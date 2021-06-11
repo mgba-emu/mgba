@@ -37,6 +37,8 @@ static void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBWisdomTree(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBPKJD(struct GB* gb, uint16_t address, uint8_t value);
+static void _GBBBD(struct GB* gb, uint16_t address, uint8_t value);
+static void _GBHitek(struct GB* gb, uint16_t address, uint8_t value);
 
 static uint8_t _GBMBC2Read(struct GBMemory*, uint16_t address);
 static uint8_t _GBMBC6Read(struct GBMemory*, uint16_t address);
@@ -45,6 +47,8 @@ static void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t valu
 
 static uint8_t _GBTAMA5Read(struct GBMemory*, uint16_t address);
 static uint8_t _GBPKJDRead(struct GBMemory*, uint16_t address);
+static uint8_t _GBBBDRead(struct GBMemory*, uint16_t address);
+static uint8_t _GBHitekRead(struct GBMemory*, uint16_t address);
 
 static uint8_t _GBPocketCamRead(struct GBMemory*, uint16_t address);
 static void _GBPocketCamCapture(struct GBMemory*);
@@ -145,6 +149,31 @@ static bool _isWisdomTree(const uint8_t* mem, size_t size) {
 	return false;
 }
 
+static enum GBMemoryBankControllerType _detectUnlMBC(const uint8_t* mem, size_t size) {
+	const struct GBCartridge* cart = (const struct GBCartridge*) &mem[0x100];
+
+	switch (cart->type) {
+		case 0:
+		if (_isWisdomTree(mem, size)) {
+			return GB_UNL_WISDOM_TREE;
+		}
+		break;
+	}
+
+	uint32_t secondaryLogo = doCrc32(&mem[0x184], 0x30);
+	switch (secondaryLogo) {
+	case 0x4fdab691:
+		return GB_UNL_HITEK;
+	case 0xc7d8c1df:
+	case 0x6d1ea662: // Garou
+		if (mem[0x7FFF] != 0x01) { // Make sure we're not using a "fixed" version
+			return GB_UNL_BBD;
+		}
+	}
+
+	return GB_MBC_AUTODETECT;
+}
+
 void GBMBCSwitchSramBank(struct GB* gb, int bank) {
 	size_t bankStart = bank * GB_SIZE_EXTERNAL_RAM;
 	if (bankStart + GB_SIZE_EXTERNAL_RAM > gb->sramSize) {
@@ -202,15 +231,13 @@ void GBMBCInit(struct GB* gb) {
 			gb->sramSize = 0x10000;
 			break;
 		}
+		if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
+			gb->memory.mbcType = _detectUnlMBC(gb->memory.rom, gb->memory.romSize);
+		}
 
 		if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
 			switch (cart->type) {
 			case 0:
-				if (_isWisdomTree(gb->memory.rom, gb->memory.romSize)) {
-					gb->memory.mbcType = GB_UNL_WISDOM_TREE;
-					break;
-				}
-				// Fall through
 			case 8:
 			case 9:
 				gb->memory.mbcType = GB_MBC_NONE;
@@ -345,6 +372,16 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_UNL_WISDOM_TREE:
 		gb->memory.mbcWrite = _GBWisdomTree;
+		break;
+	case GB_UNL_BBD:
+		gb->memory.mbcWrite = _GBBBD;
+		gb->memory.mbcRead = _GBBBDRead;
+		break;
+	case GB_UNL_HITEK:
+		gb->memory.mbcWrite = _GBHitek;
+		gb->memory.mbcRead = _GBHitekRead;
+		gb->memory.mbcState.bbd.dataSwapMode = 7;
+		gb->memory.mbcState.bbd.bankSwapMode = 7;
 		break;
 	case GB_UNL_PKJD:
 		gb->memory.mbcWrite = _GBPKJD;
@@ -1303,6 +1340,123 @@ static uint8_t _GBPKJDRead(struct GBMemory* memory, uint16_t address) {
 		return memory->mbcState.pkjd.reg[memory->activeRtcReg - 5];
 	default:
 		return 0;
+	}
+}
+
+static uint8_t _reorderBits(uint8_t input, const uint8_t* reorder) {
+	uint8_t newbyte = 0;
+	int i;
+	for(i = 0; i < 8; ++i) {
+		int oldbit = reorder[i];
+		int newbit = i;
+		newbyte += ((input >> oldbit) & 1) << newbit;
+	}
+
+	return newbyte;
+}
+
+static const uint8_t _bbdDataReordering[8][8] = {
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // 00 - Normal
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // 01 - NOT KNOWN YET
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // 02 - NOT KNOWN YET
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // 03 - NOT KNOWN YET
+	{ 0, 5, 1, 3, 4, 2, 6, 7 }, // 04 - Garou
+	{ 0, 4, 2, 3, 1, 5, 6, 7 }, // 05 - Harry
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // 06 - NOT KNOWN YET
+	{ 0, 1, 5, 3, 4, 2, 6, 7 }, // 07 - Digimon
+};
+
+static const uint8_t _bbdBankReordering[8][8] = {
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // 00 - Normal
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // 01 - NOT KNOWN YET
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // 02 - NOT KNOWN YET
+	{ 3, 4, 2, 0, 1, 5, 6, 7 }, // 03 - 0,1 unconfirmed. Digimon/Garou
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // 04 - NOT KNOWN YET
+	{ 1, 2, 3, 4, 0, 5, 6, 7 }, // 05 - 0,1 unconfirmed. Harry
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // 06 - NOT KNOWN YET
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // 07 - NOT KNOWN YET
+};
+
+void  _GBBBD(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBMemory* memory = &gb->memory;
+	switch (address & 0xF0FF) {
+	case 0x2000:
+		value = _reorderBits(value, _bbdBankReordering[memory->mbcState.bbd.bankSwapMode]);
+		break;
+	case 0x2001:
+		memory->mbcState.bbd.dataSwapMode = value & 0x07;
+		if (!(memory->mbcState.bbd.dataSwapMode == 0x07 || memory->mbcState.bbd.dataSwapMode == 0x05 || memory->mbcState.bbd.dataSwapMode == 0x04 || memory->mbcState.bbd.dataSwapMode == 0x00)) {
+			mLOG(GB_MBC, STUB, "Bitswap mode unsupported: %X", memory->mbcState.bbd.dataSwapMode);
+		}
+		break;
+	case 0x2080:
+		memory->mbcState.bbd.bankSwapMode = value & 0x07;
+		if (!(memory->mbcState.bbd.bankSwapMode == 0x03 || memory->mbcState.bbd.bankSwapMode == 0x05 || memory->mbcState.bbd.bankSwapMode == 0x00)) {
+			mLOG(GB_MBC, STUB, "Bankswap mode unsupported: %X", memory->mbcState.bbd.dataSwapMode);
+		}
+		break;
+	}
+	_GBMBC5(gb, address, value);
+}
+
+uint8_t _GBBBDRead(struct GBMemory* memory, uint16_t address) {
+	switch (address >> 14) {
+	case 0:
+	default:
+		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
+	case 1:
+		return _reorderBits(memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)], _bbdDataReordering[memory->mbcState.bbd.dataSwapMode]);
+	}
+}
+
+static const uint8_t _hitekDataReordering[8][8] = {
+	{ 0, 1, 2, 3, 4, 5, 6, 7 },
+	{ 0, 6, 5, 3, 4, 1, 2, 7 },
+	{ 0, 5, 6, 3, 4, 2, 1, 7 },
+	{ 0, 6, 2, 3, 4, 5, 1, 7 },
+	{ 0, 6, 1, 3, 4, 5, 2, 7 },
+	{ 0, 1, 6, 3, 4, 5, 2, 7 },
+	{ 0, 2, 6, 3, 4, 1, 5, 7 },
+	{ 0, 6, 2, 3, 4, 1, 5, 7 },
+};
+
+static const uint8_t _hitekBankReordering[8][8] = {
+	{ 0, 1, 2, 3, 4, 5, 6, 7 },
+	{ 3, 2, 1, 0, 4, 5, 6, 7 },
+	{ 2, 1, 0, 3, 4, 5, 6, 7 },
+	{ 1, 0, 3, 2, 4, 5, 6, 7 },
+	{ 0, 3, 2, 1, 4, 5, 6, 7 },
+	{ 2, 3, 0, 1, 4, 5, 6, 7 },
+	{ 3, 0, 1, 2, 4, 5, 6, 7 },
+	{ 2, 0, 3, 1, 4, 5, 6, 7 },
+};
+
+void  _GBHitek(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBMemory* memory = &gb->memory;
+	switch (address & 0xF0FF) {
+	case 0x2000:
+		value = _reorderBits(value, _hitekBankReordering[memory->mbcState.bbd.bankSwapMode]);
+		break;
+	case 0x2001:
+		memory->mbcState.bbd.dataSwapMode = value & 0x07;
+		break;
+	case 0x2080:
+		memory->mbcState.bbd.bankSwapMode = value & 0x07;
+		break;
+	case 0x300:
+		// See hhugboy src/memory/mbc/MbcUnlHitek.cpp for commentary on this return
+		return;	
+	}
+	_GBMBC5(gb, address, value);
+}
+
+uint8_t _GBHitekRead(struct GBMemory* memory, uint16_t address) {
+	switch (address >> 14) {
+	case 0:
+	default:
+		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
+	case 1:
+		return _reorderBits(memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)], _hitekDataReordering[memory->mbcState.bbd.dataSwapMode]);
 	}
 }
 

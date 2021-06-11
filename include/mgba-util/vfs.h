@@ -47,7 +47,7 @@ struct VFile {
 	void (*unmap)(struct VFile* vf, void* memory, size_t size);
 	void (*truncate)(struct VFile* vf, size_t size);
 	ssize_t (*size)(struct VFile* vf);
-	bool (*sync)(struct VFile* vf, const void* buffer, size_t size);
+	bool (*sync)(struct VFile* vf, void* buffer, size_t size);
 };
 
 struct VDirEntry {

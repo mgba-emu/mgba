@@ -37,7 +37,11 @@ Misc:
 Features:
  - e-Reader card scanning
  - Add WebP and APNG recording
+ - Add mute option in homebrew ports
+ - Add status indicators for fast-forward and mute in homebrew ports
  - Support for unlicensed Pokemon Jade/Diamond Game Boy mapper
+ - Support for unlicensed BBD Game Boy mapper
+ - Support for unlicensed Hitek Game Boy mapper
  - Stack tracing tools in ARM debugger (by ahigerd)
  - Command scripts for CLI debugger (by ahigerd)
 Emulation fixes:
@@ -47,15 +51,21 @@ Emulation fixes:
  - GB Audio: Fix initial sweep state
  - GB Audio: Fix serializing sweep time
  - GB Audio: Fix deserializing audio channels 2 and 3
+ - GB Audio: Fix deserializing while audio was disabled (fixes mgba.io/i/1305)
  - GB MBC: Fix MBC1 mode changing behavior
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
  - GBA: Fix timing advancing too quickly in rare cases
  - GBA Audio: Fix deserializing SOUNDCNT_L
+ - GBA Audio: Fix stereo in XQ audio
+ - GBA Audio: Fix volume/mute in XQ audio (fixes mgba.io/i/1864)
+ - GBA Audio: Revamp FIFO emulation (fixes mgba.io/i/356, mgba.io/i/875, mgba.io/i/1847)
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
  - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)
  - GBA BIOS: Make HLE BIOS calls interruptable (fixes mgba.io/i/1711 and mgba.io/i/1823)
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
+ - GBA DMA: Fix ordering and timing of overlapping DMAs
+ - GBA Hardware: Fix GB Player detection on big endian platforms
  - GBA Memory: Improve gamepak prefetch timing
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
  - GBA SIO: Fix copying Normal mode transfer values
@@ -64,21 +74,27 @@ Emulation fixes:
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
  - GBA Video: Invalidate map cache when modifying BGCNT (fixes mgba.io/i/1846)
+ - GBA Video: Don't draw sprites using unmapped VRAM in GL renderer (fixes mgba.io/i/1865)
  - SM83: Emulate HALT bug
 Other fixes:
  - 3DS: Redo video sync to be more precise
  - 3DS: Fix crash with libctru 2.0 when exiting
+ - 3DS: Fix thread cleanup
  - All: Improve export headers (fixes mgba.io/i/1738)
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix reported ROM size when a fixed buffer size is used
+ - Core: Fix memory leak loading ELF files
  - Debugger: Don't skip undefined instructions when debugger attached
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
  - GBA: Disable more checks when loading GS save with checks disabled (fixes mgba.io/i/1851)
+ - GBA: Fix endianness issues in renderer proxy
+ - GBA Core: Fix memory leak when loading symbols
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
  - Qt: Fix a race condition in the frame inspector
  - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
+ - Qt: Fix Battle Chip view not displaying chips on some DPI settings
  - mGUI: Fix closing down a game if an exit is signalled
  - mVL: Fix injecting accidentally draining non-injection buffer
  - SM83: Simplify register pair access on big endian
@@ -93,7 +109,9 @@ Misc:
  - Qt: Renderer can be changed while a game is running
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view
+ - Qt: Memory viewer now supports editing decimal values directly (closes mgba.io/i/1705)
  - Util: Reset vector size on deinit
+ - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)
 
 0.8.3: (2020-08-03)
 Emulation fixes:

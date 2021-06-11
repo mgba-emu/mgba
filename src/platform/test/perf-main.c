@@ -31,6 +31,10 @@ uint32_t* romBuffer;
 size_t romBufferSize;
 #endif
 #endif
+#ifdef PSP2
+#include <psp2/kernel/processmgr.h>
+#include <psp2/power.h>
+#endif
 
 #include <errno.h>
 #include <fcntl.h>
@@ -108,6 +112,8 @@ int main(int argc, char** argv) {
 	romBuffer = SYS_GetArena2Lo();
 	SYS_SetArena2Lo((void*)((intptr_t) romBuffer + romBufferSize));
 #endif
+#elif defined(PSP2)
+	scePowerSetArmClockFrequency(444);
 #else
 	signal(SIGINT, _mPerfShutdown);
 #endif
@@ -177,6 +183,8 @@ int main(int argc, char** argv) {
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
 	VIDEO_WaitVSync();
+#elif defined(PSP2)
+	sceKernelExitProcess(0);
 #endif
 
 	return didFail;

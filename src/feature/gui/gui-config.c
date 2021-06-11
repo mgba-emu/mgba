@@ -62,6 +62,16 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.nStates = 2
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Show status OSD",
+		.data = "showOSD",
+		.submenu = 0,
+		.state = true,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.nStates = 2
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Autosave state",
 		.data = "autosave",
 		.submenu = 0,
@@ -82,6 +92,16 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.nStates = 2
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Mute",
+		.data = "mute",
+		.submenu = 0,
+		.state = false,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.nStates = 2
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Use BIOS if found",
 		.data = "useBios",
 		.submenu = 0,
@@ -91,10 +111,12 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		},
 		.nStates = 2
 	};
+#ifdef M_CORE_GBA
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Select GBA BIOS path",
 		.data = "gba.bios",
 	};
+#endif
 #ifdef M_CORE_GB
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Select GB BIOS path",

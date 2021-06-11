@@ -69,12 +69,14 @@ static inline int ThreadCreate(Thread* thread, ThreadEntry entry, void* context)
 	if (!entry || !thread) {
 		return 1;
 	}
-	*thread = threadCreate(entry, context, 0x8000, 0x18, 2, true);
+	*thread = threadCreate(entry, context, 0x8000, 0x18, 2, false);
 	return !*thread;
 }
 
 static inline int ThreadJoin(Thread* thread) {
-	return threadJoin(*thread, U64_MAX);
+	Result res = threadJoin(*thread, U64_MAX);
+	threadFree(*thread);
+	return res;
 }
 
 static inline void ThreadSetName(const char* name) {

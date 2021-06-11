@@ -17,6 +17,7 @@ Q_OBJECT
 
 public:
 	VFileDevice(VFile* vf = nullptr, QObject* parent = nullptr);
+	VFileDevice(const QString&, QIODevice::OpenMode, QObject* parent = nullptr);
 
 	virtual void close() override;
 	virtual bool seek(qint64 pos) override;

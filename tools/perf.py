@@ -72,18 +72,20 @@ class GameClockTest(PerfTest):
 class PerfServer(object):
     ITERATIONS_PER_INSTANCE = 50
 
-    def __init__(self, address, command=None):
+    def __init__(self, address, root='/', command=None):
         s = address.rsplit(':', 1)
         if len(s) == 1:
             self.address = (s[0], 7216)
         else:
             self.address = (s[0], s[1])
+        self.command = None
         if command:
             self.command = shlex.split(command)
         self.iterations = self.ITERATIONS_PER_INSTANCE
         self.socket = None
         self.results = []
         self.reader = None
+        self.root = root
 
     def _start(self, test):
         if self.command:
@@ -108,7 +110,7 @@ class PerfServer(object):
     def run(self, test):
         if not self.socket:
             self._start(test)
-        self.socket.send(os.path.join("/perfroms", test.rom).encode("utf-8"))
+        self.socket.send(os.path.join(self.root, test.rom).encode("utf-8"))
         self.results.append(next(self.reader))
         self.iterations -= 1
         if self.iterations == 0:
@@ -178,6 +180,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--server', metavar='ADDRESS', help='run on server')
     parser.add_argument('-S', '--server-command', metavar='COMMAND', help='command to launch server')
     parser.add_argument('-o', '--out', metavar='FILE', help='output file path')
+    parser.add_argument('-r', '--root', metavar='PATH', type=str, default='/perfroms', help='root path for server mode')
     parser.add_argument('directory', help='directory containing ROM files')
     args = parser.parse_args()
 
@@ -189,9 +192,9 @@ if __name__ == '__main__':
     s = Suite(args.directory, wall=args.wall_time, game=args.game_frames, renderer=renderer)
     if args.server:
         if args.server_command:
-            server = PerfServer(args.server, args.server_command)
+            server = PerfServer(args.server, args.root, args.server_command)
         else:
-            server = PerfServer(args.server)
+            server = PerfServer(args.server, args.root)
         s.set_server(server)
     s.collect_tests()
     results = s.run()

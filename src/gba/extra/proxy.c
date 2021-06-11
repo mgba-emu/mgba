@@ -192,13 +192,13 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		break;
 	case DIRTY_PALETTE:
 		if (item->address < SIZE_PALETTE_RAM) {
-			logger->palette[item->address >> 1] = item->value;
+			STORE_16LE(item->value, item->address, logger->palette);
 			proxyRenderer->backend->writePalette(proxyRenderer->backend, item->address, item->value);
 		}
 		break;
 	case DIRTY_OAM:
 		if (item->address < SIZE_OAM) {
-			logger->oam[item->address] = item->value;
+			STORE_16LE(item->value, item->address << 1, logger->oam);
 			proxyRenderer->backend->writeOAM(proxyRenderer->backend, item->address);
 		}
 		break;

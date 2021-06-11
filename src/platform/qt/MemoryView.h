@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include <QValidator>
+
 #include "MemoryModel.h"
 
 #include "ui_MemoryView.h"
@@ -12,6 +14,20 @@
 namespace QGBA {
 
 class CoreController;
+
+class IntValidator : public QValidator {
+Q_OBJECT
+
+public:
+	IntValidator(bool isSigned, QObject* parent = nullptr);
+
+	virtual QValidator::State validate(QString& input, int& pos) const override;
+	void setWidth(int bytes) { m_width = bytes; }
+
+private:
+	int m_width = 1;
+	bool m_signed;
+};
 
 class MemoryView : public QWidget {
 Q_OBJECT
@@ -32,6 +48,8 @@ private slots:
 
 private:
 	Ui::MemoryView m_ui;
+	IntValidator m_sintValidator{true};
+	IntValidator m_uintValidator{false};
 
 	std::shared_ptr<CoreController> m_controller;
 	QPair<uint32_t, uint32_t> m_region;

@@ -138,8 +138,10 @@ static void _GBCoreDeinit(struct mCore* core) {
 	GBDestroy(core->board);
 	mappedMemoryFree(core->cpu, sizeof(struct SM83Core));
 	mappedMemoryFree(core->board, sizeof(struct GB));
-#if defined USE_DEBUGGERS && (!defined(MINIMAL_CORE) || MINIMAL_CORE < 2)
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetDeinit(&core->dirs);
+#endif
+#ifdef USE_DEBUGGERS
 	if (core->symbolTable) {
 		mDebuggerSymbolTableDestroy(core->symbolTable);
 	}

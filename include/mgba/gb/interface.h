@@ -38,6 +38,8 @@ enum GBMemoryBankControllerType {
 	GB_MBC5_RUMBLE = 0x105,
 	GB_UNL_WISDOM_TREE = 0x200,
 	GB_UNL_PKJD = 0x203,
+	GB_UNL_BBD = 0x220, // Also used as a mask for MBCs that need special read behavior
+	GB_UNL_HITEK = 0x221,
 };
 
 struct GBSIODriver {

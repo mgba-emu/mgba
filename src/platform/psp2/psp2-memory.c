@@ -4,21 +4,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba-util/memory.h>
-#include <mgba-util/vector.h>
 
 #include <psp2/kernel/sysmem.h>
 #include <psp2/types.h>
 
-DECLARE_VECTOR(SceUIDList, SceUID);
-DEFINE_VECTOR(SceUIDList, SceUID);
-
-static struct SceUIDList uids;
-static bool listInit = false;
-
 void* anonymousMemoryMap(size_t size) {
-	if (!listInit) {
-		SceUIDListInit(&uids, 8);
-	}
 	if (size & 0xFFF) {
 		// Align to 4kB pages
 		size += ((~size) & 0xFFF) + 1;
@@ -27,7 +17,6 @@ void* anonymousMemoryMap(size_t size) {
 	if (memblock < 0) {
 		return 0;
 	}
-	*SceUIDListAppend(&uids) = memblock;
 	void* ptr;
 	if (sceKernelGetMemBlockBase(memblock, &ptr) < 0) {
 		return 0;
@@ -36,18 +25,8 @@ void* anonymousMemoryMap(size_t size) {
 }
 
 void mappedMemoryFree(void* memory, size_t size) {
-	UNUSED(size);
-	size_t i;
-	for (i = 0; i < SceUIDListSize(&uids); ++i) {
-		SceUID uid = *SceUIDListGetPointer(&uids, i);
-		void* ptr;
-		if (sceKernelGetMemBlockBase(uid, &ptr) < 0) {
-			continue;
-		}
-		if (ptr == memory) {
-			sceKernelFreeMemBlock(uid);
-			SceUIDListShift(&uids, i, 1);
-			return;
-		}
+	SceUID uid = sceKernelFindMemBlockByAddr(memory, size);
+	if (uid >= 0) {
+		sceKernelFreeMemBlock(uid);
 	}
 }

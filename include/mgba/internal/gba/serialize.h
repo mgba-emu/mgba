@@ -20,7 +20,7 @@ extern const uint32_t GBA_SAVESTATE_VERSION;
 mLOG_DECLARE_CATEGORY(GBA_STATE);
 
 /* Savestate format:
- * 0x00000 - 0x00003: Version Magic (0x01000001)
+ * 0x00000 - 0x00003: Version Magic (0x01000004)
  * 0x00004 - 0x00007: BIOS checksum (e.g. 0xBAAE187F for official BIOS)
  * 0x00008 - 0x0000B: ROM CRC32
  * 0x0000C - 0x0000F: Master cycles
@@ -69,10 +69,16 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x0018C - 0x001AB: Audio FIFO 1
  * 0x001AC - 0x001CB: Audio FIFO 2
  * 0x001CC - 0x001DF: Audio miscellaneous state
- * | 0x001CC - 0x001CF: FIFO 1 size
- * | 0x001D0 - 0x001D3: Reserved
+ * | 0x001CC - 0x001CF: Channel A internal audio samples
+ * | 0x001D0 - 0x001D3: Channel B internal audio samples
  * | 0x001D4 - 0x001D7: Next sample
- * | 0x001D8 - 0x001DB: FIFO 2 size
+ * | 0x001D8: Channel A current sample
+ * | 0x001D9: Channel B current sample
+ * | 0x001DA - 0x001DB: Flags
+ *   | bits 0 - 1: Channel B internal samples remaining
+ *   | bits 2 - 4: Channel B readable words
+ *   | bits 5 - 6: Channel A internal samples remaining
+ *   | bits 7 - 9: Channel A readable words
  * | TODO: Fix this, they're in big-endian order, but field is little-endian
  * | 0x001DC - 0x001DC: Channel 1 envelope state
  *   | bits 0 - 3: Current volume
@@ -217,6 +223,12 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * Total size: 0x61000 (397,312) bytes
  */
 
+DECL_BITFIELD(GBASerializedAudioFlags, uint16_t);
+DECL_BITS(GBASerializedAudioFlags, FIFOInternalSamplesB, 0, 2);
+DECL_BITS(GBASerializedAudioFlags, FIFOSamplesB, 2, 3); // Yay legacy?
+DECL_BITS(GBASerializedAudioFlags, FIFOInternalSamplesA, 5, 2);
+DECL_BITS(GBASerializedAudioFlags, FIFOSamplesA, 7, 3);
+
 DECL_BITFIELD(GBASerializedVideoFlags, uint32_t);
 DECL_BITS(GBASerializedVideoFlags, Mode, 0, 2);
 
@@ -267,12 +279,14 @@ struct GBASerializedState {
 
 	struct {
 		struct GBSerializedPSGState psg;
-		uint8_t fifoA[32];
-		uint8_t fifoB[32];
-		uint32_t fifoSizeA;
-		int32_t reserved;
+		uint32_t fifoA[8];
+		uint32_t fifoB[8];
+		uint32_t internalA;
+		uint32_t internalB;
 		int32_t nextSample;
-		uint32_t fifoSizeB;
+		int8_t sampleA;
+		int8_t sampleB;
+		GBASerializedAudioFlags gbaFlags;
 		GBSerializedAudioFlags flags;
 	} audio;
 

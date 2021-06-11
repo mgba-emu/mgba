@@ -22,4 +22,4 @@ PYEXPORT void* _vfpMap(struct VFile* vf, size_t size, int flags);
 PYEXPORT void _vfpUnmap(struct VFile* vf, void* memory, size_t size);
 PYEXPORT void _vfpTruncate(struct VFile* vf, size_t size);
 PYEXPORT ssize_t _vfpSize(struct VFile* vf);
-PYEXPORT bool _vfpSync(struct VFile* vf, const void* buffer, size_t size);
+PYEXPORT bool _vfpSync(struct VFile* vf, void* buffer, size_t size);

@@ -42,6 +42,9 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 #else
 	int size = QFontMetrics(QFont()).height() / (devicePixelRatio() * 12);
 #endif
+	if (!size) {
+		size = 1;
+	}
 	m_ui.chipList->setIconSize(m_ui.chipList->iconSize() * size);
 	m_ui.chipList->setGridSize(m_ui.chipList->gridSize() * size);
 	m_model.setScale(size);

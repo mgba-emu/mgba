@@ -15,6 +15,8 @@ CXX_GUARD_START
 #include <mgba/internal/gb/audio.h>
 #include <mgba-util/circle-buffer.h>
 
+#define GBA_AUDIO_FIFO_SIZE 8
+
 #define MP2K_MAGIC 0x68736D53
 #define MP2K_MAX_SOUND_CHANNELS 12
 
@@ -26,7 +28,11 @@ extern const unsigned GBA_AUDIO_SAMPLES;
 extern const int GBA_AUDIO_VOLUME_MAX;
 
 struct GBAAudioFIFO {
-	struct CircleBuffer fifo;
+	uint32_t fifo[GBA_AUDIO_FIFO_SIZE];
+	int fifoWrite;
+	int fifoRead;
+	uint32_t internalSample;
+	int internalRemaining;
 	int dmaSource;
 	int8_t sample;
 };
@@ -298,7 +304,7 @@ void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value);
 void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value);
 
 void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value);
-void GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value);
+uint32_t GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value);
 void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles);
 
 struct GBASerializedState;

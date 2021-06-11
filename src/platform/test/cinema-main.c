@@ -1350,6 +1350,7 @@ void _log(struct mLogger* log, int category, enum mLogLevel level, const char* f
 int main(int argc, char** argv) {
 	ThreadLocalInitKey(&logStream);
 	ThreadLocalSetKey(logStream, NULL);
+	putenv("TZ=UTC");
 
 	int status = 0;
 	if (!parseCInemaArgs(argc, argv)) {

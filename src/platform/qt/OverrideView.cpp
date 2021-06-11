@@ -50,6 +50,8 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 		s_mbcList.append(GB_HuC1);
 		s_mbcList.append(GB_HuC3);
 		s_mbcList.append(GB_UNL_WISDOM_TREE);
+		s_mbcList.append(GB_UNL_BBD);
+		s_mbcList.append(GB_UNL_HITEK);
 		s_mbcList.append(GB_UNL_PKJD);
 	}
 	if (s_gbModelList.isEmpty()) {

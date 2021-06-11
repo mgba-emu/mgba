@@ -700,7 +700,7 @@ void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->memory.ie = state->ie;
 
 	gb->audio.enable = GBAudioEnableGetEnable(*gb->audio.nr52);
-	if (GBAudioEnableGetEnable(gb->audio.enable)) {
+	if (gb->audio.enable) {
 		GBIOWrite(gb, REG_NR10, gb->memory.io[REG_NR10]);
 		GBIOWrite(gb, REG_NR11, gb->memory.io[REG_NR11]);
 		GBIOWrite(gb, REG_NR12, gb->memory.io[REG_NR12]);

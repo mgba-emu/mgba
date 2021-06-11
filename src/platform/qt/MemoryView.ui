@@ -190,6 +190,9 @@
        </item>
        <item>
         <widget class="QLineEdit" name="uintVal">
+         <property name="maxLength">
+          <number>10</number>
+         </property>
          <property name="readOnly">
           <bool>true</bool>
          </property>
@@ -208,6 +211,9 @@
        </item>
        <item>
         <widget class="QLineEdit" name="sintVal">
+         <property name="maxLength">
+          <number>11</number>
+         </property>
          <property name="readOnly">
           <bool>true</bool>
          </property>
@@ -304,6 +310,23 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>regions</tabstop>
+  <tabstop>segments</tabstop>
+  <tabstop>setAddress</tabstop>
+  <tabstop>width8</tabstop>
+  <tabstop>width16</tabstop>
+  <tabstop>width32</tabstop>
+  <tabstop>sintVal</tabstop>
+  <tabstop>uintVal</tabstop>
+  <tabstop>stringVal</tabstop>
+  <tabstop>loadTBL</tabstop>
+  <tabstop>copy</tabstop>
+  <tabstop>paste</tabstop>
+  <tabstop>save</tabstop>
+  <tabstop>saveRange</tabstop>
+  <tabstop>load</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

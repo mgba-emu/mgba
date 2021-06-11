@@ -9,6 +9,8 @@
 #include <QObject>
 #include <QString>
 
+#include <mgba/core/serialize.h>
+
 struct mCoreConfig;
 struct VFile;
 
@@ -24,6 +26,8 @@ public:
 	void setConfig(const mCoreConfig*);
 	void setMultiplayerController(MultiplayerController*);
 	void setPreload(bool preload) { m_preload = preload; }
+
+	static QByteArray getExtdata(const QString& filename, mStateExtdataTag extdataType);
 
 public slots:
 	CoreController* loadGame(const QString& path);

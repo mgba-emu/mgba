@@ -150,6 +150,11 @@ struct GBPKJDState {
 	uint8_t reg[2];
 };
 
+struct GBBBDState {
+	int dataSwapMode;
+	int bankSwapMode;
+};
+
 union GBMBCState {
 	struct GBMBC1State mbc1;
 	struct GBMBC6State mbc6;
@@ -158,6 +163,7 @@ union GBMBCState {
 	struct GBPocketCamState pocketCam;
 	struct GBTAMA5State tama5;
 	struct GBPKJDState pkjd;
+	struct GBBBDState bbd;
 };
 
 struct mRotationSource;

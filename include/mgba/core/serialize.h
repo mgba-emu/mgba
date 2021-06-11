@@ -36,7 +36,7 @@ struct mStateExtdata {
 	struct mStateExtdataItem data[EXTDATA_MAX];
 };
 
-bool mStateExtdataInit(struct mStateExtdata*);
+void mStateExtdataInit(struct mStateExtdata*);
 void mStateExtdataDeinit(struct mStateExtdata*);
 void mStateExtdataPut(struct mStateExtdata*, enum mStateExtdataTag, struct mStateExtdataItem*);
 bool mStateExtdataGet(struct mStateExtdata*, enum mStateExtdataTag, struct mStateExtdataItem*);
@@ -49,6 +49,7 @@ struct mCore;
 bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags);
 bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags);
 void* mCoreExtractState(struct mCore* core, struct VFile* vf, struct mStateExtdata* extdata);
+bool mCoreExtractExtdata(struct mCore* core, struct VFile* vf, struct mStateExtdata* extdata);
 
 CXX_GUARD_END
 
