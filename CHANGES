@@ -81,6 +81,8 @@ Emulation fixes:
  - GBA Video: Don't draw sprites using unmapped VRAM in GL renderer (fixes mgba.io/i/1865)
  - GBA Video: Implement green swap (fixes mgba.io/i/1609)
  - GBA Video: Fix rare regression blending semitransparent sprites (fixes mgba.io/i/1876)
+ - GBA Video: Emulate sprite cycle limits in OpenGL renderer (fixes mgba.io/i/1635)
+ - GBA Video: Do not affect OBJ pixel priority when writing OBJWIN (fixes mgba.io/i/1890)
  - SM83: Emulate HALT bug
 Other fixes:
  - 3DS: Redo video sync to be more precise
@@ -115,6 +117,8 @@ Misc:
  - GB: Add support for sleep and shutdown callbacks
  - GBA: Allow pausing event loop while CPU is blocked
  - GBA BIOS: Division by zero should emit a FATAL error
+ - GBA Video: Convert OpenGL VRAM texture to integer
+ - GBA Video: Improve speed of window texture generation on AMD
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
  - mGUI: Show battery percentage

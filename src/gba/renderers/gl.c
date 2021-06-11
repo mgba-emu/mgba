@@ -84,8 +84,8 @@ static const char* const _vertexShader =
 static const char* const _renderTile16 =
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord) {\n"
 	"	int address = charBase + tile * 16 + (localCoord.x >> 2) + (localCoord.y << 1);\n"
-	"	vec4 halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0);\n"
-	"	int entry = int(halfrow[3 - (localCoord.x & 3)] * 15.9);\n"
+	"	int halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0).r;\n"
+	"	int entry = (halfrow >> (4 * (localCoord.x & 3))) & 15;\n"
 	"	if (entry == 0) {\n"
 	"		discard;\n"
 	"	}\n"
@@ -97,13 +97,12 @@ static const char* const _renderTile16 =
 static const char* const _renderTile256 =
 	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord) {\n"
 	"	int address = charBase + tile * 32 + (localCoord.x >> 1) + (localCoord.y << 2);\n"
-	"	vec4 halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0);\n"
-	"	int entry = int(halfrow[3 - 2 * (localCoord.x & 1)] * 15.9);\n"
-	"	int pal2 = int(halfrow[2 - 2 * (localCoord.x & 1)] * 15.9);\n"
-	"	if ((pal2 | entry) == 0) {\n"
+	"	int halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0).r;\n"
+	"	int entry = (halfrow >> (8 * (localCoord.x & 1))) & 255;\n"
+	"	if (entry == 0) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	int paletteEntry = palette[pal2 * 16 + entry];\n"
+	"	int paletteEntry = palette[entry];\n"
 	"	vec4 color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
 	"	return color;\n"
 	"}";
@@ -123,7 +122,7 @@ static const struct GBAVideoGLUniform _uniformsMode0[] = {
 
 static const char* const _renderMode0 =
 	"in vec2 texCoord;\n"
-	"uniform sampler2D vram;\n"
+	"uniform isampler2D vram;\n"
 	"uniform int palette[256];\n"
 	"uniform int screenBase;\n"
 	"uniform int charBase;\n"
@@ -158,16 +157,15 @@ static const char* const _renderMode0 =
 	"	coord &= 255;\n"
 	"	coord.y += wrap.x + wrap.y * doty;\n"
 	"	int mapAddress = screenBase + (coord.x >> 3) + (coord.y >> 3) * 32;\n"
-	"	vec4 map = texelFetch(vram, ivec2(mapAddress & 255, mapAddress >> 8), 0);\n"
-	"	int tileFlags = int(map.g * 15.9);\n"
-	"	if ((tileFlags & 4) == 4) {\n"
+	"	int map = texelFetch(vram, ivec2(mapAddress & 255, mapAddress >> 8), 0).r;\n"
+	"	if ((map & 1024) == 1024) {\n"
 	"		coord.x ^= 7;\n"
 	"	}\n"
-	"	if ((tileFlags & 8) == 8) {\n"
+	"	if ((map & 2048) == 2048) {\n"
 	"		coord.y ^= 7;\n"
 	"	}\n"
-	"	int tile = int(map.a * 15.9) + int(map.b * 15.9) * 16 + (tileFlags & 0x3) * 256;\n"
-	"	color = renderTile(tile, int(map.r * 15.9), coord & 7);\n"
+	"	int tile = map & 1023;\n"
+	"	color = renderTile(tile, map >> 12, coord & 7);\n"
 	"}";
 
 static const char* const _fetchTileOverflow =
@@ -225,7 +223,7 @@ static const char* const _interpolate =
 
 static const char* const _renderMode2 =
 	"in vec2 texCoord;\n"
-	"uniform sampler2D vram;\n"
+	"uniform isampler2D vram;\n"
 	"uniform int palette[256];\n"
 	"uniform int screenBase;\n"
 	"uniform int charBase;\n"
@@ -242,16 +240,15 @@ static const char* const _renderMode2 =
 	"vec4 renderTile(ivec2 coord) {\n"
 	"	int map = (coord.x >> 11) + (((coord.y >> 7) & 0x7F0) << size);\n"
 	"	int mapAddress = screenBase + (map >> 1);\n"
-	"	vec4 twomaps = texelFetch(vram, ivec2(mapAddress & 255, mapAddress >> 8), 0);\n"
-	"	int tile = int(twomaps[3 - 2 * (map & 1)] * 15.9) + int(twomaps[2 - 2 * (map & 1)] * 15.9) * 16;\n"
+	"	int twomaps = texelFetch(vram, ivec2(mapAddress & 255, mapAddress >> 8), 0).r;\n"
+	"	int tile = (twomaps >> (8 * (map & 1))) & 255;\n"
 	"	int address = charBase + tile * 32 + ((coord.x >> 9) & 3) + ((coord.y >> 6) & 0x1C);\n"
-	"	vec4 halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0);\n"
-	"	int entry = int(halfrow[3 - ((coord.x >> 7) & 2)] * 15.9);\n"
-	"	int pal2 = int(halfrow[2 - ((coord.x >> 7) & 2)] * 15.9);\n"
-	"	if ((pal2 | entry) == 0) {\n"
+	"	int halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0).r;\n"
+	"	int entry = (halfrow >> (8 * ((coord.x >> 8) & 1))) & 255;\n"
+	"	if (entry == 0) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	int paletteEntry = palette[pal2 * 16 + entry];\n"
+	"	int paletteEntry = palette[entry];\n"
 	"	vec4 color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
 	"	return color;\n"
 	"}\n"
@@ -294,7 +291,7 @@ static const struct GBAVideoGLUniform _uniformsMode35[] = {
 
 static const char* const _renderMode35 =
 	"in vec2 texCoord;\n"
-	"uniform sampler2D vram;\n"
+	"uniform isampler2D vram;\n"
 	"uniform int charBase;\n"
 	"uniform ivec2 size;\n"
 	"uniform ivec4 transform[160];\n"
@@ -333,9 +330,8 @@ static const char* const _renderMode35 =
 	"		discard;\n"
 	"	}\n"
 	"	int address = charBase + (coord.x >> 8) + (coord.y >> 8) * size.x;\n"
-	"	ivec4 entry = ivec4(texelFetch(vram, ivec2(address & 255, address >> 8), 0) * 15.9);\n"
-	"	int sixteen = (entry.x << 12) | (entry.y << 8) | (entry.z << 4) | entry.w;\n"
-	"	color = vec4(float(sixteen & 0x1F) / 31., float((sixteen >> 5) & 0x1F) / 31., float((sixteen >> 10) & 0x1F) / 31., 1.);\n"
+	"	int entry = texelFetch(vram, ivec2(address & 255, address >> 8), 0).r;\n"
+	"	color = vec4(float(entry & 0x1F) / 31., float((entry >> 5) & 0x1F) / 31., float((entry >> 10) & 0x1F) / 31., 1.);\n"
 	"}";
 
 static const struct GBAVideoGLUniform _uniformsMode4[] = {
@@ -354,7 +350,7 @@ static const struct GBAVideoGLUniform _uniformsMode4[] = {
 
 static const char* const _renderMode4 =
 	"in vec2 texCoord;\n"
-	"uniform sampler2D vram;\n"
+	"uniform isampler2D vram;\n"
 	"uniform int palette[256];\n"
 	"uniform int charBase;\n"
 	"uniform ivec2 size;\n"
@@ -394,9 +390,8 @@ static const char* const _renderMode4 =
 	"		discard;\n"
 	"	}\n"
 	"	int address = charBase + (coord.x >> 8) + (coord.y >> 8) * size.x;\n"
-	"	vec4 twoEntries = texelFetch(vram, ivec2((address >> 1) & 255, address >> 9), 0);\n"
-	"	ivec2 entry = ivec2(twoEntries[3 - 2 * (address & 1)] * 15.9, twoEntries[2 - 2 * (address & 1)] * 15.9);\n"
-	"	int paletteEntry = palette[entry.y * 16 + entry.x];\n"
+	"	int twoEntries = texelFetch(vram, ivec2((address >> 1) & 255, address >> 9), 0).r;\n"
+	"	int paletteEntry = palette[(twoEntries >> (8 * (address & 1)) & 255)];\n"
 	"	color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
 	"}";
 
@@ -413,12 +408,13 @@ static const struct GBAVideoGLUniform _uniformsObj[] = {
 	{ "dims", GBA_GL_OBJ_DIMS, },
 	{ "objwin", GBA_GL_OBJ_OBJWIN, },
 	{ "mosaic", GBA_GL_OBJ_MOSAIC, },
+	{ "cyclesRemaining", GBA_GL_OBJ_CYCLES, },
 	{ 0 }
 };
 
 static const char* const _renderObj =
 	"in vec2 texCoord;\n"
-	"uniform sampler2D vram;\n"
+	"uniform isampler2D vram;\n"
 	"uniform int palette[256];\n"
 	"uniform int charBase;\n"
 	"uniform int stride;\n"
@@ -428,6 +424,7 @@ static const char* const _renderObj =
 	"uniform ivec4 dims;\n"
 	"uniform ivec4 objwin;\n"
 	"uniform ivec4 mosaic;\n"
+	"uniform int cyclesRemaining[160];\n"
 	"OUT(0) out vec4 color;\n"
 	"OUT(1) out ivec4 flags;\n"
 	"OUT(2) out ivec4 window;\n"
@@ -442,6 +439,9 @@ static const char* const _renderObj =
 	"	} else if (mosaic.x < -1) {\n"
 	"		int x = dims.z - int(incoord.x) - 1;\n"
 	"		incoord.x = float(clamp(dims.z - x + (mosaic.z + x) % -mosaic.x - 1, 0, dims.z - 1));\n"
+	"	}\n"
+	"	if (cyclesRemaining[int(incoord.y) + mosaic.w] <= 0) {\n"
+	"		discard;\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
 	"		int y = int(incoord.y);\n"
@@ -497,7 +497,7 @@ static const char* const _renderWindow =
 	"uniform ivec4 win1[160];\n"
 	"OUT(0) out ivec4 window;\n"
 
-	"void crop(vec4 windowParams, int flags, inout ivec3 windowFlags) {\n"
+	"bool crop(vec4 windowParams) {\n"
 	"	bvec4 compare = lessThan(texCoord.xxyy, windowParams);\n"
 	"	compare = equal(compare, bvec4(true, false, true, false));\n"
 	"	if (any(compare)) {\n"
@@ -505,25 +505,23 @@ static const char* const _renderWindow =
 	"		vec2 v = windowParams.zw;\n"
 	"		if (v.x > v.y) {\n"
 	"			if (compare.z && compare.w) {\n"
-	"				return;\n"
+	"				return false;\n"
 	"			}\n"
 	"		} else if (compare.z || compare.w) {\n"
-	"			return;\n"
+	"			return false;\n"
 	"		}\n"
 	"		if (h.x > h.y) {\n"
 	"			if (compare.x && compare.y) {\n"
-	"				return;\n"
+	"				return false;\n"
 	"			}\n"
 	"		} else if (compare.x || compare.y) {\n"
-	"			return;\n"
+	"			return false;\n"
 	"		}\n"
 	"	}\n"
-	"	windowFlags.x = flags;\n"
+	"	return true;\n"
 	"}\n"
 
-	"vec4 interpolate(ivec4 win[160]) {\n"
-	"	vec4 bottom = vec4(win[int(texCoord.y) - 1]);\n"
-	"	vec4 top = vec4(win[int(texCoord.y)]);\n"
+	"vec4 interpolate(vec4 top, vec4 bottom) {\n"
 	"	if (distance(top, bottom) > 40.) {\n"
 	"		return top;\n"
 	"	}\n"
@@ -535,14 +533,15 @@ static const char* const _renderWindow =
 	"	if ((dispcnt & 0xE0) == 0) {\n"
 	"		window = ivec4(dispflags, blend, 0);\n"
 	"	} else {\n"
-	"		ivec3 windowFlags = ivec3(flags.z, blend);\n"
-	"		if ((dispcnt & 0x40) != 0) { \n"
-	"			crop(interpolate(win1), flags.y, windowFlags);\n"
+	"		ivec4 windowFlags = ivec4(flags.z, blend, 0);\n"
+	"		int top = int(texCoord.y);\n"
+	"		int bottom = max(top - 1, 0);\n"
+	"		if ((dispcnt & 0x20) != 0 && crop(interpolate(vec4(win0[top]), vec4(win0[bottom])))) { \n"
+	"			windowFlags.x = flags.x;\n"
+	"		} else if ((dispcnt & 0x40) != 0 && crop(interpolate(vec4(win1[top]), vec4(win1[bottom])))) {\n"
+	"			windowFlags.x = flags.y;\n"
 	"		}\n"
-	"		if ((dispcnt & 0x20) != 0) { \n"
-	"			crop(interpolate(win0), flags.x, windowFlags);\n"
-	"		}\n"
-	"		window = ivec4(windowFlags, 0);\n"
+	"		window = windowFlags;\n"
 	"	}\n"
 	"}\n";
 
@@ -776,7 +775,7 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	glBindTexture(GL_TEXTURE_2D, glRenderer->vramTex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA4, 256, 192, 0, GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R16UI, 256, 192, 0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
 
 	glGenBuffers(1, &glRenderer->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, glRenderer->vbo);
@@ -899,6 +898,7 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	_deleteShader(&glRenderer->bgShader[3]);
 	_deleteShader(&glRenderer->objShader[0]);
 	_deleteShader(&glRenderer->objShader[1]);
+	_deleteShader(&glRenderer->objShader[2]);
 	_deleteShader(&glRenderer->finalizeShader);
 
 	int i;
@@ -1356,7 +1356,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 					} else {
 						vram = &glRenderer->d.vramOBJ[(first - 16) >> 2][2048 * (first & 3)];
 					}
-					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 8 * first, 256, 8 * (i - first), GL_RGBA, GL_UNSIGNED_SHORT_4_4_4_4, vram);
+					glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 8 * first, 256, 8 * (i - first), GL_RED_INTEGER, GL_UNSIGNED_SHORT, vram);
 					first = -1;
 				}
 			} else if (first < 0) {
@@ -1388,6 +1388,11 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 			glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->bg[i].fbo);
 			glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 			glClear(GL_COLOR_BUFFER_BIT);
+		}
+
+		int spriteCyclesRemaining = GBARegisterDISPCNTIsHblankIntervalFree(glRenderer->dispcnt) ? OBJ_HBLANK_FREE_LENGTH : OBJ_LENGTH;
+		for (i = 0; i < GBA_VIDEO_VERTICAL_PIXELS; ++i) {
+			glRenderer->spriteCycles[i] = spriteCyclesRemaining;
 		}
 	}
 
@@ -1434,6 +1439,24 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 			}
 
 			GBAVideoGLRendererDrawSprite(glRenderer, &sprite->obj, y, sprite->y);
+
+			int startY = sprite->y;
+			int endY = sprite->endY;
+
+			if (endY >= 256) {
+				startY -= 256;
+				endY -= 256;
+			}
+			if (startY < glRenderer->firstY) {
+				startY = glRenderer->firstY;
+			}
+			if (endY > y) {
+				endY = y;
+			}
+			int j;
+			for (j = startY; j <= endY; ++j) {
+				glRenderer->spriteCycles[j] -= sprite->cycles;
+			}
 		}
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_STENCIL_TEST);
@@ -1674,6 +1697,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c),
 	                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (renderer->blendEffect * 4),
 	                                          renderer->blda, GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
+	glUniform1iv(uniforms[GBA_GL_OBJ_CYCLES], GBA_VIDEO_VERTICAL_PIXELS, renderer->spriteCycles);
 	if (GBAObjAttributesAIsTransformed(sprite->a)) {
 		struct GBAOAMMatrix mat;
 		LOAD_16(mat.a, 0, &renderer->d.oam->mat[GBAObjAttributesBGetMatIndex(sprite->b)].a);
@@ -1695,12 +1719,18 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	}
 	glUniform4i(uniforms[GBA_GL_OBJ_DIMS], width, height, totalWidth, totalHeight);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_OBJWIN) {
+		// OBJWIN writes do not affect pixel priority
 		glDisable(GL_DEPTH_TEST);
+		glDepthMask(GL_FALSE);
+		glStencilMask(GL_FALSE);
 		int window = renderer->objwin & 0x3F;
 		glUniform4i(uniforms[GBA_GL_OBJ_OBJWIN], 1, window, renderer->bldb, renderer->bldy);
 		glDrawBuffers(3, (GLenum[]) { GL_NONE, GL_NONE, GL_COLOR_ATTACHMENT2 });
 	} else {
 		glEnable(GL_DEPTH_TEST);
+		glDepthMask(GL_TRUE);
+		glStencilMask(GL_TRUE);
+		glStencilFunc(GL_ALWAYS, 1, 1);
 		glUniform4i(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0, 0);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 	}
@@ -1711,25 +1741,27 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		}
 		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], mosaicH, GBAMosaicControlGetObjV(renderer->mosaic) + 1, x, spriteY);
 	} else {
-		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], 0, 0, 0, 0);
+		glUniform4i(uniforms[GBA_GL_OBJ_MOSAIC], 0, 0, x, spriteY);
 	}
-	glStencilFunc(GL_ALWAYS, 1, 1);
 	if (GBAObjAttributesAGetMode(sprite->a) != OBJ_MODE_OBJWIN || GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt)) {
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
 
-	shader = &renderer->objShader[2];
-	uniforms = shader->uniforms;
-	glStencilFunc(GL_EQUAL, 1, 1);
-	glUseProgram(shader->program);
-	glDrawBuffers(2, (GLenum[]) { GL_NONE, GL_COLOR_ATTACHMENT1 });
-	glBindVertexArray(shader->vao);
-	glUniform2i(uniforms[GBA_GL_VS_LOC], totalHeight, 0);
-	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], totalWidth, totalHeight);
-	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c),
-	                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (renderer->blendEffect * 4),
-	                                          renderer->blda, GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	if (GBAObjAttributesAGetMode(sprite->a) != OBJ_MODE_OBJWIN) {
+		// Update the pixel priority for already-written pixels
+		shader = &renderer->objShader[2];
+		uniforms = shader->uniforms;
+		glStencilFunc(GL_EQUAL, 1, 1);
+		glUseProgram(shader->program);
+		glDrawBuffers(2, (GLenum[]) { GL_NONE, GL_COLOR_ATTACHMENT1 });
+		glBindVertexArray(shader->vao);
+		glUniform2i(uniforms[GBA_GL_VS_LOC], totalHeight, 0);
+		glUniform2i(uniforms[GBA_GL_VS_MAXPOS], totalWidth, totalHeight);
+		glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c),
+		                                          (renderer->target1Obj || GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT) | (renderer->target2Obj * 2) | (renderer->blendEffect * 4),
+		                                          renderer->blda, GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	}
 
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
