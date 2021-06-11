@@ -14,6 +14,7 @@
 #include <QImage>
 #include <QMap>
 #include <QMutex>
+#include <QReadWriteLock>
 #include <QObject>
 #include <QSet>
 #include <QTimer>
@@ -220,6 +221,7 @@ private:
 	QTimer m_gamepadTimer{nullptr};
 
 	QSet<int> m_pendingEvents;
+	QReadWriteLock m_eventsLock;
 };
 
 }

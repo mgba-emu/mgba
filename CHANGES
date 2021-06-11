@@ -54,6 +54,7 @@ Emulation fixes:
  - GB Audio: Fix deserializing audio channels 2 and 3
  - GB Audio: Fix deserializing while audio was disabled (fixes mgba.io/i/1305)
  - GB MBC: Fix MBC1 mode changing behavior
+ - GB MBC: Fix some MBC3 bit masking
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
  - GBA: Fix timing advancing too quickly in rare cases
  - GBA Audio: Fix deserializing SOUNDCNT_L
@@ -100,6 +101,7 @@ Other fixes:
  - Qt: Fix a race condition in the frame inspector
  - Qt: Add dummy English translation file (fixes mgba.io/i/1469)
  - Qt: Fix Battle Chip view not displaying chips on some DPI settings
+ - Qt: Fix camera image being upside-down sometimes (fixes mgba.io/i/829 again)
  - mGUI: Fix closing down a game if an exit is signalled
  - mVL: Fix injecting accidentally draining non-injection buffer
  - SM83: Simplify register pair access on big endian
@@ -112,6 +114,7 @@ Misc:
  - GB: Allow pausing event loop while CPU is blocked
  - GB: Add support for sleep and shutdown callbacks
  - GBA: Allow pausing event loop while CPU is blocked
+ - GBA BIOS: Division by zero should emit a FATAL error
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
  - mGUI: Show battery percentage
@@ -119,6 +122,7 @@ Misc:
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view
  - Qt: Memory viewer now supports editing decimal values directly (closes mgba.io/i/1705)
+ - Qt: Add copy button to GB printer dialog
  - Util: Reset vector size on deinit
  - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)
 
