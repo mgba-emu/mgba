@@ -60,7 +60,7 @@ struct GUIBackground {
 struct GUIParams {
 	unsigned width;
 	unsigned height;
-	const struct GUIFont* font;
+	struct GUIFont* font;
 	const char* basePath;
 
 	void (*drawStart)(void);

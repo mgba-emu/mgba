@@ -29,8 +29,12 @@ enum {
 	JOY_CMD_TRANS = 0x14,
 	JOY_CMD_RECV = 0x15,
 
-	JOYSTAT_TRANS_BIT = 8,
-	JOYSTAT_RECV_BIT = 2,
+	JOYSTAT_TRANS = 8,
+	JOYSTAT_RECV = 2,
+
+	JOYCNT_RESET = 1,
+	JOYCNT_RECV = 2,
+	JOYCNT_TRANS = 4,
 };
 
 DECL_BITFIELD(GBASIONormal, uint16_t);
@@ -77,6 +81,8 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value);
 uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value);
+
+int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data);
 
 CXX_GUARD_END
 

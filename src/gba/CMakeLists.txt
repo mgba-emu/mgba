@@ -34,6 +34,7 @@ set(SOURCE_FILES
 	video.c)
 
 set(SIO_FILES
+	sio/dolphin.c
 	sio/joybus.c
 	sio/lockstep.c)
 

@@ -79,7 +79,6 @@ struct GBASIODriver {
 };
 
 void GBASIOJOYCreate(struct GBASIODriver* sio);
-int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data);
 
 enum GBASIOBattleChipGateFlavor {
 	GBA_FLAVOR_BATTLECHIP_GATE = 4,

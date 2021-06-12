@@ -89,7 +89,7 @@ void GUIFontIconMetrics(const struct GUIFont* font, enum GUIIcon icon, unsigned*
 	}
 }
 
-void GUIFontDrawGlyph(const struct GUIFont* font, int glyph_x, int glyph_y, uint32_t color, uint32_t glyph) {
+void GUIFontDrawGlyph(struct GUIFont* font, int glyph_x, int glyph_y, uint32_t color, uint32_t glyph) {
 	int index = fontGlyphIndexFromCodePoint(font->font, glyph);
 	fontGlyphPos_s data;
 	fontCalcGlyphPos(&data, font->font, index, 0, 1.0, 1.0);
@@ -109,7 +109,7 @@ void GUIFontDrawGlyph(const struct GUIFont* font, int glyph_x, int glyph_y, uint
 	             u, v, tex->width * width, tex->height * height, 0);
 }
 
-void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {
+void GUIFontDrawIcon(struct GUIFont* font, int x, int y, enum GUIAlignment align, enum GUIOrientation orient, uint32_t color, enum GUIIcon icon) {
 	ctrActivateTexture(&font->icons);
 
 	if (icon >= GUI_ICON_MAX) {
@@ -159,7 +159,7 @@ void GUIFontDrawIcon(const struct GUIFont* font, int x, int y, enum GUIAlignment
 	}
 }
 
-void GUIFontDrawIconSize(const struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon) {
+void GUIFontDrawIconSize(struct GUIFont* font, int x, int y, int w, int h, uint32_t color, enum GUIIcon icon) {
 	ctrActivateTexture(&font->icons);
 
 	if (icon >= GUI_ICON_MAX) {

@@ -130,6 +130,7 @@ set(UI_FILES
 	BattleChipView.ui
 	CheatsView.ui
 	DebuggerConsole.ui
+	DolphinConnector.ui
 	FrameView.ui
 	GIFView.ui
 	IOViewer.ui
@@ -158,6 +159,7 @@ set(GBA_SRC
 	BattleChipModel.cpp
 	BattleChipUpdater.cpp
 	BattleChipView.cpp
+	DolphinConnector.cpp
 	GBAOverride.cpp)
 
 set(GB_SRC

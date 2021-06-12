@@ -301,7 +301,7 @@ static void _setup(struct mGUIRunner* runner) {
 	_map3DSKey(&runner->core->inputMap, KEY_L, GBA_KEY_L);
 	_map3DSKey(&runner->core->inputMap, KEY_R, GBA_KEY_R);
 
-	outputBuffer = linearMemAlign(256 * 224 * sizeof(color_t), 0x80);
+	memset(outputBuffer, 0, 256 * 224 * sizeof(color_t));
 	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
 
 	unsigned mode;
@@ -883,6 +883,7 @@ int main() {
 		_cleanup();
 		return 1;
 	}
+	outputBuffer = linearMemAlign(256 * 224 * sizeof(color_t), 0x80);
 
 	struct mGUIRunner runner = {
 		.params = {

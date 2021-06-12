@@ -64,6 +64,7 @@ static size_t dataSize;
 static void* savedata;
 static struct mAVStream stream;
 static bool sensorsInitDone;
+static bool rumbleInitDone;
 static int rumbleUp;
 static int rumbleDown;
 static struct mRumble rumble;
@@ -116,6 +117,19 @@ static void _initSensors(void) {
 	}
 
 	sensorsInitDone = true;
+}
+
+static void _initRumble(void) {
+	if (rumbleInitDone) {
+		return;
+	}
+
+	struct retro_rumble_interface rumbleInterface;
+	if (environCallback(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &rumbleInterface)) {
+		rumbleCallback = rumbleInterface.set_rumble_state;
+	}
+
+	rumbleInitDone = true;
 }
 
 static void _reloadSettings(void) {
@@ -310,13 +324,9 @@ void retro_init(void) {
 
 	// TODO: RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME when BIOS booting is supported
 
-	struct retro_rumble_interface rumbleInterface;
-	if (environCallback(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &rumbleInterface)) {
-		rumbleCallback = rumbleInterface.set_rumble_state;
-		rumble.setRumble = _setRumble;
-	} else {
-		rumbleCallback = 0;
-	}
+	rumbleInitDone = false;
+	rumble.setRumble = _setRumble;
+	rumbleCallback = 0;
 
 	sensorsInitDone = false;
 	sensorGetCallback = 0;
@@ -1002,6 +1012,9 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 
 static void _setRumble(struct mRumble* rumble, int enable) {
 	UNUSED(rumble);
+	if (!rumbleInitDone) {
+		_initRumble();
+	}
 	if (!rumbleCallback) {
 		return;
 	}

@@ -29,6 +29,7 @@
 
 #include <array>
 
+#include "CoreController.h"
 #include "VideoProxy.h"
 
 #include "platform/video-backend.h"
@@ -102,6 +103,7 @@ public:
 	bool supportsShaders() const { return m_supportsShaders; }
 
 	void setVideoProxy(std::shared_ptr<VideoProxy>);
+	void interrupt();
 
 public slots:
 	void create();
@@ -149,7 +151,8 @@ private:
 	std::unique_ptr<QOpenGLContext> m_gl;
 	bool m_active = false;
 	bool m_started = false;
-	std::shared_ptr<CoreController> m_context = nullptr;
+	std::shared_ptr<CoreController> m_context;
+	CoreController::Interrupter m_interrupter;
 	bool m_supportsShaders;
 	bool m_showOSD;
 	VideoShader m_shader{};

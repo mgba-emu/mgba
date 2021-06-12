@@ -25,6 +25,9 @@
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/sio/printer.h>
 #endif
+#ifdef M_CORE_GBA
+#include <mgba/internal/gba/sio/dolphin.h>
+#endif
 
 #ifdef M_CORE_GBA
 #include <mgba/gba/interface.h>
@@ -106,6 +109,10 @@ public:
 	void clearMultiplayerController();
 	MultiplayerController* multiplayerController() { return m_multiplayer; }
 
+#ifdef M_CORE_GBA
+	bool isDolphinConnected() const { return !SOCKET_FAILED(m_dolphin.data); }
+#endif
+
 	mCacheSet* graphicCaches();
 	int stateSlot() const { return m_stateSlot; }
 
@@ -171,6 +178,9 @@ public slots:
 	void detachBattleChipGate();
 	void setBattleChipId(uint16_t id);
 	void setBattleChipFlavor(int flavor);
+
+	bool attachDolphin(const Address& address);
+	void detachDolphin();
 #endif
 
 	void setAVStream(mAVStream*);
@@ -265,6 +275,9 @@ private:
 	InputController* m_inputController = nullptr;
 	LogController* m_log = nullptr;
 	MultiplayerController* m_multiplayer = nullptr;
+#ifdef M_CORE_GBA
+	GBASIODolphin m_dolphin;
+#endif
 
 	mVideoLogContext* m_vl = nullptr;
 	VFile* m_vlVf = nullptr;

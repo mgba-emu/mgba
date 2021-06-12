@@ -21,9 +21,14 @@
 
 #define AUTO_INPUT 0x4E585031
 #define SAMPLES 0x200
-#define BUFFER_SIZE 0x1000
 #define N_BUFFERS 4
 #define ANALOG_DEADZONE 0x4000
+
+#if (SAMPLES * 4) < 0x1000
+#define BUFFER_SIZE 0x1000
+#else
+#define BUFFER_SIZE (SAMPLES * 4)
+#endif
 
 TimeType __nx_time_type = TimeType_UserSystemClock;
 
@@ -78,6 +83,7 @@ static GLuint colorLocation;
 static GLuint tex;
 static GLuint oldTex;
 
+static struct GUIFont* font;
 static color_t* frameBuffer;
 static struct mAVStream stream;
 static struct mSwitchRumble {
@@ -88,7 +94,6 @@ static struct mSwitchRumble {
 } rumble;
 static struct mRotationSource rotation = {0};
 static int audioBufferActive;
-static struct GBAStereoSample audioBuffer[N_BUFFERS][SAMPLES] __attribute__((__aligned__(0x1000)));
 static AudioOutBuffer audoutBuffer[N_BUFFERS];
 static int enqueuedBuffers;
 static bool frameLimiter = true;
@@ -109,6 +114,8 @@ static struct mGUIRunnerLux lightSensor;
 static float gyroZ = 0;
 static float tiltX = 0;
 static float tiltY = 0;
+
+static struct GBAStereoSample audioBuffer[N_BUFFERS][BUFFER_SIZE / 4] __attribute__((__aligned__(0x1000)));
 
 static enum ScreenMode {
 	SM_PA,
@@ -203,22 +210,22 @@ static uint32_t _pollInput(const struct mInputMap* map) {
 
 	HidAnalogStickState jspos = padGetStickPos(&pad, 0);
 
-	int l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_LEFT));
-	int r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_RIGHT));
-	int u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_UP));
-	int d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_LSTICK_DOWN));
+	int l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_StickLLeft));
+	int r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_StickLRight));
+	int u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_StickLUp));
+	int d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_StickLDown));
 
 	if (l == -1) {
-		l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DLEFT));
+		l = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_Left));
 	}
 	if (r == -1) {
-		r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DRIGHT));
+		r = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_Right));
 	}
 	if (u == -1) {
-		u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DUP));
+		u = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_Up));
 	}
 	if (d == -1) {
-		d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(KEY_DDOWN));
+		d = mInputMapKey(map, AUTO_INPUT, __builtin_ctz(HidNpadButton_Down));
 	}
 
 	if (jspos.x < -ANALOG_DEADZONE && l != -1) {
@@ -247,6 +254,35 @@ static enum GUICursorState _pollCursor(unsigned* x, unsigned* y) {
 	return GUI_CURSOR_DOWN;
 }
 
+static void _updateRenderer(struct mGUIRunner* runner, bool gl) {
+	if (gl) {
+		runner->core->setVideoGLTex(runner->core, tex);
+		usePbo = false;
+	} else {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
+		usePbo = true;
+	}
+}
+
+static int _audioWait(u64 timeout) {
+	AudioOutBuffer* releasedBuffers;
+	u32 nReleasedBuffers = 0;
+	Result rc;
+	if (timeout) {
+		rc = audoutWaitPlayFinish(&releasedBuffers, &nReleasedBuffers, timeout);
+	} else {
+		rc = audoutGetReleasedAudioOutBuffer(&releasedBuffers, &nReleasedBuffers);
+	}
+	if (R_FAILED(rc)) {
+		return 0;
+	}
+	enqueuedBuffers -= nReleasedBuffers;
+	return nReleasedBuffers;
+}
+
 static void _setup(struct mGUIRunner* runner) {
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_A, GBA_KEY_A);
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_B, GBA_KEY_B);
@@ -259,17 +295,11 @@ static void _setup(struct mGUIRunner* runner) {
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_L, GBA_KEY_L);
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_R, GBA_KEY_R);
 
-	int fakeBool;
-	if (mCoreConfigGetIntValue(&runner->config, "hwaccelVideo", &fakeBool) && fakeBool && runner->core->supportsFeature(runner->core, mCORE_FEATURE_OPENGL)) {
-		runner->core->setVideoGLTex(runner->core, tex);
-		usePbo = false;
-	} else {
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, tex);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-		runner->core->setVideoBuffer(runner->core, frameBuffer, 256);
-		usePbo = true;
+	int fakeBool = false;
+	if (runner->core->supportsFeature(runner->core, mCORE_FEATURE_OPENGL)) {
+		mCoreConfigGetIntValue(&runner->config, "hwaccelVideo", &fakeBool);
 	}
+	_updateRenderer(runner, fakeBool);
 
 	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
@@ -322,9 +352,16 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		}
 	}
 
-	int scale;
-	if (mCoreConfigGetUIntValue(&runner->config, "videoScale", &scale)) {
-		runner->core->reloadConfigOption(runner->core, "videoScale", &runner->config);
+	if (runner->core->supportsFeature(runner->core, mCORE_FEATURE_OPENGL)) {
+		if (mCoreConfigGetIntValue(&runner->config, "hwaccelVideo", &fakeBool) && fakeBool == usePbo) {
+			_updateRenderer(runner, fakeBool);
+			runner->core->reloadConfigOption(runner->core, "hwaccelVideo", &runner->config);
+		}
+
+		unsigned scale;
+		if (mCoreConfigGetUIntValue(&runner->config, "videoScale", &scale)) {
+			runner->core->reloadConfigOption(runner->core, "videoScale", &runner->config);
+		}
 	}
 
 	rumble.up = 0;
@@ -506,10 +543,7 @@ static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 	UNUSED(runner);
 	if (!frameLimiter && limit) {
 		while (enqueuedBuffers > 2) {
-			AudioOutBuffer* releasedBuffers;
-			u32 audoutNReleasedBuffers;
-			audoutWaitPlayFinish(&releasedBuffers, &audoutNReleasedBuffers, 100000000);
-			enqueuedBuffers -= audoutNReleasedBuffers;
+			_audioWait(100000000);
 		}
 	}
 	frameLimiter = limit;
@@ -536,29 +570,25 @@ static bool _running(struct mGUIRunner* runner) {
 
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
 	UNUSED(stream);
-	AudioOutBuffer* releasedBuffers;
-	u32 audoutNReleasedBuffers;
-	audoutGetReleasedAudioOutBuffer(&releasedBuffers, &audoutNReleasedBuffers);
-	enqueuedBuffers -= audoutNReleasedBuffers;
-	if (!frameLimiter && enqueuedBuffers >= N_BUFFERS) {
-		blip_clear(left);
-		blip_clear(right);
-		return;
-	}
-	if (enqueuedBuffers >= N_BUFFERS - 1 && R_SUCCEEDED(audoutWaitPlayFinish(&releasedBuffers, &audoutNReleasedBuffers, 10000000))) {
-		enqueuedBuffers -= audoutNReleasedBuffers;
+	_audioWait(0);
+	while (enqueuedBuffers >= N_BUFFERS - 1) {
+		if (!frameLimiter) {
+			blip_clear(left);
+			blip_clear(right);
+			return;
+		}
+		_audioWait(10000000);
 	}
 	if (enqueuedBuffers >= N_BUFFERS) {
 		blip_clear(left);
 		blip_clear(right);
 		return;
 	}
-
 	struct GBAStereoSample* samples = audioBuffer[audioBufferActive];
 	blip_read_samples(left, &samples[0].left, SAMPLES, true);
 	blip_read_samples(right, &samples[0].right, SAMPLES, true);
 	audoutAppendAudioOutBuffer(&audoutBuffer[audioBufferActive]);
-	audioBufferActive += 1;
+	++audioBufferActive;
 	audioBufferActive %= N_BUFFERS;
 	++enqueuedBuffers;
 }
@@ -640,6 +670,10 @@ static void _guiPrepare(void) {
 	glViewport(0, 1080 - vheight, vwidth, vheight);
 }
 
+static void _guiFinish(void) {
+	GUIFontDrawSubmit(font);
+}
+
 int main(int argc, char* argv[]) {
 	NWindow* window = nwindowGetDefault();
 	nwindowSetDimensions(window, 1920, 1080);
@@ -651,7 +685,7 @@ int main(int argc, char* argv[]) {
 	audoutInitialize();
 	psmInitialize();
 
-	struct GUIFont* font = GUIFontCreate();
+	font = GUIFontCreate();
 
 	vmode = appletGetOperationMode();
 	if (vmode == AppletOperationMode_Console) {
@@ -802,7 +836,7 @@ int main(int argc, char* argv[]) {
 			_drawStart, _drawEnd,
 			_pollInput, _pollCursor,
 			_batteryState,
-			_guiPrepare, NULL,
+			_guiPrepare, _guiFinish,
 		},
 		.keySources = (struct GUIInputKeys[]) {
 			{
@@ -884,7 +918,7 @@ int main(int argc, char* argv[]) {
 				.nStates = 16
 			},
 			{
-				.title = "GPU-accelerated renderer (requires game reload)",
+				.title = "GPU-accelerated renderer",
 				.data = "hwaccelVideo",
 				.submenu = 0,
 				.state = 0,
@@ -946,13 +980,13 @@ int main(int argc, char* argv[]) {
 	};
 	mGUIInit(&runner, "switch");
 
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_A, GUI_INPUT_SELECT);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_B, GUI_INPUT_BACK);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_X, GUI_INPUT_CANCEL);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DUP, GUI_INPUT_UP);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DDOWN, GUI_INPUT_DOWN);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DLEFT, GUI_INPUT_LEFT);
-	_mapKey(&runner.params.keyMap, AUTO_INPUT, KEY_DRIGHT, GUI_INPUT_RIGHT);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_A, GUI_INPUT_SELECT);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_B, GUI_INPUT_BACK);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_X, GUI_INPUT_CANCEL);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Up, GUI_INPUT_UP);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Down, GUI_INPUT_DOWN);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Left, GUI_INPUT_LEFT);
+	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Right, GUI_INPUT_RIGHT);
 
 	audoutStartAudioOut();
 

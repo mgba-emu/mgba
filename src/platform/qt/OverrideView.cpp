@@ -134,9 +134,10 @@ void OverrideView::updateOverrides() {
 	if (!m_controller) {
 		return;
 	}
+	bool hasOverride = false;
 #ifdef M_CORE_GBA
 	if (m_ui.tabWidget->currentWidget() == m_ui.tabGBA) {
-		std::unique_ptr<GBAOverride> gba(new GBAOverride);
+		auto gba = std::make_unique<GBAOverride>();
 		memset(gba->override.id, 0, 4);
 		gba->override.savetype = static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1);
 		gba->override.hardware = HW_NO_OVERRIDE;
@@ -145,6 +146,7 @@ void OverrideView::updateOverrides() {
 		gba->override.vbaBugCompat = false;
 
 		if (!m_ui.hwAutodetect->isChecked()) {
+			hasOverride = true;
 			gba->override.hardware = HW_NONE;
 			if (m_ui.hwRTC->isChecked()) {
 				gba->override.hardware |= HW_RTC;
@@ -163,20 +165,22 @@ void OverrideView::updateOverrides() {
 			}
 		}
 		if (m_ui.hwGBPlayer->isChecked()) {
+			hasOverride = true;
 			gba->override.hardware |= HW_GB_PLAYER_DETECTION;
 		}
 		if (m_ui.vbaBugCompat->isChecked()) {
+			hasOverride = true;
 			gba->override.vbaBugCompat = true;
 		}
 
 		bool ok;
 		uint32_t parsedIdleLoop = m_ui.idleLoop->text().toInt(&ok, 16);
 		if (ok) {
+			hasOverride = true;
 			gba->override.idleLoop = parsedIdleLoop;
 		}
 
-		if (gba->override.savetype != SAVEDATA_AUTODETECT || gba->override.hardware != HW_NO_OVERRIDE ||
-		    gba->override.idleLoop != IDLE_LOOP_NONE) {
+		if (hasOverride) {
 			m_controller->setOverride(std::move(gba));
 		} else {
 			m_controller->clearOverride();
@@ -185,16 +189,14 @@ void OverrideView::updateOverrides() {
 #endif
 #ifdef M_CORE_GB
 	if (m_ui.tabWidget->currentWidget() == m_ui.tabGB) {
-		std::unique_ptr<GBOverride> gb(new GBOverride);
+		auto gb = std::make_unique<GBOverride>();
 		gb->override.mbc = static_cast<GBMemoryBankControllerType>(m_ui.mbc->currentData().toInt());
 		gb->override.model = static_cast<GBModel>(m_ui.gbModel->currentData().toInt());
-		bool hasColor = false;
+		hasOverride = gb->override.mbc != GB_MBC_AUTODETECT || gb->override.model != GB_MODEL_AUTODETECT;
 		for (int i = 0; i < 12; ++i) {
 			gb->override.gbColors[i] = m_gbColors[i];
-			hasColor = hasColor || (m_gbColors[i] & 0xFF000000);
+			hasOverride = hasOverride || (m_gbColors[i] & 0xFF000000);
 		}
-		bool hasOverride = gb->override.mbc != GB_MBC_AUTODETECT || gb->override.model != GB_MODEL_AUTODETECT;
-		hasOverride = hasOverride || hasColor;
 		if (hasOverride) {
 			m_controller->setOverride(std::move(gb));
 		} else {
@@ -268,6 +270,7 @@ void OverrideView::gameStopped() {
 	m_ui.tabWidget->setEnabled(true);
 	m_ui.savetype->setCurrentIndex(0);
 	m_ui.idleLoop->clear();
+	m_ui.vbaBugCompat->setChecked(false);
 
 	m_ui.mbc->setCurrentIndex(0);
 	m_ui.gbModel->setCurrentIndex(0);

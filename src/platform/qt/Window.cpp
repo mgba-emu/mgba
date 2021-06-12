@@ -29,6 +29,7 @@
 #include "DebuggerConsole.h"
 #include "DebuggerConsoleController.h"
 #include "Display.h"
+#include "DolphinConnector.h"
 #include "CoreController.h"
 #include "FrameView.h"
 #include "GBAApp.h"
@@ -376,6 +377,10 @@ void Window::selectROM() {
 	}
 }
 
+void Window::bootBIOS() {
+	setController(m_manager->loadBIOS(mPLATFORM_GBA, m_config->getOption("gba.bios")), QString());
+}
+
 #ifdef USE_SQLITE3
 void Window::selectROMInArchive() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFiltersArchive());
@@ -540,6 +545,18 @@ std::function<void()> Window::openControllerTView(A... arg) {
 	return [=]() {
 		T* view = new T(m_controller, arg...);
 		openView(view);
+	};
+}
+
+template <typename T, typename... A>
+std::function<void()> Window::openNamedTView(std::unique_ptr<T>* name, A... arg) {
+	return [=]() {
+		if (!*name) {
+			*name = std::make_unique<T>(arg...);
+			connect(this, &Window::shutdown, name->get(), &QWidget::close);
+		}
+		(*name)->show();
+		(*name)->setFocus(Qt::PopupFocusReason);
 	};
 }
 
@@ -1163,9 +1180,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Load &patch..."), "loadPatch", this, &Window::selectPatch, "file");
 
 #ifdef M_CORE_GBA
-	m_actions.addAction(tr("Boot BIOS"), "bootBIOS", [this]() {
-		setController(m_manager->loadBIOS(mPLATFORM_GBA, m_config->getOption("gba.bios")), QString());
-	}, "file");
+	m_actions.addAction(tr("Boot BIOS"), "bootBIOS", this, &Window::bootBIOS, "file");
 #endif
 
 	addGameAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "file");
@@ -1278,11 +1293,19 @@ void Window::setupMenu(QMenuBar* menubar) {
 		GBAApp::app()->newWindow();
 	}, "file");
 
+#ifdef M_CORE_GBA
+	Action* dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openNamedTView<DolphinConnector>(&m_dolphinView, this), "file");
+	m_platformActions.insert(mPLATFORM_GBA, dolphin);
+#endif
+
+	m_actions.addSeparator("file");
+
+	m_actions.addAction(tr("Report bug..."), "bugReport", openTView<ReportView>(), "file");
+
 #ifndef Q_OS_MAC
 	m_actions.addSeparator("file");
 #endif
 
-	m_actions.addAction(tr("Report bug..."), "bugReport", openTView<ReportView>(), "file");
 	m_actions.addAction(tr("About..."), "about", openTView<AboutScreen>(), "file");
 
 #ifndef Q_OS_MAC
