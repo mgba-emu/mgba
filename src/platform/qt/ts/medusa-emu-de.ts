@@ -3780,62 +3780,62 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../SaveConverter.cpp" line="39"/>
         <source>Save games and save states (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielstände und Savestates (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="40"/>
         <source>Select save game or save state</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielstand oder Savestate auswählen</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="52"/>
         <source>Save games (%1)</source>
-        <translation type="unfinished">Spielstände (%1)</translation>
+        <translation>Spielstände (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="53"/>
         <source>Select save game</source>
-        <translation type="unfinished">Spielstand auswählen</translation>
+        <translation>Spielstand auswählen</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="74"/>
         <source>Conversion failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Konvertierung fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="74"/>
         <source>Failed to convert the save game. This is probably a bug.</source>
-        <translation type="unfinished"></translation>
+        <translation>Fehler beim Konvertieren des Spielstands. Es handelt sich möglicherweise um einen Programmfehler.</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="90"/>
         <source>No file selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Keine Datei ausgewählt</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="97"/>
         <source>Could not open file</source>
-        <translation type="unfinished"></translation>
+        <translation>Datei konnte nicht geöffnet werden</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="111"/>
         <source>No valid formats found</source>
-        <translation type="unfinished"></translation>
+        <translation>Keine gültigen Formate gefunden</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="119"/>
         <source>Please select a valid input file</source>
-        <translation type="unfinished"></translation>
+        <translation>Bitte wähle eine gültige Eingabedatei</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="130"/>
         <source>No valid conversions found</source>
-        <translation type="unfinished"></translation>
+        <translation>Keine gültigen Konvertierungen gefunden</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="576"/>
         <source>Cannot convert save games between platforms</source>
-        <translation type="unfinished"></translation>
+        <translation>Der Spielstand konnte nicht zwischen verschiedenen Plattformen konvertiert werden</translation>
     </message>
 </context>
 <context>
@@ -4265,7 +4265,7 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../Window.cpp" line="1213"/>
         <source>Convert save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielstand konvertieren...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1223"/>
@@ -4759,17 +4759,17 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../utils.cpp" line="14"/>
         <source>%1 byte</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 Byte</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="17"/>
         <source>%1 kiB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 KiB</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="21"/>
         <source>%1 MiB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 MiB</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="29"/>
@@ -4911,103 +4911,103 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../SaveConverter.ui" line="14"/>
         <source>Convert/Extract Save Game</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielstand konvertieren/extrahieren</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="20"/>
         <source>Input file</source>
-        <translation type="unfinished"></translation>
+        <translation>Eingabedatei</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="29"/>
         <location filename="../SaveConverter.ui" line="55"/>
         <source>Browse</source>
-        <translation type="unfinished">Durchsuchen</translation>
+        <translation>Durchsuchen</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="46"/>
         <source>Output file</source>
-        <translation type="unfinished"></translation>
+        <translation>Ausgabedatei</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="397"/>
         <source>%1 %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Spielstand %1 %2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="401"/>
         <source>little endian</source>
-        <translation type="unfinished"></translation>
+        <translation>little endian</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="404"/>
         <source>big endian</source>
-        <translation type="unfinished"></translation>
+        <translation>big endian</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="415"/>
         <source>SRAM</source>
-        <translation type="unfinished">SRAM</translation>
+        <translation>SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="419"/>
         <source>%1 flash</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 Flash</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="423"/>
         <source>%1 EEPROM</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 EEPROM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="435"/>
         <source>%1 SRAM + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 SRAM + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="437"/>
         <source>%1 SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="442"/>
         <source>packed MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2, komprimiert</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="444"/>
         <source>unpacked MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2, entpackt</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="449"/>
         <source>MBC6 flash</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6 Flash-Speicher</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="451"/>
         <source>MBC6 combined SRAM + flash</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6 SRAM + Flash-Speicher</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="453"/>
         <source>MBC6 SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6 SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="457"/>
         <source>TAMA5</source>
-        <translation type="unfinished"></translation>
+        <translation>TAMA5</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="469"/>
         <source>%1 (%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="472"/>
         <source>%1 save state with embedded %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Savestate %1 mit eingebettetem Spielstand %2</translation>
     </message>
 </context>
 <context>

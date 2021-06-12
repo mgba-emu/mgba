@@ -145,40 +145,34 @@ void GBATimerWriteTMCNT_LO(struct GBATimer* timer, uint16_t reload) {
 void GBATimerWriteTMCNT_HI(struct GBATimer* timer, struct mTiming* timing, uint16_t* io, uint16_t control) {
 	GBATimerUpdateRegisterInternal(timer, timing, io, 0);
 
-	unsigned oldPrescale = GBATimerFlagsGetPrescaleBits(timer->flags);
-	unsigned prescaleBits;
-	switch (control & 0x0003) {
-	case 0x0000:
-		prescaleBits = 0;
-		break;
-	case 0x0001:
-		prescaleBits = 6;
-		break;
-	case 0x0002:
-		prescaleBits = 8;
-		break;
-	case 0x0003:
-		prescaleBits = 10;
-		break;
-	}
+	const unsigned prescaleTable[4] = { 0, 6, 8, 10 };
+	unsigned prescaleBits = prescaleTable[control & 0x0003];
 	prescaleBits += timer->forcedPrescale;
+
+	GBATimerFlags oldFlags = timer->flags;
 	timer->flags = GBATimerFlagsSetPrescaleBits(timer->flags, prescaleBits);
 	timer->flags = GBATimerFlagsTestFillCountUp(timer->flags, timer > 0 && (control & 0x0004)); // TODO: Need timer ID
 	timer->flags = GBATimerFlagsTestFillDoIrq(timer->flags, control & 0x0040);
-	bool wasEnabled = GBATimerFlagsIsEnable(timer->flags);
 	timer->flags = GBATimerFlagsTestFillEnable(timer->flags, control & 0x0080);
-	if (!wasEnabled && GBATimerFlagsIsEnable(timer->flags)) {
+
+	bool reschedule = false;
+	if (GBATimerFlagsIsEnable(oldFlags) != GBATimerFlagsIsEnable(timer->flags)) {
+		reschedule = true;
+		if (GBATimerFlagsIsEnable(timer->flags)) {
+			*io = timer->reload;
+		}
+	} else if (GBATimerFlagsIsCountUp(oldFlags) != GBATimerFlagsIsCountUp(timer->flags)) {
+		reschedule = true;
+	} else if (GBATimerFlagsGetPrescaleBits(timer->flags) != GBATimerFlagsGetPrescaleBits(oldFlags)) {
+		reschedule = true;
+	}
+
+	if (reschedule) {
 		mTimingDeschedule(timing, &timer->event);
-		*io = timer->reload;
-		int32_t tickMask = (1 << prescaleBits) - 1;
-		timer->lastEvent = mTimingCurrentTime(timing) & ~tickMask;
-		GBATimerUpdateRegisterInternal(timer, timing, io, 0);
-	} else if (wasEnabled && !GBATimerFlagsIsEnable(timer->flags)) {
-		mTimingDeschedule(timing, &timer->event);
-	} else if (GBATimerFlagsIsEnable(timer->flags) && GBATimerFlagsGetPrescaleBits(timer->flags) != oldPrescale && !GBATimerFlagsIsCountUp(timer->flags)) {
-		mTimingDeschedule(timing, &timer->event);
-		int32_t tickMask = (1 << prescaleBits) - 1;
-		timer->lastEvent = mTimingCurrentTime(timing) & ~tickMask;
-		GBATimerUpdateRegisterInternal(timer, timing, io, 0);
+		if (GBATimerFlagsIsEnable(timer->flags) && !GBATimerFlagsIsCountUp(timer->flags)) {
+			int32_t tickMask = (1 << prescaleBits) - 1;
+			timer->lastEvent = mTimingCurrentTime(timing) & ~tickMask;
+			GBATimerUpdateRegisterInternal(timer, timing, io, 0);
+		}
 	}
 }

@@ -59,6 +59,7 @@ Emulation fixes:
  - ARM: Fix STR storing PC after address calculation
  - ARM: Fix Addressing mode 1 shifter on rs == pc (fixes mgba.io/i/1926)
  - ARM: Fix long multiply-and-accumulate register write order (fixes mgba.io/1/1956)
+ - ARM: Fix long and accumulate multiply timing
  - GB: Partially fix timing for skipped BIOS
  - GB: Downgrade DMG-only ROMs from CGB mode even without boot ROM
  - GB Audio: Fix serializing sweep time
@@ -86,6 +87,8 @@ Emulation fixes:
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
  - GBA SIO: Fix deseralizing SIO registers
  - GBA SIO: Fix hanging on starting a second multiplayer window (fixes mgba.io/i/854)
+ - GBA SIO: Fix Normal mode transfer start timing (fixes mgba.io/i/425)
+ - GBA Timers: Fix toggling timer cascading while timer is active (fixes mgba.io/i/2043)
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
  - GBA Video: Implement green swap (fixes mgba.io/i/1609)

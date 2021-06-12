@@ -37,17 +37,17 @@
 #define ARM_V_ADDITION(M, N, D) (!(ARM_SIGN((M) ^ (N))) && (ARM_SIGN((M) ^ (D))))
 #define ARM_V_SUBTRACTION(M, N, D) ((ARM_SIGN((M) ^ (N))) && (ARM_SIGN((M) ^ (D))))
 
-#define ARM_WAIT_MUL(R)                                                   \
+#define ARM_WAIT_MUL(R, WAIT)                                             \
 	{                                                                     \
-		int32_t wait;                                                     \
+		int32_t wait = WAIT;                                              \
 		if ((R & 0xFFFFFF00) == 0xFFFFFF00 || !(R & 0xFFFFFF00)) {        \
-			wait = 1;                                                     \
+			wait += 1;                                                    \
 		} else if ((R & 0xFFFF0000) == 0xFFFF0000 || !(R & 0xFFFF0000)) { \
-			wait = 2;                                                     \
+			wait += 2;                                                    \
 		} else if ((R & 0xFF000000) == 0xFF000000 || !(R & 0xFF000000)) { \
-			wait = 3;                                                     \
+			wait += 3;                                                    \
 		} else {                                                          \
-			wait = 4;                                                     \
+			wait += 4;                                                    \
 		}                                                                 \
 		currentCycles += cpu->memory.stall(cpu, wait);                    \
 	}

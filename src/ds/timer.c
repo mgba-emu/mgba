@@ -48,7 +48,7 @@ static void DSTimerUpdate3(struct mTiming* timing, void* context, uint32_t cycle
 	DSTimerIrq(dscore, 3);
 }
 
-void DSTimerInit(struct DS* ds) {
+void DS7TimerInit(struct DS* ds) {
 	memset(ds->ds7.timers, 0, sizeof(ds->ds7.timers));
 	ds->ds7.timers[0].event.name = "DS7 Timer 0";
 	ds->ds7.timers[0].event.callback = DSTimerUpdate0;
@@ -66,7 +66,9 @@ void DSTimerInit(struct DS* ds) {
 	ds->ds7.timers[3].event.callback = DSTimerUpdate3;
 	ds->ds7.timers[3].event.context = &ds->ds7;
 	ds->ds7.timers[3].event.priority = 0x23;
+}
 
+void DS9TimerInit(struct DS* ds) {
 	memset(ds->ds9.timers, 0, sizeof(ds->ds9.timers));
 	ds->ds9.timers[0].event.name = "DS9 Timer 0";
 	ds->ds9.timers[0].event.callback = DSTimerUpdate0;

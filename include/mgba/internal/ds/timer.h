@@ -14,7 +14,8 @@ CXX_GUARD_START
 
 struct ARMCore;
 struct DS;
-void DSTimerInit(struct DS* ds);
+void DS7TimerInit(struct DS* ds);
+void DS9TimerInit(struct DS* ds);
 void DSTimerWriteTMCNT_HI(struct GBATimer* timer, struct mTiming* timing, uint16_t* io, uint16_t control);
 
 CXX_GUARD_END

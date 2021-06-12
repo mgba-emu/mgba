@@ -204,7 +204,6 @@ static void DSInit(void* cpu, struct mCPUComponent* component) {
 
 	ds->ds7.springIRQ = 0;
 	ds->ds9.springIRQ = 0;
-	DSTimerInit(ds);
 	ds->keySource = NULL;
 	ds->rtcSource = NULL;
 	ds->rumble = NULL;
@@ -316,6 +315,7 @@ void DS7Reset(struct ARMCore* cpu) {
 	DSDMAReset(&ds->ds7);
 	DSAudioReset(&ds->audio);
 	DS7IOInit(ds);
+	DS7TimerInit(ds);
 
 	DSConfigureWRAM(&ds->memory, 3);
 	ds->isHomebrew = false;
@@ -374,6 +374,7 @@ void DS9Reset(struct ARMCore* cpu) {
 	DSGXReset(&ds->gx);
 	DSDMAReset(&ds->ds9);
 	DS9IOInit(ds);
+	DS9TimerInit(ds);
 
 	ds->activeCpu = cpu;
 	mTimingSchedule(&ds->ds9.timing, &ds->slice, SLICE_CYCLES);
