@@ -9,6 +9,7 @@
 #include <mgba/internal/debugger/symbols.h>
 #include <mgba-util/string.h>
 
+#ifdef USE_DEBUGGERS
 #define ADVANCE(AMOUNT) \
 	if (AMOUNT >= blen) { \
 		buffer[blen - 1] = '\0'; \
@@ -589,6 +590,7 @@ int ARMDisassemble(struct ARMInstructionInfo* info, struct ARMCore* cpu, const s
 	buffer[blen - 1] = '\0';
 	return total;
 }
+#endif
 
 uint32_t ARMResolveMemoryAccess(struct ARMInstructionInfo* info, struct ARMRegisterFile* regs, uint32_t pc) {
 	uint32_t address = 0;

@@ -1675,6 +1675,11 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		spriteY -= 256;
 	}
 
+	if (x + totalWidth <= 0 || x >= GBA_VIDEO_HORIZONTAL_PIXELS) {
+		// These sprites aren't displayed but affect cycle counting
+		return;
+	}
+
 	const struct GBAVideoGLShader* shader = &renderer->objShader[GBAObjAttributesAGet256Color(sprite->a)];
 	const GLuint* uniforms = shader->uniforms;
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[GBA_GL_FBO_OBJ]);

@@ -57,6 +57,7 @@ struct mVideoLogger {
 	void* dataContext;
 
 	bool block;
+	bool waitOnFlush;
 	void (*init)(struct mVideoLogger*);
 	void (*deinit)(struct mVideoLogger*);
 	void (*reset)(struct mVideoLogger*);

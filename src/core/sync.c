@@ -49,11 +49,11 @@ bool mCoreSyncWaitFrameStart(struct mCoreSync* sync) {
 	}
 
 	MutexLock(&sync->videoFrameMutex);
-	ConditionWake(&sync->videoFrameRequiredCond);
 	if (!sync->videoFrameWait && !sync->videoFramePending) {
 		return false;
 	}
 	if (sync->videoFrameWait) {
+		ConditionWake(&sync->videoFrameRequiredCond);
 		if (ConditionWaitTimed(&sync->videoFrameAvailableCond, &sync->videoFrameMutex, 50)) {
 			return false;
 		}
@@ -67,6 +67,7 @@ void mCoreSyncWaitFrameEnd(struct mCoreSync* sync) {
 		return;
 	}
 
+	ConditionWake(&sync->videoFrameRequiredCond);
 	MutexUnlock(&sync->videoFrameMutex);
 }
 

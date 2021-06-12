@@ -49,6 +49,7 @@ Features:
  - ARM disassembler now resolves addresses to symbol names
  - Add Game Boy Player feature support to ports
  - Individual window types can now be toggled in debugging views
+ - Support for the Wii U GamePad when running as an injected VC title
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
@@ -88,14 +89,17 @@ Other fixes:
  - 3DS: Fix thread cleanup
  - All: Improve export headers (fixes mgba.io/i/1738)
  - CMake: Fix build with downstream minizip that exports incompatible symbols
+ - CMake: Link with correct OpenGL library (fixes mgba.io/i/1872)
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix threading improperly setting paused state while interrupted
+ - Core: Fix loading ELF files that have unexpected empty program headers
  - Debugger: Don't skip undefined instructions when debugger attached
  - Debugger: Close trace log when done tracing
  - Debugger: Fix change watchpoints (fixes mgba.io/i/1947)
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
  - GB Video: Fix SGB video logs
+ - GBA: Fix loading multiboot ELF files (fixes mgba.io/i/1949)
  - mGUI: Don't attempt to preload files larger than can fit in RAM
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
@@ -105,22 +109,27 @@ Other fixes:
  - Qt: Fix game display sometimes disappearing after closing load/save state screen
  - Qt: Fix cancelling pausing before the frame ends
  - Qt: Fix gamepad event dispatching (fixes mgba.io/i/1922)
+ - Qt: Pre-attach GDB stub when launching with -g (fixes mgba.io/i/1950)
  - SM83: Simplify register pair access on big endian
  - SM83: Disassemble STOP as one byte
  - Wii: Fix crash on unloading irregularly sized GBA ROMs
 Misc:
  - 3DS: Use "wide mode" where applicable for slightly better filtering
+ - 3DS: Batch directory reads
  - Core: Add savedataUpdated callback
  - Core: Add shutdown callback
  - Core: Rework thread state synchronization
  - GB: Allow pausing event loop while CPU is blocked
  - GB: Add support for sleep and shutdown callbacks
+ - GB I/O: Implement preliminary support for PCM12/PCM34 (closes mgba.io/i/1468)
  - GBA: Allow pausing event loop while CPU is blocked
  - GBA BIOS: Division by zero should emit a FATAL error
  - GBA Video: Convert OpenGL VRAM texture to integer
+ - GBA Video: Skip attempting to render offscreen sprites in OpenGL
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
  - mGUI: Show battery percentage
+ - mGUI: Skip second scan loop when possible
  - Qt: Renderer can be changed while a game is running
  - Qt: Add hex index to palette view
  - Qt: Add transformation matrix info to sprite view
@@ -128,6 +137,7 @@ Misc:
  - Qt: Add copy button to GB printer dialog
  - Qt: Window title updates can be disabled (closes mgba.io/i/1912)
  - Qt: Redo OpenGL context thread handling (fixes mgba.io/i/1724)
+ - Qt: Discard additional frame draws if waiting fails
  - Util: Reset vector size on deinit
  - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)
 
