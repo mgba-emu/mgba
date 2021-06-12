@@ -291,6 +291,9 @@ void InputController::loadConfiguration(uint32_t type) {
 }
 
 void InputController::loadProfile(uint32_t type, const QString& profile) {
+	if (profile.isEmpty()) {
+		return;
+	}
 	const InputProfile* ip = InputProfile::findProfile(profile);
 	if (ip) {
 		ip->apply(this);
@@ -321,6 +324,9 @@ void InputController::saveConfiguration(uint32_t type) {
 }
 
 void InputController::saveProfile(uint32_t type, const QString& profile) {
+	if (profile.isEmpty()) {
+		return;
+	}
 	if (m_activeKeyInfo) {
 		mInputProfileSave(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	}
