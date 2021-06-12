@@ -209,18 +209,22 @@ bool KeyEditor::event(QEvent* event) {
 void KeyEditor::updateButtonText() {
 	QStringList text;
 	if (m_hat >= 0) {
+		QString hatId("%0");
+		if (m_hat) {
+			hatId += QString::number(m_hat);
+		}
 		switch (m_hatDirection) {
 		case GamepadHatEvent::UP:
-			text.append(QString("↑%0").arg(m_hat));
+			text.append(hatId.arg("↑"));
 			break;
 		case GamepadHatEvent::RIGHT:
-			text.append(QString("→%0").arg(m_hat));
+			text.append(hatId.arg("→"));
 			break;
 		case GamepadHatEvent::DOWN:
-			text.append(QString("↓%0").arg(m_hat));
+			text.append(hatId.arg("↓"));
 			break;
 		case GamepadHatEvent::LEFT:
-			text.append(QString("←%0").arg(m_hat));
+			text.append(hatId.arg("←"));
 			break;
 		default:
 			break;

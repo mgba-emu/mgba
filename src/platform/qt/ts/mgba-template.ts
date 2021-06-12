@@ -3254,7 +3254,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <name>QGBA::KeyEditor</name>
     <message>
         <location filename="../KeyEditor.cpp" line="34"/>
-        <location filename="../KeyEditor.cpp" line="236"/>
+        <location filename="../KeyEditor.cpp" line="240"/>
         <source>---</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3934,17 +3934,17 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
 <context>
     <name>QGBA::VideoView</name>
     <message>
-        <location filename="../VideoView.cpp" line="197"/>
+        <location filename="../VideoView.cpp" line="202"/>
         <source>Failed to open output video file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.cpp" line="218"/>
+        <location filename="../VideoView.cpp" line="223"/>
         <source>Native (%0x%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.cpp" line="233"/>
+        <location filename="../VideoView.cpp" line="238"/>
         <source>Select output file</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5747,13 +5747,13 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     </message>
     <message>
         <location filename="../VideoView.ui" line="129"/>
-        <location filename="../VideoView.ui" line="251"/>
+        <location filename="../VideoView.ui" line="255"/>
         <source>WebM</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="139"/>
-        <location filename="../VideoView.ui" line="261"/>
+        <location filename="../VideoView.ui" line="265"/>
         <source>MP4</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5763,143 +5763,148 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="163"/>
+        <location filename="../VideoView.ui" line="167"/>
         <source>4K</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="170"/>
+        <location filename="../VideoView.ui" line="174"/>
         <source>&amp;1080p</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="180"/>
+        <location filename="../VideoView.ui" line="184"/>
         <source>&amp;720p</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="190"/>
+        <location filename="../VideoView.ui" line="194"/>
         <source>&amp;480p</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="203"/>
+        <location filename="../VideoView.ui" line="207"/>
         <source>&amp;Native</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="236"/>
+        <location filename="../VideoView.ui" line="240"/>
         <source>Format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="246"/>
+        <location filename="../VideoView.ui" line="250"/>
         <source>MKV</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="256"/>
+        <location filename="../VideoView.ui" line="260"/>
         <source>AVI</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="273"/>
-        <source>h.264</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../VideoView.ui" line="278"/>
-        <source>h.264 (NVENC)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../VideoView.ui" line="283"/>
+        <location filename="../VideoView.ui" line="287"/>
         <source>HEVC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="288"/>
+        <location filename="../VideoView.ui" line="292"/>
         <source>HEVC (NVENC)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="293"/>
+        <location filename="../VideoView.ui" line="297"/>
         <source>VP8</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="298"/>
+        <location filename="../VideoView.ui" line="302"/>
         <source>VP9</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="303"/>
+        <location filename="../VideoView.ui" line="307"/>
         <source>FFV1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="308"/>
-        <location filename="../VideoView.ui" line="350"/>
+        <location filename="../VideoView.ui" line="312"/>
+        <location filename="../VideoView.ui" line="354"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="320"/>
+        <location filename="../VideoView.ui" line="324"/>
         <source>FLAC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="325"/>
+        <location filename="../VideoView.ui" line="329"/>
         <source>Opus</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="330"/>
+        <location filename="../VideoView.ui" line="334"/>
         <source>Vorbis</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="335"/>
+        <location filename="../VideoView.ui" line="339"/>
         <source>MP3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="340"/>
+        <location filename="../VideoView.ui" line="344"/>
         <source>AAC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="345"/>
+        <location filename="../VideoView.ui" line="349"/>
         <source>Uncompressed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="361"/>
+        <location filename="../VideoView.ui" line="365"/>
         <source> Bitrate (kbps)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="367"/>
-        <source>VBR </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../VideoView.ui" line="412"/>
+        <location filename="../VideoView.ui" line="410"/>
         <source>ABR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="428"/>
+        <location filename="../VideoView.ui" line="277"/>
+        <source>H.264</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../VideoView.ui" line="282"/>
+        <source>H.264 (NVENC)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../VideoView.ui" line="455"/>
+        <source>VBR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../VideoView.ui" line="468"/>
+        <source>CRF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../VideoView.ui" line="484"/>
         <source>Dimensions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="494"/>
+        <location filename="../VideoView.ui" line="550"/>
         <source>Lock aspect ratio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="509"/>
+        <location filename="../VideoView.ui" line="565"/>
         <source>Show advanced</source>
         <translation type="unfinished"></translation>
     </message>

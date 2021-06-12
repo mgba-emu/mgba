@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>351</width>
-    <height>584</height>
+    <width>324</width>
+    <height>593</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -145,15 +145,19 @@
           <property name="text">
            <string>&amp;Lossless</string>
           </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
           <attribute name="buttonGroup">
            <string notr="true">presets</string>
           </attribute>
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+       </widget>
       </item>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -270,12 +274,12 @@
            </property>
            <item>
             <property name="text">
-             <string>h.264</string>
+             <string>H.264</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>h.264 (NVENC)</string>
+             <string>H.264 (NVENC)</string>
             </property>
            </item>
            <item>
@@ -361,36 +365,20 @@
          <string> Bitrate (kbps)</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_3">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label">
+         <item row="1" column="0">
+          <widget class="QRadioButton" name="doVbr">
            <property name="text">
-            <string>VBR </string>
+            <string notr="true"/>
            </property>
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           <property name="checked">
+            <bool>true</bool>
            </property>
-           <property name="buddy">
-            <cstring>vbr</cstring>
-           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">ratefactor</string>
+           </attribute>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QSpinBox" name="vbr">
-           <property name="alignment">
-            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-           </property>
-           <property name="suffix">
-            <string/>
-           </property>
-           <property name="maximum">
-            <number>10000</number>
-           </property>
-           <property name="value">
-            <number>400</number>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
+         <item row="3" column="2">
           <widget class="QSpinBox" name="abr">
            <property name="alignment">
             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -406,7 +394,17 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0">
+         <item row="0" column="0">
+          <widget class="QRadioButton" name="doCrf">
+           <property name="text">
+            <string notr="true"/>
+           </property>
+           <attribute name="buttonGroup">
+            <string notr="true">ratefactor</string>
+           </attribute>
+          </widget>
+         </item>
+         <item row="3" column="1">
           <widget class="QLabel" name="label_2">
            <property name="text">
             <string>ABR</string>
@@ -416,6 +414,64 @@
            </property>
            <property name="buddy">
             <cstring>abr</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QSpinBox" name="crf">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="maximum">
+            <number>50</number>
+           </property>
+           <property name="value">
+            <number>18</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="2">
+          <widget class="QSpinBox" name="vbr">
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="suffix">
+            <string/>
+           </property>
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>VBR</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="buddy">
+            <cstring>vbr</cstring>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>CRF</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+           <property name="buddy">
+            <cstring>crf</cstring>
            </property>
           </widget>
          </item>
@@ -529,14 +585,20 @@
   <tabstop>presetHQ</tabstop>
   <tabstop>presetYoutube</tabstop>
   <tabstop>presetWebM</tabstop>
+  <tabstop>presetMP4</tabstop>
   <tabstop>presetLossless</tabstop>
+  <tabstop>preset4K</tabstop>
   <tabstop>preset1080</tabstop>
   <tabstop>preset720</tabstop>
   <tabstop>preset480</tabstop>
   <tabstop>presetNative</tabstop>
+  <tabstop>showAdvanced</tabstop>
   <tabstop>container</tabstop>
   <tabstop>video</tabstop>
   <tabstop>audio</tabstop>
+  <tabstop>doCrf</tabstop>
+  <tabstop>doVbr</tabstop>
+  <tabstop>crf</tabstop>
   <tabstop>vbr</tabstop>
   <tabstop>abr</tabstop>
   <tabstop>width</tabstop>
@@ -544,12 +606,45 @@
   <tabstop>wratio</tabstop>
   <tabstop>hratio</tabstop>
   <tabstop>lockRatio</tabstop>
-  <tabstop>showAdvanced</tabstop>
  </tabstops>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>doCrf</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>crf</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>200</x>
+     <y>324</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>301</x>
+     <y>314</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doVbr</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>vbr</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>200</x>
+     <y>364</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>301</x>
+     <y>354</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
  <buttongroups>
-  <buttongroup name="resolutions"/>
   <buttongroup name="presets"/>
+  <buttongroup name="resolutions"/>
+  <buttongroup name="ratefactor"/>
  </buttongroups>
 </ui>

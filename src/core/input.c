@@ -541,7 +541,6 @@ void mInputBindHat(struct mInputMap* map, uint32_t type, int id, const struct mI
 	*mInputHatListGetPointer(&impl->hats, id) = *bindings;
 }
 
-
 bool mInputQueryHat(const struct mInputMap* map, uint32_t type, int id, struct mInputHatBindings* bindings) {
 	const struct mInputMapImpl* impl = _lookupMapConst(map, type);
 	if (!impl) {
@@ -559,18 +558,23 @@ void mInputUnbindHat(struct mInputMap* map, uint32_t type, int id) {
 	if (!impl) {
 		return;
 	}
-	if (mInputHatListSize(&impl->hats) && id + 1 == (ssize_t) mInputHatListSize(&impl->hats)) {
-		mInputHatListResize(&impl->hats, -1);
-	} else {
-		struct mInputHatBindings* description = mInputHatListGetPointer(&impl->hats, id);
-		memset(description, -1, sizeof(*description));
+	if (id >= (ssize_t) mInputHatListSize(&impl->hats)) {
+		return;
 	}
+	struct mInputHatBindings* description = mInputHatListGetPointer(&impl->hats, id);
+	memset(description, -1, sizeof(*description));
 }
 
 void mInputUnbindAllHats(struct mInputMap* map, uint32_t type) {
 	struct mInputMapImpl* impl = _lookupMap(map, type);
-	if (impl) {
-		mInputHatListClear(&impl->hats);
+	if (!impl) {
+		return;
+	}
+
+	size_t id;
+	for (id = 0; id < mInputHatListSize(&impl->hats); ++id) {
+		struct mInputHatBindings* description = mInputHatListGetPointer(&impl->hats, id);
+		memset(description, -1, sizeof(*description));
 	}
 }
 

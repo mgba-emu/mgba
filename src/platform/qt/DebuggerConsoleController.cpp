@@ -8,6 +8,7 @@
 #include "CoreController.h"
 
 #include <QMutexLocker>
+#include <QThread>
 
 #include <mgba/internal/debugger/cli-debugger.h>
 
@@ -30,6 +31,7 @@ DebuggerConsoleController::DebuggerConsoleController(QObject* parent)
 }
 
 void DebuggerConsoleController::enterLine(const QString& line) {
+	CoreController::Interrupter interrupter(m_gameController);
 	QMutexLocker lock(&m_mutex);
 	m_lines.append(line);
 	if (m_cliDebugger.d.state == DEBUGGER_RUNNING) {
@@ -39,14 +41,20 @@ void DebuggerConsoleController::enterLine(const QString& line) {
 }
 
 void DebuggerConsoleController::detach() {
-	if (m_cliDebugger.d.state != DEBUGGER_SHUTDOWN) {
-		m_lines.append(QString());
-		m_cond.wakeOne();
+	{
+		CoreController::Interrupter interrupter(m_gameController);
+		QMutexLocker lock(&m_mutex);
+		if (m_cliDebugger.d.state != DEBUGGER_SHUTDOWN) {
+			m_lines.append(QString());
+			m_cond.wakeOne();
+		}
 	}
 	DebuggerController::detach();
 }
 
 void DebuggerConsoleController::attachInternal() {
+	CoreController::Interrupter interrupter(m_gameController);
+	QMutexLocker lock(&m_mutex);
 	m_history.clear();
 	mCore* core = m_gameController->thread()->core;
 	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend.d);
@@ -65,12 +73,13 @@ void DebuggerConsoleController::printf(struct CLIDebuggerBackend* be, const char
 void DebuggerConsoleController::init(struct CLIDebuggerBackend* be) {
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
+	UNUSED(self);
 }
 
 void DebuggerConsoleController::deinit(struct CLIDebuggerBackend* be) {
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
-	if (be->p->d.state != DEBUGGER_SHUTDOWN) {
+	if (QThread::currentThread() == self->thread() && be->p->d.state != DEBUGGER_SHUTDOWN) {
 		self->m_lines.append(QString());
 		self->m_cond.wakeOne();
 	}
@@ -109,6 +118,7 @@ const char* DebuggerConsoleController::historyLast(struct CLIDebuggerBackend* be
 		return "i";
 	}
 	self->m_last = self->m_history.last().toUtf8();
+	*len = self->m_last.size();
 	return self->m_last.constData();
 }
 

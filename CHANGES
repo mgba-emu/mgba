@@ -62,7 +62,9 @@ Emulation fixes:
  - ARM: Fix long and accumulate multiply timing
  - GB: Partially fix timing for skipped BIOS
  - GB: Downgrade DMG-only ROMs from CGB mode even without boot ROM
+ - GB: Fix marking BIOS as unmapped when skipping BIOS (fixes mgba.io/i/2061)
  - GB Audio: Fix serializing sweep time
+ - GB Audio: Fix some channel 4 timing edge cases
  - GB MBC: Fix MBC1 mode changing behavior
  - GB MBC: Fix some MBC3 bit masking
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
@@ -128,6 +130,7 @@ Other fixes:
  - Qt: Fix crashing when no OpenGL context can be obtained
  - Qt: Fix issues with I/O viewer not properly synchronizing state
  - Qt: Fix loading a new game crashing on Wayland (fixes mgba.io/i/1992)
+ - Qt: Fix inability to clear hat bindings
  - SM83: Simplify register pair access on big endian
  - SM83: Disassemble STOP as one byte
  - Wii: Fix crash on unloading irregularly sized GBA ROMs
@@ -153,6 +156,7 @@ Misc:
  - GBA Video: Avoid integer division using reciprocal tricks
  - Debugger: Keep track of global cycle count
  - FFmpeg: Add looping option for GIF/APNG
+ - FFmpeg: Add CRF support for applicable codecs
  - mGUI: Show battery percentage
  - mGUI: Skip second scan loop when possible
  - mGUI: Improve loading speed (fixes mgba.io/i/1957)

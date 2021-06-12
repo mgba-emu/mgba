@@ -23,7 +23,7 @@ struct FFmpegEncoder {
 	unsigned audioBitrate;
 	const char* audioCodec;
 
-	unsigned videoBitrate;
+	int videoBitrate;
 	const char* videoCodec;
 
 	const char* containerFormat;
@@ -76,7 +76,7 @@ struct FFmpegEncoder {
 
 void FFmpegEncoderInit(struct FFmpegEncoder*);
 bool FFmpegEncoderSetAudio(struct FFmpegEncoder*, const char* acodec, unsigned abr);
-bool FFmpegEncoderSetVideo(struct FFmpegEncoder*, const char* vcodec, unsigned vbr, int frameskip);
+bool FFmpegEncoderSetVideo(struct FFmpegEncoder*, const char* vcodec, int vbr, int frameskip);
 bool FFmpegEncoderSetContainer(struct FFmpegEncoder*, const char* container);
 void FFmpegEncoderSetDimensions(struct FFmpegEncoder*, int width, int height);
 void FFmpegEncoderSetInputFrameRate(struct FFmpegEncoder*, int numerator, int denominator);
