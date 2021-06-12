@@ -82,6 +82,7 @@ Emulation fixes:
  - GBA Memory: Improve robustness of Matrix memory support
  - GBA Memory: Mark Famicom Mini games 22 through 28 as non-mirroring
  - GBA Memory: Return correct byte for odd ROM open bus addresses
+ - GBA Memory: Improved AGBPrint emulation of edge cases (fixes mgba.io/i/1867)
  - GBA Serialize: Fix alignment check when loading states
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
@@ -109,6 +110,7 @@ Other fixes:
  - Debugger: Fix change watchpoints (fixes mgba.io/i/1947)
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
+ - GB: Fix crash when changing ROM while in banked address space
  - GB Video: Fix SGB video logs
  - GBA: Fix loading multiboot ELF files (fixes mgba.io/i/1949)
  - mGUI: Don't attempt to preload files larger than can fit in RAM

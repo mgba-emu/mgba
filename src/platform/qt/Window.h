@@ -105,11 +105,6 @@ public slots:
 	void consoleOpen();
 #endif
 
-#ifdef USE_FFMPEG
-	void openVideoWindow();
-	void openGIFWindow();
-#endif
-
 #ifdef USE_GDB_STUB
 	void gdbOpen();
 #endif
@@ -168,6 +163,7 @@ private:
 
 	template <typename T, typename... A> std::function<void()> openTView(A... arg);
 	template <typename T, typename... A> std::function<void()> openControllerTView(A... arg);
+	template <typename T, typename... A> std::function<void()> openNamedControllerTView(std::unique_ptr<T>*, A... arg);
 
 	Action* addGameAction(const QString& visibleName, const QString& name, Action::Function action, const QString& menu = {}, const QKeySequence& = {});
 	template<typename T, typename V> Action* addGameAction(const QString& visibleName, const QString& name, T* obj, V (T::*action)(), const QString& menu = {}, const QKeySequence& = {});
@@ -229,8 +225,8 @@ private:
 	FrameView* m_frameView = nullptr;
 
 #ifdef USE_FFMPEG
-	VideoView* m_videoView = nullptr;
-	GIFView* m_gifView = nullptr;
+	std::unique_ptr<VideoView> m_videoView;
+	std::unique_ptr<GIFView> m_gifView;
 #endif
 
 #ifdef USE_GDB_STUB

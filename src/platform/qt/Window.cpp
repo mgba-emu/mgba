@@ -195,11 +195,6 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 Window::~Window() {
 	delete m_logView;
 
-#ifdef USE_FFMPEG
-	delete m_videoView;
-	delete m_gifView;
-#endif
-
 #ifdef USE_SQLITE3
 	delete m_libraryView;
 #endif
@@ -541,7 +536,6 @@ std::function<void()> Window::openTView(A... arg) {
 	};
 }
 
-
 template <typename T, typename... A>
 std::function<void()> Window::openControllerTView(A... arg) {
 	return [=]() {
@@ -550,29 +544,20 @@ std::function<void()> Window::openControllerTView(A... arg) {
 	};
 }
 
-#ifdef USE_FFMPEG
-void Window::openVideoWindow() {
-	if (!m_videoView) {
-		m_videoView = new VideoView();
-		if (m_controller) {
-			m_videoView->setController(m_controller);
+template <typename T, typename... A>
+std::function<void()> Window::openNamedControllerTView(std::unique_ptr<T>* name, A... arg) {
+	return [=]() {
+		if (!*name) {
+			*name = std::make_unique<T>(arg...);
+			if (m_controller) {
+				(*name)->setController(m_controller);
+			}
+			connect(this, &Window::shutdown, name->get(), &QWidget::close);
 		}
-		connect(this, &Window::shutdown, m_videoView, &QWidget::close);
-	}
-	m_videoView->show();
+		(*name)->show();
+		(*name)->setFocus(Qt::PopupFocusReason);
+	};
 }
-
-void Window::openGIFWindow() {
-	if (!m_gifView) {
-		m_gifView = new GIFView();
-		if (m_controller) {
-			m_gifView->setController(m_controller);
-		}
-		connect(this, &Window::shutdown, m_gifView, &QWidget::close);
-	}
-	m_gifView->show();
-}
-#endif
 
 #ifdef USE_GDB_STUB
 void Window::gdbOpen() {
@@ -1558,8 +1543,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 #ifdef USE_FFMPEG
-	addGameAction(tr("Record A/V..."), "recordOutput", this, &Window::openVideoWindow, "av");
-	addGameAction(tr("Record GIF/WebP/APNG..."), "recordGIF", this, &Window::openGIFWindow, "av");
+	addGameAction(tr("Record A/V..."), "recordOutput", openNamedControllerTView<VideoView>(&m_videoView), "av");
+	addGameAction(tr("Record GIF/WebP/APNG..."), "recordGIF", openNamedControllerTView<GIFView>(&m_gifView), "av");
 #endif
 
 	m_actions.addSeparator("av");
@@ -1583,16 +1568,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_overrideView->recheck();
 	}, "tools");
 
-	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", [this]() {
-		if (!m_sensorView) {
-			m_sensorView = std::make_unique<SensorView>(&m_inputController);
-			if (m_controller) {
-				m_sensorView->setController(m_controller);
-			}
-			connect(this, &Window::shutdown, m_sensorView.get(), &QWidget::close);
-		}
-		m_sensorView->show();
-	}, "tools");
+	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow",  openNamedControllerTView<SensorView>(&m_sensorView, &m_inputController), "tools");
 
 	addGameAction(tr("&Cheats..."), "cheatsWindow", openControllerTView<CheatsView>(), "tools");
 

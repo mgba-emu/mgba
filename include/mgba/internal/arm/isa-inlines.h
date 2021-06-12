@@ -56,20 +56,22 @@
 #define ARM_ILL cpu->irqh.hitIllegal(cpu, opcode)
 
 static inline int32_t ARMWritePC(struct ARMCore* cpu) {
-	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_ARM);
-	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
-	LOAD_32(cpu->prefetch[0], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
-	cpu->gprs[ARM_PC] += WORD_SIZE_ARM;
-	LOAD_32(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	uint32_t pc = cpu->gprs[ARM_PC] & -WORD_SIZE_ARM;
+	cpu->memory.setActiveRegion(cpu, pc);
+	LOAD_32(cpu->prefetch[0], pc & cpu->memory.activeMask, cpu->memory.activeRegion);
+	pc += WORD_SIZE_ARM;
+	LOAD_32(cpu->prefetch[1], pc & cpu->memory.activeMask, cpu->memory.activeRegion);
+	cpu->gprs[ARM_PC] = pc;
 	return 2 + cpu->memory.activeNonseqCycles32 + cpu->memory.activeSeqCycles32;
 }
 
 static inline int32_t ThumbWritePC(struct ARMCore* cpu) {
-	cpu->gprs[ARM_PC] = (cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB);
-	cpu->memory.setActiveRegion(cpu, cpu->gprs[ARM_PC]);
-	LOAD_16(cpu->prefetch[0], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
-	cpu->gprs[ARM_PC] += WORD_SIZE_THUMB;
-	LOAD_16(cpu->prefetch[1], cpu->gprs[ARM_PC] & cpu->memory.activeMask, cpu->memory.activeRegion);
+	uint32_t pc = cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB;
+	cpu->memory.setActiveRegion(cpu, pc);
+	LOAD_16(cpu->prefetch[0], pc & cpu->memory.activeMask, cpu->memory.activeRegion);
+	pc += WORD_SIZE_THUMB;
+	LOAD_16(cpu->prefetch[1], pc & cpu->memory.activeMask, cpu->memory.activeRegion);
+	cpu->gprs[ARM_PC] = pc;
 	return 2 + cpu->memory.activeNonseqCycles16 + cpu->memory.activeSeqCycles16;
 }
 

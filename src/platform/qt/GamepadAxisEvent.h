@@ -36,7 +36,6 @@ private:
 	int m_axis;
 	Direction m_direction;
 	bool m_isNew;
-	InputController* m_controller;
 	GBAKey m_key;
 };
 

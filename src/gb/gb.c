@@ -119,6 +119,7 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	GBMBCInit(gb);
 
 	if (gb->cpu) {
+		GBMBCSwitchBank(gb, 0);
 		struct SM83Core* cpu = gb->cpu;
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
 	}

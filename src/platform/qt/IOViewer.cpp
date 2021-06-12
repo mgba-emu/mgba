@@ -1730,7 +1730,7 @@ void IOViewer::selectRegister(int address) {
 			sbox->setAccelerated(true);
 			box->addWidget(sbox, i, 1, Qt::AlignRight);
 
-			connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [sbox, this, &ri](int v) {
+			connect(sbox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [this, &ri](int v) {
 				for (int o = 0; o < ri.size; ++o) {
 					QSignalBlocker blocker(m_b[o + ri.start]);
 					m_b[o + ri.start]->setChecked(v & (1 << o));

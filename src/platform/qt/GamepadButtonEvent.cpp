@@ -15,7 +15,6 @@ QEvent::Type GamepadButtonEvent::s_upType = QEvent::None;
 GamepadButtonEvent::GamepadButtonEvent(QEvent::Type pressType, int button, int type, InputController* controller)
 	: QEvent(pressType)
 	, m_button(button)
-	, m_controller(controller)
 	, m_key(GBA_KEY_NONE)
 {
 	ignore();

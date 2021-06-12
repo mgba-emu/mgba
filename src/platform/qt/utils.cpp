@@ -22,6 +22,7 @@ QString niceSizeFormat(size_t filesize) {
 	}
 	return unit.arg(size, 0, 'f', int(size * 10) % 10 ? 1 : 0);
 }
+
 QString nicePlatformFormat(mPlatform platform) {
 	switch (platform) {
 #ifdef M_CORE_GBA
@@ -35,6 +36,27 @@ QString nicePlatformFormat(mPlatform platform) {
 	default:
 		return QObject::tr("?");
 	}
+}
+
+bool convertAddress(const QHostAddress* input, Address* output) {
+	if (input->isNull()) {
+		return false;
+	}
+	Q_IPV6ADDR ipv6;
+	switch (input->protocol()) {
+	case QAbstractSocket::IPv4Protocol:
+		output->version = IPV4;
+		output->ipv4 = input->toIPv4Address();
+		break;
+	case QAbstractSocket::IPv6Protocol:
+		output->version = IPV6;
+		ipv6 = input->toIPv6Address();
+		memcpy(output->ipv6, &ipv6, 16);
+		break;
+	default:
+		return false;
+	}
+	return true;
 }
 
 }

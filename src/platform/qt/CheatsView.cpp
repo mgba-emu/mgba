@@ -126,6 +126,7 @@ void CheatsView::addSet() {
 	CoreController::Interrupter interrupter(m_controller);
 	mCheatSet* set = m_controller->cheatDevice()->createSet(m_controller->cheatDevice(), nullptr);
 	m_model.addSet(set);
+	m_ui.cheatList->selectionModel()->select(m_model.index(m_model.rowCount() - 1, 0, QModelIndex()), QItemSelectionModel::ClearAndSelect);
 }
 
 void CheatsView::removeSet() {
@@ -165,6 +166,8 @@ void CheatsView::enterCheat(int codeType) {
 		mCheatAddLine(set, string.toUtf8().constData(), codeType);
 		m_model.endAppendRow();
 	}
-	set->refresh(set, m_controller->cheatDevice());
+	if (set->refresh) {
+		set->refresh(set, m_controller->cheatDevice());
+	}
 	m_ui.codeEntry->clear();
 }
