@@ -539,13 +539,14 @@ void GBAHardwarePlayerUpdate(struct GBA* gba) {
 		gba->memory.hw.gbpTxPosition = 0;
 		return;
 	}
-	if (gba->keyCallback || gba->sio.drivers.normal) {
+	if (gba->keyCallback) {
 		return;
 	}
 	if (GBAHardwarePlayerCheckScreen(&gba->video)) {
 		gba->memory.hw.devices |= HW_GB_PLAYER;
 		gba->memory.hw.gbpInputsPosted = 0;
 		gba->keyCallback = &gba->memory.hw.gbpCallback.d;
+		// TODO: Check if the SIO driver is actually used first
 		GBASIOSetDriver(&gba->sio, &gba->memory.hw.gbpDriver.d, SIO_NORMAL_32);
 	}
 }

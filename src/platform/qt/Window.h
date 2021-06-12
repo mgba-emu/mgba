@@ -142,6 +142,8 @@ private slots:
 
 	void updateFrame();
 
+	void setLogo();
+
 private:
 	static const int FPS_TIMER_INTERVAL = 2000;
 	static const int MUST_RESTART_TIMEOUT = 10000;

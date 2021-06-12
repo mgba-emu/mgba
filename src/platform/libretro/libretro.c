@@ -142,6 +142,14 @@ static void _reloadSettings(void) {
 		}
 	}
 
+#ifdef M_CORE_GBA
+	var.key = "mgba_force_gbp";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		mCoreConfigSetDefaultIntValue(&core->config, "gba.forceGbp", strcmp(var.value, "ON") == 0);
+	}
+#endif
+
 	mCoreConfigLoadDefaults(&core->config, &opts);
 	mCoreLoadConfig(core);
 }

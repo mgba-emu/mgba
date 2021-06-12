@@ -304,6 +304,7 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 
 	mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 	mCoreConfigCopyValue(&core->config, config, "gba.bios");
+	mCoreConfigCopyValue(&core->config, config, "gba.forceGbp");
 	mCoreConfigCopyValue(&core->config, config, "gba.audioHle");
 
 #ifndef DISABLE_THREADING
@@ -562,6 +563,7 @@ static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChe
 static void _GBACoreReset(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = (struct GBA*) core->board;
+	int fakeBool;
 	if (gbacore->renderer.outputBuffer
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	    || gbacore->glRenderer.outputTex != (unsigned) -1
@@ -571,7 +573,6 @@ static void _GBACoreReset(struct mCore* core) {
 		if (gbacore->renderer.outputBuffer) {
 			renderer = &gbacore->renderer.d;
 		}
-		int fakeBool ATTRIBUTE_UNUSED;
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
 			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);
@@ -609,7 +610,17 @@ static void _GBACoreReset(struct mCore* core) {
 	}
 #endif
 
+	bool forceGbp = false;
+	if (mCoreConfigGetIntValue(&core->config, "gba.forceGbp", &fakeBool)) {
+		forceGbp = fakeBool;
+	}
+	if (!forceGbp) {
+		gba->memory.hw.devices &= ~HW_GB_PLAYER_DETECTION;
+	}
 	GBAOverrideApplyDefaults(gba, gbacore->overrides);
+	if (forceGbp) {
+		gba->memory.hw.devices |= HW_GB_PLAYER_DETECTION;
+	}
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	if (!gba->biosVf && core->opts.useBios) {
