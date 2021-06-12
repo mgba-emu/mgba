@@ -12,7 +12,9 @@
 #include <QSysInfo>
 #include <QWindow>
 
+#include <mgba/core/serialize.h>
 #include <mgba/core/version.h>
+#include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 
 #include "CoreController.h"
@@ -37,8 +39,43 @@
 #include <QOpenGLFunctions>
 #endif
 
+#ifdef USE_EDITLINE
+#include <histedit.h>
+#endif
+
+#ifdef USE_FFMPEG
+#include <libavcodec/version.h>
+#include <libavfilter/version.h>
+#include <libavformat/version.h>
+#include <libavutil/version.h>
+#include <libswscale/version.h>
+#ifdef USE_LIBAVRESAMPLE
+#include <libavresample/version.h>
+#endif
+#ifdef USE_LIBSWRESAMPLE
+#include <libswresample/version.h>
+#endif
+#endif
+
+#ifdef USE_LIBZIP
+#include <zip.h>
+#endif
+
+#ifdef USE_LZMA
+#include <7zVersion.h>
+#endif
+
+#ifdef BUILD_SDL
+#include <SDL_version.h>
+#endif
+
 #ifdef USE_SQLITE3
 #include "feature/sqlite3/no-intro.h"
+#include <sqlite3.h>
+#endif
+
+#ifdef USE_ZLIB
+#include <zlib.h>
 #endif
 
 using namespace QGBA;
@@ -84,6 +121,72 @@ void ReportView::generateReport() {
 	swReport << QString("Build architecture: %1").arg(QSysInfo::buildCpuArchitecture());
 	swReport << QString("Run architecture: %1").arg(QSysInfo::currentCpuArchitecture());
 	swReport << QString("Qt version: %1").arg(QLatin1String(qVersion()));
+#ifdef USE_FFMPEG
+	QStringList libavVers;
+	libavVers << QLatin1String(LIBAVCODEC_IDENT);
+	libavVers << QLatin1String(LIBAVFILTER_IDENT);
+	libavVers << QLatin1String(LIBAVFORMAT_IDENT);
+#ifdef USE_LIBAVRESAMPLE
+	libavVers << QLatin1String(LIBAVRESAMPLE_IDENT);
+#endif
+	libavVers << QLatin1String(LIBAVUTIL_IDENT);
+#ifdef USE_LIBSWRESAMPLE
+	libavVers << QLatin1String(LIBSWRESAMPLE_IDENT);
+#endif
+	libavVers << QLatin1String(LIBSWSCALE_IDENT);
+#ifdef USE_LIBAV
+	swReport << QString("Libav versions: %1.%2").arg(libavVers.join(", "));
+#else
+	swReport << QString("FFmpeg versions: %1.%2").arg(libavVers.join(", "));
+#endif
+#else
+	swReport << QString("FFmpeg not linked");
+#endif
+#ifdef USE_EDITLINE
+	swReport << QString("libedit version: %1.%2").arg(LIBEDIT_MAJOR).arg(LIBEDIT_MINOR);
+#else
+	swReport << QString("libedit not linked");
+#endif
+#ifdef USE_ELF
+	swReport << QString("libelf linked");
+#else
+	swReport << QString("libelf not linked");
+#endif
+#ifdef USE_PNG
+	swReport << QString("libpng version: %1").arg(QLatin1String(PNG_LIBPNG_VER_STRING));
+#else
+	swReport << QString("libpng not linked");
+#endif
+#ifdef USE_LIBZIP
+	swReport << QString("libzip version: %1").arg(QLatin1String(LIBZIP_VERSION));
+#else
+	swReport << QString("libzip not linked");
+#endif
+#ifdef USE_LZMA
+	swReport << QString("libLZMA version: %1").arg(QLatin1String(MY_VERSION_NUMBERS));
+#else
+	swReport << QString("libLZMA not linked");
+#endif
+#ifdef USE_MINIZIP
+	swReport << QString("minizip linked");
+#else
+	swReport << QString("minizip not linked");
+#endif
+#ifdef BUILD_SDL
+	swReport << QString("SDL version: %1.%2.%3").arg(SDL_MAJOR_VERSION).arg(SDL_MINOR_VERSION).arg(SDL_PATCHLEVEL);
+#else
+	swReport << QString("SDL not linked");
+#endif
+#ifdef USE_SQLITE3
+	swReport << QString("SQLite3 version: %1").arg(QLatin1String(SQLITE_VERSION));
+#else
+	swReport << QString("SQLite3 not linked");
+#endif
+#ifdef USE_ZLIB
+	swReport << QString("zlib version: %1").arg(QLatin1String(ZLIB_VERSION));
+#else
+	swReport << QString("zlib not linked");
+#endif
 	addReport(QString("System info"), swReport.join('\n'));
 
 	QStringList hwReport;
@@ -209,6 +312,7 @@ void ReportView::generateReport() {
 }
 
 void ReportView::save() {
+#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Bug report archive"), tr("ZIP archive (*.zip)"));
 	if (filename.isNull()) {
 		return;
@@ -228,6 +332,7 @@ void ReportView::save() {
 		vf.close();
 	}
 	zip->close(zip);
+#endif
 }
 
 void ReportView::setShownReport(const QString& filename) {
@@ -243,7 +348,9 @@ void ReportView::rebuildModel() {
 		}
 		m_ui.fileList->addItem(item);
 	}
+#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
 	m_ui.save->setEnabled(true);
+#endif
 	m_ui.fileList->setEnabled(true);
 	m_ui.fileView->setEnabled(true);
 	m_ui.openList->setEnabled(true);

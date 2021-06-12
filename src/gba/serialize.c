@@ -14,8 +14,8 @@
 
 #include <fcntl.h>
 
-const uint32_t GBA_SAVESTATE_MAGIC = 0x01000000;
-const uint32_t GBA_SAVESTATE_VERSION = 0x00000004;
+MGBA_EXPORT const uint32_t GBASavestateMagic = 0x01000000;
+MGBA_EXPORT const uint32_t GBASavestateVersion = 0x00000004;
 
 mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate", "gba.serialize");
 
@@ -25,7 +25,7 @@ struct GBABundledState {
 };
 
 void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
-	STORE_32(GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, 0, &state->versionMagic);
+	STORE_32(GBASavestateMagic + GBASavestateVersion, 0, &state->versionMagic);
 	STORE_32(gba->biosChecksum, 0, &state->biosChecksum);
 	STORE_32(gba->romCrc32, 0, &state->romCrc32);
 	STORE_32(gba->timing.masterCycles, 0, &state->masterCycles);
@@ -87,14 +87,14 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	int32_t check;
 	uint32_t ucheck;
 	LOAD_32(ucheck, 0, &state->versionMagic);
-	if (ucheck > GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION) {
-		mLOG(GBA_STATE, WARN, "Invalid or too new savestate: expected %08X, got %08X", GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, ucheck);
+	if (ucheck > GBASavestateMagic + GBASavestateVersion) {
+		mLOG(GBA_STATE, WARN, "Invalid or too new savestate: expected %08X, got %08X", GBASavestateMagic + GBASavestateVersion, ucheck);
 		error = true;
-	} else if (ucheck < GBA_SAVESTATE_MAGIC) {
-		mLOG(GBA_STATE, WARN, "Invalid savestate: expected %08X, got %08X", GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, ucheck);
+	} else if (ucheck < GBASavestateMagic) {
+		mLOG(GBA_STATE, WARN, "Invalid savestate: expected %08X, got %08X", GBASavestateMagic + GBASavestateVersion, ucheck);
 		error = true;
-	} else if (ucheck < GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION) {
-		mLOG(GBA_STATE, WARN, "Old savestate: expected %08X, got %08X, continuing anyway", GBA_SAVESTATE_MAGIC + GBA_SAVESTATE_VERSION, ucheck);
+	} else if (ucheck < GBASavestateMagic + GBASavestateVersion) {
+		mLOG(GBA_STATE, WARN, "Old savestate: expected %08X, got %08X, continuing anyway", GBASavestateMagic + GBASavestateVersion, ucheck);
 	}
 	LOAD_32(ucheck, 0, &state->biosChecksum);
 	if (ucheck != gba->biosChecksum) {

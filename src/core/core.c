@@ -80,6 +80,19 @@ enum mPlatform mCoreIsCompatible(struct VFile* vf) {
 	return mPLATFORM_NONE;
 }
 
+struct mCore* mCoreCreate(enum mPlatform platform) {
+	const struct mCoreFilter* filter;
+	for (filter = &_filters[0]; filter->filter; ++filter) {
+		if (filter->platform == platform) {
+			break;
+		}
+	}
+	if (filter->open) {
+		return filter->open();
+	}
+	return NULL;
+}
+
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 #include <mgba-util/png-io.h>
 

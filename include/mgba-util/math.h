@@ -119,6 +119,33 @@ static inline int reduceFraction(int* num, int* den) {
 	return n;
 }
 
+#define TYPE_GENERICIZE(MACRO) \
+	MACRO(int, Int) \
+	MACRO(unsigned, UInt)
+
+#define LOCK_ASPECT_RATIO(T, t) \
+	static inline void lockAspectRatio ## t(T refW, T refH, T* w, T* h) { \
+		if (*w * refH > *h * refW) { \
+			*w = *h * refW / refH; \
+		} else if (*w * refH < *h * refW) { \
+			*h = *w * refH / refW; \
+		} \
+	}
+
+TYPE_GENERICIZE(LOCK_ASPECT_RATIO)
+#undef LOCK_ASPECT_RATIO
+
+#define LOCK_INTEGER_RATIO(T, t) \
+	static inline void lockIntegerRatio ## t(T ref, T* val) { \
+		if (*val >= ref) { \
+			*val -= *val % ref; \
+		} \
+	}
+
+TYPE_GENERICIZE(LOCK_INTEGER_RATIO)
+#undef LOCK_INTEGER_RATIO
+
+#undef TYPE_GENERICIZE
 CXX_GUARD_END
 
 #endif

@@ -9,6 +9,7 @@
 #include "CoreController.h"
 #include "LogController.h"
 #include "VFileDevice.h"
+#include "utils.h"
 
 #include <QAction>
 #include <QApplication>
@@ -27,7 +28,7 @@ using namespace QGBA;
 MemoryModel::MemoryModel(QWidget* parent)
 	: QAbstractScrollArea(parent)
 {
-	m_font = GBAApp::monospaceFont();
+	m_font = GBAApp::app()->monospaceFont();
 #ifdef Q_OS_MAC
 	m_font.setPointSize(12);
 #else
@@ -346,7 +347,7 @@ void MemoryModel::paintEvent(QPaintEvent*) {
 	int height = (viewport()->size().height() - m_cellHeight) / m_cellHeight;
 	for (int y = 0; y < height; ++y) {
 		int yp = m_cellHeight * y + m_margins.top();
-		if ((y + m_top) * 16 >= m_size) {
+		if ((y + m_top) * 16U >= m_size) {
 			break;
 		}
 		QString data;
@@ -628,11 +629,7 @@ void MemoryModel::keyPressEvent(QKeyEvent* event) {
 }
 
 void MemoryModel::boundsCheck() {
-	if (m_top < 0) {
-		m_top = 0;
-	} else if (m_top > (m_size >> 4) + 1 - viewport()->size().height() / m_cellHeight) {
-		m_top = (m_size >> 4) + 1 - viewport()->size().height() / m_cellHeight;
-	}
+	m_top = clamp(m_top, 0, static_cast<int32_t>(m_size >> 4) + 1 - viewport()->size().height() / m_cellHeight);
 }
 
 bool MemoryModel::isInSelection(uint32_t address) {
@@ -676,34 +673,35 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 	}
 	int cursorPosition = m_top;
 	if (shift) {
+		uint32_t absolute;
 		if (m_selectionAnchor == m_selection.first) {
 			if (adjust < 0 && m_base - adjust > m_selection.second) {
-				adjust = m_base - m_selection.second + m_align;
+				absolute = m_base - m_selection.second + m_align;
 			} else if (adjust > 0 && m_selection.second + adjust >= m_base + m_size) {
-				adjust = m_base + m_size - m_selection.second;
+				absolute = m_base + m_size - m_selection.second;
 			}
-			adjust += m_selection.second;
-			if (adjust <= m_selection.first) {
+			absolute += m_selection.second;
+			if (absolute <= m_selection.first) {
 				m_selection.second = m_selection.first + m_align;
-				m_selection.first = adjust - m_align;
+				m_selection.first = absolute - m_align;
 				cursorPosition = m_selection.first;
 			} else {
-				m_selection.second = adjust;
+				m_selection.second = absolute;
 				cursorPosition = m_selection.second - m_align;
 			}
 		} else {
 			if (adjust < 0 && m_base - adjust > m_selection.first) {
-				adjust = m_base - m_selection.first;
+				absolute = m_base - m_selection.first;
 			} else if (adjust > 0 && m_selection.first + adjust >= m_base + m_size) {
-				adjust = m_base + m_size - m_selection.first - m_align;
+				absolute = m_base + m_size - m_selection.first - m_align;
 			}
-			adjust += m_selection.first;
-			if (adjust >= m_selection.second) {
+			absolute += m_selection.first;
+			if (absolute >= m_selection.second) {
 				m_selection.first = m_selection.second - m_align;
-				m_selection.second = adjust + m_align;
-				cursorPosition = adjust;
+				m_selection.second = absolute + m_align;
+				cursorPosition = absolute;
 			} else {
-				m_selection.first = adjust;
+				m_selection.first = absolute;
 				cursorPosition = m_selection.first;
 			}
 		}

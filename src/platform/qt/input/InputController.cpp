@@ -13,6 +13,7 @@
 #include "InputModel.h"
 #include "InputProfile.h"
 #include "LogController.h"
+#include "utils.h"
 
 #include <QApplication>
 #include <QKeyEvent>
@@ -1002,7 +1003,7 @@ void InputController::decreaseLuminanceLevel() {
 
 void InputController::setLuminanceLevel(int level) {
 	int value = 0x16;
-	level = std::max(0, std::min(10, level));
+	level = clamp(level, 0, 10);
 	if (level > 0) {
 		value += GBA_LUX_LEVELS[level - 1];
 	}

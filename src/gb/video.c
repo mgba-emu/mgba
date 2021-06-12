@@ -253,7 +253,7 @@ void GBVideoSkipBIOS(struct GBVideo* video) {
 	GBUpdateIRQs(video->p);
 	video->p->memory.io[GB_REG_STAT] = video->stat;
 	mTimingDeschedule(&video->p->timing, &video->modeEvent);
-	mTimingSchedule(&video->p->timing, &video->modeEvent, next);
+	mTimingSchedule(&video->p->timing, &video->modeEvent, next << 1);
 }
 
 void _endMode0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
@@ -297,7 +297,7 @@ void _endMode0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 
 	GBUpdateIRQs(video->p);
 	video->p->memory.io[GB_REG_STAT] = video->stat;
-	mTimingSchedule(timing, &video->modeEvent, (next << video->p->doubleSpeed) - cyclesLate);
+	mTimingSchedule(timing, &video->modeEvent, (next << 1) - cyclesLate);
 }
 
 void _endMode1(struct mTiming* timing, void* context, uint32_t cyclesLate) {
@@ -334,14 +334,14 @@ void _endMode1(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		GBUpdateIRQs(video->p);
 	}
 	video->p->memory.io[GB_REG_STAT] = video->stat;
-	mTimingSchedule(timing, &video->modeEvent, (next << video->p->doubleSpeed) - cyclesLate);
+	mTimingSchedule(timing, &video->modeEvent, (next << 1) - cyclesLate);
 }
 
 void _endMode2(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBVideo* video = context;
 	_cleanOAM(video, video->ly);
 	video->x = -(video->p->memory.io[GB_REG_SCX] & 7);
-	video->dotClock = mTimingCurrentTime(timing) - cyclesLate + 5 - (video->x << video->p->doubleSpeed);
+	video->dotClock = mTimingCurrentTime(timing) - cyclesLate + 10 - (video->x << 1);
 	int32_t next = GB_VIDEO_MODE_3_LENGTH_BASE + video->objMax * 6 - video->x;
 	video->mode = 3;
 	video->modeEvent.callback = _endMode3;
@@ -352,7 +352,7 @@ void _endMode2(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		GBUpdateIRQs(video->p);
 	}
 	video->p->memory.io[GB_REG_STAT] = video->stat;
-	mTimingSchedule(timing, &video->modeEvent, (next << video->p->doubleSpeed) - cyclesLate);
+	mTimingSchedule(timing, &video->modeEvent, (next << 1) - cyclesLate);
 }
 
 void _endMode3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
@@ -375,18 +375,18 @@ void _endMode3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	video->p->memory.io[GB_REG_STAT] = video->stat;
 	// TODO: Cache SCX & 7 in case it changes
 	int32_t next = GB_VIDEO_MODE_0_LENGTH_BASE - video->objMax * 6 - (video->p->memory.io[GB_REG_SCX] & 7);
-	mTimingSchedule(timing, &video->modeEvent, (next << video->p->doubleSpeed) - cyclesLate);
+	mTimingSchedule(timing, &video->modeEvent, (next << 1) - cyclesLate);
 }
 
 void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	UNUSED(cyclesLate);
 	struct GBVideo* video = context;
 	if (video->p->cpu->executionState != SM83_CORE_FETCH) {
-		mTimingSchedule(timing, &video->frameEvent, 4 - ((video->p->cpu->executionState + 1) & 3));
+		mTimingSchedule(timing, &video->frameEvent, (4 - ((video->p->cpu->executionState + 1) & 3)) * (2 - video->p->doubleSpeed));
 		return;
 	}
 	if (!GBRegisterLCDCIsEnable(video->p->memory.io[GB_REG_LCDC])) {
-		mTimingSchedule(timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
+		mTimingSchedule(timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH << 1);
 	}
 
 	--video->frameskipCounter;
@@ -424,7 +424,7 @@ void GBVideoProcessDots(struct GBVideo* video, uint32_t cyclesLate) {
 		return;
 	}
 	int oldX = video->x;
-	video->x = (int32_t) (mTimingCurrentTime(&video->p->timing) - cyclesLate - video->dotClock) >> video->p->doubleSpeed;
+	video->x = ((int32_t) (mTimingCurrentTime(&video->p->timing) - cyclesLate - video->dotClock)) >> 1;
 	if (video->x > GB_VIDEO_HORIZONTAL_PIXELS) {
 		video->x = GB_VIDEO_HORIZONTAL_PIXELS;
 	} else if (video->x < 0) {
@@ -444,7 +444,7 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 		video->modeEvent.callback = _endMode2;
 		int32_t next = GB_VIDEO_MODE_2_LENGTH - 5; // TODO: Why is this fudge factor needed? Might be related to T-cycles for load/store differing
 		mTimingDeschedule(&video->p->timing, &video->modeEvent);
-		mTimingSchedule(&video->p->timing, &video->modeEvent, next << video->p->doubleSpeed);
+		mTimingSchedule(&video->p->timing, &video->modeEvent, next << 1);
 
 		video->ly = 0;
 		video->p->memory.io[GB_REG_LY] = 0;
@@ -471,7 +471,7 @@ void GBVideoWriteLCDC(struct GBVideo* video, GBRegisterLCDC value) {
 	
 		mTimingDeschedule(&video->p->timing, &video->modeEvent);
 		mTimingDeschedule(&video->p->timing, &video->frameEvent);
-		mTimingSchedule(&video->p->timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH);
+		mTimingSchedule(&video->p->timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH << 1);
 	}
 	video->p->memory.io[GB_REG_STAT] = video->stat;
 }

@@ -32,6 +32,7 @@ public:
 protected:
 	virtual bool event(QEvent*) override;
 	virtual void closeEvent(QCloseEvent*) override;
+	virtual void showEvent(QShowEvent*) override;
 
 private slots:
 	void load(const QModelIndex&);

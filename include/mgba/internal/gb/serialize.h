@@ -13,8 +13,8 @@ CXX_GUARD_START
 #include <mgba/core/core.h>
 #include <mgba/internal/gb/gb.h>
 
-extern const uint32_t GB_SAVESTATE_MAGIC;
-extern const uint32_t GB_SAVESTATE_VERSION;
+extern MGBA_EXPORT const uint32_t GBSavestateMagic;
+extern MGBA_EXPORT const uint32_t GBSavestateVersion;
 
 mLOG_DECLARE_CATEGORY(GB_STATE);
 

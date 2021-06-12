@@ -256,7 +256,7 @@ void MemoryView::updateSelection(uint32_t start, uint32_t end) {
 }
 
 void MemoryView::updateStatus() {
-	int align = m_ui.hexfield->alignment();
+	unsigned align = m_ui.hexfield->alignment();
 	mCore* core = m_controller->thread()->core;
 	QByteArray selection(m_ui.hexfield->serialize());
 	QString text(m_ui.hexfield->decodeText(selection));

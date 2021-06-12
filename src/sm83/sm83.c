@@ -61,6 +61,7 @@ void SM83Reset(struct SM83Core* cpu) {
 
 	cpu->instruction = 0;
 
+	cpu->tMultiplier = 2;
 	cpu->cycles = 0;
 	cpu->nextEvent = 0;
 	cpu->executionState = SM83_CORE_FETCH;
@@ -102,7 +103,7 @@ static void _SM83InstructionIRQ(struct SM83Core* cpu) {
 }
 
 static void _SM83Step(struct SM83Core* cpu) {
-	++cpu->cycles;
+	cpu->cycles += cpu->tMultiplier;
 	enum SM83ExecutionState state = cpu->executionState;
 	cpu->executionState = SM83_CORE_IDLE_0;
 	switch (state) {
@@ -147,23 +148,31 @@ static void _SM83Step(struct SM83Core* cpu) {
 	}
 }
 
+static inline bool _SM83TickInternal(struct SM83Core* cpu) {
+	bool running = true;
+	_SM83Step(cpu);
+	int t = cpu->tMultiplier;
+	if (cpu->cycles + t * 2 >= cpu->nextEvent) {
+		int32_t diff = cpu->nextEvent - cpu->cycles;
+		cpu->cycles = cpu->nextEvent;
+		cpu->executionState += diff >> (t - 1); // NB: This assumes tMultiplier is either 1 or 2
+		cpu->irqh.processEvents(cpu);
+		cpu->cycles += (SM83_CORE_EXECUTE - cpu->executionState) * t;
+		running = false;
+	} else {
+		cpu->cycles += t * 2;
+	}
+	cpu->executionState = SM83_CORE_FETCH;
+	cpu->instruction(cpu);
+	cpu->cycles += t;
+	return running;
+}
+
 void SM83Tick(struct SM83Core* cpu) {
 	while (cpu->cycles >= cpu->nextEvent) {
 		cpu->irqh.processEvents(cpu);
 	}
-	_SM83Step(cpu);
-	if (cpu->cycles + 2 >= cpu->nextEvent) {
-		int32_t diff = cpu->nextEvent - cpu->cycles;
-		cpu->cycles = cpu->nextEvent;
-		cpu->executionState += diff;
-		cpu->irqh.processEvents(cpu);
-		cpu->cycles += SM83_CORE_EXECUTE - cpu->executionState;
-	} else {
-		cpu->cycles += 2;
-	}
-	cpu->executionState = SM83_CORE_FETCH;
-	cpu->instruction(cpu);
-	++cpu->cycles;
+	_SM83TickInternal(cpu);
 }
 
 void SM83Run(struct SM83Core* cpu) {
@@ -173,19 +182,6 @@ void SM83Run(struct SM83Core* cpu) {
 			cpu->irqh.processEvents(cpu);
 			break;
 		}
-		_SM83Step(cpu);
-		if (cpu->cycles + 2 >= cpu->nextEvent) {
-			int32_t diff = cpu->nextEvent - cpu->cycles;
-			cpu->cycles = cpu->nextEvent;
-			cpu->executionState += diff;
-			cpu->irqh.processEvents(cpu);
-			cpu->cycles += SM83_CORE_EXECUTE - cpu->executionState;
-			running = false;
-		} else {
-			cpu->cycles += 2;
-		}
-		cpu->executionState = SM83_CORE_FETCH;
-		cpu->instruction(cpu);
-		++cpu->cycles;
+		running = _SM83TickInternal(cpu) && running;
 	}
 }

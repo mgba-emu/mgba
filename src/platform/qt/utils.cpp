@@ -11,16 +11,16 @@ namespace QGBA {
 
 QString niceSizeFormat(size_t filesize) {
 	double size = filesize;
-	QString unit = "B";
+	QString unit = QObject::tr("%1 byte");
 	if (size >= 1024.0) {
 		size /= 1024.0;
-		unit = "kiB";
+		unit = QObject::tr("%1 kiB");
 	}
 	if (size >= 1024.0) {
 		size /= 1024.0;
-		unit = "MiB";
+		unit = QObject::tr("%1 MiB");
 	}
-	return QString("%0 %1").arg(size, 0, 'f', 1).arg(unit);
+	return unit.arg(size, 0, 'f', int(size * 10) % 10 ? 1 : 0);
 }
 QString nicePlatformFormat(mPlatform platform) {
 	switch (platform) {

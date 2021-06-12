@@ -191,6 +191,7 @@ void mCoreTakeScreenshot(struct mCore* core);
 
 struct mCore* mCoreFindVF(struct VFile* vf);
 enum mPlatform mCoreIsCompatible(struct VFile* vf);
+struct mCore* mCoreCreate(enum mPlatform);
 
 bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags);
 bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags);

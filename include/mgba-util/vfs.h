@@ -79,7 +79,7 @@ struct VFile* VFileFIFO(struct CircleBuffer* backing);
 struct VDir* VDirOpen(const char* path);
 struct VDir* VDirOpenArchive(const char* path);
 
-#if defined(USE_LIBZIP) || defined(USE_ZLIB)
+#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
 struct VDir* VDirOpenZip(const char* path, int flags);
 #endif
 

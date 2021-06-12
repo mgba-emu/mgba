@@ -13,11 +13,11 @@
 
 mLOG_DEFINE_CATEGORY(GB_STATE, "GB Savestate", "gb.serialize");
 
-const uint32_t GB_SAVESTATE_MAGIC = 0x00400000;
-const uint32_t GB_SAVESTATE_VERSION = 0x00000002;
+MGBA_EXPORT const uint32_t GBSavestateMagic = 0x00400000;
+MGBA_EXPORT const uint32_t GBSavestateVersion = 0x00000002;
 
 void GBSerialize(struct GB* gb, struct GBSerializedState* state) {
-	STORE_32LE(GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, 0, &state->versionMagic);
+	STORE_32LE(GBSavestateMagic + GBSavestateVersion, 0, &state->versionMagic);
 	STORE_32LE(gb->romCrc32, 0, &state->romCrc32);
 	STORE_32LE(gb->timing.masterCycles, 0, &state->masterCycles);
 	STORE_64LE(gb->timing.globalCycles, 0, &state->globalCycles);
@@ -76,20 +76,20 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	int16_t check16;
 	uint16_t ucheck16;
 	LOAD_32LE(ucheck, 0, &state->versionMagic);
-	if (ucheck > GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION) {
-		mLOG(GB_STATE, WARN, "Invalid or too new savestate: expected %08X, got %08X", GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, ucheck);
+	if (ucheck > GBSavestateMagic + GBSavestateVersion) {
+		mLOG(GB_STATE, WARN, "Invalid or too new savestate: expected %08X, got %08X", GBSavestateMagic + GBSavestateVersion, ucheck);
 		error = true;
-	} else if (ucheck < GB_SAVESTATE_MAGIC) {
-		mLOG(GB_STATE, WARN, "Invalid savestate: expected %08X, got %08X", GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, ucheck);
+	} else if (ucheck < GBSavestateMagic) {
+		mLOG(GB_STATE, WARN, "Invalid savestate: expected %08X, got %08X", GBSavestateMagic + GBSavestateVersion, ucheck);
 		error = true;
-	} else if (ucheck < GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION) {
-		mLOG(GB_STATE, WARN, "Old savestate: expected %08X, got %08X, continuing anyway", GB_SAVESTATE_MAGIC + GB_SAVESTATE_VERSION, ucheck);
+	} else if (ucheck < GBSavestateMagic + GBSavestateVersion) {
+		mLOG(GB_STATE, WARN, "Old savestate: expected %08X, got %08X, continuing anyway", GBSavestateMagic + GBSavestateVersion, ucheck);
 	}
-	bool canSgb = ucheck >= GB_SAVESTATE_MAGIC + 2;
+	bool canSgb = ucheck >= GBSavestateMagic + 2;
 
 	if (gb->memory.rom && memcmp(state->title, ((struct GBCartridge*) &gb->memory.rom[0x100])->titleLong, sizeof(state->title))) {
 		LOAD_32LE(ucheck, 0, &state->versionMagic);
-		if (ucheck > GB_SAVESTATE_MAGIC + 2 || memcmp(state->title, ((struct GBCartridge*) gb->memory.rom)->titleLong, sizeof(state->title))) {
+		if (ucheck > GBSavestateMagic + 2 || memcmp(state->title, ((struct GBCartridge*) gb->memory.rom)->titleLong, sizeof(state->title))) {
 			// There was a bug in previous versions where the memory address being compared was wrong
 			mLOG(GB_STATE, WARN, "Savestate is for a different game");
 			error = true;
@@ -174,8 +174,6 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->doubleSpeed = GBSerializedCpuFlagsGetDoubleSpeed(flags);
 	gb->cpu->halted = GBSerializedCpuFlagsGetHalted(flags);
 	gb->cpuBlocked = GBSerializedCpuFlagsGetBlocked(flags);
-
-	gb->audio.timingFactor = gb->doubleSpeed + 1;
 
 	LOAD_32LE(gb->cpu->cycles, 0, &state->cpu.cycles);
 	LOAD_32LE(gb->cpu->nextEvent, 0, &state->cpu.nextEvent);

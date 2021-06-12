@@ -36,6 +36,7 @@ Misc:
 0.9.0: (Future)
 Features:
  - e-Reader card scanning
+ - New tool for converting between different save game formats
  - WebP and APNG recording
  - Separate overrides for GBC games that can also run on SGB or regular GB
  - Game Boy Player features can be enabled by default for all compatible games
@@ -84,6 +85,7 @@ Emulation fixes:
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
  - GBA SIO: Fix deseralizing SIO registers
+ - GBA SIO: Fix hanging on starting a second multiplayer window (fixes mgba.io/i/854)
  - GBA Video: Latch scanline at end of Hblank (fixes mgba.io/i/1319)
  - GBA Video: Fix Hblank timing
  - GBA Video: Implement green swap (fixes mgba.io/i/1609)
@@ -93,6 +95,7 @@ Emulation fixes:
 Other fixes:
  - 3DS: Fix thread cleanup
  - All: Improve export headers (fixes mgba.io/i/1738)
+ - Cheats: Fix indirect write cheats (fixes mgba.io/i/2026)
  - CMake: Fix build with downstream minizip that exports incompatible symbols
  - CMake: Link with correct OpenGL library (fixes mgba.io/i/1872)
  - Core: Ensure ELF regions can be written before trying
@@ -129,8 +132,10 @@ Misc:
  - Core: Add shutdown callback
  - Core: Rework thread state synchronization
  - Core: Improve support for ROM patch cheats, supporting disabling overlapping patches
+ - Core: Adding to library is now recursive
  - GB: Allow pausing event loop while CPU is blocked
  - GB: Add support for sleep and shutdown callbacks
+ - GB: Redo double speed emulation (closes mgba.io/i/1515)
  - GB Core: Return the current number of banks for ROM/SRAM, not theoretical max
  - GB I/O: Implement preliminary support for PCM12/PCM34 (closes mgba.io/i/1468)
  - GBA: Allow pausing event loop while CPU is blocked
@@ -156,6 +161,7 @@ Misc:
  - Qt: Unify monospace font usage
  - Qt: Add button to jump to log settings
  - Qt: Use relative paths in portable mode when applicable (fixes mgba.io/i/838)
+ - Qt: Better initial shortcut editor column sizes
  - SDL: Fall back to sw blit if OpenGL init fails
  - Util: Reset vector size on deinit
  - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)

@@ -9,6 +9,7 @@
 
 #include "GBAApp.h"
 #include "LogController.h"
+#include "utils.h"
 
 #include <mgba-util/math.h>
 
@@ -522,11 +523,7 @@ void VideoView::setPreset(const Preset& preset) {
 
 QSize VideoView::maintainAspect(const QSize& size) {
 	QSize ds = size;
-	if (ds.width() * m_nativeHeight > ds.height() * m_nativeWidth) {
-		ds.setWidth(ds.height() * m_nativeWidth / m_nativeHeight);
-	} else if (ds.width() * m_nativeHeight < ds.height() * m_nativeWidth) {
-		ds.setHeight(ds.width() * m_nativeHeight / m_nativeWidth);
-	}
+	lockAspectRatio(QSize(m_nativeWidth, m_nativeHeight), ds);
 	return ds;
 }
 

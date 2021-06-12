@@ -6,6 +6,7 @@ mGBA ist ein Emulator für Game Boy Advance-Spiele. Das Ziel von mGBA ist, schne
 Aktuelle Neuigkeiten und Downloads findest Du auf [mgba.io](https://mgba.io).
 
 [![Build-Status](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
+[![Status der Übersetzungen](https://hosted.weblate.org/widgets/mgba/-/svg-badge.svg)](https://hosted.weblate.org/engage/mgba)
 
 Features
 --------
@@ -36,6 +37,7 @@ Features
 - Einstellbare Rücklauf-Funktion.
 - Unterstützung für das Laden und Exportieren von GameShark- und Action Replay-Abbildern.
 - Verfügbare Cores für RetroArch/Libretro und OpenEmu.
+- Übersetzungen für mehrere Sprachen über [Weblate](https://hosted.weblate.org/engage/mgba).
 - Viele, viele kleinere Dinge.
 
 ### Game Boy-Mapper
@@ -240,7 +242,7 @@ Fußnoten
 Copyright
 ---------
 
-Copyright für mGBA © 2013 – 2020 Jeffrey Pfau. mGBA wird unter der [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/) veröffentlicht. Eine Kopie der Lizenz ist in der mitgelieferten Datei LICENSE verfügbar.
+Copyright für mGBA © 2013 – 2021 Jeffrey Pfau. mGBA wird unter der [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/) veröffentlicht. Eine Kopie der Lizenz ist in der mitgelieferten Datei LICENSE verfügbar.
 
 mGBA beinhaltet die folgenden Bibliotheken von Drittanbietern:
 

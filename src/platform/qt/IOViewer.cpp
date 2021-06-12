@@ -1594,7 +1594,7 @@ IOViewer::IOViewer(std::shared_ptr<CoreController> controller, QWidget* parent)
 		m_ui.regSelect->addItem("0x" + QString("%1: %2").arg((i << m_width) + m_base, 4, 16, QChar('0')).toUpper().arg(reg), i << m_width);
 	}
 
-	const QFont font = GBAApp::monospaceFont();
+	const QFont font = GBAApp::app()->monospaceFont();
 	m_ui.regValue->setFont(font);
 
 	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, this, &IOViewer::buttonPressed);

@@ -282,7 +282,11 @@ static void* _loadPNGState(struct mCore* core, struct VFile* vf, struct mStateEx
 	success = success && PNGReadFooter(png, end);
 	PNGReadClose(png, info, end);
 
-	if (success) {
+	if (!success) {
+		free(pixels);
+		mappedMemoryFree(state, stateSize);
+		return NULL;
+	} else if (extdata) {
 		struct mStateExtdataItem item = {
 			.size = width * height * 4,
 			.data = pixels,
@@ -291,8 +295,6 @@ static void* _loadPNGState(struct mCore* core, struct VFile* vf, struct mStateEx
 		mStateExtdataPut(extdata, EXTDATA_SCREENSHOT, &item);
 	} else {
 		free(pixels);
-		mappedMemoryFree(state, stateSize);
-		return 0;
 	}
 	return state;
 }

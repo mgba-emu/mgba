@@ -5,7 +5,8 @@ medusa is an emulator for running Nintendo DS, Game Boy Advance and Game Boy gam
 
 Up-to-date news and downloads can be found at [mgba.io](https://mgba.io/).
 
-[![Build status](https://travis-ci.org/mgba-emu/mgba.svg?branch=medusa)](https://travis-ci.org/mgba-emu/mgba)
+[![Build status](https://buildbot.mgba.io/badges/build-win32.svg)](https://buildbot.mgba.io)
+[![Translation status](https://hosted.weblate.org/widgets/mgba/-/svg-badge.svg)](https://hosted.weblate.org/engage/mgba)
 
 Features
 --------
@@ -37,6 +38,7 @@ Features
 - Configurable emulation rewinding.
 - Support for loading and exporting GameShark and Action Replay snapshots.
 - Cores available for RetroArch/Libretro and OpenEmu.
+- Community-provided translations for several languages via [Weblate](https://hosted.weblate.org/engage/mgba).
 - Many, many smaller things.
 
 #### Game Boy mappers
@@ -297,7 +299,7 @@ Missing features on DS are
 Copyright
 ---------
 
-medusa is Copyright © 2013 – 2020 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
+medusa is Copyright © 2013 – 2021 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
 
 medusa contains the following third-party libraries:
 

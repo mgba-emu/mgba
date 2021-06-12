@@ -49,12 +49,14 @@
 #include "PrinterView.h"
 #include "ReportView.h"
 #include "ROMInfo.h"
+#include "SaveConverter.h"
 #include "SensorView.h"
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
 #include "TileView.h"
 #include "VideoProxy.h"
 #include "VideoView.h"
+#include "utils.h"
 
 #ifdef USE_DISCORD_RPC
 #include "DiscordCoordinator.h"
@@ -417,8 +419,8 @@ void Window::replaceROM() {
 
 void Window::selectSave(bool temporary) {
 	QStringList formats{"*.sav"};
-	QString filter = tr("Game Boy Advance save files (%1)").arg(formats.join(QChar(' ')));
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save"), filter);
+	QString filter = tr("Save games (%1)").arg(formats.join(QChar(' ')));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save game"), filter);
 	if (!filename.isEmpty()) {
 		m_controller->loadSave(filename, temporary);
 	}
@@ -426,14 +428,14 @@ void Window::selectSave(bool temporary) {
 
 void Window::selectState(bool load) {
 	QStringList formats{"*.ss0", "*.ss1", "*.ss2", "*.ss3", "*.ss4", "*.ss5", "*.ss6", "*.ss7", "*.ss8", "*.ss9"};
-	QString filter = tr("mGBA savestate files (%1)").arg(formats.join(QChar(' ')));
+	QString filter = tr("mGBA save state files (%1)").arg(formats.join(QChar(' ')));
 	if (load) {
-		QString filename = GBAApp::app()->getOpenFileName(this, tr("Select savestate"), filter);
+		QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save state"), filter);
 		if (!filename.isEmpty()) {
 			m_controller->loadState(filename);
 		}
 	} else {
-		QString filename = GBAApp::app()->getSaveFileName(this, tr("Select savestate"), filter);
+		QString filename = GBAApp::app()->getSaveFileName(this, tr("Select save state"), filter);
 		if (!filename.isEmpty()) {
 			m_controller->saveState(filename);
 		}
@@ -1183,10 +1185,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Add folder to library..."), "addDirToLibrary", this, &Window::addDirToLibrary, "file");
 #endif
 
-	addGameAction(tr("Load alternate save..."), "loadAlternateSave", [this]() {
+	addGameAction(tr("Load alternate save game..."), "loadAlternateSave", [this]() {
 		this->selectSave(false);
 	}, "file");
-	addGameAction(tr("Load temporary save..."), "loadTemporarySave", [this]() {
+	addGameAction(tr("Load temporary save game..."), "loadTemporarySave", [this]() {
 		this->selectSave(true);
 	}, "file");
 
@@ -1294,6 +1296,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef M_CORE_GBA
 	m_actions.addSeparator("file");
+	m_actions.addAction(tr("Convert save game..."), "convertSave", openControllerTView<SaveConverter>(), "file");
+
 	Action* importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "file");
 	m_platformActions.insert(mPLATFORM_GBA, importShark);
 
@@ -1980,9 +1984,7 @@ void Window::attachDisplay() {
 void Window::setLogo() {
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setCenteredAspectRatio(m_logo.width(), m_logo.height());
-	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
 	m_screenWidget->setLockIntegerScaling(false);
-	m_screenWidget->setLockAspectRatio(true);
 	m_screenWidget->filter(true);
 	m_screenWidget->unsetCursor();
 }
@@ -2037,30 +2039,6 @@ void WindowBackground::paintEvent(QPaintEvent* event) {
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::SmoothPixmapTransform, m_filter);
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
-	QSize s = size();
-	QSize ds = s;
-	if (m_centered) {
-		if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {
-			ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
-		} else if (ds.width() * m_aspectHeight > ds.height() * m_aspectWidth) {
-			ds.setHeight(ds.width() * m_aspectHeight / m_aspectWidth);
-		}
-	} else if (m_lockAspectRatio) {
-		if (ds.width() * m_aspectHeight > ds.height() * m_aspectWidth) {
-			ds.setWidth(ds.height() * m_aspectWidth / m_aspectHeight);
-		} else if (ds.width() * m_aspectHeight < ds.height() * m_aspectWidth) {
-			ds.setHeight(ds.width() * m_aspectHeight / m_aspectWidth);
-		}
-	}
-	if (m_lockIntegerScaling) {
-		if (ds.width() >= m_aspectWidth) {
-			ds.setWidth(ds.width() - ds.width() % m_aspectWidth);
-		}
-		if (ds.height() >= m_aspectHeight) {
-			ds.setHeight(ds.height() - ds.height() % m_aspectHeight);
-		}
-	}
-	QPoint origin = QPoint((s.width() - ds.width()) / 2, (s.height() - ds.height()) / 2);
-	QRect full(origin, ds);
+	QRect full(clampSize(QSize(m_aspectWidth, m_aspectHeight), size(), m_lockAspectRatio, m_lockIntegerScaling, m_centered));
 	painter.drawPixmap(full, logo);
 }

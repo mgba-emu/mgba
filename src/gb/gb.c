@@ -742,7 +742,7 @@ void GBSetInterrupts(struct SM83Core* cpu, bool enable) {
 		gb->memory.ime = false;
 		GBUpdateIRQs(gb);
 	} else {
-		mTimingSchedule(&gb->timing, &gb->eiPending, 4);
+		mTimingSchedule(&gb->timing, &gb->eiPending, 4 * cpu->tMultiplier);
 	}
 }
 
@@ -796,7 +796,7 @@ void GBStop(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	if (gb->model >= GB_MODEL_CGB && gb->memory.io[GB_REG_KEY1] & 1) {
 		gb->doubleSpeed ^= 1;
-		gb->audio.timingFactor = gb->doubleSpeed + 1;
+		gb->cpu->tMultiplier = 2 - gb->doubleSpeed;
 		gb->memory.io[GB_REG_KEY1] = 0;
 		gb->memory.io[GB_REG_KEY1] |= gb->doubleSpeed << 7;
 	} else {

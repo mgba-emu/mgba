@@ -33,7 +33,7 @@ ObjView::ObjView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	m_ui.setupUi(this);
 	m_ui.tile->setController(controller);
 
-	const QFont font = GBAApp::monospaceFont();
+	const QFont font = GBAApp::app()->monospaceFont();
 
 	m_ui.x->setFont(font);
 	m_ui.y->setFont(font);
@@ -133,8 +133,8 @@ void ObjView::updateTilesGBA(bool force) {
 	mTileCache* tileCache = mTileCacheSetGetPointer(&m_cacheSet->tiles, newInfo.paletteSet);
 
 	int i = 0;
-	for (int y = 0; y < newInfo.height; ++y) {
-		for (int x = 0; x < newInfo.width; ++x, ++i, ++tile, ++tileBase) {
+	for (unsigned y = 0; y < newInfo.height; ++y) {
+		for (unsigned x = 0; x < newInfo.width; ++x, ++i, ++tile, ++tileBase) {
 			const color_t* data = mTileCacheGetTileIfDirty(tileCache, &m_tileStatus[16 * tileBase], tile, newInfo.paletteId);
 			if (data) {
 				m_ui.tiles->setTile(i, data);
@@ -224,7 +224,7 @@ void ObjView::updateTilesGB(bool force) {
 
 	int i = 0;
 	m_ui.tile->setPalette(newInfo.paletteId);
-	for (int y = 0; y < newInfo.height; ++y, ++i) {
+	for (unsigned y = 0; y < newInfo.height; ++y, ++i) {
 		unsigned t = tile + i;
 		const color_t* data = mTileCacheGetTileIfDirty(tileCache, &m_tileStatus[8 * t], t, newInfo.paletteId);
 		if (data) {
