@@ -66,7 +66,8 @@ private:
 			BACKGROUND,
 			WINDOW,
 			SPRITE,
-			BACKDROP
+			BACKDROP,
+			FRAME
 		} type = NONE;
 		int index = -1;
 
@@ -82,6 +83,7 @@ private:
 		QRegion mask;
 		QPointF location;
 		bool repeats;
+		bool fixed;
 	};
 
 	bool lookupLayer(const QPointF& coord, Layer*&);

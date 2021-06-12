@@ -72,6 +72,9 @@ CXX_GUARD_START
 #define ARM_MEMORY_DECREMENT_BEFORE  0x0200
 #define ARM_MEMORY_INCREMENT_BEFORE  0x0300
 #define ARM_MEMORY_SPSR_SWAP         0x0400
+#define ARM_MEMORY_STORE             0x1000
+#define ARM_MEMORY_LOAD              0x2000
+#define ARM_MEMORY_SWAP              0x3000
 
 #define ARM_PSR_C 1
 #define ARM_PSR_X 2
