@@ -42,6 +42,12 @@ enum GBMemoryBankControllerType {
 	GB_UNL_HITEK = 0x221,
 };
 
+enum GBVideoLayer {
+	GB_LAYER_BACKGROUND = 0,
+	GB_LAYER_WINDOW,
+	GB_LAYER_OBJ
+};
+
 struct GBSIODriver {
 	struct GBSIO* p;
 

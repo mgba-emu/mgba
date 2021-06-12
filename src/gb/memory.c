@@ -328,7 +328,7 @@ uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 		if (address < GB_BASE_IE) {
 			return memory->hram[address & GB_SIZE_HRAM];
 		}
-		return GBIORead(gb, REG_IE);
+		return GBIORead(gb, GB_REG_IE);
 	}
 }
 
@@ -398,7 +398,7 @@ void GBStore8(struct SM83Core* cpu, uint16_t address, int8_t value) {
 		} else if (address < GB_BASE_IE) {
 			memory->hram[address & GB_SIZE_HRAM] = value;
 		} else {
-			GBIOWrite(gb, REG_IE, value);
+			GBIOWrite(gb, GB_REG_IE, value);
 		}
 	}
 }
@@ -522,7 +522,7 @@ uint8_t GBView8(struct SM83Core* cpu, uint16_t address, int segment) {
 		if (address < GB_BASE_IE) {
 			return memory->hram[address & GB_SIZE_HRAM];
 		}
-		return GBIORead(gb, REG_IE);
+		return GBIORead(gb, GB_REG_IE);
 	}
 }
 
@@ -541,10 +541,10 @@ void GBMemoryDMA(struct GB* gb, uint16_t base) {
 }
 
 uint8_t GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
-	gb->memory.hdmaSource = gb->memory.io[REG_HDMA1] << 8;
-	gb->memory.hdmaSource |= gb->memory.io[REG_HDMA2];
-	gb->memory.hdmaDest = gb->memory.io[REG_HDMA3] << 8;
-	gb->memory.hdmaDest |= gb->memory.io[REG_HDMA4];
+	gb->memory.hdmaSource = gb->memory.io[GB_REG_HDMA1] << 8;
+	gb->memory.hdmaSource |= gb->memory.io[GB_REG_HDMA2];
+	gb->memory.hdmaDest = gb->memory.io[GB_REG_HDMA3] << 8;
+	gb->memory.hdmaDest |= gb->memory.io[GB_REG_HDMA4];
 	gb->memory.hdmaSource &= 0xFFF0;
 	if (gb->memory.hdmaSource >= 0x8000 && gb->memory.hdmaSource < 0xA000) {
 		mLOG(GB_MEM, GAME_ERROR, "Invalid HDMA source: %04X", gb->memory.hdmaSource);
@@ -554,7 +554,7 @@ uint8_t GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 	gb->memory.hdmaDest |= 0x8000;
 	bool wasHdma = gb->memory.isHdma;
 	gb->memory.isHdma = value & 0x80;
-	if ((!wasHdma && !gb->memory.isHdma) || (GBRegisterLCDCIsEnable(gb->memory.io[REG_LCDC]) && gb->video.mode == 0)) {
+	if ((!wasHdma && !gb->memory.isHdma) || (GBRegisterLCDCIsEnable(gb->memory.io[GB_REG_LCDC]) && gb->video.mode == 0)) {
 		if (gb->memory.isHdma) {
 			gb->memory.hdmaRemaining = 0x10;
 		} else {
@@ -562,7 +562,7 @@ uint8_t GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 		}
 		gb->cpuBlocked = true;
 		mTimingSchedule(&gb->timing, &gb->memory.hdmaEvent, 0);
-	} else if (gb->memory.isHdma && !GBRegisterLCDCIsEnable(gb->memory.io[REG_LCDC])) {
+	} else if (gb->memory.isHdma && !GBRegisterLCDCIsEnable(gb->memory.io[GB_REG_LCDC])) {
 		return 0x80 | ((value + 1) & 0x7F);
 	}
 	return value & 0x7F;
@@ -597,17 +597,17 @@ void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cycles
 		mTimingSchedule(timing, &gb->memory.hdmaEvent, 2 - cyclesLate);
 	} else {
 		gb->cpuBlocked = false;
-		gb->memory.io[REG_HDMA1] = gb->memory.hdmaSource >> 8;
-		gb->memory.io[REG_HDMA2] = gb->memory.hdmaSource;
-		gb->memory.io[REG_HDMA3] = gb->memory.hdmaDest >> 8;
-		gb->memory.io[REG_HDMA4] = gb->memory.hdmaDest;
+		gb->memory.io[GB_REG_HDMA1] = gb->memory.hdmaSource >> 8;
+		gb->memory.io[GB_REG_HDMA2] = gb->memory.hdmaSource;
+		gb->memory.io[GB_REG_HDMA3] = gb->memory.hdmaDest >> 8;
+		gb->memory.io[GB_REG_HDMA4] = gb->memory.hdmaDest;
 		if (gb->memory.isHdma) {
-			--gb->memory.io[REG_HDMA5];
-			if (gb->memory.io[REG_HDMA5] == 0xFF) {
+			--gb->memory.io[GB_REG_HDMA5];
+			if (gb->memory.io[GB_REG_HDMA5] == 0xFF) {
 				gb->memory.isHdma = false;
 			}
 		} else {
-			gb->memory.io[REG_HDMA5] = 0xFF;
+			gb->memory.io[GB_REG_HDMA5] = 0xFF;
 		}
 	}
 }

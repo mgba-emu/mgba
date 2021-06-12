@@ -130,6 +130,7 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.title = "Select SGB BIOS path",
 		.data = "sgb.bios",
 	};
+#endif
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Interframe blending",
 		.data = "interframeBlending",
@@ -140,6 +141,19 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		},
 		.nStates = 2
 	};
+#if defined(M_CORE_GBA) && (defined(GEKKO) || defined(__SWITCH__) || defined(PSP2))
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "Enable GBP features",
+		.data = "gba.forceGbp",
+		.submenu = 0,
+		.state = false,
+		.validStates = (const char*[]) {
+			"Off", "On"
+		},
+		.nStates = 2
+	};
+#endif
+#ifdef M_CORE_GB
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Enable SGB features",
 		.data = "sgb.model",
@@ -354,8 +368,14 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		}
 #endif
 		if (item->validStates) {
-			++item->state;
-			if (item->state >= item->nStates) {
+			if (item->state < item->nStates - 1) {
+				do {
+					++item->state;
+				} while (!item->validStates[item->state] && item->state < item->nStates - 1);
+				if (!item->validStates[item->state]) {
+					item->state = 0;
+				}
+			} else {
 				item->state = 0;
 			}
 		}

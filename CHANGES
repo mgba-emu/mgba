@@ -45,6 +45,7 @@ Features:
  - Stack tracing tools in ARM debugger (by ahigerd)
  - Command scripts for CLI debugger (by ahigerd)
  - ARM disassembler now resolves addresses to symbol names
+ - Add Game Boy Player feature support to ports
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
@@ -56,6 +57,7 @@ Emulation fixes:
  - GB MBC: Fix MBC1 mode changing behavior
  - GB MBC: Fix some MBC3 bit masking
  - GB Video: Fix state after skipping BIOS (fixes mgba.io/i/1715 and mgba.io/i/1716)
+ - GB Video: Fix drawing background when window is force-disabled by frontend
  - GBA: Fix timing advancing too quickly in rare cases
  - GBA: Clear GBP connection on reset
  - GBA Audio: Fix deserializing SOUNDCNT_L
@@ -112,6 +114,7 @@ Other fixes:
  - Qt: Fix stride changing when toggling SGB borders (fixes mgba.io/i/1898)
  - Qt: Fix aliasing on background logo (fixes mgba.io/i/1886)
  - mGUI: Fix closing down a game if an exit is signalled
+ - mGUI: Fix cycling through config setting states with accept button
  - mVL: Fix injecting accidentally draining non-injection buffer
  - SM83: Simplify register pair access on big endian
  - SM83: Disassemble STOP as one byte
@@ -134,6 +137,7 @@ Misc:
  - Qt: Add transformation matrix info to sprite view
  - Qt: Memory viewer now supports editing decimal values directly (closes mgba.io/i/1705)
  - Qt: Add copy button to GB printer dialog
+ - Qt: Window title updates can be disabled (closes mgba.io/i/1912)
  - Util: Reset vector size on deinit
  - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)
 

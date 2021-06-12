@@ -237,7 +237,7 @@ bool AssetView::lookupObjGB(int id, struct ObjInfo* info) {
 	const GBObj* obj = &gb->video.oam.obj[id];
 
 	unsigned height = 8;
-	GBRegisterLCDC lcdc = gb->memory.io[REG_LCDC];
+	GBRegisterLCDC lcdc = gb->memory.io[GB_REG_LCDC];
 	if (GBRegisterLCDCIsObjSize(lcdc)) {
 		height = 16;
 	}

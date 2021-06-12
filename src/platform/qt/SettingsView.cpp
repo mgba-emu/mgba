@@ -410,6 +410,7 @@ void SettingsView::updateConfig() {
 	saveSetting("logFile", m_ui.logFile);
 	saveSetting("useDiscordPresence", m_ui.useDiscordPresence);
 	saveSetting("gba.audioHle", m_ui.audioHle);
+	saveSetting("dynamicTitle", m_ui.dynamicTitle);
 
 	if (m_ui.audioBufferSize->currentText().toInt() > 8192) {
 		m_ui.audioBufferSize->setCurrentText("8192");
@@ -606,6 +607,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("logFile", m_ui.logFile);
 	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
 	loadSetting("gba.audioHle", m_ui.audioHle);
+	loadSetting("dynamicTitle", m_ui.dynamicTitle);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 

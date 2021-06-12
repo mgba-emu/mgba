@@ -64,7 +64,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	GBVideoInit(&gb->video);
 
 	gb->audio.p = gb;
-	GBAudioInit(&gb->audio, 2048, &gb->memory.io[REG_NR52], GB_AUDIO_DMG); // TODO: Remove magic constant
+	GBAudioInit(&gb->audio, 2048, &gb->memory.io[GB_REG_NR52], GB_AUDIO_DMG); // TODO: Remove magic constant
 
 	gb->sio.p = gb;
 	GBSIOInit(&gb->sio);
@@ -567,7 +567,7 @@ void GBSkipBIOS(struct GB* gb) {
 	mTimingDeschedule(&gb->timing, &gb->timer.event);
 	mTimingSchedule(&gb->timing, &gb->timer.event, gb->timer.nextDiv);
 
-	GBIOWrite(gb, REG_LCDC, 0x91);
+	GBIOWrite(gb, GB_REG_LCDC, 0x91);
 	GBVideoSkipBIOS(&gb->video);
 
 	if (gb->biosVf) {
@@ -673,7 +673,7 @@ int GBValidModels(const uint8_t* bank0) {
 }
 
 void GBUpdateIRQs(struct GB* gb) {
-	int irqs = gb->memory.ie & gb->memory.io[REG_IF] & 0x1F;
+	int irqs = gb->memory.ie & gb->memory.io[GB_REG_IF] & 0x1F;
 	if (!irqs) {
 		gb->cpu->irqPending = false;
 		return;
@@ -737,26 +737,26 @@ void GBSetInterrupts(struct SM83Core* cpu, bool enable) {
 
 uint16_t GBIRQVector(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	int irqs = gb->memory.ie & gb->memory.io[REG_IF];
+	int irqs = gb->memory.ie & gb->memory.io[GB_REG_IF];
 
 	if (irqs & (1 << GB_IRQ_VBLANK)) {
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_VBLANK);
+		gb->memory.io[GB_REG_IF] &= ~(1 << GB_IRQ_VBLANK);
 		return GB_VECTOR_VBLANK;
 	}
 	if (irqs & (1 << GB_IRQ_LCDSTAT)) {
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_LCDSTAT);
+		gb->memory.io[GB_REG_IF] &= ~(1 << GB_IRQ_LCDSTAT);
 		return GB_VECTOR_LCDSTAT;
 	}
 	if (irqs & (1 << GB_IRQ_TIMER)) {
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_TIMER);
+		gb->memory.io[GB_REG_IF] &= ~(1 << GB_IRQ_TIMER);
 		return GB_VECTOR_TIMER;
 	}
 	if (irqs & (1 << GB_IRQ_SIO)) {
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_SIO);
+		gb->memory.io[GB_REG_IF] &= ~(1 << GB_IRQ_SIO);
 		return GB_VECTOR_SIO;
 	}
 	if (irqs & (1 << GB_IRQ_KEYPAD)) {
-		gb->memory.io[REG_IF] &= ~(1 << GB_IRQ_KEYPAD);
+		gb->memory.io[GB_REG_IF] &= ~(1 << GB_IRQ_KEYPAD);
 		return GB_VECTOR_KEYPAD;
 	}
 	return 0;
@@ -772,7 +772,7 @@ static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cycle
 
 void GBHalt(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	if (!(gb->memory.ie & gb->memory.io[REG_IF] & 0x1F)) {
+	if (!(gb->memory.ie & gb->memory.io[GB_REG_IF] & 0x1F)) {
 		cpu->cycles = cpu->nextEvent;
 		cpu->halted = true;
 	} else if (!gb->memory.ime) {
@@ -783,13 +783,13 @@ void GBHalt(struct SM83Core* cpu) {
 
 void GBStop(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	if (gb->model >= GB_MODEL_CGB && gb->memory.io[REG_KEY1] & 1) {
+	if (gb->model >= GB_MODEL_CGB && gb->memory.io[GB_REG_KEY1] & 1) {
 		gb->doubleSpeed ^= 1;
 		gb->audio.timingFactor = gb->doubleSpeed + 1;
-		gb->memory.io[REG_KEY1] = 0;
-		gb->memory.io[REG_KEY1] |= gb->doubleSpeed << 7;
+		gb->memory.io[GB_REG_KEY1] = 0;
+		gb->memory.io[GB_REG_KEY1] |= gb->doubleSpeed << 7;
 	} else {
-		int sleep = ~(gb->memory.io[REG_JOYP] & 0x30);
+		int sleep = ~(gb->memory.io[GB_REG_JOYP] & 0x30);
 		size_t c;
 		for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
 			struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);

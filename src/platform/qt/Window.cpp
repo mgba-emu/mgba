@@ -1080,7 +1080,7 @@ void Window::showFPS() {
 void Window::updateTitle(float fps) {
 	QString title;
 
-	if (m_controller) {
+	if (m_config->getOption("dynamicTitle", 1).toInt() && m_controller) {
 		CoreController::Interrupter interrupter(m_controller);
 		const NoIntroDB* db = GBAApp::app()->gameDB();
 		NoIntroGame game{};
@@ -1719,6 +1719,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 		if (m_display) {
 			m_display->setVideoScale(value.toInt());
 		}
+	}, this);
+
+	ConfigOption* dynamicTitle = m_config->addOption("dynamicTitle");
+	dynamicTitle->connect([this](const QVariant&) {
+		updateTitle();
 	}, this);
 
 	m_actions.addHiddenAction(tr("Exit fullscreen"), "exitFullScreen", this, &Window::exitFullScreen, "frame", QKeySequence("Esc"));

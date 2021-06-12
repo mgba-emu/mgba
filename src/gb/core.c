@@ -31,9 +31,9 @@
 #endif
 
 static const struct mCoreChannelInfo _GBVideoLayers[] = {
-	{ 0, "bg", "Background", NULL },
-	{ 1, "bgwin", "Window", NULL },
-	{ 2, "obj", "Objects", NULL },
+	{ GB_LAYER_BACKGROUND, "bg", "Background", NULL },
+	{ GB_LAYER_WINDOW, "bgwin", "Window", NULL },
+	{ GB_LAYER_OBJ, "obj", "Objects", NULL },
 };
 
 static const struct mCoreChannelInfo _GBAudioChannels[] = {
@@ -861,7 +861,7 @@ static bool _GBCoreLookupIdentifier(struct mCore* core, const char* name, int32_
 	UNUSED(core);
 	*segment = -1;
 	int i;
-	for (i = 0; i < REG_MAX; ++i) {
+	for (i = 0; i < GB_REG_MAX; ++i) {
 		const char* reg = GBIORegisterNames[i];
 		if (reg && strcasecmp(reg, name) == 0) {
 			*value = GB_BASE_IO | i;
@@ -939,13 +939,13 @@ static size_t _GBCoreListAudioChannels(const struct mCore* core, const struct mC
 static void _GBCoreEnableVideoLayer(struct mCore* core, size_t id, bool enable) {
 	struct GB* gb = core->board;
 	switch (id) {
-	case 0:
+	case GB_LAYER_BACKGROUND:
 		gb->video.renderer->disableBG = !enable;
 		break;
-	case 1:
+	case GB_LAYER_WINDOW:
 		gb->video.renderer->disableWIN = !enable;
 		break;
-	case 2:
+	case GB_LAYER_OBJ:
 		gb->video.renderer->disableOBJ = !enable;
 		break;
 	default:
@@ -970,15 +970,15 @@ static void _GBCoreEnableAudioChannel(struct mCore* core, size_t id, bool enable
 static void _GBCoreAdjustVideoLayer(struct mCore* core, size_t id, int32_t x, int32_t y) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	switch (id) {
-	case 0:
+	case GB_LAYER_BACKGROUND:
 		gbcore->renderer.offsetScx = x;
 		gbcore->renderer.offsetScy = y;
 		break;
-	case 1:
+	case GB_LAYER_WINDOW:
 		gbcore->renderer.offsetWx = x;
 		gbcore->renderer.offsetWy = y;
 		break;
-	case 2:
+	case GB_LAYER_OBJ:
 		gbcore->renderer.objOffsetX = x;
 		gbcore->renderer.objOffsetY = y;
 		break;

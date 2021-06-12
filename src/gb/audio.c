@@ -446,30 +446,30 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 		}
 
 		if (audio->p) {
-			audio->p->memory.io[REG_NR10] = 0;
-			audio->p->memory.io[REG_NR11] = 0;
-			audio->p->memory.io[REG_NR12] = 0;
-			audio->p->memory.io[REG_NR13] = 0;
-			audio->p->memory.io[REG_NR14] = 0;
-			audio->p->memory.io[REG_NR21] = 0;
-			audio->p->memory.io[REG_NR22] = 0;
-			audio->p->memory.io[REG_NR23] = 0;
-			audio->p->memory.io[REG_NR24] = 0;
-			audio->p->memory.io[REG_NR30] = 0;
-			audio->p->memory.io[REG_NR31] = 0;
-			audio->p->memory.io[REG_NR32] = 0;
-			audio->p->memory.io[REG_NR33] = 0;
-			audio->p->memory.io[REG_NR34] = 0;
-			audio->p->memory.io[REG_NR42] = 0;
-			audio->p->memory.io[REG_NR43] = 0;
-			audio->p->memory.io[REG_NR44] = 0;
-			audio->p->memory.io[REG_NR50] = 0;
-			audio->p->memory.io[REG_NR51] = 0;
+			audio->p->memory.io[GB_REG_NR10] = 0;
+			audio->p->memory.io[GB_REG_NR11] = 0;
+			audio->p->memory.io[GB_REG_NR12] = 0;
+			audio->p->memory.io[GB_REG_NR13] = 0;
+			audio->p->memory.io[GB_REG_NR14] = 0;
+			audio->p->memory.io[GB_REG_NR21] = 0;
+			audio->p->memory.io[GB_REG_NR22] = 0;
+			audio->p->memory.io[GB_REG_NR23] = 0;
+			audio->p->memory.io[GB_REG_NR24] = 0;
+			audio->p->memory.io[GB_REG_NR30] = 0;
+			audio->p->memory.io[GB_REG_NR31] = 0;
+			audio->p->memory.io[GB_REG_NR32] = 0;
+			audio->p->memory.io[GB_REG_NR33] = 0;
+			audio->p->memory.io[GB_REG_NR34] = 0;
+			audio->p->memory.io[GB_REG_NR42] = 0;
+			audio->p->memory.io[GB_REG_NR43] = 0;
+			audio->p->memory.io[GB_REG_NR44] = 0;
+			audio->p->memory.io[GB_REG_NR50] = 0;
+			audio->p->memory.io[GB_REG_NR51] = 0;
 			if (audio->style != GB_AUDIO_DMG) {
-				audio->p->memory.io[REG_NR11] = 0;
-				audio->p->memory.io[REG_NR21] = 0;
-				audio->p->memory.io[REG_NR31] = 0;
-				audio->p->memory.io[REG_NR41] = 0;
+				audio->p->memory.io[GB_REG_NR11] = 0;
+				audio->p->memory.io[GB_REG_NR21] = 0;
+				audio->p->memory.io[GB_REG_NR31] = 0;
+				audio->p->memory.io[GB_REG_NR41] = 0;
 			}
 		}
 		*audio->nr52 &= ~0x000F;

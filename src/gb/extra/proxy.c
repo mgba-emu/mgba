@@ -44,6 +44,10 @@ void GBVideoProxyRendererCreate(struct GBVideoProxyRenderer* renderer, struct GB
 	renderer->d.getPixels = GBVideoProxyRendererGetPixels;
 	renderer->d.putPixels = GBVideoProxyRendererPutPixels;
 
+	renderer->d.disableBG = false;
+	renderer->d.disableWIN = false;
+	renderer->d.disableOBJ = false;
+
 	renderer->logger->context = renderer;
 	renderer->logger->parsePacket = _parsePacket;
 	renderer->logger->vramBlock = _vramBlock;
@@ -138,6 +142,9 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		}
 		break;
 	case DIRTY_SCANLINE:
+		proxyRenderer->backend->disableBG = proxyRenderer->d.disableBG;
+		proxyRenderer->backend->disableWIN = proxyRenderer->d.disableWIN;
+		proxyRenderer->backend->disableOBJ = proxyRenderer->d.disableOBJ;
 		if (item->address < GB_VIDEO_VERTICAL_PIXELS) {
 			proxyRenderer->backend->finishScanline(proxyRenderer->backend, item->address);
 		}

@@ -57,12 +57,12 @@ static bool _GBCLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger;
 
 	if (gbDebugger->frameAdvance) {
-		if (!gbDebugger->inVblank && GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[REG_STAT]) == 1) {
+		if (!gbDebugger->inVblank && GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[GB_REG_STAT]) == 1) {
 			mDebuggerEnter(&gbDebugger->d.p->d, DEBUGGER_ENTER_MANUAL, 0);
 			gbDebugger->frameAdvance = false;
 			return false;
 		}
-		gbDebugger->inVblank = GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[REG_STAT]) == 1;
+		gbDebugger->inVblank = GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[GB_REG_STAT]) == 1;
 		return true;
 	}
 	return true;
@@ -74,7 +74,7 @@ static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger->system;
 	gbDebugger->frameAdvance = true;
-	gbDebugger->inVblank = GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[REG_STAT]) == 1;
+	gbDebugger->inVblank = GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[GB_REG_STAT]) == 1;
 }
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
