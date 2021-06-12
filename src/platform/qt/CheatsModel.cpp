@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "CheatsModel.h"
 
+#include "GBAApp.h"
 #include "LogController.h"
 #include "VFileDevice.h"
 
@@ -19,8 +20,7 @@ CheatsModel::CheatsModel(mCheatDevice* device, QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_device(device)
 {
-	m_font.setFamily("Source Code Pro");
-	m_font.setStyleHint(QFont::Monospace);
+	m_font = GBAApp::monospaceFont();
 }
 
 QVariant CheatsModel::data(const QModelIndex& index, int role) const {

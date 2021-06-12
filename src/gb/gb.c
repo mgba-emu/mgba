@@ -160,6 +160,10 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 	if (gb->sramSize) {
 		GBResizeSram(gb, gb->sramSize);
 		GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
+
+		if (gb->memory.mbcType == GB_MBC3_RTC) {
+			GBMBCRTCRead(gb);
+		}
 	}
 	return vf;
 }

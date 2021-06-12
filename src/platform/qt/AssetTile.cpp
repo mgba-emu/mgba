@@ -8,7 +8,6 @@
 #include "CoreController.h"
 #include "GBAApp.h"
 
-#include <QFontDatabase>
 #include <QHBoxLayout>
 
 #include <mgba/core/interface.h>
@@ -32,7 +31,7 @@ AssetTile::AssetTile(QWidget* parent)
 
 	connect(m_ui.preview, &Swatch::indexPressed, this, &AssetTile::selectColor);
 
-	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+	const QFont font = GBAApp::monospaceFont();
 
 	m_ui.tileId->setFont(font);
 	m_ui.paletteId->setFont(font);

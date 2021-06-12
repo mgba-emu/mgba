@@ -706,7 +706,7 @@
             <bool>false</bool>
            </property>
            <property name="suffix">
-            <string>×</string>
+            <string notr="true">×</string>
            </property>
            <property name="minimum">
             <double>0.010000000000000</double>
@@ -749,7 +749,7 @@
             <bool>false</bool>
            </property>
            <property name="suffix">
-            <string>×</string>
+            <string notr="true">×</string>
            </property>
            <property name="minimum">
             <double>0.010000000000000</double>
@@ -988,7 +988,7 @@
         </widget>
        </item>
        <item row="2" column="0" colspan="2">
-        <widget class="QGroupBox" name="oglEnahance">
+        <widget class="QGroupBox" name="oglEnhance">
          <property name="title">
           <string>OpenGL enhancements</string>
          </property>
@@ -1005,7 +1005,7 @@
             <item>
              <widget class="QSpinBox" name="videoScale">
               <property name="suffix">
-               <string>×</string>
+               <string notr="true">×</string>
               </property>
               <property name="minimum">
                <number>1</number>

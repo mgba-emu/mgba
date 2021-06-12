@@ -28,7 +28,6 @@ public:
 
 signals:
 	void dataAvailable();
-	void eventPosted(int);
 
 public slots:
 	void processData();

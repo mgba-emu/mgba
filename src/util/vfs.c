@@ -101,12 +101,12 @@ struct VDir* VDirOpenArchive(const char* path) {
 	UNUSED(path);
 #if defined(USE_LIBZIP) || defined(USE_ZLIB)
 	if (!dir) {
-		dir = VDirOpenZip(path, 0);
+		dir = VDirOpenZip(path, O_RDONLY);
 	}
 #endif
 #ifdef USE_LZMA
 	if (!dir) {
-		dir = VDirOpen7z(path, 0);
+		dir = VDirOpen7z(path, O_RDONLY);
 	}
 #endif
 	return dir;

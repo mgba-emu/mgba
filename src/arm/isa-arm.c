@@ -594,12 +594,11 @@ DEFINE_MULTIPLY_INSTRUCTION_2_ARM(MLA, cpu->gprs[rdHi] = cpu->gprs[rm] * cpu->gp
 DEFINE_MULTIPLY_INSTRUCTION_ARM(MUL, cpu->gprs[rd] = cpu->gprs[rm] * cpu->gprs[rs], ARM_NEUTRAL_S(cpu->gprs[rm], cpu->gprs[rs], cpu->gprs[rd]))
 
 DEFINE_MULTIPLY_INSTRUCTION_2_ARM(SMLAL,
-	int64_t d = ((int64_t) cpu->gprs[rm]) * ((int64_t) cpu->gprs[rs]);
-	int32_t dm = cpu->gprs[rd];
-	int32_t dn = d;
-	cpu->gprs[rd] = dm + dn;
-	cpu->gprs[rdHi] = cpu->gprs[rdHi] + (d >> 32) + ARM_CARRY_FROM(dm, dn, cpu->gprs[rd]);,
-	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), 3)
+	int64_t d = ((int64_t) cpu->gprs[rm]) * ((int64_t) cpu->gprs[rs]) + ((uint32_t) cpu->gprs[rd]);
+	int32_t dHi = cpu->gprs[rdHi] + (d >> 32);
+	cpu->gprs[rd] = d;
+	cpu->gprs[rdHi] = dHi;,
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], dHi), 3)
 
 DEFINE_MULTIPLY_INSTRUCTION_XY_ARM(SMLA,
 	int32_t dn = cpu->gprs[rn]; \
@@ -624,12 +623,11 @@ DEFINE_MULTIPLY_INSTRUCTION_2_ARM(SMULL,
 	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), 2)
 
 DEFINE_MULTIPLY_INSTRUCTION_2_ARM(UMLAL,
-	uint64_t d = ARM_UXT_64(cpu->gprs[rm]) * ARM_UXT_64(cpu->gprs[rs]);
-	int32_t dm = cpu->gprs[rd];
-	int32_t dn = d;
-	cpu->gprs[rd] = dm + dn;
-	cpu->gprs[rdHi] = cpu->gprs[rdHi] + (d >> 32) + ARM_CARRY_FROM(dm, dn, cpu->gprs[rd]);,
-	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), 3)
+	uint64_t d = ARM_UXT_64(cpu->gprs[rm]) * ARM_UXT_64(cpu->gprs[rs]) + ((uint32_t) cpu->gprs[rd]);
+	uint32_t dHi = ((uint32_t) cpu->gprs[rdHi]) + (d >> 32);
+	cpu->gprs[rd] = d;
+	cpu->gprs[rdHi] = dHi;,
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], dHi), 3)
 
 DEFINE_MULTIPLY_INSTRUCTION_2_ARM(UMULL,
 	uint64_t d = ARM_UXT_64(cpu->gprs[rm]) * ARM_UXT_64(cpu->gprs[rs]);

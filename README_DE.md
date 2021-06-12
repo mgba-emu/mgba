@@ -163,13 +163,7 @@ Bitte beachte, dass Du unter macOS nicht `make install` verwenden solltest, da d
 
 Um mGBA auf Windows zu kompilieren, wird MSYS2 empfohlen. Befolge die Installationsschritte auf der [MSYS2-Website](https://msys2.github.io). Stelle sicher, dass Du die 32-Bit-Version ("MSYS2 MinGW 32-bit") (oder die 64-Bit-Version "MSYS2 MinGW 64-bit", wenn Du mGBA für x86_64 kompilieren willst) verwendest und führe folgendes Kommando (einschließlich der Klammern) aus, um alle benötigten Abhängigkeiten zu installieren. Bitte beachte, dass dafür über 1100MiB an Paketen heruntergeladen werden, was eine Weile dauern kann:
 
-Für x86 (32 Bit):
-
-	pacman -Sy --needed base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
-
-Für x86_64 (64 Bit):
-
-	pacman -Sy --needed base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkgconf,qt5,SDL2,ntldd-git}
 
 Lade den aktuellen mGBA-Quellcode mithilfe des folgenden Kommandos herunter:
 
@@ -177,11 +171,10 @@ Lade den aktuellen mGBA-Quellcode mithilfe des folgenden Kommandos herunter:
 
 Abschließend wird mGBA über folgende Kommandos kompiliert:
 
-	cd mgba
-	mkdir build
-	cd build
+	mkdir -p mgba/build
+	cd mgba/build
 	cmake .. -G "MSYS Makefiles"
-	make
+	make -j$(nproc --ignore=1)
 
 Bitte beachte, dass mGBA für Windows aufgrund der Vielzahl an benötigten DLLs nicht für die weitere Verteilung geeignet ist, wenn es auf diese Weise gebaut wurde. Es ist jedoch perfekt für Entwickler geeignet. Soll mGBA dennoch weiter verteilt werden (beispielsweise zu Testzwecken auf Systemen, auf denen keine MSYS2-Umgebung installiert ist), kann mithilfe des Befehls `cpack -G ZIP` ein ZIP-Archiv mit allen benötigten DLLs erstellt werden.
 

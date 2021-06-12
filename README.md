@@ -181,13 +181,7 @@ Note that you should not do a `make install` on macOS, as it will not work prope
 
 To build on Windows for development, using MSYS2 is recommended. Follow the installation steps found on their [website](https://msys2.github.io). Make sure you're running the 32-bit version ("MSYS2 MinGW 32-bit") (or the 64-bit version "MSYS2 MinGW 64-bit" if you want to build for x86_64) and run this additional command (including the braces) to install the needed dependencies (please note that this involves downloading over 1100MiB of packages, so it will take a long time):
 
-For x86 (32 bit) builds:
-
-	pacman -Sy --needed base-devel git mingw-w64-i686-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
-
-For x86_64 (64 bit) builds:
-
-	pacman -Sy --needed base-devel git mingw-w64-x86_64-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkg-config,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkgconf,qt5,SDL2,ntldd-git}
 
 Check out the source code by running this command:
 
@@ -195,11 +189,10 @@ Check out the source code by running this command:
 
 Then finally build it by running these commands:
 
-	cd medusa
-	mkdir build
-	cd build
+	mkdir -p medusa/build
+	cd medusa/build
 	cmake .. -G "MSYS Makefiles"
-	make
+	make -j$(nproc --ignore=1)
 
 Please note that this build of medusa for Windows is not suitable for distribution, due to the scattering of DLLs it needs to run, but is perfect for development. However, if distributing such a build is desired (e.g. for testing on machines that don't have the MSYS2 environment installed), running `cpack -G ZIP` will prepare a zip file with all of the necessary DLLs.
 

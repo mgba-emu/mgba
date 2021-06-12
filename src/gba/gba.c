@@ -108,6 +108,7 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->idleOptimization = IDLE_LOOP_REMOVE;
 	gba->idleLoop = IDLE_LOOP_NONE;
 
+	gba->vbaBugCompat = false;
 	gba->hardCrash = true;
 	gba->allowOpposingDirections = true;
 

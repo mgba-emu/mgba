@@ -39,7 +39,6 @@
 
 #define PORT "sdl"
 
-static bool mSDLInit(struct mSDLRenderer* renderer);
 static void mSDLDeinit(struct mSDLRenderer* renderer);
 
 static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
@@ -84,6 +83,12 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		printf("Could not initialize video: %s\n", SDL_GetError());
+		freeArguments(&args);
+		return 1;
+	}
+
 	renderer.core = mCoreFind(args.fname);
 	if (!renderer.core) {
 		printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
@@ -97,14 +102,6 @@ int main(int argc, char** argv) {
 	}
 
 	renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
-#ifdef BUILD_GL
-	mSDLGLCreate(&renderer);
-#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
-	mSDLGLES2Create(&renderer);
-#else
-	mSDLSWCreate(&renderer);
-#endif
-
 	renderer.ratio = graphicsOpts.multiplier;
 	if (renderer.ratio == 0) {
 		renderer.ratio = 1;
@@ -139,7 +136,25 @@ int main(int argc, char** argv) {
 	renderer.interframeBlending = renderer.core->opts.interframeBlending;
 	renderer.filter = renderer.core->opts.resampleVideo;
 
-	if (!mSDLInit(&renderer)) {
+#ifdef BUILD_GL
+	if (mSDLGLCommonInit(&renderer)) {
+		mSDLGLCreate(&renderer);
+	} else
+#elif defined(BUILD_GLES2) || defined(USE_EPOXY)
+#ifdef BUILD_RASPI
+	mRPIGLCommonInit(&renderer);
+#else
+	if (mSDLGLCommonInit(&renderer))
+#endif
+	{
+		mSDLGLES2Create(&renderer);
+	} else
+#endif
+	{
+		mSDLSWCreate(&renderer);
+	}
+
+	if (!renderer.init(&renderer)) {
 		freeArguments(&args);
 		mCoreConfigDeinit(&renderer.core->config);
 		renderer.core->deinit(renderer.core);
@@ -293,15 +308,6 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 #endif
 
 	return didFail;
-}
-
-static bool mSDLInit(struct mSDLRenderer* renderer) {
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		printf("Could not initialize video: %s\n", SDL_GetError());
-		return false;
-	}
-
-	return renderer->init(renderer);
 }
 
 static void mSDLDeinit(struct mSDLRenderer* renderer) {

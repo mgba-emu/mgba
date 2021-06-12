@@ -91,6 +91,7 @@ public:
 	mCoreConfig* config() { return &m_config; }
 
 	static const QString& configDir();
+	static bool isPortable();
 
 public slots:
 	void setOption(const char* key, bool value);

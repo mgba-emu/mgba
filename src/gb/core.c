@@ -152,7 +152,6 @@ static void _GBCoreDeinit(struct mCore* core) {
 	if (gbcore->cheatDevice) {
 		mCheatDeviceDestroy(gbcore->cheatDevice);
 	}
-	free(gbcore->cheatDevice);
 	mCoreConfigFreeOpts(&core->opts);
 	free(core);
 }

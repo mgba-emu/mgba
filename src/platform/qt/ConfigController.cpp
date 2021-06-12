@@ -297,6 +297,10 @@ void ConfigController::makePortable() {
 	m_settings = settings2;
 }
 
+bool ConfigController::isPortable() {
+	return mCoreConfigIsPortable();
+}
+
 const QString& ConfigController::configDir() {
 	if (s_configDir.isNull()) {
 		char path[PATH_MAX];

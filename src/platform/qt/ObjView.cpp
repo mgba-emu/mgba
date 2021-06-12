@@ -10,7 +10,6 @@
 
 #include <QAction>
 #include <QClipboard>
-#include <QFontDatabase>
 #include <QListWidgetItem>
 #include <QTimer>
 
@@ -34,7 +33,7 @@ ObjView::ObjView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	m_ui.setupUi(this);
 	m_ui.tile->setController(controller);
 
-	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+	const QFont font = GBAApp::monospaceFont();
 
 	m_ui.x->setFont(font);
 	m_ui.y->setFont(font);

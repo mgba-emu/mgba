@@ -76,7 +76,7 @@
      <item>
       <widget class="QLabel" name="address">
        <property name="text">
-        <string>0x07000000</string>
+        <string notr="true">0x07000000</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -106,7 +106,7 @@
         </sizepolicy>
        </property>
        <property name="suffix">
-        <string>×</string>
+        <string notr="true">×</string>
        </property>
        <property name="minimum">
         <number>1</number>
@@ -168,7 +168,7 @@
            </size>
           </property>
           <property name="text">
-           <string>0</string>
+           <string notr="true">0</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -194,7 +194,7 @@
            </size>
           </property>
           <property name="text">
-           <string>0</string>
+           <string notr="true">0</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -241,7 +241,7 @@
            </size>
           </property>
           <property name="text">
-           <string>8</string>
+           <string notr="true">8</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -267,7 +267,7 @@
            </size>
           </property>
           <property name="text">
-           <string>8</string>
+           <string notr="true">8</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -281,14 +281,14 @@
         <item row="0" column="3">
          <widget class="QLabel" name="xformPC">
           <property name="text">
-           <string>+0.00</string>
+           <string notr="true">+0.00</string>
           </property>
          </widget>
         </item>
         <item row="0" column="2">
          <widget class="QLabel" name="xformPA">
           <property name="text">
-           <string>+1.00</string>
+           <string notr="true">+1.00</string>
           </property>
          </widget>
         </item>
@@ -302,7 +302,7 @@
         <item row="1" column="3">
          <widget class="QLabel" name="xformPD">
           <property name="text">
-           <string>+1.00</string>
+           <string notr="true">+1.00</string>
           </property>
          </widget>
         </item>
@@ -322,7 +322,7 @@
         <item row="1" column="2">
          <widget class="QLabel" name="xformPB">
           <property name="text">
-           <string>+0.00</string>
+           <string notr="true">+0.00</string>
           </property>
          </widget>
         </item>
@@ -434,7 +434,7 @@
         <item>
          <widget class="QLabel" name="palette">
           <property name="text">
-           <string>0</string>
+           <string notr="true">0</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -515,7 +515,7 @@
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>H</string>
+           <string extracomment="Short for horizontal">H</string>
           </property>
           <property name="shortcut">
            <string>Return, Ctrl+R</string>
@@ -528,7 +528,7 @@
            <bool>false</bool>
           </property>
           <property name="text">
-           <string>V</string>
+           <string extracomment="Short for vertical">V</string>
           </property>
           <property name="shortcut">
            <string>Return, Ctrl+R</string>
@@ -664,7 +664,7 @@
         <item>
          <widget class="QLabel" name="priority">
           <property name="text">
-           <string>0</string>
+           <string notr="true">0</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -687,6 +687,12 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>QGBA::AssetTile</class>
+   <extends>QGroupBox</extends>
+   <header>AssetTile.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>QGBA::TilePainter</class>
    <extends>QWidget</extends>
    <header>TilePainter.h</header>
@@ -694,12 +700,6 @@
    <slots>
     <slot>setTileMagnification(int)</slot>
    </slots>
-  </customwidget>
-  <customwidget>
-   <class>QGBA::AssetTile</class>
-   <extends>QGroupBox</extends>
-   <header>AssetTile.h</header>
-   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

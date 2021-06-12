@@ -29,7 +29,6 @@ VideoProxy::VideoProxy() {
 	m_logger.d.postEvent = &callback<void, enum mVideoLoggerEvent>::func<&VideoProxy::postEvent>;
 
 	connect(this, &VideoProxy::dataAvailable, this, &VideoProxy::processData);
-	connect(this, &VideoProxy::eventPosted, this, &VideoProxy::handleEvent);
 }
 
 void VideoProxy::attach(CoreController* controller) {
@@ -98,19 +97,15 @@ bool VideoProxy::readData(void* data, size_t length, bool block) {
 void VideoProxy::postEvent(enum mVideoLoggerEvent event) {
 	if (QThread::currentThread() == thread()) {
 		// We're on the main thread
-		emit eventPosted(event);
+		handleEvent(event);
 	} else {
-		m_mutex.lock();
-		emit eventPosted(event);
-		m_fromThreadCond.wait(&m_mutex, 1);
-		m_mutex.unlock();
+		QMetaObject::invokeMethod(this, "handleEvent", Qt::BlockingQueuedConnection, Q_ARG(int, event));
 	}
 }
 
 void VideoProxy::handleEvent(int event) {
 	m_mutex.lock();
 	m_logger.d.handleEvent(&m_logger.d, static_cast<enum mVideoLoggerEvent>(event));
-	m_fromThreadCond.wakeAll();
 	m_mutex.unlock();
 }
 

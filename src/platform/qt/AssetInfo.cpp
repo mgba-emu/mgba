@@ -5,7 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "AssetInfo.h"
 
-#include <QFontDatabase>
+#include "GBAApp.h"
+
 #include <QHBoxLayout>
 
 using namespace QGBA;
@@ -19,7 +20,7 @@ void AssetInfo::addCustomProperty(const QString& id, const QString& visibleName)
 	QHBoxLayout* newLayout = new QHBoxLayout;
 	newLayout->addWidget(new QLabel(visibleName));
 	QLabel* value = new QLabel;
-	value->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+	value->setFont(GBAApp::monospaceFont());
 	value->setAlignment(Qt::AlignRight);
 	newLayout->addWidget(value);
 	m_customProperties[id] = value;

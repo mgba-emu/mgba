@@ -10,6 +10,8 @@
 struct VDir;
 struct VFile;
 
+class QBuffer;
+
 namespace QGBA {
 
 class VFileDevice : public QIODevice {
@@ -28,7 +30,12 @@ public:
 	VFileDevice& operator=(VFile*);
 	operator VFile*() { return m_vf; }
 
+	static VFile* wrap(QIODevice*, QIODevice::OpenMode);
+	static VFile* wrap(QFileDevice*, QIODevice::OpenMode);
+	static VFile* wrap(QBuffer*, QIODevice::OpenMode);
+
 	static VFile* open(const QString& path, int mode);
+	static VFile* openMemory();
 	static VDir* openDir(const QString& path);
 	static VDir* openArchive(const QString& path);
 

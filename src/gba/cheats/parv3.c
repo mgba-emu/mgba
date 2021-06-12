@@ -230,16 +230,10 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 		break;
 	}
 	if (romPatch >= 0) {
-		while (cheats->romPatches[romPatch].exists) {
-			++romPatch;
-			if (romPatch >= MAX_ROM_PATCHES) {
-				break;
-			}
-		}
-		cheats->romPatches[romPatch].address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
-		cheats->romPatches[romPatch].applied = false;
-		cheats->romPatches[romPatch].exists = true;
-		cheats->incompletePatch = &cheats->romPatches[romPatch];
+		struct GBACheatPatch* patch = GBACheatPatchListAppend(&cheats->romPatches);
+		patch->address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
+		patch->applied = false;
+		cheats->incompletePatch = patch;
 	}
 	return true;
 }

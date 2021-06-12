@@ -24,8 +24,6 @@ void mSDLGLCreate(struct mSDLRenderer* renderer) {
 }
 
 bool mSDLGLInit(struct mSDLRenderer* renderer) {
-	mSDLGLCommonInit(renderer);
-
 	size_t size = renderer->width * renderer->height * BYTES_PER_PIXEL;
 	renderer->outputBuffer = malloc(size);
 	memset(renderer->outputBuffer, 0, size);

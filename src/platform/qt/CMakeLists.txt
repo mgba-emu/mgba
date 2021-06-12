@@ -98,6 +98,7 @@ set(SOURCE_FILES
 	PaletteView.cpp
 	PlacementControl.cpp
 	RegisterView.cpp
+	ReportView.cpp
 	ROMInfo.cpp
 	RotatedHeaderView.cpp
 	SavestateButton.cpp
@@ -142,6 +143,7 @@ set(UI_FILES
 	PaletteView.ui
 	PlacementControl.ui
 	PrinterView.ui
+	ReportView.ui
 	ROMInfo.ui
 	SensorView.ui
 	SettingsView.ui
@@ -260,7 +262,9 @@ if(Qt5LinguistTools_FOUND)
 	file(GLOB TS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/ts/${BINARY_NAME}-*.ts")
 	if(UPDATE_TRANSLATIONS)
 		qt5_create_translation(TRANSLATION_FILES ${SOURCE_FILES} ${UI_FILES} ${TS_FILES} OPTIONS -locations absolute -no-obsolete)
+		list(REMOVE_ITEM TS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/ts/${BINARY_NAME}-template.ts")
 	else()
+		list(REMOVE_ITEM TS_FILES "${CMAKE_CURRENT_SOURCE_DIR}/ts/${BINARY_NAME}-template.ts")
 		qt5_add_translation(TRANSLATION_FILES ${TS_FILES})
 	endif()
 	set(QT_QM_FILES)

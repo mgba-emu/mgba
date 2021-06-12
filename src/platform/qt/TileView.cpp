@@ -10,7 +10,6 @@
 
 #include <QAction>
 #include <QClipboard>
-#include <QFontDatabase>
 #include <QTimer>
 
 #ifdef M_CORE_GB

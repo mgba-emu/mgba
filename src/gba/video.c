@@ -149,6 +149,13 @@ void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* 
 	renderer->vramOBJ[3] = _zeroes;
 	renderer->oam = &video->oam;
 	video->renderer->init(video->renderer);
+	video->renderer->reset(video->renderer);
+	renderer->writeVideoRegister(renderer, REG_DISPCNT, video->p->memory.io[REG_DISPCNT >> 1]);
+	renderer->writeVideoRegister(renderer, REG_GREENSWP, video->p->memory.io[REG_GREENSWP >> 1]);
+	int address;
+	for (address = REG_BG0CNT; address < REG_SOUND1CNT_LO; address += 2) {
+		renderer->writeVideoRegister(renderer, address, video->p->memory.io[address >> 1]);
+	}
 }
 
 void _midHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {

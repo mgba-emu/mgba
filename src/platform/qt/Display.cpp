@@ -7,6 +7,7 @@
 
 #include "DisplayGL.h"
 #include "DisplayQt.h"
+#include "LogController.h"
 
 using namespace QGBA;
 
@@ -27,16 +28,31 @@ Display* Display::create(QWidget* parent) {
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(USE_EPOXY)
 	case Driver::OPENGL:
 		if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
-			format.setVersion(3, 0);
+			format.setVersion(2, 0);
 		} else {
 			format.setVersion(3, 2);
 		}
 		format.setProfile(QSurfaceFormat::CoreProfile);
+		if (!DisplayGL::supportsFormat(format)) {
+#ifdef BUILD_GL
+			LOG(QT, WARN) << ("Failed to create an OpenGL Core context, trying old-style...");
+			format.setVersion(1, 4);
+			format.setOption(QSurfaceFormat::DeprecatedFunctions);
+			if (!DisplayGL::supportsFormat(format)) {
+				return nullptr;
+			}
+#else
+			return nullptr;
+#endif
+		}
 		return new DisplayGL(format, parent);
 #endif
 #ifdef BUILD_GL
 	case Driver::OPENGL1:
 		format.setVersion(1, 4);
+		if (!DisplayGL::supportsFormat(format)) {
+			return nullptr;
+		}
 		return new DisplayGL(format, parent);
 #endif
 

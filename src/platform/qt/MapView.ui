@@ -27,7 +27,7 @@
           </sizepolicy>
          </property>
          <property name="suffix">
-          <string>×</string>
+          <string notr="true">×</string>
          </property>
          <property name="minimum">
           <number>1</number>
@@ -144,15 +144,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QGBA::AssetTile</class>
-   <extends>QGroupBox</extends>
-   <header>AssetTile.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
    <class>QGBA::AssetInfo</class>
    <extends>QGroupBox</extends>
    <header>AssetInfo.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>QGBA::AssetTile</class>
+   <extends>QGroupBox</extends>
+   <header>AssetTile.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -11,7 +11,6 @@
 #include "VFileDevice.h"
 
 #include <QFileDialog>
-#include <QFontDatabase>
 
 #include <mgba/core/core.h>
 #ifdef M_CORE_GBA
@@ -48,7 +47,7 @@ PaletteView::PaletteView(std::shared_ptr<CoreController> controller, QWidget* pa
 	m_ui.selected->setDimensions(QSize(1, 1));
 	updatePalette();
 
-	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+	const QFont font = GBAApp::monospaceFont();
 
 	m_ui.hexcode->setFont(font);
 	m_ui.value->setFont(font);

@@ -126,6 +126,7 @@ static struct CLIDebuggerCommandAlias _debuggerCommandAliases[] = {
 	{ "d", "delete" },
 	{ "dis", "disassemble" },
 	{ "disasm", "disassemble" },
+	{ "fin", "finish" },
 	{ "h", "help" },
 	{ "i", "status" },
 	{ "info", "status" },
@@ -753,8 +754,10 @@ static bool _doTrace(struct CLIDebugger* debugger) {
 		--debugger->traceRemaining;
 	}
 	if (!debugger->traceRemaining) {
-		debugger->traceVf->close(debugger->traceVf);
-		debugger->traceVf = NULL;
+		if (debugger->traceVf) {
+			debugger->traceVf->close(debugger->traceVf);
+			debugger->traceVf = NULL;
+		}
 		return false;
 	}
 	return true;

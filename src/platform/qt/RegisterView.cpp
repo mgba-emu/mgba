@@ -6,6 +6,7 @@
 #include "RegisterView.h"
 
 #include "CoreController.h"
+#include "GBAApp.h"
 
 #ifdef M_CORE_GBA
 #include <mgba/internal/arm/arm.h>
@@ -14,7 +15,6 @@
 #include <mgba/internal/sm83/sm83.h>
 #endif
 
-#include <QFontDatabase>
 #include <QFormLayout>
 #include <QLabel>
 
@@ -74,7 +74,7 @@ RegisterView::RegisterView(std::shared_ptr<CoreController> controller, QWidget* 
 
 void RegisterView::addRegisters(const QStringList& names) {
 	QFormLayout* form = static_cast<QFormLayout*>(layout());
-	const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+	const QFont font = GBAApp::monospaceFont();
 	for (const auto& reg : names) {
 		QLabel* value = new QLabel;
 		value->setTextInteractionFlags(Qt::TextSelectableByMouse);

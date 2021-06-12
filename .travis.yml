@@ -16,9 +16,10 @@ env:
 - DOCKER_TAG=windows:w32
 - DOCKER_TAG=windows:w64
 
-matrix:
+jobs:
   include:
   - os: osx
+    osx_image: xcode12.2
     compiler: clang
     env: DOCKER_TAG=
 

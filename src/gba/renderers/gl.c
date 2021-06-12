@@ -53,6 +53,9 @@ struct GBAVideoGLUniform {
 };
 
 #define PALETTE_ENTRY "#define PALETTE_ENTRY(x) (vec3((ivec3(0x1F, 0x3E0, 0x7C00) & (x)) >> ivec3(0, 5, 10)) / 31.)\n"
+#define MOSAIC \
+	"#define MOSAIC(LHS, RHS) (((int(LHS) * mosaicTable[RHS]) >> 12) * RHS)\n" \
+	"const int mosaicTable[17] = int[17](0, 4096, 2048, 1366, 1024, 820, 683, 586, 512, 456, 410, 373, 342, 316, 293, 274, 256);\n"
 
 static const GLchar* const _gles3Header =
 	"#version 300 es\n"
@@ -82,29 +85,25 @@ static const char* const _vertexShader =
 	"}";
 
 static const char* const _renderTile16 =
-	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord) {\n"
+	"int renderTile(int tile, int paletteId, ivec2 localCoord) {\n"
 	"	int address = charBase + tile * 16 + (localCoord.x >> 2) + (localCoord.y << 1);\n"
 	"	int halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0).r;\n"
 	"	int entry = (halfrow >> (4 * (localCoord.x & 3))) & 15;\n"
 	"	if (entry == 0) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	int paletteEntry = palette[paletteId * 16 + entry];\n"
-	"	vec4 color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
-	"	return color;\n"
+	"	return paletteId * 16 + entry;\n"
 	"}";
 
 static const char* const _renderTile256 =
-	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord) {\n"
+	"int renderTile(int tile, int paletteId, ivec2 localCoord) {\n"
 	"	int address = charBase + tile * 32 + (localCoord.x >> 1) + (localCoord.y << 2);\n"
 	"	int halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0).r;\n"
 	"	int entry = (halfrow >> (8 * (localCoord.x & 1))) & 255;\n"
 	"	if (entry == 0) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	int paletteEntry = palette[entry];\n"
-	"	vec4 color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
-	"	return color;\n"
+	"	return entry;\n"
 	"}";
 
 static const struct GBAVideoGLUniform _uniformsMode0[] = {
@@ -121,9 +120,10 @@ static const struct GBAVideoGLUniform _uniformsMode0[] = {
 };
 
 static const char* const _renderMode0 =
+	MOSAIC
 	"in vec2 texCoord;\n"
 	"uniform isampler2D vram;\n"
-	"uniform int palette[256];\n"
+	"uniform sampler2D palette;\n"
 	"uniform int screenBase;\n"
 	"uniform int charBase;\n"
 	"uniform int size;\n"
@@ -131,15 +131,15 @@ static const char* const _renderMode0 =
 	"uniform ivec2 mosaic;\n"
 	"OUT(0) out vec4 color;\n"
 
-	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
+	"int renderTile(int tile, int paletteId, ivec2 localCoord);\n"
 
 	"void main() {\n"
 	"	ivec2 coord = ivec2(texCoord);\n"
 	"	if (mosaic.x > 1) {\n"
-	"		coord.x -= coord.x % mosaic.x;\n"
+	"		coord.x = MOSAIC(coord.x, mosaic.x);\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		coord.y -= coord.y % mosaic.y;\n"
+	"		coord.y = MOSAIC(coord.y, mosaic.y);\n"
 	"	}\n"
 	"	coord += (ivec2(0x1FF, 0x1FF000) & offset[int(texCoord.y)]) >> ivec2(0, 12);\n"
 	"	ivec2 wrap = ivec2(255, 255);\n"
@@ -165,18 +165,19 @@ static const char* const _renderMode0 =
 	"		coord.y ^= 7;\n"
 	"	}\n"
 	"	int tile = map & 1023;\n"
-	"	color = renderTile(tile, map >> 12, coord & 7);\n"
+	"	int paletteEntry = renderTile(tile, map >> 12, coord & 7);\n"
+	"	color = texelFetch(palette, ivec2(paletteEntry, int(texCoord.y)), 0);\n"
 	"}";
 
 static const char* const _fetchTileOverflow =
-	"vec4 fetchTile(ivec2 coord) {\n"
+	"int fetchTile(ivec2 coord) {\n"
 	"	int sizeAdjusted = (0x8000 << size) - 1;\n"
 	"	coord &= sizeAdjusted;\n"
 	"	return renderTile(coord);\n"
 	"}";
 
 static const char* const _fetchTileNoOverflow =
-	"vec4 fetchTile(ivec2 coord) {\n"
+	"int fetchTile(ivec2 coord) {\n"
 	"	int sizeAdjusted = (0x8000 << size) - 1;\n"
 	"	ivec2 outerCoord = coord & ~sizeAdjusted;\n"
 	"	if ((outerCoord.x | outerCoord.y) != 0) {\n"
@@ -222,9 +223,10 @@ static const char* const _interpolate =
 	"}\n";
 
 static const char* const _renderMode2 =
+	MOSAIC
 	"in vec2 texCoord;\n"
 	"uniform isampler2D vram;\n"
-	"uniform int palette[256];\n"
+	"uniform sampler2D palette;\n"
 	"uniform int screenBase;\n"
 	"uniform int charBase;\n"
 	"uniform int size;\n"
@@ -233,11 +235,11 @@ static const char* const _renderMode2 =
 	"uniform ivec2 mosaic;\n"
 	"OUT(0) out vec4 color;\n"
 
-	"vec4 fetchTile(ivec2 coord);\n"
+	"int fetchTile(ivec2 coord);\n"
 	"vec2 interpolate(ivec2 arr[4], float x);\n"
 	"void loadAffine(int y, out ivec2 mat[4], out ivec2 aff[4]);\n"
 
-	"vec4 renderTile(ivec2 coord) {\n"
+	"int renderTile(ivec2 coord) {\n"
 	"	int map = (coord.x >> 11) + (((coord.y >> 7) & 0x7F0) << size);\n"
 	"	int mapAddress = screenBase + (map >> 1);\n"
 	"	int twomaps = texelFetch(vram, ivec2(mapAddress & 255, mapAddress >> 8), 0).r;\n"
@@ -248,9 +250,7 @@ static const char* const _renderMode2 =
 	"	if (entry == 0) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	int paletteEntry = palette[entry];\n"
-	"	vec4 color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
-	"	return color;\n"
+	"	return entry;\n"
 	"}\n"
 
 	"void main() {\n"
@@ -258,10 +258,10 @@ static const char* const _renderMode2 =
 	"	ivec2 offset[4];\n"
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
-	"		incoord.x = floor(incoord.x - float(int(incoord.x) % mosaic.x));\n"
+	"		incoord.x = float(MOSAIC(incoord.x, mosaic.x));\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		incoord.y = floor(incoord.y - float(int(incoord.y) % mosaic.y));\n"
+	"		incoord.y = float(MOSAIC(incoord.y, mosaic.y));\n"
 	"	}\n"
 	"	loadAffine(int(incoord.y), mat, offset);\n"
 	"	float y = fract(incoord.y);\n"
@@ -273,7 +273,8 @@ static const char* const _renderMode2 =
 	"	float lin = start + y * 0.25;\n"
 	"	vec2 mixedTransform = interpolate(mat, lin);\n"
 	"	vec2 mixedOffset = interpolate(offset, lin);\n"
-	"	color = fetchTile(ivec2(mixedTransform * incoord.x + mixedOffset));\n"
+	"	int paletteEntry = fetchTile(ivec2(mixedTransform * incoord.x + mixedOffset));\n"
+	"	color = texelFetch(palette, ivec2(paletteEntry, int(texCoord.y)), 0);\n"
 	"}";
 
 static const struct GBAVideoGLUniform _uniformsMode35[] = {
@@ -290,6 +291,7 @@ static const struct GBAVideoGLUniform _uniformsMode35[] = {
 };
 
 static const char* const _renderMode35 =
+	MOSAIC
 	"in vec2 texCoord;\n"
 	"uniform isampler2D vram;\n"
 	"uniform int charBase;\n"
@@ -307,10 +309,10 @@ static const char* const _renderMode35 =
 	"	ivec2 offset[4];\n"
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
-	"		incoord.x = floor(incoord.x - float(int(incoord.x) % mosaic.x));\n"
+	"		incoord.x = floor(MOSAIC(incoord.x, mosaic.x));\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		incoord.y = floor(incoord.y - float(int(incoord.y) % mosaic.y));\n"
+	"		incoord.y = floor(MOSAIC(incoord.y, mosaic.y));\n"
 	"	}\n"
 	"	loadAffine(int(incoord.y), mat, offset);\n"
 	"	float y = fract(incoord.y);\n"
@@ -349,9 +351,10 @@ static const struct GBAVideoGLUniform _uniformsMode4[] = {
 };
 
 static const char* const _renderMode4 =
+	MOSAIC
 	"in vec2 texCoord;\n"
 	"uniform isampler2D vram;\n"
-	"uniform int palette[256];\n"
+	"uniform sampler2D palette;\n"
 	"uniform int charBase;\n"
 	"uniform ivec2 size;\n"
 	"uniform ivec4 transform[160];\n"
@@ -367,10 +370,10 @@ static const char* const _renderMode4 =
 	"	ivec2 offset[4];\n"
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
-	"		incoord.x = floor(incoord.x - float(int(incoord.x) % mosaic.x));\n"
+	"		incoord.x = floor(MOSAIC(incoord.x, mosaic.x));\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
-	"		incoord.y = floor(incoord.y - float(int(incoord.y) % mosaic.y));\n"
+	"		incoord.y = floor(MOSAIC(incoord.y, mosaic.y));\n"
 	"	}\n"
 	"	loadAffine(int(incoord.y), mat, offset);\n"
 	"	float y = fract(incoord.y);\n"
@@ -395,8 +398,7 @@ static const char* const _renderMode4 =
 	"	if (entry == 0) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	int paletteEntry = palette[entry];\n"
-	"	color = vec4(PALETTE_ENTRY(paletteEntry), 1.);\n"
+	"	color = texelFetch(palette, ivec2(entry, int(texCoord.y)), 0);\n"
 	"}";
 
 static const struct GBAVideoGLUniform _uniformsObj[] = {
@@ -417,9 +419,10 @@ static const struct GBAVideoGLUniform _uniformsObj[] = {
 };
 
 static const char* const _renderObj =
+	MOSAIC
 	"in vec2 texCoord;\n"
 	"uniform isampler2D vram;\n"
-	"uniform int palette[256];\n"
+	"uniform sampler2D palette;\n"
 	"uniform int charBase;\n"
 	"uniform int stride;\n"
 	"uniform int localPalette;\n"
@@ -433,30 +436,33 @@ static const char* const _renderObj =
 	"OUT(1) out ivec4 flags;\n"
 	"OUT(2) out ivec4 window;\n"
 
-	"vec4 renderTile(int tile, int paletteId, ivec2 localCoord);\n"
+	"int renderTile(int tile, int paletteId, ivec2 localCoord);\n"
 
 	"void main() {\n"
 	"	vec2 incoord = texCoord;\n"
 	"	if (mosaic.x > 1) {\n"
 	"		int x = int(incoord.x);\n"
-	"		incoord.x = float(clamp(x - (mosaic.z + x) % mosaic.x, 0, dims.z - 1));\n"
+	"		x = MOSAIC(mosaic.z + x, mosaic.x) - mosaic.z;\n"
+	"		incoord.x = float(clamp(x, 0, dims.z - 1));\n"
 	"	} else if (mosaic.x < -1) {\n"
 	"		int x = dims.z - int(incoord.x) - 1;\n"
-	"		incoord.x = float(clamp(dims.z - x + (mosaic.z + x) % -mosaic.x - 1, 0, dims.z - 1));\n"
+	"		x = dims.z - MOSAIC(mosaic.z + x, -mosaic.x) + mosaic.z - 1;\n"
+	"		incoord.x = float(clamp(x, 0, dims.z - 1));\n"
 	"	}\n"
 	"	if (cyclesRemaining[int(incoord.y) + mosaic.w] <= 0) {\n"
 	"		discard;\n"
 	"	}\n"
 	"	if (mosaic.y > 1) {\n"
 	"		int y = int(incoord.y);\n"
-	"		incoord.y = float(clamp(y - (mosaic.w + y) % mosaic.y, 0, dims.w - 1));\n"
+	"		y = MOSAIC(mosaic.w + y, mosaic.y) - mosaic.w;"
+	"		incoord.y = float(clamp(y, 0, dims.w - 1));\n"
 	"	}\n"
 	"	ivec2 coord = ivec2(transform * (incoord - vec2(dims.zw) / 2.) + vec2(dims.xy) / 2.);\n"
 	"	if ((coord & ~(dims.xy - 1)) != ivec2(0, 0)) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	vec4 pix = renderTile((coord.x >> 3) + (coord.y >> 3) * stride, localPalette, coord & 7);\n"
-	"	color = pix;\n"
+	"	int paletteEntry = renderTile((coord.x >> 3) + (coord.y >> 3) * stride, localPalette, coord & 7);\n"
+	"	color = texelFetch(palette, ivec2(paletteEntry + 256, coord.y), 0);\n"
 	"	flags = inflags;\n"
 	"	gl_FragDepth = float(flags.x) / 16.;\n"
 	"	window = ivec4(objwin, 0);\n"
@@ -551,8 +557,8 @@ static const struct GBAVideoGLUniform _uniformsFinalize[] = {
 	{ "layers", GBA_GL_FINALIZE_LAYERS, },
 	{ "objFlags", GBA_GL_FINALIZE_FLAGS, },
 	{ "window", GBA_GL_FINALIZE_WINDOW, },
-	{ "backdrop", GBA_GL_FINALIZE_BACKDROP, },
-	{ "backdropFlags", GBA_GL_FINALIZE_BACKDROPFLAGS, },
+	{ "palette", GBA_GL_FINALIZE_PALETTE, },
+	{ "backdropFlags", GBA_GL_FINALIZE_BACKDROP, },
 	{ 0 }
 };
 
@@ -562,7 +568,7 @@ static const char* const _finalize =
 	"uniform sampler2D layers[5];\n"
 	"uniform isampler2D objFlags;\n"
 	"uniform isampler2D window;\n"
-	"uniform sampler2D backdrop;\n"
+	"uniform sampler2D palette;\n"
 	"uniform isampler2D backdropFlags;\n"
 	"out vec4 color;\n"
 
@@ -582,7 +588,7 @@ static const char* const _finalize =
 	"}\n"
 
 	"void main() {\n"
-	"	vec4 topPixel = texelFetch(backdrop, ivec2(0, texCoord.y), 0);\n"
+	"	vec4 topPixel = texelFetch(palette, ivec2(0, texCoord.y), 0);\n"
 	"	vec4 bottomPixel = topPixel;\n"
 	"	ivec4 topFlags = ivec4(texelFetch(backdropFlags, ivec2(0, texCoord.y), 0));\n"
 	"	ivec4 bottomFlags = topFlags;\n"
@@ -745,8 +751,7 @@ static void _initFramebuffers(struct GBAVideoGLRenderer* glRenderer) {
 	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_OBJ_DEPTH], GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, GL_DEPTH_STENCIL_ATTACHMENT, glRenderer->scale);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_BACKDROP]);
-	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_BACKDROP_COLOR], GL_RGB, GL_COLOR_ATTACHMENT0, 0);
-	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_BACKDROP_FLAGS], GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE, GL_COLOR_ATTACHMENT1, 0);
+	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_BACKDROP], GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE, GL_COLOR_ATTACHMENT0, 0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_WINDOW]);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glRenderer->layers[GBA_GL_TEX_WINDOW], 0);
@@ -775,6 +780,12 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_R16UI, 256, 192, 0, GL_RED_INTEGER, GL_UNSIGNED_SHORT, 0);
+
+	glGenTextures(1, &glRenderer->paletteTex);
+	glBindTexture(GL_TEXTURE_2D, glRenderer->paletteTex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, GBA_VIDEO_VERTICAL_PIXELS, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
 
 	glGenBuffers(1, &glRenderer->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, glRenderer->vbo);
@@ -889,6 +900,7 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 	glDeleteFramebuffers(GBA_GL_FBO_MAX, glRenderer->fbo);
 	glDeleteTextures(GBA_GL_TEX_MAX, glRenderer->layers);
 	glDeleteTextures(1, &glRenderer->vramTex);
+	glDeleteTextures(1, &glRenderer->paletteTex);
 	glDeleteBuffers(1, &glRenderer->vbo);
 
 	_deleteShader(&glRenderer->bgShader[0]);
@@ -918,8 +930,19 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	glRenderer->firstY = -1;
 	glRenderer->dispcnt = 0x0080;
 	glRenderer->mosaic = 0;
+	glRenderer->nextPalette = 0;
+	glRenderer->paletteDirtyScanlines = GBA_VIDEO_VERTICAL_PIXELS;
 	memset(glRenderer->shadowRegs, 0, sizeof(glRenderer->shadowRegs));
 	glRenderer->regsDirty = 0xFFFFFFFFFFFEULL;
+
+	int i;
+	for (i = 0; i < 512; ++i) {
+		int r = M_R5(glRenderer->d.palette[i]);
+		int g = M_G5(glRenderer->d.palette[i]) << 1;
+		g |= g >> 5;
+		int b = M_B5(glRenderer->d.palette[i]);
+		glRenderer->shadowPalette[0][i] = (r << 11) | (g << 5) | b;
+	}
 }
 
 void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
@@ -938,6 +961,12 @@ void GBAVideoGLRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t 
 	UNUSED(address);
 	UNUSED(value);
 	glRenderer->paletteDirty = true;
+	int r = M_R5(value);
+	int g = M_G5(value) << 1;
+	g |= g >> 5;
+	int b = M_B5(value);
+	glRenderer->paletteDirtyScanlines = GBA_VIDEO_VERTICAL_PIXELS;
+	glRenderer->shadowPalette[glRenderer->nextPalette][address >> 1] = (r << 11) | (g << 5) | b;
 }
 
 uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
@@ -1291,7 +1320,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		glRenderer->firstAffine = -1;
 	}
 
-	if (glRenderer->paletteDirty || _needsVramUpload(glRenderer, y) || glRenderer->oamDirty || glRenderer->regsDirty) {
+	if (_needsVramUpload(glRenderer, y) || glRenderer->oamDirty || glRenderer->regsDirty) {
 		if (glRenderer->firstY >= 0) {
 			_drawScanlines(glRenderer, y - 1);
 			glBindVertexArray(0);
@@ -1336,11 +1365,22 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	glRenderer->bg[3].scanlineAffine[y * 4 + 2] = glRenderer->bg[3].affine.sx;
 	glRenderer->bg[3].scanlineAffine[y * 4 + 3] = glRenderer->bg[3].affine.sy;
 
+	int oldPalette = glRenderer->nextPalette;
+	glRenderer->nextPalette = y + 1;
+	if (glRenderer->nextPalette >= GBA_VIDEO_VERTICAL_PIXELS) {
+		glRenderer->nextPalette = 0;
+	}
 	if (glRenderer->paletteDirty) {
-		for (i = 0; i < 512; ++i) {
-			glRenderer->shadowPalette[i] = glRenderer->d.palette[i];
+		memcpy(glRenderer->shadowPalette[glRenderer->nextPalette], glRenderer->shadowPalette[oldPalette], sizeof(glRenderer->shadowPalette[0]));
+		if (glRenderer->paletteDirtyScanlines > 0) {
+			--glRenderer->paletteDirtyScanlines;
 		}
-		glRenderer->paletteDirty = false;
+		if (!glRenderer->paletteDirtyScanlines) {
+			glRenderer->paletteDirty = false;
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, glRenderer->paletteTex);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, GBA_VIDEO_VERTICAL_PIXELS, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, glRenderer->shadowPalette);
+		}
 	}
 
 	if (_needsVramUpload(glRenderer, y)) {
@@ -1379,6 +1419,8 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 		glClearDepth(1);
 #endif
 		glClearStencil(0);
+		glDepthMask(GL_TRUE);
+		glStencilMask(1);
 		glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OBJ]);
 		glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -1406,24 +1448,24 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 	glEnable(GL_SCISSOR_TEST);
 
-	uint32_t backdrop = M_RGB5_TO_RGB8(glRenderer->shadowPalette[0]);
 	glViewport(0, 0, 1, GBA_VIDEO_VERTICAL_PIXELS);
 	glScissor(0, glRenderer->firstY, 1, y - glRenderer->firstY + 1);
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_BACKDROP]);
-	glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
-	glClearBufferfv(GL_COLOR, 0, (GLfloat[]) { ((backdrop >> 16) & 0xF8) / 248., ((backdrop >> 8) & 0xF8) / 248., (backdrop & 0xF8) / 248., 1.f });
-	glClearBufferiv(GL_COLOR, 1, (GLint[]) { 32, glRenderer->target1Bd | (glRenderer->target2Bd * 2) | (glRenderer->blendEffect * 4), glRenderer->blda, 0 });
-
-	glDrawBuffers(2, (GLenum[]) { GL_NONE, GL_COLOR_ATTACHMENT1 });
+	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
+	glClearBufferiv(GL_COLOR, 0, (GLint[]) { 32, glRenderer->target1Bd | (glRenderer->target2Bd * 2) | (glRenderer->blendEffect * 4), glRenderer->blda, 0 });
 	int i;
 	for (i = 0; i < 4; ++i) {
 		glScissor(i + 1, glRenderer->firstY, 1, y - glRenderer->firstY + 1);
-		glClearBufferiv(GL_COLOR, 1, (GLint[]) { glRenderer->bg[i].priority,
+		glClearBufferiv(GL_COLOR, 0, (GLint[]) { glRenderer->bg[i].priority,
 		                                         glRenderer->bg[i].target1 | (glRenderer->bg[i].target2 << 1) | (glRenderer->blendEffect << 2),
 		                                         glRenderer->blda, 0 });
 	}
 
-	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
+	if (glRenderer->paletteDirty) {
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, glRenderer->paletteTex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, GBA_VIDEO_VERTICAL_PIXELS, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, glRenderer->shadowPalette);
+	}
 
 	GBAVideoGLRendererDrawWindow(glRenderer, y);
 	if (GBARegisterDISPCNTIsObjEnable(glRenderer->dispcnt) && !glRenderer->d.disableOBJ) {
@@ -1632,9 +1674,9 @@ void _finalizeLayers(struct GBAVideoGLRenderer* renderer) {
 		glActiveTexture(GL_TEXTURE0 + 6);
 		glBindTexture(GL_TEXTURE_2D, renderer->bg[3].tex);
 		glActiveTexture(GL_TEXTURE0 + 7);
-		glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_BACKDROP_COLOR]);
+		glBindTexture(GL_TEXTURE_2D, renderer->paletteTex);
 		glActiveTexture(GL_TEXTURE0 + 8);
-		glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_BACKDROP_FLAGS]);
+		glBindTexture(GL_TEXTURE_2D, renderer->layers[GBA_GL_TEX_BACKDROP]);
 
 		glUniform2i(uniforms[GBA_GL_VS_LOC], GBA_VIDEO_VERTICAL_PIXELS, 0);
 		glUniform2i(uniforms[GBA_GL_VS_MAXPOS], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
@@ -1642,9 +1684,8 @@ void _finalizeLayers(struct GBAVideoGLRenderer* renderer) {
 		glUniform1iv(uniforms[GBA_GL_FINALIZE_LAYERS], 5, (GLint[]) { 3, 4, 5, 6, 1 });
 		glUniform1i(uniforms[GBA_GL_FINALIZE_FLAGS], 2);
 		glUniform1i(uniforms[GBA_GL_FINALIZE_WINDOW], 0);
-		glUniform1i(uniforms[GBA_GL_FINALIZE_WINDOW], 0);
-		glUniform1i(uniforms[GBA_GL_FINALIZE_BACKDROP], 7);
-		glUniform1i(uniforms[GBA_GL_FINALIZE_BACKDROPFLAGS], 8);
+		glUniform1i(uniforms[GBA_GL_FINALIZE_PALETTE], 7);
+		glUniform1i(uniforms[GBA_GL_FINALIZE_BACKDROP], 8);
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1689,10 +1730,12 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	glBindVertexArray(shader->vao);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, renderer->vramTex);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, renderer->paletteTex);
 	glUniform2i(uniforms[GBA_GL_VS_LOC], totalHeight, 0);
 	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], totalWidth, totalHeight);
 	glUniform1i(uniforms[GBA_GL_OBJ_VRAM], 0);
-	glUniform1iv(uniforms[GBA_GL_OBJ_PALETTE], 256, &renderer->shadowPalette[256]);
+	glUniform1i(uniforms[GBA_GL_OBJ_PALETTE], 1);
 	glUniform1i(uniforms[GBA_GL_OBJ_CHARBASE], charBase);
 	glUniform1i(uniforms[GBA_GL_OBJ_STRIDE], stride);
 	glUniform1i(uniforms[GBA_GL_OBJ_LOCALPALETTE], GBAObjAttributesCGetPalette(sprite->c));
@@ -1775,9 +1818,11 @@ void _prepareBackground(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBa
 	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, GBA_VIDEO_VERTICAL_PIXELS * renderer->scale);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, renderer->vramTex);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, renderer->paletteTex);
 	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 	glUniform1i(uniforms[GBA_GL_BG_VRAM], 0);
-	glUniform1iv(uniforms[GBA_GL_OBJ_PALETTE], 256, renderer->shadowPalette);
+	glUniform1i(uniforms[GBA_GL_OBJ_PALETTE], 1);
 	if (background->mosaic) {
 		glUniform2i(uniforms[GBA_GL_BG_MOSAIC], GBAMosaicControlGetBgV(renderer->mosaic) + 1, GBAMosaicControlGetBgH(renderer->mosaic) + 1);
 	} else {

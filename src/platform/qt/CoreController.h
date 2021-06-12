@@ -121,9 +121,11 @@ public slots:
 	void forceFastForward(bool);
 
 	void loadState(int slot = 0);
-	void loadState(const QString& path);
+	void loadState(const QString& path, int flags = -1);
+	void loadState(QIODevice* iodev, int flags = -1);
 	void saveState(int slot = 0);
-	void saveState(const QString& path);
+	void saveState(const QString& path, int flags = -1);
+	void saveState(QIODevice* iodev, int flags = -1);
 	void loadBackupState();
 	void saveBackupState();
 
@@ -221,6 +223,7 @@ private:
 	QByteArray m_backupSaveState{nullptr};
 	int m_stateSlot = 1;
 	QString m_statePath;
+	VFile* m_stateVf;
 	int m_loadStateFlags;
 	int m_saveStateFlags;
 

@@ -25,7 +25,6 @@
 #include <QAction>
 #include <QButtonGroup>
 #include <QClipboard>
-#include <QFontDatabase>
 #include <QMouseEvent>
 #include <QRadioButton>
 #include <QTimer>
