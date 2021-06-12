@@ -29,7 +29,7 @@ RegisterView::RegisterView(std::shared_ptr<CoreController> controller, QWidget* 
 
 	switch (controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		addRegisters({
 			"r0",
 			"r1",
@@ -52,7 +52,7 @@ RegisterView::RegisterView(std::shared_ptr<CoreController> controller, QWidget* 
 		break;
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		addRegisters({
 			"a",
 			"f",
@@ -88,12 +88,12 @@ void RegisterView::addRegisters(const QStringList& names) {
 void RegisterView::updateRegisters() {
 	switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		updateRegistersARM();
 		break;
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		updateRegistersSM83();
 		break;
 #endif

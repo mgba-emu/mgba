@@ -71,7 +71,7 @@ void gameStarted(std::shared_ptr<CoreController> controller) {
 	const NoIntroDB* db = GBAApp::app()->gameDB();
 	NoIntroGame game{};
 	uint32_t crc32 = 0;
-	core->checksum(core, &crc32, CHECKSUM_CRC32);
+	core->checksum(core, &crc32, mCHECKSUM_CRC32);
 
 	if (db && crc32 && NoIntroDBLookupGameByCRC(db, crc32, &game)) {
 		s_title = QLatin1String(game.name);

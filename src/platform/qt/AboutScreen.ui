@@ -55,7 +55,7 @@
       </font>
      </property>
      <property name="text">
-      <string>{projectName}</string>
+      <string notr="true">{projectName}</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
@@ -103,7 +103,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</string>
       </font>
      </property>
      <property name="text">
-      <string>{projectVersion}</string>
+      <string notr="true">{projectVersion}</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
@@ -152,7 +152,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</string>
         </size>
        </property>
        <property name="text">
-        <string>{logo}</string>
+        <string notr="true">{logo}</string>
        </property>
       </widget>
      </item>
@@ -187,7 +187,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</string>
    <item row="7" column="0" colspan="2">
     <widget class="QLabel" name="patrons">
      <property name="text">
-      <string>{patrons}</string>
+      <string notr="true">{patrons}</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>

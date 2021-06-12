@@ -51,7 +51,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 		switch (context->core->platform(context->core)) {
 #ifdef M_CORE_GBA
-		case PLATFORM_GBA:
+		case mPLATFORM_GBA:
 			context->core->setPeripheral(context->core, mPERIPH_GBA_LUMINANCE, controller->m_inputController->luminance());
 			break;
 #endif
@@ -336,7 +336,7 @@ mCacheSet* CoreController::graphicCaches() {
 	Interrupter interrupter(this);
 	switch (platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA: {
+	case mPLATFORM_GBA: {
 		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
 		m_cacheSet = std::make_unique<mCacheSet>();
 		GBAVideoCacheInit(m_cacheSet.get());
@@ -345,7 +345,7 @@ mCacheSet* CoreController::graphicCaches() {
 	}
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB: {
+	case mPLATFORM_GB: {
 		GB* gb = static_cast<GB*>(m_threadContext.core->board);
 		m_cacheSet = std::make_unique<mCacheSet>();
 		GBVideoCacheInit(m_cacheSet.get());
@@ -709,16 +709,16 @@ void CoreController::yankPak() {
 
 	switch (platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		GBAYankROM(static_cast<GBA*>(m_threadContext.core->board));
 		break;
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		GBYankROM(static_cast<GB*>(m_threadContext.core->board));
 		break;
 #endif
-	case PLATFORM_NONE:
+	case mPLATFORM_NONE:
 		LOG(QT, ERROR) << tr("Can't yank pack in unexpected platform!");
 		break;
 	}
@@ -774,7 +774,7 @@ void CoreController::scanCard(const QString& path) {
 
 void CoreController::importSharkport(const QString& path) {
 #ifdef M_CORE_GBA
-	if (platform() != PLATFORM_GBA) {
+	if (platform() != mPLATFORM_GBA) {
 		return;
 	}
 	VFile* vf = VFileDevice::open(path, O_RDONLY);
@@ -790,7 +790,7 @@ void CoreController::importSharkport(const QString& path) {
 
 void CoreController::exportSharkport(const QString& path) {
 #ifdef M_CORE_GBA
-	if (platform() != PLATFORM_GBA) {
+	if (platform() != mPLATFORM_GBA) {
 		return;
 	}
 	VFile* vf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
@@ -806,7 +806,7 @@ void CoreController::exportSharkport(const QString& path) {
 
 #ifdef M_CORE_GB
 void CoreController::attachPrinter() {
-	if (platform() != PLATFORM_GB) {
+	if (platform() != mPLATFORM_GB) {
 		return;
 	}
 	GB* gb = static_cast<GB*>(m_threadContext.core->board);
@@ -838,7 +838,7 @@ void CoreController::attachPrinter() {
 }
 
 void CoreController::detachPrinter() {
-	if (platform() != PLATFORM_GB) {
+	if (platform() != mPLATFORM_GB) {
 		return;
 	}
 	Interrupter interrupter(this);
@@ -848,7 +848,7 @@ void CoreController::detachPrinter() {
 }
 
 void CoreController::endPrint() {
-	if (platform() != PLATFORM_GB) {
+	if (platform() != mPLATFORM_GB) {
 		return;
 	}
 	Interrupter interrupter(this);
@@ -858,7 +858,7 @@ void CoreController::endPrint() {
 
 #ifdef M_CORE_GBA
 void CoreController::attachBattleChipGate() {
-	if (platform() != PLATFORM_GBA) {
+	if (platform() != mPLATFORM_GBA) {
 		return;
 	}
 	Interrupter interrupter(this);
@@ -868,7 +868,7 @@ void CoreController::attachBattleChipGate() {
 }
 
 void CoreController::detachBattleChipGate() {
-	if (platform() != PLATFORM_GBA) {
+	if (platform() != mPLATFORM_GBA) {
 		return;
 	}
 	Interrupter interrupter(this);
@@ -876,7 +876,7 @@ void CoreController::detachBattleChipGate() {
 }
 
 void CoreController::setBattleChipId(uint16_t id) {
-	if (platform() != PLATFORM_GBA) {
+	if (platform() != mPLATFORM_GBA) {
 		return;
 	}
 	Interrupter interrupter(this);
@@ -884,7 +884,7 @@ void CoreController::setBattleChipId(uint16_t id) {
 }
 
 void CoreController::setBattleChipFlavor(int flavor) {
-	if (platform() != PLATFORM_GBA) {
+	if (platform() != mPLATFORM_GBA) {
 		return;
 	}
 	Interrupter interrupter(this);

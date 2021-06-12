@@ -328,7 +328,7 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	switch (runner->core->platform(runner->core)) {
 #ifdef M_CORE_GBA
 		// TODO: Move these to callbacks
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
 			HIDUSER_EnableAccelerometer();
 		}
@@ -338,7 +338,7 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		break;
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		if (((struct GB*) runner->core->board)->memory.mbcType == GB_MBC7) {
 			HIDUSER_EnableAccelerometer();
 		}
@@ -412,7 +412,7 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 	switch (runner->core->platform(runner->core)) {
 #ifdef M_CORE_GBA
 		// TODO: Move these to callbacks
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		if (((struct GBA*) runner->core->board)->memory.hw.devices & HW_TILT) {
 			HIDUSER_DisableAccelerometer();
 		}
@@ -422,7 +422,7 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 		break;
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		if (((struct GB*) runner->core->board)->memory.mbcType == GB_MBC7) {
 			HIDUSER_DisableAccelerometer();
 		}

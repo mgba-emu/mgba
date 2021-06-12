@@ -117,11 +117,11 @@ class CoreCallbacks(object):
 
 
 class Core(object):
-    if hasattr(lib, 'PLATFORM_GBA'):
-        PLATFORM_GBA = lib.PLATFORM_GBA
+    if hasattr(lib, 'mPLATFORM_GBA'):
+        PLATFORM_GBA = lib.mPLATFORM_GBA
 
-    if hasattr(lib, 'PLATFORM_GB'):
-        PLATFORM_GB = lib.PLATFORM_GB
+    if hasattr(lib, 'mPLATFORM_GB'):
+        PLATFORM_GB = lib.mPLATFORM_GB
 
     if hasattr(lib, 'PLATFORM_DS'):
         PLATFORM_GB = lib.PLATFORM_DS

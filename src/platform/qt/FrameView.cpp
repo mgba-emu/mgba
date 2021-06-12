@@ -432,16 +432,16 @@ void FrameView::invalidateQueue(const QSize& dims) {
 		mVideoLoggerInjectionPoint(logger, LOGGER_INJECTION_FIRST_SCANLINE);
 		switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
-		case PLATFORM_GBA:
+		case mPLATFORM_GBA:
 			injectGBA();
 			break;
 #endif
 #ifdef M_CORE_GB
-		case PLATFORM_GB:
+		case mPLATFORM_GB:
 			injectGB();
 			break;
 #endif
-		case PLATFORM_NONE:
+		case mPLATFORM_NONE:
 			break;
 		}
 		if (m_ui.disableScanline->checkState() == Qt::Checked) {
@@ -544,7 +544,7 @@ void FrameView::newVl() {
 	m_currentFrame = nullptr;
 	mCoreInitConfig(m_vl, nullptr);
 #ifdef M_CORE_GB
-	if (m_controller->platform() == PLATFORM_GB) {
+	if (m_controller->platform() == mPLATFORM_GB) {
 		mCoreConfigSetIntValue(&m_vl->config, "sgb.borders", static_cast<GB*>(m_controller->thread()->core->board)->video.sgbBorders);
 		m_vl->reloadConfigOption(m_vl, "sgb.borders", nullptr);
 	}

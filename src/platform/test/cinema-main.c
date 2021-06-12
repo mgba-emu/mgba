@@ -333,7 +333,7 @@ static bool collectTests(struct CInemaTestList* tests, const char* path) {
 			CIerr(3, "Found potential test %s\n", subpath);
 			struct VFile* vf = dir->openFile(dir, entry->name(entry), O_RDONLY);
 			if (vf) {
-				if (mCoreIsCompatible(vf) != PLATFORM_NONE || mVideoLogIsCompatible(vf) != PLATFORM_NONE) {
+				if (mCoreIsCompatible(vf) != mPLATFORM_NONE || mVideoLogIsCompatible(vf) != mPLATFORM_NONE) {
 					struct CInemaTest* test = CInemaTestListAppend(tests);
 					if (!CInemaTestInit(test, path, entry->name(entry))) {
 						CIerr(3, "Failed to create test\n");

@@ -257,7 +257,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 	info->geometry.base_width = width;
 	info->geometry.base_height = height;
 #ifdef M_CORE_GB
-	if (core->platform(core) == PLATFORM_GB) {
+	if (core->platform(core) == mPLATFORM_GB) {
 		info->geometry.max_width = 256;
 		info->geometry.max_height = 224;
 	} else
@@ -454,7 +454,7 @@ void retro_run(void) {
 
 static void _setupMaps(struct mCore* core) {
 #ifdef M_CORE_GBA
-	if (core->platform(core) == PLATFORM_GBA) {
+	if (core->platform(core) == mPLATFORM_GBA) {
 		struct GBA* gba = core->board;
 		struct retro_memory_descriptor descs[11];
 		struct retro_memory_map mmaps;
@@ -535,7 +535,7 @@ static void _setupMaps(struct mCore* core) {
 	}
 #endif
 #ifdef M_CORE_GB
-	if (core->platform(core) == PLATFORM_GB) {
+	if (core->platform(core) == mPLATFORM_GB) {
 		struct GB* gb = core->board;
 		struct retro_memory_descriptor descs[11];
 		struct retro_memory_map mmaps;
@@ -690,7 +690,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	environCallback(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &sysDir);
 
 #ifdef M_CORE_GBA
-	if (core->platform(core) == PLATFORM_GBA) {
+	if (core->platform(core) == mPLATFORM_GBA) {
 		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, &lux);
 		biosName = "gba_bios.bin";
 
@@ -698,7 +698,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 #endif
 
 #ifdef M_CORE_GB
-	if (core->platform(core) == PLATFORM_GB) {
+	if (core->platform(core) == mPLATFORM_GB) {
 		memset(&cam, 0, sizeof(cam));
 		cam.height = GBCAM_HEIGHT;
 		cam.width = GBCAM_WIDTH;
@@ -815,7 +815,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code) {
 	}
 // Convert the super wonky unportable libretro format to something normal
 #ifdef M_CORE_GBA
-	if (core->platform(core) == PLATFORM_GBA) {
+	if (core->platform(core) == mPLATFORM_GBA) {
 		char realCode[] = "XXXXXXXX XXXXXXXX";
 		size_t len = strlen(code) + 1; // Include null terminator
 		size_t i, pos;
@@ -836,7 +836,7 @@ void retro_cheat_set(unsigned index, bool enabled, const char* code) {
 	}
 #endif
 #ifdef M_CORE_GB
-	if (core->platform(core) == PLATFORM_GB) {
+	if (core->platform(core) == mPLATFORM_GB) {
 		char realCode[] = "XXX-XXX-XXX";
 		size_t len = strlen(code) + 1; // Include null terminator
 		size_t i, pos;
@@ -882,7 +882,7 @@ void* retro_get_memory_data(unsigned id) {
 	case RETRO_MEMORY_RTC:
 		switch (core->platform(core)) {
 #ifdef M_CORE_GB
-		case PLATFORM_GB:
+		case mPLATFORM_GB:
 			switch (((struct GB*) core->board)->memory.mbcType) {
 			case GB_MBC3_RTC:
 				return &((uint8_t*) savedata)[((struct GB*) core->board)->sramSize];
@@ -904,7 +904,7 @@ size_t retro_get_memory_size(unsigned id) {
 	case RETRO_MEMORY_SAVE_RAM:
 		switch (core->platform(core)) {
 #ifdef M_CORE_GBA
-		case PLATFORM_GBA:
+		case mPLATFORM_GBA:
 			switch (((struct GBA*) core->board)->memory.savedata.type) {
 			case SAVEDATA_AUTODETECT:
 				return SIZE_CART_FLASH1M;
@@ -913,7 +913,7 @@ size_t retro_get_memory_size(unsigned id) {
 			}
 #endif
 #ifdef M_CORE_GB
-		case PLATFORM_GB:
+		case mPLATFORM_GB:
 			return ((struct GB*) core->board)->sramSize;
 #endif
 		default:
@@ -923,7 +923,7 @@ size_t retro_get_memory_size(unsigned id) {
 	case RETRO_MEMORY_RTC:
 		switch (core->platform(core)) {
 #ifdef M_CORE_GB
-		case PLATFORM_GB:
+		case mPLATFORM_GB:
 			switch (((struct GB*) core->board)->memory.mbcType) {
 			case GB_MBC3_RTC:
 				return sizeof(struct GBMBCRTCSaveBuffer);

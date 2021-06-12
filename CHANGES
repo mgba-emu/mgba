@@ -39,7 +39,7 @@ Features:
  - WebP and APNG recording
  - Separate overrides for GBC games that can also run on SGB or regular GB
  - Game Boy Player features can be enabled by default for all compatible games
- - Frame viewer support for Game Boy
+ - Frame and I/O viewer support for Game Boy
  - Bug report tool for gathering information helpful for reporting bugs
  - Mute option in homebrew ports
  - Status indicators for fast-forward and mute in homebrew ports
@@ -127,6 +127,7 @@ Misc:
  - Core: Add savedataUpdated callback
  - Core: Add shutdown callback
  - Core: Rework thread state synchronization
+ - Core: Improve support for ROM patch cheats, supporting disabling overlapping patches
  - GB: Allow pausing event loop while CPU is blocked
  - GB: Add support for sleep and shutdown callbacks
  - GB I/O: Implement preliminary support for PCM12/PCM34 (closes mgba.io/i/1468)

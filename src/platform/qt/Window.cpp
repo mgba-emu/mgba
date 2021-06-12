@@ -82,19 +82,19 @@
 #include <mgba-util/vfs.h>
 
 #ifdef M_CORE_GB
-#define SUPPORT_GB (1 << PLATFORM_GB)
+#define SUPPORT_GB (1 << mPLATFORM_GB)
 #else
 #define SUPPORT_GB 0
 #endif
 
 #ifdef M_CORE_GBA
-#define SUPPORT_GBA (1 << PLATFORM_GBA)
+#define SUPPORT_GBA (1 << mPLATFORM_GBA)
 #else
 #define SUPPORT_GBA 0
 #endif
 
 #ifdef M_CORE_DS
-#define SUPPORT_DS (1 << PLATFORM_DS)
+#define SUPPORT_DS (1 << mPLATFORM_DS)
 #else
 #define SUPPORT_DS 0
 #endif
@@ -181,13 +181,13 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	setupMenu(menuBar());
 
 #ifdef M_CORE_GBA
-	m_inputController.addPlatform(PLATFORM_GBA, &GBAInputInfo);
+	m_inputController.addPlatform(mPLATFORM_GBA, &GBAInputInfo);
 #endif
 #ifdef M_CORE_GB
-	m_inputController.addPlatform(PLATFORM_GB, &GBInputInfo);
+	m_inputController.addPlatform(mPLATFORM_GB, &GBInputInfo);
 #endif
 #ifdef M_CORE_DS
-	m_inputController.addPlatform(PLATFORM_DS, &DSInputInfo);
+	m_inputController.addPlatform(mPLATFORM_DS, &DSInputInfo);
 #endif
 }
 
@@ -789,7 +789,7 @@ void Window::gameStarted() {
 		action->setEnabled(true);
 	}
 #ifdef M_CORE_DS
-	if (m_controller->platform() == PLATFORM_DS && (!m_config->getOption("useBios").toInt() || m_config->getOption("ds.bios7").isNull() || m_config->getOption("ds.bios9").isNull() || m_config->getOption("ds.firmware").isNull())) {
+	if (m_controller->platform() == mPLATFORM_DS && (!m_config->getOption("useBios").toInt() || m_config->getOption("ds.bios7").isNull() || m_config->getOption("ds.bios9").isNull() || m_config->getOption("ds.firmware").isNull())) {
 		QMessageBox* fail = new QMessageBox(QMessageBox::Warning, tr("BIOS required"),
 		                                    tr("DS support requires dumps of the BIOS and firmware."),
 		                                    QMessageBox::Ok, this, Qt::Sheet);
@@ -1093,7 +1093,7 @@ void Window::updateTitle(float fps) {
 		NoIntroGame game{};
 		uint32_t crc32 = 0;
 		mCore* core = m_controller->thread()->core;
-		core->checksum(m_controller->thread()->core, &crc32, CHECKSUM_CRC32);
+		core->checksum(m_controller->thread()->core, &crc32, mCHECKSUM_CRC32);
 		QString filePath = windowFilePath();
 
 		if (m_config->getOption("showFilename").toInt() && !filePath.isNull()) {
@@ -1190,14 +1190,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef M_CORE_GBA
 	m_actions.addAction(tr("Boot BIOS"), "bootBIOS", [this]() {
-		setController(m_manager->loadBIOS(PLATFORM_GBA, m_config->getOption("gba.bios")), QString());
+		setController(m_manager->loadBIOS(mPLATFORM_GBA, m_config->getOption("gba.bios")), QString());
 	}, "file");
 #endif
 
 	addGameAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "file");
 #ifdef M_CORE_GBA
 	Action* scanCard = addGameAction(tr("Scan e-Reader dotcodes..."), "scanCard", this, &Window::scanCard, "file");
-	m_platformActions.insert(PLATFORM_GBA, scanCard);
+	m_platformActions.insert(mPLATFORM_GBA, scanCard);
 #endif
 
 	addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");
@@ -1212,29 +1212,29 @@ void Window::setupMenu(QMenuBar* menubar) {
 		this->openStateWindow(LoadSave::LOAD);
 	}, "file", QKeySequence("F10"));
 	m_nonMpActions.append(loadState);
-	m_platformActions.insert(PLATFORM_GBA, loadState);
-	m_platformActions.insert(PLATFORM_GB, loadState);
+	m_platformActions.insert(mPLATFORM_GBA, loadState);
+	m_platformActions.insert(mPLATFORM_GB, loadState);
 
 	Action* loadStateFile = addGameAction(tr("Load state file..."), "loadStateFile", [this]() {
 		this->selectState(true);
 	}, "file");
 	m_nonMpActions.append(loadStateFile);
-	m_platformActions.insert(PLATFORM_GBA, loadStateFile);
-	m_platformActions.insert(PLATFORM_GB, loadStateFile);
+	m_platformActions.insert(mPLATFORM_GBA, loadStateFile);
+	m_platformActions.insert(mPLATFORM_GB, loadStateFile);
 
 	Action* saveState = addGameAction(tr("&Save state"), "saveState", [this]() {
 		this->openStateWindow(LoadSave::SAVE);
 	}, "file", QKeySequence("Shift+F10"));
 	m_nonMpActions.append(saveState);
-	m_platformActions.insert(PLATFORM_GBA, saveState);
-	m_platformActions.insert(PLATFORM_GB, saveState);
+	m_platformActions.insert(mPLATFORM_GBA, saveState);
+	m_platformActions.insert(mPLATFORM_GB, saveState);
 
 	Action* saveStateFile = addGameAction(tr("Save state file..."), "saveStateFile", [this]() {
 		this->selectState(false);
 	}, "file");
 	m_nonMpActions.append(saveStateFile);
-	m_platformActions.insert(PLATFORM_GBA, saveStateFile);
-	m_platformActions.insert(PLATFORM_GB, saveStateFile);
+	m_platformActions.insert(mPLATFORM_GBA, saveStateFile);
+	m_platformActions.insert(mPLATFORM_GB, saveStateFile);
 
 	m_actions.addMenu(tr("Quick load"), "quickLoad", "file");
 	m_actions.addMenu(tr("Quick save"), "quickSave", "file");
@@ -1243,28 +1243,28 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->loadState();
 	}, "quickLoad");
 	m_nonMpActions.append(quickLoad);
-	m_platformActions.insert(PLATFORM_GBA, quickLoad);
-	m_platformActions.insert(PLATFORM_GB, quickLoad);
+	m_platformActions.insert(mPLATFORM_GBA, quickLoad);
+	m_platformActions.insert(mPLATFORM_GB, quickLoad);
 
 	Action* quickSave = addGameAction(tr("Save recent"), "quickSave", [this] {
 		m_controller->saveState();
 	}, "quickSave");
 	m_nonMpActions.append(quickSave);
-	m_platformActions.insert(PLATFORM_GBA, quickSave);
-	m_platformActions.insert(PLATFORM_GB, quickSave);
+	m_platformActions.insert(mPLATFORM_GBA, quickSave);
+	m_platformActions.insert(mPLATFORM_GB, quickSave);
 
 	m_actions.addSeparator("quickLoad");
 	m_actions.addSeparator("quickSave");
 
 	Action* undoLoadState = addGameAction(tr("Undo load state"), "undoLoadState", &CoreController::loadBackupState, "quickLoad", QKeySequence("F11"));
 	m_nonMpActions.append(undoLoadState);
-	m_platformActions.insert(PLATFORM_GBA, undoLoadState);
-	m_platformActions.insert(PLATFORM_GB, undoLoadState);
+	m_platformActions.insert(mPLATFORM_GBA, undoLoadState);
+	m_platformActions.insert(mPLATFORM_GB, undoLoadState);
 
 	Action* undoSaveState = addGameAction(tr("Undo save state"), "undoSaveState", &CoreController::saveBackupState, "quickSave", QKeySequence("Shift+F11"));
 	m_nonMpActions.append(undoSaveState);
-	m_platformActions.insert(PLATFORM_GBA, undoSaveState);
-	m_platformActions.insert(PLATFORM_GB, undoSaveState);
+	m_platformActions.insert(mPLATFORM_GBA, undoSaveState);
+	m_platformActions.insert(mPLATFORM_GB, undoSaveState);
 
 	m_actions.addSeparator("quickLoad");
 	m_actions.addSeparator("quickSave");
@@ -1274,15 +1274,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 			m_controller->loadState(i);
 		}, "quickLoad", QString("F%1").arg(i));
 		m_nonMpActions.append(quickLoad);
-		m_platformActions.insert(PLATFORM_GBA, quickLoad);
-		m_platformActions.insert(PLATFORM_GB, quickLoad);
+		m_platformActions.insert(mPLATFORM_GBA, quickLoad);
+		m_platformActions.insert(mPLATFORM_GB, quickLoad);
 
 		Action* quickSave = addGameAction(tr("State &%1").arg(i),  QString("quickSave.%1").arg(i), [this, i]() {
 			m_controller->saveState(i);
 		}, "quickSave", QString("Shift+F%1").arg(i));
 		m_nonMpActions.append(quickSave);
-		m_platformActions.insert(PLATFORM_GBA, quickSave);
-		m_platformActions.insert(PLATFORM_GB, quickSave);
+		m_platformActions.insert(mPLATFORM_GBA, quickSave);
+		m_platformActions.insert(mPLATFORM_GB, quickSave);
 	}
 
 	m_actions.addSeparator("file");
@@ -1291,10 +1291,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 #ifdef M_CORE_GBA
 	m_actions.addSeparator("file");
 	Action* importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "file");
-	m_platformActions.insert(PLATFORM_GBA, importShark);
+	m_platformActions.insert(mPLATFORM_GBA, importShark);
 
 	Action* exportShark = addGameAction(tr("Export GameShark Save..."), "exportShark", this, &Window::exportSharkport, "file");
-	m_platformActions.insert(PLATFORM_GBA, exportShark);
+	m_platformActions.insert(mPLATFORM_GBA, exportShark);
 #endif
 
 	m_actions.addSeparator("file");
@@ -1318,8 +1318,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("&Reset"), "reset", &CoreController::reset, "emu", QKeySequence("Ctrl+R"));
 	addGameAction(tr("Sh&utdown"), "shutdown", &CoreController::stop, "emu");
 	Action* yank = addGameAction(tr("Yank game pak"), "yank", &CoreController::yankPak, "emu");
-	m_platformActions.insert(PLATFORM_GBA, yank);
-	m_platformActions.insert(PLATFORM_GB, yank);
+	m_platformActions.insert(mPLATFORM_GBA, yank);
+	m_platformActions.insert(mPLATFORM_GB, yank);
 
 	m_actions.addSeparator("emu");
 
@@ -1370,15 +1370,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->rewind();
 	}, "emu", QKeySequence("~"));
 	m_nonMpActions.append(rewind);
-	m_platformActions.insert(PLATFORM_GBA, rewind);
-	m_platformActions.insert(PLATFORM_GB, rewind);
+	m_platformActions.insert(mPLATFORM_GBA, rewind);
+	m_platformActions.insert(mPLATFORM_GB, rewind);
 
 	Action* frameRewind = addGameAction(tr("Step backwards"), "frameRewind", [this] () {
 		m_controller->rewind(1);
 	}, "emu", QKeySequence("Ctrl+B"));
 	m_nonMpActions.append(frameRewind);
-	m_platformActions.insert(PLATFORM_GBA, frameRewind);
-	m_platformActions.insert(PLATFORM_GB, frameRewind);
+	m_platformActions.insert(mPLATFORM_GBA, frameRewind);
+	m_platformActions.insert(mPLATFORM_GB, frameRewind);
 
 	ConfigOption* videoSync = m_config->addOption("videoSync");
 	videoSync->addBoolean(tr("Sync to &video"), &m_actions, "emu");
@@ -1419,12 +1419,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 		openView(view);
 		m_controller->attachPrinter();
 	}, "emu");
-	m_platformActions.insert(PLATFORM_GB, gbPrint);
+	m_platformActions.insert(mPLATFORM_GB, gbPrint);
 #endif
 
 #ifdef M_CORE_GBA
 	Action* bcGate = addGameAction(tr("BattleChip Gate..."), "bcGate", openControllerTView<BattleChipView>(this), "emu");
-	m_platformActions.insert(PLATFORM_GBA, bcGate);
+	m_platformActions.insert(mPLATFORM_GBA, bcGate);
 #endif
 
 	m_actions.addMenu(tr("Audio/&Video"), "av");
@@ -1596,7 +1596,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Open debugger console..."), "debuggerWindow", this, &Window::consoleOpen, "tools");
 #ifdef USE_GDB_STUB
 	Action* gdbWindow = addGameAction(tr("Start &GDB server..."), "gdbWindow", this, &Window::gdbOpen, "tools");
-	m_platformActions.insert(PLATFORM_GBA, gdbWindow);
+	m_platformActions.insert(mPLATFORM_GBA, gdbWindow);
 #endif
 #endif
 	m_actions.addSeparator("tools");
@@ -1624,11 +1624,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "tools");
 	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "tools");
-
-#ifdef M_CORE_GBA
-	Action* ioViewer = addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "tools");
-	m_platformActions.insert(PLATFORM_GBA, ioViewer);
-#endif
+	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "tools");
 
 	m_actions.addSeparator("tools");
 	addGameAction(tr("Record debug video log..."), "recordVL", this, &Window::startVideoLog, "tools");

@@ -20,7 +20,7 @@ M_TEST_DEFINE(create) {
 M_TEST_DEFINE(platform) {
 	struct mCore* core = GBCoreCreate();
 	assert_non_null(core);
-	assert_int_equal(core->platform(core), PLATFORM_GB);
+	assert_int_equal(core->platform(core), mPLATFORM_GB);
 	assert_true(core->init(core));
 	core->deinit(core);
 }
@@ -52,7 +52,7 @@ M_TEST_DEFINE(isROM) {
 	assert_true(GBIsROM(vf));
 	struct mCore* core = mCoreFindVF(vf);
 	assert_non_null(core);
-	assert_int_equal(core->platform(core), PLATFORM_GB);
+	assert_int_equal(core->platform(core), mPLATFORM_GB);
 	vf->close(vf);
 	assert_true(core->init(core));
 

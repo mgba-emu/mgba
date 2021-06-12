@@ -19,11 +19,6 @@
         <translation>Branche : &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Révision : &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
     </message>
     <message>
-        <location filename="../AboutScreen.ui" line="58"/>
-        <source>{projectName}</source>
-        <translation>{projectName}</translation>
-    </message>
-    <message>
         <location filename="../AboutScreen.ui" line="68"/>
         <source>{projectName} would like to thank the following patrons from Patreon:</source>
         <translation>{projectName} aimerait remercier les donateurs suivant venant de Patreon :</translation>
@@ -32,28 +27,13 @@
         <location filename="../AboutScreen.ui" line="86"/>
         <source>© 2013 – 2020 Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation>© 2013 – 2020 Jeffrey Pfau, est autorisé sous la license Publique de Mozilla, version 2.0
+        <translation>© 2013 – 2020 Jeffrey Pfau, sous la licence publique de Mozilla, version 2.0
 Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</translation>
-    </message>
-    <message>
-        <location filename="../AboutScreen.ui" line="106"/>
-        <source>{projectVersion}</source>
-        <translation>{projectVersion}</translation>
-    </message>
-    <message>
-        <location filename="../AboutScreen.ui" line="155"/>
-        <source>{logo}</source>
-        <translation>{logo}</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
         <translation>{projectName} est un émulateur open-source Game Boy Advance</translation>
-    </message>
-    <message>
-        <location filename="../AboutScreen.ui" line="190"/>
-        <source>{patrons}</source>
-        <translation>{patrons}</translation>
     </message>
 </context>
 <context>
@@ -61,30 +41,25 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation>Ouvrir dans l&apos;archive...</translation>
+        <translation>Ouvrir dans l&apos;archive…</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation>Chargement...</translation>
+        <translation>Chargement…</translation>
     </message>
 </context>
 <context>
     <name>AssetTile</name>
     <message>
-        <location filename="../AssetTile.ui" line="20"/>
-        <source>AssetTile</source>
-        <translation>AssetTile</translation>
-    </message>
-    <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation>Tile #</translation>
+        <translation>Tile nº</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
-        <translation>Palette #</translation>
+        <translation>Palette nº</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="86"/>
@@ -112,7 +87,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../BattleChipView.ui" line="14"/>
         <source>BattleChip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip Gate</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="67"/>
@@ -152,12 +127,12 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../BattleChipView.ui" line="145"/>
         <source>Ba&amp;ttleChip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>Ba&amp;ttleChip Gate</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="155"/>
         <source>Progress &amp;Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>Progress &amp;Gate</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="162"/>
@@ -229,7 +204,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../DebuggerConsole.ui" line="14"/>
         <source>Debugger</source>
-        <translation>Débugeur</translation>
+        <translation>Débogueur</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="25"/>
@@ -471,7 +446,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation>Info</translation>
+        <translation>Infos</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
@@ -813,7 +788,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../ObjView.ui" line="406"/>
         <source>Off</source>
-        <translation>Off</translation>
+        <translation>Désactivé</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="417"/>
@@ -1004,7 +979,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../OverrideView.ui" line="187"/>
         <source>VBA bug compatibility mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Mode de compatibilité des erreurs VBA</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="211"/>
@@ -1029,12 +1004,12 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../OverrideView.ui" line="336"/>
         <source>Sprite Colors 1</source>
-        <translation>Couleurs du Sprite n°1</translation>
+        <translation>Couleurs du Sprite nº&#xa0;1</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="343"/>
         <source>Sprite Colors 2</source>
-        <translation>Couleurs du Sprite n°2</translation>
+        <translation>Couleurs du Sprite nº&#xa0;2</translation>
     </message>
 </context>
 <context>
@@ -1143,12 +1118,12 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../PrinterView.ui" line="137"/>
         <source>Tear off</source>
-        <translation>Déchirer (Tear off)</translation>
+        <translation>Déchirer</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="223"/>
         <source>Copy</source>
-        <translation type="unfinished">Copier</translation>
+        <translation>Copier</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="180"/>
@@ -1159,14 +1134,14 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::AssetTile</name>
     <message>
-        <location filename="../AssetTile.cpp" line="104"/>
+        <location filename="../AssetTile.cpp" line="103"/>
         <source>%0%1%2</source>
         <translation>%0%1%2</translation>
     </message>
     <message>
+        <location filename="../AssetTile.cpp" line="140"/>
         <location filename="../AssetTile.cpp" line="141"/>
         <location filename="../AssetTile.cpp" line="142"/>
-        <location filename="../AssetTile.cpp" line="143"/>
         <source>0x%0 (%1)</source>
         <translation>0x%0 (%1)</translation>
     </message>
@@ -1316,7 +1291,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::GBAApp</name>
     <message>
-        <location filename="../GBAApp.cpp" line="69"/>
+        <location filename="../GBAApp.cpp" line="73"/>
         <source>Enable Discord Rich Presence</source>
         <translation>Activer intégration avec Discord</translation>
     </message>
@@ -1364,7 +1339,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../GDBWindow.cpp" line="55"/>
         <source>Break</source>
-        <translation>Stop</translation>
+        <translation>Interrompre</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="104"/>
@@ -1408,1380 +1383,1871 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::IOViewer</name>
     <message>
-        <location filename="../IOViewer.cpp" line="30"/>
+        <location filename="../IOViewer.cpp" line="39"/>
         <source>Background mode</source>
         <translation>Mode d&apos;arrière-plan</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="31"/>
+        <location filename="../IOViewer.cpp" line="40"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation>Mode 0: 4 tile layers</translation>
+        <translation>Mode 0&#xa0;: 4 couches de tuile</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="32"/>
+        <location filename="../IOViewer.cpp" line="41"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</translation>
+        <translation>Mode 1&#xa0;: 2 couches de tuiles + 1 couche de tuiles pivotée / mise à l&apos;échelle</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="33"/>
+        <location filename="../IOViewer.cpp" line="42"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
-        <translation>Mode 2: 2 rotated/scaled tile layers</translation>
+        <translation>Mode 2&#xa0;: 2 couches de tuiles pivotées / mises à l&apos;échelle</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="34"/>
+        <location filename="../IOViewer.cpp" line="43"/>
         <source>Mode 3: Full 15-bit bitmap</source>
         <translation>Mode 3 : Bitmap complet sur 15 bits</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="35"/>
+        <location filename="../IOViewer.cpp" line="44"/>
         <source>Mode 4: Full 8-bit bitmap</source>
         <translation>Mode 4 : Bitmap complet sur 8 bits</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="36"/>
+        <location filename="../IOViewer.cpp" line="45"/>
         <source>Mode 5: Small 15-bit bitmap</source>
         <translation>Mode 5 : Bitmap réduit sur 15 bits</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="40"/>
+        <location filename="../IOViewer.cpp" line="49"/>
         <source>CGB Mode</source>
         <translation>Mode CGB</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="41"/>
+        <location filename="../IOViewer.cpp" line="50"/>
         <source>Frame select</source>
         <translation>Sélection de la trame</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="42"/>
+        <location filename="../IOViewer.cpp" line="51"/>
         <source>Unlocked HBlank</source>
         <translation>Déblocage du HBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="43"/>
+        <location filename="../IOViewer.cpp" line="52"/>
         <source>Linear OBJ tile mapping</source>
         <translation>Cartographie linéaire des tuiles OBJ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="44"/>
+        <location filename="../IOViewer.cpp" line="53"/>
         <source>Force blank screen</source>
         <translation>Forcer l&apos;écran vide</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="45"/>
+        <location filename="../IOViewer.cpp" line="54"/>
         <source>Enable background 0</source>
-        <translation>Activer l&apos;arrière-plan n°0</translation>
+        <translation>Activer l&apos;arrière-plan nº&#xa0;0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="46"/>
+        <location filename="../IOViewer.cpp" line="55"/>
         <source>Enable background 1</source>
-        <translation>Activer l&apos;arrière-plan n°1</translation>
+        <translation>Activer l&apos;arrière-plan nº&#xa0;1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="47"/>
+        <location filename="../IOViewer.cpp" line="56"/>
         <source>Enable background 2</source>
-        <translation>Activer l&apos;arrière-plan n°2</translation>
+        <translation>Activer l&apos;arrière-plan nº&#xa0;2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="48"/>
+        <location filename="../IOViewer.cpp" line="57"/>
         <source>Enable background 3</source>
-        <translation>Activer l&apos;arrière-plan n°3</translation>
+        <translation>Activer l&apos;arrière-plan nº&#xa0;3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="49"/>
+        <location filename="../IOViewer.cpp" line="58"/>
         <source>Enable OBJ</source>
         <translation>Activer l&apos;OBJ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="50"/>
+        <location filename="../IOViewer.cpp" line="59"/>
         <source>Enable Window 0</source>
-        <translation>Activer la fenêtre n°0</translation>
+        <translation>Activer la fenêtre nº&#xa0;0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="51"/>
+        <location filename="../IOViewer.cpp" line="60"/>
         <source>Enable Window 1</source>
-        <translation>Actvier la fenêtre n°1</translation>
+        <translation>Actvier la fenêtre nº&#xa0;1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="52"/>
+        <location filename="../IOViewer.cpp" line="61"/>
         <source>Enable OBJ Window</source>
         <translation>Activer la fenêtre OBJ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="58"/>
+        <location filename="../IOViewer.cpp" line="65"/>
+        <source>Swap green components</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="69"/>
         <source>Currently in VBlank</source>
         <translation>Actuellement en VBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="59"/>
+        <location filename="../IOViewer.cpp" line="70"/>
         <source>Currently in HBlank</source>
         <translation>Actuellement en HBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="60"/>
+        <location filename="../IOViewer.cpp" line="71"/>
         <source>Currently in VCounter</source>
         <translation>Actuellement en VCounter</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="61"/>
+        <location filename="../IOViewer.cpp" line="72"/>
         <source>Enable VBlank IRQ generation</source>
         <translation>Permettre la génération d&apos;IRQ VBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="62"/>
+        <location filename="../IOViewer.cpp" line="73"/>
         <source>Enable HBlank IRQ generation</source>
         <translation>Permettre la génération d&apos;IRQ HBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="63"/>
+        <location filename="../IOViewer.cpp" line="74"/>
         <source>Enable VCounter IRQ generation</source>
         <translation>Permettre la génération d&apos;IRQ VCounter</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="64"/>
+        <location filename="../IOViewer.cpp" line="75"/>
         <source>VCounter scanline</source>
         <translation>Ligne de balayage du VCounter</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="68"/>
+        <location filename="../IOViewer.cpp" line="79"/>
         <source>Current scanline</source>
         <translation>Ligne de balayage actuel</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="72"/>
-        <location filename="../IOViewer.cpp" line="81"/>
-        <location filename="../IOViewer.cpp" line="90"/>
-        <location filename="../IOViewer.cpp" line="100"/>
+        <location filename="../IOViewer.cpp" line="83"/>
+        <location filename="../IOViewer.cpp" line="92"/>
+        <location filename="../IOViewer.cpp" line="101"/>
+        <location filename="../IOViewer.cpp" line="111"/>
         <source>Priority</source>
         <translation>Priorité</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="73"/>
-        <location filename="../IOViewer.cpp" line="82"/>
-        <location filename="../IOViewer.cpp" line="91"/>
-        <location filename="../IOViewer.cpp" line="101"/>
+        <location filename="../IOViewer.cpp" line="84"/>
+        <location filename="../IOViewer.cpp" line="93"/>
+        <location filename="../IOViewer.cpp" line="102"/>
+        <location filename="../IOViewer.cpp" line="112"/>
         <source>Tile data base (* 16kB)</source>
         <translation>Base de donnée Tile (* 16kB)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="74"/>
-        <location filename="../IOViewer.cpp" line="83"/>
-        <location filename="../IOViewer.cpp" line="92"/>
-        <location filename="../IOViewer.cpp" line="102"/>
+        <location filename="../IOViewer.cpp" line="85"/>
+        <location filename="../IOViewer.cpp" line="94"/>
+        <location filename="../IOViewer.cpp" line="103"/>
+        <location filename="../IOViewer.cpp" line="113"/>
         <source>Enable mosaic</source>
         <translation>Activer la mosaïque</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="75"/>
-        <location filename="../IOViewer.cpp" line="84"/>
-        <location filename="../IOViewer.cpp" line="93"/>
-        <location filename="../IOViewer.cpp" line="103"/>
+        <location filename="../IOViewer.cpp" line="86"/>
+        <location filename="../IOViewer.cpp" line="95"/>
+        <location filename="../IOViewer.cpp" line="104"/>
+        <location filename="../IOViewer.cpp" line="114"/>
         <source>Enable 256-color</source>
         <translation>Activer le mode 256 couleurs</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="76"/>
-        <location filename="../IOViewer.cpp" line="85"/>
-        <location filename="../IOViewer.cpp" line="94"/>
-        <location filename="../IOViewer.cpp" line="104"/>
+        <location filename="../IOViewer.cpp" line="87"/>
+        <location filename="../IOViewer.cpp" line="96"/>
+        <location filename="../IOViewer.cpp" line="105"/>
+        <location filename="../IOViewer.cpp" line="115"/>
         <source>Tile map base (* 2kB)</source>
         <translation>Map de donnée Tile (* 2kB)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="77"/>
-        <location filename="../IOViewer.cpp" line="86"/>
-        <location filename="../IOViewer.cpp" line="96"/>
-        <location filename="../IOViewer.cpp" line="106"/>
+        <location filename="../IOViewer.cpp" line="88"/>
+        <location filename="../IOViewer.cpp" line="97"/>
+        <location filename="../IOViewer.cpp" line="107"/>
+        <location filename="../IOViewer.cpp" line="117"/>
         <source>Background dimensions</source>
         <translation>Dimensions de l&apos;arrière plan</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="95"/>
-        <location filename="../IOViewer.cpp" line="105"/>
+        <location filename="../IOViewer.cpp" line="106"/>
+        <location filename="../IOViewer.cpp" line="116"/>
         <source>Overflow wraps</source>
         <translation>Enveloppes de débordement</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="110"/>
-        <location filename="../IOViewer.cpp" line="118"/>
-        <location filename="../IOViewer.cpp" line="126"/>
-        <location filename="../IOViewer.cpp" line="134"/>
+        <location filename="../IOViewer.cpp" line="121"/>
+        <location filename="../IOViewer.cpp" line="129"/>
+        <location filename="../IOViewer.cpp" line="137"/>
+        <location filename="../IOViewer.cpp" line="145"/>
+        <location filename="../IOViewer.cpp" line="1364"/>
+        <location filename="../IOViewer.cpp" line="1405"/>
         <source>Horizontal offset</source>
         <translation>Décalage horizontal</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="114"/>
-        <location filename="../IOViewer.cpp" line="122"/>
-        <location filename="../IOViewer.cpp" line="130"/>
-        <location filename="../IOViewer.cpp" line="138"/>
+        <location filename="../IOViewer.cpp" line="125"/>
+        <location filename="../IOViewer.cpp" line="133"/>
+        <location filename="../IOViewer.cpp" line="141"/>
+        <location filename="../IOViewer.cpp" line="149"/>
+        <location filename="../IOViewer.cpp" line="1360"/>
+        <location filename="../IOViewer.cpp" line="1401"/>
         <source>Vertical offset</source>
         <translation>Décalage vertical</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="142"/>
-        <location filename="../IOViewer.cpp" line="147"/>
-        <location filename="../IOViewer.cpp" line="152"/>
-        <location filename="../IOViewer.cpp" line="157"/>
-        <location filename="../IOViewer.cpp" line="162"/>
-        <location filename="../IOViewer.cpp" line="171"/>
-        <location filename="../IOViewer.cpp" line="180"/>
-        <location filename="../IOViewer.cpp" line="185"/>
-        <location filename="../IOViewer.cpp" line="190"/>
-        <location filename="../IOViewer.cpp" line="195"/>
-        <location filename="../IOViewer.cpp" line="200"/>
-        <location filename="../IOViewer.cpp" line="209"/>
+        <location filename="../IOViewer.cpp" line="153"/>
+        <location filename="../IOViewer.cpp" line="158"/>
+        <location filename="../IOViewer.cpp" line="163"/>
+        <location filename="../IOViewer.cpp" line="168"/>
+        <location filename="../IOViewer.cpp" line="173"/>
+        <location filename="../IOViewer.cpp" line="182"/>
+        <location filename="../IOViewer.cpp" line="191"/>
+        <location filename="../IOViewer.cpp" line="196"/>
+        <location filename="../IOViewer.cpp" line="201"/>
+        <location filename="../IOViewer.cpp" line="206"/>
+        <location filename="../IOViewer.cpp" line="211"/>
+        <location filename="../IOViewer.cpp" line="220"/>
         <source>Fractional part</source>
         <translation>Composante fractionnelle</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="143"/>
-        <location filename="../IOViewer.cpp" line="148"/>
-        <location filename="../IOViewer.cpp" line="153"/>
-        <location filename="../IOViewer.cpp" line="158"/>
-        <location filename="../IOViewer.cpp" line="181"/>
-        <location filename="../IOViewer.cpp" line="186"/>
-        <location filename="../IOViewer.cpp" line="191"/>
-        <location filename="../IOViewer.cpp" line="196"/>
+        <location filename="../IOViewer.cpp" line="154"/>
+        <location filename="../IOViewer.cpp" line="159"/>
+        <location filename="../IOViewer.cpp" line="164"/>
+        <location filename="../IOViewer.cpp" line="169"/>
+        <location filename="../IOViewer.cpp" line="192"/>
+        <location filename="../IOViewer.cpp" line="197"/>
+        <location filename="../IOViewer.cpp" line="202"/>
+        <location filename="../IOViewer.cpp" line="207"/>
         <source>Integer part</source>
         <translation>Composante entière</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="163"/>
-        <location filename="../IOViewer.cpp" line="172"/>
-        <location filename="../IOViewer.cpp" line="201"/>
-        <location filename="../IOViewer.cpp" line="210"/>
+        <location filename="../IOViewer.cpp" line="174"/>
+        <location filename="../IOViewer.cpp" line="183"/>
+        <location filename="../IOViewer.cpp" line="212"/>
+        <location filename="../IOViewer.cpp" line="221"/>
         <source>Integer part (bottom)</source>
         <translation>Composante entière (du bas)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="167"/>
-        <location filename="../IOViewer.cpp" line="176"/>
-        <location filename="../IOViewer.cpp" line="205"/>
-        <location filename="../IOViewer.cpp" line="214"/>
+        <location filename="../IOViewer.cpp" line="178"/>
+        <location filename="../IOViewer.cpp" line="187"/>
+        <location filename="../IOViewer.cpp" line="216"/>
+        <location filename="../IOViewer.cpp" line="225"/>
         <source>Integer part (top)</source>
         <translation>Composante entière (du haut)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="218"/>
-        <location filename="../IOViewer.cpp" line="223"/>
+        <location filename="../IOViewer.cpp" line="229"/>
+        <location filename="../IOViewer.cpp" line="234"/>
         <source>End x</source>
         <translation>Fin x</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="219"/>
-        <location filename="../IOViewer.cpp" line="224"/>
+        <location filename="../IOViewer.cpp" line="230"/>
+        <location filename="../IOViewer.cpp" line="235"/>
         <source>Start x</source>
         <translation>Début x</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="228"/>
-        <location filename="../IOViewer.cpp" line="233"/>
+        <location filename="../IOViewer.cpp" line="239"/>
+        <location filename="../IOViewer.cpp" line="244"/>
         <source>End y</source>
         <translation>Fin y</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="229"/>
-        <location filename="../IOViewer.cpp" line="234"/>
+        <location filename="../IOViewer.cpp" line="240"/>
+        <location filename="../IOViewer.cpp" line="245"/>
         <source>Start y</source>
         <translation>Début y</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="238"/>
-        <source>Window 0 enable BG 0</source>
-        <translation>La fenêtre n°0 active l&apos;arrière plan n°0</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="239"/>
-        <source>Window 0 enable BG 1</source>
-        <translation>La fenêtre n°0 active l&apos;arrière plan n°1</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="240"/>
-        <source>Window 0 enable BG 2</source>
-        <translation>La fenêtre n°0 active l&apos;arrière plan n°2</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="241"/>
-        <source>Window 0 enable BG 3</source>
-        <translation>La fenêtre n°0 active l&apos;arrière plan n°3</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="242"/>
-        <source>Window 0 enable OBJ</source>
-        <translation>La fenêtre n°0 active l&apos;OBJ</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="243"/>
-        <source>Window 0 enable blend</source>
-        <translation>La fenêtre n°0 active le mixage</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="244"/>
-        <source>Window 1 enable BG 0</source>
-        <translation>La fenêtre n°1 active l&apos;arrière plan n°0</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="245"/>
-        <source>Window 1 enable BG 1</source>
-        <translation>La fenêtre n°1 active l&apos;arrière plan n°1</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="246"/>
-        <source>Window 1 enable BG 2</source>
-        <translation>La fenêtre n°1 active l&apos;arrière plan n°2</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="247"/>
-        <source>Window 1 enable BG 3</source>
-        <translation>La fenêtre n°1 active l&apos;arrière plan n°3</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="248"/>
-        <source>Window 1 enable OBJ</source>
-        <translation>La fenêtre n°1 active l&apos;OBJ</translation>
-    </message>
-    <message>
         <location filename="../IOViewer.cpp" line="249"/>
-        <source>Window 1 enable blend</source>
-        <translation>La fenêtre n°1 active le mixage</translation>
+        <source>Window 0 enable BG 0</source>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière plan nº&#xa0;0</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="250"/>
+        <source>Window 0 enable BG 1</source>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière plan nº&#xa0;1</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="251"/>
+        <source>Window 0 enable BG 2</source>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière plan nº&#xa0;2</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="252"/>
+        <source>Window 0 enable BG 3</source>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière plan nº&#xa0;3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="253"/>
-        <source>Outside window enable BG 0</source>
-        <translation>La fenêtre extérieure active l&apos;arrière plan n°0</translation>
+        <source>Window 0 enable OBJ</source>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="254"/>
-        <source>Outside window enable BG 1</source>
-        <translation>La fenêtre extérieure active l&apos;arrière plan n°1</translation>
+        <source>Window 0 enable blend</source>
+        <translation>La fenêtre nº&#xa0;0 active le mixage</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="255"/>
-        <source>Outside window enable BG 2</source>
-        <translation>La fenêtre extérieure active l&apos;arrière plan n°2</translation>
+        <source>Window 1 enable BG 0</source>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière plan nº&#xa0;0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="256"/>
-        <source>Outside window enable BG 3</source>
-        <translation>La fenêtre extérieure active l&apos;arrière plan n°3</translation>
+        <source>Window 1 enable BG 1</source>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière plan nº&#xa0;1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="257"/>
+        <source>Window 1 enable BG 2</source>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière plan nº&#xa0;2</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="258"/>
+        <source>Window 1 enable BG 3</source>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière plan nº&#xa0;3</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="259"/>
+        <source>Window 1 enable OBJ</source>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;OBJ</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="260"/>
+        <source>Window 1 enable blend</source>
+        <translation>La fenêtre nº&#xa0;1 active le mixage</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="264"/>
+        <source>Outside window enable BG 0</source>
+        <translation>La fenêtre extérieure active l&apos;arrière plan nº&#xa0;0</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="265"/>
+        <source>Outside window enable BG 1</source>
+        <translation>La fenêtre extérieure active l&apos;arrière plan nº&#xa0;1</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="266"/>
+        <source>Outside window enable BG 2</source>
+        <translation>La fenêtre extérieure active l&apos;arrière plan nº&#xa0;2</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="267"/>
+        <source>Outside window enable BG 3</source>
+        <translation>La fenêtre extérieure active l&apos;arrière plan nº&#xa0;3</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="268"/>
         <source>Outside window enable OBJ</source>
         <translation>La fenêtre extérieure active l&apos;OBJ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="258"/>
+        <location filename="../IOViewer.cpp" line="269"/>
         <source>Outside window enable blend</source>
         <translation>La fenêtre extérieure active le mixage</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="259"/>
+        <location filename="../IOViewer.cpp" line="270"/>
         <source>OBJ window enable BG 0</source>
-        <translation>La fenêtre OBJ active l&apos;arrière plan n°0</translation>
+        <translation>La fenêtre OBJ active l&apos;arrière plan nº 0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="260"/>
+        <location filename="../IOViewer.cpp" line="271"/>
         <source>OBJ window enable BG 1</source>
-        <translation>La fenêtre OBJ active l&apos;arrière plan n°1</translation>
+        <translation>La fenêtre OBJ active l&apos;arrière plan nº 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="261"/>
+        <location filename="../IOViewer.cpp" line="272"/>
         <source>OBJ window enable BG 2</source>
-        <translation>La fenêtre OBJ active l&apos;arrière plan n°2</translation>
+        <translation>La fenêtre OBJ active l&apos;arrière plan nº 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="262"/>
+        <location filename="../IOViewer.cpp" line="273"/>
         <source>OBJ window enable BG 3</source>
-        <translation>La fenêtre OBJ active l&apos;arrière plan n°3</translation>
+        <translation>La fenêtre OBJ active l&apos;arrière plan nº 3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="263"/>
+        <location filename="../IOViewer.cpp" line="274"/>
         <source>OBJ window enable OBJ</source>
         <translation>La fenêtre OBJ active l&apos;OBJ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="264"/>
+        <location filename="../IOViewer.cpp" line="275"/>
         <source>OBJ window enable blend</source>
         <translation>La fenêtre OBJ active le mixage</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="268"/>
+        <location filename="../IOViewer.cpp" line="279"/>
         <source>Background mosaic size vertical</source>
         <translation>Taille vertical de la mosaïque en arrière plan</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="269"/>
+        <location filename="../IOViewer.cpp" line="280"/>
         <source>Background mosaic size horizontal</source>
         <translation>Taille horizontal de la mosaïque en arrière plan</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="270"/>
+        <location filename="../IOViewer.cpp" line="281"/>
         <source>Object mosaic size vertical</source>
         <translation>Taille vertical de la mosaïque de l&apos;objet</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="271"/>
+        <location filename="../IOViewer.cpp" line="282"/>
         <source>Object mosaic size horizontal</source>
         <translation>Taille horizontal de la mosaïque de l&apos;objet</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="277"/>
+        <location filename="../IOViewer.cpp" line="288"/>
         <source>BG 0 target 1</source>
-        <translation>L&apos;arrière plan n°0 cible 1</translation>
+        <translation>L&apos;arrière plan nº 0 cible 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="278"/>
+        <location filename="../IOViewer.cpp" line="289"/>
         <source>BG 1 target 1</source>
-        <translation>L&apos;arrière plan n°1 cible 1</translation>
+        <translation>L&apos;arrière plan nº 1 cible 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="279"/>
+        <location filename="../IOViewer.cpp" line="290"/>
         <source>BG 2 target 1</source>
-        <translation>L&apos;arrière plan n°2 cible 1</translation>
+        <translation>L&apos;arrière plan nº 2 cible 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="280"/>
+        <location filename="../IOViewer.cpp" line="291"/>
         <source>BG 3 target 1</source>
-        <translation>L&apos;arrière plan n°3 cible 1</translation>
+        <translation>L&apos;arrière plan nº 3 cible 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="281"/>
+        <location filename="../IOViewer.cpp" line="292"/>
         <source>OBJ target 1</source>
         <translation>L&apos;OBJ cible 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="282"/>
+        <location filename="../IOViewer.cpp" line="293"/>
         <source>Backdrop target 1</source>
         <translation>La toile de fond cible 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="283"/>
+        <location filename="../IOViewer.cpp" line="294"/>
         <source>Blend mode</source>
         <translation>Mode de mixage</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="284"/>
+        <location filename="../IOViewer.cpp" line="295"/>
         <source>Disabled</source>
         <translation>Désactivé</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="285"/>
+        <location filename="../IOViewer.cpp" line="296"/>
         <source>Additive blending</source>
         <translation>Mixage additif</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="286"/>
+        <location filename="../IOViewer.cpp" line="297"/>
         <source>Brighten</source>
         <translation>Éclaircir</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="287"/>
+        <location filename="../IOViewer.cpp" line="298"/>
         <source>Darken</source>
         <translation>Obscurcir</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="289"/>
+        <location filename="../IOViewer.cpp" line="300"/>
         <source>BG 0 target 2</source>
-        <translation>L&apos;arrière plan n°0 cible 2</translation>
+        <translation>L&apos;arrière plan nº 0 cible 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="290"/>
+        <location filename="../IOViewer.cpp" line="301"/>
         <source>BG 1 target 2</source>
-        <translation>L&apos;arrière plan n°1 cible 2</translation>
+        <translation>L&apos;arrière plan nº 1 cible 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="291"/>
+        <location filename="../IOViewer.cpp" line="302"/>
         <source>BG 2 target 2</source>
-        <translation>L&apos;arrière plan n°2 cible 2</translation>
+        <translation>L&apos;arrière plan nº 2 cible 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="292"/>
+        <location filename="../IOViewer.cpp" line="303"/>
         <source>BG 3 target 2</source>
-        <translation>L&apos;arrière plan n°3 cible 2</translation>
+        <translation>L&apos;arrière plan nº 3 cible 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="293"/>
+        <location filename="../IOViewer.cpp" line="304"/>
         <source>OBJ target 2</source>
         <translation>L&apos;OBJ cible 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="294"/>
+        <location filename="../IOViewer.cpp" line="305"/>
         <source>Backdrop target 2</source>
         <translation>La toile de fond cible 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="298"/>
+        <location filename="../IOViewer.cpp" line="309"/>
         <source>Blend A (target 1)</source>
         <translation>Mixage A (cible 1)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="299"/>
+        <location filename="../IOViewer.cpp" line="310"/>
         <source>Blend B (target 2)</source>
         <translation>Mixage A (cible 2)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="303"/>
+        <location filename="../IOViewer.cpp" line="314"/>
         <source>Blend Y</source>
         <translation>Mixage Y</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="317"/>
+        <location filename="../IOViewer.cpp" line="328"/>
+        <location filename="../IOViewer.cpp" line="1099"/>
         <source>Sweep shifts</source>
         <translation>Déplacement du balayage</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="318"/>
+        <location filename="../IOViewer.cpp" line="329"/>
+        <location filename="../IOViewer.cpp" line="1100"/>
         <source>Sweep subtract</source>
         <translation>Soustraction du balayage</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="319"/>
+        <location filename="../IOViewer.cpp" line="330"/>
+        <location filename="../IOViewer.cpp" line="1101"/>
         <source>Sweep time (in 1/128s)</source>
-        <translation>Durée de balayage (en 1/128s)</translation>
+        <translation>Durée de balayage (en 1/128&#xa0;s)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="323"/>
-        <location filename="../IOViewer.cpp" line="339"/>
-        <location filename="../IOViewer.cpp" line="363"/>
-        <location filename="../IOViewer.cpp" line="385"/>
+        <location filename="../IOViewer.cpp" line="334"/>
+        <location filename="../IOViewer.cpp" line="350"/>
+        <location filename="../IOViewer.cpp" line="374"/>
+        <location filename="../IOViewer.cpp" line="396"/>
+        <location filename="../IOViewer.cpp" line="1105"/>
+        <location filename="../IOViewer.cpp" line="1128"/>
+        <location filename="../IOViewer.cpp" line="1153"/>
+        <location filename="../IOViewer.cpp" line="1178"/>
         <source>Sound length</source>
         <translation>Longueur du son</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="324"/>
-        <location filename="../IOViewer.cpp" line="340"/>
+        <location filename="../IOViewer.cpp" line="335"/>
+        <location filename="../IOViewer.cpp" line="351"/>
+        <location filename="../IOViewer.cpp" line="1106"/>
+        <location filename="../IOViewer.cpp" line="1129"/>
         <source>Duty cycle</source>
         <translation>Cycle d&apos;utilisation</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="325"/>
-        <location filename="../IOViewer.cpp" line="341"/>
-        <location filename="../IOViewer.cpp" line="386"/>
+        <location filename="../IOViewer.cpp" line="336"/>
+        <location filename="../IOViewer.cpp" line="352"/>
+        <location filename="../IOViewer.cpp" line="397"/>
+        <location filename="../IOViewer.cpp" line="1110"/>
+        <location filename="../IOViewer.cpp" line="1133"/>
+        <location filename="../IOViewer.cpp" line="1182"/>
         <source>Envelope step time</source>
         <translation>Temps de passage des enveloppes</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="326"/>
-        <location filename="../IOViewer.cpp" line="342"/>
-        <location filename="../IOViewer.cpp" line="387"/>
+        <location filename="../IOViewer.cpp" line="337"/>
+        <location filename="../IOViewer.cpp" line="353"/>
+        <location filename="../IOViewer.cpp" line="398"/>
+        <location filename="../IOViewer.cpp" line="1111"/>
+        <location filename="../IOViewer.cpp" line="1134"/>
+        <location filename="../IOViewer.cpp" line="1183"/>
         <source>Envelope increase</source>
         <translation>Augmenter l&apos;enveloppe</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="327"/>
-        <location filename="../IOViewer.cpp" line="343"/>
-        <location filename="../IOViewer.cpp" line="388"/>
+        <location filename="../IOViewer.cpp" line="338"/>
+        <location filename="../IOViewer.cpp" line="354"/>
+        <location filename="../IOViewer.cpp" line="399"/>
+        <location filename="../IOViewer.cpp" line="1112"/>
+        <location filename="../IOViewer.cpp" line="1135"/>
+        <location filename="../IOViewer.cpp" line="1184"/>
         <source>Initial volume</source>
         <translation>Volume initial</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="331"/>
-        <location filename="../IOViewer.cpp" line="349"/>
-        <location filename="../IOViewer.cpp" line="377"/>
+        <location filename="../IOViewer.cpp" line="342"/>
+        <location filename="../IOViewer.cpp" line="360"/>
+        <location filename="../IOViewer.cpp" line="388"/>
         <source>Sound frequency</source>
         <translation>Fréquence du son</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="332"/>
-        <location filename="../IOViewer.cpp" line="350"/>
-        <location filename="../IOViewer.cpp" line="378"/>
-        <location filename="../IOViewer.cpp" line="400"/>
+        <location filename="../IOViewer.cpp" line="343"/>
+        <location filename="../IOViewer.cpp" line="361"/>
+        <location filename="../IOViewer.cpp" line="389"/>
+        <location filename="../IOViewer.cpp" line="411"/>
+        <location filename="../IOViewer.cpp" line="1121"/>
+        <location filename="../IOViewer.cpp" line="1144"/>
+        <location filename="../IOViewer.cpp" line="1171"/>
+        <location filename="../IOViewer.cpp" line="1197"/>
         <source>Timed</source>
         <translation>Chronométré</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="333"/>
-        <location filename="../IOViewer.cpp" line="351"/>
-        <location filename="../IOViewer.cpp" line="379"/>
-        <location filename="../IOViewer.cpp" line="401"/>
+        <location filename="../IOViewer.cpp" line="344"/>
+        <location filename="../IOViewer.cpp" line="362"/>
+        <location filename="../IOViewer.cpp" line="390"/>
+        <location filename="../IOViewer.cpp" line="412"/>
+        <location filename="../IOViewer.cpp" line="1122"/>
+        <location filename="../IOViewer.cpp" line="1145"/>
+        <location filename="../IOViewer.cpp" line="1172"/>
+        <location filename="../IOViewer.cpp" line="1198"/>
         <source>Reset</source>
         <translation>Réinitialiser</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="357"/>
+        <location filename="../IOViewer.cpp" line="368"/>
         <source>Double-size wave table</source>
         <translation>Double table d&apos;ondes</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="358"/>
+        <location filename="../IOViewer.cpp" line="369"/>
         <source>Active wave table</source>
         <translation>Activer tableau d&apos;ondes</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="359"/>
+        <location filename="../IOViewer.cpp" line="370"/>
+        <location filename="../IOViewer.cpp" line="1149"/>
         <source>Enable channel 3</source>
         <translation>Activer le canal 3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="364"/>
+        <location filename="../IOViewer.cpp" line="375"/>
+        <location filename="../IOViewer.cpp" line="1157"/>
         <source>Volume</source>
         <translation>Volume</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="365"/>
+        <location filename="../IOViewer.cpp" line="376"/>
+        <location filename="../IOViewer.cpp" line="1158"/>
         <source>0%</source>
-        <translation>0%</translation>
+        <translation>0&#xa0;%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="366"/>
-        <location filename="../IOViewer.cpp" line="423"/>
+        <location filename="../IOViewer.cpp" line="377"/>
+        <location filename="../IOViewer.cpp" line="434"/>
+        <location filename="../IOViewer.cpp" line="1159"/>
         <source>100%</source>
-        <translation>100%</translation>
+        <translation>100&#xa0;%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="367"/>
-        <location filename="../IOViewer.cpp" line="422"/>
+        <location filename="../IOViewer.cpp" line="378"/>
+        <location filename="../IOViewer.cpp" line="433"/>
+        <location filename="../IOViewer.cpp" line="1160"/>
         <source>50%</source>
-        <translation>50%</translation>
+        <translation>50&#xa0;%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="368"/>
-        <location filename="../IOViewer.cpp" line="421"/>
+        <location filename="../IOViewer.cpp" line="379"/>
+        <location filename="../IOViewer.cpp" line="432"/>
+        <location filename="../IOViewer.cpp" line="1161"/>
         <source>25%</source>
-        <translation>25%</translation>
+        <translation>25&#xa0;%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="369"/>
-        <location filename="../IOViewer.cpp" line="370"/>
-        <location filename="../IOViewer.cpp" line="371"/>
-        <location filename="../IOViewer.cpp" line="372"/>
+        <location filename="../IOViewer.cpp" line="380"/>
+        <location filename="../IOViewer.cpp" line="381"/>
+        <location filename="../IOViewer.cpp" line="382"/>
+        <location filename="../IOViewer.cpp" line="383"/>
         <source>75%</source>
-        <translation>75%</translation>
+        <translation>75&#xa0;%</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="394"/>
+        <location filename="../IOViewer.cpp" line="405"/>
+        <location filename="../IOViewer.cpp" line="1188"/>
         <source>Clock divider</source>
         <translation>Diviseur d&apos;horloge</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="395"/>
+        <location filename="../IOViewer.cpp" line="406"/>
+        <location filename="../IOViewer.cpp" line="1189"/>
         <source>Register stages</source>
         <translation>Étapes du registre</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="396"/>
+        <location filename="../IOViewer.cpp" line="407"/>
+        <location filename="../IOViewer.cpp" line="1190"/>
         <source>15</source>
         <translation>15</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="397"/>
+        <location filename="../IOViewer.cpp" line="408"/>
+        <location filename="../IOViewer.cpp" line="1191"/>
         <source>7</source>
         <translation>7</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="399"/>
+        <location filename="../IOViewer.cpp" line="410"/>
+        <location filename="../IOViewer.cpp" line="1193"/>
         <source>Shifter frequency</source>
         <translation>Fréquence de changement</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="407"/>
+        <location filename="../IOViewer.cpp" line="418"/>
         <source>PSG volume right</source>
         <translation>Volume droit du PSG</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="408"/>
+        <location filename="../IOViewer.cpp" line="419"/>
         <source>PSG volume left</source>
         <translation>Volume gauche du PSG</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="409"/>
-        <source>Enable channel 1 right</source>
-        <translation>Activer le canal droit n°1</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="410"/>
-        <source>Enable channel 2 right</source>
-        <translation>Activer le canal droit n°2</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="411"/>
-        <source>Enable channel 3 right</source>
-        <translation>Activer le canal droit n°3</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="412"/>
-        <source>Enable channel 4 right</source>
-        <translation>Activer le canal droit n°4</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="413"/>
-        <source>Enable channel 1 left</source>
-        <translation>Activer le canal gauche n°1</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="414"/>
-        <source>Enable channel 2 left</source>
-        <translation>Activer le canal gauche n°2</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="415"/>
-        <source>Enable channel 3 left</source>
-        <translation>Activer le canal gauche n°3</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="416"/>
-        <source>Enable channel 4 left</source>
-        <translation>Activer le canal gauche n°4</translation>
-    </message>
-    <message>
         <location filename="../IOViewer.cpp" line="420"/>
+        <location filename="../IOViewer.cpp" line="1209"/>
+        <source>Enable channel 1 right</source>
+        <translation>Activer le canal droit nº 1</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="421"/>
+        <location filename="../IOViewer.cpp" line="1210"/>
+        <source>Enable channel 2 right</source>
+        <translation>Activer le canal droit nº 2</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="422"/>
+        <location filename="../IOViewer.cpp" line="1211"/>
+        <source>Enable channel 3 right</source>
+        <translation>Activer le canal droit nº 3</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="423"/>
+        <location filename="../IOViewer.cpp" line="1212"/>
+        <source>Enable channel 4 right</source>
+        <translation>Activer le canal droit nº 4</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="424"/>
+        <location filename="../IOViewer.cpp" line="1213"/>
+        <source>Enable channel 1 left</source>
+        <translation>Activer le canal gauche nº 1</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="425"/>
+        <location filename="../IOViewer.cpp" line="1214"/>
+        <source>Enable channel 2 left</source>
+        <translation>Activer le canal gauche nº 2</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="426"/>
+        <location filename="../IOViewer.cpp" line="1215"/>
+        <source>Enable channel 3 left</source>
+        <translation>Activer le canal gauche nº 3</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="427"/>
+        <location filename="../IOViewer.cpp" line="1216"/>
+        <source>Enable channel 4 left</source>
+        <translation>Activer le canal gauche nº 4</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="431"/>
         <source>PSG master volume</source>
         <translation>Volume principal du PSG</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="426"/>
+        <location filename="../IOViewer.cpp" line="437"/>
         <source>Loud channel A</source>
         <translation>Canal fort A</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="427"/>
+        <location filename="../IOViewer.cpp" line="438"/>
         <source>Loud channel B</source>
         <translation>Canal fort B</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="428"/>
+        <location filename="../IOViewer.cpp" line="439"/>
         <source>Enable channel A right</source>
-        <translation>Activer le canal droit n°A</translation>
+        <translation>Activer le canal droit A</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="429"/>
+        <location filename="../IOViewer.cpp" line="440"/>
         <source>Enable channel A left</source>
-        <translation>Activer le canal gauche n°A</translation>
+        <translation>Activer le canal gauche A</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="430"/>
+        <location filename="../IOViewer.cpp" line="441"/>
         <source>Channel A timer</source>
         <translation>Minuteur du canal A</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="431"/>
-        <location filename="../IOViewer.cpp" line="438"/>
+        <location filename="../IOViewer.cpp" line="442"/>
+        <location filename="../IOViewer.cpp" line="449"/>
         <source>0</source>
         <translation>0</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="432"/>
-        <location filename="../IOViewer.cpp" line="439"/>
-        <location filename="../IOViewer.cpp" line="768"/>
-        <location filename="../IOViewer.cpp" line="783"/>
-        <location filename="../IOViewer.cpp" line="799"/>
-        <location filename="../IOViewer.cpp" line="815"/>
-        <location filename="../IOViewer.cpp" line="987"/>
-        <location filename="../IOViewer.cpp" line="997"/>
-        <location filename="../IOViewer.cpp" line="1007"/>
+        <location filename="../IOViewer.cpp" line="443"/>
+        <location filename="../IOViewer.cpp" line="450"/>
+        <location filename="../IOViewer.cpp" line="779"/>
+        <location filename="../IOViewer.cpp" line="794"/>
+        <location filename="../IOViewer.cpp" line="810"/>
+        <location filename="../IOViewer.cpp" line="826"/>
+        <location filename="../IOViewer.cpp" line="992"/>
+        <location filename="../IOViewer.cpp" line="1002"/>
+        <location filename="../IOViewer.cpp" line="1012"/>
         <source>1</source>
         <translation>1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="434"/>
+        <location filename="../IOViewer.cpp" line="445"/>
         <source>Channel A reset</source>
         <translation>Réinitialiser le canal A</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="435"/>
+        <location filename="../IOViewer.cpp" line="446"/>
         <source>Enable channel B right</source>
-        <translation>Activer le canal droit n°B</translation>
+        <translation>Activer le canal droit B</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="436"/>
+        <location filename="../IOViewer.cpp" line="447"/>
         <source>Enable channel B left</source>
-        <translation>Activer le canal gauche n°A</translation>
+        <translation>Activer le canal gauche A</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="437"/>
+        <location filename="../IOViewer.cpp" line="448"/>
         <source>Channel B timer</source>
         <translation>Minuteur du canal B</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="441"/>
+        <location filename="../IOViewer.cpp" line="452"/>
         <source>Channel B reset</source>
         <translation>Réinitialiser le canal B</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="445"/>
+        <location filename="../IOViewer.cpp" line="456"/>
+        <location filename="../IOViewer.cpp" line="1220"/>
         <source>Active channel 1</source>
-        <translation>Activer le canal n°1</translation>
+        <translation>Activer le canal nº 1</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="446"/>
+        <location filename="../IOViewer.cpp" line="457"/>
+        <location filename="../IOViewer.cpp" line="1221"/>
         <source>Active channel 2</source>
-        <translation>Activer le canal n°2</translation>
+        <translation>Activer le canal nº 2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="447"/>
+        <location filename="../IOViewer.cpp" line="458"/>
+        <location filename="../IOViewer.cpp" line="1222"/>
         <source>Active channel 3</source>
-        <translation>Activer le canal n°3</translation>
+        <translation>Activer le canal nº 3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="448"/>
+        <location filename="../IOViewer.cpp" line="459"/>
+        <location filename="../IOViewer.cpp" line="1223"/>
         <source>Active channel 4</source>
-        <translation>Activer le canal n°4</translation>
+        <translation>Activer le canal nº 4</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="449"/>
+        <location filename="../IOViewer.cpp" line="460"/>
+        <location filename="../IOViewer.cpp" line="1224"/>
         <source>Enable audio</source>
         <translation>Activer l&apos;audio</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="455"/>
+        <location filename="../IOViewer.cpp" line="466"/>
         <source>Bias</source>
         <translation>Biais</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="456"/>
+        <location filename="../IOViewer.cpp" line="467"/>
         <source>Resolution</source>
         <translation>Résolution</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="466"/>
-        <location filename="../IOViewer.cpp" line="467"/>
-        <location filename="../IOViewer.cpp" line="468"/>
-        <location filename="../IOViewer.cpp" line="469"/>
-        <location filename="../IOViewer.cpp" line="473"/>
-        <location filename="../IOViewer.cpp" line="474"/>
-        <location filename="../IOViewer.cpp" line="475"/>
-        <location filename="../IOViewer.cpp" line="476"/>
+        <location filename="../IOViewer.cpp" line="477"/>
+        <location filename="../IOViewer.cpp" line="478"/>
+        <location filename="../IOViewer.cpp" line="479"/>
         <location filename="../IOViewer.cpp" line="480"/>
-        <location filename="../IOViewer.cpp" line="481"/>
-        <location filename="../IOViewer.cpp" line="482"/>
-        <location filename="../IOViewer.cpp" line="483"/>
+        <location filename="../IOViewer.cpp" line="484"/>
+        <location filename="../IOViewer.cpp" line="485"/>
+        <location filename="../IOViewer.cpp" line="486"/>
         <location filename="../IOViewer.cpp" line="487"/>
-        <location filename="../IOViewer.cpp" line="488"/>
-        <location filename="../IOViewer.cpp" line="489"/>
-        <location filename="../IOViewer.cpp" line="490"/>
+        <location filename="../IOViewer.cpp" line="491"/>
+        <location filename="../IOViewer.cpp" line="492"/>
+        <location filename="../IOViewer.cpp" line="493"/>
         <location filename="../IOViewer.cpp" line="494"/>
-        <location filename="../IOViewer.cpp" line="495"/>
-        <location filename="../IOViewer.cpp" line="496"/>
-        <location filename="../IOViewer.cpp" line="497"/>
+        <location filename="../IOViewer.cpp" line="498"/>
+        <location filename="../IOViewer.cpp" line="499"/>
+        <location filename="../IOViewer.cpp" line="500"/>
         <location filename="../IOViewer.cpp" line="501"/>
-        <location filename="../IOViewer.cpp" line="502"/>
-        <location filename="../IOViewer.cpp" line="503"/>
-        <location filename="../IOViewer.cpp" line="504"/>
+        <location filename="../IOViewer.cpp" line="505"/>
+        <location filename="../IOViewer.cpp" line="506"/>
+        <location filename="../IOViewer.cpp" line="507"/>
         <location filename="../IOViewer.cpp" line="508"/>
-        <location filename="../IOViewer.cpp" line="509"/>
-        <location filename="../IOViewer.cpp" line="510"/>
-        <location filename="../IOViewer.cpp" line="511"/>
+        <location filename="../IOViewer.cpp" line="512"/>
+        <location filename="../IOViewer.cpp" line="513"/>
+        <location filename="../IOViewer.cpp" line="514"/>
         <location filename="../IOViewer.cpp" line="515"/>
-        <location filename="../IOViewer.cpp" line="516"/>
-        <location filename="../IOViewer.cpp" line="517"/>
-        <location filename="../IOViewer.cpp" line="518"/>
+        <location filename="../IOViewer.cpp" line="519"/>
+        <location filename="../IOViewer.cpp" line="520"/>
+        <location filename="../IOViewer.cpp" line="521"/>
         <location filename="../IOViewer.cpp" line="522"/>
-        <location filename="../IOViewer.cpp" line="523"/>
+        <location filename="../IOViewer.cpp" line="526"/>
         <location filename="../IOViewer.cpp" line="527"/>
         <location filename="../IOViewer.cpp" line="528"/>
-        <location filename="../IOViewer.cpp" line="532"/>
+        <location filename="../IOViewer.cpp" line="529"/>
         <location filename="../IOViewer.cpp" line="533"/>
-        <location filename="../IOViewer.cpp" line="537"/>
+        <location filename="../IOViewer.cpp" line="534"/>
         <location filename="../IOViewer.cpp" line="538"/>
+        <location filename="../IOViewer.cpp" line="539"/>
+        <location filename="../IOViewer.cpp" line="543"/>
+        <location filename="../IOViewer.cpp" line="544"/>
+        <location filename="../IOViewer.cpp" line="548"/>
+        <location filename="../IOViewer.cpp" line="549"/>
+        <location filename="../IOViewer.cpp" line="1246"/>
+        <location filename="../IOViewer.cpp" line="1247"/>
+        <location filename="../IOViewer.cpp" line="1251"/>
+        <location filename="../IOViewer.cpp" line="1252"/>
+        <location filename="../IOViewer.cpp" line="1256"/>
+        <location filename="../IOViewer.cpp" line="1257"/>
+        <location filename="../IOViewer.cpp" line="1261"/>
+        <location filename="../IOViewer.cpp" line="1262"/>
+        <location filename="../IOViewer.cpp" line="1266"/>
+        <location filename="../IOViewer.cpp" line="1267"/>
+        <location filename="../IOViewer.cpp" line="1271"/>
+        <location filename="../IOViewer.cpp" line="1272"/>
+        <location filename="../IOViewer.cpp" line="1276"/>
+        <location filename="../IOViewer.cpp" line="1277"/>
+        <location filename="../IOViewer.cpp" line="1281"/>
+        <location filename="../IOViewer.cpp" line="1282"/>
+        <location filename="../IOViewer.cpp" line="1286"/>
+        <location filename="../IOViewer.cpp" line="1287"/>
+        <location filename="../IOViewer.cpp" line="1291"/>
+        <location filename="../IOViewer.cpp" line="1292"/>
+        <location filename="../IOViewer.cpp" line="1296"/>
+        <location filename="../IOViewer.cpp" line="1297"/>
+        <location filename="../IOViewer.cpp" line="1301"/>
+        <location filename="../IOViewer.cpp" line="1302"/>
+        <location filename="../IOViewer.cpp" line="1306"/>
+        <location filename="../IOViewer.cpp" line="1307"/>
+        <location filename="../IOViewer.cpp" line="1311"/>
+        <location filename="../IOViewer.cpp" line="1312"/>
+        <location filename="../IOViewer.cpp" line="1316"/>
+        <location filename="../IOViewer.cpp" line="1317"/>
+        <location filename="../IOViewer.cpp" line="1321"/>
+        <location filename="../IOViewer.cpp" line="1322"/>
         <source>Sample</source>
         <translation>Échantillon</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="550"/>
-        <location filename="../IOViewer.cpp" line="558"/>
-        <location filename="../IOViewer.cpp" line="595"/>
-        <location filename="../IOViewer.cpp" line="603"/>
-        <location filename="../IOViewer.cpp" line="640"/>
-        <location filename="../IOViewer.cpp" line="648"/>
-        <location filename="../IOViewer.cpp" line="685"/>
-        <location filename="../IOViewer.cpp" line="693"/>
+        <location filename="../IOViewer.cpp" line="561"/>
+        <location filename="../IOViewer.cpp" line="569"/>
+        <location filename="../IOViewer.cpp" line="606"/>
+        <location filename="../IOViewer.cpp" line="614"/>
+        <location filename="../IOViewer.cpp" line="651"/>
+        <location filename="../IOViewer.cpp" line="659"/>
+        <location filename="../IOViewer.cpp" line="696"/>
+        <location filename="../IOViewer.cpp" line="704"/>
         <source>Address (bottom)</source>
         <translation>Adresse (du bas)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="554"/>
-        <location filename="../IOViewer.cpp" line="562"/>
-        <location filename="../IOViewer.cpp" line="599"/>
-        <location filename="../IOViewer.cpp" line="607"/>
-        <location filename="../IOViewer.cpp" line="644"/>
-        <location filename="../IOViewer.cpp" line="652"/>
-        <location filename="../IOViewer.cpp" line="689"/>
-        <location filename="../IOViewer.cpp" line="697"/>
+        <location filename="../IOViewer.cpp" line="565"/>
+        <location filename="../IOViewer.cpp" line="573"/>
+        <location filename="../IOViewer.cpp" line="610"/>
+        <location filename="../IOViewer.cpp" line="618"/>
+        <location filename="../IOViewer.cpp" line="655"/>
+        <location filename="../IOViewer.cpp" line="663"/>
+        <location filename="../IOViewer.cpp" line="700"/>
+        <location filename="../IOViewer.cpp" line="708"/>
         <source>Address (top)</source>
         <translation>Adresse (du haut)</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="566"/>
-        <location filename="../IOViewer.cpp" line="611"/>
-        <location filename="../IOViewer.cpp" line="656"/>
-        <location filename="../IOViewer.cpp" line="701"/>
+        <location filename="../IOViewer.cpp" line="577"/>
+        <location filename="../IOViewer.cpp" line="622"/>
+        <location filename="../IOViewer.cpp" line="667"/>
+        <location filename="../IOViewer.cpp" line="712"/>
         <source>Word count</source>
         <translation>Nombre de mots</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="570"/>
-        <location filename="../IOViewer.cpp" line="615"/>
-        <location filename="../IOViewer.cpp" line="660"/>
-        <location filename="../IOViewer.cpp" line="705"/>
+        <location filename="../IOViewer.cpp" line="581"/>
+        <location filename="../IOViewer.cpp" line="626"/>
+        <location filename="../IOViewer.cpp" line="671"/>
+        <location filename="../IOViewer.cpp" line="716"/>
         <source>Destination offset</source>
         <translation>Décalage de destination</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="571"/>
-        <location filename="../IOViewer.cpp" line="577"/>
-        <location filename="../IOViewer.cpp" line="616"/>
-        <location filename="../IOViewer.cpp" line="622"/>
-        <location filename="../IOViewer.cpp" line="661"/>
-        <location filename="../IOViewer.cpp" line="667"/>
-        <location filename="../IOViewer.cpp" line="706"/>
-        <location filename="../IOViewer.cpp" line="712"/>
+        <location filename="../IOViewer.cpp" line="582"/>
+        <location filename="../IOViewer.cpp" line="588"/>
+        <location filename="../IOViewer.cpp" line="627"/>
+        <location filename="../IOViewer.cpp" line="633"/>
+        <location filename="../IOViewer.cpp" line="672"/>
+        <location filename="../IOViewer.cpp" line="678"/>
+        <location filename="../IOViewer.cpp" line="717"/>
+        <location filename="../IOViewer.cpp" line="723"/>
         <source>Increment</source>
         <translation>Incrémenter</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="572"/>
-        <location filename="../IOViewer.cpp" line="578"/>
-        <location filename="../IOViewer.cpp" line="617"/>
-        <location filename="../IOViewer.cpp" line="623"/>
-        <location filename="../IOViewer.cpp" line="662"/>
-        <location filename="../IOViewer.cpp" line="668"/>
-        <location filename="../IOViewer.cpp" line="707"/>
-        <location filename="../IOViewer.cpp" line="713"/>
+        <location filename="../IOViewer.cpp" line="583"/>
+        <location filename="../IOViewer.cpp" line="589"/>
+        <location filename="../IOViewer.cpp" line="628"/>
+        <location filename="../IOViewer.cpp" line="634"/>
+        <location filename="../IOViewer.cpp" line="673"/>
+        <location filename="../IOViewer.cpp" line="679"/>
+        <location filename="../IOViewer.cpp" line="718"/>
+        <location filename="../IOViewer.cpp" line="724"/>
         <source>Decrement</source>
         <translation>Décrémenter</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="573"/>
-        <location filename="../IOViewer.cpp" line="579"/>
-        <location filename="../IOViewer.cpp" line="618"/>
-        <location filename="../IOViewer.cpp" line="624"/>
-        <location filename="../IOViewer.cpp" line="663"/>
-        <location filename="../IOViewer.cpp" line="669"/>
-        <location filename="../IOViewer.cpp" line="708"/>
-        <location filename="../IOViewer.cpp" line="714"/>
+        <location filename="../IOViewer.cpp" line="584"/>
+        <location filename="../IOViewer.cpp" line="590"/>
+        <location filename="../IOViewer.cpp" line="629"/>
+        <location filename="../IOViewer.cpp" line="635"/>
+        <location filename="../IOViewer.cpp" line="674"/>
+        <location filename="../IOViewer.cpp" line="680"/>
+        <location filename="../IOViewer.cpp" line="719"/>
+        <location filename="../IOViewer.cpp" line="725"/>
         <source>Fixed</source>
         <translation>Fixé</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="574"/>
-        <location filename="../IOViewer.cpp" line="619"/>
-        <location filename="../IOViewer.cpp" line="664"/>
-        <location filename="../IOViewer.cpp" line="709"/>
-        <source>Increment and reload</source>
-        <translation>Incrémenter et recharger</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="576"/>
-        <location filename="../IOViewer.cpp" line="621"/>
-        <location filename="../IOViewer.cpp" line="666"/>
-        <location filename="../IOViewer.cpp" line="711"/>
-        <source>Source offset</source>
-        <translation>Décalage de source</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="582"/>
-        <location filename="../IOViewer.cpp" line="627"/>
-        <location filename="../IOViewer.cpp" line="672"/>
-        <location filename="../IOViewer.cpp" line="718"/>
-        <source>Repeat</source>
-        <translation>Répèter</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="583"/>
-        <location filename="../IOViewer.cpp" line="628"/>
-        <location filename="../IOViewer.cpp" line="673"/>
-        <location filename="../IOViewer.cpp" line="719"/>
-        <source>32-bit</source>
-        <translation>32-bit</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="584"/>
-        <location filename="../IOViewer.cpp" line="629"/>
-        <location filename="../IOViewer.cpp" line="674"/>
-        <location filename="../IOViewer.cpp" line="720"/>
-        <source>Start timing</source>
-        <translation>Début du chronométrage</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="585"/>
         <location filename="../IOViewer.cpp" line="630"/>
         <location filename="../IOViewer.cpp" line="675"/>
-        <location filename="../IOViewer.cpp" line="721"/>
-        <source>Immediate</source>
-        <translation>Immédiat</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="586"/>
-        <location filename="../IOViewer.cpp" line="631"/>
-        <location filename="../IOViewer.cpp" line="676"/>
-        <location filename="../IOViewer.cpp" line="722"/>
-        <location filename="../IOViewer.cpp" line="939"/>
-        <location filename="../IOViewer.cpp" line="956"/>
-        <source>VBlank</source>
-        <translation>VBlank</translation>
+        <location filename="../IOViewer.cpp" line="720"/>
+        <source>Increment and reload</source>
+        <translation>Incrémenter et recharger</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="587"/>
         <location filename="../IOViewer.cpp" line="632"/>
         <location filename="../IOViewer.cpp" line="677"/>
-        <location filename="../IOViewer.cpp" line="723"/>
-        <location filename="../IOViewer.cpp" line="940"/>
-        <location filename="../IOViewer.cpp" line="957"/>
+        <location filename="../IOViewer.cpp" line="722"/>
+        <source>Source offset</source>
+        <translation>Décalage de source</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="593"/>
+        <location filename="../IOViewer.cpp" line="638"/>
+        <location filename="../IOViewer.cpp" line="683"/>
+        <location filename="../IOViewer.cpp" line="729"/>
+        <source>Repeat</source>
+        <translation>Répèter</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="594"/>
+        <location filename="../IOViewer.cpp" line="639"/>
+        <location filename="../IOViewer.cpp" line="684"/>
+        <location filename="../IOViewer.cpp" line="730"/>
+        <source>32-bit</source>
+        <translation>32-bit</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="595"/>
+        <location filename="../IOViewer.cpp" line="640"/>
+        <location filename="../IOViewer.cpp" line="685"/>
+        <location filename="../IOViewer.cpp" line="731"/>
+        <source>Start timing</source>
+        <translation>Début du chronométrage</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="596"/>
+        <location filename="../IOViewer.cpp" line="641"/>
+        <location filename="../IOViewer.cpp" line="686"/>
+        <location filename="../IOViewer.cpp" line="732"/>
+        <location filename="../IOViewer.cpp" line="1442"/>
+        <source>Immediate</source>
+        <translation>Immédiat</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="597"/>
+        <location filename="../IOViewer.cpp" line="642"/>
+        <location filename="../IOViewer.cpp" line="687"/>
+        <location filename="../IOViewer.cpp" line="733"/>
+        <location filename="../IOViewer.cpp" line="944"/>
+        <location filename="../IOViewer.cpp" line="961"/>
+        <location filename="../IOViewer.cpp" line="1091"/>
+        <location filename="../IOViewer.cpp" line="1552"/>
+        <source>VBlank</source>
+        <translation>VBlank</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="598"/>
+        <location filename="../IOViewer.cpp" line="643"/>
+        <location filename="../IOViewer.cpp" line="688"/>
+        <location filename="../IOViewer.cpp" line="734"/>
+        <location filename="../IOViewer.cpp" line="945"/>
+        <location filename="../IOViewer.cpp" line="962"/>
+        <location filename="../IOViewer.cpp" line="1443"/>
         <source>HBlank</source>
         <translation>HBlank</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="590"/>
-        <location filename="../IOViewer.cpp" line="635"/>
-        <location filename="../IOViewer.cpp" line="680"/>
-        <location filename="../IOViewer.cpp" line="726"/>
-        <location filename="../IOViewer.cpp" line="773"/>
-        <location filename="../IOViewer.cpp" line="789"/>
-        <location filename="../IOViewer.cpp" line="805"/>
-        <location filename="../IOViewer.cpp" line="821"/>
-        <location filename="../IOViewer.cpp" line="881"/>
+        <location filename="../IOViewer.cpp" line="601"/>
+        <location filename="../IOViewer.cpp" line="646"/>
+        <location filename="../IOViewer.cpp" line="691"/>
+        <location filename="../IOViewer.cpp" line="737"/>
+        <location filename="../IOViewer.cpp" line="784"/>
+        <location filename="../IOViewer.cpp" line="800"/>
+        <location filename="../IOViewer.cpp" line="816"/>
+        <location filename="../IOViewer.cpp" line="832"/>
+        <location filename="../IOViewer.cpp" line="892"/>
         <source>IRQ</source>
         <translation>IRQ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="591"/>
-        <location filename="../IOViewer.cpp" line="636"/>
-        <location filename="../IOViewer.cpp" line="681"/>
-        <location filename="../IOViewer.cpp" line="727"/>
-        <location filename="../IOViewer.cpp" line="774"/>
-        <location filename="../IOViewer.cpp" line="790"/>
-        <location filename="../IOViewer.cpp" line="806"/>
-        <location filename="../IOViewer.cpp" line="822"/>
+        <location filename="../IOViewer.cpp" line="602"/>
+        <location filename="../IOViewer.cpp" line="647"/>
+        <location filename="../IOViewer.cpp" line="692"/>
+        <location filename="../IOViewer.cpp" line="738"/>
+        <location filename="../IOViewer.cpp" line="785"/>
+        <location filename="../IOViewer.cpp" line="801"/>
+        <location filename="../IOViewer.cpp" line="817"/>
+        <location filename="../IOViewer.cpp" line="833"/>
+        <location filename="../IOViewer.cpp" line="1073"/>
+        <location filename="../IOViewer.cpp" line="1450"/>
+        <location filename="../IOViewer.cpp" line="1454"/>
         <source>Enable</source>
         <translation>Activer</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="633"/>
-        <location filename="../IOViewer.cpp" line="678"/>
-        <location filename="../IOViewer.cpp" line="724"/>
+        <location filename="../IOViewer.cpp" line="644"/>
+        <location filename="../IOViewer.cpp" line="689"/>
+        <location filename="../IOViewer.cpp" line="735"/>
         <source>Audio FIFO</source>
         <translation>Audio FIFO</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="715"/>
+        <location filename="../IOViewer.cpp" line="726"/>
         <source>Video Capture</source>
         <translation>Capture Vidéo</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="717"/>
+        <location filename="../IOViewer.cpp" line="728"/>
         <source>DRQ</source>
         <translation>DRQ</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="763"/>
-        <location filename="../IOViewer.cpp" line="778"/>
-        <location filename="../IOViewer.cpp" line="794"/>
-        <location filename="../IOViewer.cpp" line="810"/>
+        <location filename="../IOViewer.cpp" line="774"/>
+        <location filename="../IOViewer.cpp" line="789"/>
+        <location filename="../IOViewer.cpp" line="805"/>
+        <location filename="../IOViewer.cpp" line="821"/>
+        <location filename="../IOViewer.cpp" line="1043"/>
+        <location filename="../IOViewer.cpp" line="1055"/>
+        <location filename="../IOViewer.cpp" line="1059"/>
+        <location filename="../IOViewer.cpp" line="1063"/>
         <source>Value</source>
         <translation>Valeur</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="767"/>
-        <location filename="../IOViewer.cpp" line="782"/>
-        <location filename="../IOViewer.cpp" line="798"/>
-        <location filename="../IOViewer.cpp" line="814"/>
+        <location filename="../IOViewer.cpp" line="778"/>
+        <location filename="../IOViewer.cpp" line="793"/>
+        <location filename="../IOViewer.cpp" line="809"/>
+        <location filename="../IOViewer.cpp" line="825"/>
         <source>Scale</source>
-        <translation>Echelle</translation>
+        <translation>Échelle</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="769"/>
-        <location filename="../IOViewer.cpp" line="784"/>
-        <location filename="../IOViewer.cpp" line="800"/>
-        <location filename="../IOViewer.cpp" line="816"/>
+        <location filename="../IOViewer.cpp" line="780"/>
+        <location filename="../IOViewer.cpp" line="795"/>
+        <location filename="../IOViewer.cpp" line="811"/>
+        <location filename="../IOViewer.cpp" line="827"/>
+        <location filename="../IOViewer.cpp" line="1070"/>
         <source>1/64</source>
         <translation>1/64</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="770"/>
-        <location filename="../IOViewer.cpp" line="785"/>
-        <location filename="../IOViewer.cpp" line="801"/>
-        <location filename="../IOViewer.cpp" line="817"/>
+        <location filename="../IOViewer.cpp" line="781"/>
+        <location filename="../IOViewer.cpp" line="796"/>
+        <location filename="../IOViewer.cpp" line="812"/>
+        <location filename="../IOViewer.cpp" line="828"/>
+        <location filename="../IOViewer.cpp" line="1071"/>
         <source>1/256</source>
         <translation>1/256</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="771"/>
-        <location filename="../IOViewer.cpp" line="786"/>
-        <location filename="../IOViewer.cpp" line="802"/>
-        <location filename="../IOViewer.cpp" line="818"/>
+        <location filename="../IOViewer.cpp" line="782"/>
+        <location filename="../IOViewer.cpp" line="797"/>
+        <location filename="../IOViewer.cpp" line="813"/>
+        <location filename="../IOViewer.cpp" line="829"/>
+        <location filename="../IOViewer.cpp" line="1068"/>
         <source>1/1024</source>
         <translation>1/1024</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="788"/>
-        <location filename="../IOViewer.cpp" line="804"/>
-        <location filename="../IOViewer.cpp" line="820"/>
+        <location filename="../IOViewer.cpp" line="799"/>
+        <location filename="../IOViewer.cpp" line="815"/>
+        <location filename="../IOViewer.cpp" line="831"/>
         <source>Cascade</source>
         <translation>Cascade</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="858"/>
-        <location filename="../IOViewer.cpp" line="871"/>
+        <location filename="../IOViewer.cpp" line="869"/>
+        <location filename="../IOViewer.cpp" line="882"/>
         <source>A</source>
         <translatorcomment>Do not use the English translation of this word as no game console manufacturer has translated it.</translatorcomment>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="859"/>
-        <location filename="../IOViewer.cpp" line="872"/>
+        <location filename="../IOViewer.cpp" line="870"/>
+        <location filename="../IOViewer.cpp" line="883"/>
         <source>B</source>
         <translatorcomment>Do not use the English translation of this word as no game console manufacturer has translated it.</translatorcomment>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="860"/>
-        <location filename="../IOViewer.cpp" line="873"/>
+        <location filename="../IOViewer.cpp" line="871"/>
+        <location filename="../IOViewer.cpp" line="884"/>
         <source>Select</source>
         <translatorcomment>Do not use the English translation of this word as no game console manufacturer has translated it.</translatorcomment>
         <translation>Select</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="861"/>
-        <location filename="../IOViewer.cpp" line="874"/>
+        <location filename="../IOViewer.cpp" line="872"/>
+        <location filename="../IOViewer.cpp" line="885"/>
         <source>Start</source>
         <translatorcomment>Do not use the English translation of this word as no game console manufacturer has translated it.</translatorcomment>
         <translation>Start</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="862"/>
-        <location filename="../IOViewer.cpp" line="875"/>
+        <location filename="../IOViewer.cpp" line="873"/>
+        <location filename="../IOViewer.cpp" line="886"/>
         <source>Right</source>
         <translatorcomment>Do not use the English translation of this word as no game console manufacturer has translated it.</translatorcomment>
-        <translation>Right</translation>
+        <translation>Droite</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="863"/>
-        <location filename="../IOViewer.cpp" line="876"/>
+        <location filename="../IOViewer.cpp" line="874"/>
+        <location filename="../IOViewer.cpp" line="887"/>
         <source>Left</source>
         <translatorcomment>Do not use the English translation of this word as no game console manufacturer has translated it.</translatorcomment>
-        <translation>Left</translation>
+        <translation>Gauche</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="864"/>
-        <location filename="../IOViewer.cpp" line="877"/>
+        <location filename="../IOViewer.cpp" line="875"/>
+        <location filename="../IOViewer.cpp" line="888"/>
         <source>Up</source>
         <translatorcomment>Do not use the English translation of this word as no game console manufacturer has translated it.</translatorcomment>
-        <translation>Up</translation>
+        <translation>Haut</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="865"/>
-        <location filename="../IOViewer.cpp" line="878"/>
+        <location filename="../IOViewer.cpp" line="876"/>
+        <location filename="../IOViewer.cpp" line="889"/>
         <source>Down</source>
         <translatorcomment>Do not use the English translation of this word as no game console manufacturer has translated it.</translatorcomment>
-        <translation>Down</translation>
+        <translation>Bas</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="866"/>
-        <location filename="../IOViewer.cpp" line="879"/>
+        <location filename="../IOViewer.cpp" line="877"/>
+        <location filename="../IOViewer.cpp" line="890"/>
         <source>R</source>
         <translatorcomment>Do not use the English translation of this word as no game console manufacturer has translated it.</translatorcomment>
         <translation>R</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="867"/>
-        <location filename="../IOViewer.cpp" line="880"/>
+        <location filename="../IOViewer.cpp" line="878"/>
+        <location filename="../IOViewer.cpp" line="891"/>
         <source>L</source>
         <translatorcomment>Do not use the English translation of this word as no game console manufacturer has translated it.</translatorcomment>
         <translation>L</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="882"/>
+        <location filename="../IOViewer.cpp" line="893"/>
         <source>Condition</source>
         <translation>Condition</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="886"/>
+        <location filename="../IOViewer.cpp" line="897"/>
         <source>SC</source>
         <translation>SC</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="887"/>
+        <location filename="../IOViewer.cpp" line="898"/>
         <source>SD</source>
         <translation>SD</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="888"/>
+        <location filename="../IOViewer.cpp" line="899"/>
         <source>SI</source>
         <translation>SI</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="889"/>
+        <location filename="../IOViewer.cpp" line="900"/>
         <source>SO</source>
         <translation>SO</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="941"/>
-        <location filename="../IOViewer.cpp" line="958"/>
+        <location filename="../IOViewer.cpp" line="946"/>
+        <location filename="../IOViewer.cpp" line="963"/>
         <source>VCounter</source>
         <translation>VCounter</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="942"/>
-        <location filename="../IOViewer.cpp" line="959"/>
-        <source>Timer 0</source>
-        <translation>Compteur n°0</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="943"/>
-        <location filename="../IOViewer.cpp" line="960"/>
-        <source>Timer 1</source>
-        <translation>Compteur n°1</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="944"/>
-        <location filename="../IOViewer.cpp" line="961"/>
-        <source>Timer 2</source>
-        <translation>Compteur n°2</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="945"/>
-        <location filename="../IOViewer.cpp" line="962"/>
-        <source>Timer 3</source>
-        <translation>Compteur n°3</translation>
-    </message>
-    <message>
-        <location filename="../IOViewer.cpp" line="946"/>
-        <location filename="../IOViewer.cpp" line="963"/>
-        <source>SIO</source>
-        <translation>SIO</translation>
-    </message>
-    <message>
         <location filename="../IOViewer.cpp" line="947"/>
         <location filename="../IOViewer.cpp" line="964"/>
-        <source>DMA 0</source>
-        <translation>DMA n°0</translation>
+        <source>Timer 0</source>
+        <translation>Compteur nº 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="948"/>
         <location filename="../IOViewer.cpp" line="965"/>
-        <source>DMA 1</source>
-        <translation>DMA n°1</translation>
+        <source>Timer 1</source>
+        <translation>Compteur nº 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="949"/>
         <location filename="../IOViewer.cpp" line="966"/>
-        <source>DMA 2</source>
-        <translation>DMA n°2</translation>
+        <source>Timer 2</source>
+        <translation>Compteur nº 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="950"/>
         <location filename="../IOViewer.cpp" line="967"/>
-        <source>DMA 3</source>
-        <translation>DMA n°3</translation>
+        <source>Timer 3</source>
+        <translation>Compteur nº 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="951"/>
         <location filename="../IOViewer.cpp" line="968"/>
+        <source>SIO</source>
+        <translation>SIO</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="952"/>
+        <location filename="../IOViewer.cpp" line="969"/>
+        <source>DMA 0</source>
+        <translation>DMA nº 0</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="953"/>
+        <location filename="../IOViewer.cpp" line="970"/>
+        <source>DMA 1</source>
+        <translation>DMA nº 1</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="954"/>
+        <location filename="../IOViewer.cpp" line="971"/>
+        <source>DMA 2</source>
+        <translation>DMA nº 2</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="955"/>
+        <location filename="../IOViewer.cpp" line="972"/>
+        <source>DMA 3</source>
+        <translation>DMA nº 3</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="956"/>
+        <location filename="../IOViewer.cpp" line="973"/>
         <source>Keypad</source>
         <translatorcomment>Do not use the English translation of this word as no game console manufacturer has translated it.</translatorcomment>
         <translation>Keypad</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="952"/>
-        <location filename="../IOViewer.cpp" line="969"/>
+        <location filename="../IOViewer.cpp" line="957"/>
+        <location filename="../IOViewer.cpp" line="974"/>
         <source>Gamepak</source>
         <translation>Gamepak</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="973"/>
+        <location filename="../IOViewer.cpp" line="978"/>
         <source>SRAM wait</source>
         <translation>Attente de la SRAM</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="974"/>
-        <location filename="../IOViewer.cpp" line="980"/>
-        <location filename="../IOViewer.cpp" line="990"/>
-        <location filename="../IOViewer.cpp" line="996"/>
-        <location filename="../IOViewer.cpp" line="1000"/>
+        <location filename="../IOViewer.cpp" line="979"/>
+        <location filename="../IOViewer.cpp" line="985"/>
+        <location filename="../IOViewer.cpp" line="995"/>
+        <location filename="../IOViewer.cpp" line="1001"/>
+        <location filename="../IOViewer.cpp" line="1005"/>
         <source>4</source>
         <translation>4</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="975"/>
-        <location filename="../IOViewer.cpp" line="981"/>
-        <location filename="../IOViewer.cpp" line="991"/>
-        <location filename="../IOViewer.cpp" line="1001"/>
+        <location filename="../IOViewer.cpp" line="980"/>
+        <location filename="../IOViewer.cpp" line="986"/>
+        <location filename="../IOViewer.cpp" line="996"/>
+        <location filename="../IOViewer.cpp" line="1006"/>
         <source>3</source>
         <translation>3</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="976"/>
-        <location filename="../IOViewer.cpp" line="982"/>
-        <location filename="../IOViewer.cpp" line="986"/>
-        <location filename="../IOViewer.cpp" line="992"/>
-        <location filename="../IOViewer.cpp" line="1002"/>
+        <location filename="../IOViewer.cpp" line="981"/>
+        <location filename="../IOViewer.cpp" line="987"/>
+        <location filename="../IOViewer.cpp" line="991"/>
+        <location filename="../IOViewer.cpp" line="997"/>
+        <location filename="../IOViewer.cpp" line="1007"/>
         <source>2</source>
         <translation>2</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="977"/>
-        <location filename="../IOViewer.cpp" line="983"/>
-        <location filename="../IOViewer.cpp" line="993"/>
-        <location filename="../IOViewer.cpp" line="1003"/>
-        <location filename="../IOViewer.cpp" line="1006"/>
+        <location filename="../IOViewer.cpp" line="982"/>
+        <location filename="../IOViewer.cpp" line="988"/>
+        <location filename="../IOViewer.cpp" line="998"/>
+        <location filename="../IOViewer.cpp" line="1008"/>
+        <location filename="../IOViewer.cpp" line="1011"/>
         <source>8</source>
         <translation>8</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="979"/>
+        <location filename="../IOViewer.cpp" line="984"/>
         <source>Cart 0 non-sequential</source>
         <translation>Cart 0 non-séquentiel</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="985"/>
+        <location filename="../IOViewer.cpp" line="990"/>
         <source>Cart 0 sequential</source>
         <translation>Cart 0 séquentiel</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="989"/>
+        <location filename="../IOViewer.cpp" line="994"/>
         <source>Cart 1 non-sequential</source>
         <translation>Cart 1 non-séquentiel</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="995"/>
+        <location filename="../IOViewer.cpp" line="1000"/>
         <source>Cart 1 sequential</source>
         <translation>Cart 1 séquentiel</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="999"/>
+        <location filename="../IOViewer.cpp" line="1004"/>
         <source>Cart 2 non-sequential</source>
         <translation>Cart 2 non-séquentiel</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1005"/>
+        <location filename="../IOViewer.cpp" line="1010"/>
         <source>Cart 2 sequential</source>
         <translation>Cart 2 séquentiel</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1009"/>
+        <location filename="../IOViewer.cpp" line="1014"/>
         <source>PHI terminal</source>
         <translation>Terminal PHI</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1010"/>
+        <location filename="../IOViewer.cpp" line="1015"/>
+        <location filename="../IOViewer.cpp" line="1451"/>
         <source>Disable</source>
         <translation>Désactiver</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1011"/>
+        <location filename="../IOViewer.cpp" line="1016"/>
         <source>4.19MHz</source>
-        <translation>4.19MHz</translation>
+        <translation>4,19&#xa0;MHz</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1012"/>
+        <location filename="../IOViewer.cpp" line="1017"/>
         <source>8.38MHz</source>
-        <translation>8.38MHz</translation>
+        <translation>8,38&#xa0;MHz</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1013"/>
+        <location filename="../IOViewer.cpp" line="1018"/>
         <source>16.78MHz</source>
-        <translation>16.78MHz</translation>
+        <translation>16,78&#xa0;MHz</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1015"/>
+        <location filename="../IOViewer.cpp" line="1020"/>
         <source>Gamepak prefetch</source>
         <translation>Pré récupération du Gamepak</translation>
     </message>
     <message>
-        <location filename="../IOViewer.cpp" line="1021"/>
+        <location filename="../IOViewer.cpp" line="1026"/>
         <source>Enable IRQs</source>
         <translation>Activer les IRQs</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1034"/>
+        <source>Right/A</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1035"/>
+        <source>Left/B</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1036"/>
+        <source>Up/Select</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1037"/>
+        <source>Down/Start</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1038"/>
+        <source>Active D-pad</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1039"/>
+        <source>Active face buttons</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1047"/>
+        <source>Internal clock</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1048"/>
+        <source>32× clocking (CGB only)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1049"/>
+        <source>Transfer active</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1067"/>
+        <source>Divider</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1069"/>
+        <source>1/16</source>
+        <translation type="unfinished">4K {1/16?}</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1092"/>
+        <location filename="../IOViewer.cpp" line="1553"/>
+        <source>LCD STAT</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1093"/>
+        <location filename="../IOViewer.cpp" line="1554"/>
+        <source>Timer</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1094"/>
+        <location filename="../IOViewer.cpp" line="1555"/>
+        <source>Serial</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1095"/>
+        <location filename="../IOViewer.cpp" line="1556"/>
+        <source>Joypad</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1116"/>
+        <location filename="../IOViewer.cpp" line="1139"/>
+        <location filename="../IOViewer.cpp" line="1166"/>
+        <source>Sound frequency (bottom)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1120"/>
+        <location filename="../IOViewer.cpp" line="1143"/>
+        <location filename="../IOViewer.cpp" line="1170"/>
+        <source>Sound frequency (top)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1202"/>
+        <source>Volume right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1203"/>
+        <source>Output right</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1204"/>
+        <source>Volume left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1205"/>
+        <source>Output left</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1326"/>
+        <source>Background enable/priority</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1327"/>
+        <source>Enable sprites</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1328"/>
+        <source>Double-height sprites</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1329"/>
+        <source>Background tile map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1330"/>
+        <location filename="../IOViewer.cpp" line="1339"/>
+        <source>0x9800 – 0x9BFF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1331"/>
+        <location filename="../IOViewer.cpp" line="1340"/>
+        <source>0x9C00 – 0x9FFF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1333"/>
+        <source>Background tile data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1334"/>
+        <source>0x8800 – 0x87FF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1335"/>
+        <source>0x8000 – 0x8FFF</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1337"/>
+        <source>Enable window</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1338"/>
+        <source>Window tile map</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1342"/>
+        <source>Enable LCD</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1346"/>
+        <source>Mode</source>
+        <translation type="unfinished">Mode</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1347"/>
+        <source>0: HBlank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1348"/>
+        <source>1: VBlank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1349"/>
+        <source>2: OAM scan</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1350"/>
+        <source>3: HDraw</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1352"/>
+        <source>In LYC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1353"/>
+        <source>Enable HBlank (mode 0) IRQ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1354"/>
+        <source>Enable VBlank (mode 1) IRQ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1355"/>
+        <source>Enable OAM (mode 2) IRQ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1356"/>
+        <source>Enable LYC IRQ</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1368"/>
+        <source>Current Y coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1372"/>
+        <source>Comparison Y coordinate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1376"/>
+        <source>Start upper byte</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1380"/>
+        <location filename="../IOViewer.cpp" line="1387"/>
+        <location filename="../IOViewer.cpp" line="1394"/>
+        <source>Color 0 shade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1381"/>
+        <location filename="../IOViewer.cpp" line="1388"/>
+        <location filename="../IOViewer.cpp" line="1395"/>
+        <source>Color 1 shade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1382"/>
+        <location filename="../IOViewer.cpp" line="1389"/>
+        <location filename="../IOViewer.cpp" line="1396"/>
+        <source>Color 2 shade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1383"/>
+        <location filename="../IOViewer.cpp" line="1390"/>
+        <location filename="../IOViewer.cpp" line="1397"/>
+        <source>Color 3 shade</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1411"/>
+        <source>Prepare to switch speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1412"/>
+        <source>Double speed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1418"/>
+        <source>VRAM bank</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1424"/>
+        <source>Source (top)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1428"/>
+        <source>Source (bottom)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1432"/>
+        <source>Destination (top)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1436"/>
+        <source>Destination (bottom)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1440"/>
+        <source>Length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1441"/>
+        <source>Timing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1448"/>
+        <source>Write bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1449"/>
+        <source>Read bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1452"/>
+        <location filename="../IOViewer.cpp" line="1453"/>
+        <source>Unknown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1493"/>
+        <location filename="../IOViewer.cpp" line="1505"/>
+        <source>Current index</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1494"/>
+        <location filename="../IOViewer.cpp" line="1506"/>
+        <source>Auto-increment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1498"/>
+        <location filename="../IOViewer.cpp" line="1510"/>
+        <source>Red</source>
+        <translation type="unfinished">Rouge</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1499"/>
+        <location filename="../IOViewer.cpp" line="1511"/>
+        <source>Green (bottom)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1500"/>
+        <location filename="../IOViewer.cpp" line="1512"/>
+        <source>Green (top)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1501"/>
+        <location filename="../IOViewer.cpp" line="1513"/>
+        <source>Blue</source>
+        <translation type="unfinished">Bleu</translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1517"/>
+        <source>Sprite ordering</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1518"/>
+        <source>OAM order</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1519"/>
+        <source>x coordinate sorting</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../IOViewer.cpp" line="1530"/>
+        <source>WRAM bank</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2813,12 +3279,12 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../LoadSaveState.cpp" line="74"/>
         <source>Load State</source>
-        <translation>Charger un Etat</translation>
+        <translation>Charger un état</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="74"/>
         <source>Save State</source>
-        <translation>Sauvegarder un Etat</translation>
+        <translation>Sauvegarder un état</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="183"/>
@@ -2885,7 +3351,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../LogController.cpp" line="68"/>
         <source>[%1] %2: %3</source>
-        <translation>[%1] %2: %3</translation>
+        <translation>[%1] %2&#xa0;: %3</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="79"/>
@@ -2938,82 +3404,82 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::MapView</name>
     <message>
-        <location filename="../MapView.cpp" line="48"/>
+        <location filename="../MapView.cpp" line="47"/>
         <source>Priority</source>
         <translation>Priorité</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="49"/>
-        <location filename="../MapView.cpp" line="61"/>
+        <location filename="../MapView.cpp" line="48"/>
+        <location filename="../MapView.cpp" line="60"/>
         <source>Map base</source>
         <translation type="unfinished">Fond de carte</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="50"/>
-        <location filename="../MapView.cpp" line="62"/>
+        <location filename="../MapView.cpp" line="49"/>
+        <location filename="../MapView.cpp" line="61"/>
         <source>Tile base</source>
         <translation type="unfinished">Fond de tuile</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="51"/>
+        <location filename="../MapView.cpp" line="50"/>
         <source>Size</source>
         <translation>Taille</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="52"/>
-        <location filename="../MapView.cpp" line="63"/>
+        <location filename="../MapView.cpp" line="51"/>
+        <location filename="../MapView.cpp" line="62"/>
         <source>Offset</source>
         <translation type="unfinished">Compensation</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="53"/>
+        <location filename="../MapView.cpp" line="52"/>
         <source>Xform</source>
         <translation>Xform</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="107"/>
+        <location filename="../MapView.cpp" line="106"/>
         <source>Map Addr.</source>
         <translation>Adresse de la map.</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="108"/>
+        <location filename="../MapView.cpp" line="107"/>
         <source>Mirror</source>
         <translation>Miroir</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="136"/>
+        <location filename="../MapView.cpp" line="135"/>
         <source>None</source>
         <translation>Aucun</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="138"/>
+        <location filename="../MapView.cpp" line="137"/>
         <source>Both</source>
         <translation>Les deux</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="140"/>
+        <location filename="../MapView.cpp" line="139"/>
         <source>Horizontal</source>
         <translation>Horizontal</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="142"/>
+        <location filename="../MapView.cpp" line="141"/>
         <source>Vertical</source>
         <translation>Vertical</translation>
     </message>
     <message>
+        <location filename="../MapView.cpp" line="167"/>
         <location filename="../MapView.cpp" line="168"/>
-        <location filename="../MapView.cpp" line="169"/>
-        <location filename="../MapView.cpp" line="217"/>
+        <location filename="../MapView.cpp" line="216"/>
         <source>N/A</source>
-        <translation>N/A</translation>
+        <translation>s.o.</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="260"/>
+        <location filename="../MapView.cpp" line="259"/>
         <source>Export map</source>
         <translation>Exporter la map</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="261"/>
+        <location filename="../MapView.cpp" line="260"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
@@ -3034,62 +3500,62 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::MemoryModel</name>
     <message>
-        <location filename="../MemoryModel.cpp" line="44"/>
+        <location filename="../MemoryModel.cpp" line="43"/>
         <source>Copy selection</source>
         <translation>Copier la sélection</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="49"/>
+        <location filename="../MemoryModel.cpp" line="48"/>
         <source>Save selection</source>
         <translation>Sauvegarder la sélection</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="54"/>
+        <location filename="../MemoryModel.cpp" line="53"/>
         <source>Paste</source>
         <translation>Coller</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="59"/>
+        <location filename="../MemoryModel.cpp" line="58"/>
         <source>Load</source>
         <translation>Charger</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="108"/>
+        <location filename="../MemoryModel.cpp" line="107"/>
         <source>All</source>
         <translation>Tout</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="153"/>
+        <location filename="../MemoryModel.cpp" line="152"/>
         <source>Load TBL</source>
         <translation>Charger le TBL</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="207"/>
+        <location filename="../MemoryModel.cpp" line="206"/>
         <source>Save selected memory</source>
         <translation>Sauvegarder la mémoire sélectionné</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="213"/>
+        <location filename="../MemoryModel.cpp" line="212"/>
         <source>Failed to open output file: %1</source>
         <translation>Impossible d&apos;ouvrir le fichier de sortie : %1</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="221"/>
+        <location filename="../MemoryModel.cpp" line="220"/>
         <source>Load memory</source>
         <translation>Charger la mémoire</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="227"/>
+        <location filename="../MemoryModel.cpp" line="226"/>
         <source>Failed to open input file: %1</source>
         <translation>Impossible d&apos;ouvrir le fichier d&apos;entrée : %1</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="342"/>
+        <location filename="../MemoryModel.cpp" line="341"/>
         <source>TBL</source>
         <translation>TBL</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="342"/>
+        <location filename="../MemoryModel.cpp" line="341"/>
         <source>ISO-8859-1</source>
         <translation>ISO-8859-1</translation>
     </message>
@@ -3120,61 +3586,61 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::ObjView</name>
     <message>
-        <location filename="../ObjView.cpp" line="155"/>
-        <location filename="../ObjView.cpp" line="243"/>
+        <location filename="../ObjView.cpp" line="154"/>
+        <location filename="../ObjView.cpp" line="242"/>
         <source>0x%0</source>
         <translation>0x%0</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="176"/>
+        <location filename="../ObjView.cpp" line="175"/>
         <source>Off</source>
-        <translation>Off</translation>
+        <translation>Désactivé</translation>
     </message>
     <message>
+        <location filename="../ObjView.cpp" line="176"/>
         <location filename="../ObjView.cpp" line="177"/>
         <location filename="../ObjView.cpp" line="178"/>
         <location filename="../ObjView.cpp" line="179"/>
-        <location filename="../ObjView.cpp" line="180"/>
+        <location filename="../ObjView.cpp" line="250"/>
         <location filename="../ObjView.cpp" line="251"/>
         <location filename="../ObjView.cpp" line="252"/>
         <location filename="../ObjView.cpp" line="253"/>
-        <location filename="../ObjView.cpp" line="254"/>
         <source>---</source>
         <translation>---</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="185"/>
+        <location filename="../ObjView.cpp" line="184"/>
         <source>Normal</source>
         <translation>Normal</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="188"/>
+        <location filename="../ObjView.cpp" line="187"/>
         <source>Trans</source>
         <translation>Trans</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="191"/>
+        <location filename="../ObjView.cpp" line="190"/>
         <source>OBJWIN</source>
         <translation>OBJWIN</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="194"/>
+        <location filename="../ObjView.cpp" line="193"/>
         <source>Invalid</source>
         <translation>Invalide</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="250"/>
-        <location filename="../ObjView.cpp" line="255"/>
+        <location filename="../ObjView.cpp" line="249"/>
+        <location filename="../ObjView.cpp" line="254"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="280"/>
+        <location filename="../ObjView.cpp" line="279"/>
         <source>Export sprite</source>
         <translation>Exporter le Sprite</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="281"/>
+        <location filename="../ObjView.cpp" line="280"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
@@ -3184,51 +3650,51 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../OverrideView.cpp" line="54"/>
         <source>Official MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC officiels</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="58"/>
         <source>Licensed MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC sous licence</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="62"/>
         <source>Unlicensed MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC sans licence</translation>
     </message>
 </context>
 <context>
     <name>QGBA::PaletteView</name>
     <message>
-        <location filename="../PaletteView.cpp" line="121"/>
+        <location filename="../PaletteView.cpp" line="120"/>
         <source>#%0</source>
         <translation>#%0</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="122"/>
+        <location filename="../PaletteView.cpp" line="121"/>
         <source>0x%0</source>
         <translation>0x%0</translation>
     </message>
     <message>
+        <location filename="../PaletteView.cpp" line="122"/>
         <location filename="../PaletteView.cpp" line="123"/>
         <location filename="../PaletteView.cpp" line="124"/>
         <location filename="../PaletteView.cpp" line="125"/>
-        <location filename="../PaletteView.cpp" line="126"/>
         <source>0x%0 (%1)</source>
         <translation>0x%0 (%1)</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="138"/>
+        <location filename="../PaletteView.cpp" line="137"/>
         <source>Export palette</source>
         <translation>Exporter la palette</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="139"/>
+        <location filename="../PaletteView.cpp" line="138"/>
         <source>Windows PAL (*.pal);;Adobe Color Table (*.act)</source>
         <translation>Windows PAL (*.pal);;Adobe Color Table (*.act)</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="142"/>
+        <location filename="../PaletteView.cpp" line="141"/>
         <source>Failed to open output palette file: %1</source>
         <translation>Impossible d&apos;ouvrir le fichier de la palette de sortie : %1</translation>
     </message>
@@ -3261,12 +3727,12 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../ReportView.cpp" line="212"/>
         <source>Bug report archive</source>
-        <translation type="unfinished"></translation>
+        <translation>Archive de signalement d&apos;erreur</translation>
     </message>
     <message>
         <location filename="../ReportView.cpp" line="212"/>
         <source>ZIP archive (*.zip)</source>
-        <translation type="unfinished"></translation>
+        <translation>Archive ZIP (*.zip)</translation>
     </message>
 </context>
 <context>
@@ -3388,18 +3854,18 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
 <context>
     <name>QGBA::TileView</name>
     <message>
-        <location filename="../TileView.cpp" line="178"/>
+        <location filename="../TileView.cpp" line="177"/>
         <source>Export tiles</source>
         <translation>Exporter les tuiles</translation>
     </message>
     <message>
-        <location filename="../TileView.cpp" line="179"/>
-        <location filename="../TileView.cpp" line="191"/>
+        <location filename="../TileView.cpp" line="178"/>
+        <location filename="../TileView.cpp" line="190"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
-        <location filename="../TileView.cpp" line="190"/>
+        <location filename="../TileView.cpp" line="189"/>
         <source>Export tile</source>
         <translation>Exporter une tuile</translation>
     </message>
@@ -3437,7 +3903,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../Window.cpp" line="308"/>
         <source>All ROMs (%1)</source>
-        <translation>Toutes les ROMs (%1)</translation>
+        <translation>Toutes les ROM (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="309"/>
@@ -3557,7 +4023,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../Window.cpp" line="889"/>
         <source>Failed to create an appropriate display device, falling back to software display. Games may run slowly, especially with larger windows.</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec de la création d&apos;un périphérique d&apos;affichage approprié, retour à l&apos;affichage du logiciel. Les jeux peuvent fonctionner lentement, en particulier avec des fenêtres plus grandes.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="981"/>
@@ -3718,7 +4184,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../Window.cpp" line="1223"/>
         <source>Report bug...</source>
-        <translation type="unfinished"></translation>
+        <translation>Signalement de l&apos;erreur…</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1227"/>
@@ -3728,7 +4194,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../Window.cpp" line="1230"/>
         <source>&amp;Emulation</source>
-        <translation>&amp;Emulation</translation>
+        <translation>&amp;Émulation</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1231"/>
@@ -3963,7 +4429,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../Window.cpp" line="1224"/>
         <source>About...</source>
-        <translation>À propos de...</translation>
+        <translation>À propos de…</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1333"/>
@@ -4056,87 +4522,87 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
         <translation>Recherche dans la mémoire…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1536"/>
+        <location filename="../Window.cpp" line="1534"/>
         <source>View &amp;I/O registers...</source>
         <translation>Voir les registres d&apos;&amp;E/S...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1541"/>
+        <location filename="../Window.cpp" line="1537"/>
         <source>Record debug video log...</source>
         <translation>Enregistrer le journal vidéo de débogage...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1542"/>
+        <location filename="../Window.cpp" line="1538"/>
         <source>Stop debug video log</source>
-        <translation>Arrêtez le journal vidéo de débogage</translation>
+        <translation>Arrêter le journal vidéo de débogage</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1642"/>
+        <location filename="../Window.cpp" line="1638"/>
         <source>Exit fullscreen</source>
         <translation>Quitter le plein écran</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1644"/>
+        <location filename="../Window.cpp" line="1640"/>
         <source>GameShark Button (held)</source>
         <translation>Bouton GameShark (maintenir)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1650"/>
+        <location filename="../Window.cpp" line="1646"/>
         <source>Autofire</source>
         <translation>Tir automatique</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1651"/>
+        <location filename="../Window.cpp" line="1647"/>
         <source>Autofire A</source>
         <translation>Tir automatique A</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1656"/>
+        <location filename="../Window.cpp" line="1652"/>
         <source>Autofire B</source>
         <translation>Tir automatique B</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1661"/>
+        <location filename="../Window.cpp" line="1657"/>
         <source>Autofire L</source>
         <translation>Tir automatique L</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1666"/>
+        <location filename="../Window.cpp" line="1662"/>
         <source>Autofire R</source>
         <translation>Tir automatique R</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1671"/>
+        <location filename="../Window.cpp" line="1667"/>
         <source>Autofire Start</source>
         <translation>Tir automatique Start</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1676"/>
+        <location filename="../Window.cpp" line="1672"/>
         <source>Autofire Select</source>
         <translation>Tir automatique Select</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1681"/>
+        <location filename="../Window.cpp" line="1677"/>
         <source>Autofire Up</source>
         <translation>Tir automatique Up</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1686"/>
+        <location filename="../Window.cpp" line="1682"/>
         <source>Autofire Right</source>
         <translation>Tir automatique Right</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1691"/>
+        <location filename="../Window.cpp" line="1687"/>
         <source>Autofire Down</source>
         <translation>Tir automatique Down</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1696"/>
+        <location filename="../Window.cpp" line="1692"/>
         <source>Autofire Left</source>
         <translation>Tir automatique Gauche</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1750"/>
+        <location filename="../Window.cpp" line="1746"/>
         <source>Clear</source>
         <translation>Vider</translation>
     </message>
@@ -4192,7 +4658,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../ROMInfo.ui" line="26"/>
         <source>Game name:</source>
-        <translation>Nom du jeu :</translation>
+        <translation>Nom du jeu&#xa0;:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="33"/>
@@ -4255,27 +4721,27 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../ReportView.ui" line="90"/>
         <source>Generate report</source>
-        <translation type="unfinished"></translation>
+        <translation>Générer un signalement</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="104"/>
         <source>Save</source>
-        <translation type="unfinished">Sauvegarder</translation>
+        <translation>Sauvegarder</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="118"/>
         <source>Open issue list in browser</source>
-        <translation type="unfinished"></translation>
+        <translation>Ouvrir la liste des problèmes dans le navigateur</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="139"/>
         <source>Include save file</source>
-        <translation type="unfinished"></translation>
+        <translation>Inclure le fichier de sauvegarde</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="155"/>
         <source>Create and include savestate</source>
-        <translation type="unfinished"></translation>
+        <translation>Créer et inclure l&apos;état de sauvegarde</translation>
     </message>
 </context>
 <context>
@@ -4523,7 +4989,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../SettingsView.ui" line="371"/>
         <source>FPS target:</source>
-        <translation>FPS ciblé :</translation>
+        <translation>IPS ciblée&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="396"/>
@@ -4553,7 +5019,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../SettingsView.ui" line="451"/>
         <source>Bilinear filtering</source>
-        <translation>Filtrage bilinèaire</translation>
+        <translation>Filtrage bilinéaire</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="582"/>
@@ -4613,7 +5079,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../SettingsView.ui" line="484"/>
         <source>English</source>
-        <translation>Anglais</translation>
+        <translation>anglais</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="499"/>
@@ -4924,22 +5390,22 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../SettingsView.ui" line="1623"/>
         <source>Default sprite colors 1:</source>
-        <translation>Couleurs par défaut de la sprite n°1 :</translation>
+        <translation>Couleurs par défaut de la sprite nº&#xa0;1 :</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1492"/>
         <source>Game Boy-only model:</source>
-        <translation type="unfinished"></translation>
+        <translation>Modèle Game Boy uniquement&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1512"/>
         <source>Game Boy Color-only model:</source>
-        <translation type="unfinished"></translation>
+        <translation>Modèle Game Boy uniquement&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1522"/>
         <source>Game Boy/Game Boy Color model:</source>
-        <translation type="unfinished"></translation>
+        <translation>Modèle Game Boy / Game Boy Color&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1710"/>
@@ -4990,7 +5456,7 @@ Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</
     <message>
         <location filename="../ShortcutView.ui" line="14"/>
         <source>Edit Shortcuts</source>
-        <translation>Éditer les raccourcis</translation>
+        <translation>Modifier les raccourcis</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="29"/>

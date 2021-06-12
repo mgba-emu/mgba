@@ -49,14 +49,14 @@ void AssetTile::setController(std::shared_ptr<CoreController> controller) {
 	m_cacheSet = controller->graphicCaches();
 	switch (controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		m_addressWidth = 8;
 		m_addressBase = BASE_VRAM;
 		m_boundaryBase = BASE_VRAM | 0x10000;
 		break;
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		m_addressWidth = 4;
 		m_addressBase = GB_BASE_VRAM;
 		m_boundaryBase = GB_BASE_VRAM;

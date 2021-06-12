@@ -40,7 +40,7 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 
 	switch (m_controller->platform()) {
 #ifdef M_CORE_GBA
-	case PLATFORM_GBA:
+	case mPLATFORM_GBA:
 		m_boundary = 2048;
 		m_addressBase = BASE_VRAM;
 		m_addressWidth = 8;
@@ -53,7 +53,7 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		break;
 #endif
 #ifdef M_CORE_GB
-	case PLATFORM_GB:
+	case mPLATFORM_GB:
 		m_boundary = 1024;
 		m_addressBase = GB_BASE_VRAM;
 		m_addressWidth = 4;
@@ -167,7 +167,7 @@ void MapView::updateTilesGBA(bool) {
 		QString offset(tr("N/A"));
 		QString transform(tr("N/A"));
 #ifdef M_CORE_GBA
-		if (m_controller->platform() == PLATFORM_GBA) {
+		if (m_controller->platform() == mPLATFORM_GBA) {
 			uint16_t* io = static_cast<GBA*>(m_controller->thread()->core->board)->memory.io;
 			int mode = GBARegisterDISPCNTGetMode(io[REG_DISPCNT >> 1]);
 			if (m_map == 2 && mode > 2) {
@@ -201,7 +201,7 @@ void MapView::updateTilesGBA(bool) {
 		}
 #endif
 #ifdef M_CORE_GB
-		if (m_controller->platform() == PLATFORM_GB) {
+		if (m_controller->platform() == mPLATFORM_GB) {
 			uint8_t* io = static_cast<GB*>(m_controller->thread()->core->board)->memory.io;
 			int x = io[m_map == 0 ? 0x42 : 0x4A];
 			int y = io[m_map == 0 ? 0x43 : 0x4B];

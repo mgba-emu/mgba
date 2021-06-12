@@ -144,7 +144,7 @@ static void _DSCoreDeinit(struct mCore* core) {
 
 static enum mPlatform _DSCorePlatform(const struct mCore* core) {
 	UNUSED(core);
-	return PLATFORM_DS;
+	return mPLATFORM_DS;
 }
 
 static bool _DSCoreSupportsFeature(const struct mCore* core, enum mCoreFeature feature) {

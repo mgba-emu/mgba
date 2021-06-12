@@ -413,7 +413,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		GUIShowMessageBox(&runner->params, GUI_MESSAGE_BOX_OK, 240, "Load failed!");
 		return;
 	}
-	if (runner->core->platform(runner->core) == PLATFORM_GBA) {
+	if (runner->core->platform(runner->core) == mPLATFORM_GBA) {
 		runner->core->setPeripheral(runner->core, mPERIPH_GBA_LUMINANCE, &runner->luminanceSource.d);
 	}
 	mLOG(GUI_RUNNER, DEBUG, "Loading config...");

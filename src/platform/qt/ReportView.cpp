@@ -350,7 +350,7 @@ void ReportView::addROMInfo(QStringList& report, CoreController* controller) {
 	}
 
 	uint32_t crc32 = 0;
-	core->checksum(core, &crc32, CHECKSUM_CRC32);
+	core->checksum(core, &crc32, mCHECKSUM_CRC32);
 	report << QString("CRC32: %1").arg(crc32, 8, 16, QChar('0'));
 
 #ifdef USE_SQLITE3

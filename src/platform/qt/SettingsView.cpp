@@ -550,7 +550,7 @@ void SettingsView::updateConfig() {
 	m_input->saveConfiguration();
 
 	emit pathsChanged();
-	emit biosLoaded(PLATFORM_GBA, m_ui.gbaBios->text());
+	emit biosLoaded(mPLATFORM_GBA, m_ui.gbaBios->text());
 }
 
 void SettingsView::reloadConfig() {	
