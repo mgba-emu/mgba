@@ -595,10 +595,10 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 		memset(&softwareRenderer->row[startX], 0, (endX - startX) * sizeof(softwareRenderer->row[0]));
 	}
 
+	if (startX == 0) {
+		_cleanOAM(softwareRenderer, y);
+	}
 	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc) && !softwareRenderer->d.disableOBJ) {
-		if (startX == 0) {
-			_cleanOAM(softwareRenderer, y);
-		}
 		int i;
 		for (i = 0; i < softwareRenderer->objMax; ++i) {
 			GBVideoSoftwareRendererDrawObj(softwareRenderer, &softwareRenderer->obj[i], startX, endX, y);

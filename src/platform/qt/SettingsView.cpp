@@ -24,7 +24,7 @@
 
 using namespace QGBA;
 
-SettingsView::SettingsView(ConfigController* controller, InputController* inputController, LogController* logController, QWidget* parent)
+SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, LogController* logController, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_controller(controller)
 	, m_input(inputController)
@@ -32,7 +32,17 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 {
 	m_ui.setupUi(this);
 
+	m_pageIndex[Page::AV] = 0;
+	m_pageIndex[Page::INTERFACE] = 1;
+	m_pageIndex[Page::EMULATION] = 2;
+	m_pageIndex[Page::ENHANCEMENTS] = 3;
+	m_pageIndex[Page::BIOS] = 4;
+	m_pageIndex[Page::PATHS] = 5;
+	m_pageIndex[Page::LOGGING] = 6;
+
 #ifdef M_CORE_GB
+	m_pageIndex[Page::GB] = 7;
+
 	for (auto model : GameBoy::modelList()) {
 		m_ui.gbModel->addItem(GameBoy::modelName(model), model);
 		m_ui.sgbModel->addItem(GameBoy::modelName(model), model);
@@ -75,11 +85,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 	connect(m_ui.savegameBrowse, &QAbstractButton::pressed, [this] () {
-		QString path = GBAApp::app()->getOpenDirectoryName(this, "Select directory");
-		if (!path.isNull()) {
-			m_ui.savegameSameDir->setChecked(false);
-			m_ui.savegamePath->setText(path);
-		}
+		selectPath(m_ui.savegamePath, m_ui.savegameSameDir);
 	});
 
 	if (m_ui.savestatePath->text().isEmpty()) {
@@ -91,11 +97,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 	connect(m_ui.savestateBrowse, &QAbstractButton::pressed, [this] () {
-		QString path = GBAApp::app()->getOpenDirectoryName(this, "Select directory");
-		if (!path.isNull()) {
-			m_ui.savestateSameDir->setChecked(false);
-			m_ui.savestatePath->setText(path);
-		}
+		selectPath(m_ui.savestatePath, m_ui.savestateSameDir);
 	});
 
 	if (m_ui.screenshotPath->text().isEmpty()) {
@@ -107,11 +109,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 	connect(m_ui.screenshotBrowse, &QAbstractButton::pressed, [this] () {
-		QString path = GBAApp::app()->getOpenDirectoryName(this, "Select directory");
-		if (!path.isNull()) {
-			m_ui.screenshotSameDir->setChecked(false);
-			m_ui.screenshotPath->setText(path);
-		}
+		selectPath(m_ui.screenshotPath, m_ui.screenshotSameDir);
 	});
 
 	if (m_ui.patchPath->text().isEmpty()) {
@@ -123,11 +121,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 	connect(m_ui.patchBrowse, &QAbstractButton::pressed, [this] () {
-		QString path = GBAApp::app()->getOpenDirectoryName(this, "Select directory");
-		if (!path.isNull()) {
-			m_ui.patchSameDir->setChecked(false);
-			m_ui.patchPath->setText(path);
-		}
+		selectPath(m_ui.patchPath, m_ui.patchSameDir);
 	});
 
 	if (m_ui.cheatsPath->text().isEmpty()) {
@@ -139,11 +133,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 	connect(m_ui.cheatsBrowse, &QAbstractButton::pressed, [this] () {
-		QString path = GBAApp::app()->getOpenDirectoryName(this, "Select directory");
-		if (!path.isNull()) {
-			m_ui.cheatsSameDir->setChecked(false);
-			m_ui.cheatsPath->setText(path);
-		}
+		selectPath(m_ui.cheatsPath, m_ui.cheatsSameDir);
 	});
 	connect(m_ui.clearCache, &QAbstractButton::pressed, this, &SettingsView::libraryCleared);
 
@@ -325,6 +315,11 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 			m_ui.logFile->setText(path);
 		}
 	});
+
+	ShortcutView* shortcutView = new ShortcutView();
+	shortcutView->setController(shortcutController);
+	shortcutView->setInputController(inputController);
+	addPage(tr("Shortcuts"), shortcutView, Page::SHORTCUTS);
 }
 
 SettingsView::~SettingsView() {
@@ -352,10 +347,33 @@ void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
 #endif
 }
 
+void SettingsView::selectPage(SettingsView::Page page) {
+	m_ui.tabs->setCurrentRow(m_pageIndex[page]);
+}
+
+QString SettingsView::makePortablePath(const QString& path) {
+	if (m_controller->isPortable()) {
+		QDir configDir(m_controller->configDir());
+		QFileInfo pathInfo(path);
+		if (pathInfo.canonicalPath() == configDir.canonicalPath()) {
+			return configDir.relativeFilePath(pathInfo.canonicalFilePath());
+		}
+	}
+	return path;
+}
+
 void SettingsView::selectBios(QLineEdit* bios) {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select BIOS"));
 	if (!filename.isEmpty()) {
-		bios->setText(filename);
+		bios->setText(makePortablePath(filename));
+	}
+}
+
+void SettingsView::selectPath(QLineEdit* field, QCheckBox* sameDir) {
+	QString path = GBAApp::app()->getOpenDirectoryName(this, tr("Select directory"));
+	if (!path.isNull()) {
+		sameDir->setChecked(false);
+		field->setText(makePortablePath(path));
 	}
 }
 
@@ -703,6 +721,12 @@ void SettingsView::reloadConfig() {
 		m_ui.videoScaleSize->setText(tr("(%1×%2)").arg(GBA_VIDEO_HORIZONTAL_PIXELS * value).arg(GBA_VIDEO_VERTICAL_PIXELS * value));
 	});
 	loadSetting("videoScale", m_ui.videoScale, 1);
+}
+
+void SettingsView::addPage(const QString& name, QWidget* view, Page index) {
+	m_pageIndex[index] = m_ui.tabs->count();
+	m_ui.tabs->addItem(name);
+	m_ui.stackedWidget->addWidget(view);
 }
 
 void SettingsView::saveSetting(const char* key, const QAbstractButton* field) {

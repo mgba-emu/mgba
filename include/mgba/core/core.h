@@ -203,6 +203,7 @@ void mCoreSetRTC(struct mCore* core, struct mRTCSource* rtc);
 
 void* mCoreGetMemoryBlock(struct mCore* core, uint32_t start, size_t* size);
 void* mCoreGetMemoryBlockMasked(struct mCore* core, uint32_t start, size_t* size, uint32_t mask);
+const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(struct mCore* core, uint32_t address);
 
 #ifdef USE_ELF
 struct ELF;

@@ -8,6 +8,7 @@
 #include <mgba/internal/debugger/symbols.h>
 
 #include <mgba/core/core.h>
+#include <mgba/core/timing.h>
 #include <mgba/core/version.h>
 #include <mgba/internal/debugger/parser.h>
 #include <mgba-util/string.h>
@@ -66,6 +67,7 @@ static void _writeWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpWord(struct CLIDebugger*, struct CLIDebugVector*);
+static void _events(struct CLIDebugger*, struct CLIDebugVector*);
 #ifdef ENABLE_SCRIPTING
 static void _source(struct CLIDebugger*, struct CLIDebugVector*);
 #endif
@@ -81,6 +83,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "continue", _continue, "", "Continue execution" },
 	{ "delete", _clearBreakpoint, "I", "Delete a breakpoint or watchpoint" },
 	{ "disassemble", _disassemble, "Ii", "Disassemble instructions" },
+	{ "events", _events, "", "Print list of scheduled events" },
 	{ "finish", _finish, "", "Execute until current stack frame returns" },
 	{ "help", _printHelp, "S", "Print help" },
 	{ "listb", _listBreakpoints, "", "List breakpoints" },
@@ -766,6 +769,15 @@ static bool _doTrace(struct CLIDebugger* debugger) {
 static void _printStatus(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
 	debugger->system->printStatus(debugger->system);
+}
+
+static void _events(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	UNUSED(dv);
+	struct mTiming* timing = debugger->d.core->timing;
+	struct mTimingEvent* next = timing->root;
+	for (; next; next = next->next) {
+		debugger->backend->printf(debugger->backend, "%s in %i cycles\n", next->name, mTimingUntil(timing, next));
+	}
 }
 
 struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* string, size_t length) {

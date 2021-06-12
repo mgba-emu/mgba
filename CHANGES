@@ -48,6 +48,7 @@ Features:
  - New unlicensed GB mappers: Pokémon Jade/Diamond, BBD, and Hitek
  - Stack tracing tools in ARM debugger (by ahigerd)
  - Command scripts for CLI debugger (by ahigerd)
+ - Scheduled event dumping in CLI debugger
  - ARM disassembler now resolves addresses to symbol names
  - Add Game Boy Player feature support to ports
  - Individual window types can now be toggled in debugging views
@@ -130,6 +131,7 @@ Misc:
  - Core: Improve support for ROM patch cheats, supporting disabling overlapping patches
  - GB: Allow pausing event loop while CPU is blocked
  - GB: Add support for sleep and shutdown callbacks
+ - GB Core: Return the current number of banks for ROM/SRAM, not theoretical max
  - GB I/O: Implement preliminary support for PCM12/PCM34 (closes mgba.io/i/1468)
  - GBA: Allow pausing event loop while CPU is blocked
  - GBA BIOS: Division by zero should emit a FATAL error
@@ -152,6 +154,8 @@ Misc:
  - Qt: Redo OpenGL context thread handling (fixes mgba.io/i/1724)
  - Qt: Discard additional frame draws if waiting fails
  - Qt: Unify monospace font usage
+ - Qt: Add button to jump to log settings
+ - Qt: Use relative paths in portable mode when applicable (fixes mgba.io/i/838)
  - SDL: Fall back to sw blit if OpenGL init fails
  - Util: Reset vector size on deinit
  - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)

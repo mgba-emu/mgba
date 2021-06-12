@@ -373,6 +373,17 @@ void* mCoreGetMemoryBlock(struct mCore* core, uint32_t start, size_t* size) {
 }
 
 void* mCoreGetMemoryBlockMasked(struct mCore* core, uint32_t start, size_t* size, uint32_t mask) {
+	const struct mCoreMemoryBlock* block = mCoreGetMemoryBlockInfo(core, start);
+	if (!block || !(block->flags & mask)) {
+		return NULL;
+	}
+	uint8_t* out = core->getMemoryBlock(core, block->id, size);
+	out += start - block->start;
+	*size -= start - block->start;
+	return out;
+}
+
+const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(struct mCore* core, uint32_t address) {
 	const struct mCoreMemoryBlock* blocks;
 	size_t nBlocks = core->listMemoryBlocks(core, &blocks);
 	size_t i;
@@ -380,19 +391,13 @@ void* mCoreGetMemoryBlockMasked(struct mCore* core, uint32_t start, size_t* size
 		if (!(blocks[i].flags & mCORE_MEMORY_MAPPED)) {
 			continue;
 		}
-		if (!(blocks[i].flags & mask)) {
+		if (address < blocks[i].start) {
 			continue;
 		}
-		if (start < blocks[i].start) {
+		if (address >= blocks[i].start + blocks[i].size) {
 			continue;
 		}
-		if (start >= blocks[i].start + blocks[i].size) {
-			continue;
-		}
-		uint8_t* out = core->getMemoryBlock(core, blocks[i].id, size);
-		out += start - blocks[i].start;
-		*size -= start - blocks[i].start;
-		return out;
+		return &blocks[i];
 	}
 	return NULL;
 }

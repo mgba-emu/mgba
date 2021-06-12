@@ -6,13 +6,14 @@
 #include "LogView.h"
 
 #include "LogController.h"
+#include "Window.h"
 
 #include <QTextBlock>
 #include <QTextCursor>
 
 using namespace QGBA;
 
-LogView::LogView(LogController* log, QWidget* parent)
+LogView::LogView(LogController* log, Window* window, QWidget* parent)
 	: QWidget(parent)
 {
 	m_ui.setupUi(this);
@@ -38,6 +39,9 @@ LogView::LogView(LogController* log, QWidget* parent)
 		setLevel(mLOG_GAME_ERROR, set);
 	});
 	connect(m_ui.clear, &QAbstractButton::clicked, this, &LogView::clear);
+	connect(m_ui.advanced, &QAbstractButton::clicked, this, [window]() {
+		window->openSettingsWindow(SettingsView::Page::LOGGING);
+	});
 	connect(m_ui.maxLines, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
 	        this, &LogView::setMaxLines);
 	m_ui.maxLines->setValue(DEFAULT_LINE_LIMIT);

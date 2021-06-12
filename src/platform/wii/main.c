@@ -915,7 +915,7 @@ void _gameUnloaded(struct mGUIRunner* runner) {
 
 void _gameLoaded(struct mGUIRunner* runner) {
 	reconfigureScreen(runner);
-	if (runner->core->platform(runner->core) == PLATFORM_GBA && ((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
+	if (runner->core->platform(runner->core) == mPLATFORM_GBA && ((struct GBA*) runner->core->board)->memory.hw.devices & HW_GYRO) {
 		int i;
 		for (i = 0; i < 6; ++i) {
 			u32 result = WPAD_SetMotionPlus(0, 1);

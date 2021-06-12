@@ -6,6 +6,7 @@
 #pragma once
 
 #include <QDialog>
+#include <QMap>
 
 #include "ColorPicker.h"
 #include "LogConfigModel.h"
@@ -24,12 +25,28 @@ class ConfigController;
 class InputController;
 class InputIndex;
 class ShaderSelector;
+class ShortcutController;
 
 class SettingsView : public QDialog {
 Q_OBJECT
 
 public:
-	SettingsView(ConfigController* controller, InputController* inputController, LogController* logController, QWidget* parent = nullptr);
+	enum class Page {
+		AV,
+		INTERFACE,
+		EMULATION,
+		ENHANCEMENTS,
+		BIOS,
+		PATHS,
+		LOGGING,
+		GB,
+		KEYBOARD,
+		CONTROLLERS,
+		SHORTCUTS,
+		SHADERS,
+	};
+
+	SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, LogController* logController, QWidget* parent = nullptr);
 	~SettingsView();
 
 	void setShaderSelector(ShaderSelector* shaderSelector);
@@ -45,8 +62,12 @@ signals:
 	void languageChanged();
 	void libraryCleared();
 
+public slots:
+	void selectPage(Page);
+
 private slots:
 	void selectBios(QLineEdit*);
+	void selectPath(QLineEdit*, QCheckBox*);
 	void updateConfig();
 	void reloadConfig();
 
@@ -62,6 +83,12 @@ private:
 	uint32_t m_gbColors[12]{};
 	ColorPicker m_colorPickers[12];
 #endif
+
+	QMap<Page, int> m_pageIndex;
+
+	QString makePortablePath(const QString& path);
+
+	void addPage(const QString& name, QWidget* view, Page index);
 
 	void saveSetting(const char* key, const QAbstractButton*);
 	void saveSetting(const char* key, const QComboBox*);
