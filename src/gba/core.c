@@ -37,11 +37,14 @@
 #endif
 
 static const struct mCoreChannelInfo _GBAVideoLayers[] = {
-	{ 0, "bg0", "Background 0", NULL },
-	{ 1, "bg1", "Background 1", NULL },
-	{ 2, "bg2", "Background 2", NULL },
-	{ 3, "bg3", "Background 3", NULL },
-	{ 4, "obj", "Objects", NULL },
+	{ GBA_LAYER_BG0, "bg0", "Background 0", NULL },
+	{ GBA_LAYER_BG1, "bg1", "Background 1", NULL },
+	{ GBA_LAYER_BG2, "bg2", "Background 2", NULL },
+	{ GBA_LAYER_BG3, "bg3", "Background 3", NULL },
+	{ GBA_LAYER_OBJ, "obj", "Objects", NULL },
+	{ GBA_LAYER_WIN0, "win0", "Window 0", NULL },
+	{ GBA_LAYER_WIN1, "win1", "Window 1", NULL },
+	{ GBA_LAYER_OBJWIN, "objwin", "Object Window", NULL },
 };
 
 static const struct mCoreChannelInfo _GBAAudioChannels[] = {
@@ -1060,14 +1063,23 @@ static size_t _GBACoreListAudioChannels(const struct mCore* core, const struct m
 static void _GBACoreEnableVideoLayer(struct mCore* core, size_t id, bool enable) {
 	struct GBA* gba = core->board;
 	switch (id) {
-	case 0:
-	case 1:
-	case 2:
-	case 3:
+	case GBA_LAYER_BG0:
+	case GBA_LAYER_BG1:
+	case GBA_LAYER_BG2:
+	case GBA_LAYER_BG3:
 		gba->video.renderer->disableBG[id] = !enable;
 		break;
-	case 4:
+	case GBA_LAYER_OBJ:
 		gba->video.renderer->disableOBJ = !enable;
+		break;
+	case GBA_LAYER_WIN0:
+		gba->video.renderer->disableWIN[0] = !enable;
+		break;
+	case GBA_LAYER_WIN1:
+		gba->video.renderer->disableWIN[1] = !enable;
+		break;
+	case GBA_LAYER_OBJWIN:
+		gba->video.renderer->disableOBJWIN = !enable;
 		break;
 	default:
 		break;
@@ -1097,17 +1109,21 @@ static void _GBACoreEnableAudioChannel(struct mCore* core, size_t id, bool enabl
 static void _GBACoreAdjustVideoLayer(struct mCore* core, size_t id, int32_t x, int32_t y) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	switch (id) {
-	case 0:
-	case 1:
-	case 2:
-	case 3:
+	case GBA_LAYER_BG0:
+	case GBA_LAYER_BG1:
+	case GBA_LAYER_BG2:
+	case GBA_LAYER_BG3:
 		gbacore->renderer.bg[id].offsetX = x;
 		gbacore->renderer.bg[id].offsetY = y;
 		break;
-	case 4:
+	case GBA_LAYER_OBJ:
 		gbacore->renderer.objOffsetX = x;
 		gbacore->renderer.objOffsetY = y;
 		gbacore->renderer.oamDirty = 1;
+		break;
+	case GBA_LAYER_WIN0:
+		gbacore->renderer.winN[id - GBA_LAYER_WIN0].offsetX = x;
+		gbacore->renderer.winN[id - GBA_LAYER_WIN0].offsetY = y;
 		break;
 	default:
 		return;

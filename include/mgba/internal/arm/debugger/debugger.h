@@ -40,7 +40,7 @@ struct ARMDebugger {
 
 	void (*entered)(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 
-	ssize_t (*setSoftwareBreakpoint)(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
+	bool (*setSoftwareBreakpoint)(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
 	void (*clearSoftwareBreakpoint)(struct ARMDebugger*, const struct ARMDebugBreakpoint*);
 };
 

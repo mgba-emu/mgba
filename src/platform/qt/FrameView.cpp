@@ -24,6 +24,7 @@
 #endif
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/memory.h>
 #endif
 
@@ -153,15 +154,43 @@ void FrameView::updateTilesGBA(bool) {
 
 		uint16_t* io = static_cast<GBA*>(m_controller->thread()->core->board)->memory.io;
 		QRgb backdrop = M_RGB5_TO_RGB8(static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[0]);
-		m_gbaDispcnt = io[REG_DISPCNT >> 1];
-		int mode = GBARegisterDISPCNTGetMode(m_gbaDispcnt);
+		GBARegisterDISPCNT gbaDispcnt = io[REG_DISPCNT >> 1];
+		int mode = GBARegisterDISPCNTGetMode(gbaDispcnt);
 
 		std::array<bool, 4> enabled{
-			bool(GBARegisterDISPCNTIsBg0Enable(m_gbaDispcnt)),
-			bool(GBARegisterDISPCNTIsBg1Enable(m_gbaDispcnt)),
-			bool(GBARegisterDISPCNTIsBg2Enable(m_gbaDispcnt)),
-			bool(GBARegisterDISPCNTIsBg3Enable(m_gbaDispcnt)),
+			bool(GBARegisterDISPCNTIsBg0Enable(gbaDispcnt)),
+			bool(GBARegisterDISPCNTIsBg1Enable(gbaDispcnt)),
+			bool(GBARegisterDISPCNTIsBg2Enable(gbaDispcnt)),
+			bool(GBARegisterDISPCNTIsBg3Enable(gbaDispcnt)),
 		};
+
+		if (GBARegisterDISPCNTIsWin0Enable(gbaDispcnt)) {
+			m_queue.append({
+				{ LayerId::WINDOW, 0 },
+				!m_disabled.contains({ LayerId::WINDOW, 0 }),
+				{},
+				{}, {0, 0}, true, false
+			});
+		}
+
+		if (GBARegisterDISPCNTIsWin1Enable(gbaDispcnt)) {
+			m_queue.append({
+				{ LayerId::WINDOW, 1 },
+				!m_disabled.contains({ LayerId::WINDOW, 1 }),
+				{},
+				{}, {0, 0}, true, false
+			});
+		}
+
+		if (GBARegisterDISPCNTIsObjwinEnable(gbaDispcnt)) {
+			m_queue.append({
+				{ LayerId::WINDOW, 2 },
+				!m_disabled.contains({ LayerId::WINDOW, 2 }),
+				{},
+				{}, {0, 0}, true, false
+			});
+
+		}
 
 		for (int priority = 0; priority < 4; ++priority) {
 			for (int sprite = 0; sprite < 128; ++sprite) {
@@ -270,6 +299,9 @@ void FrameView::injectGBA() {
 				gba->video.renderer->highlightBG[layer.id.index] = true;
 			}
 			break;
+		case LayerId::WINDOW:
+			m_vl->enableVideoLayer(m_vl, GBA_LAYER_WIN0 + layer.id.index, layer.enabled);
+			break;
 		}
 	}
 	if (m_overrideBackdrop.isValid()) {
@@ -286,6 +318,9 @@ void FrameView::updateTilesGB(bool) {
 	m_queue.clear();
 	{
 		CoreController::Interrupter interrupter(m_controller);
+		uint8_t* io = static_cast<GB*>(m_controller->thread()->core->board)->memory.io;
+		GBRegisterLCDC lcdc = io[GB_REG_LCDC];
+
 		for (int sprite = 0; sprite < 40; ++sprite) {
 			ObjInfo info;
 			lookupObj(sprite, &info);
@@ -312,6 +347,22 @@ void FrameView::updateTilesGB(bool) {
 			}
 		}
 
+		if (GBRegisterLCDCIsWindow(lcdc)) {
+			m_queue.append({
+				{ LayerId::WINDOW },
+				!m_disabled.contains({ LayerId::WINDOW }),
+				{},
+				{}, {0, 0}, false, false
+			});
+		}
+
+		m_queue.append({
+			{ LayerId::BACKGROUND },
+			!m_disabled.contains({ LayerId::BACKGROUND }),
+			{},
+			{}, {0, 0}, false, false
+		});
+
 		updateRendered();
 	}
 	invalidateQueue(m_controller->screenDimensions());
@@ -327,6 +378,12 @@ void FrameView::injectGB() {
 			if (!layer.enabled) {
 				mVideoLoggerInjectOAM(logger, layer.id.index << 2, 0);
 			}
+			break;
+		case LayerId::BACKGROUND:
+			m_vl->enableVideoLayer(m_vl, GB_LAYER_BACKGROUND, layer.enabled);
+			break;
+		case LayerId::WINDOW:
+			m_vl->enableVideoLayer(m_vl, GB_LAYER_WINDOW, layer.enabled);
 			break;
 		}
 	}
@@ -495,6 +552,11 @@ QString FrameView::LayerId::readable() const {
 		break;
 	case WINDOW:
 		typeStr = tr("Window");
+#ifdef M_CORE_GBA
+		if (index == 2) {
+			return tr("Objwin");
+		}
+#endif
 		break;
 	case SPRITE:
 		typeStr = tr("Sprite");

@@ -59,6 +59,16 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.disableBG[2] = false;
 	renderer->d.disableBG[3] = false;
 	renderer->d.disableOBJ = false;
+
+	renderer->d.disableWIN[0] = false;
+	renderer->d.disableWIN[1] = false;
+	renderer->d.disableOBJWIN = false;
+
+	renderer->d.highlightBG[0] = false;
+	renderer->d.highlightBG[1] = false;
+	renderer->d.highlightBG[2] = false;
+	renderer->d.highlightBG[3] = false;
+
 	renderer->tileStride = 0x20;
 	renderer->bitmapStride = 0;
 	renderer->combinedObjSort = false;
@@ -66,10 +76,6 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->masterHeight = GBA_VIDEO_VERTICAL_PIXELS;
 	renderer->masterScanlines = VIDEO_VERTICAL_TOTAL_PIXELS;
 
-	renderer->d.highlightBG[0] = false;
-	renderer->d.highlightBG[1] = false;
-	renderer->d.highlightBG[2] = false;
-	renderer->d.highlightBG[3] = false;
 	int i;
 	for (i = 0; i < 128; ++i) {
 		renderer->d.highlightOBJ[i] = false;
@@ -457,13 +463,13 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 
 static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win, int y) {
 	if (win->v.end >= win->v.start) {
-		if (y >= win->v.end) {
+		if (y >= win->v.end + win->offsetY) {
 			return;
 		}
-		if (y < win->v.start) {
+		if (y < win->v.start + win->offsetY) {
 			return;
 		}
-	} else if (y >= win->v.end && y < win->v.start) {
+	} else if (y >= win->v.end + win->offsetY && y < win->v.start + win->offsetY) {
 		return;
 	}
 	if (win->h.end > softwareRenderer->masterEnd || win->h.end < win->h.start) {
@@ -880,10 +886,10 @@ void GBAVideoSoftwareRendererPreprocessBuffer(struct GBAVideoSoftwareRenderer* s
 	softwareRenderer->nWindows = 1;
 	if (GBARegisterDISPCNTIsWin0Enable(softwareRenderer->dispcnt) || GBARegisterDISPCNTIsWin1Enable(softwareRenderer->dispcnt) || GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt)) {
 		softwareRenderer->windows[0].control = softwareRenderer->winout;
-		if (GBARegisterDISPCNTIsWin1Enable(softwareRenderer->dispcnt)) {
+		if (GBARegisterDISPCNTIsWin1Enable(softwareRenderer->dispcnt) && !softwareRenderer->d.disableWIN[1]) {
 			_breakWindow(softwareRenderer, &softwareRenderer->winN[1], y);
 		}
-		if (GBARegisterDISPCNTIsWin0Enable(softwareRenderer->dispcnt)) {
+		if (GBARegisterDISPCNTIsWin0Enable(softwareRenderer->dispcnt) && !softwareRenderer->d.disableWIN[0]) {
 			_breakWindow(softwareRenderer, &softwareRenderer->winN[0], y);
 		}
 	} else {

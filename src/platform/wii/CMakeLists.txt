@@ -8,9 +8,7 @@ list(APPEND CORE_VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-file.c ${CMAKE_SOU
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-file(GLOB OS_SRC ${CMAKE_SOURCE_DIR}/src/platform/wii/wii-*.c)
 list(APPEND OS_LIB wiiuse bte fat ogc)
-set(OS_SRC ${OS_SRC} PARENT_SCOPE)
 set(OS_LIB ${OS_LIB} PARENT_SCOPE)
 source_group("Wii-specific code" FILES ${OS_SRC})
 set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)

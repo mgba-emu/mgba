@@ -72,7 +72,7 @@ private:
 		int index = -1;
 
 		bool operator!=(const LayerId& other) const { return other.type != type || other.index != index; }
-		operator uint() const { return (type << 8) | index; }
+		operator uint() const { return (type << 12) | (index & 0xFFF); }
 		QString readable() const;
 	};
 
@@ -111,10 +111,6 @@ private:
 	mMapCacheEntry m_mapStatus[4][128 * 128] = {}; // TODO: Correct size
 	ColorPicker m_backdropPicker;
 	QColor m_overrideBackdrop;
-
-#ifdef M_CORE_GBA
-	uint16_t m_gbaDispcnt;
-#endif
 
 	std::shared_ptr<bool> m_callbackLocker{std::make_shared<bool>(true)};
 };

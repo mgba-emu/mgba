@@ -58,11 +58,16 @@ void VideoProxy::deinit() {
 
 bool VideoProxy::writeData(const void* data, size_t length) {
 	while (!RingFIFOWrite(&m_dirtyQueue, data, length)) {
-		emit dataAvailable();
-		m_mutex.lock();
-		m_toThreadCond.wakeAll();
-		m_fromThreadCond.wait(&m_mutex);
-		m_mutex.unlock();
+		if (QThread::currentThread() == thread()) {
+			// We're on the main thread
+			mVideoLoggerRendererRun(&m_logger.d, false);
+		} else {
+			emit dataAvailable();
+			m_mutex.lock();
+			m_toThreadCond.wakeAll();
+			m_fromThreadCond.wait(&m_mutex);
+			m_mutex.unlock();
+		}
 	}
 	return true;
 }
@@ -112,9 +117,14 @@ void VideoProxy::unlock() {
 void VideoProxy::wait() {
 	m_mutex.lock();
 	while (RingFIFOSize(&m_dirtyQueue)) {
-		emit dataAvailable();
-		m_toThreadCond.wakeAll();
-		m_fromThreadCond.wait(&m_mutex, 1);
+		if (QThread::currentThread() == thread()) {
+			// We're on the main thread
+			mVideoLoggerRendererRun(&m_logger.d, false);
+		} else {
+			emit dataAvailable();
+			m_toThreadCond.wakeAll();
+			m_fromThreadCond.wait(&m_mutex, 1);
+		}
 	}
 	m_mutex.unlock();
 }

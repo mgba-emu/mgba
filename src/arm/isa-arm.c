@@ -20,15 +20,11 @@ static inline void _shiftLSL(struct ARMCore* cpu, uint32_t opcode) {
 	if (opcode & 0x00000010) {
 		int rs = (opcode >> 8) & 0x0000000F;
 		++cpu->cycles;
-		int shift = cpu->gprs[rs];
-		if (rs == ARM_PC) {
-			shift += 4;
-		}
-		shift &= 0xFF;
 		int32_t shiftVal = cpu->gprs[rm];
 		if (rm == ARM_PC) {
 			shiftVal += 4;
 		}
+		int shift = cpu->gprs[rs] & 0xFF;
 		if (!shift) {
 			cpu->shifterOperand = shiftVal;
 			cpu->shifterCarryOut = cpu->cpsr.c;
@@ -59,15 +55,11 @@ static inline void _shiftLSR(struct ARMCore* cpu, uint32_t opcode) {
 	if (opcode & 0x00000010) {
 		int rs = (opcode >> 8) & 0x0000000F;
 		++cpu->cycles;
-		int shift = cpu->gprs[rs];
-		if (rs == ARM_PC) {
-			shift += 4;
-		}
-		shift &= 0xFF;
 		uint32_t shiftVal = cpu->gprs[rm];
 		if (rm == ARM_PC) {
 			shiftVal += 4;
 		}
+		int shift = cpu->gprs[rs] & 0xFF;
 		if (!shift) {
 			cpu->shifterOperand = shiftVal;
 			cpu->shifterCarryOut = cpu->cpsr.c;
@@ -98,15 +90,11 @@ static inline void _shiftASR(struct ARMCore* cpu, uint32_t opcode) {
 	if (opcode & 0x00000010) {
 		int rs = (opcode >> 8) & 0x0000000F;
 		++cpu->cycles;
-		int shift = cpu->gprs[rs];
-		if (rs == ARM_PC) {
-			shift += 4;
-		}
-		shift &= 0xFF;
 		int shiftVal =  cpu->gprs[rm];
 		if (rm == ARM_PC) {
 			shiftVal += 4;
 		}
+		int shift = cpu->gprs[rs] & 0xFF;
 		if (!shift) {
 			cpu->shifterOperand = shiftVal;
 			cpu->shifterCarryOut = cpu->cpsr.c;
@@ -137,15 +125,11 @@ static inline void _shiftROR(struct ARMCore* cpu, uint32_t opcode) {
 	if (opcode & 0x00000010) {
 		int rs = (opcode >> 8) & 0x0000000F;
 		++cpu->cycles;
-		int shift = cpu->gprs[rs];
-		if (rs == ARM_PC) {
-			shift += 4;
-		}
-		shift &= 0xFF;
 		int shiftVal =  cpu->gprs[rm];
 		if (rm == ARM_PC) {
 			shiftVal += 4;
 		}
+		int shift = cpu->gprs[rs] & 0xFF;
 		int rotate = shift & 0x1F;
 		if (!shift) {
 			cpu->shifterOperand = shiftVal;
@@ -319,13 +303,13 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 
 #define DEFINE_ALU_INSTRUCTION_EX_ARM(NAME, S_BODY, SHIFTER, BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
+		SHIFTER(cpu, opcode); \
 		int rd = (opcode >> 12) & 0xF; \
 		int rn = (opcode >> 16) & 0xF; \
 		int32_t n = cpu->gprs[rn]; \
 		if (UNLIKELY(rn == ARM_PC && (opcode & 0x02000010) == 0x00000010)) { \
 			n += WORD_SIZE_ARM; \
 		} \
-		SHIFTER(cpu, opcode); \
 		BODY; \
 		S_BODY; \
 		if (rd == ARM_PC) { \
