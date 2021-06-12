@@ -131,6 +131,7 @@ void GBVideoProxyRendererInit(struct GBVideoRenderer* renderer, enum GBModel mod
 
 	_init(proxyRenderer);
 
+	proxyRenderer->model = model;
 	proxyRenderer->backend->init(proxyRenderer->backend, model, borders);
 }
 
@@ -191,7 +192,9 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 			break;
 		case BUFFER_SGB:
 			logger->readData(logger, sgbPacket, 16, true);
-			proxyRenderer->backend->writeSGBPacket(proxyRenderer->backend, sgbPacket);
+			if (proxyRenderer->model & GB_MODEL_SGB) {
+				proxyRenderer->backend->writeSGBPacket(proxyRenderer->backend, sgbPacket);
+			}
 			break;
 		}
 		break;

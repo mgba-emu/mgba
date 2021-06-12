@@ -415,7 +415,7 @@ static bool globTests(struct CInemaTestList* tests, const char* glob, const char
 	} else if (next[0] == '.') {
 		char subtest[MAX_TEST];
 		if (!ancestors) {
-			strncpy(subtest, glob, next - glob);
+			strlcpy(subtest, glob, next - glob + 1);
 		} else {
 			size_t len = strlen(ancestors) + (next - glob) + 2;
 			if (len > sizeof(subtest)) {

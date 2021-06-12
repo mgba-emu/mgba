@@ -1078,6 +1078,9 @@ static void _cliDebuggerInit(struct mDebugger* debugger) {
 	cliDebugger->traceRemaining = 0;
 	cliDebugger->traceVf = NULL;
 	cliDebugger->backend->init(cliDebugger->backend);
+	if (cliDebugger->system && cliDebugger->system->init) {
+		cliDebugger->system->init(cliDebugger->system);
+	}
 }
 
 static void _cliDebuggerDeinit(struct mDebugger* debugger) {

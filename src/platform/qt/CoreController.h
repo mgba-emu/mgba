@@ -53,12 +53,22 @@ public:
 
 	class Interrupter {
 	public:
+		Interrupter();
 		Interrupter(CoreController*);
 		Interrupter(std::shared_ptr<CoreController>);
 		Interrupter(const Interrupter&);
 		~Interrupter();
 
+		Interrupter& operator=(const Interrupter&);
+
+		void interrupt(CoreController*);
+		void interrupt(std::shared_ptr<CoreController>);
+		void resume();
+
 	private:
+		void interrupt();
+		void resume(CoreController*);
+
 		CoreController* m_parent;
 	};
 
@@ -72,6 +82,10 @@ public:
 
 	bool isPaused();
 	bool hasStarted();
+
+	QString title() { return m_dbTitle.isNull() ? m_internalTitle : m_dbTitle; }
+	QString intenralTitle() { return m_internalTitle; }
+	QString dbTitle() { return m_dbTitle; }
 
 	mPlatform platform() const;
 	QSize screenDimensions() const;
@@ -197,9 +211,15 @@ private:
 
 	void updateFastForward();
 
+	void updateROMInfo();
+
 	mCoreThread m_threadContext{};
 
 	bool m_patched = false;
+
+	uint32_t m_crc32;
+	QString m_internalTitle;
+	QString m_dbTitle;
 
 	QByteArray m_activeBuffer;
 	QByteArray m_completeBuffer;

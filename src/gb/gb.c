@@ -293,6 +293,10 @@ void GBSavedataUnmask(struct GB* gb) {
 
 void GBUnloadROM(struct GB* gb) {
 	// TODO: Share with GBAUnloadROM
+	off_t romBase = gb->memory.romBase - gb->memory.rom;
+	if (romBase >= 0 && ((size_t) romBase < gb->memory.romSize || (size_t) romBase < gb->yankedRomSize)) {
+		gb->memory.romBase = NULL;
+	}
 	if (gb->memory.rom && !gb->isPristine) {
 		if (gb->yankedRomSize) {
 			gb->yankedRomSize = 0;

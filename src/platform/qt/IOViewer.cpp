@@ -276,10 +276,10 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 	});
 	// 0x0400004C: MOSAIC
 	regGBA.append({
-		{ tr("Background mosaic size vertical"), 0, 4 },
-		{ tr("Background mosaic size horizontal"), 4, 4 },
-		{ tr("Object mosaic size vertical"), 8, 4 },
-		{ tr("Object mosaic size horizontal"), 12, 4 },
+		{ tr("Background mosaic size horizontal"), 0, 4 },
+		{ tr("Background mosaic size vertical"), 4, 4 },
+		{ tr("Object mosaic size horizontal"), 8, 4 },
+		{ tr("Object mosaic size vertical"), 12, 4 },
 	});
 	// 0x0400004E: Unused
 	regGBA.append(RegisterDescription());

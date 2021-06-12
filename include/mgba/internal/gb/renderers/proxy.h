@@ -17,6 +17,7 @@ struct GBVideoProxyRenderer {
 	struct GBVideoRenderer d;
 	struct GBVideoRenderer* backend;
 	struct mVideoLogger* logger;
+	enum GBModel model;
 };
 
 void GBVideoProxyRendererCreate(struct GBVideoProxyRenderer* renderer, struct GBVideoRenderer* backend);

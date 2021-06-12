@@ -625,7 +625,7 @@
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		tileData = carryData; \
-		for (x = 0; x < 8 && length; ++x, --length) { \
+		for (; x < 8 && length; ++x, --length) { \
 			if (!mosaicWait) { \
 				paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
 				palette = &mainPalette[paletteData]; \
@@ -659,6 +659,7 @@
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			++outX; \
 		} \
+		x = 0; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0(BPP, BLEND, OBJWIN) \

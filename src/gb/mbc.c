@@ -236,9 +236,6 @@ void GBMBCInit(struct GB* gb) {
 		case 0:
 			gb->sramSize = 0;
 			break;
-		case 1:
-			gb->sramSize = 0x800;
-			break;
 		default:
 		case 2:
 			gb->sramSize = 0x2000;
@@ -356,6 +353,9 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcWrite = _GBMBC6;
 		gb->memory.mbcRead = _GBMBC6Read;
 		gb->memory.directSramAccess = false;
+		if (!gb->sramSize) {
+			gb->sramSize = GB_SIZE_EXTERNAL_RAM; // Force minimum size for convenience
+		}
 		gb->sramSize += GB_SIZE_MBC6_FLASH; // Flash is concatenated at the end
 		break;
 	case GB_MBC7:
@@ -389,6 +389,9 @@ void GBMBCInit(struct GB* gb) {
 	case GB_POCKETCAM:
 		gb->memory.mbcWrite = _GBPocketCam;
 		gb->memory.mbcRead = _GBPocketCamRead;
+		if (!gb->sramSize) {
+			gb->sramSize = GB_SIZE_EXTERNAL_RAM; // Force minimum size for convenience
+		}
 		if (gb->memory.cam && gb->memory.cam->startRequestImage) {
 			gb->memory.cam->startRequestImage(gb->memory.cam, GBCAM_WIDTH, GBCAM_HEIGHT, mCOLOR_ANY);
 		}

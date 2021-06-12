@@ -98,7 +98,10 @@ Emulation fixes:
  - GBA Video: Implement green swap (fixes mgba.io/i/1609)
  - GBA Video: Emulate sprite cycle limits in OpenGL renderer (fixes mgba.io/i/1635)
  - GBA Video: Fix OBJWIN erratic rendering in OpenGL renderer
+ - GBA Video: Fix x offset in 256-color BG mosaic (fixes mgba.io/i/1684)
  - SM83: Emulate HALT bug
+ - SM83: Improve mid-M-cycle interrupts
+ - SM83: HALT should not consume an extra T-state
 Other fixes:
  - 3DS: Fix thread cleanup
  - All: Improve export headers (fixes mgba.io/i/1738)
@@ -108,14 +111,23 @@ Other fixes:
  - Core: Ensure ELF regions can be written before trying
  - Core: Fix threading improperly setting paused state while interrupted
  - Core: Fix loading ELF files that have unexpected empty program headers
+ - Core: Fix destroying an mVL with an invalid channel count
  - Debugger: Don't skip undefined instructions when debugger attached
  - Debugger: Close trace log when done tracing
  - Debugger: Fix change watchpoints (fixes mgba.io/i/1947)
+ - Debugger: Call CLI debugger system init
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
  - GB: Fix crash when changing ROM while in banked address space
+ - GB: Fix loading model overrides
+ - GB MBC: Force minimum SRAM size on rare MBCs that always have SRAM
+ - GB Serialize: Fix crash when loading pre-0.7 SGB savestates
  - GB Video: Fix SGB video logs
+ - GB Video: Discard SGB packets in non-SGB mVLs
+ - GB Video: Fix deserializing negative LX state
+ - GB Video: Don't rendering negative batches
  - GBA: Fix loading multiboot ELF files (fixes mgba.io/i/1949)
+ - GBA: Fix loading subsequent save files (fixes mgba.io/i/2067)
  - mGUI: Don't attempt to preload files larger than can fit in RAM
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
@@ -133,6 +145,7 @@ Other fixes:
  - Qt: Fix inability to clear hat bindings
  - SM83: Simplify register pair access on big endian
  - SM83: Disassemble STOP as one byte
+ - Switch: Fix GB game height in pixel accurate mode (fixes mgba.io/i/2073)
  - Wii: Fix crash on unloading irregularly sized GBA ROMs
 Misc:
  - 3DS: Use "wide mode" where applicable for slightly better filtering
@@ -145,8 +158,10 @@ Misc:
  - GB: Allow pausing event loop while CPU is blocked
  - GB: Add support for sleep and shutdown callbacks
  - GB: Redo double speed emulation (closes mgba.io/i/1515)
+ - GB Audio: Add channel 4 batching back (fixes mgba.io/i/1313)
  - GB Core: Return the current number of banks for ROM/SRAM, not theoretical max
  - GB I/O: Implement preliminary support for PCM12/PCM34 (closes mgba.io/i/1468)
+ - GB MBC: Remove unused SRAM size
  - GBA: Allow pausing event loop while CPU is blocked
  - GBA BIOS: Division by zero should emit a FATAL error
  - GBA Cheats: Allow unlimited ROM patch-type codes per set

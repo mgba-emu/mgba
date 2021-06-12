@@ -565,6 +565,9 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	softwareRenderer->lastY = y;
 	softwareRenderer->lastX = endX;
+	if (startX >= endX) {
+		return;
+	}
 	uint8_t* maps = &softwareRenderer->d.vram[GB_BASE_MAP];
 	if (GBRegisterLCDCIsTileMap(softwareRenderer->lcdc)) {
 		maps += GB_SIZE_MAP;
