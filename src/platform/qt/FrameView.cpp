@@ -463,7 +463,7 @@ void FrameView::updateRendered() {
 	m_rendered.convertFromImage(m_controller->getPixels());
 }
 
-bool FrameView::eventFilter(QObject* obj, QEvent* event) {
+bool FrameView::eventFilter(QObject*, QEvent* event) {
 	QPointF pos;
 	switch (event->type()) {
 	case QEvent::MouseButtonPress:
@@ -521,7 +521,7 @@ void FrameView::frameCallback(FrameView* viewer, std::shared_ptr<bool> lock) {
 	if (!*lock) {
 		return;
 	}
-	CoreController::Interrupter interrupter(viewer->m_controller, true);
+	CoreController::Interrupter interrupter(viewer->m_controller);
 	viewer->refreshVl();
 	viewer->m_controller->addFrameAction(std::bind(&FrameView::frameCallback, viewer, lock));
 }

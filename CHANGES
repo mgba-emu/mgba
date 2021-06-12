@@ -52,6 +52,7 @@ Emulation fixes:
  - ARM: Fix STR storing PC after address calculation
  - ARM: Fix Addressing mode 1 shifter on rs == pc (fixes mgba.io/i/1926)
  - GB: Partially fix timing for skipped BIOS
+ - GB: Downgrade DMG-only ROMs from CGB mode even without boot ROM
  - GB Audio: Fix serializing sweep time
  - GB MBC: Fix MBC1 mode changing behavior
  - GB MBC: Fix some MBC3 bit masking
@@ -66,9 +67,11 @@ Emulation fixes:
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA DMA: Fix ordering and timing of overlapping DMAs
  - GBA I/O: Green swap register should be readable
+ - GBA I/O: Ignore high bits on IME
  - GBA Memory: Improve gamepak prefetch timing
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
  - GBA Memory: Improve robustness of Matrix memory support
+ - GBA Memory: Mark Famicom Mini games 22 through 28 as non-mirroring
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
  - GBA SIO: Fix deseralizing SIO registers
@@ -82,20 +85,28 @@ Other fixes:
  - All: Improve export headers (fixes mgba.io/i/1738)
  - CMake: Fix build with downstream minizip that exports incompatible symbols
  - Core: Ensure ELF regions can be written before trying
+ - Core: Fix threading improperly setting paused state while interrupted
  - Debugger: Don't skip undefined instructions when debugger attached
+ - Debugger: Close trace log when done tracing
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
+ - mGUI: Don't attempt to preload files larger than can fit in RAM
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)
  - Qt: Fix a race condition in the frame inspector
  - Qt: Load/save bytes from memory viewer in the order visible (fixes mgba.io/i/1900)
  - Qt: Fix running proxied video if it gets pushed to the main thread
+ - Qt: Fix game display sometimes disappearing after closing load/save state screen
+ - Qt: Fix cancelling pausing before the frame ends
+ - Qt: Fix gamepad event dispatching (fixes mgba.io/i/1922)
  - SM83: Simplify register pair access on big endian
  - SM83: Disassemble STOP as one byte
+ - Wii: Fix crash on unloading irregularly sized GBA ROMs
 Misc:
  - 3DS: Use "wide mode" where applicable for slightly better filtering
  - Core: Add savedataUpdated callback
  - Core: Add shutdown callback
+ - Core: Rework thread state synchronization
  - GB: Allow pausing event loop while CPU is blocked
  - GB: Add support for sleep and shutdown callbacks
  - GBA: Allow pausing event loop while CPU is blocked
@@ -110,6 +121,7 @@ Misc:
  - Qt: Memory viewer now supports editing decimal values directly (closes mgba.io/i/1705)
  - Qt: Add copy button to GB printer dialog
  - Qt: Window title updates can be disabled (closes mgba.io/i/1912)
+ - Qt: Redo OpenGL context thread handling (fixes mgba.io/i/1724)
  - Util: Reset vector size on deinit
  - VFS: Change semantics of VFile.sync on mapped files (fixes mgba.io/i/1730)
 

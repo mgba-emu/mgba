@@ -59,6 +59,7 @@ public:
 	std::shared_ptr<VideoProxy> videoProxy() { return m_videoProxy; }
 	
 signals:
+	void drawingStarted();
 	void showCursor();
 	void hideCursor();
 

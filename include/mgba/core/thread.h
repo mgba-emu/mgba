@@ -48,35 +48,37 @@ struct mCoreThread {
 #include <mgba-util/threading.h>
 
 enum mCoreThreadState {
-	THREAD_INITIALIZED = -1,
-	THREAD_RUNNING = 0,
-	THREAD_REWINDING,
-	THREAD_MAX_RUNNING = THREAD_REWINDING,
+	mTHREAD_INITIALIZED = -1,
+	mTHREAD_RUNNING = 0,
+	mTHREAD_REQUEST,
 
-	THREAD_WAITING,
-	THREAD_INTERRUPTED,
-	THREAD_PAUSED,
-	THREAD_MAX_WAITING = THREAD_PAUSED,
+	mTHREAD_INTERRUPTED,
+	mTHREAD_PAUSED,
+	mTHREAD_MIN_WAITING = mTHREAD_INTERRUPTED,
+	mTHREAD_MAX_WAITING = mTHREAD_PAUSED,
 
-	THREAD_PAUSING,
-	THREAD_RUN_ON,
-	THREAD_RESETING,
-	THREAD_MIN_DEFERRED = THREAD_PAUSING,
-	THREAD_MAX_DEFERRED = THREAD_RESETING,
+	mTHREAD_INTERRUPTING,
+	mTHREAD_EXITING,
 
-	THREAD_INTERRUPTING,
-	THREAD_EXITING,
-	THREAD_SHUTDOWN,
-	THREAD_CRASHED
+	mTHREAD_SHUTDOWN,
+	mTHREAD_CRASHED
+};
+
+enum mCoreThreadRequest {
+	mTHREAD_REQ_PAUSE = 1, // User-set pause
+	mTHREAD_REQ_WAIT = 2, // Core-set pause
+	mTHREAD_REQ_RESET = 4,
+	mTHREAD_REQ_RUN_ON = 8,
 };
 
 struct mCoreThreadInternal {
 	Thread thread;
 	enum mCoreThreadState state;
+	bool rewinding;
+	int requested;
 
 	Mutex stateMutex;
 	Condition stateCond;
-	enum mCoreThreadState savedState;
 	int interruptDepth;
 	bool frameWasOn;
 

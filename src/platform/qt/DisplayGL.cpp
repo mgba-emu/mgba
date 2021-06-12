@@ -34,44 +34,15 @@ using namespace QGBA;
 
 DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 	: Display(parent)
-	, m_gl(nullptr)
 {
 	setAttribute(Qt::WA_NativeWindow);
 	windowHandle()->create();
 
-	// This can spontaneously re-enter into this->resizeEvent before creation is done, so we
-	// need to make sure it's initialized to nullptr before we assign the new object to it
-	m_gl = new QOpenGLContext;
-	m_gl->setFormat(format);
-	m_gl->create();
-
-	m_gl->makeCurrent(windowHandle());
-#if defined(_WIN32) && defined(USE_EPOXY)
-	epoxy_handle_external_wglMakeCurrent();
-#endif
-	auto version = m_gl->format().version();
-	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
-
-	int forceVersion = 0;
-	if (format.majorVersion() < 2) {
-		forceVersion = 1;
-	}
-
-	if ((version == qMakePair(2, 1) && !extensions.contains("GL_ARB_framebuffer_object")) || version == qMakePair(2, 0)) {
-		QSurfaceFormat newFormat(format);
-		newFormat.setVersion(1, 4);
-		forceVersion = 1;
-		m_gl->setFormat(newFormat);
-		m_gl->create();
-	}
-
-	m_painter = new PainterGL(windowHandle(), m_gl, forceVersion);
+	m_painter = std::make_unique<PainterGL>(windowHandle(), format);
 }
 
 DisplayGL::~DisplayGL() {
 	stopDrawing();
-	delete m_painter;
-	delete m_gl;
 }
 
 bool DisplayGL::supportsShaders() const {
@@ -81,7 +52,7 @@ bool DisplayGL::supportsShaders() const {
 VideoShader* DisplayGL::shaders() {
 	VideoShader* shaders = nullptr;
 	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "shaders", Qt::BlockingQueuedConnection, Q_RETURN_ARG(VideoShader*, shaders));
+		QMetaObject::invokeMethod(m_painter.get(), "shaders", Qt::BlockingQueuedConnection, Q_RETURN_ARG(VideoShader*, shaders));
 	} else {
 		shaders = m_painter->shaders();
 	}
@@ -99,45 +70,44 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	m_painter->setContext(controller);
 	m_painter->setMessagePainter(messagePainter());
 	m_context = controller;
-	m_painter->resize(size());
 	m_drawThread = new QThread(this);
 	m_drawThread->setObjectName("Painter Thread");
-	m_gl->doneCurrent();
-	m_gl->moveToThread(m_drawThread);
 	m_painter->moveToThread(m_drawThread);
 	if (videoProxy()) {
 		videoProxy()->moveToThread(m_drawThread);
 	}
-	connect(m_drawThread, &QThread::started, m_painter, &PainterGL::start);
-	m_drawThread->start();
+	connect(m_drawThread, &QThread::started, m_painter.get(), &PainterGL::start);
+	connect(m_painter.get(), &PainterGL::started, this, [this] {
+		m_hasStarted = true;
+		resizePainter();
+		emit drawingStarted();
+	});
 
 	lockAspectRatio(isAspectRatioLocked());
 	lockIntegerScaling(isIntegerScalingLocked());
 	interframeBlending(hasInterframeBlending());
 	showOSDMessages(isShowOSD());
 	filter(isFiltered());
+
+	m_drawThread->start();
+
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatioF());
 #else
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatio());
 #endif
-	resizePainter();
 	setUpdatesEnabled(false);
 }
 
 void DisplayGL::stopDrawing() {
 	if (m_drawThread) {
 		m_isDrawing = false;
+		m_hasStarted = false;
 		CoreController::Interrupter interrupter(m_context);
-		QMetaObject::invokeMethod(m_painter, "stop", Qt::BlockingQueuedConnection);
+		QMetaObject::invokeMethod(m_painter.get(), "stop", Qt::BlockingQueuedConnection);
 		m_drawThread->exit();
 		m_drawThread->wait();
 		m_drawThread = nullptr;
-
-		m_gl->makeCurrent(windowHandle());
-#if defined(_WIN32) && defined(USE_EPOXY)
-		epoxy_handle_external_wglMakeCurrent();
-#endif
 		setUpdatesEnabled(true);
 	}
 	m_context.reset();
@@ -147,7 +117,7 @@ void DisplayGL::pauseDrawing() {
 	if (m_drawThread) {
 		m_isDrawing = false;
 		CoreController::Interrupter interrupter(m_context);
-		QMetaObject::invokeMethod(m_painter, "pause", Qt::BlockingQueuedConnection);
+		QMetaObject::invokeMethod(m_painter.get(), "pause", Qt::BlockingQueuedConnection);
 #ifndef Q_OS_MAC
 		setUpdatesEnabled(true);
 #endif
@@ -158,7 +128,7 @@ void DisplayGL::unpauseDrawing() {
 	if (m_drawThread) {
 		m_isDrawing = true;
 		CoreController::Interrupter interrupter(m_context);
-		QMetaObject::invokeMethod(m_painter, "unpause", Qt::BlockingQueuedConnection);
+		QMetaObject::invokeMethod(m_painter.get(), "unpause", Qt::BlockingQueuedConnection);
 #ifndef Q_OS_MAC
 		setUpdatesEnabled(false);
 #endif
@@ -167,78 +137,76 @@ void DisplayGL::unpauseDrawing() {
 
 void DisplayGL::forceDraw() {
 	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "forceDraw");
+		QMetaObject::invokeMethod(m_painter.get(), "forceDraw");
 	}
 }
 
 void DisplayGL::lockAspectRatio(bool lock) {
 	Display::lockAspectRatio(lock);
 	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "lockAspectRatio", Q_ARG(bool, lock));
+		QMetaObject::invokeMethod(m_painter.get(), "lockAspectRatio", Q_ARG(bool, lock));
 	}
 }
 
 void DisplayGL::lockIntegerScaling(bool lock) {
 	Display::lockIntegerScaling(lock);
 	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "lockIntegerScaling", Q_ARG(bool, lock));
+		QMetaObject::invokeMethod(m_painter.get(), "lockIntegerScaling", Q_ARG(bool, lock));
 	}
 }
 
 void DisplayGL::interframeBlending(bool enable) {
 	Display::interframeBlending(enable);
 	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "interframeBlending", Q_ARG(bool, enable));
+		QMetaObject::invokeMethod(m_painter.get(), "interframeBlending", Q_ARG(bool, enable));
 	}
 }
 
 void DisplayGL::showOSDMessages(bool enable) {
 	Display::showOSDMessages(enable);
 	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "showOSD", Q_ARG(bool, enable));
+		QMetaObject::invokeMethod(m_painter.get(), "showOSD", Q_ARG(bool, enable));
 	}
 }
 
 void DisplayGL::filter(bool filter) {
 	Display::filter(filter);
 	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "filter", Q_ARG(bool, filter));
+		QMetaObject::invokeMethod(m_painter.get(), "filter", Q_ARG(bool, filter));
 	}
 }
 
 void DisplayGL::framePosted() {
 	if (m_drawThread) {
 		m_painter->enqueue(m_context->drawContext());
-		QMetaObject::invokeMethod(m_painter, "draw");
+		QMetaObject::invokeMethod(m_painter.get(), "draw");
 	}
 }
 
 void DisplayGL::setShaders(struct VDir* shaders) {
 	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "setShaders", Qt::BlockingQueuedConnection, Q_ARG(struct VDir*, shaders));
+		QMetaObject::invokeMethod(m_painter.get(), "setShaders", Qt::BlockingQueuedConnection, Q_ARG(struct VDir*, shaders));
 	} else {
 		m_painter->setShaders(shaders);
 	}
 }
 
 void DisplayGL::clearShaders() {
-	QMetaObject::invokeMethod(m_painter, "clearShaders");
+	QMetaObject::invokeMethod(m_painter.get(), "clearShaders");
 }
 
 void DisplayGL::resizeContext() {
 	if (m_drawThread) {
-		m_isDrawing = false;
 		CoreController::Interrupter interrupter(m_context);
-		QMetaObject::invokeMethod(m_painter, "resizeContext", Qt::BlockingQueuedConnection);
+		QMetaObject::invokeMethod(m_painter.get(), "resizeContext");
 	}
 }
 
 void DisplayGL::setVideoScale(int scale) {
 	if (m_drawThread) {
-		m_isDrawing = false;
 		CoreController::Interrupter interrupter(m_context);
 		mCoreConfigSetIntValue(&m_context->thread()->core->config, "videoScale", scale);
-		QMetaObject::invokeMethod(m_painter, "resizeContext", Qt::BlockingQueuedConnection);
+		QMetaObject::invokeMethod(m_painter.get(), "resizeContext");
 	}
 }
 
@@ -248,8 +216,8 @@ void DisplayGL::resizeEvent(QResizeEvent* event) {
 }
 
 void DisplayGL::resizePainter() {
-	if (m_drawThread) {
-		QMetaObject::invokeMethod(m_painter, "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, size()));
+	if (m_drawThread && m_hasStarted) {
+		QMetaObject::invokeMethod(m_painter.get(), "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, size()));
 	}
 }
 
@@ -265,10 +233,52 @@ int DisplayGL::framebufferHandle() {
 	return m_painter->glTex();
 }
 
-PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent, int forceVersion)
-	: m_gl(parent)
-	, m_surface(surface)
+PainterGL::PainterGL(QWindow* surface, const QSurfaceFormat& format)
+	: m_surface(surface)
+	, m_format(format)
 {
+	for (auto& buf : m_buffers) {
+		m_free.append(&buf.front());
+	}
+}
+
+PainterGL::~PainterGL() {
+	if (m_gl) {
+		destroy();
+	}
+}
+
+void PainterGL::makeCurrent() {
+	m_gl->makeCurrent(m_surface);
+#if defined(_WIN32) && defined(USE_EPOXY)
+	epoxy_handle_external_wglMakeCurrent();
+#endif
+}
+
+void PainterGL::create() {
+	m_gl = std::make_unique<QOpenGLContext>();
+	m_gl->setFormat(m_format);
+	m_gl->create();
+	makeCurrent();
+
+	auto version = m_gl->format().version();
+	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
+
+	int forceVersion = 0;
+	if (m_format.majorVersion() < 2) {
+		forceVersion = 1;
+	}
+
+	if ((version == qMakePair(2, 1) && !extensions.contains("GL_ARB_framebuffer_object")) || version == qMakePair(2, 0)) {
+		QSurfaceFormat newFormat(m_format);
+		newFormat.setVersion(1, 4);
+		forceVersion = 1;
+		m_gl->doneCurrent();
+		m_gl->setFormat(newFormat);
+		m_gl->create();
+		makeCurrent();
+	}
+
 #ifdef BUILD_GL
 	mGLContext* glBackend;
 #endif
@@ -276,24 +286,11 @@ PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent, int forceVersion)
 	mGLES2Context* gl2Backend;
 #endif
 
-	m_gl->makeCurrent(m_surface);
-	m_window = new QOpenGLPaintDevice;
-	{
-		// XXX: Qt creates TLS for OpenGL objects in the local thread
-		// We need to prevent that thread from being the painter thread
-		// Qt also caches the engine object on the device if a different
-		// engine is active, so let's make a temporary one
-		QOpenGLPaintDevice* fakeDevice = new QOpenGLPaintDevice;
-		QPainter fakePainter(fakeDevice);
-		m_window->paintEngine();
-	}
-#if defined(_WIN32) && defined(USE_EPOXY)
-	epoxy_handle_external_wglMakeCurrent();
-#endif
+	m_window = std::make_unique<QOpenGLPaintDevice>();
 
 #ifdef BUILD_GLES2
-	auto version = m_gl->format().version();
-	QStringList extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
+	version = m_gl->format().version();
+	extensions = QString(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))).split(' ');
 	if (forceVersion != 1 && ((version == qMakePair(2, 1) && extensions.contains("GL_ARB_framebuffer_object")) || version.first > 2)) {
 		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
@@ -316,10 +313,7 @@ PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent, int forceVersion)
 			return;
 		}
 		painter->m_gl->swapBuffers(painter->m_surface);
-		painter->m_gl->makeCurrent(painter->m_surface);
-#if defined(_WIN32) && defined(USE_EPOXY)
-		epoxy_handle_external_wglMakeCurrent();
-#endif
+		painter->makeCurrent();
 	};
 
 	m_backend->init(m_backend, 0);
@@ -333,17 +327,22 @@ PainterGL::PainterGL(QWindow* surface, QOpenGLContext* parent, int forceVersion)
 	m_backend->filter = false;
 	m_backend->lockAspectRatio = false;
 	m_backend->interframeBlending = false;
-
-	for (auto& buf : m_buffers) {
-		m_free.append(&buf.front());
-	}
 }
 
-PainterGL::~PainterGL() {
-	m_gl->makeCurrent(m_surface);
-#if defined(_WIN32) && defined(USE_EPOXY)
-	epoxy_handle_external_wglMakeCurrent();
-#endif
+void PainterGL::destroy() {
+	if (!m_gl) {
+		return;
+	}
+	makeCurrent();
+	if (m_context) {
+		if (m_videoProxy) {
+			m_videoProxy->detach(m_context.get());
+		}
+		m_context->setFramebufferHandle(-1);
+		if (m_videoProxy) {
+			m_videoProxy->processData();
+		}
+	}
 #ifdef BUILD_GLES2
 	if (m_shader.passes) {
 		mGLES2ShaderFree(&m_shader);
@@ -351,14 +350,15 @@ PainterGL::~PainterGL() {
 #endif
 	m_backend->deinit(m_backend);
 	m_gl->doneCurrent();
+	m_window.reset();
+	m_gl.reset();
+
 	free(m_backend);
 	m_backend = nullptr;
-	delete m_window;
 }
 
 void PainterGL::setContext(std::shared_ptr<CoreController> context) {
 	m_context = context;
-	resizeContext();
 }
 
 void PainterGL::resizeContext() {
@@ -413,20 +413,22 @@ void PainterGL::filter(bool filter) {
 }
 
 void PainterGL::start() {
-	m_gl->makeCurrent(m_surface);
-#if defined(_WIN32) && defined(USE_EPOXY)
-	epoxy_handle_external_wglMakeCurrent();
-#endif
+	if (!m_gl) {
+		create();
+	}
+	makeCurrent();
 
 #ifdef BUILD_GLES2
 	if (m_supportsShaders && m_shader.passes) {
 		mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
 	}
 #endif
+	resizeContext();
 
 	m_buffer = nullptr;
 	m_active = true;
 	m_started = true;
+	emit started();
 }
 
 void PainterGL::draw() {
@@ -450,7 +452,7 @@ void PainterGL::draw() {
 }
 
 void PainterGL::forceDraw() {
-	m_painter.begin(m_window);
+	m_painter.begin(m_window.get());
 	performDraw();
 	m_painter.end();
 	if (!m_context->thread()->impl->sync.audioWait && !m_context->thread()->impl->sync.videoFrameWait) {
@@ -471,12 +473,10 @@ void PainterGL::stop() {
 	if (m_videoProxy) {
 		m_videoProxy->reset();
 	}
-	m_gl->doneCurrent();
-	m_gl->moveToThread(m_surface->thread());
-	m_context.reset();
-	moveToThread(m_gl->thread());
+	destroy();
+	moveToThread(m_surface->thread());
 	if (m_videoProxy) {
-		m_videoProxy->moveToThread(m_gl->thread());
+		m_videoProxy->moveToThread(m_surface->thread());
 	}
 }
 
@@ -561,21 +561,14 @@ void PainterGL::setShaders(struct VDir* dir) {
 	}
 #ifdef BUILD_GLES2
 	if (!m_started) {
-		m_gl->makeCurrent(m_surface);
-#if defined(_WIN32) && defined(USE_EPOXY)
-		epoxy_handle_external_wglMakeCurrent();
-#endif
+		return; // TODO
 	}
 	if (m_shader.passes) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
 	}
 	mGLES2ShaderLoad(&m_shader, dir);
-	if (m_started) {
-		mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
-	} else {
-		m_gl->doneCurrent();
-	}
+	mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
 #endif
 }
 
@@ -585,17 +578,11 @@ void PainterGL::clearShaders() {
 	}
 #ifdef BUILD_GLES2
 	if (!m_started) {
-		m_gl->makeCurrent(m_surface);
-#if defined(_WIN32) && defined(USE_EPOXY)
-		epoxy_handle_external_wglMakeCurrent();
-#endif
+		return; // TODO
 	}
 	if (m_shader.passes) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
-	}
-	if (!m_started) {
-		m_gl->doneCurrent();
 	}
 #endif
 }

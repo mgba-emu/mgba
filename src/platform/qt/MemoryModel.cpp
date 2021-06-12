@@ -328,7 +328,7 @@ void MemoryModel::resizeEvent(QResizeEvent*) {
 	boundsCheck();
 }
 
-void MemoryModel::paintEvent(QPaintEvent* event) {
+void MemoryModel::paintEvent(QPaintEvent*) {
 	QPainter painter(viewport());
 	QPalette palette;
 	painter.setFont(m_font);
@@ -336,7 +336,6 @@ void MemoryModel::paintEvent(QPaintEvent* event) {
 	static QChar c0('0');
 	static QString arg("%0");
 	static QString arg2("%0:%1");
-	QSizeF letterSize = QSizeF(m_letterWidth, m_cellHeight);
 	painter.drawStaticText(QPointF((m_margins.left() - m_regionName.size().width() - 1) / 2.0, 0), m_regionName);
 	painter.drawText(
 	    QRect(QPoint(viewport()->size().width() - m_margins.right(), 0), QSize(m_margins.right(), m_margins.top())),

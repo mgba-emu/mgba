@@ -153,7 +153,7 @@ bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, si
 	extern uint32_t* romBuffer;
 	extern size_t romBufferSize;
 	if (size > romBufferSize) {
-		size = romBufferSize;
+		return false;
 	}
 	vfm = VFileFromMemory(romBuffer, size);
 #else

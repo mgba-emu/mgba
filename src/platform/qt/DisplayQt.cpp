@@ -29,6 +29,7 @@ void DisplayQt::startDrawing(std::shared_ptr<CoreController> controller) {
 	m_oldBacking = std::move(QImage());
 	m_isDrawing = true;
 	m_context = controller;
+	emit drawingStarted();
 }
 
 void DisplayQt::stopDrawing() {

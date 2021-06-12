@@ -34,8 +34,8 @@ using namespace QGBA;
 
 CoreController::CoreController(mCore* core, QObject* parent)
 	: QObject(parent)
-	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC)
 	, m_loadStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_RTC)
+	, m_saveStateFlags(SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_CHEATS | SAVESTATE_RTC)
 {
 	m_threadContext.core = core;
 	m_threadContext.userData = this;
@@ -81,7 +81,9 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 		controller->m_resetActions.clear();
 
-		context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer.data()), controller->screenDimensions().width());
+		if (!controller->m_hwaccel) {
+			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer.data()), controller->screenDimensions().width());
+		}
 
 		QMetaObject::invokeMethod(controller, "didReset");
 		controller->finishFrame();
@@ -269,14 +271,20 @@ void CoreController::loadConfig(ConfigController* config) {
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
 
 	QSize sizeBefore = screenDimensions();
+	m_activeBuffer.resize(256 * 224 * sizeof(color_t));
+	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), sizeBefore.width());
+
 	mCoreLoadForeignConfig(m_threadContext.core, config->config());
+
 	QSize sizeAfter = screenDimensions();
+	m_activeBuffer.resize(sizeAfter.width() * sizeAfter.height() * sizeof(color_t));
+	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), sizeAfter.width());
+
 	if (hasStarted()) {
 		updateFastForward();
 		mCoreThreadRewindParamsChanged(&m_threadContext);
 	}
 	if (sizeBefore != sizeAfter) {
-		m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), sizeAfter.width());
 #ifdef M_CORE_GB
 		mCoreConfigSetIntValue(&m_threadContext.core->config, "sgb.borders", 0);
 		m_threadContext.core->reloadConfigOption(m_threadContext.core, "sgb.borders", nullptr);
@@ -373,7 +381,7 @@ void CoreController::setLogger(LogController* logger) {
 }
 
 void CoreController::start() {
-	QSize size(256, 384);
+	QSize size(screenDimensions());
 	m_activeBuffer.resize(size.width() * size.height() * sizeof(color_t));
 	m_activeBuffer.fill(0xFF);
 	m_completeBuffer = m_activeBuffer;
@@ -399,33 +407,29 @@ void CoreController::stop() {
 }
 
 void CoreController::reset() {
-	bool wasPaused = isPaused();
-	setPaused(false);
-	Interrupter interrupter(this);
 	mCoreThreadReset(&m_threadContext);
-	if (wasPaused) {
-		setPaused(true);
-	}
 }
 
 void CoreController::setPaused(bool paused) {
-	if (paused == isPaused()) {
-		return;
-	}
+	QMutexLocker locker(&m_actionMutex);
 	if (paused) {
-		addFrameAction([this]() {
-			mCoreThreadPauseFromThread(&m_threadContext);
-		});
+		if (m_moreFrames < 0) {
+			m_moreFrames = 1;
+		}
 	} else {
-		mCoreThreadUnpause(&m_threadContext);
+		m_moreFrames = -1;
+		if (isPaused()) {
+			mCoreThreadUnpause(&m_threadContext);
+		}
 	}
 }
 
 void CoreController::frameAdvance() {
-	addFrameAction([this]() {
-		mCoreThreadPauseFromThread(&m_threadContext);
-	});
-	setPaused(false);
+	QMutexLocker locker(&m_actionMutex);
+	m_moreFrames = 1;
+	if (isPaused()) {
+		mCoreThreadUnpause(&m_threadContext);
+	}
 }
 
 void CoreController::addFrameAction(std::function<void ()> action) {
@@ -897,6 +901,9 @@ void CoreController::setFramebufferHandle(int fb) {
 	}
 	if (hasStarted()) {
 		m_threadContext.core->reloadConfigOption(m_threadContext.core, "hwaccelVideo", NULL);
+		if (!m_hwaccel) {
+			m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), screenDimensions().width());
+		}
 	}
 }
 
@@ -911,14 +918,22 @@ void CoreController::finishFrame() {
 		m_threadContext.core->desiredVideoDimensions(m_threadContext.core, &width, &height);
 
 		QMutexLocker locker(&m_bufferMutex);
-		memcpy(m_completeBuffer.data(), m_activeBuffer.constData(), 256 * height * BYTES_PER_PIXEL);
+		memcpy(m_completeBuffer.data(), m_activeBuffer.constData(), width * height * BYTES_PER_PIXEL);
 	}
 
-	QMutexLocker locker(&m_actionMutex);
-	QList<std::function<void ()>> frameActions(m_frameActions);
-	m_frameActions.clear();
-	for (auto& action : frameActions) {
-		action();
+	{
+		QMutexLocker locker(&m_actionMutex);
+		QList<std::function<void ()>> frameActions(m_frameActions);
+		m_frameActions.clear();
+		for (auto& action : frameActions) {
+			action();
+		}
+		if (m_moreFrames > 0) {
+			--m_moreFrames;
+			if (!m_moreFrames) {
+				mCoreThreadPauseFromThread(&m_threadContext);
+			}
+		}
 	}
 	updateKeys();
 
@@ -969,26 +984,26 @@ void CoreController::updateFastForward() {
 	m_threadContext.core->reloadConfigOption(m_threadContext.core, NULL, NULL);
 }
 
-CoreController::Interrupter::Interrupter(CoreController* parent, bool fromThread)
+CoreController::Interrupter::Interrupter(CoreController* parent)
 	: m_parent(parent)
 {
 	if (!m_parent->thread()->impl) {
 		return;
 	}
-	if (!fromThread) {
+	if (mCoreThreadGet() != m_parent->thread()) {
 		mCoreThreadInterrupt(m_parent->thread());
 	} else {
 		mCoreThreadInterruptFromThread(m_parent->thread());
 	}
 }
 
-CoreController::Interrupter::Interrupter(std::shared_ptr<CoreController> parent, bool fromThread)
+CoreController::Interrupter::Interrupter(std::shared_ptr<CoreController> parent)
 	: m_parent(parent.get())
 {
 	if (!m_parent->thread()->impl) {
 		return;
 	}
-	if (!fromThread) {
+	if (mCoreThreadGet() != m_parent->thread()) {
 		mCoreThreadInterrupt(m_parent->thread());
 	} else {
 		mCoreThreadInterruptFromThread(m_parent->thread());

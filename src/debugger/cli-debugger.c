@@ -752,7 +752,12 @@ static bool _doTrace(struct CLIDebugger* debugger) {
 	if (debugger->traceRemaining > 0) {
 		--debugger->traceRemaining;
 	}
-	return debugger->traceRemaining != 0;
+	if (!debugger->traceRemaining) {
+		debugger->traceVf->close(debugger->traceVf);
+		debugger->traceVf = NULL;
+		return false;
+	}
+	return true;
 }
 
 static void _printStatus(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {

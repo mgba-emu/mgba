@@ -42,7 +42,7 @@ QVariant BattleChipModel::data(const QModelIndex& index, int role) const {
 	return QVariant();
 }
 
-Qt::ItemFlags BattleChipModel::flags(const QModelIndex& index) const {
+Qt::ItemFlags BattleChipModel::flags(const QModelIndex&) const {
 	return Qt::ItemIsSelectable | Qt::ItemIsDropEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren;
 }
 

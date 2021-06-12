@@ -554,6 +554,12 @@ void GBSkipBIOS(struct GB* gb) {
 			cpu->e = 0x08;
 			cpu->l = 0x7C;
 			gb->timer.internalDiv = 0x260;
+			gb->model = GB_MODEL_DMG;
+			gb->memory.io[GB_REG_KEY1] = 0xFF;
+			gb->memory.io[GB_REG_BCPS] = 0x88; // Faked writing 4 BG palette entries
+			gb->memory.io[GB_REG_OCPS] = 0x90; // Faked writing 8 OBJ palette entries
+			gb->memory.io[GB_REG_SVBK] = 0xFF;
+			GBVideoDisableCGB(&gb->video);
 		}
 		nextDiv = 0xC;
 		break;

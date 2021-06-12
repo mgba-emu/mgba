@@ -53,8 +53,8 @@ public:
 
 	class Interrupter {
 	public:
-		Interrupter(CoreController*, bool fromThread = false);
-		Interrupter(std::shared_ptr<CoreController>, bool fromThread = false);
+		Interrupter(CoreController*);
+		Interrupter(std::shared_ptr<CoreController>);
 		Interrupter(const Interrupter&);
 		~Interrupter();
 
@@ -209,6 +209,7 @@ private:
 	QList<std::function<void()>> m_resetActions;
 	QList<std::function<void()>> m_frameActions;
 	QMutex m_actionMutex{QMutex::Recursive};
+	int m_moreFrames = -1;
 	QMutex m_bufferMutex;
 
 	int m_activeKeys = 0;

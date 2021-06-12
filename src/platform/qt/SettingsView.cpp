@@ -411,6 +411,7 @@ void SettingsView::updateConfig() {
 	saveSetting("useDiscordPresence", m_ui.useDiscordPresence);
 	saveSetting("gba.audioHle", m_ui.audioHle);
 	saveSetting("dynamicTitle", m_ui.dynamicTitle);
+	saveSetting("videoScale", m_ui.videoScale);
 
 	if (m_ui.audioBufferSize->currentText().toInt() > 8192) {
 		m_ui.audioBufferSize->setCurrentText("8192");
@@ -495,9 +496,6 @@ void SettingsView::updateConfig() {
 		m_controller->setQtOption("language", language.bcp47Name());
 		emit languageChanged();
 	}
-
-	int videoScale = m_controller->getOption("videoScale", 1).toInt();
-	saveSetting("videoScale", m_ui.videoScale);
 
 	int hwaccelVideo = m_controller->getOption("hwaccelVideo").toInt();
 	saveSetting("hwaccelVideo", m_ui.hwaccelVideo->currentIndex());
