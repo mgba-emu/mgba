@@ -5286,37 +5286,37 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../SettingsView.ui" line="1852"/>
         <source>Default color palette only</source>
-        <translation type="unfinished"></translation>
+        <translation>Sólo paleta de colores predeterminada</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1862"/>
         <source>SGB color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>Paleta de color SGB si está disponible</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1872"/>
         <source>GBC color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>Paleta de color GBC si está disponible</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1882"/>
         <source>SGB (preferred) or GBC color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>Paleta de colores SGB (preferida) o GBC si está disponible</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1895"/>
         <source>Game Boy Camera</source>
-        <translation type="unfinished"></translation>
+        <translation>Cámara Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1901"/>
         <source>Driver:</source>
-        <translation type="unfinished"></translation>
+        <translation>Controlador:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1918"/>
         <source>Source:</source>
-        <translation type="unfinished"></translation>
+        <translation>Fuente:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="405"/>
@@ -5362,12 +5362,12 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../SettingsView.ui" line="886"/>
         <source>Enable VBA bug compatibility in ROM hacks</source>
-        <translation type="unfinished"></translation>
+        <translation>Activar modo de compatibilidad VBA en ROM hacks</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1574"/>
         <source>Preset:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ajustes:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="602"/>
@@ -5662,37 +5662,37 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../SettingsView.ui" line="1502"/>
         <source>Models</source>
-        <translation type="unfinished"></translation>
+        <translation>Modelos</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1508"/>
         <source>GB only:</source>
-        <translation type="unfinished"></translation>
+        <translation>Sólo GB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1518"/>
         <source>SGB compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatible con SGB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1528"/>
         <source>GBC only:</source>
-        <translation type="unfinished"></translation>
+        <translation>Sólo GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1538"/>
         <source>GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatible con GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1548"/>
         <source>SGB and GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatible con SGB y GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1568"/>
         <source>Game Boy palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Paleta de Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1584"/>
