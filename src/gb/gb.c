@@ -113,13 +113,12 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 		return false;
 	}
 	gb->yankedRomSize = 0;
-	gb->memory.romBase = gb->memory.rom;
 	gb->memory.romSize = gb->pristineRomSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
-	GBMBCInit(gb);
+	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
+	GBMBCReset(gb);
 
 	if (gb->cpu) {
-		GBMBCSwitchBank(gb, 0);
 		struct SM83Core* cpu = gb->cpu;
 		cpu->memory.setActiveRegion(cpu, cpu->pc);
 	}
@@ -133,7 +132,7 @@ void GBYankROM(struct GB* gb) {
 	gb->yankedMbc = gb->memory.mbcType;
 	gb->memory.romSize = 0;
 	gb->memory.mbcType = GB_MBC_NONE;
-	gb->memory.sramAccess = false;
+	GBMBCReset(gb);
 
 	if (gb->cpu) {
 		struct SM83Core* cpu = gb->cpu;
@@ -294,9 +293,6 @@ void GBSavedataUnmask(struct GB* gb) {
 
 void GBUnloadROM(struct GB* gb) {
 	// TODO: Share with GBAUnloadROM
-	if (gb->memory.rom && gb->memory.romBase != gb->memory.rom && !gb->isPristine) {
-		free(gb->memory.romBase);
-	}
 	if (gb->memory.rom && !gb->isPristine) {
 		if (gb->yankedRomSize) {
 			gb->yankedRomSize = 0;
@@ -316,6 +312,7 @@ void GBUnloadROM(struct GB* gb) {
 	gb->isPristine = false;
 
 	gb->sramMaskWriteback = false;
+	GBSavedataUnmask(gb);
 	GBSramDeinit(gb);
 	if (gb->sramRealVf) {
 		gb->sramRealVf->close(gb->sramRealVf);
@@ -374,6 +371,7 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 }
 
 void GBDestroy(struct GB* gb) {
+	GBUnmapBIOS(gb);
 	GBUnloadROM(gb);
 
 	if (gb->biosVf) {
@@ -588,17 +586,18 @@ void GBSkipBIOS(struct GB* gb) {
 
 void GBMapBIOS(struct GB* gb) {
 	gb->biosVf->seek(gb->biosVf, 0, SEEK_SET);
-	uint8_t* oldRomBase = gb->memory.romBase;
 	gb->memory.romBase = malloc(GB_SIZE_CART_BANK0);
 	ssize_t size = gb->biosVf->read(gb->biosVf, gb->memory.romBase, GB_SIZE_CART_BANK0);
-	memcpy(&gb->memory.romBase[size], &oldRomBase[size], GB_SIZE_CART_BANK0 - size);
-	if (size > 0x100) {
-		memcpy(&gb->memory.romBase[0x100], &oldRomBase[0x100], sizeof(struct GBCartridge));
+	if (gb->memory.rom) {
+		memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
+		if (size > 0x100) {
+			memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], sizeof(struct GBCartridge));
+		}
 	}
 }
 
 void GBUnmapBIOS(struct GB* gb) {
-	if (gb->memory.romBase < gb->memory.rom || gb->memory.romBase > &gb->memory.rom[gb->memory.romSize - 1]) {
+	if (gb->memory.io[GB_REG_BANK] == 0xFF && gb->memory.romBase != gb->memory.rom) {
 		free(gb->memory.romBase);
 		if (gb->memory.mbcType == GB_MMM01) {
 			GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);

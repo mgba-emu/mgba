@@ -183,10 +183,6 @@ void GBMemoryReset(struct GB* gb) {
 		}
 	}
 	GBMemorySwitchWramBank(&gb->memory, 1);
-	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
-	gb->memory.currentBank = 1;
-	gb->memory.sramCurrentBank = 0;
-
 	gb->memory.ime = false;
 	gb->memory.ie = 0;
 
@@ -210,32 +206,7 @@ void GBMemoryReset(struct GB* gb) {
 
 	memset(&gb->memory.hram, 0, sizeof(gb->memory.hram));
 
-	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
-	GBMBCInit(gb);
-	switch (gb->memory.mbcType) {
-	case GB_MBC1:
-		gb->memory.mbcState.mbc1.mode = 0;
-		gb->memory.mbcState.mbc1.bankLo = 1;
-		break;
-	case GB_MBC6:
-		GBMBCSwitchHalfBank(gb, 0, 2);
-		GBMBCSwitchHalfBank(gb, 1, 3);
-		gb->memory.mbcState.mbc6.sramAccess = false;
-		GBMBCSwitchSramHalfBank(gb, 0, 0);
-		GBMBCSwitchSramHalfBank(gb, 0, 1);
-		break;
-	case GB_MMM01:
-		GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
-		GBMBCSwitchBank(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 1);
-		break;
-	default:
-		break;
-	}
-	gb->memory.sramBank = gb->memory.sram;
-
-	if (!gb->memory.wram) {
-		GBMemoryDeinit(gb);
-	}
+	GBMBCReset(gb);
 }
 
 void GBMemorySwitchWramBank(struct GBMemory* memory, int bank) {

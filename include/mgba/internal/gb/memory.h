@@ -180,6 +180,7 @@ struct GBMemory {
 	GBMemoryBankControllerRead mbcRead;
 	union GBMBCState mbcState;
 	int currentBank;
+	int currentBank0;
 
 	uint8_t* wram;
 	uint8_t* wramBank;

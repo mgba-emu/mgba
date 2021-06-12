@@ -197,6 +197,25 @@ void ARMHalt(struct ARMCore* cpu) {
 	cpu->halted = 1;
 }
 
+static const uint16_t conditionLut[16] = {
+	0xF0F0, // EQ [-Z--]
+	0x0F0F, // NE [-z--]
+	0xCCCC, // CS [--C-]
+	0x3333, // CC [--c-]
+	0xFF00, // MI [N---]
+	0x00FF, // PL [n---]
+	0xAAAA, // VS [---V]
+	0x5555, // VC [---v]
+	0x0C0C, // HI [-zC-]
+	0xF3F3, // LS [-Z--] || [--c-]
+	0xAA55, // GE [N--V] || [n--v]
+	0x55AA, // LT [N--v] || [n--V]
+	0x0A05, // GT [Nz-V] || [nz-v]
+	0xF5FA, // LE [-Z--] || [Nz-v] || [nz-V]
+	0xFFFF, // AL [----]
+	0x0000 // NV
+};
+
 #define VERSION 4
 #include "arm/arm-version.c"
 #define VERSION 5

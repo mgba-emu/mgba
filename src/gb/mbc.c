@@ -76,6 +76,7 @@ void GBMBCSwitchBank0(struct GB* gb, int bank) {
 		bankStart &= (gb->memory.romSize - 1);
 	}
 	gb->memory.romBase = &gb->memory.rom[bankStart];
+	gb->memory.currentBank0 = bank;
 	if (gb->cpu->pc < GB_SIZE_CART_BANK0) {
 		gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
 	}
@@ -224,7 +225,7 @@ void GBMBCSwitchSramHalfBank(struct GB* gb, int half, int bank) {
 
 void GBMBCInit(struct GB* gb) {
 	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	if (gb->memory.rom) {
+	if (gb->memory.rom && gb->memory.romSize) {
 		if (gb->memory.romSize >= 0x8000) {
 			const struct GBCartridge* cartFooter = (const struct GBCartridge*) &gb->memory.rom[gb->memory.romSize - 0x7F00];
 			if (doCrc32(cartFooter->logo, sizeof(cartFooter->logo)) == GB_LOGO_HASH && cartFooter->type >= 0x0B && cartFooter->type <= 0x0D) {
@@ -433,6 +434,34 @@ void GBMBCInit(struct GB* gb) {
 	if (gb->memory.mbcType == GB_MBC3_RTC) {
 		GBMBCRTCRead(gb);
 	}
+}
+
+void GBMBCReset(struct GB* gb) {
+	gb->memory.currentBank0 = 0;
+	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
+
+	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
+	GBMBCInit(gb);
+	switch (gb->memory.mbcType) {
+	case GB_MBC1:
+		gb->memory.mbcState.mbc1.mode = 0;
+		gb->memory.mbcState.mbc1.bankLo = 1;
+		break;
+	case GB_MBC6:
+		GBMBCSwitchHalfBank(gb, 0, 2);
+		GBMBCSwitchHalfBank(gb, 1, 3);
+		gb->memory.mbcState.mbc6.sramAccess = false;
+		GBMBCSwitchSramHalfBank(gb, 0, 0);
+		GBMBCSwitchSramHalfBank(gb, 0, 1);
+		break;
+	case GB_MMM01:
+		GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
+		GBMBCSwitchBank(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 1);
+		break;
+	default:
+		break;
+	}
+	gb->memory.sramBank = gb->memory.sram;
 }
 
 static void _latchRtc(struct mRTCSource* rtc, uint8_t* rtcRegs, time_t* rtcLastLatch) {

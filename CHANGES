@@ -83,6 +83,7 @@ Emulation fixes:
  - GBA Memory: Mark Famicom Mini games 22 through 28 as non-mirroring
  - GBA Memory: Return correct byte for odd ROM open bus addresses
  - GBA Memory: Improved AGBPrint emulation of edge cases (fixes mgba.io/i/1867)
+ - GBA Memory: Fix masking of misaligned jumps
  - GBA Serialize: Fix alignment check when loading states
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)

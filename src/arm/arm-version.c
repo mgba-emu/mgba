@@ -23,63 +23,21 @@ static inline void ARM(Step)(struct ARMCore* cpu) {
 	ARMInstruction instruction;
 	unsigned condition = opcode >> 28;
 	if (condition != 0xE) {
-		bool conditionMet = false;
-		switch (condition) {
-		case 0x0:
-			conditionMet = ARM_COND_EQ;
-			break;
-		case 0x1:
-			conditionMet = ARM_COND_NE;
-			break;
-		case 0x2:
-			conditionMet = ARM_COND_CS;
-			break;
-		case 0x3:
-			conditionMet = ARM_COND_CC;
-			break;
-		case 0x4:
-			conditionMet = ARM_COND_MI;
-			break;
-		case 0x5:
-			conditionMet = ARM_COND_PL;
-			break;
-		case 0x6:
-			conditionMet = ARM_COND_VS;
-			break;
-		case 0x7:
-			conditionMet = ARM_COND_VC;
-			break;
-		case 0x8:
-			conditionMet = ARM_COND_HI;
-			break;
-		case 0x9:
-			conditionMet = ARM_COND_LS;
-			break;
-		case 0xA:
-			conditionMet = ARM_COND_GE;
-			break;
-		case 0xB:
-			conditionMet = ARM_COND_LT;
-			break;
-		case 0xC:
-			conditionMet = ARM_COND_GT;
-			break;
-		case 0xD:
-			conditionMet = ARM_COND_LE;
-			break;
-		default:
 #if VERSION > 4
+		if (condition == 0xF) {
 			instruction = ARM(FInstructionTable)[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
-			instruction(cpu, opcode);
-#endif
-			return;
+			goto _armInstruction;
 		}
+#endif
+		unsigned flags = cpu->cpsr.flags >> 4;
+		bool conditionMet = conditionLut[condition] & (1 << flags);
 		if (!conditionMet) {
 			cpu->cycles += ARM_PREFETCH_CYCLES;
 			return;
 		}
 	}
 	instruction = ARM(InstructionTable)[((opcode >> 16) & 0xFF0) | ((opcode >> 4) & 0x00F)];
+_armInstruction:
 	instruction(cpu, opcode);
 }
 

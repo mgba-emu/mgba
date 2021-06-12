@@ -20,13 +20,13 @@ if(NOT MSVC)
 	elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "4.3")
 		set(CMAKE_C_EXTENSIONS ON)
 	endif()
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wno-missing-field-initializers")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-missing-field-initializers")
+	set(WARNING_FLAGS "-Wall -Wextra -Wno-missing-field-initializers")
 	if(WIN32)
 		# mingw32 likes to complain about using the "wrong" format strings despite them actually working
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-format")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-format")
+		set(WARNING_FLAGS "${WARNING_FLAGS} -Wno-format")
 	endif()
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNING_FLAGS} -Werror=implicit-function-declaration")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNING_FLAGS}")
 else()
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_CRT_SECURE_NO_WARNINGS /wd4003 /wd4244 /wd4146 /wd4267")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_CRT_SECURE_NO_WARNINGS /wd4003 /wd4244 /wd4146 /wd4267")
@@ -689,10 +689,12 @@ elseif(USE_MINIZIP)
 		add_definitions(-Dunztell64=unzTell64)  # Bug in downstream minizip that some distros use
 	endif()
 elseif(USE_ZLIB)
+	list(APPEND FEATURES MINIZIP)
 	list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/util/vfs/vfs-zip.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/unzip.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/zip.c)
+	include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib)
 	if(NOT MSVC)
 		set_source_files_properties(
 			${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/zlib/contrib/minizip/ioapi.c
@@ -732,7 +734,7 @@ endif()
 
 if(USE_EPOXY)
 	list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/opengl/gl.c ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/opengl/gles2.c)
-	add_definitions(-DBUILD_GL -DBUILD_GLES2)
+	list(APPEND FEATURE_DEFINES BUILD_GL BUILD_GLES2)
 	list(APPEND FEATURES EPOXY)
 	include_directories(AFTER ${EPOXY_INCLUDE_DIRS})
 	link_directories(${EPOXY_LIBRARY_DIRS})
