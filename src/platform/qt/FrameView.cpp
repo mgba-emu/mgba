@@ -275,7 +275,7 @@ void FrameView::injectGBA() {
 		gba->video.renderer->highlightOBJ[i] = false;
 	}
 	QPalette palette;
-	gba->video.renderer->highlightColor = palette.color(QPalette::HighlightedText).rgb();
+	gba->video.renderer->highlightColor = M_RGB8_TO_NATIVE(palette.color(QPalette::Highlight).rgb());
 	gba->video.renderer->highlightAmount = sin(m_glowFrame * M_PI / 30) * 48 + 64;
 	if (!m_overrideBackdrop.isValid()) {
 		QRgb backdrop = M_RGB5_TO_RGB8(gba->video.palette[0]) | 0xFF000000;
@@ -318,7 +318,12 @@ void FrameView::updateTilesGB(bool) {
 	m_queue.clear();
 	{
 		CoreController::Interrupter interrupter(m_controller);
-		uint8_t* io = static_cast<GB*>(m_controller->thread()->core->board)->memory.io;
+		QPointF origin;
+		GB* gb = static_cast<GB*>(m_controller->thread()->core->board);
+		if (gb->video.sgbBorders && (gb->model & GB_MODEL_SGB)) {
+			origin = QPointF(48, 40);
+		}
+		uint8_t* io = gb->memory.io;
 		GBRegisterLCDC lcdc = io[GB_REG_LCDC];
 
 		for (int sprite = 0; sprite < 40; ++sprite) {
@@ -338,7 +343,7 @@ void FrameView::updateTilesGB(bool) {
 				{ LayerId::SPRITE, sprite },
 				!m_disabled.contains({ LayerId::SPRITE, sprite }),
 				QPixmap::fromImage(obj),
-				{}, offset, false, false
+				{}, offset + origin, false, false
 			});
 			if (m_queue.back().image.hasAlpha()) {
 				m_queue.back().mask = QRegion(m_queue.back().image.mask());
@@ -352,7 +357,7 @@ void FrameView::updateTilesGB(bool) {
 				{ LayerId::WINDOW },
 				!m_disabled.contains({ LayerId::WINDOW }),
 				{},
-				{}, {0, 0}, false, false
+				{}, origin, false, false
 			});
 		}
 
@@ -360,7 +365,7 @@ void FrameView::updateTilesGB(bool) {
 			{ LayerId::BACKGROUND },
 			!m_disabled.contains({ LayerId::BACKGROUND }),
 			{},
-			{}, {0, 0}, false, false
+			{}, origin, false, false
 		});
 
 		updateRendered();
@@ -370,6 +375,15 @@ void FrameView::updateTilesGB(bool) {
 
 void FrameView::injectGB() {
 	mVideoLogger* logger = m_vl->videoLogger;
+	GB* gb = static_cast<GB*>(m_vl->board);
+	gb->video.renderer->highlightBG = false;
+	gb->video.renderer->highlightWIN = false;
+	for (int i = 0; i < 40; ++i) {
+		gb->video.renderer->highlightOBJ[i] = false;
+	}
+	QPalette palette;
+	gb->video.renderer->highlightColor = M_RGB8_TO_NATIVE(palette.color(QPalette::Highlight).rgb());
+	gb->video.renderer->highlightAmount = sin(m_glowFrame * M_PI / 30) * 48 + 64;
 
 	m_vl->reset(m_vl);
 	for (const Layer& layer : m_queue) {
@@ -378,12 +392,21 @@ void FrameView::injectGB() {
 			if (!layer.enabled) {
 				mVideoLoggerInjectOAM(logger, layer.id.index << 2, 0);
 			}
+			if (layer.id == m_active) {
+				gb->video.renderer->highlightOBJ[layer.id.index] = true;
+			}
 			break;
 		case LayerId::BACKGROUND:
 			m_vl->enableVideoLayer(m_vl, GB_LAYER_BACKGROUND, layer.enabled);
+			if (layer.id == m_active) {
+				gb->video.renderer->highlightBG = true;
+			}
 			break;
 		case LayerId::WINDOW:
 			m_vl->enableVideoLayer(m_vl, GB_LAYER_WINDOW, layer.enabled);
+			if (layer.id == m_active) {
+				gb->video.renderer->highlightWIN = true;
+			}
 			break;
 		}
 	}
@@ -510,6 +533,12 @@ void FrameView::newVl() {
 	m_vl->loadROM(m_vl, m_currentFrame);
 	m_currentFrame = nullptr;
 	mCoreInitConfig(m_vl, nullptr);
+#ifdef M_CORE_GB
+	if (m_controller->platform() == PLATFORM_GB) {
+		mCoreConfigSetIntValue(&m_vl->config, "sgb.borders", static_cast<GB*>(m_controller->thread()->core->board)->video.sgbBorders);
+		m_vl->reloadConfigOption(m_vl, "sgb.borders", nullptr);
+	}
+#endif
 	unsigned width, height;
 	m_vl->desiredVideoDimensions(m_vl, &width, &height);
 	m_framebuffer = QImage(width, height, QImage::Format_RGBX8888);

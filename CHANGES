@@ -38,6 +38,8 @@ Features:
  - e-Reader card scanning
  - WebP and APNG recording
  - Separate overrides for GBC games that can also run on SGB or regular GB
+ - Game Boy Player features can be enabled by default for all compatible games
+ - Frame viewer support for Game Boy
  - Mute option in homebrew ports
  - Status indicators for fast-forward and mute in homebrew ports
  - Read-only support for MBC6 flash memory
@@ -46,7 +48,7 @@ Features:
  - Command scripts for CLI debugger (by ahigerd)
  - ARM disassembler now resolves addresses to symbol names
  - Add Game Boy Player feature support to ports
- - Individual window types can now be toggled in GBA debugging views
+ - Individual window types can now be toggled in debugging views
 Emulation fixes:
  - ARM: Fix ALU reading PC after shifting
  - ARM: Fix STR storing PC after address calculation
@@ -72,6 +74,7 @@ Emulation fixes:
  - GBA Memory: Stall on VRAM access in mode 2 (fixes mgba.io/i/190)
  - GBA Memory: Improve robustness of Matrix memory support
  - GBA Memory: Mark Famicom Mini games 22 through 28 as non-mirroring
+ - GBA Memory: Return correct byte for odd ROM open bus addresses
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
  - GBA SIO: Fix deseralizing SIO registers
@@ -79,6 +82,7 @@ Emulation fixes:
  - GBA Video: Fix Hblank timing
  - GBA Video: Implement green swap (fixes mgba.io/i/1609)
  - GBA Video: Emulate sprite cycle limits in OpenGL renderer (fixes mgba.io/i/1635)
+ - GBA Video: Fix OBJWIN erratic rendering in OpenGL renderer
  - SM83: Emulate HALT bug
 Other fixes:
  - 3DS: Fix thread cleanup
@@ -88,8 +92,10 @@ Other fixes:
  - Core: Fix threading improperly setting paused state while interrupted
  - Debugger: Don't skip undefined instructions when debugger attached
  - Debugger: Close trace log when done tracing
+ - Debugger: Fix change watchpoints (fixes mgba.io/i/1947)
  - FFmpeg: Fix some small memory leaks
  - FFmpeg: Fix encoding of time base
+ - GB Video: Fix SGB video logs
  - mGUI: Don't attempt to preload files larger than can fit in RAM
  - Qt: Force OpenGL paint engine creation thread (fixes mgba.io/i/1642)
  - Qt: Fix static compilation in MinGW (fixes mgba.io/i/1769)

@@ -10,6 +10,8 @@
 
 CXX_GUARD_START
 
+#include <mgba/core/interface.h>
+
 enum GBModel {
 	GB_MODEL_AUTODETECT = 0xFF,
 	GB_MODEL_DMG  = 0x00,

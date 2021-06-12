@@ -35,8 +35,6 @@ int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRendere
 
 static inline unsigned _brighten(unsigned color, int y);
 static inline unsigned _darken(unsigned color, int y);
-static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB);
-
 
 // We stash the priority on the top bits so we can do a one-operator comparison
 // The lower the number, the higher the priority, and sprites take precedence over backgrounds
@@ -45,7 +43,7 @@ static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB)
 static inline void _compositeBlendObjwin(struct GBAVideoSoftwareRenderer* renderer, int x, uint32_t color, uint32_t current) {
 	if (color >= current) {
 		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
-			color = _mix(renderer->alphaA[x], current, renderer->alphaB[x], color);
+			color = mColorMix5Bit(renderer->alphaA[x], current, renderer->alphaB[x], color);
 		} else {
 			color = current & (0x00FFFFFF | FLAG_REBLEND | FLAG_OBJWIN);
 		}
@@ -58,7 +56,7 @@ static inline void _compositeBlendObjwin(struct GBAVideoSoftwareRenderer* render
 static inline void _compositeBlendNoObjwin(struct GBAVideoSoftwareRenderer* renderer, int x, uint32_t color, uint32_t current) {
 	if (color >= current) {
 		if (current & FLAG_TARGET_1 && color & FLAG_TARGET_2) {
-			color = _mix(renderer->alphaA[x], current, renderer->alphaB[x], color);
+			color = mColorMix5Bit(renderer->alphaA[x], current, renderer->alphaB[x], color);
 		} else {
 			color = current & (0x00FFFFFF | FLAG_REBLEND | FLAG_OBJWIN);
 		}
@@ -281,68 +279,6 @@ static inline unsigned _darken(unsigned color, int y) {
 
 	a = color & 0xFF0000;
 	c |= (a - (a * y) / 16) & 0xFF0000;
-#endif
-	return c;
-}
-
-static unsigned _mix(int weightA, unsigned colorA, int weightB, unsigned colorB) {
-	unsigned c = 0;
-	unsigned a, b;
-#ifdef COLOR_16_BIT
-#ifdef COLOR_5_6_5
-	a = colorA & 0xF81F;
-	b = colorB & 0xF81F;
-	a |= (colorA & 0x7C0) << 16;
-	b |= (colorB & 0x7C0) << 16;
-	c = ((a * weightA + b * weightB) / 16);
-	if (c & 0x08000000) {
-		c = (c & ~0x0FC00000) | 0x07C00000;
-	}
-	if (c & 0x0020) {
-		c = (c & ~0x003F) | 0x001F;
-	}
-	if (c & 0x10000) {
-		c = (c & ~0x1F800) | 0xF800;
-	}
-	c = (c & 0xF81F) | ((c >> 16) & 0x07C0);
-#else
-	a = colorA & 0x7C1F;
-	b = colorB & 0x7C1F;
-	a |= (colorA & 0x3E0) << 16;
-	b |= (colorB & 0x3E0) << 16;
-	c = ((a * weightA + b * weightB) / 16);
-	if (c & 0x04000000) {
-		c = (c & ~0x07E00000) | 0x03E00000;
-	}
-	if (c & 0x0020) {
-		c = (c & ~0x003F) | 0x001F;
-	}
-	if (c & 0x8000) {
-		c = (c & ~0xF800) | 0x7C00;
-	}
-	c = (c & 0x7C1F) | ((c >> 16) & 0x03E0);
-#endif
-#else
-	a = colorA & 0xFF;
-	b = colorB & 0xFF;
-	c |= ((a * weightA + b * weightB) / 16) & 0x1FF;
-	if (c & 0x00000100) {
-		c = 0x000000FF;
-	}
-
-	a = colorA & 0xFF00;
-	b = colorB & 0xFF00;
-	c |= ((a * weightA + b * weightB) / 16) & 0x1FF00;
-	if (c & 0x00010000) {
-		c = (c & 0x000000FF) | 0x0000FF00;
-	}
-
-	a = colorA & 0xFF0000;
-	b = colorB & 0xFF0000;
-	c |= ((a * weightA + b * weightB) / 16) & 0x1FF0000;
-	if (c & 0x01000000) {
-		c = (c & 0x0000FFFF) | 0x00FF0000;
-	}
 #endif
 	return c;
 }

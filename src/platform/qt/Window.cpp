@@ -1597,7 +1597,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("View &tiles..."), "tileWindow", openControllerTView<TileView>(), "tools");
 	addGameAction(tr("View &map..."), "mapWindow", openControllerTView<MapView>(), "tools");
 
-#ifdef M_CORE_GBA
 	Action* frameWindow = addGameAction(tr("&Frame inspector..."), "frameWindow", [this]() {
 		if (!m_frameView) {
 			m_frameView = new FrameView(m_controller);
@@ -1613,8 +1612,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		}
 		m_frameView->show();
 	}, "tools");
-	m_platformActions.insert(PLATFORM_GBA, frameWindow);
-#endif
 
 	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "tools");
 	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "tools");

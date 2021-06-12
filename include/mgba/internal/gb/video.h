@@ -31,6 +31,9 @@ enum {
 
 	GB_VIDEO_TOTAL_LENGTH = 70224,
 
+	GB_VIDEO_MAX_OBJ = 40,
+	GB_VIDEO_MAX_LINE_OBJ = 10,
+
 	GB_BASE_MAP = 0x1800,
 	GB_SIZE_MAP = 0x0400,
 
@@ -63,8 +66,8 @@ struct GBObj {
 };
 
 union GBOAM {
-	struct GBObj obj[40];
-	uint8_t raw[160];
+	struct GBObj obj[GB_VIDEO_MAX_OBJ];
+	uint8_t raw[GB_VIDEO_MAX_OBJ * 4];
 };
 
 struct mCacheSet;
@@ -99,6 +102,12 @@ struct GBVideoRenderer {
 	bool disableBG;
 	bool disableOBJ;
 	bool disableWIN;
+
+	bool highlightBG;
+	bool highlightOBJ[GB_VIDEO_MAX_OBJ];
+	bool highlightWIN;
+	color_t highlightColor;
+	uint8_t highlightAmount;
 };
 
 DECL_BITFIELD(GBRegisterLCDC, uint8_t);

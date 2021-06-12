@@ -426,7 +426,7 @@ static const char* const _renderObj =
 	"uniform ivec4 inflags;\n"
 	"uniform mat2x2 transform;\n"
 	"uniform ivec4 dims;\n"
-	"uniform ivec4 objwin;\n"
+	"uniform ivec3 objwin;\n"
 	"uniform ivec4 mosaic;\n"
 	"uniform int cyclesRemaining[160];\n"
 	"OUT(0) out vec4 color;\n"
@@ -459,7 +459,7 @@ static const char* const _renderObj =
 	"	color = pix;\n"
 	"	flags = inflags;\n"
 	"	gl_FragDepth = float(flags.x) / 16.;\n"
-	"	window = ivec4(objwin.yzw, 0);\n"
+	"	window = ivec4(objwin, 0);\n"
 	"}";
 
 static const struct GBAVideoGLUniform _uniformsObjPriority[] = {
@@ -533,20 +533,15 @@ static const char* const _renderWindow =
 	"}\n"
 
 	"void main() {\n"
-	"	int dispflags = (dispcnt & 0x1F) | 0x20;\n"
-	"	if ((dispcnt & 0xE0) == 0) {\n"
-	"		window = ivec4(dispflags, blend, 0);\n"
-	"	} else {\n"
-	"		ivec4 windowFlags = ivec4(flags.z, blend, 0);\n"
-	"		int top = int(texCoord.y);\n"
-	"		int bottom = max(top - 1, 0);\n"
-	"		if ((dispcnt & 0x20) != 0 && crop(interpolate(vec4(win0[top]), vec4(win0[bottom])))) { \n"
-	"			windowFlags.x = flags.x;\n"
-	"		} else if ((dispcnt & 0x40) != 0 && crop(interpolate(vec4(win1[top]), vec4(win1[bottom])))) {\n"
-	"			windowFlags.x = flags.y;\n"
-	"		}\n"
-	"		window = windowFlags;\n"
+	"	ivec4 windowFlags = ivec4(flags.z, blend, 0);\n"
+	"	int top = int(texCoord.y);\n"
+	"	int bottom = max(top - 1, 0);\n"
+	"	if ((dispcnt & 0x20) != 0 && crop(interpolate(vec4(win0[top]), vec4(win0[bottom])))) { \n"
+	"		windowFlags.x = flags.x;\n"
+	"	} else if ((dispcnt & 0x40) != 0 && crop(interpolate(vec4(win1[top]), vec4(win1[bottom])))) {\n"
+	"		windowFlags.x = flags.y;\n"
 	"	}\n"
+	"	window = windowFlags;\n"
 	"}\n";
 
 static const struct GBAVideoGLUniform _uniformsFinalize[] = {
@@ -677,7 +672,7 @@ void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer) {
 	for (i = 0; i < 128; ++i) {
 		renderer->d.highlightOBJ[i] = false;
 	}
-	renderer->d.highlightColor = 0xFFFFFF;
+	renderer->d.highlightColor = M_COLOR_WHITE;
 	renderer->d.highlightAmount = 0;
 
 	renderer->scale = 1;
@@ -735,7 +730,7 @@ static void _initFramebufferTextureEx(GLuint tex, GLenum internalFormat, GLenum 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, scale > 0 ? GBA_VIDEO_HORIZONTAL_PIXELS * scale : 8, GBA_VIDEO_VERTICAL_PIXELS * (scale > 0 ? scale : 1), 0, format, type, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, tex, 0);	
+	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, tex, 0);
 }
 
 static void _initFramebufferTexture(GLuint tex, GLenum format, GLenum attachment, int scale) {
@@ -754,7 +749,7 @@ static void _initFramebuffers(struct GBAVideoGLRenderer* glRenderer) {
 	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_BACKDROP_FLAGS], GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE, GL_COLOR_ATTACHMENT1, 0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_WINDOW]);
-	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_WINDOW], GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE, GL_COLOR_ATTACHMENT0, glRenderer->scale);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, glRenderer->layers[GBA_GL_TEX_WINDOW], 0);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OUTPUT]);
 	_initFramebufferTexture(glRenderer->outputTex, GL_RGB, GL_COLOR_ATTACHMENT0, glRenderer->scale);
@@ -1422,19 +1417,17 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 	glDrawBuffers(2, (GLenum[]) { GL_NONE, GL_COLOR_ATTACHMENT1 });
 	int i;
 	for (i = 0; i < 4; ++i) {
-		glScissor(i + 1, glRenderer->firstY, i + 2, y - glRenderer->firstY + 1);
+		glScissor(i + 1, glRenderer->firstY, 1, y - glRenderer->firstY + 1);
 		glClearBufferiv(GL_COLOR, 1, (GLint[]) { glRenderer->bg[i].priority,
 		                                         glRenderer->bg[i].target1 | (glRenderer->bg[i].target2 << 1) | (glRenderer->blendEffect << 2),
 		                                         glRenderer->blda, 0 });
 	}
-
 
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 
 	GBAVideoGLRendererDrawWindow(glRenderer, y);
 	if (GBARegisterDISPCNTIsObjEnable(glRenderer->dispcnt) && !glRenderer->d.disableOBJ) {
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-		glEnable(GL_STENCIL_TEST);
 		glDepthFunc(GL_LESS);
 		for (i = 0; i < glRenderer->oamMax; ++i) {
 			struct GBAVideoRendererSprite* sprite = &glRenderer->sprites[i];
@@ -1722,20 +1715,21 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		glUniformMatrix2fv(uniforms[GBA_GL_OBJ_TRANSFORM], 1, GL_FALSE, (GLfloat[]) { flipX, 0, 0, flipY });
 	}
 	glUniform4i(uniforms[GBA_GL_OBJ_DIMS], width, height, totalWidth, totalHeight);
+	glDisable(GL_STENCIL_TEST);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_OBJWIN) {
 		// OBJWIN writes do not affect pixel priority
 		glDisable(GL_DEPTH_TEST);
 		glDepthMask(GL_FALSE);
-		glStencilMask(GL_FALSE);
+		glStencilMask(0);
 		int window = renderer->objwin & 0x3F;
-		glUniform4i(uniforms[GBA_GL_OBJ_OBJWIN], 1, window, renderer->bldb, renderer->bldy);
+		glUniform3i(uniforms[GBA_GL_OBJ_OBJWIN], window, renderer->bldb, renderer->bldy);
 		glDrawBuffers(3, (GLenum[]) { GL_NONE, GL_NONE, GL_COLOR_ATTACHMENT2 });
 	} else {
 		glEnable(GL_DEPTH_TEST);
 		glDepthMask(GL_TRUE);
-		glStencilMask(GL_TRUE);
+		glStencilMask(1);
 		glStencilFunc(GL_ALWAYS, 1, 1);
-		glUniform4i(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0, 0);
+		glUniform3i(uniforms[GBA_GL_OBJ_OBJWIN], 0, 0, 0);
 		glDrawBuffers(2, (GLenum[]) { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
 	}
 	if (GBAObjAttributesAIsMosaic(sprite->a) && GBAObjAttributesAGetMode(sprite->a) != OBJ_MODE_OBJWIN) {
@@ -1755,6 +1749,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		// Update the pixel priority for already-written pixels
 		shader = &renderer->objShader[2];
 		uniforms = shader->uniforms;
+		glEnable(GL_STENCIL_TEST);
 		glStencilFunc(GL_EQUAL, 1, 1);
 		glUseProgram(shader->program);
 		glDrawBuffers(2, (GLenum[]) { GL_NONE, GL_COLOR_ATTACHMENT1 });
@@ -1874,17 +1869,29 @@ void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y) {
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[GBA_GL_FBO_WINDOW]);
 	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, GBA_VIDEO_VERTICAL_PIXELS * renderer->scale);
 	glScissor(0, renderer->firstY * renderer->scale, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, renderer->scale * (y - renderer->firstY + 1));
-	glUseProgram(shader->program);
-	glBindVertexArray(shader->vao);
-	glUniform2i(uniforms[GBA_GL_VS_LOC], y - renderer->firstY + 1, renderer->firstY);
-	glUniform2i(uniforms[GBA_GL_VS_MAXPOS], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-	glUniform1i(uniforms[GBA_GL_WIN_DISPCNT], renderer->dispcnt >> 8);
-	glUniform2i(uniforms[GBA_GL_WIN_BLEND], renderer->bldb, renderer->bldy);
-	glUniform3i(uniforms[GBA_GL_WIN_FLAGS], renderer->winN[0].control, renderer->winN[1].control, renderer->winout);
-	glUniform4iv(uniforms[GBA_GL_WIN_WIN0], GBA_VIDEO_VERTICAL_PIXELS, renderer->winNHistory[0]);
-	glUniform4iv(uniforms[GBA_GL_WIN_WIN1], GBA_VIDEO_VERTICAL_PIXELS, renderer->winNHistory[1]);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	switch (renderer->dispcnt & 0xE000) {
+	case 0x0000:
+		// No windows are enabled
+		glClearBufferiv(GL_COLOR, 0, (GLint[]) { ((renderer->dispcnt >> 8) & 0x1F) | 0x20, renderer->bldb, renderer->bldy, 0 });
+		break;
+	case 0x8000:
+		// Only OBJWIN is enabled
+		glClearBufferiv(GL_COLOR, 0, (GLint[]) { renderer->winout, renderer->bldb, renderer->bldy, 0 });
+		break;
+	default:
+		glUseProgram(shader->program);
+		glBindVertexArray(shader->vao);
+		glUniform2i(uniforms[GBA_GL_VS_LOC], y - renderer->firstY + 1, renderer->firstY);
+		glUniform2i(uniforms[GBA_GL_VS_MAXPOS], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+		glUniform1i(uniforms[GBA_GL_WIN_DISPCNT], renderer->dispcnt >> 8);
+		glUniform2i(uniforms[GBA_GL_WIN_BLEND], renderer->bldb, renderer->bldy);
+		glUniform3i(uniforms[GBA_GL_WIN_FLAGS], renderer->winN[0].control, renderer->winN[1].control, renderer->winout);
+		glUniform4iv(uniforms[GBA_GL_WIN_WIN0], GBA_VIDEO_VERTICAL_PIXELS, renderer->winNHistory[0]);
+		glUniform4iv(uniforms[GBA_GL_WIN_WIN1], GBA_VIDEO_VERTICAL_PIXELS, renderer->winNHistory[1]);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		break;
+	}
 }
 
 void GBAVideoGLRendererSetScale(struct GBAVideoGLRenderer* renderer, int scale) {

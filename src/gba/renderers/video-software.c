@@ -80,7 +80,7 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	for (i = 0; i < 128; ++i) {
 		renderer->d.highlightOBJ[i] = false;
 	}
-	renderer->d.highlightColor = GBA_COLOR_WHITE;
+	renderer->d.highlightColor = M_COLOR_WHITE;
 	renderer->d.highlightAmount = 0;
 
 	renderer->temporaryBuffer = 0;
@@ -96,7 +96,7 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 		color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 		int x;
 		for (x = 0; x < softwareRenderer->masterEnd; ++x) {
-			row[x] = GBA_COLOR_WHITE;
+			row[x] = M_COLOR_WHITE;
 		}
 	}
 }
@@ -578,7 +578,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	if (GBARegisterDISPCNTIsForcedBlank(softwareRenderer->dispcnt)) {
 		int x;
 		for (x = 0; x < softwareRenderer->masterEnd; ++x) {
-			row[x] = GBA_COLOR_WHITE;
+			row[x] = M_COLOR_WHITE;
 		}
 		return;
 	}
@@ -944,7 +944,7 @@ void GBAVideoSoftwareRendererPostprocessBuffer(struct GBAVideoSoftwareRenderer* 
 			for (; x < end; ++x) {
 				uint32_t color = softwareRenderer->row[x];
 				if (color & FLAG_TARGET_1) {
-					softwareRenderer->row[x] = _mix(softwareRenderer->alphaB[x], backdrop, softwareRenderer->alphaA[x], color);
+					softwareRenderer->row[x] = mColorMix5Bit(softwareRenderer->alphaB[x], backdrop, softwareRenderer->alphaA[x], color);
 				}
 			}
 		}
@@ -1044,8 +1044,8 @@ static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
 
 	if (highlightAmount) {
 		for (i = 0; i < 512; ++i) {
-			renderer->highlightPalette[i] = _mix(0x10 - highlightAmount, renderer->normalPalette[i], highlightAmount, renderer->d.highlightColor);
-			renderer->highlightVariantPalette[i] = _mix(0x10 - highlightAmount, renderer->variantPalette[i], highlightAmount, renderer->d.highlightColor);
+			renderer->highlightPalette[i] = mColorMix5Bit(0x10 - highlightAmount, renderer->normalPalette[i], highlightAmount, renderer->d.highlightColor);
+			renderer->highlightVariantPalette[i] = mColorMix5Bit(0x10 - highlightAmount, renderer->variantPalette[i], highlightAmount, renderer->d.highlightColor);
 		}
 	}
 }

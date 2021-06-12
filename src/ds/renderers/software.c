@@ -394,7 +394,7 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	if (GBARegisterDISPCNTIsForcedBlank(softwareRenderer->dispcnt)) {
 		for (x = 0; x < softwareRenderer->masterEnd; ++x) {
-			row[x] = GBA_COLOR_WHITE;
+			row[x] = M_COLOR_WHITE;
 		}
 		return;
 	}
@@ -559,7 +559,7 @@ static void _drawScanlineA(struct DSVideoSoftwareRenderer* softwareRenderer, int
 	switch (DSRegisterDISPCNTGetDispMode(softwareRenderer->dispcntA)) {
 	case 0:
 		for (x = 0; x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
-			row[x] = GBA_COLOR_WHITE;
+			row[x] = M_COLOR_WHITE;
 		}
 		return;
 	case 1:
@@ -631,7 +631,7 @@ static void _drawScanlineB(struct DSVideoSoftwareRenderer* softwareRenderer, int
 	switch (DSRegisterDISPCNTGetDispMode(softwareRenderer->dispcntB)) {
 	case 0:
 		for (x = 0; x < DS_VIDEO_HORIZONTAL_PIXELS; ++x) {
-			row[x] = GBA_COLOR_WHITE;
+			row[x] = M_COLOR_WHITE;
 		}
 		return;
 	case 1:

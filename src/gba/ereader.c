@@ -103,6 +103,16 @@ const uint16_t EREADER_ADDRESS_CODES[] = {
 	54679
 };
 
+static const uint8_t DUMMY_HEADER_STRIP[2][0x10] = {
+	{ 0x00, 0x30, 0x01, 0x01, 0x00, 0x01, 0x05, 0x10, 0x00, 0x00, 0x10, 0x13, 0x00, 0x00, 0x02, 0x00 },
+	{ 0x00, 0x30, 0x01, 0x02, 0x00, 0x01, 0x08, 0x10, 0x00, 0x00, 0x10, 0x12, 0x00, 0x00, 0x01, 0x00 }
+};
+
+static const uint8_t DUMMY_HEADER_FIXED[0x16] = {
+	0x00, 0x00, 0x10, 0x00, 0x00, 0x19, 0x00, 0x00, 0x00, 0x08, 0x4e, 0x49, 0x4e, 0x54, 0x45, 0x4e,
+	0x44, 0x4f, 0x00, 0x22, 0x00, 0x09
+};
+
 static const uint8_t BLOCK_HEADER[2][0x18] = {
 	{ 0x00, 0x02, 0x00, 0x01, 0x40, 0x10, 0x00, 0x1c, 0x10, 0x6f, 0x40, 0xda, 0x39, 0x25, 0x8e, 0xe0, 0x7b, 0xb5, 0x98, 0xb6, 0x5b, 0xcf, 0x7f, 0x72 },
 	{ 0x00, 0x03, 0x00, 0x19, 0x40, 0x10, 0x00, 0x2c, 0x0e, 0x88, 0xed, 0x82, 0x50, 0x67, 0xfb, 0xd1, 0x43, 0xee, 0x03, 0xc6, 0xc6, 0x2b, 0x2c, 0x93 }
@@ -327,12 +337,18 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 	memset(hw->eReaderDots, 0, EREADER_DOTCODE_SIZE);
 
 	uint8_t blockRS[44][0x10];
+	uint8_t block0[0x30];
 	bool parsed = false;
 	bool bitmap = false;
+	bool reducedHeader = false;
 	size_t blocks;
 	int base;
 	switch (size) {
 	// Raw sizes
+	case 2076:
+		memcpy(block0, DUMMY_HEADER_STRIP[1], sizeof(DUMMY_HEADER_STRIP[1]));
+		reducedHeader = true;
+		// Fallthrough
 	case 2112:
 		parsed = true;
 		// Fallthrough
@@ -340,6 +356,10 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 		base = 25;
 		blocks = 28;
 		break;
+	case 1308:
+		memcpy(block0, DUMMY_HEADER_STRIP[0], sizeof(DUMMY_HEADER_STRIP[0]));
+		reducedHeader = true;
+		// Fallthrough
 	case 1344:
 		parsed = true;
 		// Fallthrough
@@ -355,11 +375,12 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 		return;
 	}
 
+	const uint8_t* cdata = data;
 	size_t i;
 	if (bitmap) {
 		size_t x;
 		for (i = 0; i < 40; ++i) {
-			const uint8_t* line = &((const uint8_t*) data)[(i + 2) * 124];
+			const uint8_t* line = &cdata[(i + 2) * 124];
 			uint8_t* origin = &hw->eReaderDots[EREADER_DOTCODE_STRIDE * i + 200];
 			for (x = 0; x < 124; ++x) {
 				uint8_t byte = line[x];
@@ -386,8 +407,49 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 		_eReaderAddress(origin, base + i);
 	}
 	if (parsed) {
-		for (i = 0; i < size / 48; ++i) {
-			_eReaderReedSolomon(&((const uint8_t*) data)[i * 48], blockRS[i]);
+		if (reducedHeader) {
+			memcpy(&block0[0x10], DUMMY_HEADER_FIXED, sizeof(DUMMY_HEADER_FIXED));
+			block0[0x0D] = cdata[0x0];
+			block0[0x0C] = cdata[0x1];
+			block0[0x10] = cdata[0x2];
+			block0[0x11] = cdata[0x3];
+			block0[0x26] = cdata[0x4];
+			block0[0x27] = cdata[0x5];
+			block0[0x28] = cdata[0x6];
+			block0[0x29] = cdata[0x7];
+			block0[0x2A] = cdata[0x8];
+			block0[0x2B] = cdata[0x9];
+			block0[0x2C] = cdata[0xA];
+			block0[0x2D] = cdata[0xB];
+			for (i = 0; i < 12; ++i) {
+				block0[0x2E] ^= cdata[i];
+			}
+			unsigned dataChecksum = 0;
+			int j;
+			for (i = 1; i < (size + 36) / 48; ++i) {
+				const uint8_t* block = &cdata[i * 48 - 36];
+				_eReaderReedSolomon(block, blockRS[i]);
+				unsigned fragmentChecksum = 0;
+				for (j = 0; j < 0x30; j += 2) {
+					uint16_t halfword;
+					fragmentChecksum ^= block[j];
+					fragmentChecksum ^= block[j + 1];
+					LOAD_16BE(halfword, j, block);
+					dataChecksum += halfword;
+				}
+				block0[0x2F] += fragmentChecksum;
+			}
+			block0[0x13] = (~dataChecksum) >> 8;
+			block0[0x14] = ~dataChecksum;
+			for (i = 0; i < 0x2F; ++i) {
+				block0[0x2F] += block0[i];
+			}
+			block0[0x2F] = ~block0[0x2F];
+			_eReaderReedSolomon(block0, blockRS[0]);
+		} else {
+			for (i = 0; i < size / 48; ++i) {
+				_eReaderReedSolomon(&cdata[i * 48], blockRS[i]);
+			}
 		}
 	}
 	size_t blockId = 0;
@@ -407,23 +469,29 @@ void GBAHardwareEReaderScan(struct GBACartridgeHardware* hw, const void* data, s
 			parsedBlockData[1] = header[(2 * i) % 0x18 + 1];
 			int j;
 			for (j = 2; j < 104; ++j) {
-			    if (byteOffset >= 0x40) {
-			        break;
-			    }
-			    if (byteOffset >= 0x30) {
-			        parsedBlockData[j] = blockRS[blockId][byteOffset - 0x30];
-			    } else {
-			        parsedBlockData[j] = ((const uint8_t*) data)[blockId * 0x30 + byteOffset];
-			    }
-			    ++blockId;
-			    if (blockId * 0x30 >= size) {
-			        blockId = 0;
-			        ++byteOffset;
-			    }
+				if (byteOffset >= 0x40) {
+					break;
+				}
+				if (byteOffset >= 0x30) {
+					parsedBlockData[j] = blockRS[blockId][byteOffset - 0x30];
+				} else if (!reducedHeader) {
+					parsedBlockData[j] = cdata[blockId * 0x30 + byteOffset];
+				} else {
+					if (blockId > 0) {
+						parsedBlockData[j] = cdata[blockId * 0x30 + byteOffset - 36];
+					} else {
+						parsedBlockData[j] = block0[byteOffset];
+					}
+				}
+				++blockId;
+				if (blockId * 0x30 >= size) {
+					blockId = 0;
+					++byteOffset;
+				}
 			}
 			blockData = parsedBlockData;
 		} else {
-			blockData = &((const uint8_t*) data)[i * 104];
+			blockData = &cdata[i * 104];
 		}
 		int b;
 		for (b = 0; b < 104; ++b) {
