@@ -229,7 +229,7 @@ endif()
 if(APPLE)
 	add_definitions(-D_DARWIN_C_SOURCE)
 	list(APPEND OS_LIB "-framework Foundation")
-	if(CMAKE_SYSTEM_VERSION VERSION_GREATER "10.5.8")
+	if(NOT CMAKE_SYSTEM_VERSION VERSION_LESS "10.0") # Darwin 10.x is Mac OS X 10.6
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
 	endif()
 endif()

@@ -49,7 +49,7 @@ if(WIN32)
 	list(APPEND SDL_LIBRARY imm32 setupapi version winmm)
 elseif(APPLE)
 	list(APPEND SDL_LIBRARY "-framework AppKit" "-framework AudioUnit" "-framework Carbon" "-framework CoreAudio" "-framework AudioToolbox" "-framework ForceFeedback" "-framework IOKit")
-	if(NOT CMAKE_SYSTEM_VERSION VERSION_LESS "10.13")
+	if(NOT CMAKE_SYSTEM_VERSION VERSION_LESS "17.0") # Darwin 17.x is macOS 10.13
 		list(APPEND SDL_LIBRARY "-framework Metal")
 	endif()
 endif()
