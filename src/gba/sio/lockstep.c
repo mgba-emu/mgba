@@ -179,10 +179,14 @@ static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOCNT <- %04X", node->id, value);
 
 		enum mLockstepPhase transferActive;
+		int attached;
 		ATOMIC_LOAD(transferActive, node->p->d.transferActive);
+		ATOMIC_LOAD(attached, node->p->d.attached);
+
+		driver->p->siocnt = GBASIOMultiplayerSetSlave(driver->p->siocnt, node->id || attached < 2);
 
 		if (value & 0x0080 && transferActive == TRANSFER_IDLE) {
-			if (!node->id && GBASIOMultiplayerIsReady(node->d.p->siocnt)) {
+			if (!node->id && attached > 1 && GBASIOMultiplayerIsReady(node->d.p->siocnt)) {
 				mLOG(GBA_SIO, DEBUG, "Lockstep %i: Transfer initiated", node->id);
 				ATOMIC_STORE(node->p->d.transferActive, TRANSFER_STARTING);
 				ATOMIC_STORE(node->p->d.transferCycles, GBASIOCyclesPerTransfer[GBASIOMultiplayerGetBaud(node->d.p->siocnt)][node->p->d.attached - 1]);
