@@ -442,11 +442,22 @@ static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* user,
 	struct GBASIOLockstepNode* node = user;
 	mLockstepLock(&node->p->d);
 
-	int32_t cycles = 0;
+	int32_t cycles = cycles = node->nextEvent;
 	node->nextEvent -= cyclesLate;
 	node->eventDiff += cyclesLate;
 	if (node->p->d.attached < 2) {
-		cycles = GBASIOCyclesPerTransfer[GBASIOMultiplayerGetBaud(node->d.p->siocnt)][0];
+		switch (node->mode) {
+		case SIO_MULTI:
+			cycles = GBASIOCyclesPerTransfer[GBASIOMultiplayerGetBaud(node->d.p->siocnt)][0];
+			break;
+		case SIO_NORMAL_8:
+		case SIO_NORMAL_32:
+			if (node->nextEvent <= 0) {
+				cycles = _masterUpdate(node);
+				node->eventDiff = 0;
+			}
+			break;
+		}
 	} else if (node->nextEvent <= 0) {
 		if (!node->id) {
 			cycles = _masterUpdate(node);
@@ -455,8 +466,6 @@ static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* user,
 			cycles += node->p->d.useCycles(&node->p->d, node->id, node->eventDiff);
 		}
 		node->eventDiff = 0;
-	} else {
-		cycles = node->nextEvent;
 	}
 	if (cycles > 0) {
 		node->nextEvent = 0;

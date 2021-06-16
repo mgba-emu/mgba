@@ -9,6 +9,7 @@ Features:
 Emulation fixes:
  - GB Video: Clear VRAM on reset (fixes mgba.io/i/2152)
  - GBA SIO: Add missing NORMAL8 implementation bits (fixes mgba.io/i/2172)
+ - GBA SIO: Fix missing interrupt on an unattached NORMAL transfer
  - GBA Video: Revert scanline latching changes (fixes mgba.io/i/2153, mgba.io/i/2149)
 Other fixes:
  - 3DS: Fix disabling "wide" mode on 2DS (fixes mgba.io/i/2167)
