@@ -12,7 +12,7 @@
 
 DEFINE_VECTOR(mCoreRewindPatches, struct PatchFast);
 
-void _rewindDiff(struct mCoreRewindContext* context);
+static void _rewindDiff(struct mCoreRewindContext* context);
 
 #ifndef DISABLE_THREADING
 THREAD_ENTRY _rewindThread(void* context);
@@ -136,17 +136,19 @@ bool mCoreRewindRestore(struct mCoreRewindContext* context, struct mCore* core) 
 	}
 	--context->current;
 
-	struct PatchFast* patch = mCoreRewindPatchesGetPointer(&context->patchMemory, context->current);
-	size_t size2 = context->previousState->size(context->previousState);
-	size_t size = context->currentState->size(context->currentState);
-	if (size2 < size) {
-		size = size2;
+	if (context->size) {
+		struct PatchFast* patch = mCoreRewindPatchesGetPointer(&context->patchMemory, context->current);
+		size_t size2 = context->previousState->size(context->previousState);
+		size_t size = context->currentState->size(context->currentState);
+		if (size2 < size) {
+			size = size2;
+		}
+		void* current = context->currentState->map(context->currentState, size, MAP_READ);
+		void* previous = context->previousState->map(context->previousState, size, MAP_WRITE);
+		patch->d.applyPatch(&patch->d, previous, size, current, size);
+		context->currentState->unmap(context->currentState, current, size);
+		context->previousState->unmap(context->previousState, previous, size);
 	}
-	void* current = context->currentState->map(context->currentState, size, MAP_READ);
-	void* previous = context->previousState->map(context->previousState, size, MAP_WRITE);
-	patch->d.applyPatch(&patch->d, previous, size, current, size);
-	context->currentState->unmap(context->currentState, current, size);
-	context->previousState->unmap(context->previousState, previous, size);
 	struct VFile* nextState = context->previousState;
 	context->previousState = context->currentState;
 	context->currentState = nextState;
