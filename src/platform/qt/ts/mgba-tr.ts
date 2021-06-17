@@ -392,7 +392,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <location filename="../LoadSaveState.ui" line="14"/>
         <location filename="../LoadSaveState.ui" line="66"/>
         <source>%1 State</source>
-        <translation></translation>
+        <translation>%1 Durum</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="41"/>
@@ -463,7 +463,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../LogView.ui" line="14"/>
         <source>Logs</source>
-        <translation></translation>
+        <translation>Girdiler</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="22"/>
@@ -478,7 +478,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../LogView.ui" line="38"/>
         <source>Stub</source>
-        <translation></translation>
+        <translation>Matris</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="48"/>
@@ -498,12 +498,12 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../LogView.ui" line="78"/>
         <source>Fatal</source>
-        <translation></translation>
+        <translation>Ölümcül</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="95"/>
         <source>Game Error</source>
-        <translation></translation>
+        <translation>Oyun Hatası</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="108"/>
@@ -572,7 +572,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../MemorySearch.ui" line="26"/>
         <source>Memory Search</source>
-        <translation></translation>
+        <translation>Bellek Arama</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="51"/>
@@ -722,7 +722,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../MemoryView.ui" line="14"/>
         <source>Memory</source>
-        <translation></translation>
+        <translation>Bellek</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="38"/>
@@ -800,7 +800,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../ObjView.ui" line="14"/>
         <source>Sprites</source>
-        <translation></translation>
+        <translation>Spritelar</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="254"/>
@@ -956,7 +956,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../OverrideView.ui" line="55"/>
         <source>Realtime clock</source>
-        <translation></translation>
+        <translation>Gerçek Zaman Saati</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="65"/>
@@ -971,12 +971,12 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../OverrideView.ui" line="85"/>
         <source>Light sensor</source>
-        <translation></translation>
+        <translation>Işık Sensörü</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="95"/>
         <source>Rumble</source>
-        <translation></translation>
+        <translation>Titreşim</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="113"/>
@@ -1011,12 +1011,12 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../OverrideView.ui" line="154"/>
         <source>Idle loop</source>
-        <translation></translation>
+        <translation>Boşta İşlem</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="180"/>
         <source>Game Boy Player features</source>
-        <translation></translation>
+        <translation>Game Boy Player özellikleri</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="187"/>
@@ -1036,7 +1036,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../OverrideView.ui" line="239"/>
         <source>Memory bank controller</source>
-        <translation></translation>
+        <translation>Bellek bank kontrolcüsü</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="255"/>
@@ -1109,7 +1109,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../PaletteView.ui" line="258"/>
         <source>Palette index</source>
-        <translation></translation>
+        <translation>Palet indeks</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="322"/>
@@ -1155,17 +1155,17 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../PrinterView.ui" line="14"/>
         <source>Game Boy Printer</source>
-        <translation></translation>
+        <translation>Game Boy Yazıcı</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="130"/>
         <source>Hurry up!</source>
-        <translation></translation>
+        <translation>Acele et!</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="137"/>
         <source>Tear off</source>
-        <translation></translation>
+        <translation>Parçalara ayır</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="223"/>
@@ -1356,12 +1356,12 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../GBAKeyEditor.cpp" line="67"/>
         <source>Clear Button</source>
-        <translation></translation>
+        <translation>Tuşu Temizle</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="79"/>
         <source>Clear Analog</source>
-        <translation></translation>
+        <translation>Analogu Temizle</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="90"/>
@@ -1394,7 +1394,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../GDBWindow.cpp" line="56"/>
         <source>Break</source>
-        <translation></translation>
+        <translation>İptal</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="95"/>
@@ -1409,7 +1409,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../GDBWindow.cpp" line="113"/>
         <source>Crash</source>
-        <translation></translation>
+        <translation>Hata</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="113"/>
