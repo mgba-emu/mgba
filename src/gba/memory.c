@@ -127,6 +127,7 @@ void GBAMemoryReset(struct GBA* gba) {
 	memset(gba->memory.io, 0, sizeof(gba->memory.io));
 	GBAAdjustWaitstates(gba, 0);
 
+	gba->memory.activeRegion = -1;
 	gba->memory.agbPrintProtect = 0;
 	gba->memory.agbPrintBase = 0;
 	memset(&gba->memory.agbPrintCtx, 0, sizeof(gba->memory.agbPrintCtx));
@@ -266,6 +267,11 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	gba->lastJump = address;
 	memory->lastPrefetchedPc = 0;
 	if (newRegion == memory->activeRegion) {
+		if (cpu->cpsr.t) {
+			cpu->memory.activeMask |= WORD_SIZE_THUMB;
+		} else {
+			cpu->memory.activeMask &= -WORD_SIZE_ARM;
+		}
 		if (newRegion < REGION_CART0 || (address & (SIZE_CART0 - 1)) < memory->romSize) {
 			return;
 		}
