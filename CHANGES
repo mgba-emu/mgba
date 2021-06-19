@@ -11,6 +11,7 @@ Other fixes:
  - Core: Fix memory leak in opening games from the library
  - Core: Fix memory searches for relative values (fixes mgba.io/i/2135)
  - Core: Fix portable mode on macOS
+ - GB Audio: Fix audio channel 4 being slow to deserialize
  - GB Core: Fix GBC colors setting breaking default model overrides (fixes mgba.io/i/2161)
  - Qt: Fix infrequent deadlock when using sync to video
  - Qt: Fix applying savetype-only overrides
