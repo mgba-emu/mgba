@@ -1475,7 +1475,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../IOViewer.cpp" line="49"/>
         <source>CGB Mode</source>
-        <translation></translation>
+        <translation>CGB Mod</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="50"/>
@@ -1485,7 +1485,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../IOViewer.cpp" line="51"/>
         <source>Unlocked HBlank</source>
-        <translation></translation>
+        <translation>Kilidi Açık HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="52"/>
@@ -1596,7 +1596,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <location filename="../IOViewer.cpp" line="102"/>
         <location filename="../IOViewer.cpp" line="112"/>
         <source>Tile data base (* 16kB)</source>
-        <translation></translation>
+        <translation>Tile veri tabanı (* 16kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="85"/>
@@ -1620,7 +1620,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <location filename="../IOViewer.cpp" line="105"/>
         <location filename="../IOViewer.cpp" line="115"/>
         <source>Tile map base (* 2kB)</source>
-        <translation></translation>
+        <translation>Tile plan tabanı (* 2kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="88"/>
@@ -1852,7 +1852,7 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../IOViewer.cpp" line="279"/>
         <source>Background mosaic size horizontal</source>
-        <translation>Arka plan yatay  mozaik boyutu</translation>
+        <translation>Arka plan yatay mozaik boyutu</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="282"/>
@@ -1867,27 +1867,27 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../IOViewer.cpp" line="288"/>
         <source>BG 0 target 1</source>
-        <translation></translation>
+        <translation>BG 0 hedef 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="289"/>
         <source>BG 1 target 1</source>
-        <translation></translation>
+        <translation>BG 1 hedef 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="290"/>
         <source>BG 2 target 1</source>
-        <translation></translation>
+        <translation>BG 2 hedef 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="291"/>
         <source>BG 3 target 1</source>
-        <translation></translation>
+        <translation>BG 3 hedef 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="292"/>
         <source>OBJ target 1</source>
-        <translation></translation>
+        <translation>NESNE hedef 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="293"/>
