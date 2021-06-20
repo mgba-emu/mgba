@@ -79,7 +79,7 @@ Estos mappers tienen soporte parcial:
 Plataformas soportadas
 -------------------
 
-- Windows Vista o más reciente
+- Windows 7 o más reciente
 - OS X 10.8 (Mountain Lion)[<sup>[3]</sup>](#osxver) o más reciente
 - Linux
 - FreeBSD
