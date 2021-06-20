@@ -28,12 +28,12 @@
         <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <translation>© 2013 – {year} Jeffrey Pfau, licenciado sob a Licença Pública do Mozilla, versão 2.0
-Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
+O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation>{projectName} é um emulador de Game Boy Advance de código fonte aberto</translation>
+        <translation>O {projectName} é um emulador de Game Boy Advance de código fonte aberto</translation>
     </message>
 </context>
 <context>
@@ -95,7 +95,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../BattleChipView.ui" line="14"/>
         <source>BattleChip Gate</source>
-        <translation>BattleChip Gate</translation>
+        <translation>Portal do BattleChip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="67"/>
@@ -145,7 +145,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
         <source>Update Chip data</source>
-        <translation>Atualizar dados do Chip</translation>
+        <translation>Atualizar os dados do Chip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
@@ -272,7 +272,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../FrameView.ui" line="84"/>
         <source>Backdrop color</source>
-        <translation>Cor de fundo</translation>
+        <translation>Cor do 2º plano</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="132"/>
@@ -300,7 +300,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../GIFView.ui" line="30"/>
         <source>Loop</source>
-        <translation>Repetir animação</translation>
+        <translation>Repetição</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="51"/>
@@ -390,7 +390,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <location filename="../LoadSaveState.ui" line="14"/>
         <location filename="../LoadSaveState.ui" line="66"/>
         <source>%1 State</source>
-        <translation>Estado %1</translation>
+        <translation>State %1</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="41"/>
@@ -547,7 +547,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../MemoryDump.ui" line="14"/>
         <source>Save Memory Range</source>
-        <translation>Salvar Faixa de Memória</translation>
+        <translation>Salvar o Alcance da Memória</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="20"/>
@@ -557,12 +557,12 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../MemoryDump.ui" line="76"/>
         <source>Byte Count:</source>
-        <translation>Quantidade de Bytes:</translation>
+        <translation>Contagem de Bytes:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="108"/>
         <source>Dump across banks</source>
-        <translation>Salvar através de vários bancos</translation>
+        <translation>Dumpar através dos bancos</translation>
     </message>
 </context>
 <context>
@@ -570,7 +570,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../MemorySearch.ui" line="26"/>
         <source>Memory Search</source>
-        <translation>Pesquisa de Memória</translation>
+        <translation>Busca na Memória</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="51"/>
@@ -636,7 +636,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../MemorySearch.ui" line="216"/>
         <source>Search type</source>
-        <translation>Tipo de pesquisa</translation>
+        <translation>Tipo de busca</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="223"/>
@@ -661,7 +661,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../MemorySearch.ui" line="269"/>
         <source>Changed by value</source>
-        <translation>Alterado por quantia</translation>
+        <translation>Alterado pelo valor</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="282"/>
@@ -686,7 +686,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../MemorySearch.ui" line="336"/>
         <source>New Search</source>
-        <translation>Nova Pesquisa</translation>
+        <translation>Nova Busca</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="195"/>
@@ -697,12 +697,12 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <location filename="../MemorySearch.ui" line="125"/>
         <location filename="../MemorySearch.ui" line="185"/>
         <source>Guess</source>
-        <translation>Detectar</translation>
+        <translation>Estimar</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="343"/>
         <source>Search Within</source>
-        <translation>Pesquisar nos Resultados</translation>
+        <translation>Procurar por Dentro</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="350"/>
@@ -750,12 +750,12 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../MemoryView.ui" line="187"/>
         <source>Unsigned Integer:</source>
-        <translation>Inteiro sem sinal:</translation>
+        <translation>Integral não Assinado:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="208"/>
         <source>Signed Integer:</source>
-        <translation>Inteiro com sinal:</translation>
+        <translation>Integral com Sinal:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="229"/>
@@ -785,7 +785,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../MemoryView.ui" line="290"/>
         <source>Save Range</source>
-        <translation>Salvar Intervalo</translation>
+        <translation>Salvar Alcance</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="297"/>
@@ -828,7 +828,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../ObjView.ui" line="430"/>
         <source>Off</source>
-        <translation>Não</translation>
+        <translation>Desligado</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="444"/>
@@ -953,7 +953,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../OverrideView.ui" line="55"/>
         <source>Realtime clock</source>
-        <translation>Relógio de tempo real</translation>
+        <translation>Relógio em tempo real</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="65"/>
@@ -1018,7 +1018,7 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../OverrideView.ui" line="164"/>
         <source>Idle loop</source>
-        <translation>Loop inativo</translation>
+        <translation>Repetição inativa</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="190"/>
@@ -1053,12 +1053,12 @@ Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../OverrideView.ui" line="352"/>
         <source>Sprite Colors 1</source>
-        <translation>Cores de Sprite 1</translation>
+        <translation>Cores da Imagem Móvel 1</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="359"/>
         <source>Sprite Colors 2</source>
-        <translation>Cores de Sprite 2</translation>
+        <translation>Cores da Imagem Móvel 2</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="529"/>
@@ -1287,7 +1287,7 @@ Download size: %3</source>
         <location filename="../CheatsView.cpp" line="86"/>
         <location filename="../CheatsView.cpp" line="93"/>
         <source>Select cheats file</source>
-        <translation>Selecionar arquivo de trapaças</translation>
+        <translation>Selecionar o arquivo das trapaças</translation>
     </message>
 </context>
 <context>
@@ -1371,12 +1371,12 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.cpp" line="610"/>
         <source>Sprite</source>
-        <translation>Sprite</translation>
+        <translation>Imagem Móvel</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="613"/>
         <source>Backdrop</source>
-        <translation>Cenário</translation>
+        <translation>2º Plano</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="616"/>
@@ -1394,7 +1394,7 @@ Download size: %3</source>
     <message>
         <location filename="../GBAApp.cpp" line="73"/>
         <source>Enable Discord Rich Presence</source>
-        <translation>Ativar Discord Rich Presence</translation>
+        <translation>Ativar o Discord Rich Presence</translation>
     </message>
 </context>
 <context>
@@ -1468,7 +1468,7 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.cpp" line="61"/>
         <source>Failed to open output file: %1</source>
-        <translation>Falhou em abrir arquivo de saída: %1</translation>
+        <translation>Falhou em abrir o arquivo de saída: %1</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
@@ -1478,7 +1478,7 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
-        <translation>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</translation>
+        <translation>Formato da Inter-Mudança dos Gráficos (*.gif);;WebP ( *.webp);;Gráficos da Rede Animada Portátil (*.png *.apng)</translation>
     </message>
 </context>
 <context>
@@ -1531,12 +1531,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="51"/>
         <source>Unlocked HBlank</source>
-        <translation>Destrancou HBlank</translation>
+        <translation>HBlank Destrancado</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="52"/>
         <source>Linear OBJ tile mapping</source>
-        <translation>Mapeamento do mosaio do OBJ linear</translation>
+        <translation>Mapeamento do ladrilho do OBJ linear</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="53"/>
@@ -1546,22 +1546,22 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="54"/>
         <source>Enable background 0</source>
-        <translation>Ativar 2º plano 0</translation>
+        <translation>Ativar o 2º plano 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="55"/>
         <source>Enable background 1</source>
-        <translation>Ativar 2º plano 1</translation>
+        <translation>Ativar o 2º plano 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="56"/>
         <source>Enable background 2</source>
-        <translation>Ativar 2º plano 2</translation>
+        <translation>Ativar o 2º plano 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="57"/>
         <source>Enable background 3</source>
-        <translation>Ativar 2º plano 3</translation>
+        <translation>Ativar o 2º plano 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="58"/>
@@ -1571,17 +1571,17 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="59"/>
         <source>Enable Window 0</source>
-        <translation>Ativar Janela 0</translation>
+        <translation>Ativar a Janela 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="60"/>
         <source>Enable Window 1</source>
-        <translation>Ativar Janela 1</translation>
+        <translation>Ativar a Janela 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="61"/>
         <source>Enable OBJ Window</source>
-        <translation>Ativar Janela do OBJ</translation>
+        <translation>Ativar a Janela do OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="65"/>
@@ -1642,7 +1642,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="102"/>
         <location filename="../IOViewer.cpp" line="112"/>
         <source>Tile data base (* 16kB)</source>
-        <translation>Base dos dados de ladrilhos (* 16 kB)</translation>
+        <translation>Banco de dados dos ladrilhos (* 16 kBs)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="85"/>
@@ -1650,7 +1650,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="103"/>
         <location filename="../IOViewer.cpp" line="113"/>
         <source>Enable mosaic</source>
-        <translation>Ativar efeito mosaico</translation>
+        <translation>Ativar o mosaico</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="86"/>
@@ -1666,7 +1666,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="105"/>
         <location filename="../IOViewer.cpp" line="115"/>
         <source>Tile map base (* 2kB)</source>
-        <translation>Base do mapa de ladrilhos (* 2 kB)</translation>
+        <translation>Base do mapa dos ladrilhos (* 2 kBs)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="88"/>
@@ -1736,7 +1736,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="212"/>
         <location filename="../IOViewer.cpp" line="221"/>
         <source>Integer part (low)</source>
-        <translation>Parte integral (baixo)</translation>
+        <translation>Parte integral (baixa)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="178"/>
@@ -1744,13 +1744,13 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="216"/>
         <location filename="../IOViewer.cpp" line="225"/>
         <source>Integer part (high)</source>
-        <translation>Parte integral (alto)</translation>
+        <translation>Parte integral (alta)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="229"/>
         <location filename="../IOViewer.cpp" line="234"/>
         <source>End x</source>
-        <translation>X final</translation>
+        <translation>Final x</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="230"/>
@@ -1762,7 +1762,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="239"/>
         <location filename="../IOViewer.cpp" line="244"/>
         <source>End y</source>
-        <translation>Y final</translation>
+        <translation>Final y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="240"/>
@@ -1798,7 +1798,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="254"/>
         <source>Window 0 enable blend</source>
-        <translation>Janela 0 ativar blend</translation>
+        <translation>Janela 0 ativar a mistura</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="255"/>
@@ -1828,7 +1828,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="260"/>
         <source>Window 1 enable blend</source>
-        <translation>Janela 1 ativar blend</translation>
+        <translation>Janela 1 ativar a mistura</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="264"/>
@@ -1858,7 +1858,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="269"/>
         <source>Outside window enable blend</source>
-        <translation>Fora da janela ativar mistura</translation>
+        <translation>Fora da janela ativar a mistura</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="270"/>
@@ -1888,27 +1888,27 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="275"/>
         <source>OBJ window enable blend</source>
-        <translation>Janela do OBJ ativar mistura</translation>
+        <translation>Janela do OBJ ativar a mistura</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="280"/>
         <source>Background mosaic size vertical</source>
-        <translation>Tamanho vertical do mosaico do plano de fundo</translation>
+        <translation>Tamanho vertical do mosaico do 2º plano</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="279"/>
         <source>Background mosaic size horizontal</source>
-        <translation>Tamanho horizontal do mosaico do plano de fundo</translation>
+        <translation>Tamanho horizontal do mosaico do 2º plano</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="282"/>
         <source>Object mosaic size vertical</source>
-        <translation>Tamanho vertical do mosaico de objetos</translation>
+        <translation>Tamanho vertical do mosaico dos objetos</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="281"/>
         <source>Object mosaic size horizontal</source>
-        <translation>Tamanho horizontal do mosaico de objetos</translation>
+        <translation>Tamanho horizontal do mosaico dos objetos</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="288"/>
@@ -1938,12 +1938,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="293"/>
         <source>Backdrop target 1</source>
-        <translation>Alvo do cenário 1</translation>
+        <translation>Alvo do 2º plano 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="294"/>
         <source>Blend mode</source>
-        <translation>Modo de Mistura</translation>
+        <translation>Modo de mistura</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="295"/>
@@ -1993,7 +1993,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="305"/>
         <source>Backdrop target 2</source>
-        <translation>Alvo do cenário 2</translation>
+        <translation>Alvo do 2º plano 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="309"/>
@@ -2112,7 +2112,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="368"/>
         <source>Double-size wave table</source>
-        <translation>Tabela de som com tamanho duplo</translation>
+        <translation>Tabela da onda com tamanho duplo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="369"/>
@@ -2176,7 +2176,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="406"/>
         <location filename="../IOViewer.cpp" line="1189"/>
         <source>Register stages</source>
-        <translation>Estágios do registo</translation>
+        <translation>Estágios do registro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="407"/>
@@ -2282,7 +2282,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="441"/>
         <source>Channel A timer</source>
-        <translation>Temporizador do canal A</translation>
+        <translation>Cronômetro do canal A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="442"/>
@@ -2321,7 +2321,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="448"/>
         <source>Channel B timer</source>
-        <translation>Temporizador do canal B</translation>
+        <translation>Cronômetro do canal B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="452"/>
@@ -2495,12 +2495,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1432"/>
         <source>Destination (high)</source>
-        <translation>Destinação (alto)</translation>
+        <translation>Destinação (alta)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1436"/>
         <source>Destination (low)</source>
-        <translation>Destinação (baixo)</translation>
+        <translation>Destinação (baixa)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1499"/>
@@ -2528,7 +2528,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="671"/>
         <location filename="../IOViewer.cpp" line="716"/>
         <source>Destination offset</source>
-        <translation>Deslocamento de destino</translation>
+        <translation>Deslocamento do destino</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="582"/>
@@ -2552,7 +2552,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="718"/>
         <location filename="../IOViewer.cpp" line="724"/>
         <source>Decrement</source>
-        <translation>Decrementar</translation>
+        <translation>Decréscimo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="584"/>
@@ -2753,7 +2753,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="871"/>
         <location filename="../IOViewer.cpp" line="884"/>
         <source>Select</source>
-        <translation>Selecionar</translation>
+        <translation>Select</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="872"/>
@@ -3065,7 +3065,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1093"/>
         <location filename="../IOViewer.cpp" line="1554"/>
         <source>Timer</source>
-        <translation>Temporizador</translation>
+        <translation>Cronômetro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1094"/>
@@ -3117,7 +3117,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation>Mapa de ladrilhos do plano de fundo</translation>
+        <translation>Mapa dos ladrilhos do 2º plano</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
@@ -3134,7 +3134,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1333"/>
         <source>Background tile data</source>
-        <translation>Dados de ladrilhos do plano de fundo</translation>
+        <translation>Dados dos ladrilhos do 2º plano</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1334"/>
@@ -3154,7 +3154,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1338"/>
         <source>Window tile map</source>
-        <translation>Mapa de ladrilhos da janela</translation>
+        <translation>Mapa dos ladrilhos da janela</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1342"/>
@@ -3194,22 +3194,22 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1353"/>
         <source>Enable HBlank (mode 0) IRQ</source>
-        <translation>Ativar HBlank (modo 0) IRQ</translation>
+        <translation>Ativar IRQ do HBlank (modo 0)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1354"/>
         <source>Enable VBlank (mode 1) IRQ</source>
-        <translation>Ativar VBlank (modo 1) IRQ</translation>
+        <translation>Ativar IRQ do VBlank (modo 1)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1355"/>
         <source>Enable OAM (mode 2) IRQ</source>
-        <translation>Ativar OAM (modo 2) IRQ</translation>
+        <translation>Ativar IRQ do OAM (modo 2)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1356"/>
         <source>Enable LYC IRQ</source>
-        <translation>Ativar LYC IRQ</translation>
+        <translation>Ativar IRQ do LYC</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1368"/>
@@ -3231,33 +3231,33 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1387"/>
         <location filename="../IOViewer.cpp" line="1394"/>
         <source>Color 0 shade</source>
-        <translation>Tom da Cor 0</translation>
+        <translation>Tom da cor 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1381"/>
         <location filename="../IOViewer.cpp" line="1388"/>
         <location filename="../IOViewer.cpp" line="1395"/>
         <source>Color 1 shade</source>
-        <translation>Tom da Cor 1</translation>
+        <translation>Tom da cor 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1382"/>
         <location filename="../IOViewer.cpp" line="1389"/>
         <location filename="../IOViewer.cpp" line="1396"/>
         <source>Color 2 shade</source>
-        <translation>Tom da Cor 2</translation>
+        <translation>Tom da cor 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1383"/>
         <location filename="../IOViewer.cpp" line="1390"/>
         <location filename="../IOViewer.cpp" line="1397"/>
         <source>Color 3 shade</source>
-        <translation>Tom da Cor 3</translation>
+        <translation>Tom da cor 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1411"/>
         <source>Prepare to switch speed</source>
-        <translation>Preparar pra trocar velocidade</translation>
+        <translation>Preparar pra trocar a velocidade</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1412"/>
@@ -3267,7 +3267,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1418"/>
         <source>VRAM bank</source>
-        <translation>Banco VRAM</translation>
+        <translation>Banco do VRAM</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1440"/>
@@ -3282,7 +3282,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1448"/>
         <source>Write bit</source>
-        <translation>Bit de gravação</translation>
+        <translation>Bit da gravação</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1449"/>
@@ -3322,7 +3322,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1517"/>
         <source>Sprite ordering</source>
-        <translation>Ordenação de sprites</translation>
+        <translation>Ordenação das imagens móveis</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1518"/>
@@ -3615,7 +3615,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryModel.cpp" line="207"/>
         <source>Save selected memory</source>
-        <translation>Salvar memória selecionada</translation>
+        <translation>Salvar a memória selecionada</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="213"/>
@@ -3720,7 +3720,7 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.cpp" line="283"/>
         <source>Export sprite</source>
-        <translation>Exportar sprite</translation>
+        <translation>Exportar imagem móvel</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="284"/>
@@ -3863,7 +3863,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="111"/>
         <source>No valid formats found</source>
-        <translation>Nenhum formato válido encontrado</translation>
+        <translation>Não foram encontrados formatos válidos</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="119"/>
@@ -3873,7 +3873,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="130"/>
         <source>No valid conversions found</source>
-        <translation>Nenhuma conversão válida encontrada</translation>
+        <translation>Não foram encontradas conversões válidas</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="576"/>
@@ -4213,7 +4213,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1062"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
-        <translation>Algumas mudanças não terão efeito até que o emulador seja reiniciado.</translation>
+        <translation>Algumas mudanças não terão efeito até o emulador ser reiniciado.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1101"/>
@@ -4253,7 +4253,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1185"/>
         <source>Add folder to library...</source>
-        <translation>Adicionar a pasta a biblioteca...</translation>
+        <translation>Adicionar pasta a biblioteca...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1195"/>
@@ -4268,7 +4268,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1201"/>
         <source>Replace ROM...</source>
-        <translation>Substituir ROM...</translation>
+        <translation>Substituir a ROM...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1211"/>
@@ -4334,7 +4334,7 @@ Download size: %3</source>
         <location filename="../Window.cpp" line="390"/>
         <location filename="../Window.cpp" line="395"/>
         <source>Select save state</source>
-        <translation>Selecione save state</translation>
+        <translation>Selecione um save state</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="436"/>
@@ -4420,12 +4420,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1402"/>
         <source>Load camera image...</source>
-        <translation>Carregar imagem da câmera...</translation>
+        <translation>Carregar a imagem da câmera...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1275"/>
         <source>Convert save game...</source>
-        <translation>Converter save do jogo...</translation>
+        <translation>Converter o save do jogo...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1285"/>
@@ -4460,7 +4460,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1311"/>
         <source>Yank game pak</source>
-        <translation>Arrancar game pak</translation>
+        <translation>Arrancar o game pak</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1315"/>
@@ -4570,12 +4570,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1448"/>
         <source>Lock aspect ratio</source>
-        <translation>Trancar proporção do aspecto</translation>
+        <translation>Travar a proporção do aspecto</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1460"/>
         <source>Force integer scaling</source>
-        <translation>Forçar dimensionamento da integral</translation>
+        <translation>Forçar o dimensionamento da integral</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1481"/>
@@ -4750,7 +4750,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1605"/>
         <source>Search memory...</source>
-        <translation>Procurar memória...</translation>
+        <translation>Procurar na memória...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1606"/>
@@ -4765,7 +4765,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1610"/>
         <source>Stop debug video log</source>
-        <translation>Parar log do vídeo de debug</translation>
+        <translation>Parar o registro do vídeo de debug</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1710"/>
@@ -4932,7 +4932,7 @@ Download size: %3</source>
     <message>
         <location filename="../ReportView.ui" line="67"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pra apresentar um relatório de bug, por favor primeiro gere um arquivo de relatório pra anexar ao relatório do bug. É recomendado que  você inclua os arquivos dos saves como estes frequentemente ajudam com problemas de debugging. Isto coletará um pouco de  informação sobre a versão do {projectName} que você está em executando, suas configurações, seu computador e o jogo que você abriu atualmente (se algum). Uma vez que esta coleção estiver completada você pode rever toda a informação coletada abaixo e salvá-la num arquivo zip. A coleção tentará automaticamente reescrever qualquer informação pessoal, tal como seu nome de usuário se está em qualquer dos caminhos coletados, mas em qualquer caso você pode editá-lo mais tarde. Depois que você o gerou e o salvou, por favor clique no botão abaixo ou vá em &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; pra apresentar o relatório no GitHub. Tenha a certeza de anexar o relatório que você gerou!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pra apresentar um relatório de bug por favor gere primeiro um arquivo de relatório pra anexar ao relatório do bug que você está pra apresentar. É recomendado que você inclua os arquivos dos saves como estes frequentemente ajudam com problemas de debugging. Isto coletará um pouco de informação sobre a versão do {projectName} que você está em executando, suas configurações, seu computador e o jogo que você abriu atualmente (se algum). Uma vez que esta coleção estiver completada você pode rever toda a informação coletada abaixo e salvá-la num arquivo zip. A coleção tentará automaticamente reescrever qualquer informação pessoal, tal como seu nome de usuário se está em quaisquer dos caminhos coletados, mas no caso você pode editá-lo mais tarde. Depois que você o gerou e o salvou, por favor clique no botão abaixo ou vá em &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; pra apresentar o relatório do bug no GitHub. Tenha a certeza de anexar o relatório que você gerou!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="85"/>
@@ -4976,7 +4976,7 @@ Download size: %3</source>
         <location filename="../SaveConverter.ui" line="29"/>
         <location filename="../SaveConverter.ui" line="55"/>
         <source>Browse</source>
-        <translation>Navegar</translation>
+        <translation>Explorar</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="46"/>
@@ -5046,7 +5046,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="453"/>
         <source>MBC6 SRAM</source>
-        <translation>MBC6 SRAM</translation>
+        <translation>SRAM do MBC6</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="457"/>
@@ -5289,7 +5289,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="284"/>
         <source>Fast forward volume:</source>
-        <translation>Avançar o volume rápido:</translation>
+        <translation>Avanço rápido do volume:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="324"/>
@@ -5314,7 +5314,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="371"/>
         <source>Display driver:</source>
-        <translation>Driver de exibição:</translation>
+        <translation>Driver de vídeo:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="388"/>
@@ -5360,7 +5360,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="489"/>
         <source>Lock aspect ratio</source>
-        <translation>Trancar proporção do aspecto</translation>
+        <translation>Travar a proporção do aspecto</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="510"/>
@@ -5431,7 +5431,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="2047"/>
         <source>SGB color palette if available</source>
-        <translation>Paleta das cores SGB se disponível</translation>
+        <translation>Paleta das cores do SGB se disponível</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2057"/>
@@ -5476,7 +5476,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="668"/>
         <source>Show OSD messages</source>
-        <translation>Mostrarr mensagens do OSD</translation>
+        <translation>Mostrar mensagens do OSD</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1088"/>
@@ -5507,7 +5507,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="651"/>
         <source>Show filename instead of ROM name in title bar</source>
-        <translation>Mostrar nome do arquivo em vez do nome da ROM na barra de título</translation>
+        <translation>Mostrar o nome do arquivo ao invés do nome da ROM na barra de título</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="925"/>
@@ -5582,7 +5582,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="596"/>
         <source>Suspend screensaver</source>
-        <translation>Suspender proteção de tela</translation>
+        <translation>Suspender a proteção de tela</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="641"/>
@@ -5612,12 +5612,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="678"/>
         <source>Enable Discord Rich Presence</source>
-        <translation>Ativar Discord Rich Presence</translation>
+        <translation>Ativar o Discord Rich Presence</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="882"/>
         <source>Fast forward speed:</source>
-        <translation>Velocidade de avanço rápido:</translation>
+        <translation>Velocidade do avanço rápido:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="913"/>
@@ -5638,7 +5638,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1031"/>
         <source>Idle loops:</source>
-        <translation>Loops inativos:</translation>
+        <translation>Repetições inativas:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1039"/>
@@ -5675,7 +5675,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="968"/>
         <source>Autofire interval:</source>
-        <translation>Intervalo do Auto-Disparo:</translation>
+        <translation>Intervalo do auto-disparo:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1064"/>
@@ -5705,7 +5705,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1201"/>
         <source>High-resolution scale:</source>
-        <translation>Escala de alta-resolução:</translation>
+        <translation>Escala da alta-resolução:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1188"/>
@@ -5715,7 +5715,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1268"/>
         <source>GB BIOS file:</source>
-        <translation>Arquivo do GB BIOS:</translation>
+        <translation>Arquivo da BIOS do GB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1287"/>
@@ -5728,7 +5728,7 @@ Download size: %3</source>
         <location filename="../SettingsView.ui" line="1573"/>
         <location filename="../SettingsView.ui" line="1621"/>
         <source>Browse</source>
-        <translation>Navegar</translation>
+        <translation>Explorar</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1380"/>
@@ -5738,7 +5738,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1390"/>
         <source>Skip BIOS intro</source>
-        <translation>Ignorar introdução da BIOS</translation>
+        <translation>Ignorar a introdução da BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1352"/>
@@ -5797,12 +5797,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1693"/>
         <source>GB only:</source>
-        <translation>Só GB:</translation>
+        <translation>Só no GB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1703"/>
         <source>SGB compatible:</source>
-        <translation>Compatível com SGB:</translation>
+        <translation>Compatível com o SGB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1713"/>
@@ -5812,12 +5812,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1723"/>
         <source>GBC compatible:</source>
-        <translation>Compatível com GBC:</translation>
+        <translation>Compatível com o GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1733"/>
         <source>SGB and GBC compatible:</source>
-        <translation>Compatível com SGB e GBC:</translation>
+        <translation>Compatível com o SGB e o GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1753"/>
@@ -5837,12 +5837,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1856"/>
         <source>Default sprite colors 1:</source>
-        <translation>Cores padrão de sprite 1:</translation>
+        <translation>Cores padrão da imagem móvel 1:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1943"/>
         <source>Default sprite colors 2:</source>
-        <translation>Cores padrão de sprite 2:</translation>
+        <translation>Cores padrão da imagem móvel 2:</translation>
     </message>
 </context>
 <context>
@@ -6147,12 +6147,12 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="550"/>
         <source>Lock aspect ratio</source>
-        <translation>Trancar proporção do aspecto</translation>
+        <translation>Travar a proporção do aspecto</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="565"/>
         <source>Show advanced</source>
-        <translation>Mostrar as avançadas</translation>
+        <translation>Mostrar as opções avançadas</translation>
     </message>
 </context>
 </TS>
