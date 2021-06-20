@@ -32,6 +32,7 @@ Misc:
  - Core: Suspend runloop when a core crashes
  - Qt: Rearrange menus some
  - Qt: Clean up cheats dialog
+ - Qt: Only set default controller bindings if loading fails (fixes mgba.io/i/799)
  - Util: Improve speed of UPS patch loading
 
 0.9.1: (2021-04-18)

@@ -44,7 +44,6 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	}
 	++s_sdlInited;
 	m_sdlPlayer.bindings = &m_inputMap;
-	mSDLInitBindingsGBA(&m_inputMap);
 	updateJoysticks();
 #endif
 
@@ -163,23 +162,28 @@ void InputController::setConfiguration(ConfigController* config) {
 	if (!m_playerAttached) {
 		m_playerAttached = mSDLAttachPlayer(&s_sdlEvents, &m_sdlPlayer);
 	}
-	loadConfiguration(SDL_BINDING_BUTTON);
+	if (!loadConfiguration(SDL_BINDING_BUTTON)) {
+		mSDLInitBindingsGBA(&m_inputMap);
+	}
 	loadProfile(SDL_BINDING_BUTTON, profileForType(SDL_BINDING_BUTTON));
 #endif
 }
 
-void InputController::loadConfiguration(uint32_t type) {
-	mInputMapLoad(&m_inputMap, type, m_config->input());
+bool InputController::loadConfiguration(uint32_t type) {
+	if (!mInputMapLoad(&m_inputMap, type, m_config->input())) {
+		return false;
+	}
 #ifdef BUILD_SDL
 	if (m_playerAttached) {
 		mSDLPlayerLoadConfig(&m_sdlPlayer, m_config->input());
 	}
 #endif
+	return true;
 }
 
-void InputController::loadProfile(uint32_t type, const QString& profile) {
+bool InputController::loadProfile(uint32_t type, const QString& profile) {
 	if (profile.isEmpty()) {
-		return;
+		return false;
 	}
 	bool loaded = mInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	recalibrateAxes();
@@ -187,9 +191,11 @@ void InputController::loadProfile(uint32_t type, const QString& profile) {
 		const InputProfile* ip = InputProfile::findProfile(profile);
 		if (ip) {
 			ip->apply(this);
+			loaded = true;
 		}
 	}
 	emit profileLoaded(profile);
+	return loaded;
 }
 
 void InputController::saveConfiguration() {
