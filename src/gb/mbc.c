@@ -322,6 +322,7 @@ void GBMBCInit(struct GB* gb) {
 	}
 	gb->memory.mbcRead = NULL;
 	gb->memory.directSramAccess = true;
+	gb->memory.cartBusDecay = 4;
 	switch (gb->memory.mbcType) {
 	case GB_MBC_NONE:
 		gb->memory.mbcWrite = _GBMBCNone;
@@ -442,6 +443,9 @@ void GBMBCInit(struct GB* gb) {
 void GBMBCReset(struct GB* gb) {
 	gb->memory.currentBank0 = 0;
 	gb->memory.romBank = &gb->memory.rom[GB_SIZE_CART_BANK0];
+	gb->memory.cartBus = 0xFF;
+	gb->memory.cartBusPc = 0;
+	gb->memory.cartBusDecay = 1;
 
 	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
 	GBMBCInit(gb);

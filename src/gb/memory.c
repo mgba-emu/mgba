@@ -51,12 +51,17 @@ static const uint8_t _blockedRegion[1] = { 0xFF };
 
 static void _pristineCow(struct GB* gba);
 
-static uint8_t GBFastLoad8(struct SM83Core* cpu, uint16_t address) {
+static uint8_t GBCartLoad8(struct SM83Core* cpu, uint16_t address) {
 	if (UNLIKELY(address >= cpu->memory.activeRegionEnd)) {
 		cpu->memory.setActiveRegion(cpu, address);
 		return cpu->memory.cpuLoad8(cpu, address);
 	}
-	return cpu->memory.activeRegion[address & cpu->memory.activeMask];
+	struct GB* gb = (struct GB*) cpu->master;
+	struct GBMemory* memory = &gb->memory;
+	memory->cartBusPc = address;
+	uint8_t value = cpu->memory.activeRegion[address & cpu->memory.activeMask];
+	memory->cartBus = value;
+	return value;
 }
 
 static void GBSetActiveRegion(struct SM83Core* cpu, uint16_t address) {
@@ -67,7 +72,7 @@ static void GBSetActiveRegion(struct SM83Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 1:
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
-		cpu->memory.cpuLoad8 = GBFastLoad8;
+		cpu->memory.cpuLoad8 = GBCartLoad8;
 		cpu->memory.activeRegion = memory->romBase;
 		cpu->memory.activeRegionEnd = GB_BASE_CART_BANK1;
 		cpu->memory.activeMask = GB_SIZE_CART_BANK0 - 1;
@@ -88,7 +93,7 @@ static void GBSetActiveRegion(struct SM83Core* cpu, uint16_t address) {
 			cpu->memory.cpuLoad8 = GBLoad8;
 			break;
 		}
-		cpu->memory.cpuLoad8 = GBFastLoad8;
+		cpu->memory.cpuLoad8 = GBCartLoad8;
 		if (gb->memory.mbcType != GB_MBC6) {
 			cpu->memory.activeRegion = memory->romBank;
 			cpu->memory.activeRegionEnd = GB_BASE_VRAM;
@@ -238,24 +243,31 @@ uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
 		if (address >= memory->romSize) {
-			return 0xFF;
+			memory->cartBus = 0xFF;
+		} else {
+			memory->cartBus = memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)];
 		}
-		return memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)];
+		memory->cartBusPc = cpu->pc;
+		return memory->cartBus;
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
 		if (memory->mbcType == GB_MBC6) {
-			return memory->mbcState.mbc6.romBank1[address & (GB_SIZE_CART_HALFBANK - 1)];
+			memory->cartBus = memory->mbcState.mbc6.romBank1[address & (GB_SIZE_CART_HALFBANK - 1)];
+			memory->cartBusPc = cpu->pc;
+			return memory->cartBus;
 		}
 		// Fall through
 	case GB_REGION_CART_BANK1:
 	case GB_REGION_CART_BANK1 + 1:
 		if (address >= memory->romSize) {
-			return 0xFF;
+			memory->cartBus = 0xFF;
+		} else if ((memory->mbcType & GB_UNL_BBD) == GB_UNL_BBD) {
+			memory->cartBus = memory->mbcRead(memory, address);
+		} else {
+			memory->cartBus = memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
 		}
-		if ((memory->mbcType & GB_UNL_BBD) == GB_UNL_BBD) {
-			return memory->mbcRead(memory, address);
-		}
-		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
+		memory->cartBusPc = cpu->pc;
+		return memory->cartBus;
 	case GB_REGION_VRAM:
 	case GB_REGION_VRAM + 1:
 		if (gb->video.mode != 3) {
@@ -265,15 +277,18 @@ uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 	case GB_REGION_EXTERNAL_RAM:
 	case GB_REGION_EXTERNAL_RAM + 1:
 		if (memory->rtcAccess) {
-			return memory->rtcRegs[memory->activeRtcReg];
+			memory->cartBus = memory->rtcRegs[memory->activeRtcReg];
 		} else if (memory->mbcRead) {
-			return memory->mbcRead(memory, address);
+			memory->cartBus = memory->mbcRead(memory, address);
 		} else if (memory->sramAccess && memory->sram) {
-			return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+			memory->cartBus = memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
 		} else if (memory->mbcType == GB_HuC3) {
-			return 0x01; // TODO: Is this supposed to be the current SRAM bank?
+			memory->cartBus = 0x01; // TODO: Is this supposed to be the current SRAM bank?
+		} else if (cpu->tMultiplier * (cpu->pc - memory->cartBusPc) >= memory->cartBusDecay) {
+			memory->cartBus = 0xFF;
 		}
-		return 0xFF;
+		memory->cartBusPc = cpu->pc;
+		return memory->cartBus;
 	case GB_REGION_WORKING_RAM_BANK0:
 	case GB_REGION_WORKING_RAM_BANK0 + 2:
 		return memory->wram[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
@@ -705,6 +720,9 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 	flags = GBSerializedMemoryFlagsSetActiveRtcReg(flags, memory->activeRtcReg);
 	STORE_16LE(flags, 0, &state->memory.flags);
 
+	state->memory.cartBus = memory->cartBus;
+	STORE_16LE(memory->cartBusPc, 0, &state->cartBusPc);
+
 	switch (memory->mbcType) {
 	case GB_MBC1:
 		state->memory.mbc1.mode = memory->mbcState.mbc1.mode;
@@ -783,6 +801,9 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	memory->ime = GBSerializedMemoryFlagsGetIme(flags);
 	memory->isHdma = GBSerializedMemoryFlagsGetIsHdma(flags);
 	memory->activeRtcReg = GBSerializedMemoryFlagsGetActiveRtcReg(flags);
+
+	memory->cartBus = state->memory.cartBus;
+	LOAD_16LE(memory->cartBusPc, 0, &state->cartBusPc);
 
 	switch (memory->mbcType) {
 	case GB_MBC1:

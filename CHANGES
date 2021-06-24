@@ -7,6 +7,7 @@ Features:
  - Support for combo "Super Game Boy Color" SGB + GBC ROM hacks
  - Support for 64 kiB SRAM saves used in some bootlegs
 Emulation fixes:
+ - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
  - GB Video: Clear VRAM on reset (fixes mgba.io/i/2152)
  - GBA SIO: Add missing NORMAL8 implementation bits (fixes mgba.io/i/2172)
  - GBA SIO: Fix missing interrupt on an unattached NORMAL transfer
