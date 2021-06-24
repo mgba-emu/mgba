@@ -13,6 +13,7 @@ Other fixes:
  - Core: Fix portable mode on macOS
  - GB Audio: Fix audio channel 4 being slow to deserialize
  - GB Core: Fix GBC colors setting breaking default model overrides (fixes mgba.io/i/2161)
+ - mGUI: Cache save state screenshot validity in state menu (fixes mgba.io/i/2005)
  - Qt: Fix infrequent deadlock when using sync to video
  - Qt: Fix applying savetype-only overrides
  - Qt: Fix crash in sprite view for partially out-of-bounds sprites (fixes mgba.io/i/2165)

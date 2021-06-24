@@ -31,8 +31,10 @@ struct mGUIBackground {
 	struct GUIBackground d;
 	struct mGUIRunner* p;
 
-	color_t* screenshot;
-	int screenshotId;
+	color_t* image;
+	size_t imageSize;
+
+	unsigned screenshotId;
 };
 
 struct mCore;

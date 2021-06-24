@@ -40,6 +40,11 @@ enum {
 
 #define RUNNER_STATE(X) ((X) << 16)
 
+enum {
+	SCREENSHOT_VALID = 0x10000,
+	SCREENSHOT_INVALID = 0x20000,
+};
+
 static const struct mInputPlatformInfo _mGUIKeyInfo = {
 	.platformName = "gui",
 	.keyId = (const char*[GUI_INPUT_MAX]) {
@@ -105,39 +110,49 @@ static void _drawBackground(struct GUIBackground* background, void* context) {
 
 static void _drawState(struct GUIBackground* background, void* id) {
 	struct mGUIBackground* gbaBackground = (struct mGUIBackground*) background;
-	int stateId = ((int) id) >> 16;
+	unsigned stateId = ((uint32_t) id) >> 16;
 	if (gbaBackground->p->drawScreenshot) {
 		unsigned w, h;
 		gbaBackground->p->core->desiredVideoDimensions(gbaBackground->p->core, &w, &h);
-		if (gbaBackground->screenshot && gbaBackground->screenshotId == (int) id) {
-			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->screenshot, w, h, true);
+		size_t size = w * h * BYTES_PER_PIXEL;
+		if (size != gbaBackground->imageSize) {
+			mappedMemoryFree(gbaBackground->image, gbaBackground->imageSize);
+			gbaBackground->image = NULL;
+		}
+		if (gbaBackground->image && gbaBackground->screenshotId == (stateId | SCREENSHOT_VALID)) {
+			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->image, w, h, true);
 			return;
-		}
-		struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
-		color_t* pixels = gbaBackground->screenshot;
-		if (!pixels) {
-			pixels = anonymousMemoryMap(w * h * 4);
-			gbaBackground->screenshot = pixels;
-		}
-		bool success = false;
-		if (vf && isPNG(vf) && pixels) {
-			png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
-			png_infop info = png_create_info_struct(png);
-			png_infop end = png_create_info_struct(png);
-			if (png && info && end) {
-				success = PNGReadHeader(png, info);
-				success = success && PNGReadPixels(png, info, pixels, w, h, w);
-				success = success && PNGReadFooter(png, end);
+		} else if (gbaBackground->screenshotId != (stateId | SCREENSHOT_INVALID)) {
+			struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
+			color_t* pixels = gbaBackground->image;
+			if (!pixels) {
+				pixels = anonymousMemoryMap(size);
+				gbaBackground->image = pixels;
+				gbaBackground->imageSize = size;
 			}
-			PNGReadClose(png, info, end);
+			bool success = false;
+			if (vf && isPNG(vf) && pixels) {
+				png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
+				png_infop info = png_create_info_struct(png);
+				png_infop end = png_create_info_struct(png);
+				if (png && info && end) {
+					success = PNGReadHeader(png, info);
+					success = success && PNGReadPixels(png, info, pixels, w, h, w);
+					success = success && PNGReadFooter(png, end);
+				}
+				PNGReadClose(png, info, end);
+			}
+			if (vf) {
+				vf->close(vf);
+			}
+			if (success) {
+				gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, w, h, true);
+				gbaBackground->screenshotId = stateId | SCREENSHOT_VALID;
+			} else {
+				gbaBackground->screenshotId = stateId | SCREENSHOT_INVALID;
+			}
 		}
-		if (vf) {
-			vf->close(vf);
-		}
-		if (success) {
-			gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, w, h, true);
-			gbaBackground->screenshotId = (int) id;
-		} else if (gbaBackground->p->drawFrame) {
+		if (gbaBackground->p->drawFrame && gbaBackground->screenshotId == (stateId | SCREENSHOT_INVALID)) {
 			gbaBackground->p->drawFrame(gbaBackground->p, true);
 		}
 	}
@@ -313,7 +328,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			.draw = _drawState
 		},
 		.p = runner,
-		.screenshot = 0,
+		.image = 0,
 		.screenshotId = 0
 	};
 	struct GUIMenu pauseMenu = {
@@ -605,10 +620,10 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				runner->core->reset(runner->core);
 				break;
 			case RUNNER_SAVE_STATE:
-				mCoreSaveState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
+				mCoreSaveState(runner->core, ((uint32_t) item->data) >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
 				break;
 			case RUNNER_LOAD_STATE:
-				mCoreLoadState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
+				mCoreLoadState(runner->core, ((uint32_t) item->data) >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 				break;
 			case RUNNER_SCREENSHOT:
 				mCoreTakeScreenshot(runner->core);
@@ -663,10 +678,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	mLOG(GUI_RUNNER, DEBUG, "Unloading game...");
 	runner->core->unloadROM(runner->core);
 	drawState.screenshotId = 0;
-	if (drawState.screenshot) {
-		unsigned w, h;
-		runner->core->desiredVideoDimensions(runner->core, &w, &h);
-		mappedMemoryFree(drawState.screenshot, w * h * 4);
+	if (drawState.image) {
+		mappedMemoryFree(drawState.image, drawState.imageSize);
 	}
 
 	if (runner->config.port) {
