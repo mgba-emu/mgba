@@ -106,6 +106,7 @@ VFile* LibraryController::selectedVFile() {
 		QByteArray filenameUtf8(entry.filename.toUtf8());
 		libentry.base = baseUtf8.constData();
 		libentry.filename = filenameUtf8.constData();
+		libentry.platform = mPLATFORM_NONE;
 		return mLibraryOpenVFile(m_library.get(), &libentry);
 	} else {
 		return nullptr;
