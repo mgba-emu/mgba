@@ -556,18 +556,22 @@
         </widget>
        </item>
        <item row="8" column="1">
-        <widget class="QCheckBox" name="pauseOnFocusLost">
-         <property name="text">
-          <string>Pause when inactive</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="QCheckBox" name="pauseOnMinimize">
-         <property name="text">
-          <string>Pause when minimized</string>
-         </property>
-        </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_21">
+         <item>
+          <widget class="QCheckBox" name="pauseOnFocusLost">
+           <property name="text">
+            <string>Pause</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="muteOnFocusLost">
+           <property name="text">
+            <string>Mute</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item row="10" column="0" colspan="2">
         <widget class="Line" name="line_17">
@@ -681,6 +685,38 @@
          </property>
          <property name="checked">
           <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_24">
+         <item>
+          <widget class="QCheckBox" name="pauseOnMinimize">
+           <property name="text">
+            <string>Pause</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="muteOnMinimize">
+           <property name="text">
+            <string>Mute</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_41">
+         <property name="text">
+          <string>When inactive:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0">
+        <widget class="QLabel" name="label_42">
+         <property name="text">
+          <string>When minimized:</string>
          </property>
         </widget>
        </item>

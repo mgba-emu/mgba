@@ -421,6 +421,8 @@ void SettingsView::updateConfig() {
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
 	saveSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
 	saveSetting("pauseOnMinimize", m_ui.pauseOnMinimize);
+	saveSetting("muteOnFocusLost", m_ui.muteOnFocusLost);
+	saveSetting("muteOnMinimize", m_ui.muteOnMinimize);
 	saveSetting("savegamePath", m_ui.savegamePath);
 	saveSetting("savestatePath", m_ui.savestatePath);
 	saveSetting("screenshotPath", m_ui.screenshotPath);

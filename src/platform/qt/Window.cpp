@@ -656,11 +656,20 @@ void Window::resizeEvent(QResizeEvent*) {
 
 void Window::showEvent(QShowEvent* event) {
 	if (m_wasOpened) {
-		if (event->spontaneous() && m_config->getOption("pauseOnMinimize").toInt() && m_controller) {
+		if (event->spontaneous() && m_controller) {
 			focusCheck();
-			if (m_autoresume) {
+			if (m_config->getOption("pauseOnMinimize").toInt() && m_autoresume) {
 				m_controller->setPaused(false);
 				m_autoresume = false;
+			}
+
+			if (m_config->getOption("muteOnMinimize").toInt()) {
+				CoreController::Interrupter interrupter(m_controller);
+				mCore* core = m_controller->thread()->core;
+				int fakeBool = 0;
+				mCoreConfigGetIntValue(&core->config, "mute", &fakeBool);
+				core->opts.mute = fakeBool;
+				core->reloadConfigOption(core, NULL, NULL);
 			}
 		}
 		return;
@@ -692,12 +701,19 @@ void Window::hideEvent(QHideEvent* event) {
 	if (!event->spontaneous()) {
 		return;
 	}
-	if (!m_config->getOption("pauseOnMinimize").toInt() || !m_controller) {
+	if (!m_controller) {
 		return;
 	}
-	if (!m_controller->isPaused()) {
+
+	if (m_config->getOption("pauseOnMinimize").toInt() && !m_controller->isPaused()) {
 		m_autoresume = true;
 		m_controller->setPaused(true);
+	}
+	if (m_config->getOption("muteOnMinimize").toInt()) {
+		CoreController::Interrupter interrupter(m_controller);
+		mCore* core = m_controller->thread()->core;
+		core->opts.mute = true;
+		core->reloadConfigOption(core, NULL, NULL);
 	}
 }
 
@@ -1832,15 +1848,29 @@ Action* Window::addGameAction(const QString& visibleName, const QString& name, A
 }
 
 void Window::focusCheck() {
-	if (!m_config->getOption("pauseOnFocusLost").toInt() || !m_controller) {
+	if (!m_controller) {
 		return;
 	}
-	if (QGuiApplication::focusWindow() && m_autoresume) {
-		m_controller->setPaused(false);
-		m_autoresume = false;
-	} else if (!QGuiApplication::focusWindow() && !m_controller->isPaused()) {
-		m_autoresume = true;
-		m_controller->setPaused(true);
+	if (m_config->getOption("pauseOnFocusLost").toInt()) {
+		if (QGuiApplication::focusWindow() && m_autoresume) {
+			m_controller->setPaused(false);
+			m_autoresume = false;
+		} else if (!QGuiApplication::focusWindow() && !m_controller->isPaused()) {
+			m_autoresume = true;
+			m_controller->setPaused(true);
+		}
+	}
+	if (m_config->getOption("muteOnFocusLost").toInt()) {
+		CoreController::Interrupter interrupter(m_controller);
+		mCore* core = m_controller->thread()->core;
+		if (QGuiApplication::focusWindow()) {
+			int fakeBool = 0;
+			mCoreConfigGetIntValue(&core->config, "mute", &fakeBool);
+			core->opts.mute = fakeBool;
+		} else {
+			core->opts.mute = true;
+		}
+		core->reloadConfigOption(core, NULL, NULL);
 	}
 }
 
