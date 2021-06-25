@@ -46,16 +46,16 @@ CheatsView::CheatsView(std::shared_ptr<CoreController> controller, QWidget* pare
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
 		registerCodeType(tr("Autodetect (recommended)"), GBA_CHEAT_AUTODETECT);
-		registerCodeType(tr("GameShark"), GBA_CHEAT_GAMESHARK);
-		registerCodeType(tr("Action Replay MAX"), GBA_CHEAT_PRO_ACTION_REPLAY);
-		registerCodeType(tr("CodeBreaker"), GBA_CHEAT_CODEBREAKER);
+		registerCodeType(QLatin1String("GameShark"), GBA_CHEAT_GAMESHARK);
+		registerCodeType(QLatin1String("Action Replay MAX"), GBA_CHEAT_PRO_ACTION_REPLAY);
+		registerCodeType(QLatin1String("CodeBreaker"), GBA_CHEAT_CODEBREAKER);
 		break;
 #endif
 #ifdef M_CORE_GB
 	case mPLATFORM_GB:
 		registerCodeType(tr("Autodetect (recommended)"), GB_CHEAT_AUTODETECT);
-		registerCodeType(tr("GameShark"), GB_CHEAT_GAMESHARK);
-		registerCodeType(tr("Game Genie"), GB_CHEAT_GAME_GENIE);
+		registerCodeType(QLatin1String("GameShark"), GB_CHEAT_GAMESHARK);
+		registerCodeType(QLatin1String("Game Genie"), GB_CHEAT_GAME_GENIE);
 		break;
 #endif
 	default:
