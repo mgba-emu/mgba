@@ -313,21 +313,61 @@
          </item>
         </layout>
        </item>
-       <item row="5" column="0" colspan="2">
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_43">
+         <property name="text">
+          <string>Audio in multiplayer:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QRadioButton" name="multiplayerAudioAll">
+         <property name="text">
+          <string>All windows</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">multiplayerAudio</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QRadioButton" name="multiplayerAudio1">
+         <property name="text">
+          <string>Player 1 window only</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">multiplayerAudio</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QRadioButton" name="multiplayerAudioActive">
+         <property name="text">
+          <string>Currently active player window</string>
+         </property>
+         <attribute name="buttonGroup">
+          <string notr="true">multiplayerAudio</string>
+         </attribute>
+        </widget>
+       </item>
+       <item row="8" column="0" colspan="2">
         <widget class="Line" name="line_4">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
+       <item row="9" column="0">
         <widget class="QLabel" name="label_10">
          <property name="text">
           <string>Display driver:</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="9" column="1">
         <widget class="QComboBox" name="displayDriver">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -337,14 +377,14 @@
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
+       <item row="10" column="0">
         <widget class="QLabel" name="label_9">
          <property name="text">
           <string>Frameskip:</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="10" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_16">
          <item>
           <widget class="QLabel" name="label_12">
@@ -365,14 +405,14 @@
          </item>
         </layout>
        </item>
-       <item row="8" column="0">
+       <item row="11" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
           <string>FPS target:</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
+       <item row="11" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QDoubleSpinBox" name="fpsTarget">
@@ -399,28 +439,28 @@
          </item>
         </layout>
        </item>
-       <item row="9" column="1">
+       <item row="12" column="1">
         <widget class="QPushButton" name="nativeGB">
          <property name="text">
           <string>Native (59.7275)</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="0" colspan="2">
+       <item row="13" column="0" colspan="2">
         <widget class="Line" name="line_5">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="11" column="0">
+       <item row="14" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>Sync:</string>
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
+       <item row="14" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <item>
           <widget class="QCheckBox" name="videoSync">
@@ -438,28 +478,28 @@
          </item>
         </layout>
        </item>
-       <item row="12" column="1">
+       <item row="15" column="1">
         <widget class="QCheckBox" name="lockAspectRatio">
          <property name="text">
           <string>Lock aspect ratio</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
+       <item row="16" column="1">
         <widget class="QCheckBox" name="lockIntegerScaling">
          <property name="text">
           <string>Force integer scaling</string>
          </property>
         </widget>
        </item>
-       <item row="14" column="1">
+       <item row="17" column="1">
         <widget class="QCheckBox" name="interframeBlending">
          <property name="text">
           <string>Interframe blending</string>
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
+       <item row="18" column="1">
         <widget class="QCheckBox" name="resampleVideo">
          <property name="text">
           <string>Bilinear filtering</string>
@@ -2174,5 +2214,6 @@
  </connections>
  <buttongroups>
   <buttongroup name="gbColors"/>
+  <buttongroup name="multiplayerAudio"/>
  </buttongroups>
 </ui>

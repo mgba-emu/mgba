@@ -534,6 +534,14 @@ void SettingsView::updateConfig() {
 		emit languageChanged();
 	}
 
+	if (m_ui.multiplayerAudioAll->isChecked()) {
+		m_controller->setQtOption("multiplayerAudio", "all");
+	} else if (m_ui.multiplayerAudio1->isChecked()) {
+		m_controller->setQtOption("multiplayerAudio", "p1");
+	} else if (m_ui.multiplayerAudioActive->isChecked()) {
+		m_controller->setQtOption("multiplayerAudio", "active");
+	}
+
 	int hwaccelVideo = m_controller->getOption("hwaccelVideo").toInt();
 	saveSetting("hwaccelVideo", m_ui.hwaccelVideo->currentIndex());
 	if (hwaccelVideo != m_ui.hwaccelVideo->currentIndex()) {
@@ -762,6 +770,15 @@ void SettingsView::reloadConfig() {
 		m_ui.videoScaleSize->setText(tr("(%1×%2)").arg(GBA_VIDEO_HORIZONTAL_PIXELS * value).arg(GBA_VIDEO_VERTICAL_PIXELS * value));
 	});
 	loadSetting("videoScale", m_ui.videoScale, 1);
+
+	QString multiplayerAudio = m_controller->getQtOption("multiplayerAudio").toString();
+	if (multiplayerAudio == QLatin1String("p1")) {
+		m_ui.multiplayerAudio1->setChecked(true);
+	} else if (multiplayerAudio == QLatin1String("active")) {
+		m_ui.multiplayerAudioActive->setChecked(true);
+	} else {
+		m_ui.multiplayerAudioAll->setChecked(true);		
+	}
 }
 
 void SettingsView::addPage(const QString& name, QWidget* view, Page index) {

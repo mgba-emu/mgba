@@ -217,6 +217,11 @@ void Window::resizeFrame(const QSize& size) {
 	}
 }
 
+void Window::updateMultiplayerActive(bool active) {
+	m_multiActive = active;
+	updateMute();
+}
+
 void Window::setConfig(ConfigController* config) {
 	m_config = config;
 }
@@ -249,6 +254,7 @@ void Window::reloadConfig() {
 		if (m_audioProcessor) {
 			m_audioProcessor->configure(m_config);
 		}
+		updateMute();
 		m_display->resizeContext();
 	}
 
@@ -664,12 +670,8 @@ void Window::showEvent(QShowEvent* event) {
 			}
 
 			if (m_config->getOption("muteOnMinimize").toInt()) {
-				CoreController::Interrupter interrupter(m_controller);
-				mCore* core = m_controller->thread()->core;
-				int fakeBool = 0;
-				mCoreConfigGetIntValue(&core->config, "mute", &fakeBool);
-				core->opts.mute = fakeBool;
-				core->reloadConfigOption(core, NULL, NULL);
+				m_inactiveMute = false;
+				updateMute();
 			}
 		}
 		return;
@@ -710,10 +712,8 @@ void Window::hideEvent(QHideEvent* event) {
 		m_controller->setPaused(true);
 	}
 	if (m_config->getOption("muteOnMinimize").toInt()) {
-		CoreController::Interrupter interrupter(m_controller);
-		mCore* core = m_controller->thread()->core;
-		core->opts.mute = true;
-		core->reloadConfigOption(core, NULL, NULL);
+		m_inactiveMute = true;
+		updateMute();
 	}
 }
 
@@ -736,6 +736,13 @@ void Window::closeEvent(QCloseEvent* event) {
 }
 
 void Window::focusInEvent(QFocusEvent*) {
+	for (Window* window : GBAApp::app()->windows()) {
+		if (window != this) {
+			window->updateMultiplayerActive(false);
+		} else {
+			updateMultiplayerActive(true);
+		}
+	}
 	m_display->forceDraw();
 }
 
@@ -1861,16 +1868,12 @@ void Window::focusCheck() {
 		}
 	}
 	if (m_config->getOption("muteOnFocusLost").toInt()) {
-		CoreController::Interrupter interrupter(m_controller);
-		mCore* core = m_controller->thread()->core;
 		if (QGuiApplication::focusWindow()) {
-			int fakeBool = 0;
-			mCoreConfigGetIntValue(&core->config, "mute", &fakeBool);
-			core->opts.mute = fakeBool;
+			m_inactiveMute = false;
 		} else {
-			core->opts.mute = true;
+			m_inactiveMute = true;
 		}
-		core->reloadConfigOption(core, NULL, NULL);
+		updateMute();
 	}
 }
 
@@ -2007,6 +2010,26 @@ void Window::attachDisplay() {
 	m_display->attach(m_controller);
 	connect(m_display.get(), &Display::drawingStarted, this, &Window::changeRenderer);
 	m_display->startDrawing(m_controller);
+}
+
+void Window::updateMute() {
+	if (!m_controller) {
+		return;
+	}
+
+	bool mute = m_inactiveMute;
+
+	if (!mute) {
+		QString multiplayerAudio = m_config->getQtOption("multiplayerAudio").toString();
+		if (multiplayerAudio == QLatin1String("p1")) {
+			MultiplayerController* multiplayer = m_controller->multiplayerController();
+			mute = multiplayer && multiplayer->attached() > 1 && multiplayer->playerId(m_controller.get());
+		} else if (multiplayerAudio == QLatin1String("active")) {
+			mute = !m_multiActive;
+		}
+	}
+
+	m_controller->overrideMute(mute);
 }
 
 void Window::setLogo() {

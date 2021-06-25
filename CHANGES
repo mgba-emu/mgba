@@ -3,6 +3,7 @@ Features:
  - Presets for Game Boy palettes
  - Add Super Game Boy palettes for original Game Boy games
  - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
+ - Options for muting when inactive, minimized, or for different players in multiplayer
  - Cheat code support in homebrew ports
  - Support for combo "Super Game Boy Color" SGB + GBC ROM hacks
  - Support for 64 kiB SRAM saves used in some bootlegs

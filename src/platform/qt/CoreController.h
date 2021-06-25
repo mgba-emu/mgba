@@ -140,6 +140,8 @@ public slots:
 	void setFastForward(bool);
 	void forceFastForward(bool);
 
+	void overrideMute(bool);
+
 	void loadState(int slot = 0);
 	void loadState(const QString& path, int flags = -1);
 	void loadState(QIODevice* iodev, int flags = -1);
@@ -275,6 +277,8 @@ private:
 	float m_fastForwardRatio = -1.f;
 	float m_fastForwardHeldRatio = -1.f;
 	float m_fpsTarget;
+
+	bool m_mute;
 
 	InputController* m_inputController = nullptr;
 	LogController* m_log = nullptr;
