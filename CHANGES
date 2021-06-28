@@ -11,6 +11,7 @@ Features:
 Emulation fixes:
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
  - GB Video: Clear VRAM on reset (fixes mgba.io/i/2152)
+ - GBA: Improve timing when not booting from BIOS
  - GBA SIO: Add missing NORMAL8 implementation bits (fixes mgba.io/i/2172)
  - GBA SIO: Fix missing interrupt on an unattached NORMAL transfer
  - GBA SIO: Fix SI value for unattached MULTI mode
