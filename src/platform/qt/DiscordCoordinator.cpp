@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "DiscordCoordinator.h"
 
+#include <QDateTime>
+
 #include "CoreController.h"
 #include "GBAApp.h"
 
@@ -31,6 +33,11 @@ static void updatePresence() {
 		discordPresence.details = s_title.toUtf8().constData();
 		discordPresence.instance = 1;
 		discordPresence.largeImageKey = "mgba";
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
+		discordPresence.startTimestamp = QDateTime::currentSecsSinceEpoch();
+#else
+		discordPresence.startTimestamp = QDateTime::currentMSecsSinceEpoch() / 1000;
+#endif
 		Discord_UpdatePresence(&discordPresence);
 	} else {
 		Discord_ClearPresence();

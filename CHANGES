@@ -7,6 +7,7 @@ Features:
  - Cheat code support in homebrew ports
  - Support for combo "Super Game Boy Color" SGB + GBC ROM hacks
  - Support for 64 kiB SRAM saves used in some bootlegs
+ - Discord Rich Presence now supports time elapsed
  - Additional scaling shaders
 Emulation fixes:
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
