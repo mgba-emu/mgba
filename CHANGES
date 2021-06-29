@@ -34,6 +34,7 @@ Other fixes:
  - Qt: Fix applying savetype-only overrides
  - Qt: Fix crash in sprite view for partially out-of-bounds sprites (fixes mgba.io/i/2165)
  - Qt: Fix having to press controller buttons twice for menu items (fixes mgba.io/i/2143)
+ - Qt: Redo sensor binding to be less fragile
  - Util: Fix loading UPS patches that affect the last byte of the file
 Misc:
  - Core: Suspend runloop when a core crashes
