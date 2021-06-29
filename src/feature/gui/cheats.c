@@ -35,19 +35,19 @@ static void mGUIShowCheatSet(struct mGUIRunner* runner, struct mCheatDevice* dev
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Add line",
-		.data = (void*) CHEAT_ADD_LINE,
+		.data = GUI_V_U(CHEAT_ADD_LINE),
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Rename",
-		.data = (void*) CHEAT_RENAME,
+		.data = GUI_V_U(CHEAT_RENAME),
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Delete",
-		.data = (void*) CHEAT_DELETE,
+		.data = GUI_V_U(CHEAT_DELETE),
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Back",
-		.data = 0,
+		.data = GUI_V_V,
 	};
 
 	while (true) {
@@ -56,11 +56,11 @@ static void mGUIShowCheatSet(struct mGUIRunner* runner, struct mCheatDevice* dev
 		struct GUIMenuItem* item;
 		enum GUIMenuExitReason reason = GUIShowMenu(&runner->params, &menu, &item);
 		set->enabled = GUIMenuItemListGetPointer(&menu.items, 0)->state;
-		if (reason != GUI_MENU_EXIT_ACCEPT || !item->data) {
+		if (reason != GUI_MENU_EXIT_ACCEPT || GUIVariantIsVoid(item->data)) {
 			break;
 		}
 
-		enum mGUICheatAction action = (enum mGUICheatAction) item->data;
+		enum mGUICheatAction action = (enum mGUICheatAction) item->data.v.u;
 		switch (action) {
 		case CHEAT_ADD_LINE:
 			strlcpy(keyboard.title, "Add line", sizeof(keyboard.title));
@@ -108,7 +108,7 @@ void mGUIShowCheats(struct mGUIRunner* runner) {
 			struct mCheatSet* set = *mCheatSetsGetPointer(&device->cheats, i);
 			*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 				.title = set->name,
-				.data = set,
+				.data = GUI_V_P(set),
 				.state = set->enabled,
 				.validStates = offOn,
 				.nStates = 2
@@ -116,11 +116,11 @@ void mGUIShowCheats(struct mGUIRunner* runner) {
 		}
 		*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 			.title = "Add new cheat set",
-			.data = 0,
+			.data = GUI_V_V,
 		};
 		*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 			.title = "Back",
-			.data = (void*) -1,
+			.data = GUI_V_I(-1),
 		};
 
 		struct GUIMenuItem* item;
@@ -131,11 +131,11 @@ void mGUIShowCheats(struct mGUIRunner* runner) {
 			set->enabled = item->state;
 		}
 
-		if (reason != GUI_MENU_EXIT_ACCEPT || item->data == (void*) -1) {
+		if (reason != GUI_MENU_EXIT_ACCEPT || GUIVariantCompareInt(item->data, -1)) {
 			break;
 		}
 		struct mCheatSet* set = NULL;
-		if (!item->data) {
+		if (GUIVariantIsVoid(item->data)) {
 			struct GUIKeyboardParams keyboard;
 			GUIKeyboardParamsInit(&keyboard);
 			keyboard.maxLen = 50;
@@ -146,7 +146,7 @@ void mGUIShowCheats(struct mGUIRunner* runner) {
 				mCheatAddSet(device, set);
 			}
 		} else {
-			set = item->data;
+			set = item->data.v.p;
 		}
 		if (set) {
 			mGUIShowCheatSet(runner, device, set);

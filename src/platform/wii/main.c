@@ -490,7 +490,7 @@ int main(int argc, char* argv[]) {
 		.configExtra = (struct GUIMenuItem[]) {
 			{
 				.title = "Video mode",
-				.data = "videoMode",
+				.data = GUI_V_S("videoMode"),
 				.submenu = 0,
 				.state = 0,
 				.validStates = (const char*[]) {
@@ -503,7 +503,7 @@ int main(int argc, char* argv[]) {
 			},
 			{
 				.title = "Screen mode",
-				.data = "screenMode",
+				.data = GUI_V_S("screenMode"),
 				.submenu = 0,
 				.state = 0,
 				.validStates = (const char*[]) {
@@ -514,7 +514,7 @@ int main(int argc, char* argv[]) {
 			},
 			{
 				.title = "Filtering",
-				.data = "filter",
+				.data = GUI_V_S("filter"),
 				.submenu = 0,
 				.state = 0,
 				.validStates = (const char*[]) {
@@ -526,7 +526,7 @@ int main(int argc, char* argv[]) {
 			},
 			{
 				.title = "Horizontal stretch",
-				.data = "stretchWidth",
+				.data = GUI_V_S("stretchWidth"),
 				.submenu = 0,
 				.state = 7,
 				.validStates = (const char*[]) {
@@ -546,7 +546,7 @@ int main(int argc, char* argv[]) {
 			},
 			{
 				.title = "Vertical stretch",
-				.data = "stretchHeight",
+				.data = GUI_V_S("stretchHeight"),
 				.submenu = 0,
 				.state = 6,
 				.validStates = (const char*[]) {
