@@ -6,6 +6,7 @@
 /build
 /build-*
 /.vs
+/.vscode
 
 *.a
 *.dylib
