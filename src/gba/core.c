@@ -308,6 +308,7 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	mCoreConfigCopyValue(&core->config, config, "gba.bios");
 	mCoreConfigCopyValue(&core->config, config, "gba.forceGbp");
 	mCoreConfigCopyValue(&core->config, config, "gba.audioHle");
+	mCoreConfigCopyValue(&core->config, config, "vbaBugCompat");
 
 #ifndef DISABLE_THREADING
 	mCoreConfigCopyValue(&core->config, config, "threadedVideo");
@@ -621,12 +622,19 @@ static void _GBACoreReset(struct mCore* core) {
 	if (mCoreConfigGetIntValue(&core->config, "gba.forceGbp", &fakeBool)) {
 		forceGbp = fakeBool;
 	}
+	bool vbaBugCompat = true;
+	if (mCoreConfigGetIntValue(&core->config, "vbaBugCompat", &fakeBool)) {
+		vbaBugCompat = fakeBool;
+	}
 	if (!forceGbp) {
 		gba->memory.hw.devices &= ~HW_GB_PLAYER_DETECTION;
 	}
 	GBAOverrideApplyDefaults(gba, gbacore->overrides);
 	if (forceGbp) {
 		gba->memory.hw.devices |= HW_GB_PLAYER_DETECTION;
+	}
+	if (!vbaBugCompat) {
+		gba->vbaBugCompat = false;
 	}
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

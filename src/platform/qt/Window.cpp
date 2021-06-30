@@ -280,8 +280,7 @@ void Window::reloadConfig() {
 	if (m_controller) {
 		m_controller->loadConfig(m_config);
 		if (m_audioProcessor) {
-			m_audioProcessor->setBufferSamples(opts->audioBuffers);
-			m_audioProcessor->requestSampleRate(opts->sampleRate);
+			m_audioProcessor->configure(m_config);
 		}
 		m_display->resizeContext();
 	}
@@ -686,6 +685,7 @@ void Window::showEvent(QShowEvent* event) {
 	m_wasOpened = true;
 	resizeFrame(m_screenWidget->sizeHint());
 	QVariant windowPos = m_config->getQtOption("windowPos");
+	bool maximized = m_config->getQtOption("maximized").toBool();
 	QRect geom = windowHandle()->screen()->availableGeometry();
 	if (!windowPos.isNull() && geom.contains(windowPos.toPoint())) {
 		move(windowPos.toPoint());
@@ -693,6 +693,9 @@ void Window::showEvent(QShowEvent* event) {
 		QRect rect = frameGeometry();
 		rect.moveCenter(geom.center());
 		move(rect.topLeft());
+	}
+	if (maximized) {
+		showMaximized();
 	}
 	if (m_fullscreenOnStart) {
 		enterFullScreen();
@@ -718,6 +721,7 @@ void Window::hideEvent(QHideEvent* event) {
 void Window::closeEvent(QCloseEvent* event) {
 	emit shutdown();
 	m_config->setQtOption("windowPos", pos());
+	m_config->setQtOption("maximized", isMaximized());
 
 	if (m_savedScale > 0) {
 		m_config->setOption("height", GBA_VIDEO_VERTICAL_PIXELS * m_savedScale);
@@ -1027,20 +1031,10 @@ void Window::reloadDisplayDriver() {
 		m_screenWidget->unsetCursor();
 	});
 
-	const mCoreOptions* opts = m_config->options();
-	m_display->lockAspectRatio(opts->lockAspectRatio);
-	m_display->lockIntegerScaling(opts->lockIntegerScaling);
-	m_display->interframeBlending(opts->interframeBlending);
-	m_display->filter(opts->resampleVideo);
-	m_config->updateOption("showOSD");
+	m_display->configure(m_config);
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
-	if (opts->shader) {
-		struct VDir* shader = VDirOpen(opts->shader);
-		if (shader && m_display->supportsShaders()) {
-			m_display->setShaders(shader);
-			m_shaderView->refreshShaders();
-			shader->close(shader);
-		}
+	if (m_shaderView) {
+		m_shaderView->refreshShaders();
 	}
 #endif
 
@@ -1065,16 +1059,10 @@ void Window::reloadAudioDriver() {
 		m_audioProcessor.reset();
 	}
 
-	const mCoreOptions* opts = m_config->options();
 	m_audioProcessor = std::unique_ptr<AudioProcessor>(AudioProcessor::create());
 	m_audioProcessor->setInput(m_controller);
-	m_audioProcessor->setBufferSamples(opts->audioBuffers);
-	m_audioProcessor->requestSampleRate(opts->sampleRate);
+	m_audioProcessor->configure(m_config);
 	m_audioProcessor->start();
-	connect(m_controller.get(), &CoreController::stopping, m_audioProcessor.get(), &AudioProcessor::stop);
-	connect(m_controller.get(), &CoreController::fastForwardChanged, m_audioProcessor.get(), &AudioProcessor::inputParametersChanged);
-	connect(m_controller.get(), &CoreController::paused, m_audioProcessor.get(), &AudioProcessor::pause);
-	connect(m_controller.get(), &CoreController::unpaused, m_audioProcessor.get(), &AudioProcessor::start);
 }
 
 void Window::changeRenderer() {
@@ -1192,6 +1180,7 @@ void Window::openStateWindow(LoadSave ls) {
 	if (!wasPaused) {
 		m_controller->setPaused(true);
 		connect(m_stateWindow, &LoadSaveState::closed, [this]() {
+			m_screenWidget->filter(m_config->getOption("resampleVideo").toInt());
 			if (m_controller) {
 				m_controller->setPaused(false);
 			}
@@ -1199,7 +1188,27 @@ void Window::openStateWindow(LoadSave ls) {
 	}
 	m_stateWindow->setAttribute(Qt::WA_DeleteOnClose);
 	m_stateWindow->setMode(ls);
-	updateFrame();
+
+	QImage still(m_controller->getPixels());
+	if (still.format() != QImage::Format_RGB888) {
+		still = still.convertToFormat(QImage::Format_RGB888);
+	}
+	if (still.height() > 512 || still.width() > 512) {
+		still = still.scaled(384, 256, Qt::KeepAspectRatio, Qt::SmoothTransformation).convertToFormat(QImage::Format_RGB888);
+	}
+	QImage output(still.size(), QImage::Format_RGB888);
+	size_t dims[] = {7, 7};
+	struct ConvolutionKernel kern;
+	ConvolutionKernelCreate(&kern, 2, dims);
+	ConvolutionKernelFillRadial(&kern, true);
+	Convolve2DClampChannels8(still.constBits(), output.bits(), still.width(), still.height(), still.bytesPerLine(), 3, &kern);
+	ConvolutionKernelDestroy(&kern);
+
+	QPixmap pixmap;
+	pixmap.convertFromImage(output);
+	m_screenWidget->setPixmap(pixmap);
+	m_screenWidget->filter(true);
+
 #ifndef Q_OS_MAC
 	menuBar()->show();
 #endif
@@ -1245,9 +1254,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");
 
 	m_actions.addMenu(tr("Recent"), "mru", "file");
-	m_actions.addSeparator("file");
-
-	m_actions.addAction(tr("Make portable"), "makePortable", this, &Window::tryMakePortable, "file");
 	m_actions.addSeparator("file");
 
 	Action* loadState = addGameAction(tr("&Load state"), "loadState", [this]() {
@@ -1326,9 +1332,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_platformActions.insert(mPLATFORM_GBA, quickSave);
 		m_platformActions.insert(mPLATFORM_GB, quickSave);
 	}
-
-	m_actions.addSeparator("file");
-	m_actions.addAction(tr("Load camera image..."), "loadCamImage", this, &Window::loadCamImage, "file");
 
 #ifdef M_CORE_GBA
 	m_actions.addSeparator("file");
@@ -1466,6 +1469,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 
 #ifdef M_CORE_GB
+	m_actions.addAction(tr("Load camera image..."), "loadCamImage", this, &Window::loadCamImage, "emu");
+
 	Action* gbPrint = addGameAction(tr("Game Boy Printer..."), "gbPrint", [this]() {
 		PrinterView* view = new PrinterView(m_controller);
 		openView(view);
@@ -1633,6 +1638,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addSeparator("tools");
 	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools");
+	m_actions.addAction(tr("Make portable"), "makePortable", this, &Window::tryMakePortable, "tools");
 
 #ifdef USE_DEBUGGERS
 	m_actions.addSeparator("tools");
@@ -1880,10 +1886,12 @@ void Window::focusCheck() {
 }
 
 void Window::updateFrame() {
+	if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() != m_display.get()) {
+		return;
+	}
 	QPixmap pixmap;
 	pixmap.convertFromImage(m_controller->getPixels());
 	m_screenWidget->setPixmap(pixmap);
-	emit paused(true);
 }
 
 void Window::setController(CoreController* controller, const QString& fname) {
@@ -1944,6 +1952,9 @@ void Window::setController(CoreController* controller, const QString& fname) {
 #endif
 
 	connect(m_controller.get(), &CoreController::paused, &m_inputController, &InputController::resumeScreensaver);
+	connect(m_controller.get(), &CoreController::paused, [this]() {
+		emit paused(true);
+	});
 	connect(m_controller.get(), &CoreController::unpaused, [this]() {
 		emit paused(false);
 	});
@@ -2004,14 +2015,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 }
 
 void Window::attachDisplay() {
-	connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::resizeContext);
-	connect(m_controller.get(), &CoreController::stateLoaded, m_display.get(), &Display::forceDraw);
-	connect(m_controller.get(), &CoreController::rewound, m_display.get(), &Display::forceDraw);
-	connect(m_controller.get(), &CoreController::paused, m_display.get(), &Display::pauseDrawing);
-	connect(m_controller.get(), &CoreController::unpaused, m_display.get(), &Display::unpauseDrawing);
-	connect(m_controller.get(), &CoreController::frameAvailable, m_display.get(), &Display::framePosted);
-	connect(m_controller.get(), &CoreController::statusPosted, m_display.get(), &Display::showMessage);
-	connect(m_controller.get(), &CoreController::didReset, m_display.get(), &Display::resizeContext);
+	m_display->attach(m_controller);
 	connect(m_display.get(), &Display::drawingStarted, this, &Window::changeRenderer);
 	m_display->startDrawing(m_controller);
 }

@@ -86,10 +86,24 @@ static unsigned imcapWidth;
 static unsigned imcapHeight;
 static size_t camStride;
 static bool deferredSetup = false;
+static bool useBitmasks = true;
 static bool envVarsUpdated;
 static int32_t tiltX = 0;
 static int32_t tiltY = 0;
 static int32_t gyroZ = 0;
+
+static const int keymap[] = {
+	RETRO_DEVICE_ID_JOYPAD_A,
+	RETRO_DEVICE_ID_JOYPAD_B,
+	RETRO_DEVICE_ID_JOYPAD_SELECT,
+	RETRO_DEVICE_ID_JOYPAD_START,
+	RETRO_DEVICE_ID_JOYPAD_RIGHT,
+	RETRO_DEVICE_ID_JOYPAD_LEFT,
+	RETRO_DEVICE_ID_JOYPAD_UP,
+	RETRO_DEVICE_ID_JOYPAD_DOWN,
+	RETRO_DEVICE_ID_JOYPAD_R,
+	RETRO_DEVICE_ID_JOYPAD_L,
+};
 
 static void _initSensors(void) {
 	if (sensorsInitDone) {
@@ -322,6 +336,8 @@ void retro_init(void) {
 	};
 	environCallback(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, &inputDescriptors);
 
+	useBitmasks = environCallback(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL);
+
 	// TODO: RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME when BIOS booting is supported
 
 	rumbleInitDone = false;
@@ -383,6 +399,7 @@ void retro_deinit(void) {
 	gyroEnabled = false;
 	luxSensorEnabled = false;
 	sensorsInitDone = false;
+	useBitmasks = false;
 }
 
 void retro_run(void) {
@@ -415,16 +432,17 @@ void retro_run(void) {
 	}
 
 	keys = 0;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A)) << 0;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B)) << 1;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT)) << 2;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START)) << 3;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT)) << 4;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT)) << 5;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP)) << 6;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN)) << 7;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R)) << 8;
-	keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L)) << 9;
+	int i;
+	if (useBitmasks) {
+		int16_t joypadMask = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+		for (i = 0; i < sizeof(keymap) / sizeof(*keymap); ++i) {
+			keys |= ((joypadMask >> keymap[i]) & 1) << i;
+		}
+	} else {
+		for (i = 0; i < sizeof(keymap) / sizeof(*keymap); ++i) {
+			keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, keymap[i])) << i;
+		}
+	}
 	core->setKeys(core, keys);
 
 	if (!luxSensorUsed) {
@@ -619,8 +637,8 @@ static void _setupMaps(struct mCore* core) {
 		i++;
 
 		/* Map External RAM */
-		if (gb->memory.sram) {
-			descs[i].ptr    = gb->memory.sram;
+		if (savedataSize) {
+			descs[i].ptr    = savedata;
 			descs[i].start  = GB_BASE_EXTERNAL_RAM;
 			descs[i].len    = savedataSize;
 			i++;
@@ -691,6 +709,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	blip_set_rates(core->getAudioChannel(core, 1), core->frequency(core), 32768);
 
 	core->setPeripheral(core, mPERIPH_RUMBLE, &rumble);
+	core->setPeripheral(core, mPERIPH_ROTATION, &rotation);
 
 	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	memset(savedata, 0xFF, SIZE_CART_FLASH1M);

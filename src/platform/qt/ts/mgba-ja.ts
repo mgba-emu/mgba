@@ -221,37 +221,37 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../DolphinConnector.ui" line="14"/>
         <source>Connect to Dolphin</source>
-        <translation type="unfinished"></translation>
+        <translation>Dolphinに接続する</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="23"/>
         <source>Local computer</source>
-        <translation type="unfinished"></translation>
+        <translation>ローカルコンピュータ</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
         <source>IP address</source>
-        <translation type="unfinished"></translation>
+        <translation>IPアドレス</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>接続</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="68"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>切断</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="78"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>閉じる</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="90"/>
         <source>Reset on connect</source>
-        <translation type="unfinished"></translation>
+        <translation>接続時にリセット</translation>
     </message>
 </context>
 <context>
@@ -508,7 +508,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../LogView.ui" line="108"/>
         <source>Advanced settings</source>
-        <translation type="unfinished"></translation>
+        <translation>高度な設定</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="128"/>
@@ -1685,7 +1685,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../IOViewer.cpp" line="212"/>
         <location filename="../IOViewer.cpp" line="221"/>
         <source>Integer part (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>整数部分（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="178"/>
@@ -1693,7 +1693,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../IOViewer.cpp" line="216"/>
         <location filename="../IOViewer.cpp" line="225"/>
         <source>Integer part (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>整数部分（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="229"/>
@@ -2403,7 +2403,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../IOViewer.cpp" line="696"/>
         <location filename="../IOViewer.cpp" line="704"/>
         <source>Address (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>アドレス（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="565"/>
@@ -2415,53 +2415,53 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../IOViewer.cpp" line="700"/>
         <location filename="../IOViewer.cpp" line="708"/>
         <source>Address (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>アドレス（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1116"/>
         <location filename="../IOViewer.cpp" line="1139"/>
         <location filename="../IOViewer.cpp" line="1166"/>
         <source>Sound frequency (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>音の周波数（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1120"/>
         <location filename="../IOViewer.cpp" line="1143"/>
         <location filename="../IOViewer.cpp" line="1170"/>
         <source>Sound frequency (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>音の周波数（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1424"/>
         <source>Source (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>ソース（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1428"/>
         <source>Source (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>ソース（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1432"/>
         <source>Destination (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>目的地（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1436"/>
         <source>Destination (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>目的地（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1499"/>
         <location filename="../IOViewer.cpp" line="1511"/>
         <source>Green (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>グリーン（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1500"/>
         <location filename="../IOViewer.cpp" line="1512"/>
         <source>Green (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>グリーン（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="577"/>
@@ -2952,57 +2952,57 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../IOViewer.cpp" line="1034"/>
         <source>Right/A</source>
-        <translation type="unfinished"></translation>
+        <translation>右/A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1035"/>
         <source>Left/B</source>
-        <translation type="unfinished"></translation>
+        <translation>左/B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1036"/>
         <source>Up/Select</source>
-        <translation type="unfinished"></translation>
+        <translation>上/セレクト</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1037"/>
         <source>Down/Start</source>
-        <translation type="unfinished"></translation>
+        <translation>下/スタート</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1038"/>
         <source>Active D-pad</source>
-        <translation type="unfinished"></translation>
+        <translation>有効の十字キー</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1039"/>
         <source>Active face buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>有効のフェイスボタン</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1047"/>
         <source>Internal clock</source>
-        <translation type="unfinished"></translation>
+        <translation>内部時計</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1048"/>
         <source>32× clocking (CGB only)</source>
-        <translation type="unfinished"></translation>
+        <translation>32×クロッキング（CGBのみ）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1049"/>
         <source>Transfer active</source>
-        <translation type="unfinished"></translation>
+        <translation>転送有効中</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1067"/>
         <source>Divider</source>
-        <translation type="unfinished"></translation>
+        <translation>仕切り</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/16</source>
-        <translation type="unfinished">4K {1/16?}</translation>
+        <translation>1/16</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1092"/>
@@ -3014,49 +3014,49 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../IOViewer.cpp" line="1093"/>
         <location filename="../IOViewer.cpp" line="1554"/>
         <source>Timer</source>
-        <translation type="unfinished"></translation>
+        <translation>タイマー</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1094"/>
         <location filename="../IOViewer.cpp" line="1555"/>
         <source>Serial</source>
-        <translation type="unfinished"></translation>
+        <translation>シリアル</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1095"/>
         <location filename="../IOViewer.cpp" line="1556"/>
         <source>Joypad</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲームパッド</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1202"/>
         <source>Volume right</source>
-        <translation type="unfinished"></translation>
+        <translation>音量右</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1203"/>
         <source>Output right</source>
-        <translation type="unfinished"></translation>
+        <translation>右出力</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1204"/>
         <source>Volume left</source>
-        <translation type="unfinished"></translation>
+        <translation>音量左</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1205"/>
         <source>Output left</source>
-        <translation type="unfinished"></translation>
+        <translation>左出力</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1326"/>
         <source>Background enable/priority</source>
-        <translation type="unfinished"></translation>
+        <translation>背景の有効化/優先度</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1327"/>
         <source>Enable sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>スプライトを有効にする</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1328"/>
@@ -3066,49 +3066,49 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation type="unfinished"></translation>
+        <translation>背景タイルマップ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
         <location filename="../IOViewer.cpp" line="1339"/>
         <source>0x9800 – 0x9BFF</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">0x9800 – 0x9BFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1331"/>
         <location filename="../IOViewer.cpp" line="1340"/>
         <source>0x9C00 – 0x9FFF</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">0x9C00 – 0x9FFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1333"/>
         <source>Background tile data</source>
-        <translation type="unfinished"></translation>
+        <translation>背景タイルデータ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1334"/>
         <source>0x8800 – 0x87FF</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">0x8800 – 0x87FF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1335"/>
         <source>0x8000 – 0x8FFF</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">0x8000 – 0x8FFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1337"/>
         <source>Enable window</source>
-        <translation type="unfinished"></translation>
+        <translation>ウィンドウを有効にする</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1338"/>
         <source>Window tile map</source>
-        <translation type="unfinished"></translation>
+        <translation>ウィンドウタイルマップ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1342"/>
         <source>Enable LCD</source>
-        <translation type="unfinished"></translation>
+        <translation>LCDを有効にする</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1346"/>
@@ -3118,22 +3118,22 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../IOViewer.cpp" line="1347"/>
         <source>0: HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">0: HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1348"/>
         <source>1: VBlank</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1: VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1349"/>
         <source>2: OAM scan</source>
-        <translation type="unfinished"></translation>
+        <translation>2: OAMスキャン</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1350"/>
         <source>3: HDraw</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">3: HDraw</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1352"/>
@@ -3143,150 +3143,150 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../IOViewer.cpp" line="1353"/>
         <source>Enable HBlank (mode 0) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>HBlank（モード0）IRQを有効にする</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1354"/>
         <source>Enable VBlank (mode 1) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>VBlank（モード1）IRQを有効にする</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1355"/>
         <source>Enable OAM (mode 2) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>OAM（モード2）IRQを有効にする</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1356"/>
         <source>Enable LYC IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>LYC IRQを有効にする</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1368"/>
         <source>Current Y coordinate</source>
-        <translation type="unfinished"></translation>
+        <translation>現在のY座標</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1372"/>
         <source>Comparison Y coordinate</source>
-        <translation type="unfinished"></translation>
+        <translation>比較Y座標</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1376"/>
         <source>Start upper byte</source>
-        <translation type="unfinished"></translation>
+        <translation>上位バイトを開始</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1380"/>
         <location filename="../IOViewer.cpp" line="1387"/>
         <location filename="../IOViewer.cpp" line="1394"/>
         <source>Color 0 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>カラー0 シェード</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1381"/>
         <location filename="../IOViewer.cpp" line="1388"/>
         <location filename="../IOViewer.cpp" line="1395"/>
         <source>Color 1 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>カラー1 シェード</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1382"/>
         <location filename="../IOViewer.cpp" line="1389"/>
         <location filename="../IOViewer.cpp" line="1396"/>
         <source>Color 2 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>カラー2 シェード</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1383"/>
         <location filename="../IOViewer.cpp" line="1390"/>
         <location filename="../IOViewer.cpp" line="1397"/>
         <source>Color 3 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>カラー3 シェード</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1411"/>
         <source>Prepare to switch speed</source>
-        <translation type="unfinished"></translation>
+        <translation>速度を切り替える準備をする</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1412"/>
         <source>Double speed</source>
-        <translation type="unfinished"></translation>
+        <translation>２倍速</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1418"/>
         <source>VRAM bank</source>
-        <translation type="unfinished"></translation>
+        <translation>VRAMバンク</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1440"/>
         <source>Length</source>
-        <translation type="unfinished"></translation>
+        <translation>長さ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1441"/>
         <source>Timing</source>
-        <translation type="unfinished"></translation>
+        <translation>タイミング</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1448"/>
         <source>Write bit</source>
-        <translation type="unfinished"></translation>
+        <translation>書き込みビット</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1449"/>
         <source>Read bit</source>
-        <translation type="unfinished"></translation>
+        <translation>読み込みビット</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1452"/>
         <location filename="../IOViewer.cpp" line="1453"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>不明</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1493"/>
         <location filename="../IOViewer.cpp" line="1505"/>
         <source>Current index</source>
-        <translation type="unfinished"></translation>
+        <translation>現在のインデックス</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1494"/>
         <location filename="../IOViewer.cpp" line="1506"/>
         <source>Auto-increment</source>
-        <translation type="unfinished"></translation>
+        <translation>自動増加</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1498"/>
         <location filename="../IOViewer.cpp" line="1510"/>
         <source>Red</source>
-        <translation type="unfinished">Red</translation>
+        <translation>赤</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1501"/>
         <location filename="../IOViewer.cpp" line="1513"/>
         <source>Blue</source>
-        <translation type="unfinished">Blue</translation>
+        <translation>青</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1517"/>
         <source>Sprite ordering</source>
-        <translation type="unfinished"></translation>
+        <translation>スプライトの順番</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1518"/>
         <source>OAM order</source>
-        <translation type="unfinished"></translation>
+        <translation>OAM 順番</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1519"/>
         <source>x coordinate sorting</source>
-        <translation type="unfinished"></translation>
+        <translation>x座標の並べ替え</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1530"/>
         <source>WRAM bank</source>
-        <translation type="unfinished"></translation>
+        <translation>WRAMバンク</translation>
     </message>
 </context>
 <context>
@@ -3757,12 +3757,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
 <context>
     <name>QGBA::ReportView</name>
     <message>
-        <location filename="../ReportView.cpp" line="316"/>
+        <location filename="../ReportView.cpp" line="321"/>
         <source>Bug report archive</source>
         <translation>バグレポートアーカイブ</translation>
     </message>
     <message>
-        <location filename="../ReportView.cpp" line="316"/>
+        <location filename="../ReportView.cpp" line="321"/>
         <source>ZIP archive (*.zip)</source>
         <translation>ZIPアーカイブ (*.zip)</translation>
     </message>
@@ -3772,12 +3772,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../SaveConverter.cpp" line="39"/>
         <source>Save games and save states (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲームとステートをセーブ（％1）</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="40"/>
         <source>Select save game or save state</source>
-        <translation type="unfinished"></translation>
+        <translation>セーブゲームまたはステートセーブを選択</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="52"/>
@@ -3991,101 +3991,101 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
 <context>
     <name>QGBA::Window</name>
     <message>
-        <location filename="../Window.cpp" line="283"/>
+        <location filename="../Window.cpp" line="285"/>
         <source>Game Boy Advance ROMs (%1)</source>
         <translation>ゲームボーイアドバンスファイル (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="300"/>
+        <location filename="../Window.cpp" line="302"/>
         <source>Game Boy ROMs (%1)</source>
         <translation>ゲームボーイファイル (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="304"/>
+        <location filename="../Window.cpp" line="306"/>
         <source>All ROMs (%1)</source>
         <translation>すべてのファイル (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="305"/>
+        <location filename="../Window.cpp" line="307"/>
         <source>%1 Video Logs (*.mvl)</source>
         <translation>%1ビデオログ (*.mvl)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="320"/>
+        <location filename="../Window.cpp" line="322"/>
         <source>Archives (%1)</source>
         <translation>アーカイブファイル (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="325"/>
-        <location filename="../Window.cpp" line="337"/>
-        <location filename="../Window.cpp" line="364"/>
+        <location filename="../Window.cpp" line="327"/>
+        <location filename="../Window.cpp" line="339"/>
+        <location filename="../Window.cpp" line="366"/>
         <source>Select ROM</source>
         <translation>ROMを開く</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="355"/>
+        <location filename="../Window.cpp" line="357"/>
         <source>Select folder</source>
         <translation>フォルダを開く</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="441"/>
-        <location filename="../Window.cpp" line="448"/>
+        <location filename="../Window.cpp" line="490"/>
+        <location filename="../Window.cpp" line="497"/>
         <source>Select save</source>
         <translation>セーブを開く</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="410"/>
+        <location filename="../Window.cpp" line="412"/>
         <source>Select patch</source>
         <translation>パッチを開く</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="410"/>
+        <location filename="../Window.cpp" line="412"/>
         <source>Patches (*.ips *.ups *.bps)</source>
         <translation>パッチファイル (*.ips *.ups *.bps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="421"/>
+        <location filename="../Window.cpp" line="423"/>
         <source>Select e-Reader dotcode</source>
         <translation>カードeを開く</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="421"/>
+        <location filename="../Window.cpp" line="423"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
         <translation>カードe (*.raw *.bin *.bmp)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="434"/>
+        <location filename="../Window.cpp" line="483"/>
         <source>Select image</source>
         <translation>画像を開く</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="434"/>
+        <location filename="../Window.cpp" line="483"/>
         <source>Image file (*.png *.gif *.jpg *.jpeg);;All files (*)</source>
         <translation>画像ファイル (*.png *.gif *.jpg *.jpeg);;すべてのファイル (*)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="441"/>
-        <location filename="../Window.cpp" line="448"/>
+        <location filename="../Window.cpp" line="490"/>
+        <location filename="../Window.cpp" line="497"/>
         <source>GameShark saves (*.sps *.xps)</source>
         <translation>GameSharkセーブファイル (*.sps *.xps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="480"/>
+        <location filename="../Window.cpp" line="529"/>
         <source>Select video log</source>
         <translation>ビデオログを開く</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="480"/>
+        <location filename="../Window.cpp" line="529"/>
         <source>Video logs (*.mvl)</source>
         <translation>ビデオログ (*.mvl)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="859"/>
+        <location filename="../Window.cpp" line="908"/>
         <source>Crash</source>
         <translation>クラッシュ</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="860"/>
+        <location filename="../Window.cpp" line="909"/>
         <source>The game has crashed with the following error:
 
 %1</source>
@@ -4094,629 +4094,654 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
 %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="867"/>
+        <location filename="../Window.cpp" line="916"/>
         <source>Couldn&apos;t Start</source>
         <translation>起動失敗</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="868"/>
+        <location filename="../Window.cpp" line="917"/>
         <source>Could not start game.</source>
         <translation>ゲームを起動できませんでした。</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="882"/>
+        <location filename="../Window.cpp" line="931"/>
         <source>Unimplemented BIOS call</source>
         <translation>未実装のBIOS呼び出し</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="883"/>
+        <location filename="../Window.cpp" line="932"/>
         <source>This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience.</source>
         <translation>このゲームは実装されていないBIOS呼び出しを使用します。最高のエクスペリエンスを得るには公式のBIOSを使用してください。</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="896"/>
+        <location filename="../Window.cpp" line="945"/>
         <source>Failed to create an appropriate display device, falling back to software display. Games may run slowly, especially with larger windows.</source>
         <translation>適切なディスプレイデバイスの作成に失敗し、ソフトディスプレイにフォールバックしました。特に大きなウィンドウでは、ゲームの実行が遅い場合があります。</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="988"/>
+        <location filename="../Window.cpp" line="1037"/>
         <source>Really make portable?</source>
         <translation>本当にポータブルにしますか？</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="989"/>
+        <location filename="../Window.cpp" line="1038"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
         <translation>これによりエミュレータは実行ファイルと同じディレクトリにある設定ファイルをロードします。続けますか？</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1001"/>
+        <location filename="../Window.cpp" line="1050"/>
         <source>Restart needed</source>
         <translation>再起動が必要</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1002"/>
+        <location filename="../Window.cpp" line="1051"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
         <translation>一部の変更は、エミュレータを再起動するまで有効になりません。</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1041"/>
+        <location filename="../Window.cpp" line="1090"/>
         <source> -  Player %1 of %2</source>
         <translation> -  プレーヤー %1 of %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1052"/>
+        <location filename="../Window.cpp" line="1101"/>
         <source>%1 - %2</source>
         <translation>%1 - %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1054"/>
+        <location filename="../Window.cpp" line="1103"/>
         <source>%1 - %2 - %3</source>
         <translation>%1 - %2 - %3</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1056"/>
+        <location filename="../Window.cpp" line="1105"/>
         <source>%1 - %2 (%3 fps) - %4</source>
         <translation>%1 - %2 (%3 fps) - %4</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1098"/>
+        <location filename="../Window.cpp" line="1147"/>
         <source>&amp;File</source>
         <translation>&amp;ファイル (&amp;F)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1100"/>
+        <location filename="../Window.cpp" line="1149"/>
         <source>Load &amp;ROM...</source>
         <translation>ROMをロード...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1103"/>
+        <location filename="../Window.cpp" line="1152"/>
         <source>Load ROM in archive...</source>
         <translation>アーカイブにROMをロード...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1104"/>
+        <location filename="../Window.cpp" line="1153"/>
         <source>Add folder to library...</source>
         <translation>ライブリーにフォルダを追加...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1114"/>
+        <location filename="../Window.cpp" line="1163"/>
         <source>Load &amp;patch...</source>
         <translation>パッチをロード... (&amp;P)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1117"/>
+        <location filename="../Window.cpp" line="1166"/>
         <source>Boot BIOS</source>
         <translation>BIOSを起動</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1120"/>
+        <location filename="../Window.cpp" line="1169"/>
         <source>Replace ROM...</source>
         <translation>ROMを交換...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1122"/>
+        <location filename="../Window.cpp" line="1171"/>
         <source>Scan e-Reader dotcodes...</source>
         <translation>カードeをスキャン...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1126"/>
+        <location filename="../Window.cpp" line="1179"/>
         <source>ROM &amp;info...</source>
         <translation>ROM情報... (&amp;I)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1128"/>
+        <location filename="../Window.cpp" line="1181"/>
         <source>Recent</source>
         <translation>最近開いたROM</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1131"/>
+        <location filename="../Window.cpp" line="1184"/>
         <source>Make portable</source>
         <translation>ポータブル化</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1134"/>
+        <location filename="../Window.cpp" line="1187"/>
         <source>&amp;Load state</source>
         <translation>ステートをロード (&amp;L)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1217"/>
+        <location filename="../Window.cpp" line="1270"/>
         <source>Report bug...</source>
         <translation>バグ報告</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1223"/>
+        <location filename="../Window.cpp" line="1276"/>
         <source>About...</source>
         <translation>バージョン情報...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1460"/>
+        <location filename="../Window.cpp" line="1513"/>
         <source>Record GIF/WebP/APNG...</source>
         <translation>GIF/WebP/APNGを記録</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1484"/>
+        <location filename="../Window.cpp" line="1537"/>
         <source>Game Pak sensors...</source>
         <translation>カートリッジセンサー...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1736"/>
+        <location filename="../Window.cpp" line="1789"/>
         <source>Clear</source>
         <translation>消去</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1139"/>
+        <location filename="../Window.cpp" line="1192"/>
         <source>Load state file...</source>
         <translation>ステートファイルをロード...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="372"/>
+        <location filename="../Window.cpp" line="374"/>
         <source>Save games (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="373"/>
+        <location filename="../Window.cpp" line="375"/>
         <source>Select save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="381"/>
+        <location filename="../Window.cpp" line="383"/>
         <source>mGBA save state files (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="383"/>
-        <location filename="../Window.cpp" line="388"/>
+        <location filename="../Window.cpp" line="385"/>
+        <location filename="../Window.cpp" line="390"/>
         <source>Select save state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1107"/>
+        <location filename="../Window.cpp" line="431"/>
+        <source>Select e-Reader card images</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="431"/>
+        <source>Image file (*.png *.jpg *.jpeg)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="432"/>
+        <source>Conversion finished</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="470"/>
+        <source>%1 of %2 e-Reader cards converted successfully.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1156"/>
         <source>Load alternate save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1110"/>
+        <location filename="../Window.cpp" line="1159"/>
         <source>Load temporary save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1144"/>
+        <location filename="../Window.cpp" line="1175"/>
+        <source>Convert e-Reader card image to raw...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="1197"/>
         <source>&amp;Save state</source>
         <translation>ステートをセーブ (&amp;S)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1149"/>
+        <location filename="../Window.cpp" line="1202"/>
         <source>Save state file...</source>
         <translation>ステートファイルをセーブ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1154"/>
+        <location filename="../Window.cpp" line="1207"/>
         <source>Quick load</source>
         <translation>クイックロード</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1155"/>
+        <location filename="../Window.cpp" line="1208"/>
         <source>Quick save</source>
         <translation>クイックセーブ</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1157"/>
+        <location filename="../Window.cpp" line="1210"/>
         <source>Load recent</source>
         <translation>最近使ったクイックロットからロード</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1162"/>
+        <location filename="../Window.cpp" line="1215"/>
         <source>Save recent</source>
         <translation>最近使ったクイックロットにセーブ</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1170"/>
+        <location filename="../Window.cpp" line="1223"/>
         <source>Undo load state</source>
         <translation>クイックロードを元に戻す</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1173"/>
+        <location filename="../Window.cpp" line="1226"/>
         <source>Undo save state</source>
         <translation>クイックセーブを元に戻す</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1180"/>
-        <location filename="../Window.cpp" line="1185"/>
+        <location filename="../Window.cpp" line="1233"/>
+        <location filename="../Window.cpp" line="1238"/>
         <source>State &amp;%1</source>
         <translation>クイックスロット &amp;%1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1192"/>
+        <location filename="../Window.cpp" line="1245"/>
         <source>Load camera image...</source>
         <translation>カメラ画像をロード...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1196"/>
+        <location filename="../Window.cpp" line="1249"/>
         <source>Convert save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1198"/>
+        <location filename="../Window.cpp" line="1251"/>
         <source>Import GameShark Save...</source>
         <translation>GameSharkスナップショットを読み込む</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1201"/>
+        <location filename="../Window.cpp" line="1254"/>
         <source>Export GameShark Save...</source>
         <translation>GameSharkスナップショットを書き出す</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1206"/>
+        <location filename="../Window.cpp" line="1259"/>
         <source>New multiplayer window</source>
         <translation>新しいウィンドウ(マルチプレイ)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1211"/>
+        <location filename="../Window.cpp" line="1264"/>
         <source>Connect to Dolphin...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1226"/>
+        <location filename="../Window.cpp" line="1279"/>
         <source>E&amp;xit</source>
         <translation>終了 (&amp;X)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1229"/>
+        <location filename="../Window.cpp" line="1282"/>
         <source>&amp;Emulation</source>
         <translation>エミュレーション (&amp;E)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1230"/>
+        <location filename="../Window.cpp" line="1283"/>
         <source>&amp;Reset</source>
         <translation>リセット (&amp;R)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1231"/>
+        <location filename="../Window.cpp" line="1284"/>
         <source>Sh&amp;utdown</source>
         <translation>閉じる (&amp;U)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1232"/>
+        <location filename="../Window.cpp" line="1285"/>
         <source>Yank game pak</source>
         <translation>ゲームパックをヤンク</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1236"/>
+        <location filename="../Window.cpp" line="1289"/>
         <source>&amp;Pause</source>
         <translation>一時停止 (&amp;P)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1245"/>
+        <location filename="../Window.cpp" line="1298"/>
         <source>&amp;Next frame</source>
         <translation>次のフレーム (&amp;N)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1249"/>
+        <location filename="../Window.cpp" line="1302"/>
         <source>Fast forward (held)</source>
         <translation>早送り(押し)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1255"/>
+        <location filename="../Window.cpp" line="1308"/>
         <source>&amp;Fast forward</source>
         <translation>早送り (&amp;F)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1259"/>
+        <location filename="../Window.cpp" line="1312"/>
         <source>Fast forward speed</source>
         <translation>早送り速度</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1264"/>
+        <location filename="../Window.cpp" line="1317"/>
         <source>Unbounded</source>
         <translation>制限なし</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1268"/>
+        <location filename="../Window.cpp" line="1321"/>
         <source>%0x</source>
         <translation>%0x</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1272"/>
+        <location filename="../Window.cpp" line="1325"/>
         <source>Rewind (held)</source>
         <translation>巻戻し(押し)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1279"/>
+        <location filename="../Window.cpp" line="1332"/>
         <source>Re&amp;wind</source>
         <translation>巻戻し (&amp;R)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1284"/>
+        <location filename="../Window.cpp" line="1337"/>
         <source>Step backwards</source>
         <translation>後退</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1290"/>
+        <location filename="../Window.cpp" line="1343"/>
         <source>Sync to &amp;video</source>
         <translation>ビデオ同期 (&amp;V)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1297"/>
+        <location filename="../Window.cpp" line="1350"/>
         <source>Sync to &amp;audio</source>
         <translation>オーディオ同期 (&amp;A)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1305"/>
+        <location filename="../Window.cpp" line="1358"/>
         <source>Solar sensor</source>
         <translation>太陽センサー</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1306"/>
+        <location filename="../Window.cpp" line="1359"/>
         <source>Increase solar level</source>
         <translation>明るさを上げる</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1307"/>
+        <location filename="../Window.cpp" line="1360"/>
         <source>Decrease solar level</source>
         <translation>明るさを下げる</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1308"/>
+        <location filename="../Window.cpp" line="1361"/>
         <source>Brightest solar level</source>
         <translation>明るさ最高</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1311"/>
+        <location filename="../Window.cpp" line="1364"/>
         <source>Darkest solar level</source>
         <translation>明るさ最低</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1317"/>
+        <location filename="../Window.cpp" line="1370"/>
         <source>Brightness %1</source>
         <translation>明るさ %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1336"/>
+        <location filename="../Window.cpp" line="1389"/>
         <source>Audio/&amp;Video</source>
         <translation>オーディオ/ビデオ (&amp;V)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1337"/>
+        <location filename="../Window.cpp" line="1390"/>
         <source>Frame size</source>
         <translation>画面サイズ</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1364"/>
+        <location filename="../Window.cpp" line="1417"/>
         <source>Toggle fullscreen</source>
         <translation>全画面表示</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1367"/>
+        <location filename="../Window.cpp" line="1420"/>
         <source>Lock aspect ratio</source>
         <translation>縦横比を固定</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1379"/>
+        <location filename="../Window.cpp" line="1432"/>
         <source>Force integer scaling</source>
         <translation>整数スケーリングを強制</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1400"/>
+        <location filename="../Window.cpp" line="1453"/>
         <source>Bilinear filtering</source>
         <translation>バイリニアフィルタリング</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1411"/>
+        <location filename="../Window.cpp" line="1464"/>
         <source>Frame&amp;skip</source>
         <translation>フレームスキップ (&amp;S)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1424"/>
+        <location filename="../Window.cpp" line="1477"/>
         <source>Mute</source>
         <translation>ミュート</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1430"/>
+        <location filename="../Window.cpp" line="1483"/>
         <source>FPS target</source>
         <translation>FPS</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1438"/>
+        <location filename="../Window.cpp" line="1491"/>
         <source>Native (59.7275)</source>
         <translation>ネイティブ(59.7275)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1453"/>
+        <location filename="../Window.cpp" line="1506"/>
         <source>Take &amp;screenshot</source>
         <translation>スクリーンショット (&amp;S)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1455"/>
+        <location filename="../Window.cpp" line="1508"/>
         <source>F12</source>
         <translation>F12</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1323"/>
+        <location filename="../Window.cpp" line="1376"/>
         <source>Game Boy Printer...</source>
         <translation>ポケットプリンタ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1332"/>
+        <location filename="../Window.cpp" line="1385"/>
         <source>BattleChip Gate...</source>
         <translation>チップゲート...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1339"/>
+        <location filename="../Window.cpp" line="1392"/>
         <source>%1×</source>
         <translation>%1×</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1391"/>
+        <location filename="../Window.cpp" line="1444"/>
         <source>Interframe blending</source>
         <translation>フレーム間混合</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1459"/>
+        <location filename="../Window.cpp" line="1512"/>
         <source>Record A/V...</source>
         <translation>ビデオ録画...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1464"/>
+        <location filename="../Window.cpp" line="1517"/>
         <source>Video layers</source>
         <translation>ビデオレイヤー</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1465"/>
+        <location filename="../Window.cpp" line="1518"/>
         <source>Audio channels</source>
         <translation>オーディオチャンネル</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1467"/>
+        <location filename="../Window.cpp" line="1520"/>
         <source>Adjust layer placement...</source>
         <translation>レイヤーの配置を調整...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1469"/>
+        <location filename="../Window.cpp" line="1522"/>
         <source>&amp;Tools</source>
         <translation>ツール (&amp;T)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1470"/>
+        <location filename="../Window.cpp" line="1523"/>
         <source>View &amp;logs...</source>
         <translation>ログビューアー... (&amp;L)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1472"/>
+        <location filename="../Window.cpp" line="1525"/>
         <source>Game &amp;overrides...</source>
         <translation>ゲーム別設定... (&amp;O)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1486"/>
+        <location filename="../Window.cpp" line="1539"/>
         <source>&amp;Cheats...</source>
         <translation>チート... (&amp;C)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1489"/>
+        <location filename="../Window.cpp" line="1542"/>
         <source>Settings...</source>
         <translation>設定...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1493"/>
+        <location filename="../Window.cpp" line="1546"/>
         <source>Open debugger console...</source>
         <translation>デバッガコンソールを開く...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1495"/>
+        <location filename="../Window.cpp" line="1548"/>
         <source>Start &amp;GDB server...</source>
         <translation>GDBサーバを起動... (&amp;G)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1501"/>
+        <location filename="../Window.cpp" line="1554"/>
         <source>View &amp;palette...</source>
         <translation>パレットビューアー... (&amp;P)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1502"/>
+        <location filename="../Window.cpp" line="1555"/>
         <source>View &amp;sprites...</source>
         <translation>スプライトビューアー... (&amp;S)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1503"/>
+        <location filename="../Window.cpp" line="1556"/>
         <source>View &amp;tiles...</source>
         <translation>タイルビューアー... (&amp;T)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1504"/>
+        <location filename="../Window.cpp" line="1557"/>
         <source>View &amp;map...</source>
         <translation>マップビューアー... (&amp;M)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1506"/>
+        <location filename="../Window.cpp" line="1559"/>
         <source>&amp;Frame inspector...</source>
         <translation>フレームインスペクタ... (&amp;F)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1522"/>
+        <location filename="../Window.cpp" line="1575"/>
         <source>View memory...</source>
         <translation>メモリビューアー...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1523"/>
+        <location filename="../Window.cpp" line="1576"/>
         <source>Search memory...</source>
         <translation>メモリ検索...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1524"/>
+        <location filename="../Window.cpp" line="1577"/>
         <source>View &amp;I/O registers...</source>
         <translation>IOビューアー... (&amp;I)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1527"/>
+        <location filename="../Window.cpp" line="1580"/>
         <source>Record debug video log...</source>
         <translation>デバッグビデオログ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1528"/>
+        <location filename="../Window.cpp" line="1581"/>
         <source>Stop debug video log</source>
         <translation>デバッグビデオログを停止</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1628"/>
+        <location filename="../Window.cpp" line="1681"/>
         <source>Exit fullscreen</source>
         <translation>全画面表示を終了</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1630"/>
+        <location filename="../Window.cpp" line="1683"/>
         <source>GameShark Button (held)</source>
         <translation>GameSharkボタン(押し)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1636"/>
+        <location filename="../Window.cpp" line="1689"/>
         <source>Autofire</source>
         <translation>連打</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1637"/>
+        <location filename="../Window.cpp" line="1690"/>
         <source>Autofire A</source>
         <translation>連打 A</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1642"/>
+        <location filename="../Window.cpp" line="1695"/>
         <source>Autofire B</source>
         <translation>連打 B</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1647"/>
+        <location filename="../Window.cpp" line="1700"/>
         <source>Autofire L</source>
         <translation>連打 L</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1652"/>
+        <location filename="../Window.cpp" line="1705"/>
         <source>Autofire R</source>
         <translation>連打 R</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1657"/>
+        <location filename="../Window.cpp" line="1710"/>
         <source>Autofire Start</source>
         <translation>連打 Start</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1662"/>
+        <location filename="../Window.cpp" line="1715"/>
         <source>Autofire Select</source>
         <translation>連打 Select</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1667"/>
+        <location filename="../Window.cpp" line="1720"/>
         <source>Autofire Up</source>
         <translation>連打 上</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1672"/>
+        <location filename="../Window.cpp" line="1725"/>
         <source>Autofire Right</source>
         <translation>連打 右</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1677"/>
+        <location filename="../Window.cpp" line="1730"/>
         <source>Autofire Down</source>
         <translation>連打 下</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1682"/>
+        <location filename="../Window.cpp" line="1735"/>
         <source>Autofire Left</source>
         <translation>連打 左</translation>
     </message>

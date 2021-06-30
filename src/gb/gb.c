@@ -582,13 +582,13 @@ void GBSkipBIOS(struct GB* gb) {
 	mTimingDeschedule(&gb->timing, &gb->timer.event);
 	mTimingSchedule(&gb->timing, &gb->timer.event, gb->timer.nextDiv);
 
-	GBIOWrite(gb, GB_REG_LCDC, 0x91);
-	gb->memory.io[GB_REG_BANK] = 0x1;
-	GBVideoSkipBIOS(&gb->video);
-
 	if (gb->biosVf) {
 		GBUnmapBIOS(gb);
 	}
+
+	GBIOWrite(gb, GB_REG_LCDC, 0x91);
+	gb->memory.io[GB_REG_BANK] = 0x1;
+	GBVideoSkipBIOS(&gb->video);
 }
 
 void GBMapBIOS(struct GB* gb) {

@@ -18,6 +18,7 @@ public:
 	void save(struct Configuration*) const override;
 
 	struct GBACartridgeOverride override;
+	bool vbaBugCompatSet;
 };
 
 }
