@@ -94,7 +94,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 		} else {
 			name = strdup(name);
 		}
-		*GUIMenuItemListAppend(currentFiles) = (struct GUIMenuItem) { .title = name, .data = (void*) de->type(de) };
+		*GUIMenuItemListAppend(currentFiles) = (struct GUIMenuItem) { .title = name, .data = GUI_V_U(de->type(de)) };
 		++items;
 	}
 	qsort(GUIMenuItemListGetPointer(currentFiles, 1), GUIMenuItemListSize(currentFiles) - 1, sizeof(struct GUIMenuItem), _strpcmp);
@@ -124,7 +124,7 @@ static bool _refreshDirectory(struct GUIParams* params, const char* currentPath,
 				params->drawEnd();
 			}
 			struct GUIMenuItem* testItem = GUIMenuItemListGetPointer(currentFiles, item);
-			if (testItem->data != (void*) VFS_FILE) {
+			if (!GUIVariantCompareUInt(testItem->data, VFS_FILE)) {
 				++item;
 				continue;
 			}

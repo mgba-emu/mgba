@@ -924,7 +924,7 @@ int main(int argc, char* argv[]) {
 		.configExtra = (struct GUIMenuItem[]) {
 			{
 				.title = "Screen mode",
-				.data = "screenMode",
+				.data = GUI_V_S("screenMode"),
 				.submenu = 0,
 				.state = SM_PA,
 				.validStates = (const char*[]) {
@@ -936,7 +936,7 @@ int main(int argc, char* argv[]) {
 			},
 			{
 				.title = "Fast forward cap",
-				.data = "fastForwardCap",
+				.data = GUI_V_S("fastForwardCap"),
 				.submenu = 0,
 				.state = 7,
 				.validStates = (const char*[]) {
@@ -966,7 +966,7 @@ int main(int argc, char* argv[]) {
 			},
 			{
 				.title = "GPU-accelerated renderer",
-				.data = "hwaccelVideo",
+				.data = GUI_V_S("hwaccelVideo"),
 				.submenu = 0,
 				.state = 0,
 				.validStates = (const char*[]) {
@@ -977,7 +977,7 @@ int main(int argc, char* argv[]) {
 			},
 			{
 				.title = "Hi-res scaling (requires GPU rendering)",
-				.data = "videoScale",
+				.data = GUI_V_S("videoScale"),
 				.submenu = 0,
 				.state = 0,
 				.validStates = (const char*[]) {
@@ -1000,7 +1000,7 @@ int main(int argc, char* argv[]) {
 			},
 			{
 				.title = "Use built-in brightness sensor for Boktai",
-				.data = "useLightSensor",
+				.data = GUI_V_S("useLightSensor"),
 				.submenu = 0,
 				.state = illuminanceAvailable,
 				.validStates = (const char*[]) {

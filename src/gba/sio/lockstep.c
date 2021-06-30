@@ -141,6 +141,7 @@ bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver) {
 	case SIO_MULTI:
 		ATOMIC_SUB(node->p->attachedMulti, 1);
 		break;
+	case SIO_NORMAL_8:
 	case SIO_NORMAL_32:
 		ATOMIC_SUB(node->p->attachedNormal, 1);
 		break;

@@ -953,7 +953,7 @@ int main() {
 		.configExtra = (struct GUIMenuItem[]) {
 			{
 				.title = "Screen mode",
-				.data = "screenMode",
+				.data = GUI_V_S("screenMode"),
 				.submenu = 0,
 				.state = SM_PA_TOP,
 				.validStates = (const char*[]) {
@@ -968,7 +968,7 @@ int main() {
 			},
 			{
 				.title = "Filtering",
-				.data = "filterMode",
+				.data = GUI_V_S("filterMode"),
 				.submenu = 0,
 				.state = FM_LINEAR_2x,
 				.validStates = (const char*[]) {
@@ -980,7 +980,7 @@ int main() {
 			},
 			{
 				.title = "Screen darkening",
-				.data = "darkenMode",
+				.data = GUI_V_S("darkenMode"),
 				.submenu = 0,
 				.state = DM_NATIVE,
 				.validStates = (const char*[]) {
@@ -993,7 +993,7 @@ int main() {
 			},
 			{
 				.title = "Camera",
-				.data = "camera",
+				.data = GUI_V_S("camera"),
 				.submenu = 0,
 				.state = 1,
 				.validStates = (const char*[]) {
