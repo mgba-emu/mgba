@@ -10,6 +10,16 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba-util/memory.h>
 
+#ifdef USE_FFMPEG
+#include <mgba-util/convolve.h>
+#ifdef USE_PNG
+#include <mgba-util/png-io.h>
+#include <mgba-util/vfs.h>
+#endif
+
+#include "feature/ffmpeg/ffmpeg-scale.h"
+#endif
+
 #define EREADER_BLOCK_SIZE 40
 
 static void _eReaderReset(struct GBACartEReader* ereader);
@@ -36,6 +46,13 @@ const int EREADER_NYBBLE_5BIT[16][5] = {
 	{ 0, 1, 1, 0, 1 },
 	{ 1, 0, 0, 0, 1 },
 	{ 1, 0, 0, 0, 0 }
+};
+
+const int EREADER_NYBBLE_LOOKUP[32] = {
+	 0,  1,  2, -1,  4,  5,  6, -1,
+	 8,  9, 10, -1, 12, 13, -1, -1,
+	15, 14,  3, -1, 11, -1,  7, -1,
+	-1, -1, -1, -1, -1, -1, -1, -1
 };
 
 const uint8_t EREADER_CALIBRATION_TEMPLATE[] = {
@@ -418,7 +435,7 @@ void GBACartEReaderScan(struct GBACartEReader* ereader, const void* data, size_t
 				origin[x * 8 + 6] = (byte >> 1) & 1;
 				origin[x * 8 + 7] = byte & 1;
 			}
-		}		
+		}
 		return;
 	}
 
@@ -736,3 +753,866 @@ void GBACartEReaderQueueCard(struct GBA* gba, const void* data, size_t size) {
 		return;
 	}
 }
+
+#ifdef USE_FFMPEG
+struct EReaderAnchor {
+	float x;
+	float y;
+
+	float top;
+	float bottom;
+	float left;
+	float right;
+
+	size_t nNeighbors;
+	struct EReaderAnchor** neighbors;
+};
+
+struct EReaderBlock {
+	float x[4];
+	float y[4];
+
+	uint8_t rawdots[36 * 36];
+	unsigned histogram[256];
+	uint8_t threshold;
+	uint8_t min;
+	uint8_t max;
+
+	unsigned errors;
+	unsigned missing;
+	unsigned extra;
+
+	bool hFlip;
+	bool vFlip;
+	bool dots[36 * 36];
+
+	uint16_t id;
+	uint16_t next;
+};
+
+DEFINE_VECTOR(EReaderAnchorList, struct EReaderAnchor);
+DEFINE_VECTOR(EReaderBlockList, struct EReaderBlock);
+
+static void _eReaderScanDownsample(struct EReaderScan* scan) {
+	// TODO: Replace this logic with a value based on total area
+	scan->scale = 400;
+	if (scan->srcWidth > scan->srcHeight) {
+		scan->height = 400;
+		scan->width = scan->srcWidth * 400 / scan->srcHeight;
+	} else {
+		scan->width = 400;
+		scan->height = scan->srcHeight * 400 / scan->srcWidth;
+	}
+	scan->buffer = malloc(scan->width * scan->height);
+	FFmpegScale(scan->srcBuffer, scan->srcWidth, scan->srcHeight, scan->srcWidth, scan->buffer, scan->width, scan->height, scan->width, mCOLOR_L8, 3);
+	free(scan->srcBuffer);
+	scan->srcBuffer = NULL;
+}
+
+static int _compareAnchors(const void* va, const void* vb) {
+	const struct EReaderAnchor* a = va;
+	const struct EReaderAnchor* b = vb;
+
+	float x = a->x - b->x;
+	float y = a->y - b->y;
+	float w = a->right - a->left + b->right - b->left;
+	float h = a->bottom - a->top + b->bottom - b->top;
+	if (x < -w) {
+		return -1;
+	}
+	if (x > w) {
+		return 1;
+	}
+	if (y < -h) {
+		return -1;
+	}
+	if (y > h) {
+		return 1;
+	}
+	return 0;
+}
+
+static int _compareBlocks(const void* va, const void* vb) {
+	const struct EReaderBlock* a = va;
+	const struct EReaderBlock* b = vb;
+	if (a->id < b->id) {
+		return -1;
+	}
+	if (a->id > b->id) {
+		return 1;
+	}
+	return 0;
+}
+
+struct EReaderScan* EReaderScanCreate(unsigned width, unsigned height) {
+	struct EReaderScan* scan = calloc(1, sizeof(*scan));
+	scan->srcWidth = width;
+	scan->srcHeight = height;
+	scan->srcBuffer = calloc(width, height);
+
+	scan->min = 255;
+	scan->max = 0;
+	scan->mean = 128;
+	scan->anchorThreshold = 128;
+
+	EReaderAnchorListInit(&scan->anchors, 64);
+	EReaderBlockListInit(&scan->blocks, 32);
+
+	return scan;
+}
+
+void EReaderScanDestroy(struct EReaderScan* scan) {
+	free(scan->buffer);
+	size_t i;
+	for (i = 0; i < EReaderAnchorListSize(&scan->anchors); ++i) {
+		struct EReaderAnchor* anchor = EReaderAnchorListGetPointer(&scan->anchors, i);
+		if (anchor->neighbors) {
+			free(anchor->neighbors);
+		}
+	}
+	EReaderAnchorListDeinit(&scan->anchors);
+	EReaderBlockListDeinit(&scan->blocks);
+	free(scan);
+}
+
+#ifdef USE_PNG
+struct EReaderScan* EReaderScanLoadImagePNG(const char* filename) {
+	struct VFile* vf = VFileOpen(filename, O_RDONLY);
+	if (!vf) {
+		return NULL;
+	}
+	png_structp png = PNGReadOpen(vf, 0);
+	if (!png) {
+		vf->close(vf);
+		return NULL;
+	}
+	png_infop info = png_create_info_struct(png);
+	png_infop end = png_create_info_struct(png);
+	PNGReadHeader(png, info);
+	unsigned height = png_get_image_height(png, info);
+	unsigned width = png_get_image_width(png, info);
+	int type = png_get_color_type(png, info);
+	int depth = png_get_bit_depth(png, info);
+	void* image = NULL;
+	switch (type) {
+	case PNG_COLOR_TYPE_RGB:
+		if (depth != 8) {
+			break;
+		}
+		image = malloc(height * width * 3);
+		PNGReadPixels(png, info, image, width, height, width);
+		break;
+	case PNG_COLOR_TYPE_RGBA:
+		if (depth != 8) {
+			break;
+		}
+		image = malloc(height * width * 4);
+		PNGReadPixelsA(png, info, image, width, height, width);
+		break;
+	default:
+		break;
+	}
+	PNGReadFooter(png, end);
+	PNGReadClose(png, info, end);
+	vf->close(vf);
+	if (!image) {
+		return NULL;
+	}
+	struct EReaderScan* scan = NULL;
+	switch (type) {
+	case PNG_COLOR_TYPE_RGB:
+		scan = EReaderScanLoadImage(image, width, height, width);
+		break;
+	case PNG_COLOR_TYPE_RGBA:
+		scan = EReaderScanLoadImageA(image, width, height, width);
+		break;
+	default:
+		break;
+	}
+	free(image);
+	return scan;
+}
+#endif
+
+struct EReaderScan* EReaderScanLoadImage(const void* pixels, unsigned width, unsigned height, unsigned stride) {
+	struct EReaderScan* scan = EReaderScanCreate(width, height);
+	unsigned y;
+	for (y = 0; y < height; ++y) {
+		const uint8_t* irow = pixels;
+		uint8_t* orow = &scan->srcBuffer[y * width];
+		irow = &irow[y * stride];
+		unsigned x;
+		for (x = 0; x < width; ++x) {
+			orow[x] = irow[x * 3 + 2];
+		}
+	}
+	_eReaderScanDownsample(scan);
+	return scan;
+}
+
+struct EReaderScan* EReaderScanLoadImageA(const void* pixels, unsigned width, unsigned height, unsigned stride) {
+	struct EReaderScan* scan = EReaderScanCreate(width, height);
+	unsigned y;
+	for (y = 0; y < height; ++y) {
+		const uint8_t* irow = pixels;
+		uint8_t* orow = &scan->srcBuffer[y * width];
+		irow = &irow[y * stride];
+		unsigned x;
+		for (x = 0; x < width; ++x) {
+			orow[x] = irow[x * 4 + 2];
+		}
+	}
+	_eReaderScanDownsample(scan);
+	return scan;
+}
+
+struct EReaderScan* EReaderScanLoadImage8(const void* pixels, unsigned width, unsigned height, unsigned stride) {
+	struct EReaderScan* scan = EReaderScanCreate(width, height);
+	unsigned y;
+	for (y = 0; y < height; ++y) {
+		const uint8_t* row = pixels;
+		row = &row[y * stride];
+		memcpy(&scan->srcBuffer[y * width], row, width);
+	}
+	_eReaderScanDownsample(scan);
+	return scan;
+}
+
+void EReaderScanDetectParams(struct EReaderScan* scan) {
+	size_t sum = 0;
+	unsigned y;
+	for (y = 0; y < scan->height; ++y) {
+		const uint8_t* row = &scan->buffer[scan->width * y];
+		unsigned x;
+		for (x = 0; x < scan->width; ++x) {
+			uint8_t color = row[x];
+			sum += color;
+			if (color < scan->min) {
+				scan->min = color;
+			}
+			if (color > scan->max) {
+				scan->max = color;
+			}
+		}
+	}
+	scan->mean = sum / (scan->width * scan->height);
+	scan->anchorThreshold = 2 * (scan->mean - scan->min) / 5 + scan->min;
+}
+
+void EReaderScanDetectAnchors(struct EReaderScan* scan) {
+	uint8_t* output = malloc(scan->width * scan->height);
+	unsigned dim = scan->scale;
+	// TODO: Codify this magic constant
+	size_t dims[] = {dim / 30, dim / 30};
+	struct ConvolutionKernel kern;
+	ConvolutionKernelCreate(&kern, 2, dims);
+	ConvolutionKernelFillRadial(&kern, true);
+	Convolve2DClampPacked8(scan->buffer, output, scan->width, scan->height, scan->width, &kern);
+	ConvolutionKernelDestroy(&kern);
+
+	unsigned y;
+	for (y = 0; y < scan->height; ++y) {
+		const uint8_t* row = &output[scan->width * y];
+		unsigned x;
+		for (x = 0; x < scan->width; ++x) {
+			uint8_t color = row[x];
+			if (color < scan->anchorThreshold) {
+				bool mustInsert = true;
+				size_t i;
+				for (i = 0; i < EReaderAnchorListSize(&scan->anchors); ++i) {
+					struct EReaderAnchor* anchor = EReaderAnchorListGetPointer(&scan->anchors, i);
+					float diffX = anchor->x - x;
+					float diffY = anchor->y - y;
+					float distance = hypotf(diffX, diffY);
+					float radius = sqrtf((anchor->right - anchor->left) * (anchor->bottom - anchor->top)) / 2.f; // TODO: This should be M_PI, not 2
+					if (radius + dim / 45.f > distance) { // TODO: Codify this magic constant
+						if (x < anchor->left) {
+							anchor->left = x;
+						}
+						if (x > anchor->right) {
+							anchor->right = x;
+						}
+						if (y < anchor->top) {
+							anchor->top = y;
+						}
+						if (y > anchor->bottom) {
+							anchor->bottom = y;
+						}
+						anchor->x = (anchor->left + anchor->right) / 2.f;
+						anchor->y = (anchor->bottom + anchor->top) / 2.f;
+						mustInsert = false;
+						break;
+					}
+				}
+				if (mustInsert) {
+					struct EReaderAnchor* anchor = EReaderAnchorListAppend(&scan->anchors);
+					anchor->neighbors = NULL;
+					anchor->left = x - 0.5f;
+					anchor->right = x + 0.5f;
+					anchor->x = x;
+					anchor->top = y - 0.5f;
+					anchor->bottom = y + 0.5f;
+					anchor->y = y;
+				}
+			}
+		}
+	}
+	free(output);
+}
+
+void EReaderScanFilterAnchors(struct EReaderScan* scan) {
+	unsigned dim = scan->scale;
+	float areaMean = 0;
+	size_t i;
+	for (i = 0; i < EReaderAnchorListSize(&scan->anchors); ++i) {
+		struct EReaderAnchor* anchor = EReaderAnchorListGetPointer(&scan->anchors, i);
+		float width = anchor->right - anchor->left;
+		float height = anchor->bottom - anchor->top;
+		float area = width * height;
+		// TODO: Codify these magic constants
+		float portion = dim / sqrtf(area);
+		bool keep = portion > 9. && portion < 30.;
+		if (width > height) {
+			if (width / height > 1.2f) {
+				keep = false;
+			}
+		} else {
+			if (height / width > 1.2f) {
+				keep = false;
+			}
+		}
+		if (!keep) {
+			EReaderAnchorListShift(&scan->anchors, i, 1);
+			--i;
+		} else {
+			areaMean += portion;
+		}
+	}
+	areaMean /= EReaderAnchorListSize(&scan->anchors);
+	for (i = 0; i < EReaderAnchorListSize(&scan->anchors); ++i) {
+		struct EReaderAnchor* anchor = EReaderAnchorListGetPointer(&scan->anchors, i);
+		float area = (anchor->right - anchor->left) * (anchor->bottom - anchor->top);
+		// TODO: Codify these magic constants
+		float portion = dim / sqrtf(area);
+		if (fabsf(portion - areaMean) / areaMean > 0.5) {
+			EReaderAnchorListShift(&scan->anchors, i, 1);
+			--i;
+		}
+	}
+
+	qsort(EReaderAnchorListGetPointer(&scan->anchors, 0), EReaderAnchorListSize(&scan->anchors), sizeof(struct EReaderAnchor), _compareAnchors);
+}
+
+void EReaderScanConnectAnchors(struct EReaderScan* scan) {
+	size_t i;
+	for (i = 0; i < EReaderAnchorListSize(&scan->anchors); ++i) {
+		struct EReaderAnchor* anchor = EReaderAnchorListGetPointer(&scan->anchors, i);
+		float closest = scan->scale * 2.f;
+		float threshold;
+		size_t j;
+		for (j = 0; j < EReaderAnchorListSize(&scan->anchors); ++j) {
+			if (i == j) {
+				continue;
+			}
+			struct EReaderAnchor* candidate = EReaderAnchorListGetPointer(&scan->anchors, j);
+			float dx = anchor->x - candidate->x;
+			float dy = anchor->y - candidate->y;
+			float distance = hypotf(dx, dy);
+			if (distance < closest) {
+				closest = distance;
+				threshold = 1.25 * closest;
+			}
+		}
+		if (closest >= scan->scale) {
+			continue;
+		}
+		if (anchor->neighbors) {
+			free(anchor->neighbors);
+		}
+		// This is an intentional over-estimate which we prune down later
+		anchor->neighbors = calloc(EReaderAnchorListSize(&scan->anchors) - 1, sizeof(struct EReaderAnchor*));
+		size_t matches = 0;
+		for (j = 0; j < EReaderAnchorListSize(&scan->anchors); ++j) {
+			if (i == j) {
+				continue;
+			}
+			struct EReaderAnchor* candidate = EReaderAnchorListGetPointer(&scan->anchors, j);
+			float dx = anchor->x - candidate->x;
+			float dy = anchor->y - candidate->y;
+			float distance = hypotf(dx, dy);
+			if (distance <= threshold) {
+				anchor->neighbors[matches] = candidate;
+				++matches;
+			}
+		}
+		if (matches) {
+			anchor->neighbors = realloc(anchor->neighbors, matches * sizeof(struct EReaderAnchor*));
+			anchor->nNeighbors = matches;
+		} else {
+			free(anchor->neighbors);
+			anchor->neighbors = NULL;
+		}
+	}
+}
+
+void EReaderScanCreateBlocks(struct EReaderScan* scan) {
+	size_t i;
+	for (i = 0; i < EReaderAnchorListSize(&scan->anchors); ++i) {
+		struct EReaderAnchor* anchor = EReaderAnchorListGetPointer(&scan->anchors, i);
+		if (anchor->nNeighbors < 2) {
+			continue;
+		}
+		struct EReaderAnchor* neighbors[3] = {anchor->neighbors[0], anchor->neighbors[1]};
+		size_t j;
+		for (j = 0; j < neighbors[0]->nNeighbors; ++j) {
+			if (neighbors[0]->neighbors[j] == anchor) {
+				size_t remaining = neighbors[0]->nNeighbors - j - 1;
+				--neighbors[0]->nNeighbors;
+				if (neighbors[0]->nNeighbors) {
+					memmove(&neighbors[0]->neighbors[j], &neighbors[0]->neighbors[j + 1], remaining * sizeof(struct EReaderAnchor*));
+				}
+			}
+		}
+		for (j = 0; j < neighbors[1]->nNeighbors; ++j) {
+			if (neighbors[1]->neighbors[j] == anchor) {
+				size_t remaining = neighbors[1]->nNeighbors - j - 1;
+				--neighbors[1]->nNeighbors;
+				if (neighbors[1]->nNeighbors) {
+					memmove(&neighbors[1]->neighbors[j], &neighbors[1]->neighbors[j + 1], remaining * sizeof(struct EReaderAnchor*));
+				}
+			}
+		}
+
+		// TODO: Codify this constant
+		if (fabsf(neighbors[0]->x - neighbors[1]->x) < 6) {
+			struct EReaderAnchor* neighbor = neighbors[0];
+			neighbors[0] = neighbors[1];
+			neighbors[1] = neighbor;
+		}
+		bool found = false;
+		for (j = 0; j < neighbors[0]->nNeighbors && !found; ++j) {
+			size_t k;
+			for (k = 0; k < neighbors[1]->nNeighbors; ++k) {
+				if (neighbors[0]->neighbors[j] == neighbors[1]->neighbors[k]) {
+					neighbors[2] = neighbors[0]->neighbors[j];
+					found = true;
+					break;
+				}
+			}
+		}
+		if (!found) {
+			continue;
+		}
+
+		struct EReaderBlock* block = EReaderBlockListAppend(&scan->blocks);
+		memset(block, 0, sizeof(*block));
+		block->x[0] = anchor->x;
+		block->x[1] = neighbors[0]->x;
+		block->x[2] = neighbors[1]->x;
+		block->x[3] = neighbors[2]->x;
+		block->y[0] = anchor->y;
+		block->y[1] = neighbors[0]->y;
+		block->y[2] = neighbors[1]->y;
+		block->y[3] = neighbors[2]->y;
+		block->min = scan->min;
+		block->max = scan->max;
+		block->threshold = scan->mean;
+
+		unsigned y;
+		for (y = 0; y < 36; ++y) {
+			unsigned x;
+			for (x = 0; x < 36; ++x) {
+				float topX = (block->x[1] - block->x[0]) * x / 35.f + block->x[0];
+				float topY = (block->y[1] - block->y[0]) * x / 35.f + block->y[0];
+				float bottomX = (block->x[3] - block->x[2]) * x / 35.f + block->x[2];
+				float bottomY = (block->y[3] - block->y[2]) * x / 35.f + block->y[2];
+				unsigned midX = (bottomX - topX) * y / 35.f + topX;
+				unsigned midY = (bottomY - topY) * y / 35.f + topY;
+				uint8_t color = scan->buffer[midY * scan->width + midX];
+				block->rawdots[y * 36 + x] = color;
+				if ((x >= 5 && x <= 30) || (y >= 5 && y <= 30)) {
+					++block->histogram[color];
+				}
+			}
+		}
+	}
+}
+
+void EReaderScanDetectBlockThreshold(struct EReaderScan* scan, int blockId) {
+	if (blockId < 0 || (unsigned) blockId >= EReaderBlockListSize(&scan->blocks)) {
+		return;
+	}
+	struct EReaderBlock* block = EReaderBlockListGetPointer(&scan->blocks, blockId);
+	unsigned histograms[0xF8] = {0};
+	unsigned* histogram[] = {
+		block->histogram,
+		&histograms[0x00],
+		&histograms[0x80],
+		&histograms[0xC0],
+		&histograms[0xE0],
+		&histograms[0xF0]
+	};
+
+	size_t i;
+	for (i = 0; i < 256; ++i) {
+		unsigned baseline = histogram[0][i];
+		histogram[1][i >> 1] += baseline;
+		histogram[2][i >> 2] += baseline;
+		histogram[3][i >> 3] += baseline;
+		histogram[4][i >> 4] += baseline;
+		histogram[5][i >> 5] += baseline;
+	}
+
+	int offset;
+	for (offset = 0; offset < 7; ++offset) {
+		if (histogram[5][offset] > histogram[5][offset + 1]) {
+			break;
+		}
+	}
+	for (; offset < 7; ++offset) {
+		if (histogram[5][offset] < histogram[5][offset + 1]) {
+			break;
+		}
+	}
+
+	for (i = 6; i--; offset *= 2) {
+		if (histogram[i][offset] > histogram[i][offset + 1]) {
+			++offset;
+		}
+	}
+	block->threshold = offset / 2;
+}
+
+bool EReaderScanRecalibrateBlock(struct EReaderScan* scan, int blockId) {
+	if (blockId < 0 || (unsigned) blockId >= EReaderBlockListSize(&scan->blocks)) {
+		return false;
+	}
+	struct EReaderBlock* block = EReaderBlockListGetPointer(&scan->blocks, blockId);
+	if (block->missing && block->extra) {
+		return false;
+	}
+	int errors = block->errors;
+	if (block->missing) {
+		while (errors > 0) {
+			errors -= block->histogram[block->threshold];
+			while (!block->histogram[block->threshold] && block->threshold < 254) {
+				++block->threshold;
+			}
+			++block->threshold;
+			if (block->threshold >= 255) {
+				return false;
+			}
+		}
+	} else {
+		return false;
+	}
+	return true;
+}
+
+bool EReaderScanScanBlock(struct EReaderScan* scan, int blockId, bool strict) {
+	if (blockId < 0 || (unsigned) blockId >= EReaderBlockListSize(&scan->blocks)) {
+		return false;
+	}
+	struct EReaderBlock* block = EReaderBlockListGetPointer(&scan->blocks, blockId);
+	block->errors = 0;
+	block->missing = 0;
+	block->extra = 0;
+
+	bool dots[36 * 36] = {0};
+	size_t y;
+	for (y = 0; y < 36; ++y) {
+		size_t x;
+		for (x = 0; x < 36; ++x) {
+			if ((x < 5 || x > 30) && (y < 5 || y > 30)) {
+				continue;
+			}
+			uint8_t color = block->rawdots[y * 36 + x];
+			if (color < block->threshold) {
+				dots[y * 36 + x] = true;
+			} else {
+				dots[y * 36 + x] = false;
+			}
+		}
+	}
+	int horizontal = 0;
+	int vertical = 0;
+	int hMissing = 0;
+	int hExtra = 0;
+	int vMissing = 0;
+	int vExtra = 0;
+	static const bool alignment[36] = { 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0 };
+	int i;
+	for (i = 3; i < 33; ++i) {
+		if (dots[i] != alignment[i]) {
+			++horizontal;
+			if (alignment[i]) {
+				++hMissing;
+			} else {
+				++hExtra;
+			}
+		}
+		if (dots[i + 36 * 35] != alignment[i]) {
+			++horizontal;
+			if (alignment[i]) {
+				++hMissing;
+			} else {
+				++hExtra;
+			}
+		}
+		if (dots[i * 36] != alignment[i]) {
+			++vertical;
+			if (alignment[i]) {
+				++vMissing;
+			} else {
+				++vExtra;
+			}
+		}
+		if (dots[i * 36 + 35] != alignment[i]) {
+			++vertical;
+			if (alignment[i]) {
+				++vMissing;
+			} else {
+				++vExtra;
+			}
+		}
+	}
+
+	int errors;
+	if (horizontal < vertical) {
+		errors = horizontal;
+		block->errors += horizontal;
+		block->extra += hExtra;
+		block->missing += hMissing;
+		horizontal = 0;
+	} else {
+		errors = vertical;
+		block->errors += vertical;
+		block->extra += vExtra;
+		block->missing += vMissing;
+		vertical = 0;
+	}
+	if (strict && errors) {
+		return false;
+	}
+
+	int sector[2] = {0};
+	if (!vertical) {
+		for (i = 5; i < 30; ++i) {
+			sector[0] |= dots[i] << (29 - i);
+			sector[1] |= dots[i + 36 * 35] << (29 - i);
+		}
+	} else {
+		for (i = 5; i < 30; ++i) {
+			sector[0] |= dots[i * 36] << (29 - i);
+			sector[1] |= dots[i * 36 + 35] << (29 - i);
+		}
+	}
+
+	int xFlip = 1;
+	int yFlip = 1;
+	int xBias = 0;
+	int yBias = 0;
+	block->hFlip = false;
+	block->vFlip = false;
+	if ((sector[0] & 0x1FF) == 1) {
+		yFlip = -1;
+		yBias = 35;
+		block->vFlip = true;
+		int s0 = 0;
+		int s1 = 0;
+		for (i = 0; i < 16; ++i) {
+			s0 |= ((sector[0] >> (i + 9)) & 1) << (15 - i);
+			s1 |= ((sector[1] >> (i + 9)) & 1) << (15 - i);
+		}
+		sector[0] = s0;
+		sector[1] = s1;
+	}
+	sector[0] &= 0xFFFF;
+	sector[1] &= 0xFFFF;
+	if (sector[1] < sector[0]) {
+		xFlip = -1;
+		xBias = 35;
+		block->hFlip = true;
+		int sector0 = sector[0];
+		sector[0] = sector[1];
+		sector[1] = sector0;
+	}
+
+	memset(block->dots, 0, sizeof(block->dots));
+	if (!horizontal) {
+		block->id = sector[0];
+		block->next = sector[1];
+		int y;
+		for (y = 0; y < 36; ++y) {
+			int ty = y * yFlip + yBias;
+			int x;
+			for (x = 0; x < 36; ++x) {
+				int tx = x * xFlip + xBias;
+				block->dots[ty * 36 + tx] = dots[y * 36 + x];
+			}
+		}
+	} else {
+		block->id = sector[0];
+		block->next = sector[1];
+		int y;
+		for (y = 0; y < 36; ++y) {
+			int tx = y * xFlip + xBias;
+			int x;
+			for (x = 0; x < 36; ++x) {
+				int ty = x * yFlip + yBias;
+				block->dots[ty * 36 + tx] = dots[y * 36 + x];
+			}
+		}
+	}
+	return true;
+}
+
+bool EReaderScanCard(struct EReaderScan* scan) {
+	EReaderScanDetectParams(scan);
+	EReaderScanDetectAnchors(scan);
+	EReaderScanFilterAnchors(scan);
+	if (EReaderAnchorListSize(&scan->anchors) & 1 || EReaderAnchorListSize(&scan->anchors) < 36) {
+		return false;
+	}
+	EReaderScanConnectAnchors(scan);
+	EReaderScanCreateBlocks(scan);
+	size_t blocks = EReaderBlockListSize(&scan->blocks);
+	size_t i;
+	for (i = 0; i < blocks; ++i) {
+		EReaderScanDetectBlockThreshold(scan, i);
+		int errors = 36 * 36;
+		while (!EReaderScanScanBlock(scan, i, true)) {
+			if (errors < EReaderBlockListGetPointer(&scan->blocks, i)->errors) {
+				return false;
+			}
+			errors = EReaderBlockListGetPointer(&scan->blocks, i)->errors;
+			if (!EReaderScanRecalibrateBlock(scan, i)) {
+				return false;
+			}
+		}
+	}
+	qsort(EReaderBlockListGetPointer(&scan->blocks, 0), EReaderBlockListSize(&scan->blocks), sizeof(struct EReaderBlock), _compareBlocks);
+	return true;
+}
+
+static void _eReaderBitAnchor(uint8_t* output, size_t stride, int offset) {
+	static const uint8_t anchor[5][5] = {
+		{ 0, 1, 1, 1, 0 },
+		{ 1, 1, 1, 1, 1 },
+		{ 1, 1, 1, 1, 1 },
+		{ 1, 1, 1, 1, 1 },
+		{ 0, 1, 1, 1, 0 },
+	};
+	size_t y;
+	for (y = 0; y < 5; ++y) {
+		uint8_t* line = &output[y * stride];
+		size_t x;
+		for (x = 0; x < 5; ++x) {
+			size_t xo = x + offset;
+			line[xo >> 3] |= 1 << (~xo & 7);
+			line[xo >> 3] &= ~(anchor[y][x] << (~xo & 7));
+		}
+	}
+}
+
+void EReaderScanOutputBitmap(const struct EReaderScan* scan, void* output, size_t stride) {
+	size_t blocks = EReaderBlockListSize(&scan->blocks);
+	uint8_t* rows = output;
+
+	memset(rows, 0xFF, stride * 44);
+
+	size_t i;
+	size_t y;
+	for (y = 0; y < 36; ++y) {
+		uint8_t* line = &rows[(y + 4) * stride];
+		size_t offset = 4;
+		for (i = 0; i < blocks; ++i) {
+			const struct EReaderBlock* block = EReaderBlockListGetConstPointer(&scan->blocks, i);
+			size_t x;
+			for (x = 0; x < 35; ++x, ++offset) {
+				bool dot = block->dots[y * 36 + x];
+				line[offset >> 3] &= ~(dot << (~offset & 7));
+			}
+			if (i + 1 == blocks) {
+				bool dot = block->dots[y * 36 + 35];
+				line[offset >> 3] &= ~(dot << (~offset & 7));
+			}
+		}
+	}
+	for (i = 0; i < blocks + 1; ++i) {
+		_eReaderBitAnchor(&rows[stride * 2], stride, i * 35 + 2);
+		_eReaderBitAnchor(&rows[stride * 37], stride, i * 35 + 2);
+	}
+}
+
+bool EReaderScanSaveRaw(const struct EReaderScan* scan, const char* filename, bool strict) {
+	size_t blocks = EReaderBlockListSize(&scan->blocks);
+	if (!blocks) {
+		return false;
+	}
+	uint8_t* data = malloc(104 * blocks);
+	size_t i;
+	for (i = 0; i < blocks; ++i) {
+		const struct EReaderBlock* block = EReaderBlockListGetConstPointer(&scan->blocks, i);
+		uint8_t* datablock = &data[104 * i];
+		bool bits[1040] = {0};
+		size_t offset = 0;
+		size_t y;
+		for (y = 2; y < 34; ++y) {
+			size_t x;
+			for (x = 1; x < 35; ++x) {
+				if ((x < 5 || x > 30) && (y < 5 || y > 30)) {
+					continue;
+				}
+				bits[offset] = block->dots[y * 36 + x];
+				++offset;
+			}
+		}
+		for (y = 0; y < 104; ++y) {
+			int hi = 0;
+			hi |= bits[y * 10 + 0] << 4;
+			hi |= bits[y * 10 + 1] << 3;
+			hi |= bits[y * 10 + 2] << 2;
+			hi |= bits[y * 10 + 3] << 1;
+			hi |= bits[y * 10 + 4];
+			hi = EREADER_NYBBLE_LOOKUP[hi];
+
+			int lo = 0;
+			lo |= bits[y * 10 + 5] << 4;
+			lo |= bits[y * 10 + 6] << 3;
+			lo |= bits[y * 10 + 7] << 2;
+			lo |= bits[y * 10 + 8] << 1;
+			lo |= bits[y * 10 + 9];
+			lo = EREADER_NYBBLE_LOOKUP[lo];
+
+			if (hi < 0) {
+				if (strict) {
+					free(data);
+					return false;
+				}
+				hi = 0xF;
+			}
+			if (lo < 0) {
+				if (strict) {
+					free(data);
+					return false;
+				}
+				lo = 0xF;
+			}
+
+			datablock[y] = (hi << 4) | lo;
+		}
+	}
+
+	struct VFile* vf = VFileOpen(filename, O_CREAT | O_WRONLY | O_TRUNC);
+	if (!vf) {
+		free(data);
+		return false;
+	}
+	vf->write(vf, data, 104 * blocks);
+	vf->close(vf);
+	free(data);
+	return true;
+}
+
+#endif

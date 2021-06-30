@@ -82,6 +82,8 @@
 #include <mgba/feature/commandline.h>
 #include <mgba-util/vfs.h>
 
+#include <mgba-util/convolve.h>
+
 #ifdef M_CORE_GB
 #define SUPPORT_GB (1 << mPLATFORM_GB)
 #else
@@ -471,6 +473,53 @@ void Window::scanCard() {
 	for (QString& filename : filenames) {
 		m_controller->scanCard(filename);
 	}
+}
+
+void Window::parseCard() {
+#ifdef USE_FFMPEG
+	QStringList filenames = GBAApp::app()->getOpenFileNames(this, tr("Select e-Reader card images"), tr("Image file (*.png *.jpg *.jpeg)"));
+	QMessageBox* dialog = new QMessageBox(QMessageBox::Information, tr("Conversion finished"),
+	                                      QString("oh"), QMessageBox::Ok);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
+	auto status = std::make_shared<QPair<int, int>>(0, filenames.size());
+	GBAApp::app()->submitWorkerJob([filenames, dialog, status]() {
+		int success = 0;
+		for (QString filename : filenames) {
+			if (filename.isEmpty()) {
+				continue;
+			}
+			QImage image(filename);
+			if (image.isNull()) {
+				continue;
+			}
+			EReaderScan* scan;
+			switch (image.depth()) {
+			case 8:
+				scan = EReaderScanLoadImage8(image.constBits(), image.width(), image.height(), image.bytesPerLine());
+				break;
+			case 24:
+				scan = EReaderScanLoadImage(image.constBits(), image.width(), image.height(), image.bytesPerLine());
+				break;
+			case 32:
+				scan = EReaderScanLoadImageA(image.constBits(), image.width(), image.height(), image.bytesPerLine());
+				break;
+			default:
+				continue;
+			}
+			QFileInfo ofile(filename);
+			if (EReaderScanCard(scan)) {
+				QString ofilename = ofile.path() + QDir::separator() + ofile.baseName() + ".raw";
+				EReaderScanSaveRaw(scan, ofilename.toUtf8().constData(), false);
+				++success;
+			}
+			EReaderScanDestroy(scan);
+		}
+		status->first = success;
+	}, [dialog, status]() {
+		dialog->setText(tr("%1 of %2 e-Reader cards converted successfully.").arg(status->first).arg(status->second));
+		dialog->show();
+	});
+#endif
 }
 
 void Window::openView(QWidget* widget) {
@@ -1187,6 +1236,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 #ifdef M_CORE_GBA
 	Action* scanCard = addGameAction(tr("Scan e-Reader dotcodes..."), "scanCard", this, &Window::scanCard, "file");
 	m_platformActions.insert(mPLATFORM_GBA, scanCard);
+
+#ifdef USE_FFMPEG
+	m_actions.addAction(tr("Convert e-Reader card image to raw..."), "parseCard", this, &Window::parseCard, "file");
+#endif
 #endif
 
 	addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");

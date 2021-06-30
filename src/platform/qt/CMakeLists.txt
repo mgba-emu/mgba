@@ -23,7 +23,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/input)
 
-find_package(Qt5 COMPONENTS Core Widgets OpenGL Network Multimedia)
+find_package(Qt5 COMPONENTS Core Widgets Network Multimedia)
 
 if(NOT BUILD_GL AND NOT BUILD_GLES2)
 	message(WARNING "OpenGL is recommended to build the Qt port")
@@ -168,7 +168,7 @@ set(GB_SRC
 	PrinterView.cpp)
 
 set(QT_LIBRARIES)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5,libqt5opengl5")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5")
 
 set(AUDIO_SRC)
 if(BUILD_SDL)
@@ -304,7 +304,7 @@ endif()
 
 list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::Network)
 if(BUILD_GL OR BUILD_GLES2 OR BUILD_EPOXY)
-	list(APPEND QT_LIBRARIES Qt5::OpenGL ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
+	list(APPEND QT_LIBRARIES ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 endif()
 if(QT_STATIC)
 	find_library(QTPCRE NAMES qtpcre2 qtpcre)
