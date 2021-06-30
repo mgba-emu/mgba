@@ -30,20 +30,9 @@ protected slots:
 	void updateTiles(bool force);
 
 protected:
-#ifdef M_CORE_GBA
-	virtual void updateTilesGBA(bool force) = 0;
-#endif
-#ifdef M_CORE_GB
-	virtual void updateTilesGB(bool force) = 0;
-#endif
-
-	void resizeEvent(QResizeEvent*) override;
-	void showEvent(QShowEvent*) override;
-
 	mCacheSet* const m_cacheSet;
 	std::shared_ptr<CoreController> m_controller;
 
-protected:
 	struct ObjInfo {
 		unsigned tile;
 		unsigned width;
@@ -69,6 +58,16 @@ protected:
 	QImage compositeObj(const ObjInfo&);
 
 	bool lookupObj(int id, struct ObjInfo*);
+
+#ifdef M_CORE_GBA
+	virtual void updateTilesGBA(bool force) = 0;
+#endif
+#ifdef M_CORE_GB
+	virtual void updateTilesGB(bool force) = 0;
+#endif
+
+	void resizeEvent(QResizeEvent*) override;
+	void showEvent(QShowEvent*) override;
 
 private:
 #ifdef M_CORE_GBA

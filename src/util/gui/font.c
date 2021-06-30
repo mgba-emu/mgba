@@ -40,17 +40,40 @@ void GUIFontPrint(struct GUIFont* font, int x, int y, enum GUIAlignment align, u
 	size_t len = strlen(text);
 	while (len) {
 		uint32_t c = utf8Char(&text, &len);
-		if (c == '\1') {
+		bool icon = false;
+		switch (c) {
+		case 1:
 			c = utf8Char(&text, &len);
 			if (c < GUI_ICON_MAX) {
-				GUIFontDrawIcon(font, x, y, (align & GUI_ALIGN_HCENTER) | GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, c);
-				unsigned w;
-				GUIFontIconMetrics(font, c, &w, 0);
-				x += w;
+				icon = true;
 			}
-		} else {
+			break;
+		case 0x2190:
+		case 0x2191:
+		case 0x2192:
+		case 0x2193:
+			c = GUI_ICON_LEFT + c - 0x2190;
+			icon = true;
+			break;
+		case 0x23E9:
+			c = GUI_ICON_STATUS_FAST_FORWARD;
+			icon = true;
+			break;
+		case 0x1F507:
+			c = GUI_ICON_STATUS_MUTE;
+			icon = true;
+			break;
+		default:
 			GUIFontDrawGlyph(font, x, y, color, c);
 			x += GUIFontGlyphWidth(font, c);
+			break;
+		}
+
+		if (icon) {
+			GUIFontDrawIcon(font, x, y, GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, c);
+			unsigned w;
+			GUIFontIconMetrics(font, c, &w, 0);
+			x += w;
 		}
 	}
 }

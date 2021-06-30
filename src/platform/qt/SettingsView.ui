@@ -399,6 +399,13 @@
          </item>
         </layout>
        </item>
+       <item row="9" column="1">
+        <widget class="QPushButton" name="nativeGB">
+         <property name="text">
+          <string>Native (59.7275)</string>
+         </property>
+        </widget>
+       </item>
        <item row="10" column="0" colspan="2">
         <widget class="Line" name="line_5">
          <property name="orientation">
@@ -445,24 +452,17 @@
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
-        <widget class="QCheckBox" name="resampleVideo">
-         <property name="text">
-          <string>Bilinear filtering</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="QPushButton" name="nativeGB">
-         <property name="text">
-          <string>Native (59.7275)</string>
-         </property>
-        </widget>
-       </item>
        <item row="14" column="1">
         <widget class="QCheckBox" name="interframeBlending">
          <property name="text">
           <string>Interframe blending</string>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="1">
+        <widget class="QCheckBox" name="resampleVideo">
+         <property name="text">
+          <string>Bilinear filtering</string>
          </property>
         </widget>
        </item>
@@ -586,6 +586,16 @@
          </property>
         </widget>
        </item>
+       <item row="12" column="1">
+        <widget class="QCheckBox" name="showFps">
+         <property name="text">
+          <string>Show FPS in title bar</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
        <item row="13" column="1">
         <widget class="QCheckBox" name="showFilename">
          <property name="text">
@@ -593,6 +603,13 @@
          </property>
          <property name="checked">
           <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="0" colspan="2">
+        <widget class="Line" name="line_18">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
@@ -664,23 +681,6 @@
          </property>
          <property name="checked">
           <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="1">
-        <widget class="QCheckBox" name="showFps">
-         <property name="text">
-          <string>Show FPS in title bar</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="0" colspan="2">
-        <widget class="Line" name="line_18">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
@@ -880,6 +880,16 @@
          </property>
         </widget>
        </item>
+       <item row="10" column="1">
+        <widget class="QCheckBox" name="vbaBugCompat">
+         <property name="text">
+          <string>Enable VBA bug compatibility in ROM hacks</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
        <item row="11" column="0" colspan="2">
         <widget class="Line" name="line_2">
          <property name="orientation">
@@ -962,16 +972,6 @@
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
-        <widget class="QCheckBox" name="vbaBugCompat">
-         <property name="text">
-          <string>Enable VBA bug compatibility in ROM hacks</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="enhancements">
@@ -995,6 +995,13 @@
            <string>OpenGL</string>
           </property>
          </item>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QCheckBox" name="audioHle">
+         <property name="text">
+          <string>XQ GBA audio (experimental)</string>
+         </property>
         </widget>
        </item>
        <item row="2" column="0" colspan="2">
@@ -1064,13 +1071,6 @@
            </layout>
           </item>
          </layout>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QCheckBox" name="audioHle">
-         <property name="text">
-          <string>XQ GBA audio (experimental)</string>
-         </property>
         </widget>
        </item>
       </layout>
@@ -1613,6 +1613,19 @@
          </property>
         </widget>
        </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="cgbHybridModel"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_39">
+         <property name="text">
+          <string>Super Game Boy/Game Boy Color model:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QComboBox" name="cgbSgbModel"/>
+       </item>
        <item row="5" column="0" colspan="2">
         <widget class="Line" name="line_12">
          <property name="orientation">
@@ -1621,13 +1634,23 @@
         </widget>
        </item>
        <item row="6" column="0">
+        <widget class="QLabel" name="label_40">
+         <property name="text">
+          <string>Preset:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QComboBox" name="colorPreset"/>
+       </item>
+       <item row="7" column="0">
         <widget class="QLabel" name="label_28">
          <property name="text">
           <string>Default BG colors:</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="7" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_9">
          <item>
           <widget class="QFrame" name="color0">
@@ -1707,14 +1730,14 @@
          </item>
         </layout>
        </item>
-       <item row="7" column="0">
+       <item row="8" column="0">
         <widget class="QLabel" name="label_69">
          <property name="text">
           <string>Default sprite colors 1:</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="8" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_15">
          <item>
           <widget class="QFrame" name="color4">
@@ -1794,14 +1817,14 @@
          </item>
         </layout>
        </item>
-       <item row="8" column="0">
+       <item row="9" column="0">
         <widget class="QLabel" name="label_70">
          <property name="text">
           <string>Default sprite colors 2:</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
+       <item row="9" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_37">
          <item>
           <widget class="QFrame" name="color8">
@@ -1881,35 +1904,35 @@
          </item>
         </layout>
        </item>
-       <item row="9" column="1">
+       <item row="10" column="1">
         <widget class="QCheckBox" name="useCgbColors">
          <property name="text">
           <string>Use GBC colors in GB games</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="11" column="1">
         <widget class="QCheckBox" name="sgbBorders">
          <property name="text">
           <string>Super Game Boy borders</string>
          </property>
         </widget>
        </item>
-       <item row="11" column="0" colspan="2">
+       <item row="12" column="0" colspan="2">
         <widget class="Line" name="line_11">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="12" column="0">
+       <item row="13" column="0">
         <widget class="QLabel" name="label_27">
          <property name="text">
           <string>Camera driver:</string>
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
+       <item row="13" column="1">
         <widget class="QComboBox" name="cameraDriver">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -1919,14 +1942,14 @@
          </property>
         </widget>
        </item>
-       <item row="13" column="0">
+       <item row="14" column="0">
         <widget class="QLabel" name="label_35">
          <property name="text">
           <string>Camera:</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
+       <item row="14" column="1">
         <widget class="QComboBox" name="camera">
          <property name="enabled">
           <bool>false</bool>
@@ -1938,19 +1961,6 @@
           </sizepolicy>
          </property>
         </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QComboBox" name="cgbHybridModel"/>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_39">
-         <property name="text">
-          <string>Super Game Boy/Game Boy Color model:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QComboBox" name="cgbSgbModel"/>
        </item>
       </layout>
      </widget>

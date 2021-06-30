@@ -12,6 +12,7 @@
 #include <mgba/internal/gba/gba.h>
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/overrides.h>
 #endif
 #include <mgba-util/gui/file-select.h>
 #include <mgba-util/gui/menu.h>
@@ -40,6 +41,7 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.index = 0,
 		.background = &runner->background.d
 	};
+	size_t i;
 	GUIMenuItemListInit(&menu.items, 0);
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Frameskip",
@@ -130,6 +132,18 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.title = "Select SGB BIOS path",
 		.data = "sgb.bios",
 	};
+	struct GUIMenuItem* palette = GUIMenuItemListAppend(&menu.items);
+	*palette = (struct GUIMenuItem) {
+		.title = "GB palette",
+		.data = "gb.pal",
+	};
+	const struct GBColorPreset* colorPresets;
+	palette->nStates = GBColorPresetList(&colorPresets);
+	const char** paletteStates = calloc(palette->nStates, sizeof(char*));
+	for (i = 0; i < palette->nStates; ++i) {
+		paletteStates[i] = colorPresets[i].name;
+	}
+	palette->validStates = paletteStates;
 #endif
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Interframe blending",
@@ -189,7 +203,6 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.nStates = 2
 	};
 #endif
-	size_t i;
 	const char* mapNames[GUI_MAX_INPUTS + 1];
 	if (runner->keySources) {
 		for (i = 0; runner->keySources[i].id && i < GUI_MAX_INPUTS; ++i) {
@@ -318,6 +331,23 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 						mCoreConfigSetValue(&runner->config, item->data, v->v.s);
 						break;
 					}
+#ifdef M_CORE_GB
+				} else if (!strcmp(item->data, "gb.pal")) {
+					const struct GBColorPreset* preset = &colorPresets[item->state];
+					mCoreConfigSetUIntValue(&runner->config, "gb.pal[0]", preset->colors[0] & 0xFFFFFF);
+					mCoreConfigSetUIntValue(&runner->config, "gb.pal[1]", preset->colors[1] & 0xFFFFFF);
+					mCoreConfigSetUIntValue(&runner->config, "gb.pal[2]", preset->colors[2] & 0xFFFFFF);
+					mCoreConfigSetUIntValue(&runner->config, "gb.pal[3]", preset->colors[3] & 0xFFFFFF);
+					mCoreConfigSetUIntValue(&runner->config, "gb.pal[4]", preset->colors[4] & 0xFFFFFF);
+					mCoreConfigSetUIntValue(&runner->config, "gb.pal[5]", preset->colors[5] & 0xFFFFFF);
+					mCoreConfigSetUIntValue(&runner->config, "gb.pal[6]", preset->colors[6] & 0xFFFFFF);
+					mCoreConfigSetUIntValue(&runner->config, "gb.pal[7]", preset->colors[7] & 0xFFFFFF);
+					mCoreConfigSetUIntValue(&runner->config, "gb.pal[8]", preset->colors[8] & 0xFFFFFF);
+					mCoreConfigSetUIntValue(&runner->config, "gb.pal[9]", preset->colors[9] & 0xFFFFFF);
+					mCoreConfigSetUIntValue(&runner->config, "gb.pal[10]", preset->colors[10] & 0xFFFFFF);
+					mCoreConfigSetUIntValue(&runner->config, "gb.pal[11]", preset->colors[11] & 0xFFFFFF);
+					mCoreConfigSetUIntValue(&runner->config, item->data, item->state);
+#endif
 				} else {
 					mCoreConfigSetUIntValue(&runner->config, item->data, item->state);
 				}
@@ -380,5 +410,8 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 			}
 		}
 	}
+#ifdef M_CORE_GB
+	free(paletteStates);
+#endif
 	GUIMenuItemListDeinit(&menu.items);
 }

@@ -83,6 +83,20 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 			m_gbColors[colorId] = color.rgb() | 0xFF000000;
 		});
 	}
+
+	const GBColorPreset* colorPresets;
+	size_t nPresets = GBColorPresetList(&colorPresets);
+	for (size_t i = 0; i < nPresets; ++i) {
+		m_ui.colorPreset->addItem(QString(colorPresets[i].name));
+	}
+	connect(m_ui.colorPreset, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this, colorPresets](int n) {
+		const GBColorPreset* preset = &colorPresets[n];
+		for (int colorId = 0; colorId < 12; ++colorId) {
+			uint32_t color = preset->colors[colorId] | 0xFF000000;
+			m_colorPickers[colorId].setColor(color);
+			m_gbColors[colorId] = color;
+		}
+	});
 #endif
 
 #ifndef M_CORE_GBA

@@ -189,6 +189,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		message = QString().vsprintf(format, args);
 		QMetaObject::invokeMethod(controller, "logPosted", Q_ARG(int, level), Q_ARG(int, category), Q_ARG(const QString&, message));
 		if (level == mLOG_FATAL) {
+			mCoreThreadMarkCrashed(controller->thread());
 			QMetaObject::invokeMethod(controller, "crashed", Q_ARG(const QString&, QString().vsprintf(format, args)));
 		}
 	};
@@ -293,14 +294,15 @@ void CoreController::loadConfig(ConfigController* config) {
 		updateFastForward();
 		mCoreThreadRewindParamsChanged(&m_threadContext);
 	}
-	if (sizeBefore != sizeAfter) {
 #ifdef M_CORE_GB
+	if (sizeBefore != sizeAfter) {
 		mCoreConfigSetIntValue(&m_threadContext.core->config, "sgb.borders", 0);
 		m_threadContext.core->reloadConfigOption(m_threadContext.core, "sgb.borders", nullptr);
 		mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "sgb.borders");
 		m_threadContext.core->reloadConfigOption(m_threadContext.core, "sgb.borders", nullptr);
-#endif
 	}
+	m_threadContext.core->reloadConfigOption(m_threadContext.core, "gb.pal", config->config());
+#endif
 }
 
 #ifdef USE_DEBUGGERS
