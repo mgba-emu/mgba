@@ -6,7 +6,8 @@
 #include <mgba/internal/gba/overrides.h>
 
 #include <mgba/internal/gba/gba.h>
-#include <mgba/internal/gba/hardware.h>
+#include <mgba/internal/gba/cart/ereader.h>
+#include <mgba/internal/gba/cart/gpio.h>
 
 #include <mgba-util/configuration.h>
 
@@ -347,7 +348,7 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 		}
 
 		if (override->hardware & HW_EREADER) {
-			GBAHardwareInitEReader(&gba->memory.hw);
+			GBACartEReaderInit(&gba->memory.ereader);
 		}
 
 		if (override->hardware & HW_GB_PLAYER_DETECTION) {

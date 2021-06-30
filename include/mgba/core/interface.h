@@ -164,6 +164,7 @@ enum mColorFormat {
 	mCOLOR_BGRA5  = 0x08000,
 	mCOLOR_RGB8   = 0x10000,
 	mCOLOR_BGR8   = 0x20000,
+	mCOLOR_L8     = 0x40000,
 
 	mCOLOR_ANY    = -1
 };

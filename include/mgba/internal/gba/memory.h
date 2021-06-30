@@ -14,10 +14,11 @@ CXX_GUARD_START
 
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/gba/dma.h>
-#include <mgba/internal/gba/hardware.h>
 #include <mgba/internal/gba/savedata.h>
-#include <mgba/internal/gba/vfame.h>
-#include <mgba/internal/gba/matrix.h>
+#include <mgba/internal/gba/cart/ereader.h>
+#include <mgba/internal/gba/cart/gpio.h>
+#include <mgba/internal/gba/cart/matrix.h>
+#include <mgba/internal/gba/cart/vfame.h>
 
 mLOG_DECLARE_CATEGORY(GBA_MEM);
 
@@ -108,6 +109,7 @@ struct GBAMemory {
 	struct GBASavedata savedata;
 	struct GBAVFameCart vfame;
 	struct GBAMatrix matrix;
+	struct GBACartEReader ereader;
 	size_t romSize;
 	uint32_t romMask;
 	uint16_t romID;

@@ -371,6 +371,10 @@ void PainterGL::resizeContext() {
 	m_interrupter.resume();
 
 	QSize size = m_context->screenDimensions();
+	if (m_dims == size) {
+		return;
+	}
+	dequeueAll();
 	m_backend->setDimensions(m_backend, size.width(), size.height());
 }
 
@@ -562,9 +566,6 @@ void PainterGL::dequeueAll() {
 		if (buffer) {
 			m_free.append(buffer);
 		}
-	}
-	if (buffer) {
-		m_backend->postFrame(m_backend, buffer);
 	}
 	if (m_buffer) {
 		m_free.append(m_buffer);

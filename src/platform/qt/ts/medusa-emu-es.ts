@@ -1862,27 +1862,27 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="288"/>
         <source>BG 0 target 1</source>
-        <translation>BG 0 target 1</translation>
+        <translation>BG 0 objetivo 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="289"/>
         <source>BG 1 target 1</source>
-        <translation>BG 1 target 1</translation>
+        <translation>BG 1 objetivo 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="290"/>
         <source>BG 2 target 1</source>
-        <translation>BG 2 target 1</translation>
+        <translation>BG 2 objetivo 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="291"/>
         <source>BG 3 target 1</source>
-        <translation>BG 3 target 1</translation>
+        <translation>BG 3 objetivo 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="292"/>
         <source>OBJ target 1</source>
-        <translation>OBJ target 1</translation>
+        <translation>OBJ objetivo 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="293"/>
@@ -1917,27 +1917,27 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="300"/>
         <source>BG 0 target 2</source>
-        <translation>BG 0 target 2</translation>
+        <translation>BG 0 objetivo 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="301"/>
         <source>BG 1 target 2</source>
-        <translation>BG 1 target 2</translation>
+        <translation>BG 1 objetivo 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="302"/>
         <source>BG 2 target 2</source>
-        <translation>BG 2 target 2</translation>
+        <translation>BG 2 objetivo 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="303"/>
         <source>BG 3 target 2</source>
-        <translation>BG 3 target 2</translation>
+        <translation>BG 3 objetivo 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="304"/>
         <source>OBJ target 2</source>
-        <translation>OBJ target 2</translation>
+        <translation>OBJ objetivo 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="305"/>
@@ -1947,12 +1947,12 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="309"/>
         <source>Blend A (target 1)</source>
-        <translation>Mezcla A (target 1)</translation>
+        <translation>Mezcla A (objetivo 1)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="310"/>
         <source>Blend B (target 2)</source>
-        <translation>Mezcla B (target 2)</translation>
+        <translation>Mezcla B (objetivo 2)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="314"/>
@@ -2044,7 +2044,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
         <location filename="../IOViewer.cpp" line="1171"/>
         <location filename="../IOViewer.cpp" line="1197"/>
         <source>Timed</source>
-        <translation>Timed</translation>
+        <translation>Cronometrado</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="344"/>
@@ -2620,7 +2620,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
         <location filename="../IOViewer.cpp" line="689"/>
         <location filename="../IOViewer.cpp" line="735"/>
         <source>Audio FIFO</source>
-        <translation>Audio FIFO</translation>
+        <translation>FIFO de audio</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="726"/>
@@ -2835,7 +2835,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
         <location filename="../IOViewer.cpp" line="956"/>
         <location filename="../IOViewer.cpp" line="973"/>
         <source>Keypad</source>
-        <translation>Keypad</translation>
+        <translation>Teclado numérico</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="957"/>
@@ -2916,7 +2916,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1014"/>
         <source>PHI terminal</source>
-        <translation>PHI terminal</translation>
+        <translation>Terminal PHI</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1015"/>

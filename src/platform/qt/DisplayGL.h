@@ -142,7 +142,7 @@ private:
 	QList<uint32_t*> m_free;
 	QQueue<uint32_t*> m_queue;
 	QAtomicInt m_lagging = 0;
-	uint32_t* m_buffer;
+	uint32_t* m_buffer = nullptr;
 	QPainter m_painter;
 	QMutex m_mutex;
 	QWindow* m_surface;
@@ -158,6 +158,7 @@ private:
 	VideoShader m_shader{};
 	VideoBackend* m_backend = nullptr;
 	QSize m_size;
+	QSize m_dims;
 	MessagePainter* m_messagePainter = nullptr;
 	QElapsedTimer m_delayTimer;
 	std::shared_ptr<VideoProxy> m_videoProxy;

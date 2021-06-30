@@ -20,7 +20,7 @@ CXX_GUARD_START
 #include <mgba/internal/ds/timer.h>
 #include <mgba/internal/ds/video.h>
 #include <mgba/internal/ds/wifi.h>
-#include <mgba/internal/gba/hardware.h>
+#include <mgba/internal/gba/cart/gpio.h>
 
 extern const uint32_t DS_ARM946ES_FREQUENCY;
 extern const uint32_t DS_ARM7TDMI_FREQUENCY;

@@ -10,8 +10,9 @@
 
 CXX_GUARD_START
 
-#include <mgba/gba/interface.h>
 #include <mgba/core/log.h>
+#include <mgba/gba/interface.h>
+#include <mgba/internal/gba/sio/gbp.h>
 
 #define MAX_GBAS 4
 
@@ -69,6 +70,8 @@ struct GBASIO {
 
 	uint16_t rcnt;
 	uint16_t siocnt;
+
+	struct GBASIOPlayer gbp;
 };
 
 void GBASIOInit(struct GBASIO* sio);
