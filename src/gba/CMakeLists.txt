@@ -14,6 +14,7 @@ set(SOURCE_FILES
 	core.c
 	dma.c
 	gba.c
+	hardware-extensions.c
 	hle-bios.c
 	input.c
 	io.c

@@ -9,6 +9,7 @@
 #include <mgba/internal/gba/dma.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/serialize.h>
+#include <mgba/internal/gba/hardware-extensions.h>
 
 mLOG_DEFINE_CATEGORY(GBA_IO, "GBA I/O", "gba.io");
 
@@ -666,6 +667,9 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 	case REG_DMA3DAD_LO:
 		value = GBADMAWriteDAD(gba, 3, value);
 		break;
+	case REG_MGBA_EXTENSION_0:
+		SetRegMgbaHwExtensionValue(gba, address, value);
+		return;
 	default:
 		if (address >= REG_DEBUG_STRING && address - REG_DEBUG_STRING < sizeof(gba->debugString)) {
 			STORE_32LE(value, address - REG_DEBUG_STRING, gba->debugString);
@@ -931,12 +935,19 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case 0x206:
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return 0;
+	case REG_MGBA_EXTENSIONS_ENABLED:
+		return GetRegMgbaHwExtensionsEnabled();
+	case REG_MGBA_EXTENSIONS_CNT:
+		return GetRegMgbaHwExtensionsCnt(gba, address);
 	case REG_DEBUG_ENABLE:
 		if (gba->debug) {
 			return 0x1DEA;
 		}
 		// Fall through
 	default:
+		if (address >= REG_MGBA_EXTENSION_0 && (address & 1) == 0 && ((address - REG_MGBA_EXTENSION_0) >> 2) < HWEX_EXTENSIONS_COUNT) {
+			return GetRegMgbaHwExtensionValue(gba, address);
+		}
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return GBALoadBad(gba->cpu);
 	}

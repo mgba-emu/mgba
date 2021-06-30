@@ -18,6 +18,7 @@ CXX_GUARD_START
 #include <mgba/internal/gba/audio.h>
 #include <mgba/internal/gba/sio.h>
 #include <mgba/internal/gba/timer.h>
+#include <mgba/internal/gba/hardware-extensions.h>
 
 #define GBA_ARM7TDMI_FREQUENCY 0x1000000U
 
@@ -123,6 +124,10 @@ struct GBA {
 	bool debug;
 	char debugString[0x100];
 	GBADebugFlags debugFlags;
+
+	// Extensions
+	uint32_t extIORegisters[HWEX_EXTENSIONS_COUNT];
+	uint32_t extMoreRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
 };
 
 struct GBACartridge {
