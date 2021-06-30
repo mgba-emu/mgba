@@ -6,60 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>629</width>
-    <height>428</height>
+    <width>520</width>
+    <height>455</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Cheats</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" columnstretch="3,0,0,0">
-   <item row="2" column="2" colspan="2">
-    <widget class="QPushButton" name="remove">
-     <property name="text">
-      <string>Remove</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2" colspan="2">
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="3">
-    <widget class="QPushButton" name="save">
-     <property name="text">
-      <string>Save</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QPushButton" name="load">
-     <property name="text">
-      <string>Load</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2" colspan="2">
-    <widget class="QPushButton" name="addSet">
-     <property name="text">
-      <string>Add New Set</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="2" colspan="2">
-    <widget class="QPushButton" name="add">
-     <property name="text">
-      <string>Add</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0" rowspan="7" colspan="2">
+  <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0,1,0,0" columnstretch="4,0,0">
+   <item row="0" column="0" rowspan="7">
     <widget class="QTreeView" name="cheatList">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -75,18 +33,51 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="2" rowspan="2" colspan="2">
+   <item row="0" column="1" colspan="2">
+    <widget class="QPushButton" name="addSet">
+     <property name="text">
+      <string>Add New Code</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QPushButton" name="load">
+     <property name="text">
+      <string>Load</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <widget class="QPushButton" name="save">
+     <property name="text">
+      <string>Save</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" colspan="2">
+    <widget class="QPushButton" name="remove">
+     <property name="text">
+      <string>Remove</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1" colspan="2">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1" colspan="2">
     <widget class="QPlainTextEdit" name="codeEntry">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
        <horstretch>1</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="font">
-      <font>
-       <family>Courier New</family>
-      </font>
+     <property name="tabChangesFocus">
+      <bool>true</bool>
      </property>
      <property name="lineWrapMode">
       <enum>QPlainTextEdit::NoWrap</enum>
@@ -94,6 +85,21 @@
      <property name="placeholderText">
       <string>Enter codes here...</string>
      </property>
+    </widget>
+   </item>
+   <item row="5" column="1" colspan="2">
+    <widget class="QPushButton" name="add">
+     <property name="text">
+      <string>Add Lines</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1" colspan="2">
+    <widget class="QGroupBox" name="typeBox">
+     <property name="title">
+      <string>Code type</string>
+     </property>
+     <layout class="QVBoxLayout" name="typeLayout"/>
     </widget>
    </item>
   </layout>

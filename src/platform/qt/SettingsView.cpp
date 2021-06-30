@@ -423,6 +423,8 @@ void SettingsView::updateConfig() {
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
 	saveSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
 	saveSetting("pauseOnMinimize", m_ui.pauseOnMinimize);
+	saveSetting("muteOnFocusLost", m_ui.muteOnFocusLost);
+	saveSetting("muteOnMinimize", m_ui.muteOnMinimize);
 	saveSetting("savegamePath", m_ui.savegamePath);
 	saveSetting("savestatePath", m_ui.savestatePath);
 	saveSetting("screenshotPath", m_ui.screenshotPath);
@@ -532,6 +534,14 @@ void SettingsView::updateConfig() {
 	if (language != m_controller->getQtOption("language").toLocale() && !(language.bcp47Name() == QLocale::system().bcp47Name() && m_controller->getQtOption("language").isNull())) {
 		m_controller->setQtOption("language", language.bcp47Name());
 		emit languageChanged();
+	}
+
+	if (m_ui.multiplayerAudioAll->isChecked()) {
+		m_controller->setQtOption("multiplayerAudio", "all");
+	} else if (m_ui.multiplayerAudio1->isChecked()) {
+		m_controller->setQtOption("multiplayerAudio", "p1");
+	} else if (m_ui.multiplayerAudioActive->isChecked()) {
+		m_controller->setQtOption("multiplayerAudio", "active");
 	}
 
 	int hwaccelVideo = m_controller->getOption("hwaccelVideo").toInt();
@@ -767,6 +777,15 @@ void SettingsView::reloadConfig() {
 		m_ui.videoScaleSize->setText(tr("(%1×%2)").arg(GBA_VIDEO_HORIZONTAL_PIXELS * value).arg(GBA_VIDEO_VERTICAL_PIXELS * value));
 	});
 	loadSetting("videoScale", m_ui.videoScale, 1);
+
+	QString multiplayerAudio = m_controller->getQtOption("multiplayerAudio").toString();
+	if (multiplayerAudio == QLatin1String("p1")) {
+		m_ui.multiplayerAudio1->setChecked(true);
+	} else if (multiplayerAudio == QLatin1String("active")) {
+		m_ui.multiplayerAudioActive->setChecked(true);
+	} else {
+		m_ui.multiplayerAudioAll->setChecked(true);		
+	}
 }
 
 void SettingsView::addPage(const QString& name, QWidget* view, Page index) {

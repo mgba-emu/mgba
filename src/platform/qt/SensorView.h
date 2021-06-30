@@ -42,7 +42,9 @@ private slots:
 private:
 	Ui::SensorView m_ui;
 
-	std::function<void(int)> m_jiggered;
+	QAbstractButton* m_button = nullptr;
+	void (InputController::*m_setter)(int);
+
 	std::shared_ptr<CoreController> m_controller;
 	InputController* m_input;
 	mRotationSource* m_rotation;

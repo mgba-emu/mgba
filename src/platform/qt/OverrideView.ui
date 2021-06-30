@@ -143,7 +143,17 @@
               </item>
               <item>
                <property name="text">
-                <string>EEPROM</string>
+                <string>EEPROM 8kB</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>EEPROM 512 bytes</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>SRAM 64kB (bootlegs only)</string>
                </property>
               </item>
              </widget>

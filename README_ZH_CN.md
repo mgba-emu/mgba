@@ -77,7 +77,7 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 支持平台
 -------------------
 
-- Windows Vista 或更新
+- Windows 7 或更新
 - OS X 10.8（山狮 / Mountain Lion）[<sup>[3]</sup>](#osxver) 或更新
 - Linux
 - FreeBSD

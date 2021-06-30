@@ -79,7 +79,7 @@ Die folgenden Mapper werden teilweise unterstützt:
 Unterstützte Plattformen
 ------------------------
 
-- Windows Vista oder neuer
+- Windows 7 oder neuer
 - OS X 10.8 (Mountain Lion)[<sup>[3]</sup>](#osxver) oder neuer
 - Linux
 - FreeBSD

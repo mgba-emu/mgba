@@ -142,7 +142,7 @@
         <item row="1" column="1">
          <widget class="QRadioButton" name="gateBattleChip">
           <property name="text">
-           <string>Ba&amp;ttleChip Gate</string>
+           <string notr="true">Ba&amp;ttleChip Gate</string>
           </property>
           <property name="checked">
            <bool>true</bool>
@@ -152,14 +152,14 @@
         <item row="2" column="1">
          <widget class="QRadioButton" name="gateProgress">
           <property name="text">
-           <string>Progress &amp;Gate</string>
+           <string notr="true">Progress &amp;Gate</string>
           </property>
          </widget>
         </item>
         <item row="3" column="1">
          <widget class="QRadioButton" name="gateBeastLink">
           <property name="text">
-           <string>Beast &amp;Link Gate</string>
+           <string notr="true">Beast &amp;Link Gate</string>
           </property>
          </widget>
         </item>

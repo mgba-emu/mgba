@@ -1,17 +1,17 @@
 ; this file was created with wlalink by ville helin <vhelin@iki.fi>.
-; wla symbolic information for "/home/vicki/Scratch/mooneye-gb/tests/build/emulator-only/mbc1/ram_64Kb.gb".
+; wla symbolic information for "/home/vicki/Scratch/mooneye-gb/tests/build/emulator-only/mbc1/ram_64kb.gb".
 
 [labels]
-01:48bd clear_vram
-01:487a disable_lcd_safe
-01:4880 disable_lcd_safe@wait_ly_0
-01:4898 memcmp
-01:48c7 memcpy
-01:48d0 memset
-01:48e0 print_inline_string
-01:48a6 print_load_font
-01:48b2 print_newline
-01:48d9 print_string
+01:48c7 clear_vram
+01:4884 disable_lcd_safe
+01:488a disable_lcd_safe@wait_ly_0
+01:48a2 memcmp
+01:48d1 memcpy
+01:48da memset
+01:48ea print_inline_string
+01:48b0 print_load_font
+01:48bc print_newline
+01:48e3 print_string
 01:47f0 quit
 01:4805 quit@cb_return
 01:480a quit@wait_ly_1
@@ -20,23 +20,23 @@
 01:481c quit@wait_ly_4
 01:4826 quit@success
 01:484d quit@failure
-01:4862 quit@halt
-01:4863 quit@halt_execution_0
-01:4866 reset_screen
-01:4889 serial_send_byte
+01:486c quit@halt
+01:486d quit@halt_execution_0
+01:4870 reset_screen
+01:4893 serial_send_byte
 01:4000 font
 00:0150 main
-00:0150 test_round1
-00:016e test_round2
-00:01c2 test_round3
-00:01cb test_round4
-00:01fb test_round5
-00:022c test_finish
-00:0236 test_finish@quit_inline_1
-00:0247 copy_bank_data
-00:025f check_bank_data
-00:0278 all_ff
-00:0288 all_00
+00:015f test_round1
+00:017d test_round2
+00:01d1 test_round3
+00:01da test_round4
+00:020a test_round5
+00:023b test_finish
+00:0245 test_finish@quit_inline_1
+00:0256 copy_bank_data
+00:026e check_bank_data
+00:0287 all_ff
+00:0297 all_00
 00:1000 bank_data
 00:1010 clear_ram
 00:1032 fail_round1
@@ -49,6 +49,7 @@
 00:109f fail_round4@quit_inline_5
 00:10b6 fail_round5
 00:10c0 fail_round5@quit_inline_6
+00:ff80 memcmp_hram
 
 [definitions]
 0000000a _sizeof_clear_vram
@@ -60,12 +61,13 @@
 0000000c _sizeof_print_load_font
 0000000b _sizeof_print_newline
 00000007 _sizeof_print_string
-00000076 _sizeof_quit
+00000080 _sizeof_quit
 00000014 _sizeof_reset_screen
 0000000f _sizeof_serial_send_byte
 000007f0 _sizeof_font
-00000000 _sizeof_test_round1
-0000001e _sizeof_main
+00000020 _sizeof_memcmp_hram
+0000000f _sizeof_main
+0000001e _sizeof_test_round1
 00000054 _sizeof_test_round2
 00000009 _sizeof_test_round3
 00000030 _sizeof_test_round4
@@ -74,7 +76,7 @@
 00000018 _sizeof_copy_bank_data
 00000019 _sizeof_check_bank_data
 00000010 _sizeof_all_ff
-00000d78 _sizeof_all_00
+00000d69 _sizeof_all_00
 00000010 _sizeof_bank_data
 00000022 _sizeof_clear_ram
 00000021 _sizeof_fail_round1

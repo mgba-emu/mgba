@@ -160,7 +160,7 @@ int main() {
 		.configExtra = (struct GUIMenuItem[]) {
 			{
 				.title = "Screen mode",
-				.data = "screenMode",
+				.data = GUI_V_S("screenMode"),
 				.submenu = 0,
 				.state = 0,
 				.validStates = (const char*[]) {
@@ -173,7 +173,7 @@ int main() {
 			},
 			{
 				.title = "Camera",
-				.data = "camera",
+				.data = GUI_V_S("camera"),
 				.submenu = 0,
 				.state = 1,
 				.validStates = (const char*[]) {

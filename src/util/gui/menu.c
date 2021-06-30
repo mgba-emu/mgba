@@ -137,7 +137,7 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 				if (reason != GUI_MENU_EXIT_BACK) {
 					return reason;
 				}
-			} else if ((*item)->validStates && !(*item)->data) {
+			} else if ((*item)->validStates && !(*item)->data.v.p) {
 				_itemNext(*item, true);
 			} else {
 				return GUI_MENU_EXIT_ACCEPT;
@@ -152,7 +152,7 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 
 		params->drawStart();
 		if (menu->background) {
-			menu->background->draw(menu->background, GUIMenuItemListGetPointer(&menu->items, menu->index)->data);
+			menu->background->draw(menu->background, GUIMenuItemListGetPointer(&menu->items, menu->index)->data.v.p);
 		}
 		if (params->guiPrepare) {
 			params->guiPrepare();
