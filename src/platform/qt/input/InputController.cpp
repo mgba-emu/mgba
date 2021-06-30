@@ -184,11 +184,11 @@ void InputController::setPlatform(mPlatform platform) {
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
 		image->w = w;
 		image->h = h;
-		image->p->m_cameraActive = true;
 		if (image->image.isNull()) {
 			image->image.load(":/res/no-cam.png");
 		}
 #ifdef BUILD_QT_MULTIMEDIA
+		image->p->m_cameraActive = true;
 		QByteArray camera = image->p->m_config->getQtOption("camera").toByteArray();
 		if (!camera.isNull()) {
 			image->p->m_cameraDevice = camera;

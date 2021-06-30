@@ -56,12 +56,12 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation>In Archiv öffnen...</translation>
+        <translation>In Archiv öffnen …</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation>Laden...</translation>
+        <translation>Laden …</translation>
     </message>
 </context>
 <context>
@@ -69,12 +69,12 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation>Tile #</translation>
+        <translation>Tile Nr.</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
-        <translation>Palette #</translation>
+        <translation>Palette Nr.</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="86"/>
@@ -327,7 +327,7 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../GIFView.ui" line="67"/>
         <source>Stop</source>
-        <translation>Stop</translation>
+        <translation>Stopp</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="93"/>
@@ -1262,27 +1262,27 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
 <context>
     <name>QGBA::CoreController</name>
     <message>
-        <location filename="../CoreController.cpp" line="695"/>
+        <location filename="../CoreController.cpp" line="697"/>
         <source>Failed to open save file: %1</source>
         <translation>Fehler beim Öffnen der Speicherdatei: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="726"/>
+        <location filename="../CoreController.cpp" line="728"/>
         <source>Failed to open game file: %1</source>
         <translation>Fehler beim Öffnen der Spieldatei: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="751"/>
+        <location filename="../CoreController.cpp" line="753"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
         <translation>Das GamePak kann nur auf unterstützten Plattformen herausgezogen werden!</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="828"/>
+        <location filename="../CoreController.cpp" line="830"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation>Konnte Snapshot-Datei %1 nicht zum Lesen öffnen</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="844"/>
+        <location filename="../CoreController.cpp" line="846"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation>Konnte Snapshot-Datei %1 nicht zum Schreiben öffnen</translation>
     </message>
@@ -3946,7 +3946,7 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
         <translation>Verzeichnis auswählen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="734"/>
+        <location filename="../SettingsView.cpp" line="760"/>
         <source>(%1×%2)</source>
         <translation>(%1×%2)</translation>
     </message>
@@ -4097,22 +4097,22 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../Window.cpp" line="430"/>
         <source>Select e-Reader card images</source>
-        <translation type="unfinished"></translation>
+        <translation>Bilder der Lesegerät-Karte auswählen</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="430"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Bilddatei (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="431"/>
         <source>Conversion finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Konvertierung abgeschlossen</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="469"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 von %2 Lesegerät-Karten erfolgreich konvertiert.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="482"/>
@@ -4252,7 +4252,7 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../Window.cpp" line="1184"/>
         <source>Convert e-Reader card image to raw...</source>
-        <translation type="unfinished"></translation>
+        <translation>Lesegerät-Kartenbild in Rohdaten umwandeln …</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1188"/>
@@ -5166,37 +5166,37 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
         <translation>Einstellungen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="52"/>
+        <location filename="../SettingsView.ui" line="45"/>
         <source>Audio/Video</source>
         <translation>Audio/Video</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="57"/>
+        <location filename="../SettingsView.ui" line="50"/>
         <source>Interface</source>
         <translation>Benutzeroberfläche</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="62"/>
+        <location filename="../SettingsView.ui" line="55"/>
         <source>Emulation</source>
         <translation>Emulation</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="67"/>
+        <location filename="../SettingsView.ui" line="60"/>
         <source>Enhancements</source>
         <translation>Verbesserungen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="77"/>
+        <location filename="../SettingsView.ui" line="70"/>
         <source>Paths</source>
         <translation>Verzeichnisse</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="82"/>
+        <location filename="../SettingsView.ui" line="75"/>
         <source>Logging</source>
         <translation>Protokoll</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="87"/>
+        <location filename="../SettingsView.ui" line="80"/>
         <source>Game Boy</source>
         <translation>Game Boy</translation>
     </message>
@@ -5355,6 +5355,41 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
         <translation>Erzwinge pixelgenaue Skalierung</translation>
     </message>
     <message>
+        <location filename="../SettingsView.ui" line="1852"/>
+        <source>Default color palette only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1862"/>
+        <source>SGB color palette if available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1872"/>
+        <source>GBC color palette if available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1882"/>
+        <source>SGB (preferred) or GBC color palette if available</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1895"/>
+        <source>Game Boy Camera</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1901"/>
+        <source>Driver:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1918"/>
+        <source>Source:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../SettingsView.ui" line="405"/>
         <source>Native (59.7275)</source>
         <translation>Nativ (59.7275)</translation>
@@ -5411,7 +5446,42 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
         <translation>Zusätzliche Savestate-Daten laden:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1559"/>
+        <location filename="../SettingsView.ui" line="1502"/>
+        <source>Models</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1508"/>
+        <source>GB only:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1518"/>
+        <source>SGB compatible:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1528"/>
+        <source>GBC only:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1538"/>
+        <source>GBC compatible:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1548"/>
+        <source>SGB and GBC compatible:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1568"/>
+        <source>Game Boy palette</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="1574"/>
         <source>Preset:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5419,11 +5489,6 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
         <location filename="../SettingsView.ui" line="879"/>
         <source>Enable Game Boy Player features by default</source>
         <translation>Game Boy Player-Features standardmäßig aktivieren</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="1542"/>
-        <source>Super Game Boy/Game Boy Color model:</source>
-        <translation>Super Game Boy/Game Boy Color-Modell:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="670"/>
@@ -5526,59 +5591,24 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
         <translation>Protokoll-Datei auswählen</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1502"/>
-        <source>Game Boy-only model:</source>
-        <translation>Game Boy-Modell:</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="1522"/>
-        <source>Game Boy Color-only model:</source>
-        <translation>Game Boy Color-Modell:</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="1532"/>
-        <source>Game Boy/Game Boy Color model:</source>
-        <translation>Game Boy/Game Boy Color-Modell:</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="1868"/>
-        <source>Camera:</source>
-        <translation>Kamera:</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="1569"/>
+        <location filename="../SettingsView.ui" line="1584"/>
         <source>Default BG colors:</source>
         <translation>Standard-Hintergrundfarben:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1656"/>
+        <location filename="../SettingsView.ui" line="1671"/>
         <source>Default sprite colors 1:</source>
         <translation>Standard-Sprite-Farben 1:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1743"/>
+        <location filename="../SettingsView.ui" line="1758"/>
         <source>Default sprite colors 2:</source>
         <translation>Standard-Sprite-Farben 2:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1830"/>
-        <source>Use GBC colors in GB games</source>
-        <translation>Verwende GBC-Farben in GB-Spielen</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="1837"/>
+        <location filename="../SettingsView.ui" line="1558"/>
         <source>Super Game Boy borders</source>
         <translation>Super Game Boy-Rahmen</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="1512"/>
-        <source>Super Game Boy model:</source>
-        <translation>Super Game Boy-Modell:</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="1851"/>
-        <source>Camera driver:</source>
-        <translation>Kamera-Treiber:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="499"/>
@@ -5650,7 +5680,7 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
         <translation>Bildschirmschoner deaktivieren</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="72"/>
+        <location filename="../SettingsView.ui" line="65"/>
         <source>BIOS</source>
         <translation>BIOS</translation>
     </message>
@@ -5900,7 +5930,7 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../VideoView.ui" line="56"/>
         <source>Stop</source>
-        <translation>Stop</translation>
+        <translation>Stopp</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="69"/>

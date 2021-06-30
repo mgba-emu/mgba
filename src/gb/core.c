@@ -233,6 +233,7 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	mCoreConfigCopyValue(&core->config, config, "cgb.model");
 	mCoreConfigCopyValue(&core->config, config, "cgb.hybridModel");
 	mCoreConfigCopyValue(&core->config, config, "cgb.sgbModel");
+	mCoreConfigCopyValue(&core->config, config, "gb.colors");
 	mCoreConfigCopyValue(&core->config, config, "useCgbColors");
 	mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 
@@ -494,13 +495,18 @@ static void _GBCoreReset(struct mCore* core) {
 	}
 
 	if (gb->memory.rom) {
-		int doColorOverride = 0;
-		mCoreConfigGetIntValue(&core->config, "useCgbColors", &doColorOverride);
+		int doColorOverride = GB_COLORS_NONE;
+		mCoreConfigGetIntValue(&core->config, "gb.colors", &doColorOverride);
+
+		if (doColorOverride == GB_COLORS_NONE) {
+			// Backwards compat for renamed setting
+			mCoreConfigGetIntValue(&core->config, "useCgbColors", &doColorOverride);
+		}
 
 		struct GBCartridgeOverride override;
 		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 		override.headerCrc32 = doCrc32(cart, sizeof(*cart));
-		bool modelOverride = GBOverrideFind(gbcore->overrides, &override) || (doColorOverride && GBOverrideColorFind(&override));
+		bool modelOverride = GBOverrideFind(gbcore->overrides, &override) || (doColorOverride && GBOverrideColorFind(&override, doColorOverride));
 		if (modelOverride) {
 			GBOverrideApply(gb, &override);
 		}
@@ -572,6 +578,7 @@ static void _GBCoreReset(struct mCore* core) {
 				break;
 			case GB_MODEL_CGB:
 			case GB_MODEL_AGB:
+			case GB_MODEL_SCGB:
 				configPath = mCoreConfigGetValue(&core->config, "gbc.bios");
 				break;
 			default:
@@ -601,6 +608,7 @@ static void _GBCoreReset(struct mCore* core) {
 				break;
 			case GB_MODEL_CGB:
 			case GB_MODEL_AGB:
+			case GB_MODEL_SCGB:
 				strncat(path, PATH_SEP "gbc_bios.bin", PATH_MAX - strlen(path));
 				break;
 			default:
@@ -839,13 +847,13 @@ void* _GBGetMemoryBlock(struct mCore* core, size_t id, size_t* sizeOut) {
 		*sizeOut = gb->memory.romSize;
 		return gb->memory.rom;
 	case GB_REGION_VRAM:
-		*sizeOut = GB_SIZE_WORKING_RAM_BANK0 * (isCgb ? 1 : 2);
+		*sizeOut = GB_SIZE_VRAM_BANK0 * (isCgb ? 1 : 2);
 		return gb->video.vram;
 	case GB_REGION_EXTERNAL_RAM:
 		*sizeOut = gb->sramSize;
 		return gb->memory.sram;
 	case GB_REGION_WORKING_RAM_BANK0:
-		*sizeOut = GB_SIZE_VRAM * (isCgb ? 8 : 2);
+		*sizeOut = GB_SIZE_WORKING_RAM_BANK0 * (isCgb ? 8 : 2);
 		return gb->memory.wram;
 	case GB_BASE_OAM:
 		*sizeOut = GB_SIZE_OAM;

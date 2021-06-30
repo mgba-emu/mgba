@@ -51,9 +51,44 @@
 #define PAL31 PAL_ENTRY(0x7FFF, 0x7FFF, 0x7E8C, 0x7C00)
 #define PAL32 PAL_ENTRY(0x0000, 0x7FFF, 0x421F, 0x1CF2)
 
-#define PALETTE(X, Y, Z) { PAL ## X, PAL ## Y, PAL ## Z }
+#define PAL1A PAL_ENTRY(0x67BF, 0x265B, 0x10B5, 0x2866)
+#define PAL1B PAL_ENTRY(0x637B, 0x3AD9, 0x0956, 0x0000)
+#define PAL1C PAL_ENTRY(0x7F1F, 0x2A7D, 0x30F3, 0x4CE7)
+#define PAL1D PAL_ENTRY(0x57FF, 0x2618, 0x001F, 0x006A)
+#define PAL1E PAL_ENTRY(0x5B7F, 0x3F0F, 0x222D, 0x10EB)
+#define PAL1F PAL_ENTRY(0x7FBB, 0x2A3C, 0x0015, 0x0900)
+#define PAL1G PAL_ENTRY(0x2800, 0x7680, 0x01EF, 0x2FFF)
+#define PAL1H PAL_ENTRY(0x73BF, 0x46FF, 0x0110, 0x0066)
+#define PAL2A PAL_ENTRY(0x533E, 0x2638, 0x01E5, 0x0000)
+#define PAL2B PAL_ENTRY(0x7FFF, 0x2BBF, 0x00DF, 0x2C0A)
+#define PAL2C PAL_ENTRY(0x7F1F, 0x463D, 0x74CF, 0x4CA5)
+#define PAL2D PAL_ENTRY(0x53FF, 0x03E0, 0x00DF, 0x2800)
+#define PAL2E PAL_ENTRY(0x433F, 0x72D2, 0x3045, 0x0822)
+#define PAL2F PAL_ENTRY(0x7FFA, 0x2A5F, 0x0014, 0x0003)
+#define PAL2G PAL_ENTRY(0x1EED, 0x215C, 0x42FC, 0x0060)
+#define PAL2H PAL_ENTRY(0x7FFF, 0x5EF7, 0x39CE, 0x0000)
+#define PAL3A PAL_ENTRY(0x4F5F, 0x630E, 0x159F, 0x3126)
+#define PAL3B PAL_ENTRY(0x637B, 0x121C, 0x0140, 0x0840)
+#define PAL3C PAL_ENTRY(0x66BC, 0x3FFF, 0x7EE0, 0x2C84)
+#define PAL3D PAL_ENTRY(0x5FFE, 0x3EBC, 0x0321, 0x0000)
+#define PAL3E PAL_ENTRY(0x63FF, 0x36DC, 0x11F6, 0x392A)
+#define PAL3F PAL_ENTRY(0x65EF, 0x7DBF, 0x035F, 0x2108)
+#define PAL3G PAL_ENTRY(0x2B6C, 0x7FFF, 0x1CD9, 0x0007)
+#define PAL3H PAL_ENTRY(0x53FC, 0x1F2F, 0x0E29, 0x0061)
+#define PAL4A PAL_ENTRY(0x36BE, 0x7EAF, 0x681A, 0x3C00)
+#define PAL4B PAL_ENTRY(0x7BBE, 0x329D, 0x1DE8, 0x0423)
+#define PAL4C PAL_ENTRY(0x739F, 0x6A9B, 0x7293, 0x0001)
+#define PAL4D PAL_ENTRY(0x5FFF, 0x6732, 0x3DA9, 0x2481)
+#define PAL4E PAL_ENTRY(0x577F, 0x3EBC, 0x456F, 0x1880)
+#define PAL4F PAL_ENTRY(0x6B57, 0x6E1B, 0x5010, 0x0007)
+#define PAL4G PAL_ENTRY(0x0F96, 0x2C97, 0x0045, 0x3200)
+#define PAL4H PAL_ENTRY(0x67FF, 0x2F17, 0x2230, 0x1548)
 
-static const struct GBCartridgeOverride _colorOverrides[] = {
+#define PALETTE(X, Y, Z) { PAL ## X, PAL ## Y, PAL ## Z }
+#define UNIFORM_PAL(A, B, C, D) { PAL_ENTRY(A, B, C, D), PAL_ENTRY(A, B, C, D), PAL_ENTRY(A, B, C, D) }
+#define SGB_PAL(A) { PAL ## A, PAL ## A, PAL ## A }
+
+static const struct GBCartridgeOverride _gbcOverrides[] = {
 	// Adventures of Lolo (Europe)
 	{ 0xFBE65286, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, PALETTE(0, 28, 3) },
 
@@ -489,6 +524,148 @@ static const struct GBCartridgeOverride _colorOverrides[] = {
 	{ 0, 0, 0, { 0 } }
 };
 
+static const struct GBCartridgeOverride _sgbOverrides[] = {
+	// Alleyway (World)
+	{ 0xCBAA161B, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3F) },
+
+	// Baseball (World)
+	{ 0xE02904BD, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(2G) },
+
+	// Dr. Mario (World)
+	{ 0xA3C2C1E9, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3B) },
+
+	// Dr. Mario (World) (Rev A)
+	{ 0x69975661, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3B) },
+
+	// F-1 Race (World)
+	{ 0x8434CB2C, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(4F) },
+
+	// F-1 Race (World) (Rev A)
+	{ 0xBA63383B, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(4F) },
+
+	// Game Boy Wars (Japan)
+	{ 0x03E3ED72, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3E) },
+
+	// Golf (World)
+	{ 0x885C242D, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3H) },
+
+	// Hoshi no Kirby (Japan)
+	{ 0x4AA02A13, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(2C) },
+
+	// Hoshi no Kirby (Japan) (Rev A)
+	{ 0x88D03280, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(2C) },
+
+	// Kaeru no Tame ni Kane wa Naru (Japan)
+	{ 0x7F805941, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(2A) },
+
+	// Kid Icarus - Of Myths and Monsters (USA, Europe)
+	{ 0x5D93DB0F, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(2F) },
+
+	// Kirby no Pinball (Japan)
+	{ 0x89239AED, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1C) },
+
+	// Kirby's Dream Land (USA, Europe)
+	{ 0x302017CC, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(2C) },
+
+	// Kirby's Pinball Land (USA, Europe)
+	{ 0x9C4AA9D8, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1C) },
+
+	// Legend of Zelda, The - Link's Awakening (Canada)
+	{ 0x9F54D47B, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1E) },
+
+	// Legend of Zelda, The - Link's Awakening (France)
+	{ 0x441D7FAD, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1E) },
+
+	// Legend of Zelda, The - Link's Awakening (Germany)
+	{ 0x838D65D6, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1E) },
+
+	// Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev A)
+	{ 0x24CAAB4D, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1E) },
+
+	// Legend of Zelda, The - Link's Awakening (USA, Europe) (Rev B)
+	{ 0xBCBB6BDB, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1E) },
+
+	// Legend of Zelda, The - Link's Awakening (USA, Europe)
+	{ 0x9A193109, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1E) },
+
+	// Mario & Yoshi (Europe)
+	{ 0xEC14B007, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(2D) },
+
+	// Metroid II - Return of Samus (World)
+	{ 0xBDCCC648, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(4G) },
+
+	// QIX (World)
+	{ 0x5EECB346, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(4A) },
+
+	// SolarStriker (World)
+	{ 0x981620E7, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1G) },
+
+	// Super Mario Land (World)
+	{ 0x6C0ACA9F, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1F) },
+
+	// Super Mario Land (World) (Rev A)
+	{ 0xCA117ACC, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1F) },
+
+	// Super Mario Land 2 - 6 Golden Coins (USA, Europe) (Rev A)
+	{ 0x423E09E6, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3D) },
+
+	// Super Mario Land 2 - 6 Golden Coins (USA, Europe) (Rev B)
+	{ 0x445A0358, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3D) },
+
+	// Super Mario Land 2 - 6 Golden Coins (USA, Europe)
+	{ 0xDE2960A1, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3D) },
+
+	// Super Mario Land 2 - 6-tsu no Kinka (Japan)
+	{ 0xD47CED78, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3D) },
+
+	// Super Mario Land 2 - 6-tsu no Kinka (Japan) (Rev A)
+	{ 0xA4B4F9F9, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3D) },
+
+	// Super Mario Land 2 - 6-tsu no Kinka (Japan) (Rev B)
+	{ 0x5842F25D, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3D) },
+
+	// Tennis (World)
+	{ 0xD2BEBF08, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3G) },
+
+	// Tetris (World)
+	{ 0xE906C6A6, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3A) },
+
+	// Tetris (World) (Rev A)
+	{ 0x4674B43F, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3A) },
+
+	// Wario Land - Super Mario Land 3 (World)
+	{ 0xF1EA10E9, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1B) },
+
+	// X (Japan)
+	{ 0xFED4C47F, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(4D) },
+
+	// Yakuman (Japan)
+	{ 0x40604F17, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3C) },
+
+	// Yakuman (Japan) (Rev A)
+	{ 0x2959ACFC, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(3C) },
+
+	// Yoshi (USA)
+	{ 0xAB1605B9, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(2D) },
+
+	// Yoshi no Cookie (Japan)
+	{ 0x841753DA, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1D) },
+
+	// Yoshi no Tamago (Japan)
+	{ 0xD4098A6B, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(2D) },
+
+	// Yoshi's Cookie (USA, Europe)
+	{ 0x940EDD87, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1D) },
+
+	// Zelda no Densetsu - Yume o Miru Shima (Japan)
+	{ 0x259C9A82, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1E) },
+
+	// Zelda no Densetsu - Yume o Miru Shima (Japan) (Rev A)
+	{ 0x61F269CD, GB_MODEL_AUTODETECT, GB_MBC_AUTODETECT, SGB_PAL(1E) },
+
+	{ 0, 0, 0, { 0 } }
+};
+
 static const struct GBCartridgeOverride _overrides[] = {
 	// Pokemon Spaceworld 1997 demo
 	{ 0x232a067d, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Gold (debug)
@@ -501,22 +678,10 @@ static const struct GBCartridgeOverride _overrides[] = {
 };
 
 static const struct GBColorPreset _colorPresets[] = {
-	{
-		"Grayscale",
-		{
-			PAL_ENTRY(0x7FFF, 0x56B5, 0x294A, 0x0000),
-			PAL_ENTRY(0x7FFF, 0x56B5, 0x294A, 0x0000),
-			PAL_ENTRY(0x7FFF, 0x56B5, 0x294A, 0x0000)
-		}
-	},
-	{
-		"DMG Green",
-		{
-			PAL_ENTRY(0x2691, 0x19A9, 0x1105, 0x04A3),
-			PAL_ENTRY(0x2691, 0x19A9, 0x1105, 0x04A3),
-			PAL_ENTRY(0x2691, 0x19A9, 0x1105, 0x04A3)
-		}
-	},
+	{ "Grayscale", UNIFORM_PAL(0x7FFF, 0x56B5, 0x294A, 0x0000), },
+	{ "DMG Green", UNIFORM_PAL(0x2691, 0x19A9, 0x1105, 0x04A3), },
+	{ "GB Pocket", UNIFORM_PAL(0x52D4, 0x4270, 0x2989, 0x10A3), },
+	{ "GB Light", UNIFORM_PAL(0x7FCF, 0x738B, 0x56C3, 0x39E0), },
 	{ "GBC Brown ↑", PALETTE(0, 0, 0), },
 	{ "GBC Red ↑A", PALETTE(4, 3, 28), },
 	{ "GBC Dark Brown ↑B", PALETTE(1, 0, 0), },
@@ -529,14 +694,56 @@ static const struct GBColorPreset _colorPresets[] = {
 	{ "GBC Green →", PALETTE(18, 18, 18), },
 	{ "GBC Dark Green →A", PALETTE(29, 4, 4), },
 	{ "GBC Reverse →B", PALETTE(27, 27, 27), },
+	{ "SGB 1-A", SGB_PAL(1A), },
+	{ "SGB 1-B", SGB_PAL(1B), },
+	{ "SGB 1-C", SGB_PAL(1C), },
+	{ "SGB 1-D", SGB_PAL(1D), },
+	{ "SGB 1-E", SGB_PAL(1E), },
+	{ "SGB 1-F", SGB_PAL(1F), },
+	{ "SGB 1-G", SGB_PAL(1G), },
+	{ "SGB 1-H", SGB_PAL(1H), },
+	{ "SGB 2-A", SGB_PAL(2A), },
+	{ "SGB 2-B", SGB_PAL(2B), },
+	{ "SGB 2-C", SGB_PAL(2C), },
+	{ "SGB 2-D", SGB_PAL(2D), },
+	{ "SGB 2-E", SGB_PAL(2E), },
+	{ "SGB 2-F", SGB_PAL(2F), },
+	{ "SGB 2-G", SGB_PAL(2G), },
+	{ "SGB 2-H", SGB_PAL(2H), },
+	{ "SGB 3-A", SGB_PAL(3A), },
+	{ "SGB 3-B", SGB_PAL(3B), },
+	{ "SGB 3-C", SGB_PAL(3C), },
+	{ "SGB 3-D", SGB_PAL(3D), },
+	{ "SGB 3-E", SGB_PAL(3E), },
+	{ "SGB 3-F", SGB_PAL(3F), },
+	{ "SGB 3-G", SGB_PAL(3G), },
+	{ "SGB 3-H", SGB_PAL(3H), },
+	{ "SGB 4-A", SGB_PAL(4A), },
+	{ "SGB 4-B", SGB_PAL(4B), },
+	{ "SGB 4-C", SGB_PAL(4C), },
+	{ "SGB 4-D", SGB_PAL(4D), },
+	{ "SGB 4-E", SGB_PAL(4E), },
+	{ "SGB 4-F", SGB_PAL(4F), },
+	{ "SGB 4-G", SGB_PAL(4G), },
+	{ "SGB 4-H", SGB_PAL(4H), },
 };
 
-bool GBOverrideColorFind(struct GBCartridgeOverride* override) {
+bool GBOverrideColorFind(struct GBCartridgeOverride* override, enum GBColorLookup order) {
 	int i;
-	for (i = 0; _colorOverrides[i].headerCrc32; ++i) {
-		if (override->headerCrc32 == _colorOverrides[i].headerCrc32) {
-			memcpy(override->gbColors, _colorOverrides[i].gbColors, sizeof(override->gbColors));
-			return true;
+	if (order & GB_COLORS_SGB) {
+		for (i = 0; _gbcOverrides[i].headerCrc32; ++i) {
+			if (override->headerCrc32 == _sgbOverrides[i].headerCrc32) {
+				memcpy(override->gbColors, _sgbOverrides[i].gbColors, sizeof(override->gbColors));
+				return true;
+			}
+		}
+	}
+	if (order & GB_COLORS_CGB) {
+		for (i = 0; _gbcOverrides[i].headerCrc32; ++i) {
+			if (override->headerCrc32 == _gbcOverrides[i].headerCrc32) {
+				memcpy(override->gbColors, _gbcOverrides[i].gbColors, sizeof(override->gbColors));
+				return true;
+			}
 		}
 	}
 	return false;

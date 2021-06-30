@@ -80,6 +80,7 @@ void GBVideoReset(struct GBVideo* video) {
 	video->frameskipCounter = 0;
 
 	GBVideoSwitchBank(video, 0);
+	memset(video->vram, 0, GB_SIZE_VRAM);
 	video->renderer->vram = video->vram;
 	memset(&video->oam, 0, sizeof(video->oam));
 	video->renderer->oam = &video->oam;
@@ -237,7 +238,7 @@ void GBVideoSkipBIOS(struct GBVideo* video) {
 	video->modeEvent.callback = _endMode1;
 
 	int32_t next;
-	if (video->p->model == GB_MODEL_CGB) {
+	if (video->p->model & GB_MODEL_CGB) {
 		video->ly = GB_VIDEO_VERTICAL_PIXELS;
 		video->p->memory.io[GB_REG_LY] = video->ly;
 		video->stat = GBRegisterSTATClearLYC(video->stat);
@@ -535,9 +536,7 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			video->renderer->writePalette(video->renderer, 9 * 4 + 3, video->palette[9 * 4 + 3]);
 			break;
 		}
-	} else if (video->p->model & GB_MODEL_SGB) {
-		video->renderer->writeVideoRegister(video->renderer, address, value);
-	} else {
+	} else if (video->p->model >= GB_MODEL_CGB) {
 		switch (address) {
 		case GB_REG_BCPD:
 			if (video->mode != 3) {
@@ -578,6 +577,8 @@ void GBVideoWritePalette(struct GBVideo* video, uint16_t address, uint8_t value)
 			video->p->memory.io[GB_REG_OCPD] = video->palette[8 * 4 + (video->ocpIndex >> 1)] >> (8 * (video->ocpIndex & 1));
 			break;
 		}
+	} else {
+		video->renderer->writeVideoRegister(video->renderer, address, value);
 	}
 }
 

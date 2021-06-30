@@ -12,6 +12,13 @@ CXX_GUARD_START
 
 #include <mgba/gb/interface.h>
 
+enum GBColorLookup {
+	GB_COLORS_NONE = 0,
+	GB_COLORS_CGB = 1,
+	GB_COLORS_SGB = 2,
+	GB_COLORS_SGB_CGB_FALLBACK = GB_COLORS_CGB | GB_COLORS_SGB
+};
+
 struct GBCartridgeOverride {
 	int headerCrc32;
 	enum GBModel model;
@@ -27,7 +34,7 @@ struct GBColorPreset {
 
 struct Configuration;
 bool GBOverrideFind(const struct Configuration*, struct GBCartridgeOverride* override);
-bool GBOverrideColorFind(struct GBCartridgeOverride* override);
+bool GBOverrideColorFind(struct GBCartridgeOverride* override, enum GBColorLookup);
 void GBOverrideSave(struct Configuration*, const struct GBCartridgeOverride* override);
 
 size_t GBColorPresetList(const struct GBColorPreset** presets);

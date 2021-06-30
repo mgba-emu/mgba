@@ -397,11 +397,10 @@ void SettingsView::updateConfig() {
 	saveSetting("gb.bios", m_ui.gbBios);
 	saveSetting("gbc.bios", m_ui.gbcBios);
 	saveSetting("sgb.bios", m_ui.sgbBios);
-	saveSetting("sgb.borders", m_ui.sgbBorders);
 	saveSetting("ds.bios7", m_ui.dsBios7);
 	saveSetting("ds.bios9", m_ui.dsBios9);
 	saveSetting("ds.firmware", m_ui.dsFirmware);
-	saveSetting("useCgbColors", m_ui.useCgbColors);
+	saveSetting("sgb.borders", m_ui.sgbBorders);
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("sampleRate", m_ui.sampleRate);
@@ -580,6 +579,18 @@ void SettingsView::updateConfig() {
 		m_controller->setOption(color.toUtf8().constData(), m_gbColors[colorId] & ~0xFF000000);
 
 	}
+
+	int gbColors = GB_COLORS_CGB;
+	if (m_ui.gbColor->isChecked()) {
+		gbColors = GB_COLORS_NONE;
+	} else if (m_ui.cgbColor->isChecked()) {
+		gbColors = GB_COLORS_CGB;
+	} else if (m_ui.sgbColor->isChecked()) {
+		gbColors = GB_COLORS_SGB;
+	} else if (m_ui.scgbColor->isChecked()) {
+		gbColors = GB_COLORS_SGB_CGB_FALLBACK;
+	}
+	saveSetting("gb.colors", gbColors);
 #endif
 
 	m_controller->write();
@@ -596,11 +607,10 @@ void SettingsView::reloadConfig() {
 	loadSetting("gb.bios", m_ui.gbBios);
 	loadSetting("gbc.bios", m_ui.gbcBios);
 	loadSetting("sgb.bios", m_ui.sgbBios);
-	loadSetting("sgb.borders", m_ui.sgbBorders, true);
 	loadSetting("ds.bios7", m_ui.dsBios7);
 	loadSetting("ds.bios9", m_ui.dsBios9);
 	loadSetting("ds.firmware", m_ui.dsFirmware);
-	loadSetting("useCgbColors", m_ui.useCgbColors, true);
+	loadSetting("sgb.borders", m_ui.sgbBorders, true);
 	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);
@@ -731,6 +741,22 @@ void SettingsView::reloadConfig() {
 		GBModel model = GBNameToModel(modelCGBSGB.toUtf8().constData());
 		int index = m_ui.cgbSgbModel->findData(model);
 		m_ui.cgbSgbModel->setCurrentIndex(index >= 0 ? index : 0);
+	}
+
+	switch (m_controller->getOption("gb.colors", m_controller->getOption("useCgbColors", true).toInt()).toInt()) {
+	case GB_COLORS_NONE:
+		m_ui.gbColor->setChecked(true);
+		break;
+	default:
+	case GB_COLORS_CGB:
+		m_ui.cgbColor->setChecked(true);
+		break;
+	case GB_COLORS_SGB:
+		m_ui.sgbColor->setChecked(true);
+		break;
+	case GB_COLORS_SGB_CGB_FALLBACK:
+		m_ui.scgbColor->setChecked(true);
+		break;
 	}
 #endif
 

@@ -629,7 +629,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	int p = 0;
 	switch (softwareRenderer->d.sgbRenderMode) {
 	case 0:
-		if (softwareRenderer->model & GB_MODEL_SGB) {
+		if ((softwareRenderer->model & (GB_MODEL_SGB | GB_MODEL_CGB)) == GB_MODEL_SGB) {
 			p = softwareRenderer->d.sgbAttributes[(startX >> 5) + 5 * (y >> 3)];
 			p >>= 6 - ((x / 4) & 0x6);
 			p &= 3;
@@ -639,7 +639,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 			row[x] = softwareRenderer->palette[p | softwareRenderer->lookup[softwareRenderer->row[x] & OBJ_PRIO_MASK]];
 		}
 		for (; x + 7 < (endX & ~7); x += 8) {
-			if (softwareRenderer->model & GB_MODEL_SGB) {
+			if ((softwareRenderer->model & (GB_MODEL_SGB | GB_MODEL_CGB)) == GB_MODEL_SGB) {
 				p = softwareRenderer->d.sgbAttributes[(x >> 5) + 5 * (y >> 3)];
 				p >>= 6 - ((x / 4) & 0x6);
 				p &= 3;
@@ -654,7 +654,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 			row[x + 6] = softwareRenderer->palette[p | softwareRenderer->lookup[softwareRenderer->row[x + 6] & OBJ_PRIO_MASK]];
 			row[x + 7] = softwareRenderer->palette[p | softwareRenderer->lookup[softwareRenderer->row[x + 7] & OBJ_PRIO_MASK]];
 		}
-		if (softwareRenderer->model & GB_MODEL_SGB) {
+		if ((softwareRenderer->model & (GB_MODEL_SGB | GB_MODEL_CGB)) == GB_MODEL_SGB) {
 			p = softwareRenderer->d.sgbAttributes[(x >> 5) + 5 * (y >> 3)];
 			p >>= 6 - ((x / 4) & 0x6);
 			p &= 3;
