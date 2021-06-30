@@ -8,16 +8,14 @@
 #include <mgba/core/interface.h>
 #include <mgba/internal/gba/gba.h>
 
-#define BACKGROUND_BITMAP_ITERATE(W, H)                     \
-	x += background->dx;                                    \
-	y += background->dy;                                    \
-                                                            \
-	if (x < 0 || y < 0 || (x >> 8) >= W || (y >> 8) >= H) { \
-		continue;                                           \
-	} else {                                                \
-		localX = x;                                         \
-		localY = y;                                         \
-	}
+#define BACKGROUND_BITMAP_ITERATE(W, H) \
+	x += background->dx; \
+	y += background->dy; \
+	if ((x < 0 || y < 0 || (x >> 8) >= W || (y >> 8) >= H) && !mosaicWait) { \
+		continue; \
+	} \
+	localX = x; \
+	localY = y;
 
 #define MODE_2_COORD_OVERFLOW \
 	localX = x & (sizeAdjusted - 1); \
@@ -65,12 +63,20 @@
 #define DRAW_BACKGROUND_MODE_2(BLEND, OBJWIN) \
 	if (background->overflow) { \
 		if (mosaicH > 1) { \
+			localX &= sizeAdjusted - 1; \
+			localY &= sizeAdjusted - 1; \
+			MODE_2_NO_MOSAIC(); \
 			MODE_2_LOOP(MODE_2_MOSAIC, MODE_2_COORD_OVERFLOW, BLEND, OBJWIN); \
 		} else { \
 			MODE_2_LOOP(MODE_2_NO_MOSAIC, MODE_2_COORD_OVERFLOW, BLEND, OBJWIN); \
 		} \
 	} else { \
 		if (mosaicH > 1) { \
+			if (!((x | y) & ~(sizeAdjusted - 1))) { \
+				localX &= sizeAdjusted - 1; \
+				localY &= sizeAdjusted - 1; \
+				MODE_2_NO_MOSAIC(); \
+			} \
 			MODE_2_LOOP(MODE_2_MOSAIC, MODE_2_COORD_NO_OVERFLOW, BLEND, OBJWIN); \
 		} else { \
 			MODE_2_LOOP(MODE_2_NO_MOSAIC, MODE_2_COORD_NO_OVERFLOW, BLEND, OBJWIN); \
@@ -106,10 +112,14 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 	BACKGROUND_BITMAP_INIT;
 
 	uint32_t color = renderer->normalPalette[0];
+	if (mosaicWait && localX >= 0 && localY >= 0) {
+		LOAD_16(color, ((localX >> 8) + (localY >> 8) * renderer->masterEnd) << 1, renderer->d.vramBG[0]);
+		color = mColorFrom555(color);
+	}
 
 	int outX;
 	for (outX = renderer->start; outX < renderer->end; ++outX) {
-		BACKGROUND_BITMAP_ITERATE(renderer->masterEnd, GBA_VIDEO_VERTICAL_PIXELS);
+		BACKGROUND_BITMAP_ITERATE(renderer->masterEnd, renderer->masterHeight);
 
 		if (!mosaicWait) {
 			LOAD_16(color, ((localX >> 8) + (localY >> 8) * renderer->masterEnd) << 1, renderer->d.vramBG[0]);
@@ -143,6 +153,9 @@ void GBAVideoSoftwareRendererDrawBackgroundMode4(struct GBAVideoSoftwareRenderer
 	uint32_t offset = 0;
 	if (GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt)) {
 		offset = 0xA000;
+	}
+	if (mosaicWait && localX >= 0 && localY >= 0) {
+		color = ((uint8_t*)renderer->d.vramBG[0])[offset + (localX >> 8) + (localY >> 8) * renderer->masterEnd];
 	}
 
 	int outX;
@@ -180,6 +193,10 @@ void GBAVideoSoftwareRendererDrawBackgroundMode5(struct GBAVideoSoftwareRenderer
 	uint32_t offset = 0;
 	if (GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt)) {
 		offset = 0xA000;
+	}
+	if (mosaicWait && localX >= 0 && localY >= 0) {
+		LOAD_16(color, offset + (localX >> 8) * 2 + (localY >> 8) * 320, renderer->d.vramBG[0]);
+		color = mColorFrom555(color);
 	}
 
 	int outX;

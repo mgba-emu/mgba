@@ -175,15 +175,21 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	int32_t y = background->sy + (renderer->start - 1) * background->dy;                                              \
 	int mosaicH = 0;                                                                                                  \
 	int mosaicWait = 0;                                                                                               \
-	if (background->mosaic) {                                                                                         \
-		int mosaicV = GBAMosaicControlGetBgV(renderer->mosaic) + 1;                                                   \
-		y -= (inY % mosaicV) * background->dmy;                                                                       \
-		x -= (inY % mosaicV) * background->dmx;                                                                       \
-		mosaicH = GBAMosaicControlGetBgH(renderer->mosaic);                                                           \
-		mosaicWait = renderer->start % (mosaicH + 1);                                                                 \
-	}                                                                                                                 \
 	int32_t localX;                                                                                                   \
 	int32_t localY;                                                                                                   \
+	if (background->mosaic) {                                                                                         \
+		int mosaicV = GBAMosaicControlGetBgV(renderer->mosaic) + 1;                                                   \
+		mosaicH = GBAMosaicControlGetBgH(renderer->mosaic) + 1;                                                       \
+		mosaicWait = (mosaicH - renderer->start + GBA_VIDEO_HORIZONTAL_PIXELS * mosaicH) % mosaicH;                   \
+		int32_t startX = renderer->start - (renderer->start % mosaicH);                                               \
+		--mosaicH;                                                                                                    \
+		localX = -(inY % mosaicV) * background->dmx;                                                                  \
+		localY = -(inY % mosaicV) * background->dmy;                                                                  \
+		x += localX;                                                                                                  \
+		y += localY;                                                                                                  \
+		localX += background->sx + startX * background->dx;                                                           \
+		localY += background->sy + startX * background->dy;                                                           \
+	}                                                                                                                 \
                                                                                                                       \
 	uint32_t flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
 	flags |= FLAG_TARGET_2 * background->target2;                                                                     \

@@ -60,7 +60,9 @@ static void _switchMode(struct GBASIO* sio) {
 		if (sio->activeDriver && sio->activeDriver->unload) {
 			sio->activeDriver->unload(sio->activeDriver);
 		}
-		mLOG(GBA_SIO, DEBUG, "Switching mode from %s to %s", _modeName(sio->mode), _modeName(newMode));
+		if (sio->mode != (enum GBASIOMode) -1) {
+			mLOG(GBA_SIO, DEBUG, "Switching mode from %s to %s", _modeName(sio->mode), _modeName(newMode));
+		}
 		sio->mode = newMode;
 		sio->activeDriver = _lookupDriver(sio, sio->mode);
 		if (sio->activeDriver && sio->activeDriver->load) {

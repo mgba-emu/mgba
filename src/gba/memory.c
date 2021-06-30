@@ -912,7 +912,11 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		}
 		break;
 	case REGION_CART0:
-		if (memory->hw.devices != HW_NONE && IS_GPIO_REGISTER(address & 0xFFFFFE)) {
+		if (IS_GPIO_REGISTER(address & 0xFFFFFE)) {
+			if (memory->hw.devices == HW_NONE) {
+				mLOG(GBA_HW, WARN, "Write to GPIO address %08X on cartridge without GPIO", address);
+				break;
+			}
 			uint32_t reg = address & 0xFFFFFE;
 			GBAHardwareGPIOWrite(&memory->hw, reg, value);
 			break;
