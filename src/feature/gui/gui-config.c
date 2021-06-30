@@ -380,4 +380,5 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 			}
 		}
 	}
+	GUIMenuItemListDeinit(&menu.items);
 }

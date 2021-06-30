@@ -84,4 +84,5 @@ void mGUIRemapKeys(struct GUIParams* params, struct mInputMap* map, const struct
 			// TODO: Open remap menu
 		}
 	}
+	GUIMenuItemListDeinit(&menu.items);
 }

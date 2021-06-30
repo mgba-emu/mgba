@@ -8,6 +8,7 @@
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
 #include "feature/gui/gui-config.h"
+#include "feature/gui/cheats.h"
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
 #include <mgba/gba/interface.h>
@@ -35,6 +36,7 @@ enum {
 	RUNNER_SCREENSHOT,
 	RUNNER_CONFIG,
 	RUNNER_RESET,
+	RUNNER_CHEATS,
 	RUNNER_COMMAND_MASK = 0xFFFF
 };
 
@@ -333,7 +335,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	};
 	GUIMenuItemListInit(&pauseMenu.items, 0);
 	GUIMenuItemListInit(&stateSaveMenu.items, 9);
-	GUIMenuItemListInit(&stateLoadMenu.items, 9);
+	GUIMenuItemListInit(&stateLoadMenu.items, 10);
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Unpause", .data = (void*) RUNNER_CONTINUE };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Save state", .submenu = &stateSaveMenu };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Load state", .submenu = &stateLoadMenu };
@@ -360,6 +362,9 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(9)) };
 
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Take screenshot", .data = (void*) RUNNER_SCREENSHOT };
+	if (runner->params.getText) {
+		*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Cheats", .data = (void*) RUNNER_CHEATS };
+	}
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Configure", .data = (void*) RUNNER_CONFIG };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Reset game", .data = (void*) RUNNER_RESET };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = (void*) RUNNER_EXIT };
@@ -615,6 +620,9 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				break;
 			case RUNNER_CONFIG:
 				mGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
+				break;
+			case RUNNER_CHEATS:
+				mGUIShowCheats(runner);
 				break;
 			case RUNNER_CONTINUE:
 				break;

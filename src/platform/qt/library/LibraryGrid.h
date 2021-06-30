@@ -16,16 +16,21 @@ public:
 	explicit LibraryGrid(LibraryController* parent = nullptr);
 	~LibraryGrid();
 
-	// AbstractGameList stuff
-	virtual LibraryEntryRef selectedEntry() override;
-	virtual void selectEntry(LibraryEntryRef game) override;
+	QString selectedEntry() override;
+	void selectEntry(const QString& fullpath) override;
 
-	virtual void setViewStyle(LibraryStyle newStyle) override;
+	void setViewStyle(LibraryStyle newStyle) override;
 
-	virtual void addEntry(LibraryEntryRef item) override;
-	virtual void removeEntry(LibraryEntryRef entry) override;
+	void resetEntries(const QList<LibraryEntry>& items) override;
+	void addEntries(const QList<LibraryEntry>& items) override;
+	void updateEntries(const QList<LibraryEntry>& items) override;
+	void removeEntries(const QList<QString>& items) override;
 
-	virtual QWidget* widget() override { return m_widget; }
+	void addEntry(const LibraryEntry& items) override;
+	void updateEntry(const LibraryEntry& items) override;
+	void removeEntry(const QString& items) override;
+
+	QWidget* widget() override { return m_widget; }
 
 signals:
 	void startGame();
@@ -40,7 +45,7 @@ private:
 	const quint32 ICON_BANNER_WIDTH = 64;
 	const quint32 ICON_BANNER_HEIGHT = 64;
 
-	QMap<LibraryEntryRef, QListWidgetItem*> m_items;
+	QHash<QString, QListWidgetItem*> m_items;
 	LibraryStyle m_currentStyle;
 };
 

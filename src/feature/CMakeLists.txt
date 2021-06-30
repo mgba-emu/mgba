@@ -5,6 +5,7 @@ set(SOURCE_FILES
 	video-logger.c)
 
 set(GUI_FILES
+	gui/cheats.c
 	gui/gui-config.c
 	gui/gui-runner.c
 	gui/remap.c)

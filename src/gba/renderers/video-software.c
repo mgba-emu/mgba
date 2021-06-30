@@ -699,19 +699,19 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
 	}
 
-	if (softwareRenderer->bg[0].enabled > 0 && softwareRenderer->bg[0].enabled < 3) {
+	if (softwareRenderer->bg[0].enabled > 0 && softwareRenderer->bg[0].enabled < 4) {
 		++softwareRenderer->bg[0].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-	if (softwareRenderer->bg[1].enabled > 0 && softwareRenderer->bg[1].enabled < 3) {
+	if (softwareRenderer->bg[1].enabled > 0 && softwareRenderer->bg[1].enabled < 4) {
 		++softwareRenderer->bg[1].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-	if (softwareRenderer->bg[2].enabled > 0 && softwareRenderer->bg[2].enabled < 3) {
+	if (softwareRenderer->bg[2].enabled > 0 && softwareRenderer->bg[2].enabled < 4) {
 		++softwareRenderer->bg[2].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-	if (softwareRenderer->bg[3].enabled > 0 && softwareRenderer->bg[3].enabled < 3) {
+	if (softwareRenderer->bg[3].enabled > 0 && softwareRenderer->bg[3].enabled < 4) {
 		++softwareRenderer->bg[3].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
@@ -759,16 +759,16 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 	softwareRenderer->bg[3].sy = softwareRenderer->bg[3].refy;
 
 	if (softwareRenderer->bg[0].enabled > 0) {
-		softwareRenderer->bg[0].enabled = 3;
+		softwareRenderer->bg[0].enabled = 4;
 	}
 	if (softwareRenderer->bg[1].enabled > 0) {
-		softwareRenderer->bg[1].enabled = 3;
+		softwareRenderer->bg[1].enabled = 4;
 	}
 	if (softwareRenderer->bg[2].enabled > 0) {
-		softwareRenderer->bg[2].enabled = 3;
+		softwareRenderer->bg[2].enabled = 4;
 	}
 	if (softwareRenderer->bg[3].enabled > 0) {
-		softwareRenderer->bg[3].enabled = 3;
+		softwareRenderer->bg[3].enabled = 4;
 	}
 }
 
@@ -795,7 +795,7 @@ static void _enableBg(struct GBAVideoSoftwareRenderer* renderer, int bg, bool ac
 	} else if (!wasActive && active) {
 		if (renderer->nextY == 0 || GBARegisterDISPCNTGetMode(renderer->dispcnt) > 2) {
 			// TODO: Investigate in more depth how switching background works in different modes
-			renderer->bg[bg].enabled = 3;
+			renderer->bg[bg].enabled = 4;
 		} else {
 			renderer->bg[bg].enabled = 1;
 		}
