@@ -42,7 +42,7 @@
 
 #define MODE_2_MOSAIC(COORD) \
 		if (!mosaicWait) { \
-			MODE_2_NO_MOSAIC(COORD)	\
+			MODE_2_NO_MOSAIC(COORD) \
 			mosaicWait = mosaicH; \
 		} else { \
 			--mosaicWait; \

@@ -218,6 +218,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	PREPARE_OBJWIN;
 
 #define TEST_LAYER_ENABLED(X) \
+	!softwareRenderer->d.disableBG[X] && \
 	(softwareRenderer->bg[X].enabled == 4 && \
 	(GBAWindowControlIsBg ## X ## Enable(softwareRenderer->currentWindow.packed) || \
 	(GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt) && GBAWindowControlIsBg ## X ## Enable (softwareRenderer->objwin.packed))) && \

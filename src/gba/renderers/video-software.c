@@ -591,23 +591,6 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	softwareRenderer->spriteCyclesRemaining = GBARegisterDISPCNTIsHblankIntervalFree(softwareRenderer->dispcnt) ? OBJ_HBLANK_FREE_LENGTH : OBJ_LENGTH;
 	int spriteLayers = GBAVideoSoftwareRendererPreprocessSpriteLayer(softwareRenderer, y);
 	softwareRenderer->d.vramOBJ[0] = objVramBase;
-	if (softwareRenderer->lastHighlightAmount != softwareRenderer->d.highlightAmount) {
-		softwareRenderer->lastHighlightAmount = softwareRenderer->d.highlightAmount;
-		if (softwareRenderer->lastHighlightAmount) {
-			softwareRenderer->blendDirty = true;
-		}
-	}
-
-	if (softwareRenderer->blendDirty) {
-		_updatePalettes(softwareRenderer);
-		softwareRenderer->blendDirty = false;
-	}
-	softwareRenderer->forceTarget1 = false;
-
-	softwareRenderer->bg[0].highlight = softwareRenderer->d.highlightBG[0];
-	softwareRenderer->bg[1].highlight = softwareRenderer->d.highlightBG[1];
-	softwareRenderer->bg[2].highlight = softwareRenderer->d.highlightBG[2];
-	softwareRenderer->bg[3].highlight = softwareRenderer->d.highlightBG[3];
 
 	int w;
 	unsigned priority;
@@ -658,40 +641,9 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 			}
 		}
 	}
-	if (softwareRenderer->forceTarget1 && (softwareRenderer->blendEffect == BLEND_DARKEN || softwareRenderer->blendEffect == BLEND_BRIGHTEN)) {
-		int x = 0;
-		for (w = 0; w < softwareRenderer->nWindows; ++w) {
-			int end = softwareRenderer->windows[w].endX;
-			uint32_t mask = FLAG_REBLEND | FLAG_IS_BACKGROUND;
-			uint32_t match = FLAG_REBLEND;
-			bool objBlend = GBAWindowControlIsBlendEnable(softwareRenderer->objwin.packed);
-			bool winBlend = GBAWindowControlIsBlendEnable(softwareRenderer->windows[w].control.packed);
-			if (GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt) && objBlend != winBlend) {
-				mask |= FLAG_OBJWIN;
-				if (objBlend) {
-					match |= FLAG_OBJWIN;
-				}
-			} else if (!winBlend) {
-				x = end;
-				continue;
-			}
-			if (softwareRenderer->blendEffect == BLEND_DARKEN) {
-				for (; x < end; ++x) {
-					uint32_t color = softwareRenderer->row[x];
-					if ((color & mask) == match) {
-						softwareRenderer->row[x] = _darken(color, softwareRenderer->bldy);
-					}
-				}
-			} else if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
-				for (; x < end; ++x) {
-					uint32_t color = softwareRenderer->row[x];
-					if ((color & mask) == match) {
-						softwareRenderer->row[x] = _brighten(color, softwareRenderer->bldy);
-					}
-				}
-			}
-		}
-	}
+
+	GBAVideoSoftwareRendererPostprocessBuffer(softwareRenderer);
+
 	if (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) != 0) {
 		softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
 		softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
@@ -715,8 +667,6 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		++softwareRenderer->bg[3].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-
-	GBAVideoSoftwareRendererPostprocessBuffer(softwareRenderer);
 
 	int x;
 	if (softwareRenderer->greenswap) {
@@ -897,10 +847,18 @@ void GBAVideoSoftwareRendererPreprocessBuffer(struct GBAVideoSoftwareRenderer* s
 
 	GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
 
+	if (softwareRenderer->lastHighlightAmount != softwareRenderer->d.highlightAmount) {
+		softwareRenderer->lastHighlightAmount = softwareRenderer->d.highlightAmount;
+		if (softwareRenderer->lastHighlightAmount) {
+			softwareRenderer->blendDirty = true;
+		}
+	}
+
 	if (softwareRenderer->blendDirty) {
 		_updatePalettes(softwareRenderer);
 		softwareRenderer->blendDirty = false;
 	}
+	softwareRenderer->forceTarget1 = false;
 
 	int w;
 	x = 0;
@@ -926,11 +884,16 @@ void GBAVideoSoftwareRendererPreprocessBuffer(struct GBAVideoSoftwareRenderer* s
 			softwareRenderer->row[x] = backdrop;
 		}
 	}
+
+	softwareRenderer->bg[0].highlight = softwareRenderer->d.highlightBG[0];
+	softwareRenderer->bg[1].highlight = softwareRenderer->d.highlightBG[1];
+	softwareRenderer->bg[2].highlight = softwareRenderer->d.highlightBG[2];
+	softwareRenderer->bg[3].highlight = softwareRenderer->d.highlightBG[3];
 }
 
 void GBAVideoSoftwareRendererPostprocessBuffer(struct GBAVideoSoftwareRenderer* softwareRenderer) {
 	int x, w;
-	if (softwareRenderer->target2Bd) {
+	if ((softwareRenderer->forceTarget1 || softwareRenderer->bg[0].target1 || softwareRenderer->bg[1].target1 || softwareRenderer->bg[2].target1 || softwareRenderer->bg[3].target1) && softwareRenderer->target2Bd) {
 		x = 0;
 		for (w = 0; w < softwareRenderer->nWindows; ++w) {
 			uint32_t backdrop = 0;
@@ -943,29 +906,39 @@ void GBAVideoSoftwareRendererPostprocessBuffer(struct GBAVideoSoftwareRenderer* 
 			for (; x < end; ++x) {
 				uint32_t color = softwareRenderer->row[x];
 				if (color & FLAG_TARGET_1) {
-					softwareRenderer->row[x] = mColorMix5Bit(softwareRenderer->alphaB[x], backdrop, softwareRenderer->alphaA[x], color);
+					softwareRenderer->row[x] = mColorMix5Bit(softwareRenderer->bldb, backdrop, softwareRenderer->blda, color);
 				}
 			}
 		}
 	}
-	if (softwareRenderer->target1Obj && (softwareRenderer->blendEffect == BLEND_DARKEN || softwareRenderer->blendEffect == BLEND_BRIGHTEN)) {
+	if (softwareRenderer->forceTarget1 && (softwareRenderer->blendEffect == BLEND_DARKEN || softwareRenderer->blendEffect == BLEND_BRIGHTEN)) {
 		x = 0;
 		for (w = 0; w < softwareRenderer->nWindows; ++w) {
-			if (!GBAWindowControlIsBlendEnable(softwareRenderer->windows[w].control.packed)) {
+			int end = softwareRenderer->windows[w].endX;
+			uint32_t mask = FLAG_REBLEND | FLAG_IS_BACKGROUND;
+			uint32_t match = FLAG_REBLEND;
+			bool objBlend = GBAWindowControlIsBlendEnable(softwareRenderer->objwin.packed);
+			bool winBlend = GBAWindowControlIsBlendEnable(softwareRenderer->windows[w].control.packed);
+			if (GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt) && objBlend != winBlend) {
+				mask |= FLAG_OBJWIN;
+				if (objBlend) {
+					match |= FLAG_OBJWIN;
+				}
+			} else if (!winBlend) {
+				x = end;
 				continue;
 			}
-			int end = softwareRenderer->windows[w].endX;
 			if (softwareRenderer->blendEffect == BLEND_DARKEN) {
 				for (; x < end; ++x) {
 					uint32_t color = softwareRenderer->row[x];
-					if ((color & 0xFF000000) == FLAG_REBLEND) {
+					if ((color & mask) == match) {
 						softwareRenderer->row[x] = _darken(color, softwareRenderer->bldy);
 					}
 				}
 			} else if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
 				for (; x < end; ++x) {
 					uint32_t color = softwareRenderer->row[x];
-					if ((color & 0xFF000000) == FLAG_REBLEND) {
+					if ((color & mask) == match) {
 						softwareRenderer->row[x] = _brighten(color, softwareRenderer->bldy);
 					}
 				}
