@@ -73,6 +73,10 @@ static void _slice(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	} else {
 		ds->activeCpu = ds->ds9.cpu;
 		ds->cycleDrift -= cycles << 1;
+		int32_t nextEvent = mTimingNextEvent(&ds->ds7.timing) << 1;
+		if (!ds->ds7.cpu->halted || nextEvent < SLICE_CYCLES) {
+			nextEvent = SLICE_CYCLES;
+		}
 		cycles = ds->cycleDrift + SLICE_CYCLES;
 		timing = &ds->ds9.timing;
 	}
