@@ -28,6 +28,8 @@
 #include <getopt.h>
 #endif
 
+#include <setjmp.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -79,6 +81,7 @@ struct CInemaTest {
 	unsigned totalFrames;
 	uint64_t totalDistance;
 	uint64_t totalPixels;
+	jmp_buf errorCtx;
 };
 
 struct CInemaImage {
@@ -98,7 +101,6 @@ struct StringBuilder {
 	struct StringList lines;
 	struct StringList partial;
 	unsigned repeat;
-
 };
 
 struct CInemaLogStream {
@@ -1082,6 +1084,9 @@ void CInemaTestRun(struct CInemaTest* test) {
 	bool xdiff = false;
 	for (frame = 0; limit; ++frame, --limit) {
 		_updateInput(core, frame, &input);
+		if (setjmp(test->errorCtx)) {
+			break;
+		}
 		core->runFrame(core);
 		++test->totalFrames;
 		unsigned frameCounter = core->frameCounter(core);
@@ -1347,6 +1352,21 @@ void _log(struct mLogger* log, int category, enum mLogLevel level, const char* f
 	CIerr(0, "[%s] %s\n", mLogCategoryName(category), buffer);
 }
 
+#if defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L
+static void _signalHandler(int signal, siginfo_t* info, void* context) {
+	UNUSED(info);
+	UNUSED(context);
+	struct CInemaTest* test = ThreadLocalGetValue(currentTest);
+	if (test) {
+		test->status = CI_ERROR;
+		CIerr(0, "Test %s crashed with signal %i\n", test->name, signal);
+	} else {
+		CIerr(0, "Thread crashed with signal %i\n", signal);
+	}
+	longjmp(test->errorCtx, -1);
+}
+#endif
+
 int main(int argc, char** argv) {
 	ThreadLocalInitKey(&logStream);
 	ThreadLocalSetKey(logStream, NULL);
@@ -1418,7 +1438,7 @@ int main(int argc, char** argv) {
 	}
 
 	if (CInemaTestListSize(&tests) == 0) {
-		CIlog(1, "No tests found.");
+		CIlog(1, "No tests found.\n");
 		status = 1;
 	} else {
 		reduceTestList(&tests);
@@ -1440,12 +1460,34 @@ int main(int argc, char** argv) {
 	} else {
 		MutexInit(&jobMutex);
 		int i;
+
+#if defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L
+		struct sigaction sa = {
+			.sa_flags = SA_SIGINFO,
+			.sa_sigaction = _signalHandler,
+		};
+		sigemptyset(&sa.sa_mask);
+
+		sigaction(SIGSEGV, &sa, NULL);
+		sigaction(SIGBUS, &sa, NULL);
+		sigaction(SIGFPE, &sa, NULL);
+		sigaction(SIGILL, &sa, NULL);
+#endif
+
 		for (i = 0; i < jobs; ++i) {
 			ThreadCreate(&jobThreads[i], CInemaJob, &tests);
 		}
 		for (i = 0; i < jobs; ++i) {
 			ThreadJoin(&jobThreads[i]);
 		}
+
+#if defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L
+		signal(SIGSEGV, SIG_DFL);
+		signal(SIGBUS, SIG_DFL);
+		signal(SIGFPE, SIG_DFL);
+		signal(SIGILL, SIG_DFL);
+#endif
+
 		MutexDeinit(&jobMutex);
 		status = jobStatus;
 	}

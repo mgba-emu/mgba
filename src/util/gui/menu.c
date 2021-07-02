@@ -137,7 +137,7 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 				if (reason != GUI_MENU_EXIT_BACK) {
 					return reason;
 				}
-			} else if ((*item)->validStates && !(*item)->data.v.p) {
+			} else if ((*item)->validStates && GUIVariantIsString((*item)->data)) {
 				_itemNext(*item, true);
 			} else {
 				return GUI_MENU_EXIT_ACCEPT;
