@@ -43,6 +43,199 @@ extern "C" {
 
 /* RETRO_LANGUAGE_SPANISH */
 
+struct retro_core_option_definition option_defs_es[] = {
+   {
+      "mgba_solar_sensor_level",
+      "Nivel del sensor solar",
+      "Ajusta la intensidad de la luz solar ambiental. Para juegos que contenían un sensor solar en sus cartuchos, p. ej.: la saga Boktai.",
+      {
+         { "sensor",  "Utilizar dispositivo sensor si está disponible" },
+         { "0",       NULL },
+         { "1",       NULL },
+         { "2",       NULL },
+         { "3",       NULL },
+         { "4",       NULL },
+         { "5",       NULL },
+         { "6",       NULL },
+         { "7",       NULL },
+         { "8",       NULL },
+         { "9",       NULL },
+         { "10",      NULL },
+         { NULL,      NULL },
+      },
+      "0"
+   },
+   {
+      "mgba_allow_opposing_directions",
+      "Permitir entradas direccionales opuestas",
+      "Permite pulsar, alternar rápidamente o mantener las direcciones hacia la izquierda y hacia la derecha (o hacia arriba y abajo) al mismo tiempo. Puede provocar defectos en el movimiento.",
+      {
+         { "no",  "No" },
+         { "yes", "Sí" },
+         { NULL, NULL },
+      },
+      "no"
+   },
+   {
+      "mgba_gb_model",
+      "Modelo de Game Boy (es necesario reiniciar)",
+      "Carga el contenido cargado utilizando un modelo de Game Boy específico. La opción «Autodetectar» seleccionará el modelo más adecuado para el juego actual.",
+      {
+         { "Autodetect",       "Autodetectar" },
+         { "Game Boy",         NULL },
+         { "Super Game Boy",   NULL },
+         { "Game Boy Color",   NULL },
+         { "Game Boy Advance", NULL },
+         { NULL, NULL },
+      },
+      "Autodetect"
+   },
+   {
+      "mgba_use_bios",
+      "Utilizar BIOS en caso de encontrarla (es necesario reiniciar)",
+      "Si se encuentran en el directorio de sistema de RetroArch, se utilizarán los archivos de la BIOS y el bootloader oficiales para emular el hardware.",
+      {
+         { "ON",  NULL },
+         { "OFF", NULL },
+         { NULL, NULL },
+      },
+      "ON"
+   },
+   {
+      "mgba_skip_bios",
+      "Omitir introducción de la BIOS (es necesario reiniciar)",
+      "Al utilizar una BIOS y bootloader oficiales, omitirá la animación del logotipo al arrancar. Esta opción será ignorada si «Utilizar BIOS en caso de encontrarla» está desactivada.",
+      {
+         { "OFF", NULL },
+         { "ON",  NULL },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
+   {
+      "mgba_sgb_borders",
+      "Utilizar bordes de Super Game Boy (es necesario reiniciar)",
+      "Muestra los bordes de Super Game Boy al ejecutar juegos compatibles con este sistema.",
+      {
+         { "ON",  NULL },
+         { "OFF", NULL },
+         { NULL, NULL },
+      },
+      "ON"
+   },
+   {
+      "mgba_idle_optimization",
+      "Eliminar bucle de inactividad",
+      "Minimiza la carga del sistema optimizando los llamados bucles de inactividad: secciones de código en las que no ocurre nada, pero la CPU se ejecuta a máxima velocidad (como cuando un vehículo es revolucionado sin tener la marcha puesta). Mejora el rendimiento y debería activarse en hardware de bajas prestaciones.",
+      {
+         { "Remove Known",      "Eliminar bucles conocidos" },
+         { "Detect and Remove", "Detectar y eliminar" },
+         { "Don't Remove",      "No eliminar" },
+         { NULL, NULL },
+      },
+      "Remove Known"
+   },
+   {
+      "mgba_frameskip",
+      "Omisión de fotogramas",
+      "Omite fotogramas para no saturar el búfer de audio (chasquidos en el sonido). Mejora el rendimiento a costa de perder fluidez visual. El valor Automática omite fotogramas según lo aconseje el front-end. El valor Automática (umbral) utiliza el ajuste Umbral de omisión de fotogramas (%). El valor «Intervalos fijos» utiliza el ajuste «Intervalo de omisión de fotogramas».",
+      {
+         { "disabled",       "Desactivada" },
+         { "auto",           "Automática" },
+         { "auto_threshold", "Automática (umbral)" },
+         { "fixed_interval", "Intervalos fijos" },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "mgba_frameskip_threshold",
+      "Umbral de omisión de fotogramas (%)",
+      "Cuando la omisión de fotogramas esté configurada como Automática (umbral), este ajuste especifica el umbral de ocupación del búfer de audio (en porcentaje) por el que se omitirán fotogramas si el valor es inferior. Un valor más elevado reduce el riesgo de chasquidos omitiendo fotogramas con una mayor frecuencia.",
+      {
+         { "15", NULL },
+         { "18", NULL },
+         { "21", NULL },
+         { "24", NULL },
+         { "27", NULL },
+         { "30", NULL },
+         { "33", NULL },
+         { "36", NULL },
+         { "39", NULL },
+         { "42", NULL },
+         { "45", NULL },
+         { "48", NULL },
+         { "51", NULL },
+         { "54", NULL },
+         { "57", NULL },
+         { "60", NULL },
+         { NULL, NULL },
+      },
+      "33"
+   },
+   {
+      "mgba_frameskip_interval",
+      "Intervalo de omisión de fotogramas",
+      "Cuando la omisión de fotogramas esté configurada como Intervalos fijos, el valor que se asigne aquí será el número de fotogramas omitidos una vez se haya renderizado un fotograma. Por ejemplo: «0» = 60 FPS, «1» = 30 FPS, «2» = 15 FPS, etcétera.",
+      {
+         { "0",  NULL },
+         { "1",  NULL },
+         { "2",  NULL },
+         { "3",  NULL },
+         { "4",  NULL },
+         { "5",  NULL },
+         { "6",  NULL },
+         { "7",  NULL },
+         { "8",  NULL },
+         { "9",  NULL },
+         { "10", NULL },
+         { NULL, NULL },
+      },
+      "0"
+   },
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+   {
+      "mgba_color_correction",
+      "Corrección de color",
+      "Ajusta los colores de la salida de imagen para que esta coincida con la que mostraría un hardware real de GBA/GBC.",
+      {
+         { "OFF",  NULL },
+         { "GBA",  "Game Boy Advance" },
+         { "GBC",  "Game Boy Color" },
+         { "Auto", "Automática" },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
+   {
+      "mgba_interframe_blending",
+      "Fusión interfotograma",
+      "Simula el efecto fantasma de una pantalla LCD. «Sencilla» mezcla los fotogramas previos y posteriores en un 50%. «Inteligente» intenta detectar los parpadeos de pantalla y solo lleva a cabo la fusión del 50% en los fotogramas afectados. «Efecto fantasma de LCD» imita los tiempos de respuesta naturales de una pantalla LCD combinando varios fotogramas guardados en el búfer. La fusión sencilla o inteligente es necesaria en aquellos juegos que aprovechan de forma agresiva el efecto fantasma de la pantalla LCD para los efectos de transparencia (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, la saga Boktai...).",
+      {
+         { "OFF",               NULL },
+         { "mix",               "Sencilla" },
+         { "mix_smart",         "Inteligente" },
+         { "lcd_ghosting",      "Efecto fantasma de LCD (preciso)" },
+         { "lcd_ghosting_fast", "Efecto fantasma de LCD (rápido)" },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
+#endif
+   {
+      "mgba_force_gbp",
+      "Vibración de Game Boy Player (es necesario reiniciar)",
+      "Permite que aquellos juegos compatibles con el logotipo de arranque de Game Boy Player hagan vibrar el mando. Debido a el método que utilizó Nintendo, puede provocar fallos gráficos, como parpadeos o retrasos de señal en algunos de estos juegos.",
+      {
+         { "OFF", NULL },
+         { "ON",  NULL },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
+   { NULL, NULL, NULL, {{0}}, NULL },
+};
+
 /* RETRO_LANGUAGE_GERMAN */
 
 /* RETRO_LANGUAGE_ITALIAN */
