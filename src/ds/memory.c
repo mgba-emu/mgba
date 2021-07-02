@@ -238,6 +238,7 @@ static void DS7SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 			cpu->memory.activeRegion = ds->memory.wram7;
 			cpu->memory.activeMask = DS7_SIZE_WORKING_RAM - 1;
 		} else if (ds->memory.wramSize7 == DS_SIZE_WORKING_RAM) {
+			// XXX: See the documentation on this hack in DSMemoryReset
 			if (address & DS_SIZE_WORKING_RAM) {
 				cpu->memory.activeRegion = ds->memory.wram;
 			} else {
@@ -285,6 +286,7 @@ static void DS7SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	cpu->memory.activeSeqCycles16 = memory->waitstatesPrefetchSeq16[memory->activeRegion];
 	cpu->memory.activeNonseqCycles32 = memory->waitstatesPrefetchNonseq32[memory->activeRegion];
 	cpu->memory.activeNonseqCycles16 = memory->waitstatesPrefetchNonseq16[memory->activeRegion];
+	cpu->memory.activeMask &= -(cpu->cpsr.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM);
 }
 
 uint32_t DS7Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
@@ -815,6 +817,7 @@ static void DS9SetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	cpu->memory.activeSeqCycles16 = memory->waitstatesPrefetchSeq16[memory->activeRegion];
 	cpu->memory.activeNonseqCycles32 = memory->waitstatesPrefetchNonseq32[memory->activeRegion];
 	cpu->memory.activeNonseqCycles16 = memory->waitstatesPrefetchNonseq16[memory->activeRegion];
+	cpu->memory.activeMask &= -(cpu->cpsr.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM);
 }
 
 uint32_t DS9Load32(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
