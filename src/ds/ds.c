@@ -436,6 +436,10 @@ static void DSProcessEvents(struct DSCommon* dscore) {
 		} while (ds->cpuBlocked && !ds->earlyExit);
 
 		cpu->nextEvent = nextEvent;
+		if (ds->earlyExit) {
+			break;
+		}
+
 		if (cpu->halted) {
 			cpu->cycles = nextEvent;
 		}
@@ -444,9 +448,6 @@ static void DSProcessEvents(struct DSCommon* dscore) {
 			mLOG(DS, FATAL, "Negative cycles will pass: %i", nextEvent);
 		}
 #endif
-		if (ds->earlyExit) {
-			break;
-		}
 	}
 	ds->earlyExit = false;
 	if (ds->cpuBlocked) {
