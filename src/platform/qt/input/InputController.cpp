@@ -159,8 +159,9 @@ void InputController::setPlatform(mPlatform platform) {
 
 	loadConfiguration(KEYBOARD);
 #ifdef BUILD_SDL
-	mSDLInitBindingsGBA(&m_inputMap);
-	loadConfiguration(SDL_BINDING_BUTTON);
+	if (!loadConfiguration(SDL_BINDING_BUTTON)) {
+		mSDLInitBindingsGBA(&m_inputMap);
+	}
 #endif
 
 	rebuildKeyIndex();
@@ -272,9 +273,6 @@ void InputController::setConfiguration(ConfigController* config) {
 	mSDLEventsLoadConfig(&s_sdlEvents, config->input());
 	if (!m_playerAttached) {
 		m_playerAttached = mSDLAttachPlayer(&s_sdlEvents, &m_sdlPlayer);
-	}
-	if (!loadConfiguration(SDL_BINDING_BUTTON)) {
-		mSDLInitBindingsGBA(&m_inputMap);
 	}
 	loadProfile(SDL_BINDING_BUTTON, profileForType(SDL_BINDING_BUTTON));
 #endif
