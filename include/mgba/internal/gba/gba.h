@@ -125,9 +125,7 @@ struct GBA {
 	char debugString[0x100];
 	GBADebugFlags debugFlags;
 
-	// Extensions
-	uint32_t extIORegisters[HWEX_EXTENSIONS_COUNT];
-	uint32_t extMoreRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
+	struct GBAHardwareExtensions hwExtensions;
 };
 
 struct GBACartridge {

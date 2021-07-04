@@ -124,6 +124,8 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->irqEvent.callback = _triggerIRQ;
 	gba->irqEvent.context = gba;
 	gba->irqEvent.priority = 0;
+
+	GBAHardwareExtensionsInit(&gba->hwExtensions);
 }
 
 void GBAUnloadROM(struct GBA* gba) {

@@ -586,6 +586,10 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			STORE_16LE(value, address - REG_DEBUG_STRING, gba->debugString);
 			return;
 		}
+		if (address >= REG_HWEX_ENABLE && address < REG_HWEX_END) {
+			GBAHardwareExtensionsIOWrite(gba, address, value);
+			return;
+		}
 		mLOG(GBA_IO, STUB, "Stub I/O register write: %03X", address);
 		if (address >= REG_MAX) {
 			mLOG(GBA_IO, GAME_ERROR, "Write to unused I/O register: %03X", address);
@@ -612,6 +616,10 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 	}
 	if (address >= REG_DEBUG_STRING && address - REG_DEBUG_STRING < sizeof(gba->debugString)) {
 		gba->debugString[address - REG_DEBUG_STRING] = value;
+		return;
+	}
+	if (address >= REG_HWEX_ENABLE && address < REG_HWEX_END) {
+		GBAHardwareExtensionsIOWrite8(gba, address, value);
 		return;
 	}
 	if (address > SIZE_IO) {
@@ -667,12 +675,13 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 	case REG_DMA3DAD_LO:
 		value = GBADMAWriteDAD(gba, 3, value);
 		break;
-	case REG_MGBA_EXTENSION_0:
-		SetRegMgbaHwExtensionValue(gba, address, value);
-		return;
 	default:
 		if (address >= REG_DEBUG_STRING && address - REG_DEBUG_STRING < sizeof(gba->debugString)) {
 			STORE_32LE(value, address - REG_DEBUG_STRING, gba->debugString);
+			return;
+		}
+		if (address >= REG_HWEX_ENABLE && address < REG_HWEX_END) {
+			GBAHardwareExtensionsIOWrite32(gba, address, value);
 			return;
 		}
 		GBAIOWrite(gba, address, value & 0xFFFF);
@@ -935,18 +944,14 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case 0x206:
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return 0;
-	case REG_MGBA_EXTENSIONS_ENABLED:
-		return GetRegMgbaHwExtensionsEnabled();
-	case REG_MGBA_EXTENSIONS_CNT:
-		return GetRegMgbaHwExtensionsCnt(gba, address);
 	case REG_DEBUG_ENABLE:
 		if (gba->debug) {
 			return 0x1DEA;
 		}
 		// Fall through
 	default:
-		if (address >= REG_MGBA_EXTENSION_0 && (address & 1) == 0 && ((address - REG_MGBA_EXTENSION_0) >> 2) < HWEX_EXTENSIONS_COUNT) {
-			return GetRegMgbaHwExtensionValue(gba, address);
+		if (address >= REG_HWEX_ENABLE && address < REG_HWEX_END) {
+			return GBAHardwareExtensionsIORead(gba, address);
 		}
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return GBALoadBad(gba->cpu);
