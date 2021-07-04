@@ -8,10 +8,8 @@
 #include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/gba.h>
 
-static uint16_t* GetHwExIOPointer(struct GBA* gba, uint32_t address);
-static uint32_t GetHwExMemoryIndex32FromAddress(uint32_t address);
 
-static enum HWEX_RETURN_CODES {
+enum HWEX_RETURN_CODES {
     HWEX_RET_OK = 0,
     HWEX_RET_WAIT = 1,
 
@@ -20,10 +18,12 @@ static enum HWEX_RETURN_CODES {
     HWEX_RET_ERR_BAD_ADDRESS = 0x101,
     HWEX_RET_ERR_INVALID_PARAMETERS = 0x102,
     HWEX_RET_ERR_WRITE_TO_ROM = 0x103,
-    HWEX_RET_ERR_ABORTED = 0x104
+    HWEX_RET_ERR_ABORTED = 0x104,
+    HWEX_RET_ERR_DISABLED = 0x105,
+    HWEX_RET_ERR_DISABLED_BY_USER = 0x106
 };
 
-static enum {
+enum {
     HWEX_ID_MORE_RAM = 0
 };
 
@@ -37,7 +37,19 @@ void GBAHardwareExtensionsInit(struct GBAHardwareExtensions* hwExtensions) {
     memset(hwExtensions->memory, 0, sizeof(hwExtensions->memory));
 }
 
-uint16_t _GBAHardwareExtensionsIORead(struct GBA* gba, uint32_t address) {
+static uint32_t GetHwExMemoryIndex16FromAddress(uint32_t address) {
+    return (address - REG_HWEX_ENABLE_FLAGS_0) >> 1;
+}
+
+static uint32_t GetHwExMemoryIndex32FromAddress(uint32_t address) {
+    return (address - REG_HWEX_ENABLE_FLAGS_0) >> 2;
+}
+
+static uint16_t* GetHwExIOPointer(struct GBA* gba, uint32_t address) {
+    return ((uint16_t*) &gba->hwExtensions.memory) + GetHwExMemoryIndex16FromAddress(address);
+}
+
+static uint16_t _GBAHardwareExtensionsIORead(struct GBA* gba, uint32_t address) {
     switch (address) {
         case REG_HWEX_ENABLE:
             return 0x1DEA;
@@ -66,11 +78,11 @@ uint16_t GBAHardwareExtensionsIORead(struct GBA* gba, uint32_t address) {
     return GBALoadBad(gba->cpu);
 }
 
-uint32_t GBAHardwareExtensionsIORead32(struct GBA* gba, uint32_t address) {
+static uint32_t _GBAHardwareExtensionsIORead32(struct GBA* gba, uint32_t address) {
     return gba->hwExtensions.memory[GetHwExMemoryIndex32FromAddress(address)];
 };
 
-static void* GBAHardwareExtensionsIOReadPointer(struct GBA* gba, uint32_t address, uint32_t* memoryMaxSize, bool* isRom) {
+static void* GBAGetMemoryPointer(struct GBA* gba, uint32_t address, uint32_t* memoryMaxSize, bool* isRom) {
     uint32_t addressPrefix = (address >> 24) & 0xF;
     uint8_t* pointer = NULL;
     *isRom = false;
@@ -84,9 +96,7 @@ static void* GBAHardwareExtensionsIOReadPointer(struct GBA* gba, uint32_t addres
     } else if (addressPrefix == 3) {
         if ((address & 0xFFFFFF) < SIZE_WORKING_IRAM) {
             pointer = (uint8_t*) gba->memory.iwram;
-            mLOG(GBA_IO, GAME_ERROR, "addr: %03X", pointer);
             pointer += address & 0xFFFFFF;
-            mLOG(GBA_IO, GAME_ERROR, "addr2: %03X", pointer);
             *memoryMaxSize = SIZE_WORKING_IRAM - (address & 0xFFFFFF);
         }
     } else if (addressPrefix & 8) {
@@ -101,25 +111,23 @@ static void* GBAHardwareExtensionsIOReadPointer(struct GBA* gba, uint32_t addres
     return pointer;
 }
 
-static enum HwExMoreRAMCommands {
+enum HwExMoreRAMCommands {
     HwExtMoreRAMMemoryWrite = 0,
     HwExtMoreRAMMemoryRead = 1,
     HwExtMoreRAMMemorySwap = 2
 };
 
-
 static uint16_t MGBAHwExtMoreRAM(struct GBA* gba) {
-    uint32_t command = GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P0_LO);
-    uint32_t index = GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P1_LO);
-    uint32_t dataPointer = GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P2_LO);
-    uint32_t dataSize = GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P3_LO);
+    uint32_t command = _GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P0_LO);
+    uint32_t index = _GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P1_LO);
+    uint32_t dataPointer = _GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P2_LO);
+    uint32_t dataSize = _GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P3_LO);
     void* data;
     // Check if the pointer is valid
     bool isRom;
     uint32_t memoryMaxSize;
-    data = GBAHardwareExtensionsIOReadPointer(gba, dataPointer, &memoryMaxSize, &isRom);
+    data = GBAGetMemoryPointer(gba, dataPointer, &memoryMaxSize, &isRom);
     if (data == NULL) {
-        mLOG(GBA_IO, GAME_ERROR, "Bad address: %03X", dataPointer);
         return HWEX_RET_ERR_BAD_ADDRESS;
     }
 
@@ -130,7 +138,6 @@ static uint16_t MGBAHwExtMoreRAM(struct GBA* gba) {
     
     switch (command) {
         case HwExtMoreRAMMemoryWrite:
-            mLOG(GBA_IO, GAME_ERROR, "write: %03X", dataPointer);
             memcpy(((uint8_t*)gba->hwExtensions.moreRam) + index, data, dataSize);
             break;
         case HwExtMoreRAMMemoryRead:
@@ -145,7 +152,7 @@ static uint16_t MGBAHwExtMoreRAM(struct GBA* gba) {
             }
             // TODO: make this more efficient
             uint8_t* data1 = data;
-            uint8_t* data2 = gba->hwExtensions.moreRam;
+            uint8_t* data2 = (uint8_t*) gba->hwExtensions.moreRam;
             data2 += index;
             for (uint32_t i = 0; i < dataSize; i++) {
                 uint8_t aux = data1[i];
@@ -159,19 +166,6 @@ static uint16_t MGBAHwExtMoreRAM(struct GBA* gba) {
     }
 
     return HWEX_RET_OK;
-}
-
-
-static uint32_t GetHwExMemoryIndex16FromAddress(uint32_t address) {
-    uint32_t ret = (address - REG_HWEX_ENABLE_FLAGS_0) >> 1;
-    return ret;
-}
-static uint32_t GetHwExMemoryIndex32FromAddress(uint32_t address) {
-    return (address - REG_HWEX_ENABLE_FLAGS_0) >> 2;
-}
-
-static uint16_t* GetHwExIOPointer(struct GBA* gba, uint32_t address) {
-    return ((uint16_t*) &gba->hwExtensions.memory) + GetHwExMemoryIndex16FromAddress(address);
 }
 
 static void _GBAHardwareExtensionsIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
@@ -216,7 +210,6 @@ static uint16_t GetExtensionIdFromAddress(uint32_t address) {
 
 #undef SIMPLIFY_HWEX_REG_ADDRESS
 
-
 static void GBAHardwareExtensionsHandleCntWrite(struct GBA* gba, uint32_t cntAddress, uint32_t value) {
     uint16_t* cnt = GetHwExIOPointer(gba, cntAddress);
     uint16_t* returnCode = cnt + 1;
@@ -246,10 +239,7 @@ static void GBAHardwareExtensionsHandleCntWrite(struct GBA* gba, uint32_t cntAdd
             }
         }
     }
-    
-    return;
 }
-
 
 void GBAHardwareExtensionsIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
     switch (address) {
