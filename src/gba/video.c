@@ -100,7 +100,7 @@ void GBAVideoReset(struct GBAVideo* video) {
 	memset(video->renderer->vramOBJ, 0, sizeof(video->renderer->vramOBJ));
 	video->renderer->vramOBJ[0] = &video->vram[0x8000];
 	video->renderer->vramOBJ[1] = &video->vram[0xA000];
-	video->renderer->vramOBJ[2] = _zeroes;
+	video->renderer->vramOBJ[2] = &video->vram[0x8000];
 	video->renderer->vramOBJ[3] = _zeroes;
 
 	video->renderer->reset(video->renderer);
