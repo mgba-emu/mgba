@@ -39,6 +39,7 @@
 #define LOG_THRESHOLD 1000000
 
 static const struct option longOpts[] = {
+	{ "4up",        no_argument, 0, '4' },
 	{ "base",       required_argument, 0, 'b' },
 	{ "diffs",      no_argument, 0, 'd' },
 	{ "help",       no_argument, 0, 'h' },
@@ -54,7 +55,7 @@ static const struct option longOpts[] = {
 	{ 0, 0, 0, 0 }
 };
 
-static const char shortOpts[] = "b:dhj:no:qRrvx";
+static const char shortOpts[] = "4b:dhj:no:qRrvx";
 
 enum CInemaStatus {
 	CI_PASS,
@@ -114,6 +115,7 @@ static char base[PATH_MAX] = {0};
 static char outdir[PATH_MAX] = {'.'};
 static bool dryRun = false;
 static bool diffs = false;
+static bool is4Up = false;
 static enum CInemaRebaseline rebaseline = CI_R_NONE;
 static enum CInemaRebaseline xbaseline = CI_R_NONE;
 static int verbosity = 0;
@@ -243,6 +245,9 @@ static bool parseCInemaArgs(int argc, char* const* argv) {
 			} else {
 				return false;
 			}
+			break;
+		case '4':
+			is4Up = true;
 			break;
 		case 'b':
 			strlcpy(base, optarg, sizeof(base));
@@ -861,7 +866,43 @@ static bool _compareImages(struct CInemaTest* restrict test, const struct CInema
 	return !failed;
 }
 
-void _writeDiffSet(struct CInemaImage* expected, const char* name, uint8_t* diff, int frame, int max, bool xfail) {
+static void _write4UpDiff(const struct CInemaImage* expected, const struct CInemaImage* result, const char* name, uint8_t* diff, int frame, int max) {
+	struct CInemaImage out = {
+		.width = expected->width * 2,
+		.height = expected->height * 2,
+		.stride = expected->width * 2,
+	};
+	out.data = malloc(out.width * out.stride * 4);
+	uint32_t* outdata = out.data;
+	size_t x;
+	size_t y;
+	for (y = 0; y < expected->height; ++y) {
+		size_t base = y * out.stride;
+		size_t inbase = y * expected->stride;
+		memcpy(&outdata[base], &((uint32_t*) expected->data)[inbase], expected->width * 4);
+		memcpy(&outdata[base + expected->width], &((uint32_t*) result->data)[inbase], expected->width * 4);
+		memcpy(&outdata[base + expected->height * out.stride], &diff[inbase * 4], expected->width * 4);
+		int x;
+		for (x = 0; x < expected->width; ++x) {
+			size_t pix = (expected->stride * y + x) * 4;
+			size_t outpix = base + expected->height * out.stride + expected->width + x;
+			uint8_t* outdiff = (uint8_t*) &outdata[outpix];
+#ifndef __BIG_ENDIAN__
+			outdiff[0] = diff[pix + 0] * 255 / max;
+			outdiff[1] = diff[pix + 1] * 255 / max;
+			outdiff[2] = diff[pix + 2] * 255 / max;
+#else
+			outdiff[1] = diff[pix + 1] * 255 / max;
+			outdiff[2] = diff[pix + 2] * 255 / max;
+			outdiff[3] = diff[pix + 3] * 255 / max;
+#endif
+		}
+	}
+	_writeDiff(name, &out, frame, "4up");
+
+}
+
+static void _writeDiffSet(const struct CInemaImage* expected, const char* name, uint8_t* diff, int frame, int max, bool xfail) {
 	struct CInemaImage outdiff = {
 		.data = diff,
 		.width = expected->width,
@@ -1158,8 +1199,12 @@ void CInemaTestRun(struct CInemaTest* test) {
 			}
 			if (diff) {
 				if (failed) {
-					_writeDiff(test->name, &image, frame, "result");
-					_writeDiffSet(&expected, test->name, diff, frame, max, false);
+					if (is4Up) {
+						_write4UpDiff(&expected, &image, test->name, diff, frame, max);
+					} else {
+						_writeDiff(test->name, &image, frame, "result");
+						_writeDiffSet(&expected, test->name, diff, frame, max, false);
+					}
 				}
 				free(diff);
 				diff = NULL;
