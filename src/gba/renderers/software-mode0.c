@@ -380,7 +380,7 @@
 		} \
 	} \
 	localX = tileX * 8 + inX; \
-	for (; tileX < tileEnd; ++tileX) { \
+	for (; length; ++tileX) { \
 		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
 		localX += 8; \
 		localY = inY & 0x7; \
@@ -390,7 +390,7 @@
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 6)) + (localY << 3); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		tileData = carryData; \
-		for (x = 0; x < 8; ++x) { \
+		for (; x < 8 && length; ++x, --length) { \
 			if (!mosaicWait) { \
 				if (UNLIKELY(!vram)) { \
 					carryData = 0; \
@@ -422,6 +422,7 @@
 			BACKGROUND_DRAW_PIXEL_256(BLEND, OBJWIN, 0); \
 			++outX; \
 		} \
+		x = 0; \
 	}
 
 #define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_256EXT(BLEND, OBJWIN) \
