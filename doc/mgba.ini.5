@@ -1,0 +1,293 @@
+.\" Copyright (c) 2018 Anthony J. Bentley <anthony@anjbe.name>
+.\"
+.\" This Source Code Form is subject to the terms of the Mozilla Public
+.\" License, v. 2.0. If a copy of the MPL was not distributed with this
+.\" file, you can obtain one at https://mozilla.org/MPL/2.0/.
+.Dd April 20, 2018
+.Dt MGBA.INI 5
+.Os
+.Sh NAME
+.Nm mgba.ini
+.Nd mGBA configuration file
+.Sh DESCRIPTION
+.Nm
+is a configuration file in INI format that specifies behavior of the
+.Xr mgba 6
+emulator.
+Like every INI file, it consists of
+.Ar key Ns = Ns Ar value
+pairs, one per line.
+These settings are contained in sections, whose titles are wrapped in brackets
+[].
+.Bl -tag -width Ds
+.It Ic width
+Width of the emulation window in pixels.
+.It Ic height
+Height of the emulation window in pixels.
+.It Ic fullscreen
+Boolean.
+If 1,
+the window will take up the entire screen.
+.It Ic gb.model
+SGB, MGB, SGB2, CGB, AGB?
+.It Ic sgb.model
+???
+.It Ic cgb.model
+???
+.It Ic logLevel
+Log messages during emulation to
+.Dv stdout .
+The value is a bitmask defining which types of messages to log:
+.Bl -bullet -compact
+.It
+1 \(en fatal errors
+.It
+2 \(en errors
+.It
+4 \(en warnings
+.It
+8 \(en informative messages
+.It
+16 \(en debugging messages
+.It
+32 \(en stub messages for unimplemented features
+.It
+256 \(en in\(hygame errors
+.It
+512 \(en software interrupts
+.It
+1024 \(en emulator status messages
+.It
+2048 \(en serial I/O messages
+.El
+The default is to log warnings, errors, fatal errors, and status messages.
+.It Ic shader
+Pathname of the shader to use (???).
+.It Ic bios
+Synonym for
+.Ic gba.bios .
+.It Ic gba.bios
+Filename of the Game Boy Advance BIOS.
+.It Ic gb.bios
+Filename of the Game Boy boot ROM.
+.It Ic gbc.bios
+Filename of the Game Boy Color boot ROM.
+.It Ic sgb.bios
+Filename of the Super Game Boy boot ROM.
+.It Ic sgb.borders
+Whether or not to display Super Game Boy borders (for games that support them).
+.It Ic useBios
+Boolean.
+If 1,
+.Xr mgba 6
+will execute a BIOS or boot ROM on startup corresponding to an existing
+.Ic gb.bios , sgb.bios , gbc.bios ,
+or
+.Ic gba.bios
+setting.
+If 0,
+.Xr mgba 6
+will use its built\(hyin BIOS emulation,
+which in certain games may result in less accurate emulation.
+.It Ic skipBios
+Boolean.
+If 1,
+and a BIOS or boot ROM has been enabled,
+.Xr mgba 6
+will skip displaying the Nintendo Game Boy logo animation.
+.It Ic audioBuffers
+The size in bytes that
+.Xr mgba 6
+will use for audio buffering.
+.It Ic sampleRate
+The audio sample rate in hertz.
+.It Ic videoSync
+Boolean.
+Whether or not to synchronize video (???).
+.It Ic audioSync
+Boolean.
+Whether or not to synchronize audio (???).
+.It Ic frameskip
+How many frames to skip between displayed frames.
+Improves performance at significant cost to emulation quality.
+.It Ic fpsTarget
+???
+.It Ic autofireThreshold
+???
+.It Ic lockAspectRatio
+Boolean.
+If 1,
+when increasing or decreasing the window size,
+.Xr mgba 6
+will force the window to keep the same aspect ratio.
+.It Ic lockIntegerScaling
+Boolean.
+If 1,
+when increasing or decreasing the window size,
+.Xr mgba 6
+will force the window to an integer multiple of the default size.
+.It Ic volume
+Audio volume.
+.It Ic mute
+Boolean.
+If 1,
+audio is muted.
+.It Ic rewindEnable
+Boolean.
+If 1,
+rewind is enabled (???).
+(Caveats?)
+.It Ic rewindBufferCapacity
+How much memory(?) to devote to rewind history,
+if
+.Ic rewindEnable
+has been set.
+.It Ic rewindSave
+???
+.It Ic resampleVideo
+???
+.It Ic allowOpposingDirections
+Boolean.
+If 1,
+allow pressing left and right, or up and down, at the same time.
+Some games don't expect this capability
+and display unexpected behavior when it's used.
+.It Ic suspendScreensaver
+Boolean.
+If 1,
+.Xr mgba 6
+disable the operating system's screensaver while playing.
+.It Ic pauseOnFocusLost
+Boolean.
+If 1,
+.Xr mgba 6
+will pause emulation when it detects that it no longer has focus.
+.It Ic savegamePath
+Path to store save games.
+(Default value?)
+.It Ic screenshotPath
+Path to store screenshots.
+(Default?)
+.It Ic patchPath
+Path to search for patch files.
+(Default?)
+.It Ic cheatsPath
+Path to search for cheat files.
+(Default?)
+.It Ic showLibrary
+Boolean.
+If 1,
+???.
+.It Ic preload
+Boolean.
+If 1,
+preload the entire ROM into memory when emulating.
+(Benefits/Caveats?)
+.It Ic showFps
+Boolean.
+If 1,
+display the number of frames per second.
+(Where?)
+.It Ic cheatAutoload
+Boolean.
+If 1,
+automatically load cheats on startup.
+.It Ic cheatAutosave
+Boolean.
+If 1,
+automatically save cheats as soon as they've been set (?).
+.It Ic autoload
+???
+.It Ic autosave
+???
+.It Ic libraryStyle
+.Bl -tag -compact -width xxxx
+.It 1
+List view.
+.It 2
+Tree view.
+.El
+.It Ic fastForwardRatio
+???
+.It Ic idleOptimization
+???
+.It Ic loadStateExtdata
+???
+.It Ic saveStateExtdata
+???
+.El
+.Ss Bq ports.qt
+.Pp
+.Bl -tag -width Ds
+.It Ic lastDirectory
+The last location that a game was loaded from.
+.Xr mgba-qt 6
+will default to this directory when it opens the file load dialog.
+.El
+.Ss Bq gba.input-profile. Ns Ar gamepad
+.Pp
+.Bl -tag -width Ds
+.It Ic axisDownAxis
+.It Ic axisDownValue
+.It Ic axisLAxis
+.It Ic axisLValue
+.It Ic axisLeftAxis
+.It Ic axisLeftValue
+.It Ic axisRAxis
+.It Ic axisRValue
+.It Ic axisRightAxis
+.It Ic axisRightValue
+.It Ic axisUpAxis
+.It Ic axisUpValue
+.It Ic device0
+.It Ic gyroAxisX
+.It Ic gyroAxisY
+.It Ic gyroSensitivity
+.It Ic hat0Down
+.It Ic hat0Left
+.It Ic hat0Right
+.It Ic hat0Up
+.It Ic keyA
+.It Ic keyB
+.It Ic keyDown
+.It Ic keyL
+.It Ic keyLeft
+.It Ic keyR
+.It Ic keyRight
+.It Ic keySelect
+.It Ic keyStart
+.It Ic keyUp
+.It Ic tiltAxisX
+.It Ic tiltAxisY
+.El
+.Sh FILES
+.Bl -tag -width Ds -compact
+.It Pa $XDG_CONFIG_HOME/mgba/mgba.ini
+Default
+.Xr mgba 6
+configuration file.
+.It Pa $XDG_CONFIG_HOME/mgba/config.ini
+Synonym of
+.Nm
+for backwards compatibility.
+.It Pa portable.ini
+If this file exists in the current directory,
+.Xr mgba 6
+will read
+.Nm
+from the current directory instead of
+.Pa $XDG_CONFIG_HOME/mgba .
+.El
+.Sh AUTHORS
+.An Jeffrey Pfau Aq Mt jeffrey@endrift.com
+.Sh HOMEPAGE
+.Bl -bullet
+.It
+.Lk https://mgba.io/ "mGBA homepage"
+.It
+.Lk https://github.com/mgba-emu/mgba "Development repository"
+.It
+.Lk https://github.com/mgba-emu/mgba/issues "Bug tracker"
+.It
+.Lk https://forums.mgba.io/ "Message board"
+.El
