@@ -42,6 +42,10 @@ static const struct option _options[] = {
 	{ "savestate", required_argument, 0, 't' },
 	{ "patch",     required_argument, 0, 'p' },
 	{ "version",   no_argument, 0, '\0' },
+	// Extensions
+	{ "hw-extensions", no_argument, 0, 0x1000 },
+	{ "hwex-all", no_argument, 0, 0x1001 },
+	{ "hwex-more-ram", no_argument, 0, 0x1002 },
 	{ 0, 0, 0, 0 }
 };
 
@@ -135,6 +139,24 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 		case 't':
 			args->savestate = strdup(optarg);
 			break;
+		
+		// Extensions
+		case 0x1000:
+			// enable extensions
+			args->hwExtensions = true;
+			break;
+		case 0x1001:
+			// enable all extensions
+			memset(args->hwExtensionsFlags, 0xFF, sizeof(args->hwExtensionsFlags));
+			break;
+		case 0x1002: {
+			// enable 1 extension
+			size_t extensionId = ch - 0x1002;
+			size_t index = extensionId / (8 * sizeof(args->hwExtensionsFlags[0]));
+			size_t offset = extensionId % (8 * sizeof(args->hwExtensionsFlags[0]));
+			args->hwExtensionsFlags[index] |= 1 << offset;
+			break;
+		}
 		default:
 			if (subparser) {
 				if (!subparser->parse(subparser, ch, optarg)) {
@@ -165,6 +187,14 @@ void applyArguments(const struct mArguments* args, struct mSubParser* subparser,
 	}
 	if (args->bios) {
 		mCoreConfigSetOverrideValue(config, "bios", args->bios);
+	}
+	if (args->hwExtensions) {
+		mCoreConfigSetOverrideIntValue(config, "hwExtensions", args->hwExtensions);
+	}
+	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_X";
+	for (size_t i = 0; i < (sizeof(args->hwExtensionsFlags) / sizeof(args->hwExtensionsFlags[0])); i++) {
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = 'A' + i;
+		mCoreConfigSetOverrideUIntValue(config, hwExtensionsFlagsKey, args->hwExtensionsFlags[i]);
 	}
 	HashTableEnumerate(&args->configOverrides, _tableApply, config);
 	if (subparser) {

@@ -272,6 +272,9 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	}
 	gba->video.frameskip = core->opts.frameskip;
 
+	gba->hwExtensions.userEnabled = core->opts.hwExtensions;
+	memcpy(gba->hwExtensions.userEnabledFlags, core->opts.hwExtensionsFlags, sizeof(gba->hwExtensions.userEnabledFlags));
+
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->overrides = mCoreConfigGetOverridesConst(config);
@@ -359,6 +362,26 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 			gba->allowOpposingDirections = fakeBool;
 		}
 		return;
+	}
+
+	if (strcmp("hwExtensions", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "hwExtensions", &fakeBool)) {
+			core->opts.hwExtensions = fakeBool;
+			gba->hwExtensions.userEnabled = core->opts.hwExtensions;
+		}
+		return;
+	}
+	
+	if (strcmp("hwExtensionsFlags", option) == 0) {
+		char hwExtensionsFlagsKey[] = "hwExtensionsFlags_X";
+		uint32_t value32;
+		for (size_t i = 0; i < (sizeof(core->opts.hwExtensionsFlags) / sizeof(core->opts.hwExtensionsFlags[0])); i++) {
+			hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = 'A' + i;
+			if (mCoreConfigGetUIntValue(config, hwExtensionsFlagsKey, &value32)) {
+				core->opts.hwExtensionsFlags[i] = (uint16_t)value32;
+				gba->hwExtensions.userEnabledFlags[i] = core->opts.hwExtensionsFlags[i];	
+			}
+		}
 	}
 
 	struct GBACore* gbacore = (struct GBACore*) core;

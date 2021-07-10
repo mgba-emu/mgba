@@ -440,6 +440,17 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts)
 	_lookupCharValue(config, "screenshotPath", &opts->screenshotPath);
 	_lookupCharValue(config, "patchPath", &opts->patchPath);
 	_lookupCharValue(config, "cheatsPath", &opts->cheatsPath);
+
+	_lookupIntValue(config, "hwExtensions", &fakeBool);
+	opts->hwExtensions = fakeBool;
+	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_X";
+	uint32_t value32;
+	for (size_t i = 0; i < (sizeof(opts->hwExtensionsFlags) / sizeof(opts->hwExtensionsFlags[0])); i++) {
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = 'A' + i;
+		if (_lookupUIntValue(config, hwExtensionsFlagsKey, &value32)) {
+			opts->hwExtensionsFlags[i] = (uint16_t)value32;
+		}
+	}
 }
 
 void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptions* opts) {
@@ -465,6 +476,13 @@ void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptio
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockIntegerScaling", opts->lockIntegerScaling);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "resampleVideo", opts->resampleVideo);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "suspendScreensaver", opts->suspendScreensaver);
+
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "hwExtensions", opts->hwExtensions);
+	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_X";
+	for (size_t i = 0; i < (sizeof(opts->hwExtensionsFlags) / sizeof(opts->hwExtensionsFlags[0])); i++) {
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = 'A' + i;
+		ConfigurationSetIntValue(&config->defaultsTable, 0, hwExtensionsFlagsKey, opts->hwExtensionsFlags[i]);
+	}
 }
 
 static void _configEnum(const char* key, const char* value, void* user) {

@@ -29,6 +29,9 @@ struct mArguments {
 	bool debugAtStart;
 	bool showHelp;
 	bool showVersion;
+
+	bool hwExtensions;
+	uint16_t hwExtensionsFlags[5];
 };
 
 struct mCoreConfig;

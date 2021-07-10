@@ -58,6 +58,10 @@ struct mCoreOptions {
 
 	bool videoSync;
 	bool audioSync;
+
+	// Extensions
+	bool hwExtensions;
+	uint16_t hwExtensionsFlags[5];
 };
 
 void mCoreConfigInit(struct mCoreConfig*, const char* port);
