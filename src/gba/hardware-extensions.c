@@ -30,9 +30,8 @@ enum {
 void GBAHardwareExtensionsInit(struct GBAHardwareExtensions* hwExtensions) {
 	hwExtensions->enabled = false;
 
-    // TODO: read this from the config
-    hwExtensions->userEnabled = true;
-    memset(hwExtensions->userEnabledFlags, 0xFF, sizeof(hwExtensions->userEnabledFlags));
+    hwExtensions->userEnabled = false;
+    memset(hwExtensions->userEnabledFlags, 0, sizeof(hwExtensions->userEnabledFlags));
 
     memset(hwExtensions->memory, 0, sizeof(hwExtensions->memory));
 }
@@ -210,11 +209,24 @@ static uint16_t GetExtensionIdFromAddress(uint32_t address) {
 
 #undef SIMPLIFY_HWEX_REG_ADDRESS
 
+static bool GBAHardwareExtensionsIsExtensionEnabled(struct GBA* gba, uint32_t extensionId) {
+    uint32_t index = extensionId / 16;
+    uint32_t bit = extensionId % 16;
+    return (_GBAHardwareExtensionsIORead(gba, REG_HWEX_ENABLE_FLAGS_0 + index * 2) & (1 << bit)) != 0;
+}
+
 static void GBAHardwareExtensionsHandleCntWrite(struct GBA* gba, uint32_t cntAddress, uint32_t value) {
     uint16_t* cnt = GetHwExIOPointer(gba, cntAddress);
     uint16_t* returnCode = cnt + 1;
     uint16_t currentValue = *cnt;
-    const struct HardwareExtensionHandlers* handlers = extensionHandlers + GetExtensionIdFromAddress(cntAddress);
+    uint32_t extensionId = GetExtensionIdFromAddress(cntAddress);
+
+    if (!GBAHardwareExtensionsIsExtensionEnabled(gba, extensionId)) {
+        *returnCode = HWEX_RET_ERR_DISABLED;
+        return;
+    }
+
+    const struct HardwareExtensionHandlers* handlers = extensionHandlers + extensionId;
     value &= HWEX_CNT_ALL_WRITABLE; // delete non-writable flags
     
     if (value != (currentValue & HWEX_CNT_ALL_WRITABLE)) { // check if value changed
