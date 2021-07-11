@@ -27,6 +27,8 @@
 	"  -6               6x viewport\n" \
 	"  -f               Start full-screen"
 
+#define HWEX_ARGS_OFFSET 0x1002
+
 static const struct option _options[] = {
 	{ "bios",      required_argument, 0, 'b' },
 	{ "cheats",    required_argument, 0, 'c' },
@@ -43,9 +45,9 @@ static const struct option _options[] = {
 	{ "patch",     required_argument, 0, 'p' },
 	{ "version",   no_argument, 0, '\0' },
 	// Extensions
-	{ "hw-extensions", no_argument, 0, 0x1000 },
-	{ "hwex-all", no_argument, 0, 0x1001 },
-	{ "hwex-more-ram", no_argument, 0, 0x1002 },
+	{ "hw-extensions", no_argument, 0, HWEX_ARGS_OFFSET - 2 },
+	{ "hwex-all", no_argument, 0, HWEX_ARGS_OFFSET - 1 },
+	{ "hwex-more-ram", no_argument, 0, HWEX_ARGS_OFFSET + HWEX_ID_MORE_RAM },
 	{ 0, 0, 0, 0 }
 };
 
@@ -141,19 +143,19 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 			break;
 		
 		// Extensions
-		case 0x1000:
+		case HWEX_ARGS_OFFSET - 2:
 			// enable extensions
 			args->hwExtensions = true;
 			break;
-		case 0x1001:
+		case HWEX_ARGS_OFFSET - 1:
 			// enable all extensions
 			memset(args->hwExtensionsFlags, 0xFF, sizeof(args->hwExtensionsFlags));
 			break;
-		case 0x1002: {
+		case HWEX_ARGS_OFFSET + HWEX_ID_MORE_RAM: {
 			// enable 1 extension
-			size_t extensionId = ch - 0x1002;
-			size_t index = extensionId / (8 * sizeof(args->hwExtensionsFlags[0]));
-			size_t offset = extensionId % (8 * sizeof(args->hwExtensionsFlags[0]));
+			size_t extensionId = ch - HWEX_ARGS_OFFSET;
+			size_t index = extensionId / 16;
+			size_t offset = extensionId % 16;
 			args->hwExtensionsFlags[index] |= 1 << offset;
 			break;
 		}

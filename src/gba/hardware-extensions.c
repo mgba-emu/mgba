@@ -23,10 +23,6 @@ enum HWEX_RETURN_CODES {
     HWEX_RET_ERR_DISABLED_BY_USER = 0x106
 };
 
-enum {
-    HWEX_ID_MORE_RAM = 0
-};
-
 #define SIMPLIFY_HWEX_REG_ADDRESS(address) ((address - REG_HWEX0_CNT) >> 1)
 
 const uint16_t extensionIdByRegister[] = {

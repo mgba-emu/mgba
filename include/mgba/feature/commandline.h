@@ -14,6 +14,8 @@ CXX_GUARD_START
 
 #include <mgba/debugger/debugger.h>
 
+#include <mgba/internal/gba/hardware-extensions-ids.h>
+
 struct mArguments {
 	char* fname;
 	char* patch;
@@ -31,7 +33,7 @@ struct mArguments {
 	bool showVersion;
 
 	bool hwExtensions;
-	uint16_t hwExtensionsFlags[5];
+	uint16_t hwExtensionsFlags[HWEX_FLAGS_REGISTERS_COUNT];
 };
 
 struct mCoreConfig;

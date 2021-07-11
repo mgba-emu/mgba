@@ -12,16 +12,16 @@
 #include <mgba/core/timing.h>
 
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/hardware-extensions-ids.h>
 
 
-#define HWEX_EXTENSIONS_COUNT  ((REG_HWEX_END - REG_HWEX_ENABLE) / 2) 
 #define REG_HWEX_VERSION_VALUE HWEX_EXTENSIONS_COUNT
 #define HWEX_MORE_RAM_SIZE 0x100000 // 1 MB
 
 struct GBAHardwareExtensions {
     bool enabled;
     bool userEnabled;
-    uint16_t userEnabledFlags[5];
+    uint16_t userEnabledFlags[HWEX_FLAGS_REGISTERS_COUNT];
 
     // IO:
     uint32_t memory[HWEX_EXTENSIONS_COUNT / 2];
@@ -34,7 +34,7 @@ struct GBAHardwareExtensions {
 struct GBAHardwareExtensionsState {
     uint32_t enabled; // boolean
     uint32_t version;
-    
+
     // IO:
     uint32_t memory[128];
     

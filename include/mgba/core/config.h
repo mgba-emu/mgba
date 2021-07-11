@@ -12,6 +12,8 @@ CXX_GUARD_START
 
 #include <mgba-util/configuration.h>
 
+#include <mgba/internal/gba/hardware-extensions-ids.h>
+
 struct mCoreConfig {
 	struct Configuration configTable;
 	struct Configuration defaultsTable;
@@ -61,7 +63,7 @@ struct mCoreOptions {
 
 	// Extensions
 	bool hwExtensions;
-	uint16_t hwExtensionsFlags[5];
+	uint16_t hwExtensionsFlags[HWEX_FLAGS_REGISTERS_COUNT];
 };
 
 void mCoreConfigInit(struct mCoreConfig*, const char* port);
