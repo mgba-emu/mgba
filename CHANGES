@@ -1,4 +1,4 @@
-0.9.2: (Future)
+0.9.2: (2021-07-10)
 Emulation fixes:
  - GB Video: Clear VRAM on reset (fixes mgba.io/i/2152)
  - GBA SIO: Add missing NORMAL8 implementation bits (fixes mgba.io/i/2172)
@@ -15,11 +15,12 @@ Other fixes:
  - GB Audio: Fix audio channel 4 being slow to deserialize
  - GB Core: Fix GBC colors setting breaking default model overrides (fixes mgba.io/i/2161)
  - mGUI: Cache save state screenshot validity in state menu (fixes mgba.io/i/2005)
- - Qt: Fix infrequent deadlock when using sync to video
+ - Qt: Fix eventual deadlock when using sync to video
  - Qt: Fix applying savetype-only overrides
  - Qt: Fix crash in sprite view for partially out-of-bounds sprites (fixes mgba.io/i/2165)
  - Qt: Fix having to press controller buttons twice for menu items (fixes mgba.io/i/2143)
  - Qt: Redo sensor binding to be less fragile
+ - Qt: Reuse timer when rescheduling missing frames (fixes mgba.io/i/2236)
  - Qt: Fix bounded fast forward with enhancement OpenGL renderer
  - Util: Fix loading UPS patches that affect the last byte of the file
 Misc:
