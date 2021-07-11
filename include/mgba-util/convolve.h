@@ -26,6 +26,7 @@ void ConvolutionKernelFillCircle(struct ConvolutionKernel* kernel, bool normaliz
 void Convolve1DPad0PackedS32(const int32_t* restrict src, int32_t* restrict dst, size_t length, const struct ConvolutionKernel* restrict kernel);
 
 void Convolve2DClampPacked8(const uint8_t* restrict src, uint8_t* restrict dst, size_t width, size_t height, size_t stride, const struct ConvolutionKernel* restrict kernel);
+void Convolve2DClampChannels8(const uint8_t* restrict src, uint8_t* restrict dst, size_t width, size_t height, size_t stride, size_t channels, const struct ConvolutionKernel* restrict kernel);
 
 CXX_GUARD_END
 

@@ -6,6 +6,7 @@
 #include "GBAOverride.h"
 
 #include <mgba/core/core.h>
+#include <mgba/internal/gba/gba.h>
 
 using namespace QGBA;
 
@@ -13,7 +14,11 @@ void GBAOverride::apply(struct mCore* core) {
 	if (core->platform(core) != mPLATFORM_GBA) {
 		return;
 	}
-	GBAOverrideApply(static_cast<GBA*>(core->board), &override);
+	GBA* gba = static_cast<GBA*>(core->board);
+	if (!vbaBugCompatSet) {
+		override.vbaBugCompat = gba->vbaBugCompat;
+	}
+	GBAOverrideApply(gba, &override);
 }
 
 void GBAOverride::identify(const struct mCore* core) {

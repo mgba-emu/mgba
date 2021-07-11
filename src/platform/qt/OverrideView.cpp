@@ -83,6 +83,20 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 			m_gbColors[colorId] = color.rgb() | 0xFF000000;
 		});
 	}
+
+	const GBColorPreset* colorPresets;
+	size_t nPresets = GBColorPresetList(&colorPresets);
+	for (size_t i = 0; i < nPresets; ++i) {
+		m_ui.colorPreset->addItem(QString(colorPresets[i].name));
+	}
+	connect(m_ui.colorPreset, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this, colorPresets](int n) {
+		const GBColorPreset* preset = &colorPresets[n];
+		for (int colorId = 0; colorId < 12; ++colorId) {
+			uint32_t color = preset->colors[colorId] | 0xFF000000;
+			m_colorPickers[colorId].setColor(color);
+			m_gbColors[colorId] = color;
+		}
+	});
 #endif
 
 #ifndef M_CORE_GBA
@@ -144,7 +158,11 @@ void OverrideView::updateOverrides() {
 		gba->override.idleLoop = IDLE_LOOP_NONE;
 		gba->override.mirroring = false;
 		gba->override.vbaBugCompat = false;
+		gba->vbaBugCompatSet = false;
 
+		if (gba->override.savetype != SAVEDATA_AUTODETECT) {
+			hasOverride = true;
+		}
 		if (!m_ui.hwAutodetect->isChecked()) {
 			hasOverride = true;
 			gba->override.hardware = HW_NONE;
@@ -168,9 +186,10 @@ void OverrideView::updateOverrides() {
 			hasOverride = true;
 			gba->override.hardware |= HW_GB_PLAYER_DETECTION;
 		}
-		if (m_ui.vbaBugCompat->isChecked()) {
+		if (m_ui.vbaBugCompat->checkState() != Qt::PartiallyChecked) {
 			hasOverride = true;
-			gba->override.vbaBugCompat = true;
+			gba->vbaBugCompatSet = true;
+			gba->override.vbaBugCompat = m_ui.vbaBugCompat->isChecked();
 		}
 
 		bool ok;
@@ -270,7 +289,7 @@ void OverrideView::gameStopped() {
 	m_ui.tabWidget->setEnabled(true);
 	m_ui.savetype->setCurrentIndex(0);
 	m_ui.idleLoop->clear();
-	m_ui.vbaBugCompat->setChecked(false);
+	m_ui.vbaBugCompat->setCheckState(Qt::PartiallyChecked);
 
 	m_ui.mbc->setCurrentIndex(0);
 	m_ui.gbModel->setCurrentIndex(0);

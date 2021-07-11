@@ -180,6 +180,30 @@ size_t toUtf8(uint32_t unichar, char* buffer) {
 	return 0;
 }
 
+size_t toUtf16(uint32_t unichar, uint16_t* buffer) {
+	if (unichar < 0xD800) {
+		buffer[0] = unichar;
+		return 1;
+	}
+	if (unichar < 0xE000) {
+		// Orphan surrogate, invalid
+		return 0;
+	}
+	if (unichar < 0x10000) {
+		buffer[0] = unichar;
+		return 1;
+	}
+	if (unichar < 0x110000) {
+		unichar -= 0x10000;
+		buffer[0] = 0xD800 | (unichar >> 10);
+		buffer[1] = 0xDC00 | (unichar & 0x3FF);
+		return 2;
+	}
+
+	// Invalid code point
+	return 0;
+}
+
 int utfcmp(const uint16_t* utf16, const char* utf8, size_t utf16Length, size_t utf8Length) {
 	uint32_t char1 = 0, char2 = 0;
 	while (utf16Length > 0 && utf8Length > 0) {

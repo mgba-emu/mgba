@@ -61,9 +61,17 @@ int main(int argc, char* argv[]) {
 	mSubParser subparser;
 	initParserForGraphics(&subparser, &graphicsOpts);
 	bool loaded = configController.parseArguments(&args, argc, argv, &subparser);
-	if (loaded && args.showHelp) {
-		usage(argv[0], subparser.usage);
-		return 0;
+	if (loaded) {
+		if (args.showHelp) {
+			usage(argv[0], subparser.usage);
+			freeArguments(&args);
+			return 0;
+		}
+		if (args.showVersion) {
+			version(argv[0]);
+			freeArguments(&args);
+			return 0;
+		}
 	}
 
 	QApplication::setApplicationName(projectName);

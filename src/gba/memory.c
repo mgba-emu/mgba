@@ -127,6 +127,7 @@ void GBAMemoryReset(struct GBA* gba) {
 	memset(gba->memory.io, 0, sizeof(gba->memory.io));
 	GBAAdjustWaitstates(gba, 0);
 
+	gba->memory.activeRegion = -1;
 	gba->memory.agbPrintProtect = 0;
 	gba->memory.agbPrintBase = 0;
 	memset(&gba->memory.agbPrintCtx, 0, sizeof(gba->memory.agbPrintCtx));
@@ -266,6 +267,11 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	gba->lastJump = address;
 	memory->lastPrefetchedPc = 0;
 	if (newRegion == memory->activeRegion) {
+		if (cpu->cpsr.t) {
+			cpu->memory.activeMask |= WORD_SIZE_THUMB;
+		} else {
+			cpu->memory.activeMask &= -WORD_SIZE_ARM;
+		}
 		if (newRegion < REGION_CART0 || (address & (SIZE_CART0 - 1)) < memory->romSize) {
 			return;
 		}
@@ -717,6 +723,8 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = GBASavedataReadFlash(&memory->savedata, address);
 		} else if (memory->hw.devices & HW_TILT) {
 			value = GBAHardwareTiltRead(&memory->hw, address & OFFSET_MASK);
+		} else if (memory->savedata.type == SAVEDATA_SRAM512) {
+			value = memory->savedata.data[address & (SIZE_CART_SRAM512 - 1)];
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Reading from non-existent SRAM: 0x%08X", address);
 			value = 0xFF;
@@ -1070,6 +1078,9 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 			memory->savedata.dirty |= SAVEDATA_DIRT_NEW;
 		} else if (memory->hw.devices & HW_TILT) {
 			GBAHardwareTiltWrite(&memory->hw, address & OFFSET_MASK, value);
+		} else if (memory->savedata.type == SAVEDATA_SRAM512) {
+			memory->savedata.data[address & (SIZE_CART_SRAM512 - 1)] = value;
+			memory->savedata.dirty |= SAVEDATA_DIRT_NEW;
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
 		}

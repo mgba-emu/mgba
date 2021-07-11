@@ -70,7 +70,7 @@ bool mInputQueryHat(const struct mInputMap*, uint32_t type, int id, struct mInpu
 void mInputUnbindHat(struct mInputMap*, uint32_t type, int id);
 void mInputUnbindAllHats(struct mInputMap*, uint32_t type);
 
-void mInputMapLoad(struct mInputMap*, uint32_t type, const struct Configuration*);
+bool mInputMapLoad(struct mInputMap*, uint32_t type, const struct Configuration*);
 void mInputMapSave(const struct mInputMap*, uint32_t type, struct Configuration*);
 
 bool mInputProfileLoad(struct mInputMap*, uint32_t type, const struct Configuration*, const char* profile);

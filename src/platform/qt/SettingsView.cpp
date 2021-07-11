@@ -17,6 +17,7 @@
 
 #ifdef M_CORE_GB
 #include "GameBoy.h"
+#include <mgba/internal/gb/overrides.h>
 #endif
 
 #include <mgba/core/serialize.h>
@@ -258,6 +259,20 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 			m_gbColors[colorId] = color.rgb();
 		});
 	}
+
+	const GBColorPreset* colorPresets;
+	size_t nPresets = GBColorPresetList(&colorPresets);
+	for (size_t i = 0; i < nPresets; ++i) {
+		m_ui.colorPreset->addItem(QString(colorPresets[i].name));
+	}
+	connect(m_ui.colorPreset, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this, colorPresets](int n) {
+		const GBColorPreset* preset = &colorPresets[n];
+		for (int colorId = 0; colorId < 12; ++colorId) {
+			uint32_t color = preset->colors[colorId] | 0xFF000000;
+			m_colorPickers[colorId].setColor(color);
+			m_gbColors[colorId] = color;
+		}
+	});
 #else
 	m_ui.gbBiosBrowse->hide();
 	m_ui.gbcBiosBrowse->hide();
@@ -384,7 +399,6 @@ void SettingsView::updateConfig() {
 	saveSetting("gbc.bios", m_ui.gbcBios);
 	saveSetting("sgb.bios", m_ui.sgbBios);
 	saveSetting("sgb.borders", m_ui.sgbBorders);
-	saveSetting("useCgbColors", m_ui.useCgbColors);
 	saveSetting("useBios", m_ui.useBios);
 	saveSetting("skipBios", m_ui.skipBios);
 	saveSetting("sampleRate", m_ui.sampleRate);
@@ -407,6 +421,8 @@ void SettingsView::updateConfig() {
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
 	saveSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
 	saveSetting("pauseOnMinimize", m_ui.pauseOnMinimize);
+	saveSetting("muteOnFocusLost", m_ui.muteOnFocusLost);
+	saveSetting("muteOnMinimize", m_ui.muteOnMinimize);
 	saveSetting("savegamePath", m_ui.savegamePath);
 	saveSetting("savestatePath", m_ui.savestatePath);
 	saveSetting("screenshotPath", m_ui.screenshotPath);
@@ -429,6 +445,7 @@ void SettingsView::updateConfig() {
 	saveSetting("dynamicTitle", m_ui.dynamicTitle);
 	saveSetting("videoScale", m_ui.videoScale);
 	saveSetting("gba.forceGbp", m_ui.forceGbp);
+	saveSetting("vbaBugCompat", m_ui.vbaBugCompat);
 
 	if (m_ui.audioBufferSize->currentText().toInt() > 8192) {
 		m_ui.audioBufferSize->setCurrentText("8192");
@@ -503,15 +520,26 @@ void SettingsView::updateConfig() {
 	}
 
 	QVariant camera = m_ui.camera->itemData(m_ui.camera->currentIndex());
-	if (camera != m_controller->getQtOption("camera")) {
+	QVariant oldCamera = m_controller->getQtOption("camera");
+	if (camera != oldCamera) {
 		m_controller->setQtOption("camera", camera);
-		emit cameraChanged(camera.toByteArray());
+		if (!oldCamera.isNull()) {
+			emit cameraChanged(camera.toByteArray());
+		}
 	}
 
 	QLocale language = m_ui.languages->itemData(m_ui.languages->currentIndex()).toLocale();
 	if (language != m_controller->getQtOption("language").toLocale() && !(language.bcp47Name() == QLocale::system().bcp47Name() && m_controller->getQtOption("language").isNull())) {
 		m_controller->setQtOption("language", language.bcp47Name());
 		emit languageChanged();
+	}
+
+	if (m_ui.multiplayerAudioAll->isChecked()) {
+		m_controller->setQtOption("multiplayerAudio", "all");
+	} else if (m_ui.multiplayerAudio1->isChecked()) {
+		m_controller->setQtOption("multiplayerAudio", "p1");
+	} else if (m_ui.multiplayerAudioActive->isChecked()) {
+		m_controller->setQtOption("multiplayerAudio", "active");
 	}
 
 	int hwaccelVideo = m_controller->getOption("hwaccelVideo").toInt();
@@ -559,6 +587,18 @@ void SettingsView::updateConfig() {
 		m_controller->setOption(color.toUtf8().constData(), m_gbColors[colorId] & ~0xFF000000);
 
 	}
+
+	int gbColors = GB_COLORS_CGB;
+	if (m_ui.gbColor->isChecked()) {
+		gbColors = GB_COLORS_NONE;
+	} else if (m_ui.cgbColor->isChecked()) {
+		gbColors = GB_COLORS_CGB;
+	} else if (m_ui.sgbColor->isChecked()) {
+		gbColors = GB_COLORS_SGB;
+	} else if (m_ui.scgbColor->isChecked()) {
+		gbColors = GB_COLORS_SGB_CGB_FALLBACK;
+	}
+	saveSetting("gb.colors", gbColors);
 #endif
 
 	m_controller->write();
@@ -574,7 +614,6 @@ void SettingsView::reloadConfig() {
 	loadSetting("gbc.bios", m_ui.gbcBios);
 	loadSetting("sgb.bios", m_ui.sgbBios);
 	loadSetting("sgb.borders", m_ui.sgbBorders, true);
-	loadSetting("useCgbColors", m_ui.useCgbColors, true);
 	loadSetting("useBios", m_ui.useBios);
 	loadSetting("skipBios", m_ui.skipBios);
 	loadSetting("audioBuffers", m_ui.audioBufferSize);
@@ -619,6 +658,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("gba.audioHle", m_ui.audioHle);
 	loadSetting("dynamicTitle", m_ui.dynamicTitle, true);
 	loadSetting("gba.forceGbp", m_ui.forceGbp);
+	loadSetting("vbaBugCompat", m_ui.vbaBugCompat, true);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
@@ -705,6 +745,22 @@ void SettingsView::reloadConfig() {
 		int index = m_ui.cgbSgbModel->findData(model);
 		m_ui.cgbSgbModel->setCurrentIndex(index >= 0 ? index : 0);
 	}
+
+	switch (m_controller->getOption("gb.colors", m_controller->getOption("useCgbColors", true).toInt()).toInt()) {
+	case GB_COLORS_NONE:
+		m_ui.gbColor->setChecked(true);
+		break;
+	default:
+	case GB_COLORS_CGB:
+		m_ui.cgbColor->setChecked(true);
+		break;
+	case GB_COLORS_SGB:
+		m_ui.sgbColor->setChecked(true);
+		break;
+	case GB_COLORS_SGB_CGB_FALLBACK:
+		m_ui.scgbColor->setChecked(true);
+		break;
+	}
 #endif
 
 	int hwaccelVideo = m_controller->getOption("hwaccelVideo", 0).toInt();
@@ -714,6 +770,15 @@ void SettingsView::reloadConfig() {
 		m_ui.videoScaleSize->setText(tr("(%1×%2)").arg(GBA_VIDEO_HORIZONTAL_PIXELS * value).arg(GBA_VIDEO_VERTICAL_PIXELS * value));
 	});
 	loadSetting("videoScale", m_ui.videoScale, 1);
+
+	QString multiplayerAudio = m_controller->getQtOption("multiplayerAudio").toString();
+	if (multiplayerAudio == QLatin1String("p1")) {
+		m_ui.multiplayerAudio1->setChecked(true);
+	} else if (multiplayerAudio == QLatin1String("active")) {
+		m_ui.multiplayerAudioActive->setChecked(true);
+	} else {
+		m_ui.multiplayerAudioAll->setChecked(true);		
+	}
 }
 
 void SettingsView::addPage(const QString& name, QWidget* view, Page index) {

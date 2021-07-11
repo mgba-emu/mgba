@@ -19,6 +19,12 @@
 #include <strsafe.h>
 #endif
 
+#ifdef __APPLE__
+#include <CoreFoundation/CFBundle.h>
+#include <CoreFoundation/CFString.h>
+#include <CoreFoundation/CFURL.h>
+#endif
+
 #ifdef PSP2
 #include <psp2/io/stat.h>
 #endif
@@ -274,6 +280,16 @@ void mCoreConfigPortablePath(char* out, size_t outLength) {
 	out[0] = '\0';
 #else
 	getcwd(out, outLength);
+#ifdef __APPLE__
+	CFBundleRef mainBundle = CFBundleGetMainBundle();
+	if (strcmp(out, "/") == 0 && mainBundle) {
+		CFURLRef url = CFBundleCopyBundleURL(mainBundle);
+		CFURLRef suburl = CFURLCreateCopyDeletingLastPathComponent(kCFAllocatorDefault, url);
+		CFRelease(url);
+		CFURLGetFileSystemRepresentation(suburl, true, (UInt8*) out, outLength);
+		CFRelease(suburl);
+	}
+#endif
 	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
 #endif
 }

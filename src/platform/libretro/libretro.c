@@ -17,6 +17,7 @@
 #include <mgba/gb/core.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/mbc.h>
+#include <mgba/internal/gb/overrides.h>
 #endif
 #ifdef M_CORE_GBA
 #include <mgba/gba/core.h>
@@ -114,10 +115,24 @@ static bool retroAudioBuffUnderrun;
 static unsigned retroAudioLatency;
 static bool updateAudioLatency;
 static bool deferredSetup = false;
+static bool useBitmasks = true;
 static bool envVarsUpdated;
 static int32_t tiltX = 0;
 static int32_t tiltY = 0;
 static int32_t gyroZ = 0;
+
+static const int keymap[] = {
+	RETRO_DEVICE_ID_JOYPAD_A,
+	RETRO_DEVICE_ID_JOYPAD_B,
+	RETRO_DEVICE_ID_JOYPAD_SELECT,
+	RETRO_DEVICE_ID_JOYPAD_START,
+	RETRO_DEVICE_ID_JOYPAD_RIGHT,
+	RETRO_DEVICE_ID_JOYPAD_LEFT,
+	RETRO_DEVICE_ID_JOYPAD_UP,
+	RETRO_DEVICE_ID_JOYPAD_DOWN,
+	RETRO_DEVICE_ID_JOYPAD_R,
+	RETRO_DEVICE_ID_JOYPAD_L,
+};
 
 /* Maximum number of consecutive frames that
  * can be skipped */
@@ -1046,6 +1061,38 @@ static void _initRumble(void) {
 	rumbleInitDone = true;
 }
 
+#ifdef M_CORE_GB
+static void _updateGbPal(void) {
+	struct retro_variable var;
+	var.key = "mgba_gb_colors";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		const struct GBColorPreset* presets;
+		size_t listSize = GBColorPresetList(&presets);
+		size_t i;
+		for (i = 0; i < listSize; ++i) {
+			if (strcmp(presets[i].name, var.value) != 0) {
+				continue;
+			}
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[0]", presets[i].colors[0] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[1]", presets[i].colors[1] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[2]", presets[i].colors[2] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[3]", presets[i].colors[3] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[4]", presets[i].colors[4] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[5]", presets[i].colors[5] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[6]", presets[i].colors[6] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[7]", presets[i].colors[7] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[8]", presets[i].colors[8] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[9]", presets[i].colors[9] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[10]", presets[i].colors[10] & 0xFFFFFF);
+			mCoreConfigSetUIntValue(&core->config, "gb.pal[11]", presets[i].colors[11] & 0xFFFFFF);
+			core->reloadConfigOption(core, "gb.pal", NULL);
+			break;
+		}
+	}
+}
+#endif
+
 static void _reloadSettings(void) {
 	struct mCoreOptions opts = {
 		.useBios = true,
@@ -1077,6 +1124,14 @@ static void _reloadSettings(void) {
 		mCoreConfigSetDefaultValue(&core->config, "sgb.model", modelName);
 		mCoreConfigSetDefaultValue(&core->config, "cgb.model", modelName);
 	}
+
+	var.key = "mgba_sgb_borders";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", strcmp(var.value, "ON") == 0);
+	}
+
+	_updateGbPal();
 #endif
 
 	var.key = "mgba_use_bios";
@@ -1150,6 +1205,22 @@ unsigned retro_api_version(void) {
 void retro_set_environment(retro_environment_t env)
 {
 	environCallback = env;
+
+#ifdef M_CORE_GB
+	const struct GBColorPreset* presets;
+	size_t listSize = GBColorPresetList(&presets);
+
+	size_t colorOpt;
+	for (colorOpt = 0; option_defs_us[colorOpt].key; ++colorOpt) {
+		if (strcmp(option_defs_us[colorOpt].key, "mgba_gb_colors") == 0) {
+			break;
+		}
+	}
+	size_t i;
+	for (i = 0; i < listSize && i < RETRO_NUM_CORE_OPTION_VALUES_MAX; ++i) {
+		option_defs_us[colorOpt].values[i].value = presets[i].name;
+	}
+#endif
 
 	libretro_set_core_options(environCallback);
 }
@@ -1250,6 +1321,8 @@ void retro_init(void) {
 	};
 	environCallback(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, &inputDescriptors);
 
+	useBitmasks = environCallback(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL);
+
 	// TODO: RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME when BIOS booting is supported
 
 	rumbleInitDone = false;
@@ -1332,14 +1405,13 @@ void retro_deinit(void) {
 	gyroEnabled = false;
 	luxSensorEnabled = false;
 	sensorsInitDone = false;
-	libretro_supports_bitmasks = false;
+	useBitmasks = false;
 }
 
-#define RDKEYP1(key) (joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_##key))
 static int turboclock = 0;
 static bool indownstate = true;
 
-int16_t cycleturbo(bool x/*turbo A*/, bool y/*turbo B*/, bool l2/*turbo L*/, bool r2/*turbo R*/) {
+int16_t cycleturbo(bool a, bool b, bool l, bool r) {
 	int16_t buttons = 0;
 	turboclock++;
 	if (turboclock >= 2) {
@@ -1347,25 +1419,24 @@ int16_t cycleturbo(bool x/*turbo A*/, bool y/*turbo B*/, bool l2/*turbo L*/, boo
 		indownstate = !indownstate;
 	}
 
-	if (x) {
+	if (a) {
 		buttons |= indownstate << 0;
 	}
 
-	if (y) {
+	if (b) {
 		buttons |= indownstate << 1;
 	}
 
-	if (l2) {
+	if (l) {
 		buttons |= indownstate << 9;
 	}
 
-	if (r2) {
-	buttons |= indownstate << 8;
+	if (r) {
+		buttons |= indownstate << 8;
 	}
 
 	return buttons;
 }
-
 
 void retro_run(void) {
 	if (deferredSetup) {
@@ -1400,33 +1471,32 @@ void retro_run(void) {
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
 		_loadPostProcessingSettings();
 #endif
-	}
-
-	unsigned i;
-	int16_t joypad_bits;
-	if (libretro_supports_bitmasks)
-		joypad_bits = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
-	else
-	{
-		joypad_bits = 0;
-		for (i = 0; i < (RETRO_DEVICE_ID_JOYPAD_R3+1); i++)
-			joypad_bits |= inputCallback(0, RETRO_DEVICE_JOYPAD, 0, i) ? (1 << i) : 0;
+#ifdef M_CORE_GB
+		_updateGbPal();
+#endif
 	}
 
 	keys = 0;
-	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_A))) << 0;
-	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_B))) << 1;
-	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_SELECT))) << 2;
-	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_START))) << 3;
-	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_RIGHT))) << 4;
-	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_LEFT))) << 5;
-	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_UP))) << 6;
-	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_DOWN))) << 7;
-	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_R))) << 8;
-	keys |= (!!(joypad_bits & (1 << RETRO_DEVICE_ID_JOYPAD_L))) << 9;
-
-	//turbo keys
-	keys |= cycleturbo(RDKEYP1(X),RDKEYP1(Y),RDKEYP1(L2),RDKEYP1(R2));
+	int i;
+	if (useBitmasks) {
+		int16_t joypadMask = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+		for (i = 0; i < sizeof(keymap) / sizeof(*keymap); ++i) {
+			keys |= ((joypadMask >> keymap[i]) & 1) << i;
+		}
+		// XXX: turbo keys, should be moved to frontend
+		keys |= cycleturbo(joypadMask & RETRO_DEVICE_ID_JOYPAD_X, joypadMask & RETRO_DEVICE_ID_JOYPAD_Y, joypadMask & RETRO_DEVICE_ID_JOYPAD_L2, joypadMask & RETRO_DEVICE_ID_JOYPAD_R2);
+	} else {
+		for (i = 0; i < sizeof(keymap) / sizeof(*keymap); ++i) {
+			keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, keymap[i])) << i;
+		}
+		// XXX: turbo keys, should be moved to frontend
+		keys |= cycleturbo(
+			inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X),
+			inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y),
+			inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2),
+			inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2)
+		);
+	}
 
 	core->setKeys(core, keys);
 

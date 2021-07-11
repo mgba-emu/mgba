@@ -15,6 +15,7 @@ static const QList<GBModel> s_gbModelList{
 	GB_MODEL_SGB,
 	GB_MODEL_CGB,
 	GB_MODEL_AGB,
+	GB_MODEL_SCGB,
 };
 
 static const QList<GBMemoryBankControllerType> s_mbcList{
@@ -58,6 +59,7 @@ QString GameBoy::modelName(GBModel model) {
 		s_gbModelNames[GB_MODEL_SGB2] = tr("Super Game Boy 2 (SGB)");
 		s_gbModelNames[GB_MODEL_CGB] = tr("Game Boy Color (CGB)");
 		s_gbModelNames[GB_MODEL_AGB] = tr("Game Boy Advance (AGB)");
+		s_gbModelNames[GB_MODEL_SCGB] = tr("Super Game Boy Color (SGB + CGB)");
 	}
 
 	return s_gbModelNames[model];

@@ -87,7 +87,13 @@ void ActionMapper::rebuildMenu(const QString& menu, QMenu* qmenu, QWidget* conte
 			}
 		});
 		QObject::connect(action, &Action::enabled, qaction, &QAction::setEnabled);
-		QObject::connect(action, &Action::activated, qaction, &QAction::setChecked);
+		QObject::connect(action, &Action::activated, [qaction, action](bool active) {
+			if (qaction->isCheckable()) {
+				qaction->setChecked(active);
+			} else if (active) {
+				action->setActive(false);
+			}
+		});
 		QObject::connect(action, &Action::destroyed, qaction, &QAction::deleteLater);
 		if (shortcut) {
 			QObject::connect(shortcut, &Shortcut::shortcutChanged, qaction, [qaction](int shortcut) {

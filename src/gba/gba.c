@@ -265,8 +265,10 @@ void GBASkipBIOS(struct GBA* gba) {
 		} else {
 			cpu->gprs[ARM_PC] = BASE_WORKING_RAM + 0xC0;
 		}
-		gba->video.vcount = 0x7D;
-		gba->memory.io[REG_VCOUNT >> 1] = 0x7D;
+		gba->video.vcount = 0x7E;
+		gba->memory.io[REG_VCOUNT >> 1] = 0x7E;
+		mTimingDeschedule(&gba->timing, &gba->video.event);
+		mTimingSchedule(&gba->timing, &gba->video.event, 117);
 		gba->memory.io[REG_POSTFLG >> 1] = 1;
 		ARMWritePC(cpu);
 	}
@@ -501,7 +503,11 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 	}
 	if (gba->romVf) {
 #ifndef FIXED_ROM_BUFFER
-		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->pristineRomSize);
+		if (!gba->isPristine) {
+			mappedMemoryFree(gba->memory.rom, SIZE_CART0);
+		} else {
+			gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->pristineRomSize);
+		}
 #endif
 		gba->romVf->close(gba->romVf);
 		gba->romVf = NULL;
@@ -510,7 +516,7 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 	gba->memory.rom = newRom;
 	gba->memory.hw.gpioBase = &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1];
 	gba->memory.romSize = patchedSize;
-	gba->memory.romMask = SIZE_CART0 - 1;
+	gba->memory.romMask = toPow2(patchedSize) - 1;
 	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
 }
 

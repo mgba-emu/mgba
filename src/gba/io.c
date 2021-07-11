@@ -226,7 +226,7 @@ static const int _isValidRegister[REG_MAX >> 1] = {
 	1, 1, 1, 1, 1, 0, 0, 0,
 	1, 1, 1, 0, 0, 0, 0, 0,
 	1, 0, 0, 0, 0, 0, 0, 0,
-	1, 0, 1, 0, 1, 0, 0, 0,
+	1, 1, 1, 1, 1, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -268,7 +268,7 @@ static const int _isRSpecialRegister[REG_MAX >> 1] = {
 	1, 1, 1, 1, 1, 0, 0, 0,
 	1, 1, 1, 0, 0, 0, 0, 0,
 	1, 0, 0, 0, 0, 0, 0, 0,
-	1, 0, 1, 0, 1, 0, 0, 0,
+	1, 1, 1, 1, 1, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -309,7 +309,7 @@ static const int _isWSpecialRegister[REG_MAX >> 1] = {
 	1, 1, 1, 1, 1, 0, 0, 0,
 	1, 1, 1, 0, 0, 0, 0, 0,
 	1, 0, 0, 0, 0, 0, 0, 0,
-	1, 0, 1, 0, 1, 0, 0, 0,
+	1, 1, 1, 1, 1, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -973,6 +973,9 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 }
 
 void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
+	LOAD_16(gba->memory.io[REG_SOUNDCNT_X >> 1], REG_SOUNDCNT_X, state->io);
+	GBAAudioWriteSOUNDCNT_X(&gba->audio, gba->memory.io[REG_SOUNDCNT_X >> 1]);
+
 	int i;
 	for (i = 0; i < REG_MAX; i += 2) {
 		if (_isWSpecialRegister[i >> 1]) {
@@ -1003,7 +1006,6 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		LOAD_32(gba->memory.dma[i].nextCount, 0, &state->dma[i].nextCount);
 		LOAD_32(gba->memory.dma[i].when, 0, &state->dma[i].when);
 	}
-	GBAAudioWriteSOUNDCNT_X(&gba->audio, gba->memory.io[REG_SOUNDCNT_X >> 1]);
 	gba->sio.siocnt = gba->memory.io[REG_SIOCNT >> 1];
 	GBASIOWriteRCNT(&gba->sio, gba->memory.io[REG_RCNT >> 1]);
 

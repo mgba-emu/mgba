@@ -64,6 +64,7 @@ public:
 	void resizeFrame(const QSize& size);
 
 	void updateMultiplayerStatus(bool canOpenAnother) { m_multiWindow->setEnabled(canOpenAnother); }
+	void updateMultiplayerActive(bool active);
 
 signals:
 	void startDrawing();
@@ -145,6 +146,7 @@ private slots:
 	void focusCheck();
 
 	void updateFrame();
+	void updateMute();
 
 	void setLogo();
 
@@ -225,6 +227,9 @@ private:
 	bool m_pendingClose = false;
 
 	bool m_hitUnimplementedBiosCall;
+
+	bool m_inactiveMute = false;
+	bool m_multiActive = true;
 
 	std::unique_ptr<OverrideView> m_overrideView;
 	std::unique_ptr<SensorView> m_sensorView;

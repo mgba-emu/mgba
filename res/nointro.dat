@@ -1,7 +1,7 @@
 clrmamepro (
 	name "Nintendo - Game Boy Advance"
 	description "Nintendo - Game Boy Advance"
-	version 20210326-211504
+	version 20210415-050230
 	author "aci68, Aringon, Bent, BigFred, C. V. Reynolds, chillerecke, DeadSkullzJr, Densetsu, DeriLoko3, einstein95, ElBarto, Enker, fuzzball, Gefflon, Hiccup, hking0036, hydr0x, InternalLoss, Jack, jimmsu, kazumi213, Money_114, niemand, omonim2007, Powerpuff, PPLToast, relax, RetroGamer, Rifu, SonGoku, Tauwasser, Vallaine01, Whovian9369, xuom2, zg"
 	homepage No-Intro
 	url "http://www.no-intro.org"
@@ -11842,7 +11842,7 @@ game (
 game (
 	name "Mother 3 (Japan) (Virtual Console)"
 	description "Mother 3 (Japan) (Virtual Console)"
-	rom ( name "Mother 3 (Japan) (Virtual Console).gba" size 33554432 crc c704a567 sha1 A9FB9C36DF3B0FB24B266826F5853C56122F9D36 )
+	rom ( name "Mother 3 (Japan) (Virtual Console).gba" size 33554432 crc c704a567 sha1 A9FB9C36DF3B0FB24B266826F5853C56122F9D36 flags verified )
 )
 
 game (
@@ -13450,7 +13450,7 @@ game (
 game (
 	name "Pokemon - Version Rouge Feu (France)"
 	description "Pokemon - Version Rouge Feu (France)"
-	rom ( name "Pokemon - Version Rouge Feu (France).gba" size 16777216 crc 5dc668f6 sha1 FC663907256F06A3A09E2D6B967BC9AF4919F111 )
+	rom ( name "Pokemon - Version Rouge Feu (France).gba" size 16777216 crc 5dc668f6 sha1 FC663907256F06A3A09E2D6B967BC9AF4919F111 flags verified )
 )
 
 game (
@@ -19951,8 +19951,8 @@ game (
 clrmamepro (
 	name "Nintendo - Game Boy"
 	description "Nintendo - Game Boy"
-	version 20210311-081758
-	author "aci68, akubi, Aringon, Bent, BigFred, BitLooter, C. V. Reynolds, chillerecke, darthcloud, DeadSkullzJr, Densetsu, DeriLoko3, ElBarto, foxe, fuzzball, Gefflon, Hiccup, hking0036, jimmsu, kazumi213, leekindo, Money_114, NGEfreak, omonim2007, Powerpuff, PPLToast, relax, RetroUprising, rpg2813, SonGoku, Tauwasser, xNo, xuom2"
+	version 20210412-150119
+	author "aci68, akubi, Aringon, Bent, BigFred, BitLooter, C. V. Reynolds, chillerecke, darthcloud, DeadSkullzJr, Densetsu, DeriLoko3, ElBarto, foxe, fuzzball, Gefflon, Hiccup, hking0036, InternalLoss, jimmsu, kazumi213, leekindo, Money_114, NGEfreak, omonim2007, Powerpuff, PPLToast, relax, RetroUprising, rpg2813, SonGoku, Tauwasser, xNo, xuom2"
 	homepage No-Intro
 	url "http://www.no-intro.org"
 )
@@ -20170,7 +20170,7 @@ game (
 game (
 	name "Akumajou Special - Boku Dracula-kun (Japan)"
 	description "Akumajou Special - Boku Dracula-kun (Japan)"
-	rom ( name "Akumajou Special - Boku Dracula-kun (Japan).gb" size 262144 crc e8335398 sha1 F2F15DA8ED94BC8652C23965428F6D767E506E38 )
+	rom ( name "Akumajou Special - Boku Dracula-kun (Japan).gb" size 262144 crc e8335398 sha1 F2F15DA8ED94BC8652C23965428F6D767E506E38 flags verified )
 )
 
 game (
@@ -20183,6 +20183,12 @@ game (
 	name "Aladdin (USA) (SGB Enhanced)"
 	description "Aladdin (USA) (SGB Enhanced)"
 	rom ( name "Aladdin (USA) (SGB Enhanced).gb" size 262144 crc af6bdc50 sha1 81B4E56AE235FBB123D7AD4BD7C1D96C3B69EB72 )
+)
+
+game (
+	name "Aladdin (World) (Disney Classic Games) (SGB Enhanced)"
+	description "Aladdin (World) (Disney Classic Games) (SGB Enhanced)"
+	rom ( name "Aladdin (World) (Disney Classic Games) (SGB Enhanced).gb" size 262144 crc 53918941 sha1 C59C44051E41DC6AC8C2F693CFF2BA1FEFFD32F0 flags verified )
 )
 
 game (
@@ -21518,9 +21524,15 @@ game (
 )
 
 game (
-	name "Contra (Japan)"
-	description "Contra (Japan)"
-	rom ( name "Contra (Japan).gb" size 131072 crc cde6de15 sha1 C8B34B5ABA3D448E357B59CDF106EE9B134713DB )
+	name "Contra (Japan) (En)"
+	description "Contra (Japan) (En)"
+	rom ( name "Contra (Japan) (En).gb" size 131072 crc cde6de15 sha1 C8B34B5ABA3D448E357B59CDF106EE9B134713DB )
+)
+
+game (
+	name "Contra (World) (Contra Anniversary Collection)"
+	description "Contra (World) (Contra Anniversary Collection)"
+	rom ( name "Contra (World) (Contra Anniversary Collection).gb" size 131072 crc cc67a046 sha1 6FEA1350AC04F418095CCA5F157A9C770A0505BC flags verified )
 )
 
 game (
@@ -22436,15 +22448,33 @@ game (
 )
 
 game (
+	name "Final Fantasy Legend (World) (Collection of SaGa)"
+	description "Final Fantasy Legend (World) (Collection of SaGa)"
+	rom ( name "Final Fantasy Legend (World) (Collection of SaGa).gb" size 131072 crc 00388844 sha1 42450483C9894863C7543F9695C0CBAFFDCB7E99 )
+)
+
+game (
 	name "Final Fantasy Legend II (USA)"
 	description "Final Fantasy Legend II (USA)"
 	rom ( name "Final Fantasy Legend II (USA).gb" size 262144 crc 58314182 sha1 6AB6890E8F688BCD87E97886A1748A4D9D341909 flags verified )
 )
 
 game (
+	name "Final Fantasy Legend II (World) (Collection of SaGa)"
+	description "Final Fantasy Legend II (World) (Collection of SaGa)"
+	rom ( name "Final Fantasy Legend II (World) (Collection of SaGa).gb" size 262144 crc e84e051a sha1 EEDF962D01B733B5EAF2413905E59E671E04A51C )
+)
+
+game (
 	name "Final Fantasy Legend III (USA)"
 	description "Final Fantasy Legend III (USA)"
 	rom ( name "Final Fantasy Legend III (USA).gb" size 262144 crc 3e454710 sha1 3864AFA48A97DB826FFDA1D31A7FF9C6C315D5C9 )
+)
+
+game (
+	name "Final Fantasy Legend III (World) (Collection of SaGa)"
+	description "Final Fantasy Legend III (World) (Collection of SaGa)"
+	rom ( name "Final Fantasy Legend III (World) (Collection of SaGa).gb" size 262144 crc 0c5171ef sha1 5190B0EF6264E26AF21DC0097FD5608CB619FB63 )
 )
 
 game (
@@ -24512,6 +24542,12 @@ game (
 )
 
 game (
+	name "Lion King, The (World) (Disney Classic Games)"
+	description "Lion King, The (World) (Disney Classic Games)"
+	rom ( name "Lion King, The (World) (Disney Classic Games).gb" size 524288 crc e435ed72 sha1 170C071DB25DA7A2B39DD1FB2675ACEB8EEB87A1 flags verified )
+)
+
+game (
 	name "Litti's Summer Sports (Germany)"
 	description "Litti's Summer Sports (Germany)"
 	rom ( name "Litti's Summer Sports (Germany).gb" size 131072 crc e681395b sha1 D958C99EBE387B1BA489F4FFDA943C00345D2F4E flags verified )
@@ -24695,6 +24731,12 @@ game (
 	name "Makai Toushi Sa-Ga (Japan) (Rev 1)"
 	description "Makai Toushi Sa-Ga (Japan) (Rev 1)"
 	rom ( name "Makai Toushi Sa-Ga (Japan) (Rev 1).gb" size 131072 crc 1953820f sha1 CBF480BC92BD98BAE4FB79294B604D341FE58CBE flags verified )
+)
+
+game (
+	name "Makai Toushi Sa-Ga (World) (Ja) (Rev 1) (Collection of SaGa)"
+	description "Makai Toushi Sa-Ga (World) (Ja) (Rev 1) (Collection of SaGa)"
+	rom ( name "Makai Toushi Sa-Ga (World) (Ja) (Rev 1) (Collection of SaGa).gb" size 131072 crc 0006612d sha1 3CE39646BFFE38A9C8FD4913F0E950BAE061D094 )
 )
 
 game (
@@ -26042,6 +26084,12 @@ game (
 )
 
 game (
+	name "Operation C (World) (Contra Anniversary Collection)"
+	description "Operation C (World) (Contra Anniversary Collection)"
+	rom ( name "Operation C (World) (Contra Anniversary Collection).gb" size 131072 crc a7a5d9c2 sha1 BD528F1B20051502E2B4418845E0C6698E1C5B4B flags verified )
+)
+
+game (
 	name "Osawagase! Penguin Boy (Japan)"
 	description "Osawagase! Penguin Boy (Japan)"
 	rom ( name "Osawagase! Penguin Boy (Japan).gb" size 65536 crc 54913227 sha1 1CDCF9810E98BA04378B2D6B555654722CB0ACF6 )
@@ -26758,13 +26806,13 @@ game (
 game (
 	name "Pokemon - Version Jaune - Edition Speciale Pikachu (France) (CGB+SGB Enhanced)"
 	description "Pokemon - Version Jaune - Edition Speciale Pikachu (France) (CGB+SGB Enhanced)"
-	rom ( name "Pokemon - Version Jaune - Edition Speciale Pikachu (France) (CGB+SGB Enhanced).gb" size 1048576 crc d03426e9 sha1 0ACEEC0EF7AA2CA5AA831554598D91F61A925591 )
+	rom ( name "Pokemon - Version Jaune - Edition Speciale Pikachu (France) (CGB+SGB Enhanced).gb" size 1048576 crc d03426e9 sha1 0ACEEC0EF7AA2CA5AA831554598D91F61A925591 flags verified )
 )
 
 game (
 	name "Pokemon - Version Rouge (France) (SGB Enhanced)"
 	description "Pokemon - Version Rouge (France) (SGB Enhanced)"
-	rom ( name "Pokemon - Version Rouge (France) (SGB Enhanced).gb" size 1048576 crc 337fce11 sha1 47A7622FA30E6402A3891FE65B3A930BF9BD7AEC )
+	rom ( name "Pokemon - Version Rouge (France) (SGB Enhanced).gb" size 1048576 crc 337fce11 sha1 47A7622FA30E6402A3891FE65B3A930BF9BD7AEC flags verified )
 )
 
 game (
@@ -26981,6 +27029,12 @@ game (
 	name "Probotector (Europe)"
 	description "Probotector (Europe)"
 	rom ( name "Probotector (Europe).gb" size 131072 crc c9acc4f4 sha1 45482A44CE0CDFA33FC58A8A8AFE2D7284DFA498 flags verified )
+)
+
+game (
+	name "Probotector (World) (Contra Anniversary Collection)"
+	description "Probotector (World) (Contra Anniversary Collection)"
+	rom ( name "Probotector (World) (Contra Anniversary Collection).gb" size 131072 crc 1c03c0ee sha1 BC58585F8A1B2E27712AE5D44E3D851F4535A53F flags verified )
 )
 
 game (
@@ -27506,9 +27560,21 @@ game (
 )
 
 game (
+	name "Sa-Ga 2 - Hihou Densetsu (World) (Ja) (Rev 1) (Collection of SaGa)"
+	description "Sa-Ga 2 - Hihou Densetsu (World) (Ja) (Rev 1) (Collection of SaGa)"
+	rom ( name "Sa-Ga 2 - Hihou Densetsu (World) (Ja) (Rev 1) (Collection of SaGa).gb" size 262144 crc 2fe38e18 sha1 1DF1F6E277BF6406B865DD5A3E12C0277C3C65F2 )
+)
+
+game (
 	name "Sa-Ga 3 - Jikuu no Hasha (Japan)"
 	description "Sa-Ga 3 - Jikuu no Hasha (Japan)"
 	rom ( name "Sa-Ga 3 - Jikuu no Hasha (Japan).gb" size 262144 crc 575d6d9d sha1 C8DCBEFC0352B0590FD85A683D983B5510A63519 )
+)
+
+game (
+	name "Sa-Ga 3 - Jikuu no Hasha (World) (Ja) (Collection of SaGa)"
+	description "Sa-Ga 3 - Jikuu no Hasha (World) (Ja) (Collection of SaGa)"
+	rom ( name "Sa-Ga 3 - Jikuu no Hasha (World) (Ja) (Collection of SaGa).gb" size 262144 crc dc4f4e34 sha1 8125677EE63E9ABB4B956ED0BEE18FAE3E04193B )
 )
 
 game (
@@ -28810,7 +28876,7 @@ game (
 game (
 	name "Tecmo Bowl GB (Japan)"
 	description "Tecmo Bowl GB (Japan)"
-	rom ( name "Tecmo Bowl GB (Japan).gb" size 262144 crc cfd74e34 sha1 2447006C578E1DF0256E9155C8B65FA2A6B0004B )
+	rom ( name "Tecmo Bowl GB (Japan).gb" size 262144 crc cfd74e34 sha1 2447006C578E1DF0256E9155C8B65FA2A6B0004B flags verified )
 )
 
 game (
@@ -30004,8 +30070,8 @@ game (
 clrmamepro (
 	name "Nintendo - Game Boy Color"
 	description "Nintendo - Game Boy Color"
-	version 20210303-092238
-	author "akubi, Aringon, Bent, BigFred, BitLooter, C. V. Reynolds, chillerecke, coraz, darthcloud, DeadSkullzJr, Densetsu, DeriLoko3, foxe, fuzzball, Hiccup, hking0036, kazumi213, Money_114, NGEfreak, omonim2007, PPLToast, relax, Rifu, SonGoku, Tauwasser, Whovian9369, xuom2, zg"
+	version 20210410-081930
+	author "akubi, Aringon, Bent, BigFred, BitLooter, C. V. Reynolds, chillerecke, coraz, darthcloud, DeadSkullzJr, Densetsu, DeriLoko3, foxe, fuzzball, Hiccup, hking0036, InternalLoss, kazumi213, Money_114, NGEfreak, omonim2007, PPLToast, relax, Rifu, SonGoku, Tauwasser, Whovian9369, xuom2, zg"
 	homepage No-Intro
 	url "http://www.no-intro.org"
 )
@@ -34873,7 +34939,7 @@ game (
 game (
 	name "Mobile Golf (Japan)"
 	description "Mobile Golf (Japan)"
-	rom ( name "Mobile Golf (Japan).gbc" size 4194304 crc 35fc5b32 sha1 FDE414FC9EFEF2C30D1A9E0A2ED35AD2EFC0EDEE )
+	rom ( name "Mobile Golf (Japan).gbc" size 4194304 crc 35fc5b32 sha1 FDE414FC9EFEF2C30D1A9E0A2ED35AD2EFC0EDEE flags verified )
 )
 
 game (
@@ -35887,7 +35953,7 @@ game (
 game (
 	name "Pokemon - Silberne Edition (Germany) (Beta) (SGB Enhanced) (GB Compatible)"
 	description "Pokemon - Silberne Edition (Germany) (Beta) (SGB Enhanced) (GB Compatible)"
-	rom ( name "Pokemon - Silberne Edition (Germany) (Beta) (SGB Enhanced) (GB Compatible).gbc" size 2097152 crc 576f5ced sha1 76FA60D66B2F22A035ADC54C61AAD9A415C894CD )
+	rom ( name "Pokemon - Silberne Edition (Germany) (Beta) (SGB Enhanced) (GB Compatible).gbc" size 2097152 crc 576f5ced sha1 76FA60D66B2F22A035ADC54C61AAD9A415C894CD flags verified )
 )
 
 game (

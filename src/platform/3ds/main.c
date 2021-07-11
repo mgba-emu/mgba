@@ -797,6 +797,22 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 	}
 }
 
+static enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
+	SwkbdState swkbd;
+	swkbdInit(&swkbd, SWKBD_TYPE_NORMAL, 2, keyboard->maxLen);
+	swkbdSetInitialText(&swkbd, keyboard->result);
+	if (keyboard->multiline) {
+		swkbdSetFeatures(&swkbd, SWKBD_MULTILINE);
+	}
+
+	SwkbdButton button = swkbdInputText(&swkbd,  keyboard->result, sizeof( keyboard->result));
+	if (button == SWKBD_BUTTON_CONFIRM) {
+		return GUI_KEYBOARD_DONE;
+	} else {
+		return GUI_KEYBOARD_CANCEL;
+	}
+}
+
 THREAD_ENTRY _core2Test(void* context) {
 	UNUSED(context);
 }
@@ -845,10 +861,12 @@ int main() {
 	gfxInit(GSP_BGR8_OES, GSP_BGR8_OES, true);
 
 	u8 model = 0;
+	cfguInit();
 	CFGU_GetSystemModel(&model);
 	if (model != 3 /* o2DS */) {
 		gfxSetWide(true);
 	}
+	cfguExit();
 
 	if (!_initGpu()) {
 		outputTexture[0].data = 0;
@@ -892,6 +910,7 @@ int main() {
 			_pollInput, _pollCursor,
 			_batteryState,
 			_guiPrepare, _guiFinish,
+			_keyboardRun,
 		},
 		.keySources = (struct GUIInputKeys[]) {
 			{
@@ -934,7 +953,7 @@ int main() {
 		.configExtra = (struct GUIMenuItem[]) {
 			{
 				.title = "Screen mode",
-				.data = "screenMode",
+				.data = GUI_V_S("screenMode"),
 				.submenu = 0,
 				.state = SM_PA_TOP,
 				.validStates = (const char*[]) {
@@ -949,7 +968,7 @@ int main() {
 			},
 			{
 				.title = "Filtering",
-				.data = "filterMode",
+				.data = GUI_V_S("filterMode"),
 				.submenu = 0,
 				.state = FM_LINEAR_2x,
 				.validStates = (const char*[]) {
@@ -961,7 +980,7 @@ int main() {
 			},
 			{
 				.title = "Screen darkening",
-				.data = "darkenMode",
+				.data = GUI_V_S("darkenMode"),
 				.submenu = 0,
 				.state = DM_NATIVE,
 				.validStates = (const char*[]) {
@@ -974,7 +993,7 @@ int main() {
 			},
 			{
 				.title = "Camera",
-				.data = "camera",
+				.data = GUI_V_S("camera"),
 				.submenu = 0,
 				.state = 1,
 				.validStates = (const char*[]) {

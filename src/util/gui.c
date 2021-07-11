@@ -72,3 +72,10 @@ void GUIInvalidateKeys(struct GUIParams* params) {
 		params->inputHistory[i] = 0;
 	}
 }
+
+void GUIKeyboardParamsInit(struct GUIKeyboardParams* keyboard) {
+	memset(keyboard->title, 0, sizeof(keyboard->title));
+	memset(keyboard->result, 0, sizeof(keyboard->result));
+	keyboard->maxLen = sizeof(keyboard->result);
+	keyboard->multiline = false;
+}

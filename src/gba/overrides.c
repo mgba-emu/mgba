@@ -35,6 +35,9 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "AC8E", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
 	{ "AC8P", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
 
+	// DigiCommunication Nyo - Datou! Black Gemagema Dan
+	{ "BDKJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+
 	// Dragon Ball Z - The Legacy of Goku
 	{ "ALGP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
 
@@ -50,6 +53,7 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// Drill Dozer
 	{ "V49J", SAVEDATA_SRAM, HW_RUMBLE, IDLE_LOOP_NONE, false },
 	{ "V49E", SAVEDATA_SRAM, HW_RUMBLE, IDLE_LOOP_NONE, false },
+	{ "V49P", SAVEDATA_SRAM, HW_RUMBLE, IDLE_LOOP_NONE, false },
 
 	// e-Reader
 	{ "PEAJ", SAVEDATA_FLASH1M, HW_EREADER, IDLE_LOOP_NONE },
@@ -237,6 +241,9 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 			if (strcasecmp(savetype, "SRAM") == 0) {
 				found = true;
 				override->savetype = SAVEDATA_SRAM;
+			} else if (strcasecmp(savetype, "SRAM512") == 0) {
+				found = true;
+				override->savetype = SAVEDATA_SRAM512;
 			} else if (strcasecmp(savetype, "EEPROM") == 0) {
 				found = true;
 				override->savetype = SAVEDATA_EEPROM;
@@ -283,6 +290,9 @@ void GBAOverrideSave(struct Configuration* config, const struct GBACartridgeOver
 	switch (override->savetype) {
 	case SAVEDATA_SRAM:
 		savetype = "SRAM";
+		break;
+	case SAVEDATA_SRAM512:
+		savetype = "SRAM512";
 		break;
 	case SAVEDATA_EEPROM:
 		savetype = "EEPROM";

@@ -22,6 +22,7 @@ public:
 	QPixmap backing() const { return m_backing; }
 
 public slots:
+	void clearTile(int index);
 	void setTile(int index, const color_t*);
 	void setTileCount(int tiles);
 	void setTileMagnification(int mag);

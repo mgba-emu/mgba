@@ -55,18 +55,18 @@ Enum values and `#define`s should be all caps with underscores.
 Good:
 
 	static int _localVariable;
-	
+
 	struct LocalStruct {
 		void (*methodName)(struct LocalStruct struct, param);
-		
+
 		int memberName;
 	};
-	
+
 	enum {
 		ENUM_ITEM_1,
 		ENUM_ITEM_2
 	};
-	
+
 	void LocalStructCreate(struct LocalStruct* struct);
 	
 	void functionName(int argument);
@@ -124,7 +124,7 @@ Bad (missing space):
 	if (condition){
 		block;
 	}
-	
+
 ### Spacing
 
 Indentation should be done using tabs and should match the level of braces. Alignment within a line should be done sparingly, but only done with spaces.
@@ -137,9 +137,9 @@ Good:
 
 	#ifndef FILE_NAME_H
 	#define FILE_NAME_H
-	
+
 	// Header
-	
+
 	#endif
 
 There should be no comment on the `#endif`.

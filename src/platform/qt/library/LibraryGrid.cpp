@@ -1,4 +1,5 @@
 /* Copyright (c) 2014-2017 waddlesplash
+ * Copyright (c) 2013-2021 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -23,22 +24,16 @@ LibraryGrid::~LibraryGrid() {
 	delete m_widget;
 }
 
-LibraryEntryRef LibraryGrid::selectedEntry() {
+QString LibraryGrid::selectedEntry() {
 	if (!m_widget->selectedItems().empty()) {
 		return m_items.key(m_widget->selectedItems().at(0));
 	} else {
-		return LibraryEntryRef();
+		return {};
 	}
 }
 
-void LibraryGrid::selectEntry(LibraryEntryRef game) {
-	if (!game) {
-		return;
-	}
-	if (!m_widget->selectedItems().empty()) {
-		m_widget->selectedItems().at(0)->setSelected(false);
-	}
-	m_items.value(game)->setSelected(true);
+void LibraryGrid::selectEntry(const QString& game) {
+	m_widget->setCurrentItem(m_items.value(game));
 }
 
 void LibraryGrid::setViewStyle(LibraryStyle newStyle) {
@@ -47,33 +42,62 @@ void LibraryGrid::setViewStyle(LibraryStyle newStyle) {
 		m_widget->setIconSize(QSize(GRID_BANNER_WIDTH, GRID_BANNER_HEIGHT));
 		m_widget->setViewMode(QListView::IconMode);
 	} else {
-		m_currentStyle = LibraryStyle::STYLE_ICON;
 		m_widget->setIconSize(QSize(ICON_BANNER_WIDTH, ICON_BANNER_HEIGHT));
 		m_widget->setViewMode(QListView::ListMode);
 	}
+	m_currentStyle = newStyle;
 
 	// QListView resets this when you change the view mode, so let's set it again
 	m_widget->setDragEnabled(false);
 }
 
-void LibraryGrid::addEntry(LibraryEntryRef item) {
-	if (m_items.contains(item)) {
+void LibraryGrid::resetEntries(const QList<LibraryEntry>& items) {
+	m_widget->clear();
+	m_items.clear();
+	addEntries(items);
+}
+
+void LibraryGrid::addEntries(const QList<LibraryEntry>& items) {
+	for (const auto& item : items) {
+		addEntry(item);
+	}
+}
+
+void LibraryGrid::addEntry(const LibraryEntry& item) {
+	if (m_items.contains(item.fullpath)) {
 		return;
 	}
 
 	QListWidgetItem* i = new QListWidgetItem;
-	i->setText(item->displayTitle());
+	i->setText(item.displayTitle());
 
 	m_widget->addItem(i);
-	m_items.insert(item, i);
+	m_items.insert(item.fullpath, i);
 }
 
-void LibraryGrid::removeEntry(LibraryEntryRef entry) {
-	if (!m_items.contains(entry)) {
+void LibraryGrid::updateEntries(const QList<LibraryEntry>& items) {
+	for (const auto& item : items) {
+		updateEntry(item);
+	}
+}
+
+void LibraryGrid::updateEntry(const LibraryEntry& item) {
+	QListWidgetItem* i = m_items.value(item.fullpath);
+	i->setText(item.displayTitle());
+}
+
+void LibraryGrid::removeEntries(const QList<QString>& items) {
+	for (const auto& item : items) {
+		removeEntry(item);
+	}
+}
+
+void LibraryGrid::removeEntry(const QString& item) {
+	if (!m_items.contains(item)) {
 		return;
 	}
 
-	delete m_items.take(entry);
+	delete m_items.take(item);
 }
 
 }

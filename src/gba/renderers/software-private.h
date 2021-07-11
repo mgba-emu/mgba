@@ -166,6 +166,60 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 		}                                                                                         \
 	}
 
+#define BACKGROUND_BITMAP_INIT                                                                                        \
+	int32_t x = background->sx + (renderer->start - 1) * background->dx;                                              \
+	int32_t y = background->sy + (renderer->start - 1) * background->dy;                                              \
+	int mosaicH = 0;                                                                                                  \
+	int mosaicWait = 0;                                                                                               \
+	int32_t localX;                                                                                                   \
+	int32_t localY;                                                                                                   \
+	if (background->mosaic) {                                                                                         \
+		int mosaicV = GBAMosaicControlGetBgV(renderer->mosaic) + 1;                                                   \
+		mosaicH = GBAMosaicControlGetBgH(renderer->mosaic) + 1;                                                       \
+		mosaicWait = (mosaicH - renderer->start + GBA_VIDEO_HORIZONTAL_PIXELS * mosaicH) % mosaicH;                   \
+		int32_t startX = renderer->start - (renderer->start % mosaicH);                                               \
+		--mosaicH;                                                                                                    \
+		localX = -(inY % mosaicV) * background->dmx;                                                                  \
+		localY = -(inY % mosaicV) * background->dmy;                                                                  \
+		x += localX;                                                                                                  \
+		y += localY;                                                                                                  \
+		localX += background->sx + startX * background->dx;                                                           \
+		localY += background->sy + startX * background->dy;                                                           \
+	}                                                                                                                 \
+                                                                                                                      \
+	uint32_t flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
+	flags |= FLAG_TARGET_2 * background->target2;                                                                     \
+	int objwinFlags = FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA &&                 \
+	                                   GBAWindowControlIsBlendEnable(renderer->objwin.packed));                       \
+	objwinFlags |= flags;                                                                                             \
+	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA &&                          \
+	                          GBAWindowControlIsBlendEnable(renderer->currentWindow.packed));                         \
+	if (renderer->blendEffect == BLEND_ALPHA && renderer->blda == 0x10 && renderer->bldb == 0) {                      \
+		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);                                                                    \
+		objwinFlags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);                                                              \
+	}                                                                                                                 \
+	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) &&             \
+	    (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);                           \
+	color_t* palette = renderer->normalPalette;                                                                       \
+	if (renderer->d.highlightAmount && background->highlight) {                                                       \
+		palette = renderer->highlightPalette;                                                                         \
+	}                                                                                                                 \
+	if (variant) {                                                                                                    \
+		palette = renderer->variantPalette;                                                                           \
+		if (renderer->d.highlightAmount && background->highlight) {                                                   \
+			palette = renderer->highlightVariantPalette;                                                              \
+		}                                                                                                             \
+	}                                                                                                                 \
+	UNUSED(palette);                                                                                                  \
+	PREPARE_OBJWIN;
+
+#define TEST_LAYER_ENABLED(X) \
+	!softwareRenderer->d.disableBG[X] && \
+	(softwareRenderer->bg[X].enabled == 4 && \
+	(GBAWindowControlIsBg ## X ## Enable(softwareRenderer->currentWindow.packed) || \
+	(GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt) && GBAWindowControlIsBg ## X ## Enable (softwareRenderer->objwin.packed))) && \
+	softwareRenderer->bg[X].priority == priority)
+
 static inline unsigned _brighten(unsigned color, int y) {
 	unsigned c = 0;
 	unsigned a;

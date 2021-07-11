@@ -44,7 +44,6 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 	}
 	++s_sdlInited;
 	m_sdlPlayer.bindings = &m_inputMap;
-	mSDLInitBindingsGBA(&m_inputMap);
 	updateJoysticks();
 #endif
 
@@ -98,19 +97,19 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 			image->image.load(":/res/no-cam.png");
 		}
 #ifdef BUILD_QT_MULTIMEDIA
-		if (image->p->m_config->getQtOption("cameraDriver").toInt() == static_cast<int>(CameraDriver::QT_MULTIMEDIA)) {
-			QByteArray camera = image->p->m_config->getQtOption("camera").toByteArray();
-			if (!camera.isNull()) {
-				QMetaObject::invokeMethod(image->p, "setCamera", Q_ARG(QByteArray, camera));
-			}
-			QMetaObject::invokeMethod(image->p, "setupCam");
+		image->p->m_cameraActive = true;
+		QByteArray camera = image->p->m_config->getQtOption("camera").toByteArray();
+		if (!camera.isNull()) {
+			image->p->m_cameraDevice = camera;
 		}
+		QMetaObject::invokeMethod(image->p, "setupCam");
 #endif
 	};
 
 	m_image.stopRequestImage = [](mImageSource* context) {
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
 #ifdef BUILD_QT_MULTIMEDIA
+		image->p->m_cameraActive = false;
 		QMetaObject::invokeMethod(image->p, "teardownCam");
 #endif
 	};
@@ -163,23 +162,28 @@ void InputController::setConfiguration(ConfigController* config) {
 	if (!m_playerAttached) {
 		m_playerAttached = mSDLAttachPlayer(&s_sdlEvents, &m_sdlPlayer);
 	}
-	loadConfiguration(SDL_BINDING_BUTTON);
+	if (!loadConfiguration(SDL_BINDING_BUTTON)) {
+		mSDLInitBindingsGBA(&m_inputMap);
+	}
 	loadProfile(SDL_BINDING_BUTTON, profileForType(SDL_BINDING_BUTTON));
 #endif
 }
 
-void InputController::loadConfiguration(uint32_t type) {
-	mInputMapLoad(&m_inputMap, type, m_config->input());
+bool InputController::loadConfiguration(uint32_t type) {
+	if (!mInputMapLoad(&m_inputMap, type, m_config->input())) {
+		return false;
+	}
 #ifdef BUILD_SDL
 	if (m_playerAttached) {
 		mSDLPlayerLoadConfig(&m_sdlPlayer, m_config->input());
 	}
 #endif
+	return true;
 }
 
-void InputController::loadProfile(uint32_t type, const QString& profile) {
+bool InputController::loadProfile(uint32_t type, const QString& profile) {
 	if (profile.isEmpty()) {
-		return;
+		return false;
 	}
 	bool loaded = mInputProfileLoad(&m_inputMap, type, m_config->input(), profile.toUtf8().constData());
 	recalibrateAxes();
@@ -187,9 +191,11 @@ void InputController::loadProfile(uint32_t type, const QString& profile) {
 		const InputProfile* ip = InputProfile::findProfile(profile);
 		if (ip) {
 			ip->apply(this);
+			loaded = true;
 		}
 	}
 	emit profileLoaded(profile);
+	return loaded;
 }
 
 void InputController::saveConfiguration() {
@@ -766,9 +772,17 @@ void InputController::setLuminanceValue(uint8_t value) {
 
 void InputController::setupCam() {
 #ifdef BUILD_QT_MULTIMEDIA
+	if (m_config->getQtOption("cameraDriver").toInt() != static_cast<int>(CameraDriver::QT_MULTIMEDIA)) {
+		return;
+	}
+
 	if (!m_camera) {
-		m_camera = std::make_unique<QCamera>();
+		m_camera = std::make_unique<QCamera>(m_cameraDevice);
 		connect(m_camera.get(), &QCamera::statusChanged, this, &InputController::prepareCamSettings, Qt::QueuedConnection);
+	}
+	if (m_camera->status() == QCamera::UnavailableStatus) {
+		m_camera.reset();
+		return;
 	}
 	m_camera->setCaptureMode(QCamera::CaptureVideo);
 	m_camera->setViewfinder(&m_videoDumper);
@@ -820,20 +834,22 @@ void InputController::prepareCamSettings(QCamera::Status status) {
 void InputController::teardownCam() {
 #ifdef BUILD_QT_MULTIMEDIA
 	if (m_camera) {
-		m_camera->stop();
+		m_camera->unload();
+		m_camera.reset();
 	}
 #endif
 }
 
 void InputController::setCamera(const QByteArray& name) {
 #ifdef BUILD_QT_MULTIMEDIA
-	bool needsRestart = false;
-	if (m_camera) {
-		needsRestart = m_camera->state() == QCamera::ActiveState;
+	if (m_cameraDevice == name) {
+		return;
 	}
-	m_camera = std::make_unique<QCamera>(name);
-	connect(m_camera.get(), &QCamera::statusChanged, this, &InputController::prepareCamSettings, Qt::QueuedConnection);
-	if (needsRestart) {
+	m_cameraDevice = name;
+	if (m_camera && m_camera->state() == QCamera::ActiveState) {
+		teardownCam();
+	}
+	if (m_cameraActive) {
 		setupCam();
 	}
 #endif

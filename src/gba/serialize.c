@@ -158,6 +158,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		mLOG(GBA_STATE, WARN, "Savestate has unaligned PC and is probably corrupted");
 		gba->cpu->gprs[ARM_PC] &= ~1;
 	}
+	gba->memory.activeRegion = -1;
 	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	if (state->biosPrefetch) {
 		LOAD_32(gba->memory.biosPrefetch, 0, &state->biosPrefetch);

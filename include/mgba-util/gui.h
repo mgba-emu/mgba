@@ -14,6 +14,9 @@ CXX_GUARD_START
 #include <mgba/core/input.h>
 #include <mgba-util/vector.h>
 
+#define MAX_KEYBOARD_LEN 256
+#define MAX_KEYBOARD_TITLE_LEN 128
+
 struct GUIFont;
 
 enum GUIInput {
@@ -40,6 +43,11 @@ enum GUICursorState {
 	GUI_CURSOR_DRAGGING
 };
 
+enum GUIKeyboardStatus {
+	GUI_KEYBOARD_DONE = 0,
+	GUI_KEYBOARD_CANCEL,
+};
+
 enum {
 	BATTERY_EMPTY = 0,
 	BATTERY_LOW = 25,
@@ -57,6 +65,13 @@ struct GUIBackground {
 	void (*draw)(struct GUIBackground*, void* context);
 };
 
+struct GUIKeyboardParams {
+	char title[MAX_KEYBOARD_TITLE_LEN];
+	char result[MAX_KEYBOARD_LEN];
+	size_t maxLen;
+	bool multiline;
+};
+
 struct GUIParams {
 	unsigned width;
 	unsigned height;
@@ -70,6 +85,7 @@ struct GUIParams {
 	int (*batteryState)(void);
 	void (*guiPrepare)(void);
 	void (*guiFinish)(void);
+	enum GUIKeyboardStatus (*getText)(struct GUIKeyboardParams*);
 
 	// State
 	struct mInputMap keyMap;
@@ -86,6 +102,8 @@ void GUIInit(struct GUIParams* params);
 void GUIPollInput(struct GUIParams* params, uint32_t* newInput, uint32_t* heldInput);
 enum GUICursorState GUIPollCursor(struct GUIParams* params, unsigned* x, unsigned* y);
 void GUIInvalidateKeys(struct GUIParams* params);
+
+void GUIKeyboardParamsInit(struct GUIKeyboardParams*);
 
 CXX_GUARD_END
 

@@ -8,6 +8,7 @@
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
 #include "feature/gui/gui-config.h"
+#include "feature/gui/cheats.h"
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
 #include <mgba/gba/interface.h>
@@ -35,10 +36,16 @@ enum {
 	RUNNER_SCREENSHOT,
 	RUNNER_CONFIG,
 	RUNNER_RESET,
+	RUNNER_CHEATS,
 	RUNNER_COMMAND_MASK = 0xFFFF
 };
 
 #define RUNNER_STATE(X) ((X) << 16)
+
+enum {
+	SCREENSHOT_VALID = 0x10000,
+	SCREENSHOT_INVALID = 0x20000,
+};
 
 static const struct mInputPlatformInfo _mGUIKeyInfo = {
 	.platformName = "gui",
@@ -105,39 +112,49 @@ static void _drawBackground(struct GUIBackground* background, void* context) {
 
 static void _drawState(struct GUIBackground* background, void* id) {
 	struct mGUIBackground* gbaBackground = (struct mGUIBackground*) background;
-	int stateId = ((int) id) >> 16;
+	unsigned stateId = ((uint32_t) id) >> 16;
 	if (gbaBackground->p->drawScreenshot) {
 		unsigned w, h;
 		gbaBackground->p->core->desiredVideoDimensions(gbaBackground->p->core, &w, &h);
-		if (gbaBackground->screenshot && gbaBackground->screenshotId == (int) id) {
-			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->screenshot, w, h, true);
+		size_t size = w * h * BYTES_PER_PIXEL;
+		if (size != gbaBackground->imageSize) {
+			mappedMemoryFree(gbaBackground->image, gbaBackground->imageSize);
+			gbaBackground->image = NULL;
+		}
+		if (gbaBackground->image && gbaBackground->screenshotId == (stateId | SCREENSHOT_VALID)) {
+			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->image, w, h, true);
 			return;
-		}
-		struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
-		color_t* pixels = gbaBackground->screenshot;
-		if (!pixels) {
-			pixels = anonymousMemoryMap(w * h * 4);
-			gbaBackground->screenshot = pixels;
-		}
-		bool success = false;
-		if (vf && isPNG(vf) && pixels) {
-			png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
-			png_infop info = png_create_info_struct(png);
-			png_infop end = png_create_info_struct(png);
-			if (png && info && end) {
-				success = PNGReadHeader(png, info);
-				success = success && PNGReadPixels(png, info, pixels, w, h, w);
-				success = success && PNGReadFooter(png, end);
+		} else if (gbaBackground->screenshotId != (stateId | SCREENSHOT_INVALID)) {
+			struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
+			color_t* pixels = gbaBackground->image;
+			if (!pixels) {
+				pixels = anonymousMemoryMap(size);
+				gbaBackground->image = pixels;
+				gbaBackground->imageSize = size;
 			}
-			PNGReadClose(png, info, end);
+			bool success = false;
+			if (vf && isPNG(vf) && pixels) {
+				png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
+				png_infop info = png_create_info_struct(png);
+				png_infop end = png_create_info_struct(png);
+				if (png && info && end) {
+					success = PNGReadHeader(png, info);
+					success = success && PNGReadPixels(png, info, pixels, w, h, w);
+					success = success && PNGReadFooter(png, end);
+				}
+				PNGReadClose(png, info, end);
+			}
+			if (vf) {
+				vf->close(vf);
+			}
+			if (success) {
+				gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, w, h, true);
+				gbaBackground->screenshotId = stateId | SCREENSHOT_VALID;
+			} else {
+				gbaBackground->screenshotId = stateId | SCREENSHOT_INVALID;
+			}
 		}
-		if (vf) {
-			vf->close(vf);
-		}
-		if (success) {
-			gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, w, h, true);
-			gbaBackground->screenshotId = (int) id;
-		} else if (gbaBackground->p->drawFrame) {
+		if (gbaBackground->p->drawFrame && gbaBackground->screenshotId == (stateId | SCREENSHOT_INVALID)) {
 			gbaBackground->p->drawFrame(gbaBackground->p, true);
 		}
 	}
@@ -313,7 +330,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			.draw = _drawState
 		},
 		.p = runner,
-		.screenshot = 0,
+		.image = 0,
 		.screenshotId = 0
 	};
 	struct GUIMenu pauseMenu = {
@@ -333,36 +350,39 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	};
 	GUIMenuItemListInit(&pauseMenu.items, 0);
 	GUIMenuItemListInit(&stateSaveMenu.items, 9);
-	GUIMenuItemListInit(&stateLoadMenu.items, 9);
-	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Unpause", .data = (void*) RUNNER_CONTINUE };
+	GUIMenuItemListInit(&stateLoadMenu.items, 10);
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Unpause", .data = GUI_V_U(RUNNER_CONTINUE) };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Save state", .submenu = &stateSaveMenu };
 	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Load state", .submenu = &stateLoadMenu };
 
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 1", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(1)) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 2", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(2)) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 3", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(3)) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 4", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(4)) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 5", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(5)) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 6", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(6)) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 7", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(7)) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 8", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(8)) };
-	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = (void*) (RUNNER_SAVE_STATE | RUNNER_STATE(9)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 1", .data = GUI_V_U(RUNNER_SAVE_STATE | RUNNER_STATE(1)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 2", .data = GUI_V_U(RUNNER_SAVE_STATE | RUNNER_STATE(2)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 3", .data = GUI_V_U(RUNNER_SAVE_STATE | RUNNER_STATE(3)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 4", .data = GUI_V_U(RUNNER_SAVE_STATE | RUNNER_STATE(4)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 5", .data = GUI_V_U(RUNNER_SAVE_STATE | RUNNER_STATE(5)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 6", .data = GUI_V_U(RUNNER_SAVE_STATE | RUNNER_STATE(6)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 7", .data = GUI_V_U(RUNNER_SAVE_STATE | RUNNER_STATE(7)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 8", .data = GUI_V_U(RUNNER_SAVE_STATE | RUNNER_STATE(8)) };
+	*GUIMenuItemListAppend(&stateSaveMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = GUI_V_U(RUNNER_SAVE_STATE | RUNNER_STATE(9)) };
 
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "Autosave", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(0)) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 1", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(1)) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 2", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(2)) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 3", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(3)) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 4", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(4)) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 5", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(5)) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 6", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(6)) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 7", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(7)) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 8", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(8)) };
-	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = (void*) (RUNNER_LOAD_STATE | RUNNER_STATE(9)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "Autosave", .data = GUI_V_U(RUNNER_LOAD_STATE | RUNNER_STATE(0)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 1", .data = GUI_V_U(RUNNER_LOAD_STATE | RUNNER_STATE(1)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 2", .data = GUI_V_U(RUNNER_LOAD_STATE | RUNNER_STATE(2)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 3", .data = GUI_V_U(RUNNER_LOAD_STATE | RUNNER_STATE(3)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 4", .data = GUI_V_U(RUNNER_LOAD_STATE | RUNNER_STATE(4)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 5", .data = GUI_V_U(RUNNER_LOAD_STATE | RUNNER_STATE(5)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 6", .data = GUI_V_U(RUNNER_LOAD_STATE | RUNNER_STATE(6)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 7", .data = GUI_V_U(RUNNER_LOAD_STATE | RUNNER_STATE(7)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 8", .data = GUI_V_U(RUNNER_LOAD_STATE | RUNNER_STATE(8)) };
+	*GUIMenuItemListAppend(&stateLoadMenu.items) = (struct GUIMenuItem) { .title = "State 9", .data = GUI_V_U(RUNNER_LOAD_STATE | RUNNER_STATE(9)) };
 
-	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Take screenshot", .data = (void*) RUNNER_SCREENSHOT };
-	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Configure", .data = (void*) RUNNER_CONFIG };
-	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Reset game", .data = (void*) RUNNER_RESET };
-	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = (void*) RUNNER_EXIT };
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Take screenshot", .data = GUI_V_U(RUNNER_SCREENSHOT) };
+	if (runner->params.getText) {
+		*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Cheats", .data = GUI_V_U(RUNNER_CHEATS) };
+	}
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Configure", .data = GUI_V_U(RUNNER_CONFIG) };
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Reset game", .data = GUI_V_U(RUNNER_RESET) };
+	*GUIMenuItemListAppend(&pauseMenu.items) = (struct GUIMenuItem) { .title = "Exit game", .data = GUI_V_U(RUNNER_EXIT) };
 
 	runner->params.drawStart();
 	if (runner->params.guiPrepare) {
@@ -450,6 +470,12 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	int drawFps = false;
 	mCoreConfigGetIntValue(&runner->config, "fpsCounter", &drawFps);
 
+	int mute = false;
+	mCoreConfigGetIntValue(&runner->config, "mute", &mute);
+
+	int fastForwardMute = false;
+	mCoreConfigGetIntValue(&runner->config, "fastForwardMute", &fastForwardMute);
+
 	bool running = true;
 
 #ifndef DISABLE_THREADING
@@ -501,20 +527,32 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 			if (guiKeys & (1 << mGUI_INPUT_SCREENSHOT)) {
 				mCoreTakeScreenshot(runner->core);
 			}
+			bool muteTogglePressed = guiKeys & (1 << mGUI_INPUT_MUTE_TOGGLE);
+			if (muteTogglePressed) {
+				mute = !mute;
+				mCoreConfigSetUIntValue(&runner->config, "mute", mute);
+				runner->core->reloadConfigOption(runner->core, "mute", &runner->config);
+			}
 			if (runner->setFrameLimiter) {
 				if (guiKeys & (1 << mGUI_INPUT_FAST_FORWARD_TOGGLE)) {
 					fastForward = !fastForward;
 				}
-				if (fastForward || (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD_HELD))) {
+				bool fastForwarding = fastForward || (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD_HELD));
+				if (fastForwarding) {
+					if (fastForwardMute && !mute && !muteTogglePressed) {
+						mCoreConfigSetUIntValue(&runner->core->config, "mute", fastForwardMute);
+						runner->core->reloadConfigOption(runner->core, "mute", NULL);
+					}
+
 					runner->setFrameLimiter(runner, false);
 				} else {
 					runner->setFrameLimiter(runner, true);
+
+					if (fastForwardMute && !mute && !muteTogglePressed) {
+						mCoreConfigSetUIntValue(&runner->core->config, "mute", !fastForwardMute);
+						runner->core->reloadConfigOption(runner->core, "mute", NULL);
+					}
 				}
-			}
-			if (guiKeys & (1 << mGUI_INPUT_MUTE_TOGGLE)) {
-				int mute = !runner->core->opts.mute;
-				mCoreConfigSetUIntValue(&runner->config, "mute", mute);
-				runner->core->reloadConfigOption(runner->core, "mute", &runner->config);
 			}
 			uint16_t keys = runner->pollGameInput(runner);
 			if (runner->prepareForFrame) {
@@ -595,8 +633,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		uint32_t keys = 0xFFFFFFFF; // Huge hack to avoid an extra variable!
 		struct GUIMenuItem* item;
 		enum GUIMenuExitReason reason = GUIShowMenu(&runner->params, &pauseMenu, &item);
-		if (reason == GUI_MENU_EXIT_ACCEPT) {
-			switch (((int) item->data) & RUNNER_COMMAND_MASK) {
+		if (reason == GUI_MENU_EXIT_ACCEPT && item->data.type == GUI_VARIANT_UNSIGNED) {
+			switch (item->data.v.u & RUNNER_COMMAND_MASK) {
 			case RUNNER_EXIT:
 				running = false;
 				keys = 0;
@@ -605,16 +643,19 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				runner->core->reset(runner->core);
 				break;
 			case RUNNER_SAVE_STATE:
-				mCoreSaveState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
+				mCoreSaveState(runner->core, item->data.v.u >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
 				break;
 			case RUNNER_LOAD_STATE:
-				mCoreLoadState(runner->core, ((int) item->data) >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
+				mCoreLoadState(runner->core, item->data.v.u >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 				break;
 			case RUNNER_SCREENSHOT:
 				mCoreTakeScreenshot(runner->core);
 				break;
 			case RUNNER_CONFIG:
 				mGUIShowConfig(runner, runner->configExtra, runner->nConfigExtra);
+				break;
+			case RUNNER_CHEATS:
+				mGUIShowCheats(runner);
 				break;
 			case RUNNER_CONTINUE:
 				break;
@@ -643,6 +684,13 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		}
 		mCoreConfigGetIntValue(&runner->config, "fpsCounter", &drawFps);
 		mCoreConfigGetIntValue(&runner->config, "showOSD", &showOSD);
+		mCoreConfigGetIntValue(&runner->config, "mute", &mute);
+		mCoreConfigGetIntValue(&runner->config, "fastForwardMute", &fastForwardMute);
+#ifdef M_CORE_GB
+		if (runner->core->platform(runner->core) == mPLATFORM_GB) {
+			runner->core->reloadConfigOption(runner->core, "gb.pal", &runner->config);
+		}
+#endif
 	}
 	mLOG(GUI_RUNNER, DEBUG, "Shutting down...");
 	if (runner->gameUnloaded) {
@@ -663,10 +711,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	mLOG(GUI_RUNNER, DEBUG, "Unloading game...");
 	runner->core->unloadROM(runner->core);
 	drawState.screenshotId = 0;
-	if (drawState.screenshot) {
-		unsigned w, h;
-		runner->core->desiredVideoDimensions(runner->core, &w, &h);
-		mappedMemoryFree(drawState.screenshot, w * h * 4);
+	if (drawState.image) {
+		mappedMemoryFree(drawState.image, drawState.imageSize);
 	}
 
 	if (runner->config.port) {

@@ -6,6 +6,7 @@
 #include "DebuggerConsole.h"
 
 #include "DebuggerConsoleController.h"
+#include "GBAApp.h"
 
 #include <QScrollBar>
 
@@ -18,6 +19,8 @@ DebuggerConsole::DebuggerConsole(DebuggerConsoleController* controller, QWidget*
 	m_ui.setupUi(this);
 
 	m_ui.prompt->installEventFilter(this);
+	m_ui.log->setFont(GBAApp::app()->monospaceFont());
+	m_ui.prompt->setFont(GBAApp::app()->monospaceFont());
 
 	connect(m_ui.prompt, &QLineEdit::returnPressed, this, &DebuggerConsole::postLine);
 	connect(controller, &DebuggerConsoleController::log, this, &DebuggerConsole::log);

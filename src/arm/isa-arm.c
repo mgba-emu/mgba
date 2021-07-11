@@ -421,7 +421,7 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 
 #define ARM_MS_PRE_load \
 	enum PrivilegeMode privilegeMode; \
-	if (!(rs & 0x8000)) { \
+	if (!(rs & 0x8000) && rs) { \
 		privilegeMode = cpu->privilegeMode; \
 		ARMSetPrivilegeMode(cpu, MODE_SYSTEM); \
 	}
@@ -429,7 +429,7 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 #define ARM_MS_POST_store ARMSetPrivilegeMode(cpu, privilegeMode);
 
 #define ARM_MS_POST_load \
-	if (!(rs & 0x8000)) { \
+	if (!(rs & 0x8000) && rs) { \
 		ARMSetPrivilegeMode(cpu, privilegeMode); \
 	} else if (_ARMModeHasSPSR(cpu->cpsr.priv)) { \
 		cpu->cpsr = cpu->spsr; \

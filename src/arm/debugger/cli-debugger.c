@@ -101,9 +101,10 @@ static inline uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address
 	struct mCore* core = debugger->d.core;
 	char disassembly[64];
 	struct ARMInstructionInfo info;
+	address &= ~(WORD_SIZE_THUMB - 1);
 	be->printf(be, "%08X:  ", address);
 	if (mode == MODE_ARM) {
-		uint32_t instruction = core->busRead32(core, address);
+		uint32_t instruction = core->busRead32(core, address & ~(WORD_SIZE_ARM - 1));
 		ARMDecodeARM(instruction, &info);
 		ARMDisassemble(&info, core->cpu, core->symbolTable, address + WORD_SIZE_ARM * 2, disassembly, sizeof(disassembly));
 		be->printf(be, "%08X\t%s\n", instruction, disassembly);

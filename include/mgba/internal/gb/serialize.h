@@ -157,9 +157,11 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bit 3: IME
  *   | bit 4: Is HDMA active?
  *   | bits 5 - 7:  Active RTC register
- * | 0x00196 - 0x00197: Reserved (leave zero)
+ * | 0x00196: Cartridge bus value
+ * | 0x00197: Reserved (leave zero)
  * 0x00198 - 0x0019F: Global cycle counter
- * 0x001A0 - 0x0025F: Reserved (leave zero)
+ * 0x001A0 - 0x001A1: Program counter for last cartridge read
+ * 0x001A2 - 0x0025F: Reserved (leave zero)
  * 0x00260 - 0x002FF: OAM
  * 0x00300 - 0x0037F: I/O memory
  * 0x00380 - 0x003FE: HRAM
@@ -401,12 +403,14 @@ struct GBSerializedState {
 		};
 
 		GBSerializedMemoryFlags flags;
-		uint16_t reserved;
+		uint8_t cartBus;
+		uint8_t reserved;
 	} memory;
 
 	uint64_t globalCycles;
 
-	uint32_t reserved[48];
+	uint16_t cartBusPc;
+	uint16_t reserved[95];
 
 	uint8_t oam[GB_SIZE_OAM];
 

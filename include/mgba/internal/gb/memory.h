@@ -181,6 +181,9 @@ struct GBMemory {
 	union GBMBCState mbcState;
 	int currentBank;
 	int currentBank0;
+	unsigned cartBusDecay;
+	uint16_t cartBusPc;
+	uint8_t cartBus;
 
 	uint8_t* wram;
 	uint8_t* wramBank;

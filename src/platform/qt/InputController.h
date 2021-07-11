@@ -56,8 +56,8 @@ public:
 
 	void setConfiguration(ConfigController* config);
 	void saveConfiguration();
-	void loadConfiguration(uint32_t type);
-	void loadProfile(uint32_t type, const QString& profile);
+	bool loadConfiguration(uint32_t type);
+	bool loadProfile(uint32_t type, const QString& profile);
 	void saveConfiguration(uint32_t type);
 	void saveProfile(uint32_t type, const QString& profile);
 	const char* profileForType(uint32_t type);
@@ -158,6 +158,8 @@ private:
 	} m_image;
 
 #ifdef BUILD_QT_MULTIMEDIA
+	bool m_cameraActive = false;
+	QByteArray m_cameraDevice;
 	std::unique_ptr<QCamera> m_camera;
 	VideoDumper m_videoDumper;
 #endif

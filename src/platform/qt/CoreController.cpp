@@ -189,6 +189,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		message = QString().vsprintf(format, args);
 		QMetaObject::invokeMethod(controller, "logPosted", Q_ARG(int, level), Q_ARG(int, category), Q_ARG(const QString&, message));
 		if (level == mLOG_FATAL) {
+			mCoreThreadMarkCrashed(controller->thread());
 			QMetaObject::invokeMethod(controller, "crashed", Q_ARG(const QString&, QString().vsprintf(format, args)));
 		}
 	};
@@ -289,14 +290,15 @@ void CoreController::loadConfig(ConfigController* config) {
 		updateFastForward();
 		mCoreThreadRewindParamsChanged(&m_threadContext);
 	}
-	if (sizeBefore != sizeAfter) {
 #ifdef M_CORE_GB
+	if (sizeBefore != sizeAfter) {
 		mCoreConfigSetIntValue(&m_threadContext.core->config, "sgb.borders", 0);
 		m_threadContext.core->reloadConfigOption(m_threadContext.core, "sgb.borders", nullptr);
 		mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "sgb.borders");
 		m_threadContext.core->reloadConfigOption(m_threadContext.core, "sgb.borders", nullptr);
-#endif
 	}
+	m_threadContext.core->reloadConfigOption(m_threadContext.core, "gb.pal", config->config());
+#endif
 }
 
 #ifdef USE_DEBUGGERS
@@ -520,6 +522,21 @@ void CoreController::forceFastForward(bool enable) {
 	m_fastForwardForced = enable;
 	updateFastForward();
 	emit fastForwardChanged(enable || m_fastForward);
+}
+
+void CoreController::overrideMute(bool override) {
+	m_mute = override;
+
+	Interrupter interrupter(this);
+	mCore* core = m_threadContext.core;
+	if (m_mute) {
+		core->opts.mute = true;
+	} else {
+		int fakeBool = 0;
+		mCoreConfigGetIntValue(&core->config, "mute", &fakeBool);
+		core->opts.mute = fakeBool;
+	}
+	core->reloadConfigOption(core, NULL, NULL);
 }
 
 void CoreController::loadState(int slot) {
@@ -1072,7 +1089,7 @@ void CoreController::updateFastForward() {
 			m_threadContext.core->opts.volume = m_fastForwardVolume;
 		}
 		if (m_fastForwardMute >= 0) {
-			m_threadContext.core->opts.mute = m_fastForwardMute;
+			m_threadContext.core->opts.mute = m_fastForwardMute || m_mute;
 		}
 
 		// If we aren't holding the fast forward button

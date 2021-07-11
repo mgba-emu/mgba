@@ -8,53 +8,6 @@
 #include <mgba/core/interface.h>
 #include <mgba/internal/gba/gba.h>
 
-#define BACKGROUND_BITMAP_INIT                                                                                        \
-	int32_t x = background->sx + (renderer->start - 1) * background->dx;                                              \
-	int32_t y = background->sy + (renderer->start - 1) * background->dy;                                              \
-	int mosaicH = 0;                                                                                                  \
-	int mosaicWait = 0;                                                                                               \
-	int32_t localX;                                                                                                   \
-	int32_t localY;                                                                                                   \
-	if (background->mosaic) {                                                                                         \
-		int mosaicV = GBAMosaicControlGetBgV(renderer->mosaic) + 1;                                                   \
-		mosaicH = GBAMosaicControlGetBgH(renderer->mosaic) + 1;                                                       \
-		mosaicWait = (mosaicH - renderer->start + GBA_VIDEO_HORIZONTAL_PIXELS * mosaicH) % mosaicH;                   \
-		int32_t startX = renderer->start - (renderer->start % mosaicH);                                               \
-		--mosaicH;                                                                                                    \
-		localX = -(inY % mosaicV) * background->dmx;                                                                  \
-		localY = -(inY % mosaicV) * background->dmy;                                                                  \
-		x += localX;                                                                                                  \
-		y += localY;                                                                                                  \
-		localX += background->sx + startX * background->dx;                                                           \
-		localY += background->sy + startX * background->dy;                                                           \
-	}                                                                                                                 \
-                                                                                                                      \
-	uint32_t flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND; \
-	flags |= FLAG_TARGET_2 * background->target2;                                                                     \
-	int objwinFlags = FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA &&                 \
-	                                   GBAWindowControlIsBlendEnable(renderer->objwin.packed));                       \
-	objwinFlags |= flags;                                                                                             \
-	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA &&                          \
-	                          GBAWindowControlIsBlendEnable(renderer->currentWindow.packed));                         \
-	if (renderer->blendEffect == BLEND_ALPHA && renderer->blda == 0x10 && renderer->bldb == 0) {                      \
-		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);                                                                    \
-		objwinFlags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);                                                              \
-	}                                                                                                                 \
-	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) &&             \
-	    (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);                           \
-	color_t* palette = renderer->normalPalette;                                                                       \
-	if (renderer->d.highlightAmount && background->highlight) {                                                       \
-		palette = renderer->highlightPalette;                                                                         \
-	}                                                                                                                 \
-	if (variant) {                                                                                                    \
-		palette = renderer->variantPalette;                                                                           \
-		if (renderer->d.highlightAmount && background->highlight) {                                                   \
-			palette = renderer->highlightVariantPalette;                                                              \
-		}                                                                                                             \
-	}                                                                                                                 \
-	UNUSED(palette);                                                                                                  \
-	PREPARE_OBJWIN;
-
 #define BACKGROUND_BITMAP_ITERATE(W, H) \
 	x += background->dx; \
 	y += background->dy; \
@@ -75,21 +28,18 @@
 	localX = x; \
 	localY = y;
 
-#define MODE_2_MOSAIC(COORD) \
-		if (!mosaicWait) { \
-			COORD \
-			mapData = screenBase[(localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)]; \
-			pixelData = charBase[(mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)]; \
-			\
-			mosaicWait = mosaicH; \
-		} else { \
-			--mosaicWait; \
-		}
-
 #define MODE_2_NO_MOSAIC(COORD) \
 	COORD \
 	mapData = screenBase[(localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)]; \
 	pixelData = charBase[(mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
+
+#define MODE_2_MOSAIC(COORD) \
+		if (!mosaicWait) { \
+			MODE_2_NO_MOSAIC(COORD) \
+			mosaicWait = mosaicH; \
+		} else { \
+			--mosaicWait; \
+		}
 
 #define MODE_2_LOOP(MOSAIC, COORD, BLEND, OBJWIN) \
 	for (outX = renderer->start, pixel = &renderer->row[outX]; outX < renderer->end; ++outX, ++pixel) { \
