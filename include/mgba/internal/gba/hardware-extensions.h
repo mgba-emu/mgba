@@ -14,7 +14,7 @@
 #include <mgba/internal/gba/io.h>
 
 
-#define HWEX_EXTENSIONS_COUNT  1 
+#define HWEX_EXTENSIONS_COUNT  ((REG_HWEX_END - REG_HWEX_ENABLE) / 2) 
 #define REG_HWEX_VERSION_VALUE HWEX_EXTENSIONS_COUNT
 #define HWEX_MORE_RAM_SIZE 0x100000 // 1 MB
 
@@ -24,7 +24,7 @@ struct GBAHardwareExtensions {
     uint16_t userEnabledFlags[5];
 
     // IO:
-    uint32_t memory[(REG_HWEX_END - REG_HWEX_ENABLE) / sizeof(uint32_t)];
+    uint32_t memory[HWEX_EXTENSIONS_COUNT / 2];
     
     // Other data
     uint32_t moreRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
@@ -33,6 +33,8 @@ struct GBAHardwareExtensions {
 
 struct GBAHardwareExtensionsState {
     uint32_t enabled; // boolean
+    uint32_t version;
+    
     // IO:
     uint32_t memory[128];
     

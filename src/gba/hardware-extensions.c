@@ -27,6 +27,42 @@ enum {
     HWEX_ID_MORE_RAM = 0
 };
 
+#define SIMPLIFY_HWEX_REG_ADDRESS(address) ((address - REG_HWEX0_CNT) >> 1)
+
+const uint16_t extensionIdByRegister[] = {
+    // More RAM
+    [SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_CNT)] = HWEX_ID_MORE_RAM,
+    [SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_RET_CODE)] = HWEX_ID_MORE_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P0_LO)] = HWEX_ID_MORE_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P0_HI)] = HWEX_ID_MORE_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P1_LO)] = HWEX_ID_MORE_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P1_HI)] = HWEX_ID_MORE_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P2_LO)] = HWEX_ID_MORE_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P2_HI)] = HWEX_ID_MORE_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P3_LO)] = HWEX_ID_MORE_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P3_HI)] = HWEX_ID_MORE_RAM,
+};
+
+static uint16_t GetExtensionIdFromAddress(uint32_t address) {
+    return extensionIdByRegister[SIMPLIFY_HWEX_REG_ADDRESS(address)];
+}
+
+#undef SIMPLIFY_HWEX_REG_ADDRESS
+
+// CNT flags
+// Writable
+#define HWEX_CNT_FLAG_CALL 1
+#define HWEX_CNT_ALL_WRITABLE (HWEX_CNT_FLAG_CALL)
+// Read only
+#define HWEX_CNT_FLAG_PROCESSING (1 << 15)
+
+struct HardwareExtensionHandlers {
+    uint16_t (*onCall)(struct GBA* gba);
+    bool (*onAbort)(void);
+};
+
+static const struct HardwareExtensionHandlers extensionHandlers[];
+
 void GBAHardwareExtensionsInit(struct GBAHardwareExtensions* hwExtensions) {
 	hwExtensions->enabled = false;
 
@@ -171,44 +207,6 @@ static void _GBAHardwareExtensionsIOWrite(struct GBA* gba, uint32_t address, uin
     *GetHwExIOPointer(gba, address) = value;
 }
 
-// CNT flags
-// Writable
-#define HWEX_CNT_FLAG_CALL 1
-#define HWEX_CNT_ALL_WRITABLE (HWEX_CNT_FLAG_CALL)
-// Read only
-#define HWEX_CNT_FLAG_PROCESSING (1 << 15)
-
-struct HardwareExtensionHandlers {
-    uint16_t (*onCall)(struct GBA* gba);
-    bool (*onAbort)(void);
-};
-
-static const struct HardwareExtensionHandlers extensionHandlers[] = {
-    [HWEX_ID_MORE_RAM] = { .onCall = MGBAHwExtMoreRAM, .onAbort = NULL }
-};
-
-#define SIMPLIFY_HWEX_REG_ADDRESS(address) ((address - REG_HWEX0_CNT) >> 1)
-
-const uint16_t extensionIdByRegister[] = {
-    // More RAM
-    [SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_CNT)] = HWEX_ID_MORE_RAM,
-    [SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_RET_CODE)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P0_LO)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P0_HI)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P1_LO)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P1_HI)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P2_LO)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P2_HI)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P3_LO)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P3_HI)] = HWEX_ID_MORE_RAM,
-};
-
-static uint16_t GetExtensionIdFromAddress(uint32_t address) {
-    return extensionIdByRegister[SIMPLIFY_HWEX_REG_ADDRESS(address)];
-}
-
-#undef SIMPLIFY_HWEX_REG_ADDRESS
-
 static bool GBAHardwareExtensionsIsExtensionEnabled(struct GBA* gba, uint32_t extensionId) {
     uint32_t index = extensionId / 16;
     uint32_t bit = extensionId % 16;
@@ -316,6 +314,7 @@ void GBAHardwareExtensionsIOWrite32(struct GBA* gba, uint32_t address, uint32_t 
 
 bool GBAHardwareExtensionsSerialize(struct GBA* gba, struct GBAHardwareExtensionsState* state) {
     state->enabled = gba->hwExtensions.enabled;
+    state->version = REG_HWEX_VERSION_VALUE;
     memcpy(state->memory, gba->hwExtensions.memory, sizeof(gba->hwExtensions.memory));
     memcpy(state->moreRam, gba->hwExtensions.moreRam, sizeof(gba->hwExtensions.moreRam));
     return true;
@@ -331,3 +330,8 @@ bool GBAHardwareExtensionsDeserialize(struct GBA* gba, const struct GBAHardwareE
 
     return true;
 }
+
+
+static const struct HardwareExtensionHandlers extensionHandlers[] = {
+    [HWEX_ID_MORE_RAM] = { .onCall = MGBAHwExtMoreRAM, .onAbort = NULL }
+};
