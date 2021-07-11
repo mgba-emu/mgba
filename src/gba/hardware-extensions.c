@@ -117,92 +117,6 @@ static uint32_t _GBAHardwareExtensionsIORead32(struct GBA* gba, uint32_t address
     return gba->hwExtensions.memory[GetHwExMemoryIndex32FromAddress(address)];
 };
 
-static void* GBAGetMemoryPointer(struct GBA* gba, uint32_t address, uint32_t* memoryMaxSize, bool* isRom) {
-    uint32_t addressPrefix = (address >> 24) & 0xF;
-    uint8_t* pointer = NULL;
-    *isRom = false;
-
-    if (addressPrefix == 2) {
-        if ((address & 0xFFFFFF) < SIZE_WORKING_RAM) {
-            pointer = (uint8_t*) gba->memory.wram;
-            pointer += address & 0xFFFFFF;
-            *memoryMaxSize = SIZE_WORKING_RAM - (address & 0xFFFFFF);
-        }
-    } else if (addressPrefix == 3) {
-        if ((address & 0xFFFFFF) < SIZE_WORKING_IRAM) {
-            pointer = (uint8_t*) gba->memory.iwram;
-            pointer += address & 0xFFFFFF;
-            *memoryMaxSize = SIZE_WORKING_IRAM - (address & 0xFFFFFF);
-        }
-    } else if (addressPrefix & 8) {
-        if ((address & 0x1FFFFFF) < gba->memory.romSize) {
-            *isRom = true;
-            pointer = (uint8_t*) gba->memory.rom;
-            pointer += address & 0x1FFFFFF;
-            *memoryMaxSize = gba->memory.romSize - (address & 0x1FFFFFF);
-        }
-    }
-
-    return pointer;
-}
-
-enum HwExMoreRAMCommands {
-    HwExtMoreRAMMemoryWrite = 0,
-    HwExtMoreRAMMemoryRead = 1,
-    HwExtMoreRAMMemorySwap = 2
-};
-
-static uint16_t MGBAHwExtMoreRAM(struct GBA* gba) {
-    uint32_t command = _GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P0_LO);
-    uint32_t index = _GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P1_LO);
-    uint32_t dataPointer = _GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P2_LO);
-    uint32_t dataSize = _GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P3_LO);
-    void* data;
-    // Check if the pointer is valid
-    bool isRom;
-    uint32_t memoryMaxSize;
-    data = GBAGetMemoryPointer(gba, dataPointer, &memoryMaxSize, &isRom);
-    if (data == NULL) {
-        return HWEX_RET_ERR_BAD_ADDRESS;
-    }
-
-    // Check if index and size are valid
-    if (index >= HWEX_MORE_RAM_SIZE || (index + dataSize) >= HWEX_MORE_RAM_SIZE || dataSize >= memoryMaxSize) {
-        return HWEX_RET_ERR_INVALID_PARAMETERS;
-    }
-    
-    switch (command) {
-        case HwExtMoreRAMMemoryWrite:
-            memcpy(((uint8_t*)gba->hwExtensions.moreRam) + index, data, dataSize);
-            break;
-        case HwExtMoreRAMMemoryRead:
-            if (isRom) {
-                return HWEX_RET_ERR_WRITE_TO_ROM;
-            }
-            memcpy(data, ((uint8_t*)gba->hwExtensions.moreRam) + index, dataSize);
-            break;
-        case HwExtMoreRAMMemorySwap:
-            if (isRom) {
-                return HWEX_RET_ERR_WRITE_TO_ROM;
-            }
-            // TODO: make this more efficient
-            uint8_t* data1 = data;
-            uint8_t* data2 = (uint8_t*) gba->hwExtensions.moreRam;
-            data2 += index;
-            for (uint32_t i = 0; i < dataSize; i++) {
-                uint8_t aux = data1[i];
-                data1[i] = data2[i];
-                data2[i] = aux;
-            }
-            break;
-        default:
-            // invalid command
-            return HWEX_RET_ERR_INVALID_PARAMETERS;
-    }
-
-    return HWEX_RET_OK;
-}
-
 static void _GBAHardwareExtensionsIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
     *GetHwExIOPointer(gba, address) = value;
 }
@@ -331,6 +245,95 @@ bool GBAHardwareExtensionsDeserialize(struct GBA* gba, const struct GBAHardwareE
     return true;
 }
 
+
+
+// Extension handlers
+
+static void* GBAGetMemoryPointer(struct GBA* gba, uint32_t address, uint32_t* memoryMaxSize, bool* isRom) {
+    uint32_t addressPrefix = (address >> 24) & 0xF;
+    uint8_t* pointer = NULL;
+    *isRom = false;
+
+    if (addressPrefix == 2) {
+        if ((address & 0xFFFFFF) < SIZE_WORKING_RAM) {
+            pointer = (uint8_t*) gba->memory.wram;
+            pointer += address & 0xFFFFFF;
+            *memoryMaxSize = SIZE_WORKING_RAM - (address & 0xFFFFFF);
+        }
+    } else if (addressPrefix == 3) {
+        if ((address & 0xFFFFFF) < SIZE_WORKING_IRAM) {
+            pointer = (uint8_t*) gba->memory.iwram;
+            pointer += address & 0xFFFFFF;
+            *memoryMaxSize = SIZE_WORKING_IRAM - (address & 0xFFFFFF);
+        }
+    } else if (addressPrefix & 8) {
+        if ((address & 0x1FFFFFF) < gba->memory.romSize) {
+            *isRom = true;
+            pointer = (uint8_t*) gba->memory.rom;
+            pointer += address & 0x1FFFFFF;
+            *memoryMaxSize = gba->memory.romSize - (address & 0x1FFFFFF);
+        }
+    }
+
+    return pointer;
+}
+
+enum HwExMoreRAMCommands {
+    HwExtMoreRAMMemoryWrite = 0,
+    HwExtMoreRAMMemoryRead = 1,
+    HwExtMoreRAMMemorySwap = 2
+};
+
+static uint16_t MGBAHwExtMoreRAM(struct GBA* gba) {
+    uint32_t command = _GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P0_LO);
+    uint32_t index = _GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P1_LO);
+    uint32_t dataPointer = _GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P2_LO);
+    uint32_t dataSize = _GBAHardwareExtensionsIORead32(gba, REG_HWEX0_P3_LO);
+    void* data;
+    // Check if the pointer is valid
+    bool isRom;
+    uint32_t memoryMaxSize;
+    data = GBAGetMemoryPointer(gba, dataPointer, &memoryMaxSize, &isRom);
+    if (data == NULL) {
+        return HWEX_RET_ERR_BAD_ADDRESS;
+    }
+
+    // Check if index and size are valid
+    if (index >= HWEX_MORE_RAM_SIZE || (index + dataSize) >= HWEX_MORE_RAM_SIZE || dataSize >= memoryMaxSize) {
+        return HWEX_RET_ERR_INVALID_PARAMETERS;
+    }
+    
+    switch (command) {
+        case HwExtMoreRAMMemoryWrite:
+            memcpy(((uint8_t*)gba->hwExtensions.moreRam) + index, data, dataSize);
+            break;
+        case HwExtMoreRAMMemoryRead:
+            if (isRom) {
+                return HWEX_RET_ERR_WRITE_TO_ROM;
+            }
+            memcpy(data, ((uint8_t*)gba->hwExtensions.moreRam) + index, dataSize);
+            break;
+        case HwExtMoreRAMMemorySwap:
+            if (isRom) {
+                return HWEX_RET_ERR_WRITE_TO_ROM;
+            }
+            // TODO: make this more efficient
+            uint8_t* data1 = data;
+            uint8_t* data2 = (uint8_t*) gba->hwExtensions.moreRam;
+            data2 += index;
+            for (uint32_t i = 0; i < dataSize; i++) {
+                uint8_t aux = data1[i];
+                data1[i] = data2[i];
+                data2[i] = aux;
+            }
+            break;
+        default:
+            // invalid command
+            return HWEX_RET_ERR_INVALID_PARAMETERS;
+    }
+
+    return HWEX_RET_OK;
+}
 
 static const struct HardwareExtensionHandlers extensionHandlers[] = {
     [HWEX_ID_MORE_RAM] = { .onCall = MGBAHwExtMoreRAM, .onAbort = NULL }
