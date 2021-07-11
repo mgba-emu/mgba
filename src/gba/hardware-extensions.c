@@ -314,3 +314,20 @@ void GBAHardwareExtensionsIOWrite32(struct GBA* gba, uint32_t address, uint32_t 
     GBAHardwareExtensionsIOWrite(gba, address + 2, value >> 16);
 }
 
+bool GBAHardwareExtensionsSerialize(struct GBA* gba, struct GBAHardwareExtensionsState* state) {
+    state->enabled = gba->hwExtensions.enabled;
+    memcpy(state->memory, gba->hwExtensions.memory, sizeof(gba->hwExtensions.memory));
+    memcpy(state->moreRam, gba->hwExtensions.moreRam, sizeof(gba->hwExtensions.moreRam));
+    return true;
+}
+
+bool GBAHardwareExtensionsDeserialize(struct GBA* gba, const struct GBAHardwareExtensionsState* state, size_t size) {
+    if (size < sizeof(*state)) {
+        return false;
+    }
+    gba->hwExtensions.enabled = state->enabled;
+    memcpy(gba->hwExtensions.memory, state->memory, sizeof(gba->hwExtensions.memory));
+    memcpy(gba->hwExtensions.moreRam, state->moreRam, sizeof(gba->hwExtensions.moreRam));
+
+    return true;
+}

@@ -160,6 +160,9 @@ struct mCore {
 	void (*startVideoLog)(struct mCore*, struct mVideoLogContext*);
 	void (*endVideoLog)(struct mCore*);
 #endif
+
+	size_t (*hwExtensionsSerialize)(struct mCore*, void** sram);
+	bool (*hwExtensionsDeserialize)(struct mCore*, const void* sram, size_t size);
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

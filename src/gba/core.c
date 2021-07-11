@@ -1175,6 +1175,21 @@ static void _GBACoreEndVideoLog(struct mCore* core) {
 }
 #endif
 
+static size_t _GBAHardwareExtensionsSerialize(struct mCore* core, void** sram) {
+	size_t size = sizeof(struct GBAHardwareExtensionsState);
+	*sram = malloc(size);
+	if (!GBAHardwareExtensionsSerialize(core->board, sram)) {
+		free(*sram);
+		size = 0;
+		*sram = NULL;
+	}
+	return size;
+}
+
+static bool _GBAHardwareExtensionsDeserialize(struct mCore* core, const void* sram, size_t size) {
+	return GBAHardwareExtensionsDeserialize(core->board, sram, size);
+}
+
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
 	struct mCore* core = &gbacore->d;
@@ -1259,6 +1274,8 @@ struct mCore* GBACoreCreate(void) {
 	core->startVideoLog = _GBACoreStartVideoLog;
 	core->endVideoLog = _GBACoreEndVideoLog;
 #endif
+	core->hwExtensionsSerialize = NULL;
+	core->hwExtensionsDeserialize = NULL;
 	return core;
 }
 

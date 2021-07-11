@@ -30,6 +30,17 @@ struct GBAHardwareExtensions {
     uint32_t moreRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
 };
 
+
+struct GBAHardwareExtensionsState {
+    uint32_t enabled; // boolean
+    // IO:
+    uint32_t memory[128];
+    
+    // Other data
+    uint32_t moreRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
+};
+
+
 struct GBA;
 void GBAHardwareExtensionsInit(struct GBAHardwareExtensions* hw);
 uint16_t GBAHardwareExtensionsIORead(struct GBA* gba, uint32_t address);
@@ -37,5 +48,7 @@ uint32_t GBAHardwareExtensionsIORead32(struct GBA* gba, uint32_t address);
 void GBAHardwareExtensionsIOWrite8(struct GBA* gba, uint32_t address, uint8_t value);
 void GBAHardwareExtensionsIOWrite(struct GBA* gba, uint32_t address, uint16_t value);
 void GBAHardwareExtensionsIOWrite32(struct GBA* gba, uint32_t address, uint32_t value);
+bool GBAHardwareExtensionsSerialize(struct GBA* gba, struct GBAHardwareExtensionsState* state);
+bool GBAHardwareExtensionsDeserialize(struct GBA* gba, const struct GBAHardwareExtensionsState* state, size_t size);
 
 #endif

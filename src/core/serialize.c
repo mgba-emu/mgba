@@ -421,6 +421,18 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 			mStateExtdataPut(&extdata, EXTDATA_RTC, &item);
 		}
 	}
+	if ((true || flags & SAVESTATE_HW_EXTENSIONS) && core->hwExtensionsSerialize) {
+		void* sram = NULL;
+		size_t size = core->hwExtensionsSerialize(core, &sram);
+		if (size) {
+			struct mStateExtdataItem item = {
+				.size = size,
+				.data = sram,
+				.clean = free
+			};
+			mStateExtdataPut(&extdata, EXTDATA_HW_EXTENSIONS, &item);
+		}
+	}
 #ifdef USE_PNG
 	if (!(flags & SAVESTATE_SCREENSHOT)) {
 #else
@@ -536,6 +548,10 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 		if (core->rtc.d.deserialize) {
 			core->rtc.d.deserialize(&core->rtc.d, &item);
 		}
+	}
+	if ((true || flags & SAVESTATE_HW_EXTENSIONS) && core->hwExtensionsDeserialize && mStateExtdataGet(&extdata, EXTDATA_HW_EXTENSIONS, &item)) {
+		mLOG(SAVESTATE, INFO, "Loading hardware extensions");
+		core->hwExtensionsDeserialize(core, item.data, item.size);
 	}
 	mStateExtdataDeinit(&extdata);
 	return success;
