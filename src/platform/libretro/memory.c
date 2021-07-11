@@ -8,8 +8,6 @@
 #ifdef _WIN32
 #include "../windows/memory.c"
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__DragonFly__) || defined(__NetBSD__)
-#include <sys/mman.h>
-
 #ifndef MAP_ANONYMOUS
 #define MAP_ANONYMOUS 0x20
 #endif
@@ -20,14 +18,5 @@
 
 #include "../posix/memory.c"
 #else
-
-void* anonymousMemoryMap(size_t size) {
-	return calloc(1, size);
-}
-
-void mappedMemoryFree(void* memory, size_t size) {
-	UNUSED(size);
-	free(memory);
-}
-
+#include "../../util/memory.c"
 #endif
