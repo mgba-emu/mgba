@@ -1484,7 +1484,9 @@ void retro_run(void) {
 			keys |= ((joypadMask >> keymap[i]) & 1) << i;
 		}
 		// XXX: turbo keys, should be moved to frontend
-		keys |= cycleturbo(joypadMask & RETRO_DEVICE_ID_JOYPAD_X, joypadMask & RETRO_DEVICE_ID_JOYPAD_Y, joypadMask & RETRO_DEVICE_ID_JOYPAD_L2, joypadMask & RETRO_DEVICE_ID_JOYPAD_R2);
+#define JOYPAD_BIT(BUTTON) (1 << RETRO_DEVICE_ID_JOYPAD_ ## BUTTON)
+		keys |= cycleturbo(joypadMask & JOYPAD_BIT(X), joypadMask & JOYPAD_BIT(Y), joypadMask & JOYPAD_BIT(L2), joypadMask & JOYPAD_BIT(R2));
+#undef JOYPAD_BIT
 	} else {
 		for (i = 0; i < sizeof(keymap) / sizeof(*keymap); ++i) {
 			keys |= (!!inputCallback(0, RETRO_DEVICE_JOYPAD, 0, keymap[i])) << i;
