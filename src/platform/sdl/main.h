@@ -27,6 +27,8 @@ CXX_GUARD_START
 
 #include <bcm_host.h>
 #pragma GCC diagnostic pop
+
+#include "rpi-common.h"
 #endif
 
 #if defined(BUILD_GLES2) || defined(USE_EPOXY)

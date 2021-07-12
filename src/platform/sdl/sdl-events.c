@@ -486,7 +486,7 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 			context->frameCallback = _pauseAfterFrame;
 			mCoreThreadUnpause(context);
 			return;
-#ifdef BUILD_PANDORA
+#if defined(BUILD_PANDORA) || defined(BUILD_RASPI)
 		case SDLK_ESCAPE:
 			mCoreThreadEnd(context);
 			return;

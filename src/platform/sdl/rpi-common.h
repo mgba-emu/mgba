@@ -10,10 +10,10 @@
 
 CXX_GUARD_START
 
-#include "main.h"
-
+struct VideoBackend;
+struct mSDLRenderer;
 void mRPIGLCommonSwap(struct VideoBackend* context);
-void mRPIGLCommonInit(struct mSDLRenderer* renderer);
+bool mRPIGLCommonInit(struct mSDLRenderer* renderer);
 
 CXX_GUARD_END
 
