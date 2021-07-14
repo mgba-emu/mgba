@@ -871,7 +871,7 @@ static void _write4UpDiff(const struct CInemaImage* expected, const struct CInem
 		.height = expected->height * 2,
 		.stride = expected->width * 2,
 	};
-	out.data = malloc(out.width * out.stride * 4);
+	out.data = malloc(out.height * out.stride * 4);
 	uint32_t* outdata = out.data;
 	size_t x;
 	size_t y;
@@ -881,7 +881,6 @@ static void _write4UpDiff(const struct CInemaImage* expected, const struct CInem
 		memcpy(&outdata[base], &((uint32_t*) expected->data)[inbase], expected->width * 4);
 		memcpy(&outdata[base + expected->width], &((uint32_t*) result->data)[inbase], expected->width * 4);
 		memcpy(&outdata[base + expected->height * out.stride], &diff[inbase * 4], expected->width * 4);
-		int x;
 		for (x = 0; x < expected->width; ++x) {
 			size_t pix = (expected->stride * y + x) * 4;
 			size_t outpix = base + expected->height * out.stride + expected->width + x;
@@ -898,7 +897,7 @@ static void _write4UpDiff(const struct CInemaImage* expected, const struct CInem
 		}
 	}
 	_writeDiff(name, &out, frame, "4up");
-
+	free(out.data);
 }
 
 static void _writeDiffSet(const struct CInemaImage* expected, const char* name, uint8_t* diff, int frame, int max, bool xfail) {
