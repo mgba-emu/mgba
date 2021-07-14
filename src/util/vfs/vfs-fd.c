@@ -200,9 +200,9 @@ static bool _vfdSync(struct VFile* vf, void* buffer, size_t size) {
 	UNUSED(size);
 	struct VFileFD* vfd = (struct VFileFD*) vf;
 #ifndef _WIN32
-#ifdef __HAIKU__
+#ifdef HAVE_FUTIMENS
 	futimens(vfd->fd, NULL);
-#else
+#elif defined(HAVE_FUTIMES)
 	futimes(vfd->fd, NULL);
 #endif
 	if (buffer && size) {

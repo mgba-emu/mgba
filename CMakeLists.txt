@@ -317,6 +317,9 @@ find_function(setlocale)
 find_function(snprintf_l)
 find_function(uselocale)
 
+find_function(futimens)
+find_function(futimes)
+
 if(ANDROID AND ANDROID_NDK_MAJOR GREATER 13)
 	set(HAVE_STRTOF_L ON)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
