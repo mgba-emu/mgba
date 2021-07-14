@@ -7,6 +7,19 @@
 #define _TIME_H_
 #define MGBA_EXPORT
 
+#ifdef _WIN32
+#define _VCRUNTIME_H
+#define _CRT_BEGIN_C_HEADER
+#define _CRT_END_C_HEADER
+#define _INC_CRTDEFS
+#define _IO_H_
+#define _INC_IO
+#define _WINDOWS_
+#ifdef _MSC_VER
+#define PATH_MAX 260
+#endif
+#endif
+
 #define ATTRIBUTE_FORMAT(X, Y, Z)
 #define DECL_BITFIELD(newtype, oldtype) typedef oldtype newtype
 #define DECL_BIT(type, field, bit) DECL_BITS(type, field, bit, 1)
@@ -23,9 +36,9 @@
 
 #define PYCPARSE
 
+typedef struct { ...; } va_list;
 typedef int... time_t;
 typedef int... off_t;
-typedef ... va_list;
 typedef ...* png_structp;
 typedef ...* png_infop;
 typedef ...* png_unknown_chunkp;

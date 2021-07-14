@@ -1,13 +1,16 @@
 from setuptools import setup
+import json
 import re
 import os
 import os.path
 import sys
 import subprocess
 
+with open(os.environ.get("JSON_CONFIG"), "r") as f:
+    config = json.load(f)
 
 def get_version_component(piece):
-    return subprocess.check_output(['cmake', '-DPRINT_STRING={}'.format(piece), '-P', '../../../version.cmake']).decode('utf-8').strip()
+    return subprocess.check_output([config['CMAKE_COMMAND'], '-DPRINT_STRING={}'.format(piece), '-P', '../../../version.cmake']).decode('utf-8').strip()
 
 
 version = '{}.{}.{}'.format(*(get_version_component(p) for p in ('LIB_VERSION_MAJOR', 'LIB_VERSION_MINOR', 'LIB_VERSION_PATCH')))

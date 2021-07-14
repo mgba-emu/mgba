@@ -100,6 +100,7 @@ void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate*);
 
 void GBACartEReaderQueueCard(struct GBA* gba, const void* data, size_t size);
 
+#ifdef USE_FFMPEG
 struct EReaderScan;
 #ifdef USE_PNG
 MGBA_EXPORT struct EReaderScan* EReaderScanLoadImagePNG(const char* filename);
@@ -112,6 +113,7 @@ MGBA_EXPORT void EReaderScanDestroy(struct EReaderScan*);
 MGBA_EXPORT bool EReaderScanCard(struct EReaderScan*);
 MGBA_EXPORT void EReaderScanOutputBitmap(const struct EReaderScan*, void* output, size_t stride);
 MGBA_EXPORT bool EReaderScanSaveRaw(const struct EReaderScan*, const char* filename, bool strict);
+#endif
 
 CXX_GUARD_END
 
