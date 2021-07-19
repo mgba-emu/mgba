@@ -443,12 +443,24 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts)
 
 	_lookupIntValue(config, "hwExtensions", &fakeBool);
 	opts->hwExtensions = fakeBool;
-	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_X";
-	uint32_t value32;
-	for (size_t i = 0; i < (sizeof(opts->hwExtensionsFlags) / sizeof(opts->hwExtensionsFlags[0])); i++) {
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = 'A' + i;
-		if (_lookupUIntValue(config, hwExtensionsFlagsKey, &value32)) {
-			opts->hwExtensionsFlags[i] = (uint16_t)value32;
+
+	const char hexDigits[] = "0123456789ABCDEF";
+	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_XXXX";
+	for (size_t index = 0; index <= (HWEX_EXTENSIONS_COUNT >> 4); index++) {
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 3] = hexDigits[index & 0xF];
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 4] = hexDigits[(index >> 4) & 0xF];
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 5] = hexDigits[(index >> 8) & 0xF];
+		
+		for (size_t offset = 0; offset < 0x10 && ((index << 4) + offset) < HWEX_EXTENSIONS_COUNT; offset++) {
+			uint16_t bitFlag = (1 << offset);
+			hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = hexDigits[offset];
+			if (_lookupIntValue(config, hwExtensionsFlagsKey, &fakeBool)) {
+				if (fakeBool) {
+					opts->hwExtensionsFlags[index] |= bitFlag;
+				} else {
+					opts->hwExtensionsFlags[index] &= 0xFFFF ^ bitFlag;
+				}
+			}
 		}
 	}
 }
@@ -478,10 +490,18 @@ void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptio
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "suspendScreensaver", opts->suspendScreensaver);
 
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "hwExtensions", opts->hwExtensions);
-	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_X";
-	for (size_t i = 0; i < (sizeof(opts->hwExtensionsFlags) / sizeof(opts->hwExtensionsFlags[0])); i++) {
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = 'A' + i;
-		ConfigurationSetIntValue(&config->defaultsTable, 0, hwExtensionsFlagsKey, opts->hwExtensionsFlags[i]);
+
+	const char hexDigits[] = "0123456789ABCDEF";
+	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_XXXX";
+	for (size_t index = 0; index <= HWEX_EXTENSIONS_COUNT; index++) {
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 3] = hexDigits[index & 0xF];
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 4] = hexDigits[(index >> 4) & 0xF];
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 5] = hexDigits[(index >> 8) & 0xF];
+
+		for (size_t offset = 0; offset < 0x10 && ((index << 4) + offset) < HWEX_EXTENSIONS_COUNT; offset++) {
+			hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = hexDigits[offset];
+			ConfigurationSetIntValue(&config->defaultsTable, 0, hwExtensionsFlagsKey, (opts->hwExtensionsFlags[index] & (1 << offset)) != 0);
+		}
 	}
 }
 

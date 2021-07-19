@@ -14,7 +14,6 @@
 #include "RotatedHeaderView.h"
 #include "ShaderSelector.h"
 #include "ShortcutView.h"
-#include "HardwareExtensionsView.h"
 
 #ifdef M_CORE_GB
 #include "GameBoy.h"
@@ -24,6 +23,17 @@
 #include <mgba/core/serialize.h>
 #include <mgba/core/version.h>
 #include <mgba/internal/gba/gba.h>
+
+struct HwExtensionDescription {
+	int id;
+	const char* description;
+};
+
+const struct HwExtensionDescription hwExtensionsDescriptions[] = {
+	{ .id = HWEX_ID_MORE_RAM, .description = "More RAM" },
+};
+
+#define EXTENSIONS_ROWS (sizeof(hwExtensionsDescriptions) / sizeof(hwExtensionsDescriptions[0]))
 
 using namespace QGBA;
 
@@ -59,6 +69,52 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.cgbHybridModel->setCurrentIndex(m_ui.gbModel->findData(GB_MODEL_CGB));
 	m_ui.cgbSgbModel->setCurrentIndex(m_ui.gbModel->findData(GB_MODEL_CGB));
 #endif
+
+	// Hardware extensions
+	m_enabledExtensionsCounter = 0;
+
+	// Add "All" checkbox
+	QCheckBox* cb = new QCheckBox(this);
+	m_ui.individualEnableTable->setCellWidget(0, 0, cb);
+	connect(cb, &QCheckBox::stateChanged, this, [this](int state) {
+		QCheckBox* cb;
+		for (unsigned i = 0; i < EXTENSIONS_ROWS; i++) {
+			cb = (QCheckBox*) m_ui.individualEnableTable->cellWidget(1 + i, 0);
+			if (state != cb->checkState()) {
+				cb->setCheckState((Qt::CheckState) state);
+			}
+		}
+	});
+
+	// Add the rest of checkboxes
+	m_ui.individualEnableTable->setRowCount(1 + EXTENSIONS_ROWS);
+	for (unsigned int i = 0; i < EXTENSIONS_ROWS; i++) {
+		cb = new QCheckBox(this);
+		m_ui.individualEnableTable->setVerticalHeaderItem(i + 1, new QTableWidgetItem(tr(hwExtensionsDescriptions[i].description)));
+		m_ui.individualEnableTable->setCellWidget(i + 1, 0, cb);
+		connect(cb, &QCheckBox::stateChanged, this, [this, i](int state) {
+			bool enabled = state == Qt::Checked;
+			QCheckBox* cbAll = (QCheckBox*) m_ui.individualEnableTable->cellWidget(0, 0);
+
+			// Update "All" checkbox
+			m_enabledExtensionsCounter += enabled ? 1 : -1;
+			switch (cbAll->checkState()) {
+				case Qt::Checked:
+					if (m_enabledExtensionsCounter < EXTENSIONS_ROWS) {
+						cbAll->blockSignals(true);
+						cbAll->setCheckState(Qt::Unchecked);
+						cbAll->blockSignals(false);
+					}
+					break;
+				default:
+					if (m_enabledExtensionsCounter == EXTENSIONS_ROWS) {
+						cbAll->blockSignals(true);
+						cbAll->setCheckState(Qt::Checked);
+						cbAll->blockSignals(false);
+					}
+			}
+		});
+	}
 
 	reloadConfig();
 
@@ -337,9 +393,6 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
 	addPage(tr("Shortcuts"), shortcutView, Page::SHORTCUTS);
-
-	HardwareExtensionsView* hwExtensionsView = new HardwareExtensionsView(m_controller);
-	addPage(tr("Hardware extensions"), hwExtensionsView, Page::HARDWARE_EXTENSIONS);
 }
 
 SettingsView::~SettingsView() {
@@ -605,6 +658,21 @@ void SettingsView::updateConfig() {
 	saveSetting("gb.colors", gbColors);
 #endif
 
+	saveSetting("hwExtensions", m_ui.globalEnableCheckBox);
+	const char hexDigits[] = "0123456789ABCDEF";
+	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_XXXX";
+	for (size_t i = 0; i < EXTENSIONS_ROWS; i++) {
+		QCheckBox* cb = (QCheckBox*) m_ui.individualEnableTable->cellWidget(i + 1, 0);
+		unsigned int extensionId = hwExtensionsDescriptions[i].id;
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = hexDigits[extensionId & 0xF];
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 3] = hexDigits[(extensionId >> 4) & 0xF];
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 4] = hexDigits[(extensionId >> 8) & 0xF];
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 5] = hexDigits[(extensionId >> 12) & 0xF];
+
+		saveSetting(hwExtensionsFlagsKey, cb);
+	}
+
+
 	m_controller->write();
 
 	emit pathsChanged();
@@ -782,6 +850,19 @@ void SettingsView::reloadConfig() {
 		m_ui.multiplayerAudioActive->setChecked(true);
 	} else {
 		m_ui.multiplayerAudioAll->setChecked(true);		
+	}
+
+	loadSetting("hwExtensions", m_ui.globalEnableCheckBox, false);
+	const char hexDigits[] = "0123456789ABCDEF";
+	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_XXXX";
+	for (size_t i = 0; i < EXTENSIONS_ROWS; i++) {
+		unsigned int extensionId = hwExtensionsDescriptions[i].id;
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = hexDigits[extensionId & 0xF];
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 3] = hexDigits[(extensionId >> 4) & 0xF];
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 4] = hexDigits[(extensionId >> 8) & 0xF];
+		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 5] = hexDigits[(extensionId >> 12) & 0xF];
+
+		loadSetting(hwExtensionsFlagsKey, (QCheckBox*) m_ui.individualEnableTable->cellWidget(i + 1, 0), false);
 	}
 }
 

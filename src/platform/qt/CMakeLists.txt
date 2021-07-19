@@ -80,7 +80,6 @@ set(SOURCE_FILES
 	GamepadAxisEvent.cpp
 	GamepadButtonEvent.cpp
 	GamepadHatEvent.cpp
-	HardwareExtensionsView.cpp
 	IOViewer.cpp
 	InputController.cpp
 	InputProfile.cpp
@@ -131,7 +130,6 @@ set(UI_FILES
 	DolphinConnector.ui
 	FrameView.ui
 	GIFView.ui
-	HardwareExtensionsView.ui
 	IOViewer.ui
 	LoadSaveState.ui
 	LogView.ui

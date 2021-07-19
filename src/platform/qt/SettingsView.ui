@@ -80,6 +80,11 @@
        <string>Game Boy</string>
       </property>
      </item>
+     <item>
+      <property name="text">
+       <string>Hardware extensions</string>
+      </property>
+     </item>
     </widget>
    </item>
    <item row="2" column="0" colspan="2">
@@ -2009,6 +2014,48 @@
            </widget>
           </item>
          </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="hwExtensions">
+      <layout class="QVBoxLayout" name="verticalLayout_5">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_22">
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="globalEnableCheckBox">
+           <property name="text">
+            <string>Enable hardware extensions</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QTableWidget" name="individualEnableTable">
+         <row>
+          <property name="text">
+           <string>All</string>
+          </property>
+         </row>
+         <column>
+          <property name="text">
+           <string>Enable</string>
+          </property>
+         </column>
         </widget>
        </item>
       </layout>

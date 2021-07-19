@@ -16,6 +16,12 @@ CXX_GUARD_START
 
 #include <mgba/internal/gba/hardware-extensions-ids.h>
 
+enum HwExSettingsOverrides {
+	HWEX_DONT_OVERRIDE = 0,
+	HWEX_ENABLE = 1,
+	HWEX_DISABLE = 2,
+};
+
 struct mArguments {
 	char* fname;
 	char* patch;
@@ -32,8 +38,8 @@ struct mArguments {
 	bool showHelp;
 	bool showVersion;
 
-	bool hwExtensions;
-	uint16_t hwExtensionsFlags[HWEX_FLAGS_REGISTERS_COUNT];
+	char hwExtensions;
+	char hwExtensionsFlags[HWEX_EXTENSIONS_COUNT];
 };
 
 struct mCoreConfig;

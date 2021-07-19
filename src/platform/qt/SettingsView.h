@@ -79,6 +79,8 @@ private:
 	ShaderSelector* m_shader = nullptr;
 	LogConfigModel m_logModel;
 
+	unsigned int m_enabledExtensionsCounter;
+
 #ifdef M_CORE_GB
 	uint32_t m_gbColors[12]{};
 	ColorPicker m_colorPickers[12];
