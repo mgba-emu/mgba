@@ -24,7 +24,7 @@ struct GBAHardwareExtensions {
     uint16_t userEnabledFlags[HWEX_FLAGS_REGISTERS_COUNT];
 
     // IO:
-    uint32_t memory[HWEX_EXTENSIONS_COUNT / 2];
+    uint32_t memory[(REG_HWEX_END - REG_HWEX_ENABLE) / 2];
     
     // Other data
     uint32_t moreRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];

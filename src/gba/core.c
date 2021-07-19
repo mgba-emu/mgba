@@ -373,14 +373,24 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 	}
 	
 	if (strcmp("hwExtensionsFlags", option) == 0) {
-		char hwExtensionsFlagsKey[] = "hwExtensionsFlags_X";
-		uint32_t value32;
-		for (size_t i = 0; i < (sizeof(core->opts.hwExtensionsFlags) / sizeof(core->opts.hwExtensionsFlags[0])); i++) {
-			hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = 'A' + i;
-			if (mCoreConfigGetUIntValue(config, hwExtensionsFlagsKey, &value32)) {
-				core->opts.hwExtensionsFlags[i] = (uint16_t)value32;
-				gba->hwExtensions.userEnabledFlags[i] = core->opts.hwExtensionsFlags[i];	
+		const char hexDigits[] = "0123456789ABCDEF";
+		char hwExtensionsFlagsKey[] = "hwExtensionsFlags_XXXX";
+		for (size_t index = 0; index <= (HWEX_EXTENSIONS_COUNT >> 4); index++) {
+			for (size_t offset = 0; offset < 0x10 && ((index << 4) + offset) < HWEX_EXTENSIONS_COUNT; offset++) {
+				uint16_t bitFlag = (1 << offset);
+				hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = hexDigits[offset];
+				hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 3] = hexDigits[index & 0xF];
+				hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 4] = hexDigits[(index >> 4) & 0xF];
+				hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 5] = hexDigits[(index >> 8) & 0xF];
+				if (mCoreConfigGetIntValue(config, hwExtensionsFlagsKey, &fakeBool)) {
+					if (fakeBool) {
+						core->opts.hwExtensionsFlags[index] |= bitFlag;
+					} else {
+						core->opts.hwExtensionsFlags[index] &= 0xFFFF ^ bitFlag;
+					}
+				}
 			}
+			gba->hwExtensions.userEnabledFlags[index] = core->opts.hwExtensionsFlags[index];
 		}
 	}
 
@@ -1178,7 +1188,7 @@ static void _GBACoreEndVideoLog(struct mCore* core) {
 static size_t _GBAHardwareExtensionsSerialize(struct mCore* core, void** sram) {
 	size_t size = sizeof(struct GBAHardwareExtensionsState);
 	*sram = malloc(size);
-	if (!GBAHardwareExtensionsSerialize(core->board, sram)) {
+	if (!GBAHardwareExtensionsSerialize(core->board, *sram)) {
 		free(*sram);
 		size = 0;
 		*sram = NULL;
@@ -1274,8 +1284,8 @@ struct mCore* GBACoreCreate(void) {
 	core->startVideoLog = _GBACoreStartVideoLog;
 	core->endVideoLog = _GBACoreEndVideoLog;
 #endif
-	core->hwExtensionsSerialize = NULL;
-	core->hwExtensionsDeserialize = NULL;
+	core->hwExtensionsSerialize = _GBAHardwareExtensionsSerialize;
+	core->hwExtensionsDeserialize = _GBAHardwareExtensionsDeserialize;
 	return core;
 }
 
