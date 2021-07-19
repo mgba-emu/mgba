@@ -14,6 +14,7 @@
 #include "RotatedHeaderView.h"
 #include "ShaderSelector.h"
 #include "ShortcutView.h"
+#include "HardwareExtensionsView.h"
 
 #ifdef M_CORE_GB
 #include "GameBoy.h"
@@ -336,6 +337,9 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
 	addPage(tr("Shortcuts"), shortcutView, Page::SHORTCUTS);
+
+	HardwareExtensionsView* hwExtensionsView = new HardwareExtensionsView(m_controller);
+	addPage(tr("Hardware extensions"), hwExtensionsView, Page::HARDWARE_EXTENSIONS);
 }
 
 SettingsView::~SettingsView() {

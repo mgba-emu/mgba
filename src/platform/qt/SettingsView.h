@@ -43,6 +43,7 @@ public:
 		CONTROLLERS,
 		SHORTCUTS,
 		SHADERS,
+		HARDWARE_EXTENSIONS,
 	};
 
 	SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, LogController* logController, QWidget* parent = nullptr);
