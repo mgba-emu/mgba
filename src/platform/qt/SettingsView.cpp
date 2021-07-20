@@ -24,17 +24,6 @@
 #include <mgba/core/version.h>
 #include <mgba/internal/gba/gba.h>
 
-struct HwExtensionDescription {
-	int id;
-	const char* description;
-};
-
-const struct HwExtensionDescription hwExtensionsDescriptions[] = {
-	{ .id = HWEX_ID_MORE_RAM, .description = "More RAM" },
-};
-
-#define EXTENSIONS_ROWS (sizeof(hwExtensionsDescriptions) / sizeof(hwExtensionsDescriptions[0]))
-
 using namespace QGBA;
 
 SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, LogController* logController, QWidget* parent)
@@ -69,52 +58,6 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.cgbHybridModel->setCurrentIndex(m_ui.gbModel->findData(GB_MODEL_CGB));
 	m_ui.cgbSgbModel->setCurrentIndex(m_ui.gbModel->findData(GB_MODEL_CGB));
 #endif
-
-	// Hardware extensions
-	m_enabledExtensionsCounter = 0;
-
-	// Add "All" checkbox
-	QCheckBox* cb = new QCheckBox(this);
-	m_ui.individualEnableTable->setCellWidget(0, 0, cb);
-	connect(cb, &QCheckBox::stateChanged, this, [this](int state) {
-		QCheckBox* cb;
-		for (unsigned i = 0; i < EXTENSIONS_ROWS; i++) {
-			cb = (QCheckBox*) m_ui.individualEnableTable->cellWidget(1 + i, 0);
-			if (state != cb->checkState()) {
-				cb->setCheckState((Qt::CheckState) state);
-			}
-		}
-	});
-
-	// Add the rest of checkboxes
-	m_ui.individualEnableTable->setRowCount(1 + EXTENSIONS_ROWS);
-	for (unsigned int i = 0; i < EXTENSIONS_ROWS; i++) {
-		cb = new QCheckBox(this);
-		m_ui.individualEnableTable->setVerticalHeaderItem(i + 1, new QTableWidgetItem(tr(hwExtensionsDescriptions[i].description)));
-		m_ui.individualEnableTable->setCellWidget(i + 1, 0, cb);
-		connect(cb, &QCheckBox::stateChanged, this, [this, i](int state) {
-			bool enabled = state == Qt::Checked;
-			QCheckBox* cbAll = (QCheckBox*) m_ui.individualEnableTable->cellWidget(0, 0);
-
-			// Update "All" checkbox
-			m_enabledExtensionsCounter += enabled ? 1 : -1;
-			switch (cbAll->checkState()) {
-				case Qt::Checked:
-					if (m_enabledExtensionsCounter < EXTENSIONS_ROWS) {
-						cbAll->blockSignals(true);
-						cbAll->setCheckState(Qt::Unchecked);
-						cbAll->blockSignals(false);
-					}
-					break;
-				default:
-					if (m_enabledExtensionsCounter == EXTENSIONS_ROWS) {
-						cbAll->blockSignals(true);
-						cbAll->setCheckState(Qt::Checked);
-						cbAll->blockSignals(false);
-					}
-			}
-		});
-	}
 
 	reloadConfig();
 
@@ -393,6 +336,55 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
 	addPage(tr("Shortcuts"), shortcutView, Page::SHORTCUTS);
+
+	// Hardware extensions
+	memset(m_hwExtensionsCheckboxes, 0, sizeof(m_hwExtensionsCheckboxes));
+	m_hwExtensionsCheckboxes[0] = m_ui.hwEx0CheckBox;
+	m_enabledExtensionsCounter = 0;
+	for (size_t i = 0; i < HWEX_EXTENSIONS_COUNT; i++) {
+		if (m_hwExtensionsCheckboxes[i] && Qt::Checked == m_hwExtensionsCheckboxes[i]->checkState()) {
+			m_enabledExtensionsCounter++;
+		}
+	}
+	if (m_enabledExtensionsCounter == HWEX_EXTENSIONS_COUNT) {
+		m_ui.hwExAllCheckBox->setCheckState(Qt::Checked);
+	}
+
+	// connect "All" checkbox
+	connect(m_ui.hwExAllCheckBox, &QCheckBox::stateChanged, this, [this](int state) {
+		for (size_t i = 0; i < HWEX_EXTENSIONS_COUNT; i++) {
+			m_enabledExtensionsCounter = 0;
+			if (m_hwExtensionsCheckboxes[i] && state != m_hwExtensionsCheckboxes[i]->checkState()) {
+				m_hwExtensionsCheckboxes[i]->blockSignals(true);
+				m_hwExtensionsCheckboxes[i]->setCheckState((Qt::CheckState) state);
+				m_hwExtensionsCheckboxes[i]->blockSignals(false);
+				m_enabledExtensionsCounter++;
+			}
+		}
+	});
+	for (size_t i = 0; i < HWEX_EXTENSIONS_COUNT; i++) {
+		if (m_hwExtensionsCheckboxes[i]) {
+			connect(m_hwExtensionsCheckboxes[i], &QCheckBox::stateChanged, this, [this](int state) {
+				// update "All" checkbox
+				m_enabledExtensionsCounter += (state == Qt::Checked) ? 1 : -1;
+				switch (m_ui.hwExAllCheckBox->checkState()) {
+					case Qt::Checked:
+						if (m_enabledExtensionsCounter < HWEX_EXTENSIONS_COUNT) {
+							m_ui.hwExAllCheckBox->blockSignals(true);
+							m_ui.hwExAllCheckBox->setCheckState(Qt::Unchecked);
+							m_ui.hwExAllCheckBox->blockSignals(false);
+						}
+						break;
+					default:
+						if (m_enabledExtensionsCounter == HWEX_EXTENSIONS_COUNT) {
+							m_ui.hwExAllCheckBox->blockSignals(true);
+							m_ui.hwExAllCheckBox->setCheckState(Qt::Checked);
+							m_ui.hwExAllCheckBox->blockSignals(false);
+						}
+				}
+			});
+		}
+	}
 }
 
 SettingsView::~SettingsView() {
@@ -658,20 +650,8 @@ void SettingsView::updateConfig() {
 	saveSetting("gb.colors", gbColors);
 #endif
 
-	saveSetting("hwExtensions", m_ui.globalEnableCheckBox);
-	const char hexDigits[] = "0123456789ABCDEF";
-	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_XXXX";
-	for (size_t i = 0; i < EXTENSIONS_ROWS; i++) {
-		QCheckBox* cb = (QCheckBox*) m_ui.individualEnableTable->cellWidget(i + 1, 0);
-		unsigned int extensionId = hwExtensionsDescriptions[i].id;
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = hexDigits[extensionId & 0xF];
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 3] = hexDigits[(extensionId >> 4) & 0xF];
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 4] = hexDigits[(extensionId >> 8) & 0xF];
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 5] = hexDigits[(extensionId >> 12) & 0xF];
-
-		saveSetting(hwExtensionsFlagsKey, cb);
-	}
-
+	saveSetting("hwExtensions", m_ui.hwExtensionsCheckBox);
+	saveSetting("hwExtensionsFlags_0000", m_ui.hwEx0CheckBox);
 
 	m_controller->write();
 
@@ -852,18 +832,8 @@ void SettingsView::reloadConfig() {
 		m_ui.multiplayerAudioAll->setChecked(true);		
 	}
 
-	loadSetting("hwExtensions", m_ui.globalEnableCheckBox, false);
-	const char hexDigits[] = "0123456789ABCDEF";
-	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_XXXX";
-	for (size_t i = 0; i < EXTENSIONS_ROWS; i++) {
-		unsigned int extensionId = hwExtensionsDescriptions[i].id;
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = hexDigits[extensionId & 0xF];
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 3] = hexDigits[(extensionId >> 4) & 0xF];
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 4] = hexDigits[(extensionId >> 8) & 0xF];
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 5] = hexDigits[(extensionId >> 12) & 0xF];
-
-		loadSetting(hwExtensionsFlagsKey, (QCheckBox*) m_ui.individualEnableTable->cellWidget(i + 1, 0), false);
-	}
+	loadSetting("hwExtensions", m_ui.hwExtensionsCheckBox, false);
+	loadSetting("hwExtensionsFlags_0000", m_ui.hwEx0CheckBox, false);
 }
 
 void SettingsView::addPage(const QString& name, QWidget* view, Page index) {
