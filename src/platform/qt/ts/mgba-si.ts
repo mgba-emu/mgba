@@ -6,7 +6,7 @@
     <message>
         <location filename="../AboutScreen.ui" line="14"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>පිළිබඳව</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
@@ -45,7 +45,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation type="unfinished"></translation>
+        <translation>පූරණය වෙමින් ...</translation>
     </message>
 </context>
 <context>
@@ -63,22 +63,22 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../AssetTile.ui" line="86"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>ලිපිනය</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="135"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>රතු</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="142"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>කොළ</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="149"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>නිල්</translation>
     </message>
 </context>
 <context>
@@ -96,32 +96,32 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
         <source>Insert</source>
-        <translation type="unfinished"></translation>
+        <translation>ඇතුළු කරන්න</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>සුරකින්න</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="94"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>පූරණය කරන්න</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="114"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>එකතු කරන්න</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="121"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>ඉවත් කරන්න</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="138"/>
         <source>Gate type</source>
-        <translation type="unfinished"></translation>
+        <translation>කඩුලු වර්ගය</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="145"/>
@@ -169,17 +169,17 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../CheatsView.ui" line="20"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>ඉවත් කරන්න</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="34"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>සුරකින්න</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="41"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>පූරණය කරන්න</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="48"/>
