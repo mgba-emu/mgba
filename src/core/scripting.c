@@ -91,8 +91,16 @@ void mScriptBridgeInstallEngine(struct mScriptBridge* sb, struct mScriptEngine* 
 
 #ifdef USE_DEBUGGERS
 void mScriptBridgeSetDebugger(struct mScriptBridge* sb, struct mDebugger* debugger) {
+	if (sb->debugger == debugger) {
+		return;
+	}
+	if (sb->debugger) {
+		sb->debugger->bridge = NULL;
+	}
 	sb->debugger = debugger;
-	debugger->bridge = sb;
+	if (debugger) {
+		debugger->bridge = sb;
+	}
 }
 
 struct mDebugger* mScriptBridgeGetDebugger(struct mScriptBridge* sb) {
