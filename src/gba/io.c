@@ -984,7 +984,8 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 }
 
 void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
-	GBAAudioWriteSOUNDCNT_X(&gba->audio, state->io[REG_SOUNDCNT_X >> 1]);
+	LOAD_16(gba->memory.io[REG_SOUNDCNT_X >> 1], REG_SOUNDCNT_X, state->io);
+	GBAAudioWriteSOUNDCNT_X(&gba->audio, gba->memory.io[REG_SOUNDCNT_X >> 1]);
 
 	int i;
 	for (i = 0; i < REG_MAX; i += 2) {

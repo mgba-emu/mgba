@@ -3007,7 +3007,7 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/16</source>
-        <translation type="unfinished">1/16</translation>
+        <translation>1/16</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1092"/>
@@ -3036,27 +3036,27 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1202"/>
         <source>Volume right</source>
-        <translation type="unfinished"></translation>
+        <translation>Volume destro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1203"/>
         <source>Output right</source>
-        <translation type="unfinished"></translation>
+        <translation>Uscita a destra</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1204"/>
         <source>Volume left</source>
-        <translation type="unfinished"></translation>
+        <translation>Volume sinistro</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1205"/>
         <source>Output left</source>
-        <translation type="unfinished"></translation>
+        <translation>Uscita a sinistra</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1326"/>
         <source>Background enable/priority</source>
-        <translation type="unfinished"></translation>
+        <translation>Sfondo abilitato/priorità</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1327"/>
@@ -3071,7 +3071,7 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation type="unfinished"></translation>
+        <translation>Mappa mattonelle di sfondo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
@@ -3088,7 +3088,7 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1333"/>
         <source>Background tile data</source>
-        <translation type="unfinished"></translation>
+        <translation>Dati mattonelle di sfondo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1334"/>
@@ -3108,7 +3108,7 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1338"/>
         <source>Window tile map</source>
-        <translation type="unfinished"></translation>
+        <translation>Mappa mattonelle finestra</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1342"/>
@@ -3148,22 +3148,22 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1353"/>
         <source>Enable HBlank (mode 0) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>Abilita IRQ HBlank (mode 0)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1354"/>
         <source>Enable VBlank (mode 1) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>Abilita IRQ VBlank (mode 1)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1355"/>
         <source>Enable OAM (mode 2) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>Abilita IRQ OAM (mode 2)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1356"/>
         <source>Enable LYC IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>Abilita IRQ LYC</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1368"/>
@@ -3173,40 +3173,40 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1372"/>
         <source>Comparison Y coordinate</source>
-        <translation type="unfinished"></translation>
+        <translation>Confronto coordinate Y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1376"/>
         <source>Start upper byte</source>
-        <translation type="unfinished"></translation>
+        <translation>Inizio byte superiore</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1380"/>
         <location filename="../IOViewer.cpp" line="1387"/>
         <location filename="../IOViewer.cpp" line="1394"/>
         <source>Color 0 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Shade Colore 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1381"/>
         <location filename="../IOViewer.cpp" line="1388"/>
         <location filename="../IOViewer.cpp" line="1395"/>
         <source>Color 1 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Shade Colore 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1382"/>
         <location filename="../IOViewer.cpp" line="1389"/>
         <location filename="../IOViewer.cpp" line="1396"/>
         <source>Color 2 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Shade Colore 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1383"/>
         <location filename="../IOViewer.cpp" line="1390"/>
         <location filename="../IOViewer.cpp" line="1397"/>
         <source>Color 3 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Shade Colore 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1411"/>
@@ -5276,72 +5276,72 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../SettingsView.ui" line="1502"/>
         <source>Models</source>
-        <translation type="unfinished"></translation>
+        <translation>Modelli</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1508"/>
         <source>GB only:</source>
-        <translation type="unfinished"></translation>
+        <translation>Solo GB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1518"/>
         <source>SGB compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatibile SGB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1528"/>
         <source>GBC only:</source>
-        <translation type="unfinished"></translation>
+        <translation>Solo GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1538"/>
         <source>GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatibile BGC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1548"/>
         <source>SGB and GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatibile SGB e GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1568"/>
         <source>Game Boy palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Tavolozza Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1852"/>
         <source>Default color palette only</source>
-        <translation type="unfinished"></translation>
+        <translation>Solo tavolozza colori predefinita</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1862"/>
         <source>SGB color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>Tavolozza colori SGB se disponibile</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1872"/>
         <source>GBC color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>Tavolozza colori GBC se disponibile</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1882"/>
         <source>SGB (preferred) or GBC color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>Tavolozza colori SGB (preferita) o GBC se disponibile</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1895"/>
         <source>Game Boy Camera</source>
-        <translation type="unfinished"></translation>
+        <translation>Videocamera Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1901"/>
         <source>Driver:</source>
-        <translation type="unfinished"></translation>
+        <translation>Driver:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1918"/>
         <source>Source:</source>
-        <translation type="unfinished"></translation>
+        <translation>Sorgente:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="405"/>

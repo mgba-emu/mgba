@@ -96,11 +96,13 @@ public:
 	PainterGL(QWindow* surface, const QSurfaceFormat& format);
 	~PainterGL();
 
+	void setThread(QThread*);
 	void setContext(std::shared_ptr<CoreController>);
 	void setMessagePainter(MessagePainter*);
 	void enqueue(const uint32_t* backing);
 
 	bool supportsShaders() const { return m_supportsShaders; }
+	int glTex();
 
 	void setVideoProxy(std::shared_ptr<VideoProxy>);
 	void interrupt();
@@ -127,8 +129,6 @@ public slots:
 	void clearShaders();
 	VideoShader* shaders();
 
-	int glTex();
-
 signals:
 	void started();
 
@@ -150,6 +150,7 @@ private:
 	std::unique_ptr<QOpenGLContext> m_gl;
 	bool m_active = false;
 	bool m_started = false;
+	QTimer m_drawTimer;
 	std::shared_ptr<CoreController> m_context;
 	CoreController::Interrupter m_interrupter;
 	bool m_supportsShaders;

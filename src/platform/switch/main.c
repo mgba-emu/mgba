@@ -659,7 +659,7 @@ static int _batteryState(void) {
 	} else {
 		return BATTERY_NOT_PRESENT;
 	}
-	ChargerType type;
+	PsmChargerType type;
 	if (R_SUCCEEDED(psmGetChargerType(&type)) && type) {
 		state |= BATTERY_CHARGING;
 	}

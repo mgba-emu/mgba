@@ -11,11 +11,22 @@ Features:
  - Additional scaling shaders
 Emulation fixes:
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
- - GB Video: Clear VRAM on reset (fixes mgba.io/i/2152)
  - GBA: Improve timing when not booting from BIOS
+ - GBA SIO: Fix SI value for unattached MULTI mode
+Other fixes:
+ - Core: Don't attempt to restore rewind diffs past start of rewind
+ - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
+Misc:
+ - Core: Suspend runloop when a core crashes
+ - Qt: Rearrange menus some
+ - Qt: Clean up cheats dialog
+ - Qt: Only set default controller bindings if loading fails (fixes mgba.io/i/799)
+
+0.9.2: (2021-07-10)
+Emulation fixes:
+ - GB Video: Clear VRAM on reset (fixes mgba.io/i/2152)
  - GBA SIO: Add missing NORMAL8 implementation bits (fixes mgba.io/i/2172)
  - GBA SIO: Fix missing interrupt on an unattached NORMAL transfer
- - GBA SIO: Fix SI value for unattached MULTI mode
  - GBA Memory: Fix prefetch mask when swapping modes within a region
  - GBA Serialize: Fix loading audio enable bit late (fixes mgba.io/i/2230)
  - GBA Video: Revert scanline latching changes (fixes mgba.io/i/2153, mgba.io/i/2149)
@@ -25,22 +36,18 @@ Other fixes:
  - Core: Fix memory leak in opening games from the library
  - Core: Fix memory searches for relative values (fixes mgba.io/i/2135)
  - Core: Fix portable mode on macOS
- - Core: Don't attempt to restore rewind diffs past start of rewind
  - GB Audio: Fix audio channel 4 being slow to deserialize
  - GB Core: Fix GBC colors setting breaking default model overrides (fixes mgba.io/i/2161)
- - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
  - mGUI: Cache save state screenshot validity in state menu (fixes mgba.io/i/2005)
- - Qt: Fix infrequent deadlock when using sync to video
+ - Qt: Fix eventual deadlock when using sync to video
  - Qt: Fix applying savetype-only overrides
  - Qt: Fix crash in sprite view for partially out-of-bounds sprites (fixes mgba.io/i/2165)
  - Qt: Fix having to press controller buttons twice for menu items (fixes mgba.io/i/2143)
  - Qt: Redo sensor binding to be less fragile
+ - Qt: Reuse timer when rescheduling missing frames (fixes mgba.io/i/2236)
+ - Qt: Fix bounded fast forward with enhancement OpenGL renderer
  - Util: Fix loading UPS patches that affect the last byte of the file
 Misc:
- - Core: Suspend runloop when a core crashes
- - Qt: Rearrange menus some
- - Qt: Clean up cheats dialog
- - Qt: Only set default controller bindings if loading fails (fixes mgba.io/i/799)
  - Util: Improve speed of UPS patch loading
 
 0.9.1: (2021-04-18)
