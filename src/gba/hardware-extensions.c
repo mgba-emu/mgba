@@ -246,38 +246,41 @@ bool GBAHardwareExtensionsDeserialize(struct GBA* gba, const struct GBAHardwareE
 // Extension handlers
 
 static void* GBAGetMemoryPointer(struct GBA* gba, uint32_t address, uint32_t* memoryMaxSize, bool* isRom) {
-    uint32_t addressPrefix = (address >> 24) & 0xF;
     uint8_t* pointer = NULL;
     *isRom = false;
 
-    if (addressPrefix == 2) {
-        if ((address & 0xFFFFFF) < SIZE_WORKING_RAM) {
-            pointer = (uint8_t*) gba->memory.wram;
-            pointer += address & 0xFFFFFF;
-            *memoryMaxSize = SIZE_WORKING_RAM - (address & 0xFFFFFF);
-        }
-    } else if (addressPrefix == 3) {
-        if ((address & 0xFFFFFF) < SIZE_WORKING_IRAM) {
-            pointer = (uint8_t*) gba->memory.iwram;
-            pointer += address & 0xFFFFFF;
-            *memoryMaxSize = SIZE_WORKING_IRAM - (address & 0xFFFFFF);
-        }
-    } else if (addressPrefix & 8) {
-        if ((address & 0x1FFFFFF) < gba->memory.romSize) {
-            *isRom = true;
-            pointer = (uint8_t*) gba->memory.rom;
-            pointer += address & 0x1FFFFFF;
-            *memoryMaxSize = gba->memory.romSize - (address & 0x1FFFFFF);
-        }
+    switch (address >> 24) {
+        case REGION_WORKING_RAM:
+            if ((address & 0xFFFFFF) < SIZE_WORKING_RAM) {
+                pointer = (uint8_t*) gba->memory.wram;
+                pointer += address & 0xFFFFFF;
+                *memoryMaxSize = SIZE_WORKING_RAM - (address & 0xFFFFFF);
+            }
+            break;
+        case REGION_WORKING_IRAM:
+            if ((address & 0xFFFFFF) < SIZE_WORKING_IRAM) {
+                pointer = (uint8_t*) gba->memory.iwram;
+                pointer += address & 0xFFFFFF;
+                *memoryMaxSize = SIZE_WORKING_IRAM - (address & 0xFFFFFF);
+            }
+            break;
+        case REGION_CART0:
+        case REGION_CART0_EX:
+            if ((address & 0x1FFFFFF) < gba->memory.romSize) {
+                *isRom = true;
+                pointer = (uint8_t*) gba->memory.rom;
+                pointer += address & 0x1FFFFFF;
+                *memoryMaxSize = gba->memory.romSize - (address & 0x1FFFFFF);
+            }
     }
 
     return pointer;
 }
 
 enum HwExMoreRAMCommands {
-    HwExtMoreRAMMemoryWrite = 0,
-    HwExtMoreRAMMemoryRead = 1,
-    HwExtMoreRAMMemorySwap = 2
+    HWEX_MORE_RAM_CMD_WRITE = 0,
+    HWEX_MORE_RAM_CMD_READ = 1,
+    HWEX_MORE_RAM_CMD_SWAP = 2
 };
 
 static uint16_t MGBAHwExtMoreRAM(struct GBA* gba) {
@@ -300,16 +303,16 @@ static uint16_t MGBAHwExtMoreRAM(struct GBA* gba) {
     }
     
     switch (command) {
-        case HwExtMoreRAMMemoryWrite:
+        case HWEX_MORE_RAM_CMD_WRITE:
             memcpy(((uint8_t*)gba->hwExtensions.moreRam) + index, data, dataSize);
             break;
-        case HwExtMoreRAMMemoryRead:
+        case HWEX_MORE_RAM_CMD_READ:
             if (isRom) {
                 return HWEX_RET_ERR_WRITE_TO_ROM;
             }
             memcpy(data, ((uint8_t*)gba->hwExtensions.moreRam) + index, dataSize);
             break;
-        case HwExtMoreRAMMemorySwap:
+        case HWEX_MORE_RAM_CMD_SWAP:
             if (isRom) {
                 return HWEX_RET_ERR_WRITE_TO_ROM;
             }
