@@ -13,8 +13,8 @@ set(SOURCE_FILES
 	cheats/parv3.c
 	core.c
 	dma.c
+	extra/extensions.c
 	gba.c
-	hardware-extensions.c
 	hle-bios.c
 	input.c
 	io.c

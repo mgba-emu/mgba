@@ -125,7 +125,7 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->irqEvent.context = gba;
 	gba->irqEvent.priority = 0;
 
-	GBAHardwareExtensionsInit(&gba->hwExtensions);
+	GBAExtensionsInit(&gba->extensions);
 }
 
 void GBAUnloadROM(struct GBA* gba) {

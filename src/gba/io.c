@@ -9,7 +9,7 @@
 #include <mgba/internal/gba/dma.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/serialize.h>
-#include <mgba/internal/gba/hardware-extensions.h>
+#include <mgba/internal/gba/extra/extensions.h>
 
 mLOG_DEFINE_CATEGORY(GBA_IO, "GBA I/O", "gba.io");
 
@@ -587,7 +587,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 			return;
 		}
 		if (address >= REG_HWEX_ENABLE && address < REG_HWEX_END) {
-			GBAHardwareExtensionsIOWrite(gba, address, value);
+			GBAExtensionsIOWrite(gba, address, value);
 			return;
 		}
 		mLOG(GBA_IO, STUB, "Stub I/O register write: %03X", address);
@@ -619,7 +619,7 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 		return;
 	}
 	if (address >= REG_HWEX_ENABLE && address < REG_HWEX_END) {
-		GBAHardwareExtensionsIOWrite8(gba, address, value);
+		GBAExtensionsIOWrite8(gba, address, value);
 		return;
 	}
 	if (address > SIZE_IO) {
@@ -678,10 +678,6 @@ void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
 	default:
 		if (address >= REG_DEBUG_STRING && address - REG_DEBUG_STRING < sizeof(gba->debugString)) {
 			STORE_32LE(value, address - REG_DEBUG_STRING, gba->debugString);
-			return;
-		}
-		if (address >= REG_HWEX_ENABLE && address < REG_HWEX_END) {
-			GBAHardwareExtensionsIOWrite32(gba, address, value);
 			return;
 		}
 		GBAIOWrite(gba, address, value & 0xFFFF);
@@ -951,7 +947,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		// Fall through
 	default:
 		if (address >= REG_HWEX_ENABLE && address < REG_HWEX_END) {
-			return GBAHardwareExtensionsIORead(gba, address);
+			return GBAExtensionsIORead(gba, address);
 		}
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return GBALoadBad(gba->cpu);

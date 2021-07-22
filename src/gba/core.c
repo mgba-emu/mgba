@@ -272,8 +272,8 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	}
 	gba->video.frameskip = core->opts.frameskip;
 
-	gba->hwExtensions.userEnabled = core->opts.hwExtensions;
-	memcpy(gba->hwExtensions.userEnabledFlags, core->opts.hwExtensionsFlags, sizeof(gba->hwExtensions.userEnabledFlags));
+	gba->extensions.userEnabled = core->opts.hwExtensions;
+	memcpy(gba->extensions.userEnabledFlags, core->opts.hwExtensionsFlags, sizeof(gba->extensions.userEnabledFlags));
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBACore* gbacore = (struct GBACore*) core;
@@ -367,7 +367,7 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 	if (strcmp("hwExtensions", option) == 0) {
 		if (mCoreConfigGetIntValue(config, "hwExtensions", &fakeBool)) {
 			core->opts.hwExtensions = fakeBool;
-			gba->hwExtensions.userEnabled = core->opts.hwExtensions;
+			gba->extensions.userEnabled = core->opts.hwExtensions;
 		}
 		return;
 	}
@@ -390,7 +390,7 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 					}
 				}
 			}
-			gba->hwExtensions.userEnabledFlags[index] = core->opts.hwExtensionsFlags[index];
+			gba->extensions.userEnabledFlags[index] = core->opts.hwExtensionsFlags[index];
 		}
 	}
 
@@ -1185,10 +1185,10 @@ static void _GBACoreEndVideoLog(struct mCore* core) {
 }
 #endif
 
-static size_t _GBAHardwareExtensionsSerialize(struct mCore* core, void** sram) {
-	size_t size = sizeof(struct GBAHardwareExtensionsState);
+static size_t _GBAExtensionsSerialize(struct mCore* core, void** sram) {
+	size_t size = sizeof(struct GBAExtensionsState);
 	*sram = malloc(size);
-	if (!GBAHardwareExtensionsSerialize(core->board, *sram)) {
+	if (!GBAExtensionsSerialize(core->board, *sram)) {
 		free(*sram);
 		size = 0;
 		*sram = NULL;
@@ -1196,8 +1196,8 @@ static size_t _GBAHardwareExtensionsSerialize(struct mCore* core, void** sram) {
 	return size;
 }
 
-static bool _GBAHardwareExtensionsDeserialize(struct mCore* core, const void* sram, size_t size) {
-	return GBAHardwareExtensionsDeserialize(core->board, sram, size);
+static bool _GBAExtensionsDeserialize(struct mCore* core, const void* sram, size_t size) {
+	return GBAExtensionsDeserialize(core->board, sram, size);
 }
 
 struct mCore* GBACoreCreate(void) {
@@ -1284,8 +1284,8 @@ struct mCore* GBACoreCreate(void) {
 	core->startVideoLog = _GBACoreStartVideoLog;
 	core->endVideoLog = _GBACoreEndVideoLog;
 #endif
-	core->hwExtensionsSerialize = _GBAHardwareExtensionsSerialize;
-	core->hwExtensionsDeserialize = _GBAHardwareExtensionsDeserialize;
+	core->hwExtensionsSerialize = _GBAExtensionsSerialize;
+	core->hwExtensionsDeserialize = _GBAExtensionsDeserialize;
 	return core;
 }
 
