@@ -20,26 +20,26 @@ CXX_GUARD_START
 #define HWEX_MORE_RAM_SIZE 0x100000 // 1 MB
 
 struct GBAExtensions {
-    bool enabled;
-    bool userEnabled;
-    uint16_t userEnabledFlags[HWEX_FLAGS_REGISTERS_COUNT];
+	bool enabled;
+	bool userEnabled;
+	uint16_t userEnabledFlags[HWEX_FLAGS_REGISTERS_COUNT];
 
-    // IO:
-    uint16_t io[REG_HWEX_END - REG_HWEX_ENABLE];
-    
-    // Other data
-    uint32_t moreRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
+	// IO:
+	uint16_t io[REG_HWEX_END - REG_HWEX_ENABLE];
+	
+	// Other data
+	uint32_t moreRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
 };
 
 struct GBAExtensionsState {
-    uint32_t enabled; // boolean
-    uint32_t version;
+	uint32_t enabled; // boolean
+	uint32_t version;
 
-    // IO:
-    uint32_t memory[128];
-    
-    // Other data
-    uint32_t moreRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
+	// IO:
+	uint32_t memory[128];
+	
+	// Other data
+	uint32_t moreRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
 };
 
 struct GBA;
