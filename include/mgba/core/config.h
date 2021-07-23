@@ -12,8 +12,6 @@ CXX_GUARD_START
 
 #include <mgba-util/configuration.h>
 
-#include <mgba/internal/gba/extra/extensions-ids.h>
-
 struct mCoreConfig {
 	struct Configuration configTable;
 	struct Configuration defaultsTable;

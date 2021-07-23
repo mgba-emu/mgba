@@ -1172,19 +1172,29 @@ static void _GBACoreEndVideoLog(struct mCore* core) {
 }
 #endif
 
-static size_t _GBAExtensionsSerialize(struct mCore* core, void** sram) {
-	size_t size = sizeof(struct GBAExtensionsState);
-	*sram = malloc(size);
-	if (!GBAExtensionsSerialize(core->board, *sram)) {
-		free(*sram);
+static size_t _GBAExtDataSerialize(struct mCore* core, enum mStateExtdataTag tag, void** sram) {
+	size_t size;
+	if (tag == EXTDATA_GBA_EXTENSIONS) {
+		size = sizeof(struct GBAExtensionsState);
+		*sram = malloc(size);
+		if (!GBAExtensionsSerialize(core->board, *sram)) {
+			free(*sram);
+			size = 0;
+			*sram = NULL;
+		}
+	} else {
 		size = 0;
 		*sram = NULL;
 	}
+	 
 	return size;
 }
 
-static bool _GBAExtensionsDeserialize(struct mCore* core, const void* sram, size_t size) {
-	return GBAExtensionsDeserialize(core->board, sram, size);
+static bool _GBAExtDataDeserialize(struct mCore* core, enum mStateExtdataTag tag, const void* sram, size_t size) {
+	if (tag == EXTDATA_GBA_EXTENSIONS) {
+		return GBAExtensionsDeserialize(core->board, sram, size);
+	}
+	return false;
 }
 
 struct mCore* GBACoreCreate(void) {
@@ -1271,8 +1281,8 @@ struct mCore* GBACoreCreate(void) {
 	core->startVideoLog = _GBACoreStartVideoLog;
 	core->endVideoLog = _GBACoreEndVideoLog;
 #endif
-	core->hwExtensionsSerialize = _GBAExtensionsSerialize;
-	core->hwExtensionsDeserialize = _GBAExtensionsDeserialize;
+	core->extDataSerialize = _GBAExtDataSerialize;
+	core->extDataDeserialize = _GBAExtDataDeserialize;
 	return core;
 }
 

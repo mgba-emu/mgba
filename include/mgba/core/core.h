@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/core/config.h>
+#include <mgba/core/serialize.h>
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 #include <mgba/core/directories.h>
 #endif
@@ -161,8 +162,8 @@ struct mCore {
 	void (*endVideoLog)(struct mCore*);
 #endif
 
-	size_t (*hwExtensionsSerialize)(struct mCore*, void** sram);
-	bool (*hwExtensionsDeserialize)(struct mCore*, const void* sram, size_t size);
+	size_t (*extDataSerialize)(struct mCore*, enum mStateExtdataTag tag, void** sram);
+	bool (*extDataDeserialize)(struct mCore*, enum mStateExtdataTag tag, const void* sram, size_t size);
 };
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

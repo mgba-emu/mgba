@@ -421,16 +421,16 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 			mStateExtdataPut(&extdata, EXTDATA_RTC, &item);
 		}
 	}
-	if ((true || flags & SAVESTATE_HW_EXTENSIONS) && core->hwExtensionsSerialize) {
+	if ((true || flags & SAVESTATE_GBA_EXTENSIONS) && core->extDataSerialize) {
 		void* sram = NULL;
-		size_t size = core->hwExtensionsSerialize(core, &sram);
+		size_t size = core->extDataSerialize(core, EXTDATA_GBA_EXTENSIONS, &sram);
 		if (size) {
 			struct mStateExtdataItem item = {
 				.size = size,
 				.data = sram,
 				.clean = free
 			};
-			mStateExtdataPut(&extdata, EXTDATA_HW_EXTENSIONS, &item);
+			mStateExtdataPut(&extdata, EXTDATA_GBA_EXTENSIONS, &item);
 		}
 	}
 #ifdef USE_PNG
@@ -549,9 +549,9 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 			core->rtc.d.deserialize(&core->rtc.d, &item);
 		}
 	}
-	if ((true || flags & SAVESTATE_HW_EXTENSIONS) && core->hwExtensionsDeserialize && mStateExtdataGet(&extdata, EXTDATA_HW_EXTENSIONS, &item)) {
-		mLOG(SAVESTATE, INFO, "Loading hardware extensions");
-		core->hwExtensionsDeserialize(core, item.data, item.size);
+	if ((true || flags & SAVESTATE_GBA_EXTENSIONS) && core->extDataDeserialize && mStateExtdataGet(&extdata, EXTDATA_GBA_EXTENSIONS, &item)) {
+		mLOG(SAVESTATE, INFO, "Loading GBA extensions");
+		core->extDataDeserialize(core, EXTDATA_GBA_EXTENSIONS, item.data, item.size);
 	}
 	mStateExtdataDeinit(&extdata);
 	return success;

@@ -14,7 +14,11 @@ CXX_GUARD_START
 #include <mgba/core/timing.h>
 
 #include <mgba/internal/gba/io.h>
-#include <mgba/internal/gba/extra/extensions-ids.h>
+
+enum GBA_EXTENSIONS_IDS {
+	GBAEX_ID_EXTRA_RAM = 0,
+	GBAEX_EXTENSIONS_COUNT
+};
 
 #define REG_HWEX_VERSION_VALUE GBAEX_EXTENSIONS_COUNT
 #define HWEX_MORE_RAM_SIZE 0x100000 // 1 MB

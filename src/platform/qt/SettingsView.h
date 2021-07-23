@@ -17,6 +17,8 @@
 #include <mgba/gb/interface.h>
 #endif
 
+#include <mgba/internal/gba/extra/extensions.h>
+
 #include "ui_SettingsView.h"
 
 namespace QGBA {
