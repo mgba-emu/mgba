@@ -440,29 +440,6 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts)
 	_lookupCharValue(config, "screenshotPath", &opts->screenshotPath);
 	_lookupCharValue(config, "patchPath", &opts->patchPath);
 	_lookupCharValue(config, "cheatsPath", &opts->cheatsPath);
-
-	_lookupIntValue(config, "hwExtensions", &fakeBool);
-	opts->hwExtensions = fakeBool;
-
-	const char hexDigits[] = "0123456789ABCDEF";
-	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_XXXX";
-	for (size_t index = 0; index <= (HWEX_EXTENSIONS_COUNT >> 4); index++) {
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 3] = hexDigits[index & 0xF];
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 4] = hexDigits[(index >> 4) & 0xF];
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 5] = hexDigits[(index >> 8) & 0xF];
-		
-		for (size_t offset = 0; offset < 0x10 && ((index << 4) + offset) < HWEX_EXTENSIONS_COUNT; offset++) {
-			uint16_t bitFlag = (1 << offset);
-			hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = hexDigits[offset];
-			if (_lookupIntValue(config, hwExtensionsFlagsKey, &fakeBool)) {
-				if (fakeBool) {
-					opts->hwExtensionsFlags[index] |= bitFlag;
-				} else {
-					opts->hwExtensionsFlags[index] &= 0xFFFF ^ bitFlag;
-				}
-			}
-		}
-	}
 }
 
 void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptions* opts) {
@@ -488,21 +465,6 @@ void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptio
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockIntegerScaling", opts->lockIntegerScaling);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "resampleVideo", opts->resampleVideo);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "suspendScreensaver", opts->suspendScreensaver);
-
-	ConfigurationSetIntValue(&config->defaultsTable, 0, "hwExtensions", opts->hwExtensions);
-
-	const char hexDigits[] = "0123456789ABCDEF";
-	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_XXXX";
-	for (size_t index = 0; index <= HWEX_EXTENSIONS_COUNT; index++) {
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 3] = hexDigits[index & 0xF];
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 4] = hexDigits[(index >> 4) & 0xF];
-		hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 5] = hexDigits[(index >> 8) & 0xF];
-
-		for (size_t offset = 0; offset < 0x10 && ((index << 4) + offset) < HWEX_EXTENSIONS_COUNT; offset++) {
-			hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = hexDigits[offset];
-			ConfigurationSetIntValue(&config->defaultsTable, 0, hwExtensionsFlagsKey, (opts->hwExtensionsFlags[index] & (1 << offset)) != 0);
-		}
-	}
 }
 
 static void _configEnum(const char* key, const char* value, void* user) {

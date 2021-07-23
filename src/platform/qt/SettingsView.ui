@@ -1152,7 +1152,7 @@
        <item row="3" column="0" colspan="2">
         <widget class="QGroupBox" name="hwExGroupBox">
          <property name="title">
-          <string>Hardware extensions</string>
+          <string>GBA extensions</string>
          </property>
          <layout class="QFormLayout" name="formLayout_11">
           <property name="fieldGrowthPolicy">
@@ -1166,7 +1166,7 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QCheckBox" name="hwExtensionsCheckBox">
+           <widget class="QCheckBox" name="gbaExtensionsCheckBox">
             <property name="text">
              <string>Enable</string>
             </property>
@@ -1187,16 +1187,16 @@
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QCheckBox" name="hwExAllCheckBox">
+           <widget class="QCheckBox" name="gbaExtAllCheckBox">
             <property name="text">
              <string>All</string>
             </property>
            </widget>
           </item>
           <item row="3" column="1">
-           <widget class="QCheckBox" name="hwEx0CheckBox">
+           <widget class="QCheckBox" name="gbaExtExtraRamCheckBox">
             <property name="text">
-             <string>More RAM</string>
+             <string>Extra RAM</string>
             </property>
            </widget>
           </item>

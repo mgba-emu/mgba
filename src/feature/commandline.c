@@ -27,9 +27,6 @@
 	"  -6               6x viewport\n" \
 	"  -f               Start full-screen"
 
-#define HWEX_ARGS_OFFSET 0x1002
-#define HWEX_ARGS_NO_OFFSET (HWEX_ARGS_OFFSET + HWEX_EXTENSIONS_COUNT)
-
 static const struct option _options[] = {
 	{ "bios",      required_argument, 0, 'b' },
 	{ "cheats",    required_argument, 0, 'c' },
@@ -45,13 +42,6 @@ static const struct option _options[] = {
 	{ "savestate", required_argument, 0, 't' },
 	{ "patch",     required_argument, 0, 'p' },
 	{ "version",   no_argument, 0, '\0' },
-	// Extensions
-	{ "hw-extensions", no_argument, 0, HWEX_ARGS_OFFSET - 4 },
-	{ "no-hw-extensions", no_argument, 0, HWEX_ARGS_OFFSET - 3 },
-	{ "hwex-all", no_argument, 0, HWEX_ARGS_OFFSET - 2 },
-	{ "hwex-none", no_argument, 0, HWEX_ARGS_OFFSET - 1 },
-	{ "hwex-more-ram", no_argument, 0, HWEX_ARGS_OFFSET + HWEX_ID_MORE_RAM },
-	{ "no-hwex-more-ram", no_argument, 0, HWEX_ARGS_NO_OFFSET + HWEX_ID_MORE_RAM },
 	{ 0, 0, 0, 0 }
 };
 
@@ -145,32 +135,6 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 		case 't':
 			args->savestate = strdup(optarg);
 			break;
-		
-		// Extensions
-		case HWEX_ARGS_OFFSET - 4:
-			// enable extensions
-			args->hwExtensions = HWEX_ENABLE;
-			break;
-		case HWEX_ARGS_OFFSET - 3:
-			// enable extensions
-			args->hwExtensions = HWEX_DISABLE;
-			break;
-		case HWEX_ARGS_OFFSET - 2:
-			// enable all extensions
-			memset(args->hwExtensionsFlags, HWEX_ENABLE, sizeof(args->hwExtensionsFlags));
-			break;
-		case HWEX_ARGS_OFFSET - 1:
-			// disable all extensions
-			memset(args->hwExtensionsFlags, HWEX_DISABLE, sizeof(args->hwExtensionsFlags));
-			break;
-		case HWEX_ARGS_OFFSET + HWEX_ID_MORE_RAM:
-			// enable 1 extension
-			args->hwExtensionsFlags[ch - HWEX_ARGS_OFFSET] = HWEX_ENABLE;
-			break;
-		case HWEX_ARGS_NO_OFFSET + HWEX_ID_MORE_RAM:
-			// disable 1 extension
-			args->hwExtensionsFlags[ch - HWEX_ARGS_OFFSET] = HWEX_ENABLE;
-			break;
 		default:
 			if (subparser) {
 				if (!subparser->parse(subparser, ch, optarg)) {
@@ -201,20 +165,6 @@ void applyArguments(const struct mArguments* args, struct mSubParser* subparser,
 	}
 	if (args->bios) {
 		mCoreConfigSetOverrideValue(config, "bios", args->bios);
-	}
-	if (args->hwExtensions) {
-		mCoreConfigSetOverrideIntValue(config, "hwExtensions", args->hwExtensions == HWEX_ENABLE);
-	}
-	const char hexDigits[] = "0123456789ABCDEF";
-	char hwExtensionsFlagsKey[] = "hwExtensionsFlags_XXXX";
-	for (size_t i = 0; i < (sizeof(args->hwExtensionsFlags) / sizeof(args->hwExtensionsFlags[0])); i++) {
-		if (args->hwExtensionsFlags[i]) {
-			hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = hexDigits[i & 0xF];
-			hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 3] = hexDigits[(i >> 4) & 0xF];
-			hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 4] = hexDigits[(i >> 8) & 0xF];
-			hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 5] = hexDigits[(i >> 12) & 0xF];
-			mCoreConfigSetOverrideIntValue(config, hwExtensionsFlagsKey, args->hwExtensionsFlags[i] == HWEX_ENABLE);
-		}
 	}
 	HashTableEnumerate(&args->configOverrides, _tableApply, config);
 	if (subparser) {

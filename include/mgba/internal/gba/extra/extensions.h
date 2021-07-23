@@ -16,30 +16,31 @@ CXX_GUARD_START
 #include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/extra/extensions-ids.h>
 
-#define REG_HWEX_VERSION_VALUE HWEX_EXTENSIONS_COUNT
+#define REG_HWEX_VERSION_VALUE GBAEX_EXTENSIONS_COUNT
 #define HWEX_MORE_RAM_SIZE 0x100000 // 1 MB
 
 struct GBAExtensions {
-	bool enabled;
-	bool userEnabled;
-	uint16_t userEnabledFlags[HWEX_FLAGS_REGISTERS_COUNT];
+	bool globalEnabled;
+	bool extensionsEnabled[GBAEX_EXTENSIONS_COUNT];
+	bool userGlobalEnabled;
+	bool userExtensionsEnabled[GBAEX_EXTENSIONS_COUNT];
 
 	// IO:
-	uint16_t io[REG_HWEX_END - REG_HWEX_ENABLE];
+	uint16_t io[(REG_HWEX_END - REG_HWEX0_ENABLE) / 2];
 	
 	// Other data
-	uint32_t moreRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
+	uint32_t extraRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
 };
 
 struct GBAExtensionsState {
-	uint32_t enabled; // boolean
+	uint32_t globalEnabled; // boolean
 	uint32_t version;
 
 	// IO:
 	uint32_t memory[128];
 	
 	// Other data
-	uint32_t moreRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
+	uint32_t extraRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
 };
 
 struct GBA;

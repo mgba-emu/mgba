@@ -272,9 +272,6 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	}
 	gba->video.frameskip = core->opts.frameskip;
 
-	gba->extensions.userEnabled = core->opts.hwExtensions;
-	memcpy(gba->extensions.userEnabledFlags, core->opts.hwExtensionsFlags, sizeof(gba->extensions.userEnabledFlags));
-
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->overrides = mCoreConfigGetOverridesConst(config);
@@ -310,6 +307,13 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 #endif
 	mCoreConfigCopyValue(&core->config, config, "hwaccelVideo");
 	mCoreConfigCopyValue(&core->config, config, "videoScale");
+
+	if (mCoreConfigGetIntValue(config, "gba.extensions", &fakeBool)) {
+		gba->extensions.userGlobalEnabled = fakeBool;
+	}
+	if (mCoreConfigGetIntValue(config, "gba.ext.extraRam", &fakeBool)) {
+		gba->extensions.userExtensionsEnabled[GBAEX_ID_EXTRA_RAM] = fakeBool;
+	}
 }
 
 static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, const struct mCoreConfig* config) {
@@ -364,36 +368,6 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 		return;
 	}
 
-	if (strcmp("hwExtensions", option) == 0) {
-		if (mCoreConfigGetIntValue(config, "hwExtensions", &fakeBool)) {
-			core->opts.hwExtensions = fakeBool;
-			gba->extensions.userEnabled = core->opts.hwExtensions;
-		}
-		return;
-	}
-	
-	if (strcmp("hwExtensionsFlags", option) == 0) {
-		const char hexDigits[] = "0123456789ABCDEF";
-		char hwExtensionsFlagsKey[] = "hwExtensionsFlags_XXXX";
-		for (size_t index = 0; index <= (HWEX_EXTENSIONS_COUNT >> 4); index++) {
-			for (size_t offset = 0; offset < 0x10 && ((index << 4) + offset) < HWEX_EXTENSIONS_COUNT; offset++) {
-				uint16_t bitFlag = (1 << offset);
-				hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 2] = hexDigits[offset];
-				hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 3] = hexDigits[index & 0xF];
-				hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 4] = hexDigits[(index >> 4) & 0xF];
-				hwExtensionsFlagsKey[sizeof(hwExtensionsFlagsKey) - 5] = hexDigits[(index >> 8) & 0xF];
-				if (mCoreConfigGetIntValue(config, hwExtensionsFlagsKey, &fakeBool)) {
-					if (fakeBool) {
-						core->opts.hwExtensionsFlags[index] |= bitFlag;
-					} else {
-						core->opts.hwExtensionsFlags[index] &= 0xFFFF ^ bitFlag;
-					}
-				}
-			}
-			gba->extensions.userEnabledFlags[index] = core->opts.hwExtensionsFlags[index];
-		}
-	}
-
 	struct GBACore* gbacore = (struct GBACore*) core;
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (strcmp("videoScale", option) == 0) {
@@ -431,6 +405,19 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 		if (renderer) {
 			GBAVideoAssociateRenderer(&gba->video, renderer);
 		}
+	}
+
+	if (strcmp("gba.extensions", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "gba.extensions", &fakeBool)) {
+			gba->extensions.userGlobalEnabled = fakeBool;
+		}
+		return;
+	}
+	if (strcmp("gba.ext.extraRam", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "gba.ext.extraRam", &fakeBool)) {
+			gba->extensions.userExtensionsEnabled[GBAEX_ID_EXTRA_RAM] = fakeBool;
+		}
+		return;
 	}
 }
 

@@ -14,14 +14,6 @@ CXX_GUARD_START
 
 #include <mgba/debugger/debugger.h>
 
-#include <mgba/internal/gba/extra/extensions-ids.h>
-
-enum HwExSettingsOverrides {
-	HWEX_DONT_OVERRIDE = 0,
-	HWEX_ENABLE = 1,
-	HWEX_DISABLE = 2,
-};
-
 struct mArguments {
 	char* fname;
 	char* patch;
@@ -37,9 +29,6 @@ struct mArguments {
 	bool debugAtStart;
 	bool showHelp;
 	bool showVersion;
-
-	char hwExtensions;
-	char hwExtensionsFlags[HWEX_EXTENSIONS_COUNT];
 };
 
 struct mCoreConfig;

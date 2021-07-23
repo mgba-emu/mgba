@@ -80,7 +80,8 @@ private:
 	LogConfigModel m_logModel;
 
 	unsigned int m_enabledExtensionsCounter;
-	QCheckBox* m_hwExtensionsCheckboxes[HWEX_EXTENSIONS_COUNT];
+	QCheckBox* m_gbaExtCheckboxes[GBAEX_EXTENSIONS_COUNT];
+	unsigned int m_gbaExtCheckboxesCounter;
 
 #ifdef M_CORE_GB
 	uint32_t m_gbColors[12]{};

@@ -337,49 +337,50 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	shortcutView->setInputController(inputController);
 	addPage(tr("Shortcuts"), shortcutView, Page::SHORTCUTS);
 
-	// Hardware extensions
-	memset(m_hwExtensionsCheckboxes, 0, sizeof(m_hwExtensionsCheckboxes));
-	m_hwExtensionsCheckboxes[0] = m_ui.hwEx0CheckBox;
+	// GBA extensions
+	m_gbaExtCheckboxesCounter = 0;
+	m_gbaExtCheckboxes[m_gbaExtCheckboxesCounter++] = m_ui.gbaExtExtraRamCheckBox;
+
 	m_enabledExtensionsCounter = 0;
-	for (size_t i = 0; i < HWEX_EXTENSIONS_COUNT; i++) {
-		if (m_hwExtensionsCheckboxes[i] && Qt::Checked == m_hwExtensionsCheckboxes[i]->checkState()) {
+	for (size_t i = 0; i < m_gbaExtCheckboxesCounter; i++) {
+		if (m_gbaExtCheckboxes[i] && Qt::Checked == m_gbaExtCheckboxes[i]->checkState()) {
 			m_enabledExtensionsCounter++;
 		}
 	}
-	if (m_enabledExtensionsCounter == HWEX_EXTENSIONS_COUNT) {
-		m_ui.hwExAllCheckBox->setCheckState(Qt::Checked);
+	if (m_enabledExtensionsCounter == m_gbaExtCheckboxesCounter) {
+		m_ui.gbaExtAllCheckBox->setCheckState(Qt::Checked);
 	}
 
 	// connect "All" checkbox
-	connect(m_ui.hwExAllCheckBox, &QCheckBox::stateChanged, this, [this](int state) {
-		for (size_t i = 0; i < HWEX_EXTENSIONS_COUNT; i++) {
+	connect(m_ui.gbaExtAllCheckBox, &QCheckBox::stateChanged, this, [this](int state) {
+		for (size_t i = 0; i < m_gbaExtCheckboxesCounter; i++) {
 			m_enabledExtensionsCounter = 0;
-			if (m_hwExtensionsCheckboxes[i] && state != m_hwExtensionsCheckboxes[i]->checkState()) {
-				m_hwExtensionsCheckboxes[i]->blockSignals(true);
-				m_hwExtensionsCheckboxes[i]->setCheckState((Qt::CheckState) state);
-				m_hwExtensionsCheckboxes[i]->blockSignals(false);
+			if (m_gbaExtCheckboxes[i] && state != m_gbaExtCheckboxes[i]->checkState()) {
+				m_gbaExtCheckboxes[i]->blockSignals(true);
+				m_gbaExtCheckboxes[i]->setCheckState((Qt::CheckState) state);
+				m_gbaExtCheckboxes[i]->blockSignals(false);
 				m_enabledExtensionsCounter++;
 			}
 		}
 	});
-	for (size_t i = 0; i < HWEX_EXTENSIONS_COUNT; i++) {
-		if (m_hwExtensionsCheckboxes[i]) {
-			connect(m_hwExtensionsCheckboxes[i], &QCheckBox::stateChanged, this, [this](int state) {
+	for (size_t i = 0; i < m_gbaExtCheckboxesCounter; i++) {
+		if (m_gbaExtCheckboxes[i]) {
+			connect(m_gbaExtCheckboxes[i], &QCheckBox::stateChanged, this, [this](int state) {
 				// update "All" checkbox
 				m_enabledExtensionsCounter += (state == Qt::Checked) ? 1 : -1;
-				switch (m_ui.hwExAllCheckBox->checkState()) {
+				switch (m_ui.gbaExtAllCheckBox->checkState()) {
 					case Qt::Checked:
-						if (m_enabledExtensionsCounter < HWEX_EXTENSIONS_COUNT) {
-							m_ui.hwExAllCheckBox->blockSignals(true);
-							m_ui.hwExAllCheckBox->setCheckState(Qt::Unchecked);
-							m_ui.hwExAllCheckBox->blockSignals(false);
+						if (m_enabledExtensionsCounter < m_gbaExtCheckboxesCounter) {
+							m_ui.gbaExtAllCheckBox->blockSignals(true);
+							m_ui.gbaExtAllCheckBox->setCheckState(Qt::Unchecked);
+							m_ui.gbaExtAllCheckBox->blockSignals(false);
 						}
 						break;
 					default:
-						if (m_enabledExtensionsCounter == HWEX_EXTENSIONS_COUNT) {
-							m_ui.hwExAllCheckBox->blockSignals(true);
-							m_ui.hwExAllCheckBox->setCheckState(Qt::Checked);
-							m_ui.hwExAllCheckBox->blockSignals(false);
+						if (m_enabledExtensionsCounter == m_gbaExtCheckboxesCounter) {
+							m_ui.gbaExtAllCheckBox->blockSignals(true);
+							m_ui.gbaExtAllCheckBox->setCheckState(Qt::Checked);
+							m_ui.gbaExtAllCheckBox->blockSignals(false);
 						}
 				}
 			});
@@ -650,8 +651,8 @@ void SettingsView::updateConfig() {
 	saveSetting("gb.colors", gbColors);
 #endif
 
-	saveSetting("hwExtensions", m_ui.hwExtensionsCheckBox);
-	saveSetting("hwExtensionsFlags_0000", m_ui.hwEx0CheckBox);
+	saveSetting("gba.extensions", m_ui.gbaExtensionsCheckBox);
+	saveSetting("gba.ext.extraRam", m_ui.gbaExtExtraRamCheckBox);
 
 	m_controller->write();
 
@@ -832,8 +833,8 @@ void SettingsView::reloadConfig() {
 		m_ui.multiplayerAudioAll->setChecked(true);		
 	}
 
-	loadSetting("hwExtensions", m_ui.hwExtensionsCheckBox, false);
-	loadSetting("hwExtensionsFlags_0000", m_ui.hwEx0CheckBox, false);
+	loadSetting("gba.extensions", m_ui.gbaExtensionsCheckBox, false);
+	loadSetting("gba.ext.extraRam", m_ui.gbaExtExtraRamCheckBox, false);
 }
 
 void SettingsView::addPage(const QString& name, QWidget* view, Page index) {

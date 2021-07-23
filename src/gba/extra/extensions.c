@@ -8,6 +8,8 @@
 #include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/gba.h>
 
+#define ENABLE_CODE 0xC0DE
+#define ENABLED_VALUE 0x1DEA
 
 enum HWEX_RETURN_CODES {
 	HWEX_RET_OK = 0,
@@ -23,20 +25,22 @@ enum HWEX_RETURN_CODES {
 	HWEX_RET_ERR_DISABLED_BY_USER = 0x106
 };
 
-#define SIMPLIFY_HWEX_REG_ADDRESS(address) ((address - REG_HWEX0_CNT) >> 1)
+#define SIMPLIFY_HWEX_REG_ADDRESS(address) ((address - REG_HWEX0_ENABLE) >> 1)
 
 const uint16_t extensionIdByRegister[] = {
-	// More RAM
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_CNT)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_RET_CODE)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P0_LO)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P0_HI)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P1_LO)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P1_HI)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P2_LO)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P2_HI)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P3_LO)] = HWEX_ID_MORE_RAM,
-	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P3_HI)] = HWEX_ID_MORE_RAM,
+	// Extra RAM
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_ENABLE)] = GBAEX_ID_EXTRA_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_CNT)] = GBAEX_ID_EXTRA_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_RET_CODE)] = GBAEX_ID_EXTRA_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_UNUSED)] = GBAEX_ID_EXTRA_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P0_LO)] = GBAEX_ID_EXTRA_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P0_HI)] = GBAEX_ID_EXTRA_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P1_LO)] = GBAEX_ID_EXTRA_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P1_HI)] = GBAEX_ID_EXTRA_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P2_LO)] = GBAEX_ID_EXTRA_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P2_HI)] = GBAEX_ID_EXTRA_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P3_LO)] = GBAEX_ID_EXTRA_RAM,
+	[SIMPLIFY_HWEX_REG_ADDRESS(REG_HWEX0_P3_HI)] = GBAEX_ID_EXTRA_RAM,
 };
 
 static uint16_t _getExtensionIdFromAddress(uint32_t address) {
@@ -57,40 +61,36 @@ struct GBAExtensionHandlers {
 	bool (*onAbort)(void);
 };
 
-static uint16_t _GBAExtensionMoreRAM(struct GBA* gba);
+static uint16_t _GBAExtensionExtraRAM(struct GBA* gba);
 
 static const struct GBAExtensionHandlers extensionHandlers[] = {
-	[HWEX_ID_MORE_RAM] = { .onCall = _GBAExtensionMoreRAM, .onAbort = NULL }
+	[GBAEX_ID_EXTRA_RAM] = { .onCall = _GBAExtensionExtraRAM, .onAbort = NULL }
 };
 
 void GBAExtensionsInit(struct GBAExtensions* hwExtensions) {
-	hwExtensions->enabled = false;
+	hwExtensions->globalEnabled = false;
+	memset(hwExtensions->extensionsEnabled, 0, sizeof(hwExtensions->extensionsEnabled));
 
-	hwExtensions->userEnabled = false;
-	memset(hwExtensions->userEnabledFlags, 0, sizeof(hwExtensions->userEnabledFlags));
+	hwExtensions->userGlobalEnabled = false;
+	memset(hwExtensions->userExtensionsEnabled, 0, sizeof(hwExtensions->userExtensionsEnabled));
 
 	memset(hwExtensions->io, 0, sizeof(hwExtensions->io));
 }
 
 static uint16_t* _getHwExIOPointer(struct GBA* gba, uint32_t address) {
-	return gba->extensions.io + ((address - REG_HWEX_ENABLE_FLAGS_0) >> 1);
+	return gba->extensions.io + (address - REG_HWEX0_ENABLE) / 2;
+}
+
+static bool GBAExtensionsIsExtensionEnabled(struct GBA* gba, uint32_t extensionId) {
+	return gba->extensions.extensionsEnabled[extensionId] && gba->extensions.userExtensionsEnabled[extensionId];
 }
 
 static uint16_t _GBAExtensionsIORead(struct GBA* gba, uint32_t address) {
 	switch (address) {
 	case REG_HWEX_ENABLE:
-		return 0x1DEA;
+		return ENABLED_VALUE;
 	case REG_HWEX_VERSION:
 		return REG_HWEX_VERSION_VALUE;
-	case REG_HWEX_ENABLE_FLAGS_0:
-	case REG_HWEX_ENABLE_FLAGS_1:
-	case REG_HWEX_ENABLE_FLAGS_2:
-	case REG_HWEX_ENABLE_FLAGS_3:
-	case REG_HWEX_ENABLE_FLAGS_4:
-	case REG_HWEX_ENABLE_FLAGS_5: {
-		uint32_t index = (address - REG_HWEX_ENABLE_FLAGS_0) >> 1;
-		return *_getHwExIOPointer(gba, address) & gba->extensions.userEnabledFlags[index];
-	}
 		
 	default:
 		return *_getHwExIOPointer(gba, address);
@@ -98,7 +98,7 @@ static uint16_t _GBAExtensionsIORead(struct GBA* gba, uint32_t address) {
 }
 
 uint16_t GBAExtensionsIORead(struct GBA* gba, uint32_t address) {
-	if (gba->extensions.enabled && gba->extensions.userEnabled) {
+	if (gba->extensions.userGlobalEnabled && gba->extensions.globalEnabled) {
 		return _GBAExtensionsIORead(gba, address);
 	}
 	mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
@@ -111,12 +111,6 @@ static uint32_t _GBAExtensionsIORead32(struct GBA* gba, uint32_t address) {
 
 static void _GBAExtensionsIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	*_getHwExIOPointer(gba, address) = value;
-}
-
-static bool GBAExtensionsIsExtensionEnabled(struct GBA* gba, uint32_t extensionId) {
-	uint32_t index = extensionId / 16;
-	uint32_t bit = extensionId % 16;
-	return (_GBAExtensionsIORead(gba, REG_HWEX_ENABLE_FLAGS_0 + index * 2) & (1 << bit)) != 0;
 }
 
 static void GBAExtensionsHandleCntWrite(struct GBA* gba, uint32_t cntAddress, uint32_t value) {
@@ -160,23 +154,14 @@ static void GBAExtensionsHandleCntWrite(struct GBA* gba, uint32_t cntAddress, ui
 void GBAExtensionsIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	switch (address) {
 	case REG_HWEX_ENABLE:
-		gba->extensions.enabled = value == 0xC0DE;
+		gba->extensions.globalEnabled = value == ENABLE_CODE;
 		break;
 	// Enable flags
-	case REG_HWEX_ENABLE_FLAGS_0:
-	case REG_HWEX_ENABLE_FLAGS_1:
-	case REG_HWEX_ENABLE_FLAGS_2:
-	case REG_HWEX_ENABLE_FLAGS_3:
-	case REG_HWEX_ENABLE_FLAGS_4:
-	case REG_HWEX_ENABLE_FLAGS_5: {
-		uint32_t index = (address - REG_HWEX_ENABLE_FLAGS_0) >> 1;
-		if (index <= (HWEX_EXTENSIONS_COUNT >> 4)) { // check if the extension exists
-			if (index == (HWEX_EXTENSIONS_COUNT >> 4)) {
-				// delete the flags of the non-existant extensions
-				value = value & (0xFFFF >> (16 - (HWEX_EXTENSIONS_COUNT & 0xF)));
-			}
-			_GBAExtensionsIOWrite(gba, address, value);
-		}
+	case REG_HWEX0_ENABLE: {
+		uint32_t extensionId = _getExtensionIdFromAddress(address);
+		bool enabled = value == ENABLE_CODE;
+		gba->extensions.extensionsEnabled[extensionId] = enabled;
+		_GBAExtensionsIOWrite(gba, address, enabled ? ENABLED_VALUE : 0);
 		break;
 	}
 	// Return codes
@@ -205,6 +190,7 @@ void GBAExtensionsIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	default:
 		mLOG(GBA_IO, GAME_ERROR, "Write non hardware extensions I/O register: %06X", address);
 	}
+	mLOG(GBA_IO, GAME_ERROR, "Write to: %06X", address);
 }
 
 void GBAExtensionsIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
@@ -214,10 +200,10 @@ void GBAExtensionsIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 }
 
 bool GBAExtensionsSerialize(struct GBA* gba, struct GBAExtensionsState* state) {
-	state->enabled = gba->extensions.enabled;
+	state->globalEnabled = gba->extensions.globalEnabled;
 	state->version = REG_HWEX_VERSION_VALUE;
 	memcpy(state->memory, gba->extensions.io, sizeof(gba->extensions.io));
-	memcpy(state->moreRam, gba->extensions.moreRam, sizeof(gba->extensions.moreRam));
+	memcpy(state->extraRam, gba->extensions.extraRam, sizeof(gba->extensions.extraRam));
 	return true;
 }
 
@@ -225,9 +211,11 @@ bool GBAExtensionsDeserialize(struct GBA* gba, const struct GBAExtensionsState* 
 	if (size < sizeof(*state)) {
 		return false;
 	}
-	gba->extensions.enabled = state->enabled;
+	gba->extensions.globalEnabled = state->globalEnabled;
 	memcpy(gba->extensions.io, state->memory, sizeof(gba->extensions.io));
-	memcpy(gba->extensions.moreRam, state->moreRam, sizeof(gba->extensions.moreRam));
+	gba->extensions.extensionsEnabled[GBAEX_ID_EXTRA_RAM] = *_getHwExIOPointer(gba, REG_HWEX0_ENABLE);
+
+	memcpy(gba->extensions.extraRam, state->extraRam, sizeof(gba->extensions.extraRam));
 
 	return true;
 }
@@ -265,13 +253,13 @@ static void* GBAGetMemoryPointer(struct GBA* gba, uint32_t address, uint32_t* me
 	return pointer;
 }
 
-enum GBAEX_MORE_RAM_COMMANDS {
-	GBAEX_MORE_RAM_CMD_WRITE = 0,
-	GBAEX_MORE_RAM_CMD_READ = 1,
-	GBAEX_MORE_RAM_CMD_SWAP = 2
+enum GBAEX_EXTRA_RAM_COMMANDS {
+	GBAEX_EXTRA_RAM_CMD_WRITE = 0,
+	GBAEX_EXTRA_RAM_CMD_READ = 1,
+	GBAEX_EXTRA_RAM_CMD_SWAP = 2
 };
 
-static uint16_t _GBAExtensionMoreRAM(struct GBA* gba) {
+static uint16_t _GBAExtensionExtraRAM(struct GBA* gba) {
 	uint32_t command = _GBAExtensionsIORead32(gba, REG_HWEX0_P0_LO);
 	uint32_t index = _GBAExtensionsIORead32(gba, REG_HWEX0_P1_LO);
 	uint32_t dataPointer = _GBAExtensionsIORead32(gba, REG_HWEX0_P2_LO);
@@ -291,22 +279,22 @@ static uint16_t _GBAExtensionMoreRAM(struct GBA* gba) {
 	}
 	
 	switch (command) {
-	case GBAEX_MORE_RAM_CMD_WRITE:
-		memcpy(((uint8_t*)gba->extensions.moreRam) + index, data, dataSize);
+	case GBAEX_EXTRA_RAM_CMD_WRITE:
+		memcpy(((uint8_t*)gba->extensions.extraRam) + index, data, dataSize);
 		break;
-	case GBAEX_MORE_RAM_CMD_READ:
+	case GBAEX_EXTRA_RAM_CMD_READ:
 		if (isRom) {
 			return HWEX_RET_ERR_WRITE_TO_ROM;
 		}
-		memcpy(data, ((uint8_t*)gba->extensions.moreRam) + index, dataSize);
+		memcpy(data, ((uint8_t*)gba->extensions.extraRam) + index, dataSize);
 		break;
-	case GBAEX_MORE_RAM_CMD_SWAP:
+	case GBAEX_EXTRA_RAM_CMD_SWAP:
 		if (isRom) {
 			return HWEX_RET_ERR_WRITE_TO_ROM;
 		}
 		// TODO: make this more efficient
 		uint8_t* data1 = data;
-		uint8_t* data2 = (uint8_t*) gba->extensions.moreRam;
+		uint8_t* data2 = (uint8_t*) gba->extensions.extraRam;
 		data2 += index;
 		for (uint32_t i = 0; i < dataSize; i++) {
 			uint8_t aux = data1[i];
