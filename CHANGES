@@ -2,6 +2,7 @@
 Emulation fixes:
  - GBA SIO: Fix SI value for unattached MULTI mode
 Other fixes:
+ - GB Video: Fix memory leak when reseting SGB games
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
  - Qt: Remove potentially deadlocking optimization
 

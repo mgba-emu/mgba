@@ -87,20 +87,53 @@ void GBVideoReset(struct GBVideo* video) {
 	memset(&video->palette, 0, sizeof(video->palette));
 
 	if (video->p->model & GB_MODEL_SGB) {
-		video->renderer->sgbCharRam = anonymousMemoryMap(SGB_SIZE_CHAR_RAM);
-		video->renderer->sgbMapRam = anonymousMemoryMap(SGB_SIZE_MAP_RAM);
-		video->renderer->sgbPalRam = anonymousMemoryMap(SGB_SIZE_PAL_RAM);
-		video->renderer->sgbAttributeFiles = anonymousMemoryMap(SGB_SIZE_ATF_RAM);
-		video->renderer->sgbAttributes = malloc(90 * 45);
+		if (video->renderer->sgbCharRam) {
+			memset(video->renderer->sgbCharRam, 0, SGB_SIZE_CHAR_RAM);
+		} else {
+			video->renderer->sgbCharRam = anonymousMemoryMap(SGB_SIZE_CHAR_RAM);
+		}
+		if (video->renderer->sgbMapRam) {
+			memset(video->renderer->sgbMapRam, 0, SGB_SIZE_MAP_RAM);
+		} else {
+			video->renderer->sgbMapRam = anonymousMemoryMap(SGB_SIZE_MAP_RAM);
+		}
+		if (video->renderer->sgbPalRam) {
+			memset(video->renderer->sgbPalRam, 0, SGB_SIZE_PAL_RAM);
+		} else {
+			video->renderer->sgbPalRam = anonymousMemoryMap(SGB_SIZE_PAL_RAM);
+		}
+		if (video->renderer->sgbAttributeFiles) {
+			memset(video->renderer->sgbAttributeFiles, 0, SGB_SIZE_ATF_RAM);
+		} else {
+			video->renderer->sgbAttributeFiles = anonymousMemoryMap(SGB_SIZE_ATF_RAM);
+		}
+		if (!video->renderer->sgbAttributes) {
+			video->renderer->sgbAttributes = malloc(90 * 45);
+		}
 		memset(video->renderer->sgbAttributes, 0, 90 * 45);
 		video->sgbCommandHeader = 0;
 		video->sgbBufferIndex = 0;
 	} else {
-		video->renderer->sgbCharRam = NULL;
-		video->renderer->sgbMapRam = NULL;
-		video->renderer->sgbPalRam = NULL;
-		video->renderer->sgbAttributes = NULL;
-		video->renderer->sgbAttributeFiles = NULL;
+		if (video->renderer->sgbCharRam) {
+			mappedMemoryFree(video->renderer->sgbCharRam, SGB_SIZE_CHAR_RAM);
+			video->renderer->sgbCharRam = NULL;
+		}
+		if (video->renderer->sgbMapRam) {
+			mappedMemoryFree(video->renderer->sgbMapRam, SGB_SIZE_MAP_RAM);
+			video->renderer->sgbMapRam = NULL;
+		}
+		if (video->renderer->sgbPalRam) {
+			mappedMemoryFree(video->renderer->sgbPalRam, SGB_SIZE_PAL_RAM);
+			video->renderer->sgbPalRam = NULL;
+		}
+		if (video->renderer->sgbAttributeFiles) {
+			mappedMemoryFree(video->renderer->sgbAttributeFiles, SGB_SIZE_ATF_RAM);
+			video->renderer->sgbAttributeFiles = NULL;
+		}
+		if (video->renderer->sgbAttributes) {
+			free(video->renderer->sgbAttributes);
+			video->renderer->sgbAttributes = NULL;
+		}
 	}
 
 	video->palette[0] = video->dmgPalette[0];
