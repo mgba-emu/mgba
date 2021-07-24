@@ -15,6 +15,7 @@ Emulation fixes:
  - GBA SIO: Fix SI value for unattached MULTI mode
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
+ - GB Video: Fix memory leak when reseting SGB games
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
 Misc:
  - Core: Suspend runloop when a core crashes
