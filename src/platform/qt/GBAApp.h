@@ -18,6 +18,7 @@
 
 #include <functional>
 
+#include "ApplicationUpdater.h"
 #include "CoreManager.h"
 #include "MultiplayerController.h"
 
@@ -75,6 +76,8 @@ public:
 	bool removeWorkerJob(qint64 jobId);
 	bool waitOnJob(qint64 jobId, QObject* context, std::function<void ()> callback);
 
+	ApplicationUpdater* updater() { return &m_updater; }
+
 signals:
 	void jobFinished(qint64 jobId);
 
@@ -108,6 +111,7 @@ private:
 	QList<Window*> m_windows;
 	MultiplayerController m_multiplayer;
 	CoreManager m_manager;
+	ApplicationUpdater m_updater;
 
 	QMap<qint64, WorkerJob*> m_workerJobs;
 	QMultiMap<qint64, QMetaObject::Connection> m_workerJobCallbacks;

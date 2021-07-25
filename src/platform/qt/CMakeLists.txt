@@ -60,6 +60,7 @@ set(SOURCE_FILES
 	AbstractUpdater.cpp
 	Action.cpp
 	ActionMapper.cpp
+	ApplicationUpdater.cpp
 	AssetInfo.cpp
 	AssetTile.cpp
 	AssetView.cpp

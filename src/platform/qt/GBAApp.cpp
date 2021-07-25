@@ -39,6 +39,7 @@ mLOG_DEFINE_CATEGORY(QT, "Qt", "platform.qt");
 GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	: QApplication(argc, argv)
 	, m_configController(config)
+	, m_updater(config)
 	, m_monospace(QFontDatabase::systemFont(QFontDatabase::FixedFont))
 {
 	g_app = this;
@@ -80,6 +81,9 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 #endif
 
 	connect(this, &GBAApp::aboutToQuit, this, &GBAApp::cleanup);
+	if (m_configController->getOption("updateAutoCheck", 0).toInt()) {
+		QMetaObject::invokeMethod(&m_updater, "checkUpdate", Qt::QueuedConnection);
+	}
 }
 
 void GBAApp::cleanup() {
