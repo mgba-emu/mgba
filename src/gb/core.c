@@ -1141,6 +1141,8 @@ struct mCore* GBCoreCreate(void) {
 	core->startVideoLog = _GBCoreStartVideoLog;
 	core->endVideoLog = _GBCoreEndVideoLog;
 #endif
+	core->extDataSerialize = NULL;
+	core->extDataDeserialize = NULL;
 	return core;
 }
 
