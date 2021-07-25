@@ -1175,13 +1175,7 @@ static void _GBACoreEndVideoLog(struct mCore* core) {
 static size_t _GBAExtDataSerialize(struct mCore* core, enum mStateExtdataTag tag, void** sram) {
 	size_t size;
 	if (tag == EXTDATA_GBA_EXTENSIONS) {
-		size = sizeof(struct GBAExtensionsState);
-		*sram = malloc(size);
-		if (!GBAExtensionsSerialize(core->board, *sram)) {
-			free(*sram);
-			size = 0;
-			*sram = NULL;
-		}
+		return GBAExtensionsSerialize(core->board, sram);
 	} else {
 		size = 0;
 		*sram = NULL;

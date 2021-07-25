@@ -15,13 +15,15 @@ CXX_GUARD_START
 
 #include <mgba/internal/gba/io.h>
 
+#include <mgba-util/memory.h>
+
 enum GBA_EXTENSIONS_IDS {
 	GBAEX_ID_EXTRA_RAM = 0,
 	GBAEX_EXTENSIONS_COUNT
 };
 
 #define REG_HWEX_VERSION_VALUE GBAEX_EXTENSIONS_COUNT
-#define HWEX_MORE_RAM_SIZE 0x100000 // 1 MB
+#define GBAEX_IO_SIZE (REG_HWEX_END - REG_HWEX0_ENABLE)
 
 struct GBAExtensions {
 	bool globalEnabled;
@@ -30,30 +32,37 @@ struct GBAExtensions {
 	bool userExtensionsEnabled[GBAEX_EXTENSIONS_COUNT];
 
 	// IO:
-	uint16_t io[(REG_HWEX_END - REG_HWEX0_ENABLE) / 2];
+	uint16_t* io;
 	
 	// Other data
-	uint32_t extraRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
+	uint8_t* extraRam;
+	uint32_t extraRamSize;
+	uint32_t extraRamRealSize;
+};
+
+struct GBAExtensionsStateBlockHeader {
+	uint32_t id;
+	uint32_t offset;
+	uint32_t size;
 };
 
 struct GBAExtensionsState {
-	uint32_t globalEnabled; // boolean
 	uint32_t version;
+	uint32_t extensionsBlockCount;
 
-	// IO:
-	uint32_t memory[128];
-	
-	// Other data
-	uint32_t extraRam[HWEX_MORE_RAM_SIZE / sizeof(uint32_t)];
+	struct GBAExtensionsStateBlockHeader ioBlockHeader;
+	// More blocks can come after the IO one
 };
 
 struct GBA;
-void GBAExtensionsInit(struct GBAExtensions* hw);
+void GBAExtensionsInit(struct GBAExtensions* extensions);
+void GBAExtensionsReset(struct GBAExtensions* extensions);
+void GBAExtensionsDestroy(struct GBAExtensions* extensions);
 uint16_t GBAExtensionsIORead(struct GBA* gba, uint32_t address);
 uint32_t GBAExtensionsIORead32(struct GBA* gba, uint32_t address);
 void GBAExtensionsIOWrite8(struct GBA* gba, uint32_t address, uint8_t value);
 void GBAExtensionsIOWrite(struct GBA* gba, uint32_t address, uint16_t value);
-bool GBAExtensionsSerialize(struct GBA* gba, struct GBAExtensionsState* state);
+size_t GBAExtensionsSerialize(struct GBA* gba, void** sram);
 bool GBAExtensionsDeserialize(struct GBA* gba, const struct GBAExtensionsState* state, size_t size);
 
 CXX_GUARD_END

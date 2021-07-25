@@ -173,6 +173,7 @@ void GBADestroy(struct GBA* gba) {
 	GBAVideoDeinit(&gba->video);
 	GBAAudioDeinit(&gba->audio);
 	GBASIODeinit(&gba->sio);
+	GBAExtensionsDestroy(&gba->extensions);
 	mTimingDeinit(&gba->timing);
 	mCoreCallbacksListDeinit(&gba->coreCallbacks);
 }
@@ -216,6 +217,7 @@ void GBAReset(struct ARMCore* cpu) {
 	GBAAudioReset(&gba->audio);
 	GBAIOInit(gba);
 	GBATimerInit(gba);
+	GBAExtensionsReset(&gba->extensions);
 
 	GBASIOReset(&gba->sio);
 
