@@ -13,6 +13,8 @@
 
 #include <QDateTime>
 #include <QMutexLocker>
+#include <QTemporaryFile>
+#include <QProcess>
 
 #include <mgba/core/serialize.h>
 #include <mgba/feature/video-logger.h>
@@ -275,6 +277,7 @@ void CoreController::loadConfig(ConfigController* config) {
 	m_fastForwardMute = config->getOption("fastForwardMute", -1).toInt();
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "volume");
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
+	m_extPrintCmd = config->getOption("extPrintCmd");
 
 	QSize sizeBefore = screenDimensions();
 	m_activeBuffer.resize(256 * 224 * sizeof(color_t));
@@ -285,6 +288,11 @@ void CoreController::loadConfig(ConfigController* config) {
 	QSize sizeAfter = screenDimensions();
 	m_activeBuffer.resize(sizeAfter.width() * sizeAfter.height() * sizeof(color_t));
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), sizeAfter.width());
+
+	if (!m_extPrintCmd.isEmpty()) {
+		connect(this, &CoreController::started, this, &CoreController::setupExtPrinter, Qt::UniqueConnection);
+		connect(this, &CoreController::stopping, this, &CoreController::detachPrinter, Qt::UniqueConnection);
+	}
 
 	if (hasStarted()) {
 		updateFastForward();
@@ -868,6 +876,36 @@ void CoreController::exportSharkport(const QString& path) {
 }
 
 #ifdef M_CORE_GB
+void CoreController::setupExtPrinter() {
+	attachPrinter();
+	connect(this, &CoreController::imagePrinted, this, &CoreController::extPrint);
+}
+
+void CoreController::extPrint(const QImage& image) {
+	TempProcess* p = new TempProcess();
+	if (!p->m_temp.open()) {
+		delete p;
+		endPrint();
+		return;
+	}
+	if (!image.save(&(p->m_temp), "png")) {
+		delete p;
+		endPrint();
+		return;
+	}
+	connect(p, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+	        [this](int exitCode, QProcess::ExitStatus exitStatus) { 
+			endPrint();
+		});
+	connect(p, &QProcess::errorOccurred, [this](QProcess::ProcessError error) { 
+		qDebug() << "process error " << error;
+		endPrint();
+	});
+	QStringList list = QProcess::splitCommand(m_extPrintCmd.arg(p->m_temp.fileName()));
+	QString cmd = list.takeFirst();
+	p->start(cmd, list);
+}
+
 void CoreController::attachPrinter() {
 	if (platform() != mPLATFORM_GB) {
 		return;
@@ -880,7 +918,7 @@ void CoreController::attachPrinter() {
 		QGBPrinter* qPrinter = reinterpret_cast<QGBPrinter*>(printer);
 		QImage image(GB_VIDEO_HORIZONTAL_PIXELS, height, QImage::Format_Indexed8);
 		QVector<QRgb> colors;
-		colors.append(qRgb(0xF8, 0xF8, 0xF8));
+		colors.append(qRgb(0xFF, 0xFF, 0xFF));
 		colors.append(qRgb(0xA8, 0xA8, 0xA8));
 		colors.append(qRgb(0x50, 0x50, 0x50));
 		colors.append(qRgb(0x00, 0x00, 0x00));

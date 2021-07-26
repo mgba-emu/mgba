@@ -11,6 +11,8 @@
 #include <QMutex>
 #include <QObject>
 #include <QSize>
+#include <QProcess>
+#include <QTemporaryFile>
 
 #include "VFileDevice.h"
 
@@ -42,6 +44,12 @@ class InputController;
 class LogController;
 class MultiplayerController;
 class Override;
+
+class TempProcess : public QProcess {
+Q_OBJECT
+public:
+	QTemporaryFile m_temp;
+};
 
 class CoreController : public QObject {
 Q_OBJECT
@@ -173,6 +181,8 @@ public slots:
 	void exportSharkport(const QString& path);
 
 #ifdef M_CORE_GB
+	void setupExtPrinter();
+	void extPrint(const QImage&);
 	void attachPrinter();
 	void detachPrinter();
 	void endPrint();
@@ -295,6 +305,7 @@ private:
 		GBPrinter d;
 		CoreController* parent;
 	} m_printer;
+	QString m_extPrintCmd;
 #endif
 
 #ifdef M_CORE_GBA
