@@ -1,6 +1,7 @@
 0.9.3: (Future)
 Emulation fixes:
  - GBA SIO: Fix SI value for unattached MULTI mode
+ - GBA Video: Fix backdrop color if DISPCNT is first set to 0 (fixes mgba.io/i/2260)
 Other fixes:
  - GB Video: Fix memory leak when reseting SGB games
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
