@@ -13,6 +13,7 @@ Emulation fixes:
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
  - GBA: Improve timing when not booting from BIOS
  - GBA SIO: Fix SI value for unattached MULTI mode
+ - GBA Video: Fix backdrop color if DISPCNT is first set to 0 (fixes mgba.io/i/2260)
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - GB Video: Fix memory leak when reseting SGB games
