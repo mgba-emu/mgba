@@ -780,6 +780,9 @@ static void GBVideoSoftwareRendererFinishFrame(struct GBVideoRenderer* renderer)
 		case SGB_ATTR_SET:
 			if (softwareRenderer->sgbPacket[1] & 0x40) {
 				renderer->sgbRenderMode = 0;
+				if (softwareRenderer->sgbBorders) {
+					_regenerateSGBBorder(softwareRenderer);
+				}
 			}
 			break;
 		case SGB_PAL_TRN:
