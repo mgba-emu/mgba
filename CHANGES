@@ -34,6 +34,7 @@ Misc:
  - DS Video: Simplify VRAM mapping
  - DS GX: Reject and log polygons that clip to more than 10 vertices
  - DS Core: Backport symbol loading changes from GBA core (fixes mgba.io/i/1834)
+ - DS I/O: Mark BGCNT registers as readable
 
 0.10.0: (Future)
 Features:

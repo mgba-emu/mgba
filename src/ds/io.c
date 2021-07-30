@@ -770,6 +770,10 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS_REG_KEYINPUT:
 		return DSIOReadKeyInput(ds);
 	case DS_REG_VCOUNT:
+	case DS9_REG_A_BG0CNT:
+	case DS9_REG_A_BG1CNT:
+	case DS9_REG_A_BG2CNT:
+	case DS9_REG_A_BG3CNT:
 	case DS_REG_DMA0CNT_HI:
 	case DS_REG_DMA1CNT_HI:
 	case DS_REG_DMA2CNT_HI:
@@ -896,6 +900,10 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS9_REG_CLIPMTX_RESULT_1D:
 	case DS9_REG_CLIPMTX_RESULT_1E:
 	case DS9_REG_CLIPMTX_RESULT_1F:
+	case DS9_REG_B_BG0CNT:
+	case DS9_REG_B_BG1CNT:
+	case DS9_REG_B_BG2CNT:
+	case DS9_REG_B_BG3CNT:
 		// Handled transparently by the registers
 		break;
 	case DS_REG_AUXSPICNT:
