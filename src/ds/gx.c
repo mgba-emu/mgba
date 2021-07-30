@@ -485,10 +485,7 @@ static int16_t _dot3(int32_t x0, int32_t y0, int32_t z0, int32_t x1, int32_t y1,
 	return a;
 }
 
-static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
-	if (gx->vertexMode < 0 || gx->vertexIndex == DS_GX_VERTEX_BUFFER_SIZE || gx->polygonIndex == DS_GX_POLYGON_BUFFER_SIZE) {
-		return;
-	}
+static void _posTest(struct DSGX* gx, int16_t x, int16_t y, int16_t z) {
 	gx->currentVertex.coord[0] = x;
 	gx->currentVertex.coord[1] = y;
 	gx->currentVertex.coord[2] = z;
@@ -496,6 +493,13 @@ static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
 	gx->currentVertex.viewCoord[1] = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[1]);
 	gx->currentVertex.viewCoord[2] = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[2]);
 	gx->currentVertex.viewCoord[3] = _dotViewport(&gx->currentVertex, &gx->clipMatrix.m[3]);
+}
+
+static void _emitVertex(struct DSGX* gx, uint16_t x, uint16_t y, uint16_t z) {
+	if (gx->vertexMode < 0 || gx->vertexIndex == DS_GX_VERTEX_BUFFER_SIZE || gx->polygonIndex == DS_GX_POLYGON_BUFFER_SIZE) {
+		return;
+	}
+	_posTest(gx, x, y, z);
 
 	if (DSGXTexParamsGetCoordTfMode(gx->currentPoly.texParams) == 0) {
 		gx->currentVertex.vs = gx->currentVertex.st[0];
@@ -1244,6 +1248,25 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			gxstat = DSRegGXSTATClearTestBusy(gxstat);
 			gxstat = DSRegGXSTATTestFillBoxTestResult(gxstat, _boxTest(gx));
 			break;
+		case DS_GX_CMD_POS_TEST: {
+			int16_t x = gx->activeEntries[0].params[0];
+			x |= gx->activeEntries[0].params[1] << 8;
+			int16_t y = gx->activeEntries[0].params[2];
+			y |= gx->activeEntries[0].params[3] << 8;
+			int16_t z = gx->activeEntries[1].params[0];
+			z |= gx->activeEntries[1].params[1] << 8;
+			_posTest(gx, x, y, z);
+			gx->p->memory.io9[DS9_REG_POS_RESULT_0 >> 1] = gx->currentVertex.viewCoord[0] & 0xFFFF;
+			gx->p->memory.io9[DS9_REG_POS_RESULT_1 >> 1] = gx->currentVertex.viewCoord[0] >> 16;
+			gx->p->memory.io9[DS9_REG_POS_RESULT_2 >> 1] = gx->currentVertex.viewCoord[1] & 0xFFFF;
+			gx->p->memory.io9[DS9_REG_POS_RESULT_3 >> 1] = gx->currentVertex.viewCoord[1] >> 16;
+			gx->p->memory.io9[DS9_REG_POS_RESULT_4 >> 1] = gx->currentVertex.viewCoord[2] & 0xFFFF;
+			gx->p->memory.io9[DS9_REG_POS_RESULT_5 >> 1] = gx->currentVertex.viewCoord[2] >> 16;
+			gx->p->memory.io9[DS9_REG_POS_RESULT_6 >> 1] = gx->currentVertex.viewCoord[3] & 0xFFFF;
+			gx->p->memory.io9[DS9_REG_POS_RESULT_7 >> 1] = gx->currentVertex.viewCoord[3] >> 16;
+			gxstat = DSRegGXSTATClearTestBusy(gxstat);
+			break;
+		}
 		default:
 			mLOG(DS_GX, STUB, "Unimplemented GX command %02X:%02X %02X %02X %02X", entry.command, entry.params[0], entry.params[1], entry.params[2], entry.params[3]);
 			break;
@@ -1468,6 +1491,10 @@ static void DSGXWriteFIFO(struct DSGX* gx, struct DSGXEntry entry) {
 		DSRegGXSTAT gxstat = gx->p->memory.io9[DS9_REG_GXSTAT_LO >> 1];
 		gxstat = DSRegGXSTATFillTestBusy(gxstat);
 		gxstat = DSRegGXSTATClearBoxTestResult(gxstat);
+		gx->p->memory.io9[DS9_REG_GXSTAT_LO >> 1] = gxstat;
+	} else if (entry.command == DS_GX_CMD_POS_TEST) {
+		DSRegGXSTAT gxstat = gx->p->memory.io9[DS9_REG_GXSTAT_LO >> 1];
+		gxstat = DSRegGXSTATFillTestBusy(gxstat);
 		gx->p->memory.io9[DS9_REG_GXSTAT_LO >> 1] = gxstat;
 	}
 	if (!gx->swapBuffers && !mTimingIsScheduled(&gx->p->ds9.timing, &gx->fifoEvent)) {
