@@ -39,6 +39,12 @@ Q_IMPORT_PLUGIN(AVFServicePlugin);
 #endif
 #endif
 
+#ifdef Q_OS_WIN
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+
 using namespace QGBA;
 
 int main(int argc, char* argv[]) {
@@ -121,7 +127,21 @@ int main(int argc, char* argv[]) {
 
 	w->show();
 
-	return application.exec();
+	int ret = application.exec();
+	if (ret != 0) {
+		return ret;
+	}
+	QString invoke = application.invokeOnExit();
+	if (!invoke.isNull()) {
+		QByteArray proc = invoke.toUtf8();
+#ifdef Q_OS_WIN
+		_execl(proc.constData(), proc.constData(), NULL);
+#else
+		execl(proc.constData(), proc.constData(), NULL);
+#endif
+	}
+
+	return ret;
 }
 
 #ifdef _WIN32

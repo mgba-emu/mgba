@@ -49,10 +49,11 @@ public:
 
 	QDateTime lastCheck() const { return m_lastCheck; }
 
+	virtual QString destination() const override;
+
 protected:
 	virtual QUrl manifestLocation() const override;
 	virtual QUrl parseManifest(const QByteArray&) override;
-	virtual QString destination() const override;
 
 private:
 	static const char* platform();

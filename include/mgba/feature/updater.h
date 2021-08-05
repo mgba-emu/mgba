@@ -38,6 +38,14 @@ const char* mUpdaterGetBucket(const struct mUpdaterContext*);
 void mUpdateRecord(struct mCoreConfig*, const char* prefix, const struct mUpdate*);
 bool mUpdateLoad(const struct mCoreConfig*, const char* prefix, struct mUpdate*);
 
+void mUpdateRegister(struct mCoreConfig*, const char* arg0, const char* updatePath);
+void mUpdateDeregister(struct mCoreConfig*);
+
+const char* mUpdateGetRoot(const struct mCoreConfig*);
+const char* mUpdateGetCommand(const struct mCoreConfig*);
+const char* mUpdateGetArchiveExtension(const struct mCoreConfig*);
+bool mUpdateGetArchivePath(const struct mCoreConfig*, char* out, size_t outLength);
+
 CXX_GUARD_END
 
 #endif

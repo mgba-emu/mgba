@@ -5,9 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/feature/updater.h>
 
+#include <mgba-util/string.h>
 #include <mgba-util/table.h>
 #include <mgba-util/vector.h>
 #include <mgba-util/vfs.h>
+
+#define UPDATE_SECTION "update"
 
 struct mUpdateMatch {
 	const char* channel;
@@ -166,5 +169,56 @@ bool mUpdateLoad(const struct mCoreConfig* config, const char* prefix, struct mU
 	update->commit = mCoreConfigGetValue(config, key);
 	snprintf(key, sizeof(key), "%s.sha256", prefix);
 	update->sha256 = mCoreConfigGetValue(config, key);
+	return true;
+}
+
+void mUpdateRegister(struct mCoreConfig* config, const char* arg0, const char* updatePath) {
+	struct Configuration* cfg = &config->configTable;
+	char filename[PATH_MAX];
+
+	strlcpy(filename, arg0, sizeof(filename));
+	char* last;
+#ifdef _WIN32
+	last = strrchr(filename, '\\');
+#else
+	last = strrchr(filename, '/');
+#endif
+	if (last) {
+		last[0] = '\0';
+	}
+	ConfigurationSetValue(cfg, UPDATE_SECTION, "bin", arg0);
+	ConfigurationSetValue(cfg, UPDATE_SECTION, "root", filename);
+
+	separatePath(updatePath, NULL, NULL, filename);
+	ConfigurationSetValue(cfg, UPDATE_SECTION, "extension", filename);
+	mCoreConfigSave(config);
+}
+
+void mUpdateDeregister(struct mCoreConfig* config) {
+	ConfigurationDeleteSection(&config->configTable, UPDATE_SECTION);
+	mCoreConfigSave(config);
+}
+
+const char* mUpdateGetRoot(const struct mCoreConfig* config) {
+	return ConfigurationGetValue(&config->configTable, UPDATE_SECTION, "root");
+}
+
+const char* mUpdateGetCommand(const struct mCoreConfig* config) {
+	return ConfigurationGetValue(&config->configTable, UPDATE_SECTION, "bin");
+}
+
+const char* mUpdateGetArchiveExtension(const struct mCoreConfig* config) {
+	return ConfigurationGetValue(&config->configTable, UPDATE_SECTION, "extension");
+}
+
+bool mUpdateGetArchivePath(const struct mCoreConfig* config, char* out, size_t outLength) {
+	const char* extension = ConfigurationGetValue(&config->configTable, UPDATE_SECTION, "extension");
+	if (!extension) {
+		return false;
+	}
+	mCoreConfigDirectory(out, outLength);
+	size_t start = strlen(out);
+	outLength -= start;
+	snprintf(&out[start], outLength, PATH_SEP "update.%s", extension);
 	return true;
 }

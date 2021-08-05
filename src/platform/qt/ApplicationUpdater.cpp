@@ -5,8 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ApplicationUpdater.h"
 
+#include <QDir>
 #include <QFileInfo>
 
+#include "ApplicationUpdatePrompt.h"
 #include "ConfigController.h"
 #include "GBAApp.h"
 
@@ -37,9 +39,26 @@ ApplicationUpdater::ApplicationUpdater(ConfigController* config, QObject* parent
 		}
 	}
 
-	connect(this, &AbstractUpdater::updateAvailable, this, [this, config](bool) {
+	connect(this, &AbstractUpdater::updateAvailable, this, [this, config](bool available) {
 		m_lastCheck = QDateTime::currentDateTimeUtc();
 		config->setQtOption("lastUpdateCheck", m_lastCheck);
+
+		if (available && currentVersion() < updateInfo()) {
+#ifdef Q_OS_WIN
+			// Only works on Windows at the moment
+			ApplicationUpdatePrompt* prompt = new ApplicationUpdatePrompt;
+			connect(prompt, &QDialog::accepted, GBAApp::app(), &GBAApp::restartForUpdate);
+			prompt->setAttribute(Qt::WA_DeleteOnClose);
+			prompt->show();
+#endif
+		}
+	});
+
+	connect(this, &AbstractUpdater::updateDone, this, [this, config]() {
+		QByteArray arg0 = GBAApp::app()->arguments().at(0).toUtf8();
+		QByteArray path = updateInfo().url.path().toUtf8();
+		mUpdateRegister(config->config(), arg0.constData(), path.constData());
+		config->write();
 	});
 }
 
@@ -79,6 +98,7 @@ QString ApplicationUpdater::readableChannel(const QString& channel) {
 
 ApplicationUpdater::UpdateInfo ApplicationUpdater::currentVersion() {
 	UpdateInfo info;
+	info.version = QLatin1String(projectVersion);
 	info.rev = gitRevision;
 	info.commit = QLatin1String(gitCommit);
 	return info;
@@ -118,14 +138,20 @@ QUrl ApplicationUpdater::parseManifest(const QByteArray& manifest) {
 }
 
 QString ApplicationUpdater::destination() const {
-	return {};
+	QFileInfo path(updateInfo().url.path());
+	QDir dir(ConfigController::configDir());
+	return dir.filePath(QLatin1String("update.") + path.completeSuffix());
 }
 
 const char* ApplicationUpdater::platform() {
+#ifdef Q_OS_WIN
+	QFileInfo exe(GBAApp::app()->arguments().at(0));
+	QFileInfo uninstallInfo(exe.dir().filePath("unins000.dat"));
 #ifdef Q_OS_WIN64
-	return "win64";
+	return uninstallInfo.exists() ? "win64-installer" : "win64";
 #elif defined(Q_OS_WIN32)
-	return "win32";
+	return uninstallInfo.exists() ? "win32-installer" : "win32";
+#endif
 #elif defined(Q_OS_MACOS)
 	return "osx";
 #else
@@ -160,8 +186,8 @@ bool ApplicationUpdater::UpdateInfo::operator<(const ApplicationUpdater::UpdateI
 		QStringList components = version.split(QChar('.'));
 		QStringList otherComponents = other.version.split(QChar('.'));
 		for (int i = 0; i < std::max<int>(components.count(), otherComponents.count()); ++i) {
-			int component = 0;
-			int otherComponent = 0;
+			int component = -1;
+			int otherComponent = -1;
 			if (i < components.count()) {
 				bool ok = true;
 				component = components[i].toInt(&ok);
@@ -188,6 +214,9 @@ bool ApplicationUpdater::UpdateInfo::operator<(const ApplicationUpdater::UpdateI
 ApplicationUpdater::UpdateInfo::operator QString() const {
 	if (!version.isNull()) {
 		return version;
+	}
+	if (rev <= 0) {
+		return tr("(None)");
 	}
 	int len = strlen(gitCommitShort);
 	const char* pos = strchr(gitCommitShort, '-');
