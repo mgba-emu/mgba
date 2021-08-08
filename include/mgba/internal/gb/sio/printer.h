@@ -29,6 +29,13 @@ enum GBPrinterPacketByte {
 	GB_PRINTER_BYTE_UNCOMPRESSED_DATA
 };
 
+enum GBPrinterParameterByte {
+	GB_PRINTER_PARAMETER_BYTE_SHEETS,
+	GB_PRINTER_PARAMETER_BYTE_MARGINS,
+	GB_PRINTER_PARAMETER_BYTE_PALETTE,
+	GB_PRINTER_PARAMETER_BYTE_EXPOSURE
+};
+
 enum GBPrinterStatus {
 	GB_PRINTER_STATUS_CHECKSUM_ERROR = 0x01,
 	GB_PRINTER_STATUS_PRINTING = 0x02,
@@ -64,6 +71,13 @@ struct GBPrinter {
 	enum GBPrinterPacketByte next;
 	uint8_t status;
 	int printWait;
+
+	enum GBPrinterParameterByte nextParam;
+	uint8_t sheets;
+	uint8_t topMargin;
+	uint8_t bottomMargin;
+	uint8_t palette;
+	uint8_t exposure;
 };
 
 void GBPrinterCreate(struct GBPrinter* printer);

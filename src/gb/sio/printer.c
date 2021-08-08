@@ -59,7 +59,24 @@ static void _processByte(struct GBPrinter* printer) {
 		}
 		break;
 	case GB_PRINTER_COMMAND_PRINT:
-		// TODO
+		switch (printer->nextParam) { 
+		case GB_PRINTER_PARAMETER_BYTE_SHEETS:
+			printer->sheets = printer->byte;
+			printer->nextParam = GB_PRINTER_PARAMETER_BYTE_MARGINS;
+			break;
+		case GB_PRINTER_PARAMETER_BYTE_MARGINS:
+			printer->topMargin = printer->byte >> 4;
+			printer->bottomMargin = printer->byte & 0xF;
+			printer->nextParam = GB_PRINTER_PARAMETER_BYTE_PALETTE;
+			break;
+		case GB_PRINTER_PARAMETER_BYTE_PALETTE:
+			printer->palette = printer->byte;
+			printer->nextParam = GB_PRINTER_PARAMETER_BYTE_EXPOSURE;
+			break;
+		case GB_PRINTER_PARAMETER_BYTE_EXPOSURE:
+			printer->exposure = printer->byte;
+			printer->nextParam = GB_PRINTER_PARAMETER_BYTE_SHEETS;
+		}
 		break;
 	default:
 		break;
@@ -112,6 +129,9 @@ static uint8_t GBPrinterWriteSC(struct GBSIODriver* driver, uint8_t value) {
 			case GB_PRINTER_COMMAND_INIT:
 				printer->currentIndex = 0;
 				printer->status &= ~(GB_PRINTER_STATUS_PRINT_REQ | GB_PRINTER_STATUS_READY);
+				break;
+			case GB_PRINTER_COMMAND_PRINT:
+				printer->nextParam = GB_PRINTER_PARAMETER_BYTE_SHEETS;
 				break;
 			default:
 				break;
