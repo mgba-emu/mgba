@@ -182,7 +182,7 @@ public slots:
 
 #ifdef M_CORE_GB
 	void setupExtPrinter();
-	void extPrint(const QImage&);
+	void extPrint(const QImage&, int topMargin, int bottomMargin, int exposure);
 	void attachPrinter();
 	void detachPrinter();
 	void endPrint();
@@ -228,7 +228,7 @@ signals:
 	void statusPosted(const QString& message);
 	void logPosted(int level, int category, const QString& log);
 
-	void imagePrinted(const QImage&);
+	void imagePrinted(const QImage&, int topMargin, int bottomMargin, int exposure);
 
 private:
 	void updateKeys();

@@ -881,7 +881,7 @@ void CoreController::setupExtPrinter() {
 	connect(this, &CoreController::imagePrinted, this, &CoreController::extPrint);
 }
 
-void CoreController::extPrint(const QImage& image) {
+void CoreController::extPrint(const QImage& image, int topMargin, int bottomMargin, int exposure) {
 	TempProcess* p = new TempProcess();
 	if (!p->m_temp.open()) {
 		delete p;
@@ -901,7 +901,12 @@ void CoreController::extPrint(const QImage& image) {
 		qDebug() << "process error " << error;
 		endPrint();
 	});
-	QStringList list = QProcess::splitCommand(m_extPrintCmd.arg(p->m_temp.fileName()));
+	QString cmdLine = QString(m_extPrintCmd)
+		.replace("%2", QVariant(exposure).toString())
+		.replace("%3", QVariant(topMargin * 16).toString())
+	    .replace("%4", QVariant(bottomMargin * 16).toString())
+		.replace("%1", p->m_temp.fileName());
+	QStringList list = QProcess::splitCommand(cmdLine);
 	QString cmd = list.takeFirst();
 	p->start(cmd, list);
 }
@@ -918,10 +923,24 @@ void CoreController::attachPrinter() {
 		QGBPrinter* qPrinter = reinterpret_cast<QGBPrinter*>(printer);
 		QImage image(GB_VIDEO_HORIZONTAL_PIXELS, height, QImage::Format_Indexed8);
 		QVector<QRgb> colors;
-		colors.append(qRgb(0xFF, 0xFF, 0xFF));
-		colors.append(qRgb(0xA8, 0xA8, 0xA8));
-		colors.append(qRgb(0x50, 0x50, 0x50));
-		colors.append(qRgb(0x00, 0x00, 0x00));
+		uint8_t gamePalette = qPrinter->d.palette;
+		for (int x = 0; x < 4; ++x) {
+			switch (gamePalette >> 6) { 
+			case 3:
+				colors.append(qRgb(0xFF, 0xFF, 0xFF));
+				break;
+			case 2:
+				colors.append(qRgb(0xA8, 0xA8, 0xA8));
+				break;
+			case 1:
+				colors.append(qRgb(0x50, 0x50, 0x50));
+				break;
+			default:
+				colors.append(qRgb(0x00, 0x00, 0x00));
+				break;
+			}
+			gamePalette = gamePalette << 2;
+		}
 		image.setColorTable(colors);
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 4) {
@@ -932,7 +951,11 @@ void CoreController::attachPrinter() {
 				image.setPixel(x + 3, y, (byte & 0x03) >> 0);
 			}
 		}
-		QMetaObject::invokeMethod(qPrinter->parent, "imagePrinted", Q_ARG(const QImage&, image));
+		QMetaObject::invokeMethod(qPrinter->parent, "imagePrinted", 
+			Q_ARG(const QImage&, image), 
+			Q_ARG(int, qPrinter->d.topMargin), 
+			Q_ARG(int, qPrinter->d.bottomMargin), 
+			Q_ARG(int, qPrinter->d.exposure));
 	};
 	Interrupter interrupter(this);
 	GBSIOSetDriver(&gb->sio, &m_printer.d.d);

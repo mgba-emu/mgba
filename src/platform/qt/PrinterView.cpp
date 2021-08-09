@@ -75,11 +75,13 @@ void PrinterView::clear() {
 	m_ui.copyButton->setEnabled(false);
 }
 
-void PrinterView::printImage(const QImage& image) {
-	QPixmap pixmap(image.width(), image.height() + m_image.height());
+void PrinterView::printImage(const QImage& image, int topMargin, int bottomMargin, int exposure) {
+	QPixmap pixmap(image.width(), image.height() + m_image.height() + ((topMargin + bottomMargin) * 16));
+	pixmap.fill();
 	QPainter painter(&pixmap);
 	painter.drawPixmap(0, 0, m_image);
-	painter.drawImage(0, m_image.height(), image);
+	painter.setOpacity(0.5 + (exposure / 256.0));
+	painter.drawImage(0, m_image.height() + (topMargin * 16), image);
 	m_image = pixmap;
 	m_ui.image->setPixmap(m_image.scaled(m_image.size() * m_ui.magnification->value()));
 	m_timer.start();

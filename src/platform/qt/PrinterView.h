@@ -33,7 +33,7 @@ public slots:
 	void clear();
 
 private slots:
-	void printImage(const QImage&);
+	void printImage(const QImage&, int topMargin, int bottomMargin, int exposure);
 	void printLine();
 	void printAll();
 
