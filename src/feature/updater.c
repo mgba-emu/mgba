@@ -41,7 +41,7 @@ static void _updateUpdate(struct mUpdate* update, const char* item, const char* 
 }
 
 static void _updateList(const char* key, const char* value, void* user) {
-	char channel[64] = {};
+	char channel[64] = {0};
 	const char* dotLoc;
 	if (strncmp("medusa.", key, 7) == 0) {
 		dotLoc = strchr(&key[7], '.');
