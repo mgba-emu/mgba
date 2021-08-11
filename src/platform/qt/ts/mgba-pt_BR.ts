@@ -41,7 +41,7 @@ O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>Uma atualização está disponível</translation>
     </message>
 </context>
 <context>
@@ -163,7 +163,7 @@ O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished"></translation>
+        <translation>Adicionar Novo Código</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
@@ -173,12 +173,12 @@ O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../CheatsView.ui" line="93"/>
         <source>Add Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Adicionar Linhas</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="100"/>
         <source>Code type</source>
-        <translation type="unfinished"></translation>
+        <translation>Tipo de código</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
@@ -1003,17 +1003,17 @@ O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../OverrideView.ui" line="146"/>
         <source>EEPROM 8kB</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 8 kBs</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="151"/>
         <source>EEPROM 512 bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 512 bytes</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="156"/>
         <source>SRAM 64kB (bootlegs only)</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM 64 kBs (só bootlegs)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="164"/>
@@ -1199,29 +1199,32 @@ O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>Uma atualização pro %1 está disponível.
+Você que baixar e instalá-lo agora? Você precisará reiniciar o emulador quando o download estiver completo.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="28"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Versão atual: %1
+Nova versão: %2
+Tamanho do download: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="47"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>Baixando atualização...</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>O download falhou. Por favor atualize manualmente.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="66"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>Download concluído. Pressione Ok pra reiniciar o %1 e instalar a atualização.</translation>
     </message>
 </context>
 <context>
@@ -1229,22 +1232,22 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="90"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>Estável</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="93"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>Desenvolvimento</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Unknown</source>
-        <translation type="unfinished">Desconhecido</translation>
+        <translation>Desconhecido</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="218"/>
         <source>(None)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Nenhum)</translation>
     </message>
 </context>
 <context>
@@ -1281,7 +1284,7 @@ Download size: %3</source>
         <location filename="../CheatsView.cpp" line="48"/>
         <location filename="../CheatsView.cpp" line="56"/>
         <source>Autodetect (recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto-detectar (recomendado)</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="86"/>
@@ -3912,7 +3915,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="206"/>
         <source>None</source>
-        <translation type="unfinished">Nenhum</translation>
+        <translation>Nenhum</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="213"/>
@@ -3958,32 +3961,32 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="829"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>Nunca</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="834"/>
         <source>Just now</source>
-        <translation type="unfinished"></translation>
+        <translation>Aconteceu agora</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="838"/>
         <source>Less than an hour ago</source>
-        <translation type="unfinished"></translation>
+        <translation>Menos do que uma hora atrás</translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="843"/>
         <source>%n hour(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n hora atrás</numerusform>
+            <numerusform>%n horas atrás</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="847"/>
         <source>%n day(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n dia atrás</numerusform>
+            <numerusform>%n dias atrás</numerusform>
         </translation>
     </message>
 </context>
@@ -5159,7 +5162,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>Atualizar</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
@@ -5294,22 +5297,22 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="324"/>
         <source>Audio in multiplayer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Áudio no multiplayer:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="331"/>
         <source>All windows</source>
-        <translation type="unfinished"></translation>
+        <translation>Todas as janelas</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="344"/>
         <source>Player 1 window only</source>
-        <translation type="unfinished"></translation>
+        <translation>Só a janela do jogador 1</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="354"/>
         <source>Currently active player window</source>
-        <translation type="unfinished"></translation>
+        <translation>Atualmente na janela do jogador ativo</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="371"/>
@@ -5371,57 +5374,57 @@ Download size: %3</source>
         <location filename="../SettingsView.ui" line="608"/>
         <location filename="../SettingsView.ui" line="741"/>
         <source>Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>Pausa</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="757"/>
         <source>When inactive:</source>
-        <translation type="unfinished"></translation>
+        <translation>Quando inativo:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="764"/>
         <source>When minimized:</source>
-        <translation type="unfinished"></translation>
+        <translation>Quando minimizado:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="775"/>
         <source>Current channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Canal atual:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="789"/>
         <source>Current version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Versão atual:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="813"/>
         <source>Update channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Canal da atualização:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="823"/>
         <source>Available version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Versão disponível:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="830"/>
         <source>(Unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Desconhecido)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="840"/>
         <source>Last checked:</source>
-        <translation type="unfinished"></translation>
+        <translation>Verificado pela última vez:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="861"/>
         <source>Automatically check on start</source>
-        <translation type="unfinished"></translation>
+        <translation>Verificar automaticamente ao iniciar</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="868"/>
         <source>Check now</source>
-        <translation type="unfinished"></translation>
+        <translation>Verificar agora</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2037"/>
