@@ -41,17 +41,17 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>Ein Update ist verfügbar</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="23"/>
         <source>{text}</source>
-        <translation type="unfinished"></translation>
+        <translation>{text}</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="33"/>
         <source>{details}</source>
-        <translation type="unfinished"></translation>
+        <translation>{details}</translation>
     </message>
 </context>
 <context>
@@ -1209,29 +1209,32 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>Eine Update auf %1 ist verfügbar.
+Möchtest Du das Update jetzt herunterladen und installeren? Du wirst den Emulator nach dem Download des Updates einmal neustarten müssen.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="28"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuelle Version: %1
+Neue Version: %2
+Download-Größe: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="47"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>Update wird heruntergeladen...</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>Download fehlgeschlagen. Bitte führe das Update manuell durch.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="66"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>Download abgeschlossen. Klicke auf OK, um %1 neuzustarten und das Update zu installieren.</translation>
     </message>
 </context>
 <context>
@@ -1239,22 +1242,22 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="91"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>Stabil</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="94"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>Entwicklung</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="96"/>
         <source>Unknown</source>
-        <translation type="unfinished">Unbekannt</translation>
+        <translation>Unbekannt</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="219"/>
         <source>(None)</source>
-        <translation type="unfinished"></translation>
+        <translation>(keiner)</translation>
     </message>
 </context>
 <context>
@@ -3922,7 +3925,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="206"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Keiner</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="213"/>
@@ -3968,32 +3971,32 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="829"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="834"/>
         <source>Just now</source>
-        <translation type="unfinished"></translation>
+        <translation>Gerade eben</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="838"/>
         <source>Less than an hour ago</source>
-        <translation type="unfinished"></translation>
+        <translation>Vor weniger als einer Stunde</translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="843"/>
         <source>%n hour(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Vor %n Stunde(n)</numerusform>
+            <numerusform>Vor %n Stunde(n)</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="847"/>
         <source>%n day(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Vor %n Tag(en)</numerusform>
+            <numerusform>Vor %n Tag(en)</numerusform>
         </translation>
     </message>
 </context>
@@ -5194,7 +5197,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>Updates</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
@@ -5416,42 +5419,42 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="775"/>
         <source>Current channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktueller Channel:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="789"/>
         <source>Current version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuelle Version:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="813"/>
         <source>Update channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Update-Channel:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="823"/>
         <source>Available version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Verfügbare Version:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="830"/>
         <source>(Unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(unbekannt)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="840"/>
         <source>Last checked:</source>
-        <translation type="unfinished"></translation>
+        <translation>Zuletzt geprüft:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="861"/>
         <source>Automatically check on start</source>
-        <translation type="unfinished"></translation>
+        <translation>Beim Start automatisch auf Aktualisierungen prüfen</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="868"/>
         <source>Check now</source>
-        <translation type="unfinished"></translation>
+        <translation>Jetzt überprüfen</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2037"/>
