@@ -216,7 +216,7 @@ ApplicationUpdater::UpdateInfo::operator QString() const {
 		return version;
 	}
 	if (rev <= 0) {
-		return tr("(None)");
+		return ApplicationUpdater::tr("(None)");
 	}
 	int len = strlen(gitCommitShort);
 	const char* pos = strchr(gitCommitShort, '-');
