@@ -570,12 +570,12 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 
 	int w;
 	unsigned priority;
-	for (priority = 0; priority < 4; ++priority) {
-		softwareRenderer->end = 0;
-		for (w = 0; w < softwareRenderer->nWindows; ++w) {
-			softwareRenderer->start = softwareRenderer->end;
-			softwareRenderer->end = softwareRenderer->windows[w].endX;
-			softwareRenderer->currentWindow = softwareRenderer->windows[w].control;
+	softwareRenderer->end = 0;
+	for (w = 0; w < softwareRenderer->nWindows; ++w) {
+		softwareRenderer->start = softwareRenderer->end;
+		softwareRenderer->end = softwareRenderer->windows[w].endX;
+		softwareRenderer->currentWindow = softwareRenderer->windows[w].control;
+		for (priority = 0; priority < 4; ++priority) {
 			if (spriteLayers & (1 << priority)) {
 				GBAVideoSoftwareRendererPostprocessSprite(softwareRenderer, priority);
 			}
