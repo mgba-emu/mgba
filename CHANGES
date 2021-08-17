@@ -11,11 +11,15 @@ Features:
  - Additional scaling shaders
 Emulation fixes:
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
+ - GB Video: Render SGB border when unmasking with ATTR/PAL_SET (fixes mgba.io/i/2261)
  - GBA: Improve timing when not booting from BIOS
  - GBA SIO: Fix SI value for unattached MULTI mode
+ - GBA Video: Fix backdrop color if DISPCNT is first set to 0 (fixes mgba.io/i/2260)
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
+ - GB Video: Fix memory leak when reseting SGB games
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
+ - Libretro: Fix crash when using Game Boy codes (fixes mgba.io/i/2281)
 Misc:
  - Core: Suspend runloop when a core crashes
  - Qt: Rearrange menus some

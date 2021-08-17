@@ -150,6 +150,7 @@ if (NOT DEFINED MANDIR)
 endif()
 
 include(FindFeature)
+include(FindFunction)
 
 # Version information
 add_custom_target(${BINARY_NAME}-version-info ALL
@@ -301,46 +302,38 @@ if(WII)
 endif()
 
 include(CheckCCompilerFlag)
-include(CheckFunctionExists)
 include(CheckIncludeFiles)
-check_function_exists(strdup HAVE_STRDUP)
-check_function_exists(strndup HAVE_STRNDUP)
-check_function_exists(strlcpy HAVE_STRLCPY)
-check_function_exists(vasprintf HAVE_VASPRINTF)
-if(NOT DEFINED PSP2)
-	check_function_exists(localtime_r HAVE_LOCALTIME_R)
+
+set(FUNCTION_DEFINES)
+
+find_function(strdup)
+find_function(strlcpy)
+find_function(strndup)
+find_function(vasprintf)
+
+find_function(freelocale)
+find_function(newlocale)
+find_function(setlocale)
+find_function(snprintf_l)
+find_function(uselocale)
+
+find_function(futimens)
+find_function(futimes)
+
+if(ANDROID AND ANDROID_NDK_MAJOR GREATER 13)
+	find_function(localtime_r)
+	set(HAVE_STRTOF_L ON)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	find_function(localtime_r)
+	# The strtof_l on Linux not actually exposed nor actually strtof_l
+	set(HAVE_STRTOF_L OFF)
+elseif(NOT DEFINED PSP2)
+	find_function(localtime_r)
+	find_function(strtof_l)
 endif()
+
 check_include_files("xlocale.h" HAVE_XLOCALE)
-if(NOT CMAKE_SYSTEM_NAME STREQUAL "Generic")
-	check_function_exists(snprintf_l HAVE_SNPRINTF_L)
-	if(ANDROID AND ANDROID_NDK_MAJOR GREATER 13)
-		set(HAVE_STRTOF_L ON)
-	elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-		# The strtof_l on Linux not actually exposed nor actually strtof_l
-		set(HAVE_STRTOF_L OFF)
-	else()
-		check_function_exists(strtof_l HAVE_STRTOF_L)
-	endif()
-	check_function_exists(newlocale HAVE_NEWLOCALE)
-	check_function_exists(freelocale HAVE_FREELOCALE)
-	check_function_exists(uselocale HAVE_USELOCALE)
-	check_function_exists(setlocale HAVE_SETLOCALE)
-else()
-	if(DEFINED 3DS OR DEFINED WII OR DEFINED SWITCH)
-		set(CMAKE_REQUIRED_FLAGS -Wl,--require-defined,snprintf_l)
-		check_function_exists(snprintf_l HAVE_SNPRINTF_L)
-		set(CMAKE_REQUIRED_FLAGS -Wl,--require-defined,strtof_l)
-		check_function_exists(strtof_l HAVE_STRTOF_L)
-		set(CMAKE_REQUIRED_FLAGS -Wl,--require-defined,newlocale)
-		check_function_exists(newlocale HAVE_NEWLOCALE)
-		set(CMAKE_REQUIRED_FLAGS -Wl,--require-defined,freelocale)
-		check_function_exists(freelocale HAVE_FREELOCALE)
-		set(CMAKE_REQUIRED_FLAGS -Wl,--require-defined,uselocale)
-		check_function_exists(uselocale HAVE_USELOCALE)
-		set(CMAKE_REQUIRED_FLAGS -Wl,--require-defined,setlocale)
-		check_function_exists(setlocale HAVE_SETLOCALE)
-		unset(CMAKE_REQUIRED_FLAGS)
-	endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "Generic")
 	if(NOT IS_EMBEDDED)
 		set(DISABLE_DEPS ON CACHE BOOL "This platform cannot build with dependencies" FORCE)
 	endif()
@@ -351,9 +344,6 @@ else()
 	set(ENABLE_EXTRA ON)
 endif()
 
-check_function_exists(chmod HAVE_CHMOD)
-check_function_exists(umask HAVE_UMASK)
-
 if(USE_PTHREADS)
 	check_include_files("pthread.h" HAVE_PTHREAD_H)
 	if(HAVE_PTHREAD_H)
@@ -363,38 +353,16 @@ if(USE_PTHREADS)
 			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 		endif()
 
-		check_function_exists(pthread_create HAVE_PTHREAD_CREATE)
+		find_function(pthread_create)
 		if(HAVE_PTHREAD_CREATE)
 			add_definitions(-DUSE_PTHREADS)
 
 			check_include_files("pthread_np.h" HAVE_PTHREAD_NP_H)
 
-			check_function_exists(pthread_setname_np HAVE_PTHREAD_SETNAME_NP)
-			check_function_exists(pthread_set_name_np HAVE_PTHREAD_SET_NAME_NP)
+			find_function(pthread_setname_np)
+			find_function(pthread_set_name_np)
 		endif()
 	endif()
-endif()
-
-set(FUNCTION_DEFINES)
-
-if(HAVE_STRDUP)
-	list(APPEND FUNCTION_DEFINES HAVE_STRDUP)
-endif()
-
-if(HAVE_STRNDUP)
-	list(APPEND FUNCTION_DEFINES HAVE_STRNDUP)
-endif()
-
-if(HAVE_STRLCPY)
-	list(APPEND FUNCTION_DEFINES HAVE_STRLCPY)
-endif()
-
-if(HAVE_VASPRINTF)
-	list(APPEND FUNCTION_DEFINES HAVE_VASPRINTF)
-endif()
-
-if(HAVE_LOCALTIME_R)
-	list(APPEND FUNCTION_DEFINES HAVE_LOCALTIME_R)
 endif()
 
 if(HAVE_NEWLOCALE AND HAVE_FREELOCALE AND HAVE_USELOCALE OR APPLE)
@@ -404,36 +372,12 @@ if(HAVE_NEWLOCALE AND HAVE_FREELOCALE AND HAVE_USELOCALE OR APPLE)
 	endif()
 endif()
 
-if(HAVE_SETLOCALE)
-	list(APPEND FUNCTION_DEFINES HAVE_SETLOCALE)
-endif()
-
-if (HAVE_STRTOF_L)
-	list(APPEND FUNCTION_DEFINES HAVE_STRTOF_L)
-endif()
-
 if(HAVE_XLOCALE)
 	list(APPEND FUNCTION_DEFINES HAVE_XLOCALE)
 endif()
 
-if(HAVE_CHMOD)
-	list(APPEND FUNCTION_DEFINES HAVE_CHMOD)
-endif()
-
-if(HAVE_UMASK)
-	list(APPEND FUNCTION_DEFINES HAVE_UMASK)
-endif()
-
 if(HAVE_PTHREAD_NP_H)
 	list(APPEND FUNCTION_DEFINES HAVE_PTHREAD_NP_H)
-endif()
-
-if(HAVE_PTHREAD_SETNAME_NP)
-	list(APPEND FUNCTION_DEFINES HAVE_PTHREAD_SETNAME_NP)
-endif()
-
-if(HAVE_PTHREAD_SET_NAME_NP)
-	list(APPEND FUNCTION_DEFINES HAVE_PTHREAD_SET_NAME_NP)
 endif()
 
 # Feature dependencies
@@ -964,6 +908,19 @@ if(BUILD_OPENEMU)
 		COMPILE_DEFINITIONS "DISABLE_THREADING;MGBA_STANDALONE;${OS_DEFINES};${FUNCTION_DEFINES};MINIMAL_CORE=1")
 	target_link_libraries(${BINARY_NAME}-openemu ${OS_LIB} ${FOUNDATION} ${OPENEMUBASE})
 	install(TARGETS ${BINARY_NAME}-openemu LIBRARY DESTINATION ${OE_LIBDIR} COMPONENT ${BINARY_NAME}.oecoreplugin NAMELINK_SKIP)
+endif()
+
+if(BUILD_QT AND WIN32)
+	set(BUILD_UPDATER ON)
+endif()
+
+if(BUILD_UPDATER)
+	add_executable(updater-stub WIN32 ${CMAKE_CURRENT_SOURCE_DIR}/src/feature/updater-main.c)
+	target_link_libraries(updater-stub ${OS_LIB} ${PLATFORM_LIBRARY} ${BINARY_NAME})
+	if(NOT MSVC)
+		set_target_properties(updater-stub PROPERTIES LINK_FLAGS_RELEASE -s)
+		set_target_properties(updater-stub PROPERTIES LINK_FLAGS_RELWITHDEBINFO -s)
+	endif()
 endif()
 
 if(BUILD_SDL)

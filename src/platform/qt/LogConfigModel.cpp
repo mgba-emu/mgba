@@ -27,6 +27,9 @@ QVariant LogConfigModel::data(const QModelIndex& index, int role) const {
 	}
 	int levels;
 	if (index.row() == 0) {
+		if (index.column() == 0) {
+			return QVariant();
+		}
 		levels = m_levels;
 	} else {
 		levels = m_cache[index.row() - 1].levels;
@@ -46,6 +49,9 @@ bool LogConfigModel::setData(const QModelIndex& index, const QVariant& value, in
 	}
 	int levels;
 	if (index.row() == 0) {
+		if (index.column() == 0) {
+			return false;
+		}
 		levels = m_levels;
 	} else {
 		levels = m_cache[index.row() - 1].levels;
@@ -60,7 +66,7 @@ bool LogConfigModel::setData(const QModelIndex& index, const QVariant& value, in
 		if (value.value<Qt::CheckState>() == Qt::Unchecked) {
 			levels &= ~bit;
 		} else {
-			levels |= bit;			
+			levels |= bit;
 		}
 	}
 	if (index.row() == 0) {
@@ -132,10 +138,10 @@ int LogConfigModel::rowCount(const QModelIndex& parent) const {
 }
 
 Qt::ItemFlags LogConfigModel::flags(const QModelIndex& index) const {
-	if (!index.isValid()) {
+	if (!index.isValid() || (index.row() == 0 && index.column() == 0)) {
 		return 0;
 	}
-	return Qt::ItemIsUserCheckable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
+	return Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
 }
 
 void LogConfigModel::reset() {

@@ -137,6 +137,10 @@ bool ConfigurationHasSection(const struct Configuration* configuration, const ch
 	return HashTableLookup(&configuration->sections, section);
 }
 
+void ConfigurationDeleteSection(struct Configuration* configuration, const char* section) {
+	HashTableRemove(&configuration->sections, section);
+}
+
 const char* ConfigurationGetValue(const struct Configuration* configuration, const char* section, const char* key) {
 	const struct Table* currentSection = &configuration->root;
 	if (section) {

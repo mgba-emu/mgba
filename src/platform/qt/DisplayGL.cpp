@@ -457,13 +457,13 @@ void PainterGL::draw() {
 		m_delayTimer.start();
 	} else {
 		if (sync->audioWait || sync->videoFrameWait) {
-			while (m_delayTimer.nsecsElapsed() + 1'000'000 < 1'000'000'000 / sync->fpsTarget) {
+			while (m_delayTimer.nsecsElapsed() + 1000000 < 1000000000 / sync->fpsTarget) {
 				QThread::usleep(500);
 			}
 			forceRedraw = sync->videoFrameWait;
 		}
 		if (!forceRedraw) {
-			forceRedraw = m_delayTimer.nsecsElapsed() + 1'000'000 >= 1'000'000'000 / m_surface->screen()->refreshRate();
+			forceRedraw = m_delayTimer.nsecsElapsed() + 1000000 >= 1000000000 / m_surface->screen()->refreshRate();
 		}
 	}
 	mCoreSyncWaitFrameEnd(sync);

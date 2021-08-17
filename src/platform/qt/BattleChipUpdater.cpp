@@ -24,7 +24,7 @@ QUrl BattleChipUpdater::manifestLocation() const {
 	return {"https://api.github.com/repos/mgba-emu/chip-assets/releases/latest"};
 }
 
-QUrl BattleChipUpdater::parseManifest(const QByteArray& manifest) const {
+QUrl BattleChipUpdater::parseManifest(const QByteArray& manifest) {
 	QJsonDocument manifestDoc(QJsonDocument::fromJson(manifest));
 	if (manifestDoc.isNull()) {
 		return QUrl();

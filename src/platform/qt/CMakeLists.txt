@@ -60,6 +60,8 @@ set(SOURCE_FILES
 	AbstractUpdater.cpp
 	Action.cpp
 	ActionMapper.cpp
+	ApplicationUpdater.cpp
+	ApplicationUpdatePrompt.cpp
 	AssetInfo.cpp
 	AssetTile.cpp
 	AssetView.cpp
@@ -122,6 +124,7 @@ set(SOURCE_FILES
 
 set(UI_FILES
 	AboutScreen.ui
+	ApplicationUpdatePrompt.ui
 	ArchiveInspector.ui
 	AssetTile.ui
 	BattleChipView.ui
@@ -227,6 +230,11 @@ if(USE_DISCORD_RPC)
 endif()
 
 qt5_add_resources(RESOURCES resources.qrc)
+if(BUILD_UPDATER)
+	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/updater.qrc.in ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc)
+	qt5_add_resources(UPDATER_RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc)
+	list(APPEND RESOURCES ${UPDATER_RESOURCES})
+endif()
 if(APPLE)
 	set(MACOSX_BUNDLE_ICON_FILE mgba.icns)
 	set(MACOSX_BUNDLE_BUNDLE_VERSION ${LIB_VERSION_STRING})

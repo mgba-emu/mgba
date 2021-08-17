@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2021 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -35,14 +35,15 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 	m_pageIndex[Page::AV] = 0;
 	m_pageIndex[Page::INTERFACE] = 1;
-	m_pageIndex[Page::EMULATION] = 2;
-	m_pageIndex[Page::ENHANCEMENTS] = 3;
-	m_pageIndex[Page::BIOS] = 4;
-	m_pageIndex[Page::PATHS] = 5;
-	m_pageIndex[Page::LOGGING] = 6;
+	m_pageIndex[Page::UPDATE] = 2;
+	m_pageIndex[Page::EMULATION] = 3;
+	m_pageIndex[Page::ENHANCEMENTS] = 4;
+	m_pageIndex[Page::BIOS] = 5;
+	m_pageIndex[Page::PATHS] = 6;
+	m_pageIndex[Page::LOGGING] = 7;
 
 #ifdef M_CORE_GB
-	m_pageIndex[Page::GB] = 7;
+	m_pageIndex[Page::GB] = 8;
 
 	for (auto model : GameBoy::modelList()) {
 		m_ui.gbModel->addItem(GameBoy::modelName(model), model);
@@ -174,6 +175,38 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		m_ui.displayDriver->setCurrentIndex(m_ui.displayDriver->count() - 1);
 	}
 #endif
+
+	ApplicationUpdater* updater = GBAApp::app()->updater();
+	m_ui.currentChannel->setText(ApplicationUpdater::readableChannel());
+	m_ui.currentVersion->setText(ApplicationUpdater::currentVersion());
+	QDateTime lastCheck = updater->lastCheck();
+	if (!lastCheck.isNull()) {
+		m_ui.lastChecked->setText(lastCheck.toLocalTime().toString());
+	}
+	connect(m_ui.checkUpdate, &QAbstractButton::pressed, updater, &ApplicationUpdater::checkUpdate);
+	connect(updater, &ApplicationUpdater::updateAvailable, this, [this, updater](bool hasUpdate) {
+		updateChecked();
+		if (hasUpdate) {
+			m_ui.availVersion->setText(updater->updateInfo());
+		}
+	});
+	for (const QString& channel : ApplicationUpdater::listChannels()) {
+		m_ui.updateChannel->addItem(ApplicationUpdater::readableChannel(channel), channel);
+		if (channel == ApplicationUpdater::currentChannel()) {
+			m_ui.updateChannel->setCurrentIndex(m_ui.updateChannel->count() - 1);
+		}
+	}
+	connect(m_ui.updateChannel, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this, updater](int) {
+		QString channel = m_ui.updateChannel->currentData().toString();
+		updater->setChannel(channel);
+		auto updates = updater->listUpdates();
+		if (updates.contains(channel)) {
+			m_ui.availVersion->setText(updates[channel]);
+		} else {
+			m_ui.availVersion->setText(tr("None"));
+		}
+	});
+	m_ui.availVersion->setText(updater->updateInfo());
 
 	// TODO: Move to reloadConfig()
 	QVariant cameraDriver = m_controller->getQtOption("cameraDriver");
@@ -332,6 +365,12 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 
+	m_checkTimer.setInterval(60);
+	m_checkTimer.setSingleShot(false);
+	connect(&m_checkTimer, &QTimer::timeout, this, &SettingsView::updateChecked);
+	m_checkTimer.start();
+	updateChecked();
+
 	ShortcutView* shortcutView = new ShortcutView();
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
@@ -446,6 +485,7 @@ void SettingsView::updateConfig() {
 	saveSetting("videoScale", m_ui.videoScale);
 	saveSetting("gba.forceGbp", m_ui.forceGbp);
 	saveSetting("vbaBugCompat", m_ui.vbaBugCompat);
+	saveSetting("updateAutoCheck", m_ui.updateAutoCheck);
 
 	if (m_ui.audioBufferSize->currentText().toInt() > 8192) {
 		m_ui.audioBufferSize->setCurrentText("8192");
@@ -659,6 +699,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("dynamicTitle", m_ui.dynamicTitle, true);
 	loadSetting("gba.forceGbp", m_ui.forceGbp);
 	loadSetting("vbaBugCompat", m_ui.vbaBugCompat, true);
+	loadSetting("updateAutoCheck", m_ui.updateAutoCheck);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 
@@ -779,6 +820,31 @@ void SettingsView::reloadConfig() {
 	} else {
 		m_ui.multiplayerAudioAll->setChecked(true);		
 	}
+}
+
+void SettingsView::updateChecked() {
+	QDateTime now(QDateTime::currentDateTimeUtc());
+	QDateTime lastCheck(GBAApp::app()->updater()->lastCheck());
+	if (!lastCheck.isValid()) {
+		m_ui.lastChecked->setText(tr("Never"));
+		return;
+	}
+	qint64 ago = GBAApp::app()->updater()->lastCheck().secsTo(now);
+	if (ago < 60) {
+		m_ui.lastChecked->setText(tr("Just now"));
+		return;
+	}
+	if (ago < 3600) {
+		m_ui.lastChecked->setText(tr("Less than an hour ago"));
+		return;
+	}
+	ago /= 3600;
+	if (ago < 24) {
+		m_ui.lastChecked->setText(tr("%n hour(s) ago", nullptr, ago));
+		return;
+	}
+	ago /= 24;
+	m_ui.lastChecked->setText(tr("%n day(s) ago", nullptr, ago));
 }
 
 void SettingsView::addPage(const QString& name, QWidget* view, Page index) {

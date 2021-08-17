@@ -19,6 +19,7 @@
 #include <QFontDatabase>
 #include <QIcon>
 
+#include <mgba/feature/updater.h>
 #include <mgba-util/socket.h>
 #include <mgba-util/vfs.h>
 
@@ -39,6 +40,7 @@ mLOG_DEFINE_CATEGORY(QT, "Qt", "platform.qt");
 GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	: QApplication(argc, argv)
 	, m_configController(config)
+	, m_updater(config)
 	, m_monospace(QFontDatabase::systemFont(QFontDatabase::FixedFont))
 {
 	g_app = this;
@@ -79,7 +81,12 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	m_configController->updateOption("useDiscordPresence");
 #endif
 
+	cleanupAfterUpdate();
+
 	connect(this, &GBAApp::aboutToQuit, this, &GBAApp::cleanup);
+	if (m_configController->getOption("updateAutoCheck", 0).toInt()) {
+		QMetaObject::invokeMethod(&m_updater, "checkUpdate", Qt::QueuedConnection);
+	}
 }
 
 void GBAApp::cleanup() {
@@ -264,7 +271,6 @@ bool GBAApp::removeWorkerJob(qint64 jobId) {
 	return success;
 }
 
-
 bool GBAApp::waitOnJob(qint64 jobId, QObject* context, std::function<void ()> callback) {
 	if (!m_workerJobs.contains(jobId)) {
 		return false;
@@ -280,6 +286,52 @@ bool GBAApp::waitOnJob(qint64 jobId, QObject* context, std::function<void ()> ca
 	});
 	m_workerJobCallbacks.insert(m_nextJob, connection);
 	return true;
+}
+
+void GBAApp::cleanupAfterUpdate() {
+	// Remove leftover updater if there's one present
+	QDir configDir(ConfigController::configDir());
+	QString extractedPath = configDir.filePath(QLatin1String("updater"));
+#ifdef Q_OS_WIN
+	extractedPath += ".exe";
+#endif
+	QFile updater(extractedPath);
+	if (updater.exists()) {
+		updater.remove();
+	}
+
+#ifdef Q_OS_WIN
+	// Remove the installer exe if we downloaded that too
+	extractedPath = configDir.filePath(QLatin1String("update.exe"));
+	QFile update(extractedPath);
+	if (update.exists()) {
+		update.remove();
+	}
+#endif
+}
+
+void GBAApp::restartForUpdate() {
+	QFileInfo updaterPath(m_updater.updateInfo().url.path());
+	QDir configDir(ConfigController::configDir());
+	if (updaterPath.completeSuffix() == "exe") {
+		m_invokeOnExit = configDir.filePath(QLatin1String("update.exe"));
+	} else {
+		QFile updater(":/updater");
+		QString extractedPath = configDir.filePath(QLatin1String("updater"));
+	#ifdef Q_OS_WIN
+		extractedPath += ".exe";
+	#endif
+		updater.copy(extractedPath);
+	#ifndef Q_OS_WIN
+		QFile(extractedPath).setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);
+	#endif
+		m_invokeOnExit = extractedPath;
+	}
+
+	for (auto& window : m_windows) {
+		window->deleteLater();
+	}
+	QMetaObject::invokeMethod(this, "quit", Qt::QueuedConnection);
 }
 
 void GBAApp::finishJob(qint64 jobId) {

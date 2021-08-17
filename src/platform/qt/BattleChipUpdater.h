@@ -15,7 +15,7 @@ public:
 
 protected:
 	virtual QUrl manifestLocation() const override;
-	virtual QUrl parseManifest(const QByteArray&) const override;
+	virtual QUrl parseManifest(const QByteArray&) override;
 	virtual QString destination() const override;
 };
 
