@@ -19,6 +19,7 @@ Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - GB Video: Fix memory leak when reseting SGB games
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
+ - Libretro: Fix crash when using Game Boy codes (fixes mgba.io/i/2281)
 Misc:
  - Core: Suspend runloop when a core crashes
  - Qt: Rearrange menus some
