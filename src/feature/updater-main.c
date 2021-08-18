@@ -23,7 +23,7 @@
 #endif
 
 bool extractArchive(struct VDir* archive, const char* root) {
-	char path[PATH_MAX] = {};
+	char path[PATH_MAX] = {0};
 	struct VDirEntry* vde;
 	uint8_t block[8192];
 	ssize_t size;
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
 	UNUSED(argc);
 	UNUSED(argv);
 	struct mCoreConfig config;
-	char updateArchive[PATH_MAX] = {};
+	char updateArchive[PATH_MAX] = {0};
 	const char* root;
 	int ok = 1;
 
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
 			unlink(updateArchive);
 		}
 		if (!isPortable) {
-			char portableIni[PATH_MAX] = {};
+			char portableIni[PATH_MAX] = {0};
 			snprintf(portableIni, sizeof(portableIni), "%s/portable.ini", root);
 			unlink(portableIni);
 		}
