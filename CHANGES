@@ -22,6 +22,7 @@ Other fixes:
  - Libretro: Fix crash when using Game Boy codes (fixes mgba.io/i/2281)
 Misc:
  - Core: Suspend runloop when a core crashes
+ - mGUI: Add margin to right-aligned menu text (fixes mgba.io/i/871)
  - Qt: Rearrange menus some
  - Qt: Clean up cheats dialog
  - Qt: Only set default controller bindings if loading fails (fixes mgba.io/i/799)
