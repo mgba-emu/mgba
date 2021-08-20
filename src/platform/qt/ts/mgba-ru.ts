@@ -41,7 +41,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>Доступно обновление</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="23"/>
@@ -160,7 +160,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
         <source>Show advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>Расширенные настройки</translation>
     </message>
 </context>
 <context>
@@ -173,7 +173,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить новый код</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
@@ -188,7 +188,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../CheatsView.ui" line="100"/>
         <source>Code type</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип кода</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
@@ -229,37 +229,37 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../DolphinConnector.ui" line="14"/>
         <source>Connect to Dolphin</source>
-        <translation type="unfinished"></translation>
+        <translation>Соединение с Dolphin</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="23"/>
         <source>Local computer</source>
-        <translation type="unfinished"></translation>
+        <translation>Локальный компьютер</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
         <source>IP address</source>
-        <translation type="unfinished"></translation>
+        <translation>IP-адрес</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Подключиться</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="68"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключиться</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="78"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="90"/>
         <source>Reset on connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Сброс при соединении</translation>
     </message>
 </context>
 <context>
@@ -297,7 +297,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../FrameView.ui" line="152"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Сброс</translation>
     </message>
 </context>
 <context>
@@ -353,7 +353,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../IOViewer.ui" line="14"/>
         <source>I/O Viewer</source>
-        <translation type="unfinished"></translation>
+        <translation>Просмотр I/O</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="26"/>
@@ -371,27 +371,27 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../library/LibraryTree.cpp" line="50"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Имя</translation>
     </message>
     <message>
         <location filename="../library/LibraryTree.cpp" line="51"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Расположение</translation>
     </message>
     <message>
         <location filename="../library/LibraryTree.cpp" line="52"/>
         <source>Platform</source>
-        <translation type="unfinished"></translation>
+        <translation>Платформа</translation>
     </message>
     <message>
         <location filename="../library/LibraryTree.cpp" line="53"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Размер</translation>
     </message>
     <message>
         <location filename="../library/LibraryTree.cpp" line="54"/>
         <source>CRC32</source>
-        <translation type="unfinished"></translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -418,52 +418,52 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../LoadSaveState.ui" line="50"/>
         <source>5</source>
-        <translation type="unfinished"></translation>
+        <translation>5</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="94"/>
         <source>6</source>
-        <translation type="unfinished"></translation>
+        <translation>6</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="116"/>
         <source>8</source>
-        <translation type="unfinished"></translation>
+        <translation>8</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="138"/>
         <source>4</source>
-        <translation type="unfinished"></translation>
+        <translation>4</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="160"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="182"/>
         <source>3</source>
-        <translation type="unfinished"></translation>
+        <translation>3</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="204"/>
         <source>7</source>
-        <translation type="unfinished"></translation>
+        <translation>7</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="226"/>
         <source>9</source>
-        <translation type="unfinished"></translation>
+        <translation>9</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="248"/>
         <source>2</source>
-        <translation type="unfinished"></translation>
+        <translation>2</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="261"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>Отмена</translation>
     </message>
 </context>
 <context>
@@ -471,12 +471,12 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../LogView.ui" line="14"/>
         <source>Logs</source>
-        <translation type="unfinished"></translation>
+        <translation>Логи</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="22"/>
         <source>Enabled Levels</source>
-        <translation type="unfinished"></translation>
+        <translation>Активные уровни</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="28"/>
@@ -516,17 +516,17 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../LogView.ui" line="108"/>
         <source>Advanced settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Расширенные настройки</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="128"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>Очистить</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="137"/>
         <source>Max Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Макс. строк</translation>
     </message>
 </context>
 <context>
@@ -534,7 +534,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../MapView.ui" line="14"/>
         <source>Maps</source>
-        <translation type="unfinished"></translation>
+        <translation>Карты</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="43"/>
@@ -544,12 +544,12 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../MapView.ui" line="124"/>
         <source>Export</source>
-        <translation type="unfinished">Экспортировать</translation>
+        <translation>Экспорт</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="139"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Копировать</translation>
     </message>
 </context>
 <context>
@@ -557,17 +557,17 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../MemoryDump.ui" line="14"/>
         <source>Save Memory Range</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить область памяти</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="20"/>
         <source>Start Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Исходный адрес:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="76"/>
         <source>Byte Count:</source>
-        <translation type="unfinished"></translation>
+        <translation>Количество байт:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="108"/>
@@ -580,43 +580,43 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../MemorySearch.ui" line="26"/>
         <source>Memory Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Поиск в памяти</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="51"/>
         <source>Address</source>
-        <translation type="unfinished">Адрес</translation>
+        <translation>Адрес</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="56"/>
         <source>Current Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Текущее значение</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="61"/>
         <location filename="../MemorySearch.ui" line="81"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="71"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>Значение</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="88"/>
         <source>Numeric</source>
-        <translation type="unfinished"></translation>
+        <translation>Число</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="101"/>
         <source>Text</source>
-        <translation type="unfinished"></translation>
+        <translation>Текст</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="118"/>
         <source>Width</source>
-        <translation type="unfinished"></translation>
+        <translation>Длина</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="125"/>
@@ -627,102 +627,102 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../MemorySearch.ui" line="138"/>
         <source>1 Byte (8-bit)</source>
-        <translation type="unfinished"></translation>
+        <translation>1 байт (8 бит)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="148"/>
         <source>2 Bytes (16-bit)</source>
-        <translation type="unfinished"></translation>
+        <translation>2 байта (16 бит)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="158"/>
         <source>4 Bytes (32-bit)</source>
-        <translation type="unfinished"></translation>
+        <translation>4 байта (32 бита)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="178"/>
         <source>Number type</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип числа</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="195"/>
         <source>Decimal</source>
-        <translation type="unfinished"></translation>
+        <translation>10-ный</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="202"/>
         <source>Hexadecimal</source>
-        <translation type="unfinished"></translation>
+        <translation>16-ный</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="216"/>
         <source>Search type</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип поиска</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="223"/>
         <source>Equal to value</source>
-        <translation type="unfinished"></translation>
+        <translation>Равно значению</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="236"/>
         <source>Greater than value</source>
-        <translation type="unfinished"></translation>
+        <translation>Больше значения</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="246"/>
         <source>Less than value</source>
-        <translation type="unfinished"></translation>
+        <translation>Меньше значения</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="256"/>
         <source>Unknown/changed</source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестно/изменилось</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="269"/>
         <source>Changed by value</source>
-        <translation type="unfinished"></translation>
+        <translation>Изменилось на значение</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="282"/>
         <source>Unchanged</source>
-        <translation type="unfinished"></translation>
+        <translation>Не изменилось</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="295"/>
         <source>Increased</source>
-        <translation type="unfinished"></translation>
+        <translation>Увеличилось</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="308"/>
         <source>Decreased</source>
-        <translation type="unfinished"></translation>
+        <translation>Уменьшилось</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="318"/>
         <source>Search ROM</source>
-        <translation type="unfinished"></translation>
+        <translation>Поиск в ROM</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="336"/>
         <source>New Search</source>
-        <translation type="unfinished"></translation>
+        <translation>Новый поиск</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="343"/>
         <source>Search Within</source>
-        <translation type="unfinished"></translation>
+        <translation>Поиск в результатах</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="350"/>
         <source>Open in Memory Viewer</source>
-        <translation type="unfinished"></translation>
+        <translation>Открыть в просмотре памяти</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="357"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновить</translation>
     </message>
 </context>
 <context>
@@ -730,77 +730,77 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../MemoryView.ui" line="14"/>
         <source>Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Память</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="38"/>
         <source>Inspect Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Просмотр адреса:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="88"/>
         <source>Set Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation>Выравнивание:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="108"/>
         <source>&amp;1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;1 байт</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="131"/>
         <source>&amp;2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;2 байта</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="151"/>
         <source>&amp;4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;4 байта</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="187"/>
         <source>Unsigned Integer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Целое число без знака:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="208"/>
         <source>Signed Integer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Целое число со знаком:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="229"/>
         <source>String:</source>
-        <translation type="unfinished"></translation>
+        <translation>Строка:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="243"/>
         <source>Load TBL</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить TBL</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="256"/>
         <source>Copy Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Скопировать выделение</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="263"/>
         <source>Paste</source>
-        <translation type="unfinished"></translation>
+        <translation>Вставить</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="283"/>
         <source>Save Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить выделение</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="290"/>
         <source>Save Range</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить область</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="297"/>
         <source>Load</source>
-        <translation type="unfinished">Загрузить</translation>
+        <translation>Загрузить</translation>
     </message>
 </context>
 <context>
@@ -808,77 +808,77 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../ObjView.ui" line="14"/>
         <source>Sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>Спрайты</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="94"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Скопировать</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="137"/>
         <source>Geometry</source>
-        <translation type="unfinished"></translation>
+        <translation>Геометрия</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="145"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>Позиция</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="184"/>
         <source>, </source>
-        <translation type="unfinished"></translation>
+        <translation>, </translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="224"/>
         <source>Dimensions</source>
-        <translation type="unfinished"></translation>
+        <translation>Размеры</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="263"/>
         <source>×</source>
-        <translation type="unfinished"></translation>
+        <translation>×</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="715"/>
         <source>Tile</source>
-        <translation type="unfinished"></translation>
+        <translation>Тайл</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="389"/>
         <source>Export</source>
-        <translation type="unfinished">Экспортировать</translation>
+        <translation>Экспорт</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="316"/>
         <source>Matrix</source>
-        <translation type="unfinished"></translation>
+        <translation>Матрица</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="402"/>
         <source>Attributes</source>
-        <translation type="unfinished"></translation>
+        <translation>Атрибуты</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="410"/>
         <source>Transform</source>
-        <translation type="unfinished"></translation>
+        <translation>Трансформация</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="430"/>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Выкл.</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="444"/>
         <source>Palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Палитра</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="481"/>
         <source>Double Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Двойной размер</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="548"/>
@@ -890,34 +890,34 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../ObjView.ui" line="522"/>
         <source>Flipped</source>
-        <translation type="unfinished"></translation>
+        <translation>Поворот</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="545"/>
         <source>H</source>
         <extracomment>Short for horizontal</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>Г</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="558"/>
         <source>V</source>
         <extracomment>Short for vertical</extracomment>
-        <translation type="unfinished"></translation>
+        <translation>В</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="572"/>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="592"/>
         <source>Normal</source>
-        <translation type="unfinished"></translation>
+        <translation>Обычный</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="606"/>
         <source>Mosaic</source>
-        <translation type="unfinished"></translation>
+        <translation>Мозаика</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="643"/>
@@ -927,17 +927,17 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../ObjView.ui" line="677"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>Приоритет</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="72"/>
         <source>Address</source>
-        <translation type="unfinished">Адрес</translation>
+        <translation>Адрес</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="122"/>
         <source>Magnification</source>
-        <translation type="unfinished">Увеличить</translation>
+        <translation>Увеличить</translation>
     </message>
 </context>
 <context>
@@ -945,12 +945,12 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../OverrideView.ui" line="20"/>
         <source>Game Overrides</source>
-        <translation type="unfinished"></translation>
+        <translation>Переопределения игры</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="30"/>
         <source>Game Boy Advance</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="42"/>
@@ -958,97 +958,97 @@ Game Boy Advance - зарегистрированная торговая мар�
         <location filename="../OverrideView.ui" line="241"/>
         <location filename="../OverrideView.ui" line="257"/>
         <source>Autodetect</source>
-        <translation type="unfinished"></translation>
+        <translation>Автоопределение</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="55"/>
         <source>Realtime clock</source>
-        <translation type="unfinished"></translation>
+        <translation>Реальное время</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="65"/>
         <source>Gyroscope</source>
-        <translation type="unfinished"></translation>
+        <translation>Гироскоп</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="75"/>
         <source>Tilt</source>
-        <translation type="unfinished"></translation>
+        <translation>Наклон</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="85"/>
         <source>Light sensor</source>
-        <translation type="unfinished"></translation>
+        <translation>Датчик света</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="95"/>
         <source>Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>Отдача</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="113"/>
         <source>Save type</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип сохранения</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="126"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="131"/>
         <source>SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="136"/>
         <source>Flash 512kb</source>
-        <translation type="unfinished"></translation>
+        <translation>Flash 512kb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="141"/>
         <source>Flash 1Mb</source>
-        <translation type="unfinished"></translation>
+        <translation>Flash 1Mb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="146"/>
         <source>EEPROM 8kB</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 8kB</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="151"/>
         <source>EEPROM 512 bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 512 bytes</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="156"/>
         <source>SRAM 64kB (bootlegs only)</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM 64kB (только для бутлегов)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="164"/>
         <source>Idle loop</source>
-        <translation type="unfinished"></translation>
+        <translation>Холостой цикл</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="190"/>
         <source>Game Boy Player features</source>
-        <translation type="unfinished"></translation>
+        <translation>Поддержка Game Boy Player</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="197"/>
         <source>VBA bug compatibility mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим совместимости с багами VBA</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="227"/>
         <source>Game Boy</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="233"/>
         <source>Game Boy model</source>
-        <translation type="unfinished"></translation>
+        <translation>Модель Game Boy</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="249"/>
@@ -1073,7 +1073,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../OverrideView.ui" line="529"/>
         <source>Palette preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Пресет палитры</translation>
     </message>
 </context>
 <context>
@@ -1081,62 +1081,62 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../PaletteView.ui" line="14"/>
         <source>Palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Палитра</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="44"/>
         <source>Background</source>
-        <translation type="unfinished"></translation>
+        <translation>Фон</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="94"/>
         <source>Objects</source>
-        <translation type="unfinished"></translation>
+        <translation>Объекты</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="153"/>
         <source>Selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Выделение</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="184"/>
         <source>Red</source>
-        <translation type="unfinished">Красный</translation>
+        <translation>Красный</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="191"/>
         <source>Green</source>
-        <translation type="unfinished">Зеленый</translation>
+        <translation>Зеленый</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="198"/>
         <source>Blue</source>
-        <translation type="unfinished">Синий</translation>
+        <translation>Синий</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="253"/>
         <source>16-bit value</source>
-        <translation type="unfinished"></translation>
+        <translation>16-битное значение</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="260"/>
         <source>Hex code</source>
-        <translation type="unfinished"></translation>
+        <translation>Hex-код</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="267"/>
         <source>Palette index</source>
-        <translation type="unfinished"></translation>
+        <translation>Индекс палитры</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="340"/>
         <source>Export BG</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт BG</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="360"/>
         <source>Export OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт OBJ</translation>
     </message>
 </context>
 <context>
@@ -1144,27 +1144,27 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../PlacementControl.ui" line="20"/>
         <source>Adjust placement</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройка положения</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="26"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>Все</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="65"/>
         <source>Offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Смещение</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="72"/>
         <source>X</source>
-        <translation type="unfinished"></translation>
+        <translation>X</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="79"/>
         <source>Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Y</translation>
     </message>
 </context>
 <context>
@@ -1172,12 +1172,12 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../PrinterView.ui" line="14"/>
         <source>Game Boy Printer</source>
-        <translation type="unfinished"></translation>
+        <translation>Принтер Game Boy</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="130"/>
         <source>Hurry up!</source>
-        <translation type="unfinished"></translation>
+        <translation>Поторопись!</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="137"/>
@@ -1187,12 +1187,12 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../PrinterView.ui" line="223"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Копировать</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="180"/>
         <source>Magnification</source>
-        <translation type="unfinished">Увеличить</translation>
+        <translation>Увеличение</translation>
     </message>
 </context>
 <context>
@@ -1200,7 +1200,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../AboutScreen.cpp" line="77"/>
         <source>2021</source>
-        <translation type="unfinished"></translation>
+        <translation>2021</translation>
     </message>
 </context>
 <context>
@@ -1209,29 +1209,32 @@ Game Boy Advance - зарегистрированная торговая мар�
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>Доступно обновление %1.
+Загрузить и установить его сейчас? После завершения загрузки потребуется перезапустить эмулятор.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="28"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Текущая версия: %1
+Новая версия: %2
+Размер файла: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="47"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка обновления...</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка не удалась. Пожалуйста, загрузите обновление вручную.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="66"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка завершена. Нажмите OK для перезапуска и установки обновления.</translation>
     </message>
 </context>
 <context>
@@ -1239,22 +1242,22 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="91"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>Стабильная</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="94"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>В разработке</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="96"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестно</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="219"/>
         <source>(None)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Нет)</translation>
     </message>
 </context>
 <context>
@@ -1262,14 +1265,14 @@ Download size: %3</source>
     <message>
         <location filename="../AssetTile.cpp" line="103"/>
         <source>%0%1%2</source>
-        <translation type="unfinished"></translation>
+        <translation>%0%1%2</translation>
     </message>
     <message>
         <location filename="../AssetTile.cpp" line="140"/>
         <location filename="../AssetTile.cpp" line="141"/>
         <location filename="../AssetTile.cpp" line="142"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0 (%1)</translation>
     </message>
 </context>
 <context>
@@ -1277,12 +1280,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsModel.cpp" line="53"/>
         <source>(untitled)</source>
-        <translation type="unfinished"></translation>
+        <translation>(без имени)</translation>
     </message>
     <message>
         <location filename="../CheatsModel.cpp" line="211"/>
         <source>Failed to open cheats file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть файл с чит-кодами: %1</translation>
     </message>
 </context>
 <context>
@@ -1291,13 +1294,13 @@ Download size: %3</source>
         <location filename="../CheatsView.cpp" line="48"/>
         <location filename="../CheatsView.cpp" line="56"/>
         <source>Autodetect (recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation>Автоопределение (рекомендовано)</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="86"/>
         <location filename="../CheatsView.cpp" line="93"/>
         <source>Select cheats file</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите файл с чит-кодами</translation>
     </message>
 </context>
 <context>
@@ -1305,12 +1308,12 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="712"/>
         <source>Failed to open save file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть файл сохранения: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="743"/>
         <source>Failed to open game file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть файл игры: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="768"/>
@@ -1320,12 +1323,12 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="845"/>
         <source>Failed to open snapshot file for reading: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть файл изображения для считывания: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="861"/>
         <source>Failed to open snapshot file for writing: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть файл изображения для записи: %1</translation>
     </message>
 </context>
 <context>
@@ -1333,17 +1336,17 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="55"/>
         <source>Failed to open game file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть файл игры: %1</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="88"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось загрузить игру. Вы уверены, что она в правильном формате?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="115"/>
         <source>Failed to open save file. Is the save directory writable?</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть файл сохранения. Разрешена ли запись для папки сохранений?</translation>
     </message>
 </context>
 <context>
@@ -1351,52 +1354,52 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.cpp" line="578"/>
         <source>Export frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт кадра</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="579"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="597"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="599"/>
         <source>Background</source>
-        <translation type="unfinished"></translation>
+        <translation>Фон</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="602"/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Окно</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="605"/>
         <source>Objwin</source>
-        <translation type="unfinished"></translation>
+        <translation>Objwin</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="610"/>
         <source>Sprite</source>
-        <translation type="unfinished"></translation>
+        <translation>Спрайт</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="613"/>
         <source>Backdrop</source>
-        <translation type="unfinished"></translation>
+        <translation>Подложка</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="616"/>
         <source>Frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Кадр</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="622"/>
         <source>%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -1404,7 +1407,7 @@ Download size: %3</source>
     <message>
         <location filename="../GBAApp.cpp" line="73"/>
         <source>Enable Discord Rich Presence</source>
-        <translation type="unfinished"></translation>
+        <translation>Вкл. расширенный статус в Discord</translation>
     </message>
 </context>
 <context>
@@ -1412,22 +1415,22 @@ Download size: %3</source>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="67"/>
         <source>Clear Button</source>
-        <translation type="unfinished"></translation>
+        <translation>Сброс кнопки</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="79"/>
         <source>Clear Analog</source>
-        <translation type="unfinished"></translation>
+        <translation>Сброс аналога</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="90"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновить</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="100"/>
         <source>Set all</source>
-        <translation type="unfinished"></translation>
+        <translation>Назначить все</translation>
     </message>
 </context>
 <context>
@@ -1435,42 +1438,42 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="29"/>
         <source>Server settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки сервера</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="35"/>
         <source>Local port</source>
-        <translation type="unfinished"></translation>
+        <translation>Локальный порт</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="37"/>
         <source>Bind address</source>
-        <translation type="unfinished"></translation>
+        <translation>Привязка адреса</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="56"/>
         <source>Break</source>
-        <translation type="unfinished">Прервать</translation>
+        <translation>Прервать</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="95"/>
         <source>Stop</source>
-        <translation type="unfinished">Остановить</translation>
+        <translation>Стоп</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="105"/>
         <source>Start</source>
-        <translation type="unfinished">Начать</translation>
+        <translation>Запуск</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="113"/>
         <source>Crash</source>
-        <translation type="unfinished"></translation>
+        <translation>Сбой</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="113"/>
         <source>Could not start GDB server</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось запустить GDB-сервер</translation>
     </message>
 </context>
 <context>
@@ -1478,17 +1481,17 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.cpp" line="61"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть выходной файл: %1</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
         <source>Select output file</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор выходного файла</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
-        <translation type="unfinished"></translation>
+        <translation>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</translation>
     </message>
 </context>
 <context>
@@ -1496,102 +1499,102 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="39"/>
         <source>Background mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим фона</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="40"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим 0: 4 тайловых слоя</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="41"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим 1: 2 тайловых слоя + 1 тайл. слой с вращением/масштабированием</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="42"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим 2: 2 тайловых слоя с вращением/масштабированием</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="43"/>
         <source>Mode 3: Full 15-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим 3: Полная 15-битная битовая карта</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="44"/>
         <source>Mode 4: Full 8-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим 4: Полная 8-битная битовая карта</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="45"/>
         <source>Mode 5: Small 15-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим 5: Малая 15-битная битовая карта</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="49"/>
         <source>CGB Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим CGB</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="50"/>
         <source>Frame select</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор кадра</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="51"/>
         <source>Unlocked HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>Разблокированный HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="52"/>
         <source>Linear OBJ tile mapping</source>
-        <translation type="unfinished"></translation>
+        <translation>Линейная отрисовка OBJ тайлов</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="53"/>
         <source>Force blank screen</source>
-        <translation type="unfinished"></translation>
+        <translation>Принудительная очистка экрана</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="54"/>
         <source>Enable background 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Вкл. фон 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="55"/>
         <source>Enable background 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Вкл. фон 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="56"/>
         <source>Enable background 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Вкл. фон 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="57"/>
         <source>Enable background 3</source>
-        <translation type="unfinished"></translation>
+        <translation>Вкл. фон 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="58"/>
         <source>Enable OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>Вкл. OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="59"/>
         <source>Enable Window 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Вкл. Окно 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="60"/>
         <source>Enable Window 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Вкл. Окно 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="61"/>
         <source>Enable OBJ Window</source>
-        <translation type="unfinished"></translation>
+        <translation>Вкл. Окно OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="65"/>
@@ -3321,28 +3324,28 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1498"/>
         <location filename="../IOViewer.cpp" line="1510"/>
         <source>Red</source>
-        <translation type="unfinished">Красный</translation>
+        <translation>Красный</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1501"/>
         <location filename="../IOViewer.cpp" line="1513"/>
         <source>Blue</source>
-        <translation type="unfinished">Синий</translation>
+        <translation>Синий</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1517"/>
         <source>Sprite ordering</source>
-        <translation type="unfinished"></translation>
+        <translation>Порядок спрайтов</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1518"/>
         <source>OAM order</source>
-        <translation type="unfinished"></translation>
+        <translation>Порядок OAM</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1519"/>
         <source>x coordinate sorting</source>
-        <translation type="unfinished"></translation>
+        <translation>Сортировка x координат</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1530"/>
@@ -3371,7 +3374,7 @@ Download size: %3</source>
     <message>
         <location filename="../KeyEditor.cpp" line="59"/>
         <source>Menu</source>
-        <translation type="unfinished"></translation>
+        <translation>Меню</translation>
     </message>
 </context>
 <context>
@@ -3379,12 +3382,12 @@ Download size: %3</source>
     <message>
         <location filename="../LoadSaveState.cpp" line="74"/>
         <source>Load State</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить состояние</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="74"/>
         <source>Save State</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить состояние</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="183"/>
@@ -3394,12 +3397,12 @@ Download size: %3</source>
     <message>
         <location filename="../LoadSaveState.cpp" line="192"/>
         <source>Corrupted</source>
-        <translation type="unfinished"></translation>
+        <translation>Повреждено</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="221"/>
         <source>Slot %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Слот %1</translation>
     </message>
 </context>
 <context>
@@ -3408,7 +3411,7 @@ Download size: %3</source>
         <location filename="../LogConfigModel.cpp" line="90"/>
         <location filename="../LogConfigModel.cpp" line="111"/>
         <source>Default</source>
-        <translation type="unfinished"></translation>
+        <translation>По умолчанию</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="92"/>
@@ -3456,7 +3459,7 @@ Download size: %3</source>
     <message>
         <location filename="../LogController.cpp" line="79"/>
         <source>An error occurred</source>
-        <translation type="unfinished"></translation>
+        <translation>Произошла ошибка</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="151"/>
@@ -3499,7 +3502,7 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="47"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>Приоритет</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="48"/>
@@ -3516,13 +3519,13 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="50"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Размер</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="51"/>
         <location filename="../MapView.cpp" line="62"/>
         <source>Offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Смещение</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="52"/>
@@ -3532,22 +3535,22 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="106"/>
         <source>Map Addr.</source>
-        <translation type="unfinished"></translation>
+        <translation>Адрес карты</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="107"/>
         <source>Mirror</source>
-        <translation type="unfinished"></translation>
+        <translation>Зеркально</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="135"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="137"/>
         <source>Both</source>
-        <translation type="unfinished"></translation>
+        <translation>Оба</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="139"/>
@@ -3564,17 +3567,17 @@ Download size: %3</source>
         <location filename="../MapView.cpp" line="168"/>
         <location filename="../MapView.cpp" line="216"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translation>Н/Д</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="259"/>
         <source>Export map</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт карты</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="260"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -3582,12 +3585,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryDump.cpp" line="24"/>
         <source>Save memory region</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить область памяти</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="30"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть выходной файл: %1</translation>
     </message>
 </context>
 <context>
@@ -3595,62 +3598,62 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryModel.cpp" line="44"/>
         <source>Copy selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Копировать выделение</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="49"/>
         <source>Save selection</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить выделение</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="54"/>
         <source>Paste</source>
-        <translation type="unfinished"></translation>
+        <translation>Вставить</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="59"/>
         <source>Load</source>
-        <translation type="unfinished">Загрузить</translation>
+        <translation>Загрузить</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="108"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>Все</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="153"/>
         <source>Load TBL</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить TBL</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="207"/>
         <source>Save selected memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранение выделенной памяти</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="213"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть выходной файл: %1</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="221"/>
         <source>Load memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка памяти</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="227"/>
         <source>Failed to open input file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось загрузить входной файл: %1</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="342"/>
         <source>TBL</source>
-        <translation type="unfinished"></translation>
+        <translation>TBL</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="342"/>
         <source>ISO-8859-1</source>
-        <translation type="unfinished"></translation>
+        <translation>ISO-8859-1</translation>
     </message>
 </context>
 <context>
@@ -3658,17 +3661,17 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.cpp" line="221"/>
         <source> (%0/%1×)</source>
-        <translation type="unfinished"></translation>
+        <translation> (%0/%1×)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.cpp" line="223"/>
         <source> (⅟%0×)</source>
-        <translation type="unfinished"></translation>
+        <translation> (⅟%0×)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.cpp" line="226"/>
         <source> (%0×)</source>
-        <translation type="unfinished"></translation>
+        <translation> (%0×)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.cpp" line="230"/>
@@ -3687,7 +3690,7 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.cpp" line="179"/>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Выкл.</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="180"/>
@@ -3704,12 +3707,12 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.cpp" line="188"/>
         <source>Normal</source>
-        <translation type="unfinished"></translation>
+        <translation>Обычный</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="191"/>
         <source>Trans</source>
-        <translation type="unfinished"></translation>
+        <translation>Прозрач.</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="194"/>
@@ -3719,23 +3722,23 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.cpp" line="197"/>
         <source>Invalid</source>
-        <translation type="unfinished"></translation>
+        <translation>Неверно</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="253"/>
         <location filename="../ObjView.cpp" line="258"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translation>Н/Д</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="283"/>
         <source>Export sprite</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт спрайта</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="284"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -3743,17 +3746,17 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.cpp" line="54"/>
         <source>Official MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>Официальные MBC</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="58"/>
         <source>Licensed MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>Лицензионные MBC</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="62"/>
         <source>Unlicensed MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>Нелицензионные MBC</translation>
     </message>
 </context>
 <context>
@@ -3779,17 +3782,17 @@ Download size: %3</source>
     <message>
         <location filename="../PaletteView.cpp" line="137"/>
         <source>Export palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт палитры</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="138"/>
         <source>Windows PAL (*.pal);;Adobe Color Table (*.act)</source>
-        <translation type="unfinished"></translation>
+        <translation>Windows PAL (*.pal);;Adobe Color Table (*.act)</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="141"/>
         <source>Failed to open output palette file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть файл палитры: %1</translation>
     </message>
 </context>
 <context>
@@ -3801,18 +3804,18 @@ Download size: %3</source>
         <location filename="../ROMInfo.cpp" line="85"/>
         <location filename="../ROMInfo.cpp" line="86"/>
         <source>(unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(неизвестно)</translation>
     </message>
     <message>
         <location filename="../ROMInfo.cpp" line="53"/>
         <location filename="../ROMInfo.cpp" line="60"/>
         <source> bytes</source>
-        <translation type="unfinished"></translation>
+        <translation> байт</translation>
     </message>
     <message>
         <location filename="../ROMInfo.cpp" line="79"/>
         <source>(no database present)</source>
-        <translation type="unfinished"></translation>
+        <translation>(нет в базе данных)</translation>
     </message>
 </context>
 <context>
@@ -3820,12 +3823,12 @@ Download size: %3</source>
     <message>
         <location filename="../ReportView.cpp" line="322"/>
         <source>Bug report archive</source>
-        <translation type="unfinished"></translation>
+        <translation>Архив отчётов об ошибках</translation>
     </message>
     <message>
         <location filename="../ReportView.cpp" line="322"/>
         <source>ZIP archive (*.zip)</source>
-        <translation type="unfinished"></translation>
+        <translation>ZIP архив (*.zip)</translation>
     </message>
 </context>
 <context>
@@ -3833,62 +3836,62 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="39"/>
         <source>Save games and save states (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Игровые сохранения и сохранения состояний (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="40"/>
         <source>Select save game or save state</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор игрового сохранения или сохранения состояния</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="52"/>
         <source>Save games (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Игровые сохранения (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="53"/>
         <source>Select save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор игрового сохранения</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="74"/>
         <source>Conversion failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка конвертации</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="74"/>
         <source>Failed to convert the save game. This is probably a bug.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось сконвертировать игровое сохранение. Возможно, это баг.</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="90"/>
         <source>No file selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Не выбран файл</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="97"/>
         <source>Could not open file</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть файл</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="111"/>
         <source>No valid formats found</source>
-        <translation type="unfinished"></translation>
+        <translation>Совместимые форматы не найдены</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="119"/>
         <source>Please select a valid input file</source>
-        <translation type="unfinished"></translation>
+        <translation>Пожалуйста, выберите совместимый входной файл</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="130"/>
         <source>No valid conversions found</source>
-        <translation type="unfinished"></translation>
+        <translation>Совместимые конверсии не найдены</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="576"/>
         <source>Cannot convert save games between platforms</source>
-        <translation type="unfinished"></translation>
+        <translation>Нельзя сконвертировать сохранения для разных платформ</translation>
     </message>
 </context>
 <context>
@@ -3922,43 +3925,43 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="206"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="213"/>
         <source>None (Still Image)</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет (статичное изображение)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="317"/>
         <source>Keyboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Клавиатура</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="325"/>
         <source>Controllers</source>
-        <translation type="unfinished"></translation>
+        <translation>Контроллеры</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="377"/>
         <source>Shortcuts</source>
-        <translation type="unfinished"></translation>
+        <translation>Сочетания клавиш</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="389"/>
         <location filename="../SettingsView.cpp" line="399"/>
         <source>Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Шейдеры</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="421"/>
         <source>Select BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="428"/>
         <source>Select directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор папки</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="811"/>
@@ -3968,34 +3971,34 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="829"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>Никогда</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="834"/>
         <source>Just now</source>
-        <translation type="unfinished"></translation>
+        <translation>Только сейчас</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="838"/>
         <source>Less than an hour ago</source>
-        <translation type="unfinished"></translation>
+        <translation>Менее часа назад</translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="843"/>
         <source>%n hour(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n час назад</numerusform>
+            <numerusform>%n часа назад</numerusform>
+            <numerusform>%n часов назад</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="847"/>
         <source>%n day(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n день назад</numerusform>
+            <numerusform>%n дня назад</numerusform>
+            <numerusform>%n дней назад</numerusform>
         </translation>
     </message>
 </context>
@@ -4004,32 +4007,32 @@ Download size: %3</source>
     <message>
         <location filename="../ShaderSelector.cpp" line="53"/>
         <source>No shader active</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет активных шейдеров</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="66"/>
         <source>Load shader</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка шейдера</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="103"/>
         <source>No shader loaded</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет загруженных шейдеров</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="111"/>
         <source>by %1</source>
-        <translation type="unfinished"></translation>
+        <translation>автор %1</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="122"/>
         <source>Preprocessing</source>
-        <translation type="unfinished"></translation>
+        <translation>Предобработка</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="129"/>
         <source>Pass %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Проход %1</translation>
     </message>
 </context>
 <context>
@@ -4037,17 +4040,17 @@ Download size: %3</source>
     <message>
         <location filename="../ShortcutModel.cpp" line="66"/>
         <source>Action</source>
-        <translation type="unfinished"></translation>
+        <translation>Действие</translation>
     </message>
     <message>
         <location filename="../ShortcutModel.cpp" line="68"/>
         <source>Keyboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Клавиатура</translation>
     </message>
     <message>
         <location filename="../ShortcutModel.cpp" line="70"/>
         <source>Gamepad</source>
-        <translation type="unfinished"></translation>
+        <translation>Геймпад</translation>
     </message>
 </context>
 <context>
@@ -4055,18 +4058,18 @@ Download size: %3</source>
     <message>
         <location filename="../TileView.cpp" line="177"/>
         <source>Export tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт тайлов</translation>
     </message>
     <message>
         <location filename="../TileView.cpp" line="178"/>
         <location filename="../TileView.cpp" line="190"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished"></translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
         <location filename="../TileView.cpp" line="189"/>
         <source>Export tile</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт тайла</translation>
     </message>
 </context>
 <context>
@@ -4074,17 +4077,17 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.cpp" line="202"/>
         <source>Failed to open output video file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть выходной видеофайл: %1</translation>
     </message>
     <message>
         <location filename="../VideoView.cpp" line="223"/>
         <source>Native (%0x%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Нативно (%0x%1)</translation>
     </message>
     <message>
         <location filename="../VideoView.cpp" line="238"/>
         <source>Select output file</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор выходного файла</translation>
     </message>
 </context>
 <context>
@@ -4092,17 +4095,17 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="290"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Игры Game Boy Advance (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="307"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Игры Game Boy (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="311"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Все игры (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="312"/>
@@ -4112,128 +4115,130 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="327"/>
         <source>Archives (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Архивы (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="332"/>
         <location filename="../Window.cpp" line="344"/>
         <location filename="../Window.cpp" line="371"/>
         <source>Select ROM</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор игры</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="362"/>
         <source>Select folder</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор папки</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="495"/>
         <location filename="../Window.cpp" line="502"/>
         <source>Select save</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор сохранения</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="417"/>
         <source>Select patch</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор патча</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="417"/>
         <source>Patches (*.ips *.ups *.bps)</source>
-        <translation type="unfinished"></translation>
+        <translation>Патчи (*.ips *.ups *.bps)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="428"/>
         <source>Select e-Reader dotcode</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор карточки e-Reader</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="428"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Карточка e-Reader (*.raw *.bin *.bmp)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="488"/>
         <source>Select image</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор изображения</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="488"/>
         <source>Image file (*.png *.gif *.jpg *.jpeg);;All files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл изображения (*.png *.gif *.jpg *.jpeg);;All files (*)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="495"/>
         <location filename="../Window.cpp" line="502"/>
         <source>GameShark saves (*.sps *.xps)</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранения GameShark (*.sps *.xps)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="534"/>
         <source>Select video log</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор видеолога</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="534"/>
         <source>Video logs (*.mvl)</source>
-        <translation type="unfinished"></translation>
+        <translation>Видеологи (*.mvl)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="935"/>
         <source>Crash</source>
-        <translation type="unfinished"></translation>
+        <translation>Сбой</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="936"/>
         <source>The game has crashed with the following error:
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>В игре произошёл сбой со следующей ошибкой:
+
+%1</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="943"/>
         <source>Couldn&apos;t Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Запуск не удался</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="944"/>
         <source>Could not start game.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось запустить игру.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="958"/>
         <source>Unimplemented BIOS call</source>
-        <translation type="unfinished"></translation>
+        <translation>Неизвестный вызов BIOS</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="959"/>
         <source>This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience.</source>
-        <translation type="unfinished"></translation>
+        <translation>Игра использует нереализованный вызов BIOS. Пожалуйста, воспользуйтесь официальным BIOS для лучшей совместимости.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="972"/>
         <source>Failed to create an appropriate display device, falling back to software display. Games may run slowly, especially with larger windows.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось создать устройство отображения, возврат к программному режиму. Игры могут идти медленнее, особенно в окнах больших размеров.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1048"/>
         <source>Really make portable?</source>
-        <translation type="unfinished"></translation>
+        <translation>Перейти в портативный режим?</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1049"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>После этого эмулятор будет загружать конфигурацию из папки с исполняемым файлом. Продолжить?</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1061"/>
         <source>Restart needed</source>
-        <translation type="unfinished"></translation>
+        <translation>Требуется перезапуск</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1062"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
-        <translation type="unfinished"></translation>
+        <translation>Для применения некоторых изменений требуется перезапустить эмулятор.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1101"/>
@@ -4258,7 +4263,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1179"/>
         <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Файл</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1181"/>
@@ -4268,12 +4273,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1184"/>
         <source>Load ROM in archive...</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить игру из архива...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1185"/>
         <source>Add folder to library...</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить папку в библиотеку...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="379"/>
@@ -4283,38 +4288,38 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="380"/>
         <source>Select save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор игрового сохранения</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="388"/>
         <source>mGBA save state files (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл сохранения состояния mGBA (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="390"/>
         <location filename="../Window.cpp" line="395"/>
         <source>Select save state</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор сохранения состояния</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="436"/>
         <source>Select e-Reader card images</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор изображения карточки e-Reader</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="436"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл изображения (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="437"/>
         <source>Conversion finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Конвертация завершена</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="475"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 из %2 карточек e-Reader успешно сконвертировано.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1188"/>
@@ -6187,7 +6192,7 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="565"/>
         <source>Show advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>Расширенные настройки</translation>
     </message>
 </context>
 </TS>
