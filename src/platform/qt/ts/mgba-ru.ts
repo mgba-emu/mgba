@@ -72,7 +72,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation type="unfinished"></translation>
+        <translation>Тайл #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
@@ -277,7 +277,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../FrameView.ui" line="50"/>
         <source>Freeze frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Зафиксировать фрейм</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="84"/>
