@@ -708,7 +708,11 @@ static struct VDir* _makeOutDir(const char* testName) {
 		strncpy(pathEnd, testName, len);
 		pathEnd += len;
 
+#ifndef _WIN32
 		mkdir(path, 0777);
+#else
+		mkdir(path);
+#endif
 
 		if (!pos) {
 			break;
