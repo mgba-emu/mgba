@@ -4313,118 +4313,118 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1188"/>
         <source>Load alternate save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить альтернативное сохранение...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1191"/>
         <source>Load temporary save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить временное сохранение...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1195"/>
         <source>Load &amp;patch...</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить &amp;патч...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1198"/>
         <source>Boot BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузиться в BIOS</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1201"/>
         <source>Replace ROM...</source>
-        <translation type="unfinished"></translation>
+        <translation>Заменить ROM...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1203"/>
         <source>Scan e-Reader dotcodes...</source>
-        <translation type="unfinished"></translation>
+        <translation>Сканировать dot-коды e-Reader...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1207"/>
         <source>Convert e-Reader card image to raw...</source>
-        <translation type="unfinished"></translation>
+        <translation>Конвертировать карту e-Reader в raw...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1211"/>
         <source>ROM &amp;info...</source>
-        <translation type="unfinished"></translation>
+        <translation>Информация об &amp;игре...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1213"/>
         <source>Recent</source>
-        <translation type="unfinished"></translation>
+        <translation>Недавние</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1571"/>
         <source>Make portable</source>
-        <translation type="unfinished"></translation>
+        <translation>Портативный режим</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1216"/>
         <source>&amp;Load state</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Загрузить состояние</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1221"/>
         <source>Load state file...</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить состояние из файла...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1226"/>
         <source>&amp;Save state</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Сохранить состояние</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1231"/>
         <source>Save state file...</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить состояние в файл...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1236"/>
         <source>Quick load</source>
-        <translation type="unfinished"></translation>
+        <translation>Быстрая загрузка</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1237"/>
         <source>Quick save</source>
-        <translation type="unfinished"></translation>
+        <translation>Быстрое сохранение</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1239"/>
         <source>Load recent</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить недавнее</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1244"/>
         <source>Save recent</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить в недавнее</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1252"/>
         <source>Undo load state</source>
-        <translation type="unfinished"></translation>
+        <translation>Отмена загрузки состояния</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1255"/>
         <source>Undo save state</source>
-        <translation type="unfinished"></translation>
+        <translation>Отмена сохранения состояния</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1262"/>
         <location filename="../Window.cpp" line="1267"/>
         <source>State &amp;%1</source>
-        <translation type="unfinished"></translation>
+        <translation>Слот &amp;%1</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1402"/>
         <source>Load camera image...</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить изображение с камеры...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1275"/>
         <source>Convert save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>Конвертировать игровое сохранение...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="495"/>
@@ -4434,42 +4434,42 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1277"/>
         <source>Import GameShark Save...</source>
-        <translation type="unfinished"></translation>
+        <translation>Импорт сохранения GameShark...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1280"/>
         <source>Export GameShark Save...</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт сохранения GameShark...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1285"/>
         <source>New multiplayer window</source>
-        <translation type="unfinished"></translation>
+        <translation>Новое окно мультиплеера</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1290"/>
         <source>Connect to Dolphin...</source>
-        <translation type="unfinished"></translation>
+        <translation>Соединение с Dolphin...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1296"/>
         <source>Report bug...</source>
-        <translation type="unfinished"></translation>
+        <translation>Сообщить об ошибке...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1302"/>
         <source>About...</source>
-        <translation type="unfinished"></translation>
+        <translation>О программе...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1305"/>
         <source>E&amp;xit</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Выход</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1308"/>
         <source>&amp;Emulation</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Эмуляция</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1309"/>
