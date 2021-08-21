@@ -305,6 +305,9 @@ set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CM
 
 if(WIN32)
 	set_target_properties(${BINARY_NAME}-qt PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+	if(NOT MSVC)
+		target_link_libraries(${BINARY_NAME}-qt -municode)
+	endif()
 endif()
 
 list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::Network)
