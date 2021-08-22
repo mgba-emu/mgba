@@ -99,7 +99,7 @@
 
 <h3>Requerimentos do sistema</h3>
 
-<p>Os requerimentos são mínimos. Qualquer computador que consiga executar o Windows Vista ou mais novo deve ser capaz de lidar com a emulação. Suporte pra OpenGL 1.1 ou mais novo também é requerido, com o OpenGL 3.2 ou mais novo pros shaders e funções avançadas.</p>
+<p>Os requerimentos são mínimos. Qualquer computador que consiga executar o Windows Vista ou mais novo deve ser capaz de lidar com a emulação. Suporte para OpenGL 1.1 ou mais novo também é requerido, com o OpenGL 3.2 ou mais novo para os shaders e funções avançadas.</p>
 
 <h2>Downloads</h2>
 
