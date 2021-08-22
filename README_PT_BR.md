@@ -273,4 +273,4 @@ make
 <li><a href="https://www.sqlite.org">SQLite3</a>, a qual está sob o domínio público.</li>
 </ul>
 
-<p>Se você é um publicador de jogos e desejar licenciar o mGBA pra uso comercial por favor envie um email pra <a href="mailto:licensing@mgba.io">licensing@mgba.io</a> pra mais informações.</p>
+<p>Se você é um publicador de jogos e desejar licenciar o mGBA para uso comercial por favor envie um email para <a href="mailto:licensing@mgba.io">licensing@mgba.io</a> para mais informações.</p>
