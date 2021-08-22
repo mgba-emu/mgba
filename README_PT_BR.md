@@ -11,7 +11,7 @@
 
 <ul>
 <li>Suporte altamente preciso do hardware do Game Boy Advance<a href="#missing"><sup>[1]</sup></a>.</li>
-<li>Suporte pro hardware do Game Boy/Game Boy Color.</li>
+<li>Suporte ao hardware do Game Boy/Game Boy Color.</li>
 <li>Emulação rápida. Conhecido por executar na velocidade máxima até mesmo nos hardwares low-end tais como netbooks.</li>
 <li>Portes do Qt e SDL pra um frontend peso-pesado e um peso-leve.</li>
 <li>Suporte pro cabo do link local (do mesmo computador).</li>
