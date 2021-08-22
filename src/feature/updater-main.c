@@ -22,6 +22,10 @@
 #include <unistd.h>
 #endif
 
+#ifndef W_OK
+#define W_OK 02
+#endif
+
 bool extractArchive(struct VDir* archive, const char* root) {
 	char path[PATH_MAX] = {0};
 	struct VDirEntry* vde;
