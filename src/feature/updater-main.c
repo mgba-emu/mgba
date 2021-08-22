@@ -16,6 +16,7 @@
 #include <direct.h>
 #include <io.h>
 #include <process.h>
+#include <synchapi.h>
 
 #define mkdir(X, Y) _mkdir(X)
 #elif defined(_POSIX_C_SOURCE)
@@ -52,7 +53,11 @@ bool extractArchive(struct VDir* archive, const char* root) {
 			errno = 0;
 			vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
 			if (!vfOut && errno == EACCES) {
+#ifdef _WIN32
+				Sleep(1000);
+#else
 				sleep(1);
+#endif
 				vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
 			}
 			if (!vfOut) {
