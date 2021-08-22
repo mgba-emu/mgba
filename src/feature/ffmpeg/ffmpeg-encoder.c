@@ -311,11 +311,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			FFmpegEncoderClose(encoder);
 			return false;
 		}
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 		encoder->audioFrame = av_frame_alloc();
-#else
-		encoder->audioFrame = avcodec_alloc_frame();
-#endif
 		if (!encoder->audio->frame_size) {
 			encoder->audio->frame_size = 1;
 		}
@@ -493,11 +489,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 				return false;
 			}
 
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 			encoder->sinkFrame = av_frame_alloc();
-#else
-			encoder->sinkFrame = avcodec_alloc_frame();
-#endif
 		}
 		AVDictionary* opts = 0;
 		av_dict_set(&opts, "strict", "-2", 0);
@@ -507,11 +499,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			FFmpegEncoderClose(encoder);
 			return false;
 		}
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 		encoder->videoFrame = av_frame_alloc();
-#else
-		encoder->videoFrame = avcodec_alloc_frame();
-#endif
 		encoder->videoFrame->format = encoder->video->pix_fmt != AV_PIX_FMT_PAL8 ? encoder->video->pix_fmt : encoder->ipixFormat;
 		encoder->videoFrame->width = encoder->video->width;
 		encoder->videoFrame->height = encoder->video->height;
@@ -585,11 +573,7 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	}
 
 	if (encoder->audioFrame) {
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 		av_frame_free(&encoder->audioFrame);
-#else
-		avcodec_free_frame(&encoder->audioFrame);
-#endif
 	}
 	if (encoder->audio) {
 #ifdef FFMPEG_USE_CODECPAR
@@ -620,19 +604,11 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 
 	if (encoder->videoFrame) {
 		av_freep(encoder->videoFrame->data);
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 		av_frame_free(&encoder->videoFrame);
-#else
-		avcodec_free_frame(&encoder->videoFrame);
-#endif
 	}
 
 	if (encoder->sinkFrame) {
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 		av_frame_free(&encoder->sinkFrame);
-#else
-		avcodec_free_frame(&encoder->sinkFrame);
-#endif
 		encoder->sinkFrame = NULL;
 	}
 
@@ -701,14 +677,10 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 	if (avresample_available(encoder->resampleContext) < encoder->audioFrame->nb_samples) {
 		return;
 	}
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->audioFrame);
-#endif
 	int samples = avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / channelSize);
 #else
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->audioFrame);
-#endif
 	if (swr_get_out_samples(encoder->resampleContext, 1) < encoder->audioFrame->nb_samples) {
 		swr_convert(encoder->resampleContext, NULL, 0, (const uint8_t**) &encoder->audioBuffer, encoder->audioBufferSize / 4);
 		return;
@@ -794,9 +766,7 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 	}
 	stride *= BYTES_PER_PIXEL;
 
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->videoFrame);
-#endif
 	if (encoder->video->codec->id == AV_CODEC_ID_WEBP) {
 		// TODO: Figure out why WebP is rescaling internally (should video frames not be rescaled externally?)
 		encoder->videoFrame->pts = encoder->currentVideoFrame;
