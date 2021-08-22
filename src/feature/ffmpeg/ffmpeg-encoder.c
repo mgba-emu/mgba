@@ -86,7 +86,6 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->audioStream = NULL;
 	encoder->audioFrame = NULL;
 	encoder->audioBuffer = NULL;
-	encoder->postaudioBuffer = NULL;
 	encoder->video = NULL;
 	encoder->videoStream = NULL;
 	encoder->videoFrame = NULL;
@@ -562,10 +561,6 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 		avio_close(encoder->context->pb);
 	}
 
-	if (encoder->postaudioBuffer) {
-		av_free(encoder->postaudioBuffer);
-		encoder->postaudioBuffer = NULL;
-	}
 	if (encoder->audioBuffer) {
 		av_free(encoder->audioBuffer);
 		encoder->audioBuffer = NULL;
