@@ -1,6 +1,6 @@
 <h1>mGBA</h1>
 
-<p>O mGBA é um emulador pra executar jogos de Game Boy Advance. Ele mira ser mais rápido e mais preciso do que muitos emuladores existentes do Game Boy Advance assim como adicionar características que faltam em outros emuladores. Ele também suporta jogos de Game Boy e Game Boy Color.</p>
+<p>O mGBA é um emulador para executar jogos de Game Boy Advance. Ele visa ser mais rápido e preciso do que muitos emuladores existentes de Game Boy Advance, assim como adicionar características que faltam em outros emuladores. Ele também suporta jogos de Game Boy e Game Boy Color.</p>
 
 <p>Notícias e downloads atualizados podem ser achados em <a href="https://mgba.io/">mgba.io</a>.</p>
 
