@@ -693,61 +693,76 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 }
 
 bool _ffmpegWriteAudioFrame(struct FFmpegEncoder* encoder, struct AVFrame* audioFrame) {
-	AVPacket packet;
-	av_init_packet(&packet);
-	packet.data = 0;
-	packet.size = 0;
+	AVPacket* packet;
+#ifdef FFMPEG_USE_PACKET_UNREF
+	packet = av_packet_alloc();
+#else
+	packet = av_malloc(sizeof(*packet));
+	av_init_packet(packet);
+#endif
+	packet->data = 0;
+	packet->size = 0;
 
 	int gotData;
 #ifdef FFMPEG_USE_PACKETS
 	avcodec_send_frame(encoder->audio, audioFrame);
-	gotData = avcodec_receive_packet(encoder->audio, &packet);
-	gotData = (gotData == 0) && packet.size;
+	gotData = avcodec_receive_packet(encoder->audio, packet);
+	gotData = (gotData == 0) && packet->size;
 #else
-	avcodec_encode_audio2(encoder->audio, &packet, audioFrame, &gotData);
+	avcodec_encode_audio2(encoder->audio, packet, audioFrame, &gotData);
 #endif
-	packet.pts = av_rescale_q(packet.pts, encoder->audio->time_base, encoder->audioStream->time_base);
-	packet.dts = packet.pts;
+	packet->pts = av_rescale_q(packet->pts, encoder->audio->time_base, encoder->audioStream->time_base);
+	packet->dts = packet->pts;
 
 	if (gotData) {
 		if (encoder->absf) {
-			AVPacket tempPacket;
+			AVPacket* tempPacket;
+#ifdef FFMPEG_USE_PACKETS
+			tempPacket = av_packet_alloc();
+#else
+			tempPacket = av_malloc(sizeof(*tempPacket));
+			av_init_packet(tempPacket);
+#endif
 
 #ifdef FFMPEG_USE_NEW_BSF
-			int success = av_bsf_send_packet(encoder->absf, &packet);
+			int success = av_bsf_send_packet(encoder->absf, packet);
 			if (success >= 0) {
-				success = av_bsf_receive_packet(encoder->absf, &tempPacket);
+				success = av_bsf_receive_packet(encoder->absf, tempPacket);
 			}
 #else
 			int success = av_bitstream_filter_filter(encoder->absf, encoder->audio, 0,
-			    &tempPacket.data, &tempPacket.size,
-			    packet.data, packet.size, 0);
+			    &tempPacket->data, &tempPacket->size,
+			    packet->data, packet->size, 0);
 #endif
 
 			if (success >= 0) {
 #if LIBAVUTIL_VERSION_MAJOR >= 53
-				tempPacket.buf = av_buffer_create(tempPacket.data, tempPacket.size, av_buffer_default_free, 0, 0);
+				tempPacket->buf = av_buffer_create(tempPacket->data, tempPacket->size, av_buffer_default_free, 0, 0);
 #endif
 
 #ifdef FFMPEG_USE_PACKET_UNREF
-				av_packet_move_ref(&packet, &tempPacket);
+				av_packet_move_ref(packet, tempPacket);
+				av_packet_free(&packet);
 #else
-				av_free_packet(&packet);
+				av_free_packet(packet);
+				av_freep(&packet);
 				packet = tempPacket;
 #endif
 
-				packet.stream_index = encoder->audioStream->index;
-				av_interleaved_write_frame(encoder->context, &packet);
+				packet->stream_index = encoder->audioStream->index;
+				av_interleaved_write_frame(encoder->context, packet);
 			}
 		} else {
-			packet.stream_index = encoder->audioStream->index;
-			av_interleaved_write_frame(encoder->context, &packet);
+			packet->stream_index = encoder->audioStream->index;
+			av_interleaved_write_frame(encoder->context, packet);
 		}
 	}
 #ifdef FFMPEG_USE_PACKET_UNREF
-	av_packet_unref(&packet);
+	av_packet_unref(packet);
+	av_packet_free(&packet);
 #else
-	av_free_packet(&packet);
+	av_free_packet(packet);
+	av_freep(&packet);
 #endif
 	return gotData;
 }
@@ -792,32 +807,39 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 }
 
 bool _ffmpegWriteVideoFrame(struct FFmpegEncoder* encoder, struct AVFrame* videoFrame) {
-	AVPacket packet;
+	AVPacket* packet;
 
-	av_init_packet(&packet);
-	packet.data = 0;
-	packet.size = 0;
+#ifdef FFMPEG_USE_PACKET_UNREF
+	packet = av_packet_alloc();
+#else
+	packet = av_malloc(sizeof(*packet));
+	av_init_packet(packet);
+#endif
+	packet->data = 0;
+	packet->size = 0;
 
 	int gotData;
 #ifdef FFMPEG_USE_PACKETS
 	avcodec_send_frame(encoder->video, videoFrame);
-	gotData = avcodec_receive_packet(encoder->video, &packet) == 0;
+	gotData = avcodec_receive_packet(encoder->video, packet) == 0;
 #else
-	avcodec_encode_video2(encoder->video, &packet, videoFrame, &gotData);
+	avcodec_encode_video2(encoder->video, packet, videoFrame, &gotData);
 #endif
 	if (gotData) {
 #ifndef FFMPEG_USE_PACKET_UNREF
 		if (encoder->video->coded_frame->key_frame) {
-			packet.flags |= AV_PKT_FLAG_KEY;
+			packet->flags |= AV_PKT_FLAG_KEY;
 		}
 #endif
-		packet.stream_index = encoder->videoStream->index;
-		av_interleaved_write_frame(encoder->context, &packet);
+		packet->stream_index = encoder->videoStream->index;
+		av_interleaved_write_frame(encoder->context, packet);
 	}
 #ifdef FFMPEG_USE_PACKET_UNREF
-	av_packet_unref(&packet);
+	av_packet_unref(packet);
+	av_packet_free(&packet);
 #else
-	av_free_packet(&packet);
+	av_free_packet(packet);
+	av_freep(&packet);
 #endif
 
 	return gotData;
