@@ -322,6 +322,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->audioFrame->nb_samples = encoder->audio->frame_size;
 		encoder->audioFrame->format = encoder->audio->sample_fmt;
 		encoder->audioFrame->pts = 0;
+		encoder->audioFrame->channel_layout = AV_CH_LAYOUT_STEREO;
 #ifdef USE_LIBAVRESAMPLE
 		encoder->resampleContext = avresample_alloc_context();
 		av_opt_set_int(encoder->resampleContext, "in_channel_layout", AV_CH_LAYOUT_STEREO, 0);
@@ -338,9 +339,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 #endif
 		encoder->audioBufferSize = (encoder->audioFrame->nb_samples * PREFERRED_SAMPLE_RATE / encoder->sampleRate) * 4;
 		encoder->audioBuffer = av_malloc(encoder->audioBufferSize);
-		encoder->postaudioBufferSize = av_samples_get_buffer_size(0, encoder->audio->channels, encoder->audio->frame_size, encoder->audio->sample_fmt, 0);
-		encoder->postaudioBuffer = av_malloc(encoder->postaudioBufferSize);
-		avcodec_fill_audio_frame(encoder->audioFrame, encoder->audio->channels, encoder->audio->sample_fmt, (const uint8_t*) encoder->postaudioBuffer, encoder->postaudioBufferSize, 0);
+		av_frame_get_buffer(encoder->audioFrame, 0);
 
 		if (encoder->audio->codec->id == AV_CODEC_ID_AAC &&
 		    (strcasecmp(encoder->containerFormat, "mp4") == 0||
@@ -517,7 +516,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->videoFrame->height = encoder->video->height;
 		encoder->videoFrame->pts = 0;
 		_ffmpegSetVideoDimensions(&encoder->d, encoder->iwidth, encoder->iheight);
-		av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->videoFrame->width, encoder->videoFrame->height, encoder->videoFrame->format, 32);
+		av_frame_get_buffer(encoder->videoFrame, 32);
 #ifdef FFMPEG_USE_CODECPAR
 		avcodec_parameters_from_context(encoder->videoStream->codecpar, encoder->video);
 #endif
@@ -692,7 +691,6 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 		return;
 	}
 
-	int channelSize = 2 * av_get_bytes_per_sample(encoder->audio->sample_fmt);
 	encoder->currentAudioSample = 0;
 #ifdef USE_LIBAVRESAMPLE
 	avresample_convert(encoder->resampleContext, 0, 0, 0,
@@ -704,7 +702,7 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->audioFrame);
 #endif
-	int samples = avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / channelSize);
+	int samples = avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->audioFrame->nb_samples);
 #else
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->audioFrame);
@@ -713,7 +711,7 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 		swr_convert(encoder->resampleContext, NULL, 0, (const uint8_t**) &encoder->audioBuffer, encoder->audioBufferSize / 4);
 		return;
 	}
-	int samples = swr_convert(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / channelSize,
+	int samples = swr_convert(encoder->resampleContext, encoder->audioFrame->data, encoder->audioFrame->nb_samples,
 	                          (const uint8_t**) &encoder->audioBuffer, encoder->audioBufferSize / 4);
 #endif
 
