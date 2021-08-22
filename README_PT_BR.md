@@ -26,7 +26,7 @@
 <li>Frameskip, configurável até 10.</li>
 <li>Suporte pra screenshot.</li>
 <li>Suporte pra códigos de trapaça.</li>
-<li>9 slots pra savestates. Os savestates são também visíveis como screenshots.</li>
+<li>9 slots para savestates. Os savestates são também visíveis como screenshots.</li>
 <li>Gravação em Vídeo, GIF, WebP e APNG.</li>
 <li>Suporte pra e-Reader.</li>
 <li>Controles remapeáveis pra ambos, o teclado e o gamepad.</li>
