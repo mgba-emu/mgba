@@ -270,7 +270,7 @@ make
 <li><a href="http://www.7-zip.org/sdk.html">SDK do LZMA</a>, a qual é de domínio público.</li>
 <li><a href="https://github.com/aappleby/smhasher">MurmurHash3</a> implementação do Austin Appleby, a qual é de domínio público.</li>
 <li><a href="https://github.com/skandhurkat/Getopt-for-Visual-Studio/">getopt pro MSVC</a>, a qual está sob domínio público.</li>
-<li><a href="https://www.sqlite.org">SQLite3</a>, a qual é de domínio público.</li>
+<li><a href="https://www.sqlite.org">SQLite3</a>, a qual está sob o domínio público.</li>
 </ul>
 
 <p>Se você é um publicador de jogos e desejar licenciar o mGBA pra uso comercial por favor envie um email pra <a href="mailto:licensing@mgba.io">licensing@mgba.io</a> pra mais informações.</p>
