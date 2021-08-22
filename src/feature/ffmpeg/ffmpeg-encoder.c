@@ -343,9 +343,9 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		avcodec_fill_audio_frame(encoder->audioFrame, encoder->audio->channels, encoder->audio->sample_fmt, (const uint8_t*) encoder->postaudioBuffer, encoder->postaudioBufferSize, 0);
 
 		if (encoder->audio->codec->id == AV_CODEC_ID_AAC &&
-		    (strcasecmp(encoder->containerFormat, "mp4") ||
-		        strcasecmp(encoder->containerFormat, "m4v") ||
-		        strcasecmp(encoder->containerFormat, "mov"))) {
+		    (strcasecmp(encoder->containerFormat, "mp4") == 0||
+		        strcasecmp(encoder->containerFormat, "m4v") == 0 ||
+		        strcasecmp(encoder->containerFormat, "mov") == 0)) {
 			// MP4 container doesn't support the raw ADTS AAC format that the encoder spits out
 #ifdef FFMPEG_USE_NEW_BSF
 			av_bsf_alloc(av_bsf_get_by_name("aac_adtstoasc"), &encoder->absf);
@@ -387,9 +387,9 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		}
 
 		if (encoder->video->codec->id == AV_CODEC_ID_H264 &&
-		    (strcasecmp(encoder->containerFormat, "mp4") ||
-		        strcasecmp(encoder->containerFormat, "m4v") ||
-		        strcasecmp(encoder->containerFormat, "mov"))) {
+		    (strcasecmp(encoder->containerFormat, "mp4") == 0 ||
+		        strcasecmp(encoder->containerFormat, "m4v") == 0 ||
+		        strcasecmp(encoder->containerFormat, "mov") == 0)) {
 			// QuickTime and a few other things require YUV420
 			encoder->video->pix_fmt = AV_PIX_FMT_YUV420P;
 		}
