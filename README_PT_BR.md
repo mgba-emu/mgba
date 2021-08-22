@@ -269,7 +269,7 @@ make
 <li><a href="https://code.google.com/archive/p/blip-buf">blip-buf</a>, a qual tem um copyright de © 2003 – 2009 do Shay Green e é usada sob uma Licença Pública Inferior do GNU.</li>
 <li><a href="http://www.7-zip.org/sdk.html">SDK do LZMA</a>, a qual é de domínio público.</li>
 <li><a href="https://github.com/aappleby/smhasher">MurmurHash3</a> implementação do Austin Appleby, a qual é de domínio público.</li>
-<li><a href="https://github.com/skandhurkat/Getopt-for-Visual-Studio/">getopt pro MSVC</a>, a qual é de domínio público.</li>
+<li><a href="https://github.com/skandhurkat/Getopt-for-Visual-Studio/">getopt pro MSVC</a>, a qual está sob domínio público.</li>
 <li><a href="https://www.sqlite.org">SQLite3</a>, a qual é de domínio público.</li>
 </ul>
 
