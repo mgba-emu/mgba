@@ -14,7 +14,7 @@
 <li>Suporte ao hardware do Game Boy/Game Boy Color.</li>
 <li>Emulação rápida. Conhecido por executar na velocidade máxima até mesmo em hardware low-end, como netbooks.</li>
 <li>Portes para Qt e SDL, afim de ter um frontend peso-pesado e um peso-leve.</li>
-<li>Suporte pro cabo do link local (do mesmo computador).</li>
+<li>Suporte local (no mesmo computador) ao cabo link.</li>
 <li>Detecção do tipo do save até mesmo pro tamanho da memória do flash<a href="#flashdetect"><sup>[2]</sup></a>.</li>
 <li>Suporte pra cartuchos com sensores de movimento e pro rumble (só usável com controles do jogo).</li>
 <li>Suporte pra relógio em tempo real até mesmo sem configuração.</li>
