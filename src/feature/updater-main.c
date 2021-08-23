@@ -4,7 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/core/config.h>
+#include <mgba/core/version.h>
 #include <mgba/feature/updater.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 #include <errno.h>
@@ -27,7 +29,7 @@
 #define W_OK 02
 #endif
 
-bool extractArchive(struct VDir* archive, const char* root) {
+bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 	char path[PATH_MAX] = {0};
 	struct VDirEntry* vde;
 	uint8_t block[8192];
@@ -35,16 +37,36 @@ bool extractArchive(struct VDir* archive, const char* root) {
 	while ((vde = archive->listNext(archive))) {
 		struct VFile* vfIn;
 		struct VFile* vfOut;
-		const char* fname = strchr(vde->name(vde), '/');
-		if (!fname) {
+		const char* fname;
+		if (prefix) {
+			fname = strchr(vde->name(vde), '/');
+			if (!fname) {
+				continue;
+			}
+			snprintf(path, sizeof(path), "%s/%s", root, &fname[1]);
+		} else {
+			fname = vde->name(vde);
+			snprintf(path, sizeof(path), "%s/%s", root, fname);
+		}
+		if (fname[0] == '.') {
 			continue;
 		}
-		snprintf(path, sizeof(path), "%s/%s", root, &fname[1]);
 		switch (vde->type(vde)) {
 		case VFS_DIRECTORY:
 			printf("mkdir   %s\n", fname);
 			if (mkdir(path, 0755) < 0 && errno != EEXIST) {
 				return false;
+			}
+			if (!prefix) {
+				struct VDir* subdir = archive->openDir(archive, fname);
+				if (!subdir) {
+					return false;
+				}
+				if (!extractArchive(subdir, path, false)) {
+					subdir->close(subdir);
+					return false;
+				}
+				subdir->close(subdir);
 			}
 			break;
 		case VFS_FILE:
@@ -96,13 +118,68 @@ int main(int argc, char* argv[]) {
 	} else if (access(root, W_OK)) {
 		puts("Cannot write to update path");
 	} else {
+#ifdef __APPLE__
+		char subdir[PATH_MAX];
+		char devpath[PATH_MAX] = {0};
+		bool needsUnmount = false;
+#endif
 		bool isPortable = mCoreConfigIsPortable();
-		struct VDir* archive = VDirOpenArchive(updateArchive);
+		const char* extension = mUpdateGetArchiveExtension(&config);
+		struct VDir* archive = NULL;
+		bool prefix = true;
+		if (strcmp(extension, "dmg") == 0) {
+#ifdef __APPLE__
+			char mountpoint[PATH_MAX];
+			// Make a slightly random directory name for the updater mountpoint
+			struct timespec t;
+			clock_gettime(CLOCK_MONOTONIC, &t);
+			int printed = snprintf(mountpoint, sizeof(mountpoint), "/Volumes/%s Updater %04lX", projectName, (t.tv_nsec >> 14) & 0xFFFF);
+
+			// Fork hdiutil to mount it
+			char* args[] = {"hdiutil", "attach", "-nobrowse", "-mountpoint", mountpoint, updateArchive, NULL};
+			int fds[2];
+			pipe(fds);
+			pid_t pid = fork();
+			if (pid == 0) {
+				dup2(fds[1], STDOUT_FILENO);
+				execvp("hdiutil", args);
+				_exit(1);
+			} else {
+				// Parse out the disk ID so we can detach it when we're done
+				char buffer[1024] = {0};
+				ssize_t size;
+				while ((size = read(fds[0], buffer, sizeof(buffer) - 1)) > 0) { // Leave the last byte null
+					char* devinfo = strnstr(buffer, "\n/dev/disk", size);
+					if (!devinfo) {
+						continue;
+					}
+					char* devend = strpbrk(&devinfo[9], "s \t");
+					if (!devend) {
+						continue;
+					}
+					off_t diff = devend - devinfo - 1;
+					memcpy(devpath, &devinfo[1], diff);
+					puts(devpath);
+					break;
+				}
+				int retstat;
+				wait4(pid, &retstat, 0, NULL);
+			}
+			snprintf(&mountpoint[printed], sizeof(mountpoint) - printed, "/%s.app", projectName);
+			snprintf(subdir, sizeof(subdir), "%s/%s.app", root, projectName);
+			root = subdir;
+			archive = VDirOpen(mountpoint);
+			prefix = false;
+			needsUnmount = true;
+#endif
+		} else {
+			archive = VDirOpenArchive(updateArchive);
+		}
 		if (!archive) {
 			puts("Cannot open update archive");
 		} else {
 			puts("Extracting update");
-			if (extractArchive(archive, root)) {
+			if (extractArchive(archive, root, prefix)) {
 				puts("Complete");
 				ok = 0;
 				mUpdateDeregister(&config);
@@ -112,6 +189,19 @@ int main(int argc, char* argv[]) {
 			archive->close(archive);
 			unlink(updateArchive);
 		}
+#ifdef __APPLE__
+		if (needsUnmount) {
+			char* args[] = {"hdiutil", "detach", devpath, NULL};
+			pid_t pid = vfork();
+			if (pid == 0) {
+				execvp("hdiutil", args);
+				_exit(0);
+			} else {
+				int retstat;
+				wait4(pid, &retstat, 0, NULL);
+			}
+		}
+#endif
 		if (!isPortable) {
 			char portableIni[PATH_MAX] = {0};
 			snprintf(portableIni, sizeof(portableIni), "%s/portable.ini", root);
@@ -124,7 +214,7 @@ int main(int argc, char* argv[]) {
 		const char* argv[] = { bin, NULL };
 #ifdef _WIN32
 		_execv(bin, argv);
-#elif defined(_POSIX_C_SOURCE)
+#elif defined(_POSIX_C_SOURCE) || defined(__APPLE__)
 		execv(bin, argv);
 #endif
 	}
