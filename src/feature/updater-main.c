@@ -107,6 +107,7 @@ int main(int argc, char* argv[]) {
 	UNUSED(argv);
 	struct mCoreConfig config;
 	char updateArchive[PATH_MAX] = {0};
+	char bin[PATH_MAX] = {0};
 	const char* root;
 	int ok = 1;
 
@@ -131,9 +132,9 @@ int main(int argc, char* argv[]) {
 #ifdef __APPLE__
 			char mountpoint[PATH_MAX];
 			// Make a slightly random directory name for the updater mountpoint
-			struct timespec t;
-			clock_gettime(CLOCK_MONOTONIC, &t);
-			int printed = snprintf(mountpoint, sizeof(mountpoint), "/Volumes/%s Updater %04lX", projectName, (t.tv_nsec >> 14) & 0xFFFF);
+			struct timeval t;
+			gettimeofday(&t, NULL);
+			int printed = snprintf(mountpoint, sizeof(mountpoint), "/Volumes/%s Updater %04X", projectName, (t.tv_usec >> 2) & 0xFFFF);
 
 			// Fork hdiutil to mount it
 			char* args[] = {"hdiutil", "attach", "-nobrowse", "-mountpoint", mountpoint, updateArchive, NULL};
@@ -181,6 +182,8 @@ int main(int argc, char* argv[]) {
 			puts("Extracting update");
 			if (extractArchive(archive, root, prefix)) {
 				puts("Complete");
+				const char* command = mUpdateGetCommand(&config);
+				strlcpy(bin, command, sizeof(bin));
 				ok = 0;
 				mUpdateDeregister(&config);
 			} else {
@@ -208,7 +211,6 @@ int main(int argc, char* argv[]) {
 			unlink(portableIni);
 		}
 	}
-	const char* bin = mUpdateGetCommand(&config);
 	mCoreConfigDeinit(&config);
 	if (ok == 0) {
 		const char* argv[] = { bin, NULL };
