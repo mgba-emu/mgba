@@ -252,9 +252,9 @@ typedef intptr_t ssize_t;
 #define ATTRIBUTE_NOINLINE
 // Adapted from https://stackoverflow.com/a/2390626
 #define _CONSTRUCTOR(FN, PRE) \
-    static void FN(void); \
-    __declspec(allocate(".CRT$XCU")) void (*_CONSTRUCTOR_ ## FN)(void) = FN; \
-    static void FN(void)
+	static void FN(void); \
+	__declspec(allocate(".CRT$XCU")) void (*_CONSTRUCTOR_ ## FN)(void) = FN; \
+	static void FN(void)
 #ifdef _WIN64
 #define CONSTRUCTOR(FN) _CONSTRUCTOR(FN, "")
 #else

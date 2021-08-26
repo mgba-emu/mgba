@@ -83,8 +83,8 @@ static Socket _server = INVALID_SOCKET;
 int main(int argc, char** argv) {
 #ifdef _3DS
 	UNUSED(_mPerfShutdown);
-    gfxInitDefault();
-    osSetSpeedupEnable(true);
+	gfxInitDefault();
+	osSetSpeedupEnable(true);
 	consoleInit(GFX_BOTTOM, NULL);
 #elif defined(__SWITCH__)
 	UNUSED(_mPerfShutdown);

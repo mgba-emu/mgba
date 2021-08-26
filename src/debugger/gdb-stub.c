@@ -662,7 +662,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		break;
 	case 'X':
 		_writeMemoryBinary(stub, message);
-                break;
+		break;
 	case 'Z':
 		_setBreakpoint(stub, message);
 		break;

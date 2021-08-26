@@ -17,16 +17,16 @@ struct StringList;
 struct Table;
 
 struct mUpdaterContext {
-    struct Configuration manifest;
+	struct Configuration manifest;
 };
 
 struct mUpdate {
-    const char* path;
-    size_t size;
-    int rev;
-    const char* version;
-    const char* commit;
-    const char* sha256;
+	const char* path;
+	size_t size;
+	int rev;
+	const char* version;
+	const char* commit;
+	const char* sha256;
 };
 
 bool mUpdaterInit(struct mUpdaterContext*, const char* manifest);
