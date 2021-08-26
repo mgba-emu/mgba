@@ -3244,28 +3244,28 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1387"/>
         <location filename="../IOViewer.cpp" line="1394"/>
         <source>Color 0 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>颜色 0 阴影</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1381"/>
         <location filename="../IOViewer.cpp" line="1388"/>
         <location filename="../IOViewer.cpp" line="1395"/>
         <source>Color 1 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>颜色 1 阴影</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1382"/>
         <location filename="../IOViewer.cpp" line="1389"/>
         <location filename="../IOViewer.cpp" line="1396"/>
         <source>Color 2 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>颜色 2 阴影</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1383"/>
         <location filename="../IOViewer.cpp" line="1390"/>
         <location filename="../IOViewer.cpp" line="1397"/>
         <source>Color 3 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>颜色 3 阴影</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1411"/>
@@ -3280,7 +3280,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1418"/>
         <source>VRAM bank</source>
-        <translation type="unfinished"></translation>
+        <translation>显存库</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1440"/>
@@ -3350,7 +3350,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1530"/>
         <source>WRAM bank</source>
-        <translation type="unfinished"></translation>
+        <translation>内存库</translation>
     </message>
 </context>
 <context>
@@ -4854,7 +4854,7 @@ Download size: %3</source>
     <message>
         <location filename="../utils.cpp" line="17"/>
         <source>%1 kiB</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%1 kiB</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="21"/>
