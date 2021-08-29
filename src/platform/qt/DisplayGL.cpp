@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "DisplayGL.h"
 
-#if defined(BUILD_GL) || defined(BUILD_GLES2)
+#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 
 #include <QApplication>
 #include <QMutexLocker>
@@ -24,7 +24,7 @@
 #ifdef BUILD_GL
 #include "platform/opengl/gl.h"
 #endif
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 #include "platform/opengl/gles2.h"
 #ifdef _WIN32
 #include <epoxy/wgl.h>
@@ -294,13 +294,13 @@ void PainterGL::create() {
 #ifdef BUILD_GL
 	mGLContext* glBackend;
 #endif
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	mGLES2Context* gl2Backend;
 #endif
 
 	m_window = std::make_unique<QOpenGLPaintDevice>();
 
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	auto version = m_format.version();
 	if (version >= qMakePair(2, 0)) {
 		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
@@ -326,7 +326,7 @@ void PainterGL::create() {
 	};
 
 	m_backend->init(m_backend, 0);
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (m_supportsShaders) {
 		m_shader.preprocessShader = static_cast<void*>(&reinterpret_cast<mGLES2Context*>(m_backend)->initialShader);
 	}
@@ -343,7 +343,7 @@ void PainterGL::destroy() {
 		return;
 	}
 	makeCurrent();
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (m_shader.passes) {
 		mGLES2ShaderFree(&m_shader);
 	}
@@ -420,7 +420,7 @@ void PainterGL::filter(bool filter) {
 void PainterGL::start() {
 	makeCurrent();
 
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (m_supportsShaders && m_shader.passes) {
 		mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
 	}
@@ -598,7 +598,7 @@ void PainterGL::setShaders(struct VDir* dir) {
 	if (!supportsShaders()) {
 		return;
 	}
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (m_shader.passes) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
@@ -612,7 +612,7 @@ void PainterGL::clearShaders() {
 	if (!supportsShaders()) {
 		return;
 	}
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (m_shader.passes) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
@@ -625,7 +625,7 @@ VideoShader* PainterGL::shaders() {
 }
 
 int PainterGL::glTex() {
-#ifdef BUILD_GLES2
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (supportsShaders()) {
 		mGLES2Context* gl2Backend = reinterpret_cast<mGLES2Context*>(m_backend);
 		return gl2Backend->tex;
