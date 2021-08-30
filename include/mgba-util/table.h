@@ -11,13 +11,22 @@
 CXX_GUARD_START
 
 struct TableList;
+typedef uint32_t (*HashFunction)(const void* key, size_t len, uint32_t seed);
+
+struct TableFunctions {
+	void (*deinitializer)(void*);
+	HashFunction hash;
+	bool (*equal)(const void*, const void*);
+	void* (*ref)(void*);
+	void (*deref)(void*);
+};
 
 struct Table {
 	struct TableList* table;
 	size_t tableSize;
 	size_t size;
-	void (*deinitializer)(void*);
 	uint32_t seed;
+	struct TableFunctions fn;
 };
 
 void TableInit(struct Table*, size_t initialSize, void (*deinitializer)(void*));
@@ -33,19 +42,24 @@ void TableEnumerate(const struct Table*, void (*handler)(uint32_t key, void* val
 size_t TableSize(const struct Table*);
 
 void HashTableInit(struct Table* table, size_t initialSize, void (*deinitializer)(void*));
+void HashTableInitCustom(struct Table* table, size_t initialSize, const struct TableFunctions* funcs);
 void HashTableDeinit(struct Table* table);
 
 void* HashTableLookup(const struct Table*, const char* key);
 void* HashTableLookupBinary(const struct Table*, const void* key, size_t keylen);
+void* HashTableLookupCustom(const struct Table*, void* key);
 void HashTableInsert(struct Table*, const char* key, void* value);
 void HashTableInsertBinary(struct Table*, const void* key, size_t keylen, void* value);
+void HashTableInsertCustom(struct Table*, void* key, void* value);
 
 void HashTableRemove(struct Table*, const char* key);
 void HashTableRemoveBinary(struct Table*, const void* key, size_t keylen);
+void HashTableRemoveCustom(struct Table*, void* key);
 void HashTableClear(struct Table*);
 
 void HashTableEnumerate(const struct Table*, void (*handler)(const char* key, void* value, void* user), void* user);
 void HashTableEnumerateBinary(const struct Table*, void (*handler)(const char* key, size_t keylen, void* value, void* user), void* user);
+void HashTableEnumerateCustom(const struct Table*, void (*handler)(const char* key, void* value, void* user), void* user);
 const char* HashTableSearch(const struct Table* table, bool (*predicate)(const char* key, const void* value, const void* user), const void* user);
 const char* HashTableSearchPointer(const struct Table* table, const void* value);
 const char* HashTableSearchData(const struct Table* table, const void* value, size_t bytes);

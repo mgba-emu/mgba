@@ -16,6 +16,7 @@
 #define TABLE_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == key
 #define HASH_TABLE_STRNCMP_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == hash && strncmp(LIST->list[(INDEX)].stringKey, key, LIST->list[(INDEX)].keylen) == 0
 #define HASH_TABLE_MEMCMP_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == hash && LIST->list[(INDEX)].keylen == keylen && memcmp(LIST->list[(INDEX)].stringKey, key, LIST->list[(INDEX)].keylen) == 0
+#define HASH_TABLE_CUSTOM_COMPARATOR(LIST, INDEX) LIST->list[(INDEX)].key == hash && table->fn.equal(LIST->list[(INDEX)].stringKey, key)
 
 #define TABLE_LOOKUP_START(COMPARATOR, LIST) \
 	size_t i; \
@@ -68,9 +69,13 @@ static struct TableList* _resizeAsNeeded(struct Table* table, struct TableList* 
 static void _removeItemFromList(struct Table* table, struct TableList* list, size_t item) {
 	--list->nEntries;
 	--table->size;
-	free(list->list[item].stringKey);
-	if (table->deinitializer) {
-		table->deinitializer(list->list[item].value);
+	if (table->fn.deref) {
+		table->fn.deref(list->list[item].stringKey);
+	} else {
+		free(list->list[item].stringKey);
+	}
+	if (table->fn.deinitializer) {
+		table->fn.deinitializer(list->list[item].value);
 	}
 	if (item != list->nEntries) {
 		list->list[item] = list->list[list->nEntries];
@@ -80,13 +85,19 @@ static void _removeItemFromList(struct Table* table, struct TableList* list, siz
 static void _rebalance(struct Table* table) {
 	struct Table newTable;
 	TableInit(&newTable, table->tableSize * REBALANCE_THRESHOLD, NULL);
+	memcpy(&newTable.fn, &table->fn, sizeof(newTable.fn));
 	newTable.seed = table->seed * 134775813 + 1;
 	size_t i;
 	for (i = 0; i < table->tableSize; ++i) {
-		const struct TableList* list = &table->table[i];
+		struct TableList* list = &table->table[i];
 		size_t j;
 		for (j = 0; j < list->nEntries; ++j) {
-			HashTableInsertBinaryMoveKey(&newTable, list->list[j].stringKey, list->list[j].keylen, list->list[j].value);
+			if (!table->fn.equal) {
+				HashTableInsertBinaryMoveKey(&newTable, list->list[j].stringKey, list->list[j].keylen, list->list[j].value);
+			} else {
+				HashTableInsertCustom(&newTable, list->list[j].stringKey, list->list[j].value);
+				table->fn.deref(list->list[j].stringKey);
+			}
 		}
 		free(list->list);
 	}
@@ -105,7 +116,9 @@ void TableInit(struct Table* table, size_t initialSize, void (*deinitializer)(vo
 	table->tableSize = initialSize;
 	table->table = calloc(table->tableSize, sizeof(struct TableList));
 	table->size = 0;
-	table->deinitializer = deinitializer;
+	table->fn = (struct TableFunctions) {
+		.deinitializer = deinitializer
+	};
 	table->seed = 0;
 
 	size_t i;
@@ -122,9 +135,13 @@ void TableDeinit(struct Table* table) {
 		struct TableList* list = &table->table[i];
 		size_t j;
 		for (j = 0; j < list->nEntries; ++j) {
-			free(list->list[j].stringKey);
-			if (table->deinitializer) {
-				table->deinitializer(list->list[j].value);
+			if (table->fn.deref) {
+				table->fn.deref(list->list[j].stringKey);
+			} else {
+				free(list->list[j].stringKey);
+			}
+			if (table->fn.deinitializer) {
+				table->fn.deinitializer(list->list[j].value);
 			}
 		}
 		free(list->list);
@@ -146,8 +163,8 @@ void TableInsert(struct Table* table, uint32_t key, void* value) {
 	struct TableList* list = _getList(table, key);
 	TABLE_LOOKUP_START(TABLE_COMPARATOR, list) {
 		if (value != lookupResult->value) {
-			if (table->deinitializer) {
-				table->deinitializer(lookupResult->value);
+			if (table->fn.deinitializer) {
+				table->fn.deinitializer(lookupResult->value);
 			}
 			lookupResult->value = value;
 		}
@@ -172,10 +189,10 @@ void TableClear(struct Table* table) {
 	size_t i;
 	for (i = 0; i < table->tableSize; ++i) {
 		struct TableList* list = &table->table[i];
-		if (table->deinitializer) {
+		if (table->fn.deinitializer) {
 			size_t j;
 			for (j = 0; j < list->nEntries; ++j) {
-				table->deinitializer(list->list[j].value);
+				table->fn.deinitializer(list->list[j].value);
 			}
 		}
 		free(list->list);
@@ -205,12 +222,22 @@ void HashTableInit(struct Table* table, size_t initialSize, void (*deinitializer
 	table->seed = 1;
 }
 
+void HashTableInitCustom(struct Table* table, size_t initialSize, const struct TableFunctions* funcs) {
+	HashTableInit(table, initialSize, NULL);
+	table->fn = *funcs;
+}
+
 void HashTableDeinit(struct Table* table) {
 	TableDeinit(table);
 }
 
 void* HashTableLookup(const struct Table* table, const char* key) {
-	uint32_t hash = hash32(key, strlen(key), table->seed);
+	uint32_t hash;
+	if (table->fn.hash) {
+		hash = table->fn.hash(key, strlen(key), table->seed);
+	} else {
+		hash = hash32(key, strlen(key), table->seed);
+	}
 	const struct TableList* list = _getConstList(table, hash);
 	TABLE_LOOKUP_START(HASH_TABLE_STRNCMP_COMPARATOR, list) {
 		return lookupResult->value;
@@ -219,7 +246,12 @@ void* HashTableLookup(const struct Table* table, const char* key) {
 }
 
 void* HashTableLookupBinary(const struct Table* table, const void* key, size_t keylen) {
-	uint32_t hash = hash32(key, keylen, table->seed);
+	uint32_t hash;
+	if (table->fn.hash) {
+		hash = table->fn.hash(key, keylen, table->seed);
+	} else {
+		hash = hash32(key, keylen, table->seed);
+	}
 	const struct TableList* list = _getConstList(table, hash);
 	TABLE_LOOKUP_START(HASH_TABLE_MEMCMP_COMPARATOR, list) {
 		return lookupResult->value;
@@ -227,18 +259,36 @@ void* HashTableLookupBinary(const struct Table* table, const void* key, size_t k
 	return 0;
 }
 
+void* HashTableLookupCustom(const struct Table* table, void* key) {
+	uint32_t hash = table->fn.hash(key, 0, table->seed);
+	const struct TableList* list = _getConstList(table, hash);
+	TABLE_LOOKUP_START(HASH_TABLE_CUSTOM_COMPARATOR, list) {
+		return lookupResult->value;
+	} TABLE_LOOKUP_END;
+	return 0;
+}
+
 void HashTableInsert(struct Table* table, const char* key, void* value) {
-	uint32_t hash = hash32(key, strlen(key), table->seed);
+	uint32_t hash;
+	if (table->fn.hash) {
+		hash = table->fn.hash(key, strlen(key), table->seed);
+	} else {
+		hash = hash32(key, strlen(key), table->seed);
+	}
 	struct TableList* list = _getList(table, hash);
 	if (table->size >= table->tableSize * REBALANCE_THRESHOLD) {
 		_rebalance(table);
-		hash = hash32(key, strlen(key), table->seed);
+		if (table->fn.hash) {
+			hash = table->fn.hash(key, strlen(key), table->seed);
+		} else {
+			hash = hash32(key, strlen(key), table->seed);
+		}
 		list = _getList(table, hash);
 	}
 	TABLE_LOOKUP_START(HASH_TABLE_STRNCMP_COMPARATOR, list) {
 		if (value != lookupResult->value) {
-			if (table->deinitializer) {
-				table->deinitializer(lookupResult->value);
+			if (table->fn.deinitializer) {
+				table->fn.deinitializer(lookupResult->value);
 			}
 			lookupResult->value = value;
 		}
@@ -254,17 +304,26 @@ void HashTableInsert(struct Table* table, const char* key, void* value) {
 }
 
 void HashTableInsertBinary(struct Table* table, const void* key, size_t keylen, void* value) {
-	uint32_t hash = hash32(key, keylen, table->seed);
+	uint32_t hash;
+	if (table->fn.hash) {
+		hash = table->fn.hash(key, keylen, table->seed);
+	} else {
+		hash = hash32(key, keylen, table->seed);
+	}
 	struct TableList* list = _getList(table, hash);
 	if (table->size >= table->tableSize * REBALANCE_THRESHOLD) {
 		_rebalance(table);
-		hash = hash32(key, keylen, table->seed);
+		if (table->fn.hash) {
+			hash = table->fn.hash(key, keylen, table->seed);
+		} else {
+			hash = hash32(key, keylen, table->seed);
+		}
 		list = _getList(table, hash);
 	}
 	TABLE_LOOKUP_START(HASH_TABLE_MEMCMP_COMPARATOR, list) {
 		if (value != lookupResult->value) {
-			if (table->deinitializer) {
-				table->deinitializer(lookupResult->value);
+			if (table->fn.deinitializer) {
+				table->fn.deinitializer(lookupResult->value);
 			}
 			lookupResult->value = value;
 		}
@@ -280,18 +339,53 @@ void HashTableInsertBinary(struct Table* table, const void* key, size_t keylen, 
 	++table->size;
 }
 
-void HashTableInsertBinaryMoveKey(struct Table* table, void* key, size_t keylen, void* value) {
-	uint32_t hash = hash32(key, keylen, table->seed);
+void HashTableInsertCustom(struct Table* table, void* key, void* value) {
+	uint32_t hash = table->fn.hash(key, 0, table->seed);
 	struct TableList* list = _getList(table, hash);
 	if (table->size >= table->tableSize * REBALANCE_THRESHOLD) {
 		_rebalance(table);
+		hash = table->fn.hash(key, 0, table->seed);
+		list = _getList(table, hash);
+	}
+	TABLE_LOOKUP_START(HASH_TABLE_CUSTOM_COMPARATOR, list) {
+		if (value != lookupResult->value) {
+			if (table->fn.deinitializer) {
+				table->fn.deinitializer(lookupResult->value);
+			}
+			lookupResult->value = value;
+		}
+		return;
+	} TABLE_LOOKUP_END;
+	list = _resizeAsNeeded(table, list, hash);
+	list->list[list->nEntries].key = hash;
+	list->list[list->nEntries].stringKey = table->fn.ref(key);
+	list->list[list->nEntries].keylen = 0;
+	list->list[list->nEntries].value = value;
+	++list->nEntries;
+	++table->size;
+}
+
+void HashTableInsertBinaryMoveKey(struct Table* table, void* key, size_t keylen, void* value) {
+	uint32_t hash;
+	if (table->fn.hash) {
+		hash = table->fn.hash(key, keylen, table->seed);
+	} else {
 		hash = hash32(key, keylen, table->seed);
+	}
+	struct TableList* list = _getList(table, hash);
+	if (table->size >= table->tableSize * REBALANCE_THRESHOLD) {
+		_rebalance(table);
+		if (table->fn.hash) {
+			hash = table->fn.hash(key, keylen, table->seed);
+		} else {
+			hash = hash32(key, keylen, table->seed);
+		}
 		list = _getList(table, hash);
 	}
 	TABLE_LOOKUP_START(HASH_TABLE_MEMCMP_COMPARATOR, list) {
 		if (value != lookupResult->value) {
-			if (table->deinitializer) {
-				table->deinitializer(lookupResult->value);
+			if (table->fn.deinitializer) {
+				table->fn.deinitializer(lookupResult->value);
 			}
 			lookupResult->value = value;
 		}
@@ -307,7 +401,13 @@ void HashTableInsertBinaryMoveKey(struct Table* table, void* key, size_t keylen,
 }
 
 void HashTableRemove(struct Table* table, const char* key) {
-	uint32_t hash = hash32(key, strlen(key), table->seed);
+	uint32_t hash;
+
+	if (table->fn.hash) {
+		hash = table->fn.hash(key, strlen(key), table->seed);
+	} else {
+		hash = hash32(key, strlen(key), table->seed);
+	}
 	struct TableList* list = _getList(table, hash);
 	TABLE_LOOKUP_START(HASH_TABLE_STRNCMP_COMPARATOR, list) {
 		_removeItemFromList(table, list, i); // TODO: Move i out of the macro
@@ -315,9 +415,22 @@ void HashTableRemove(struct Table* table, const char* key) {
 }
 
 void HashTableRemoveBinary(struct Table* table, const void* key, size_t keylen) {
-	uint32_t hash = hash32(key, keylen, table->seed);
+	uint32_t hash;
+	if (table->fn.hash) {
+		hash = table->fn.hash(key, keylen, table->seed);
+	} else {
+		hash = hash32(key, keylen, table->seed);
+	}
 	struct TableList* list = _getList(table, hash);
 	TABLE_LOOKUP_START(HASH_TABLE_MEMCMP_COMPARATOR, list) {
+		_removeItemFromList(table, list, i); // TODO: Move i out of the macro
+	} TABLE_LOOKUP_END;
+}
+
+void HashTableRemoveCustom(struct Table* table, void* key) {
+	uint32_t hash = table->fn.hash(key, 0, table->seed);
+	struct TableList* list = _getList(table, hash);
+	TABLE_LOOKUP_START(HASH_TABLE_CUSTOM_COMPARATOR, list) {
 		_removeItemFromList(table, list, i); // TODO: Move i out of the macro
 	} TABLE_LOOKUP_END;
 }
@@ -328,10 +441,14 @@ void HashTableClear(struct Table* table) {
 		struct TableList* list = &table->table[i];
 		size_t j;
 		for (j = 0; j < list->nEntries; ++j) {
-			if (table->deinitializer) {
-				table->deinitializer(list->list[j].value);
+			if (table->fn.deinitializer) {
+				table->fn.deinitializer(list->list[j].value);
 			}
-			free(list->list[j].stringKey);
+			if (table->fn.deref) {
+				table->fn.deref(list->list[j].stringKey);
+			} else {
+				free(list->list[j].stringKey);
+			}
 		}
 		free(list->list);
 		list->listSize = LIST_INITIAL_SIZE;
