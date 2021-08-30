@@ -155,6 +155,18 @@ CXX_GUARD_START
 		.call = _binding_ ## NAME \
 	};
 
+#define mSCRIPT_MAKE(TYPE, FIELD, VALUE) (struct mScriptValue) { \
+		.type = (TYPE), \
+		.refs = mSCRIPT_VALUE_UNREF, \
+		.value = { \
+			.FIELD = (VALUE) \
+		}, \
+	} \
+
+#define mSCRIPT_MAKE_S32(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_S32, s32, VALUE)
+#define mSCRIPT_MAKE_U32(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_U32, u32, VALUE)
+#define mSCRIPT_MAKE_F32(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_F32, f32, VALUE)
+
 enum {
 	mSCRIPT_TYPE_VOID = 0,
 	mSCRIPT_TYPE_SINT,

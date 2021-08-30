@@ -180,21 +180,8 @@ M_TEST_DEFINE(hashTableBasic) {
 	assert_int_equal(intValue->value.s32, 0);
 	assert_int_equal(intValue->refs, 1);
 
-	struct mScriptValue intKey = {
-		.type = mSCRIPT_TYPE_MS_S32,
-		.value = {
-			.s32 = 1234
-		},
-		.refs = mSCRIPT_VALUE_UNREF
-	};
-
-	struct mScriptValue badKey = {
-		.type = mSCRIPT_TYPE_MS_S32,
-		.value = {
-			.s32 = 1235
-		},
-		.refs = mSCRIPT_VALUE_UNREF
-	};
+	struct mScriptValue intKey = mSCRIPT_MAKE_S32(1234);
+	struct mScriptValue badKey = mSCRIPT_MAKE_S32(1235);
 
 	assert_true(mScriptTableInsert(table, &intKey, intValue));
 	assert_int_equal(intValue->refs, 2);
