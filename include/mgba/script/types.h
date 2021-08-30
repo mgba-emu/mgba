@@ -195,7 +195,7 @@ struct mScriptType {
 	const char* name;
 	void (*alloc)(const struct mScriptType*, struct mScriptValue*);
 	void (*free)(const struct mScriptType*, struct mScriptValue*);
-	uint32_t (*hash)(const struct mScriptType*, struct mScriptValue*);
+	uint32_t (*hash)(const struct mScriptType*, const struct mScriptValue*);
 	union {
 		struct mScriptTypeTuple tuple;
 		struct mScriptTypeFunction function;

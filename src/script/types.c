@@ -11,7 +11,12 @@ static void _allocTable(const struct mScriptType*, struct mScriptValue*);
 static void _freeTable(const struct mScriptType*, struct mScriptValue*);
 static void _deinitTableValue(void*);
 
-static uint32_t _hashScalar(const struct mScriptType*, struct mScriptValue*);
+static uint32_t _hashScalar(const struct mScriptType*, const struct mScriptValue*);
+
+static uint32_t _valHash(const void* val, size_t len, uint32_t seed);
+static bool _valEqual(const void* a, const void* b);
+static void* _valRef(void*);
+static void _valDeref(void*);
 
 const struct mScriptType mSTVoid = {
 	.base = mSCRIPT_TYPE_VOID,
@@ -63,12 +68,19 @@ DEFINE_VECTOR(mScriptList, struct mScriptValue)
 void _allocTable(const struct mScriptType* type, struct mScriptValue* val) {
 	UNUSED(type);
 	val->value.opaque = malloc(sizeof(struct Table));
-	TableInit(val->value.opaque, 0, _deinitTableValue);
+	struct TableFunctions funcs = {
+		.deinitializer = _deinitTableValue,
+		.hash = _valHash,
+		.equal = _valEqual,
+		.ref = _valRef,
+		.deref = _valDeref
+	};
+	HashTableInitCustom(val->value.opaque, 0, &funcs);
 }
 
 void _freeTable(const struct mScriptType* type, struct mScriptValue* val) {
 	UNUSED(type);
-	TableDeinit(val->value.opaque);
+	HashTableDeinit(val->value.opaque);
 	free(val->value.opaque);
 }
 
@@ -76,7 +88,7 @@ void _deinitTableValue(void* val) {
 	mScriptValueDeref(val);
 }
 
-uint32_t _hashScalar(const struct mScriptType* type, struct mScriptValue* val) {
+uint32_t _hashScalar(const struct mScriptType* type, const struct mScriptValue* val) {
 	// From https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
 	uint32_t x;
 	switch (type->base) {
@@ -91,6 +103,43 @@ uint32_t _hashScalar(const struct mScriptType* type, struct mScriptValue* val) {
 	x = ((x >> 16) ^ x) * 0x45D9F3B;
 	x = (x >> 16) ^ x;
 	return x;
+}
+
+uint32_t _valHash(const void* val, size_t len, uint32_t seed) {
+	UNUSED(len);
+	const struct mScriptValue* value = val;
+	uint32_t hash = value->type->hash(value->type, value);
+	return hash ^ seed;
+}
+
+bool _valEqual(const void* a, const void* b) {
+	const struct mScriptValue* valueA = a;
+	const struct mScriptValue* valueB = b;
+	// TODO: Move equality into type
+	if (valueA->type != valueB->type) {
+		return false;
+	}
+	switch (valueA->type->base) {
+	case mSCRIPT_TYPE_VOID:
+		return true;
+	case mSCRIPT_TYPE_SINT:
+		return valueA->value.s32 == valueB->value.s32;
+	case mSCRIPT_TYPE_UINT:
+		return valueA->value.u32 == valueB->value.u32;
+	case mSCRIPT_TYPE_FLOAT:
+		return valueA->value.f32 == valueB->value.f32;
+	default:
+		return valueA->value.opaque == valueB->value.opaque;
+	}
+}
+
+void* _valRef(void* val) {
+	mScriptValueRef(val);
+	return val;
+}
+
+void _valDeref(void* val) {
+	mScriptValueDeref(val);
 }
 
 struct mScriptValue* mScriptValueAlloc(const struct mScriptType* type) {
@@ -121,6 +170,7 @@ void mScriptValueDeref(struct mScriptValue* val) {
 		return;
 	} else if (val->refs < 0) {
 		val->refs = mSCRIPT_VALUE_UNREF;
+		return;
 	}
 	if (val->type->free) {
 		val->type->free(val->type, val);
@@ -136,9 +186,8 @@ bool mScriptTableInsert(struct mScriptValue* table, struct mScriptValue* key, st
 		return false;
 	}
 	struct Table* t = table->value.opaque;
-	uint32_t hash = key->type->hash(key->type, key);
 	mScriptValueRef(value);
-	TableInsert(t, hash, value);
+	HashTableInsertCustom(t, key, value);
 	return true;
 }
 
@@ -150,8 +199,7 @@ bool mScriptTableRemove(struct mScriptValue* table, struct mScriptValue* key) {
 		return false;
 	}
 	struct Table* t = table->value.opaque;
-	uint32_t hash = key->type->hash(key->type, key);
-	TableRemove(t, hash);
+	HashTableRemoveCustom(t, key);
 	return true;
 }
 
@@ -163,8 +211,7 @@ struct mScriptValue* mScriptTableLookup(struct mScriptValue* table, struct mScri
 		return false;
 	}
 	struct Table* t = table->value.opaque;
-	uint32_t hash = key->type->hash(key->type, key);
-	return TableLookup(t, hash);
+	return HashTableLookupCustom(t, key);
 }
 
 void mScriptFrameInit(struct mScriptFrame* frame) {
