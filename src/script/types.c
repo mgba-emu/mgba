@@ -7,11 +7,11 @@
 
 #include <mgba-util/table.h>
 
-static void _allocTable(const struct mScriptType*, struct mScriptValue*);
-static void _freeTable(const struct mScriptType*, struct mScriptValue*);
+static void _allocTable(struct mScriptValue*);
+static void _freeTable(struct mScriptValue*);
 static void _deinitTableValue(void*);
 
-static uint32_t _hashScalar(const struct mScriptType*, const struct mScriptValue*);
+static uint32_t _hashScalar(const struct mScriptValue*);
 
 static uint32_t _valHash(const void* val, size_t len, uint32_t seed);
 static bool _valEqual(const void* a, const void* b);
@@ -65,8 +65,7 @@ const struct mScriptType mSTTable = {
 
 DEFINE_VECTOR(mScriptList, struct mScriptValue)
 
-void _allocTable(const struct mScriptType* type, struct mScriptValue* val) {
-	UNUSED(type);
+void _allocTable(struct mScriptValue* val) {
 	val->value.opaque = malloc(sizeof(struct Table));
 	struct TableFunctions funcs = {
 		.deinitializer = _deinitTableValue,
@@ -78,8 +77,7 @@ void _allocTable(const struct mScriptType* type, struct mScriptValue* val) {
 	HashTableInitCustom(val->value.opaque, 0, &funcs);
 }
 
-void _freeTable(const struct mScriptType* type, struct mScriptValue* val) {
-	UNUSED(type);
+void _freeTable(struct mScriptValue* val) {
 	HashTableDeinit(val->value.opaque);
 	free(val->value.opaque);
 }
@@ -88,10 +86,10 @@ void _deinitTableValue(void* val) {
 	mScriptValueDeref(val);
 }
 
-uint32_t _hashScalar(const struct mScriptType* type, const struct mScriptValue* val) {
+uint32_t _hashScalar(const struct mScriptValue* val) {
 	// From https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
 	uint32_t x;
-	switch (type->base) {
+	switch (val->type->base) {
 	case mSCRIPT_TYPE_SINT:
 		x = val->value.s32;
 		break;
@@ -108,7 +106,7 @@ uint32_t _hashScalar(const struct mScriptType* type, const struct mScriptValue* 
 uint32_t _valHash(const void* val, size_t len, uint32_t seed) {
 	UNUSED(len);
 	const struct mScriptValue* value = val;
-	uint32_t hash = value->type->hash(value->type, value);
+	uint32_t hash = value->type->hash(value);
 	return hash ^ seed;
 }
 
@@ -146,12 +144,12 @@ struct mScriptValue* mScriptValueAlloc(const struct mScriptType* type) {
 	// TODO: Use an arena instead of just the generic heap
 	struct mScriptValue* val = malloc(sizeof(*val));
 	val->refs = 1;
+	val->type = type;
 	if (type->alloc) {
-		type->alloc(type, val);
+		type->alloc(val);
 	} else {
 		val->value.opaque = NULL;
 	}
-	val->type = type;
 	return val;
 }
 
@@ -173,7 +171,7 @@ void mScriptValueDeref(struct mScriptValue* val) {
 		return;
 	}
 	if (val->type->free) {
-		val->type->free(val->type, val);
+		val->type->free(val);
 	}
 	free(val);
 }

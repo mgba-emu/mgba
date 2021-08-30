@@ -205,14 +205,14 @@ struct mScriptType {
 	int base;
 	size_t size;
 	const char* name;
-	void (*alloc)(const struct mScriptType*, struct mScriptValue*);
-	void (*free)(const struct mScriptType*, struct mScriptValue*);
-	uint32_t (*hash)(const struct mScriptType*, const struct mScriptValue*);
 	union {
 		struct mScriptTypeTuple tuple;
 		struct mScriptTypeFunction function;
 		void* opaque;
 	} details;
+	void (*alloc)(struct mScriptValue*);
+	void (*free)(struct mScriptValue*);
+	uint32_t (*hash)(const struct mScriptValue*);
 };
 
 struct mScriptValue {
