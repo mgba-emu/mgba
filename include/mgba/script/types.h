@@ -213,6 +213,7 @@ struct mScriptType {
 	void (*alloc)(struct mScriptValue*);
 	void (*free)(struct mScriptValue*);
 	uint32_t (*hash)(const struct mScriptValue*);
+	bool (*equal)(const struct mScriptValue*, const struct mScriptValue*);
 };
 
 struct mScriptValue {

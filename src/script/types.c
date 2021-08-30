@@ -18,6 +18,11 @@ static bool _valEqual(const void* a, const void* b);
 static void* _valRef(void*);
 static void _valDeref(void*);
 
+static bool _typeEqual(const struct mScriptValue*, const struct mScriptValue*);
+static bool _s32Equal(const struct mScriptValue*, const struct mScriptValue*);
+static bool _u32Equal(const struct mScriptValue*, const struct mScriptValue*);
+static bool _f32Equal(const struct mScriptValue*, const struct mScriptValue*);
+
 const struct mScriptType mSTVoid = {
 	.base = mSCRIPT_TYPE_VOID,
 	.size = 0,
@@ -25,6 +30,7 @@ const struct mScriptType mSTVoid = {
 	.alloc = NULL,
 	.free = NULL,
 	.hash = NULL,
+	.equal = _typeEqual,
 };
 
 const struct mScriptType mSTSInt32 = {
@@ -34,6 +40,7 @@ const struct mScriptType mSTSInt32 = {
 	.alloc = NULL,
 	.free = NULL,
 	.hash = _hashScalar,
+	.equal = _s32Equal,
 };
 
 const struct mScriptType mSTUInt32 = {
@@ -43,6 +50,7 @@ const struct mScriptType mSTUInt32 = {
 	.alloc = NULL,
 	.free = NULL,
 	.hash = _hashScalar,
+	.equal = _u32Equal,
 };
 
 const struct mScriptType mSTFloat32 = {
@@ -52,6 +60,7 @@ const struct mScriptType mSTFloat32 = {
 	.alloc = NULL,
 	.free = NULL,
 	.hash = NULL,
+	.equal = _f32Equal,
 };
 
 const struct mScriptType mSTTable = {
@@ -113,22 +122,7 @@ uint32_t _valHash(const void* val, size_t len, uint32_t seed) {
 bool _valEqual(const void* a, const void* b) {
 	const struct mScriptValue* valueA = a;
 	const struct mScriptValue* valueB = b;
-	// TODO: Move equality into type
-	if (valueA->type != valueB->type) {
-		return false;
-	}
-	switch (valueA->type->base) {
-	case mSCRIPT_TYPE_VOID:
-		return true;
-	case mSCRIPT_TYPE_SINT:
-		return valueA->value.s32 == valueB->value.s32;
-	case mSCRIPT_TYPE_UINT:
-		return valueA->value.u32 == valueB->value.u32;
-	case mSCRIPT_TYPE_FLOAT:
-		return valueA->value.f32 == valueB->value.f32;
-	default:
-		return valueA->value.opaque == valueB->value.opaque;
-	}
+	return valueA->type->equal(valueA, valueB);
 }
 
 void* _valRef(void* val) {
@@ -138,6 +132,77 @@ void* _valRef(void* val) {
 
 void _valDeref(void* val) {
 	mScriptValueDeref(val);
+}
+
+bool _typeEqual(const struct mScriptValue* a, const struct mScriptValue* b) {
+	return a->type == b->type;
+
+}
+
+bool _s32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
+	int32_t val;
+	switch (b->type->base) {
+	case mSCRIPT_TYPE_SINT:
+		val = b->value.s32;
+		break;
+	case mSCRIPT_TYPE_UINT:
+		if (b->value.u32 > (uint32_t) INT_MAX) {
+			return false;
+		}
+		if (a->value.s32 < 0) {
+			return false;
+		}
+		val = b->value.u32;
+		break;
+	case mSCRIPT_TYPE_VOID:
+		return false;
+	default:
+		return b->type->equal && b->type->equal(b, a);
+	}
+	return a->value.s32 == val;
+}
+
+bool _u32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
+	uint32_t val;
+	switch (b->type->base) {
+	case mSCRIPT_TYPE_SINT:
+		if (b->value.s32 < 0) {
+			return false;
+		}
+		if (a->value.u32 > (uint32_t) INT_MAX) {
+			return false;
+		}
+		val = b->value.s32;
+		break;
+	case mSCRIPT_TYPE_UINT:
+		val = b->value.u32;
+		break;
+	case mSCRIPT_TYPE_VOID:
+		return false;
+	default:
+		return b->type->equal && b->type->equal(b, a);
+	}
+	return a->value.u32 == val;
+}
+
+bool _f32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
+	float val;
+	switch (b->type->base) {
+	case mSCRIPT_TYPE_SINT:
+		val = b->value.s32;
+		break;
+	case mSCRIPT_TYPE_UINT:
+		val = b->value.u32;
+		break;
+	case mSCRIPT_TYPE_FLOAT:
+		val = b->value.f32;
+		break;
+	case mSCRIPT_TYPE_VOID:
+		return false;
+	default:
+		return b->type->equal && b->type->equal(b, a);
+	}
+	return a->value.f32 == val;
 }
 
 struct mScriptValue* mScriptValueAlloc(const struct mScriptType* type) {

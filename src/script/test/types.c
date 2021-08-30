@@ -171,6 +171,235 @@ M_TEST_DEFINE(coerceFromFloat) {
 	mScriptFrameDeinit(&frame);
 }
 
+M_TEST_DEFINE(s32Equality) {
+	struct mScriptValue s32A;
+	struct mScriptValue s32B;
+	struct mScriptValue u32;
+	struct mScriptValue f32;
+
+	s32A = mSCRIPT_MAKE_S32(0);
+	s32B = mSCRIPT_MAKE_S32(0);
+	assert_true(s32A.type->equal(&s32A, &s32B));
+
+	s32B = mSCRIPT_MAKE_S32(1);
+	assert_false(s32A.type->equal(&s32A, &s32B));
+
+	s32A = mSCRIPT_MAKE_S32(1);
+	assert_true(s32A.type->equal(&s32A, &s32B));
+
+	s32B = mSCRIPT_MAKE_S32(-1);
+	assert_false(s32A.type->equal(&s32A, &s32B));
+
+	s32A = mSCRIPT_MAKE_S32(-1);
+	assert_true(s32A.type->equal(&s32A, &s32B));
+
+	s32A = mSCRIPT_MAKE_S32(0);
+	u32 = mSCRIPT_MAKE_U32(0);
+	assert_true(s32A.type->equal(&s32A, &u32));
+
+	s32A = mSCRIPT_MAKE_S32(1);
+	u32 = mSCRIPT_MAKE_U32(1);
+	assert_true(s32A.type->equal(&s32A, &u32));
+
+	s32A = mSCRIPT_MAKE_S32(0);
+	u32 = mSCRIPT_MAKE_U32(1);
+	assert_false(s32A.type->equal(&s32A, &u32));
+
+	s32A = mSCRIPT_MAKE_S32(1);
+	u32 = mSCRIPT_MAKE_U32(0);
+	assert_false(s32A.type->equal(&s32A, &u32));
+
+	s32A = mSCRIPT_MAKE_S32(0x7FFFFFFF);
+	u32 = mSCRIPT_MAKE_U32(0x7FFFFFFF);
+	assert_true(s32A.type->equal(&s32A, &u32));
+
+	s32A = mSCRIPT_MAKE_S32(0xFFFFFFFF);
+	u32 = mSCRIPT_MAKE_U32(0xFFFFFFFF);
+	assert_false(s32A.type->equal(&s32A, &u32));
+
+	s32A = mSCRIPT_MAKE_S32(0x80000000);
+	u32 = mSCRIPT_MAKE_U32(0x80000000);
+	assert_false(s32A.type->equal(&s32A, &u32));
+
+	s32A = mSCRIPT_MAKE_S32(0);
+	f32 = mSCRIPT_MAKE_F32(0);
+	assert_true(s32A.type->equal(&s32A, &f32));
+
+	s32A = mSCRIPT_MAKE_S32(1);
+	f32 = mSCRIPT_MAKE_F32(1);
+	assert_true(s32A.type->equal(&s32A, &f32));
+
+	s32A = mSCRIPT_MAKE_S32(0);
+	f32 = mSCRIPT_MAKE_F32(1);
+	assert_false(s32A.type->equal(&s32A, &f32));
+
+	s32A = mSCRIPT_MAKE_S32(1);
+	f32 = mSCRIPT_MAKE_F32(0);
+	assert_false(s32A.type->equal(&s32A, &f32));
+
+	s32A = mSCRIPT_MAKE_S32(-1);
+	f32 = mSCRIPT_MAKE_F32(-1);
+	assert_true(s32A.type->equal(&s32A, &f32));
+
+	s32A = mSCRIPT_MAKE_S32(0);
+	f32 = mSCRIPT_MAKE_F32(-1);
+	assert_false(s32A.type->equal(&s32A, &f32));
+
+	s32A = mSCRIPT_MAKE_S32(-1);
+	f32 = mSCRIPT_MAKE_F32(0);
+	assert_false(s32A.type->equal(&s32A, &f32));
+}
+
+M_TEST_DEFINE(u32Equality) {
+	struct mScriptValue u32A;
+	struct mScriptValue u32B;
+	struct mScriptValue s32;
+	struct mScriptValue f32;
+
+	u32A = mSCRIPT_MAKE_U32(0);
+	u32B = mSCRIPT_MAKE_U32(0);
+	assert_true(u32A.type->equal(&u32A, &u32B));
+
+	u32B = mSCRIPT_MAKE_U32(1);
+	assert_false(u32A.type->equal(&u32A, &u32B));
+
+	u32A = mSCRIPT_MAKE_U32(1);
+	assert_true(u32A.type->equal(&u32A, &u32B));
+
+	u32B = mSCRIPT_MAKE_U32(0x80000000U);
+	assert_false(u32A.type->equal(&u32A, &u32B));
+
+	u32A = mSCRIPT_MAKE_U32(0x80000000U);
+	assert_true(u32A.type->equal(&u32A, &u32B));
+
+	u32A = mSCRIPT_MAKE_U32(0);
+	s32 = mSCRIPT_MAKE_S32(0);
+	assert_true(u32A.type->equal(&u32A, &s32));
+
+	u32A = mSCRIPT_MAKE_U32(1);
+	s32 = mSCRIPT_MAKE_S32(1);
+	assert_true(u32A.type->equal(&u32A, &s32));
+
+	u32A = mSCRIPT_MAKE_U32(0);
+	s32 = mSCRIPT_MAKE_S32(1);
+	assert_false(u32A.type->equal(&u32A, &s32));
+
+	u32A = mSCRIPT_MAKE_U32(1);
+	s32 = mSCRIPT_MAKE_S32(0);
+	assert_false(u32A.type->equal(&u32A, &s32));
+
+	u32A = mSCRIPT_MAKE_U32(0x7FFFFFFF);
+	s32 = mSCRIPT_MAKE_S32(0x7FFFFFFF);
+	assert_true(u32A.type->equal(&u32A, &s32));
+
+	u32A = mSCRIPT_MAKE_U32(0xFFFFFFFF);
+	s32 = mSCRIPT_MAKE_S32(0xFFFFFFFF);
+	assert_false(u32A.type->equal(&u32A, &s32));
+
+	u32A = mSCRIPT_MAKE_U32(0x80000000);
+	s32 = mSCRIPT_MAKE_S32(0x80000000);
+	assert_false(u32A.type->equal(&u32A, &s32));
+
+	u32A = mSCRIPT_MAKE_U32(0);
+	f32 = mSCRIPT_MAKE_F32(0);
+	assert_true(u32A.type->equal(&u32A, &f32));
+
+	u32A = mSCRIPT_MAKE_U32(1);
+	f32 = mSCRIPT_MAKE_F32(1);
+	assert_true(u32A.type->equal(&u32A, &f32));
+
+	u32A = mSCRIPT_MAKE_U32(0);
+	f32 = mSCRIPT_MAKE_F32(1);
+	assert_false(u32A.type->equal(&u32A, &f32));
+
+	u32A = mSCRIPT_MAKE_U32(1);
+	f32 = mSCRIPT_MAKE_F32(0);
+	assert_false(u32A.type->equal(&u32A, &f32));
+
+	u32A = mSCRIPT_MAKE_U32(0x80000000);
+	f32 = mSCRIPT_MAKE_F32(0x80000000);
+	assert_true(u32A.type->equal(&u32A, &f32));
+
+	u32A = mSCRIPT_MAKE_U32(0);
+	f32 = mSCRIPT_MAKE_F32(0x80000000);
+	assert_false(u32A.type->equal(&u32A, &f32));
+
+	u32A = mSCRIPT_MAKE_U32(0x80000000);
+	f32 = mSCRIPT_MAKE_F32(0);
+	assert_false(u32A.type->equal(&u32A, &f32));
+}
+
+M_TEST_DEFINE(f32Equality) {
+	struct mScriptValue f32A;
+	struct mScriptValue f32B;
+	struct mScriptValue s32;
+	struct mScriptValue u32;
+
+	f32A = mSCRIPT_MAKE_F32(0);
+	f32B = mSCRIPT_MAKE_F32(0);
+	assert_true(f32A.type->equal(&f32A, &f32B));
+
+	f32B = mSCRIPT_MAKE_F32(1);
+	assert_false(f32A.type->equal(&f32A, &f32B));
+
+	f32A = mSCRIPT_MAKE_F32(1);
+	assert_true(f32A.type->equal(&f32A, &f32B));
+
+	f32B = mSCRIPT_MAKE_F32(1.1);
+	assert_false(f32A.type->equal(&f32A, &f32B));
+
+	f32A = mSCRIPT_MAKE_F32(1.1);
+	assert_true(f32A.type->equal(&f32A, &f32B));
+
+	f32A = mSCRIPT_MAKE_F32(0);
+	s32 = mSCRIPT_MAKE_S32(0);
+	assert_true(f32A.type->equal(&f32A, &s32));
+
+	f32A = mSCRIPT_MAKE_F32(1);
+	s32 = mSCRIPT_MAKE_S32(1);
+	assert_true(f32A.type->equal(&f32A, &s32));
+
+	f32A = mSCRIPT_MAKE_F32(0);
+	s32 = mSCRIPT_MAKE_S32(1);
+	assert_false(f32A.type->equal(&f32A, &s32));
+
+	f32A = mSCRIPT_MAKE_F32(1);
+	s32 = mSCRIPT_MAKE_S32(0);
+	assert_false(f32A.type->equal(&f32A, &s32));
+
+	f32A = mSCRIPT_MAKE_F32(1.1);
+	s32 = mSCRIPT_MAKE_S32(1);
+	assert_false(f32A.type->equal(&f32A, &s32));
+
+	f32A = mSCRIPT_MAKE_F32(0x40000000);
+	s32 = mSCRIPT_MAKE_S32(0x40000000);
+	assert_true(f32A.type->equal(&f32A, &s32));
+
+	f32A = mSCRIPT_MAKE_F32(0);
+	u32 = mSCRIPT_MAKE_U32(0);
+	assert_true(f32A.type->equal(&f32A, &u32));
+
+	f32A = mSCRIPT_MAKE_F32(1);
+	u32 = mSCRIPT_MAKE_U32(1);
+	assert_true(f32A.type->equal(&f32A, &u32));
+
+	f32A = mSCRIPT_MAKE_F32(0);
+	u32 = mSCRIPT_MAKE_U32(1);
+	assert_false(f32A.type->equal(&f32A, &u32));
+
+	f32A = mSCRIPT_MAKE_F32(1);
+	u32 = mSCRIPT_MAKE_U32(0);
+	assert_false(f32A.type->equal(&f32A, &u32));
+
+	f32A = mSCRIPT_MAKE_F32(1.1);
+	u32 = mSCRIPT_MAKE_U32(1);
+	assert_false(f32A.type->equal(&f32A, &u32));
+
+	f32A = mSCRIPT_MAKE_F32(0x40000000);
+	u32 = mSCRIPT_MAKE_U32(0x40000000);
+	assert_true(f32A.type->equal(&f32A, &u32));
+}
+
 M_TEST_DEFINE(hashTableBasic) {
 	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
 	assert_non_null(table);
@@ -213,4 +442,7 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(wrongArgType),
 	cmocka_unit_test(coerceToFloat),
 	cmocka_unit_test(coerceFromFloat),
+	cmocka_unit_test(s32Equality),
+	cmocka_unit_test(u32Equality),
+	cmocka_unit_test(f32Equality),
 	cmocka_unit_test(hashTableBasic))
