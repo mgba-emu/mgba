@@ -330,7 +330,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	find_function(localtime_r)
 	# The strtof_l on Linux not actually exposed nor actually strtof_l
 	set(HAVE_STRTOF_L OFF)
-elseif(NOT DEFINED PSP2)
+else()
 	find_function(localtime_r)
 	find_function(strtof_l)
 endif()

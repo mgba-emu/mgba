@@ -90,7 +90,7 @@ struct VFile* VFileOpenSce(const char* path, int flags, SceMode mode) {
 
 bool _vfsceClose(struct VFile* vf) {
 	struct VFileSce* vfsce = (struct VFileSce*) vf;
-	sceIoSyncByFd(vfsce->fd);
+	sceIoSyncByFd(vfsce->fd, 0);
 	return sceIoClose(vfsce->fd) >= 0;
 }
 
@@ -128,7 +128,7 @@ static void _vfsceUnmap(struct VFile* vf, void* memory, size_t size) {
 	sceIoLseek(vfsce->fd, 0, SEEK_SET);
 	sceIoWrite(vfsce->fd, memory, size);
 	sceIoLseek(vfsce->fd, cur, SEEK_SET);
-	sceIoSyncByFd(vfsce->fd);
+	sceIoSyncByFd(vfsce->fd, 0);
 	mappedMemoryFree(memory, size);
 }
 
@@ -155,7 +155,7 @@ bool _vfsceSync(struct VFile* vf, void* buffer, size_t size) {
 		sceIoLseek(vfsce->fd, cur, SEEK_SET);
 		return res == size;
 	}
-	return sceIoSyncByFd(vfsce->fd) >= 0;
+	return sceIoSyncByFd(vfsce->fd, 0) >= 0;
 }
 
 struct VDir* VDirOpen(const char* path) {
