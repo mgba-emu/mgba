@@ -41,6 +41,10 @@ static int subInts(int a, int b) {
 	return a - b;
 }
 
+static int isHello(const char* str) {
+	return strcmp(str, "hello") == 0;
+}
+
 mSCRIPT_BIND_FUNCTION(boundVoidOne, S32, voidOne, 0);
 mSCRIPT_BIND_VOID_FUNCTION(boundDiscard, discard, 1, S32);
 mSCRIPT_BIND_FUNCTION(boundIdentityInt, S32, identityInt, 1, S32);
@@ -48,6 +52,7 @@ mSCRIPT_BIND_FUNCTION(boundIdentityFloat, F32, identityFloat, 1, F32);
 mSCRIPT_BIND_FUNCTION(boundIdentityStruct, S(Test), identityStruct, 1, S(Test));
 mSCRIPT_BIND_FUNCTION(boundAddInts, S32, addInts, 2, S32, S32);
 mSCRIPT_BIND_FUNCTION(boundSubInts, S32, subInts, 2, S32, S32);
+mSCRIPT_BIND_FUNCTION(boundIsHello, S32, isHello, 1, CHARP);
 
 M_TEST_DEFINE(voidArgs) {
 	struct mScriptFrame frame;
@@ -400,6 +405,33 @@ M_TEST_DEFINE(f32Equality) {
 	assert_true(f32A.type->equal(&f32A, &u32));
 }
 
+M_TEST_DEFINE(stringEquality) {
+	struct mScriptValue* stringA = mScriptStringCreateFromUTF8("hello");
+	struct mScriptValue* stringB = mScriptStringCreateFromUTF8("world");
+	struct mScriptValue* stringC = mScriptStringCreateFromUTF8("hello");
+	struct mScriptValue charpA = mSCRIPT_MAKE_CHARP("hello");
+	struct mScriptValue charpB = mSCRIPT_MAKE_CHARP("world");
+
+	assert_true(stringA->type->equal(stringA, stringC));
+	assert_false(stringA->type->equal(stringA, stringB));
+
+	assert_true(stringA->type->equal(stringA, &charpA));
+	assert_false(stringA->type->equal(stringA, &charpB));
+
+	assert_true(charpA.type->equal(&charpA, stringA));
+	assert_false(charpA.type->equal(&charpA, stringB));
+
+	charpB = mSCRIPT_MAKE_CHARP("hello");
+	assert_true(charpA.type->equal(&charpA, &charpB));
+
+	charpB = mSCRIPT_MAKE_CHARP("world");
+	assert_false(charpA.type->equal(&charpA, &charpB));
+
+	mScriptValueDeref(stringA);
+	mScriptValueDeref(stringB);
+	mScriptValueDeref(stringC);
+}
+
 M_TEST_DEFINE(hashTableBasic) {
 	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
 	assert_non_null(table);
@@ -429,6 +461,57 @@ M_TEST_DEFINE(hashTableBasic) {
 	mScriptValueDeref(table);
 }
 
+M_TEST_DEFINE(hashTableString) {
+	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+	assert_non_null(table);
+
+	struct mScriptValue* intValue = mScriptValueAlloc(mSCRIPT_TYPE_MS_S32);
+	assert_ptr_equal(intValue->type, mSCRIPT_TYPE_MS_S32);
+	assert_int_equal(intValue->value.s32, 0);
+	assert_int_equal(intValue->refs, 1);
+
+	struct mScriptValue key = mSCRIPT_MAKE_CHARP("key");
+	struct mScriptValue badKey = mSCRIPT_MAKE_CHARP("bad");
+
+	assert_true(mScriptTableInsert(table, &key, intValue));
+	assert_int_equal(intValue->refs, 2);
+
+	struct mScriptValue* lookupValue = mScriptTableLookup(table, &key);
+	assert_non_null(lookupValue);
+	assert_ptr_equal(lookupValue, intValue);
+
+	lookupValue = mScriptTableLookup(table, &badKey);
+	assert_null(lookupValue);
+
+	assert_true(mScriptTableRemove(table, &key));
+	assert_int_equal(intValue->refs, 1);
+
+	mScriptValueDeref(intValue);
+	mScriptValueDeref(table);
+}
+
+M_TEST_DEFINE(stringIsHello) {
+	struct mScriptFrame frame;
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, CHARP, "hello");
+	assert_true(mScriptInvoke(&boundIsHello, &frame));
+	int val;
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 1);
+	mScriptFrameDeinit(&frame);
+}
+
+M_TEST_DEFINE(stringIsNotHello) {
+	struct mScriptFrame frame;
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, CHARP, "world");
+	assert_true(mScriptInvoke(&boundIsHello, &frame));
+	int val;
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 0);
+	mScriptFrameDeinit(&frame);
+}
+
 M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(voidArgs),
 	cmocka_unit_test(voidFunc),
@@ -445,4 +528,8 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(s32Equality),
 	cmocka_unit_test(u32Equality),
 	cmocka_unit_test(f32Equality),
-	cmocka_unit_test(hashTableBasic))
+	cmocka_unit_test(stringEquality),
+	cmocka_unit_test(hashTableBasic),
+	cmocka_unit_test(hashTableString),
+	cmocka_unit_test(stringIsHello),
+	cmocka_unit_test(stringIsNotHello))

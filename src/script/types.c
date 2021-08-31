@@ -5,11 +5,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/script/types.h>
 
+#include <mgba-util/hash.h>
 #include <mgba-util/table.h>
 
 static void _allocTable(struct mScriptValue*);
 static void _freeTable(struct mScriptValue*);
 static void _deinitTableValue(void*);
+
+static void _allocString(struct mScriptValue*);
+static void _freeString(struct mScriptValue*);
+static uint32_t _hashString(const struct mScriptValue*);
 
 static uint32_t _hashScalar(const struct mScriptValue*);
 
@@ -22,6 +27,8 @@ static bool _typeEqual(const struct mScriptValue*, const struct mScriptValue*);
 static bool _s32Equal(const struct mScriptValue*, const struct mScriptValue*);
 static bool _u32Equal(const struct mScriptValue*, const struct mScriptValue*);
 static bool _f32Equal(const struct mScriptValue*, const struct mScriptValue*);
+static bool _charpEqual(const struct mScriptValue*, const struct mScriptValue*);
+static bool _stringEqual(const struct mScriptValue*, const struct mScriptValue*);
 
 const struct mScriptType mSTVoid = {
 	.base = mSCRIPT_TYPE_VOID,
@@ -63,6 +70,26 @@ const struct mScriptType mSTFloat32 = {
 	.equal = _f32Equal,
 };
 
+const struct mScriptType mSTString = {
+	.base = mSCRIPT_TYPE_STRING,
+	.size = sizeof(struct mScriptString),
+	.name = "string",
+	.alloc = _allocString,
+	.free = _freeString,
+	.hash = _hashString,
+	.equal = _stringEqual,
+};
+
+const struct mScriptType mSTCharPtr = {
+	.base = mSCRIPT_TYPE_STRING,
+	.size = sizeof(char*),
+	.name = "charptr",
+	.alloc = NULL,
+	.free = NULL,
+	.hash = _hashString,
+	.equal = _charpEqual,
+};
+
 const struct mScriptType mSTTable = {
 	.base = mSCRIPT_TYPE_TABLE,
 	.size = sizeof(struct Table),
@@ -93,6 +120,35 @@ void _freeTable(struct mScriptValue* val) {
 
 void _deinitTableValue(void* val) {
 	mScriptValueDeref(val);
+}
+
+static void _allocString(struct mScriptValue* val) {
+	struct mScriptString* string = calloc(1, sizeof(*string));
+	string->size = 0;
+	string->buffer = NULL;
+	val->value.opaque = string;
+}
+
+static void _freeString(struct mScriptValue* val) {
+	struct mScriptString* string = val->value.opaque;
+	if (string->size) {
+		free(string->buffer);
+	}
+	free(string);
+}
+
+static uint32_t _hashString(const struct mScriptValue* val) {
+	const char* buffer = 0;
+	size_t size = 0;
+	if (val->type == &mSTString) {
+		struct mScriptString* string = val->value.opaque;
+		buffer = string->buffer;
+		size = string->size;
+	} else if (val->type == &mSTCharPtr) {
+		buffer = val->value.opaque;
+		size = strlen(buffer);
+	}
+	return hash32(buffer, size, 0);
 }
 
 uint32_t _hashScalar(const struct mScriptValue* val) {
@@ -136,7 +192,6 @@ void _valDeref(void* val) {
 
 bool _typeEqual(const struct mScriptValue* a, const struct mScriptValue* b) {
 	return a->type == b->type;
-
 }
 
 bool _s32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
@@ -205,6 +260,58 @@ bool _f32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 	return a->value.f32 == val;
 }
 
+bool _charpEqual(const struct mScriptValue* a, const struct mScriptValue* b) {
+	const char* valA = a->value.opaque;
+	const char* valB;
+	size_t lenA;
+	size_t lenB;
+	if (b->type->base != mSCRIPT_TYPE_STRING) {
+		return false;
+	}
+	if (b->type == &mSTCharPtr) {
+		valB = b->value.opaque;
+		lenB = strlen(valB);
+	} else if (b->type == &mSTString) {
+		struct mScriptString* stringB = b->value.opaque;
+		valB = stringB->buffer;
+		lenB = stringB->size;
+	} else {
+		// TODO: Allow casting
+		return false;
+	}
+	lenA = strlen(valA);
+	if (lenA != lenB) {
+		return false;
+	}
+	return strncmp(valA, valB, lenA) == 0;
+}
+
+bool _stringEqual(const struct mScriptValue* a, const struct mScriptValue* b) {
+	struct mScriptString* stringA = a->value.opaque;
+	const char* valA = stringA->buffer;
+	const char* valB;
+	size_t lenA = stringA->size;
+	size_t lenB;
+	if (b->type->base != mSCRIPT_TYPE_STRING) {
+		return false;
+	}
+	if (b->type == &mSTCharPtr) {
+		valB = b->value.opaque;
+		lenB = strlen(valB);
+	} else if (b->type == &mSTString) {
+		struct mScriptString* stringB = b->value.opaque;
+		valB = stringB->buffer;
+		lenB = stringB->size;
+	} else {
+		// TODO: Allow casting
+		return false;
+	}
+	if (lenA != lenB) {
+		return false;
+	}
+	return strncmp(valA, valB, lenA) == 0;
+}
+
 struct mScriptValue* mScriptValueAlloc(const struct mScriptType* type) {
 	// TODO: Use an arena instead of just the generic heap
 	struct mScriptValue* val = malloc(sizeof(*val));
@@ -239,6 +346,14 @@ void mScriptValueDeref(struct mScriptValue* val) {
 		val->type->free(val);
 	}
 	free(val);
+}
+
+struct mScriptValue* mScriptStringCreateFromUTF8(const char* string) {
+	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_STR);
+	struct mScriptString* internal = val->value.opaque;
+	internal->size = strlen(string);
+	internal->buffer = strdup(string);
+	return val;
 }
 
 bool mScriptTableInsert(struct mScriptValue* table, struct mScriptValue* key, struct mScriptValue* value) {
