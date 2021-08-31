@@ -225,6 +225,7 @@ struct mScriptType {
 	void (*free)(struct mScriptValue*);
 	uint32_t (*hash)(const struct mScriptValue*);
 	bool (*equal)(const struct mScriptValue*, const struct mScriptValue*);
+	bool (*cast)(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
 };
 
 struct mScriptValue {

@@ -16,6 +16,7 @@ static void _allocString(struct mScriptValue*);
 static void _freeString(struct mScriptValue*);
 static uint32_t _hashString(const struct mScriptValue*);
 
+static bool _castScalar(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
 static uint32_t _hashScalar(const struct mScriptValue*);
 
 static uint32_t _valHash(const void* val, size_t len, uint32_t seed);
@@ -38,6 +39,7 @@ const struct mScriptType mSTVoid = {
 	.free = NULL,
 	.hash = NULL,
 	.equal = _typeEqual,
+	.cast = NULL,
 };
 
 const struct mScriptType mSTSInt32 = {
@@ -48,6 +50,7 @@ const struct mScriptType mSTSInt32 = {
 	.free = NULL,
 	.hash = _hashScalar,
 	.equal = _s32Equal,
+	.cast = _castScalar,
 };
 
 const struct mScriptType mSTUInt32 = {
@@ -58,6 +61,7 @@ const struct mScriptType mSTUInt32 = {
 	.free = NULL,
 	.hash = _hashScalar,
 	.equal = _u32Equal,
+	.cast = _castScalar,
 };
 
 const struct mScriptType mSTFloat32 = {
@@ -68,6 +72,7 @@ const struct mScriptType mSTFloat32 = {
 	.free = NULL,
 	.hash = NULL,
 	.equal = _f32Equal,
+	.cast = _castScalar,
 };
 
 const struct mScriptType mSTString = {
@@ -166,6 +171,60 @@ uint32_t _hashScalar(const struct mScriptValue* val) {
 	x = ((x >> 16) ^ x) * 0x45D9F3B;
 	x = (x >> 16) ^ x;
 	return x;
+}
+
+bool _castScalar(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) {
+	switch (type->base) {
+	case mSCRIPT_TYPE_SINT:
+		switch (input->type->base) {
+		case mSCRIPT_TYPE_SINT:
+			output->value.s32 = input->value.s32;
+			break;
+		case mSCRIPT_TYPE_UINT:
+			output->value.s32 = input->value.u32;
+			break;
+		case mSCRIPT_TYPE_FLOAT:
+			output->value.s32 = input->value.f32;
+			break;
+		default:
+			return false;
+		}
+		break;
+	case mSCRIPT_TYPE_UINT:
+		switch (input->type->base) {
+		case mSCRIPT_TYPE_SINT:
+			output->value.u32 = input->value.s32;
+			break;
+		case mSCRIPT_TYPE_UINT:
+			output->value.u32 = input->value.u32;
+			break;
+		case mSCRIPT_TYPE_FLOAT:
+			output->value.u32 = input->value.f32;
+			break;
+		default:
+			return false;
+		}
+		break;
+	case mSCRIPT_TYPE_FLOAT:
+		switch (input->type->base) {
+		case mSCRIPT_TYPE_SINT:
+			output->value.f32 = input->value.s32;
+			break;
+		case mSCRIPT_TYPE_UINT:
+			output->value.f32 = input->value.u32;
+			break;
+		case mSCRIPT_TYPE_FLOAT:
+			output->value.f32 = input->value.f32;
+			break;
+		default:
+			return false;
+		}
+		break;
+	default:
+		return false;
+	}
+	output->type = type;
+	return true;
 }
 
 uint32_t _valHash(const void* val, size_t len, uint32_t seed) {
@@ -427,76 +486,12 @@ bool mScriptPopPointer(struct mScriptList* list, void** out) {
 }
 
 bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* input, struct mScriptValue* output) {
-	switch (type->base) {
-	case mSCRIPT_TYPE_VOID:
-		return false;
-	case mSCRIPT_TYPE_SINT:
-		switch (input->type->base) {
-		case mSCRIPT_TYPE_SINT:
-			output->value.s32 = input->value.s32;
-			break;
-		case mSCRIPT_TYPE_UINT:
-			output->value.s32 = input->value.u32;
-			break;
-		case mSCRIPT_TYPE_FLOAT:
-			switch (input->type->size) {
-			case 4:
-				output->value.s32 = input->value.f32;
-				break;
-			default:
-				return false;
-			}
-			break;
-		default:
-			return false;
-		}
-		break;
-	case mSCRIPT_TYPE_UINT:
-		switch (input->type->base) {
-		case mSCRIPT_TYPE_SINT:
-			output->value.u32 = input->value.s32;
-			break;
-		case mSCRIPT_TYPE_UINT:
-			output->value.u32 = input->value.u32;
-			break;
-		case mSCRIPT_TYPE_FLOAT:
-			switch (input->type->size) {
-			case 4:
-				output->value.u32 = input->value.f32;
-				break;
-			default:
-				return false;
-			}
-			break;
-		default:
-			return false;
-		}
-		break;
-	case mSCRIPT_TYPE_FLOAT:
-		switch (input->type->base) {
-		case mSCRIPT_TYPE_SINT:
-			output->value.f32 = input->value.s32;
-			break;
-		case mSCRIPT_TYPE_UINT:
-			output->value.f32 = input->value.u32;
-			break;
-		case mSCRIPT_TYPE_FLOAT:
-			switch (input->type->size) {
-			case 4:
-				output->value.f32 = input->value.f32;
-				break;
-			default:
-				return false;
-			}
-			break;
-		default:
-			return false;
-		}
-		break;
-	default:
-		return false;
+	if (type->cast && type->cast(input, type, output)) {
+		return true;
 	}
-	output->type = type;
+	if (input->type->cast && input->type->cast(input, type, output)) {
+		return true;
+	}
 	return true;
 }
 
