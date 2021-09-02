@@ -3525,7 +3525,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MapView.cpp" line="106"/>
         <source>Map Addr.</source>
-        <translation>Endereço do Mapa</translation>
+        <translation>Endereço do Mapa.</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="107"/>
