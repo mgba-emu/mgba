@@ -20,6 +20,8 @@ CXX_GUARD_START
 #include <GL/gl.h>
 #include <GL/glext.h>
 #endif
+#elif defined(BUILD_GLES3)
+#include <GLES3/gl3.h>
 #else
 #include <GLES2/gl2.h>
 #endif

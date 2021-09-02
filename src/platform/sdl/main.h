@@ -29,7 +29,7 @@ CXX_GUARD_START
 #pragma GCC diagnostic pop
 #endif
 
-#if defined(BUILD_GLES2) || defined(USE_EPOXY)
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 #include "gl-common.h"
 #include "platform/opengl/gles2.h"
 #endif
@@ -72,7 +72,7 @@ struct mSDLRenderer {
 #ifdef BUILD_GL
 	struct mGLContext gl;
 #endif
-#if defined(BUILD_GLES2) || defined(USE_EPOXY)
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 	struct mGLES2Context gl2;
 #endif
 

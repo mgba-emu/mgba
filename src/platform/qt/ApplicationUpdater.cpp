@@ -44,8 +44,7 @@ ApplicationUpdater::ApplicationUpdater(ConfigController* config, QObject* parent
 		config->setQtOption("lastUpdateCheck", m_lastCheck);
 
 		if (available && currentVersion() < updateInfo()) {
-#ifdef Q_OS_WIN
-			// Only works on Windows at the moment
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
 			ApplicationUpdatePrompt* prompt = new ApplicationUpdatePrompt;
 			connect(prompt, &QDialog::accepted, GBAApp::app(), &GBAApp::restartForUpdate);
 			prompt->setAttribute(Qt::WA_DeleteOnClose);

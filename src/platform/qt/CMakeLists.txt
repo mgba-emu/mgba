@@ -24,7 +24,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5 COMPONENTS Core Widgets Network Multimedia)
 
-if(NOT BUILD_GL AND NOT BUILD_GLES2)
+if(NOT BUILD_GL AND NOT BUILD_GLES2 AND NOT BUILD_GLES3)
 	message(WARNING "OpenGL is recommended to build the Qt port")
 endif()
 
@@ -310,6 +310,9 @@ set_target_properties(${BINARY_NAME}-qt PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CM
 
 if(WIN32)
 	set_target_properties(${BINARY_NAME}-qt PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+	if(NOT MSVC)
+		target_link_libraries(${BINARY_NAME}-qt -municode)
+	endif()
 endif()
 
 list(APPEND QT_LIBRARIES Qt5::Widgets Qt5::Network)
