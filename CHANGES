@@ -29,6 +29,7 @@ Bugfixes:
  - DS Memory: Fix crash when overflowing misaligned WRAM jump
 Misc:
  - ARM: Add F-block instruction decoding
+ - DS Audio: Defer mixer updates until needed
  - DS GX: Clean up and unify texture mapping
  - DS Core: Add symbol loading
  - DS Video: Simplify VRAM mapping

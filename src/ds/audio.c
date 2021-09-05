@@ -276,7 +276,6 @@ static void _updateChannel(struct mTiming* timing, void* user, uint32_t cyclesLa
 		}
 		ch->sample = (0xFFFF * ch->high) - 0x8000;
 	}
-	_updateMixer(ch->p);
 	if (ch->format == 3 && ch->index < 14) {
 		int32_t period = ch->period;
 		if (ch->high) {
@@ -323,6 +322,7 @@ static int _applyBias(struct DSAudio* audio, int sample) {
 static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	struct DSAudio* audio = user;
 
+	_updateMixer(audio);
 	int16_t sampleLeft = _applyBias(audio, audio->sampleLeft);
 	int16_t sampleRight = _applyBias(audio, audio->sampleRight);
 
