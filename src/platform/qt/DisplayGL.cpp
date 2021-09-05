@@ -521,19 +521,17 @@ void PainterGL::unpause() {
 }
 
 void PainterGL::performDraw() {
-	m_painter.begin(m_window.get());
-	m_painter.beginNativePainting();
 	float r = m_surface->devicePixelRatio();
 	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
 	if (m_buffer) {
 		m_backend->postFrame(m_backend, m_buffer);
 	}
 	m_backend->drawFrame(m_backend);
-	m_painter.endNativePainting();
 	if (m_showOSD && m_messagePainter) {
+		m_painter.begin(m_window.get());
 		m_messagePainter->paint(&m_painter);
+		m_painter.end();
 	}
-	m_painter.end();
 }
 
 void PainterGL::enqueue(const uint32_t* backing) {
