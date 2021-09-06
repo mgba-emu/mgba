@@ -59,6 +59,31 @@ enum GUIIcon {
 	GUI_ICON_UP,
 	GUI_ICON_RIGHT,
 	GUI_ICON_DOWN,
+	GUI_ICON_9SLICE_EMPTY_NW,
+	GUI_ICON_9SLICE_EMPTY_N,
+	GUI_ICON_9SLICE_EMPTY_NE,
+	GUI_ICON_9SLICE_EMPTY_W,
+	GUI_ICON_9SLICE_EMPTY_E,
+	GUI_ICON_9SLICE_EMPTY_SW,
+	GUI_ICON_9SLICE_EMPTY_S,
+	GUI_ICON_9SLICE_EMPTY_SE,
+	GUI_ICON_9SLICE_FILLED_NW,
+	GUI_ICON_9SLICE_FILLED_N,
+	GUI_ICON_9SLICE_FILLED_NE,
+	GUI_ICON_9SLICE_FILLED_W,
+	GUI_ICON_9SLICE_FILLED_C,
+	GUI_ICON_9SLICE_FILLED_E,
+	GUI_ICON_9SLICE_FILLED_SW,
+	GUI_ICON_9SLICE_FILLED_S,
+	GUI_ICON_9SLICE_FILLED_SE,
+	GUI_ICON_9SLICE_CAP_NNW,
+	GUI_ICON_9SLICE_CAP_NWW,
+	GUI_ICON_9SLICE_CAP_NNE,
+	GUI_ICON_9SLICE_CAP_NEE,
+	GUI_ICON_9SLICE_CAP_SSW,
+	GUI_ICON_9SLICE_CAP_SWW,
+	GUI_ICON_9SLICE_CAP_SSE,
+	GUI_ICON_9SLICE_CAP_SEE,
 	GUI_ICON_MAX,
 };
 
@@ -80,6 +105,12 @@ struct GUIIconMetric {
 	int height;
 };
 
+enum GUI9SliceStyle {
+	GUI_9SLICE_FILLED,
+	GUI_9SLICE_EMPTY,
+	GUI_9SLICE_EMPTY_CAPPED,
+};
+
 unsigned GUIFontHeight(const struct GUIFont*);
 unsigned GUIFontGlyphWidth(const struct GUIFont*, uint32_t glyph);
 unsigned GUIFontSpanWidth(const struct GUIFont*, const char* text);
@@ -95,6 +126,8 @@ void GUIFontDrawIconSize(struct GUIFont* font, int x, int y, int w, int h, uint3
 #ifdef __SWITCH__
 void GUIFontDrawSubmit(struct GUIFont* font);
 #endif
+
+void GUIFontDraw9Slice(struct GUIFont*, int x, int y, int width, int height, uint32_t color, enum GUI9SliceStyle style);
 
 CXX_GUARD_END
 
