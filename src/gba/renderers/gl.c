@@ -1408,7 +1408,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	if (y == 0) {
 		glDisable(GL_SCISSOR_TEST);
 		glClearColor(0, 0, 0, 0);
-#ifdef BUILD_GLES3
+#ifdef GL_GLES_PROTOTYPES
 		glClearDepthf(1.f);
 #else
 		glClearDepth(1);
