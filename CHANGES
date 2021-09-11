@@ -5,6 +5,7 @@ Features:
  - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
  - Options for muting when inactive, minimized, or for different players in multiplayer
  - Cheat code support in homebrew ports
+ - Acclerometer and gyro support for controllers on PC
  - Support for combo "Super Game Boy Color" SGB + GBC ROM hacks
  - Support for 64 kiB SRAM saves used in some bootlegs
  - Discord Rich Presence now supports time elapsed

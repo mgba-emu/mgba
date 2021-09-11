@@ -37,6 +37,34 @@ static int32_t _mSDLReadTiltY(struct mRotationSource* rumble);
 static int32_t _mSDLReadGyroZ(struct mRotationSource* rumble);
 static void _mSDLRotationSample(struct mRotationSource* source);
 
+static struct SDL_JoystickCombo* _mSDLOpenJoystick(struct mSDLEvents* events, int i) {
+	SDL_Joystick* sdlJoystick = SDL_JoystickOpen(i);
+	if (!sdlJoystick) {
+		return NULL;
+	}
+	struct SDL_JoystickCombo* joystick = SDL_JoystickListAppend(&events->joysticks);
+	joystick->index = SDL_JoystickListSize(&events->joysticks) - 1;
+	joystick->joystick = sdlJoystick;
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	joystick->id = SDL_JoystickInstanceID(joystick->joystick);
+	joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
+	joystick->controller = SDL_GameControllerOpen(i);
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+	if (joystick->controller) {
+		if (SDL_GameControllerHasSensor(joystick->controller, SDL_SENSOR_GYRO) && !SDL_GameControllerIsSensorEnabled(joystick->controller, SDL_SENSOR_GYRO)) {
+			SDL_GameControllerSetSensorEnabled(joystick->controller, SDL_SENSOR_GYRO, SDL_TRUE);
+		}
+		if (SDL_GameControllerHasSensor(joystick->controller, SDL_SENSOR_ACCEL) && !SDL_GameControllerIsSensorEnabled(joystick->controller, SDL_SENSOR_ACCEL)) {
+			SDL_GameControllerSetSensorEnabled(joystick->controller, SDL_SENSOR_ACCEL, SDL_TRUE);
+		}
+	}
+#endif
+#else
+	joystick->id = SDL_JoystickIndex(joystick->joystick);
+#endif
+	return joystick;
+}
+
 bool mSDLInitEvents(struct mSDLEvents* context) {
 #if SDL_VERSION_ATLEAST(2, 0, 4)
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
@@ -49,6 +77,9 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 	SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 	if (SDL_InitSubSystem(SDL_INIT_HAPTIC) < 0) {
 		mLOG(SDL_EVENTS, ERROR, "SDL haptic initialization failed: %s", SDL_GetError());
+	}
+	if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) < 0) {
+		mLOG(SDL_EVENTS, ERROR, "SDL game controller initialization failed: %s", SDL_GetError());
 	}
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
 		mLOG(SDL_EVENTS, ERROR, "SDL video initialization failed: %s", SDL_GetError());
@@ -64,19 +95,7 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 		if (!SDL_JoystickListSize(&context->joysticks)) {
 			int i;
 			for (i = 0; i < nJoysticks; ++i) {
-				SDL_Joystick* sdlJoystick = SDL_JoystickOpen(i);
-				if (!sdlJoystick) {
-					continue;
-				}
-				struct SDL_JoystickCombo* joystick = SDL_JoystickListAppend(&context->joysticks);
-				joystick->joystick = sdlJoystick;
-				joystick->index = SDL_JoystickListSize(&context->joysticks) - 1;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-				joystick->id = SDL_JoystickInstanceID(joystick->joystick);
-				joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
-#else
-				joystick->id = SDL_JoystickIndex(joystick->joystick);
-#endif
+				_mSDLOpenJoystick(context, i);
 			}
 		}
 	}
@@ -101,6 +120,7 @@ void mSDLDeinitEvents(struct mSDLEvents* context) {
 	for (i = 0; i < SDL_JoystickListSize(&context->joysticks); ++i) {
 		struct SDL_JoystickCombo* joystick = SDL_JoystickListGetPointer(&context->joysticks, i);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+		SDL_GameControllerClose(joystick->controller);
 		SDL_HapticClose(joystick->haptic);
 #endif
 		SDL_JoystickClose(joystick->joystick);
@@ -350,10 +370,6 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 	SDL_Event event;
 	while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_JOYDEVICEADDED, SDL_JOYDEVICEREMOVED) > 0) {
 		if (event.type == SDL_JOYDEVICEADDED) {
-			SDL_Joystick* sdlJoystick = SDL_JoystickOpen(event.jdevice.which);
-			if (!sdlJoystick) {
-				continue;
-			}
 			ssize_t joysticks[MAX_PLAYERS];
 			ssize_t i;
 			// Pointers can get invalidated, so we'll need to refresh them
@@ -361,38 +377,26 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				joysticks[i] = events->players[i]->joystick ? (ssize_t) SDL_JoystickListIndex(&events->joysticks, events->players[i]->joystick) : -1;
 				events->players[i]->joystick = NULL;
 			}
-			struct SDL_JoystickCombo* joystick = SDL_JoystickListAppend(&events->joysticks);
-			joystick->joystick = sdlJoystick;
-			joystick->id = SDL_JoystickInstanceID(joystick->joystick);
-			joystick->index = SDL_JoystickListSize(&events->joysticks) - 1;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-			joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
-#endif
+			struct SDL_JoystickCombo* joystick = _mSDLOpenJoystick(events, event.jdevice.which);
+
 			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
 				if (joysticks[i] != -1) {
 					events->players[i]->joystick = SDL_JoystickListGetPointer(&events->joysticks, joysticks[i]);
 				}
 			}
 
-#if SDL_VERSION_ATLEAST(2, 0, 0)
 			char joystickName[34] = {0};
 			SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick->joystick), joystickName, sizeof(joystickName));
-#else
-			const char* joystickName = SDL_JoystickName(SDL_JoystickIndex(joystick->joystick));
-			if (joystickName)
-#endif
-			{
-				for (i = 0; (int) i < events->playersAttached; ++i) {
-					if (events->players[i]->joystick) {
-						continue;
+			for (i = 0; (int) i < events->playersAttached; ++i) {
+				if (events->players[i]->joystick) {
+					continue;
+				}
+				if (events->preferredJoysticks[i] && strcmp(events->preferredJoysticks[i], joystickName) == 0) {
+					events->players[i]->joystick = joystick;
+					if (config) {
+						mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_BUTTON, config, joystickName);
 					}
-					if (events->preferredJoysticks[i] && strcmp(events->preferredJoysticks[i], joystickName) == 0) {
-						events->players[i]->joystick = joystick;
-						if (config) {
-							mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_BUTTON, config, joystickName);
-						}
-						return;
-					}
+					return;
 				}
 			}
 			for (i = 0; (int) i < events->playersAttached; ++i) {
@@ -400,11 +404,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 					continue;
 				}
 				events->players[i]->joystick = joystick;
-				if (config
-#if !SDL_VERSION_ATLEAST(2, 0, 0)
-					&& joystickName
-#endif
-					) {
+				if (config && joystickName[0]) {
 					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_BUTTON, config, joystickName);
 				}
 				break;
@@ -686,11 +686,17 @@ static int32_t _readTilt(struct mSDLPlayer* player, int axis) {
 
 static int32_t _mSDLReadTiltX(struct mRotationSource* source) {
 	struct mSDLRotation* rotation = (struct mSDLRotation*) source;
+	if (rotation->axisX < 0) {
+		return rotation->accelX * -0x2000000;
+	}
 	return _readTilt(rotation->p, rotation->axisX);
 }
 
 static int32_t _mSDLReadTiltY(struct mRotationSource* source) {
 	struct mSDLRotation* rotation = (struct mSDLRotation*) source;
+	if (rotation->axisY < 0) {
+		return rotation->accelY * -0x2000000;
+	}
 	return _readTilt(rotation->p, rotation->axisY);
 }
 
@@ -706,6 +712,30 @@ static void _mSDLRotationSample(struct mRotationSource* source) {
 	if (!rotation->p->joystick) {
 		return;
 	}
+
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+	if (rotation->p->joystick->controller) {
+		SDL_GameController* controller = rotation->p->joystick->controller;
+		if (SDL_GameControllerHasSensor(controller, SDL_SENSOR_ACCEL)) {
+			float accel[3];
+			int count = SDL_GameControllerGetSensorData(controller, SDL_SENSOR_ACCEL, accel, 3);
+			if (count >= 0) {
+				rotation->accelX = accel[0];
+				rotation->accelY = accel[2];
+				rotation->axisX = -1;
+				rotation->axisY = -1;
+			}
+		}
+		if (SDL_GameControllerHasSensor(controller, SDL_SENSOR_GYRO)) {
+			float theta[3];
+			int count = SDL_GameControllerGetSensorData(controller, SDL_SENSOR_GYRO, theta, 3);
+			if (count >= 0) {
+				rotation->zDelta = theta[1] / -10.f;
+			}
+			return;
+		}
+	}
+#endif
 
 	int x = SDL_JoystickGetAxis(rotation->p->joystick->joystick, rotation->gyroX);
 	int y = SDL_JoystickGetAxis(rotation->p->joystick->joystick, rotation->gyroY);
