@@ -95,6 +95,9 @@ static bool _testExtensions(const char* name) {
 	if (!strncmp(ext, "ini", PATH_MAX)) {
 		return false;
 	}
+	if (!strncmp(ext, "cheats", PATH_MAX)) {
+		return false;
+	}
 	if (!strncmp(ext, "ss", 2)) {
 		return false;
 	}
