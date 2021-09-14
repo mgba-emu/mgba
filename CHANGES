@@ -15,6 +15,7 @@ Emulation fixes:
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
  - GB Video: Render SGB border when unmasking with ATTR/PAL_SET (fixes mgba.io/i/2261)
  - GBA: Improve timing when not booting from BIOS
+ - GBA Memory: Fix misaligned 32-bit I/O loads (fixes mgba.io/i/2307)
  - GBA SIO: Fix SI value for unattached MULTI mode
  - GBA Video: Fix backdrop color if DISPCNT is first set to 0 (fixes mgba.io/i/2260)
 Other fixes:
