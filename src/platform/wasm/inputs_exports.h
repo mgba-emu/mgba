@@ -2,17 +2,25 @@
 
 static void setKey(const char* key, int code) {
 	SDL_Keycode sdl_code = SDL_GetKeyFromName(key);
-	if(sdl_code != SDLK_UNKNOWN)
-	{
-		if(core)
-			mInputBindKey(&core->inputMap, SDL_BINDING_KEY, sdl_code, code);
-	}
+	if(sdl_code == SDLK_UNKNOWN) return;
+	if(core)
+		mInputBindKey(&core->inputMap, SDL_BINDING_KEY, sdl_code, code);
 }
 
 static const char * getKey(int input) {
 	int code = mInputQueryBinding(&core->inputMap, SDL_BINDING_KEY,input);
-	printf("KeyCode: %d\n", code);
 	return SDL_GetKeyName(code);
+}
+
+// Other Keys
+EMSCRIPTEN_KEEPALIVE const char* getKeySpeedToggle() {
+	return SDL_GetKeyName(speedupKey);
+}
+EMSCRIPTEN_KEEPALIVE void setKeySpeedToggle(const char* key) {
+	SDL_Keycode sdl_code = SDL_GetKeyFromName(key);
+	if(sdl_code == SDLK_UNKNOWN) return;
+	speedupKey = sdl_code;
+
 }
 
 // Input Getters

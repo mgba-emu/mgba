@@ -20,6 +20,9 @@ Module.setSpeed = cwrap("setSpeed", "null", ["numbers"]);
 Module.setScale = cwrap("setScale", "null", ["numbers"]);
 Module.getPlatform = cwrap("getPlatform", "string", []);
 
+Module.getKeySpeedToggle = cwrap("getKeySpeedToggle", "string", []);
+Module.setKeySpeedToggle = cwrap("setKeySpeedToggle", "null", ["string"]);
+
 //getters and setters for every key available to gba
 Module.setKeyA = cwrap("setKeyA", "null", ["string"]);
 Module.getKeyA = cwrap("getKeyA", "string", []);
