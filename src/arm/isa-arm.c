@@ -320,38 +320,38 @@ ATTRIBUTE_NOINLINE static void _neutralS(struct ARMCore* cpu, int32_t d) {
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## _ROR, S_BODY, _shiftROR, BODY) \
 	DEFINE_ALU_INSTRUCTION_EX_ARM(NAME ## I, S_BODY, _immediate, BODY)
 
-#define DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME, BODY, S_BODY) \
+#define DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME, BODY, S_BODY, SIGNED) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
 		int rd = (opcode >> 16) & 0xF; \
 		int rs = (opcode >> 8) & 0xF; \
 		int rm = opcode & 0xF; \
 		if (rd != ARM_PC) { \
-			ARM_WAIT_MUL(cpu->gprs[rs], 0); \
+			ARM_WAIT_ ## SIGNED ## MUL(cpu->gprs[rs], 0); \
 			BODY; \
 			S_BODY; \
 		} \
 		currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32)
 
-#define DEFINE_MULTIPLY_INSTRUCTION_2_EX_ARM(NAME, BODY, S_BODY, WAIT) \
+#define DEFINE_MULTIPLY_INSTRUCTION_2_EX_ARM(NAME, BODY, S_BODY, SIGNED, WAIT) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
 		int rd = (opcode >> 12) & 0xF; \
 		int rdHi = (opcode >> 16) & 0xF; \
 		int rs = (opcode >> 8) & 0xF; \
 		int rm = opcode & 0xF; \
 		if (rdHi != ARM_PC && rd != ARM_PC) { \
-			ARM_WAIT_MUL(cpu->gprs[rs], WAIT); \
+			ARM_WAIT_ ## SIGNED ## MUL(cpu->gprs[rs], WAIT); \
 			BODY; \
 			S_BODY; \
 		} \
 		currentCycles += cpu->memory.activeNonseqCycles32 - cpu->memory.activeSeqCycles32)
 
-#define DEFINE_MULTIPLY_INSTRUCTION_ARM(NAME, BODY, S_BODY) \
-	DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME, BODY, ) \
-	DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME ## S, BODY, S_BODY)
+#define DEFINE_MULTIPLY_INSTRUCTION_ARM(NAME, BODY, S_BODY, SIGNED) \
+	DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME, BODY, , SIGNED) \
+	DEFINE_MULTIPLY_INSTRUCTION_EX_ARM(NAME ## S, BODY, S_BODY, SIGNED)
 
-#define DEFINE_MULTIPLY_INSTRUCTION_2_ARM(NAME, BODY, S_BODY, WAIT) \
-	DEFINE_MULTIPLY_INSTRUCTION_2_EX_ARM(NAME, BODY, , WAIT) \
-	DEFINE_MULTIPLY_INSTRUCTION_2_EX_ARM(NAME ## S, BODY, S_BODY, WAIT)
+#define DEFINE_MULTIPLY_INSTRUCTION_2_ARM(NAME, BODY, S_BODY, SIGNED, WAIT) \
+	DEFINE_MULTIPLY_INSTRUCTION_2_EX_ARM(NAME, BODY, , SIGNED, WAIT) \
+	DEFINE_MULTIPLY_INSTRUCTION_2_EX_ARM(NAME ## S, BODY, S_BODY, SIGNED, WAIT)
 
 #define DEFINE_LOAD_STORE_INSTRUCTION_EX_ARM(NAME, ADDRESS, WRITEBACK, LS, BODY) \
 	DEFINE_INSTRUCTION_ARM(NAME, \
@@ -520,34 +520,34 @@ DEFINE_ALU_INSTRUCTION_S_ONLY_ARM(TST, ARM_NEUTRAL_S(n, cpu->shifterOperand, alu
 
 // Begin multiply definitions
 
-DEFINE_MULTIPLY_INSTRUCTION_2_ARM(MLA, cpu->gprs[rdHi] = cpu->gprs[rm] * cpu->gprs[rs] + cpu->gprs[rd], ARM_NEUTRAL_S(, , cpu->gprs[rdHi]), 1)
-DEFINE_MULTIPLY_INSTRUCTION_ARM(MUL, cpu->gprs[rd] = cpu->gprs[rm] * cpu->gprs[rs], ARM_NEUTRAL_S(cpu->gprs[rm], cpu->gprs[rs], cpu->gprs[rd]))
+DEFINE_MULTIPLY_INSTRUCTION_2_ARM(MLA, cpu->gprs[rdHi] = cpu->gprs[rm] * cpu->gprs[rs] + cpu->gprs[rd], ARM_NEUTRAL_S(, , cpu->gprs[rdHi]), S, 1)
+DEFINE_MULTIPLY_INSTRUCTION_ARM(MUL, cpu->gprs[rd] = cpu->gprs[rm] * cpu->gprs[rs], ARM_NEUTRAL_S(cpu->gprs[rm], cpu->gprs[rs], cpu->gprs[rd]), S)
 
 DEFINE_MULTIPLY_INSTRUCTION_2_ARM(SMLAL,
 	int64_t d = ((int64_t) cpu->gprs[rm]) * ((int64_t) cpu->gprs[rs]) + ((uint32_t) cpu->gprs[rd]);
 	int32_t dHi = cpu->gprs[rdHi] + (d >> 32);
 	cpu->gprs[rd] = d;
 	cpu->gprs[rdHi] = dHi;,
-	ARM_NEUTRAL_HI_S(cpu->gprs[rd], dHi), 2)
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], dHi), S, 2)
 
 DEFINE_MULTIPLY_INSTRUCTION_2_ARM(SMULL,
 	int64_t d = ((int64_t) cpu->gprs[rm]) * ((int64_t) cpu->gprs[rs]);
 	cpu->gprs[rd] = d;
 	cpu->gprs[rdHi] = d >> 32;,
-	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), 1)
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), S, 1)
 
 DEFINE_MULTIPLY_INSTRUCTION_2_ARM(UMLAL,
 	uint64_t d = ARM_UXT_64(cpu->gprs[rm]) * ARM_UXT_64(cpu->gprs[rs]) + ((uint32_t) cpu->gprs[rd]);
 	uint32_t dHi = ((uint32_t) cpu->gprs[rdHi]) + (d >> 32);
 	cpu->gprs[rd] = d;
 	cpu->gprs[rdHi] = dHi;,
-	ARM_NEUTRAL_HI_S(cpu->gprs[rd], dHi), 2)
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], dHi), U, 2)
 
 DEFINE_MULTIPLY_INSTRUCTION_2_ARM(UMULL,
 	uint64_t d = ARM_UXT_64(cpu->gprs[rm]) * ARM_UXT_64(cpu->gprs[rs]);
 	cpu->gprs[rd] = d;
 	cpu->gprs[rdHi] = d >> 32;,
-	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), 1)
+	ARM_NEUTRAL_HI_S(cpu->gprs[rd], cpu->gprs[rdHi]), U, 1)
 
 // End multiply definitions
 
