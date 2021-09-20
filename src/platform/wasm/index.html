@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>mGBA</title>
+    <style>
+      #canvas {
+        image-rendering: crisp-edges;
+      }
+    </style>
+    <script src="mgba.js"></script>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+    <script type="text/javascript">
+      function loadBuffer(name, buffer) {
+        Module.FS.writeFile(name, new Uint8Array(buffer));
+        Module.loadFile(name);
+      }
+
+      function loadFile(romFile) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          loadBuffer(romFile.name, e.target.result);
+        };
+        reader.readAsArrayBuffer(romFile);
+      }
+
+      function saveFile(a) {
+        var save = Module.getSave();
+        a.download = Module.saveName;
+        var blob = new Blob([save], { type: "application/octet-stream" });
+        a.href = URL.createObjectURL(blob);
+        setTimeout(function () {
+          URL.revokeObjectURL(a.href);
+          a.href = "#";
+        }, 0);
+      }
+      function changeA() {
+        Module.setKeyA("0");
+      }
+
+      var Module = {
+        canvas: (function () {
+          return document.getElementById("canvas");
+        })(),
+      };
+      mGBA(Module).then(function (Module) {
+        document.getElementById("version").textContent =
+          Module.version.projectName + " " + Module.version.projectVersion;
+      });
+    </script>
+    <input type="file" onchange="loadFile(this.files[0]);" />
+    <a href="#" onclick="saveFile(this)">Download savedata</a>
+    <span id="version"></span>
+    <button onclick="changeA()">Change A</button>
+  </body>
+</html>
