@@ -5,9 +5,9 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} \
 	-s ALLOW_MEMORY_GROWTH=1 \
 	-s EXTRA_EXPORTED_RUNTIME_METHODS=[\"FS\"] \
 	-s MODULARIZE=1 \
+	-s WASM=1 \
 	-s EXPORT_NAME=${CMAKE_PROJECT_NAME} \
 	--pre-js ${CMAKE_CURRENT_SOURCE_DIR}/pre.js")
-add_executable(${BINARY_NAME}.js main.c  memory.c ../sdl/sdl-audio.c ../sdl/sdl-events.c)
+add_executable(${BINARY_NAME}.js main.c exports.c  memory.c ../sdl/sdl-audio.c ../sdl/sdl-events.c)
 set_target_properties(${BINARY_NAME}.js PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}" COMPILE_OPTIONS "-s;USE_SDL=2" OUTPUT_NAME ${BINARY_NAME})
 target_link_libraries(${BINARY_NAME}.js ${BINARY_NAME} ${OS_LIB})
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/index.html DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

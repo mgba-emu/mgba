@@ -31,12 +31,13 @@ static struct mSDLAudio audio = { .sampleRate = 48000, .samples = 512 };
 static SDL_Window* window = NULL;
 static SDL_Renderer* renderer = NULL;
 static SDL_Texture* tex = NULL;
-static int render_scale = 1;
+static float render_scale = 1;
+static bool full_stop = false;
+
+void setSize(float width, float height);
 
 static void _log(struct mLogger*, int category, enum mLogLevel level, const char* format, va_list args);
 static struct mLogger logCtx = { .log = _log };
-// Todo: temporary solution to hide the implementations
-#include "inputs_exports.h"
 
 static void handleKeypressCore(const struct SDL_KeyboardEvent* event) {
 	if (event->keysym.sym == speedupKey) {
@@ -61,66 +62,13 @@ static void handleKeypressCore(const struct SDL_KeyboardEvent* event) {
 	}
 }
 
-EMSCRIPTEN_KEEPALIVE void setScale(int scale) {
-	if (scale <= 0)
-		return;
-	render_scale = scale;
-	unsigned w, h;
-	core->desiredVideoDimensions(core, &w, &h);
-	SDL_SetWindowSize(window, w * render_scale, h * render_scale);
-	SDL_RenderSetScale(renderer, render_scale, render_scale);
-}
-
-EMSCRIPTEN_KEEPALIVE void setSpeed(int speed) {
-	fastSimulationSpeed = speed;
-}
-
-void EMSCRIPTEN_KEEPALIVE mute() {
-	mSDLPauseAudio(&audio);
-}
-
-void EMSCRIPTEN_KEEPALIVE unMute() {
-	mSDLResumeAudio(&audio);
-}
-
-EMSCRIPTEN_KEEPALIVE void setVolume(float vol) {
-	if (vol > 2.0)
-		return; // this is a percentage so more than 200% is insane.
-
-	int volume = (int) (vol * 0x100);
-
-	if (volume < 0)
-		return;
-	else if (volume == 0)
-		return mSDLPauseAudio(&audio);
-	else {
-		mCoreConfigSetDefaultIntValue(&core->config, "volume", volume);
-		core->reloadConfigOption(core, "volume", &core->config);
-		mSDLResumeAudio(&audio);
-	}
-}
-
-EMSCRIPTEN_KEEPALIVE const char* getPlatform() {
-	if (!core)
-		return "Uninitialized";
-	switch (core->platform(core)) {
-	case mPLATFORM_NONE:
-		return "None";
-	case mPLATFORM_GBA:
-		return "GBA";
-	case mPLATFORM_GB:
-		return "GB";
-	}
-}
-
-static void handleKeypress(const struct SDL_KeyboardEvent* event) {
-	UNUSED(event);
-	// Nothing here yet
-}
 void testLoop() {
+	if (full_stop)
+		return;
+
 	// Check for joysticks
 	if (SDL_NumJoysticks() < 1) {
-		printf("Warning: No joysticks connected!\n");
+		// printf("Warning: No joysticks connected!\n");
 	} else {
 		// Load joystick
 		SDL_JoystickEventState(SDL_ENABLE);
@@ -137,7 +85,7 @@ void testLoop() {
 		switch (event.type) {
 		case SDL_JOYAXISMOTION: /* Handle Joystick Motion */
 			if ((event.jaxis.value < -3200) || (event.jaxis.value > 3200)) {
-				printf("jaxis: %d \n", event.jaxis.value);
+				// printf("jaxis: %d \n", event.jaxis.value);
 				mInputMapAxis(&core->inputMap, SDL_BINDING_BUTTON, 0, event.jaxis.value); // Up or down
 				mInputMapAxis(&core->inputMap, SDL_BINDING_BUTTON, 1, event.jaxis.value); // Up or down
 			}
@@ -151,7 +99,7 @@ void testLoop() {
 			if (core) {
 				handleKeypressCore(&event.key);
 			}
-			handleKeypress(&event.key);
+
 			break;
 		};
 	}
@@ -197,7 +145,6 @@ EMSCRIPTEN_KEEPALIVE bool loadGame(const char* name) {
 	core->init(core);
 	core->opts.savegamePath = strdup("/data/saves");
 	core->opts.savestatePath = strdup("/data/states");
-	core->opts.volume = 5;
 
 	mCoreLoadFile(core, name);
 
@@ -220,9 +167,7 @@ EMSCRIPTEN_KEEPALIVE bool loadGame(const char* name) {
 	core->setVideoBuffer(core, buffer, stride / BYTES_PER_PIXEL);
 
 	core->reset(core);
-	core->desiredVideoDimensions(core, &w, &h);
-
-	SDL_SetWindowSize(window, w * render_scale, h * render_scale);
+	setSize(w * 1.0, h * 1.0);
 	audio.core = core;
 	mSDLResumeAudio(&audio);
 
@@ -236,7 +181,7 @@ void _log(struct mLogger* logger, int category, enum mLogLevel level, const char
 	UNUSED(args);
 }
 
-EMSCRIPTEN_KEEPALIVE void setupConstants(void) {
+void EMSCRIPTEN_KEEPALIVE setupConstants(void) {
 	EM_ASM(({
 		       Module.version = {
 			       gitCommit : UTF8ToString($0),
@@ -258,7 +203,7 @@ CONSTRUCTOR(premain) {
 int main() {
 	mLogSetDefaultLogger(&logCtx);
 	SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, (const char*) render_scale);
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, 0);
 
 	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
 
