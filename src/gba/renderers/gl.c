@@ -1433,10 +1433,14 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 
 	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
-		glRenderer->bg[2].affine.sx += glRenderer->bg[2].affine.dmx;
-		glRenderer->bg[2].affine.sy += glRenderer->bg[2].affine.dmy;
-		glRenderer->bg[3].affine.sx += glRenderer->bg[3].affine.dmx;
-		glRenderer->bg[3].affine.sy += glRenderer->bg[3].affine.dmy;
+		if (glRenderer->bg[2].enabled == 4) {
+			glRenderer->bg[2].affine.sx += glRenderer->bg[2].affine.dmx;
+			glRenderer->bg[2].affine.sy += glRenderer->bg[2].affine.dmy;
+		}
+		if (glRenderer->bg[3].enabled == 4) {
+			glRenderer->bg[3].affine.sx += glRenderer->bg[3].affine.dmx;
+			glRenderer->bg[3].affine.sy += glRenderer->bg[3].affine.dmy;
+		}
 	}
 }
 

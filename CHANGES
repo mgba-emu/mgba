@@ -5,6 +5,7 @@ Emulation fixes:
  - GBA Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
  - GBA SIO: Fix SI value for unattached MULTI mode
  - GBA Video: Fix backdrop color if DISPCNT is first set to 0 (fixes mgba.io/i/2260)
+ - GBA Video: Don't iterate affine backgrounds when disabled
 Other fixes:
  - FFmpeg: Don't attempt to use YUV 4:2:0 for lossless videos (fixes mgba.io/i/2084)
  - GB Video: Fix memory leak when reseting SGB games
