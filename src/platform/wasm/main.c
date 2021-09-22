@@ -16,23 +16,23 @@
 #include <SDL2/SDL.h>
 #include <emscripten.h>
 
-static struct mCore* core = NULL;
-static color_t* buffer = NULL;
-static SDL_Joystick* gGameController = NULL;
+struct mCore* core = NULL;
+color_t* buffer = NULL;
+SDL_Joystick* gGameController = NULL;
 const int JOYSTICK_DEAD_ZONE = 8000;
 
-static int simulationSpeed = 1;
-static int fastSimulationSpeed = 2;
-static int slowSimulationSpeed = 1;
-static SDL_Keycode speedupKey = SDLK_TAB;
+int simulationSpeed = 1;
+int fastSimulationSpeed = 2;
+int slowSimulationSpeed = 1;
+SDL_Keycode speedupKey = SDLK_TAB;
 
-static struct mSDLAudio audio = { .sampleRate = 48000, .samples = 512 };
+struct mSDLAudio audio = { .sampleRate = 48000, .samples = 512 };
 
-static SDL_Window* window = NULL;
-static SDL_Renderer* renderer = NULL;
-static SDL_Texture* tex = NULL;
-static float render_scale = 1;
-static bool full_stop = false;
+SDL_Window* window = NULL;
+SDL_Renderer* renderer = NULL;
+SDL_Texture* tex = NULL;
+float render_scale = 1;
+bool full_stop = false;
 
 void setSize(float width, float height);
 
@@ -91,8 +91,8 @@ void testLoop() {
 			}
 			break;
 
-		case SDL_JOYBUTTONDOWN:
-			printf("Button Index: %d\n", event.button);
+			// case SDL_JOYBUTTONDOWN:
+			// 	printf("Button Index: %d\n", event.button);
 			break;
 		case SDL_KEYDOWN:
 		case SDL_KEYUP:

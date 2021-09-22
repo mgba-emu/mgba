@@ -1,3 +1,23 @@
+function findFunctions(mod) {
+  let keys = [
+    "A",
+    "B",
+    "L",
+    "R",
+    "Start",
+    "Select",
+    "Up",
+    "Down",
+    "Left",
+    "Right",
+    "Forward",
+  ];
+  keys.forEach((key) => {
+    mod[`getKey${key}`] = cwrap(`getKey${key}`, "string", []);
+    mod[`setKey${key}`] = cwrap(`setKey${key}`, "null", ["string"]);
+  });
+}
+
 Module.loadFile = (function () {
   var loadGame = cwrap("loadGame", "number", ["string"]);
   return function (name) {
@@ -15,3 +35,5 @@ Module.loadFile = (function () {
 Module.getSave = function () {
   return FS.readFile("/data/saves/" + Module.saveName);
 };
+
+findFunctions(Module);

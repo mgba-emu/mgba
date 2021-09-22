@@ -10,18 +10,18 @@
 
 // Info: All this static data live in main.c
 // Info: I should probable move everything to a struct and work from there.
-static struct mCore* core;
-static SDL_Window* window;
-static SDL_Renderer* renderer;
-static SDL_Texture* tex;
-static float render_scale;
-static bool full_stop;
-static SDL_Keycode speedupKey;
-static int simulationSpeed;
-static int fastSimulationSpeed;
-static int slowSimulationSpeed;
-static SDL_Keycode speedupKey;
-static struct mSDLAudio audio;
+extern struct mCore* core;
+extern SDL_Window* window;
+extern SDL_Renderer* renderer;
+extern SDL_Texture* tex;
+extern float render_scale;
+extern bool full_stop;
+extern SDL_Keycode speedupKey;
+extern int simulationSpeed;
+extern int fastSimulationSpeed;
+extern int slowSimulationSpeed;
+extern SDL_Keycode speedupKey;
+extern struct mSDLAudio audio;
 
 static void setKey(const char* key, int code) {
 	SDL_Keycode sdl_code = SDL_GetKeyFromName(key);
@@ -37,15 +37,22 @@ static const char* getKey(int input) {
 }
 
 // Other Keys
-EMSCRIPTEN_KEEPALIVE const char* getKeySpeedToggle() {
+EMSCRIPTEN_KEEPALIVE const char* getKeyForward() {
 	return SDL_GetKeyName(speedupKey);
 }
-EMSCRIPTEN_KEEPALIVE void setKeySpeedToggle(const char* key) {
+EMSCRIPTEN_KEEPALIVE void setKeyForward(const char* key) {
 	SDL_Keycode sdl_code = SDL_GetKeyFromName(key);
 	if (sdl_code == SDLK_UNKNOWN)
 		return;
 	speedupKey = sdl_code;
 }
+EMSCRIPTEN_KEEPALIVE void pressForward() {
+	simulationSpeed = fastSimulationSpeed;
+}
+EMSCRIPTEN_KEEPALIVE void releaseForward() {
+	simulationSpeed = slowSimulationSpeed;
+}
+
 void EMSCRIPTEN_KEEPALIVE mute() {
 	mSDLPauseAudio(&audio);
 }
@@ -113,8 +120,8 @@ EMSCRIPTEN_KEEPALIVE void setSpeed(int speed) {
 #define CREATE_EXPORTS(key, name)                                                           \
 	EMSCRIPTEN_KEEPALIVE const char* getKey##name() { return getKey(GBA_KEY_##key); }       \
 	EMSCRIPTEN_KEEPALIVE void setKey##name(const char* key) { setKey(key, GBA_KEY_##key); } \
-	EMSCRIPTEN_KEEPALIVE void press##name() { core->addKeys(core, 1 << GBA_KEY_##key); }    \
-	EMSCRIPTEN_KEEPALIVE void release##name() { core->clearKeys(core, 1 << GBA_KEY_##key); }
+	EMSCRIPTEN_KEEPALIVE void pressKey##name() { core->addKeys(core, 1 << GBA_KEY_##key); } \
+	EMSCRIPTEN_KEEPALIVE void releaseKey##name() { core->clearKeys(core, 1 << GBA_KEY_##key); }
 #define CREATE_SIMPLE_EXPORTS(x) CREATE_EXPORTS(x, x)
 
 CREATE_SIMPLE_EXPORTS(A)

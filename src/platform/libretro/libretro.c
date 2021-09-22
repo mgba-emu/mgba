@@ -94,15 +94,9 @@ static int32_t tiltY = 0;
 static int32_t gyroZ = 0;
 
 static const int keymap[] = {
-	RETRO_DEVICE_ID_JOYPAD_A,
-	RETRO_DEVICE_ID_JOYPAD_B,
-	RETRO_DEVICE_ID_JOYPAD_SELECT,
-	RETRO_DEVICE_ID_JOYPAD_START,
-	RETRO_DEVICE_ID_JOYPAD_RIGHT,
-	RETRO_DEVICE_ID_JOYPAD_LEFT,
-	RETRO_DEVICE_ID_JOYPAD_UP,
-	RETRO_DEVICE_ID_JOYPAD_DOWN,
-	RETRO_DEVICE_ID_JOYPAD_R,
+	RETRO_DEVICE_ID_JOYPAD_A,     RETRO_DEVICE_ID_JOYPAD_B,     RETRO_DEVICE_ID_JOYPAD_SELECT,
+	RETRO_DEVICE_ID_JOYPAD_START, RETRO_DEVICE_ID_JOYPAD_RIGHT, RETRO_DEVICE_ID_JOYPAD_LEFT,
+	RETRO_DEVICE_ID_JOYPAD_UP,    RETRO_DEVICE_ID_JOYPAD_DOWN,  RETRO_DEVICE_ID_JOYPAD_R,
 	RETRO_DEVICE_ID_JOYPAD_L,
 };
 
@@ -462,10 +456,7 @@ void retro_run(void) {
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated) {
 		envVarsUpdated = true;
 
-		struct retro_variable var = {
-			.key = "mgba_allow_opposing_directions",
-			.value = 0
-		};
+		struct retro_variable var = { .key = "mgba_allow_opposing_directions", .value = 0 };
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
 			mCoreConfigSetIntValue(&core->config, "allowOpposingDirections", strcmp(var.value, "yes") == 0);
 			core->reloadConfigOption(core, "allowOpposingDirections", NULL);
@@ -501,7 +492,7 @@ void retro_run(void) {
 		static bool wasAdjustingLux = false;
 		if (wasAdjustingLux) {
 			wasAdjustingLux = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3) ||
-			                  inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3);
+			    inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3);
 		} else {
 			if (inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)) {
 				++luxLevelIndex;
@@ -549,67 +540,67 @@ static void _setupMaps(struct mCore* core) {
 		size_t savedataSize = retro_get_memory_size(RETRO_MEMORY_SAVE_RAM);
 
 		/* Map internal working RAM */
-		descs[0].ptr    = gba->memory.iwram;
-		descs[0].start  = BASE_WORKING_IRAM;
-		descs[0].len    = SIZE_WORKING_IRAM;
+		descs[0].ptr = gba->memory.iwram;
+		descs[0].start = BASE_WORKING_IRAM;
+		descs[0].len = SIZE_WORKING_IRAM;
 		descs[0].select = 0xFF000000;
 
 		/* Map working RAM */
-		descs[1].ptr    = gba->memory.wram;
-		descs[1].start  = BASE_WORKING_RAM;
-		descs[1].len    = SIZE_WORKING_RAM;
+		descs[1].ptr = gba->memory.wram;
+		descs[1].start = BASE_WORKING_RAM;
+		descs[1].len = SIZE_WORKING_RAM;
 		descs[1].select = 0xFF000000;
 
 		/* Map save RAM */
 		/* TODO: if SRAM is flash, use start=0 addrspace="S" instead */
-		descs[2].ptr    = savedataSize ? savedata : NULL;
-		descs[2].start  = BASE_CART_SRAM;
-		descs[2].len    = savedataSize;
+		descs[2].ptr = savedataSize ? savedata : NULL;
+		descs[2].start = BASE_CART_SRAM;
+		descs[2].len = savedataSize;
 
 		/* Map ROM */
-		descs[3].ptr    = gba->memory.rom;
-		descs[3].start  = BASE_CART0;
-		descs[3].len    = romSize;
-		descs[3].flags  = RETRO_MEMDESC_CONST;
+		descs[3].ptr = gba->memory.rom;
+		descs[3].start = BASE_CART0;
+		descs[3].len = romSize;
+		descs[3].flags = RETRO_MEMDESC_CONST;
 
-		descs[4].ptr    = gba->memory.rom;
-		descs[4].start  = BASE_CART1;
-		descs[4].len    = romSize;
-		descs[4].flags  = RETRO_MEMDESC_CONST;
+		descs[4].ptr = gba->memory.rom;
+		descs[4].start = BASE_CART1;
+		descs[4].len = romSize;
+		descs[4].flags = RETRO_MEMDESC_CONST;
 
-		descs[5].ptr    = gba->memory.rom;
-		descs[5].start  = BASE_CART2;
-		descs[5].len    = romSize;
-		descs[5].flags  = RETRO_MEMDESC_CONST;
+		descs[5].ptr = gba->memory.rom;
+		descs[5].start = BASE_CART2;
+		descs[5].len = romSize;
+		descs[5].flags = RETRO_MEMDESC_CONST;
 
 		/* Map BIOS */
-		descs[6].ptr    = gba->memory.bios;
-		descs[6].start  = BASE_BIOS;
-		descs[6].len    = SIZE_BIOS;
-		descs[6].flags  = RETRO_MEMDESC_CONST;
+		descs[6].ptr = gba->memory.bios;
+		descs[6].start = BASE_BIOS;
+		descs[6].len = SIZE_BIOS;
+		descs[6].flags = RETRO_MEMDESC_CONST;
 
 		/* Map VRAM */
-		descs[7].ptr    = gba->video.vram;
-		descs[7].start  = BASE_VRAM;
-		descs[7].len    = SIZE_VRAM;
+		descs[7].ptr = gba->video.vram;
+		descs[7].start = BASE_VRAM;
+		descs[7].len = SIZE_VRAM;
 		descs[7].select = 0xFF000000;
 
 		/* Map palette RAM */
-		descs[8].ptr    = gba->video.palette;
-		descs[8].start  = BASE_PALETTE_RAM;
-		descs[8].len    = SIZE_PALETTE_RAM;
+		descs[8].ptr = gba->video.palette;
+		descs[8].start = BASE_PALETTE_RAM;
+		descs[8].len = SIZE_PALETTE_RAM;
 		descs[8].select = 0xFF000000;
 
 		/* Map OAM */
-		descs[9].ptr    = &gba->video.oam; /* video.oam is a structure */
-		descs[9].start  = BASE_OAM;
-		descs[9].len    = SIZE_OAM;
+		descs[9].ptr = &gba->video.oam; /* video.oam is a structure */
+		descs[9].start = BASE_OAM;
+		descs[9].len = SIZE_OAM;
 		descs[9].select = 0xFF000000;
 
 		/* Map mmapped I/O */
-		descs[10].ptr    = gba->memory.io;
-		descs[10].start  = BASE_IO;
-		descs[10].len    = SIZE_IO;
+		descs[10].ptr = gba->memory.io;
+		descs[10].start = BASE_IO;
+		descs[10].len = SIZE_IO;
 
 		mmaps.descriptors = descs;
 		mmaps.num_descriptors = sizeof(descs) / sizeof(descs[0]);
@@ -631,68 +622,68 @@ static void _setupMaps(struct mCore* core) {
 		unsigned i = 0;
 
 		/* Map ROM */
-		descs[i].ptr    = gb->memory.rom;
-		descs[i].start  = GB_BASE_CART_BANK0;
-		descs[i].len    = GB_SIZE_CART_BANK0;
-		descs[i].flags  = RETRO_MEMDESC_CONST;
+		descs[i].ptr = gb->memory.rom;
+		descs[i].start = GB_BASE_CART_BANK0;
+		descs[i].len = GB_SIZE_CART_BANK0;
+		descs[i].flags = RETRO_MEMDESC_CONST;
 		i++;
 
-		descs[i].ptr    = gb->memory.rom;
+		descs[i].ptr = gb->memory.rom;
 		descs[i].offset = GB_SIZE_CART_BANK0;
-		descs[i].start  = GB_BASE_CART_BANK1;
-		descs[i].len    = GB_SIZE_CART_BANK0;
-		descs[i].flags  = RETRO_MEMDESC_CONST;
+		descs[i].start = GB_BASE_CART_BANK1;
+		descs[i].len = GB_SIZE_CART_BANK0;
+		descs[i].flags = RETRO_MEMDESC_CONST;
 		i++;
 
 		/* Map VRAM */
-		descs[i].ptr    = gb->video.vram;
-		descs[i].start  = GB_BASE_VRAM;
-		descs[i].len    = GB_SIZE_VRAM_BANK0;
+		descs[i].ptr = gb->video.vram;
+		descs[i].start = GB_BASE_VRAM;
+		descs[i].len = GB_SIZE_VRAM_BANK0;
 		i++;
 
 		/* Map working RAM */
-		descs[i].ptr    = gb->memory.wram;
-		descs[i].start  = GB_BASE_WORKING_RAM_BANK0;
-		descs[i].len    = GB_SIZE_WORKING_RAM_BANK0;
+		descs[i].ptr = gb->memory.wram;
+		descs[i].start = GB_BASE_WORKING_RAM_BANK0;
+		descs[i].len = GB_SIZE_WORKING_RAM_BANK0;
 		i++;
 
-		descs[i].ptr    = gb->memory.wram;
+		descs[i].ptr = gb->memory.wram;
 		descs[i].offset = GB_SIZE_WORKING_RAM_BANK0;
-		descs[i].start  = GB_BASE_WORKING_RAM_BANK1;
-		descs[i].len    = GB_SIZE_WORKING_RAM_BANK0;
+		descs[i].start = GB_BASE_WORKING_RAM_BANK1;
+		descs[i].len = GB_SIZE_WORKING_RAM_BANK0;
 		i++;
 
 		/* Map OAM */
-		descs[i].ptr    = &gb->video.oam; /* video.oam is a structure */
-		descs[i].start  = GB_BASE_OAM;
-		descs[i].len    = GB_SIZE_OAM;
+		descs[i].ptr = &gb->video.oam; /* video.oam is a structure */
+		descs[i].start = GB_BASE_OAM;
+		descs[i].len = GB_SIZE_OAM;
 		descs[i].select = 0xFFFFFF60;
 		i++;
 
 		/* Map mmapped I/O */
-		descs[i].ptr    = gb->memory.io;
-		descs[i].start  = GB_BASE_IO;
-		descs[i].len    = GB_SIZE_IO;
+		descs[i].ptr = gb->memory.io;
+		descs[i].start = GB_BASE_IO;
+		descs[i].len = GB_SIZE_IO;
 		i++;
 
 		/* Map High RAM */
-		descs[i].ptr    = gb->memory.hram;
-		descs[i].start  = GB_BASE_HRAM;
-		descs[i].len    = GB_SIZE_HRAM;
+		descs[i].ptr = gb->memory.hram;
+		descs[i].start = GB_BASE_HRAM;
+		descs[i].len = GB_SIZE_HRAM;
 		descs[i].select = 0xFFFFFF80;
 		i++;
 
 		/* Map IE Register */
-		descs[i].ptr    = &gb->memory.ie;
-		descs[i].start  = GB_BASE_IE;
-		descs[i].len    = 1;
+		descs[i].ptr = &gb->memory.ie;
+		descs[i].start = GB_BASE_IE;
+		descs[i].len = 1;
 		i++;
 
 		/* Map External RAM */
 		if (savedataSize) {
-			descs[i].ptr    = savedata;
-			descs[i].start  = GB_BASE_EXTERNAL_RAM;
-			descs[i].len    = savedataSize;
+			descs[i].ptr = savedata;
+			descs[i].start = GB_BASE_EXTERNAL_RAM;
+			descs[i].len = savedataSize;
 			i++;
 		}
 
@@ -700,9 +691,9 @@ static void _setupMaps(struct mCore* core) {
 			/* Map working RAM */
 			/* banks 2-7 of wram mapped in virtual address so it can be
 			 * accessed without bank switching, GBC only */
-			descs[i].ptr    = gb->memory.wram + 0x2000;
-			descs[i].start  = 0x10000;
-			descs[i].len    = GB_SIZE_WORKING_RAM - 0x2000;
+			descs[i].ptr = gb->memory.wram + 0x2000;
+			descs[i].start = 0x10000;
+			descs[i].len = GB_SIZE_WORKING_RAM - 0x2000;
 			descs[i].select = 0xFFFFA000;
 			i++;
 		}
@@ -779,7 +770,6 @@ bool retro_load_game(const struct retro_game_info* game) {
 	if (core->platform(core) == mPLATFORM_GBA) {
 		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, &lux);
 		biosName = "gba_bios.bin";
-
 	}
 #endif
 
@@ -1100,10 +1090,7 @@ static void _setRumble(struct mRumble* rumble, int enable) {
 
 static void _updateLux(struct GBALuminanceSource* lux) {
 	UNUSED(lux);
-	struct retro_variable var = {
-		.key = "mgba_solar_sensor_level",
-		.value = 0
-	};
+	struct retro_variable var = { .key = "mgba_solar_sensor_level", .value = 0 };
 	bool luxVarUpdated = envVarsUpdated;
 
 	if (luxVarUpdated && (!environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) || !var.value)) {
@@ -1189,10 +1176,11 @@ static void _startImage(struct mImageSource* image, unsigned w, unsigned h, int 
 
 static void _stopImage(struct mImageSource* image) {
 	UNUSED(image);
-	cam.stop();	
+	cam.stop();
 }
 
-static void _requestImage(struct mImageSource* image, const void** buffer, size_t* stride, enum mColorFormat* colorFormat) {
+static void _requestImage(struct mImageSource* image, const void** buffer, size_t* stride,
+                          enum mColorFormat* colorFormat) {
 	UNUSED(image);
 	if (!camData) {
 		cam.start();
