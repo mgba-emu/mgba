@@ -545,10 +545,14 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 
 	if (!dirty) {
 		if (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) != 0) {
-			softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
-			softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
-			softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
-			softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
+			if (softwareRenderer->bg[2].enabled == 4) {
+				softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
+				softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
+			}
+			if (softwareRenderer->bg[3].enabled == 4) {
+				softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
+				softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
+			}
 		}
 		return;
 	}
@@ -621,10 +625,14 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	GBAVideoSoftwareRendererPostprocessBuffer(softwareRenderer);
 
 	if (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) != 0) {
-		softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
-		softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
-		softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
-		softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
+		if (softwareRenderer->bg[2].enabled == 4) {
+			softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
+			softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
+		}
+		if (softwareRenderer->bg[3].enabled == 4) {
+			softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
+			softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
+		}
 	}
 
 	if (softwareRenderer->bg[0].enabled > 0 && softwareRenderer->bg[0].enabled < 4) {
