@@ -27,6 +27,7 @@ Other fixes:
  - GB Video: Fix memory leak when reseting SGB games
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
  - Libretro: Fix crash when using Game Boy codes (fixes mgba.io/i/2281)
+ - Qt: Fix corrupted savestate and fatal error text
 Misc:
  - Core: Suspend runloop when a core crashes
  - mGUI: Add margin to right-aligned menu text (fixes mgba.io/i/871)
