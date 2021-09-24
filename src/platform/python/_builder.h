@@ -22,10 +22,10 @@
 #define CXX_GUARD_END
 
 #define PYCPARSE
+#define va_list void*
 
 typedef int... time_t;
 typedef int... off_t;
-typedef ... va_list;
 typedef ...* png_structp;
 typedef ...* png_infop;
 typedef ...* png_unknown_chunkp;
