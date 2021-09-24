@@ -183,13 +183,16 @@ CoreController::CoreController(mCore* core, QObject* parent)
 					return;
 				}
 			}
-			message = QString().vsprintf(format, args);
+			va_list argc;
+			va_copy(argc, args);
+			message = QString().vsprintf(format, argc);
+			va_end(argc);
 			QMetaObject::invokeMethod(controller, "statusPosted", Q_ARG(const QString&, message));
 		}
 		message = QString().vsprintf(format, args);
 		QMetaObject::invokeMethod(controller, "logPosted", Q_ARG(int, level), Q_ARG(int, category), Q_ARG(const QString&, message));
 		if (level == mLOG_FATAL) {
-			QMetaObject::invokeMethod(controller, "crashed", Q_ARG(const QString&, QString().vsprintf(format, args)));
+			QMetaObject::invokeMethod(controller, "crashed", Q_ARG(const QString&, message));
 		}
 	};
 }
