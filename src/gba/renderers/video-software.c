@@ -937,13 +937,13 @@ static void _drawScanline(struct GBAVideoSoftwareRenderer* renderer, int y) {
 		}
 	}
 	if (GBARegisterDISPCNTGetMode(renderer->dispcnt) != 0) {
-		if (softwareRenderer->bg[2].enabled == 4) {
-			softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
-			softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
+		if (renderer->bg[2].enabled == 4) {
+			renderer->bg[2].sx += renderer->bg[2].dmx;
+			renderer->bg[2].sy += renderer->bg[2].dmy;
 		}
-		if (softwareRenderer->bg[3].enabled == 4) {
-			softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
-			softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
+		if (renderer->bg[3].enabled == 4) {
+			renderer->bg[3].sx += renderer->bg[3].dmx;
+			renderer->bg[3].sy += renderer->bg[3].dmy;
 		}
 	}
 
