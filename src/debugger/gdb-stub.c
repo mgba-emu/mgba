@@ -629,6 +629,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		_readGPRs(stub, message);
 		break;
 	case 'H':
+	case 'T':
 		// This is faked because we only have one thread
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);
