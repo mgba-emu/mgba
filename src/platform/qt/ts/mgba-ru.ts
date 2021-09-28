@@ -105,12 +105,12 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../BattleChipView.ui" line="14"/>
         <source>BattleChip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>Чип BattleChip Gate</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="67"/>
         <source>Chip name</source>
-        <translation type="unfinished"></translation>
+        <translation>Имя чипа</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
@@ -140,7 +140,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../BattleChipView.ui" line="138"/>
         <source>Gate type</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип Gate</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="180"/>
@@ -150,12 +150,12 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
-        <translation type="unfinished"></translation>
+        <translation>ID чипа</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
         <source>Update Chip data</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновление данных чипа</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
@@ -183,7 +183,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../CheatsView.ui" line="93"/>
         <source>Add Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Добавить линии</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="100"/>
@@ -413,7 +413,7 @@ Game Boy Advance - зарегистрированная торговая мар�
         <location filename="../LoadSaveState.ui" line="217"/>
         <location filename="../LoadSaveState.ui" line="239"/>
         <source>No Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Нет сохранений</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="50"/>
@@ -481,12 +481,12 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../LogView.ui" line="28"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Откладка</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="38"/>
         <source>Stub</source>
-        <translation type="unfinished"></translation>
+        <translation>Заглушка</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="48"/>
@@ -496,7 +496,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../LogView.ui" line="58"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>Внимание</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="68"/>
@@ -511,7 +511,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../LogView.ui" line="95"/>
         <source>Game Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка игры</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="108"/>
@@ -885,7 +885,7 @@ Game Boy Advance - зарегистрированная торговая мар�
         <location filename="../ObjView.ui" line="561"/>
         <location filename="../ObjView.ui" line="632"/>
         <source>Return, Ctrl+R</source>
-        <translation type="unfinished"></translation>
+        <translation>Возврат, Ctrl+R</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="522"/>
@@ -1058,17 +1058,17 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../OverrideView.ui" line="265"/>
         <source>Background Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>Цвета фона</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="352"/>
         <source>Sprite Colors 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Цвета спрайта 1</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="359"/>
         <source>Sprite Colors 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Цвета спрайта 2</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="529"/>
