@@ -635,19 +635,19 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		}
 	}
 
-	if (softwareRenderer->bg[0].enabled > 0 && softwareRenderer->bg[0].enabled < 4) {
+	if (softwareRenderer->bg[0].enabled != 0 && softwareRenderer->bg[0].enabled < 4) {
 		++softwareRenderer->bg[0].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-	if (softwareRenderer->bg[1].enabled > 0 && softwareRenderer->bg[1].enabled < 4) {
+	if (softwareRenderer->bg[1].enabled != 0 && softwareRenderer->bg[1].enabled < 4) {
 		++softwareRenderer->bg[1].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-	if (softwareRenderer->bg[2].enabled > 0 && softwareRenderer->bg[2].enabled < 4) {
+	if (softwareRenderer->bg[2].enabled != 0 && softwareRenderer->bg[2].enabled < 4) {
 		++softwareRenderer->bg[2].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-	if (softwareRenderer->bg[3].enabled > 0 && softwareRenderer->bg[3].enabled < 4) {
+	if (softwareRenderer->bg[3].enabled != 0 && softwareRenderer->bg[3].enabled < 4) {
 		++softwareRenderer->bg[3].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
@@ -725,7 +725,11 @@ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer,
 static void _enableBg(struct GBAVideoSoftwareRenderer* renderer, int bg, bool active) {
 	int wasActive = renderer->bg[bg].enabled;
 	if (!active) {
-		renderer->bg[bg].enabled = 0;
+		if (renderer->nextY == 0 || (wasActive > 0 && wasActive < 4)) {
+			renderer->bg[bg].enabled = 0;
+		} else if (wasActive == 4) {
+			renderer->bg[bg].enabled = -2;
+		}
 	} else if (!wasActive && active) {
 		if (renderer->nextY == 0) {
 			// TODO: Investigate in more depth how switching background works in different modes
@@ -735,6 +739,8 @@ static void _enableBg(struct GBAVideoSoftwareRenderer* renderer, int bg, bool ac
 		} else {
 			renderer->bg[bg].enabled = 1;
 		}
+	} else if (wasActive < 0 && active) {
+		renderer->bg[bg].enabled = 4;
 	}
 }
 
