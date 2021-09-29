@@ -538,12 +538,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MapView.ui" line="43"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Vergroting</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="124"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Exporteren</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="139"/>
@@ -584,7 +584,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemorySearch.ui" line="51"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Adres</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="56"/>
@@ -799,7 +799,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemoryView.ui" line="297"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Laden</translation>
     </message>
 </context>
 <context>
@@ -847,7 +847,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ObjView.ui" line="389"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Exporteren</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="316"/>
@@ -931,12 +931,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ObjView.ui" line="72"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Adres</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="122"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Vergroting</translation>
     </message>
 </context>
 <context>
@@ -1100,17 +1100,17 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../PaletteView.ui" line="184"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Rood</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="191"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Groen</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="198"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Blauw</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="253"/>
@@ -1191,7 +1191,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../PrinterView.ui" line="180"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Vergroting</translation>
     </message>
 </context>
 <context>
@@ -1199,7 +1199,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../AboutScreen.cpp" line="77"/>
         <source>2021</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">2021</translation>
     </message>
 </context>
 <context>
@@ -1236,22 +1236,22 @@ Download size: %3</source>
 <context>
     <name>QGBA::ApplicationUpdater</name>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="91"/>
+        <location filename="../ApplicationUpdater.cpp" line="90"/>
         <source>Stable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="94"/>
+        <location filename="../ApplicationUpdater.cpp" line="93"/>
         <source>Development</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="96"/>
+        <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Unknown</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="219"/>
+        <location filename="../ApplicationUpdater.cpp" line="218"/>
         <source>(None)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1302,27 +1302,27 @@ Download size: %3</source>
 <context>
     <name>QGBA::CoreController</name>
     <message>
-        <location filename="../CoreController.cpp" line="712"/>
+        <location filename="../CoreController.cpp" line="715"/>
         <source>Failed to open save file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="743"/>
+        <location filename="../CoreController.cpp" line="746"/>
         <source>Failed to open game file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="768"/>
+        <location filename="../CoreController.cpp" line="771"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="845"/>
+        <location filename="../CoreController.cpp" line="848"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="861"/>
+        <location filename="../CoreController.cpp" line="864"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1454,12 +1454,12 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="95"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Stop</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="105"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Start</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="113"/>
@@ -2116,7 +2116,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1172"/>
         <location filename="../IOViewer.cpp" line="1198"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Resetten</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="368"/>
@@ -2144,28 +2144,28 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="376"/>
         <location filename="../IOViewer.cpp" line="1158"/>
         <source>0%</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">0%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="377"/>
         <location filename="../IOViewer.cpp" line="434"/>
         <location filename="../IOViewer.cpp" line="1159"/>
         <source>100%</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">100%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="378"/>
         <location filename="../IOViewer.cpp" line="433"/>
         <location filename="../IOViewer.cpp" line="1160"/>
         <source>50%</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">50%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="379"/>
         <location filename="../IOViewer.cpp" line="432"/>
         <location filename="../IOViewer.cpp" line="1161"/>
         <source>25%</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">25%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="380"/>
@@ -2173,7 +2173,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="382"/>
         <location filename="../IOViewer.cpp" line="383"/>
         <source>75%</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">75%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="405"/>
@@ -2191,13 +2191,13 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="407"/>
         <location filename="../IOViewer.cpp" line="1190"/>
         <source>15</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">15</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="408"/>
         <location filename="../IOViewer.cpp" line="1191"/>
         <source>7</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">7</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="410"/>
@@ -2297,7 +2297,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="442"/>
         <location filename="../IOViewer.cpp" line="449"/>
         <source>0</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="443"/>
@@ -2310,7 +2310,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1002"/>
         <location filename="../IOViewer.cpp" line="1012"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="445"/>
@@ -2719,7 +2719,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="827"/>
         <location filename="../IOViewer.cpp" line="1070"/>
         <source>1/64</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1/64</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="781"/>
@@ -2728,7 +2728,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="828"/>
         <location filename="../IOViewer.cpp" line="1071"/>
         <source>1/256</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1/256</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="782"/>
@@ -2737,7 +2737,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="829"/>
         <location filename="../IOViewer.cpp" line="1068"/>
         <source>1/1024</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1/1024</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="799"/>
@@ -2756,7 +2756,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="870"/>
         <location filename="../IOViewer.cpp" line="883"/>
         <source>B</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="871"/>
@@ -2768,7 +2768,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="872"/>
         <location filename="../IOViewer.cpp" line="885"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Start</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="873"/>
@@ -2915,7 +2915,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1001"/>
         <location filename="../IOViewer.cpp" line="1005"/>
         <source>4</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">4</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="980"/>
@@ -2923,7 +2923,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="996"/>
         <location filename="../IOViewer.cpp" line="1006"/>
         <source>3</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="981"/>
@@ -2932,7 +2932,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="997"/>
         <location filename="../IOViewer.cpp" line="1007"/>
         <source>2</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="982"/>
@@ -2941,7 +2941,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1008"/>
         <location filename="../IOViewer.cpp" line="1011"/>
         <source>8</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">8</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="984"/>
@@ -3062,7 +3062,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/16</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1/16</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1092"/>
@@ -3320,13 +3320,13 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1498"/>
         <location filename="../IOViewer.cpp" line="1510"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Rood</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1501"/>
         <location filename="../IOViewer.cpp" line="1513"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Blauw</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1517"/>
@@ -3417,22 +3417,22 @@ Download size: %3</source>
     <message>
         <location filename="../LogConfigModel.cpp" line="94"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Fout</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="96"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Waarschuwing</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="98"/>
         <source>Info</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Info</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="100"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Debug</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="102"/>
@@ -3442,7 +3442,7 @@ Download size: %3</source>
     <message>
         <location filename="../LogConfigModel.cpp" line="104"/>
         <source>Game Error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Spel fout</translation>
     </message>
 </context>
 <context>
@@ -3515,7 +3515,7 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="50"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Grootte</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="51"/>
@@ -3609,7 +3609,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryModel.cpp" line="59"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Laden</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="108"/>
@@ -4946,7 +4946,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="97"/>
         <source>CRC32:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">CRC32:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="104"/>
@@ -4974,7 +4974,7 @@ Download size: %3</source>
     <message>
         <location filename="../ReportView.ui" line="99"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Opslaan</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="113"/>
@@ -5237,37 +5237,37 @@ Download size: %3</source>
         <location filename="../SettingsView.ui" line="139"/>
         <location filename="../SettingsView.ui" line="161"/>
         <source>1536</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1536</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="146"/>
         <source>512</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">512</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="151"/>
         <source>768</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">768</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="156"/>
         <source>1024</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1024</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="166"/>
         <source>2048</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">2048</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="171"/>
         <source>3072</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">3072</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="176"/>
         <source>4096</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">4096</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="184"/>
@@ -5283,22 +5283,22 @@ Download size: %3</source>
         <location filename="../SettingsView.ui" line="205"/>
         <location filename="../SettingsView.ui" line="222"/>
         <source>44100</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">44100</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="212"/>
         <source>22050</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">22050</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="217"/>
         <source>32000</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">32000</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="227"/>
         <source>48000</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">48000</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="235"/>
@@ -5839,7 +5839,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1596"/>
         <source>Cheats</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Cheats</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1653"/>
@@ -5892,7 +5892,7 @@ Download size: %3</source>
     <message>
         <location filename="../ShaderSelector.ui" line="35"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Naam</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="45"/>
@@ -5963,7 +5963,7 @@ Download size: %3</source>
     <message>
         <location filename="../TileView.ui" line="69"/>
         <source>Magnification</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Vergroting</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="92"/>
@@ -5996,17 +5996,17 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="40"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Start</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="56"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Stop</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="69"/>
         <source>Select File</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Bestqnd selecteren</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="101"/>
@@ -6078,7 +6078,7 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="167"/>
         <source>4K</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">4K</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="287"/>
@@ -6184,7 +6184,7 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="565"/>
         <source>Show advanced</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Geavanceerd tonen</translation>
     </message>
 </context>
 </TS>

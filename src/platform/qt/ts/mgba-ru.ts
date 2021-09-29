@@ -1240,22 +1240,22 @@ Download size: %3</source>
 <context>
     <name>QGBA::ApplicationUpdater</name>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="91"/>
+        <location filename="../ApplicationUpdater.cpp" line="90"/>
         <source>Stable</source>
         <translation>Стабильная</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="94"/>
+        <location filename="../ApplicationUpdater.cpp" line="93"/>
         <source>Development</source>
         <translation>В разработке</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="96"/>
+        <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Unknown</source>
         <translation>Неизвестно</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="219"/>
+        <location filename="../ApplicationUpdater.cpp" line="218"/>
         <source>(None)</source>
         <translation>(Нет)</translation>
     </message>
@@ -1306,27 +1306,27 @@ Download size: %3</source>
 <context>
     <name>QGBA::CoreController</name>
     <message>
-        <location filename="../CoreController.cpp" line="712"/>
+        <location filename="../CoreController.cpp" line="715"/>
         <source>Failed to open save file: %1</source>
         <translation>Не удалось открыть файл сохранения: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="743"/>
+        <location filename="../CoreController.cpp" line="746"/>
         <source>Failed to open game file: %1</source>
         <translation>Не удалось открыть файл игры: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="768"/>
+        <location filename="../CoreController.cpp" line="771"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="845"/>
+        <location filename="../CoreController.cpp" line="848"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation>Не удалось открыть файл изображения для считывания: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="861"/>
+        <location filename="../CoreController.cpp" line="864"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation>Не удалось открыть файл изображения для записи: %1</translation>
     </message>
@@ -1647,7 +1647,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="101"/>
         <location filename="../IOViewer.cpp" line="111"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Приоритет</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="84"/>
@@ -2301,7 +2301,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="442"/>
         <location filename="../IOViewer.cpp" line="449"/>
         <source>0</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="443"/>
@@ -2314,7 +2314,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1002"/>
         <location filename="../IOViewer.cpp" line="1012"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="445"/>
@@ -2706,7 +2706,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1059"/>
         <location filename="../IOViewer.cpp" line="1063"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Значение</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="778"/>
@@ -2723,7 +2723,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="827"/>
         <location filename="../IOViewer.cpp" line="1070"/>
         <source>1/64</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1/64</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="781"/>
@@ -2732,7 +2732,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="828"/>
         <location filename="../IOViewer.cpp" line="1071"/>
         <source>1/256</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1/256</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="782"/>
@@ -2741,7 +2741,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="829"/>
         <location filename="../IOViewer.cpp" line="1068"/>
         <source>1/1024</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1/1024</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="799"/>
@@ -2760,7 +2760,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="870"/>
         <location filename="../IOViewer.cpp" line="883"/>
         <source>B</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="871"/>
@@ -3066,7 +3066,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/16</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1/16</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1092"/>
@@ -3177,7 +3177,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1346"/>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Режим</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1347"/>
@@ -3306,7 +3306,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1452"/>
         <location filename="../IOViewer.cpp" line="1453"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Неизвестно</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1493"/>
@@ -3421,12 +3421,12 @@ Download size: %3</source>
     <message>
         <location filename="../LogConfigModel.cpp" line="94"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ошибка</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="96"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Внимание</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="98"/>
@@ -3436,17 +3436,17 @@ Download size: %3</source>
     <message>
         <location filename="../LogConfigModel.cpp" line="100"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Откладка</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="102"/>
         <source>Stub</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Заглушка</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="104"/>
         <source>Game Error</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Ошибка игры</translation>
     </message>
 </context>
 <context>
@@ -3777,7 +3777,7 @@ Download size: %3</source>
         <location filename="../PaletteView.cpp" line="124"/>
         <location filename="../PaletteView.cpp" line="125"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">0x%0 (%1)</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="137"/>
@@ -4283,7 +4283,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="379"/>
         <source>Save games (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Игровые сохранения (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="380"/>
@@ -4525,7 +4525,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1347"/>
         <source>%0x</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%0x</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1351"/>
@@ -4605,7 +4605,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1420"/>
         <source>%1×</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">%1×</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1445"/>
@@ -4845,7 +4845,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1818"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Очистить</translation>
     </message>
 </context>
 <context>
@@ -4954,7 +4954,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="97"/>
         <source>CRC32:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">CRC32:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="104"/>
@@ -5041,7 +5041,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="415"/>
         <source>SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="419"/>
@@ -5114,7 +5114,7 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="31"/>
         <source>Realtime clock</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Реальное время</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="37"/>
@@ -5144,7 +5144,7 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="107"/>
         <source>Light sensor</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Датчик света</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="113"/>
@@ -5171,7 +5171,7 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="239"/>
         <source>Gyroscope</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Гироскоп</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="267"/>
@@ -5229,7 +5229,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="85"/>
         <source>Game Boy</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="110"/>
@@ -5245,37 +5245,37 @@ Download size: %3</source>
         <location filename="../SettingsView.ui" line="139"/>
         <location filename="../SettingsView.ui" line="161"/>
         <source>1536</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1536</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="146"/>
         <source>512</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">512</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="151"/>
         <source>768</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">768</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="156"/>
         <source>1024</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">1024</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="166"/>
         <source>2048</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">2048</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="171"/>
         <source>3072</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">3072</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="176"/>
         <source>4096</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">4096</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="184"/>
@@ -5291,22 +5291,22 @@ Download size: %3</source>
         <location filename="../SettingsView.ui" line="205"/>
         <location filename="../SettingsView.ui" line="222"/>
         <source>44100</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">44100</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="212"/>
         <source>22050</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">22050</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="217"/>
         <source>32000</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">32000</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="227"/>
         <source>48000</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">48000</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="235"/>
@@ -5632,7 +5632,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="678"/>
         <source>Enable Discord Rich Presence</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Вкл. расширенный статус в Discord</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="692"/>
@@ -5890,7 +5890,7 @@ Download size: %3</source>
     <message>
         <location filename="../ShaderSelector.ui" line="14"/>
         <source>Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Шейдеры</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="28"/>
@@ -5900,7 +5900,7 @@ Download size: %3</source>
     <message>
         <location filename="../ShaderSelector.ui" line="35"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Имя</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="45"/>
@@ -5933,17 +5933,17 @@ Download size: %3</source>
     <message>
         <location filename="../ShortcutView.ui" line="32"/>
         <source>Keyboard</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Клавиатура</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="42"/>
         <source>Gamepad</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Геймпад</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="49"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Очистить</translation>
     </message>
 </context>
 <context>
@@ -6086,7 +6086,7 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="167"/>
         <source>4K</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">4K</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="287"/>
@@ -6117,7 +6117,7 @@ Download size: %3</source>
         <location filename="../VideoView.ui" line="312"/>
         <location filename="../VideoView.ui" line="354"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Нет</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="324"/>
@@ -6182,7 +6182,7 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="484"/>
         <source>Dimensions</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Размеры</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="550"/>
