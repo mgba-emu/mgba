@@ -958,7 +958,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../OverrideView.ui" line="65"/>
         <source>Gyroscope</source>
-        <translation>回転センサー</translation>
+        <translation>ジャイロセンサー</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="75"/>
@@ -3219,7 +3219,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1372"/>
         <source>Comparison Y coordinate</source>
-        <translation>比較Y座標</translation>
+        <translation>比較対象のY座標</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1376"/>
@@ -3907,7 +3907,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="173"/>
         <source>OpenGL (force version 1.x)</source>
-        <translation>OpenGL(強制バージョン1.x)</translation>
+        <translation>OpenGL(バージョン1.xを強制)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="206"/>
@@ -4261,7 +4261,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1185"/>
         <source>Add folder to library...</source>
-        <translation>ライブリーにフォルダを追加...</translation>
+        <translation>ライブラリーにフォルダを追加...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1195"/>
@@ -4538,7 +4538,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1363"/>
         <source>Step backwards</source>
-        <translation>後退</translation>
+        <translation>1フレーム巻き戻す</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1369"/>
@@ -4989,12 +4989,12 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="401"/>
         <source>little endian</source>
-        <translation type="unfinished"></translation>
+        <translation>リトルエンディアン</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="404"/>
         <source>big endian</source>
-        <translation type="unfinished"></translation>
+        <translation>ビッグエンディアン</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="415"/>
@@ -5167,7 +5167,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
         <source>Enhancements</source>
-        <translation>機能強化</translation>
+        <translation>機能拡張</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="70"/>
@@ -5287,7 +5287,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="284"/>
         <source>Fast forward volume:</source>
-        <translation>早送り音量:</translation>
+        <translation>早送り時の音量:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="324"/>
@@ -5540,7 +5540,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1058"/>
         <source>Enable Game Boy Player features by default</source>
-        <translation>ゲームボーイプレーヤーの機能をデフォルトで有効</translation>
+        <translation>ゲームボーイプレーヤーの機能をデフォルトで有効化</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1233"/>
@@ -5575,7 +5575,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="538"/>
         <source>Library:</source>
-        <translation>ライブラリー:</translation>
+        <translation>ライブラリ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="546"/>
@@ -5600,7 +5600,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="583"/>
         <source>Allow opposing input directions</source>
-        <translation>反対の入力方向を有効</translation>
+        <translation>反対方向(上下、右左)の同時入力を許可</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="590"/>
@@ -5848,7 +5848,7 @@ Download size: %3</source>
     <message>
         <location filename="../ShaderSelector.ui" line="28"/>
         <source>Active Shader:</source>
-        <translation>アクティブシェーダー:</translation>
+        <translation>適用中のシェーダー:</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="35"/>
