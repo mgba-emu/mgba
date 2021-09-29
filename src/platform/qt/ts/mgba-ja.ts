@@ -958,7 +958,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../OverrideView.ui" line="65"/>
         <source>Gyroscope</source>
-        <translation>回転センサー</translation>
+        <translation>ジャイロセンサー</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="75"/>
@@ -3219,7 +3219,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1372"/>
         <source>Comparison Y coordinate</source>
-        <translation>比較Y座標</translation>
+        <translation>比較対象のY座標</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1376"/>
@@ -4261,7 +4261,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1185"/>
         <source>Add folder to library...</source>
-        <translation>ライブリーにフォルダを追加...</translation>
+        <translation>ライブラリーにフォルダを追加...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1195"/>
@@ -4989,12 +4989,12 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="401"/>
         <source>little endian</source>
-        <translation type="unfinished"></translation>
+        <translation>リトルエンディアン</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="404"/>
         <source>big endian</source>
-        <translation type="unfinished"></translation>
+        <translation>ビッグエンディアン</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="415"/>
@@ -5287,7 +5287,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="284"/>
         <source>Fast forward volume:</source>
-        <translation>早送り音量:</translation>
+        <translation>早送り時の音量:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="324"/>
