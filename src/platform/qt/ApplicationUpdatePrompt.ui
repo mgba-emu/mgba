@@ -20,7 +20,7 @@
    <item>
     <widget class="QLabel" name="text">
      <property name="text">
-      <string>{text}</string>
+      <string notr="true">{text}</string>
      </property>
      <property name="wordWrap">
       <bool>true</bool>
@@ -30,7 +30,7 @@
    <item>
     <widget class="QLabel" name="details">
      <property name="text">
-      <string>{details}</string>
+      <string notr="true">{details}</string>
      </property>
     </widget>
    </item>
