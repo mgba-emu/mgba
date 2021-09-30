@@ -3907,7 +3907,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="173"/>
         <source>OpenGL (force version 1.x)</source>
-        <translation>OpenGL(強制バージョン1.x)</translation>
+        <translation>OpenGL(バージョン1.xを強制)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="206"/>
@@ -4538,7 +4538,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1363"/>
         <source>Step backwards</source>
-        <translation>後退</translation>
+        <translation>1フレーム巻き戻す</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1369"/>
@@ -5167,7 +5167,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
         <source>Enhancements</source>
-        <translation>機能強化</translation>
+        <translation>機能拡張</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="70"/>
@@ -5540,7 +5540,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1064"/>
         <source>Enable Game Boy Player features by default</source>
-        <translation>ゲームボーイプレーヤーの機能をデフォルトで有効</translation>
+        <translation>ゲームボーイプレーヤーの機能をデフォルトで有効化</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1239"/>
@@ -5580,7 +5580,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="544"/>
         <source>Library:</source>
-        <translation>ライブラリー:</translation>
+        <translation>ライブラリ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="552"/>
@@ -5605,7 +5605,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="589"/>
         <source>Allow opposing input directions</source>
-        <translation>反対の入力方向を有効</translation>
+        <translation>反対方向(上下、右左)の同時入力を許可</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="596"/>
@@ -5853,7 +5853,7 @@ Download size: %3</source>
     <message>
         <location filename="../ShaderSelector.ui" line="28"/>
         <source>Active Shader:</source>
-        <translation>アクティブシェーダー:</translation>
+        <translation>適用中のシェーダー:</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="35"/>
