@@ -567,7 +567,7 @@ int main(int argc, char* argv[]) {
 			},
 			{
 				.title = "Gyroscope sensitivity",
-				.data = GUI_V_S("gyroSensitivity"),
+				.data = "gyroSensitivity",
 				.submenu = 0,
 				.state = 0,
 				.validStates = (const char*[]) {
