@@ -763,8 +763,9 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 					}
 				}
 			}
-			return 0x3FF ^ input;
+			gba->memory.io[address >> 1] = 0x3FF ^ input;
 		}
+		break;
 	case REG_SIOCNT:
 		return gba->sio.siocnt;
 	case REG_RCNT:
