@@ -90,7 +90,8 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 
 	GBAHardwareInit(&gba->memory.hw, NULL);
 
-	gba->keySource = 0;
+	gba->keysActive = 0;
+	gba->keysLast = 0;
 	gba->rotationSource = 0;
 	gba->luminanceSource = 0;
 	gba->rtcSource = 0;
@@ -877,18 +878,22 @@ void GBAFrameEnded(struct GBA* gba) {
 }
 
 void GBATestKeypadIRQ(struct GBA* gba) {
+	if (gba->keysActive == gba->keysLast) {
+		return;
+	}
 	uint16_t keycnt = gba->memory.io[REG_KEYCNT >> 1];
 	if (!(keycnt & 0x4000)) {
 		return;
 	}
 	int isAnd = keycnt & 0x8000;
-	if (!gba->keySource) {
-		// TODO?
-		return;
-	}
 
 	keycnt &= 0x3FF;
-	uint16_t keyInput = *gba->keySource & keycnt;
+	uint16_t keyInput = gba->keysActive & keycnt;
+	uint16_t lastInput = gba->keysLast & keycnt;
+	gba->keysLast = gba->keysActive;
+	if (keyInput == lastInput) {
+		return;
+	}
 
 	if (isAnd && keycnt == keyInput) {
 		GBARaiseIRQ(gba, IRQ_KEYPAD, 0);
