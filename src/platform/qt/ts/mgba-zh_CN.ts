@@ -1199,7 +1199,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation>%1 有更新可用。 
+        <translation>%1 有更新可用。
 您想要现在下载并安装它吗？在下载完成后，您将需要重新启动模拟器。</translation>
     </message>
     <message>
@@ -1207,8 +1207,8 @@ Do you want to download and install it now? You will need to restart the emulato
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation>当前版本：%1 
-新版本：%2 
+        <translation>当前版本：%1
+新版本：%2
 更新大小：%3</translation>
     </message>
     <message>
@@ -5478,11 +5478,6 @@ Download size: %3</source>
         <location filename="../SettingsView.ui" line="521"/>
         <source>Language</source>
         <translation>语言</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="529"/>
-        <source>English</source>
-        <translation>英语</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="544"/>

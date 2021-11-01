@@ -5512,11 +5512,6 @@ Download size: %3</source>
         <translation>Dil</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="529"/>
-        <source>English</source>
-        <translation>İngilizce</translation>
-    </message>
-    <message>
         <location filename="../SettingsView.ui" line="544"/>
         <source>Library:</source>
         <translation>Kütüphane:</translation>

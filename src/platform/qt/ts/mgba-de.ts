@@ -5472,11 +5472,6 @@ Download-Größe: %3</translation>
         <translation>Sprache</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="529"/>
-        <source>English</source>
-        <translation>Englisch</translation>
-    </message>
-    <message>
         <location filename="../SettingsView.ui" line="552"/>
         <source>List view</source>
         <translation>Listenansicht</translation>
