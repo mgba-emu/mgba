@@ -5570,11 +5570,6 @@ Download size: %3</source>
         <translation>Langue</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="529"/>
-        <source>English</source>
-        <translation>anglais</translation>
-    </message>
-    <message>
         <location filename="../SettingsView.ui" line="544"/>
         <source>Library:</source>
         <translation>Bibliothèque :</translation>
