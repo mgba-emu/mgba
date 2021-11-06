@@ -44,6 +44,7 @@ static void mSDLDeinit(struct mSDLRenderer* renderer);
 static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
 
 static struct VFile* _state = NULL;
+static struct mLogger _logger;
 
 static void _loadState(struct mCoreThread* thread) {
 	mCoreLoadStateNamed(thread->core, _state, SAVESTATE_RTC);
@@ -175,6 +176,7 @@ int main(int argc, char** argv) {
 	int ret;
 
 	// TODO: Use opts and config
+	_logger = getLogger(renderer.core);
 	ret = mSDLRun(&renderer, &args);
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&renderer.core->inputMap);
@@ -258,8 +260,14 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 
 	renderer->audio.samples = renderer->core->opts.audioBuffers;
 	renderer->audio.sampleRate = 44100;
-
+		
+	struct mThreadLogger threadLogger;
+	threadLogger.d = _logger;
+	threadLogger.p = &thread;
+	thread.logger = threadLogger;
+	
 	bool didFail = !mCoreThreadStart(&thread);
+
 	if (!didFail) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		renderer->core->desiredVideoDimensions(renderer->core, &renderer->width, &renderer->height);
