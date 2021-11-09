@@ -16,6 +16,7 @@ Other fixes:
  - Libretro: Fix crash when using Game Boy codes (fixes mgba.io/i/2281)
  - Qt: Remove potentially deadlocking optimization
  - Qt: Fix corrupted savestate and fatal error text
+ - Qt: Fix sprite compositing when sprite tiles go out of bounds (fixes mgba.io/i/2348)
 Misc:
  - Wii: Add adjustable gyroscope settings (closes mgba.io/i/2245)
 
