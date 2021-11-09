@@ -28,6 +28,7 @@ Other fixes:
  - FFmpeg: Don't attempt to use YUV 4:2:0 for lossless videos (fixes mgba.io/i/2084)
  - GB Video: Fix memory leak when reseting SGB games
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
+ - GBA: Fix maximum tile ID in caching for 256-color modes
  - Libretro: Fix crash when using Game Boy codes (fixes mgba.io/i/2281)
  - Qt: Fix corrupted savestate and fatal error text
 Misc:
