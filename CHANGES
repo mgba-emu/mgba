@@ -23,6 +23,7 @@ Emulation fixes:
  - GBA Video: Don't iterate affine backgrounds when disabled
  - GBA Video: Delay enabling backgrounds in bitmap modes (fixes mgba.io/i/1668)
 Other fixes:
+ - ARM Decoder: Fix decoding of lsl r0 (fixes mgba.io/i/2349)
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - FFmpeg: Don't attempt to use YUV 4:2:0 for lossless videos (fixes mgba.io/i/2084)
  - GB Video: Fix memory leak when reseting SGB games
