@@ -743,11 +743,15 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 					callbacks->keysRead(callbacks->context);
 				}
 			}
+			bool allowOpposingDirections = gba->allowOpposingDirections;
 			if (gba->keyCallback) {
 				gba->keysActive = gba->keyCallback->readKeys(gba->keyCallback);
+				if (!allowOpposingDirections) {
+					allowOpposingDirections = gba->keyCallback->requireOpposingDirections;
+				}
 			}
 			uint16_t input = gba->keysActive;
-			if (!gba->allowOpposingDirections) {
+			if (!allowOpposingDirections) {
 				unsigned rl = input & 0x030;
 				unsigned ud = input & 0x0C0;
 				input &= 0x30F;
