@@ -535,9 +535,13 @@ void CoreController::overrideMute(bool override) {
 	if (m_mute) {
 		core->opts.mute = true;
 	} else {
-		int fakeBool = 0;
-		mCoreConfigGetIntValue(&core->config, "mute", &fakeBool);
-		core->opts.mute = fakeBool;
+		if (m_fastForward || m_fastForwardForced) {
+			core->opts.mute = m_fastForwardMute >= 0;
+		} else {
+			int fakeBool = 0;
+			mCoreConfigGetIntValue(&core->config, "mute", &fakeBool);
+			core->opts.mute = fakeBool;
+		}
 	}
 	core->reloadConfigOption(core, NULL, NULL);
 }
