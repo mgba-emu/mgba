@@ -59,22 +59,24 @@ struct mLogger _getLogger(bool logToStdout, bool logToFile, const char* logFile,
 	return logger;
 }
 
+void writeToStream(bool val, FILE* stream, int category, const char* format, va_list args)
+{
+	if(val)
+	{
+		fprintf(stream, "%s: ", mLogCategoryName(category));
+		vfprintf(stream, format, args);
+		fprintf(stream, "\n");
+		fflush(stream);
+	}
+}
+
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
 	if (!mLogFilterTest(logger->filter, category, level)) {
 		return;
 	}
 
-	if(_logToStdout){
-		printf("%s: ", mLogCategoryName(category));
-		vprintf(format, args);
-		printf("\n");
-	}
-
-	if(_logFile){
-		fprintf(_logFile, "%s: ", mLogCategoryName(category));
-		vfprintf(_logFile, format, args);
-		fprintf(_logFile, "\n");
-	}
+	writeToStream(_logToStdout, stdout, category, format, args);
+	writeToStream(_logFile, _logFile, category, format, args);
 
 	struct mCoreThread* thread = mCoreThreadGet();
 	if (thread && level == mLOG_FATAL) {
