@@ -4,31 +4,29 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "sdl-log.h"
+#include <mgba-util/vfs.h>
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
 #include <mgba/core/thread.h>
 #include <mgba/core/config.h>
 
 static bool _logToStdout;
-static FILE* _logFile;
+static struct VFile* _logFile;
 
 struct mLogger _getLogger(bool logToStdout, bool logToFile, const char* logFile, int filterLevels);
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
 
-bool getBoolConfig(struct mCore* core, const char* key, bool defaultValue)
-{
+bool getBoolConfig(struct mCore* core, const char* key, bool defaultValue) {
 	int value = 0;
 	bool searched = mCoreConfigGetValue(&core->config, key);
-	if(searched)
-	{
+	if(searched) {
 		mCoreConfigGetIntValue(&core->config, key, &value);
 		return value != 0 ? true: false;
 	}
 	return defaultValue;
 }
 
-struct mLogger getLogger(struct mCore* core)
-{
+struct mLogger getLogger(struct mCore* core) {
 	bool logToStdout = getBoolConfig(core, "logToStdout", true);
 	bool logToFile = getBoolConfig(core, "logToFile", false);
 	const char* logFile = mCoreConfigGetValue(&core->config, "logFile");
@@ -36,13 +34,13 @@ struct mLogger getLogger(struct mCore* core)
 	return _getLogger(logToStdout, logToFile, logFile, filterLevels);
 }
 
-struct mLogger _getLogger(bool logToStdout, bool logToFile, const char* logFile, int filterLevels){
+struct mLogger _getLogger(bool logToStdout, bool logToFile, const char* logFile, int filterLevels) {
 	// Assign basic static variables
 	_logToStdout = logToStdout;
 	_logFile = NULL;
 	
 	if(logToFile && logFile)
-		_logFile = fopen(logFile, "a");
+		_logFile = VFileOpen(logFile, O_WRONLY | O_CREAT | O_TRUNC);
 
 	// Create the filter
 	struct mLogFilter* filter = (struct mLogFilter*)malloc(sizeof(struct mLogFilter));
@@ -59,29 +57,31 @@ struct mLogger _getLogger(bool logToStdout, bool logToFile, const char* logFile,
 	return logger;
 }
 
-void writeToStream(bool val, FILE* stream, int category, const char* format, va_list args)
-{
-	if(val)
-	{
-		fprintf(stream, "%s: ", mLogCategoryName(category));
-		vfprintf(stream, format, args);
-		fprintf(stream, "\n");
-		fflush(stream);
-	}
-}
-
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
-	if (!mLogFilterTest(logger->filter, category, level)) {
-		return;
-	}
-
-	writeToStream(_logToStdout, stdout, category, format, args);
-	writeToStream(_logFile, _logFile, category, format, args);
 
 	struct mCoreThread* thread = mCoreThreadGet();
 	if (thread && level == mLOG_FATAL) {
 		mCoreThreadMarkCrashed(thread);
 	}
-}
 
+	if (!mLogFilterTest(logger->filter, category, level)) {
+		return;
+	}
+
+	const int MAX_BUF = 1024;
+	char* buffer = malloc(MAX_BUF);
+
+	int length = 0;
+	length += snprintf(buffer+length, MAX_BUF-length, "%s: ", mLogCategoryName(category));
+	length += vsnprintf(buffer+length, MAX_BUF-length, format, args);
+	length += snprintf(buffer+length, MAX_BUF-length, "\n");
+
+	if(_logToStdout)
+		printf("%s", buffer);
+
+	if (_logFile)
+		_logFile->write(_logFile, buffer, length);
+
+	free(buffer);
+}
 
