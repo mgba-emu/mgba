@@ -11,7 +11,6 @@
 CXX_GUARD_START
 
 #include "sdl-audio.h"
-#include "sdl-log.h"
 #include "sdl-events.h"
 
 #ifdef BUILD_GL

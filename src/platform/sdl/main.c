@@ -43,8 +43,16 @@ static void mSDLDeinit(struct mSDLRenderer* renderer);
 
 static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
 
-static struct VFile* _state = NULL;
+void setLogger(struct mCore* core);
+void _setLogger(bool logToStdout, bool logToFile, const char* logFile, int filterLevels);
+static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
+
+static bool _logToStdout;
+static struct VFile* _logFile;
+static struct mLogFilter _filter;
 static struct mLogger _logger;
+
+static struct VFile* _state = NULL;
 
 static void _loadState(struct mCoreThread* thread) {
 	mCoreLoadStateNamed(thread->core, _state, SAVESTATE_RTC);
@@ -176,7 +184,7 @@ int main(int argc, char** argv) {
 	int ret;
 
 	// TODO: Use opts and config
-	_logger = getLogger(renderer.core);
+	setLogger(renderer.core);
 	ret = mSDLRun(&renderer, &args);
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&renderer.core->inputMap);
@@ -328,4 +336,65 @@ static void mSDLDeinit(struct mSDLRenderer* renderer) {
 	renderer->deinit(renderer);
 
 	SDL_Quit();
+}
+
+void setLogger(struct mCore* core) {
+	int fakeBool = 0;
+	bool logToStdout = true;
+	bool logToFile = false;
+
+	if (mCoreConfigGetIntValue(&core->config, "logToStdout", &fakeBool))
+		logToStdout = fakeBool;
+	if (mCoreConfigGetIntValue(&core->config, "logToFile", &fakeBool))
+		logToFile = fakeBool;
+	const char* logFile = mCoreConfigGetValue(&core->config, "logFile");
+	int filterLevels = core->opts.logLevel;
+
+	_setLogger(logToStdout, logToFile, logFile, filterLevels);
+}
+
+void _setLogger(bool logToStdout, bool logToFile, const char* logFile, int filterLevels) {
+	// Assign basic static variables
+	_logToStdout = logToStdout;
+	_logFile = NULL;
+	
+	if(logToFile && logFile)
+		_logFile = VFileOpen(logFile, O_WRONLY | O_CREAT | O_TRUNC);
+
+	// Create the filter
+	mLogFilterInit(&_filter);
+	mLogFilterSet(&_filter, "gba.bios", mLOG_STUB | mLOG_FATAL);
+	mLogFilterSet(&_filter, "core.status", mLOG_ALL & ~mLOG_DEBUG);
+	_filter.defaultLevels = filterLevels;
+
+	// Fill the logger
+	_logger.log = _mCoreLog;
+	_logger.filter = &_filter;
+}
+
+static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
+	struct mCoreThread* thread = mCoreThreadGet();
+	if (thread && level == mLOG_FATAL) {
+		mCoreThreadMarkCrashed(thread);
+	}
+
+	if (!mLogFilterTest(logger->filter, category, level)) {
+		return;
+	}
+
+	const int MAX_BUF = 1024;
+	char* buffer = malloc(MAX_BUF);
+
+	int length = 0;
+	length += snprintf(buffer+length, MAX_BUF-length, "%s: ", mLogCategoryName(category));
+	length += vsnprintf(buffer+length, MAX_BUF-length, format, args);
+	length += snprintf(buffer+length, MAX_BUF-length, "\n");
+
+	if(_logToStdout)
+		printf("%s", buffer);
+
+	if (_logFile)
+		_logFile->write(_logFile, buffer, length);
+
+	free(buffer);
 }
