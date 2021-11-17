@@ -18,6 +18,7 @@ Other fixes:
  - Qt: Fix corrupted savestate and fatal error text
  - Qt: Fix sprite compositing when sprite tiles go out of bounds (fixes mgba.io/i/2348)
 Misc:
+ - SDL: Use SDL_JoystickRumble where available
  - Wii: Add adjustable gyroscope settings (closes mgba.io/i/2245)
 
 0.9.2: (2021-07-10)
