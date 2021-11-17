@@ -39,6 +39,7 @@ Misc:
  - Qt: Rearrange menus some
  - Qt: Clean up cheats dialog
  - Qt: Only set default controller bindings if loading fails (fixes mgba.io/i/799)
+ - SDL: Use SDL_JoystickRumble where available
  - Wii: Add adjustable gyroscope settings (closes mgba.io/i/2245)
 
 0.9.2: (2021-07-10)
