@@ -43,8 +43,8 @@ private:
 	Ui::MapView m_ui;
 
 	std::shared_ptr<CoreController> m_controller;
-	mMapCacheEntry m_mapStatus[128 * 128] = {}; // TODO: Correct size
-	mBitmapCacheEntry m_bitmapStatus[512 * 2] = {}; // TODO: Correct size
+	QVector<mMapCacheEntry> m_mapStatus;
+	QVector<mBitmapCacheEntry> m_bitmapStatus{512 * 2}; // TODO: Correct size
 	int m_map = 0;
 	QImage m_rawMap;
 	int m_boundary;
