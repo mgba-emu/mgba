@@ -112,15 +112,19 @@ void AssetView::compositeTile(const void* tBuffer, void* buffer, size_t stride, 
 	}
 }
 
-QImage AssetView::compositeMap(int map, mMapCacheEntry* mapStatus) {
+QImage AssetView::compositeMap(int map, QVector<mMapCacheEntry>* mapStatus) {
 	mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, map);
 	int tilesW = 1 << mMapCacheSystemInfoGetTilesWide(mapCache->sysConfig);
 	int tilesH = 1 << mMapCacheSystemInfoGetTilesHigh(mapCache->sysConfig);
+	if (mapStatus->size() != tilesW * tilesH) {
+		mapStatus->resize(tilesW * tilesH);
+		mapStatus->fill({});
+	}
 	QImage rawMap = QImage(QSize(tilesW * 8, tilesH * 8), QImage::Format_ARGB32);
 	uchar* bgBits = rawMap.bits();
 	for (int j = 0; j < tilesH; ++j) {
 		for (int i = 0; i < tilesW; ++i) {
-			mMapCacheCleanTile(mapCache, mapStatus, i, j);
+			mMapCacheCleanTile(mapCache, mapStatus->data(), i, j);
 		}
 		for (int i = 0; i < 8; ++i) {
 			memcpy(static_cast<void*>(&bgBits[tilesW * 32 * (i + j * 8)]), mMapCacheGetRow(mapCache, i + j * 8), tilesW * 32);
