@@ -140,7 +140,7 @@ bool DisplayGL::supportsFormat(const QSurfaceFormat& format) {
 				return false;
 			}
 #endif
-			s_supports[format] = context,hasExtension("GL_EXT_blend_color"); // Core as of 1.2
+			s_supports[format] = context.hasExtension("GL_EXT_blend_color"); // Core as of 1.2
 			context.doneCurrent();
 		} else if (!context.isOpenGLES() && format.version() >= qMakePair(2, 1) && foundVersion < qMakePair(3, 0) && foundVersion >= qMakePair(2, 1)) {
 			// Weird edge case we support if ARB_framebuffer_object is present
