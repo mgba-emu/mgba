@@ -38,6 +38,7 @@
 #include <signal.h>
 
 #define PORT "sdl"
+#define MAX_LOG_BUF 1024
 
 static void mSDLDeinit(struct mSDLRenderer* renderer);
 
@@ -379,8 +380,7 @@ static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level
 		return;
 	}
 
-	const int MAX_BUF = 1024;
-	char buffer[MAX_BUF];
+	char buffer[MAX_LOG_BUF];
 
 	int length = 0;
 	length += snprintf(buffer + length, sizeof(buffer) - length, "%s: ", mLogCategoryName(category));
