@@ -44,7 +44,6 @@ static void mSDLDeinit(struct mSDLRenderer* renderer);
 static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
 
 void setLogger(struct mCore* core);
-void _setLogger(bool logToStdout, bool logToFile, const char* logFile, int filterLevels);
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
 
 static bool _logToStdout;
@@ -350,25 +349,20 @@ void setLogger(struct mCore* core) {
 		logToFile = fakeBool;
 	}
 	const char* logFile = mCoreConfigGetValue(&core->config, "logFile");
-	int filterLevels = core->opts.logLevel;
 
-	_setLogger(logToStdout, logToFile, logFile, filterLevels);
-}
-
-void _setLogger(bool logToStdout, bool logToFile, const char* logFile, int filterLevels) {
 	// Assign basic static variables
 	_logToStdout = logToStdout;
 	_logFile = NULL;
 	
 	if(logToFile && logFile) {
-		_logFile = VFileOpen(logFile, O_WRONLY | O_CREAT | O_TRUNC);
+		_logFile = VFileOpen(logFile, O_WRONLY | O_CREAT | O_APPEND);
 	}
 
 	// Create the filter
 	mLogFilterInit(&_filter);
-	mLogFilterSet(&_filter, "gba.bios", mLOG_STUB | mLOG_FATAL);
+	mLogFilterSet(&_filter, "gba.bios", mLOG_FATAL);
 	mLogFilterSet(&_filter, "core.status", mLOG_ALL & ~mLOG_DEBUG);
-	_filter.defaultLevels = filterLevels;
+	_filter.defaultLevels = core->opts.logLevel;
 
 	// Fill the logger
 	_logger.log = _mCoreLog;
@@ -380,25 +374,24 @@ static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level
 	if (thread && level == mLOG_FATAL) {
 		mCoreThreadMarkCrashed(thread);
 	}
-
+	
 	if (!mLogFilterTest(logger->filter, category, level)) {
 		return;
 	}
 
 	const int MAX_BUF = 1024;
-	char* buffer = malloc(MAX_BUF);
+	char buffer[MAX_BUF];
 
 	int length = 0;
-	length += snprintf(buffer + length, MAX_BUF - length, "%s: ", mLogCategoryName(category));
-	length += vsnprintf(buffer + length, MAX_BUF - length, format, args);
-	length += snprintf(buffer + length, MAX_BUF - length, "\n");
+	length += snprintf(buffer + length, sizeof(buffer) - length, "%s: ", mLogCategoryName(category));
+	length += vsnprintf(buffer + length, sizeof(buffer) - length, format, args);
+	length += snprintf(buffer + length, sizeof(buffer) - length, "\n");
 
 	if(_logToStdout) {
 		printf("%s", buffer);
 	}
 
-	if (_logFile)
+	if (_logFile) {
 		_logFile->write(_logFile, buffer, length);
-
-	free(buffer);
+	}
 }
