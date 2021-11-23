@@ -343,10 +343,12 @@ void setLogger(struct mCore* core) {
 	bool logToStdout = true;
 	bool logToFile = false;
 
-	if (mCoreConfigGetIntValue(&core->config, "logToStdout", &fakeBool))
+	if (mCoreConfigGetIntValue(&core->config, "logToStdout", &fakeBool)) {
 		logToStdout = fakeBool;
-	if (mCoreConfigGetIntValue(&core->config, "logToFile", &fakeBool))
+	}
+	if (mCoreConfigGetIntValue(&core->config, "logToFile", &fakeBool)) {
 		logToFile = fakeBool;
+	}
 	const char* logFile = mCoreConfigGetValue(&core->config, "logFile");
 	int filterLevels = core->opts.logLevel;
 
@@ -358,8 +360,9 @@ void _setLogger(bool logToStdout, bool logToFile, const char* logFile, int filte
 	_logToStdout = logToStdout;
 	_logFile = NULL;
 	
-	if(logToFile && logFile)
+	if(logToFile && logFile) {
 		_logFile = VFileOpen(logFile, O_WRONLY | O_CREAT | O_TRUNC);
+	}
 
 	// Create the filter
 	mLogFilterInit(&_filter);
@@ -386,12 +389,13 @@ static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level
 	char* buffer = malloc(MAX_BUF);
 
 	int length = 0;
-	length += snprintf(buffer+length, MAX_BUF-length, "%s: ", mLogCategoryName(category));
-	length += vsnprintf(buffer+length, MAX_BUF-length, format, args);
-	length += snprintf(buffer+length, MAX_BUF-length, "\n");
+	length += snprintf(buffer + length, MAX_BUF - length, "%s: ", mLogCategoryName(category));
+	length += vsnprintf(buffer + length, MAX_BUF - length, format, args);
+	length += snprintf(buffer + length, MAX_BUF - length, "\n");
 
-	if(_logToStdout)
+	if(_logToStdout) {
 		printf("%s", buffer);
+	}
 
 	if (_logFile)
 		_logFile->write(_logFile, buffer, length);
