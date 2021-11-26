@@ -40,6 +40,7 @@ Misc:
  - Qt: Rearrange menus some
  - Qt: Clean up cheats dialog
  - Qt: Only set default controller bindings if loading fails (fixes mgba.io/i/799)
+ - Qt: Save converter now supports importing SharkPort saves
  - SDL: Use SDL_JoystickRumble where available
  - Wii: Add adjustable gyroscope settings (closes mgba.io/i/2245)
 
