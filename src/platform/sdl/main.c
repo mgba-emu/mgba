@@ -47,8 +47,8 @@ static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
 void setLogger(struct mCore* core);
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
 
-static bool _logToStdout;
-static struct VFile* _logFile;
+static bool _logToStdout = true;
+static struct VFile* _logFile = NULL;
 static struct mLogFilter _filter;
 static struct mLogger _logger;
 
@@ -344,7 +344,7 @@ void setLogger(struct mCore* core) {
 	bool logToFile = false;
 
 	if (mCoreConfigGetIntValue(&core->config, "logToStdout", &fakeBool)) {
-		logToStdout = fakeBool;
+		_logToStdout = fakeBool;
 	}
 	if (mCoreConfigGetIntValue(&core->config, "logToFile", &fakeBool)) {
 		logToFile = fakeBool;
