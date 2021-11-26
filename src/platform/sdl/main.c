@@ -382,10 +382,9 @@ static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level
 
 	char buffer[MAX_LOG_BUF];
 
-	int length = 0;
-	length += snprintf(buffer + length, sizeof(buffer) - length, "%s: ", mLogCategoryName(category));
-	length += vsnprintf(buffer + length, sizeof(buffer) - length, format, args);
-	length += snprintf(buffer + length, sizeof(buffer) - length, "\n");
+	size_t length = (length = snprintf(buffer, sizeof(buffer), "%s: ", mLogCategoryName(category))) > sizeof(buffer) ? sizeof(buffer) : length;
+	length = (length += vsnprintf(buffer + length, sizeof(buffer) - length, format, args)) > sizeof(buffer) ? sizeof(buffer) : length;
+	length = (length += snprintf(buffer + length, sizeof(buffer) - length, "\n")) > sizeof(buffer) ? sizeof(buffer) : length;
 
 	if(_logToStdout) {
 		printf("%s", buffer);
