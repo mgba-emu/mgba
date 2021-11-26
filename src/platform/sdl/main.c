@@ -44,7 +44,7 @@ static void mSDLDeinit(struct mSDLRenderer* renderer);
 
 static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
 
-void setLogger(struct mCore* core);
+static void _setLogger(struct mCore* core);
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
 
 static bool _logToStdout = true;
@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
 	int ret;
 
 	// TODO: Use opts and config
-	setLogger(renderer.core);
+	_setLogger(renderer.core);
 	ret = mSDLRun(&renderer, &args);
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&renderer.core->inputMap);
@@ -338,9 +338,8 @@ static void mSDLDeinit(struct mSDLRenderer* renderer) {
 	SDL_Quit();
 }
 
-void setLogger(struct mCore* core) {
+static void _setLogger(struct mCore* core) {
 	int fakeBool = 0;
-	bool logToStdout = true;
 	bool logToFile = false;
 
 	if (mCoreConfigGetIntValue(&core->config, "logToStdout", &fakeBool)) {
@@ -350,10 +349,6 @@ void setLogger(struct mCore* core) {
 		logToFile = fakeBool;
 	}
 	const char* logFile = mCoreConfigGetValue(&core->config, "logFile");
-
-	// Assign basic static variables
-	_logToStdout = logToStdout;
-	_logFile = NULL;
 	
 	if(logToFile && logFile) {
 		_logFile = VFileOpen(logFile, O_WRONLY | O_CREAT | O_APPEND);
