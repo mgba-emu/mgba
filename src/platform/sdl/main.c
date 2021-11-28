@@ -380,9 +380,9 @@ static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level
 	size_t length = snprintf(buffer, sizeof(buffer), "%s: ", mLogCategoryName(category));
 	if (length < sizeof(buffer)) {
 		length += vsnprintf(buffer + length, sizeof(buffer) - length, format, args);
-		if (length < sizeof(buffer)) {
-			length += snprintf(buffer + length, sizeof(buffer) - length, "\n");
-		}
+	}
+	if (length < sizeof(buffer)) {
+		length += snprintf(buffer + length, sizeof(buffer) - length, "\n");
 	}
 
 	// Make sure the length doesn't exceed the size of the buffer when actually writing
