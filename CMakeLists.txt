@@ -320,6 +320,8 @@ find_function(setlocale)
 find_function(snprintf_l)
 find_function(uselocale)
 
+find_function(popcount32)
+
 find_function(futimens)
 find_function(futimes)
 
