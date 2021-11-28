@@ -69,6 +69,7 @@ int main(int argc, char** argv) {
 		.videoSync = false,
 		.audioSync = true,
 		.volume = 0x100,
+		.logLevel = mLOG_WARN | mLOG_ERROR | mLOG_FATAL,
 	};
 
 	struct mArguments args;
@@ -350,15 +351,13 @@ static void _setLogger(struct mCore* core) {
 	}
 	const char* logFile = mCoreConfigGetValue(&core->config, "logFile");
 	
-	if(logToFile && logFile) {
+	if (logToFile && logFile) {
 		_logFile = VFileOpen(logFile, O_WRONLY | O_CREAT | O_APPEND);
 	}
 
 	// Create the filter
 	mLogFilterInit(&_filter);
-	mLogFilterSet(&_filter, "gba.bios", mLOG_FATAL);
-	mLogFilterSet(&_filter, "core.status", mLOG_ALL & ~mLOG_DEBUG);
-	_filter.defaultLevels = core->opts.logLevel;
+	mLogFilterLoad(&_filter, &core->config);
 
 	// Fill the logger
 	_logger.log = _mCoreLog;
@@ -377,11 +376,21 @@ static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level
 
 	char buffer[MAX_LOG_BUF];
 
-	size_t length = (length = snprintf(buffer, sizeof(buffer), "%s: ", mLogCategoryName(category))) > sizeof(buffer) ? sizeof(buffer) : length;
-	length = (length += vsnprintf(buffer + length, sizeof(buffer) - length, format, args)) > sizeof(buffer) ? sizeof(buffer) : length;
-	length = (length += snprintf(buffer + length, sizeof(buffer) - length, "\n")) > sizeof(buffer) ? sizeof(buffer) : length;
+	// Prepare the string
+	size_t length = snprintf(buffer, sizeof(buffer), "%s: ", mLogCategoryName(category));
+	if (length < sizeof(buffer)) {
+		length += vsnprintf(buffer + length, sizeof(buffer) - length, format, args);
+		if (length < sizeof(buffer)) {
+			length += snprintf(buffer + length, sizeof(buffer) - length, "\n");
+		}
+	}
 
-	if(_logToStdout) {
+	// Make sure the length doesn't exceed the size of the buffer when actually writing
+	if (length > sizeof(buffer)) {
+		length = sizeof(buffer);
+	}
+
+	if (_logToStdout) {
 		printf("%s", buffer);
 	}
 
