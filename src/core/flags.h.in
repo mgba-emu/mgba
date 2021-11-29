@@ -119,4 +119,10 @@
 #cmakedefine USE_ZLIB
 #endif
 
+// HAVE flags
+
+#ifndef HAVE_POPCOUNT32
+#cmakedefine HAVE_POPCOUNT32
+#endif
+
 #endif
