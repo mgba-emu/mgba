@@ -31,6 +31,7 @@ Other fixes:
  - GBA: Fix maximum tile ID in caching for 256-color modes
  - GBA Video: Fix cache updating with proxy and GL renderers
  - Libretro: Fix crash when using Game Boy codes (fixes mgba.io/i/2281)
+ - mGUI: Fix crash if autosave file can't be opened (fixes mgba.io/i/2268)
  - Qt: Fix corrupted savestate and fatal error text
  - Qt: Fix sprite compositing when sprite tiles go out of bounds (fixes mgba.io/i/2348)
 Misc:
