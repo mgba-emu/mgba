@@ -95,7 +95,7 @@ static inline int ThreadSetName(const char* name) {
 	rename_thread(find_thread(NULL), name);
 	return 0;
 #elif defined(__NetBSD__)
-	return pthread_setname_np(pthread_self(), "%s", (void *)name);
+	return pthread_setname_np(pthread_self(), "%s", (void *) name);
 #elif defined(HAVE_PTHREAD_SETNAME_NP)
 	return pthread_setname_np(pthread_self(), name);
 #else
