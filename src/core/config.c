@@ -89,6 +89,20 @@ static bool _lookupCharValue(const struct mCoreConfig* config, const char* key, 
 	return true;
 }
 
+static bool _lookupBoolValue(const struct mCoreConfig* config, const char* key, bool* out) {
+	const char* charValue = _lookupValue(config, key);
+	if (!charValue) {
+		return false;
+	}
+	char* end;
+	long value = strtol(charValue, &end, 10);
+	if (*end) {
+		return false;
+	}
+	*out = value;
+	return true;
+}
+
 static bool _lookupIntValue(const struct mCoreConfig* config, const char* key, int* out) {
 	const char* charValue = _lookupValue(config, key);
 	if (!charValue) {
@@ -312,6 +326,10 @@ bool mCoreConfigIsPortable(void) {
 
 const char* mCoreConfigGetValue(const struct mCoreConfig* config, const char* key) {
 	return _lookupValue(config, key);
+}
+
+bool mCoreConfigGetBoolValue(const struct mCoreConfig* config, const char* key, bool* value) {
+	return _lookupBoolValue(config, key, value);
 }
 
 bool mCoreConfigGetIntValue(const struct mCoreConfig* config, const char* key, int* value) {
