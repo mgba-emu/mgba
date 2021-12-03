@@ -414,40 +414,20 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts)
 	}
 	_lookupUIntValue(config, "sampleRate", &opts->sampleRate);
 
-	int fakeBool;
-	if (_lookupIntValue(config, "useBios", &fakeBool)) {
-		opts->useBios = fakeBool;
-	}
-	if (_lookupIntValue(config, "audioSync", &fakeBool)) {
-		opts->audioSync = fakeBool;
-	}
-	if (_lookupIntValue(config, "videoSync", &fakeBool)) {
-		opts->videoSync = fakeBool;
-	}
-	if (_lookupIntValue(config, "lockAspectRatio", &fakeBool)) {
-		opts->lockAspectRatio = fakeBool;
-	}
-	if (_lookupIntValue(config, "lockIntegerScaling", &fakeBool)) {
-		opts->lockIntegerScaling = fakeBool;
-	}
-	if (_lookupIntValue(config, "interframeBlending", &fakeBool)) {
-		opts->interframeBlending = fakeBool;
-	}
-	if (_lookupIntValue(config, "resampleVideo", &fakeBool)) {
-		opts->resampleVideo = fakeBool;
-	}
-	if (_lookupIntValue(config, "suspendScreensaver", &fakeBool)) {
-		opts->suspendScreensaver = fakeBool;
-	}
-	if (_lookupIntValue(config, "mute", &fakeBool)) {
-		opts->mute = fakeBool;
-	}
-	if (_lookupIntValue(config, "skipBios", &fakeBool)) {
-		opts->skipBios = fakeBool;
-	}
-	if (_lookupIntValue(config, "rewindEnable", &fakeBool)) {
-		opts->rewindEnable = fakeBool;
-	}
+	_lookupBoolValue(config, "audioSync", &opts->audioSync);
+	_lookupBoolValue(config, "videoSync", &opts->videoSync);
+
+	_lookupBoolValue(config, "lockAspectRatio", &opts->lockAspectRatio);
+	_lookupBoolValue(config, "lockIntegerScaling", &opts->lockIntegerScaling);
+	_lookupBoolValue(config, "interframeBlending", &opts->interframeBlending);
+	_lookupBoolValue(config, "resampleVideo", &opts->resampleVideo);
+
+	_lookupBoolValue(config, "useBios", &opts->useBios);
+	_lookupBoolValue(config, "skipBios", &opts->skipBios);
+
+	_lookupBoolValue(config, "suspendScreensaver", &opts->suspendScreensaver);
+	_lookupBoolValue(config, "mute", &opts->mute);
+	_lookupBoolValue(config, "rewindEnable", &opts->rewindEnable);
 
 	_lookupIntValue(config, "fullscreen", &opts->fullscreen);
 	_lookupIntValue(config, "width", &opts->width);
