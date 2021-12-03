@@ -452,16 +452,16 @@ struct retro_core_options_v2 options_ar = {
 
 /* RETRO_LANGUAGE_AST */
 
-#define CATEGORY_SYSTEM_LABEL_AST NULL
+#define CATEGORY_SYSTEM_LABEL_AST "Sistema"
 #define CATEGORY_SYSTEM_INFO_0_AST NULL
-#define CATEGORY_VIDEO_LABEL_AST NULL
+#define CATEGORY_VIDEO_LABEL_AST "Videu"
 #define CATEGORY_VIDEO_INFO_0_AST NULL
 #define CATEGORY_VIDEO_INFO_1_AST NULL
-#define CATEGORY_AUDIO_LABEL_AST NULL
+#define CATEGORY_AUDIO_LABEL_AST "Audiu"
 #define CATEGORY_AUDIO_INFO_0_AST NULL
-#define CATEGORY_INPUT_LABEL_AST NULL
+#define CATEGORY_INPUT_LABEL_AST "Preseos d'entrada y auxiliares"
 #define CATEGORY_INPUT_INFO_0_AST NULL
-#define CATEGORY_PERFORMANCE_LABEL_AST NULL
+#define CATEGORY_PERFORMANCE_LABEL_AST "Rindimientu"
 #define CATEGORY_PERFORMANCE_INFO_0_AST NULL
 #define MGBA_GB_MODEL_LABEL_AST NULL
 #define MGBA_GB_MODEL_INFO_0_AST NULL
@@ -515,9 +515,9 @@ struct retro_core_options_v2 options_ar = {
 #define OPTION_VAL_95_AST NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_AST NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_AST NULL
-#define OPTION_VAL_NO_AST NULL
-#define OPTION_VAL_YES_AST NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_AST NULL
+#define OPTION_VAL_NO_AST "non"
+#define OPTION_VAL_YES_AST "sí"
+#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_AST "Nivel del sensor solar"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_AST NULL
 #define OPTION_VAL_SENSOR_AST NULL
 #define MGBA_FORCE_GBP_LABEL_AST NULL
@@ -3349,10 +3349,10 @@ struct retro_core_options_v2 options_da = {
 #define CATEGORY_VIDEO_INFO_0_DE NULL
 #define CATEGORY_VIDEO_INFO_1_DE NULL
 #define CATEGORY_AUDIO_LABEL_DE NULL
-#define CATEGORY_AUDIO_INFO_0_DE NULL
-#define CATEGORY_INPUT_LABEL_DE NULL
+#define CATEGORY_AUDIO_INFO_0_DE "Audiofilterung konfigurieren."
+#define CATEGORY_INPUT_LABEL_DE "Eingabe- und Hilfsgeräte"
 #define CATEGORY_INPUT_INFO_0_DE NULL
-#define CATEGORY_PERFORMANCE_LABEL_DE NULL
+#define CATEGORY_PERFORMANCE_LABEL_DE "Leistung"
 #define CATEGORY_PERFORMANCE_INFO_0_DE NULL
 #define MGBA_GB_MODEL_LABEL_DE NULL
 #define MGBA_GB_MODEL_INFO_0_DE NULL
@@ -3367,47 +3367,47 @@ struct retro_core_options_v2 options_da = {
 #define MGBA_SKIP_BIOS_INFO_0_DE NULL
 #define MGBA_GB_COLORS_LABEL_DE NULL
 #define MGBA_GB_COLORS_INFO_0_DE NULL
-#define OPTION_VAL_GRAYSCALE_DE NULL
+#define OPTION_VAL_GRAYSCALE_DE "Graustufen"
 #define MGBA_SGB_BORDERS_LABEL_DE NULL
 #define MGBA_SGB_BORDERS_INFO_0_DE NULL
-#define MGBA_COLOR_CORRECTION_LABEL_DE NULL
+#define MGBA_COLOR_CORRECTION_LABEL_DE "Farbkorrektur"
 #define MGBA_COLOR_CORRECTION_INFO_0_DE NULL
-#define OPTION_VAL_AUTO_DE NULL
+#define OPTION_VAL_AUTO_DE "Automatisch"
 #define MGBA_INTERFRAME_BLENDING_LABEL_DE NULL
 #define MGBA_INTERFRAME_BLENDING_INFO_0_DE NULL
-#define OPTION_VAL_MIX_DE NULL
+#define OPTION_VAL_MIX_DE "Einfach"
 #define OPTION_VAL_MIX_SMART_DE NULL
 #define OPTION_VAL_LCD_GHOSTING_DE NULL
 #define OPTION_VAL_LCD_GHOSTING_FAST_DE NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_DE NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_DE NULL
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_DE "Audiofilter"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_DE "Tiefpassfilter"
 #define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_DE NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_DE NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_DE NULL
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_DE "Audiofilterstufe"
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_DE "Filterstufe"
 #define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_DE NULL
-#define OPTION_VAL_5_DE NULL
-#define OPTION_VAL_10_DE NULL
-#define OPTION_VAL_15_DE NULL
-#define OPTION_VAL_20_DE NULL
-#define OPTION_VAL_25_DE NULL
-#define OPTION_VAL_30_DE NULL
-#define OPTION_VAL_35_DE NULL
-#define OPTION_VAL_40_DE NULL
-#define OPTION_VAL_45_DE NULL
-#define OPTION_VAL_50_DE NULL
-#define OPTION_VAL_55_DE NULL
-#define OPTION_VAL_60_DE NULL
-#define OPTION_VAL_65_DE NULL
-#define OPTION_VAL_70_DE NULL
-#define OPTION_VAL_75_DE NULL
-#define OPTION_VAL_80_DE NULL
-#define OPTION_VAL_85_DE NULL
-#define OPTION_VAL_90_DE NULL
-#define OPTION_VAL_95_DE NULL
+#define OPTION_VAL_5_DE "5 %"
+#define OPTION_VAL_10_DE "10 %"
+#define OPTION_VAL_15_DE "15 %"
+#define OPTION_VAL_20_DE "20 %"
+#define OPTION_VAL_25_DE "25 %"
+#define OPTION_VAL_30_DE "30 %"
+#define OPTION_VAL_35_DE "35 %"
+#define OPTION_VAL_40_DE "40 %"
+#define OPTION_VAL_45_DE "45 %"
+#define OPTION_VAL_50_DE "50 %"
+#define OPTION_VAL_55_DE "55 %"
+#define OPTION_VAL_60_DE "60 %"
+#define OPTION_VAL_65_DE "65 %"
+#define OPTION_VAL_70_DE "70 %"
+#define OPTION_VAL_75_DE "75 %"
+#define OPTION_VAL_80_DE "80 %"
+#define OPTION_VAL_85_DE "85 %"
+#define OPTION_VAL_90_DE "90 %"
+#define OPTION_VAL_95_DE "95 %"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_DE NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_DE NULL
-#define OPTION_VAL_NO_DE NULL
-#define OPTION_VAL_YES_DE NULL
+#define OPTION_VAL_NO_DE "Nein"
+#define OPTION_VAL_YES_DE "Ja"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_DE NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_DE NULL
 #define OPTION_VAL_SENSOR_DE NULL
@@ -3417,11 +3417,11 @@ struct retro_core_options_v2 options_da = {
 #define MGBA_IDLE_OPTIMIZATION_INFO_0_DE NULL
 #define OPTION_VAL_REMOVE_KNOWN_DE NULL
 #define OPTION_VAL_DETECT_AND_REMOVE_DE NULL
-#define OPTION_VAL_DON_T_REMOVE_DE NULL
+#define OPTION_VAL_DON_T_REMOVE_DE "Nicht entfernen"
 #define MGBA_FRAMESKIP_LABEL_DE NULL
 #define MGBA_FRAMESKIP_INFO_0_DE NULL
-#define OPTION_VAL_AUTO_THRESHOLD_DE NULL
-#define OPTION_VAL_FIXED_INTERVAL_DE NULL
+#define OPTION_VAL_AUTO_THRESHOLD_DE "Automatisch (Schwellenwert)"
+#define OPTION_VAL_FIXED_INTERVAL_DE "Festes Intervall"
 #define MGBA_FRAMESKIP_THRESHOLD_LABEL_DE NULL
 #define MGBA_FRAMESKIP_THRESHOLD_INFO_0_DE NULL
 #define MGBA_FRAMESKIP_INTERVAL_LABEL_DE NULL
@@ -4582,89 +4582,89 @@ struct retro_core_options_v2 options_eo = {
 
 /* RETRO_LANGUAGE_ES */
 
-#define CATEGORY_SYSTEM_LABEL_ES NULL
-#define CATEGORY_SYSTEM_INFO_0_ES NULL
-#define CATEGORY_VIDEO_LABEL_ES NULL
-#define CATEGORY_VIDEO_INFO_0_ES NULL
-#define CATEGORY_VIDEO_INFO_1_ES NULL
+#define CATEGORY_SYSTEM_LABEL_ES "Sistema"
+#define CATEGORY_SYSTEM_INFO_0_ES "Cambia los ajustes de selección del hardware base y de la BIOS."
+#define CATEGORY_VIDEO_LABEL_ES "Vídeo"
+#define CATEGORY_VIDEO_INFO_0_ES "Cambia la paleta de los modelos DMG, los bordes de SGB, la corrección de color y los efectos «ghosting» (fantasma) de la pantalla LCD."
+#define CATEGORY_VIDEO_INFO_1_ES "Cambia la paleta de los modelos DMG y los bordes de SGB."
 #define CATEGORY_AUDIO_LABEL_ES NULL
-#define CATEGORY_AUDIO_INFO_0_ES NULL
-#define CATEGORY_INPUT_LABEL_ES NULL
-#define CATEGORY_INPUT_INFO_0_ES NULL
-#define CATEGORY_PERFORMANCE_LABEL_ES NULL
-#define CATEGORY_PERFORMANCE_INFO_0_ES NULL
+#define CATEGORY_AUDIO_INFO_0_ES "Cambia los filtros de audio."
+#define CATEGORY_INPUT_LABEL_ES "Entrada y dispositivos auxiliares"
+#define CATEGORY_INPUT_INFO_0_ES "Cambia los ajustes de los mandos, de la entrada de los sensores y de la vibración."
+#define CATEGORY_PERFORMANCE_LABEL_ES "Rendimiento"
+#define CATEGORY_PERFORMANCE_INFO_0_ES "Cambia los ajustes de los bucles de inactividad y de la omisión de fotogramas."
 #define MGBA_GB_MODEL_LABEL_ES "Modelo de Game Boy (es necesario reiniciar)"
-#define MGBA_GB_MODEL_INFO_0_ES "Carga el contenido cargado utilizando un modelo de Game Boy específico. La opción «Autodetectar» seleccionará el modelo más adecuado para el juego actual."
-#define OPTION_VAL_AUTODETECT_ES "Autodetectar"
+#define MGBA_GB_MODEL_INFO_0_ES "Ejecuta el contenido cargado utilizando un modelo de Game Boy específico. La opción «Detección automática» seleccionará el modelo más adecuado para cada juego."
+#define OPTION_VAL_AUTODETECT_ES "Detección automática"
 #define OPTION_VAL_GAME_BOY_ES NULL
 #define OPTION_VAL_SUPER_GAME_BOY_ES NULL
 #define OPTION_VAL_GAME_BOY_COLOR_ES NULL
 #define OPTION_VAL_GAME_BOY_ADVANCE_ES NULL
 #define MGBA_USE_BIOS_LABEL_ES "Utilizar BIOS en caso de encontrarla (es necesario reiniciar)"
-#define MGBA_USE_BIOS_INFO_0_ES "Si se encuentran en el directorio de sistema de RetroArch, se utilizarán los archivos de la BIOS y el bootloader oficiales para emular el hardware."
+#define MGBA_USE_BIOS_INFO_0_ES "Si se encuentran en el directorio de sistema de RetroArch, se utilizarán los archivos de la BIOS y el cargador de arranque oficiales para emular el hardware."
 #define MGBA_SKIP_BIOS_LABEL_ES "Omitir introducción de la BIOS (es necesario reiniciar)"
-#define MGBA_SKIP_BIOS_INFO_0_ES "Al utilizar una BIOS y bootloader oficiales, omitirá la animación del logotipo al arrancar. Esta opción será ignorada si «Utilizar BIOS en caso de encontrarla» está desactivada."
-#define MGBA_GB_COLORS_LABEL_ES NULL
-#define MGBA_GB_COLORS_INFO_0_ES NULL
-#define OPTION_VAL_GRAYSCALE_ES NULL
+#define MGBA_SKIP_BIOS_INFO_0_ES "Al utilizar una BIOS y un cargador de arranque oficiales, omitirá la animación del logotipo al arrancar. Esta opción será ignorada si «Utilizar BIOS en caso de encontrarla» está desactivada."
+#define MGBA_GB_COLORS_LABEL_ES "Paleta predeterminada de Game Boy"
+#define MGBA_GB_COLORS_INFO_0_ES "Selecciona la paleta que se utilizará con aquellos juegos de Game Boy que no sean compatibles con Game Boy Color/Super Game Boy o al forzar el modelo a Game Boy."
+#define OPTION_VAL_GRAYSCALE_ES "Escala de grises"
 #define MGBA_SGB_BORDERS_LABEL_ES "Utilizar bordes de Super Game Boy (es necesario reiniciar)"
 #define MGBA_SGB_BORDERS_INFO_0_ES "Muestra los bordes de Super Game Boy al ejecutar juegos compatibles con este sistema."
 #define MGBA_COLOR_CORRECTION_LABEL_ES "Corrección de color"
 #define MGBA_COLOR_CORRECTION_INFO_0_ES "Ajusta los colores de la salida de imagen para que esta coincida con la que mostraría un hardware real de GBA/GBC."
-#define OPTION_VAL_AUTO_ES "Automática"
-#define MGBA_INTERFRAME_BLENDING_LABEL_ES "Fusión interfotograma"
-#define MGBA_INTERFRAME_BLENDING_INFO_0_ES "Simula el efecto fantasma de una pantalla LCD. «Sencilla» mezcla los fotogramas previos y posteriores en un 50%. «Inteligente» intenta detectar los parpadeos de pantalla y solo lleva a cabo la fusión del 50% en los fotogramas afectados. «Efecto fantasma de LCD» imita los tiempos de respuesta naturales de una pantalla LCD combinando varios fotogramas guardados en el búfer. La fusión sencilla o inteligente es necesaria en aquellos juegos que aprovechan de forma agresiva el efecto fantasma de la pantalla LCD para los efectos de transparencia (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, la saga Boktai...)."
+#define OPTION_VAL_AUTO_ES "Selección automática"
+#define MGBA_INTERFRAME_BLENDING_LABEL_ES "Fusión entre fotogramas"
+#define MGBA_INTERFRAME_BLENDING_INFO_0_ES "Simula el efecto «ghosting» (fantasma) de la pantalla LCD. «Sencilla» mezcla la mitad de los fotogramas anterior y siguiente. «Inteligente» intentará detectar parpadeos en la pantalla y solo hará una mezcla de mitades de fotogramas en los píxeles afectados. «Ghosting de LCD» simula los tiempos de respuesta naturales de una pantalla LCD combinando varios fotogramas almacenados en el búfer. Las fusiones «Sencilla» o «Inteligente» son necesarias para aquellos juegos que necesiten el efecto «ghosting» para mostrar efectos de transparencias (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, la saga Boktai...)."
 #define OPTION_VAL_MIX_ES "Sencilla"
 #define OPTION_VAL_MIX_SMART_ES "Inteligente"
-#define OPTION_VAL_LCD_GHOSTING_ES "Efecto fantasma de LCD (preciso)"
-#define OPTION_VAL_LCD_GHOSTING_FAST_ES "Efecto fantasma de LCD (rápido)"
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_ES NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_ES NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_ES NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_ES NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_ES NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_ES NULL
-#define OPTION_VAL_5_ES NULL
-#define OPTION_VAL_10_ES NULL
-#define OPTION_VAL_15_ES NULL
-#define OPTION_VAL_20_ES NULL
-#define OPTION_VAL_25_ES NULL
-#define OPTION_VAL_30_ES NULL
-#define OPTION_VAL_35_ES NULL
-#define OPTION_VAL_40_ES NULL
-#define OPTION_VAL_45_ES NULL
-#define OPTION_VAL_50_ES NULL
-#define OPTION_VAL_55_ES NULL
-#define OPTION_VAL_60_ES NULL
-#define OPTION_VAL_65_ES NULL
-#define OPTION_VAL_70_ES NULL
-#define OPTION_VAL_75_ES NULL
-#define OPTION_VAL_80_ES NULL
-#define OPTION_VAL_85_ES NULL
-#define OPTION_VAL_90_ES NULL
-#define OPTION_VAL_95_ES NULL
+#define OPTION_VAL_LCD_GHOSTING_ES "«Ghosting» de LCD (preciso)"
+#define OPTION_VAL_LCD_GHOSTING_FAST_ES "«Ghosting» de LCD (rápido)"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_ES "Filtro de audio"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_ES "Filtro de paso bajo"
+#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_ES "Activa un filtro de paso bajo para reducir la estridencia del audio generado."
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_ES "Nivel del filtro de audio"
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_ES "Nivel del filtro"
+#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_ES "Especifica el corte de frecuencias en el filtro de paso bajo de audio. Un valor elevado aumentará la fuerza percibida del filtro, ya que se atenuará un rango mayor del espectro de frecuencias altas."
+#define OPTION_VAL_5_ES "5 %"
+#define OPTION_VAL_10_ES "10 %"
+#define OPTION_VAL_15_ES "15 %"
+#define OPTION_VAL_20_ES "20 %"
+#define OPTION_VAL_25_ES "25 %"
+#define OPTION_VAL_30_ES "30 %"
+#define OPTION_VAL_35_ES "35 %"
+#define OPTION_VAL_40_ES "40 %"
+#define OPTION_VAL_45_ES "45 %"
+#define OPTION_VAL_50_ES "50 %"
+#define OPTION_VAL_55_ES "55 %"
+#define OPTION_VAL_60_ES "60 %"
+#define OPTION_VAL_65_ES "65 %"
+#define OPTION_VAL_70_ES "70 %"
+#define OPTION_VAL_75_ES "75 %"
+#define OPTION_VAL_80_ES "80 %"
+#define OPTION_VAL_85_ES "85 %"
+#define OPTION_VAL_90_ES "90 %"
+#define OPTION_VAL_95_ES "95 %"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_ES "Permitir entradas direccionales opuestas"
-#define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_ES "Permite pulsar, alternar rápidamente o mantener las direcciones hacia la izquierda y hacia la derecha (o hacia arriba y abajo) al mismo tiempo. Puede provocar defectos en el movimiento."
-#define OPTION_VAL_NO_ES NULL
-#define OPTION_VAL_YES_ES NULL
+#define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_ES "Esta opción permitirá pulsar, alternar rápidamente o mantener las direcciones izquierda y derecha (o arriba y abajo) al mismo tiempo. Podría provocar fallos de movimiento."
+#define OPTION_VAL_NO_ES "No"
+#define OPTION_VAL_YES_ES "Sí"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_ES "Nivel del sensor solar"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_ES "Ajusta la intensidad de la luz solar ambiental. Para juegos que contenían un sensor solar en sus cartuchos, p. ej.: la saga Boktai."
 #define OPTION_VAL_SENSOR_ES "Utilizar dispositivo sensor si está disponible"
 #define MGBA_FORCE_GBP_LABEL_ES "Vibración de Game Boy Player (es necesario reiniciar)"
-#define MGBA_FORCE_GBP_INFO_0_ES "Permite que aquellos juegos compatibles con el logotipo de arranque de Game Boy Player hagan vibrar el mando. Debido a el método que utilizó Nintendo, puede provocar fallos gráficos, como parpadeos o retrasos de señal en algunos de estos juegos."
+#define MGBA_FORCE_GBP_INFO_0_ES "Permite que los juegos compatibles con el logotipo de arranque de Game Boy Player hagan vibrar el mando. Debido al método que utilizó Nintendo, puede provocar fallos gráficos, como parpadeos o retrasos de señal en algunos de estos juegos."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_ES "Eliminar bucle de inactividad"
 #define MGBA_IDLE_OPTIMIZATION_INFO_0_ES "Minimiza la carga del sistema optimizando los llamados bucles de inactividad: secciones de código en las que no ocurre nada, pero la CPU se ejecuta a máxima velocidad (como cuando un vehículo es revolucionado sin tener la marcha puesta). Mejora el rendimiento y debería activarse en hardware de bajas prestaciones."
 #define OPTION_VAL_REMOVE_KNOWN_ES "Eliminar bucles conocidos"
 #define OPTION_VAL_DETECT_AND_REMOVE_ES "Detectar y eliminar"
 #define OPTION_VAL_DON_T_REMOVE_ES "No eliminar"
 #define MGBA_FRAMESKIP_LABEL_ES "Omisión de fotogramas"
-#define MGBA_FRAMESKIP_INFO_0_ES "Omite fotogramas para no saturar el búfer de audio (chasquidos en el sonido). Mejora el rendimiento a costa de perder fluidez visual. El valor Automática omite fotogramas según lo aconseje el front-end. El valor Automática (umbral) utiliza el ajuste Umbral de omisión de fotogramas (%). El valor «Intervalos fijos» utiliza el ajuste «Intervalo de omisión de fotogramas»."
-#define OPTION_VAL_AUTO_THRESHOLD_ES "Automática (umbral)"
+#define MGBA_FRAMESKIP_INFO_0_ES "Omite fotogramas para no saturar el búfer de audio (chasquidos en el sonido). Mejora el rendimiento a costa de perder fluidez visual. «Selección automática» omite fotogramas según lo aconseje el front-end. «Selección automática (umbral)» utiliza el valor configurado en Umbral de omisión de fotogramas (%). «Intervalos fijos» utiliza el ajuste Intervalo de omisión de fotogramas."
+#define OPTION_VAL_AUTO_THRESHOLD_ES "Selección automática (umbral)"
 #define OPTION_VAL_FIXED_INTERVAL_ES "Intervalos fijos"
 #define MGBA_FRAMESKIP_THRESHOLD_LABEL_ES "Umbral de omisión de fotogramas (%)"
-#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_ES "Cuando la omisión de fotogramas esté configurada como Automática (umbral), este ajuste especifica el umbral de ocupación del búfer de audio (en porcentaje) por el que se omitirán fotogramas si el valor es inferior. Un valor más elevado reduce el riesgo de chasquidos omitiendo fotogramas con una mayor frecuencia."
+#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_ES "Cuando la omisión de fotogramas esté configurada como «Selección automática (umbral)», este ajuste especifica el umbral de ocupación del búfer de audio (en porcentaje) por el que se omitirán fotogramas si el valor es inferior. Un valor más elevado reduce el riesgo de chasquidos omitiendo fotogramas con una mayor frecuencia."
 #define MGBA_FRAMESKIP_INTERVAL_LABEL_ES "Intervalo de omisión de fotogramas"
-#define MGBA_FRAMESKIP_INTERVAL_INFO_0_ES "Cuando la omisión de fotogramas esté configurada como Intervalos fijos, el valor que se asigne aquí será el número de fotogramas omitidos una vez se haya renderizado un fotograma. Por ejemplo: «0» = 60 FPS, «1» = 30 FPS, «2» = 15 FPS, etcétera."
+#define MGBA_FRAMESKIP_INTERVAL_INFO_0_ES "Cuando la omisión de fotogramas esté configurada como «Intervalos fijos», el valor que se asigne aquí será el número de fotogramas omitidos una vez se haya renderizado un fotograma. Por ejemplo: «0» = 60 FPS, «1» = 30 FPS, «2» = 15 FPS, etcétera."
 
 struct retro_core_option_v2_category option_cats_es[] = {
    {
@@ -5408,71 +5408,71 @@ struct retro_core_options_v2 options_fa = {
 
 /* RETRO_LANGUAGE_FI */
 
-#define CATEGORY_SYSTEM_LABEL_FI NULL
-#define CATEGORY_SYSTEM_INFO_0_FI NULL
+#define CATEGORY_SYSTEM_LABEL_FI "Järjestelmä"
+#define CATEGORY_SYSTEM_INFO_0_FI "Määritä peruslaitteiston valinta / BIOS-parametrit."
 #define CATEGORY_VIDEO_LABEL_FI NULL
-#define CATEGORY_VIDEO_INFO_0_FI NULL
-#define CATEGORY_VIDEO_INFO_1_FI NULL
-#define CATEGORY_AUDIO_LABEL_FI NULL
-#define CATEGORY_AUDIO_INFO_0_FI NULL
-#define CATEGORY_INPUT_LABEL_FI NULL
-#define CATEGORY_INPUT_INFO_0_FI NULL
-#define CATEGORY_PERFORMANCE_LABEL_FI NULL
+#define CATEGORY_VIDEO_INFO_0_FI "Määritä DMG paletti / SGB rajat / väri korjaus / LCD ghosting-efektit."
+#define CATEGORY_VIDEO_INFO_1_FI "Määritä DMG paletti / SGB rajat."
+#define CATEGORY_AUDIO_LABEL_FI "Ääni"
+#define CATEGORY_AUDIO_INFO_0_FI "Määritä äänen suodatus."
+#define CATEGORY_INPUT_LABEL_FI "Syöte- ja lisälaitteet"
+#define CATEGORY_INPUT_INFO_0_FI "Määritä ohjaimen / anturin syötteen ja tärinän asetukset."
+#define CATEGORY_PERFORMANCE_LABEL_FI "Suorituskyky"
 #define CATEGORY_PERFORMANCE_INFO_0_FI NULL
-#define MGBA_GB_MODEL_LABEL_FI NULL
-#define MGBA_GB_MODEL_INFO_0_FI NULL
-#define OPTION_VAL_AUTODETECT_FI NULL
+#define MGBA_GB_MODEL_LABEL_FI "Game Boy malli (Uudelleenkäynnistys)"
+#define MGBA_GB_MODEL_INFO_0_FI "Suorittaa ladattua sisältöä tietyllä Game Boy -mallilla. 'Havaitse automaattisesti' valitsee sopivimman mallin nykyiselle pelille."
+#define OPTION_VAL_AUTODETECT_FI "Havaitse automaattisesti"
 #define OPTION_VAL_GAME_BOY_FI NULL
 #define OPTION_VAL_SUPER_GAME_BOY_FI NULL
 #define OPTION_VAL_GAME_BOY_COLOR_FI NULL
 #define OPTION_VAL_GAME_BOY_ADVANCE_FI NULL
-#define MGBA_USE_BIOS_LABEL_FI NULL
-#define MGBA_USE_BIOS_INFO_0_FI NULL
-#define MGBA_SKIP_BIOS_LABEL_FI NULL
-#define MGBA_SKIP_BIOS_INFO_0_FI NULL
-#define MGBA_GB_COLORS_LABEL_FI NULL
+#define MGBA_USE_BIOS_LABEL_FI "Käytä BIOS-tiedostoa, mikäli se on läsnä (Uudelleenkäynnistys)"
+#define MGBA_USE_BIOS_INFO_0_FI "Käytä virallista BIOS/bootloader -ohjelmaa emuloidulle laitteelle, mikäli ne löytyvät RetroArchin järjestelmäkansiosta."
+#define MGBA_SKIP_BIOS_LABEL_FI "Ohita BIOS-alkulataus (Uudelleenkäynnistys)"
+#define MGBA_SKIP_BIOS_INFO_0_FI "Kun käytät virallista BIOS/bootloaderia, jätä käynnistyslogo-animaatio väliin. Tämä asetus ohitetaan, kun 'Käytä BIOS-tiedostoa, mikäli se on läsnä\" on pois päältä."
+#define MGBA_GB_COLORS_LABEL_FI "Game Boy:n oletus paletti"
 #define MGBA_GB_COLORS_INFO_0_FI NULL
-#define OPTION_VAL_GRAYSCALE_FI NULL
+#define OPTION_VAL_GRAYSCALE_FI "Harmaasävy"
 #define MGBA_SGB_BORDERS_LABEL_FI NULL
 #define MGBA_SGB_BORDERS_INFO_0_FI NULL
-#define MGBA_COLOR_CORRECTION_LABEL_FI NULL
+#define MGBA_COLOR_CORRECTION_LABEL_FI "Värinkorjaus"
 #define MGBA_COLOR_CORRECTION_INFO_0_FI NULL
-#define OPTION_VAL_AUTO_FI NULL
+#define OPTION_VAL_AUTO_FI "Automaattinen"
 #define MGBA_INTERFRAME_BLENDING_LABEL_FI NULL
 #define MGBA_INTERFRAME_BLENDING_INFO_0_FI NULL
-#define OPTION_VAL_MIX_FI NULL
-#define OPTION_VAL_MIX_SMART_FI NULL
+#define OPTION_VAL_MIX_FI "Yksinkertainen"
+#define OPTION_VAL_MIX_SMART_FI "Älykäs"
 #define OPTION_VAL_LCD_GHOSTING_FI NULL
 #define OPTION_VAL_LCD_GHOSTING_FAST_FI NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_FI NULL
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_FI "Äänisuodatin"
 #define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_FI NULL
 #define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_FI NULL
 #define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_FI NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_FI NULL
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_FI "Suodatustaso"
 #define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_FI NULL
-#define OPTION_VAL_5_FI NULL
-#define OPTION_VAL_10_FI NULL
-#define OPTION_VAL_15_FI NULL
-#define OPTION_VAL_20_FI NULL
-#define OPTION_VAL_25_FI NULL
-#define OPTION_VAL_30_FI NULL
-#define OPTION_VAL_35_FI NULL
-#define OPTION_VAL_40_FI NULL
-#define OPTION_VAL_45_FI NULL
-#define OPTION_VAL_50_FI NULL
-#define OPTION_VAL_55_FI NULL
-#define OPTION_VAL_60_FI NULL
-#define OPTION_VAL_65_FI NULL
-#define OPTION_VAL_70_FI NULL
-#define OPTION_VAL_75_FI NULL
-#define OPTION_VAL_80_FI NULL
-#define OPTION_VAL_85_FI NULL
-#define OPTION_VAL_90_FI NULL
-#define OPTION_VAL_95_FI NULL
-#define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FI NULL
+#define OPTION_VAL_5_FI "5 %"
+#define OPTION_VAL_10_FI "10 %"
+#define OPTION_VAL_15_FI "15 %"
+#define OPTION_VAL_20_FI "20 %"
+#define OPTION_VAL_25_FI "25 %"
+#define OPTION_VAL_30_FI "30 %"
+#define OPTION_VAL_35_FI "35 %"
+#define OPTION_VAL_40_FI "40 %"
+#define OPTION_VAL_45_FI "45 %"
+#define OPTION_VAL_50_FI "50 %"
+#define OPTION_VAL_55_FI "55 %"
+#define OPTION_VAL_60_FI "60 %"
+#define OPTION_VAL_65_FI "65 %"
+#define OPTION_VAL_70_FI "70 %"
+#define OPTION_VAL_75_FI "75 %"
+#define OPTION_VAL_80_FI "80 %"
+#define OPTION_VAL_85_FI "85 %"
+#define OPTION_VAL_90_FI "90 %"
+#define OPTION_VAL_95_FI "95 %"
+#define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FI "Salli vastakkaisten suuntien syöte"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_FI NULL
-#define OPTION_VAL_NO_FI NULL
-#define OPTION_VAL_YES_FI NULL
+#define OPTION_VAL_NO_FI "ei"
+#define OPTION_VAL_YES_FI "kyllä"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_FI NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FI NULL
 #define OPTION_VAL_SENSOR_FI NULL
@@ -5483,13 +5483,13 @@ struct retro_core_options_v2 options_fa = {
 #define OPTION_VAL_REMOVE_KNOWN_FI NULL
 #define OPTION_VAL_DETECT_AND_REMOVE_FI NULL
 #define OPTION_VAL_DON_T_REMOVE_FI NULL
-#define MGBA_FRAMESKIP_LABEL_FI NULL
+#define MGBA_FRAMESKIP_LABEL_FI "Kuvanohitus"
 #define MGBA_FRAMESKIP_INFO_0_FI NULL
 #define OPTION_VAL_AUTO_THRESHOLD_FI NULL
-#define OPTION_VAL_FIXED_INTERVAL_FI NULL
-#define MGBA_FRAMESKIP_THRESHOLD_LABEL_FI NULL
+#define OPTION_VAL_FIXED_INTERVAL_FI "Kiinteä aikaväli"
+#define MGBA_FRAMESKIP_THRESHOLD_LABEL_FI "Kuvienohituksen arvo (%)"
 #define MGBA_FRAMESKIP_THRESHOLD_INFO_0_FI NULL
-#define MGBA_FRAMESKIP_INTERVAL_LABEL_FI NULL
+#define MGBA_FRAMESKIP_INTERVAL_LABEL_FI "Kuvienohituksen aikaväli"
 #define MGBA_FRAMESKIP_INTERVAL_INFO_0_FI NULL
 
 struct retro_core_option_v2_category option_cats_fi[] = {
@@ -5821,48 +5821,48 @@ struct retro_core_options_v2 options_fi = {
 
 /* RETRO_LANGUAGE_FR */
 
-#define CATEGORY_SYSTEM_LABEL_FR NULL
-#define CATEGORY_SYSTEM_INFO_0_FR NULL
-#define CATEGORY_VIDEO_LABEL_FR NULL
-#define CATEGORY_VIDEO_INFO_0_FR NULL
-#define CATEGORY_VIDEO_INFO_1_FR NULL
+#define CATEGORY_SYSTEM_LABEL_FR "Système"
+#define CATEGORY_SYSTEM_INFO_0_FR "Configurer les paramètres de la sélection du matériel de base/de la BIOS."
+#define CATEGORY_VIDEO_LABEL_FR "Vidéo"
+#define CATEGORY_VIDEO_INFO_0_FR "Configurer la palette DMG/les bordures SGB/la correction des couleurs/les effets de rémanence LCD."
+#define CATEGORY_VIDEO_INFO_1_FR "Configurer la palette DMG/les bordures SGB."
 #define CATEGORY_AUDIO_LABEL_FR NULL
-#define CATEGORY_AUDIO_INFO_0_FR NULL
-#define CATEGORY_INPUT_LABEL_FR NULL
-#define CATEGORY_INPUT_INFO_0_FR NULL
-#define CATEGORY_PERFORMANCE_LABEL_FR NULL
-#define CATEGORY_PERFORMANCE_INFO_0_FR NULL
-#define MGBA_GB_MODEL_LABEL_FR NULL
-#define MGBA_GB_MODEL_INFO_0_FR NULL
-#define OPTION_VAL_AUTODETECT_FR NULL
+#define CATEGORY_AUDIO_INFO_0_FR "Configurer le filtrage audio."
+#define CATEGORY_INPUT_LABEL_FR "Périphériques d'entrées & auxiliaires"
+#define CATEGORY_INPUT_INFO_0_FR "Configurer les réglages d'entrées manettes/capteurs et de vibration."
+#define CATEGORY_PERFORMANCE_LABEL_FR "Performances"
+#define CATEGORY_PERFORMANCE_INFO_0_FR "Configurer les réglages de suppression de boucle inactive/de saut d'images."
+#define MGBA_GB_MODEL_LABEL_FR "Modèle de Game Boy (Redémarrage requis)"
+#define MGBA_GB_MODEL_INFO_0_FR "Exécute du contenu chargé avec un modèle de Game Boy émulée spécifique. 'Détection automatique' sélectionnera le modèle le plus approprié pour le jeu en cours."
+#define OPTION_VAL_AUTODETECT_FR "Détection automatique"
 #define OPTION_VAL_GAME_BOY_FR NULL
 #define OPTION_VAL_SUPER_GAME_BOY_FR NULL
 #define OPTION_VAL_GAME_BOY_COLOR_FR NULL
 #define OPTION_VAL_GAME_BOY_ADVANCE_FR NULL
-#define MGBA_USE_BIOS_LABEL_FR NULL
-#define MGBA_USE_BIOS_INFO_0_FR NULL
-#define MGBA_SKIP_BIOS_LABEL_FR NULL
-#define MGBA_SKIP_BIOS_INFO_0_FR NULL
-#define MGBA_GB_COLORS_LABEL_FR NULL
-#define MGBA_GB_COLORS_INFO_0_FR NULL
-#define OPTION_VAL_GRAYSCALE_FR NULL
-#define MGBA_SGB_BORDERS_LABEL_FR NULL
-#define MGBA_SGB_BORDERS_INFO_0_FR NULL
-#define MGBA_COLOR_CORRECTION_LABEL_FR NULL
-#define MGBA_COLOR_CORRECTION_INFO_0_FR NULL
+#define MGBA_USE_BIOS_LABEL_FR "Utiliser le fichier BIOS si trouvé (Redémarrage requis)"
+#define MGBA_USE_BIOS_INFO_0_FR "Utiliser la BIOS/le bootloader officiel pour le matériel émulé, s'il est présent dans le dossier system de RetroArch."
+#define MGBA_SKIP_BIOS_LABEL_FR "Ignorer l'intro de la BIOS (Redémarrage requis)"
+#define MGBA_SKIP_BIOS_INFO_0_FR "Lors de l'utilisation d'une BIOS/d'un bootloader officiel, sauter l'animation du logo de démarrage. Ce réglage est ignoré lorsque l'option 'Utiliser le fichier BIOS si trouvé' est désactivée."
+#define MGBA_GB_COLORS_LABEL_FR "Palette Game Boy par défaut"
+#define MGBA_GB_COLORS_INFO_0_FR "Sélectionne quelle palette est utilisée pour les jeux de Game Boy qui ne sont pas compatibles Game Boy Color ou Super Game Boy, ou si le modèle est forcé sur Game Boy."
+#define OPTION_VAL_GRAYSCALE_FR "Niveaux de gris"
+#define MGBA_SGB_BORDERS_LABEL_FR "Utiliser les bordures de Super Game Boy (Redémarrage requis)"
+#define MGBA_SGB_BORDERS_INFO_0_FR "Afficher les bordures Super Game Boy lors de l'exécution de jeux améliorés pour le Super Game Boy."
+#define MGBA_COLOR_CORRECTION_LABEL_FR "Correction colorimétrique"
+#define MGBA_COLOR_CORRECTION_INFO_0_FR "Ajuste les couleurs de sortie pour correspondre à l'écran du matériel GBA/GBC réel."
 #define OPTION_VAL_AUTO_FR NULL
-#define MGBA_INTERFRAME_BLENDING_LABEL_FR NULL
-#define MGBA_INTERFRAME_BLENDING_INFO_0_FR NULL
+#define MGBA_INTERFRAME_BLENDING_LABEL_FR "Mélange d'inter-trames"
+#define MGBA_INTERFRAME_BLENDING_INFO_0_FR "Simule les effets de rémanence LCD, 'Simple' effectue un mélange à 50/50 des images actuelles et précédentes. 'Intelligent' tente de détecter le scintillement de l'écran, et n'effectue un mélange à 50/50 que sur les pixels affectés. 'Rémanence LCD' imite le temps de réponse naturel du LCD en combinant plusieurs images mises en mémoire tampon. Un mélange 'Simple' ou 'Intelligent' est nécessaire lorsque vous jouez à des jeux qui exploitent agressivement la rémanence LCD pour des effets de transparence (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, la série Boktai...)."
 #define OPTION_VAL_MIX_FR NULL
-#define OPTION_VAL_MIX_SMART_FR NULL
-#define OPTION_VAL_LCD_GHOSTING_FR NULL
-#define OPTION_VAL_LCD_GHOSTING_FAST_FR NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_FR NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_FR NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_FR NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_FR NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_FR NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_FR NULL
+#define OPTION_VAL_MIX_SMART_FR "Intelligent"
+#define OPTION_VAL_LCD_GHOSTING_FR "Rémanence LCD (réaliste)"
+#define OPTION_VAL_LCD_GHOSTING_FAST_FR "Rémanence LCD (rapide)"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_FR "Filtre audio"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_FR "Filtre passe-bas"
+#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_FR "Active un filtre audio passe-bas pour réduire la 'dureté' de l'audio généré."
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_FR "Niveau du filtre audio"
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_FR "Niveau du filtre"
+#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_FR "Spécifie la fréquence de coupure du filtre passe-bas audio. Une valeur plus élevée accroît la 'force' perçue du filtre, car une gamme plus large du spectre des hautes fréquences est atténuée."
 #define OPTION_VAL_5_FR NULL
 #define OPTION_VAL_10_FR NULL
 #define OPTION_VAL_15_FR NULL
@@ -5882,28 +5882,28 @@ struct retro_core_options_v2 options_fi = {
 #define OPTION_VAL_85_FR NULL
 #define OPTION_VAL_90_FR NULL
 #define OPTION_VAL_95_FR NULL
-#define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FR NULL
-#define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_FR NULL
-#define OPTION_VAL_NO_FR NULL
-#define OPTION_VAL_YES_FR NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_FR NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FR NULL
-#define OPTION_VAL_SENSOR_FR NULL
-#define MGBA_FORCE_GBP_LABEL_FR NULL
-#define MGBA_FORCE_GBP_INFO_0_FR NULL
-#define MGBA_IDLE_OPTIMIZATION_LABEL_FR NULL
-#define MGBA_IDLE_OPTIMIZATION_INFO_0_FR NULL
-#define OPTION_VAL_REMOVE_KNOWN_FR NULL
-#define OPTION_VAL_DETECT_AND_REMOVE_FR NULL
-#define OPTION_VAL_DON_T_REMOVE_FR NULL
-#define MGBA_FRAMESKIP_LABEL_FR NULL
-#define MGBA_FRAMESKIP_INFO_0_FR NULL
-#define OPTION_VAL_AUTO_THRESHOLD_FR NULL
-#define OPTION_VAL_FIXED_INTERVAL_FR NULL
-#define MGBA_FRAMESKIP_THRESHOLD_LABEL_FR NULL
-#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_FR NULL
-#define MGBA_FRAMESKIP_INTERVAL_LABEL_FR NULL
-#define MGBA_FRAMESKIP_INTERVAL_INFO_0_FR NULL
+#define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FR "Autoriser les entrées directionnelles opposées"
+#define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_FR "L'activation de cette option permettra d'appuyer/d'alterner rapidement/de maintenir les directions gauche et droite (ou haut et bas) en même temps. Cela peut causer des bugs liés au mouvement."
+#define OPTION_VAL_NO_FR "non"
+#define OPTION_VAL_YES_FR "oui"
+#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_FR "Niveau du capteur solaire"
+#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FR "Définit l'intensité ambiante de la lumière du soleil. Peut être utilisée par des jeux qui incluaient un capteur solaire dans leurs cartouches, par exemple : la série Boktai."
+#define OPTION_VAL_SENSOR_FR "Utiliser le capteur de l'appareil si disponible"
+#define MGBA_FORCE_GBP_LABEL_FR "Vibration du Game Boy Player (Redémarrage requis)"
+#define MGBA_FORCE_GBP_INFO_0_FR "Activer cette option permettra aux jeux compatibles avec le logo de démarrage du Game Boy Player de faire vibrer la manette. En raison de la façon dont Nintendo a décidé que cette fonctionnalité devrait marcher, cela peut causer des bugs tels que scintillement ou latence dans certains de ces jeux."
+#define MGBA_IDLE_OPTIMIZATION_LABEL_FR "Suppression de la boucle inactive"
+#define MGBA_IDLE_OPTIMIZATION_INFO_0_FR "Réduire la charge du système en optimisant ce que l'on appelle les 'boucles inactives' — sections dans le code où rien ne se passe, mais où le processeur fonctionne à pleine vitesse (comme une voiture révoquée en neutre). Améliore les performances et devrait être activé sur du matériel de bas de gamme."
+#define OPTION_VAL_REMOVE_KNOWN_FR "Supprimer celles connues"
+#define OPTION_VAL_DETECT_AND_REMOVE_FR "Détecter et supprimer"
+#define OPTION_VAL_DON_T_REMOVE_FR "Ne pas supprimer"
+#define MGBA_FRAMESKIP_LABEL_FR "Saut d'images"
+#define MGBA_FRAMESKIP_INFO_0_FR "Sauter des images pour éviter que le tampon audio ne soit sous-exécuté (crépitements). Améliore les performances au détriment de la fluidité visuelle. 'Auto' saute des images lorsque le frontend le conseille. 'Auto (seuil)' utilise le paramètre 'Seuil de saut d'images (%)'. 'Intervalle fixe' utilise le paramètre 'Intervalle de saut d'images'."
+#define OPTION_VAL_AUTO_THRESHOLD_FR "Auto (seuil)"
+#define OPTION_VAL_FIXED_INTERVAL_FR "Intervalle fixe"
+#define MGBA_FRAMESKIP_THRESHOLD_LABEL_FR "Seuil de saut d'images (%)"
+#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_FR "Lorsque 'Saut d'images' est réglé sur 'Auto (seuil)', spécifie le seuil d'occupation du tampon audio (pourcentage) en dessous duquel des images seront sautées. Des valeurs plus élevées réduisent le risque de crépitements en faisant sauter des images plus fréquemment."
+#define MGBA_FRAMESKIP_INTERVAL_LABEL_FR "Intervalle de saut d'images"
+#define MGBA_FRAMESKIP_INTERVAL_INFO_0_FR "Lorsque 'Saut d'images' est défini sur 'Intervalle fixe', la valeur définie ici est le nombre d'images omises après le rendu d'une image - par exemple '0' = 60i/s, '1' = 30i/s, '2' = 15i/s, etc."
 
 struct retro_core_option_v2_category option_cats_fr[] = {
    {
@@ -7886,17 +7886,17 @@ struct retro_core_options_v2 options_id = {
 
 /* RETRO_LANGUAGE_IT */
 
-#define CATEGORY_SYSTEM_LABEL_IT NULL
-#define CATEGORY_SYSTEM_INFO_0_IT NULL
+#define CATEGORY_SYSTEM_LABEL_IT "Sistema"
+#define CATEGORY_SYSTEM_INFO_0_IT "Configura i parametri di selezione hardware base / BIOS."
 #define CATEGORY_VIDEO_LABEL_IT NULL
-#define CATEGORY_VIDEO_INFO_0_IT NULL
-#define CATEGORY_VIDEO_INFO_1_IT NULL
+#define CATEGORY_VIDEO_INFO_0_IT "Configura i bordi della tavolozza DMG / SGB / correzione del colore / effetti fantasma LCD."
+#define CATEGORY_VIDEO_INFO_1_IT "Configura i bordi della tavolozza DMG / SGB."
 #define CATEGORY_AUDIO_LABEL_IT NULL
-#define CATEGORY_AUDIO_INFO_0_IT NULL
-#define CATEGORY_INPUT_LABEL_IT NULL
-#define CATEGORY_INPUT_INFO_0_IT NULL
-#define CATEGORY_PERFORMANCE_LABEL_IT NULL
-#define CATEGORY_PERFORMANCE_INFO_0_IT NULL
+#define CATEGORY_AUDIO_INFO_0_IT "Configura il filtro audio."
+#define CATEGORY_INPUT_LABEL_IT "Dispositivi Di Ingresso E Ausiliari"
+#define CATEGORY_INPUT_INFO_0_IT "Configurare le impostazioni del controller / sensore di ingresso e della vibrazione del controller."
+#define CATEGORY_PERFORMANCE_LABEL_IT "Prestazioni"
+#define CATEGORY_PERFORMANCE_INFO_0_IT "Configura i parametri di rimozione del ciclo inattivo / frameskipping."
 #define MGBA_GB_MODEL_LABEL_IT "Modello Game Boy (richiede riavvio)"
 #define MGBA_GB_MODEL_INFO_0_IT "Esegue il contenuto caricato con un modello specifico di Game Boy. 'Rivela Automaticamente' selezionerà il modello più appropriato per il gioco attuale."
 #define OPTION_VAL_AUTODETECT_IT "Rivela Automaticamente"
@@ -7908,26 +7908,26 @@ struct retro_core_options_v2 options_id = {
 #define MGBA_USE_BIOS_INFO_0_IT "Usa il BIOS/bootloader ufficiale per hardware emulato, se presente nella cartella di sistema di RetroArch."
 #define MGBA_SKIP_BIOS_LABEL_IT "Salta Intro BIOS (richiede riavvio)"
 #define MGBA_SKIP_BIOS_INFO_0_IT "Salta il filmato del logo di avvio se si usa un BIOS/bootloader ufficiale. Questa impostazione è ignorata se 'Usa il file BIOS se presente' è disabilitato."
-#define MGBA_GB_COLORS_LABEL_IT NULL
-#define MGBA_GB_COLORS_INFO_0_IT NULL
-#define OPTION_VAL_GRAYSCALE_IT NULL
+#define MGBA_GB_COLORS_LABEL_IT "Tavolozza Game Boy Predefinita"
+#define MGBA_GB_COLORS_INFO_0_IT "Seleziona quale tavolozza è utilizzata per i giochi Game Boy che non sono compatibili con Game Boy Color o Super Game Boy, o se il modello è costretto a Game Boy."
+#define OPTION_VAL_GRAYSCALE_IT "Scala di grigi"
 #define MGBA_SGB_BORDERS_LABEL_IT "Utilizza i Bordi Super Game Boy (richiede riavvio)"
 #define MGBA_SGB_BORDERS_INFO_0_IT "Visualizza i bordi del Super Game Boy quando apri un gioco potenziato dal Super Game Boy."
 #define MGBA_COLOR_CORRECTION_LABEL_IT "Correzione Colore"
 #define MGBA_COLOR_CORRECTION_INFO_0_IT "Regola i colori per corrispondere lo schermo di GBA/GBC reali."
 #define OPTION_VAL_AUTO_IT NULL
-#define MGBA_INTERFRAME_BLENDING_LABEL_IT NULL
-#define MGBA_INTERFRAME_BLENDING_INFO_0_IT NULL
-#define OPTION_VAL_MIX_IT NULL
-#define OPTION_VAL_MIX_SMART_IT NULL
-#define OPTION_VAL_LCD_GHOSTING_IT NULL
-#define OPTION_VAL_LCD_GHOSTING_FAST_IT NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_IT NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_IT NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_IT NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_IT NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_IT NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_IT NULL
+#define MGBA_INTERFRAME_BLENDING_LABEL_IT "Combinazione Interframe"
+#define MGBA_INTERFRAME_BLENDING_INFO_0_IT "Simula gli effetti fantasma LCD. 'Semplice' esegue un mix di 50:50 dei fotogrammi attuali e precedenti. 'Smart' tenta di rilevare lo sfarfallio dello schermo, ed esegue solo un mix di 50:50 sui pixel interessati. 'LCD Ghosting' imita i tempi naturali di risposta LCD combinando più frame tamponati. 'Semplice' o 'Smart' miscela è necessario quando si gioca a giochi che sfruttano aggressivamente il fantasma LCD per gli effetti di trasparenza (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, la serie Boktai..)."
+#define OPTION_VAL_MIX_IT "Semplice"
+#define OPTION_VAL_MIX_SMART_IT "Intelligente"
+#define OPTION_VAL_LCD_GHOSTING_IT "Ghosting LCD (preciso)"
+#define OPTION_VAL_LCD_GHOSTING_FAST_IT "Ghosting LCD (veloce)"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_IT "Filtro Audio"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_IT "Filtro Passaggio-basso"
+#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_IT "Abilita un filtro audio passaggio-basso per ridurre la 'durezza' dell'audio generato."
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_IT "Livello Filtro Audio"
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_IT "Livello Filtro"
+#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_IT "Specifica la frequenza di cut-off del filtro audio passa-basso. Un valore più elevato aumenta la 'forza' percepita del filtro, poiché una gamma più ampia dello spettro ad alta frequenza è attenuata."
 #define OPTION_VAL_5_IT NULL
 #define OPTION_VAL_10_IT NULL
 #define OPTION_VAL_15_IT NULL
@@ -7950,12 +7950,12 @@ struct retro_core_options_v2 options_id = {
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_IT "Permetti Input Direzionali Opposti"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_IT "Attivando questa funzionalità ti permette di premere / alternare velocemente / tenere premuti entrambe le direzioni destra e sinistra (oppure su e giù) allo stesso momento. Potrebbe causare dei glitch di movimento."
 #define OPTION_VAL_NO_IT NULL
-#define OPTION_VAL_YES_IT NULL
+#define OPTION_VAL_YES_IT "si"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_IT "Livello Sensore Solare"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_IT "Imposta l'intensità solare dell'ambiente. Può essere usato dai giochi che includono un sensore solare nelle loro cartucce, es.: la serie Boktai."
-#define OPTION_VAL_SENSOR_IT NULL
-#define MGBA_FORCE_GBP_LABEL_IT NULL
-#define MGBA_FORCE_GBP_INFO_0_IT NULL
+#define OPTION_VAL_SENSOR_IT "Usa sensore dispositivo se disponibile"
+#define MGBA_FORCE_GBP_LABEL_IT "Vibrazione Game Boy Player (Riavvio)"
+#define MGBA_FORCE_GBP_INFO_0_IT "Abilitando questa opzione i giochi saranno compatibili con il logo di avvio del Game Boy Player per far vibrare il controller. A causa di come Nintendo ha deciso che questa funzione dovrebbe funzionare, può causare problemi come tremolio o ritardo in alcuni di questi giochi."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_IT "Rimozione Idle Loop"
 #define MGBA_IDLE_OPTIMIZATION_INFO_0_IT "Riduce il carico del sistema ottimizzando gli 'idle-loops' - sezione del codice dove non accade nulla, ma la CPU lavora a velocità massima. Migliora le prestazioni, è consigliato abilitarlo su hardware di bassa fascia."
 #define OPTION_VAL_REMOVE_KNOWN_IT "Rimuovi Conosciuti"
@@ -7963,12 +7963,12 @@ struct retro_core_options_v2 options_id = {
 #define OPTION_VAL_DON_T_REMOVE_IT "Non Rimuovere"
 #define MGBA_FRAMESKIP_LABEL_IT "Salta Frame"
 #define MGBA_FRAMESKIP_INFO_0_IT "Salta dei frame per migliorare le prestazioni a costo della fluidità dell'immagine. Il valore impostato qui è il numero dei frame rimosso dopo che un frame sia stato renderizzato - ovvero '0' = 60fps, '1' = 30fps, '2' = 15fps, ecc."
-#define OPTION_VAL_AUTO_THRESHOLD_IT NULL
-#define OPTION_VAL_FIXED_INTERVAL_IT NULL
-#define MGBA_FRAMESKIP_THRESHOLD_LABEL_IT NULL
-#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_IT NULL
-#define MGBA_FRAMESKIP_INTERVAL_LABEL_IT NULL
-#define MGBA_FRAMESKIP_INTERVAL_INFO_0_IT NULL
+#define OPTION_VAL_AUTO_THRESHOLD_IT "Auto (Soglia)"
+#define OPTION_VAL_FIXED_INTERVAL_IT "Intervallo Fisso"
+#define MGBA_FRAMESKIP_THRESHOLD_LABEL_IT "Soglia salto fotogrammi (%)"
+#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_IT "Quando 'Salto fotogrammi' è impostato a 'Auto (Soglia)', specifica la soglia di occupazione del buffer audio (percentuale) al di sotto della quale i quadri saranno saltati. Valori più elevati riducono il rischio di rompere causando un calo più frequente dei fotogrammi."
+#define MGBA_FRAMESKIP_INTERVAL_LABEL_IT "Intervallo Salto Fotogrammi"
+#define MGBA_FRAMESKIP_INTERVAL_INFO_0_IT "Quando 'Salto fotogrammi' è impostato a 'Intervallo Fisso', il valore impostato qui è il numero di fotogrammi omessi dopo che un fotogramma è renderizzato - i.. '0' = 60fps, '1' = 30fps, '2' = 15fps, ecc."
 
 struct retro_core_option_v2_category option_cats_it[] = {
    {
@@ -8712,48 +8712,48 @@ struct retro_core_options_v2 options_ja = {
 
 /* RETRO_LANGUAGE_KO */
 
-#define CATEGORY_SYSTEM_LABEL_KO NULL
-#define CATEGORY_SYSTEM_INFO_0_KO NULL
-#define CATEGORY_VIDEO_LABEL_KO NULL
-#define CATEGORY_VIDEO_INFO_0_KO NULL
-#define CATEGORY_VIDEO_INFO_1_KO NULL
-#define CATEGORY_AUDIO_LABEL_KO NULL
-#define CATEGORY_AUDIO_INFO_0_KO NULL
-#define CATEGORY_INPUT_LABEL_KO NULL
-#define CATEGORY_INPUT_INFO_0_KO NULL
-#define CATEGORY_PERFORMANCE_LABEL_KO NULL
-#define CATEGORY_PERFORMANCE_INFO_0_KO NULL
-#define MGBA_GB_MODEL_LABEL_KO NULL
-#define MGBA_GB_MODEL_INFO_0_KO NULL
-#define OPTION_VAL_AUTODETECT_KO NULL
+#define CATEGORY_SYSTEM_LABEL_KO "시스템"
+#define CATEGORY_SYSTEM_INFO_0_KO "기본 하드웨어 / BIOS 등을 설정합니다."
+#define CATEGORY_VIDEO_LABEL_KO "비디오"
+#define CATEGORY_VIDEO_INFO_0_KO "DMG 팔레트 / SGB 보더 / 색상 보정 / LCD 고스팅 효과 등을 설정합니다."
+#define CATEGORY_VIDEO_INFO_1_KO "DMG 팔레트 / SGB 보더를 설정합니다."
+#define CATEGORY_AUDIO_LABEL_KO "오디오"
+#define CATEGORY_AUDIO_INFO_0_KO "오디오 필터를 설정합니다."
+#define CATEGORY_INPUT_LABEL_KO "입력 및 보조 장치"
+#define CATEGORY_INPUT_INFO_0_KO "컨트롤러 / 센서 입력 / 진동 등을 설정합니다."
+#define CATEGORY_PERFORMANCE_LABEL_KO "성능"
+#define CATEGORY_PERFORMANCE_INFO_0_KO "유휴 루프 제거 / 프레임 스킵 등을 설정합니다."
+#define MGBA_GB_MODEL_LABEL_KO "Game Boy 모델 (재시작 필요)"
+#define MGBA_GB_MODEL_INFO_0_KO "불러온 컨텐츠를 실행할 Game Boy 모델을 선택합니다. '자동 감지'는 현재 게임에 가장 적절한 모델을 자동으로 선택합니다."
+#define OPTION_VAL_AUTODETECT_KO "자동 감지"
 #define OPTION_VAL_GAME_BOY_KO NULL
 #define OPTION_VAL_SUPER_GAME_BOY_KO NULL
 #define OPTION_VAL_GAME_BOY_COLOR_KO NULL
 #define OPTION_VAL_GAME_BOY_ADVANCE_KO NULL
-#define MGBA_USE_BIOS_LABEL_KO NULL
-#define MGBA_USE_BIOS_INFO_0_KO NULL
-#define MGBA_SKIP_BIOS_LABEL_KO NULL
-#define MGBA_SKIP_BIOS_INFO_0_KO NULL
-#define MGBA_GB_COLORS_LABEL_KO NULL
-#define MGBA_GB_COLORS_INFO_0_KO NULL
-#define OPTION_VAL_GRAYSCALE_KO NULL
-#define MGBA_SGB_BORDERS_LABEL_KO NULL
-#define MGBA_SGB_BORDERS_INFO_0_KO NULL
-#define MGBA_COLOR_CORRECTION_LABEL_KO NULL
-#define MGBA_COLOR_CORRECTION_INFO_0_KO NULL
-#define OPTION_VAL_AUTO_KO NULL
-#define MGBA_INTERFRAME_BLENDING_LABEL_KO NULL
-#define MGBA_INTERFRAME_BLENDING_INFO_0_KO NULL
-#define OPTION_VAL_MIX_KO NULL
-#define OPTION_VAL_MIX_SMART_KO NULL
-#define OPTION_VAL_LCD_GHOSTING_KO NULL
-#define OPTION_VAL_LCD_GHOSTING_FAST_KO NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_KO NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_KO NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_KO NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_KO NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_KO NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_KO NULL
+#define MGBA_USE_BIOS_LABEL_KO "존재할 경우 BIOS 파일 사용 (재시작 필요)"
+#define MGBA_USE_BIOS_INFO_0_KO "RetroArch의 시스템 디렉토리에 존재할 경우, 에뮬레이트하는 하드웨어의 공식 BIOS/부트로더를 사용합니다."
+#define MGBA_SKIP_BIOS_LABEL_KO "BIOS 인트로 건너뛰기 (재시작 필요)"
+#define MGBA_SKIP_BIOS_INFO_0_KO "공식 BIOS/부트로더를 사용할 때, 시작 로고 애니메이션을 건너뜁니다. 이 설정은 '존재할 경우 BIOS 파일 사용'이 비활성화되어있을 경우 무시됩니다."
+#define MGBA_GB_COLORS_LABEL_KO "기본 Game Boy 팔레트"
+#define MGBA_GB_COLORS_INFO_0_KO "Game Boy Color 또는 Super Game Boy와 호환되지 않는 Game Boy 게임을 구동하거나, 게임을 강제로 Game Boy 모델로 구동할 경우 사용할 팔레트를 선택합니다."
+#define OPTION_VAL_GRAYSCALE_KO "흑백"
+#define MGBA_SGB_BORDERS_LABEL_KO "Super Game Boy 보더 사용 (재시작 필요)"
+#define MGBA_SGB_BORDERS_INFO_0_KO "Super Game Boy 향상이 지원되는 게임을 구동할 때 Super Game Boy 보더를 표시합니다."
+#define MGBA_COLOR_CORRECTION_LABEL_KO "색상 보정"
+#define MGBA_COLOR_CORRECTION_INFO_0_KO "출력되는 색상을 실제 GBA/GBC 하드웨어의 디스플레이와 비슷하게 조정합니다."
+#define OPTION_VAL_AUTO_KO "자동"
+#define MGBA_INTERFRAME_BLENDING_LABEL_KO "프레임 간 혼합"
+#define MGBA_INTERFRAME_BLENDING_INFO_0_KO "LCD 고스팅 효과를 흉내냅니다. '단순'은 현재 프레임과 이전 프레임을 50:50 비율로 혼합합니다. '스마트'는 화면 깜빡임을 감지하여 영향을 받는 픽셀만 50:50 비율로 혼합합니다. 'LCD 고스팅' 옵션은 LCD 반응 시간에 따라 여러 프레임을 혼합합니다. LCD 고스팅을 이용해 투명 효과를 구현하는 게임(Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, Boktai 시리즈 등)을 플레이하려면 '단순' 또는 '스마트' 혼합을 사용해야 합니다."
+#define OPTION_VAL_MIX_KO "단순"
+#define OPTION_VAL_MIX_SMART_KO "스마트"
+#define OPTION_VAL_LCD_GHOSTING_KO "LCD 고스팅 (정확하게)"
+#define OPTION_VAL_LCD_GHOSTING_FAST_KO "LCD 고스팅 (빠르게)"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_KO "오디오 필터"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_KO "로우패스 필터"
+#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_KO "오디오에 로우패스 필터를 적용하여 '거친' 소리를 줄입니다."
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_KO "오디오 필터 수준"
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_KO "필터 수준"
+#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_KO "로우패스 오디오 필터의 컷오프 주파수를 지정합니다. 높은 값은 더 넓은 범위의 고주파음을 차단하여 필터의 '강도'를 높입니다."
 #define OPTION_VAL_5_KO NULL
 #define OPTION_VAL_10_KO NULL
 #define OPTION_VAL_15_KO NULL
@@ -8773,28 +8773,28 @@ struct retro_core_options_v2 options_ja = {
 #define OPTION_VAL_85_KO NULL
 #define OPTION_VAL_90_KO NULL
 #define OPTION_VAL_95_KO NULL
-#define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_KO NULL
-#define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_KO NULL
-#define OPTION_VAL_NO_KO NULL
-#define OPTION_VAL_YES_KO NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_KO NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_KO NULL
-#define OPTION_VAL_SENSOR_KO NULL
-#define MGBA_FORCE_GBP_LABEL_KO NULL
-#define MGBA_FORCE_GBP_INFO_0_KO NULL
-#define MGBA_IDLE_OPTIMIZATION_LABEL_KO NULL
-#define MGBA_IDLE_OPTIMIZATION_INFO_0_KO NULL
-#define OPTION_VAL_REMOVE_KNOWN_KO NULL
-#define OPTION_VAL_DETECT_AND_REMOVE_KO NULL
-#define OPTION_VAL_DON_T_REMOVE_KO NULL
-#define MGBA_FRAMESKIP_LABEL_KO NULL
-#define MGBA_FRAMESKIP_INFO_0_KO NULL
-#define OPTION_VAL_AUTO_THRESHOLD_KO NULL
-#define OPTION_VAL_FIXED_INTERVAL_KO NULL
-#define MGBA_FRAMESKIP_THRESHOLD_LABEL_KO NULL
-#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_KO NULL
-#define MGBA_FRAMESKIP_INTERVAL_LABEL_KO NULL
-#define MGBA_FRAMESKIP_INTERVAL_INFO_0_KO NULL
+#define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_KO "반대 방향 동시 입력 허용"
+#define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_KO "이 옵션을 활성화하면 왼쪽과 오른쪽 (또는 위쪽과 아래쪽) 방향 입력을 동시에 누르거나 빠르게 번갈아 누르는 것을 허용합니다. 이는 움직임 관련 버그를 일으킬 수 있습니다."
+#define OPTION_VAL_NO_KO "아니오"
+#define OPTION_VAL_YES_KO "예"
+#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_KO "태양광 센서 수준"
+#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_KO "태양광 센서의 강도를 설정합니다. 카트리지에 태양광 센서를 장착한 일부 게임(예: Boktai 시리즈)에서 사용할 수 있습니다."
+#define OPTION_VAL_SENSOR_KO "가능한 경우 장치 센서 사용"
+#define MGBA_FORCE_GBP_LABEL_KO "Game Boy Player 진동 (재시작 필요)"
+#define MGBA_FORCE_GBP_INFO_0_KO "사용할 경우 Game Boy Player 로고를 표시하는 호환 게임에서 컨트롤러 진동을 사용합니다. Nintendo의 진동 구현 방식 때문에 일부 게임에서는 화면 깜빡임 또는 지연이 발생할 수 있습니다."
+#define MGBA_IDLE_OPTIMIZATION_LABEL_KO "유휴 루프 제거"
+#define MGBA_IDLE_OPTIMIZATION_INFO_0_KO "아무런 작업도 하지 않지만 CPU를 100% 사용하는 일명 '유휴 루프'를 최적화하여 시스템 부하를 감소시킵니다. 성능을 향상시키며, 저사양 환경에서는 활성화되어야 합니다."
+#define OPTION_VAL_REMOVE_KNOWN_KO "알려진 경우만 제거"
+#define OPTION_VAL_DETECT_AND_REMOVE_KO "자동 감지하여 제거"
+#define OPTION_VAL_DON_T_REMOVE_KO "제거 안 함"
+#define MGBA_FRAMESKIP_LABEL_KO "프레임 스킵"
+#define MGBA_FRAMESKIP_INFO_0_KO "오디오 버퍼 언더런(소리깨짐) 을 줄이기 위해 프레임 건너뛰기를 합니다. 시각적인 부드러움을 포기하는 대신 성능이 향상됩니다. '자동'은 프론트엔드의 추천값으로 실행되고 '자동 (임계값)'은 '프레임 건너뛰기 임계값(%)' 설정을 이용해 실행됩니다. '고정 간격'은 '프레임 스킵 간격' 설정을 이용합니다."
+#define OPTION_VAL_AUTO_THRESHOLD_KO "자동 (임계값)"
+#define OPTION_VAL_FIXED_INTERVAL_KO "고정 간격"
+#define MGBA_FRAMESKIP_THRESHOLD_LABEL_KO "프레임 스킵 임계값 (%)"
+#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_KO "'프레임 건너뛰기'가 '자동 (임계값)'일 경우 건너뛸 프레임에 대한 오디오 버퍼 점유 임계점 (퍼센트) 을 설정하게됩니다. 값이 높을 수록 프레임은 떨어지고 그 대신 소리 깨짐 현상은 줄어들게 됩니다."
+#define MGBA_FRAMESKIP_INTERVAL_LABEL_KO "프레임 스킵 간격"
+#define MGBA_FRAMESKIP_INTERVAL_INFO_0_KO "'프레임 건너뛰기'가 '고정 간격'일 경우, 프레임을 표시한 뒤 여기에 지정한 수만큼 다음 프레임을 건너뜁니다. 예: '0' = 60fps, '1' = 30fps, '2' = 15fps..."
 
 struct retro_core_option_v2_category option_cats_ko[] = {
    {
@@ -10365,87 +10365,87 @@ struct retro_core_options_v2 options_oc = {
 /* RETRO_LANGUAGE_PL */
 
 #define CATEGORY_SYSTEM_LABEL_PL NULL
-#define CATEGORY_SYSTEM_INFO_0_PL NULL
-#define CATEGORY_VIDEO_LABEL_PL NULL
-#define CATEGORY_VIDEO_INFO_0_PL NULL
-#define CATEGORY_VIDEO_INFO_1_PL NULL
+#define CATEGORY_SYSTEM_INFO_0_PL "Skonfiguruj podstawowe ustawienia sprzętowe / parametry BIOS."
+#define CATEGORY_VIDEO_LABEL_PL "Wideo"
+#define CATEGORY_VIDEO_INFO_0_PL "Skonfiguruj paletę DMG / ramki SGB / korektę kolorów / efekty wizualizacji LCD."
+#define CATEGORY_VIDEO_INFO_1_PL "Skonfiguruj paletę DMG / granice SGB."
 #define CATEGORY_AUDIO_LABEL_PL NULL
-#define CATEGORY_AUDIO_INFO_0_PL NULL
-#define CATEGORY_INPUT_LABEL_PL NULL
-#define CATEGORY_INPUT_INFO_0_PL NULL
-#define CATEGORY_PERFORMANCE_LABEL_PL NULL
-#define CATEGORY_PERFORMANCE_INFO_0_PL NULL
-#define MGBA_GB_MODEL_LABEL_PL NULL
+#define CATEGORY_AUDIO_INFO_0_PL "Skonfiguruj filtrowanie audio."
+#define CATEGORY_INPUT_LABEL_PL "Urządzenia wejściowe i pomocnicze"
+#define CATEGORY_INPUT_INFO_0_PL "Skonfiguruj ustawienia sterownika / czujnika wejściowego i kontrolera."
+#define CATEGORY_PERFORMANCE_LABEL_PL "Wydajność"
+#define CATEGORY_PERFORMANCE_INFO_0_PL "Skonfiguruj parametry usuwania pętli bezczynności / usuwania ramek."
+#define MGBA_GB_MODEL_LABEL_PL "Model Game Boy (restart)"
 #define MGBA_GB_MODEL_INFO_0_PL NULL
-#define OPTION_VAL_AUTODETECT_PL NULL
+#define OPTION_VAL_AUTODETECT_PL "Autodetekcja"
 #define OPTION_VAL_GAME_BOY_PL NULL
 #define OPTION_VAL_SUPER_GAME_BOY_PL NULL
 #define OPTION_VAL_GAME_BOY_COLOR_PL NULL
 #define OPTION_VAL_GAME_BOY_ADVANCE_PL NULL
-#define MGBA_USE_BIOS_LABEL_PL NULL
-#define MGBA_USE_BIOS_INFO_0_PL NULL
-#define MGBA_SKIP_BIOS_LABEL_PL NULL
+#define MGBA_USE_BIOS_LABEL_PL "Użyj pliku BIOS jeśli został znaleziony (Restart)"
+#define MGBA_USE_BIOS_INFO_0_PL "Użyj oficjalnego BIOS/bootloadera do emulowanego sprzętu, jeśli jest obecny w katalogu systemowym RetroArch."
+#define MGBA_SKIP_BIOS_LABEL_PL "Pomiń wprowadzenie BIOS (restart)"
 #define MGBA_SKIP_BIOS_INFO_0_PL NULL
-#define MGBA_GB_COLORS_LABEL_PL NULL
+#define MGBA_GB_COLORS_LABEL_PL "Domyślna paleta Game Boy"
 #define MGBA_GB_COLORS_INFO_0_PL NULL
-#define OPTION_VAL_GRAYSCALE_PL NULL
+#define OPTION_VAL_GRAYSCALE_PL "Odcienie szarości"
 #define MGBA_SGB_BORDERS_LABEL_PL NULL
 #define MGBA_SGB_BORDERS_INFO_0_PL NULL
-#define MGBA_COLOR_CORRECTION_LABEL_PL NULL
-#define MGBA_COLOR_CORRECTION_INFO_0_PL NULL
+#define MGBA_COLOR_CORRECTION_LABEL_PL "Korekcja kolorów"
+#define MGBA_COLOR_CORRECTION_INFO_0_PL "Dostosowuje kolory wyjściowe, aby dopasować wyświetlanie rzeczywistego sprzętu GBA/GBC."
 #define OPTION_VAL_AUTO_PL NULL
-#define MGBA_INTERFRAME_BLENDING_LABEL_PL NULL
+#define MGBA_INTERFRAME_BLENDING_LABEL_PL "Łączenie międzyramowe"
 #define MGBA_INTERFRAME_BLENDING_INFO_0_PL NULL
-#define OPTION_VAL_MIX_PL NULL
-#define OPTION_VAL_MIX_SMART_PL NULL
-#define OPTION_VAL_LCD_GHOSTING_PL NULL
-#define OPTION_VAL_LCD_GHOSTING_FAST_PL NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_PL NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_PL NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_PL NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_PL NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_PL NULL
+#define OPTION_VAL_MIX_PL "Prosty"
+#define OPTION_VAL_MIX_SMART_PL "Inteligentny"
+#define OPTION_VAL_LCD_GHOSTING_PL "Ghosting LCD (dokładny)"
+#define OPTION_VAL_LCD_GHOSTING_FAST_PL "LCD Ghosting (szybki)"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_PL "Filtr audio"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_PL "Filtr dolnoprzepustowy"
+#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_PL "Włącza filtr dźwiękowy o niskim współczynniku przenikania w celu zmniejszenia \"surowości\" generowanego dźwięku."
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_PL "Poziom filtra dźwięku"
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_PL "Poziom filtrów"
 #define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_PL NULL
 #define OPTION_VAL_5_PL NULL
 #define OPTION_VAL_10_PL NULL
 #define OPTION_VAL_15_PL NULL
 #define OPTION_VAL_20_PL NULL
 #define OPTION_VAL_25_PL NULL
-#define OPTION_VAL_30_PL NULL
+#define OPTION_VAL_30_PL "30 %"
 #define OPTION_VAL_35_PL NULL
 #define OPTION_VAL_40_PL NULL
 #define OPTION_VAL_45_PL NULL
-#define OPTION_VAL_50_PL NULL
+#define OPTION_VAL_50_PL "50 %"
 #define OPTION_VAL_55_PL NULL
-#define OPTION_VAL_60_PL NULL
+#define OPTION_VAL_60_PL "60 %"
 #define OPTION_VAL_65_PL NULL
 #define OPTION_VAL_70_PL NULL
 #define OPTION_VAL_75_PL NULL
-#define OPTION_VAL_80_PL NULL
+#define OPTION_VAL_80_PL "80 %"
 #define OPTION_VAL_85_PL NULL
 #define OPTION_VAL_90_PL NULL
 #define OPTION_VAL_95_PL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PL NULL
-#define OPTION_VAL_NO_PL NULL
-#define OPTION_VAL_YES_PL NULL
+#define OPTION_VAL_NO_PL "nie"
+#define OPTION_VAL_YES_PL "tak"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PL NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PL NULL
-#define OPTION_VAL_SENSOR_PL NULL
+#define OPTION_VAL_SENSOR_PL "Użyj czujnika urządzenia, jeśli jest dostępny"
 #define MGBA_FORCE_GBP_LABEL_PL NULL
 #define MGBA_FORCE_GBP_INFO_0_PL NULL
-#define MGBA_IDLE_OPTIMIZATION_LABEL_PL NULL
+#define MGBA_IDLE_OPTIMIZATION_LABEL_PL "Usuwanie pętli bezczynności"
 #define MGBA_IDLE_OPTIMIZATION_INFO_0_PL NULL
-#define OPTION_VAL_REMOVE_KNOWN_PL NULL
-#define OPTION_VAL_DETECT_AND_REMOVE_PL NULL
-#define OPTION_VAL_DON_T_REMOVE_PL NULL
-#define MGBA_FRAMESKIP_LABEL_PL NULL
+#define OPTION_VAL_REMOVE_KNOWN_PL "Usuń znaną"
+#define OPTION_VAL_DETECT_AND_REMOVE_PL "Wykrywanie i usuwanie"
+#define OPTION_VAL_DON_T_REMOVE_PL "Nie usuwaj"
+#define MGBA_FRAMESKIP_LABEL_PL "Pomijanie klatek"
 #define MGBA_FRAMESKIP_INFO_0_PL NULL
-#define OPTION_VAL_AUTO_THRESHOLD_PL NULL
+#define OPTION_VAL_AUTO_THRESHOLD_PL "Auto (próg)"
 #define OPTION_VAL_FIXED_INTERVAL_PL NULL
-#define MGBA_FRAMESKIP_THRESHOLD_LABEL_PL NULL
+#define MGBA_FRAMESKIP_THRESHOLD_LABEL_PL "Próg pominięcia ramki (%)"
 #define MGBA_FRAMESKIP_THRESHOLD_INFO_0_PL NULL
-#define MGBA_FRAMESKIP_INTERVAL_LABEL_PL NULL
+#define MGBA_FRAMESKIP_INTERVAL_LABEL_PL "Odstęp pomiędzy ramkami"
 #define MGBA_FRAMESKIP_INTERVAL_INFO_0_PL NULL
 
 struct retro_core_option_v2_category option_cats_pl[] = {
@@ -10777,48 +10777,48 @@ struct retro_core_options_v2 options_pl = {
 
 /* RETRO_LANGUAGE_PT_BR */
 
-#define CATEGORY_SYSTEM_LABEL_PT_BR NULL
-#define CATEGORY_SYSTEM_INFO_0_PT_BR NULL
-#define CATEGORY_VIDEO_LABEL_PT_BR NULL
-#define CATEGORY_VIDEO_INFO_0_PT_BR NULL
-#define CATEGORY_VIDEO_INFO_1_PT_BR NULL
-#define CATEGORY_AUDIO_LABEL_PT_BR NULL
-#define CATEGORY_AUDIO_INFO_0_PT_BR NULL
-#define CATEGORY_INPUT_LABEL_PT_BR NULL
-#define CATEGORY_INPUT_INFO_0_PT_BR NULL
-#define CATEGORY_PERFORMANCE_LABEL_PT_BR NULL
-#define CATEGORY_PERFORMANCE_INFO_0_PT_BR NULL
-#define MGBA_GB_MODEL_LABEL_PT_BR NULL
-#define MGBA_GB_MODEL_INFO_0_PT_BR NULL
-#define OPTION_VAL_AUTODETECT_PT_BR NULL
+#define CATEGORY_SYSTEM_LABEL_PT_BR "Sistema"
+#define CATEGORY_SYSTEM_INFO_0_PT_BR "Configurar os parâmetros de seleção do hardware base / BIOS."
+#define CATEGORY_VIDEO_LABEL_PT_BR "Vídeo"
+#define CATEGORY_VIDEO_INFO_0_PT_BR "Configura a paleta de modelos DMG, as bordas do SGB, a correção de cor e os efeitos fantasmas do LCD."
+#define CATEGORY_VIDEO_INFO_1_PT_BR "Configura a paleta de modelos DMG, as bordas do SGB."
+#define CATEGORY_AUDIO_LABEL_PT_BR "Áudio"
+#define CATEGORY_AUDIO_INFO_0_PT_BR "Configurar o filtro de áudio."
+#define CATEGORY_INPUT_LABEL_PT_BR "Entrada e dispositivos auxiliares"
+#define CATEGORY_INPUT_INFO_0_PT_BR "Configura os ajustes dos controles, da entrada dos sensores e da vibração dos controles."
+#define CATEGORY_PERFORMANCE_LABEL_PT_BR "Desempenho"
+#define CATEGORY_PERFORMANCE_INFO_0_PT_BR "Configura os ajustes dos loops de inatividade e dos pulos de quadros."
+#define MGBA_GB_MODEL_LABEL_PT_BR "Modelo do Game Boy (requer reinício)"
+#define MGBA_GB_MODEL_INFO_0_PT_BR "Executa o conteúdo carregado utilizando um modelo de Game Boy específico. 'Detectar automaticamente' selecionará o modelo mais apropriado para o jogo atual."
+#define OPTION_VAL_AUTODETECT_PT_BR "Detectar automaticamente"
 #define OPTION_VAL_GAME_BOY_PT_BR NULL
 #define OPTION_VAL_SUPER_GAME_BOY_PT_BR NULL
 #define OPTION_VAL_GAME_BOY_COLOR_PT_BR NULL
 #define OPTION_VAL_GAME_BOY_ADVANCE_PT_BR NULL
-#define MGBA_USE_BIOS_LABEL_PT_BR NULL
-#define MGBA_USE_BIOS_INFO_0_PT_BR NULL
-#define MGBA_SKIP_BIOS_LABEL_PT_BR NULL
-#define MGBA_SKIP_BIOS_INFO_0_PT_BR NULL
+#define MGBA_USE_BIOS_LABEL_PT_BR "Usar arquivo de BIOS se encontrado (requer reinício)"
+#define MGBA_USE_BIOS_INFO_0_PT_BR "Usa a BIOS/carregador de inicialização oficial para o hardware emulado, se estiver presente no diretório de sistema do RetroArch."
+#define MGBA_SKIP_BIOS_LABEL_PT_BR "Pular introdução da BIOS (requer reinício)"
+#define MGBA_SKIP_BIOS_INFO_0_PT_BR "Ao usar uma BIOS e um carregador de inicialização oficial, omitirá a animação do logotipo na inicialização. Esta configuração será ignorada caso 'Usar arquivo de BIOS se encontrado' estiver desativada."
 #define MGBA_GB_COLORS_LABEL_PT_BR NULL
 #define MGBA_GB_COLORS_INFO_0_PT_BR NULL
-#define OPTION_VAL_GRAYSCALE_PT_BR NULL
-#define MGBA_SGB_BORDERS_LABEL_PT_BR NULL
+#define OPTION_VAL_GRAYSCALE_PT_BR "Escalas de cinza"
+#define MGBA_SGB_BORDERS_LABEL_PT_BR "Usar bordas do Super Game Boy (requer reinício)"
 #define MGBA_SGB_BORDERS_INFO_0_PT_BR NULL
-#define MGBA_COLOR_CORRECTION_LABEL_PT_BR NULL
+#define MGBA_COLOR_CORRECTION_LABEL_PT_BR "Correção de cor"
 #define MGBA_COLOR_CORRECTION_INFO_0_PT_BR NULL
-#define OPTION_VAL_AUTO_PT_BR NULL
-#define MGBA_INTERFRAME_BLENDING_LABEL_PT_BR NULL
+#define OPTION_VAL_AUTO_PT_BR "Automático"
+#define MGBA_INTERFRAME_BLENDING_LABEL_PT_BR "Fusão entre quadros"
 #define MGBA_INTERFRAME_BLENDING_INFO_0_PT_BR NULL
-#define OPTION_VAL_MIX_PT_BR NULL
-#define OPTION_VAL_MIX_SMART_PT_BR NULL
-#define OPTION_VAL_LCD_GHOSTING_PT_BR NULL
-#define OPTION_VAL_LCD_GHOSTING_FAST_PT_BR NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_PT_BR NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_PT_BR NULL
+#define OPTION_VAL_MIX_PT_BR "Simples"
+#define OPTION_VAL_MIX_SMART_PT_BR "Inteligente"
+#define OPTION_VAL_LCD_GHOSTING_PT_BR "Efeito fantasma do LCD (preciso)"
+#define OPTION_VAL_LCD_GHOSTING_FAST_PT_BR "Efeito fantasma do LCD (rápido)"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_PT_BR "Filtro de áudio"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_PT_BR "Filtro passa-baixo"
 #define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_PT_BR NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_PT_BR NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_PT_BR NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_PT_BR NULL
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_PT_BR "Nível do filtro de áudio"
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_PT_BR "Nível do filtro"
+#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_PT_BR "Especifica a frequência de corte do filtro de áudio passa-baixo. Um valor mais alto aumenta a 'força' percebida do filtro, uma vez que uma faixa mais ampla do espectro de alta frequência é atenuada."
 #define OPTION_VAL_5_PT_BR NULL
 #define OPTION_VAL_10_PT_BR NULL
 #define OPTION_VAL_15_PT_BR NULL
@@ -10838,27 +10838,27 @@ struct retro_core_options_v2 options_pl = {
 #define OPTION_VAL_85_PT_BR NULL
 #define OPTION_VAL_90_PT_BR NULL
 #define OPTION_VAL_95_PT_BR NULL
-#define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PT_BR NULL
+#define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PT_BR "Permitir entradas direcionais opostas"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PT_BR NULL
-#define OPTION_VAL_NO_PT_BR NULL
-#define OPTION_VAL_YES_PT_BR NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_BR NULL
+#define OPTION_VAL_NO_PT_BR "não"
+#define OPTION_VAL_YES_PT_BR "sim"
+#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_BR "Nível do sensor solar"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PT_BR NULL
-#define OPTION_VAL_SENSOR_PT_BR NULL
+#define OPTION_VAL_SENSOR_PT_BR "Usar dispositivo sensor, se disponível"
 #define MGBA_FORCE_GBP_LABEL_PT_BR NULL
 #define MGBA_FORCE_GBP_INFO_0_PT_BR NULL
-#define MGBA_IDLE_OPTIMIZATION_LABEL_PT_BR NULL
+#define MGBA_IDLE_OPTIMIZATION_LABEL_PT_BR "Remover loops de inatividade"
 #define MGBA_IDLE_OPTIMIZATION_INFO_0_PT_BR NULL
 #define OPTION_VAL_REMOVE_KNOWN_PT_BR NULL
-#define OPTION_VAL_DETECT_AND_REMOVE_PT_BR NULL
+#define OPTION_VAL_DETECT_AND_REMOVE_PT_BR "Detectar e remover"
 #define OPTION_VAL_DON_T_REMOVE_PT_BR NULL
-#define MGBA_FRAMESKIP_LABEL_PT_BR NULL
-#define MGBA_FRAMESKIP_INFO_0_PT_BR NULL
-#define OPTION_VAL_AUTO_THRESHOLD_PT_BR NULL
-#define OPTION_VAL_FIXED_INTERVAL_PT_BR NULL
-#define MGBA_FRAMESKIP_THRESHOLD_LABEL_PT_BR NULL
-#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_PT_BR NULL
-#define MGBA_FRAMESKIP_INTERVAL_LABEL_PT_BR NULL
+#define MGBA_FRAMESKIP_LABEL_PT_BR "Pulo de quadro"
+#define MGBA_FRAMESKIP_INFO_0_PT_BR "Ignora quadros para evitar o esvaziamento do buffer do áudio (cortes no áudio). Melhora o desempenho ao custo da suavidade visual. A opção 'Automático' ignora os quadros quando for aconselhado pela interface. A opção 'Automático (limite)' utiliza a configuração 'Limite do salto de quadros (%)'. 'Já 'Intervalo fixo', usa a configuração do 'Intervalo de pulo de quadros'."
+#define OPTION_VAL_AUTO_THRESHOLD_PT_BR "Automático (limite)"
+#define OPTION_VAL_FIXED_INTERVAL_PT_BR "Intervalo fixo"
+#define MGBA_FRAMESKIP_THRESHOLD_LABEL_PT_BR "Limite de pulo de quadro (%)"
+#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_PT_BR "Quando o 'Pulo de quadro' for definido como 'Automático (limite)', especifica o limite de ocupação do buffer de áudio (em porcentagem) abaixo do qual os quadros serão pulados. Valores maiores reduzem o risco de engasgos pois farão que os quadros sejam descartados com mais frequência."
+#define MGBA_FRAMESKIP_INTERVAL_LABEL_PT_BR "Intervalo de pulo de quadros"
 #define MGBA_FRAMESKIP_INTERVAL_INFO_0_PT_BR NULL
 
 struct retro_core_option_v2_category option_cats_pt_br[] = {
@@ -12016,48 +12016,48 @@ struct retro_core_options_v2 options_ro = {
 
 /* RETRO_LANGUAGE_RU */
 
-#define CATEGORY_SYSTEM_LABEL_RU NULL
-#define CATEGORY_SYSTEM_INFO_0_RU NULL
-#define CATEGORY_VIDEO_LABEL_RU NULL
-#define CATEGORY_VIDEO_INFO_0_RU NULL
-#define CATEGORY_VIDEO_INFO_1_RU NULL
-#define CATEGORY_AUDIO_LABEL_RU NULL
-#define CATEGORY_AUDIO_INFO_0_RU NULL
-#define CATEGORY_INPUT_LABEL_RU NULL
-#define CATEGORY_INPUT_INFO_0_RU NULL
-#define CATEGORY_PERFORMANCE_LABEL_RU NULL
-#define CATEGORY_PERFORMANCE_INFO_0_RU NULL
-#define MGBA_GB_MODEL_LABEL_RU NULL
-#define MGBA_GB_MODEL_INFO_0_RU NULL
-#define OPTION_VAL_AUTODETECT_RU NULL
+#define CATEGORY_SYSTEM_LABEL_RU "Системные"
+#define CATEGORY_SYSTEM_INFO_0_RU "Выбор модели устройства и базовые настройки BIOS."
+#define CATEGORY_VIDEO_LABEL_RU "Видео"
+#define CATEGORY_VIDEO_INFO_0_RU "Настройки палитры DMG, SGB-рамок, цветокоррекции, эффекта двоения ЖК-дисплея."
+#define CATEGORY_VIDEO_INFO_1_RU "Настройка палитры DMG / рамок SGB."
+#define CATEGORY_AUDIO_LABEL_RU "Аудио"
+#define CATEGORY_AUDIO_INFO_0_RU "Настройки фильтрации звука."
+#define CATEGORY_INPUT_LABEL_RU "Управление и вспом. устройства"
+#define CATEGORY_INPUT_INFO_0_RU "Настройки параметров ввода, сенсора и отдачи контроллера."
+#define CATEGORY_PERFORMANCE_LABEL_RU "Производительность"
+#define CATEGORY_PERFORMANCE_INFO_0_RU "Настройки удаления циклов простоя / пропуска кадров."
+#define MGBA_GB_MODEL_LABEL_RU "Модель Game Boy (перезапуск)"
+#define MGBA_GB_MODEL_INFO_0_RU "Запуск загруженного контента на указанной модели Game Boy. В режиме 'Авто' будет установлена самая подходящая модель для текущей игры."
+#define OPTION_VAL_AUTODETECT_RU "Авто"
 #define OPTION_VAL_GAME_BOY_RU NULL
 #define OPTION_VAL_SUPER_GAME_BOY_RU NULL
 #define OPTION_VAL_GAME_BOY_COLOR_RU NULL
 #define OPTION_VAL_GAME_BOY_ADVANCE_RU NULL
-#define MGBA_USE_BIOS_LABEL_RU NULL
-#define MGBA_USE_BIOS_INFO_0_RU NULL
-#define MGBA_SKIP_BIOS_LABEL_RU NULL
-#define MGBA_SKIP_BIOS_INFO_0_RU NULL
-#define MGBA_GB_COLORS_LABEL_RU NULL
-#define MGBA_GB_COLORS_INFO_0_RU NULL
-#define OPTION_VAL_GRAYSCALE_RU NULL
-#define MGBA_SGB_BORDERS_LABEL_RU NULL
-#define MGBA_SGB_BORDERS_INFO_0_RU NULL
-#define MGBA_COLOR_CORRECTION_LABEL_RU NULL
-#define MGBA_COLOR_CORRECTION_INFO_0_RU NULL
-#define OPTION_VAL_AUTO_RU NULL
-#define MGBA_INTERFRAME_BLENDING_LABEL_RU NULL
-#define MGBA_INTERFRAME_BLENDING_INFO_0_RU NULL
-#define OPTION_VAL_MIX_RU NULL
-#define OPTION_VAL_MIX_SMART_RU NULL
-#define OPTION_VAL_LCD_GHOSTING_RU NULL
-#define OPTION_VAL_LCD_GHOSTING_FAST_RU NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_RU NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_RU NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_RU NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_RU NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_RU NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_RU NULL
+#define MGBA_USE_BIOS_LABEL_RU "Использовать образ BIOS (перезапуск)"
+#define MGBA_USE_BIOS_INFO_0_RU "Использовать для эмуляции консоли официальный BIOS/загрузчик, при наличии образа в системном каталоге RetroArch."
+#define MGBA_SKIP_BIOS_LABEL_RU "Пропуск заставки BIOS (перезапуск)"
+#define MGBA_SKIP_BIOS_INFO_0_RU "Пропускать начальную анимацию при использовании официального BIOS/загрузчика. Не работает, если выключена опция 'Использовать образ BIOS'."
+#define MGBA_GB_COLORS_LABEL_RU "Стандартная палитра Game Boy"
+#define MGBA_GB_COLORS_INFO_0_RU "Выбор палитры, используемой для игр Game Boy, несовместимых с Game Boy Color / Super Game Boy или в случае принудительного выбора модели Game Boy."
+#define OPTION_VAL_GRAYSCALE_RU "Оттенки серого"
+#define MGBA_SGB_BORDERS_LABEL_RU "Рамки Super Game Boy (перезапуск)"
+#define MGBA_SGB_BORDERS_INFO_0_RU "Отображать рамки Super Game Boy при запуске игр, улучшенных для Super Game Boy."
+#define MGBA_COLOR_CORRECTION_LABEL_RU "Коррекция цвета"
+#define MGBA_COLOR_CORRECTION_INFO_0_RU "Настройка отображаемых цветов для соответствия дисплеям реальных GBA/GBC."
+#define OPTION_VAL_AUTO_RU "Авто"
+#define MGBA_INTERFRAME_BLENDING_LABEL_RU "Межкадровое смешение"
+#define MGBA_INTERFRAME_BLENDING_INFO_0_RU "Имитирует эффект двоения ЖК-дисплея. 'Простое' смешивает текущие и предшествующие кадры в пропорции 50:50. 'Умное' пытается определять мерцание экрана и делает смешение 50:50 только для затрагиваемых пикселей. 'Двоение ЖК' имитирует естественное время отклика жк-дисплея объединением нескольких буферизованных кадров. 'Простое' или 'Умное' смешение требуется в играх, широко использующих двоение для эффектов прозрачности (Wave Racer, Chikyuu Kaihou Gun ZAS, F-Zero, серия Boktai...)."
+#define OPTION_VAL_MIX_RU "Простое"
+#define OPTION_VAL_MIX_SMART_RU "Умное"
+#define OPTION_VAL_LCD_GHOSTING_RU "Двоение ЖК (точно)"
+#define OPTION_VAL_LCD_GHOSTING_FAST_RU "Двоение ЖК (быстро)"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_RU "Аудиофильтр"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_RU "Фильтр нижних частот"
+#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_RU "Включает низкочастотный аудиофильтр для смягчения воспроизводимого звука."
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_RU "Уровень аудиофильтра"
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_RU "Уровень фильтрации"
+#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_RU "Установка частоты среза для низкочастотного аудиофильтра. Большие значения усиливают эффект фильтрации за счёт влияния на более широкий диапазон высоких частот."
 #define OPTION_VAL_5_RU NULL
 #define OPTION_VAL_10_RU NULL
 #define OPTION_VAL_15_RU NULL
@@ -12077,28 +12077,28 @@ struct retro_core_options_v2 options_ro = {
 #define OPTION_VAL_85_RU NULL
 #define OPTION_VAL_90_RU NULL
 #define OPTION_VAL_95_RU NULL
-#define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_RU NULL
-#define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_RU NULL
-#define OPTION_VAL_NO_RU NULL
-#define OPTION_VAL_YES_RU NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_RU NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_RU NULL
-#define OPTION_VAL_SENSOR_RU NULL
-#define MGBA_FORCE_GBP_LABEL_RU NULL
-#define MGBA_FORCE_GBP_INFO_0_RU NULL
-#define MGBA_IDLE_OPTIMIZATION_LABEL_RU NULL
-#define MGBA_IDLE_OPTIMIZATION_INFO_0_RU NULL
-#define OPTION_VAL_REMOVE_KNOWN_RU NULL
-#define OPTION_VAL_DETECT_AND_REMOVE_RU NULL
-#define OPTION_VAL_DON_T_REMOVE_RU NULL
-#define MGBA_FRAMESKIP_LABEL_RU NULL
-#define MGBA_FRAMESKIP_INFO_0_RU NULL
-#define OPTION_VAL_AUTO_THRESHOLD_RU NULL
-#define OPTION_VAL_FIXED_INTERVAL_RU NULL
-#define MGBA_FRAMESKIP_THRESHOLD_LABEL_RU NULL
-#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_RU NULL
-#define MGBA_FRAMESKIP_INTERVAL_LABEL_RU NULL
-#define MGBA_FRAMESKIP_INTERVAL_INFO_0_RU NULL
+#define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_RU "Разрешать нажатия в разные стороны"
+#define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_RU "Позволяет нажимать / быстро менять / зажимать одновременно направления влево и вправо (или вверх и вниз). Может вызывать глитчи, связанные с перемещением."
+#define OPTION_VAL_NO_RU "Да"
+#define OPTION_VAL_YES_RU "Нет"
+#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_RU "Уровень датчика света"
+#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_RU "Устанавливает интенсивность окружающего освещения. Может использоваться в играх с картриджами, оснащёнными датчиком света (напр. серия Boktai)."
+#define OPTION_VAL_SENSOR_RU "Использовать датчик устройства"
+#define MGBA_FORCE_GBP_LABEL_RU "Отдача Game Boy Player (перезапуск)"
+#define MGBA_FORCE_GBP_INFO_0_RU "При включении активирует отдачу для совместимых игр с логотипом Game Boy Player на экране загрузки. Из-за особенностей реализации Nintendo, в некоторых играх данная функция может вызывать баги, такие как мерцание или подтормаживания."
+#define MGBA_IDLE_OPTIMIZATION_LABEL_RU "Удаление циклов простоя"
+#define MGBA_IDLE_OPTIMIZATION_INFO_0_RU "Уменьшает загруженность системы, оптимизируя т.н. 'циклы простоя' - части кода, в которых ничего не происходит, но которые CPU обрабатывает на полной скорости. Повышает производительность и рекомендуется для включения на слабых устройствах."
+#define OPTION_VAL_REMOVE_KNOWN_RU "Удалять известные"
+#define OPTION_VAL_DETECT_AND_REMOVE_RU "Определять и удалять"
+#define OPTION_VAL_DON_T_REMOVE_RU "Не удалять"
+#define MGBA_FRAMESKIP_LABEL_RU "Пропуск кадров"
+#define MGBA_FRAMESKIP_INFO_0_RU "Пропускать кадры, чтобы избежать опустошения аудиобуфера (треск). Улучшает производительность, но снижает плавность изображения. В режиме 'Авто' пропуск кадров регулируется фронтендом. 'Авто (граница)' использует настройку 'Граница пропуска кадров (%)'. 'Фикс. интервал' использует настройку 'Интервал пропуска кадров'."
+#define OPTION_VAL_AUTO_THRESHOLD_RU "Авто (граница)"
+#define OPTION_VAL_FIXED_INTERVAL_RU "Фикс. интервал"
+#define MGBA_FRAMESKIP_THRESHOLD_LABEL_RU "Граница пропуска кадров (%)"
+#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_RU "Порог заполнения аудиобуфера (в процентах) ниже которого будет включаться пропуск кадров, если для параметра 'Пропуск кадров' выбран режим 'Авто (граница)'. Большие значения снижают вероятность появления треска за счёт более частого пропуска кадров."
+#define MGBA_FRAMESKIP_INTERVAL_LABEL_RU "Интервал пропуска кадров"
+#define MGBA_FRAMESKIP_INTERVAL_INFO_0_RU "Количество кадров, пропускаемых после рендеринга, если для параметра 'Пропуск кадров' выбран режим 'Фикс. значение', напр. '0' = 60 кадр/с, '1' = 30 кадр/с, '2' = 15 кадр/с и т.д."
 
 struct retro_core_option_v2_category option_cats_ru[] = {
    {
@@ -14081,71 +14081,71 @@ struct retro_core_options_v2 options_sv = {
 
 /* RETRO_LANGUAGE_TR */
 
-#define CATEGORY_SYSTEM_LABEL_TR NULL
-#define CATEGORY_SYSTEM_INFO_0_TR NULL
+#define CATEGORY_SYSTEM_LABEL_TR "Sistem"
+#define CATEGORY_SYSTEM_INFO_0_TR "Temel donanım seçimini/BIOS parametrelerini yapılandırın."
 #define CATEGORY_VIDEO_LABEL_TR NULL
 #define CATEGORY_VIDEO_INFO_0_TR NULL
 #define CATEGORY_VIDEO_INFO_1_TR NULL
-#define CATEGORY_AUDIO_LABEL_TR NULL
-#define CATEGORY_AUDIO_INFO_0_TR NULL
+#define CATEGORY_AUDIO_LABEL_TR "Ses"
+#define CATEGORY_AUDIO_INFO_0_TR "Ses filtrelemeyi yapılandırın."
 #define CATEGORY_INPUT_LABEL_TR NULL
 #define CATEGORY_INPUT_INFO_0_TR NULL
-#define CATEGORY_PERFORMANCE_LABEL_TR NULL
+#define CATEGORY_PERFORMANCE_LABEL_TR "Performans"
 #define CATEGORY_PERFORMANCE_INFO_0_TR NULL
-#define MGBA_GB_MODEL_LABEL_TR "Game Boy Modeli (yeniden başlatma gerektirir)"
+#define MGBA_GB_MODEL_LABEL_TR "Game Boy Modeli (Yeniden Başlatılmalı)"
 #define MGBA_GB_MODEL_INFO_0_TR "Yüklenen içeriği belirli bir Game Boy modeliyle çalıştırır. 'Otomatik Tespit' mevcut oyun için en uygun modeli seçecektir."
 #define OPTION_VAL_AUTODETECT_TR "Otomatik Tespit"
 #define OPTION_VAL_GAME_BOY_TR NULL
 #define OPTION_VAL_SUPER_GAME_BOY_TR NULL
 #define OPTION_VAL_GAME_BOY_COLOR_TR NULL
 #define OPTION_VAL_GAME_BOY_ADVANCE_TR NULL
-#define MGBA_USE_BIOS_LABEL_TR "Bulunursa BIOS Dosyasını kullanın (yeniden başlatma gerektirir)"
-#define MGBA_USE_BIOS_INFO_0_TR "RetroArch'ın sistem dizininde varsa, öykünülmüş donanım için resmi BIOS/önyükleyici kullanır."
-#define MGBA_SKIP_BIOS_LABEL_TR "BIOS Girişini Atla (yeniden başlatma gerektirir)"
+#define MGBA_USE_BIOS_LABEL_TR "Bulunursa BIOS Dosyasını Kullan (Yeniden Başlatılmalı)"
+#define MGBA_USE_BIOS_INFO_0_TR "RetroArch sistem dizininde varsa, taklit edilmiş donanım için resmi BIOS/önyükleyici kullanır."
+#define MGBA_SKIP_BIOS_LABEL_TR "BIOS Sahnesini Atla (Yeniden Başlatılmalı)"
 #define MGBA_SKIP_BIOS_INFO_0_TR "Resmi bir BIOS / önyükleyici kullanırken, başlangıç logosu animasyonunu atlayın. Bu ayar, 'Bulunursa BIOS Dosyasını Kullan' devre dışı bırakıldığında geçersiz sayılır."
-#define MGBA_GB_COLORS_LABEL_TR NULL
-#define MGBA_GB_COLORS_INFO_0_TR NULL
-#define OPTION_VAL_GRAYSCALE_TR NULL
-#define MGBA_SGB_BORDERS_LABEL_TR "Super Game Boy Sınırlarını kullanın (yeniden başlatma gerekir)"
-#define MGBA_SGB_BORDERS_INFO_0_TR "Super Game Boy gelişmiş oyunlarını çalıştırırken Super Game Boy sınırlarını görüntüleR."
+#define MGBA_GB_COLORS_LABEL_TR "Varsayılan Game Boy Paleti"
+#define MGBA_GB_COLORS_INFO_0_TR "Game Boy Color veya Super Game Boy uyumlu olmayan Game Boy oyunları için veya modelin Game Boy'a zorlanması durumunda hangi paletin kullanılacağını seçer."
+#define OPTION_VAL_GRAYSCALE_TR "Gri Tonlama"
+#define MGBA_SGB_BORDERS_LABEL_TR "Super Game Boy Sınırlarını Kullan (Yeniden Başlatılmalı)"
+#define MGBA_SGB_BORDERS_INFO_0_TR "Super Game Boy geliştirilmiş oyunlarını çalıştırırken Super Game Boy sınırlarını görüntüleyin."
 #define MGBA_COLOR_CORRECTION_LABEL_TR "Renk Düzeltmesi"
 #define MGBA_COLOR_CORRECTION_INFO_0_TR "Çıktı renklerini gerçek GBA / GBC donanımının görüntüsüyle eşleşecek şekilde ayarlar."
 #define OPTION_VAL_AUTO_TR "Otomatik"
-#define MGBA_INTERFRAME_BLENDING_LABEL_TR NULL
-#define MGBA_INTERFRAME_BLENDING_INFO_0_TR NULL
-#define OPTION_VAL_MIX_TR NULL
-#define OPTION_VAL_MIX_SMART_TR NULL
-#define OPTION_VAL_LCD_GHOSTING_TR NULL
-#define OPTION_VAL_LCD_GHOSTING_FAST_TR NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_TR NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_TR NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_TR NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_TR NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_TR NULL
-#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_TR NULL
-#define OPTION_VAL_5_TR NULL
-#define OPTION_VAL_10_TR NULL
-#define OPTION_VAL_15_TR NULL
-#define OPTION_VAL_20_TR NULL
-#define OPTION_VAL_25_TR NULL
-#define OPTION_VAL_30_TR NULL
+#define MGBA_INTERFRAME_BLENDING_LABEL_TR "Çerçeveler Arası Karıştırma"
+#define MGBA_INTERFRAME_BLENDING_INFO_0_TR "LCD gölgelenme efektlerini taklit eder. 'Basit', mevcut ve önceki karelerin 50:50'lik bir karışımını gerçekleştirir. 'Akıllı' ekran titremesini algılamaya çalışır ve etkilenen piksellerde yalnızca 50:50'lik bir karışım gerçekleştirir. 'LCD Gölgeleme', birden çok arabelleğe alınmış çerçeveyi birleştirerek doğal LCD yanıt sürelerini taklit eder. Şeffaflık efektleri için LCD gölgelenmesinden agresif bir şekilde yararlanan oyunlar oynarken 'Basit' veya 'Akıllı' karıştırma gereklidir (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, Boktai serisi...)."
+#define OPTION_VAL_MIX_TR "Basit"
+#define OPTION_VAL_MIX_SMART_TR "Akıllı"
+#define OPTION_VAL_LCD_GHOSTING_TR "LCD Gölgeleme (Tam)"
+#define OPTION_VAL_LCD_GHOSTING_FAST_TR "LCD Gölgeleme (Hızlı)"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_TR "Ses Filtresi"
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_TR "Düşük Geçiş Filtresi"
+#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_TR "Oluşturulan sesin \"sertliğini\" azaltmak için düşük geçişli bir ses filtresini etkinleştirir."
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_TR "Ses Filtresi Seviyesi"
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_TR "Filtre Seviyesi"
+#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_TR "Düşük ses geçiş filtresinin kesme frekansını belirtin. Daha yüksek bir değer, yüksek frekans spektrumunun daha geniş bir aralığı azaltıldığı için filtrenin algılanan gücünü arttırır."
+#define OPTION_VAL_5_TR "%5"
+#define OPTION_VAL_10_TR "%10"
+#define OPTION_VAL_15_TR "%15"
+#define OPTION_VAL_20_TR "%20"
+#define OPTION_VAL_25_TR "%25"
+#define OPTION_VAL_30_TR "%30"
 #define OPTION_VAL_35_TR NULL
-#define OPTION_VAL_40_TR NULL
-#define OPTION_VAL_45_TR NULL
-#define OPTION_VAL_50_TR NULL
-#define OPTION_VAL_55_TR NULL
-#define OPTION_VAL_60_TR NULL
-#define OPTION_VAL_65_TR NULL
-#define OPTION_VAL_70_TR NULL
-#define OPTION_VAL_75_TR NULL
-#define OPTION_VAL_80_TR NULL
-#define OPTION_VAL_85_TR NULL
-#define OPTION_VAL_90_TR NULL
-#define OPTION_VAL_95_TR NULL
+#define OPTION_VAL_40_TR "%40"
+#define OPTION_VAL_45_TR "%45"
+#define OPTION_VAL_50_TR "%50"
+#define OPTION_VAL_55_TR "%55"
+#define OPTION_VAL_60_TR "%60"
+#define OPTION_VAL_65_TR "%65"
+#define OPTION_VAL_70_TR "%70"
+#define OPTION_VAL_75_TR "%75"
+#define OPTION_VAL_80_TR "%80"
+#define OPTION_VAL_85_TR "%85"
+#define OPTION_VAL_90_TR "%90"
+#define OPTION_VAL_95_TR "%95"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_TR "Karşı Yönlü Girdiye Çıkmaya İzin Ver"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_TR "Bunu etkinleştirmek aynı anda hem sola hem de sağa (veya yukarı ve aşağı) yönlere basma / hızlı değiştirme / tutma imkanı sağlar. Bu harekete dayalı hatalara neden olabilir."
-#define OPTION_VAL_NO_TR NULL
-#define OPTION_VAL_YES_TR NULL
+#define OPTION_VAL_NO_TR "hayır"
+#define OPTION_VAL_YES_TR "evet"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_TR "Güneş Sensörü Seviyesi"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_TR "Ortam güneş ışığının yoğunluğunu ayarlar. Boktai serisi, kartuşlarına güneş sensörü içeren oyunlar tarafından kullanılabilir."
 #define OPTION_VAL_SENSOR_TR "Sensörü"
@@ -14156,7 +14156,7 @@ struct retro_core_options_v2 options_sv = {
 #define OPTION_VAL_REMOVE_KNOWN_TR "Bilinenleri Kaldır"
 #define OPTION_VAL_DETECT_AND_REMOVE_TR "Algıla ve Kaldır"
 #define OPTION_VAL_DON_T_REMOVE_TR "Kaldırma"
-#define MGBA_FRAMESKIP_LABEL_TR NULL
+#define MGBA_FRAMESKIP_LABEL_TR "Kare Atlama"
 #define MGBA_FRAMESKIP_INFO_0_TR NULL
 #define OPTION_VAL_AUTO_THRESHOLD_TR NULL
 #define OPTION_VAL_FIXED_INTERVAL_TR NULL
