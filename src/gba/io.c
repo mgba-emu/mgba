@@ -547,6 +547,9 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	// Interrupts and misc
 	case REG_KEYCNT:
 		value &= 0xC3FF;
+		if (gba->keysLast < 0x400) {
+			gba->keysLast &= gba->memory.io[address >> 1] | ~value;
+		}
 		gba->memory.io[address >> 1] = value;
 		GBATestKeypadIRQ(gba);
 		return;
