@@ -143,6 +143,22 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       "Grayscale"
    },
    {
+      "mgba_gb_colors_preset",
+      "Hardware Preset Game Boy Palettes (Restart)",
+      NULL,
+      "Use the palettes for Game Boy games that have presets on the Game Boy Color or Super Game Boy.",
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", "Game Boy Color presets only" },
+         { "2", "Super Game Boy presets only" },
+         { "3", "Any available presets" },
+         { NULL, NULL },
+      },
+      "ON"
+   },
+   {
       "mgba_sgb_borders",
       "Use Super Game Boy Borders (Restart)",
       NULL,

@@ -1199,6 +1199,12 @@ static void _reloadSettings(void) {
 		mCoreConfigSetDefaultIntValue(&core->config, "sgb.borders", strcmp(var.value, "ON") == 0);
 	}
 
+	var.key = "mgba_gb_colors_preset";
+	var.value = 0;
+	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+		mCoreConfigSetDefaultIntValue(&core->config, "gb.colors", strtol(var.value, NULL, 10));
+	}
+
 	_updateGbPal();
 #endif
 
