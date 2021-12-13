@@ -381,7 +381,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	wait += waitstatesRegion[REGION_WORKING_RAM];
 
 #define LOAD_WORKING_IRAM LOAD_32(value, address & (SIZE_WORKING_IRAM - 4), memory->iwram);
-#define LOAD_IO value = GBAIORead(gba, address & OFFSET_MASK & ~2) | (GBAIORead(gba, (address & OFFSET_MASK) | 2) << 16);
+#define LOAD_IO value = GBAIORead(gba, address & OFFSET_MASK & ~3) | (GBAIORead(gba, (address & OFFSET_MASK & ~1) | 2) << 16);
 
 #define LOAD_PALETTE_RAM \
 	LOAD_32(value, address & (SIZE_PALETTE_RAM - 4), gba->video.palette); \

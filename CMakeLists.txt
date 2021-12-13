@@ -320,6 +320,8 @@ find_function(setlocale)
 find_function(snprintf_l)
 find_function(uselocale)
 
+find_function(popcount32)
+
 find_function(futimens)
 find_function(futimes)
 
@@ -368,7 +370,7 @@ if(USE_PTHREADS)
 	endif()
 endif()
 
-if(HAVE_NEWLOCALE AND HAVE_FREELOCALE AND HAVE_USELOCALE OR APPLE)
+if(HAVE_NEWLOCALE AND HAVE_FREELOCALE OR APPLE)
 	list(APPEND FUNCTION_DEFINES HAVE_LOCALE)
 	if (HAVE_SNPRINTF_L)
 		list(APPEND FUNCTION_DEFINES HAVE_SNPRINTF_L)

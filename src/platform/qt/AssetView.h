@@ -54,7 +54,7 @@ protected:
 	};
 
 	static void compositeTile(const void* tile, void* image, size_t stride, size_t x, size_t y, int depth = 8);
-	QImage compositeMap(int map, mMapCacheEntry*);
+	QImage compositeMap(int map, QVector<mMapCacheEntry>*);
 	QImage compositeObj(const ObjInfo&);
 
 	bool lookupObj(int id, struct ObjInfo*);

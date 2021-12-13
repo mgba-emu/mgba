@@ -95,6 +95,9 @@ static bool _testExtensions(const char* name) {
 	if (!strncmp(ext, "ini", PATH_MAX)) {
 		return false;
 	}
+	if (!strncmp(ext, "cheats", PATH_MAX)) {
+		return false;
+	}
 	if (!strncmp(ext, "ss", 2)) {
 		return false;
 	}
@@ -183,10 +186,10 @@ static void _tryAutosave(struct mGUIRunner* runner) {
 #ifdef DISABLE_THREADING
 	mCoreSaveState(runner->core, 0, SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
 #else
+	MutexLock(&runner->autosave.mutex);
 	if (!runner->autosave.buffer) {
 		runner->autosave.buffer = VFileMemChunk(NULL, 0);
 	}
-	MutexLock(&runner->autosave.mutex);
 	runner->autosave.core = runner->core;
 	mCoreSaveStateNamed(runner->core, runner->autosave.buffer, SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
 	ConditionWake(&runner->autosave.cond);
@@ -772,7 +775,13 @@ THREAD_ENTRY mGUIAutosaveThread(void* context) {
 	while (autosave->running) {
 		ConditionWait(&autosave->cond, &autosave->mutex);
 		if (autosave->running && autosave->core) {
+			if (!autosave->buffer) {
+				continue;
+			}
 			struct VFile* vf = mCoreGetState(autosave->core, 0, true);
+			if (!vf) {
+				continue;
+			}
 			void* mem = autosave->buffer->map(autosave->buffer, autosave->buffer->size(autosave->buffer), MAP_READ);
 			vf->write(vf, mem, autosave->buffer->size(autosave->buffer));
 			autosave->buffer->unmap(autosave->buffer, mem, autosave->buffer->size(autosave->buffer));

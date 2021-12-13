@@ -102,7 +102,7 @@ const struct GUIFontGlyphMetric defaultFontMetrics[128] = {
 	{  6, 11, { 2, 5, 3, 5 }}, // 0x5D "]"
 	{  8,  7, { 2, 4, 7, 4 }}, // 0x5E "^"
 	{ 10,  3, { 10, 3, 3, 3 }}, // 0x5F "_"
-	{  6,  5, { 8, 6, 3, 4 }}, // 0x60 "`"
+	{  6,  5, { 3, 4, 8, 6 }}, // 0x60 "`"
 	{  8,  7, { 6, 4, 3, 4 }}, // 0x61 "a"
 	{  8, 11, { 2, 4, 3, 4 }}, // 0x62 "b"
 	{  8,  7, { 6, 4, 3, 4 }}, // 0x63 "c"
@@ -158,4 +158,29 @@ const struct GUIIconMetric defaultIconMetrics[] = {
 	[GUI_ICON_DOWN] = { 130, 34, 12, 12 },
 	[GUI_ICON_STATUS_FAST_FORWARD] = { 2, 50, 12, 12 },
 	[GUI_ICON_STATUS_MUTE] = { 17, 50, 14, 12 },
+	[GUI_ICON_9SLICE_EMPTY_NW] = { 162, 1, 8, 8 },
+	[GUI_ICON_9SLICE_EMPTY_N] = { 170, 1, 12, 8 },
+	[GUI_ICON_9SLICE_EMPTY_NE] = { 182, 1, 8, 8 },
+	[GUI_ICON_9SLICE_EMPTY_W] = { 162, 9, 8, 12 },
+	[GUI_ICON_9SLICE_EMPTY_E] = { 182, 9, 8, 12 },
+	[GUI_ICON_9SLICE_EMPTY_SW] = { 162, 23, 8, 8 },
+	[GUI_ICON_9SLICE_EMPTY_S] = { 170, 23, 12, 8 },
+	[GUI_ICON_9SLICE_EMPTY_SE] = { 182, 23, 8, 8 },
+	[GUI_ICON_9SLICE_FILLED_NW] = { 194, 1, 8, 8 },
+	[GUI_ICON_9SLICE_FILLED_N] = { 202, 1, 12, 8 },
+	[GUI_ICON_9SLICE_FILLED_NE] = { 214, 1, 8, 8 },
+	[GUI_ICON_9SLICE_FILLED_W] = { 194, 9, 8, 12 },
+	[GUI_ICON_9SLICE_FILLED_C] = { 202, 9, 12, 12 },
+	[GUI_ICON_9SLICE_FILLED_E] = { 214, 9, 8, 12 },
+	[GUI_ICON_9SLICE_FILLED_SW] = { 194, 23, 8, 8 },
+	[GUI_ICON_9SLICE_FILLED_S] = { 202, 23, 12, 8 },
+	[GUI_ICON_9SLICE_FILLED_SE] = { 214, 23, 8, 8 },
+	[GUI_ICON_9SLICE_CAP_NNW] = { 240, 1, 8, 7 },
+	[GUI_ICON_9SLICE_CAP_NWW] = { 226, 16, 6, 8 },
+	[GUI_ICON_9SLICE_CAP_NNE] = { 232, 1, 8, 7 },
+	[GUI_ICON_9SLICE_CAP_NEE] = { 248, 16, 6, 8 },
+	[GUI_ICON_9SLICE_CAP_SSW] = { 240, 24, 8, 7 },
+	[GUI_ICON_9SLICE_CAP_SWW] = { 226, 8, 6, 8 },
+	[GUI_ICON_9SLICE_CAP_SSE] = { 232, 24, 8, 7 },
+	[GUI_ICON_9SLICE_CAP_SEE] = { 248, 8, 6, 8 },
 };

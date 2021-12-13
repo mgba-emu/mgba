@@ -146,7 +146,6 @@ struct GBACore {
 #ifndef DISABLE_THREADING
 	struct mVideoThreadProxy threadProxy;
 #endif
-	int keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	const struct Configuration* overrides;
 	struct mDebuggerPlatform* debuggerPlatform;
@@ -204,9 +203,6 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->vlProxy.logger = NULL;
 	gbacore->proxyRenderer.logger = NULL;
 #endif
-
-	gbacore->keys = 0;
-	gba->keySource = &gbacore->keys;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetInit(&core->dirs);
@@ -292,9 +288,7 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 		}
 	}
 
-	int fakeBool = 0;
-	mCoreConfigGetIntValue(config, "allowOpposingDirections", &fakeBool);
-	gba->allowOpposingDirections = fakeBool;
+	mCoreConfigGetBoolValue(config, "allowOpposingDirections", &gba->allowOpposingDirections);
 
 	mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 	mCoreConfigCopyValue(&core->config, config, "gba.bios");
@@ -326,11 +320,8 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 		return;
 	}
 
-	int fakeBool;
 	if (strcmp("mute", option) == 0) {
-		if (mCoreConfigGetIntValue(config, "mute", &fakeBool)) {
-			core->opts.mute = fakeBool;
-
+		if (mCoreConfigGetBoolValue(config, "mute", &core->opts.mute)) {
 			if (core->opts.mute) {
 				gba->audio.masterVolume = 0;
 			} else {
@@ -355,9 +346,7 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 		if (config != &core->config) {
 			mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 		}
-		if (mCoreConfigGetIntValue(config, "allowOpposingDirections", &fakeBool)) {
-			gba->allowOpposingDirections = fakeBool;
-		}
+		mCoreConfigGetBoolValue(config, "allowOpposingDirections", &gba->allowOpposingDirections);
 		return;
 	}
 
@@ -367,7 +356,8 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 		if (config != &core->config) {
 			mCoreConfigCopyValue(&core->config, config, "videoScale");
 		}
-		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
+		bool value;
+		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetBoolValue(&core->config, "hwaccelVideo", &value) && value) {
 			int scale;
 			mCoreConfigGetIntValue(config, "videoScale", &scale);
 			GBAVideoGLRendererSetScale(&gbacore->glRenderer, scale);
@@ -381,7 +371,8 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 			renderer = &gbacore->renderer.d;
 		}
 #ifdef BUILD_GLES3
-		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
+		bool value;
+		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetBoolValue(&core->config, "hwaccelVideo", &value) && value) {
 			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);
 			renderer = &gbacore->glRenderer.d;
 		} else {
@@ -560,7 +551,8 @@ static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChe
 static void _GBACoreReset(struct mCore* core) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	struct GBA* gba = (struct GBA*) core->board;
-	int fakeBool;
+	bool value;
+	UNUSED(value);
 	if (gbacore->renderer.outputBuffer
 #ifdef BUILD_GLES3
 	    || gbacore->glRenderer.outputTex != (unsigned) -1
@@ -571,7 +563,7 @@ static void _GBACoreReset(struct mCore* core) {
 			renderer = &gbacore->renderer.d;
 		}
 #ifdef BUILD_GLES3
-		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetIntValue(&core->config, "hwaccelVideo", &fakeBool) && fakeBool) {
+		if (gbacore->glRenderer.outputTex != (unsigned) -1 && mCoreConfigGetBoolValue(&core->config, "hwaccelVideo", &value) && value) {
 			mCoreConfigGetIntValue(&core->config, "videoScale", &gbacore->glRenderer.scale);
 			renderer = &gbacore->glRenderer.d;
 		} else {
@@ -579,7 +571,7 @@ static void _GBACoreReset(struct mCore* core) {
 		}
 #endif
 #ifndef DISABLE_THREADING
-		if (mCoreConfigGetIntValue(&core->config, "threadedVideo", &fakeBool) && fakeBool) {
+		if (mCoreConfigGetBoolValue(&core->config, "threadedVideo", &value) && value) {
 			if (!core->videoLogger) {
 				core->videoLogger = &gbacore->threadProxy.d;
 			}
@@ -608,13 +600,9 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 
 	bool forceGbp = false;
-	if (mCoreConfigGetIntValue(&core->config, "gba.forceGbp", &fakeBool)) {
-		forceGbp = fakeBool;
-	}
 	bool vbaBugCompat = true;
-	if (mCoreConfigGetIntValue(&core->config, "vbaBugCompat", &fakeBool)) {
-		vbaBugCompat = fakeBool;
-	}
+	mCoreConfigGetBoolValue(&core->config, "gba.forceGbp", &forceGbp);
+	mCoreConfigGetBoolValue(&core->config, "vbaBugCompat", &vbaBugCompat);
 	if (!forceGbp) {
 		gba->memory.hw.devices &= ~HW_GB_PLAYER_DETECTION;
 	}
@@ -707,20 +695,21 @@ static bool _GBACoreSaveState(struct mCore* core, void* state) {
 }
 
 static void _GBACoreSetKeys(struct mCore* core, uint32_t keys) {
-	struct GBACore* gbacore = (struct GBACore*) core;
-	gbacore->keys = keys;
-	GBATestKeypadIRQ(core->board);
+	struct GBA* gba = core->board;
+	gba->keysActive = keys;
+	GBATestKeypadIRQ(gba);
 }
 
 static void _GBACoreAddKeys(struct mCore* core, uint32_t keys) {
-	struct GBACore* gbacore = (struct GBACore*) core;
-	gbacore->keys |= keys;
-	GBATestKeypadIRQ(core->board);
+	struct GBA* gba = core->board;
+	gba->keysActive |= keys;
+	GBATestKeypadIRQ(gba);
 }
 
 static void _GBACoreClearKeys(struct mCore* core, uint32_t keys) {
-	struct GBACore* gbacore = (struct GBACore*) core;
-	gbacore->keys &= ~keys;
+	struct GBA* gba = core->board;
+	gba->keysActive &= ~keys;
+	GBATestKeypadIRQ(gba);
 }
 
 static int32_t _GBACoreFrameCounter(const struct mCore* core) {

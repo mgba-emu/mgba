@@ -72,6 +72,8 @@ static void _gdbStubEntered(struct mDebugger* debugger, enum mDebuggerEntryReaso
 			case WATCHPOINT_RW:
 				type = "awatch";
 				break;
+			case WATCHPOINT_CHANGE:
+				break;
 			}
 			snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "T%02x%s:%08x;", SIGTRAP, type, info->address);
 		} else {
@@ -629,6 +631,7 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		_readGPRs(stub, message);
 		break;
 	case 'H':
+	case 'T':
 		// This is faked because we only have one thread
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 		_sendMessage(stub);

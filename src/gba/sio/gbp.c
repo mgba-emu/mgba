@@ -41,6 +41,7 @@ static const uint32_t _gbpTxData[] = {
 
 void GBASIOPlayerInit(struct GBASIOPlayer* gbp) {
 	gbp->callback.d.readKeys = _gbpRead;
+	gbp->callback.d.requireOpposingDirections = true;
 	gbp->callback.p = gbp;
 	gbp->d.init = 0;
 	gbp->d.deinit = 0;
@@ -72,10 +73,8 @@ void GBASIOPlayerUpdate(struct GBA* gba) {
 		if (GBASIOPlayerCheckScreen(&gba->video)) {
 			++gba->sio.gbp.inputsPosted;
 			gba->sio.gbp.inputsPosted %= 3;
-			gba->keyCallback = &gba->sio.gbp.callback.d;
 		} else {
-			// TODO: Save and restore
-			gba->keyCallback = 0;
+			gba->keyCallback = gba->sio.gbp.oldCallback;
 		}
 		gba->sio.gbp.txPosition = 0;
 		return;
@@ -86,6 +85,7 @@ void GBASIOPlayerUpdate(struct GBA* gba) {
 	if (GBASIOPlayerCheckScreen(&gba->video)) {
 		gba->memory.hw.devices |= HW_GB_PLAYER;
 		gba->sio.gbp.inputsPosted = 0;
+		gba->sio.gbp.oldCallback = gba->keyCallback;
 		gba->keyCallback = &gba->sio.gbp.callback.d;
 		// TODO: Check if the SIO driver is actually used first
 		GBASIOSetDriver(&gba->sio, &gba->sio.gbp.d, SIO_NORMAL_32);

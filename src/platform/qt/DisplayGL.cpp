@@ -11,6 +11,7 @@
 #include <QMutexLocker>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include <QOpenGLFunctions>
 #include <QOpenGLPaintDevice>
 #include <QResizeEvent>
 #include <QScreen>
@@ -125,7 +126,22 @@ bool DisplayGL::supportsFormat(const QSurfaceFormat& format) {
 		           context.format().profile() == QSurfaceFormat::CompatibilityProfile ||
 		           context.format().testOption(QSurfaceFormat::DeprecatedFunctions))) {
 			// Supports the old stuff
-			s_supports[format] = true;
+			QOffscreenSurface surface;
+			surface.create();
+			if (!context.makeCurrent(&surface)) {
+				s_supports[format] = false;
+				return false;
+			}
+#ifdef Q_OS_WIN
+			QLatin1String renderer(reinterpret_cast<const char*>(context.functions()->glGetString(GL_RENDERER)));
+			if (renderer == "GDI Generic") {
+				// Windows' software OpenGL 1.1 implementation is not sufficient
+				s_supports[format] = false;
+				return false;
+			}
+#endif
+			s_supports[format] = context.hasExtension("GL_EXT_blend_color"); // Core as of 1.2
+			context.doneCurrent();
 		} else if (!context.isOpenGLES() && format.version() >= qMakePair(2, 1) && foundVersion < qMakePair(3, 0) && foundVersion >= qMakePair(2, 1)) {
 			// Weird edge case we support if ARB_framebuffer_object is present
 			QOffscreenSurface surface;
@@ -521,19 +537,17 @@ void PainterGL::unpause() {
 }
 
 void PainterGL::performDraw() {
-	m_painter.begin(m_window.get());
-	m_painter.beginNativePainting();
 	float r = m_surface->devicePixelRatio();
 	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
 	if (m_buffer) {
 		m_backend->postFrame(m_backend, m_buffer);
 	}
 	m_backend->drawFrame(m_backend);
-	m_painter.endNativePainting();
 	if (m_showOSD && m_messagePainter) {
+		m_painter.begin(m_window.get());
 		m_messagePainter->paint(&m_painter);
+		m_painter.end();
 	}
-	m_painter.end();
 }
 
 void PainterGL::enqueue(const uint32_t* backing) {

@@ -23,6 +23,8 @@ struct GBASIOPlayer {
 	int txPosition;
 	struct mTimingEvent event;
 	struct GBASIOPlayerKeyCallback callback;
+	bool oldOpposingDirections;
+	struct mKeyCallback* oldCallback;
 };
 
 void GBASIOPlayerInit(struct GBASIOPlayer* gbp);

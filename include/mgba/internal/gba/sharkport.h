@@ -13,6 +13,8 @@ CXX_GUARD_START
 struct GBA;
 struct VFile;
 
+int GBASavedataSharkPortPayloadSize(struct VFile* vf);
+void* GBASavedataSharkPortGetPayload(struct VFile* vf, size_t* size, uint8_t* header, bool testChecksum);
 bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChecksum);
 bool GBASavedataExportSharkPort(const struct GBA* gba, struct VFile* vf);
 

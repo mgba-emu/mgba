@@ -744,7 +744,7 @@ static bool _doTrace(struct CLIDebugger* debugger) {
 	trace[sizeof(trace) - 1] = '\0';
 	size_t traceSize = sizeof(trace) - 2;
 	debugger->d.platform->trace(debugger->d.platform, trace, &traceSize);
-	if (traceSize + 1 <= sizeof(trace)) {
+	if (traceSize + 2 <= sizeof(trace)) {
 		trace[traceSize] = '\n';
 		trace[traceSize + 1] = '\0';
 	}

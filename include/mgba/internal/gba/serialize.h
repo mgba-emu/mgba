@@ -184,7 +184,11 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x002C4 - 0x002C7: Game Boy Player next event
  * 0x002C8 - 0x002CB: Current DMA transfer word
  * 0x002CC - 0x002CF: Last DMA transfer PC
- * 0x002D0 - 0x002DF: Reserved (leave zero)
+ * 0x002D0 - 0x002DF: Matrix memory command buffer
+ * | 0x002D0 - 0x002D3: Command
+ * | 0x002D4 - 0x002D7: Physical address
+ * | 0x002D8 - 0x002DB: Virtual address
+ * | 0x002DC - 0x002DF: Size
  * 0x002E0 - 0x002EF: Savedata state
  * | 0x002E0 - 0x002E0: Savedata type
  * | 0x002E1 - 0x002E1: Savedata command (see savedata.h)
@@ -208,12 +212,16 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x00310 - 0x00317: Global cycle counter
  * 0x00318 - 0x0031B: Last prefetched program counter
  * 0x0031C - 0x0031F: Miscellaneous flags
- *  | bit 0: Is CPU halted?
- *  | bit 1: POSTFLG
- *  | bit 2: Is IRQ pending?
+ * | bit 0: Is CPU halted?
+ * | bit 1: POSTFLG
+ * | bit 2: Is IRQ pending?
+ * | bit 3: Is CPU blocked?
+ * | bits 4 - 14: Active key IRQ keys
+ * | bits 15 - 31: Reserved
  * 0x00320 - 0x00323: Next IRQ event
  * 0x00324 - 0x00327: Interruptable BIOS stall cycles
- * 0x00328 - 0x003FF: Reserved (leave zero)
+ * 0x00328 - 0x00367: Matrix memory mapping table
+ * 0x00368 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -255,6 +263,7 @@ DECL_BIT(GBASerializedMiscFlags, Halted, 0);
 DECL_BIT(GBASerializedMiscFlags, POSTFLG, 1);
 DECL_BIT(GBASerializedMiscFlags, IrqPending, 2);
 DECL_BIT(GBASerializedMiscFlags, Blocked, 3);
+DECL_BITS(GBASerializedMiscFlags, KeyIRQKeys, 4, 11);
 
 struct GBASerializedState {
 	uint32_t versionMagic;

@@ -462,6 +462,8 @@ static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* user,
 				node->eventDiff = 0;
 			}
 			break;
+		default:
+			break;
 		}
 	} else if (node->nextEvent <= 0) {
 		if (!node->id) {

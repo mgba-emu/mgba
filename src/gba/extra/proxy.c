@@ -8,6 +8,7 @@
 #include <mgba/core/cache-set.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/renderers/cache-set.h>
 
 static void GBAVideoProxyRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoProxyRendererReset(struct GBAVideoRenderer* renderer);
@@ -266,6 +267,9 @@ uint16_t GBAVideoProxyRendererWriteVideoRegister(struct GBAVideoRenderer* render
 	}
 	if (address > REG_BLDY) {
 		return value;
+	}
+	if (renderer->cache) {
+		GBAVideoCacheWriteVideoRegister(renderer->cache, address, value);
 	}
 
 	mVideoLoggerRendererWriteVideoRegister(proxyRenderer->logger, address, value);

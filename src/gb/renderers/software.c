@@ -472,12 +472,14 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	color_t color = mColorFrom555(value);
 	if (softwareRenderer->model & GB_MODEL_SGB) {
-		if (index < 0x10 && index && !(index & 3)) {
+		if (index >= PAL_SGB_BORDER && !(index & 0xF)) {
 			color = softwareRenderer->palette[0];
-		} else if (index >= PAL_SGB_BORDER && !(index & 0xF)) {
-			color = softwareRenderer->palette[0];
-		} else if (index > PAL_HIGHLIGHT && index < PAL_HIGHLIGHT_OBJ && !(index & 3)) {
-			color = softwareRenderer->palette[PAL_HIGHLIGHT_BG];			
+		} else if (!(softwareRenderer->model & GB_MODEL_CGB)) {
+			if (index < 0x10 && index && !(index & 3)) {
+				color = softwareRenderer->palette[0];
+			} else if (index > PAL_HIGHLIGHT && index < PAL_HIGHLIGHT_OBJ && !(index & 3)) {
+				color = softwareRenderer->palette[PAL_HIGHLIGHT_BG];
+			}
 		}
 	}
 	if (renderer->cache) {
@@ -511,13 +513,15 @@ static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer
 	}
 
 	if (softwareRenderer->model & GB_MODEL_SGB && !index && GBRegisterLCDCIsEnable(softwareRenderer->lcdc)) {
-		renderer->writePalette(renderer, 0x04, value);
-		renderer->writePalette(renderer, 0x08, value);
-		renderer->writePalette(renderer, 0x0C, value);
-		renderer->writePalette(renderer, 0x40, value);
-		renderer->writePalette(renderer, 0x50, value);
-		renderer->writePalette(renderer, 0x60, value);
-		renderer->writePalette(renderer, 0x70, value);
+		if (!(softwareRenderer->model & GB_MODEL_CGB)) {
+			renderer->writePalette(renderer, 0x04, value);
+			renderer->writePalette(renderer, 0x08, value);
+			renderer->writePalette(renderer, 0x0C, value);
+			renderer->writePalette(renderer, 0x40, value);
+			renderer->writePalette(renderer, 0x50, value);
+			renderer->writePalette(renderer, 0x60, value);
+			renderer->writePalette(renderer, 0x70, value);
+		}
 		if (softwareRenderer->sgbBorders && !renderer->sgbRenderMode) {
 			_regenerateSGBBorder(softwareRenderer);
 		}

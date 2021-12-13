@@ -60,8 +60,8 @@ SolidCompression=True
 VersionInfoTextVersion={#VersionString}
 VersionInfoProductVersion={#AppVer}
 VersionInfoProductTextVersion={#VersionString}
-ArchitecturesInstallIn64BitMode=x64
-ArchitecturesAllowed=x86 x64
+ArchitecturesInstallIn64BitMode=x64 arm64
+ArchitecturesAllowed=x86 x64 arm64
 
 [Languages]
 Name: "german"; MessagesFile: "compiler:Languages\German.isl"

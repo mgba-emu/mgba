@@ -61,11 +61,11 @@ void GBTimerReset(struct GBTimer* timer) {
 	timer->event.context = timer;
 	timer->event.name = "GB Timer";
 	timer->event.callback = _GBTimerUpdate;
-	timer->event.priority = 0x20;
+	timer->event.priority = 0x21;
 	timer->irq.context = timer;
 	timer->irq.name = "GB Timer IRQ";
 	timer->irq.callback = _GBTimerIRQ;
-	timer->event.priority = 0x21;
+	timer->irq.priority = 0x20;
 
 	timer->nextDiv = GB_DMG_DIV_PERIOD * 2;
 	timer->timaPeriod = 1024 >> 4;
