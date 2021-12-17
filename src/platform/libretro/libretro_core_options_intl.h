@@ -64,6 +64,11 @@ extern "C" {
 #define MGBA_GB_COLORS_LABEL_AR NULL
 #define MGBA_GB_COLORS_INFO_0_AR NULL
 #define OPTION_VAL_GRAYSCALE_AR NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_AR NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_AR NULL
+#define OPTION_VAL_1_AR NULL
+#define OPTION_VAL_2_AR NULL
+#define OPTION_VAL_3_AR NULL
 #define MGBA_SGB_BORDERS_LABEL_AR NULL
 #define MGBA_SGB_BORDERS_INFO_0_AR NULL
 #define MGBA_COLOR_CORRECTION_LABEL_AR NULL
@@ -214,6 +219,22 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_AR,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_AR,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_AR },
+         { "2", OPTION_VAL_2_AR },
+         { "3", OPTION_VAL_3_AR },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -477,6 +498,11 @@ struct retro_core_options_v2 options_ar = {
 #define MGBA_GB_COLORS_LABEL_AST NULL
 #define MGBA_GB_COLORS_INFO_0_AST NULL
 #define OPTION_VAL_GRAYSCALE_AST NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_AST NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_AST "Usa les paletes de los xuegos de Game Boy que tengan preaxustes en Game Boy Color o Super Game Boy."
+#define OPTION_VAL_1_AST "Namás preaxustes de Game Boy Color"
+#define OPTION_VAL_2_AST "Namás preaxustes de Super Game Boy"
+#define OPTION_VAL_3_AST "Cualesquier preaxuste disponible"
 #define MGBA_SGB_BORDERS_LABEL_AST NULL
 #define MGBA_SGB_BORDERS_INFO_0_AST NULL
 #define MGBA_COLOR_CORRECTION_LABEL_AST NULL
@@ -627,6 +653,22 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_AST,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_AST,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_AST },
+         { "2", OPTION_VAL_2_AST },
+         { "3", OPTION_VAL_3_AST },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -890,6 +932,11 @@ struct retro_core_options_v2 options_ast = {
 #define MGBA_GB_COLORS_LABEL_CA NULL
 #define MGBA_GB_COLORS_INFO_0_CA NULL
 #define OPTION_VAL_GRAYSCALE_CA NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_CA NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_CA NULL
+#define OPTION_VAL_1_CA NULL
+#define OPTION_VAL_2_CA NULL
+#define OPTION_VAL_3_CA NULL
 #define MGBA_SGB_BORDERS_LABEL_CA NULL
 #define MGBA_SGB_BORDERS_INFO_0_CA NULL
 #define MGBA_COLOR_CORRECTION_LABEL_CA NULL
@@ -1040,6 +1087,22 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_CA,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_CA,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_CA },
+         { "2", OPTION_VAL_2_CA },
+         { "3", OPTION_VAL_3_CA },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -1303,6 +1366,11 @@ struct retro_core_options_v2 options_ca = {
 #define MGBA_GB_COLORS_LABEL_CHS NULL
 #define MGBA_GB_COLORS_INFO_0_CHS NULL
 #define OPTION_VAL_GRAYSCALE_CHS "灰阶"
+#define MGBA_GB_COLORS_PRESET_LABEL_CHS NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_CHS NULL
+#define OPTION_VAL_1_CHS NULL
+#define OPTION_VAL_2_CHS NULL
+#define OPTION_VAL_3_CHS NULL
 #define MGBA_SGB_BORDERS_LABEL_CHS NULL
 #define MGBA_SGB_BORDERS_INFO_0_CHS NULL
 #define MGBA_COLOR_CORRECTION_LABEL_CHS NULL
@@ -1453,6 +1521,22 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_CHS,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_CHS,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_CHS },
+         { "2", OPTION_VAL_2_CHS },
+         { "3", OPTION_VAL_3_CHS },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -1716,6 +1800,11 @@ struct retro_core_options_v2 options_chs = {
 #define MGBA_GB_COLORS_LABEL_CHT NULL
 #define MGBA_GB_COLORS_INFO_0_CHT NULL
 #define OPTION_VAL_GRAYSCALE_CHT NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_CHT NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_CHT NULL
+#define OPTION_VAL_1_CHT NULL
+#define OPTION_VAL_2_CHT NULL
+#define OPTION_VAL_3_CHT NULL
 #define MGBA_SGB_BORDERS_LABEL_CHT NULL
 #define MGBA_SGB_BORDERS_INFO_0_CHT NULL
 #define MGBA_COLOR_CORRECTION_LABEL_CHT NULL
@@ -1866,6 +1955,22 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_CHT,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_CHT,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_CHT },
+         { "2", OPTION_VAL_2_CHT },
+         { "3", OPTION_VAL_3_CHT },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -2129,6 +2234,11 @@ struct retro_core_options_v2 options_cht = {
 #define MGBA_GB_COLORS_LABEL_CS NULL
 #define MGBA_GB_COLORS_INFO_0_CS NULL
 #define OPTION_VAL_GRAYSCALE_CS NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_CS NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_CS NULL
+#define OPTION_VAL_1_CS NULL
+#define OPTION_VAL_2_CS NULL
+#define OPTION_VAL_3_CS NULL
 #define MGBA_SGB_BORDERS_LABEL_CS NULL
 #define MGBA_SGB_BORDERS_INFO_0_CS NULL
 #define MGBA_COLOR_CORRECTION_LABEL_CS NULL
@@ -2279,6 +2389,22 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_CS,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_CS,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_CS },
+         { "2", OPTION_VAL_2_CS },
+         { "3", OPTION_VAL_3_CS },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -2542,6 +2668,11 @@ struct retro_core_options_v2 options_cs = {
 #define MGBA_GB_COLORS_LABEL_CY NULL
 #define MGBA_GB_COLORS_INFO_0_CY NULL
 #define OPTION_VAL_GRAYSCALE_CY NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_CY NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_CY NULL
+#define OPTION_VAL_1_CY NULL
+#define OPTION_VAL_2_CY NULL
+#define OPTION_VAL_3_CY NULL
 #define MGBA_SGB_BORDERS_LABEL_CY NULL
 #define MGBA_SGB_BORDERS_INFO_0_CY NULL
 #define MGBA_COLOR_CORRECTION_LABEL_CY NULL
@@ -2692,6 +2823,22 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_CY,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_CY,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_CY },
+         { "2", OPTION_VAL_2_CY },
+         { "3", OPTION_VAL_3_CY },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -2955,6 +3102,11 @@ struct retro_core_options_v2 options_cy = {
 #define MGBA_GB_COLORS_LABEL_DA NULL
 #define MGBA_GB_COLORS_INFO_0_DA NULL
 #define OPTION_VAL_GRAYSCALE_DA NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_DA NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_DA NULL
+#define OPTION_VAL_1_DA NULL
+#define OPTION_VAL_2_DA NULL
+#define OPTION_VAL_3_DA NULL
 #define MGBA_SGB_BORDERS_LABEL_DA NULL
 #define MGBA_SGB_BORDERS_INFO_0_DA NULL
 #define MGBA_COLOR_CORRECTION_LABEL_DA NULL
@@ -3105,6 +3257,22 @@ struct retro_core_option_v2_definition option_defs_da[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_DA,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_DA,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_DA },
+         { "2", OPTION_VAL_2_DA },
+         { "3", OPTION_VAL_3_DA },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -3368,6 +3536,11 @@ struct retro_core_options_v2 options_da = {
 #define MGBA_GB_COLORS_LABEL_DE NULL
 #define MGBA_GB_COLORS_INFO_0_DE NULL
 #define OPTION_VAL_GRAYSCALE_DE "Graustufen"
+#define MGBA_GB_COLORS_PRESET_LABEL_DE NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_DE NULL
+#define OPTION_VAL_1_DE NULL
+#define OPTION_VAL_2_DE NULL
+#define OPTION_VAL_3_DE NULL
 #define MGBA_SGB_BORDERS_LABEL_DE NULL
 #define MGBA_SGB_BORDERS_INFO_0_DE NULL
 #define MGBA_COLOR_CORRECTION_LABEL_DE "Farbkorrektur"
@@ -3518,6 +3691,22 @@ struct retro_core_option_v2_definition option_defs_de[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_DE,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_DE,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_DE },
+         { "2", OPTION_VAL_2_DE },
+         { "3", OPTION_VAL_3_DE },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -3781,6 +3970,11 @@ struct retro_core_options_v2 options_de = {
 #define MGBA_GB_COLORS_LABEL_EL NULL
 #define MGBA_GB_COLORS_INFO_0_EL NULL
 #define OPTION_VAL_GRAYSCALE_EL NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_EL NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_EL NULL
+#define OPTION_VAL_1_EL NULL
+#define OPTION_VAL_2_EL NULL
+#define OPTION_VAL_3_EL NULL
 #define MGBA_SGB_BORDERS_LABEL_EL NULL
 #define MGBA_SGB_BORDERS_INFO_0_EL NULL
 #define MGBA_COLOR_CORRECTION_LABEL_EL NULL
@@ -3931,6 +4125,22 @@ struct retro_core_option_v2_definition option_defs_el[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_EL,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_EL,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_EL },
+         { "2", OPTION_VAL_2_EL },
+         { "3", OPTION_VAL_3_EL },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -4194,6 +4404,11 @@ struct retro_core_options_v2 options_el = {
 #define MGBA_GB_COLORS_LABEL_EO NULL
 #define MGBA_GB_COLORS_INFO_0_EO NULL
 #define OPTION_VAL_GRAYSCALE_EO NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_EO NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_EO NULL
+#define OPTION_VAL_1_EO NULL
+#define OPTION_VAL_2_EO NULL
+#define OPTION_VAL_3_EO NULL
 #define MGBA_SGB_BORDERS_LABEL_EO NULL
 #define MGBA_SGB_BORDERS_INFO_0_EO NULL
 #define MGBA_COLOR_CORRECTION_LABEL_EO NULL
@@ -4344,6 +4559,22 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_EO,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_EO,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_EO },
+         { "2", OPTION_VAL_2_EO },
+         { "3", OPTION_VAL_3_EO },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -4607,6 +4838,11 @@ struct retro_core_options_v2 options_eo = {
 #define MGBA_GB_COLORS_LABEL_ES "Paleta predeterminada de Game Boy"
 #define MGBA_GB_COLORS_INFO_0_ES "Selecciona la paleta que se utilizará con aquellos juegos de Game Boy que no sean compatibles con Game Boy Color/Super Game Boy o al forzar el modelo a Game Boy."
 #define OPTION_VAL_GRAYSCALE_ES "Escala de grises"
+#define MGBA_GB_COLORS_PRESET_LABEL_ES "Paletas del hardware de Game Boy (es necesario reiniciar)"
+#define MGBA_GB_COLORS_PRESET_INFO_0_ES "Aplica paletas específicas a aquellos juegos de Game Boy para los que la Game Boy Color o el Super Game Boy tengan un preajuste asignado."
+#define OPTION_VAL_1_ES "Solo preajustes de Game Boy Color"
+#define OPTION_VAL_2_ES "Solo preajustes de Super Game Boy"
+#define OPTION_VAL_3_ES "Usar cualquier preajuste disponible"
 #define MGBA_SGB_BORDERS_LABEL_ES "Utilizar bordes de Super Game Boy (es necesario reiniciar)"
 #define MGBA_SGB_BORDERS_INFO_0_ES "Muestra los bordes de Super Game Boy al ejecutar juegos compatibles con este sistema."
 #define MGBA_COLOR_CORRECTION_LABEL_ES "Corrección de color"
@@ -4757,6 +4993,22 @@ struct retro_core_option_v2_definition option_defs_es[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_ES,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_ES,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_ES },
+         { "2", OPTION_VAL_2_ES },
+         { "3", OPTION_VAL_3_ES },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -5020,6 +5272,11 @@ struct retro_core_options_v2 options_es = {
 #define MGBA_GB_COLORS_LABEL_FA NULL
 #define MGBA_GB_COLORS_INFO_0_FA NULL
 #define OPTION_VAL_GRAYSCALE_FA NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_FA NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_FA NULL
+#define OPTION_VAL_1_FA NULL
+#define OPTION_VAL_2_FA NULL
+#define OPTION_VAL_3_FA NULL
 #define MGBA_SGB_BORDERS_LABEL_FA NULL
 #define MGBA_SGB_BORDERS_INFO_0_FA NULL
 #define MGBA_COLOR_CORRECTION_LABEL_FA NULL
@@ -5170,6 +5427,22 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_FA,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_FA,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_FA },
+         { "2", OPTION_VAL_2_FA },
+         { "3", OPTION_VAL_3_FA },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -5433,6 +5706,11 @@ struct retro_core_options_v2 options_fa = {
 #define MGBA_GB_COLORS_LABEL_FI "Game Boy:n oletus paletti"
 #define MGBA_GB_COLORS_INFO_0_FI NULL
 #define OPTION_VAL_GRAYSCALE_FI "Harmaasävy"
+#define MGBA_GB_COLORS_PRESET_LABEL_FI NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_FI NULL
+#define OPTION_VAL_1_FI NULL
+#define OPTION_VAL_2_FI NULL
+#define OPTION_VAL_3_FI NULL
 #define MGBA_SGB_BORDERS_LABEL_FI "Käytä Super Game Boy -kehyksiä (Uudelleenkäynnistys)"
 #define MGBA_SGB_BORDERS_INFO_0_FI "Näytä Super Game Boy kehykset, kun ajetaan Super Game Boy tehostettuja pelejä."
 #define MGBA_COLOR_CORRECTION_LABEL_FI "Värinkorjaus"
@@ -5583,6 +5861,22 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_FI,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_FI,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_FI },
+         { "2", OPTION_VAL_2_FI },
+         { "3", OPTION_VAL_3_FI },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -5846,6 +6140,11 @@ struct retro_core_options_v2 options_fi = {
 #define MGBA_GB_COLORS_LABEL_FR "Palette Game Boy par défaut"
 #define MGBA_GB_COLORS_INFO_0_FR "Sélectionne quelle palette est utilisée pour les jeux de Game Boy qui ne sont pas compatibles Game Boy Color ou Super Game Boy, ou si le modèle est forcé sur Game Boy."
 #define OPTION_VAL_GRAYSCALE_FR "Niveaux de gris"
+#define MGBA_GB_COLORS_PRESET_LABEL_FR "Palettes de Game Boy prédéfinies par le matériel (Redémarrage requis)"
+#define MGBA_GB_COLORS_PRESET_INFO_0_FR "Utiliser les palettes pour les jeux de Game Boy qui ont des préréglages sur la Game Boy Color ou le Super Game Boy."
+#define OPTION_VAL_1_FR "Préréglages de Game Boy Color uniquement"
+#define OPTION_VAL_2_FR "Préréglages de Super Game Boy uniquement"
+#define OPTION_VAL_3_FR "Tous les préréglages disponibles"
 #define MGBA_SGB_BORDERS_LABEL_FR "Utiliser les bordures de Super Game Boy (Redémarrage requis)"
 #define MGBA_SGB_BORDERS_INFO_0_FR "Afficher les bordures Super Game Boy lors de l'exécution de jeux améliorés pour le Super Game Boy."
 #define MGBA_COLOR_CORRECTION_LABEL_FR "Correction colorimétrique"
@@ -5996,6 +6295,22 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_FR,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_FR,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_FR },
+         { "2", OPTION_VAL_2_FR },
+         { "3", OPTION_VAL_3_FR },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -6259,6 +6574,11 @@ struct retro_core_options_v2 options_fr = {
 #define MGBA_GB_COLORS_LABEL_GL NULL
 #define MGBA_GB_COLORS_INFO_0_GL NULL
 #define OPTION_VAL_GRAYSCALE_GL NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_GL NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_GL NULL
+#define OPTION_VAL_1_GL NULL
+#define OPTION_VAL_2_GL NULL
+#define OPTION_VAL_3_GL NULL
 #define MGBA_SGB_BORDERS_LABEL_GL NULL
 #define MGBA_SGB_BORDERS_INFO_0_GL NULL
 #define MGBA_COLOR_CORRECTION_LABEL_GL NULL
@@ -6409,6 +6729,22 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_GL,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_GL,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_GL },
+         { "2", OPTION_VAL_2_GL },
+         { "3", OPTION_VAL_3_GL },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -6672,6 +7008,11 @@ struct retro_core_options_v2 options_gl = {
 #define MGBA_GB_COLORS_LABEL_HE NULL
 #define MGBA_GB_COLORS_INFO_0_HE NULL
 #define OPTION_VAL_GRAYSCALE_HE NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_HE NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_HE NULL
+#define OPTION_VAL_1_HE NULL
+#define OPTION_VAL_2_HE NULL
+#define OPTION_VAL_3_HE NULL
 #define MGBA_SGB_BORDERS_LABEL_HE NULL
 #define MGBA_SGB_BORDERS_INFO_0_HE NULL
 #define MGBA_COLOR_CORRECTION_LABEL_HE NULL
@@ -6822,6 +7163,22 @@ struct retro_core_option_v2_definition option_defs_he[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_HE,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_HE,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_HE },
+         { "2", OPTION_VAL_2_HE },
+         { "3", OPTION_VAL_3_HE },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -7085,6 +7442,11 @@ struct retro_core_options_v2 options_he = {
 #define MGBA_GB_COLORS_LABEL_HU NULL
 #define MGBA_GB_COLORS_INFO_0_HU NULL
 #define OPTION_VAL_GRAYSCALE_HU NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_HU NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_HU NULL
+#define OPTION_VAL_1_HU NULL
+#define OPTION_VAL_2_HU NULL
+#define OPTION_VAL_3_HU NULL
 #define MGBA_SGB_BORDERS_LABEL_HU NULL
 #define MGBA_SGB_BORDERS_INFO_0_HU NULL
 #define MGBA_COLOR_CORRECTION_LABEL_HU NULL
@@ -7235,6 +7597,22 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_HU,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_HU,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_HU },
+         { "2", OPTION_VAL_2_HU },
+         { "3", OPTION_VAL_3_HU },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -7498,6 +7876,11 @@ struct retro_core_options_v2 options_hu = {
 #define MGBA_GB_COLORS_LABEL_ID NULL
 #define MGBA_GB_COLORS_INFO_0_ID NULL
 #define OPTION_VAL_GRAYSCALE_ID NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_ID NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_ID NULL
+#define OPTION_VAL_1_ID NULL
+#define OPTION_VAL_2_ID NULL
+#define OPTION_VAL_3_ID NULL
 #define MGBA_SGB_BORDERS_LABEL_ID NULL
 #define MGBA_SGB_BORDERS_INFO_0_ID NULL
 #define MGBA_COLOR_CORRECTION_LABEL_ID NULL
@@ -7648,6 +8031,22 @@ struct retro_core_option_v2_definition option_defs_id[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_ID,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_ID,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_ID },
+         { "2", OPTION_VAL_2_ID },
+         { "3", OPTION_VAL_3_ID },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -7911,6 +8310,11 @@ struct retro_core_options_v2 options_id = {
 #define MGBA_GB_COLORS_LABEL_IT "Tavolozza Game Boy Predefinita"
 #define MGBA_GB_COLORS_INFO_0_IT "Seleziona quale tavolozza è utilizzata per i giochi Game Boy che non sono compatibili con Game Boy Color o Super Game Boy, o se il modello è costretto a Game Boy."
 #define OPTION_VAL_GRAYSCALE_IT "Scala di grigi"
+#define MGBA_GB_COLORS_PRESET_LABEL_IT "Tavolozze del Game Boy predefinite per l'hardware (Riavvio richiesto)"
+#define MGBA_GB_COLORS_PRESET_INFO_0_IT "Usa le tavolozze per i giochi di Game Boy che hanno preset sul Game Boy Color o Super Game Boy."
+#define OPTION_VAL_1_IT "Solo preimpostazioni di Game Boy Color"
+#define OPTION_VAL_2_IT "Solo preimpostazioni di Super Game Boy"
+#define OPTION_VAL_3_IT "Qualsiasi preset disponibile"
 #define MGBA_SGB_BORDERS_LABEL_IT "Utilizza i Bordi Super Game Boy (richiede riavvio)"
 #define MGBA_SGB_BORDERS_INFO_0_IT "Visualizza i bordi del Super Game Boy quando apri un gioco potenziato dal Super Game Boy."
 #define MGBA_COLOR_CORRECTION_LABEL_IT "Correzione Colore"
@@ -8061,6 +8465,22 @@ struct retro_core_option_v2_definition option_defs_it[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_IT,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_IT,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_IT },
+         { "2", OPTION_VAL_2_IT },
+         { "3", OPTION_VAL_3_IT },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -8324,6 +8744,11 @@ struct retro_core_options_v2 options_it = {
 #define MGBA_GB_COLORS_LABEL_JA NULL
 #define MGBA_GB_COLORS_INFO_0_JA NULL
 #define OPTION_VAL_GRAYSCALE_JA NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_JA NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_JA NULL
+#define OPTION_VAL_1_JA NULL
+#define OPTION_VAL_2_JA NULL
+#define OPTION_VAL_3_JA NULL
 #define MGBA_SGB_BORDERS_LABEL_JA NULL
 #define MGBA_SGB_BORDERS_INFO_0_JA NULL
 #define MGBA_COLOR_CORRECTION_LABEL_JA NULL
@@ -8474,6 +8899,22 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_JA,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_JA,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_JA },
+         { "2", OPTION_VAL_2_JA },
+         { "3", OPTION_VAL_3_JA },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -8737,6 +9178,11 @@ struct retro_core_options_v2 options_ja = {
 #define MGBA_GB_COLORS_LABEL_KO "기본 Game Boy 팔레트"
 #define MGBA_GB_COLORS_INFO_0_KO "Game Boy Color 또는 Super Game Boy와 호환되지 않는 Game Boy 게임을 구동하거나, 게임을 강제로 Game Boy 모델로 구동할 경우 사용할 팔레트를 선택합니다."
 #define OPTION_VAL_GRAYSCALE_KO "흑백"
+#define MGBA_GB_COLORS_PRESET_LABEL_KO "하드웨어 프리셋 Game Boy 팔레트 (재시작 필요)"
+#define MGBA_GB_COLORS_PRESET_INFO_0_KO "Game Boy 게임에 Game Boy Color 또는 Super Game Boy에서 사용되는 팔레트가 있는 경우 해당 팔레트를 사용합니다."
+#define OPTION_VAL_1_KO "Game Boy Color 프리셋만"
+#define OPTION_VAL_2_KO "Super Game Boy 프리셋만"
+#define OPTION_VAL_3_KO "모든 프리셋 사용"
 #define MGBA_SGB_BORDERS_LABEL_KO "Super Game Boy 보더 사용 (재시작 필요)"
 #define MGBA_SGB_BORDERS_INFO_0_KO "Super Game Boy 향상이 지원되는 게임을 구동할 때 Super Game Boy 보더를 표시합니다."
 #define MGBA_COLOR_CORRECTION_LABEL_KO "색상 보정"
@@ -8887,6 +9333,22 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_KO,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_KO,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_KO },
+         { "2", OPTION_VAL_2_KO },
+         { "3", OPTION_VAL_3_KO },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -9150,6 +9612,11 @@ struct retro_core_options_v2 options_ko = {
 #define MGBA_GB_COLORS_LABEL_MT NULL
 #define MGBA_GB_COLORS_INFO_0_MT NULL
 #define OPTION_VAL_GRAYSCALE_MT NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_MT NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_MT NULL
+#define OPTION_VAL_1_MT NULL
+#define OPTION_VAL_2_MT NULL
+#define OPTION_VAL_3_MT NULL
 #define MGBA_SGB_BORDERS_LABEL_MT NULL
 #define MGBA_SGB_BORDERS_INFO_0_MT NULL
 #define MGBA_COLOR_CORRECTION_LABEL_MT NULL
@@ -9300,6 +9767,22 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_MT,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_MT,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_MT },
+         { "2", OPTION_VAL_2_MT },
+         { "3", OPTION_VAL_3_MT },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -9563,6 +10046,11 @@ struct retro_core_options_v2 options_mt = {
 #define MGBA_GB_COLORS_LABEL_NL NULL
 #define MGBA_GB_COLORS_INFO_0_NL NULL
 #define OPTION_VAL_GRAYSCALE_NL NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_NL NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_NL NULL
+#define OPTION_VAL_1_NL NULL
+#define OPTION_VAL_2_NL NULL
+#define OPTION_VAL_3_NL NULL
 #define MGBA_SGB_BORDERS_LABEL_NL NULL
 #define MGBA_SGB_BORDERS_INFO_0_NL NULL
 #define MGBA_COLOR_CORRECTION_LABEL_NL NULL
@@ -9713,6 +10201,22 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_NL,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_NL,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_NL },
+         { "2", OPTION_VAL_2_NL },
+         { "3", OPTION_VAL_3_NL },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -9976,6 +10480,11 @@ struct retro_core_options_v2 options_nl = {
 #define MGBA_GB_COLORS_LABEL_OC NULL
 #define MGBA_GB_COLORS_INFO_0_OC NULL
 #define OPTION_VAL_GRAYSCALE_OC NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_OC NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_OC NULL
+#define OPTION_VAL_1_OC NULL
+#define OPTION_VAL_2_OC NULL
+#define OPTION_VAL_3_OC NULL
 #define MGBA_SGB_BORDERS_LABEL_OC NULL
 #define MGBA_SGB_BORDERS_INFO_0_OC NULL
 #define MGBA_COLOR_CORRECTION_LABEL_OC NULL
@@ -10126,6 +10635,22 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_OC,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_OC,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_OC },
+         { "2", OPTION_VAL_2_OC },
+         { "3", OPTION_VAL_3_OC },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -10389,6 +10914,11 @@ struct retro_core_options_v2 options_oc = {
 #define MGBA_GB_COLORS_LABEL_PL "Domyślna paleta Game Boy"
 #define MGBA_GB_COLORS_INFO_0_PL NULL
 #define OPTION_VAL_GRAYSCALE_PL "Odcienie szarości"
+#define MGBA_GB_COLORS_PRESET_LABEL_PL "Sprzętowe predefiniowane palety Game Boy (Restart)"
+#define MGBA_GB_COLORS_PRESET_INFO_0_PL "Użyj palet dla gier Game Boy, które mają presety w kolorze Game Boy Color lub Super Game Boy."
+#define OPTION_VAL_1_PL "Tylko ustawienia kolorów Game Boy Color"
+#define OPTION_VAL_2_PL "Tylko ustawienia kolorów Super Game Boy"
+#define OPTION_VAL_3_PL "Dowolne dostępne wstępne ustawienia"
 #define MGBA_SGB_BORDERS_LABEL_PL NULL
 #define MGBA_SGB_BORDERS_INFO_0_PL NULL
 #define MGBA_COLOR_CORRECTION_LABEL_PL "Korekcja kolorów"
@@ -10539,6 +11069,22 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_PL,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_PL,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_PL },
+         { "2", OPTION_VAL_2_PL },
+         { "3", OPTION_VAL_3_PL },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -10802,13 +11348,18 @@ struct retro_core_options_v2 options_pl = {
 #define MGBA_GB_COLORS_LABEL_PT_BR "Paleta padrão do Game Boy"
 #define MGBA_GB_COLORS_INFO_0_PT_BR "Seleciona a paleta que será usada com jogos de Game Boy que não são compatíveis com Game Boy Color ou Super Game Boy ou ao forçar o modelo a Game Boy."
 #define OPTION_VAL_GRAYSCALE_PT_BR "Escalas de cinza"
+#define MGBA_GB_COLORS_PRESET_LABEL_PT_BR "Paletas do hardware de Game Boy (requer reinício)"
+#define MGBA_GB_COLORS_PRESET_INFO_0_PT_BR "Usa as paletas específicas nos jogos de Game Boy para os quais o Game Boy Color ou Super Game Boy tem predefinições atribuídas a eles."
+#define OPTION_VAL_1_PT_BR "Apenas predefinições de Game Boy Color"
+#define OPTION_VAL_2_PT_BR "Apenas predefinições de Super Game Boy"
+#define OPTION_VAL_3_PT_BR "Qualquer predefinição disponível"
 #define MGBA_SGB_BORDERS_LABEL_PT_BR "Usar bordas do Super Game Boy (requer reinício)"
 #define MGBA_SGB_BORDERS_INFO_0_PT_BR "Exibe as bordas do Super Game Boy ao jogar jogos compatíveis com esse sistema."
 #define MGBA_COLOR_CORRECTION_LABEL_PT_BR "Correção de cor"
 #define MGBA_COLOR_CORRECTION_INFO_0_PT_BR "Ajusta as cores de saída para coincidir com a exibição de hardware real do GBA ou GBC."
 #define OPTION_VAL_AUTO_PT_BR "Automático"
 #define MGBA_INTERFRAME_BLENDING_LABEL_PT_BR "Fusão entre quadros"
-#define MGBA_INTERFRAME_BLENDING_INFO_0_PT_BR "Simula o efeito 'fantasma' da tela LCD. 'Simples' mistura metade dos quadros anterior e seguinte. 'Inteligente' tentará detectar a cintilação na tela e irá misturar apenas metade dos quadros nos pixels afetados. 'Efeito fantasma do LCD' simula os tempos naturais de resposta de uma tela de LCD, combinando vários quadros armazenados em buffer. As fusões 'Simples' ou 'Inteligente' são necessárias para jogos que precisam do efeito 'fantasma' para exibir transparência (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, a saga Boktai...)."
+#define MGBA_INTERFRAME_BLENDING_INFO_0_PT_BR "Simula o efeito 'fantasma' da tela LCD. 'Simples' mistura metade dos quadros anterior e seguinte. 'Inteligente' tentará detectar a tremulação na tela e irá misturar apenas metade dos quadros nos pixels afetados. 'Efeito fantasma do LCD' simula os tempos naturais de resposta de uma tela de LCD, combinando vários quadros armazenados em buffer. As fusões 'Simples' ou 'Inteligente' são necessárias para jogos que precisam do efeito 'fantasma' para exibir transparência (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, a saga Boktai...)."
 #define OPTION_VAL_MIX_PT_BR "Simples"
 #define OPTION_VAL_MIX_SMART_PT_BR "Inteligente"
 #define OPTION_VAL_LCD_GHOSTING_PT_BR "Efeito fantasma do LCD (preciso)"
@@ -10839,7 +11390,7 @@ struct retro_core_options_v2 options_pl = {
 #define OPTION_VAL_90_PT_BR NULL
 #define OPTION_VAL_95_PT_BR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PT_BR "Permitir entradas direcionais opostas"
-#define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PT_BR "Esta opção permitira pressionar, alternar ou segurar rapidamente as direções esquerda e direita (ou cima e baixo) ao mesmo tempo. Pode causar falhas de movimento."
+#define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PT_BR "Esta opção permitirá pressionar, alternar ou segurar rapidamente as direções esquerda e direita (ou cima e baixo) ao mesmo tempo. Pode causar falhas de movimento."
 #define OPTION_VAL_NO_PT_BR "não"
 #define OPTION_VAL_YES_PT_BR "sim"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_BR "Nível do sensor solar"
@@ -10952,6 +11503,22 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_PT_BR,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_PT_BR,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_PT_BR },
+         { "2", OPTION_VAL_2_PT_BR },
+         { "3", OPTION_VAL_3_PT_BR },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -11215,6 +11782,11 @@ struct retro_core_options_v2 options_pt_br = {
 #define MGBA_GB_COLORS_LABEL_PT_PT NULL
 #define MGBA_GB_COLORS_INFO_0_PT_PT NULL
 #define OPTION_VAL_GRAYSCALE_PT_PT NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_PT_PT NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_PT_PT NULL
+#define OPTION_VAL_1_PT_PT NULL
+#define OPTION_VAL_2_PT_PT NULL
+#define OPTION_VAL_3_PT_PT NULL
 #define MGBA_SGB_BORDERS_LABEL_PT_PT NULL
 #define MGBA_SGB_BORDERS_INFO_0_PT_PT NULL
 #define MGBA_COLOR_CORRECTION_LABEL_PT_PT NULL
@@ -11365,6 +11937,22 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_PT_PT,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_PT_PT,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_PT_PT },
+         { "2", OPTION_VAL_2_PT_PT },
+         { "3", OPTION_VAL_3_PT_PT },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -11628,6 +12216,11 @@ struct retro_core_options_v2 options_pt_pt = {
 #define MGBA_GB_COLORS_LABEL_RO NULL
 #define MGBA_GB_COLORS_INFO_0_RO NULL
 #define OPTION_VAL_GRAYSCALE_RO NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_RO NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_RO NULL
+#define OPTION_VAL_1_RO NULL
+#define OPTION_VAL_2_RO NULL
+#define OPTION_VAL_3_RO NULL
 #define MGBA_SGB_BORDERS_LABEL_RO NULL
 #define MGBA_SGB_BORDERS_INFO_0_RO NULL
 #define MGBA_COLOR_CORRECTION_LABEL_RO NULL
@@ -11778,6 +12371,22 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_RO,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_RO,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_RO },
+         { "2", OPTION_VAL_2_RO },
+         { "3", OPTION_VAL_3_RO },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -12041,6 +12650,11 @@ struct retro_core_options_v2 options_ro = {
 #define MGBA_GB_COLORS_LABEL_RU "Стандартная палитра Game Boy"
 #define MGBA_GB_COLORS_INFO_0_RU "Выбор палитры, используемой для игр Game Boy, несовместимых с Game Boy Color / Super Game Boy или в случае принудительного выбора модели Game Boy."
 #define OPTION_VAL_GRAYSCALE_RU "Оттенки серого"
+#define MGBA_GB_COLORS_PRESET_LABEL_RU "Встроенные пресеты палитр Game Boy (перезапуск)"
+#define MGBA_GB_COLORS_PRESET_INFO_0_RU "Использовать палитры игр Game Boy для которых есть встроенные пресеты на Game Boy Color или Super Game Boy."
+#define OPTION_VAL_1_RU "Только пресеты Game Boy Color"
+#define OPTION_VAL_2_RU "Только пресеты Super Game Boy"
+#define OPTION_VAL_3_RU "Любые доступные пресеты"
 #define MGBA_SGB_BORDERS_LABEL_RU "Рамки Super Game Boy (перезапуск)"
 #define MGBA_SGB_BORDERS_INFO_0_RU "Отображать рамки Super Game Boy при запуске игр, улучшенных для Super Game Boy."
 #define MGBA_COLOR_CORRECTION_LABEL_RU "Коррекция цвета"
@@ -12191,6 +12805,22 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_RU,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_RU,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_RU },
+         { "2", OPTION_VAL_2_RU },
+         { "3", OPTION_VAL_3_RU },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -12454,6 +13084,11 @@ struct retro_core_options_v2 options_ru = {
 #define MGBA_GB_COLORS_LABEL_SI NULL
 #define MGBA_GB_COLORS_INFO_0_SI NULL
 #define OPTION_VAL_GRAYSCALE_SI NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_SI NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_SI NULL
+#define OPTION_VAL_1_SI NULL
+#define OPTION_VAL_2_SI NULL
+#define OPTION_VAL_3_SI NULL
 #define MGBA_SGB_BORDERS_LABEL_SI NULL
 #define MGBA_SGB_BORDERS_INFO_0_SI NULL
 #define MGBA_COLOR_CORRECTION_LABEL_SI NULL
@@ -12604,6 +13239,22 @@ struct retro_core_option_v2_definition option_defs_si[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_SI,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_SI,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_SI },
+         { "2", OPTION_VAL_2_SI },
+         { "3", OPTION_VAL_3_SI },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -12867,6 +13518,11 @@ struct retro_core_options_v2 options_si = {
 #define MGBA_GB_COLORS_LABEL_SK NULL
 #define MGBA_GB_COLORS_INFO_0_SK NULL
 #define OPTION_VAL_GRAYSCALE_SK NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_SK NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_SK NULL
+#define OPTION_VAL_1_SK NULL
+#define OPTION_VAL_2_SK NULL
+#define OPTION_VAL_3_SK NULL
 #define MGBA_SGB_BORDERS_LABEL_SK NULL
 #define MGBA_SGB_BORDERS_INFO_0_SK NULL
 #define MGBA_COLOR_CORRECTION_LABEL_SK NULL
@@ -13017,6 +13673,22 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_SK,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_SK,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_SK },
+         { "2", OPTION_VAL_2_SK },
+         { "3", OPTION_VAL_3_SK },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -13280,6 +13952,11 @@ struct retro_core_options_v2 options_sk = {
 #define MGBA_GB_COLORS_LABEL_SR NULL
 #define MGBA_GB_COLORS_INFO_0_SR NULL
 #define OPTION_VAL_GRAYSCALE_SR NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_SR NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_SR NULL
+#define OPTION_VAL_1_SR NULL
+#define OPTION_VAL_2_SR NULL
+#define OPTION_VAL_3_SR NULL
 #define MGBA_SGB_BORDERS_LABEL_SR NULL
 #define MGBA_SGB_BORDERS_INFO_0_SR NULL
 #define MGBA_COLOR_CORRECTION_LABEL_SR NULL
@@ -13430,6 +14107,22 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_SR,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_SR,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_SR },
+         { "2", OPTION_VAL_2_SR },
+         { "3", OPTION_VAL_3_SR },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -13693,6 +14386,11 @@ struct retro_core_options_v2 options_sr = {
 #define MGBA_GB_COLORS_LABEL_SV NULL
 #define MGBA_GB_COLORS_INFO_0_SV NULL
 #define OPTION_VAL_GRAYSCALE_SV NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_SV NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_SV NULL
+#define OPTION_VAL_1_SV NULL
+#define OPTION_VAL_2_SV NULL
+#define OPTION_VAL_3_SV NULL
 #define MGBA_SGB_BORDERS_LABEL_SV NULL
 #define MGBA_SGB_BORDERS_INFO_0_SV NULL
 #define MGBA_COLOR_CORRECTION_LABEL_SV NULL
@@ -13843,6 +14541,22 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_SV,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_SV,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_SV },
+         { "2", OPTION_VAL_2_SV },
+         { "3", OPTION_VAL_3_SV },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -14106,6 +14820,11 @@ struct retro_core_options_v2 options_sv = {
 #define MGBA_GB_COLORS_LABEL_TR "Varsayılan Game Boy Paleti"
 #define MGBA_GB_COLORS_INFO_0_TR "Game Boy Color veya Super Game Boy uyumlu olmayan Game Boy oyunları için veya modelin Game Boy'a zorlanması durumunda hangi paletin kullanılacağını seçer."
 #define OPTION_VAL_GRAYSCALE_TR "Gri Tonlama"
+#define MGBA_GB_COLORS_PRESET_LABEL_TR NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_TR NULL
+#define OPTION_VAL_1_TR NULL
+#define OPTION_VAL_2_TR NULL
+#define OPTION_VAL_3_TR NULL
 #define MGBA_SGB_BORDERS_LABEL_TR "Super Game Boy Sınırlarını Kullan (Yeniden Başlatılmalı)"
 #define MGBA_SGB_BORDERS_INFO_0_TR "Super Game Boy geliştirilmiş oyunlarını çalıştırırken Super Game Boy sınırlarını görüntüleyin."
 #define MGBA_COLOR_CORRECTION_LABEL_TR "Renk Düzeltmesi"
@@ -14256,6 +14975,22 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_TR,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_TR,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_TR },
+         { "2", OPTION_VAL_2_TR },
+         { "3", OPTION_VAL_3_TR },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -14519,6 +15254,11 @@ struct retro_core_options_v2 options_tr = {
 #define MGBA_GB_COLORS_LABEL_UK NULL
 #define MGBA_GB_COLORS_INFO_0_UK NULL
 #define OPTION_VAL_GRAYSCALE_UK NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_UK NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_UK NULL
+#define OPTION_VAL_1_UK NULL
+#define OPTION_VAL_2_UK NULL
+#define OPTION_VAL_3_UK NULL
 #define MGBA_SGB_BORDERS_LABEL_UK NULL
 #define MGBA_SGB_BORDERS_INFO_0_UK NULL
 #define MGBA_COLOR_CORRECTION_LABEL_UK NULL
@@ -14669,6 +15409,22 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_UK,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_UK,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_UK },
+         { "2", OPTION_VAL_2_UK },
+         { "3", OPTION_VAL_3_UK },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
@@ -14932,6 +15688,11 @@ struct retro_core_options_v2 options_uk = {
 #define MGBA_GB_COLORS_LABEL_VN NULL
 #define MGBA_GB_COLORS_INFO_0_VN NULL
 #define OPTION_VAL_GRAYSCALE_VN NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_VN NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_VN NULL
+#define OPTION_VAL_1_VN NULL
+#define OPTION_VAL_2_VN NULL
+#define OPTION_VAL_3_VN NULL
 #define MGBA_SGB_BORDERS_LABEL_VN NULL
 #define MGBA_SGB_BORDERS_INFO_0_VN NULL
 #define MGBA_COLOR_CORRECTION_LABEL_VN NULL
@@ -15082,6 +15843,22 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
          { NULL, NULL },
       },
       "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_VN,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_VN,
+      NULL,
+      "video",
+      {
+         { "0", "" },
+         { "1", OPTION_VAL_1_VN },
+         { "2", OPTION_VAL_2_VN },
+         { "3", OPTION_VAL_3_VN },
+         { NULL, NULL },
+      },
+      "ON"
    },
    {
       "mgba_sgb_borders",
