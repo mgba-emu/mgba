@@ -18,6 +18,7 @@ Emulation fixes:
  - GBA Memory: Fix misaligned 32-bit I/O loads (fixes mgba.io/i/2307)
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
+ - FFmpeg: Fix crash when encoding audio with some containers
 Misc:
  - Core: Suspend runloop when a core crashes
  - mGUI: Add margin to right-aligned menu text (fixes mgba.io/i/871)
