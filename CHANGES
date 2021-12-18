@@ -1,3 +1,7 @@
+0.9.4: (Future)
+Other fixes:
+ - FFmpeg: Fix crash when encoding audio with some containers
+
 0.9.3: (2021-12-17)
 Emulation fixes:
  - GB I/O: Fix incrementing SGB controller when P14 is low (fixes mgba.io/i/2202)
