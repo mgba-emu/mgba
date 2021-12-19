@@ -618,7 +618,6 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	}
 
 	if (encoder->videoFrame) {
-		av_freep(encoder->videoFrame->data);
 #if LIBAVCODEC_VERSION_MAJOR >= 55
 		av_frame_free(&encoder->videoFrame);
 #else
