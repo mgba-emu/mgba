@@ -1292,27 +1292,27 @@ Download size: %3</source>
 <context>
     <name>QGBA::CoreController</name>
     <message>
-        <location filename="../CoreController.cpp" line="719"/>
+        <location filename="../CoreController.cpp" line="717"/>
         <source>Failed to open save file: %1</source>
         <translation>Gagal membuka fail tersimpan: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="750"/>
+        <location filename="../CoreController.cpp" line="748"/>
         <source>Failed to open game file: %1</source>
         <translation>Gagal membuka fail permainan: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="775"/>
+        <location filename="../CoreController.cpp" line="773"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="852"/>
+        <location filename="../CoreController.cpp" line="850"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation type="unfinished">Gagal membuka fail snapshot untuk baca: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="868"/>
+        <location filename="../CoreController.cpp" line="867"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation type="unfinished">Gagal membuka fail snapshot untuk menulis: %1</translation>
     </message>
@@ -3529,39 +3529,39 @@ Download size: %3</source>
         <translation>Cermin</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="135"/>
+        <location filename="../MapView.cpp" line="141"/>
         <source>None</source>
         <translation>Tiada</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="137"/>
+        <location filename="../MapView.cpp" line="143"/>
         <source>Both</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="139"/>
+        <location filename="../MapView.cpp" line="145"/>
         <source>Horizontal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="141"/>
+        <location filename="../MapView.cpp" line="147"/>
         <source>Vertical</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="167"/>
-        <location filename="../MapView.cpp" line="168"/>
-        <location filename="../MapView.cpp" line="216"/>
+        <location filename="../MapView.cpp" line="173"/>
+        <location filename="../MapView.cpp" line="174"/>
+        <location filename="../MapView.cpp" line="222"/>
         <source>N/A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="259"/>
+        <location filename="../MapView.cpp" line="265"/>
         <source>Export map</source>
         <translation>Eksport peta</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="260"/>
+        <location filename="../MapView.cpp" line="266"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Grafik Rangkaian Mudah Alih (*.png)</translation>
     </message>
@@ -3860,22 +3860,22 @@ Download size: %3</source>
         <translation>Tidak dapat membuka fail</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="111"/>
+        <location filename="../SaveConverter.cpp" line="112"/>
         <source>No valid formats found</source>
         <translation>Tiada format yang sah ditemui</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="119"/>
+        <location filename="../SaveConverter.cpp" line="120"/>
         <source>Please select a valid input file</source>
         <translation>Sila pilih fail input yang sah</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="130"/>
+        <location filename="../SaveConverter.cpp" line="131"/>
         <source>No valid conversions found</source>
         <translation>Tiada penukaran yang sah ditemui</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="576"/>
+        <location filename="../SaveConverter.cpp" line="638"/>
         <source>Cannot convert save games between platforms</source>
         <translation type="unfinished">Tidak boleh menukar simpanan permainan antara platform</translation>
     </message>
@@ -4148,7 +4148,6 @@ Download size: %3</source>
         <translation>Fail gambar (*.png *.gif *.jpg *.jpeg);;Semua fail (*)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="495"/>
         <location filename="../Window.cpp" line="502"/>
         <source>GameShark saves (*.sps *.xps)</source>
         <translation>Simpanan GameShark (*.sps *.xps)</translation>
@@ -4418,6 +4417,11 @@ Download size: %3</source>
         <location filename="../Window.cpp" line="1275"/>
         <source>Convert save game...</source>
         <translation type="unfinished">Tukar simpanan permainan...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="495"/>
+        <source>GameShark saves (*.gsv *.sps *.xps)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1277"/>
@@ -4981,84 +4985,94 @@ Download size: %3</source>
         <translation>Fail output</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="397"/>
+        <location filename="../SaveConverter.cpp" line="450"/>
         <source>%1 %2 save game</source>
         <translation>Simpanan permainan %1 %2</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="401"/>
+        <location filename="../SaveConverter.cpp" line="454"/>
         <source>little endian</source>
         <translation>little-endian</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="404"/>
+        <location filename="../SaveConverter.cpp" line="457"/>
         <source>big endian</source>
         <translation>big-endian</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="415"/>
+        <location filename="../SaveConverter.cpp" line="468"/>
         <source>SRAM</source>
         <translation>SRAM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="419"/>
+        <location filename="../SaveConverter.cpp" line="472"/>
         <source>%1 flash</source>
         <translation>%1 kilat</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="423"/>
+        <location filename="../SaveConverter.cpp" line="476"/>
         <source>%1 EEPROM</source>
         <translation>%1 EEPROM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="435"/>
+        <location filename="../SaveConverter.cpp" line="488"/>
         <source>%1 SRAM + RTC</source>
         <translation>%1 SRAM + RTC</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="437"/>
+        <location filename="../SaveConverter.cpp" line="490"/>
         <source>%1 SRAM</source>
         <translation>%1 SRAM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="442"/>
+        <location filename="../SaveConverter.cpp" line="495"/>
         <source>packed MBC2</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="444"/>
+        <location filename="../SaveConverter.cpp" line="497"/>
         <source>unpacked MBC2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="449"/>
+        <location filename="../SaveConverter.cpp" line="502"/>
         <source>MBC6 flash</source>
         <translation>Kilat MBC6</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="451"/>
+        <location filename="../SaveConverter.cpp" line="504"/>
         <source>MBC6 combined SRAM + flash</source>
         <translation>MBC6 bergabung SRAM + kilat</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="453"/>
+        <location filename="../SaveConverter.cpp" line="506"/>
         <source>MBC6 SRAM</source>
         <translation>SRAM MBC6</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="457"/>
+        <location filename="../SaveConverter.cpp" line="510"/>
         <source>TAMA5</source>
         <translation>TAMA5</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="469"/>
+        <location filename="../SaveConverter.cpp" line="522"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="472"/>
+        <location filename="../SaveConverter.cpp" line="526"/>
         <source>%1 save state with embedded %2 save game</source>
         <translation>Keadaan tersimpan %1 dgn simpanan permainan terbenam %2</translation>
+    </message>
+    <message>
+        <location filename="../SaveConverter.cpp" line="529"/>
+        <source>%1 SharkPort %2 save game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SaveConverter.cpp" line="532"/>
+        <source>%1 GameShark Advance SP %2 save game</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

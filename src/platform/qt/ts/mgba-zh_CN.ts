@@ -1296,27 +1296,27 @@ Download size: %3</source>
 <context>
     <name>QGBA::CoreController</name>
     <message>
-        <location filename="../CoreController.cpp" line="719"/>
+        <location filename="../CoreController.cpp" line="717"/>
         <source>Failed to open save file: %1</source>
         <translation>打开存档失败: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="750"/>
+        <location filename="../CoreController.cpp" line="748"/>
         <source>Failed to open game file: %1</source>
         <translation>打开游戏文件失败: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="775"/>
+        <location filename="../CoreController.cpp" line="773"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
         <translation>无法在意外平台上抽出卡带！</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="852"/>
+        <location filename="../CoreController.cpp" line="850"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation>读取快照文件失败: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="868"/>
+        <location filename="../CoreController.cpp" line="867"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation>写入快照文件失败: %1</translation>
     </message>
@@ -3533,39 +3533,39 @@ Download size: %3</source>
         <translation>镜像</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="135"/>
+        <location filename="../MapView.cpp" line="141"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="137"/>
+        <location filename="../MapView.cpp" line="143"/>
         <source>Both</source>
         <translation>两者</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="139"/>
+        <location filename="../MapView.cpp" line="145"/>
         <source>Horizontal</source>
         <translation>水平</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="141"/>
+        <location filename="../MapView.cpp" line="147"/>
         <source>Vertical</source>
         <translation>垂直</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="167"/>
-        <location filename="../MapView.cpp" line="168"/>
-        <location filename="../MapView.cpp" line="216"/>
+        <location filename="../MapView.cpp" line="173"/>
+        <location filename="../MapView.cpp" line="174"/>
+        <location filename="../MapView.cpp" line="222"/>
         <source>N/A</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="259"/>
+        <location filename="../MapView.cpp" line="265"/>
         <source>Export map</source>
         <translation>导出映射</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="260"/>
+        <location filename="../MapView.cpp" line="266"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>便携式网络图形 (*.png)</translation>
     </message>
@@ -3864,22 +3864,22 @@ Download size: %3</source>
         <translation>无法打开文件</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="111"/>
+        <location filename="../SaveConverter.cpp" line="112"/>
         <source>No valid formats found</source>
         <translation>未找到有效格式</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="119"/>
+        <location filename="../SaveConverter.cpp" line="120"/>
         <source>Please select a valid input file</source>
         <translation>请选择一个有效的输入文件</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="130"/>
+        <location filename="../SaveConverter.cpp" line="131"/>
         <source>No valid conversions found</source>
         <translation type="unfinished">未发现有效转换</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="576"/>
+        <location filename="../SaveConverter.cpp" line="638"/>
         <source>Cannot convert save games between platforms</source>
         <translation type="unfinished">无法在平台之间转换保存游戏</translation>
     </message>
@@ -4152,7 +4152,6 @@ Download size: %3</source>
         <translation>图像文件 (*.png *.gif *.jpg *.jpeg);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="495"/>
         <location filename="../Window.cpp" line="502"/>
         <source>GameShark saves (*.sps *.xps)</source>
         <translation>GameShark 存档 (*.sps *.xps)</translation>
@@ -4422,6 +4421,11 @@ Download size: %3</source>
         <location filename="../Window.cpp" line="1275"/>
         <source>Convert save game...</source>
         <translation type="unfinished">转换保存游戏...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="495"/>
+        <source>GameShark saves (*.gsv *.sps *.xps)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1277"/>
@@ -4985,84 +4989,94 @@ Download size: %3</source>
         <translation>输出文件</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="397"/>
+        <location filename="../SaveConverter.cpp" line="450"/>
         <source>%1 %2 save game</source>
         <translation type="unfinished">%1 %2 保存游戏</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="401"/>
+        <location filename="../SaveConverter.cpp" line="454"/>
         <source>little endian</source>
         <translation type="unfinished">小端</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="404"/>
+        <location filename="../SaveConverter.cpp" line="457"/>
         <source>big endian</source>
         <translation type="unfinished">大端</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="415"/>
+        <location filename="../SaveConverter.cpp" line="468"/>
         <source>SRAM</source>
         <translation type="unfinished">SRAM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="419"/>
+        <location filename="../SaveConverter.cpp" line="472"/>
         <source>%1 flash</source>
         <translation type="unfinished">%1 闪存</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="423"/>
+        <location filename="../SaveConverter.cpp" line="476"/>
         <source>%1 EEPROM</source>
         <translation type="unfinished">%1 EEPROM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="435"/>
+        <location filename="../SaveConverter.cpp" line="488"/>
         <source>%1 SRAM + RTC</source>
         <translation type="unfinished">%1 SRAM + RTC</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="437"/>
+        <location filename="../SaveConverter.cpp" line="490"/>
         <source>%1 SRAM</source>
         <translation type="unfinished">%1 SRAM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="442"/>
+        <location filename="../SaveConverter.cpp" line="495"/>
         <source>packed MBC2</source>
         <translation type="unfinished">包装的MBC2</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="444"/>
+        <location filename="../SaveConverter.cpp" line="497"/>
         <source>unpacked MBC2</source>
         <translation type="unfinished">未包装的 MBC2</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="449"/>
+        <location filename="../SaveConverter.cpp" line="502"/>
         <source>MBC6 flash</source>
         <translation type="unfinished">MBC6 闪存</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="451"/>
+        <location filename="../SaveConverter.cpp" line="504"/>
         <source>MBC6 combined SRAM + flash</source>
         <translation>MBC6组合SRAM+闪存</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="453"/>
+        <location filename="../SaveConverter.cpp" line="506"/>
         <source>MBC6 SRAM</source>
         <translation>MBC6 SRAM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="457"/>
+        <location filename="../SaveConverter.cpp" line="510"/>
         <source>TAMA5</source>
         <translation type="unfinished">TAMA5</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="469"/>
+        <location filename="../SaveConverter.cpp" line="522"/>
         <source>%1 (%2)</source>
         <translation>%1（%2）</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="472"/>
+        <location filename="../SaveConverter.cpp" line="526"/>
         <source>%1 save state with embedded %2 save game</source>
         <translation type="unfinished">带嵌入的 %2 保存游戏的 %1 保存状态</translation>
+    </message>
+    <message>
+        <location filename="../SaveConverter.cpp" line="529"/>
+        <source>%1 SharkPort %2 save game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SaveConverter.cpp" line="532"/>
+        <source>%1 GameShark Advance SP %2 save game</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
