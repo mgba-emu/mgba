@@ -492,7 +492,7 @@ void Window::loadCamImage() {
 }
 
 void Window::importSharkport() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save"), tr("GameShark saves (*.sps *.xps)"));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save"), tr("GameShark saves (*.gsv *.sps *.xps)"));
 	if (!filename.isEmpty()) {
 		m_controller->importSharkport(filename);
 	}

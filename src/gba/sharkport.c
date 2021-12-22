@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2021 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -10,6 +10,50 @@
 #include <mgba-util/vfs.h>
 
 static const char* const SHARKPORT_HEADER = "SharkPortSave";
+static const char* const GSV_HEADER = "ADVSAVEG";
+static const char* const GSV_FOOTER = "xV4\x12";
+static const int GSV_IDENT_OFFSET = 0xC;
+static const int GSV_PAYLOAD_OFFSET = 0x430;
+
+static bool _importSavedata(struct GBA* gba, void* payload, size_t size) {
+	bool success = false;
+	switch (gba->memory.savedata.type) {
+	case SAVEDATA_FLASH512:
+		if (size > SIZE_CART_FLASH512) {
+			GBASavedataForceType(&gba->memory.savedata, SAVEDATA_FLASH1M);
+		}
+	// Fall through
+	default:
+		if (size > GBASavedataSize(&gba->memory.savedata)) {
+			size = GBASavedataSize(&gba->memory.savedata);
+		}
+		break;
+	case SAVEDATA_FORCE_NONE:
+	case SAVEDATA_AUTODETECT:
+		goto cleanup;
+	}
+
+	if (size == SIZE_CART_EEPROM || size == SIZE_CART_EEPROM512) {
+		size_t i;
+		for (i = 0; i < size; i += 8) {
+			uint32_t lo, hi;
+			LOAD_32BE(lo, i, payload);
+			LOAD_32BE(hi, i + 4, payload);
+			STORE_32LE(hi, i, gba->memory.savedata.data);
+			STORE_32LE(lo, i + 4, gba->memory.savedata.data);
+		}
+	} else {
+		memcpy(gba->memory.savedata.data, payload, size);
+	}
+	if (gba->memory.savedata.vf) {
+		gba->memory.savedata.vf->sync(gba->memory.savedata.vf, gba->memory.savedata.data, size);
+	}
+	success = true;
+
+cleanup:
+	free(payload);
+	return success;
+}
 
 int GBASavedataSharkPortPayloadSize(struct VFile* vf) {
 	union {
@@ -121,7 +165,6 @@ cleanup:
 	return NULL;
 }
 
-
 bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChecksum) {
 	uint8_t buffer[0x1C];
 	uint8_t header[0x1C];
@@ -132,7 +175,6 @@ bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChec
 		return false;
 	}
 
-	bool success = false;
 	struct GBACartridge* cart = (struct GBACartridge*) gba->memory.rom;
 	memcpy(buffer, &cart->title, 16);
 	buffer[0x10] = 0;
@@ -148,46 +190,11 @@ bool GBASavedataImportSharkPort(struct GBA* gba, struct VFile* vf, bool testChec
 	buffer[0x1A] = 0;
 	buffer[0x1B] = 0;
 	if (memcmp(buffer, header, testChecksum ? 0x1C : 0xF) != 0) {
-		goto cleanup;
+		free(payload);
+		return false;
 	}
 
-	switch (gba->memory.savedata.type) {
-	case SAVEDATA_FLASH512:
-		if (size > SIZE_CART_FLASH512) {
-			GBASavedataForceType(&gba->memory.savedata, SAVEDATA_FLASH1M);
-		}
-	// Fall through
-	default:
-		if (size > GBASavedataSize(&gba->memory.savedata)) {
-			size = GBASavedataSize(&gba->memory.savedata);
-		}
-		break;
-	case SAVEDATA_FORCE_NONE:
-	case SAVEDATA_AUTODETECT:
-		goto cleanup;
-	}
-
-
-	if (size == SIZE_CART_EEPROM || size == SIZE_CART_EEPROM512) {
-		size_t i;
-		for (i = 0; i < size; i += 8) {
-			uint32_t lo, hi;
-			LOAD_32BE(lo, i, payload);
-			LOAD_32BE(hi, i + 4, payload);
-			STORE_32LE(hi, i, gba->memory.savedata.data);
-			STORE_32LE(lo, i + 4, gba->memory.savedata.data);
-		}
-	} else {
-		memcpy(gba->memory.savedata.data, payload, size);
-	}
-	if (gba->memory.savedata.vf) {
-		gba->memory.savedata.vf->sync(gba->memory.savedata.vf, gba->memory.savedata.data, size);
-	}
-	success = true;
-
-cleanup:
-	free(payload);
-	return success;
+	return _importSavedata(gba, payload, size);
 }
 
 bool GBASavedataExportSharkPort(const struct GBA* gba, struct VFile* vf) {
@@ -269,7 +276,6 @@ bool GBASavedataExportSharkPort(const struct GBA* gba, struct VFile* vf) {
 		checksum += buffer.c[i] << (checksum % 24);
 	}
 
-
 	if (gba->memory.savedata.type == SAVEDATA_EEPROM) {
 		for (i = 0; i < size; ++i) {
 			char byte = gba->memory.savedata.data[i ^ 7];
@@ -290,4 +296,94 @@ bool GBASavedataExportSharkPort(const struct GBA* gba, struct VFile* vf) {
 	}
 
 	return true;
+}
+
+int GBASavedataGSVPayloadSize(struct VFile* vf) {
+	union {
+		char c[8];
+		int32_t i;
+	} buffer;
+	vf->seek(vf, 0, SEEK_SET);
+	if (vf->read(vf, &buffer.c, 8) < 8) {
+		return 0;
+	}
+	if (memcmp(GSV_HEADER, buffer.c, 8) != 0) {
+		return 0;
+	}
+
+	// Skip the checksum
+	if (vf->read(vf, &buffer.i, 4) < 4) {
+		return 0;
+	}
+
+	struct {
+		char name[12];
+		int padding;
+		int type;
+		int unk[3];
+		char description[0x400];
+		char footer[4];
+	} header;
+
+	if (vf->read(vf, &header, sizeof(header)) < (ssize_t) sizeof(header)) {
+		return 0;
+	}
+	if (memcmp(GSV_FOOTER, header.footer, 4) != 0) {
+		return 0;
+	}
+
+	int type;
+	LOAD_32(type, 0, &header.type);
+	switch (type) {
+	case 2:
+		return SIZE_CART_SRAM;
+	case 3:
+		return SIZE_CART_EEPROM512;
+	case 4:
+		return SIZE_CART_EEPROM;
+	case 5:
+		return SIZE_CART_FLASH512;
+	case 6:
+		return SIZE_CART_FLASH1M; // Unconfirmed
+	default:
+		return vf->size(vf) - GSV_PAYLOAD_OFFSET;
+	}
+}
+
+void* GBASavedataGSVGetPayload(struct VFile* vf, size_t* osize, uint8_t* ident, bool testChecksum) {
+	int32_t size = GBASavedataGSVPayloadSize(vf);
+	if (!size || size > SIZE_CART_FLASH1M) {
+		return NULL;
+	}
+
+	vf->seek(vf, GSV_IDENT_OFFSET, SEEK_SET);
+	if (ident && vf->read(vf, ident, 12) != 12) {
+		return NULL;
+	}
+	vf->seek(vf, GSV_PAYLOAD_OFFSET, SEEK_SET);
+
+	int8_t* payload = malloc(size);
+	if (vf->read(vf, payload, size) != size) {
+		free(payload);
+		return NULL;
+	}
+	UNUSED(testChecksum); // The checksum format is currently unknown
+	*osize = size;
+	return payload;
+}
+
+bool GBASavedataImportGSV(struct GBA* gba, struct VFile* vf, bool testChecksum) {
+	size_t size;
+	uint8_t ident[12];
+	void* payload = GBASavedataGSVGetPayload(vf, &size, ident, testChecksum);
+	if (!payload) {
+		return false;
+	}
+	struct GBACartridge* cart = (struct GBACartridge*) gba->memory.rom;
+	if (memcmp(ident, cart->title, sizeof(ident)) != 0) {
+		free(payload);
+		return false;
+	}
+
+	return _importSavedata(gba, payload, size);
 }

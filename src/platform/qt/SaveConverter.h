@@ -59,7 +59,8 @@ private:
 	enum class Container {
 		NONE = 0,
 		SAVESTATE,
-		SHARKPORT
+		SHARKPORT,
+		GSV
 	};
 	struct AnnotatedSave {
 		AnnotatedSave();

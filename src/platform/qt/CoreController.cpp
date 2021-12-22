@@ -852,6 +852,7 @@ void CoreController::importSharkport(const QString& path) {
 	}
 	Interrupter interrupter(this);
 	GBASavedataImportSharkPort(static_cast<GBA*>(m_threadContext.core->board), vf, false);
+	GBASavedataImportGSV(static_cast<GBA*>(m_threadContext.core->board), vf, false);
 	vf->close(vf);
 #endif
 }

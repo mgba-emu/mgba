@@ -10,6 +10,7 @@ Features:
  - Support for 64 kiB SRAM saves used in some bootlegs
  - Discord Rich Presence now supports time elapsed
  - Additional scaling shaders
+ - Support for GameShark Advance SP (.gsv) save file importing
 Emulation fixes:
  - ARM7: Fix unsigned multiply timing
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
@@ -25,7 +26,7 @@ Misc:
  - Qt: Rearrange menus some
  - Qt: Clean up cheats dialog
  - Qt: Only set default controller bindings if loading fails (fixes mgba.io/i/799)
- - Qt: Save converter now supports importing SharkPort saves
+ - Qt: Save converter now supports importing GameShark Advance saves
 
 0.9.3: (2021-12-17)
 Emulation fixes:
