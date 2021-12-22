@@ -43,7 +43,7 @@
 
 #define ANALOG_DEADZONE 0x30
 
-static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, enum GBAKey key) {
+static void _mapKey(struct mInputMap* map, uint32_t binding, int nativeKey, int key) {
 	mInputBindKey(map, binding, __builtin_ctz(nativeKey), key);
 }
 
@@ -124,6 +124,7 @@ static bool sgbCrop = false;
 static int32_t tiltX;
 static int32_t tiltY;
 static int32_t gyroZ;
+static float gyroSensitivity = 1.f;
 static uint32_t retraceCount;
 static uint32_t referenceRetraceCount;
 static bool frameLimiter = true;
@@ -564,8 +565,26 @@ int main(int argc, char* argv[]) {
 				},
 				.nStates = 8
 			},
+			{
+				.title = "Gyroscope sensitivity",
+				.data = GUI_V_S("gyroSensitivity"),
+				.submenu = 0,
+				.state = 0,
+				.validStates = (const char*[]) {
+					"1x", "1x flipped", "2x", "2x flipped", "1/2x", "1/2x flipped"
+				},
+				.stateMappings = (const struct GUIVariant[]) {
+					GUI_V_F(1.f),
+					GUI_V_F(-1.f),
+					GUI_V_F(2.f),
+					GUI_V_F(-2.f),
+					GUI_V_F(0.5f),
+					GUI_V_F(-0.5f),
+				},
+				.nStates = 6
+			},
 		},
-		.nConfigExtra = 5,
+		.nConfigExtra = 6,
 		.setup = _setup,
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
@@ -976,6 +995,7 @@ void _unpaused(struct mGUIRunner* runner) {
 	if (mCoreConfigGetFloatValue(&runner->config, "stretchHeight", &stretch)) {
 		hStretch = fminf(1.0f, fmaxf(0.5f, stretch));
 	}
+	mCoreConfigGetFloatValue(&runner->config, "gyroSensitivity", &gyroSensitivity);
 }
 
 void _prepareForFrame(struct mGUIRunner* runner) {
@@ -1220,7 +1240,7 @@ int32_t _readTiltY(struct mRotationSource* source) {
 
 int32_t _readGyroZ(struct mRotationSource* source) {
 	UNUSED(source);
-	return gyroZ;
+	return gyroZ * gyroSensitivity;
 }
 
 static s8 WPAD_StickX(u8 chan, u8 right) {

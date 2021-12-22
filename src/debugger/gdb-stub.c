@@ -72,6 +72,8 @@ static void _gdbStubEntered(struct mDebugger* debugger, enum mDebuggerEntryReaso
 			case WATCHPOINT_RW:
 				type = "awatch";
 				break;
+			case WATCHPOINT_CHANGE:
+				break;
 			}
 			snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "T%02x%s:%08x;", SIGTRAP, type, info->address);
 		} else {

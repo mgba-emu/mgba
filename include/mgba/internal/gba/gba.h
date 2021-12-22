@@ -85,7 +85,8 @@ struct GBA {
 	struct mTimingEvent irqEvent;
 
 	uint32_t biosChecksum;
-	int* keySource;
+	uint16_t keysActive;
+	uint16_t keysLast;
 	struct mRotationSource* rotationSource;
 	struct GBALuminanceSource* luminanceSource;
 	struct mRTCSource* rtcSource;

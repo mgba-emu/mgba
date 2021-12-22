@@ -1199,7 +1199,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的注册商标
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation>%1 有更新可用。 
+        <translation>%1 有更新可用。
 您想要现在下载并安装它吗？在下载完成后，您将需要重新启动模拟器。</translation>
     </message>
     <message>
@@ -1207,8 +1207,8 @@ Do you want to download and install it now? You will need to restart the emulato
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation>当前版本：%1 
-新版本：%2 
+        <translation>当前版本：%1
+新版本：%2
 更新大小：%3</translation>
     </message>
     <message>
@@ -1296,27 +1296,27 @@ Download size: %3</source>
 <context>
     <name>QGBA::CoreController</name>
     <message>
-        <location filename="../CoreController.cpp" line="715"/>
+        <location filename="../CoreController.cpp" line="717"/>
         <source>Failed to open save file: %1</source>
         <translation>打开存档失败: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="746"/>
+        <location filename="../CoreController.cpp" line="748"/>
         <source>Failed to open game file: %1</source>
         <translation>打开游戏文件失败: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="771"/>
+        <location filename="../CoreController.cpp" line="773"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
         <translation>无法在意外平台上抽出卡带！</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="848"/>
+        <location filename="../CoreController.cpp" line="850"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation>读取快照文件失败: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="864"/>
+        <location filename="../CoreController.cpp" line="867"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation>写入快照文件失败: %1</translation>
     </message>
@@ -3533,39 +3533,39 @@ Download size: %3</source>
         <translation>镜像</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="135"/>
+        <location filename="../MapView.cpp" line="141"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="137"/>
+        <location filename="../MapView.cpp" line="143"/>
         <source>Both</source>
         <translation>两者</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="139"/>
+        <location filename="../MapView.cpp" line="145"/>
         <source>Horizontal</source>
         <translation>水平</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="141"/>
+        <location filename="../MapView.cpp" line="147"/>
         <source>Vertical</source>
         <translation>垂直</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="167"/>
-        <location filename="../MapView.cpp" line="168"/>
-        <location filename="../MapView.cpp" line="216"/>
+        <location filename="../MapView.cpp" line="173"/>
+        <location filename="../MapView.cpp" line="174"/>
+        <location filename="../MapView.cpp" line="222"/>
         <source>N/A</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="259"/>
+        <location filename="../MapView.cpp" line="265"/>
         <source>Export map</source>
         <translation>导出映射</translation>
     </message>
     <message>
-        <location filename="../MapView.cpp" line="260"/>
+        <location filename="../MapView.cpp" line="266"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>便携式网络图形 (*.png)</translation>
     </message>
@@ -3864,22 +3864,22 @@ Download size: %3</source>
         <translation>无法打开文件</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="111"/>
+        <location filename="../SaveConverter.cpp" line="112"/>
         <source>No valid formats found</source>
         <translation>未找到有效格式</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="119"/>
+        <location filename="../SaveConverter.cpp" line="120"/>
         <source>Please select a valid input file</source>
         <translation>请选择一个有效的输入文件</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="130"/>
+        <location filename="../SaveConverter.cpp" line="131"/>
         <source>No valid conversions found</source>
         <translation type="unfinished">未发现有效转换</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="576"/>
+        <location filename="../SaveConverter.cpp" line="638"/>
         <source>Cannot convert save games between platforms</source>
         <translation type="unfinished">无法在平台之间转换保存游戏</translation>
     </message>
@@ -3933,55 +3933,55 @@ Download size: %3</source>
         <translation>控制器</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="377"/>
+        <location filename="../SettingsView.cpp" line="378"/>
         <source>Shortcuts</source>
         <translation>快捷键</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="389"/>
-        <location filename="../SettingsView.cpp" line="399"/>
+        <location filename="../SettingsView.cpp" line="390"/>
+        <location filename="../SettingsView.cpp" line="400"/>
         <source>Shaders</source>
         <translation>着色器</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="421"/>
+        <location filename="../SettingsView.cpp" line="422"/>
         <source>Select BIOS</source>
         <translation>选择 BIOS</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="428"/>
+        <location filename="../SettingsView.cpp" line="429"/>
         <source>Select directory</source>
         <translation>选择目录</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="811"/>
+        <location filename="../SettingsView.cpp" line="812"/>
         <source>(%1×%2)</source>
         <translation>(%1×%2)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="829"/>
+        <location filename="../SettingsView.cpp" line="830"/>
         <source>Never</source>
         <translation>从不</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="834"/>
+        <location filename="../SettingsView.cpp" line="835"/>
         <source>Just now</source>
         <translation>刚刚</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="838"/>
+        <location filename="../SettingsView.cpp" line="839"/>
         <source>Less than an hour ago</source>
         <translation>不到一小时前</translation>
     </message>
     <message numerus="yes">
-        <location filename="../SettingsView.cpp" line="843"/>
+        <location filename="../SettingsView.cpp" line="844"/>
         <source>%n hour(s) ago</source>
         <translation>
             <numerusform>%n 小时前</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../SettingsView.cpp" line="847"/>
+        <location filename="../SettingsView.cpp" line="848"/>
         <source>%n day(s) ago</source>
         <translation>
             <numerusform>%n 天前</numerusform>
@@ -4152,7 +4152,6 @@ Download size: %3</source>
         <translation>图像文件 (*.png *.gif *.jpg *.jpeg);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="495"/>
         <location filename="../Window.cpp" line="502"/>
         <source>GameShark saves (*.sps *.xps)</source>
         <translation>GameShark 存档 (*.sps *.xps)</translation>
@@ -4422,6 +4421,11 @@ Download size: %3</source>
         <location filename="../Window.cpp" line="1275"/>
         <source>Convert save game...</source>
         <translation type="unfinished">转换保存游戏...</translation>
+    </message>
+    <message>
+        <location filename="../Window.cpp" line="495"/>
+        <source>GameShark saves (*.gsv *.sps *.xps)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1277"/>
@@ -4985,84 +4989,94 @@ Download size: %3</source>
         <translation>输出文件</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="397"/>
+        <location filename="../SaveConverter.cpp" line="450"/>
         <source>%1 %2 save game</source>
         <translation type="unfinished">%1 %2 保存游戏</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="401"/>
+        <location filename="../SaveConverter.cpp" line="454"/>
         <source>little endian</source>
         <translation type="unfinished">小端</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="404"/>
+        <location filename="../SaveConverter.cpp" line="457"/>
         <source>big endian</source>
         <translation type="unfinished">大端</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="415"/>
+        <location filename="../SaveConverter.cpp" line="468"/>
         <source>SRAM</source>
         <translation type="unfinished">SRAM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="419"/>
+        <location filename="../SaveConverter.cpp" line="472"/>
         <source>%1 flash</source>
         <translation type="unfinished">%1 闪存</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="423"/>
+        <location filename="../SaveConverter.cpp" line="476"/>
         <source>%1 EEPROM</source>
         <translation type="unfinished">%1 EEPROM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="435"/>
+        <location filename="../SaveConverter.cpp" line="488"/>
         <source>%1 SRAM + RTC</source>
         <translation type="unfinished">%1 SRAM + RTC</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="437"/>
+        <location filename="../SaveConverter.cpp" line="490"/>
         <source>%1 SRAM</source>
         <translation type="unfinished">%1 SRAM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="442"/>
+        <location filename="../SaveConverter.cpp" line="495"/>
         <source>packed MBC2</source>
         <translation type="unfinished">包装的MBC2</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="444"/>
+        <location filename="../SaveConverter.cpp" line="497"/>
         <source>unpacked MBC2</source>
         <translation type="unfinished">未包装的 MBC2</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="449"/>
+        <location filename="../SaveConverter.cpp" line="502"/>
         <source>MBC6 flash</source>
         <translation type="unfinished">MBC6 闪存</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="451"/>
+        <location filename="../SaveConverter.cpp" line="504"/>
         <source>MBC6 combined SRAM + flash</source>
         <translation>MBC6组合SRAM+闪存</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="453"/>
+        <location filename="../SaveConverter.cpp" line="506"/>
         <source>MBC6 SRAM</source>
         <translation>MBC6 SRAM</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="457"/>
+        <location filename="../SaveConverter.cpp" line="510"/>
         <source>TAMA5</source>
         <translation type="unfinished">TAMA5</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="469"/>
+        <location filename="../SaveConverter.cpp" line="522"/>
         <source>%1 (%2)</source>
         <translation>%1（%2）</translation>
     </message>
     <message>
-        <location filename="../SaveConverter.cpp" line="472"/>
+        <location filename="../SaveConverter.cpp" line="526"/>
         <source>%1 save state with embedded %2 save game</source>
         <translation type="unfinished">带嵌入的 %2 保存游戏的 %1 保存状态</translation>
+    </message>
+    <message>
+        <location filename="../SaveConverter.cpp" line="529"/>
+        <source>%1 SharkPort %2 save game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SaveConverter.cpp" line="532"/>
+        <source>%1 GameShark Advance SP %2 save game</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -5282,8 +5296,8 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="275"/>
         <location filename="../SettingsView.ui" line="315"/>
-        <location filename="../SettingsView.ui" line="615"/>
-        <location filename="../SettingsView.ui" line="748"/>
+        <location filename="../SettingsView.ui" line="609"/>
+        <location filename="../SettingsView.ui" line="742"/>
         <source>Mute</source>
         <translation>静音</translation>
     </message>
@@ -5329,7 +5343,7 @@ Download size: %3</source>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="407"/>
-        <location filename="../SettingsView.ui" line="1015"/>
+        <location filename="../SettingsView.ui" line="1009"/>
         <source>frames</source>
         <translation>帧</translation>
     </message>
@@ -5374,93 +5388,93 @@ Download size: %3</source>
         <translation>双线性过滤</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="608"/>
-        <location filename="../SettingsView.ui" line="741"/>
+        <location filename="../SettingsView.ui" line="602"/>
+        <location filename="../SettingsView.ui" line="735"/>
         <source>Pause</source>
         <translation>暂停</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="757"/>
+        <location filename="../SettingsView.ui" line="751"/>
         <source>When inactive:</source>
         <translation type="unfinished">不活跃时：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="764"/>
+        <location filename="../SettingsView.ui" line="758"/>
         <source>When minimized:</source>
         <translation>最小化时：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="775"/>
+        <location filename="../SettingsView.ui" line="769"/>
         <source>Current channel:</source>
         <translation>当前通道：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="789"/>
+        <location filename="../SettingsView.ui" line="783"/>
         <source>Current version:</source>
         <translation>当前版本：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="813"/>
+        <location filename="../SettingsView.ui" line="807"/>
         <source>Update channel:</source>
         <translation>更新通道：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="823"/>
+        <location filename="../SettingsView.ui" line="817"/>
         <source>Available version:</source>
         <translation>可用版本：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="830"/>
+        <location filename="../SettingsView.ui" line="824"/>
         <source>(Unknown)</source>
         <translation>(未知)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="840"/>
+        <location filename="../SettingsView.ui" line="834"/>
         <source>Last checked:</source>
         <translation>上次检查更新时间：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="861"/>
+        <location filename="../SettingsView.ui" line="855"/>
         <source>Automatically check on start</source>
         <translation>启动时自动检查</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="868"/>
+        <location filename="../SettingsView.ui" line="862"/>
         <source>Check now</source>
         <translation>立即检查更新</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2037"/>
+        <location filename="../SettingsView.ui" line="2031"/>
         <source>Default color palette only</source>
         <translation>只使用默认调色板</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2047"/>
+        <location filename="../SettingsView.ui" line="2041"/>
         <source>SGB color palette if available</source>
         <translation>可用时使用 SGB 调色板</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2057"/>
+        <location filename="../SettingsView.ui" line="2051"/>
         <source>GBC color palette if available</source>
         <translation>可用时使用 GBC 调色板</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2067"/>
+        <location filename="../SettingsView.ui" line="2061"/>
         <source>SGB (preferred) or GBC color palette if available</source>
         <translation>可用时使用 SGB（首选）或 GBC 调色板</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2080"/>
+        <location filename="../SettingsView.ui" line="2074"/>
         <source>Game Boy Camera</source>
         <translation>Game Boy Camera</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2086"/>
+        <location filename="../SettingsView.ui" line="2080"/>
         <source>Driver:</source>
         <translation type="unfinished">驱动：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2103"/>
+        <location filename="../SettingsView.ui" line="2097"/>
         <source>Source:</source>
         <translation type="unfinished">来源：</translation>
     </message>
@@ -5480,368 +5494,363 @@ Download size: %3</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="529"/>
-        <source>English</source>
-        <translation>英语</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="544"/>
+        <location filename="../SettingsView.ui" line="538"/>
         <source>Library:</source>
         <translation>库:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="552"/>
+        <location filename="../SettingsView.ui" line="546"/>
         <source>List view</source>
         <translation>列表视图</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="557"/>
+        <location filename="../SettingsView.ui" line="551"/>
         <source>Tree view</source>
         <translation>树状视图</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="565"/>
+        <location filename="../SettingsView.ui" line="559"/>
         <source>Show when no game open</source>
         <translation>未打开游戏时显示</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="575"/>
+        <location filename="../SettingsView.ui" line="569"/>
         <source>Clear cache</source>
         <translation>清除缓存</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="589"/>
+        <location filename="../SettingsView.ui" line="583"/>
         <source>Allow opposing input directions</source>
         <translation>允许相对方向输入</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="596"/>
+        <location filename="../SettingsView.ui" line="590"/>
         <source>Suspend screensaver</source>
         <translation>停用屏幕保护程序</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="631"/>
+        <location filename="../SettingsView.ui" line="625"/>
         <source>Dynamically update window title</source>
         <translation>动态更新窗口标题</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="651"/>
+        <location filename="../SettingsView.ui" line="645"/>
         <source>Show filename instead of ROM name in title bar</source>
         <translation>标题栏显示文件名而不显示 ROM 名称</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="668"/>
+        <location filename="../SettingsView.ui" line="662"/>
         <source>Show OSD messages</source>
         <translation>显示 OSD 信息</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="678"/>
+        <location filename="../SettingsView.ui" line="672"/>
         <source>Enable Discord Rich Presence</source>
         <translation>启用 Discord Rich Presence</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="692"/>
+        <location filename="../SettingsView.ui" line="686"/>
         <source>Automatically save state</source>
         <translation>自动存档</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="702"/>
+        <location filename="../SettingsView.ui" line="696"/>
         <source>Automatically load state</source>
         <translation>自动读档</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="719"/>
+        <location filename="../SettingsView.ui" line="713"/>
         <source>Automatically save cheats</source>
         <translation>自动保存作弊码</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="729"/>
+        <location filename="../SettingsView.ui" line="723"/>
         <source>Automatically load cheats</source>
         <translation>自动载入作弊码</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="641"/>
+        <location filename="../SettingsView.ui" line="635"/>
         <source>Show FPS in title bar</source>
         <translation>在标题栏显示 FPS</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="882"/>
+        <location filename="../SettingsView.ui" line="876"/>
         <source>Fast forward speed:</source>
         <translation>快进速度:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="913"/>
-        <location filename="../SettingsView.ui" line="956"/>
+        <location filename="../SettingsView.ui" line="907"/>
+        <location filename="../SettingsView.ui" line="950"/>
         <source>Unbounded</source>
         <translation>不限制</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="925"/>
+        <location filename="../SettingsView.ui" line="919"/>
         <source>Fast forward (held) speed:</source>
         <translation>快进 (按住) 速度:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="968"/>
+        <location filename="../SettingsView.ui" line="962"/>
         <source>Autofire interval:</source>
         <translation>连发间隔:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="992"/>
+        <location filename="../SettingsView.ui" line="986"/>
         <source>Enable rewind</source>
         <translation>启用倒带</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="999"/>
+        <location filename="../SettingsView.ui" line="993"/>
         <source>Rewind history:</source>
         <translation>倒带历史:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1031"/>
+        <location filename="../SettingsView.ui" line="1025"/>
         <source>Idle loops:</source>
         <translation>空循环:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1039"/>
+        <location filename="../SettingsView.ui" line="1033"/>
         <source>Run all</source>
         <translation>全部运行</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1044"/>
+        <location filename="../SettingsView.ui" line="1038"/>
         <source>Remove known</source>
         <translation>移除已知</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1049"/>
+        <location filename="../SettingsView.ui" line="1043"/>
         <source>Detect and remove</source>
         <translation>检测并移除</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1057"/>
+        <location filename="../SettingsView.ui" line="1051"/>
         <source>Preload entire ROM into memory</source>
         <translation>将整个 ROM 预载到内存中</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1088"/>
+        <location filename="../SettingsView.ui" line="1082"/>
         <source>Save state extra data:</source>
         <translation type="unfinished">保存存档附加数据：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1105"/>
-        <location filename="../SettingsView.ui" line="1149"/>
+        <location filename="../SettingsView.ui" line="1099"/>
+        <location filename="../SettingsView.ui" line="1143"/>
         <source>Save game</source>
         <translation type="unfinished">保存游戏</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1132"/>
+        <location filename="../SettingsView.ui" line="1126"/>
         <source>Load state extra data:</source>
         <translation type="unfinished">载入存档附加数据：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1687"/>
+        <location filename="../SettingsView.ui" line="1681"/>
         <source>Models</source>
         <translation type="unfinished">型号</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1693"/>
+        <location filename="../SettingsView.ui" line="1687"/>
         <source>GB only:</source>
         <translation type="unfinished">仅 GB：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1703"/>
+        <location filename="../SettingsView.ui" line="1697"/>
         <source>SGB compatible:</source>
         <translation>兼容 SGB：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1713"/>
+        <location filename="../SettingsView.ui" line="1707"/>
         <source>GBC only:</source>
         <translation type="unfinished">仅 GBC：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1723"/>
+        <location filename="../SettingsView.ui" line="1717"/>
         <source>GBC compatible:</source>
         <translation>兼容 GBC：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1733"/>
+        <location filename="../SettingsView.ui" line="1727"/>
         <source>SGB and GBC compatible:</source>
         <translation>兼容 SGB 和 GBC：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1753"/>
+        <location filename="../SettingsView.ui" line="1747"/>
         <source>Game Boy palette</source>
         <translation type="unfinished">Game Boy 调色板</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1759"/>
+        <location filename="../SettingsView.ui" line="1753"/>
         <source>Preset:</source>
         <translation>预设：</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1095"/>
-        <location filename="../SettingsView.ui" line="1139"/>
+        <location filename="../SettingsView.ui" line="1089"/>
+        <location filename="../SettingsView.ui" line="1133"/>
         <source>Screenshot</source>
         <translation>截图</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1115"/>
-        <location filename="../SettingsView.ui" line="1156"/>
+        <location filename="../SettingsView.ui" line="1109"/>
+        <location filename="../SettingsView.ui" line="1150"/>
         <source>Cheat codes</source>
         <translation>作弊码</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1064"/>
+        <location filename="../SettingsView.ui" line="1058"/>
         <source>Enable Game Boy Player features by default</source>
         <translation>默认启用 Game Boy Player 功能</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1071"/>
+        <location filename="../SettingsView.ui" line="1065"/>
         <source>Enable VBA bug compatibility in ROM hacks</source>
         <translation>启用用于改版的 VBA 漏洞兼容模式</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1167"/>
+        <location filename="../SettingsView.ui" line="1161"/>
         <source>Video renderer:</source>
         <translation>视频渲染器:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1175"/>
+        <location filename="../SettingsView.ui" line="1169"/>
         <source>Software</source>
         <translation>软件</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1180"/>
+        <location filename="../SettingsView.ui" line="1174"/>
         <source>OpenGL</source>
         <translation>OpenGL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1195"/>
+        <location filename="../SettingsView.ui" line="1189"/>
         <source>OpenGL enhancements</source>
         <translation>OpenGL 增强</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1201"/>
+        <location filename="../SettingsView.ui" line="1195"/>
         <source>High-resolution scale:</source>
         <translation>高分辨率比例:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1239"/>
+        <location filename="../SettingsView.ui" line="1233"/>
         <source>(240×160)</source>
         <translation>(240×160)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1188"/>
+        <location filename="../SettingsView.ui" line="1182"/>
         <source>XQ GBA audio (experimental)</source>
         <translation>XQ GBA 音频 (实验性)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1268"/>
+        <location filename="../SettingsView.ui" line="1262"/>
         <source>GB BIOS file:</source>
         <translation>GB BIOS 文件:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1287"/>
-        <location filename="../SettingsView.ui" line="1315"/>
-        <location filename="../SettingsView.ui" line="1343"/>
-        <location filename="../SettingsView.ui" line="1371"/>
-        <location filename="../SettingsView.ui" line="1429"/>
-        <location filename="../SettingsView.ui" line="1477"/>
-        <location filename="../SettingsView.ui" line="1525"/>
-        <location filename="../SettingsView.ui" line="1573"/>
-        <location filename="../SettingsView.ui" line="1621"/>
+        <location filename="../SettingsView.ui" line="1281"/>
+        <location filename="../SettingsView.ui" line="1309"/>
+        <location filename="../SettingsView.ui" line="1337"/>
+        <location filename="../SettingsView.ui" line="1365"/>
+        <location filename="../SettingsView.ui" line="1423"/>
+        <location filename="../SettingsView.ui" line="1471"/>
+        <location filename="../SettingsView.ui" line="1519"/>
+        <location filename="../SettingsView.ui" line="1567"/>
+        <location filename="../SettingsView.ui" line="1615"/>
         <source>Browse</source>
         <translation>浏览</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1380"/>
+        <location filename="../SettingsView.ui" line="1374"/>
         <source>Use BIOS file if found</source>
         <translation>当可用时使用 BIOS 文件</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1390"/>
+        <location filename="../SettingsView.ui" line="1384"/>
         <source>Skip BIOS intro</source>
         <translation>跳过 BIOS 启动画面</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1352"/>
+        <location filename="../SettingsView.ui" line="1346"/>
         <source>GBA BIOS file:</source>
         <translation>GBA BIOS 文件:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1324"/>
+        <location filename="../SettingsView.ui" line="1318"/>
         <source>GBC BIOS file:</source>
         <translation>GBC BIOS 文件:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1296"/>
+        <location filename="../SettingsView.ui" line="1290"/>
         <source>SGB BIOS file:</source>
         <translation>SGB BIOS 文件:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1404"/>
+        <location filename="../SettingsView.ui" line="1398"/>
         <source>Save games</source>
         <translation>游戏存档</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1438"/>
-        <location filename="../SettingsView.ui" line="1486"/>
-        <location filename="../SettingsView.ui" line="1534"/>
-        <location filename="../SettingsView.ui" line="1582"/>
-        <location filename="../SettingsView.ui" line="1630"/>
+        <location filename="../SettingsView.ui" line="1432"/>
+        <location filename="../SettingsView.ui" line="1480"/>
+        <location filename="../SettingsView.ui" line="1528"/>
+        <location filename="../SettingsView.ui" line="1576"/>
+        <location filename="../SettingsView.ui" line="1624"/>
         <source>Same directory as the ROM</source>
         <translation>与 ROM 所在目录相同</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1452"/>
+        <location filename="../SettingsView.ui" line="1446"/>
         <source>Save states</source>
         <translation>即时存档</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1500"/>
+        <location filename="../SettingsView.ui" line="1494"/>
         <source>Screenshots</source>
         <translation>截图</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1548"/>
+        <location filename="../SettingsView.ui" line="1542"/>
         <source>Patches</source>
         <translation>补丁</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1596"/>
+        <location filename="../SettingsView.ui" line="1590"/>
         <source>Cheats</source>
         <translation>作弊码</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1653"/>
+        <location filename="../SettingsView.ui" line="1647"/>
         <source>Log to file</source>
         <translation>记录日志到文件</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1660"/>
+        <location filename="../SettingsView.ui" line="1654"/>
         <source>Log to console</source>
         <translation>记录日志到控制台</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1674"/>
+        <location filename="../SettingsView.ui" line="1668"/>
         <source>Select Log File</source>
         <translation>选择日志文件</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1769"/>
+        <location filename="../SettingsView.ui" line="1763"/>
         <source>Default BG colors:</source>
         <translation>默认背景色:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1856"/>
+        <location filename="../SettingsView.ui" line="1850"/>
         <source>Default sprite colors 1:</source>
         <translation>默认精灵图颜色 1:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1943"/>
+        <location filename="../SettingsView.ui" line="1937"/>
         <source>Default sprite colors 2:</source>
         <translation>默认精灵图颜色 2:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1743"/>
+        <location filename="../SettingsView.ui" line="1737"/>
         <source>Super Game Boy borders</source>
         <translation>Super Game Boy 边框</translation>
     </message>

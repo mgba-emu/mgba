@@ -948,6 +948,9 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 
 void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
+	if (renderer->cache) {
+		mCacheSetWriteVRAM(renderer->cache, address);
+	}
 	glRenderer->vramDirty |= 1 << (address >> 12);
 }
 
@@ -959,8 +962,9 @@ void GBAVideoGLRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam)
 
 void GBAVideoGLRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
-	UNUSED(address);
-	UNUSED(value);
+	if (renderer->cache) {
+		mCacheSetWritePalette(renderer->cache, address >> 1, mColorFrom555(value));
+	}
 	glRenderer->paletteDirty = true;
 	int r = M_R5(value);
 	int g = M_G5(value) << 1;

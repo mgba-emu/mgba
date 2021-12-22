@@ -108,7 +108,7 @@ private:
 	QSet<LayerId> m_disabled;
 	QPixmap m_composited;
 	QPixmap m_rendered;
-	mMapCacheEntry m_mapStatus[4][128 * 128] = {}; // TODO: Correct size
+	QVector<mMapCacheEntry> m_mapStatus[4];
 	ColorPicker m_backdropPicker;
 	QColor m_overrideBackdrop;
 

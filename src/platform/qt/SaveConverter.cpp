@@ -15,6 +15,7 @@
 #ifdef M_CORE_GBA
 #include <mgba/gba/core.h>
 #include <mgba/internal/gba/serialize.h>
+#include <mgba/internal/gba/sharkport.h>
 #endif
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
@@ -34,8 +35,7 @@ SaveConverter::SaveConverter(std::shared_ptr<CoreController> controller, QWidget
 
 	connect(m_ui.inputFile, &QLineEdit::textEdited, this, &SaveConverter::refreshInputTypes);
 	connect(m_ui.inputBrowse, &QAbstractButton::clicked, this, [this]() {
-		// TODO: Add gameshark saves here too
-		QStringList formats{"*.sav", "*.sgm", "*.ss0", "*.ss1", "*.ss2", "*.ss3", "*.ss4", "*.ss5", "*.ss6", "*.ss7", "*.ss8", "*.ss9"};
+		QStringList formats{"*.gsv", "*.sav", "*.sgm", "*.sps", "*.ss0", "*.ss1", "*.ss2", "*.ss3", "*.ss4", "*.ss5", "*.ss6", "*.ss7", "*.ss8", "*.ss9", "*.xps"};
 		QString filter = tr("Save games and save states (%1)").arg(formats.join(QChar(' ')));
 		QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save game or save state"), filter);
 		if (!filename.isEmpty()) {
@@ -101,6 +101,7 @@ void SaveConverter::refreshInputTypes() {
 	
 	detectFromSavestate(*vf);
 	detectFromSize(vf);
+	detectFromHeaders(vf);
 
 	for (const auto& save : m_validSaves) {
 		m_ui.inputType->addItem(save);
@@ -166,7 +167,7 @@ void SaveConverter::detectFromSavestate(VFile* vf) {
 	}
 
 	QByteArray state = getState(vf, platform);
-	AnnotatedSave save{platform, std::make_shared<VFileDevice>(extSavedata)};
+	AnnotatedSave save{platform, std::make_shared<VFileDevice>(extSavedata), Endian::NONE, Container::SAVESTATE};
 	switch (platform) {
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
@@ -253,6 +254,58 @@ void SaveConverter::detectFromSize(std::shared_ptr<VFileDevice> vf) {
 #endif
 }
 
+void SaveConverter::detectFromHeaders(std::shared_ptr<VFileDevice> vf) {
+	const QByteArray sharkport("\xd\0\0\0SharkPortSave", 0x11);
+	const QByteArray gsv("ADVSAVEG", 8);
+	QByteArray buffer;
+
+	vf->seek(0);
+	buffer = vf->read(sharkport.size());
+	if (buffer == sharkport) {
+		size_t size;
+		void* data = GBASavedataSharkPortGetPayload(*vf, &size, nullptr, false);
+		if (data) {
+			QByteArray bytes = QByteArray::fromRawData(static_cast<const char*>(data), size);
+			bytes.data(); // Trigger a deep copy before we delete the backing
+			if (size == SIZE_CART_FLASH1M) {
+				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::SHARKPORT});
+			} else {
+				m_validSaves.append(AnnotatedSave{SAVEDATA_SRAM, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_SRAM)), Endian::NONE, Container::SHARKPORT});
+				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH512, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_FLASH512)), Endian::NONE, Container::SHARKPORT});
+				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_EEPROM)), Endian::BIG, Container::SHARKPORT});
+				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_EEPROM512)), Endian::BIG, Container::SHARKPORT});
+			}
+			free(data);
+		}
+	} else if (buffer.left(gsv.count()) == gsv) {
+		size_t size;
+		void* data = GBASavedataGSVGetPayload(*vf, &size, nullptr, false);
+		if (data) {
+			QByteArray bytes = QByteArray::fromRawData(static_cast<const char*>(data), size);
+			bytes.data(); // Trigger a deep copy before we delete the backing
+			switch (size) {
+			case SIZE_CART_FLASH1M:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
+				break;
+			case SIZE_CART_FLASH512:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH512, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
+				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
+				break;
+			case SIZE_CART_SRAM:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_SRAM, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_SRAM)), Endian::NONE, Container::GSV});
+				break;
+			case SIZE_CART_EEPROM:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_EEPROM)), Endian::BIG, Container::GSV});
+				break;
+			case SIZE_CART_EEPROM512:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_EEPROM512)), Endian::BIG, Container::GSV});
+				break;
+			}
+			free(data);
+		}
+	}
+}
+
 mPlatform SaveConverter::getStatePlatform(VFile* vf) {
 	uint32_t magic;
 	void* state = nullptr;
@@ -326,7 +379,7 @@ QByteArray SaveConverter::getExtdata(VFile* vf, mPlatform platform, mStateExtdat
 }
 
 SaveConverter::AnnotatedSave::AnnotatedSave()
-	: savestate(false)
+	: container(Container::NONE)
 	, platform(mPLATFORM_NONE)
 	, size(0)
 	, backing()
@@ -334,8 +387,8 @@ SaveConverter::AnnotatedSave::AnnotatedSave()
 {
 }
 
-SaveConverter::AnnotatedSave::AnnotatedSave(mPlatform platform, std::shared_ptr<VFileDevice> vf, Endian endianness)
-	: savestate(true)
+SaveConverter::AnnotatedSave::AnnotatedSave(mPlatform platform, std::shared_ptr<VFileDevice> vf, Endian endianness, Container container)
+	: container(container)
 	, platform(platform)
 	, size(vf->size())
 	, backing(vf)
@@ -344,8 +397,8 @@ SaveConverter::AnnotatedSave::AnnotatedSave(mPlatform platform, std::shared_ptr<
 }
 
 #ifdef M_CORE_GBA
-SaveConverter::AnnotatedSave::AnnotatedSave(SavedataType type, std::shared_ptr<VFileDevice> vf, Endian endianness)
-	: savestate(false)
+SaveConverter::AnnotatedSave::AnnotatedSave(SavedataType type, std::shared_ptr<VFileDevice> vf, Endian endianness, Container container)
+	: container(container)
 	, platform(mPLATFORM_GBA)
 	, size(vf->size())
 	, backing(vf)
@@ -356,8 +409,8 @@ SaveConverter::AnnotatedSave::AnnotatedSave(SavedataType type, std::shared_ptr<V
 #endif
 
 #ifdef M_CORE_GB
-SaveConverter::AnnotatedSave::AnnotatedSave(GBMemoryBankControllerType type, std::shared_ptr<VFileDevice> vf, Endian endianness)
-	: savestate(false)
+SaveConverter::AnnotatedSave::AnnotatedSave(GBMemoryBankControllerType type, std::shared_ptr<VFileDevice> vf, Endian endianness, Container container)
+	: container(container)
 	, platform(mPLATFORM_GB)
 	, size(vf->size())
 	, backing(vf)
@@ -468,14 +521,24 @@ SaveConverter::AnnotatedSave::operator QString() const {
 	if (!endianStr.isEmpty()) {
 		saveType = QCoreApplication::translate("SaveConverter", "%1 (%2)").arg(saveType).arg(endianStr);
 	}
-	if (savestate) {
+	switch (container) {
+	case Container::SAVESTATE:
 		format = QCoreApplication::translate("SaveConverter", "%1 save state with embedded %2 save game");
+		break;
+	case Container::SHARKPORT:
+		format = QCoreApplication::translate("SaveConverter", "%1 SharkPort %2 save game");
+		break;
+	case Container::GSV:
+		format = QCoreApplication::translate("SaveConverter", "%1 GameShark Advance SP %2 save game");
+		break;
+	case Container::NONE:
+		break;
 	}
 	return format.arg(nicePlatformFormat(platform)).arg(saveType);
 }
 
 bool SaveConverter::AnnotatedSave::operator==(const AnnotatedSave& other) const {
-	if (other.savestate != savestate || other.platform != platform || other.size != size || other.endianness != endianness) {
+	if (other.container != container || other.platform != platform || other.size != size || other.endianness != endianness) {
 		return false;
 	}
 	switch (platform) {
@@ -503,12 +566,11 @@ QList<SaveConverter::AnnotatedSave> SaveConverter::AnnotatedSave::possibleConver
 	QList<AnnotatedSave> possible;
 	AnnotatedSave same = asRaw();
 	same.backing.reset();
-	same.savestate = false;
+	same.container = Container::NONE;
 
-	if (savestate) {
+	if (container != Container::NONE) {
 		possible.append(same);
 	}
-
 
 	AnnotatedSave endianSwapped = same;
 	switch (endianness) {
@@ -583,6 +645,9 @@ QByteArray SaveConverter::AnnotatedSave::convertTo(const SaveConverter::Annotate
 		switch (gba.type) {
 		case SAVEDATA_EEPROM:
 		case SAVEDATA_EEPROM512:
+			if (endianness == target.endianness) {
+				break;
+			}
 			converted.resize(target.size);
 			buffer = backing->readAll();
 			for (int i = 0; i < size; i += 8) {

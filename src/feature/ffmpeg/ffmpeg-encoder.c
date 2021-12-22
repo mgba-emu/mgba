@@ -737,7 +737,7 @@ bool _ffmpegWriteAudioFrame(struct FFmpegEncoder* encoder, struct AVFrame* audio
 
 #ifdef FFMPEG_USE_PACKET_UNREF
 				av_packet_move_ref(packet, tempPacket);
-				av_packet_free(&packet);
+				av_packet_free(&tempPacket);
 #else
 				av_free_packet(packet);
 				av_freep(&packet);

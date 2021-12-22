@@ -56,14 +56,20 @@ private:
 		GBMemoryBankControllerType type;
 	};
 #endif
+	enum class Container {
+		NONE = 0,
+		SAVESTATE,
+		SHARKPORT,
+		GSV
+	};
 	struct AnnotatedSave {
 		AnnotatedSave();
-		AnnotatedSave(mPlatform, std::shared_ptr<VFileDevice>, Endian = Endian::NONE);
+		AnnotatedSave(mPlatform, std::shared_ptr<VFileDevice>, Endian = Endian::NONE, Container = Container::NONE);
 #ifdef M_CORE_GBA
-		AnnotatedSave(SavedataType, std::shared_ptr<VFileDevice>, Endian = Endian::NONE);
+		AnnotatedSave(SavedataType, std::shared_ptr<VFileDevice>, Endian = Endian::NONE, Container = Container::NONE);
 #endif
 #ifdef M_CORE_GB
-		AnnotatedSave(GBMemoryBankControllerType, std::shared_ptr<VFileDevice>, Endian = Endian::NONE);
+		AnnotatedSave(GBMemoryBankControllerType, std::shared_ptr<VFileDevice>, Endian = Endian::NONE, Container = Container::NONE);
 #endif
 
 		AnnotatedSave asRaw() const;
@@ -73,7 +79,7 @@ private:
 		QList<AnnotatedSave> possibleConversions() const;
 		QByteArray convertTo(const AnnotatedSave&) const;
 
-		bool savestate;
+		Container container;
 		mPlatform platform;
 		ssize_t size;
 		std::shared_ptr<VFileDevice> backing;

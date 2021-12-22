@@ -547,6 +547,9 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	// Interrupts and misc
 	case REG_KEYCNT:
 		value &= 0xC3FF;
+		if (gba->keysLast < 0x400) {
+			gba->keysLast &= gba->memory.io[address >> 1] | ~value;
+		}
 		gba->memory.io[address >> 1] = value;
 		GBATestKeypadIRQ(gba);
 		return;
@@ -743,28 +746,28 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 					callbacks->keysRead(callbacks->context);
 				}
 			}
-			uint16_t input = 0;
+			bool allowOpposingDirections = gba->allowOpposingDirections;
 			if (gba->keyCallback) {
-				input = gba->keyCallback->readKeys(gba->keyCallback);
-				if (gba->keySource) {
-					*gba->keySource = input;
-				}
-			} else if (gba->keySource) {
-				input = *gba->keySource;
-				if (!gba->allowOpposingDirections) {
-					unsigned rl = input & 0x030;
-					unsigned ud = input & 0x0C0;
-					input &= 0x30F;
-					if (rl != 0x030) {
-						input |= rl;
-					}
-					if (ud != 0x0C0) {
-						input |= ud;
-					}
+				gba->keysActive = gba->keyCallback->readKeys(gba->keyCallback);
+				if (!allowOpposingDirections) {
+					allowOpposingDirections = gba->keyCallback->requireOpposingDirections;
 				}
 			}
-			return 0x3FF ^ input;
+			uint16_t input = gba->keysActive;
+			if (!allowOpposingDirections) {
+				unsigned rl = input & 0x030;
+				unsigned ud = input & 0x0C0;
+				input &= 0x30F;
+				if (rl != 0x030) {
+					input |= rl;
+				}
+				if (ud != 0x0C0) {
+					input |= ud;
+				}
+			}
+			gba->memory.io[address >> 1] = 0x3FF ^ input;
 		}
+		break;
 	case REG_SIOCNT:
 		return gba->sio.siocnt;
 	case REG_RCNT:

@@ -112,15 +112,19 @@ void AssetView::compositeTile(const void* tBuffer, void* buffer, size_t stride, 
 	}
 }
 
-QImage AssetView::compositeMap(int map, mMapCacheEntry* mapStatus) {
+QImage AssetView::compositeMap(int map, QVector<mMapCacheEntry>* mapStatus) {
 	mMapCache* mapCache = mMapCacheSetGetPointer(&m_cacheSet->maps, map);
 	int tilesW = 1 << mMapCacheSystemInfoGetTilesWide(mapCache->sysConfig);
 	int tilesH = 1 << mMapCacheSystemInfoGetTilesHigh(mapCache->sysConfig);
+	if (mapStatus->size() != tilesW * tilesH) {
+		mapStatus->resize(tilesW * tilesH);
+		mapStatus->fill({});
+	}
 	QImage rawMap = QImage(QSize(tilesW * 8, tilesH * 8), QImage::Format_ARGB32);
 	uchar* bgBits = rawMap.bits();
 	for (int j = 0; j < tilesH; ++j) {
 		for (int i = 0; i < tilesW; ++i) {
-			mMapCacheCleanTile(mapCache, mapStatus, i, j);
+			mMapCacheCleanTile(mapCache, mapStatus->data(), i, j);
 		}
 		for (int i = 0; i < 8; ++i) {
 			memcpy(static_cast<void*>(&bgBits[tilesW * 32 * (i + j * 8)]), mMapCacheGetRow(mapCache, i + j * 8), tilesW * 32);
@@ -131,6 +135,7 @@ QImage AssetView::compositeMap(int map, mMapCacheEntry* mapStatus) {
 
 QImage AssetView::compositeObj(const ObjInfo& objInfo) {
 	mTileCache* tileCache = mTileCacheSetGetPointer(&m_cacheSet->tiles, objInfo.paletteSet);
+	unsigned maxTiles = mTileCacheSystemInfoGetMaxTiles(tileCache->sysConfig);
 	const color_t* rawPalette = mTileCacheGetPalette(tileCache, objInfo.paletteId);
 	unsigned colors = 1 << objInfo.bits;
 	QVector<QRgb> palette;
@@ -142,10 +147,11 @@ QImage AssetView::compositeObj(const ObjInfo& objInfo) {
 
 	QImage image = QImage(QSize(objInfo.width * 8, objInfo.height * 8), QImage::Format_Indexed8);
 	image.setColorTable(palette);
+	image.fill(0);
 	uchar* bits = image.bits();
 	unsigned t = objInfo.tile;
-	for (unsigned y = 0; y < objInfo.height; ++y) {
-		for (unsigned x = 0; x < objInfo.width; ++x, ++t) {
+	for (unsigned y = 0; y < objInfo.height && t < maxTiles; ++y) {
+		for (unsigned x = 0; x < objInfo.width && t < maxTiles; ++x, ++t) {
 			compositeTile(static_cast<const void*>(mTileCacheGetVRAM(tileCache, t)), bits, objInfo.width * 8, x * 8, y * 8, objInfo.bits);
 		}
 		t += objInfo.stride - objInfo.width;

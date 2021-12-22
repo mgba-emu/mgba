@@ -38,10 +38,19 @@
 #include <signal.h>
 
 #define PORT "sdl"
+#define MAX_LOG_BUF 1024
 
 static void mSDLDeinit(struct mSDLRenderer* renderer);
 
 static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
+
+static void _setLogger(struct mCore* core);
+static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
+
+static bool _logToStdout = true;
+static struct VFile* _logFile = NULL;
+static struct mLogFilter _filter;
+static struct mLogger _logger;
 
 static struct VFile* _state = NULL;
 
@@ -60,6 +69,7 @@ int main(int argc, char** argv) {
 		.videoSync = false,
 		.audioSync = true,
 		.volume = 0x100,
+		.logLevel = mLOG_WARN | mLOG_ERROR | mLOG_FATAL,
 	};
 
 	struct mArguments args;
@@ -175,6 +185,7 @@ int main(int argc, char** argv) {
 	int ret;
 
 	// TODO: Use opts and config
+	_setLogger(renderer.core);
 	ret = mSDLRun(&renderer, &args);
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&renderer.core->inputMap);
@@ -258,8 +269,14 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 
 	renderer->audio.samples = renderer->core->opts.audioBuffers;
 	renderer->audio.sampleRate = 44100;
-
+		
+	struct mThreadLogger threadLogger;
+	threadLogger.d = _logger;
+	threadLogger.p = &thread;
+	thread.logger = threadLogger;
+	
 	bool didFail = !mCoreThreadStart(&thread);
+
 	if (!didFail) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		renderer->core->desiredVideoDimensions(renderer->core, &renderer->width, &renderer->height);
@@ -320,4 +337,64 @@ static void mSDLDeinit(struct mSDLRenderer* renderer) {
 	renderer->deinit(renderer);
 
 	SDL_Quit();
+}
+
+static void _setLogger(struct mCore* core) {
+	int fakeBool = 0;
+	bool logToFile = false;
+
+	if (mCoreConfigGetIntValue(&core->config, "logToStdout", &fakeBool)) {
+		_logToStdout = fakeBool;
+	}
+	if (mCoreConfigGetIntValue(&core->config, "logToFile", &fakeBool)) {
+		logToFile = fakeBool;
+	}
+	const char* logFile = mCoreConfigGetValue(&core->config, "logFile");
+	
+	if (logToFile && logFile) {
+		_logFile = VFileOpen(logFile, O_WRONLY | O_CREAT | O_APPEND);
+	}
+
+	// Create the filter
+	mLogFilterInit(&_filter);
+	mLogFilterLoad(&_filter, &core->config);
+
+	// Fill the logger
+	_logger.log = _mCoreLog;
+	_logger.filter = &_filter;
+}
+
+static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
+	struct mCoreThread* thread = mCoreThreadGet();
+	if (thread && level == mLOG_FATAL) {
+		mCoreThreadMarkCrashed(thread);
+	}
+	
+	if (!mLogFilterTest(logger->filter, category, level)) {
+		return;
+	}
+
+	char buffer[MAX_LOG_BUF];
+
+	// Prepare the string
+	size_t length = snprintf(buffer, sizeof(buffer), "%s: ", mLogCategoryName(category));
+	if (length < sizeof(buffer)) {
+		length += vsnprintf(buffer + length, sizeof(buffer) - length, format, args);
+	}
+	if (length < sizeof(buffer)) {
+		length += snprintf(buffer + length, sizeof(buffer) - length, "\n");
+	}
+
+	// Make sure the length doesn't exceed the size of the buffer when actually writing
+	if (length > sizeof(buffer)) {
+		length = sizeof(buffer);
+	}
+
+	if (_logToStdout) {
+		printf("%s", buffer);
+	}
+
+	if (_logFile) {
+		_logFile->write(_logFile, buffer, length);
+	}
 }
