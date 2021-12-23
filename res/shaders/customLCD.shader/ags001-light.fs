@@ -1,9 +1,9 @@
 varying vec2 texCoord;
 uniform sampler2D tex;
+uniform int enable;
 uniform float reflectionBrightness;
 uniform vec2 reflectionDistance;
 uniform float lightBrightness;
-uniform int enable;
 
 const float speed = 2.0;
 const float decay = 2.0;
