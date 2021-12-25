@@ -115,13 +115,12 @@ static struct DSGXRenderer dummyRenderer = {
 };
 
 static void _pullPipe(struct DSGX* gx) {
+	struct DSGXEntry entry;
 	if (CircleBufferSize(&gx->fifo) >= sizeof(struct DSGXEntry)) {
-		struct DSGXEntry entry = { 0 };
 		CircleBufferRead(&gx->fifo, &entry, sizeof(entry));
 		CircleBufferWrite(&gx->pipe, &entry, sizeof(entry));
 	}
 	if (CircleBufferSize(&gx->fifo) >= sizeof(struct DSGXEntry)) {
-		struct DSGXEntry entry = { 0 };
 		CircleBufferRead(&gx->fifo, &entry, sizeof(entry));
 		CircleBufferWrite(&gx->pipe, &entry, sizeof(entry));
 	}
@@ -1290,7 +1289,6 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 		_flushOutstanding(gx);
 	}
 	DSGXUpdateGXSTAT(gx);
-	_updateDMA(gx);
 }
 
 void DSGXInit(struct DSGX* gx) {

@@ -774,17 +774,17 @@ static void DSGXSoftwareRendererDrawScanline(struct DSGXRenderer* renderer, int 
 		return;
 	}
 
+	struct DSGXSoftwareSpan span;
 	size_t p;
 	for (p = 0; p < DSGXSoftwarePolygonListSize(&softwareRenderer->activePolys); ++p) {
 		struct DSGXSoftwarePolygon* poly = DSGXSoftwarePolygonListGetPointer(&softwareRenderer->activePolys, p);
 		DSGXSoftwareEdgeListClear(&softwareRenderer->activeEdges);
 		_preparePoly(renderer, softwareRenderer->verts, poly);
+		span.poly = poly;
+		span.polyId = DSGXPolygonAttrsGetId(poly->polyParams);
 		int y;
 		for (y = poly->minY; y <= poly->maxY; ++y) {
-			struct DSGXSoftwareSpan span = {
-				.poly = poly,
-				.polyId = DSGXPolygonAttrsGetId(poly->polyParams),
-			};
+			span.ep[0].coord[3] = 0;
 			size_t i;
 			for (i = 0; i < DSGXSoftwareEdgeListSize(&softwareRenderer->activeEdges); ++i) {
 				struct DSGXSoftwareEdge* edge = DSGXSoftwareEdgeListGetPointer(&softwareRenderer->activeEdges, i);
