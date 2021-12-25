@@ -100,6 +100,17 @@ enum DSGXCommand {
 	DS_GX_CMD_MAX
 };
 
+enum DSGXTexFormat {
+	DS_GX_TEX_NONE = 0,
+	DS_GX_TEX_A3I5 = 1,
+	DS_GX_TEX_IDX2 = 2,
+	DS_GX_TEX_IDX4 = 3,
+	DS_GX_TEX_IDX8 = 4,
+	DS_GX_TEX_COMPRESSED = 5,
+	DS_GX_TEX_A5I3 = 6,
+	DS_GX_TEX_RGBA = 7
+};
+
 #pragma pack(push, 1)
 struct DSGXEntry {
 	uint8_t command;

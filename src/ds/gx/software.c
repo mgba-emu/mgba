@@ -143,44 +143,44 @@ static color_t _lookupColor(struct DSGXSoftwareRenderer* renderer, struct DSGXSo
 		pa = (pa << 1) + 1;
 	}
 	switch (poly->texFormat) {
-	case 0:
+	case DS_GX_TEX_NONE:
 	default:
 		return _finishColor(ep->cr, ep->cg, ep->cb, pa);
-	case 1:
+	case DS_GX_TEX_A3I5:
 		texel = ((uint8_t*) poly->texBase)[texelCoord];
 		ta = (texel >> 5) & 0x7;
 		ta = (ta << 2) + (ta >> 1);
 		texel &= 0x1F;
 		break;
-	case 2:
+	case DS_GX_TEX_IDX2:
 		texel = ((uint8_t*) poly->texBase)[texelCoord >> 2];
 		if (texelCoord & 0x3) {
 			texel >>= 2 * (texelCoord & 0x3);
 		}
 		texel &= 0x3;
 		break;
-	case 3:
+	case DS_GX_TEX_IDX4:
 		texel = ((uint8_t*) poly->texBase)[texelCoord >> 1];
 		if (texelCoord & 0x1) {
 			texel >>= 4;
 		}
 		texel &= 0xF;
 		break;
-	case 4:
+	case DS_GX_TEX_IDX8:
 		texel = ((uint8_t*) poly->texBase)[texelCoord];
 		break;
-	case 5:
+	case DS_GX_TEX_COMPRESSED:
 		texelCoord = (s & ~3) + (t & 3) + (t >> 2) * poly->texW;
 		texel = ((uint8_t*) poly->texBase)[texelCoord];
 		texel >>= (s & 3) * 2;
 		texel &= 3;
 		break;
-	case 6:
+	case DS_GX_TEX_A5I3:
 		texel = ((uint8_t*) poly->texBase)[texelCoord];
 		ta = (texel >> 3) & 0x1F;
 		texel &= 0x7;
 		break;
-	case 7:
+	case DS_GX_TEX_RGBA:
 		texel = poly->texBase[texelCoord];
 		break;
 	}
