@@ -56,16 +56,16 @@ static void _gdbStubEntered(struct mDebugger* debugger, enum mDebuggerEntryReaso
 			const char* type = 0;
 			switch (info->type.wp.watchType) {
 			case WATCHPOINT_WRITE:
-				if (info->type.wp.newValue == info->type.wp.oldValue) {
-					if (stub->d.state == DEBUGGER_PAUSED) {
-						stub->d.state = DEBUGGER_RUNNING;
-					}
-					return;
-				}
 				// Fall through
 			case WATCHPOINT_WRITE_CHANGE:
 				type = "watch";
-				break;
+				// We send S05 instead of T05watch because it bypasses GDB's internal
+				// logic to check if the value changed. We need to bypass it because
+				// we knows more than GDB in regards to using savestates and mgba already
+				// has this logic anyway
+				snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGTRAP);
+				_sendMessage(stub);
+				return;
 			case WATCHPOINT_READ:
 				type = "rwatch";
 				break;
