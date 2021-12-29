@@ -15,6 +15,7 @@ Emulation fixes:
  - ARM7: Fix unsigned multiply timing
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
  - GBA: Improve timing when not booting from BIOS
+ - GBA BIOS: Work around IRQ handling hiccup in Mario & Luigi (fixes mgba.io/i/1059)
  - GBA I/O: Redo internal key input, enabling edge-based key IRQs
  - GBA Memory: Fix misaligned 32-bit I/O loads (fixes mgba.io/i/2307)
 Other fixes:

@@ -31,12 +31,12 @@ swiBase:
 cmp    sp, #0
 moveq  sp, #0x04000000
 subeq  sp, #0x20
-stmfd  sp!, {r11-r12, lr}
-ldrb   r11, [lr, #-2]
+stmfd  sp!, {r4, r12, lr}
+ldrb   r4, [lr, #-2]
 mov    r12, #swiTable
-ldr    r11, [r12, r11, lsl #2]
+ldr    r4, [r12, r4, lsl #2]
 mov    r12, #StallCall
-cmp    r12, r11
+cmp    r12, r4
 mrs    r12, spsr
 stmfd  sp!, {r12}
 and    r12, #0x80
@@ -44,7 +44,7 @@ orr    r12, #0x1F
 msr    cpsr_c, r12
 swieq  0xF00000  @ Special mGBA-internal call to load the stall count into r12
 stmfd  sp!, {r2, lr}
-cmp    r11, #0
+cmp    r4, #0
 nop
 nop
 nop
@@ -52,7 +52,7 @@ nop
 nop
 nop
 mov    lr, pc
-bxne   r11
+bxne   r4
 nop
 nop
 nop
@@ -60,7 +60,7 @@ ldmfd  sp!, {r2, lr}
 msr    cpsr, #0x93
 ldmfd  sp!, {r12}
 msr    spsr, r12
-ldmfd  sp!, {r11-r12, lr}
+ldmfd  sp!, {r4, r12, lr}
 movs   pc, lr
 .word 0
 .word 0xE3A02004
