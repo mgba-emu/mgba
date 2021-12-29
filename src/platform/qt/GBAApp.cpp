@@ -120,7 +120,7 @@ Window* GBAApp::newWindow() {
 	if (m_windows.count() >= MAX_GBAS) {
 		return nullptr;
 	}
-	Window* w = new Window(&m_manager, m_configController, m_multiplayer.attached());
+	Window* w = new Window(&m_manager, m_configController, m_windows.count());
 	connect(w, &Window::destroyed, [this, w]() {
 		m_windows.removeAll(w);
 		for (Window* w : m_windows) {
