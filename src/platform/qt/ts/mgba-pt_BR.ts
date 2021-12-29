@@ -656,12 +656,12 @@ O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../MemorySearch.ui" line="256"/>
         <source>Unknown/changed</source>
-        <translation>Desconhecido/alterado</translation>
+        <translation>Desconhecido/mudado</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="269"/>
         <source>Changed by value</source>
-        <translation>Alterado pelo valor</translation>
+        <translation>Mudado pelo valor</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="282"/>
@@ -750,12 +750,12 @@ O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../MemoryView.ui" line="187"/>
         <source>Unsigned Integer:</source>
-        <translation>Integral não Assinado:</translation>
+        <translation>Inteiro não Assinado:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="208"/>
         <source>Signed Integer:</source>
-        <translation>Integral com Sinal:</translation>
+        <translation>Inteiro com Sinal:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="229"/>
@@ -1731,7 +1731,7 @@ Tamanho do download: %3</translation>
         <location filename="../IOViewer.cpp" line="202"/>
         <location filename="../IOViewer.cpp" line="207"/>
         <source>Integer part</source>
-        <translation>Parte integral</translation>
+        <translation>Parte inteira</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="174"/>
@@ -1739,7 +1739,7 @@ Tamanho do download: %3</translation>
         <location filename="../IOViewer.cpp" line="212"/>
         <location filename="../IOViewer.cpp" line="221"/>
         <source>Integer part (low)</source>
-        <translation>Parte integral (baixa)</translation>
+        <translation>Parte inteira (baixa)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="178"/>
@@ -1747,7 +1747,7 @@ Tamanho do download: %3</translation>
         <location filename="../IOViewer.cpp" line="216"/>
         <location filename="../IOViewer.cpp" line="225"/>
         <source>Integer part (high)</source>
-        <translation>Parte integral (alta)</translation>
+        <translation>Parte inteira (alta)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="229"/>
@@ -4582,7 +4582,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1460"/>
         <source>Force integer scaling</source>
-        <translation>Forçar o dimensionamento da integral</translation>
+        <translation>Forçar o dimensionamento do inteiro</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1481"/>
@@ -5554,7 +5554,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="496"/>
         <source>Force integer scaling</source>
-        <translation>Forçar dimensionamento da integral</translation>
+        <translation>Forçar dimensionamento do inteiro</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="521"/>
