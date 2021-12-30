@@ -28,6 +28,7 @@ public:
 public slots:
 	void setPort(ushort port);
 	void setBindAddress(const Address&);
+	void setWatchpointsBehavior(int watchpointsBehaviorId);
 	void listen();
 
 signals:
@@ -41,6 +42,7 @@ private:
 
 	ushort m_port = 2345;
 	Address m_bindAddress;
+	enum GDBWatchpointsBehvaior m_watchpointsBehavior = GDB_WATCHPOINT_STANDARD_LOGIC;
 };
 
 }

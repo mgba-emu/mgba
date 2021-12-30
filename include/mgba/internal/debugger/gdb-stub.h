@@ -24,6 +24,12 @@ enum GDBStubAckState {
 	GDB_ACK_OFF
 };
 
+enum GDBWatchpointsBehvaior {
+	GDB_WATCHPOINT_STANDARD_LOGIC = 0,
+	GDB_WATCHPOINT_OVERRIDE_LOGIC,
+	GDB_WATCHPOINT_OVERRIDE_LOGIC_ANY_WRITE,
+};
+
 struct GDBStub {
 	struct mDebugger d;
 
@@ -40,10 +46,12 @@ struct GDBStub {
 
 	bool supportsSwbreak;
 	bool supportsHwbreak;
+
+	enum GDBWatchpointsBehvaior watchpointsBehavior;
 };
 
 void GDBStubCreate(struct GDBStub*);
-bool GDBStubListen(struct GDBStub*, int port, const struct Address* bindAddress);
+bool GDBStubListen(struct GDBStub*, int port, const struct Address* bindAddress, enum GDBWatchpointsBehvaior watchpointsBehavior);
 
 void GDBStubHangup(struct GDBStub*);
 void GDBStubShutdown(struct GDBStub*);

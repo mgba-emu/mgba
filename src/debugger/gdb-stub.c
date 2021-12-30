@@ -79,15 +79,18 @@ static void _gdbStubEntered(struct mDebugger* debugger, enum mDebuggerEntryReaso
 	case DEBUGGER_ENTER_WATCHPOINT:
 		if (info) {
 			const char* type = 0;
+
+			if (stub->watchpointsBehavior != GDB_WATCHPOINT_STANDARD_LOGIC && info->type.wp.watchType & WATCHPOINT_WRITE) {
+				// We send S05 instead of T05watch because it bypasses GDB's internal logic to check if
+				// the value changed and to bypass a step into by GDB. This allows to control the change
+				// logic even when using savestates which we already handle in the core debugger logic
+				snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGTRAP);
+				_sendMessage(stub);
+				return;
+			}
+
 			switch (info->type.wp.watchType) {
 			case WATCHPOINT_WRITE:
-				if (info->type.wp.newValue == info->type.wp.oldValue) {
-					if (stub->d.state == DEBUGGER_PAUSED) {
-						stub->d.state = DEBUGGER_RUNNING;
-					}
-					return;
-				}
-				// Fall through
 			case WATCHPOINT_WRITE_CHANGE:
 				type = "watch";
 				break;
@@ -575,7 +578,7 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 		stub->d.platform->setBreakpoint(stub->d.platform, &breakpoint);
 		break;
 	case '2':
-		watchpoint.type = WATCHPOINT_WRITE_CHANGE;
+		watchpoint.type = stub->watchpointsBehavior == GDB_WATCHPOINT_OVERRIDE_LOGIC_ANY_WRITE ? WATCHPOINT_WRITE : WATCHPOINT_WRITE_CHANGE;
 		stub->d.platform->setWatchpoint(stub->d.platform, &watchpoint);
 		break;
 	case '3':
@@ -763,7 +766,7 @@ void GDBStubCreate(struct GDBStub* stub) {
 	stub->shouldBlock = false;
 }
 
-bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAddress) {
+bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAddress, enum GDBWatchpointsBehvaior watchpointsBehavior) {
 	if (!SOCKET_FAILED(stub->socket)) {
 		GDBStubShutdown(stub);
 	}
@@ -780,6 +783,7 @@ bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAdd
 		goto cleanup;
 	}
 
+	stub->watchpointsBehavior = watchpointsBehavior;
 	memset(stub->memoryMapXml, 0, GDB_STUB_MAX_LINE);
 
 	return true;
