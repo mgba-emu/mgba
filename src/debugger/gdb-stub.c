@@ -9,6 +9,7 @@
 #include <mgba/internal/arm/debugger/debugger.h>
 #include <mgba/internal/arm/isa-inlines.h>
 #include <mgba/internal/gba/memory.h>
+#include <mgba-util/string.h>
 
 #include <signal.h>
 
@@ -28,6 +29,30 @@ enum {
 	MACH_O_ARM = 12,
 	MACH_O_ARM_V4T = 5
 };
+
+static const char* TARGET_XML = "<target version=\"1.0\">"
+                                "<architecture>armv4t</architecture>"
+                                "<osabi>none</osabi>"
+                                "<feature name=\"org.gnu.gdb.arm.core\">"
+                                "<reg name=\"r0\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"r1\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"r2\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"r3\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"r4\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"r5\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"r6\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"r7\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"r8\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"r9\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"r10\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"r11\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"r12\" bitsize=\"32\" type=\"uint32\"/>"
+                                "<reg name=\"sp\" bitsize=\"32\" type=\"data_ptr\"/>"
+                                "<reg name=\"lr\" bitsize=\"32\"/>"
+                                "<reg name=\"pc\" bitsize=\"32\" type=\"code_ptr\"/>"
+                                "<reg name=\"cpsr\" bitsize=\"32\" regnum=\"25\"/>"
+                                "</feature>"
+                                "</target>";
 
 static void _sendMessage(struct GDBStub* stub);
 
@@ -336,16 +361,6 @@ static void _readGPRs(struct GDBStub* stub, const char* message) {
 	_int2hex32(cpu->gprs[ARM_PC] - (cpu->cpsr.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM), &stub->outgoing[i]);
 	i += 8;
 
-	// Floating point registers, unused on the GBA (8 of them, 24 bits each)
-	for (r = 0; r < 8 * 3; ++r) {
-		_int2hex32(0, &stub->outgoing[i]);
-		i += 8;
-	}
-
-	// Floating point status, unused on the GBA (32 bits)
-	_int2hex32(0, &stub->outgoing[i]);
-	i += 8;
-
 	// CPU status
 	_int2hex32(cpu->cpsr.packed, &stub->outgoing[i]);
 	i += 8;
@@ -433,7 +448,58 @@ static void _processQSupportedCommand(struct GDBStub* stub, const char* message)
 		}
 		message = end + 1;
 	}
-	strncpy(stub->outgoing, "swbreak+;hwbreak+", GDB_STUB_MAX_LINE - 4);
+	strncpy(stub->outgoing, "swbreak+;hwbreak+;qXfer:features:read+;qXfer:memory-map:read+", GDB_STUB_MAX_LINE - 4);
+}
+
+static void _processQXferCommand(struct GDBStub* stub, const char* params, const char* data) {
+	unsigned offset = 0;
+	unsigned length = 0;
+
+	unsigned index = 0;
+	for (index = 0; params[index] != ','; ++index) {
+		offset <<= 4;
+		offset |= _hex2int(&params[index], 1);
+	}
+
+	++index;
+	unsigned int paramsLength = strlen(params);
+	for (; index + 3 < paramsLength; ++index) {
+		length <<= 4;
+		length |= _hex2int(&params[index], 1);
+	}
+
+	length += 1;
+
+	if (length + 4 > GDB_STUB_MAX_LINE) {
+		length = GDB_STUB_MAX_LINE - 4;
+	}
+
+	if (strlen(data) < length + offset) {
+		length = strlen(data) - offset + 1;
+		stub->outgoing[0] = 'l';
+	} else {
+		stub->outgoing[0] = 'm';
+	}
+	strlcpy(&stub->outgoing[1], &data[offset], length);
+}
+
+static void _generateMemoryMapXml(struct GDBStub* stub, char* memoryMap) {
+	size_t index = 0;
+	strncpy(memoryMap, "<memory-map version=\"1.0\">", 27);
+	index += strlen(memoryMap);
+	const struct mCoreMemoryBlock* blocks;
+	size_t nBlocks = stub->d.core->listMemoryBlocks(stub->d.core, &blocks);
+	size_t i;
+	for (i = 0; i < nBlocks; ++i) {
+		if (!(blocks[i].flags & mCORE_MEMORY_MAPPED)) {
+			continue;
+		}
+
+		const char* type = blocks[i].flags & (mCORE_MEMORY_WRITE | mCORE_MEMORY_WORM) ? "ram" : "rom";
+		index += snprintf(&memoryMap[index], GDB_STUB_MAX_LINE - index, "<memory type=\"%s\" start=\"0x%08x\" length=\"0x%08x\"/>", type, blocks[i].start, blocks[i].size);
+	}
+	int amountLeft = GDB_STUB_MAX_LINE - index;
+	strncpy(&memoryMap[index], "</memory-map>", amountLeft);
 }
 
 static void _processQReadCommand(struct GDBStub* stub, const char* message) {
@@ -452,6 +518,13 @@ static void _processQReadCommand(struct GDBStub* stub, const char* message) {
 		strncpy(stub->outgoing, "m1", GDB_STUB_MAX_LINE - 4);
 	} else if (!strncmp("sThreadInfo#", message, 12)) {
 		strncpy(stub->outgoing, "l", GDB_STUB_MAX_LINE - 4);
+	} else if (!strncmp("Xfer:features:read:target.xml:", message, 30)) {
+		_processQXferCommand(stub, message + 30, TARGET_XML);
+	} else if (!strncmp("Xfer:memory-map:read::", message, 22)) {
+		if (strlen(stub->memoryMapXml) == 0) {
+			_generateMemoryMapXml(stub, stub->memoryMapXml);
+		} 
+		_processQXferCommand(stub, message + 22, stub->memoryMapXml);
 	} else if (!strncmp("Supported:", message, 10)) {
 		_processQSupportedCommand(stub, message + 10);
 	}
@@ -709,6 +782,8 @@ bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAdd
 	if (err) {
 		goto cleanup;
 	}
+
+	memset(stub->memoryMapXml, 0, GDB_STUB_MAX_LINE);
 
 	return true;
 
