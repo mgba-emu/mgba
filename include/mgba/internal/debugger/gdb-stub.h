@@ -29,6 +29,7 @@ struct GDBStub {
 
 	char line[GDB_STUB_MAX_LINE];
 	char outgoing[GDB_STUB_MAX_LINE];
+	char memoryMapXml[GDB_STUB_MAX_LINE];
 	enum GDBStubAckState lineAck;
 
 	Socket socket;
