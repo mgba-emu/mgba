@@ -146,13 +146,13 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       NULL,
       "video",
       {
-         { "0", "" },
+         { "0", "Default Game Boy preset" },
          { "1", "Game Boy Color presets only" },
          { "2", "Super Game Boy presets only" },
          { "3", "Any available presets" },
          { NULL, NULL },
       },
-      "ON"
+      "0"
    },
    {
       "mgba_sgb_borders",
