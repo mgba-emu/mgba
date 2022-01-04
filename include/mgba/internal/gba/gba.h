@@ -124,6 +124,9 @@ struct GBA {
 	bool debug;
 	char debugString[0x100];
 	GBADebugFlags debugFlags;
+
+	int ctestArgc;
+	char ctestArgv[0x100 - sizeof(int)];
 };
 
 struct GBACartridge {

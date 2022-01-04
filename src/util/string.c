@@ -483,6 +483,74 @@ void rtrim(char* string) {
 	}
 }
 
+int parseArgsString(const char* args, char* buffer, int bufferLen) {
+	// Start of buffer is argv table
+	memset(buffer, 0, bufferLen);
+	int argc = 0;
+
+	int argvTblEnd = 4;
+	int strStart = bufferLen - 1;
+	int cur = 0;
+
+	bool quoted = false;
+	bool escaped = false;
+	while (*args && argvTblEnd < strStart) {
+		char c = args[cur];
+
+		if (escaped) {
+			if (c != '"' && c != '\\') {
+				return -1; // Malformed
+			}
+			--strStart;
+			escaped = false;
+		} else {
+			if (c == '\0' || (isspace(c) && !quoted)) {
+				if (!cur) {
+					++args;
+					continue;
+				}
+
+				// Write index into argvTable
+				memcpy(&buffer[argvTblEnd - 4], &strStart, 4);
+
+				// Copy string into buffer
+				char* b = buffer + strStart;
+				int i;
+				for (i = 0; i < cur; ++i) {
+					c = args[i];
+					if (escaped) {
+						escaped = false;
+					} else if (c == '\\' || c == '\"') {
+						escaped = true;
+						continue;
+					}
+					*b++ = c;
+				}
+
+				// Move to next string
+				args += cur;
+				argvTblEnd += sizeof(int);
+				--strStart;
+				cur = 0;
+				quoted = escaped = false;
+
+				++argc;
+				continue;
+			} else if (c == '\\') {
+				escaped = true;
+			} else if (c == '\"') {
+				quoted = !quoted;
+			} else {
+				--strStart;
+			}
+		}
+
+		++cur;
+	}
+
+	return argc;
+}
+
 ssize_t parseQuotedString(const char* unparsed, ssize_t unparsedLen, char* parsed, ssize_t parsedLen) {
 	memset(parsed, 0, parsedLen);
 	bool escaped = false;

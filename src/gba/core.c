@@ -30,6 +30,7 @@
 #endif
 #include <mgba-util/memory.h>
 #include <mgba-util/patch.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 static const struct mCoreChannelInfo _GBAVideoLayers[] = {
@@ -301,6 +302,9 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 #endif
 	mCoreConfigCopyValue(&core->config, config, "hwaccelVideo");
 	mCoreConfigCopyValue(&core->config, config, "videoScale");
+
+	const char* ctestArgs = mCoreConfigGetValue(config, "ctest");
+	gba->ctestArgc = parseArgsString(ctestArgs, gba->ctestArgv, sizeof(gba->ctestArgv));
 }
 
 static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, const struct mCoreConfig* config) {

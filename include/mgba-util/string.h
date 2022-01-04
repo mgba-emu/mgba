@@ -45,6 +45,7 @@ const char* hex4(const char* line, uint8_t* out);
 
 void rtrim(char* string);
 
+int parseArgsString(const char* args, char* buffer, int bufferLen);
 ssize_t parseQuotedString(const char* unparsed, ssize_t unparsedLen, char* parsed, ssize_t parsedLen);
 bool wildcard(const char* search, const char* string);
 
