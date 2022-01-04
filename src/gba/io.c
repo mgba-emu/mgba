@@ -582,7 +582,13 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 
 			return;
 		}
-		// Fall through
+		goto no_debug;
+	case REG_CTEST_EXIT:
+		if (gba->debug && gba->ctestArgc) {
+			exit(value); // ctest force a quick exit with code
+		}
+	    goto no_debug;
+	no_debug:
 	default:
 		if (address >= REG_DEBUG_STRING && address - REG_DEBUG_STRING < sizeof(gba->debugString)) {
 			STORE_16LE(value, address - REG_DEBUG_STRING, gba->debugString);
