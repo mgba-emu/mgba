@@ -61,12 +61,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation type="unfinished"></translation>
+        <translation>Numer Kafelka</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
-        <translation type="unfinished"></translation>
+        <translation>Numer Palety</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="89"/>
@@ -139,7 +139,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
-        <translation>ID chipu</translation>
+        <translation>ID Chipu</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
@@ -187,7 +187,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../CheatsView.ui" line="46"/>
         <source>Load</source>
-        <translation>Wgraj</translation>
+        <translation>Wczytaj</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="86"/>
@@ -218,12 +218,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../DolphinConnector.ui" line="14"/>
         <source>Connect to Dolphin</source>
-        <translation type="unfinished"></translation>
+        <translation>Połącz z Dolphinem</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="23"/>
         <source>Local computer</source>
-        <translation type="unfinished"></translation>
+        <translation>Komputer lokalny</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
@@ -248,7 +248,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../DolphinConnector.ui" line="90"/>
         <source>Reset on connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Zresetuj przy połączeniu</translation>
     </message>
 </context>
 <context>
@@ -266,7 +266,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../FrameView.ui" line="50"/>
         <source>Freeze frame</source>
-        <translation type="unfinished"></translation>
+        <translation>Stopklatka</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="84"/>
@@ -389,7 +389,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../LoadSaveState.ui" line="14"/>
         <location filename="../LoadSaveState.ui" line="66"/>
         <source>%1 State</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 Stan</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="41"/>
@@ -402,7 +402,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../LoadSaveState.ui" line="217"/>
         <location filename="../LoadSaveState.ui" line="239"/>
         <source>No Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Brak Zapisu</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="50"/>
