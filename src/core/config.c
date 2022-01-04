@@ -502,6 +502,7 @@ void mCoreConfigFreeOpts(struct mCoreOptions* opts) {
 	free(opts->screenshotPath);
 	free(opts->patchPath);
 	free(opts->cheatsPath);
+	free(opts->ctestArgv);
 	opts->bios = 0;
 	opts->shader = 0;
 	opts->savegamePath = 0;
@@ -509,4 +510,6 @@ void mCoreConfigFreeOpts(struct mCoreOptions* opts) {
 	opts->screenshotPath = 0;
 	opts->patchPath = 0;
 	opts->cheatsPath = 0;
+	opts->ctestArgc = 0;
+	opts->ctestArgv = 0;
 }

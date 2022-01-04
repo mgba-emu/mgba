@@ -29,6 +29,8 @@ struct mArguments {
 	bool debugAtStart;
 	bool showHelp;
 	bool showVersion;
+
+	char* ctestArgs;
 };
 
 struct mCoreConfig;

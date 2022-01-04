@@ -42,6 +42,7 @@ static const struct option _options[] = {
 	{ "savestate", required_argument, 0, 't' },
 	{ "patch",     required_argument, 0, 'p' },
 	{ "version",   no_argument, 0, '\0' },
+	{ "ctest",     required_argument, 0, '\0' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -91,6 +92,8 @@ bool parseArguments(struct mArguments* args, int argc, char* const* argv, struct
 		case '\0':
 			if (strcmp(opt->name, "version") == 0) {
 				args->showVersion = true;
+			} else if (strcmp(opt->name, "ctest") == 0) {
+				args->ctestArgs = strdup(optarg);
 			} else {
 				return false;
 			}
@@ -166,6 +169,9 @@ void applyArguments(const struct mArguments* args, struct mSubParser* subparser,
 	if (args->bios) {
 		mCoreConfigSetOverrideValue(config, "bios", args->bios);
 	}
+	if (args->ctestArgs) {
+		mCoreConfigSetValue(config, "ctest", args->ctestArgs);
+	}
 	HashTableEnumerate(&args->configOverrides, _tableApply, config);
 	if (subparser) {
 		subparser->apply(subparser, config);
@@ -187,6 +193,9 @@ void freeArguments(struct mArguments* args) {
 
 	free(args->bios);
 	args->bios = 0;
+
+	free(args->ctestArgs);
+	args->ctestArgs = 0;
 
 	HashTableDeinit(&args->configOverrides);
 }
@@ -248,6 +257,7 @@ void usage(const char* arg0, const char* extraOptions) {
 	puts("  -p, --patch FILE           Apply a specified patch file when running");
 	puts("  -s, --frameskip N          Skip every N frames");
 	puts("  --version                  Print version and exit");
+	puts("  --ctest VALUE              Argument string passed to ctest");
 	if (extraOptions) {
 		puts(extraOptions);
 	}
