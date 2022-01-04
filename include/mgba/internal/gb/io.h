@@ -100,7 +100,6 @@ enum GBIORegisters {
 	GB_REG_OCPD = 0x6B,
 	GB_REG_OPRI = 0x6C,
 	GB_REG_SVBK = 0x70,
-	GB_REG_PSM = 0x71,
 	GB_REG_PSWX = 0x72,
 	GB_REG_PSWY = 0x73,
 	GB_REG_PSW = 0x74,

@@ -687,10 +687,8 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	case GB_REG_OCPS:
 	case GB_REG_OCPD:
 	case GB_REG_SVBK:
-	case GB_REG_PSM:
 	case GB_REG_PSWX:
 	case GB_REG_PSWY:
-	case GB_REG_PSW:
 	case GB_REG_UNK75:
 		// Handled transparently by the registers
 		if (gb->model < GB_MODEL_CGB) {
