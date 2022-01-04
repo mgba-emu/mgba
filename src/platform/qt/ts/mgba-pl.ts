@@ -27,12 +27,13 @@
         <location filename="../AboutScreen.ui" line="86"/>
         <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation type="unfinished"></translation>
+        <translation>© 2013 – {year} Jeffrey Pfau, licencja Mozilla Public License, wersja 2.0
+Game Boy Advance jest zarejestrowanym znakiem towarowym Nintendo Co., Ltd.</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation type="unfinished"></translation>
+        <translation>{projectName} jest emulatorem konsoli Game Boy Advance, o otwartym kodzie źródłowym</translation>
     </message>
 </context>
 <context>
@@ -99,12 +100,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../BattleChipView.ui" line="67"/>
         <source>Chip name</source>
-        <translation type="unfinished"></translation>
+        <translation>Nazwa chipu</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
         <source>Insert</source>
-        <translation type="unfinished"></translation>
+        <translation>Umieść</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
@@ -134,7 +135,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../BattleChipView.ui" line="180"/>
         <source>Inserted</source>
-        <translation type="unfinished"></translation>
+        <translation>Umieszczone</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
@@ -157,7 +158,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../CheatsView.ui" line="14"/>
         <source>Cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>Kody (cheaty)</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
@@ -299,12 +300,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../GIFView.ui" line="30"/>
         <source>Loop</source>
-        <translation type="unfinished"></translation>
+        <translation>Zapętl</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="51"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Start</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="67"/>
@@ -729,7 +730,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemoryView.ui" line="88"/>
         <source>Set Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation>Wyrównaj:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="108"/>
@@ -749,22 +750,22 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../MemoryView.ui" line="187"/>
         <source>Unsigned Integer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Całkowita, bez znaku:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="208"/>
         <source>Signed Integer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Całkowita, ze znakiem:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="229"/>
         <source>String:</source>
-        <translation type="unfinished"></translation>
+        <translation>Łańcuch znaków (string):</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="243"/>
         <source>Load TBL</source>
-        <translation type="unfinished"></translation>
+        <translation>Załaduj TBL</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="256"/>
@@ -797,7 +798,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ObjView.ui" line="14"/>
         <source>Sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>Sprite&apos;y</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="72"/>
@@ -1285,7 +1286,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../CheatsModel.cpp" line="211"/>
         <source>Failed to open cheats file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Błąd przy otwieraniu pliku z kodami: %1</translation>
     </message>
 </context>
 <context>
