@@ -305,6 +305,15 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 
 	const char* ctestArgs = mCoreConfigGetValue(config, "ctest");
 	gba->ctestArgc = parseArgsString(ctestArgs, gba->ctestArgv, sizeof(gba->ctestArgv));
+	// Fix ctest argv pointers
+	int i, argPtr;
+	for (i = 0; i < gba->ctestArgc; ++i) {
+		char* argv = &gba->ctestArgv[i * sizeof(argPtr)];
+
+		memcpy(&argPtr, argv, sizeof(argPtr));
+		argPtr += 0x4000000 + REG_CTEST_ARGV;
+		memcpy(argv, &argPtr, sizeof(argPtr));
+	}
 }
 
 static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, const struct mCoreConfig* config) {

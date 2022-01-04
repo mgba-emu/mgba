@@ -664,7 +664,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		value = ((uint8_t*) memory->iwram)[address & (SIZE_WORKING_IRAM - 1)];
 		break;
 	case REGION_IO:
-		value = (GBAIORead(gba, address & 0xFFFE) >> ((address & 0x0001) << 3)) & 0xFF;
+		value = (GBAIORead(gba, address & 0xFFFFFE) >> ((address & 0x0001) << 3)) & 0xFF;
 		break;
 	case REGION_PALETTE_RAM:
 		value = ((uint8_t*) gba->video.palette)[address & (SIZE_PALETTE_RAM - 1)];

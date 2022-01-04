@@ -940,6 +940,18 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		}
 		// Fall through
 	default:
+		if (gba->debug) {
+			if (address >= REG_CTEST_ARGC && address - REG_CTEST_ARGC < sizeof(gba->ctestArgc)) {
+				short buff[2];
+				memcpy(buff, &gba->ctestArgc, sizeof(buff));
+				return buff[(address >> 1) & 0x1];
+			}
+			if (address >= REG_CTEST_ARGV && address - REG_CTEST_ARGV < sizeof(gba->ctestArgc) + sizeof(gba->ctestArgv)) {
+				short buff;
+				memcpy(&buff, &gba->ctestArgv[address - REG_CTEST_ARGV], sizeof(buff));
+				return buff;
+			}
+		}
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return GBALoadBad(gba->cpu);
 	}
