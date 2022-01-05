@@ -920,6 +920,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		// Handled transparently by registers
 		break;
 	case 0x066:
+	case 0x06A:
 	case 0x06E:
 	case 0x076:
 	case 0x07A:

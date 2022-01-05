@@ -1,4 +1,6 @@
 0.9.4: (Future)
+Emulation fixes:
+ - GBA I/O: Disable open bus behavior on invalid register 06A
 Other fixes:
  - FFmpeg: Fix crash when encoding audio with some containers
 
