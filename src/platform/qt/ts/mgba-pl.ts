@@ -730,7 +730,7 @@ Game Boy Advance jest zarejestrowanym znakiem towarowym Nintendo Co., Ltd.</tran
     <message>
         <location filename="../MemoryView.ui" line="88"/>
         <source>Set Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation>Wyrównaj:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="108"/>
@@ -750,22 +750,22 @@ Game Boy Advance jest zarejestrowanym znakiem towarowym Nintendo Co., Ltd.</tran
     <message>
         <location filename="../MemoryView.ui" line="187"/>
         <source>Unsigned Integer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Całkowita, bez znaku:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="208"/>
         <source>Signed Integer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Całkowita, ze znakiem:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="229"/>
         <source>String:</source>
-        <translation type="unfinished"></translation>
+        <translation>Łańcuch znaków (string):</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="243"/>
         <source>Load TBL</source>
-        <translation type="unfinished"></translation>
+        <translation>Załaduj TBL</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="256"/>
@@ -798,7 +798,7 @@ Game Boy Advance jest zarejestrowanym znakiem towarowym Nintendo Co., Ltd.</tran
     <message>
         <location filename="../ObjView.ui" line="14"/>
         <source>Sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>Sprite&apos;y</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="72"/>
@@ -1275,7 +1275,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../CheatsModel.cpp" line="211"/>
         <source>Failed to open cheats file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Błąd przy otwieraniu pliku z kodami: %1</translation>
     </message>
 </context>
 <context>
