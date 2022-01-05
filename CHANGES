@@ -17,6 +17,7 @@ Emulation fixes:
  - GBA: Improve timing when not booting from BIOS
  - GBA BIOS: Work around IRQ handling hiccup in Mario & Luigi (fixes mgba.io/i/1059)
  - GBA I/O: Redo internal key input, enabling edge-based key IRQs
+ - GBA I/O: Disable open bus behavior on invalid register 06A
  - GBA Memory: Fix misaligned 32-bit I/O loads (fixes mgba.io/i/2307)
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
