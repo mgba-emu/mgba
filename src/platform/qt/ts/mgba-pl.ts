@@ -547,7 +547,7 @@ Game Boy Advance jest zarejestrowanym znakiem towarowym Nintendo Co., Ltd.</tran
     <message>
         <location filename="../MemoryDump.ui" line="14"/>
         <source>Save Memory Range</source>
-        <translation>Zapisz zakres pamięci</translation>
+        <translation>Zapisz Zakres Pamięci</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="20"/>
