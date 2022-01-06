@@ -1205,11 +1205,41 @@ enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 		unsigned height = GUIFontHeight(params->font) * 2;
 		unsigned width = (GUIFontGlyphWidth(params->font, 'W') | 1) + 1; // Round up
 
-		int offset = (params->width - (width + 32) / 2 * currentKbd->width) / 2;
+		unsigned originX = (params->width - (width + 32) / 2 * currentKbd->width) / 2;
+		unsigned originY = params->height / 2 - (height + 16);
+
+		bool cursorOverKey = false;
+
+		if (cx >= originX && cy >= originY) {
+			unsigned xOff = cx - originX;
+			unsigned yOff = cy - originY;
+			int row = yOff / (height + 16);
+			int x = xOff * 2 / (width + 32);
+			int accumX = 0;
+			if (row < 5 && x < currentKbd->width) {
+				x -= currentKbd->rows[row].offset;
+				accumX += currentKbd->rows[row].offset;
+				int col;
+				for (col = 0; currentKbd->rows[row].keys[col].name; ++col) {
+					const struct GUIKey* key = &currentKbd->rows[row].keys[col];
+					int w = key->width ? key->width : 2;
+					if (x < w) {
+						curX = accumX;
+						curY = row;
+						curKey = key;
+						cursorOverKey = cursor == GUI_CURSOR_CLICKED;
+						break;
+					}
+					x -= w;
+					accumX += w;
+				}
+			}
+		}
+
 		int row;
 		int col;
 		for (row = 0; row < 5; ++row) {
-			int y = params->height / 2 + (height + 16) * (row - 1);
+			int y = originY + (height + 16) * row;
 			int x = currentKbd->rows[row].offset;
 			for (col = 0; currentKbd->rows[row].keys[col].name; ++col) {
 				const struct GUIKey* key = &currentKbd->rows[row].keys[col];
@@ -1224,7 +1254,7 @@ enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 					}
 				}
 				if (key->name[0]) {
-					int xOff = offset + x * (width + 32) / 2;
+					int xOff = originX + x * (width + 32) / 2;
 					if (curKey == key) {
 						curX = x / 2;
 						GUIFontDraw9Slice(params->font, xOff, y, (width + 4) * w, height + 12, 0xFFFFFFFF, GUI_9SLICE_FILLED);
@@ -1235,13 +1265,13 @@ enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 						}
 						GUIFontDraw9Slice(params->font, xOff - 2, y - 2, (width + 4) * w + 4, height + 16, fill, GUI_9SLICE_FILL_ONLY);
 					}
-					GUIFontPrint(params->font, offset + (x * 2 + w) * (width + 32) / 4, y + height * 3 / 4 + 1, GUI_ALIGN_HCENTER | GUI_ALIGN_VCENTER, 0xFFFFFFFF, key->name);
+					GUIFontPrint(params->font, originX + (x * 2 + w) * (width + 32) / 4, y + height * 3 / 4 + 1, GUI_ALIGN_HCENTER | GUI_ALIGN_VCENTER, 0xFFFFFFFF, key->name);
 				}
 				x += w;
 			}
 		}
 
-		if (newInput & (1 << GUI_INPUT_SELECT) && curKey) {
+		if ((newInput & (1 << GUI_INPUT_SELECT) || cursorOverKey) && curKey) {
 			switch (curKey->function) {
 			case GUI_KEYFUNC_INPUT_DATA: {
 				size_t dataLen = strlen(curKey->data);
@@ -1311,6 +1341,10 @@ enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 
 		GUIDrawBattery(params);
 		GUIDrawClock(params);
+
+		if (cursor != GUI_CURSOR_NOT_PRESENT) {
+			GUIFontDrawIcon(params->font, cx, cy, GUI_ALIGN_HCENTER | GUI_ALIGN_TOP, GUI_ORIENT_0, 0xFFFFFFFF, GUI_ICON_CURSOR);
+		}
 
 		if (params->guiFinish) {
 			params->guiFinish();
