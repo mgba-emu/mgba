@@ -15,12 +15,11 @@
 
 #include <signal.h>
 
-#define MTEST_OPTIONS "S:R:N"
+#define MTEST_OPTIONS "S:R:O:"
 #define MTEST_USAGE \
 	"\nAdditional options:\n" \
-	"  -S SWI       	Run until specified SWI call before exiting\n" \
+	"  -S SWI           Run until specified SWI call before exiting\n" \
 	"  -R REGISTER      Register to return as exit code\n" \
-	"  -N               Disable video rendering entirely\n" \
 
  enum mRegisterExitCode {
 	 mRegister_NONE = -1,
@@ -31,7 +30,6 @@
 struct MTestOpts {
 	int exitSwiImmediate;
 	enum mRegisterExitCode returnCodeRegister;
-	bool noVideo;
 };
 
 static int _mTestRunloop(struct mCore* core, int exitSwiImmediate);
@@ -57,7 +55,7 @@ static int _prevSwiImmediate = -1;
 int main(int argc, char * argv[]) {
 	signal(SIGINT, _mTestShutdown);
 
-	struct MTestOpts mTestOpts = { -1, mRegister_NONE, false };
+	struct MTestOpts mTestOpts = { -1, mRegister_NONE };
 	struct mSubParser subparser = {
 		.usage = MTEST_USAGE,
 		.parse = _parseMTestOpts,
@@ -87,14 +85,6 @@ int main(int argc, char * argv[]) {
 	applyArguments(&args, NULL, &core->config);
 
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
-
-	void* outputBuffer;
-	outputBuffer = 0;
-
-	if (!mTestOpts.noVideo) {
-		outputBuffer = malloc(256 * 256 * 4);
-		core->setVideoBuffer(core, outputBuffer, 256);
-	}
 
 #ifdef M_CORE_GBA
 	if (core->platform(core) == mPLATFORM_GBA) {
@@ -146,15 +136,8 @@ int main(int argc, char * argv[]) {
 
 	core->unloadROM(core);
 
-	if (savestate) {
-		savestate->close(savestate);
-	}
-
 loadError:
 	freeArguments(&args);
-	if (outputBuffer) {
-		free(outputBuffer);
-	}
 	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 
@@ -204,9 +187,6 @@ static bool _parseMTestOpts(struct mSubParser* parser, int option, const char* a
 	case 'R':
 		opts->returnCodeRegister = _parseNamedRegister(arg);
 		return !errno;
-	case 'N':
-		opts->noVideo = true;
-		return true;
 	default:
 		return false;
 	}
