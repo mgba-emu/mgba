@@ -96,6 +96,7 @@ enum GUIIcon {
 	GUI_ICON_BACKSPACE,
 	GUI_ICON_KBD_SHIFT,
 	GUI_ICON_CAPSLOCK,
+	GUI_ICON_TEXT_CURSOR,
 	GUI_ICON_MAX,
 };
 
@@ -127,6 +128,7 @@ enum GUI9SliceStyle {
 unsigned GUIFontHeight(const struct GUIFont*);
 unsigned GUIFontGlyphWidth(const struct GUIFont*, uint32_t glyph);
 unsigned GUIFontSpanWidth(const struct GUIFont*, const char* text);
+unsigned GUIFontSpanCountWidth(const struct GUIFont*, const char* text, size_t len);
 void GUIFontIconMetrics(const struct GUIFont*, enum GUIIcon icon, unsigned* w, unsigned* h);
 
 ATTRIBUTE_FORMAT(printf, 6, 7)

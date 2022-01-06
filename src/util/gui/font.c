@@ -8,8 +8,12 @@
 #include <mgba-util/string.h>
 
 unsigned GUIFontSpanWidth(const struct GUIFont* font, const char* text) {
-	unsigned width = 0;
 	size_t len = strlen(text);
+	return GUIFontSpanCountWidth(font, text, len);
+}
+
+unsigned GUIFontSpanCountWidth(const struct GUIFont* font, const char* text, size_t len) {
+	unsigned width = 0;
 	while (len) {
 		uint32_t c = utf8Char(&text, &len);
 		if (c == '\1') {

@@ -195,4 +195,5 @@ const struct GUIIconMetric defaultIconMetrics[] = {
 	[GUI_ICON_BACKSPACE] = { 82, 18, 12, 12 },
 	[GUI_ICON_KBD_SHIFT] = { 114, 18, 12, 12 },
 	[GUI_ICON_CAPSLOCK] = { 130, 18, 12, 12 },
+	[GUI_ICON_TEXT_CURSOR] = { 103, 16, 3, 16 },
 };

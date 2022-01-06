@@ -1117,17 +1117,35 @@ static const struct GUIKeyboard symbols = {
 	.width = 24
 };
 
-static void _backspace(char* string) {
+static size_t _backspace(char* string, size_t position) {
 	size_t len = strlen(string);
-	if (len) {
-		string[len - 1] = '\0';
+	if (position == 0) {
+		return position;
 	}
+	size_t newPos = position - 1;
+	char byte = string[newPos];
+	if (byte & 0x80) { // In a UTF-8 character
+		while (newPos > 0) {
+			--newPos;
+			if ((string[newPos] & 0xC0) != 0x80) {
+				// Found beginning of UTF-8 character
+				break;
+			}
+		}
+	}
+	if (len == position) {
+		string[newPos] = '\0';
+	} else if (position > 0 && position < len) {
+		memmove(&string[newPos], &string[position], len + 1 - position);
+	}
+	return newPos;
 }
 
 enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 	GUIInvalidateKeys(params);
 	int curX = 0;
 	int curY = 0;
+	size_t position = strlen(keyboard->result);
 	const struct GUIKey* curKey = NULL;
 	const struct GUIKeyboard* currentKbd = &qwertyLower;
 	const struct GUIKeyboard* prevKbd = currentKbd;
@@ -1171,7 +1189,7 @@ enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 			curKey = NULL;
 		}
 		if (newInput & (1 << GUI_INPUT_BACK)) {
-			_backspace(keyboard->result);
+			position = _backspace(keyboard->result, position);
 		}
 		if (newInput & (1 << GUI_INPUT_CANCEL)) {
 			return GUI_KEYBOARD_CANCEL;
@@ -1225,15 +1243,28 @@ enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 
 		if (newInput & (1 << GUI_INPUT_SELECT) && curKey) {
 			switch (curKey->function) {
-			case GUI_KEYFUNC_INPUT_DATA:
-				strncat(keyboard->result, curKey->data, keyboard->maxLen + 1);
+			case GUI_KEYFUNC_INPUT_DATA: {
+				size_t dataLen = strlen(curKey->data);
+				size_t followingLen = strlen(&keyboard->result[position]);
+				size_t copySize = followingLen;
+				if (position + copySize > keyboard->maxLen) {
+					copySize = keyboard->maxLen - position;
+				}
+				memmove(&keyboard->result[position + dataLen], &keyboard->result[position], copySize + 1);
+				copySize = dataLen;
+				if (position + copySize > keyboard->maxLen) {
+					copySize = keyboard->maxLen - position;
+				}
+				memcpy(&keyboard->result[position], curKey->data, copySize);
+				position += copySize;
 				if (tempKbd) {
 					tempKbd = false;
 					currentKbd = prevKbd;
 				}
 				break;
+			}
 			case GUI_KEYFUNC_BACKSPACE:
-				_backspace(keyboard->result);
+				position = _backspace(keyboard->result, position);
 				break;
 			case GUI_KEYFUNC_SHIFT_KB:
 				tempKbd = true;
@@ -1256,6 +1287,16 @@ enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 				return GUI_KEYBOARD_DONE;
 			case GUI_KEYFUNC_CANCEL:
 				return GUI_KEYBOARD_CANCEL;
+			case GUI_KEYFUNC_LEFT:
+				if (position > 0) {
+					--position;
+				}
+				break;
+			case GUI_KEYFUNC_RIGHT:
+				if (position < strlen(keyboard->result)) {
+					++position;
+				}
+				break;
 			}
 		}
 
@@ -1264,7 +1305,9 @@ enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 			inputSize = params->width / width - 2;
 		}
 		GUIFontDraw9Slice(params->font, (params->width - width * inputSize) / 2 - 8, height * 3, width * inputSize + 16, height + 8, 0xFFFFFFFF, GUI_9SLICE_EMPTY);
-		GUIFontPrint(params->font, (params->width - width * inputSize) / 2, height * 4 - 8, GUI_ALIGN_LEFT, 0xFFFFFFFF, keyboard->result);
+		GUIFontPrint(params->font, (params->width - width * inputSize) / 2 + 8, height * 4 - 8, GUI_ALIGN_LEFT, 0xFFFFFFFF, keyboard->result);
+		unsigned cursorWidth = GUIFontSpanCountWidth(params->font, keyboard->result, position);
+		GUIFontDrawIcon(params->font, (params->width - width * inputSize) / 2 + 8 + cursorWidth, height * 4 - 4, GUI_ALIGN_HCENTER | GUI_ALIGN_BOTTOM, GUI_ORIENT_0, 0xFFFFFFFF, GUI_ICON_TEXT_CURSOR);
 
 		GUIDrawBattery(params);
 		GUIDrawClock(params);
