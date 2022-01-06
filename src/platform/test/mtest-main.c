@@ -34,7 +34,7 @@ struct MTestOpts {
 	bool noVideo;
 };
 
-static int _mTestRunloop(struct mCore* core, int exitSwiImmediate, enum mRegisterExitCode registerExitCode);
+static int _mTestRunloop(struct mCore* core, int exitSwiImmediate);
 static void _mTestShutdown(int signal);
 static bool _parseMTestOpts(struct mSubParser* parser, int option, const char* arg);
 static enum mRegisterExitCode _parseNamedRegister(const char* regStr);
@@ -47,7 +47,10 @@ void (*_armSwi32)(struct ARMCore* cpu, int immediate);
 
 static void _mTestSwi16(struct ARMCore* cpu, int immediate);
 static void _mTestSwi32(struct ARMCore* cpu, int immediate);
+static void _mTestUpdateExitCond(struct ARMCore* cpu, int immediate);
 
+static enum mRegisterExitCode _returnCodeRegister;
+static int _exitCode = 0;
 static int _prevSwiImmediate = -1;
 #endif
 
@@ -101,6 +104,8 @@ int main(int argc, char * argv[]) {
 		((struct GBA*) core->board)->cpu->irqh.swi16 = _mTestSwi16;
 		_armSwi32 = ((struct GBA*) core->board)->cpu->irqh.swi32;
 		((struct GBA*) core->board)->cpu->irqh.swi32 = _mTestSwi32;
+
+		_returnCodeRegister = mTestOpts.returnCodeRegister;
 	}
 #endif
 
@@ -137,7 +142,7 @@ int main(int argc, char * argv[]) {
 		savestate = 0;
 	}
 
-	int returnCode = _mTestRunloop(core, mTestOpts.exitSwiImmediate, mTestOpts.returnCodeRegister);
+	int returnCode = _mTestRunloop(core, mTestOpts.exitSwiImmediate);
 
 	core->unloadROM(core);
 
@@ -156,22 +161,11 @@ loadError:
 	return cleanExit ? returnCode : 1;
 }
 
-static int _mTestRunloop(struct mCore* core, int exitSwiImmediate, enum mRegisterExitCode registerExitCode) {
+static int _mTestRunloop(struct mCore* core, int exitSwiImmediate) {
 	do {
 		core->step(core);
 	} while (_prevSwiImmediate != exitSwiImmediate && !_dispatchExiting);
-
-#ifdef M_CORE_GBA
-	if (core->platform(core) == mPLATFORM_GBA) {
-		if (registerExitCode >= 0 && registerExitCode < 16) {
-			return ((struct GBA*) core->board)->cpu->regs.gprs[registerExitCode];
-		}
-		if (registerExitCode == mRegister_CPSR) {
-			return ((struct GBA*) core->board)->cpu->regs.cpsr.packed;
-		}
-	}
-#endif
-	return 0;
+	return _exitCode;
 }
 
 static void _mTestShutdown(int signal) {
@@ -181,12 +175,21 @@ static void _mTestShutdown(int signal) {
 
 #ifdef M_CORE_GBA
 static void _mTestSwi16(struct ARMCore* cpu, int immediate) {
+	_mTestUpdateExitCond(cpu, immediate);
 	_armSwi16(cpu, immediate);
-	_prevSwiImmediate = immediate;
 }
 
 static void _mTestSwi32(struct ARMCore* cpu, int immediate) {
+	_mTestUpdateExitCond(cpu, immediate);
 	_armSwi32(cpu, immediate);
+}
+
+static void _mTestUpdateExitCond(struct ARMCore* cpu, int immediate) {
+	if (_returnCodeRegister >= 0 && _returnCodeRegister < 16) {
+		_exitCode = cpu->regs.gprs[_returnCodeRegister];
+	} else if (_returnCodeRegister == mRegister_CPSR) {
+		_exitCode = cpu->regs.cpsr.packed;
+	}
 	_prevSwiImmediate = immediate;
 }
 #endif
