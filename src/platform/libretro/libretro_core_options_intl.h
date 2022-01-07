@@ -4816,7 +4816,7 @@ struct retro_core_options_v2 options_eo = {
 #define CATEGORY_SYSTEM_LABEL_ES "Sistema"
 #define CATEGORY_SYSTEM_INFO_0_ES "Cambia los ajustes de selección del hardware base y de la BIOS."
 #define CATEGORY_VIDEO_LABEL_ES "Vídeo"
-#define CATEGORY_VIDEO_INFO_0_ES "Cambia la paleta de los modelos DMG, los bordes de SGB, la corrección de color y los efectos «ghosting» (fantasma) de la pantalla LCD."
+#define CATEGORY_VIDEO_INFO_0_ES "Cambia la paleta de los modelos DMG, los bordes de SGB, la corrección de color y los efectos de imagen fantasma («ghosting») de la pantalla LCD."
 #define CATEGORY_VIDEO_INFO_1_ES "Cambia la paleta de los modelos DMG y los bordes de SGB."
 #define CATEGORY_AUDIO_LABEL_ES NULL
 #define CATEGORY_AUDIO_INFO_0_ES "Cambia los filtros de audio."
@@ -4849,11 +4849,11 @@ struct retro_core_options_v2 options_eo = {
 #define MGBA_COLOR_CORRECTION_INFO_0_ES "Ajusta los colores de la salida de imagen para que esta coincida con la que mostraría un hardware real de GBA/GBC."
 #define OPTION_VAL_AUTO_ES "Selección automática"
 #define MGBA_INTERFRAME_BLENDING_LABEL_ES "Fusión entre fotogramas"
-#define MGBA_INTERFRAME_BLENDING_INFO_0_ES "Simula el efecto «ghosting» (fantasma) de la pantalla LCD. «Sencilla» mezcla la mitad de los fotogramas anterior y siguiente. «Inteligente» intentará detectar parpadeos en la pantalla y solo hará una mezcla de mitades de fotogramas en los píxeles afectados. «Ghosting de LCD» simula los tiempos de respuesta naturales de una pantalla LCD combinando varios fotogramas almacenados en el búfer. Las fusiones «Sencilla» o «Inteligente» son necesarias para aquellos juegos que necesiten el efecto «ghosting» para mostrar efectos de transparencias (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, la saga Boktai...)."
+#define MGBA_INTERFRAME_BLENDING_INFO_0_ES "Simula el efecto de imagen fantasma («ghosting») de la pantalla LCD. «Sencilla» mezcla la mitad de los fotogramas anterior y siguiente. «Inteligente» intentará detectar parpadeos en la pantalla y solo hará una mezcla de mitades de fotogramas en los píxeles afectados. «Imagen fantasma de LCD» simula los tiempos de respuesta naturales de una pantalla LCD combinando varios fotogramas almacenados en el búfer. Las fusiones «Sencilla» o «Inteligente» son necesarias para aquellos juegos que necesiten este efecto para mostrar efectos de transparencias (Wave Race, Chikyuu Kaihou Gun ZAS, F-Zero, la saga Boktai...)."
 #define OPTION_VAL_MIX_ES "Sencilla"
 #define OPTION_VAL_MIX_SMART_ES "Inteligente"
-#define OPTION_VAL_LCD_GHOSTING_ES "«Ghosting» de LCD (preciso)"
-#define OPTION_VAL_LCD_GHOSTING_FAST_ES "«Ghosting» de LCD (rápido)"
+#define OPTION_VAL_LCD_GHOSTING_ES "Imagen fantasma («ghosting») de LCD (preciso)"
+#define OPTION_VAL_LCD_GHOSTING_FAST_ES "Imagen fantasma («ghosting») de LCD (rápido)"
 #define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_ES "Filtro de audio"
 #define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_ES "Filtro de paso bajo"
 #define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_ES "Activa un filtro de paso bajo para reducir la estridencia del audio generado."
@@ -14385,7 +14385,7 @@ struct retro_core_options_v2 options_sr = {
 #define MGBA_SKIP_BIOS_INFO_0_SV NULL
 #define MGBA_GB_COLORS_LABEL_SV NULL
 #define MGBA_GB_COLORS_INFO_0_SV NULL
-#define OPTION_VAL_GRAYSCALE_SV NULL
+#define OPTION_VAL_GRAYSCALE_SV "Gråskala"
 #define MGBA_GB_COLORS_PRESET_LABEL_SV NULL
 #define MGBA_GB_COLORS_PRESET_INFO_0_SV NULL
 #define OPTION_VAL_1_SV NULL
@@ -14393,7 +14393,7 @@ struct retro_core_options_v2 options_sr = {
 #define OPTION_VAL_3_SV NULL
 #define MGBA_SGB_BORDERS_LABEL_SV NULL
 #define MGBA_SGB_BORDERS_INFO_0_SV NULL
-#define MGBA_COLOR_CORRECTION_LABEL_SV NULL
+#define MGBA_COLOR_CORRECTION_LABEL_SV "Färgkorrigering"
 #define MGBA_COLOR_CORRECTION_INFO_0_SV NULL
 #define OPTION_VAL_AUTO_SV "Automatiskt"
 #define MGBA_INTERFRAME_BLENDING_LABEL_SV NULL
@@ -14402,7 +14402,7 @@ struct retro_core_options_v2 options_sr = {
 #define OPTION_VAL_MIX_SMART_SV NULL
 #define OPTION_VAL_LCD_GHOSTING_SV NULL
 #define OPTION_VAL_LCD_GHOSTING_FAST_SV NULL
-#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_SV NULL
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_SV "Ljudfilter"
 #define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_SV NULL
 #define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_SV NULL
 #define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_SV NULL
@@ -14429,8 +14429,8 @@ struct retro_core_options_v2 options_sr = {
 #define OPTION_VAL_95_SV NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SV NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SV NULL
-#define OPTION_VAL_NO_SV NULL
-#define OPTION_VAL_YES_SV NULL
+#define OPTION_VAL_NO_SV "nej"
+#define OPTION_VAL_YES_SV "ja"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SV NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SV NULL
 #define OPTION_VAL_SENSOR_SV NULL
