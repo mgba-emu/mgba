@@ -15,47 +15,41 @@
 
 #include <signal.h>
 
-#define MTEST_OPTIONS "S:R:O:"
+#define MTEST_OPTIONS "S:R:"
 #define MTEST_USAGE \
 	"\nAdditional options:\n" \
 	"  -S SWI           Run until specified SWI call before exiting\n" \
-	"  -R REGISTER      Register to return as exit code\n" \
-
- enum mRegisterExitCode {
-	 mRegister_NONE = -1,
-	 mRegister_GPRS = 0,
-	 mRegister_CPSR = 16
- };
+	"  -R REGISTER      General purpose register to return as exit code\n" \
 
 struct MTestOpts {
 	int exitSwiImmediate;
-	enum mRegisterExitCode returnCodeRegister;
+	int returnCodeRegister;
 };
 
-static int _mTestRunloop(struct mCore* core, int exitSwiImmediate);
 static void _mTestShutdown(int signal);
 static bool _parseMTestOpts(struct mSubParser* parser, int option, const char* arg);
-static enum mRegisterExitCode _parseNamedRegister(const char* regStr);
+static int _parseNamedRegister(const char* regStr);
 
 static bool _dispatchExiting = false;
+static int _exitCode = 0;
 
 #ifdef M_CORE_GBA
+static void _mTestSwi3Callback(struct mCore* core);
+
+static int _exitSwiImmediate = -1;
+static int _returnCodeRegister;
+
 void (*_armSwi16)(struct ARMCore* cpu, int immediate);
 void (*_armSwi32)(struct ARMCore* cpu, int immediate);
 
 static void _mTestSwi16(struct ARMCore* cpu, int immediate);
 static void _mTestSwi32(struct ARMCore* cpu, int immediate);
-static void _mTestUpdateExitCond(struct ARMCore* cpu, int immediate);
-
-static enum mRegisterExitCode _returnCodeRegister;
-static int _exitCode = 0;
-static int _prevSwiImmediate = -1;
 #endif
 
 int main(int argc, char * argv[]) {
 	signal(SIGINT, _mTestShutdown);
 
-	struct MTestOpts mTestOpts = { -1, mRegister_NONE };
+	struct MTestOpts mTestOpts = { 3, -1 };
 	struct mSubParser subparser = {
 		.usage = MTEST_USAGE,
 		.parse = _parseMTestOpts,
@@ -86,16 +80,28 @@ int main(int argc, char * argv[]) {
 
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
 
+	struct mCoreCallbacks* callbacks = NULL;
+
 #ifdef M_CORE_GBA
 	if (core->platform(core) == mPLATFORM_GBA) {
 		((struct GBA*) core->board)->hardCrash = false;
 
-		_armSwi16 = ((struct GBA*) core->board)->cpu->irqh.swi16;
-		((struct GBA*) core->board)->cpu->irqh.swi16 = _mTestSwi16;
-		_armSwi32 = ((struct GBA*) core->board)->cpu->irqh.swi32;
-		((struct GBA*) core->board)->cpu->irqh.swi32 = _mTestSwi32;
-
+		_exitSwiImmediate = mTestOpts.exitSwiImmediate;
 		_returnCodeRegister = mTestOpts.returnCodeRegister;
+
+		if (_exitSwiImmediate == 3) {
+			// Hook into SWI 3 (shutdown)
+			callbacks = calloc(1, sizeof(*callbacks));
+			callbacks->context = core;
+			callbacks->shutdown = (void(*)(void*)) _mTestSwi3Callback;
+			core->addCoreCallbacks(core, callbacks);
+		} else {
+			// Custom SWI hooks
+			_armSwi16 = ((struct GBA*) core->board)->cpu->irqh.swi16;
+			((struct GBA*) core->board)->cpu->irqh.swi16 = _mTestSwi16;
+			_armSwi32 = ((struct GBA*) core->board)->cpu->irqh.swi32;
+			((struct GBA*) core->board)->cpu->irqh.swi32 = _mTestSwi32;
+		}
 	}
 #endif
 
@@ -129,10 +135,11 @@ int main(int argc, char * argv[]) {
 	if (savestate) {
 		mCoreLoadStateNamed(core, savestate, 0);
 		savestate->close(savestate);
-		savestate = 0;
 	}
 
-	int returnCode = _mTestRunloop(core, mTestOpts.exitSwiImmediate);
+	do {
+		core->runLoop(core);
+	} while (!_dispatchExiting);
 
 	core->unloadROM(core);
 
@@ -141,14 +148,7 @@ loadError:
 	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 
-	return cleanExit ? returnCode : 1;
-}
-
-static int _mTestRunloop(struct mCore* core, int exitSwiImmediate) {
-	do {
-		core->step(core);
-	} while (_prevSwiImmediate != exitSwiImmediate && !_dispatchExiting);
-	return _exitCode;
+	return cleanExit ? _exitCode : 1;
 }
 
 static void _mTestShutdown(int signal) {
@@ -156,24 +156,30 @@ static void _mTestShutdown(int signal) {
 	_dispatchExiting = true;
 }
 
+static void _mTestSwi3Callback(struct mCore* core) {
+#ifdef M_CORE_GBA
+	_exitCode = ((struct GBA*) core->board)->cpu->regs.gprs[_returnCodeRegister];
+#endif
+	_dispatchExiting = true;
+}
+
 #ifdef M_CORE_GBA
 static void _mTestSwi16(struct ARMCore* cpu, int immediate) {
-	_mTestUpdateExitCond(cpu, immediate);
+	if (immediate == _exitSwiImmediate) {
+		_exitCode = cpu->regs.gprs[_returnCodeRegister];
+		_dispatchExiting = true;
+		return;
+	}
 	_armSwi16(cpu, immediate);
 }
 
 static void _mTestSwi32(struct ARMCore* cpu, int immediate) {
-	_mTestUpdateExitCond(cpu, immediate);
-	_armSwi32(cpu, immediate);
-}
-
-static void _mTestUpdateExitCond(struct ARMCore* cpu, int immediate) {
-	if (_returnCodeRegister >= 0 && _returnCodeRegister < 16) {
+	if (immediate == _exitSwiImmediate) {
 		_exitCode = cpu->regs.gprs[_returnCodeRegister];
-	} else if (_returnCodeRegister == mRegister_CPSR) {
-		_exitCode = cpu->regs.cpsr.packed;
+		_dispatchExiting = true;
+		return;
 	}
-	_prevSwiImmediate = immediate;
+	_armSwi32(cpu, immediate);
 }
 #endif
 
@@ -192,24 +198,9 @@ static bool _parseMTestOpts(struct mSubParser* parser, int option, const char* a
 	}
 }
 
-static enum mRegisterExitCode _parseNamedRegister(const char* regStr) {
+static int _parseNamedRegister(const char* regStr) {
 	if (regStr[0] == 'r' || regStr[0] == 'R') {
-		return mRegister_GPRS + strtol(regStr + 1, NULL, 10);
+		++regStr;
 	}
-
-	if (0 == strcasecmp("sp", regStr)) {
-		return mRegister_GPRS + 13;
-	}
-	if (0 == strcasecmp("lr", regStr)) {
-		return mRegister_GPRS + 14;
-	}
-	if (0 == strcasecmp("pc", regStr)) {
-		return mRegister_GPRS + 15;
-	}
-
-	if (0 == strcasecmp("cpsr", regStr)) {
-		return mRegister_CPSR;
-	}
-
-	return mRegister_NONE;
+	return strtol(regStr, NULL, 10);
 }
