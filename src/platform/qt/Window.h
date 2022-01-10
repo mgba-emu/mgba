@@ -66,6 +66,8 @@ public:
 	void updateMultiplayerStatus(bool canOpenAnother);
 	void updateMultiplayerActive(bool active);
 
+	InputController* inputController() { return &m_inputController; }
+
 signals:
 	void startDrawing();
 	void shutdown();
