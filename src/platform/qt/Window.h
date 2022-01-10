@@ -63,7 +63,7 @@ public:
 
 	void resizeFrame(const QSize& size);
 
-	void updateMultiplayerStatus(bool canOpenAnother) { m_multiWindow->setEnabled(canOpenAnother); }
+	void updateMultiplayerStatus(bool canOpenAnother);
 	void updateMultiplayerActive(bool active);
 
 signals:
@@ -230,6 +230,7 @@ private:
 
 	bool m_inactiveMute = false;
 	bool m_multiActive = true;
+	int m_playerId;
 
 	std::unique_ptr<OverrideView> m_overrideView;
 	std::unique_ptr<SensorView> m_sensorView;

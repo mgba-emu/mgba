@@ -190,7 +190,7 @@ static void _cleanup(void) {
 	mcuHwcExit();
 }
 
-static void _map3DSKey(struct mInputMap* map, int ctrKey, enum GBAKey key) {
+static void _map3DSKey(struct mInputMap* map, int ctrKey, int key) {
 	mInputBindKey(map, _3DS_INPUT, __builtin_ctz(ctrKey), key);
 }
 

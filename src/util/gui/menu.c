@@ -122,7 +122,7 @@ static enum GUIMenuExitReason GUIMenuPollInput(struct GUIParams* params, struct 
 	}
 	if (newInput & (1 << GUI_INPUT_LEFT)) {
 		struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, menu->index);
-		if (item->validStates) {
+		if (item->validStates && !item->readonly) {
 			_itemPrev(item, false);
 		} else if (menu->index >= pageSize) {
 			menu->index -= pageSize;
@@ -132,7 +132,7 @@ static enum GUIMenuExitReason GUIMenuPollInput(struct GUIParams* params, struct 
 	}
 	if (newInput & (1 << GUI_INPUT_RIGHT)) {
 		struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, menu->index);
-		if (item->validStates) {
+		if (item->validStates && !item->readonly) {
 			_itemNext(item, false);
 		} else if (menu->index + pageSize < GUIMenuItemListSize(&menu->items)) {
 			menu->index += pageSize;
@@ -184,17 +184,19 @@ static enum GUIMenuExitReason GUIMenuPollInput(struct GUIParams* params, struct 
 	}
 	if (newInput & (1 << GUI_INPUT_SELECT) || (state->cursorOverItem == 2 && state->cursor == GUI_CURSOR_CLICKED)) {
 		struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, menu->index);
-		if (item->submenu) {
-			// Selected menus get shown inline
-			state->resultItem = item;
-			return GUI_MENU_ENTER;
-		} else if (item->validStates && GUIVariantIsString(item->data)) {
-			// Selected items with multiple (named) states get scrolled through
-			_itemNext(item, true);
-		} else {
-			// Otherwise tell caller item was accepted
-			state->resultItem = item;
-			return GUI_MENU_EXIT_ACCEPT;
+		if (!item->readonly) {
+			if (item->submenu) {
+				// Selected menus get shown inline
+				state->resultItem = item;
+				return GUI_MENU_ENTER;
+			} else if (item->validStates && GUIVariantIsString(item->data)) {
+				// Selected items with multiple (named) states get scrolled through
+				_itemNext(item, true);
+			} else {
+				// Otherwise tell caller item was accepted
+				state->resultItem = item;
+				return GUI_MENU_EXIT_ACCEPT;
+			}
 		}
 	}
 	if (state->cursorOverItem == 1 && (state->cursor == GUI_CURSOR_UP || state->cursor == GUI_CURSOR_NOT_PRESENT)) {
@@ -229,12 +231,12 @@ static void GUIMenuDraw(struct GUIParams* params, const struct GUIMenu* menu, co
 	size_t i;
 	for (i = state->start; i < GUIMenuItemListSize(&menu->items); ++i) {
 		int color = 0xE0A0A0A0;
-		if (i == menu->index) {
-			color = 0xFFFFFFFF;
-			GUIFontDrawIcon(params->font, lineHeight * 0.8f, y, GUI_ALIGN_BOTTOM | GUI_ALIGN_RIGHT, GUI_ORIENT_0, 0xFFFFFFFF, GUI_ICON_POINTER);
-		}
 		const struct GUIMenuItem* item = GUIMenuItemListGetConstPointer(&menu->items, i);
-		GUIFontPrint(params->font, lineHeight, y, GUI_ALIGN_LEFT, color, item->title);
+		if (i == menu->index) {
+			color = item->readonly ? 0xD0909090 : 0xFFFFFFFF;
+			GUIFontDrawIcon(params->font, lineHeight * 0.8f, y, GUI_ALIGN_BOTTOM | GUI_ALIGN_RIGHT, GUI_ORIENT_0, color, GUI_ICON_POINTER);
+		}
+		GUIFontPrint(params->font, item->readonly ? lineHeight * 3 / 2 : lineHeight, y, GUI_ALIGN_LEFT, color, item->title);
 		if (item->validStates && item->validStates[item->state]) {
 			GUIFontPrintf(params->font, params->width - right - 8, y, GUI_ALIGN_RIGHT, color, "%s ", item->validStates[item->state]);
 		}

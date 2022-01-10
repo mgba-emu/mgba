@@ -48,6 +48,17 @@ enum GUIKeyboardStatus {
 	GUI_KEYBOARD_CANCEL,
 };
 
+enum GUIKeyFunction {
+	GUI_KEYFUNC_INPUT_DATA = 0,
+	GUI_KEYFUNC_CHANGE_KB,
+	GUI_KEYFUNC_SHIFT_KB,
+	GUI_KEYFUNC_BACKSPACE,
+	GUI_KEYFUNC_ENTER,
+	GUI_KEYFUNC_CANCEL,
+	GUI_KEYFUNC_LEFT,
+	GUI_KEYFUNC_RIGHT,
+};
+
 enum {
 	BATTERY_EMPTY = 0,
 	BATTERY_LOW = 25,
@@ -70,6 +81,21 @@ struct GUIKeyboardParams {
 	char result[MAX_KEYBOARD_LEN];
 	size_t maxLen;
 	bool multiline;
+};
+
+struct GUIKey {
+	const char* name;
+	const void* data;
+	int width;
+	enum GUIKeyFunction function;
+};
+
+struct GUIKeyboard {
+	struct {
+		int offset;
+		struct GUIKey* keys;
+	} rows[5];
+	int width;
 };
 
 struct GUIParams {
