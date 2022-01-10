@@ -31,36 +31,36 @@ swiBase:
 cmp    sp, #0
 moveq  sp, #0x04000000
 subeq  sp, #0x20
-stmfd  sp!, {r4, r12, lr}
-ldrb   r4, [lr, #-2]
-mov    r12, #swiTable
-ldr    r4, [r12, r4, lsl #2]
-mov    r12, #StallCall
-cmp    r12, r4
-mrs    r12, spsr
-stmfd  sp!, {r12}
-and    r12, #0x80
-orr    r12, #0x1F
-msr    cpsr_c, r12
-swieq  0xF00000  @ Special mGBA-internal call to load the stall count into r12
+stmfd  sp!, {r11, r12, lr}
+ldrb   r12, [lr, #-2]
+mov    r11, #swiTable
+ldr    r12, [r11, r12, lsl #2]
+mov    r11, #StallCall
+cmp    r11, r12
+mrs    r11, spsr
+stmfd  sp!, {r11}
+and    r11, #0x80
+orr    r11, #0x1F
+msr    cpsr_c, r11
+swieq  0xF00000  @ Special mGBA-internal call to load the stall count into r11
 stmfd  sp!, {r2, lr}
-cmp    r4, #0
+cmp    r12, #0
 nop
 nop
 nop
 nop
 nop
 nop
-mov    lr, pc
-bxne   r4
+movne  lr, pc
+bxne   r12
 nop
 nop
 nop
 ldmfd  sp!, {r2, lr}
 msr    cpsr, #0x93
-ldmfd  sp!, {r12}
-msr    spsr, r12
-ldmfd  sp!, {r4, r12, lr}
+ldmfd  sp!, {r11}
+msr    spsr, r11
+ldmfd  sp!, {r11, r12, lr}
 movs   pc, lr
 .word 0
 .word 0xE3A02004
@@ -310,6 +310,6 @@ ArcTan:
 ArcTan2:
 
 StallCall:
-subs r12, #4
+subs r11, #4
 bhi StallCall
 bx lr
