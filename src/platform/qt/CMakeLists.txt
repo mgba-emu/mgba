@@ -122,6 +122,10 @@ set(SOURCE_FILES
 	VideoProxy.cpp
 	VideoView.cpp)
 
+if(APPLE)
+	list(APPEND SOURCE_FILES ${SOURCE_FILES} eventpump.m)
+endif()
+
 set(UI_FILES
 	AboutScreen.ui
 	ApplicationUpdatePrompt.ui

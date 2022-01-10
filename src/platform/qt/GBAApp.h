@@ -16,6 +16,10 @@
 #include <QString>
 #include <QThreadPool>
 
+#ifdef Q_OS_MAC
+#include <QTimer>
+#endif
+
 #include <functional>
 
 #include "ApplicationUpdater.h"
@@ -78,6 +82,11 @@ public:
 
 	ApplicationUpdater* updater() { return &m_updater; }
 	QString invokeOnExit() { return m_invokeOnExit; }
+
+#ifdef Q_OS_MAC
+	QTimer m_periodicTimer;
+	void timerFunc();
+#endif
 
 public slots:
 	void restartForUpdate();

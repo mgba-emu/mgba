@@ -45,9 +45,16 @@ Q_IMPORT_PLUGIN(AVFServicePlugin);
 #include <unistd.h>
 #endif
 
+#ifdef Q_OS_MAC
+#include "eventpump.h"
+#endif
+
 using namespace QGBA;
 
 int main(int argc, char* argv[]) {
+#ifdef Q_OS_MAC
+		setupPostEvent();
+#endif
 #ifdef BUILD_SDL
 #if SDL_VERSION_ATLEAST(2, 0, 0) // CPP does not shortcut function lookup
 	SDL_SetMainReady();

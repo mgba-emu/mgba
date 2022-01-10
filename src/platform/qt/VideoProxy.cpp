@@ -9,6 +9,27 @@
 
 #include <QThread>
 
+#ifdef Q_OS_MAC
+#include <dispatch/dispatch.h>
+
+#include "eventpump.h"
+
+static void dispatch_main_reentrant(void (^block)()) {
+	dispatch_queue_t queue = dispatch_get_main_queue();
+	if (dispatch_queue_get_label(queue) == dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL)) {
+		block();
+	}
+	else {
+		postEvent(block);
+	}
+}
+
+void dispatch_process_events() {
+	if (dispatch_queue_get_label(dispatch_get_main_queue()) == dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL))
+		processEvents();
+}
+#endif
+
 using namespace QGBA;
 
 VideoProxy::VideoProxy() {
@@ -70,10 +91,16 @@ bool VideoProxy::writeData(const void* data, size_t length) {
 			mVideoLoggerRendererRun(&m_logger.d, false);
 		} else {
 			emit dataAvailable();
+#ifdef Q_OS_MAC
+			dispatch_main_reentrant(^{
+				mVideoLoggerRendererRun(&m_logger.d, false);
+			});
+#else
 			m_mutex.lock();
 			m_toThreadCond.wakeAll();
 			m_fromThreadCond.wait(&m_mutex);
 			m_mutex.unlock();
+#endif
 		}
 	}
 	return true;
@@ -86,10 +113,15 @@ bool VideoProxy::readData(void* data, size_t length, bool block) {
 		if (!block || read) {
 			break;
 		}
+#ifdef Q_OS_MAC
+		dispatch_process_events();
+		QThread::usleep(500);
+#else
 		m_mutex.lock();
 		m_fromThreadCond.wakeAll();
 		m_toThreadCond.wait(&m_mutex);
 		m_mutex.unlock();
+#endif
 	}
 	return read;
 }
@@ -99,7 +131,13 @@ void VideoProxy::postEvent(enum mVideoLoggerEvent event) {
 		// We're on the main thread
 		handleEvent(event);
 	} else {
+#ifdef Q_OS_MAC
+		dispatch_main_reentrant(^{
+			this->handleEvent(event);
+		});
+#else
 		QMetaObject::invokeMethod(this, "handleEvent", Qt::BlockingQueuedConnection, Q_ARG(int, event));
+#endif
 	}
 }
 
@@ -124,6 +162,11 @@ void VideoProxy::wait() {
 			// We're on the main thread
 			mVideoLoggerRendererRun(&m_logger.d, false);
 		} else {
+#ifdef Q_OS_MAC
+			dispatch_main_reentrant(^{
+				mVideoLoggerRendererRun(&m_logger.d, false);
+			});
+#endif
 			emit dataAvailable();
 			m_toThreadCond.wakeAll();
 			m_fromThreadCond.wait(&m_mutex, 1);

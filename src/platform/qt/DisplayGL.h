@@ -85,7 +85,10 @@ private:
 	bool m_isDrawing = false;
 	bool m_hasStarted = false;
 	std::unique_ptr<PainterGL> m_painter;
-	QThread m_drawThread;
+	QThread *m_drawThread;
+#ifndef Q_OS_MAC
+	QThread _m_drawThread;
+#endif
 	std::shared_ptr<CoreController> m_context;
 };
 

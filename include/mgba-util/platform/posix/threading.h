@@ -18,6 +18,13 @@ CXX_GUARD_START
 #include <OS.h>
 #endif
 
+#ifdef __APPLE__
+#include <sys/errno.h>
+#include <sys/time.h>
+#include <dispatch/dispatch.h>
+extern void (*__processEvents)();
+#endif
+
 #define THREAD_ENTRY void*
 typedef THREAD_ENTRY (*ThreadEntry)(void*);
 
@@ -55,6 +62,34 @@ static inline int ConditionDeinit(Condition* cond) {
 }
 
 static inline int ConditionWait(Condition* cond, Mutex* mutex) {
+#ifdef __APPLE__
+	dispatch_queue_t queue = dispatch_get_main_queue();
+	if (dispatch_queue_get_label(queue) == dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL)) {
+		struct timespec timeToWait;
+		struct timeval now;
+
+		gettimeofday(&now, NULL);
+
+		timeToWait.tv_sec = now.tv_sec;
+		timeToWait.tv_nsec = (now.tv_usec + 2000UL) * 1000UL;
+
+		int ret = pthread_cond_timedwait(cond, mutex, &timeToWait);
+
+		while (ret == ETIMEDOUT) {
+			if (__processEvents) __processEvents();
+
+			gettimeofday(&now, NULL);
+
+			timeToWait.tv_sec = now.tv_sec;
+			timeToWait.tv_nsec = (now.tv_usec + 2000UL) * 1000UL;
+
+			ret = pthread_cond_timedwait(cond, mutex, &timeToWait);
+		}
+
+		return ret;
+	}
+	else
+#endif
 	return pthread_cond_wait(cond, mutex);
 }
 

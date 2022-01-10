@@ -31,11 +31,21 @@
 #include "DiscordCoordinator.h"
 #endif
 
+#ifdef Q_OS_MAC
+#include "eventpump.h"
+#endif
+
 using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
 
 mLOG_DEFINE_CATEGORY(QT, "Qt", "platform.qt");
+
+#ifdef Q_OS_MAC
+void GBAApp::timerFunc() {
+	::processEvents();
+}
+#endif
 
 GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	: QApplication(argc, argv)
@@ -47,6 +57,14 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 
 #ifdef BUILD_SDL
 	SDL_Init(SDL_INIT_NOPARACHUTE);
+#endif
+
+#ifdef Q_OS_MAC
+	m_periodicTimer.setSingleShot(false);
+	m_periodicTimer.setInterval(1);
+	m_periodicTimer.moveToThread(qApp->thread());
+	connect(&m_periodicTimer, &QTimer::timeout, this, &GBAApp::timerFunc);
+	m_periodicTimer.start();
 #endif
 
 	SocketSubsystemInit();

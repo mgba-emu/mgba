@@ -10,6 +10,10 @@
 
 CXX_GUARD_START
 
+#ifdef __APPLE__
+extern void (*__processEvents)();
+#endif
+
 #include <mgba/core/log.h>
 
 struct mCoreThread;

@@ -50,23 +50,40 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 	windowHandle()->create();
 
 	m_painter = std::make_unique<PainterGL>(windowHandle(), format);
-	m_drawThread.setObjectName("Painter Thread");
-	m_painter->setThread(&m_drawThread);
+#ifdef Q_OS_MAC
+	m_drawThread = qApp->thread();
+#else
+	m_drawThread = &_m_drawThread;
+	m_drawThread->setObjectName("Painter Thread");
+#endif
+	m_painter->setThread(m_drawThread);
 
-	connect(&m_drawThread, &QThread::started, m_painter.get(), &PainterGL::create);
 	connect(m_painter.get(), &PainterGL::started, this, [this] {
 		m_hasStarted = true;
 		resizePainter();
 		emit drawingStarted();
 	});
+
+#ifdef Q_OS_MAC
+	m_painter->create();
+#else
+	connect(&m_drawThread, &QThread::started, m_painter.get(), &PainterGL::create);
 	m_drawThread.start();
+#endif
 }
 
 DisplayGL::~DisplayGL() {
 	stopDrawing();
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		m_painter->destroy();
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "destroy", Qt::BlockingQueuedConnection);
-	m_drawThread.exit();
-	m_drawThread.wait();
+#ifndef Q_OS_MAC
+	m_drawThread->exit();
+	m_drawThread->wait();
+#endif
 }
 
 bool DisplayGL::supportsShaders() const {
@@ -75,6 +92,11 @@ bool DisplayGL::supportsShaders() const {
 
 VideoShader* DisplayGL::shaders() {
 	VideoShader* shaders = nullptr;
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		shaders = m_painter->shaders();
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "shaders", Qt::BlockingQueuedConnection, Q_RETURN_ARG(VideoShader*, shaders));
 	return shaders;
 }
@@ -88,7 +110,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	m_painter->setMessagePainter(messagePainter());
 	m_context = controller;
 	if (videoProxy()) {
-		videoProxy()->moveToThread(&m_drawThread);
+		videoProxy()->moveToThread(m_drawThread);
 	}
 
 	lockAspectRatio(isAspectRatioLocked());
@@ -103,6 +125,11 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatio());
 #endif
 	CoreController::Interrupter interrupter(controller);
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		m_painter->start();
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "start");
 	setUpdatesEnabled(false);
 }
@@ -165,6 +192,11 @@ void DisplayGL::stopDrawing() {
 		m_isDrawing = false;
 		m_hasStarted = false;
 		CoreController::Interrupter interrupter(m_context);
+#ifdef Q_OS_MAC
+		if (QThread::currentThread() == qApp->thread())
+			m_painter->stop();
+		else
+#endif
 		QMetaObject::invokeMethod(m_painter.get(), "stop", Qt::BlockingQueuedConnection);
 		setUpdatesEnabled(true);
 	}
@@ -174,6 +206,11 @@ void DisplayGL::stopDrawing() {
 void DisplayGL::pauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = false;
+#ifdef Q_OS_MAC
+		if (QThread::currentThread() == qApp->thread())
+			m_painter->pause();
+		else
+#endif
 		QMetaObject::invokeMethod(m_painter.get(), "pause", Qt::BlockingQueuedConnection);
 #ifndef Q_OS_MAC
 		setUpdatesEnabled(true);
@@ -184,6 +221,11 @@ void DisplayGL::pauseDrawing() {
 void DisplayGL::unpauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = true;
+#ifdef Q_OS_MAC
+		if (QThread::currentThread() == qApp->thread())
+			m_painter->unpause();
+		else
+#endif
 		QMetaObject::invokeMethod(m_painter.get(), "unpause", Qt::BlockingQueuedConnection);
 #ifndef Q_OS_MAC
 		setUpdatesEnabled(false);
@@ -193,50 +235,100 @@ void DisplayGL::unpauseDrawing() {
 
 void DisplayGL::forceDraw() {
 	if (m_hasStarted) {
+#ifdef Q_OS_MAC
+		if (QThread::currentThread() == qApp->thread())
+			m_painter->forceDraw();
+		else
+#endif
 		QMetaObject::invokeMethod(m_painter.get(), "forceDraw");
 	}
 }
 
 void DisplayGL::lockAspectRatio(bool lock) {
 	Display::lockAspectRatio(lock);
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		m_painter->lockAspectRatio(lock);
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "lockAspectRatio", Q_ARG(bool, lock));
 }
 
 void DisplayGL::lockIntegerScaling(bool lock) {
 	Display::lockIntegerScaling(lock);
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		m_painter->lockIntegerScaling(lock);
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "lockIntegerScaling", Q_ARG(bool, lock));
 }
 
 void DisplayGL::interframeBlending(bool enable) {
 	Display::interframeBlending(enable);
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		m_painter->interframeBlending(enable);
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "interframeBlending", Q_ARG(bool, enable));
 }
 
 void DisplayGL::showOSDMessages(bool enable) {
 	Display::showOSDMessages(enable);
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		m_painter->showOSD(enable);
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "showOSD", Q_ARG(bool, enable));
 }
 
 void DisplayGL::filter(bool filter) {
 	Display::filter(filter);
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		m_painter->filter(filter);
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "filter", Q_ARG(bool, filter));
 }
 
 void DisplayGL::framePosted() {
 	m_painter->enqueue(m_context->drawContext());
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		m_painter->draw();
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "draw");
 }
 
 void DisplayGL::setShaders(struct VDir* shaders) {
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		m_painter->setShaders(shaders);
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "setShaders", Qt::BlockingQueuedConnection, Q_ARG(struct VDir*, shaders));
 }
 
 void DisplayGL::clearShaders() {
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		m_painter->clearShaders();
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "clearShaders", Qt::BlockingQueuedConnection);
 }
 
 void DisplayGL::resizeContext() {
 	m_painter->interrupt();
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		m_painter->resizeContext();
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "resizeContext");
 }
 
@@ -245,6 +337,11 @@ void DisplayGL::setVideoScale(int scale) {
 		m_painter->interrupt();
 		mCoreConfigSetIntValue(&m_context->thread()->core->config, "videoScale", scale);
 	}
+#ifdef Q_OS_MAC
+	if (QThread::currentThread() == qApp->thread())
+		m_painter->resizeContext();
+	else
+#endif
 	QMetaObject::invokeMethod(m_painter.get(), "resizeContext");
 }
 
@@ -255,6 +352,11 @@ void DisplayGL::resizeEvent(QResizeEvent* event) {
 
 void DisplayGL::resizePainter() {
 	if (m_hasStarted) {
+#ifdef Q_OS_MAC
+		if (QThread::currentThread() == qApp->thread())
+			m_painter->resize(size());
+		else
+#endif
 		QMetaObject::invokeMethod(m_painter.get(), "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, size()));
 	}
 }
@@ -262,7 +364,7 @@ void DisplayGL::resizePainter() {
 void DisplayGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
 	Display::setVideoProxy(proxy);
 	if (proxy) {
-		proxy->moveToThread(&m_drawThread);
+		proxy->moveToThread(m_drawThread);
 	}
 	m_painter->setVideoProxy(proxy);
 }

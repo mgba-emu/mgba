@@ -13,6 +13,18 @@
 
 #include <signal.h>
 
+#ifdef __APPLE__
+#include <dispatch/dispatch.h>
+
+void (*__processEvents)() = NULL;
+
+void dispatch_process_events() {
+	if (__processEvents &&
+	    dispatch_queue_get_label(dispatch_get_main_queue()) == dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL))
+		__processEvents();
+}
+#endif
+
 #ifndef DISABLE_THREADING
 
 static const float _defaultFPSTarget = 60.f;
@@ -91,6 +103,10 @@ static void _wait(struct mCoreThreadInternal* threadContext) {
 		ConditionWake(&threadContext->sync.audioRequiredCond);
 		MutexUnlock(&threadContext->sync.audioBufferMutex);
 	}
+
+#ifdef __APPLE__
+	dispatch_process_events();
+#endif
 
 	MutexLock(&threadContext->stateMutex);
 	ConditionWake(&threadContext->stateCond);

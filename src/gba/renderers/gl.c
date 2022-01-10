@@ -13,6 +13,27 @@
 #include <mgba/internal/gba/renderers/cache-set.h>
 #include <mgba-util/memory.h>
 
+#ifdef __APPLE__
+#include <dispatch/dispatch.h>
+
+void (*__postEvent)(void(^block)()) = NULL;
+
+static void dispatch_main_reentrant(void (^block)()) {
+	dispatch_queue_t queue = dispatch_get_main_queue();
+	if (dispatch_queue_get_label(queue) == dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL)) {
+		block();
+	}
+	else {
+		if (__postEvent) {
+			__postEvent(block);
+		}
+		else {
+			block();
+		}
+	}
+}
+#endif
+
 static void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer);
 static void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer);
@@ -685,6 +706,9 @@ void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer) {
 }
 
 static void _compileShader(struct GBAVideoGLRenderer* glRenderer, struct GBAVideoGLShader* shader, const char** shaderBuffer, int shaderBufferLines, GLuint vs, const struct GBAVideoGLUniform* uniforms, const char* const* outFrags, char* log) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	GLuint program = glCreateProgram();
 	shader->program = program;
 
@@ -722,14 +746,26 @@ static void _compileShader(struct GBAVideoGLRenderer* glRenderer, struct GBAVide
 	for (i = 0; uniforms[i].name; ++i) {
 		shader->uniforms[uniforms[i].type] = glGetUniformLocation(program, uniforms[i].name);
 	}
+#ifdef __APPLE__
+	});
+#endif
 }
 
 static void _deleteShader(struct GBAVideoGLShader* shader) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	glDeleteProgram(shader->program);
 	glDeleteVertexArrays(1, &shader->vao);
+#ifdef __APPLE__
+	});
+#endif
 }
 
 static void _initFramebufferTextureEx(GLuint tex, GLenum internalFormat, GLenum format, GLenum type, GLenum attachment, int scale) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -737,13 +773,25 @@ static void _initFramebufferTextureEx(GLuint tex, GLenum internalFormat, GLenum 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, scale > 0 ? GBA_VIDEO_HORIZONTAL_PIXELS * scale : 8, GBA_VIDEO_VERTICAL_PIXELS * (scale > 0 ? scale : 1), 0, format, type, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, tex, 0);
+#ifdef __APPLE__
+	});
+#endif
 }
 
 static void _initFramebufferTexture(GLuint tex, GLenum format, GLenum attachment, int scale) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	_initFramebufferTextureEx(tex, format, format, GL_UNSIGNED_BYTE, attachment, scale);
+#ifdef __APPLE__
+	});
+#endif
 }
 
 static void _initFramebuffers(struct GBAVideoGLRenderer* glRenderer) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OBJ]);
 	_initFramebufferTexture(glRenderer->layers[GBA_GL_TEX_OBJ_COLOR], GL_RGBA, GL_COLOR_ATTACHMENT0, glRenderer->scale);
 	_initFramebufferTextureEx(glRenderer->layers[GBA_GL_TEX_OBJ_FLAGS], GL_RGBA8I, GL_RGBA_INTEGER, GL_BYTE, GL_COLOR_ATTACHMENT1, glRenderer->scale);
@@ -766,9 +814,15 @@ static void _initFramebuffers(struct GBAVideoGLRenderer* glRenderer) {
 		_initFramebufferTexture(bg->tex, GL_RGBA, GL_COLOR_ATTACHMENT0, glRenderer->scale);
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 	glRenderer->temporaryBuffer = NULL;
 
@@ -890,9 +944,15 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 	glDeleteShader(vs);
 
 	GBAVideoGLRendererReset(renderer);
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 	if (glRenderer->temporaryBuffer) {
 		mappedMemoryFree(glRenderer->temporaryBuffer, GBA_VIDEO_HORIZONTAL_PIXELS * GBA_VIDEO_VERTICAL_PIXELS * glRenderer->scale * glRenderer->scale);
@@ -918,6 +978,9 @@ void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer) {
 		glDeleteFramebuffers(1, &bg->fbo);
 		glDeleteTextures(1, &bg->tex);
 	}
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
@@ -1315,6 +1378,9 @@ static bool _needsVramUpload(struct GBAVideoGLRenderer* renderer, int y) {
 }
 
 void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 
 	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
@@ -1446,9 +1512,15 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 			glRenderer->bg[3].affine.sy += glRenderer->bg[3].affine.dmy;
 		}
 	}
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	glEnable(GL_SCISSOR_TEST);
 
 	glViewport(0, 0, 1, GBA_VIDEO_VERTICAL_PIXELS);
@@ -1541,9 +1613,15 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 		}
 	}
 	glRenderer->firstY = -1;
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererFinishFrame(struct GBAVideoRenderer* renderer) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	struct GBAVideoGLRenderer* glRenderer = (struct GBAVideoGLRenderer*) renderer;
 	_drawScanlines(glRenderer, GBA_VIDEO_VERTICAL_PIXELS - 1);
 	_finalizeLayers(glRenderer);
@@ -1555,6 +1633,9 @@ void GBAVideoGLRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	glRenderer->bg[2].affine.sy = glRenderer->bg[2].refy;
 	glRenderer->bg[3].affine.sx = glRenderer->bg[3].refx;
 	glRenderer->bg[3].affine.sy = glRenderer->bg[3].refy;
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
@@ -1563,11 +1644,17 @@ void GBAVideoGLRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stri
 	if (!glRenderer->temporaryBuffer) {
 		glRenderer->temporaryBuffer = anonymousMemoryMap(GBA_VIDEO_HORIZONTAL_PIXELS * GBA_VIDEO_VERTICAL_PIXELS * glRenderer->scale * glRenderer->scale * BYTES_PER_PIXEL);
 	}
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	glFinish();
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OUTPUT]);
 	glPixelStorei(GL_PACK_ROW_LENGTH, GBA_VIDEO_HORIZONTAL_PIXELS * glRenderer->scale);
 	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glReadPixels(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * glRenderer->scale, GBA_VIDEO_VERTICAL_PIXELS * glRenderer->scale, GL_RGBA, GL_UNSIGNED_BYTE, (void*) glRenderer->temporaryBuffer);
+#ifdef __APPLE__
+	});
+#endif
 	*pixels = glRenderer->temporaryBuffer;
 }
 
@@ -1652,6 +1739,9 @@ static void GBAVideoGLRendererWriteBLDCNT(struct GBAVideoGLRenderer* renderer, u
 }
 
 void _finalizeLayers(struct GBAVideoGLRenderer* renderer) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	const GLuint* uniforms = renderer->finalizeShader.uniforms;
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[GBA_GL_FBO_OUTPUT]);
 	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, GBA_VIDEO_VERTICAL_PIXELS * renderer->scale);
@@ -1692,6 +1782,9 @@ void _finalizeLayers(struct GBAVideoGLRenderer* renderer) {
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GBAObj* sprite, int y, int spriteY) {
@@ -1724,6 +1817,9 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		return;
 	}
 
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	const struct GBAVideoGLShader* shader = &renderer->objShader[GBAObjAttributesAGet256Color(sprite->a)];
 	const GLuint* uniforms = shader->uniforms;
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[GBA_GL_FBO_OBJ]);
@@ -1814,9 +1910,15 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	}
 
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void _prepareBackground(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, const GLuint* uniforms) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	glBindFramebuffer(GL_FRAMEBUFFER, background->fbo);
 	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, GBA_VIDEO_VERTICAL_PIXELS * renderer->scale);
 	glActiveTexture(GL_TEXTURE0);
@@ -1832,9 +1934,15 @@ void _prepareBackground(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBa
 		glUniform2i(uniforms[GBA_GL_BG_MOSAIC], 0, 0);
 	}
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	const struct GBAVideoGLShader* shader = &renderer->bgShader[background->multipalette ? 1 : 0];
 	const GLuint* uniforms = shader->uniforms;
 	glUseProgram(shader->program);
@@ -1850,18 +1958,30 @@ void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, 
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void _prepareTransform(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, const GLuint* uniforms, int y) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	glScissor(0, renderer->firstY * renderer->scale, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, renderer->scale * (y - renderer->firstY + 1));
 	glUniform2i(uniforms[GBA_GL_VS_LOC], y - renderer->firstY + 1, renderer->firstY);
 	glUniform2i(uniforms[GBA_GL_BG_RANGE], renderer->firstAffine, y);
 
 	glUniform4iv(uniforms[GBA_GL_BG_TRANSFORM], GBA_VIDEO_VERTICAL_PIXELS, background->scanlineAffine);
 	_prepareBackground(renderer, background, uniforms);
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	const struct GBAVideoGLShader* shader = &renderer->bgShader[background->overflow ? 2 : 3];
 	const GLuint* uniforms = shader->uniforms;
 	glUseProgram(shader->program);
@@ -1872,9 +1992,15 @@ void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, 
 	glUniform1i(uniforms[GBA_GL_BG_SIZE], background->size);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererDrawBackgroundMode3(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	const struct GBAVideoGLShader* shader = &renderer->bgShader[5];
 	const GLuint* uniforms = shader->uniforms;
 	glBindFramebuffer(GL_FRAMEBUFFER, background->fbo);
@@ -1886,9 +2012,15 @@ void GBAVideoGLRendererDrawBackgroundMode3(struct GBAVideoGLRenderer* renderer, 
 	glUniform2i(uniforms[GBA_GL_BG_SIZE], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererDrawBackgroundMode4(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	const struct GBAVideoGLShader* shader = &renderer->bgShader[4];
 	const GLuint* uniforms = shader->uniforms;
 	glBindFramebuffer(GL_FRAMEBUFFER, background->fbo);
@@ -1900,9 +2032,15 @@ void GBAVideoGLRendererDrawBackgroundMode4(struct GBAVideoGLRenderer* renderer, 
 	glUniform2i(uniforms[GBA_GL_BG_SIZE], GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererDrawBackgroundMode5(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	const struct GBAVideoGLShader* shader = &renderer->bgShader[5];
 	const GLuint* uniforms = shader->uniforms;
 	glBindFramebuffer(GL_FRAMEBUFFER, background->fbo);
@@ -1914,9 +2052,15 @@ void GBAVideoGLRendererDrawBackgroundMode5(struct GBAVideoGLRenderer* renderer, 
 	glUniform2i(uniforms[GBA_GL_BG_SIZE], 160, 128);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	const struct GBAVideoGLShader* shader = &renderer->windowShader;
 	const GLuint* uniforms = shader->uniforms;
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[GBA_GL_FBO_WINDOW]);
@@ -1945,6 +2089,9 @@ void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y) {
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		break;
 	}
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void GBAVideoGLRendererSetScale(struct GBAVideoGLRenderer* renderer, int scale) {

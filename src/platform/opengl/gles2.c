@@ -98,8 +98,31 @@ static const GLfloat _vertices[] = {
 	1.f, -1.f,
 };
 
+#ifdef __APPLE__
+#include <mgba/gba/core.h>
+#include <dispatch/dispatch.h>
+
+static void dispatch_main_reentrant(void (^block)()) {
+	dispatch_queue_t queue = dispatch_get_main_queue();
+	if (dispatch_queue_get_label(queue) == dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL)) {
+		block();
+	}
+	else {
+		if (__postEvent) {
+			__postEvent(block);
+		}
+		else {
+			block();
+		}
+	}
+}
+#endif
+
 static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	UNUSED(handle);
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	v->width = 1;
 	v->height = 1;
@@ -175,6 +198,9 @@ static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	glDeleteTextures(1, &context->finalShader.tex);
 	context->finalShader.fbo = 0;
 	context->finalShader.tex = 0;
+#ifdef __APPLE__
+	});
+#endif
 }
 
 static void mGLES2ContextSetDimensions(struct VideoBackend* v, unsigned width, unsigned height) {
@@ -184,6 +210,10 @@ static void mGLES2ContextSetDimensions(struct VideoBackend* v, unsigned width, u
 	}
 	v->width = width;
 	v->height = height;
+
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 #ifdef COLOR_16_BIT
@@ -198,6 +228,10 @@ static void mGLES2ContextSetDimensions(struct VideoBackend* v, unsigned width, u
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 #endif
 
+#ifdef __APPLE__
+	});
+#endif
+
 	size_t n;
 	for (n = 0; n < context->nShaders; ++n) {
 		if (context->shaders[n].width < 0 || context->shaders[n].height < 0) {
@@ -210,15 +244,24 @@ static void mGLES2ContextSetDimensions(struct VideoBackend* v, unsigned width, u
 
 static void mGLES2ContextDeinit(struct VideoBackend* v) {
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	glDeleteTextures(1, &context->tex);
 	glDeleteBuffers(1, &context->vbo);
 	mGLES2ShaderDeinit(&context->initialShader);
 	mGLES2ShaderDeinit(&context->finalShader);
 	mGLES2ShaderDeinit(&context->interframeShader);
+#ifdef __APPLE__
+	});
+#endif
 	free(context->initialShader.uniforms);
 }
 
 static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	unsigned drawW = w;
 	unsigned drawH = h;
@@ -237,16 +280,28 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
+#ifdef __APPLE__
+	});
+#endif
 }
 
 static void mGLES2ContextClear(struct VideoBackend* v) {
 	UNUSED(v);
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	int drawW = shader->width;
@@ -362,9 +417,15 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 	}
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glBindTexture(GL_TEXTURE_2D, shader->tex);
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void mGLES2ContextDrawFrame(struct VideoBackend* v) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, context->tex);
@@ -401,9 +462,15 @@ void mGLES2ContextDrawFrame(struct VideoBackend* v) {
 		glBindVertexArray(0);
 	}
 #endif
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void mGLES2ContextPostFrame(struct VideoBackend* v, const void* frame) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	glBindTexture(GL_TEXTURE_2D, context->tex);
 #ifdef COLOR_16_BIT
@@ -416,6 +483,9 @@ void mGLES2ContextPostFrame(struct VideoBackend* v, const void* frame) {
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, v->width, v->height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, frame);
 #else
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, v->width, v->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, frame);
+#endif
+#ifdef __APPLE__
+	});
 #endif
 }
 
@@ -443,6 +513,9 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	shader->dirty = true;
 	shader->uniforms = uniforms;
 	shader->nUniforms = nUniforms;
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	glGenFramebuffers(1, &shader->fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, shader->fbo);
 
@@ -530,9 +603,15 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void mGLES2ShaderDeinit(struct mGLES2Shader* shader) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	glDeleteTextures(1, &shader->tex);
 	glDeleteShader(shader->fragmentShader);
 	glDeleteProgram(shader->program);
@@ -542,9 +621,15 @@ void mGLES2ShaderDeinit(struct mGLES2Shader* shader) {
 		glDeleteVertexArrays(1, &shader->vao);
 	}
 #endif
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void mGLES2ShaderAttach(struct mGLES2Context* context, struct mGLES2Shader* shaders, size_t nShaders) {
+#ifdef __APPLE__
+	dispatch_main_reentrant(^(){
+#endif
 	if (context->shaders) {
 		if (context->shaders == shaders && context->nShaders == nShaders) {
 			return;
@@ -574,6 +659,9 @@ void mGLES2ShaderAttach(struct mGLES2Context* context, struct mGLES2Shader* shad
 	}
 #endif
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+#ifdef __APPLE__
+	});
+#endif
 }
 
 void mGLES2ShaderDetach(struct mGLES2Context* context) {
