@@ -754,7 +754,9 @@ void Window::focusInEvent(QFocusEvent*) {
 			updateMultiplayerActive(true);
 		}
 	}
-	m_display->forceDraw();
+	if (m_display) {
+		m_display->forceDraw();
+	}
 }
 
 void Window::focusOutEvent(QFocusEvent*) {

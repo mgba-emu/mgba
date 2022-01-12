@@ -35,6 +35,7 @@ Misc:
  - Qt: Save positions of multiplayer windows (closes mgba.io/i/2128)
  - Qt: Add optional frame counter to OSD (closes mgba.io/i/1728)
  - Qt: Add optional emulation-related information on reset (closes mgba.io/i/1780)
+ - Qt: Add QOpenGLWidget cross-thread codepath for macOS (fixes mgba.io/i/1754)
  - Windows: Attach to console if present
 
 0.9.3: (2021-12-17)

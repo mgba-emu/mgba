@@ -38,7 +38,9 @@ Display* Display::create(QWidget* parent) {
 			format.setVersion(3, 2);
 		}
 		format.setProfile(QSurfaceFormat::CoreProfile);
-		if (!DisplayGL::supportsFormat(format)) {
+		if (DisplayGL::supportsFormat(format)) {
+			QSurfaceFormat::setDefaultFormat(format);
+		} else {
 #ifdef BUILD_GL
 			LOG(QT, WARN) << ("Failed to create an OpenGL Core context, trying old-style...");
 			format.setVersion(1, 4);
