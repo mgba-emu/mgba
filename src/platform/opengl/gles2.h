@@ -92,6 +92,7 @@ struct mGLES2Context {
 };
 
 void mGLES2ContextCreate(struct mGLES2Context*);
+void mGLES2ContextUseFramebuffer(struct mGLES2Context*);
 
 void mGLES2ShaderInit(struct mGLES2Shader*, const char* vs, const char* fs, int width, int height, bool integerScaling, struct mGLES2Uniform* uniforms, size_t nUniforms);
 void mGLES2ShaderDeinit(struct mGLES2Shader*);

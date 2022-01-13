@@ -235,13 +235,15 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 			context->shaders[n].dirty = true;
 		}
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, context->finalShader.tex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, drawW, drawH, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, context->finalShader.fbo);
 	glViewport((w - drawW) / 2, (h - drawH) / 2, drawW, drawH);
 }
 
 static void mGLES2ContextClear(struct VideoBackend* v) {
-	UNUSED(v);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	struct mGLES2Context* context = (struct mGLES2Context*) v;
+	glBindFramebuffer(GL_FRAMEBUFFER, context->finalShader.fbo);
 	glClearColor(0.f, 0.f, 0.f, 1.f);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
@@ -277,7 +279,7 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 			GLint oldTex;
 			glGetIntegerv(GL_TEXTURE_BINDING_2D, &oldTex);
 			glBindTexture(GL_TEXTURE_2D, shader->tex);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, drawW, drawH, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, drawW + padW * 2, drawH + padH * 2, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 			glBindTexture(GL_TEXTURE_2D, oldTex);
 		}
 		shader->dirty = false;
@@ -432,6 +434,22 @@ void mGLES2ContextCreate(struct mGLES2Context* context) {
 	context->d.clearMessage = 0;
 	context->shaders = 0;
 	context->nShaders = 0;
+}
+
+void mGLES2ContextUseFramebuffer(struct mGLES2Context* context) {
+	glGenFramebuffers(1, &context->finalShader.fbo);
+	glGenTextures(1, &context->finalShader.tex);
+
+	glBindTexture(GL_TEXTURE_2D, context->finalShader.tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, context->finalShader.fbo);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, context->finalShader.tex, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* fs, int width, int height, bool integerScaling, struct mGLES2Uniform* uniforms, size_t nUniforms) {
