@@ -1,4 +1,4 @@
-/* Copyright (c) 2022 Felix Jones
+/* Copyright (c) 2022 Jeffrey Pfau, Felix Jones
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -36,14 +36,14 @@ static int _exitCode = 0;
 #ifdef M_CORE_GBA
 static void _mTestSwi3Callback(struct mCore* core);
 
+static void _mTestSwi16(struct ARMCore* cpu, int immediate);
+static void _mTestSwi32(struct ARMCore* cpu, int immediate);
+
 static int _exitSwiImmediate = -1;
 static int _returnCodeRegister;
 
 void (*_armSwi16)(struct ARMCore* cpu, int immediate);
 void (*_armSwi32)(struct ARMCore* cpu, int immediate);
-
-static void _mTestSwi16(struct ARMCore* cpu, int immediate);
-static void _mTestSwi32(struct ARMCore* cpu, int immediate);
 #endif
 
 int main(int argc, char * argv[]) {
@@ -80,8 +80,6 @@ int main(int argc, char * argv[]) {
 
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
 
-	struct mCoreCallbacks* callbacks = NULL;
-
 #ifdef M_CORE_GBA
 	if (core->platform(core) == mPLATFORM_GBA) {
 		((struct GBA*) core->board)->hardCrash = false;
@@ -91,10 +89,10 @@ int main(int argc, char * argv[]) {
 
 		if (_exitSwiImmediate == 3) {
 			// Hook into SWI 3 (shutdown)
-			callbacks = calloc(1, sizeof(*callbacks));
-			callbacks->context = core;
-			callbacks->shutdown = (void(*)(void*)) _mTestSwi3Callback;
-			core->addCoreCallbacks(core, callbacks);
+			struct mCoreCallbacks callbacks = {0};
+			callbacks.context = core;
+			callbacks.shutdown = (void(*)(void*)) _mTestSwi3Callback;
+			core->addCoreCallbacks(core, &callbacks);
 		} else {
 			// Custom SWI hooks
 			_armSwi16 = ((struct GBA*) core->board)->cpu->irqh.swi16;
@@ -156,14 +154,12 @@ static void _mTestShutdown(int signal) {
 	_dispatchExiting = true;
 }
 
-static void _mTestSwi3Callback(struct mCore* core) {
 #ifdef M_CORE_GBA
+static void _mTestSwi3Callback(struct mCore* core) {
 	_exitCode = ((struct GBA*) core->board)->cpu->regs.gprs[_returnCodeRegister];
-#endif
 	_dispatchExiting = true;
 }
 
-#ifdef M_CORE_GBA
 static void _mTestSwi16(struct ARMCore* cpu, int immediate) {
 	if (immediate == _exitSwiImmediate) {
 		_exitCode = cpu->regs.gprs[_returnCodeRegister];
