@@ -25,6 +25,7 @@ Other fixes:
  - FFmpeg: Fix crash when encoding audio with some containers
 Misc:
  - Core: Suspend runloop when a core crashes
+ - GB Video: Add default SGB border
  - mGUI: Add margin to right-aligned menu text (fixes mgba.io/i/871)
  - Qt: Rearrange menus some
  - Qt: Clean up cheats dialog
