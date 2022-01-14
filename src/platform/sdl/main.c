@@ -59,6 +59,9 @@ static void _loadState(struct mCoreThread* thread) {
 }
 
 int main(int argc, char** argv) {
+#ifdef _WIN32
+	AttachConsole(ATTACH_PARENT_PROCESS);
+#endif
 	struct mSDLRenderer renderer = {0};
 
 	struct mCoreOptions opts = {
@@ -213,6 +216,7 @@ int wmain(int argc, wchar_t** argv) {
 	for (i = 0; i < argc; ++i) {
 		argv8[i] = utf16to8((uint16_t*) argv[i], wcslen(argv[i]) * 2);
 	}
+	__argv = argv8;
 	int ret = main(argc, argv8);
 	for (i = 0; i < argc; ++i) {
 		free(argv8[i]);
