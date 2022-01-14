@@ -146,6 +146,12 @@ static const int keymap[] = {
 	RETRO_DEVICE_ID_JOYPAD_L,
 };
 
+#ifndef GIT_VERSION
+#define GIT_VERSION ""
+#endif
+const char* const projectVersion = "0.10-dev" GIT_VERSION;
+const char* const projectName = "mGBA";
+
 /* Maximum number of consecutive frames that
  * can be skipped */
 #define RETRO_FRAMESKIP_MAX 30
@@ -1326,11 +1332,8 @@ void retro_get_system_info(struct retro_system_info* info) {
 #else
 	info->valid_extensions = "gba";
 #endif
-#ifndef GIT_VERSION
-#define GIT_VERSION ""
-#endif
-	info->library_version = "0.9.2" GIT_VERSION;
-	info->library_name = "mGBA";
+	info->library_version = projectVersion;
+	info->library_name = projectName;
 	info->block_extract = false;
 }
 
