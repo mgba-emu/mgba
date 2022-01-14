@@ -10,21 +10,41 @@ Features:
  - Support for 64 kiB SRAM saves used in some bootlegs
  - Discord Rich Presence now supports time elapsed
  - Additional scaling shaders
+ - Support for GameShark Advance SP (.gsv) save file importing
 Emulation fixes:
  - ARM7: Fix unsigned multiply timing
+ - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
+ - GB Video: Draw SGB border pieces that overlap GB graphics (fixes mgba.io/i/1339)
+ - GBA: Improve timing when not booting from BIOS
+ - GBA BIOS: Work around IRQ handling hiccup in Mario & Luigi (fixes mgba.io/i/1059)
+ - GBA I/O: Redo internal key input, enabling edge-based key IRQs
+ - GBA I/O: Disable open bus behavior on invalid register 06A
+ - GBA Memory: Fix misaligned 32-bit I/O loads (fixes mgba.io/i/2307)
+Other fixes:
+ - Core: Don't attempt to restore rewind diffs past start of rewind
+ - FFmpeg: Fix crash when encoding audio with some containers
+Misc:
+ - Core: Suspend runloop when a core crashes
+ - GB Video: Add default SGB border
+ - mGUI: Add margin to right-aligned menu text (fixes mgba.io/i/871)
+ - Qt: Rearrange menus some
+ - Qt: Clean up cheats dialog
+ - Qt: Only set default controller bindings if loading fails (fixes mgba.io/i/799)
+ - Qt: Save converter now supports importing GameShark Advance saves
+ - Qt: Save positions of multiplayer windows (closes mgba.io/i/2128)
+ - Windows: Attach to console if present
+
+0.9.3: (2021-12-17)
+Emulation fixes:
  - GB I/O: Fix incrementing SGB controller when P14 is low (fixes mgba.io/i/2202)
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
  - GB Video: Render SGB border when unmasking with ATTR/PAL_SET (fixes mgba.io/i/2261)
- - GBA: Improve timing when not booting from BIOS
- - GBA I/O: Redo internal key input, enabling edge-based key IRQs
- - GBA Memory: Fix misaligned 32-bit I/O loads (fixes mgba.io/i/2307)
  - GBA SIO: Fix SI value for unattached MULTI mode
  - GBA Video: Fix backdrop color if DISPCNT is first set to 0 (fixes mgba.io/i/2260)
  - GBA Video: Don't iterate affine backgrounds when disabled
  - GBA Video: Delay enabling backgrounds in bitmap modes (fixes mgba.io/i/1668)
 Other fixes:
  - ARM Decoder: Fix decoding of lsl r0 (fixes mgba.io/i/2349)
- - Core: Don't attempt to restore rewind diffs past start of rewind
  - FFmpeg: Don't attempt to use YUV 4:2:0 for lossless videos (fixes mgba.io/i/2084)
  - GB Video: Fix memory leak when reseting SGB games
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
@@ -32,16 +52,11 @@ Other fixes:
  - GBA Video: Fix cache updating with proxy and GL renderers
  - Libretro: Fix crash when using Game Boy codes (fixes mgba.io/i/2281)
  - mGUI: Fix crash if autosave file can't be opened (fixes mgba.io/i/2268)
+ - Qt: Remove potentially deadlocking optimization
  - Qt: Fix corrupted savestate and fatal error text
  - Qt: Fix sprite compositing when sprite tiles go out of bounds (fixes mgba.io/i/2348)
 Misc:
- - Core: Suspend runloop when a core crashes
  - GBA I/O: Update KEYINPUT in internal I/O memory (fixes mgba.io/i/2235)
- - mGUI: Add margin to right-aligned menu text (fixes mgba.io/i/871)
- - Qt: Rearrange menus some
- - Qt: Clean up cheats dialog
- - Qt: Only set default controller bindings if loading fails (fixes mgba.io/i/799)
- - Qt: Save converter now supports importing SharkPort saves
  - SDL: Use SDL_JoystickRumble where available
  - Wii: Add adjustable gyroscope settings (closes mgba.io/i/2245)
 

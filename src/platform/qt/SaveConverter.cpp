@@ -35,7 +35,7 @@ SaveConverter::SaveConverter(std::shared_ptr<CoreController> controller, QWidget
 
 	connect(m_ui.inputFile, &QLineEdit::textEdited, this, &SaveConverter::refreshInputTypes);
 	connect(m_ui.inputBrowse, &QAbstractButton::clicked, this, [this]() {
-		QStringList formats{"*.sav", "*.sgm", "*.sps", "*.ss0", "*.ss1", "*.ss2", "*.ss3", "*.ss4", "*.ss5", "*.ss6", "*.ss7", "*.ss8", "*.ss9", "*.xps"};
+		QStringList formats{"*.gsv", "*.sav", "*.sgm", "*.sps", "*.ss0", "*.ss1", "*.ss2", "*.ss3", "*.ss4", "*.ss5", "*.ss6", "*.ss7", "*.ss8", "*.ss9", "*.xps"};
 		QString filter = tr("Save games and save states (%1)").arg(formats.join(QChar(' ')));
 		QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save game or save state"), filter);
 		if (!filename.isEmpty()) {
@@ -256,6 +256,7 @@ void SaveConverter::detectFromSize(std::shared_ptr<VFileDevice> vf) {
 
 void SaveConverter::detectFromHeaders(std::shared_ptr<VFileDevice> vf) {
 	const QByteArray sharkport("\xd\0\0\0SharkPortSave", 0x11);
+	const QByteArray gsv("ADVSAVEG", 8);
 	QByteArray buffer;
 
 	vf->seek(0);
@@ -273,6 +274,32 @@ void SaveConverter::detectFromHeaders(std::shared_ptr<VFileDevice> vf) {
 				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH512, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_FLASH512)), Endian::NONE, Container::SHARKPORT});
 				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_EEPROM)), Endian::BIG, Container::SHARKPORT});
 				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_EEPROM512)), Endian::BIG, Container::SHARKPORT});
+			}
+			free(data);
+		}
+	} else if (buffer.left(gsv.count()) == gsv) {
+		size_t size;
+		void* data = GBASavedataGSVGetPayload(*vf, &size, nullptr, false);
+		if (data) {
+			QByteArray bytes = QByteArray::fromRawData(static_cast<const char*>(data), size);
+			bytes.data(); // Trigger a deep copy before we delete the backing
+			switch (size) {
+			case SIZE_CART_FLASH1M:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
+				break;
+			case SIZE_CART_FLASH512:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH512, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
+				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
+				break;
+			case SIZE_CART_SRAM:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_SRAM, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_SRAM)), Endian::NONE, Container::GSV});
+				break;
+			case SIZE_CART_EEPROM:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_EEPROM)), Endian::BIG, Container::GSV});
+				break;
+			case SIZE_CART_EEPROM512:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_EEPROM512)), Endian::BIG, Container::GSV});
+				break;
 			}
 			free(data);
 		}
@@ -500,6 +527,9 @@ SaveConverter::AnnotatedSave::operator QString() const {
 		break;
 	case Container::SHARKPORT:
 		format = QCoreApplication::translate("SaveConverter", "%1 SharkPort %2 save game");
+		break;
+	case Container::GSV:
+		format = QCoreApplication::translate("SaveConverter", "%1 GameShark Advance SP %2 save game");
 		break;
 	case Container::NONE:
 		break;

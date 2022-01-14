@@ -11,6 +11,7 @@
 #include <mgba-util/gui/menu.h>
 
 enum mGUICheatAction {
+	CHEAT_BACK = 0,
 	CHEAT_ADD_LINE = 1,
 	CHEAT_RENAME,
 	CHEAT_DELETE,
@@ -18,15 +19,37 @@ enum mGUICheatAction {
 
 static const char* const offOn[] = { "Off", "On" };
 
+static void _rebuildCheatView(struct GUIMenuItemList* items, const struct mCheatSet* set) {
+	GUIMenuItemListClear(items);
+	size_t i;
+	for (i = 0; i < StringListSize(&set->lines); ++i) {
+		*GUIMenuItemListAppend(items) = (struct GUIMenuItem) {
+			.title = *StringListGetConstPointer(&set->lines, i),
+			.readonly = true
+		};
+	}
+	*GUIMenuItemListAppend(items) = (struct GUIMenuItem) {
+		.title = "Back",
+		.data = GUI_V_U(CHEAT_BACK),
+	};
+}
+
 static void mGUIShowCheatSet(struct mGUIRunner* runner, struct mCheatDevice* device, struct mCheatSet* set) {
-	char cheatName[64];
-	snprintf(cheatName, sizeof(cheatName), "Edit cheat: %s", set->name);
 	struct GUIMenu menu = {
-		.title = cheatName,
+		.title = "Edit cheat",
+		.subtitle = set->name,
 		.index = 0,
 		.background = &runner->background.d
 	};
 	GUIMenuItemListInit(&menu.items, 0);
+
+	struct GUIMenu view = {
+		.title = "View cheat",
+		.subtitle = set->name,
+		.index = 0,
+		.background = &runner->background.d
+	};
+
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Enable",
 		.state = set->enabled,
@@ -36,6 +59,10 @@ static void mGUIShowCheatSet(struct mGUIRunner* runner, struct mCheatDevice* dev
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Add line",
 		.data = GUI_V_U(CHEAT_ADD_LINE),
+	};
+	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
+		.title = "View lines",
+		.submenu = &view,
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Rename",
@@ -49,6 +76,9 @@ static void mGUIShowCheatSet(struct mGUIRunner* runner, struct mCheatDevice* dev
 		.title = "Back",
 		.data = GUI_V_V,
 	};
+
+	GUIMenuItemListInit(&view.items, 0);
+	_rebuildCheatView(&view.items, set);
 
 	while (true) {
 		struct GUIKeyboardParams keyboard;
@@ -67,6 +97,7 @@ static void mGUIShowCheatSet(struct mGUIRunner* runner, struct mCheatDevice* dev
 			keyboard.maxLen = 12;
 			if (runner->params.getText(&keyboard) == GUI_KEYBOARD_DONE) {
 				mCheatAddLine(set, keyboard.result, 0);
+				_rebuildCheatView(&view.items, set);
 			}
 			break;
 		case CHEAT_RENAME:
@@ -75,11 +106,15 @@ static void mGUIShowCheatSet(struct mGUIRunner* runner, struct mCheatDevice* dev
 			keyboard.maxLen = 50;
 			if (runner->params.getText(&keyboard) == GUI_KEYBOARD_DONE) {
 				mCheatSetRename(set, keyboard.result);
-				snprintf(cheatName, sizeof(cheatName), "Edit cheat: %s", set->name);
+				menu.subtitle = set->name;
+				view.subtitle = set->name;
 			}
 			break;
 		case CHEAT_DELETE:
 			mCheatRemoveSet(device, set);
+			break;
+		case CHEAT_BACK:
+			// Used by submenus to return to the top menu
 			break;
 		}
 
@@ -88,6 +123,7 @@ static void mGUIShowCheatSet(struct mGUIRunner* runner, struct mCheatDevice* dev
 		}
 	}
 	GUIMenuItemListDeinit(&menu.items);
+	GUIMenuItemListDeinit(&view.items);
 }
 
 void mGUIShowCheats(struct mGUIRunner* runner) {

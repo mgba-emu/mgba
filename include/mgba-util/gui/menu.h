@@ -61,6 +61,7 @@ struct GUIMenuItem {
 	const struct GUIVariant* stateMappings;
 	unsigned nStates;
 	struct GUIMenu* submenu;
+	bool readonly;
 };
 
 DECLARE_VECTOR(GUIMenuItemList, struct GUIMenuItem);

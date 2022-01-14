@@ -41,6 +41,7 @@ Q_IMPORT_PLUGIN(AVFServicePlugin);
 
 #ifdef Q_OS_WIN
 #include <process.h>
+#include <wincon.h>
 #else
 #include <unistd.h>
 #endif
@@ -48,6 +49,9 @@ Q_IMPORT_PLUGIN(AVFServicePlugin);
 using namespace QGBA;
 
 int main(int argc, char* argv[]) {
+#ifdef Q_OS_WIN
+	AttachConsole(ATTACH_PARENT_PROCESS);
+#endif
 #ifdef BUILD_SDL
 #if SDL_VERSION_ATLEAST(2, 0, 0) // CPP does not shortcut function lookup
 	SDL_SetMainReady();
@@ -154,6 +158,7 @@ int wmain(int argc, wchar_t* argv[]) {
 	for (int i = 0; i < argc; ++i) {
 		argv8.push_back(utf16to8(reinterpret_cast<uint16_t*>(argv[i]), wcslen(argv[i]) * 2));
 	}
+	__argv = argv8.data();
 	int ret = main(argc, argv8.data());
 	for (char* ptr : argv8) {
 		free(ptr);
