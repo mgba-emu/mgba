@@ -1,4 +1,5 @@
-/* Copyright (c) 2022 Jeffrey Pfau, Felix Jones
+/* Copyright (c) 2013-2022 Jeffrey Pfau
+*  Copyright (c) 2022 Felix Jones
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
 * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -15,46 +16,47 @@
 
 #include <signal.h>
 
-#define MTEST_OPTIONS "S:R:"
-#define MTEST_USAGE \
+#define ROM_TEST_OPTIONS "S:R:"
+#define ROM_TEST_USAGE \
 	"\nAdditional options:\n" \
 	"  -S SWI           Run until specified SWI call before exiting\n" \
 	"  -R REGISTER      General purpose register to return as exit code\n" \
 
-struct MTestOpts {
+struct romTestOpts {
 	int exitSwiImmediate;
-	int returnCodeRegister;
+	unsigned int returnCodeRegister;
 };
 
-static void _mTestShutdown(int signal);
-static bool _parseMTestOpts(struct mSubParser* parser, int option, const char* arg);
-static int _parseNamedRegister(const char* regStr);
+static void _romTestShutdown(int signal);
+static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char* arg);
+static bool _parseSwi(const char* regStr, int* oSwi);
+static bool _parseNamedRegister(const char* regStr, unsigned int* oRegister);
 
 static bool _dispatchExiting = false;
 static int _exitCode = 0;
 
 #ifdef M_CORE_GBA
-static void _mTestSwi3Callback(struct mCore* core);
+static void _romTestSwi3Callback(struct mCore* core);
 
-static void _mTestSwi16(struct ARMCore* cpu, int immediate);
-static void _mTestSwi32(struct ARMCore* cpu, int immediate);
+static void _romTestSwi16(struct ARMCore* cpu, int immediate);
+static void _romTestSwi32(struct ARMCore* cpu, int immediate);
 
-static int _exitSwiImmediate = -1;
-static int _returnCodeRegister;
+static int _exitSwiImmediate;
+static unsigned int _returnCodeRegister;
 
 void (*_armSwi16)(struct ARMCore* cpu, int immediate);
 void (*_armSwi32)(struct ARMCore* cpu, int immediate);
 #endif
 
 int main(int argc, char * argv[]) {
-	signal(SIGINT, _mTestShutdown);
+	signal(SIGINT, _romTestShutdown);
 
-	struct MTestOpts mTestOpts = { 3, -1 };
+	struct romTestOpts romTestOpts = { 3, 0 };
 	struct mSubParser subparser = {
-		.usage = MTEST_USAGE,
-		.parse = _parseMTestOpts,
-		.extraOptions = MTEST_OPTIONS,
-		.opts = &mTestOpts
+		.usage = ROM_TEST_USAGE,
+		.parse = _parseRomTestOpts,
+		.extraOptions = ROM_TEST_OPTIONS,
+		.opts = &romTestOpts
 	};
 
 	struct mArguments args;
@@ -63,7 +65,7 @@ int main(int argc, char * argv[]) {
 		parsed = false;
 	}
 	if (!parsed || args.showHelp) {
-		usage(argv[0], MTEST_USAGE);
+		usage(argv[0], ROM_TEST_USAGE);
 		return !parsed;
 	}
 	if (args.showVersion) {
@@ -75,7 +77,7 @@ int main(int argc, char * argv[]) {
 		return 1;
 	}
 	core->init(core);
-	mCoreInitConfig(core, "mTest");
+	mCoreInitConfig(core, "romTest");
 	applyArguments(&args, NULL, &core->config);
 
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
@@ -84,21 +86,21 @@ int main(int argc, char * argv[]) {
 	if (core->platform(core) == mPLATFORM_GBA) {
 		((struct GBA*) core->board)->hardCrash = false;
 
-		_exitSwiImmediate = mTestOpts.exitSwiImmediate;
-		_returnCodeRegister = mTestOpts.returnCodeRegister;
+		_exitSwiImmediate = romTestOpts.exitSwiImmediate;
+		_returnCodeRegister = romTestOpts.returnCodeRegister;
 
 		if (_exitSwiImmediate == 3) {
 			// Hook into SWI 3 (shutdown)
 			struct mCoreCallbacks callbacks = {0};
 			callbacks.context = core;
-			callbacks.shutdown = (void(*)(void*)) _mTestSwi3Callback;
+			callbacks.shutdown = (void(*)(void*)) _romTestSwi3Callback;
 			core->addCoreCallbacks(core, &callbacks);
 		} else {
 			// Custom SWI hooks
 			_armSwi16 = ((struct GBA*) core->board)->cpu->irqh.swi16;
-			((struct GBA*) core->board)->cpu->irqh.swi16 = _mTestSwi16;
+			((struct GBA*) core->board)->cpu->irqh.swi16 = _romTestSwi16;
 			_armSwi32 = ((struct GBA*) core->board)->cpu->irqh.swi32;
-			((struct GBA*) core->board)->cpu->irqh.swi32 = _mTestSwi32;
+			((struct GBA*) core->board)->cpu->irqh.swi32 = _romTestSwi32;
 		}
 	}
 #endif
@@ -149,18 +151,18 @@ loadError:
 	return cleanExit ? _exitCode : 1;
 }
 
-static void _mTestShutdown(int signal) {
+static void _romTestShutdown(int signal) {
 	UNUSED(signal);
 	_dispatchExiting = true;
 }
 
 #ifdef M_CORE_GBA
-static void _mTestSwi3Callback(struct mCore* core) {
+static void _romTestSwi3Callback(struct mCore* core) {
 	_exitCode = ((struct GBA*) core->board)->cpu->regs.gprs[_returnCodeRegister];
 	_dispatchExiting = true;
 }
 
-static void _mTestSwi16(struct ARMCore* cpu, int immediate) {
+static void _romTestSwi16(struct ARMCore* cpu, int immediate) {
 	if (immediate == _exitSwiImmediate) {
 		_exitCode = cpu->regs.gprs[_returnCodeRegister];
 		_dispatchExiting = true;
@@ -169,7 +171,7 @@ static void _mTestSwi16(struct ARMCore* cpu, int immediate) {
 	_armSwi16(cpu, immediate);
 }
 
-static void _mTestSwi32(struct ARMCore* cpu, int immediate) {
+static void _romTestSwi32(struct ARMCore* cpu, int immediate) {
 	if (immediate == _exitSwiImmediate) {
 		_exitCode = cpu->regs.gprs[_returnCodeRegister];
 		_dispatchExiting = true;
@@ -179,24 +181,37 @@ static void _mTestSwi32(struct ARMCore* cpu, int immediate) {
 }
 #endif
 
-static bool _parseMTestOpts(struct mSubParser* parser, int option, const char* arg) {
-	struct MTestOpts* opts = parser->opts;
+static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char* arg) {
+	struct romTestOpts* opts = parser->opts;
 	errno = 0;
 	switch (option) {
 	case 'S':
-		opts->exitSwiImmediate = strtol(arg, NULL, 0);
-		return !errno;
+		return _parseSwi(arg, &opts->exitSwiImmediate);
 	case 'R':
-		opts->returnCodeRegister = _parseNamedRegister(arg);
-		return !errno;
+		return _parseNamedRegister(arg, &opts->returnCodeRegister);
 	default:
 		return false;
 	}
 }
 
-static int _parseNamedRegister(const char* regStr) {
+static bool _parseSwi(const char* regStr, int* oSwi) {
+	long swi = strtol(regStr, NULL, 0);
+	if (errno || swi > UINT8_MAX) {
+		return false;
+	}
+	*oSwi = swi;
+	return true;
+}
+
+static bool _parseNamedRegister(const char* regStr, unsigned int* oRegister) {
 	if (regStr[0] == 'r' || regStr[0] == 'R') {
 		++regStr;
 	}
-	return strtol(regStr, NULL, 10);
+
+	unsigned long regId = strtoul(regStr, NULL, 10);
+	if (errno || regId > 15) {
+		return false;
+	}
+	*oRegister = regId;
+	return true;
 }
