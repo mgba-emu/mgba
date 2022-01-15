@@ -329,7 +329,7 @@ struct GBSerializedState {
 		uint32_t reserved;
 		uint32_t nextMode;
 		int32_t dotCounter;
-		int32_t frameCounter;
+		uint32_t frameCounter;
 
 		uint8_t vramCurrentBank;
 		GBSerializedVideoFlags flags;
