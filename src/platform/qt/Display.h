@@ -42,6 +42,7 @@ public:
 	bool hasInterframeBlending() const { return m_interframeBlending; }
 	bool isFiltered() const { return m_filter; }
 	bool isShowOSD() const { return m_showOSD; }
+	bool isShowFrameCounter() const { return m_showFrameCounter; }
 
 	virtual void attach(std::shared_ptr<CoreController>);
 	virtual void configure(ConfigController*);
@@ -69,6 +70,7 @@ public slots:
 	virtual void lockIntegerScaling(bool lock);
 	virtual void interframeBlending(bool enable);
 	virtual void showOSDMessages(bool enable);
+	virtual void showFrameCounter(bool enable);
 	virtual void filter(bool filter);
 	virtual void framePosted() = 0;
 	virtual void setShaders(struct VDir*) = 0;
@@ -89,6 +91,7 @@ private:
 
 	MessagePainter m_messagePainter;
 	bool m_showOSD = true;
+	bool m_showFrameCounter = false;
 	bool m_lockAspectRatio = false;
 	bool m_lockIntegerScaling = false;
 	bool m_interframeBlending = false;

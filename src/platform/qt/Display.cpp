@@ -85,14 +85,20 @@ Display::Display(QWidget* parent)
 }
 
 void Display::attach(std::shared_ptr<CoreController> controller) {
-	connect(controller.get(), &CoreController::stateLoaded, this, &Display::resizeContext);
-	connect(controller.get(), &CoreController::stateLoaded, this, &Display::forceDraw);
-	connect(controller.get(), &CoreController::rewound, this, &Display::forceDraw);
-	connect(controller.get(), &CoreController::paused, this, &Display::pauseDrawing);
-	connect(controller.get(), &CoreController::unpaused, this, &Display::unpauseDrawing);
-	connect(controller.get(), &CoreController::frameAvailable, this, &Display::framePosted);
-	connect(controller.get(), &CoreController::statusPosted, this, &Display::showMessage);
-	connect(controller.get(), &CoreController::didReset, this, &Display::resizeContext);
+	CoreController* controllerP = controller.get();
+	connect(controllerP, &CoreController::stateLoaded, this, &Display::resizeContext);
+	connect(controllerP, &CoreController::stateLoaded, this, &Display::forceDraw);
+	connect(controllerP, &CoreController::rewound, this, &Display::forceDraw);
+	connect(controllerP, &CoreController::paused, this, &Display::pauseDrawing);
+	connect(controllerP, &CoreController::unpaused, this, &Display::unpauseDrawing);
+	connect(controllerP, &CoreController::frameAvailable, this, &Display::framePosted);
+	connect(controllerP, &CoreController::frameAvailable, this, [controllerP, this]() {
+		if (m_showFrameCounter) {
+			m_messagePainter.showFrameCounter(controllerP->frameCounter());
+		}
+	});
+	connect(controllerP, &CoreController::statusPosted, this, &Display::showMessage);
+	connect(controllerP, &CoreController::didReset, this, &Display::resizeContext);
 }
 
 void Display::configure(ConfigController* config) {
@@ -102,6 +108,7 @@ void Display::configure(ConfigController* config) {
 	interframeBlending(opts->interframeBlending);
 	filter(opts->resampleVideo);
 	config->updateOption("showOSD");
+	config->updateOption("showFrameCounter");
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (opts->shader) {
 		struct VDir* shader = VDirOpen(opts->shader);
@@ -135,6 +142,13 @@ void Display::interframeBlending(bool lock) {
 
 void Display::showOSDMessages(bool enable) {
 	m_showOSD = enable;
+}
+
+void Display::showFrameCounter(bool enable) {
+	m_showFrameCounter = enable;
+	if (!enable) {
+		m_messagePainter.clearFrameCounter();
+	}
 }
 
 void Display::filter(bool filter) {

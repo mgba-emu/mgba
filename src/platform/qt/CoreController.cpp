@@ -86,6 +86,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		}
 
 		controller->m_resetActions.clear();
+		controller->m_frameCounter = -1;
 
 		if (!controller->m_hwaccel) {
 			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer.data()), controller->screenDimensions().width());
@@ -1081,6 +1082,7 @@ void CoreController::finishFrame() {
 				mCoreThreadPauseFromThread(&m_threadContext);
 			}
 		}
+		++m_frameCounter;
 	}
 	updateKeys();
 

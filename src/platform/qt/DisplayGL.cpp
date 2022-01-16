@@ -95,6 +95,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	lockIntegerScaling(isIntegerScalingLocked());
 	interframeBlending(hasInterframeBlending());
 	showOSDMessages(isShowOSD());
+	showFrameCounter(isShowFrameCounter());
 	filter(isFiltered());
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
@@ -216,6 +217,11 @@ void DisplayGL::interframeBlending(bool enable) {
 void DisplayGL::showOSDMessages(bool enable) {
 	Display::showOSDMessages(enable);
 	QMetaObject::invokeMethod(m_painter.get(), "showOSD", Q_ARG(bool, enable));
+}
+
+void DisplayGL::showFrameCounter(bool enable) {
+	Display::showFrameCounter(enable);
+	QMetaObject::invokeMethod(m_painter.get(), "showFrameCounter", Q_ARG(bool, enable));
 }
 
 void DisplayGL::filter(bool filter) {
@@ -427,6 +433,10 @@ void PainterGL::interframeBlending(bool enable) {
 
 void PainterGL::showOSD(bool enable) {
 	m_showOSD = enable;
+}
+
+void PainterGL::showFrameCounter(bool enable) {
+	m_showFrameCounter = enable;
 }
 
 void PainterGL::filter(bool filter) {

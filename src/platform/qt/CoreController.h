@@ -125,6 +125,7 @@ public:
 	bool videoSync() const { return m_videoSync; }
 
 	void addFrameAction(std::function<void ()> callback);
+	uint64_t frameCounter() const { return m_frameCounter; }
 
 public slots:
 	void start();
@@ -244,6 +245,7 @@ private:
 	std::unique_ptr<mCacheSet> m_cacheSet;
 	std::unique_ptr<Override> m_override;
 
+	uint64_t m_frameCounter;
 	QList<std::function<void()>> m_resetActions;
 	QList<std::function<void()>> m_frameActions;
 	QMutex m_actionMutex{QMutex::Recursive};

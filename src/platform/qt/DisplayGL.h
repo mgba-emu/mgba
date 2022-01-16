@@ -66,6 +66,7 @@ public slots:
 	void lockIntegerScaling(bool lock) override;
 	void interframeBlending(bool enable) override;
 	void showOSDMessages(bool enable) override;
+	void showFrameCounter(bool enable) override;
 	void filter(bool filter) override;
 	void framePosted() override;
 	void setShaders(struct VDir*) override;
@@ -122,6 +123,7 @@ public slots:
 	void lockIntegerScaling(bool lock);
 	void interframeBlending(bool enable);
 	void showOSD(bool enable);
+	void showFrameCounter(bool enable);
 	void filter(bool filter);
 	void resizeContext();
 
@@ -155,6 +157,7 @@ private:
 	CoreController::Interrupter m_interrupter;
 	bool m_supportsShaders;
 	bool m_showOSD;
+	bool m_showFrameCounter;
 	VideoShader m_shader{};
 	VideoBackend* m_backend = nullptr;
 	QSize m_size;

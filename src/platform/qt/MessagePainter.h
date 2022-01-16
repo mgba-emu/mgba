@@ -27,16 +27,26 @@ public slots:
 	void showMessage(const QString& message);
 	void clearMessage();
 
+	void showFrameCounter(uint64_t);
+	void clearFrameCounter();
+
 private:
 	void redraw();
 
 	QMutex m_mutex;
 	QStaticText m_message;
 	qreal m_scaleFactor = 1;
+	uint64_t m_frameCounter;
+	bool m_drawFrameCounter = false;
+
+	QPoint m_local;
 	QPixmap m_pixmap;
 	QPixmap m_pixmapBuffer;
+
+	QPointF m_framePoint = QPointF(0, 0);
+	QFont m_frameFont;
+
 	QTimer m_messageTimer{this};
-	QPoint m_local;
 	QTransform m_world;
 	QFont m_messageFont;
 };

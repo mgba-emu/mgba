@@ -33,6 +33,7 @@ Misc:
  - Qt: Only set default controller bindings if loading fails (fixes mgba.io/i/799)
  - Qt: Save converter now supports importing GameShark Advance saves
  - Qt: Save positions of multiplayer windows (closes mgba.io/i/2128)
+ - Qt: Add optional frame counter to OSD (closes mgba.io/i/1728)
  - Windows: Attach to console if present
 
 0.9.3: (2021-12-17)

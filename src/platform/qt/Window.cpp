@@ -835,7 +835,6 @@ void Window::gameStarted() {
 	m_config->updateOption("lockAspectRatio");
 	m_config->updateOption("interframeBlending");
 	m_config->updateOption("resampleVideo");
-	m_config->updateOption("showOSD");
 	if (m_savedScale > 0) {
 		resizeFrame(size * m_savedScale);
 	}
@@ -1706,6 +1705,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 		}
 	}, this);
 
+	ConfigOption* showFrameCounter = m_config->addOption("showFrameCounter");
+	showFrameCounter->connect([this](const QVariant& value) {
+		if (m_display) {
+			m_display->showFrameCounter(value.toBool());
+		}
+	}, this);
+
 	ConfigOption* videoScale = m_config->addOption("videoScale");
 	videoScale->connect([this](const QVariant& value) {
 		if (m_display) {
@@ -2004,6 +2010,8 @@ void Window::setController(CoreController* controller, const QString& fname) {
 
 	attachDisplay();
 	m_controller->loadConfig(m_config);
+	m_config->updateOption("showOSD");
+	m_config->updateOption("showFrameCounter");
 	m_controller->start();
 
 	if (!m_pendingState.isEmpty()) {

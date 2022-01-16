@@ -18,6 +18,8 @@ MessagePainter::MessagePainter(QObject* parent)
 {
 	m_messageFont = GBAApp::app()->monospaceFont();
 	m_messageFont.setPixelSize(13);
+	m_frameFont = GBAApp::app()->monospaceFont();
+	m_frameFont.setPixelSize(10);
 	connect(&m_messageTimer, &QTimer::timeout, this, &MessagePainter::clearMessage);
 	m_messageTimer.setSingleShot(true);
 	m_messageTimer.setInterval(5000);
@@ -33,6 +35,9 @@ void MessagePainter::resize(const QSize& size, qreal scaleFactor) {
 	m_world.reset();
 	m_world.scale(area / 220., area / 220.);
 	m_local = QPoint(area / 100., drawH - m_messageFont.pixelSize() * m_world.m22() * 1.3);
+
+	QFontMetrics metrics(m_frameFont);
+	m_framePoint = QPoint(drawW / m_world.m11() - metrics.height() * 0.1, metrics.height() * 0.75);
 
 	m_mutex.lock();
 	redraw();
@@ -72,6 +77,24 @@ void MessagePainter::paint(QPainter* painter) {
 	if (!m_message.text().isEmpty()) {
 		painter->drawPixmap(m_local, m_pixmap);
 	}
+	if (m_drawFrameCounter) {
+		QString frame(tr("Frame %1").arg(m_frameCounter));
+		QFontMetrics metrics(m_frameFont);
+		painter->setWorldTransform(m_world);
+		painter->setRenderHint(QPainter::Antialiasing);
+		painter->setFont(m_frameFont);
+		painter->setPen(Qt::black);
+		painter->translate(-metrics.width(frame), 0);
+		const static int ITERATIONS = 11;
+		for (int i = 0; i < ITERATIONS; ++i) {
+			painter->save();
+			painter->translate(cos(i * 2.0 * M_PI / ITERATIONS) * 0.8, sin(i * 2.0 * M_PI / ITERATIONS) * 0.8);
+			painter->drawText(m_framePoint, frame);
+			painter->restore();
+		}
+		painter->setPen(Qt::white);
+		painter->drawText(m_framePoint, frame);
+	}
 }
 
 void MessagePainter::showMessage(const QString& message) {
@@ -89,4 +112,17 @@ void MessagePainter::clearMessage() {
 	redraw();
 	m_mutex.unlock();
 	m_messageTimer.stop();
+}
+
+void MessagePainter::showFrameCounter(uint64_t frameCounter) {
+	m_mutex.lock();
+	m_frameCounter = frameCounter;
+	m_drawFrameCounter = true;
+	m_mutex.unlock();
+}
+
+void MessagePainter::clearFrameCounter() {
+	m_mutex.lock();
+	m_drawFrameCounter = false;
+	m_mutex.unlock();
 }
