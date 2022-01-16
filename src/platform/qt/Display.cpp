@@ -114,12 +114,15 @@ void Display::configure(ConfigController* config) {
 }
 
 void Display::resizeEvent(QResizeEvent*) {
-	m_messagePainter.resize(size(), m_lockAspectRatio, devicePixelRatio());
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+	m_messagePainter.resize(size(), devicePixelRatioF());
+#else
+	m_messagePainter.resize(size(), devicePixelRatio());
+#endif
 }
 
 void Display::lockAspectRatio(bool lock) {
 	m_lockAspectRatio = lock;
-	m_messagePainter.resize(size(), m_lockAspectRatio, devicePixelRatio());
 }
 
 void Display::lockIntegerScaling(bool lock) {

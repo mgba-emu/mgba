@@ -25,40 +25,32 @@ MessagePainter::MessagePainter(QObject* parent)
 	clearMessage();
 }
 
-void MessagePainter::resize(const QSize& size, bool lockAspectRatio, qreal scaleFactor) {
-	int w = size.width();
-	int h = size.height();
-	int drawW = w;
-	int drawH = h;
-	if (lockAspectRatio) {
-		if (w * 2 > h * 3) {
-			drawW = h * 3 / 2;
-		} else if (w * 2 < h * 3) {
-			drawH = w * 2 / 3;
-		}
-	}
-	m_world.reset();
-	m_world.scale(qreal(drawW) / GBA_VIDEO_HORIZONTAL_PIXELS, qreal(drawH) / GBA_VIDEO_VERTICAL_PIXELS);
+void MessagePainter::resize(const QSize& size, qreal scaleFactor) {
+	double drawW = size.width();
+	double drawH = size.height();
+	double area = pow(drawW * drawW * drawW * drawH * drawH, 0.2);
 	m_scaleFactor = scaleFactor;
-	m_local = QPoint(1, GBA_VIDEO_VERTICAL_PIXELS - m_messageFont.pixelSize() - 1);
-	m_local = m_world.map(m_local);
-	m_local += QPoint((w - drawW) / 2, (h - drawH) / 2);
-	m_pixmapBuffer = QPixmap(drawW * m_scaleFactor,
-		                     (m_messageFont.pixelSize() + 2) * m_world.m22() * m_scaleFactor);
-	m_pixmapBuffer.setDevicePixelRatio(m_scaleFactor);
+	m_world.reset();
+	m_world.scale(area / 220., area / 220.);
+	m_local = QPoint(area / 100., drawH - m_messageFont.pixelSize() * m_world.m22() * 1.3);
+
 	m_mutex.lock();
-	m_message.prepare(m_world, m_messageFont);
 	redraw();
 	m_mutex.unlock();
 }
 
 void MessagePainter::redraw() {
-	m_pixmapBuffer.fill(Qt::transparent);
 	if (m_message.text().isEmpty()) {
+		m_pixmapBuffer.fill(Qt::transparent);
 		m_pixmap = m_pixmapBuffer;
-		m_pixmap.setDevicePixelRatio(m_scaleFactor);
 		return;
 	}
+	m_message.prepare(m_world, m_messageFont);
+	QSizeF sizef = m_message.size() * m_scaleFactor;
+	m_pixmapBuffer = QPixmap(sizef.width() * m_world.m11(), sizef.height() * m_world.m22());
+	m_pixmapBuffer.setDevicePixelRatio(m_scaleFactor);
+	m_pixmapBuffer.fill(Qt::transparent);
+
 	QPainter painter(&m_pixmapBuffer);
 	painter.setWorldTransform(m_world);
 	painter.setRenderHint(QPainter::Antialiasing);
@@ -74,7 +66,6 @@ void MessagePainter::redraw() {
 	painter.setPen(Qt::white);
 	painter.drawStaticText(0, 0, m_message);
 	m_pixmap = m_pixmapBuffer;
-	m_pixmap.setDevicePixelRatio(m_scaleFactor);
 }
 
 void MessagePainter::paint(QPainter* painter) {
@@ -82,7 +73,6 @@ void MessagePainter::paint(QPainter* painter) {
 		painter->drawPixmap(m_local, m_pixmap);
 	}
 }
-
 
 void MessagePainter::showMessage(const QString& message) {
 	m_mutex.lock();

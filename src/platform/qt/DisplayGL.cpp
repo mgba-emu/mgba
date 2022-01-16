@@ -98,10 +98,11 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	filter(isFiltered());
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
-	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatioF());
+	messagePainter()->resize(size(), devicePixelRatioF());
 #else
-	messagePainter()->resize(size(), isAspectRatioLocked(), devicePixelRatio());
+	messagePainter()->resize(size(), devicePixelRatio());
 #endif
+
 	CoreController::Interrupter interrupter(controller);
 	QMetaObject::invokeMethod(m_painter.get(), "start");
 	setUpdatesEnabled(false);
@@ -401,8 +402,10 @@ void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
 }
 
 void PainterGL::resize(const QSize& size) {
+	qreal r = m_surface->devicePixelRatio();
 	m_size = size;
-	m_window->setSize(m_size);
+	m_window->setSize(m_size * r);
+	m_window->setDevicePixelRatio(r);
 	if (m_started && !m_active) {
 		forceDraw();
 	}
