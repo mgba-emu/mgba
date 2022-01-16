@@ -22,7 +22,7 @@
 	"  -S SWI           Run until specified SWI call before exiting\n" \
 	"  -R REGISTER      General purpose register to return as exit code\n" \
 
-struct romTestOpts {
+struct RomTestOpts {
 	int exitSwiImmediate;
 	unsigned int returnCodeRegister;
 };
@@ -51,7 +51,7 @@ void (*_armSwi32)(struct ARMCore* cpu, int immediate);
 int main(int argc, char * argv[]) {
 	signal(SIGINT, _romTestShutdown);
 
-	struct romTestOpts romTestOpts = { 3, 0 };
+	struct RomTestOpts romTestOpts = { 3, 0 };
 	struct mSubParser subparser = {
 		.usage = ROM_TEST_USAGE,
 		.parse = _parseRomTestOpts,
@@ -182,7 +182,7 @@ static void _romTestSwi32(struct ARMCore* cpu, int immediate) {
 #endif
 
 static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char* arg) {
-	struct romTestOpts* opts = parser->opts;
+	struct RomTestOpts* opts = parser->opts;
 	errno = 0;
 	switch (option) {
 	case 'S':
@@ -194,9 +194,10 @@ static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char*
 	}
 }
 
-static bool _parseSwi(const char* regStr, int* oSwi) {
-	long swi = strtol(regStr, NULL, 0);
-	if (errno || swi > UINT8_MAX) {
+static bool _parseSwi(const char* swiStr, int* oSwi) {
+	char * parseEnd;
+	long swi = strtol(swiStr, &parseEnd, 0);
+	if (errno || swi > UINT8_MAX || *parseEnd) {
 		return false;
 	}
 	*oSwi = swi;
@@ -208,8 +209,9 @@ static bool _parseNamedRegister(const char* regStr, unsigned int* oRegister) {
 		++regStr;
 	}
 
-	unsigned long regId = strtoul(regStr, NULL, 10);
-	if (errno || regId > 15) {
+	char * parseEnd;
+	unsigned long regId = strtoul(regStr, &parseEnd, 10);
+	if (errno || regId > 15 || *parseEnd) {
 		return false;
 	}
 	*oRegister = regId;
