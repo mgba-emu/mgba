@@ -140,7 +140,7 @@ Game Boy Advance è un marchio registrato di Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
-        <translation>Chip ID</translation>
+        <translation>ID chip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
