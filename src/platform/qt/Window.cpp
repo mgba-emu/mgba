@@ -1712,6 +1712,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 		}
 	}, this);
 
+	ConfigOption* showResetInfo = m_config->addOption("showResetInfo");
+	showResetInfo->connect([this](const QVariant& value) {
+		if (m_controller) {
+			m_controller->showResetInfo(value.toBool());
+		}
+	}, this);
+
 	ConfigOption* videoScale = m_config->addOption("videoScale");
 	videoScale->connect([this](const QVariant& value) {
 		if (m_display) {
@@ -2012,6 +2019,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	m_controller->loadConfig(m_config);
 	m_config->updateOption("showOSD");
 	m_config->updateOption("showFrameCounter");
+	m_config->updateOption("showResetInfo");
 	m_controller->start();
 
 	if (!m_pendingState.isEmpty()) {

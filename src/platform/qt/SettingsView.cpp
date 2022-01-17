@@ -451,6 +451,7 @@ void SettingsView::updateConfig() {
 	saveSetting("interframeBlending", m_ui.interframeBlending);
 	saveSetting("showOSD", m_ui.showOSD);
 	saveSetting("showFrameCounter", m_ui.showFrameCounter);
+	saveSetting("showResetInfo", m_ui.showResetInfo);
 	saveSetting("volume", m_ui.volume);
 	saveSetting("mute", m_ui.mute);
 	saveSetting("fastForwardVolume", m_ui.volumeFf);
@@ -670,6 +671,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("interframeBlending", m_ui.interframeBlending);
 	loadSetting("showOSD", m_ui.showOSD, true);
 	loadSetting("showFrameCounter", m_ui.showFrameCounter);
+	loadSetting("showResetInfo", m_ui.showResetInfo);
 	loadSetting("volume", m_ui.volume, 0x100);
 	loadSetting("mute", m_ui.mute, false);
 	loadSetting("fastForwardVolume", m_ui.volumeFf, m_ui.volume->value());

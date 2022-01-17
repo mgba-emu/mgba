@@ -134,6 +134,7 @@ public slots:
 	void setPaused(bool paused);
 	void frameAdvance();
 	void setSync(bool enable);
+	void showResetInfo(bool enable);
 
 	void setRewinding(bool);
 	void rewind(int count = 0);
@@ -237,6 +238,7 @@ private:
 	uint32_t m_crc32;
 	QString m_internalTitle;
 	QString m_dbTitle;
+	bool m_showResetInfo = false;
 
 	QByteArray m_activeBuffer;
 	QByteArray m_completeBuffer;
