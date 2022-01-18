@@ -103,8 +103,6 @@ int main(int argc, char * argv[]) {
 			((struct GBA*) core->board)->cpu->irqh.swi32 = _romTestSwi32;
 		}
 	}
-#else
-#error Unsupported core
 #endif
 
 	bool cleanExit = true;
