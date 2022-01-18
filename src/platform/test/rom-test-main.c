@@ -36,7 +36,7 @@ static bool _dispatchExiting = false;
 static int _exitCode = 0;
 
 #ifdef M_CORE_GBA
-static void _romTestSwi3Callback(struct mCore* core);
+static void _romTestSwi3Callback(void* context);
 
 static void _romTestSwi16(struct ARMCore* cpu, int immediate);
 static void _romTestSwi32(struct ARMCore* cpu, int immediate);
@@ -157,7 +157,8 @@ static void _romTestShutdown(int signal) {
 }
 
 #ifdef M_CORE_GBA
-static void _romTestSwi3Callback(struct mCore* core) {
+static void _romTestSwi3Callback(void* context) {
+	struct mCore* core = context;
 	_exitCode = ((struct GBA*) core->board)->cpu->regs.gprs[_returnCodeRegister];
 	_dispatchExiting = true;
 }
