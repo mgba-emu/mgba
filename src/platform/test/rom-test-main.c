@@ -93,7 +93,7 @@ int main(int argc, char * argv[]) {
 			// Hook into SWI 3 (shutdown)
 			struct mCoreCallbacks callbacks = {0};
 			callbacks.context = core;
-			callbacks.shutdown = (void(*)(void*)) _romTestSwi3Callback;
+			callbacks.shutdown = _romTestSwi3Callback;
 			core->addCoreCallbacks(core, &callbacks);
 		} else {
 			// Custom SWI hooks
@@ -103,6 +103,8 @@ int main(int argc, char * argv[]) {
 			((struct GBA*) core->board)->cpu->irqh.swi32 = _romTestSwi32;
 		}
 	}
+#else
+#error Unsupported core
 #endif
 
 	bool cleanExit = true;
@@ -195,7 +197,7 @@ static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char*
 }
 
 static bool _parseSwi(const char* swiStr, int* oSwi) {
-	char * parseEnd;
+	char* parseEnd;
 	long swi = strtol(swiStr, &parseEnd, 0);
 	if (errno || swi > UINT8_MAX || *parseEnd) {
 		return false;
@@ -209,7 +211,7 @@ static bool _parseNamedRegister(const char* regStr, unsigned int* oRegister) {
 		++regStr;
 	}
 
-	char * parseEnd;
+	char* parseEnd;
 	unsigned long regId = strtoul(regStr, &parseEnd, 10);
 	if (errno || regId > 15 || *parseEnd) {
 		return false;
