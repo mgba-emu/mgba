@@ -67,8 +67,14 @@ static const GLchar* const _gles3Header =
 	"precision highp isampler2D;\n";
 
 static const GLchar* const _gl3Header =
-	"#version 150 core\n"
+	"#version 140 core\n"
 	"#define OUT(n)\n"
+	PALETTE_ENTRY
+	"precision highp float;\n";
+
+static const GLchar* const _gl33Header =
+	"#version 330 core\n"
+	"#define OUT(n) layout(location = n)\n"
 	PALETTE_ENTRY
 	"precision highp float;\n";
 
@@ -698,13 +704,11 @@ static void _compileShader(struct GBAVideoGLRenderer* glRenderer, struct GBAVide
 		mLOG(GBA_VIDEO, ERROR, "Fragment shader compilation failure: %s", log);
 	}
 	size_t i;
-#ifndef BUILD_GLES3
-	for (i = 0; outFrags[i]; ++i) {
-		glBindFragDataLocation(program, i, outFrags[i]);
+	if (glRenderer->useBindFragData) {
+		for (i = 0; outFrags[i]; ++i) {
+			glBindFragDataLocation(program, i, outFrags[i]);
+		}
 	}
-#else
-	UNUSED(outFrags);
-#endif
 	glLinkProgram(program);
 	glGetProgramInfoLog(program, 2048, 0, log);
 	if (log[0]) {
@@ -823,9 +827,15 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 
 	char log[2048];
 	const GLchar* shaderBuffer[4];
+	glRenderer->useBindFragData = false;
 	const GLubyte* version = glGetString(GL_VERSION);
-	if (strncmp((const char*) version, "OpenGL ES ", strlen("OpenGL ES "))) {
-		shaderBuffer[0] = _gl3Header;
+	if (strncmp((const char*) version, "OpenGL ES ", strlen("OpenGL ES ")) != 0) {
+		if (strncmp((const char*) version, "3.3 ", strlen("3.3 ")) == 0 || strncmp((const char*) version, "4.", strlen("4.")) == 0) {
+			shaderBuffer[0] = _gl33Header;
+		} else {
+			shaderBuffer[0] = _gl3Header;
+			glRenderer->useBindFragData = true;
+		}
 	} else {
 		shaderBuffer[0] = _gles3Header;
 	}
