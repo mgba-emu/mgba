@@ -3,6 +3,7 @@ Emulation fixes:
  - GBA I/O: Disable open bus behavior on invalid register 06A
 Other fixes:
  - FFmpeg: Fix crash when encoding audio with some containers
+ - GB, GBA: Save writeback-pending masked saves on unload (fixes mgba.io/i/2396)
 
 0.9.3: (2021-12-17)
 Emulation fixes:
