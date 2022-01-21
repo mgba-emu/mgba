@@ -35,7 +35,7 @@ Display* Display::create(QWidget* parent) {
 		if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
 			format.setVersion(2, 0);
 		} else {
-			format.setVersion(3, 2);
+			format.setVersion(3, 3);
 		}
 		format.setProfile(QSurfaceFormat::CoreProfile);
 		if (DisplayGL::supportsFormat(format)) {

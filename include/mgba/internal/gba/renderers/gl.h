@@ -166,8 +166,6 @@ struct GBAVideoGLRenderer {
 	struct GBAVideoGLShader windowShader;
 	struct GBAVideoGLShader finalizeShader;
 
-	bool useBindFragData;
-
 	GBARegisterDISPCNT dispcnt;
 
 	unsigned target1Obj;
