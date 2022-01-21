@@ -102,7 +102,7 @@ struct GB {
 	struct VFile* sramRealVf;
 	uint32_t sramSize;
 	int sramDirty;
-	int32_t sramDirtAge;
+	uint32_t sramDirtAge;
 	bool sramMaskWriteback;
 
 	int sgbBit;

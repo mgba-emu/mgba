@@ -6,6 +6,7 @@
 #include <mgba/internal/gb/memory.h>
 
 #include <mgba/core/interface.h>
+#include <mgba/internal/defines.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/mbc.h>
@@ -356,11 +357,13 @@ void GBStore8(struct SM83Core* cpu, uint16_t address, int8_t value) {
 		if (memory->rtcAccess) {
 			memory->rtcRegs[memory->activeRtcReg] = value;
 		} else if (memory->sramAccess && memory->sram && memory->directSramAccess) {
-			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
+			if (memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] != value) {
+				memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)] = value;
+				gb->sramDirty |= mSAVEDATA_DIRT_NEW;
+			}
 		} else {
 			memory->mbcWrite(gb, address, value);
 		}
-		gb->sramDirty |= GB_SRAM_DIRT_NEW;
 		return;
 	case GB_REGION_WORKING_RAM_BANK0:
 	case GB_REGION_WORKING_RAM_BANK0 + 2:
@@ -648,7 +651,7 @@ void GBPatch8(struct SM83Core* cpu, uint16_t address, int8_t value, int8_t* old,
 		} else {
 			memory->mbcWrite(gb, address, value);
 		}
-		gb->sramDirty |= GB_SRAM_DIRT_NEW;
+		gb->sramDirty |= mSAVEDATA_DIRT_NEW;
 		return;
 	case GB_REGION_WORKING_RAM_BANK0:
 	case GB_REGION_WORKING_RAM_BANK0 + 2:

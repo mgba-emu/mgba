@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gb/gb.h>
 
+#include <mgba/internal/defines.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/mbc.h>
 #include <mgba/internal/sm83/sm83.h>
@@ -16,8 +17,6 @@
 #include <mgba-util/math.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
-
-#define CLEANUP_THRESHOLD 15
 
 const uint32_t CGB_SM83_FREQUENCY = 0x800000;
 const uint32_t SGB_SM83_FREQUENCY = 0x418B1E;
@@ -233,20 +232,13 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 	if (!gb->sramVf) {
 		return;
 	}
-	if (gb->sramDirty & GB_SRAM_DIRT_NEW) {
-		gb->sramDirtAge = frameCount;
-		gb->sramDirty &= ~GB_SRAM_DIRT_NEW;
-		if (!(gb->sramDirty & GB_SRAM_DIRT_SEEN)) {
-			gb->sramDirty |= GB_SRAM_DIRT_SEEN;
-		}
-	} else if ((gb->sramDirty & GB_SRAM_DIRT_SEEN) && frameCount - gb->sramDirtAge > CLEANUP_THRESHOLD) {
+	if (mSavedataClean(&gb->sramDirty, &gb->sramDirtAge, frameCount)) {
 		if (gb->sramMaskWriteback) {
 			GBSavedataUnmask(gb);
 		}
 		if (gb->memory.mbcType == GB_MBC3_RTC) {
 			GBMBCRTCWrite(gb);
 		}
-		gb->sramDirty = 0;
 		if (gb->memory.sram && gb->sramVf->sync(gb->sramVf, gb->memory.sram, gb->sramSize)) {
 			mLOG(GB_MEM, INFO, "Savedata synced");
 		} else {

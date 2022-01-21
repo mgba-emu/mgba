@@ -7,6 +7,7 @@
 
 #include <mgba/internal/arm/decoder.h>
 #include <mgba/internal/arm/macros.h>
+#include <mgba/internal/defines.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/dma.h>
 #include <mgba/internal/gba/io.h>
@@ -1075,12 +1076,12 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 			} else {
 				memory->savedata.data[address & (SIZE_CART_SRAM - 1)] = value;
 			}
-			memory->savedata.dirty |= SAVEDATA_DIRT_NEW;
+			memory->savedata.dirty |= mSAVEDATA_DIRT_NEW;
 		} else if (memory->hw.devices & HW_TILT) {
 			GBAHardwareTiltWrite(&memory->hw, address & OFFSET_MASK, value);
 		} else if (memory->savedata.type == SAVEDATA_SRAM512) {
 			memory->savedata.data[address & (SIZE_CART_SRAM512 - 1)] = value;
-			memory->savedata.dirty |= SAVEDATA_DIRT_NEW;
+			memory->savedata.dirty |= mSAVEDATA_DIRT_NEW;
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);
 		}
