@@ -785,7 +785,7 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, encoder->iheight, encoder->videoFrame->data, encoder->videoFrame->linesize);
 
 	if (encoder->graph) {
-		if (av_buffersrc_add_frame(encoder->source, encoder->videoFrame) < 0) {
+		if (av_buffersrc_write_frame(encoder->source, encoder->videoFrame) < 0) {
 			return;
 		}
 		while (true) {

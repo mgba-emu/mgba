@@ -25,6 +25,7 @@ Emulation fixes:
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - FFmpeg: Fix crash when encoding audio with some containers
+ - FFmpeg: Fix GIF recording (fixes mgba.io/i/2393)
  - GB: Fix temporary saves
  - GB, GBA: Save writeback-pending masked saves on unload (fixes mgba.io/i/2396)
 Misc:
