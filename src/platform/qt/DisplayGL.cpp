@@ -32,6 +32,12 @@
 #endif
 #endif
 
+#ifdef _WIN32
+#define OVERHEAD_NSEC 1000000
+#else
+#define OVERHEAD_NSEC 300000
+#endif
+
 using namespace QGBA;
 
 QHash<QSurfaceFormat, bool> DisplayGL::s_supports;
@@ -612,13 +618,13 @@ void PainterGL::draw() {
 		m_delayTimer.start();
 	} else {
 		if (sync->audioWait || sync->videoFrameWait) {
-			while (m_delayTimer.nsecsElapsed() + 300000 < 1000000000 / sync->fpsTarget) {
+			while (m_delayTimer.nsecsElapsed() + OVERHEAD_NSEC < 1000000000 / sync->fpsTarget) {
 				QThread::usleep(500);
 			}
 			forceRedraw = sync->videoFrameWait;
 		}
 		if (!forceRedraw) {
-			forceRedraw = m_delayTimer.nsecsElapsed() + 300000 >= 1000000000 / m_window->screen()->refreshRate();
+			forceRedraw = m_delayTimer.nsecsElapsed() + OVERHEAD_NSEC >= 1000000000 / m_window->screen()->refreshRate();
 		}
 	}
 	mCoreSyncWaitFrameEnd(sync);
