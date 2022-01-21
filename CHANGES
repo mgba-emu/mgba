@@ -25,6 +25,7 @@ Emulation fixes:
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - FFmpeg: Fix crash when encoding audio with some containers
+ - GB: Fix temporary saves
 Misc:
  - Core: Suspend runloop when a core crashes
  - GB Video: Add default SGB border

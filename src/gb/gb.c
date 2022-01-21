@@ -202,6 +202,14 @@ void GBResizeSram(struct GB* gb, size_t size) {
 			if (gb->memory.sram) {
 				vf->unmap(vf, gb->memory.sram, gb->sramSize);
 			}
+			if (vf->size(vf) < gb->sramSize) {
+				void* sram = vf->map(vf, vf->size(vf), MAP_READ);
+				struct VFile* newVf = VFileMemChunk(sram, vf->size(vf));
+				vf->unmap(vf, sram,vf->size(vf));
+				vf = newVf;
+				gb->sramVf = newVf;
+				vf->truncate(vf, size);
+			}
 			gb->memory.sram = vf->map(vf, size, MAP_READ);
 		}
 		if (gb->memory.sram == (void*) -1) {
@@ -239,10 +247,12 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 		if (gb->memory.mbcType == GB_MBC3_RTC) {
 			GBMBCRTCWrite(gb);
 		}
-		if (gb->memory.sram && gb->sramVf->sync(gb->sramVf, gb->memory.sram, gb->sramSize)) {
-			mLOG(GB_MEM, INFO, "Savedata synced");
-		} else {
-			mLOG(GB_MEM, INFO, "Savedata failed to sync!");
+		if (gb->sramVf == gb->sramRealVf) {
+			if (gb->memory.sram && gb->sramVf->sync(gb->sramVf, gb->memory.sram, gb->sramSize)) {
+				mLOG(GB_MEM, INFO, "Savedata synced");
+			} else {
+				mLOG(GB_MEM, INFO, "Savedata failed to sync!");
+			}
 		}
 
 		size_t c;
@@ -263,7 +273,7 @@ void GBSavedataMask(struct GB* gb, struct VFile* vf, bool writeback) {
 	}
 	gb->sramVf = vf;
 	gb->sramMaskWriteback = writeback;
-	gb->memory.sram = vf->map(vf, gb->sramSize, MAP_READ);
+	GBResizeSram(gb, gb->sramSize);
 	GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
 }
 
