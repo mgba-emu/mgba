@@ -1225,11 +1225,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addSeparator("file");
 #endif
 
-	m_actions.addAction(tr("About..."), "about", openTView<AboutScreen>(), "file");
-
-#ifndef Q_OS_MAC
-	m_actions.addAction(tr("E&xit"), "quit", static_cast<QWidget*>(this), &QWidget::close, "file", QKeySequence::Quit);
-#endif
+	m_actions.addAction(tr("About..."), "about", openTView<AboutScreen>(), "file")->setRole(Action::Role::ABOUT);
+	m_actions.addAction(tr("E&xit"), "quit", static_cast<QWidget*>(this), &QWidget::close, "file", QKeySequence::Quit)->setRole(Action::Role::SETTINGS);
 
 	m_actions.addMenu(tr("&Emulation"), "emu");
 	addGameAction(tr("&Reset"), "reset", &CoreController::reset, "emu", QKeySequence("Ctrl+R"));
@@ -1491,7 +1488,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("&Cheats..."), "cheatsWindow", openControllerTView<CheatsView>(), "tools");
 
 	m_actions.addSeparator("tools");
-	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools");
+	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools")->setRole(Action::Role::SETTINGS);
 
 #ifdef USE_DEBUGGERS
 	m_actions.addSeparator("tools");
