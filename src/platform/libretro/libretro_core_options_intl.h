@@ -1377,7 +1377,7 @@ struct retro_core_options_v2 options_ca = {
 #define OPTION_VAL_3_CHS NULL
 #define MGBA_SGB_BORDERS_LABEL_CHS NULL
 #define MGBA_SGB_BORDERS_INFO_0_CHS NULL
-#define MGBA_COLOR_CORRECTION_LABEL_CHS NULL
+#define MGBA_COLOR_CORRECTION_LABEL_CHS "色彩校正"
 #define MGBA_COLOR_CORRECTION_INFO_0_CHS NULL
 #define OPTION_VAL_AUTO_CHS "自动"
 #define MGBA_INTERFRAME_BLENDING_LABEL_CHS NULL
@@ -3989,7 +3989,7 @@ struct retro_core_options_v2 options_de = {
 #define MGBA_SGB_BORDERS_INFO_0_EL NULL
 #define MGBA_COLOR_CORRECTION_LABEL_EL "Διόρθωση Χρωμάτων"
 #define MGBA_COLOR_CORRECTION_INFO_0_EL NULL
-#define OPTION_VAL_AUTO_EL NULL
+#define OPTION_VAL_AUTO_EL "Αυτόματο"
 #define MGBA_INTERFRAME_BLENDING_LABEL_EL NULL
 #define MGBA_INTERFRAME_BLENDING_INFO_0_EL NULL
 #define OPTION_VAL_MIX_EL "Απλό"
@@ -8331,7 +8331,7 @@ struct retro_core_options_v2 options_id = {
 #define OPTION_VAL_GRAYSCALE_IT "Scala di grigi"
 #define MGBA_GB_COLORS_PRESET_LABEL_IT "Tavolozze del Game Boy predefinite per l'hardware (Riavvio richiesto)"
 #define MGBA_GB_COLORS_PRESET_INFO_0_IT "Usa le tavolozze per i giochi di Game Boy che hanno preset sul Game Boy Color o Super Game Boy."
-#define OPTION_VAL_0_IT NULL
+#define OPTION_VAL_0_IT "Predefinito Game Boy"
 #define OPTION_VAL_1_IT "Solo preimpostazioni di Game Boy Color"
 #define OPTION_VAL_2_IT "Solo preimpostazioni di Super Game Boy"
 #define OPTION_VAL_3_IT "Qualsiasi preset disponibile"
@@ -8754,7 +8754,7 @@ struct retro_core_options_v2 options_it = {
 #define MGBA_GB_MODEL_INFO_0_JA NULL
 #define OPTION_VAL_AUTODETECT_JA "自動検出"
 #define OPTION_VAL_GAME_BOY_JA NULL
-#define OPTION_VAL_SUPER_GAME_BOY_JA NULL
+#define OPTION_VAL_SUPER_GAME_BOY_JA "スーパーゲームボーイ"
 #define OPTION_VAL_GAME_BOY_COLOR_JA NULL
 #define OPTION_VAL_GAME_BOY_ADVANCE_JA NULL
 #define MGBA_USE_BIOS_LABEL_JA NULL
@@ -10484,7 +10484,7 @@ struct retro_core_options_v2 options_nl = {
 #define CATEGORY_VIDEO_LABEL_NO NULL
 #define CATEGORY_VIDEO_INFO_0_NO NULL
 #define CATEGORY_VIDEO_INFO_1_NO NULL
-#define CATEGORY_AUDIO_LABEL_NO NULL
+#define CATEGORY_AUDIO_LABEL_NO "Lyd"
 #define CATEGORY_AUDIO_INFO_0_NO NULL
 #define CATEGORY_INPUT_LABEL_NO NULL
 #define CATEGORY_INPUT_INFO_0_NO NULL
@@ -11808,7 +11808,7 @@ struct retro_core_options_v2 options_pl = {
 #define MGBA_SKIP_BIOS_INFO_0_PT_BR "Ao usar uma BIOS e um carregador de inicialização oficial, omitirá a animação do logotipo na inicialização. Esta configuração será ignorada caso 'Usar arquivo de BIOS se encontrado' estiver desativada."
 #define MGBA_GB_COLORS_LABEL_PT_BR "Paleta padrão do Game Boy"
 #define MGBA_GB_COLORS_INFO_0_PT_BR "Seleciona a paleta que será usada com jogos de Game Boy que não são compatíveis com Game Boy Color ou Super Game Boy ou ao forçar o modelo a Game Boy."
-#define OPTION_VAL_GRAYSCALE_PT_BR "Tons de cinza"
+#define OPTION_VAL_GRAYSCALE_PT_BR "Nível de cinza"
 #define MGBA_GB_COLORS_PRESET_LABEL_PT_BR "Paletas do hardware de Game Boy (requer reinício)"
 #define MGBA_GB_COLORS_PRESET_INFO_0_PT_BR "Usa as paletas específicas nos jogos de Game Boy para os quais o Game Boy Color ou Super Game Boy tem predefinições atribuídas a eles."
 #define OPTION_VAL_0_PT_BR "Predefinição padrão do Game Boy"
