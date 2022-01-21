@@ -318,7 +318,9 @@ void GBUnloadROM(struct GB* gb) {
 	gb->memory.mbcType = GB_MBC_AUTODETECT;
 	gb->isPristine = false;
 
-	gb->sramMaskWriteback = false;
+	if (!gb->sramDirty) {
+		gb->sramMaskWriteback = false;
+	}
 	GBSavedataUnmask(gb);
 	GBSramDeinit(gb);
 	if (gb->sramRealVf) {

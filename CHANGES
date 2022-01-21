@@ -26,6 +26,7 @@ Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - FFmpeg: Fix crash when encoding audio with some containers
  - GB: Fix temporary saves
+ - GB, GBA: Save writeback-pending masked saves on unload (fixes mgba.io/i/2396)
 Misc:
  - Core: Suspend runloop when a core crashes
  - GB Video: Add default SGB border
