@@ -22,6 +22,7 @@ Emulation fixes:
  - GBA I/O: Disable open bus behavior on invalid register 06A
  - GBA Memory: Fix misaligned 32-bit I/O loads (fixes mgba.io/i/2307)
  - GBA Video: Fix OpenGL rendering on M1 Macs
+ - GBA Video: Ignore horizontally off-screen sprite timing (fixes mgba.io/i/2391)
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - FFmpeg: Fix crash when encoding audio with some containers
