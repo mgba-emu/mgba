@@ -1197,12 +1197,25 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Add folder to library..."), "addDirToLibrary", this, &Window::addDirToLibrary, "file");
 #endif
 
+	m_actions.addMenu(tr("Save games"), "saves", "file");
 	addGameAction(tr("Load alternate save game..."), "loadAlternateSave", [this]() {
 		this->selectSave(false);
-	}, "file");
+	}, "saves");
 	addGameAction(tr("Load temporary save game..."), "loadTemporarySave", [this]() {
 		this->selectSave(true);
-	}, "file");
+	}, "saves");
+
+	m_actions.addSeparator("saves");
+
+	m_actions.addAction(tr("Convert save game..."), "convertSave", openControllerTView<SaveConverter>(), "saves");
+
+#ifdef M_CORE_GBA
+	Action* importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "saves");
+	m_platformActions.insert(mPLATFORM_GBA, importShark);
+
+	Action* exportShark = addGameAction(tr("Export GameShark Save..."), "exportShark", this, &Window::exportSharkport, "saves");
+	m_platformActions.insert(mPLATFORM_GBA, exportShark);
+#endif
 
 	m_actions.addAction(tr("Load &patch..."), "loadPatch", this, &Window::selectPatch, "file");
 
@@ -1281,17 +1294,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		}, "quickSave", QString("Shift+F%1").arg(i));
 		m_nonMpActions.append(quickSave);
 	}
-
-#ifdef M_CORE_GBA
-	m_actions.addSeparator("file");
-	m_actions.addAction(tr("Convert save game..."), "convertSave", openControllerTView<SaveConverter>(), "file");
-
-	Action* importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "file");
-	m_platformActions.insert(mPLATFORM_GBA, importShark);
-
-	Action* exportShark = addGameAction(tr("Export GameShark Save..."), "exportShark", this, &Window::exportSharkport, "file");
-	m_platformActions.insert(mPLATFORM_GBA, exportShark);
-#endif
 
 	m_actions.addSeparator("file");
 	m_multiWindow = m_actions.addAction(tr("New multiplayer window"), "multiWindow", [this]() {
