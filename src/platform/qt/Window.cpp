@@ -160,6 +160,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	m_shortcutController->setConfigController(m_config);
 	m_shortcutController->setActionMapper(&m_actions);
 	setupMenu(menuBar());
+	setupOptions();
 }
 
 Window::~Window() {
@@ -1376,20 +1377,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, "emu", QKeySequence("Ctrl+B"));
 	m_nonMpActions.append(frameRewind);
 
-	ConfigOption* videoSync = m_config->addOption("videoSync");
-	videoSync->addBoolean(tr("Sync to &video"), &m_actions, "emu");
-	videoSync->connect([this](const QVariant&) {
-		reloadConfig();
-	}, this);
-	m_config->updateOption("videoSync");
-
-	ConfigOption* audioSync = m_config->addOption("audioSync");
-	audioSync->addBoolean(tr("Sync to &audio"), &m_actions, "emu");
-	audioSync->connect([this](const QVariant&) {
-		reloadConfig();
-	}, this);
-	m_config->updateOption("audioSync");
-
 	m_actions.addSeparator("emu");
 
 	m_actions.addMenu(tr("Solar sensor"), "solar", "emu");
@@ -1622,6 +1609,85 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_controller->endVideoLog();
 	}, "tools");
 
+	m_actions.addHiddenAction(tr("Exit fullscreen"), "exitFullScreen", this, &Window::exitFullScreen, "frame", QKeySequence("Esc"));
+
+	m_actions.addHeldAction(tr("GameShark Button (held)"), "holdGSButton", [this](bool held) {
+		if (m_controller) {
+			mCheatPressButton(m_controller->cheatDevice(), held);
+		}
+	}, "tools", QKeySequence(Qt::Key_Apostrophe));
+
+	m_actions.addHiddenMenu(tr("Autofire"), "autofire");
+	m_actions.addHeldAction(tr("Autofire A"), "autofireA", [this](bool held) {
+		if (m_controller) {
+			m_controller->setAutofire(GBA_KEY_A, held);
+		}
+	}, "autofire");
+	m_actions.addHeldAction(tr("Autofire B"), "autofireB", [this](bool held) {
+		if (m_controller) {
+			m_controller->setAutofire(GBA_KEY_B, held);
+		}
+	}, "autofire");
+	m_actions.addHeldAction(tr("Autofire L"), "autofireL", [this](bool held) {
+		if (m_controller) {
+			m_controller->setAutofire(GBA_KEY_L, held);
+		}
+	}, "autofire");
+	m_actions.addHeldAction(tr("Autofire R"), "autofireR", [this](bool held) {
+		if (m_controller) {
+			m_controller->setAutofire(GBA_KEY_R, held);
+		}
+	}, "autofire");
+	m_actions.addHeldAction(tr("Autofire Start"), "autofireStart", [this](bool held) {
+		if (m_controller) {
+			m_controller->setAutofire(GBA_KEY_START, held);
+		}
+	}, "autofire");
+	m_actions.addHeldAction(tr("Autofire Select"), "autofireSelect", [this](bool held) {
+		if (m_controller) {
+			m_controller->setAutofire(GBA_KEY_SELECT, held);
+		}
+	}, "autofire");
+	m_actions.addHeldAction(tr("Autofire Up"), "autofireUp", [this](bool held) {
+		if (m_controller) {
+			m_controller->setAutofire(GBA_KEY_UP, held);
+		}
+	}, "autofire");
+	m_actions.addHeldAction(tr("Autofire Right"), "autofireRight", [this](bool held) {
+		if (m_controller) {
+			m_controller->setAutofire(GBA_KEY_RIGHT, held);
+		}
+	}, "autofire");
+	m_actions.addHeldAction(tr("Autofire Down"), "autofireDown", [this](bool held) {
+		if (m_controller) {
+			m_controller->setAutofire(GBA_KEY_DOWN, held);
+		}
+	}, "autofire");
+	m_actions.addHeldAction(tr("Autofire Left"), "autofireLeft", [this](bool held) {
+		if (m_controller) {
+			m_controller->setAutofire(GBA_KEY_LEFT, held);
+		}
+	}, "autofire");
+
+	for (Action* action : m_gameActions) {
+		action->setEnabled(false);
+	}
+
+	m_shortcutController->rebuildItems();
+	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
+}
+
+void Window::setupOptions() {
+	ConfigOption* videoSync = m_config->addOption("videoSync");
+	videoSync->connect([this](const QVariant&) {
+		reloadConfig();
+	}, this);
+
+	ConfigOption* audioSync = m_config->addOption("audioSync");
+	audioSync->connect([this](const QVariant&) {
+		reloadConfig();
+	}, this);
+
 	ConfigOption* skipBios = m_config->addOption("skipBios");
 	skipBios->connect([this](const QVariant&) {
 		reloadConfig();
@@ -1732,72 +1798,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		updateTitle();
 	}, this);
 
-	m_actions.addHiddenAction(tr("Exit fullscreen"), "exitFullScreen", this, &Window::exitFullScreen, "frame", QKeySequence("Esc"));
-
-	m_actions.addHeldAction(tr("GameShark Button (held)"), "holdGSButton", [this](bool held) {
-		if (m_controller) {
-			mCheatPressButton(m_controller->cheatDevice(), held);
-		}
-	}, "tools", QKeySequence(Qt::Key_Apostrophe));
-
-	m_actions.addHiddenMenu(tr("Autofire"), "autofire");
-	m_actions.addHeldAction(tr("Autofire A"), "autofireA", [this](bool held) {
-		if (m_controller) {
-			m_controller->setAutofire(GBA_KEY_A, held);
-		}
-	}, "autofire");
-	m_actions.addHeldAction(tr("Autofire B"), "autofireB", [this](bool held) {
-		if (m_controller) {
-			m_controller->setAutofire(GBA_KEY_B, held);
-		}
-	}, "autofire");
-	m_actions.addHeldAction(tr("Autofire L"), "autofireL", [this](bool held) {
-		if (m_controller) {
-			m_controller->setAutofire(GBA_KEY_L, held);
-		}
-	}, "autofire");
-	m_actions.addHeldAction(tr("Autofire R"), "autofireR", [this](bool held) {
-		if (m_controller) {
-			m_controller->setAutofire(GBA_KEY_R, held);
-		}
-	}, "autofire");
-	m_actions.addHeldAction(tr("Autofire Start"), "autofireStart", [this](bool held) {
-		if (m_controller) {
-			m_controller->setAutofire(GBA_KEY_START, held);
-		}
-	}, "autofire");
-	m_actions.addHeldAction(tr("Autofire Select"), "autofireSelect", [this](bool held) {
-		if (m_controller) {
-			m_controller->setAutofire(GBA_KEY_SELECT, held);
-		}
-	}, "autofire");
-	m_actions.addHeldAction(tr("Autofire Up"), "autofireUp", [this](bool held) {
-		if (m_controller) {
-			m_controller->setAutofire(GBA_KEY_UP, held);
-		}
-	}, "autofire");
-	m_actions.addHeldAction(tr("Autofire Right"), "autofireRight", [this](bool held) {
-		if (m_controller) {
-			m_controller->setAutofire(GBA_KEY_RIGHT, held);
-		}
-	}, "autofire");
-	m_actions.addHeldAction(tr("Autofire Down"), "autofireDown", [this](bool held) {
-		if (m_controller) {
-			m_controller->setAutofire(GBA_KEY_DOWN, held);
-		}
-	}, "autofire");
-	m_actions.addHeldAction(tr("Autofire Left"), "autofireLeft", [this](bool held) {
-		if (m_controller) {
-			m_controller->setAutofire(GBA_KEY_LEFT, held);
-		}
-	}, "autofire");
-
-	for (Action* action : m_gameActions) {
-		action->setEnabled(false);
-	}
-
-	m_shortcutController->rebuildItems();
-	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
 }
 
 void Window::attachWidget(QWidget* widget) {
