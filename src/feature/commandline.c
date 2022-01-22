@@ -165,6 +165,7 @@ void applyArguments(const struct mArguments* args, struct mSubParser* subparser,
 	}
 	if (args->bios) {
 		mCoreConfigSetOverrideValue(config, "bios", args->bios);
+		mCoreConfigSetOverrideIntValue(config, "useBios", true);
 	}
 	HashTableEnumerate(&args->configOverrides, _tableApply, config);
 	if (subparser) {
