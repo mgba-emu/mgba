@@ -17,6 +17,7 @@ Emulation fixes:
  - GB Video: Draw SGB border pieces that overlap GB graphics (fixes mgba.io/i/1339)
  - GBA: Improve timing when not booting from BIOS
  - GBA BIOS: Work around IRQ handling hiccup in Mario & Luigi (fixes mgba.io/i/1059)
+ - GBA BIOS: Initial HLE timing estimation of UnLz77 functions (fixes mgba.io/i/2141)
  - GBA DMA: Fix DMA source direction bits being cleared (fixes mgba.io/i/2410)
  - GBA I/O: Redo internal key input, enabling edge-based key IRQs
  - GBA I/O: Disable open bus behavior on invalid register 06A

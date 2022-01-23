@@ -137,8 +137,6 @@ GetBiosChecksum:
 BgAffineSet:
 ObjAffineSet:
 BitUnPack:
-Lz77UnCompWram:
-Lz77UnCompVram:
 HuffmanUnComp:
 RlUnCompWram:
 RlUnCompVram:
@@ -308,6 +306,8 @@ DivArm:
 Sqrt:
 ArcTan:
 ArcTan2:
+Lz77UnCompWram:
+Lz77UnCompVram:
 
 StallCall:
 subs r11, #4
