@@ -1,5 +1,6 @@
 0.9.4: (Future)
 Emulation fixes:
+ - GB Serialize: Fix loading MBC1 states that affect bank 0 (fixes mgba.io/i/2402)
  - GBA I/O: Disable open bus behavior on invalid register 06A
  - GBA Video: Ignore horizontally off-screen sprite timing (fixes mgba.io/i/2391)
 Other fixes:
