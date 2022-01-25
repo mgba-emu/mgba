@@ -298,7 +298,7 @@ else ifeq ($(platform), psp1)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = psp-gcc$(EXE_EXT)
    AR = psp-ar$(EXE_EXT)
-   PLATFORM_DEFINES := -DPSP -DCC_RESAMPLER
+   PLATFORM_DEFINES := -DPSP -DCC_RESAMPLER -DHAVE_STRTOF_L
    CFLAGS += -G0 -I$(shell psp-config --pspsdk-path)/include
    STATIC_LINKING = 1
    DEFINES += -std=c99
