@@ -911,10 +911,10 @@ struct retro_core_options_v2 options_ast = {
 
 #define CATEGORY_SYSTEM_LABEL_CA NULL
 #define CATEGORY_SYSTEM_INFO_0_CA NULL
-#define CATEGORY_VIDEO_LABEL_CA NULL
+#define CATEGORY_VIDEO_LABEL_CA "Vídeo"
 #define CATEGORY_VIDEO_INFO_0_CA NULL
 #define CATEGORY_VIDEO_INFO_1_CA NULL
-#define CATEGORY_AUDIO_LABEL_CA NULL
+#define CATEGORY_AUDIO_LABEL_CA "Àudio"
 #define CATEGORY_AUDIO_INFO_0_CA NULL
 #define CATEGORY_INPUT_LABEL_CA NULL
 #define CATEGORY_INPUT_INFO_0_CA NULL
@@ -4871,7 +4871,7 @@ struct retro_core_options_v2 options_eo = {
 #define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_ES "Activa un filtro de paso bajo para reducir la estridencia del audio generado."
 #define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_ES "Nivel del filtro de audio"
 #define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_ES "Nivel del filtro"
-#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_ES "Especifica el corte de frecuencias en el filtro de paso bajo de audio. Un valor elevado aumentará la fuerza percibida del filtro, ya que se atenuará un rango mayor del espectro de frecuencias altas."
+#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_ES "Especifica el corte de frecuencias en el filtro de paso bajo de audio. Un valor elevado aumentará la fuerza percibida del filtro, ya que se atenuará un rango mayor del espectro de frecuencias agudas."
 #define OPTION_VAL_5_ES "5 %"
 #define OPTION_VAL_10_ES "10 %"
 #define OPTION_VAL_15_ES "15 %"
@@ -5721,7 +5721,7 @@ struct retro_core_options_v2 options_fa = {
 #define OPTION_VAL_GRAYSCALE_FI "Harmaasävy"
 #define MGBA_GB_COLORS_PRESET_LABEL_FI "Game Boy laitteiston esiasetetut paletit (Uudelleenkäynnistys)"
 #define MGBA_GB_COLORS_PRESET_INFO_0_FI "Käytä Game Boy peleillä paletteja, joilla on esiasetukset Game Boy Color:illa tai Super Game Boy:lla."
-#define OPTION_VAL_0_FI NULL
+#define OPTION_VAL_0_FI "Oletus Game Boy esiasetus"
 #define OPTION_VAL_1_FI "Vain Game Boy Color esiasetukset"
 #define OPTION_VAL_2_FI "Vain Super Game Boy esiasetukset"
 #define OPTION_VAL_3_FI "Kaikki käytettävissä olevat esiasetukset"
@@ -16130,6 +16130,441 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
 struct retro_core_options_v2 options_uk = {
    option_cats_uk,
    option_defs_uk
+};
+
+/* RETRO_LANGUAGE_VAL */
+
+#define CATEGORY_SYSTEM_LABEL_VAL NULL
+#define CATEGORY_SYSTEM_INFO_0_VAL NULL
+#define CATEGORY_VIDEO_LABEL_VAL NULL
+#define CATEGORY_VIDEO_INFO_0_VAL NULL
+#define CATEGORY_VIDEO_INFO_1_VAL NULL
+#define CATEGORY_AUDIO_LABEL_VAL NULL
+#define CATEGORY_AUDIO_INFO_0_VAL NULL
+#define CATEGORY_INPUT_LABEL_VAL NULL
+#define CATEGORY_INPUT_INFO_0_VAL NULL
+#define CATEGORY_PERFORMANCE_LABEL_VAL NULL
+#define CATEGORY_PERFORMANCE_INFO_0_VAL NULL
+#define MGBA_GB_MODEL_LABEL_VAL NULL
+#define MGBA_GB_MODEL_INFO_0_VAL NULL
+#define OPTION_VAL_AUTODETECT_VAL NULL
+#define OPTION_VAL_GAME_BOY_VAL NULL
+#define OPTION_VAL_SUPER_GAME_BOY_VAL NULL
+#define OPTION_VAL_GAME_BOY_COLOR_VAL NULL
+#define OPTION_VAL_GAME_BOY_ADVANCE_VAL NULL
+#define MGBA_USE_BIOS_LABEL_VAL NULL
+#define MGBA_USE_BIOS_INFO_0_VAL NULL
+#define MGBA_SKIP_BIOS_LABEL_VAL NULL
+#define MGBA_SKIP_BIOS_INFO_0_VAL NULL
+#define MGBA_GB_COLORS_LABEL_VAL NULL
+#define MGBA_GB_COLORS_INFO_0_VAL NULL
+#define OPTION_VAL_GRAYSCALE_VAL NULL
+#define MGBA_GB_COLORS_PRESET_LABEL_VAL NULL
+#define MGBA_GB_COLORS_PRESET_INFO_0_VAL NULL
+#define OPTION_VAL_0_VAL NULL
+#define OPTION_VAL_1_VAL NULL
+#define OPTION_VAL_2_VAL NULL
+#define OPTION_VAL_3_VAL NULL
+#define MGBA_SGB_BORDERS_LABEL_VAL NULL
+#define MGBA_SGB_BORDERS_INFO_0_VAL NULL
+#define MGBA_COLOR_CORRECTION_LABEL_VAL NULL
+#define MGBA_COLOR_CORRECTION_INFO_0_VAL NULL
+#define OPTION_VAL_AUTO_VAL NULL
+#define MGBA_INTERFRAME_BLENDING_LABEL_VAL NULL
+#define MGBA_INTERFRAME_BLENDING_INFO_0_VAL NULL
+#define OPTION_VAL_MIX_VAL NULL
+#define OPTION_VAL_MIX_SMART_VAL NULL
+#define OPTION_VAL_LCD_GHOSTING_VAL NULL
+#define OPTION_VAL_LCD_GHOSTING_FAST_VAL NULL
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_VAL NULL
+#define MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_VAL NULL
+#define MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_VAL NULL
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_VAL NULL
+#define MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_VAL NULL
+#define MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_VAL NULL
+#define OPTION_VAL_5_VAL NULL
+#define OPTION_VAL_10_VAL NULL
+#define OPTION_VAL_15_VAL NULL
+#define OPTION_VAL_20_VAL NULL
+#define OPTION_VAL_25_VAL NULL
+#define OPTION_VAL_30_VAL NULL
+#define OPTION_VAL_35_VAL NULL
+#define OPTION_VAL_40_VAL NULL
+#define OPTION_VAL_45_VAL NULL
+#define OPTION_VAL_50_VAL NULL
+#define OPTION_VAL_55_VAL NULL
+#define OPTION_VAL_60_VAL NULL
+#define OPTION_VAL_65_VAL NULL
+#define OPTION_VAL_70_VAL NULL
+#define OPTION_VAL_75_VAL NULL
+#define OPTION_VAL_80_VAL NULL
+#define OPTION_VAL_85_VAL NULL
+#define OPTION_VAL_90_VAL NULL
+#define OPTION_VAL_95_VAL NULL
+#define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_VAL NULL
+#define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_VAL NULL
+#define OPTION_VAL_NO_VAL NULL
+#define OPTION_VAL_YES_VAL NULL
+#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_VAL NULL
+#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_VAL NULL
+#define OPTION_VAL_SENSOR_VAL NULL
+#define MGBA_FORCE_GBP_LABEL_VAL NULL
+#define MGBA_FORCE_GBP_INFO_0_VAL NULL
+#define MGBA_IDLE_OPTIMIZATION_LABEL_VAL NULL
+#define MGBA_IDLE_OPTIMIZATION_INFO_0_VAL NULL
+#define OPTION_VAL_REMOVE_KNOWN_VAL NULL
+#define OPTION_VAL_DETECT_AND_REMOVE_VAL NULL
+#define OPTION_VAL_DON_T_REMOVE_VAL NULL
+#define MGBA_FRAMESKIP_LABEL_VAL NULL
+#define MGBA_FRAMESKIP_INFO_0_VAL NULL
+#define OPTION_VAL_AUTO_THRESHOLD_VAL NULL
+#define OPTION_VAL_FIXED_INTERVAL_VAL NULL
+#define MGBA_FRAMESKIP_THRESHOLD_LABEL_VAL NULL
+#define MGBA_FRAMESKIP_THRESHOLD_INFO_0_VAL NULL
+#define MGBA_FRAMESKIP_INTERVAL_LABEL_VAL NULL
+#define MGBA_FRAMESKIP_INTERVAL_INFO_0_VAL NULL
+
+struct retro_core_option_v2_category option_cats_val[] = {
+   {
+      "system",
+      CATEGORY_SYSTEM_LABEL_VAL,
+      CATEGORY_SYSTEM_INFO_0_VAL
+   },
+   {
+      "video",
+      CATEGORY_VIDEO_LABEL_VAL,
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+      CATEGORY_VIDEO_INFO_0_VAL
+#else
+      CATEGORY_VIDEO_INFO_1_VAL
+#endif
+   },
+   {
+      "audio",
+      CATEGORY_AUDIO_LABEL_VAL,
+      CATEGORY_AUDIO_INFO_0_VAL
+   },
+   {
+      "input",
+      CATEGORY_INPUT_LABEL_VAL,
+      CATEGORY_INPUT_INFO_0_VAL
+   },
+   {
+      "performance",
+      CATEGORY_PERFORMANCE_LABEL_VAL,
+      CATEGORY_PERFORMANCE_INFO_0_VAL
+   },
+   { NULL, NULL, NULL },
+};
+struct retro_core_option_v2_definition option_defs_val[] = {
+   {
+      "mgba_gb_model",
+      MGBA_GB_MODEL_LABEL_VAL,
+      NULL,
+      MGBA_GB_MODEL_INFO_0_VAL,
+      NULL,
+      "system",
+      {
+         { "Autodetect",       OPTION_VAL_AUTODETECT_VAL },
+         { "Game Boy",         OPTION_VAL_GAME_BOY_VAL },
+         { "Super Game Boy",   OPTION_VAL_SUPER_GAME_BOY_VAL },
+         { "Game Boy Color",   OPTION_VAL_GAME_BOY_COLOR_VAL },
+         { "Game Boy Advance", OPTION_VAL_GAME_BOY_ADVANCE_VAL },
+         { NULL, NULL },
+      },
+      "Autodetect"
+   },
+   {
+      "mgba_use_bios",
+      MGBA_USE_BIOS_LABEL_VAL,
+      NULL,
+      MGBA_USE_BIOS_INFO_0_VAL,
+      NULL,
+      "system",
+      {
+         { "ON",  "enabled" },
+         { "OFF", "disabled" },
+         { NULL, NULL },
+      },
+      "ON"
+   },
+   {
+      "mgba_skip_bios",
+      MGBA_SKIP_BIOS_LABEL_VAL,
+      NULL,
+      MGBA_SKIP_BIOS_INFO_0_VAL,
+      NULL,
+      "system",
+      {
+         { "OFF", "disabled" },
+         { "ON",  "enabled" },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
+   {
+      "mgba_gb_colors",
+      MGBA_GB_COLORS_LABEL_VAL,
+      NULL,
+      MGBA_GB_COLORS_INFO_0_VAL,
+      NULL,
+      "video",
+      {
+         /* This list is populated at runtime */
+         { "Grayscale", OPTION_VAL_GRAYSCALE_VAL },
+         { NULL, NULL },
+      },
+      "Grayscale"
+   },
+   {
+      "mgba_gb_colors_preset",
+      MGBA_GB_COLORS_PRESET_LABEL_VAL,
+      NULL,
+      MGBA_GB_COLORS_PRESET_INFO_0_VAL,
+      NULL,
+      "video",
+      {
+         { "0", OPTION_VAL_0_VAL },
+         { "1", OPTION_VAL_1_VAL },
+         { "2", OPTION_VAL_2_VAL },
+         { "3", OPTION_VAL_3_VAL },
+         { NULL, NULL },
+      },
+      "0"
+   },
+   {
+      "mgba_sgb_borders",
+      MGBA_SGB_BORDERS_LABEL_VAL,
+      NULL,
+      MGBA_SGB_BORDERS_INFO_0_VAL,
+      NULL,
+      "video",
+      {
+         { "ON",  "enabled" },
+         { "OFF", "disabled" },
+         { NULL, NULL },
+      },
+      "ON"
+   },
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+   {
+      "mgba_color_correction",
+      MGBA_COLOR_CORRECTION_LABEL_VAL,
+      NULL,
+      MGBA_COLOR_CORRECTION_INFO_0_VAL,
+      NULL,
+      "video",
+      {
+         { "OFF",  "disabled" },
+         { "GBA",  OPTION_VAL_GAME_BOY_ADVANCE_VAL },
+         { "GBC",  OPTION_VAL_GAME_BOY_COLOR_VAL },
+         { "Auto", OPTION_VAL_AUTO_VAL },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
+   {
+      "mgba_interframe_blending",
+      MGBA_INTERFRAME_BLENDING_LABEL_VAL,
+      NULL,
+      MGBA_INTERFRAME_BLENDING_INFO_0_VAL,
+      NULL,
+      "video",
+      {
+         { "OFF",               "disabled" },
+         { "mix",               OPTION_VAL_MIX_VAL },
+         { "mix_smart",         OPTION_VAL_MIX_SMART_VAL },
+         { "lcd_ghosting",      OPTION_VAL_LCD_GHOSTING_VAL },
+         { "lcd_ghosting_fast", OPTION_VAL_LCD_GHOSTING_FAST_VAL },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
+#endif
+   {
+      "mgba_audio_low_pass_filter",
+      MGBA_AUDIO_LOW_PASS_FILTER_LABEL_VAL,
+      MGBA_AUDIO_LOW_PASS_FILTER_LABEL_CAT_VAL,
+      MGBA_AUDIO_LOW_PASS_FILTER_INFO_0_VAL,
+      NULL,
+      "audio",
+      {
+         { "disabled", NULL },
+         { "enabled",  NULL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "mgba_audio_low_pass_range",
+      MGBA_AUDIO_LOW_PASS_RANGE_LABEL_VAL,
+      MGBA_AUDIO_LOW_PASS_RANGE_LABEL_CAT_VAL,
+      MGBA_AUDIO_LOW_PASS_RANGE_INFO_0_VAL,
+      NULL,
+      "audio",
+      {
+         { "5",  OPTION_VAL_5_VAL },
+         { "10", OPTION_VAL_10_VAL },
+         { "15", OPTION_VAL_15_VAL },
+         { "20", OPTION_VAL_20_VAL },
+         { "25", OPTION_VAL_25_VAL },
+         { "30", OPTION_VAL_30_VAL },
+         { "35", OPTION_VAL_35_VAL },
+         { "40", OPTION_VAL_40_VAL },
+         { "45", OPTION_VAL_45_VAL },
+         { "50", OPTION_VAL_50_VAL },
+         { "55", OPTION_VAL_55_VAL },
+         { "60", OPTION_VAL_60_VAL },
+         { "65", OPTION_VAL_65_VAL },
+         { "70", OPTION_VAL_70_VAL },
+         { "75", OPTION_VAL_75_VAL },
+         { "80", OPTION_VAL_80_VAL },
+         { "85", OPTION_VAL_85_VAL },
+         { "90", OPTION_VAL_90_VAL },
+         { "95", OPTION_VAL_95_VAL },
+         { NULL, NULL },
+      },
+      "60"
+   },
+   {
+      "mgba_allow_opposing_directions",
+      MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_VAL,
+      NULL,
+      MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_VAL,
+      NULL,
+      "input",
+      {
+         { "no",  OPTION_VAL_NO_VAL },
+         { "yes", OPTION_VAL_YES_VAL },
+         { NULL, NULL },
+      },
+      "no"
+   },
+   {
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_VAL,
+      NULL,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_VAL,
+      NULL,
+      "input",
+      {
+         { "sensor", OPTION_VAL_SENSOR_VAL },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
+      },
+      "0"
+   },
+   {
+      "mgba_force_gbp",
+      MGBA_FORCE_GBP_LABEL_VAL,
+      NULL,
+      MGBA_FORCE_GBP_INFO_0_VAL,
+      NULL,
+      "input",
+      {
+         { "OFF", "disabled" },
+         { "ON",  "enabled" },
+         { NULL, NULL },
+      },
+      "OFF"
+   },
+   {
+      "mgba_idle_optimization",
+      MGBA_IDLE_OPTIMIZATION_LABEL_VAL,
+      NULL,
+      MGBA_IDLE_OPTIMIZATION_INFO_0_VAL,
+      NULL,
+      "performance",
+      {
+         { "Remove Known",      OPTION_VAL_REMOVE_KNOWN_VAL },
+         { "Detect and Remove", OPTION_VAL_DETECT_AND_REMOVE_VAL },
+         { "Don't Remove",      OPTION_VAL_DON_T_REMOVE_VAL },
+         { NULL, NULL },
+      },
+      "Remove Known"
+   },
+   {
+      "mgba_frameskip",
+      MGBA_FRAMESKIP_LABEL_VAL,
+      NULL,
+      MGBA_FRAMESKIP_INFO_0_VAL,
+      NULL,
+      "performance",
+      {
+         { "disabled",       NULL },
+         { "auto",           OPTION_VAL_AUTO_VAL },
+         { "auto_threshold", OPTION_VAL_AUTO_THRESHOLD_VAL },
+         { "fixed_interval", OPTION_VAL_FIXED_INTERVAL_VAL },
+         { NULL, NULL },
+      },
+      "disabled"
+   },
+   {
+      "mgba_frameskip_threshold",
+      MGBA_FRAMESKIP_THRESHOLD_LABEL_VAL,
+      NULL,
+      MGBA_FRAMESKIP_THRESHOLD_INFO_0_VAL,
+      NULL,
+      "performance",
+      {
+         { "15", NULL },
+         { "18", NULL },
+         { "21", NULL },
+         { "24", NULL },
+         { "27", NULL },
+         { "30", NULL },
+         { "33", NULL },
+         { "36", NULL },
+         { "39", NULL },
+         { "42", NULL },
+         { "45", NULL },
+         { "48", NULL },
+         { "51", NULL },
+         { "54", NULL },
+         { "57", NULL },
+         { "60", NULL },
+         { NULL, NULL },
+      },
+      "33"
+   },
+   {
+      "mgba_frameskip_interval",
+      MGBA_FRAMESKIP_INTERVAL_LABEL_VAL,
+      NULL,
+      MGBA_FRAMESKIP_INTERVAL_INFO_0_VAL,
+      NULL,
+      "performance",
+      {
+         { "0",  NULL },
+         { "1",  NULL },
+         { "2",  NULL },
+         { "3",  NULL },
+         { "4",  NULL },
+         { "5",  NULL },
+         { "6",  NULL },
+         { "7",  NULL },
+         { "8",  NULL },
+         { "9",  NULL },
+         { "10", NULL },
+         { NULL, NULL },
+      },
+      "0"
+   },
+   { NULL, NULL, NULL, NULL, NULL, NULL, {{0}}, NULL },
+};
+struct retro_core_options_v2 options_val = {
+   option_cats_val,
+   option_defs_val
 };
 
 /* RETRO_LANGUAGE_VN */
