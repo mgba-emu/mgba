@@ -61,7 +61,7 @@ else ifneq (,$(findstring armv,$(platform)))
 	ifeq (,$(findstring classic_,$(platform)))
 		override platform += unix
 	endif
-else ifneq (,$(findstring rpi3,$(platform)))
+else ifneq (,$(findstring rpi,$(platform)))
 	override platform += unix
 endif
 
@@ -96,24 +96,23 @@ ifneq (,$(findstring unix,$(platform)))
    else
       DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE
    endif
+endif
 
-# Raspberry Pi 3
-else ifeq ($(platform), rpi3)
-   TARGET := $(TARGET_NAME)_libretro.so
-   fpic := -fPIC
-   SHARED := -shared -Wl,-version-script=link.T
-   CFLAGS += -marm -mcpu=cortex-a53 -mfloat-abi=hard
-   CFLAGS += -fomit-frame-pointer
-   DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE
+# Raspberry Pi: GCC provides the right cflags for each model.
+ifneq ($(platform), rpi)
+   CFLAGS += -march=native -mcpu=native -ftree-vectorize -pipe -fomit-frame-pointer
    HAVE_VFS_FD = 0
 
-# Raspberry Pi 4 in 64bit mode
-else ifeq ($(platform), rpi4_64)
+# Go-Advance 
+else ifeq ($(platform), goadvance)
+   CPUFLAGS := -Ofast -march=armv8-a+crc+fp+simd -mcpu=cortex-a35 -flto -DUSE_RENDER_THREAD -DNO_ASM -DARM_ASM -frename-registers -ftree-vectorize
+   CFLAGS   := -DNDEBUG -Ofast -fno-ident
+   LDFLAGS  += -Ofast -fno-ident
+   CFLAGS  += $(CPUFLAGS) -fpic -fomit-frame-pointer -fno-exceptions -fno-non-call-exceptions -Wno-psabi -Wno-format
+   LDFLAGS += $(CPUFLAGS) -lpthread -Wl,--gc-sections -shared
    TARGET := $(TARGET_NAME)_libretro.so
    fpic := -fPIC
    SHARED := -shared -Wl,-version-script=link.T
-   CFLAGS += -march=armv8-a+crc+simd -mtune=cortex-a72
-   CFLAGS += -fomit-frame-pointer
    DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE
    HAVE_VFS_FD = 0
 
