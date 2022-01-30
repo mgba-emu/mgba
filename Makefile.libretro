@@ -98,23 +98,16 @@ ifneq (,$(findstring unix,$(platform)))
    endif
 endif
 
-# Raspberry Pi: GCC provides the right cflags for each model.
-ifneq ($(platform), rpi)
-   CFLAGS += -march=native -mcpu=native -ftree-vectorize -pipe -fomit-frame-pointer
+# Raspberry Pi
+ifneq (,$(findstring rpi,$(platform)))
+   LDFLAGS += -flto 
    HAVE_VFS_FD = 0
-
-# Go-Advance 
-else ifeq ($(platform), goadvance)
-   CPUFLAGS := -Ofast -march=armv8-a+crc+fp+simd -mcpu=cortex-a35 -flto -DUSE_RENDER_THREAD -DNO_ASM -DARM_ASM -frename-registers -ftree-vectorize
-   CFLAGS   := -DNDEBUG -Ofast -fno-ident
-   LDFLAGS  += -Ofast -fno-ident
-   CFLAGS  += $(CPUFLAGS) -fpic -fomit-frame-pointer -fno-exceptions -fno-non-call-exceptions -Wno-psabi -Wno-format
-   LDFLAGS += $(CPUFLAGS) -lpthread -Wl,--gc-sections -shared
-   TARGET := $(TARGET_NAME)_libretro.so
-   fpic := -fPIC
-   SHARED := -shared -Wl,-version-script=link.T
-   DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE
-   HAVE_VFS_FD = 0
+   CFLAGS += -fomit-frame-pointer -ftree-vectorize -flto
+   ifneq (,$(findstring rpi3,$(platform)))
+      CFLAGS += -marm -mcpu=cortex-a53 -mfloat-abi=hard
+   else ifneq (,$(findstring rpi4_64,$(platform)))
+      CFLAGS += -march=armv8-a+crc+simd -mtune=cortex-a72
+   endif
 
 # Go-Advance 
 else ifeq ($(platform), goadvance)
