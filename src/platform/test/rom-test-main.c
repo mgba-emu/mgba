@@ -9,11 +9,17 @@
 #include <mgba/core/config.h>
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
+#ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
+#endif
+#ifdef M_CORE_GB
+#include <mgba/internal/sm83/sm83.h>
+#endif
 
 #include <mgba/feature/commandline.h>
 #include <mgba-util/vfs.h>
 
+#include <errno.h>
 #include <signal.h>
 
 #define ROM_TEST_OPTIONS "S:R:"
@@ -46,6 +52,21 @@ static unsigned int _returnCodeRegister;
 
 void (*_armSwi16)(struct ARMCore* cpu, int immediate);
 void (*_armSwi32)(struct ARMCore* cpu, int immediate);
+#endif
+
+#ifdef M_CORE_GB
+enum GBReg {
+	GB_REG_A = 16,
+	GB_REG_F,
+	GB_REG_B,
+	GB_REG_C,
+	GB_REG_D,
+	GB_REG_E,
+	GB_REG_H,
+	GB_REG_L
+};
+
+static void _romTestGBCallback(void* context);
 #endif
 
 int main(int argc, char * argv[]) {
@@ -82,17 +103,22 @@ int main(int argc, char * argv[]) {
 
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
 
+	bool cleanExit = false;
+	struct mCoreCallbacks callbacks = {0};
+	callbacks.context = core;
+	switch (core->platform(core)) {
 #ifdef M_CORE_GBA
-	if (core->platform(core) == mPLATFORM_GBA) {
+	case mPLATFORM_GBA:
 		((struct GBA*) core->board)->hardCrash = false;
+		if (romTestOpts.returnCodeRegister >= 16) {
+			goto loadError;
+		}
 
 		_exitSwiImmediate = romTestOpts.exitSwiImmediate;
 		_returnCodeRegister = romTestOpts.returnCodeRegister;
 
 		if (_exitSwiImmediate == 3) {
 			// Hook into SWI 3 (shutdown)
-			struct mCoreCallbacks callbacks = {0};
-			callbacks.context = core;
 			callbacks.shutdown = _romTestSwi3Callback;
 			core->addCoreCallbacks(core, &callbacks);
 		} else {
@@ -102,12 +128,25 @@ int main(int argc, char * argv[]) {
 			_armSwi32 = ((struct GBA*) core->board)->cpu->irqh.swi32;
 			((struct GBA*) core->board)->cpu->irqh.swi32 = _romTestSwi32;
 		}
-	}
+		break;
 #endif
+#ifdef M_CORE_GB
+	case mPLATFORM_GB:
+		if (romTestOpts.returnCodeRegister < GB_REG_A) {
+			goto loadError;
+		}
 
-	bool cleanExit = true;
+		_returnCodeRegister = romTestOpts.returnCodeRegister;
+
+		callbacks.shutdown = _romTestGBCallback;
+		core->addCoreCallbacks(core, &callbacks);
+		break;
+#endif
+	default:
+		goto loadError;
+	}
+
 	if (!mCoreLoadFile(core, args.fname)) {
-		cleanExit = false;
 		goto loadError;
 	}
 	if (args.patch) {
@@ -142,6 +181,7 @@ int main(int argc, char * argv[]) {
 	} while (!_dispatchExiting);
 
 	core->unloadROM(core);
+	cleanExit = true;
 
 loadError:
 	freeArguments(&args);
@@ -182,6 +222,41 @@ static void _romTestSwi32(struct ARMCore* cpu, int immediate) {
 }
 #endif
 
+#ifdef M_CORE_GB
+static void _romTestGBCallback(void* context) {
+	struct mCore* core = context;
+	struct SM83Core* cpu = core->cpu;
+
+	switch (_returnCodeRegister) {
+	case GB_REG_A:
+		_exitCode = cpu->a;
+		break;
+	case GB_REG_B:
+		_exitCode = cpu->b;
+		break;
+	case GB_REG_C:
+		_exitCode = cpu->c;
+		break;
+	case GB_REG_D:
+		_exitCode = cpu->d;
+		break;
+	case GB_REG_E:
+		_exitCode = cpu->e;
+		break;
+	case GB_REG_F:
+		_exitCode = cpu->f.packed;
+		break;
+	case GB_REG_H:
+		_exitCode = cpu->h;
+		break;
+	case GB_REG_L:
+		_exitCode = cpu->l;
+		break;
+	}
+	_dispatchExiting = true;
+}
+#endif
+
 static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char* arg) {
 	struct RomTestOpts* opts = parser->opts;
 	errno = 0;
@@ -206,8 +281,63 @@ static bool _parseSwi(const char* swiStr, int* oSwi) {
 }
 
 static bool _parseNamedRegister(const char* regStr, unsigned int* oRegister) {
-	if (regStr[0] == 'r' || regStr[0] == 'R') {
+#ifdef M_CORE_GB
+	static const enum GBReg gbMapping[] = {
+		['a' - 'a'] = GB_REG_A,
+		['b' - 'a'] = GB_REG_B,
+		['c' - 'a'] = GB_REG_C,
+		['d' - 'a'] = GB_REG_D,
+		['e' - 'a'] = GB_REG_E,
+		['f' - 'a'] = GB_REG_F,
+		['h' - 'a'] = GB_REG_H,
+		['l' - 'a'] = GB_REG_L,
+	};
+#endif
+
+	switch (regStr[0]) {
+	case 'r':
+	case 'R':
 		++regStr;
+		break;
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+		break;
+#ifdef M_CORE_GB
+	case 'a':
+	case 'b':
+	case 'c':
+	case 'd':
+	case 'e':
+	case 'f':
+	case 'h':
+	case 'l':
+		if (regStr[1] != '\0') {
+			return false;
+		}
+		*oRegister = gbMapping[regStr[0] - 'a'];
+		break;
+	case 'A':
+	case 'B':
+	case 'C':
+	case 'D':
+	case 'E':
+	case 'F':
+	case 'H':
+	case 'L':
+		if (regStr[1] != '\0') {
+			return false;
+		}
+		*oRegister = gbMapping[regStr[0] - 'A'];
+		return true;
+#endif
 	}
 
 	char* parseEnd;
