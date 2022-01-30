@@ -6,33 +6,34 @@
     <message>
         <location filename="../AboutScreen.ui" line="14"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>關於</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;網站&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;論壇、支持&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;捐助&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;源代碼&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
         <source>Branch: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revision: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>分支: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;修訂版: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
         <source>{projectName} would like to thank the following patrons from Patreon:</source>
-        <translation type="unfinished"></translation>
+        <translation>{projectName} 感謝以下來自 Patreon 的讚助者:</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
         <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation type="unfinished"></translation>
+        <translation>© 2013 – {year} Jeffrey Pfau，基於 Mozilla 公共許可證（版本 2.0）授權
+Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的註冊商標。</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation type="unfinished"></translation>
+        <translation>{projectName} 是開放源代碼的 Game Boy Advance 模擬器</translation>
     </message>
 </context>
 <context>
@@ -40,7 +41,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>有可用的更新</translation>
     </message>
 </context>
 <context>
@@ -48,12 +49,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation type="unfinished"></translation>
+        <translation>在壓縮文件中打開...</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation type="unfinished"></translation>
+        <translation>正在載入...</translation>
     </message>
 </context>
 <context>
@@ -61,12 +62,12 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation type="unfinished"></translation>
+        <translation>圖塊 #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
-        <translation type="unfinished"></translation>
+        <translation>調色板 #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="89"/>
