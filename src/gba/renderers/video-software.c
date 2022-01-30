@@ -545,11 +545,11 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 
 	if (!dirty) {
 		if (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) != 0) {
-			if (softwareRenderer->bg[2].enabled == 4) {
+			if (softwareRenderer->bg[2].enabled == ENABLED_MAX) {
 				softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
 				softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
 			}
-			if (softwareRenderer->bg[3].enabled == 4) {
+			if (softwareRenderer->bg[3].enabled == ENABLED_MAX) {
 				softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
 				softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
 			}
@@ -625,29 +625,29 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	GBAVideoSoftwareRendererPostprocessBuffer(softwareRenderer);
 
 	if (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) != 0) {
-		if (softwareRenderer->bg[2].enabled == 4) {
+		if (softwareRenderer->bg[2].enabled == ENABLED_MAX) {
 			softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
 			softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
 		}
-		if (softwareRenderer->bg[3].enabled == 4) {
+		if (softwareRenderer->bg[3].enabled == ENABLED_MAX) {
 			softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
 			softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
 		}
 	}
 
-	if (softwareRenderer->bg[0].enabled != 0 && softwareRenderer->bg[0].enabled < 4) {
+	if (softwareRenderer->bg[0].enabled != 0 && softwareRenderer->bg[0].enabled < ENABLED_MAX) {
 		++softwareRenderer->bg[0].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-	if (softwareRenderer->bg[1].enabled != 0 && softwareRenderer->bg[1].enabled < 4) {
+	if (softwareRenderer->bg[1].enabled != 0 && softwareRenderer->bg[1].enabled < ENABLED_MAX) {
 		++softwareRenderer->bg[1].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-	if (softwareRenderer->bg[2].enabled != 0 && softwareRenderer->bg[2].enabled < 4) {
+	if (softwareRenderer->bg[2].enabled != 0 && softwareRenderer->bg[2].enabled < ENABLED_MAX) {
 		++softwareRenderer->bg[2].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-	if (softwareRenderer->bg[3].enabled != 0 && softwareRenderer->bg[3].enabled < 4) {
+	if (softwareRenderer->bg[3].enabled != 0 && softwareRenderer->bg[3].enabled < ENABLED_MAX) {
 		++softwareRenderer->bg[3].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
@@ -693,16 +693,16 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 	softwareRenderer->bg[3].sy = softwareRenderer->bg[3].refy;
 
 	if (softwareRenderer->bg[0].enabled > 0) {
-		softwareRenderer->bg[0].enabled = 4;
+		softwareRenderer->bg[0].enabled = ENABLED_MAX;
 	}
 	if (softwareRenderer->bg[1].enabled > 0) {
-		softwareRenderer->bg[1].enabled = 4;
+		softwareRenderer->bg[1].enabled = ENABLED_MAX;
 	}
 	if (softwareRenderer->bg[2].enabled > 0) {
-		softwareRenderer->bg[2].enabled = 4;
+		softwareRenderer->bg[2].enabled = ENABLED_MAX;
 	}
 	if (softwareRenderer->bg[3].enabled > 0) {
-		softwareRenderer->bg[3].enabled = 4;
+		softwareRenderer->bg[3].enabled = ENABLED_MAX;
 	}
 }
 
@@ -725,22 +725,22 @@ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer,
 static void _enableBg(struct GBAVideoSoftwareRenderer* renderer, int bg, bool active) {
 	int wasActive = renderer->bg[bg].enabled;
 	if (!active) {
-		if (renderer->nextY == 0 || (wasActive > 0 && wasActive < 4)) {
+		if (renderer->nextY == 0 || (wasActive > 0 && wasActive < ENABLED_MAX)) {
 			renderer->bg[bg].enabled = 0;
-		} else if (wasActive == 4) {
+		} else if (wasActive == ENABLED_MAX) {
 			renderer->bg[bg].enabled = -2;
 		}
 	} else if (!wasActive && active) {
 		if (renderer->nextY == 0) {
 			// TODO: Investigate in more depth how switching background works in different modes
-			renderer->bg[bg].enabled = 4;
+			renderer->bg[bg].enabled = ENABLED_MAX;
 		} else if (GBARegisterDISPCNTGetMode(renderer->dispcnt) > 2) {
 			renderer->bg[bg].enabled = 2;
 		} else {
 			renderer->bg[bg].enabled = 1;
 		}
 	} else if (wasActive < 0 && active) {
-		renderer->bg[bg].enabled = 4;
+		renderer->bg[bg].enabled = ENABLED_MAX;
 	}
 }
 

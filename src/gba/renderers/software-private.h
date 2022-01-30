@@ -15,6 +15,8 @@
 #define VIDEO_CHECKS true
 #endif
 
+#define ENABLED_MAX 4
+
 void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer* renderer,
                                                  struct GBAVideoSoftwareBackground* background, int y);
 void GBAVideoSoftwareRendererDrawBackgroundMode2(struct GBAVideoSoftwareRenderer* renderer,
@@ -215,7 +217,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 
 #define TEST_LAYER_ENABLED(X) \
 	!softwareRenderer->d.disableBG[X] && \
-	(softwareRenderer->bg[X].enabled == 4 && \
+	(softwareRenderer->bg[X].enabled == ENABLED_MAX && \
 	(GBAWindowControlIsBg ## X ## Enable(softwareRenderer->currentWindow.packed) || \
 	(GBARegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt) && GBAWindowControlIsBg ## X ## Enable (softwareRenderer->objwin.packed))) && \
 	softwareRenderer->bg[X].priority == priority)
