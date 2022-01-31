@@ -96,10 +96,13 @@ ifneq (,$(findstring unix,$(platform)))
    else
       DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE
    endif
-endif
 
 # Raspberry Pi
-ifneq (,$(findstring rpi,$(platform)))
+else ifneq (,$(findstring rpi,$(platform)))
+   TARGET := $(TARGET_NAME)_libretro.so
+   fpic := -fPIC
+   SHARED := -shared -Wl,-version-script=link.T
+   DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE
    LDFLAGS += -flto 
    HAVE_VFS_FD = 0
    CFLAGS += -fomit-frame-pointer -ftree-vectorize -flto
