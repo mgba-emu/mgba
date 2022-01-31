@@ -27,6 +27,7 @@ Emulation fixes:
  - GBA Video: Fix OpenGL rendering on M1 Macs
  - GBA Video: Ignore horizontally off-screen sprite timing (fixes mgba.io/i/2391)
  - GBA Video: Fix Hblank timing (fixes mgba.io/i/2131, mgba.io/i/2310)
+ - GBA Video: Fix rare crash in modes 3-5
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - FFmpeg: Fix crash when encoding audio with some containers
