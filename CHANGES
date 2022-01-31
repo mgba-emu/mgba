@@ -3,6 +3,7 @@ Emulation fixes:
  - GB Serialize: Fix loading MBC1 states that affect bank 0 (fixes mgba.io/i/2402)
  - GBA I/O: Disable open bus behavior on invalid register 06A
  - GBA Video: Ignore horizontally off-screen sprite timing (fixes mgba.io/i/2391)
+ - GBA Video: Fix rare crash in modes 3-5
 Other fixes:
  - FFmpeg: Fix crash when encoding audio with some containers
  - FFmpeg: Fix GIF recording (fixes mgba.io/i/2393)
