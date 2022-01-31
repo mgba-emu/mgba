@@ -1218,6 +1218,23 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_platformActions.insert(mPLATFORM_GBA, exportShark);
 #endif
 
+	m_actions.addSeparator("saves");
+	Action* savePlayerAction;
+	ConfigOption* savePlayer = m_config->addOption("savePlayerId");
+	savePlayerAction = savePlayer->addValue(tr("Automatically determine"), 0, &m_actions, "saves");
+	m_nonMpActions.append(savePlayerAction);
+
+	for (int i = 1; i < 5; ++i) {
+		savePlayerAction = savePlayer->addValue(tr("Use player %0 save game").arg(i), i, &m_actions, "saves");
+		m_nonMpActions.append(savePlayerAction);
+	}
+	savePlayer->connect([this](const QVariant& value) {
+		if (m_controller) {
+			m_controller->changePlayer(value.toInt());
+		}
+	}, this);
+	m_config->updateOption("savePlayerId");
+
 	m_actions.addAction(tr("Load &patch..."), "loadPatch", this, &Window::selectPatch, "file");
 
 #ifdef M_CORE_GBA

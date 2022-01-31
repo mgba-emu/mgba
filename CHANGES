@@ -11,6 +11,7 @@ Features:
  - Discord Rich Presence now supports time elapsed
  - Additional scaling shaders
  - Support for GameShark Advance SP (.gsv) save file importing
+ - Support for multiple saves per game using .sa2, .sa3, etc.
 Emulation fixes:
  - ARM7: Fix unsigned multiply timing
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)

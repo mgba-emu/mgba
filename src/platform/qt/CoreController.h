@@ -142,6 +142,8 @@ public slots:
 	void setFastForward(bool);
 	void forceFastForward(bool);
 
+	void changePlayer(int id);
+
 	void overrideMute(bool);
 
 	void loadState(int slot = 0);
@@ -154,6 +156,7 @@ public slots:
 	void saveBackupState();
 
 	void loadSave(const QString&, bool temporary);
+	void loadSave(VFile*, bool temporary);
 	void loadPatch(const QString&);
 	void scanCard(const QString&);
 	void replaceGame(const QString&);
@@ -226,6 +229,8 @@ private:
 	void updateKeys();
 	int updateAutofire();
 	void finishFrame();
+
+	void updatePlayerSave();
 
 	void updateFastForward();
 

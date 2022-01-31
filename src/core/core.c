@@ -223,7 +223,13 @@ bool mCoreAutoloadSave(struct mCore* core) {
 	if (!core->dirs.save) {
 		return false;
 	}
-	return core->loadSave(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, ".sav", O_CREAT | O_RDWR));
+	int savePlayerId = 0;
+	char sav[16] = ".sav";
+	mCoreConfigGetIntValue(&core->config, "savePlayerId", &savePlayerId);
+	if (savePlayerId > 1) {
+		snprintf(sav, sizeof(sav), ".sa%i", savePlayerId);
+	}
+	return core->loadSave(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, sav, O_CREAT | O_RDWR));
 }
 
 bool mCoreAutoloadPatch(struct mCore* core) {
@@ -365,6 +371,7 @@ void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config
 
 	mCoreConfigCopyValue(&core->config, config, "cheatAutosave");
 	mCoreConfigCopyValue(&core->config, config, "cheatAutoload");
+	mCoreConfigCopyValue(&core->config, config, "savePlayerId");
 
 	core->loadConfig(core, config);
 }
