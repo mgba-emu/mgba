@@ -726,6 +726,7 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 	state->memory.cartBus = memory->cartBus;
 	STORE_16LE(memory->cartBusPc, 0, &state->cartBusPc);
 
+	int i;
 	switch (memory->mbcType) {
 	case GB_MBC1:
 		state->memory.mbc1.mode = memory->mbcState.mbc1.mode;
@@ -734,7 +735,7 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 		state->memory.mbc1.bankHi = memory->mbcState.mbc1.bankHi;
 		break;
 	case GB_MBC3_RTC:
-		STORE_64LE(gb->memory.rtcLastLatch, 0, &state->memory.rtc.lastLatch);
+		STORE_64LE(memory->rtcLastLatch, 0, &state->memory.rtc.lastLatch);
 		break;
 	case GB_MBC7:
 		state->memory.mbc7.state = memory->mbcState.mbc7.state;
@@ -745,6 +746,16 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 		state->memory.mbc7.srBits = memory->mbcState.mbc7.srBits;
 		STORE_16LE(memory->mbcState.mbc7.sr, 0, &state->memory.mbc7.sr);
 		STORE_32LE(memory->mbcState.mbc7.writable, 0, &state->memory.mbc7.writable);
+		break;
+	case GB_HuC3:
+		STORE_64LE(memory->rtcLastLatch, 0, &state->memory.huc3.lastLatch);
+		state->memory.huc3.index = memory->mbcState.huc3.index;
+		state->memory.huc3.value = memory->mbcState.huc3.value;
+		state->memory.huc3.mode = memory->mbcState.huc3.mode;
+		for (i = 0; i < 0x80; ++i) {
+			state->huc3Registers[i] = memory->mbcState.huc3.registers[i * 2] & 0xF;
+			state->huc3Registers[i] |= memory->mbcState.huc3.registers[i * 2 + 1] << 4;
+		}
 		break;
 	case GB_MMM01:
 		state->memory.mmm01.locked = memory->mbcState.mmm01.locked;
@@ -808,6 +819,7 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	memory->cartBus = state->memory.cartBus;
 	LOAD_16LE(memory->cartBusPc, 0, &state->cartBusPc);
 
+	int i;
 	switch (memory->mbcType) {
 	case GB_MBC1:
 		memory->mbcState.mbc1.mode = state->memory.mbc1.mode;
@@ -824,7 +836,7 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		}
 		break;
 	case GB_MBC3_RTC:
-		LOAD_64LE(gb->memory.rtcLastLatch, 0, &state->memory.rtc.lastLatch);
+		LOAD_64LE(memory->rtcLastLatch, 0, &state->memory.rtc.lastLatch);
 		break;
 	case GB_MBC7:
 		memory->mbcState.mbc7.state = state->memory.mbc7.state;
@@ -835,6 +847,16 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		memory->mbcState.mbc7.srBits = state->memory.mbc7.srBits;
 		LOAD_16LE(memory->mbcState.mbc7.sr, 0, &state->memory.mbc7.sr);
 		LOAD_32LE(memory->mbcState.mbc7.writable, 0, &state->memory.mbc7.writable);
+		break;
+	case GB_HuC3:
+		LOAD_64LE(memory->rtcLastLatch, 0, &state->memory.huc3.lastLatch);
+		memory->mbcState.huc3.index = state->memory.huc3.index;
+		memory->mbcState.huc3.value = state->memory.huc3.value;
+		memory->mbcState.huc3.mode = state->memory.huc3.mode;
+		for (i = 0; i < 0x80; ++i) {
+			memory->mbcState.huc3.registers[i * 2] = state->huc3Registers[i] & 0xF;
+			memory->mbcState.huc3.registers[i * 2 + 1] = state->huc3Registers[i] >> 4;
+		}
 		break;
 	case GB_MMM01:
 		memory->mbcState.mmm01.locked = state->memory.mmm01.locked;

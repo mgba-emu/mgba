@@ -168,7 +168,8 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * 0x003FF: Interrupts enabled
  * 0x00400 - 0x043FF: VRAM
  * 0x04400 - 0x0C3FF: WRAM
- * 0x0C400 - 0x0C77F: Reserved
+ * 0x0C400 - 0x0C6FF: Reserved
+ * 0x0C700 - 0x0C77F: Reserved
  * 0x0C780 - 0x117FF: Super Game Boy
  * | 0x0C780 - 0x0C7D9: Current attributes
  * | 0x0C7DA: Current command
@@ -394,6 +395,12 @@ struct GBSerializedState {
 				uint8_t bank0;
 			} mmm01;
 			struct {
+				uint64_t lastLatch;
+				uint8_t index;
+				uint8_t value;
+				uint8_t mode;
+			} huc3;
+			struct {
 				uint8_t dataSwapMode;
 				uint8_t bankSwapMode;
 			} bbd;
@@ -421,7 +428,9 @@ struct GBSerializedState {
 	uint8_t vram[GB_SIZE_VRAM];
 	uint8_t wram[GB_SIZE_WORKING_RAM];
 
-	uint32_t reserved2[0xC4];
+	uint32_t reserved2[0xA4];
+
+	uint8_t huc3Registers[0x80];
 
 	struct {
 		uint8_t attributes[90];
