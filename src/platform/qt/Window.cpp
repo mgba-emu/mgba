@@ -329,7 +329,11 @@ void Window::selectROM() {
 }
 
 void Window::bootBIOS() {
-	setController(m_manager->loadBIOS(mPLATFORM_GBA, m_config->getOption("gba.bios")), QString());
+	QString bios(m_config->getOption("gba.bios"));
+	if (bios.isEmpty()) {
+		bios = m_config->getOption("bios");
+	}
+	setController(m_manager->loadBIOS(mPLATFORM_GBA, bios), QString());
 }
 
 #ifdef USE_SQLITE3
