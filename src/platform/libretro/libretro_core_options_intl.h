@@ -15291,7 +15291,7 @@ struct retro_core_options_v2 options_sv = {
 #define OPTION_VAL_GRAYSCALE_TR "Gri Tonlama"
 #define MGBA_GB_COLORS_PRESET_LABEL_TR "Donanım Ön Ayarlı Game Boy Paletleri (Yeniden Başlat)"
 #define MGBA_GB_COLORS_PRESET_INFO_0_TR "Game Boy Color veya Super Game Boy üzerinde ön ayarları olan Game Boy oyunları için paletleri kullanın."
-#define OPTION_VAL_0_TR NULL
+#define OPTION_VAL_0_TR "Varsayılan Game Boy ön ayarı"
 #define OPTION_VAL_1_TR "Yalnızca Game Boy Color ön ayarları"
 #define OPTION_VAL_2_TR "Yalnızca Super Game Boy ön ayarları"
 #define OPTION_VAL_3_TR "Mevcut herhangi bir ön ayar"
@@ -16136,10 +16136,10 @@ struct retro_core_options_v2 options_uk = {
 
 #define CATEGORY_SYSTEM_LABEL_VAL NULL
 #define CATEGORY_SYSTEM_INFO_0_VAL NULL
-#define CATEGORY_VIDEO_LABEL_VAL NULL
+#define CATEGORY_VIDEO_LABEL_VAL "Vídeo"
 #define CATEGORY_VIDEO_INFO_0_VAL NULL
 #define CATEGORY_VIDEO_INFO_1_VAL NULL
-#define CATEGORY_AUDIO_LABEL_VAL NULL
+#define CATEGORY_AUDIO_LABEL_VAL "Àudio"
 #define CATEGORY_AUDIO_INFO_0_VAL NULL
 #define CATEGORY_INPUT_LABEL_VAL NULL
 #define CATEGORY_INPUT_INFO_0_VAL NULL
