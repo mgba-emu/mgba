@@ -440,6 +440,8 @@ void GBMBCInit(struct GB* gb) {
 
 	if (gb->memory.mbcType == GB_MBC3_RTC) {
 		GBMBCRTCRead(gb);
+	} else if (gb->memory.mbcType == GB_HuC3) {
+		GBMBCHuC3Read(gb);
 	}
 }
 
@@ -1692,6 +1694,21 @@ uint8_t _GBHitekRead(struct GBMemory* memory, uint16_t address) {
 	}
 }
 
+static void _appendSaveSuffix(struct GB* gb, const void* buffer, size_t size) {
+	struct VFile* vf = gb->sramVf;
+	if ((size_t) vf->size(vf) < gb->sramSize + size) {
+		// Writing past the end of the file can invalidate the file mapping
+		vf->unmap(vf, gb->memory.sram, gb->sramSize);
+		gb->memory.sram = NULL;
+	}
+	vf->seek(vf, gb->sramSize, SEEK_SET);
+	vf->write(vf, buffer, size);
+	if (!gb->memory.sram) {
+		gb->memory.sram = vf->map(vf, gb->sramSize, MAP_WRITE);
+		GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
+	}
+}
+
 void GBMBCRTCRead(struct GB* gb) {
 	struct GBMBCRTCSaveBuffer rtcBuffer;
 	struct VFile* vf = gb->sramVf;
@@ -1735,15 +1752,41 @@ void GBMBCRTCWrite(struct GB* gb) {
 	STORE_32LE(gb->memory.rtcRegs[4], 0, &rtcBuffer.latchedDaysHi);
 	STORE_64LE(gb->memory.rtcLastLatch, 0, &rtcBuffer.unixTime);
 
-	if ((size_t) vf->size(vf) < gb->sramSize + sizeof(rtcBuffer)) {
-		// Writing past the end of the file can invalidate the file mapping
-		vf->unmap(vf, gb->memory.sram, gb->sramSize);
-		gb->memory.sram = NULL;
+	_appendSaveSuffix(gb, &rtcBuffer, sizeof(rtcBuffer));
+}
+
+void GBMBCHuC3Read(struct GB* gb) {
+	struct GBMBCHuC3SaveBuffer buffer;
+	struct VFile* vf = gb->sramVf;
+	if (!vf) {
+		return;
 	}
 	vf->seek(vf, gb->sramSize, SEEK_SET);
-	vf->write(vf, &rtcBuffer, sizeof(rtcBuffer));
-	if (!gb->memory.sram) {
-		gb->memory.sram = vf->map(vf, gb->sramSize, MAP_WRITE);
-		GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
+	if (vf->read(vf, &buffer, sizeof(buffer)) < (ssize_t) sizeof(buffer)) {
+		return;
 	}
+
+	size_t i;
+	for (i = 0; i < 0x80; ++i) {
+		gb->memory.mbcState.huc3.registers[i * 2] = buffer.regs[i] & 0xF;
+		gb->memory.mbcState.huc3.registers[i * 2 + 1] = buffer.regs[i] >> 4;
+	}
+	LOAD_64LE(gb->memory.rtcLastLatch, 0, &buffer.latchedUnix);
+}
+
+void GBMBCHuC3Write(struct GB* gb) {
+	struct VFile* vf = gb->sramVf;
+	if (!vf) {
+		return;
+	}
+
+	struct GBMBCHuC3SaveBuffer buffer;
+	size_t i;
+	for (i = 0; i < 0x80; ++i) {
+		buffer.regs[i] = gb->memory.mbcState.huc3.registers[i * 2] & 0xF;
+		buffer.regs[i] |= gb->memory.mbcState.huc3.registers[i * 2 + 1] << 4;
+	}
+	STORE_64LE(gb->memory.rtcLastLatch, 0, &buffer.latchedUnix);
+
+	_appendSaveSuffix(gb, &buffer, sizeof(buffer));
 }

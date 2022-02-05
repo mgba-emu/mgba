@@ -42,8 +42,17 @@ struct GBMBCRTCSaveBuffer {
 	uint32_t latchedDaysHi;
 	uint64_t unixTime;
 };
+
+struct GBMBCHuC3SaveBuffer {
+	uint8_t regs[0x80];
+	uint64_t latchedUnix;
+};
+
 void GBMBCRTCRead(struct GB* gb);
 void GBMBCRTCWrite(struct GB* gb);
+
+void GBMBCHuC3Read(struct GB* gb);
+void GBMBCHuC3Write(struct GB* gb);
 
 CXX_GUARD_END
 

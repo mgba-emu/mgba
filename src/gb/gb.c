@@ -143,8 +143,12 @@ void GBYankROM(struct GB* gb) {
 static void GBSramDeinit(struct GB* gb) {
 	if (gb->sramVf) {
 		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, gb->sramSize);
-		if (gb->memory.mbcType == GB_MBC3_RTC && gb->sramVf == gb->sramRealVf) {
-			GBMBCRTCWrite(gb);
+		if (gb->sramVf == gb->sramRealVf) {
+			if (gb->memory.mbcType == GB_MBC3_RTC) {
+				GBMBCRTCWrite(gb);
+			} else if (gb->memory.mbcType == GB_HuC3) {
+				GBMBCHuC3Write(gb);
+			}
 		}
 		gb->sramVf = NULL;
 	} else if (gb->memory.sram) {
@@ -163,6 +167,8 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 
 		if (gb->memory.mbcType == GB_MBC3_RTC) {
 			GBMBCRTCRead(gb);
+		} else if (gb->memory.mbcType == GB_HuC3) {
+			GBMBCHuC3Read(gb);
 		}
 	}
 	return vf;
@@ -246,6 +252,8 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 		}
 		if (gb->memory.mbcType == GB_MBC3_RTC) {
 			GBMBCRTCWrite(gb);
+		} else if (gb->memory.mbcType == GB_HuC3) {
+			GBMBCHuC3Write(gb);
 		}
 		if (gb->sramVf == gb->sramRealVf) {
 			if (gb->memory.sram && gb->sramVf->sync(gb->sramVf, gb->memory.sram, gb->sramSize)) {
