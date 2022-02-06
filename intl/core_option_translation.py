@@ -134,13 +134,12 @@ def is_viable_non_dupe(text: str, comparison) -> bool:
 
 
 def is_viable_value(text: str) -> bool:
-   """text must be longer than 2 ('""'), not 'NULL' and text.lower() not in
-   {'"enabled"', '"disabled"', '"true"', '"false"', '"on"', '"off"'}.
+   """text must be longer than 2 ('""') and not 'NULL'.
 
    :param text: String to be tested.
    :return: bool
    """
-   return 2 < len(text) and text != 'NULL' and text.lower() not in ON_OFFS
+   return 2 < len(text) and text != 'NULL'
 
 
 def create_non_dupe(base_name: str, opt_num: int, comparison) -> str:
@@ -248,16 +247,21 @@ def get_texts(text: str) -> dict:
          else:
             raise ValueError(f'Too few arguments in struct {struct_type_name[1]} option {option.group(1)}!')
 
-         # group 4:
+         # group 4: key/value pairs
          if option.group(4):
             for j, kv_set in enumerate(cor.p_key_value.finditer(option.group(4))):
                set_key, set_value = kv_set.group(1, 2)
                if not is_viable_value(set_value):
-                  if not is_viable_value(set_key):
-                     continue
+                  # use the key if value not available
                   set_value = set_key
+                  if not is_viable_value(set_value):
+                     continue
                # re.fullmatch(r'(?:[+-][0-9]+)+', value[1:-1])
-               if set_value not in just_string[lang] and not re.sub(r'[+-]', '', set_value[1:-1]).isdigit():
+
+               # add only if non-dupe, not translated by RetroArch directly & not purely numeric
+               if set_value not in just_string[lang]\
+                  and set_value.lower() not in ON_OFFS\
+                  and not re.sub(r'[+-]', '', set_value[1:-1]).isdigit():
                   clean_key = set_key[1:-1]
                   clean_key = remove_special_chars(clean_key).upper().replace(' ', '_')
                   m_h = create_non_dupe(re.sub(r'__+', '_', f"OPTION_VAL_{clean_key}"), opt, hash_n_string[lang])
@@ -585,7 +589,7 @@ def create_intl_file(localisation_file_path: str, intl_dir_path: str, text: str,
 
 if __name__ == '__main__':
    try:
-      if os.path.isfile(sys.argv[1]):
+      if os.path.isfile(sys.argv[1]) or sys.argv[1].endswith('.h'):
          _temp = os.path.dirname(sys.argv[1])
       else:
          _temp = sys.argv[1]
