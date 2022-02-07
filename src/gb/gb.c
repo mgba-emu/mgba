@@ -587,6 +587,53 @@ void GBSkipBIOS(struct GB* gb) {
 		break;
 	}
 
+	unsigned i;
+	for (i = 0; i < sizeof(cart->logo); ++i) {
+		uint8_t byte = GBLoad8(cpu, 0x104 + i);
+
+		uint8_t output0 = 0;
+		uint8_t output1 = 0;
+
+		output0 |= (byte & 0x80) >> 0;
+		output0 |= (byte & 0x40) >> 1;
+		output0 |= (byte & 0x20) >> 2;
+		output0 |= (byte & 0x10) >> 3;
+		output0 |= output0 >> 1;
+
+		output1 |= (byte & 0x08) << 3;
+		output1 |= (byte & 0x04) << 2;
+		output1 |= (byte & 0x02) << 1;
+		output1 |= (byte & 0x01) << 0;
+		output1 |= output1 << 1;
+
+		if (gb->model < GB_MODEL_CGB) {
+			GBPatch8(cpu, 0x8010 + i * 8, output0, NULL, 0);
+			GBPatch8(cpu, 0x8012 + i * 8, output0, NULL, 0);
+			GBPatch8(cpu, 0x8014 + i * 8, output1, NULL, 0);
+			GBPatch8(cpu, 0x8016 + i * 8, output1, NULL, 0);
+		} else {
+			GBPatch8(cpu, 0x8380 + i * 2, output0, NULL, 0);
+			GBPatch8(cpu, 0x8381 + i * 2, output1, NULL, 0);
+		}
+	}
+	if (gb->model < GB_MODEL_CGB) {
+		for (i = 0; i < 12; ++i) {
+			GBPatch8(cpu, 0x9904 + i, i + 1, NULL, 0);
+			GBPatch8(cpu, 0x9924 + i, i + 13, NULL, 0);
+		}
+		GBPatch8(cpu, 0x9910, 0x19, NULL, 0);
+		for (i = 0; i < sizeof(_registeredTrademark); ++i) {
+			GBPatch8(cpu, 0x8191 + i * 2, _registeredTrademark[i], NULL, 0);
+		}
+	} else {
+		for (i = 0; i < 7; ++i) {
+			GBPatch8(cpu, 0x99A7 + i, i + 0x38, NULL, 0);
+		}
+		for (i = 0; i < sizeof(_registeredTrademark); ++i) {
+			GBPatch8(cpu, 0x83E1 + i * 2, _registeredTrademark[i], NULL, 0);
+		}
+	}
+
 	cpu->sp = 0xFFFE;
 	cpu->pc = 0x100;
 
