@@ -453,7 +453,7 @@ static void _GBCoreUnloadROM(struct mCore* core) {
 		mCheatDeviceDestroy(gbcore->cheatDevice);
 		gbcore->cheatDevice = NULL;
 	}
-	return GBUnloadROM(core->board);
+	GBUnloadROM(core->board);
 }
 
 static void _GBCoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
