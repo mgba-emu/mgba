@@ -23,7 +23,8 @@ const uint32_t SGB_SM83_FREQUENCY = 0x418B1E;
 
 const uint32_t GB_COMPONENT_MAGIC = 0x400000;
 
-static const uint8_t _knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
+static const uint8_t _knownHeader[4] = {0xCE, 0xED, 0x66, 0x66};
+static const uint8_t _registeredTrademark[] = {0x3C, 0x42, 0xB9, 0xA5, 0xB9, 0xA5, 0x42, 0x3C};
 
 #define DMG0_BIOS_CHECKSUM 0xC2F5CC97
 #define DMG_BIOS_CHECKSUM 0x59C8598E
