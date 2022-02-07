@@ -145,11 +145,7 @@ struct GBMBC1State {
 };
 
 struct GBMBC6State {
-	int currentBank1;
-	uint8_t* romBank1;
 	bool sramAccess;
-	int currentSramBank1;
-	uint8_t* sramBank1;
 	bool flashBank0;
 	bool flashBank1;
 };
@@ -191,6 +187,10 @@ struct GBPKJDState {
 	uint8_t reg[2];
 };
 
+struct GBNTNewState {
+	bool splitMode;
+};
+
 struct GBBBDState {
 	int dataSwapMode;
 	int bankSwapMode;
@@ -204,6 +204,7 @@ union GBMBCState {
 	struct GBPocketCamState pocketCam;
 	struct GBTAMA5State tama5;
 	struct GBHuC3State huc3;
+	struct GBNTNewState ntNew;
 	struct GBPKJDState pkjd;
 	struct GBBBDState bbd;
 };
@@ -219,6 +220,11 @@ struct GBMemory {
 	union GBMBCState mbcState;
 	int currentBank;
 	int currentBank0;
+	int currentBank1;
+	uint8_t* romBank1;
+	int currentSramBank1;
+	uint8_t* sramBank1;
+
 	unsigned cartBusDecay;
 	uint16_t cartBusPc;
 	uint8_t cartBus;

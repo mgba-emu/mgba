@@ -38,6 +38,7 @@ static void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBWisdomTree(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBPKJD(struct GB* gb, uint16_t address, uint8_t value);
+static void _GBNTNew(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBBBD(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBHitek(struct GB* gb, uint16_t address, uint8_t value);
 
@@ -86,7 +87,10 @@ void GBMBCSwitchBank0(struct GB* gb, int bank) {
 
 void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_HALFBANK;
-	bool isFlash = half ? gb->memory.mbcState.mbc6.flashBank1 : gb->memory.mbcState.mbc6.flashBank0;
+	bool isFlash = false;
+	if (gb->memory.mbcType == GB_MBC6) {
+		isFlash = half ? gb->memory.mbcState.mbc6.flashBank1 : gb->memory.mbcState.mbc6.flashBank0;
+	}
 	if (isFlash) {
 		if (bankStart + GB_SIZE_CART_HALFBANK > GB_SIZE_MBC6_FLASH) {
 			mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid Flash bank: %0X", bank);
@@ -113,11 +117,11 @@ void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
 		gb->memory.currentBank = bank;
 	} else {
 		if (isFlash) {
-			gb->memory.mbcState.mbc6.romBank1 = &gb->memory.sram[bankStart];
+			gb->memory.romBank1 = &gb->memory.sram[bankStart];
 		} else {
-			gb->memory.mbcState.mbc6.romBank1 = &gb->memory.rom[bankStart];
+			gb->memory.romBank1 = &gb->memory.rom[bankStart];
 		}
-		gb->memory.mbcState.mbc6.currentBank1 = bank;
+		gb->memory.currentBank1 = bank;
 	}
 	if (gb->cpu->pc < GB_BASE_VRAM) {
 		gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
@@ -220,8 +224,8 @@ void GBMBCSwitchSramHalfBank(struct GB* gb, int half, int bank) {
 		gb->memory.sramBank = &gb->memory.sram[bankStart];
 		gb->memory.sramCurrentBank = bank;
 	} else {
-		gb->memory.mbcState.mbc6.sramBank1 = &gb->memory.sram[bankStart];
-		gb->memory.mbcState.mbc6.currentSramBank1 = bank;
+		gb->memory.sramBank1 = &gb->memory.sram[bankStart];
+		gb->memory.currentSramBank1 = bank;
 	}
 }
 
@@ -403,6 +407,13 @@ void GBMBCInit(struct GB* gb) {
 	case GB_UNL_WISDOM_TREE:
 		gb->memory.mbcWrite = _GBWisdomTree;
 		break;
+	case GB_UNL_NT_NEW:
+		gb->memory.mbcWrite = _GBNTNew;
+		break;
+	case GB_UNL_PKJD:
+		gb->memory.mbcWrite = _GBPKJD;
+		gb->memory.mbcRead = _GBPKJDRead;
+		break;
 	case GB_UNL_BBD:
 		gb->memory.mbcWrite = _GBBBD;
 		gb->memory.mbcRead = _GBBBDRead;
@@ -412,10 +423,6 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcRead = _GBHitekRead;
 		gb->memory.mbcState.bbd.dataSwapMode = 7;
 		gb->memory.mbcState.bbd.bankSwapMode = 7;
-		break;
-	case GB_UNL_PKJD:
-		gb->memory.mbcWrite = _GBPKJD;
-		gb->memory.mbcRead = _GBPKJDRead;
 		break;
 	}
 
@@ -790,7 +797,7 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 	case 0x2E:
 	case 0x2F:
 		if (memory->sramAccess) {
-			memory->mbcState.mbc6.sramBank1[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)] = value;
+			memory->sramBank1[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)] = value;
 		}
 		break;
 	default:
@@ -807,7 +814,7 @@ uint8_t _GBMBC6Read(struct GBMemory* memory, uint16_t address) {
 	case 0xA:
 		return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)];
 	case 0xB:
-		return memory->mbcState.mbc6.sramBank1[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)];
+		return memory->sramBank1[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)];
 	}
 	return 0xFF;
 }
@@ -818,7 +825,7 @@ static void _GBMBC6MapChip(struct GB* gb, int half, uint8_t value) {
 		GBMBCSwitchHalfBank(gb, half, gb->memory.currentBank);
 	} else {
 		gb->memory.mbcState.mbc6.flashBank1 = !!(value & 0x08);
-		GBMBCSwitchHalfBank(gb, half, gb->memory.mbcState.mbc6.currentBank1);
+		GBMBCSwitchHalfBank(gb, half, gb->memory.currentBank1);
 	}
 }
 
@@ -1575,6 +1582,29 @@ static uint8_t _GBPKJDRead(struct GBMemory* memory, uint16_t address) {
 	default:
 		return 0;
 	}
+}
+
+void _GBNTNew(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBMemory* memory = &gb->memory;
+	if (address >> 8 == 0x14) {
+		memory->mbcState.ntNew.splitMode = true;
+		return;
+	}
+	if (memory->mbcState.ntNew.splitMode) {
+		int bank = value;
+		if (bank < 2) {
+			bank = 2;
+		}
+		switch (address >> 10) {
+		case 8:
+			GBMBCSwitchHalfBank(gb, 0, bank);
+			return;
+		case 9:
+			GBMBCSwitchHalfBank(gb, 1, bank);
+			return;
+		}
+	}
+	_GBMBC5(gb, address, value);
 }
 
 static uint8_t _reorderBits(uint8_t input, const uint8_t* reorder) {

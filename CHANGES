@@ -13,6 +13,7 @@ Features:
  - Additional scaling shaders
  - Support for GameShark Advance SP (.gsv) save file importing
  - Support for multiple saves per game using .sa2, .sa3, etc.
+ - New unlicensed GB mappers: NT (newer type)
 Emulation fixes:
  - ARM7: Fix unsigned multiply timing
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)

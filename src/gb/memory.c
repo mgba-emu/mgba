@@ -95,14 +95,14 @@ static void GBSetActiveRegion(struct SM83Core* cpu, uint16_t address) {
 			break;
 		}
 		cpu->memory.cpuLoad8 = GBCartLoad8;
-		if (gb->memory.mbcType != GB_MBC6) {
+		if (gb->memory.mbcType != GB_MBC6 && !(gb->memory.mbcType == GB_UNL_NT_NEW && gb->memory.mbcState.ntNew.splitMode)) {
 			cpu->memory.activeRegion = memory->romBank;
 			cpu->memory.activeRegionEnd = GB_BASE_VRAM;
 			cpu->memory.activeMask = GB_SIZE_CART_BANK0 - 1;
 		} else {
 			cpu->memory.activeMask = GB_SIZE_CART_HALFBANK - 1;
 			if (address & 0x2000) {
-				cpu->memory.activeRegion = memory->mbcState.mbc6.romBank1;
+				cpu->memory.activeRegion = memory->romBank1;
 				cpu->memory.activeRegionEnd = GB_BASE_VRAM;
 			} else {
 				cpu->memory.activeRegion = memory->romBank;
@@ -252,8 +252,8 @@ uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 		return memory->cartBus;
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
-		if (memory->mbcType == GB_MBC6) {
-			memory->cartBus = memory->mbcState.mbc6.romBank1[address & (GB_SIZE_CART_HALFBANK - 1)];
+		if (gb->memory.mbcType == GB_MBC6 || (gb->memory.mbcType == GB_UNL_NT_NEW && gb->memory.mbcState.ntNew.splitMode)) {
+			memory->cartBus = memory->romBank1[address & (GB_SIZE_CART_HALFBANK - 1)];
 			memory->cartBusPc = cpu->pc;
 			return memory->cartBus;
 		}

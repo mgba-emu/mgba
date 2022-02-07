@@ -668,11 +668,21 @@ static const struct GBCartridgeOverride _sgbOverrides[] = {
 
 static const struct GBCartridgeOverride _overrides[] = {
 	// Pokemon Spaceworld 1997 demo
-	{ 0x232a067d, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Gold (debug)
-	{ 0x630ed957, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Gold (non-debug)
-	{ 0x5aff0038, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Silver (debug)
-	{ 0xa61856bd, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Silver (non-debug)
-	{ 0x30f8f86c, GB_MODEL_AUTODETECT, GB_UNL_PKJD, { 0 } }, // Pokemon Jade Version (Telefang Speed bootleg)
+	{ 0x232A067D, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Gold (debug)
+	{ 0x630ED957, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Gold (non-debug)
+	{ 0x5AFF0038, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Silver (debug)
+	{ 0xA61856BD, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Silver (non-debug)
+	{ 0x30F8F86C, GB_MODEL_AUTODETECT, GB_UNL_PKJD, { 0 } }, // Pokemon Jade Version (Telefang Speed bootleg)
+	{ 0xB289D95A, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Capcom vs SNK - Millennium Fight 2001
+	{ 0x688D6713, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Digimon 02 4
+	{ 0x8931A272, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Digimon 2
+	{ 0x79083C6B, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Digimon Pocket
+	{ 0x0C5047EE, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Harry Potter 3
+	{ 0x8AC634B7, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Pokemon Diamond (Special Pikachu Edition)
+	{ 0x8628A287, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Pokemon Jade (Special Pikachu Edition)
+	{ 0xBC75D7B8, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Pokemon - Mewtwo Strikes Back
+	{ 0xFF0B60CC, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Shuma Baolong 02 4
+	{ 0x14A992A6, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // /Street Fighter Zero 4
 
 	{ 0, 0, 0, { 0 } }
 };
