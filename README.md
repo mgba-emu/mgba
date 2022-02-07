@@ -33,7 +33,7 @@ Features
 - Remappable controls for both keyboards and gamepads.
 - Loading from ZIP and 7z files.
 - IPS, UPS and BPS patch support.
-- Game debugging via a command-line interface and GDB remote support, compatible with IDA Pro.
+- Game debugging via a command-line interface and GDB remote support, compatible with Ghidra and IDA Pro.
 - Configurable emulation rewinding.
 - Support for loading and exporting GameShark and Action Replay snapshots.
 - Cores available for RetroArch/Libretro and OpenEmu.
@@ -53,6 +53,7 @@ The following mappers are fully supported:
 - MBC5+Rumble
 - MBC7
 - Wisdom Tree (unlicensed)
+- NT "new type" (unlicensed MBC5-like)
 - Pokémon Jade/Diamond (unlicensed)
 - BBD (unlicensed MBC5-like)
 - Hitek (unlicensed MBC5-like)
@@ -64,7 +65,7 @@ The following mappers are partially supported:
 - Pocket Cam
 - TAMA5 (missing RTC support)
 - HuC-1 (missing IR support)
-- HuC-3 (missing RTC and IR support)
+- HuC-3 (missing IR support)
 
 ### Planned features
 
@@ -242,7 +243,7 @@ Footnotes
 Copyright
 ---------
 
-mGBA is Copyright © 2013 – 2021 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
+mGBA is Copyright © 2013 – 2022 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
 
 mGBA contains the following third-party libraries:
 
