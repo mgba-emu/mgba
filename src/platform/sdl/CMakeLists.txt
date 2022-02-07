@@ -6,7 +6,7 @@ if (SDL_VERSION EQUAL "2")
 	if (NOT SDL2_FOUND)
 		find_package(SDL2)
 	endif()
-	
+
 	if (SDL2_FOUND)
 		set(SDL_INCLUDE_DIR ${SDL2_INCLUDE_DIRS})
 		set(SDL_LIBRARY ${SDL2_LIBRARIES})
@@ -15,7 +15,11 @@ if (SDL_VERSION EQUAL "2")
 		set(SDL_FOUND ON PARENT_SCOPE)
 
 		if (NOT SDL2MAIN_LIBRARY)
-			set(SDL2MAIN_LIBRARY "")
+			if(TARGET SDL2::SDL2main)
+				set(SDL2MAIN_LIBRARY SDL2::SDL2main)
+			else()
+				set(SDL2MAIN_LIBRARY "")
+			endif()
 		endif()
 
 		set(SDLMAIN_LIBRARY ${SDL2MAIN_LIBRARY})
