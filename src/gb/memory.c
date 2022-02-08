@@ -73,7 +73,7 @@ static void GBSetActiveRegion(struct SM83Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 1:
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
-		if ((gb->memory.mbcType & GB_UNL_SACHEN_MMC1) == GB_UNL_SACHEN_MMC1) {
+		if (gb->memory.mbcReadBank0) {
 			cpu->memory.cpuLoad8 = GBLoad8;
 			break;
 		}
@@ -94,7 +94,7 @@ static void GBSetActiveRegion(struct SM83Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK1 + 1:
 	case GB_REGION_CART_BANK1 + 2:
 	case GB_REGION_CART_BANK1 + 3:
-		if ((gb->memory.mbcType & GB_UNL_BBD) == GB_UNL_BBD) {
+		if (gb->memory.mbcReadBank1) {
 			cpu->memory.cpuLoad8 = GBLoad8;
 			break;
 		}
@@ -249,7 +249,7 @@ uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 3:
 		if (address >= memory->romSize) {
 			memory->cartBus = 0xFF;
-		} else if ((memory->mbcType & GB_UNL_SACHEN_MMC1) == GB_UNL_SACHEN_MMC1) {
+		} else if (gb->memory.mbcReadBank0) {
 			memory->cartBus = memory->mbcRead(memory, address);
 		} else {
 			memory->cartBus = memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)];
@@ -268,7 +268,7 @@ uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK1 + 1:
 		if (address >= memory->romSize) {
 			memory->cartBus = 0xFF;
-		} else if ((memory->mbcType & GB_UNL_BBD) == GB_UNL_BBD) {
+		} else if (gb->memory.mbcReadBank1) {
 			memory->cartBus = memory->mbcRead(memory, address);
 		} else {
 			memory->cartBus = memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
@@ -298,8 +298,14 @@ uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 		return memory->cartBus;
 	case GB_REGION_WORKING_RAM_BANK0:
 	case GB_REGION_WORKING_RAM_BANK0 + 2:
+		if (gb->memory.mbcReadHigh) {
+			memory->mbcRead(memory, address);
+		}
 		return memory->wram[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
 	case GB_REGION_WORKING_RAM_BANK1:
+		if (gb->memory.mbcReadHigh) {
+			memory->mbcRead(memory, address);
+		}
 		return memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
 	default:
 		if (address < GB_BASE_OAM) {
@@ -373,9 +379,15 @@ void GBStore8(struct SM83Core* cpu, uint16_t address, int8_t value) {
 		return;
 	case GB_REGION_WORKING_RAM_BANK0:
 	case GB_REGION_WORKING_RAM_BANK0 + 2:
+		if (memory->mbcWriteHigh) {
+			memory->mbcWrite(gb, address, value);
+		}
 		memory->wram[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)] = value;
 		return;
 	case GB_REGION_WORKING_RAM_BANK1:
+		if (memory->mbcWriteHigh) {
+			memory->mbcWrite(gb, address, value);
+		}
 		memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)] = value;
 		return;
 	default:

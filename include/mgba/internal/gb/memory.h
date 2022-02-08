@@ -248,6 +248,11 @@ struct GBMemory {
 	uint8_t* wramBank;
 	int wramCurrentBank;
 
+	bool mbcReadBank0;
+	bool mbcReadBank1;
+	bool mbcReadHigh;
+	bool mbcWriteHigh;
+
 	bool sramAccess;
 	bool directSramAccess;
 	uint8_t* sram;

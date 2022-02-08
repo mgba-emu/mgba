@@ -636,6 +636,10 @@ void GBSkipBIOS(struct GB* gb) {
 		}
 	}
 
+	if (gb->memory.mbcType == GB_UNL_SACHEN_MMC2) {
+		gb->memory.mbcState.sachen.locked = GB_SACHEN_UNLOCKED;
+	}
+
 	cpu->sp = 0xFFFE;
 	cpu->pc = 0x100;
 
@@ -660,7 +664,7 @@ void GBMapBIOS(struct GB* gb) {
 	if (gb->memory.rom) {
 		memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
 		if (size > 0x100) {
-			memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], sizeof(struct GBCartridge));
+			memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], 0x100);
 		}
 	}
 }
