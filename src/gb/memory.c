@@ -73,6 +73,10 @@ static void GBSetActiveRegion(struct SM83Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 1:
 	case GB_REGION_CART_BANK0 + 2:
 	case GB_REGION_CART_BANK0 + 3:
+		if ((gb->memory.mbcType & GB_UNL_SACHEN_MMC1) == GB_UNL_SACHEN_MMC1) {
+			cpu->memory.cpuLoad8 = GBLoad8;
+			break;
+		}
 		cpu->memory.cpuLoad8 = GBCartLoad8;
 		cpu->memory.activeRegion = memory->romBase;
 		cpu->memory.activeRegionEnd = GB_BASE_CART_BANK1;
@@ -245,6 +249,8 @@ uint8_t GBLoad8(struct SM83Core* cpu, uint16_t address) {
 	case GB_REGION_CART_BANK0 + 3:
 		if (address >= memory->romSize) {
 			memory->cartBus = 0xFF;
+		} else if ((memory->mbcType & GB_UNL_SACHEN_MMC1) == GB_UNL_SACHEN_MMC1) {
+			memory->cartBus = memory->mbcRead(memory, address);
 		} else {
 			memory->cartBus = memory->romBase[address & (GB_SIZE_CART_BANK0 - 1)];
 		}
@@ -766,6 +772,14 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 		state->memory.bbd.dataSwapMode = memory->mbcState.bbd.dataSwapMode;
 		state->memory.bbd.bankSwapMode = memory->mbcState.bbd.bankSwapMode;
 		break;
+	case GB_UNL_SACHEN_MMC1:
+	case GB_UNL_SACHEN_MMC2:
+		state->memory.sachen.flags = GBSerializedSachenFlagsSetTransition(0, memory->mbcState.sachen.transition);
+		state->memory.sachen.flags = GBSerializedSachenFlagsSetLocked(state->memory.sachen.flags, memory->mbcState.sachen.locked);
+		state->memory.sachen.mask = memory->mbcState.sachen.mask;
+		state->memory.sachen.unmaskedBank = memory->mbcState.sachen.unmaskedBank;
+		state->memory.sachen.baseBank = memory->mbcState.sachen.baseBank;
+		break;
 	default:
 		break;
 	}
@@ -871,6 +885,15 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	case GB_UNL_HITEK:
 		memory->mbcState.bbd.dataSwapMode = state->memory.bbd.dataSwapMode & 0x7;
 		memory->mbcState.bbd.bankSwapMode = state->memory.bbd.bankSwapMode & 0x7;
+		break;
+	case GB_UNL_SACHEN_MMC1:
+	case GB_UNL_SACHEN_MMC2:
+		memory->mbcState.sachen.transition = GBSerializedSachenFlagsGetTransition(state->memory.sachen.flags);
+		memory->mbcState.sachen.locked = GBSerializedSachenFlagsGetLocked(state->memory.sachen.flags);
+		memory->mbcState.sachen.mask = state->memory.sachen.mask;
+		memory->mbcState.sachen.unmaskedBank = state->memory.sachen.unmaskedBank;
+		memory->mbcState.sachen.baseBank = state->memory.sachen.baseBank;
+		GBMBCSwitchBank0(gb, memory->mbcState.sachen.baseBank & memory->mbcState.sachen.mask);
 		break;
 	default:
 		break;

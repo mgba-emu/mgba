@@ -24,6 +24,7 @@ const uint32_t SGB_SM83_FREQUENCY = 0x418B1E;
 const uint32_t GB_COMPONENT_MAGIC = 0x400000;
 
 static const uint8_t _knownHeader[4] = {0xCE, 0xED, 0x66, 0x66};
+static const uint8_t _knownHeaderSachen[4] = {0x7C, 0xE7, 0xC0, 0x00};
 static const uint8_t _registeredTrademark[] = {0x3C, 0x42, 0xB9, 0xA5, 0xB9, 0xA5, 0x42, 0x3C};
 
 #define DMG0_BIOS_CHECKSUM 0xC2F5CC97
@@ -906,16 +907,30 @@ bool GBIsROM(struct VFile* vf) {
 	if (!vf) {
 		return false;
 	}
-	vf->seek(vf, 0x104, SEEK_SET);
-	uint8_t header[4];
+	vf->seek(vf, 0x100, SEEK_SET);
+	uint8_t header[0x100];
 
 	if (vf->read(vf, &header, sizeof(header)) < (ssize_t) sizeof(header)) {
 		return false;
 	}
-	if (memcmp(header, _knownHeader, sizeof(header))) {
-		return false;
+	if (memcmp(&header[4], _knownHeader, sizeof(_knownHeader)) == 0) {
+		return true;
 	}
-	return true;
+	if (memcmp(&header[4], _knownHeaderSachen, sizeof(_knownHeaderSachen)) == 0) {
+		// Sachen logo
+		return true;
+	}
+	if (header[0x04] == _knownHeader[0] && header[0x44] == _knownHeader[1] &&
+	    header[0x14] == _knownHeader[2] && header[0x54] == _knownHeader[3]) {
+		// Sachen MMC1 scrambled header
+		return true;
+	}
+	if (header[0x04] == _knownHeaderSachen[0] && header[0x44] == _knownHeaderSachen[1] &&
+	    header[0x14] == _knownHeaderSachen[2] && header[0x54] == _knownHeaderSachen[3]) {
+		// Sachen MMC2 scrambled header
+		return true;
+	}
+	return false;
 }
 
 void GBGetGameTitle(const struct GB* gb, char* out) {

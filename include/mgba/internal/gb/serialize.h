@@ -262,6 +262,10 @@ DECL_BITFIELD(GBSerializedMBC7Flags, uint8_t);
 DECL_BITS(GBSerializedMBC7Flags, Command, 0, 2);
 DECL_BIT(GBSerializedMBC7Flags, Writable, 2);
 
+DECL_BITFIELD(GBSerializedSachenFlags, uint8_t);
+DECL_BITS(GBSerializedSachenFlags, Transition, 0, 6);
+DECL_BITS(GBSerializedSachenFlags, Locked, 6, 2);
+
 DECL_BITFIELD(GBSerializedMemoryFlags, uint16_t);
 DECL_BIT(GBSerializedMemoryFlags, SramAccess, 0);
 DECL_BIT(GBSerializedMemoryFlags, RtcAccess, 1);
@@ -404,6 +408,12 @@ struct GBSerializedState {
 				uint8_t dataSwapMode;
 				uint8_t bankSwapMode;
 			} bbd;
+			struct {
+				GBSerializedSachenFlags flags;
+				uint8_t mask;
+				uint8_t unmaskedBank;
+				uint8_t baseBank;
+			} sachen;
 			struct {
 				uint8_t reserved[16];
 			} padding;
