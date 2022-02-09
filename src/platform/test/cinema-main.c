@@ -883,7 +883,7 @@ static void _write4UpDiff(const struct CInemaImage* expected, const struct CInem
 		size_t base = y * out.stride;
 		size_t inbase = y * expected->stride;
 		memcpy(&outdata[base], &((uint32_t*) expected->data)[inbase], expected->width * 4);
-		memcpy(&outdata[base + expected->width], &((uint32_t*) result->data)[inbase], expected->width * 4);
+		memcpy(&outdata[base + expected->width], &((uint32_t*) result->data)[y * result->stride], expected->width * 4);
 		memcpy(&outdata[base + expected->height * out.stride], &diff[inbase * 4], expected->width * 4);
 		for (x = 0; x < expected->width; ++x) {
 			size_t pix = (expected->stride * y + x) * 4;
