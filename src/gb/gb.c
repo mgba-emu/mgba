@@ -608,15 +608,13 @@ void GBSkipBIOS(struct GB* gb) {
 		output1 |= (byte & 0x01) << 0;
 		output1 |= output1 << 1;
 
-		if (gb->model < GB_MODEL_CGB) {
-			GBPatch8(cpu, 0x8010 + i * 8, output0, NULL, 0);
-			GBPatch8(cpu, 0x8012 + i * 8, output0, NULL, 0);
-			GBPatch8(cpu, 0x8014 + i * 8, output1, NULL, 0);
-			GBPatch8(cpu, 0x8016 + i * 8, output1, NULL, 0);
-		} else {
-			GBPatch8(cpu, 0x8380 + i * 2, output0, NULL, 0);
-			GBPatch8(cpu, 0x8381 + i * 2, output1, NULL, 0);
-		}
+		GBPatch8(cpu, 0x8010 + i * 8, output0, NULL, 0);
+		GBPatch8(cpu, 0x8012 + i * 8, output0, NULL, 0);
+		GBPatch8(cpu, 0x8014 + i * 8, output1, NULL, 0);
+		GBPatch8(cpu, 0x8016 + i * 8, output1, NULL, 0);
+	}
+	for (i = 0; i < sizeof(_registeredTrademark); ++i) {
+		GBPatch8(cpu, 0x8190 + i * 2, _registeredTrademark[i], NULL, 0);
 	}
 	if (gb->model < GB_MODEL_CGB) {
 		for (i = 0; i < 12; ++i) {
@@ -624,16 +622,6 @@ void GBSkipBIOS(struct GB* gb) {
 			GBPatch8(cpu, 0x9924 + i, i + 13, NULL, 0);
 		}
 		GBPatch8(cpu, 0x9910, 0x19, NULL, 0);
-		for (i = 0; i < sizeof(_registeredTrademark); ++i) {
-			GBPatch8(cpu, 0x8191 + i * 2, _registeredTrademark[i], NULL, 0);
-		}
-	} else {
-		for (i = 0; i < 7; ++i) {
-			GBPatch8(cpu, 0x99A7 + i, i + 0x38, NULL, 0);
-		}
-		for (i = 0; i < sizeof(_registeredTrademark); ++i) {
-			GBPatch8(cpu, 0x83E1 + i * 2, _registeredTrademark[i], NULL, 0);
-		}
 	}
 
 	if (gb->memory.mbcType == GB_UNL_SACHEN_MMC2) {
