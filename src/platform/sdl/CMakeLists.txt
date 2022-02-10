@@ -1,10 +1,10 @@
 set(SDL_VERSION "2" CACHE STRING "Version of SDL to use (1.2 or 2)")
 
 if (SDL_VERSION EQUAL "2")
-	include(FindPkgConfig)
-	pkg_search_module(SDL2 sdl2)
+	find_package(SDL2)
 	if (NOT SDL2_FOUND)
-		find_package(SDL2)
+		include(FindPkgConfig)
+		pkg_search_module(SDL2 sdl2)
 	endif()
 
 	if (SDL2_FOUND)
