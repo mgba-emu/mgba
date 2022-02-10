@@ -117,7 +117,6 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	gb->yankedRomSize = 0;
 	gb->memory.romSize = gb->pristineRomSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
-	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
 	GBMBCReset(gb);
 
 	if (gb->cpu) {

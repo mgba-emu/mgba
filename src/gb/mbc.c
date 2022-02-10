@@ -339,6 +339,10 @@ void GBMBCInit(struct GB* gb) {
 	}
 	gb->memory.mbcRead = NULL;
 	gb->memory.directSramAccess = true;
+	gb->memory.mbcReadBank0 = false;
+	gb->memory.mbcReadBank1 = false;
+	gb->memory.mbcReadHigh = false;
+	gb->memory.mbcWriteHigh = false;
 	gb->memory.cartBusDecay = 4;
 	switch (gb->memory.mbcType) {
 	case GB_MBC_NONE:
