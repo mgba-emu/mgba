@@ -56,7 +56,9 @@ GDBWindow::GDBWindow(GDBController* controller, QWidget* parent)
 	watchpointsSettings->setLayout(watchpointsSettingsLayout);
 
 	QButtonGroup* watchpointsButtonGroup = new QButtonGroup(watchpointsSettings);
-	connect(watchpointsButtonGroup, &QButtonGroup::idClicked, controller, &GDBController::setWatchpointsBehavior);
+	connect(watchpointsButtonGroup, qOverload<QAbstractButton*>(&QButtonGroup::buttonClicked), controller, [watchpointsButtonGroup, controller](QAbstractButton* button) {
+		controller->setWatchpointsBehavior(watchpointsButtonGroup->id(button));
+	});
 
 	m_watchpointsStandardRadio = new QRadioButton(tr("Standard GDB"), watchpointsSettings);
 	m_watchpointsStandardRadio->setChecked(true);
