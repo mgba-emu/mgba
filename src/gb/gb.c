@@ -84,6 +84,8 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->pristineRomSize = 0;
 	gb->yankedRomSize = 0;
 
+	memset(&gb->gbx, 0, sizeof(gb->gbx));
+
 	mCoreCallbacksListInit(&gb->coreCallbacks, 0);
 	gb->stream = NULL;
 
@@ -101,13 +103,79 @@ static void GBDeinit(struct mCPUComponent* component) {
 	mTimingDeinit(&gb->timing);
 }
 
+bool GBLoadGBX(struct GBXMetadata* metadata, struct VFile* vf) {
+	uint8_t footer[16];
+	if (vf->seek(vf, -sizeof(footer), SEEK_END) < 0) {
+		return false;
+	}
+	if (vf->read(vf, footer, sizeof(footer)) < (ssize_t) sizeof(footer)) {
+		return false;
+	}
+	int32_t gbxSize = 0;
+	uint32_t vers;
+	LOAD_32BE(gbxSize, 0, footer);
+	LOAD_32BE(vers, 4, footer);
+	if (memcmp(&footer[12], "GBX!", 4) != 0 || gbxSize != 0x40 || vers != 1) {
+		return false;
+	}
+	if (vf->seek(vf, -gbxSize, SEEK_END) < 0) {
+		return false;
+	}
+	if (vf->read(vf, footer, sizeof(footer)) != (ssize_t) sizeof(footer)) {
+		return false;
+	}
+	memset(metadata, 0, sizeof(*metadata));
+	metadata->mbc = GBMBCFromGBX(footer);
+
+	if (footer[4] == 1) {
+		metadata->battery = true;
+	}
+	if (footer[5] == 1) {
+		metadata->rumble = true;
+		if (metadata->mbc == GB_MBC5) {
+			metadata->mbc = GB_MBC5_RUMBLE;
+		}
+	}
+	if (footer[6] == 1) {
+		metadata->timer = true;
+		if (metadata->mbc == GB_MBC3) {
+			metadata->mbc = GB_MBC3_RTC;
+		}
+	}
+	LOAD_32BE(metadata->romSize, 8, footer);
+	LOAD_32BE(metadata->ramSize, 12, footer);
+	vf->read(vf, &metadata->mapperVars, 0x20);
+
+	// There's no dedicated mapper type for MBC1M so let's stash some data here
+	if (memcmp(footer, "MBC1", 4) == 0) {
+		metadata->mapperVars.u8[0] = 5;
+	} else if (memcmp(footer, "MB1M", 4) == 0) {
+		metadata->mapperVars.u8[0] = 4;		
+	}
+	return true;
+}
+
 bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	if (!vf) {
 		return false;
 	}
 	GBUnloadROM(gb);
+
+	if (!GBLoadGBX(&gb->gbx, vf)) {
+		// GBX handles the pristine size itself, but other formats don't
+		gb->pristineRomSize = vf->size(vf);
+	} else {
+		uint32_t fileSize = vf->size(vf);
+		if (gb->gbx.romSize <= fileSize - 0x40) {
+			gb->pristineRomSize = gb->gbx.romSize;
+		} else {
+			// TODO: Should we make a temporary buffer?
+			mLOG(GB, WARN, "GBX file size %d is larger than real file size %d", gb->gbx.romSize, fileSize - 0x40);
+			gb->pristineRomSize = fileSize - 0x40;
+		}
+	}
+
 	gb->romVf = vf;
-	gb->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
 	gb->isPristine = true;
 	gb->memory.rom = vf->map(vf, gb->pristineRomSize, MAP_READ);
@@ -921,6 +989,21 @@ bool GBIsROM(struct VFile* vf) {
 		// Sachen MMC2 scrambled header
 		return true;
 	}
+
+	uint8_t footer[16];
+	vf->seek(vf, -sizeof(footer), SEEK_END);
+	if (vf->read(vf, footer, sizeof(footer)) < (ssize_t) sizeof(footer)) {
+		return false;
+	}
+	uint32_t size;
+	uint32_t vers;
+	LOAD_32BE(size, 0, footer);
+	LOAD_32BE(vers, 4, footer);
+	if (memcmp(&footer[12], "GBX!", 4) == 0 && size == 0x40 && vers == 1) {
+		// GBX file
+		return true;
+	}
+
 	return false;
 }
 

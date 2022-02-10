@@ -13,6 +13,7 @@ Features:
  - Additional scaling shaders
  - Support for GameShark Advance SP (.gsv) save file importing
  - Support for multiple saves per game using .sa2, .sa3, etc.
+ - Support for GBX format Game Boy ROMs
  - New unlicensed GB mappers: NT (newer type), Sachen (MMC1, MMC2)
 Emulation fixes:
  - ARM7: Fix unsigned multiply timing

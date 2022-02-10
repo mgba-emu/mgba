@@ -131,6 +131,55 @@ void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
 	}
 }
 
+static struct {
+	const char* fourcc;
+	enum GBMemoryBankControllerType mbc;
+} _gbxToMbc[] = {
+	{"ROM", GB_MBC_NONE},
+	{"MBC1", GB_MBC1},
+	{"MBC2", GB_MBC2},
+	{"MBC3", GB_MBC3},
+	{"MBC5", GB_MBC5},
+	{"MBC6", GB_MBC6},
+	{"MBC7", GB_MBC7},
+	{"MB1M", GB_MBC1},
+	{"MMM1", GB_MMM01},
+	{"CAMR", GB_POCKETCAM},
+	{"HUC1", GB_HuC1},
+	{"HUC3", GB_HuC3},
+	{"TAM5", GB_TAMA5},
+	{"M161", GB_MBC_AUTODETECT}, // TODO
+	{"BBD", GB_UNL_BBD},
+	{"HITK", GB_UNL_HITEK},
+	{"SNTX", GB_MBC_AUTODETECT}, // TODO
+	{"NTO1", GB_MBC_AUTODETECT}, // TODO
+	{"NTO2", GB_MBC_AUTODETECT}, // TODO
+	{"NTN", GB_UNL_NT_NEW},
+	{"LICH", GB_MBC_AUTODETECT}, // TODO
+	{"LBMC", GB_MBC_AUTODETECT}, // TODO
+	{"LIBA", GB_MBC_AUTODETECT}, // TODO
+	{"PKJD", GB_UNL_PKJD},
+	{"WISD", GB_UNL_WISDOM_TREE},
+	{"SAM1", GB_UNL_SACHEN_MMC1},
+	{"SAM2", GB_UNL_SACHEN_MMC2},
+	{"ROCK", GB_MBC_AUTODETECT}, // TODO
+	{"NGHK", GB_MBC_AUTODETECT}, // TODO
+	{"GB81", GB_MBC_AUTODETECT}, // TODO
+	{"TPP1", GB_MBC_AUTODETECT}, // TODO
+
+	{NULL, GB_MBC_AUTODETECT},
+};
+
+enum GBMemoryBankControllerType GBMBCFromGBX(const void* fourcc) {
+	size_t i;
+	for (i = 0; _gbxToMbc[i].fourcc; ++i) {
+		if (memcmp(fourcc, _gbxToMbc[i].fourcc, 4) == 0) {
+			break;
+		}
+	}
+	return _gbxToMbc[i].mbc;
+}
+
 static bool _isMulticart(const uint8_t* mem) {
 	bool success;
 	struct VFile* vf;
@@ -249,23 +298,28 @@ void GBMBCInit(struct GB* gb) {
 				cart = cartFooter;
 			}
 		}
-		switch (cart->ramSize) {
-		case 0:
-			gb->sramSize = 0;
-			break;
-		default:
-		case 2:
-			gb->sramSize = 0x2000;
-			break;
-		case 3:
-			gb->sramSize = 0x8000;
-			break;
-		case 4:
-			gb->sramSize = 0x20000;
-			break;
-		case 5:
-			gb->sramSize = 0x10000;
-			break;
+		if (gb->gbx.romSize) {
+			gb->sramSize = gb->gbx.ramSize;
+			gb->memory.mbcType = gb->gbx.mbc;
+		} else {
+			switch (cart->ramSize) {
+			case 0:
+				gb->sramSize = 0;
+				break;
+			default:
+			case 2:
+				gb->sramSize = 0x2000;
+				break;
+			case 3:
+				gb->sramSize = 0x8000;
+				break;
+			case 4:
+				gb->sramSize = 0x20000;
+				break;
+			case 5:
+				gb->sramSize = 0x10000;
+				break;
+			}
 		}
 		if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
 			gb->memory.mbcType = _detectUnlMBC(gb->memory.rom, gb->memory.romSize);
@@ -350,7 +404,9 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_MBC1:
 		gb->memory.mbcWrite = _GBMBC1;
-		if (gb->memory.romSize >= GB_SIZE_CART_BANK0 * 0x31 && _isMulticart(gb->memory.rom)) {
+		if (gb->gbx.mapperVars.u8[0]) {
+			gb->memory.mbcState.mbc1.multicartStride = gb->gbx.mapperVars.u8[0];
+		} else if (gb->memory.romSize >= GB_SIZE_CART_BANK0 * 0x31 && _isMulticart(gb->memory.rom)) {
 			gb->memory.mbcState.mbc1.multicartStride = 4;
 		} else {
 			gb->memory.mbcState.mbc1.multicartStride = 5;

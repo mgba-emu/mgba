@@ -24,6 +24,8 @@ void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank);
 void GBMBCSwitchSramBank(struct GB* gb, int bank);
 void GBMBCSwitchSramHalfBank(struct GB* gb, int half, int bank);
 
+enum GBMemoryBankControllerType GBMBCFromGBX(const void* fourcc);
+
 enum GBCam {
 	GBCAM_WIDTH = 128,
 	GBCAM_HEIGHT = 112
