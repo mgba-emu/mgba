@@ -72,6 +72,19 @@ enum GBSGBCommand {
 	SGB_OBJ_TRN
 };
 
+struct GBXMetadata {
+	enum GBMemoryBankControllerType mbc;
+	bool battery;
+	bool rumble;
+	bool timer;
+	uint32_t romSize;
+	uint32_t ramSize;
+	union {
+		uint8_t u8[32];
+		uint32_t u32[8];
+	} mapperVars;
+};
+
 struct SM83Core;
 struct mCoreSync;
 struct mAVStream;
@@ -85,6 +98,7 @@ struct GB {
 	struct GBAudio audio;
 	struct GBSIO sio;
 	enum GBModel model;
+	struct GBXMetadata gbx;
 
 	struct mCoreSync* sync;
 	struct mTiming timing;
@@ -102,7 +116,7 @@ struct GB {
 	struct VFile* sramRealVf;
 	uint32_t sramSize;
 	int sramDirty;
-	int32_t sramDirtAge;
+	uint32_t sramDirtAge;
 	bool sramMaskWriteback;
 
 	int sgbBit;
@@ -165,6 +179,7 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf);
 void GBUnloadROM(struct GB* gb);
 void GBSynthesizeROM(struct VFile* vf);
 void GBYankROM(struct GB* gb);
+bool GBLoadGBX(struct GBXMetadata* metadata, struct VFile* vf);
 
 void GBLoadBIOS(struct GB* gb, struct VFile* vf);
 

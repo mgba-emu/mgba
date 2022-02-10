@@ -83,9 +83,6 @@ uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control) {
 
 	if (!wasEnabled && GBADMARegisterIsEnable(currentDma->reg)) {
 		currentDma->nextSource = currentDma->source;
-		if (currentDma->nextSource >= BASE_CART0 && currentDma->nextSource < BASE_CART_SRAM && GBADMARegisterGetSrcControl(currentDma->reg) < 3) {
-			currentDma->reg = GBADMARegisterClearSrcControl(currentDma->reg);
-		}
 		currentDma->nextDest = currentDma->dest;
 
 		uint32_t width = 2 << GBADMARegisterGetWidth(currentDma->reg);
@@ -291,7 +288,13 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		}
 		gba->bus = memory->dmaTransferRegister;
 	}
-	int sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
+
+	int sourceOffset;
+	if (info->nextSource >= BASE_CART0 && info->nextSource < BASE_CART_SRAM && GBADMARegisterGetSrcControl(info->reg) < 3) {
+		sourceOffset = width;
+	} else {
+		sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
+	}
 	int destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(info->reg)] * width;
 	if (source) {
 		source += sourceOffset;

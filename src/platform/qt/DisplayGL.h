@@ -21,7 +21,11 @@
 #include <QHash>
 #include <QList>
 #include <QMouseEvent>
+#include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include <QOpenGLShaderProgram>
+#include <QOpenGLVertexArrayObject>
+#include <QOpenGLWidget>
 #include <QPainter>
 #include <QQueue>
 #include <QThread>
@@ -35,10 +39,36 @@
 #include "platform/video-backend.h"
 
 class QOpenGLPaintDevice;
+class QOpenGLWidget;
 
 uint qHash(const QSurfaceFormat&, uint seed = 0);
 
 namespace QGBA {
+
+class mGLWidget : public QOpenGLWidget {
+Q_OBJECT
+
+public:
+	void setTex(GLuint tex) { m_tex = tex; }
+	void setVBO(GLuint vbo) { m_vbo = vbo; }
+	void finalizeVAO();
+
+protected:
+	void initializeGL() override;
+	void paintGL() override;
+
+private:
+	GLuint m_tex;
+	GLuint m_vbo;
+
+	bool m_vaoDone = false;
+	QOpenGLVertexArrayObject m_vao;
+	QOpenGLShaderProgram m_program;
+	GLuint m_positionLocation;
+
+	QTimer m_refresh;
+	int m_refreshResidue = 0;
+};
 
 class PainterGL;
 class DisplayGL : public Display {
@@ -66,6 +96,7 @@ public slots:
 	void lockIntegerScaling(bool lock) override;
 	void interframeBlending(bool enable) override;
 	void showOSDMessages(bool enable) override;
+	void showFrameCounter(bool enable) override;
 	void filter(bool filter) override;
 	void framePosted() override;
 	void setShaders(struct VDir*) override;
@@ -87,13 +118,14 @@ private:
 	std::unique_ptr<PainterGL> m_painter;
 	QThread m_drawThread;
 	std::shared_ptr<CoreController> m_context;
+	mGLWidget* m_gl;
 };
 
 class PainterGL : public QObject {
 Q_OBJECT
 
 public:
-	PainterGL(QWindow* surface, const QSurfaceFormat& format);
+	PainterGL(QWindow* surface, mGLWidget* widget, const QSurfaceFormat& format);
 	~PainterGL();
 
 	void setThread(QThread*);
@@ -122,6 +154,7 @@ public slots:
 	void lockIntegerScaling(bool lock);
 	void interframeBlending(bool enable);
 	void showOSD(bool enable);
+	void showFrameCounter(bool enable);
 	void filter(bool filter);
 	void resizeContext();
 
@@ -144,10 +177,14 @@ private:
 	uint32_t* m_buffer = nullptr;
 	QPainter m_painter;
 	QMutex m_mutex;
-	QWindow* m_surface;
+	QWindow* m_window;
+	QSurface* m_surface;
 	QSurfaceFormat m_format;
-	std::unique_ptr<QOpenGLPaintDevice> m_window;
+	std::unique_ptr<QOpenGLPaintDevice> m_paintDev;
 	std::unique_ptr<QOpenGLContext> m_gl;
+	int m_finalTexIdx = 0;
+	GLuint m_finalTex[2];
+	mGLWidget* m_widget;
 	bool m_active = false;
 	bool m_started = false;
 	QTimer m_drawTimer;
@@ -155,6 +192,7 @@ private:
 	CoreController::Interrupter m_interrupter;
 	bool m_supportsShaders;
 	bool m_showOSD;
+	bool m_showFrameCounter;
 	VideoShader m_shader{};
 	VideoBackend* m_backend = nullptr;
 	QSize m_size;

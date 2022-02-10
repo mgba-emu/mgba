@@ -73,7 +73,9 @@ private:
 
 template<typename T, typename V>
 Action* ActionMapper::addAction(const QString& visibleName, const QString& name, T* obj, V (T::*method)(), const QString& menu, const QKeySequence& shortcut) {
-	return addAction(visibleName, name, std::bind(method, obj), menu, shortcut);
+	return addAction(visibleName, name, [method, obj]() -> void {
+		(obj->*method)();
+	}, menu, shortcut);
 }
 
 template<typename T, typename V>

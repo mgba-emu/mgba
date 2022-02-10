@@ -34,9 +34,11 @@ static const QList<GBMemoryBankControllerType> s_mbcList{
 	GB_HuC1,
 	GB_HuC3,
 	GB_UNL_WISDOM_TREE,
+	GB_UNL_PKJD,
+	GB_UNL_NT_NEW,
 	GB_UNL_BBD,
 	GB_UNL_HITEK,
-	GB_UNL_PKJD,
+	GB_UNL_SACHEN_MMC1,
 };
 
 static QMap<GBModel, QString> s_gbModelNames;
@@ -87,9 +89,12 @@ QString GameBoy::mbcName(GBMemoryBankControllerType mbc) {
 		s_mbcNames[GB_POCKETCAM] = tr("Pocket Cam");
 		s_mbcNames[GB_TAMA5] = tr("TAMA5");
 		s_mbcNames[GB_UNL_WISDOM_TREE] = tr("Wisdom Tree");
+		s_mbcNames[GB_UNL_NT_NEW] = tr("NT (new)");
 		s_mbcNames[GB_UNL_PKJD] = tr("Pokémon Jade/Diamond");
 		s_mbcNames[GB_UNL_BBD] = tr("BBD");
 		s_mbcNames[GB_UNL_HITEK] = tr("Hitek");
+		s_mbcNames[GB_UNL_SACHEN_MMC1] = tr("Sachen (MMC1)");
+		s_mbcNames[GB_UNL_SACHEN_MMC2] = tr("Sachen (MMC2)");
 	}
 
 	return s_mbcNames[mbc];

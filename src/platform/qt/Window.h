@@ -66,6 +66,8 @@ public:
 	void updateMultiplayerStatus(bool canOpenAnother);
 	void updateMultiplayerActive(bool active);
 
+	InputController* inputController() { return &m_inputController; }
+
 signals:
 	void startDrawing();
 	void shutdown();
@@ -155,6 +157,7 @@ private:
 	static const int MUST_RESTART_TIMEOUT = 10000;
 
 	void setupMenu(QMenuBar*);
+	void setupOptions();
 	void openStateWindow(LoadSave);
 
 	void attachWidget(QWidget* widget);

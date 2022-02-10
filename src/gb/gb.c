@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gb/gb.h>
 
+#include <mgba/internal/defines.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/mbc.h>
 #include <mgba/internal/sm83/sm83.h>
@@ -17,14 +18,14 @@
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
 
-#define CLEANUP_THRESHOLD 15
-
 const uint32_t CGB_SM83_FREQUENCY = 0x800000;
 const uint32_t SGB_SM83_FREQUENCY = 0x418B1E;
 
 const uint32_t GB_COMPONENT_MAGIC = 0x400000;
 
-static const uint8_t _knownHeader[4] = { 0xCE, 0xED, 0x66, 0x66};
+static const uint8_t _knownHeader[4] = {0xCE, 0xED, 0x66, 0x66};
+static const uint8_t _knownHeaderSachen[4] = {0x7C, 0xE7, 0xC0, 0x00};
+static const uint8_t _registeredTrademark[] = {0x3C, 0x42, 0xB9, 0xA5, 0xB9, 0xA5, 0x42, 0x3C};
 
 #define DMG0_BIOS_CHECKSUM 0xC2F5CC97
 #define DMG_BIOS_CHECKSUM 0x59C8598E
@@ -83,6 +84,8 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->pristineRomSize = 0;
 	gb->yankedRomSize = 0;
 
+	memset(&gb->gbx, 0, sizeof(gb->gbx));
+
 	mCoreCallbacksListInit(&gb->coreCallbacks, 0);
 	gb->stream = NULL;
 
@@ -100,13 +103,79 @@ static void GBDeinit(struct mCPUComponent* component) {
 	mTimingDeinit(&gb->timing);
 }
 
+bool GBLoadGBX(struct GBXMetadata* metadata, struct VFile* vf) {
+	uint8_t footer[16];
+	if (vf->seek(vf, -sizeof(footer), SEEK_END) < 0) {
+		return false;
+	}
+	if (vf->read(vf, footer, sizeof(footer)) < (ssize_t) sizeof(footer)) {
+		return false;
+	}
+	int32_t gbxSize = 0;
+	uint32_t vers;
+	LOAD_32BE(gbxSize, 0, footer);
+	LOAD_32BE(vers, 4, footer);
+	if (memcmp(&footer[12], "GBX!", 4) != 0 || gbxSize != 0x40 || vers != 1) {
+		return false;
+	}
+	if (vf->seek(vf, -gbxSize, SEEK_END) < 0) {
+		return false;
+	}
+	if (vf->read(vf, footer, sizeof(footer)) != (ssize_t) sizeof(footer)) {
+		return false;
+	}
+	memset(metadata, 0, sizeof(*metadata));
+	metadata->mbc = GBMBCFromGBX(footer);
+
+	if (footer[4] == 1) {
+		metadata->battery = true;
+	}
+	if (footer[5] == 1) {
+		metadata->rumble = true;
+		if (metadata->mbc == GB_MBC5) {
+			metadata->mbc = GB_MBC5_RUMBLE;
+		}
+	}
+	if (footer[6] == 1) {
+		metadata->timer = true;
+		if (metadata->mbc == GB_MBC3) {
+			metadata->mbc = GB_MBC3_RTC;
+		}
+	}
+	LOAD_32BE(metadata->romSize, 8, footer);
+	LOAD_32BE(metadata->ramSize, 12, footer);
+	vf->read(vf, &metadata->mapperVars, 0x20);
+
+	// There's no dedicated mapper type for MBC1M so let's stash some data here
+	if (memcmp(footer, "MBC1", 4) == 0) {
+		metadata->mapperVars.u8[0] = 5;
+	} else if (memcmp(footer, "MB1M", 4) == 0) {
+		metadata->mapperVars.u8[0] = 4;		
+	}
+	return true;
+}
+
 bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	if (!vf) {
 		return false;
 	}
 	GBUnloadROM(gb);
+
+	if (!GBLoadGBX(&gb->gbx, vf)) {
+		// GBX handles the pristine size itself, but other formats don't
+		gb->pristineRomSize = vf->size(vf);
+	} else {
+		uint32_t fileSize = vf->size(vf);
+		if (gb->gbx.romSize <= fileSize - 0x40) {
+			gb->pristineRomSize = gb->gbx.romSize;
+		} else {
+			// TODO: Should we make a temporary buffer?
+			mLOG(GB, WARN, "GBX file size %d is larger than real file size %d", gb->gbx.romSize, fileSize - 0x40);
+			gb->pristineRomSize = fileSize - 0x40;
+		}
+	}
+
 	gb->romVf = vf;
-	gb->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
 	gb->isPristine = true;
 	gb->memory.rom = vf->map(vf, gb->pristineRomSize, MAP_READ);
@@ -116,7 +185,6 @@ bool GBLoadROM(struct GB* gb, struct VFile* vf) {
 	gb->yankedRomSize = 0;
 	gb->memory.romSize = gb->pristineRomSize;
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
-	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
 	GBMBCReset(gb);
 
 	if (gb->cpu) {
@@ -144,8 +212,12 @@ void GBYankROM(struct GB* gb) {
 static void GBSramDeinit(struct GB* gb) {
 	if (gb->sramVf) {
 		gb->sramVf->unmap(gb->sramVf, gb->memory.sram, gb->sramSize);
-		if (gb->memory.mbcType == GB_MBC3_RTC && gb->sramVf == gb->sramRealVf) {
-			GBMBCRTCWrite(gb);
+		if (gb->sramVf == gb->sramRealVf) {
+			if (gb->memory.mbcType == GB_MBC3_RTC) {
+				GBMBCRTCWrite(gb);
+			} else if (gb->memory.mbcType == GB_HuC3) {
+				GBMBCHuC3Write(gb);
+			}
 		}
 		gb->sramVf = NULL;
 	} else if (gb->memory.sram) {
@@ -164,6 +236,8 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 
 		if (gb->memory.mbcType == GB_MBC3_RTC) {
 			GBMBCRTCRead(gb);
+		} else if (gb->memory.mbcType == GB_HuC3) {
+			GBMBCHuC3Read(gb);
 		}
 	}
 	return vf;
@@ -203,6 +277,14 @@ void GBResizeSram(struct GB* gb, size_t size) {
 			if (gb->memory.sram) {
 				vf->unmap(vf, gb->memory.sram, gb->sramSize);
 			}
+			if (vf->size(vf) < gb->sramSize) {
+				void* sram = vf->map(vf, vf->size(vf), MAP_READ);
+				struct VFile* newVf = VFileMemChunk(sram, vf->size(vf));
+				vf->unmap(vf, sram,vf->size(vf));
+				vf = newVf;
+				gb->sramVf = newVf;
+				vf->truncate(vf, size);
+			}
 			gb->memory.sram = vf->map(vf, size, MAP_READ);
 		}
 		if (gb->memory.sram == (void*) -1) {
@@ -233,24 +315,21 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 	if (!gb->sramVf) {
 		return;
 	}
-	if (gb->sramDirty & GB_SRAM_DIRT_NEW) {
-		gb->sramDirtAge = frameCount;
-		gb->sramDirty &= ~GB_SRAM_DIRT_NEW;
-		if (!(gb->sramDirty & GB_SRAM_DIRT_SEEN)) {
-			gb->sramDirty |= GB_SRAM_DIRT_SEEN;
-		}
-	} else if ((gb->sramDirty & GB_SRAM_DIRT_SEEN) && frameCount - gb->sramDirtAge > CLEANUP_THRESHOLD) {
+	if (mSavedataClean(&gb->sramDirty, &gb->sramDirtAge, frameCount)) {
 		if (gb->sramMaskWriteback) {
 			GBSavedataUnmask(gb);
 		}
 		if (gb->memory.mbcType == GB_MBC3_RTC) {
 			GBMBCRTCWrite(gb);
+		} else if (gb->memory.mbcType == GB_HuC3) {
+			GBMBCHuC3Write(gb);
 		}
-		gb->sramDirty = 0;
-		if (gb->memory.sram && gb->sramVf->sync(gb->sramVf, gb->memory.sram, gb->sramSize)) {
-			mLOG(GB_MEM, INFO, "Savedata synced");
-		} else {
-			mLOG(GB_MEM, INFO, "Savedata failed to sync!");
+		if (gb->sramVf == gb->sramRealVf) {
+			if (gb->memory.sram && gb->sramVf->sync(gb->sramVf, gb->memory.sram, gb->sramSize)) {
+				mLOG(GB_MEM, INFO, "Savedata synced");
+			} else {
+				mLOG(GB_MEM, INFO, "Savedata failed to sync!");
+			}
 		}
 
 		size_t c;
@@ -271,7 +350,7 @@ void GBSavedataMask(struct GB* gb, struct VFile* vf, bool writeback) {
 	}
 	gb->sramVf = vf;
 	gb->sramMaskWriteback = writeback;
-	gb->memory.sram = vf->map(vf, gb->sramSize, MAP_READ);
+	GBResizeSram(gb, gb->sramSize);
 	GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
 }
 
@@ -316,7 +395,9 @@ void GBUnloadROM(struct GB* gb) {
 	gb->memory.mbcType = GB_MBC_AUTODETECT;
 	gb->isPristine = false;
 
-	gb->sramMaskWriteback = false;
+	if (!gb->sramDirty) {
+		gb->sramMaskWriteback = false;
+	}
 	GBSavedataUnmask(gb);
 	GBSramDeinit(gb);
 	if (gb->sramRealVf) {
@@ -575,6 +656,45 @@ void GBSkipBIOS(struct GB* gb) {
 		break;
 	}
 
+	unsigned i;
+	for (i = 0; i < sizeof(cart->logo); ++i) {
+		uint8_t byte = GBLoad8(cpu, 0x104 + i);
+
+		uint8_t output0 = 0;
+		uint8_t output1 = 0;
+
+		output0 |= (byte & 0x80) >> 0;
+		output0 |= (byte & 0x40) >> 1;
+		output0 |= (byte & 0x20) >> 2;
+		output0 |= (byte & 0x10) >> 3;
+		output0 |= output0 >> 1;
+
+		output1 |= (byte & 0x08) << 3;
+		output1 |= (byte & 0x04) << 2;
+		output1 |= (byte & 0x02) << 1;
+		output1 |= (byte & 0x01) << 0;
+		output1 |= output1 << 1;
+
+		GBPatch8(cpu, 0x8010 + i * 8, output0, NULL, 0);
+		GBPatch8(cpu, 0x8012 + i * 8, output0, NULL, 0);
+		GBPatch8(cpu, 0x8014 + i * 8, output1, NULL, 0);
+		GBPatch8(cpu, 0x8016 + i * 8, output1, NULL, 0);
+	}
+	for (i = 0; i < sizeof(_registeredTrademark); ++i) {
+		GBPatch8(cpu, 0x8190 + i * 2, _registeredTrademark[i], NULL, 0);
+	}
+	if (gb->model < GB_MODEL_CGB) {
+		for (i = 0; i < 12; ++i) {
+			GBPatch8(cpu, 0x9904 + i, i + 1, NULL, 0);
+			GBPatch8(cpu, 0x9924 + i, i + 13, NULL, 0);
+		}
+		GBPatch8(cpu, 0x9910, 0x19, NULL, 0);
+	}
+
+	if (gb->memory.mbcType == GB_UNL_SACHEN_MMC2) {
+		gb->memory.mbcState.sachen.locked = GB_SACHEN_UNLOCKED;
+	}
+
 	cpu->sp = 0xFFFE;
 	cpu->pc = 0x100;
 
@@ -599,7 +719,7 @@ void GBMapBIOS(struct GB* gb) {
 	if (gb->memory.rom) {
 		memcpy(&gb->memory.romBase[size], &gb->memory.rom[size], GB_SIZE_CART_BANK0 - size);
 		if (size > 0x100) {
-			memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], sizeof(struct GBCartridge));
+			memcpy(&gb->memory.romBase[0x100], &gb->memory.rom[0x100], 0x100);
 		}
 	}
 }
@@ -846,16 +966,45 @@ bool GBIsROM(struct VFile* vf) {
 	if (!vf) {
 		return false;
 	}
-	vf->seek(vf, 0x104, SEEK_SET);
-	uint8_t header[4];
+	vf->seek(vf, 0x100, SEEK_SET);
+	uint8_t header[0x100];
 
 	if (vf->read(vf, &header, sizeof(header)) < (ssize_t) sizeof(header)) {
 		return false;
 	}
-	if (memcmp(header, _knownHeader, sizeof(header))) {
+	if (memcmp(&header[4], _knownHeader, sizeof(_knownHeader)) == 0) {
+		return true;
+	}
+	if (memcmp(&header[4], _knownHeaderSachen, sizeof(_knownHeaderSachen)) == 0) {
+		// Sachen logo
+		return true;
+	}
+	if (header[0x04] == _knownHeader[0] && header[0x44] == _knownHeader[1] &&
+	    header[0x14] == _knownHeader[2] && header[0x54] == _knownHeader[3]) {
+		// Sachen MMC1 scrambled header
+		return true;
+	}
+	if (header[0x04] == _knownHeaderSachen[0] && header[0x44] == _knownHeaderSachen[1] &&
+	    header[0x14] == _knownHeaderSachen[2] && header[0x54] == _knownHeaderSachen[3]) {
+		// Sachen MMC2 scrambled header
+		return true;
+	}
+
+	uint8_t footer[16];
+	vf->seek(vf, -sizeof(footer), SEEK_END);
+	if (vf->read(vf, footer, sizeof(footer)) < (ssize_t) sizeof(footer)) {
 		return false;
 	}
-	return true;
+	uint32_t size;
+	uint32_t vers;
+	LOAD_32BE(size, 0, footer);
+	LOAD_32BE(vers, 4, footer);
+	if (memcmp(&footer[12], "GBX!", 4) == 0 && size == 0x40 && vers == 1) {
+		// GBX file
+		return true;
+	}
+
+	return false;
 }
 
 void GBGetGameTitle(const struct GB* gb, char* out) {

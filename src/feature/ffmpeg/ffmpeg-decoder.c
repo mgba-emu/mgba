@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ffmpeg-decoder.h"
 
+#include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
 
 void FFmpegDecoderInit(struct FFmpegDecoder* decoder) {
@@ -38,7 +39,7 @@ bool FFmpegDecoderOpen(struct FFmpegDecoder* decoder, const char* infile) {
 #else
 		enum AVMediaType type = decoder->context->streams[i]->codec->codec_type;
 #endif
-		struct AVCodec* codec;
+		const struct AVCodec* codec;
 		struct AVCodecContext* context = NULL;
 		if (type == AVMEDIA_TYPE_VIDEO && decoder->videoStream < 0) {
 			decoder->video = avcodec_alloc_context3(NULL);

@@ -25,8 +25,6 @@ static void _rtcProcessByte(struct GBACartridgeHardware* hw);
 static void _rtcUpdateClock(struct GBACartridgeHardware* hw);
 static unsigned _rtcBCD(unsigned value);
 
-static time_t _rtcGenericCallback(struct mRTCSource* source);
-
 static void _gyroReadPins(struct GBACartridgeHardware* hw);
 
 static void _rumbleReadPins(struct GBACartridgeHardware* hw);
@@ -300,27 +298,6 @@ unsigned _rtcBCD(unsigned value) {
 	value /= 10;
 	counter += (value % 10) << 4;
 	return counter;
-}
-
-time_t _rtcGenericCallback(struct mRTCSource* source) {
-	struct GBARTCGenericSource* rtc = (struct GBARTCGenericSource*) source;
-	switch (rtc->override) {
-	case RTC_NO_OVERRIDE:
-	default:
-		return time(0);
-	case RTC_FIXED:
-		return rtc->value;
-	case RTC_FAKE_EPOCH:
-		return rtc->value + rtc->p->video.frameCounter * (int64_t) VIDEO_TOTAL_LENGTH / GBA_ARM7TDMI_FREQUENCY;
-	}
-}
-
-void GBARTCGenericSourceInit(struct GBARTCGenericSource* rtc, struct GBA* gba) {
-	rtc->p = gba;
-	rtc->override = RTC_NO_OVERRIDE;
-	rtc->value = 0;
-	rtc->d.sample = 0;
-	rtc->d.unixTime = _rtcGenericCallback;
 }
 
 // == Gyro

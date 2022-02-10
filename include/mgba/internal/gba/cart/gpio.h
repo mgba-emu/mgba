@@ -18,13 +18,6 @@ mLOG_DECLARE_CATEGORY(GBA_HW);
 
 #define IS_GPIO_REGISTER(reg) ((reg) == GPIO_REG_DATA || (reg) == GPIO_REG_DIRECTION || (reg) == GPIO_REG_CONTROL)
 
-struct GBARTCGenericSource {
-	struct mRTCSource d;
-	struct GBA* p;
-	enum mRTCGenericType override;
-	int64_t value;
-};
-
 enum GBAHardwareDevice {
 	HW_NO_OVERRIDE = 0x8000,
 	HW_NONE = 0,
@@ -115,8 +108,6 @@ void GBAHardwareInitTilt(struct GBACartridgeHardware* gpio);
 void GBAHardwareGPIOWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint16_t value);
 void GBAHardwareTiltWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint8_t value);
 uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* gpio, uint32_t address);
-
-void GBARTCGenericSourceInit(struct GBARTCGenericSource* rtc, struct GBA* gba);
 
 struct GBASerializedState;
 void GBAHardwareSerialize(const struct GBACartridgeHardware* gpio, struct GBASerializedState* state);

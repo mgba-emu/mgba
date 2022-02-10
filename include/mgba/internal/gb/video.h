@@ -163,7 +163,7 @@ struct GBVideo {
 
 	bool sgbBorders;
 
-	int32_t frameCounter;
+	uint32_t frameCounter;
 	int frameskip;
 	int frameskipCounter;
 };

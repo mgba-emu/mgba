@@ -428,7 +428,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 
 	switch (immediate) {
 	case 0xF0: // Used for internal stall counting
-		cpu->gprs[12] = gba->biosStall;
+		cpu->gprs[11] = gba->biosStall;
 		return;
 	case 0xFA:
 		GBAPrintFlush(gba);
@@ -536,6 +536,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 		case REGION_WORKING_RAM:
 		case REGION_WORKING_IRAM:
 		case REGION_VRAM:
+			useStall = true;
 			_unLz77(gba, immediate == GBA_SWI_LZ77_UNCOMP_WRAM ? 1 : 2);
 			break;
 		}
@@ -644,7 +645,8 @@ static void _unLz77(struct GBA* gba, int width) {
 	struct ARMCore* cpu = gba->cpu;
 	uint32_t source = cpu->gprs[0];
 	uint32_t dest = cpu->gprs[1];
-	int remaining = (cpu->memory.load32(cpu, source, 0) & 0xFFFFFF00) >> 8;
+	int32_t cycles = 20;
+	int remaining = (cpu->memory.load32(cpu, source, &cycles) & 0xFFFFFF00) >> 8;
 	// We assume the signature byte (0x10) is correct
 	int blockheader = 0; // Some compilers warn if this isn't set, even though it's trivially provably always set
 	source += 4;
@@ -654,14 +656,17 @@ static void _unLz77(struct GBA* gba, int width) {
 	int byte;
 	int halfword = 0;
 	while (remaining > 0) {
+		cycles += 14;
 		if (blocksRemaining) {
+			cycles += 18;
 			if (blockheader & 0x80) {
 				// Compressed
-				int block = cpu->memory.load8(cpu, source + 1, 0) | (cpu->memory.load8(cpu, source, 0) << 8);
+				int block = cpu->memory.load8(cpu, source + 1, &cycles) | (cpu->memory.load8(cpu, source, &cycles) << 8);
 				source += 2;
 				disp = dest - (block & 0x0FFF) - 1;
 				bytes = (block >> 12) + 3;
 				while (bytes--) {
+					cycles += 10;
 					if (remaining) {
 						--remaining;
 					} else {
@@ -673,35 +678,36 @@ static void _unLz77(struct GBA* gba, int width) {
 						}
 					}
 					if (width == 2) {
-						byte = (int16_t) cpu->memory.load16(cpu, disp & ~1, 0);
+						byte = (int16_t) cpu->memory.load16(cpu, disp & ~1, &cycles);
 						if (dest & 1) {
 							byte >>= (disp & 1) * 8;
 							halfword |= byte << 8;
-							cpu->memory.store16(cpu, dest ^ 1, halfword, 0);
+							cpu->memory.store16(cpu, dest ^ 1, halfword, &cycles);
 						} else {
 							byte >>= (disp & 1) * 8;
 							halfword = byte & 0xFF;
 						}
+						cycles += 4;
 					} else {
-						byte = cpu->memory.load8(cpu, disp, 0);
-						cpu->memory.store8(cpu, dest, byte, 0);
+						byte = cpu->memory.load8(cpu, disp, &cycles);
+						cpu->memory.store8(cpu, dest, byte, &cycles);
 					}
 					++disp;
 					++dest;
 				}
 			} else {
 				// Uncompressed
-				byte = cpu->memory.load8(cpu, source, 0);
+				byte = cpu->memory.load8(cpu, source, &cycles);
 				++source;
 				if (width == 2) {
 					if (dest & 1) {
 						halfword |= byte << 8;
-						cpu->memory.store16(cpu, dest ^ 1, halfword, 0);
+						cpu->memory.store16(cpu, dest ^ 1, halfword, &cycles);
 					} else {
 						halfword = byte;
 					}
 				} else {
-					cpu->memory.store8(cpu, dest, byte, 0);
+					cpu->memory.store8(cpu, dest, byte, &cycles);
 				}
 				++dest;
 				--remaining;
@@ -709,7 +715,7 @@ static void _unLz77(struct GBA* gba, int width) {
 			blockheader <<= 1;
 			--blocksRemaining;
 		} else {
-			blockheader = cpu->memory.load8(cpu, source, 0);
+			blockheader = cpu->memory.load8(cpu, source, &cycles);
 			++source;
 			blocksRemaining = 8;
 		}
@@ -717,6 +723,7 @@ static void _unLz77(struct GBA* gba, int width) {
 	cpu->gprs[0] = source;
 	cpu->gprs[1] = dest;
 	cpu->gprs[3] = 0;
+	gba->biosStall = cycles;
 }
 
 DECL_BITFIELD(HuffmanNode, uint8_t);

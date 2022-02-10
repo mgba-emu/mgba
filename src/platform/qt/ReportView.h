@@ -41,6 +41,7 @@ protected:
 private:
 	void addCpuInfo(QStringList&);
 	void addGLInfo(QStringList&);
+	void addGamepadInfo(QStringList&);
 	void addROMInfo(QStringList&, CoreController*);
 	void addScreenInfo(QStringList&, const QScreen*);
 

@@ -168,7 +168,8 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * 0x003FF: Interrupts enabled
  * 0x00400 - 0x043FF: VRAM
  * 0x04400 - 0x0C3FF: WRAM
- * 0x0C400 - 0x0C77F: Reserved
+ * 0x0C400 - 0x0C6FF: Reserved
+ * 0x0C700 - 0x0C77F: Reserved
  * 0x0C780 - 0x117FF: Super Game Boy
  * | 0x0C780 - 0x0C7D9: Current attributes
  * | 0x0C7DA: Current command
@@ -261,6 +262,10 @@ DECL_BITFIELD(GBSerializedMBC7Flags, uint8_t);
 DECL_BITS(GBSerializedMBC7Flags, Command, 0, 2);
 DECL_BIT(GBSerializedMBC7Flags, Writable, 2);
 
+DECL_BITFIELD(GBSerializedSachenFlags, uint8_t);
+DECL_BITS(GBSerializedSachenFlags, Transition, 0, 6);
+DECL_BITS(GBSerializedSachenFlags, Locked, 6, 2);
+
 DECL_BITFIELD(GBSerializedMemoryFlags, uint16_t);
 DECL_BIT(GBSerializedMemoryFlags, SramAccess, 0);
 DECL_BIT(GBSerializedMemoryFlags, RtcAccess, 1);
@@ -329,7 +334,7 @@ struct GBSerializedState {
 		uint32_t reserved;
 		uint32_t nextMode;
 		int32_t dotCounter;
-		int32_t frameCounter;
+		uint32_t frameCounter;
 
 		uint8_t vramCurrentBank;
 		GBSerializedVideoFlags flags;
@@ -394,9 +399,21 @@ struct GBSerializedState {
 				uint8_t bank0;
 			} mmm01;
 			struct {
+				uint64_t lastLatch;
+				uint8_t index;
+				uint8_t value;
+				uint8_t mode;
+			} huc3;
+			struct {
 				uint8_t dataSwapMode;
 				uint8_t bankSwapMode;
 			} bbd;
+			struct {
+				GBSerializedSachenFlags flags;
+				uint8_t mask;
+				uint8_t unmaskedBank;
+				uint8_t baseBank;
+			} sachen;
 			struct {
 				uint8_t reserved[16];
 			} padding;
@@ -421,7 +438,9 @@ struct GBSerializedState {
 	uint8_t vram[GB_SIZE_VRAM];
 	uint8_t wram[GB_SIZE_WORKING_RAM];
 
-	uint32_t reserved2[0xC4];
+	uint32_t reserved2[0xA4];
+
+	uint8_t huc3Registers[0x80];
 
 	struct {
 		uint8_t attributes[90];

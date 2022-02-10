@@ -12,6 +12,9 @@
 
 #include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>
+#if LIBAVCODEC_VERSION_MAJOR >= 59
+#include <libavcodec/bsf.h>
+#endif
 
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
@@ -121,7 +124,7 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 		return true;
 	}
 
-	AVCodec* codec = avcodec_find_encoder_by_name(acodec);
+	const AVCodec* codec = avcodec_find_encoder_by_name(acodec);
 	if (!codec) {
 		return false;
 	}
@@ -193,7 +196,7 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, in
 		return true;
 	}
 
-	AVCodec* codec = avcodec_find_encoder_by_name(vcodec);
+	const AVCodec* codec = avcodec_find_encoder_by_name(vcodec);
 	if (!codec) {
 		return false;
 	}
@@ -213,7 +216,7 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, in
 	if (encoder->pixFormat == AV_PIX_FMT_NONE) {
 		return false;
 	}
-	if (vbr < 0 && !av_opt_find(&codec->priv_class, "crf", NULL, 0, 0)) {
+	if (vbr < 0 && !av_opt_find((void*) &codec->priv_class, "crf", NULL, 0, 0)) {
 		return false;
 	}
 	encoder->videoCodec = vcodec;
@@ -223,7 +226,7 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, in
 }
 
 bool FFmpegEncoderSetContainer(struct FFmpegEncoder* encoder, const char* container) {
-	AVOutputFormat* oformat = av_guess_format(container, 0, 0);
+	const AVOutputFormat* oformat = av_guess_format(container, 0, 0);
 	if (!oformat) {
 		return false;
 	}
@@ -241,9 +244,9 @@ void FFmpegEncoderSetLooping(struct FFmpegEncoder* encoder, bool loop) {
 }
 
 bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder* encoder) {
-	AVOutputFormat* oformat = av_guess_format(encoder->containerFormat, 0, 0);
-	AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
-	AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
+	const AVOutputFormat* oformat = av_guess_format(encoder->containerFormat, 0, 0);
+	const AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
+	const AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
 	if ((encoder->audioCodec && !acodec) || (encoder->videoCodec && !vcodec) || !oformat || (!acodec && !vcodec)) {
 		return false;
 	}
@@ -257,8 +260,8 @@ bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder* encoder) {
 }
 
 bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
-	AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
-	AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
+	const AVCodec* acodec = avcodec_find_encoder_by_name(encoder->audioCodec);
+	const AVCodec* vcodec = avcodec_find_encoder_by_name(encoder->videoCodec);
 	if ((encoder->audioCodec && !acodec) || (encoder->videoCodec && !vcodec) || !FFmpegEncoderVerifyContainer(encoder)) {
 		return false;
 	}
@@ -272,9 +275,9 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 	encoder->currentVideoFrame = 0;
 	encoder->skipResidue = 0;
 
-	AVOutputFormat* oformat = av_guess_format(encoder->containerFormat, 0, 0);
+	const AVOutputFormat* oformat = av_guess_format(encoder->containerFormat, 0, 0);
 #ifndef USE_LIBAV
-	avformat_alloc_output_context2(&encoder->context, oformat, 0, outfile);
+	avformat_alloc_output_context2(&encoder->context, (AVOutputFormat*) oformat, 0, outfile);
 #else
 	encoder->context = avformat_alloc_context();
 	strncpy(encoder->context->filename, outfile, sizeof(encoder->context->filename) - 1);
@@ -785,7 +788,7 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 	sws_scale(encoder->scaleContext, (const uint8_t* const*) &pixels, (const int*) &stride, 0, encoder->iheight, encoder->videoFrame->data, encoder->videoFrame->linesize);
 
 	if (encoder->graph) {
-		if (av_buffersrc_add_frame(encoder->source, encoder->videoFrame) < 0) {
+		if (av_buffersrc_write_frame(encoder->source, encoder->videoFrame) < 0) {
 			return;
 		}
 		while (true) {

@@ -106,7 +106,7 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 	}
 	painter.drawImage(full, m_backing, QRect(0, 0, m_width, m_height));
 	painter.setOpacity(1);
-	if (isShowOSD()) {
+	if (isShowOSD() || isShowFrameCounter()) {
 		messagePainter()->paint(&painter);
 	}
 }

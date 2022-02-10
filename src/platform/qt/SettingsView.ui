@@ -594,6 +594,13 @@
          </property>
         </widget>
        </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_41">
+         <property name="text">
+          <string>When inactive:</string>
+         </property>
+        </widget>
+       </item>
        <item row="8" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_21">
          <item>
@@ -605,6 +612,31 @@
          </item>
          <item>
           <widget class="QCheckBox" name="muteOnFocusLost">
+           <property name="text">
+            <string>Mute</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="0">
+        <widget class="QLabel" name="label_42">
+         <property name="text">
+          <string>When minimized:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <layout class="QHBoxLayout" name="horizontalLayout_24">
+         <item>
+          <widget class="QCheckBox" name="pauseOnMinimize">
+           <property name="text">
+            <string>Pause</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="muteOnMinimize">
            <property name="text">
             <string>Mute</string>
            </property>
@@ -667,20 +699,41 @@
         </widget>
        </item>
        <item row="16" column="1">
+        <layout class="QVBoxLayout" name="osdDisplay">
+         <property name="leftMargin">
+          <number>20</number>
+         </property>
+         <item>
+          <widget class="QCheckBox" name="showFrameCounter">
+           <property name="text">
+            <string>Show frame count in OSD</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="showResetInfo">
+           <property name="text">
+            <string>Show emulation info on reset</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="17" column="1">
         <widget class="QCheckBox" name="useDiscordPresence">
          <property name="text">
           <string>Enable Discord Rich Presence</string>
          </property>
         </widget>
        </item>
-       <item row="17" column="0" colspan="2">
+       <item row="18" column="0" colspan="2">
         <widget class="Line" name="line_13">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="18" column="1">
+       <item row="19" column="1">
         <widget class="QCheckBox" name="autosave">
          <property name="text">
           <string>Automatically save state</string>
@@ -690,7 +743,7 @@
          </property>
         </widget>
        </item>
-       <item row="19" column="1">
+       <item row="20" column="1">
         <widget class="QCheckBox" name="autoload">
          <property name="text">
           <string>Automatically load state</string>
@@ -700,14 +753,14 @@
          </property>
         </widget>
        </item>
-       <item row="20" column="0" colspan="2">
+       <item row="21" column="0" colspan="2">
         <widget class="Line" name="line_16">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="21" column="1">
+       <item row="22" column="1">
         <widget class="QCheckBox" name="cheatAutosave">
          <property name="text">
           <string>Automatically save cheats</string>
@@ -717,45 +770,13 @@
          </property>
         </widget>
        </item>
-       <item row="22" column="1">
+       <item row="23" column="1">
         <widget class="QCheckBox" name="cheatAutoload">
          <property name="text">
           <string>Automatically load cheats</string>
          </property>
          <property name="checked">
           <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_24">
-         <item>
-          <widget class="QCheckBox" name="pauseOnMinimize">
-           <property name="text">
-            <string>Pause</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="muteOnMinimize">
-           <property name="text">
-            <string>Mute</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="8" column="0">
-        <widget class="QLabel" name="label_41">
-         <property name="text">
-          <string>When inactive:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0">
-        <widget class="QLabel" name="label_42">
-         <property name="text">
-          <string>When minimized:</string>
          </property>
         </widget>
        </item>
@@ -2311,6 +2332,38 @@
     <hint type="destinationlabel">
      <x>409</x>
      <y>449</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showOSD</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>showFrameCounter</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>374</x>
+     <y>391</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>418</x>
+     <y>431</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>showOSD</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>showResetInfo</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>374</x>
+     <y>391</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>418</x>
+     <y>470</y>
     </hint>
    </hints>
   </connection>

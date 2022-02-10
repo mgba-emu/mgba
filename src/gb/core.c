@@ -453,7 +453,7 @@ static void _GBCoreUnloadROM(struct mCore* core) {
 		mCheatDeviceDestroy(gbcore->cheatDevice);
 		gbcore->cheatDevice = NULL;
 	}
-	return GBUnloadROM(core->board);
+	GBUnloadROM(core->board);
 }
 
 static void _GBCoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
@@ -636,7 +636,7 @@ static void _GBCoreReset(struct mCore* core) {
 
 static void _GBCoreRunFrame(struct mCore* core) {
 	struct GB* gb = core->board;
-	int32_t frameCounter = gb->video.frameCounter;
+	uint32_t frameCounter = gb->video.frameCounter;
 	while (gb->video.frameCounter == frameCounter) {
 		SM83Run(core->cpu);
 	}
@@ -688,7 +688,7 @@ static void _GBCoreClearKeys(struct mCore* core, uint32_t keys) {
 	gbcore->keys &= ~keys;
 }
 
-static int32_t _GBCoreFrameCounter(const struct mCore* core) {
+static uint32_t _GBCoreFrameCounter(const struct mCore* core) {
 	const struct GB* gb = core->board;
 	return gb->video.frameCounter;
 }
