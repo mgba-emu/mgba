@@ -4,8 +4,6 @@ platform:
 - x64
 configuration:
 - Release
-cache:
-- C:\Tools\vcpkg
 install:
 - git -C C:\Tools\vcpkg clean -dfq docs ports scripts toolsrc triplets versions
 - git -C C:\Tools\vcpkg pull --force --quiet
