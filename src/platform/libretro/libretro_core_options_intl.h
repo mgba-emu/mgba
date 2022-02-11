@@ -108,8 +108,6 @@ extern "C" {
 #define OPTION_VAL_95_AR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_AR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_AR NULL
-#define OPTION_VAL_NO_AR "لا"
-#define OPTION_VAL_YES_AR "نعم"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_AR NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_AR NULL
 #define OPTION_VAL_SENSOR_AR NULL
@@ -339,8 +337,8 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_AR },
-         { "yes", OPTION_VAL_YES_AR },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -543,8 +541,6 @@ struct retro_core_options_v2 options_ar = {
 #define OPTION_VAL_95_AST NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_AST NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_AST NULL
-#define OPTION_VAL_NO_AST "non"
-#define OPTION_VAL_YES_AST "sí"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_AST "Nivel del sensor solar"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_AST NULL
 #define OPTION_VAL_SENSOR_AST NULL
@@ -774,8 +770,8 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_AST },
-         { "yes", OPTION_VAL_YES_AST },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -978,8 +974,6 @@ struct retro_core_options_v2 options_ast = {
 #define OPTION_VAL_95_CA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CA NULL
-#define OPTION_VAL_NO_CA NULL
-#define OPTION_VAL_YES_CA NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CA NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CA NULL
 #define OPTION_VAL_SENSOR_CA NULL
@@ -1209,8 +1203,8 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_CA },
-         { "yes", OPTION_VAL_YES_CA },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -1413,8 +1407,6 @@ struct retro_core_options_v2 options_ca = {
 #define OPTION_VAL_95_CHS NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CHS NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CHS NULL
-#define OPTION_VAL_NO_CHS "否"
-#define OPTION_VAL_YES_CHS NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CHS NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CHS NULL
 #define OPTION_VAL_SENSOR_CHS NULL
@@ -1644,8 +1636,8 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_CHS },
-         { "yes", OPTION_VAL_YES_CHS },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -1848,8 +1840,6 @@ struct retro_core_options_v2 options_chs = {
 #define OPTION_VAL_95_CHT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CHT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CHT NULL
-#define OPTION_VAL_NO_CHT "否"
-#define OPTION_VAL_YES_CHT "是"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CHT NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CHT NULL
 #define OPTION_VAL_SENSOR_CHT NULL
@@ -2079,8 +2069,8 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_CHT },
-         { "yes", OPTION_VAL_YES_CHT },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -2283,8 +2273,6 @@ struct retro_core_options_v2 options_cht = {
 #define OPTION_VAL_95_CS NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CS NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CS NULL
-#define OPTION_VAL_NO_CS NULL
-#define OPTION_VAL_YES_CS NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CS NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CS NULL
 #define OPTION_VAL_SENSOR_CS NULL
@@ -2514,8 +2502,8 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_CS },
-         { "yes", OPTION_VAL_YES_CS },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -2718,8 +2706,6 @@ struct retro_core_options_v2 options_cs = {
 #define OPTION_VAL_95_CY NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CY NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CY NULL
-#define OPTION_VAL_NO_CY "na"
-#define OPTION_VAL_YES_CY "ie"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CY NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CY NULL
 #define OPTION_VAL_SENSOR_CY NULL
@@ -2949,8 +2935,8 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_CY },
-         { "yes", OPTION_VAL_YES_CY },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -3153,8 +3139,6 @@ struct retro_core_options_v2 options_cy = {
 #define OPTION_VAL_95_DA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_DA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_DA NULL
-#define OPTION_VAL_NO_DA NULL
-#define OPTION_VAL_YES_DA NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_DA NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_DA NULL
 #define OPTION_VAL_SENSOR_DA NULL
@@ -3384,8 +3368,8 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_DA },
-         { "yes", OPTION_VAL_YES_DA },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -3588,8 +3572,6 @@ struct retro_core_options_v2 options_da = {
 #define OPTION_VAL_95_DE "95 %"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_DE NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_DE NULL
-#define OPTION_VAL_NO_DE "Nein"
-#define OPTION_VAL_YES_DE "Ja"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_DE NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_DE NULL
 #define OPTION_VAL_SENSOR_DE NULL
@@ -3819,8 +3801,8 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_DE },
-         { "yes", OPTION_VAL_YES_DE },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -3978,7 +3960,7 @@ struct retro_core_options_v2 options_de = {
 #define MGBA_SKIP_BIOS_INFO_0_EL NULL
 #define MGBA_GB_COLORS_LABEL_EL NULL
 #define MGBA_GB_COLORS_INFO_0_EL NULL
-#define OPTION_VAL_GRAYSCALE_EL NULL
+#define OPTION_VAL_GRAYSCALE_EL "Γκρι απόχρωση"
 #define MGBA_GB_COLORS_PRESET_LABEL_EL NULL
 #define MGBA_GB_COLORS_PRESET_INFO_0_EL NULL
 #define OPTION_VAL_0_EL NULL
@@ -4023,8 +4005,6 @@ struct retro_core_options_v2 options_de = {
 #define OPTION_VAL_95_EL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_EL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_EL NULL
-#define OPTION_VAL_NO_EL "όχι"
-#define OPTION_VAL_YES_EL "ναι"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_EL "Επίπεδο Ηλιακού Αισθητήρα"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EL NULL
 #define OPTION_VAL_SENSOR_EL "Χρήση αισθητήρα συσκευής εάν υπάρχει"
@@ -4254,8 +4234,8 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_EL },
-         { "yes", OPTION_VAL_YES_EL },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -4458,8 +4438,6 @@ struct retro_core_options_v2 options_el = {
 #define OPTION_VAL_95_EO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_EO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_EO NULL
-#define OPTION_VAL_NO_EO NULL
-#define OPTION_VAL_YES_EO NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_EO NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EO NULL
 #define OPTION_VAL_SENSOR_EO NULL
@@ -4689,8 +4667,8 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_EO },
-         { "yes", OPTION_VAL_YES_EO },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -4893,8 +4871,6 @@ struct retro_core_options_v2 options_eo = {
 #define OPTION_VAL_95_ES "95 %"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_ES "Permitir entradas direccionales opuestas"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_ES "Esta opción permitirá pulsar, alternar rápidamente o mantener las direcciones izquierda y derecha (o arriba y abajo) al mismo tiempo. Podría provocar fallos de movimiento."
-#define OPTION_VAL_NO_ES "No"
-#define OPTION_VAL_YES_ES "Sí"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_ES "Nivel del sensor solar"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_ES "Ajusta la intensidad de la luz solar ambiental. Para juegos que contenían un sensor solar en sus cartuchos, p. ej.: la saga Boktai."
 #define OPTION_VAL_SENSOR_ES "Utilizar dispositivo sensor si está disponible"
@@ -5124,8 +5100,8 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_ES },
-         { "yes", OPTION_VAL_YES_ES },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -5328,8 +5304,6 @@ struct retro_core_options_v2 options_es = {
 #define OPTION_VAL_95_FA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_FA NULL
-#define OPTION_VAL_NO_FA NULL
-#define OPTION_VAL_YES_FA NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_FA NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FA NULL
 #define OPTION_VAL_SENSOR_FA NULL
@@ -5559,8 +5533,8 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_FA },
-         { "yes", OPTION_VAL_YES_FA },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -5763,8 +5737,6 @@ struct retro_core_options_v2 options_fa = {
 #define OPTION_VAL_95_FI "95 %"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FI "Salli vastakkaisten suuntien syöte"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_FI "Tämän käyttöönotto sallii painamaan / nopeasti vaihtelemaan / pitämään sekä vasemmalle että oikealle (tai ylös ja alas) samanaikaisesti. Tämä voi aiheuttaa liikkeisiin perustuvia virheitä."
-#define OPTION_VAL_NO_FI "ei"
-#define OPTION_VAL_YES_FI "kyllä"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_FI "Aurinkoanturin taso"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FI "Asettaa ympäristön auringonvalon voimakkuuden. Voidaan käyttää peleissä, jotka sisälsivät aurinkoanturin kaseteissaan, esim. Boktai-sarjassa."
 #define OPTION_VAL_SENSOR_FI "Käytä laitteen anturia, mikäli saatavana"
@@ -5994,8 +5966,8 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_FI },
-         { "yes", OPTION_VAL_YES_FI },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -6198,8 +6170,6 @@ struct retro_core_options_v2 options_fi = {
 #define OPTION_VAL_95_FR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FR "Autoriser les entrées directionnelles opposées"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_FR "L'activation de cette option permettra d'appuyer/d'alterner rapidement/de maintenir les directions gauche et droite (ou haut et bas) en même temps. Cela peut causer des bugs liés au mouvement."
-#define OPTION_VAL_NO_FR "non"
-#define OPTION_VAL_YES_FR "oui"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_FR "Niveau du capteur solaire"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FR "Définit l'intensité ambiante de la lumière du soleil. Peut être utilisée par des jeux qui incluaient un capteur solaire dans leurs cartouches, par exemple : la série Boktai."
 #define OPTION_VAL_SENSOR_FR "Utiliser le capteur de l'appareil si disponible"
@@ -6429,8 +6399,8 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_FR },
-         { "yes", OPTION_VAL_YES_FR },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -6633,8 +6603,6 @@ struct retro_core_options_v2 options_fr = {
 #define OPTION_VAL_95_GL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_GL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_GL NULL
-#define OPTION_VAL_NO_GL NULL
-#define OPTION_VAL_YES_GL "sí"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_GL NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_GL NULL
 #define OPTION_VAL_SENSOR_GL NULL
@@ -6864,8 +6832,8 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_GL },
-         { "yes", OPTION_VAL_YES_GL },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -7068,8 +7036,6 @@ struct retro_core_options_v2 options_gl = {
 #define OPTION_VAL_95_HE NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_HE NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_HE NULL
-#define OPTION_VAL_NO_HE NULL
-#define OPTION_VAL_YES_HE NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_HE NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HE NULL
 #define OPTION_VAL_SENSOR_HE NULL
@@ -7299,8 +7265,8 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_HE },
-         { "yes", OPTION_VAL_YES_HE },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -7503,8 +7469,6 @@ struct retro_core_options_v2 options_he = {
 #define OPTION_VAL_95_HU NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_HU NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_HU NULL
-#define OPTION_VAL_NO_HU NULL
-#define OPTION_VAL_YES_HU NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_HU NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HU NULL
 #define OPTION_VAL_SENSOR_HU NULL
@@ -7734,8 +7698,8 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_HU },
-         { "yes", OPTION_VAL_YES_HU },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -7938,8 +7902,6 @@ struct retro_core_options_v2 options_hu = {
 #define OPTION_VAL_95_ID NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_ID NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_ID NULL
-#define OPTION_VAL_NO_ID NULL
-#define OPTION_VAL_YES_ID NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_ID NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_ID NULL
 #define OPTION_VAL_SENSOR_ID NULL
@@ -8169,8 +8131,8 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_ID },
-         { "yes", OPTION_VAL_YES_ID },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -8373,8 +8335,6 @@ struct retro_core_options_v2 options_id = {
 #define OPTION_VAL_95_IT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_IT "Permetti Input Direzionali Opposti"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_IT "Attivando questa funzionalità ti permette di premere / alternare velocemente / tenere premuti entrambe le direzioni destra e sinistra (oppure su e giù) allo stesso momento. Potrebbe causare dei glitch di movimento."
-#define OPTION_VAL_NO_IT NULL
-#define OPTION_VAL_YES_IT "si"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_IT "Livello Sensore Solare"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_IT "Imposta l'intensità solare dell'ambiente. Può essere usato dai giochi che includono un sensore solare nelle loro cartucce, es.: la serie Boktai."
 #define OPTION_VAL_SENSOR_IT "Usa sensore dispositivo se disponibile"
@@ -8604,8 +8564,8 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_IT },
-         { "yes", OPTION_VAL_YES_IT },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -8808,8 +8768,6 @@ struct retro_core_options_v2 options_it = {
 #define OPTION_VAL_95_JA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_JA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_JA NULL
-#define OPTION_VAL_NO_JA "いいえ"
-#define OPTION_VAL_YES_JA "はい"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_JA NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_JA NULL
 #define OPTION_VAL_SENSOR_JA NULL
@@ -9039,8 +8997,8 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_JA },
-         { "yes", OPTION_VAL_YES_JA },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -9243,8 +9201,6 @@ struct retro_core_options_v2 options_ja = {
 #define OPTION_VAL_95_KO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_KO "반대 방향 동시 입력 허용"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_KO "이 옵션을 활성화하면 왼쪽과 오른쪽 (또는 위쪽과 아래쪽) 방향 입력을 동시에 누르거나 빠르게 번갈아 누르는 것을 허용합니다. 이는 움직임 관련 버그를 일으킬 수 있습니다."
-#define OPTION_VAL_NO_KO "아니오"
-#define OPTION_VAL_YES_KO "예"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_KO "태양광 센서 수준"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_KO "태양광 센서의 강도를 설정합니다. 카트리지에 태양광 센서를 장착한 일부 게임(예: Boktai 시리즈)에서 사용할 수 있습니다."
 #define OPTION_VAL_SENSOR_KO "가능한 경우 장치 센서 사용"
@@ -9474,8 +9430,8 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_KO },
-         { "yes", OPTION_VAL_YES_KO },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -9678,8 +9634,6 @@ struct retro_core_options_v2 options_ko = {
 #define OPTION_VAL_95_MT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_MT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_MT NULL
-#define OPTION_VAL_NO_MT NULL
-#define OPTION_VAL_YES_MT NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_MT NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_MT NULL
 #define OPTION_VAL_SENSOR_MT NULL
@@ -9909,8 +9863,8 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_MT },
-         { "yes", OPTION_VAL_YES_MT },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -10113,8 +10067,6 @@ struct retro_core_options_v2 options_mt = {
 #define OPTION_VAL_95_NL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_NL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_NL NULL
-#define OPTION_VAL_NO_NL "nee"
-#define OPTION_VAL_YES_NL "ja"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_NL NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_NL NULL
 #define OPTION_VAL_SENSOR_NL NULL
@@ -10344,8 +10296,8 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_NL },
-         { "yes", OPTION_VAL_YES_NL },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -10548,8 +10500,6 @@ struct retro_core_options_v2 options_nl = {
 #define OPTION_VAL_95_NO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_NO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_NO NULL
-#define OPTION_VAL_NO_NO NULL
-#define OPTION_VAL_YES_NO NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_NO NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_NO NULL
 #define OPTION_VAL_SENSOR_NO NULL
@@ -10779,8 +10729,8 @@ struct retro_core_option_v2_definition option_defs_no[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_NO },
-         { "yes", OPTION_VAL_YES_NO },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -10983,8 +10933,6 @@ struct retro_core_options_v2 options_no = {
 #define OPTION_VAL_95_OC NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_OC NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_OC NULL
-#define OPTION_VAL_NO_OC NULL
-#define OPTION_VAL_YES_OC NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_OC NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_OC NULL
 #define OPTION_VAL_SENSOR_OC NULL
@@ -11214,8 +11162,8 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_OC },
-         { "yes", OPTION_VAL_YES_OC },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -11418,8 +11366,6 @@ struct retro_core_options_v2 options_oc = {
 #define OPTION_VAL_95_PL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PL NULL
-#define OPTION_VAL_NO_PL "nie"
-#define OPTION_VAL_YES_PL "tak"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PL NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PL NULL
 #define OPTION_VAL_SENSOR_PL "Użyj czujnika urządzenia, jeśli jest dostępny"
@@ -11649,8 +11595,8 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_PL },
-         { "yes", OPTION_VAL_YES_PL },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -11853,8 +11799,6 @@ struct retro_core_options_v2 options_pl = {
 #define OPTION_VAL_95_PT_BR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PT_BR "Permitir entradas direcionais opostas"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PT_BR "Esta opção permitirá pressionar, alternar ou segurar rapidamente as direções esquerda e direita (ou cima e baixo) ao mesmo tempo. Pode causar falhas de movimento."
-#define OPTION_VAL_NO_PT_BR "não"
-#define OPTION_VAL_YES_PT_BR "sim"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_BR "Nível do sensor solar"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PT_BR "Define a intensidade da luz do sol no ambiente. Pode ser usado por jogos que incluem um sensor solar em seus cartuchos, por exemplo: a série Boktai."
 #define OPTION_VAL_SENSOR_PT_BR "Usa um dispositivo sensor, se disponível"
@@ -12084,8 +12028,8 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_PT_BR },
-         { "yes", OPTION_VAL_YES_PT_BR },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -12288,8 +12232,6 @@ struct retro_core_options_v2 options_pt_br = {
 #define OPTION_VAL_95_PT_PT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PT_PT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PT_PT NULL
-#define OPTION_VAL_NO_PT_PT "não"
-#define OPTION_VAL_YES_PT_PT "sim"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_PT NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PT_PT NULL
 #define OPTION_VAL_SENSOR_PT_PT NULL
@@ -12519,8 +12461,8 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_PT_PT },
-         { "yes", OPTION_VAL_YES_PT_PT },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -12723,8 +12665,6 @@ struct retro_core_options_v2 options_pt_pt = {
 #define OPTION_VAL_95_RO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_RO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_RO NULL
-#define OPTION_VAL_NO_RO NULL
-#define OPTION_VAL_YES_RO NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_RO NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_RO NULL
 #define OPTION_VAL_SENSOR_RO NULL
@@ -12954,8 +12894,8 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_RO },
-         { "yes", OPTION_VAL_YES_RO },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -13158,8 +13098,6 @@ struct retro_core_options_v2 options_ro = {
 #define OPTION_VAL_95_RU NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_RU "Разрешать нажатия в разные стороны"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_RU "Позволяет нажимать / быстро менять / зажимать одновременно направления влево и вправо (или вверх и вниз). Может вызывать глитчи, связанные с перемещением."
-#define OPTION_VAL_NO_RU "Нет"
-#define OPTION_VAL_YES_RU "Да"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_RU "Уровень датчика света"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_RU "Устанавливает интенсивность окружающего освещения. Может использоваться в играх с картриджами, оснащёнными датчиком света (напр. серия Boktai)."
 #define OPTION_VAL_SENSOR_RU "Использовать датчик устройства"
@@ -13389,8 +13327,8 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_RU },
-         { "yes", OPTION_VAL_YES_RU },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -13593,8 +13531,6 @@ struct retro_core_options_v2 options_ru = {
 #define OPTION_VAL_95_SI NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SI NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SI NULL
-#define OPTION_VAL_NO_SI NULL
-#define OPTION_VAL_YES_SI NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SI NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SI NULL
 #define OPTION_VAL_SENSOR_SI NULL
@@ -13824,8 +13760,8 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_SI },
-         { "yes", OPTION_VAL_YES_SI },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -14028,8 +13964,6 @@ struct retro_core_options_v2 options_si = {
 #define OPTION_VAL_95_SK NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SK NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SK NULL
-#define OPTION_VAL_NO_SK "nie"
-#define OPTION_VAL_YES_SK "áno"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SK NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SK NULL
 #define OPTION_VAL_SENSOR_SK NULL
@@ -14259,8 +14193,8 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_SK },
-         { "yes", OPTION_VAL_YES_SK },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -14463,8 +14397,6 @@ struct retro_core_options_v2 options_sk = {
 #define OPTION_VAL_95_SR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SR NULL
-#define OPTION_VAL_NO_SR NULL
-#define OPTION_VAL_YES_SR NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SR NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SR NULL
 #define OPTION_VAL_SENSOR_SR NULL
@@ -14694,8 +14626,8 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_SR },
-         { "yes", OPTION_VAL_YES_SR },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -14898,8 +14830,6 @@ struct retro_core_options_v2 options_sr = {
 #define OPTION_VAL_95_SV NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SV NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SV NULL
-#define OPTION_VAL_NO_SV "nej"
-#define OPTION_VAL_YES_SV "ja"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SV NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SV NULL
 #define OPTION_VAL_SENSOR_SV NULL
@@ -15129,8 +15059,8 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_SV },
-         { "yes", OPTION_VAL_YES_SV },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -15333,8 +15263,6 @@ struct retro_core_options_v2 options_sv = {
 #define OPTION_VAL_95_TR "%95"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_TR "Karşı Yönlü Girişe İzin Ver"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_TR "Bunu etkinleştirmek aynı anda hem sola hem de sağa (veya yukarı ve aşağı) yönlere basma/hızlı değiştirme/tutma imkanı sağlar. Bu harekete dayalı hatalara neden olabilir."
-#define OPTION_VAL_NO_TR "hayır"
-#define OPTION_VAL_YES_TR "evet"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_TR "Güneş Sensörü Seviyesi"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_TR "Ortamdaki güneş ışığı yoğunluğunu ayarlar. Kartuşlarında güneş sensörü bulunan oyunlar tarafından kullanılabilir, örneğin: Boktai serisi."
 #define OPTION_VAL_SENSOR_TR "Varsa cihaz sensörünü kullanın"
@@ -15564,8 +15492,8 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_TR },
-         { "yes", OPTION_VAL_YES_TR },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -15768,8 +15696,6 @@ struct retro_core_options_v2 options_tr = {
 #define OPTION_VAL_95_UK NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_UK NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_UK NULL
-#define OPTION_VAL_NO_UK "ні"
-#define OPTION_VAL_YES_UK "так"
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_UK NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_UK NULL
 #define OPTION_VAL_SENSOR_UK NULL
@@ -15999,8 +15925,8 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_UK },
-         { "yes", OPTION_VAL_YES_UK },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -16203,8 +16129,6 @@ struct retro_core_options_v2 options_uk = {
 #define OPTION_VAL_95_VAL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_VAL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_VAL NULL
-#define OPTION_VAL_NO_VAL NULL
-#define OPTION_VAL_YES_VAL NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_VAL NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_VAL NULL
 #define OPTION_VAL_SENSOR_VAL NULL
@@ -16434,8 +16358,8 @@ struct retro_core_option_v2_definition option_defs_val[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_VAL },
-         { "yes", OPTION_VAL_YES_VAL },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
@@ -16638,8 +16562,6 @@ struct retro_core_options_v2 options_val = {
 #define OPTION_VAL_95_VN NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_VN NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_VN NULL
-#define OPTION_VAL_NO_VN NULL
-#define OPTION_VAL_YES_VN NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_VN NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_VN NULL
 #define OPTION_VAL_SENSOR_VN NULL
@@ -16869,8 +16791,8 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       NULL,
       "input",
       {
-         { "no",  OPTION_VAL_NO_VN },
-         { "yes", OPTION_VAL_YES_VN },
+         { "no",  "disabled" },
+         { "yes", "enabled" },
          { NULL, NULL },
       },
       "no"
