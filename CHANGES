@@ -41,6 +41,7 @@ Other fixes:
 Misc:
  - Core: Suspend runloop when a core crashes
  - GB Video: Add default SGB border
+ - GBA: Automatically skip BIOS if ROM has invalid logo
  - mGUI: Add margin to right-aligned menu text (fixes mgba.io/i/871)
  - Qt: Rearrange menus some
  - Qt: Clean up cheats dialog
