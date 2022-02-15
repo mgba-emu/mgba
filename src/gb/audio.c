@@ -12,7 +12,7 @@
 #include <mgba/internal/gb/serialize.h>
 #include <mgba/internal/gb/io.h>
 
-#ifdef _3DS
+#ifdef __3DS__
 #define blip_add_delta blip_add_delta_fast
 #endif
 
