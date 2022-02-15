@@ -14,7 +14,7 @@
 
 #define ITERATION_SIZE 5
 #define SCANNING_THRESHOLD_1 50
-#ifdef _3DS
+#ifdef __3DS__
 // 3DS is slooooow at opening files
 #define SCANNING_THRESHOLD_2 10
 #else

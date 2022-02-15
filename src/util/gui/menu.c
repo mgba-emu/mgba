@@ -8,7 +8,7 @@
 #include <mgba-util/gui.h>
 #include <mgba-util/gui/font.h>
 
-#ifdef _3DS
+#ifdef __3DS__
 #include <3ds.h>
 #elif defined(__SWITCH__)
 #include <switch.h>
@@ -29,7 +29,7 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 
 	GUIInvalidateKeys(params);
 	while (true) {
-#ifdef _3DS
+#ifdef __3DS__
 		if (!aptMainLoop()) {
 			return GUI_MENU_EXIT_CANCEL;
 		}

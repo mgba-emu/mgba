@@ -10,7 +10,7 @@
 #ifdef PSP2
 #include <mgba-util/platform/psp2/sce-vfs.h>
 #endif
-#ifdef _3DS
+#ifdef __3DS__
 #include <mgba-util/platform/3ds/3ds-vfs.h>
 #endif
 
