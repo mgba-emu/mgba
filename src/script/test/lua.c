@@ -44,7 +44,7 @@ M_TEST_DEFINE(loadGood) {
 	mScriptContextDeinit(&context);
 }
 
-M_TEST_DEFINE(loadSyntax) {
+M_TEST_DEFINE(loadBadSyntax) {
 	struct mScriptContext context;
 	mScriptContextInit(&context);
 	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
@@ -59,7 +59,132 @@ M_TEST_DEFINE(loadSyntax) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(runNop) {
+	struct mScriptContext context;
+	mScriptContextInit(&context);
+	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+
+	const char* program = "return";
+	struct VFile* vf = VFileFromConstMemory(program, strlen(program));
+	const char* error = NULL;
+	assert_true(lua->load(lua, vf, &error));
+	assert_null(error);
+	assert_true(lua->run(lua));
+
+	lua->destroy(lua);
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(getGlobal) {
+	struct mScriptContext context;
+	mScriptContextInit(&context);
+	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+
+	struct mScriptValue a = mSCRIPT_MAKE_S32(1);
+	struct mScriptValue* val;
+	const char* program;
+	struct VFile* vf;
+	const char* error;
+
+	program = "a = 1";
+	vf = VFileFromConstMemory(program, strlen(program));
+	error = NULL;
+	assert_true(lua->load(lua, vf, &error));
+	assert_null(error);
+	assert_true(lua->run(lua));
+
+	val = lua->getGlobal(lua, "a");
+	assert_non_null(val);
+	assert_true(a.type->equal(&a, val));
+	mScriptValueDeref(val);
+
+	program = "b = 1";
+	vf = VFileFromConstMemory(program, strlen(program));
+	error = NULL;
+	assert_true(lua->load(lua, vf, &error));
+	assert_null(error);
+	assert_true(lua->run(lua));
+
+	val = lua->getGlobal(lua, "a");
+	assert_non_null(val);
+	assert_true(a.type->equal(&a, val));
+	mScriptValueDeref(val);
+
+	val = lua->getGlobal(lua, "b");
+	assert_non_null(val);
+	assert_true(a.type->equal(&a, val));
+	mScriptValueDeref(val);
+
+	a = mSCRIPT_MAKE_S32(2);
+	program = "a = 2";
+	vf = VFileFromConstMemory(program, strlen(program));
+	error = NULL;
+	assert_true(lua->load(lua, vf, &error));
+	assert_null(error);
+	assert_true(lua->run(lua));
+
+	val = lua->getGlobal(lua, "a");
+	assert_non_null(val);
+	assert_true(a.type->equal(&a, val));
+	mScriptValueDeref(val);
+
+	a = mSCRIPT_MAKE_S32(3);
+	program = "b = a + b";
+	vf = VFileFromConstMemory(program, strlen(program));
+	error = NULL;
+	assert_true(lua->load(lua, vf, &error));
+	assert_null(error);
+	assert_true(lua->run(lua));
+
+	val = lua->getGlobal(lua, "b");
+	assert_non_null(val);
+	assert_true(a.type->equal(&a, val));
+	mScriptValueDeref(val);
+
+	lua->destroy(lua);
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(callLuaFunc) {
+	struct mScriptContext context;
+	mScriptContextInit(&context);
+	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+
+	struct mScriptValue* fn;
+	const char* program;
+	struct VFile* vf;
+	const char* error;
+
+	program = "function a(b) return b + 1 end";
+	vf = VFileFromConstMemory(program, strlen(program));
+	error = NULL;
+	assert_true(lua->load(lua, vf, &error));
+	assert_null(error);
+	assert_true(lua->run(lua));
+
+	fn = lua->getGlobal(lua, "a");
+	assert_non_null(fn);
+	assert_int_equal(fn->type->base, mSCRIPT_TYPE_FUNCTION);
+
+	struct mScriptFrame frame;
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	assert_true(mScriptInvoke(fn, &frame));
+	int64_t val;
+	assert_true(mScriptPopS64(&frame.returnValues, &val));
+	assert_int_equal(val, 2);
+
+	mScriptFrameDeinit(&frame);
+	mScriptValueDeref(fn);
+
+	lua->destroy(lua);
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(create),
 	cmocka_unit_test(loadGood),
-	cmocka_unit_test(loadSyntax))
+	cmocka_unit_test(loadBadSyntax),
+	cmocka_unit_test(runNop),
+	cmocka_unit_test(getGlobal),
+	cmocka_unit_test(callLuaFunc))
