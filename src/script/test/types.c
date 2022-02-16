@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/test/suite.h"
 
+#include <mgba/script/context.h>
 #include <mgba/script/types.h>
 
 struct Test {

@@ -723,10 +723,3 @@ bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList
 	}
 	return true;
 }
-
-bool mScriptInvoke(const struct mScriptFunction* fn, struct mScriptFrame* frame) {
-	if (!mScriptCoerceFrame(&fn->signature.parameters, &frame->arguments)) {
-		return false;
-	}
-	return fn->call(frame);
-}

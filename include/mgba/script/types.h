@@ -131,7 +131,8 @@ CXX_GUARD_START
 	}
 
 #define mSCRIPT_BIND_FUNCTION(NAME, RETURN, FUNCTION, NPARAMS, ...) \
-	static bool _binding_ ## NAME(struct mScriptFrame* frame) { \
+	static bool _binding_ ## NAME(struct mScriptFrame* frame, void* ctx) { \
+		UNUSED(ctx); \
 		mSCRIPT_POP_ ## NPARAMS(&frame->arguments, __VA_ARGS__); \
 		if (mScriptListSize(&frame->arguments)) { \
 			return false; \
@@ -154,7 +155,8 @@ CXX_GUARD_START
 	};
 
 #define mSCRIPT_BIND_VOID_FUNCTION(NAME, FUNCTION, NPARAMS, ...) \
-	static bool _binding_ ## NAME(struct mScriptFrame* frame) { \
+	static bool _binding_ ## NAME(struct mScriptFrame* frame, void* ctx) { \
+		UNUSED(ctx); \
 		mSCRIPT_POP_ ## NPARAMS(&frame->arguments, __VA_ARGS__); \
 		if (mScriptListSize(&frame->arguments)) { \
 			return false; \
@@ -276,7 +278,7 @@ struct mScriptFrame {
 
 struct mScriptFunction {
 	struct mScriptTypeFunction signature;
-	bool (*call)(struct mScriptFrame*);
+	bool (*call)(struct mScriptFrame*, void* context);
 	void* context;
 };
 
@@ -303,6 +305,5 @@ bool mScriptPopPointer(struct mScriptList* list, void** out);
 
 bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* input, struct mScriptValue* output);
 bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList* frame);
-bool mScriptInvoke(const struct mScriptFunction* fn, struct mScriptFrame* frame);
 
 #endif
