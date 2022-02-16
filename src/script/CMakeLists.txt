@@ -6,6 +6,11 @@ set(SOURCE_FILES
 set(TEST_FILES
 	test/types.c)
 
+if(USE_LUA)
+	list(APPEND SOURCE_FILES engines/lua.c)
+	list(APPEND TEST_FILES test/lua.c)
+endif()
+
 source_group("Scripting" FILES ${SOURCE_FILES})
 source_group("Scripting tests" FILES ${TEST_FILES})
 
