@@ -20,6 +20,9 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_C_S32 int32_t
 #define mSCRIPT_TYPE_C_U32 uint32_t
 #define mSCRIPT_TYPE_C_F32 float
+#define mSCRIPT_TYPE_C_S64 int64_t
+#define mSCRIPT_TYPE_C_U64 uint64_t
+#define mSCRIPT_TYPE_C_F64 double
 #define mSCRIPT_TYPE_C_STR mScriptString*
 #define mSCRIPT_TYPE_C_CHARP const char*
 #define mSCRIPT_TYPE_C_PTR void*
@@ -29,6 +32,9 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_S32 s32
 #define mSCRIPT_TYPE_FIELD_U32 u32
 #define mSCRIPT_TYPE_FIELD_F32 f32
+#define mSCRIPT_TYPE_FIELD_S64 s64
+#define mSCRIPT_TYPE_FIELD_U64 u64
+#define mSCRIPT_TYPE_FIELD_F64 f64
 #define mSCRIPT_TYPE_FIELD_STR opaque
 #define mSCRIPT_TYPE_FIELD_CHARP opaque
 #define mSCRIPT_TYPE_FIELD_PTR opaque
@@ -38,6 +44,9 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_MS_S32 (&mSTSInt32)
 #define mSCRIPT_TYPE_MS_U32 (&mSTUInt32)
 #define mSCRIPT_TYPE_MS_F32 (&mSTFloat32)
+#define mSCRIPT_TYPE_MS_S64 (&mSTSInt64)
+#define mSCRIPT_TYPE_MS_U64 (&mSTUInt64)
+#define mSCRIPT_TYPE_MS_F64 (&mSTFloat64)
 #define mSCRIPT_TYPE_MS_STR (&mSTString)
 #define mSCRIPT_TYPE_MS_CHARP (&mSTCharPtr)
 #define mSCRIPT_TYPE_MS_TABLE (&mSTTable)
@@ -49,6 +58,9 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_CMP_U32(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_U32, TYPE)
 #define mSCRIPT_TYPE_CMP_S32(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_S32, TYPE)
 #define mSCRIPT_TYPE_CMP_F32(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_F32, TYPE)
+#define mSCRIPT_TYPE_CMP_U64(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_U64, TYPE)
+#define mSCRIPT_TYPE_CMP_S64(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_S64, TYPE)
+#define mSCRIPT_TYPE_CMP_F64(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_F64, TYPE)
 #define mSCRIPT_TYPE_CMP_STR(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_STR, TYPE)
 #define mSCRIPT_TYPE_CMP_CHARP(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_CHARP, TYPE)
 #define mSCRIPT_TYPE_CMP_PTR(TYPE) ((TYPE)->base >= mSCRIPT_TYPE_OPAQUE)
@@ -174,6 +186,9 @@ CXX_GUARD_START
 #define mSCRIPT_MAKE_S32(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_S32, s32, VALUE)
 #define mSCRIPT_MAKE_U32(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_U32, u32, VALUE)
 #define mSCRIPT_MAKE_F32(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_F32, f32, VALUE)
+#define mSCRIPT_MAKE_S64(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_S64, s64, VALUE)
+#define mSCRIPT_MAKE_U64(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_U64, u64, VALUE)
+#define mSCRIPT_MAKE_F64(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_F64, f64, VALUE)
 #define mSCRIPT_MAKE_CHARP(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_CHARP, opaque, VALUE)
 
 enum {
@@ -196,6 +211,9 @@ extern const struct mScriptType mSTVoid;
 extern const struct mScriptType mSTSInt32;
 extern const struct mScriptType mSTUInt32;
 extern const struct mScriptType mSTFloat32;
+extern const struct mScriptType mSTSInt64;
+extern const struct mScriptType mSTUInt64;
+extern const struct mScriptType mSTFloat64;
 extern const struct mScriptType mSTString;
 extern const struct mScriptType mSTCharPtr;
 extern const struct mScriptType mSTTable;
@@ -235,6 +253,9 @@ struct mScriptValue {
 		int32_t s32;
 		uint32_t u32;
 		float f32;
+		int64_t s64;
+		uint64_t u64;
+		double f64;
 		void* opaque;
 	} value;
 };
@@ -275,6 +296,9 @@ void mScriptFrameDeinit(struct mScriptFrame* frame);
 bool mScriptPopS32(struct mScriptList* list, int32_t* out);
 bool mScriptPopU32(struct mScriptList* list, uint32_t* out);
 bool mScriptPopF32(struct mScriptList* list, float* out);
+bool mScriptPopS64(struct mScriptList* list, int64_t* out);
+bool mScriptPopU64(struct mScriptList* list, uint64_t* out);
+bool mScriptPopF64(struct mScriptList* list, double* out);
 bool mScriptPopPointer(struct mScriptList* list, void** out);
 
 bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* input, struct mScriptValue* output);

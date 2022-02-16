@@ -25,6 +25,10 @@ static int identityInt(int in) {
 	return in;
 }
 
+static int64_t identityInt64(int64_t in) {
+	return in;
+}
+
 static float identityFloat(float in) {
 	return in;
 }
@@ -48,6 +52,7 @@ static int isHello(const char* str) {
 mSCRIPT_BIND_FUNCTION(boundVoidOne, S32, voidOne, 0);
 mSCRIPT_BIND_VOID_FUNCTION(boundDiscard, discard, 1, S32);
 mSCRIPT_BIND_FUNCTION(boundIdentityInt, S32, identityInt, 1, S32);
+mSCRIPT_BIND_FUNCTION(boundIdentityInt64, S64, identityInt64, 1, S64);
 mSCRIPT_BIND_FUNCTION(boundIdentityFloat, F32, identityFloat, 1, F32);
 mSCRIPT_BIND_FUNCTION(boundIdentityStruct, S(Test), identityStruct, 1, S(Test));
 mSCRIPT_BIND_FUNCTION(boundAddInts, S32, addInts, 2, S32, S32);
@@ -79,6 +84,17 @@ M_TEST_DEFINE(identityFunctionS32) {
 	assert_true(mScriptInvoke(&boundIdentityInt, &frame));
 	int32_t val;
 	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 1);
+	mScriptFrameDeinit(&frame);
+}
+
+M_TEST_DEFINE(identityFunctionS64) {
+	struct mScriptFrame frame;
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S64, 1);
+	assert_true(mScriptInvoke(&boundIdentityInt64, &frame));
+	int64_t val;
+	assert_true(mScriptPopS64(&frame.returnValues, &val));
 	assert_int_equal(val, 1);
 	mScriptFrameDeinit(&frame);
 }
@@ -154,6 +170,92 @@ M_TEST_DEFINE(wrongArgType) {
 	mScriptFrameDeinit(&frame);
 }
 
+M_TEST_DEFINE(wrongPopType) {
+	struct mScriptFrame frame;
+	int32_t s32;
+	int64_t s64;
+	uint32_t u32;
+	uint64_t u64;
+	float f32;
+	double f64;
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S32, 0);
+	assert_false(mScriptPopU32(&frame.arguments, &u32));
+	assert_false(mScriptPopF32(&frame.arguments, &f32));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S64, 0);
+	assert_false(mScriptPopU64(&frame.arguments, &u64));
+	assert_false(mScriptPopF64(&frame.arguments, &f64));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, U32, 0);
+	assert_false(mScriptPopS32(&frame.arguments, &s32));
+	assert_false(mScriptPopF32(&frame.arguments, &f32));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, U64, 0);
+	assert_false(mScriptPopS64(&frame.arguments, &s64));
+	assert_false(mScriptPopF64(&frame.arguments, &f64));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, F32, 0);
+	assert_false(mScriptPopS32(&frame.arguments, &s32));
+	assert_false(mScriptPopU32(&frame.arguments, &u32));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, F64, 0);
+	assert_false(mScriptPopS64(&frame.arguments, &s64));
+	assert_false(mScriptPopU64(&frame.arguments, &u64));
+	mScriptFrameDeinit(&frame);
+}
+
+M_TEST_DEFINE(wrongPopSize) {
+	struct mScriptFrame frame;
+	int32_t s32;
+	int64_t s64;
+	uint32_t u32;
+	uint64_t u64;
+	float f32;
+	double f64;
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S32, 0);
+	assert_false(mScriptPopS64(&frame.arguments, &s64));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S64, 0);
+	assert_false(mScriptPopS32(&frame.arguments, &s32));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, U32, 0);
+	assert_false(mScriptPopU64(&frame.arguments, &u64));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, U64, 0);
+	assert_false(mScriptPopU32(&frame.arguments, &u32));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, F32, 0);
+	assert_false(mScriptPopF64(&frame.arguments, &f64));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, F64, 0);
+	assert_false(mScriptPopF32(&frame.arguments, &f32));
+	mScriptFrameDeinit(&frame);
+}
+
 M_TEST_DEFINE(coerceToFloat) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
@@ -176,233 +278,459 @@ M_TEST_DEFINE(coerceFromFloat) {
 	mScriptFrameDeinit(&frame);
 }
 
+M_TEST_DEFINE(coerceWiden) {
+	struct mScriptFrame frame;
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S32, -1);
+	assert_true(mScriptInvoke(&boundIdentityInt64, &frame));
+	int64_t val;
+	assert_true(mScriptPopS64(&frame.returnValues, &val));
+	assert_true(val == -1LL);
+	mScriptFrameDeinit(&frame);
+}
+
+M_TEST_DEFINE(coerceNarrow) {
+	struct mScriptFrame frame;
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S64, -1);
+	assert_true(mScriptInvoke(&boundIdentityInt, &frame));
+	int32_t val;
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(val == -1);
+	mScriptFrameDeinit(&frame);
+}
+
+#define COMPARE_BOOL(EXPECT, T0, V0, T1, V1) \
+	a = mSCRIPT_MAKE_ ## T0 (V0); \
+	b = mSCRIPT_MAKE_ ## T1 (V1); \
+	assert_ ## EXPECT (a.type->equal(&a, &b));
+
 M_TEST_DEFINE(s32Equality) {
-	struct mScriptValue s32A;
-	struct mScriptValue s32B;
-	struct mScriptValue u32;
-	struct mScriptValue f32;
+	struct mScriptValue a;
+	struct mScriptValue b;
 
-	s32A = mSCRIPT_MAKE_S32(0);
-	s32B = mSCRIPT_MAKE_S32(0);
-	assert_true(s32A.type->equal(&s32A, &s32B));
+	// S32
+	COMPARE_BOOL(true,  S32,  0, S32,  0);
+	COMPARE_BOOL(false, S32,  0, S32,  1);
+	COMPARE_BOOL(true,  S32,  1, S32,  1);
+	COMPARE_BOOL(false, S32,  1, S32, -1);
+	COMPARE_BOOL(true,  S32, -1, S32, -1);
 
-	s32B = mSCRIPT_MAKE_S32(1);
-	assert_false(s32A.type->equal(&s32A, &s32B));
+	// S64
+	COMPARE_BOOL(true,  S32,  0, S64,  0);
+	COMPARE_BOOL(false, S32,  0, S64,  1);
+	COMPARE_BOOL(true,  S32,  1, S64,  1);
+	COMPARE_BOOL(false, S32,  1, S64, -1);
+	COMPARE_BOOL(true,  S32, -1, S64, -1);
+	COMPARE_BOOL(false, S32,  0, S64,  0x100000000LL);
+	COMPARE_BOOL(false, S32, -1, S64,  0x1FFFFFFFFLL);
+	COMPARE_BOOL(false, S32, -1, S64, -0x100000001LL);
 
-	s32A = mSCRIPT_MAKE_S32(1);
-	assert_true(s32A.type->equal(&s32A, &s32B));
+	// U32
+	COMPARE_BOOL(true,  S32,           0, U32, 0);
+	COMPARE_BOOL(false, S32,           0, U32, 1);
+	COMPARE_BOOL(true,  S32,           1, U32, 1);
+	COMPARE_BOOL(true,  S32,  0x7FFFFFFF, U32, 0x7FFFFFFFU);
+	COMPARE_BOOL(false, S32,  0xFFFFFFFF, U32, 0xFFFFFFFFU);
+	COMPARE_BOOL(false, S32,  0x80000000, U32, 0x80000000U);
 
-	s32B = mSCRIPT_MAKE_S32(-1);
-	assert_false(s32A.type->equal(&s32A, &s32B));
+	// U64
+	COMPARE_BOOL(true,  S32,           0, U64, 0);
+	COMPARE_BOOL(false, S32,           0, U64, 1);
+	COMPARE_BOOL(true,  S32,           1, U64, 1);
+	COMPARE_BOOL(true,  S32,  0x7FFFFFFF, U64, 0x7FFFFFFFULL);
+	COMPARE_BOOL(false, S32,  0xFFFFFFFF, U64, 0xFFFFFFFFULL);
+	COMPARE_BOOL(false, S32,  0x80000000, U64, 0x80000000ULL);
 
-	s32A = mSCRIPT_MAKE_S32(-1);
-	assert_true(s32A.type->equal(&s32A, &s32B));
+	// F32
+	COMPARE_BOOL(true,  S32,           0, F32,  0);
+	COMPARE_BOOL(false, S32,           1, F32,  0);
+	COMPARE_BOOL(false, S32,           0, F32,  1);
+	COMPARE_BOOL(true,  S32,           1, F32,  1);
+	COMPARE_BOOL(false, S32,           0, F32, -1);
+	COMPARE_BOOL(false, S32,           1, F32, -1);
+	COMPARE_BOOL(true,  S32,          -1, F32, -1);
+	COMPARE_BOOL(false, S32,           1, F32,  1.1);
+	COMPARE_BOOL(false, S32,           0, F32,  0.1);
+	COMPARE_BOOL(true,  S32,  0x40000000, F32,  0x40000000);
+	COMPARE_BOOL(true,  S32, -0x40000000, F32, -0x40000000);
 
-	s32A = mSCRIPT_MAKE_S32(0);
-	u32 = mSCRIPT_MAKE_U32(0);
-	assert_true(s32A.type->equal(&s32A, &u32));
+	// F64
+	COMPARE_BOOL(true,  S32,           0, F64,  0);
+	COMPARE_BOOL(false, S32,           1, F64,  0);
+	COMPARE_BOOL(false, S32,           0, F64,  1);
+	COMPARE_BOOL(true,  S32,           1, F64,  1);
+	COMPARE_BOOL(false, S32,           0, F64, -1);
+	COMPARE_BOOL(false, S32,           1, F64, -1);
+	COMPARE_BOOL(true,  S32,          -1, F64, -1);
+	COMPARE_BOOL(false, S32,           1, F64,  1.1);
+	COMPARE_BOOL(false, S32,           0, F64,  0.1);
+	COMPARE_BOOL(true,  S32,  0x40000000, F64,  0x40000000);
+	COMPARE_BOOL(true,  S32, -0x40000000, F64, -0x40000000);
+}
 
-	s32A = mSCRIPT_MAKE_S32(1);
-	u32 = mSCRIPT_MAKE_U32(1);
-	assert_true(s32A.type->equal(&s32A, &u32));
+M_TEST_DEFINE(s64Equality) {
+	struct mScriptValue a;
+	struct mScriptValue b;
 
-	s32A = mSCRIPT_MAKE_S32(0);
-	u32 = mSCRIPT_MAKE_U32(1);
-	assert_false(s32A.type->equal(&s32A, &u32));
+	// S32
+	COMPARE_BOOL(true,  S64,              0, S32,  0);
+	COMPARE_BOOL(false, S64,              0, S32,  1);
+	COMPARE_BOOL(true,  S64,              1, S32,  1);
+	COMPARE_BOOL(false, S64,              1, S32, -1);
+	COMPARE_BOOL(true,  S64,             -1, S32, -1);
+	COMPARE_BOOL(false, S64,  0x100000000LL, S32,  0);
+	COMPARE_BOOL(false, S64,  0x1FFFFFFFFLL, S32, -1);
+	COMPARE_BOOL(false, S64, -0x100000001LL, S32, -1);
 
-	s32A = mSCRIPT_MAKE_S32(1);
-	u32 = mSCRIPT_MAKE_U32(0);
-	assert_false(s32A.type->equal(&s32A, &u32));
+	// S64
+	COMPARE_BOOL(true,  S64,              0, S64,  0);
+	COMPARE_BOOL(false, S64,              0, S64,  1);
+	COMPARE_BOOL(true,  S64,              1, S64,  1);
+	COMPARE_BOOL(false, S64,              1, S64, -1);
+	COMPARE_BOOL(true,  S64,             -1, S64, -1);
+	COMPARE_BOOL(false, S64,              0, S64,  0x100000000LL);
+	COMPARE_BOOL(false, S64,             -1, S64,  0x1FFFFFFFFLL);
+	COMPARE_BOOL(false, S64,             -1, S64, -0x100000001LL);
+	COMPARE_BOOL(false, S64,  0x100000000LL, S64,  0);
+	COMPARE_BOOL(false, S64,  0x1FFFFFFFFLL, S64, -1);
+	COMPARE_BOOL(false, S64, -0x100000001LL, S64, -1);
+	COMPARE_BOOL(true,  S64,  0x100000000LL, S64,  0x100000000LL);
+	COMPARE_BOOL(true,  S64,  0x1FFFFFFFFLL, S64,  0x1FFFFFFFFLL);
+	COMPARE_BOOL(true,  S64, -0x100000001LL, S64, -0x100000001LL);
 
-	s32A = mSCRIPT_MAKE_S32(0x7FFFFFFF);
-	u32 = mSCRIPT_MAKE_U32(0x7FFFFFFF);
-	assert_true(s32A.type->equal(&s32A, &u32));
+	// U32
+	COMPARE_BOOL(true,  S64,             0, U32, 0);
+	COMPARE_BOOL(false, S64,             0, U32, 1);
+	COMPARE_BOOL(true,  S64,             1, U32, 1);
+	COMPARE_BOOL(true,  S64,  0x7FFFFFFFLL, U32, 0x7FFFFFFFU);
+	COMPARE_BOOL(true,  S64,  0xFFFFFFFFLL, U32, 0xFFFFFFFFU);
+	COMPARE_BOOL(true,  S64,  0x80000000LL, U32, 0x80000000U);
+	COMPARE_BOOL(false, S64,            -1, U32, 0xFFFFFFFFU);
+	COMPARE_BOOL(false, S64, -0x80000000LL, U32, 0x80000000U);
 
-	s32A = mSCRIPT_MAKE_S32(0xFFFFFFFF);
-	u32 = mSCRIPT_MAKE_U32(0xFFFFFFFF);
-	assert_false(s32A.type->equal(&s32A, &u32));
+	// U64
+	COMPARE_BOOL(true,  S64,              0, U64, 0);
+	COMPARE_BOOL(false, S64,              0, U64, 1);
+	COMPARE_BOOL(true,  S64,              1, U64, 1);
+	COMPARE_BOOL(true,  S64,  0x07FFFFFFFLL, U64, 0x07FFFFFFFULL);
+	COMPARE_BOOL(true,  S64,  0x0FFFFFFFFLL, U64, 0x0FFFFFFFFULL);
+	COMPARE_BOOL(true,  S64,  0x080000000LL, U64, 0x080000000ULL);
+	COMPARE_BOOL(false, S64,              0, U64, 0x100000000ULL);
+	COMPARE_BOOL(false, S64,  0x100000000LL, U64, 0);
+	COMPARE_BOOL(true,  S64,  0x100000000LL, U64, 0x100000000ULL);
+	COMPARE_BOOL(false, S64,             -1, U64, 0x0FFFFFFFFULL);
+	COMPARE_BOOL(false, S64,             -1, U64, 0xFFFFFFFFFFFFFFFFULL);
+	COMPARE_BOOL(false, S64, -0x080000000LL, U64, 0x080000000ULL);
 
-	s32A = mSCRIPT_MAKE_S32(0x80000000);
-	u32 = mSCRIPT_MAKE_U32(0x80000000);
-	assert_false(s32A.type->equal(&s32A, &u32));
+	// F32
+	COMPARE_BOOL(true,  S64,                     0, F32,  0);
+	COMPARE_BOOL(false, S64,                     1, F32,  0);
+	COMPARE_BOOL(false, S64,                     0, F32,  1);
+	COMPARE_BOOL(true,  S64,                     1, F32,  1);
+	COMPARE_BOOL(false, S64,                     0, F32, -1);
+	COMPARE_BOOL(false, S64,                     1, F32, -1);
+	COMPARE_BOOL(true,  S64,                    -1, F32, -1);
+	COMPARE_BOOL(false, S64,                     1, F32,  1.1);
+	COMPARE_BOOL(false, S64,                     0, F32,  0.1);
+	COMPARE_BOOL(true,  S64,  0x4000000000000000LL, F32,  0x4000000000000000LL);
+	COMPARE_BOOL(true,  S64, -0x4000000000000000LL, F32, -0x4000000000000000LL);
 
-	s32A = mSCRIPT_MAKE_S32(0);
-	f32 = mSCRIPT_MAKE_F32(0);
-	assert_true(s32A.type->equal(&s32A, &f32));
-
-	s32A = mSCRIPT_MAKE_S32(1);
-	f32 = mSCRIPT_MAKE_F32(1);
-	assert_true(s32A.type->equal(&s32A, &f32));
-
-	s32A = mSCRIPT_MAKE_S32(0);
-	f32 = mSCRIPT_MAKE_F32(1);
-	assert_false(s32A.type->equal(&s32A, &f32));
-
-	s32A = mSCRIPT_MAKE_S32(1);
-	f32 = mSCRIPT_MAKE_F32(0);
-	assert_false(s32A.type->equal(&s32A, &f32));
-
-	s32A = mSCRIPT_MAKE_S32(-1);
-	f32 = mSCRIPT_MAKE_F32(-1);
-	assert_true(s32A.type->equal(&s32A, &f32));
-
-	s32A = mSCRIPT_MAKE_S32(0);
-	f32 = mSCRIPT_MAKE_F32(-1);
-	assert_false(s32A.type->equal(&s32A, &f32));
-
-	s32A = mSCRIPT_MAKE_S32(-1);
-	f32 = mSCRIPT_MAKE_F32(0);
-	assert_false(s32A.type->equal(&s32A, &f32));
+	// F64
+	COMPARE_BOOL(true,  S64,                     0, F64,  0);
+	COMPARE_BOOL(false, S64,                     1, F64,  0);
+	COMPARE_BOOL(false, S64,                     0, F64,  1);
+	COMPARE_BOOL(true,  S64,                     1, F64,  1);
+	COMPARE_BOOL(false, S64,                     0, F64, -1);
+	COMPARE_BOOL(false, S64,                     1, F64, -1);
+	COMPARE_BOOL(true,  S64,                    -1, F64, -1);
+	COMPARE_BOOL(false, S64,                     1, F64,  1.1);
+	COMPARE_BOOL(false, S64,                     0, F64,  0.1);
+	COMPARE_BOOL(true,  S64,  0x4000000000000000LL, F64,  0x4000000000000000LL);
+	COMPARE_BOOL(true,  S64, -0x4000000000000000LL, F64, -0x4000000000000000LL);
 }
 
 M_TEST_DEFINE(u32Equality) {
-	struct mScriptValue u32A;
-	struct mScriptValue u32B;
-	struct mScriptValue s32;
-	struct mScriptValue f32;
+	struct mScriptValue a;
+	struct mScriptValue b;
 
-	u32A = mSCRIPT_MAKE_U32(0);
-	u32B = mSCRIPT_MAKE_U32(0);
-	assert_true(u32A.type->equal(&u32A, &u32B));
+	// U32
+	COMPARE_BOOL(true,  U32,           0, U32, 0);
+	COMPARE_BOOL(false, U32,           0, U32, 1);
+	COMPARE_BOOL(true,  U32,           1, U32, 1);
+	COMPARE_BOOL(false, U32, 0x80000000U, U32, 1);
+	COMPARE_BOOL(true,  U32, 0x80000000U, U32, 0x80000000U);
+	COMPARE_BOOL(false, U32, 0x7FFFFFFFU, U32, 1);
+	COMPARE_BOOL(true,  U32, 0x7FFFFFFFU, U32, 0x7FFFFFFFU);
 
-	u32B = mSCRIPT_MAKE_U32(1);
-	assert_false(u32A.type->equal(&u32A, &u32B));
+	// U64
+	COMPARE_BOOL(true,  U32,           0, U64, 0);
+	COMPARE_BOOL(false, U32,           0, U64, 1);
+	COMPARE_BOOL(true,  U32,           1, U64, 1);
+	COMPARE_BOOL(false, U32, 0x80000000U, U64, 1);
+	COMPARE_BOOL(true,  U32, 0x80000000U, U64, 0x080000000ULL);
+	COMPARE_BOOL(false, U32, 0x7FFFFFFFU, U64, 1);
+	COMPARE_BOOL(true,  U32, 0x7FFFFFFFU, U64, 0x07FFFFFFFULL);
+	COMPARE_BOOL(false, U32, 0x80000000U, U64, 0x180000000ULL);
+	COMPARE_BOOL(false, U32,           0, U64, 0x100000000ULL);
 
-	u32A = mSCRIPT_MAKE_U32(1);
-	assert_true(u32A.type->equal(&u32A, &u32B));
+	// S32
+	COMPARE_BOOL(true,  U32,           0, S32, 0);
+	COMPARE_BOOL(false, U32,           0, S32, 1);
+	COMPARE_BOOL(true,  U32,           1, S32, 1);
+	COMPARE_BOOL(true,  U32, 0x7FFFFFFFU, S32, 0x7FFFFFFF);
+	COMPARE_BOOL(false, U32, 0xFFFFFFFFU, S32, 0xFFFFFFFF);
+	COMPARE_BOOL(false, U32, 0x80000000U, S32, 0x80000000);
 
-	u32B = mSCRIPT_MAKE_U32(0x80000000U);
-	assert_false(u32A.type->equal(&u32A, &u32B));
+	// S64
+	COMPARE_BOOL(true,  U32,           0, S64, 0);
+	COMPARE_BOOL(false, U32,           0, S64, 1);
+	COMPARE_BOOL(true,  U32,           1, S64, 1);
+	COMPARE_BOOL(true,  U32, 0x7FFFFFFFU, S64, 0x07FFFFFFFLL);
+	COMPARE_BOOL(true,  U32, 0xFFFFFFFFU, S64, 0x0FFFFFFFFLL);
+	COMPARE_BOOL(true,  U32, 0x80000000U, S64, 0x080000000LL);
+	COMPARE_BOOL(false, U32, 0x80000000U, S64, 0x180000000LL);
+	COMPARE_BOOL(false, U32,           0, S64, 0x100000000LL);
 
-	u32A = mSCRIPT_MAKE_U32(0x80000000U);
-	assert_true(u32A.type->equal(&u32A, &u32B));
+	// F32
+	COMPARE_BOOL(true,  U32,           0, F32,  0);
+	COMPARE_BOOL(false, U32,           1, F32,  0);
+	COMPARE_BOOL(false, U32,           0, F32,  1);
+	COMPARE_BOOL(true,  U32,           1, F32,  1);
+	COMPARE_BOOL(false, U32,           0, F32, -1);
+	COMPARE_BOOL(false, U32,           1, F32, -1);
+	COMPARE_BOOL(false, U32, 0xFFFFFFFFU, F32, -1);
+	COMPARE_BOOL(true,  U32, 0x80000000U, F32,  0x80000000);
+	COMPARE_BOOL(false, U32,           0, F32,  0x80000000);
+	COMPARE_BOOL(false, U32, 0x80000000U, F32,  0);
+	COMPARE_BOOL(false, U32,           1, F32,  1.1);
+	COMPARE_BOOL(false, U32,           0, F32,  0.1);
 
-	u32A = mSCRIPT_MAKE_U32(0);
-	s32 = mSCRIPT_MAKE_S32(0);
-	assert_true(u32A.type->equal(&u32A, &s32));
+	// F64
+	COMPARE_BOOL(true,  U32,           0, F64,  0);
+	COMPARE_BOOL(false, U32,           1, F64,  0);
+	COMPARE_BOOL(false, U32,           0, F64,  1);
+	COMPARE_BOOL(true,  U32,           1, F64,  1);
+	COMPARE_BOOL(false, U32,           0, F64, -1);
+	COMPARE_BOOL(false, U32,           1, F64, -1);
+	COMPARE_BOOL(false, U32, 0xFFFFFFFFU, F64, -1);
+	COMPARE_BOOL(true,  U32, 0x80000000U, F64,  0x80000000);
+	COMPARE_BOOL(false, U32,           0, F64,  0x80000000);
+	COMPARE_BOOL(false, U32, 0x80000000U, F64,  0);
+	COMPARE_BOOL(false, U32,           1, F64,  1.1);
+	COMPARE_BOOL(false, U32,           0, F64,  0.1);
+}
 
-	u32A = mSCRIPT_MAKE_U32(1);
-	s32 = mSCRIPT_MAKE_S32(1);
-	assert_true(u32A.type->equal(&u32A, &s32));
+M_TEST_DEFINE(u64Equality) {
+	struct mScriptValue a;
+	struct mScriptValue b;
 
-	u32A = mSCRIPT_MAKE_U32(0);
-	s32 = mSCRIPT_MAKE_S32(1);
-	assert_false(u32A.type->equal(&u32A, &s32));
+	// U32
+	COMPARE_BOOL(true,  U64,              0, U32, 0);
+	COMPARE_BOOL(false, U64,              0, U32, 1);
+	COMPARE_BOOL(true,  U64,              1, U32, 1);
+	COMPARE_BOOL(false, U64, 0x080000000ULL, U32, 1);
+	COMPARE_BOOL(true,  U64, 0x080000000ULL, U32, 0x80000000U);
+	COMPARE_BOOL(false, U64, 0x07FFFFFFFULL, U32, 1);
+	COMPARE_BOOL(true,  U64, 0x07FFFFFFFULL, U32, 0x7FFFFFFFU);
+	COMPARE_BOOL(false, U64, 0x180000000ULL, U32, 0x80000000U);
+	COMPARE_BOOL(false, U64, 0x100000000ULL, U32, 0);
 
-	u32A = mSCRIPT_MAKE_U32(1);
-	s32 = mSCRIPT_MAKE_S32(0);
-	assert_false(u32A.type->equal(&u32A, &s32));
+	// U64
+	COMPARE_BOOL(true,  U64,              0, U64, 0);
+	COMPARE_BOOL(false, U64,              0, U64, 1);
+	COMPARE_BOOL(true,  U64,              1, U64, 1);
+	COMPARE_BOOL(false, U64, 0x080000000ULL, U64, 1);
+	COMPARE_BOOL(true,  U64, 0x080000000ULL, U64, 0x080000000ULL);
+	COMPARE_BOOL(false, U64, 0x07FFFFFFFULL, U64, 1);
+	COMPARE_BOOL(true,  U64, 0x07FFFFFFFULL, U64, 0x07FFFFFFFULL);
+	COMPARE_BOOL(true,  U64, 0x180000000ULL, U64, 0x180000000ULL);
+	COMPARE_BOOL(true,  U64, 0x100000000ULL, U64, 0x100000000ULL);
 
-	u32A = mSCRIPT_MAKE_U32(0x7FFFFFFF);
-	s32 = mSCRIPT_MAKE_S32(0x7FFFFFFF);
-	assert_true(u32A.type->equal(&u32A, &s32));
+	// S32
+	COMPARE_BOOL(true,  U64,              0, S32, 0);
+	COMPARE_BOOL(false, U64,              0, S32, 1);
+	COMPARE_BOOL(true,  U64,              1, S32, 1);
+	COMPARE_BOOL(true,  U64, 0x07FFFFFFFULL, S32, 0x7FFFFFFF);
+	COMPARE_BOOL(false, U64, 0x0FFFFFFFFULL, S32, 0xFFFFFFFF);
+	COMPARE_BOOL(false, U64, 0x080000000ULL, S32, 0x80000000);
+	COMPARE_BOOL(false, U64, 0x100000000ULL, S32, 0);
 
-	u32A = mSCRIPT_MAKE_U32(0xFFFFFFFF);
-	s32 = mSCRIPT_MAKE_S32(0xFFFFFFFF);
-	assert_false(u32A.type->equal(&u32A, &s32));
+	// S64
+	COMPARE_BOOL(true,  U64,                     0, S64, 0);
+	COMPARE_BOOL(false, U64,                     0, S64, 1);
+	COMPARE_BOOL(true,  U64,                     1, S64, 1);
+	COMPARE_BOOL(true,  U64,        0x07FFFFFFFULL, S64, 0x07FFFFFFFLL);
+	COMPARE_BOOL(true,  U64,        0x0FFFFFFFFULL, S64, 0x0FFFFFFFFLL);
+	COMPARE_BOOL(true,  U64,        0x080000000ULL, S64, 0x080000000LL);
+	COMPARE_BOOL(false, U64,                     0, S64, 0x100000000LL);
+	COMPARE_BOOL(false, U64,        0x100000000ULL, S64, 0);
+	COMPARE_BOOL(true,  U64,        0x100000000ULL, S64, 0x100000000LL);
+	COMPARE_BOOL(false, U64,        0x0FFFFFFFFULL, S64, -1);
+	COMPARE_BOOL(false, U64, 0xFFFFFFFFFFFFFFFFULL, S64, -1);
+	COMPARE_BOOL(true,  U64,        0x080000000ULL, S64, 0x080000000LL);
 
-	u32A = mSCRIPT_MAKE_U32(0x80000000);
-	s32 = mSCRIPT_MAKE_S32(0x80000000);
-	assert_false(u32A.type->equal(&u32A, &s32));
+	// F32
+	COMPARE_BOOL(true,  U64,                     0, F32,  0);
+	COMPARE_BOOL(false, U64,                     1, F32,  0);
+	COMPARE_BOOL(false, U64,                     0, F32,  1);
+	COMPARE_BOOL(true,  U64,                     1, F32,  1);
+	COMPARE_BOOL(false, U64,                     0, F32, -1);
+	COMPARE_BOOL(false, U64,                     1, F32, -1);
+	COMPARE_BOOL(false, U64, 0xFFFFFFFFFFFFFFFFULL, F32, -1);
+	COMPARE_BOOL(true,  U64, 0x8000000000000000ULL, F32,  0x8000000000000000ULL);
+	COMPARE_BOOL(false, U64,                     0, F32,  0x8000000000000000ULL);
+	COMPARE_BOOL(false, U64, 0x8000000000000000ULL, F32,  0);
+	COMPARE_BOOL(false, U64,                     1, F32,  1.1);
+	COMPARE_BOOL(false, U64,                     0, F32,  0.1);
 
-	u32A = mSCRIPT_MAKE_U32(0);
-	f32 = mSCRIPT_MAKE_F32(0);
-	assert_true(u32A.type->equal(&u32A, &f32));
-
-	u32A = mSCRIPT_MAKE_U32(1);
-	f32 = mSCRIPT_MAKE_F32(1);
-	assert_true(u32A.type->equal(&u32A, &f32));
-
-	u32A = mSCRIPT_MAKE_U32(0);
-	f32 = mSCRIPT_MAKE_F32(1);
-	assert_false(u32A.type->equal(&u32A, &f32));
-
-	u32A = mSCRIPT_MAKE_U32(1);
-	f32 = mSCRIPT_MAKE_F32(0);
-	assert_false(u32A.type->equal(&u32A, &f32));
-
-	u32A = mSCRIPT_MAKE_U32(0x80000000);
-	f32 = mSCRIPT_MAKE_F32(0x80000000);
-	assert_true(u32A.type->equal(&u32A, &f32));
-
-	u32A = mSCRIPT_MAKE_U32(0);
-	f32 = mSCRIPT_MAKE_F32(0x80000000);
-	assert_false(u32A.type->equal(&u32A, &f32));
-
-	u32A = mSCRIPT_MAKE_U32(0x80000000);
-	f32 = mSCRIPT_MAKE_F32(0);
-	assert_false(u32A.type->equal(&u32A, &f32));
+	// F64
+	COMPARE_BOOL(true,  U64,                     0, F64,  0);
+	COMPARE_BOOL(false, U64,                     1, F64,  0);
+	COMPARE_BOOL(false, U64,                     0, F64,  1);
+	COMPARE_BOOL(true,  U64,                     1, F64,  1);
+	COMPARE_BOOL(false, U64,                     0, F64, -1);
+	COMPARE_BOOL(false, U64,                     1, F64, -1);
+	COMPARE_BOOL(false, U64, 0xFFFFFFFFFFFFFFFFULL, F64, -1);
+	COMPARE_BOOL(true,  U64, 0x8000000000000000ULL, F64,  0x8000000000000000ULL);
+	COMPARE_BOOL(false, U64,                     0, F64,  0x8000000000000000ULL);
+	COMPARE_BOOL(false, U64, 0x8000000000000000ULL, F64,  0);
+	COMPARE_BOOL(false, U64,                     1, F64,  1.1);
+	COMPARE_BOOL(false, U64,                     0, F64,  0.1);
 }
 
 M_TEST_DEFINE(f32Equality) {
-	struct mScriptValue f32A;
-	struct mScriptValue f32B;
-	struct mScriptValue s32;
-	struct mScriptValue u32;
+	struct mScriptValue a;
+	struct mScriptValue b;
 
-	f32A = mSCRIPT_MAKE_F32(0);
-	f32B = mSCRIPT_MAKE_F32(0);
-	assert_true(f32A.type->equal(&f32A, &f32B));
+	// F32
+	COMPARE_BOOL(true,  F32,   0, F32,  0);
+	COMPARE_BOOL(false, F32,   0, F32,  1);
+	COMPARE_BOOL(true,  F32,   1, F32,  1);
+	COMPARE_BOOL(true,  F32,  -1, F32, -1);
+	COMPARE_BOOL(false, F32, 1.1, F32,  1);
+	COMPARE_BOOL(false, F32,   1, F32,  1.1);
+	COMPARE_BOOL(true,  F32, 1.1, F32,  1.1);
 
-	f32B = mSCRIPT_MAKE_F32(1);
-	assert_false(f32A.type->equal(&f32A, &f32B));
+	// F64
+	COMPARE_BOOL(true,  F32,    0, F64,  0);
+	COMPARE_BOOL(false, F32,    0, F64,  1);
+	COMPARE_BOOL(true,  F32,    1, F64,  1);
+	COMPARE_BOOL(true,  F32,   -1, F64, -1);
+	COMPARE_BOOL(false, F32,  1.1, F64,  1);
+	COMPARE_BOOL(false, F32,    1, F64,  1.1);
+	COMPARE_BOOL(true,  F32, 1.25, F64,  1.25);
 
-	f32A = mSCRIPT_MAKE_F32(1);
-	assert_true(f32A.type->equal(&f32A, &f32B));
+	// S32
+	COMPARE_BOOL(true,  F32,           0, S32,  0);
+	COMPARE_BOOL(false, F32,           0, S32,  1);
+	COMPARE_BOOL(false, F32,           1, S32,  0);
+	COMPARE_BOOL(true,  F32,           1, S32,  1);
+	COMPARE_BOOL(false, F32,         1.1, S32,  1);
+	COMPARE_BOOL(true,  F32,          -1, S32, -1);
+	COMPARE_BOOL(false, F32,        -1.1, S32, -1);
+	COMPARE_BOOL(true,  F32,  0x40000000, S32,  0x40000000);
+	COMPARE_BOOL(true,  F32, -0x40000000, S32, -0x40000000);
 
-	f32B = mSCRIPT_MAKE_F32(1.1);
-	assert_false(f32A.type->equal(&f32A, &f32B));
+	// S64
+	COMPARE_BOOL(true,  F32,              0, S64,  0);
+	COMPARE_BOOL(false, F32,              0, S64,  1);
+	COMPARE_BOOL(false, F32,              1, S64,  0);
+	COMPARE_BOOL(true,  F32,              1, S64,  1);
+	COMPARE_BOOL(false, F32,            1.1, S64,  1);
+	COMPARE_BOOL(true,  F32,             -1, S64, -1);
+	COMPARE_BOOL(false, F32,           -1.1, S64, -1);
+	COMPARE_BOOL(true,  F32,  0x040000000LL, S64,  0x040000000LL);
+	COMPARE_BOOL(true,  F32,  0x100000000LL, S64,  0x100000000LL);
+	COMPARE_BOOL(false, F32,  0x100000000LL, S64,  0);
+	COMPARE_BOOL(false, F32,              0, S64,  0x100000000LL);
+	COMPARE_BOOL(true,  F32, -0x040000000LL, S64, -0x040000000LL);
 
-	f32A = mSCRIPT_MAKE_F32(1.1);
-	assert_true(f32A.type->equal(&f32A, &f32B));
+	// U32
+	COMPARE_BOOL(true,  F32,          0, U32, 0);
+	COMPARE_BOOL(false, F32,          0, U32, 1);
+	COMPARE_BOOL(false, F32,          1, U32, 0);
+	COMPARE_BOOL(true,  F32,          1, U32, 1);
+	COMPARE_BOOL(false, F32,        1.1, U32, 1);
+	COMPARE_BOOL(true,  F32, 0x40000000, U32, 0x40000000);
 
-	f32A = mSCRIPT_MAKE_F32(0);
-	s32 = mSCRIPT_MAKE_S32(0);
-	assert_true(f32A.type->equal(&f32A, &s32));
+	// U64
+	COMPARE_BOOL(true,  F32,              0, U64, 0);
+	COMPARE_BOOL(false, F32,              0, U64, 1);
+	COMPARE_BOOL(false, F32,              1, U64, 0);
+	COMPARE_BOOL(true,  F32,              1, U64, 1);
+	COMPARE_BOOL(false, F32,            1.1, U64, 1);
+	COMPARE_BOOL(true,  F32, 0x040000000ULL, U64, 0x040000000ULL);
+	COMPARE_BOOL(true,  F32, 0x100000000ULL, U64, 0x100000000ULL);
+	COMPARE_BOOL(false, F32, 0x100000000ULL, U64, 0);
+	COMPARE_BOOL(false, F32,              0, U64, 0x100000000ULL);
+}
 
-	f32A = mSCRIPT_MAKE_F32(1);
-	s32 = mSCRIPT_MAKE_S32(1);
-	assert_true(f32A.type->equal(&f32A, &s32));
+M_TEST_DEFINE(f64Equality) {
+	struct mScriptValue a;
+	struct mScriptValue b;
 
-	f32A = mSCRIPT_MAKE_F32(0);
-	s32 = mSCRIPT_MAKE_S32(1);
-	assert_false(f32A.type->equal(&f32A, &s32));
+	// F32
+	COMPARE_BOOL(true,  F64,    0, F32,  0);
+	COMPARE_BOOL(false, F64,    0, F32,  1);
+	COMPARE_BOOL(true,  F64,    1, F32,  1);
+	COMPARE_BOOL(true,  F64,   -1, F32, -1);
+	COMPARE_BOOL(false, F64,  1.1, F32,  1);
+	COMPARE_BOOL(false, F64,    1, F32,  1.1);
+	COMPARE_BOOL(true,  F64, 1.25, F32,  1.25);
 
-	f32A = mSCRIPT_MAKE_F32(1);
-	s32 = mSCRIPT_MAKE_S32(0);
-	assert_false(f32A.type->equal(&f32A, &s32));
+	// F64
+	COMPARE_BOOL(true,  F64,   0, F64,  0);
+	COMPARE_BOOL(false, F64,   0, F64,  1);
+	COMPARE_BOOL(true,  F64,   1, F64,  1);
+	COMPARE_BOOL(true,  F64,  -1, F64, -1);
+	COMPARE_BOOL(false, F64, 1.1, F64,  1);
+	COMPARE_BOOL(false, F64,   1, F64,  1.1);
+	COMPARE_BOOL(true,  F64, 1.1, F64,  1.1);
 
-	f32A = mSCRIPT_MAKE_F32(1.1);
-	s32 = mSCRIPT_MAKE_S32(1);
-	assert_false(f32A.type->equal(&f32A, &s32));
+	// S32
+	COMPARE_BOOL(true,  F64,           0, S32,  0);
+	COMPARE_BOOL(false, F64,           0, S32,  1);
+	COMPARE_BOOL(false, F64,           1, S32,  0);
+	COMPARE_BOOL(true,  F64,           1, S32,  1);
+	COMPARE_BOOL(false, F64,         1.1, S32,  1);
+	COMPARE_BOOL(true,  F64,          -1, S32, -1);
+	COMPARE_BOOL(false, F64,        -1.1, S32, -1);
+	COMPARE_BOOL(true,  F64,  0x40000000, S32,  0x40000000);
+	COMPARE_BOOL(true,  F64, -0x40000000, S32, -0x40000000);
 
-	f32A = mSCRIPT_MAKE_F32(0x40000000);
-	s32 = mSCRIPT_MAKE_S32(0x40000000);
-	assert_true(f32A.type->equal(&f32A, &s32));
+	// S64
+	COMPARE_BOOL(true,  F64,              0, S64,  0);
+	COMPARE_BOOL(false, F64,              0, S64,  1);
+	COMPARE_BOOL(false, F64,              1, S64,  0);
+	COMPARE_BOOL(true,  F64,              1, S64,  1);
+	COMPARE_BOOL(false, F64,            1.1, S64,  1);
+	COMPARE_BOOL(true,  F64,             -1, S64, -1);
+	COMPARE_BOOL(false, F64,           -1.1, S64, -1);
+	COMPARE_BOOL(true,  F64,  0x040000000LL, S64,  0x040000000LL);
+	COMPARE_BOOL(true,  F64,  0x100000000LL, S64,  0x100000000LL);
+	COMPARE_BOOL(false, F64,  0x100000000LL, S64,  0);
+	COMPARE_BOOL(false, F64,              0, S64,  0x100000000LL);
+	COMPARE_BOOL(true,  F64, -0x040000000LL, S64, -0x040000000LL);
 
-	f32A = mSCRIPT_MAKE_F32(0);
-	u32 = mSCRIPT_MAKE_U32(0);
-	assert_true(f32A.type->equal(&f32A, &u32));
+	// U32
+	COMPARE_BOOL(true,  F64,          0, U32, 0);
+	COMPARE_BOOL(false, F64,          0, U32, 1);
+	COMPARE_BOOL(false, F64,          1, U32, 0);
+	COMPARE_BOOL(true,  F64,          1, U32, 1);
+	COMPARE_BOOL(false, F64,        1.1, U32, 1);
+	COMPARE_BOOL(true,  F64, 0x40000000, U32, 0x40000000);
 
-	f32A = mSCRIPT_MAKE_F32(1);
-	u32 = mSCRIPT_MAKE_U32(1);
-	assert_true(f32A.type->equal(&f32A, &u32));
-
-	f32A = mSCRIPT_MAKE_F32(0);
-	u32 = mSCRIPT_MAKE_U32(1);
-	assert_false(f32A.type->equal(&f32A, &u32));
-
-	f32A = mSCRIPT_MAKE_F32(1);
-	u32 = mSCRIPT_MAKE_U32(0);
-	assert_false(f32A.type->equal(&f32A, &u32));
-
-	f32A = mSCRIPT_MAKE_F32(1.1);
-	u32 = mSCRIPT_MAKE_U32(1);
-	assert_false(f32A.type->equal(&f32A, &u32));
-
-	f32A = mSCRIPT_MAKE_F32(0x40000000);
-	u32 = mSCRIPT_MAKE_U32(0x40000000);
-	assert_true(f32A.type->equal(&f32A, &u32));
+	// U64
+	COMPARE_BOOL(true,  F64,              0, U64, 0);
+	COMPARE_BOOL(false, F64,              0, U64, 1);
+	COMPARE_BOOL(false, F64,              1, U64, 0);
+	COMPARE_BOOL(true,  F64,              1, U64, 1);
+	COMPARE_BOOL(false, F64,            1.1, U64, 1);
+	COMPARE_BOOL(true,  F64, 0x040000000ULL, U64, 0x040000000ULL);
+	COMPARE_BOOL(true,  F64, 0x100000000ULL, U64, 0x100000000ULL);
+	COMPARE_BOOL(false, F64, 0x100000000ULL, U64, 0);
+	COMPARE_BOOL(false, F64,              0, U64, 0x100000000ULL);
 }
 
 M_TEST_DEFINE(stringEquality) {
@@ -516,6 +844,7 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(voidArgs),
 	cmocka_unit_test(voidFunc),
 	cmocka_unit_test(identityFunctionS32),
+	cmocka_unit_test(identityFunctionS64),
 	cmocka_unit_test(identityFunctionF32),
 	cmocka_unit_test(identityFunctionStruct),
 	cmocka_unit_test(addS32),
@@ -523,11 +852,18 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(wrongArgCountLo),
 	cmocka_unit_test(wrongArgCountHi),
 	cmocka_unit_test(wrongArgType),
+	cmocka_unit_test(wrongPopType),
+	cmocka_unit_test(wrongPopSize),
 	cmocka_unit_test(coerceToFloat),
 	cmocka_unit_test(coerceFromFloat),
+	cmocka_unit_test(coerceNarrow),
+	cmocka_unit_test(coerceWiden),
 	cmocka_unit_test(s32Equality),
+	cmocka_unit_test(s64Equality),
 	cmocka_unit_test(u32Equality),
+	cmocka_unit_test(u64Equality),
 	cmocka_unit_test(f32Equality),
+	cmocka_unit_test(f64Equality),
 	cmocka_unit_test(stringEquality),
 	cmocka_unit_test(hashTableBasic),
 	cmocka_unit_test(hashTableString),
