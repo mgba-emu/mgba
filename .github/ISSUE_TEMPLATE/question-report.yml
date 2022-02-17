@@ -1,0 +1,23 @@
+name: Question
+description: If you have a question you can fill in the report here.
+title: "[Question]: "
+labels: question
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill in the question report!
+  - type: textarea
+    id: question
+    attributes:
+      label: Describe your question
+      description: Describe your question as accurate as possible.
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Add screenshots
+      description: Please add screenshots if available.
+    validations:
+      required: false

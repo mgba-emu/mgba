@@ -1,0 +1,23 @@
+name: Feature request
+description: If you want a feature to be added you can fill in the report here.
+title: "[Feature request]: "
+labels: enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature report!
+  - type: textarea
+    id: feature
+    attributes:
+      label: Describe the feature
+      description: Describe the feature as accurate as possible.
+    validations:
+      required: true
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Add screenshots
+      description: Please add screenshots if available.
+    validations:
+      required: false
