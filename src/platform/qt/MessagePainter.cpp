@@ -30,11 +30,11 @@ MessagePainter::MessagePainter(QObject* parent)
 void MessagePainter::resize(const QSize& size, qreal scaleFactor) {
 	double drawW = size.width();
 	double drawH = size.height();
-	double area = pow(drawW * drawW * drawW * drawH * drawH, 0.2);
+	double area = pow(drawW * drawW * drawW * drawH * drawH, 0.185);
 	m_scaleFactor = scaleFactor;
 	m_world.reset();
-	m_world.scale(area / 220., area / 220.);
-	m_local = QPoint(area / 100., drawH - m_messageFont.pixelSize() * m_world.m22() * 1.3);
+	m_world.scale(area / 170., area / 170.);
+	m_local = QPoint(area / 80., drawH - m_messageFont.pixelSize() * m_world.m22() * 1.3);
 
 	QFontMetrics metrics(m_frameFont);
 	m_framePoint = QPoint(drawW / m_world.m11() - metrics.height() * 0.1, metrics.height() * 0.75);
