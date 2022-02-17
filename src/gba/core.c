@@ -25,6 +25,7 @@
 #include <mgba/internal/gba/renderers/video-software.h>
 #include <mgba/internal/gba/savedata.h>
 #include <mgba/internal/gba/serialize.h>
+#include <mgba-util/crc32.h>
 #ifdef USE_ELF
 #include <mgba-util/elf-read.h>
 #endif
@@ -129,6 +130,7 @@ static const struct mCoreMemoryBlock _GBAMemoryBlocksEEPROM[] = {
 struct mVideoLogContext;
 
 #define CPU_COMPONENT_AUDIO_MIXER CPU_COMPONENT_MISC_1
+#define LOGO_CRC32 0xD0BEB55E
 
 struct GBACore {
 	struct mCore d;
@@ -658,7 +660,16 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 
 	ARMReset(core->cpu);
-	if ((core->opts.skipBios && (gba->romVf || gba->memory.rom)) || (gba->romVf && GBAIsMB(gba->romVf))) {
+	bool forceSkip = gba->romVf && GBAIsMB(gba->romVf);
+	if (!(forceSkip || core->opts.skipBios) && (gba->romVf || gba->memory.rom) && gba->pristineRomSize >= 0xA0 && gba->biosVf) {
+		uint32_t crc = doCrc32(&gba->memory.rom[1], 0x9C);
+		if (crc != LOGO_CRC32) {
+			mLOG(STATUS, WARN, "Invalid logo, skipping BIOS");
+			forceSkip = true;
+		}
+	}
+
+	if (forceSkip || (core->opts.skipBios && (gba->romVf || gba->memory.rom))) {
 		GBASkipBIOS(core->board);
 	}
 }

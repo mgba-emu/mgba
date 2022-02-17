@@ -29,7 +29,7 @@
 #include <psp2/io/stat.h>
 #endif
 
-#ifdef _3DS
+#ifdef __3DS__
 #include <mgba-util/platform/3ds/3ds-vfs.h>
 #endif
 
@@ -253,7 +253,7 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 #elif defined(GEKKO) || defined(__SWITCH__)
 	snprintf(out, outLength, "/%s", projectName);
 	mkdir(out, 0777);
-#elif defined(_3DS)
+#elif defined(__3DS__)
 	snprintf(out, outLength, "/%s", projectName);
 	FSUSER_CreateDirectory(sdmcArchive, fsMakePath(PATH_ASCII, out), 0);
 #elif defined(__HAIKU__)
@@ -290,7 +290,7 @@ void mCoreConfigPortablePath(char* out, size_t outLength) {
 	}
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 	StringCchCatA(out, outLength, PATH_SEP "portable.ini");
-#elif defined(PSP2) || defined(GEKKO) || defined(__SWITCH__) || defined(_3DS)
+#elif defined(PSP2) || defined(GEKKO) || defined(__SWITCH__) || defined(__3DS__)
 	out[0] = '\0';
 #else
 	getcwd(out, outLength);

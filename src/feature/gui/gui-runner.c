@@ -667,13 +667,13 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		int frames = 0;
 		GUIPollInput(&runner->params, 0, &keys);
 		while (keys && frames < 30) {
-#ifdef _3DS
+#ifdef __3DS__
 			if (!frames) {
 #endif
 				runner->params.drawStart();
 				runner->drawFrame(runner, true);
 				runner->params.drawEnd();
-#ifdef _3DS
+#ifdef __3DS__
 			} else {
 				// XXX: Why does this fix #1294?
 				usleep(15000);

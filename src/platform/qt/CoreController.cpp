@@ -500,6 +500,9 @@ void CoreController::showResetInfo(bool enable) {
 
 void CoreController::setRewinding(bool rewind) {
 	if (!m_threadContext.core->opts.rewindEnable) {
+		if (rewind) {
+			emit statusPosted(tr("Rewinding not currently enabled"));
+		}
 		return;
 	}
 	if (rewind && m_multiplayer && m_multiplayer->attached() > 1) {
@@ -514,17 +517,22 @@ void CoreController::setRewinding(bool rewind) {
 }
 
 void CoreController::rewind(int states) {
-	{
-		Interrupter interrupter(this);
-		if (!states) {
-			states = INT_MAX;
-		}
-		for (int i = 0; i < states; ++i) {
-			if (!mCoreRewindRestore(&m_threadContext.impl->rewind, m_threadContext.core)) {
-				break;
-			}
+	if (!states) {
+		return;
+	}
+	if (!m_threadContext.core->opts.rewindEnable) {
+		emit statusPosted(tr("Rewinding not currently enabled"));
+	}
+	Interrupter interrupter(this);
+	if (!states) {
+		states = INT_MAX;
+	}
+	for (int i = 0; i < states; ++i) {
+		if (!mCoreRewindRestore(&m_threadContext.impl->rewind, m_threadContext.core)) {
+			break;
 		}
 	}
+	interrupter.resume();
 	emit frameAvailable();
 	emit rewound();
 }
