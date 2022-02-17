@@ -27,6 +27,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_C_CHARP const char*
 #define mSCRIPT_TYPE_C_PTR void*
 #define mSCRIPT_TYPE_C_TABLE Table*
+#define mSCRIPT_TYPE_C_WRAPPER mScriptValue*
 #define mSCRIPT_TYPE_C_S(STRUCT) struct STRUCT*
 
 #define mSCRIPT_TYPE_FIELD_S32 s32
@@ -39,6 +40,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_CHARP opaque
 #define mSCRIPT_TYPE_FIELD_PTR opaque
 #define mSCRIPT_TYPE_FIELD_TABLE opaque
+#define mSCRIPT_TYPE_FIELD_WRAPPER opaque
 #define mSCRIPT_TYPE_FIELD_S(STRUCT) opaque
 
 #define mSCRIPT_TYPE_MS_S32 (&mSTSInt32)
@@ -50,6 +52,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_MS_STR (&mSTString)
 #define mSCRIPT_TYPE_MS_CHARP (&mSTCharPtr)
 #define mSCRIPT_TYPE_MS_TABLE (&mSTTable)
+#define mSCRIPT_TYPE_MS_WRAPPER (&mSTWrapper)
 #define mSCRIPT_TYPE_MS_S(STRUCT) (&mSTStruct_ ## STRUCT)
 
 #define _mSCRIPT_FIELD_NAME(V) (V)->name
@@ -72,9 +75,17 @@ CXX_GUARD_START
 	do { \
 		struct mScriptValue* _val = mScriptListGetPointer(STACK, mScriptListSize(STACK) - 1); \
 		if (!(mSCRIPT_TYPE_CMP(TYPE, _val->type))) { \
-			return false; \
+			if (_val->type == mSCRIPT_TYPE_MS_WRAPPER) { \
+				_val = mScriptValueUnwrap(_val); \
+				if (!(mSCRIPT_TYPE_CMP(TYPE, _val->type))) { \
+					return false; \
+				} \
+			} else { \
+				return false; \
+			} \
 		} \
 		NAME = _val->value. _mAPPLY(mSCRIPT_TYPE_FIELD_ ## TYPE); \
+		mScriptValueDeref(_val); \
 		mScriptListResize(STACK, -1); \
 	} while (0)
 
@@ -140,18 +151,30 @@ CXX_GUARD_START
 		_mSCRIPT_CALL(RETURN, FUNCTION, NPARAMS); \
 		return true; \
 	} \
-	const struct mScriptFunction NAME = { \
-		.signature = { \
-			.parameters = { \
-				.count = NPARAMS, \
-				.entries = { _mAPPLY(mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_MS_, __VA_ARGS__)) } \
+	static const struct mScriptType _type_ ## NAME = { \
+		.base = mSCRIPT_TYPE_FUNCTION, \
+		.details = { \
+			.function = { \
+				.parameters = { \
+					.count = NPARAMS, \
+					.entries = { _mAPPLY(mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_MS_, __VA_ARGS__)) } \
+				}, \
+				.returnType = { \
+					.count = 1, \
+					.entries = { mSCRIPT_TYPE_MS_ ## RETURN } \
+				}, \
 			}, \
-			.returnType = { \
-				.count = 1, \
-				.entries = { mSCRIPT_TYPE_MS_ ## RETURN } \
-			}, \
-		}, \
+		} \
+	}; \
+	static struct mScriptFunction _function_ ## NAME = { \
 		.call = _binding_ ## NAME \
+	}; \
+	const struct mScriptValue NAME = { \
+		.type = &_type_ ## NAME, \
+		.refs = mSCRIPT_VALUE_UNREF, \
+		.value = { \
+			.opaque = &_function_ ## NAME \
+		} \
 	};
 
 #define mSCRIPT_BIND_VOID_FUNCTION(NAME, FUNCTION, NPARAMS, ...) \
@@ -164,17 +187,29 @@ CXX_GUARD_START
 		_mSCRIPT_CALL_VOID(FUNCTION, NPARAMS); \
 		return true; \
 	} \
-	const struct mScriptFunction NAME = { \
-		.signature = { \
-			.parameters = { \
-				.count = NPARAMS, \
-				.entries = { _mAPPLY(mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_MS_, __VA_ARGS__)) } \
+	static const struct mScriptType _type_ ## NAME = { \
+		.base = mSCRIPT_TYPE_FUNCTION, \
+		.details = { \
+			.function = { \
+				.parameters = { \
+					.count = NPARAMS, \
+					.entries = { _mAPPLY(mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_MS_, __VA_ARGS__)) } \
+				}, \
+				.returnType = { \
+					.count = 0, \
+				}, \
 			}, \
-			.returnType = { \
-				.count = 0, \
-			}, \
-		}, \
+		} \
+	}; \
+	static struct mScriptFunction _function_ ## NAME = { \
 		.call = _binding_ ## NAME \
+	}; \
+	const struct mScriptValue NAME = { \
+		.type = &_type_ ## NAME, \
+		.refs = mSCRIPT_VALUE_UNREF, \
+		.value = { \
+			.opaque = &_function_ ## NAME \
+		} \
 	};
 
 #define mSCRIPT_MAKE(TYPE, FIELD, VALUE) (struct mScriptValue) { \
@@ -205,6 +240,7 @@ enum {
 	mSCRIPT_TYPE_TUPLE,
 	mSCRIPT_TYPE_LIST,
 	mSCRIPT_TYPE_TABLE,
+	mSCRIPT_TYPE_WRAPPER
 };
 
 struct Table;
@@ -219,16 +255,18 @@ extern const struct mScriptType mSTFloat64;
 extern const struct mScriptType mSTString;
 extern const struct mScriptType mSTCharPtr;
 extern const struct mScriptType mSTTable;
+extern const struct mScriptType mSTWrapper;
 
 struct mScriptTypeTuple {
 	size_t count;
 	const struct mScriptType* entries[mSCRIPT_PARAMS_MAX];
+	bool variable;
 };
 
 struct mScriptTypeFunction {
 	struct mScriptTypeTuple parameters;
 	struct mScriptTypeTuple returnType;
-	// TODO: varargs, kwargs, defaults
+	// TODO: kwargs, defaults
 };
 
 struct mScriptValue;
@@ -277,7 +315,6 @@ struct mScriptFrame {
 };
 
 struct mScriptFunction {
-	struct mScriptTypeFunction signature;
 	bool (*call)(struct mScriptFrame*, void* context);
 	void* context;
 };
@@ -285,6 +322,9 @@ struct mScriptFunction {
 struct mScriptValue* mScriptValueAlloc(const struct mScriptType* type);
 void mScriptValueRef(struct mScriptValue* val);
 void mScriptValueDeref(struct mScriptValue* val);
+
+void mScriptValueWrap(struct mScriptValue* val, struct mScriptValue* out);
+struct mScriptValue* mScriptValueUnwrap(struct mScriptValue* val);
 
 struct mScriptValue* mScriptStringCreateFromUTF8(const char* string);
 

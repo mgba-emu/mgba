@@ -51,6 +51,6 @@ void mScriptContextRegisterEngine(struct mScriptContext*, struct mScriptEngine2*
 void mScriptContextAddGlobal(struct mScriptContext*, const char* key, struct mScriptValue* value);
 void mScriptContextRemoveGlobal(struct mScriptContext*, const char* key);
 
-bool mScriptInvoke(const struct mScriptFunction* fn, struct mScriptFrame* frame);
+bool mScriptInvoke(const struct mScriptValue* fn, struct mScriptFrame* frame);
 
 #endif

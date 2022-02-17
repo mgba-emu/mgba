@@ -140,6 +140,15 @@ const struct mScriptType mSTTable = {
 	.hash = NULL,
 };
 
+const struct mScriptType mSTWrapper = {
+	.base = mSCRIPT_TYPE_WRAPPER,
+	.size = sizeof(struct mScriptValue),
+	.name = "wrapper",
+	.alloc = NULL,
+	.free = NULL,
+	.hash = NULL,
+};
+
 DEFINE_VECTOR(mScriptList, struct mScriptValue)
 
 void _allocTable(struct mScriptValue* val) {
@@ -602,6 +611,36 @@ void mScriptValueDeref(struct mScriptValue* val) {
 	free(val);
 }
 
+void mScriptValueWrap(struct mScriptValue* value, struct mScriptValue* out) {
+	if (value->refs == mSCRIPT_VALUE_UNREF) {
+		memcpy(out, value, sizeof(*out));
+		return;
+	}
+	out->refs = mSCRIPT_VALUE_UNREF;
+	switch (value->type->base) {
+	case mSCRIPT_TYPE_SINT:
+	case mSCRIPT_TYPE_UINT:
+	case mSCRIPT_TYPE_FLOAT:
+	case mSCRIPT_TYPE_WRAPPER:
+		out->type = value->type;
+		memcpy(&out->value, &value->value, sizeof(out->value));
+		return;
+	default:
+		break;
+	}
+
+	out->type = mSCRIPT_TYPE_MS_WRAPPER;
+	out->value.opaque = value;
+	mScriptValueRef(value);
+}
+
+struct mScriptValue* mScriptValueUnwrap(struct mScriptValue* value) {
+	if (value->type == mSCRIPT_TYPE_MS_WRAPPER) {
+		return value->value.opaque;
+	}
+	return NULL;
+}
+
 struct mScriptValue* mScriptStringCreateFromUTF8(const char* string) {
 	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_STR);
 	struct mScriptString* internal = val->value.opaque;
@@ -709,7 +748,7 @@ bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* inpu
 }
 
 bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList* frame) {
-	if (types->count != mScriptListSize(frame)) {
+	if (types->count != mScriptListSize(frame) && (!types->variable || mScriptListSize(frame) < types->count)) {
 		return false;
 	}
 	size_t i;

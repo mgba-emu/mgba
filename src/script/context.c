@@ -14,9 +14,14 @@ void mScriptContextDeinit(struct mScriptContext* context) {
 	HashTableDeinit(&context->engines);
 }
 
-bool mScriptInvoke(const struct mScriptFunction* fn, struct mScriptFrame* frame) {
-	if (!mScriptCoerceFrame(&fn->signature.parameters, &frame->arguments)) {
+bool mScriptInvoke(const struct mScriptValue* val, struct mScriptFrame* frame) {
+	if (val->type->base != mSCRIPT_TYPE_FUNCTION) {
 		return false;
 	}
+	const struct mScriptTypeFunction* signature = &val->type->details.function;
+	if (!mScriptCoerceFrame(&signature->parameters, &frame->arguments)) {
+		return false;
+	}
+	const struct mScriptFunction* fn = val->value.opaque;
 	return fn->call(frame, fn->context);
 }
