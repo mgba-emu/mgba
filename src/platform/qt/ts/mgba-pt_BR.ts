@@ -1304,23 +1304,23 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreController.cpp" line="99"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Resetar r%1-%2 %3</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="504"/>
         <location filename="../CoreController.cpp" line="524"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>O rebobinamento não está ativado atualmente</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="567"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>Resetar o jogo?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="568"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation type="unfinished"></translation>
+        <translation>A maioria dos jogos requerirão um reset pra carregar o novo save. Você quer resetar agora?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="780"/>
@@ -1470,22 +1470,22 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GDBWindow.cpp" line="52"/>
         <source>Write watchpoints behavior</source>
-        <translation type="unfinished"></translation>
+        <translation>Gravar o comportamento dos pontos de observação</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="63"/>
         <source>Standard GDB</source>
-        <translation type="unfinished"></translation>
+        <translation>GDB padrão</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="68"/>
         <source>Internal change detection</source>
-        <translation type="unfinished"></translation>
+        <translation>Detecção das mudanças internas</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="72"/>
         <source>Break on all writes</source>
-        <translation type="unfinished"></translation>
+        <translation>Interromper todas as gravações</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
@@ -3721,7 +3721,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MessagePainter.cpp" line="81"/>
         <source>Frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Frame %1</translation>
     </message>
 </context>
 <context>
@@ -4315,17 +4315,17 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1205"/>
         <source>Save games</source>
-        <translation type="unfinished">Saves dos jogos</translation>
+        <translation>Saves dos jogos</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1228"/>
         <source>Automatically determine</source>
-        <translation type="unfinished"></translation>
+        <translation>Determinar automaticamente</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1232"/>
         <source>Use player %0 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Usar o save do jogo %0 do jogador</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1242"/>
@@ -5463,12 +5463,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="709"/>
         <source>Show frame count in OSD</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar contagem dos frames no OSD</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="716"/>
         <source>Show emulation info on reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar informações da emulação no reset</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="790"/>
