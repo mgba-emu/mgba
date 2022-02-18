@@ -74,6 +74,7 @@ set(SOURCE_FILES
 	AudioProcessor.cpp
 	CheatsModel.cpp
 	CheatsView.cpp
+	CheckBoxDelegate.cpp
 	ConfigController.cpp
 	ColorPicker.cpp
 	CoreManager.cpp
