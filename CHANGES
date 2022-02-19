@@ -35,6 +35,7 @@ Emulation fixes:
 Other fixes:
  - 3DS: Ensure writes update file modification time (fixes mgba.io/i/2444)
  - Core: Don't attempt to restore rewind diffs past start of rewind
+ - Core: Fix the runloop resuming after a game has crashed (fixes mgba.io/i/2451)
  - FFmpeg: Fix crash when encoding audio with some containers
  - FFmpeg: Fix GIF recording (fixes mgba.io/i/2393)
  - GB: Fix temporary saves
