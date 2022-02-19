@@ -22,6 +22,7 @@ Emulation fixes:
  - GB Serialize: Fix loading MBC1 states that affect bank 0 (fixes mgba.io/i/2402)
  - GB Video: Draw SGB border pieces that overlap GB graphics (fixes mgba.io/i/1339)
  - GBA: Improve timing when not booting from BIOS
+ - GBA: Fix expected entry point for multiboot ELFs (fixes mgba.io/i/2450)
  - GBA BIOS: Work around IRQ handling hiccup in Mario & Luigi (fixes mgba.io/i/1059)
  - GBA BIOS: Initial HLE timing estimation of UnLz77 functions (fixes mgba.io/i/2141)
  - GBA DMA: Fix DMA source direction bits being cleared (fixes mgba.io/i/2410)
