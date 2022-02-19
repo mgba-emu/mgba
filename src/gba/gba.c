@@ -579,7 +579,7 @@ bool GBAIsROM(struct VFile* vf) {
 		uint32_t entry = ELFEntry(elf);
 		bool isGBA = true;
 		isGBA = isGBA && ELFMachine(elf) == EM_ARM;
-		isGBA = isGBA && (entry == BASE_CART0 || entry == BASE_WORKING_RAM);
+		isGBA = isGBA && (entry == BASE_CART0 || entry == BASE_WORKING_RAM + 0xC0);
 		ELFClose(elf);
 		return isGBA;
 	}
@@ -638,7 +638,7 @@ bool GBAIsMB(struct VFile* vf) {
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
-		bool isMB = ELFEntry(elf) == BASE_WORKING_RAM;
+		bool isMB = ELFEntry(elf) == BASE_WORKING_RAM + 0xC0;
 		ELFClose(elf);
 		return isMB;
 	}
