@@ -16,8 +16,7 @@ CheckBoxDelegate::CheckBoxDelegate(QObject* parent)
 	// initializers only
 }
 
-void CheckBoxDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
-{
+void CheckBoxDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {
 	QAbstractItemView* view = qobject_cast<QAbstractItemView*>(option.styleObject);
 	if (view && (index.flags() & Qt::ItemIsUserCheckable)) {
 		// Set up style options
