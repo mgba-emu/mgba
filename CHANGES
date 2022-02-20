@@ -60,6 +60,7 @@ Misc:
  - Qt: Enable -b for Boot BIOS menu option (fixes mgba.io/i/2074)
  - Qt: Add tile range selection to tile viewer (closes mgba.io/i/2455)
  - Windows: Attach to console if present
+ - Vita: Add bilinear filtering option (closes mgba.io/i/344)
 
 0.9.3: (2021-12-17)
 Emulation fixes:
