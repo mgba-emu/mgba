@@ -26,7 +26,6 @@ protected:
 
 private:
 	Ui::DebuggerConsole m_ui;
-	QStringList m_history;
 	int m_historyOffset;
 
 	DebuggerConsoleController* m_consoleController;

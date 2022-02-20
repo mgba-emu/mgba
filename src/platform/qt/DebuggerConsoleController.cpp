@@ -5,7 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "DebuggerConsoleController.h"
 
+#include "ConfigController.h"
 #include "CoreController.h"
+#include "LogController.h"
 
 #include <QMutexLocker>
 #include <QThread>
@@ -50,12 +52,12 @@ void DebuggerConsoleController::detach() {
 		}
 	}
 	DebuggerController::detach();
+	historySave();
 }
 
 void DebuggerConsoleController::attachInternal() {
 	CoreController::Interrupter interrupter(m_gameController);
 	QMutexLocker lock(&m_mutex);
-	m_history.clear();
 	mCore* core = m_gameController->thread()->core;
 	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend.d);
 	CLIDebuggerAttachSystem(&m_cliDebugger, core->cliDebuggerSystem(core));
@@ -128,4 +130,38 @@ void DebuggerConsoleController::historyAppend(struct CLIDebuggerBackend* be, con
 	CoreController::Interrupter interrupter(self->m_gameController);
 	QMutexLocker lock(&self->m_mutex);
 	self->m_history.append(QString::fromUtf8(line));
+}
+
+void DebuggerConsoleController::historyLoad() {
+	QFile log(ConfigController::configDir() + "/cli_history.log");
+	QStringList history;
+	if (!log.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		return;
+	}
+	while (true) {
+		QByteArray line = log.readLine();
+		if (line.isEmpty()) {
+			break;
+		}
+		if (line.endsWith("\r\n")) {
+			line.chop(2);
+		} else if (line.endsWith("\n")) {
+			line.chop(1);			
+		}
+		history.append(QString::fromUtf8(line));
+	}
+	QMutexLocker lock(&m_mutex);
+	m_history = history;
+}
+
+void DebuggerConsoleController::historySave() {
+	QFile log(ConfigController::configDir() + "/cli_history.log");
+	if (!log.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		LOG(QT, WARN) << tr("Could not open CLI history for writing");
+		return;
+	}
+	for (const QString& line : m_history) {
+		log.write(line.toUtf8());
+		log.write("\n");
+	}
 }
