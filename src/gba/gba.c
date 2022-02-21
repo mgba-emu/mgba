@@ -672,6 +672,10 @@ bool GBAIsMB(struct VFile* vf) {
 	}
 
 	uint32_t pc = GBA_MB_MAGIC_OFFSET;
+	int wramAddrs = 0;
+	int wramLoads = 0;
+	int romAddrs = 0;
+	int romLoads = 0;
 	int i;
 	for (i = 0; i < 80; ++i) {
 		if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
@@ -679,6 +683,12 @@ bool GBAIsMB(struct VFile* vf) {
 		}
 		pc += 4;
 		LOAD_32(opcode, 0, &signature);
+		if ((opcode & ~0x7FF) == BASE_WORKING_RAM) {
+			++wramAddrs;
+		}
+		if ((opcode & ~0x7FF) == BASE_CART0) {
+			++romAddrs;
+		}
 		ARMDecodeARM(opcode, &info);
 		if (info.mnemonic != ARM_MN_LDR) {
 			continue;
@@ -700,9 +710,18 @@ bool GBAIsMB(struct VFile* vf) {
 				break;
 			}
 			if ((immediate & ~0x7FF) == BASE_WORKING_RAM) {
-				return true;
+				++wramLoads;
+			}
+			if ((immediate & ~0x7FF) == BASE_CART0) {
+				++romLoads;
 			}
 		}
+	}
+	if (romLoads + romAddrs > 2) {
+		return false;
+	}
+	if (wramLoads + wramAddrs) {
+		return true;
 	}
 	// Found a libgba-linked cart...these are a bit harder to detect.
 	return false;
