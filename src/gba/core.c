@@ -1105,15 +1105,29 @@ static void _GBACoreAdjustVideoLayer(struct mCore* core, size_t id, int32_t x, i
 	case GBA_LAYER_BG3:
 		gbacore->renderer.bg[id].offsetX = x;
 		gbacore->renderer.bg[id].offsetY = y;
+#ifdef BUILD_GLES3
+		gbacore->glRenderer.bg[id].offsetX = x;
+		gbacore->glRenderer.bg[id].offsetY = y;
+#endif
 		break;
 	case GBA_LAYER_OBJ:
 		gbacore->renderer.objOffsetX = x;
 		gbacore->renderer.objOffsetY = y;
 		gbacore->renderer.oamDirty = 1;
+#ifdef BUILD_GLES3
+		gbacore->glRenderer.objOffsetX = x;
+		gbacore->glRenderer.objOffsetY = y;
+		gbacore->glRenderer.oamDirty = 1;
+#endif
 		break;
 	case GBA_LAYER_WIN0:
+	case GBA_LAYER_WIN1:
 		gbacore->renderer.winN[id - GBA_LAYER_WIN0].offsetX = x;
 		gbacore->renderer.winN[id - GBA_LAYER_WIN0].offsetY = y;
+#ifdef BUILD_GLES3
+		gbacore->glRenderer.winN[id - GBA_LAYER_WIN0].offsetX = x;
+		gbacore->glRenderer.winN[id - GBA_LAYER_WIN0].offsetY = y;
+#endif
 		break;
 	default:
 		return;

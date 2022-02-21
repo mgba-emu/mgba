@@ -1331,27 +1331,27 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 	glRenderer->regsDirty = 0;
 
-	glRenderer->winNHistory[0][y * 4 + 0] = glRenderer->winN[0].h.start;
-	glRenderer->winNHistory[0][y * 4 + 1] = glRenderer->winN[0].h.end;
-	glRenderer->winNHistory[0][y * 4 + 2] = glRenderer->winN[0].v.start;
-	glRenderer->winNHistory[0][y * 4 + 3] = glRenderer->winN[0].v.end;
-	glRenderer->winNHistory[1][y * 4 + 0] = glRenderer->winN[1].h.start;
-	glRenderer->winNHistory[1][y * 4 + 1] = glRenderer->winN[1].h.end;
-	glRenderer->winNHistory[1][y * 4 + 2] = glRenderer->winN[1].v.start;
-	glRenderer->winNHistory[1][y * 4 + 3] = glRenderer->winN[1].v.end;
+	glRenderer->winNHistory[0][y * 4 + 0] = glRenderer->winN[0].h.start + glRenderer->winN[0].offsetX;
+	glRenderer->winNHistory[0][y * 4 + 1] = glRenderer->winN[0].h.end + glRenderer->winN[0].offsetX;
+	glRenderer->winNHistory[0][y * 4 + 2] = glRenderer->winN[0].v.start + glRenderer->winN[0].offsetY;
+	glRenderer->winNHistory[0][y * 4 + 3] = glRenderer->winN[0].v.end + glRenderer->winN[0].offsetY;
+	glRenderer->winNHistory[1][y * 4 + 0] = glRenderer->winN[1].h.start + glRenderer->winN[1].offsetX;
+	glRenderer->winNHistory[1][y * 4 + 1] = glRenderer->winN[1].h.end + glRenderer->winN[1].offsetX;
+	glRenderer->winNHistory[1][y * 4 + 2] = glRenderer->winN[1].v.start + glRenderer->winN[1].offsetY;
+	glRenderer->winNHistory[1][y * 4 + 3] = glRenderer->winN[1].v.end + glRenderer->winN[1].offsetY;
 
-	glRenderer->bg[0].scanlineOffset[y] = glRenderer->bg[0].x;
-	glRenderer->bg[0].scanlineOffset[y] |= glRenderer->bg[0].y << 12;
-	glRenderer->bg[1].scanlineOffset[y] = glRenderer->bg[1].x;
-	glRenderer->bg[1].scanlineOffset[y] |= glRenderer->bg[1].y << 12;
-	glRenderer->bg[2].scanlineOffset[y] = glRenderer->bg[2].x;
-	glRenderer->bg[2].scanlineOffset[y] |= glRenderer->bg[2].y << 12;
+	glRenderer->bg[0].scanlineOffset[y] = (glRenderer->bg[0].x - glRenderer->bg[0].offsetX) & 0x1FF;
+	glRenderer->bg[0].scanlineOffset[y] |= ((glRenderer->bg[0].y - glRenderer->bg[0].offsetY) & 0x1FF) << 12;
+	glRenderer->bg[1].scanlineOffset[y] = (glRenderer->bg[1].x - glRenderer->bg[1].offsetX) & 0x1FF;
+	glRenderer->bg[1].scanlineOffset[y] |= ((glRenderer->bg[1].y - glRenderer->bg[1].offsetY) & 0x1FF) << 12;
+	glRenderer->bg[2].scanlineOffset[y] = (glRenderer->bg[2].x - glRenderer->bg[2].offsetX) & 0x1FF;
+	glRenderer->bg[2].scanlineOffset[y] |= ((glRenderer->bg[2].y - glRenderer->bg[2].offsetY) & 0x1FF) << 12;
 	glRenderer->bg[2].scanlineAffine[y * 4] = glRenderer->bg[2].affine.dx;
 	glRenderer->bg[2].scanlineAffine[y * 4 + 1] = glRenderer->bg[2].affine.dy;
 	glRenderer->bg[2].scanlineAffine[y * 4 + 2] = glRenderer->bg[2].affine.sx;
 	glRenderer->bg[2].scanlineAffine[y * 4 + 3] = glRenderer->bg[2].affine.sy;
-	glRenderer->bg[3].scanlineOffset[y] = glRenderer->bg[3].x;
-	glRenderer->bg[3].scanlineOffset[y] |= glRenderer->bg[3].y << 12;
+	glRenderer->bg[3].scanlineOffset[y] = (glRenderer->bg[3].x - glRenderer->bg[3].offsetX) & 0x1FF;
+	glRenderer->bg[3].scanlineOffset[y] |= ((glRenderer->bg[3].y - glRenderer->bg[3].offsetY) & 0x1FF) << 12;
 	glRenderer->bg[3].scanlineAffine[y * 4] = glRenderer->bg[3].affine.dx;
 	glRenderer->bg[3].scanlineAffine[y * 4 + 1] = glRenderer->bg[3].affine.dy;
 	glRenderer->bg[3].scanlineAffine[y * 4 + 2] = glRenderer->bg[3].affine.sx;
@@ -1686,6 +1686,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	int height = GBAVideoObjSizes[GBAObjAttributesAGetShape(sprite->a) * 4 + GBAObjAttributesBGetSize(sprite->b)][1];
 	int32_t x = (uint32_t) GBAObjAttributesBGetX(sprite->b) << 23;
 	x >>= 23;
+	x += renderer->objOffsetX;
 
 	if (GBARegisterDISPCNTGetMode(renderer->dispcnt) >= 3 && GBAObjAttributesCGetTile(sprite->c) < 512) {
 		return;
@@ -1702,6 +1703,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 		totalHeight <<= 1;
 	}
 
+	spriteY += renderer->objOffsetY;
 	if (spriteY + totalHeight >= 256) {
 		spriteY -= 256;
 	}
