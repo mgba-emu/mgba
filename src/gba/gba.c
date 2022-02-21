@@ -677,16 +677,16 @@ bool GBAIsMB(struct VFile* vf) {
 	int romAddrs = 0;
 	int romLoads = 0;
 	int i;
-	for (i = 0; i < 80; ++i) {
+	for (i = 0; i < 128; ++i) {
 		if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
 			break;
 		}
 		pc += 4;
 		LOAD_32(opcode, 0, &signature);
-		if ((opcode & ~0x7FF) == BASE_WORKING_RAM) {
+		if ((opcode & ~0x1FFFF) == BASE_WORKING_RAM) {
 			++wramAddrs;
 		}
-		if ((opcode & ~0x7FF) == BASE_CART0) {
+		if ((opcode & ~0x1FFFF) == BASE_CART0) {
 			++romAddrs;
 		}
 		ARMDecodeARM(opcode, &info);
@@ -709,15 +709,15 @@ bool GBAIsMB(struct VFile* vf) {
 			if (vf->seek(vf, pc, SEEK_SET) < 0) {
 				break;
 			}
-			if ((immediate & ~0x7FF) == BASE_WORKING_RAM) {
+			if ((immediate & ~0x1FFFF) == BASE_WORKING_RAM) {
 				++wramLoads;
 			}
-			if ((immediate & ~0x7FF) == BASE_CART0) {
+			if ((immediate & ~0x1FFFF) == BASE_CART0) {
 				++romLoads;
 			}
 		}
 	}
-	if (romLoads + romAddrs > 2) {
+	if (romLoads + romAddrs >= 2) {
 		return false;
 	}
 	if (wramLoads + wramAddrs) {
