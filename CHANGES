@@ -60,6 +60,7 @@ Misc:
  - Qt: Add QOpenGLWidget cross-thread codepath for macOS (fixes mgba.io/i/1754)
  - Qt: Enable -b for Boot BIOS menu option (fixes mgba.io/i/2074)
  - Qt: Add tile range selection to tile viewer (closes mgba.io/i/2455)
+ - Qt: Show warning if XQ audio is toggled while loaded (fixes mgba.io/i/2295)
  - Windows: Attach to console if present
  - Vita: Add bilinear filtering option (closes mgba.io/i/344)
 

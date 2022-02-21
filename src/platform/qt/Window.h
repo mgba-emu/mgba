@@ -142,6 +142,7 @@ private slots:
 
 	void tryMakePortable();
 	void mustRestart();
+	void mustReset();
 
 	void recordFrame();
 	void showFPS();
@@ -215,6 +216,7 @@ private:
 	QElapsedTimer m_frameTimer;
 	QTimer m_fpsTimer;
 	QTimer m_mustRestart;
+	QTimer m_mustReset;
 	QList<QString> m_mruFiles;
 	ShortcutController* m_shortcutController;
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
