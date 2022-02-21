@@ -236,7 +236,7 @@ endif()
 
 qt5_add_resources(RESOURCES resources.qrc)
 if(BUILD_UPDATER)
-	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/updater.qrc.in ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc)
+	file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc INPUT ${CMAKE_CURRENT_SOURCE_DIR}/updater.qrc.in)
 	qt5_add_resources(UPDATER_RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc)
 	list(APPEND RESOURCES ${UPDATER_RESOURCES})
 endif()
