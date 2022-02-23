@@ -1051,6 +1051,133 @@ M_TEST_DEFINE(doPARv3IfButton) {
 	mCheatSetDeinit(set);
 }
 
+M_TEST_DEFINE(doPARv3Never1) {
+	struct mCore* core = *state;
+	struct mCheatDevice* device = core->cheatDevice(core);
+	assert_non_null(device);
+	struct mCheatSet* set = device->createSet(device, NULL);
+	assert_non_null(set);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	assert_true(set->addLine(set, "00300001 00000011", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "0E300000 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00300001 00000012", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00300000 00000001", GBA_CHEAT_PRO_ACTION_REPLAY));
+
+	core->reset(core);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0);
+
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0x11);
+
+	core->reset(core);
+	core->rawWrite8(core, 0x03000000, -1, 0x1);
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0x11);
+
+	mCheatSetDeinit(set);
+}
+
+M_TEST_DEFINE(doPARv3Never2) {
+	struct mCore* core = *state;
+	struct mCheatDevice* device = core->cheatDevice(core);
+	assert_non_null(device);
+	struct mCheatSet* set = device->createSet(device, NULL);
+	assert_non_null(set);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	assert_true(set->addLine(set, "00300001 00000011", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "4E300000 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00300001 00000012", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00300002 00000022", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00300000 00000001", GBA_CHEAT_PRO_ACTION_REPLAY));
+
+	core->reset(core);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0);
+
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0x11);
+	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0x21);
+
+	core->reset(core);
+	core->rawWrite8(core, 0x03000000, -1, 0x1);
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0x11);
+	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0x21);
+
+	mCheatSetDeinit(set);
+}
+
+M_TEST_DEFINE(doPARv3NeverX) {
+	struct mCore* core = *state;
+	struct mCheatDevice* device = core->cheatDevice(core);
+	assert_non_null(device);
+	struct mCheatSet* set = device->createSet(device, NULL);
+	assert_non_null(set);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	assert_true(set->addLine(set, "00300001 00000011", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "8E300000 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00300001 00000012", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00000000 40000000", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00300000 00000001", GBA_CHEAT_PRO_ACTION_REPLAY));
+
+	core->reset(core);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0);
+
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0x11);
+
+	core->reset(core);
+	core->rawWrite8(core, 0x03000000, -1, 0x1);
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0x11);
+	mCheatSetDeinit(set);
+}
+
+M_TEST_DEFINE(doPARv3NeverXElse) {
+	struct mCore* core = *state;
+	struct mCheatDevice* device = core->cheatDevice(core);
+	assert_non_null(device);
+	struct mCheatSet* set = device->createSet(device, NULL);
+	assert_non_null(set);
+	GBACheatSetGameSharkVersion((struct GBACheatSet*) set, GBA_GS_PARV3_RAW);
+	assert_true(set->addLine(set, "00300001 00000011", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00300002 00000021", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "8E300000 00000000", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00300001 00000012", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00000000 60000000", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00300002 00000022", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00000000 40000000", GBA_CHEAT_PRO_ACTION_REPLAY));
+	assert_true(set->addLine(set, "00300000 00000001", GBA_CHEAT_PRO_ACTION_REPLAY));
+
+	core->reset(core);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0);
+	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0);
+
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0x11);
+	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0x22);
+
+	core->reset(core);
+	core->rawWrite8(core, 0x03000000, -1, 0x1);
+	mCheatRefresh(device, set);
+	assert_int_equal(core->rawRead8(core, 0x03000000, -1), 0x1);
+	assert_int_equal(core->rawRead8(core, 0x03000001, -1), 0x11);
+	assert_int_equal(core->rawRead8(core, 0x03000002, -1), 0x22);
+	mCheatSetDeinit(set);
+}
+
 M_TEST_SUITE_DEFINE(GBACheats,
 	cmocka_unit_test_setup_teardown(createSet, cheatsSetup, cheatsTeardown),
 	cmocka_unit_test_setup_teardown(addRawPARv3, cheatsSetup, cheatsTeardown),
@@ -1072,4 +1199,8 @@ M_TEST_SUITE_DEFINE(GBACheats,
 	cmocka_unit_test_setup_teardown(doPARv3IfXContain1Else, cheatsSetup, cheatsTeardown),
 	cmocka_unit_test_setup_teardown(doPARv3IfXElseContain1, cheatsSetup, cheatsTeardown),
 	cmocka_unit_test_setup_teardown(doPARv3IfXContain1ElseContain1, cheatsSetup, cheatsTeardown),
-	cmocka_unit_test_setup_teardown(doPARv3IfButton, cheatsSetup, cheatsTeardown))
+	cmocka_unit_test_setup_teardown(doPARv3IfButton, cheatsSetup, cheatsTeardown),
+	cmocka_unit_test_setup_teardown(doPARv3Never1, cheatsSetup, cheatsTeardown),
+	cmocka_unit_test_setup_teardown(doPARv3Never2, cheatsSetup, cheatsTeardown),
+	cmocka_unit_test_setup_teardown(doPARv3NeverX, cheatsSetup, cheatsTeardown),
+	cmocka_unit_test_setup_teardown(doPARv3NeverXElse, cheatsSetup, cheatsTeardown))
