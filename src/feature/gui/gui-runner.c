@@ -24,8 +24,8 @@ mLOG_DECLARE_CATEGORY(GUI_RUNNER);
 mLOG_DEFINE_CATEGORY(GUI_RUNNER, "GUI Runner", "gui.runner");
 
 #define AUTOSAVE_GRANULARITY 600
-#define FPS_GRANULARITY 120
-#define FPS_BUFFER_SIZE 3
+#define FPS_GRANULARITY 30
+#define FPS_BUFFER_SIZE 4
 
 enum {
 	RUNNER_CONTINUE = 1,
@@ -477,10 +477,10 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		runner->gameLoaded(runner);
 	}
 	mLOG(GUI_RUNNER, INFO, "Game starting");
+	runner->fps = 0;
 	while (running) {
 		CircleBufferClear(&runner->fpsBuffer);
 		runner->totalDelta = 0;
-		runner->fps = 0;
 		struct timeval tv;
 		gettimeofday(&tv, 0);
 		runner->lastFpsCheck = 1000000LL * tv.tv_sec + tv.tv_usec;
@@ -567,7 +567,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				}
 				runner->params.drawEnd();
 
-				if (runner->core->frameCounter(runner->core) % FPS_GRANULARITY == 0) {
+				++frame;
+				if (frame % FPS_GRANULARITY == 0) {
 					if (drawFps) {
 						struct timeval tv;
 						gettimeofday(&tv, 0);
@@ -592,7 +593,9 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 					frame = 0;
 					_tryAutosave(runner);
 				}
-				++frame;
+				if (frame == FPS_GRANULARITY * AUTOSAVE_GRANULARITY) {
+					frame = 0;
+				}
 			}
 		}
 		if (!running) {

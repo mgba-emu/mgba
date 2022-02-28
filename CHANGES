@@ -10,6 +10,7 @@ Other fixes:
  - FFmpeg: Fix crash when encoding audio with some containers
  - FFmpeg: Fix GIF recording (fixes mgba.io/i/2393)
  - GB, GBA: Save writeback-pending masked saves on unload (fixes mgba.io/i/2396)
+ - mGUI: Fix FPS counter after closing menu
  - VFS: Failed file mapping should return NULL on POSIX
 Misc:
  - Qt: Enable -b for Boot BIOS menu option (fixes mgba.io/i/2074)
