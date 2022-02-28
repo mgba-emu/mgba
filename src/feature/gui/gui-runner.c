@@ -536,11 +536,11 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				mCoreConfigSetUIntValue(&runner->config, "mute", mute);
 				runner->core->reloadConfigOption(runner->core, "mute", &runner->config);
 			}
+			if (guiKeys & (1 << mGUI_INPUT_FAST_FORWARD_TOGGLE)) {
+				fastForward = !fastForward;
+			}
+			bool fastForwarding = fastForward || (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD_HELD));
 			if (runner->setFrameLimiter) {
-				if (guiKeys & (1 << mGUI_INPUT_FAST_FORWARD_TOGGLE)) {
-					fastForward = !fastForward;
-				}
-				bool fastForwarding = fastForward || (heldKeys & (1 << mGUI_INPUT_FAST_FORWARD_HELD));
 				if (fastForwarding) {
 					if (fastForwardMute && !mute && !muteTogglePressed) {
 						mCoreConfigSetUIntValue(&runner->core->config, "mute", fastForwardMute);
@@ -615,8 +615,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 						runner->fps = (CircleBufferSize(&runner->fpsBuffer) * FPS_GRANULARITY * 1000000.0f) / (runner->totalDelta * sizeof(uint32_t));
 					}
 				}
-				if (frame == AUTOSAVE_GRANULARITY) {
-					frame = 0;
+				if (frame % (AUTOSAVE_GRANULARITY * (fastForwarding ? 2 : 1)) == 0) {
 					_tryAutosave(runner);
 				}
 				if (frame == FPS_GRANULARITY * AUTOSAVE_GRANULARITY) {
