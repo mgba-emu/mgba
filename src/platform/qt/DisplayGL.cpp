@@ -10,7 +10,13 @@
 #include <QApplication>
 #include <QMutexLocker>
 #include <QOpenGLFunctions>
+#ifdef QT_OPENGL_ES_2
+#include <QOpenGLFunctions_ES2>
+using QOpenGLFunctions_Baseline = QOpenGLFunctions_ES2;
+#else
 #include <QOpenGLFunctions_3_2_Core>
+using QOpenGLFunctions_Baseline = QOpenGLFunctions_3_2_Core;
+#endif
 #include <QOpenGLPaintDevice>
 #include <QResizeEvent>
 #include <QScreen>
@@ -77,7 +83,7 @@ void mGLWidget::initializeGL() {
 }
 
 void mGLWidget::finalizeVAO() {
-	QOpenGLFunctions_3_2_Core* fn = context()->versionFunctions<QOpenGLFunctions_3_2_Core>();
+	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
 	fn->glGetError(); // Clear the error
 	m_vao.bind();
 	fn->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
@@ -93,7 +99,7 @@ void mGLWidget::paintGL() {
 	if (!m_vaoDone) {
 		finalizeVAO();
 	}
-	QOpenGLFunctions_3_2_Core* fn = context()->versionFunctions<QOpenGLFunctions_3_2_Core>();
+	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
 	m_program.bind();
 	m_vao.bind();
 	fn->glBindTexture(GL_TEXTURE_2D, m_tex);
@@ -455,7 +461,7 @@ void PainterGL::create() {
 		painter->makeCurrent();
 
 		if (painter->m_widget && painter->supportsShaders()) {
-			QOpenGLFunctions_3_2_Core* fn = painter->m_gl->versionFunctions<QOpenGLFunctions_3_2_Core>();
+			QOpenGLFunctions_Baseline* fn = painter->m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
 			fn->glFinish();
 			mGLES2Context* gl2Backend = reinterpret_cast<mGLES2Context*>(painter->m_backend);
 			painter->m_widget->setTex(painter->m_finalTex[painter->m_finalTexIdx]);
