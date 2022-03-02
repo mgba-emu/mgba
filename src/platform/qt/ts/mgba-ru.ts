@@ -390,7 +390,7 @@ Game Boy Advance - зарегистрированная торговая мар�
         <location filename="../LoadSaveState.ui" line="14"/>
         <location filename="../LoadSaveState.ui" line="66"/>
         <source>%1 State</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 состояние</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="41"/>
@@ -496,7 +496,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../LogView.ui" line="78"/>
         <source>Fatal</source>
-        <translation type="unfinished"></translation>
+        <translation>Фатальная ошибка</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="95"/>
@@ -612,7 +612,7 @@ Game Boy Advance - зарегистрированная торговая мар�
         <location filename="../MemorySearch.ui" line="125"/>
         <location filename="../MemorySearch.ui" line="185"/>
         <source>Guess</source>
-        <translation type="unfinished"></translation>
+        <translation>Догадка</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="138"/>
@@ -1043,7 +1043,7 @@ Game Boy Advance - зарегистрированная торговая мар�
     <message>
         <location filename="../OverrideView.ui" line="249"/>
         <source>Memory bank controller</source>
-        <translation type="unfinished"></translation>
+        <translation>Контроллер банка памяти</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="265"/>
@@ -1197,13 +1197,15 @@ Game Boy Advance - зарегистрированная торговая мар�
         <location filename="../ApplicationUpdatePrompt.cpp" line="28"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Вы хотите скачать и установить сейчас? Вам надо будет перезагрузить эмулятор когда загрузка закончится.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="31"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Автообновление не доступно на этой платформе. Если вы хотите обновить эмулятор вам нужно сделать это вручную.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="35"/>
@@ -1301,7 +1303,7 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="99"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Сброс r%1-%2 %3</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="504"/>
@@ -2335,7 +2337,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="442"/>
         <location filename="../IOViewer.cpp" line="449"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="443"/>
@@ -2348,7 +2350,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1002"/>
         <location filename="../IOViewer.cpp" line="1012"/>
         <source>1</source>
-        <translation type="unfinished">1</translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="445"/>
