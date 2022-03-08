@@ -18,6 +18,7 @@ Features:
 Emulation fixes:
  - ARM7: Fix unsigned multiply timing
  - GB: Copy logo from ROM if not running the BIOS intro (fixes mgba.io/i/2378)
+ - GB Audio: Fix channel 1/2 reseting edge cases (fixes mgba.io/i/1925)
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
  - GB Serialize: Fix loading MBC1 states that affect bank 0 (fixes mgba.io/i/2402)
  - GB Video: Draw SGB border pieces that overlap GB graphics (fixes mgba.io/i/1339)
