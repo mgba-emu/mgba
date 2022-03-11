@@ -808,6 +808,8 @@ void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer) {
 		bg->affine.dmy = 256;
 		bg->affine.sx = 0;
 		bg->affine.sy = 0;
+		bg->offsetX = 0;
+		bg->offsetY = 0;
 		glGenFramebuffers(1, &bg->fbo);
 		glGenTextures(1, &bg->tex);
 	}
@@ -922,6 +924,9 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	memset(glRenderer->shadowRegs, 0, sizeof(glRenderer->shadowRegs));
 	glRenderer->shadowRegs[REG_DISPCNT >> 1] = glRenderer->dispcnt;
 	glRenderer->regsDirty = 0xFFFFFFFFFFFEULL;
+
+	glRenderer->objOffsetX = 0;
+	glRenderer->objOffsetY = 0;
 
 	int i;
 	for (i = 0; i < 512; ++i) {
