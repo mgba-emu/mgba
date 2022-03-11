@@ -10,6 +10,7 @@ static struct mScriptEngineContext* _luaCreate(struct mScriptEngine2*, struct mS
 
 static void _luaDestroy(struct mScriptEngineContext*);
 static struct mScriptValue* _luaGetGlobal(struct mScriptEngineContext*, const char* name);
+static bool _luaSetGlobal(struct mScriptEngineContext*, const char* name, struct mScriptValue*);
 static bool _luaLoad(struct mScriptEngineContext*, struct VFile*, const char** error);
 static bool _luaRun(struct mScriptEngineContext*);
 
@@ -53,6 +54,7 @@ const struct mScriptType mSTLuaFunc = {
 struct mScriptEngineContextLua {
 	struct mScriptEngineContext d;
 	lua_State* lua;
+	int func;
 };
 
 struct mScriptEngineContextLuaRef {
@@ -80,15 +82,20 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 		.context = context,
 		.destroy = _luaDestroy,
 		.getGlobal = _luaGetGlobal,
+		.setGlobal = _luaSetGlobal,
 		.load = _luaLoad,
 		.run = _luaRun
 	};
 	luaContext->lua = luaL_newstate();
+	luaContext->func = -1;
 	return &luaContext->d;
 }
 
 void _luaDestroy(struct mScriptEngineContext* ctx) {
 	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) ctx;
+	if (luaContext->func > 0) {
+		luaL_unref(luaContext->lua, LUA_REGISTRYINDEX, luaContext->func);
+	}
 	lua_close(luaContext->lua);
 	free(luaContext);
 }
@@ -97,6 +104,15 @@ struct mScriptValue* _luaGetGlobal(struct mScriptEngineContext* ctx, const char*
 	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) ctx;
 	lua_getglobal(luaContext->lua, name);
 	return _luaCoerce(luaContext);
+}
+
+bool _luaSetGlobal(struct mScriptEngineContext* ctx, const char* name, struct mScriptValue* value) {
+	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) ctx;
+	if (!_luaWrap(luaContext, value)) {
+		return false;
+	}
+	lua_setglobal(luaContext->lua, name);
+	return true;
 }
 
 struct mScriptValue* _luaWrapFunction(struct mScriptEngineContextLua* luaContext) {
@@ -211,6 +227,7 @@ bool _luaLoad(struct mScriptEngineContext* ctx, struct VFile* vf, const char** e
 		if (error) {
 			*error = NULL;
 		}
+		luaContext->func = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
 		return true;
 	case LUA_ERRSYNTAX:
 		if (error) {
@@ -228,6 +245,7 @@ bool _luaLoad(struct mScriptEngineContext* ctx, struct VFile* vf, const char** e
 
 bool _luaRun(struct mScriptEngineContext* context) {
 	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) context;
+	lua_rawgeti(luaContext->lua, LUA_REGISTRYINDEX, luaContext->func);
 	return _luaInvoke(luaContext, NULL);
 }
 

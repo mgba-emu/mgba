@@ -71,6 +71,9 @@ M_TEST_DEFINE(runNop) {
 	assert_null(error);
 	assert_true(lua->run(lua));
 
+	// Make sure we can run it twice
+	assert_true(lua->run(lua));
+
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
 }
@@ -145,6 +148,62 @@ M_TEST_DEFINE(getGlobal) {
 	mScriptContextDeinit(&context);
 }
 
+
+M_TEST_DEFINE(setGlobal) {
+	struct mScriptContext context;
+	mScriptContextInit(&context);
+	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+
+	struct mScriptValue a = mSCRIPT_MAKE_S32(1);
+	struct mScriptValue* val;
+	const char* program;
+	struct VFile* vf;
+	const char* error;
+
+	program = "a = b";
+	vf = VFileFromConstMemory(program, strlen(program));
+	error = NULL;
+	assert_true(lua->load(lua, vf, &error));
+	assert_null(error);
+	assert_true(lua->setGlobal(lua, "b", &a));
+
+	val = lua->getGlobal(lua, "b");
+	assert_non_null(val);
+	assert_true(a.type->equal(&a, val));
+	mScriptValueDeref(val);
+
+	assert_true(lua->run(lua));
+
+	val = lua->getGlobal(lua, "a");
+	assert_non_null(val);
+	assert_true(a.type->equal(&a, val));
+	a = mSCRIPT_MAKE_S32(2);
+	assert_false(a.type->equal(&a, val));
+	mScriptValueDeref(val);
+
+	val = lua->getGlobal(lua, "a");
+	assert_non_null(val);
+	assert_false(a.type->equal(&a, val));
+	mScriptValueDeref(val);
+
+	assert_true(lua->setGlobal(lua, "b", &a));
+
+	val = lua->getGlobal(lua, "b");
+	assert_non_null(val);
+	assert_true(a.type->equal(&a, val));
+	mScriptValueDeref(val);
+
+	assert_true(lua->run(lua));
+
+	val = lua->getGlobal(lua, "a");
+	assert_non_null(val);
+	assert_true(a.type->equal(&a, val));
+	mScriptValueDeref(val);
+
+	lua->destroy(lua);
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_DEFINE(callLuaFunc) {
 	struct mScriptContext context;
 	mScriptContextInit(&context);
@@ -187,4 +246,5 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(loadBadSyntax),
 	cmocka_unit_test(runNop),
 	cmocka_unit_test(getGlobal),
+	cmocka_unit_test(setGlobal),
 	cmocka_unit_test(callLuaFunc))
