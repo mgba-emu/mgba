@@ -23,11 +23,11 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_C_S64 int64_t
 #define mSCRIPT_TYPE_C_U64 uint64_t
 #define mSCRIPT_TYPE_C_F64 double
-#define mSCRIPT_TYPE_C_STR mScriptString*
+#define mSCRIPT_TYPE_C_STR struct mScriptString*
 #define mSCRIPT_TYPE_C_CHARP const char*
 #define mSCRIPT_TYPE_C_PTR void*
 #define mSCRIPT_TYPE_C_TABLE Table*
-#define mSCRIPT_TYPE_C_WRAPPER mScriptValue*
+#define mSCRIPT_TYPE_C_WRAPPER struct mScriptValue*
 #define mSCRIPT_TYPE_C_S(STRUCT) struct STRUCT*
 
 #define mSCRIPT_TYPE_FIELD_S32 s32

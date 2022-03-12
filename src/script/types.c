@@ -598,11 +598,10 @@ void mScriptValueRef(struct mScriptValue* val) {
 }
 
 void mScriptValueDeref(struct mScriptValue* val) {
-	--val->refs;
-	if (val->refs > 0) {
+	if (val->refs > 1) {
+		--val->refs;
 		return;
-	} else if (val->refs < 0) {
-		val->refs = mSCRIPT_VALUE_UNREF;
+	} else if (val->refs <= 0) {
 		return;
 	}
 	if (val->type->free) {
