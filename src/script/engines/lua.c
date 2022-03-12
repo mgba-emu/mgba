@@ -17,14 +17,16 @@ static bool _luaRun(struct mScriptEngineContext*);
 static bool _luaCall(struct mScriptFrame*, void* context);
 
 struct mScriptEngineContextLua;
-static bool _luaPushFrame(struct mScriptEngineContextLua*, struct mScriptFrame*);
-static bool _luaPopFrame(struct mScriptEngineContextLua*, struct mScriptFrame*);
+static bool _luaPushFrame(struct mScriptEngineContextLua*, struct mScriptList*);
+static bool _luaPopFrame(struct mScriptEngineContextLua*, struct mScriptList*);
 static bool _luaInvoke(struct mScriptEngineContextLua*, struct mScriptFrame*);
 
 static struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext);
 static bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue*);
 
 static void _luaDeref(struct mScriptValue*);
+
+static int _luaThunk(lua_State* lua);
 
 #if LUA_VERSION_NUM < 503
 #define lua_pushinteger lua_pushnumber
@@ -190,12 +192,18 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 			ok = false;
 		}
 		break;
+	case mSCRIPT_TYPE_FUNCTION:
+		lua_pushlightuserdata(luaContext->lua, value);
+		lua_pushcclosure(luaContext->lua, _luaThunk, 1);
+		break;
 	default:
 		ok = false;
 		break;
 	}
 
-	mScriptValueDeref(value);
+	if (ok) {
+		mScriptValueDeref(value);
+	}
 	return ok;
 }
 
@@ -249,12 +257,12 @@ bool _luaRun(struct mScriptEngineContext* context) {
 	return _luaInvoke(luaContext, NULL);
 }
 
-bool _luaPushFrame(struct mScriptEngineContextLua* luaContext, struct mScriptFrame* frame) {
+bool _luaPushFrame(struct mScriptEngineContextLua* luaContext, struct mScriptList* frame) {
 	bool ok = true;
 	if (frame) {
 		size_t i;
-		for (i = 0; i < mScriptListSize(&frame->arguments); ++i) {
-			if (!_luaWrap(luaContext, mScriptListGetPointer(&frame->arguments, i))) {
+		for (i = 0; i < mScriptListSize(frame); ++i) {
+			if (!_luaWrap(luaContext, mScriptListGetPointer(frame, i))) {
 				ok = false;
 				break;
 			}
@@ -266,7 +274,7 @@ bool _luaPushFrame(struct mScriptEngineContextLua* luaContext, struct mScriptFra
 	return ok;
 }
 
-bool _luaPopFrame(struct mScriptEngineContextLua* luaContext, struct mScriptFrame* frame) {
+bool _luaPopFrame(struct mScriptEngineContextLua* luaContext, struct mScriptList* frame) {
 	int count = lua_gettop(luaContext->lua);
 	bool ok = true;
 	if (frame) {
@@ -277,8 +285,7 @@ bool _luaPopFrame(struct mScriptEngineContextLua* luaContext, struct mScriptFram
 				ok = false;
 				break;
 			}
-			lua_pop(luaContext->lua, 1);
-			mScriptValueWrap(value, mScriptListAppend(&frame->returnValues));
+			mScriptValueWrap(value, mScriptListAppend(frame));
 			mScriptValueDeref(value);
 		}
 		if (count > i) {
@@ -303,11 +310,17 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 		nargs = mScriptListSize(&frame->arguments);
 	}
 
-	if (frame && !_luaPushFrame(luaContext, frame)) {
+	if (frame && !_luaPushFrame(luaContext, &frame->arguments)) {
 		return false;
 	}
 
+	lua_pushliteral(luaContext->lua, "mCtx");
+	lua_pushlightuserdata(luaContext->lua, luaContext);
+	lua_rawset(luaContext->lua, LUA_REGISTRYINDEX);
 	int ret = lua_pcall(luaContext->lua, nargs, LUA_MULTRET, 0);
+	lua_pushliteral(luaContext->lua, "mCtx");
+	lua_pushnil(luaContext->lua);
+	lua_rawset(luaContext->lua, LUA_REGISTRYINDEX);
 
 	if (ret == LUA_ERRRUN) {
 		lua_pop(luaContext->lua, 1);
@@ -316,7 +329,7 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 		return false;
 	}
 
-	if (!_luaPopFrame(luaContext, frame)) {
+	if (!_luaPopFrame(luaContext, &frame->returnValues)) {
 		return false;
 	}
 
@@ -334,4 +347,45 @@ void _luaDeref(struct mScriptValue* value) {
 	}
 	luaL_unref(ref->context->lua, LUA_REGISTRYINDEX, ref->ref);
 	free(ref);
+}
+
+int _luaThunk(lua_State* lua) {
+	lua_pushliteral(lua, "mCtx");
+	int type = lua_rawget(lua, LUA_REGISTRYINDEX);
+	if (type != LUA_TLIGHTUSERDATA) {
+		lua_pop(lua, 1);
+		lua_pushliteral(lua, "Function called from invalid context");
+		lua_error(lua);
+	}
+
+	struct mScriptEngineContextLua* luaContext = lua_touserdata(lua, -1);
+	lua_pop(lua, 1);
+	if (luaContext->lua != lua) {
+		lua_pushliteral(lua, "Function called from invalid context");
+		lua_error(lua);
+	}
+
+	struct mScriptFrame frame;
+	mScriptFrameInit(&frame);
+	if (!_luaPopFrame(luaContext, &frame.arguments)) {
+		mScriptFrameDeinit(&frame);
+		lua_pushliteral(lua, "Error calling function (setting arguments)");
+		lua_error(lua);
+	}
+
+	struct mScriptValue* fn = lua_touserdata(lua, lua_upvalueindex(1));
+	if (!fn || !mScriptInvoke(fn, &frame)) {
+		mScriptFrameDeinit(&frame);
+		lua_pushliteral(lua, "Error calling function (invoking)");
+		lua_error(lua);
+	}
+
+	if (!_luaPushFrame(luaContext, &frame.returnValues)) {
+		mScriptFrameDeinit(&frame);
+		lua_pushliteral(lua, "Error calling function (getting return values)");
+		lua_error(lua);
+	}
+	mScriptFrameDeinit(&frame);
+
+	return lua_gettop(luaContext->lua);
 }

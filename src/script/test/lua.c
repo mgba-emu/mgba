@@ -7,6 +7,17 @@
 
 #include <mgba/internal/script/lua.h>
 
+static int identityInt(int in) {
+	return in;
+}
+
+static int addInts(int a, int b) {
+	return a + b;
+}
+
+mSCRIPT_BIND_FUNCTION(boundIdentityInt, S32, identityInt, 1, S32);
+mSCRIPT_BIND_FUNCTION(boundAddInts, S32, addInts, 2, S32, S32);
+
 M_TEST_SUITE_SETUP(mScriptLua) {
 	if (mSCRIPT_ENGINE_LUA->init) {
 		mSCRIPT_ENGINE_LUA->init(mSCRIPT_ENGINE_LUA);
@@ -214,7 +225,7 @@ M_TEST_DEFINE(callLuaFunc) {
 	struct VFile* vf;
 	const char* error;
 
-	program = "function a(b) return b + 1 end";
+	program = "function a(b) return b + 1 end; function c(d, e) return d + e end";
 	vf = VFileFromConstMemory(program, strlen(program));
 	error = NULL;
 	assert_true(lua->load(lua, vf, &error));
@@ -236,6 +247,56 @@ M_TEST_DEFINE(callLuaFunc) {
 	mScriptFrameDeinit(&frame);
 	mScriptValueDeref(fn);
 
+	fn = lua->getGlobal(lua, "c");
+	assert_non_null(fn);
+	assert_int_equal(fn->type->base, mSCRIPT_TYPE_FUNCTION);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	mSCRIPT_PUSH(&frame.arguments, S32, 2);
+	assert_true(mScriptInvoke(fn, &frame));
+	assert_true(mScriptPopS64(&frame.returnValues, &val));
+	assert_int_equal(val, 3);
+
+	mScriptFrameDeinit(&frame);
+	mScriptValueDeref(fn);
+
+	lua->destroy(lua);
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(callCFunc) {
+	struct mScriptContext context;
+	mScriptContextInit(&context);
+	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+
+	struct mScriptValue a = mSCRIPT_MAKE_S32(1);
+	struct mScriptValue* val;
+	const char* program;
+	struct VFile* vf;
+	const char* error;
+
+	program = "a = b(1); c = d(1, 2)";
+	vf = VFileFromConstMemory(program, strlen(program));
+	error = NULL;
+	assert_true(lua->load(lua, vf, &error));
+	assert_null(error);
+
+	assert_true(lua->setGlobal(lua, "b", &boundIdentityInt));
+	assert_true(lua->setGlobal(lua, "d", &boundAddInts));
+	assert_true(lua->run(lua));
+
+	val = lua->getGlobal(lua, "a");
+	assert_non_null(val);
+	assert_true(a.type->equal(&a, val));
+	mScriptValueDeref(val);
+
+	a = mSCRIPT_MAKE_S32(3);
+	val = lua->getGlobal(lua, "c");
+	assert_non_null(val);
+	assert_true(a.type->equal(&a, val));
+	mScriptValueDeref(val);
+
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
 }
@@ -247,4 +308,5 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(runNop),
 	cmocka_unit_test(getGlobal),
 	cmocka_unit_test(setGlobal),
-	cmocka_unit_test(callLuaFunc))
+	cmocka_unit_test(callLuaFunc),
+	cmocka_unit_test(callCFunc))
