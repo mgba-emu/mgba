@@ -63,9 +63,9 @@ Action* ConfigOption::addBoolean(const QString& text, ActionMapper* actions, con
 	}
 
 	QObject::connect(action, &QObject::destroyed, this, [this, action]() {
-		m_actions.removeAll(std::make_pair(action, 1));
+		m_actions.removeAll(std::make_pair(action, QVariant(1)));
 	});
-	m_actions.append(std::make_pair(action, 1));
+	m_actions.append(std::make_pair(action, QVariant(1)));
 
 	return action;
 }

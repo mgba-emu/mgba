@@ -216,7 +216,7 @@ void LoadSaveState::loadState(int slot) {
 		m_slots[slot - 1]->setIcon(statePixmap);
 	}
 	if (creation.toMSecsSinceEpoch()) {
-		m_slots[slot - 1]->setText(creation.toString(Qt::DefaultLocaleShortDate));
+		m_slots[slot - 1]->setText(QLocale().toString(creation, QLocale::ShortFormat));
 	} else if (stateImage.isNull()) {
 		m_slots[slot - 1]->setText(tr("Slot %1").arg(slot));
 	} else {

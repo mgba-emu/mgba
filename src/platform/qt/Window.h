@@ -189,7 +189,7 @@ private:
 	std::shared_ptr<CoreController> m_controller;
 	std::unique_ptr<AudioProcessor> m_audioProcessor;
 
-	std::unique_ptr<Display> m_display;
+	std::unique_ptr<QGBA::Display> m_display;
 	int m_savedScale;
 
 	// TODO: Move these to a new class
