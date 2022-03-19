@@ -8,8 +8,8 @@ if(WIIDRC_LIBRARY)
     add_definitions(-DWIIDRC)
 endif()
 
-set(OS_DEFINES _GNU_SOURCE COLOR_16_BIT COLOR_5_6_5 USE_VFS_FILE IOAPI_NO_64 FIXED_ROM_BUFFER)
-list(APPEND CORE_VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-file.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-devlist.c)
+set(OS_DEFINES _GNU_SOURCE COLOR_16_BIT COLOR_5_6_5 IOAPI_NO_64 FIXED_ROM_BUFFER)
+list(APPEND CORE_VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-devlist.c)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
