@@ -141,7 +141,7 @@ void LibraryTree::updateEntry(const LibraryEntry& item) {
 	m_entries[item.fullpath] = item;
 
 	LibraryTreeItem* i = static_cast<LibraryTreeItem*>(m_items.value(item.fullpath));
-	i->setText(COL_NAME, item.displayTitle());
+	i->setText(COL_NAME, m_showFilename ? item.filename : item.displayTitle());
 	i->setText(COL_PLATFORM, nicePlatformFormat(item.platform));
 	i->setFilesize(item.filesize);
 	i->setText(COL_CRC32, QString("%0").arg(item.crc32, 8, 16, QChar('0')));

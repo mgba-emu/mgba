@@ -564,27 +564,34 @@
         </widget>
        </item>
        <item row="4" column="1">
+        <widget class="QCheckBox" name="showFilenameInLibrary">
+         <property name="text">
+          <string>Show filename instead of ROM name in library view</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
         <widget class="QPushButton" name="clearCache">
          <property name="text">
           <string>Clear cache</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="0" colspan="2">
+       <item row="6" column="0" colspan="2">
         <widget class="Line" name="line_8">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="6" column="1">
+       <item row="7" column="1">
         <widget class="QCheckBox" name="allowOpposingDirections">
          <property name="text">
           <string>Allow opposing input directions</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="8" column="1">
         <widget class="QCheckBox" name="suspendScreensaver">
          <property name="text">
           <string>Suspend screensaver</string>
@@ -594,14 +601,14 @@
          </property>
         </widget>
        </item>
-       <item row="8" column="0">
+       <item row="9" column="0">
         <widget class="QLabel" name="label_41">
          <property name="text">
           <string>When inactive:</string>
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
+       <item row="9" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_21">
          <item>
           <widget class="QCheckBox" name="pauseOnFocusLost">
@@ -619,14 +626,14 @@
          </item>
         </layout>
        </item>
-       <item row="9" column="0">
+       <item row="10" column="0">
         <widget class="QLabel" name="label_42">
          <property name="text">
           <string>When minimized:</string>
          </property>
         </widget>
        </item>
-       <item row="9" column="1">
+       <item row="10" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_24">
          <item>
           <widget class="QCheckBox" name="pauseOnMinimize">
@@ -644,14 +651,14 @@
          </item>
         </layout>
        </item>
-       <item row="10" column="0" colspan="2">
+       <item row="11" column="0" colspan="2">
         <widget class="Line" name="line_17">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
+       <item row="12" column="1">
         <widget class="QCheckBox" name="dynamicTitle">
          <property name="text">
           <string>Dynamically update window title</string>
@@ -661,7 +668,7 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
+       <item row="13" column="1">
         <widget class="QCheckBox" name="showFps">
          <property name="text">
           <string>Show FPS in title bar</string>
@@ -671,7 +678,7 @@
          </property>
         </widget>
        </item>
-       <item row="13" column="1">
+       <item row="14" column="1">
         <widget class="QCheckBox" name="showFilename">
          <property name="text">
           <string>Show filename instead of ROM name in title bar</string>
@@ -681,14 +688,14 @@
          </property>
         </widget>
        </item>
-       <item row="14" column="0" colspan="2">
+       <item row="15" column="0" colspan="2">
         <widget class="Line" name="line_18">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
+       <item row="16" column="1">
         <widget class="QCheckBox" name="showOSD">
          <property name="text">
           <string>Show OSD messages</string>
@@ -698,7 +705,7 @@
          </property>
         </widget>
        </item>
-       <item row="16" column="1">
+       <item row="17" column="1">
         <layout class="QVBoxLayout" name="osdDisplay">
          <property name="leftMargin">
           <number>20</number>
@@ -719,21 +726,21 @@
          </item>
         </layout>
        </item>
-       <item row="17" column="1">
+       <item row="18" column="1">
         <widget class="QCheckBox" name="useDiscordPresence">
          <property name="text">
           <string>Enable Discord Rich Presence</string>
          </property>
         </widget>
        </item>
-       <item row="18" column="0" colspan="2">
+       <item row="19" column="0" colspan="2">
         <widget class="Line" name="line_13">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="19" column="1">
+       <item row="20" column="1">
         <widget class="QCheckBox" name="autosave">
          <property name="text">
           <string>Automatically save state</string>
@@ -743,7 +750,7 @@
          </property>
         </widget>
        </item>
-       <item row="20" column="1">
+       <item row="21" column="1">
         <widget class="QCheckBox" name="autoload">
          <property name="text">
           <string>Automatically load state</string>
@@ -753,14 +760,14 @@
          </property>
         </widget>
        </item>
-       <item row="21" column="0" colspan="2">
+       <item row="22" column="0" colspan="2">
         <widget class="Line" name="line_16">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="22" column="1">
+       <item row="23" column="1">
         <widget class="QCheckBox" name="cheatAutosave">
          <property name="text">
           <string>Automatically save cheats</string>
@@ -770,7 +777,7 @@
          </property>
         </widget>
        </item>
-       <item row="23" column="1">
+       <item row="24" column="1">
         <widget class="QCheckBox" name="cheatAutoload">
          <property name="text">
           <string>Automatically load cheats</string>
@@ -2369,7 +2376,7 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="gbColors"/>
   <buttongroup name="multiplayerAudio"/>
+  <buttongroup name="gbColors"/>
  </buttongroups>
 </ui>
