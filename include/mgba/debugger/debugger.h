@@ -140,6 +140,7 @@ struct mDebugger {
 	void (*deinit)(struct mDebugger*);
 
 	void (*paused)(struct mDebugger*);
+	void (*update)(struct mDebugger*);
 	void (*entered)(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 	void (*custom)(struct mDebugger*);
 };
