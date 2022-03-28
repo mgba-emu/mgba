@@ -62,12 +62,12 @@ Game Boy Advance jest zarejestrowanym znakiem towarowym Nintendo Co., Ltd.</tran
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation>Numer Kafelka</translation>
+        <translation>Kafelek nr</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
-        <translation>Numer Palety</translation>
+        <translation>Nr palety</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="89"/>
@@ -188,7 +188,7 @@ Game Boy Advance jest zarejestrowanym znakiem towarowym Nintendo Co., Ltd.</tran
     <message>
         <location filename="../CheatsView.ui" line="46"/>
         <source>Load</source>
-        <translation>Wczytaj</translation>
+        <translation>Załaduj</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="86"/>
@@ -790,7 +790,7 @@ Game Boy Advance jest zarejestrowanym znakiem towarowym Nintendo Co., Ltd.</tran
     <message>
         <location filename="../MemoryView.ui" line="297"/>
         <source>Load</source>
-        <translation>Wczytaj</translation>
+        <translation>Załaduj</translation>
     </message>
 </context>
 <context>
