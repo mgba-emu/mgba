@@ -6,119 +6,188 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>748</width>
-    <height>823</height>
+    <width>680</width>
+    <height>450</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Tiles</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,1,0,0,0,0" columnstretch="0,1">
-   <item row="5" column="0">
-    <widget class="QPushButton" name="exportOne">
-     <property name="text">
-      <string>Export Selected</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0">
-    <widget class="QPushButton" name="exportAll">
-     <property name="text">
-      <string>Export All</string>
-     </property>
-    </widget>
-   </item>
+  <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,1,0" columnstretch="0,0,1">
    <item row="0" column="0">
-    <layout class="QFormLayout" name="formLayout">
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string/>
+     </property>
+     <layout class="QFormLayout" name="formLayout_2">
+      <item row="0" column="0">
+       <widget class="QSpinBox" name="paletteId">
+        <property name="maximum">
+         <number>15</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Palette</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QCheckBox" name="palette256">
+        <property name="text">
+         <string>256 colors</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QSpinBox" name="magnification">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="suffix">
+         <string notr="true">×</string>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>8</number>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Magnification</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QSpinBox" name="tilesPerRow">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>64</number>
+        </property>
+        <property name="value">
+         <number>32</number>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Tiles per row</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="0" colspan="2">
+       <widget class="QCheckBox" name="tileFit">
+        <property name="text">
+         <string>Fit to window</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="1" rowspan="2">
+    <widget class="QGBA::AssetTile" name="tile"/>
+   </item>
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Displayed tiles</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QRadioButton" name="tilesBg">
+        <property name="text">
+         <string>Only BG tiles</string>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">tilesSelector</string>
+        </attribute>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="tilesObj">
+        <property name="text">
+         <string>Only OBJ tiles</string>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">tilesSelector</string>
+        </attribute>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="tilesBoth">
+        <property name="text">
+         <string>Both</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">tilesSelector</string>
+        </attribute>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
-      <widget class="QSpinBox" name="paletteId">
-       <property name="maximum">
-        <number>15</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QCheckBox" name="palette256">
+      <widget class="QPushButton" name="copyOne">
        <property name="text">
-        <string>256 colors</string>
+        <string>Copy Selected</string>
        </property>
       </widget>
      </item>
      <item row="1" column="0">
-      <widget class="QSpinBox" name="magnification">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+      <widget class="QPushButton" name="exportOne">
+       <property name="text">
+        <string>Export Selected</string>
        </property>
-       <property name="suffix">
-        <string notr="true">×</string>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <number>8</number>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="copyAll">
+       <property name="text">
+        <string>Copy All</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLabel" name="label_2">
+      <widget class="QPushButton" name="exportAll">
        <property name="text">
-        <string>Magnification</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QSpinBox" name="tilesPerRow">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="minimum">
-        <number>1</number>
-       </property>
-       <property name="maximum">
-        <number>64</number>
-       </property>
-       <property name="value">
-        <number>32</number>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Tiles per row</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QCheckBox" name="tileFit">
-       <property name="text">
-        <string>Fit to window</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
+        <string>Export All</string>
        </property>
       </widget>
      </item>
     </layout>
    </item>
-   <item row="3" column="0">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="0" column="1" rowspan="8">
+   <item row="0" column="2" rowspan="4">
     <widget class="QScrollArea" name="scrollArea">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
@@ -137,7 +206,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>480</width>
+        <width>441</width>
         <height>768</height>
        </rect>
       </property>
@@ -183,23 +252,6 @@
      </widget>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QGBA::AssetTile" name="tile"/>
-   </item>
-   <item row="4" column="0">
-    <widget class="QPushButton" name="copyOne">
-     <property name="text">
-      <string>Copy Selected</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QPushButton" name="copyAll">
-     <property name="text">
-      <string>Copy All</string>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -219,6 +271,21 @@
    </slots>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>paletteId</tabstop>
+  <tabstop>palette256</tabstop>
+  <tabstop>magnification</tabstop>
+  <tabstop>tilesPerRow</tabstop>
+  <tabstop>tileFit</tabstop>
+  <tabstop>tilesBg</tabstop>
+  <tabstop>tilesObj</tabstop>
+  <tabstop>tilesBoth</tabstop>
+  <tabstop>copyOne</tabstop>
+  <tabstop>copyAll</tabstop>
+  <tabstop>exportOne</tabstop>
+  <tabstop>exportAll</tabstop>
+  <tabstop>scrollArea</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
@@ -270,4 +337,7 @@
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="tilesSelector"/>
+ </buttongroups>
 </ui>

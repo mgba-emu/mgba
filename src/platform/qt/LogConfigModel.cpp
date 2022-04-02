@@ -139,7 +139,7 @@ int LogConfigModel::rowCount(const QModelIndex& parent) const {
 
 Qt::ItemFlags LogConfigModel::flags(const QModelIndex& index) const {
 	if (!index.isValid() || (index.row() == 0 && index.column() == 0)) {
-		return 0;
+		return Qt::NoItemFlags;
 	}
 	return Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
 }

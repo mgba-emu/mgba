@@ -123,6 +123,12 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 		}
 	}, this);
 	m_config->updateOption("showLibrary");
+
+	ConfigOption* showFilenameInLibrary = m_config->addOption("showFilenameInLibrary");
+	showFilenameInLibrary->connect([this](const QVariant& value) {
+			m_libraryView->setShowFilename(value.toBool());
+	}, this); 
+    m_config->updateOption("showFilenameInLibrary");
 	ConfigOption* libraryStyle = m_config->addOption("libraryStyle");
 	libraryStyle->connect([this](const QVariant& value) {
 		m_libraryView->setViewStyle(static_cast<LibraryStyle>(value.toInt()));
@@ -156,6 +162,8 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	m_focusCheck.setInterval(200);
 	m_mustRestart.setInterval(MUST_RESTART_TIMEOUT);
 	m_mustRestart.setSingleShot(true);
+	m_mustReset.setInterval(MUST_RESTART_TIMEOUT);
+	m_mustReset.setSingleShot(true);
 
 	m_shortcutController->setConfigController(m_config);
 	m_shortcutController->setActionMapper(&m_actions);
@@ -534,11 +542,20 @@ void Window::openSettingsWindow(SettingsView::Page page) {
 #endif
 	connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::reloadDisplayDriver);
 	connect(settingsWindow, &SettingsView::audioDriverChanged, this, &Window::reloadAudioDriver);
-	connect(settingsWindow, &SettingsView::cameraDriverChanged, this, &Window::mustRestart);
+	connect(settingsWindow, &SettingsView::cameraDriverChanged, this, &Window::mustReset);
 	connect(settingsWindow, &SettingsView::cameraChanged, &m_inputController, &InputController::setCamera);
 	connect(settingsWindow, &SettingsView::videoRendererChanged, this, &Window::changeRenderer);
 	connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
+	connect(settingsWindow, &SettingsView::audioHleChanged, this, [this]() {
+		if (!m_controller) {
+			return;
+		}
+		if (m_controller->platform() != mPLATFORM_GBA) {
+			return;
+		}
+		mustReset();
+	});
 #ifdef USE_SQLITE3
 	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
 #endif
@@ -1077,6 +1094,18 @@ void Window::mustRestart() {
 	m_mustRestart.start();
 	QMessageBox* dialog = new QMessageBox(QMessageBox::Warning, tr("Restart needed"),
 	                                      tr("Some changes will not take effect until the emulator is restarted."),
+	                                      QMessageBox::Ok, this, Qt::Sheet);
+	dialog->setAttribute(Qt::WA_DeleteOnClose);
+	dialog->show();
+}
+
+void Window::mustReset() {
+	if (m_mustReset.isActive() || !m_controller) {
+		return;
+	}
+	m_mustReset.start();
+	QMessageBox* dialog = new QMessageBox(QMessageBox::Warning, tr("Reset needed"),
+	                                      tr("Some changes will not take effect until the game is reset."),
 	                                      QMessageBox::Ok, this, Qt::Sheet);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
 	dialog->show();

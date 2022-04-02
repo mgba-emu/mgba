@@ -56,6 +56,7 @@ static vita2d_texture* screenshot;
 static Thread audioThread;
 static bool interframeBlending = false;
 static bool sgbCrop = false;
+static bool blurry = false;
 
 static struct mSceRotationSource {
 	struct mRotationSource d;
@@ -368,10 +369,8 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	if (mCoreConfigGetUIntValue(&runner->config, "camera", &mode)) {
 		camera.cam = mode;
 	}
-	int fakeBool;
-	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
-		sgbCrop = fakeBool;
-	}
+	mCoreConfigGetBoolValue(&runner->config, "sgb.borderCrop", &sgbCrop);
+	mCoreConfigGetBoolValue(&runner->config, "filtering", &blurry);
 }
 
 void mPSP2LoadROM(struct mGUIRunner* runner) {
@@ -400,10 +399,7 @@ void mPSP2LoadROM(struct mGUIRunner* runner) {
 		break;
 	}
 
-	int fakeBool;
-	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
-		interframeBlending = fakeBool;
-	}
+	mCoreConfigGetBoolValue(&runner->config, "interframeBlending", &interframeBlending);
 
 	// Backcompat: Old versions of mGBA use an older binding system that has different mappings for L/R
 	if (!sceKernelIsPSVitaTV()) {
@@ -479,14 +475,9 @@ void mPSP2Unpaused(struct mGUIRunner* runner) {
 		}
 	}
 
-	int fakeBool;
-	if (mCoreConfigGetIntValue(&runner->config, "interframeBlending", &fakeBool)) {
-		interframeBlending = fakeBool;
-	}
-
-	if (mCoreConfigGetIntValue(&runner->config, "sgb.borderCrop", &fakeBool)) {
-		sgbCrop = fakeBool;
-	}
+	mCoreConfigGetBoolValue(&runner->config, "interframeBlending", &interframeBlending);
+	mCoreConfigGetBoolValue(&runner->config, "sgb.borderCrop", &sgbCrop);
+	mCoreConfigGetBoolValue(&runner->config, "filtering", &blurry);
 }
 
 void mPSP2Teardown(struct mGUIRunner* runner) {
@@ -576,6 +567,21 @@ void _drawTex(vita2d_texture* t, unsigned width, unsigned height, bool faded, bo
 		scalex = 960.0f / width;
 		scaley = 544.0f / height;
 		break;
+	}
+	vita2d_texture_set_filters(t, SCE_GXM_TEXTURE_FILTER_LINEAR,
+	                           blurry ? SCE_GXM_TEXTURE_FILTER_LINEAR : SCE_GXM_TEXTURE_FILTER_POINT);
+	if (blurry) {
+		// Needed to avoid bleed from off-screen portion of texture
+		unsigned i;
+		uint32_t* texpixels = vita2d_texture_get_datap(t);
+		if (width < 256) {
+			for (i = 0; i < height; ++i) {
+				texpixels[i * 256 + width] = texpixels[i * 256 + width - 1];
+			}
+		}
+		if (height < vita2d_texture_get_height(t)) {
+			memcpy(&texpixels[height * 256], &texpixels[(height - 1) * 256], 1024);
+		}
 	}
 	vita2d_draw_texture_tint_part_scale(t,
 	                                    (960.0f - w) / 2.0f, (544.0f - h) / 2.0f,

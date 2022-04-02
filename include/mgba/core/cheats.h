@@ -31,6 +31,7 @@ enum mCheatType {
 	CHEAT_IF_LAND,
 	CHEAT_IF_NAND,
 	CHEAT_IF_BUTTON,
+	CHEAT_NEVER,
 };
 
 struct mCheat {

@@ -142,6 +142,7 @@ private slots:
 
 	void tryMakePortable();
 	void mustRestart();
+	void mustReset();
 
 	void recordFrame();
 	void showFPS();
@@ -188,7 +189,7 @@ private:
 	std::shared_ptr<CoreController> m_controller;
 	std::unique_ptr<AudioProcessor> m_audioProcessor;
 
-	std::unique_ptr<Display> m_display;
+	std::unique_ptr<QGBA::Display> m_display;
 	int m_savedScale;
 
 	// TODO: Move these to a new class
@@ -215,6 +216,7 @@ private:
 	QElapsedTimer m_frameTimer;
 	QTimer m_fpsTimer;
 	QTimer m_mustRestart;
+	QTimer m_mustReset;
 	QList<QString> m_mruFiles;
 	ShortcutController* m_shortcutController;
 #if defined(BUILD_GL) || defined(BUILD_GLES2)

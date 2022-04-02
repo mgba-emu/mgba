@@ -582,7 +582,7 @@ bool GBAIsROM(struct VFile* vf) {
 		uint32_t entry = ELFEntry(elf);
 		bool isGBA = true;
 		isGBA = isGBA && ELFMachine(elf) == EM_ARM;
-		isGBA = isGBA && (entry == BASE_CART0 || entry == BASE_WORKING_RAM);
+		isGBA = isGBA && (entry == BASE_CART0 || entry == BASE_WORKING_RAM + 0xC0);
 		ELFClose(elf);
 		return isGBA;
 	}
@@ -641,7 +641,7 @@ bool GBAIsMB(struct VFile* vf) {
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
-		bool isMB = ELFEntry(elf) == BASE_WORKING_RAM;
+		bool isMB = ELFEntry(elf) == BASE_WORKING_RAM + 0xC0;
 		ELFClose(elf);
 		return isMB;
 	}
@@ -672,13 +672,23 @@ bool GBAIsMB(struct VFile* vf) {
 	}
 
 	uint32_t pc = GBA_MB_MAGIC_OFFSET;
+	int wramAddrs = 0;
+	int wramLoads = 0;
+	int romAddrs = 0;
+	int romLoads = 0;
 	int i;
-	for (i = 0; i < 80; ++i) {
+	for (i = 0; i < 128; ++i) {
 		if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
 			break;
 		}
 		pc += 4;
 		LOAD_32(opcode, 0, &signature);
+		if ((opcode & ~0x1FFFF) == BASE_WORKING_RAM) {
+			++wramAddrs;
+		}
+		if ((opcode & ~0x1FFFF) == BASE_CART0) {
+			++romAddrs;
+		}
 		ARMDecodeARM(opcode, &info);
 		if (info.mnemonic != ARM_MN_LDR) {
 			continue;
@@ -699,10 +709,19 @@ bool GBAIsMB(struct VFile* vf) {
 			if (vf->seek(vf, pc, SEEK_SET) < 0) {
 				break;
 			}
-			if ((immediate & ~0x7FF) == BASE_WORKING_RAM) {
-				return true;
+			if ((immediate & ~0x1FFFF) == BASE_WORKING_RAM) {
+				++wramLoads;
+			}
+			if ((immediate & ~0x1FFFF) == BASE_CART0) {
+				++romLoads;
 			}
 		}
+	}
+	if (romLoads + romAddrs >= 2) {
+		return false;
+	}
+	if (wramLoads + wramAddrs) {
+		return true;
 	}
 	// Found a libgba-linked cart...these are a bit harder to detect.
 	return false;

@@ -37,6 +37,8 @@ static bool _updateSweep(struct GBAudioSquareChannel* sweep, bool initial);
 static void _updateSquareSample(struct GBAudioSquareChannel* ch);
 static int32_t _updateSquareChannel(struct GBAudioSquareChannel* ch);
 
+static int32_t _cyclesToInvert(struct GBAudioSquareChannel* ch);
+
 static int16_t _coalesceNoiseChannel(struct GBAudioNoiseChannel* ch);
 
 static void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate);
@@ -204,6 +206,7 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 		}
 	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
+		bool wasDead = !audio->playingCh1;
 		audio->playingCh1 = _resetEnvelope(&audio->ch1.envelope);
 		audio->ch1.sweep.realFrequency = audio->ch1.control.frequency;
 		_resetSweep(&audio->ch1.sweep);
@@ -216,10 +219,11 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 				--audio->ch1.control.length;
 			}
 		}
-		if (audio->playingCh1 && audio->ch1.envelope.dead != 2) {
-			_updateSquareChannel(&audio->ch1);
+		_updateSquareSample(&audio->ch1);
+		if (wasDead && audio->playingCh1) {
+			mTimingSchedule(audio->timing, &audio->ch1Event, _cyclesToInvert(&audio->ch1));
+		} else if (!audio->playingCh1) {
 			mTimingDeschedule(audio->timing, &audio->ch1Event);
-			mTimingSchedule(audio->timing, &audio->ch1Event, 0);
 		}
 	}
 	*audio->nr52 &= ~0x0001;
@@ -257,6 +261,7 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 		}
 	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
+		bool wasDead = !audio->playingCh2;
 		audio->playingCh2 = _resetEnvelope(&audio->ch2.envelope);
 
 		if (!audio->ch2.control.length) {
@@ -265,10 +270,11 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 				--audio->ch2.control.length;
 			}
 		}
-		if (audio->playingCh2 && audio->ch2.envelope.dead != 2) {
-			_updateSquareChannel(&audio->ch2);
+		_updateSquareSample(&audio->ch2);
+		if (wasDead && audio->playingCh2) {
+			mTimingSchedule(audio->timing, &audio->ch2Event, _cyclesToInvert(&audio->ch2));
+		} else if (!audio->playingCh2) {
 			mTimingDeschedule(audio->timing, &audio->ch2Event);
-			mTimingSchedule(audio->timing, &audio->ch2Event, 0);
 		}
 	}
 	*audio->nr52 &= ~0x0002;
@@ -775,6 +781,10 @@ static void _updateSquareSample(struct GBAudioSquareChannel* ch) {
 static int32_t _updateSquareChannel(struct GBAudioSquareChannel* ch) {
 	ch->control.hi = !ch->control.hi;
 	_updateSquareSample(ch);
+	return _cyclesToInvert(ch);
+}
+
+static int32_t _cyclesToInvert(struct GBAudioSquareChannel* ch) {
 	int period = 4 * (2048 - ch->control.frequency);
 	switch (ch->envelope.duty) {
 	case 0:

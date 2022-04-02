@@ -60,6 +60,8 @@ struct GBAVideoGLBackground {
 	uint16_t y;
 	int32_t refx;
 	int32_t refy;
+	int32_t offsetX;
+	int32_t offsetY;
 
 	struct GBAVideoGLAffine affine;
 
@@ -142,6 +144,8 @@ struct GBAVideoGLRenderer {
 	int oamMax;
 	bool oamDirty;
 	struct GBAVideoRendererSprite sprites[128];
+	int16_t objOffsetX;
+	int16_t objOffsetY;
 
 	GLuint fbo[GBA_GL_FBO_MAX];
 	GLuint layers[GBA_GL_TEX_MAX];
@@ -183,6 +187,8 @@ struct GBAVideoGLRenderer {
 		struct GBAVideoWindowRegion h;
 		struct GBAVideoWindowRegion v;
 		GBAWindowControl control;
+		int16_t offsetX;
+		int16_t offsetY;
 	} winN[2];
 
 	GLint winNHistory[2][GBA_VIDEO_VERTICAL_PIXELS * 4];

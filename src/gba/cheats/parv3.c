@@ -72,12 +72,9 @@ static void _parElseBlock(struct GBACheatSet* cheats) {
 static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2) {
 	enum GBAActionReplay3Condition condition = op1 & PAR3_COND;
 	int width = 1 << ((op1 & PAR3_WIDTH) >> PAR3_WIDTH_BASE);
-	if (width > 4) {
-		// TODO: Always false conditions
-		return false;
-	}
 	if ((op1 & PAR3_ACTION) == PAR3_ACTION_DISABLE) {
 		// TODO: Codes that disable
+		mLOG(CHEATS, STUB, "Disable-type PARv3 codes not yet supported");
 		return false;
 	}
 
@@ -135,6 +132,11 @@ static bool _addPAR3Cond(struct GBACheatSet* cheats, uint32_t op1, uint32_t op2)
 	case PAR3_COND_AND:
 		cheat->type = CHEAT_IF_AND;
 		break;
+	}
+
+	if (width > 4) {
+		cheat->width = 0;
+		cheat->type = CHEAT_NEVER;
 	}
 	return true;
 }

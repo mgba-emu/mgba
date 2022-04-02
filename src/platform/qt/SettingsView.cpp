@@ -483,12 +483,12 @@ void SettingsView::updateConfig() {
 	saveSetting("logToStdout", m_ui.logToStdout);
 	saveSetting("logFile", m_ui.logFile);
 	saveSetting("useDiscordPresence", m_ui.useDiscordPresence);
-	saveSetting("gba.audioHle", m_ui.audioHle);
 	saveSetting("dynamicTitle", m_ui.dynamicTitle);
 	saveSetting("videoScale", m_ui.videoScale);
 	saveSetting("gba.forceGbp", m_ui.forceGbp);
 	saveSetting("vbaBugCompat", m_ui.vbaBugCompat);
 	saveSetting("updateAutoCheck", m_ui.updateAutoCheck);
+	saveSetting("showFilenameInLibrary", m_ui.showFilenameInLibrary);
 
 	if (m_ui.audioBufferSize->currentText().toInt() > 8192) {
 		m_ui.audioBufferSize->setCurrentText("8192");
@@ -575,6 +575,12 @@ void SettingsView::updateConfig() {
 	if (language != m_controller->getQtOption("language").toLocale() && !(language.bcp47Name() == QLocale::system().bcp47Name() && m_controller->getQtOption("language").isNull())) {
 		m_controller->setQtOption("language", language.bcp47Name());
 		emit languageChanged();
+	}
+
+	bool oldAudioHle = m_controller->getOption("gba.audioHle", "0") != "0";
+	if (oldAudioHle != m_ui.audioHle->isChecked()) {
+		saveSetting("gba.audioHle", m_ui.audioHle);
+		emit audioHleChanged();
 	}
 
 	if (m_ui.multiplayerAudioAll->isChecked()) {
@@ -705,6 +711,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("gba.forceGbp", m_ui.forceGbp);
 	loadSetting("vbaBugCompat", m_ui.vbaBugCompat, true);
 	loadSetting("updateAutoCheck", m_ui.updateAutoCheck);
+	loadSetting("showFilenameInLibrary", m_ui.showFilenameInLibrary);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 

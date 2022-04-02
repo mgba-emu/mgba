@@ -250,7 +250,15 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 			}
 
 			while (impl->state >= mTHREAD_MIN_WAITING && impl->state <= mTHREAD_MAX_WAITING) {
-				ConditionWait(&impl->stateCond, &impl->stateMutex);
+#ifdef USE_DEBUGGERS
+				if (debugger && debugger->update && debugger->state != DEBUGGER_SHUTDOWN) {
+					debugger->update(debugger);
+					ConditionWaitTimed(&impl->stateCond, &impl->stateMutex, 10);
+				} else
+#endif
+				{
+					ConditionWait(&impl->stateCond, &impl->stateMutex);
+				}
 
 				if (impl->sync.audioWait) {
 					MutexUnlock(&impl->stateMutex);
@@ -468,7 +476,7 @@ bool mCoreThreadIsActive(struct mCoreThread* threadContext) {
 	if (!threadContext->impl) {
 		return false;
 	}
-	return threadContext->impl->state >= mTHREAD_RUNNING && threadContext->impl->state < mTHREAD_EXITING;
+	return threadContext->impl->state >= mTHREAD_RUNNING && threadContext->impl->state < mTHREAD_EXITING && threadContext->impl->state != mTHREAD_CRASHED;
 }
 
 void mCoreThreadInterrupt(struct mCoreThread* threadContext) {

@@ -135,6 +135,12 @@ static void _gdbStubWait(struct mDebugger* debugger) {
 	GDBStubUpdate(stub);
 }
 
+static void _gdbStubUpdate(struct mDebugger* debugger) {
+	struct GDBStub* stub = (struct GDBStub*) debugger;
+	stub->shouldBlock = false;
+	GDBStubUpdate(stub);
+}
+
 static void _ack(struct GDBStub* stub) {
 	char ack = '+';
 	SocketSend(stub->connection, &ack, 1);
@@ -758,6 +764,7 @@ void GDBStubCreate(struct GDBStub* stub) {
 	stub->d.init = 0;
 	stub->d.deinit = _gdbStubDeinit;
 	stub->d.paused = _gdbStubWait;
+	stub->d.update = _gdbStubUpdate;
 	stub->d.entered = _gdbStubEntered;
 	stub->d.custom = _gdbStubPoll;
 	stub->d.type = DEBUGGER_GDB;
