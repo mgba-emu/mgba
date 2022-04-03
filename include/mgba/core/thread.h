@@ -85,6 +85,7 @@ struct mCoreThreadInternal {
 
 	struct mCoreSync sync;
 	struct mCoreRewindContext rewind;
+	struct mCore* core;
 };
 
 #endif
