@@ -460,6 +460,7 @@ void PainterGL::create() {
 		painter->m_gl->swapBuffers(painter->m_surface);
 		painter->makeCurrent();
 
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		if (painter->m_widget && painter->supportsShaders()) {
 			QOpenGLFunctions_Baseline* fn = painter->m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
 			fn->glFinish();
@@ -469,6 +470,7 @@ void PainterGL::create() {
 			gl2Backend->finalShader.tex = painter->m_finalTex[painter->m_finalTexIdx];
 			mGLES2ContextUseFramebuffer(gl2Backend);
 		}
+#endif
 	};
 
 	m_backend->init(m_backend, 0);
