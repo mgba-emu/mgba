@@ -86,7 +86,9 @@ void GIFView::stopRecording() {
 
 void GIFView::selectFile() {
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select output file"), tr("Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)"));
-	m_ui.filename->setText(filename);
+	if (!filename.isNull()) {
+		m_ui.filename->setText(filename);
+	}
 }
 
 void GIFView::setFilename(const QString& filename) {
