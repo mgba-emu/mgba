@@ -13,6 +13,7 @@ Other fixes:
  - mGUI: Fix FPS counter after closing menu
  - VFS: Failed file mapping should return NULL on POSIX
 Misc:
+ - GB MBC: Filter out MBC errors when cartridge is yanked (fixes mgba.io/i/2488)
  - Qt: Enable -b for Boot BIOS menu option (fixes mgba.io/i/2074)
 
 0.9.3: (2021-12-17)
