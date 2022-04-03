@@ -43,6 +43,7 @@ Other fixes:
  - GB: Fix temporary saves
  - GB, GBA: Save writeback-pending masked saves on unload (fixes mgba.io/i/2396)
  - mGUI: Fix FPS counter after closing menu
+ - Qt: Fix some hangs when using the debugger console
  - VFS: Failed file mapping should return NULL on POSIX
 Misc:
  - Core: Suspend runloop when a core crashes
