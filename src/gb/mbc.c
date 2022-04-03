@@ -18,11 +18,12 @@ const uint32_t GB_LOGO_HASH = 0x46195417;
 mLOG_DEFINE_CATEGORY(GB_MBC, "GB MBC", "gb.mbc");
 
 static void _GBMBCNone(struct GB* gb, uint16_t address, uint8_t value) {
-	UNUSED(gb);
 	UNUSED(address);
 	UNUSED(value);
 
-	mLOG(GB_MBC, GAME_ERROR, "Wrote to invalid MBC");
+	if (!gb->yankedRomSize) {
+		mLOG(GB_MBC, GAME_ERROR, "Wrote to invalid MBC");
+	}
 }
 
 static void _GBMBC1(struct GB*, uint16_t address, uint8_t value);
