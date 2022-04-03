@@ -92,12 +92,14 @@ static void _wait(struct mCoreThreadInternal* threadContext) {
 		MutexUnlock(&threadContext->sync.audioBufferMutex);
 	}
 
+#ifdef USE_DEBUGGERS
 	if (threadContext->core && threadContext->core->debugger) {
 		struct mDebugger* debugger = threadContext->core->debugger;
 		if (debugger->interrupt) {
 			debugger->interrupt(debugger);
 		}
 	}
+#endif
 
 	MutexLock(&threadContext->stateMutex);
 	ConditionWake(&threadContext->stateCond);
