@@ -838,7 +838,7 @@ Game Boy Advance jest zarejestrowanym znakiem towarowym Nintendo Co., Ltd.</tran
     <message>
         <location filename="../ObjView.ui" line="263"/>
         <source>×</source>
-        <translation type="unfinished">×</translation>
+        <translation>×</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="316"/>
@@ -1008,7 +1008,7 @@ Game Boy Advance jest zarejestrowanym znakiem towarowym Nintendo Co., Ltd.</tran
     <message>
         <location filename="../OverrideView.ui" line="151"/>
         <source>EEPROM 512 bytes</source>
-        <translation type="unfinished">EEPROM 512 bytes</translation>
+        <translation>EEPROM 512 bytes</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="156"/>
@@ -1304,7 +1304,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../CoreController.cpp" line="99"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished">Reset r%1-%2 %3</translation>
+        <translation>Reset r%1-%2 %3</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="504"/>
@@ -1371,7 +1371,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="160"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie można otworzyć historii CLI do zapisu</translation>
     </message>
 </context>
 <context>
@@ -1424,7 +1424,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../FrameView.cpp" line="622"/>
         <source>%1 %2</source>
-        <translation type="unfinished">%1 %2</translation>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -1450,7 +1450,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="90"/>
         <source>Refresh</source>
-        <translation type="unfinished">Odśwież</translation>
+        <translation>Odśwież</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="100"/>
@@ -1498,12 +1498,12 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
         <source>Break</source>
-        <translation type="unfinished">Przerwij</translation>
+        <translation>Przerwij</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="124"/>
         <source>Stop</source>
-        <translation type="unfinished">Stop</translation>
+        <translation>Stop</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="137"/>
@@ -1536,7 +1536,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
-        <translation type="unfinished">Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</translation>
+        <translation>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</translation>
     </message>
 </context>
 <context>
@@ -2165,7 +2165,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="1172"/>
         <location filename="../IOViewer.cpp" line="1198"/>
         <source>Reset</source>
-        <translation type="unfinished">Resetuj</translation>
+        <translation>Resetuj</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="368"/>
@@ -2193,28 +2193,28 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="376"/>
         <location filename="../IOViewer.cpp" line="1158"/>
         <source>0%</source>
-        <translation type="unfinished">0%</translation>
+        <translation>0%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="377"/>
         <location filename="../IOViewer.cpp" line="434"/>
         <location filename="../IOViewer.cpp" line="1159"/>
         <source>100%</source>
-        <translation type="unfinished">100%</translation>
+        <translation>100%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="378"/>
         <location filename="../IOViewer.cpp" line="433"/>
         <location filename="../IOViewer.cpp" line="1160"/>
         <source>50%</source>
-        <translation type="unfinished">50%</translation>
+        <translation>50%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="379"/>
         <location filename="../IOViewer.cpp" line="432"/>
         <location filename="../IOViewer.cpp" line="1161"/>
         <source>25%</source>
-        <translation type="unfinished">25%</translation>
+        <translation>25%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="380"/>
@@ -2222,7 +2222,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="382"/>
         <location filename="../IOViewer.cpp" line="383"/>
         <source>75%</source>
-        <translation type="unfinished">75%</translation>
+        <translation>75%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="405"/>
@@ -2240,13 +2240,13 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="407"/>
         <location filename="../IOViewer.cpp" line="1190"/>
         <source>15</source>
-        <translation type="unfinished">15</translation>
+        <translation>15</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="408"/>
         <location filename="../IOViewer.cpp" line="1191"/>
         <source>7</source>
-        <translation type="unfinished">7</translation>
+        <translation>7</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="410"/>
@@ -2346,7 +2346,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="442"/>
         <location filename="../IOViewer.cpp" line="449"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="443"/>
@@ -2359,7 +2359,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="1002"/>
         <location filename="../IOViewer.cpp" line="1012"/>
         <source>1</source>
-        <translation type="unfinished">1</translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="445"/>
@@ -2751,7 +2751,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="1059"/>
         <location filename="../IOViewer.cpp" line="1063"/>
         <source>Value</source>
-        <translation type="unfinished">Wartość</translation>
+        <translation>Wartość</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="778"/>
@@ -2768,7 +2768,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="827"/>
         <location filename="../IOViewer.cpp" line="1070"/>
         <source>1/64</source>
-        <translation type="unfinished">1/64</translation>
+        <translation>1/64</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="781"/>
@@ -2777,7 +2777,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="828"/>
         <location filename="../IOViewer.cpp" line="1071"/>
         <source>1/256</source>
-        <translation type="unfinished">1/256</translation>
+        <translation>1/256</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="782"/>
@@ -2786,7 +2786,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="829"/>
         <location filename="../IOViewer.cpp" line="1068"/>
         <source>1/1024</source>
-        <translation type="unfinished">1/1024</translation>
+        <translation>1/1024</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="799"/>
@@ -2805,7 +2805,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="870"/>
         <location filename="../IOViewer.cpp" line="883"/>
         <source>B</source>
-        <translation type="unfinished">B</translation>
+        <translation>B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="871"/>
@@ -2817,7 +2817,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="872"/>
         <location filename="../IOViewer.cpp" line="885"/>
         <source>Start</source>
-        <translation type="unfinished">Start</translation>
+        <translation>Start</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="873"/>
@@ -2964,7 +2964,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="1001"/>
         <location filename="../IOViewer.cpp" line="1005"/>
         <source>4</source>
-        <translation type="unfinished">4</translation>
+        <translation>4</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="980"/>
@@ -2972,7 +2972,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="996"/>
         <location filename="../IOViewer.cpp" line="1006"/>
         <source>3</source>
-        <translation type="unfinished">3</translation>
+        <translation>3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="981"/>
@@ -2981,7 +2981,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="997"/>
         <location filename="../IOViewer.cpp" line="1007"/>
         <source>2</source>
-        <translation type="unfinished">2</translation>
+        <translation>2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="982"/>
@@ -2990,7 +2990,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../IOViewer.cpp" line="1008"/>
         <location filename="../IOViewer.cpp" line="1011"/>
         <source>8</source>
-        <translation type="unfinished">8</translation>
+        <translation>8</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="984"/>
@@ -3051,351 +3051,351 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1020"/>
         <source>Gamepak prefetch</source>
-        <translation type="unfinished"></translation>
+        <translation>Załadowanie wstępne Gamepak</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1026"/>
         <source>Enable IRQs</source>
-        <translation type="unfinished"></translation>
+        <translation>Włącz IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1034"/>
         <source>Right/A</source>
-        <translation type="unfinished"></translation>
+        <translation>Prawo/A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1035"/>
         <source>Left/B</source>
-        <translation type="unfinished"></translation>
+        <translation>Lewo/B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1036"/>
         <source>Up/Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Góra/Select</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1037"/>
         <source>Down/Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Dół/Start</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1038"/>
         <source>Active D-pad</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktywny Krzyżak</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1039"/>
         <source>Active face buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktywne przyciski frontowe</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1047"/>
         <source>Internal clock</source>
-        <translation type="unfinished"></translation>
+        <translation>Zegar wewnętrzny</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1048"/>
         <source>32× clocking (CGB only)</source>
-        <translation type="unfinished"></translation>
+        <translation>Taktowanie 32× (tylko CGB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1049"/>
         <source>Transfer active</source>
-        <translation type="unfinished"></translation>
+        <translation>Transfer aktywny</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1067"/>
         <source>Divider</source>
-        <translation type="unfinished"></translation>
+        <translation>Dzielnik</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/16</source>
-        <translation type="unfinished">1/16</translation>
+        <translation>1/16</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1092"/>
         <location filename="../IOViewer.cpp" line="1553"/>
         <source>LCD STAT</source>
-        <translation type="unfinished"></translation>
+        <translation>LCD STAT</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1093"/>
         <location filename="../IOViewer.cpp" line="1554"/>
         <source>Timer</source>
-        <translation type="unfinished"></translation>
+        <translation>Czasomierz</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1094"/>
         <location filename="../IOViewer.cpp" line="1555"/>
         <source>Serial</source>
-        <translation type="unfinished"></translation>
+        <translation>Seryjny</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1095"/>
         <location filename="../IOViewer.cpp" line="1556"/>
         <source>Joypad</source>
-        <translation type="unfinished"></translation>
+        <translation>Joypad</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1202"/>
         <source>Volume right</source>
-        <translation type="unfinished"></translation>
+        <translation>Głośność prawo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1203"/>
         <source>Output right</source>
-        <translation type="unfinished"></translation>
+        <translation>Wyjście prawo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1204"/>
         <source>Volume left</source>
-        <translation type="unfinished"></translation>
+        <translation>Głośność lewo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1205"/>
         <source>Output left</source>
-        <translation type="unfinished"></translation>
+        <translation>Wyjście lewo</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1326"/>
         <source>Background enable/priority</source>
-        <translation type="unfinished"></translation>
+        <translation>Włącz/priorytet tła</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1327"/>
         <source>Enable sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>Włącz sprite&apos;y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1328"/>
         <source>Double-height sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>Sprite&apos;y podwójnej wysokości</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation type="unfinished"></translation>
+        <translation>Mapa kafelków tła</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
         <location filename="../IOViewer.cpp" line="1339"/>
         <source>0x9800 – 0x9BFF</source>
-        <translation type="unfinished"></translation>
+        <translation>0x9800 – 0x9BFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1331"/>
         <location filename="../IOViewer.cpp" line="1340"/>
         <source>0x9C00 – 0x9FFF</source>
-        <translation type="unfinished"></translation>
+        <translation>0x9C00 – 0x9FFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1333"/>
         <source>Background tile data</source>
-        <translation type="unfinished"></translation>
+        <translation>Dane kafelka tła</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1334"/>
         <source>0x8800 – 0x87FF</source>
-        <translation type="unfinished"></translation>
+        <translation>0x8800 – 0x87FF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1335"/>
         <source>0x8000 – 0x8FFF</source>
-        <translation type="unfinished"></translation>
+        <translation>0x8000 – 0x8FFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1337"/>
         <source>Enable window</source>
-        <translation type="unfinished"></translation>
+        <translation>Włącz okno</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1338"/>
         <source>Window tile map</source>
-        <translation type="unfinished"></translation>
+        <translation>Mapa płytek okna</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1342"/>
         <source>Enable LCD</source>
-        <translation type="unfinished"></translation>
+        <translation>Włącz LCD</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1346"/>
         <source>Mode</source>
-        <translation type="unfinished">Tryb</translation>
+        <translation>Tryb</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1347"/>
         <source>0: HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>0: HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1348"/>
         <source>1: VBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>1: VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1349"/>
         <source>2: OAM scan</source>
-        <translation type="unfinished"></translation>
+        <translation>2: skan OAM</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1350"/>
         <source>3: HDraw</source>
-        <translation type="unfinished"></translation>
+        <translation>3: HDraw</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1352"/>
         <source>In LYC</source>
-        <translation type="unfinished"></translation>
+        <translation>W LYC</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1353"/>
         <source>Enable HBlank (mode 0) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>Włącz IRQ HBlank (tryb 0)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1354"/>
         <source>Enable VBlank (mode 1) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>Włącz IRQ VBlank (tryb 1)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1355"/>
         <source>Enable OAM (mode 2) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>Włącz IRQ OAM (tryb 2)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1356"/>
         <source>Enable LYC IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>Włącz IRQ LYC</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1368"/>
         <source>Current Y coordinate</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktualna współrzędna Y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1372"/>
         <source>Comparison Y coordinate</source>
-        <translation type="unfinished"></translation>
+        <translation>Porównywana współrzędna Y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1376"/>
         <source>Start upper byte</source>
-        <translation type="unfinished"></translation>
+        <translation>Początkowy bajt górny</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1380"/>
         <location filename="../IOViewer.cpp" line="1387"/>
         <location filename="../IOViewer.cpp" line="1394"/>
         <source>Color 0 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Odcień koloru 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1381"/>
         <location filename="../IOViewer.cpp" line="1388"/>
         <location filename="../IOViewer.cpp" line="1395"/>
         <source>Color 1 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Odcień koloru 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1382"/>
         <location filename="../IOViewer.cpp" line="1389"/>
         <location filename="../IOViewer.cpp" line="1396"/>
         <source>Color 2 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Odcień koloru 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1383"/>
         <location filename="../IOViewer.cpp" line="1390"/>
         <location filename="../IOViewer.cpp" line="1397"/>
         <source>Color 3 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Odcień koloru 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1411"/>
         <source>Prepare to switch speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Przygotuj się do zmiany prędkości</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1412"/>
         <source>Double speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Podwójna prędkość</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1418"/>
         <source>VRAM bank</source>
-        <translation type="unfinished"></translation>
+        <translation>Bank VRAM</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1440"/>
         <source>Length</source>
-        <translation type="unfinished"></translation>
+        <translation>Długość</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1441"/>
         <source>Timing</source>
-        <translation type="unfinished"></translation>
+        <translation>Czas</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1448"/>
         <source>Write bit</source>
-        <translation type="unfinished"></translation>
+        <translation>Bit zapisu</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1449"/>
         <source>Read bit</source>
-        <translation type="unfinished"></translation>
+        <translation>Bit odczytu</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1452"/>
         <location filename="../IOViewer.cpp" line="1453"/>
         <source>Unknown</source>
-        <translation type="unfinished">Nieznana</translation>
+        <translation>Nieznana</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1493"/>
         <location filename="../IOViewer.cpp" line="1505"/>
         <source>Current index</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktualny indeks</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1494"/>
         <location filename="../IOViewer.cpp" line="1506"/>
         <source>Auto-increment</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto-inkrementacja</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1498"/>
         <location filename="../IOViewer.cpp" line="1510"/>
         <source>Red</source>
-        <translation type="unfinished">Czerwony</translation>
+        <translation>Czerwony</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1501"/>
         <location filename="../IOViewer.cpp" line="1513"/>
         <source>Blue</source>
-        <translation type="unfinished">Niebieski</translation>
+        <translation>Niebieski</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1517"/>
         <source>Sprite ordering</source>
-        <translation type="unfinished"></translation>
+        <translation>Kolejność Sprite&apos;ów</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1518"/>
         <source>OAM order</source>
-        <translation type="unfinished"></translation>
+        <translation>Kolejność OAM</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1519"/>
         <source>x coordinate sorting</source>
-        <translation type="unfinished"></translation>
+        <translation>sortowanie współrzędnych x</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1530"/>
         <source>WRAM bank</source>
-        <translation type="unfinished"></translation>
+        <translation>Bank WRAM</translation>
     </message>
 </context>
 <context>
@@ -3404,22 +3404,22 @@ Rozmiar pobierania: %3</translation>
         <location filename="../KeyEditor.cpp" line="34"/>
         <location filename="../KeyEditor.cpp" line="240"/>
         <source>---</source>
-        <translation type="unfinished">---</translation>
+        <translation>---</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="53"/>
         <source>Super (L)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super (L)</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="56"/>
         <source>Super (R)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super (R)</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="59"/>
         <source>Menu</source>
-        <translation type="unfinished"></translation>
+        <translation>Menu</translation>
     </message>
 </context>
 <context>
@@ -3427,27 +3427,27 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../LoadSaveState.cpp" line="74"/>
         <source>Load State</source>
-        <translation type="unfinished"></translation>
+        <translation>Załaduj Stan</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="74"/>
         <source>Save State</source>
-        <translation type="unfinished"></translation>
+        <translation>Zapisz Stan</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="183"/>
         <source>Empty</source>
-        <translation type="unfinished"></translation>
+        <translation>Pusty</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="192"/>
         <source>Corrupted</source>
-        <translation type="unfinished"></translation>
+        <translation>Uszkodzony</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="221"/>
         <source>Slot %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Slot %1</translation>
     </message>
 </context>
 <context>
@@ -3456,42 +3456,42 @@ Rozmiar pobierania: %3</translation>
         <location filename="../LogConfigModel.cpp" line="90"/>
         <location filename="../LogConfigModel.cpp" line="111"/>
         <source>Default</source>
-        <translation type="unfinished"></translation>
+        <translation>Domyślna</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="92"/>
         <source>Fatal</source>
-        <translation type="unfinished">Błąd krytyczny</translation>
+        <translation>Krytyczny</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="94"/>
         <source>Error</source>
-        <translation type="unfinished">Błąd</translation>
+        <translation>Błąd</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="96"/>
         <source>Warning</source>
-        <translation type="unfinished">Ostrzeżenie</translation>
+        <translation>Ostrzeżenie</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="98"/>
         <source>Info</source>
-        <translation type="unfinished">Info</translation>
+        <translation>Info</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="100"/>
         <source>Debug</source>
-        <translation type="unfinished">Debug</translation>
+        <translation>Debug</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="102"/>
         <source>Stub</source>
-        <translation type="unfinished">Stub</translation>
+        <translation>Zalążek</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="104"/>
         <source>Game Error</source>
-        <translation type="unfinished">Błąd gry</translation>
+        <translation>Błąd gry</translation>
     </message>
 </context>
 <context>
@@ -3499,47 +3499,47 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../LogController.cpp" line="68"/>
         <source>[%1] %2: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>[%1] %2: %3</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="79"/>
         <source>An error occurred</source>
-        <translation type="unfinished"></translation>
+        <translation>Pojawił się błąd</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="151"/>
         <source>DEBUG</source>
-        <translation type="unfinished"></translation>
+        <translation>DEBUG</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="153"/>
         <source>STUB</source>
-        <translation type="unfinished"></translation>
+        <translation>ZALĄŻEK</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="155"/>
         <source>INFO</source>
-        <translation type="unfinished"></translation>
+        <translation>INFO</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="157"/>
         <source>WARN</source>
-        <translation type="unfinished"></translation>
+        <translation>OSTRZEC</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="159"/>
         <source>ERROR</source>
-        <translation type="unfinished"></translation>
+        <translation>BŁĄD</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="161"/>
         <source>FATAL</source>
-        <translation type="unfinished"></translation>
+        <translation>KRYTYCZNY</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="163"/>
         <source>GAME ERROR</source>
-        <translation type="unfinished"></translation>
+        <translation>BŁĄD GRY</translation>
     </message>
 </context>
 <context>
@@ -3547,55 +3547,55 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../MapView.cpp" line="47"/>
         <source>Priority</source>
-        <translation type="unfinished">Priorytet</translation>
+        <translation>Priorytet</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="48"/>
         <location filename="../MapView.cpp" line="60"/>
         <source>Map base</source>
-        <translation type="unfinished"></translation>
+        <translation>Podstawa mapy</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="49"/>
         <location filename="../MapView.cpp" line="61"/>
         <source>Tile base</source>
-        <translation type="unfinished"></translation>
+        <translation>Podstawa kafelka</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="50"/>
         <source>Size</source>
-        <translation type="unfinished">Rozmiar</translation>
+        <translation>Rozmiar</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="51"/>
         <location filename="../MapView.cpp" line="62"/>
         <source>Offset</source>
-        <translation type="unfinished">Offset</translation>
+        <translation>Offset</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="52"/>
         <source>Xform</source>
-        <translation type="unfinished"></translation>
+        <translation>Xform</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="106"/>
         <source>Map Addr.</source>
-        <translation type="unfinished"></translation>
+        <translation>Adres Mapy</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="107"/>
         <source>Mirror</source>
-        <translation type="unfinished"></translation>
+        <translation>Odbicie</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="141"/>
         <source>None</source>
-        <translation type="unfinished">Nic</translation>
+        <translation>Nic</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="143"/>
         <source>Both</source>
-        <translation type="unfinished"></translation>
+        <translation>Obydwa</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="145"/>
@@ -3622,7 +3622,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../MapView.cpp" line="266"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished">Portable Network Graphics (*.png)</translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -3635,7 +3635,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../MemoryDump.cpp" line="30"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished">Nie udało się otworzyć pliku wyjściowego: %1</translation>
+        <translation>Nie udało się otworzyć pliku wyjściowego: %1</translation>
     </message>
 </context>
 <context>
@@ -3653,7 +3653,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../MemoryModel.cpp" line="54"/>
         <source>Paste</source>
-        <translation type="unfinished">Wklej</translation>
+        <translation>Wklej</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="59"/>
@@ -3663,12 +3663,12 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../MemoryModel.cpp" line="108"/>
         <source>All</source>
-        <translation type="unfinished">Wszystkie</translation>
+        <translation>Wszystko</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="153"/>
         <source>Load TBL</source>
-        <translation type="unfinished">Załaduj TBL</translation>
+        <translation>Załaduj TBL</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="207"/>
@@ -3678,7 +3678,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../MemoryModel.cpp" line="213"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished">Nie udało się otworzyć pliku wyjściowego: %1</translation>
+        <translation>Nie udało się otworzyć pliku wyjściowego: %1</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="221"/>
@@ -3693,7 +3693,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../MemoryModel.cpp" line="342"/>
         <source>TBL</source>
-        <translation type="unfinished"></translation>
+        <translation>TBL</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="342"/>
@@ -3738,7 +3738,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../ObjView.cpp" line="158"/>
         <location filename="../ObjView.cpp" line="246"/>
         <source>0x%0</source>
-        <translation type="unfinished">0x%0</translation>
+        <translation>0x%0</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="179"/>
@@ -3755,17 +3755,17 @@ Rozmiar pobierania: %3</translation>
         <location filename="../ObjView.cpp" line="256"/>
         <location filename="../ObjView.cpp" line="257"/>
         <source>---</source>
-        <translation type="unfinished">---</translation>
+        <translation>---</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="188"/>
         <source>Normal</source>
-        <translation type="unfinished">Normalna</translation>
+        <translation>Normalna</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="191"/>
         <source>Trans</source>
-        <translation type="unfinished">Trans</translation>
+        <translation>Trans</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="194"/>
@@ -3791,7 +3791,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../ObjView.cpp" line="284"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished">Portable Network Graphics (*.png)</translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -3830,7 +3830,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../PaletteView.cpp" line="124"/>
         <location filename="../PaletteView.cpp" line="125"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished">0x%0 (%1)</translation>
+        <translation>0x%0 (%1)</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="137"/>
@@ -3978,7 +3978,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../SettingsView.cpp" line="206"/>
         <source>None</source>
-        <translation type="unfinished">Nic</translation>
+        <translation>Nic</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="213"/>
@@ -4117,7 +4117,7 @@ Rozmiar pobierania: %3</translation>
         <location filename="../TileView.cpp" line="210"/>
         <location filename="../TileView.cpp" line="222"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished">Portable Network Graphics (*.png)</translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
         <location filename="../TileView.cpp" line="221"/>
@@ -4140,7 +4140,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../VideoView.cpp" line="238"/>
         <source>Select output file</source>
-        <translation type="unfinished">Wybierz plik wyjściowy</translation>
+        <translation>Wybierz plik wyjściowy</translation>
     </message>
 </context>
 <context>
@@ -4236,7 +4236,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../Window.cpp" line="969"/>
         <source>Crash</source>
-        <translation type="unfinished">Crash</translation>
+        <translation>Crash</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="970"/>
@@ -4280,143 +4280,143 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1083"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>To sprawi, że emulator załaduje swoją konfigurację z tego samego katalogu, co plik wykonywalny. Czy chcesz kontynuować?</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1095"/>
         <source>Restart needed</source>
-        <translation type="unfinished"></translation>
+        <translation>Wymagane ponowne uruchomienie</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1096"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
-        <translation type="unfinished"></translation>
+        <translation>Niektóre zmiany nie zaczną obowiązywać, dopóki emulator nie zostanie ponownie uruchomiony.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1147"/>
         <source> -  Player %1 of %2</source>
-        <translation type="unfinished"></translation>
+        <translation> -  Gracz %1 z %2</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1158"/>
         <source>%1 - %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1160"/>
         <source>%1 - %2 - %3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2 - %3</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1162"/>
         <source>%1 - %2 (%3 fps) - %4</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2 (%3 FPS) - %4</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1225"/>
         <source>&amp;File</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Plik</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1227"/>
         <source>Load &amp;ROM...</source>
-        <translation type="unfinished"></translation>
+        <translation>Załaduj &amp;ROM...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1230"/>
         <source>Load ROM in archive...</source>
-        <translation type="unfinished"></translation>
+        <translation>Załaduj ROM w archiwum...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1231"/>
         <source>Add folder to library...</source>
-        <translation type="unfinished"></translation>
+        <translation>Dodaj folder do biblioteki...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="403"/>
         <source>Save games (%1)</source>
-        <translation type="unfinished">Zapisane gry (%1)</translation>
+        <translation>Zapisane gry (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="404"/>
         <source>Select save game</source>
-        <translation type="unfinished">Wybierz zapis gry</translation>
+        <translation>Wybierz zapis gry</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="412"/>
         <source>mGBA save state files (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Pliki stanu gry mGBA (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="414"/>
         <location filename="../Window.cpp" line="419"/>
         <source>Select save state</source>
-        <translation type="unfinished"></translation>
+        <translation>Wybierz stan</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="460"/>
         <source>Select e-Reader card images</source>
-        <translation type="unfinished"></translation>
+        <translation>Wybierz obrazy kart e-Reader</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="460"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Plik graficzny (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="461"/>
         <source>Conversion finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Konwersja zakończona</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="499"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 z %2 kart czytnika e-Reader zostało pomyślnie przekonwertowanych.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1235"/>
         <source>Load alternate save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>Załaduj alternatywny zapis gry...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1238"/>
         <source>Load temporary save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>Załaduj tymczasowy zapis gry...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1271"/>
         <source>Load &amp;patch...</source>
-        <translation type="unfinished"></translation>
+        <translation>Wczytaj &amp;poprawkę...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1274"/>
         <source>Boot BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>BIOS startowy</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1277"/>
         <source>Replace ROM...</source>
-        <translation type="unfinished"></translation>
+        <translation>Wymień ROM...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1279"/>
         <source>Scan e-Reader dotcodes...</source>
-        <translation type="unfinished"></translation>
+        <translation>Skanuj kody kropkowe czytnika e-Reader...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1283"/>
         <source>Convert e-Reader card image to raw...</source>
-        <translation type="unfinished"></translation>
+        <translation>Konwertuj obraz karty czytnika e-Reader na surowy...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1287"/>
         <source>ROM &amp;info...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Informacje o pamięci ROM...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1289"/>
         <source>Recent</source>
-        <translation type="unfinished"></translation>
+        <translation>Ostatni</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1619"/>
@@ -4426,253 +4426,253 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1292"/>
         <source>&amp;Load state</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Załaduj stan</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1297"/>
         <source>Load state file...</source>
-        <translation type="unfinished"></translation>
+        <translation>Załaduj plik stanu…</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1302"/>
         <source>&amp;Save state</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Zapisz stan</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1307"/>
         <source>Save state file...</source>
-        <translation type="unfinished"></translation>
+        <translation>Zapisz plik stanu...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1312"/>
         <source>Quick load</source>
-        <translation type="unfinished"></translation>
+        <translation>Szybkie załadowanie</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1313"/>
         <source>Quick save</source>
-        <translation type="unfinished"></translation>
+        <translation>Szybki zapis</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1315"/>
         <source>Load recent</source>
-        <translation type="unfinished"></translation>
+        <translation>Załaduj ostatnie</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1320"/>
         <source>Save recent</source>
-        <translation type="unfinished"></translation>
+        <translation>Zapisz ostatnie</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1328"/>
         <source>Undo load state</source>
-        <translation type="unfinished"></translation>
+        <translation>Cofnij załadowanie stanu</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1331"/>
         <source>Undo save state</source>
-        <translation type="unfinished"></translation>
+        <translation>Cofnij zapisanie stanu</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1338"/>
         <location filename="../Window.cpp" line="1343"/>
         <source>State &amp;%1</source>
-        <translation type="unfinished"></translation>
+        <translation>Stan &amp;%1</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1450"/>
         <source>Load camera image...</source>
-        <translation type="unfinished"></translation>
+        <translation>Załaduj obraz do kamery...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1244"/>
         <source>Convert save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>Konwertuj zapisaną grę...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="519"/>
         <source>GameShark saves (*.gsv *.sps *.xps)</source>
-        <translation type="unfinished"></translation>
+        <translation>Zapisy GameShark (*.gsv *.sps *.xps)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1107"/>
         <source>Reset needed</source>
-        <translation type="unfinished"></translation>
+        <translation>Wymagane zresetowanie</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1108"/>
         <source>Some changes will not take effect until the game is reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>Niektóre zmiany nie zaczną obowiązywać, dopóki gra nie zostanie zresetowana.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1234"/>
         <source>Save games</source>
-        <translation type="unfinished"></translation>
+        <translation>Zapisy gry</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1247"/>
         <source>Import GameShark Save...</source>
-        <translation type="unfinished"></translation>
+        <translation>Importuj Zapis GameShark...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1250"/>
         <source>Export GameShark Save...</source>
-        <translation type="unfinished"></translation>
+        <translation>Eksportuj Zapis GameShark...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1257"/>
         <source>Automatically determine</source>
-        <translation type="unfinished"></translation>
+        <translation>Wykryj automatycznie</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1261"/>
         <source>Use player %0 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Użyj zapis gry gracza %0</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1350"/>
         <source>New multiplayer window</source>
-        <translation type="unfinished"></translation>
+        <translation>Nowe okno dla wielu graczy</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1355"/>
         <source>Connect to Dolphin...</source>
-        <translation type="unfinished"></translation>
+        <translation>Połącz z Dolphinem...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1361"/>
         <source>Report bug...</source>
-        <translation type="unfinished"></translation>
+        <translation>Zgłoś błąd...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1367"/>
         <source>About...</source>
-        <translation type="unfinished"></translation>
+        <translation>O...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1368"/>
         <source>E&amp;xit</source>
-        <translation type="unfinished"></translation>
+        <translation>Z&amp;akończ</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1370"/>
         <source>&amp;Emulation</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Emulacja</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1371"/>
         <source>&amp;Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Resetowanie</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1372"/>
         <source>Sh&amp;utdown</source>
-        <translation type="unfinished"></translation>
+        <translation>Za&amp;mknij</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1373"/>
         <source>Yank game pak</source>
-        <translation type="unfinished"></translation>
+        <translation>Wyciągnij Game Pak</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1377"/>
         <source>&amp;Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Pauza</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1386"/>
         <source>&amp;Next frame</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Następna klatka</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1390"/>
         <source>Fast forward (held)</source>
-        <translation type="unfinished"></translation>
+        <translation>Przewijanie (przytrzymaj)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1396"/>
         <source>&amp;Fast forward</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Przewijanie do przodu</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1400"/>
         <source>Fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Prędkość przewijania do przodu</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1405"/>
         <source>Unbounded</source>
-        <translation type="unfinished"></translation>
+        <translation>Bez ograniczeń</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1409"/>
         <source>%0x</source>
-        <translation type="unfinished">%0x</translation>
+        <translation>%0x</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1413"/>
         <source>Rewind (held)</source>
-        <translation type="unfinished"></translation>
+        <translation>Przewijanie (przytrzymaj)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1420"/>
         <source>Re&amp;wind</source>
-        <translation type="unfinished"></translation>
+        <translation>Pr&amp;zewijanie</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1425"/>
         <source>Step backwards</source>
-        <translation type="unfinished"></translation>
+        <translation>Krok w tył</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1432"/>
         <source>Solar sensor</source>
-        <translation type="unfinished"></translation>
+        <translation>Czujnik słoneczny</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1433"/>
         <source>Increase solar level</source>
-        <translation type="unfinished"></translation>
+        <translation>Zwiększ poziom energii słonecznej</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1434"/>
         <source>Decrease solar level</source>
-        <translation type="unfinished"></translation>
+        <translation>Zmniejsz poziom energii słonecznej</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1435"/>
         <source>Brightest solar level</source>
-        <translation type="unfinished"></translation>
+        <translation>Najjaśniejszy poziom energii słonecznej</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1438"/>
         <source>Darkest solar level</source>
-        <translation type="unfinished"></translation>
+        <translation>Najciemniejszy poziom energii słonecznej</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1444"/>
         <source>Brightness %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Jasność %1</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1452"/>
         <source>Game Boy Printer...</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Printer...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1461"/>
         <source>BattleChip Gate...</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip Gate...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1465"/>
         <source>Audio/&amp;Video</source>
-        <translation type="unfinished"></translation>
+        <translation>Dźwięk/&amp;Wideo</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1466"/>
         <source>Frame size</source>
-        <translation type="unfinished"></translation>
+        <translation>Rozmiar klatki</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1468"/>
