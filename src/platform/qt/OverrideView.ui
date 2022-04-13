@@ -156,6 +156,11 @@
                 <string>SRAM 64kB (bootlegs only)</string>
                </property>
               </item>
+			  <item>
+               <property name="text">
+                <string>SRAM 128kB (bootlegs)</string>
+               </property>
+              </item>
              </widget>
             </item>
             <item row="2" column="0">

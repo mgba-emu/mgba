@@ -26,6 +26,7 @@ enum SavedataType {
 	SAVEDATA_EEPROM = 4,
 	SAVEDATA_EEPROM512 = 5,
 	SAVEDATA_SRAM512 = 6,
+	SAVEDATA_SRAM1M = 7,
 };
 
 enum SavedataCommand {
@@ -107,12 +108,15 @@ void GBASavedataInitFlash(struct GBASavedata* savedata);
 void GBASavedataInitEEPROM(struct GBASavedata* savedata);
 void GBASavedataInitSRAM(struct GBASavedata* savedata);
 void GBASavedataInitSRAM512(struct GBASavedata* savedata);
+void GBASavedataInitSRAM1M(struct GBASavedata* savedata);
 
 uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address);
 void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8_t value);
 
 uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata);
 void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32_t writeSize);
+
+void GBASavedataSetSRAMBank(struct GBASavedata* savedata, uint16_t value);
 
 void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount);
 

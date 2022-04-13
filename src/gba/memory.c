@@ -727,6 +727,8 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = GBAHardwareTiltRead(&memory->hw, address & OFFSET_MASK);
 		} else if (memory->savedata.type == SAVEDATA_SRAM512) {
 			value = memory->savedata.data[address & (SIZE_CART_SRAM512 - 1)];
+	    } else if (memory->savedata.type == SAVEDATA_SRAM1M) {
+			value = memory->savedata.currentBank[address & (SIZE_CART_SRAM512 - 1)];
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Reading from non-existent SRAM: 0x%08X", address);
 			value = 0xFF;
@@ -977,6 +979,10 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 				break;
 			}
 		}
+		if (address == 0x09000000 && memory->savedata.type == SAVEDATA_SRAM1M) {
+			GBASavedataSetSRAMBank(&memory->savedata, value);
+			break;
+		}
 		mLOG(GBA_MEM, GAME_ERROR, "Bad cartridge Store16: 0x%08X", address);
 		break;
 	case REGION_CART2_EX:
@@ -1056,6 +1062,13 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 	case REGION_CART0:
 		mLOG(GBA_MEM, STUB, "Unimplemented memory Store8: 0x%08X", address);
 		break;
+	case REGION_CART0_EX:
+	    if (address == 0x09000000 && memory->savedata.type == SAVEDATA_SRAM1M) {
+			GBASavedataSetSRAMBank(&memory->savedata, value);
+			break;
+		}
+		mLOG(GBA_MEM, STUB, "Unimplemented memory Store8: 0x%08X", address);
+		break;
 	case REGION_CART_SRAM:
 	case REGION_CART_SRAM_MIRROR:
 		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
@@ -1082,6 +1095,9 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 			GBAHardwareTiltWrite(&memory->hw, address & OFFSET_MASK, value);
 		} else if (memory->savedata.type == SAVEDATA_SRAM512) {
 			memory->savedata.data[address & (SIZE_CART_SRAM512 - 1)] = value;
+			memory->savedata.dirty |= mSAVEDATA_DIRT_NEW;
+		} else if (memory->savedata.type == SAVEDATA_SRAM1M) {
+			memory->savedata.currentBank[address & (SIZE_CART_SRAM512 - 1)] = value;
 			memory->savedata.dirty |= mSAVEDATA_DIRT_NEW;
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Writing to non-existent SRAM: 0x%08X", address);

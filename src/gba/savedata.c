@@ -74,6 +74,9 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 		case SAVEDATA_SRAM512:
 			mappedMemoryFree(savedata->data, SIZE_CART_SRAM512);
 			break;
+		case SAVEDATA_SRAM1M:
+		    mappedMemoryFree(savedata->data, SIZE_CART_SRAM1M);
+			break;
 		case SAVEDATA_FLASH512:
 			mappedMemoryFree(savedata->data, SIZE_CART_FLASH512);
 			break;
@@ -132,6 +135,8 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 			return out->write(out, savedata->data, SIZE_CART_SRAM) == SIZE_CART_SRAM;
 		case SAVEDATA_SRAM512:
 			return out->write(out, savedata->data, SIZE_CART_SRAM512) == SIZE_CART_SRAM512;
+		case SAVEDATA_SRAM1M:
+		    return out->write(out, savedata->data, SIZE_CART_SRAM1M) == SIZE_CART_SRAM1M;
 		case SAVEDATA_FLASH512:
 			return out->write(out, savedata->data, SIZE_CART_FLASH512) == SIZE_CART_FLASH512;
 		case SAVEDATA_FLASH1M:
@@ -163,6 +168,8 @@ size_t GBASavedataSize(const struct GBASavedata* savedata) {
 		return SIZE_CART_SRAM;
 	case SAVEDATA_SRAM512:
 		return SIZE_CART_SRAM512;
+	case SAVEDATA_SRAM1M:
+	    return SIZE_CART_SRAM1M;
 	case SAVEDATA_FLASH512:
 		return SIZE_CART_FLASH512;
 	case SAVEDATA_FLASH1M:
@@ -245,6 +252,9 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type) 
 		break;
 	case SAVEDATA_SRAM512:
 		GBASavedataInitSRAM512(savedata);
+		break;
+	case SAVEDATA_SRAM1M:
+	    GBASavedataInitSRAM1M(savedata);
 		break;
 	case SAVEDATA_FORCE_NONE:
 		savedata->type = SAVEDATA_FORCE_NONE;
@@ -356,6 +366,31 @@ void GBASavedataInitSRAM512(struct GBASavedata* savedata) {
 
 	if (end < SIZE_CART_SRAM512) {
 		memset(&savedata->data[end], 0xFF, SIZE_CART_SRAM512 - end);
+	}
+}
+
+void GBASavedataInitSRAM1M(struct GBASavedata* savedata) {
+	if (savedata->type == SAVEDATA_AUTODETECT) {
+		savedata->type = SAVEDATA_SRAM1M;
+	} else {
+		mLOG(GBA_SAVE, WARN, "Can't re-initialize savedata");
+		return;
+	}
+	off_t end;
+	if (!savedata->vf) {
+		end = 0;
+		savedata->data = anonymousMemoryMap(SIZE_CART_SRAM1M);
+	} else {
+		end = savedata->vf->size(savedata->vf);
+		if (end < SIZE_CART_SRAM512) {
+			savedata->vf->truncate(savedata->vf, SIZE_CART_SRAM1M);
+		}
+		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_SRAM1M, savedata->mapMode);
+	}
+
+    savedata->currentBank = savedata->data;
+	if (end < SIZE_CART_SRAM1M) {
+		memset(&savedata->data[end], 0xFF, SIZE_CART_SRAM1M - end);
 	}
 }
 
@@ -562,6 +597,26 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 		return data & 0x1;
 	}
 	return 0;
+}
+
+void GBASavedataSetSRAMBank(struct GBASavedata* savedata, uint16_t value) {
+	switch (value) {
+		case 0x8000:
+		    // Enter bank switching mode for GBATA
+			break;
+	    // GBATA bank #1 
+		case 0x0800:
+		// Pokemon bootleg bank #1
+		case 0x0001:
+		   savedata->currentBank = &savedata->data[SIZE_CART_SRAM512];
+		   break;
+		case 0x0000:
+		   savedata->currentBank = savedata->data;
+		   break;
+		default:
+		   mLOG(GBA_SAVE, GAME_ERROR, "Unrecognised SRAM bank: %08X", value);
+		   break;
+	}
 }
 
 void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
