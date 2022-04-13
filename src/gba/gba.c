@@ -125,6 +125,8 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->irqEvent.callback = _triggerIRQ;
 	gba->irqEvent.context = gba;
 	gba->irqEvent.priority = 0;
+
+	GBAExtensionsInit(&gba->extensions);
 }
 
 void GBAUnloadROM(struct GBA* gba) {
@@ -174,6 +176,7 @@ void GBADestroy(struct GBA* gba) {
 	GBAVideoDeinit(&gba->video);
 	GBAAudioDeinit(&gba->audio);
 	GBASIODeinit(&gba->sio);
+	GBAExtensionsDestroy(&gba->extensions);
 	mTimingDeinit(&gba->timing);
 	mCoreCallbacksListDeinit(&gba->coreCallbacks);
 }
@@ -217,6 +220,7 @@ void GBAReset(struct ARMCore* cpu) {
 	GBAAudioReset(&gba->audio);
 	GBAIOInit(gba);
 	GBATimerInit(gba);
+	GBAExtensionsReset(&gba->extensions);
 
 	GBASIOReset(&gba->sio);
 

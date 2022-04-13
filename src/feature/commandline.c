@@ -249,6 +249,15 @@ void usage(const char* arg0, const char* extraOptions) {
 	puts("  -p, --patch FILE           Apply a specified patch file when running");
 	puts("  -s, --frameskip N          Skip every N frames");
 	puts("  --version                  Print version and exit");
+
+	puts("\nHardware extensions options:");
+	puts("  --hw-extensions            Enable hardware extensions");
+	puts("  --no-hw-extensions         Disable hardware extensions");
+	puts("  --hwex-all                 Enable all hardware extensions");
+	puts("  --hwex-none                Disable all hardware extensions");
+	puts("  --hwex-more-ram            Enable hardware extension \"More RAM\"");
+	puts("  --no-hwex-more-ram         Disable hardware extension \"More RAM\"");
+
 	if (extraOptions) {
 		puts(extraOptions);
 	}

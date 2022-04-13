@@ -18,6 +18,8 @@
 #include <mgba/gb/interface.h>
 #endif
 
+#include <mgba/internal/gba/extra/extensions.h>
+
 #include "ui_SettingsView.h"
 
 namespace QGBA {
@@ -45,6 +47,7 @@ public:
 		CONTROLLERS,
 		SHORTCUTS,
 		SHADERS,
+		HARDWARE_EXTENSIONS,
 	};
 
 	SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, LogController* logController, QWidget* parent = nullptr);
@@ -82,6 +85,10 @@ private:
 	ShaderSelector* m_shader = nullptr;
 	LogConfigModel m_logModel;
 	QTimer m_checkTimer;
+
+	unsigned int m_enabledExtensionsCounter;
+	QCheckBox* m_gbaExtCheckboxes[GBAEX_EXTENSIONS_COUNT];
+	unsigned int m_gbaExtCheckboxesCounter;
 
 #ifdef M_CORE_GB
 	uint32_t m_gbColors[12]{};

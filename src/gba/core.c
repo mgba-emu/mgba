@@ -303,6 +303,13 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 #endif
 	mCoreConfigCopyValue(&core->config, config, "hwaccelVideo");
 	mCoreConfigCopyValue(&core->config, config, "videoScale");
+
+	if (mCoreConfigGetIntValue(config, "gba.extensions", &fakeBool)) {
+		gba->extensions.userGlobalEnabled = fakeBool;
+	}
+	if (mCoreConfigGetIntValue(config, "gba.ext.extraRam", &fakeBool)) {
+		gba->extensions.userExtensionsEnabled[GBAEX_ID_EXTRA_RAM] = fakeBool;
+	}
 }
 
 static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, const struct mCoreConfig* config) {
@@ -391,6 +398,19 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 		if (renderer) {
 			GBAVideoAssociateRenderer(&gba->video, renderer);
 		}
+	}
+
+	if (strcmp("gba.extensions", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "gba.extensions", &fakeBool)) {
+			gba->extensions.userGlobalEnabled = fakeBool;
+		}
+		return;
+	}
+	if (strcmp("gba.ext.extraRam", option) == 0) {
+		if (mCoreConfigGetIntValue(config, "gba.ext.extraRam", &fakeBool)) {
+			gba->extensions.userExtensionsEnabled[GBAEX_ID_EXTRA_RAM] = fakeBool;
+		}
+		return;
 	}
 }
 
@@ -1166,6 +1186,25 @@ static void _GBACoreEndVideoLog(struct mCore* core) {
 }
 #endif
 
+static size_t _GBAExtDataSerialize(struct mCore* core, enum mStateExtdataTag tag, void** sram) {
+	size_t size;
+	if (tag == EXTDATA_GBA_EXTENSIONS) {
+		return GBAExtensionsSerialize(core->board, sram);
+	} else {
+		size = 0;
+		*sram = NULL;
+	}
+	 
+	return size;
+}
+
+static bool _GBAExtDataDeserialize(struct mCore* core, enum mStateExtdataTag tag, const void* sram, size_t size) {
+	if (tag == EXTDATA_GBA_EXTENSIONS) {
+		return GBAExtensionsDeserialize(core->board, sram, size);
+	}
+	return false;
+}
+
 struct mCore* GBACoreCreate(void) {
 	struct GBACore* gbacore = malloc(sizeof(*gbacore));
 	struct mCore* core = &gbacore->d;
@@ -1250,6 +1289,8 @@ struct mCore* GBACoreCreate(void) {
 	core->startVideoLog = _GBACoreStartVideoLog;
 	core->endVideoLog = _GBACoreEndVideoLog;
 #endif
+	core->extDataSerialize = _GBAExtDataSerialize;
+	core->extDataDeserialize = _GBAExtDataDeserialize;
 	return core;
 }
 

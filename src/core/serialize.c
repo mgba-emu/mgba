@@ -431,6 +431,18 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 			mStateExtdataPut(&extdata, EXTDATA_RTC, &item);
 		}
 	}
+	if ((true || flags & SAVESTATE_GBA_EXTENSIONS) && core->extDataSerialize) {
+		void* sram = NULL;
+		size_t size = core->extDataSerialize(core, EXTDATA_GBA_EXTENSIONS, &sram);
+		if (size) {
+			struct mStateExtdataItem item = {
+				.size = size,
+				.data = sram,
+				.clean = free
+			};
+			mStateExtdataPut(&extdata, EXTDATA_GBA_EXTENSIONS, &item);
+		}
+	}
 #ifdef USE_PNG
 	if (!(flags & SAVESTATE_SCREENSHOT)) {
 #else
@@ -546,6 +558,10 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 		if (core->rtc.d.deserialize) {
 			core->rtc.d.deserialize(&core->rtc.d, &item);
 		}
+	}
+	if ((true || flags & SAVESTATE_GBA_EXTENSIONS) && core->extDataDeserialize && mStateExtdataGet(&extdata, EXTDATA_GBA_EXTENSIONS, &item)) {
+		mLOG(SAVESTATE, INFO, "Loading GBA extensions");
+		core->extDataDeserialize(core, EXTDATA_GBA_EXTENSIONS, item.data, item.size);
 	}
 	mStateExtdataDeinit(&extdata);
 	return success;
