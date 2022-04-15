@@ -96,6 +96,16 @@
             </property>
            </widget>
           </item>
+		  <item>
+           <widget class="QCheckBox" name="hwFlashROM">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>FlashROM</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

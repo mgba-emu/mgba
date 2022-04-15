@@ -43,6 +43,7 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->type = SAVEDATA_AUTODETECT;
 	savedata->data = 0;
 	savedata->command = EEPROM_COMMAND_NULL;
+	savedata->sramBanking = 0;
 	savedata->flashState = FLASH_STATE_RAW;
 	savedata->vf = vf;
 	if (savedata->realVf && savedata->realVf != vf) {
@@ -600,23 +601,22 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 }
 
 void GBASavedataSetSRAMBank(struct GBASavedata* savedata, uint16_t value) {
-	switch (value) {
-		case 0x8000:
-		    // Enter bank switching mode for GBATA
-			break;
-	    // GBATA bank #1 
-		case 0x0800:
-		// Pokemon bootleg bank #1
-		case 0x0001:
-		   savedata->currentBank = &savedata->data[SIZE_CART_SRAM512];
-		   break;
-		case 0x0000:
-		   savedata->currentBank = savedata->data;
-		   break;
-		default:
-		   mLOG(GBA_SAVE, GAME_ERROR, "Unrecognised SRAM bank: %08X", value);
-		   break;
+	if (value == 0x8000) {
+		savedata->sramBanking = 1;
+		return;
+	} else if (savedata->sramBanking == 1) {
+		if (value == 0x0800 || value == 0x0001) {
+		    savedata->currentBank = &savedata->data[SIZE_CART_SRAM512];
+			savedata->sramBanking = 0;
+			return;
+		} else if (value == 0x0000) {
+			savedata->currentBank = savedata->data;
+			savedata->sramBanking = 0;
+			return;
+		}
 	}
+	savedata->sramBanking = 0;
+	mLOG(GBA_SAVE, GAME_ERROR, "Unrecognised SRAM bank: %08X", value);
 }
 
 void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {

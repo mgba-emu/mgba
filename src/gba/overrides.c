@@ -375,6 +375,10 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 		} else {
 			gba->memory.hw.devices &= ~HW_GB_PLAYER_DETECTION;
 		}
+		
+		if (override->hardware & HW_FLASHROM) {
+			gba->memory.hw.devices |= HW_FLASHROM;
+		}
 	}
 
 	if (override->idleLoop != IDLE_LOOP_NONE) {

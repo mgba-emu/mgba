@@ -90,6 +90,8 @@ struct GBASavedata {
 
 	int dirty;
 	uint32_t dirtAge;
+	
+	int sramBanking;
 
 	enum FlashStateMachine flashState;
 };

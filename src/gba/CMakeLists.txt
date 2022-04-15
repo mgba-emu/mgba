@@ -4,6 +4,7 @@ set(SOURCE_FILES
 	audio.c
 	bios.c
 	cart/ereader.c
+	cart/flashrom.c
 	cart/gpio.c
 	cart/matrix.c
 	cart/vfame.c

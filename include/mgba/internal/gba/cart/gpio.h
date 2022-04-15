@@ -28,7 +28,8 @@ enum GBAHardwareDevice {
 	HW_TILT = 16,
 	HW_GB_PLAYER = 32,
 	HW_GB_PLAYER_DETECTION = 64,
-	HW_EREADER = 128
+	HW_EREADER = 128,
+	HW_FLASHROM = 256
 };
 
 enum GPIORegister {
@@ -104,6 +105,7 @@ void GBAHardwareInitGyro(struct GBACartridgeHardware* gpio);
 void GBAHardwareInitRumble(struct GBACartridgeHardware* gpio);
 void GBAHardwareInitLight(struct GBACartridgeHardware* gpio);
 void GBAHardwareInitTilt(struct GBACartridgeHardware* gpio);
+void GBAHardwareInitFlashROM(struct GBACartridgeHardware* gpio);
 
 void GBAHardwareGPIOWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint16_t value);
 void GBAHardwareTiltWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint8_t value);

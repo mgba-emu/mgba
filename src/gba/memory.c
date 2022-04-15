@@ -576,6 +576,11 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case REGION_CART1_EX:
 	case REGION_CART2:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
+	    if (memory->hw.devices & HW_FLASHROM) {
+			if (GBAFlashROMRead(memory, address, &value)) {
+			    break;
+			}
+		}
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
 		} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) {
@@ -945,6 +950,14 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		}
 		// Fall through
 	case REGION_CART0_EX:
+		if (address == 0x09000000 && memory->savedata.type == SAVEDATA_SRAM1M) {
+			GBASavedataSetSRAMBank(&memory->savedata, value);
+		}
+		if (memory->hw.devices & HW_FLASHROM) {
+			if (GBAFlashROMWrite(memory, address, value)) {
+				break;
+			}
+		}
 		if ((address & 0x00FFFFFF) >= AGB_PRINT_BASE) {
 			uint32_t agbPrintAddr = address & 0x00FFFFFF;
 			if (agbPrintAddr == AGB_PRINT_PROTECT) {
@@ -978,10 +991,6 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 				_agbPrintStore(gba, address, value);
 				break;
 			}
-		}
-		if (address == 0x09000000 && memory->savedata.type == SAVEDATA_SRAM1M) {
-			GBASavedataSetSRAMBank(&memory->savedata, value);
-			break;
 		}
 		mLOG(GBA_MEM, GAME_ERROR, "Bad cartridge Store16: 0x%08X", address);
 		break;

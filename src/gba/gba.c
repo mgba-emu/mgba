@@ -415,12 +415,13 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 			gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
 #endif
 		} else {
-			gba->memory.rom = vf->map(vf, SIZE_CART0, MAP_READ);
+			gba->memory.rom = vf->map(vf, SIZE_CART0, MAP_READ | MAP_WRITE);
 			gba->memory.romSize = SIZE_CART0;
 		}
 		gba->pristineRomSize = SIZE_CART0;
 	} else {
-		gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ);
+		gba->isPristine = true;
+		gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ | MAP_WRITE);]
 		gba->memory.romSize = gba->pristineRomSize;
 	}
 	if (!gba->memory.rom) {
@@ -872,6 +873,10 @@ void GBAFrameStarted(struct GBA* gba) {
 void GBAFrameEnded(struct GBA* gba) {
 	int wasDirty = gba->memory.savedata.dirty;
 	GBASavedataClean(&gba->memory.savedata, gba->video.frameCounter);
+	if (gba->memory.hw.devices & HW_FLASHROM) {
+		wasDirty |= gba->memory.flashrom.dirty;
+		GBAFlashROMClean(gba, gba->video.frameCounter);
+	}
 
 	if (gba->cpu->components && gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
 		struct mCheatDevice* device = (struct mCheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];
