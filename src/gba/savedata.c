@@ -383,7 +383,7 @@ void GBASavedataInitSRAM1M(struct GBASavedata* savedata) {
 		savedata->data = anonymousMemoryMap(SIZE_CART_SRAM1M);
 	} else {
 		end = savedata->vf->size(savedata->vf);
-		if (end < SIZE_CART_SRAM512) {
+		if (end < SIZE_CART_SRAM1M) {
 			savedata->vf->truncate(savedata->vf, SIZE_CART_SRAM1M);
 		}
 		savedata->data = savedata->vf->map(savedata->vf, SIZE_CART_SRAM1M, savedata->mapMode);
@@ -605,8 +605,10 @@ void GBASavedataSetSRAMBank(struct GBASavedata* savedata, uint16_t value) {
 		savedata->sramBanking = 1;
 		return;
 	} else if (value == 0x0001 || (savedata->sramBanking == 1 && value == 0x0800)) {
+		mLOG(GBA_SAVE, INFO, "SRAM bank set to 1");
 		savedata->currentBank = &savedata->data[SIZE_CART_SRAM512];
 	} else if (value == 0x0000) {
+		mLOG(GBA_SAVE, INFO, "SRAM bank set to 0");
 		savedata->currentBank = savedata->data;
 	} else {
 		mLOG(GBA_SAVE, GAME_ERROR, "Unrecognised SRAM banking register: %08X", value);
