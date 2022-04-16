@@ -6,6 +6,7 @@
 
 #include <mgba-util/vfs.h>
 
+static bool _programWord(struct GBAMemory* memory, uint32_t address, uint16_t value);
 static bool _eraseBlock(struct GBAMemory* memory, uint32_t address);
 static void _eraseChip(struct GBAMemory* memory);
 
@@ -90,13 +91,10 @@ bool GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 			return false;
 		}
 	case FLASHROM_PROGRAM_READY:
-    uint32_t offset = address & 0x01FFFFFF;
-		if (offset >= memory->romSize) {
-			mLOG(GBA_MEM, GAME_ERROR, "FlashROM program out of bounds: 0x%08X", offset);
+		if (!_programWord(memory, address, value)) {
 			return false;
 		}
 	
-		STORE_16(value, offset, memory->rom);
 		flashrom->dirty |= mSAVEDATA_DIRT_NEW;
 		
 		flashrom->state = FLASHROM_IDLE;
@@ -147,6 +145,19 @@ void GBAFlashROMClean(struct GBA* gba, uint32_t frameCount) {
 			mLOG(GBA_SAVE, INFO, "FlashROM failed to sync!");
 		}
 	}
+}
+
+static bool _programWord(struct GBAMemory* memory, uint32_t address, uint16_t value) {
+    uint32_t offset = address & 0x01FFFFFF;
+	if (offset >= memory->romSize) {
+		mLOG(GBA_MEM, GAME_ERROR, "FlashROM program out of bounds: 0x%08X", offset);
+		return false;
+	}
+	
+	uint16_t word;
+	LOAD_16(word, offset, memory->rom);
+	STORE_16(word & value, offset, memory->rom);
+	return true;
 }
 
 static bool _eraseBlock(struct GBAMemory* memory, uint32_t address) {
