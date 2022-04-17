@@ -24,6 +24,9 @@ bool GBAFlashROMRead(struct GBAMemory* memory, uint32_t address, uint32_t* value
 	case FLASHROM_IDLE:
 	case FLASHROM_CMD_1:
 	case FLASHROM_CMD_READY:
+	case FLASHROM_UNLOCKED:
+	case FLASHROM_UNLOCKED_READY:
+	case FLASHROM_LOCK_READY:
 		return false;
 	case FLASHROM_AUTO_SELECT:
 		if ((address & 0x06) == 0) {
@@ -48,9 +51,21 @@ bool GBAFlashROMRead(struct GBAMemory* memory, uint32_t address, uint32_t* value
 bool GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value) {
 	struct GBAFlashROM* flashrom = &memory->flashrom;
 	
-	if (value == 0xF0 && flashrom->state != FLASHROM_PROGRAM_READY) {
-		flashrom->state = FLASHROM_IDLE;
-		return true;
+	if (value == 0xF0) {
+		switch (flashrom->state) {
+		case FLASHROM_IDLE:
+		case FLASHROM_CMD_1:
+		case FLASHROM_CMD_READY:
+		case FLASHROM_AUTO_SELECT:
+		case FLASHROM_PROGRAM_ERR:
+		case FLASHROM_ERASE_1:
+		case FLASHROM_ERASE_2:
+		FLASHROM_ERASE_ERR:
+			flashrom->state = FLASHROM_IDLE;
+			return true;
+		default:
+			break;
+		}
 	}
 	
 	switch (flashrom->state) {
@@ -74,6 +89,9 @@ bool GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 			return false;
 		}
 		switch (value) {
+		case 0x20:
+			flashrom->state = FLASHROM_UNLOCKED;
+			return true;
 		case 0x80:
 			flashrom->state = FLASHROM_ERASE_1;
 			return true;
@@ -125,6 +143,35 @@ bool GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 			return true;
 		default:
 			flashrom->state = FLASHROM_IDLE;
+			return false;
+		}
+	case FLASHROM_UNLOCKED:
+		switch (value) {
+			case 0x90:
+				flashrom->state = FLASHROM_LOCK_READY;
+				return true;
+			case 0xA0:
+				flashrom->state = FLASHROM_UNLOCKED_READY;
+				return true;
+			default:
+				return false;
+		}
+	case FLASHROM_UNLOCKED_READY:
+		if (!_programWord(memory, address, value)) {
+			flashrom->state = FLASHROM_UNLOCKED;
+			return false;
+		}
+	
+		flashrom->dirty |= mSAVEDATA_DIRT_NEW;
+		
+		flashrom->state = FLASHROM_UNLOCKED;
+		return true;
+	case FLASHROM_LOCK_READY:
+		if (value == 0x00) {
+			flashrom->state = FLASHROM_IDLE;
+			return true;
+		} else {
+			flashrom->state = FLASHROM_UNLOCKED;
 			return false;
 		}
 	default:
