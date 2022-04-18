@@ -1844,7 +1844,7 @@ void GBAMemoryDeserialize(struct GBAMemory* memory, const struct GBASerializedSt
 }
 
 void _pristineCow(struct GBA* gba) {
-	if (!gba->isPristine) {
+	if (!gba->isPristine || gba->memory.hw.devices & HW_FLASHROM) {
 		return;
 	}
 #if !defined(FIXED_ROM_BUFFER) && !defined(__wii__)
