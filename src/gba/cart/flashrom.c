@@ -136,10 +136,12 @@ void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 		switch (value) {
 		case 0x10:
 			_eraseChip(memory);
+			flashrom->dirty |= mSAVEDATA_DIRT_NEW;
 			flashrom->state = FLASHROM_IDLE;
 			return;
 		case 0x30:
 			if(_eraseBlock(memory, address)) {
+				flashrom->dirty |= mSAVEDATA_DIRT_NEW;
 				flashrom->state = FLASHROM_IDLE;
 			} else {
 				flashrom->state = FLASHROM_ERASE_ERR;
