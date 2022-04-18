@@ -18,6 +18,7 @@ enum FlashROMStateMachine {
 	FLASHROM_ERASE_ERR,
 	FLASHROM_UNLOCKED,
 	FLASHROM_UNLOCKED_READY,
+	FLASHROM_UNLOCKED_ERR,
 	FLASHROM_LOCK_READY
 };
 
@@ -35,7 +36,7 @@ void GBAFlashROMInit(struct GBAFlashROM* flashrom);
 struct GBAMemory;
 
 bool GBAFlashROMRead(struct GBAMemory* memory, uint32_t address, uint32_t* value);
-bool GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value);
+void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value);
 
 struct GBA;
 

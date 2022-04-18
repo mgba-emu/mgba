@@ -48,7 +48,7 @@ bool GBAFlashROMRead(struct GBAMemory* memory, uint32_t address, uint32_t* value
 	}
 }
 
-bool GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value) {
+void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value) {
 	struct GBAFlashROM* flashrom = &memory->flashrom;
 	
 	if (value == 0xF0) {
@@ -60,9 +60,9 @@ bool GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 		case FLASHROM_PROGRAM_ERR:
 		case FLASHROM_ERASE_1:
 		case FLASHROM_ERASE_2:
-		FLASHROM_ERASE_ERR:
+		case FLASHROM_ERASE_ERR:
 			flashrom->state = FLASHROM_IDLE;
-			return true;
+			return;
 		default:
 			break;
 		}
@@ -72,111 +72,111 @@ bool GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 	case FLASHROM_IDLE:
 		if (address == 0x08000AAA && value == 0x00A9) {
 			flashrom->state = FLASHROM_CMD_1;
-			return true;
 		}
-		flashrom->state = FLASHROM_IDLE;
-		return false;
+		break;
 	case FLASHROM_CMD_1:
 		if ((address & ~1) == 0x08000554 && value == 0x0056) {
 			flashrom->state = FLASHROM_CMD_READY;
-			return true;
+		} else {
+			flashrom->state = FLASHROM_IDLE;
 		}
-		flashrom->state = FLASHROM_IDLE;
-		return false;
+		break;
 	case FLASHROM_CMD_READY:
 		if (address != 0x08000AAA) {
 			flashrom->state = FLASHROM_IDLE;
-			return false;
+			break;
 		}
 		switch (value) {
 		case 0x20:
 			flashrom->state = FLASHROM_UNLOCKED;
-			return true;
+			break;
 		case 0x80:
 			flashrom->state = FLASHROM_ERASE_1;
-			return true;
+			break;
 		case 0x90:
 			flashrom->state = FLASHROM_AUTO_SELECT;
-			return true;
+			break;
 		case 0xA0:
 			flashrom->state = FLASHROM_PROGRAM_READY;
-			return true;
+			break;
 		case 0xF0:
 			flashrom->state = FLASHROM_IDLE;
-			return true;
+			break;
 		default:
 			flashrom->state = FLASHROM_IDLE;
-			return false;
+			break;
 		}
+		break;
 	case FLASHROM_PROGRAM_READY:
-		if (!_programWord(memory, address, value)) {
-			return false;
+		if (_programWord(memory, address, value)) {
+			flashrom->dirty |= mSAVEDATA_DIRT_NEW;
+			flashrom->state = FLASHROM_IDLE;
+		} else {
+			flashrom->state = FLASHROM_PROGRAM_ERR;
 		}
-	
-		flashrom->dirty |= mSAVEDATA_DIRT_NEW;
-		
-		flashrom->state = FLASHROM_IDLE;
-		return true;
+		break;
 	case FLASHROM_ERASE_1:
 		if (address == 0x08000AAA && value == 0x00A9) {
 			flashrom->state = FLASHROM_ERASE_2;
-			return true;
+		} else {
+			flashrom->state = FLASHROM_IDLE;
 		}
-		flashrom->state = FLASHROM_IDLE;
-		return false;
+		break;
 	case FLASHROM_ERASE_2:
 		if ((address & ~1) == 0x08000554 && value == 0x0056) {
 			flashrom->state = FLASHROM_ERASE_READY;
-			return true;
+		} else {
+			flashrom->state = FLASHROM_IDLE;
 		}
-		flashrom->state = FLASHROM_IDLE;
-		return false;
+		break;
 	case FLASHROM_ERASE_READY:
 		switch (value) {
 		case 0x10:
 			_eraseChip(memory);
 			flashrom->state = FLASHROM_IDLE;
-			return true;
+			break;
 		case 0x30:
-			_eraseBlock(memory, address);
-			flashrom->state = FLASHROM_IDLE;
-			return true;
+			if(_eraseBlock(memory, address)) {
+				flashrom->state = FLASHROM_IDLE;
+			} else {
+				flashrom->state = FLASHROM_ERASE_ERR;
+			}
+			break;
 		default:
 			flashrom->state = FLASHROM_IDLE;
-			return false;
+			break;
 		}
+		break;
 	case FLASHROM_UNLOCKED:
 		switch (value) {
 			case 0x90:
 				flashrom->state = FLASHROM_LOCK_READY;
-				return true;
+				break;
 			case 0xA0:
 				flashrom->state = FLASHROM_UNLOCKED_READY;
-				return true;
+				break;
 			default:
-				return false;
+				break;
 		}
+		break;
 	case FLASHROM_UNLOCKED_READY:
-		if (!_programWord(memory, address, value)) {
+		if (_programWord(memory, address, value)) {
+			flashrom->dirty |= mSAVEDATA_DIRT_NEW;
 			flashrom->state = FLASHROM_UNLOCKED;
-			return false;
+		} else {
+			flashrom->state = FLASHROM_UNLOCKED_ERR;
 		}
-	
-		flashrom->dirty |= mSAVEDATA_DIRT_NEW;
-		
-		flashrom->state = FLASHROM_UNLOCKED;
-		return true;
+		break;
 	case FLASHROM_LOCK_READY:
 		if (value == 0x00) {
 			flashrom->state = FLASHROM_IDLE;
-			return true;
 		} else {
 			flashrom->state = FLASHROM_UNLOCKED;
-			return false;
 		}
+		break;
 	default:
-		flashrom->state = FLASHROM_IDLE;
-		return false;
+		mLOG(GBA_MEM, GAME_ERROR, "FlashROM state machine error");
+		break;
 	}
 }
 	
