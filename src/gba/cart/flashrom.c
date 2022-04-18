@@ -48,7 +48,7 @@ bool GBAFlashROMRead(struct GBAMemory* memory, uint32_t address, uint32_t* value
 	}
 }
 
-void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value) {
+bool GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value) {
 	struct GBAFlashROM* flashrom = &memory->flashrom;
 	
 	if (value == 0xF0) {
@@ -62,7 +62,7 @@ void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 		case FLASHROM_ERASE_2:
 		case FLASHROM_ERASE_ERR:
 			flashrom->state = FLASHROM_IDLE;
-			return;
+			return true;
 		default:
 			break;
 		}
@@ -72,13 +72,13 @@ void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 	case FLASHROM_IDLE:
 		if (address == 0x08000AAA && value == 0x00A9) {
 			flashrom->state = FLASHROM_CMD_1;
-			return;
+			return true;
 		}
 		break;
 	case FLASHROM_CMD_1:
 		if ((address & ~1) == 0x08000554 && value == 0x0056) {
 			flashrom->state = FLASHROM_CMD_READY;
-			return;
+			return true;
 		}
 		flashrom->state = FLASHROM_IDLE;
 		break;
@@ -90,19 +90,19 @@ void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 		switch (value) {
 		case 0x20:
 			flashrom->state = FLASHROM_UNLOCKED;
-			return;
+			return true;
 		case 0x80:
 			flashrom->state = FLASHROM_ERASE_1;
-			return;
+			return true;
 		case 0x90:
 			flashrom->state = FLASHROM_AUTO_SELECT;
-			return;
+			return true;
 		case 0xA0:
 			flashrom->state = FLASHROM_PROGRAM_READY;
-			return;
+			return true;
 		case 0xF0:
 			flashrom->state = FLASHROM_IDLE;
-			return;
+			return true;
 		default:
 			flashrom->state = FLASHROM_IDLE;
 			break;
@@ -112,23 +112,23 @@ void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 		if (_programWord(memory, address, value)) {
 			flashrom->dirty |= mSAVEDATA_DIRT_NEW;
 			flashrom->state = FLASHROM_IDLE;
-			return;
+			return true;
 		} else {
 			flashrom->state = FLASHROM_PROGRAM_ERR;
-			return;
+			return true;
 		}
 		break;
 	case FLASHROM_ERASE_1:
 		if (address == 0x08000AAA && value == 0x00A9) {
 			flashrom->state = FLASHROM_ERASE_2;
-			return;
+			return true;
 		} 
 		flashrom->state = FLASHROM_IDLE;
 		break;
 	case FLASHROM_ERASE_2:
 		if ((address & ~1) == 0x08000554 && value == 0x0056) {
 			flashrom->state = FLASHROM_ERASE_READY;
-			return;
+			return true;
 		}
 		flashrom->state = FLASHROM_IDLE;
 		break;
@@ -138,7 +138,7 @@ void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 			_eraseChip(memory);
 			flashrom->dirty |= mSAVEDATA_DIRT_NEW;
 			flashrom->state = FLASHROM_IDLE;
-			return;
+			return true;
 		case 0x30:
 			if(_eraseBlock(memory, address)) {
 				flashrom->dirty |= mSAVEDATA_DIRT_NEW;
@@ -146,7 +146,7 @@ void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 			} else {
 				flashrom->state = FLASHROM_ERASE_ERR;
 			}
-			return;
+			return true;
 		default:
 			flashrom->state = FLASHROM_IDLE;
 			break;
@@ -156,10 +156,10 @@ void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 		switch (value) {
 			case 0x90:
 				flashrom->state = FLASHROM_LOCK_READY;
-				return;
+				return true;
 			case 0xA0:
 				flashrom->state = FLASHROM_UNLOCKED_READY;
-				return;
+				return true;
 			default:
 				break;
 		}
@@ -171,11 +171,11 @@ void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 		} else {
 			flashrom->state = FLASHROM_UNLOCKED_ERR;
 		}
-		return;
+		return true;
 	case FLASHROM_LOCK_READY:
 		if (value == 0x00) {
 			flashrom->state = FLASHROM_IDLE;
-			return;
+			return true;
 		} else {
 			flashrom->state = FLASHROM_UNLOCKED;
 		}
@@ -184,7 +184,7 @@ void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value
 		mLOG(GBA_MEM, GAME_ERROR, "Write during unhandled FlashROM state");
 		break;
 	}
-	mLOG(GBA_MEM, GAME_ERROR, "Unrecognised FlashROM command: 0x%04X to 0x%08X", value, address);
+	return false;
 }
 	
 void GBAFlashROMClean(struct GBA* gba, uint32_t frameCount) {

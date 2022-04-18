@@ -36,7 +36,7 @@ void GBAFlashROMInit(struct GBAFlashROM* flashrom);
 struct GBAMemory;
 
 bool GBAFlashROMRead(struct GBAMemory* memory, uint32_t address, uint32_t* value);
-void GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value);
+bool GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value);
 
 struct GBA;
 

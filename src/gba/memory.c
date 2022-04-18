@@ -989,8 +989,9 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 			break;
 		}
 		if (memory->hw.devices & HW_FLASHROM) {
-			GBAFlashROMWrite(memory, address, value);
-			break;
+			if (GBAFlashROMWrite(memory, address, value)) {
+				break;
+			}
 		}
 		mLOG(GBA_MEM, GAME_ERROR, "Bad cartridge Store16: 0x%08X", address);
 		break;
