@@ -10,12 +10,16 @@ static bool _programWord(struct GBAMemory* memory, uint32_t address, uint16_t va
 static bool _eraseBlock(struct GBAMemory* memory, uint32_t address);
 static void _eraseChip(struct GBAMemory* memory);
 
-void GBAFlashROMInit(struct GBAFlashROM* flashrom) {
+void GBAFlashROMInit(struct GBAFlashROM* flashrom, enum FlashROMType type) {
+	flashrom->type = type;
 	flashrom->state = FLASHROM_IDLE;
-	flashrom->manufacturerId = 0x0001;
-	flashrom->deviceId = 0x2258;
 	flashrom->status = 0x0000;
 	flashrom->dirty = 0;
+	
+	if (type == FLASHROM_22XX) {
+		flashrom->manufacturerId = 0x0001;
+		flashrom->deviceId = 0x2258;
+	}
 }
 
 bool GBAFlashROMRead(struct GBAMemory* memory, uint32_t address, uint32_t* value) {

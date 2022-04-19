@@ -377,7 +377,7 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 		}
 	}
 	
-	gba->memory.flashrom.type = override->flashromtype;
+	GBAFlashROMInit(&gba->memory.flashrom, override->flashromtype);
 
 	if (override->idleLoop != IDLE_LOOP_NONE) {
 		gba->idleLoop = override->idleLoop;

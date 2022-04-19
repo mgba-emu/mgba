@@ -158,7 +158,7 @@ void OverrideView::updateOverrides() {
 		gba->override.idleLoop = IDLE_LOOP_NONE;
 		gba->override.mirroring = false;
 		gba->override.vbaBugCompat = false;
-		gba->override.flashromtype = static_cast<FlashROMType>(m_ui.savetype->currentIndex() - 1);
+		gba->override.flashromtype = static_cast<FlashROMType>(m_ui.flashrom->currentIndex());
 		gba->vbaBugCompatSet = false;
 
 		if (gba->override.savetype != SAVEDATA_AUTODETECT) {

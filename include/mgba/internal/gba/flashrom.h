@@ -37,7 +37,7 @@ struct GBAFlashROM {
 	uint32_t dirtAge;
 };
 
-void GBAFlashROMInit(struct GBAFlashROM* flashrom);
+void GBAFlashROMInit(struct GBAFlashROM* flashrom, enum FlashROMType type);
 
 struct GBAMemory;
 
