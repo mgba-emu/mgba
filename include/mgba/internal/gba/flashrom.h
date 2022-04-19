@@ -7,24 +7,28 @@ CXX_GUARD_START
 
 enum FlashROMType {
 	FLASHROM_NONE,
-	FLASHROM_22XX
+	FLASHROM_22XX,
+	FLASHROM_INTEL
 };
 
 enum FlashROMStateMachine {
 	FLASHROM_IDLE,
-	FLASHROM_CMD_1,
-	FLASHROM_CMD_READY,
-	FLASHROM_AUTO_SELECT,
-	FLASHROM_PROGRAM_READY,
-	FLASHROM_PROGRAM_ERR,
-	FLASHROM_ERASE_1,
-	FLASHROM_ERASE_2,
-	FLASHROM_ERASE_READY,
-	FLASHROM_ERASE_ERR,
-	FLASHROM_UNLOCKED,
-	FLASHROM_UNLOCKED_READY,
-	FLASHROM_UNLOCKED_ERR,
-	FLASHROM_LOCK_READY
+	
+	FLASHROM_22XX_CMD_1,
+	FLASHROM_22XX_CMD_READY,
+	FLASHROM_22XX_AUTO_SELECT,
+	FLASHROM_22XX_PROGRAM_READY,
+	FLASHROM_22XX_PROGRAM_ERR,
+	FLASHROM_22XX_ERASE_1,
+	FLASHROM_22XX_ERASE_2,
+	FLASHROM_22XX_ERASE_READY,
+	FLASHROM_22XX_ERASE_ERR,
+	FLASHROM_22XX_UNLOCKED,
+	FLASHROM_22XX_UNLOCKED_READY,
+	FLASHROM_22XX_UNLOCKED_ERR,
+	FLASHROM_22XX_LOCK_READY,
+	
+	FLASHROM_INTEL_IDENTIFY
 };
 
 struct GBAFlashROM {
@@ -41,8 +45,11 @@ void GBAFlashROMInit(struct GBAFlashROM* flashrom, enum FlashROMType type);
 
 struct GBAMemory;
 
-bool GBAFlashROMRead(struct GBAMemory* memory, uint32_t address, uint32_t* value);
-bool GBAFlashROMWrite(struct GBAMemory* memory, uint32_t address, uint16_t value);
+bool GBAFlashROMRead22xx(struct GBAMemory* memory, uint32_t address, uint32_t* value);
+bool GBAFlashROMWrite22xx(struct GBAMemory* memory, uint32_t address, uint16_t value);
+
+bool GBAFlashROMReadIntel(struct GBAMemory* memory, uint32_t address, uint32_t* value);
+bool GBAFlashROMWriteIntel(struct GBAMemory* memory, uint32_t address, uint16_t value);
 
 struct GBA;
 
