@@ -701,6 +701,13 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case REGION_CART2:
 	case REGION_CART2_EX:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
+		if (memory->flashrom.type == FLASHROM_22XX && GBAFlashROMRead22xx(memory, address, &value)) {
+			value &= 0x00FF;
+			break;
+		} else if (memory->flashrom.type == FLASHROM_INTEL && GBAFlashROMReadIntel(memory, address, &value)) {
+			value &= 0x00FF;
+			break;
+		}
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			value = ((uint8_t*) memory->rom)[address & (SIZE_CART0 - 1)];
 		} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) {

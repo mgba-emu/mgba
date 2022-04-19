@@ -20,7 +20,7 @@ void GBAFlashROMInit(struct GBAFlashROM* flashrom, enum FlashROMType type) {
 		flashrom->manufacturerId = 0x0001;
 		flashrom->deviceId = 0x2258;
 	} else if (type == FLASHROM_INTEL) {
-		flashrom->manufacturerId = 0x0001;
+		flashrom->manufacturerId = 0x008a;
 		flashrom->deviceId = 0x8815;
 	}
 }
@@ -198,19 +198,25 @@ bool GBAFlashROMReadIntel(struct GBAMemory* memory, uint32_t address, uint32_t* 
 	struct GBAFlashROM* flashrom = &memory->flashrom;
 	switch (flashrom->state) {
 	case FLASHROM_IDLE:
+	case FLASHROM_INTEL_BLOCK_LOCK:
+	case FLASHROM_INTEL_ERASE:
+	case FLASHROM_INTEL_PROGRAM:
 			return false;
 	case FLASHROM_INTEL_IDENTIFY:
 		switch (address & 0x0FFFFF) {
 		case 0x00000:
 			*value = flashrom->manufacturerId;
 			return true;
-		case 0x00001:
+		case 0x00002:
 			*value = flashrom->deviceId;
 			return true;
 		default:
 			mLOG(GBA_MEM, GAME_ERROR, "Unknown FlashROM register: 0x%08X", address);
 			return false;
 		}
+	case FLASHROM_INTEL_STATUS:
+		*value = flashrom->status;
+		return true;
 	default:
 		mLOG(GBA_MEM, GAME_ERROR, "Unhandled FlashROM read: 0x%08X", address);
 		return false;
@@ -222,9 +228,23 @@ bool GBAFlashROMWriteIntel(struct GBAMemory* memory, uint32_t address, uint16_t 
 	switch (flashrom->state) {
 	case FLASHROM_IDLE:
 	case FLASHROM_INTEL_IDENTIFY:
+	case FLASHROM_INTEL_STATUS:
 		switch (value) {
+		case 0x10:
+		case 0x40:
+			flashrom->state = FLASHROM_INTEL_PROGRAM;
+			return true;
+		case 0x20:
+			flashrom->state = FLASHROM_INTEL_ERASE;
+			return true;
 		case 0x50:
-			// TODO: clear status
+			// clear status
+			return true;
+		case 0x60:
+			flashrom->state = FLASHROM_INTEL_BLOCK_LOCK;
+			return true;
+		case 0x70:
+			flashrom->state = FLASHROM_INTEL_STATUS;
 			return true;
 		case 0x90:
 			flashrom->state = FLASHROM_INTEL_IDENTIFY;
@@ -235,6 +255,37 @@ bool GBAFlashROMWriteIntel(struct GBAMemory* memory, uint32_t address, uint16_t 
 		default:
 			break;
 		}
+		break;
+	case FLASHROM_INTEL_BLOCK_LOCK:
+		switch (value) {
+		case 0xD0:
+			// Clear block lock bits
+			flashrom->state = FLASHROM_IDLE;
+			return true;
+		default:
+			break;
+		}
+		flashrom->state = FLASHROM_IDLE;
+		break;
+	case FLASHROM_INTEL_ERASE:
+		switch (value) {
+		case 0xD0:
+			_eraseBlock(memory, address);
+			flashrom->state = FLASHROM_INTEL_STATUS;
+			flashrom->status = 0x80;
+			return true;
+		default:
+			break;
+		}
+		flashrom->state = FLASHROM_IDLE;
+		break;
+	case FLASHROM_INTEL_PROGRAM:
+		_programWord(memory, address, value);
+		 flashrom->state = FLASHROM_INTEL_STATUS;
+		 flashrom->status = 0x80;
+		 return true;
+	default:
+		mLOG(GBA_MEM, GAME_ERROR, "Write during unhandled FlashROM state");
 		break;
 	}
 		
