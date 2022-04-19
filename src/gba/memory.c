@@ -576,7 +576,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case REGION_CART1_EX:
 	case REGION_CART2:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
-	    if (memory->hw.devices & HW_FLASHROM) {
+	    if (memory->flashrom.type != FLASHROM_NONE) {
 			if (GBAFlashROMRead(memory, address, &value)) {
 			    break;
 			}
@@ -988,7 +988,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 			GBASavedataSetSRAMBank(&memory->savedata, value);
 			break;
 		}
-		if (memory->hw.devices & HW_FLASHROM) {
+		if (memory->flashrom.type != FLASHROM_NONE) {
 			if (GBAFlashROMWrite(memory, address, value)) {
 				break;
 			}
@@ -1845,7 +1845,7 @@ void GBAMemoryDeserialize(struct GBAMemory* memory, const struct GBASerializedSt
 }
 
 void _pristineCow(struct GBA* gba) {
-	if (!gba->isPristine || gba->memory.hw.devices & HW_FLASHROM) {
+	if (!gba->isPristine || gba->memory.flashrom.type != FLASHROM_NONE) {
 		return;
 	}
 #if !defined(FIXED_ROM_BUFFER) && !defined(__wii__)

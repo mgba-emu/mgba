@@ -4,7 +4,6 @@ set(SOURCE_FILES
 	audio.c
 	bios.c
 	cart/ereader.c
-	cart/flashrom.c
 	cart/gpio.c
 	cart/matrix.c
 	cart/vfame.c
@@ -14,6 +13,7 @@ set(SOURCE_FILES
 	cheats/parv3.c
 	core.c
 	dma.c
+	flashrom.c
 	gba.c
 	hle-bios.c
 	input.c

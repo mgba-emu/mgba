@@ -5,6 +5,11 @@
 
 CXX_GUARD_START
 
+enum FlashROMType {
+	FLASHROM_NONE,
+	FLASHROM_22XX
+};
+
 enum FlashROMStateMachine {
 	FLASHROM_IDLE,
 	FLASHROM_CMD_1,
@@ -23,6 +28,7 @@ enum FlashROMStateMachine {
 };
 
 struct GBAFlashROM {
+	enum FlashROMType type;
 	enum FlashROMStateMachine state;
 	uint16_t manufacturerId;
 	uint16_t deviceId;

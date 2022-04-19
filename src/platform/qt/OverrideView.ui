@@ -96,16 +96,6 @@
             </property>
            </widget>
           </item>
-		  <item>
-           <widget class="QCheckBox" name="hwFlashROM">
-            <property name="enabled">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string>FlashROM</string>
-            </property>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
@@ -219,6 +209,34 @@
             </property>
            </widget>
           </item>
+		  <item>
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+	   <item row="3" column="0">
+             <widget class="QLabel">
+              <property name="text">
+               <string>FlashROM (bootlegs)</string>
+              </property>
+             </widget>
+            </item>
+	   <item row="3" column="1">
+             <widget class="QComboBox" name="flashrom">
+              <item>
+               <property name="text">
+                <string>None</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>22xx</string>
+               </property>
+              </item>
+             </widget>
+            </item>
          </layout>
         </widget>
        </item>

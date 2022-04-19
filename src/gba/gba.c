@@ -873,7 +873,7 @@ void GBAFrameStarted(struct GBA* gba) {
 void GBAFrameEnded(struct GBA* gba) {
 	int wasDirty = gba->memory.savedata.dirty;
 	GBASavedataClean(&gba->memory.savedata, gba->video.frameCounter);
-	if (gba->memory.hw.devices & HW_FLASHROM) {
+	if (gba->memory.flashrom.type != FLASHROM_NONE) {
 		wasDirty |= gba->memory.flashrom.dirty;
 		GBAFlashROMClean(gba, gba->video.frameCounter);
 	}

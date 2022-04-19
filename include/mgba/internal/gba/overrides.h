@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/internal/gba/savedata.h>
+#include <mgba/internal/gba/flashrom.h>
 
 #define IDLE_LOOP_NONE 0xFFFFFFFF
 
@@ -21,6 +22,7 @@ struct GBACartridgeOverride {
 	uint32_t idleLoop;
 	bool mirroring;
 	bool vbaBugCompat;
+	enum FlashROMType flashromtype;
 };
 
 struct Configuration;

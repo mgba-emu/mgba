@@ -1,6 +1,6 @@
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/defines.h>
-#include <mgba/internal/gba/cart/flashrom.h>
+#include <mgba/internal/gba/flashrom.h>
 #include <mgba/internal/gba/memory.h>
 #include <mgba/internal/gba/gba.h>
 

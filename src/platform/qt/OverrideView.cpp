@@ -36,7 +36,6 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 		m_ui.hwLight->setEnabled(!enabled);
 		m_ui.hwTilt->setEnabled(!enabled);
 		m_ui.hwRumble->setEnabled(!enabled);
-		m_ui.hwFlashROM->setEnabled(!enabled);
 	});
 
 #ifdef M_CORE_GB
@@ -159,6 +158,7 @@ void OverrideView::updateOverrides() {
 		gba->override.idleLoop = IDLE_LOOP_NONE;
 		gba->override.mirroring = false;
 		gba->override.vbaBugCompat = false;
+		gba->override.flashromtype = static_cast<FlashROMType>(m_ui.savetype->currentIndex() - 1);
 		gba->vbaBugCompatSet = false;
 
 		if (gba->override.savetype != SAVEDATA_AUTODETECT) {
@@ -181,9 +181,6 @@ void OverrideView::updateOverrides() {
 			}
 			if (m_ui.hwRumble->isChecked()) {
 				gba->override.hardware |= HW_RUMBLE;
-			}
-			if (m_ui.hwFlashROM->isChecked()) {
-			    gba->override.hardware |= HW_FLASHROM;
 			}
 		}
 		if (m_ui.hwGBPlayer->isChecked()) {

@@ -28,8 +28,7 @@ enum GBAHardwareDevice {
 	HW_TILT = 16,
 	HW_GB_PLAYER = 32,
 	HW_GB_PLAYER_DETECTION = 64,
-	HW_EREADER = 128,
-	HW_FLASHROM = 256
+	HW_EREADER = 128
 };
 
 enum GPIORegister {

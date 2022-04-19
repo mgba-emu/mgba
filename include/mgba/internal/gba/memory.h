@@ -14,9 +14,9 @@ CXX_GUARD_START
 
 #include <mgba/internal/arm/arm.h>
 #include <mgba/internal/gba/dma.h>
+#include <mgba/internal/gba/flashrom.h>
 #include <mgba/internal/gba/savedata.h>
 #include <mgba/internal/gba/cart/ereader.h>
-#include <mgba/internal/gba/cart/flashrom.h>
 #include <mgba/internal/gba/cart/gpio.h>
 #include <mgba/internal/gba/cart/matrix.h>
 #include <mgba/internal/gba/cart/vfame.h>
