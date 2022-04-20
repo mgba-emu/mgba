@@ -152,7 +152,7 @@ void _CLIDebuggerEditLineHistoryAppend(struct CLIDebuggerBackend* be, const char
 }
 
 struct CLIDebuggerBackend* CLIDebuggerEditLineBackendCreate(void) {
-	struct CLIDebuggerEditLineBackend* elbe = malloc(sizeof(*elbe));
+	struct CLIDebuggerEditLineBackend* elbe = calloc(1, sizeof(*elbe));
 	elbe->d.printf = _CLIDebuggerEditLinePrintf;
 	elbe->d.init = _CLIDebuggerEditLineInit;
 	elbe->d.deinit = _CLIDebuggerEditLineDeinit;
@@ -160,5 +160,6 @@ struct CLIDebuggerBackend* CLIDebuggerEditLineBackendCreate(void) {
 	elbe->d.lineAppend = _CLIDebuggerEditLineLineAppend;
 	elbe->d.historyLast = _CLIDebuggerEditLineHistoryLast;
 	elbe->d.historyAppend = _CLIDebuggerEditLineHistoryAppend;
+	elbe->d.interrupt = NULL;
 	return &elbe->d;
 }

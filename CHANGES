@@ -35,7 +35,6 @@ Emulation fixes:
  - GBA Video: Fix Hblank timing (fixes mgba.io/i/2131, mgba.io/i/2310)
  - GBA Video: Fix rare crash in modes 3-5
 Other fixes:
- - 3DS: Ensure writes update file modification time (fixes mgba.io/i/2444)
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - Core: Fix the runloop resuming after a game has crashed (fixes mgba.io/i/2451)
  - FFmpeg: Fix crash when encoding audio with some containers
@@ -43,11 +42,14 @@ Other fixes:
  - GB: Fix temporary saves
  - GB, GBA: Save writeback-pending masked saves on unload (fixes mgba.io/i/2396)
  - mGUI: Fix FPS counter after closing menu
+ - Qt: Fix some hangs when using the debugger console
+ - Qt: Fix crash when clicking past last tile in viewer
  - VFS: Failed file mapping should return NULL on POSIX
 Misc:
  - Core: Suspend runloop when a core crashes
  - Debugger: Save and restore CLI history
  - Debugger: GDB now works while the game is paused
+ - GB MBC: Filter out MBC errors when cartridge is yanked (fixes mgba.io/i/2488)
  - GB Video: Add default SGB border
  - GBA: Automatically skip BIOS if ROM has invalid logo
  - GBA: Refine multiboot detection (fixes mgba.io/i/2192)

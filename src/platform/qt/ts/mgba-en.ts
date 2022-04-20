@@ -825,18 +825,8 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="184"/>
-        <source>, </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../ObjView.ui" line="224"/>
         <source>Dimensions</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ObjView.ui" line="263"/>
-        <source>×</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1253,11 +1243,6 @@ Download size: %3</source>
 <context>
     <name>QGBA::AssetTile</name>
     <message>
-        <location filename="../AssetTile.cpp" line="103"/>
-        <source>%0%1%2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../AssetTile.cpp" line="140"/>
         <location filename="../AssetTile.cpp" line="141"/>
         <location filename="../AssetTile.cpp" line="142"/>
@@ -1363,7 +1348,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::DebuggerConsoleController</name>
     <message>
-        <location filename="../DebuggerConsoleController.cpp" line="160"/>
+        <location filename="../DebuggerConsoleController.cpp" line="171"/>
         <source>Could not open CLI history for writing</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1381,42 +1366,42 @@ Download size: %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="597"/>
+        <location filename="../FrameView.cpp" line="600"/>
         <source>None</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="599"/>
+        <location filename="../FrameView.cpp" line="602"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="602"/>
+        <location filename="../FrameView.cpp" line="605"/>
         <source>Window</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="605"/>
+        <location filename="../FrameView.cpp" line="608"/>
         <source>Objwin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="610"/>
+        <location filename="../FrameView.cpp" line="613"/>
         <source>Sprite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="613"/>
+        <location filename="../FrameView.cpp" line="616"/>
         <source>Backdrop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="616"/>
+        <location filename="../FrameView.cpp" line="619"/>
         <source>Frame</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="622"/>
+        <location filename="../FrameView.cpp" line="625"/>
         <source>%1 %2</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3778,12 +3763,12 @@ Download size: %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="283"/>
+        <location filename="../ObjView.cpp" line="284"/>
         <source>Export sprite</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="284"/>
+        <location filename="../ObjView.cpp" line="285"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3837,7 +3822,7 @@ Download size: %3</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="141"/>
+        <location filename="../PaletteView.cpp" line="144"/>
         <source>Failed to open output palette file: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4101,18 +4086,18 @@ Download size: %3</source>
 <context>
     <name>QGBA::TileView</name>
     <message>
-        <location filename="../TileView.cpp" line="209"/>
+        <location filename="../TileView.cpp" line="222"/>
         <source>Export tiles</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TileView.cpp" line="210"/>
-        <location filename="../TileView.cpp" line="222"/>
+        <location filename="../TileView.cpp" line="223"/>
+        <location filename="../TileView.cpp" line="235"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../TileView.cpp" line="221"/>
+        <location filename="../TileView.cpp" line="234"/>
         <source>Export tile</source>
         <translation type="unfinished"></translation>
     </message>

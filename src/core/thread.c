@@ -92,6 +92,15 @@ static void _wait(struct mCoreThreadInternal* threadContext) {
 		MutexUnlock(&threadContext->sync.audioBufferMutex);
 	}
 
+#ifdef USE_DEBUGGERS
+	if (threadContext->core && threadContext->core->debugger) {
+		struct mDebugger* debugger = threadContext->core->debugger;
+		if (debugger->interrupt) {
+			debugger->interrupt(debugger);
+		}
+	}
+#endif
+
 	MutexLock(&threadContext->stateMutex);
 	ConditionWake(&threadContext->stateCond);
 }
@@ -216,6 +225,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 
 	core->reset(core);
+	threadContext->impl->core = core;
 	_changeState(threadContext->impl, mTHREAD_RUNNING, true);
 
 	if (threadContext->resetCallback) {
@@ -519,7 +529,11 @@ void mCoreThreadContinue(struct mCoreThread* threadContext) {
 	MutexLock(&threadContext->impl->stateMutex);
 	--threadContext->impl->interruptDepth;
 	if (threadContext->impl->interruptDepth < 1 && mCoreThreadIsActive(threadContext)) {
-		threadContext->impl->state = mTHREAD_REQUEST;
+		if (threadContext->impl->requested) {
+			threadContext->impl->state = mTHREAD_REQUEST;
+		} else {
+			threadContext->impl->state = mTHREAD_RUNNING;			
+		}
 		ConditionWake(&threadContext->impl->stateCond);
 	}
 	MutexUnlock(&threadContext->impl->stateMutex);

@@ -801,11 +801,6 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <translation>スプライトビューアー</translation>
     </message>
     <message>
-        <location filename="../ObjView.ui" line="263"/>
-        <source>×</source>
-        <translation>×</translation>
-    </message>
-    <message>
         <location filename="../ObjView.ui" line="122"/>
         <source>Magnification</source>
         <translation>倍率</translation>
@@ -913,11 +908,6 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <location filename="../ObjView.ui" line="145"/>
         <source>Position</source>
         <translation>位置</translation>
-    </message>
-    <message>
-        <location filename="../ObjView.ui" line="184"/>
-        <source>, </source>
-        <translation>, </translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="224"/>
@@ -1254,11 +1244,6 @@ Download size: %3</source>
 <context>
     <name>QGBA::AssetTile</name>
     <message>
-        <location filename="../AssetTile.cpp" line="103"/>
-        <source>%0%1%2</source>
-        <translation>%0%1%2</translation>
-    </message>
-    <message>
         <location filename="../AssetTile.cpp" line="140"/>
         <location filename="../AssetTile.cpp" line="141"/>
         <location filename="../AssetTile.cpp" line="142"/>
@@ -1364,7 +1349,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::DebuggerConsoleController</name>
     <message>
-        <location filename="../DebuggerConsoleController.cpp" line="160"/>
+        <location filename="../DebuggerConsoleController.cpp" line="171"/>
         <source>Could not open CLI history for writing</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1382,42 +1367,42 @@ Download size: %3</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="597"/>
+        <location filename="../FrameView.cpp" line="600"/>
         <source>None</source>
         <translation>なし</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="599"/>
+        <location filename="../FrameView.cpp" line="602"/>
         <source>Background</source>
         <translation>バックグラウンド</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="602"/>
+        <location filename="../FrameView.cpp" line="605"/>
         <source>Window</source>
         <translation>ウインドウ</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="605"/>
+        <location filename="../FrameView.cpp" line="608"/>
         <source>Objwin</source>
         <translation>Objwin</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="610"/>
+        <location filename="../FrameView.cpp" line="613"/>
         <source>Sprite</source>
         <translation>スプライト</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="613"/>
+        <location filename="../FrameView.cpp" line="616"/>
         <source>Backdrop</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="616"/>
+        <location filename="../FrameView.cpp" line="619"/>
         <source>Frame</source>
         <translation>フレーム</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="622"/>
+        <location filename="../FrameView.cpp" line="625"/>
         <source>%1 %2</source>
         <translation>%1 %2</translation>
     </message>
@@ -3779,12 +3764,12 @@ Download size: %3</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="283"/>
+        <location filename="../ObjView.cpp" line="284"/>
         <source>Export sprite</source>
         <translation>OBJを書き出す</translation>
     </message>
     <message>
-        <location filename="../ObjView.cpp" line="284"/>
+        <location filename="../ObjView.cpp" line="285"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
@@ -3838,7 +3823,7 @@ Download size: %3</source>
         <translation>Windows PAL (*.pal);;Adobe Color Table (*.act)</translation>
     </message>
     <message>
-        <location filename="../PaletteView.cpp" line="141"/>
+        <location filename="../PaletteView.cpp" line="144"/>
         <source>Failed to open output palette file: %1</source>
         <translation>出力パレットファイルを開けませんでした: %1</translation>
     </message>
@@ -4100,18 +4085,18 @@ Download size: %3</source>
 <context>
     <name>QGBA::TileView</name>
     <message>
-        <location filename="../TileView.cpp" line="209"/>
+        <location filename="../TileView.cpp" line="222"/>
         <source>Export tiles</source>
         <translation>タイルを書き出す</translation>
     </message>
     <message>
-        <location filename="../TileView.cpp" line="210"/>
-        <location filename="../TileView.cpp" line="222"/>
+        <location filename="../TileView.cpp" line="223"/>
+        <location filename="../TileView.cpp" line="235"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
-        <location filename="../TileView.cpp" line="221"/>
+        <location filename="../TileView.cpp" line="234"/>
         <source>Export tile</source>
         <translation>タイルを書き出す</translation>
     </message>
