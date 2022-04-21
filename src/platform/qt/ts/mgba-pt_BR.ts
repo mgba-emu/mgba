@@ -1356,7 +1356,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="171"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>Não pôde abrir o histórico do CLI pra gravar</translation>
     </message>
 </context>
 <context>
@@ -4500,12 +4500,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1107"/>
         <source>Reset needed</source>
-        <translation type="unfinished"></translation>
+        <translation>É necessário resetar</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1108"/>
         <source>Some changes will not take effect until the game is reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>Algumas mudanças não terão efeito até o jogo ser resetado.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1350"/>
@@ -5450,7 +5450,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="569"/>
         <source>Show filename instead of ROM name in library view</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar o nome do arquivo ao invés do nome da ROM na visualização da biblioteca</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="616"/>
@@ -6041,17 +6041,17 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../TileView.ui" line="119"/>
         <source>Displayed tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Mosaicos exibidos</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="125"/>
         <source>Only BG tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Só os mosaicos do 2º plano</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="135"/>
         <source>Only OBJ tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Só os mosaicos do OBJ</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="145"/>
