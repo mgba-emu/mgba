@@ -33,7 +33,7 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的註冊商標
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation>{projectName} 是開放源代碼的 Game Boy Advance 模擬器</translation>
+        <translation>{projectName} 是開源的 Game Boy Advance 模擬器</translation>
     </message>
 </context>
 <context>
@@ -72,12 +72,12 @@ Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的註冊商標
     <message>
         <location filename="../AssetTile.ui" line="89"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>地址</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="138"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>红色</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="145"/>
