@@ -11,7 +11,7 @@
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;Sitio web&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Foros / Supporto&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donar&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Codice sorgente&lt;/a&gt;</translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;Sito web&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forum / Supporto&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donazioni&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Codice sorgente&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
@@ -1289,23 +1289,23 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../CoreController.cpp" line="99"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Reset r%1-%2 %3</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="504"/>
         <location filename="../CoreController.cpp" line="524"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Rewind attualmente disattivato</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="567"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>Resettare il gioco?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="568"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation type="unfinished"></translation>
+        <translation>La maggior parte dei giochi richiederà un reset per caricare il nuovo salvataggio. Vuoi resettare ora?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="780"/>
@@ -1356,7 +1356,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="171"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossibile aprire lo storico della riga di comando in scrittura</translation>
     </message>
 </context>
 <context>
@@ -1463,22 +1463,22 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../GDBWindow.cpp" line="52"/>
         <source>Write watchpoints behavior</source>
-        <translation type="unfinished"></translation>
+        <translation>Comportamento watchpoint scrittura</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="63"/>
         <source>Standard GDB</source>
-        <translation type="unfinished"></translation>
+        <translation>Fornito da GDB</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="68"/>
         <source>Internal change detection</source>
-        <translation type="unfinished"></translation>
+        <translation>Riconoscimento differenze interno</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="72"/>
         <source>Break on all writes</source>
-        <translation type="unfinished"></translation>
+        <translation>Interrompi ad ogni scrittura</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
@@ -3714,7 +3714,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../MessagePainter.cpp" line="81"/>
         <source>Frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Frame %1</translation>
     </message>
 </context>
 <context>
@@ -4419,12 +4419,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1107"/>
         <source>Reset needed</source>
-        <translation type="unfinished"></translation>
+        <translation>Reset necessario</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1108"/>
         <source>Some changes will not take effect until the game is reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>Alcune modifiche non si applicheranno finché il gioco non viene resettato.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1350"/>
@@ -4725,7 +4725,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1234"/>
         <source>Save games</source>
-        <translation type="unfinished">Salva le partite</translation>
+        <translation>Salvataggi</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1235"/>
@@ -4740,12 +4740,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1257"/>
         <source>Automatically determine</source>
-        <translation type="unfinished"></translation>
+        <translation>Determina automaticamente</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1261"/>
         <source>Use player %0 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Usa il salvataggio del giocatore %0</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1461"/>
@@ -5440,7 +5440,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="569"/>
         <source>Show filename instead of ROM name in library view</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostra nome del file al posto del nome della ROM nella visualizzazione libreria</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="616"/>
@@ -5461,12 +5461,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="716"/>
         <source>Show frame count in OSD</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostra contatore frame nell&apos;OSD</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="723"/>
         <source>Show emulation info on reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostra informazioni emulazione su reset</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="797"/>
@@ -6021,7 +6021,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../TileView.ui" line="33"/>
         <source>Palette</source>
-        <translation type="unfinished">Tavolozza</translation>
+        <translation>Palette</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="73"/>
@@ -6041,22 +6041,22 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../TileView.ui" line="119"/>
         <source>Displayed tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Tile visualizzati</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="125"/>
         <source>Only BG tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Solo tile BG</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="135"/>
         <source>Only OBJ tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Solo tile OBJ</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="145"/>
         <source>Both</source>
-        <translation type="unfinished">Entrambi</translation>
+        <translation>Entrambi</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="163"/>
