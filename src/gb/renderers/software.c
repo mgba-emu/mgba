@@ -917,7 +917,7 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 				bgTile = ((int8_t*) maps)[topX + topY];
 			}
 			int p = highlight ? PAL_HIGHLIGHT_BG : PAL_BG;
-			if (renderer->model >= GB_MODEL_CGB) {
+			if (renderer->model >= GB_MODEL_CGB && renderer->sgbTransfer != 1) {
 				GBObjAttributes attrs = attr[topX + topY];
 				p |= GBObjAttributesGetCGBPalette(attrs) * 4;
 				if (GBObjAttributesIsPriority(attrs) && GBRegisterLCDCIsBgEnable(renderer->lcdc)) {
@@ -952,7 +952,7 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 			bgTile = ((int8_t*) maps)[topX + topY];
 		}
 		int p = highlight ? PAL_HIGHLIGHT_BG : PAL_BG;
-		if (renderer->model >= GB_MODEL_CGB) {
+		if (renderer->model >= GB_MODEL_CGB && renderer->sgbTransfer != 1) {
 			GBObjAttributes attrs = attr[topX + topY];
 			p |= GBObjAttributesGetCGBPalette(attrs) * 4;
 			if (GBObjAttributesIsPriority(attrs) && GBRegisterLCDCIsBgEnable(renderer->lcdc)) {
