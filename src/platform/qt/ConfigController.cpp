@@ -13,6 +13,11 @@
 
 #include <mgba/feature/commandline.h>
 
+static const mOption s_frontendOptions[] = {
+	{ "ecard", true, '\0' },
+	{ 0 }
+};
+
 using namespace QGBA;
 
 ConfigOption::ConfigOption(const QString& name, QObject* parent)
@@ -129,24 +134,27 @@ ConfigController::ConfigController(QObject* parent)
 	mSubParserGraphicsInit(&m_subparsers[0], &m_graphicsOpts);
 
 	m_subparsers[1].usage = "Frontend options:\n"
-	    "  --ecard FILENAME  Scan an e-Reader card in the first loaded game\n"
-	    "                    Can be paassed multiple times for multiple cards";
+	    "  --ecard FILE  Scan an e-Reader card in the first loaded game\n"
+	    "                Can be paassed multiple times for multiple cards\n"
 	m_subparsers[1].parse = nullptr;
 	m_subparsers[1].parseLong = [](struct mSubParser* parser, const char* option, const char* arg) {
-		if (option == QLatin1String("ecard")) {
-			QStringList* eCards = static_cast<QStringList*>(parser->opts);
-			eCards->append(QString::fromUtf8(arg));
+		ConfigController* self = static_cast<ConfigController*>(parser->opts);
+		QString optionName(QString::fromUtf8(option));
+		if (optionName == QLatin1String("ecard")) {
+			QStringList ecards;
+			if (self->m_argvOptions.contains(optionName)) {
+				ecards = self->m_argvOptions[optionName].toStringList();
+			}
+			ecards.append(QString::fromUtf8(arg));
+			self->m_argvOptions[optionName] = ecards;
 			return true;
 		}
 		return false;
 	};
 	m_subparsers[1].apply = nullptr;
 	m_subparsers[1].extraOptions = nullptr;
-	m_subparsers[1].longOptions = (const mOption[]) {
-		{ "ecard", true, '\0' },
-		{ 0 }
-	};
-	m_subparsers[1].opts = &m_eCards;
+	m_subparsers[1].longOptions = s_frontendOptions;
+	m_subparsers[1].opts = this;
 }
 
 ConfigController::~ConfigController() {
@@ -221,6 +229,14 @@ QVariant ConfigController::getQtOption(const QString& key, const QString& group)
 		m_settings->endGroup();
 	}
 	return value;
+}
+
+QVariant ConfigController::getArgvOption(const QString& key) const {
+	return m_argvOptions.value(key);
+}
+
+QVariant ConfigController::takeArgvOption(const QString& key) {
+		return m_argvOptions.take(key);
 }
 
 void ConfigController::saveOverride(const Override& override) {
@@ -332,10 +348,6 @@ void ConfigController::makePortable() {
 
 void ConfigController::usage(const char* arg0) const {
 	::usage(arg0, nullptr, nullptr, m_subparsers.data(), m_subparsers.size());
-}
-
-QStringList ConfigController::takeECardList() {
-	return QStringList(std::move(m_eCards));
 }
 
 bool ConfigController::isPortable() {

@@ -81,6 +81,9 @@ public:
 
 	QVariant getQtOption(const QString& key, const QString& group = QString()) const;
 
+	QVariant getArgvOption(const QString& key) const;
+	QVariant takeArgvOption(const QString& key);
+
 	QList<QString> getMRU() const;
 	void setMRU(const QList<QString>& mru);
 
@@ -95,8 +98,6 @@ public:
 	const mArguments* args() const { return &m_args; }
 	const mGraphicsOpts* graphicsOpts() const { return &m_graphicsOpts; }
 	void usage(const char* arg0) const;
-
-	QStringList takeECardList();
 
 	static const QString& configDir();
 	static bool isPortable();
@@ -113,6 +114,8 @@ public slots:
 	void write();
 
 private:
+	void addArgvOption(const QString& key, const QVariant& value);
+
 	Configuration* defaults() { return &m_config.defaultsTable; }
 
 	mCoreConfig m_config;
@@ -121,8 +124,8 @@ private:
 	mGraphicsOpts m_graphicsOpts{};
 	std::array<mSubParser, 2> m_subparsers;
 	bool m_parsed = false;
-	QStringList m_eCards;
-
+	
+	QHash<QString, QVariant> m_argvOptions;
 	QHash<QString, ConfigOption*> m_optionSet;
 	std::unique_ptr<QSettings> m_settings;
 	static QString s_configDir;

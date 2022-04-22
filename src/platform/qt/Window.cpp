@@ -931,7 +931,10 @@ void Window::gameStarted() {
 
 #ifdef M_CORE_GBA
 	if (m_controller->platform() == mPLATFORM_GBA) {
-		m_controller->scanCards(m_config->takeECardList());
+		QVariant eCardList = m_config->takeArgvOption(QString("ecard"));
+		if (eCardList.canConvert(QMetaType::QStringList)) {
+			m_controller->scanCards(eCardList.toStringList());
+		}
 	}
 #endif
 

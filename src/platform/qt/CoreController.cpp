@@ -912,7 +912,7 @@ void CoreController::scanCard(const QString& path) {
 				break;
 			}
 			QString filepath(QString::fromUtf8(line));
-			if (filepath[0] == QChar('#')) {
+			if (filepath.isEmpty() || filepath[0] == QChar('#')) {
 				continue;
 			}
 			if (QFileInfo(filepath).isRelative()) {
