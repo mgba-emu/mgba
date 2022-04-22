@@ -2057,6 +2057,15 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	connect(m_controller.get(), &CoreController::failed, this, &Window::gameFailed);
 	connect(m_controller.get(), &CoreController::unimplementedBiosCall, this, &Window::unimplementedBiosCall);
 
+#ifdef M_CORE_GBA
+	if (m_controller->platform() == mPLATFORM_GBA) {
+		QVariant mb = m_config->takeArgvOption(QString("mb"));
+		if (mb.canConvert(QMetaType::QString)) {
+			m_controller->replaceGame(mb.toString());
+		}
+	}
+#endif
+
 #ifdef USE_GDB_STUB
 	if (m_gdbController) {
 		m_gdbController->setController(m_controller);

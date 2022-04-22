@@ -70,6 +70,7 @@ Misc:
  - Qt: Add tile range selection to tile viewer (closes mgba.io/i/2455)
  - Qt: Show warning if XQ audio is toggled while loaded (fixes mgba.io/i/2295)
  - Qt: Add e-Card passing to the command line (closes mgba.io/i/2474)
+ - Qt: Boot both a multiboot image and ROM with CLI args (closes mgba.io/i/1941)
  - Windows: Attach to console if present
  - Vita: Add bilinear filtering option (closes mgba.io/i/344)
 

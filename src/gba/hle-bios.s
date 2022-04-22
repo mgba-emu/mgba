@@ -17,10 +17,10 @@ b irqBase
 b fiqBase
 
 resetBase:
-mov r0, #0x8000000
-ldrb r1, [r0, #3]
-cmp r1, #0xEA
-ldrne r0, =0x20000C0
+ldr r0, =0x20000C0
+ldr r1, [r0]
+cmp r1, #0
+moveq r0, #0x8000000
 bx r0
 .word 0
 .word 0xE129F000

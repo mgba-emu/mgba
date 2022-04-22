@@ -139,7 +139,7 @@ void GBAUnloadROM(struct GBA* gba) {
 
 	if (gba->romVf) {
 #ifndef FIXED_ROM_BUFFER
-		if (gba->isPristine) {
+		if (gba->isPristine && gba->memory.rom) {
 			gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->pristineRomSize);
 		}
 #endif
@@ -147,6 +147,8 @@ void GBAUnloadROM(struct GBA* gba) {
 		gba->romVf = NULL;
 	}
 	gba->memory.rom = NULL;
+	gba->memory.romSize = 0;
+	gba->memory.romMask = 0;
 	gba->isPristine = false;
 
 	if (!gba->memory.savedata.dirty) {
@@ -163,6 +165,7 @@ void GBAUnloadROM(struct GBA* gba) {
 
 void GBADestroy(struct GBA* gba) {
 	GBAUnloadROM(gba);
+	GBAUnloadMB(gba);
 
 	if (gba->biosVf) {
 		gba->biosVf->unmap(gba->biosVf, gba->memory.bios, SIZE_BIOS);
@@ -228,16 +231,18 @@ void GBAReset(struct ARMCore* cpu) {
 
 	bool isELF = false;
 #ifdef USE_ELF
-	struct ELF* elf = ELFOpen(gba->romVf);
-	if (elf) {
-		isELF = true;
-		ELFClose(elf);
+	if (gba->mbVf) {
+		struct ELF* elf = ELFOpen(gba->mbVf);
+		if (elf) {
+			isELF = true;
+			ELFClose(elf);
+		}
 	}
 #endif
 
-	if (GBAIsMB(gba->romVf) && !isELF) {
-		gba->romVf->seek(gba->romVf, 0, SEEK_SET);
-		gba->romVf->read(gba->romVf, gba->memory.wram, gba->pristineRomSize);
+	if (GBAIsMB(gba->mbVf) && !isELF) {
+		gba->mbVf->seek(gba->mbVf, 0, SEEK_SET);
+		gba->mbVf->read(gba->mbVf, gba->memory.wram, SIZE_WORKING_RAM);
 	}
 
 	gba->lastJump = 0;
@@ -367,23 +372,22 @@ bool GBALoadNull(struct GBA* gba) {
 }
 
 bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
-	GBAUnloadROM(gba);
-	gba->romVf = vf;
-	gba->pristineRomSize = vf->size(vf);
+	GBAUnloadMB(gba);
+	gba->mbVf = vf;
 	vf->seek(vf, 0, SEEK_SET);
-	if (gba->pristineRomSize > SIZE_WORKING_RAM) {
-		gba->pristineRomSize = SIZE_WORKING_RAM;
-	}
-	gba->isPristine = true;
 	memset(gba->memory.wram, 0, SIZE_WORKING_RAM);
-	gba->yankedRomSize = 0;
-	gba->memory.romSize = 0;
-	gba->memory.romMask = 0;
-	gba->romCrc32 = doCrc32(gba->memory.wram, gba->pristineRomSize);
+	vf->read(vf, gba->memory.wram, SIZE_WORKING_RAM);
 	if (gba->cpu && gba->memory.activeRegion == REGION_WORKING_RAM) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
 	return true;
+}
+
+void GBAUnloadMB(struct GBA* gba) {
+	if (gba->mbVf) {
+		gba->mbVf->close(gba->mbVf);
+		gba->mbVf = NULL;
+	}
 }
 
 bool GBALoadROM(struct GBA* gba, struct VFile* vf) {

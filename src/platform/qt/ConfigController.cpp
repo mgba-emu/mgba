@@ -15,6 +15,7 @@
 
 static const mOption s_frontendOptions[] = {
 	{ "ecard", true, '\0' },
+	{ "mb", true, '\0' },
 	{ 0 }
 };
 
@@ -136,6 +137,7 @@ ConfigController::ConfigController(QObject* parent)
 	m_subparsers[1].usage = "Frontend options:\n"
 	    "  --ecard FILE  Scan an e-Reader card in the first loaded game\n"
 	    "                Can be paassed multiple times for multiple cards\n"
+	    "  --mb FILE     Boot a multiboot image with FILE inserted into the ROM slot";
 	m_subparsers[1].parse = nullptr;
 	m_subparsers[1].parseLong = [](struct mSubParser* parser, const char* option, const char* arg) {
 		ConfigController* self = static_cast<ConfigController*>(parser->opts);
@@ -147,6 +149,10 @@ ConfigController::ConfigController(QObject* parent)
 			}
 			ecards.append(QString::fromUtf8(arg));
 			self->m_argvOptions[optionName] = ecards;
+			return true;
+		}
+		if (optionName == QLatin1String("mb")) {
+			self->m_argvOptions[optionName] = QString::fromUtf8(arg);
 			return true;
 		}
 		return false;
