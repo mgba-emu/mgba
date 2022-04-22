@@ -6021,7 +6021,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../TileView.ui" line="33"/>
         <source>Palette</source>
-        <translation type="unfinished">Paleta</translation>
+        <translation>Paleta</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="73"/>
@@ -6056,7 +6056,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../TileView.ui" line="145"/>
         <source>Both</source>
-        <translation type="unfinished">Ambos</translation>
+        <translation>Ambos</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="163"/>
