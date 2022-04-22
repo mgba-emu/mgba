@@ -96,6 +96,8 @@ public:
 	const mGraphicsOpts* graphicsOpts() const { return &m_graphicsOpts; }
 	void usage(const char* arg0) const;
 
+	QStringList takeECardList();
+
 	static const QString& configDir();
 	static bool isPortable();
 
@@ -117,8 +119,9 @@ private:
 	mCoreOptions m_opts{};
 	mArguments m_args{};
 	mGraphicsOpts m_graphicsOpts{};
-	std::array<mSubParser, 1> m_subparsers;
+	std::array<mSubParser, 2> m_subparsers;
 	bool m_parsed = false;
+	QStringList m_eCards;
 
 	QHash<QString, ConfigOption*> m_optionSet;
 	std::unique_ptr<QSettings> m_settings;

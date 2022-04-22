@@ -125,6 +125,28 @@ ConfigController::ConfigController(QObject* parent)
 	mCoreConfigSetDefaultIntValue(&m_config, "sgb.borders", 1);
 	mCoreConfigSetDefaultIntValue(&m_config, "useCgbColors", 1);
 	mCoreConfigMap(&m_config, &m_opts);
+
+	mSubParserGraphicsInit(&m_subparsers[0], &m_graphicsOpts);
+
+	m_subparsers[1].usage = "Frontend options:\n"
+	    "  --ecard FILENAME  Scan an e-Reader card in the first loaded game\n"
+	    "                    Can be paassed multiple times for multiple cards";
+	m_subparsers[1].parse = nullptr;
+	m_subparsers[1].parseLong = [](struct mSubParser* parser, const char* option, const char* arg) {
+		if (option == QLatin1String("ecard")) {
+			QStringList* eCards = static_cast<QStringList*>(parser->opts);
+			eCards->append(QString::fromUtf8(arg));
+			return true;
+		}
+		return false;
+	};
+	m_subparsers[1].apply = nullptr;
+	m_subparsers[1].extraOptions = nullptr;
+	m_subparsers[1].longOptions = (const mOption[]) {
+		{ "ecard", true, '\0' },
+		{ 0 }
+	};
+	m_subparsers[1].opts = &m_eCards;
 }
 
 ConfigController::~ConfigController() {
@@ -140,7 +162,7 @@ bool ConfigController::parseArguments(int argc, char* argv[]) {
 	if (m_parsed) {
 		return false;
 	}
-	mSubParserGraphicsInit(&m_subparsers[0], &m_graphicsOpts);
+
 	if (mArgumentsParse(&m_args, argc, argv, m_subparsers.data(), m_subparsers.size())) {
 		mCoreConfigFreeOpts(&m_opts);
 		mArgumentsApply(&m_args, m_subparsers.data(), m_subparsers.size(), &m_config);
@@ -310,6 +332,10 @@ void ConfigController::makePortable() {
 
 void ConfigController::usage(const char* arg0) const {
 	::usage(arg0, nullptr, nullptr, m_subparsers.data(), m_subparsers.size());
+}
+
+QStringList ConfigController::takeECardList() {
+	return QStringList(std::move(m_eCards));
 }
 
 bool ConfigController::isPortable() {

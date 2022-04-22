@@ -925,7 +925,15 @@ void Window::gameStarted() {
 			action->setActive(true);
 		}
 	}
+	interrupter.resume();
+
 	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
+
+#ifdef M_CORE_GBA
+	if (m_controller->platform() == mPLATFORM_GBA) {
+		m_controller->scanCards(m_config->takeECardList());
+	}
+#endif
 
 #ifdef USE_DISCORD_RPC
 	DiscordCoordinator::gameStarted(m_controller);
