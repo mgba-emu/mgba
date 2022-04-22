@@ -130,13 +130,22 @@ ConfigController::ConfigController(QObject* parent)
 ConfigController::~ConfigController() {
 	mCoreConfigDeinit(&m_config);
 	mCoreConfigFreeOpts(&m_opts);
+
+	if (m_parsed) {
+		mArgumentsDeinit(&m_args);
+	}
 }
 
-bool ConfigController::parseArguments(mArguments* args, int argc, char* argv[], mSubParser* subparser) {
-	if (::parseArguments(args, argc, argv, subparser)) {
+bool ConfigController::parseArguments(int argc, char* argv[]) {
+	if (m_parsed) {
+		return false;
+	}
+	mSubParserGraphicsInit(&m_subparsers[0], &m_graphicsOpts);
+	if (mArgumentsParse(&m_args, argc, argv, m_subparsers.data(), m_subparsers.size())) {
 		mCoreConfigFreeOpts(&m_opts);
-		applyArguments(args, subparser, &m_config);
+		mArgumentsApply(&m_args, m_subparsers.data(), m_subparsers.size(), &m_config);
 		mCoreConfigMap(&m_config, &m_opts);
+		m_parsed = true;
 		return true;
 	}
 	return false;
@@ -297,6 +306,10 @@ void ConfigController::makePortable() {
 		settings2->setValue(key, m_settings->value(key));
 	}
 	m_settings = std::move(settings2);
+}
+
+void ConfigController::usage(const char* arg0) const {
+	::usage(arg0, nullptr, nullptr, m_subparsers.data(), m_subparsers.size());
 }
 
 bool ConfigController::isPortable() {

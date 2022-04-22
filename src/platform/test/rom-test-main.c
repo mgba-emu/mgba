@@ -24,7 +24,7 @@
 
 #define ROM_TEST_OPTIONS "S:R:"
 #define ROM_TEST_USAGE \
-	"\nAdditional options:\n" \
+	"Additional options:\n" \
 	"  -S SWI           Run until specified SWI call before exiting\n" \
 	"  -R REGISTER      General purpose register to return as exit code\n" \
 
@@ -81,12 +81,12 @@ int main(int argc, char * argv[]) {
 	};
 
 	struct mArguments args;
-	bool parsed = parseArguments(&args, argc, argv, &subparser);
+	bool parsed = mArgumentsParse(&args, argc, argv, &subparser, 1);
 	if (!args.fname) {
 		parsed = false;
 	}
 	if (!parsed || args.showHelp) {
-		usage(argv[0], ROM_TEST_USAGE);
+		usage(argv[0], NULL, NULL, &subparser, 1);
 		return !parsed;
 	}
 	if (args.showVersion) {
@@ -99,7 +99,7 @@ int main(int argc, char * argv[]) {
 	}
 	core->init(core);
 	mCoreInitConfig(core, "romTest");
-	applyArguments(&args, NULL, &core->config);
+	mArgumentsApply(&args, NULL, 0, &core->config);
 
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
 
@@ -184,7 +184,7 @@ int main(int argc, char * argv[]) {
 	cleanExit = true;
 
 loadError:
-	freeArguments(&args);
+	mArgumentsDeinit(&args);
 	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 

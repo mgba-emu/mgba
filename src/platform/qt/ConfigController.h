@@ -12,6 +12,7 @@
 #include <QSettings>
 #include <QVariant>
 
+#include <array>
 #include <functional>
 #include <memory>
 
@@ -70,7 +71,7 @@ public:
 	~ConfigController();
 
 	const mCoreOptions* options() const { return &m_opts; }
-	bool parseArguments(mArguments* args, int argc, char* argv[], mSubParser* subparser = nullptr);
+	bool parseArguments(int argc, char* argv[]);
 
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
@@ -91,6 +92,10 @@ public:
 	const mCoreConfig* config() const { return &m_config; }
 	mCoreConfig* config() { return &m_config; }
 
+	const mArguments* args() const { return &m_args; }
+	const mGraphicsOpts* graphicsOpts() const { return &m_graphicsOpts; }
+	void usage(const char* arg0) const;
+
 	static const QString& configDir();
 	static bool isPortable();
 
@@ -110,6 +115,10 @@ private:
 
 	mCoreConfig m_config;
 	mCoreOptions m_opts{};
+	mArguments m_args{};
+	mGraphicsOpts m_graphicsOpts{};
+	std::array<mSubParser, 1> m_subparsers;
+	bool m_parsed = false;
 
 	QHash<QString, ConfigOption*> m_optionSet;
 	std::unique_ptr<QSettings> m_settings;
