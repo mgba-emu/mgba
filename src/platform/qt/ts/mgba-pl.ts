@@ -1243,7 +1243,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="216"/>
         <source>(None)</source>
-        <translation>(Nic)</translation>
+        <translation>(Żadna)</translation>
     </message>
 </context>
 <context>
@@ -4401,7 +4401,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1289"/>
         <source>Recent</source>
-        <translation>Ostatni</translation>
+        <translation>Ostatnie</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1619"/>
@@ -4532,7 +4532,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1367"/>
         <source>About...</source>
-        <translation>O...</translation>
+        <translation>O Aplikacji...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1368"/>
@@ -4547,7 +4547,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1371"/>
         <source>&amp;Reset</source>
-        <translation>&amp;Resetowanie</translation>
+        <translation>&amp;Resetuj</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1372"/>
@@ -5488,7 +5488,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="835"/>
         <source>Update channel:</source>
-        <translation>Zaktualizuj kanał:</translation>
+        <translation>Kanał aktualizacji:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="845"/>
@@ -5884,7 +5884,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1474"/>
         <source>Save states</source>
-        <translation>Stan gier</translation>
+        <translation>Stany gry</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1522"/>
