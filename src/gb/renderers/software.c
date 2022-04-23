@@ -627,7 +627,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	if (startX == 0) {
 		_cleanOAM(softwareRenderer, y);
 	}
-	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc) && !softwareRenderer->d.disableOBJ) {
+	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc) && !softwareRenderer->d.disableOBJ && softwareRenderer->sgbTransfer != 1) {
 		int i;
 		for (i = 0; i < softwareRenderer->objMax; ++i) {
 			GBVideoSoftwareRendererDrawObj(softwareRenderer, &softwareRenderer->obj[i], startX, endX, y);
