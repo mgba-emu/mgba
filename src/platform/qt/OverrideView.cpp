@@ -192,6 +192,9 @@ void OverrideView::updateOverrides() {
 			gba->vbaBugCompatSet = true;
 			gba->override.vbaBugCompat = m_ui.vbaBugCompat->isChecked();
 		}
+		if (gba->override.flashromtype != FLASHROM_NONE) {
+			hasOverride = true;
+		}
 
 		bool ok;
 		uint32_t parsedIdleLoop = m_ui.idleLoop->text().toInt(&ok, 16);
