@@ -4,6 +4,7 @@ set(SOURCE_FILES
 	types.c)
 
 set(TEST_FILES
+	test/classes.c
 	test/types.c)
 
 if(USE_LUA)

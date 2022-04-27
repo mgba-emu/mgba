@@ -12,6 +12,9 @@ struct Test {
 	int32_t a;
 };
 
+mSCRIPT_DEFINE_STRUCT(Test)
+mSCRIPT_DEFINE_END
+
 mSCRIPT_EXPORT_STRUCT(Test);
 
 static int voidOne(void) {

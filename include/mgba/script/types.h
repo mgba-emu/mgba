@@ -10,6 +10,7 @@
 
 CXX_GUARD_START
 
+#include <mgba-util/table.h>
 #include <mgba-util/vector.h>
 
 #define _mAPPLY(...) __VA_ARGS__
@@ -151,11 +152,50 @@ CXX_GUARD_START
 #define mSCRIPT_EXPORT_STRUCT(STRUCT) \
 	const struct mScriptType mSTStruct_ ## STRUCT = { \
 		.base = mSCRIPT_TYPE_OBJECT, \
+		.details = { \
+			.cls = &_mSTStructDetails_ ## STRUCT \
+		}, \
 		.size = sizeof(struct STRUCT), \
 		.name = "struct::" #STRUCT, \
 		.alloc = NULL, \
 		.free = NULL, \
 	}
+
+#define mSCRIPT_DECLARE_STRUCT(STRUCT) extern const struct mScriptType mSTStruct_ ## STRUCT;
+#define mSCRIPT_DEFINE_STRUCT(STRUCT) \
+	static struct mScriptTypeClass _mSTStructDetails_ ## STRUCT = { \
+		.init = false, \
+		.details = (const struct mScriptClassInitDetails[]) {
+
+#define mSCRIPT_DEFINE_DOCSTRING(DOCSTRING) { \
+	.type = mSCRIPT_CLASS_INIT_DOCSTRING, \
+	.info = { \
+		.comment = DOCSTRING \
+	} \
+},
+
+#define mSCRIPT_DEFINE_STRUCT_MEMBER(STRUCT, TYPE, NAME) { \
+	.type = mSCRIPT_CLASS_INIT_INSTANCE_MEMBER, \
+	.info = { \
+		.member = { \
+			.name = #NAME, \
+			.type = _mAPPLY(mSCRIPT_TYPE_MS_ ## TYPE), \
+			.offset = offsetof(STRUCT, NAME) \
+		} \
+	} \
+},
+
+#define mSCRIPT_DEFINE_STATIC_MEMBER(TYPE, NAME) { \
+	.type = mSCRIPT_CLASS_INIT_STATIC_MEMBER, \
+	.info = { \
+		.member = { \
+			.name = #NAME, \
+			.type = _mAPPLY(mSCRIPT_TYPE_MS_ ## TYPE) \
+		} \
+	}, \
+},
+
+#define mSCRIPT_DEFINE_END { .type = mSCRIPT_CLASS_INIT_END } } };
 
 #define _mSCRIPT_BIND_FUNCTION(NAME, NRET, RETURN, NPARAMS, ...) \
 	static const struct mScriptType _type_ ## NAME = { \
@@ -243,6 +283,14 @@ enum {
 	mSCRIPT_TYPE_WRAPPER
 };
 
+enum mScriptClassInitType {
+	mSCRIPT_CLASS_INIT_END = 0,
+	mSCRIPT_CLASS_INIT_DOCSTRING,
+	mSCRIPT_CLASS_INIT_INSTANCE_MEMBER,
+	mSCRIPT_CLASS_INIT_STATIC_MEMBER,
+	mSCRIPT_CLASS_INIT_INHERIT,
+};
+
 struct Table;
 struct mScriptType;
 extern const struct mScriptType mSTVoid;
@@ -273,6 +321,29 @@ struct mScriptTypeFunction {
 	// TODO: kwargs, defaults
 };
 
+struct mScriptClassMember {
+	const char* name;
+	const char* docstring;
+	const struct mScriptType* type;
+	size_t offset;
+};
+
+struct mScriptClassInitDetails {
+	enum mScriptClassInitType type;
+	union {
+		const char* comment;
+		const struct mScriptTypeClass* parent;
+		struct mScriptClassMember member;
+	} info;
+};
+
+struct mScriptTypeClass {
+	bool init;
+	const struct mScriptClassInitDetails* details;
+	struct Table staticMembers;
+	struct Table instanceMembers;
+};
+
 struct mScriptValue;
 struct mScriptType {
 	int base;
@@ -281,6 +352,7 @@ struct mScriptType {
 	union {
 		struct mScriptTypeTuple tuple;
 		struct mScriptTypeFunction function;
+		struct mScriptTypeClass* cls;
 		void* opaque;
 	} details;
 	void (*alloc)(struct mScriptValue*);
@@ -338,6 +410,9 @@ struct mScriptValue* mScriptTableLookup(struct mScriptValue* table, struct mScri
 
 void mScriptFrameInit(struct mScriptFrame* frame);
 void mScriptFrameDeinit(struct mScriptFrame* frame);
+
+void mScriptClassInit(struct mScriptTypeClass* cls);
+void mScriptClassDeinit(struct mScriptTypeClass* cls);
 
 bool mScriptPopS32(struct mScriptList* list, int32_t* out);
 bool mScriptPopU32(struct mScriptList* list, uint32_t* out);

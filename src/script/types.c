@@ -8,6 +8,8 @@
 #include <mgba-util/hash.h>
 #include <mgba-util/table.h>
 
+#define MAX_ALIGNMENT 8
+
 static void _allocTable(struct mScriptValue*);
 static void _freeTable(struct mScriptValue*);
 static void _deinitTableValue(void*);
@@ -736,6 +738,73 @@ void mScriptFrameInit(struct mScriptFrame* frame) {
 void mScriptFrameDeinit(struct mScriptFrame* frame) {
 	mScriptListDeinit(&frame->returnValues);
 	mScriptListDeinit(&frame->arguments);
+}
+
+void mScriptClassInit(struct mScriptTypeClass* cls) {
+	if (cls->init) {
+		return;
+	}
+	HashTableInit(&cls->staticMembers, 0, free);
+	HashTableInit(&cls->instanceMembers, 0, free);
+	size_t staticOffset = 0;
+	const char* docstring = NULL;
+
+	size_t i;
+	for (i = 0; cls->details[i].type != mSCRIPT_CLASS_INIT_END; ++i) {
+		const struct mScriptClassInitDetails* details = &cls->details[i];
+		struct mScriptClassMember* member;
+
+		switch (details->type) {
+		case mSCRIPT_CLASS_INIT_END:
+			break;
+		case mSCRIPT_CLASS_INIT_DOCSTRING:
+			docstring = details->info.comment;
+			break;
+		case mSCRIPT_CLASS_INIT_INHERIT:
+			// TODO
+			abort();
+			break;
+		case mSCRIPT_CLASS_INIT_INSTANCE_MEMBER:
+			member = calloc(1, sizeof(*member));
+			memcpy(member, &details->info.member, sizeof(*member));
+			if (docstring) {
+				member->docstring = docstring;
+				docstring = NULL;
+			}
+			HashTableInsert(&cls->instanceMembers, member->name, member);
+			break;
+		case mSCRIPT_CLASS_INIT_STATIC_MEMBER:
+			member = calloc(1, sizeof(*member));
+			memcpy(member, &details->info.member, sizeof(*member));
+			if (docstring) {
+				member->docstring = docstring;
+				docstring = NULL;
+			}
+
+			// Alignment check
+			if (staticOffset & (details->info.member.type->size - 1)) {
+				size_t size = details->info.member.type->size;
+				if (size > MAX_ALIGNMENT) {
+					size = MAX_ALIGNMENT;
+				}
+				staticOffset = (staticOffset & ~(size - 1)) + size;
+			}
+			member->offset = staticOffset;
+			staticOffset += details->info.member.type->size;
+			HashTableInsert(&cls->staticMembers, member->name, member);
+			break;
+		}
+	}
+	cls->init = true;
+}
+
+void mScriptClassDeinit(struct mScriptTypeClass* cls) {
+	if (!cls->init) {
+		return;
+	}
+	HashTableDeinit(&cls->instanceMembers);
+	HashTableDeinit(&cls->staticMembers);
+	cls->init = false;
 }
 
 bool mScriptPopS32(struct mScriptList* list, int32_t* out) {
