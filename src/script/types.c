@@ -45,6 +45,50 @@ const struct mScriptType mSTVoid = {
 	.cast = NULL,
 };
 
+const struct mScriptType mSTSInt8 = {
+	.base = mSCRIPT_TYPE_SINT,
+	.size = 1,
+	.name = "s8",
+	.alloc = NULL,
+	.free = NULL,
+	.hash = _hashScalar,
+	.equal = _s32Equal,
+	.cast = _castScalar,
+};
+
+const struct mScriptType mSTUInt8 = {
+	.base = mSCRIPT_TYPE_UINT,
+	.size = 1,
+	.name = "u8",
+	.alloc = NULL,
+	.free = NULL,
+	.hash = _hashScalar,
+	.equal = _u32Equal,
+	.cast = _castScalar,
+};
+
+const struct mScriptType mSTSInt16 = {
+	.base = mSCRIPT_TYPE_SINT,
+	.size = 2,
+	.name = "s16",
+	.alloc = NULL,
+	.free = NULL,
+	.hash = _hashScalar,
+	.equal = _s32Equal,
+	.cast = _castScalar,
+};
+
+const struct mScriptType mSTUInt16 = {
+	.base = mSCRIPT_TYPE_UINT,
+	.size = 2,
+	.name = "u16",
+	.alloc = NULL,
+	.free = NULL,
+	.hash = _hashScalar,
+	.equal = _u32Equal,
+	.cast = _castScalar,
+};
+
 const struct mScriptType mSTSInt32 = {
 	.base = mSCRIPT_TYPE_SINT,
 	.size = 4,
@@ -222,14 +266,14 @@ uint32_t _hashScalar(const struct mScriptValue* val) {
 	bool _as ## NAME(const struct mScriptValue* input, mSCRIPT_TYPE_C_ ## TYPE * T) { \
 		switch (input->type->base) { \
 		case mSCRIPT_TYPE_SINT: \
-			if (input->type->size == 4) { \
+			if (input->type->size <= 4) { \
 				*T = input->value.s32; \
 			} else if (input->type->size == 8) { \
 				*T = input->value.s64; \
 			} \
 			break; \
 		case mSCRIPT_TYPE_UINT: \
-			if (input->type->size == 4) { \
+			if (input->type->size <= 4) { \
 				*T = input->value.u32; \
 			} else if (input->type->size == 8) { \
 				*T = input->value.u64; \
@@ -258,7 +302,7 @@ _mAPPLY(AS(Float64, F64));
 bool _castScalar(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) {
 	switch (type->base) {
 	case mSCRIPT_TYPE_SINT:
-		if (type->size == 4) {
+		if (type->size <= 4) {
 			if (!_asSInt32(input, &output->value.s32)) {
 				return false;
 			}
@@ -271,7 +315,7 @@ bool _castScalar(const struct mScriptValue* input, const struct mScriptType* typ
 		}
 		break;
 	case mSCRIPT_TYPE_UINT:
-		if (type->size == 4) {
+		if (type->size <= 4) {
 			if (!_asUInt32(input, &output->value.u32)) {
 				return false;
 			}
@@ -333,7 +377,7 @@ bool _s32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 	int32_t val;
 	switch (b->type->base) {
 	case mSCRIPT_TYPE_SINT:
-		if (b->type->size == 4) {
+		if (b->type->size <= 4) {
 			val = b->value.s32;
 		} else if (b->type->size == 8) {
 			if (b->value.s64 > INT_MAX || b->value.s64 < INT_MIN) {
@@ -348,7 +392,7 @@ bool _s32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 		if (a->value.s32 < 0) {
 			return false;
 		}
-		if (b->type->size == 4) {
+		if (b->type->size <= 4) {
 			if (b->value.u32 > (uint32_t) INT_MAX) {
 				return false;
 			}
@@ -374,7 +418,7 @@ bool _u32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 	uint32_t val;
 	switch (b->type->base) {
 	case mSCRIPT_TYPE_SINT:
-		if (b->type->size == 4) {
+		if (b->type->size <= 4) {
 			if (a->value.u32 > (uint32_t) INT_MAX) {
 				return false;
 			}
@@ -392,7 +436,7 @@ bool _u32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 		}
 		break;
 	case mSCRIPT_TYPE_UINT:
-		if (b->type->size == 4) {
+		if (b->type->size <= 4) {
 			val = b->value.u32;
 		} else if (b->type->size == 8) {
 			if (b->value.u64 > UINT_MAX) {
@@ -433,7 +477,7 @@ bool _s64Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 	int64_t val;
 	switch (b->type->base) {
 	case mSCRIPT_TYPE_SINT:
-		if (b->type->size == 4) {
+		if (b->type->size <= 4) {
 			val = b->value.s32;
 		} else if (b->type->size == 8) {
 			val = b->value.s64;
@@ -445,7 +489,7 @@ bool _s64Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 		if (a->value.s64 < 0) {
 			return false;
 		}
-		if (b->type->size == 4) {
+		if (b->type->size <= 4) {
 			val = b->value.u32;
 		} else if (b->type->size == 8) {
 			if (b->value.u64 > (uint64_t) INT64_MAX) {
@@ -468,7 +512,7 @@ bool _u64Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 	uint64_t val;
 	switch (b->type->base) {
 	case mSCRIPT_TYPE_SINT:
-		if (b->type->size == 4) {
+		if (b->type->size <= 4) {
 			if (a->value.u64 > (uint64_t) INT_MAX) {
 				return false;
 			}
@@ -489,7 +533,7 @@ bool _u64Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 		}
 		break;
 	case mSCRIPT_TYPE_UINT:
-		if (b->type->size == 4) {
+		if (b->type->size <= 4) {
 			val = b->value.u32;
 		} else if (b->type->size == 8) {
 			val = b->value.u64;

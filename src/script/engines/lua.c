@@ -166,7 +166,7 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 	bool ok = true;
 	switch (value->type->base) {
 	case mSCRIPT_TYPE_SINT:
-		if (value->type->size == 4) {
+		if (value->type->size <= 4) {
 			lua_pushinteger(luaContext->lua, value->value.s32);
 		} else if (value->type->size == 8) {
 			lua_pushinteger(luaContext->lua, value->value.s64);
@@ -175,7 +175,7 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		}
 		break;
 	case mSCRIPT_TYPE_UINT:
-		if (value->type->size == 4) {
+		if (value->type->size <= 4) {
 			lua_pushinteger(luaContext->lua, value->value.u32);
 		} else if (value->type->size == 8) {
 			lua_pushinteger(luaContext->lua, value->value.u64);
