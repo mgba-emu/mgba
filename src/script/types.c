@@ -807,6 +807,84 @@ void mScriptClassDeinit(struct mScriptTypeClass* cls) {
 	cls->init = false;
 }
 
+bool mScriptObjectGet(struct mScriptValue* obj, const char* member, struct mScriptValue* val) {
+	if (obj->type->base != mSCRIPT_TYPE_OBJECT) {
+		return false;
+	}
+
+	struct mScriptTypeClass* cls = obj->type->details.cls;
+	if (!cls) {
+		return false;
+	}
+
+	mScriptClassInit(cls);
+
+	struct mScriptClassMember* m = HashTableLookup(&cls->instanceMembers, member);
+	if (!m) {
+		return false;
+	}
+
+	void* rawMember = (void *)((uintptr_t) obj->value.opaque + m->offset);
+	switch (m->type->base) {
+	case mSCRIPT_TYPE_SINT:
+		switch (m->type->size) {
+		case 1:
+			*val = mSCRIPT_MAKE_S32(*(int8_t *) rawMember);
+			break;
+		case 2:
+			*val = mSCRIPT_MAKE_S32(*(int16_t *) rawMember);
+			break;
+		case 4:
+			*val = mSCRIPT_MAKE_S32(*(int32_t *) rawMember);
+			break;
+		case 8:
+			*val = mSCRIPT_MAKE_S64(*(int64_t *) rawMember);
+			break;
+		default:
+			return false;
+		}
+		break;
+	case mSCRIPT_TYPE_UINT:
+		switch (m->type->size) {
+		case 1:
+			*val = mSCRIPT_MAKE_U32(*(uint8_t *) rawMember);
+			break;
+		case 2:
+			*val = mSCRIPT_MAKE_U32(*(uint16_t *) rawMember);
+			break;
+		case 4:
+			*val = mSCRIPT_MAKE_U32(*(uint32_t *) rawMember);
+			break;
+		case 8:
+			*val = mSCRIPT_MAKE_U64(*(uint64_t *) rawMember);
+			break;
+		default:
+			return false;
+		}
+		break;
+	case mSCRIPT_TYPE_FLOAT:
+		switch (m->type->size) {
+		case 4:
+			*val = mSCRIPT_MAKE_F32(*(mSCRIPT_TYPE_C_F32 *) rawMember);
+			break;
+		case 8:
+			*val = mSCRIPT_MAKE_F64(*(mSCRIPT_TYPE_C_F64 *) rawMember);
+			break;
+		default:
+			return false;
+		}
+		break;
+	case mSCRIPT_TYPE_FUNCTION:
+		val->refs = mSCRIPT_VALUE_UNREF;
+		val->type = m->type;
+		m->type->alloc(val);
+		break;
+	default:
+		return false;
+	}
+	return true;
+}
+
 bool mScriptPopS32(struct mScriptList* list, int32_t* out) {
 	mSCRIPT_POP(list, S32, val);
 	*out = val;

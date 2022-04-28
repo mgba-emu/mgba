@@ -13,7 +13,13 @@ CXX_GUARD_START
 #include <mgba-util/table.h>
 #include <mgba-util/vector.h>
 
+#define _mCPP_EMPTY()
+#define _mCPP_CAT(A, B) A ## B
+
+#define _mDEFER(X) X _mCPP_EMPTY()
+#define _mBLOCK(...) __VA_ARGS__ _mDEFER(_mCPP_EMPTY)()
 #define _mAPPLY(...) __VA_ARGS__
+#define _mCAT(A, B) _mCPP_CAT(A, B)
 
 #define mSCRIPT_VALUE_UNREF -1
 #define mSCRIPT_PARAMS_MAX 8
@@ -34,6 +40,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_C_TABLE Table*
 #define mSCRIPT_TYPE_C_WRAPPER struct mScriptValue*
 #define mSCRIPT_TYPE_C_S(STRUCT) struct STRUCT*
+#define mSCRIPT_TYPE_C_S_METHOD(STRUCT, NAME) _mSTStructFunctionType_ ## STRUCT ## _ ## NAME
 
 #define mSCRIPT_TYPE_FIELD_S8 s32
 #define mSCRIPT_TYPE_FIELD_U8 s32
@@ -51,6 +58,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_TABLE opaque
 #define mSCRIPT_TYPE_FIELD_WRAPPER opaque
 #define mSCRIPT_TYPE_FIELD_S(STRUCT) opaque
+#define mSCRIPT_TYPE_FIELD_S_METHOD(STRUCT, NAME) copaque
 
 #define mSCRIPT_TYPE_MS_S8 (&mSTSInt8)
 #define mSCRIPT_TYPE_MS_U8 (&mSTUInt8)
@@ -67,6 +75,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_MS_TABLE (&mSTTable)
 #define mSCRIPT_TYPE_MS_WRAPPER (&mSTWrapper)
 #define mSCRIPT_TYPE_MS_S(STRUCT) (&mSTStruct_ ## STRUCT)
+#define mSCRIPT_TYPE_MS_S_METHOD(STRUCT, NAME) (&_mSTStructBindingType_ ## STRUCT ## _ ## NAME)
 
 #define _mSCRIPT_FIELD_NAME(V) (V)->name
 
@@ -85,6 +94,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_CMP_CHARP(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_CHARP, TYPE)
 #define mSCRIPT_TYPE_CMP_PTR(TYPE) ((TYPE)->base >= mSCRIPT_TYPE_OPAQUE)
 #define mSCRIPT_TYPE_CMP_S(STRUCT) mSCRIPT_TYPE_MS_S(STRUCT)->name == _mSCRIPT_FIELD_NAME
+#define mSCRIPT_TYPE_CMP_S_METHOD(STRUCT, NAME) mSCRIPT_TYPE_MS_S_METHOD(STRUCT, NAME)->name == _mSCRIPT_FIELD_NAME
 #define mSCRIPT_TYPE_CMP(TYPE0, TYPE1) _mAPPLY(mSCRIPT_TYPE_CMP_ ## TYPE0(TYPE1))
 
 #define mSCRIPT_POP(STACK, TYPE, NAME) \
@@ -116,6 +126,15 @@ CXX_GUARD_START
 #define mSCRIPT_POP_7(FRAME, T0, T1, T2, T3, T4, T5, T6) mSCRIPT_POP(FRAME, T6, p6); mSCRIPT_POP_6(FRAME, T0, T1, T2, T3, T4, T5)
 #define mSCRIPT_POP_8(FRAME, T0, T1, T2, T3, T4, T5, T6, T7) mSCRIPT_POP(FRAME, T7, p7); mSCRIPT_POP_7(FRAME, T0, T1, T2, T3, T4, T5, T6)
 
+#define _mCOMMA_0(N, ...) N
+#define _mCOMMA_1(N, ...) N, __VA_ARGS__
+#define _mCOMMA_2(N, ...) N, __VA_ARGS__
+#define _mCOMMA_3(N, ...) N, __VA_ARGS__
+#define _mCOMMA_4(N, ...) N, __VA_ARGS__
+#define _mCOMMA_5(N, ...) N, __VA_ARGS__
+#define _mCOMMA_6(N, ...) N, __VA_ARGS__
+#define _mCOMMA_7(N, ...) N, __VA_ARGS__
+
 #define mSCRIPT_PUSH(STACK, TYPE, NAME) \
 	do { \
 		struct mScriptValue* _val = mScriptListAppend(STACK); \
@@ -143,10 +162,29 @@ CXX_GUARD_START
 #define mSCRIPT_PREFIX_6(PREFIX, T0, T1, T2, T3, T4, T5) PREFIX ## T0, PREFIX ## T1, PREFIX ## T2, PREFIX ## T3, PREFIX ## T4, PREFIX ## T5
 #define mSCRIPT_PREFIX_7(PREFIX, T0, T1, T2, T3, T4, T5, T6) PREFIX ## T0, PREFIX ## T1, PREFIX ## T2, PREFIX ## T3, PREFIX ## T4, PREFIX ## T5, PREFIX ## T6
 #define mSCRIPT_PREFIX_8(PREFIX, T0, T1, T2, T3, T4, T5, T6, T7) PREFIX ## T0, PREFIX ## T1, PREFIX ## T2, PREFIX ## T3, PREFIX ## T4, PREFIX ## T5, PREFIX ## T6, PREFIX ## T7
+#define mSCRIPT_PREFIX_N(N) _mAPPLY(mSCRIPT_PREFIX_ ## N)
 
-#define _mSCRIPT_CALL_VOID(FUNCTION, NPARAMS) FUNCTION(mSCRIPT_ARG_NAMES_ ## NPARAMS)
+#define _mSUCC0 1
+#define _mSUCC1 2
+#define _mSUCC2 3
+#define _mSUCC3 4
+#define _mSUCC4 5
+#define _mSUCC5 6
+#define _mSUCC6 7
+#define _mSUCC7 8
+
+#define _mPREC1 0
+#define _mPREC2 1
+#define _mPREC3 2
+#define _mPREC4 3
+#define _mPREC5 4
+#define _mPREC6 5
+#define _mPREC7 6
+#define _mPREC8 7
+
+#define _mSCRIPT_CALL_VOID(FUNCTION, NPARAMS) FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS))
 #define _mSCRIPT_CALL(RETURN, FUNCTION, NPARAMS) \
-	_mAPPLY(mSCRIPT_TYPE_C_ ## RETURN) out = FUNCTION(mSCRIPT_ARG_NAMES_ ## NPARAMS); \
+	_mAPPLY(mSCRIPT_TYPE_C_ ## RETURN) out = FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS)); \
 	mSCRIPT_PUSH(&frame->returnValues, RETURN, out)
 
 #define mSCRIPT_EXPORT_STRUCT(STRUCT) \
@@ -161,8 +199,9 @@ CXX_GUARD_START
 		.free = NULL, \
 	}
 
-#define mSCRIPT_DECLARE_STRUCT(STRUCT) extern const struct mScriptType mSTStruct_ ## STRUCT;
+#define mSCRIPT_DECLARE_STRUCT(STRUCT) extern const struct mScriptType mSTStruct_ ## STRUCT
 #define mSCRIPT_DEFINE_STRUCT(STRUCT) \
+	const struct mScriptType mSTStruct_ ## STRUCT; \
 	static struct mScriptTypeClass _mSTStructDetails_ ## STRUCT = { \
 		.init = false, \
 		.details = (const struct mScriptClassInitDetails[]) {
@@ -180,7 +219,7 @@ CXX_GUARD_START
 		.member = { \
 			.name = #NAME, \
 			.type = _mAPPLY(mSCRIPT_TYPE_MS_ ## TYPE), \
-			.offset = offsetof(STRUCT, NAME) \
+			.offset = offsetof(struct STRUCT, NAME) \
 		} \
 	} \
 },
@@ -195,7 +234,72 @@ CXX_GUARD_START
 	}, \
 },
 
-#define mSCRIPT_DEFINE_END { .type = mSCRIPT_CLASS_INIT_END } } };
+#define _mSCRIPT_STRUCT_METHOD_POP(TYPE, NPARAMS, ...) \
+	_mDEFER(_mDEFER(_mCAT(mSCRIPT_POP_, _mSUCC ## NPARAMS)) (&frame->arguments, _mCOMMA_ ## NPARAMS(S(TYPE), __VA_ARGS__))); \
+	if (mScriptListSize(&frame->arguments)) { \
+		return false; \
+	}
+
+#define _mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, NRET, RETURN, NPARAMS, ...) \
+	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx); \
+	static const struct mScriptFunction _mSTStructBindingFunction_ ## TYPE ## _ ## NAME = { \
+		.call = &_mSTStructBinding_ ## TYPE ## _ ## NAME \
+	}; \
+	\
+	static void _mSTStructBindingAlloc_ ## TYPE ## _ ## NAME(struct mScriptValue* val) { \
+		val->value.copaque = &_mSTStructBindingFunction_ ## TYPE ## _ ## NAME; \
+	}\
+	static const struct mScriptType _mSTStructBindingType_ ## TYPE ## _ ## NAME = { \
+		.base = mSCRIPT_TYPE_FUNCTION, \
+		.name = "struct::" #TYPE "." #NAME, \
+		.alloc = _mSTStructBindingAlloc_ ## TYPE ## _ ## NAME, \
+		.details = { \
+			.function = { \
+				.parameters = { \
+					.count = _mSUCC ## NPARAMS, \
+					.entries = { _mAPPLY(mSCRIPT_TYPE_MS_S(TYPE)), mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_MS_, __VA_ARGS__) } \
+				}, \
+				.returnType = { \
+					.count = NRET, \
+					.entries = { RETURN } \
+				}, \
+			}, \
+		} \
+	};
+
+#define mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, RETURN, NAME, NPARAMS, ...) \
+	typedef _mAPPLY(mSCRIPT_TYPE_C_ ## RETURN) (*_mSTStructFunctionType_ ## TYPE ## _ ## NAME)(_mAPPLY(_mCOMMA_ ## NPARAMS(struct TYPE* , mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_C_, __VA_ARGS__)))); \
+	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS, __VA_ARGS__) \
+	\
+	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
+		UNUSED(ctx); \
+		_mSCRIPT_STRUCT_METHOD_POP(TYPE, NPARAMS, __VA_ARGS__); \
+		_mSCRIPT_CALL(RETURN, p0->NAME, _mSUCC ## NPARAMS); \
+		return true; \
+	} \
+
+#define mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TYPE, NAME, NPARAMS, ...) \
+	typedef void (*_mSTStructFunctionType_ ## TYPE ## _ ## NAME)(_mAPPLY(_mCOMMA_ ## NPARAMS(struct TYPE* , mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_C_, __VA_ARGS__)))); \
+	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, 0, , NPARAMS, __VA_ARGS__) \
+	\
+	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
+		UNUSED(ctx); \
+		_mSCRIPT_STRUCT_METHOD_POP(TYPE, NPARAMS, __VA_ARGS__); \
+		_mSCRIPT_CALL_VOID(p0->NAME, _mSUCC ## NPARAMS); \
+		return true; \
+	} \
+
+#define mSCRIPT_DEFINE_STRUCT_METHOD(TYPE, NAME) { \
+	.type = mSCRIPT_CLASS_INIT_INSTANCE_MEMBER, \
+	.info = { \
+		.member = { \
+			.name = #NAME, \
+			.type = &_mSTStructBindingType_ ## TYPE ## _ ## NAME \
+		} \
+	}, \
+},
+
+#define mSCRIPT_DEFINE_END { .type = mSCRIPT_CLASS_INIT_END } } }
 
 #define _mSCRIPT_BIND_FUNCTION(NAME, NRET, RETURN, NPARAMS, ...) \
 	static const struct mScriptType _type_ ## NAME = { \
@@ -220,7 +324,7 @@ CXX_GUARD_START
 		.type = &_type_ ## NAME, \
 		.refs = mSCRIPT_VALUE_UNREF, \
 		.value = { \
-			.opaque = &_function_ ## NAME \
+			.copaque = &_function_ ## NAME \
 		} \
 	}
 
@@ -267,6 +371,7 @@ CXX_GUARD_START
 #define mSCRIPT_MAKE_U64(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_U64, u64, VALUE)
 #define mSCRIPT_MAKE_F64(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_F64, f64, VALUE)
 #define mSCRIPT_MAKE_CHARP(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_CHARP, opaque, VALUE)
+#define mSCRIPT_MAKE_S(STRUCT, VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_S(STRUCT), opaque, VALUE)
 
 enum {
 	mSCRIPT_TYPE_VOID = 0,
@@ -373,6 +478,7 @@ struct mScriptValue {
 		uint64_t u64;
 		double f64;
 		void* opaque;
+		const void* copaque;
 	} value;
 };
 
@@ -413,6 +519,8 @@ void mScriptFrameDeinit(struct mScriptFrame* frame);
 
 void mScriptClassInit(struct mScriptTypeClass* cls);
 void mScriptClassDeinit(struct mScriptTypeClass* cls);
+
+bool mScriptObjectGet(struct mScriptValue* obj, const char* member, struct mScriptValue*);
 
 bool mScriptPopS32(struct mScriptList* list, int32_t* out);
 bool mScriptPopU32(struct mScriptList* list, uint32_t* out);
