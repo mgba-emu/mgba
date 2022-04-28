@@ -141,16 +141,7 @@ CXX_GUARD_START
 		.free = NULL, \
 	}
 
-#define mSCRIPT_BIND_FUNCTION(NAME, RETURN, FUNCTION, NPARAMS, ...) \
-	static bool _binding_ ## NAME(struct mScriptFrame* frame, void* ctx) { \
-		UNUSED(ctx); \
-		mSCRIPT_POP_ ## NPARAMS(&frame->arguments, __VA_ARGS__); \
-		if (mScriptListSize(&frame->arguments)) { \
-			return false; \
-		} \
-		_mSCRIPT_CALL(RETURN, FUNCTION, NPARAMS); \
-		return true; \
-	} \
+#define _mSCRIPT_BIND_FUNCTION(NAME, NRET, RETURN, NPARAMS, ...) \
 	static const struct mScriptType _type_ ## NAME = { \
 		.base = mSCRIPT_TYPE_FUNCTION, \
 		.details = { \
@@ -160,8 +151,8 @@ CXX_GUARD_START
 					.entries = { _mAPPLY(mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_MS_, __VA_ARGS__)) } \
 				}, \
 				.returnType = { \
-					.count = 1, \
-					.entries = { mSCRIPT_TYPE_MS_ ## RETURN } \
+					.count = NRET, \
+					.entries = { RETURN } \
 				}, \
 			}, \
 		} \
@@ -175,7 +166,19 @@ CXX_GUARD_START
 		.value = { \
 			.opaque = &_function_ ## NAME \
 		} \
-	};
+	}
+
+#define mSCRIPT_BIND_FUNCTION(NAME, RETURN, FUNCTION, NPARAMS, ...) \
+	static bool _binding_ ## NAME(struct mScriptFrame* frame, void* ctx) { \
+		UNUSED(ctx); \
+		mSCRIPT_POP_ ## NPARAMS(&frame->arguments, __VA_ARGS__); \
+		if (mScriptListSize(&frame->arguments)) { \
+			return false; \
+		} \
+		_mSCRIPT_CALL(RETURN, FUNCTION, NPARAMS); \
+		return true; \
+	} \
+	_mSCRIPT_BIND_FUNCTION(NAME, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS, __VA_ARGS__)
 
 #define mSCRIPT_BIND_VOID_FUNCTION(NAME, FUNCTION, NPARAMS, ...) \
 	static bool _binding_ ## NAME(struct mScriptFrame* frame, void* ctx) { \
@@ -187,30 +190,7 @@ CXX_GUARD_START
 		_mSCRIPT_CALL_VOID(FUNCTION, NPARAMS); \
 		return true; \
 	} \
-	static const struct mScriptType _type_ ## NAME = { \
-		.base = mSCRIPT_TYPE_FUNCTION, \
-		.details = { \
-			.function = { \
-				.parameters = { \
-					.count = NPARAMS, \
-					.entries = { _mAPPLY(mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_MS_, __VA_ARGS__)) } \
-				}, \
-				.returnType = { \
-					.count = 0, \
-				}, \
-			}, \
-		} \
-	}; \
-	static struct mScriptFunction _function_ ## NAME = { \
-		.call = _binding_ ## NAME \
-	}; \
-	const struct mScriptValue NAME = { \
-		.type = &_type_ ## NAME, \
-		.refs = mSCRIPT_VALUE_UNREF, \
-		.value = { \
-			.opaque = &_function_ ## NAME \
-		} \
-	};
+	_mSCRIPT_BIND_FUNCTION(NAME, 0, , NPARAMS, __VA_ARGS__)
 
 #define mSCRIPT_MAKE(TYPE, FIELD, VALUE) (struct mScriptValue) { \
 		.type = (TYPE), \
