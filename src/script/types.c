@@ -743,7 +743,7 @@ bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* inpu
 	if (input->type->cast && input->type->cast(input, type, output)) {
 		return true;
 	}
-	return true;
+	return false;
 }
 
 bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList* frame) {
