@@ -17,6 +17,8 @@ struct TestA {
 	int32_t (*ifn1)(struct TestA*, int);
 	void (*vfn0)(struct TestA*);
 	void (*vfn1)(struct TestA*, int);
+	int32_t (*icfn0)(const struct TestA*);
+	int32_t (*icfn1)(const struct TestA*, int);
 };
 
 static int32_t testAi0(struct TestA* a) {
@@ -24,6 +26,14 @@ static int32_t testAi0(struct TestA* a) {
 }
 
 static int32_t testAi1(struct TestA* a, int b) {
+	return a->i + b;
+}
+
+static int32_t testAic0(const struct TestA* a) {
+	return a->i;
+}
+
+static int32_t testAic1(const struct TestA* a, int b) {
 	return a->i + b;
 }
 
@@ -38,10 +48,12 @@ static void testAv1(struct TestA* a, int b) {
 #define MEMBER_A_DOCSTRING "Member a"
 
 mSCRIPT_DECLARE_STRUCT(TestA);
-mSCRIPT_DECLARE_STRUCT_METHOD(TestA, S32, ifn0, 0);
-mSCRIPT_DECLARE_STRUCT_METHOD(TestA, S32, ifn1, 1, S32);
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestA, vfn0, 0);
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestA, vfn1, 1, S32);
+mSCRIPT_DECLARE_STRUCT_D_METHOD(TestA, S32, ifn0, 0);
+mSCRIPT_DECLARE_STRUCT_D_METHOD(TestA, S32, ifn1, 1, S32);
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(TestA, S32, icfn0, 0);
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(TestA, S32, icfn1, 1, S32);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(TestA, vfn0, 0);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(TestA, vfn1, 1, S32);
 
 mSCRIPT_DEFINE_STRUCT(TestA)
 	mSCRIPT_DEFINE_DOCSTRING(MEMBER_A_DOCSTRING)
@@ -51,6 +63,8 @@ mSCRIPT_DEFINE_STRUCT(TestA)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestA, S16, hUnaligned)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, ifn0)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, ifn1)
+	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, icfn0)
+	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, icfn1)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, vfn0)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, vfn1)
 
@@ -194,6 +208,8 @@ M_TEST_DEFINE(testAFunctions) {
 		.i = 1,
 		.ifn0 = testAi0,
 		.ifn1 = testAi1,
+		.icfn0 = testAic0,
+		.icfn1 = testAic1,
 		.vfn0 = testAv0,
 		.vfn1 = testAv1,
 	};
@@ -220,6 +236,40 @@ M_TEST_DEFINE(testAFunctions) {
 	assert_int_equal(rval, 2);
 	mScriptFrameDeinit(&frame);
 
+	assert_true(mScriptObjectGet(&sval, "icfn0", &val));
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, CS(TestA), &s);
+	assert_true(mScriptInvoke(&val, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &rval));
+	assert_int_equal(rval, 1);
+	mScriptFrameDeinit(&frame);
+
+	assert_true(mScriptObjectGet(&sval, "icfn0", &val));
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S(TestA), &s);
+	assert_true(mScriptInvoke(&val, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &rval));
+	assert_int_equal(rval, 1);
+	mScriptFrameDeinit(&frame);
+
+	assert_true(mScriptObjectGet(&sval, "icfn1", &val));
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, CS(TestA), &s);
+	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	assert_true(mScriptInvoke(&val, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &rval));
+	assert_int_equal(rval, 2);
+	mScriptFrameDeinit(&frame);
+
+	assert_true(mScriptObjectGet(&sval, "icfn1", &val));
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S(TestA), &s);
+	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	assert_true(mScriptInvoke(&val, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &rval));
+	assert_int_equal(rval, 2);
+	mScriptFrameDeinit(&frame);
+
 	assert_true(mScriptObjectGet(&sval, "vfn0", &val));
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, S(TestA), &s);
@@ -228,6 +278,13 @@ M_TEST_DEFINE(testAFunctions) {
 	assert_true(mScriptObjectGet(&sval, "ifn0", &val));
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, S(TestA), &s);
+	assert_true(mScriptInvoke(&val, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &rval));
+	assert_int_equal(rval, 2);
+	mScriptFrameDeinit(&frame);
+	assert_true(mScriptObjectGet(&sval, "icfn0", &val));
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, CS(TestA), &s);
 	assert_true(mScriptInvoke(&val, &frame));
 	assert_true(mScriptPopS32(&frame.returnValues, &rval));
 	assert_int_equal(rval, 2);
@@ -242,6 +299,13 @@ M_TEST_DEFINE(testAFunctions) {
 	assert_true(mScriptObjectGet(&sval, "ifn0", &val));
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, S(TestA), &s);
+	assert_true(mScriptInvoke(&val, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &rval));
+	assert_int_equal(rval, 4);
+	mScriptFrameDeinit(&frame);
+	assert_true(mScriptObjectGet(&sval, "icfn0", &val));
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, CS(TestA), &s);
 	assert_true(mScriptInvoke(&val, &frame));
 	assert_true(mScriptPopS32(&frame.returnValues, &rval));
 	assert_int_equal(rval, 4);

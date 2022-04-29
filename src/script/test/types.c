@@ -260,6 +260,79 @@ M_TEST_DEFINE(wrongPopSize) {
 	mScriptFrameDeinit(&frame);
 }
 
+bool mScriptPopCSTest(struct mScriptList* list, const struct Test** out) {
+	mSCRIPT_POP(list, CS(Test), val);
+	*out = val;
+	return true;
+}
+
+bool mScriptPopSTest(struct mScriptList* list, struct Test** out) {
+	mSCRIPT_POP(list, S(Test), val);
+	*out = val;
+	return true;
+}
+
+M_TEST_DEFINE(wrongConst) {
+	struct mScriptFrame frame;
+	struct Test a;
+	struct Test* b;
+	const struct Test* cb;
+	struct mScriptTypeTuple signature = {
+		.count = 1,
+		.variable = false
+	};
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S(Test), &a);
+	signature.entries[0] = mSCRIPT_TYPE_MS_S(Test);
+	assert_true(mScriptCoerceFrame(&signature, &frame.arguments));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, CS(Test), &a);
+	signature.entries[0] = mSCRIPT_TYPE_MS_CS(Test);
+	assert_true(mScriptCoerceFrame(&signature, &frame.arguments));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S(Test), &a);
+	signature.entries[0] = mSCRIPT_TYPE_MS_CS(Test);
+	assert_true(mScriptCoerceFrame(&signature, &frame.arguments));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, CS(Test), &a);
+	signature.entries[0] = mSCRIPT_TYPE_MS_S(Test);
+	assert_false(mScriptCoerceFrame(&signature, &frame.arguments));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S(Test), &a);
+	assert_true(mScriptPopSTest(&frame.arguments, &b));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S(Test), &a);
+	assert_false(mScriptPopCSTest(&frame.arguments, &cb));
+	signature.entries[0] = mSCRIPT_TYPE_MS_CS(Test);
+	assert_true(mScriptCoerceFrame(&signature, &frame.arguments));
+	assert_true(mScriptPopCSTest(&frame.arguments, &cb));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, CS(Test), &a);
+	assert_false(mScriptPopSTest(&frame.arguments, &b));
+	signature.entries[0] = mSCRIPT_TYPE_MS_S(Test);
+	assert_false(mScriptCoerceFrame(&signature, &frame.arguments));
+	assert_false(mScriptPopSTest(&frame.arguments, &b));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, CS(Test), &a);
+	assert_true(mScriptPopCSTest(&frame.arguments, &cb));
+	mScriptFrameDeinit(&frame);
+}
+
 M_TEST_DEFINE(coerceToFloat) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
@@ -858,6 +931,7 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(wrongArgType),
 	cmocka_unit_test(wrongPopType),
 	cmocka_unit_test(wrongPopSize),
+	cmocka_unit_test(wrongConst),
 	cmocka_unit_test(coerceToFloat),
 	cmocka_unit_test(coerceFromFloat),
 	cmocka_unit_test(coerceNarrow),
