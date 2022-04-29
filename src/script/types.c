@@ -255,6 +255,7 @@ uint32_t _hashScalar(const struct mScriptValue* val) {
 		x = val->value.s32;
 		break;
 	case mSCRIPT_TYPE_UINT:
+	default:
 		x = val->value.u32;
 		break;
 	}

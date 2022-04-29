@@ -205,6 +205,7 @@ CXX_GUARD_START
 	}; \
 	const struct mScriptType mSTStructConst_ ## STRUCT = { \
 		.base = mSCRIPT_TYPE_OBJECT, \
+		.isConst = true, \
 		.details = { \
 			.cls = &_mSTStructDetails_ ## STRUCT \
 		}, \
@@ -427,8 +428,9 @@ CXX_GUARD_START
 #define mSCRIPT_MAKE_F64(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_F64, f64, VALUE)
 #define mSCRIPT_MAKE_CHARP(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_CHARP, opaque, VALUE)
 #define mSCRIPT_MAKE_S(STRUCT, VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_S(STRUCT), opaque, VALUE)
+#define mSCRIPT_MAKE_CS(STRUCT, VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_CS(STRUCT), copaque, VALUE)
 
-enum {
+enum mScriptTypeBase {
 	mSCRIPT_TYPE_VOID = 0,
 	mSCRIPT_TYPE_SINT,
 	mSCRIPT_TYPE_UINT,
@@ -505,7 +507,9 @@ struct mScriptTypeClass {
 
 struct mScriptValue;
 struct mScriptType {
-	int base;
+	enum mScriptTypeBase base : 8;
+	bool isConst;
+
 	size_t size;
 	const char* name;
 	union {
