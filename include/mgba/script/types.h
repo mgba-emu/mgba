@@ -177,15 +177,6 @@ CXX_GUARD_START
 #define _mSUCC6 7
 #define _mSUCC7 8
 
-#define _mPREC1 0
-#define _mPREC2 1
-#define _mPREC3 2
-#define _mPREC4 3
-#define _mPREC5 4
-#define _mPREC6 5
-#define _mPREC7 6
-#define _mPREC8 7
-
 #define _mSCRIPT_CALL_VOID(FUNCTION, NPARAMS) FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS))
 #define _mSCRIPT_CALL(RETURN, FUNCTION, NPARAMS) \
 	_mAPPLY(mSCRIPT_TYPE_C_ ## RETURN) out = FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS)); \
@@ -460,7 +451,6 @@ enum mScriptClassInitType {
 	mSCRIPT_CLASS_INIT_INHERIT,
 };
 
-struct Table;
 struct mScriptType;
 extern const struct mScriptType mSTVoid;
 extern const struct mScriptType mSTSInt8;
