@@ -579,6 +579,7 @@ void mScriptClassInit(struct mScriptTypeClass* cls);
 void mScriptClassDeinit(struct mScriptTypeClass* cls);
 
 bool mScriptObjectGet(struct mScriptValue* obj, const char* member, struct mScriptValue*);
+bool mScriptObjectSet(struct mScriptValue* obj, const char* member, struct mScriptValue*);
 
 bool mScriptPopS32(struct mScriptList* list, int32_t* out);
 bool mScriptPopU32(struct mScriptList* list, uint32_t* out);

@@ -165,7 +165,7 @@ M_TEST_DEFINE(testALayout) {
 	assert_false(cls->init);
 }
 
-M_TEST_DEFINE(testATranslation) {
+M_TEST_DEFINE(testAGet) {
 	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestA)->details.cls;
 
 	struct TestA s = {
@@ -194,6 +194,58 @@ M_TEST_DEFINE(testATranslation) {
 	compare = mSCRIPT_MAKE_S32(4);
 	assert_true(mScriptObjectGet(&sval, "hUnaligned", &val));
 	assert_true(compare.type->equal(&compare, &val));
+
+	assert_true(cls->init);
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
+M_TEST_DEFINE(testASet) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestA)->details.cls;
+
+	struct TestA s = {
+		.i = 1,
+		.i2 = 2,
+		.b8 = 3,
+		.hUnaligned = 4
+	};
+
+	struct mScriptValue sval = mSCRIPT_MAKE_S(TestA, &s);
+	struct mScriptValue val;
+
+	val = mSCRIPT_MAKE_S32(2);
+	assert_true(mScriptObjectSet(&sval, "i", &val));
+	assert_int_equal(s.i, 2);
+
+	val = mSCRIPT_MAKE_S32(3);
+	assert_true(mScriptObjectSet(&sval, "i2", &val));
+	assert_int_equal(s.i2, 3);
+
+	val = mSCRIPT_MAKE_S32(4);
+	assert_true(mScriptObjectSet(&sval, "b8", &val));
+	assert_int_equal(s.b8, 4);
+
+	val = mSCRIPT_MAKE_S32(5);
+	assert_true(mScriptObjectSet(&sval, "hUnaligned", &val));
+	assert_int_equal(s.hUnaligned, 5);
+
+	sval = mSCRIPT_MAKE_CS(TestA, &s);
+
+	val = mSCRIPT_MAKE_S32(3);
+	assert_false(mScriptObjectSet(&sval, "i", &val));
+	assert_int_equal(s.i, 2);
+
+	val = mSCRIPT_MAKE_S32(4);
+	assert_false(mScriptObjectSet(&sval, "i2", &val));
+	assert_int_equal(s.i2, 3);
+
+	val = mSCRIPT_MAKE_S32(5);
+	assert_false(mScriptObjectSet(&sval, "b8", &val));
+	assert_int_equal(s.b8, 4);
+
+	val = mSCRIPT_MAKE_S32(6);
+	assert_false(mScriptObjectSet(&sval, "hUnaligned", &val));
+	assert_int_equal(s.hUnaligned, 5);
 
 	assert_true(cls->init);
 	mScriptClassDeinit(cls);
@@ -442,6 +494,7 @@ M_TEST_DEFINE(testADynamic) {
 
 M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testALayout),
-	cmocka_unit_test(testATranslation),
+	cmocka_unit_test(testAGet),
+	cmocka_unit_test(testASet),
 	cmocka_unit_test(testAStatic),
 	cmocka_unit_test(testADynamic))
