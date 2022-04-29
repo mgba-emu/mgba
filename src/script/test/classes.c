@@ -21,6 +21,20 @@ struct TestA {
 	int32_t (*icfn1)(const struct TestA*, int);
 };
 
+struct TestB {
+	struct TestA d;
+	int32_t i3;
+};
+
+struct TestC {
+	int32_t i;
+};
+
+struct TestD {
+	struct TestC a;
+	struct TestC b;
+};
+
 static int32_t testAi0(struct TestA* a) {
 	return a->i;
 }
@@ -87,7 +101,24 @@ mSCRIPT_DEFINE_STRUCT(TestA)
 	mSCRIPT_DEFINE_STATIC_MEMBER(S16, s_hUnaligned)
 mSCRIPT_DEFINE_END;
 
+mSCRIPT_DEFINE_STRUCT(TestB)
+	mSCRIPT_DEFINE_INHERIT(TestA)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(TestB, S32, i3)
+mSCRIPT_DEFINE_END;
+
+mSCRIPT_DEFINE_STRUCT(TestC)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(TestC, S32, i)
+mSCRIPT_DEFINE_END;
+
+mSCRIPT_DEFINE_STRUCT(TestD)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(TestD, S(TestC), a)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(TestD, S(TestC), b)
+mSCRIPT_DEFINE_END;
+
 mSCRIPT_EXPORT_STRUCT(TestA);
+mSCRIPT_EXPORT_STRUCT(TestB);
+mSCRIPT_EXPORT_STRUCT(TestC);
+mSCRIPT_EXPORT_STRUCT(TestD);
 
 M_TEST_DEFINE(testALayout) {
 	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestA)->details.cls;
@@ -492,9 +523,331 @@ M_TEST_DEFINE(testADynamic) {
 	assert_false(cls->init);
 }
 
+M_TEST_DEFINE(testBLayout) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestB)->details.cls;
+	assert_false(cls->init);
+	mScriptClassInit(cls);
+	assert_true(cls->init);
+
+	struct mScriptClassMember* member;
+
+	// Instance members
+	member = HashTableLookup(&cls->instanceMembers, "i");
+	assert_non_null(member);
+	assert_string_equal(member->name, "i");
+	assert_string_equal(member->docstring, MEMBER_A_DOCSTRING);
+	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S32);
+	assert_int_equal(member->offset, 0);
+
+	member = HashTableLookup(&cls->instanceMembers, "i2");
+	assert_non_null(member);
+	assert_string_equal(member->name, "i2");
+	assert_null(member->docstring);
+	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S32);
+	assert_int_equal(member->offset, sizeof(int32_t));
+
+	member = HashTableLookup(&cls->instanceMembers, "b8");
+	assert_non_null(member);
+	assert_string_equal(member->name, "b8");
+	assert_null(member->docstring);
+	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S8);
+	assert_int_equal(member->offset, sizeof(int32_t) * 2);
+
+	member = HashTableLookup(&cls->instanceMembers, "hUnaligned");
+	assert_non_null(member);
+	assert_string_equal(member->name, "hUnaligned");
+	assert_null(member->docstring);
+	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S16);
+	assert_int_not_equal(member->offset, sizeof(int32_t) * 2 + 1);
+	size_t hOffset = member->offset;
+
+	member = HashTableLookup(&cls->instanceMembers, "i3");
+	assert_non_null(member);
+	assert_string_equal(member->name, "i3");
+	assert_null(member->docstring);
+	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S32);
+	assert_true(member->offset >= hOffset + sizeof(int16_t));
+
+	member = HashTableLookup(&cls->instanceMembers, "_super");
+	assert_non_null(member);
+	assert_string_equal(member->name, "_super");
+	assert_null(member->docstring);
+	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S(TestA));
+	assert_int_equal(member->offset, 0);
+
+	member = HashTableLookup(&cls->instanceMembers, "unknown");
+	assert_null(member);
+
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
+M_TEST_DEFINE(testBGet) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestB)->details.cls;
+
+	struct TestB s = {
+		.d = {
+			.i = 1,
+			.i2 = 2,
+			.b8 = 3,
+			.hUnaligned = 4
+		},
+		.i3 = 5
+	};
+
+	struct mScriptValue sval = mSCRIPT_MAKE_S(TestB, &s);
+	struct mScriptValue super;
+	struct mScriptValue val;
+	struct mScriptValue compare;
+
+	compare = mSCRIPT_MAKE_S32(1);
+	assert_true(mScriptObjectGet(&sval, "i", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32(2);
+	assert_true(mScriptObjectGet(&sval, "i2", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32(3);
+	assert_true(mScriptObjectGet(&sval, "b8", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32(4);
+	assert_true(mScriptObjectGet(&sval, "hUnaligned", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32(5);
+	assert_true(mScriptObjectGet(&sval, "i3", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	// Superclass explicit access
+	assert_true(mScriptObjectGet(&sval, "_super", &super));
+	assert_true(super.type == mSCRIPT_TYPE_MS_S(TestA));
+
+	compare = mSCRIPT_MAKE_S32(1);
+	assert_true(mScriptObjectGet(&super, "i", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32(2);
+	assert_true(mScriptObjectGet(&super, "i2", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32(3);
+	assert_true(mScriptObjectGet(&super, "b8", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32(4);
+	assert_true(mScriptObjectGet(&super, "hUnaligned", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	assert_false(mScriptObjectGet(&super, "i3", &val));
+
+	// Test const-correctness
+	sval = mSCRIPT_MAKE_CS(TestB, &s);
+	assert_true(mScriptObjectGet(&sval, "_super", &super));
+	assert_true(super.type == mSCRIPT_TYPE_MS_CS(TestA));
+
+	assert_true(cls->init);
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
+M_TEST_DEFINE(testBSet) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestB)->details.cls;
+
+	struct TestB s = {
+		.d = {
+			.i = 1,
+			.i2 = 2,
+			.b8 = 3,
+			.hUnaligned = 4
+		},
+		.i3 = 5
+	};
+
+	struct mScriptValue sval = mSCRIPT_MAKE_S(TestB, &s);
+	struct mScriptValue super;
+	struct mScriptValue val;
+
+	val = mSCRIPT_MAKE_S32(2);
+	assert_true(mScriptObjectSet(&sval, "i", &val));
+	assert_int_equal(s.d.i, 2);
+
+	val = mSCRIPT_MAKE_S32(3);
+	assert_true(mScriptObjectSet(&sval, "i2", &val));
+	assert_int_equal(s.d.i2, 3);
+
+	val = mSCRIPT_MAKE_S32(4);
+	assert_true(mScriptObjectSet(&sval, "b8", &val));
+	assert_int_equal(s.d.b8, 4);
+
+	val = mSCRIPT_MAKE_S32(5);
+	assert_true(mScriptObjectSet(&sval, "hUnaligned", &val));
+	assert_int_equal(s.d.hUnaligned, 5);
+
+	val = mSCRIPT_MAKE_S32(6);
+	assert_true(mScriptObjectSet(&sval, "i3", &val));
+	assert_int_equal(s.i3, 6);
+
+	// Superclass explicit access
+	assert_true(mScriptObjectGet(&sval, "_super", &super));
+	assert_true(super.type == mSCRIPT_TYPE_MS_S(TestA));
+
+	val = mSCRIPT_MAKE_S32(3);
+	assert_true(mScriptObjectSet(&super, "i", &val));
+	assert_int_equal(s.d.i, 3);
+
+	val = mSCRIPT_MAKE_S32(4);
+	assert_true(mScriptObjectSet(&super, "i2", &val));
+	assert_int_equal(s.d.i2, 4);
+
+	val = mSCRIPT_MAKE_S32(5);
+	assert_true(mScriptObjectSet(&super, "b8", &val));
+	assert_int_equal(s.d.b8, 5);
+
+	val = mSCRIPT_MAKE_S32(6);
+	assert_true(mScriptObjectSet(&super, "hUnaligned", &val));
+	assert_int_equal(s.d.hUnaligned, 6);
+
+	val = mSCRIPT_MAKE_S32(7);
+	assert_false(mScriptObjectSet(&super, "i3", &val));
+	assert_int_equal(s.i3, 6);
+
+	// Const access
+	sval = mSCRIPT_MAKE_CS(TestB, &s);
+
+	val = mSCRIPT_MAKE_S32(4);
+	assert_false(mScriptObjectSet(&sval, "i", &val));
+	assert_int_equal(s.d.i, 3);
+
+	val = mSCRIPT_MAKE_S32(5);
+	assert_false(mScriptObjectSet(&sval, "i2", &val));
+	assert_int_equal(s.d.i2, 4);
+
+	val = mSCRIPT_MAKE_S32(6);
+	assert_false(mScriptObjectSet(&sval, "b8", &val));
+	assert_int_equal(s.d.b8, 5);
+
+	val = mSCRIPT_MAKE_S32(7);
+	assert_false(mScriptObjectSet(&sval, "hUnaligned", &val));
+	assert_int_equal(s.d.hUnaligned, 6);
+
+	val = mSCRIPT_MAKE_S32(8);
+	assert_false(mScriptObjectSet(&sval, "i3", &val));
+	assert_int_equal(s.i3, 6);
+
+	assert_true(cls->init);
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
+M_TEST_DEFINE(testDLayout) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestD)->details.cls;
+	assert_false(cls->init);
+	mScriptClassInit(cls);
+	assert_true(cls->init);
+
+	struct mScriptClassMember* member;
+
+	// Instance members
+	member = HashTableLookup(&cls->instanceMembers, "a");
+	assert_non_null(member);
+	assert_string_equal(member->name, "a");
+	assert_null(member->docstring);
+	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S(TestC));
+	assert_int_equal(member->offset, 0);
+
+	member = HashTableLookup(&cls->instanceMembers, "b");
+	assert_non_null(member);
+	assert_string_equal(member->name, "b");
+	assert_null(member->docstring);
+	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S(TestC));
+	assert_int_equal(member->offset, sizeof(struct TestC));
+
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
+M_TEST_DEFINE(testDGet) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestD)->details.cls;
+
+	struct TestD s = {
+		.a = { 1 },
+		.b = { 2 },
+	};
+
+	struct mScriptValue sval = mSCRIPT_MAKE_S(TestD, &s);
+	struct mScriptValue val;
+	struct mScriptValue member;
+	struct mScriptValue compare;
+
+	compare = mSCRIPT_MAKE_S32(1);
+	assert_true(mScriptObjectGet(&sval, "a", &member));
+	assert_true(mScriptObjectGet(&member, "i", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32(2);
+	assert_true(mScriptObjectGet(&sval, "b", &member));
+	assert_true(mScriptObjectGet(&member, "i", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	assert_true(cls->init);
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
+M_TEST_DEFINE(testDSet) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestD)->details.cls;
+
+	struct TestD s = {
+		.a = { 1 },
+		.b = { 2 },
+	};
+
+	struct mScriptValue sval = mSCRIPT_MAKE_S(TestD, &s);
+	struct mScriptValue member;
+	struct mScriptValue val;
+
+	val = mSCRIPT_MAKE_S32(2);
+	assert_true(mScriptObjectGet(&sval, "a", &member));
+	assert_true(mScriptObjectSet(&member, "i", &val));
+	assert_int_equal(s.a.i, 2);
+	assert_int_equal(s.b.i, 2);
+
+	val = mSCRIPT_MAKE_S32(3);
+	assert_true(mScriptObjectGet(&sval, "b", &member));
+	assert_true(mScriptObjectSet(&member, "i", &val));
+	assert_int_equal(s.a.i, 2);
+	assert_int_equal(s.b.i, 3);
+
+	sval = mSCRIPT_MAKE_CS(TestD, &s);
+
+	val = mSCRIPT_MAKE_S32(4);
+	assert_true(mScriptObjectGet(&sval, "a", &member));
+	assert_false(mScriptObjectSet(&member, "i", &val));
+	assert_int_equal(s.a.i, 2);
+	assert_int_equal(s.b.i, 3);
+
+	val = mSCRIPT_MAKE_S32(5);
+	assert_true(mScriptObjectGet(&sval, "b", &member));
+	assert_false(mScriptObjectSet(&member, "i", &val));
+	assert_int_equal(s.a.i, 2);
+	assert_int_equal(s.b.i, 3);
+
+	assert_true(cls->init);
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
 M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testALayout),
 	cmocka_unit_test(testAGet),
 	cmocka_unit_test(testASet),
 	cmocka_unit_test(testAStatic),
-	cmocka_unit_test(testADynamic))
+	cmocka_unit_test(testADynamic),
+	cmocka_unit_test(testBLayout),
+	cmocka_unit_test(testBGet),
+	cmocka_unit_test(testBSet),
+	cmocka_unit_test(testDLayout),
+	cmocka_unit_test(testDGet),
+	cmocka_unit_test(testDSet))

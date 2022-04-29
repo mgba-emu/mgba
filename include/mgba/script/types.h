@@ -202,6 +202,7 @@ CXX_GUARD_START
 		.alloc = NULL, \
 		.free = NULL, \
 		.cast = _mSTStructCast_ ## STRUCT, \
+		.constType = &mSTStructConst_ ## STRUCT, \
 	}; \
 	const struct mScriptType mSTStructConst_ ## STRUCT = { \
 		.base = mSCRIPT_TYPE_OBJECT, \
@@ -253,6 +254,13 @@ CXX_GUARD_START
 			.type = _mAPPLY(mSCRIPT_TYPE_MS_ ## TYPE) \
 		} \
 	}, \
+},
+
+#define mSCRIPT_DEFINE_INHERIT(PARENT) { \
+	.type = mSCRIPT_CLASS_INIT_INHERIT, \
+	.info = { \
+		.parent = mSCRIPT_TYPE_MS_S(PARENT) \
+	} \
 },
 
 #define _mSCRIPT_STRUCT_METHOD_POP(TYPE, S, NPARAMS, ...) \
@@ -493,7 +501,7 @@ struct mScriptClassInitDetails {
 	enum mScriptClassInitType type;
 	union {
 		const char* comment;
-		const struct mScriptTypeClass* parent;
+		const struct mScriptType* parent;
 		struct mScriptClassMember member;
 	} info;
 };
@@ -501,6 +509,7 @@ struct mScriptClassInitDetails {
 struct mScriptTypeClass {
 	bool init;
 	const struct mScriptClassInitDetails* details;
+	const struct mScriptType* parent;
 	struct Table staticMembers;
 	struct Table instanceMembers;
 };
@@ -518,6 +527,7 @@ struct mScriptType {
 		struct mScriptTypeClass* cls;
 		void* opaque;
 	} details;
+	const struct mScriptType* constType;
 	void (*alloc)(struct mScriptValue*);
 	void (*free)(struct mScriptValue*);
 	uint32_t (*hash)(const struct mScriptValue*);
