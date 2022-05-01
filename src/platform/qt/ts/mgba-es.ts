@@ -1203,22 +1203,24 @@ La actualización automática no está disponible en esta plataforma. Si desea a
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Versión actual: %1
+Nueva versión: %2
+Tamaño de la descarga: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="53"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>Descargando actualización...</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="69"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>La descarga ha fallado. Por favor, actualiza manualmente.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="72"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>Descarga finalizada. Presiona OK para reiniciar %1 e instalar la actualización.</translation>
     </message>
 </context>
 <context>
@@ -1226,12 +1228,12 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="88"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>Estable</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="91"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>Desarrollo</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="93"/>
@@ -1241,7 +1243,7 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="216"/>
         <source>(None)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Ninguno)</translation>
     </message>
 </context>
 <context>
@@ -1273,7 +1275,7 @@ Download size: %3</source>
         <location filename="../CheatsView.cpp" line="48"/>
         <location filename="../CheatsView.cpp" line="56"/>
         <source>Autodetect (recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation>Autodetectar (recomendado)</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="86"/>
@@ -1287,23 +1289,23 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="99"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Reiniciar r%1-%2 %3</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="504"/>
         <location filename="../CoreController.cpp" line="524"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Rebobinado desactivado actualmente</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="567"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>¿Reiniciar el juego?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="568"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation type="unfinished"></translation>
+        <translation>La mayoría de juegos requieren reiniciar para cargar la nueva partida guardada. ¿Quieres reiniciar ahora?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="780"/>
@@ -1346,7 +1348,7 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="115"/>
         <source>Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).</source>
-        <translation type="unfinished"></translation>
+        <translation>Error al abrir el archivo de guardado; las partidas guardadas no se pueden actualizar. Por favor, asegúrese de que es posible escribir en el directorio de partidas guardadas sin necesidad de privilegios adicionales (Por ejemplo, UAC en Windows).</translation>
     </message>
 </context>
 <context>
@@ -1354,7 +1356,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="171"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>No se ha podido abrir el historial de la linea de comandos para escritura</translation>
     </message>
 </context>
 <context>
@@ -1466,17 +1468,17 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="63"/>
         <source>Standard GDB</source>
-        <translation type="unfinished"></translation>
+        <translation>GDB estándar</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="68"/>
         <source>Internal change detection</source>
-        <translation type="unfinished"></translation>
+        <translation>Detección interna de cambio</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="72"/>
         <source>Break on all writes</source>
-        <translation type="unfinished"></translation>
+        <translation>Parar ejecución en todas las escrituras</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
@@ -4007,32 +4009,32 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="841"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>Nunca</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="846"/>
         <source>Just now</source>
-        <translation type="unfinished"></translation>
+        <translation>Ahora mismo</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="850"/>
         <source>Less than an hour ago</source>
-        <translation type="unfinished"></translation>
+        <translation>Hace menos de una hora</translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="855"/>
         <source>%n hour(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Hace %n hora</numerusform>
+            <numerusform>Hace %n horas</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="859"/>
         <source>%n day(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Hace %n dia</numerusform>
+            <numerusform>Hace %n dias</numerusform>
         </translation>
     </message>
 </context>
@@ -4311,12 +4313,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1257"/>
         <source>Automatically determine</source>
-        <translation type="unfinished"></translation>
+        <translation>Determinar automáticamente</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1261"/>
         <source>Use player %0 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Usar la partida guardada del jugador %0</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1271"/>
@@ -4493,17 +4495,17 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="519"/>
         <source>GameShark saves (*.gsv *.sps *.xps)</source>
-        <translation type="unfinished"></translation>
+        <translation>Partidas guardadas de GameShark (*.gsv *.sps *.xps)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1107"/>
         <source>Reset needed</source>
-        <translation type="unfinished"></translation>
+        <translation>Reinicio necesario</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1108"/>
         <source>Some changes will not take effect until the game is reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>Algunos cambios no tendrán efecto hasta que se reinicie el juego.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1350"/>
@@ -5134,12 +5136,12 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="529"/>
         <source>%1 SharkPort %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 SharkPort %2 partida guardada</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="532"/>
         <source>%1 GameShark Advance SP %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 GameShark Advance SP %2 partida guardada</translation>
     </message>
 </context>
 <context>
@@ -5237,7 +5239,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>Actualización</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
@@ -5372,22 +5374,22 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="324"/>
         <source>Audio in multiplayer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Audio en multijugador:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="331"/>
         <source>All windows</source>
-        <translation type="unfinished"></translation>
+        <translation>Todas las ventanas</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="344"/>
         <source>Player 1 window only</source>
-        <translation type="unfinished"></translation>
+        <translation>Solo la ventana del jugador 1</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="354"/>
         <source>Currently active player window</source>
-        <translation type="unfinished"></translation>
+        <translation>Ventana del jugador actualmente activo</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="371"/>
@@ -5448,23 +5450,23 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="569"/>
         <source>Show filename instead of ROM name in library view</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar el nombre del archivo en vez del nombre de la ROM en la vista de librería</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="616"/>
         <location filename="../SettingsView.ui" line="641"/>
         <source>Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>Pausa</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="607"/>
         <source>When inactive:</source>
-        <translation type="unfinished"></translation>
+        <translation>Cuando este inactivo:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="632"/>
         <source>When minimized:</source>
-        <translation type="unfinished"></translation>
+        <translation>Cuando este minimizada:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="716"/>
@@ -5474,47 +5476,47 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="723"/>
         <source>Show emulation info on reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar información sobre la emulación al reiniciar</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="797"/>
         <source>Current channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Canal actual:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="811"/>
         <source>Current version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Versión actual:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="835"/>
         <source>Update channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Actualizar canal:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="845"/>
         <source>Available version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Versión disponible:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="852"/>
         <source>(Unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Desconocido)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="862"/>
         <source>Last checked:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ultima vez comprobado:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="883"/>
         <source>Automatically check on start</source>
-        <translation type="unfinished"></translation>
+        <translation>Comprobar automáticamente al inicio</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="890"/>
         <source>Check now</source>
-        <translation type="unfinished"></translation>
+        <translation>Comprobar ahora</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2059"/>
