@@ -1195,7 +1195,8 @@ Do you want to download and install it now? You will need to restart the emulato
         <location filename="../ApplicationUpdatePrompt.cpp" line="31"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+La actualización automática no está disponible en esta plataforma. Si desea actualizar, deberá hacerlo manualmente.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="35"/>
