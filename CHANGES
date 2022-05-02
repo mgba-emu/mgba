@@ -51,6 +51,7 @@ Misc:
  - Core: Suspend runloop when a core crashes
  - Debugger: Save and restore CLI history
  - Debugger: GDB now works while the game is paused
+ - Debugger: Add command to load external symbol file (fixes mgba.io/i/2480)
  - GB MBC: Filter out MBC errors when cartridge is yanked (fixes mgba.io/i/2488)
  - GB Video: Add default SGB border
  - GBA: Automatically skip BIOS if ROM has invalid logo

@@ -8,15 +8,17 @@
 #include <mgba/internal/debugger/symbols.h>
 
 #include <mgba/core/core.h>
-#include <mgba/core/timing.h>
-#include <mgba/core/version.h>
-#include <mgba/internal/debugger/parser.h>
-#include <mgba-util/string.h>
-#include <mgba-util/vfs.h>
-
 #ifdef ENABLE_SCRIPTING
 #include <mgba/core/scripting.h>
 #endif
+#include <mgba/core/timing.h>
+#include <mgba/core/version.h>
+#include <mgba/internal/debugger/parser.h>
+#ifdef USE_ELF
+#include <mgba-util/elf-read.h>
+#endif
+#include <mgba-util/string.h>
+#include <mgba-util/vfs.h>
 
 #if !defined(NDEBUG) && !defined(_WIN32)
 #include <signal.h>
@@ -74,6 +76,7 @@ static void _source(struct CLIDebugger*, struct CLIDebugVector*);
 static void _backtrace(struct CLIDebugger*, struct CLIDebugVector*);
 static void _finish(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setStackTraceMode(struct CLIDebugger*, struct CLIDebugVector*);
+static void _loadSymbols(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 static void _findSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 
@@ -101,6 +104,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "stack", _setStackTraceMode, "S", "Change the stack tracing mode" },
 	{ "status", _printStatus, "", "Print the current status" },
 	{ "symbol", _findSymbol, "I", "Find the symbol name for an address" },
+	{ "load-symbols", _loadSymbols, "S", "Load symbols from an external file" },
 	{ "trace", _trace, "Is", "Trace a number of instructions" },
 	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
 	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset" },
@@ -133,6 +137,7 @@ static struct CLIDebuggerCommandAlias _debuggerCommandAliases[] = {
 	{ "h", "help" },
 	{ "i", "status" },
 	{ "info", "status" },
+	{ "loadsyms", "load-symbols" },
 	{ "lb", "listb" },
 	{ "lw", "listw" },
 	{ "n", "next" },
@@ -1289,6 +1294,40 @@ static void _setStackTraceMode(struct CLIDebugger* debugger, struct CLIDebugVect
 	} else {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
 	}
+}
+
+static void _loadSymbols(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	struct mDebuggerSymbols* symbolTable = debugger->d.core->symbolTable;
+	if (!symbolTable) {
+		debugger->backend->printf(debugger->backend, "No symbol table available.\n");
+		return;
+	}
+	if (!dv || dv->next) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (dv->type != CLIDV_CHAR_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+		return;
+	}
+	struct VFile* vf = VFileOpen(dv->charValue, O_RDONLY);
+	if (!vf) {
+		debugger->backend->printf(debugger->backend, "%s\n", "Could not open symbol file");
+		return;
+	}
+#ifdef USE_ELF
+	struct ELF* elf = ELFOpen(vf);
+	if (elf) {
+#ifdef USE_DEBUGGERS
+		mCoreLoadELFSymbols(symbolTable, elf);
+#endif
+		ELFClose(elf);
+	} else
+#endif
+	{
+		mDebuggerLoadARMIPSSymbols(symbolTable, vf);
+	}
+	vf->close(vf);
 }
 
 static void _setSymbol(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
