@@ -53,6 +53,7 @@ M_TEST_DEFINE(loadGood) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
+	vf->close(vf);
 }
 
 M_TEST_DEFINE(loadBadSyntax) {
@@ -68,6 +69,7 @@ M_TEST_DEFINE(loadBadSyntax) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
+	vf->close(vf);
 }
 
 M_TEST_DEFINE(runNop) {
@@ -87,6 +89,7 @@ M_TEST_DEFINE(runNop) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
+	vf->close(vf);
 }
 
 M_TEST_DEFINE(getGlobal) {
@@ -111,6 +114,7 @@ M_TEST_DEFINE(getGlobal) {
 	assert_non_null(val);
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
+	vf->close(vf);
 
 	program = "b = 1";
 	vf = VFileFromConstMemory(program, strlen(program));
@@ -128,6 +132,7 @@ M_TEST_DEFINE(getGlobal) {
 	assert_non_null(val);
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
+	vf->close(vf);
 
 	a = mSCRIPT_MAKE_S32(2);
 	program = "a = 2";
@@ -141,6 +146,7 @@ M_TEST_DEFINE(getGlobal) {
 	assert_non_null(val);
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
+	vf->close(vf);
 
 	a = mSCRIPT_MAKE_S32(3);
 	program = "b = a + b";
@@ -157,8 +163,8 @@ M_TEST_DEFINE(getGlobal) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
+	vf->close(vf);
 }
-
 
 M_TEST_DEFINE(setGlobal) {
 	struct mScriptContext context;
@@ -213,6 +219,7 @@ M_TEST_DEFINE(setGlobal) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
+	vf->close(vf);
 }
 
 M_TEST_DEFINE(callLuaFunc) {
@@ -263,6 +270,7 @@ M_TEST_DEFINE(callLuaFunc) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
+	vf->close(vf);
 }
 
 M_TEST_DEFINE(callCFunc) {
@@ -299,6 +307,7 @@ M_TEST_DEFINE(callCFunc) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
+	vf->close(vf);
 }
 
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
