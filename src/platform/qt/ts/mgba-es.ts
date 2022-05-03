@@ -3714,7 +3714,7 @@ Tamaño de la descarga: %3</translation>
     <message>
         <location filename="../MessagePainter.cpp" line="81"/>
         <source>Frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Cuadro %1</translation>
     </message>
 </context>
 <context>
@@ -5471,7 +5471,7 @@ Tamaño de la descarga: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="716"/>
         <source>Show frame count in OSD</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar contador de cuadros en OSD</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="723"/>
