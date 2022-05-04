@@ -7,6 +7,15 @@
 
 #include <mgba/internal/script/lua.h>
 
+#define LOAD_PROGRAM(PROG) \
+	do { \
+		struct VFile* vf = VFileFromConstMemory(PROG, strlen(PROG)); \
+		const char* error = NULL; \
+		assert_true(lua->load(lua, vf, &error)); \
+		assert_null(error); \
+		vf->close(vf); \
+	} while(0)
+
 struct Test {
 	int32_t i;
 	int32_t (*ifn0)(struct Test*);
@@ -134,11 +143,7 @@ M_TEST_DEFINE(runNop) {
 	mScriptContextInit(&context);
 	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
 
-	const char* program = "return";
-	struct VFile* vf = VFileFromConstMemory(program, strlen(program));
-	const char* error = NULL;
-	assert_true(lua->load(lua, vf, &error));
-	assert_null(error);
+	LOAD_PROGRAM("return");
 	assert_true(lua->run(lua));
 
 	// Make sure we can run it twice
@@ -146,7 +151,6 @@ M_TEST_DEFINE(runNop) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
-	vf->close(vf);
 }
 
 M_TEST_DEFINE(getGlobal) {
@@ -156,28 +160,16 @@ M_TEST_DEFINE(getGlobal) {
 
 	struct mScriptValue a = mSCRIPT_MAKE_S32(1);
 	struct mScriptValue* val;
-	const char* program;
-	struct VFile* vf;
-	const char* error;
 
-	program = "a = 1";
-	vf = VFileFromConstMemory(program, strlen(program));
-	error = NULL;
-	assert_true(lua->load(lua, vf, &error));
-	assert_null(error);
+	LOAD_PROGRAM("a = 1");
 	assert_true(lua->run(lua));
 
 	val = lua->getGlobal(lua, "a");
 	assert_non_null(val);
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
-	vf->close(vf);
 
-	program = "b = 1";
-	vf = VFileFromConstMemory(program, strlen(program));
-	error = NULL;
-	assert_true(lua->load(lua, vf, &error));
-	assert_null(error);
+	LOAD_PROGRAM("b = 1");
 	assert_true(lua->run(lua));
 
 	val = lua->getGlobal(lua, "a");
@@ -189,28 +181,18 @@ M_TEST_DEFINE(getGlobal) {
 	assert_non_null(val);
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
-	vf->close(vf);
 
 	a = mSCRIPT_MAKE_S32(2);
-	program = "a = 2";
-	vf = VFileFromConstMemory(program, strlen(program));
-	error = NULL;
-	assert_true(lua->load(lua, vf, &error));
-	assert_null(error);
+	LOAD_PROGRAM("a = 2");
 	assert_true(lua->run(lua));
 
 	val = lua->getGlobal(lua, "a");
 	assert_non_null(val);
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
-	vf->close(vf);
 
 	a = mSCRIPT_MAKE_S32(3);
-	program = "b = a + b";
-	vf = VFileFromConstMemory(program, strlen(program));
-	error = NULL;
-	assert_true(lua->load(lua, vf, &error));
-	assert_null(error);
+	LOAD_PROGRAM("b = a + b");
 	assert_true(lua->run(lua));
 
 	val = lua->getGlobal(lua, "b");
@@ -220,7 +202,6 @@ M_TEST_DEFINE(getGlobal) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
-	vf->close(vf);
 }
 
 M_TEST_DEFINE(setGlobal) {
@@ -230,15 +211,8 @@ M_TEST_DEFINE(setGlobal) {
 
 	struct mScriptValue a = mSCRIPT_MAKE_S32(1);
 	struct mScriptValue* val;
-	const char* program;
-	struct VFile* vf;
-	const char* error;
 
-	program = "a = b";
-	vf = VFileFromConstMemory(program, strlen(program));
-	error = NULL;
-	assert_true(lua->load(lua, vf, &error));
-	assert_null(error);
+	LOAD_PROGRAM("a = b");
 	assert_true(lua->setGlobal(lua, "b", &a));
 
 	val = lua->getGlobal(lua, "b");
@@ -276,7 +250,6 @@ M_TEST_DEFINE(setGlobal) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
-	vf->close(vf);
 }
 
 M_TEST_DEFINE(callLuaFunc) {
@@ -285,15 +258,8 @@ M_TEST_DEFINE(callLuaFunc) {
 	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
 
 	struct mScriptValue* fn;
-	const char* program;
-	struct VFile* vf;
-	const char* error;
 
-	program = "function a(b) return b + 1 end; function c(d, e) return d + e end";
-	vf = VFileFromConstMemory(program, strlen(program));
-	error = NULL;
-	assert_true(lua->load(lua, vf, &error));
-	assert_null(error);
+	LOAD_PROGRAM("function a(b) return b + 1 end; function c(d, e) return d + e end");
 	assert_true(lua->run(lua));
 
 	fn = lua->getGlobal(lua, "a");
@@ -327,7 +293,6 @@ M_TEST_DEFINE(callLuaFunc) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
-	vf->close(vf);
 }
 
 M_TEST_DEFINE(callCFunc) {
@@ -337,15 +302,8 @@ M_TEST_DEFINE(callCFunc) {
 
 	struct mScriptValue a = mSCRIPT_MAKE_S32(1);
 	struct mScriptValue* val;
-	const char* program;
-	struct VFile* vf;
-	const char* error;
 
-	program = "a = b(1); c = d(1, 2)";
-	vf = VFileFromConstMemory(program, strlen(program));
-	error = NULL;
-	assert_true(lua->load(lua, vf, &error));
-	assert_null(error);
+	LOAD_PROGRAM("a = b(1); c = d(1, 2)");
 
 	assert_true(lua->setGlobal(lua, "b", &boundIdentityInt));
 	assert_true(lua->setGlobal(lua, "d", &boundAddInts));
@@ -364,7 +322,6 @@ M_TEST_DEFINE(callCFunc) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
-	vf->close(vf);
 }
 
 M_TEST_DEFINE(setGlobalStruct) {
@@ -379,15 +336,8 @@ M_TEST_DEFINE(setGlobalStruct) {
 	struct mScriptValue a = mSCRIPT_MAKE_S(Test, &s);
 	struct mScriptValue b;
 	struct mScriptValue* val;
-	const char* program;
-	struct VFile* vf;
-	const char* error;
 
-	program = "b = a.i";
-	vf = VFileFromConstMemory(program, strlen(program));
-	error = NULL;
-	assert_true(lua->load(lua, vf, &error));
-	assert_null(error);
+	LOAD_PROGRAM("b = a.i");
 	assert_true(lua->setGlobal(lua, "a", &a));
 
 	assert_true(lua->run(lua));
@@ -406,12 +356,8 @@ M_TEST_DEFINE(setGlobalStruct) {
 	assert_non_null(val);
 	assert_true(b.type->equal(&b, val));
 	mScriptValueDeref(val);
-	vf->close(vf);
 
-	program = "a.i = b";
-	vf = VFileFromConstMemory(program, strlen(program));
-	assert_true(lua->load(lua, vf, &error));
-	assert_null(error);
+	LOAD_PROGRAM("a.i = b");
 	b = mSCRIPT_MAKE_S32(3);
 	assert_true(lua->setGlobal(lua, "b", &b));
 
@@ -430,7 +376,6 @@ M_TEST_DEFINE(setGlobalStruct) {
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
-	vf->close(vf);
 }
 
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
