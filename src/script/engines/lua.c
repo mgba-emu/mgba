@@ -30,6 +30,7 @@ static void _luaDeref(struct mScriptValue*);
 static int _luaThunk(lua_State* lua);
 static int _luaGetObject(lua_State* lua);
 static int _luaSetObject(lua_State* lua);
+static int _luaGcObject(lua_State* lua);
 
 #if LUA_VERSION_NUM < 503
 #define lua_pushinteger lua_pushnumber
@@ -83,6 +84,7 @@ struct mScriptEngine2* const mSCRIPT_ENGINE_LUA = &_engineLua.d;
 static const luaL_Reg _mSTStruct[] = {
 	{ "__index", _luaGetObject },
 	{ "__newindex", _luaSetObject },
+	{ "__gc", _luaGcObject },
 	{ NULL, NULL }
 };
 
@@ -479,6 +481,16 @@ int _luaSetObject(lua_State* lua) {
 		mScriptValueDeref(val);
 		lua_pushliteral(lua, "Invalid key");
 		lua_error(lua);
+	}
+	mScriptValueDeref(val);
+	return 0;
+}
+
+static int _luaGcObject(lua_State* lua) {
+	struct mScriptValue* val = lua_touserdata(lua, -1);
+	val = mScriptValueUnwrap(val);
+	if (!val) {
+		return 0;
 	}
 	mScriptValueDeref(val);
 	return 0;

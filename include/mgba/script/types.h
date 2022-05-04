@@ -580,6 +580,7 @@ void mScriptValueDeref(struct mScriptValue* val);
 
 void mScriptValueWrap(struct mScriptValue* val, struct mScriptValue* out);
 struct mScriptValue* mScriptValueUnwrap(struct mScriptValue* val);
+const struct mScriptValue* mScriptValueUnwrapConst(const struct mScriptValue* val);
 
 struct mScriptValue* mScriptStringCreateFromUTF8(const char* string);
 

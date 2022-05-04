@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2017 Jeffrey Pfau
+/* Copyright (c) 2013-2022 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -13,6 +13,10 @@ CXX_GUARD_START
 #ifdef USE_DEBUGGERS
 #include <mgba/debugger/debugger.h>
 #endif
+#include <mgba/script/types.h>
+
+struct mCore;
+mSCRIPT_DECLARE_STRUCT(mCore);
 
 struct mScriptBridge;
 struct VFile;
@@ -46,6 +50,11 @@ void mScriptBridgeRun(struct mScriptBridge*);
 bool mScriptBridgeLoadScript(struct mScriptBridge*, const char* name);
 
 bool mScriptBridgeLookupSymbol(struct mScriptBridge*, const char* name, int32_t* out);
+
+struct mScriptContext;
+struct mCore;
+void mScriptContextAttachCore(struct mScriptContext*, struct mCore*);
+void mScriptContextDetachCore(struct mScriptContext*);
 
 CXX_GUARD_END
 

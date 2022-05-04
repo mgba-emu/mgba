@@ -19,7 +19,7 @@ struct mScriptFunction;
 struct mScriptEngineContext;
 
 struct mScriptContext {
-	struct mScriptValue rootScope;
+	struct Table rootScope;
 	struct Table engines;
 };
 
@@ -46,9 +46,9 @@ struct mScriptEngineContext {
 void mScriptContextInit(struct mScriptContext*);
 void mScriptContextDeinit(struct mScriptContext*);
 
-void mScriptContextRegisterEngine(struct mScriptContext*, struct mScriptEngine2*);
+struct mScriptEngineContext* mScriptContextRegisterEngine(struct mScriptContext*, struct mScriptEngine2*);
 
-void mScriptContextAddGlobal(struct mScriptContext*, const char* key, struct mScriptValue* value);
+void mScriptContextSetGlobal(struct mScriptContext*, const char* key, struct mScriptValue* value);
 void mScriptContextRemoveGlobal(struct mScriptContext*, const char* key);
 
 bool mScriptInvoke(const struct mScriptValue* fn, struct mScriptFrame* frame);

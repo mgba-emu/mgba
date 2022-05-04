@@ -1,10 +1,12 @@
-/* Copyright (c) 2013-2017 Jeffrey Pfau
+/* Copyright (c) 2013-2022 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/core/scripting.h>
 
+#include <mgba/core/core.h>
+#include <mgba/script/context.h>
 #include <mgba-util/table.h>
 #include <mgba-util/vfs.h>
 
@@ -143,4 +145,34 @@ bool mScriptBridgeLookupSymbol(struct mScriptBridge* sb, const char* name, int32
 	};
 	HashTableEnumerate(&sb->engines, _seLookupSymbol, &info);
 	return info.success;
+}
+
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, U32, frameCounter, 0);
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frameCycles, 0);
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frequency, 0);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, runFrame, 0);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, step, 0);
+
+mSCRIPT_DEFINE_STRUCT(mCore)
+mSCRIPT_DEFINE_DOCSTRING("Get the number of the current frame")
+mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, currentFrame, frameCounter)
+mSCRIPT_DEFINE_DOCSTRING("Get the number of cycles per frame")
+mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frameCycles)
+mSCRIPT_DEFINE_DOCSTRING("Get the number of cycles per second")
+mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frequency)
+mSCRIPT_DEFINE_DOCSTRING("Run until the next frame")
+mSCRIPT_DEFINE_STRUCT_METHOD(mCore, runFrame)
+mSCRIPT_DEFINE_DOCSTRING("Run a single instruction")
+mSCRIPT_DEFINE_STRUCT_METHOD(mCore, step)
+mSCRIPT_DEFINE_END;
+
+void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core) {
+	struct mScriptValue* coreValue = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mCore));
+	coreValue->value.opaque = core;
+	mScriptContextSetGlobal(context, "emu", coreValue);
+	mScriptValueDeref(coreValue);
+}
+
+void mScriptContextDetachCore(struct mScriptContext* context) {
+	mScriptContextRemoveGlobal(context, "emu");
 }

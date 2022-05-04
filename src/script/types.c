@@ -687,6 +687,13 @@ struct mScriptValue* mScriptValueUnwrap(struct mScriptValue* value) {
 	return NULL;
 }
 
+const struct mScriptValue* mScriptValueUnwrapConst(const struct mScriptValue* value) {
+	if (value->type == mSCRIPT_TYPE_MS_WRAPPER) {
+		return value->value.copaque;
+	}
+	return NULL;
+}
+
 struct mScriptValue* mScriptStringCreateFromUTF8(const char* string) {
 	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_STR);
 	struct mScriptString* internal = val->value.opaque;
@@ -823,6 +830,9 @@ void mScriptClassDeinit(struct mScriptTypeClass* cls) {
 }
 
 bool mScriptObjectGet(struct mScriptValue* obj, const char* member, struct mScriptValue* val) {
+	if (obj->type->base == mSCRIPT_TYPE_WRAPPER) {
+		obj = mScriptValueUnwrap(obj);
+	}
 	if (obj->type->base != mSCRIPT_TYPE_OBJECT) {
 		return false;
 	}
@@ -1031,6 +1041,9 @@ bool mScriptPopPointer(struct mScriptList* list, void** out) {
 }
 
 bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* input, struct mScriptValue* output) {
+	if (input->type->base == mSCRIPT_TYPE_WRAPPER) {
+		input = mScriptValueUnwrapConst(input);
+	}
 	if (type->cast && type->cast(input, type, output)) {
 		return true;
 	}
