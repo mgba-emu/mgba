@@ -366,8 +366,16 @@ CXX_GUARD_START
 #define mSCRIPT_DEFINE_END { .type = mSCRIPT_CLASS_INIT_END } } }
 
 #define _mSCRIPT_BIND_FUNCTION(NAME, NRET, RETURN, NPARAMS, ...) \
+	static struct mScriptFunction _function_ ## NAME = { \
+		.call = _binding_ ## NAME \
+	}; \
+	static void _alloc_ ## NAME(struct mScriptValue* val) { \
+		val->value.copaque = &_function_ ## NAME; \
+	} \
 	static const struct mScriptType _type_ ## NAME = { \
 		.base = mSCRIPT_TYPE_FUNCTION, \
+		.name = "function::" #NAME, \
+		.alloc = _alloc_ ## NAME, \
 		.details = { \
 			.function = { \
 				.parameters = { \
@@ -380,9 +388,6 @@ CXX_GUARD_START
 				}, \
 			}, \
 		} \
-	}; \
-	static struct mScriptFunction _function_ ## NAME = { \
-		.call = _binding_ ## NAME \
 	}; \
 	const struct mScriptValue NAME = { \
 		.type = &_type_ ## NAME, \

@@ -324,24 +324,26 @@ M_TEST_DEFINE(callCFunc) {
 	mScriptContextDeinit(&context);
 }
 
-M_TEST_DEFINE(setGlobalStruct) {
+M_TEST_DEFINE(globalStructFieldGet) {
 	struct mScriptContext context;
 	mScriptContextInit(&context);
 	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
 
 	struct Test s = {
-		.i = 1
+		.i = 1,
 	};
 
-	struct mScriptValue a = mSCRIPT_MAKE_S(Test, &s);
+	struct mScriptValue a;
 	struct mScriptValue b;
 	struct mScriptValue* val;
 
 	LOAD_PROGRAM("b = a.i");
+
+	a = mSCRIPT_MAKE_S(Test, &s);
 	assert_true(lua->setGlobal(lua, "a", &a));
 
+	s.i = 1;
 	assert_true(lua->run(lua));
-
 	b = mSCRIPT_MAKE_S32(1);
 	val = lua->getGlobal(lua, "b");
 	assert_non_null(val);
@@ -350,29 +352,187 @@ M_TEST_DEFINE(setGlobalStruct) {
 
 	s.i = 2;
 	assert_true(lua->run(lua));
-
 	b = mSCRIPT_MAKE_S32(2);
 	val = lua->getGlobal(lua, "b");
 	assert_non_null(val);
 	assert_true(b.type->equal(&b, val));
 	mScriptValueDeref(val);
 
-	LOAD_PROGRAM("a.i = b");
-	b = mSCRIPT_MAKE_S32(3);
-	assert_true(lua->setGlobal(lua, "b", &b));
+	a = mSCRIPT_MAKE_CS(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
 
+	s.i = 1;
 	assert_true(lua->run(lua));
+	b = mSCRIPT_MAKE_S32(1);
+	val = lua->getGlobal(lua, "b");
+	assert_non_null(val);
+	assert_true(b.type->equal(&b, val));
+	mScriptValueDeref(val);
 
+	lua->destroy(lua);
+	mScriptContextDeinit(&context);
+}
+
+
+M_TEST_DEFINE(globalStructFieldSet) {
+	struct mScriptContext context;
+	mScriptContextInit(&context);
+	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+
+	struct Test s = {
+		.i = 1,
+	};
+
+	struct mScriptValue a;
+	struct mScriptValue b;
+
+	LOAD_PROGRAM("a.i = b");
+
+	a = mSCRIPT_MAKE_S(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	s.i = 1;
+	b = mSCRIPT_MAKE_S32(2);
+	assert_true(lua->setGlobal(lua, "b", &b));
+	assert_true(lua->run(lua));
+	assert_int_equal(s.i, 2);
+
+	a = mSCRIPT_MAKE_CS(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	s.i = 1;
+	b = mSCRIPT_MAKE_S32(2);
+	assert_true(lua->setGlobal(lua, "b", &b));
+	assert_false(lua->run(lua));
+	assert_int_equal(s.i, 1);
+
+	lua->destroy(lua);
+	mScriptContextDeinit(&context);
+}
+
+
+M_TEST_DEFINE(globalStructMethods) {
+	struct mScriptContext context;
+	mScriptContextInit(&context);
+	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+
+	struct Test s = {
+		.i = 1,
+		.ifn0 = testI0,
+		.ifn1 = testI1,
+		.icfn0 = testIC0,
+		.vfn0 = testV0,
+		.vfn1 = testV1,
+	};
+
+	struct mScriptValue a;
+	struct mScriptValue b;
+	struct mScriptValue* val;
+
+	// ifn0
+	LOAD_PROGRAM("b = a:ifn0()");
+
+	a = mSCRIPT_MAKE_S(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	s.i = 1;
+	assert_true(lua->run(lua));
+	b = mSCRIPT_MAKE_S32(1);
+	val = lua->getGlobal(lua, "b");
+	assert_non_null(val);
+	assert_true(b.type->equal(&b, val));
+	mScriptValueDeref(val);
+
+	a = mSCRIPT_MAKE_CS(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	assert_false(lua->run(lua));
+
+	// ifn1
+	LOAD_PROGRAM("b = a:ifn1(c)");
+
+	a = mSCRIPT_MAKE_S(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	s.i = 1;
+	b = mSCRIPT_MAKE_S32(1);
+	assert_true(lua->setGlobal(lua, "c", &b));
+	assert_true(lua->run(lua));
+	b = mSCRIPT_MAKE_S32(2);
+	val = lua->getGlobal(lua, "b");
+	assert_non_null(val);
+	assert_true(b.type->equal(&b, val));
+	mScriptValueDeref(val);
+
+	b = mSCRIPT_MAKE_S32(2);
+	assert_true(lua->setGlobal(lua, "c", &b));
+	assert_true(lua->run(lua));
+	b = mSCRIPT_MAKE_S32(3);
+	val = lua->getGlobal(lua, "b");
+	assert_non_null(val);
+	assert_true(b.type->equal(&b, val));
+	mScriptValueDeref(val);
+
+	a = mSCRIPT_MAKE_CS(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	assert_false(lua->run(lua));
+
+	// vfn0
+	LOAD_PROGRAM("a:vfn0()");
+
+	a = mSCRIPT_MAKE_S(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	s.i = 1;
+	assert_true(lua->run(lua));
+	assert_int_equal(s.i, 2);
+	assert_true(lua->run(lua));
 	assert_int_equal(s.i, 3);
 
 	a = mSCRIPT_MAKE_CS(Test, &s);
 	assert_true(lua->setGlobal(lua, "a", &a));
-	b = mSCRIPT_MAKE_S32(4);
-	assert_true(lua->setGlobal(lua, "b", &b));
-
 	assert_false(lua->run(lua));
 
+	// vfn1
+	LOAD_PROGRAM("a:vfn1(c)");
+
+	a = mSCRIPT_MAKE_S(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	s.i = 1;
+	b = mSCRIPT_MAKE_S32(1);
+	assert_true(lua->setGlobal(lua, "c", &b));
+	assert_true(lua->run(lua));
+	assert_int_equal(s.i, 2);
+	b = mSCRIPT_MAKE_S32(2);
+	assert_true(lua->setGlobal(lua, "c", &b));
+	s.i = 1;
+	assert_true(lua->run(lua));
 	assert_int_equal(s.i, 3);
+
+	a = mSCRIPT_MAKE_CS(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	s.i = 1;
+	b = mSCRIPT_MAKE_S32(1);
+	assert_true(lua->setGlobal(lua, "c", &b));
+	assert_false(lua->run(lua));
+	assert_int_equal(s.i, 1);
+
+	// icfn0
+	LOAD_PROGRAM("b = a:icfn0()");
+
+	a = mSCRIPT_MAKE_S(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	s.i = 1;
+	assert_true(lua->run(lua));
+	b = mSCRIPT_MAKE_S32(1);
+	val = lua->getGlobal(lua, "b");
+	assert_non_null(val);
+	assert_true(b.type->equal(&b, val));
+	mScriptValueDeref(val);
+
+	a = mSCRIPT_MAKE_CS(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	s.i = 1;
+	assert_true(lua->run(lua));
+	b = mSCRIPT_MAKE_S32(1);
+	val = lua->getGlobal(lua, "b");
+	assert_non_null(val);
+	assert_true(b.type->equal(&b, val));
+	mScriptValueDeref(val);
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
@@ -387,4 +547,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(setGlobal),
 	cmocka_unit_test(callLuaFunc),
 	cmocka_unit_test(callCFunc),
-	cmocka_unit_test(setGlobalStruct))
+	cmocka_unit_test(globalStructFieldGet),
+	cmocka_unit_test(globalStructFieldSet),
+	cmocka_unit_test(globalStructMethods))

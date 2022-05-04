@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/script/lua.h>
+#include <lualib.h>
 #include <lauxlib.h>
 
 static struct mScriptEngineContext* _luaCreate(struct mScriptEngine2*, struct mScriptContext*);
@@ -79,6 +80,12 @@ static struct mScriptEngineLua {
 
 struct mScriptEngine2* const mSCRIPT_ENGINE_LUA = &_engineLua.d;
 
+static const luaL_Reg _mSTStruct[] = {
+	{ "__index", _luaGetObject },
+	{ "__newindex", _luaSetObject },
+	{ NULL, NULL }
+};
+
 struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mScriptContext* context) {
 	UNUSED(engine);
 	struct mScriptEngineContextLua* luaContext = calloc(1, sizeof(*luaContext));
@@ -93,13 +100,14 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 	luaContext->lua = luaL_newstate();
 	luaContext->func = -1;
 
+	luaL_openlibs(luaContext->lua);
+
 	luaL_newmetatable(luaContext->lua, "mSTStruct");
-	lua_pushliteral(luaContext->lua, "__index");
-	lua_pushcfunction(luaContext->lua, _luaGetObject);
-	lua_rawset(luaContext->lua, -3);
-	lua_pushliteral(luaContext->lua, "__newindex");
-	lua_pushcfunction(luaContext->lua, _luaSetObject);
-	lua_rawset(luaContext->lua, -3);
+#if LUA_VERSION_NUM < 502
+	luaL_register(luaContext->lua, NULL, _mSTStruct);
+#else
+	luaL_setfuncs(luaContext->lua, _mSTStruct, 0);
+#endif
 	lua_pop(luaContext->lua, 1);
 
 	return &luaContext->d;
@@ -129,7 +137,7 @@ bool _luaSetGlobal(struct mScriptEngineContext* ctx, const char* name, struct mS
 	return true;
 }
 
-struct mScriptValue* _luaWrapFunction(struct mScriptEngineContextLua* luaContext) {
+struct mScriptValue* _luaCoerceFunction(struct mScriptEngineContextLua* luaContext) {
 	struct mScriptValue* value = mScriptValueAlloc(&mSTLuaFunc);
 	struct mScriptFunction* fn = calloc(1, sizeof(*fn));
 	struct mScriptEngineContextLuaRef* ref = calloc(1, sizeof(*ref));
@@ -167,7 +175,18 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext) {
 	case LUA_TSTRING:
 		break;
 	case LUA_TFUNCTION:
-		return _luaWrapFunction(luaContext);
+		return _luaCoerceFunction(luaContext);
+	case LUA_TUSERDATA:
+		if (!lua_getmetatable(luaContext->lua, -1)) {
+			break;
+		}
+		luaL_getmetatable(luaContext->lua, "mSTStruct");
+		if (!lua_rawequal(luaContext->lua, -1, -2)) {
+			lua_pop(luaContext->lua, 2);
+			break;
+		}
+		lua_pop(luaContext->lua, 2);
+		value = lua_touserdata(luaContext->lua, -1);
 	}
 	lua_pop(luaContext->lua, 1);
 	return value;
@@ -178,6 +197,7 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		value = mScriptValueUnwrap(value);
 	}
 	bool ok = true;
+	struct mScriptValue* newValue;
 	switch (value->type->base) {
 	case mSCRIPT_TYPE_SINT:
 		if (value->type->size <= 4) {
@@ -207,14 +227,16 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		}
 		break;
 	case mSCRIPT_TYPE_FUNCTION:
-		lua_pushlightuserdata(luaContext->lua, value);
+		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
+		newValue->type = value->type;
+		newValue->refs = mSCRIPT_VALUE_UNREF;
+		newValue->type->alloc(newValue);
 		lua_pushcclosure(luaContext->lua, _luaThunk, 1);
-		mScriptValueRef(value);
 		break;
 	case mSCRIPT_TYPE_OBJECT:
-		lua_pushlightuserdata(luaContext->lua, value);
+		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
+		mScriptValueWrap(value, newValue);
 		luaL_setmetatable(luaContext->lua, "mSTStruct");
-		mScriptValueRef(value);
 		break;
 	default:
 		ok = false;
@@ -308,6 +330,15 @@ bool _luaPopFrame(struct mScriptEngineContextLua* luaContext, struct mScriptList
 		if (count > i) {
 			lua_pop(luaContext->lua, count - i);
 		}
+
+		if (ok) {
+			for (i = 0; i < (ssize_t) (mScriptListSize(frame) / 2); ++i) {
+				struct mScriptValue buffer;
+				memcpy(&buffer, mScriptListGetPointer(frame, i), sizeof(buffer));
+				memcpy(mScriptListGetPointer(frame, i), mScriptListGetPointer(frame, mScriptListSize(frame) - i - 1), sizeof(buffer));
+				memcpy(mScriptListGetPointer(frame, mScriptListSize(frame) - i - 1), &buffer, sizeof(buffer));
+			}
+		}
 	}
 	return ok;
 }
@@ -346,7 +377,7 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 		return false;
 	}
 
-	if (!_luaPopFrame(luaContext, &frame->returnValues)) {
+	if (frame && !_luaPopFrame(luaContext, &frame->returnValues)) {
 		return false;
 	}
 
