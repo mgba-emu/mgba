@@ -115,11 +115,6 @@ mSCRIPT_DEFINE_STRUCT(TestD)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestD, S(TestC), b)
 mSCRIPT_DEFINE_END;
 
-mSCRIPT_EXPORT_STRUCT(TestA);
-mSCRIPT_EXPORT_STRUCT(TestB);
-mSCRIPT_EXPORT_STRUCT(TestC);
-mSCRIPT_EXPORT_STRUCT(TestD);
-
 M_TEST_DEFINE(testALayout) {
 	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestA)->details.cls;
 	assert_false(cls->init);

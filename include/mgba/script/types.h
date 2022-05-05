@@ -182,8 +182,14 @@ CXX_GUARD_START
 	_mAPPLY(mSCRIPT_TYPE_C_ ## RETURN) out = FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS)); \
 	mSCRIPT_PUSH(&frame->returnValues, RETURN, out)
 
-#define mSCRIPT_EXPORT_STRUCT(STRUCT) \
-	mSCRIPT_DECLARE_STRUCT(STRUCT) \
+#define mSCRIPT_DECLARE_STRUCT(STRUCT) \
+	extern const struct mScriptType mSTStruct_ ## STRUCT; \
+	extern const struct mScriptType mSTStructConst_ ## STRUCT;
+
+#define mSCRIPT_DEFINE_STRUCT(STRUCT) \
+	const struct mScriptType mSTStruct_ ## STRUCT; \
+	const struct mScriptType mSTStructConst_ ## STRUCT; \
+	static struct mScriptTypeClass _mSTStructDetails_ ## STRUCT; \
 	static bool _mSTStructCast_ ## STRUCT(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) { \
 		if (input->type == type || (input->type == &mSTStruct_ ## STRUCT && type == &mSTStructConst_ ## STRUCT)) { \
 			output->type = type; \
@@ -215,15 +221,7 @@ CXX_GUARD_START
 		.alloc = NULL, \
 		.free = NULL, \
 		.cast = _mSTStructCast_ ## STRUCT, \
-	}
-
-#define mSCRIPT_DECLARE_STRUCT(STRUCT) \
-	extern const struct mScriptType mSTStruct_ ## STRUCT; \
-	extern const struct mScriptType mSTStructConst_ ## STRUCT;
-
-#define mSCRIPT_DEFINE_STRUCT(STRUCT) \
-	const struct mScriptType mSTStruct_ ## STRUCT; \
-	const struct mScriptType mSTStructConst_ ## STRUCT; \
+	}; \
 	static struct mScriptTypeClass _mSTStructDetails_ ## STRUCT = { \
 		.init = false, \
 		.details = (const struct mScriptClassInitDetails[]) {
@@ -353,15 +351,17 @@ CXX_GUARD_START
 #define mSCRIPT_DECLARE_STRUCT_VOID_CD_METHOD(TYPE, NAME, NPARAMS, ...) \
 	mSCRIPT_DECLARE_STRUCT_VOID_C_METHOD(TYPE, NAME, p0->NAME, NPARAMS, __VA_ARGS__)
 
-#define mSCRIPT_DEFINE_STRUCT_METHOD(TYPE, NAME) { \
+#define mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(TYPE, EXPORTED_NAME, NAME) { \
 	.type = mSCRIPT_CLASS_INIT_INSTANCE_MEMBER, \
 	.info = { \
 		.member = { \
-			.name = #NAME, \
+			.name = #EXPORTED_NAME, \
 			.type = &_mSTStructBindingType_ ## TYPE ## _ ## NAME \
 		} \
 	}, \
 },
+
+#define mSCRIPT_DEFINE_STRUCT_METHOD(TYPE, NAME) mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(TYPE, NAME, NAME)
 
 #define mSCRIPT_DEFINE_END { .type = mSCRIPT_CLASS_INIT_END } } }
 
@@ -421,27 +421,27 @@ CXX_GUARD_START
 	} \
 	_mSCRIPT_BIND_FUNCTION(NAME, 0, , NPARAMS, __VA_ARGS__)
 
-#define mSCRIPT_MAKE(TYPE, FIELD, VALUE) (struct mScriptValue) { \
-		.type = (TYPE), \
+#define mSCRIPT_MAKE(TYPE, VALUE) (struct mScriptValue) { \
+		.type = (mSCRIPT_TYPE_MS_ ## TYPE), \
 		.refs = mSCRIPT_VALUE_UNREF, \
 		.value = { \
-			.FIELD = (VALUE) \
+			.mSCRIPT_TYPE_FIELD_ ## TYPE = (VALUE) \
 		}, \
 	} \
 
-#define mSCRIPT_MAKE_S8(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_S8, s32, VALUE)
-#define mSCRIPT_MAKE_U8(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_U8, u32, VALUE)
-#define mSCRIPT_MAKE_S16(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_S16, s32, VALUE)
-#define mSCRIPT_MAKE_U16(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_U16, u32, VALUE)
-#define mSCRIPT_MAKE_S32(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_S32, s32, VALUE)
-#define mSCRIPT_MAKE_U32(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_U32, u32, VALUE)
-#define mSCRIPT_MAKE_F32(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_F32, f32, VALUE)
-#define mSCRIPT_MAKE_S64(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_S64, s64, VALUE)
-#define mSCRIPT_MAKE_U64(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_U64, u64, VALUE)
-#define mSCRIPT_MAKE_F64(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_F64, f64, VALUE)
-#define mSCRIPT_MAKE_CHARP(VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_CHARP, opaque, VALUE)
-#define mSCRIPT_MAKE_S(STRUCT, VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_S(STRUCT), opaque, VALUE)
-#define mSCRIPT_MAKE_CS(STRUCT, VALUE) mSCRIPT_MAKE(mSCRIPT_TYPE_MS_CS(STRUCT), copaque, VALUE)
+#define mSCRIPT_MAKE_S8(VALUE) mSCRIPT_MAKE(S8, VALUE)
+#define mSCRIPT_MAKE_U8(VALUE) mSCRIPT_MAKE(U8, VALUE)
+#define mSCRIPT_MAKE_S16(VALUE) mSCRIPT_MAKE(S16, VALUE)
+#define mSCRIPT_MAKE_U16(VALUE) mSCRIPT_MAKE(U16, VALUE)
+#define mSCRIPT_MAKE_S32(VALUE) mSCRIPT_MAKE(S32, VALUE)
+#define mSCRIPT_MAKE_U32(VALUE) mSCRIPT_MAKE(U32, VALUE)
+#define mSCRIPT_MAKE_F32(VALUE) mSCRIPT_MAKE(F32, VALUE)
+#define mSCRIPT_MAKE_S64(VALUE) mSCRIPT_MAKE(S64, VALUE)
+#define mSCRIPT_MAKE_U64(VALUE) mSCRIPT_MAKE(U64, VALUE)
+#define mSCRIPT_MAKE_F64(VALUE) mSCRIPT_MAKE(F64, VALUE)
+#define mSCRIPT_MAKE_CHARP(VALUE) mSCRIPT_MAKE(CHARP, VALUE)
+#define mSCRIPT_MAKE_S(STRUCT, VALUE) mSCRIPT_MAKE(S(STRUCT), VALUE)
+#define mSCRIPT_MAKE_CS(STRUCT, VALUE) mSCRIPT_MAKE(CS(STRUCT), VALUE)
 
 enum mScriptTypeBase {
 	mSCRIPT_TYPE_VOID = 0,
