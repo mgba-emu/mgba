@@ -7,6 +7,11 @@
 
 #include <mgba/internal/script/lua.h>
 
+#define SETUP_LUA \
+	struct mScriptContext context; \
+	mScriptContextInit(&context); \
+	struct mScriptEngineContext* lua = mScriptContextRegisterEngine(&context, mSCRIPT_ENGINE_LUA)
+
 #define LOAD_PROGRAM(PROG) \
 	do { \
 		struct VFile* vf = VFileFromConstMemory(PROG, strlen(PROG)); \
@@ -137,9 +142,7 @@ M_TEST_DEFINE(loadBadSyntax) {
 }
 
 M_TEST_DEFINE(runNop) {
-	struct mScriptContext context;
-	mScriptContextInit(&context);
-	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+	SETUP_LUA;
 
 	LOAD_PROGRAM("return");
 	assert_true(lua->run(lua));
@@ -147,14 +150,11 @@ M_TEST_DEFINE(runNop) {
 	// Make sure we can run it twice
 	assert_true(lua->run(lua));
 
-	lua->destroy(lua);
 	mScriptContextDeinit(&context);
 }
 
 M_TEST_DEFINE(getGlobal) {
-	struct mScriptContext context;
-	mScriptContextInit(&context);
-	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+	SETUP_LUA;
 
 	struct mScriptValue a = mSCRIPT_MAKE_S32(1);
 	struct mScriptValue* val;
@@ -198,14 +198,11 @@ M_TEST_DEFINE(getGlobal) {
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
 
-	lua->destroy(lua);
 	mScriptContextDeinit(&context);
 }
 
 M_TEST_DEFINE(setGlobal) {
-	struct mScriptContext context;
-	mScriptContextInit(&context);
-	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+	SETUP_LUA;
 
 	struct mScriptValue a = mSCRIPT_MAKE_S32(1);
 	struct mScriptValue* val;
@@ -246,14 +243,11 @@ M_TEST_DEFINE(setGlobal) {
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
 
-	lua->destroy(lua);
 	mScriptContextDeinit(&context);
 }
 
 M_TEST_DEFINE(callLuaFunc) {
-	struct mScriptContext context;
-	mScriptContextInit(&context);
-	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+	SETUP_LUA;
 
 	struct mScriptValue* fn;
 
@@ -289,14 +283,11 @@ M_TEST_DEFINE(callLuaFunc) {
 	mScriptFrameDeinit(&frame);
 	mScriptValueDeref(fn);
 
-	lua->destroy(lua);
 	mScriptContextDeinit(&context);
 }
 
 M_TEST_DEFINE(callCFunc) {
-	struct mScriptContext context;
-	mScriptContextInit(&context);
-	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+	SETUP_LUA;
 
 	struct mScriptValue a = mSCRIPT_MAKE_S32(1);
 	struct mScriptValue* val;
@@ -318,14 +309,11 @@ M_TEST_DEFINE(callCFunc) {
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
 
-	lua->destroy(lua);
 	mScriptContextDeinit(&context);
 }
 
 M_TEST_DEFINE(globalStructFieldGet) {
-	struct mScriptContext context;
-	mScriptContextInit(&context);
-	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+	SETUP_LUA;
 
 	struct Test s = {
 		.i = 1,
@@ -367,15 +355,11 @@ M_TEST_DEFINE(globalStructFieldGet) {
 	assert_true(b.type->equal(&b, val));
 	mScriptValueDeref(val);
 
-	lua->destroy(lua);
 	mScriptContextDeinit(&context);
 }
 
-
 M_TEST_DEFINE(globalStructFieldSet) {
-	struct mScriptContext context;
-	mScriptContextInit(&context);
-	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+	SETUP_LUA;
 
 	struct Test s = {
 		.i = 1,
@@ -402,15 +386,12 @@ M_TEST_DEFINE(globalStructFieldSet) {
 	assert_false(lua->run(lua));
 	assert_int_equal(s.i, 1);
 
-	lua->destroy(lua);
 	mScriptContextDeinit(&context);
 }
 
 
 M_TEST_DEFINE(globalStructMethods) {
-	struct mScriptContext context;
-	mScriptContextInit(&context);
-	struct mScriptEngineContext* lua = mSCRIPT_ENGINE_LUA->create(mSCRIPT_ENGINE_LUA, &context);
+	SETUP_LUA;
 
 	struct Test s = {
 		.i = 1,
@@ -532,7 +513,6 @@ M_TEST_DEFINE(globalStructMethods) {
 	assert_true(b.type->equal(&b, val));
 	mScriptValueDeref(val);
 
-	lua->destroy(lua);
 	mScriptContextDeinit(&context);
 }
 
