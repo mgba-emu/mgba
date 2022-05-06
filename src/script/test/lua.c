@@ -516,6 +516,26 @@ M_TEST_DEFINE(globalStructMethods) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(errorReporting) {
+	SETUP_LUA;
+
+	assert_null(lua->getError(lua));
+
+	LOAD_PROGRAM("assert(false)");
+
+	assert_false(lua->run(lua));
+	const char* errorBuffer = lua->getError(lua);
+	assert_non_null(errorBuffer);
+	assert_non_null(strstr(errorBuffer, "assertion failed"));
+
+	LOAD_PROGRAM("assert(true)");
+
+	assert_true(lua->run(lua));
+	assert_null(lua->getError(lua));
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(create),
 	cmocka_unit_test(loadGood),
@@ -527,4 +547,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(callCFunc),
 	cmocka_unit_test(globalStructFieldGet),
 	cmocka_unit_test(globalStructFieldSet),
-	cmocka_unit_test(globalStructMethods))
+	cmocka_unit_test(globalStructMethods),
+	cmocka_unit_test(errorReporting),
+)

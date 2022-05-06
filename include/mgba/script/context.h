@@ -41,6 +41,7 @@ struct mScriptEngineContext {
 
 	bool (*load)(struct mScriptEngineContext*, struct VFile*, const char** error);
 	bool (*run)(struct mScriptEngineContext*);
+	const char* (*getError)(struct mScriptEngineContext*);
 };
 
 void mScriptContextInit(struct mScriptContext*);

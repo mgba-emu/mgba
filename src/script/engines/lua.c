@@ -4,6 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/script/lua.h>
+
+#include <mgba-util/string.h>
+
 #include <lualib.h>
 #include <lauxlib.h>
 
@@ -14,6 +17,7 @@ static struct mScriptValue* _luaGetGlobal(struct mScriptEngineContext*, const ch
 static bool _luaSetGlobal(struct mScriptEngineContext*, const char* name, struct mScriptValue*);
 static bool _luaLoad(struct mScriptEngineContext*, struct VFile*, const char** error);
 static bool _luaRun(struct mScriptEngineContext*);
+static const char* _luaGetError(struct mScriptEngineContext*);
 
 static bool _luaCall(struct mScriptFrame*, void* context);
 
@@ -61,6 +65,7 @@ struct mScriptEngineContextLua {
 	struct mScriptEngineContext d;
 	lua_State* lua;
 	int func;
+	char* lastError;
 };
 
 struct mScriptEngineContextLuaRef {
@@ -97,7 +102,8 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 		.getGlobal = _luaGetGlobal,
 		.setGlobal = _luaSetGlobal,
 		.load = _luaLoad,
-		.run = _luaRun
+		.run = _luaRun,
+		.getError = _luaGetError
 	};
 	luaContext->lua = luaL_newstate();
 	luaContext->func = -1;
@@ -117,6 +123,10 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 
 void _luaDestroy(struct mScriptEngineContext* ctx) {
 	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) ctx;
+	if (luaContext->lastError) {
+		free(luaContext->lastError);
+		luaContext->lastError = NULL;
+	}
 	if (luaContext->func > 0) {
 		luaL_unref(luaContext->lua, LUA_REGISTRYINDEX, luaContext->func);
 	}
@@ -298,6 +308,11 @@ bool _luaRun(struct mScriptEngineContext* context) {
 	return _luaInvoke(luaContext, NULL);
 }
 
+const char* _luaGetError(struct mScriptEngineContext* context) {
+	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) context;
+	return luaContext->lastError;
+}
+
 bool _luaPushFrame(struct mScriptEngineContextLua* luaContext, struct mScriptList* frame) {
 	bool ok = true;
 	if (frame) {
@@ -360,6 +375,11 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 		nargs = mScriptListSize(&frame->arguments);
 	}
 
+	if (luaContext->lastError) {
+		free(luaContext->lastError);
+		luaContext->lastError = NULL;
+	}
+
 	if (frame && !_luaPushFrame(luaContext, &frame->arguments)) {
 		return false;
 	}
@@ -373,6 +393,7 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 	lua_rawset(luaContext->lua, LUA_REGISTRYINDEX);
 
 	if (ret == LUA_ERRRUN) {
+		luaContext->lastError = strdup(lua_tostring(luaContext->lua, -1));
 		lua_pop(luaContext->lua, 1);
 	}
 	if (ret) {
