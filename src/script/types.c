@@ -295,12 +295,12 @@ uint32_t _hashScalar(const struct mScriptValue* val) {
 		return true; \
 	}
 
-_mAPPLY(AS(SInt32, S32));
-_mAPPLY(AS(UInt32, U32));
-_mAPPLY(AS(Float32, F32));
-_mAPPLY(AS(SInt64, S64));
-_mAPPLY(AS(UInt64, U64));
-_mAPPLY(AS(Float64, F64));
+AS(SInt32, S32);
+AS(UInt32, U32);
+AS(Float32, F32);
+AS(SInt64, S64);
+AS(UInt64, U64);
+AS(Float64, F64);
 
 bool _castScalar(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) {
 	switch (type->base) {

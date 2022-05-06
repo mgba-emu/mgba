@@ -10,16 +10,9 @@
 
 CXX_GUARD_START
 
+#include <mgba-util/macros.h>
 #include <mgba-util/table.h>
 #include <mgba-util/vector.h>
-
-#define _mCPP_EMPTY()
-#define _mCPP_CAT(A, B) A ## B
-
-#define _mDEFER(X) X _mCPP_EMPTY()
-#define _mBLOCK(...) __VA_ARGS__ _mDEFER(_mCPP_EMPTY)()
-#define _mAPPLY(...) __VA_ARGS__
-#define _mCAT(A, B) _mCPP_CAT(A, B)
 
 #define mSCRIPT_VALUE_UNREF -1
 #define mSCRIPT_PARAMS_MAX 8
@@ -99,10 +92,10 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_CMP_S(STRUCT) mSCRIPT_TYPE_MS_S(STRUCT)->name == _mSCRIPT_FIELD_NAME
 #define mSCRIPT_TYPE_CMP_CS(STRUCT) mSCRIPT_TYPE_MS_CS(STRUCT)->name == _mSCRIPT_FIELD_NAME
 #define mSCRIPT_TYPE_CMP_S_METHOD(STRUCT, NAME) mSCRIPT_TYPE_MS_S_METHOD(STRUCT, NAME)->name == _mSCRIPT_FIELD_NAME
-#define mSCRIPT_TYPE_CMP(TYPE0, TYPE1) _mAPPLY(mSCRIPT_TYPE_CMP_ ## TYPE0(TYPE1))
+#define mSCRIPT_TYPE_CMP(TYPE0, TYPE1) mSCRIPT_TYPE_CMP_ ## TYPE0(TYPE1)
 
 #define mSCRIPT_POP(STACK, TYPE, NAME) \
-	_mAPPLY(mSCRIPT_TYPE_C_ ## TYPE) NAME; \
+	mSCRIPT_TYPE_C_ ## TYPE NAME; \
 	do { \
 		struct mScriptValue* _val = mScriptListGetPointer(STACK, mScriptListSize(STACK) - 1); \
 		if (!(mSCRIPT_TYPE_CMP(TYPE, _val->type))) { \
@@ -115,7 +108,7 @@ CXX_GUARD_START
 				return false; \
 			} \
 		} \
-		NAME = _val->value. _mAPPLY(mSCRIPT_TYPE_FIELD_ ## TYPE); \
+		NAME = _val->value.mSCRIPT_TYPE_FIELD_ ## TYPE; \
 		mScriptValueDeref(_val); \
 		mScriptListResize(STACK, -1); \
 	} while (0)
@@ -130,21 +123,12 @@ CXX_GUARD_START
 #define mSCRIPT_POP_7(FRAME, T0, T1, T2, T3, T4, T5, T6) mSCRIPT_POP(FRAME, T6, p6); mSCRIPT_POP_6(FRAME, T0, T1, T2, T3, T4, T5)
 #define mSCRIPT_POP_8(FRAME, T0, T1, T2, T3, T4, T5, T6, T7) mSCRIPT_POP(FRAME, T7, p7); mSCRIPT_POP_7(FRAME, T0, T1, T2, T3, T4, T5, T6)
 
-#define _mCOMMA_0(N, ...) N
-#define _mCOMMA_1(N, ...) N, __VA_ARGS__
-#define _mCOMMA_2(N, ...) N, __VA_ARGS__
-#define _mCOMMA_3(N, ...) N, __VA_ARGS__
-#define _mCOMMA_4(N, ...) N, __VA_ARGS__
-#define _mCOMMA_5(N, ...) N, __VA_ARGS__
-#define _mCOMMA_6(N, ...) N, __VA_ARGS__
-#define _mCOMMA_7(N, ...) N, __VA_ARGS__
-
 #define mSCRIPT_PUSH(STACK, TYPE, NAME) \
 	do { \
 		struct mScriptValue* _val = mScriptListAppend(STACK); \
-		_val->type = _mAPPLY(mSCRIPT_TYPE_MS_ ## TYPE); \
+		_val->type = mSCRIPT_TYPE_MS_ ## TYPE; \
 		_val->refs = mSCRIPT_VALUE_UNREF; \
-		_val->value._mAPPLY(mSCRIPT_TYPE_FIELD_ ## TYPE) = NAME; \
+		_val->value.mSCRIPT_TYPE_FIELD_ ## TYPE = NAME; \
 	} while (0)
 
 #define mSCRIPT_ARG_NAMES_0
@@ -166,20 +150,11 @@ CXX_GUARD_START
 #define mSCRIPT_PREFIX_6(PREFIX, T0, T1, T2, T3, T4, T5) PREFIX ## T0, PREFIX ## T1, PREFIX ## T2, PREFIX ## T3, PREFIX ## T4, PREFIX ## T5
 #define mSCRIPT_PREFIX_7(PREFIX, T0, T1, T2, T3, T4, T5, T6) PREFIX ## T0, PREFIX ## T1, PREFIX ## T2, PREFIX ## T3, PREFIX ## T4, PREFIX ## T5, PREFIX ## T6
 #define mSCRIPT_PREFIX_8(PREFIX, T0, T1, T2, T3, T4, T5, T6, T7) PREFIX ## T0, PREFIX ## T1, PREFIX ## T2, PREFIX ## T3, PREFIX ## T4, PREFIX ## T5, PREFIX ## T6, PREFIX ## T7
-#define mSCRIPT_PREFIX_N(N) _mAPPLY(mSCRIPT_PREFIX_ ## N)
-
-#define _mSUCC0 1
-#define _mSUCC1 2
-#define _mSUCC2 3
-#define _mSUCC3 4
-#define _mSUCC4 5
-#define _mSUCC5 6
-#define _mSUCC6 7
-#define _mSUCC7 8
+#define mSCRIPT_PREFIX_N(N) mSCRIPT_PREFIX_ ## N
 
 #define _mSCRIPT_CALL_VOID(FUNCTION, NPARAMS) FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS))
 #define _mSCRIPT_CALL(RETURN, FUNCTION, NPARAMS) \
-	_mAPPLY(mSCRIPT_TYPE_C_ ## RETURN) out = FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS)); \
+	mSCRIPT_TYPE_C_ ## RETURN out = FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS)); \
 	mSCRIPT_PUSH(&frame->returnValues, RETURN, out)
 
 #define mSCRIPT_DECLARE_STRUCT(STRUCT) \
@@ -238,7 +213,7 @@ CXX_GUARD_START
 	.info = { \
 		.member = { \
 			.name = #NAME, \
-			.type = _mAPPLY(mSCRIPT_TYPE_MS_ ## TYPE), \
+			.type = mSCRIPT_TYPE_MS_ ## TYPE, \
 			.offset = offsetof(struct STRUCT, NAME) \
 		} \
 	} \
@@ -249,7 +224,7 @@ CXX_GUARD_START
 	.info = { \
 		.member = { \
 			.name = #NAME, \
-			.type = _mAPPLY(mSCRIPT_TYPE_MS_ ## TYPE) \
+			.type = mSCRIPT_TYPE_MS_ ## TYPE \
 		} \
 	}, \
 },
@@ -262,7 +237,7 @@ CXX_GUARD_START
 },
 
 #define _mSCRIPT_STRUCT_METHOD_POP(TYPE, S, NPARAMS, ...) \
-	_mDEFER(_mDEFER(_mCAT(mSCRIPT_POP_, _mSUCC ## NPARAMS)) (&frame->arguments, _mCOMMA_ ## NPARAMS(S(TYPE), __VA_ARGS__))); \
+	_mCALL(_mCAT(mSCRIPT_POP_, _mSUCC_ ## NPARAMS), &frame->arguments, _mCOMMA_ ## NPARAMS(S(TYPE), __VA_ARGS__)); \
 	if (mScriptListSize(&frame->arguments)) { \
 		return false; \
 	}
@@ -283,8 +258,9 @@ CXX_GUARD_START
 		.details = { \
 			.function = { \
 				.parameters = { \
-					.count = _mSUCC ## NPARAMS, \
-					.entries = { _mAPPLY(mSCRIPT_TYPE_MS_ ## S(TYPE)), mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_MS_, __VA_ARGS__) } \
+					.count = _mSUCC_ ## NPARAMS, \
+					.entries = { mSCRIPT_TYPE_MS_ ## S(TYPE), _mCALL(mSCRIPT_PREFIX_ ## NPARAMS, mSCRIPT_TYPE_MS_, _mEVEN_ ## NPARAMS(__VA_ARGS__)) }, \
+					.names = { "this", _mCALL(_mCALL_ ## NPARAMS, _mSTRINGIFY, _mODD_ ## NPARAMS(__VA_ARGS__)) }, \
 				}, \
 				.returnType = { \
 					.count = NRET, \
@@ -294,47 +270,50 @@ CXX_GUARD_START
 		} \
 	};
 
+#define _mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, RETURN, NAME, CONST, NPARAMS, ...) \
+	typedef RETURN (*_mSTStructFunctionType_ ## TYPE ## _ ## NAME)(_mCOMMA_ ## NPARAMS(CONST struct TYPE* , mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_C_, __VA_ARGS__)))
+
 #define mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, RETURN, NAME, FUNCTION, NPARAMS, ...) \
-	typedef _mAPPLY(mSCRIPT_TYPE_C_ ## RETURN) (*_mSTStructFunctionType_ ## TYPE ## _ ## NAME)(_mAPPLY(_mCOMMA_ ## NPARAMS(struct TYPE* , mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_C_, __VA_ARGS__)))); \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, mSCRIPT_TYPE_C_ ## RETURN, NAME, , NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
 	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, S, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS, __VA_ARGS__) \
 	\
 	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
-		_mSCRIPT_STRUCT_METHOD_POP(TYPE, S, NPARAMS, __VA_ARGS__); \
-		_mSCRIPT_CALL(RETURN, FUNCTION, _mSUCC ## NPARAMS); \
+		_mSCRIPT_STRUCT_METHOD_POP(TYPE, S, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+		_mSCRIPT_CALL(RETURN, FUNCTION, _mSUCC_ ## NPARAMS); \
 		return true; \
 	} \
 
 #define mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TYPE, NAME, FUNCTION, NPARAMS, ...) \
-	typedef void (*_mSTStructFunctionType_ ## TYPE ## _ ## NAME)(_mAPPLY(_mCOMMA_ ## NPARAMS(struct TYPE* , mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_C_, __VA_ARGS__)))); \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, void, NAME, , NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
 	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, S, 0, , NPARAMS, __VA_ARGS__) \
 	\
 	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
-		_mSCRIPT_STRUCT_METHOD_POP(TYPE, S, NPARAMS, __VA_ARGS__); \
-		_mSCRIPT_CALL_VOID(FUNCTION, _mSUCC ## NPARAMS); \
+		_mSCRIPT_STRUCT_METHOD_POP(TYPE, S, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+		_mSCRIPT_CALL_VOID(FUNCTION, _mSUCC_ ## NPARAMS); \
 		return true; \
 	} \
 
 #define mSCRIPT_DECLARE_STRUCT_C_METHOD(TYPE, RETURN, NAME, FUNCTION, NPARAMS, ...) \
-	typedef _mAPPLY(mSCRIPT_TYPE_C_ ## RETURN) (*_mSTStructFunctionType_ ## TYPE ## _ ## NAME)(_mAPPLY(_mCOMMA_ ## NPARAMS(struct TYPE* , mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_C_, __VA_ARGS__)))); \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, mSCRIPT_TYPE_C_ ## RETURN, NAME, const, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
 	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, CS, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS, __VA_ARGS__) \
 	\
 	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
-		_mSCRIPT_STRUCT_METHOD_POP(TYPE, CS, NPARAMS, __VA_ARGS__); \
-		_mSCRIPT_CALL(RETURN, FUNCTION, _mSUCC ## NPARAMS); \
+		_mSCRIPT_STRUCT_METHOD_POP(TYPE, CS, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+		_mSCRIPT_CALL(RETURN, FUNCTION, _mSUCC_ ## NPARAMS); \
 		return true; \
 	} \
 
 #define mSCRIPT_DECLARE_STRUCT_VOID_C_METHOD(TYPE, NAME, FUNCTION, NPARAMS, ...) \
-	typedef void (*_mSTStructFunctionType_ ## TYPE ## _ ## NAME)(_mAPPLY(_mCOMMA_ ## NPARAMS(struct TYPE* , mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_C_, __VA_ARGS__)))); \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, void, NAME, const, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
 	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, CS, 0, , NPARAMS, __VA_ARGS__) \
 	\
 	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
-		_mSCRIPT_STRUCT_METHOD_POP(TYPE, CS, NPARAMS, __VA_ARGS__); \
-		_mSCRIPT_CALL_VOID(FUNCTION, _mSUCC ## NPARAMS); \
+		_mSCRIPT_STRUCT_METHOD_POP(TYPE, CS, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+		_mSCRIPT_CALL_VOID(FUNCTION, _mSUCC_ ## NPARAMS); \
 		return true; \
 	} \
 
@@ -380,7 +359,8 @@ CXX_GUARD_START
 			.function = { \
 				.parameters = { \
 					.count = NPARAMS, \
-					.entries = { _mAPPLY(mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_MS_, __VA_ARGS__)) } \
+					.entries = { _mCALL(mSCRIPT_PREFIX_ ## NPARAMS, mSCRIPT_TYPE_MS_, _mEVEN_ ## NPARAMS(__VA_ARGS__)) }, \
+					.names = { _mCALL(_mCALL_ ## NPARAMS, _mSTRINGIFY, _mODD_ ## NPARAMS(__VA_ARGS__)) }, \
 				}, \
 				.returnType = { \
 					.count = NRET, \
@@ -400,7 +380,7 @@ CXX_GUARD_START
 #define mSCRIPT_BIND_FUNCTION(NAME, RETURN, FUNCTION, NPARAMS, ...) \
 	static bool _binding_ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
-		mSCRIPT_POP_ ## NPARAMS(&frame->arguments, __VA_ARGS__); \
+		_mCALL(mSCRIPT_POP_ ## NPARAMS, &frame->arguments, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
 		if (mScriptListSize(&frame->arguments)) { \
 			return false; \
 		} \
@@ -412,7 +392,7 @@ CXX_GUARD_START
 #define mSCRIPT_BIND_VOID_FUNCTION(NAME, FUNCTION, NPARAMS, ...) \
 	static bool _binding_ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
-		mSCRIPT_POP_ ## NPARAMS(&frame->arguments, __VA_ARGS__); \
+		_mCALL(mSCRIPT_POP_ ## NPARAMS, &frame->arguments, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
 		if (mScriptListSize(&frame->arguments)) { \
 			return false; \
 		} \
@@ -486,6 +466,7 @@ extern const struct mScriptType mSTWrapper;
 struct mScriptTypeTuple {
 	size_t count;
 	const struct mScriptType* entries[mSCRIPT_PARAMS_MAX];
+	const char* names[mSCRIPT_PARAMS_MAX];
 	bool variable;
 };
 

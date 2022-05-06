@@ -52,14 +52,14 @@ static int isHello(const char* str) {
 }
 
 mSCRIPT_BIND_FUNCTION(boundVoidOne, S32, voidOne, 0);
-mSCRIPT_BIND_VOID_FUNCTION(boundDiscard, discard, 1, S32);
-mSCRIPT_BIND_FUNCTION(boundIdentityInt, S32, identityInt, 1, S32);
-mSCRIPT_BIND_FUNCTION(boundIdentityInt64, S64, identityInt64, 1, S64);
-mSCRIPT_BIND_FUNCTION(boundIdentityFloat, F32, identityFloat, 1, F32);
-mSCRIPT_BIND_FUNCTION(boundIdentityStruct, S(Test), identityStruct, 1, S(Test));
-mSCRIPT_BIND_FUNCTION(boundAddInts, S32, addInts, 2, S32, S32);
-mSCRIPT_BIND_FUNCTION(boundSubInts, S32, subInts, 2, S32, S32);
-mSCRIPT_BIND_FUNCTION(boundIsHello, S32, isHello, 1, CHARP);
+mSCRIPT_BIND_VOID_FUNCTION(boundDiscard, discard, 1, S32, ignored);
+mSCRIPT_BIND_FUNCTION(boundIdentityInt, S32, identityInt, 1, S32, in);
+mSCRIPT_BIND_FUNCTION(boundIdentityInt64, S64, identityInt64, 1, S64, in);
+mSCRIPT_BIND_FUNCTION(boundIdentityFloat, F32, identityFloat, 1, F32, in);
+mSCRIPT_BIND_FUNCTION(boundIdentityStruct, S(Test), identityStruct, 1, S(Test), t);
+mSCRIPT_BIND_FUNCTION(boundAddInts, S32, addInts, 2, S32, a, S32, b);
+mSCRIPT_BIND_FUNCTION(boundSubInts, S32, subInts, 2, S32, a, S32, b);
+mSCRIPT_BIND_FUNCTION(boundIsHello, S32, isHello, 1, CHARP, str);
 
 M_TEST_DEFINE(voidArgs) {
 	struct mScriptFrame frame;

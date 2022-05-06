@@ -63,17 +63,17 @@ static void testAv1(struct TestA* a, int b) {
 
 mSCRIPT_DECLARE_STRUCT(TestA);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(TestA, S32, ifn0, 0);
-mSCRIPT_DECLARE_STRUCT_D_METHOD(TestA, S32, ifn1, 1, S32);
+mSCRIPT_DECLARE_STRUCT_D_METHOD(TestA, S32, ifn1, 1, S32, b);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(TestA, S32, icfn0, 0);
-mSCRIPT_DECLARE_STRUCT_CD_METHOD(TestA, S32, icfn1, 1, S32);
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(TestA, S32, icfn1, 1, S32, b);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(TestA, vfn0, 0);
-mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(TestA, vfn1, 1, S32);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(TestA, vfn1, 1, S32, b);
 mSCRIPT_DECLARE_STRUCT_METHOD(TestA, S32, i0, testAi0, 0);
-mSCRIPT_DECLARE_STRUCT_METHOD(TestA, S32, i1, testAi1, 1, S32);
+mSCRIPT_DECLARE_STRUCT_METHOD(TestA, S32, i1, testAi1, 1, S32, b);
 mSCRIPT_DECLARE_STRUCT_C_METHOD(TestA, S32, ic0, testAic0, 0);
-mSCRIPT_DECLARE_STRUCT_C_METHOD(TestA, S32, ic1, testAic1, 1, S32);
+mSCRIPT_DECLARE_STRUCT_C_METHOD(TestA, S32, ic1, testAic1, 1, S32, b);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestA, v0, testAv0, 0);
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestA, v1, testAv1, 1, S32);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestA, v1, testAv1, 1, S32, b);
 
 mSCRIPT_DEFINE_STRUCT(TestA)
 	mSCRIPT_DEFINE_DOCSTRING(MEMBER_A_DOCSTRING)
@@ -186,6 +186,82 @@ M_TEST_DEFINE(testALayout) {
 
 	member = HashTableLookup(&cls->staticMembers, "unknown");
 	assert_null(member);
+
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
+M_TEST_DEFINE(testASignatures) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestA)->details.cls;
+	assert_false(cls->init);
+	mScriptClassInit(cls);
+	assert_true(cls->init);
+
+	struct mScriptClassMember* member;
+
+	member = HashTableLookup(&cls->instanceMembers, "ifn0");
+	assert_non_null(member);
+	assert_string_equal(member->name, "ifn0");
+	assert_int_equal(member->type->base, mSCRIPT_TYPE_FUNCTION);
+	assert_int_equal(member->type->details.function.parameters.count, 1);
+	assert_ptr_equal(member->type->details.function.parameters.entries[0], mSCRIPT_TYPE_MS_S(TestA));
+	assert_string_equal(member->type->details.function.parameters.names[0], "this");
+	assert_int_equal(member->type->details.function.returnType.count, 1);
+	assert_ptr_equal(member->type->details.function.returnType.entries[0], mSCRIPT_TYPE_MS_S32);
+
+	member = HashTableLookup(&cls->instanceMembers, "ifn1");
+	assert_non_null(member);
+	assert_string_equal(member->name, "ifn1");
+	assert_int_equal(member->type->base, mSCRIPT_TYPE_FUNCTION);
+	assert_int_equal(member->type->details.function.parameters.count, 2);
+	assert_ptr_equal(member->type->details.function.parameters.entries[0], mSCRIPT_TYPE_MS_S(TestA));
+	assert_ptr_equal(member->type->details.function.parameters.entries[1], mSCRIPT_TYPE_MS_S32);
+	assert_string_equal(member->type->details.function.parameters.names[0], "this");
+	assert_string_equal(member->type->details.function.parameters.names[1], "b");
+	assert_int_equal(member->type->details.function.returnType.count, 1);
+	assert_ptr_equal(member->type->details.function.returnType.entries[0], mSCRIPT_TYPE_MS_S32);
+
+	member = HashTableLookup(&cls->instanceMembers, "vfn0");
+	assert_non_null(member);
+	assert_string_equal(member->name, "vfn0");
+	assert_int_equal(member->type->base, mSCRIPT_TYPE_FUNCTION);
+	assert_int_equal(member->type->details.function.parameters.count, 1);
+	assert_ptr_equal(member->type->details.function.parameters.entries[0], mSCRIPT_TYPE_MS_S(TestA));
+	assert_string_equal(member->type->details.function.parameters.names[0], "this");
+	assert_int_equal(member->type->details.function.returnType.count, 0);
+
+	member = HashTableLookup(&cls->instanceMembers, "vfn1");
+	assert_non_null(member);
+	assert_string_equal(member->name, "vfn1");
+	assert_int_equal(member->type->base, mSCRIPT_TYPE_FUNCTION);
+	assert_int_equal(member->type->details.function.parameters.count, 2);
+	assert_ptr_equal(member->type->details.function.parameters.entries[0], mSCRIPT_TYPE_MS_S(TestA));
+	assert_ptr_equal(member->type->details.function.parameters.entries[1], mSCRIPT_TYPE_MS_S32);
+	assert_string_equal(member->type->details.function.parameters.names[0], "this");
+	assert_string_equal(member->type->details.function.parameters.names[1], "b");
+	assert_int_equal(member->type->details.function.returnType.count, 0);
+
+	member = HashTableLookup(&cls->instanceMembers, "icfn0");
+	assert_non_null(member);
+	assert_string_equal(member->name, "icfn0");
+	assert_int_equal(member->type->base, mSCRIPT_TYPE_FUNCTION);
+	assert_int_equal(member->type->details.function.parameters.count, 1);
+	assert_ptr_equal(member->type->details.function.parameters.entries[0], mSCRIPT_TYPE_MS_CS(TestA));
+	assert_string_equal(member->type->details.function.parameters.names[0], "this");
+	assert_int_equal(member->type->details.function.returnType.count, 1);
+	assert_ptr_equal(member->type->details.function.returnType.entries[0], mSCRIPT_TYPE_MS_S32);
+
+	member = HashTableLookup(&cls->instanceMembers, "icfn1");
+	assert_non_null(member);
+	assert_string_equal(member->name, "icfn1");
+	assert_int_equal(member->type->base, mSCRIPT_TYPE_FUNCTION);
+	assert_int_equal(member->type->details.function.parameters.count, 2);
+	assert_ptr_equal(member->type->details.function.parameters.entries[0], mSCRIPT_TYPE_MS_CS(TestA));
+	assert_ptr_equal(member->type->details.function.parameters.entries[1], mSCRIPT_TYPE_MS_S32);
+	assert_string_equal(member->type->details.function.parameters.names[0], "this");
+	assert_string_equal(member->type->details.function.parameters.names[1], "b");
+	assert_int_equal(member->type->details.function.returnType.count, 1);
+	assert_ptr_equal(member->type->details.function.returnType.entries[0], mSCRIPT_TYPE_MS_S32);
 
 	mScriptClassDeinit(cls);
 	assert_false(cls->init);
@@ -836,6 +912,7 @@ M_TEST_DEFINE(testDSet) {
 
 M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testALayout),
+	cmocka_unit_test(testASignatures),
 	cmocka_unit_test(testAGet),
 	cmocka_unit_test(testASet),
 	cmocka_unit_test(testAStatic),
