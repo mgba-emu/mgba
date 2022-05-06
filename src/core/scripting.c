@@ -153,6 +153,13 @@ mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frequency, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, runFrame, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, step, 0);
 
+mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U8, busRead8, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U16, busRead16, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead32, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite8, 2, U32, address, U8, value);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite16, 2, U32, address, U16, value);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite32, 2, U32, address, U32, value);
+
 mSCRIPT_DEFINE_STRUCT(mCore)
 mSCRIPT_DEFINE_DOCSTRING("Get the number of the current frame")
 mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, currentFrame, frameCounter)
@@ -164,6 +171,19 @@ mSCRIPT_DEFINE_DOCSTRING("Run until the next frame")
 mSCRIPT_DEFINE_STRUCT_METHOD(mCore, runFrame)
 mSCRIPT_DEFINE_DOCSTRING("Run a single instruction")
 mSCRIPT_DEFINE_STRUCT_METHOD(mCore, step)
+
+mSCRIPT_DEFINE_DOCSTRING("Read an 8-bit value from the given bus address")
+mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read8, busRead8)
+mSCRIPT_DEFINE_DOCSTRING("Read a 16-bit value from the given bus address")
+mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read16, busRead16)
+mSCRIPT_DEFINE_DOCSTRING("Read a 32-bit value from the given bus address")
+mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read32, busRead32)
+mSCRIPT_DEFINE_DOCSTRING("Write an 8-bit value from the given bus address")
+mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write8, busWrite8)
+mSCRIPT_DEFINE_DOCSTRING("Write a 16-bit value from the given bus address")
+mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write16, busWrite16)
+mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given bus address")
+mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write32, busWrite32)
 mSCRIPT_DEFINE_END;
 
 void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core) {

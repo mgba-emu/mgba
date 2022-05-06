@@ -12,9 +12,13 @@
 #include <mgba/script/types.h>
 
 #ifdef M_CORE_GBA
+#include <mgba/internal/gba/memory.h>
 #define TEST_PLATFORM mPLATFORM_GBA
+#define RAM_BASE BASE_WORKING_IRAM
 #elif defined(M_CORE_GB)
+#include <mgba/internal/gb/memory.h>
 #define TEST_PLATFORM mPLATFORM_GB
+#define RAM_BASE GB_BASE_WORKING_RAM_BANK0
 #else
 #error "Need a valid platform for testing"
 #endif
@@ -136,8 +140,73 @@ M_TEST_DEFINE(runFrame) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(memoryRead) {
+	SETUP_LUA;
+	CREATE_CORE;
+	core->reset(core);
+
+	LOAD_PROGRAM(
+		"a8 = emu:read8(base + 0)\n"
+		"b8 = emu:read8(base + 1)\n"
+		"c8 = emu:read8(base + 2)\n"
+		"d8 = emu:read8(base + 3)\n"
+		"a16 = emu:read16(base + 4)\n"
+		"b16 = emu:read16(base + 6)\n"
+		"a32 = emu:read32(base + 8)\n"
+	);
+
+	int i;
+	for (i = 0; i < 12; ++i) {
+		core->busWrite8(core, RAM_BASE + i, i + 1);
+	}
+	struct mScriptValue base = mSCRIPT_MAKE_S32(RAM_BASE);
+	lua->setGlobal(lua, "base", &base);
+	assert_true(lua->run(lua));
+
+	TEST_VALUE(S32, "a8", 1);
+	TEST_VALUE(S32, "b8", 2);
+	TEST_VALUE(S32, "c8", 3);
+	TEST_VALUE(S32, "d8", 4);
+	TEST_VALUE(S32, "a16", 0x0605);
+	TEST_VALUE(S32, "b16", 0x0807);
+	TEST_VALUE(S32, "a32", 0x0C0B0A09);
+
+	TEARDOWN_CORE;
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(memoryWrite) {
+	SETUP_LUA;
+	CREATE_CORE;
+	core->reset(core);
+
+	LOAD_PROGRAM(
+		"emu:write8(base + 0, 1)\n"
+		"emu:write8(base + 1, 2)\n"
+		"emu:write8(base + 2, 3)\n"
+		"emu:write8(base + 3, 4)\n"
+		"emu:write16(base + 4, 0x0605)\n"
+		"emu:write16(base + 6, 0x0807)\n"
+		"emu:write32(base + 8, 0x0C0B0A09)\n"
+	);
+
+	struct mScriptValue base = mSCRIPT_MAKE_S32(RAM_BASE);
+	lua->setGlobal(lua, "base", &base);
+	assert_true(lua->run(lua));
+
+	int i;
+	for (i = 0; i < 12; ++i) {
+		assert_int_equal(core->busRead8(core, RAM_BASE + i), i + 1);
+	}
+
+	TEARDOWN_CORE;
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(globals),
 	cmocka_unit_test(infoFuncs),
 	cmocka_unit_test(runFrame),
+	cmocka_unit_test(memoryRead),
+	cmocka_unit_test(memoryWrite),
 )
