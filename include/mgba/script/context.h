@@ -54,4 +54,6 @@ void mScriptContextRemoveGlobal(struct mScriptContext*, const char* key);
 
 bool mScriptInvoke(const struct mScriptValue* fn, struct mScriptFrame* frame);
 
+CXX_GUARD_END
+
 #endif

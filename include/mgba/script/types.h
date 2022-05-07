@@ -589,4 +589,6 @@ bool mScriptPopPointer(struct mScriptList* list, void** out);
 bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* input, struct mScriptValue* output);
 bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList* frame);
 
+CXX_GUARD_END
+
 #endif
