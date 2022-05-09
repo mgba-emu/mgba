@@ -243,6 +243,10 @@ M_TEST_DEFINE(setGlobal) {
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
 
+	assert_true(lua->setGlobal(lua, "b", NULL));
+	val = lua->getGlobal(lua, "b");
+	assert_null(val);
+
 	mScriptContextDeinit(&context);
 }
 

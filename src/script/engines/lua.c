@@ -142,7 +142,9 @@ struct mScriptValue* _luaGetGlobal(struct mScriptEngineContext* ctx, const char*
 
 bool _luaSetGlobal(struct mScriptEngineContext* ctx, const char* name, struct mScriptValue* value) {
 	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) ctx;
-	if (!_luaWrap(luaContext, value)) {
+	if (!value) {
+		lua_pushnil(luaContext->lua);
+	} else if (!_luaWrap(luaContext, value)) {
 		return false;
 	}
 	lua_setglobal(luaContext->lua, name);
