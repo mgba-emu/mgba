@@ -52,11 +52,14 @@ static void _contextFindForFile(const char* key, void* value, void* user) {
 void mScriptContextInit(struct mScriptContext* context) {
 	HashTableInit(&context->rootScope, 0, (void (*)(void*)) mScriptValueDeref);
 	HashTableInit(&context->engines, 0, _engineContextDestroy);
+	TableInit(&context->weakrefs, 0, (void (*)(void*)) mScriptValueDeref);
+	context->nextWeakref = 0;
 }
 
 void mScriptContextDeinit(struct mScriptContext* context) {
 	HashTableDeinit(&context->engines);
 	HashTableDeinit(&context->rootScope);
+	HashTableDeinit(&context->weakrefs);
 }
 
 struct mScriptEngineContext* mScriptContextRegisterEngine(struct mScriptContext* context, struct mScriptEngine2* engine) {
@@ -75,7 +78,13 @@ void mScriptContextRegisterEngines(struct mScriptContext* context) {
 }
 
 void mScriptContextSetGlobal(struct mScriptContext* context, const char* key, struct mScriptValue* value) {
-	mScriptValueRef(value);
+	struct mScriptValue* oldValue = HashTableLookup(&context->rootScope, key);
+	if (oldValue) {
+		mScriptContextClearWeakref(context, oldValue->value.u32);
+	}
+	uint32_t weakref = mScriptContextSetWeakref(context, value);
+	value = mScriptValueAlloc(mSCRIPT_TYPE_MS_WEAKREF);
+	value->value.u32 = weakref;
 	HashTableInsert(&context->rootScope, key, value);
 	struct mScriptKVPair pair = {
 		.key = key,
@@ -90,7 +99,42 @@ void mScriptContextRemoveGlobal(struct mScriptContext* context, const char* key)
 	}
 	// Since _contextRemoveGlobal doesn't mutate |key|, this cast should be safe
 	HashTableEnumerate(&context->engines, _contextRemoveGlobal, (char*) key);
-	HashTableRemove(&context->rootScope, key);
+	struct mScriptValue* oldValue = HashTableLookup(&context->rootScope, key);
+	if (oldValue) {
+		mScriptContextClearWeakref(context, oldValue->value.u32);
+		HashTableRemove(&context->rootScope, key);
+	}
+}
+
+uint32_t mScriptContextSetWeakref(struct mScriptContext* context, struct mScriptValue* value) {
+	mScriptValueRef(value);
+	TableInsert(&context->weakrefs, context->nextWeakref, value);
+
+	uint32_t nextWeakref = context->nextWeakref;
+	++context->nextWeakref;
+	while (TableLookup(&context->weakrefs, context->nextWeakref)) {
+		++context->nextWeakref;
+	}
+	return nextWeakref;
+}
+
+struct mScriptValue* mScriptContextMakeWeakref(struct mScriptContext* context, struct mScriptValue* value) {
+	uint32_t weakref = mScriptContextSetWeakref(context, value);
+	mScriptValueDeref(value);
+	value = mScriptValueAlloc(mSCRIPT_TYPE_MS_WEAKREF);
+	value->value.u32 = weakref;
+	return value;
+}
+
+struct mScriptValue* mScriptContextAccessWeakref(struct mScriptContext* context, struct mScriptValue* value) {
+	if (value->type != mSCRIPT_TYPE_MS_WEAKREF) {
+		return value;
+	}
+	return TableLookup(&context->weakrefs, value->value.u32);
+}
+
+void mScriptContextClearWeakref(struct mScriptContext* context, uint32_t weakref) {
+	TableRemove(&context->weakrefs, weakref);
 }
 
 bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, struct VFile* vf) {

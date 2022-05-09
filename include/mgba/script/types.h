@@ -32,6 +32,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_C_PTR void*
 #define mSCRIPT_TYPE_C_TABLE Table*
 #define mSCRIPT_TYPE_C_WRAPPER struct mScriptValue*
+#define mSCRIPT_TYPE_C_WEAKREF uint32_t
 #define mSCRIPT_TYPE_C_S(STRUCT) struct STRUCT*
 #define mSCRIPT_TYPE_C_CS(STRUCT) const struct STRUCT*
 #define mSCRIPT_TYPE_C_S_METHOD(STRUCT, NAME) _mSTStructFunctionType_ ## STRUCT ## _ ## NAME
@@ -51,6 +52,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_PTR opaque
 #define mSCRIPT_TYPE_FIELD_TABLE opaque
 #define mSCRIPT_TYPE_FIELD_WRAPPER opaque
+#define mSCRIPT_TYPE_FIELD_WEAKREF u32
 #define mSCRIPT_TYPE_FIELD_S(STRUCT) opaque
 #define mSCRIPT_TYPE_FIELD_CS(STRUCT) copaque
 #define mSCRIPT_TYPE_FIELD_S_METHOD(STRUCT, NAME) copaque
@@ -69,6 +71,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_MS_CHARP (&mSTCharPtr)
 #define mSCRIPT_TYPE_MS_TABLE (&mSTTable)
 #define mSCRIPT_TYPE_MS_WRAPPER (&mSTWrapper)
+#define mSCRIPT_TYPE_MS_WEAKREF (&mSTWeakref)
 #define mSCRIPT_TYPE_MS_S(STRUCT) (&mSTStruct_ ## STRUCT)
 #define mSCRIPT_TYPE_MS_CS(STRUCT) (&mSTStructConst_ ## STRUCT)
 #define mSCRIPT_TYPE_MS_S_METHOD(STRUCT, NAME) (&_mSTStructBindingType_ ## STRUCT ## _ ## NAME)
@@ -435,7 +438,8 @@ enum mScriptTypeBase {
 	mSCRIPT_TYPE_TUPLE,
 	mSCRIPT_TYPE_LIST,
 	mSCRIPT_TYPE_TABLE,
-	mSCRIPT_TYPE_WRAPPER
+	mSCRIPT_TYPE_WRAPPER,
+	mSCRIPT_TYPE_WEAKREF,
 };
 
 enum mScriptClassInitType {
@@ -462,6 +466,7 @@ extern const struct mScriptType mSTString;
 extern const struct mScriptType mSTCharPtr;
 extern const struct mScriptType mSTTable;
 extern const struct mScriptType mSTWrapper;
+extern const struct mScriptType mSTWeakref;
 
 struct mScriptTypeTuple {
 	size_t count;

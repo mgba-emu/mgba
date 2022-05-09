@@ -120,6 +120,33 @@ M_TEST_DEFINE(infoFuncs) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(detach) {
+	SETUP_LUA;
+	CREATE_CORE;
+	core->reset(core);
+
+	LOAD_PROGRAM(
+		"assert(emu)\n"
+		"a = emu\n"
+	);
+	assert_true(lua->run(lua));
+
+	mScriptContextDetachCore(&context);
+
+	LOAD_PROGRAM(
+		"assert(not emu)\n"
+	);
+	assert_true(lua->run(lua));
+
+	LOAD_PROGRAM(
+		"a:frequency()\n"
+	);
+	assert_false(lua->run(lua));
+
+	TEARDOWN_CORE;
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_DEFINE(runFrame) {
 	SETUP_LUA;
 	CREATE_CORE;
@@ -206,6 +233,7 @@ M_TEST_DEFINE(memoryWrite) {
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(globals),
 	cmocka_unit_test(infoFuncs),
+	cmocka_unit_test(detach),
 	cmocka_unit_test(runFrame),
 	cmocka_unit_test(memoryRead),
 	cmocka_unit_test(memoryWrite),

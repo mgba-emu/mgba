@@ -21,6 +21,8 @@ struct mScriptEngineContext;
 struct mScriptContext {
 	struct Table rootScope;
 	struct Table engines;
+	struct Table weakrefs;
+	uint32_t nextWeakref;
 };
 
 struct mScriptEngine2 {
@@ -54,6 +56,11 @@ void mScriptContextRegisterEngines(struct mScriptContext*);
 
 void mScriptContextSetGlobal(struct mScriptContext*, const char* key, struct mScriptValue* value);
 void mScriptContextRemoveGlobal(struct mScriptContext*, const char* key);
+
+uint32_t mScriptContextSetWeakref(struct mScriptContext*, struct mScriptValue* value);
+struct mScriptValue* mScriptContextMakeWeakref(struct mScriptContext*, struct mScriptValue* value);
+struct mScriptValue* mScriptContextAccessWeakref(struct mScriptContext*, struct mScriptValue* value);
+void mScriptContextClearWeakref(struct mScriptContext*, uint32_t weakref);
 
 struct VFile;
 bool mScriptContextLoadVF(struct mScriptContext*, const char* name, struct VFile* vf);

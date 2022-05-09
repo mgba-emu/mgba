@@ -195,6 +195,15 @@ const struct mScriptType mSTWrapper = {
 	.hash = NULL,
 };
 
+const struct mScriptType mSTWeakref = {
+	.base = mSCRIPT_TYPE_WEAKREF,
+	.size = sizeof(uint32_t),
+	.name = "weakref",
+	.alloc = NULL,
+	.free = NULL,
+	.hash = NULL,
+};
+
 DEFINE_VECTOR(mScriptList, struct mScriptValue)
 
 void _allocTable(struct mScriptValue* val) {

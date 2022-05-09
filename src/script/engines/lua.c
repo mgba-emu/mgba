@@ -212,14 +212,22 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext) {
 		}
 		lua_pop(luaContext->lua, 2);
 		value = lua_touserdata(luaContext->lua, -1);
+		value = mScriptContextAccessWeakref(luaContext->d.context, value);
 	}
 	lua_pop(luaContext->lua, 1);
 	return value;
 }
 
 bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* value) {
+	uint32_t weakref;
+	bool needsWeakref = false;
 	if (value->type == mSCRIPT_TYPE_MS_WRAPPER) {
 		value = mScriptValueUnwrap(value);
+	}
+	if (value->type == mSCRIPT_TYPE_MS_WEAKREF) {
+		weakref = value->value.u32;
+		value = mScriptContextAccessWeakref(luaContext->d.context, value);
+		needsWeakref = true;
 	}
 	bool ok = true;
 	struct mScriptValue* newValue;
@@ -260,7 +268,11 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		break;
 	case mSCRIPT_TYPE_OBJECT:
 		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
-		mScriptValueWrap(value, newValue);
+		if (needsWeakref) {
+			*newValue = mSCRIPT_MAKE(WEAKREF, weakref);
+		} else {
+			mScriptValueWrap(value, newValue);
+		}
 		luaL_setmetatable(luaContext->lua, "mSTStruct");
 		break;
 	default:
@@ -484,6 +496,13 @@ int _luaGetObject(lua_State* lua) {
 	struct mScriptValue* obj = lua_touserdata(lua, -2);
 	struct mScriptValue val;
 
+	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
+	if (!obj) {
+		lua_pop(lua, 2);
+		lua_pushliteral(lua, "Invalid object");
+		lua_error(lua);
+	}
+
 	if (!mScriptObjectGet(obj, key, &val)) {
 		lua_pop(lua, 2);
 		lua_pushliteral(lua, "Invalid key");
@@ -504,6 +523,12 @@ int _luaSetObject(lua_State* lua) {
 	const char* key = lua_tostring(lua, -2);
 	struct mScriptValue* obj = lua_touserdata(lua, -3);
 	struct mScriptValue* val = _luaCoerce(luaContext);
+
+	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
+	if (!obj) {
+		lua_pushliteral(lua, "Invalid object");
+		lua_error(lua);
+	}
 
 	lua_pop(lua, 2);
 	if (!val) {
