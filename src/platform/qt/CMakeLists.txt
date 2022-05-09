@@ -109,6 +109,7 @@ set(SOURCE_FILES
 	LogController.cpp
 	LogConfigModel.cpp
 	LogView.cpp
+	LogWidget.cpp
 	MapView.cpp
 	MemoryDump.cpp
 	MemoryModel.cpp

@@ -29,7 +29,7 @@
     </widget>
    </item>
    <item row="0" column="0" colspan="2">
-    <widget class="QPlainTextEdit" name="log">
+    <widget class="QGBA::LogWidget" name="log">
      <property name="readOnly">
       <bool>true</bool>
      </property>
@@ -37,6 +37,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QGBA::LogWidget</class>
+   <extends>QPlainTextEdit</extends>
+   <header>LogWidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
