@@ -219,6 +219,12 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		mLogFilterLoad(threadContext->logger.d.filter, &core->config);
 	}
 
+#ifdef ENABLE_SCRIPTING
+	if (threadContext->scriptContext) {
+		mScriptContextAttachCore(threadContext->scriptContext, core);
+	}
+#endif
+
 	mCoreThreadRewindParamsChanged(threadContext);
 	if (threadContext->startCallback) {
 		threadContext->startCallback(threadContext);
@@ -337,6 +343,11 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	if (threadContext->cleanCallback) {
 		threadContext->cleanCallback(threadContext);
 	}
+#ifdef ENABLE_SCRIPTING
+	if (threadContext->scriptContext) {
+		mScriptContextDetachCore(threadContext->scriptContext);
+	}
+#endif
 	core->clearCoreCallbacks(core);
 
 	if (threadContext->logger.d.filter == &filter) {

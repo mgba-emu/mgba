@@ -4,10 +4,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/script/context.h>
+#ifdef USE_LUA
+#include <mgba/internal/script/lua.h>
+#endif
 
 struct mScriptKVPair {
 	const char* key;
 	struct mScriptValue* value;
+};
+
+struct mScriptFileInfo {
+	const char* name;
+	struct VFile* vf;
+	struct mScriptEngineContext* context;
 };
 
 static void _engineContextDestroy(void* ctx) {
@@ -28,6 +37,18 @@ static void _contextRemoveGlobal(const char* key, void* value, void* user) {
 	context->setGlobal(context, user, NULL);
 }
 
+static void _contextFindForFile(const char* key, void* value, void* user) {
+	UNUSED(key);
+	struct mScriptFileInfo* info = user;
+	struct mScriptEngineContext* context = value;
+	if (info->context) {
+		return;
+	}
+	if (context->isScript(context, info->name, info->vf)) {
+		info->context = context;
+	}
+}
+
 void mScriptContextInit(struct mScriptContext* context) {
 	HashTableInit(&context->rootScope, 0, (void (*)(void*)) mScriptValueDeref);
 	HashTableInit(&context->engines, 0, _engineContextDestroy);
@@ -44,6 +65,13 @@ struct mScriptEngineContext* mScriptContextRegisterEngine(struct mScriptContext*
 		HashTableInsert(&context->engines, engine->name, ectx);
 	}
 	return ectx;
+}
+
+void mScriptContextRegisterEngines(struct mScriptContext* context) {
+	UNUSED(context);
+#ifdef USE_LUA
+	mScriptContextRegisterEngine(context, mSCRIPT_ENGINE_LUA);
+#endif
 }
 
 void mScriptContextSetGlobal(struct mScriptContext* context, const char* key, struct mScriptValue* value) {
@@ -63,6 +91,29 @@ void mScriptContextRemoveGlobal(struct mScriptContext* context, const char* key)
 	// Since _contextRemoveGlobal doesn't mutate |key|, this cast should be safe
 	HashTableEnumerate(&context->engines, _contextRemoveGlobal, (char*) key);
 	HashTableRemove(&context->rootScope, key);
+}
+
+bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, struct VFile* vf) {
+	struct mScriptFileInfo info = {
+		.name = name,
+		.vf = vf,
+		.context = NULL
+	};
+	HashTableEnumerate(&context->engines, _contextFindForFile, &info);
+	if (!info.context) {
+		return false;
+	}
+	return info.context->load(info.context, vf, NULL);
+}
+
+bool mScriptContextLoadFile(struct mScriptContext* context, const char* path) {
+	struct VFile* vf = VFileOpen(path, O_RDONLY);
+	if (!vf) {
+		return false;
+	}
+	bool ret = mScriptContextLoadVF(context, path, vf);
+	vf->close(vf);
+	return ret;
 }
 
 bool mScriptInvoke(const struct mScriptValue* val, struct mScriptFrame* frame) {

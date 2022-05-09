@@ -13,6 +13,7 @@
 static struct mScriptEngineContext* _luaCreate(struct mScriptEngine2*, struct mScriptContext*);
 
 static void _luaDestroy(struct mScriptEngineContext*);
+static bool _luaIsScript(struct mScriptEngineContext*, const char*, struct VFile*);
 static struct mScriptValue* _luaGetGlobal(struct mScriptEngineContext*, const char* name);
 static bool _luaSetGlobal(struct mScriptEngineContext*, const char* name, struct mScriptValue*);
 static bool _luaLoad(struct mScriptEngineContext*, struct VFile*, const char** error);
@@ -99,6 +100,7 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 	luaContext->d = (struct mScriptEngineContext) {
 		.context = context,
 		.destroy = _luaDestroy,
+		.isScript = _luaIsScript,
 		.getGlobal = _luaGetGlobal,
 		.setGlobal = _luaSetGlobal,
 		.load = _luaLoad,
@@ -132,6 +134,15 @@ void _luaDestroy(struct mScriptEngineContext* ctx) {
 	}
 	lua_close(luaContext->lua);
 	free(luaContext);
+}
+
+bool _luaIsScript(struct mScriptEngineContext* ctx, const char* name, struct VFile* vf) {
+	UNUSED(ctx);
+	UNUSED(vf);
+	if (!name) {
+		return false;
+	}
+	return endswith(name, ".lua");
 }
 
 struct mScriptValue* _luaGetGlobal(struct mScriptEngineContext* ctx, const char* name) {

@@ -36,6 +36,8 @@ struct mScriptEngineContext {
 	struct mScriptContext* context;
 	void (*destroy)(struct mScriptEngineContext*);
 
+	bool (*isScript)(struct mScriptEngineContext*, const char* name, struct VFile* vf);
+
 	bool (*setGlobal)(struct mScriptEngineContext*, const char* name, struct mScriptValue*);
 	struct mScriptValue* (*getGlobal)(struct mScriptEngineContext*, const char* name);
 
@@ -48,9 +50,14 @@ void mScriptContextInit(struct mScriptContext*);
 void mScriptContextDeinit(struct mScriptContext*);
 
 struct mScriptEngineContext* mScriptContextRegisterEngine(struct mScriptContext*, struct mScriptEngine2*);
+void mScriptContextRegisterEngines(struct mScriptContext*);
 
 void mScriptContextSetGlobal(struct mScriptContext*, const char* key, struct mScriptValue* value);
 void mScriptContextRemoveGlobal(struct mScriptContext*, const char* key);
+
+struct VFile;
+bool mScriptContextLoadVF(struct mScriptContext*, const char* name, struct VFile* vf);
+bool mScriptContextLoadFile(struct mScriptContext*, const char* path);
 
 bool mScriptInvoke(const struct mScriptValue* fn, struct mScriptFrame* frame);
 
