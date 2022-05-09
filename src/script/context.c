@@ -52,6 +52,7 @@ static void _contextFindForFile(const char* key, void* value, void* user) {
 void mScriptContextInit(struct mScriptContext* context) {
 	HashTableInit(&context->rootScope, 0, (void (*)(void*)) mScriptValueDeref);
 	HashTableInit(&context->engines, 0, _engineContextDestroy);
+	mScriptListInit(&context->refPool, 0);
 	TableInit(&context->weakrefs, 0, (void (*)(void*)) mScriptValueDeref);
 	context->nextWeakref = 0;
 }
@@ -60,6 +61,38 @@ void mScriptContextDeinit(struct mScriptContext* context) {
 	HashTableDeinit(&context->engines);
 	HashTableDeinit(&context->rootScope);
 	HashTableDeinit(&context->weakrefs);
+	mScriptContextDrainPool(context);
+	mScriptListDeinit(&context->refPool);
+}
+
+void mScriptContextFillPool(struct mScriptContext* context, struct mScriptValue* value) {
+	if (value->refs == mSCRIPT_VALUE_UNREF) {
+		return;
+	}
+	switch (value->type->base) {
+	case mSCRIPT_TYPE_SINT:
+	case mSCRIPT_TYPE_UINT:
+	case mSCRIPT_TYPE_FLOAT:
+		return;
+	default:
+		break;
+	}
+
+	struct mScriptValue* poolEntry = mScriptListAppend(&context->refPool);
+	poolEntry->type = mSCRIPT_TYPE_MS_WRAPPER;
+	poolEntry->value.opaque = value;
+	poolEntry->refs = mSCRIPT_VALUE_UNREF;
+}
+
+void mScriptContextDrainPool(struct mScriptContext* context) {
+	size_t i;
+	for (i = 0; i < mScriptListSize(&context->refPool); ++i) {
+		struct mScriptValue* value = mScriptValueUnwrap(mScriptListGetPointer(&context->refPool, i));
+		if (value) {
+			mScriptValueDeref(value);
+		}
+	}
+	mScriptListClear(&context->refPool);
 }
 
 struct mScriptEngineContext* mScriptContextRegisterEngine(struct mScriptContext* context, struct mScriptEngine2* engine) {

@@ -1071,6 +1071,13 @@ bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList
 		if (types->entries[i] == mScriptListGetPointer(frame, i)->type) {
 			continue;
 		}
+		struct mScriptValue* unwrapped = NULL;
+		if (mScriptListGetPointer(frame, i)->type == mSCRIPT_TYPE_MS_WRAPPER) {
+			unwrapped = mScriptValueUnwrap(mScriptListGetPointer(frame, i));
+			if (types->entries[i] == unwrapped->type) {
+				continue;
+			}
+		}
 		if (!mScriptCast(types->entries[i], mScriptListGetPointer(frame, i), mScriptListGetPointer(frame, i))) {
 			return false;
 		}

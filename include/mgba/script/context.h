@@ -21,6 +21,7 @@ struct mScriptEngineContext;
 struct mScriptContext {
 	struct Table rootScope;
 	struct Table engines;
+	struct mScriptList refPool;
 	struct Table weakrefs;
 	uint32_t nextWeakref;
 };
@@ -50,6 +51,9 @@ struct mScriptEngineContext {
 
 void mScriptContextInit(struct mScriptContext*);
 void mScriptContextDeinit(struct mScriptContext*);
+
+void mScriptContextFillPool(struct mScriptContext*, struct mScriptValue*);
+void mScriptContextDrainPool(struct mScriptContext*);
 
 struct mScriptEngineContext* mScriptContextRegisterEngine(struct mScriptContext*, struct mScriptEngine2*);
 void mScriptContextRegisterEngines(struct mScriptContext*);

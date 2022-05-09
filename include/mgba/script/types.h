@@ -101,9 +101,11 @@ CXX_GUARD_START
 	mSCRIPT_TYPE_C_ ## TYPE NAME; \
 	do { \
 		struct mScriptValue* _val = mScriptListGetPointer(STACK, mScriptListSize(STACK) - 1); \
+		bool deref = true; \
 		if (!(mSCRIPT_TYPE_CMP(TYPE, _val->type))) { \
 			if (_val->type == mSCRIPT_TYPE_MS_WRAPPER) { \
 				_val = mScriptValueUnwrap(_val); \
+				deref = false; \
 				if (!(mSCRIPT_TYPE_CMP(TYPE, _val->type))) { \
 					return false; \
 				} \
@@ -112,7 +114,9 @@ CXX_GUARD_START
 			} \
 		} \
 		NAME = _val->value.mSCRIPT_TYPE_FIELD_ ## TYPE; \
-		mScriptValueDeref(_val); \
+		if (deref) { \
+			mScriptValueDeref(_val); \
+		} \
 		mScriptListResize(STACK, -1); \
 	} while (0)
 

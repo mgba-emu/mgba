@@ -198,6 +198,9 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext) {
 		value->value.s32 = lua_toboolean(luaContext->lua, -1);
 		break;
 	case LUA_TSTRING:
+		value = mScriptStringCreateFromUTF8(lua_tostring(luaContext->lua, -1));
+		mScriptValueWrap(value, mScriptListAppend(&luaContext->d.context->refPool));
+		mScriptValueDeref(value);
 		break;
 	case LUA_TFUNCTION:
 		return _luaCoerceFunction(luaContext);
@@ -258,6 +261,9 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		} else {
 			ok = false;
 		}
+		break;
+	case mSCRIPT_TYPE_STRING:
+		lua_pushstring(luaContext->lua, ((struct mScriptString*) value->value.opaque)->buffer);
 		break;
 	case mSCRIPT_TYPE_FUNCTION:
 		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
@@ -426,8 +432,10 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 	}
 
 	if (frame && !_luaPopFrame(luaContext, &frame->returnValues)) {
+		mScriptContextDrainPool(luaContext->d.context);
 		return false;
 	}
+	mScriptContextDrainPool(luaContext->d.context);
 
 	return true;
 }
@@ -468,6 +476,7 @@ int _luaThunk(lua_State* lua) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
 	if (!_luaPopFrame(luaContext, &frame.arguments)) {
+		mScriptContextDrainPool(luaContext->d.context);
 		mScriptFrameDeinit(&frame);
 		lua_pushliteral(lua, "Error calling function (setting arguments)");
 		lua_error(lua);
@@ -479,6 +488,7 @@ int _luaThunk(lua_State* lua) {
 		lua_pushliteral(lua, "Error calling function (invoking)");
 		lua_error(lua);
 	}
+	mScriptContextDrainPool(luaContext->d.context);
 
 	if (!_luaPushFrame(luaContext, &frame.returnValues)) {
 		mScriptFrameDeinit(&frame);
@@ -542,6 +552,7 @@ int _luaSetObject(lua_State* lua) {
 		lua_error(lua);
 	}
 	mScriptValueDeref(val);
+	mScriptContextDrainPool(luaContext->d.context);
 	return 0;
 }
 
