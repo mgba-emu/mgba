@@ -10,6 +10,8 @@
 #include <mgba-util/table.h>
 #include <mgba-util/vfs.h>
 
+mLOG_DEFINE_CATEGORY(SCRIPT, "Scripting", "script");
+
 struct mScriptBridge {
 	struct Table engines;
 	struct mDebugger* debugger;
@@ -195,4 +197,37 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 
 void mScriptContextDetachCore(struct mScriptContext* context) {
 	mScriptContextRemoveGlobal(context, "emu");
+}
+
+void mScriptLog(struct mLogger* logger, struct mScriptString* msg) {
+	mLogExplicit(logger, _mLOG_CAT_SCRIPT, mLOG_INFO, "%s", msg->buffer);
+}
+
+void mScriptWarn(struct mLogger* logger, struct mScriptString* msg) {
+	mLogExplicit(logger, _mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);
+}
+
+void mScriptError(struct mLogger* logger, struct mScriptString* msg) {
+	mLogExplicit(logger, _mLOG_CAT_SCRIPT, mLOG_ERROR, "%s", msg->buffer);
+}
+
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mLogger, log, mScriptLog, 1, STR, msg);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mLogger, warn, mScriptWarn, 1, STR, msg);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mLogger, error, mScriptError, 1, STR, msg);
+
+mSCRIPT_DEFINE_STRUCT(mLogger)
+mSCRIPT_DEFINE_STRUCT_METHOD(mLogger, log)
+mSCRIPT_DEFINE_STRUCT_METHOD(mLogger, warn)
+mSCRIPT_DEFINE_STRUCT_METHOD(mLogger, error)
+mSCRIPT_DEFINE_END;
+
+void mScriptContextAttachLogger(struct mScriptContext* context, struct mLogger* logger) {
+	struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mLogger));
+	value->value.opaque = logger;
+	mScriptContextSetGlobal(context, "console", value);
+	mScriptValueDeref(value);
+}
+
+void mScriptContextDetachLogger(struct mScriptContext* context) {
+	mScriptContextRemoveGlobal(context, "console");
 }

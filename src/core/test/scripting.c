@@ -6,6 +6,7 @@
 #include "util/test/suite.h"
 
 #include <mgba/core/core.h>
+#include <mgba/core/log.h>
 #include <mgba/core/scripting.h>
 #include <mgba/internal/script/lua.h>
 #include <mgba/script/context.h>
@@ -22,6 +23,13 @@
 #else
 #error "Need a valid platform for testing"
 #endif
+
+struct mScriptTestLogger {
+	struct mLogger d;
+	char* log;
+	char* warn;
+	char* error;
+};
 
 static const uint8_t _fakeGBROM[0x4000] = {
 	[0x100] = 0x18, // Loop forever
@@ -75,6 +83,59 @@ static const uint8_t _fakeGBROM[0x4000] = {
 		assert_true(global->type->equal(global, &val)); \
 		mScriptValueDeref(global); \
 	} while(0)
+
+static void _mScriptTestLog(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args) {
+	UNUSED(category);
+	struct mScriptTestLogger* logger = (struct mScriptTestLogger*) log;
+
+	char* message;
+#ifdef HAVE_VASPRINTF
+	vasprintf(&message, format, args);
+#else
+	char messageBuf[64];
+	vsnprintf(messageBuf, format, args);
+	message = strdup(messageBuf);
+#endif
+	switch (level) {
+	case mLOG_INFO:
+		if (logger->log) {
+			free(logger->log);
+		}
+		logger->log = message;
+		break;
+	case mLOG_WARN:
+		if (logger->warn) {
+			free(logger->warn);
+		}
+		logger->warn = message;
+		break;
+	case mLOG_ERROR:
+		if (logger->error) {
+			free(logger->error);
+		}
+		logger->error = message;
+		break;
+	default:
+		free(message);
+	}
+}
+
+static void mScriptTestLoggerInit(struct mScriptTestLogger* logger) {
+	memset(logger, 0, sizeof(*logger));
+	logger->d.log = _mScriptTestLog;
+}
+
+static void mScriptTestLoggerDeinit(struct mScriptTestLogger* logger) {
+	if (logger->log) {
+		free(logger->log);
+	}
+	if (logger->warn) {
+		free(logger->warn);
+	}
+	if (logger->error) {
+		free(logger->error);
+	}
+}
 
 M_TEST_SUITE_SETUP(mScriptCore) {
 	if (mSCRIPT_ENGINE_LUA->init) {
@@ -230,6 +291,45 @@ M_TEST_DEFINE(memoryWrite) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(logging) {
+	SETUP_LUA;
+	struct mScriptTestLogger logger;
+	mScriptTestLoggerInit(&logger);
+
+	mScriptContextAttachLogger(&context, &logger.d);
+
+	LOAD_PROGRAM(
+		"assert(console)\n"
+		"console:log(\"log\")\n"
+		"console:warn(\"warn\")\n"
+		"console:error(\"error\")\n"
+		"a = console\n"
+	);
+
+	assert_true(lua->run(lua));
+	assert_non_null(logger.log);
+	assert_non_null(logger.warn);
+	assert_non_null(logger.error);
+	assert_string_equal(logger.log, "log");
+	assert_string_equal(logger.warn, "warn");
+	assert_string_equal(logger.error, "error");
+
+	mScriptContextDetachLogger(&context);
+
+	LOAD_PROGRAM(
+		"assert(not console)\n"
+	);
+	assert_true(lua->run(lua));
+
+	LOAD_PROGRAM(
+		"a:log(\"l2\")\n"
+	);
+	assert_false(lua->run(lua));
+
+	mScriptTestLoggerDeinit(&logger);
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(globals),
 	cmocka_unit_test(infoFuncs),
@@ -237,4 +337,5 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(runFrame),
 	cmocka_unit_test(memoryRead),
 	cmocka_unit_test(memoryWrite),
+	cmocka_unit_test(logging),
 )

@@ -10,13 +10,18 @@
 
 CXX_GUARD_START
 
+#include <mgba/core/log.h>
 #ifdef USE_DEBUGGERS
 #include <mgba/debugger/debugger.h>
 #endif
 #include <mgba/script/types.h>
 
+mLOG_DECLARE_CATEGORY(SCRIPT);
+
 struct mCore;
+struct mLogger;
 mSCRIPT_DECLARE_STRUCT(mCore);
+mSCRIPT_DECLARE_STRUCT(mLogger);
 
 struct mScriptBridge;
 struct VFile;
@@ -52,9 +57,11 @@ bool mScriptBridgeLoadScript(struct mScriptBridge*, const char* name);
 bool mScriptBridgeLookupSymbol(struct mScriptBridge*, const char* name, int32_t* out);
 
 struct mScriptContext;
-struct mCore;
 void mScriptContextAttachCore(struct mScriptContext*, struct mCore*);
 void mScriptContextDetachCore(struct mScriptContext*);
+
+void mScriptContextAttachLogger(struct mScriptContext*, struct mLogger*);
+void mScriptContextDetachLogger(struct mScriptContext*);
 
 CXX_GUARD_END
 

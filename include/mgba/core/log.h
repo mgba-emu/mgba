@@ -56,6 +56,9 @@ int mLogFilterLevels(const struct mLogFilter*, int category);
 ATTRIBUTE_FORMAT(printf, 3, 4)
 void mLog(int category, enum mLogLevel level, const char* format, ...);
 
+ATTRIBUTE_FORMAT(printf, 4, 5)
+void mLogExplicit(struct mLogger*, int category, enum mLogLevel level, const char* format, ...);
+
 #define mLOG(CATEGORY, LEVEL, ...) mLog(_mLOG_CAT_ ## CATEGORY, mLOG_ ## LEVEL, __VA_ARGS__)
 
 #define mLOG_DECLARE_CATEGORY(CATEGORY) extern int _mLOG_CAT_ ## CATEGORY;
