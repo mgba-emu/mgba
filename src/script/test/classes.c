@@ -35,6 +35,9 @@ struct TestD {
 	struct TestC b;
 };
 
+struct TestE {
+};
+
 static int32_t testAi0(struct TestA* a) {
 	return a->i;
 }
@@ -57,6 +60,11 @@ static void testAv0(struct TestA* a) {
 
 static void testAv1(struct TestA* a, int b) {
 	a->i += b;
+}
+
+static int32_t testGet(struct TestE* e, const char* name) {
+	UNUSED(e);
+	return name[0];
 }
 
 #define MEMBER_A_DOCSTRING "Member a"
@@ -107,6 +115,13 @@ mSCRIPT_DEFINE_END;
 mSCRIPT_DEFINE_STRUCT(TestD)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestD, S(TestC), a)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestD, S(TestC), b)
+mSCRIPT_DEFINE_END;
+
+mSCRIPT_DECLARE_STRUCT(TestE);
+mSCRIPT_DECLARE_STRUCT_METHOD(TestE, S32, _get, testGet, 1, CHARP, name);
+
+mSCRIPT_DEFINE_STRUCT(TestE)
+	mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(TestE)
 mSCRIPT_DEFINE_END;
 
 M_TEST_DEFINE(testALayout) {
@@ -258,6 +273,8 @@ M_TEST_DEFINE(testAGet) {
 	assert_true(mScriptObjectGet(&sval, "hUnaligned", &val));
 	assert_true(compare.type->equal(&compare, &val));
 
+	assert_false(mScriptObjectGet(&sval, "unknown", &val));
+
 	assert_true(cls->init);
 	mScriptClassDeinit(cls);
 	assert_false(cls->init);
@@ -309,6 +326,8 @@ M_TEST_DEFINE(testASet) {
 	val = mSCRIPT_MAKE_S32(6);
 	assert_false(mScriptObjectSet(&sval, "hUnaligned", &val));
 	assert_int_equal(s.hUnaligned, 5);
+
+	assert_false(mScriptObjectSet(&sval, "unknown", &val));
 
 	assert_true(cls->init);
 	mScriptClassDeinit(cls);
@@ -868,6 +887,29 @@ M_TEST_DEFINE(testDSet) {
 	assert_false(cls->init);
 }
 
+M_TEST_DEFINE(testEGet) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestE)->details.cls;
+
+	struct TestE s = {
+	};
+
+	struct mScriptValue sval = mSCRIPT_MAKE_S(TestE, &s);
+	struct mScriptValue val;
+	struct mScriptValue compare;
+
+	compare = mSCRIPT_MAKE_S32('a');
+	assert_true(mScriptObjectGet(&sval, "a", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32('b');
+	assert_true(mScriptObjectGet(&sval, "b", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	assert_true(cls->init);
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
 M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testALayout),
 	cmocka_unit_test(testASignatures),
@@ -880,4 +922,6 @@ M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testBSet),
 	cmocka_unit_test(testDLayout),
 	cmocka_unit_test(testDGet),
-	cmocka_unit_test(testDSet))
+	cmocka_unit_test(testDSet),
+	cmocka_unit_test(testEGet),
+)

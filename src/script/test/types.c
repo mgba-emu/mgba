@@ -280,6 +280,9 @@ M_TEST_DEFINE(wrongConst) {
 		.variable = false
 	};
 
+	mScriptClassInit(mSCRIPT_TYPE_MS_S(Test)->details.cls);
+	mScriptClassInit(mSCRIPT_TYPE_MS_CS(Test)->details.cls);
+
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, S(Test), &a);
 	signature.entries[0] = mSCRIPT_TYPE_MS_S(Test);

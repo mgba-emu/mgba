@@ -253,17 +253,19 @@ CXX_GUARD_START
 	} \
 },
 
-#define mSCRIPT_DEFINE_STRUCT_MEMBER(STRUCT, TYPE, NAME) { \
+#define mSCRIPT_DEFINE_STRUCT_MEMBER_NAMED(STRUCT, TYPE, EXPORTED_NAME, NAME) { \
 	.type = mSCRIPT_CLASS_INIT_INSTANCE_MEMBER, \
 	.info = { \
 		.member = { \
-			.name = #NAME, \
+			.name = #EXPORTED_NAME, \
 			.type = mSCRIPT_TYPE_MS_ ## TYPE, \
 			.offset = offsetof(struct STRUCT, NAME) \
 		} \
 	} \
 },
 
+#define mSCRIPT_DEFINE_STRUCT_MEMBER(STRUCT, TYPE, NAME) \
+	mSCRIPT_DEFINE_STRUCT_MEMBER_NAMED(STRUCT, TYPE, NAME, NAME)
 
 #define mSCRIPT_DEFINE_INHERIT(PARENT) { \
 	.type = mSCRIPT_CLASS_INIT_INHERIT, \
@@ -378,6 +380,18 @@ CXX_GUARD_START
 
 #define mSCRIPT_DEFINE_STRUCT_METHOD(TYPE, NAME) mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(TYPE, NAME, NAME)
 
+#define mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(TYPE) mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(TYPE, _get, _get)
+
+#define mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(TYPE, CAST_TYPE, MEMBER) { \
+	.type = mSCRIPT_CLASS_INIT_CAST_TO_MEMBER, \
+	.info = { \
+		.castMember = { \
+			.type = mSCRIPT_TYPE_MS_ ## CAST_TYPE, \
+			.member = #MEMBER \
+		} \
+	}, \
+},
+
 #define mSCRIPT_DEFINE_END { .type = mSCRIPT_CLASS_INIT_END } } }
 
 #define _mSCRIPT_BIND_FUNCTION(NAME, NRET, RETURN, NPARAMS, ...) \
@@ -480,6 +494,7 @@ enum mScriptClassInitType {
 	mSCRIPT_CLASS_INIT_DOCSTRING,
 	mSCRIPT_CLASS_INIT_INSTANCE_MEMBER,
 	mSCRIPT_CLASS_INIT_INHERIT,
+	mSCRIPT_CLASS_INIT_CAST_TO_MEMBER,
 };
 
 enum {
@@ -524,12 +539,18 @@ struct mScriptClassMember {
 	size_t offset;
 };
 
+struct mScriptClassCastMember {
+	const struct mScriptType* type;
+	const char* member;
+};
+
 struct mScriptClassInitDetails {
 	enum mScriptClassInitType type;
 	union {
 		const char* comment;
 		const struct mScriptType* parent;
 		struct mScriptClassMember member;
+		struct mScriptClassCastMember castMember;
 	} info;
 };
 
@@ -538,6 +559,7 @@ struct mScriptTypeClass {
 	const struct mScriptClassInitDetails* details;
 	const struct mScriptType* parent;
 	struct Table instanceMembers;
+	struct Table castToMembers;
 };
 
 struct mScriptValue;

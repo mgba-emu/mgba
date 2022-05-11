@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/script/types.h>
 
+#include <mgba/script/context.h>
 #include <mgba-util/hash.h>
 #include <mgba-util/table.h>
 
@@ -793,6 +794,9 @@ static void _mScriptClassInit(struct mScriptTypeClass* cls, const struct mScript
 			}
 			HashTableInsert(&cls->instanceMembers, member->name, member);
 			break;
+		case mSCRIPT_CLASS_INIT_CAST_TO_MEMBER:
+			HashTableInsert(&cls->castToMembers, detail->info.castMember.type->name, (char*) detail->info.castMember.member);
+			break;
 		}
 	}
 }
@@ -802,6 +806,7 @@ void mScriptClassInit(struct mScriptTypeClass* cls) {
 		return;
 	}
 	HashTableInit(&cls->instanceMembers, 0, free);
+	HashTableInit(&cls->castToMembers, 0, NULL);
 
 	_mScriptClassInit(cls, cls->details, false);
 
@@ -813,6 +818,7 @@ void mScriptClassDeinit(struct mScriptTypeClass* cls) {
 		return;
 	}
 	HashTableDeinit(&cls->instanceMembers);
+	HashTableDeinit(&cls->castToMembers);
 	cls->init = false;
 }
 
@@ -913,7 +919,26 @@ bool mScriptObjectGet(struct mScriptValue* obj, const char* member, struct mScri
 
 	struct mScriptClassMember* m = HashTableLookup(&cls->instanceMembers, member);
 	if (!m) {
-		return false;
+		struct mScriptValue getMember;
+		m = HashTableLookup(&cls->instanceMembers, "_get");
+		if (!m || !_accessRawMember(m, obj->value.opaque, obj->type->isConst, &getMember)) {
+			return false;
+		}
+		struct mScriptFrame frame;
+		mScriptFrameInit(&frame);
+		struct mScriptValue* this = mScriptListAppend(&frame.arguments);
+		this->type = obj->type;
+		this->refs = mSCRIPT_VALUE_UNREF;
+		this->flags = 0;
+		this->value.opaque = obj;
+		mSCRIPT_PUSH(&frame.arguments, CHARP, member);
+		if (!mScriptInvoke(&getMember, &frame) || mScriptListSize(&frame.returnValues) != 1) {
+			mScriptFrameDeinit(&frame);
+			return false;
+		}
+		memcpy(val, mScriptListGetPointer(&frame.returnValues, 0), sizeof(*val));
+		mScriptFrameDeinit(&frame);
+		return true;
 	}
 
 	return _accessRawMember(m, obj->value.opaque, obj->type->isConst, val);
@@ -1026,6 +1051,21 @@ bool mScriptObjectCast(const struct mScriptValue* input, const struct mScriptTyp
 		output->refs = mSCRIPT_VALUE_UNREF;
 		output->flags = 0;
 		return true;
+	}
+	if (input->type->base != mSCRIPT_TYPE_OBJECT) {
+		return false;
+	}
+	const char* member = HashTableLookup(&input->type->details.cls->castToMembers, type->name);
+	if (member) {
+		struct mScriptValue cast;
+		if (!mScriptObjectGetConst(input, member, &cast)) {
+			return false;
+		}
+		if (cast.type == type) {
+			memcpy(output, &cast, sizeof(*output));
+			return true;
+		}
+		return mScriptCast(type, &cast, output);
 	}
 	return false;
 }
