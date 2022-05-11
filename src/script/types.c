@@ -759,7 +759,6 @@ void mScriptFrameDeinit(struct mScriptFrame* frame) {
 
 static void _mScriptClassInit(struct mScriptTypeClass* cls, const struct mScriptClassInitDetails* details, bool child) {
 	const char* docstring = NULL;
-	size_t staticOffset = 0;
 
 	size_t i;
 	for (i = 0; details[i].type != mSCRIPT_CLASS_INIT_END; ++i) {
@@ -791,28 +790,6 @@ static void _mScriptClassInit(struct mScriptTypeClass* cls, const struct mScript
 			}
 			HashTableInsert(&cls->instanceMembers, member->name, member);
 			break;
-		case mSCRIPT_CLASS_INIT_STATIC_MEMBER:
-			if (!child) {
-				member = calloc(1, sizeof(*member));
-				memcpy(member, &detail->info.member, sizeof(*member));
-				if (docstring) {
-					member->docstring = docstring;
-					docstring = NULL;
-				}
-
-				// Alignment check
-				if (staticOffset & (detail->info.member.type->size - 1)) {
-					size_t size = detail->info.member.type->size;
-					if (size > MAX_ALIGNMENT) {
-						size = MAX_ALIGNMENT;
-					}
-					staticOffset = (staticOffset & ~(size - 1)) + size;
-				}
-				member->offset = staticOffset;
-				staticOffset += detail->info.member.type->size;
-				HashTableInsert(&cls->staticMembers, member->name, member);
-			}
-			break;
 		}
 	}
 }
@@ -821,7 +798,6 @@ void mScriptClassInit(struct mScriptTypeClass* cls) {
 	if (cls->init) {
 		return;
 	}
-	HashTableInit(&cls->staticMembers, 0, free);
 	HashTableInit(&cls->instanceMembers, 0, free);
 
 	_mScriptClassInit(cls, cls->details, false);
@@ -834,7 +810,6 @@ void mScriptClassDeinit(struct mScriptTypeClass* cls) {
 		return;
 	}
 	HashTableDeinit(&cls->instanceMembers);
-	HashTableDeinit(&cls->staticMembers);
 	cls->init = false;
 }
 

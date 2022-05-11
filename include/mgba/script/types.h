@@ -226,15 +226,6 @@ CXX_GUARD_START
 	} \
 },
 
-#define mSCRIPT_DEFINE_STATIC_MEMBER(TYPE, NAME) { \
-	.type = mSCRIPT_CLASS_INIT_STATIC_MEMBER, \
-	.info = { \
-		.member = { \
-			.name = #NAME, \
-			.type = mSCRIPT_TYPE_MS_ ## TYPE \
-		} \
-	}, \
-},
 
 #define mSCRIPT_DEFINE_INHERIT(PARENT) { \
 	.type = mSCRIPT_CLASS_INIT_INHERIT, \
@@ -450,7 +441,6 @@ enum mScriptClassInitType {
 	mSCRIPT_CLASS_INIT_END = 0,
 	mSCRIPT_CLASS_INIT_DOCSTRING,
 	mSCRIPT_CLASS_INIT_INSTANCE_MEMBER,
-	mSCRIPT_CLASS_INIT_STATIC_MEMBER,
 	mSCRIPT_CLASS_INIT_INHERIT,
 };
 
@@ -505,7 +495,6 @@ struct mScriptTypeClass {
 	bool init;
 	const struct mScriptClassInitDetails* details;
 	const struct mScriptType* parent;
-	struct Table staticMembers;
 	struct Table instanceMembers;
 };
 

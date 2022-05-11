@@ -93,12 +93,6 @@ mSCRIPT_DEFINE_STRUCT(TestA)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, ic1)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, v0)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, v1)
-
-	mSCRIPT_DEFINE_DOCSTRING(MEMBER_A_DOCSTRING)
-	mSCRIPT_DEFINE_STATIC_MEMBER(S32, s_i)
-	mSCRIPT_DEFINE_STATIC_MEMBER(S32, s_i2)
-	mSCRIPT_DEFINE_STATIC_MEMBER(S8, s_b8)
-	mSCRIPT_DEFINE_STATIC_MEMBER(S16, s_hUnaligned)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT(TestB)
@@ -123,7 +117,6 @@ M_TEST_DEFINE(testALayout) {
 
 	struct mScriptClassMember* member;
 
-	// Instance members
 	member = HashTableLookup(&cls->instanceMembers, "i");
 	assert_non_null(member);
 	assert_string_equal(member->name, "i");
@@ -153,38 +146,6 @@ M_TEST_DEFINE(testALayout) {
 	assert_int_not_equal(member->offset, sizeof(int32_t) * 2 + 1);
 
 	member = HashTableLookup(&cls->instanceMembers, "unknown");
-	assert_null(member);
-
-	// Static members
-	member = HashTableLookup(&cls->staticMembers, "s_i");
-	assert_non_null(member);
-	assert_string_equal(member->name, "s_i");
-	assert_string_equal(member->docstring, MEMBER_A_DOCSTRING);
-	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S32);
-	assert_int_equal(member->offset, 0);
-
-	member = HashTableLookup(&cls->staticMembers, "s_i2");
-	assert_non_null(member);
-	assert_string_equal(member->name, "s_i2");
-	assert_null(member->docstring);
-	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S32);
-	assert_int_equal(member->offset, sizeof(int32_t));
-
-	member = HashTableLookup(&cls->staticMembers, "s_b8");
-	assert_non_null(member);
-	assert_string_equal(member->name, "s_b8");
-	assert_null(member->docstring);
-	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S8);
-	assert_int_equal(member->offset, sizeof(int32_t) * 2);
-
-	member = HashTableLookup(&cls->staticMembers, "s_hUnaligned");
-	assert_non_null(member);
-	assert_string_equal(member->name, "s_hUnaligned");
-	assert_null(member->docstring);
-	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S16);
-	assert_int_not_equal(member->offset, sizeof(int32_t) * 2 + 1);
-
-	member = HashTableLookup(&cls->staticMembers, "unknown");
 	assert_null(member);
 
 	mScriptClassDeinit(cls);
@@ -474,7 +435,6 @@ M_TEST_DEFINE(testADynamic) {
 
 	struct mScriptClassMember* member;
 
-	// Instance methods
 	member = HashTableLookup(&cls->instanceMembers, "ifn0");
 	assert_non_null(member);
 	assert_string_equal(member->name, "ifn0");
@@ -602,7 +562,6 @@ M_TEST_DEFINE(testBLayout) {
 
 	struct mScriptClassMember* member;
 
-	// Instance members
 	member = HashTableLookup(&cls->instanceMembers, "i");
 	assert_non_null(member);
 	assert_string_equal(member->name, "i");
@@ -820,7 +779,6 @@ M_TEST_DEFINE(testDLayout) {
 
 	struct mScriptClassMember* member;
 
-	// Instance members
 	member = HashTableLookup(&cls->instanceMembers, "a");
 	assert_non_null(member);
 	assert_string_equal(member->name, "a");
