@@ -631,6 +631,7 @@ struct mScriptValue* mScriptStringCreateFromUTF8(const char* string);
 bool mScriptTableInsert(struct mScriptValue* table, struct mScriptValue* key, struct mScriptValue* value);
 bool mScriptTableRemove(struct mScriptValue* table, struct mScriptValue* key);
 struct mScriptValue* mScriptTableLookup(struct mScriptValue* table, struct mScriptValue* key);
+bool mScriptTableClear(struct mScriptValue* table);
 
 void mScriptFrameInit(struct mScriptFrame* frame);
 void mScriptFrameDeinit(struct mScriptFrame* frame);

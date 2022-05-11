@@ -751,6 +751,15 @@ struct mScriptValue* mScriptTableLookup(struct mScriptValue* table, struct mScri
 	return HashTableLookupCustom(t, key);
 }
 
+bool mScriptTableClear(struct mScriptValue* table) {
+	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
+		return false;
+	}
+	struct Table* t = table->value.opaque;
+	HashTableClear(t);
+	return true;
+}
+
 void mScriptFrameInit(struct mScriptFrame* frame) {
 	mScriptListInit(&frame->arguments, 4);
 	mScriptListInit(&frame->returnValues, 1);
@@ -873,6 +882,11 @@ static bool _accessRawMember(struct mScriptClassMember* member, void* raw, bool 
 		default:
 			return false;
 		}
+		break;
+	case mSCRIPT_TYPE_TABLE:
+		val->refs = mSCRIPT_VALUE_UNREF;
+		val->type = mSCRIPT_TYPE_MS_WRAPPER;
+		val->value.opaque = raw;
 		break;
 	case mSCRIPT_TYPE_FUNCTION:
 		val->refs = mSCRIPT_VALUE_UNREF;
