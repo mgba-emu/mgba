@@ -30,12 +30,15 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_C_STR struct mScriptString*
 #define mSCRIPT_TYPE_C_CHARP const char*
 #define mSCRIPT_TYPE_C_PTR void*
+#define mSCRIPT_TYPE_C_CPTR const void*
 #define mSCRIPT_TYPE_C_TABLE Table*
 #define mSCRIPT_TYPE_C_WRAPPER struct mScriptValue*
 #define mSCRIPT_TYPE_C_WEAKREF uint32_t
 #define mSCRIPT_TYPE_C_S(STRUCT) struct STRUCT*
 #define mSCRIPT_TYPE_C_CS(STRUCT) const struct STRUCT*
 #define mSCRIPT_TYPE_C_S_METHOD(STRUCT, NAME) _mSTStructFunctionType_ ## STRUCT ## _ ## NAME
+#define mSCRIPT_TYPE_C_PS(X) void
+#define mSCRIPT_TYPE_C_PCS(X) void
 
 #define mSCRIPT_TYPE_FIELD_S8 s32
 #define mSCRIPT_TYPE_FIELD_U8 s32
@@ -48,7 +51,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_U64 u64
 #define mSCRIPT_TYPE_FIELD_F64 f64
 #define mSCRIPT_TYPE_FIELD_STR opaque
-#define mSCRIPT_TYPE_FIELD_CHARP opaque
+#define mSCRIPT_TYPE_FIELD_CHARP copaque
 #define mSCRIPT_TYPE_FIELD_PTR opaque
 #define mSCRIPT_TYPE_FIELD_TABLE opaque
 #define mSCRIPT_TYPE_FIELD_WRAPPER opaque
@@ -56,6 +59,8 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_S(STRUCT) opaque
 #define mSCRIPT_TYPE_FIELD_CS(STRUCT) copaque
 #define mSCRIPT_TYPE_FIELD_S_METHOD(STRUCT, NAME) copaque
+#define mSCRIPT_TYPE_FIELD_PS(STRUCT) opaque
+#define mSCRIPT_TYPE_FIELD_PCS(STRUCT) copaque
 
 #define mSCRIPT_TYPE_MS_S8 (&mSTSInt8)
 #define mSCRIPT_TYPE_MS_U8 (&mSTUInt8)
@@ -75,6 +80,8 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_MS_S(STRUCT) (&mSTStruct_ ## STRUCT)
 #define mSCRIPT_TYPE_MS_CS(STRUCT) (&mSTStructConst_ ## STRUCT)
 #define mSCRIPT_TYPE_MS_S_METHOD(STRUCT, NAME) (&_mSTStructBindingType_ ## STRUCT ## _ ## NAME)
+#define mSCRIPT_TYPE_MS_PS(STRUCT) (&mSTStructPtr_ ## STRUCT)
+#define mSCRIPT_TYPE_MS_PCS(STRUCT) (&mSTStructConstPtr_ ## STRUCT)
 
 #define _mSCRIPT_FIELD_NAME(V) (V)->name
 
@@ -167,16 +174,28 @@ CXX_GUARD_START
 
 #define mSCRIPT_DECLARE_STRUCT(STRUCT) \
 	extern const struct mScriptType mSTStruct_ ## STRUCT; \
-	extern const struct mScriptType mSTStructConst_ ## STRUCT;
+	extern const struct mScriptType mSTStructConst_ ## STRUCT; \
+	extern const struct mScriptType mSTStructPtr_ ## STRUCT; \
+	extern const struct mScriptType mSTStructPtrConst_ ## STRUCT;
 
 #define mSCRIPT_DEFINE_STRUCT(STRUCT) \
 	const struct mScriptType mSTStruct_ ## STRUCT; \
 	const struct mScriptType mSTStructConst_ ## STRUCT; \
+	const struct mScriptType mSTStructPtr_ ## STRUCT; \
+	const struct mScriptType mSTStructPtrConst_ ## STRUCT; \
 	static struct mScriptTypeClass _mSTStructDetails_ ## STRUCT; \
-	static bool _mSTStructCast_ ## STRUCT(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) { \
-		if (input->type == type || (input->type == &mSTStruct_ ## STRUCT && type == &mSTStructConst_ ## STRUCT)) { \
+	static bool _mSTStructPtrCast_ ## STRUCT(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) { \
+		if (input->type == type || (input->type->constType == type)) { \
 			output->type = type; \
 			output->value.opaque = input->value.opaque; \
+			return true; \
+		} \
+		if (input->type != &mSTStructPtr_ ## STRUCT && input->type != &mSTStructPtrConst_ ## STRUCT) { \
+			return false; \
+		} \
+		if (type == &mSTStructConst_ ## STRUCT || (!input->type->isConst && type == &mSTStruct_ ## STRUCT)) { \
+			output->type = type; \
+			output->value.opaque = *(void**) input->value.opaque; \
 			return true; \
 		} \
 		return false; \
@@ -190,7 +209,7 @@ CXX_GUARD_START
 		.name = "struct::" #STRUCT, \
 		.alloc = NULL, \
 		.free = NULL, \
-		.cast = _mSTStructCast_ ## STRUCT, \
+		.cast = mScriptObjectCast, \
 		.constType = &mSTStructConst_ ## STRUCT, \
 	}; \
 	const struct mScriptType mSTStructConst_ ## STRUCT = { \
@@ -203,7 +222,25 @@ CXX_GUARD_START
 		.name = "const struct::" #STRUCT, \
 		.alloc = NULL, \
 		.free = NULL, \
-		.cast = _mSTStructCast_ ## STRUCT, \
+		.cast = mScriptObjectCast, \
+	}; \
+	const struct mScriptType mSTStructPtr_ ## STRUCT = { \
+		.base = mSCRIPT_TYPE_OPAQUE, \
+		.size = sizeof(void*), \
+		.name = "ptr struct::" #STRUCT, \
+		.alloc = NULL, \
+		.free = NULL, \
+		.cast = _mSTStructPtrCast_ ## STRUCT, \
+		.constType = &mSTStructPtrConst_ ## STRUCT, \
+	}; \
+	const struct mScriptType mSTStructPtrConst_ ## STRUCT = { \
+		.base = mSCRIPT_TYPE_OPAQUE, \
+		.isConst = true, \
+		.size = sizeof(void*), \
+		.name = "ptr const struct::" #STRUCT, \
+		.alloc = NULL, \
+		.free = NULL, \
+		.cast = _mSTStructPtrCast_ ## STRUCT, \
 	}; \
 	static struct mScriptTypeClass _mSTStructDetails_ ## STRUCT = { \
 		.init = false, \
@@ -580,7 +617,9 @@ void mScriptClassInit(struct mScriptTypeClass* cls);
 void mScriptClassDeinit(struct mScriptTypeClass* cls);
 
 bool mScriptObjectGet(struct mScriptValue* obj, const char* member, struct mScriptValue*);
+bool mScriptObjectGetConst(const struct mScriptValue* obj, const char* member, struct mScriptValue*);
 bool mScriptObjectSet(struct mScriptValue* obj, const char* member, struct mScriptValue*);
+bool mScriptObjectCast(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) ;
 
 bool mScriptPopS32(struct mScriptList* list, int32_t* out);
 bool mScriptPopU32(struct mScriptList* list, uint32_t* out);
