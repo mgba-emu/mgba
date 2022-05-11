@@ -636,6 +636,7 @@ struct mScriptValue* mScriptValueAlloc(const struct mScriptType* type) {
 	struct mScriptValue* val = malloc(sizeof(*val));
 	val->refs = 1;
 	val->type = type;
+	val->flags = 0;
 	if (type->alloc) {
 		type->alloc(val);
 	} else {
@@ -662,6 +663,8 @@ void mScriptValueDeref(struct mScriptValue* val) {
 	}
 	if (val->type->free) {
 		val->type->free(val);
+	} else if (val->flags & mSCRIPT_VALUE_FLAG_FREE_BUFFER) {
+		free(val->value.opaque);
 	}
 	free(val);
 }

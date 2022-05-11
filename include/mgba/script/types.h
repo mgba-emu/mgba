@@ -135,6 +135,7 @@ CXX_GUARD_START
 		struct mScriptValue* _val = mScriptListAppend(STACK); \
 		_val->type = mSCRIPT_TYPE_MS_ ## TYPE; \
 		_val->refs = mSCRIPT_VALUE_UNREF; \
+		_val->flags = 0; \
 		_val->value.mSCRIPT_TYPE_FIELD_ ## TYPE = NAME; \
 	} while (0)
 
@@ -444,6 +445,10 @@ enum mScriptClassInitType {
 	mSCRIPT_CLASS_INIT_INHERIT,
 };
 
+enum {
+	mSCRIPT_VALUE_FLAG_FREE_BUFFER = 1
+};
+
 struct mScriptType;
 extern const struct mScriptType mSTVoid;
 extern const struct mScriptType mSTSInt8;
@@ -522,6 +527,7 @@ struct mScriptType {
 struct mScriptValue {
 	const struct mScriptType* type;
 	int refs;
+	uint32_t flags;
 	union {
 		int32_t s32;
 		uint32_t u32;
