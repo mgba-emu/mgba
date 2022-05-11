@@ -10,6 +10,8 @@
 #include <lualib.h>
 #include <lauxlib.h>
 
+#define MAX_KEY_SIZE 128
+
 static struct mScriptEngineContext* _luaCreate(struct mScriptEngine2*, struct mScriptContext*);
 
 static void _luaDestroy(struct mScriptEngineContext*);
@@ -264,6 +266,7 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		break;
 	case mSCRIPT_TYPE_STRING:
 		lua_pushstring(luaContext->lua, ((struct mScriptString*) value->value.opaque)->buffer);
+		mScriptValueDeref(value);
 		break;
 	case mSCRIPT_TYPE_FUNCTION:
 		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
@@ -271,6 +274,7 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		newValue->refs = mSCRIPT_VALUE_UNREF;
 		newValue->type->alloc(newValue);
 		lua_pushcclosure(luaContext->lua, _luaThunk, 1);
+		mScriptValueDeref(value);
 		break;
 	case mSCRIPT_TYPE_OBJECT:
 		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
@@ -502,24 +506,30 @@ int _luaThunk(lua_State* lua) {
 
 int _luaGetObject(lua_State* lua) {
 	struct mScriptEngineContextLua* luaContext = _luaGetContext(lua);
-	const char* key = lua_tostring(lua, -1);
+	char key[MAX_KEY_SIZE];
+	const char* keyPtr = lua_tostring(lua, -1);
 	struct mScriptValue* obj = lua_touserdata(lua, -2);
 	struct mScriptValue val;
 
+	if (!keyPtr) {
+		lua_pop(lua, 2);
+		lua_pushliteral(lua, "Invalid key");
+		lua_error(lua);
+	}
+	strlcpy(key, keyPtr, sizeof(key));
+	lua_pop(lua, 2);
+
 	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
 	if (!obj) {
-		lua_pop(lua, 2);
 		lua_pushliteral(lua, "Invalid object");
 		lua_error(lua);
 	}
 
 	if (!mScriptObjectGet(obj, key, &val)) {
-		lua_pop(lua, 2);
 		lua_pushliteral(lua, "Invalid key");
 		lua_error(lua);
 	}
 
-	lua_pop(lua, 2);
 	if (!_luaWrap(luaContext, &val)) {
 		lua_pushliteral(lua, "Invalid value");
 		lua_error(lua);
@@ -530,9 +540,18 @@ int _luaGetObject(lua_State* lua) {
 
 int _luaSetObject(lua_State* lua) {
 	struct mScriptEngineContextLua* luaContext = _luaGetContext(lua);
-	const char* key = lua_tostring(lua, -2);
+	char key[MAX_KEY_SIZE];
+	const char* keyPtr = lua_tostring(lua, -2);
 	struct mScriptValue* obj = lua_touserdata(lua, -3);
 	struct mScriptValue* val = _luaCoerce(luaContext);
+
+	if (!keyPtr) {
+		lua_pop(lua, 2);
+		lua_pushliteral(lua, "Invalid key");
+		lua_error(lua);
+	}
+	strlcpy(key, keyPtr, sizeof(key));
+	lua_pop(lua, 2);
 
 	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
 	if (!obj) {
@@ -540,7 +559,6 @@ int _luaSetObject(lua_State* lua) {
 		lua_error(lua);
 	}
 
-	lua_pop(lua, 2);
 	if (!val) {
 		lua_pushliteral(lua, "Invalid value");
 		lua_error(lua);
