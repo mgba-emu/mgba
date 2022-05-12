@@ -92,13 +92,14 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 
 	gba->keysActive = 0;
 	gba->keysLast = 0x400;
-	gba->rotationSource = 0;
-	gba->luminanceSource = 0;
-	gba->rtcSource = 0;
-	gba->rumble = 0;
+	gba->rotationSource = NULL;
+	gba->luminanceSource = NULL;
+	gba->rtcSource = NULL;
+	gba->rumble = NULL;
 
-	gba->romVf = 0;
-	gba->biosVf = 0;
+	gba->romVf = NULL;
+	gba->mbVf = NULL;
+	gba->biosVf = NULL;
 
 	gba->stream = NULL;
 	gba->keyCallback = NULL;
