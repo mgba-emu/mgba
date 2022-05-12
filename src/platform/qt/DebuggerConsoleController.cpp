@@ -69,7 +69,7 @@ void DebuggerConsoleController::printf(struct CLIDebuggerBackend* be, const char
 	DebuggerConsoleController* self = consoleBe->self;
 	va_list args;
 	va_start(args, fmt);
-	self->log(QString().vsprintf(fmt, args));
+	self->log(QString::vasprintf(fmt, args));
 	va_end(args);
 }
 
