@@ -60,6 +60,7 @@ void mScriptContextInit(struct mScriptContext* context) {
 	mScriptListInit(&context->refPool, 0);
 	TableInit(&context->weakrefs, 0, (void (*)(void*)) mScriptValueDeref);
 	context->nextWeakref = 0;
+	HashTableInit(&context->callbacks, 0, (void (*)(void*)) mScriptValueDeref);
 }
 
 void mScriptContextDeinit(struct mScriptContext* context) {
@@ -68,6 +69,7 @@ void mScriptContextDeinit(struct mScriptContext* context) {
 	HashTableDeinit(&context->weakrefs);
 	mScriptContextDrainPool(context);
 	mScriptListDeinit(&context->refPool);
+	HashTableDeinit(&context->callbacks);
 }
 
 void mScriptContextFillPool(struct mScriptContext* context, struct mScriptValue* value) {
@@ -175,6 +177,36 @@ struct mScriptValue* mScriptContextAccessWeakref(struct mScriptContext* context,
 
 void mScriptContextClearWeakref(struct mScriptContext* context, uint32_t weakref) {
 	TableRemove(&context->weakrefs, weakref);
+}
+
+void mScriptContextTriggerCallback(struct mScriptContext* context, const char* callback) {
+	struct mScriptValue* list = HashTableLookup(&context->callbacks, callback);
+	if (!list) {
+		return;
+	}
+	size_t i;
+	for (i = 0; i < mScriptListSize(list->value.opaque); ++i) {
+		struct mScriptFrame frame;
+		mScriptFrameInit(&frame);
+		struct mScriptValue* fn = mScriptListGetPointer(list->value.opaque, i);
+		if (fn->type->base == mSCRIPT_TYPE_WRAPPER) {
+			fn = mScriptValueUnwrap(fn);
+		}
+		mScriptInvoke(fn, &frame);
+		mScriptFrameDeinit(&frame);
+	}
+}
+
+void mScriptContextAddCallback(struct mScriptContext* context, const char* callback, struct mScriptValue* fn) {
+	if (fn->type->base != mSCRIPT_TYPE_FUNCTION) {
+		return;
+	}
+	struct mScriptValue* list = HashTableLookup(&context->callbacks, callback);
+	if (!list) {
+		list = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
+		HashTableInsert(&context->callbacks, callback, list);
+	}
+	mScriptValueWrap(fn, mScriptListAppend(list->value.opaque));
 }
 
 bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, struct VFile* vf) {

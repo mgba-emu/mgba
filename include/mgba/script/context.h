@@ -24,6 +24,7 @@ struct mScriptContext {
 	struct mScriptList refPool;
 	struct Table weakrefs;
 	uint32_t nextWeakref;
+	struct Table callbacks;
 };
 
 struct mScriptEngine2 {
@@ -65,6 +66,11 @@ uint32_t mScriptContextSetWeakref(struct mScriptContext*, struct mScriptValue* v
 struct mScriptValue* mScriptContextMakeWeakref(struct mScriptContext*, struct mScriptValue* value);
 struct mScriptValue* mScriptContextAccessWeakref(struct mScriptContext*, struct mScriptValue* value);
 void mScriptContextClearWeakref(struct mScriptContext*, uint32_t weakref);
+
+void mScriptContextAttachStdlib(struct mScriptContext* context);
+
+void mScriptContextTriggerCallback(struct mScriptContext*, const char* callback);
+void mScriptContextAddCallback(struct mScriptContext*, const char* callback, struct mScriptValue* value);
 
 struct VFile;
 bool mScriptContextLoadVF(struct mScriptContext*, const char* name, struct VFile* vf);

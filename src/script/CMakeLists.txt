@@ -1,6 +1,7 @@
 include(ExportDirectory)
 set(SOURCE_FILES
 	context.c
+	stdlib.c
 	types.c)
 
 set(TEST_FILES
