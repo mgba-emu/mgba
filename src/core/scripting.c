@@ -334,7 +334,6 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 	coreValue->value.opaque = adapter;
 	coreValue->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 	mScriptContextSetGlobal(context, "emu", coreValue);
-	mScriptValueDeref(coreValue);
 }
 
 void mScriptContextDetachCore(struct mScriptContext* context) {
@@ -367,7 +366,6 @@ void mScriptContextAttachLogger(struct mScriptContext* context, struct mLogger* 
 	struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mLogger));
 	value->value.opaque = logger;
 	mScriptContextSetGlobal(context, "console", value);
-	mScriptValueDeref(value);
 }
 
 void mScriptContextDetachLogger(struct mScriptContext* context) {

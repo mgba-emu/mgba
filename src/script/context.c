@@ -24,6 +24,11 @@ static void _engineContextDestroy(void* ctx) {
 	context->destroy(context);
 }
 
+static void _engineAddGlobal(const char* key, void* value, void* user) {
+	struct mScriptEngineContext* context = user;
+	context->setGlobal(context, key, value);
+}
+
 static void _contextAddGlobal(const char* key, void* value, void* user) {
 	UNUSED(key);
 	struct mScriptEngineContext* context = value;
@@ -99,6 +104,7 @@ struct mScriptEngineContext* mScriptContextRegisterEngine(struct mScriptContext*
 	struct mScriptEngineContext* ectx = engine->create(engine, context);
 	if (ectx) {
 		HashTableInsert(&context->engines, engine->name, ectx);
+		HashTableEnumerate(&context->rootScope, _engineAddGlobal, ectx);
 	}
 	return ectx;
 }
@@ -116,6 +122,7 @@ void mScriptContextSetGlobal(struct mScriptContext* context, const char* key, st
 		mScriptContextClearWeakref(context, oldValue->value.u32);
 	}
 	uint32_t weakref = mScriptContextSetWeakref(context, value);
+	mScriptValueDeref(value);
 	value = mScriptValueAlloc(mSCRIPT_TYPE_MS_WEAKREF);
 	value->value.u32 = weakref;
 	HashTableInsert(&context->rootScope, key, value);
