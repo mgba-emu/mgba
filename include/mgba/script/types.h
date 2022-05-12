@@ -31,6 +31,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_C_CHARP const char*
 #define mSCRIPT_TYPE_C_PTR void*
 #define mSCRIPT_TYPE_C_CPTR const void*
+#define mSCRIPT_TYPE_C_LIST struct mScriptList*
 #define mSCRIPT_TYPE_C_TABLE Table*
 #define mSCRIPT_TYPE_C_WRAPPER struct mScriptValue*
 #define mSCRIPT_TYPE_C_WEAKREF uint32_t
@@ -53,6 +54,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_STR opaque
 #define mSCRIPT_TYPE_FIELD_CHARP copaque
 #define mSCRIPT_TYPE_FIELD_PTR opaque
+#define mSCRIPT_TYPE_FIELD_LIST opaque
 #define mSCRIPT_TYPE_FIELD_TABLE opaque
 #define mSCRIPT_TYPE_FIELD_WRAPPER opaque
 #define mSCRIPT_TYPE_FIELD_WEAKREF u32
@@ -74,6 +76,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_MS_F64 (&mSTFloat64)
 #define mSCRIPT_TYPE_MS_STR (&mSTString)
 #define mSCRIPT_TYPE_MS_CHARP (&mSTCharPtr)
+#define mSCRIPT_TYPE_MS_LIST (&mSTList)
 #define mSCRIPT_TYPE_MS_TABLE (&mSTTable)
 #define mSCRIPT_TYPE_MS_WRAPPER (&mSTWrapper)
 #define mSCRIPT_TYPE_MS_WEAKREF (&mSTWeakref)
@@ -524,6 +527,7 @@ extern const struct mScriptType mSTUInt64;
 extern const struct mScriptType mSTFloat64;
 extern const struct mScriptType mSTString;
 extern const struct mScriptType mSTCharPtr;
+extern const struct mScriptType mSTList;
 extern const struct mScriptType mSTTable;
 extern const struct mScriptType mSTWrapper;
 extern const struct mScriptType mSTWeakref;

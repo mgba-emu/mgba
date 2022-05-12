@@ -9,7 +9,8 @@
 #include <mgba-util/hash.h>
 #include <mgba-util/table.h>
 
-#define MAX_ALIGNMENT 8
+static void _allocList(struct mScriptValue*);
+static void _freeList(struct mScriptValue*);
 
 static void _allocTable(struct mScriptValue*);
 static void _freeTable(struct mScriptValue*);
@@ -178,6 +179,15 @@ const struct mScriptType mSTCharPtr = {
 	.equal = _charpEqual,
 };
 
+const struct mScriptType mSTList = {
+	.base = mSCRIPT_TYPE_LIST,
+	.size = sizeof(struct mScriptList),
+	.name = "list",
+	.alloc = _allocList,
+	.free = _freeList,
+	.hash = NULL,
+};
+
 const struct mScriptType mSTTable = {
 	.base = mSCRIPT_TYPE_TABLE,
 	.size = sizeof(struct Table),
@@ -206,6 +216,23 @@ const struct mScriptType mSTWeakref = {
 };
 
 DEFINE_VECTOR(mScriptList, struct mScriptValue)
+
+void _allocList(struct mScriptValue* val) {
+	val->value.opaque = malloc(sizeof(struct mScriptList));
+	mScriptListInit(val->value.opaque, 0);
+}
+
+void _freeList(struct mScriptValue* val) {
+	size_t i;
+	for (i = 0; i < mScriptListSize(val->value.opaque); ++i) {
+		struct mScriptValue* unwrapped = mScriptValueUnwrap(mScriptListGetPointer(val->value.opaque, i));
+		if (unwrapped) {
+			mScriptValueDeref(unwrapped);
+		}
+	}
+	mScriptListDeinit(val->value.opaque);
+	free(val->value.opaque);
+}
 
 void _allocTable(struct mScriptValue* val) {
 	val->value.opaque = malloc(sizeof(struct Table));
