@@ -208,7 +208,7 @@ CXX_GUARD_START
 		.size = sizeof(struct STRUCT), \
 		.name = "struct::" #STRUCT, \
 		.alloc = NULL, \
-		.free = NULL, \
+		.free = mScriptObjectFree, \
 		.cast = mScriptObjectCast, \
 		.constType = &mSTStructConst_ ## STRUCT, \
 	}; \
@@ -355,7 +355,6 @@ CXX_GUARD_START
 		return true; \
 	} \
 
-
 #define mSCRIPT_DECLARE_STRUCT_D_METHOD(TYPE, RETURN, NAME, NPARAMS, ...) \
 	mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, RETURN, NAME, p0->NAME, NPARAMS, __VA_ARGS__)
 
@@ -368,8 +367,8 @@ CXX_GUARD_START
 #define mSCRIPT_DECLARE_STRUCT_VOID_CD_METHOD(TYPE, NAME, NPARAMS, ...) \
 	mSCRIPT_DECLARE_STRUCT_VOID_C_METHOD(TYPE, NAME, p0->NAME, NPARAMS, __VA_ARGS__)
 
-#define mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(TYPE, EXPORTED_NAME, NAME) { \
-	.type = mSCRIPT_CLASS_INIT_INSTANCE_MEMBER, \
+#define _mSCRIPT_DEFINE_STRUCT_BINDING(INIT_TYPE, TYPE, EXPORTED_NAME, NAME) { \
+	.type = mSCRIPT_CLASS_INIT_ ## INIT_TYPE, \
 	.info = { \
 		.member = { \
 			.name = #EXPORTED_NAME, \
@@ -378,9 +377,15 @@ CXX_GUARD_START
 	}, \
 },
 
+#define mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(TYPE, EXPORTED_NAME, NAME) \
+	_mSCRIPT_DEFINE_STRUCT_BINDING(INSTANCE_MEMBER, TYPE, EXPORTED_NAME, NAME)
+
 #define mSCRIPT_DEFINE_STRUCT_METHOD(TYPE, NAME) mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(TYPE, NAME, NAME)
 
-#define mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(TYPE) mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(TYPE, _get, _get)
+#define mSCRIPT_DEFINE_STRUCT_INIT(TYPE) _mSCRIPT_DEFINE_STRUCT_BINDING(INIT, TYPE, _init, _init)
+#define mSCRIPT_DEFINE_STRUCT_DEINIT(TYPE) _mSCRIPT_DEFINE_STRUCT_BINDING(DEINIT, TYPE, _deinit, _deinit)
+#define mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(TYPE) _mSCRIPT_DEFINE_STRUCT_BINDING(GET, TYPE, _get, _get)
+#define mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(TYPE) _mSCRIPT_DEFINE_STRUCT_BINDING(SET, TYPE, _set, _set)
 
 #define mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(TYPE, CAST_TYPE, MEMBER) { \
 	.type = mSCRIPT_CLASS_INIT_CAST_TO_MEMBER, \
@@ -495,6 +500,10 @@ enum mScriptClassInitType {
 	mSCRIPT_CLASS_INIT_INSTANCE_MEMBER,
 	mSCRIPT_CLASS_INIT_INHERIT,
 	mSCRIPT_CLASS_INIT_CAST_TO_MEMBER,
+	mSCRIPT_CLASS_INIT_INIT,
+	mSCRIPT_CLASS_INIT_DEINIT,
+	mSCRIPT_CLASS_INIT_GET,
+	mSCRIPT_CLASS_INIT_SET,
 };
 
 enum {
@@ -560,6 +569,10 @@ struct mScriptTypeClass {
 	const struct mScriptType* parent;
 	struct Table instanceMembers;
 	struct Table castToMembers;
+	struct mScriptClassMember* alloc; // TODO
+	struct mScriptClassMember* free;
+	struct mScriptClassMember* get;
+	struct mScriptClassMember* set; // TODO
 };
 
 struct mScriptValue;
@@ -643,6 +656,7 @@ bool mScriptObjectGet(struct mScriptValue* obj, const char* member, struct mScri
 bool mScriptObjectGetConst(const struct mScriptValue* obj, const char* member, struct mScriptValue*);
 bool mScriptObjectSet(struct mScriptValue* obj, const char* member, struct mScriptValue*);
 bool mScriptObjectCast(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) ;
+void mScriptObjectFree(struct mScriptValue* obj);
 
 bool mScriptPopS32(struct mScriptList* list, int32_t* out);
 bool mScriptPopU32(struct mScriptList* list, uint32_t* out);

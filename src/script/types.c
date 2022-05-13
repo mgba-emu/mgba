@@ -806,6 +806,38 @@ static void _mScriptClassInit(struct mScriptTypeClass* cls, const struct mScript
 		case mSCRIPT_CLASS_INIT_CAST_TO_MEMBER:
 			HashTableInsert(&cls->castToMembers, detail->info.castMember.type->name, (char*) detail->info.castMember.member);
 			break;
+		case mSCRIPT_CLASS_INIT_INIT:
+			cls->alloc = calloc(1, sizeof(*member));
+			memcpy(cls->alloc, &detail->info.member, sizeof(*member));
+			if (docstring) {
+				cls->alloc->docstring = docstring;
+				docstring = NULL;
+			}
+			break;
+		case mSCRIPT_CLASS_INIT_DEINIT:
+			cls->free = calloc(1, sizeof(*member));
+			memcpy(cls->free, &detail->info.member, sizeof(*member));
+			if (docstring) {
+				cls->free->docstring = docstring;
+				docstring = NULL;
+			}
+			break;
+		case mSCRIPT_CLASS_INIT_GET:
+			cls->get = calloc(1, sizeof(*member));
+			memcpy(cls->get, &detail->info.member, sizeof(*member));
+			if (docstring) {
+				cls->get->docstring = docstring;
+				docstring = NULL;
+			}
+			break;
+		case mSCRIPT_CLASS_INIT_SET:
+			cls->set = calloc(1, sizeof(*member));
+			memcpy(cls->set, &detail->info.member, sizeof(*member));
+			if (docstring) {
+				cls->set->docstring = docstring;
+				docstring = NULL;
+			}
+			break;
 		}
 	}
 }
@@ -817,6 +849,10 @@ void mScriptClassInit(struct mScriptTypeClass* cls) {
 	HashTableInit(&cls->instanceMembers, 0, free);
 	HashTableInit(&cls->castToMembers, 0, NULL);
 
+	cls->alloc = NULL;
+	cls->free = NULL;
+	cls->get = NULL;
+	cls->set = NULL;
 	_mScriptClassInit(cls, cls->details, false);
 
 	cls->init = true;
@@ -934,7 +970,7 @@ bool mScriptObjectGet(struct mScriptValue* obj, const char* member, struct mScri
 	struct mScriptClassMember* m = HashTableLookup(&cls->instanceMembers, member);
 	if (!m) {
 		struct mScriptValue getMember;
-		m = HashTableLookup(&cls->instanceMembers, "_get");
+		m = cls->get;
 		if (!m || !_accessRawMember(m, obj->value.opaque, obj->type->isConst, &getMember)) {
 			return false;
 		}
@@ -1082,6 +1118,30 @@ bool mScriptObjectCast(const struct mScriptValue* input, const struct mScriptTyp
 		return mScriptCast(type, &cast, output);
 	}
 	return false;
+}
+
+void mScriptObjectFree(struct mScriptValue* value) {
+	if (value->type->base != mSCRIPT_TYPE_OBJECT) {
+		return;
+	}
+	if (value->flags & mSCRIPT_VALUE_FLAG_FREE_BUFFER) {
+		mScriptClassInit(value->type->details.cls);
+		if (value->type->details.cls->free) {
+			struct mScriptValue deinitMember;
+			if (_accessRawMember(value->type->details.cls->free, value->value.opaque, value->type->isConst, &deinitMember)) {
+				struct mScriptFrame frame;
+				mScriptFrameInit(&frame);
+				struct mScriptValue* this = mScriptListAppend(&frame.arguments);
+				this->type = mSCRIPT_TYPE_MS_WRAPPER;
+				this->refs = mSCRIPT_VALUE_UNREF;
+				this->flags = 0;
+				this->value.opaque = value;
+				mScriptInvoke(&deinitMember, &frame);
+				mScriptFrameDeinit(&frame);
+			}
+		}
+		free(value->value.opaque);
+	}
 }
 
 bool mScriptPopS32(struct mScriptList* list, int32_t* out) {

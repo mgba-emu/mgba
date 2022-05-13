@@ -38,6 +38,10 @@ struct TestD {
 struct TestE {
 };
 
+struct TestF {
+	int* ref;
+};
+
 static int32_t testAi0(struct TestA* a) {
 	return a->i;
 }
@@ -65,6 +69,10 @@ static void testAv1(struct TestA* a, int b) {
 static int32_t testGet(struct TestE* e, const char* name) {
 	UNUSED(e);
 	return name[0];
+}
+
+static void testDeinit(struct TestF* f) {
+	++*f->ref;
 }
 
 #define MEMBER_A_DOCSTRING "Member a"
@@ -122,6 +130,13 @@ mSCRIPT_DECLARE_STRUCT_METHOD(TestE, S32, _get, testGet, 1, CHARP, name);
 
 mSCRIPT_DEFINE_STRUCT(TestE)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(TestE)
+mSCRIPT_DEFINE_END;
+
+mSCRIPT_DECLARE_STRUCT(TestF);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestF, _deinit, testDeinit, 0);
+
+mSCRIPT_DEFINE_STRUCT(TestF)
+	mSCRIPT_DEFINE_STRUCT_DEINIT(TestF)
 mSCRIPT_DEFINE_END;
 
 M_TEST_DEFINE(testALayout) {
@@ -910,6 +925,23 @@ M_TEST_DEFINE(testEGet) {
 	assert_false(cls->init);
 }
 
+M_TEST_DEFINE(testFDeinit) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestF)->details.cls;
+
+	int ref = 0;
+	struct TestF* s = calloc(1, sizeof(struct TestF));
+	s->ref = &ref;
+	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(TestF));
+	val->value.opaque = s;
+	val->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+	mScriptValueDeref(val);
+	assert_int_equal(ref, 1);
+
+	assert_true(cls->init);
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
 M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testALayout),
 	cmocka_unit_test(testASignatures),
@@ -924,4 +956,5 @@ M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testDGet),
 	cmocka_unit_test(testDSet),
 	cmocka_unit_test(testEGet),
+	cmocka_unit_test(testFDeinit),
 )
