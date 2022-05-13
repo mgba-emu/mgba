@@ -678,7 +678,7 @@ void MemoryModel::adjustCursor(int adjust, bool shift) {
 	}
 	int cursorPosition = m_top;
 	if (shift) {
-		uint32_t absolute;
+		uint32_t absolute = adjust;
 		if (m_selectionAnchor == m_selection.first) {
 			if (adjust < 0 && m_base - adjust > m_selection.second) {
 				absolute = m_base - m_selection.second + m_align;

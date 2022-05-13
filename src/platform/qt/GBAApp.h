@@ -61,7 +61,6 @@ public:
 	QFont monospaceFont() { return m_monospace; }
 
 	QList<Window*> windows() { return m_windows; }
-	Window* newWindow();
 
 	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = {});
 	QStringList getOpenFileNames(QWidget* owner, const QString& title, const QString& filter = {});
@@ -81,6 +80,7 @@ public:
 
 public slots:
 	void restartForUpdate();
+	Window* newWindow();
 
 signals:
 	void jobFinished(qint64 jobId);

@@ -87,8 +87,8 @@ void DisplayQt::resizeContext() {
 	if (m_width != size.width() || m_height != size.height()) {
 		m_width = size.width();
 		m_height = size.height();
-		m_oldBacking = std::move(QImage());
-		m_backing = std::move(QImage());
+		m_oldBacking = QImage();
+		m_backing = QImage();
 	}
 }
 
