@@ -247,11 +247,21 @@ if(USE_DISCORD_RPC)
 	list(APPEND SOURCE_FILES DiscordCoordinator.cpp)
 endif()
 
+if(ENABLE_SCRIPTING)
+	list(APPEND SOURCE_FILES
+		ScriptingController.cpp
+		ScriptingView.cpp)
+
+	list(APPEND UI_FILES
+		ScriptingView.ui)
+endif()
+
 if(TARGET Qt6::Core)
 	qt_add_resources(RESOURCES resources.qrc)
 else()
 	qt5_add_resources(RESOURCES resources.qrc)
 endif()
+
 if(BUILD_UPDATER)
 	file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc INPUT ${CMAKE_CURRENT_SOURCE_DIR}/updater.qrc.in)
 	if(TARGET Qt6::Core)
