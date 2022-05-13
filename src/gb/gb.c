@@ -229,6 +229,9 @@ static void GBSramDeinit(struct GB* gb) {
 bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 	GBSramDeinit(gb);
 	gb->sramVf = vf;
+	if (gb->sramRealVf && gb->sramRealVf != vf) {
+		gb->sramRealVf->close(gb->sramRealVf);
+	}
 	gb->sramRealVf = vf;
 	if (gb->sramSize) {
 		GBResizeSram(gb, gb->sramSize);

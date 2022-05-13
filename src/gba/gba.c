@@ -75,6 +75,8 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	GBAMemoryInit(gba);
 
 	gba->memory.savedata.timing = &gba->timing;
+	gba->memory.savedata.vf = NULL;
+	gba->memory.savedata.realVf = NULL;
 	GBASavedataInit(&gba->memory.savedata, NULL);
 
 	gba->video.p = gba;
