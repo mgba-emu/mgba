@@ -741,6 +741,17 @@ struct mScriptValue* mScriptStringCreateFromUTF8(const char* string) {
 	internal->buffer = strdup(string);
 	return val;
 }
+struct mScriptValue* mScriptValueCreateFromSInt(int32_t value) {
+	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_S32);
+	val->value.s32 = value;
+	return val;
+}
+
+struct mScriptValue* mScriptValueCreateFromUInt(uint32_t value) {
+	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_U32);
+	val->value.u32 = value;
+	return val;
+}
 
 bool mScriptTableInsert(struct mScriptValue* table, struct mScriptValue* key, struct mScriptValue* value) {
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
@@ -768,6 +779,9 @@ bool mScriptTableRemove(struct mScriptValue* table, struct mScriptValue* key) {
 }
 
 struct mScriptValue* mScriptTableLookup(struct mScriptValue* table, struct mScriptValue* key) {
+	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
+		table = mScriptValueUnwrap(table);
+	}
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
 		return false;
 	}
@@ -1003,6 +1017,7 @@ static bool _accessRawMember(struct mScriptClassMember* member, void* raw, bool 
 		break;
 	case mSCRIPT_TYPE_TABLE:
 		val->refs = mSCRIPT_VALUE_UNREF;
+		val->flags = 0;
 		val->type = mSCRIPT_TYPE_MS_WRAPPER;
 		val->value.opaque = raw;
 		break;

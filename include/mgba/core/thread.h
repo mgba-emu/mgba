@@ -11,10 +11,6 @@
 CXX_GUARD_START
 
 #include <mgba/core/log.h>
-#ifdef ENABLE_SCRIPTING
-#include <mgba/core/scripting.h>
-#include <mgba/script/context.h>
-#endif
 
 struct mCoreThread;
 struct mCore;
@@ -27,6 +23,9 @@ struct mThreadLogger {
 	struct mCoreThread* p;
 };
 
+#ifdef ENABLE_SCRIPTING
+struct mScriptContext;
+#endif
 struct mCoreThreadInternal;
 struct mCoreThread {
 	// Input

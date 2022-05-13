@@ -8,6 +8,7 @@
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
 #ifdef ENABLE_SCRIPTING
+#include <mgba/script/context.h>
 #include <mgba/core/scripting.h>
 #endif
 #include <mgba/core/serialize.h>

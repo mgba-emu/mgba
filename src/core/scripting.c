@@ -315,7 +315,6 @@ static void _rebuildMemoryMap(struct mScriptCoreAdapter* adapter) {
 		struct mScriptValue* key = mScriptStringCreateFromUTF8(blocks[i].internalName);
 		mScriptTableInsert(&adapter->memory, key, value);
 		mScriptValueDeref(key);
-		mScriptValueDeref(value);
 	}
 }
 

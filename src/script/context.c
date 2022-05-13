@@ -59,7 +59,7 @@ void mScriptContextInit(struct mScriptContext* context) {
 	HashTableInit(&context->engines, 0, _engineContextDestroy);
 	mScriptListInit(&context->refPool, 0);
 	TableInit(&context->weakrefs, 0, (void (*)(void*)) mScriptValueDeref);
-	context->nextWeakref = 0;
+	context->nextWeakref = 1;
 	HashTableInit(&context->callbacks, 0, (void (*)(void*)) mScriptValueDeref);
 }
 
@@ -123,16 +123,21 @@ void mScriptContextSetGlobal(struct mScriptContext* context, const char* key, st
 	if (oldValue) {
 		mScriptContextClearWeakref(context, oldValue->value.u32);
 	}
-	uint32_t weakref = mScriptContextSetWeakref(context, value);
-	mScriptValueDeref(value);
-	value = mScriptValueAlloc(mSCRIPT_TYPE_MS_WEAKREF);
-	value->value.u32 = weakref;
+	value = mScriptContextMakeWeakref(context, value);
 	HashTableInsert(&context->rootScope, key, value);
 	struct mScriptKVPair pair = {
 		.key = key,
 		.value = value
 	};
 	HashTableEnumerate(&context->engines, _contextAddGlobal, &pair);
+}
+
+struct mScriptValue* mScriptContextGetGlobal(struct mScriptContext* context, const char* key) {
+	struct mScriptValue* weakref = HashTableLookup(&context->rootScope, key);
+	if (!weakref) {
+		return NULL;
+	}
+	return mScriptContextAccessWeakref(context, weakref);
 }
 
 void mScriptContextRemoveGlobal(struct mScriptContext* context, const char* key) {
@@ -146,6 +151,15 @@ void mScriptContextRemoveGlobal(struct mScriptContext* context, const char* key)
 		mScriptContextClearWeakref(context, oldValue->value.u32);
 		HashTableRemove(&context->rootScope, key);
 	}
+}
+
+struct mScriptValue* mScriptContextEnsureGlobal(struct mScriptContext* context, const char* key, const struct mScriptType* type) {
+	struct mScriptValue* value = mScriptContextGetGlobal(context, key);
+	if (!value) {
+		mScriptContextSetGlobal(context, key, mScriptValueAlloc(type));
+		value = mScriptContextGetGlobal(context, key);
+	}
+	return value;
 }
 
 uint32_t mScriptContextSetWeakref(struct mScriptContext* context, struct mScriptValue* value) {
@@ -219,7 +233,7 @@ bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, stru
 	if (!info.context) {
 		return false;
 	}
-	return info.context->load(info.context, vf, NULL);
+	return info.context->load(info.context, vf);
 }
 
 bool mScriptContextLoadFile(struct mScriptContext* context, const char* path) {

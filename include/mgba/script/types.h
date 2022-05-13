@@ -491,7 +491,6 @@ enum mScriptTypeBase {
 	mSCRIPT_TYPE_FUNCTION,
 	mSCRIPT_TYPE_OPAQUE,
 	mSCRIPT_TYPE_OBJECT,
-	mSCRIPT_TYPE_TUPLE,
 	mSCRIPT_TYPE_LIST,
 	mSCRIPT_TYPE_TABLE,
 	mSCRIPT_TYPE_WRAPPER,
@@ -645,6 +644,8 @@ struct mScriptValue* mScriptValueUnwrap(struct mScriptValue* val);
 const struct mScriptValue* mScriptValueUnwrapConst(const struct mScriptValue* val);
 
 struct mScriptValue* mScriptStringCreateFromUTF8(const char* string);
+struct mScriptValue* mScriptValueCreateFromUInt(uint32_t value);
+struct mScriptValue* mScriptValueCreateFromSInt(int32_t value);
 
 bool mScriptTableInsert(struct mScriptValue* table, struct mScriptValue* key, struct mScriptValue* value);
 bool mScriptTableRemove(struct mScriptValue* table, struct mScriptValue* key);

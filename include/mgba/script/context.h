@@ -45,7 +45,7 @@ struct mScriptEngineContext {
 	bool (*setGlobal)(struct mScriptEngineContext*, const char* name, struct mScriptValue*);
 	struct mScriptValue* (*getGlobal)(struct mScriptEngineContext*, const char* name);
 
-	bool (*load)(struct mScriptEngineContext*, struct VFile*, const char** error);
+	bool (*load)(struct mScriptEngineContext*, struct VFile*);
 	bool (*run)(struct mScriptEngineContext*);
 	const char* (*getError)(struct mScriptEngineContext*);
 };
@@ -60,7 +60,9 @@ struct mScriptEngineContext* mScriptContextRegisterEngine(struct mScriptContext*
 void mScriptContextRegisterEngines(struct mScriptContext*);
 
 void mScriptContextSetGlobal(struct mScriptContext*, const char* key, struct mScriptValue* value);
+struct mScriptValue* mScriptContextGetGlobal(struct mScriptContext*, const char* key);
 void mScriptContextRemoveGlobal(struct mScriptContext*, const char* key);
+struct mScriptValue* mScriptContextEnsureGlobal(struct mScriptContext*, const char* key, const struct mScriptType* type);
 
 uint32_t mScriptContextSetWeakref(struct mScriptContext*, struct mScriptValue* value);
 struct mScriptValue* mScriptContextMakeWeakref(struct mScriptContext*, struct mScriptValue* value);

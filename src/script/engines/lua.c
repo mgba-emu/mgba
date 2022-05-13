@@ -18,7 +18,7 @@ static void _luaDestroy(struct mScriptEngineContext*);
 static bool _luaIsScript(struct mScriptEngineContext*, const char*, struct VFile*);
 static struct mScriptValue* _luaGetGlobal(struct mScriptEngineContext*, const char* name);
 static bool _luaSetGlobal(struct mScriptEngineContext*, const char* name, struct mScriptValue*);
-static bool _luaLoad(struct mScriptEngineContext*, struct VFile*, const char** error);
+static bool _luaLoad(struct mScriptEngineContext*, struct VFile*);
 static bool _luaRun(struct mScriptEngineContext*);
 static const char* _luaGetError(struct mScriptEngineContext*);
 
@@ -333,28 +333,25 @@ static const char* _reader(lua_State* lua, void* context, size_t* size) {
 	return reader->block;
 }
 
-bool _luaLoad(struct mScriptEngineContext* ctx, struct VFile* vf, const char** error) {
+bool _luaLoad(struct mScriptEngineContext* ctx, struct VFile* vf) {
 	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) ctx;
 	struct mScriptEngineLuaReader data = {
 		.vf = vf
 	};
+	if (luaContext->lastError) {
+		free(luaContext->lastError);
+		luaContext->lastError = NULL;
+	}
 	int ret = lua_load(luaContext->lua, _reader, &data, NULL, "t");
 	switch (ret) {
 	case LUA_OK:
-		if (error) {
-			*error = NULL;
-		}
 		luaContext->func = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
 		return true;
 	case LUA_ERRSYNTAX:
-		if (error) {
-			*error = "Syntax error";
-		}
+		luaContext->lastError = strdup(lua_tostring(luaContext->lua, -1));
+		lua_pop(luaContext->lua, 1);
 		break;
 	default:
-		if (error) {
-			*error = "Unknown error";
-		}
 		break;
 	}
 	return false;
