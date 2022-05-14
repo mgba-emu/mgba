@@ -6,6 +6,7 @@
 #include <mgba/core/scripting.h>
 
 #include <mgba/core/core.h>
+#include <mgba/core/serialize.h>
 #include <mgba/script/context.h>
 #include <mgba-util/table.h>
 #include <mgba-util/vfs.h>
@@ -244,31 +245,49 @@ mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite8, 2, U32, address, U8, valu
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite16, 2, U32, address, U16, value);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite32, 2, U32, address, U32, value);
 
-mSCRIPT_DEFINE_STRUCT(mCore)
-mSCRIPT_DEFINE_DOCSTRING("Get the number of the current frame")
-mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, currentFrame, frameCounter)
-mSCRIPT_DEFINE_DOCSTRING("Get the number of cycles per frame")
-mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frameCycles)
-mSCRIPT_DEFINE_DOCSTRING("Get the number of cycles per second")
-mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frequency)
-mSCRIPT_DEFINE_DOCSTRING("Run until the next frame")
-mSCRIPT_DEFINE_STRUCT_METHOD(mCore, runFrame)
-mSCRIPT_DEFINE_DOCSTRING("Run a single instruction")
-mSCRIPT_DEFINE_STRUCT_METHOD(mCore, step)
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, saveStateSlot, mCoreSaveState, 2, S32, slot, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateSlot, mCoreLoadState, 2, S32, slot, S32, flags);
 
-mSCRIPT_DEFINE_DOCSTRING("Read an 8-bit value from the given bus address")
-mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read8, busRead8)
-mSCRIPT_DEFINE_DOCSTRING("Read a 16-bit value from the given bus address")
-mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read16, busRead16)
-mSCRIPT_DEFINE_DOCSTRING("Read a 32-bit value from the given bus address")
-mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read32, busRead32)
-mSCRIPT_DEFINE_DOCSTRING("Write an 8-bit value from the given bus address")
-mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write8, busWrite8)
-mSCRIPT_DEFINE_DOCSTRING("Write a 16-bit value from the given bus address")
-mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write16, busWrite16)
-mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given bus address")
-mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write32, busWrite32)
+mSCRIPT_DEFINE_STRUCT(mCore)
+	mSCRIPT_DEFINE_DOCSTRING("Get the number of the current frame")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, currentFrame, frameCounter)
+	mSCRIPT_DEFINE_DOCSTRING("Get the number of cycles per frame")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frameCycles)
+	mSCRIPT_DEFINE_DOCSTRING("Get the number of cycles per second")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frequency)
+	mSCRIPT_DEFINE_DOCSTRING("Run until the next frame")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, runFrame)
+	mSCRIPT_DEFINE_DOCSTRING("Run a single instruction")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, step)
+
+	mSCRIPT_DEFINE_DOCSTRING("Read an 8-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read8, busRead8)
+	mSCRIPT_DEFINE_DOCSTRING("Read a 16-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read16, busRead16)
+	mSCRIPT_DEFINE_DOCSTRING("Read a 32-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read32, busRead32)
+	mSCRIPT_DEFINE_DOCSTRING("Write an 8-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write8, busWrite8)
+	mSCRIPT_DEFINE_DOCSTRING("Write a 16-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write16, busWrite16)
+	mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write32, busWrite32)
+
+	mSCRIPT_DEFINE_DOCSTRING("Save state to the slot number")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateSlot)
+	mSCRIPT_DEFINE_DOCSTRING("Load state from the slot number")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateSlot)
 mSCRIPT_DEFINE_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateSlot)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_MAKE_S32(SAVESTATE_ALL)
+mSCRIPT_DEFINE_DEFAULTS_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, loadStateSlot)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_MAKE_S32(SAVESTATE_ALL & ~SAVESTATE_SAVEDATA)
+mSCRIPT_DEFINE_DEFAULTS_END;
 
 static void _clearMemoryMap(struct mScriptContext* context, struct mScriptCoreAdapter* adapter, bool clear) {
 	struct TableIterator iter;
