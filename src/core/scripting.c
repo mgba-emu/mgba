@@ -232,12 +232,16 @@ mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given offset")
 mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, write32)
 mSCRIPT_DEFINE_END;
 
+// Info functions
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, U32, frameCounter, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frameCycles, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frequency, 0);
+
+// Run functions
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, runFrame, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, step, 0);
 
+// Memory functions
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead8, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead16, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead32, 1, U32, address);
@@ -245,8 +249,12 @@ mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite8, 2, U32, address, U8, valu
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite16, 2, U32, address, U16, value);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite32, 2, U32, address, U32, value);
 
+// Savestate functions
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, saveStateSlot, mCoreSaveState, 2, S32, slot, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateSlot, mCoreLoadState, 2, S32, slot, S32, flags);
+
+// Miscellaneous functions
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, screenshot, mCoreTakeScreenshot, 0);
 
 mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_DOCSTRING("Get the number of the current frame")
@@ -277,6 +285,9 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateSlot)
 	mSCRIPT_DEFINE_DOCSTRING("Load state from the slot number")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateSlot)
+
+	mSCRIPT_DEFINE_DOCSTRING("Save a screenshot")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, screenshot)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateSlot)
