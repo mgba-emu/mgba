@@ -284,7 +284,7 @@ CXX_GUARD_START
 		return false; \
 	}
 
-#define _mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, S, NRET, RETURN, NPARAMS, ...) \
+#define _mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, S, NRET, RETURN, NPARAMS, DEFAULTS, ...) \
 	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx); \
 	static const struct mScriptFunction _mSTStructBindingFunction_ ## TYPE ## _ ## NAME = { \
 		.call = &_mSTStructBinding_ ## TYPE ## _ ## NAME \
@@ -303,6 +303,7 @@ CXX_GUARD_START
 					.count = _mSUCC_ ## NPARAMS, \
 					.entries = { mSCRIPT_TYPE_MS_ ## S(TYPE), _mCALL(mSCRIPT_PREFIX_ ## NPARAMS, mSCRIPT_TYPE_MS_, _mEVEN_ ## NPARAMS(__VA_ARGS__)) }, \
 					.names = { "this", _mCALL(_mCALL_ ## NPARAMS, _mSTRINGIFY, _mODD_ ## NPARAMS(__VA_ARGS__)) }, \
+					.defaults = DEFAULTS, \
 				}, \
 				.returnType = { \
 					.count = NRET, \
@@ -315,49 +316,65 @@ CXX_GUARD_START
 #define _mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, RETURN, NAME, CONST, NPARAMS, ...) \
 	typedef RETURN (*_mSTStructFunctionType_ ## TYPE ## _ ## NAME)(_mCOMMA_ ## NPARAMS(CONST struct TYPE* , mSCRIPT_PREFIX_ ## NPARAMS(mSCRIPT_TYPE_C_, __VA_ARGS__)))
 
-#define mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, RETURN, NAME, FUNCTION, NPARAMS, ...) \
-	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, mSCRIPT_TYPE_C_ ## RETURN, NAME, , NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
-	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, S, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS, __VA_ARGS__) \
-	\
+#define _mSCRIPT_DECLARE_STRUCT_METHOD_BINDING(TYPE, RETURN, NAME, FUNCTION, T, NPARAMS, ...) \
 	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
-		_mSCRIPT_STRUCT_METHOD_POP(TYPE, S, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+		_mSCRIPT_STRUCT_METHOD_POP(TYPE, T, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
 		_mSCRIPT_CALL(RETURN, FUNCTION, _mSUCC_ ## NPARAMS); \
 		return true; \
+	}
+
+#define _mSCRIPT_DECLARE_STRUCT_VOID_METHOD_BINDING(TYPE, NAME, FUNCTION, T, NPARAMS, ...) \
+	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
+		UNUSED(ctx); \
+		_mSCRIPT_STRUCT_METHOD_POP(TYPE, T, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+		_mSCRIPT_CALL_VOID(FUNCTION, _mSUCC_ ## NPARAMS); \
+		return true; \
 	} \
+
+#define mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, RETURN, NAME, FUNCTION, NPARAMS, ...) \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, mSCRIPT_TYPE_C_ ## RETURN, NAME, , NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, S, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS, NULL, __VA_ARGS__) \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_BINDING(TYPE, RETURN, NAME, FUNCTION, S, NPARAMS, __VA_ARGS__)
 
 #define mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TYPE, NAME, FUNCTION, NPARAMS, ...) \
 	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, void, NAME, , NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
-	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, S, 0, , NPARAMS, __VA_ARGS__) \
-	\
-	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
-		UNUSED(ctx); \
-		_mSCRIPT_STRUCT_METHOD_POP(TYPE, S, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
-		_mSCRIPT_CALL_VOID(FUNCTION, _mSUCC_ ## NPARAMS); \
-		return true; \
-	} \
+	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, S, 0, , NPARAMS, NULL, __VA_ARGS__) \
+	_mSCRIPT_DECLARE_STRUCT_VOID_METHOD_BINDING(TYPE, NAME, FUNCTION, S, NPARAMS, __VA_ARGS__)
 
 #define mSCRIPT_DECLARE_STRUCT_C_METHOD(TYPE, RETURN, NAME, FUNCTION, NPARAMS, ...) \
 	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, mSCRIPT_TYPE_C_ ## RETURN, NAME, const, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
-	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, CS, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS, __VA_ARGS__) \
-	\
-	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
-		UNUSED(ctx); \
-		_mSCRIPT_STRUCT_METHOD_POP(TYPE, CS, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
-		_mSCRIPT_CALL(RETURN, FUNCTION, _mSUCC_ ## NPARAMS); \
-		return true; \
-	} \
+	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, CS, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS, NULL, __VA_ARGS__) \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_BINDING(TYPE, RETURN, NAME, FUNCTION, CS, NPARAMS, __VA_ARGS__)
 
 #define mSCRIPT_DECLARE_STRUCT_VOID_C_METHOD(TYPE, NAME, FUNCTION, NPARAMS, ...) \
 	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, void, NAME, const, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
-	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, CS, 0, , NPARAMS, __VA_ARGS__) \
-	\
-	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
-		UNUSED(ctx); \
-		_mSCRIPT_STRUCT_METHOD_POP(TYPE, CS, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
-		_mSCRIPT_CALL_VOID(FUNCTION, _mSUCC_ ## NPARAMS); \
-		return true; \
-	} \
+	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, CS, 0, , NPARAMS, NULL, __VA_ARGS__) \
+	_mSCRIPT_DECLARE_STRUCT_VOID_METHOD_BINDING(TYPE, NAME, FUNCTION, CS, NPARAMS, __VA_ARGS__)
+
+#define mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(TYPE, RETURN, NAME, FUNCTION, NPARAMS, ...) \
+	static const struct mScriptValue _mSTStructBindingDefaults_ ## TYPE ## NAME[mSCRIPT_PARAMS_MAX]; \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, mSCRIPT_TYPE_C_ ## RETURN, NAME, , NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, S, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS, _mSTStructBindingDefaults_ ## TYPE ## NAME, __VA_ARGS__) \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_BINDING(TYPE, RETURN, NAME, FUNCTION, S, NPARAMS, __VA_ARGS__)
+
+#define mSCRIPT_DECLARE_STRUCT_VOID_METHOD_WITH_DEFAULTS(TYPE, NAME, FUNCTION, NPARAMS, ...) \
+	static const struct mScriptValue _mSTStructBindingDefaults_ ## TYPE ## NAME[mSCRIPT_PARAMS_MAX]; \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, void, NAME, , NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, S, 0, , NPARAMS, _mSTStructBindingDefaults_ ## TYPE ## NAME, __VA_ARGS__) \
+	_mSCRIPT_DECLARE_STRUCT_VOID_METHOD_BINDING(TYPE, NAME, FUNCTION, S, NPARAMS, __VA_ARGS__)
+
+#define mSCRIPT_DECLARE_STRUCT_C_METHOD_WITH_DEFAULTS(TYPE, RETURN, NAME, FUNCTION, NPARAMS, ...) \
+	static const struct mScriptValue _mSTStructBindingDefaults_ ## TYPE ## NAME[mSCRIPT_PARAMS_MAX]; \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, mSCRIPT_TYPE_C_ ## RETURN, NAME, const, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, CS, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS, _mSTStructBindingDefaults_ ## TYPE ## NAME, __VA_ARGS__) \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_BINDING(TYPE, RETURN, NAME, FUNCTION, CS, NPARAMS, __VA_ARGS__)
+
+#define mSCRIPT_DECLARE_STRUCT_VOID_C_METHOD_WITH_DEFAULTS(TYPE, NAME, FUNCTION, NPARAMS, ...) \
+	static const struct mScriptValue _mSTStructBindingDefaults_ ## TYPE ## NAME[mSCRIPT_PARAMS_MAX]; \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, void, NAME, const, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, CS, 0, , NPARAMS, _mSTStructBindingDefaults_ ## TYPE ## NAME, __VA_ARGS__) \
+	_mSCRIPT_DECLARE_STRUCT_VOID_METHOD_BINDING(TYPE, NAME, FUNCTION, CS, NPARAMS, __VA_ARGS__)
 
 #define mSCRIPT_DECLARE_STRUCT_D_METHOD(TYPE, RETURN, NAME, NPARAMS, ...) \
 	mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, RETURN, NAME, p0->NAME, NPARAMS, __VA_ARGS__)
@@ -370,6 +387,24 @@ CXX_GUARD_START
 
 #define mSCRIPT_DECLARE_STRUCT_VOID_CD_METHOD(TYPE, NAME, NPARAMS, ...) \
 	mSCRIPT_DECLARE_STRUCT_VOID_C_METHOD(TYPE, NAME, p0->NAME, NPARAMS, __VA_ARGS__)
+
+#define mSCRIPT_DECLARE_STRUCT_D_METHOD_WITH_DEFAULTS(TYPE, RETURN, NAME, NPARAMS, ...) \
+	mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(TYPE, RETURN, NAME, p0->NAME, NPARAMS, __VA_ARGS__)
+
+#define mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD_WITH_DEFAULTS(TYPE, NAME, NPARAMS, ...) \
+	mSCRIPT_DECLARE_STRUCT_VOID_METHOD_WITH_DEFAULTS(TYPE, NAME, p0->NAME, NPARAMS, __VA_ARGS__)
+
+#define mSCRIPT_DECLARE_STRUCT_CD_METHOD_WITH_DEFAULTS(TYPE, RETURN, NAME, NPARAMS, ...) \
+	mSCRIPT_DECLARE_STRUCT_C_METHOD_WITH_DEFAULTS(TYPE, RETURN, NAME, p0->NAME, NPARAMS, __VA_ARGS__)
+
+#define mSCRIPT_DECLARE_STRUCT_VOID_CD_METHOD_WITH_DEFAULTS(TYPE, NAME, NPARAMS, ...) \
+	mSCRIPT_DECLARE_STRUCT_VOID_C_METHOD_WITH_DEFAU(TYPE, NAME, p0->NAME, NPARAMS, __VA_ARGS__)
+
+#define mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(TYPE, NAME) \
+	static const struct mScriptValue _mSTStructBindingDefaults_ ## TYPE ## NAME[mSCRIPT_PARAMS_MAX] = { \
+		mSCRIPT_NO_DEFAULT,
+
+#define mSCRIPT_DEFINE_DEFAULTS_END }
 
 #define _mSCRIPT_DEFINE_STRUCT_BINDING(INIT_TYPE, TYPE, EXPORTED_NAME, NAME) { \
 	.type = mSCRIPT_CLASS_INIT_ ## INIT_TYPE, \
@@ -482,6 +517,12 @@ CXX_GUARD_START
 #define mSCRIPT_MAKE_S(STRUCT, VALUE) mSCRIPT_MAKE(S(STRUCT), VALUE)
 #define mSCRIPT_MAKE_CS(STRUCT, VALUE) mSCRIPT_MAKE(CS(STRUCT), VALUE)
 
+#define mSCRIPT_NO_DEFAULT { \
+	.type = NULL, \
+	.refs = mSCRIPT_VALUE_UNREF, \
+	.value = {0} \
+}
+
 enum mScriptTypeBase {
 	mSCRIPT_TYPE_VOID = 0,
 	mSCRIPT_TYPE_SINT,
@@ -532,17 +573,35 @@ extern const struct mScriptType mSTTable;
 extern const struct mScriptType mSTWrapper;
 extern const struct mScriptType mSTWeakref;
 
+struct mScriptType;
+struct mScriptValue {
+	const struct mScriptType* type;
+	int refs;
+	uint32_t flags;
+	union {
+		int32_t s32;
+		uint32_t u32;
+		float f32;
+		int64_t s64;
+		uint64_t u64;
+		double f64;
+		void* opaque;
+		const void* copaque;
+	} value;
+};
+
 struct mScriptTypeTuple {
 	size_t count;
 	const struct mScriptType* entries[mSCRIPT_PARAMS_MAX];
 	const char* names[mSCRIPT_PARAMS_MAX];
+	const struct mScriptValue* defaults;
 	bool variable;
 };
 
 struct mScriptTypeFunction {
 	struct mScriptTypeTuple parameters;
 	struct mScriptTypeTuple returnType;
-	// TODO: kwargs, defaults
+	// TODO: kwargs
 };
 
 struct mScriptClassMember {
@@ -579,7 +638,6 @@ struct mScriptTypeClass {
 	struct mScriptClassMember* set; // TODO
 };
 
-struct mScriptValue;
 struct mScriptType {
 	enum mScriptTypeBase base : 8;
 	bool isConst;
@@ -598,22 +656,6 @@ struct mScriptType {
 	uint32_t (*hash)(const struct mScriptValue*);
 	bool (*equal)(const struct mScriptValue*, const struct mScriptValue*);
 	bool (*cast)(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
-};
-
-struct mScriptValue {
-	const struct mScriptType* type;
-	int refs;
-	uint32_t flags;
-	union {
-		int32_t s32;
-		uint32_t u32;
-		float f32;
-		int64_t s64;
-		uint64_t u64;
-		double f64;
-		void* opaque;
-		const void* copaque;
-	} value;
 };
 
 DECLARE_VECTOR(mScriptList, struct mScriptValue)

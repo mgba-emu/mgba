@@ -1297,11 +1297,14 @@ bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* inpu
 }
 
 bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList* frame) {
-	if (types->count != mScriptListSize(frame) && (!types->variable || mScriptListSize(frame) < types->count)) {
+	if (types->count < mScriptListSize(frame) && !types->variable) {
+		return false;
+	}
+	if (types->count > mScriptListSize(frame) && !types->variable && !types->defaults) {
 		return false;
 	}
 	size_t i;
-	for (i = 0; i < types->count; ++i) {
+	for (i = 0; i < mScriptListSize(frame) && i < types->count; ++i) {
 		if (types->entries[i] == mScriptListGetPointer(frame, i)->type) {
 			continue;
 		}
@@ -1315,6 +1318,16 @@ bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList
 		if (!mScriptCast(types->entries[i], mScriptListGetPointer(frame, i), mScriptListGetPointer(frame, i))) {
 			return false;
 		}
+	}
+	if (types->variable) {
+		return true;
+	}
+
+	for (; i < types->count; ++i) {
+		if (!types->defaults[i].type) {
+			return false;
+		}
+		memcpy(mScriptListAppend(frame), &types->defaults[i], sizeof(struct mScriptValue));
 	}
 	return true;
 }

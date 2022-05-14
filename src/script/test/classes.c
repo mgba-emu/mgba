@@ -66,6 +66,10 @@ static void testAv1(struct TestA* a, int b) {
 	a->i += b;
 }
 
+static void testAv2(struct TestA* a, int b, int c) {
+	a->i += b + c;
+}
+
 static int32_t testGet(struct TestE* e, const char* name) {
 	UNUSED(e);
 	return name[0];
@@ -90,6 +94,7 @@ mSCRIPT_DECLARE_STRUCT_C_METHOD(TestA, S32, ic0, testAic0, 0);
 mSCRIPT_DECLARE_STRUCT_C_METHOD(TestA, S32, ic1, testAic1, 1, S32, b);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestA, v0, testAv0, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestA, v1, testAv1, 1, S32, b);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD_WITH_DEFAULTS(TestA, v2, testAv2, 2, S32, b, S32, c);
 
 mSCRIPT_DEFINE_STRUCT(TestA)
 	mSCRIPT_DEFINE_DOCSTRING(MEMBER_A_DOCSTRING)
@@ -109,7 +114,13 @@ mSCRIPT_DEFINE_STRUCT(TestA)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, ic1)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, v0)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, v1)
+	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, v2)
 mSCRIPT_DEFINE_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(TestA, v2)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_MAKE_S32(0)
+mSCRIPT_DEFINE_DEFAULTS_END;
 
 mSCRIPT_DEFINE_STRUCT(TestB)
 	mSCRIPT_DEFINE_INHERIT(TestA)
@@ -439,6 +450,19 @@ M_TEST_DEFINE(testAStatic) {
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, S(TestA), &s);
 	mSCRIPT_PUSH(&frame.arguments, S32, 2);
+	assert_true(mScriptInvoke(&val, &frame));
+	mScriptFrameDeinit(&frame);
+	assert_true(mScriptObjectGet(&sval, "v2", &val));
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S(TestA), &s);
+	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	mSCRIPT_PUSH(&frame.arguments, S32, -2);
+	assert_true(mScriptInvoke(&val, &frame));
+	mScriptFrameDeinit(&frame);
+	assert_true(mScriptObjectGet(&sval, "v2", &val));
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S(TestA), &s);
+	mSCRIPT_PUSH(&frame.arguments, S32, 1);
 	assert_true(mScriptInvoke(&val, &frame));
 	mScriptFrameDeinit(&frame);
 	assert_true(mScriptObjectGet(&sval, "i0", &val));
