@@ -5,6 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/script/context.h>
 
+#include <mgba/core/core.h>
+#include <mgba/core/serialize.h>
+
 struct mScriptCallbackAdapter {
 	struct mScriptContext* context;
 };
@@ -34,4 +37,21 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 	};
 	lib->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 	mScriptContextSetGlobal(context, "callbacks", lib);
+
+	mScriptContextExportConstants(context, "SAVESTATE", (struct mScriptKVPair[]) {
+		mSCRIPT_CONSTANT_PAIR(SAVESTATE, SCREENSHOT),
+		mSCRIPT_CONSTANT_PAIR(SAVESTATE, SAVEDATA),
+		mSCRIPT_CONSTANT_PAIR(SAVESTATE, CHEATS),
+		mSCRIPT_CONSTANT_PAIR(SAVESTATE, RTC),
+		mSCRIPT_CONSTANT_PAIR(SAVESTATE, METADATA),
+		mSCRIPT_CONSTANT_PAIR(SAVESTATE, ALL),
+		mSCRIPT_CONSTANT_SENTINEL
+	});
+	mScriptContextExportConstants(context, "PLATFORM", (struct mScriptKVPair[]) {
+		mSCRIPT_CONSTANT_PAIR(mPLATFORM, NONE),
+		mSCRIPT_CONSTANT_PAIR(mPLATFORM, GBA),
+		mSCRIPT_CONSTANT_PAIR(mPLATFORM, GB),
+		mSCRIPT_CONSTANT_SENTINEL
+	});
+	mScriptContextSetGlobal(context, "C", context->constants);
 }

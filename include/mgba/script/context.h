@@ -14,6 +14,9 @@ CXX_GUARD_START
 #include <mgba-util/table.h>
 #include <mgba-util/vfs.h>
 
+#define mSCRIPT_CONSTANT_PAIR(NS, CONST) { #CONST, mScriptValueCreateFromSInt(NS ## _ ## CONST) }
+#define mSCRIPT_CONSTANT_SENTINEL { NULL, NULL }
+
 struct mScriptFrame;
 struct mScriptFunction;
 struct mScriptEngineContext;
@@ -25,6 +28,7 @@ struct mScriptContext {
 	struct Table weakrefs;
 	uint32_t nextWeakref;
 	struct Table callbacks;
+	struct mScriptValue* constants;
 };
 
 struct mScriptEngine2 {
@@ -50,6 +54,11 @@ struct mScriptEngineContext {
 	const char* (*getError)(struct mScriptEngineContext*);
 };
 
+struct mScriptKVPair {
+	const char* key;
+	struct mScriptValue* value;
+};
+
 void mScriptContextInit(struct mScriptContext*);
 void mScriptContextDeinit(struct mScriptContext*);
 
@@ -70,6 +79,7 @@ struct mScriptValue* mScriptContextAccessWeakref(struct mScriptContext*, struct 
 void mScriptContextClearWeakref(struct mScriptContext*, uint32_t weakref);
 
 void mScriptContextAttachStdlib(struct mScriptContext* context);
+void mScriptContextExportConstants(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* constants);
 
 void mScriptContextTriggerCallback(struct mScriptContext*, const char* callback);
 void mScriptContextAddCallback(struct mScriptContext*, const char* callback, struct mScriptValue* value);

@@ -8,11 +8,6 @@
 #include <mgba/internal/script/lua.h>
 #endif
 
-struct mScriptKVPair {
-	const char* key;
-	struct mScriptValue* value;
-};
-
 struct mScriptFileInfo {
 	const char* name;
 	struct VFile* vf;
@@ -61,6 +56,7 @@ void mScriptContextInit(struct mScriptContext* context) {
 	TableInit(&context->weakrefs, 0, (void (*)(void*)) mScriptValueDeref);
 	context->nextWeakref = 1;
 	HashTableInit(&context->callbacks, 0, (void (*)(void*)) mScriptValueDeref);
+	context->constants = NULL;
 }
 
 void mScriptContextDeinit(struct mScriptContext* context) {
@@ -221,6 +217,24 @@ void mScriptContextAddCallback(struct mScriptContext* context, const char* callb
 		HashTableInsert(&context->callbacks, callback, list);
 	}
 	mScriptValueWrap(fn, mScriptListAppend(list->value.opaque));
+}
+
+void mScriptContextExportConstants(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* constants) {
+	if (!context->constants) {
+		context->constants = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+	}
+	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+	size_t i;
+	for (i = 0; constants[i].key; ++i) {
+		struct mScriptValue* key = mScriptStringCreateFromUTF8(constants[i].key);
+		mScriptTableInsert(table, key, constants[i].value);
+		mScriptValueDeref(key);
+		mScriptValueDeref(constants[i].value);
+	}
+	struct mScriptValue* key = mScriptStringCreateFromUTF8(nspace);
+	mScriptTableInsert(context->constants, key, table);
+	mScriptValueDeref(key);
+	mScriptValueDeref(table);
 }
 
 bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, struct VFile* vf) {
