@@ -156,6 +156,7 @@ struct mScriptMemoryAdapter {
 
 struct mScriptCoreAdapter {
 	struct mCore* core;
+	struct mScriptContext* context;
 	struct mScriptValue memory;
 };
 
@@ -269,7 +270,46 @@ mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given bus address")
 mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write32, busWrite32)
 mSCRIPT_DEFINE_END;
 
+static void _clearMemoryMap(struct mScriptContext* context, struct mScriptCoreAdapter* adapter, bool clear) {
+	struct TableIterator iter;
+	if (mScriptTableIteratorStart(&adapter->memory, &iter)) {
+		while (true) {
+			struct mScriptValue* weakref = mScriptTableIteratorGetValue(&adapter->memory, &iter);
+			if (weakref) {
+				if (clear) {
+					mScriptContextClearWeakref(context, weakref->value.s32);
+				}
+				mScriptValueDeref(weakref);
+			}
+			if (!mScriptTableIteratorNext(&adapter->memory, &iter)) {
+				break;
+			}
+		}
+	}
+	mScriptTableClear(&adapter->memory);
+}
+
+static void _rebuildMemoryMap(struct mScriptContext* context, struct mScriptCoreAdapter* adapter) {
+	_clearMemoryMap(context, adapter, true);
+
+	const struct mCoreMemoryBlock* blocks;
+	size_t nBlocks = adapter->core->listMemoryBlocks(adapter->core, &blocks);
+	size_t i;
+	for (i = 0; i < nBlocks; ++i) {
+		struct mScriptMemoryAdapter* memadapter = calloc(1, sizeof(*memadapter));
+		memadapter->core = adapter->core;
+		memcpy(&memadapter->block, &blocks[i], sizeof(memadapter->block));
+		struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mScriptMemoryAdapter));
+		value->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+		value->value.opaque = memadapter;
+		struct mScriptValue* key = mScriptStringCreateFromUTF8(blocks[i].internalName);
+		mScriptTableInsert(&adapter->memory, key, mScriptContextMakeWeakref(context, value));
+		mScriptValueDeref(key);
+	}
+}
+
 static void _mScriptCoreAdapterDeinit(struct mScriptCoreAdapter* adapter) {
+	_clearMemoryMap(adapter->context, adapter, false);
 	adapter->memory.type->free(&adapter->memory);
 }
 
@@ -299,36 +339,18 @@ mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, S(mCore), _core)
 mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, CS(mCore), _core)
 mSCRIPT_DEFINE_END;
 
-static void _rebuildMemoryMap(struct mScriptCoreAdapter* adapter) {
-	mScriptTableClear(&adapter->memory);
-
-	const struct mCoreMemoryBlock* blocks;
-	size_t nBlocks = adapter->core->listMemoryBlocks(adapter->core, &blocks);
-	size_t i;
-	for (i = 0; i < nBlocks; ++i) {
-		struct mScriptMemoryAdapter* memadapter = calloc(1, sizeof(*memadapter));
-		memadapter->core = adapter->core;
-		memcpy(&memadapter->block, &blocks[i], sizeof(memadapter->block));
-		struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mScriptMemoryAdapter));
-		value->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
-		value->value.opaque = memadapter;
-		struct mScriptValue* key = mScriptStringCreateFromUTF8(blocks[i].internalName);
-		mScriptTableInsert(&adapter->memory, key, value);
-		mScriptValueDeref(key);
-	}
-}
-
 void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core) {
 	struct mScriptValue* coreValue = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mScriptCoreAdapter));
 	struct mScriptCoreAdapter* adapter = calloc(1, sizeof(*adapter));
 	adapter->core = core;
+	adapter->context = context;
 
 	adapter->memory.refs = mSCRIPT_VALUE_UNREF;
 	adapter->memory.flags = 0;
 	adapter->memory.type = mSCRIPT_TYPE_MS_TABLE;
 	adapter->memory.type->alloc(&adapter->memory);
 
-	_rebuildMemoryMap(adapter);
+	_rebuildMemoryMap(context, adapter);
 
 	coreValue->value.opaque = adapter;
 	coreValue->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
@@ -336,6 +358,15 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 }
 
 void mScriptContextDetachCore(struct mScriptContext* context) {
+	struct mScriptValue* value = HashTableLookup(&context->rootScope, "emu");
+	if (!value) {
+		return;
+	}
+	value = mScriptContextAccessWeakref(context, value);
+	if (!value) {
+		return;
+	}
+	_clearMemoryMap(context, value->value.opaque, true);
 	mScriptContextRemoveGlobal(context, "emu");
 }
 
