@@ -650,6 +650,11 @@ bool mScriptTableInsert(struct mScriptValue* table, struct mScriptValue* key, st
 bool mScriptTableRemove(struct mScriptValue* table, struct mScriptValue* key);
 struct mScriptValue* mScriptTableLookup(struct mScriptValue* table, struct mScriptValue* key);
 bool mScriptTableClear(struct mScriptValue* table);
+bool mScriptTableIteratorStart(struct mScriptValue* table, struct TableIterator*);
+bool mScriptTableIteratorNext(struct mScriptValue* table, struct TableIterator*);
+struct mScriptValue* mScriptTableIteratorGetKey(struct mScriptValue* table, struct TableIterator*);
+struct mScriptValue* mScriptTableIteratorGetValue(struct mScriptValue* table, struct TableIterator*);
+bool mScriptTableIteratorLookup(struct mScriptValue* table, struct TableIterator*, struct mScriptValue* key);
 
 void mScriptFrameInit(struct mScriptFrame* frame);
 void mScriptFrameDeinit(struct mScriptFrame* frame);

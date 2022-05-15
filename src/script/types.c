@@ -787,6 +787,61 @@ bool mScriptTableClear(struct mScriptValue* table) {
 	return true;
 }
 
+bool mScriptTableIteratorStart(struct mScriptValue* table, struct TableIterator* iter) {
+	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
+		table = mScriptValueUnwrap(table);
+	}
+	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
+		return false;
+	}
+	struct Table* t = table->value.opaque;
+	return HashTableIteratorStart(t, iter);
+}
+
+bool mScriptTableIteratorNext(struct mScriptValue* table, struct TableIterator* iter) {
+	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
+		table = mScriptValueUnwrap(table);
+	}
+	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
+		return false;
+	}
+	struct Table* t = table->value.opaque;
+	return HashTableIteratorNext(t, iter);
+}
+
+struct mScriptValue* mScriptTableIteratorGetKey(struct mScriptValue* table, struct TableIterator* iter) {
+	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
+		table = mScriptValueUnwrap(table);
+	}
+	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
+		return NULL;
+	}
+	struct Table* t = table->value.opaque;
+	return HashTableIteratorGetCustomKey(t, iter);
+}
+
+struct mScriptValue* mScriptTableIteratorGetValue(struct mScriptValue* table, struct TableIterator* iter) {
+	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
+		table = mScriptValueUnwrap(table);
+	}
+	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
+		return NULL;
+	}
+	struct Table* t = table->value.opaque;
+	return HashTableIteratorGetValue(t, iter);
+}
+
+bool mScriptTableIteratorLookup(struct mScriptValue* table, struct TableIterator* iter, struct mScriptValue* key) {
+	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
+		table = mScriptValueUnwrap(table);
+	}
+	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
+		return false;
+	}
+	struct Table* t = table->value.opaque;
+	return HashTableIteratorLookupCustom(t, iter, key);
+}
+
 void mScriptFrameInit(struct mScriptFrame* frame) {
 	mScriptListInit(&frame->arguments, 4);
 	mScriptListInit(&frame->returnValues, 1);
