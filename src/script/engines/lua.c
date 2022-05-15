@@ -39,6 +39,7 @@ static int _luaGetObject(lua_State* lua);
 static int _luaSetObject(lua_State* lua);
 static int _luaGcObject(lua_State* lua);
 static int _luaGetTable(lua_State* lua);
+static int _luaPairsTable(lua_State* lua);
 
 #if LUA_VERSION_NUM < 503
 #define lua_pushinteger lua_pushnumber
@@ -99,6 +100,7 @@ static const luaL_Reg _mSTStruct[] = {
 
 static const luaL_Reg _mSTTable[] = {
 	{ "__index", _luaGetTable },
+	{ "__pairs", _luaPairsTable },
 	{ NULL, NULL }
 };
 
@@ -633,4 +635,57 @@ int _luaGetTable(lua_State* lua) {
 		lua_error(lua);
 	}
 	return 1;
+}
+
+static int _luaNextTable(lua_State* lua) {
+	struct mScriptEngineContextLua* luaContext = _luaGetContext(lua);
+	char key[MAX_KEY_SIZE];
+	const char* keyPtr = lua_tostring(lua, -1);
+	struct mScriptValue* table = lua_touserdata(lua, -2);
+	struct mScriptValue keyVal;
+
+	if (keyPtr) {
+		strlcpy(key, keyPtr, sizeof(key));
+		keyVal = mSCRIPT_MAKE_CHARP(key);
+	}
+	lua_pop(lua, 2);
+
+	table = mScriptContextAccessWeakref(luaContext->d.context, table);
+	if (!table) {
+		lua_pushliteral(lua, "Invalid object");
+		lua_error(lua);
+	}
+
+	struct TableIterator iter;
+	if (keyPtr) {
+		if (!mScriptTableIteratorLookup(table, &iter, &keyVal)) {
+			return 0;
+		}
+		if (!mScriptTableIteratorNext(table, &iter)) {
+			return 0;
+		}
+	} else {
+		if (!mScriptTableIteratorStart(table, &iter)) {
+			return 0;
+		}
+	}
+
+	if (!_luaWrap(luaContext, mScriptTableIteratorGetKey(table, &iter))) {
+		lua_pushliteral(lua, "Iteration error");
+		lua_error(lua);
+	}
+
+	if (!_luaWrap(luaContext, mScriptTableIteratorGetValue(table, &iter))) {
+		lua_pushliteral(lua, "Iteration error");
+		lua_error(lua);
+	}
+
+	return 2;
+}
+
+int _luaPairsTable(lua_State* lua) {
+	lua_pushcfunction(lua, _luaNextTable);
+	lua_insert(lua, -2);
+	lua_pushnil(lua);
+	return 3;
 }
