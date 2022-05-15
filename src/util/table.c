@@ -217,6 +217,52 @@ size_t TableSize(const struct Table* table) {
 	return table->size;
 }
 
+bool TableIteratorStart(const struct Table* table, struct TableIterator* iter) {
+	iter->entry = 0;
+	for (iter->bucket = 0; iter->bucket < table->tableSize; ++iter->bucket) {
+		if (table->table[iter->bucket].nEntries) {
+			break;
+		}
+	}
+	return iter->bucket < table->tableSize;
+}
+
+bool TableIteratorNext(const struct Table* table, struct TableIterator* iter) {
+	if (iter->entry + 1 < table->table[iter->bucket].nEntries) {
+		++iter->entry;
+		return true;
+	}
+	if (iter->bucket + 1 < table->tableSize) {
+		iter->entry = 0;
+		for (++iter->bucket; iter->bucket < table->tableSize; ++iter->bucket) {
+			if (table->table[iter->bucket].nEntries) {
+				break;
+			}
+		}
+		return iter->bucket < table->tableSize;
+	}
+	return false;
+}
+
+uint32_t TableIteratorGetKey(const struct Table* table, const struct TableIterator* iter) {
+	return table->table[iter->bucket].list[iter->entry].key;
+}
+
+void* TableIteratorGetValue(const struct Table* table, const struct TableIterator* iter) {
+	return table->table[iter->bucket].list[iter->entry].value;
+}
+
+bool TableIteratorLookup(const struct Table* table, struct TableIterator* iter, uint32_t key) {
+	uint32_t bucket = key & (table->tableSize - 1);
+	const struct TableList* list = &table->table[bucket];
+	TABLE_LOOKUP_START(TABLE_COMPARATOR, list) {
+		iter->bucket = bucket;
+		iter->entry = i;
+		return true;
+	} TABLE_LOOKUP_END;
+	return false;
+}
+
 void HashTableInit(struct Table* table, size_t initialSize, void (*deinitializer)(void*)) {
 	TableInit(table, initialSize, deinitializer);
 	table->seed = 1;
@@ -530,4 +576,78 @@ const char* HashTableSearchString(const struct Table* table, const char* value) 
 
 size_t HashTableSize(const struct Table* table) {
 	return table->size;
+}
+
+bool HashTableIteratorStart(const struct Table* table, struct TableIterator* iter) {
+	return TableIteratorStart(table, iter);
+}
+
+bool HashTableIteratorNext(const struct Table* table, struct TableIterator* iter) {
+	return TableIteratorNext(table, iter);
+}
+
+const char* HashTableIteratorGetKey(const struct Table* table, const struct TableIterator* iter) {
+	return table->table[iter->bucket].list[iter->entry].stringKey;
+}
+
+const void* HashTableIteratorGetBinaryKey(const struct Table* table, const struct TableIterator* iter) {
+	return table->table[iter->bucket].list[iter->entry].stringKey;
+}
+
+size_t HashTableIteratorGetBinaryKeyLen(const struct Table* table, const struct TableIterator* iter) {
+	return table->table[iter->bucket].list[iter->entry].keylen;
+}
+
+void* HashTableIteratorGetCustomKey(const struct Table* table, const struct TableIterator* iter) {
+	return (char*) table->table[iter->bucket].list[iter->entry].stringKey;
+}
+
+void* HashTableIteratorGetValue(const struct Table* table, const struct TableIterator* iter) {
+	return TableIteratorGetValue(table, iter);
+}
+
+bool HashTableIteratorLookup(const struct Table* table, struct TableIterator* iter, const char* key) {
+	uint32_t hash;
+	if (table->fn.hash) {
+		hash = table->fn.hash(key, strlen(key), table->seed);
+	} else {
+		hash = hash32(key, strlen(key), table->seed);
+	}
+	uint32_t bucket = hash & (table->tableSize - 1);
+	const struct TableList* list = &table->table[bucket];
+	TABLE_LOOKUP_START(HASH_TABLE_STRNCMP_COMPARATOR, list) {
+		iter->bucket = bucket;
+		iter->entry = i;
+		return true;
+	} TABLE_LOOKUP_END;
+	return false;
+}
+
+bool HashTableIteratorLookupBinary(const struct Table* table, struct TableIterator* iter, const void* key, size_t keylen) {
+	uint32_t hash;
+	if (table->fn.hash) {
+		hash = table->fn.hash(key, keylen, table->seed);
+	} else {
+		hash = hash32(key, keylen, table->seed);
+	}
+	uint32_t bucket = hash & (table->tableSize - 1);
+	const struct TableList* list = &table->table[bucket];
+	TABLE_LOOKUP_START(HASH_TABLE_MEMCMP_COMPARATOR, list) {
+		iter->bucket = bucket;
+		iter->entry = i;
+		return true;
+	} TABLE_LOOKUP_END;
+	return false;
+}
+
+bool HashTableIteratorLookupCustom(const struct Table* table, struct TableIterator* iter, void* key) {
+	uint32_t hash = table->fn.hash(key, 0, table->seed);
+	uint32_t bucket = hash & (table->tableSize - 1);
+	const struct TableList* list = &table->table[bucket];
+	TABLE_LOOKUP_START(HASH_TABLE_CUSTOM_COMPARATOR, list) {
+		iter->bucket = bucket;
+		iter->entry = i;
+		return true;
+	} TABLE_LOOKUP_END;
+	return false;
 }

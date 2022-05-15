@@ -29,6 +29,11 @@ struct Table {
 	struct TableFunctions fn;
 };
 
+struct TableIterator {
+	size_t bucket;
+	size_t entry;
+};
+
 void TableInit(struct Table*, size_t initialSize, void (*deinitializer)(void*));
 void TableDeinit(struct Table*);
 
@@ -40,6 +45,12 @@ void TableClear(struct Table*);
 
 void TableEnumerate(const struct Table*, void (*handler)(uint32_t key, void* value, void* user), void* user);
 size_t TableSize(const struct Table*);
+
+bool TableIteratorStart(const struct Table*, struct TableIterator*);
+bool TableIteratorNext(const struct Table*, struct TableIterator*);
+uint32_t TableIteratorGetKey(const struct Table*, const struct TableIterator*);
+void* TableIteratorGetValue(const struct Table*, const struct TableIterator*);
+bool TableIteratorLookup(const struct Table*, struct TableIterator*, uint32_t key);
 
 void HashTableInit(struct Table* table, size_t initialSize, void (*deinitializer)(void*));
 void HashTableInitCustom(struct Table* table, size_t initialSize, const struct TableFunctions* funcs);
@@ -65,6 +76,17 @@ const char* HashTableSearchPointer(const struct Table* table, const void* value)
 const char* HashTableSearchData(const struct Table* table, const void* value, size_t bytes);
 const char* HashTableSearchString(const struct Table* table, const char* value);
 size_t HashTableSize(const struct Table*);
+
+bool HashTableIteratorStart(const struct Table*, struct TableIterator*);
+bool HashTableIteratorNext(const struct Table*, struct TableIterator*);
+const char* HashTableIteratorGetKey(const struct Table*, const struct TableIterator*);
+const void* HashTableIteratorGetBinaryKey(const struct Table*, const struct TableIterator*);
+size_t HashTableIteratorGetBinaryKeyLen(const struct Table*, const struct TableIterator*);
+void* HashTableIteratorGetCustomKey(const struct Table*, const struct TableIterator*);
+void* HashTableIteratorGetValue(const struct Table*, const struct TableIterator*);
+bool HashTableIteratorLookup(const struct Table*, struct TableIterator*, const char* key);
+bool HashTableIteratorLookupBinary(const struct Table*, struct TableIterator*, const void* key, size_t keylen);
+bool HashTableIteratorLookupCustom(const struct Table*, struct TableIterator*, void* key);
 
 CXX_GUARD_END
 
