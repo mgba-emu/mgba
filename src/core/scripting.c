@@ -256,6 +256,12 @@ mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WRAPPER, getGameCode, _mScriptCoreGetGame
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, runFrame, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, step, 0);
 
+// Key functions
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, setKeys, 1, U32, keys);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, addKeys, 1, U32, keys);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, clearKeys, 1, U32, keys);
+mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, getKeys, 0);
+
 // Memory functions
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead8, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead16, 1, U32, address);
@@ -290,6 +296,15 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, runFrame)
 	mSCRIPT_DEFINE_DOCSTRING("Run a single instruction")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, step)
+
+	mSCRIPT_DEFINE_DOCSTRING("Set the currently active keys")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, setKeys)
+	mSCRIPT_DEFINE_DOCSTRING("Add keys to the currently active key list")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, addKeys)
+	mSCRIPT_DEFINE_DOCSTRING("Remove keys from the currently active key list")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, clearKeys)
+	mSCRIPT_DEFINE_DOCSTRING("Get the currently active keys")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, getKeys)
 
 	mSCRIPT_DEFINE_DOCSTRING("Read an 8-bit value from the given bus address")
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read8, busRead8)
