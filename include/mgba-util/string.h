@@ -34,6 +34,7 @@ char* utf16to8(const uint16_t* utf16, size_t length);
 uint32_t utf8Char(const char** unicode, size_t* length);
 uint32_t utf16Char(const uint16_t** unicode, size_t* length);
 char* gbkToUtf8(const char* gbk, size_t length);
+size_t utf8strlen(const char* string);
 
 int hexDigit(char digit);
 const char* hex32(const char* line, uint32_t* out);

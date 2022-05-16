@@ -29,6 +29,7 @@ set(GUI_FILES
 
 set(TEST_FILES
 	test/string-parser.c
+	test/string-utf8.c
 	test/text-codec.c
 	test/vfs.c)
 
