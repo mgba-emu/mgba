@@ -33,6 +33,7 @@ int utfcmp(const uint16_t* utf16, const char* utf8, size_t utf16Length, size_t u
 char* utf16to8(const uint16_t* utf16, size_t length);
 uint32_t utf8Char(const char** unicode, size_t* length);
 uint32_t utf16Char(const uint16_t** unicode, size_t* length);
+char* latin1ToUtf8(const char* latin1, size_t length);
 char* gbkToUtf8(const char* gbk, size_t length);
 size_t utf8strlen(const char* string);
 
