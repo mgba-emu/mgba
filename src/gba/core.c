@@ -723,6 +723,11 @@ static void _GBACoreClearKeys(struct mCore* core, uint32_t keys) {
 	GBATestKeypadIRQ(gba);
 }
 
+static uint32_t _GBACoreGetKeys(struct mCore* core) {
+	struct GBA* gba = core->board;
+	return gba->keysActive;
+}
+
 static uint32_t _GBACoreFrameCounter(const struct mCore* core) {
 	const struct GBA* gba = core->board;
 	return gba->video.frameCounter;
@@ -1209,6 +1214,7 @@ struct mCore* GBACoreCreate(void) {
 	core->setKeys = _GBACoreSetKeys;
 	core->addKeys = _GBACoreAddKeys;
 	core->clearKeys = _GBACoreClearKeys;
+	core->getKeys = _GBACoreGetKeys;
 	core->frameCounter = _GBACoreFrameCounter;
 	core->frameCycles = _GBACoreFrameCycles;
 	core->frequency = _GBACoreFrequency;

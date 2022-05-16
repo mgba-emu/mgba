@@ -105,6 +105,7 @@ struct mCore {
 	void (*setKeys)(struct mCore*, uint32_t keys);
 	void (*addKeys)(struct mCore*, uint32_t keys);
 	void (*clearKeys)(struct mCore*, uint32_t keys);
+	uint32_t (*getKeys)(struct mCore*);
 
 	uint32_t (*frameCounter)(const struct mCore*);
 	int32_t (*frameCycles)(const struct mCore*);

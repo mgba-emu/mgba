@@ -688,6 +688,11 @@ static void _GBCoreClearKeys(struct mCore* core, uint32_t keys) {
 	gbcore->keys &= ~keys;
 }
 
+static uint32_t _GBCoreGetKeys(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	return gbcore->keys;
+}
+
 static uint32_t _GBCoreFrameCounter(const struct mCore* core) {
 	const struct GB* gb = core->board;
 	return gb->video.frameCounter;
@@ -1091,6 +1096,7 @@ struct mCore* GBCoreCreate(void) {
 	core->setKeys = _GBCoreSetKeys;
 	core->addKeys = _GBCoreAddKeys;
 	core->clearKeys = _GBCoreClearKeys;
+	core->getKeys = _GBCoreGetKeys;
 	core->frameCounter = _GBCoreFrameCounter;
 	core->frameCycles = _GBCoreFrameCycles;
 	core->frequency = _GBCoreFrequency;
