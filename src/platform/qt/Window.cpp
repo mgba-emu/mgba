@@ -1027,7 +1027,7 @@ void Window::reloadDisplayDriver() {
 		m_display->stopDrawing();
 		detachWidget(m_display.get());
 	}
-	m_display = std::unique_ptr<Display>(Display::create(this));
+	m_display = std::unique_ptr<QGBA::Display>(Display::create(this));
 	if (!m_display) {
 		LOG(QT, ERROR) << tr("Failed to create an appropriate display device, falling back to software display. "
 		                     "Games may run slowly, especially with larger windows.");
@@ -1039,12 +1039,12 @@ void Window::reloadDisplayDriver() {
 	m_shaderView = std::make_unique<ShaderSelector>(m_display.get(), m_config);
 #endif
 
-	connect(m_display.get(), &Display::hideCursor, [this]() {
+	connect(m_display.get(), &QGBA::Display::hideCursor, [this]() {
 		if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() == m_display.get()) {
 			m_screenWidget->setCursor(Qt::BlankCursor);
 		}
 	});
-	connect(m_display.get(), &Display::showCursor, [this]() {
+	connect(m_display.get(), &QGBA::Display::showCursor, [this]() {
 		m_screenWidget->unsetCursor();
 	});
 
@@ -2119,7 +2119,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 
 void Window::attachDisplay() {
 	m_display->attach(m_controller);
-	connect(m_display.get(), &Display::drawingStarted, this, &Window::changeRenderer);
+	connect(m_display.get(), &QGBA::Display::drawingStarted, this, &Window::changeRenderer);
 	m_display->startDrawing(m_controller);
 }
 
