@@ -241,14 +241,26 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext) {
 }
 
 bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* value) {
+	if (!value) {
+		lua_pushnil(luaContext->lua);
+		return true;
+	}
 	uint32_t weakref;
 	bool needsWeakref = false;
 	if (value->type == mSCRIPT_TYPE_MS_WRAPPER) {
 		value = mScriptValueUnwrap(value);
+		if (!value) {
+			lua_pushnil(luaContext->lua);
+			return true;
+		}
 	}
 	if (value->type == mSCRIPT_TYPE_MS_WEAKREF) {
 		weakref = value->value.u32;
 		value = mScriptContextAccessWeakref(luaContext->d.context, value);
+		if (!value) {
+			lua_pushnil(luaContext->lua);
+			return true;
+		}
 		needsWeakref = true;
 	}
 	bool ok = true;
