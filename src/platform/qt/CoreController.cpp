@@ -859,6 +859,7 @@ void CoreController::addKey(int key) {
 
 void CoreController::clearKey(int key) {
 	m_activeKeys &= ~(1 << key);
+	m_removedKeys |= 1 << key;
 }
 
 void CoreController::setAutofire(int key, bool enable) {
@@ -1145,7 +1146,10 @@ void CoreController::setFramebufferHandle(int fb) {
 }
 
 void CoreController::updateKeys() {
-	int activeKeys = m_activeKeys | updateAutofire() | m_inputController->pollEvents();
+	int polledKeys = m_inputController->pollEvents() | updateAutofire();
+	int activeKeys = m_activeKeys | polledKeys;
+	activeKeys |= m_threadContext.core->getKeys(m_threadContext.core) & ~m_removedKeys;
+	m_removedKeys = polledKeys;
 	m_threadContext.core->setKeys(m_threadContext.core, activeKeys);
 }
 
