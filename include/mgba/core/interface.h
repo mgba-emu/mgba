@@ -286,6 +286,21 @@ struct mCoreMemoryBlock {
 	uint32_t segmentStart;
 };
 
+enum mCoreRegisterType {
+	mCORE_REGISTER_GPR = 0,
+	mCORE_REGISTER_FPR,
+	mCORE_REGISTER_FLAGS,
+	mCORE_REGISTER_SIMD,
+};
+
+struct mCoreRegisterInfo {
+	const char* name;
+	const char** aliases;
+	unsigned width;
+	uint32_t mask;
+	enum mCoreRegisterType type;
+};
+
 CXX_GUARD_END
 
 #endif
