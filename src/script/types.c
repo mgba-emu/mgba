@@ -7,6 +7,7 @@
 
 #include <mgba/script/context.h>
 #include <mgba-util/hash.h>
+#include <mgba-util/string.h>
 #include <mgba-util/table.h>
 
 static void _allocList(struct mScriptValue*);
@@ -738,9 +739,20 @@ struct mScriptValue* mScriptStringCreateFromUTF8(const char* string) {
 	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_STR);
 	struct mScriptString* internal = val->value.opaque;
 	internal->size = strlen(string);
+	internal->length = utf8strlen(string);
 	internal->buffer = strdup(string);
 	return val;
 }
+
+struct mScriptValue* mScriptStringCreateFromASCII(const char* string) {
+	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_STR);
+	struct mScriptString* internal = val->value.opaque;
+	internal->size = strlen(string);
+	internal->length = strlen(string);
+	internal->buffer = latin1ToUtf8(string, internal->size + 1);
+	return val;
+}
+
 struct mScriptValue* mScriptValueCreateFromSInt(int32_t value) {
 	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_S32);
 	val->value.s32 = value;
