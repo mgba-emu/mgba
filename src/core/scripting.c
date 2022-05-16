@@ -232,10 +232,25 @@ mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given offset")
 mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, write32)
 mSCRIPT_DEFINE_END;
 
+struct mScriptValue* _mScriptCoreGetGameTitle(const struct mCore* core) {
+	char title[32] = {0};
+	core->getGameTitle(core, title);
+	return mScriptStringCreateFromASCII(title);
+}
+
+struct mScriptValue* _mScriptCoreGetGameCode(const struct mCore* core) {
+	char code[16] = {0};
+	core->getGameCode(core, code);
+	return mScriptStringCreateFromASCII(code);
+}
+
 // Info functions
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, platform, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, U32, frameCounter, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frameCycles, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frequency, 0);
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WRAPPER, getGameTitle, _mScriptCoreGetGameTitle, 0);
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WRAPPER, getGameCode, _mScriptCoreGetGameCode, 0);
 
 // Run functions
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, runFrame, 0);
@@ -257,12 +272,20 @@ mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateSlot, mCoreLoad
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, screenshot, mCoreTakeScreenshot, 0);
 
 mSCRIPT_DEFINE_STRUCT(mCore)
+	mSCRIPT_DEFINE_DOCSTRING("Get which platform is being emulated")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, platform)
 	mSCRIPT_DEFINE_DOCSTRING("Get the number of the current frame")
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, currentFrame, frameCounter)
 	mSCRIPT_DEFINE_DOCSTRING("Get the number of cycles per frame")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frameCycles)
 	mSCRIPT_DEFINE_DOCSTRING("Get the number of cycles per second")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frequency)
+
+	mSCRIPT_DEFINE_DOCSTRING("Get internal title of the game from the ROM header")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, getGameTitle)
+	mSCRIPT_DEFINE_DOCSTRING("Get internal product code for the game from the ROM header")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, getGameCode)
+
 	mSCRIPT_DEFINE_DOCSTRING("Run until the next frame")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, runFrame)
 	mSCRIPT_DEFINE_DOCSTRING("Run a single instruction")
