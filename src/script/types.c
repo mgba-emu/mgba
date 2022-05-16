@@ -21,6 +21,7 @@ static void _deinitTableValue(void*);
 static void _allocString(struct mScriptValue*);
 static void _freeString(struct mScriptValue*);
 static uint32_t _hashString(const struct mScriptValue*);
+static bool _stringCast(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
 
 static bool _castScalar(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
 static uint32_t _hashScalar(const struct mScriptValue*);
@@ -169,6 +170,7 @@ const struct mScriptType mSTString = {
 	.free = _freeString,
 	.hash = _hashString,
 	.equal = _stringEqual,
+	.cast = _stringCast,
 };
 
 const struct mScriptType mSTCharPtr = {
@@ -179,6 +181,7 @@ const struct mScriptType mSTCharPtr = {
 	.free = NULL,
 	.hash = _hashString,
 	.equal = _charpEqual,
+	.cast = _stringCast,
 };
 
 const struct mScriptType mSTList = {
@@ -270,6 +273,24 @@ static void _freeString(struct mScriptValue* val) {
 		free(string->buffer);
 	}
 	free(string);
+}
+
+static bool _stringCast(const struct mScriptValue* in, const struct mScriptType* type, struct mScriptValue* out) {
+	if (in->type == type) {
+		out->type = type;
+		out->refs = mSCRIPT_VALUE_UNREF;
+		out->flags = 0;
+		out->value.opaque = in->value.opaque;
+		return true;
+	}
+	if (in->type == mSCRIPT_TYPE_MS_STR && type == mSCRIPT_TYPE_MS_CHARP) {
+		out->type = type;
+		out->refs = mSCRIPT_VALUE_UNREF;
+		out->flags = 0;
+		out->value.opaque = ((struct mScriptString*) in->value.opaque)->buffer;
+		return true;
+	}
+	return false;
 }
 
 static uint32_t _hashString(const struct mScriptValue* val) {
