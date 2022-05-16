@@ -7,6 +7,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
+#include <mgba/script/macros.h>
 
 struct mScriptCallbackAdapter {
 	struct mScriptContext* context;

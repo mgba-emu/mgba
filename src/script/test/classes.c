@@ -6,6 +6,7 @@
 #include "util/test/suite.h"
 
 #include <mgba/script/context.h>
+#include <mgba/script/macros.h>
 #include <mgba/script/types.h>
 
 struct TestA {

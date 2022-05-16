@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/script/lua.h>
 
+#include <mgba/script/macros.h>
 #include <mgba-util/string.h>
 
 #include <lualib.h>

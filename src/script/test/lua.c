@@ -6,6 +6,7 @@
 #include "util/test/suite.h"
 
 #include <mgba/internal/script/lua.h>
+#include <mgba/script/macros.h>
 
 #define SETUP_LUA \
 	struct mScriptContext context; \

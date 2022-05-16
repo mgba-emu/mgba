@@ -6,6 +6,7 @@
 #include <mgba/script/types.h>
 
 #include <mgba/script/context.h>
+#include <mgba/script/macros.h>
 #include <mgba-util/hash.h>
 #include <mgba-util/string.h>
 #include <mgba-util/table.h>
