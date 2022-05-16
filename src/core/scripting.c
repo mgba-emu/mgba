@@ -232,16 +232,30 @@ mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given offset")
 mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, write32)
 mSCRIPT_DEFINE_END;
 
-struct mScriptValue* _mScriptCoreGetGameTitle(const struct mCore* core) {
+static struct mScriptValue* _mScriptCoreGetGameTitle(const struct mCore* core) {
 	char title[32] = {0};
 	core->getGameTitle(core, title);
 	return mScriptStringCreateFromASCII(title);
 }
 
-struct mScriptValue* _mScriptCoreGetGameCode(const struct mCore* core) {
+static struct mScriptValue* _mScriptCoreGetGameCode(const struct mCore* core) {
 	char code[16] = {0};
 	core->getGameCode(core, code);
 	return mScriptStringCreateFromASCII(code);
+}
+
+static struct mScriptValue* _mScriptCoreReadRegister(const struct mCore* core, const char* regName) {
+	int32_t out;
+	if (!core->readRegister(core, regName, &out)) {
+		return NULL;
+	}
+	struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S32);
+	value->value.s32 = out;
+	return value;
+}
+
+static void _mScriptCoreWriteRegister(struct mCore* core, const char* regName, int32_t in) {
+	core->writeRegister(core, regName, &in);
 }
 
 // Info functions
@@ -269,6 +283,10 @@ mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead32, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite8, 2, U32, address, U8, value);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite16, 2, U32, address, U16, value);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite32, 2, U32, address, U32, value);
+
+// Register functions
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WRAPPER, readRegister, _mScriptCoreReadRegister, 1, CHARP, regName);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, writeRegister, _mScriptCoreWriteRegister, 2, CHARP, regName, S32, value);
 
 // Savestate functions
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, saveStateSlot, mCoreSaveState, 2, S32, slot, S32, flags);
@@ -318,6 +336,11 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write16, busWrite16)
 	mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given bus address")
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write32, busWrite32)
+
+	mSCRIPT_DEFINE_DOCSTRING("Read the value of the register with the given name")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, readRegister)
+	mSCRIPT_DEFINE_DOCSTRING("Write the value of the register with the given name")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, writeRegister)
 
 	mSCRIPT_DEFINE_DOCSTRING("Save state to the slot number")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateSlot)
