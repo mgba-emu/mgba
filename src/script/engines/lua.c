@@ -41,6 +41,8 @@ static int _luaSetObject(lua_State* lua);
 static int _luaGcObject(lua_State* lua);
 static int _luaGetTable(lua_State* lua);
 static int _luaPairsTable(lua_State* lua);
+static int _luaGetList(lua_State* lua);
+static int _luaLenList(lua_State* lua);
 
 #if LUA_VERSION_NUM < 503
 #define lua_pushinteger lua_pushnumber
@@ -105,6 +107,13 @@ static const luaL_Reg _mSTTable[] = {
 	{ NULL, NULL }
 };
 
+static const luaL_Reg _mSTList[] = {
+	{ "__index", _luaGetList },
+	{ "__len", _luaLenList },
+	{ "__gc", _luaGcObject },
+	{ NULL, NULL }
+};
+
 struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mScriptContext* context) {
 	UNUSED(engine);
 	struct mScriptEngineContextLua* luaContext = calloc(1, sizeof(*luaContext));
@@ -136,6 +145,14 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 	luaL_register(luaContext->lua, NULL, _mSTTable);
 #else
 	luaL_setfuncs(luaContext->lua, _mSTTable, 0);
+#endif
+	lua_pop(luaContext->lua, 1);
+
+	luaL_newmetatable(luaContext->lua, "mSTList");
+#if LUA_VERSION_NUM < 502
+	luaL_register(luaContext->lua, NULL, _mSTList);
+#else
+	luaL_setfuncs(luaContext->lua, _mSTList, 0);
 #endif
 	lua_pop(luaContext->lua, 1);
 
@@ -296,6 +313,16 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 	case mSCRIPT_TYPE_STRING:
 		lua_pushstring(luaContext->lua, ((struct mScriptString*) value->value.opaque)->buffer);
 		mScriptValueDeref(value);
+		break;
+	case mSCRIPT_TYPE_LIST:
+		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
+		if (needsWeakref) {
+			*newValue = mSCRIPT_MAKE(WEAKREF, weakref);
+		} else {
+			mScriptValueWrap(value, newValue);
+			mScriptValueDeref(value);
+		}
+		luaL_setmetatable(luaContext->lua, "mSTList");
 		break;
 	case mSCRIPT_TYPE_TABLE:
 		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
@@ -701,4 +728,61 @@ int _luaPairsTable(lua_State* lua) {
 	lua_insert(lua, -2);
 	lua_pushnil(lua);
 	return 3;
+}
+
+int _luaGetList(lua_State* lua) {
+	struct mScriptEngineContextLua* luaContext = _luaGetContext(lua);
+	ssize_t index;
+#if LUA_VERSION_NUM >= 503
+	index = lua_tointeger(luaContext->lua, -1);
+#else
+	index = lua_tonumber(luaContext->lua, -1);
+#endif
+	struct mScriptValue* obj = lua_touserdata(lua, -2);
+	lua_pop(lua, 2);
+
+	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
+	if (obj->type == mSCRIPT_TYPE_MS_WRAPPER) {
+		obj = mScriptValueUnwrap(obj);
+	}
+	if (!obj || obj->type != mSCRIPT_TYPE_MS_LIST) {
+		lua_pushliteral(lua, "Invalid object");
+		lua_error(lua);
+	}
+	struct mScriptList* list = obj->value.opaque;
+
+	// Lua indexes from 1
+	if (index < 1) {
+		lua_pushliteral(lua, "Invalid index");
+		lua_error(lua);
+	}
+	if ((size_t) index > mScriptListSize(list)) {
+		return 0;
+	}
+	--index;
+
+	struct mScriptValue* val = mScriptListGetPointer(list, index);
+	if (!_luaWrap(luaContext, val)) {
+		lua_pushliteral(lua, "Invalid value");
+		lua_error(lua);
+	}
+	return 1;
+}
+
+static int _luaLenList(lua_State* lua) {
+	struct mScriptEngineContextLua* luaContext = _luaGetContext(lua);
+	struct mScriptValue* obj = lua_touserdata(lua, -1);
+	lua_pop(lua, 1);
+
+	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
+	if (obj->type == mSCRIPT_TYPE_MS_WRAPPER) {
+		obj = mScriptValueUnwrap(obj);
+	}
+	if (!obj || obj->type != mSCRIPT_TYPE_MS_LIST) {
+		lua_pushliteral(lua, "Invalid object");
+		lua_error(lua);
+	}
+	struct mScriptList* list = obj->value.opaque;
+	lua_pushinteger(lua, mScriptListSize(list));
+	return 1;
 }
