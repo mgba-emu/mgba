@@ -185,6 +185,20 @@ static uint32_t mScriptMemoryAdapterRead32(struct mScriptMemoryAdapter* adapter,
 	return adapter->core->rawRead32(adapter->core, address, segment);
 }
 
+static struct mScriptValue* mScriptMemoryAdapterReadRange(struct mScriptMemoryAdapter* adapter, uint32_t address, uint32_t length) {
+	uint32_t segmentSize = adapter->block.end - adapter->block.start;
+	struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
+	struct mScriptList* list = value->value.opaque;
+	uint32_t i;
+	for (i = 0; i < length; ++i, ++address) {
+		uint32_t segmentAddress = address % segmentSize;
+		int segment = address / segmentSize;
+		segmentAddress += adapter->block.start;
+		*mScriptListAppend(list) = mSCRIPT_MAKE_U32(adapter->core->rawRead8(adapter->core, segmentAddress, segment));
+	}
+	return value;
+}
+
 static void mScriptMemoryAdapterWrite8(struct mScriptMemoryAdapter* adapter, uint32_t address, uint8_t value) {
 	uint32_t segmentSize = adapter->block.end - adapter->block.start;
 	uint32_t segmentAddress = address % segmentSize;
@@ -213,23 +227,26 @@ mSCRIPT_DECLARE_STRUCT(mScriptMemoryAdapter);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryAdapter, U32, read8, mScriptMemoryAdapterRead8, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryAdapter, U32, read16, mScriptMemoryAdapterRead16, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryAdapter, U32, read32, mScriptMemoryAdapterRead32, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryAdapter, WRAPPER, readRange, mScriptMemoryAdapterReadRange, 2, U32, address, U32, length);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryAdapter, write8, mScriptMemoryAdapterWrite8, 2, U32, address, U8, value);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryAdapter, write16, mScriptMemoryAdapterWrite16, 2, U32, address, U16, value);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryAdapter, write32, mScriptMemoryAdapterWrite32, 2, U32, address, U32, value);
 
 mSCRIPT_DEFINE_STRUCT(mScriptMemoryAdapter)
-mSCRIPT_DEFINE_DOCSTRING("Read an 8-bit value from the given offset")
-mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, read8)
-mSCRIPT_DEFINE_DOCSTRING("Read a 16-bit value from the given offset")
-mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, read16)
-mSCRIPT_DEFINE_DOCSTRING("Read a 32-bit value from the given offset")
-mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, read32)
-mSCRIPT_DEFINE_DOCSTRING("Write an 8-bit value from the given offset")
-mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, write8)
-mSCRIPT_DEFINE_DOCSTRING("Write a 16-bit value from the given offset")
-mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, write16)
-mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given offset")
-mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, write32)
+	mSCRIPT_DEFINE_DOCSTRING("Read an 8-bit value from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, read8)
+	mSCRIPT_DEFINE_DOCSTRING("Read a 16-bit value from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, read16)
+	mSCRIPT_DEFINE_DOCSTRING("Read a 32-bit value from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, read32)
+	mSCRIPT_DEFINE_DOCSTRING("Read byte range from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, readRange)
+	mSCRIPT_DEFINE_DOCSTRING("Write an 8-bit value from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, write8)
+	mSCRIPT_DEFINE_DOCSTRING("Write a 16-bit value from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, write16)
+	mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, write32)
 mSCRIPT_DEFINE_END;
 
 static struct mScriptValue* _mScriptCoreGetGameTitle(const struct mCore* core) {
@@ -242,6 +259,16 @@ static struct mScriptValue* _mScriptCoreGetGameCode(const struct mCore* core) {
 	char code[16] = {0};
 	core->getGameCode(core, code);
 	return mScriptStringCreateFromASCII(code);
+}
+
+static struct mScriptValue* _mScriptCoreReadRange(struct mCore* core, uint32_t address, uint32_t length) {
+	struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
+	struct mScriptList* list = value->value.opaque;
+	uint32_t i;
+	for (i = 0; i < length; ++i, ++address) {
+		*mScriptListAppend(list) = mSCRIPT_MAKE_U32(core->busRead8(core, address));
+	}
+	return value;
 }
 
 static struct mScriptValue* _mScriptCoreReadRegister(const struct mCore* core, const char* regName) {
@@ -280,6 +307,7 @@ mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, getKeys, 0);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead8, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead16, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead32, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WRAPPER, readRange, _mScriptCoreReadRange, 2, U32, address, U32, length);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite8, 2, U32, address, U8, value);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite16, 2, U32, address, U16, value);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite32, 2, U32, address, U32, value);
@@ -330,6 +358,8 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read16, busRead16)
 	mSCRIPT_DEFINE_DOCSTRING("Read a 32-bit value from the given bus address")
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read32, busRead32)
+	mSCRIPT_DEFINE_DOCSTRING("Read byte range from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, readRange)
 	mSCRIPT_DEFINE_DOCSTRING("Write an 8-bit value from the given bus address")
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write8, busWrite8)
 	mSCRIPT_DEFINE_DOCSTRING("Write a 16-bit value from the given bus address")
