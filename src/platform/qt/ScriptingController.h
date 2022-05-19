@@ -18,6 +18,8 @@
 namespace QGBA {
 
 class CoreController;
+class ScriptingTextBuffer;
+
 class ScriptingController : public QObject {
 Q_OBJECT
 
@@ -36,12 +38,15 @@ signals:
 	void log(const QString&);
 	void warn(const QString&);
 	void error(const QString&);
+	void textBufferCreated(ScriptingTextBuffer*);
 
 public slots:
 	void clearController();
 	void runCode(const QString& code);
 
 private:
+	static mScriptTextBuffer* createTextBuffer(void* context);
+
 	struct Logger : mLogger {
 		ScriptingController* p;
 	} m_logger{};

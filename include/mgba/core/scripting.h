@@ -21,8 +21,10 @@ mLOG_DECLARE_CATEGORY(SCRIPT);
 
 struct mCore;
 struct mLogger;
+struct mScriptTextBuffer;
 mSCRIPT_DECLARE_STRUCT(mCore);
 mSCRIPT_DECLARE_STRUCT(mLogger);
+mSCRIPT_DECLARE_STRUCT(mScriptTextBuffer);
 
 struct mScriptBridge;
 struct VFile;
@@ -39,6 +41,24 @@ struct mScriptEngine {
 #ifdef USE_DEBUGGERS
 	void (*debuggerEntered)(struct mScriptEngine*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 #endif
+};
+
+struct mScriptTextBuffer {
+	void (*init)(struct mScriptTextBuffer*, const char* name);
+	void (*deinit)(struct mScriptTextBuffer*);
+
+	void (*setName)(struct mScriptTextBuffer*, const char* text);
+
+	uint32_t (*getX)(const struct mScriptTextBuffer*);
+	uint32_t (*getY)(const struct mScriptTextBuffer*);
+	uint32_t (*cols)(const struct mScriptTextBuffer*);
+	uint32_t (*rows)(const struct mScriptTextBuffer*);
+
+	void (*print)(struct mScriptTextBuffer*, const char* text);
+	void (*clear)(struct mScriptTextBuffer*);
+	void (*setSize)(struct mScriptTextBuffer*, uint32_t cols, uint32_t rows);
+	void (*moveCursor)(struct mScriptTextBuffer*, uint32_t x, uint32_t y);
+	void (*advance)(struct mScriptTextBuffer*, int32_t);
 };
 
 struct mScriptBridge* mScriptBridgeCreate(void);
@@ -63,6 +83,9 @@ void mScriptContextDetachCore(struct mScriptContext*);
 
 void mScriptContextAttachLogger(struct mScriptContext*, struct mLogger*);
 void mScriptContextDetachLogger(struct mScriptContext*);
+
+typedef struct mScriptTextBuffer* (*mScriptContextBufferFactory)(void*);
+void mScriptContextSetTextBufferFactory(struct mScriptContext*, mScriptContextBufferFactory factory, void* cbContext);
 
 CXX_GUARD_END
 

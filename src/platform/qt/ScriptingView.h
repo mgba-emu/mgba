@@ -10,6 +10,7 @@
 namespace QGBA {
 
 class ScriptingController;
+class ScriptingTextBuffer;
 
 class ScriptingView : public QMainWindow {
 Q_OBJECT
@@ -21,11 +22,16 @@ private slots:
 	void submitRepl();
 	void load();
 
+	void addTextBuffer(ScriptingTextBuffer*);
+	void selectBuffer(int);
+
 private:
 	QString getFilters() const;
+
 	Ui::ScriptingView m_ui;
 
 	ScriptingController* m_controller;
+	QList<ScriptingTextBuffer*> m_textBuffers;
 };
 
 }

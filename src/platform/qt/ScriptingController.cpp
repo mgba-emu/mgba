@@ -6,6 +6,7 @@
 #include "ScriptingController.h"
 
 #include "CoreController.h"
+#include "ScriptingTextBuffer.h"
 
 using namespace QGBA;
 
@@ -37,6 +38,7 @@ ScriptingController::ScriptingController(QObject* parent)
 	};
 
 	mScriptContextAttachLogger(&m_scriptContext, &m_logger);
+	mScriptContextSetTextBufferFactory(&m_scriptContext, &ScriptingController::createTextBuffer, this);
 
 	HashTableEnumerate(&m_scriptContext.engines, [](const char* key, void* engine, void* context) {
 	ScriptingController* self = static_cast<ScriptingController*>(context);
@@ -99,4 +101,11 @@ void ScriptingController::clearController() {
 void ScriptingController::runCode(const QString& code) {
 	VFileDevice vf(code.toUtf8());
 	load(vf);
+}
+
+mScriptTextBuffer* ScriptingController::createTextBuffer(void* context) {
+	ScriptingController* self = static_cast<ScriptingController*>(context);
+	ScriptingTextBuffer* buffer = new ScriptingTextBuffer(self);
+	emit self->textBufferCreated(buffer);
+	return buffer->textBuffer();
 }

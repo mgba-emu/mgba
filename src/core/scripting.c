@@ -161,6 +161,11 @@ struct mScriptCoreAdapter {
 	struct mScriptValue memory;
 };
 
+struct mScriptUILibrary {
+	mScriptContextBufferFactory textBufferFactory;
+	void* textBufferContext;
+};
+
 static uint32_t mScriptMemoryAdapterRead8(struct mScriptMemoryAdapter* adapter, uint32_t address) {
 	uint32_t segmentSize = adapter->block.end - adapter->block.start;
 	uint32_t segmentAddress = address % segmentSize;
@@ -521,4 +526,60 @@ void mScriptContextAttachLogger(struct mScriptContext* context, struct mLogger* 
 
 void mScriptContextDetachLogger(struct mScriptContext* context) {
 	mScriptContextRemoveGlobal(context, "console");
+}
+
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mScriptTextBuffer, deinit, 0);
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(mScriptTextBuffer, U32, getX, 0);
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(mScriptTextBuffer, U32, getY, 0);
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(mScriptTextBuffer, U32, cols, 0);
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(mScriptTextBuffer, U32, rows, 0);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mScriptTextBuffer, print, 1, CHARP, text);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mScriptTextBuffer, clear, 0);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mScriptTextBuffer, setSize, 2, U32, cols, U32, rows);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mScriptTextBuffer, moveCursor, 2, U32, x, U32, y);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mScriptTextBuffer, advance, 1, S32, adv);
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mScriptTextBuffer, setName, 1, CHARP, name);
+
+mSCRIPT_DEFINE_STRUCT(mScriptTextBuffer)
+	mSCRIPT_DEFINE_STRUCT_DEINIT_NAMED(mScriptTextBuffer, deinit)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, getX)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, getY)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, cols)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, rows)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, print)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, clear)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, setSize)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, moveCursor)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, advance)
+	mSCRIPT_DEFINE_DOCSTRING("Set the user-visible name of this buffer")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, setName)
+mSCRIPT_DEFINE_END;
+
+struct mScriptTextBuffer* _mScriptUICreateBuffer(struct mScriptUILibrary* lib, const char* name) {
+	struct mScriptTextBuffer* buffer = lib->textBufferFactory(lib->textBufferContext);
+	buffer->init(buffer, name);
+	return buffer;
+}
+
+mSCRIPT_DECLARE_STRUCT(mScriptUILibrary);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptUILibrary, S(mScriptTextBuffer), createBuffer, _mScriptUICreateBuffer, 1, CHARP, name);
+
+mSCRIPT_DEFINE_STRUCT(mScriptUILibrary)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptUILibrary, createBuffer)
+mSCRIPT_DEFINE_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mScriptUILibrary, createBuffer)
+	mSCRIPT_MAKE_CHARP(NULL)
+mSCRIPT_DEFINE_DEFAULTS_END;
+
+void mScriptContextSetTextBufferFactory(struct mScriptContext* context, mScriptContextBufferFactory factory, void* cbContext) {
+	struct mScriptValue* value = mScriptContextEnsureGlobal(context, "ui", mSCRIPT_TYPE_MS_S(mScriptUILibrary));
+	struct mScriptUILibrary* uiLib = value->value.opaque;
+	if (!uiLib) {
+		uiLib = calloc(1, sizeof(*uiLib));
+		value->value.opaque = uiLib;
+		value->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+	}
+	uiLib->textBufferFactory = factory;
+	uiLib->textBufferContext = cbContext;
 }
