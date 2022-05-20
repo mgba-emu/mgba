@@ -1,4 +1,23 @@
-gen3CharmapEn = {
+gbCharmapEn = { [0]=
+	"�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�",
+	"�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�",
+	"�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�",
+	"�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�",
+	"�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�",
+	"", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�",
+	"�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�",
+	"�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", " ",
+	"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P",
+	"Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "(", ")", ":", ";", "[", "]",
+	"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p",
+	"q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "é", "ʼd", "ʼl", "ʼs", "ʼt", "ʼv",
+	"�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�",
+	"�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�",
+	"'", "P\u{200d}k", "M\u{200d}n", "-", "ʼr", "ʼm", "?", "!", ".", "ァ", "ゥ", "ェ", "▹", "▸", "▾", "♂",
+	"$", "×", ".", "/", ",", "♀", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
+}
+
+gen3CharmapEn = { [0]=
 	" ", "À", "Á", "Â", "Ç", "È", "É", "Ê", "Ë", "Ì", "こ", "Î", "Ï", "Ò", "Ó", "Ô",
 	"Œ", "Ù", "Ú", "Û", "Ñ", "ß", "à", "á", "ね", "ç", "è", "é", "ê", "ë", "ì", "ま",
 	"î", "ï", "ò", "ó", "ô", "œ", "ù", "ú", "û", "ñ", "º", "ª", "�", "&", "+", "あ",
@@ -16,6 +35,116 @@ gen3CharmapEn = {
 	"l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "▶",
 	":", "Ä", "Ö", "Ü", "ä", "ö", "ü", "⬆", "⬇", "⬅", "�", "�", "�", "�", "�", ""
 }
+
+function _read16BE(emu, address)
+	return (emu:read8(address) << 8) | emu:read8(address + 1)
+end
+
+function readBoxMonGen1(game, address, nameAddress, otAddress)
+	local mon = {}
+	mon.species = emu.memory.cart0:read8(game._speciesIndex + emu:read8(address + 0) - 1)
+	mon.hp = _read16BE(emu, address + 1)
+	mon.level = emu:read8(address + 3)
+	mon.status = emu:read8(address + 4)
+	mon.type1 = emu:read8(address + 5)
+	mon.type2 = emu:read8(address + 6)
+	mon.catchRate = emu:read8(address + 7)
+	mon.moves = {
+		emu:read8(address + 8),
+		emu:read8(address + 9),
+		emu:read8(address + 10),
+		emu:read8(address + 11),
+	}
+	mon.otId = _read16BE(emu, address + 12)
+	mon.experience = (_read16BE(emu, address + 14) << 8)| emu:read8(address + 16)
+	mon.hpEV = _read16BE(emu, address + 17)
+	mon.attackEV = _read16BE(emu, address + 19)
+	mon.defenseEV = _read16BE(emu, address + 21)
+	mon.speedEV = _read16BE(emu, address + 23)
+	mon.spAttackEV = _read16BE(emu, address + 25)
+	mon.spDefenseEV = mon.spAttackEv
+	local iv = _read16BE(emu, address + 27)
+	mon.attackIV = (iv >> 4) & 0xF
+	mon.defenseIV = iv & 0xF
+	mon.speedIV = (iv >> 12) & 0xF
+	mon.spAttackIV = (iv >> 8) & 0xF
+	mon.spDefenseIV = mon.spAttackIV
+	mon.pp = {
+		emu:read8(address + 28),
+		emu:read8(address + 29),
+		emu:read8(address + 30),
+		emu:read8(address + 31),
+	}
+	mon.nickname = game:toString(emu:readRange(nameAddress, game._monNameLength))
+	mon.otName = game:toString(emu:readRange(otAddress, game._playerNameLength))
+	return mon
+end
+
+function readPartyMonGen1(game, address, nameAddress, otAddress)
+	local mon = game:_readBoxMon(address, nameAddress, otAddress)
+	mon.level = emu:read8(address + 33)
+	mon.maxHP = _read16BE(emu, address + 34)
+	mon.attack = _read16BE(emu, address + 36)
+	mon.defense = _read16BE(emu, address + 38)
+	mon.speed = _read16BE(emu, address + 40)
+	mon.spAttack = _read16BE(emu, address + 42)
+	mon.spDefense = mon.spAttack
+	return mon
+end
+
+function readBoxMonGen2(game, address, nameAddress, otAddress)
+	local mon = {}
+	mon.species = emu:read8(address + 0)
+	mon.item = emu:read8(address + 1)
+	mon.moves = {
+		emu:read8(address + 2),
+		emu:read8(address + 3),
+		emu:read8(address + 4),
+		emu:read8(address + 5),
+	}
+	mon.otId = _read16BE(emu, address + 6)
+	mon.experience = (_read16BE(emu, address + 8) << 8)| emu:read8(address + 10)
+	mon.hpEV = _read16BE(emu, address + 11)
+	mon.attackEV = _read16BE(emu, address + 13)
+	mon.defenseEV = _read16BE(emu, address + 15)
+	mon.speedEV = _read16BE(emu, address + 17)
+	mon.spAttackEV = _read16BE(emu, address + 19)
+	mon.spDefenseEV = mon.spAttackEv
+	local iv = _read16BE(emu, address + 21)
+	mon.attackIV = (iv >> 4) & 0xF
+	mon.defenseIV = iv & 0xF
+	mon.speedIV = (iv >> 12) & 0xF
+	mon.spAttackIV = (iv >> 8) & 0xF
+	mon.spDefenseIV = mon.spAttackIV
+	mon.pp = {
+		emu:read8(address + 23),
+		emu:read8(address + 24),
+		emu:read8(address + 25),
+		emu:read8(address + 26),
+	}
+	mon.friendship = emu:read8(address + 27)
+	mon.pokerus = emu:read8(address + 28)
+	local caughtData = _read16BE(emu, address + 29)
+	mon.metLocation = (caughtData >> 8) & 0x7F
+	mon.metLevel = caughtData & 0x1F
+	mon.level = emu:read8(address + 31)
+	mon.nickname = game:toString(emu:readRange(nameAddress, game._monNameLength))
+	mon.otName = game:toString(emu:readRange(otAddress, game._playerNameLength))
+	return mon
+end
+
+function readPartyMonGen2(game, address, nameAddress, otAddress)
+	local mon = game:_readBoxMon(address, nameAddress, otAddress)
+	mon.status = emu:read8(address + 32)
+	mon.hp = _read16BE(emu, address + 34)
+	mon.maxHP = _read16BE(emu, address + 36)
+	mon.attack = _read16BE(emu, address + 38)
+	mon.defense = _read16BE(emu, address + 40)
+	mon.speed = _read16BE(emu, address + 42)
+	mon.spAttack = _read16BE(emu, address + 44)
+	mon.spDefense = _read16BE(emu, address + 46)
+	return mon
+end
 
 function readBoxMonGen3(game, address)
 	local mon = {}
@@ -158,45 +287,127 @@ end
 
 function getParty(game)
 	local party = {}
+	local monStart = game._party
+	local nameStart = game._partyNames
+	local otStart = game._partyOt
 	for i = 1, emu:read8(game._partyCount) do
-		party[i] = game:_readPartyMon(game._party + (i - 1) * game._partyMonSize)
+		party[i] = game:_readPartyMon(monStart, nameStart, otStart)
+		monStart = monStart + game._partyMonSize
+		if game._partyNames then
+			nameStart = nameStart + game._monNameLength + 1
+		end
+		if game._partyOt then
+			otStart = otStart + game._playerNameLength + 1
+		end
 	end
 	return party
 end
 
 function toString(game, rawstring)
 	local string = ""
-	for _, char in ipairs(rawstring) do
+	for _, char in ipairs({rawstring:byte(1, #rawstring)}) do
 		if char == game._terminator then
 			break
 		end
-		string = string..game._charmap[char + 1]
+		string = string..game._charmap[char]
 	end
 	return string
 end
 
 function getSpeciesName(game, id)
-	local pointer = game._speciesNameTable + (game._monNameLength + 1) * id
-	return game:toString(emu:readRange(pointer, game._monNameLength))
+	if game._speciesIndex then
+		local index = game._index
+		if not index then
+			index = {}
+			for i = 0, 255 do
+				index[emu.memory.cart0:read8(game._speciesIndex + i)] = i
+			end
+			game._index = index
+		end
+		id = index[id]
+	end
+	local pointer = game._speciesNameTable + (game._speciesNameLength) * id
+	return game:toString(emu.memory.cart0:readRange(pointer, game._monNameLength))
 end
+
+local gameRBEn = {
+	name="Red/Blue (USA)",
+	_party=0xd16b,
+	_partyCount=0xd163,
+	_partyNames=0xd2b5,
+	_partyOt=0xd273,
+	_speciesNameTable=0x1c21e,
+	_speciesIndex=0x41024,
+	_boxMonSize=33,
+	_partyMonSize=44,
+	_terminator=0x50,
+	_monNameLength=10,
+	_speciesNameLength=10,
+	_playerNameLength=10,
+	_charmap=gbCharmapEn,
+	_readBoxMon=readBoxMonGen1,
+	_readPartyMon=readPartyMonGen1,
+	toString=toString,
+	getParty=getParty,
+	getSpeciesName=getSpeciesName,
+}
+
+local gameYellowEn = {
+	name="Yellow (USA)",
+}
 
 local gameGSEn = {
 	name="Gold/Silver (USA)",
+	_party=0xda2a,
+	_partyCount=0xda22,
+	_partyNames=0xdb8c,
+	_partyOt=0xdb4a,
+	_speciesNameTable=0x1b0b6a,
+	_boxMonSize=32,
+	_partyMonSize=48,
+	_monNameLength=10,
+	_speciesNameLength=10,
+	_playerNameLength=10,
+	_charmap=gbCharmapEn,
+	_readBoxMon=readBoxMonGen2,
+	_readPartyMon=readPartyMonGen2,
+	_terminator=0x50,
+	toString=toString,
+	getParty=getParty,
+	getSpeciesName=getSpeciesName,
 }
 
 local gameCrystalEn = {
 	name="Crystal (USA)",
+	_party=0xdcdf,
+	_partyCount=0xdcd7,
+	_partyNames=0xde41,
+	_partyOt=0xddff,
+	_speciesNameTable=0x5337a,
+	_boxMonSize=32,
+	_partyMonSize=48,
+	_monNameLength=10,
+	_speciesNameLength=10,
+	_playerNameLength=10,
+	_charmap=gbCharmapEn,
+	_readBoxMon=readBoxMonGen2,
+	_readPartyMon=readPartyMonGen2,
+	_terminator=0x50,
+	toString=toString,
+	getParty=getParty,
+	getSpeciesName=getSpeciesName,
 }
 
 local gameRubyEn = {
 	name="Ruby (USA)",
 	_party=0x3004360,
 	_partyCount=0x3004350,
-	_speciesNameTable=0x81f716c,
+	_speciesNameTable=0x1f716c,
 	_boxMonSize=80,
 	_partyMonSize=100,
 	_monNameLength=10,
-	_playerNameLength=7,
+	_speciesNameLength=11,
+	_playerNameLength=10,
 	_charmap=gen3CharmapEn,
 	_readBoxMon=readBoxMonGen3,
 	_readPartyMon=readPartyMonGen3,
@@ -210,11 +421,12 @@ local gameSapphireEn = {
 	name="Sapphire (USA)",
 	_party=0x3004360,
 	_partyCount=0x3004350,
-	_speciesNameTable=0x81f70fc,
+	_speciesNameTable=0x1f70fc,
 	_boxMonSize=80,
 	_partyMonSize=100,
 	_monNameLength=10,
-	_playerNameLength=7,
+	_speciesNameLength=11,
+	_playerNameLength=10,
 	_charmap=gen3CharmapEn,
 	_readBoxMon=readBoxMonGen3,
 	_readPartyMon=readPartyMonGen3,
@@ -223,17 +435,17 @@ local gameSapphireEn = {
 	getParty=getParty,
 	getSpeciesName=getSpeciesName,
 }
-
 
 local gameEmeraldEn = {
 	name="Emerald (USA)",
 	_party=0x20244ec,
 	_partyCount=0x20244e9,
-	_speciesNameTable=0x8318570,
+	_speciesNameTable=0x3185c8,
 	_boxMonSize=80,
 	_partyMonSize=100,
 	_monNameLength=10,
-	_playerNameLength=7,
+	_speciesNameLength=11,
+	_playerNameLength=10,
 	_charmap=gen3CharmapEn,
 	_readBoxMon=readBoxMonGen3,
 	_readPartyMon=readPartyMonGen3,
@@ -243,14 +455,73 @@ local gameEmeraldEn = {
 	getSpeciesName=getSpeciesName,
 }
 
-local gameFRLGEn = {
-	name="FireRed/LeafGreen (USA)",
+local gameFireRedEn = {
+	name="FireRed (USA)",
 	_party=0x2024284,
 	_partyCount=0x2024029,
+	_speciesNameTable=0x245ee0,
 	_boxMonSize=80,
 	_partyMonSize=100,
 	_monNameLength=10,
-	_playerNameLength=7,
+	_speciesNameLength=11,
+	_playerNameLength=10,
+	_charmap=gen3CharmapEn,
+	_readBoxMon=readBoxMonGen3,
+	_readPartyMon=readPartyMonGen3,
+	_terminator=0xFF,
+	toString=toString,
+	getParty=getParty,
+	getSpeciesName=getSpeciesName,
+}
+
+local gameFireRedEnR1 = {
+	name="FireRed (USA) (Rev 1)",
+	_party=0x2024284,
+	_partyCount=0x2024029,
+	_speciesNameTable=0x245f50,
+	_boxMonSize=80,
+	_partyMonSize=100,
+	_monNameLength=10,
+	_speciesNameLength=11,
+	_playerNameLength=10,
+	_charmap=gen3CharmapEn,
+	_readBoxMon=readBoxMonGen3,
+	_readPartyMon=readPartyMonGen3,
+	_terminator=0xFF,
+	toString=toString,
+	getParty=getParty,
+	getSpeciesName=getSpeciesName,
+}
+
+local gameLeafGreenEn = {
+	name="LeafGreen (USA)",
+	_party=0x2024284,
+	_partyCount=0x2024029,
+	_speciesNameTable=0x245ebc,
+	_boxMonSize=80,
+	_partyMonSize=100,
+	_monNameLength=10,
+	_speciesNameLength=11,
+	_playerNameLength=10,
+	_charmap=gen3CharmapEn,
+	_readBoxMon=readBoxMonGen3,
+	_readPartyMon=readPartyMonGen3,
+	_terminator=0xFF,
+	toString=toString,
+	getParty=getParty,
+	getSpeciesName=getSpeciesName,
+}
+
+local gameLeafGreenEnR1 = {
+	name="LeafGreen (USA)",
+	_party=0x2024284,
+	_partyCount=0x2024029,
+	_speciesNameTable=0x245f2c,
+	_boxMonSize=80,
+	_partyMonSize=100,
+	_monNameLength=10,
+	_speciesNameLength=11,
+	_playerNameLength=10,
 	_charmap=gen3CharmapEn,
 	_readBoxMon=readBoxMonGen3,
 	_readPartyMon=readPartyMonGen3,
@@ -261,14 +532,25 @@ local gameFRLGEn = {
 }
 
 gameCodes = {
-	["DMG-AAUE"]=gameGSEn,
-	["DMG-AAXE"]=gameGSEn,
-	["DMG-BYTE"]=gameCrystalEn,
+	["DMG-AAUE"]=gameGSEn, -- Gold
+	["DMG-AAXE"]=gameGSEn, -- Silver
+	["CGB-BYTE"]=gameCrystalEn,
 	["AGB-AXVE"]=gameRubyEn,
 	["AGB-AXPE"]=gameSapphireEn,
 	["AGB-BPEE"]=gameEmeraldEn,
-	["AGB-BPRE"]=gameFRLGEn,
-	["AGB-BPGE"]=gameFRLGEn,
+	["AGB-BPRE"]=gameFireRedEn,
+	["AGB-BPGE"]=gameLeafGreenEn,
+}
+
+-- These versions have slight differences and/or cannot be uniquely
+-- identified by their in-header game codes, so fall back on a CRC32
+gameCrc32 = {
+	[0x9f7fdd53] = gameRBEn, -- Red
+	[0xd6da8a1a] = gameRBEn, -- Blue
+	[0x7d527d62] = gameYellowEn,
+	[0x3358e30a] = gameCrystal, -- Crystal rev 1
+	[0x84ee4776] = gameFireRedEnR1,
+	[0xdaffecec] = gameLeafGreenEnR1,
 }
 
 function printPartyStatus(game, buffer)
@@ -284,7 +566,15 @@ function printPartyStatus(game, buffer)
 end
 
 function detectGame()
-	game = gameCodes[emu:getGameCode()]
+	local checksum = 0
+	for i, v in ipairs({emu:checksum(C.CHECKSUM.CRC32):byte(1, 4)}) do
+		checksum = checksum * 256 + v
+	end
+	game = gameCrc32[checksum]
+	if not game then
+		game = gameCodes[emu:getGameCode()]
+	end
+
 	if not game then
 		console:error("Unknown game!")
 	else
