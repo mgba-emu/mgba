@@ -544,21 +544,21 @@ int _luaThunk(lua_State* lua) {
 	if (!_luaPopFrame(luaContext, &frame.arguments)) {
 		mScriptContextDrainPool(luaContext->d.context);
 		mScriptFrameDeinit(&frame);
-		lua_pushliteral(lua, "Error calling function (setting arguments)");
+		luaL_traceback(lua, lua, "Error calling function (translating arguments into runtime)", 1);
 		lua_error(lua);
 	}
 
 	struct mScriptValue* fn = lua_touserdata(lua, lua_upvalueindex(1));
 	if (!fn || !mScriptInvoke(fn, &frame)) {
 		mScriptFrameDeinit(&frame);
-		lua_pushliteral(lua, "Error calling function (invoking)");
+		luaL_traceback(lua, lua, "Error calling function (invoking failed)", 1);
 		lua_error(lua);
 	}
 	mScriptContextDrainPool(luaContext->d.context);
 
 	if (!_luaPushFrame(luaContext, &frame.returnValues)) {
 		mScriptFrameDeinit(&frame);
-		lua_pushliteral(lua, "Error calling function (getting return values)");
+		luaL_traceback(lua, lua, "Error calling function (translating return values from runtime)", 1);
 		lua_error(lua);
 	}
 	mScriptFrameDeinit(&frame);
@@ -575,7 +575,7 @@ int _luaGetObject(lua_State* lua) {
 
 	if (!keyPtr) {
 		lua_pop(lua, 2);
-		lua_pushliteral(lua, "Invalid key");
+		luaL_traceback(lua, lua, "Invalid key", 1);
 		lua_error(lua);
 	}
 	strlcpy(key, keyPtr, sizeof(key));
@@ -583,17 +583,19 @@ int _luaGetObject(lua_State* lua) {
 
 	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
 	if (!obj) {
-		lua_pushliteral(lua, "Invalid object");
+		luaL_traceback(lua, lua, "Invalid object", 1);
 		lua_error(lua);
 	}
 
 	if (!mScriptObjectGet(obj, key, &val)) {
-		lua_pushliteral(lua, "Invalid key");
+		char error[MAX_KEY_SIZE + 16];
+		snprintf(error, sizeof(error), "Invalid key '%s'", key);
+		luaL_traceback(lua, lua, "Invalid key", 1);
 		lua_error(lua);
 	}
 
 	if (!_luaWrap(luaContext, &val)) {
-		lua_pushliteral(lua, "Invalid value");
+		luaL_traceback(lua, lua, "Error translating value from runtime", 1);
 		lua_error(lua);
 	}
 	return 1;
@@ -608,7 +610,7 @@ int _luaSetObject(lua_State* lua) {
 
 	if (!keyPtr) {
 		lua_pop(lua, 2);
-		lua_pushliteral(lua, "Invalid key");
+		luaL_traceback(lua, lua, "Invalid key", 1);
 		lua_error(lua);
 	}
 	strlcpy(key, keyPtr, sizeof(key));
@@ -616,18 +618,20 @@ int _luaSetObject(lua_State* lua) {
 
 	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
 	if (!obj) {
-		lua_pushliteral(lua, "Invalid object");
+		luaL_traceback(lua, lua, "Invalid object", 1);
 		lua_error(lua);
 	}
 
 	if (!val) {
-		lua_pushliteral(lua, "Invalid value");
+		luaL_traceback(lua, lua, "Error translating value to runtime", 1);
 		lua_error(lua);
 	}
 
 	if (!mScriptObjectSet(obj, key, val)) {
 		mScriptValueDeref(val);
-		lua_pushliteral(lua, "Invalid key");
+		char error[MAX_KEY_SIZE + 16];
+		snprintf(error, sizeof(error), "Invalid key '%s'", key);
+		luaL_traceback(lua, lua, "Invalid key", 1);
 		lua_error(lua);
 	}
 	mScriptValueDeref(val);
@@ -660,7 +664,7 @@ int _luaGetTable(lua_State* lua) {
 
 	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
 	if (!obj) {
-		lua_pushliteral(lua, "Invalid object");
+		luaL_traceback(lua, lua, "Invalid table", 1);
 		lua_error(lua);
 	}
 
@@ -671,7 +675,7 @@ int _luaGetTable(lua_State* lua) {
 	}
 
 	if (!_luaWrap(luaContext, val)) {
-		lua_pushliteral(lua, "Invalid value");
+		luaL_traceback(lua, lua, "Error translating value from runtime", 1);
 		lua_error(lua);
 	}
 	return 1;
@@ -692,7 +696,7 @@ static int _luaNextTable(lua_State* lua) {
 
 	table = mScriptContextAccessWeakref(luaContext->d.context, table);
 	if (!table) {
-		lua_pushliteral(lua, "Invalid object");
+		luaL_traceback(lua, lua, "Invalid table", 1);
 		lua_error(lua);
 	}
 
@@ -711,12 +715,12 @@ static int _luaNextTable(lua_State* lua) {
 	}
 
 	if (!_luaWrap(luaContext, mScriptTableIteratorGetKey(table, &iter))) {
-		lua_pushliteral(lua, "Iteration error");
+		luaL_traceback(lua, lua, "Iteration error", 1);
 		lua_error(lua);
 	}
 
 	if (!_luaWrap(luaContext, mScriptTableIteratorGetValue(table, &iter))) {
-		lua_pushliteral(lua, "Iteration error");
+		luaL_traceback(lua, lua, "Iteration error", 1);
 		lua_error(lua);
 	}
 
@@ -746,14 +750,14 @@ int _luaGetList(lua_State* lua) {
 		obj = mScriptValueUnwrap(obj);
 	}
 	if (!obj || obj->type != mSCRIPT_TYPE_MS_LIST) {
-		lua_pushliteral(lua, "Invalid object");
+		luaL_traceback(lua, lua, "Invalid list", 1);
 		lua_error(lua);
 	}
 	struct mScriptList* list = obj->value.opaque;
 
 	// Lua indexes from 1
 	if (index < 1) {
-		lua_pushliteral(lua, "Invalid index");
+		luaL_traceback(lua, lua, "Invalid index", 1);
 		lua_error(lua);
 	}
 	if ((size_t) index > mScriptListSize(list)) {
@@ -763,7 +767,7 @@ int _luaGetList(lua_State* lua) {
 
 	struct mScriptValue* val = mScriptListGetPointer(list, index);
 	if (!_luaWrap(luaContext, val)) {
-		lua_pushliteral(lua, "Invalid value");
+		luaL_traceback(lua, lua, "Error translating value from runtime", 1);
 		lua_error(lua);
 	}
 	return 1;
@@ -779,7 +783,7 @@ static int _luaLenList(lua_State* lua) {
 		obj = mScriptValueUnwrap(obj);
 	}
 	if (!obj || obj->type != mSCRIPT_TYPE_MS_LIST) {
-		lua_pushliteral(lua, "Invalid object");
+		luaL_traceback(lua, lua, "Invalid list", 1);
 		lua_error(lua);
 	}
 	struct mScriptList* list = obj->value.opaque;
