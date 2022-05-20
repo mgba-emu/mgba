@@ -60,12 +60,12 @@ void mScriptContextInit(struct mScriptContext* context) {
 }
 
 void mScriptContextDeinit(struct mScriptContext* context) {
-	HashTableDeinit(&context->engines);
 	HashTableDeinit(&context->rootScope);
 	HashTableDeinit(&context->weakrefs);
 	mScriptContextDrainPool(context);
 	mScriptListDeinit(&context->refPool);
 	HashTableDeinit(&context->callbacks);
+	HashTableDeinit(&context->engines);
 }
 
 void mScriptContextFillPool(struct mScriptContext* context, struct mScriptValue* value) {

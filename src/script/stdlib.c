@@ -18,6 +18,7 @@ static void _mScriptCallbackAdd(struct mScriptCallbackAdapter* adapter, struct m
 		fn = mScriptValueUnwrap(fn);
 	}
 	mScriptContextAddCallback(adapter->context, name->buffer, fn);
+	mScriptValueDeref(fn);
 }
 
 mSCRIPT_DECLARE_STRUCT(mScriptCallbackAdapter);
