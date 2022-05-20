@@ -161,7 +161,8 @@ struct mScriptCoreAdapter {
 	struct mScriptValue memory;
 };
 
-struct mScriptUILibrary {
+struct mScriptConsole {
+	struct mLogger* logger;
 	mScriptContextBufferFactory textBufferFactory;
 	void* textBufferContext;
 };
@@ -201,12 +202,12 @@ static uint32_t mScriptMemoryAdapterRead32(struct mScriptMemoryAdapter* adapter,
 
 static struct mScriptValue* mScriptMemoryAdapterReadRange(struct mScriptMemoryAdapter* adapter, uint32_t address, uint32_t length) {
 	CALCULATE_SEGMENT_INFO;
-	struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
-	struct mScriptList* list = value->value.opaque;
+	struct mScriptValue* value = mScriptStringCreateEmpty(length);
+	char* buffer = value->value.string->buffer;
 	uint32_t i;
 	for (i = 0; i < length; ++i, ++address) {
 		CALCULATE_SEGMENT_ADDRESS;
-		*mScriptListAppend(list) = mSCRIPT_MAKE_U32(adapter->core->rawRead8(adapter->core, segmentAddress, segment));
+		buffer[i] = adapter->core->rawRead8(adapter->core, segmentAddress, segment);
 	}
 	return value;
 }
@@ -268,11 +269,11 @@ static struct mScriptValue* _mScriptCoreGetGameCode(const struct mCore* core) {
 }
 
 static struct mScriptValue* _mScriptCoreReadRange(struct mCore* core, uint32_t address, uint32_t length) {
-	struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
-	struct mScriptList* list = value->value.opaque;
+	struct mScriptValue* value = mScriptStringCreateEmpty(length);
+	char* buffer = value->value.string->buffer;
 	uint32_t i;
 	for (i = 0; i < length; ++i, ++address) {
-		*mScriptListAppend(list) = mSCRIPT_MAKE_U32(core->busRead8(core, address));
+		buffer[i] = core->busRead8(core, address);
 	}
 	return value;
 }
@@ -497,36 +498,70 @@ void mScriptContextDetachCore(struct mScriptContext* context) {
 	mScriptContextRemoveGlobal(context, "emu");
 }
 
-void mScriptLog(struct mLogger* logger, struct mScriptString* msg) {
-	mLogExplicit(logger, _mLOG_CAT_SCRIPT, mLOG_INFO, "%s", msg->buffer);
+static struct mScriptTextBuffer* _mScriptConsoleCreateBuffer(struct mScriptConsole* lib, const char* name) {
+	struct mScriptTextBuffer* buffer = lib->textBufferFactory(lib->textBufferContext);
+	buffer->init(buffer, name);
+	return buffer;
 }
 
-void mScriptWarn(struct mLogger* logger, struct mScriptString* msg) {
-	mLogExplicit(logger, _mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);
+static void mScriptConsoleLog(struct mScriptConsole* console, struct mScriptString* msg) {
+	if (console->logger) {
+		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_INFO, "%s", msg->buffer);
+	} else {
+		mLog(_mLOG_CAT_SCRIPT, mLOG_INFO, "%s", msg->buffer);		
+	}
 }
 
-void mScriptError(struct mLogger* logger, struct mScriptString* msg) {
-	mLogExplicit(logger, _mLOG_CAT_SCRIPT, mLOG_ERROR, "%s", msg->buffer);
+static void mScriptConsoleWarn(struct mScriptConsole* console, struct mScriptString* msg) {
+	if (console->logger) {
+		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);
+	} else {
+		mLog(_mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);		
+	}
 }
 
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mLogger, log, mScriptLog, 1, STR, msg);
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mLogger, warn, mScriptWarn, 1, STR, msg);
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mLogger, error, mScriptError, 1, STR, msg);
+static void mScriptConsoleError(struct mScriptConsole* console, struct mScriptString* msg) {
+	if (console->logger) {
+		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_ERROR, "%s", msg->buffer);
+	} else {
+		mLog(_mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);		
+	}
+}
 
-mSCRIPT_DEFINE_STRUCT(mLogger)
-mSCRIPT_DEFINE_STRUCT_METHOD(mLogger, log)
-mSCRIPT_DEFINE_STRUCT_METHOD(mLogger, warn)
-mSCRIPT_DEFINE_STRUCT_METHOD(mLogger, error)
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptConsole, log, mScriptConsoleLog, 1, STR, msg);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptConsole, warn, mScriptConsoleWarn, 1, STR, msg);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptConsole, error, mScriptConsoleError, 1, STR, msg);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptConsole, S(mScriptTextBuffer), createBuffer, _mScriptConsoleCreateBuffer, 1, CHARP, name);
+
+mSCRIPT_DEFINE_STRUCT(mScriptConsole)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptConsole, log)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptConsole, warn)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptConsole, error)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptConsole, createBuffer)
 mSCRIPT_DEFINE_END;
 
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mScriptConsole, createBuffer)
+	mSCRIPT_MAKE_CHARP(NULL)
+mSCRIPT_DEFINE_DEFAULTS_END;
+
 void mScriptContextAttachLogger(struct mScriptContext* context, struct mLogger* logger) {
-	struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mLogger));
-	value->value.opaque = logger;
-	mScriptContextSetGlobal(context, "console", value);
+	struct mScriptValue* value = mScriptContextEnsureGlobal(context, "console", mSCRIPT_TYPE_MS_S(mScriptConsole));
+	struct mScriptConsole* console = value->value.opaque;
+	if (!console) {
+		console = calloc(1, sizeof(*console));
+		value->value.opaque = console;
+		value->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+	}
+	console->logger = logger;
 }
 
 void mScriptContextDetachLogger(struct mScriptContext* context) {
-	mScriptContextRemoveGlobal(context, "console");
+	struct mScriptValue* value = mScriptContextGetGlobal(context, "console");
+	if (!value) {
+		return;
+	}
+	struct mScriptConsole* console = value->value.opaque;
+	console->logger = mLogGetContext();
 }
 
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mScriptTextBuffer, deinit, 0);
@@ -556,31 +591,15 @@ mSCRIPT_DEFINE_STRUCT(mScriptTextBuffer)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, setName)
 mSCRIPT_DEFINE_END;
 
-struct mScriptTextBuffer* _mScriptUICreateBuffer(struct mScriptUILibrary* lib, const char* name) {
-	struct mScriptTextBuffer* buffer = lib->textBufferFactory(lib->textBufferContext);
-	buffer->init(buffer, name);
-	return buffer;
-}
-
-mSCRIPT_DECLARE_STRUCT(mScriptUILibrary);
-mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptUILibrary, S(mScriptTextBuffer), createBuffer, _mScriptUICreateBuffer, 1, CHARP, name);
-
-mSCRIPT_DEFINE_STRUCT(mScriptUILibrary)
-	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptUILibrary, createBuffer)
-mSCRIPT_DEFINE_END;
-
-mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mScriptUILibrary, createBuffer)
-	mSCRIPT_MAKE_CHARP(NULL)
-mSCRIPT_DEFINE_DEFAULTS_END;
-
 void mScriptContextSetTextBufferFactory(struct mScriptContext* context, mScriptContextBufferFactory factory, void* cbContext) {
-	struct mScriptValue* value = mScriptContextEnsureGlobal(context, "ui", mSCRIPT_TYPE_MS_S(mScriptUILibrary));
-	struct mScriptUILibrary* uiLib = value->value.opaque;
-	if (!uiLib) {
-		uiLib = calloc(1, sizeof(*uiLib));
-		value->value.opaque = uiLib;
+	struct mScriptValue* value = mScriptContextEnsureGlobal(context, "console", mSCRIPT_TYPE_MS_S(mScriptConsole));
+	struct mScriptConsole* console = value->value.opaque;
+	if (!console) {
+		console = calloc(1, sizeof(*console));
+		console->logger = mLogGetContext();
+		value->value.opaque = console;
 		value->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 	}
-	uiLib->textBufferFactory = factory;
-	uiLib->textBufferContext = cbContext;
+	console->textBufferFactory = factory;
+	console->textBufferContext = cbContext;
 }

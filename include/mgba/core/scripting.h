@@ -20,10 +20,10 @@ CXX_GUARD_START
 mLOG_DECLARE_CATEGORY(SCRIPT);
 
 struct mCore;
-struct mLogger;
 struct mScriptTextBuffer;
 mSCRIPT_DECLARE_STRUCT(mCore);
 mSCRIPT_DECLARE_STRUCT(mLogger);
+mSCRIPT_DECLARE_STRUCT(mScriptConsole);
 mSCRIPT_DECLARE_STRUCT(mScriptTextBuffer);
 
 struct mScriptBridge;

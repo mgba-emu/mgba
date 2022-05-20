@@ -313,17 +313,6 @@ M_TEST_DEFINE(logging) {
 	assert_string_equal(logger.error, "error");
 
 	mScriptContextDetachLogger(&context);
-
-	LOAD_PROGRAM(
-		"assert(not console)\n"
-	);
-	assert_true(lua->run(lua));
-
-	LOAD_PROGRAM(
-		"a:log(\"l2\")\n"
-	);
-	assert_false(lua->run(lua));
-
 	mScriptTestLoggerDeinit(&logger);
 	mScriptContextDeinit(&context);
 }

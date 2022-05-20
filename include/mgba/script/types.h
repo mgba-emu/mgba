@@ -51,11 +51,11 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_S64 s64
 #define mSCRIPT_TYPE_FIELD_U64 u64
 #define mSCRIPT_TYPE_FIELD_F64 f64
-#define mSCRIPT_TYPE_FIELD_STR opaque
+#define mSCRIPT_TYPE_FIELD_STR string
 #define mSCRIPT_TYPE_FIELD_CHARP copaque
 #define mSCRIPT_TYPE_FIELD_PTR opaque
-#define mSCRIPT_TYPE_FIELD_LIST opaque
-#define mSCRIPT_TYPE_FIELD_TABLE opaque
+#define mSCRIPT_TYPE_FIELD_LIST list
+#define mSCRIPT_TYPE_FIELD_TABLE table
 #define mSCRIPT_TYPE_FIELD_WRAPPER opaque
 #define mSCRIPT_TYPE_FIELD_WEAKREF u32
 #define mSCRIPT_TYPE_FIELD_S(STRUCT) opaque
@@ -172,6 +172,9 @@ struct mScriptValue {
 		double f64;
 		void* opaque;
 		const void* copaque;
+		struct mScriptString* string;
+		struct Table* table;
+		struct mScriptList* list;
 	} value;
 };
 
@@ -270,6 +273,8 @@ void mScriptValueWrap(struct mScriptValue* val, struct mScriptValue* out);
 struct mScriptValue* mScriptValueUnwrap(struct mScriptValue* val);
 const struct mScriptValue* mScriptValueUnwrapConst(const struct mScriptValue* val);
 
+struct mScriptValue* mScriptStringCreateEmpty(size_t size);
+struct mScriptValue* mScriptStringCreateFromBytes(const void* string, size_t size);
 struct mScriptValue* mScriptStringCreateFromUTF8(const char* string);
 struct mScriptValue* mScriptStringCreateFromASCII(const char* string);
 struct mScriptValue* mScriptValueCreateFromUInt(uint32_t value);

@@ -182,6 +182,7 @@ const struct mScriptType mSTCharPtr = {
 	.hash = _hashString,
 	.equal = _charpEqual,
 	.cast = _stringCast,
+	.isConst = true,
 };
 
 const struct mScriptType mSTList = {
@@ -223,24 +224,24 @@ const struct mScriptType mSTWeakref = {
 DEFINE_VECTOR(mScriptList, struct mScriptValue)
 
 void _allocList(struct mScriptValue* val) {
-	val->value.opaque = malloc(sizeof(struct mScriptList));
-	mScriptListInit(val->value.opaque, 0);
+	val->value.list = malloc(sizeof(struct mScriptList));
+	mScriptListInit(val->value.list, 0);
 }
 
 void _freeList(struct mScriptValue* val) {
 	size_t i;
-	for (i = 0; i < mScriptListSize(val->value.opaque); ++i) {
-		struct mScriptValue* unwrapped = mScriptValueUnwrap(mScriptListGetPointer(val->value.opaque, i));
+	for (i = 0; i < mScriptListSize(val->value.list); ++i) {
+		struct mScriptValue* unwrapped = mScriptValueUnwrap(mScriptListGetPointer(val->value.list, i));
 		if (unwrapped) {
 			mScriptValueDeref(unwrapped);
 		}
 	}
-	mScriptListDeinit(val->value.opaque);
-	free(val->value.opaque);
+	mScriptListDeinit(val->value.list);
+	free(val->value.list);
 }
 
 void _allocTable(struct mScriptValue* val) {
-	val->value.opaque = malloc(sizeof(struct Table));
+	val->value.table = malloc(sizeof(struct Table));
 	struct TableFunctions funcs = {
 		.deinitializer = _deinitTableValue,
 		.hash = _valHash,
@@ -248,12 +249,12 @@ void _allocTable(struct mScriptValue* val) {
 		.ref = _valRef,
 		.deref = _valDeref
 	};
-	HashTableInitCustom(val->value.opaque, 0, &funcs);
+	HashTableInitCustom(val->value.table, 0, &funcs);
 }
 
 void _freeTable(struct mScriptValue* val) {
-	HashTableDeinit(val->value.opaque);
-	free(val->value.opaque);
+	HashTableDeinit(val->value.table);
+	free(val->value.table);
 }
 
 void _deinitTableValue(void* val) {
@@ -264,11 +265,11 @@ static void _allocString(struct mScriptValue* val) {
 	struct mScriptString* string = calloc(1, sizeof(*string));
 	string->size = 0;
 	string->buffer = NULL;
-	val->value.opaque = string;
+	val->value.string = string;
 }
 
 static void _freeString(struct mScriptValue* val) {
-	struct mScriptString* string = val->value.opaque;
+	struct mScriptString* string = val->value.string;
 	if (string->size) {
 		free(string->buffer);
 	}
@@ -287,7 +288,7 @@ static bool _stringCast(const struct mScriptValue* in, const struct mScriptType*
 		out->type = type;
 		out->refs = mSCRIPT_VALUE_UNREF;
 		out->flags = 0;
-		out->value.opaque = ((struct mScriptString*) in->value.opaque)->buffer;
+		out->value.opaque = in->value.string->buffer;
 		return true;
 	}
 	return false;
@@ -297,7 +298,7 @@ static uint32_t _hashString(const struct mScriptValue* val) {
 	const char* buffer = 0;
 	size_t size = 0;
 	if (val->type == &mSTString) {
-		struct mScriptString* string = val->value.opaque;
+		struct mScriptString* string = val->value.string;
 		buffer = string->buffer;
 		size = string->size;
 	} else if (val->type == &mSTCharPtr) {
@@ -642,7 +643,7 @@ bool _charpEqual(const struct mScriptValue* a, const struct mScriptValue* b) {
 		valB = b->value.opaque;
 		lenB = strlen(valB);
 	} else if (b->type == &mSTString) {
-		struct mScriptString* stringB = b->value.opaque;
+		struct mScriptString* stringB = b->value.string;
 		valB = stringB->buffer;
 		lenB = stringB->size;
 	} else {
@@ -657,7 +658,7 @@ bool _charpEqual(const struct mScriptValue* a, const struct mScriptValue* b) {
 }
 
 bool _stringEqual(const struct mScriptValue* a, const struct mScriptValue* b) {
-	struct mScriptString* stringA = a->value.opaque;
+	struct mScriptString* stringA = a->value.string;
 	const char* valA = stringA->buffer;
 	const char* valB;
 	size_t lenA = stringA->size;
@@ -669,7 +670,7 @@ bool _stringEqual(const struct mScriptValue* a, const struct mScriptValue* b) {
 		valB = b->value.opaque;
 		lenB = strlen(valB);
 	} else if (b->type == &mSTString) {
-		struct mScriptString* stringB = b->value.opaque;
+		struct mScriptString* stringB = b->value.string;
 		valB = stringB->buffer;
 		lenB = stringB->size;
 	} else {
@@ -757,9 +758,30 @@ const struct mScriptValue* mScriptValueUnwrapConst(const struct mScriptValue* va
 	return NULL;
 }
 
-struct mScriptValue* mScriptStringCreateFromUTF8(const char* string) {
+struct mScriptValue* mScriptStringCreateEmpty(size_t size) {
 	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_STR);
 	struct mScriptString* internal = val->value.opaque;
+	internal->size = size;
+	internal->length = 0;
+	internal->buffer = malloc(size + 1);
+	memset(internal->buffer, 0, size + 1);
+	return val;
+}
+
+struct mScriptValue* mScriptStringCreateFromBytes(const void* string, size_t size) {
+	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_STR);
+	struct mScriptString* internal = val->value.opaque;
+	internal->size = size;
+	internal->length = 0;
+	internal->buffer = malloc(size + 1);
+	memcpy(internal->buffer, string, size);
+	internal->buffer[size] = '\0';
+	return val;
+}
+
+struct mScriptValue* mScriptStringCreateFromUTF8(const char* string) {
+	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_STR);
+	struct mScriptString* internal = val->value.string;
 	internal->size = strlen(string);
 	internal->length = utf8strlen(string);
 	internal->buffer = strdup(string);
@@ -768,7 +790,7 @@ struct mScriptValue* mScriptStringCreateFromUTF8(const char* string) {
 
 struct mScriptValue* mScriptStringCreateFromASCII(const char* string) {
 	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_STR);
-	struct mScriptString* internal = val->value.opaque;
+	struct mScriptString* internal = val->value.string;
 	internal->size = strlen(string);
 	internal->length = strlen(string);
 	internal->buffer = latin1ToUtf8(string, internal->size + 1);
@@ -794,9 +816,8 @@ bool mScriptTableInsert(struct mScriptValue* table, struct mScriptValue* key, st
 	if (!key->type->hash) {
 		return false;
 	}
-	struct Table* t = table->value.opaque;
 	mScriptValueRef(value);
-	HashTableInsertCustom(t, key, value);
+	HashTableInsertCustom(table->value.table, key, value);
 	return true;
 }
 
@@ -807,8 +828,7 @@ bool mScriptTableRemove(struct mScriptValue* table, struct mScriptValue* key) {
 	if (!key->type->hash) {
 		return false;
 	}
-	struct Table* t = table->value.opaque;
-	HashTableRemoveCustom(t, key);
+	HashTableRemoveCustom(table->value.table, key);
 	return true;
 }
 
@@ -822,16 +842,14 @@ struct mScriptValue* mScriptTableLookup(struct mScriptValue* table, struct mScri
 	if (!key->type->hash) {
 		return false;
 	}
-	struct Table* t = table->value.opaque;
-	return HashTableLookupCustom(t, key);
+	return HashTableLookupCustom(table->value.table, key);
 }
 
 bool mScriptTableClear(struct mScriptValue* table) {
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
 		return false;
 	}
-	struct Table* t = table->value.opaque;
-	HashTableClear(t);
+	HashTableClear(table->value.table);
 	return true;
 }
 
@@ -842,8 +860,7 @@ bool mScriptTableIteratorStart(struct mScriptValue* table, struct TableIterator*
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
 		return false;
 	}
-	struct Table* t = table->value.opaque;
-	return HashTableIteratorStart(t, iter);
+	return HashTableIteratorStart(table->value.table, iter);
 }
 
 bool mScriptTableIteratorNext(struct mScriptValue* table, struct TableIterator* iter) {
@@ -853,8 +870,7 @@ bool mScriptTableIteratorNext(struct mScriptValue* table, struct TableIterator* 
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
 		return false;
 	}
-	struct Table* t = table->value.opaque;
-	return HashTableIteratorNext(t, iter);
+	return HashTableIteratorNext(table->value.table, iter);
 }
 
 struct mScriptValue* mScriptTableIteratorGetKey(struct mScriptValue* table, struct TableIterator* iter) {
@@ -864,8 +880,7 @@ struct mScriptValue* mScriptTableIteratorGetKey(struct mScriptValue* table, stru
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
 		return NULL;
 	}
-	struct Table* t = table->value.opaque;
-	return HashTableIteratorGetCustomKey(t, iter);
+	return HashTableIteratorGetCustomKey(table->value.table, iter);
 }
 
 struct mScriptValue* mScriptTableIteratorGetValue(struct mScriptValue* table, struct TableIterator* iter) {
@@ -875,8 +890,7 @@ struct mScriptValue* mScriptTableIteratorGetValue(struct mScriptValue* table, st
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
 		return NULL;
 	}
-	struct Table* t = table->value.opaque;
-	return HashTableIteratorGetValue(t, iter);
+	return HashTableIteratorGetValue(table->value.table, iter);
 }
 
 bool mScriptTableIteratorLookup(struct mScriptValue* table, struct TableIterator* iter, struct mScriptValue* key) {
@@ -886,8 +900,7 @@ bool mScriptTableIteratorLookup(struct mScriptValue* table, struct TableIterator
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
 		return false;
 	}
-	struct Table* t = table->value.opaque;
-	return HashTableIteratorLookupCustom(t, iter, key);
+	return HashTableIteratorLookupCustom(table->value.table, iter, key);
 }
 
 void mScriptFrameInit(struct mScriptFrame* frame) {
@@ -1053,7 +1066,7 @@ static bool _accessRawMember(struct mScriptClassMember* member, void* raw, bool 
 		val->refs = mSCRIPT_VALUE_UNREF;
 		val->flags = 0;
 		val->type = mSCRIPT_TYPE_MS_WRAPPER;
-		val->value.opaque = raw;
+		val->value.table = raw;
 		break;
 	case mSCRIPT_TYPE_FUNCTION:
 		val->refs = mSCRIPT_VALUE_UNREF;

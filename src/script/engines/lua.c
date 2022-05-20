@@ -216,6 +216,8 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext) {
 		return NULL;
 	}
 
+	size_t size;
+	const void* buffer;
 	struct mScriptValue* value = NULL;
 	switch (lua_type(luaContext->lua, -1)) {
 	case LUA_TNUMBER:
@@ -234,7 +236,8 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext) {
 		value->value.s32 = lua_toboolean(luaContext->lua, -1);
 		break;
 	case LUA_TSTRING:
-		value = mScriptStringCreateFromUTF8(lua_tostring(luaContext->lua, -1));
+		buffer = lua_tolstring(luaContext->lua, -1, &size);
+		value = mScriptStringCreateFromBytes(buffer, size);
 		mScriptValueWrap(value, mScriptListAppend(&luaContext->d.context->refPool));
 		mScriptValueDeref(value);
 		break;
@@ -311,7 +314,7 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		}
 		break;
 	case mSCRIPT_TYPE_STRING:
-		lua_pushstring(luaContext->lua, ((struct mScriptString*) value->value.opaque)->buffer);
+		lua_pushlstring(luaContext->lua, value->value.string->buffer, value->value.string->size);
 		mScriptValueDeref(value);
 		break;
 	case mSCRIPT_TYPE_LIST:
@@ -753,7 +756,7 @@ int _luaGetList(lua_State* lua) {
 		luaL_traceback(lua, lua, "Invalid list", 1);
 		lua_error(lua);
 	}
-	struct mScriptList* list = obj->value.opaque;
+	struct mScriptList* list = obj->value.list;
 
 	// Lua indexes from 1
 	if (index < 1) {
@@ -786,7 +789,7 @@ static int _luaLenList(lua_State* lua) {
 		luaL_traceback(lua, lua, "Invalid list", 1);
 		lua_error(lua);
 	}
-	struct mScriptList* list = obj->value.opaque;
+	struct mScriptList* list = obj->value.list;
 	lua_pushinteger(lua, mScriptListSize(list));
 	return 1;
 }

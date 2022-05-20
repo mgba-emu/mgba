@@ -195,10 +195,10 @@ void mScriptContextTriggerCallback(struct mScriptContext* context, const char* c
 		return;
 	}
 	size_t i;
-	for (i = 0; i < mScriptListSize(list->value.opaque); ++i) {
+	for (i = 0; i < mScriptListSize(list->value.list); ++i) {
 		struct mScriptFrame frame;
 		mScriptFrameInit(&frame);
-		struct mScriptValue* fn = mScriptListGetPointer(list->value.opaque, i);
+		struct mScriptValue* fn = mScriptListGetPointer(list->value.list, i);
 		if (fn->type->base == mSCRIPT_TYPE_WRAPPER) {
 			fn = mScriptValueUnwrap(fn);
 		}
@@ -216,7 +216,7 @@ void mScriptContextAddCallback(struct mScriptContext* context, const char* callb
 		list = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
 		HashTableInsert(&context->callbacks, callback, list);
 	}
-	mScriptValueWrap(fn, mScriptListAppend(list->value.opaque));
+	mScriptValueWrap(fn, mScriptListAppend(list->value.list));
 }
 
 void mScriptContextExportConstants(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* constants) {
