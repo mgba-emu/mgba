@@ -268,6 +268,29 @@ static struct mScriptValue* _mScriptCoreGetGameCode(const struct mCore* core) {
 	return mScriptStringCreateFromASCII(code);
 }
 
+static struct mScriptValue* _mScriptCoreChecksum(const struct mCore* core, int t) {
+	enum mCoreChecksumType type = (enum mCoreChecksumType) t;
+	size_t size = 0;
+	switch (type) {
+	case mCHECKSUM_CRC32:
+		size = 4;
+		break;
+	}
+	if (!size) {
+		return NULL;
+	}
+	void* data = calloc(1, size);
+	core->checksum(core, data, type);
+	if (type == mCHECKSUM_CRC32) {
+		// This checksum is endian-dependent...let's just make it big endian for Lua
+		uint32_t* crc = data;
+		STORE_32BE(*crc, 0, crc);
+	}
+	struct mScriptValue* ret = mScriptStringCreateFromBytes(data, size);
+	free(data);
+	return ret;
+}
+
 static struct mScriptValue* _mScriptCoreReadRange(struct mCore* core, uint32_t address, uint32_t length) {
 	struct mScriptValue* value = mScriptStringCreateEmpty(length);
 	char* buffer = value->value.string->buffer;
@@ -299,6 +322,7 @@ mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frameCycles, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frequency, 0);
 mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WRAPPER, getGameTitle, _mScriptCoreGetGameTitle, 0);
 mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WRAPPER, getGameCode, _mScriptCoreGetGameCode, 0);
+mSCRIPT_DECLARE_STRUCT_C_METHOD_WITH_DEFAULTS(mCore, WRAPPER, checksum, _mScriptCoreChecksum, 1, S32, type);
 
 // Run functions
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, runFrame, 0);
@@ -339,6 +363,8 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frameCycles)
 	mSCRIPT_DEFINE_DOCSTRING("Get the number of cycles per second")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frequency)
+	mSCRIPT_DEFINE_DOCSTRING("Get the checksum of the loaded ROM")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, checksum)
 
 	mSCRIPT_DEFINE_DOCSTRING("Get internal title of the game from the ROM header")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, getGameTitle)
@@ -387,6 +413,10 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_DOCSTRING("Save a screenshot")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, screenshot)
 mSCRIPT_DEFINE_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, checksum)
+	mSCRIPT_MAKE_S32(mCHECKSUM_CRC32)
+mSCRIPT_DEFINE_DEFAULTS_END;
 
 mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateSlot)
 	mSCRIPT_NO_DEFAULT,

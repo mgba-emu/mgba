@@ -55,5 +55,9 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 		mSCRIPT_CONSTANT_PAIR(mPLATFORM, GB),
 		mSCRIPT_CONSTANT_SENTINEL
 	});
+	mScriptContextExportConstants(context, "CHECKSUM", (struct mScriptKVPair[]) {
+		mSCRIPT_CONSTANT_PAIR(mCHECKSUM, CRC32),
+		mSCRIPT_CONSTANT_SENTINEL
+	});
 	mScriptContextSetGlobal(context, "C", context->constants);
 }
