@@ -40,6 +40,7 @@ static int _luaGetObject(lua_State* lua);
 static int _luaSetObject(lua_State* lua);
 static int _luaGcObject(lua_State* lua);
 static int _luaGetTable(lua_State* lua);
+static int _luaLenTable(lua_State* lua);
 static int _luaPairsTable(lua_State* lua);
 static int _luaGetList(lua_State* lua);
 static int _luaLenList(lua_State* lua);
@@ -103,6 +104,7 @@ static const luaL_Reg _mSTStruct[] = {
 
 static const luaL_Reg _mSTTable[] = {
 	{ "__index", _luaGetTable },
+	{ "__len", _luaLenTable },
 	{ "__pairs", _luaPairsTable },
 	{ NULL, NULL }
 };
@@ -662,14 +664,24 @@ static int _luaGcObject(lua_State* lua) {
 int _luaGetTable(lua_State* lua) {
 	struct mScriptEngineContextLua* luaContext = _luaGetContext(lua);
 	char key[MAX_KEY_SIZE];
-	const char* keyPtr = lua_tostring(lua, -1);
-	struct mScriptValue* obj = lua_touserdata(lua, -2);
-
-	if (!keyPtr) {
+	int type = lua_type(luaContext->lua, -1);
+	const char* keyPtr = NULL;
+	int64_t intKey;
+	switch (type) {
+	case LUA_TNUMBER:
+		intKey = lua_tointeger(luaContext->lua, -1);
+		break;
+	case LUA_TSTRING:
+		keyPtr = lua_tostring(lua, -1);
+		break;
+	default:
 		lua_pop(lua, 2);
 		return 0;
 	}
-	strlcpy(key, keyPtr, sizeof(key));
+	struct mScriptValue* obj = lua_touserdata(lua, -2);
+	if (keyPtr) {
+		strlcpy(key, keyPtr, sizeof(key));
+	}
 	lua_pop(lua, 2);
 
 	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
@@ -678,7 +690,15 @@ int _luaGetTable(lua_State* lua) {
 		lua_error(lua);
 	}
 
-	struct mScriptValue keyVal = mSCRIPT_MAKE_CHARP(key);
+	struct mScriptValue keyVal;
+	switch (type) {
+	case LUA_TNUMBER:
+		keyVal = mSCRIPT_MAKE_S64(intKey);
+		break;
+	case LUA_TSTRING:
+		keyVal = mSCRIPT_MAKE_CHARP(key);
+		break;
+	}
 	struct mScriptValue* val = mScriptTableLookup(obj, &keyVal);
 	if (!val) {
 		return 0;
@@ -691,13 +711,41 @@ int _luaGetTable(lua_State* lua) {
 	return 1;
 }
 
+int _luaLenTable(lua_State* lua) {
+	struct mScriptEngineContextLua* luaContext = _luaGetContext(lua);
+	struct mScriptValue* obj = lua_touserdata(lua, -1);
+	lua_pop(lua, 1);
+
+	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
+	if (!obj) {
+		luaL_traceback(lua, lua, "Invalid table", 1);
+		lua_error(lua);
+	}
+
+	struct mScriptValue val = mSCRIPT_MAKE_U64(mScriptTableSize(obj));
+
+	if (!_luaWrap(luaContext, &val)) {
+		luaL_traceback(lua, lua, "Error translating value from runtime", 1);
+		lua_error(lua);
+	}
+	return 1;
+}
+
 static int _luaNextTable(lua_State* lua) {
 	struct mScriptEngineContextLua* luaContext = _luaGetContext(lua);
 	char key[MAX_KEY_SIZE];
-	const char* keyPtr = lua_tostring(lua, -1);
+	int type = lua_type(luaContext->lua, -1);
+	const char* keyPtr = NULL;
+	struct mScriptValue keyVal = {0};
+	switch (type) {
+	case LUA_TNUMBER:
+		keyVal = mSCRIPT_MAKE_S64(lua_tointeger(luaContext->lua, -1));
+		break;
+	case LUA_TSTRING:
+		keyPtr = lua_tostring(lua, -1);
+		break;
+	}
 	struct mScriptValue* table = lua_touserdata(lua, -2);
-	struct mScriptValue keyVal;
-
 	if (keyPtr) {
 		strlcpy(key, keyPtr, sizeof(key));
 		keyVal = mSCRIPT_MAKE_CHARP(key);
@@ -711,7 +759,7 @@ static int _luaNextTable(lua_State* lua) {
 	}
 
 	struct TableIterator iter;
-	if (keyPtr) {
+	if (keyVal.type) {
 		if (!mScriptTableIteratorLookup(table, &iter, &keyVal)) {
 			return 0;
 		}

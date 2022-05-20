@@ -20,6 +20,10 @@
 		vf->close(vf); \
 	} while(0)
 
+#define TEST_PROGRAM(PROG) \
+	LOAD_PROGRAM(PROG); \
+	assert_true(lua->run(lua)); \
+
 struct Test {
 	int32_t i;
 	int32_t (*ifn0)(struct Test*);
@@ -154,16 +158,14 @@ M_TEST_DEFINE(getGlobal) {
 	struct mScriptValue a = mSCRIPT_MAKE_S32(1);
 	struct mScriptValue* val;
 
-	LOAD_PROGRAM("a = 1");
-	assert_true(lua->run(lua));
+	TEST_PROGRAM("a = 1");
 
 	val = lua->getGlobal(lua, "a");
 	assert_non_null(val);
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
 
-	LOAD_PROGRAM("b = 1");
-	assert_true(lua->run(lua));
+	TEST_PROGRAM("b = 1");
 
 	val = lua->getGlobal(lua, "a");
 	assert_non_null(val);
@@ -176,8 +178,7 @@ M_TEST_DEFINE(getGlobal) {
 	mScriptValueDeref(val);
 
 	a = mSCRIPT_MAKE_S32(2);
-	LOAD_PROGRAM("a = 2");
-	assert_true(lua->run(lua));
+	TEST_PROGRAM("a = 2");
 
 	val = lua->getGlobal(lua, "a");
 	assert_non_null(val);
@@ -185,8 +186,7 @@ M_TEST_DEFINE(getGlobal) {
 	mScriptValueDeref(val);
 
 	a = mSCRIPT_MAKE_S32(3);
-	LOAD_PROGRAM("b = a + b");
-	assert_true(lua->run(lua));
+	TEST_PROGRAM("b = a + b");
 
 	val = lua->getGlobal(lua, "b");
 	assert_non_null(val);
@@ -250,8 +250,8 @@ M_TEST_DEFINE(callLuaFunc) {
 
 	struct mScriptValue* fn;
 
-	LOAD_PROGRAM("function a(b) return b + 1 end; function c(d, e) return d + e end");
-	assert_true(lua->run(lua));
+	TEST_PROGRAM("function a(b) return b + 1 end; function c(d, e) return d + e end");
+	assert_null(lua->getError(lua));
 
 	fn = lua->getGlobal(lua, "a");
 	assert_non_null(fn);
@@ -291,11 +291,10 @@ M_TEST_DEFINE(callCFunc) {
 	struct mScriptValue a = mSCRIPT_MAKE_S32(1);
 	struct mScriptValue* val;
 
-	LOAD_PROGRAM("a = b(1); c = d(1, 2)");
-
 	assert_true(lua->setGlobal(lua, "b", &boundIdentityInt));
 	assert_true(lua->setGlobal(lua, "d", &boundAddInts));
-	assert_true(lua->run(lua));
+	TEST_PROGRAM("a = b(1); c = d(1, 2)");
+	assert_null(lua->getError(lua));
 
 	val = lua->getGlobal(lua, "a");
 	assert_non_null(val);
@@ -535,6 +534,91 @@ M_TEST_DEFINE(errorReporting) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(tableLookup) {
+	SETUP_LUA;
+
+	assert_null(lua->getError(lua));
+	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+	assert_non_null(table);
+	struct mScriptValue* val;
+
+	mScriptContextSetGlobal(&context, "t", table);
+
+	val = mScriptValueAlloc(mSCRIPT_TYPE_MS_S64);
+	val->value.s64 = 0;
+	assert_true(mScriptTableInsert(table, &mSCRIPT_MAKE_S64(0), val));
+	mScriptValueDeref(val);
+
+	val = mScriptStringCreateFromASCII("t");
+	assert_true(mScriptTableInsert(table, &mSCRIPT_MAKE_CHARP("t"), val));
+	mScriptValueDeref(val);
+
+	val = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+	assert_true(mScriptTableInsert(table, &mSCRIPT_MAKE_CHARP("sub"), val));
+	mScriptValueDeref(val);
+
+	table = val;
+	val = mScriptStringCreateFromASCII("t");
+	assert_true(mScriptTableInsert(table, &mSCRIPT_MAKE_CHARP("t"), val));
+	mScriptValueDeref(val);
+
+	TEST_PROGRAM("assert(t)");
+	TEST_PROGRAM("assert(t['t'] ~= nil)");
+	TEST_PROGRAM("assert(t['t'] == 't')");
+	TEST_PROGRAM("assert(t.t == 't')");
+	TEST_PROGRAM("assert(t['x'] == nil)");
+	TEST_PROGRAM("assert(t.x == nil)");
+	TEST_PROGRAM("assert(t.sub ~= nil)");
+	TEST_PROGRAM("assert(t.sub.t ~= nil)");
+	TEST_PROGRAM("assert(t.sub.t == 't')");
+	TEST_PROGRAM("assert(t[0] ~= nil)");
+	TEST_PROGRAM("assert(t[0] == 0)");
+	TEST_PROGRAM("assert(t[1] == nil)");
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(tableIterate) {
+	SETUP_LUA;
+
+	assert_null(lua->getError(lua));
+	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+	assert_non_null(table);
+	struct mScriptValue* val;
+	struct mScriptValue* key;
+
+	mScriptContextSetGlobal(&context, "t", table);
+
+	int i;
+	for (i = 0; i < 50; ++i) {
+		val = mScriptValueAlloc(mSCRIPT_TYPE_MS_S64);
+		val->value.s64 = 1LL << i;
+		key = mScriptValueAlloc(mSCRIPT_TYPE_MS_S32);
+		key->value.s32 = i;
+		assert_true(mScriptTableInsert(table, key, val));
+		mScriptValueDeref(key);
+		mScriptValueDeref(val);
+	}
+	assert_int_equal(mScriptTableSize(table), 50);
+
+	TEST_PROGRAM("assert(t)");
+	TEST_PROGRAM("assert(#t == 50)");
+	TEST_PROGRAM(
+		"i = 0\n"
+		"z = 0\n"
+		"for k, v in pairs(t) do\n"
+		"	i = i + 1\n"
+		"	z = z + v\n"
+		"	assert((1 << k) == v)\n"
+		"end\n"
+	);
+
+	TEST_PROGRAM("assert(i == #t)");
+	TEST_PROGRAM("assert(z == (1 << #t) - 1)");
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(create),
 	cmocka_unit_test(loadGood),
@@ -548,4 +632,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(globalStructFieldSet),
 	cmocka_unit_test(globalStructMethods),
 	cmocka_unit_test(errorReporting),
+	cmocka_unit_test(tableLookup),
+	cmocka_unit_test(tableIterate),
 )

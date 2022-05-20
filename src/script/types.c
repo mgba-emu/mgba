@@ -853,6 +853,13 @@ bool mScriptTableClear(struct mScriptValue* table) {
 	return true;
 }
 
+size_t mScriptTableSize(struct mScriptValue* table) {
+	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
+		return 0;
+	}
+	return HashTableSize(table->value.table);
+}
+
 bool mScriptTableIteratorStart(struct mScriptValue* table, struct TableIterator* iter) {
 	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
 		table = mScriptValueUnwrap(table);

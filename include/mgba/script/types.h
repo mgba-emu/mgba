@@ -284,6 +284,7 @@ bool mScriptTableInsert(struct mScriptValue* table, struct mScriptValue* key, st
 bool mScriptTableRemove(struct mScriptValue* table, struct mScriptValue* key);
 struct mScriptValue* mScriptTableLookup(struct mScriptValue* table, struct mScriptValue* key);
 bool mScriptTableClear(struct mScriptValue* table);
+size_t mScriptTableSize(struct mScriptValue* table);
 bool mScriptTableIteratorStart(struct mScriptValue* table, struct TableIterator*);
 bool mScriptTableIteratorNext(struct mScriptValue* table, struct TableIterator*);
 struct mScriptValue* mScriptTableIteratorGetKey(struct mScriptValue* table, struct TableIterator*);

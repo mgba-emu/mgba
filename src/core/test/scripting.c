@@ -186,7 +186,9 @@ M_TEST_DEFINE(detach) {
 
 	LOAD_PROGRAM(
 		"assert(emu)\n"
+		"assert(emu.memory)\n"
 		"a = emu\n"
+		"b = emu.memory\n"
 	);
 	assert_true(lua->run(lua));
 
@@ -199,6 +201,11 @@ M_TEST_DEFINE(detach) {
 
 	LOAD_PROGRAM(
 		"a:frequency()\n"
+	);
+	assert_false(lua->run(lua));
+
+	LOAD_PROGRAM(
+		"assert(memory.cart0)\n"
 	);
 	assert_false(lua->run(lua));
 
