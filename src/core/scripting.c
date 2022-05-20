@@ -166,66 +166,67 @@ struct mScriptUILibrary {
 	void* textBufferContext;
 };
 
+#define CALCULATE_SEGMENT_INFO \
+	uint32_t segmentSize = adapter->block.end - adapter->block.start; \
+	uint32_t segmentStart = adapter->block.segmentStart - adapter->block.start; \
+	if (adapter->block.segmentStart) { \
+		segmentSize -= segmentStart; \
+	}
+
+#define CALCULATE_SEGMENT_ADDRESS \
+	uint32_t segmentAddress = address % segmentSize; \
+	int segment = address / segmentSize; \
+	segmentAddress += adapter->block.start; \
+	if (adapter->block.segmentStart && segment) { \
+		segmentAddress += segmentStart; \
+	}
+
 static uint32_t mScriptMemoryAdapterRead8(struct mScriptMemoryAdapter* adapter, uint32_t address) {
-	uint32_t segmentSize = adapter->block.end - adapter->block.start;
-	uint32_t segmentAddress = address % segmentSize;
-	int segment = address / segmentSize;
-	address = adapter->block.start + segmentAddress;
-	return adapter->core->rawRead8(adapter->core, address, segment);
+	CALCULATE_SEGMENT_INFO;
+	CALCULATE_SEGMENT_ADDRESS;
+	return adapter->core->rawRead8(adapter->core, segmentAddress, segment);
 }
 
 static uint32_t mScriptMemoryAdapterRead16(struct mScriptMemoryAdapter* adapter, uint32_t address) {
-	uint32_t segmentSize = adapter->block.end - adapter->block.start;
-	uint32_t segmentAddress = address % segmentSize;
-	int segment = address / segmentSize;
-	address = adapter->block.start + segmentAddress;
-	return adapter->core->rawRead16(adapter->core, address, segment);
+	CALCULATE_SEGMENT_INFO;
+	CALCULATE_SEGMENT_ADDRESS;
+	return adapter->core->rawRead16(adapter->core, segmentAddress, segment);
 }
 
 static uint32_t mScriptMemoryAdapterRead32(struct mScriptMemoryAdapter* adapter, uint32_t address) {
-	uint32_t segmentSize = adapter->block.end - adapter->block.start;
-	uint32_t segmentAddress = address % segmentSize;
-	int segment = address / segmentSize;
-	address = adapter->block.start + segmentAddress;
-	return adapter->core->rawRead32(adapter->core, address, segment);
+	CALCULATE_SEGMENT_INFO;
+	CALCULATE_SEGMENT_ADDRESS;
+	return adapter->core->rawRead32(adapter->core, segmentAddress, segment);
 }
 
 static struct mScriptValue* mScriptMemoryAdapterReadRange(struct mScriptMemoryAdapter* adapter, uint32_t address, uint32_t length) {
-	uint32_t segmentSize = adapter->block.end - adapter->block.start;
+	CALCULATE_SEGMENT_INFO;
 	struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
 	struct mScriptList* list = value->value.opaque;
 	uint32_t i;
 	for (i = 0; i < length; ++i, ++address) {
-		uint32_t segmentAddress = address % segmentSize;
-		int segment = address / segmentSize;
-		segmentAddress += adapter->block.start;
+		CALCULATE_SEGMENT_ADDRESS;
 		*mScriptListAppend(list) = mSCRIPT_MAKE_U32(adapter->core->rawRead8(adapter->core, segmentAddress, segment));
 	}
 	return value;
 }
 
 static void mScriptMemoryAdapterWrite8(struct mScriptMemoryAdapter* adapter, uint32_t address, uint8_t value) {
-	uint32_t segmentSize = adapter->block.end - adapter->block.start;
-	uint32_t segmentAddress = address % segmentSize;
-	int segment = address / segmentSize;
-	address = adapter->block.start + segmentAddress;
-	adapter->core->rawWrite8(adapter->core, address, segment, value);
+	CALCULATE_SEGMENT_INFO;
+	CALCULATE_SEGMENT_ADDRESS;
+	adapter->core->rawWrite8(adapter->core, address, segmentAddress, value);
 }
 
 static void mScriptMemoryAdapterWrite16(struct mScriptMemoryAdapter* adapter, uint32_t address, uint16_t value) {
-	uint32_t segmentSize = adapter->block.end - adapter->block.start;
-	uint32_t segmentAddress = address % segmentSize;
-	int segment = address / segmentSize;
-	address = adapter->block.segmentStart + segmentAddress;
-	adapter->core->rawWrite16(adapter->core, address, segment, value);
+	CALCULATE_SEGMENT_INFO;
+	CALCULATE_SEGMENT_ADDRESS;
+	adapter->core->rawWrite16(adapter->core, address, segmentAddress, value);
 }
 
 static void mScriptMemoryAdapterWrite32(struct mScriptMemoryAdapter* adapter, uint32_t address, uint32_t value) {
-	uint32_t segmentSize = adapter->block.end - adapter->block.start;
-	uint32_t segmentAddress = address % segmentSize;
-	int segment = address / segmentSize;
-	address = adapter->block.segmentStart + segmentAddress;
-	adapter->core->rawWrite32(adapter->core, address, segment, value);
+	CALCULATE_SEGMENT_INFO;
+	CALCULATE_SEGMENT_ADDRESS;
+	adapter->core->rawWrite32(adapter->core, address, segmentAddress, value);
 }
 
 mSCRIPT_DECLARE_STRUCT(mScriptMemoryAdapter);
