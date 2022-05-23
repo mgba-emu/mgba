@@ -247,7 +247,7 @@ bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, stru
 	if (!info.context) {
 		return false;
 	}
-	return info.context->load(info.context, vf);
+	return info.context->load(info.context, name, vf);
 }
 
 bool mScriptContextLoadFile(struct mScriptContext* context, const char* path) {

@@ -19,7 +19,7 @@ static void _luaDestroy(struct mScriptEngineContext*);
 static bool _luaIsScript(struct mScriptEngineContext*, const char*, struct VFile*);
 static struct mScriptValue* _luaGetGlobal(struct mScriptEngineContext*, const char* name);
 static bool _luaSetGlobal(struct mScriptEngineContext*, const char* name, struct mScriptValue*);
-static bool _luaLoad(struct mScriptEngineContext*, struct VFile*);
+static bool _luaLoad(struct mScriptEngineContext*, const char*, struct VFile*);
 static bool _luaRun(struct mScriptEngineContext*);
 static const char* _luaGetError(struct mScriptEngineContext*);
 
@@ -382,7 +382,7 @@ static const char* _reader(lua_State* lua, void* context, size_t* size) {
 	return reader->block;
 }
 
-bool _luaLoad(struct mScriptEngineContext* ctx, struct VFile* vf) {
+bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFile* vf) {
 	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) ctx;
 	struct mScriptEngineLuaReader data = {
 		.vf = vf
@@ -391,7 +391,29 @@ bool _luaLoad(struct mScriptEngineContext* ctx, struct VFile* vf) {
 		free(luaContext->lastError);
 		luaContext->lastError = NULL;
 	}
-	int ret = lua_load(luaContext->lua, _reader, &data, NULL, "t");
+	char name[80];
+	if (filename) {
+		if (*filename == '*') {
+			snprintf(name, sizeof(name), "=%s", filename + 1);
+		} else {
+			const char* lastSlash = strrchr(filename, '/');
+			const char* lastBackslash = strrchr(filename, '\\');
+			if (lastSlash && lastBackslash) {
+				if (lastSlash > lastBackslash) {
+					filename = lastSlash + 1;
+				} else {
+					filename = lastBackslash + 1;
+				}
+			} else if (lastSlash) {
+				filename = lastSlash + 1;
+			} else if (lastBackslash) {
+				filename = lastBackslash + 1;
+			}
+			snprintf(name, sizeof(name), "@%s", filename);
+		}
+		filename = name;
+	}
+	int ret = lua_load(luaContext->lua, _reader, &data, filename, "t");
 	switch (ret) {
 	case LUA_OK:
 		luaContext->func = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);

@@ -49,7 +49,7 @@ struct mScriptEngineContext {
 	bool (*setGlobal)(struct mScriptEngineContext*, const char* name, struct mScriptValue*);
 	struct mScriptValue* (*getGlobal)(struct mScriptEngineContext*, const char* name);
 
-	bool (*load)(struct mScriptEngineContext*, struct VFile*);
+	bool (*load)(struct mScriptEngineContext*, const char* filename, struct VFile*);
 	bool (*run)(struct mScriptEngineContext*);
 	const char* (*getError)(struct mScriptEngineContext*);
 };

@@ -69,7 +69,7 @@ static const uint8_t _fakeGBROM[0x4000] = {
 #define LOAD_PROGRAM(PROG) \
 	do { \
 		struct VFile* vf = VFileFromConstMemory(PROG, strlen(PROG)); \
-		assert_true(lua->load(lua, vf)); \
+		assert_true(lua->load(lua, NULL, vf)); \
 		vf->close(vf); \
 	} while(0)
 

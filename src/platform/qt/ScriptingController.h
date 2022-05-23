@@ -30,7 +30,7 @@ public:
 	void setController(std::shared_ptr<CoreController> controller);
 
 	bool loadFile(const QString& path);
-	bool load(VFileDevice& vf);
+	bool load(VFileDevice& vf, const QString& name);
 
 	mScriptContext* context() { return &m_scriptContext; }
 

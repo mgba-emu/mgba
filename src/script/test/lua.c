@@ -16,7 +16,7 @@
 #define LOAD_PROGRAM(PROG) \
 	do { \
 		struct VFile* vf = VFileFromConstMemory(PROG, strlen(PROG)); \
-		assert_true(lua->load(lua, vf)); \
+		assert_true(lua->load(lua, NULL, vf)); \
 		vf->close(vf); \
 	} while(0)
 
@@ -119,7 +119,7 @@ M_TEST_DEFINE(loadGood) {
 
 	const char* program = "-- test\n";
 	struct VFile* vf = VFileFromConstMemory(program, strlen(program));
-	assert_true(lua->load(lua, vf));
+	assert_true(lua->load(lua, NULL, vf));
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);
@@ -133,7 +133,7 @@ M_TEST_DEFINE(loadBadSyntax) {
 
 	const char* program = "Invalid syntax! )\n";
 	struct VFile* vf = VFileFromConstMemory(program, strlen(program));
-	assert_false(lua->load(lua, vf));
+	assert_false(lua->load(lua, NULL, vf));
 
 	lua->destroy(lua);
 	mScriptContextDeinit(&context);

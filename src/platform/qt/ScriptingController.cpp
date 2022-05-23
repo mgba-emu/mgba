@@ -71,15 +71,16 @@ void ScriptingController::setController(std::shared_ptr<CoreController> controll
 
 bool ScriptingController::loadFile(const QString& path) {
 	VFileDevice vf(path, QIODevice::ReadOnly);
-	return load(vf);
+	return load(vf, path);
 }
 
-bool ScriptingController::load(VFileDevice& vf) {
+bool ScriptingController::load(VFileDevice& vf, const QString& name) {
 	if (!m_activeEngine) {
 		return false;
 	}
+	QByteArray utf8 = name.toUtf8();
 	CoreController::Interrupter interrupter(m_controller);
-	if (!m_activeEngine->load(m_activeEngine, vf) || !m_activeEngine->run(m_activeEngine)) {
+	if (!m_activeEngine->load(m_activeEngine, utf8.constData(), vf) || !m_activeEngine->run(m_activeEngine)) {
 		emit error(QString::fromUtf8(m_activeEngine->getError(m_activeEngine)));
 		return false;
 	}
@@ -100,7 +101,7 @@ void ScriptingController::clearController() {
 
 void ScriptingController::runCode(const QString& code) {
 	VFileDevice vf(code.toUtf8());
-	load(vf);
+	load(vf, "*prompt");
 }
 
 mScriptTextBuffer* ScriptingController::createTextBuffer(void* context) {
