@@ -385,6 +385,12 @@ local gameRBEn = Generation1En:new{
 
 local gameYellowEn = Generation1En:new{
 	name="Yellow (USA)",
+	_party=0xd16a,
+	_partyCount=0xd162,
+	_partyNames=0xd2b4,
+	_partyOt=0xd272,
+	_speciesNameTable=0xe8000,
+	_speciesIndex=0x410b1,
 }
 
 local gameGSEn = Generation2En:new{
