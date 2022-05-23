@@ -29,6 +29,7 @@ ScriptingView::ScriptingView(ScriptingController* controller, QWidget* parent)
 
 	connect(m_ui.buffers, &QListWidget::currentRowChanged, this, &ScriptingView::selectBuffer);
 	connect(m_ui.load, &QAction::triggered, this, &ScriptingView::load);
+	connect(m_ui.reset, &QAction::triggered, controller, &ScriptingController::reset);
 }
 
 void ScriptingView::submitRepl() {

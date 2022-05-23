@@ -42,9 +42,12 @@ signals:
 
 public slots:
 	void clearController();
+	void reset();
 	void runCode(const QString& code);
 
 private:
+	void init();
+
 	static mScriptTextBuffer* createTextBuffer(void* context);
 
 	struct Logger : mLogger {

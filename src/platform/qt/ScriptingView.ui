@@ -80,6 +80,7 @@
      <string>File</string>
     </property>
     <addaction name="load"/>
+    <addaction name="reset"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -87,6 +88,11 @@
   <action name="load">
    <property name="text">
     <string>Load script...</string>
+   </property>
+  </action>
+  <action name="reset">
+   <property name="text">
+    <string>&amp;Reset</string>
    </property>
   </action>
  </widget>

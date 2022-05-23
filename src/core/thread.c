@@ -273,7 +273,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 #ifdef ENABLE_SCRIPTING
 	// startCallback could add a script context
-	if (!scriptContext) {
+	if (scriptContext != threadContext->scriptContext) {
 		scriptContext = threadContext->scriptContext;
 		if (scriptContext) {
 			_mCoreThreadAddCallbacks(threadContext);
@@ -294,7 +294,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 
 #ifdef ENABLE_SCRIPTING
 	// resetCallback could add a script context
-	if (!scriptContext) {
+	if (scriptContext != threadContext->scriptContext) {
 		scriptContext = threadContext->scriptContext;
 		if (scriptContext) {
 			_mCoreThreadAddCallbacks(threadContext);
@@ -351,7 +351,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 				}
 			}
 #ifdef ENABLE_SCRIPTING
-			if (!scriptContext) {
+			if (scriptContext != threadContext->scriptContext) {
 				scriptContext = threadContext->scriptContext;
 				if (scriptContext) {
 					_mCoreThreadAddCallbacks(threadContext);

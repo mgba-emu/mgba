@@ -13,10 +13,6 @@ using namespace QGBA;
 ScriptingController::ScriptingController(QObject* parent)
 	: QObject(parent)
 {
-	mScriptContextInit(&m_scriptContext);
-	mScriptContextAttachStdlib(&m_scriptContext);
-	mScriptContextRegisterEngines(&m_scriptContext);
-
 	m_logger.p = this;
 	m_logger.log = [](mLogger* log, int, enum mLogLevel level, const char* format, va_list args) {
 		Logger* logger = static_cast<Logger*>(log);
@@ -37,17 +33,7 @@ ScriptingController::ScriptingController(QObject* parent)
 		}
 	};
 
-	mScriptContextAttachLogger(&m_scriptContext, &m_logger);
-	mScriptContextSetTextBufferFactory(&m_scriptContext, &ScriptingController::createTextBuffer, this);
-
-	HashTableEnumerate(&m_scriptContext.engines, [](const char* key, void* engine, void* context) {
-	ScriptingController* self = static_cast<ScriptingController*>(context);
-		self->m_engines[QString::fromUtf8(key)] = static_cast<mScriptEngineContext*>(engine);
-	}, this);
-
-	if (m_engines.count() == 1) {
-		m_activeEngine = *m_engines.begin();
-	}
+	init();
 }
 
 ScriptingController::~ScriptingController() {
@@ -99,6 +85,18 @@ void ScriptingController::clearController() {
 	m_controller.reset();
 }
 
+void ScriptingController::reset() {
+	CoreController::Interrupter interrupter(m_controller);
+	mScriptContextDetachCore(&m_scriptContext);
+	mScriptContextDeinit(&m_scriptContext);
+	m_engines.clear();
+	m_activeEngine = nullptr;
+	init();
+	if (m_controller && m_controller->hasStarted()) {
+		mScriptContextAttachCore(&m_scriptContext, m_controller->thread()->core);
+	}
+}
+
 void ScriptingController::runCode(const QString& code) {
 	VFileDevice vf(code.toUtf8());
 	load(vf, "*prompt");
@@ -109,4 +107,22 @@ mScriptTextBuffer* ScriptingController::createTextBuffer(void* context) {
 	ScriptingTextBuffer* buffer = new ScriptingTextBuffer(self);
 	emit self->textBufferCreated(buffer);
 	return buffer->textBuffer();
+}
+
+void ScriptingController::init() {
+	mScriptContextInit(&m_scriptContext);
+	mScriptContextAttachStdlib(&m_scriptContext);
+	mScriptContextRegisterEngines(&m_scriptContext);
+
+	mScriptContextAttachLogger(&m_scriptContext, &m_logger);
+	mScriptContextSetTextBufferFactory(&m_scriptContext, &ScriptingController::createTextBuffer, this);
+
+	HashTableEnumerate(&m_scriptContext.engines, [](const char* key, void* engine, void* context) {
+	ScriptingController* self = static_cast<ScriptingController*>(context);
+		self->m_engines[QString::fromUtf8(key)] = static_cast<mScriptEngineContext*>(engine);
+	}, this);
+
+	if (m_engines.count() == 1) {
+		m_activeEngine = *m_engines.begin();
+	}
 }
