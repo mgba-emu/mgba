@@ -1,4 +1,92 @@
-gbCharmapEn = { [0]=
+local Game = {
+	new = function (self, game)
+		self.__index = self
+		setmetatable(game, self)
+		return game
+	end
+}
+
+function Game.getParty(game)
+	local party = {}
+	local monStart = game._party
+	local nameStart = game._partyNames
+	local otStart = game._partyOt
+	for i = 1, emu:read8(game._partyCount) do
+		party[i] = game:_readPartyMon(monStart, nameStart, otStart)
+		monStart = monStart + game._partyMonSize
+		if game._partyNames then
+			nameStart = nameStart + game._monNameLength + 1
+		end
+		if game._partyOt then
+			otStart = otStart + game._playerNameLength + 1
+		end
+	end
+	return party
+end
+
+function Game.toString(game, rawstring)
+	local string = ""
+	for _, char in ipairs({rawstring:byte(1, #rawstring)}) do
+		if char == game._terminator then
+			break
+		end
+		string = string..game._charmap[char]
+	end
+	return string
+end
+
+function Game.getSpeciesName(game, id)
+	if game._speciesIndex then
+		local index = game._index
+		if not index then
+			index = {}
+			for i = 0, 255 do
+				index[emu.memory.cart0:read8(game._speciesIndex + i)] = i
+			end
+			game._index = index
+		end
+		id = index[id]
+	end
+	local pointer = game._speciesNameTable + (game._speciesNameLength) * id
+	return game:toString(emu.memory.cart0:readRange(pointer, game._monNameLength))
+end
+
+local GBGameEn = Game:new{
+	_terminator=0x50,
+	_monNameLength=10,
+	_speciesNameLength=10,
+	_playerNameLength=10,
+}
+
+local GBAGameEn = Game:new{
+	_terminator=0xFF,
+	_monNameLength=10,
+	_speciesNameLength=11,
+	_playerNameLength=10,
+}
+
+local Generation1En = GBGameEn:new{
+	_boxMonSize=33,
+	_partyMonSize=44,
+	_readBoxMon=readBoxMonGen1,
+	_readPartyMon=readPartyMonGen1,
+}
+
+local Generation2En = GBGameEn:new{
+	_boxMonSize=32,
+	_partyMonSize=48,
+	_readBoxMon=readBoxMonGen2,
+	_readPartyMon=readPartyMonGen2,
+}
+
+local Generation3En = GBAGameEn:new{
+	_boxMonSize=80,
+	_partyMonSize=100,
+	_readBoxMon=readBoxMonGen3,
+	_readPartyMon=readPartyMonGen3,
+}
+
+GBGameEn._charmap = { [0]=
 	"�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�",
 	"�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�",
 	"�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�", "�",
@@ -17,7 +105,7 @@ gbCharmapEn = { [0]=
 	"$", "×", ".", "/", ",", "♀", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"
 }
 
-gen3CharmapEn = { [0]=
+GBAGameEn._charmap = { [0]=
 	" ", "À", "Á", "Â", "Ç", "È", "É", "Ê", "Ë", "Ì", "こ", "Î", "Ï", "Ò", "Ó", "Ô",
 	"Œ", "Ù", "Ú", "Û", "Ñ", "ß", "à", "á", "ね", "ç", "è", "é", "ê", "ë", "ì", "ま",
 	"î", "ï", "ò", "ó", "ô", "œ", "ù", "ú", "û", "ñ", "º", "ª", "�", "&", "+", "あ",
@@ -40,7 +128,7 @@ function _read16BE(emu, address)
 	return (emu:read8(address) << 8) | emu:read8(address + 1)
 end
 
-function readBoxMonGen1(game, address, nameAddress, otAddress)
+function Generation1En._readBoxMon(game, address, nameAddress, otAddress)
 	local mon = {}
 	mon.species = emu.memory.cart0:read8(game._speciesIndex + emu:read8(address + 0) - 1)
 	mon.hp = _read16BE(emu, address + 1)
@@ -80,7 +168,7 @@ function readBoxMonGen1(game, address, nameAddress, otAddress)
 	return mon
 end
 
-function readPartyMonGen1(game, address, nameAddress, otAddress)
+function Generation1En._readPartyMon(game, address, nameAddress, otAddress)
 	local mon = game:_readBoxMon(address, nameAddress, otAddress)
 	mon.level = emu:read8(address + 33)
 	mon.maxHP = _read16BE(emu, address + 34)
@@ -92,7 +180,7 @@ function readPartyMonGen1(game, address, nameAddress, otAddress)
 	return mon
 end
 
-function readBoxMonGen2(game, address, nameAddress, otAddress)
+function  Generation2En._readBoxMon(game, address, nameAddress, otAddress)
 	local mon = {}
 	mon.species = emu:read8(address + 0)
 	mon.item = emu:read8(address + 1)
@@ -133,7 +221,7 @@ function readBoxMonGen2(game, address, nameAddress, otAddress)
 	return mon
 end
 
-function readPartyMonGen2(game, address, nameAddress, otAddress)
+function Generation2En._readPartyMon(game, address, nameAddress, otAddress)
 	local mon = game:_readBoxMon(address, nameAddress, otAddress)
 	mon.status = emu:read8(address + 32)
 	mon.hp = _read16BE(emu, address + 34)
@@ -146,7 +234,7 @@ function readPartyMonGen2(game, address, nameAddress, otAddress)
 	return mon
 end
 
-function readBoxMonGen3(game, address)
+function Generation3En._readBoxMon(game, address)
 	local mon = {}
 	mon.personality = emu:read32(address + 0)
 	mon.otId = emu:read32(address + 4)
@@ -270,7 +358,7 @@ function readBoxMonGen3(game, address)
 	return mon
 end
 
-function readPartyMonGen3(game, address)
+function Generation3En._readPartyMon(game, address)
 	local mon = game:_readBoxMon(address)
 	mon.status = emu:read32(address + 80)
 	mon.level = emu:read8(address + 84)
@@ -285,52 +373,7 @@ function readPartyMonGen3(game, address)
 	return mon
 end
 
-function getParty(game)
-	local party = {}
-	local monStart = game._party
-	local nameStart = game._partyNames
-	local otStart = game._partyOt
-	for i = 1, emu:read8(game._partyCount) do
-		party[i] = game:_readPartyMon(monStart, nameStart, otStart)
-		monStart = monStart + game._partyMonSize
-		if game._partyNames then
-			nameStart = nameStart + game._monNameLength + 1
-		end
-		if game._partyOt then
-			otStart = otStart + game._playerNameLength + 1
-		end
-	end
-	return party
-end
-
-function toString(game, rawstring)
-	local string = ""
-	for _, char in ipairs({rawstring:byte(1, #rawstring)}) do
-		if char == game._terminator then
-			break
-		end
-		string = string..game._charmap[char]
-	end
-	return string
-end
-
-function getSpeciesName(game, id)
-	if game._speciesIndex then
-		local index = game._index
-		if not index then
-			index = {}
-			for i = 0, 255 do
-				index[emu.memory.cart0:read8(game._speciesIndex + i)] = i
-			end
-			game._index = index
-		end
-		id = index[id]
-	end
-	local pointer = game._speciesNameTable + (game._speciesNameLength) * id
-	return game:toString(emu.memory.cart0:readRange(pointer, game._monNameLength))
-end
-
-local gameRBEn = {
+local gameRBEn = Generation1En:new{
 	name="Red/Blue (USA)",
 	_party=0xd16b,
 	_partyCount=0xd163,
@@ -338,197 +381,75 @@ local gameRBEn = {
 	_partyOt=0xd273,
 	_speciesNameTable=0x1c21e,
 	_speciesIndex=0x41024,
-	_boxMonSize=33,
-	_partyMonSize=44,
-	_terminator=0x50,
-	_monNameLength=10,
-	_speciesNameLength=10,
-	_playerNameLength=10,
-	_charmap=gbCharmapEn,
-	_readBoxMon=readBoxMonGen1,
-	_readPartyMon=readPartyMonGen1,
-	toString=toString,
-	getParty=getParty,
-	getSpeciesName=getSpeciesName,
 }
 
-local gameYellowEn = {
+local gameYellowEn = Generation1En:new{
 	name="Yellow (USA)",
 }
 
-local gameGSEn = {
+local gameGSEn = Generation2En:new{
 	name="Gold/Silver (USA)",
 	_party=0xda2a,
 	_partyCount=0xda22,
 	_partyNames=0xdb8c,
 	_partyOt=0xdb4a,
 	_speciesNameTable=0x1b0b6a,
-	_boxMonSize=32,
-	_partyMonSize=48,
-	_monNameLength=10,
-	_speciesNameLength=10,
-	_playerNameLength=10,
-	_charmap=gbCharmapEn,
-	_readBoxMon=readBoxMonGen2,
-	_readPartyMon=readPartyMonGen2,
-	_terminator=0x50,
-	toString=toString,
-	getParty=getParty,
-	getSpeciesName=getSpeciesName,
 }
 
-local gameCrystalEn = {
+local gameCrystalEn = Generation2En:new{
 	name="Crystal (USA)",
 	_party=0xdcdf,
 	_partyCount=0xdcd7,
 	_partyNames=0xde41,
 	_partyOt=0xddff,
 	_speciesNameTable=0x5337a,
-	_boxMonSize=32,
-	_partyMonSize=48,
-	_monNameLength=10,
-	_speciesNameLength=10,
-	_playerNameLength=10,
-	_charmap=gbCharmapEn,
-	_readBoxMon=readBoxMonGen2,
-	_readPartyMon=readPartyMonGen2,
-	_terminator=0x50,
-	toString=toString,
-	getParty=getParty,
-	getSpeciesName=getSpeciesName,
 }
 
-local gameRubyEn = {
+local gameRubyEn = Generation3En:new{
 	name="Ruby (USA)",
 	_party=0x3004360,
 	_partyCount=0x3004350,
 	_speciesNameTable=0x1f716c,
-	_boxMonSize=80,
-	_partyMonSize=100,
-	_monNameLength=10,
-	_speciesNameLength=11,
-	_playerNameLength=10,
-	_charmap=gen3CharmapEn,
-	_readBoxMon=readBoxMonGen3,
-	_readPartyMon=readPartyMonGen3,
-	_terminator=0xFF,
-	toString=toString,
-	getParty=getParty,
-	getSpeciesName=getSpeciesName,
 }
 
-local gameSapphireEn = {
+local gameSapphireEn = Generation3En:new{
 	name="Sapphire (USA)",
 	_party=0x3004360,
 	_partyCount=0x3004350,
 	_speciesNameTable=0x1f70fc,
-	_boxMonSize=80,
-	_partyMonSize=100,
-	_monNameLength=10,
-	_speciesNameLength=11,
-	_playerNameLength=10,
-	_charmap=gen3CharmapEn,
-	_readBoxMon=readBoxMonGen3,
-	_readPartyMon=readPartyMonGen3,
-	_terminator=0xFF,
-	toString=toString,
-	getParty=getParty,
-	getSpeciesName=getSpeciesName,
 }
 
-local gameEmeraldEn = {
+local gameEmeraldEn = Generation3En:new{
 	name="Emerald (USA)",
 	_party=0x20244ec,
 	_partyCount=0x20244e9,
 	_speciesNameTable=0x3185c8,
-	_boxMonSize=80,
-	_partyMonSize=100,
-	_monNameLength=10,
-	_speciesNameLength=11,
-	_playerNameLength=10,
-	_charmap=gen3CharmapEn,
-	_readBoxMon=readBoxMonGen3,
-	_readPartyMon=readPartyMonGen3,
-	_terminator=0xFF,
-	toString=toString,
-	getParty=getParty,
-	getSpeciesName=getSpeciesName,
 }
 
-local gameFireRedEn = {
+local gameFireRedEn = Generation3En:new{
 	name="FireRed (USA)",
 	_party=0x2024284,
 	_partyCount=0x2024029,
 	_speciesNameTable=0x245ee0,
-	_boxMonSize=80,
-	_partyMonSize=100,
-	_monNameLength=10,
-	_speciesNameLength=11,
-	_playerNameLength=10,
-	_charmap=gen3CharmapEn,
-	_readBoxMon=readBoxMonGen3,
-	_readPartyMon=readPartyMonGen3,
-	_terminator=0xFF,
-	toString=toString,
-	getParty=getParty,
-	getSpeciesName=getSpeciesName,
 }
 
-local gameFireRedEnR1 = {
+local gameFireRedEnR1 = gameFireRedEn:new{
 	name="FireRed (USA) (Rev 1)",
-	_party=0x2024284,
-	_partyCount=0x2024029,
 	_speciesNameTable=0x245f50,
-	_boxMonSize=80,
-	_partyMonSize=100,
-	_monNameLength=10,
-	_speciesNameLength=11,
-	_playerNameLength=10,
-	_charmap=gen3CharmapEn,
-	_readBoxMon=readBoxMonGen3,
-	_readPartyMon=readPartyMonGen3,
-	_terminator=0xFF,
-	toString=toString,
-	getParty=getParty,
-	getSpeciesName=getSpeciesName,
 }
 
-local gameLeafGreenEn = {
+local gameLeafGreenEn = Generation3En:new{
 	name="LeafGreen (USA)",
 	_party=0x2024284,
 	_partyCount=0x2024029,
 	_speciesNameTable=0x245ebc,
-	_boxMonSize=80,
-	_partyMonSize=100,
-	_monNameLength=10,
-	_speciesNameLength=11,
-	_playerNameLength=10,
-	_charmap=gen3CharmapEn,
-	_readBoxMon=readBoxMonGen3,
-	_readPartyMon=readPartyMonGen3,
-	_terminator=0xFF,
-	toString=toString,
-	getParty=getParty,
-	getSpeciesName=getSpeciesName,
 }
 
-local gameLeafGreenEnR1 = {
+local gameLeafGreenEnR1 = gameLeafGreenEn:new{
 	name="LeafGreen (USA)",
 	_party=0x2024284,
 	_partyCount=0x2024029,
 	_speciesNameTable=0x245f2c,
-	_boxMonSize=80,
-	_partyMonSize=100,
-	_monNameLength=10,
-	_speciesNameLength=11,
-	_playerNameLength=10,
-	_charmap=gen3CharmapEn,
-	_readBoxMon=readBoxMonGen3,
-	_readPartyMon=readPartyMonGen3,
-	_terminator=0xFF,
-	toString=toString,
-	getParty=getParty,
-	getSpeciesName=getSpeciesName,
 }
 
 gameCodes = {
