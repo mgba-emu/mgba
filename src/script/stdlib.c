@@ -25,8 +25,11 @@ mSCRIPT_DECLARE_STRUCT(mScriptCallbackManager);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCallbackManager, add, _mScriptCallbackAdd, 2, STR, callback, WRAPPER, function);
 
 mSCRIPT_DEFINE_STRUCT(mScriptCallbackManager)
-mSCRIPT_DEFINE_DOCSTRING("Add a callback of the named type")
-mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCallbackManager, add)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING(
+		"A singleton object `callbacks` used for managing callbacks."
+	)
+	mSCRIPT_DEFINE_DOCSTRING("Add a callback of the named type")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCallbackManager, add)
 mSCRIPT_DEFINE_END;
 
 void mScriptContextAttachStdlib(struct mScriptContext* context) {

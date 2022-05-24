@@ -125,6 +125,7 @@ enum mScriptTypeBase {
 
 enum mScriptClassInitType {
 	mSCRIPT_CLASS_INIT_END = 0,
+	mSCRIPT_CLASS_INIT_CLASS_DOCSTRING,
 	mSCRIPT_CLASS_INIT_DOCSTRING,
 	mSCRIPT_CLASS_INIT_INSTANCE_MEMBER,
 	mSCRIPT_CLASS_INIT_INHERIT,
@@ -218,6 +219,7 @@ struct mScriptTypeClass {
 	bool init;
 	const struct mScriptClassInitDetails* details;
 	const struct mScriptType* parent;
+	const char* docstring;
 	struct Table instanceMembers;
 	struct Table castToMembers;
 	struct mScriptClassMember* alloc; // TODO

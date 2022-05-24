@@ -931,6 +931,11 @@ static void _mScriptClassInit(struct mScriptTypeClass* cls, const struct mScript
 		switch (detail->type) {
 		case mSCRIPT_CLASS_INIT_END:
 			break;
+		case mSCRIPT_CLASS_INIT_CLASS_DOCSTRING:
+			if (!child) {
+				cls->docstring = detail->info.comment;
+			}
+			break;
 		case mSCRIPT_CLASS_INIT_DOCSTRING:
 			docstring = detail->info.comment;
 			break;

@@ -261,6 +261,10 @@ mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, size, mScriptMemoryDomai
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, WRAPPER, name, mScriptMemoryDomainName, 0);
 
 mSCRIPT_DEFINE_STRUCT(mScriptMemoryDomain)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING(
+		"An object used for access directly to a memory domain, e.g. the cartridge, "
+		"instead of through a whole address space, as with the functions directly on struct::mCore."
+	)
 	mSCRIPT_DEFINE_DOCSTRING("Read an 8-bit value from the given offset")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, read8)
 	mSCRIPT_DEFINE_DOCSTRING("Read a 16-bit value from the given offset")
@@ -385,6 +389,9 @@ mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateSlot, mCoreLoad
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, screenshot, mCoreTakeScreenshot, 0);
 
 mSCRIPT_DEFINE_STRUCT(mCore)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING(
+		"An instance of an emulator core."
+	)
 	mSCRIPT_DEFINE_DOCSTRING("Get which platform is being emulated")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, platform)
 	mSCRIPT_DEFINE_DOCSTRING("Get the number of the current frame")
@@ -522,8 +529,13 @@ mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, WRAPPER, _get, _mScriptCoreAda
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, _deinit, _mScriptCoreAdapterDeinit, 0);
 
 mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING(
+		"A wrapper around a struct::mCore object that exposes more functionality. "
+		"It can be implicity cast to a Core object, and exposes the same methods. "
+		"Please see the documentation on struct::mCore for details on those methods."
+	)
 	mSCRIPT_DEFINE_STRUCT_MEMBER_NAMED(mScriptCoreAdapter, PS(mCore), _core, core)
-	mSCRIPT_DEFINE_DOCSTRING("A table containing a platform-specific set of memory adapters")
+	mSCRIPT_DEFINE_DOCSTRING("A table containing a platform-specific set of struct::mScriptMemoryDomain objects")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptCoreAdapter, TABLE, memory)
 	mSCRIPT_DEFINE_STRUCT_DEINIT(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(mScriptCoreAdapter)
@@ -598,6 +610,9 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptConsole, error, mScriptConsoleError, 1
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptConsole, S(mScriptTextBuffer), createBuffer, _mScriptConsoleCreateBuffer, 1, CHARP, name);
 
 mSCRIPT_DEFINE_STRUCT(mScriptConsole)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING(
+		"A singleton object `console` that can be used for presenting textual information to the user via a console."
+	)
 	mSCRIPT_DEFINE_DOCSTRING("Print a log to the console")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptConsole, log)
 	mSCRIPT_DEFINE_DOCSTRING("Print a warning to the console")
@@ -645,6 +660,10 @@ mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mScriptTextBuffer, advance, 1, S32, adv);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mScriptTextBuffer, setName, 1, CHARP, name);
 
 mSCRIPT_DEFINE_STRUCT(mScriptTextBuffer)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING(
+		"An object that can be used to present texual data to the user. It is displayed monospaced, "
+		"and text can be edited after sending by moving the cursor or clearing the buffer."
+	)
 	mSCRIPT_DEFINE_STRUCT_DEINIT_NAMED(mScriptTextBuffer, deinit)
 	mSCRIPT_DEFINE_DOCSTRING("Get the current x position of the cursor")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, getX)

@@ -164,6 +164,12 @@ CXX_GUARD_START
         .comment = DOCSTRING \
     } \
 },
+#define mSCRIPT_DEFINE_CLASS_DOCSTRING(DOCSTRING) { \
+    .type = mSCRIPT_CLASS_INIT_CLASS_DOCSTRING, \
+    .info = { \
+        .comment = DOCSTRING \
+    } \
+},
 
 #define mSCRIPT_DEFINE_STRUCT_MEMBER_NAMED(STRUCT, TYPE, EXPORTED_NAME, NAME) { \
     .type = mSCRIPT_CLASS_INIT_INSTANCE_MEMBER, \

@@ -59,6 +59,34 @@ void addTypesFromTable(struct Table* table) {
 	} while(HashTableIteratorNext(table, &iter));
 }
 
+void printchomp(const char* string, int level) {
+	char indent[(level + 1) * 2 + 1];
+	memset(indent, ' ', sizeof(indent) - 1);
+	indent[sizeof(indent) - 1] = '\0';
+
+	const char* start = string;
+	char lineBuffer[1024];
+	while (true) {
+		const char* end = strchr(start, '\n');
+		if (end) {
+			size_t size = end - start;
+			if (sizeof(lineBuffer) - 1 < size) {
+				size = sizeof(lineBuffer) - 1;
+			}
+			strncpy(lineBuffer, start, size);
+			lineBuffer[size] = '\0';
+			printf("%s%s\n", indent, lineBuffer);
+		} else {
+			printf("%s%s\n", indent, start);
+			break;
+		}
+		start = end + 1;
+		if (!*end) {
+			break;
+		}
+	}
+}
+
 bool printval(const struct mScriptValue* value, char* buffer, size_t bufferSize) {
 	struct mScriptValue sval;
 	switch (value->type->base) {
@@ -122,6 +150,14 @@ void explainClass(struct mScriptTypeClass* cls, int level) {
 	if (cls->parent) {
 		printf("%sparent: %s\n", indent, cls->parent->name);
 	}
+	if (cls->docstring) {
+		if (strchr(cls->docstring, '\n')) {
+			printf("%scomment: |-\n", indent);
+			printchomp(cls->docstring, level + 1);
+		} else {
+			printf("%scomment: \"%s\"\n", indent, cls->docstring);
+		}
+	}
 
 	printf("%smembers:\n", indent);
 	const char* docstring = NULL;
@@ -137,7 +173,7 @@ void explainClass(struct mScriptTypeClass* cls, int level) {
 			printf("%s  %s:\n", indent, details->info.member.name);
 			if (docstring) {
 				printf("%s    comment: \"%s\"\n", indent, docstring);
-				docstring = NULL;				
+				docstring = NULL;
 			}
 			printf("%s    type: %s\n", indent, details->info.member.type->name);
 			break;
@@ -211,7 +247,7 @@ void explainTypeTuple(struct mScriptTypeTuple* tuple, int level) {
 	size_t i;
 	for (i = 0; i < tuple->count; ++i) {
 		if (tuple->names[i]) {
-			printf("%s- name: %s\n", indent, tuple->names[i]);		
+			printf("%s- name: %s\n", indent, tuple->names[i]);
 			printf("%s  type: %s\n", indent, tuple->entries[i]->name);
 		} else {
 			printf("%s- type: %s\n", indent, tuple->entries[i]->name);
@@ -274,10 +310,57 @@ void explainType(struct mScriptType* type, int level) {
 	}
 }
 
+bool call(struct mScriptValue* obj, const char* method, struct mScriptFrame* frame) {
+	struct mScriptValue fn;
+	if (!mScriptObjectGet(obj, method, &fn)) {
+		return false;
+	}
+	struct mScriptValue* this = mScriptListAppend(&frame->arguments);
+	this->type = mSCRIPT_TYPE_MS_WRAPPER;
+	this->refs = mSCRIPT_VALUE_UNREF;
+	this->flags = 0;
+	this->value.opaque = obj;
+	return mScriptInvoke(&fn, frame);
+}
+
 void explainCore(struct mCore* core) {
+	struct mScriptValue wrapper;
 	mScriptContextAttachCore(&context, core);
 	struct mScriptValue* emu = mScriptContextGetGlobal(&context, "emu");
-	explainValue(emu, 1);
+	addType(emu->type);
+	if (mScriptObjectGet(emu, "memory", &wrapper)) {
+		struct mScriptValue* memory = mScriptValueUnwrap(&wrapper);
+		struct TableIterator iter;
+		printf("    memory:\n");
+		if (mScriptTableIteratorStart(memory, &iter)) {
+			do {
+				struct mScriptValue* name = mScriptTableIteratorGetKey(memory, &iter);
+				struct mScriptValue* value = mScriptTableIteratorGetValue(memory, &iter);
+
+				printf("      %s:\n", name->value.string->buffer);
+				value = mScriptContextAccessWeakref(&context, value);
+
+				struct mScriptFrame frame;
+				uint32_t baseVal;
+				struct mScriptValue* shortName;
+
+				mScriptFrameInit(&frame);
+				call(value, "base", &frame);
+				mScriptPopU32(&frame.returnValues, &baseVal);
+				mScriptFrameDeinit(&frame);
+
+				mScriptFrameInit(&frame);
+				call(value, "name", &frame);
+				shortName = mScriptValueUnwrap(mScriptListGetPointer(&frame.returnValues, 0));
+				mScriptFrameDeinit(&frame);
+
+				printf("        base: 0x%x\n", baseVal);
+				printf("        name: \"%s\"\n", shortName->value.string->buffer);
+
+				mScriptValueDeref(shortName);
+			} while (mScriptTableIteratorNext(memory, &iter));
+		}
+	}
 	mScriptContextDetachCore(&context);
 }
 
