@@ -337,6 +337,11 @@ void GBAOverrideSave(struct Configuration* config, const struct GBACartridgeOver
 }
 
 void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* override) {
+	
+	GBASavedataForceType(&gba->memory.savedata, SAVEDATA_FORCE_NONE);
+	GBAFlashROMInit(&gba->memory.savedata.flashrom, override->flashromtype);
+	GBAFlashROMLoad(gba);
+
 	if (override->savetype != SAVEDATA_AUTODETECT) {
 		GBASavedataForceType(&gba->memory.savedata, override->savetype);
 	}
@@ -376,8 +381,6 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 			gba->memory.hw.devices &= ~HW_GB_PLAYER_DETECTION;
 		}
 	}
-	
-	GBAFlashROMInit(&gba->memory.flashrom, override->flashromtype);
 
 	if (override->idleLoop != IDLE_LOOP_NONE) {
 		gba->idleLoop = override->idleLoop;

@@ -113,7 +113,6 @@ struct GBAMemory {
 	struct GBAVFameCart vfame;
 	struct GBAMatrix matrix;
 	struct GBACartEReader ereader;
-	struct GBAFlashROM flashrom;
 	size_t romSize;
 	uint32_t romMask;
 	uint16_t romID;

@@ -873,10 +873,6 @@ void GBAFrameStarted(struct GBA* gba) {
 void GBAFrameEnded(struct GBA* gba) {
 	int wasDirty = gba->memory.savedata.dirty;
 	GBASavedataClean(&gba->memory.savedata, gba->video.frameCounter);
-	if (gba->memory.flashrom.type != FLASHROM_NONE) {
-		wasDirty |= gba->memory.flashrom.dirty;
-		GBAFlashROMClean(gba, gba->video.frameCounter);
-	}
 
 	if (gba->cpu->components && gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE]) {
 		struct mCheatDevice* device = (struct mCheatDevice*) gba->cpu->components[CPU_COMPONENT_CHEAT_DEVICE];

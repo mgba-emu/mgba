@@ -164,6 +164,9 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 }
 
 size_t GBASavedataSize(const struct GBASavedata* savedata) {
+	if (savedata->flashrom.type != FLASHROM_NONE) {
+		return savedata->flashrom.blockCount * (FLASHROM_BLOCK_SIZE + 4);
+	}
 	switch (savedata->type) {
 	case SAVEDATA_SRAM:
 		return SIZE_CART_SRAM;
@@ -278,7 +281,7 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 		flashSize = SIZE_CART_FLASH1M;
 	}
 	off_t end;
-	if (!savedata->vf) {
+	if (!savedata->vf || savedata->flashrom.type != FLASHROM_NONE) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_FLASH1M);
 	} else {
@@ -307,7 +310,7 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 		eepromSize = SIZE_CART_EEPROM;
 	}
 	off_t end;
-	if (!savedata->vf) {
+	if (!savedata->vf || savedata->flashrom.type != FLASHROM_NONE) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_EEPROM);
 	} else {
@@ -330,7 +333,7 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 		return;
 	}
 	off_t end;
-	if (!savedata->vf) {
+	if (!savedata->vf || savedata->flashrom.type != FLASHROM_NONE) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_SRAM);
 	} else {
@@ -354,7 +357,7 @@ void GBASavedataInitSRAM512(struct GBASavedata* savedata) {
 		return;
 	}
 	off_t end;
-	if (!savedata->vf) {
+	if (!savedata->vf || savedata->flashrom.type != FLASHROM_NONE) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_SRAM512);
 	} else {
@@ -378,7 +381,7 @@ void GBASavedataInitSRAM1M(struct GBASavedata* savedata) {
 		return;
 	}
 	off_t end;
-	if (!savedata->vf) {
+	if (!savedata->vf || savedata->flashrom.type != FLASHROM_NONE) {
 		end = 0;
 		savedata->data = anonymousMemoryMap(SIZE_CART_SRAM1M);
 	} else {
@@ -626,7 +629,13 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 		}
 		if (savedata->mapMode & MAP_WRITE) {
 			size_t size = GBASavedataSize(savedata);
-			if (savedata->data && savedata->vf->sync(savedata->vf, savedata->data, size)) {
+			bool success;
+			if (savedata->flashrom.type == FLASHROM_NONE) {
+				success = savedata->data && savedata->vf->sync(savedata->vf, savedata->data, size);
+			} else {
+				success = savedata->flashrom.blocks && savedata->vf->sync(savedata->vf, savedata->flashrom.blocks, size);
+			}
+			if (success) {
 				mLOG(GBA_SAVE, INFO, "Savedata synced");
 			} else {
 				mLOG(GBA_SAVE, INFO, "Savedata failed to sync!");

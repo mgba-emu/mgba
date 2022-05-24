@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
+#include <mgba/internal/gba/flashrom.h>
 
 mLOG_DECLARE_CATEGORY(GBA_SAVE);
 
@@ -94,6 +95,8 @@ struct GBASavedata {
 	int sramBanking;
 
 	enum FlashStateMachine flashState;
+
+	struct GBAFlashROM flashrom;
 };
 
 void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf);

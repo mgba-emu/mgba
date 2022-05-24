@@ -2,6 +2,7 @@
 #define GBA_FLASHROM_H
 
 #include <mgba-util/common.h>
+#include <mgba-util/memory.h>
 
 CXX_GUARD_START
 
@@ -35,14 +36,20 @@ enum FlashROMStateMachine {
 	FLASHROM_INTEL_STATUS
 };
 
+enum {
+	FLASHROM_BLOCK_SIZE = 0x10000,
+};
+
+typedef uint8_t FlashROMBlock[FLASHROM_BLOCK_SIZE];
+
 struct GBAFlashROM {
 	enum FlashROMType type;
 	enum FlashROMStateMachine state;
 	uint16_t manufacturerId;
 	uint16_t deviceId;
 	uint16_t status;
-	int dirty;
-	uint32_t dirtAge;
+	int blockCount;
+	FlashROMBlock *blocks;
 };
 
 void GBAFlashROMInit(struct GBAFlashROM* flashrom, enum FlashROMType type);
@@ -57,7 +64,7 @@ bool GBAFlashROMWriteIntel(struct GBAMemory* memory, uint32_t address, uint16_t 
 
 struct GBA;
 
-void GBAFlashROMClean(struct GBA* gba, uint32_t frameCount);
+bool GBAFlashROMLoad(struct GBA* gba);
 
 CXX_GUARD_END
 

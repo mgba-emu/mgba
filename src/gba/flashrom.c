@@ -9,12 +9,14 @@
 static bool _programWord(struct GBAMemory* memory, uint32_t address, uint16_t value);
 static bool _eraseBlock(struct GBAMemory* memory, uint32_t address);
 static void _eraseChip(struct GBAMemory* memory);
+static FlashROMBlock *_findBlock(struct GBAMemory* memory, uint32_t offset);
+static uint32_t* _offsetList(struct GBAFlashROM* flashrom);
 
 void GBAFlashROMInit(struct GBAFlashROM* flashrom, enum FlashROMType type) {
 	flashrom->type = type;
 	flashrom->state = FLASHROM_IDLE;
 	flashrom->status = 0x0000;
-	flashrom->dirty = 0;
+	flashrom->blocks = NULL;
 	
 	if (type == FLASHROM_22XX) {
 		flashrom->manufacturerId = 0x0001;
@@ -26,7 +28,7 @@ void GBAFlashROMInit(struct GBAFlashROM* flashrom, enum FlashROMType type) {
 }
 
 bool GBAFlashROMRead22xx(struct GBAMemory* memory, uint32_t address, uint32_t* value) {
-	struct GBAFlashROM* flashrom = &memory->flashrom;
+	struct GBAFlashROM* flashrom = &memory->savedata.flashrom;
 	switch (flashrom->state) {
 	case FLASHROM_IDLE:
 	case FLASHROM_22XX_CMD_1:
@@ -56,7 +58,7 @@ bool GBAFlashROMRead22xx(struct GBAMemory* memory, uint32_t address, uint32_t* v
 }
 
 bool GBAFlashROMWrite22xx(struct GBAMemory* memory, uint32_t address, uint16_t value) {
-	struct GBAFlashROM* flashrom = &memory->flashrom;
+	struct GBAFlashROM* flashrom = &memory->savedata.flashrom;
 	
 	if (value == 0xF0) {
 		switch (flashrom->state) {
@@ -117,7 +119,6 @@ bool GBAFlashROMWrite22xx(struct GBAMemory* memory, uint32_t address, uint16_t v
 		break;
 	case FLASHROM_22XX_PROGRAM_READY:
 		if (_programWord(memory, address, value)) {
-			flashrom->dirty |= mSAVEDATA_DIRT_NEW;
 			flashrom->state = FLASHROM_IDLE;
 			return true;
 		} else {
@@ -143,12 +144,10 @@ bool GBAFlashROMWrite22xx(struct GBAMemory* memory, uint32_t address, uint16_t v
 		switch (value) {
 		case 0x10:
 			_eraseChip(memory);
-			flashrom->dirty |= mSAVEDATA_DIRT_NEW;
 			flashrom->state = FLASHROM_IDLE;
 			return true;
 		case 0x30:
 			if(_eraseBlock(memory, address)) {
-				flashrom->dirty |= mSAVEDATA_DIRT_NEW;
 				flashrom->state = FLASHROM_IDLE;
 			} else {
 				flashrom->state = FLASHROM_22XX_ERASE_ERR;
@@ -173,7 +172,6 @@ bool GBAFlashROMWrite22xx(struct GBAMemory* memory, uint32_t address, uint16_t v
 		break;
 	case FLASHROM_22XX_UNLOCKED_READY:
 		if (_programWord(memory, address, value)) {
-			flashrom->dirty |= mSAVEDATA_DIRT_NEW;
 			flashrom->state = FLASHROM_22XX_UNLOCKED;
 		} else {
 			flashrom->state = FLASHROM_22XX_UNLOCKED_ERR;
@@ -195,7 +193,7 @@ bool GBAFlashROMWrite22xx(struct GBAMemory* memory, uint32_t address, uint16_t v
 }
 
 bool GBAFlashROMReadIntel(struct GBAMemory* memory, uint32_t address, uint32_t* value) {
-	struct GBAFlashROM* flashrom = &memory->flashrom;
+	struct GBAFlashROM* flashrom = &memory->savedata.flashrom;
 	switch (flashrom->state) {
 	case FLASHROM_IDLE:
 	case FLASHROM_INTEL_BLOCK_LOCK:
@@ -224,7 +222,7 @@ bool GBAFlashROMReadIntel(struct GBAMemory* memory, uint32_t address, uint32_t* 
 }
 
 bool GBAFlashROMWriteIntel(struct GBAMemory* memory, uint32_t address, uint16_t value) {
-	struct GBAFlashROM* flashrom = &memory->flashrom;
+	struct GBAFlashROM* flashrom = &memory->savedata.flashrom;
 	switch (flashrom->state) {
 	case FLASHROM_IDLE:
 	case FLASHROM_INTEL_IDENTIFY:
@@ -291,19 +289,61 @@ bool GBAFlashROMWriteIntel(struct GBAMemory* memory, uint32_t address, uint16_t 
 		
 	return false;
 }
-	
-void GBAFlashROMClean(struct GBA* gba, uint32_t frameCount) {
-	if (!gba->romVf) {
-		return;
+
+bool GBAFlashROMLoad(struct GBA* gba) {
+	if (gba->memory.savedata.flashrom.type == FLASHROM_NONE) {
+		return true;
 	}
-	if (mSavedataClean(&gba->memory.flashrom.dirty, &gba->memory.flashrom.dirtAge, frameCount)) {
-		size_t size = gba->memory.romSize;
-		if (gba->romVf->sync(gba->romVf, gba->memory.rom, size)) {
-			mLOG(GBA_SAVE, INFO, "FlashROM synced");
-		} else {
-			mLOG(GBA_SAVE, INFO, "FlashROM failed to sync!");
+
+	if (gba->isPristine) {
+#if !defined(FIXED_ROM_BUFFER) && !defined(__wii__)
+		void* newRom = anonymousMemoryMap(SIZE_CART0);
+		memcpy(newRom, gba->memory.rom, gba->memory.romSize);
+		memset(((uint8_t*) newRom) + gba->memory.romSize, 0xFF, SIZE_CART0 - gba->memory.romSize);
+		if (gba->cpu->memory.activeRegion == gba->memory.rom) {
+			gba->cpu->memory.activeRegion = newRom;
+		}
+		if (gba->romVf) {
+			gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->memory.romSize);
+			gba->romVf->close(gba->romVf);
+			gba->romVf = NULL;
+		}
+		gba->memory.rom = newRom;
+		gba->memory.hw.gpioBase = &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1];
+#endif
+		gba->isPristine = false;
+	}
+
+	struct GBASavedata* savedata = &gba->memory.savedata;
+	off_t size = savedata->vf->size(savedata->vf);
+	if (size % (FLASHROM_BLOCK_SIZE + 4)) {
+		savedata->vf->truncate(savedata->vf, 0);
+		size = 0;
+	}
+	savedata->flashrom.blockCount = size / (FLASHROM_BLOCK_SIZE + 4);
+	savedata->flashrom.blocks = savedata->vf->map(savedata->vf, size, MAP_WRITE);
+	if (size && !savedata->flashrom.blocks) {
+		return false;
+	}
+	uint32_t* offsetList = _offsetList(&savedata->flashrom);
+	for (int i = 0; i < savedata->flashrom.blockCount; ++i)
+	{
+		uint32_t offset;
+		LOAD_32(offset, 4 * i, offsetList);
+		if (offset != (offset & 0x01ff0000)) {
+			savedata->vf->unmap(savedata->vf, savedata->flashrom.blocks, gba->memory.romSize + gba->memory.romSize * 4 / FLASHROM_BLOCK_SIZE);
+			savedata->flashrom.blocks = NULL;
+			return false;
 		}
 	}
+	for (int i = 0; i < savedata->flashrom.blockCount; ++i)
+	{
+		uint32_t offset;
+		LOAD_32(offset, 4 * i, offsetList);
+		memcpy(((uint8_t*) gba->memory.rom) + offset, savedata->flashrom.blocks, FLASHROM_BLOCK_SIZE);
+	}
+
+	return true;
 }
 
 static bool _programWord(struct GBAMemory* memory, uint32_t address, uint16_t value) {
@@ -316,6 +356,11 @@ static bool _programWord(struct GBAMemory* memory, uint32_t address, uint16_t va
 	uint16_t word;
 	LOAD_16(word, offset, memory->rom);
 	STORE_16(word & value, offset, memory->rom);
+	FlashROMBlock* block = _findBlock(memory, offset & 0x01FF0000);
+	if (block) {
+		STORE_16(word & value, offset & 0x0000FFFF, block);
+	}
+	memory->savedata.dirty |= mSAVEDATA_DIRT_NEW;
 	return true;
 }
 
@@ -326,12 +371,53 @@ static bool _eraseBlock(struct GBAMemory* memory, uint32_t address) {
 		return false;
 	}
 	
-	memset(&((uint8_t*) memory->rom)[offset], 0xFF, 0x10000);
-	memory->flashrom.dirty |= mSAVEDATA_DIRT_NEW;
+	memset(&((uint8_t*) memory->rom)[offset], 0xFF, FLASHROM_BLOCK_SIZE);
+	FlashROMBlock* block = _findBlock(memory, offset);
+	if (block) {
+		memset(block, 0xFF, FLASHROM_BLOCK_SIZE);
+	}
+	memory->savedata.dirty |= mSAVEDATA_DIRT_NEW;
 	return true;
 }
 
 static void _eraseChip(struct GBAMemory* memory) {
     memset(memory->rom, 0xFF, memory->romSize);
-	memory->flashrom.dirty |= mSAVEDATA_DIRT_NEW;
+	memory->savedata.flashrom.blockCount = memory->romSize / FLASHROM_BLOCK_SIZE;
+	memory->savedata.vf->truncate(memory->savedata.vf, memory->romSize + 4 * memory->savedata.flashrom.blockCount);
+	memset(memory->savedata.flashrom.blocks, 0xFF, memory->romSize);
+	for (int i = 0; i < memory->savedata.flashrom.blockCount; ++i) {
+		STORE_32(i << 16, 4 * i, _offsetList(&memory->savedata.flashrom));
+	}
+	memory->savedata.dirty |= mSAVEDATA_DIRT_NEW;
+}
+
+static FlashROMBlock* _findBlock(struct GBAMemory* memory, uint32_t offset) {
+	uint32_t* offsetList = _offsetList(&memory->savedata.flashrom);
+	for (int i = 0; i < memory->savedata.flashrom.blockCount; ++i)
+	{
+		uint32_t foundOffset;
+		LOAD_32(foundOffset, 4 * i, offsetList);
+		if (offset == foundOffset) {
+			return &memory->savedata.flashrom.blocks[i];
+		}
+	}
+	memory->savedata.vf->truncate(memory->savedata.vf, (memory->savedata.flashrom.blockCount + 1) * (FLASHROM_BLOCK_SIZE + 4));
+	memory->savedata.vf->unmap(memory->savedata.vf, memory->savedata.flashrom.blocks, memory->savedata.flashrom.blockCount * (FLASHROM_BLOCK_SIZE + 4));
+	memory->savedata.flashrom.blocks = memory->savedata.vf->map(memory->savedata.vf, (memory->savedata.flashrom.blockCount + 1) * (FLASHROM_BLOCK_SIZE + 4), MAP_WRITE);
+	offsetList = _offsetList(&memory->savedata.flashrom);
+	memcpy(offsetList + FLASHROM_BLOCK_SIZE, offsetList, memory->savedata.flashrom.blockCount * 4);
+	memcpy(offsetList, ((uint8_t*) memory->rom) + offset, FLASHROM_BLOCK_SIZE);
+	++memory->savedata.flashrom.blockCount;
+	offsetList = _offsetList(&memory->savedata.flashrom);
+	STORE_32(offset, memory->savedata.flashrom.blockCount - 1, offsetList);
+	return &memory->savedata.flashrom.blocks[memory->savedata.flashrom.blockCount - 1];
+}
+
+// The list of offsets of modified blocks is appended after all modified blocks.
+// Ideally this means flashrom saves are usable as regular saves just by truncating the file.
+static uint32_t* _offsetList(struct GBAFlashROM* flashrom) {
+	if (!flashrom->blocks) {
+		return NULL;
+	}
+	return (uint32_t*) &flashrom->blocks[flashrom->blockCount];
 }

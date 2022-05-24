@@ -576,9 +576,9 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case REGION_CART1_EX:
 	case REGION_CART2:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
-	    if (memory->flashrom.type == FLASHROM_22XX && GBAFlashROMRead22xx(memory, address, &value)) {
+	    if (memory->savedata.flashrom.type == FLASHROM_22XX && GBAFlashROMRead22xx(memory, address, &value)) {
 			break;
-		} else if (memory->flashrom.type == FLASHROM_INTEL && GBAFlashROMReadIntel(memory, address, &value)) {
+		} else if (memory->savedata.flashrom.type == FLASHROM_INTEL && GBAFlashROMReadIntel(memory, address, &value)) {
 			break;
 		}
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
@@ -701,10 +701,10 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case REGION_CART2:
 	case REGION_CART2_EX:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
-		if (memory->flashrom.type == FLASHROM_22XX && GBAFlashROMRead22xx(memory, address, &value)) {
+		if (memory->savedata.flashrom.type == FLASHROM_22XX && GBAFlashROMRead22xx(memory, address, &value)) {
 			value &= 0x00FF;
 			break;
-		} else if (memory->flashrom.type == FLASHROM_INTEL && GBAFlashROMReadIntel(memory, address, &value)) {
+		} else if (memory->savedata.flashrom.type == FLASHROM_INTEL && GBAFlashROMReadIntel(memory, address, &value)) {
 			value &= 0x00FF;
 			break;
 		}
@@ -995,10 +995,10 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 			GBASavedataSetSRAMBank(&memory->savedata, value);
 			break;
 		}
-		if (memory->flashrom.type == FLASHROM_22XX && GBAFlashROMWrite22xx(memory, address, value)) {
+		if (memory->savedata.flashrom.type == FLASHROM_22XX && GBAFlashROMWrite22xx(memory, address, value)) {
 			break;
 		}
-		if (memory->flashrom.type == FLASHROM_INTEL && GBAFlashROMWriteIntel(memory, address, value)) {
+		if (memory->savedata.flashrom.type == FLASHROM_INTEL && GBAFlashROMWriteIntel(memory, address, value)) {
 			break;
 		}
 		mLOG(GBA_MEM, GAME_ERROR, "Bad cartridge Store16: 0x%08X", address);
@@ -1853,7 +1853,7 @@ void GBAMemoryDeserialize(struct GBAMemory* memory, const struct GBASerializedSt
 }
 
 void _pristineCow(struct GBA* gba) {
-	if (!gba->isPristine || gba->memory.flashrom.type != FLASHROM_NONE) {
+	if (!gba->isPristine) {
 		return;
 	}
 #if !defined(FIXED_ROM_BUFFER) && !defined(__wii__)
