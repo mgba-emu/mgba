@@ -132,6 +132,9 @@ CXX_GUARD_START
     }; \
     const struct mScriptType mSTStructPtr_ ## STRUCT = { \
         .base = mSCRIPT_TYPE_OPAQUE, \
+        .details = { \
+            .type = &mSTStruct_ ## STRUCT \
+        }, \
         .size = sizeof(void*), \
         .name = "ptr struct::" #STRUCT, \
         .alloc = NULL, \
@@ -141,6 +144,9 @@ CXX_GUARD_START
     }; \
     const struct mScriptType mSTStructPtrConst_ ## STRUCT = { \
         .base = mSCRIPT_TYPE_OPAQUE, \
+        .details = { \
+            .type = &mSTStructConst_ ## STRUCT \
+        }, \
         .isConst = true, \
         .size = sizeof(void*), \
         .name = "ptr const struct::" #STRUCT, \

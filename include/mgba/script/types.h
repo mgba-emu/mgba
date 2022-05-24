@@ -236,6 +236,7 @@ struct mScriptType {
 		struct mScriptTypeTuple tuple;
 		struct mScriptTypeFunction function;
 		struct mScriptTypeClass* cls;
+		const struct mScriptType* type;
 		void* opaque;
 	} details;
 	const struct mScriptType* constType;
