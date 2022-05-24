@@ -368,7 +368,7 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 
 	mSCRIPT_DEFINE_DOCSTRING("Get internal title of the game from the ROM header")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, getGameTitle)
-	mSCRIPT_DEFINE_DOCSTRING("Get internal product code for the game from the ROM header")
+	mSCRIPT_DEFINE_DOCSTRING("Get internal product code for the game from the ROM header, if available")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, getGameCode)
 
 	mSCRIPT_DEFINE_DOCSTRING("Run until the next frame")
@@ -489,12 +489,13 @@ mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, WRAPPER, _get, _mScriptCoreAda
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, _deinit, _mScriptCoreAdapterDeinit, 0);
 
 mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
-mSCRIPT_DEFINE_STRUCT_MEMBER_NAMED(mScriptCoreAdapter, PS(mCore), _core, core)
-mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptCoreAdapter, TABLE, memory)
-mSCRIPT_DEFINE_STRUCT_DEINIT(mScriptCoreAdapter)
-mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(mScriptCoreAdapter)
-mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, S(mCore), _core)
-mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, CS(mCore), _core)
+	mSCRIPT_DEFINE_STRUCT_MEMBER_NAMED(mScriptCoreAdapter, PS(mCore), _core, core)
+	mSCRIPT_DEFINE_DOCSTRING("A table containing a platform-specific set of memory adapters")
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptCoreAdapter, TABLE, memory)
+	mSCRIPT_DEFINE_STRUCT_DEINIT(mScriptCoreAdapter)
+	mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(mScriptCoreAdapter)
+	mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, S(mCore), _core)
+	mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, CS(mCore), _core)
 mSCRIPT_DEFINE_END;
 
 void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core) {
@@ -564,9 +565,13 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptConsole, error, mScriptConsoleError, 1
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptConsole, S(mScriptTextBuffer), createBuffer, _mScriptConsoleCreateBuffer, 1, CHARP, name);
 
 mSCRIPT_DEFINE_STRUCT(mScriptConsole)
+	mSCRIPT_DEFINE_DOCSTRING("Print a log to the console")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptConsole, log)
+	mSCRIPT_DEFINE_DOCSTRING("Print a warning to the console")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptConsole, warn)
+	mSCRIPT_DEFINE_DOCSTRING("Print an error to the console")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptConsole, error)
+	mSCRIPT_DEFINE_DOCSTRING("Create a text buffer that can be used to display custom information")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptConsole, createBuffer)
 mSCRIPT_DEFINE_END;
 
@@ -608,14 +613,23 @@ mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mScriptTextBuffer, setName, 1, CHARP, name)
 
 mSCRIPT_DEFINE_STRUCT(mScriptTextBuffer)
 	mSCRIPT_DEFINE_STRUCT_DEINIT_NAMED(mScriptTextBuffer, deinit)
+	mSCRIPT_DEFINE_DOCSTRING("Get the current x position of the cursor")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, getX)
+	mSCRIPT_DEFINE_DOCSTRING("Get the current y position of the cursor")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, getY)
+	mSCRIPT_DEFINE_DOCSTRING("Get number of columns in the buffer")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, cols)
+	mSCRIPT_DEFINE_DOCSTRING("Get number of rows in the buffer")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, rows)
+	mSCRIPT_DEFINE_DOCSTRING("Print a string to the buffer")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, print)
+	mSCRIPT_DEFINE_DOCSTRING("Clear the buffer")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, clear)
+	mSCRIPT_DEFINE_DOCSTRING("Set the number of rows and columns")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, setSize)
+	mSCRIPT_DEFINE_DOCSTRING("Set the posiiton of the cursor")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, moveCursor)
+	mSCRIPT_DEFINE_DOCSTRING("Advance the cursor a number of columns")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, advance)
 	mSCRIPT_DEFINE_DOCSTRING("Set the user-visible name of this buffer")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, setName)
