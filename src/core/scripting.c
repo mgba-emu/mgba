@@ -150,7 +150,7 @@ bool mScriptBridgeLookupSymbol(struct mScriptBridge* sb, const char* name, int32
 	return info.success;
 }
 
-struct mScriptMemoryAdapter {
+struct mScriptMemoryDomain {
 	struct mCore* core;
 	struct mCoreMemoryBlock block;
 };
@@ -182,25 +182,25 @@ struct mScriptConsole {
 		segmentAddress += segmentStart; \
 	}
 
-static uint32_t mScriptMemoryAdapterRead8(struct mScriptMemoryAdapter* adapter, uint32_t address) {
+static uint32_t mScriptMemoryDomainRead8(struct mScriptMemoryDomain* adapter, uint32_t address) {
 	CALCULATE_SEGMENT_INFO;
 	CALCULATE_SEGMENT_ADDRESS;
 	return adapter->core->rawRead8(adapter->core, segmentAddress, segment);
 }
 
-static uint32_t mScriptMemoryAdapterRead16(struct mScriptMemoryAdapter* adapter, uint32_t address) {
+static uint32_t mScriptMemoryDomainRead16(struct mScriptMemoryDomain* adapter, uint32_t address) {
 	CALCULATE_SEGMENT_INFO;
 	CALCULATE_SEGMENT_ADDRESS;
 	return adapter->core->rawRead16(adapter->core, segmentAddress, segment);
 }
 
-static uint32_t mScriptMemoryAdapterRead32(struct mScriptMemoryAdapter* adapter, uint32_t address) {
+static uint32_t mScriptMemoryDomainRead32(struct mScriptMemoryDomain* adapter, uint32_t address) {
 	CALCULATE_SEGMENT_INFO;
 	CALCULATE_SEGMENT_ADDRESS;
 	return adapter->core->rawRead32(adapter->core, segmentAddress, segment);
 }
 
-static struct mScriptValue* mScriptMemoryAdapterReadRange(struct mScriptMemoryAdapter* adapter, uint32_t address, uint32_t length) {
+static struct mScriptValue* mScriptMemoryDomainReadRange(struct mScriptMemoryDomain* adapter, uint32_t address, uint32_t length) {
 	CALCULATE_SEGMENT_INFO;
 	struct mScriptValue* value = mScriptStringCreateEmpty(length);
 	char* buffer = value->value.string->buffer;
@@ -212,48 +212,48 @@ static struct mScriptValue* mScriptMemoryAdapterReadRange(struct mScriptMemoryAd
 	return value;
 }
 
-static void mScriptMemoryAdapterWrite8(struct mScriptMemoryAdapter* adapter, uint32_t address, uint8_t value) {
+static void mScriptMemoryDomainWrite8(struct mScriptMemoryDomain* adapter, uint32_t address, uint8_t value) {
 	CALCULATE_SEGMENT_INFO;
 	CALCULATE_SEGMENT_ADDRESS;
 	adapter->core->rawWrite8(adapter->core, address, segmentAddress, value);
 }
 
-static void mScriptMemoryAdapterWrite16(struct mScriptMemoryAdapter* adapter, uint32_t address, uint16_t value) {
+static void mScriptMemoryDomainWrite16(struct mScriptMemoryDomain* adapter, uint32_t address, uint16_t value) {
 	CALCULATE_SEGMENT_INFO;
 	CALCULATE_SEGMENT_ADDRESS;
 	adapter->core->rawWrite16(adapter->core, address, segmentAddress, value);
 }
 
-static void mScriptMemoryAdapterWrite32(struct mScriptMemoryAdapter* adapter, uint32_t address, uint32_t value) {
+static void mScriptMemoryDomainWrite32(struct mScriptMemoryDomain* adapter, uint32_t address, uint32_t value) {
 	CALCULATE_SEGMENT_INFO;
 	CALCULATE_SEGMENT_ADDRESS;
 	adapter->core->rawWrite32(adapter->core, address, segmentAddress, value);
 }
 
-mSCRIPT_DECLARE_STRUCT(mScriptMemoryAdapter);
-mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryAdapter, U32, read8, mScriptMemoryAdapterRead8, 1, U32, address);
-mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryAdapter, U32, read16, mScriptMemoryAdapterRead16, 1, U32, address);
-mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryAdapter, U32, read32, mScriptMemoryAdapterRead32, 1, U32, address);
-mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryAdapter, WRAPPER, readRange, mScriptMemoryAdapterReadRange, 2, U32, address, U32, length);
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryAdapter, write8, mScriptMemoryAdapterWrite8, 2, U32, address, U8, value);
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryAdapter, write16, mScriptMemoryAdapterWrite16, 2, U32, address, U16, value);
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryAdapter, write32, mScriptMemoryAdapterWrite32, 2, U32, address, U32, value);
+mSCRIPT_DECLARE_STRUCT(mScriptMemoryDomain);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, read8, mScriptMemoryDomainRead8, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, read16, mScriptMemoryDomainRead16, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, read32, mScriptMemoryDomainRead32, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, WRAPPER, readRange, mScriptMemoryDomainReadRange, 2, U32, address, U32, length);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write8, mScriptMemoryDomainWrite8, 2, U32, address, U8, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write16, mScriptMemoryDomainWrite16, 2, U32, address, U16, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write32, mScriptMemoryDomainWrite32, 2, U32, address, U32, value);
 
-mSCRIPT_DEFINE_STRUCT(mScriptMemoryAdapter)
+mSCRIPT_DEFINE_STRUCT(mScriptMemoryDomain)
 	mSCRIPT_DEFINE_DOCSTRING("Read an 8-bit value from the given offset")
-	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, read8)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, read8)
 	mSCRIPT_DEFINE_DOCSTRING("Read a 16-bit value from the given offset")
-	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, read16)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, read16)
 	mSCRIPT_DEFINE_DOCSTRING("Read a 32-bit value from the given offset")
-	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, read32)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, read32)
 	mSCRIPT_DEFINE_DOCSTRING("Read byte range from the given offset")
-	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, readRange)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, readRange)
 	mSCRIPT_DEFINE_DOCSTRING("Write an 8-bit value from the given offset")
-	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, write8)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, write8)
 	mSCRIPT_DEFINE_DOCSTRING("Write a 16-bit value from the given offset")
-	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, write16)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, write16)
 	mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given offset")
-	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryAdapter, write32)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, write32)
 mSCRIPT_DEFINE_END;
 
 static struct mScriptValue* _mScriptCoreGetGameTitle(const struct mCore* core) {
@@ -454,10 +454,10 @@ static void _rebuildMemoryMap(struct mScriptContext* context, struct mScriptCore
 	size_t nBlocks = adapter->core->listMemoryBlocks(adapter->core, &blocks);
 	size_t i;
 	for (i = 0; i < nBlocks; ++i) {
-		struct mScriptMemoryAdapter* memadapter = calloc(1, sizeof(*memadapter));
+		struct mScriptMemoryDomain* memadapter = calloc(1, sizeof(*memadapter));
 		memadapter->core = adapter->core;
 		memcpy(&memadapter->block, &blocks[i], sizeof(memadapter->block));
-		struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mScriptMemoryAdapter));
+		struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mScriptMemoryDomain));
 		value->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 		value->value.opaque = memadapter;
 		struct mScriptValue* key = mScriptStringCreateFromUTF8(blocks[i].internalName);
