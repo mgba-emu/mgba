@@ -407,7 +407,7 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
 		"An instance of an emulator core."
 	)
-	mSCRIPT_DEFINE_DOCSTRING("Get which platform is being emulated")
+	mSCRIPT_DEFINE_DOCSTRING("Get which platform is being emulated. See C.PLATFORM for possible values")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, platform)
 	mSCRIPT_DEFINE_DOCSTRING("Get the number of the current frame")
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, currentFrame, frameCounter)
@@ -463,9 +463,9 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_DOCSTRING("Write the value of the register with the given name")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, writeRegister)
 
-	mSCRIPT_DEFINE_DOCSTRING("Save state to the slot number")
+	mSCRIPT_DEFINE_DOCSTRING("Save state to the slot number. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateSlot)
-	mSCRIPT_DEFINE_DOCSTRING("Load state from the slot number")
+	mSCRIPT_DEFINE_DOCSTRING("Load state from the slot number. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateSlot)
 
 	mSCRIPT_DEFINE_DOCSTRING("Save a screenshot")
@@ -632,7 +632,7 @@ mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptConsole, S(mScriptTextBuffer)
 
 mSCRIPT_DEFINE_STRUCT(mScriptConsole)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
-		"A singleton object `console` that can be used for presenting textual information to the user via a console."
+		"A global singleton object `console` that can be used for presenting textual information to the user via a console."
 	)
 	mSCRIPT_DEFINE_DOCSTRING("Print a log to the console")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptConsole, log)

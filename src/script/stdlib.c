@@ -32,7 +32,17 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCallbackManager, add, _mScriptCallback
 
 mSCRIPT_DEFINE_STRUCT(mScriptCallbackManager)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
-		"A singleton object `callbacks` used for managing callbacks."
+		"A global singleton object `callbacks` used for managing callbacks. The following callbacks are defined:\n\n"
+		"- **alarm**: An in-game alarm went off\n"
+		"- **crashed**: The emulation crashed\n"
+		"- **frame**: The emulation finished a frame\n"
+		"- **keysRead**: The emulation is about to read the key input\n"
+		"- **reset**: The emulation has been reset\n"
+		"- **savedataUpdated**: The emulation has just finished modifying save data\n"
+		"- **sleep**: The emulation has used the sleep feature to enter a low-power mode\n"
+		"- **shutdown**: The emulation has been powered off\n"
+		"- **start**: The emulation has started\n"
+		"- **stop**: The emulation has voluntarily shut down\n"
 	)
 	mSCRIPT_DEFINE_DOCSTRING("Add a callback of the named type")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCallbackManager, add)
