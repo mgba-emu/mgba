@@ -8,6 +8,12 @@
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
 #include <mgba/script/macros.h>
+#ifdef M_CORE_GBA
+#include <mgba/internal/gba/input.h>
+#endif
+#ifdef M_CORE_GB
+#include <mgba/internal/gb/input.h>
+#endif
 
 struct mScriptCallbackManager {
 	struct mScriptContext* context;
@@ -62,5 +68,33 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 		mSCRIPT_CONSTANT_PAIR(mCHECKSUM, CRC32),
 		mSCRIPT_CONSTANT_SENTINEL
 	});
+#ifdef M_CORE_GBA
+	mScriptContextExportConstants(context, "GBA_KEY", (struct mScriptKVPair[]) {
+		mSCRIPT_CONSTANT_PAIR(GBA_KEY, A),
+		mSCRIPT_CONSTANT_PAIR(GBA_KEY, B),
+		mSCRIPT_CONSTANT_PAIR(GBA_KEY, SELECT),
+		mSCRIPT_CONSTANT_PAIR(GBA_KEY, START),
+		mSCRIPT_CONSTANT_PAIR(GBA_KEY, RIGHT),
+		mSCRIPT_CONSTANT_PAIR(GBA_KEY, LEFT),
+		mSCRIPT_CONSTANT_PAIR(GBA_KEY, UP),
+		mSCRIPT_CONSTANT_PAIR(GBA_KEY, DOWN),
+		mSCRIPT_CONSTANT_PAIR(GBA_KEY, R),
+		mSCRIPT_CONSTANT_PAIR(GBA_KEY, L),
+		mSCRIPT_CONSTANT_SENTINEL
+	});
+#endif
+#ifdef M_CORE_GB
+	mScriptContextExportConstants(context, "GB_KEY", (struct mScriptKVPair[]) {
+		mSCRIPT_CONSTANT_PAIR(GB_KEY, A),
+		mSCRIPT_CONSTANT_PAIR(GB_KEY, B),
+		mSCRIPT_CONSTANT_PAIR(GB_KEY, SELECT),
+		mSCRIPT_CONSTANT_PAIR(GB_KEY, START),
+		mSCRIPT_CONSTANT_PAIR(GB_KEY, RIGHT),
+		mSCRIPT_CONSTANT_PAIR(GB_KEY, LEFT),
+		mSCRIPT_CONSTANT_PAIR(GB_KEY, UP),
+		mSCRIPT_CONSTANT_PAIR(GB_KEY, DOWN),
+		mSCRIPT_CONSTANT_SENTINEL
+	});
+#endif
 	mScriptContextSetGlobal(context, "C", context->constants);
 }

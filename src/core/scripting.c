@@ -325,6 +325,18 @@ static struct mScriptValue* _mScriptCoreChecksum(const struct mCore* core, int t
 	return ret;
 }
 
+static void _mScriptCoreAddKey(struct mCore* core, int32_t key) {
+	core->addKeys(core, 1 << key);
+}
+
+static void _mScriptCoreClearKey(struct mCore* core, int32_t key) {
+	core->clearKeys(core, 1 << key);
+}
+
+static int32_t _mScriptCoreGetKey(struct mCore* core, int32_t key) {
+	return (core->getKeys(core) >> key) & 1;
+}
+
 static struct mScriptValue* _mScriptCoreReadRange(struct mCore* core, uint32_t address, uint32_t length) {
 	struct mScriptValue* value = mScriptStringCreateEmpty(length);
 	char* buffer = value->value.string->buffer;
@@ -366,6 +378,9 @@ mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, step, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, setKeys, 1, U32, keys);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, addKeys, 1, U32, keys);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, clearKeys, 1, U32, keys);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, addKey, _mScriptCoreAddKey, 1, S32, key);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, clearKey, _mScriptCoreClearKey, 1, S32, key);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, S32, getKey, _mScriptCoreGetKey, 1, S32, key);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, getKeys, 0);
 
 // Memory functions
@@ -413,13 +428,19 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_DOCSTRING("Run a single instruction")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, step)
 
-	mSCRIPT_DEFINE_DOCSTRING("Set the currently active keys")
+	mSCRIPT_DEFINE_DOCSTRING("Set the currently active key list")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, setKeys)
-	mSCRIPT_DEFINE_DOCSTRING("Add keys to the currently active key list")
+	mSCRIPT_DEFINE_DOCSTRING("Add a single key to the currently active key list")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, addKey)
+	mSCRIPT_DEFINE_DOCSTRING("Add a bitmask of keys to the currently active key list")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, addKeys)
-	mSCRIPT_DEFINE_DOCSTRING("Remove keys from the currently active key list")
+	mSCRIPT_DEFINE_DOCSTRING("Remove a single key from the currently active key list")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, clearKey)
+	mSCRIPT_DEFINE_DOCSTRING("Remove a bitmask of keys from the currently active key list")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, clearKeys)
-	mSCRIPT_DEFINE_DOCSTRING("Get the currently active keys")
+	mSCRIPT_DEFINE_DOCSTRING("Get the active state of a given key")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, getKey)
+	mSCRIPT_DEFINE_DOCSTRING("Get the currently active keys as a bitmask")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, getKeys)
 
 	mSCRIPT_DEFINE_DOCSTRING("Read an 8-bit value from the given bus address")
