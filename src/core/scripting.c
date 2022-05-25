@@ -390,6 +390,7 @@ mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WRAPPER, getGameCode, _mScriptCoreGetGame
 mSCRIPT_DECLARE_STRUCT_C_METHOD_WITH_DEFAULTS(mCore, WRAPPER, checksum, _mScriptCoreChecksum, 1, S32, type);
 
 // Run functions
+mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, reset, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, runFrame, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, step, 0);
 
@@ -444,6 +445,8 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_DOCSTRING("Get internal product code for the game from the ROM header, if available")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, getGameCode)
 
+	mSCRIPT_DEFINE_DOCSTRING("Reset the emulation. This does not invoke the **reset** callback")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, reset)
 	mSCRIPT_DEFINE_DOCSTRING("Run until the next frame")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, runFrame)
 	mSCRIPT_DEFINE_DOCSTRING("Run a single instruction")
@@ -579,9 +582,15 @@ static struct mScriptValue* _mScriptCoreAdapterGet(struct mScriptCoreAdapter* ad
 	return ret;
 }
 
+static void _mScriptCoreAdapterReset(struct mScriptCoreAdapter* adapter) {
+	adapter->core->reset(adapter->core);
+	mScriptContextTriggerCallback(adapter->context, "reset");
+}
+
 mSCRIPT_DECLARE_STRUCT(mScriptCoreAdapter);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, WRAPPER, _get, _mScriptCoreAdapterGet, 1, CHARP, name);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, _deinit, _mScriptCoreAdapterDeinit, 0);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, reset, _mScriptCoreAdapterReset, 0);
 
 mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
@@ -594,6 +603,8 @@ mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptCoreAdapter, TABLE, memory)
 	mSCRIPT_DEFINE_STRUCT_DEINIT(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(mScriptCoreAdapter)
+	mSCRIPT_DEFINE_DOCSTRING("Reset the emulation. As opposed to struct::mCore.reset, this version calls the **reset** callback")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, reset)
 	mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, S(mCore), _core)
 	mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, CS(mCore), _core)
 mSCRIPT_DEFINE_END;
