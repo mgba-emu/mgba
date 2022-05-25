@@ -361,6 +361,25 @@ static void _mScriptCoreWriteRegister(struct mCore* core, const char* regName, i
 	core->writeRegister(core, regName, &in);
 }
 
+static struct mScriptValue* _mScriptCoreSaveState(struct mCore* core, int32_t flags) {
+	struct VFile* vf = VFileMemChunk(NULL, 0);
+	if (!mCoreSaveStateNamed(core, vf, flags)) {
+		vf->close(vf);
+		return NULL;
+	}
+	void* buffer = vf->map(vf, vf->size(vf), MAP_READ);
+	struct mScriptValue* value = mScriptStringCreateFromBytes(buffer, vf->size(vf));
+	vf->close(vf);
+	return value;
+}
+
+static int32_t _mScriptCoreLoadState(struct mCore* core, struct mScriptValue* buffer, int32_t flags) {
+	struct VFile* vf = VFileFromConstMemory(buffer->value.string->buffer, buffer->value.string->size);
+	int ret = mCoreLoadStateNamed(core, vf, flags);
+	vf->close(vf);
+	return ret;
+}
+
 // Info functions
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, platform, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, U32, frameCounter, 0);
@@ -398,7 +417,9 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, writeRegister, _mScriptCoreWriteRegist
 
 // Savestate functions
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, saveStateSlot, mCoreSaveState, 2, S32, slot, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, WRAPPER, saveStateBuffer, _mScriptCoreSaveState, 1, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateSlot, mCoreLoadState, 2, S32, slot, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateBuffer, _mScriptCoreLoadState, 2, WRAPPER, buffer, S32, flags);
 
 // Miscellaneous functions
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, screenshot, mCoreTakeScreenshot, 0);
@@ -465,8 +486,12 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 
 	mSCRIPT_DEFINE_DOCSTRING("Save state to the slot number. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateSlot)
+	mSCRIPT_DEFINE_DOCSTRING("Save state and return as a buffer. See C.SAVESTATE for possible values for `flags`")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateBuffer)
 	mSCRIPT_DEFINE_DOCSTRING("Load state from the slot number. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateSlot)
+	mSCRIPT_DEFINE_DOCSTRING("Load state a buffer. See C.SAVESTATE for possible values for `flags`")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateBuffer)
 
 	mSCRIPT_DEFINE_DOCSTRING("Save a screenshot")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, screenshot)
@@ -482,6 +507,15 @@ mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateSlot)
 mSCRIPT_DEFINE_DEFAULTS_END;
 
 mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, loadStateSlot)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_MAKE_S32(SAVESTATE_ALL & ~SAVESTATE_SAVEDATA)
+mSCRIPT_DEFINE_DEFAULTS_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateBuffer)
+	mSCRIPT_MAKE_S32(SAVESTATE_ALL)
+mSCRIPT_DEFINE_DEFAULTS_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, loadStateBuffer)
 	mSCRIPT_NO_DEFAULT,
 	mSCRIPT_MAKE_S32(SAVESTATE_ALL & ~SAVESTATE_SAVEDATA)
 mSCRIPT_DEFINE_DEFAULTS_END;
