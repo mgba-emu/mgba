@@ -230,6 +230,22 @@ static void mScriptMemoryDomainWrite32(struct mScriptMemoryDomain* adapter, uint
 	adapter->core->rawWrite32(adapter->core, address, segmentAddress, value);
 }
 
+static uint32_t mScriptMemoryDomainBase(struct mScriptMemoryDomain* adapter) {
+	return adapter->block.start;
+}
+
+static uint32_t mScriptMemoryDomainEnd(struct mScriptMemoryDomain* adapter) {
+	return adapter->block.end;
+}
+
+static uint32_t mScriptMemoryDomainSize(struct mScriptMemoryDomain* adapter) {
+	return adapter->block.size;
+}
+
+static struct mScriptValue* mScriptMemoryDomainName(struct mScriptMemoryDomain* adapter) {
+	return mScriptStringCreateFromUTF8(adapter->block.shortName);
+}
+
 mSCRIPT_DECLARE_STRUCT(mScriptMemoryDomain);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, read8, mScriptMemoryDomainRead8, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, read16, mScriptMemoryDomainRead16, 1, U32, address);
@@ -238,6 +254,11 @@ mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, WRAPPER, readRange, mScriptMe
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write8, mScriptMemoryDomainWrite8, 2, U32, address, U8, value);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write16, mScriptMemoryDomainWrite16, 2, U32, address, U16, value);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write32, mScriptMemoryDomainWrite32, 2, U32, address, U32, value);
+
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, base, mScriptMemoryDomainBase, 0);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, bound, mScriptMemoryDomainEnd, 0);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, size, mScriptMemoryDomainSize, 0);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, WRAPPER, name, mScriptMemoryDomainName, 0);
 
 mSCRIPT_DEFINE_STRUCT(mScriptMemoryDomain)
 	mSCRIPT_DEFINE_DOCSTRING("Read an 8-bit value from the given offset")
@@ -254,6 +275,15 @@ mSCRIPT_DEFINE_STRUCT(mScriptMemoryDomain)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, write16)
 	mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given offset")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, write32)
+
+	mSCRIPT_DEFINE_DOCSTRING("Get the address of the base of this memory domain")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, base)
+	mSCRIPT_DEFINE_DOCSTRING("Get the address of the end bound of this memory domain. Note that this address is not in the domain itself, and is the address of the first byte past it")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, bound)
+	mSCRIPT_DEFINE_DOCSTRING("Get the size of this memory domain in bytes")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, size)
+	mSCRIPT_DEFINE_DOCSTRING("Get a short, human-readable name for this memory domain")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, name)
 mSCRIPT_DEFINE_END;
 
 static struct mScriptValue* _mScriptCoreGetGameTitle(const struct mCore* core) {
@@ -454,6 +484,9 @@ static void _rebuildMemoryMap(struct mScriptContext* context, struct mScriptCore
 	size_t nBlocks = adapter->core->listMemoryBlocks(adapter->core, &blocks);
 	size_t i;
 	for (i = 0; i < nBlocks; ++i) {
+		if (blocks[i].flags == mCORE_MEMORY_VIRTUAL) {
+			continue;
+		}
 		struct mScriptMemoryDomain* memadapter = calloc(1, sizeof(*memadapter));
 		memadapter->core = adapter->core;
 		memcpy(&memadapter->block, &blocks[i], sizeof(memadapter->block));
