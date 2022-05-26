@@ -35,6 +35,10 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 
 	m_mruFiles = m_config->getMRU(ConfigController::MRU::Script);
 	updateMRU();
+
+	for (ScriptingTextBuffer* buffer : controller->textBuffers()) {
+		addTextBuffer(buffer);
+	}
 }
 
 void ScriptingView::submitRepl() {

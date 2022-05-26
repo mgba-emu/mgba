@@ -33,6 +33,7 @@ public:
 	bool load(VFileDevice& vf, const QString& name);
 
 	mScriptContext* context() { return &m_scriptContext; }
+	QList<ScriptingTextBuffer*> textBuffers() { return m_buffers; }
 
 signals:
 	void log(const QString&);
@@ -58,6 +59,7 @@ private:
 
 	mScriptEngineContext* m_activeEngine = nullptr;
 	QHash<QString, mScriptEngineContext*> m_engines;
+	QList<ScriptingTextBuffer*> m_buffers;
 
 	std::shared_ptr<CoreController> m_controller;
 };

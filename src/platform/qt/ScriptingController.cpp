@@ -87,6 +87,10 @@ void ScriptingController::clearController() {
 
 void ScriptingController::reset() {
 	CoreController::Interrupter interrupter(m_controller);
+	for (ScriptingTextBuffer* buffer : m_buffers) {
+		delete buffer;
+	}
+	m_buffers.clear();
 	mScriptContextDetachCore(&m_scriptContext);
 	mScriptContextDeinit(&m_scriptContext);
 	m_engines.clear();
@@ -105,6 +109,7 @@ void ScriptingController::runCode(const QString& code) {
 mScriptTextBuffer* ScriptingController::createTextBuffer(void* context) {
 	ScriptingController* self = static_cast<ScriptingController*>(context);
 	ScriptingTextBuffer* buffer = new ScriptingTextBuffer(self);
+	self->m_buffers.append(buffer);
 	emit self->textBufferCreated(buffer);
 	return buffer->textBuffer();
 }
