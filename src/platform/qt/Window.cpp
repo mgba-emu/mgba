@@ -662,7 +662,7 @@ void Window::scriptingOpen() {
 			m_scripting->setController(m_controller);
 		}
 	}
-	ScriptingView* view = new ScriptingView(m_scripting.get());
+	ScriptingView* view = new ScriptingView(m_scripting.get(), m_config);
 	openView(view);
 }
 #endif

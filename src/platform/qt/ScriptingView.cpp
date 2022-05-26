@@ -6,13 +6,15 @@
 #include "ScriptingView.h"
 
 #include "GBAApp.h"
+#include "ConfigController.h"
 #include "ScriptingController.h"
 #include "ScriptingTextBuffer.h"
 
 using namespace QGBA;
 
-ScriptingView::ScriptingView(ScriptingController* controller, QWidget* parent)
+ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* config, QWidget* parent)
 	: QMainWindow(parent)
+	, m_config(config)
 	, m_controller(controller)
 {
 	m_ui.setupUi(this);
@@ -30,6 +32,9 @@ ScriptingView::ScriptingView(ScriptingController* controller, QWidget* parent)
 	connect(m_ui.buffers, &QListWidget::currentRowChanged, this, &ScriptingView::selectBuffer);
 	connect(m_ui.load, &QAction::triggered, this, &ScriptingView::load);
 	connect(m_ui.reset, &QAction::triggered, controller, &ScriptingController::reset);
+
+	m_mruFiles = m_config->getMRU(ConfigController::MRU::Script);
+	updateMRU();
 }
 
 void ScriptingView::submitRepl() {
@@ -41,7 +46,10 @@ void ScriptingView::submitRepl() {
 void ScriptingView::load() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select script to load"), getFilters());
 	if (!filename.isEmpty()) {
-		m_controller->loadFile(filename);
+		if (!m_controller->loadFile(filename)) {
+			return;
+		}
+		appendMRU(filename);
 	}
 }
 
@@ -71,4 +79,26 @@ QString ScriptingView::getFilters() const {
 #endif
 	filters.append(tr("All files (*.*)"));
 	return filters.join(";;");
+}
+
+void ScriptingView::appendMRU(const QString& fname) {
+	int index = m_mruFiles.indexOf(fname);
+	if (index >= 0) {
+		m_mruFiles.removeAt(index);
+	}
+	m_mruFiles.prepend(fname);
+	while (m_mruFiles.size() > ConfigController::MRU_LIST_SIZE) {
+		m_mruFiles.removeLast();
+	}
+	updateMRU();
+}
+
+void ScriptingView::updateMRU() {
+	m_config->setMRU(m_mruFiles, ConfigController::MRU::Script);
+	m_ui.mru->clear();
+	for (const auto& fname : m_mruFiles) {
+		m_ui.mru->addAction(fname, [this, fname]() {
+			m_controller->loadFile(fname);
+		});
+	}
 }

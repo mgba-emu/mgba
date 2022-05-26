@@ -9,6 +9,7 @@
 
 namespace QGBA {
 
+class ConfigController;
 class ScriptingController;
 class ScriptingTextBuffer;
 
@@ -16,7 +17,7 @@ class ScriptingView : public QMainWindow {
 Q_OBJECT
 
 public:
-	ScriptingView(ScriptingController* controller, QWidget* parent = nullptr);
+	ScriptingView(ScriptingController* controller, ConfigController* config, QWidget* parent = nullptr);
 
 private slots:
 	void submitRepl();
@@ -28,10 +29,15 @@ private slots:
 private:
 	QString getFilters() const;
 
+	void appendMRU(const QString&);
+	void updateMRU();
+
 	Ui::ScriptingView m_ui;
 
+	ConfigController* m_config;
 	ScriptingController* m_controller;
 	QList<ScriptingTextBuffer*> m_textBuffers;
+	QStringList m_mruFiles;
 };
 
 }

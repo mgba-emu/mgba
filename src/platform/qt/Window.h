@@ -222,7 +222,7 @@ private:
 	QTimer m_fpsTimer;
 	QTimer m_mustRestart;
 	QTimer m_mustReset;
-	QList<QString> m_mruFiles;
+	QStringList m_mruFiles;
 	ShortcutController* m_shortcutController;
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	std::unique_ptr<ShaderSelector> m_shaderView;

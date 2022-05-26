@@ -79,7 +79,14 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="mru">
+     <property name="title">
+      <string>Load recent script</string>
+     </property>
+    </widget>
     <addaction name="load"/>
+    <addaction name="mru"/>
+    <addaction name="separator"/>
     <addaction name="reset"/>
    </widget>
    <addaction name="menuFile"/>
@@ -93,6 +100,11 @@
   <action name="reset">
    <property name="text">
     <string>&amp;Reset</string>
+   </property>
+  </action>
+  <action name="action0">
+   <property name="text">
+    <string>0</string>
    </property>
   </action>
  </widget>
