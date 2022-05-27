@@ -325,13 +325,17 @@ bool call(struct mScriptValue* obj, const char* method, struct mScriptFrame* fra
 
 void explainCore(struct mCore* core) {
 	struct mScriptValue wrapper;
+	size_t size;
+	size_t i;
 	mScriptContextAttachCore(&context, core);
+
 	struct mScriptValue* emu = mScriptContextGetGlobal(&context, "emu");
 	addType(emu->type);
+
 	if (mScriptObjectGet(emu, "memory", &wrapper)) {
 		struct mScriptValue* memory = mScriptValueUnwrap(&wrapper);
 		struct TableIterator iter;
-		printf("    memory:\n");
+		puts("    memory:");
 		if (mScriptTableIteratorStart(memory, &iter)) {
 			do {
 				struct mScriptValue* name = mScriptTableIteratorGetKey(memory, &iter);
@@ -359,6 +363,27 @@ void explainCore(struct mCore* core) {
 
 				mScriptValueDeref(shortName);
 			} while (mScriptTableIteratorNext(memory, &iter));
+		}
+	}
+
+	const struct mCoreRegisterInfo* registers;
+	size = core->listRegisters(core, &registers);
+	if (size) {
+		puts("    registers:");
+		for (i = 0; i < size; ++i) {
+			if (strncmp(registers[i].name, "spsr", 4) == 0) {
+				// SPSR access is not implemented yet
+				continue;
+			}
+			printf("    - name: \"%s\"\n", registers[i].name);
+			if (registers[i].aliases && registers[i].aliases[0]) {
+				size_t alias;
+				puts("      aliases:");
+				for (alias = 0; registers[i].aliases[alias]; ++alias) {
+					printf("      - \"%s\"\n", registers[i].aliases[alias]);
+				}
+			}
+			printf("      width: %u\n", registers[i].width);
 		}
 	}
 	mScriptContextDetachCore(&context);
