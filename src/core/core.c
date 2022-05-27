@@ -308,10 +308,6 @@ void mCoreDeleteState(struct mCore* core, int slot) {
 
 void mCoreTakeScreenshot(struct mCore* core) {
 #ifdef USE_PNG
-	size_t stride;
-	const void* pixels = 0;
-	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
 	struct VFile* vf;
 #ifndef PSP2
 	vf = VDirFindNextAvailable(core->dirs.screenshot, core->dirs.baseName, "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
@@ -320,11 +316,7 @@ void mCoreTakeScreenshot(struct mCore* core) {
 #endif
 	bool success = false;
 	if (vf) {
-		core->getPixels(core, &pixels, &stride);
-		png_structp png = PNGWriteOpen(vf);
-		png_infop info = PNGWriteHeader(png, width, height);
-		success = PNGWritePixels(png, width, height, stride, pixels);
-		PNGWriteClose(png, info);
+		success = mCoreTakeScreenshotVF(core, vf);
 #ifdef PSP2
 		void* data = vf->map(vf, 0, 0);
 		PhotoExportParam param = {
@@ -348,6 +340,23 @@ void mCoreTakeScreenshot(struct mCore* core) {
 	mLOG(STATUS, WARN, "Failed to take screenshot");
 }
 #endif
+
+bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf) {
+#ifdef USE_PNG
+	size_t stride;
+	const void* pixels = 0;
+	unsigned width, height;
+	core->desiredVideoDimensions(core, &width, &height);
+	core->getPixels(core, &pixels, &stride);
+	png_structp png = PNGWriteOpen(vf);
+	png_infop info = PNGWriteHeader(png, width, height);
+	bool success = PNGWritePixels(png, width, height, stride, pixels);
+	PNGWriteClose(png, info);
+	return success;
+#else
+	return false;
+#endif
+}
 
 void mCoreInitConfig(struct mCore* core, const char* port) {
 	mCoreConfigInit(&core->config, port);
