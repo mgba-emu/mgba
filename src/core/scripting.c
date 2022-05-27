@@ -380,6 +380,19 @@ static int32_t _mScriptCoreLoadState(struct mCore* core, struct mScriptValue* bu
 	return ret;
 }
 
+static void _mScriptCoreTakeScreenshot(struct mCore* core, const char* filename) {
+	if (filename) {
+		struct VFile* vf = VFileOpen(filename, O_WRONLY | O_CREAT | O_TRUNC);
+		if (!vf) {
+			return;
+		}
+		mCoreTakeScreenshotVF(core, vf);
+		vf->close(vf);
+	} else {
+		mCoreTakeScreenshot(core);
+	}
+}
+
 // Info functions
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, platform, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, U32, frameCounter, 0);
@@ -423,7 +436,7 @@ mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateSlot, mCoreLoad
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateBuffer, _mScriptCoreLoadState, 2, WRAPPER, buffer, S32, flags);
 
 // Miscellaneous functions
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, screenshot, mCoreTakeScreenshot, 0);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD_WITH_DEFAULTS(mCore, screenshot, _mScriptCoreTakeScreenshot, 1, CHARP, filename);
 
 mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
@@ -521,6 +534,10 @@ mSCRIPT_DEFINE_DEFAULTS_END;
 mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, loadStateBuffer)
 	mSCRIPT_NO_DEFAULT,
 	mSCRIPT_MAKE_S32(SAVESTATE_ALL & ~SAVESTATE_SAVEDATA)
+mSCRIPT_DEFINE_DEFAULTS_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, screenshot)
+	mSCRIPT_MAKE_CHARP(NULL)
 mSCRIPT_DEFINE_DEFAULTS_END;
 
 static void _clearMemoryMap(struct mScriptContext* context, struct mScriptCoreAdapter* adapter, bool clear) {
