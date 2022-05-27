@@ -525,6 +525,17 @@ void HashTableEnumerateBinary(const struct Table* table, void (*handler)(const c
 	}
 }
 
+void HashTableEnumerateCustom(const struct Table* table, void (*handler)(void* key, void* value, void* user), void* user) {
+	size_t i;
+	for (i = 0; i < table->tableSize; ++i) {
+		const struct TableList* list = &table->table[i];
+		size_t j;
+		for (j = 0; j < list->nEntries; ++j) {
+			handler((char*) list->list[j].stringKey, list->list[j].value, user);
+		}
+	}
+}
+
 const char* HashTableSearch(const struct Table* table, bool (*predicate)(const char* key, const void* value, const void* user), const void* user) {
 	size_t i;
 	const char* result = NULL;
