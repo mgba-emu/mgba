@@ -10,6 +10,7 @@
 
 struct mScriptContext context;
 struct Table types;
+FILE* out;
 
 void explainValue(struct mScriptValue* value, int level);
 void explainType(struct mScriptType* type, int level);
@@ -35,9 +36,20 @@ void addType(const struct mScriptType* type) {
 		addTypesFromTable(&type->details.cls->instanceMembers);
 		break;
 	case mSCRIPT_TYPE_OPAQUE:
+	case mSCRIPT_TYPE_WRAPPER:
 		if (type->details.type) {
 			addType(type->details.type);
 		}
+	case mSCRIPT_TYPE_VOID:
+	case mSCRIPT_TYPE_SINT:
+	case mSCRIPT_TYPE_UINT:
+	case mSCRIPT_TYPE_FLOAT:
+	case mSCRIPT_TYPE_STRING:
+	case mSCRIPT_TYPE_LIST:
+	case mSCRIPT_TYPE_TABLE:
+	case mSCRIPT_TYPE_WEAKREF:
+		// No subtypes
+		break;
 	}
 }
 
@@ -75,9 +87,9 @@ void printchomp(const char* string, int level) {
 			}
 			strncpy(lineBuffer, start, size);
 			lineBuffer[size] = '\0';
-			printf("%s%s\n", indent, lineBuffer);
+			fprintf(out, "%s%s\n", indent, lineBuffer);
 		} else {
-			printf("%s%s\n", indent, start);
+			fprintf(out, "%s%s\n", indent, start);
 			break;
 		}
 		start = end + 1;
@@ -110,16 +122,34 @@ bool printval(const struct mScriptValue* value, char* buffer, size_t bufferSize)
 			return true;
 		}
 		return false;
+	case mSCRIPT_TYPE_FLOAT:
+		if (value->type->size <= 4) {
+			snprintf(buffer, bufferSize, "%g", value->value.f32);
+			return true;
+		}
+		if (value->type->size == 8) {
+			snprintf(buffer, bufferSize, "%g", value->value.f64);
+			return true;
+		}
+		return false;
 	case mSCRIPT_TYPE_STRING:
 		if (!mScriptCast(mSCRIPT_TYPE_MS_CHARP, value, &sval)) {
 			return false;
 		}
-		if (sval.value.opaque) {
-			snprintf(buffer, bufferSize, "\"%s\"", sval.value.opaque);
+		if (sval.value.copaque) {
+			snprintf(buffer, bufferSize, "\"%s\"", (const char*) sval.value.copaque);
 		} else {
 			snprintf(buffer, bufferSize, "null");
 		}
 		return true;
+	case mSCRIPT_TYPE_VOID:
+		snprintf(buffer, bufferSize, "null");
+		return true;
+	case mSCRIPT_TYPE_OPAQUE:
+	case mSCRIPT_TYPE_LIST:
+	case mSCRIPT_TYPE_TABLE:
+		// Not scalar or string values
+		return false;
 	}
 	return false;
 }
@@ -135,7 +165,7 @@ void explainTable(struct mScriptValue* value, int level) {
 			char keyval[1024];
 			struct mScriptValue* k = mScriptTableIteratorGetKey(value, &iter);
 			printval(k, keyval, sizeof(keyval));
-			printf("%s- key: %s\n", indent, keyval);
+			fprintf(out, "%s- key: %s\n", indent, keyval);
 			struct mScriptValue* v = mScriptTableIteratorGetValue(value, &iter);
 			explainValue(v, level + 1);
 		} while (mScriptTableIteratorNext(value, &iter));
@@ -148,18 +178,18 @@ void explainClass(struct mScriptTypeClass* cls, int level) {
 	indent[sizeof(indent) - 1] = '\0';
 
 	if (cls->parent) {
-		printf("%sparent: %s\n", indent, cls->parent->name);
+		fprintf(out, "%sparent: %s\n", indent, cls->parent->name);
 	}
 	if (cls->docstring) {
 		if (strchr(cls->docstring, '\n')) {
-			printf("%scomment: |-\n", indent);
+			fprintf(out, "%scomment: |-\n", indent);
 			printchomp(cls->docstring, level + 1);
 		} else {
-			printf("%scomment: \"%s\"\n", indent, cls->docstring);
+			fprintf(out, "%scomment: \"%s\"\n", indent, cls->docstring);
 		}
 	}
 
-	printf("%smembers:\n", indent);
+	fprintf(out, "%smembers:\n", indent);
 	const char* docstring = NULL;
 	const struct mScriptClassInitDetails* details;
 	size_t i;
@@ -170,12 +200,14 @@ void explainClass(struct mScriptTypeClass* cls, int level) {
 			docstring = details->info.comment;
 			break;
 		case mSCRIPT_CLASS_INIT_INSTANCE_MEMBER:
-			printf("%s  %s:\n", indent, details->info.member.name);
+			fprintf(out, "%s  %s:\n", indent, details->info.member.name);
 			if (docstring) {
-				printf("%s    comment: \"%s\"\n", indent, docstring);
+				fprintf(out, "%s    comment: \"%s\"\n", indent, docstring);
 				docstring = NULL;
 			}
-			printf("%s    type: %s\n", indent, details->info.member.type->name);
+			fprintf(out, "%s    type: %s\n", indent, details->info.member.type->name);
+			break;
+		case mSCRIPT_CLASS_INIT_END:
 			break;
 		}
 	}
@@ -196,7 +228,7 @@ void explainObject(struct mScriptValue* value, int level) {
 		if (cls->details[i].type != mSCRIPT_CLASS_INIT_INSTANCE_MEMBER) {
 			continue;
 		}
-		printf("%s%s:\n", indent, details->info.member.name);
+		fprintf(out, "%s%s:\n", indent, details->info.member.name);
 		addType(details->info.member.type);
 		if (mScriptObjectGet(value, details->info.member.name, &member)) {
 			struct mScriptValue* unwrappedMember;
@@ -217,20 +249,20 @@ void explainValue(struct mScriptValue* value, int level) {
 	indent[sizeof(indent) - 1] = '\0';
 	value = mScriptContextAccessWeakref(&context, value);
 	addType(value->type);
-	printf("%stype: %s\n", indent, value->type->name);
+	fprintf(out, "%stype: %s\n", indent, value->type->name);
 	switch (value->type->base) {
 	case mSCRIPT_TYPE_TABLE:
-		printf("%svalue:\n", indent);
+		fprintf(out, "%svalue:\n", indent);
 		explainTable(value, level);
 		break;
 	case mSCRIPT_TYPE_SINT:
 	case mSCRIPT_TYPE_UINT:
 	case mSCRIPT_TYPE_STRING:
 		printval(value, valstring, sizeof(valstring));
-		printf("%svalue: %s\n", indent, valstring);
+		fprintf(out, "%svalue: %s\n", indent, valstring);
 		break;
 	case mSCRIPT_TYPE_OBJECT:
-		printf("%svalue:\n", indent);
+		fprintf(out, "%svalue:\n", indent);
 		explainObject(value, level);
 		break;
 	default:
@@ -242,20 +274,20 @@ void explainTypeTuple(struct mScriptTypeTuple* tuple, int level) {
 	char indent[(level + 1) * 2 + 1];
 	memset(indent, ' ', sizeof(indent) - 1);
 	indent[sizeof(indent) - 1] = '\0';
-	printf("%svariable: %s\n", indent, tuple->variable ? "yes" : "no");
-	printf("%slist:\n", indent);
+	fprintf(out, "%svariable: %s\n", indent, tuple->variable ? "yes" : "no");
+	fprintf(out, "%slist:\n", indent);
 	size_t i;
 	for (i = 0; i < tuple->count; ++i) {
 		if (tuple->names[i]) {
-			printf("%s- name: %s\n", indent, tuple->names[i]);
-			printf("%s  type: %s\n", indent, tuple->entries[i]->name);
+			fprintf(out, "%s- name: %s\n", indent, tuple->names[i]);
+			fprintf(out, "%s  type: %s\n", indent, tuple->entries[i]->name);
 		} else {
-			printf("%s- type: %s\n", indent, tuple->entries[i]->name);
+			fprintf(out, "%s- type: %s\n", indent, tuple->entries[i]->name);
 		}
 		if (tuple->defaults && tuple->defaults[i].type) {
 			char defaultValue[128];
 			printval(&tuple->defaults[i], defaultValue, sizeof(defaultValue));
-			printf("%s  default: %s\n", indent, defaultValue);
+			fprintf(out, "%s  default: %s\n", indent, defaultValue);
 		}
 	}
 }
@@ -264,48 +296,48 @@ void explainType(struct mScriptType* type, int level) {
 	char indent[(level + 1) * 2 + 1];
 	memset(indent, ' ', sizeof(indent) - 1);
 	indent[sizeof(indent) - 1] = '\0';
-	printf("%sbase: ", indent);
+	fprintf(out, "%sbase: ", indent);
 	switch (type->base) {
 	case mSCRIPT_TYPE_SINT:
-		puts("sint");
+		fputs("sint\n", out);
 		break;
 	case mSCRIPT_TYPE_UINT:
-		puts("uint");
+		fputs("uint\n", out);
 		break;
 	case mSCRIPT_TYPE_FLOAT:
-		puts("float");
+		fputs("float\n", out);
 		break;
 	case mSCRIPT_TYPE_STRING:
-		puts("string");
+		fputs("string\n", out);
 		break;
 	case mSCRIPT_TYPE_FUNCTION:
-		puts("function");
-		printf("%sparameters:\n", indent);
+		fputs("function\n", out);
+		fprintf(out, "%sparameters:\n", indent);
 		explainTypeTuple(&type->details.function.parameters, level + 1);
-		printf("%sreturn:\n", indent);
+		fprintf(out, "%sreturn:\n", indent);
 		explainTypeTuple(&type->details.function.returnType, level + 1);
 		break;
 	case mSCRIPT_TYPE_OPAQUE:
-		puts("opaque");
+		fputs("opaque\n", out);
 		break;
 	case mSCRIPT_TYPE_OBJECT:
-		puts("object");
+		fputs("object\n", out);
 		explainClass(type->details.cls, level);
 		break;
 	case mSCRIPT_TYPE_LIST:
-		puts("list");
+		fputs("list\n", out);
 		break;
 	case mSCRIPT_TYPE_TABLE:
-		puts("table");
+		fputs("table\n", out);
 		break;
 	case mSCRIPT_TYPE_WRAPPER:
-		puts("wrapper");
+		fputs("wrapper\n", out);
 		break;
 	case mSCRIPT_TYPE_WEAKREF:
-		puts("weakref");
+		fputs("weakref\n", out);
 		break;
 	case mSCRIPT_TYPE_VOID:
-		puts("void");
+		fputs("void\n", out);
 		break;
 	}
 }
@@ -335,13 +367,13 @@ void explainCore(struct mCore* core) {
 	if (mScriptObjectGet(emu, "memory", &wrapper)) {
 		struct mScriptValue* memory = mScriptValueUnwrap(&wrapper);
 		struct TableIterator iter;
-		puts("    memory:");
+		fputs("    memory:\n", out);
 		if (mScriptTableIteratorStart(memory, &iter)) {
 			do {
 				struct mScriptValue* name = mScriptTableIteratorGetKey(memory, &iter);
 				struct mScriptValue* value = mScriptTableIteratorGetValue(memory, &iter);
 
-				printf("      %s:\n", name->value.string->buffer);
+				fprintf(out, "      %s:\n", name->value.string->buffer);
 				value = mScriptContextAccessWeakref(&context, value);
 
 				struct mScriptFrame frame;
@@ -358,8 +390,8 @@ void explainCore(struct mCore* core) {
 				shortName = mScriptValueUnwrap(mScriptListGetPointer(&frame.returnValues, 0));
 				mScriptFrameDeinit(&frame);
 
-				printf("        base: 0x%x\n", baseVal);
-				printf("        name: \"%s\"\n", shortName->value.string->buffer);
+				fprintf(out, "        base: 0x%x\n", baseVal);
+				fprintf(out, "        name: \"%s\"\n", shortName->value.string->buffer);
 
 				mScriptValueDeref(shortName);
 			} while (mScriptTableIteratorNext(memory, &iter));
@@ -369,27 +401,36 @@ void explainCore(struct mCore* core) {
 	const struct mCoreRegisterInfo* registers;
 	size = core->listRegisters(core, &registers);
 	if (size) {
-		puts("    registers:");
+		fputs("    registers:\n", out);
 		for (i = 0; i < size; ++i) {
 			if (strncmp(registers[i].name, "spsr", 4) == 0) {
 				// SPSR access is not implemented yet
 				continue;
 			}
-			printf("    - name: \"%s\"\n", registers[i].name);
+			fprintf(out, "    - name: \"%s\"\n", registers[i].name);
 			if (registers[i].aliases && registers[i].aliases[0]) {
 				size_t alias;
-				puts("      aliases:");
+				fputs("      aliases:\n", out);
 				for (alias = 0; registers[i].aliases[alias]; ++alias) {
-					printf("      - \"%s\"\n", registers[i].aliases[alias]);
+					fprintf(out, "      - \"%s\"\n", registers[i].aliases[alias]);
 				}
 			}
-			printf("      width: %u\n", registers[i].width);
+			fprintf(out, "      width: %u\n", registers[i].width);
 		}
 	}
 	mScriptContextDetachCore(&context);
 }
 
 int main(int argc, char* argv[]) {
+	out = stdout;
+	if (argc > 1) {
+		out = fopen(argv[1], "w");
+		if (!out) {
+			perror("Couldn't open output");
+			return 1;
+		}
+	}
+
 	mScriptContextInit(&context);
 	mScriptContextAttachStdlib(&context);
 	mScriptContextSetTextBufferFactory(&context, NULL, NULL);
@@ -411,40 +452,40 @@ int main(int argc, char* argv[]) {
 	addType(mSCRIPT_TYPE_MS_TABLE);
 	addType(mSCRIPT_TYPE_MS_WRAPPER);
 
-	puts("version:");
-	printf("  string: \"%s\"\n", projectVersion);
-	printf("  commit: \"%s\"\n", gitCommit);
-	puts("root:");
+	fputs("version:\n", out);
+	fprintf(out, "  string: \"%s\"\n", projectVersion);
+	fprintf(out, "  commit: \"%s\"\n", gitCommit);
+	fputs("root:\n", out);
 	struct TableIterator iter;
 	if (HashTableIteratorStart(&context.rootScope, &iter)) {
 		do {
 			const char* name = HashTableIteratorGetKey(&context.rootScope, &iter);
-			printf("  %s:\n", name);
+			fprintf(out, "  %s:\n", name);
 			struct mScriptValue* value = HashTableIteratorGetValue(&context.rootScope, &iter);
 			explainValue(value, 1);
 		} while (HashTableIteratorNext(&context.rootScope, &iter));
 	}
-	puts("emu:");
+	fputs("emu:\n", out);
 	struct mCore* core;
 	core = mCoreCreate(mPLATFORM_GBA);
 	if (core) {
-		puts("  gba:");
+		fputs("  gba:\n", out);
 		core->init(core);
 		explainCore(core);
 		core->deinit(core);
 	}
 	core = mCoreCreate(mPLATFORM_GB);
 	if (core) {
-		puts("  gb:");
+		fputs("  gb:\n", out);
 		core->init(core);
 		explainCore(core);
 		core->deinit(core);
 	}
-	puts("types:");
+	fputs("types:\n", out);
 	if (HashTableIteratorStart(&types, &iter)) {
 		do {
 			const char* name = HashTableIteratorGetKey(&types, &iter);
-			printf("  %s:\n", name);
+			fprintf(out, "  %s:\n", name);
 			struct mScriptType* type = HashTableIteratorGetValue(&types, &iter);
 			explainType(type, 1);
 		} while (HashTableIteratorNext(&types, &iter));
