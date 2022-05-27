@@ -16,7 +16,7 @@ CXX_GUARD_START
         struct mScriptValue* _val = mScriptListGetPointer(STACK, mScriptListSize(STACK) - 1); \
         bool deref = true; \
         if (!(mSCRIPT_TYPE_CMP(TYPE, _val->type))) { \
-            if (_val->type == mSCRIPT_TYPE_MS_WRAPPER) { \
+            if (_val->type->base == mSCRIPT_TYPE_WRAPPER) { \
                 _val = mScriptValueUnwrap(_val); \
                 deref = false; \
                 if (!(mSCRIPT_TYPE_CMP(TYPE, _val->type))) { \
@@ -72,6 +72,8 @@ CXX_GUARD_START
 #define mSCRIPT_PREFIX_7(PREFIX, T0, T1, T2, T3, T4, T5, T6) PREFIX ## T0, PREFIX ## T1, PREFIX ## T2, PREFIX ## T3, PREFIX ## T4, PREFIX ## T5, PREFIX ## T6
 #define mSCRIPT_PREFIX_8(PREFIX, T0, T1, T2, T3, T4, T5, T6, T7) PREFIX ## T0, PREFIX ## T1, PREFIX ## T2, PREFIX ## T3, PREFIX ## T4, PREFIX ## T5, PREFIX ## T6, PREFIX ## T7
 #define mSCRIPT_PREFIX_N(N) mSCRIPT_PREFIX_ ## N
+
+#define _mSCRIPT_FIELD_NAME(V) (V)->name
 
 #define _mSCRIPT_CALL_VOID(FUNCTION, NPARAMS) FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS))
 #define _mSCRIPT_CALL(RETURN, FUNCTION, NPARAMS) \
@@ -153,6 +155,26 @@ CXX_GUARD_START
         .alloc = NULL, \
         .free = NULL, \
         .cast = _mSTStructPtrCast_ ## STRUCT, \
+    }; \
+    const struct mScriptType mSTWrapper_ ## STRUCT = { \
+        .base = mSCRIPT_TYPE_WRAPPER, \
+        .details = { \
+            .type = &mSTStruct_ ## STRUCT \
+        }, \
+        .size = sizeof(struct mScriptValue), \
+        .name = "wrapper struct::" #STRUCT, \
+        .alloc = NULL, \
+        .free = NULL, \
+    }; \
+    const struct mScriptType mSTWrapperConst_ ## STRUCT = { \
+        .base = mSCRIPT_TYPE_WRAPPER, \
+        .details = { \
+            .type = &mSTStructConst_ ## STRUCT \
+        }, \
+        .size = sizeof(struct mScriptValue), \
+        .name = "wrapper const struct::" #STRUCT, \
+        .alloc = NULL, \
+        .free = NULL, \
     }; \
     static struct mScriptTypeClass _mSTStructDetails_ ## STRUCT = { \
         .init = false, \

@@ -212,6 +212,15 @@ const struct mScriptType mSTWrapper = {
 	.hash = NULL,
 };
 
+const struct mScriptType mSTStringWrapper = {
+	.base = mSCRIPT_TYPE_WRAPPER,
+	.size = sizeof(struct mScriptValue),
+	.name = "wrapper string",
+	.alloc = NULL,
+	.free = NULL,
+	.hash = NULL,
+};
+
 const struct mScriptType mSTWeakref = {
 	.base = mSCRIPT_TYPE_WEAKREF,
 	.size = sizeof(uint32_t),
@@ -745,14 +754,14 @@ void mScriptValueWrap(struct mScriptValue* value, struct mScriptValue* out) {
 }
 
 struct mScriptValue* mScriptValueUnwrap(struct mScriptValue* value) {
-	if (value->type == mSCRIPT_TYPE_MS_WRAPPER) {
+	if (value->type->base == mSCRIPT_TYPE_WRAPPER) {
 		return value->value.opaque;
 	}
 	return NULL;
 }
 
 const struct mScriptValue* mScriptValueUnwrapConst(const struct mScriptValue* value) {
-	if (value->type == mSCRIPT_TYPE_MS_WRAPPER) {
+	if (value->type->base == mSCRIPT_TYPE_WRAPPER) {
 		return value->value.copaque;
 	}
 	return NULL;
@@ -833,7 +842,7 @@ bool mScriptTableRemove(struct mScriptValue* table, struct mScriptValue* key) {
 }
 
 struct mScriptValue* mScriptTableLookup(struct mScriptValue* table, struct mScriptValue* key) {
-	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
+	if (table->type->base == mSCRIPT_TYPE_WRAPPER) {
 		table = mScriptValueUnwrap(table);
 	}
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
@@ -861,7 +870,7 @@ size_t mScriptTableSize(struct mScriptValue* table) {
 }
 
 bool mScriptTableIteratorStart(struct mScriptValue* table, struct TableIterator* iter) {
-	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
+	if (table->type->base == mSCRIPT_TYPE_WRAPPER) {
 		table = mScriptValueUnwrap(table);
 	}
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
@@ -871,7 +880,7 @@ bool mScriptTableIteratorStart(struct mScriptValue* table, struct TableIterator*
 }
 
 bool mScriptTableIteratorNext(struct mScriptValue* table, struct TableIterator* iter) {
-	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
+	if (table->type->base == mSCRIPT_TYPE_WRAPPER) {
 		table = mScriptValueUnwrap(table);
 	}
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
@@ -881,7 +890,7 @@ bool mScriptTableIteratorNext(struct mScriptValue* table, struct TableIterator* 
 }
 
 struct mScriptValue* mScriptTableIteratorGetKey(struct mScriptValue* table, struct TableIterator* iter) {
-	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
+	if (table->type->base == mSCRIPT_TYPE_WRAPPER) {
 		table = mScriptValueUnwrap(table);
 	}
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
@@ -891,7 +900,7 @@ struct mScriptValue* mScriptTableIteratorGetKey(struct mScriptValue* table, stru
 }
 
 struct mScriptValue* mScriptTableIteratorGetValue(struct mScriptValue* table, struct TableIterator* iter) {
-	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
+	if (table->type->base == mSCRIPT_TYPE_WRAPPER) {
 		table = mScriptValueUnwrap(table);
 	}
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
@@ -901,7 +910,7 @@ struct mScriptValue* mScriptTableIteratorGetValue(struct mScriptValue* table, st
 }
 
 bool mScriptTableIteratorLookup(struct mScriptValue* table, struct TableIterator* iter, struct mScriptValue* key) {
-	if (table->type == mSCRIPT_TYPE_MS_WRAPPER) {
+	if (table->type->base == mSCRIPT_TYPE_WRAPPER) {
 		table = mScriptValueUnwrap(table);
 	}
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
@@ -1368,7 +1377,7 @@ bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList
 			continue;
 		}
 		struct mScriptValue* unwrapped = NULL;
-		if (mScriptListGetPointer(frame, i)->type == mSCRIPT_TYPE_MS_WRAPPER) {
+		if (mScriptListGetPointer(frame, i)->type->base == mSCRIPT_TYPE_WRAPPER) {
 			unwrapped = mScriptValueUnwrap(mScriptListGetPointer(frame, i));
 			if (types->entries[i] == unwrapped->type) {
 				continue;

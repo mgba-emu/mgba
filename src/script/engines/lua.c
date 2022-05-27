@@ -270,7 +270,7 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 	}
 	uint32_t weakref;
 	bool needsWeakref = false;
-	if (value->type == mSCRIPT_TYPE_MS_WRAPPER) {
+	if (value->type->base == mSCRIPT_TYPE_WRAPPER) {
 		value = mScriptValueUnwrap(value);
 		if (!value) {
 			lua_pushnil(luaContext->lua);
@@ -826,7 +826,7 @@ int _luaGetList(lua_State* lua) {
 	lua_pop(lua, 2);
 
 	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
-	if (obj->type == mSCRIPT_TYPE_MS_WRAPPER) {
+	if (obj->type->base == mSCRIPT_TYPE_WRAPPER) {
 		obj = mScriptValueUnwrap(obj);
 	}
 	if (!obj || obj->type != mSCRIPT_TYPE_MS_LIST) {
@@ -859,7 +859,7 @@ static int _luaLenList(lua_State* lua) {
 	lua_pop(lua, 1);
 
 	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
-	if (obj->type == mSCRIPT_TYPE_MS_WRAPPER) {
+	if (obj->type->base == mSCRIPT_TYPE_WRAPPER) {
 		obj = mScriptValueUnwrap(obj);
 	}
 	if (!obj || obj->type != mSCRIPT_TYPE_MS_LIST) {

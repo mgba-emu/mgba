@@ -250,7 +250,7 @@ mSCRIPT_DECLARE_STRUCT(mScriptMemoryDomain);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, read8, mScriptMemoryDomainRead8, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, read16, mScriptMemoryDomainRead16, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, read32, mScriptMemoryDomainRead32, 1, U32, address);
-mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, WRAPPER, readRange, mScriptMemoryDomainReadRange, 2, U32, address, U32, length);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, WSTR, readRange, mScriptMemoryDomainReadRange, 2, U32, address, U32, length);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write8, mScriptMemoryDomainWrite8, 2, U32, address, U8, value);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write16, mScriptMemoryDomainWrite16, 2, U32, address, U16, value);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write32, mScriptMemoryDomainWrite32, 2, U32, address, U32, value);
@@ -258,7 +258,7 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write32, mScriptMemoryDo
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, base, mScriptMemoryDomainBase, 0);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, bound, mScriptMemoryDomainEnd, 0);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, size, mScriptMemoryDomainSize, 0);
-mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, WRAPPER, name, mScriptMemoryDomainName, 0);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, WSTR, name, mScriptMemoryDomainName, 0);
 
 mSCRIPT_DEFINE_STRUCT(mScriptMemoryDomain)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
@@ -373,8 +373,8 @@ static struct mScriptValue* _mScriptCoreSaveState(struct mCore* core, int32_t fl
 	return value;
 }
 
-static int32_t _mScriptCoreLoadState(struct mCore* core, struct mScriptValue* buffer, int32_t flags) {
-	struct VFile* vf = VFileFromConstMemory(buffer->value.string->buffer, buffer->value.string->size);
+static int32_t _mScriptCoreLoadState(struct mCore* core, struct mScriptString* buffer, int32_t flags) {
+	struct VFile* vf = VFileFromConstMemory(buffer->buffer, buffer->size);
 	int ret = mCoreLoadStateNamed(core, vf, flags);
 	vf->close(vf);
 	return ret;
@@ -398,9 +398,9 @@ mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, platform, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, U32, frameCounter, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frameCycles, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frequency, 0);
-mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WRAPPER, getGameTitle, _mScriptCoreGetGameTitle, 0);
-mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WRAPPER, getGameCode, _mScriptCoreGetGameCode, 0);
-mSCRIPT_DECLARE_STRUCT_C_METHOD_WITH_DEFAULTS(mCore, WRAPPER, checksum, _mScriptCoreChecksum, 1, S32, type);
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WSTR, getGameTitle, _mScriptCoreGetGameTitle, 0);
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WSTR, getGameCode, _mScriptCoreGetGameCode, 0);
+mSCRIPT_DECLARE_STRUCT_C_METHOD_WITH_DEFAULTS(mCore, WSTR, checksum, _mScriptCoreChecksum, 1, S32, type);
 
 // Run functions
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, reset, 0);
@@ -420,20 +420,20 @@ mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, getKeys, 0);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead8, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead16, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead32, 1, U32, address);
-mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WRAPPER, readRange, _mScriptCoreReadRange, 2, U32, address, U32, length);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WSTR, readRange, _mScriptCoreReadRange, 2, U32, address, U32, length);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite8, 2, U32, address, U8, value);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite16, 2, U32, address, U16, value);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite32, 2, U32, address, U32, value);
 
 // Register functions
-mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WRAPPER, readRegister, _mScriptCoreReadRegister, 1, CHARP, regName);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WSTR, readRegister, _mScriptCoreReadRegister, 1, CHARP, regName);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, writeRegister, _mScriptCoreWriteRegister, 2, CHARP, regName, S32, value);
 
 // Savestate functions
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, saveStateSlot, mCoreSaveState, 2, S32, slot, S32, flags);
-mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, WRAPPER, saveStateBuffer, _mScriptCoreSaveState, 1, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, WSTR, saveStateBuffer, _mScriptCoreSaveState, 1, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateSlot, mCoreLoadState, 2, S32, slot, S32, flags);
-mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateBuffer, _mScriptCoreLoadState, 2, WRAPPER, buffer, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateBuffer, _mScriptCoreLoadState, 2, STR, buffer, S32, flags);
 
 // Miscellaneous functions
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD_WITH_DEFAULTS(mCore, screenshot, _mScriptCoreTakeScreenshot, 1, CHARP, filename);
@@ -605,7 +605,7 @@ static void _mScriptCoreAdapterReset(struct mScriptCoreAdapter* adapter) {
 }
 
 mSCRIPT_DECLARE_STRUCT(mScriptCoreAdapter);
-mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, WRAPPER, _get, _mScriptCoreAdapterGet, 1, CHARP, name);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, W(mCore), _get, _mScriptCoreAdapterGet, 1, CHARP, name);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, _deinit, _mScriptCoreAdapterDeinit, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, reset, _mScriptCoreAdapterReset, 0);
 
