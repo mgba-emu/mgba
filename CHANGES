@@ -1,5 +1,6 @@
 0.10.0: (Future)
 Features:
+ - Preliminary Lua scripting support
  - Presets for Game Boy palettes
  - Add Super Game Boy palettes for original Game Boy games
  - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
