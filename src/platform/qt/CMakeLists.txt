@@ -248,11 +248,22 @@ if(USE_DISCORD_RPC)
 	list(APPEND SOURCE_FILES DiscordCoordinator.cpp)
 endif()
 
+if(ENABLE_SCRIPTING)
+	list(APPEND SOURCE_FILES
+		ScriptingController.cpp
+		ScriptingTextBuffer.cpp
+		ScriptingView.cpp)
+
+	list(APPEND UI_FILES
+		ScriptingView.ui)
+endif()
+
 if(TARGET Qt6::Core)
 	qt_add_resources(RESOURCES resources.qrc)
 else()
 	qt5_add_resources(RESOURCES resources.qrc)
 endif()
+
 if(BUILD_UPDATER)
 	file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc INPUT ${CMAKE_CURRENT_SOURCE_DIR}/updater.qrc.in)
 	if(TARGET Qt6::Core)
@@ -291,6 +302,10 @@ if(NOT DEFINED DATADIR)
 endif()
 if(BUILD_GL OR BUILD_GLES2 OR BUILD_EPOXY)
 	install(DIRECTORY ${CMAKE_SOURCE_DIR}/res/shaders DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
+endif()
+if(ENABLE_SCRIPTING AND USE_LUA)
+	message(STATUS ${CMAKE_SOURCE_DIR}/res/scripts)
+	install(DIRECTORY ${CMAKE_SOURCE_DIR}/res/scripts DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
 endif()
 install(FILES ${CMAKE_SOURCE_DIR}/res/nointro.dat DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
 if(NOT WIN32 AND NOT APPLE)

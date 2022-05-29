@@ -80,6 +80,14 @@ void mLog(int category, enum mLogLevel level, const char* format, ...) {
 	va_end(args);
 }
 
+void mLogExplicit(struct mLogger* context, int category, enum mLogLevel level, const char* format, ...) {
+	va_list args;
+	va_start(args, format);
+	if (!context->filter || mLogFilterTest(context->filter, category, level)) {
+		context->log(context, category, level, format, args);
+	}
+}
+
 void mLogFilterInit(struct mLogFilter* filter) {
 	HashTableInit(&filter->categories, 8, NULL);
 	TableInit(&filter->levels, 8, NULL);

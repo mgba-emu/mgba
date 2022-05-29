@@ -51,6 +51,7 @@
 #include "ReportView.h"
 #include "ROMInfo.h"
 #include "SaveConverter.h"
+#include "ScriptingView.h"
 #include "SensorView.h"
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
@@ -650,6 +651,19 @@ void Window::consoleOpen() {
 		m_console->setController(m_controller);
 	}
 	openView(window);
+}
+#endif
+
+#ifdef ENABLE_SCRIPTING
+void Window::scriptingOpen() {
+	if (!m_scripting) {
+		m_scripting = std::make_unique<ScriptingController>();
+		if (m_controller) {
+			m_scripting->setController(m_controller);
+		}
+	}
+	ScriptingView* view = new ScriptingView(m_scripting.get(), m_config);
+	openView(view);
 }
 #endif
 
@@ -1642,15 +1656,20 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools")->setRole(Action::Role::SETTINGS);
 	m_actions.addAction(tr("Make portable"), "makePortable", this, &Window::tryMakePortable, "tools");
 
-#ifdef USE_DEBUGGERS
 	m_actions.addSeparator("tools");
+#ifdef USE_DEBUGGERS
 	m_actions.addAction(tr("Open debugger console..."), "debuggerWindow", this, &Window::consoleOpen, "tools");
 #ifdef USE_GDB_STUB
 	Action* gdbWindow = addGameAction(tr("Start &GDB server..."), "gdbWindow", this, &Window::gdbOpen, "tools");
 	m_platformActions.insert(mPLATFORM_GBA, gdbWindow);
 #endif
 #endif
+#ifdef ENABLE_SCRIPTING
+	m_actions.addAction(tr("Scripting..."), "scripting", this, &Window::scriptingOpen, "tools");
+#endif
+#if defined(USE_DEBUGGERS) || defined(ENABLE_SCRIPTING)
 	m_actions.addSeparator("tools");
+#endif
 
 	addGameAction(tr("View &palette..."), "paletteWindow", openControllerTView<PaletteView>(), "tools");
 	addGameAction(tr("View &sprites..."), "spriteWindow", openControllerTView<ObjView>(), "tools");
@@ -2098,6 +2117,12 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		m_controller->loadPatch(m_pendingPatch);
 		m_pendingPatch = QString();
 	}
+
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_scripting->setController(m_controller);
+	}
+#endif
 
 	attachDisplay();
 	m_controller->loadConfig(m_config);

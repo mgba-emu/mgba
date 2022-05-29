@@ -295,6 +295,9 @@ struct VFile* mCoreGetState(struct mCore* core, int slot, bool write) {
 	if (!core->dirs.state) {
 		return NULL;
 	}
+	if (slot < 0) {
+		return NULL;
+	}
 	char name[PATH_MAX + 14]; // Quash warning
 	snprintf(name, sizeof(name), "%s.ss%i", core->dirs.baseName, slot);
 	return core->dirs.state->openFile(core->dirs.state, name, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);

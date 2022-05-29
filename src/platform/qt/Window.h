@@ -23,6 +23,9 @@
 #include "LoadSaveState.h"
 #include "LogController.h"
 #include "SettingsView.h"
+#ifdef ENABLE_SCRIPTING
+#include "ScriptingController.h"
+#endif
 
 namespace QGBA {
 
@@ -111,6 +114,10 @@ public slots:
 
 #ifdef USE_GDB_STUB
 	void gdbOpen();
+#endif
+
+#ifdef ENABLE_SCRIPTING
+	void scriptingOpen();
 #endif
 
 protected:
@@ -215,7 +222,7 @@ private:
 	QTimer m_fpsTimer;
 	QTimer m_mustRestart;
 	QTimer m_mustReset;
-	QList<QString> m_mruFiles;
+	QStringList m_mruFiles;
 	ShortcutController* m_shortcutController;
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	std::unique_ptr<ShaderSelector> m_shaderView;
@@ -251,6 +258,10 @@ private:
 
 #ifdef USE_SQLITE3
 	LibraryController* m_libraryView;
+#endif
+
+#ifdef ENABLE_SCRIPTING
+	std::unique_ptr<ScriptingController> m_scripting;
 #endif
 };
 
