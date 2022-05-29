@@ -8,7 +8,8 @@
 
 #define _mCPP_CAT(A, B) A ## B
 
-#define _mCALL(FN, ...) FN(__VA_ARGS__)
+#define _mIDENT(...) __VA_ARGS__
+#define _mCALL(FN, ...) _mIDENT(FN(__VA_ARGS__))
 #define _mCAT(A, B) _mCPP_CAT(A, B)
 #define _mSTRINGIFY(X, ...) #X
 
@@ -36,25 +37,25 @@
 
 #define _mEVEN_0(...)
 #define _mEVEN_1(A, B, ...) A
-#define _mEVEN_2(A, B, ...) A, _mEVEN_1(__VA_ARGS__)
-#define _mEVEN_3(A, B, ...) A, _mEVEN_2(__VA_ARGS__)
-#define _mEVEN_4(A, B, ...) A, _mEVEN_3(__VA_ARGS__)
-#define _mEVEN_5(A, B, ...) A, _mEVEN_4(__VA_ARGS__)
-#define _mEVEN_6(A, B, ...) A, _mEVEN_5(__VA_ARGS__)
-#define _mEVEN_7(A, B, ...) A, _mEVEN_6(__VA_ARGS__)
-#define _mEVEN_8(A, B, ...) A, _mEVEN_7(__VA_ARGS__)
-#define _mEVEN_9(A, B, ...) A, _mEVEN_7(__VA_ARGS__)
+#define _mEVEN_2(A, B, ...) A, _mIDENT(_mEVEN_1(__VA_ARGS__))
+#define _mEVEN_3(A, B, ...) A, _mIDENT(_mEVEN_2(__VA_ARGS__))
+#define _mEVEN_4(A, B, ...) A, _mIDENT(_mEVEN_3(__VA_ARGS__))
+#define _mEVEN_5(A, B, ...) A, _mIDENT(_mEVEN_4(__VA_ARGS__))
+#define _mEVEN_6(A, B, ...) A, _mIDENT(_mEVEN_5(__VA_ARGS__))
+#define _mEVEN_7(A, B, ...) A, _mIDENT(_mEVEN_6(__VA_ARGS__))
+#define _mEVEN_8(A, B, ...) A, _mIDENT(_mEVEN_7(__VA_ARGS__))
+#define _mEVEN_9(A, B, ...) A, _mIDENT(_mEVEN_7(__VA_ARGS__))
 
 #define _mODD_0(...)
 #define _mODD_1(A, B, ...) B
-#define _mODD_2(A, B, ...) B, _mODD_1(__VA_ARGS__)
-#define _mODD_3(A, B, ...) B, _mODD_2(__VA_ARGS__)
-#define _mODD_4(A, B, ...) B, _mODD_3(__VA_ARGS__)
-#define _mODD_5(A, B, ...) B, _mODD_4(__VA_ARGS__)
-#define _mODD_6(A, B, ...) B, _mODD_5(__VA_ARGS__)
-#define _mODD_7(A, B, ...) B, _mODD_6(__VA_ARGS__)
-#define _mODD_8(A, B, ...) B, _mODD_7(__VA_ARGS__)
-#define _mODD_9(A, B, ...) B, _mODD_7(__VA_ARGS__)
+#define _mODD_2(A, B, ...) B, _mIDENT(_mODD_1(__VA_ARGS__))
+#define _mODD_3(A, B, ...) B, _mIDENT(_mODD_2(__VA_ARGS__))
+#define _mODD_4(A, B, ...) B, _mIDENT(_mODD_3(__VA_ARGS__))
+#define _mODD_5(A, B, ...) B, _mIDENT(_mODD_4(__VA_ARGS__))
+#define _mODD_6(A, B, ...) B, _mIDENT(_mODD_5(__VA_ARGS__))
+#define _mODD_7(A, B, ...) B, _mIDENT(_mODD_6(__VA_ARGS__))
+#define _mODD_8(A, B, ...) B, _mIDENT(_mODD_7(__VA_ARGS__))
+#define _mODD_9(A, B, ...) B, _mIDENT(_mODD_7(__VA_ARGS__))
 
 #define _mSUCC_0 1
 #define _mSUCC_1 2
