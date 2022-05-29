@@ -198,11 +198,11 @@ void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 
 void GBAReset(struct ARMCore* cpu) {
 	ARMSetPrivilegeMode(cpu, MODE_IRQ);
-	cpu->gprs[ARM_SP] = SP_BASE_IRQ;
+	cpu->gprs[ARM_SP] = GBA_SP_BASE_IRQ;
 	ARMSetPrivilegeMode(cpu, MODE_SUPERVISOR);
-	cpu->gprs[ARM_SP] = SP_BASE_SUPERVISOR;
+	cpu->gprs[ARM_SP] = GBA_SP_BASE_SUPERVISOR;
 	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
-	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
+	cpu->gprs[ARM_SP] = GBA_SP_BASE_SYSTEM;
 
 	struct GBA* gba = (struct GBA*) cpu->master;
 	gba->memory.savedata.maskWriteback = false;
@@ -465,7 +465,7 @@ void GBAYankROM(struct GBA* gba) {
 	gba->yankedRomSize = gba->memory.romSize;
 	gba->memory.romSize = 0;
 	gba->memory.romMask = 0;
-	GBARaiseIRQ(gba, IRQ_GAMEPAK, 0);
+	GBARaiseIRQ(gba, GBA_IRQ_GAMEPAK, 0);
 }
 
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
@@ -554,7 +554,7 @@ void GBAHalt(struct GBA* gba) {
 }
 
 void GBAStop(struct GBA* gba) {
-	int validIrqs = (1 << IRQ_GAMEPAK) | (1 << IRQ_KEYPAD) | (1 << IRQ_SIO);
+	int validIrqs = (1 << GBA_IRQ_GAMEPAK) | (1 << GBA_IRQ_KEYPAD) | (1 << GBA_IRQ_SIO);
 	int sleep = gba->memory.io[REG_IE >> 1] & validIrqs;
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
@@ -921,9 +921,9 @@ void GBATestKeypadIRQ(struct GBA* gba) {
 		if (keysLast == keysActive) {
 			return;
 		}
-		GBARaiseIRQ(gba, IRQ_KEYPAD, 0);
+		GBARaiseIRQ(gba, GBA_IRQ_KEYPAD, 0);
 	} else if (!isAnd && (keysActive & keycnt)) {
-		GBARaiseIRQ(gba, IRQ_KEYPAD, 0);
+		GBARaiseIRQ(gba, GBA_IRQ_KEYPAD, 0);
 	} else {
 		gba->keysLast = 0x400;
 	}

@@ -208,7 +208,7 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 			dma->nextDest = dma->dest;
 		}
 		if (GBADMARegisterIsDoIRQ(dma->reg)) {
-			GBARaiseIRQ(gba, IRQ_DMA0 + memory->activeDMA, cyclesLate);
+			GBARaiseIRQ(gba, GBA_IRQ_DMA0 + memory->activeDMA, cyclesLate);
 		}
 		GBADMAUpdate(gba);
 	}

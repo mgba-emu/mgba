@@ -27,7 +27,6 @@ extern const uint32_t SGB_SM83_FREQUENCY;
 
 mLOG_DECLARE_CATEGORY(GB);
 
-// TODO: Prefix GBAIRQ
 enum GBIRQ {
 	GB_IRQ_VBLANK = 0x0,
 	GB_IRQ_LCDSTAT = 0x1,

@@ -46,7 +46,7 @@ int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command
 	case JOY_RESET:
 		sio->p->p->memory.io[REG_JOYCNT >> 1] |= JOYCNT_RESET;
 		if (sio->p->p->memory.io[REG_JOYCNT >> 1] & 0x40) {
-			GBARaiseIRQ(sio->p->p, IRQ_SIO, 0);
+			GBARaiseIRQ(sio->p->p, GBA_IRQ_SIO, 0);
 		}
 		// Fall through
 	case JOY_POLL:
@@ -68,7 +68,7 @@ int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command
 		mLOG(GBA_SIO, DEBUG, "JOY recv: %02X (%02X)", data[0], sio->p->p->memory.io[REG_JOYCNT >> 1]);
 
 		if (sio->p->p->memory.io[REG_JOYCNT >> 1] & 0x40) {
-			GBARaiseIRQ(sio->p->p, IRQ_SIO, 0);
+			GBARaiseIRQ(sio->p->p, GBA_IRQ_SIO, 0);
 		}
 		return 1;
 	case JOY_TRANS:
@@ -84,7 +84,7 @@ int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command
 		mLOG(GBA_SIO, DEBUG, "JOY trans: %02X%02X%02X%02X:%02X (%02X)", data[0], data[1], data[2], data[3], data[4], sio->p->p->memory.io[REG_JOYCNT >> 1]);
 
 		if (sio->p->p->memory.io[REG_JOYCNT >> 1] & 0x40) {
-			GBARaiseIRQ(sio->p->p, IRQ_SIO, 0);
+			GBARaiseIRQ(sio->p->p, GBA_IRQ_SIO, 0);
 		}
 		return 5;
 	}
