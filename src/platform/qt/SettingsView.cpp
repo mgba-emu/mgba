@@ -6,6 +6,7 @@
 #include "SettingsView.h"
 
 #include "AudioProcessor.h"
+#include "CheckBoxDelegate.h"
 #include "ConfigController.h"
 #include "Display.h"
 #include "GBAApp.h"
@@ -355,9 +356,11 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	}
 
 	m_ui.loggingView->setModel(&m_logModel);
+	m_ui.loggingView->setItemDelegate(new CheckBoxDelegate(m_ui.loggingView));
 	m_ui.loggingView->setHorizontalHeader(new RotatedHeaderView(Qt::Horizontal));
 	m_ui.loggingView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 	m_ui.loggingView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+	connect(m_ui.loggingView, SIGNAL(clicked(QModelIndex)), m_ui.loggingView, SLOT(setCurrentIndex(QModelIndex)));
 
 	connect(m_ui.logFileBrowse, &QAbstractButton::pressed, [this] () {
 		QString path = GBAApp::app()->getSaveFileName(this, "Select log file");
