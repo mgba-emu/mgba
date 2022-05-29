@@ -161,6 +161,24 @@ void* TableLookup(const struct Table* table, uint32_t key) {
 
 void TableInsert(struct Table* table, uint32_t key, void* value) {
 	struct TableList* list = _getList(table, key);
+	if (table->size >= table->tableSize * REBALANCE_THRESHOLD) {
+		struct Table newTable;
+		TableInit(&newTable, table->tableSize * REBALANCE_THRESHOLD, NULL);
+		memcpy(&newTable.fn, &table->fn, sizeof(newTable.fn));
+		size_t i;
+		for (i = 0; i < table->tableSize; ++i) {
+			struct TableList* list = &table->table[i];
+			size_t j;
+			for (j = 0; j < list->nEntries; ++j) {
+				TableInsert(&newTable, list->list[j].key, list->list[j].value);
+			}
+			free(list->list);
+		}
+		free(table->table);
+		table->tableSize = newTable.tableSize;
+		table->table = newTable.table;
+		list = _getList(table, key);
+	}
 	TABLE_LOOKUP_START(TABLE_COMPARATOR, list) {
 		if (value != lookupResult->value) {
 			if (table->fn.deinitializer) {
