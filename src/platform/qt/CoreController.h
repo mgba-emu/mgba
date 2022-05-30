@@ -159,6 +159,7 @@ public slots:
 	void loadSave(VFile*, bool temporary);
 	void loadPatch(const QString&);
 	void scanCard(const QString&);
+	void scanCards(const QStringList&);
 	void replaceGame(const QString&);
 	void yankPak();
 
@@ -264,6 +265,7 @@ private:
 	QMutex m_bufferMutex;
 
 	int m_activeKeys = 0;
+	int m_removedKeys = 0;
 	bool m_autofire[32] = {};
 	int m_autofireStatus[32] = {};
 	int m_autofireThreshold = 1;

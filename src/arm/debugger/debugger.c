@@ -242,8 +242,6 @@ static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform*);
 static void ARMDebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
 static void ARMDebuggerFormatRegisters(struct ARMRegisterFile* regs, char* out, size_t* length);
 static void ARMDebuggerFrameFormatRegisters(struct mStackFrame* frame, char* out, size_t* length);
-static bool ARMDebuggerGetRegister(struct mDebuggerPlatform*, const char* name, int32_t* value);
-static bool ARMDebuggerSetRegister(struct mDebuggerPlatform*, const char* name, int32_t value);
 static uint32_t ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform*);
 static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform*, uint32_t);
 static bool ARMDebuggerUpdateStackTrace(struct mDebuggerPlatform* d);
@@ -261,8 +259,6 @@ struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	platform->checkBreakpoints = ARMDebuggerCheckBreakpoints;
 	platform->hasBreakpoints = ARMDebuggerHasBreakpoints;
 	platform->trace = ARMDebuggerTrace;
-	platform->getRegister = ARMDebuggerGetRegister;
-	platform->setRegister = ARMDebuggerSetRegister;
 	platform->getStackTraceMode = ARMDebuggerGetStackTraceMode;
 	platform->setStackTraceMode = ARMDebuggerSetStackTraceMode;
 	platform->updateStackTrace = ARMDebuggerUpdateStackTrace;
@@ -509,82 +505,6 @@ static void ARMDebuggerFormatRegisters(struct ARMRegisterFile* regs, char* out, 
 
 static void ARMDebuggerFrameFormatRegisters(struct mStackFrame* frame, char* out, size_t* length) {
 	ARMDebuggerFormatRegisters(frame->regs, out, length);
-}
-
-bool ARMDebuggerGetRegister(struct mDebuggerPlatform* d, const char* name, int32_t* value) {
-	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
-	struct ARMCore* cpu = debugger->cpu;
-
-	if (strcmp(name, "sp") == 0) {
-		*value = cpu->gprs[ARM_SP];
-		return true;
-	}
-	if (strcmp(name, "lr") == 0) {
-		*value = cpu->gprs[ARM_LR];
-		return true;
-	}
-	if (strcmp(name, "pc") == 0) {
-		*value = cpu->gprs[ARM_PC];
-		return true;
-	}
-	if (strcmp(name, "cpsr") == 0) {
-		*value = cpu->cpsr.packed;
-		return true;
-	}
-	// TODO: test if mode has SPSR
-	if (strcmp(name, "spsr") == 0) {
-		*value = cpu->spsr.packed;
-		return true;
-	}
-	if (name[0] == 'r') {
-		char* end;
-		uint32_t reg = strtoul(&name[1], &end, 10);
-		if (reg <= ARM_PC) {
-			*value = cpu->gprs[reg];
-			return true;
-		}
-	}
-	return false;
-}
-
-bool ARMDebuggerSetRegister(struct mDebuggerPlatform* d, const char* name, int32_t value) {
-	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
-	struct ARMCore* cpu = debugger->cpu;
-
-	if (strcmp(name, "sp") == 0) {
-		cpu->gprs[ARM_SP] = value;
-		return true;
-	}
-	if (strcmp(name, "lr") == 0) {
-		cpu->gprs[ARM_LR] = value;
-		return true;
-	}
-	if (strcmp(name, "pc") == 0) {
-		cpu->gprs[ARM_PC] = value;
-		if (cpu->executionMode == MODE_ARM) {
-			ARMWritePC(cpu);
-		} else {
-			ThumbWritePC(cpu);
-		}
-		return true;
-	}
-	if (name[0] == 'r') {
-		char* end;
-		uint32_t reg = strtoul(&name[1], &end, 10);
-		if (reg > ARM_PC) {
-			return false;
-		}
-		cpu->gprs[reg] = value;
-		if (reg == ARM_PC) {
-			if (cpu->executionMode == MODE_ARM) {
-				ARMWritePC(cpu);
-			} else {
-				ThumbWritePC(cpu);
-			}
-		}
-		return true;
-	}
-	return false;
 }
 
 static uint32_t ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform* d) {

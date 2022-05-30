@@ -26,6 +26,7 @@ enum mStateExtdataTag {
 #define SAVESTATE_CHEATS     4
 #define SAVESTATE_RTC        8
 #define SAVESTATE_METADATA   16
+#define SAVESTATE_ALL        31
 
 struct mStateExtdataItem {
 	int32_t size;

@@ -80,37 +80,37 @@ int main(int argc, char** argv) {
 
 	struct mSubParser subparser;
 
-	initParserForGraphics(&subparser, &graphicsOpts);
-	bool parsed = parseArguments(&args, argc, argv, &subparser);
+	mSubParserGraphicsInit(&subparser, &graphicsOpts);
+	bool parsed = mArgumentsParse(&args, argc, argv, &subparser, 1);
 	if (!args.fname && !args.showVersion) {
 		parsed = false;
 	}
 	if (!parsed || args.showHelp) {
-		usage(argv[0], subparser.usage);
-		freeArguments(&args);
+		usage(argv[0], NULL, NULL, &subparser, 1);
+		mArgumentsDeinit(&args);
 		return !parsed;
 	}
 	if (args.showVersion) {
 		version(argv[0]);
-		freeArguments(&args);
+		mArgumentsDeinit(&args);
 		return 0;
 	}
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("Could not initialize video: %s\n", SDL_GetError());
-		freeArguments(&args);
+		mArgumentsDeinit(&args);
 		return 1;
 	}
 
 	renderer.core = mCoreFind(args.fname);
 	if (!renderer.core) {
 		printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
-		freeArguments(&args);
+		mArgumentsDeinit(&args);
 		return 1;
 	}
 
 	if (!renderer.core->init(renderer.core)) {
-		freeArguments(&args);
+		mArgumentsDeinit(&args);
 		return 1;
 	}
 
@@ -134,7 +134,7 @@ int main(int argc, char** argv) {
 
 	mInputMapInit(&renderer.core->inputMap, &GBAInputInfo);
 	mCoreInitConfig(renderer.core, PORT);
-	applyArguments(&args, &subparser, &renderer.core->config);
+	mArgumentsApply(&args, &subparser, 1, &renderer.core->config);
 
 	mCoreConfigLoadDefaults(&renderer.core->config, &opts);
 	mCoreLoadConfig(renderer.core);
@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
 	}
 
 	if (!renderer.init(&renderer)) {
-		freeArguments(&args);
+		mArgumentsDeinit(&args);
 		mCoreConfigDeinit(&renderer.core->config);
 		renderer.core->deinit(renderer.core);
 		return 1;
@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
 
 	mSDLDeinit(&renderer);
 
-	freeArguments(&args);
+	mArgumentsDeinit(&args);
 	mCoreConfigFreeOpts(&opts);
 	mCoreConfigDeinit(&renderer.core->config);
 	renderer.core->deinit(renderer.core);

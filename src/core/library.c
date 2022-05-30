@@ -199,6 +199,10 @@ error:
 }
 
 void mLibraryDestroy(struct mLibrary* library) {
+	if (!library) {
+		return;
+	}
+
 	sqlite3_finalize(library->insertPath);
 	sqlite3_finalize(library->insertRom);
 	sqlite3_finalize(library->insertRoot);

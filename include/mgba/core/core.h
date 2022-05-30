@@ -105,6 +105,7 @@ struct mCore {
 	void (*setKeys)(struct mCore*, uint32_t keys);
 	void (*addKeys)(struct mCore*, uint32_t keys);
 	void (*clearKeys)(struct mCore*, uint32_t keys);
+	uint32_t (*getKeys)(struct mCore*);
 
 	uint32_t (*frameCounter)(const struct mCore*);
 	int32_t (*frameCycles)(const struct mCore*);
@@ -133,6 +134,10 @@ struct mCore {
 
 	size_t (*listMemoryBlocks)(const struct mCore*, const struct mCoreMemoryBlock**);
 	void* (*getMemoryBlock)(struct mCore*, size_t id, size_t* sizeOut);
+
+	size_t (*listRegisters)(const struct mCore*, const struct mCoreRegisterInfo**);
+	bool (*readRegister)(const struct mCore*, const char* name, void* out);
+	bool (*writeRegister)(struct mCore*, const char* name, const void* in);
 
 #ifdef USE_DEBUGGERS
 	bool (*supportsDebuggerType)(struct mCore*, enum mDebuggerType);
@@ -182,6 +187,7 @@ struct VFile* mCoreGetState(struct mCore* core, int slot, bool write);
 void mCoreDeleteState(struct mCore* core, int slot);
 
 void mCoreTakeScreenshot(struct mCore* core);
+bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf);
 #endif
 
 struct mCore* mCoreFindVF(struct VFile* vf);

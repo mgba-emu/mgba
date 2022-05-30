@@ -8,6 +8,7 @@
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
 #include <mgba/internal/arm/debugger/debugger.h>
+#include <mgba/internal/arm/isa-inlines.h>
 #include <mgba/internal/debugger/symbols.h>
 #include <mgba/internal/gba/cheats.h>
 #include <mgba/internal/gba/gba.h>
@@ -32,6 +33,7 @@
 #include <mgba-util/memory.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
+#include <errno.h>
 
 static const struct mCoreChannelInfo _GBAVideoLayers[] = {
 	{ GBA_LAYER_BG0, "bg0", "Background 0", NULL },
@@ -125,6 +127,32 @@ static const struct mCoreMemoryBlock _GBAMemoryBlocksEEPROM[] = {
 	{ REGION_CART1, "cart1", "ROM WS1", "Game Pak (Waitstate 1)", BASE_CART1, BASE_CART1 + SIZE_CART1, SIZE_CART1, mCORE_MEMORY_READ | mCORE_MEMORY_WORM | mCORE_MEMORY_MAPPED },
 	{ REGION_CART2, "cart2", "ROM WS2", "Game Pak (Waitstate 2)", BASE_CART2, BASE_CART2 + SIZE_CART2, SIZE_CART2, mCORE_MEMORY_READ | mCORE_MEMORY_WORM | mCORE_MEMORY_MAPPED },
 	{ REGION_CART_SRAM_MIRROR, "eeprom", "EEPROM", "EEPROM (8kiB)", 0, SIZE_CART_EEPROM, SIZE_CART_EEPROM, mCORE_MEMORY_RW },
+};
+
+static const struct mCoreRegisterInfo _GBARegisters[] = {
+	{ "r0", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "r1", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "r2", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "r3", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "r4", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "r5", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "r6", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "r7", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "r8", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "r9", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "r10", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "r11", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "r12", (const char*[]) { "ip", NULL }, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "sp", (const char*[]) { "r13", NULL }, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "lr", (const char*[]) { "r14", NULL }, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "pc", (const char*[]) { "r15", NULL }, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
+	{ "cpsr", NULL, 4, 0xF00000FF, mCORE_REGISTER_FLAGS },
+	{ "spsr", NULL, 4, 0xF00000FF, mCORE_REGISTER_FLAGS },
+	{ "spsr_irq", NULL, 4, 0xF00000FF, mCORE_REGISTER_FLAGS },
+	{ "spsr_fiq", NULL, 4, 0xF00000FF, mCORE_REGISTER_FLAGS },
+	{ "spsr_svc", NULL, 4, 0xF00000FF, mCORE_REGISTER_FLAGS },
+	{ "spsr_abt", NULL, 4, 0xF00000FF, mCORE_REGISTER_FLAGS },
+	{ "spsr_und", NULL, 4, 0xF00000FF, mCORE_REGISTER_FLAGS },
 };
 
 struct mVideoLogContext;
@@ -723,6 +751,11 @@ static void _GBACoreClearKeys(struct mCore* core, uint32_t keys) {
 	GBATestKeypadIRQ(gba);
 }
 
+static uint32_t _GBACoreGetKeys(struct mCore* core) {
+	struct GBA* gba = core->board;
+	return gba->keysActive;
+}
+
 static uint32_t _GBACoreFrameCounter(const struct mCore* core) {
 	const struct GBA* gba = core->board;
 	return gba->video.frameCounter;
@@ -834,7 +867,7 @@ static void _GBACoreRawWrite32(struct mCore* core, uint32_t address, int segment
 	GBAPatch32(cpu, address, value, NULL);
 }
 
-size_t _GBAListMemoryBlocks(const struct mCore* core, const struct mCoreMemoryBlock** blocks) {
+size_t _GBACoreListMemoryBlocks(const struct mCore* core, const struct mCoreMemoryBlock** blocks) {
 	const struct GBA* gba = core->board;
 	switch (gba->memory.savedata.type) {
 	case SAVEDATA_SRAM:
@@ -855,7 +888,7 @@ size_t _GBAListMemoryBlocks(const struct mCore* core, const struct mCoreMemoryBl
 	}
 }
 
-void* _GBAGetMemoryBlock(struct mCore* core, size_t id, size_t* sizeOut) {
+void* _GBACoreGetMemoryBlock(struct mCore* core, size_t id, size_t* sizeOut) {
 	struct GBA* gba = core->board;
 	switch (id) {
 	default:
@@ -893,6 +926,137 @@ void* _GBAGetMemoryBlock(struct mCore* core, size_t id, size_t* sizeOut) {
 		*sizeOut = GBASavedataSize(&gba->memory.savedata);
 		return gba->memory.savedata.data;
 	}
+}
+
+static size_t _GBACoreListRegisters(const struct mCore* core, const struct mCoreRegisterInfo** list) {
+	UNUSED(core);
+	*list = _GBARegisters;
+	return sizeof(_GBARegisters) / sizeof(*_GBARegisters);
+}
+
+static bool _GBACoreReadRegister(const struct mCore* core, const char* name, void* out) {
+	struct ARMCore* cpu = core->cpu;
+	int32_t* value = out;
+	switch (name[0]) {
+	case 'r':
+	case 'R':
+		++name;
+		break;
+	case 'c':
+	case 'C':
+		if (strcmp(name, "cpsr") == 0 || strcmp(name, "CPSR") == 0) {
+			*value = cpu->cpsr.packed;
+			_ARMReadCPSR(cpu);
+			return true;
+		}
+		return false;
+	case 'i':
+	case 'I':
+		if (strcmp(name, "ip") == 0 || strcmp(name, "IP") == 0) {
+			*value = cpu->gprs[12];
+			return true;
+		}
+		return false;
+	case 's':
+	case 'S':
+		if (strcmp(name, "sp") == 0 || strcmp(name, "SP") == 0) {
+			*value = cpu->gprs[ARM_SP];
+			return true;
+		}
+		// TODO: SPSR
+		return false;
+	case 'l':
+	case 'L':
+		if (strcmp(name, "lr") == 0 || strcmp(name, "LR") == 0) {
+			*value = cpu->gprs[ARM_LR];
+			return true;
+		}
+		return false;
+	case 'p':
+	case 'P':
+		if (strcmp(name, "pc") == 0 || strcmp(name, "PC") == 0) {
+			*value = cpu->gprs[ARM_PC];
+			return true;
+		}
+		return false;
+	default:
+		return false;
+	}
+
+	char* parseEnd;
+	errno = 0;
+	unsigned long regId = strtoul(name, &parseEnd, 10);
+	if (errno || regId > 15 || *parseEnd) {
+		return false;
+	}
+	*value = cpu->gprs[regId];
+	return true;
+}
+
+static bool _GBACoreWriteRegister(struct mCore* core, const char* name, const void* in) {
+	struct ARMCore* cpu = core->cpu;
+	int32_t value = *(const int32_t*) in;
+	switch (name[0]) {
+	case 'r':
+	case 'R':
+		++name;
+		break;
+	case 'c':
+	case 'C':
+		if (strcmp(name, "cpsr") == 0) {
+			cpu->cpsr.packed = value & 0xF00000FF;
+			_ARMReadCPSR(cpu);
+			return true;
+		}
+		return false;
+	case 'i':
+	case 'I':
+		if (strcmp(name, "ip") == 0 || strcmp(name, "IP") == 0) {
+			cpu->gprs[12] = value;
+			return true;
+		}
+		return false;
+	case 's':
+	case 'S':
+		if (strcmp(name, "sp") == 0 || strcmp(name, "SP") == 0) {
+			cpu->gprs[ARM_SP] = value;
+			return true;
+		}
+		// TODO: SPSR
+		return false;
+	case 'l':
+	case 'L':
+		if (strcmp(name, "lr") == 0 || strcmp(name, "LR") == 0) {
+			cpu->gprs[ARM_LR] = value;
+			return true;
+		}
+		return false;
+	case 'p':
+	case 'P':
+		if (strcmp(name, "pc") == 0 || strcmp(name, "PC") == 0) {
+			name = "15";
+			break;
+		}
+		return false;
+	default:
+		return false;
+	}
+
+	char* parseEnd;
+	errno = 0;
+	unsigned long regId = strtoul(name, &parseEnd, 10);
+	if (errno || regId > 15 || *parseEnd) {
+		return false;
+	}
+	cpu->gprs[regId] = value;
+	if (regId == ARM_PC) {
+		if (cpu->cpsr.t) {
+			ThumbWritePC(cpu);
+		} else {
+			ARMWritePC(cpu);
+		}
+	}
+	return true;
 }
 
 #ifdef USE_DEBUGGERS
@@ -1209,6 +1373,7 @@ struct mCore* GBACoreCreate(void) {
 	core->setKeys = _GBACoreSetKeys;
 	core->addKeys = _GBACoreAddKeys;
 	core->clearKeys = _GBACoreClearKeys;
+	core->getKeys = _GBACoreGetKeys;
 	core->frameCounter = _GBACoreFrameCounter;
 	core->frameCycles = _GBACoreFrameCycles;
 	core->frequency = _GBACoreFrequency;
@@ -1227,8 +1392,11 @@ struct mCore* GBACoreCreate(void) {
 	core->rawWrite8 = _GBACoreRawWrite8;
 	core->rawWrite16 = _GBACoreRawWrite16;
 	core->rawWrite32 = _GBACoreRawWrite32;
-	core->listMemoryBlocks = _GBAListMemoryBlocks;
-	core->getMemoryBlock = _GBAGetMemoryBlock;
+	core->listMemoryBlocks = _GBACoreListMemoryBlocks;
+	core->getMemoryBlock = _GBACoreGetMemoryBlock;
+	core->listRegisters = _GBACoreListRegisters;
+	core->readRegister = _GBACoreReadRegister;
+	core->writeRegister = _GBACoreWriteRegister;
 #ifdef USE_DEBUGGERS
 	core->supportsDebuggerType = _GBACoreSupportsDebuggerType;
 	core->debuggerPlatform = _GBACoreDebuggerPlatform;

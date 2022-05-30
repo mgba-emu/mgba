@@ -1,5 +1,6 @@
 0.10.0: (Future)
 Features:
+ - Preliminary Lua scripting support
  - Presets for Game Boy palettes
  - Add Super Game Boy palettes for original Game Boy games
  - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
@@ -19,11 +20,13 @@ Emulation fixes:
  - ARM7: Fix unsigned multiply timing
  - GB: Copy logo from ROM if not running the BIOS intro (fixes mgba.io/i/2378)
  - GB Audio: Fix channel 1/2 reseting edge cases (fixes mgba.io/i/1925)
+ - GB Audio: Properly apply per-model audio differences
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
  - GB Serialize: Fix loading MBC1 states that affect bank 0 (fixes mgba.io/i/2402)
  - GB Video: Draw SGB border pieces that overlap GB graphics (fixes mgba.io/i/1339)
  - GBA: Improve timing when not booting from BIOS
  - GBA: Fix expected entry point for multiboot ELFs (fixes mgba.io/i/2450)
+ - GBA: Fix booting multiboot ROMs with no JOY entrypoint
  - GBA BIOS: Work around IRQ handling hiccup in Mario & Luigi (fixes mgba.io/i/1059)
  - GBA BIOS: Initial HLE timing estimation of UnLz77 functions (fixes mgba.io/i/2141)
  - GBA DMA: Fix DMA source direction bits being cleared (fixes mgba.io/i/2410)
@@ -34,9 +37,11 @@ Emulation fixes:
  - GBA Video: Ignore horizontally off-screen sprite timing (fixes mgba.io/i/2391)
  - GBA Video: Fix Hblank timing (fixes mgba.io/i/2131, mgba.io/i/2310)
  - GBA Video: Fix rare crash in modes 3-5
+ - GBA Video: Fix sprites with mid-frame palette changes in GL (fixes mgba.io/i/2476)
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - Core: Fix the runloop resuming after a game has crashed (fixes mgba.io/i/2451)
+ - Core: Fix crash if library can't be opened
  - FFmpeg: Fix crash when encoding audio with some containers
  - FFmpeg: Fix GIF recording (fixes mgba.io/i/2393)
  - GB: Fix temporary saves
@@ -49,6 +54,7 @@ Misc:
  - Core: Suspend runloop when a core crashes
  - Debugger: Save and restore CLI history
  - Debugger: GDB now works while the game is paused
+ - Debugger: Add command to load external symbol file (fixes mgba.io/i/2480)
  - GB MBC: Filter out MBC errors when cartridge is yanked (fixes mgba.io/i/2488)
  - GB Video: Add default SGB border
  - GBA: Automatically skip BIOS if ROM has invalid logo
@@ -56,6 +62,7 @@ Misc:
  - GBA Cheats: Implement "never" type codes (closes mgba.io/i/915)
  - GBA DMA: Enhanced logging (closes mgba.io/i/2454)
  - GBA Video: Implement layer placement for OpenGL renderer (fixes mgba.io/i/1962)
+ - GBA Video: Fix highlighting for sprites with mid-frame palette changes
  - mGUI: Add margin to right-aligned menu text (fixes mgba.io/i/871)
  - mGUI: Autosave less frequently when fast-forwarding
  - Qt: Rearrange menus some
@@ -69,6 +76,9 @@ Misc:
  - Qt: Enable -b for Boot BIOS menu option (fixes mgba.io/i/2074)
  - Qt: Add tile range selection to tile viewer (closes mgba.io/i/2455)
  - Qt: Show warning if XQ audio is toggled while loaded (fixes mgba.io/i/2295)
+ - Qt: Add e-Card passing to the command line (closes mgba.io/i/2474)
+ - Qt: Boot both a multiboot image and ROM with CLI args (closes mgba.io/i/1941)
+ - Qt: Improve cheat parsing (fixes mgba.io/i/2297)
  - Windows: Attach to console if present
  - Vita: Add bilinear filtering option (closes mgba.io/i/344)
 

@@ -11,6 +11,10 @@
 
 using namespace QGBA;
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+#define endl Qt::endl
+#endif
+
 LogController LogController::s_global(mLOG_ALL);
 int LogController::s_qtCat{-1};
 

@@ -459,6 +459,9 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	else {
 		bool success = _savePNGState(core, vf, &extdata);
 		mStateExtdataDeinit(&extdata);
+		if (cheatVf) {
+			cheatVf->close(cheatVf);
+		}
 		return success;
 	}
 #endif

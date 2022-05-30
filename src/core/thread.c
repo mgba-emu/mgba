@@ -7,6 +7,10 @@
 
 #include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
+#ifdef ENABLE_SCRIPTING
+#include <mgba/script/context.h>
+#include <mgba/core/scripting.h>
+#endif
 #include <mgba/core/serialize.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
@@ -183,6 +187,42 @@ void _coreShutdown(void* context) {
 	_changeState(thread->impl, mTHREAD_EXITING, true);
 }
 
+#ifdef ENABLE_SCRIPTING
+#define ADD_CALLBACK(NAME) \
+void _script_ ## NAME(void* context) { \
+	struct mCoreThread* threadContext = context; \
+	if (!threadContext->scriptContext) { \
+		return; \
+	} \
+	mScriptContextTriggerCallback(threadContext->scriptContext, #NAME); \
+}
+
+ADD_CALLBACK(frame)
+ADD_CALLBACK(crashed)
+ADD_CALLBACK(sleep)
+ADD_CALLBACK(stop)
+ADD_CALLBACK(keysRead)
+ADD_CALLBACK(savedataUpdated)
+ADD_CALLBACK(alarm)
+
+#undef ADD_CALLBACK
+#define CALLBACK(NAME) _script_ ## NAME
+
+static void _mCoreThreadAddCallbacks(struct mCoreThread* threadContext) {
+	struct mCoreCallbacks callbacks = {
+		.videoFrameEnded = CALLBACK(frame),
+		.coreCrashed = CALLBACK(crashed),
+		.sleep = CALLBACK(sleep),
+		.shutdown = CALLBACK(stop),
+		.keysRead = CALLBACK(keysRead),
+		.savedataUpdated = CALLBACK(savedataUpdated),
+		.alarm = CALLBACK(alarm),
+		.context = threadContext
+	};
+	threadContext->core->addCoreCallbacks(threadContext->core, &callbacks);
+}
+#endif
+
 static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	struct mCoreThread* threadContext = context;
 #ifdef USE_PTHREADS
@@ -219,10 +259,30 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		mLogFilterLoad(threadContext->logger.d.filter, &core->config);
 	}
 
+#ifdef ENABLE_SCRIPTING
+	struct mScriptContext* scriptContext = threadContext->scriptContext;
+	if (scriptContext) {
+		mScriptContextAttachCore(scriptContext, core);
+		_mCoreThreadAddCallbacks(threadContext);
+	}
+#endif
+
 	mCoreThreadRewindParamsChanged(threadContext);
 	if (threadContext->startCallback) {
 		threadContext->startCallback(threadContext);
 	}
+#ifdef ENABLE_SCRIPTING
+	// startCallback could add a script context
+	if (scriptContext != threadContext->scriptContext) {
+		scriptContext = threadContext->scriptContext;
+		if (scriptContext) {
+			_mCoreThreadAddCallbacks(threadContext);
+		}
+	}
+	if (scriptContext) {
+		mScriptContextTriggerCallback(scriptContext, "start");
+	}
+#endif
 
 	core->reset(core);
 	threadContext->impl->core = core;
@@ -231,6 +291,19 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	if (threadContext->resetCallback) {
 		threadContext->resetCallback(threadContext);
 	}
+
+#ifdef ENABLE_SCRIPTING
+	// resetCallback could add a script context
+	if (scriptContext != threadContext->scriptContext) {
+		scriptContext = threadContext->scriptContext;
+		if (scriptContext) {
+			_mCoreThreadAddCallbacks(threadContext);
+		}
+	}
+	if (scriptContext) {
+		mScriptContextTriggerCallback(scriptContext, "reset");
+	}
+#endif
 
 	struct mCoreThreadInternal* impl = threadContext->impl;
 	bool wasPaused = false;
@@ -277,6 +350,14 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 					MutexLock(&impl->stateMutex);
 				}
 			}
+#ifdef ENABLE_SCRIPTING
+			if (scriptContext != threadContext->scriptContext) {
+				scriptContext = threadContext->scriptContext;
+				if (scriptContext) {
+					_mCoreThreadAddCallbacks(threadContext);
+				}
+			}
+#endif
 			if (wasPaused && !(impl->requested & mTHREAD_REQ_PAUSE)) {
 				break;
 			}
@@ -318,6 +399,11 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 			if (threadContext->resetCallback) {
 				threadContext->resetCallback(threadContext);
 			}
+#ifdef ENABLE_SCRIPTING
+			if (scriptContext) {
+				mScriptContextTriggerCallback(scriptContext, "reset");
+			}
+#endif
 		}
 		if (pendingRequests & mTHREAD_REQ_RUN_ON) {
 			if (threadContext->run) {
@@ -337,6 +423,12 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	if (threadContext->cleanCallback) {
 		threadContext->cleanCallback(threadContext);
 	}
+#ifdef ENABLE_SCRIPTING
+	if (scriptContext) {
+		mScriptContextTriggerCallback(scriptContext, "shutdown");
+		mScriptContextDetachCore(scriptContext);
+	}
+#endif
 	core->clearCoreCallbacks(core);
 
 	if (threadContext->logger.d.filter == &filter) {

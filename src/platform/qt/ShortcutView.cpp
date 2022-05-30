@@ -137,7 +137,11 @@ void ShortcutView::closeEvent(QCloseEvent*) {
 
 void ShortcutView::showEvent(QShowEvent*) {
 	QString longString("Ctrl+Alt+Shift+Tab");
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+	int width = QFontMetrics(QFont()).horizontalAdvance(longString);
+#else
 	int width = QFontMetrics(QFont()).width(longString);
+#endif
 	QHeaderView* header = m_ui.shortcutTable->header();
 	header->resizeSection(0, header->length() - width * 2);
 	header->resizeSection(1, width);

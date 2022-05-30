@@ -16,16 +16,14 @@ nop
 b irqBase
 b fiqBase
 
-resetBase:
-mov r0, #0x8000000
-ldrb r1, [r0, #3]
-cmp r1, #0xEA
-ldrne r0, =0x20000C0
-bx r0
-.word 0
-.word 0xE129F000
-
 .word 0 @ Padding for back-compat
+.word 0
+.word 0
+.word 0
+.word 0
+.word 0
+.word 0
+.word 0
 
 swiBase:
 cmp    sp, #0
@@ -113,6 +111,7 @@ swiTable:
 .word SoundDriverGetJumpList  @ 0x2A
 
 .ltorg
+.word 0 @ Padding for back-compat
 
 irqBase:
 stmfd  sp!, {r0-r3, r12, lr}
@@ -313,3 +312,19 @@ StallCall:
 subs r11, #4
 bhi StallCall
 bx lr
+
+resetBase:
+mov r0, #0x8000003
+ldrb r1, [r0], #-3
+cmp r1, #0
+movne r1, #0
+bxne r0
+ldr r0, =0x20000C0
+ldr r1, [r0]
+cmp r1, #0
+mov r1, #0
+bxne r0
+sub r0, #0xC0
+bx r0
+.word 0
+.word 0xE129F000
