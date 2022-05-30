@@ -61,6 +61,7 @@ Misc:
  - GBA Cheats: Implement "never" type codes (closes mgba.io/i/915)
  - GBA DMA: Enhanced logging (closes mgba.io/i/2454)
  - GBA Video: Implement layer placement for OpenGL renderer (fixes mgba.io/i/1962)
+ - GBA Video: Fix highlighting for sprites with mid-frame palette changes
  - mGUI: Add margin to right-aligned menu text (fixes mgba.io/i/871)
  - mGUI: Autosave less frequently when fast-forwarding
  - Qt: Rearrange menus some
