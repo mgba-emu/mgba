@@ -86,3 +86,55 @@ void GUIFontPrintf(struct GUIFont* font, int x, int y, enum GUIAlignment align, 
 	va_end(args);
 	GUIFontPrint(font, x, y, align, color, buffer);
 }
+
+void GUIFontDraw9Slice(struct GUIFont* font, int x, int y, int width, int height, uint32_t color, enum GUI9SliceStyle style) {
+	switch (style) {
+	case GUI_9SLICE_EMPTY:
+	case GUI_9SLICE_EMPTY_CAPPED:
+		GUIFontDrawIcon(font, x        , y         , GUI_ALIGN_LEFT  | GUI_ALIGN_TOP   , GUI_ORIENT_0, color, GUI_ICON_9SLICE_EMPTY_NW);
+		GUIFontDrawIcon(font, x + width, y         , GUI_ALIGN_RIGHT | GUI_ALIGN_TOP   , GUI_ORIENT_0, color, GUI_ICON_9SLICE_EMPTY_NE);
+		GUIFontDrawIcon(font, x        , y + height, GUI_ALIGN_LEFT  | GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, GUI_ICON_9SLICE_EMPTY_SW);
+		GUIFontDrawIcon(font, x + width, y + height, GUI_ALIGN_RIGHT | GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, GUI_ICON_9SLICE_EMPTY_SE);
+		break;
+	case GUI_9SLICE_FILLED:
+		GUIFontDrawIcon(font, x        , y         , GUI_ALIGN_LEFT  | GUI_ALIGN_TOP   , GUI_ORIENT_0, color, GUI_ICON_9SLICE_FILLED_NW);
+		GUIFontDrawIcon(font, x + width, y         , GUI_ALIGN_RIGHT | GUI_ALIGN_TOP   , GUI_ORIENT_0, color, GUI_ICON_9SLICE_FILLED_NE);
+		GUIFontDrawIcon(font, x        , y + height, GUI_ALIGN_LEFT  | GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, GUI_ICON_9SLICE_FILLED_SW);
+		GUIFontDrawIcon(font, x + width, y + height, GUI_ALIGN_RIGHT | GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, GUI_ICON_9SLICE_FILLED_SE);
+		break;
+	}
+
+	unsigned offX, offY;
+	unsigned endX, endY;
+	GUIFontIconMetrics(font, GUI_ICON_9SLICE_EMPTY_NW, &offX, &offY);
+	GUIFontIconMetrics(font, GUI_ICON_9SLICE_EMPTY_SE, &endX, &endY);
+
+	switch (style) {
+	case GUI_9SLICE_EMPTY:
+		GUIFontDrawIconSize(font, x + offX, y, width - offX - endX, offY, color, GUI_ICON_9SLICE_EMPTY_N);
+		GUIFontDrawIconSize(font, x, y + offY, offX, height - offY - endY, color, GUI_ICON_9SLICE_EMPTY_W);
+		GUIFontDrawIconSize(font, x + offX, y + height - endY, width - offX - endX, offY, color, GUI_ICON_9SLICE_EMPTY_S);
+		GUIFontDrawIconSize(font, x + width - endX, y + offY, offX, height - offY - endY, color, GUI_ICON_9SLICE_EMPTY_E);
+		break;
+	case GUI_9SLICE_FILLED:
+		GUIFontDrawIconSize(font, x + offX, y, width - offX - endX, offY, color, GUI_ICON_9SLICE_FILLED_N);
+		GUIFontDrawIconSize(font, x, y + offY, offX, height - offY - endY, color, GUI_ICON_9SLICE_FILLED_W);
+		GUIFontDrawIconSize(font, x + offX, y + height - endY, width - offX - endX, offY, color, GUI_ICON_9SLICE_FILLED_S);
+		GUIFontDrawIconSize(font, x + width - endX, y + offY, offX, height - offY - endY, color, GUI_ICON_9SLICE_FILLED_E);
+		GUIFontDrawIconSize(font, x + offX, y + offY, width - offX - endX, height - offY - endY, color, GUI_ICON_9SLICE_FILLED_C);
+		break;
+	case GUI_9SLICE_EMPTY_CAPPED:
+		GUIFontDrawIcon(font, x + offX, y, GUI_ALIGN_LEFT | GUI_ALIGN_TOP, GUI_ORIENT_0, color, GUI_ICON_9SLICE_CAP_NNW);
+		GUIFontDrawIcon(font, x, y + offY, GUI_ALIGN_LEFT | GUI_ALIGN_TOP, GUI_ORIENT_0, color, GUI_ICON_9SLICE_CAP_NWW);
+
+		GUIFontDrawIcon(font, x + width - endX, y, GUI_ALIGN_RIGHT | GUI_ALIGN_TOP, GUI_ORIENT_0, color, GUI_ICON_9SLICE_CAP_NNE);
+		GUIFontDrawIcon(font, x + width, y + offY, GUI_ALIGN_RIGHT | GUI_ALIGN_TOP, GUI_ORIENT_0, color, GUI_ICON_9SLICE_CAP_NEE);
+
+		GUIFontDrawIcon(font, x + offX, y + height, GUI_ALIGN_LEFT | GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, GUI_ICON_9SLICE_CAP_SSW);
+		GUIFontDrawIcon(font, x, y + height - endY, GUI_ALIGN_LEFT | GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, GUI_ICON_9SLICE_CAP_SWW);
+
+		GUIFontDrawIcon(font, x + width - endX, y + height, GUI_ALIGN_RIGHT | GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, GUI_ICON_9SLICE_CAP_SSE);
+		GUIFontDrawIcon(font, x + width, y + height - endY, GUI_ALIGN_RIGHT | GUI_ALIGN_BOTTOM, GUI_ORIENT_0, color, GUI_ICON_9SLICE_CAP_SEE);
+		break;
+	}
+}

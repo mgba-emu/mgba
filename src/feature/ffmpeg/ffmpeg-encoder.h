@@ -33,8 +33,6 @@ struct FFmpegEncoder {
 	int sampleRate;
 	uint16_t* audioBuffer;
 	size_t audioBufferSize;
-	uint16_t* postaudioBuffer;
-	size_t postaudioBufferSize;
 	AVFrame* audioFrame;
 	size_t currentAudioSample;
 	int64_t currentAudioFrame;

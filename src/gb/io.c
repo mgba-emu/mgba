@@ -119,19 +119,15 @@ static void _writeSGBBits(struct GB* gb, int bits) {
 	if (bits == gb->currentSgbBits) {
 		return;
 	}
-	switch (bits) {
-	case 0:
-	case 1:
-		if (gb->currentSgbBits & 2) {
-			gb->sgbIncrement = !gb->sgbIncrement;
-		}
-		break;
-	case 3:
+	if (bits & 2) {
 		if (gb->sgbIncrement) {
 			gb->sgbIncrement = false;
 			gb->sgbCurrentController = (gb->sgbCurrentController + 1) & gb->sgbControllers;
 		}
-		break;
+	} else {
+		if (gb->currentSgbBits & 2) {
+			gb->sgbIncrement = !gb->sgbIncrement;
+		}
 	}
 	gb->currentSgbBits = bits;
 	if (gb->sgbBit == 128 && bits == 2) {

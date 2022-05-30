@@ -90,7 +90,6 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->audioStream = NULL;
 	encoder->audioFrame = NULL;
 	encoder->audioBuffer = NULL;
-	encoder->postaudioBuffer = NULL;
 	encoder->video = NULL;
 	encoder->videoStream = NULL;
 	encoder->videoFrame = NULL;
@@ -315,17 +314,14 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			FFmpegEncoderClose(encoder);
 			return false;
 		}
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 		encoder->audioFrame = av_frame_alloc();
-#else
-		encoder->audioFrame = avcodec_alloc_frame();
-#endif
 		if (!encoder->audio->frame_size) {
 			encoder->audio->frame_size = 1;
 		}
 		encoder->audioFrame->nb_samples = encoder->audio->frame_size;
 		encoder->audioFrame->format = encoder->audio->sample_fmt;
 		encoder->audioFrame->pts = 0;
+		encoder->audioFrame->channel_layout = AV_CH_LAYOUT_STEREO;
 #ifdef USE_LIBAVRESAMPLE
 		encoder->resampleContext = avresample_alloc_context();
 		av_opt_set_int(encoder->resampleContext, "in_channel_layout", AV_CH_LAYOUT_STEREO, 0);
@@ -342,14 +338,12 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 #endif
 		encoder->audioBufferSize = (encoder->audioFrame->nb_samples * PREFERRED_SAMPLE_RATE / encoder->sampleRate) * 4;
 		encoder->audioBuffer = av_malloc(encoder->audioBufferSize);
-		encoder->postaudioBufferSize = av_samples_get_buffer_size(0, encoder->audio->channels, encoder->audio->frame_size, encoder->audio->sample_fmt, 0);
-		encoder->postaudioBuffer = av_malloc(encoder->postaudioBufferSize);
-		avcodec_fill_audio_frame(encoder->audioFrame, encoder->audio->channels, encoder->audio->sample_fmt, (const uint8_t*) encoder->postaudioBuffer, encoder->postaudioBufferSize, 0);
+		av_frame_get_buffer(encoder->audioFrame, 0);
 
 		if (encoder->audio->codec->id == AV_CODEC_ID_AAC &&
-		    (strcasecmp(encoder->containerFormat, "mp4") ||
-		        strcasecmp(encoder->containerFormat, "m4v") ||
-		        strcasecmp(encoder->containerFormat, "mov"))) {
+		    (strcasecmp(encoder->containerFormat, "mp4") == 0||
+		        strcasecmp(encoder->containerFormat, "m4v") == 0 ||
+		        strcasecmp(encoder->containerFormat, "mov") == 0)) {
 			// MP4 container doesn't support the raw ADTS AAC format that the encoder spits out
 #ifdef FFMPEG_USE_NEW_BSF
 			av_bsf_alloc(av_bsf_get_by_name("aac_adtstoasc"), &encoder->absf);
@@ -391,9 +385,9 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		}
 
 		if (encoder->video->codec->id == AV_CODEC_ID_H264 &&
-		    (strcasecmp(encoder->containerFormat, "mp4") ||
-		        strcasecmp(encoder->containerFormat, "m4v") ||
-		        strcasecmp(encoder->containerFormat, "mov"))) {
+		    (strcasecmp(encoder->containerFormat, "mp4") == 0 ||
+		        strcasecmp(encoder->containerFormat, "m4v") == 0 ||
+		        strcasecmp(encoder->containerFormat, "mov") == 0)) {
 			// QuickTime and a few other things require YUV420
 			encoder->video->pix_fmt = AV_PIX_FMT_YUV420P;
 		}
@@ -497,11 +491,7 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 				return false;
 			}
 
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 			encoder->sinkFrame = av_frame_alloc();
-#else
-			encoder->sinkFrame = avcodec_alloc_frame();
-#endif
 		}
 		AVDictionary* opts = 0;
 		av_dict_set(&opts, "strict", "-2", 0);
@@ -511,17 +501,13 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 			FFmpegEncoderClose(encoder);
 			return false;
 		}
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 		encoder->videoFrame = av_frame_alloc();
-#else
-		encoder->videoFrame = avcodec_alloc_frame();
-#endif
 		encoder->videoFrame->format = encoder->video->pix_fmt != AV_PIX_FMT_PAL8 ? encoder->video->pix_fmt : encoder->ipixFormat;
 		encoder->videoFrame->width = encoder->video->width;
 		encoder->videoFrame->height = encoder->video->height;
 		encoder->videoFrame->pts = 0;
 		_ffmpegSetVideoDimensions(&encoder->d, encoder->iwidth, encoder->iheight);
-		av_image_alloc(encoder->videoFrame->data, encoder->videoFrame->linesize, encoder->videoFrame->width, encoder->videoFrame->height, encoder->videoFrame->format, 32);
+		av_frame_get_buffer(encoder->videoFrame, 32);
 #ifdef FFMPEG_USE_CODECPAR
 		avcodec_parameters_from_context(encoder->videoStream->codecpar, encoder->video);
 #endif
@@ -579,21 +565,13 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 		avio_close(encoder->context->pb);
 	}
 
-	if (encoder->postaudioBuffer) {
-		av_free(encoder->postaudioBuffer);
-		encoder->postaudioBuffer = NULL;
-	}
 	if (encoder->audioBuffer) {
 		av_free(encoder->audioBuffer);
 		encoder->audioBuffer = NULL;
 	}
 
 	if (encoder->audioFrame) {
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 		av_frame_free(&encoder->audioFrame);
-#else
-		avcodec_free_frame(&encoder->audioFrame);
-#endif
 	}
 	if (encoder->audio) {
 #ifdef FFMPEG_USE_CODECPAR
@@ -623,20 +601,11 @@ void FFmpegEncoderClose(struct FFmpegEncoder* encoder) {
 	}
 
 	if (encoder->videoFrame) {
-		av_freep(encoder->videoFrame->data);
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 		av_frame_free(&encoder->videoFrame);
-#else
-		avcodec_free_frame(&encoder->videoFrame);
-#endif
 	}
 
 	if (encoder->sinkFrame) {
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 		av_frame_free(&encoder->sinkFrame);
-#else
-		avcodec_free_frame(&encoder->sinkFrame);
-#endif
 		encoder->sinkFrame = NULL;
 	}
 
@@ -696,7 +665,6 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 		return;
 	}
 
-	int channelSize = 2 * av_get_bytes_per_sample(encoder->audio->sample_fmt);
 	encoder->currentAudioSample = 0;
 #ifdef USE_LIBAVRESAMPLE
 	avresample_convert(encoder->resampleContext, 0, 0, 0,
@@ -705,19 +673,15 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 	if (avresample_available(encoder->resampleContext) < encoder->audioFrame->nb_samples) {
 		return;
 	}
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->audioFrame);
-#endif
-	int samples = avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / channelSize);
+	int samples = avresample_read(encoder->resampleContext, encoder->audioFrame->data, encoder->audioFrame->nb_samples);
 #else
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->audioFrame);
-#endif
 	if (swr_get_out_samples(encoder->resampleContext, 1) < encoder->audioFrame->nb_samples) {
 		swr_convert(encoder->resampleContext, NULL, 0, (const uint8_t**) &encoder->audioBuffer, encoder->audioBufferSize / 4);
 		return;
 	}
-	int samples = swr_convert(encoder->resampleContext, encoder->audioFrame->data, encoder->postaudioBufferSize / channelSize,
+	int samples = swr_convert(encoder->resampleContext, encoder->audioFrame->data, encoder->audioFrame->nb_samples,
 	                          (const uint8_t**) &encoder->audioBuffer, encoder->audioBufferSize / 4);
 #endif
 
@@ -728,61 +692,76 @@ void _ffmpegPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right
 }
 
 bool _ffmpegWriteAudioFrame(struct FFmpegEncoder* encoder, struct AVFrame* audioFrame) {
-	AVPacket packet;
-	av_init_packet(&packet);
-	packet.data = 0;
-	packet.size = 0;
+	AVPacket* packet;
+#ifdef FFMPEG_USE_PACKET_UNREF
+	packet = av_packet_alloc();
+#else
+	packet = av_malloc(sizeof(*packet));
+	av_init_packet(packet);
+#endif
+	packet->data = 0;
+	packet->size = 0;
 
 	int gotData;
 #ifdef FFMPEG_USE_PACKETS
 	avcodec_send_frame(encoder->audio, audioFrame);
-	gotData = avcodec_receive_packet(encoder->audio, &packet);
-	gotData = (gotData == 0) && packet.size;
+	gotData = avcodec_receive_packet(encoder->audio, packet);
+	gotData = (gotData == 0) && packet->size;
 #else
-	avcodec_encode_audio2(encoder->audio, &packet, audioFrame, &gotData);
+	avcodec_encode_audio2(encoder->audio, packet, audioFrame, &gotData);
 #endif
-	packet.pts = av_rescale_q(packet.pts, encoder->audio->time_base, encoder->audioStream->time_base);
-	packet.dts = packet.pts;
+	packet->pts = av_rescale_q(packet->pts, encoder->audio->time_base, encoder->audioStream->time_base);
+	packet->dts = packet->pts;
 
 	if (gotData) {
 		if (encoder->absf) {
-			AVPacket tempPacket;
+			AVPacket* tempPacket;
+#ifdef FFMPEG_USE_PACKETS
+			tempPacket = av_packet_alloc();
+#else
+			tempPacket = av_malloc(sizeof(*tempPacket));
+			av_init_packet(tempPacket);
+#endif
 
 #ifdef FFMPEG_USE_NEW_BSF
-			int success = av_bsf_send_packet(encoder->absf, &packet);
+			int success = av_bsf_send_packet(encoder->absf, packet);
 			if (success >= 0) {
-				success = av_bsf_receive_packet(encoder->absf, &tempPacket);
+				success = av_bsf_receive_packet(encoder->absf, tempPacket);
 			}
 #else
 			int success = av_bitstream_filter_filter(encoder->absf, encoder->audio, 0,
-			    &tempPacket.data, &tempPacket.size,
-			    packet.data, packet.size, 0);
+			    &tempPacket->data, &tempPacket->size,
+			    packet->data, packet->size, 0);
 #endif
 
 			if (success >= 0) {
 #if LIBAVUTIL_VERSION_MAJOR >= 53
-				tempPacket.buf = av_buffer_create(tempPacket.data, tempPacket.size, av_buffer_default_free, 0, 0);
+				tempPacket->buf = av_buffer_create(tempPacket->data, tempPacket->size, av_buffer_default_free, 0, 0);
 #endif
 
 #ifdef FFMPEG_USE_PACKET_UNREF
-				av_packet_move_ref(&packet, &tempPacket);
+				av_packet_move_ref(packet, tempPacket);
+				av_packet_free(&packet);
 #else
-				av_free_packet(&packet);
+				av_free_packet(packet);
+				av_freep(&packet);
 				packet = tempPacket;
 #endif
 
-				packet.stream_index = encoder->audioStream->index;
-				av_interleaved_write_frame(encoder->context, &packet);
+				packet->stream_index = encoder->audioStream->index;
+				av_interleaved_write_frame(encoder->context, packet);
 			}
 		} else {
-			packet.stream_index = encoder->audioStream->index;
-			av_interleaved_write_frame(encoder->context, &packet);
+			packet->stream_index = encoder->audioStream->index;
+			av_interleaved_write_frame(encoder->context, packet);
 		}
 	}
 #ifdef FFMPEG_USE_PACKET_UNREF
-	av_packet_unref(&packet);
+	av_packet_unref(packet);
+	av_packet_free(&packet);
 #else
-	av_free_packet(&packet);
+	av_free_packet(packet);
+	av_freep(&packet);
 #endif
 	return gotData;
 }
@@ -798,9 +777,7 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 	}
 	stride *= BYTES_PER_PIXEL;
 
-#if LIBAVCODEC_VERSION_MAJOR >= 55
 	av_frame_make_writable(encoder->videoFrame);
-#endif
 	if (encoder->video->codec->id == AV_CODEC_ID_WEBP) {
 		// TODO: Figure out why WebP is rescaling internally (should video frames not be rescaled externally?)
 		encoder->videoFrame->pts = encoder->currentVideoFrame;
@@ -829,32 +806,39 @@ void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size
 }
 
 bool _ffmpegWriteVideoFrame(struct FFmpegEncoder* encoder, struct AVFrame* videoFrame) {
-	AVPacket packet;
+	AVPacket* packet;
 
-	av_init_packet(&packet);
-	packet.data = 0;
-	packet.size = 0;
+#ifdef FFMPEG_USE_PACKET_UNREF
+	packet = av_packet_alloc();
+#else
+	packet = av_malloc(sizeof(*packet));
+	av_init_packet(packet);
+#endif
+	packet->data = 0;
+	packet->size = 0;
 
 	int gotData;
 #ifdef FFMPEG_USE_PACKETS
 	avcodec_send_frame(encoder->video, videoFrame);
-	gotData = avcodec_receive_packet(encoder->video, &packet) == 0;
+	gotData = avcodec_receive_packet(encoder->video, packet) == 0;
 #else
-	avcodec_encode_video2(encoder->video, &packet, videoFrame, &gotData);
+	avcodec_encode_video2(encoder->video, packet, videoFrame, &gotData);
 #endif
 	if (gotData) {
 #ifndef FFMPEG_USE_PACKET_UNREF
 		if (encoder->video->coded_frame->key_frame) {
-			packet.flags |= AV_PKT_FLAG_KEY;
+			packet->flags |= AV_PKT_FLAG_KEY;
 		}
 #endif
-		packet.stream_index = encoder->videoStream->index;
-		av_interleaved_write_frame(encoder->context, &packet);
+		packet->stream_index = encoder->videoStream->index;
+		av_interleaved_write_frame(encoder->context, packet);
 	}
 #ifdef FFMPEG_USE_PACKET_UNREF
-	av_packet_unref(&packet);
+	av_packet_unref(packet);
+	av_packet_free(&packet);
 #else
-	av_free_packet(&packet);
+	av_free_packet(packet);
+	av_freep(&packet);
 #endif
 
 	return gotData;

@@ -185,6 +185,16 @@ void mUpdateRegister(struct mCoreConfig* config, const char* arg0, const char* u
 #endif
 	if (last) {
 		last[0] = '\0';
+#ifdef __APPLE__
+		ssize_t len = strlen(filename);
+		if (len > 19 && strcmp(&filename[len - 19], ".app/Contents/MacOS") == 0) {
+			filename[len - 19] = '\0';
+			last = strrchr(filename, '/');
+			if (last) {
+				last[0] = '\0';
+			}
+		}
+#endif
 	}
 	ConfigurationSetValue(cfg, UPDATE_SECTION, "bin", arg0);
 	ConfigurationSetValue(cfg, UPDATE_SECTION, "root", filename);
