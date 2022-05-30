@@ -6,6 +6,7 @@
 #include <mgba/internal/gba/savedata.h>
 
 #include <mgba/internal/arm/macros.h>
+#include <mgba/internal/defines.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/serialize.h>
 
@@ -24,7 +25,6 @@
 #define FLASH_PROGRAM_CYCLES 650
 // This needs real testing, and is only an estimation currently
 #define EEPROM_SETTLE_CYCLES 115000
-#define CLEANUP_THRESHOLD 15
 
 mLOG_DEFINE_CATEGORY(GBA_SAVE, "GBA Savedata", "gba.savedata");
 
@@ -379,7 +379,7 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 	case FLASH_STATE_RAW:
 		switch (savedata->command) {
 		case FLASH_COMMAND_PROGRAM:
-			savedata->dirty |= SAVEDATA_DIRT_NEW;
+			savedata->dirty |= mSAVEDATA_DIRT_NEW;
 			savedata->currentBank[address] = value;
 			savedata->command = FLASH_COMMAND_NONE;
 			mTimingDeschedule(savedata->timing, &savedata->dust);
@@ -511,7 +511,7 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 			uint8_t current = savedata->data[savedata->writeAddress >> 3];
 			current &= ~(1 << (0x7 - (savedata->writeAddress & 0x7)));
 			current |= (value & 0x1) << (0x7 - (savedata->writeAddress & 0x7));
-			savedata->dirty |= SAVEDATA_DIRT_NEW;
+			savedata->dirty |= mSAVEDATA_DIRT_NEW;
 			savedata->data[savedata->writeAddress >> 3] = current;
 			mTimingDeschedule(savedata->timing, &savedata->dust);
 			mTimingSchedule(savedata->timing, &savedata->dust, EEPROM_SETTLE_CYCLES);
@@ -565,15 +565,10 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 	if (!savedata->vf) {
 		return;
 	}
-	if (savedata->dirty & SAVEDATA_DIRT_NEW) {
-		savedata->dirtAge = frameCount;
-		savedata->dirty &= ~SAVEDATA_DIRT_NEW;
-		savedata->dirty |= SAVEDATA_DIRT_SEEN;
-	} else if ((savedata->dirty & SAVEDATA_DIRT_SEEN) && frameCount - savedata->dirtAge > CLEANUP_THRESHOLD) {
+	if (mSavedataClean(&savedata->dirty, &savedata->dirtAge, frameCount)) {
 		if (savedata->maskWriteback) {
 			GBASavedataUnmask(savedata);
 		}
-		savedata->dirty = 0;
 		if (savedata->mapMode & MAP_WRITE) {
 			size_t size = GBASavedataSize(savedata);
 			if (savedata->data && savedata->vf->sync(savedata->vf, savedata->data, size)) {
@@ -650,7 +645,7 @@ void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 
 void _flashErase(struct GBASavedata* savedata) {
 	mLOG(GBA_SAVE, DEBUG, "Performing flash chip erase");
-	savedata->dirty |= SAVEDATA_DIRT_NEW;
+	savedata->dirty |= mSAVEDATA_DIRT_NEW;
 	size_t size = SIZE_CART_FLASH512;
 	if (savedata->type == SAVEDATA_FLASH1M) {
 		size = SIZE_CART_FLASH1M;
@@ -660,7 +655,7 @@ void _flashErase(struct GBASavedata* savedata) {
 
 void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart) {
 	mLOG(GBA_SAVE, DEBUG, "Performing flash sector erase at 0x%04x", sectorStart);
-	savedata->dirty |= SAVEDATA_DIRT_NEW;
+	savedata->dirty |= mSAVEDATA_DIRT_NEW;
 	size_t size = 0x1000;
 	if (savedata->type == SAVEDATA_FLASH1M) {
 		mLOG(GBA_SAVE, DEBUG, "Performing unknown sector-size erase at 0x%04x", sectorStart);

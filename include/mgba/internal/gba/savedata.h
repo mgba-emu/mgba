@@ -60,11 +60,6 @@ enum FlashManufacturer {
 	FLASH_MFG_SANYO = 0x1362
 };
 
-enum SavedataDirty {
-	SAVEDATA_DIRT_NEW = 1,
-	SAVEDATA_DIRT_SEEN = 2
-};
-
 enum {
 	SAVEDATA_FLASH_BASE = 0x0E005555,
 
@@ -92,7 +87,7 @@ struct GBASavedata {
 	unsigned settling;
 	struct mTimingEvent dust;
 
-	enum SavedataDirty dirty;
+	int dirty;
 	uint32_t dirtAge;
 
 	enum FlashStateMachine flashState;

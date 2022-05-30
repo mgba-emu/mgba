@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gb/gb.h>
 
+#include <mgba/internal/defines.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/mbc.h>
 #include <mgba/internal/sm83/sm83.h>
@@ -16,8 +17,6 @@
 #include <mgba-util/math.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
-
-#define CLEANUP_THRESHOLD 15
 
 const uint32_t CGB_SM83_FREQUENCY = 0x800000;
 const uint32_t SGB_SM83_FREQUENCY = 0x418B1E;
@@ -203,6 +202,14 @@ void GBResizeSram(struct GB* gb, size_t size) {
 			if (gb->memory.sram) {
 				vf->unmap(vf, gb->memory.sram, gb->sramSize);
 			}
+			if (vf->size(vf) < gb->sramSize) {
+				void* sram = vf->map(vf, vf->size(vf), MAP_READ);
+				struct VFile* newVf = VFileMemChunk(sram, vf->size(vf));
+				vf->unmap(vf, sram,vf->size(vf));
+				vf = newVf;
+				gb->sramVf = newVf;
+				vf->truncate(vf, size);
+			}
 			gb->memory.sram = vf->map(vf, size, MAP_READ);
 		}
 		if (gb->memory.sram == (void*) -1) {
@@ -233,24 +240,19 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 	if (!gb->sramVf) {
 		return;
 	}
-	if (gb->sramDirty & GB_SRAM_DIRT_NEW) {
-		gb->sramDirtAge = frameCount;
-		gb->sramDirty &= ~GB_SRAM_DIRT_NEW;
-		if (!(gb->sramDirty & GB_SRAM_DIRT_SEEN)) {
-			gb->sramDirty |= GB_SRAM_DIRT_SEEN;
-		}
-	} else if ((gb->sramDirty & GB_SRAM_DIRT_SEEN) && frameCount - gb->sramDirtAge > CLEANUP_THRESHOLD) {
+	if (mSavedataClean(&gb->sramDirty, &gb->sramDirtAge, frameCount)) {
 		if (gb->sramMaskWriteback) {
 			GBSavedataUnmask(gb);
 		}
 		if (gb->memory.mbcType == GB_MBC3_RTC) {
 			GBMBCRTCWrite(gb);
 		}
-		gb->sramDirty = 0;
-		if (gb->memory.sram && gb->sramVf->sync(gb->sramVf, gb->memory.sram, gb->sramSize)) {
-			mLOG(GB_MEM, INFO, "Savedata synced");
-		} else {
-			mLOG(GB_MEM, INFO, "Savedata failed to sync!");
+		if (gb->sramVf == gb->sramRealVf) {
+			if (gb->memory.sram && gb->sramVf->sync(gb->sramVf, gb->memory.sram, gb->sramSize)) {
+				mLOG(GB_MEM, INFO, "Savedata synced");
+			} else {
+				mLOG(GB_MEM, INFO, "Savedata failed to sync!");
+			}
 		}
 
 		size_t c;
@@ -271,7 +273,7 @@ void GBSavedataMask(struct GB* gb, struct VFile* vf, bool writeback) {
 	}
 	gb->sramVf = vf;
 	gb->sramMaskWriteback = writeback;
-	gb->memory.sram = vf->map(vf, gb->sramSize, MAP_READ);
+	GBResizeSram(gb, gb->sramSize);
 	GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
 }
 
@@ -316,7 +318,9 @@ void GBUnloadROM(struct GB* gb) {
 	gb->memory.mbcType = GB_MBC_AUTODETECT;
 	gb->isPristine = false;
 
-	gb->sramMaskWriteback = false;
+	if (!gb->sramDirty) {
+		gb->sramMaskWriteback = false;
+	}
 	GBSavedataUnmask(gb);
 	GBSramDeinit(gb);
 	if (gb->sramRealVf) {

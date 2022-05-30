@@ -149,7 +149,9 @@ void GBAUnloadROM(struct GBA* gba) {
 	gba->memory.rom = NULL;
 	gba->isPristine = false;
 
-	gba->memory.savedata.maskWriteback = false;
+	if (!gba->memory.savedata.dirty) {
+		gba->memory.savedata.maskWriteback = false;
+	}
 	GBASavedataUnmask(&gba->memory.savedata);
 	GBASavedataDeinit(&gba->memory.savedata);
 	if (gba->memory.savedata.realVf) {

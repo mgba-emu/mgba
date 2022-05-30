@@ -771,7 +771,9 @@ void Window::focusInEvent(QFocusEvent*) {
 			updateMultiplayerActive(true);
 		}
 	}
-	m_display->forceDraw();
+	if (m_display) {
+		m_display->forceDraw();
+	}
 }
 
 void Window::focusOutEvent(QFocusEvent*) {
@@ -899,7 +901,6 @@ void Window::gameStarted() {
 	m_config->updateOption("lockAspectRatio");
 	m_config->updateOption("interframeBlending");
 	m_config->updateOption("resampleVideo");
-	m_config->updateOption("showOSD");
 	if (m_savedScale > 0) {
 		resizeFrame(size * m_savedScale);
 	}
@@ -1262,12 +1263,25 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Add folder to library..."), "addDirToLibrary", this, &Window::addDirToLibrary, "file");
 #endif
 
+	m_actions.addMenu(tr("Save games"), "saves", "file");
 	addGameAction(tr("Load alternate save game..."), "loadAlternateSave", [this]() {
 		this->selectSave(false);
-	}, "file");
+	}, "saves");
 	addGameAction(tr("Load temporary save game..."), "loadTemporarySave", [this]() {
 		this->selectSave(true);
-	}, "file");
+	}, "saves");
+
+	m_actions.addSeparator("saves");
+
+	m_actions.addAction(tr("Convert save game..."), "convertSave", openControllerTView<SaveConverter>(), "saves");
+
+#ifdef M_CORE_GBA
+	Action* importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "saves");
+	m_platformActions.insert(mPLATFORM_GBA, importShark);
+
+	Action* exportShark = addGameAction(tr("Export GameShark Save..."), "exportShark", this, &Window::exportSharkport, "saves");
+	m_platformActions.insert(mPLATFORM_GBA, exportShark);
+#endif
 
 	m_actions.addAction(tr("Load &patch..."), "loadPatch", this, &Window::selectPatch, "file");
 
@@ -1367,17 +1381,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		m_platformActions.insert(mPLATFORM_GB, quickSave);
 	}
 
-#ifdef M_CORE_GBA
-	m_actions.addSeparator("file");
-	m_actions.addAction(tr("Convert save game..."), "convertSave", openControllerTView<SaveConverter>(), "file");
-
-	Action* importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "file");
-	m_platformActions.insert(mPLATFORM_GBA, importShark);
-
-	Action* exportShark = addGameAction(tr("Export GameShark Save..."), "exportShark", this, &Window::exportSharkport, "file");
-	m_platformActions.insert(mPLATFORM_GBA, exportShark);
-#endif
-
 	m_actions.addSeparator("file");
 	m_multiWindow = m_actions.addAction(tr("New multiplayer window"), "multiWindow", [this]() {
 		GBAApp::app()->newWindow();
@@ -1396,11 +1399,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addSeparator("file");
 #endif
 
-	m_actions.addAction(tr("About..."), "about", openTView<AboutScreen>(), "file");
-
-#ifndef Q_OS_MAC
-	m_actions.addAction(tr("E&xit"), "quit", static_cast<QWidget*>(this), &QWidget::close, "file", QKeySequence::Quit);
-#endif
+	m_actions.addAction(tr("About..."), "about", openTView<AboutScreen>(), "file")->setRole(Action::Role::ABOUT);
+	m_actions.addAction(tr("E&xit"), "quit", static_cast<QWidget*>(this), &QWidget::close, "file", QKeySequence::Quit)->setRole(Action::Role::SETTINGS);
 
 	m_actions.addMenu(tr("&Emulation"), "emu");
 
@@ -1671,7 +1671,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("&Cheats..."), "cheatsWindow", openControllerTView<CheatsView>(), "tools");
 
 	m_actions.addSeparator("tools");
-	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools");
+	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools")->setRole(Action::Role::SETTINGS);
 	m_actions.addAction(tr("Make portable"), "makePortable", this, &Window::tryMakePortable, "tools");
 
 #ifdef USE_DEBUGGERS
@@ -1796,6 +1796,20 @@ void Window::setupMenu(QMenuBar* menubar) {
 	showOSD->connect([this](const QVariant& value) {
 		if (m_display) {
 			m_display->showOSDMessages(value.toBool());
+		}
+	}, this);
+
+	ConfigOption* showFrameCounter = m_config->addOption("showFrameCounter");
+	showFrameCounter->connect([this](const QVariant& value) {
+		if (m_display) {
+			m_display->showFrameCounter(value.toBool());
+		}
+	}, this);
+
+	ConfigOption* showResetInfo = m_config->addOption("showResetInfo");
+	showResetInfo->connect([this](const QVariant& value) {
+		if (m_controller) {
+			m_controller->showResetInfo(value.toBool());
 		}
 	}, this);
 
@@ -2045,6 +2059,9 @@ void Window::setController(CoreController* controller, const QString& fname) {
 
 	attachDisplay();
 	m_controller->loadConfig(m_config);
+	m_config->updateOption("showOSD");
+	m_config->updateOption("showFrameCounter");
+	m_config->updateOption("showResetInfo");
 	m_controller->start();
 
 	if (!m_pendingState.isEmpty()) {

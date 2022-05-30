@@ -235,6 +235,7 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 			context->shaders[n].dirty = true;
 		}
 	}
+	context->finalShader.dirty = true;
 	glBindTexture(GL_TEXTURE_2D, context->finalShader.tex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, drawW, drawH, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, context->finalShader.fbo);
@@ -375,7 +376,6 @@ void mGLES2ContextDrawFrame(struct VideoBackend* v) {
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
 	context->finalShader.filter = v->filter;
-	context->finalShader.dirty = true;
 	_drawShader(context, &context->initialShader);
 	if (v->interframeBlending) {
 		context->interframeShader.blend = true;
@@ -437,15 +437,19 @@ void mGLES2ContextCreate(struct mGLES2Context* context) {
 }
 
 void mGLES2ContextUseFramebuffer(struct mGLES2Context* context) {
-	glGenFramebuffers(1, &context->finalShader.fbo);
-	glGenTextures(1, &context->finalShader.tex);
+	if (!context->finalShader.fbo) {
+		glGenFramebuffers(1, &context->finalShader.fbo);
+	}
+	if (!context->finalShader.tex) {
+		glGenTextures(1, &context->finalShader.tex);
 
-	glBindTexture(GL_TEXTURE_2D, context->finalShader.tex);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glBindTexture(GL_TEXTURE_2D, 0);
+		glBindTexture(GL_TEXTURE_2D, context->finalShader.tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, context->finalShader.fbo);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, context->finalShader.tex, 0);

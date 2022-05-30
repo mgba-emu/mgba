@@ -6,9 +6,10 @@
 #include <mgba/internal/gb/mbc.h>
 
 #include <mgba/core/interface.h>
-#include <mgba/internal/sm83/sm83.h>
+#include <mgba/internal/defines.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/memory.h>
+#include <mgba/internal/sm83/sm83.h>
 #include <mgba-util/crc32.h>
 #include <mgba-util/vfs.h>
 
@@ -615,6 +616,7 @@ void _GBMBC2(struct GB* gb, uint16_t address, uint8_t value) {
 		address &= 0x1FF;
 		memory->sramBank[(address >> 1)] &= 0xF0 >> shift;
 		memory->sramBank[(address >> 1)] |= (value & 0xF) << shift;
+		gb->sramDirty |= mSAVEDATA_DIRT_NEW;
 		break;
 	default:
 		// TODO
@@ -776,6 +778,7 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 	case 0x2B:
 		if (memory->sramAccess) {
 			memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)] = value;
+			gb->sramDirty |= mSAVEDATA_DIRT_NEW;
 		}
 		break;
 	case 0x2C:
@@ -841,6 +844,7 @@ void _GBMBC7(struct GB* gb, uint16_t address, uint8_t value) {
 		break;
 	case 0x5:
 		_GBMBC7Write(&gb->memory, address, value);
+		gb->sramDirty |= mSAVEDATA_DIRT_NEW;
 		break;
 	default:
 		// TODO
@@ -1163,6 +1167,7 @@ void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value) {
 		address &= 0x7F;
 		if (address == 0 && value & 1) {
 			value &= 6; // TODO: Timing
+			gb->sramDirty |= mSAVEDATA_DIRT_NEW;
 			_GBPocketCamCapture(memory);
 		}
 		if (address < sizeof(memory->mbcState.pocketCam.registers)) {
@@ -1287,6 +1292,7 @@ void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value) {
 					switch (tama5->registers[GBTAMA5_CS] >> 1) {
 					case 0x0: // RAM write
 						memory->sram[address] = out;
+						gb->sramDirty |= mSAVEDATA_DIRT_NEW;
 						break;
 					case 0x1: // RAM read
 						break;

@@ -56,12 +56,17 @@ Emulation fixes:
  - GB Video: Draw SGB border pieces that overlap GB graphics (fixes mgba.io/i/1339)
  - GBA: Improve timing when not booting from BIOS
  - GBA BIOS: Work around IRQ handling hiccup in Mario & Luigi (fixes mgba.io/i/1059)
+ - GBA DMA: Fix DMA source direction bits being cleared (fixes mgba.io/i/2410)
  - GBA I/O: Redo internal key input, enabling edge-based key IRQs
  - GBA I/O: Disable open bus behavior on invalid register 06A
  - GBA Memory: Fix misaligned 32-bit I/O loads (fixes mgba.io/i/2307)
+ - GBA Video: Fix OpenGL rendering on M1 Macs
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - FFmpeg: Fix crash when encoding audio with some containers
+ - FFmpeg: Fix GIF recording (fixes mgba.io/i/2393)
+ - GB: Fix temporary saves
+ - GB, GBA: Save writeback-pending masked saves on unload (fixes mgba.io/i/2396)
 Misc:
  - Core: Suspend runloop when a core crashes
  - GB Video: Add default SGB border
@@ -71,6 +76,9 @@ Misc:
  - Qt: Only set default controller bindings if loading fails (fixes mgba.io/i/799)
  - Qt: Save converter now supports importing GameShark Advance saves
  - Qt: Save positions of multiplayer windows (closes mgba.io/i/2128)
+ - Qt: Add optional frame counter to OSD (closes mgba.io/i/1728)
+ - Qt: Add optional emulation-related information on reset (closes mgba.io/i/1780)
+ - Qt: Add QOpenGLWidget cross-thread codepath for macOS (fixes mgba.io/i/1754)
  - Windows: Attach to console if present
 
 0.9.3: (2021-12-17)

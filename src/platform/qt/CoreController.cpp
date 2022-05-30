@@ -15,6 +15,7 @@
 #include <QMutexLocker>
 
 #include <mgba/core/serialize.h>
+#include <mgba/core/version.h>
 #include <mgba/feature/video-logger.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
@@ -86,12 +87,17 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		}
 
 		controller->m_resetActions.clear();
+		controller->m_frameCounter = -1;
 
 		if (!controller->m_hwaccel) {
 			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer.data()), controller->screenDimensions().width());
 		}
 
+		QString message(tr("Reset r%1-%2 %3").arg(gitRevision).arg(QLatin1String(gitCommitShort)).arg(controller->m_crc32, 8, 16, QLatin1Char('0')));
 		QMetaObject::invokeMethod(controller, "didReset");
+		if (controller->m_showResetInfo) {
+			QMetaObject::invokeMethod(controller, "statusPosted", Q_ARG(const QString&, message));
+		}
 		controller->finishFrame();
 	};
 
@@ -481,6 +487,10 @@ void CoreController::setSync(bool sync) {
 		m_threadContext.impl->sync.audioWait = false;
 		m_threadContext.impl->sync.videoFrameWait = false;
 	}
+}
+
+void CoreController::showResetInfo(bool enable) {
+	m_showResetInfo = enable;
 }
 
 void CoreController::setRewinding(bool rewind) {
@@ -1053,6 +1063,7 @@ void CoreController::finishFrame() {
 				mCoreThreadPauseFromThread(&m_threadContext);
 			}
 		}
+		++m_frameCounter;
 	}
 	updateKeys();
 

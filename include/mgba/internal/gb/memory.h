@@ -65,11 +65,6 @@ enum {
 	GB_SIZE_MBC6_FLASH = 0x100000,
 };
 
-enum {
-	GB_SRAM_DIRT_NEW = 1,
-	GB_SRAM_DIRT_SEEN = 2
-};
-
 struct GBMemory;
 typedef void (*GBMemoryBankControllerWrite)(struct GB*, uint16_t address, uint8_t value);
 typedef uint8_t (*GBMemoryBankControllerRead)(struct GBMemory*, uint16_t address);
