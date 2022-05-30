@@ -3,6 +3,7 @@ Features:
  - DS GX: Toon shading
  - DS GX: Clear depth
  - DS GX: Position test
+ - DS GX: Vector result
 Bugfixes:
  - DS GX: Fix vertex texture transformation (fixes mgba.io/i/702)
  - DS GX: Automatically normalize winding culling calculations (fixes mgba.io/i/699)

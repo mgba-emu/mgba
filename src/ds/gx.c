@@ -162,6 +162,27 @@ static void _updateClipMatrix(struct DSGX* gx) {
 	gx->p->memory.io9[DS9_REG_CLIPMTX_RESULT_1F >> 1] = gx->clipMatrix.m[15] >> 16;
 }
 
+static void _updateVecMatrix(struct DSGX* gx) {
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_00 >> 1] = gx->vecMatrix.m[0];
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_01 >> 1] = gx->vecMatrix.m[0] >> 16;
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_02 >> 1] = gx->vecMatrix.m[1];
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_03 >> 1] = gx->vecMatrix.m[1] >> 16;
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_04 >> 1] = gx->vecMatrix.m[2];
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_05 >> 1] = gx->vecMatrix.m[2] >> 16;
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_06 >> 1] = gx->vecMatrix.m[4];
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_07 >> 1] = gx->vecMatrix.m[4] >> 16;
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_08 >> 1] = gx->vecMatrix.m[5];
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_09 >> 1] = gx->vecMatrix.m[5] >> 16;
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_0A >> 1] = gx->vecMatrix.m[6];
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_0B >> 1] = gx->vecMatrix.m[6] >> 16;
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_0C >> 1] = gx->vecMatrix.m[8];
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_0D >> 1] = gx->vecMatrix.m[8] >> 16;
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_0E >> 1] = gx->vecMatrix.m[9];
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_0F >> 1] = gx->vecMatrix.m[9] >> 16;
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_10 >> 1] = gx->vecMatrix.m[10];
+	gx->p->memory.io9[DS9_REG_VECMTX_RESULT_11 >> 1] = gx->vecMatrix.m[10] >> 16;
+}
+
 static inline int32_t _lerp(int32_t x0, int32_t x1, int32_t q, int64_t r) {
 	int64_t x = x1 - x0;
 	x *= q;
@@ -743,6 +764,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				gx->pvMatrixPointer -= offset;
 				memcpy(&gx->vecMatrix, &gx->vecMatrixStack[gx->pvMatrixPointer & 0x1F], sizeof(gx->vecMatrix));
 				memcpy(&gx->posMatrix, &gx->posMatrixStack[gx->pvMatrixPointer & 0x1F], sizeof(gx->posMatrix));
+				_updateVecMatrix(gx);
 				break;
 			case 3:
 				mLOG(DS_GX, STUB, "Unimplemented GX MTX_POP mode");
@@ -780,6 +802,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 			case 2:
 				memcpy(&gx->vecMatrix, &gx->vecMatrixStack[offset], sizeof(gx->vecMatrix));
 				memcpy(&gx->posMatrix, &gx->posMatrixStack[offset], sizeof(gx->posMatrix));
+				_updateVecMatrix(gx);
 				break;
 			case 3:
 				mLOG(DS_GX, STUB, "Unimplemented GX MTX_RESTORE mode");
@@ -795,6 +818,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				break;
 			case 2:
 				DSGXMtxIdentity(&gx->vecMatrix);
+				_updateVecMatrix(gx);
 				// Fall through
 			case 1:
 				DSGXMtxIdentity(&gx->posMatrix);
@@ -820,6 +844,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				break;
 			case 2:
 				memcpy(&gx->vecMatrix, &m, sizeof(gx->vecMatrix));
+				_updateVecMatrix(gx);
 				// Fall through
 			case 1:
 				memcpy(&gx->posMatrix, &m, sizeof(gx->posMatrix));
@@ -850,6 +875,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				break;
 			case 2:
 				memcpy(&gx->vecMatrix, &m, sizeof(gx->vecMatrix));
+				_updateVecMatrix(gx);
 				// Fall through
 			case 1:
 				memcpy(&gx->posMatrix, &m, sizeof(gx->posMatrix));
@@ -876,6 +902,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				break;
 			case 2:
 				DSGXMtxMultiply(&gx->vecMatrix, &m, &gx->vecMatrix);
+				_updateVecMatrix(gx);
 				// Fall through
 			case 1:
 				DSGXMtxMultiply(&gx->posMatrix, &m, &gx->posMatrix);
@@ -906,6 +933,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				break;
 			case 2:
 				DSGXMtxMultiply(&gx->vecMatrix, &m, &gx->vecMatrix);
+				_updateVecMatrix(gx);
 				// Fall through
 			case 1:
 				DSGXMtxMultiply(&gx->posMatrix, &m, &gx->posMatrix);
@@ -939,6 +967,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				break;
 			case 2:
 				DSGXMtxMultiply(&gx->vecMatrix, &m, &gx->vecMatrix);
+				_updateVecMatrix(gx);
 				// Fall through
 			case 1:
 				DSGXMtxMultiply(&gx->posMatrix, &m, &gx->posMatrix);
@@ -970,6 +999,7 @@ static void _fifoRun(struct mTiming* timing, void* context, uint32_t cyclesLate)
 				break;
 			case 2:
 				DSGXMtxTranslate(&gx->vecMatrix, m);
+				_updateVecMatrix(gx);
 				// Fall through
 			case 1:
 				DSGXMtxTranslate(&gx->posMatrix, m);

@@ -604,7 +604,7 @@ void DS9IOWrite(struct DS* ds, uint32_t address, uint16_t value) {
 		value = ds->video.renderer->writeVideoRegister(ds->video.renderer, address, value);
 	} else if ((address >= DS9_REG_B_DISPCNT_LO && address <= DS9_REG_B_BLDY) || address == DS9_REG_B_MASTER_BRIGHT) {
 		value = ds->video.renderer->writeVideoRegister(ds->video.renderer, address, value);
-	} else if ((address >= DS9_REG_RDLINES_COUNT && address <= DS9_REG_VECMTX_RESULT_12) || address == DS9_REG_DISP3DCNT) {
+	} else if ((address >= DS9_REG_RDLINES_COUNT && address <= DS9_REG_VECMTX_RESULT_11) || address == DS9_REG_DISP3DCNT) {
 		value = DSGXWriteRegister(&ds->gx, address, value);
 	} else {
 		uint16_t oldValue;
@@ -719,7 +719,7 @@ void DS9IOWrite8(struct DS* ds, uint32_t address, uint8_t value) {
 }
 
 void DS9IOWrite32(struct DS* ds, uint32_t address, uint32_t value) {
-	if ((address >= DS9_REG_RDLINES_COUNT && address <= DS9_REG_VECMTX_RESULT_12) || address == DS9_REG_DISP3DCNT) {
+	if ((address >= DS9_REG_RDLINES_COUNT && address <= DS9_REG_VECMTX_RESULT_11) || address == DS9_REG_DISP3DCNT) {
 		value = DSGXWriteRegister32(&ds->gx, address, value);
 	} else {
 		switch (address) {
@@ -900,6 +900,24 @@ uint16_t DS9IORead(struct DS* ds, uint32_t address) {
 	case DS9_REG_CLIPMTX_RESULT_1D:
 	case DS9_REG_CLIPMTX_RESULT_1E:
 	case DS9_REG_CLIPMTX_RESULT_1F:
+	case DS9_REG_VECMTX_RESULT_00:
+	case DS9_REG_VECMTX_RESULT_01:
+	case DS9_REG_VECMTX_RESULT_02:
+	case DS9_REG_VECMTX_RESULT_03:
+	case DS9_REG_VECMTX_RESULT_04:
+	case DS9_REG_VECMTX_RESULT_05:
+	case DS9_REG_VECMTX_RESULT_06:
+	case DS9_REG_VECMTX_RESULT_07:
+	case DS9_REG_VECMTX_RESULT_08:
+	case DS9_REG_VECMTX_RESULT_09:
+	case DS9_REG_VECMTX_RESULT_0A:
+	case DS9_REG_VECMTX_RESULT_0B:
+	case DS9_REG_VECMTX_RESULT_0C:
+	case DS9_REG_VECMTX_RESULT_0D:
+	case DS9_REG_VECMTX_RESULT_0E:
+	case DS9_REG_VECMTX_RESULT_0F:
+	case DS9_REG_VECMTX_RESULT_10:
+	case DS9_REG_VECMTX_RESULT_11:
 	case DS9_REG_B_BG0CNT:
 	case DS9_REG_B_BG1CNT:
 	case DS9_REG_B_BG2CNT:
