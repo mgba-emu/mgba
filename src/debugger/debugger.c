@@ -108,7 +108,7 @@ void mDebuggerRun(struct mDebugger* debugger) {
 }
 
 void mDebuggerRunFrame(struct mDebugger* debugger) {
-	int32_t frame = debugger->core->frameCounter(debugger->core);
+	uint32_t frame = debugger->core->frameCounter(debugger->core);
 	do {
 		mDebuggerRun(debugger);
 	} while (debugger->core->frameCounter(debugger->core) == frame);

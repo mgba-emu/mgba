@@ -676,7 +676,7 @@ static void _GBACoreReset(struct mCore* core) {
 
 static void _GBACoreRunFrame(struct mCore* core) {
 	struct GBA* gba = core->board;
-	int32_t frameCounter = gba->video.frameCounter;
+	uint32_t frameCounter = gba->video.frameCounter;
 	uint32_t startCycle = mTimingCurrentTime(&gba->timing);
 	while (gba->video.frameCounter == frameCounter && mTimingCurrentTime(&gba->timing) - startCycle < VIDEO_TOTAL_LENGTH + VIDEO_HORIZONTAL_LENGTH) {
 		ARMv4RunLoop(core->cpu);
@@ -734,7 +734,7 @@ static void _GBACoreSetCursorDown(struct mCore* core, bool down) {
 	UNUSED(down);
 }
 
-static int32_t _GBACoreFrameCounter(const struct mCore* core) {
+static uint32_t _GBACoreFrameCounter(const struct mCore* core) {
 	const struct GBA* gba = core->board;
 	return gba->video.frameCounter;
 }

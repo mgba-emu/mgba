@@ -648,7 +648,7 @@ static void _GBCoreReset(struct mCore* core) {
 
 static void _GBCoreRunFrame(struct mCore* core) {
 	struct GB* gb = core->board;
-	int32_t frameCounter = gb->video.frameCounter;
+	uint32_t frameCounter = gb->video.frameCounter;
 	while (gb->video.frameCounter == frameCounter) {
 		SM83Run(core->cpu);
 	}
@@ -711,7 +711,7 @@ static void _GBCoreSetCursorDown(struct mCore* core, bool down) {
 	UNUSED(down);
 }
 
-static int32_t _GBCoreFrameCounter(const struct mCore* core) {
+static uint32_t _GBCoreFrameCounter(const struct mCore* core) {
 	const struct GB* gb = core->board;
 	return gb->video.frameCounter;
 }

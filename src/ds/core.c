@@ -466,7 +466,7 @@ static void _DSCoreSetCursorDown(struct mCore* core, bool down) {
 	dscore->touchDown = down;
 }
 
-static int32_t _DSCoreFrameCounter(const struct mCore* core) {
+static uint32_t _DSCoreFrameCounter(const struct mCore* core) {
 	struct DS* ds = core->board;
 	return ds->video.frameCounter;
 }

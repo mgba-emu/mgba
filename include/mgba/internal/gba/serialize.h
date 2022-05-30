@@ -303,7 +303,7 @@ struct GBASerializedState {
 		int32_t nextEvent;
 		int32_t reserved[5];
 		GBASerializedVideoFlags flags;
-		int32_t frameCounter;
+		uint32_t frameCounter;
 	} video;
 
 	struct {
