@@ -163,6 +163,8 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 			GUIFontPrint(params->font, 0, y * 2, GUI_ALIGN_LEFT, 0xFFFFFFFF, menu->subtitle);
 		}
 		y += 2 * lineHeight;
+		unsigned right;
+		GUIFontIconMetrics(params->font, GUI_ICON_SCROLLBAR_BUTTON, &right, 0);
 		size_t itemsPerScreen = (params->height - y) / lineHeight;
 		size_t i;
 		for (i = start; i < GUIMenuItemListSize(&menu->items); ++i) {
@@ -174,7 +176,7 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 			struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, i);
 			GUIFontPrint(params->font, lineHeight, y, GUI_ALIGN_LEFT, color, item->title);
 			if (item->validStates && item->validStates[item->state]) {
-				GUIFontPrintf(params->font, params->width, y, GUI_ALIGN_RIGHT, color, "%s ", item->validStates[item->state]);
+				GUIFontPrintf(params->font, params->width - right - 8, y, GUI_ALIGN_RIGHT, color, "%s ", item->validStates[item->state]);
 			}
 			y += lineHeight;
 			if (y + lineHeight > params->height) {
@@ -186,8 +188,6 @@ enum GUIMenuExitReason GUIShowMenu(struct GUIParams* params, struct GUIMenu* men
 			size_t top = 2 * lineHeight;
 			size_t bottom = params->height - 8;
 			unsigned w;
-			unsigned right;
-			GUIFontIconMetrics(params->font, GUI_ICON_SCROLLBAR_BUTTON, &right, 0);
 			GUIFontIconMetrics(params->font, GUI_ICON_SCROLLBAR_TRACK, &w, 0);
 			right = (right - w) / 2;
 			GUIFontDrawIconSize(params->font, params->width - right - 8, top, 0, bottom - top, 0xA0FFFFFF, GUI_ICON_SCROLLBAR_TRACK);

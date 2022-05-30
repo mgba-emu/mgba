@@ -2,6 +2,7 @@ include(ExportDirectory)
 set(SOURCE_FILES
 	commandline.c
 	thread-proxy.c
+	updater.c
 	video-logger.c)
 
 set(GUI_FILES

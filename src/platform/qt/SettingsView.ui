@@ -52,6 +52,11 @@
      </item>
      <item>
       <property name="text">
+       <string>Update</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Emulation</string>
       </property>
      </item>
@@ -757,6 +762,110 @@
         <widget class="QLabel" name="label_42">
          <property name="text">
           <string>When minimized:</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="update">
+      <layout class="QFormLayout" name="formLayout_11">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_46">
+         <property name="text">
+          <string>Current channel:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="currentChannel">
+         <property name="text">
+          <string notr="true">None</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_50">
+         <property name="text">
+          <string>Current version:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="currentVersion">
+         <property name="text">
+          <string notr="true">0</string>
+         </property>
+         <property name="textInteractionFlags">
+          <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="Line" name="line_20">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_45">
+         <property name="text">
+          <string>Update channel:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="updateChannel"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_44">
+         <property name="text">
+          <string>Available version:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLabel" name="availVersion">
+         <property name="text">
+          <string>(Unknown)</string>
+         </property>
+         <property name="textInteractionFlags">
+          <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_49">
+         <property name="text">
+          <string>Last checked:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLabel" name="lastChecked">
+         <property name="text">
+          <string notr="true">Never</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="2">
+        <widget class="Line" name="line_11">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QCheckBox" name="updateAutoCheck">
+         <property name="text">
+          <string>Automatically check on start</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QPushButton" name="checkUpdate">
+         <property name="text">
+          <string>Check now</string>
          </property>
         </widget>
        </item>

@@ -40,7 +40,17 @@ void AbstractUpdater::downloadUpdate() {
 	chaseRedirects(reply, &AbstractUpdater::updateDownloaded);
 }
 
+void AbstractUpdater::progress(qint64 progress, qint64 max) {
+	if (!max) {
+		return;
+	}
+	emit updateProgress(static_cast<float>(progress) / static_cast<float>(max));
+}
+
 void AbstractUpdater::chaseRedirects(QNetworkReply* reply, void (AbstractUpdater::*cb)(QNetworkReply*)) {
+	if (m_isUpdating) {
+		connect(reply, &QNetworkReply::downloadProgress, this, &AbstractUpdater::progress);
+	}
 	connect(reply, &QNetworkReply::finished, this, [this, reply, cb]() {
 		// TODO: check domains, etc
 		if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() / 100 == 3) {
