@@ -287,6 +287,7 @@ void CoreController::loadConfig(ConfigController* config) {
 	m_fastForwardMute = config->getOption("fastForwardMute", -1).toInt();
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "volume");
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
+	m_preload = config->getOption("preload").toInt();
 
 	int playerId = m_multiplayer->playerId(this) + 1;
 	QVariant savePlayerId = config->getOption("savePlayerId");
@@ -829,7 +830,11 @@ void CoreController::replaceGame(const QString& path) {
 	QString fname = info.canonicalFilePath();
 	Interrupter interrupter(this);
 	mDirectorySetDetachBase(&m_threadContext.core->dirs);
-	mCoreLoadFile(m_threadContext.core, fname.toUtf8().constData());
+	if (m_preload) {
+		mCorePreloadFile(m_threadContext.core, fname.toUtf8().constData());
+	} else {
+		mCoreLoadFile(m_threadContext.core, fname.toUtf8().constData());
+	}
 	updateROMInfo();
 }
 

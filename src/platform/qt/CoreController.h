@@ -240,6 +240,7 @@ private:
 	mCoreThread m_threadContext{};
 
 	bool m_patched = false;
+	bool m_preload = false;
 
 	uint32_t m_crc32;
 	QString m_internalTitle;
