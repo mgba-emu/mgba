@@ -462,7 +462,7 @@ static const char* const _renderObj =
 	"		discard;\n"
 	"	}\n"
 	"	int paletteEntry = renderTile((coord.x >> 3) + (coord.y >> 3) * stride, localPalette, coord & 7);\n"
-	"	color = texelFetch(palette, ivec2(paletteEntry + 256, coord.y), 0);\n"
+	"	color = texelFetch(palette, ivec2(paletteEntry + 256, int(texCoord.y) + mosaic.w), 0);\n"
 	"	flags = inflags;\n"
 	"	gl_FragDepth = float(flags.x) / 16.;\n"
 	"	window = ivec4(objwin, 0);\n"

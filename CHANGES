@@ -37,6 +37,7 @@ Emulation fixes:
  - GBA Video: Ignore horizontally off-screen sprite timing (fixes mgba.io/i/2391)
  - GBA Video: Fix Hblank timing (fixes mgba.io/i/2131, mgba.io/i/2310)
  - GBA Video: Fix rare crash in modes 3-5
+ - GBA Video: Fix sprites with mid-frame palette changes in GL (fixes mgba.io/i/2476)
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - Core: Fix the runloop resuming after a game has crashed (fixes mgba.io/i/2451)
