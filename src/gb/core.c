@@ -237,13 +237,10 @@ static void _GBCoreLoadConfig(struct mCore* core, const struct mCoreConfig* conf
 	mCoreConfigCopyValue(&core->config, config, "useCgbColors");
 	mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 
-	int fakeBool = 0;
-	mCoreConfigGetIntValue(config, "allowOpposingDirections", &fakeBool);
-	gb->allowOpposingDirections = fakeBool;
+	mCoreConfigGetBoolValue(config, "allowOpposingDirections", &gb->allowOpposingDirections);
 
-	if (mCoreConfigGetIntValue(config, "sgb.borders", &fakeBool)) {
-		gb->video.sgbBorders = fakeBool;
-		gb->video.renderer->enableSGBBorder(gb->video.renderer, fakeBool);
+	if (mCoreConfigGetBoolValue(config, "sgb.borders", &gb->video.sgbBorders)) {
+		gb->video.renderer->enableSGBBorder(gb->video.renderer, gb->video.sgbBorders);
 	}
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
@@ -269,11 +266,8 @@ static void _GBCoreReloadConfigOption(struct mCore* core, const char* option, co
 		return;
 	}
 
-	int fakeBool;
 	if (strcmp("mute", option) == 0) {
-		if (mCoreConfigGetIntValue(config, "mute", &fakeBool)) {
-			core->opts.mute = fakeBool;
-
+		if (mCoreConfigGetBoolValue(config, "mute", &core->opts.mute)) {
 			if (core->opts.mute) {
 				gb->audio.masterVolume = 0;
 			} else {
@@ -298,15 +292,12 @@ static void _GBCoreReloadConfigOption(struct mCore* core, const char* option, co
 		if (config != &core->config) {
 			mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 		}
-		if (mCoreConfigGetIntValue(config, "allowOpposingDirections", &fakeBool)) {
-			gb->allowOpposingDirections = fakeBool;
-		}
+		mCoreConfigGetBoolValue(config, "allowOpposingDirections", &gb->allowOpposingDirections);
 		return;
 	}
 	if (strcmp("sgb.borders", option) == 0) {
-		if (mCoreConfigGetIntValue(config, "sgb.borders", &fakeBool)) {
-			gb->video.sgbBorders = fakeBool;
-			gb->video.renderer->enableSGBBorder(gb->video.renderer, fakeBool);
+		if (mCoreConfigGetBoolValue(config, "sgb.borders", &gb->video.sgbBorders)) {
+			gb->video.renderer->enableSGBBorder(gb->video.renderer, gb->video.sgbBorders);
 		}
 	}
 

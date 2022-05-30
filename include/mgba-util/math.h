@@ -10,11 +10,13 @@
 
 CXX_GUARD_START
 
+#ifndef HAVE_POPCOUNT32
 static inline uint32_t popcount32(unsigned bits) {
 	bits = bits - ((bits >> 1) & 0x55555555);
 	bits = (bits & 0x33333333) + ((bits >> 2) & 0x33333333);
 	return (((bits + (bits >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
 }
+#endif
 
 static inline unsigned clz32(uint32_t bits) {
 #if defined(__GNUC__) || __clang__

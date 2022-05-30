@@ -540,9 +540,11 @@ void CoreController::overrideMute(bool override) {
 	if (m_mute) {
 		core->opts.mute = true;
 	} else {
-		int fakeBool = 0;
-		mCoreConfigGetIntValue(&core->config, "mute", &fakeBool);
-		core->opts.mute = fakeBool;
+		if (m_fastForward || m_fastForwardForced) {
+			core->opts.mute = m_fastForwardMute >= 0;
+		} else {
+			mCoreConfigGetBoolValue(&core->config, "mute", &core->opts.mute);
+		}
 	}
 	core->reloadConfigOption(core, NULL, NULL);
 }
@@ -838,6 +840,7 @@ void CoreController::importSharkport(const QString& path) {
 	}
 	Interrupter interrupter(this);
 	GBASavedataImportSharkPort(static_cast<GBA*>(m_threadContext.core->board), vf, false);
+	GBASavedataImportGSV(static_cast<GBA*>(m_threadContext.core->board), vf, false);
 	vf->close(vf);
 #endif
 }
@@ -1090,9 +1093,7 @@ void CoreController::updateFastForward() {
 		if (!mCoreConfigGetIntValue(&m_threadContext.core->config, "volume", &m_threadContext.core->opts.volume)) {
 			m_threadContext.core->opts.volume = 0x100;
 		}
-		int fakeBool = 0;
-		mCoreConfigGetIntValue(&m_threadContext.core->config, "mute", &fakeBool);
-		m_threadContext.core->opts.mute = fakeBool;
+		mCoreConfigGetBoolValue(&m_threadContext.core->config, "mute", &m_threadContext.core->opts.mute);
 		m_threadContext.impl->sync.fpsTarget = m_fpsTarget;
 		setSync(true);
 	}

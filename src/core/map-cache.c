@@ -32,7 +32,7 @@ static void _redoCacheSize(struct mMapCache* cache) {
 		return;
 	}
 
-	size_t tiles = (1 << mMapCacheSystemInfoGetTilesWide(cache->sysConfig)) * (1 << mMapCacheSystemInfoGetTilesHigh(cache->sysConfig));
+	size_t tiles = mMapCacheTileCount(cache);
 	cache->cache = anonymousMemoryMap(8 * 8 * sizeof(color_t) * tiles);
 	cache->status = anonymousMemoryMap(tiles * sizeof(*cache->status));
 }
@@ -54,12 +54,12 @@ void mMapCacheConfigureSystem(struct mMapCache* cache, mMapCacheSystemInfo confi
 	cache->sysConfig = config;
 	_redoCacheSize(cache);
 
-	size_t mapSize = (1 << mMapCacheSystemInfoGetTilesWide(cache->sysConfig)) * (1 << mMapCacheSystemInfoGetTilesHigh(cache->sysConfig));
+	size_t mapSize = mMapCacheTileCount(cache);
 	cache->mapSize = mapSize << mMapCacheSystemInfoGetMapAlign(cache->sysConfig);
 }
 
 void mMapCacheConfigureMap(struct mMapCache* cache, uint32_t mapStart) {
-	size_t tiles = (1 << mMapCacheSystemInfoGetTilesWide(cache->sysConfig)) * (1 << mMapCacheSystemInfoGetTilesHigh(cache->sysConfig));
+	size_t tiles = mMapCacheTileCount(cache);
 	memset(cache->status, 0, tiles * sizeof(*cache->status));
 	cache->mapStart = mapStart;
 }

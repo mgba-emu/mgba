@@ -196,6 +196,7 @@ struct mAVStream {
 
 struct mKeyCallback {
 	uint16_t (*readKeys)(struct mKeyCallback*);
+	bool requireOpposingDirections;
 };
 
 enum mPeripheral {

@@ -89,6 +89,20 @@ static bool _lookupCharValue(const struct mCoreConfig* config, const char* key, 
 	return true;
 }
 
+static bool _lookupBoolValue(const struct mCoreConfig* config, const char* key, bool* out) {
+	const char* charValue = _lookupValue(config, key);
+	if (!charValue) {
+		return false;
+	}
+	char* end;
+	long value = strtol(charValue, &end, 10);
+	if (*end) {
+		return false;
+	}
+	*out = value;
+	return true;
+}
+
 static bool _lookupIntValue(const struct mCoreConfig* config, const char* key, int* out) {
 	const char* charValue = _lookupValue(config, key);
 	if (!charValue) {
@@ -314,6 +328,10 @@ const char* mCoreConfigGetValue(const struct mCoreConfig* config, const char* ke
 	return _lookupValue(config, key);
 }
 
+bool mCoreConfigGetBoolValue(const struct mCoreConfig* config, const char* key, bool* value) {
+	return _lookupBoolValue(config, key, value);
+}
+
 bool mCoreConfigGetIntValue(const struct mCoreConfig* config, const char* key, int* value) {
 	return _lookupIntValue(config, key, value);
 }
@@ -396,40 +414,20 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts)
 	}
 	_lookupUIntValue(config, "sampleRate", &opts->sampleRate);
 
-	int fakeBool;
-	if (_lookupIntValue(config, "useBios", &fakeBool)) {
-		opts->useBios = fakeBool;
-	}
-	if (_lookupIntValue(config, "audioSync", &fakeBool)) {
-		opts->audioSync = fakeBool;
-	}
-	if (_lookupIntValue(config, "videoSync", &fakeBool)) {
-		opts->videoSync = fakeBool;
-	}
-	if (_lookupIntValue(config, "lockAspectRatio", &fakeBool)) {
-		opts->lockAspectRatio = fakeBool;
-	}
-	if (_lookupIntValue(config, "lockIntegerScaling", &fakeBool)) {
-		opts->lockIntegerScaling = fakeBool;
-	}
-	if (_lookupIntValue(config, "interframeBlending", &fakeBool)) {
-		opts->interframeBlending = fakeBool;
-	}
-	if (_lookupIntValue(config, "resampleVideo", &fakeBool)) {
-		opts->resampleVideo = fakeBool;
-	}
-	if (_lookupIntValue(config, "suspendScreensaver", &fakeBool)) {
-		opts->suspendScreensaver = fakeBool;
-	}
-	if (_lookupIntValue(config, "mute", &fakeBool)) {
-		opts->mute = fakeBool;
-	}
-	if (_lookupIntValue(config, "skipBios", &fakeBool)) {
-		opts->skipBios = fakeBool;
-	}
-	if (_lookupIntValue(config, "rewindEnable", &fakeBool)) {
-		opts->rewindEnable = fakeBool;
-	}
+	_lookupBoolValue(config, "audioSync", &opts->audioSync);
+	_lookupBoolValue(config, "videoSync", &opts->videoSync);
+
+	_lookupBoolValue(config, "lockAspectRatio", &opts->lockAspectRatio);
+	_lookupBoolValue(config, "lockIntegerScaling", &opts->lockIntegerScaling);
+	_lookupBoolValue(config, "interframeBlending", &opts->interframeBlending);
+	_lookupBoolValue(config, "resampleVideo", &opts->resampleVideo);
+
+	_lookupBoolValue(config, "useBios", &opts->useBios);
+	_lookupBoolValue(config, "skipBios", &opts->skipBios);
+
+	_lookupBoolValue(config, "suspendScreensaver", &opts->suspendScreensaver);
+	_lookupBoolValue(config, "mute", &opts->mute);
+	_lookupBoolValue(config, "rewindEnable", &opts->rewindEnable);
 
 	_lookupIntValue(config, "fullscreen", &opts->fullscreen);
 	_lookupIntValue(config, "width", &opts->width);

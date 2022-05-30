@@ -21,7 +21,7 @@ void mGUIRemapKeys(struct GUIParams* params, struct mInputMap* map, const struct
 	size_t i;
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Game keys:",
-		.data = GUI_V_V,
+		.readonly = true,
 	};
 	for (i = 0; i < map->info->nKeys; ++i) {
 		*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
@@ -35,7 +35,7 @@ void mGUIRemapKeys(struct GUIParams* params, struct mInputMap* map, const struct
 	}
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
 		.title = "Interface keys:",
-		.data = GUI_V_V,
+		.readonly = true,
 	};
 	for (i = 0; i < params->keyMap.info->nKeys; ++i) {
 		if (!params->keyMap.info->keyId[i]) {

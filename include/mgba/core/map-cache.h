@@ -31,6 +31,8 @@ DECL_BIT(mMapCacheEntryFlags, HMirror, 5);
 DECL_BIT(mMapCacheEntryFlags, VMirror, 6);
 DECL_BITS(mMapCacheEntryFlags, Mirror, 5, 2);
 
+#define mMapCacheTileCount(C) (1 << mMapCacheSystemInfoGetTilesWide((C)->sysConfig)) * (1 << mMapCacheSystemInfoGetTilesHigh((C)->sysConfig))
+
 struct mMapCacheEntry {
 	uint32_t vramVersion;
 	uint16_t tileId;

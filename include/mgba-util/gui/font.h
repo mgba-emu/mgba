@@ -84,6 +84,19 @@ enum GUIIcon {
 	GUI_ICON_9SLICE_CAP_SWW,
 	GUI_ICON_9SLICE_CAP_SSE,
 	GUI_ICON_9SLICE_CAP_SEE,
+	GUI_ICON_9SLICE_FILL_ONLY_NW,
+	GUI_ICON_9SLICE_FILL_ONLY_N,
+	GUI_ICON_9SLICE_FILL_ONLY_NE,
+	GUI_ICON_9SLICE_FILL_ONLY_W,
+	GUI_ICON_9SLICE_FILL_ONLY_C,
+	GUI_ICON_9SLICE_FILL_ONLY_E,
+	GUI_ICON_9SLICE_FILL_ONLY_SW,
+	GUI_ICON_9SLICE_FILL_ONLY_S,
+	GUI_ICON_9SLICE_FILL_ONLY_SE,
+	GUI_ICON_BACKSPACE,
+	GUI_ICON_KBD_SHIFT,
+	GUI_ICON_CAPSLOCK,
+	GUI_ICON_TEXT_CURSOR,
 	GUI_ICON_MAX,
 };
 
@@ -109,11 +122,13 @@ enum GUI9SliceStyle {
 	GUI_9SLICE_FILLED,
 	GUI_9SLICE_EMPTY,
 	GUI_9SLICE_EMPTY_CAPPED,
+	GUI_9SLICE_FILL_ONLY,
 };
 
 unsigned GUIFontHeight(const struct GUIFont*);
 unsigned GUIFontGlyphWidth(const struct GUIFont*, uint32_t glyph);
 unsigned GUIFontSpanWidth(const struct GUIFont*, const char* text);
+unsigned GUIFontSpanCountWidth(const struct GUIFont*, const char* text, size_t len);
 void GUIFontIconMetrics(const struct GUIFont*, enum GUIIcon icon, unsigned* w, unsigned* h);
 
 ATTRIBUTE_FORMAT(printf, 6, 7)

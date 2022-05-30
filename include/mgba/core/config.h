@@ -78,6 +78,7 @@ bool mCoreConfigIsPortable(void);
 #endif
 
 const char* mCoreConfigGetValue(const struct mCoreConfig*, const char* key);
+bool mCoreConfigGetBoolValue(const struct mCoreConfig*, const char* key, bool* value);
 bool mCoreConfigGetIntValue(const struct mCoreConfig*, const char* key, int* value);
 bool mCoreConfigGetUIntValue(const struct mCoreConfig*, const char* key, unsigned* value);
 bool mCoreConfigGetFloatValue(const struct mCoreConfig*, const char* key, float* value);

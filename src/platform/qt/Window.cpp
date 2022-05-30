@@ -112,6 +112,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	, m_config(config)
 	, m_inputController(playerId, this)
 	, m_shortcutController(new ShortcutController(this))
+	, m_playerId(playerId)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
@@ -247,6 +248,16 @@ void Window::resizeFrame(const QSize& size) {
 	newSize += this->size();
 	if (!isFullScreen()) {
 		resize(newSize);
+	}
+}
+
+void Window::updateMultiplayerStatus(bool canOpenAnother) {
+	m_multiWindow->setEnabled(canOpenAnother);
+	if (m_controller) {
+		MultiplayerController* multiplayer = m_controller->multiplayerController();
+		if (multiplayer) {
+			m_playerId = multiplayer->playerId(m_controller.get());
+		}
 	}
 }
 
@@ -541,7 +552,7 @@ void Window::loadCamImage() {
 }
 
 void Window::importSharkport() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save"), tr("GameShark saves (*.sps *.xps)"));
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save"), tr("GameShark saves (*.gsv *.sps *.xps)"));
 	if (!filename.isEmpty()) {
 		m_controller->importSharkport(filename);
 	}
@@ -695,7 +706,7 @@ void Window::showEvent(QShowEvent* event) {
 	}
 	m_wasOpened = true;
 	resizeFrame(m_screenWidget->sizeHint());
-	QVariant windowPos = m_config->getQtOption("windowPos");
+	QVariant windowPos = m_config->getQtOption("windowPos", m_playerId > 0 ? QString("player%0").arg(m_playerId) : QString());
 	bool maximized = m_config->getQtOption("maximized").toBool();
 	QRect geom = windowHandle()->screen()->availableGeometry();
 	if (!windowPos.isNull() && geom.contains(windowPos.toPoint())) {
@@ -736,7 +747,7 @@ void Window::hideEvent(QHideEvent* event) {
 
 void Window::closeEvent(QCloseEvent* event) {
 	emit shutdown();
-	m_config->setQtOption("windowPos", pos());
+	m_config->setQtOption("windowPos", pos(), m_playerId > 0 ? QString("player%0").arg(m_playerId) : QString());
 	m_config->setQtOption("maximized", isMaximized());
 
 	if (m_savedScale > 0) {
@@ -1164,7 +1175,7 @@ void Window::updateTitle(float fps) {
 
 		MultiplayerController* multiplayer = m_controller->multiplayerController();
 		if (multiplayer && multiplayer->attached() > 1) {
-			title += tr(" -  Player %1 of %2").arg(multiplayer->playerId(m_controller.get()) + 1).arg(multiplayer->attached());
+			title += tr(" -  Player %1 of %2").arg(m_playerId + 1).arg(multiplayer->attached());
 			for (Action* action : m_nonMpActions) {
 				action->setEnabled(false);
 			}
@@ -2064,7 +2075,7 @@ void Window::updateMute() {
 		QString multiplayerAudio = m_config->getQtOption("multiplayerAudio").toString();
 		if (multiplayerAudio == QLatin1String("p1")) {
 			MultiplayerController* multiplayer = m_controller->multiplayerController();
-			mute = multiplayer && multiplayer->attached() > 1 && multiplayer->playerId(m_controller.get());
+			mute = multiplayer && multiplayer->attached() > 1 && m_playerId;
 		} else if (multiplayerAudio == QLatin1String("active")) {
 			mute = !m_multiActive;
 		}
