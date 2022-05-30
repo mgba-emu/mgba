@@ -336,7 +336,8 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		}
 	});
 
-	m_ui.languages->setItemData(0, QLocale("en"));
+	QLocale englishLocale("en");
+	m_ui.languages->addItem(englishLocale.nativeLanguageName(), englishLocale);
 	QDir ts(":/translations/");
 	for (auto name : ts.entryList()) {
 		if (!name.endsWith(".qm") || !name.startsWith(binaryName)) {
@@ -651,7 +652,7 @@ void SettingsView::updateConfig() {
 	emit biosLoaded(mPLATFORM_GBA, m_ui.gbaBios->text());
 }
 
-void SettingsView::reloadConfig() {	
+void SettingsView::reloadConfig() {
 	loadSetting("bios", m_ui.gbaBios);
 	loadSetting("gba.bios", m_ui.gbaBios);
 	loadSetting("gb.bios", m_ui.gbBios);
@@ -825,7 +826,7 @@ void SettingsView::reloadConfig() {
 	} else if (multiplayerAudio == QLatin1String("active")) {
 		m_ui.multiplayerAudioActive->setChecked(true);
 	} else {
-		m_ui.multiplayerAudioAll->setChecked(true);		
+		m_ui.multiplayerAudioAll->setChecked(true);
 	}
 }
 

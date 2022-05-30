@@ -43,16 +43,6 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
         <source>An update is available</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <location filename="../ApplicationUpdatePrompt.ui" line="23"/>
-        <source>{text}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ApplicationUpdatePrompt.ui" line="33"/>
-        <source>{details}</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>ArchiveInspector</name>
@@ -1237,22 +1227,22 @@ Download size: %3</source>
 <context>
     <name>QGBA::ApplicationUpdater</name>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="91"/>
+        <location filename="../ApplicationUpdater.cpp" line="90"/>
         <source>Stable</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="94"/>
+        <location filename="../ApplicationUpdater.cpp" line="93"/>
         <source>Development</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="96"/>
+        <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Unknown</source>
         <translation type="unfinished">Bilinmeyen</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="219"/>
+        <location filename="../ApplicationUpdater.cpp" line="218"/>
         <source>(None)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1303,27 +1293,27 @@ Download size: %3</source>
 <context>
     <name>QGBA::CoreController</name>
     <message>
-        <location filename="../CoreController.cpp" line="712"/>
+        <location filename="../CoreController.cpp" line="715"/>
         <source>Failed to open save file: %1</source>
         <translation>Kayıt dosyası açılamadı: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="743"/>
+        <location filename="../CoreController.cpp" line="746"/>
         <source>Failed to open game file: %1</source>
         <translation>Oyun dosyası açılamadı: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="768"/>
+        <location filename="../CoreController.cpp" line="771"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
         <translation>Beklenmedik bir platformda kartı çıkaramazsın!</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="845"/>
+        <location filename="../CoreController.cpp" line="848"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation>Anlık görüntü dosyası okuma için açılamadı: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="861"/>
+        <location filename="../CoreController.cpp" line="864"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation>Anlık görüntü dosyası yazma için açılamadı: %1</translation>
     </message>
@@ -4910,28 +4900,13 @@ Download size: %3</source>
         <translation>Oyun adı:</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="33"/>
-        <source>{NAME}</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ROMInfo.ui" line="46"/>
         <source>Internal name:</source>
         <translation>Dahili İsim:</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="53"/>
-        <source>{TITLE}</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ROMInfo.ui" line="63"/>
         <source>Game ID:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ROMInfo.ui" line="70"/>
-        <source>{ID}</source>
         <translation></translation>
     </message>
     <message>
@@ -4940,18 +4915,8 @@ Download size: %3</source>
         <translation>Dosya boyutu:</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="87"/>
-        <source>{SIZE}</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../ROMInfo.ui" line="97"/>
         <source>CRC32:</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../ROMInfo.ui" line="104"/>
-        <source>{CRC}</source>
         <translation></translation>
     </message>
 </context>
@@ -5545,11 +5510,6 @@ Download size: %3</source>
         <location filename="../SettingsView.ui" line="521"/>
         <source>Language</source>
         <translation>Dil</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="529"/>
-        <source>English</source>
-        <translation>İngilizce</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="544"/>

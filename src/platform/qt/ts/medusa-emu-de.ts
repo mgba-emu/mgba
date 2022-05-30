@@ -58,16 +58,6 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
         <source>An update is available</source>
         <translation>Ein Update ist verfügbar</translation>
     </message>
-    <message>
-        <location filename="../ApplicationUpdatePrompt.ui" line="23"/>
-        <source>{text}</source>
-        <translation>{text}</translation>
-    </message>
-    <message>
-        <location filename="../ApplicationUpdatePrompt.ui" line="33"/>
-        <source>{details}</source>
-        <translation>{details}</translation>
-    </message>
 </context>
 <context>
     <name>ArchiveInspector</name>
@@ -1255,22 +1245,22 @@ Download-Größe: %3</translation>
 <context>
     <name>QGBA::ApplicationUpdater</name>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="91"/>
+        <location filename="../ApplicationUpdater.cpp" line="90"/>
         <source>Stable</source>
         <translation>Stabil</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="94"/>
+        <location filename="../ApplicationUpdater.cpp" line="93"/>
         <source>Development</source>
         <translation>Entwicklung</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="96"/>
+        <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Unknown</source>
         <translation>Unbekannt</translation>
     </message>
     <message>
-        <location filename="../ApplicationUpdater.cpp" line="219"/>
+        <location filename="../ApplicationUpdater.cpp" line="218"/>
         <source>(None)</source>
         <translation>(keiner)</translation>
     </message>
@@ -1321,27 +1311,27 @@ Download-Größe: %3</translation>
 <context>
     <name>QGBA::CoreController</name>
     <message>
-        <location filename="../CoreController.cpp" line="712"/>
+        <location filename="../CoreController.cpp" line="715"/>
         <source>Failed to open save file: %1</source>
         <translation>Fehler beim Öffnen der Speicherdatei: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="743"/>
+        <location filename="../CoreController.cpp" line="746"/>
         <source>Failed to open game file: %1</source>
         <translation>Fehler beim Öffnen der Spieldatei: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="768"/>
+        <location filename="../CoreController.cpp" line="771"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
         <translation>Das GamePak kann nur auf unterstützten Plattformen herausgezogen werden!</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="845"/>
+        <location filename="../CoreController.cpp" line="848"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation>Konnte Snapshot-Datei %1 nicht zum Lesen öffnen</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="861"/>
+        <location filename="../CoreController.cpp" line="864"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation>Konnte Snapshot-Datei %1 nicht zum Schreiben öffnen</translation>
     </message>
@@ -4991,19 +4981,9 @@ Download-Größe: %3</translation>
         <translation>Spielname:</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="33"/>
-        <source>{NAME}</source>
-        <translation>{NAME}</translation>
-    </message>
-    <message>
         <location filename="../ROMInfo.ui" line="46"/>
         <source>Internal name:</source>
         <translation>Interner Name:</translation>
-    </message>
-    <message>
-        <location filename="../ROMInfo.ui" line="53"/>
-        <source>{TITLE}</source>
-        <translation>{TITLE}</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="63"/>
@@ -5011,29 +4991,14 @@ Download-Größe: %3</translation>
         <translation>Spiele-ID:</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="70"/>
-        <source>{ID}</source>
-        <translation>{ID}</translation>
-    </message>
-    <message>
         <location filename="../ROMInfo.ui" line="80"/>
         <source>File size:</source>
         <translation>Dateigröße:</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="87"/>
-        <source>{SIZE}</source>
-        <translation>{SIZE}</translation>
-    </message>
-    <message>
         <location filename="../ROMInfo.ui" line="97"/>
         <source>CRC32:</source>
         <translation>CRC32:</translation>
-    </message>
-    <message>
-        <location filename="../ROMInfo.ui" line="104"/>
-        <source>{CRC}</source>
-        <translation>{CRC}</translation>
     </message>
 </context>
 <context>
@@ -5581,11 +5546,6 @@ Download-Größe: %3</translation>
         <location filename="../SettingsView.ui" line="521"/>
         <source>Language</source>
         <translation>Sprache</translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="529"/>
-        <source>English</source>
-        <translation>Englisch</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="552"/>

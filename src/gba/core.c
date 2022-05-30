@@ -150,7 +150,6 @@ struct GBACore {
 #ifndef DISABLE_THREADING
 	struct mVideoThreadProxy threadProxy;
 #endif
-	int keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	const struct Configuration* overrides;
 	struct mDebuggerPlatform* debuggerPlatform;
@@ -208,9 +207,6 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->vlProxy.logger = NULL;
 	gbacore->proxyRenderer.logger = NULL;
 #endif
-
-	gbacore->keys = 0;
-	gba->keySource = &gbacore->keys;
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetInit(&core->dirs);
@@ -718,20 +714,20 @@ static bool _GBACoreSaveState(struct mCore* core, void* state) {
 }
 
 static void _GBACoreSetKeys(struct mCore* core, uint32_t keys) {
-	struct GBACore* gbacore = (struct GBACore*) core;
-	gbacore->keys = keys;
-	GBATestKeypadIRQ(core->board);
+	struct GBA* gba = core->board;
+	gba->keysActive = keys;
+	GBATestKeypadIRQ(gba);
 }
 
 static void _GBACoreAddKeys(struct mCore* core, uint32_t keys) {
-	struct GBACore* gbacore = (struct GBACore*) core;
-	gbacore->keys |= keys;
-	GBATestKeypadIRQ(core->board);
+	struct GBA* gba = core->board;
+	gba->keysActive |= keys;
+	GBATestKeypadIRQ(gba);
 }
 
 static void _GBACoreClearKeys(struct mCore* core, uint32_t keys) {
-	struct GBACore* gbacore = (struct GBACore*) core;
-	gbacore->keys &= ~keys;
+	struct GBA* gba = core->board;
+	gba->keysActive &= ~keys;
 }
 
 static void _GBACoreSetCursorLocation(struct mCore* core, int x, int y) {
