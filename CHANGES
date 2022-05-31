@@ -87,6 +87,7 @@ Other fixes:
 Misc:
  - Core: Suspend runloop when a core crashes
  - Debugger: Save and restore CLI history
+ - Debugger: GDB now works while the game is paused
  - GB Video: Add default SGB border
  - GBA: Automatically skip BIOS if ROM has invalid logo
  - GBA: Refine multiboot detection (fixes mgba.io/i/2192)

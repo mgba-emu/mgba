@@ -107,7 +107,7 @@ QModelIndex CheatsModel::parent(const QModelIndex& index) const {
 
 Qt::ItemFlags CheatsModel::flags(const QModelIndex& index) const {
 	if (!index.isValid()) {
-		return 0;
+		return Qt::NoItemFlags;
 	}
 
 	if (index.parent().isValid()) {

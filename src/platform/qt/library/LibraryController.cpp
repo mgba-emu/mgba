@@ -37,6 +37,9 @@ void AbstractGameList::updateEntry(const LibraryEntry& item) {
 void AbstractGameList::removeEntry(const QString& item) {
 	removeEntries({item});
 }
+void AbstractGameList::setShowFilename(bool showFilename) {
+	m_showFilename = showFilename;
+}
 
 LibraryController::LibraryController(QWidget* parent, const QString& path, ConfigController* config)
 	: QStackedWidget(parent)
@@ -209,4 +212,17 @@ void LibraryController::loadDirectory(const QString& dir, bool recursive) {
 	qint64 libraryJob = m_libraryJob;
 	mLibraryLoadDirectory(library.get(), dir.toUtf8().constData(), recursive);
 	m_libraryJob.testAndSetOrdered(libraryJob, -1);
+}
+void LibraryController::setShowFilename(bool showFilename) {
+	if (showFilename == m_showFilename) {
+		return;
+	}
+	m_showFilename = showFilename;
+	if (m_libraryGrid) {
+		m_libraryGrid->setShowFilename(m_showFilename);
+	}
+	if (m_libraryTree) {
+		m_libraryTree->setShowFilename(m_showFilename);
+	}
+	refresh();
 }

@@ -65,8 +65,12 @@ public:
 	virtual void addEntry(const LibraryEntry&);
 	virtual void updateEntry(const LibraryEntry&);
 	virtual void removeEntry(const QString&);
+	virtual void setShowFilename(bool showFilename);
 
 	virtual QWidget* widget() = 0;
+
+protected:
+	bool m_showFilename = false;
 };
 
 class LibraryController final : public QStackedWidget {
@@ -79,6 +83,7 @@ public:
 
 	LibraryStyle viewStyle() const { return m_currentStyle; }
 	void setViewStyle(LibraryStyle newStyle);
+	void setShowFilename(bool showFilename);
 
 	void selectEntry(const QString& fullpath);
 	LibraryEntry selectedEntry();
@@ -112,6 +117,7 @@ private:
 
 	std::unique_ptr<LibraryGrid> m_libraryGrid;
 	std::unique_ptr<LibraryTree> m_libraryTree;
+	bool m_showFilename = false;
 };
 
 }

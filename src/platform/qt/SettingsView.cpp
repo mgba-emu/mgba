@@ -490,6 +490,7 @@ void SettingsView::updateConfig() {
 	saveSetting("gba.forceGbp", m_ui.forceGbp);
 	saveSetting("vbaBugCompat", m_ui.vbaBugCompat);
 	saveSetting("updateAutoCheck", m_ui.updateAutoCheck);
+	saveSetting("showFilenameInLibrary", m_ui.showFilenameInLibrary);
 
 	if (m_ui.audioBufferSize->currentText().toInt() > 8192) {
 		m_ui.audioBufferSize->setCurrentText("8192");
@@ -717,6 +718,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("gba.forceGbp", m_ui.forceGbp);
 	loadSetting("vbaBugCompat", m_ui.vbaBugCompat, true);
 	loadSetting("updateAutoCheck", m_ui.updateAutoCheck);
+	loadSetting("showFilenameInLibrary", m_ui.showFilenameInLibrary);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 

@@ -29,7 +29,7 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	connect(m_ui.tiles, &TilePainter::needsRedraw, this, [this]() {
 		updateTiles(true);
 	});
-	connect(m_ui.tilesSelector, qOverload<int>(&QButtonGroup::buttonClicked), this, [this]() {
+	connect(m_ui.tilesSelector, qOverload<QAbstractButton*>(&QButtonGroup::buttonClicked), this, [this]() {
 		updateTiles(true);
 	});
 	connect(m_ui.paletteId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &TileView::updatePalette);

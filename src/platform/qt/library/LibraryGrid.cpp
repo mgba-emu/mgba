@@ -69,8 +69,7 @@ void LibraryGrid::addEntry(const LibraryEntry& item) {
 	}
 
 	QListWidgetItem* i = new QListWidgetItem;
-	i->setText(item.displayTitle());
-
+	i->setText(m_showFilename ? item.filename : item.displayTitle());
 	m_widget->addItem(i);
 	m_items.insert(item.fullpath, i);
 }
@@ -83,7 +82,7 @@ void LibraryGrid::updateEntries(const QList<LibraryEntry>& items) {
 
 void LibraryGrid::updateEntry(const LibraryEntry& item) {
 	QListWidgetItem* i = m_items.value(item.fullpath);
-	i->setText(item.displayTitle());
+	i->setText(m_showFilename ? item.filename : item.displayTitle());
 }
 
 void LibraryGrid::removeEntries(const QList<QString>& items) {

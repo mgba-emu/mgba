@@ -147,6 +147,12 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 		}
 	}, this);
 	m_config->updateOption("showLibrary");
+
+	ConfigOption* showFilenameInLibrary = m_config->addOption("showFilenameInLibrary");
+	showFilenameInLibrary->connect([this](const QVariant& value) {
+			m_libraryView->setShowFilename(value.toBool());
+	}, this); 
+    m_config->updateOption("showFilenameInLibrary");
 	ConfigOption* libraryStyle = m_config->addOption("libraryStyle");
 	libraryStyle->connect([this](const QVariant& value) {
 		m_libraryView->setViewStyle(static_cast<LibraryStyle>(value.toInt()));
