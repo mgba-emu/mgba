@@ -761,12 +761,13 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 void GDBStubCreate(struct GDBStub* stub) {
 	stub->socket = INVALID_SOCKET;
 	stub->connection = INVALID_SOCKET;
-	stub->d.init = 0;
+	stub->d.init = NULL;
 	stub->d.deinit = _gdbStubDeinit;
 	stub->d.paused = _gdbStubWait;
 	stub->d.update = _gdbStubUpdate;
 	stub->d.entered = _gdbStubEntered;
 	stub->d.custom = _gdbStubPoll;
+	stub->d.interrupt = NULL;
 	stub->d.type = DEBUGGER_GDB;
 	stub->untilPoll = GDB_STUB_INTERVAL;
 	stub->lineAck = GDB_ACK_PENDING;

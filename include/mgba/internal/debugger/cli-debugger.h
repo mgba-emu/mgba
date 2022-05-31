@@ -77,6 +77,7 @@ struct CLIDebuggerBackend {
 	void (*lineAppend)(struct CLIDebuggerBackend*, const char* line);
 	const char* (*historyLast)(struct CLIDebuggerBackend*, size_t* len);
 	void (*historyAppend)(struct CLIDebuggerBackend*, const char* line);
+	void (*interrupt)(struct CLIDebuggerBackend*);
 };
 
 struct CLIDebugger {
@@ -87,6 +88,7 @@ struct CLIDebugger {
 
 	int traceRemaining;
 	struct VFile* traceVf;
+	bool skipStatus;
 };
 
 void CLIDebuggerCreate(struct CLIDebugger*);

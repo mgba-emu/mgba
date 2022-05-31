@@ -136,6 +136,9 @@ void PaletteView::exportPalette(int start, int length) {
 	CoreController::Interrupter interrupter(m_controller);
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export palette"),
 	                                                  tr("Windows PAL (*.pal);;Adobe Color Table (*.act)"));
+	if (filename.isNull()) {
+		return;
+	}
 	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
 		LOG(QT, ERROR) << tr("Failed to open output palette file: %1").arg(filename);

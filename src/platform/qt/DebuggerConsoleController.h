@@ -46,6 +46,7 @@ private:
 	static void lineAppend(struct CLIDebuggerBackend* be, const char* line);
 	static const char* historyLast(struct CLIDebuggerBackend* be, size_t* len);
 	static void historyAppend(struct CLIDebuggerBackend* be, const char* line);
+	static void interrupt(struct CLIDebuggerBackend* be);
 
 	CLIDebugger m_cliDebugger{};
 

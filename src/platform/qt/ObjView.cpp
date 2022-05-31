@@ -266,6 +266,7 @@ void ObjView::updateObjList(int maxObj) {
 			item->setText(QString::number(i));
 			item->setData(Qt::UserRole, i);
 			item->setSizeHint(QSize(64, 96));
+			item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 			if (m_objId == i) {
 				item->setSelected(true);
 			}

@@ -994,12 +994,20 @@ bool CLIDebuggerRunCommand(struct CLIDebugger* debugger, const char* line, size_
 static void _commandLine(struct mDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	const char* line;
-		size_t len;
-	_printStatus(cliDebugger, 0);
+	size_t len;
+	if (cliDebugger->skipStatus) {
+		cliDebugger->skipStatus = false;
+	} else {
+		_printStatus(cliDebugger, 0);
+	}
 	while (debugger->state == DEBUGGER_PAUSED) {
 		line = cliDebugger->backend->readline(cliDebugger->backend, &len);
 		if (!line || len == 0) {
 			debugger->state = DEBUGGER_SHUTDOWN;
+			return;
+		}
+		if (line[0] == '\033') {
+			cliDebugger->skipStatus = true;
 			return;
 		}
 		if (line[0] == '\n') {
@@ -1008,7 +1016,11 @@ static void _commandLine(struct mDebugger* debugger) {
 				CLIDebuggerRunCommand(cliDebugger, line, len);
 			}
 		} else {
-			CLIDebuggerRunCommand(cliDebugger, line, len);
+			if (line[0] == '#') {
+				cliDebugger->skipStatus = true;
+			} else {
+				CLIDebuggerRunCommand(cliDebugger, line, len);
+			}
 			cliDebugger->backend->historyAppend(cliDebugger->backend, line);
 		}
 	}
@@ -1019,6 +1031,7 @@ static void _reportEntry(struct mDebugger* debugger, enum mDebuggerEntryReason r
 	if (cliDebugger->traceRemaining > 0) {
 		cliDebugger->traceRemaining = 0;
 	}
+	cliDebugger->skipStatus = false;
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
 	case DEBUGGER_ENTER_ATTACHED:
@@ -1077,6 +1090,7 @@ static void _cliDebuggerInit(struct mDebugger* debugger) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	cliDebugger->traceRemaining = 0;
 	cliDebugger->traceVf = NULL;
+	cliDebugger->skipStatus = false;
 	cliDebugger->backend->init(cliDebugger->backend);
 	if (cliDebugger->system && cliDebugger->system->init) {
 		cliDebugger->system->init(cliDebugger->system);
@@ -1119,6 +1133,13 @@ static void _cliDebuggerCustom(struct mDebugger* debugger) {
 	}
 }
 
+static void _cliDebuggerInterrupt(struct mDebugger* debugger) {
+	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
+	if (cliDebugger->backend->interrupt) {
+		cliDebugger->backend->interrupt(cliDebugger->backend);
+	}
+}
+
 void CLIDebuggerCreate(struct CLIDebugger* debugger) {
 	debugger->d.init = _cliDebuggerInit;
 	debugger->d.deinit = _cliDebuggerDeinit;
@@ -1126,6 +1147,7 @@ void CLIDebuggerCreate(struct CLIDebugger* debugger) {
 	debugger->d.paused = _commandLine;
 	debugger->d.update = NULL;
 	debugger->d.entered = _reportEntry;
+	debugger->d.interrupt = _cliDebuggerInterrupt;
 	debugger->d.type = DEBUGGER_CLI;
 
 	debugger->system = NULL;

@@ -577,6 +577,9 @@ void FrameView::frameCallback(FrameView* viewer, std::shared_ptr<bool> lock) {
 void FrameView::exportFrame() {
 	QString filename = GBAApp::app()->getSaveFileName(this, tr("Export frame"),
 	                                                  tr("Portable Network Graphics (*.png)"));
+	if (filename.isNull()) {
+		return;
+	}
 	CoreController::Interrupter interrupter(m_controller);
 	m_framebuffer.save(filename, "PNG");
 }
