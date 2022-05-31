@@ -934,6 +934,11 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 		bg->offsetY = 0;
 	}
 
+	glRenderer->winN[0].offsetX = 0;
+	glRenderer->winN[0].offsetY = 0;
+	glRenderer->winN[1].offsetX = 0;
+	glRenderer->winN[1].offsetY = 0;
+
 	for (i = 0; i < 512; ++i) {
 		int r = M_R5(glRenderer->d.palette[i]);
 		int g = M_G5(glRenderer->d.palette[i]) << 1;

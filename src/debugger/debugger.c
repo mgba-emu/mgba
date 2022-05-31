@@ -156,7 +156,7 @@ bool mDebuggerLookupIdentifier(struct mDebugger* debugger, const char* name, int
 	if (debugger->core->lookupIdentifier(debugger->core, name, value, segment)) {
 		return true;
 	}
-	if (debugger->platform && debugger->platform->getRegister(debugger->platform, name, value)) {
+	if (debugger->platform && debugger->core->readRegister(debugger->core, name, value)) {
 		return true;
 	}
 	return false;

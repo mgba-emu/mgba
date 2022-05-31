@@ -858,6 +858,15 @@ void CoreController::yankPak() {
 	}
 }
 
+void CoreController::addKey(int key) {
+	m_activeKeys |= 1 << key;
+}
+
+void CoreController::clearKey(int key) {
+	m_activeKeys &= ~(1 << key);
+	m_removedKeys |= 1 << key;
+}
+
 #ifdef USE_PNG
 void CoreController::screenshot() {
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
@@ -1133,7 +1142,10 @@ void CoreController::setFramebufferHandle(int fb) {
 }
 
 void CoreController::updateKeys() {
-	int activeKeys = m_inputController->updateAutofire() | m_inputController->pollEvents();
+	int polledKeys = m_inputController->pollEvents() | m_inputController->updateAutofire();
+	int activeKeys = m_activeKeys | polledKeys;
+	activeKeys |= m_threadContext.core->getKeys(m_threadContext.core) & ~m_removedKeys;
+	m_removedKeys = polledKeys;
 	m_threadContext.core->setKeys(m_threadContext.core, activeKeys);
 }
 

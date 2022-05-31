@@ -8,7 +8,7 @@
 #include "DebuggerConsoleController.h"
 #include "GBAApp.h"
 
-#include <QScrollBar>
+#include <QKeyEvent>
 
 using namespace QGBA;
 
@@ -19,21 +19,14 @@ DebuggerConsole::DebuggerConsole(DebuggerConsoleController* controller, QWidget*
 	m_ui.setupUi(this);
 
 	m_ui.prompt->installEventFilter(this);
-	m_ui.log->setFont(GBAApp::app()->monospaceFont());
 	m_ui.prompt->setFont(GBAApp::app()->monospaceFont());
 
 	connect(m_ui.prompt, &QLineEdit::returnPressed, this, &DebuggerConsole::postLine);
-	connect(controller, &DebuggerConsoleController::log, this, &DebuggerConsole::log);
+	connect(controller, &DebuggerConsoleController::log, m_ui.log, &LogWidget::log);
 	connect(m_ui.breakpoint, &QAbstractButton::clicked, controller, &DebuggerController::attach);
 	connect(m_ui.breakpoint, &QAbstractButton::clicked, controller, &DebuggerController::breakInto);
 
 	controller->historyLoad();
-}
-
-void DebuggerConsole::log(const QString& line) {
-	m_ui.log->moveCursor(QTextCursor::End);
-	m_ui.log->insertPlainText(line);
-	m_ui.log->verticalScrollBar()->setValue(m_ui.log->verticalScrollBar()->maximum());
 }
 
 void DebuggerConsole::postLine() {
@@ -44,7 +37,7 @@ void DebuggerConsole::postLine() {
 		m_consoleController->enterLine(QString("\n"));
 	} else {
 		m_historyOffset = 0;
-		log(QString("> %1\n").arg(line));
+		m_ui.log->log(QString("> %1\n").arg(line));
 		m_consoleController->enterLine(line);
 	}
 }

@@ -58,6 +58,7 @@ The following mappers are fully supported:
 - Pokémon Jade/Diamond (unlicensed)
 - BBD (unlicensed MBC5-like)
 - Hitek (unlicensed MBC5-like)
+- Sachen MMC1
 
 The following mappers are partially supported:
 
@@ -67,6 +68,7 @@ The following mappers are partially supported:
 - TAMA5 (missing RTC support)
 - HuC-1 (missing IR support)
 - HuC-3 (missing IR support)
+- Sachen MMC2 (missing alternate wiring support)
 
 ### Planned features
 
