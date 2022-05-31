@@ -12,7 +12,7 @@
 
 #include <libavcodec/version.h>
 #include <libavcodec/avcodec.h>
-#if LIBAVCODEC_VERSION_MAJOR >= 58
+#if LIBAVCODEC_VERSION_MAJOR >= 59
 #include <libavcodec/bsf.h>
 #endif
 

@@ -182,6 +182,7 @@ struct mCoreCallbacks {
 	void (*shutdown)(void* context);
 	void (*keysRead)(void* context);
 	void (*savedataUpdated)(void* context);
+	void (*alarm)(void* context);
 };
 
 DECLARE_VECTOR(mCoreCallbacksList, struct mCoreCallbacks);

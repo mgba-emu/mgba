@@ -38,6 +38,7 @@ static void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBWisdomTree(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBPKJD(struct GB* gb, uint16_t address, uint8_t value);
+static void _GBNTNew(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBBBD(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBHitek(struct GB* gb, uint16_t address, uint8_t value);
 
@@ -47,6 +48,7 @@ static uint8_t _GBMBC7Read(struct GBMemory*, uint16_t address);
 static void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value);
 
 static uint8_t _GBTAMA5Read(struct GBMemory*, uint16_t address);
+static uint8_t _GBHuC3Read(struct GBMemory*, uint16_t address);
 static uint8_t _GBPKJDRead(struct GBMemory*, uint16_t address);
 static uint8_t _GBBBDRead(struct GBMemory*, uint16_t address);
 static uint8_t _GBHitekRead(struct GBMemory*, uint16_t address);
@@ -85,7 +87,10 @@ void GBMBCSwitchBank0(struct GB* gb, int bank) {
 
 void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
 	size_t bankStart = bank * GB_SIZE_CART_HALFBANK;
-	bool isFlash = half ? gb->memory.mbcState.mbc6.flashBank1 : gb->memory.mbcState.mbc6.flashBank0;
+	bool isFlash = false;
+	if (gb->memory.mbcType == GB_MBC6) {
+		isFlash = half ? gb->memory.mbcState.mbc6.flashBank1 : gb->memory.mbcState.mbc6.flashBank0;
+	}
 	if (isFlash) {
 		if (bankStart + GB_SIZE_CART_HALFBANK > GB_SIZE_MBC6_FLASH) {
 			mLOG(GB_MBC, GAME_ERROR, "Attempting to switch to an invalid Flash bank: %0X", bank);
@@ -112,11 +117,11 @@ void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
 		gb->memory.currentBank = bank;
 	} else {
 		if (isFlash) {
-			gb->memory.mbcState.mbc6.romBank1 = &gb->memory.sram[bankStart];
+			gb->memory.romBank1 = &gb->memory.sram[bankStart];
 		} else {
-			gb->memory.mbcState.mbc6.romBank1 = &gb->memory.rom[bankStart];
+			gb->memory.romBank1 = &gb->memory.rom[bankStart];
 		}
-		gb->memory.mbcState.mbc6.currentBank1 = bank;
+		gb->memory.currentBank1 = bank;
 	}
 	if (gb->cpu->pc < GB_BASE_VRAM) {
 		gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
@@ -219,8 +224,8 @@ void GBMBCSwitchSramHalfBank(struct GB* gb, int half, int bank) {
 		gb->memory.sramBank = &gb->memory.sram[bankStart];
 		gb->memory.sramCurrentBank = bank;
 	} else {
-		gb->memory.mbcState.mbc6.sramBank1 = &gb->memory.sram[bankStart];
-		gb->memory.mbcState.mbc6.currentSramBank1 = bank;
+		gb->memory.sramBank1 = &gb->memory.sram[bankStart];
+		gb->memory.currentSramBank1 = bank;
 	}
 }
 
@@ -373,6 +378,7 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_HuC3:
 		gb->memory.mbcWrite = _GBHuC3;
+		gb->memory.mbcRead = _GBHuC3Read;
 		break;
 	case GB_TAMA5:
 		mLOG(GB_MBC, WARN, "unimplemented MBC: TAMA5");
@@ -401,6 +407,13 @@ void GBMBCInit(struct GB* gb) {
 	case GB_UNL_WISDOM_TREE:
 		gb->memory.mbcWrite = _GBWisdomTree;
 		break;
+	case GB_UNL_NT_NEW:
+		gb->memory.mbcWrite = _GBNTNew;
+		break;
+	case GB_UNL_PKJD:
+		gb->memory.mbcWrite = _GBPKJD;
+		gb->memory.mbcRead = _GBPKJDRead;
+		break;
 	case GB_UNL_BBD:
 		gb->memory.mbcWrite = _GBBBD;
 		gb->memory.mbcRead = _GBBBDRead;
@@ -410,10 +423,6 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcRead = _GBHitekRead;
 		gb->memory.mbcState.bbd.dataSwapMode = 7;
 		gb->memory.mbcState.bbd.bankSwapMode = 7;
-		break;
-	case GB_UNL_PKJD:
-		gb->memory.mbcWrite = _GBPKJD;
-		gb->memory.mbcRead = _GBPKJDRead;
 		break;
 	}
 
@@ -438,6 +447,8 @@ void GBMBCInit(struct GB* gb) {
 
 	if (gb->memory.mbcType == GB_MBC3_RTC) {
 		GBMBCRTCRead(gb);
+	} else if (gb->memory.mbcType == GB_HuC3) {
+		GBMBCHuC3Read(gb);
 	}
 }
 
@@ -786,7 +797,7 @@ void _GBMBC6(struct GB* gb, uint16_t address, uint8_t value) {
 	case 0x2E:
 	case 0x2F:
 		if (memory->sramAccess) {
-			memory->mbcState.mbc6.sramBank1[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)] = value;
+			memory->sramBank1[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)] = value;
 		}
 		break;
 	default:
@@ -803,7 +814,7 @@ uint8_t _GBMBC6Read(struct GBMemory* memory, uint16_t address) {
 	case 0xA:
 		return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)];
 	case 0xB:
-		return memory->mbcState.mbc6.sramBank1[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)];
+		return memory->sramBank1[address & (GB_SIZE_EXTERNAL_RAM_HALFBANK - 1)];
 	}
 	return 0xFF;
 }
@@ -814,7 +825,7 @@ static void _GBMBC6MapChip(struct GB* gb, int half, uint8_t value) {
 		GBMBCSwitchHalfBank(gb, half, gb->memory.currentBank);
 	} else {
 		gb->memory.mbcState.mbc6.flashBank1 = !!(value & 0x08);
-		GBMBCSwitchHalfBank(gb, half, gb->memory.mbcState.mbc6.currentBank1);
+		GBMBCSwitchHalfBank(gb, half, gb->memory.currentBank1);
 	}
 }
 
@@ -1101,9 +1112,123 @@ void _GBHuC1(struct GB* gb, uint16_t address, uint8_t value) {
 	}
 }
 
+static void _latchHuC3Rtc(struct mRTCSource* rtc, uint8_t* huc3Regs, time_t* rtcLastLatch) {
+	time_t t;
+	if (rtc) {
+		if (rtc->sample) {
+			rtc->sample(rtc);
+		}
+		t = rtc->unixTime(rtc);
+	} else {
+		t = time(0);
+	}
+	t -= *rtcLastLatch;
+	t /= 60;
+
+	if (!t) {
+		return;
+	}
+	*rtcLastLatch += t * 60;
+
+	int minutes = huc3Regs[GBHUC3_RTC_MINUTES_HI] << 8;
+	minutes |= huc3Regs[GBHUC3_RTC_MINUTES_MI] << 4;
+	minutes |= huc3Regs[GBHUC3_RTC_MINUTES_LO];
+	minutes += t % 1440;
+	t /= 1440;
+	if (minutes >= 1440) {
+		minutes -= 1440;
+		++t;
+	} else if (minutes < 0) {
+		minutes += 1440;
+		--t;
+	}
+	huc3Regs[GBHUC3_RTC_MINUTES_LO] = minutes & 0xF;
+	huc3Regs[GBHUC3_RTC_MINUTES_MI] = (minutes >> 4) & 0xF;
+	huc3Regs[GBHUC3_RTC_MINUTES_HI] = (minutes >> 8) & 0xF;
+
+	int days = huc3Regs[GBHUC3_RTC_DAYS_LO];
+	days |= huc3Regs[GBHUC3_RTC_DAYS_MI] << 4;
+	days |= huc3Regs[GBHUC3_RTC_DAYS_HI] << 8;
+
+	days += t;
+
+	huc3Regs[GBHUC3_RTC_DAYS_LO] = days & 0xF;
+	huc3Regs[GBHUC3_RTC_DAYS_MI] = (days >> 4) & 0xF;
+	huc3Regs[GBHUC3_RTC_DAYS_HI] = (days >> 8) & 0xF;
+}
+
+static void _huc3Commit(struct GB* gb, struct GBHuC3State* state) {
+	size_t c;
+	switch (state->value & 0x70) {
+	case 0x10:
+		if ((state->index & 0xF8) == 0x10) {
+			_latchHuC3Rtc(gb->memory.rtc, state->registers, &gb->memory.rtcLastLatch);
+		}
+		state->value &= 0xF0;
+		state->value |= state->registers[state->index] & 0xF;
+		mLOG(GB_MBC, DEBUG, "HuC-3 read: %02X:%X", state->index, state->value & 0xF);
+		if (state->value & 0x10) {
+			++state->index;
+		}
+		break;
+	case 0x30:
+		mLOG(GB_MBC, DEBUG, "HuC-3 write: %02X:%X", state->index, state->value & 0xF);
+		state->registers[state->index] = state->value & 0xF;
+		if (state->value & 0x10) {
+			++state->index;
+		}
+		break;
+	case 0x40:
+		state->index &= 0xF0;
+		state->index |= (state->value) & 0xF;
+		mLOG(GB_MBC, DEBUG, "HuC-3 index (low): %02X", state->index);
+		break;
+	case 0x50:
+		state->index &= 0x0F;
+		state->index |= ((state->value) & 0xF) << 4;
+		mLOG(GB_MBC, DEBUG, "HuC-3 index (high): %02X", state->index);
+		break;
+	case 0x60:
+		switch (state->value & 0xF) {
+		case GBHUC3_CMD_LATCH:
+			_latchHuC3Rtc(gb->memory.rtc, state->registers, &gb->memory.rtcLastLatch);
+			memcpy(state->registers, &state->registers[GBHUC3_RTC_MINUTES_LO], 6);
+			mLOG(GB_MBC, DEBUG, "HuC-3 RTC latch");
+			break;
+		case GBHUC3_CMD_SET_RTC:
+			memcpy(&state->registers[GBHUC3_RTC_MINUTES_LO], state->registers, 6);
+			mLOG(GB_MBC, DEBUG, "HuC-3 set RTC");
+			break;
+		case GBHUC3_CMD_RO:
+			mLOG(GB_MBC, STUB, "HuC-3 unimplemented read-only mode");
+			break;
+		case GBHUC3_CMD_TONE:
+			if (state->registers[GBHUC3_SPEAKER_ENABLE] == 1) {
+				for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
+					struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
+					if (callbacks->alarm) {
+						callbacks->alarm(callbacks->context);
+					}
+				}
+				mLOG(GB_MBC, DEBUG, "HuC-3 tone %i", state->registers[GBHUC3_SPEAKER_TONE] & 3);
+			}
+			break;
+		default:
+			mLOG(GB_MBC, STUB, "HuC-3 unknown command: %X", state->value & 0xF);
+			break;
+		}
+		state->value = 0xE1;
+		break;
+	default:
+		mLOG(GB_MBC, STUB, "HuC-3 unknown mode commit: %02X:%02X", state->index, state->value);
+		break;
+	}
+}
+
 void _GBHuC3(struct GB* gb, uint16_t address, uint8_t value) {
 	struct GBMemory* memory = &gb->memory;
-	int bank = value & 0x3F;
+	struct GBHuC3State* state = &memory->mbcState.huc3;
+	int bank = value & 0x7F;
 	if (address & 0x1FFF) {
 		mLOG(GB_MBC, STUB, "HuC-3 unknown value %04X:%02X", address, value);
 	}
@@ -1119,6 +1244,7 @@ void _GBHuC3(struct GB* gb, uint16_t address, uint8_t value) {
 			memory->sramAccess = false;
 			break;
 		}
+		state->mode = value;
 		break;
 	case 0x1:
 		GBMBCSwitchBank(gb, bank);
@@ -1126,10 +1252,36 @@ void _GBHuC3(struct GB* gb, uint16_t address, uint8_t value) {
 	case 0x2:
 		GBMBCSwitchSramBank(gb, bank);
 		break;
+	case 0x5:
+		switch (state->mode) {
+		case GBHUC3_MODE_IN:
+			state->value = 0x80 | value;
+			break;
+		case GBHUC3_MODE_COMMIT:
+			_huc3Commit(gb, state);
+			break;
+		default:
+			mLOG(GB_MBC, STUB, "HuC-3 unknown mode write: %02X:%02X", state->mode, value);
+		}
+		break;
 	default:
 		// TODO
 		mLOG(GB_MBC, STUB, "HuC-3 unknown address: %04X:%02X", address, value);
 		break;
+	}
+}
+
+uint8_t _GBHuC3Read(struct GBMemory* memory, uint16_t address) {
+	struct GBHuC3State* state = &memory->mbcState.huc3;
+	switch (state->mode) {
+	case GBHUC3_MODE_SRAM_RO:
+	case GBHUC3_MODE_SRAM_RW:
+		return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+	case GBHUC3_MODE_IN:
+	case GBHUC3_MODE_OUT:
+		return 0x80 | state->value;
+	default:
+		return 0xFF;
 	}
 }
 
@@ -1432,6 +1584,29 @@ static uint8_t _GBPKJDRead(struct GBMemory* memory, uint16_t address) {
 	}
 }
 
+void _GBNTNew(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBMemory* memory = &gb->memory;
+	if (address >> 8 == 0x14) {
+		memory->mbcState.ntNew.splitMode = true;
+		return;
+	}
+	if (memory->mbcState.ntNew.splitMode) {
+		int bank = value;
+		if (bank < 2) {
+			bank = 2;
+		}
+		switch (address >> 10) {
+		case 8:
+			GBMBCSwitchHalfBank(gb, 0, bank);
+			return;
+		case 9:
+			GBMBCSwitchHalfBank(gb, 1, bank);
+			return;
+		}
+	}
+	_GBMBC5(gb, address, value);
+}
+
 static uint8_t _reorderBits(uint8_t input, const uint8_t* reorder) {
 	uint8_t newbyte = 0;
 	int i;
@@ -1549,6 +1724,21 @@ uint8_t _GBHitekRead(struct GBMemory* memory, uint16_t address) {
 	}
 }
 
+static void _appendSaveSuffix(struct GB* gb, const void* buffer, size_t size) {
+	struct VFile* vf = gb->sramVf;
+	if ((size_t) vf->size(vf) < gb->sramSize + size) {
+		// Writing past the end of the file can invalidate the file mapping
+		vf->unmap(vf, gb->memory.sram, gb->sramSize);
+		gb->memory.sram = NULL;
+	}
+	vf->seek(vf, gb->sramSize, SEEK_SET);
+	vf->write(vf, buffer, size);
+	if (!gb->memory.sram) {
+		gb->memory.sram = vf->map(vf, gb->sramSize, MAP_WRITE);
+		GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
+	}
+}
+
 void GBMBCRTCRead(struct GB* gb) {
 	struct GBMBCRTCSaveBuffer rtcBuffer;
 	struct VFile* vf = gb->sramVf;
@@ -1592,15 +1782,41 @@ void GBMBCRTCWrite(struct GB* gb) {
 	STORE_32LE(gb->memory.rtcRegs[4], 0, &rtcBuffer.latchedDaysHi);
 	STORE_64LE(gb->memory.rtcLastLatch, 0, &rtcBuffer.unixTime);
 
-	if ((size_t) vf->size(vf) < gb->sramSize + sizeof(rtcBuffer)) {
-		// Writing past the end of the file can invalidate the file mapping
-		vf->unmap(vf, gb->memory.sram, gb->sramSize);
-		gb->memory.sram = NULL;
+	_appendSaveSuffix(gb, &rtcBuffer, sizeof(rtcBuffer));
+}
+
+void GBMBCHuC3Read(struct GB* gb) {
+	struct GBMBCHuC3SaveBuffer buffer;
+	struct VFile* vf = gb->sramVf;
+	if (!vf) {
+		return;
 	}
 	vf->seek(vf, gb->sramSize, SEEK_SET);
-	vf->write(vf, &rtcBuffer, sizeof(rtcBuffer));
-	if (!gb->memory.sram) {
-		gb->memory.sram = vf->map(vf, gb->sramSize, MAP_WRITE);
-		GBMBCSwitchSramBank(gb, gb->memory.sramCurrentBank);
+	if (vf->read(vf, &buffer, sizeof(buffer)) < (ssize_t) sizeof(buffer)) {
+		return;
 	}
+
+	size_t i;
+	for (i = 0; i < 0x80; ++i) {
+		gb->memory.mbcState.huc3.registers[i * 2] = buffer.regs[i] & 0xF;
+		gb->memory.mbcState.huc3.registers[i * 2 + 1] = buffer.regs[i] >> 4;
+	}
+	LOAD_64LE(gb->memory.rtcLastLatch, 0, &buffer.latchedUnix);
+}
+
+void GBMBCHuC3Write(struct GB* gb) {
+	struct VFile* vf = gb->sramVf;
+	if (!vf) {
+		return;
+	}
+
+	struct GBMBCHuC3SaveBuffer buffer;
+	size_t i;
+	for (i = 0; i < 0x80; ++i) {
+		buffer.regs[i] = gb->memory.mbcState.huc3.registers[i * 2] & 0xF;
+		buffer.regs[i] |= gb->memory.mbcState.huc3.registers[i * 2 + 1] << 4;
+	}
+	STORE_64LE(gb->memory.rtcLastLatch, 0, &buffer.latchedUnix);
+
+	_appendSaveSuffix(gb, &buffer, sizeof(buffer));
 }

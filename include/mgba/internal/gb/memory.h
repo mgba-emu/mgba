@@ -102,6 +102,41 @@ enum GBTAMA5Register {
 	GBTAMA5_READ_HI = 0xD,
 };
 
+enum GBHuC3Register {
+	GBHUC3_RTC_MINUTES_LO = 0x10,
+	GBHUC3_RTC_MINUTES_MI = 0x11,
+	GBHUC3_RTC_MINUTES_HI = 0x12,
+	GBHUC3_RTC_DAYS_LO = 0x13,
+	GBHUC3_RTC_DAYS_MI = 0x14,
+	GBHUC3_RTC_DAYS_HI = 0x15,
+	GBHUC3_RTC_ENABLE = 0x16,
+	GBHUC3_SPEAKER_TONE = 0x26,
+	GBHUC3_SPEAKER_ENABLE = 0x27,
+	GBHUC3_ALARM_MINUTES_LO = 0x58,
+	GBHUC3_ALARM_MINUTES_MI = 0x59,
+	GBHUC3_ALARM_MINUTES_HI = 0x5A,
+	GBHUC3_ALARM_DAYS_LO = 0x5B,
+	GBHUC3_ALARM_DAYS_MI = 0x5C,
+	GBHUC3_ALARM_DAYS_HI = 0x5D,
+	GBHUC3_ALARM_TONE = 0x5E,
+	GBHUC3_ALARM_ENABLE = 0x5F,
+};
+
+enum GBHuC3Mode {
+	GBHUC3_MODE_SRAM_RO = 0x0,
+	GBHUC3_MODE_SRAM_RW = 0xA,
+	GBHUC3_MODE_IN = 0xB,
+	GBHUC3_MODE_OUT = 0xC,
+	GBHUC3_MODE_COMMIT = 0xD,
+};
+
+enum GBHuC3Command {
+	GBHUC3_CMD_LATCH = 0x0,
+	GBHUC3_CMD_SET_RTC = 0x1,
+	GBHUC3_CMD_RO = 0x2,
+	GBHUC3_CMD_TONE = 0xE,
+};
+
 struct GBMBC1State {
 	int mode;
 	int multicartStride;
@@ -110,11 +145,7 @@ struct GBMBC1State {
 };
 
 struct GBMBC6State {
-	int currentBank1;
-	uint8_t* romBank1;
 	bool sramAccess;
-	int currentSramBank1;
-	uint8_t* sramBank1;
 	bool flashBank0;
 	bool flashBank1;
 };
@@ -145,8 +176,19 @@ struct GBTAMA5State {
 	uint8_t registers[GBTAMA5_MAX];
 };
 
+struct GBHuC3State {
+	uint8_t index;
+	uint8_t value;
+	uint8_t mode;
+	uint8_t registers[256];
+};
+
 struct GBPKJDState {
 	uint8_t reg[2];
+};
+
+struct GBNTNewState {
+	bool splitMode;
 };
 
 struct GBBBDState {
@@ -161,6 +203,8 @@ union GBMBCState {
 	struct GBMMM01State mmm01;
 	struct GBPocketCamState pocketCam;
 	struct GBTAMA5State tama5;
+	struct GBHuC3State huc3;
+	struct GBNTNewState ntNew;
 	struct GBPKJDState pkjd;
 	struct GBBBDState bbd;
 };
@@ -176,6 +220,11 @@ struct GBMemory {
 	union GBMBCState mbcState;
 	int currentBank;
 	int currentBank0;
+	int currentBank1;
+	uint8_t* romBank1;
+	int currentSramBank1;
+	uint8_t* sramBank1;
+
 	unsigned cartBusDecay;
 	uint16_t cartBusPc;
 	uint8_t cartBus;
