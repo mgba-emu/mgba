@@ -820,7 +820,7 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 			memory->mbcState.mbc1.bankHi = memory->currentBank >> memory->mbcState.mbc1.multicartStride;
 		}
 		if (memory->mbcState.mbc1.mode) {
-			GBMBCSwitchBank0(gb, memory->mbcState.mbc1.bankHi);
+			GBMBCSwitchBank0(gb, memory->mbcState.mbc1.bankHi << memory->mbcState.mbc1.multicartStride);
 		}
 		break;
 	case GB_MBC3_RTC:

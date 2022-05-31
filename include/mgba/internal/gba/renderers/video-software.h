@@ -46,6 +46,9 @@ struct GBAVideoSoftwareBackground {
 	uint16_t mapCache[64];
 	color_t* extPalette;
 	color_t* variantPalette;
+	uint32_t flags;
+	uint32_t objwinFlags;
+	bool variant;
 	int32_t offsetX;
 	int32_t offsetY;
 	bool highlight;
