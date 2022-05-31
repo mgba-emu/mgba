@@ -14,6 +14,9 @@
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/input.h>
 #endif
+#ifdef M_CORE_DS
+#include <mgba/internal/ds/input.h>
+#endif
 
 struct mScriptCallbackManager {
 	struct mScriptContext* context;
@@ -72,6 +75,7 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 		mSCRIPT_CONSTANT_PAIR(mPLATFORM, NONE),
 		mSCRIPT_CONSTANT_PAIR(mPLATFORM, GBA),
 		mSCRIPT_CONSTANT_PAIR(mPLATFORM, GB),
+		mSCRIPT_CONSTANT_PAIR(mPLATFORM, DS),
 		mSCRIPT_CONSTANT_SENTINEL
 	});
 	mScriptContextExportConstants(context, "CHECKSUM", (struct mScriptKVPair[]) {
@@ -103,6 +107,23 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 		mSCRIPT_CONSTANT_PAIR(GB_KEY, LEFT),
 		mSCRIPT_CONSTANT_PAIR(GB_KEY, UP),
 		mSCRIPT_CONSTANT_PAIR(GB_KEY, DOWN),
+		mSCRIPT_CONSTANT_SENTINEL
+	});
+#endif
+#ifdef M_CORE_DS
+	mScriptContextExportConstants(context, "DS_KEY", (struct mScriptKVPair[]) {
+		mSCRIPT_CONSTANT_PAIR(DS_KEY, A),
+		mSCRIPT_CONSTANT_PAIR(DS_KEY, B),
+		mSCRIPT_CONSTANT_PAIR(DS_KEY, SELECT),
+		mSCRIPT_CONSTANT_PAIR(DS_KEY, START),
+		mSCRIPT_CONSTANT_PAIR(DS_KEY, RIGHT),
+		mSCRIPT_CONSTANT_PAIR(DS_KEY, LEFT),
+		mSCRIPT_CONSTANT_PAIR(DS_KEY, UP),
+		mSCRIPT_CONSTANT_PAIR(DS_KEY, DOWN),
+		mSCRIPT_CONSTANT_PAIR(DS_KEY, R),
+		mSCRIPT_CONSTANT_PAIR(DS_KEY, L),
+		mSCRIPT_CONSTANT_PAIR(DS_KEY, X),
+		mSCRIPT_CONSTANT_PAIR(DS_KEY, Y),
 		mSCRIPT_CONSTANT_SENTINEL
 	});
 #endif
