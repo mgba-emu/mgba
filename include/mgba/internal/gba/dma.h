@@ -10,6 +10,8 @@
 
 CXX_GUARD_START
 
+#include <mgba/core/log.h>
+
 enum GBADMAControl {
 	GBA_DMA_INCREMENT = 0,
 	GBA_DMA_DECREMENT = 1,
@@ -33,6 +35,8 @@ DECL_BIT(GBADMARegister, DRQ, 11);
 DECL_BITS(GBADMARegister, Timing, 12, 2);
 DECL_BIT(GBADMARegister, DoIRQ, 14);
 DECL_BIT(GBADMARegister, Enable, 15);
+
+mLOG_DECLARE_CATEGORY(GBA_DMA);
 
 struct GBADMA {
 	GBADMARegister reg;

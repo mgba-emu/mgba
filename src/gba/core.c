@@ -25,6 +25,7 @@
 #include <mgba/internal/gba/renderers/video-software.h>
 #include <mgba/internal/gba/savedata.h>
 #include <mgba/internal/gba/serialize.h>
+#include <mgba-util/crc32.h>
 #ifdef USE_ELF
 #include <mgba-util/elf-read.h>
 #endif
@@ -133,6 +134,7 @@ static const struct mCoreMemoryBlock _GBAMemoryBlocksEEPROM[] = {
 struct mVideoLogContext;
 
 #define CPU_COMPONENT_AUDIO_MIXER CPU_COMPONENT_MISC_1
+#define LOGO_CRC32 0xD0BEB55E
 
 struct GBACore {
 	struct mCore d;
@@ -546,7 +548,7 @@ static void _GBACoreUnloadROM(struct mCore* core) {
 		mCheatDeviceDestroy(gbacore->cheatDevice);
 		gbacore->cheatDevice = NULL;
 	}
-	return GBAUnloadROM(core->board);
+	GBAUnloadROM(core->board);
 }
 
 static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
@@ -669,7 +671,16 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 
 	ARMReset(core->cpu);
-	if ((core->opts.skipBios && (gba->romVf || gba->memory.rom)) || (gba->romVf && GBAIsMB(gba->romVf))) {
+	bool forceSkip = gba->romVf && GBAIsMB(gba->romVf);
+	if (!(forceSkip || core->opts.skipBios) && (gba->romVf || gba->memory.rom) && gba->pristineRomSize >= 0xA0 && gba->biosVf) {
+		uint32_t crc = doCrc32(&gba->memory.rom[1], 0x9C);
+		if (crc != LOGO_CRC32) {
+			mLOG(STATUS, WARN, "Invalid logo, skipping BIOS");
+			forceSkip = true;
+		}
+	}
+
+	if (forceSkip || (core->opts.skipBios && (gba->romVf || gba->memory.rom))) {
 		GBASkipBIOS(core->board);
 	}
 }
@@ -1116,15 +1127,29 @@ static void _GBACoreAdjustVideoLayer(struct mCore* core, size_t id, int32_t x, i
 	case GBA_LAYER_BG3:
 		gbacore->renderer.bg[id].offsetX = x;
 		gbacore->renderer.bg[id].offsetY = y;
+#ifdef BUILD_GLES3
+		gbacore->glRenderer.bg[id].offsetX = x;
+		gbacore->glRenderer.bg[id].offsetY = y;
+#endif
 		break;
 	case GBA_LAYER_OBJ:
 		gbacore->renderer.objOffsetX = x;
 		gbacore->renderer.objOffsetY = y;
 		gbacore->renderer.oamDirty = 1;
+#ifdef BUILD_GLES3
+		gbacore->glRenderer.objOffsetX = x;
+		gbacore->glRenderer.objOffsetY = y;
+		gbacore->glRenderer.oamDirty = 1;
+#endif
 		break;
 	case GBA_LAYER_WIN0:
+	case GBA_LAYER_WIN1:
 		gbacore->renderer.winN[id - GBA_LAYER_WIN0].offsetX = x;
 		gbacore->renderer.winN[id - GBA_LAYER_WIN0].offsetY = y;
+#ifdef BUILD_GLES3
+		gbacore->glRenderer.winN[id - GBA_LAYER_WIN0].offsetX = x;
+		gbacore->glRenderer.winN[id - GBA_LAYER_WIN0].offsetY = y;
+#endif
 		break;
 	default:
 		return;

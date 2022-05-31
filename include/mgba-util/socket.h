@@ -52,7 +52,7 @@ struct Address {
 	};
 };
 
-#ifdef _3DS
+#ifdef __3DS__
 #include <3ds.h>
 #include <malloc.h>
 
@@ -73,7 +73,7 @@ static inline void SocketSubsystemInit() {
 #ifdef _WIN32
 	WSADATA data;
 	WSAStartup(MAKEWORD(2, 2), &data);
-#elif defined(_3DS)
+#elif defined(__3DS__)
 	if (!SOCUBuffer) {
 		SOCUBuffer = memalign(SOCU_ALIGN, SOCU_BUFFERSIZE);
 		socInit(SOCUBuffer, SOCU_BUFFERSIZE);
@@ -92,7 +92,7 @@ static inline void SocketSubsystemInit() {
 static inline void SocketSubsystemDeinit() {
 #ifdef _WIN32
 	WSACleanup();
-#elif defined(_3DS)
+#elif defined(__3DS__)
 	socExit();
 	free(SOCUBuffer);
 	SOCUBuffer = NULL;
@@ -168,7 +168,7 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 		memset(&bindInfo, 0, sizeof(bindInfo));
 		bindInfo.sin_family = AF_INET;
 		bindInfo.sin_port = htons(port);
-#ifndef _3DS
+#ifndef __3DS__
 		bindInfo.sin_addr.s_addr = INADDR_ANY;
 #else
 		bindInfo.sin_addr.s_addr = gethostid();
@@ -189,7 +189,7 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 #else
 		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
 #endif
-#if !defined(_3DS) && !defined(GEKKO)
+#if !defined(__3DS__) && !defined(GEKKO)
 	} else {
 		struct sockaddr_in6 bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
@@ -238,7 +238,7 @@ static inline Socket SocketConnectTCP(int port, const struct Address* destinatio
 #else
 		err = connect(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
 #endif
-#if !defined(_3DS) && !defined(GEKKO)
+#if !defined(__3DS__) && !defined(GEKKO)
 	} else {
 		struct sockaddr_in6 bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
@@ -291,7 +291,7 @@ static inline Socket SocketAccept(Socket socket, struct Address* address) {
 #else
 		return accept(socket, (struct sockaddr*) &addrInfo, &len);
 #endif
-#if !defined(_3DS) && !defined(GEKKO)
+#if !defined(__3DS__) && !defined(GEKKO)
 	} else {
 		struct sockaddr_in6 addrInfo;
 		memset(&addrInfo, 0, sizeof(addrInfo));

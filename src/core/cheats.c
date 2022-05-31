@@ -741,6 +741,12 @@ void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
 				negativeConditionRemaining = cheat->negativeRepeat;
 				operationsRemaining = 1;
 				break;
+			case CHEAT_NEVER:
+				condition = false;
+				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
+				break;
 			}
 
 			if (performAssignment) {

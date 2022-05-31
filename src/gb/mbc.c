@@ -41,6 +41,7 @@ static void _GBPKJD(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBNTNew(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBBBD(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBHitek(struct GB* gb, uint16_t address, uint8_t value);
+static void _GBSachen(struct GB* gb, uint16_t address, uint8_t value);
 
 static uint8_t _GBMBC2Read(struct GBMemory*, uint16_t address);
 static uint8_t _GBMBC6Read(struct GBMemory*, uint16_t address);
@@ -52,6 +53,8 @@ static uint8_t _GBHuC3Read(struct GBMemory*, uint16_t address);
 static uint8_t _GBPKJDRead(struct GBMemory*, uint16_t address);
 static uint8_t _GBBBDRead(struct GBMemory*, uint16_t address);
 static uint8_t _GBHitekRead(struct GBMemory*, uint16_t address);
+static uint8_t _GBSachenMMC1Read(struct GBMemory*, uint16_t address);
+static uint8_t _GBSachenMMC2Read(struct GBMemory*, uint16_t address);
 
 static uint8_t _GBPocketCamRead(struct GBMemory*, uint16_t address);
 static void _GBPocketCamCapture(struct GBMemory*);
@@ -128,6 +131,55 @@ void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank) {
 	}
 }
 
+static struct {
+	const char* fourcc;
+	enum GBMemoryBankControllerType mbc;
+} _gbxToMbc[] = {
+	{"ROM", GB_MBC_NONE},
+	{"MBC1", GB_MBC1},
+	{"MBC2", GB_MBC2},
+	{"MBC3", GB_MBC3},
+	{"MBC5", GB_MBC5},
+	{"MBC6", GB_MBC6},
+	{"MBC7", GB_MBC7},
+	{"MB1M", GB_MBC1},
+	{"MMM1", GB_MMM01},
+	{"CAMR", GB_POCKETCAM},
+	{"HUC1", GB_HuC1},
+	{"HUC3", GB_HuC3},
+	{"TAM5", GB_TAMA5},
+	{"M161", GB_MBC_AUTODETECT}, // TODO
+	{"BBD", GB_UNL_BBD},
+	{"HITK", GB_UNL_HITEK},
+	{"SNTX", GB_MBC_AUTODETECT}, // TODO
+	{"NTO1", GB_MBC_AUTODETECT}, // TODO
+	{"NTO2", GB_MBC_AUTODETECT}, // TODO
+	{"NTN", GB_UNL_NT_NEW},
+	{"LICH", GB_MBC_AUTODETECT}, // TODO
+	{"LBMC", GB_MBC_AUTODETECT}, // TODO
+	{"LIBA", GB_MBC_AUTODETECT}, // TODO
+	{"PKJD", GB_UNL_PKJD},
+	{"WISD", GB_UNL_WISDOM_TREE},
+	{"SAM1", GB_UNL_SACHEN_MMC1},
+	{"SAM2", GB_UNL_SACHEN_MMC2},
+	{"ROCK", GB_MBC_AUTODETECT}, // TODO
+	{"NGHK", GB_MBC_AUTODETECT}, // TODO
+	{"GB81", GB_MBC_AUTODETECT}, // TODO
+	{"TPP1", GB_MBC_AUTODETECT}, // TODO
+
+	{NULL, GB_MBC_AUTODETECT},
+};
+
+enum GBMemoryBankControllerType GBMBCFromGBX(const void* fourcc) {
+	size_t i;
+	for (i = 0; _gbxToMbc[i].fourcc; ++i) {
+		if (memcmp(fourcc, _gbxToMbc[i].fourcc, 4) == 0) {
+			break;
+		}
+	}
+	return _gbxToMbc[i].mbc;
+}
+
 static bool _isMulticart(const uint8_t* mem) {
 	bool success;
 	struct VFile* vf;
@@ -198,6 +250,14 @@ static enum GBMemoryBankControllerType _detectUnlMBC(const uint8_t* mem, size_t 
 		}
 	}
 
+	if (mem[0x104] == 0xCE && mem[0x144] == 0xED && mem[0x114] == 0x66) {
+		return GB_UNL_SACHEN_MMC1;
+	}
+
+	if (mem[0x184] == 0xCE && mem[0x1C4] == 0xED && mem[0x194] == 0x66) {
+		return GB_UNL_SACHEN_MMC2;
+	}
+
 	return GB_MBC_AUTODETECT;
 }
 
@@ -238,23 +298,28 @@ void GBMBCInit(struct GB* gb) {
 				cart = cartFooter;
 			}
 		}
-		switch (cart->ramSize) {
-		case 0:
-			gb->sramSize = 0;
-			break;
-		default:
-		case 2:
-			gb->sramSize = 0x2000;
-			break;
-		case 3:
-			gb->sramSize = 0x8000;
-			break;
-		case 4:
-			gb->sramSize = 0x20000;
-			break;
-		case 5:
-			gb->sramSize = 0x10000;
-			break;
+		if (gb->gbx.romSize) {
+			gb->sramSize = gb->gbx.ramSize;
+			gb->memory.mbcType = gb->gbx.mbc;
+		} else {
+			switch (cart->ramSize) {
+			case 0:
+				gb->sramSize = 0;
+				break;
+			default:
+			case 2:
+				gb->sramSize = 0x2000;
+				break;
+			case 3:
+				gb->sramSize = 0x8000;
+				break;
+			case 4:
+				gb->sramSize = 0x20000;
+				break;
+			case 5:
+				gb->sramSize = 0x10000;
+				break;
+			}
 		}
 		if (gb->memory.mbcType == GB_MBC_AUTODETECT) {
 			gb->memory.mbcType = _detectUnlMBC(gb->memory.rom, gb->memory.romSize);
@@ -328,6 +393,10 @@ void GBMBCInit(struct GB* gb) {
 	}
 	gb->memory.mbcRead = NULL;
 	gb->memory.directSramAccess = true;
+	gb->memory.mbcReadBank0 = false;
+	gb->memory.mbcReadBank1 = false;
+	gb->memory.mbcReadHigh = false;
+	gb->memory.mbcWriteHigh = false;
 	gb->memory.cartBusDecay = 4;
 	switch (gb->memory.mbcType) {
 	case GB_MBC_NONE:
@@ -335,7 +404,9 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_MBC1:
 		gb->memory.mbcWrite = _GBMBC1;
-		if (gb->memory.romSize >= GB_SIZE_CART_BANK0 * 0x31 && _isMulticart(gb->memory.rom)) {
+		if (gb->gbx.mapperVars.u8[0]) {
+			gb->memory.mbcState.mbc1.multicartStride = gb->gbx.mapperVars.u8[0];
+		} else if (gb->memory.romSize >= GB_SIZE_CART_BANK0 * 0x31 && _isMulticart(gb->memory.rom)) {
 			gb->memory.mbcState.mbc1.multicartStride = 4;
 		} else {
 			gb->memory.mbcState.mbc1.multicartStride = 5;
@@ -417,12 +488,31 @@ void GBMBCInit(struct GB* gb) {
 	case GB_UNL_BBD:
 		gb->memory.mbcWrite = _GBBBD;
 		gb->memory.mbcRead = _GBBBDRead;
+		gb->memory.mbcReadBank1 = true;
 		break;
 	case GB_UNL_HITEK:
 		gb->memory.mbcWrite = _GBHitek;
 		gb->memory.mbcRead = _GBHitekRead;
 		gb->memory.mbcState.bbd.dataSwapMode = 7;
 		gb->memory.mbcState.bbd.bankSwapMode = 7;
+		gb->memory.mbcReadBank1 = true;
+		break;
+	case GB_UNL_SACHEN_MMC1:
+		gb->memory.mbcWrite = _GBSachen;
+		gb->memory.mbcRead = _GBSachenMMC1Read;
+		gb->memory.mbcReadBank0 = true;
+		gb->memory.mbcReadBank1 = true;
+		break;
+	case GB_UNL_SACHEN_MMC2:
+		gb->memory.mbcWrite = _GBSachen;
+		gb->memory.mbcRead = _GBSachenMMC2Read;
+		gb->memory.mbcReadBank0 = true;
+		gb->memory.mbcReadBank1 = true;
+		gb->memory.mbcReadHigh = true;
+		gb->memory.mbcWriteHigh = true;
+		if (gb->sramSize) {
+			gb->memory.sramAccess = true;
+		}
 		break;
 	}
 
@@ -1721,6 +1811,105 @@ uint8_t _GBHitekRead(struct GBMemory* memory, uint16_t address) {
 		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
 	case 1:
 		return _reorderBits(memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)], _hitekDataReordering[memory->mbcState.bbd.dataSwapMode]);
+	}
+}
+
+void _GBSachen(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBSachenState* state = &gb->memory.mbcState.sachen;
+	uint8_t bank = value;
+	switch (address >> 13) {
+	case 0:
+		if ((state->unmaskedBank & 0x30) == 0x30) {
+			state->baseBank = bank;
+			GBMBCSwitchBank0(gb, state->baseBank & state->mask);
+		}
+		break;
+	case 1:
+		if (!bank) {
+			bank = 1;
+		}
+		state->unmaskedBank = bank;
+		bank = (bank & ~state->mask) | (state->baseBank & state->mask);
+		GBMBCSwitchBank(gb, bank);
+		break;
+	case 2:
+		if ((state->unmaskedBank & 0x30) == 0x30) {
+			state->mask = value;
+			bank = (state->unmaskedBank & ~state->mask) | (state->baseBank & state->mask);
+			GBMBCSwitchBank(gb, bank);
+			GBMBCSwitchBank0(gb, state->baseBank & state->mask);
+		}
+		break;
+	case 6:
+		if (gb->memory.mbcType == GB_UNL_SACHEN_MMC2 && state->locked == GB_SACHEN_LOCKED_DMG) {
+			state->locked = GB_SACHEN_LOCKED_CGB;
+			state->transition = 0;
+		}
+		break;
+	}
+}
+
+static uint16_t _unscrambleSachen(uint16_t address) {
+	uint16_t unscrambled = address & 0xFFAC;
+	unscrambled |= (address & 0x40) >> 6;
+	unscrambled |= (address & 0x10) >> 3;
+	unscrambled |= (address & 0x02) << 3;
+	unscrambled |= (address & 0x01) << 6;
+	return unscrambled;
+}
+
+uint8_t _GBSachenMMC1Read(struct GBMemory* memory, uint16_t address) {
+	struct GBSachenState* state = &memory->mbcState.sachen;
+	if (state->locked != GB_SACHEN_UNLOCKED && (address & 0xFF00) == 0x100) {
+		++state->transition;
+		if (state->transition == 0x31) {
+			state->locked = GB_SACHEN_UNLOCKED;
+		} else {
+			address |= 0x80;
+		}
+	}
+
+	if ((address & 0xFF00) == 0x0100) {
+		address = _unscrambleSachen(address);
+	}
+
+	if (address < GB_BASE_CART_BANK1) {
+		return memory->romBase[address];
+	} else if (address < GB_BASE_VRAM) {
+		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
+	} else {
+		return 0xFF;
+	}
+}
+
+uint8_t _GBSachenMMC2Read(struct GBMemory* memory, uint16_t address) {
+	struct GBSachenState* state = &memory->mbcState.sachen;
+	if (address >= 0xC000 && state->locked == GB_SACHEN_LOCKED_DMG) {
+		state->transition = 0;
+		state->locked = GB_SACHEN_LOCKED_CGB;
+	}
+
+	if (state->locked != GB_SACHEN_UNLOCKED && (address & 0x8700) == 0x0100) {
+		++state->transition;
+		if (state->transition == 0x31) {
+			++state->locked;
+			state->transition = 0;
+		}
+	}
+
+	if ((address & 0xFF00) == 0x0100) {
+		if (state->locked == GB_SACHEN_LOCKED_CGB) {
+			address |= 0x80;
+		}
+		address = _unscrambleSachen(address);
+	}
+
+	if (address < GB_BASE_CART_BANK1) {
+		return memory->romBase[address];
+	} else if (address < GB_BASE_VRAM) {
+		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
+	} else {
+		return 0xFF;
 	}
 }
 

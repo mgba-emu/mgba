@@ -116,7 +116,7 @@ typedef intptr_t ssize_t;
 #define ATOMIC_LOAD_PTR(DST, SRC) ATOMIC_LOAD(DST, SRC)
 #endif
 
-#if defined(_3DS) || defined(GEKKO) || defined(PSP2)
+#if defined(__3DS__) || defined(GEKKO) || defined(PSP2)
 // newlib doesn't support %z properly by default
 #define PRIz ""
 #elif defined(_MSC_VER)

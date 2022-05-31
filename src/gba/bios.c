@@ -307,7 +307,7 @@ static void _Div(struct GBA* gba, int32_t num, int32_t denom) {
 }
 
 static int16_t _ArcTan(int32_t i, int32_t* r1, int32_t* r3, uint32_t* cycles) {
-	int currentCycles = 37;
+	uint32_t currentCycles = 37;
 	currentCycles += _mulWait(i * i);
 	int32_t a = -((i * i) >> 14);
 	currentCycles += _mulWait(0xA9 * a);
@@ -645,7 +645,7 @@ static void _unLz77(struct GBA* gba, int width) {
 	struct ARMCore* cpu = gba->cpu;
 	uint32_t source = cpu->gprs[0];
 	uint32_t dest = cpu->gprs[1];
-	int32_t cycles = 20;
+	int cycles = 20;
 	int remaining = (cpu->memory.load32(cpu, source, &cycles) & 0xFFFFFF00) >> 8;
 	// We assume the signature byte (0x10) is correct
 	int blockheader = 0; // Some compilers warn if this isn't set, even though it's trivially provably always set

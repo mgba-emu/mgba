@@ -172,6 +172,17 @@ int main() {
 				.nStates = 4
 			},
 			{
+				.title = "Screen filtering",
+				.data = GUI_V_S("filtering"),
+				.submenu = 0,
+				.state = 0,
+				.validStates = (const char*[]) {
+					"None",
+					"Bilinear",
+				},
+				.nStates = 2
+			},
+			{
 				.title = "Camera",
 				.data = GUI_V_S("camera"),
 				.submenu = 0,

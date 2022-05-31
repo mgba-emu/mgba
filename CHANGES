@@ -53,13 +53,17 @@ Features:
  - Additional scaling shaders
  - Support for GameShark Advance SP (.gsv) save file importing
  - Support for multiple saves per game using .sa2, .sa3, etc.
- - New unlicensed GB mappers: NT (newer type)
+ - Support for GBX format Game Boy ROMs
+ - New unlicensed GB mappers: NT (newer type), Sachen (MMC1, MMC2)
 Emulation fixes:
  - ARM7: Fix unsigned multiply timing
+ - GB: Copy logo from ROM if not running the BIOS intro (fixes mgba.io/i/2378)
+ - GB Audio: Fix channel 1/2 reseting edge cases (fixes mgba.io/i/1925)
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
  - GB Serialize: Fix loading MBC1 states that affect bank 0 (fixes mgba.io/i/2402)
  - GB Video: Draw SGB border pieces that overlap GB graphics (fixes mgba.io/i/1339)
  - GBA: Improve timing when not booting from BIOS
+ - GBA: Fix expected entry point for multiboot ELFs (fixes mgba.io/i/2450)
  - GBA BIOS: Work around IRQ handling hiccup in Mario & Luigi (fixes mgba.io/i/1059)
  - GBA BIOS: Initial HLE timing estimation of UnLz77 functions (fixes mgba.io/i/2141)
  - GBA DMA: Fix DMA source direction bits being cleared (fixes mgba.io/i/2410)
@@ -71,15 +75,26 @@ Emulation fixes:
  - GBA Video: Fix Hblank timing (fixes mgba.io/i/2131, mgba.io/i/2310)
  - GBA Video: Fix rare crash in modes 3-5
 Other fixes:
+ - 3DS: Ensure writes update file modification time (fixes mgba.io/i/2444)
  - Core: Don't attempt to restore rewind diffs past start of rewind
+ - Core: Fix the runloop resuming after a game has crashed (fixes mgba.io/i/2451)
  - FFmpeg: Fix crash when encoding audio with some containers
  - FFmpeg: Fix GIF recording (fixes mgba.io/i/2393)
  - GB: Fix temporary saves
  - GB, GBA: Save writeback-pending masked saves on unload (fixes mgba.io/i/2396)
+ - mGUI: Fix FPS counter after closing menu
+ - VFS: Failed file mapping should return NULL on POSIX
 Misc:
  - Core: Suspend runloop when a core crashes
+ - Debugger: Save and restore CLI history
  - GB Video: Add default SGB border
+ - GBA: Automatically skip BIOS if ROM has invalid logo
+ - GBA: Refine multiboot detection (fixes mgba.io/i/2192)
+ - GBA Cheats: Implement "never" type codes (closes mgba.io/i/915)
+ - GBA DMA: Enhanced logging (closes mgba.io/i/2454)
+ - GBA Video: Implement layer placement for OpenGL renderer (fixes mgba.io/i/1962)
  - mGUI: Add margin to right-aligned menu text (fixes mgba.io/i/871)
+ - mGUI: Autosave less frequently when fast-forwarding
  - Qt: Rearrange menus some
  - Qt: Clean up cheats dialog
  - Qt: Only set default controller bindings if loading fails (fixes mgba.io/i/799)
@@ -89,7 +104,10 @@ Misc:
  - Qt: Add optional emulation-related information on reset (closes mgba.io/i/1780)
  - Qt: Add QOpenGLWidget cross-thread codepath for macOS (fixes mgba.io/i/1754)
  - Qt: Enable -b for Boot BIOS menu option (fixes mgba.io/i/2074)
+ - Qt: Add tile range selection to tile viewer (closes mgba.io/i/2455)
+ - Qt: Show warning if XQ audio is toggled while loaded (fixes mgba.io/i/2295)
  - Windows: Attach to console if present
+ - Vita: Add bilinear filtering option (closes mgba.io/i/344)
 
 0.9.3: (2021-12-17)
 Emulation fixes:

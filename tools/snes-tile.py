@@ -54,6 +54,10 @@ for tid in np.mgrid[:32, :28].reshape(2, -1).T:
 
 chardataRaw = bytearray(len(tiledata) * 32)
 
+palette = np.array(im.getpalette(), np.uint16).reshape(-1, 3)
+palette >>= 3
+palette = palette[:,0] | (palette[:,1] << 5) | (palette[:,2] << 10)
+
 for i, tile in enumerate(tiledata):
     for y in range(8):
         tileData = [0] * 4
@@ -64,7 +68,6 @@ for i, tile in enumerate(tiledata):
             tileData[2] |= ((t & 4) >> 2) << (7 - x)
             tileData[3] |= ((t & 8) >> 3) << (7 - x)
         tileBase = i * 32 + y * 2
-        print(tileBase)
         chardataRaw[tileBase + 0x00] = tileData[0]
         chardataRaw[tileBase + 0x01] = tileData[1]
         chardataRaw[tileBase + 0x10] = tileData[2]
@@ -73,4 +76,19 @@ for i, tile in enumerate(tiledata):
 def printMem(mem):
     for i in range(len(mem) // 16):
         line = mem[i * 16:(i + 1) * 16]
-        print(', '.join([f'0x{b:02X}' for b in line]) + ',')
+        print('\t' + ', '.join([f'0x{b:02X}' for b in line]) + ',')
+
+print('uint16_t palette[] = {');
+for rgb in palette[:16]:
+    print(f'\t0x{rgb:04X},')
+print('};')
+print()
+
+print('uint8_t tilemap[] = {');
+printMem(tilemapRaw)
+print('};')
+print()
+
+print('uint8_t chardata[] = {');
+printMem(chardataRaw)
+print('};')

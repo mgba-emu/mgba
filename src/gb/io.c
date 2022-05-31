@@ -506,9 +506,6 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				gb->memory.io[GB_REG_BCPD] = gb->video.palette[gb->video.bcpIndex >> 1] >> (8 * (gb->video.bcpIndex & 1));
 				break;
 			case GB_REG_BCPD:
-				if (gb->video.mode != 3) {
-					GBVideoProcessDots(&gb->video, 0);
-				}
 				GBVideoWritePalette(&gb->video, address, value);
 				return;
 			case GB_REG_OCPS:
@@ -517,9 +514,6 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				gb->memory.io[GB_REG_OCPD] = gb->video.palette[8 * 4 + (gb->video.ocpIndex >> 1)] >> (8 * (gb->video.ocpIndex & 1));
 				break;
 			case GB_REG_OCPD:
-				if (gb->video.mode != 3) {
-					GBVideoProcessDots(&gb->video, 0);
-				}
 				GBVideoWritePalette(&gb->video, address, value);
 				return;
 			case GB_REG_SVBK:

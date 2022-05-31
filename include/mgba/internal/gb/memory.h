@@ -137,6 +137,12 @@ enum GBHuC3Command {
 	GBHUC3_CMD_TONE = 0xE,
 };
 
+enum GBSachenLockMode {
+	GB_SACHEN_LOCKED_DMG = 0,
+	GB_SACHEN_LOCKED_CGB,
+	GB_SACHEN_UNLOCKED
+};
+
 struct GBMBC1State {
 	int mode;
 	int multicartStride;
@@ -196,6 +202,14 @@ struct GBBBDState {
 	int bankSwapMode;
 };
 
+struct GBSachenState {
+	enum GBSachenLockMode locked;
+	int transition;
+	uint8_t mask;
+	uint8_t unmaskedBank;
+	uint8_t baseBank;
+};
+
 union GBMBCState {
 	struct GBMBC1State mbc1;
 	struct GBMBC6State mbc6;
@@ -207,6 +221,7 @@ union GBMBCState {
 	struct GBNTNewState ntNew;
 	struct GBPKJDState pkjd;
 	struct GBBBDState bbd;
+	struct GBSachenState sachen;
 };
 
 struct mRotationSource;
@@ -232,6 +247,11 @@ struct GBMemory {
 	uint8_t* wram;
 	uint8_t* wramBank;
 	int wramCurrentBank;
+
+	bool mbcReadBank0;
+	bool mbcReadBank1;
+	bool mbcReadHigh;
+	bool mbcWriteHigh;
 
 	bool sramAccess;
 	bool directSramAccess;
