@@ -24,6 +24,7 @@ set(OS_LIB -lvita2d -l${M_LIBRARY}
     -lSceGxm_stub
     -lSceIme_stub
     -lSceMotion_stub
+    -lSceNetCtl_stub
     -lScePgf_stub
     -lScePhotoExport_stub
     -lScePower_stub

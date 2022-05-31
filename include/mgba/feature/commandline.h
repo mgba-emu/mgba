@@ -31,12 +31,20 @@ struct mArguments {
 	bool showVersion;
 };
 
+struct mOption {
+	const char* name;
+	bool arg;
+	char shortEquiv;
+};
+
 struct mCoreConfig;
 struct mSubParser {
 	const char* usage;
 	bool (*parse)(struct mSubParser* parser, int option, const char* arg);
+	bool (*parseLong)(struct mSubParser* parser, const char* option, const char* arg);
 	void (*apply)(struct mSubParser* parser, struct mCoreConfig* config);
 	const char* extraOptions;
+	const struct mOption* longOptions;
 	void* opts;
 };
 
@@ -45,15 +53,14 @@ struct mGraphicsOpts {
 	bool fullscreen;
 };
 
-bool parseArguments(struct mArguments* args, int argc, char* const* argv,
-                    struct mSubParser* subparser);
-void applyArguments(const struct mArguments* args, struct mSubParser* subparser, struct mCoreConfig* config);
-void freeArguments(struct mArguments* args);
-
-void usage(const char* arg0, const char* extraOptions);
+void usage(const char* arg0, const char* prologue, const char* epilogue, const struct mSubParser* subparsers, int nSubparsers);
 void version(const char* arg0);
 
-void initParserForGraphics(struct mSubParser* parser, struct mGraphicsOpts* opts);
+bool mArgumentsParse(struct mArguments* args, int argc, char* const* argv, struct mSubParser* subparsers, int nSubparsers);
+void mArgumentsApply(const struct mArguments* args, struct mSubParser* subparsers, int nSubparsers, struct mCoreConfig* config);
+void mArgumentsDeinit(struct mArguments* args);
+
+void mSubParserGraphicsInit(struct mSubParser* parser, struct mGraphicsOpts* opts);
 
 CXX_GUARD_END
 

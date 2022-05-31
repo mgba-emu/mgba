@@ -160,6 +160,7 @@ public slots:
 	void loadSave(VFile*, bool temporary);
 	void loadPatch(const QString&);
 	void scanCard(const QString&);
+	void scanCards(const QStringList&);
 	void replaceGame(const QString&);
 	void yankPak();
 

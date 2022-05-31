@@ -24,8 +24,6 @@
 #include "LogController.h"
 #include "SettingsView.h"
 
-struct mArguments;
-
 namespace QGBA {
 
 class AudioProcessor;
@@ -59,7 +57,7 @@ public:
 	void setConfig(ConfigController*);
 	ConfigController* config() { return m_config; }
 
-	void argumentsPassed(mArguments*);
+	void argumentsPassed();
 
 	void resizeFrame(const QSize& size);
 

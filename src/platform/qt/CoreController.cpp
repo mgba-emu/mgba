@@ -194,11 +194,11 @@ CoreController::CoreController(mCore* core, QObject* parent)
 			}
 			va_list argc;
 			va_copy(argc, args);
-			message = QString().vsprintf(format, argc);
+			message = QString::vasprintf(format, argc);
 			va_end(argc);
 			QMetaObject::invokeMethod(controller, "statusPosted", Q_ARG(const QString&, message));
 		}
-		message = QString().vsprintf(format, args);
+		message = QString::vasprintf(format, args);
 		QMetaObject::invokeMethod(controller, "logPosted", Q_ARG(int, level), Q_ARG(int, category), Q_ARG(const QString&, message));
 		if (level == mLOG_FATAL) {
 			mCoreThreadMarkCrashed(controller->thread());
@@ -885,8 +885,31 @@ void CoreController::scanCard(const QString& path) {
 	QImage image(path);
 	if (image.isNull()) {
 		QFile file(path);
-		file.open(QIODevice::ReadOnly);
+		if (!file.open(QIODevice::ReadOnly)) {
+			return;
+		}
 		m_eReaderData = file.read(2912);
+
+		file.seek(0);
+		QStringList lines;
+		QDir basedir(QFileInfo(path).dir());
+
+		while (true) {
+			QByteArray line = file.readLine().trimmed();
+			if (line.isEmpty()) {
+				break;
+			}
+			QString filepath(QString::fromUtf8(line));
+			if (filepath.isEmpty() || filepath[0] == QChar('#')) {
+				continue;
+			}
+			if (QFileInfo(filepath).isRelative()) {
+				lines.append(basedir.filePath(filepath));
+			} else {
+				lines.append(filepath);
+			}
+		}
+		scanCards(lines);
 	} else if (image.size() == QSize(989, 44) || image.size() == QSize(639, 44)) {
 		const uchar* bits = image.constBits();
 		size_t size;
@@ -905,6 +928,11 @@ void CoreController::scanCard(const QString& path) {
 #endif
 }
 
+void CoreController::scanCards(const QStringList& paths) {
+	for (const QString& path : paths) {
+		scanCard(path);
+	}
+}
 
 void CoreController::importSharkport(const QString& path) {
 #ifdef M_CORE_GBA

@@ -78,7 +78,7 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 -------------------
 
 - Windows 7 或更新
-- OS X 10.8（山狮 / Mountain Lion）[<sup>[3]</sup>](#osxver) 或更新
+- OS X 10.9（Mavericks）[<sup>[3]</sup>](#osxver) 或更新
 - Linux
 - FreeBSD
 - Nintendo 3DS
@@ -232,7 +232,7 @@ Footnotes
 
 <a name="flashdetect">[2]</a> 闪存大小检测在某些情况下不起作用。 这些可以在运行时中进行配置，但如果遇到此类情况，建议提交错误。
 
-<a name="osxver">[3]</a> 仅 Qt 端口需要 10.8。应该可以在 10.7 或更早版本上构建或运行 Qt 端口，但这类操作不受官方支持。已知 SDL 端口可以在 10.5 上运行，并且可能能够在旧版本上运行。
+<a name="osxver">[3]</a> 仅 Qt 端口需要 10.9。应该可以在 10.7 或更早版本上构建或运行 Qt 端口，但这类操作不受官方支持。已知 SDL 端口可以在 10.5 上运行，并且可能能够在旧版本上运行。
 
 [downloads]: http://mgba.io/downloads.html
 [source]: https://github.com/mgba-emu/mgba/

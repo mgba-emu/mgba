@@ -556,6 +556,23 @@ void GBReset(struct SM83Core* cpu) {
 		}
 	}
 
+	switch (gb->model) {
+	case GB_MODEL_DMG:
+	case GB_MODEL_SGB:
+	case GB_MODEL_AUTODETECT: //Silence warnings
+		gb->audio.style = GB_AUDIO_DMG;
+		break;
+	case GB_MODEL_MGB:
+	case GB_MODEL_SGB2:
+		gb->audio.style = GB_AUDIO_MGB;
+		break;
+	case GB_MODEL_AGB:
+	case GB_MODEL_CGB:
+	case GB_MODEL_SCGB:
+		gb->audio.style = GB_AUDIO_CGB;
+		break;
+	}
+
 	GBVideoReset(&gb->video);
 	GBTimerReset(&gb->timer);
 	GBIOReset(gb);
@@ -778,23 +795,6 @@ void GBDetectModel(struct GB* gb) {
 		} else {
 			gb->model = GB_MODEL_DMG;
 		}
-	}
-
-	switch (gb->model) {
-	case GB_MODEL_DMG:
-	case GB_MODEL_SGB:
-	case GB_MODEL_AUTODETECT: //Silence warnings
-		gb->audio.style = GB_AUDIO_DMG;
-		break;
-	case GB_MODEL_MGB:
-	case GB_MODEL_SGB2:
-		gb->audio.style = GB_AUDIO_MGB;
-		break;
-	case GB_MODEL_AGB:
-	case GB_MODEL_CGB:
-	case GB_MODEL_SCGB:
-		gb->audio.style = GB_AUDIO_CGB;
-		break;
 	}
 }
 

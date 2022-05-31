@@ -44,7 +44,7 @@ size_t romBufferSize;
 
 #define PERF_OPTIONS "DF:L:NPS:T"
 #define PERF_USAGE \
-	"\nBenchmark options:\n" \
+	"Benchmark options:\n" \
 	"  -F FRAMES        Run for the specified number of FRAMES before exiting\n" \
 	"  -N               Disable video rendering entirely\n" \
 	"  -T               Use threaded video rendering\n" \
@@ -131,12 +131,12 @@ int main(int argc, char** argv) {
 	};
 
 	struct mArguments args = {};
-	bool parsed = parseArguments(&args, argc, argv, &subparser);
+	bool parsed = mArgumentsParse(&args, argc, argv, &subparser, 1);
 	if (!args.fname && !perfOpts.server) {
 		parsed = false;
 	}
 	if (!parsed || args.showHelp) {
-		usage(argv[0], PERF_USAGE);
+		usage(argv[0], NULL, NULL, &subparser, 1);
 		didFail = !parsed;
 		goto cleanup;
 	}
@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
 		_savestate->close(_savestate);
 	}
 	cleanup:
-	freeArguments(&args);
+	mArgumentsDeinit(&args);
 
 #ifdef __3DS__
 	gfxExit();
@@ -217,7 +217,7 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 	mCoreConfigMap(&core->config, &opts);
 	opts.audioSync = false;
 	opts.videoSync = false;
-	applyArguments(args, NULL, &core->config);
+	mArgumentsApply(args, NULL, 0, &core->config);
 	mCoreConfigLoadDefaults(&core->config, &opts);
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "detect");
 	mCoreLoadConfig(core);

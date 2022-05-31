@@ -98,6 +98,7 @@ struct GBA {
 	uint32_t romCrc32;
 	struct VFile* romVf;
 	struct VFile* biosVf;
+	struct VFile* mbVf;
 
 	struct mAVStream* stream;
 	struct mKeyCallback* keyCallback;
@@ -171,6 +172,8 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf);
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch);
 
 bool GBALoadMB(struct GBA* gba, struct VFile* vf);
+void GBAUnloadMB(struct GBA* gba);
+
 bool GBALoadNull(struct GBA* gba);
 
 void GBAGetGameCode(const struct GBA* gba, char* out);
