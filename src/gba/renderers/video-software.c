@@ -455,6 +455,14 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 	} else if (softwareRenderer->blendEffect == BLEND_DARKEN) {
 		softwareRenderer->variantPalette[address >> 1] = _darken(color, softwareRenderer->bldy);
 	}
+	int highlightAmount = renderer->highlightAmount >> 4;
+	if (highlightAmount) {
+		softwareRenderer->highlightPalette[address >> 1] = mColorMix5Bit(0x10 - highlightAmount, softwareRenderer->normalPalette[address >> 1], highlightAmount, renderer->highlightColor);
+		softwareRenderer->highlightVariantPalette[address >> 1] = mColorMix5Bit(0x10 - highlightAmount, softwareRenderer->variantPalette[address >> 1], highlightAmount, renderer->highlightColor);
+	} else {
+		softwareRenderer->highlightPalette[address >> 1] = softwareRenderer->normalPalette[address >> 1];
+		softwareRenderer->highlightVariantPalette[address >> 1] = softwareRenderer->variantPalette[address >> 1];
+	}
 	if (renderer->cache) {
 		mCacheSetWritePalette(renderer->cache, address >> 1, color);
 	}

@@ -77,6 +77,7 @@ Emulation fixes:
  - GBA Video: Ignore horizontally off-screen sprite timing (fixes mgba.io/i/2391)
  - GBA Video: Fix Hblank timing (fixes mgba.io/i/2131, mgba.io/i/2310)
  - GBA Video: Fix rare crash in modes 3-5
+ - GBA Video: Fix sprites with mid-frame palette changes in GL (fixes mgba.io/i/2476)
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - Core: Fix the runloop resuming after a game has crashed (fixes mgba.io/i/2451)
@@ -88,6 +89,7 @@ Other fixes:
  - mGUI: Fix FPS counter after closing menu
  - Qt: Fix some hangs when using the debugger console
  - Qt: Fix crash when clicking past last tile in viewer
+ - Qt: Fix preloading for ROM replacing
  - VFS: Failed file mapping should return NULL on POSIX
 Misc:
  - Core: Suspend runloop when a core crashes
@@ -101,6 +103,7 @@ Misc:
  - GBA Cheats: Implement "never" type codes (closes mgba.io/i/915)
  - GBA DMA: Enhanced logging (closes mgba.io/i/2454)
  - GBA Video: Implement layer placement for OpenGL renderer (fixes mgba.io/i/1962)
+ - GBA Video: Fix highlighting for sprites with mid-frame palette changes
  - mGUI: Add margin to right-aligned menu text (fixes mgba.io/i/871)
  - mGUI: Autosave less frequently when fast-forwarding
  - Qt: Rearrange menus some
