@@ -1093,7 +1093,7 @@ void Window::reloadDisplayDriver() {
 		m_display->stopDrawing();
 		detachWidget(m_display.get());
 	}
-	m_display = std::unique_ptr<Display>(Display::create(this));
+	m_display = std::unique_ptr<QGBA::Display>(Display::create(this));
 	if (!m_display) {
 		LOG(QT, ERROR) << tr("Failed to create an appropriate display device, falling back to software display. "
 		                     "Games may run slowly, especially with larger windows.");
@@ -1105,12 +1105,12 @@ void Window::reloadDisplayDriver() {
 	m_shaderView = std::make_unique<ShaderSelector>(m_display.get(), m_config);
 #endif
 
-	connect(m_display.get(), &Display::hideCursor, [this]() {
+	connect(m_display.get(), &QGBA::Display::hideCursor, [this]() {
 		if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() == m_display.get()) {
 			m_screenWidget->setCursor(Qt::BlankCursor);
 		}
 	});
-	connect(m_display.get(), &Display::showCursor, [this]() {
+	connect(m_display.get(), &QGBA::Display::showCursor, [this]() {
 		m_screenWidget->unsetCursor();
 	});
 
@@ -1459,9 +1459,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 
 	m_actions.addSeparator("file");
-	m_multiWindow = m_actions.addAction(tr("New multiplayer window"), "multiWindow", [this]() {
-		GBAApp::app()->newWindow();
-	}, "file");
+	m_multiWindow = m_actions.addAction(tr("New multiplayer window"), "multiWindow", GBAApp::app(), &GBAApp::newWindow, "file");
 
 #ifdef M_CORE_GBA
 	Action* dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openNamedTView<DolphinConnector>(&m_dolphinView, this), "file");
@@ -1973,7 +1971,7 @@ Action* Window::addGameAction(const QString& visibleName, const QString& name, A
 
 template<typename T, typename V>
 Action* Window::addGameAction(const QString& visibleName, const QString& name, T* obj, V (T::*method)(), const QString& menu, const QKeySequence& shortcut) {
-	return addGameAction(visibleName, name, [this, obj, method]() {
+	return addGameAction(visibleName, name, [obj, method]() {
 		(obj->*method)();
 	}, menu, shortcut);
 }
@@ -2161,7 +2159,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 
 void Window::attachDisplay() {
 	m_display->attach(m_controller);
-	connect(m_display.get(), &Display::drawingStarted, this, &Window::changeRenderer);
+	connect(m_display.get(), &QGBA::Display::drawingStarted, this, &Window::changeRenderer);
 	m_display->startDrawing(m_controller);
 }
 

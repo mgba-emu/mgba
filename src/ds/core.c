@@ -445,6 +445,11 @@ static void _DSCoreClearKeys(struct mCore* core, uint32_t keys) {
 	dscore->keys &= ~keys;
 }
 
+static uint32_t _DSCoreGetKeys(struct mCore* core) {
+	struct DSCore* dscore = (struct DSCore*) core;
+	return dscore->keys;
+}
+
 static void _DSCoreSetCursorLocation(struct mCore* core, int x, int y) {
 	struct DSCore* dscore = (struct DSCore*) core;
 	dscore->cursorX = x;
@@ -735,6 +740,7 @@ struct mCore* DSCoreCreate(void) {
 	core->setKeys = _DSCoreSetKeys;
 	core->addKeys = _DSCoreAddKeys;
 	core->clearKeys = _DSCoreClearKeys;
+	core->getKeys = _DSCoreGetKeys;
 	core->setCursorLocation = _DSCoreSetCursorLocation;
 	core->setCursorDown = _DSCoreSetCursorDown;
 	core->frameCounter = _DSCoreFrameCounter;

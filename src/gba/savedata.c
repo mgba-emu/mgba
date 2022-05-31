@@ -45,6 +45,9 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->command = EEPROM_COMMAND_NULL;
 	savedata->flashState = FLASH_STATE_RAW;
 	savedata->vf = vf;
+	if (savedata->realVf && savedata->realVf != vf) {
+		savedata->realVf->close(savedata->realVf);
+	}
 	savedata->realVf = vf;
 	savedata->mapMode = MAP_WRITE;
 	savedata->maskWriteback = false;

@@ -107,6 +107,7 @@ struct mCore {
 	void (*setKeys)(struct mCore*, uint32_t keys);
 	void (*addKeys)(struct mCore*, uint32_t keys);
 	void (*clearKeys)(struct mCore*, uint32_t keys);
+	uint32_t (*getKeys)(struct mCore*);
 
 	void (*setCursorLocation)(struct mCore*, int x, int y);
 	void (*setCursorDown)(struct mCore*, bool down);

@@ -734,6 +734,11 @@ static void _GBACoreClearKeys(struct mCore* core, uint32_t keys) {
 	GBATestKeypadIRQ(gba);
 }
 
+static uint32_t _GBACoreGetKeys(struct mCore* core) {
+	struct GBA* gba = core->board;
+	return gba->keysActive;
+}
+
 static void _GBACoreSetCursorLocation(struct mCore* core, int x, int y) {
 	UNUSED(core);
 	UNUSED(x);
@@ -1231,6 +1236,7 @@ struct mCore* GBACoreCreate(void) {
 	core->setKeys = _GBACoreSetKeys;
 	core->addKeys = _GBACoreAddKeys;
 	core->clearKeys = _GBACoreClearKeys;
+	core->getKeys = _GBACoreGetKeys;
 	core->setCursorLocation = _GBACoreSetCursorLocation;
 	core->setCursorDown = _GBACoreSetCursorDown;
 	core->frameCounter = _GBACoreFrameCounter;

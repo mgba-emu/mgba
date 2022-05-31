@@ -700,6 +700,11 @@ static void _GBCoreClearKeys(struct mCore* core, uint32_t keys) {
 	gbcore->keys &= ~keys;
 }
 
+static uint32_t _GBCoreGetKeys(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	return gbcore->keys;
+}
+
 static void _GBCoreSetCursorLocation(struct mCore* core, int x, int y) {
 	UNUSED(core);
 	UNUSED(x);
@@ -1114,6 +1119,7 @@ struct mCore* GBCoreCreate(void) {
 	core->setKeys = _GBCoreSetKeys;
 	core->addKeys = _GBCoreAddKeys;
 	core->clearKeys = _GBCoreClearKeys;
+	core->getKeys = _GBCoreGetKeys;
 	core->setCursorLocation = _GBCoreSetCursorLocation;
 	core->setCursorDown = _GBCoreSetCursorDown;
 	core->frameCounter = _GBCoreFrameCounter;
