@@ -100,7 +100,7 @@ void AssetTile::selectIndex(int index) {
 	data = mTileCacheGetTile(tileCache, index, paletteId);
 	m_ui.tileId->setText(QString::number(dispIndex));
 	m_ui.paletteId->setText(QString::number(paletteId));
-	m_ui.address->setText(tr("%0%1%2")
+	m_ui.address->setText(QString("%0%1%2")
 		.arg(m_addressWidth == 4 ? index >= m_boundary / 2 : 0)
 		.arg(m_addressWidth == 4 ? ":" : "x")
 		.arg(dispIndex * bpp | base, m_addressWidth, 16, QChar('0')));

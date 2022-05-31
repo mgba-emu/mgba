@@ -181,7 +181,7 @@
         <item>
          <widget class="QLabel" name="tileId_3">
           <property name="text">
-           <string>, </string>
+           <string notr="true">, </string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -260,7 +260,7 @@
         <item>
          <widget class="QLabel" name="tileId_5">
           <property name="text">
-           <string>×</string>
+           <string notr="true">×</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

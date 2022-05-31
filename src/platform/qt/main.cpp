@@ -36,6 +36,8 @@ Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin);
 Q_IMPORT_PLUGIN(CoreAudioPlugin);
 Q_IMPORT_PLUGIN(AVFServicePlugin);
 #endif
+#elif defined(Q_OS_UNIX)
+Q_IMPORT_PLUGIN(QXcbIntegrationPlugin);
 #endif
 #endif
 
