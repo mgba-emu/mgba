@@ -20,7 +20,7 @@ struct GBAVideoRendererSprite {
 	int8_t index;
 };
 
-int GBAVideoRendererCleanOAM(struct GBAObj* oam, struct GBAVideoRendererSprite* sprites, int offsetY, int masterHeight, bool combinedObjSort);
+int GBAVideoRendererCleanOAM(struct GBAObj* oam, struct GBAVideoRendererSprite* sprites, int offsetY, int masterHeight, int masterWidth, bool combinedObjSort);
 
 CXX_GUARD_END
 

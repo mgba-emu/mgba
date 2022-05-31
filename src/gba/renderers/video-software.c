@@ -968,7 +968,7 @@ int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRendere
 	int spriteLayers = 0;
 	if (GBARegisterDISPCNTIsObjEnable(renderer->dispcnt) && !renderer->d.disableOBJ) {
 		if (renderer->oamDirty) {
-			renderer->oamMax = GBAVideoRendererCleanOAM(renderer->d.oam->obj, renderer->sprites, renderer->objOffsetY, renderer->masterHeight, renderer->combinedObjSort);
+			renderer->oamMax = GBAVideoRendererCleanOAM(renderer->d.oam->obj, renderer->sprites, renderer->objOffsetY, renderer->masterHeight, renderer->masterEnd, renderer->combinedObjSort);
 			renderer->oamDirty = false;
 		}
 		int mosaicV = GBAMosaicControlGetObjV(renderer->mosaic) + 1;

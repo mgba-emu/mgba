@@ -7,7 +7,7 @@
 
 #include <mgba/gba/interface.h>
 
-int GBAVideoRendererCleanOAM(struct GBAObj* oam, struct GBAVideoRendererSprite* sprites, int offsetY, int masterHeight, bool combinedObjSort) {
+int GBAVideoRendererCleanOAM(struct GBAObj* oam, struct GBAVideoRendererSprite* sprites, int offsetY, int masterHeight, int masterWidth, bool combinedObjSort) {
 	int i;
 	int p;
 	int oamMax = 0;
@@ -33,15 +33,19 @@ int GBAVideoRendererCleanOAM(struct GBAObj* oam, struct GBAVideoRendererSprite* 
 					width <<= GBAObjAttributesAGetDoubleSize(obj.a);
 					cycles = 10 + width * 2;
 				}
-				if (GBAObjAttributesAGetY(obj.a) < masterHeight || GBAObjAttributesAGetY(obj.a) + height >= 256) {
-					int y = GBAObjAttributesAGetY(obj.a) + offsetY;
-					sprites[oamMax].y = y;
-					sprites[oamMax].endY = y + height;
-					sprites[oamMax].cycles = cycles;
-					sprites[oamMax].obj = obj;
-					sprites[oamMax].index = i;
-					++oamMax;
+				if (GBAObjAttributesAGetY(obj.a) >= masterHeight && GBAObjAttributesAGetY(obj.a) + height < 256) {
+					continue;
 				}
+				if (GBAObjAttributesBGetX(obj.b) >= masterWidth && GBAObjAttributesBGetX(obj.b) + width < 512) {
+					continue;
+				}
+				int y = GBAObjAttributesAGetY(obj.a) + offsetY;
+				sprites[oamMax].y = y;
+				sprites[oamMax].endY = y + height;
+				sprites[oamMax].cycles = cycles;
+				sprites[oamMax].obj = obj;
+				sprites[oamMax].index = i;
+				++oamMax;
 			}
 		}
 	}

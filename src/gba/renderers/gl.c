@@ -1398,7 +1398,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 
 	if (glRenderer->oamDirty) {
-		glRenderer->oamMax = GBAVideoRendererCleanOAM(glRenderer->d.oam->obj, glRenderer->sprites, 0, GBA_VIDEO_VERTICAL_PIXELS, false);
+		glRenderer->oamMax = GBAVideoRendererCleanOAM(glRenderer->d.oam->obj, glRenderer->sprites, 0, GBA_VIDEO_VERTICAL_PIXELS, GBA_VIDEO_HORIZONTAL_PIXELS, false);
 		glRenderer->oamDirty = false;
 	}
 
