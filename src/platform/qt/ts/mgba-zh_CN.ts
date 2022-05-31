@@ -1286,7 +1286,7 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>无法添加某些作弊码。请确认它们的格式是否正确并且/或尝试其它的作弊类型。</translation>
     </message>
 </context>
 <context>
@@ -1294,23 +1294,23 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="99"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>重置 r%1-%2 %3</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="505"/>
         <location filename="../CoreController.cpp" line="525"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>当前未开启倒带</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="568"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>要重置游戏吗?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="569"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation type="unfinished"></translation>
+        <translation>大多数游戏需要重置才能加载新的存档。您要立即重启吗?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="781"/>
@@ -1353,7 +1353,7 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="115"/>
         <source>Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).</source>
-        <translation type="unfinished">无法打开存档；游戏内存档无法更新。请确保保存目录是可写的，且没有额外权限（例如 Windows 上的 UAC）。</translation>
+        <translation>无法打开存档；游戏内存档无法更新。请确保保存目录是可写的，且没有额外权限（例如 Windows 上的 UAC）。</translation>
     </message>
 </context>
 <context>
@@ -1361,7 +1361,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="171"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>无法打开用于写入的 CLI 历史</translation>
     </message>
 </context>
 <context>
@@ -1468,22 +1468,22 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="52"/>
         <source>Write watchpoints behavior</source>
-        <translation type="unfinished"></translation>
+        <translation>写入监视点行为</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="63"/>
         <source>Standard GDB</source>
-        <translation type="unfinished"></translation>
+        <translation>标准 GDB</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="68"/>
         <source>Internal change detection</source>
-        <translation type="unfinished"></translation>
+        <translation>内部改动检测</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="72"/>
         <source>Break on all writes</source>
-        <translation type="unfinished"></translation>
+        <translation>中断所有写入</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
@@ -1634,7 +1634,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="65"/>
         <source>Swap green components</source>
-        <translation type="unfinished">交换绿色组件</translation>
+        <translation>交换绿色组件</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="69"/>
@@ -2533,22 +2533,22 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1424"/>
         <source>Source (high)</source>
-        <translation type="unfinished">源（高）</translation>
+        <translation>源（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1428"/>
         <source>Source (low)</source>
-        <translation type="unfinished">源（低）</translation>
+        <translation>源（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1432"/>
         <source>Destination (high)</source>
-        <translation type="unfinished">目的地（高）</translation>
+        <translation>目的地（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1436"/>
         <source>Destination (low)</source>
-        <translation type="unfinished">目的地（低）</translation>
+        <translation>目的地（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1499"/>
@@ -3091,12 +3091,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1049"/>
         <source>Transfer active</source>
-        <translation type="unfinished">传输处于活动状态</translation>
+        <translation>传输处于活动状态</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1067"/>
         <source>Divider</source>
-        <translation type="unfinished">除数</translation>
+        <translation>除数</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
@@ -3107,13 +3107,13 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1092"/>
         <location filename="../IOViewer.cpp" line="1553"/>
         <source>LCD STAT</source>
-        <translation type="unfinished">LCD 统计</translation>
+        <translation>LCD 统计</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1093"/>
         <location filename="../IOViewer.cpp" line="1554"/>
         <source>Timer</source>
-        <translation type="unfinished">定时器</translation>
+        <translation>定时器</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1094"/>
@@ -3160,12 +3160,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1328"/>
         <source>Double-height sprites</source>
-        <translation type="unfinished">二倍高度精灵</translation>
+        <translation>二倍高度精灵</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation type="unfinished">背景图块集</translation>
+        <translation>背景图块集</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
@@ -3182,7 +3182,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1333"/>
         <source>Background tile data</source>
-        <translation type="unfinished">背景图块数据</translation>
+        <translation>背景图块数据</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1334"/>
@@ -3197,12 +3197,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1337"/>
         <source>Enable window</source>
-        <translation type="unfinished">启用窗口</translation>
+        <translation>启用窗口</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1338"/>
         <source>Window tile map</source>
-        <translation type="unfinished">窗口图块集</translation>
+        <translation>窗口图块集</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1342"/>
@@ -3212,7 +3212,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1346"/>
         <source>Mode</source>
-        <translation type="unfinished">模式</translation>
+        <translation>模式</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1347"/>
@@ -3227,7 +3227,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1349"/>
         <source>2: OAM scan</source>
-        <translation type="unfinished">2：OAM 扫描</translation>
+        <translation>2：OAM 扫描</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1350"/>
@@ -3237,22 +3237,22 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1352"/>
         <source>In LYC</source>
-        <translation type="unfinished">在 LYC 中</translation>
+        <translation>在 LYC 中</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1353"/>
         <source>Enable HBlank (mode 0) IRQ</source>
-        <translation type="unfinished">启用 HBlank（模式 0）IRQ</translation>
+        <translation>启用 HBlank（模式 0）IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1354"/>
         <source>Enable VBlank (mode 1) IRQ</source>
-        <translation type="unfinished">启用 VBlank（模式 1）IRQ</translation>
+        <translation>启用 VBlank（模式 1）IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1355"/>
         <source>Enable OAM (mode 2) IRQ</source>
-        <translation type="unfinished">启用 OAM（模式 2）IRQ</translation>
+        <translation>启用 OAM（模式 2）IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1356"/>
@@ -3267,12 +3267,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1372"/>
         <source>Comparison Y coordinate</source>
-        <translation type="unfinished">对比 Y 坐标</translation>
+        <translation>对比 Y 坐标</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1376"/>
         <source>Start upper byte</source>
-        <translation type="unfinished">开始上部字节</translation>
+        <translation>开始上部字节</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1380"/>
@@ -3320,22 +3320,22 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1440"/>
         <source>Length</source>
-        <translation type="unfinished">长度</translation>
+        <translation>长度</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1441"/>
         <source>Timing</source>
-        <translation type="unfinished">定时</translation>
+        <translation>定时</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1448"/>
         <source>Write bit</source>
-        <translation type="unfinished">写位</translation>
+        <translation>写位</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1449"/>
         <source>Read bit</source>
-        <translation type="unfinished">读位</translation>
+        <translation>读位</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1452"/>
@@ -3347,7 +3347,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1493"/>
         <location filename="../IOViewer.cpp" line="1505"/>
         <source>Current index</source>
-        <translation type="unfinished">当前索引</translation>
+        <translation>当前索引</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1494"/>
@@ -3359,28 +3359,28 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1498"/>
         <location filename="../IOViewer.cpp" line="1510"/>
         <source>Red</source>
-        <translation type="unfinished">红</translation>
+        <translation>红</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1501"/>
         <location filename="../IOViewer.cpp" line="1513"/>
         <source>Blue</source>
-        <translation type="unfinished">蓝</translation>
+        <translation>蓝</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1517"/>
         <source>Sprite ordering</source>
-        <translation type="unfinished">精灵排序</translation>
+        <translation>精灵排序</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1518"/>
         <source>OAM order</source>
-        <translation type="unfinished">OAM 顺序</translation>
+        <translation>OAM 顺序</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1519"/>
         <source>x coordinate sorting</source>
-        <translation type="unfinished">x 坐标排序</translation>
+        <translation>x 坐标排序</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1530"/>
@@ -3570,7 +3570,7 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="106"/>
         <source>Map Addr.</source>
-        <translation>映射地址</translation>
+        <translation>映射地址.</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="107"/>
@@ -3719,7 +3719,7 @@ Download size: %3</source>
     <message>
         <location filename="../MessagePainter.cpp" line="81"/>
         <source>Frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>帧 %1</translation>
     </message>
 </context>
 <context>
@@ -3879,22 +3879,22 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="39"/>
         <source>Save games and save states (%1)</source>
-        <translation type="unfinished">保存游戏和即时存档（%1）</translation>
+        <translation>保存游戏和即时存档（%1）</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="40"/>
         <source>Select save game or save state</source>
-        <translation type="unfinished">选择保存游戏或即时存档</translation>
+        <translation>选择保存游戏或即时存档</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="52"/>
         <source>Save games (%1)</source>
-        <translation type="unfinished">保存游戏（%1）</translation>
+        <translation>保存游戏（%1）</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="53"/>
         <source>Select save game</source>
-        <translation type="unfinished">选择保存游戏</translation>
+        <translation>选择保存游戏</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="74"/>
@@ -3904,12 +3904,12 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="74"/>
         <source>Failed to convert the save game. This is probably a bug.</source>
-        <translation type="unfinished">未能转换保存游戏。这可能是一个错误。</translation>
+        <translation>未能转换保存游戏。这可能是一个错误。</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="90"/>
         <source>No file selected</source>
-        <translation type="unfinished">未选择文件</translation>
+        <translation>未选择文件</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="97"/>
@@ -3929,12 +3929,12 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="131"/>
         <source>No valid conversions found</source>
-        <translation type="unfinished">未发现有效转换</translation>
+        <translation>未发现有效转换</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="638"/>
         <source>Cannot convert save games between platforms</source>
-        <translation type="unfinished">无法在平台之间转换保存游戏</translation>
+        <translation>无法在平台之间转换保存游戏</translation>
     </message>
 </context>
 <context>
@@ -3942,7 +3942,7 @@ Download size: %3</source>
     <message>
         <location filename="../ScriptingTextBuffer.cpp" line="42"/>
         <source>Untitled buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>无标题缓存</translation>
     </message>
 </context>
 <context>
@@ -3950,17 +3950,17 @@ Download size: %3</source>
     <message>
         <location filename="../ScriptingView.cpp" line="51"/>
         <source>Select script to load</source>
-        <translation type="unfinished"></translation>
+        <translation>选择要载入的脚本</translation>
     </message>
     <message>
         <location filename="../ScriptingView.cpp" line="82"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished"></translation>
+        <translation>Lua 脚本 (*.lua)</translation>
     </message>
     <message>
         <location filename="../ScriptingView.cpp" line="84"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>所有文件 (*.*)</translation>
     </message>
 </context>
 <context>
@@ -3994,7 +3994,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="207"/>
         <source>None</source>
-        <translation type="unfinished">无</translation>
+        <translation>无</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="214"/>
@@ -4322,7 +4322,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1202"/>
         <source>%1 - %2 (%3 fps) - %4</source>
-        <translation type="unfinished">%1 - %2（%3 fps）- %4</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1265"/>
@@ -4352,7 +4352,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="420"/>
         <source>Select save game</source>
-        <translation type="unfinished">选择保存游戏</translation>
+        <translation>选择保存游戏</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="428"/>
@@ -4383,17 +4383,17 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="515"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
-        <translation type="unfinished">成功转换了 %1 张（共 %2 张）e-Reader 卡片。</translation>
+        <translation>成功转换了 %1 张（共 %2 张）e-Reader 卡片。</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1275"/>
         <source>Load alternate save game...</source>
-        <translation type="unfinished">加载备用保存游戏...</translation>
+        <translation>加载备用保存游戏...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1278"/>
         <source>Load temporary save game...</source>
-        <translation type="unfinished">加载临时保存游戏...</translation>
+        <translation>加载临时保存游戏...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1311"/>
@@ -4418,7 +4418,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1323"/>
         <source>Convert e-Reader card image to raw...</source>
-        <translation type="unfinished">将 e-Reader 卡片图像转换为原始数据...</translation>
+        <translation>将 e-Reader 卡片图像转换为原始数据...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1327"/>
@@ -4499,7 +4499,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1284"/>
         <source>Convert save game...</source>
-        <translation type="unfinished">转换保存游戏...</translation>
+        <translation>转换保存游戏...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="535"/>
@@ -4509,17 +4509,17 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1147"/>
         <source>Reset needed</source>
-        <translation type="unfinished"></translation>
+        <translation>需要重启</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1148"/>
         <source>Some changes will not take effect until the game is reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>某些改动需要重新启动才会生效。</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1274"/>
         <source>Save games</source>
-        <translation type="unfinished">游戏存档</translation>
+        <translation>游戏存档</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1287"/>
@@ -4534,12 +4534,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1297"/>
         <source>Automatically determine</source>
-        <translation type="unfinished"></translation>
+        <translation>自动终止</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1301"/>
         <source>Use player %0 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>使用玩家 %0 存档</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1390"/>
@@ -4814,7 +4814,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1668"/>
         <source>Scripting...</source>
-        <translation type="unfinished"></translation>
+        <translation>脚本...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1674"/>
@@ -4947,7 +4947,7 @@ Download size: %3</source>
     <message>
         <location filename="../utils.cpp" line="17"/>
         <source>%1 kiB</source>
-        <translation type="unfinished">%1 kiB</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="21"/>
@@ -5069,7 +5069,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.ui" line="14"/>
         <source>Convert/Extract Save Game</source>
-        <translation type="unfinished">转换或提取保存游戏</translation>
+        <translation>转换或提取保存游戏</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="20"/>
@@ -5080,7 +5080,7 @@ Download size: %3</source>
         <location filename="../SaveConverter.ui" line="29"/>
         <location filename="../SaveConverter.ui" line="55"/>
         <source>Browse</source>
-        <translation type="unfinished">浏览</translation>
+        <translation>浏览</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="46"/>
@@ -5090,17 +5090,17 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="450"/>
         <source>%1 %2 save game</source>
-        <translation type="unfinished">%1 %2 保存游戏</translation>
+        <translation>%1 %2 保存游戏</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="454"/>
         <source>little endian</source>
-        <translation type="unfinished">小端</translation>
+        <translation>小端</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="457"/>
         <source>big endian</source>
-        <translation type="unfinished">大端</translation>
+        <translation>大端</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="468"/>
@@ -5110,7 +5110,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="472"/>
         <source>%1 flash</source>
-        <translation type="unfinished">%1 闪存</translation>
+        <translation>%1 闪存</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="476"/>
@@ -5130,17 +5130,17 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="495"/>
         <source>packed MBC2</source>
-        <translation type="unfinished">包装的MBC2</translation>
+        <translation>包装的 MBC2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="497"/>
         <source>unpacked MBC2</source>
-        <translation type="unfinished">未包装的 MBC2</translation>
+        <translation>未包装的 MBC2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="502"/>
         <source>MBC6 flash</source>
-        <translation type="unfinished">MBC6 闪存</translation>
+        <translation>MBC6 闪存</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="504"/>
@@ -5165,17 +5165,17 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="526"/>
         <source>%1 save state with embedded %2 save game</source>
-        <translation type="unfinished">带嵌入的 %2 保存游戏的 %1 保存状态</translation>
+        <translation>带嵌入的 %2 保存游戏的 %1 保存状态</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="529"/>
         <source>%1 SharkPort %2 save game</source>
-        <translation type="unfinished">%1 SharkPort %2 存档</translation>
+        <translation>%1 SharkPort %2 存档</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="532"/>
         <source>%1 GameShark Advance SP %2 save game</source>
-        <translation type="unfinished">%1 GameShark Advance SP %2 存档</translation>
+        <translation>%1 GameShark Advance SP %2 存档</translation>
     </message>
 </context>
 <context>
@@ -5183,32 +5183,32 @@ Download size: %3</source>
     <message>
         <location filename="../ScriptingView.ui" line="14"/>
         <source>Scripting</source>
-        <translation type="unfinished"></translation>
+        <translation>脚本</translation>
     </message>
     <message>
         <location filename="../ScriptingView.ui" line="63"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>运行</translation>
     </message>
     <message>
         <location filename="../ScriptingView.ui" line="80"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>文件</translation>
     </message>
     <message>
         <location filename="../ScriptingView.ui" line="84"/>
         <source>Load recent script</source>
-        <translation type="unfinished"></translation>
+        <translation>载入历史脚本</translation>
     </message>
     <message>
         <location filename="../ScriptingView.ui" line="97"/>
         <source>Load script...</source>
-        <translation type="unfinished"></translation>
+        <translation>载入脚本...</translation>
     </message>
     <message>
         <location filename="../ScriptingView.ui" line="102"/>
         <source>&amp;Reset</source>
-        <translation type="unfinished">重置(&amp;R)</translation>
+        <translation>重置(&amp;R)</translation>
     </message>
     <message>
         <location filename="../ScriptingView.ui" line="107"/>
@@ -5461,7 +5461,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="354"/>
         <source>Currently active player window</source>
-        <translation type="unfinished">当前活跃的玩家窗口</translation>
+        <translation>当前活跃的玩家窗口</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="371"/>
@@ -5527,7 +5527,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="569"/>
         <source>Show filename instead of ROM name in library view</source>
-        <translation type="unfinished"></translation>
+        <translation>库视图中显示文件名替代 ROM 名</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="616"/>
@@ -5538,7 +5538,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="607"/>
         <source>When inactive:</source>
-        <translation type="unfinished">不活跃时：</translation>
+        <translation>不活跃时：</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="632"/>
@@ -5613,12 +5613,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="2108"/>
         <source>Driver:</source>
-        <translation type="unfinished">驱动：</translation>
+        <translation>驱动：</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2125"/>
         <source>Source:</source>
-        <translation type="unfinished">来源：</translation>
+        <translation>来源：</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="450"/>
@@ -5718,12 +5718,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="716"/>
         <source>Show frame count in OSD</source>
-        <translation type="unfinished"></translation>
+        <translation>OSD 中显示帧数</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="723"/>
         <source>Show emulation info on reset</source>
-        <translation type="unfinished"></translation>
+        <translation>重置时显示模拟信息</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="904"/>
@@ -5784,28 +5784,28 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1110"/>
         <source>Save state extra data:</source>
-        <translation type="unfinished">保存存档附加数据：</translation>
+        <translation>保存存档附加数据：</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1127"/>
         <location filename="../SettingsView.ui" line="1171"/>
         <source>Save game</source>
-        <translation type="unfinished">保存游戏</translation>
+        <translation>保存游戏</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1154"/>
         <source>Load state extra data:</source>
-        <translation type="unfinished">载入存档附加数据：</translation>
+        <translation>载入存档附加数据：</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1709"/>
         <source>Models</source>
-        <translation type="unfinished">型号</translation>
+        <translation>型号</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1715"/>
         <source>GB only:</source>
-        <translation type="unfinished">仅 GB：</translation>
+        <translation>仅 GB：</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1725"/>
@@ -5815,7 +5815,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1735"/>
         <source>GBC only:</source>
-        <translation type="unfinished">仅 GBC：</translation>
+        <translation>仅 GBC：</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1745"/>
@@ -5830,7 +5830,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1775"/>
         <source>Game Boy palette</source>
-        <translation type="unfinished">Game Boy 调色板</translation>
+        <translation>Game Boy 调色板</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1781"/>
@@ -6093,7 +6093,7 @@ Download size: %3</source>
     <message>
         <location filename="../TileView.ui" line="33"/>
         <source>Palette</source>
-        <translation type="unfinished">调色板</translation>
+        <translation>调色板</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="73"/>
@@ -6113,22 +6113,22 @@ Download size: %3</source>
     <message>
         <location filename="../TileView.ui" line="119"/>
         <source>Displayed tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>已显示的图块</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="125"/>
         <source>Only BG tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>仅 BG 图块</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="135"/>
         <source>Only OBJ tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>仅 OBJ 图块</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="145"/>
         <source>Both</source>
-        <translation type="unfinished">两者</translation>
+        <translation>两者</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="163"/>
