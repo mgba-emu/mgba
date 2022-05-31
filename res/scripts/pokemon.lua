@@ -68,22 +68,16 @@ local GBAGameEn = Game:new{
 local Generation1En = GBGameEn:new{
 	_boxMonSize=33,
 	_partyMonSize=44,
-	_readBoxMon=readBoxMonGen1,
-	_readPartyMon=readPartyMonGen1,
 }
 
 local Generation2En = GBGameEn:new{
 	_boxMonSize=32,
 	_partyMonSize=48,
-	_readBoxMon=readBoxMonGen2,
-	_readPartyMon=readPartyMonGen2,
 }
 
 local Generation3En = GBAGameEn:new{
 	_boxMonSize=80,
 	_partyMonSize=100,
-	_readBoxMon=readBoxMonGen3,
-	_readPartyMon=readPartyMonGen3,
 }
 
 GBGameEn._charmap = { [0]=
@@ -475,7 +469,6 @@ gameCrc32 = {
 	[0x9f7fdd53] = gameRBEn, -- Red
 	[0xd6da8a1a] = gameRBEn, -- Blue
 	[0x7d527d62] = gameYellowEn,
-	[0x3358e30a] = gameCrystal, -- Crystal rev 1
 	[0x84ee4776] = gameFireRedEnR1,
 	[0xdaffecec] = gameLeafGreenEnR1,
 }
