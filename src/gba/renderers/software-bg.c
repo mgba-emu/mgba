@@ -112,7 +112,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 	BACKGROUND_BITMAP_INIT;
 
 	uint32_t color = renderer->normalPalette[0];
-	if (mosaicWait && localX >= 0 && localY >= 0) {
+	if (mosaicWait && localX >= 0 && localY >= 0 && (localX >> 8) < renderer->masterEnd && (localY >> 8) < renderer->masterHeight) {
 		LOAD_16(color, ((localX >> 8) + (localY >> 8) * renderer->masterEnd) << 1, renderer->d.vramBG[0]);
 		color = mColorFrom555(color);
 	}
@@ -154,7 +154,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode4(struct GBAVideoSoftwareRenderer
 	if (GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt)) {
 		offset = 0xA000;
 	}
-	if (mosaicWait && localX >= 0 && localY >= 0) {
+	if (mosaicWait && localX >= 0 && localY >= 0 && (localX >> 8) < renderer->masterEnd && (localY >> 8) < renderer->masterHeight) {
 		color = ((uint8_t*)renderer->d.vramBG[0])[offset + (localX >> 8) + (localY >> 8) * renderer->masterEnd];
 	}
 
@@ -194,7 +194,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode5(struct GBAVideoSoftwareRenderer
 	if (GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt)) {
 		offset = 0xA000;
 	}
-	if (mosaicWait && localX >= 0 && localY >= 0) {
+	if (mosaicWait && localX >= 0 && localY >= 0 && (localX >> 8) < 160 && (localY >> 8) < 128) {
 		LOAD_16(color, offset + (localX >> 8) * 2 + (localY >> 8) * 320, renderer->d.vramBG[0]);
 		color = mColorFrom555(color);
 	}

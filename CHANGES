@@ -51,6 +51,7 @@ Features:
  - Discord Rich Presence now supports time elapsed
  - Additional scaling shaders
  - Support for GameShark Advance SP (.gsv) save file importing
+ - Support for multiple saves per game using .sa2, .sa3, etc.
 Emulation fixes:
  - ARM7: Fix unsigned multiply timing
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
@@ -66,6 +67,7 @@ Emulation fixes:
  - GBA Video: Fix OpenGL rendering on M1 Macs
  - GBA Video: Ignore horizontally off-screen sprite timing (fixes mgba.io/i/2391)
  - GBA Video: Fix Hblank timing (fixes mgba.io/i/2131, mgba.io/i/2310)
+ - GBA Video: Fix rare crash in modes 3-5
 Other fixes:
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - FFmpeg: Fix crash when encoding audio with some containers
@@ -84,6 +86,7 @@ Misc:
  - Qt: Add optional frame counter to OSD (closes mgba.io/i/1728)
  - Qt: Add optional emulation-related information on reset (closes mgba.io/i/1780)
  - Qt: Add QOpenGLWidget cross-thread codepath for macOS (fixes mgba.io/i/1754)
+ - Qt: Enable -b for Boot BIOS menu option (fixes mgba.io/i/2074)
  - Windows: Attach to console if present
 
 0.9.3: (2021-12-17)

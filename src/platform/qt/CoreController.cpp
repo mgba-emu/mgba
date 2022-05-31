@@ -11,7 +11,9 @@
 #include "MultiplayerController.h"
 #include "Override.h"
 
+#include <QAbstractButton>
 #include <QDateTime>
+#include <QMessageBox>
 #include <QMutexLocker>
 
 #include <mgba/core/serialize.h>
@@ -70,6 +72,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 		if (controller->m_multiplayer) {
 			controller->m_multiplayer->attachGame(controller);
+			controller->updatePlayerSave();
 		}
 
 		QMetaObject::invokeMethod(controller, "started");
@@ -288,6 +291,13 @@ void CoreController::loadConfig(ConfigController* config) {
 	m_fastForwardMute = config->getOption("fastForwardMute", -1).toInt();
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "volume");
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
+
+	int playerId = m_multiplayer->playerId(this) + 1;
+	QVariant savePlayerId = config->getOption("savePlayerId");
+	if (m_multiplayer->attached() < 2 && savePlayerId.canConvert<int>()) {
+		playerId = savePlayerId.toInt();
+	}
+	mCoreConfigSetOverrideIntValue(&m_threadContext.core->config, "savePlayerId", playerId);
 
 	QSize sizeBefore = screenDimensions();
 	m_activeBuffer.resize(256 * 224 * sizeof(color_t));
@@ -542,6 +552,41 @@ void CoreController::forceFastForward(bool enable) {
 	emit fastForwardChanged(enable || m_fastForward);
 }
 
+void CoreController::changePlayer(int id) {
+	Interrupter interrupter(this);
+	int playerId = 0;
+	mCoreConfigGetIntValue(&m_threadContext.core->config, "savePlayerId", &playerId);
+	if (id == playerId) {
+		return;
+	}
+	interrupter.resume();
+
+	QMessageBox* resetPrompt = new QMessageBox(QMessageBox::Question, tr("Reset the game?"),
+		tr("Most games will require a reset to load the new save. Do you want to reset now?"),
+		QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+	connect(resetPrompt, &QMessageBox::buttonClicked, this, [this, resetPrompt, id](QAbstractButton* button) {
+		Interrupter interrupter(this);
+		switch (resetPrompt->standardButton(button)) {
+		default:
+			return;
+		case QMessageBox::Yes:
+			mCoreConfigSetOverrideIntValue(&m_threadContext.core->config, "savePlayerId", id);
+			m_resetActions.append([this]() {
+				updatePlayerSave();
+			});
+			interrupter.resume();
+			reset();
+			break;
+		case QMessageBox::No:
+			mCoreConfigSetOverrideIntValue(&m_threadContext.core->config, "savePlayerId", id);
+			updatePlayerSave();
+			break;
+		}
+	});
+	resetPrompt->setAttribute(Qt::WA_DeleteOnClose);
+	resetPrompt->show();
+}
+
 void CoreController::overrideMute(bool override) {
 	m_mute = override;
 
@@ -739,7 +784,22 @@ void CoreController::loadSave(const QString& path, bool temporary) {
 			m_threadContext.core->loadSave(m_threadContext.core, vf);
 		}
 	});
-	reset();
+	if (hasStarted()) {
+		reset();
+	}
+}
+
+void CoreController::loadSave(VFile* vf, bool temporary) {
+	m_resetActions.append([this, vf, temporary]() {
+		if (temporary) {
+			m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
+		} else {
+			m_threadContext.core->loadSave(m_threadContext.core, vf);
+		}
+	});
+	if (hasStarted()) {
+		reset();
+	}
 }
 
 void CoreController::loadPatch(const QString& patchPath) {
@@ -1068,6 +1128,26 @@ void CoreController::finishFrame() {
 	updateKeys();
 
 	QMetaObject::invokeMethod(this, "frameAvailable");
+}
+
+void CoreController::updatePlayerSave() {
+	int savePlayerId = 0;
+	mCoreConfigGetIntValue(&m_threadContext.core->config, "savePlayerId", &savePlayerId);
+	if (savePlayerId == 0 || m_multiplayer->attached() > 1) {
+		savePlayerId = m_multiplayer->playerId(this) + 1;
+	}
+
+	QString saveSuffix;
+	if (savePlayerId < 2) {
+		saveSuffix = QLatin1String(".sav");
+	} else {
+		saveSuffix = QString(".sa%1").arg(savePlayerId);
+	}
+	QByteArray saveSuffixBin(saveSuffix.toUtf8());
+	VFile* save = mDirectorySetOpenSuffix(&m_threadContext.core->dirs, m_threadContext.core->dirs.save, saveSuffixBin.constData(), O_CREAT | O_RDWR);
+	if (save) {
+		m_threadContext.core->loadSave(m_threadContext.core, save);
+	}
 }
 
 void CoreController::updateFastForward() {

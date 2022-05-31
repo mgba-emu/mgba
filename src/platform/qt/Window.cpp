@@ -397,7 +397,11 @@ void Window::selectROM() {
 }
 
 void Window::bootBIOS() {
-	setController(m_manager->loadBIOS(mPLATFORM_GBA, m_config->getOption("gba.bios")), QString());
+	QString bios(m_config->getOption("gba.bios"));
+	if (bios.isEmpty()) {
+		bios = m_config->getOption("bios");
+	}
+	setController(m_manager->loadBIOS(mPLATFORM_GBA, bios), QString());
 }
 
 #ifdef USE_SQLITE3
@@ -1283,6 +1287,23 @@ void Window::setupMenu(QMenuBar* menubar) {
 	Action* exportShark = addGameAction(tr("Export GameShark Save..."), "exportShark", this, &Window::exportSharkport, "saves");
 	m_platformActions.insert(mPLATFORM_GBA, exportShark);
 #endif
+
+	m_actions.addSeparator("saves");
+	Action* savePlayerAction;
+	ConfigOption* savePlayer = m_config->addOption("savePlayerId");
+	savePlayerAction = savePlayer->addValue(tr("Automatically determine"), 0, &m_actions, "saves");
+	m_nonMpActions.append(savePlayerAction);
+
+	for (int i = 1; i < 5; ++i) {
+		savePlayerAction = savePlayer->addValue(tr("Use player %0 save game").arg(i), i, &m_actions, "saves");
+		m_nonMpActions.append(savePlayerAction);
+	}
+	savePlayer->connect([this](const QVariant& value) {
+		if (m_controller) {
+			m_controller->changePlayer(value.toInt());
+		}
+	}, this);
+	m_config->updateOption("savePlayerId");
 
 	m_actions.addAction(tr("Load &patch..."), "loadPatch", this, &Window::selectPatch, "file");
 
