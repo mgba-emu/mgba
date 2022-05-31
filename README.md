@@ -23,6 +23,7 @@ Features
 - Solar sensor support for Boktai games.
 - Game Boy Camera and Game Boy Printer support.
 - A built-in GBA BIOS implementation, and ability to load external BIOS files. DS currently requires BIOS and firmware dumps[<sup>[2]</sup>](#dscaveat).
+- Scripting support using Lua.
 - Turbo/fast-forward support by holding Tab.
 - Rewind by holding Backquote.
 - Frameskip, configurable up to 10.
@@ -172,7 +173,7 @@ This will build and install medusa into `/usr/bin` and `/usr/lib`. Dependencies 
 
 If you are on macOS, the steps are a little different. Assuming you are using the homebrew package manager, the recommended commands to obtain the dependencies and build are:
 
-	brew install cmake ffmpeg libzip qt5 sdl2 libedit pkg-config
+	brew install cmake ffmpeg libzip qt5 sdl2 libedit lua pkg-config
 	mkdir build
 	cd build
 	cmake -DCMAKE_PREFIX_PATH=`brew --prefix qt5` ..
@@ -186,7 +187,7 @@ Note that you should not do a `make install` on macOS, as it will not work prope
 
 To build on Windows for development, using MSYS2 is recommended. Follow the installation steps found on their [website](https://msys2.github.io). Make sure you're running the 32-bit version ("MSYS2 MinGW 32-bit") (or the 64-bit version "MSYS2 MinGW 64-bit" if you want to build for x86_64) and run this additional command (including the braces) to install the needed dependencies (please note that this involves downloading over 1100MiB of packages, so it will take a long time):
 
-	pacman -Sy --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkgconf,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,lua,pkgconf,qt5,SDL2,ntldd-git}
 
 Check out the source code by running this command:
 
@@ -205,7 +206,7 @@ Please note that this build of medusa for Windows is not suitable for distributi
 
 To build using Visual Studio is a similarly complicated setup. To begin you will need to install [vcpkg](https://github.com/Microsoft/vcpkg). After installing vcpkg you will need to install several additional packages:
 
-    vcpkg install ffmpeg[vpx,x264] libepoxy libpng libzip sdl2 sqlite3
+    vcpkg install ffmpeg[vpx,x264] libepoxy libpng libzip lua sdl2 sqlite3
 
 Note that this installation won't support hardware accelerated video encoding on Nvidia hardware. If you care about this, you'll need to install CUDA beforehand, and then substitute `ffmpeg[vpx,x264,nvcodec]` into the previous command.
 
@@ -243,6 +244,7 @@ medusa has no hard dependencies, however, the following optional dependencies ar
 - libzip or zlib: for loading ROMs stored in zip files.
 - SQLite3: for game databases.
 - libelf: for ELF loading.
+- Lua: for scripting.
 
 SQLite3, libpng, and zlib are included with the emulator, so they do not need to be externally compiled first.
 

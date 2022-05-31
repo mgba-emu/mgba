@@ -11,7 +11,7 @@
 static void GBATimerIrq(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 	struct GBATimer* timer = &gba->timers[timerId];
 	if (GBATimerFlagsIsDoIrq(timer->flags)) {
-		GBARaiseIRQ(gba, IRQ_TIMER0 + timerId, cyclesLate);
+		GBARaiseIRQ(gba, GBA_IRQ_TIMER0 + timerId, cyclesLate);
 	}
 }
 

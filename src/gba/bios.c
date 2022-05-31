@@ -40,14 +40,14 @@ static void _SoftReset(struct GBA* gba) {
 	ARMSetPrivilegeMode(cpu, MODE_IRQ);
 	cpu->spsr.packed = 0;
 	cpu->gprs[ARM_LR] = 0;
-	cpu->gprs[ARM_SP] = SP_BASE_IRQ;
+	cpu->gprs[ARM_SP] = GBA_SP_BASE_IRQ;
 	ARMSetPrivilegeMode(cpu, MODE_SUPERVISOR);
 	cpu->spsr.packed = 0;
 	cpu->gprs[ARM_LR] = 0;
-	cpu->gprs[ARM_SP] = SP_BASE_SUPERVISOR;
+	cpu->gprs[ARM_SP] = GBA_SP_BASE_SUPERVISOR;
 	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
 	cpu->gprs[ARM_LR] = 0;
-	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
+	cpu->gprs[ARM_SP] = GBA_SP_BASE_SYSTEM;
 	int8_t flag = ((int8_t*) gba->memory.iwram)[0x7FFA];
 	memset(((int8_t*) gba->memory.iwram) + SIZE_WORKING_IRAM - 0x200, 0, 0x200);
 	if (flag) {

@@ -192,6 +192,7 @@ struct VFile* mCoreGetState(struct mCore* core, int slot, bool write);
 void mCoreDeleteState(struct mCore* core, int slot);
 
 void mCoreTakeScreenshot(struct mCore* core);
+bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf);
 #endif
 
 struct mCore* mCoreFindVF(struct VFile* vf);

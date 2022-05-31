@@ -7,11 +7,13 @@
 
 #include "GBAApp.h"
 #include "CoreController.h"
+#include "LogController.h"
 
 #include <QBoxLayout>
 #include <QButtonGroup>
 #include <QClipboard>
 #include <QRadioButton>
+#include <QRegularExpression>
 
 #include <mgba/core/cheats.h>
 #ifdef M_CORE_GBA
@@ -110,7 +112,7 @@ void CheatsView::removeSet() {
 		return;
 	}
 	CoreController::Interrupter interrupter(m_controller);
-	for (const QModelIndex& index : selection) {
+	for (const QModelIndex& index ATTRIBUTE_UNUSED : selection) {
 		m_model.removeAt(selection[0]);
 	}
 }
@@ -149,18 +151,40 @@ void CheatsView::enterCheat() {
 		index = m_model.index(m_model.rowCount() - 1, 0, QModelIndex());
 		m_ui.cheatList->selectionModel()->select(index, QItemSelectionModel::SelectCurrent | QItemSelectionModel::Rows);
 	}
+	// TODO: Update API to handle this splitting in the core
+	QRegularExpression regexp("\\s");
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
-	QStringList cheats = m_ui.codeEntry->toPlainText().split('\n', Qt::SkipEmptyParts);
+	QStringList cheats = m_ui.codeEntry->toPlainText().split(regexp, Qt::SkipEmptyParts);
 #else
-	QStringList cheats = m_ui.codeEntry->toPlainText().split('\n', QString::SkipEmptyParts);
+	QStringList cheats = m_ui.codeEntry->toPlainText().split(regexp, QString::SkipEmptyParts);
 #endif
+	int failure = 0;
+	QString buffer;
 	for (const QString& string : cheats) {
 		m_model.beginAppendRow(index);
-		mCheatAddLine(set, string.toUtf8().constData(), m_codeType);
+		if (!buffer.isEmpty()) {
+			buffer += " " + string;
+			if (mCheatAddLine(set, buffer.toUtf8().constData(), m_codeType)) {
+				buffer.clear();
+			} else if (mCheatAddLine(set, string.toUtf8().constData(), m_codeType)) {
+				buffer.clear();
+			} else {
+				buffer = string;
+				++failure;
+			}
+		} else if (!mCheatAddLine(set, string.toUtf8().constData(), m_codeType)) {
+			buffer = string;
+		}
 		m_model.endAppendRow();
+	}
+	if (!buffer.isEmpty()) {
+		++failure;
 	}
 	if (set->refresh) {
 		set->refresh(set, m_controller->cheatDevice());
+	}
+	if (failure) {
+		LOG(QT, ERROR) << tr("Some cheats could not be added. Please ensure they're formatted correctly and/or try other cheat types.");
 	}
 	m_ui.codeEntry->clear();
 }

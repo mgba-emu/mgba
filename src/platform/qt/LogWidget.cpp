@@ -11,14 +11,58 @@
 
 using namespace QGBA;
 
+QTextCharFormat LogWidget::s_warn;
+QTextCharFormat LogWidget::s_error;
+QTextCharFormat LogWidget::s_prompt;
+
 LogWidget::LogWidget(QWidget* parent)
-	: QTextEdit(parent)
+	: QPlainTextEdit(parent)
 {
 	setFont(GBAApp::app()->monospaceFont());
+
+	QPalette palette = QApplication::palette();
+	s_warn.setFontWeight(QFont::DemiBold);
+	s_warn.setFontItalic(true);
+	s_warn.setForeground(Qt::yellow);
+	s_warn.setBackground(QColor(255, 255, 0, 64));
+	s_error.setFontWeight(QFont::Bold);
+	s_error.setForeground(Qt::red);
+	s_error.setBackground(QColor(255, 0, 0, 64));
+	s_prompt.setForeground(palette.brush(QPalette::Disabled, QPalette::Text));
 }
 
 void LogWidget::log(const QString& line) {
 	moveCursor(QTextCursor::End);
-	insertPlainText(line);
+	textCursor().insertText(line, {});
+	if (m_newlineTerminated) {
+		textCursor().insertText("\n");
+	}
+	verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+}
+
+void LogWidget::warn(const QString& line) {
+	moveCursor(QTextCursor::End);
+	textCursor().insertText(WARN_PREFIX + line, s_warn);
+	if (m_newlineTerminated) {
+		textCursor().insertText("\n");
+	}
+	verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+}
+
+void LogWidget::error(const QString& line) {
+	moveCursor(QTextCursor::End);
+	textCursor().insertText(ERROR_PREFIX + line, s_error);
+	if (m_newlineTerminated) {
+		textCursor().insertText("\n");
+	}
+	verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+}
+
+void LogWidget::echo(const QString& line) {
+	moveCursor(QTextCursor::End);
+	textCursor().insertText(PROMPT_PREFIX + line, s_prompt);
+	if (m_newlineTerminated) {
+		textCursor().insertText("\n");
+	}
 	verticalScrollBar()->setValue(verticalScrollBar()->maximum());
 }

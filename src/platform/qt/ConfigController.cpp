@@ -301,9 +301,9 @@ void ConfigController::setQtOption(const QString& key, const QVariant& value, co
 	}
 }
 
-QList<QString> ConfigController::getMRU() const {
-	QList<QString> mru;
-	m_settings->beginGroup("mru");
+QStringList ConfigController::getMRU(ConfigController::MRU mruType) const {
+	QStringList mru;
+	m_settings->beginGroup(mruName(mruType));
 	for (int i = 0; i < MRU_LIST_SIZE; ++i) {
 		QString item = m_settings->value(QString::number(i)).toString();
 		if (item.isNull()) {
@@ -315,9 +315,9 @@ QList<QString> ConfigController::getMRU() const {
 	return mru;
 }
 
-void ConfigController::setMRU(const QList<QString>& mru) {
+void ConfigController::setMRU(const QStringList& mru, ConfigController::MRU mruType) {
 	int i = 0;
-	m_settings->beginGroup("mru");
+	m_settings->beginGroup(mruName(mruType));
 	for (const QString& item : mru) {
 		m_settings->setValue(QString::number(i), item);
 		++i;
@@ -329,6 +329,15 @@ void ConfigController::setMRU(const QList<QString>& mru) {
 		m_settings->remove(QString::number(i));
 	}
 	m_settings->endGroup();
+}
+
+constexpr const char* ConfigController::mruName(ConfigController::MRU mru) {
+	switch (mru) {
+	case MRU::ROM:
+		return "mru";
+	case MRU::Script:
+		return "recentScripts";
+	}
 }
 
 void ConfigController::write() {

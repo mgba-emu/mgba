@@ -164,6 +164,9 @@ public slots:
 	void replaceGame(const QString&);
 	void yankPak();
 
+	void addKey(int key);
+	void clearKey(int key);
+
 #ifdef USE_PNG
 	void screenshot();
 #endif

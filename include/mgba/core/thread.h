@@ -23,6 +23,9 @@ struct mThreadLogger {
 	struct mCoreThread* p;
 };
 
+#ifdef ENABLE_SCRIPTING
+struct mScriptContext;
+#endif
 struct mCoreThreadInternal;
 struct mCoreThread {
 	// Input
@@ -38,6 +41,10 @@ struct mCoreThread {
 	ThreadCallback unpauseCallback;
 	void* userData;
 	void (*run)(struct mCoreThread*);
+
+#ifdef ENABLE_SCRIPTING
+	struct mScriptContext* scriptContext;
+#endif
 
 	struct mCoreThreadInternal* impl;
 };
