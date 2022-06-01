@@ -229,7 +229,7 @@ void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value) {
 		bank = 1;
 	}
 
-	GBAudioRun(&audio->psg, mTimingCurrentTime(audio->psg.timing));
+	GBAudioRun(&audio->psg, mTimingCurrentTime(audio->psg.timing), 0x4);
 	audio->psg.ch3.wavedata32[address | (bank * 4)] = value;
 }
 
@@ -242,7 +242,7 @@ uint32_t GBAAudioReadWaveRAM(struct GBAAudio* audio, int address) {
 		bank = 1;
 	}
 
-	GBAudioRun(&audio->psg, mTimingCurrentTime(audio->psg.timing));
+	GBAudioRun(&audio->psg, mTimingCurrentTime(audio->psg.timing), 0x4);
 	return audio->psg.ch3.wavedata32[address | (bank * 4)];
 }
 
