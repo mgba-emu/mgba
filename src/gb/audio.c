@@ -674,7 +674,6 @@ void GBAudioUpdateFrame(struct GBAudio* audio) {
 }
 
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
-	GBAudioRun(audio, mTimingCurrentTime(audio->timing), 0xF);
 	int dcOffset = audio->style == GB_AUDIO_GBA ? 0 : -0x8;
 	int sampleLeft = dcOffset;
 	int sampleRight = dcOffset;
@@ -731,6 +730,7 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	struct GBAudio* audio = user;
 	int16_t sampleLeft = 0;
 	int16_t sampleRight = 0;
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing), 0xF);
 	GBAudioSamplePSG(audio, &sampleLeft, &sampleRight);
 	sampleLeft = (sampleLeft * audio->masterVolume * 6) >> 7;
 	sampleRight = (sampleRight * audio->masterVolume * 6) >> 7;
