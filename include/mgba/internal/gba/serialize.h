@@ -42,7 +42,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 21 - 23: Duty index
  *   | bits 24 - 31: Reserved
  * | 0x00134 - 0x00137: Next frame
- * | 0x00138 - 0x0013B: Next channel 3 fade
+ * | 0x00138 - 0x0013B: Reserved
  * | 0x0013C - 0x0013F: Sweep state
  *   | bits 0 - 2: Timesteps
  *   | bits 3 - 7: Reserved
@@ -60,7 +60,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | 0x00154 - 0x00173: Wave banks
  * | 0x00174 - 0x00175: Remaining length
  * | 0x00176 - 0x00177: Reserved
- * | 0x00178 - 0x0017B: Last update
+ * | 0x00178 - 0x0017B: Next event
  * 0x0017C - 0x0018B: Audio channel 4 state
  * | 0x0017C - 0x0017F: Linear feedback shift register state
  * | 0x00180 - 0x00183: Envelepe timing

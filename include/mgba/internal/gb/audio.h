@@ -113,6 +113,7 @@ struct GBAudioWaveChannel {
 	bool bank;
 	bool enable;
 
+	int8_t sample;
 	unsigned length;
 	int volume;
 
@@ -125,7 +126,7 @@ struct GBAudioWaveChannel {
 		uint32_t wavedata32[8];
 		uint8_t wavedata8[16];
 	};
-	int8_t sample;
+	int32_t nextUpdate;
 };
 
 struct GBAudioNoiseChannel {
@@ -195,8 +196,6 @@ struct GBAudio {
 	enum GBAudioStyle style;
 
 	struct mTimingEvent frameEvent;
-	struct mTimingEvent ch3Event;
-	struct mTimingEvent ch3Fade;
 	struct mTimingEvent sampleEvent;
 	bool enable;
 

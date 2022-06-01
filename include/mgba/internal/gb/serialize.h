@@ -59,7 +59,7 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bits 21 - 23: Duty index
  *   | bits 24 - 31: Reserved
  * | 0x0004C - 0x0004F: Next frame
- * | 0x00050 - 0x00053: Next channel 3 fade
+ * | 0x00050 - 0x00053: Reserved
  * | 0x00054 - 0x00057: Sweep state
  *   | bits 0 - 2: Timesteps
  *   | bits 3 - 31: Reserved
@@ -220,7 +220,7 @@ struct GBSerializedPSGState {
 	struct {
 		GBSerializedAudioEnvelope envelope;
 		int32_t nextFrame;
-		int32_t nextCh3Fade;
+		int32_t reserved;
 		GBSerializedAudioSweep sweep;
 		uint32_t lastUpdate;
 	} ch1;
