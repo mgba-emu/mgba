@@ -620,6 +620,7 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 		if (gb->model < GB_MODEL_CGB) {
 			mLOG(GB_IO, GAME_ERROR, "Reading from CGB register FF%02X in DMG mode", address);
 		} else if (gb->audio.enable) {
+			GBAudioRun(&gb->audio, mTimingCurrentTime(gb->audio.timing));
 			return (gb->audio.ch1.sample) | (gb->audio.ch2.sample << 4);
 		}
 		break;

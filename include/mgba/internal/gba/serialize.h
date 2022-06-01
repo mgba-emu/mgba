@@ -20,7 +20,7 @@ extern MGBA_EXPORT const uint32_t GBASavestateVersion;
 mLOG_DECLARE_CATEGORY(GBA_STATE);
 
 /* Savestate format:
- * 0x00000 - 0x00003: Version Magic (0x01000004)
+ * 0x00000 - 0x00003: Version Magic (0x01000005)
  * 0x00004 - 0x00007: BIOS checksum (e.g. 0xBAAE187F for official BIOS)
  * 0x00008 - 0x0000B: ROM CRC32
  * 0x0000C - 0x0000F: Master cycles
@@ -39,25 +39,28 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 0 - 6: Remaining length
  *   | bits 7 - 9: Next step
  *   | bits 10 - 20: Shadow frequency register
- *   | bits 21 - 31: Reserved
+ *   | bits 21 - 23: Duty index
+ *   | bits 24 - 31: Reserved
  * | 0x00134 - 0x00137: Next frame
  * | 0x00138 - 0x0013B: Next channel 3 fade
  * | 0x0013C - 0x0013F: Sweep state
  *   | bits 0 - 2: Timesteps
  *   | bits 3 - 7: Reserved
- * | 0x00140 - 0x00143: Next event
+ * | 0x00140 - 0x00143: Last update
  * 0x00144 - 0x00153: Audio channel 2 state
  * | 0x00144 - 0x00147: Envelepe timing
  *   | bits 0 - 2: Remaining length
  *   | bits 3 - 5: Next step
- *   | bits 6 - 31: Reserved
+ *   | bits 6 - 20: Reserved
+ *   | bits 21 - 23: Duty index
+ *   | bits 24 - 31: Reserved
  * | 0x00148 - 0x0014F: Reserved
- * | 0x00150 - 0x00153: Next event
+ * | 0x00150 - 0x00153: Last update
  * 0x00154 - 0x0017B: Audio channel 3 state
  * | 0x00154 - 0x00173: Wave banks
  * | 0x00174 - 0x00175: Remaining length
  * | 0x00176 - 0x00177: Reserved
- * | 0x00178 - 0x0017B: Next event
+ * | 0x00178 - 0x0017B: Last update
  * 0x0017C - 0x0018B: Audio channel 4 state
  * | 0x0017C - 0x0017F: Linear feedback shift register state
  * | 0x00180 - 0x00183: Envelepe timing

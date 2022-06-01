@@ -35,18 +35,20 @@ static void _updateEnvelopeDead(struct GBAudioEnvelope* envelope);
 static bool _updateSweep(struct GBAudioSquareChannel* sweep, bool initial);
 
 static void _updateSquareSample(struct GBAudioSquareChannel* ch);
-static int32_t _updateSquareChannel(struct GBAudioSquareChannel* ch);
-
-static int32_t _cyclesToInvert(struct GBAudioSquareChannel* ch);
 
 static int16_t _coalesceNoiseChannel(struct GBAudioNoiseChannel* ch);
 
 static void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate);
-static void _updateChannel1(struct mTiming* timing, void* user, uint32_t cyclesLate);
-static void _updateChannel2(struct mTiming* timing, void* user, uint32_t cyclesLate);
 static void _updateChannel3(struct mTiming* timing, void* user, uint32_t cyclesLate);
 static void _fadeChannel3(struct mTiming* timing, void* user, uint32_t cyclesLate);
 static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate);
+
+static const int _squareChannelDuty[4][8] = {
+	{ 0, 0, 0, 0, 0, 0, 0, 1 },
+	{ 1, 0, 0, 0, 0, 0, 0, 1 },
+	{ 1, 0, 0, 0, 0, 1, 1, 1 },
+	{ 0, 1, 1, 1, 1, 1, 1, 0 },
+};
 
 void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAudioStyle style) {
 	audio->samples = samples;
@@ -73,14 +75,6 @@ void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAu
 	audio->frameEvent.name = "GB Audio Frame Sequencer";
 	audio->frameEvent.callback = _updateFrame;
 	audio->frameEvent.priority = 0x10;
-	audio->ch1Event.context = audio;
-	audio->ch1Event.name = "GB Audio Channel 1";
-	audio->ch1Event.callback = _updateChannel1;
-	audio->ch1Event.priority = 0x11;
-	audio->ch2Event.context = audio;
-	audio->ch2Event.name = "GB Audio Channel 2";
-	audio->ch2Event.callback = _updateChannel2;
-	audio->ch2Event.priority = 0x12;
 	audio->ch3Event.context = audio;
 	audio->ch3Event.name = "GB Audio Channel 3";
 	audio->ch3Event.callback = _updateChannel3;
@@ -106,8 +100,6 @@ void GBAudioDeinit(struct GBAudio* audio) {
 
 void GBAudioReset(struct GBAudio* audio) {
 	mTimingDeschedule(audio->timing, &audio->frameEvent);
-	mTimingDeschedule(audio->timing, &audio->ch1Event);
-	mTimingDeschedule(audio->timing, &audio->ch2Event);
 	mTimingDeschedule(audio->timing, &audio->ch3Event);
 	mTimingDeschedule(audio->timing, &audio->ch3Fade);
 	mTimingDeschedule(audio->timing, &audio->ch4Event);
@@ -168,32 +160,35 @@ void GBAudioResizeBuffer(struct GBAudio* audio, size_t samples) {
 }
 
 void GBAudioWriteNR10(struct GBAudio* audio, uint8_t value) {
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing));
 	if (!_writeSweep(&audio->ch1.sweep, value)) {
-		mTimingDeschedule(audio->timing, &audio->ch1Event);
 		audio->playingCh1 = false;
 		*audio->nr52 &= ~0x0001;
 	}
 }
 
 void GBAudioWriteNR11(struct GBAudio* audio, uint8_t value) {
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing));
 	_writeDuty(&audio->ch1.envelope, value);
 	audio->ch1.control.length = 64 - audio->ch1.envelope.length;
 }
 
 void GBAudioWriteNR12(struct GBAudio* audio, uint8_t value) {
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing));
 	if (!_writeEnvelope(&audio->ch1.envelope, value, audio->style)) {
-		mTimingDeschedule(audio->timing, &audio->ch1Event);
 		audio->playingCh1 = false;
 		*audio->nr52 &= ~0x0001;
 	}
 }
 
 void GBAudioWriteNR13(struct GBAudio* audio, uint8_t value) {
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing));
 	audio->ch1.control.frequency &= 0x700;
 	audio->ch1.control.frequency |= GBAudioRegisterControlGetFrequency(value);
 }
 
 void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing));
 	audio->ch1.control.frequency &= 0xFF;
 	audio->ch1.control.frequency |= GBAudioRegisterControlGetFrequency(value << 8);
 	bool wasStop = audio->ch1.control.stop;
@@ -201,12 +196,10 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 	if (!wasStop && audio->ch1.control.stop && audio->ch1.control.length && !(audio->frame & 1)) {
 		--audio->ch1.control.length;
 		if (audio->ch1.control.length == 0) {
-			mTimingDeschedule(audio->timing, &audio->ch1Event);
 			audio->playingCh1 = false;
 		}
 	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
-		bool wasDead = !audio->playingCh1;
 		audio->playingCh1 = _resetEnvelope(&audio->ch1.envelope);
 		audio->ch1.sweep.realFrequency = audio->ch1.control.frequency;
 		_resetSweep(&audio->ch1.sweep);
@@ -220,35 +213,33 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 			}
 		}
 		_updateSquareSample(&audio->ch1);
-		if (wasDead && audio->playingCh1) {
-			mTimingSchedule(audio->timing, &audio->ch1Event, _cyclesToInvert(&audio->ch1));
-		} else if (!audio->playingCh1) {
-			mTimingDeschedule(audio->timing, &audio->ch1Event);
-		}
 	}
 	*audio->nr52 &= ~0x0001;
 	*audio->nr52 |= audio->playingCh1;
 }
 
 void GBAudioWriteNR21(struct GBAudio* audio, uint8_t value) {
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing));
 	_writeDuty(&audio->ch2.envelope, value);
 	audio->ch2.control.length = 64 - audio->ch2.envelope.length;
 }
 
 void GBAudioWriteNR22(struct GBAudio* audio, uint8_t value) {
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing));
 	if (!_writeEnvelope(&audio->ch2.envelope, value, audio->style)) {
-		mTimingDeschedule(audio->timing, &audio->ch2Event);
 		audio->playingCh2 = false;
 		*audio->nr52 &= ~0x0002;
 	}
 }
 
 void GBAudioWriteNR23(struct GBAudio* audio, uint8_t value) {
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing));
 	audio->ch2.control.frequency &= 0x700;
 	audio->ch2.control.frequency |= GBAudioRegisterControlGetFrequency(value);
 }
 
 void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing));
 	audio->ch2.control.frequency &= 0xFF;
 	audio->ch2.control.frequency |= GBAudioRegisterControlGetFrequency(value << 8);
 	bool wasStop = audio->ch2.control.stop;
@@ -256,12 +247,10 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 	if (!wasStop && audio->ch2.control.stop && audio->ch2.control.length && !(audio->frame & 1)) {
 		--audio->ch2.control.length;
 		if (audio->ch2.control.length == 0) {
-			mTimingDeschedule(audio->timing, &audio->ch2Event);
 			audio->playingCh2 = false;
 		}
 	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
-		bool wasDead = !audio->playingCh2;
 		audio->playingCh2 = _resetEnvelope(&audio->ch2.envelope);
 
 		if (!audio->ch2.control.length) {
@@ -271,11 +260,6 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 			}
 		}
 		_updateSquareSample(&audio->ch2);
-		if (wasDead && audio->playingCh2) {
-			mTimingSchedule(audio->timing, &audio->ch2Event, _cyclesToInvert(&audio->ch2));
-		} else if (!audio->playingCh2) {
-			mTimingDeschedule(audio->timing, &audio->ch2Event);
-		}
 	}
 	*audio->nr52 &= ~0x0002;
 	*audio->nr52 |= audio->playingCh2 << 1;
@@ -496,6 +480,26 @@ void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	}
 }
 
+void GBAudioRun(struct GBAudio* audio, int32_t timestamp) {
+	if (!audio->enable) {
+		return;
+	}
+	if (audio->playingCh1) {
+		int period = 4 * (2048 - audio->ch1.control.frequency) * audio->timingFactor;
+		int32_t diff = (timestamp - audio->ch1.lastUpdate) / period;
+		audio->ch1.index = (audio->ch1.index + diff) & 7;
+		audio->ch1.lastUpdate += diff * period;
+		_updateSquareSample(&audio->ch1);
+	}
+	if (audio->playingCh2) {
+		int period = 4 * (2048 - audio->ch2.control.frequency) * audio->timingFactor;
+		int32_t diff = (timestamp - audio->ch2.lastUpdate) / period;
+		audio->ch2.index = (audio->ch2.index + diff) & 7;
+		audio->ch2.lastUpdate += diff * period;
+		_updateSquareSample(&audio->ch2);
+	}
+}
+
 void GBAudioUpdateFrame(struct GBAudio* audio) {
 	if (!audio->enable) {
 		return;
@@ -504,6 +508,8 @@ void GBAudioUpdateFrame(struct GBAudio* audio) {
 		audio->skipFrame = false;
 		return;
 	}
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing));
+
 	int frame = (audio->frame + 1) & 7;
 	audio->frame = frame;
 
@@ -516,9 +522,6 @@ void GBAudioUpdateFrame(struct GBAudio* audio) {
 				audio->playingCh1 = _updateSweep(&audio->ch1, false);
 				*audio->nr52 &= ~0x0001;
 				*audio->nr52 |= audio->playingCh1;
-				if (!audio->playingCh1) {
-					mTimingDeschedule(audio->timing, &audio->ch1Event);
-				}
 			}
 		}
 		// Fall through
@@ -527,7 +530,6 @@ void GBAudioUpdateFrame(struct GBAudio* audio) {
 		if (audio->ch1.control.length && audio->ch1.control.stop) {
 			--audio->ch1.control.length;
 			if (audio->ch1.control.length == 0) {
-				mTimingDeschedule(audio->timing, &audio->ch1Event);
 				audio->playingCh1 = 0;
 				*audio->nr52 &= ~0x0001;
 			}
@@ -536,7 +538,6 @@ void GBAudioUpdateFrame(struct GBAudio* audio) {
 		if (audio->ch2.control.length && audio->ch2.control.stop) {
 			--audio->ch2.control.length;
 			if (audio->ch2.control.length == 0) {
-				mTimingDeschedule(audio->timing, &audio->ch2Event);
 				audio->playingCh2 = 0;
 				*audio->nr52 &= ~0x0002;
 			}
@@ -565,9 +566,6 @@ void GBAudioUpdateFrame(struct GBAudio* audio) {
 			--audio->ch1.envelope.nextStep;
 			if (audio->ch1.envelope.nextStep == 0) {
 				_updateEnvelope(&audio->ch1.envelope);
-				if (audio->ch1.envelope.dead == 2) {
-					mTimingDeschedule(audio->timing, &audio->ch1Event);
-				}
 				_updateSquareSample(&audio->ch1);
 			}
 		}
@@ -576,9 +574,6 @@ void GBAudioUpdateFrame(struct GBAudio* audio) {
 			--audio->ch2.envelope.nextStep;
 			if (audio->ch2.envelope.nextStep == 0) {
 				_updateEnvelope(&audio->ch2.envelope);
-				if (audio->ch2.envelope.dead == 2) {
-					mTimingDeschedule(audio->timing, &audio->ch2Event);
-				}
 				_updateSquareSample(&audio->ch2);
 			}
 		}
@@ -626,6 +621,7 @@ void GBAudioUpdateChannel4(struct GBAudio* audio) {
 }
 
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing));
 	int dcOffset = audio->style == GB_AUDIO_GBA ? 0 : -0x8;
 	int sampleLeft = dcOffset;
 	int sampleRight = dcOffset;
@@ -775,30 +771,7 @@ bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value, enum GBAudi
 }
 
 static void _updateSquareSample(struct GBAudioSquareChannel* ch) {
-	ch->sample = ch->control.hi * ch->envelope.currentVolume;
-}
-
-static int32_t _updateSquareChannel(struct GBAudioSquareChannel* ch) {
-	ch->control.hi = !ch->control.hi;
-	_updateSquareSample(ch);
-	return _cyclesToInvert(ch);
-}
-
-static int32_t _cyclesToInvert(struct GBAudioSquareChannel* ch) {
-	int period = 4 * (2048 - ch->control.frequency);
-	switch (ch->envelope.duty) {
-	case 0:
-		return ch->control.hi ? period : period * 7;
-	case 1:
-		return ch->control.hi ? period * 2 : period * 6;
-	case 2:
-		return period * 4;
-	case 3:
-		return ch->control.hi ? period * 6 : period * 2;
-	default:
-		// This should never be hit
-		return period * 4;
-	}
+	ch->sample = _squareChannelDuty[ch->envelope.duty][ch->index] * ch->envelope.currentVolume;
 }
 
 static int16_t _coalesceNoiseChannel(struct GBAudioNoiseChannel* ch) {
@@ -868,20 +841,6 @@ static bool _updateSweep(struct GBAudioSquareChannel* ch, bool initial) {
 	}
 	ch->sweep.step = ch->sweep.time;
 	return true;
-}
-
-static void _updateChannel1(struct mTiming* timing, void* user, uint32_t cyclesLate) {
-	struct GBAudio* audio = user;
-	struct GBAudioSquareChannel* ch = &audio->ch1;
-	int cycles = _updateSquareChannel(ch);
-	mTimingSchedule(timing, &audio->ch1Event, audio->timingFactor * cycles - cyclesLate);
-}
-
-static void _updateChannel2(struct mTiming* timing, void* user, uint32_t cyclesLate) {
-	struct GBAudio* audio = user;
-	struct GBAudioSquareChannel* ch = &audio->ch2;
-	int cycles = _updateSquareChannel(ch);
-	mTimingSchedule(timing, &audio->ch2Event, audio->timingFactor * cycles - cyclesLate);
 }
 
 static void _updateChannel3(struct mTiming* timing, void* user, uint32_t cyclesLate) {
@@ -971,24 +930,24 @@ void GBAudioPSGSerialize(const struct GBAudio* audio, struct GBSerializedPSGStat
 
 	flags = GBSerializedAudioFlagsSetCh1Volume(flags, audio->ch1.envelope.currentVolume);
 	flags = GBSerializedAudioFlagsSetCh1Dead(flags, audio->ch1.envelope.dead);
-	flags = GBSerializedAudioFlagsSetCh1Hi(flags, audio->ch1.control.hi);
 	flags = GBSerializedAudioFlagsSetCh1SweepEnabled(flags, audio->ch1.sweep.enable);
 	flags = GBSerializedAudioFlagsSetCh1SweepOccurred(flags, audio->ch1.sweep.occurred);
 	ch1Flags = GBSerializedAudioEnvelopeSetLength(ch1Flags, audio->ch1.control.length);
 	ch1Flags = GBSerializedAudioEnvelopeSetNextStep(ch1Flags, audio->ch1.envelope.nextStep);
 	ch1Flags = GBSerializedAudioEnvelopeSetFrequency(ch1Flags, audio->ch1.sweep.realFrequency);
+	ch1Flags = GBSerializedAudioEnvelopeSetDutyIndex(ch1Flags, audio->ch1.index);
 	sweep = GBSerializedAudioSweepSetTime(sweep, audio->ch1.sweep.time & 7);
 	STORE_32LE(ch1Flags, 0, &state->ch1.envelope);
 	STORE_32LE(sweep, 0, &state->ch1.sweep);
-	STORE_32LE(audio->ch1Event.when - mTimingCurrentTime(audio->timing), 0, &state->ch1.nextEvent);
+	STORE_32LE(audio->ch1.lastUpdate - mTimingCurrentTime(audio->timing), 0, &state->ch1.lastUpdate);
 
 	flags = GBSerializedAudioFlagsSetCh2Volume(flags, audio->ch2.envelope.currentVolume);
 	flags = GBSerializedAudioFlagsSetCh2Dead(flags, audio->ch2.envelope.dead);
-	flags = GBSerializedAudioFlagsSetCh2Hi(flags, audio->ch2.control.hi);
 	ch2Flags = GBSerializedAudioEnvelopeSetLength(ch2Flags, audio->ch2.control.length);
 	ch2Flags = GBSerializedAudioEnvelopeSetNextStep(ch2Flags, audio->ch2.envelope.nextStep);
+	ch2Flags = GBSerializedAudioEnvelopeSetDutyIndex(ch2Flags, audio->ch2.index);
 	STORE_32LE(ch2Flags, 0, &state->ch2.envelope);
-	STORE_32LE(audio->ch2Event.when - mTimingCurrentTime(audio->timing), 0, &state->ch2.nextEvent);
+	STORE_32LE(audio->ch2.lastUpdate - mTimingCurrentTime(audio->timing), 0, &state->ch2.lastUpdate);
 
 	flags = GBSerializedAudioFlagsSetCh3Readable(flags, audio->ch3.readable);
 	memcpy(state->ch3.wavebanks, audio->ch3.wavedata32, sizeof(state->ch3.wavebanks));
@@ -1039,7 +998,6 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	LOAD_32LE(sweep, 0, &state->ch1.sweep);
 	audio->ch1.envelope.currentVolume = GBSerializedAudioFlagsGetCh1Volume(flags);
 	audio->ch1.envelope.dead = GBSerializedAudioFlagsGetCh1Dead(flags);
-	audio->ch1.control.hi = GBSerializedAudioFlagsGetCh1Hi(flags);
 	audio->ch1.sweep.enable = GBSerializedAudioFlagsGetCh1SweepEnabled(flags);
 	audio->ch1.sweep.occurred = GBSerializedAudioFlagsGetCh1SweepOccurred(flags);
 	audio->ch1.sweep.time = GBSerializedAudioSweepGetTime(sweep);
@@ -1049,21 +1007,18 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 	audio->ch1.control.length = GBSerializedAudioEnvelopeGetLength(ch1Flags);
 	audio->ch1.envelope.nextStep = GBSerializedAudioEnvelopeGetNextStep(ch1Flags);
 	audio->ch1.sweep.realFrequency = GBSerializedAudioEnvelopeGetFrequency(ch1Flags);
-	LOAD_32LE(when, 0, &state->ch1.nextEvent);
-	if (audio->ch1.envelope.dead < 2 && audio->playingCh1) {
-		mTimingSchedule(audio->timing, &audio->ch1Event, when);
-	}
+	audio->ch1.index = GBSerializedAudioEnvelopeGetDutyIndex(ch1Flags);
+	LOAD_32LE(audio->ch1.lastUpdate, 0, &state->ch1.lastUpdate);
+	audio->ch1.lastUpdate += mTimingCurrentTime(audio->timing);
 
 	LOAD_32LE(ch2Flags, 0, &state->ch2.envelope);
 	audio->ch2.envelope.currentVolume = GBSerializedAudioFlagsGetCh2Volume(flags);
 	audio->ch2.envelope.dead = GBSerializedAudioFlagsGetCh2Dead(flags);
-	audio->ch2.control.hi = GBSerializedAudioFlagsGetCh2Hi(flags);
 	audio->ch2.control.length = GBSerializedAudioEnvelopeGetLength(ch2Flags);
 	audio->ch2.envelope.nextStep = GBSerializedAudioEnvelopeGetNextStep(ch2Flags);
-	LOAD_32LE(when, 0, &state->ch2.nextEvent);
-	if (audio->ch2.envelope.dead < 2 && audio->playingCh2) {
-		mTimingSchedule(audio->timing, &audio->ch2Event, when);
-	}
+	audio->ch2.index = GBSerializedAudioEnvelopeGetDutyIndex(ch2Flags);
+	LOAD_32LE(audio->ch2.lastUpdate, 0, &state->ch2.lastUpdate);
+	audio->ch2.lastUpdate += mTimingCurrentTime(audio->timing);
 
 	audio->ch3.readable = GBSerializedAudioFlagsGetCh3Readable(flags);
 	// TODO: Big endian?
