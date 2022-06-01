@@ -197,7 +197,6 @@ struct GBAudio {
 	struct mTimingEvent frameEvent;
 	struct mTimingEvent ch3Event;
 	struct mTimingEvent ch3Fade;
-	struct mTimingEvent ch4Event;
 	struct mTimingEvent sampleEvent;
 	bool enable;
 
@@ -240,7 +239,6 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t);
 
 void GBAudioRun(struct GBAudio* audio, int32_t timestamp);
 void GBAudioUpdateFrame(struct GBAudio* audio);
-void GBAudioUpdateChannel4(struct GBAudio* audio);
 
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right);
 
