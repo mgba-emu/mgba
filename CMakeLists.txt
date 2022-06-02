@@ -957,7 +957,7 @@ if(BUILD_UPDATER)
 		${CMAKE_CURRENT_SOURCE_DIR}/src/feature/updater.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/feature/updater-main.c)
 	target_link_libraries(updater-stub ${OS_LIB} ${PLATFORM_LIBRARY})
-	set_target_properties(updater-stub PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FUNCTION_DEFINES}")
+	set_target_properties(updater-stub PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FUNCTION_DEFINES};BUILD_STATIC")
 	if(MSVC)
 		set_target_properties(updater-stub PROPERTIES LINK_FLAGS /ENTRY:mainCRTStartup)
 	else()
