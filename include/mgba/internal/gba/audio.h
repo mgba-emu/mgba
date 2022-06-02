@@ -34,7 +34,7 @@ struct GBAAudioFIFO {
 	uint32_t internalSample;
 	int internalRemaining;
 	int dmaSource;
-	int8_t sample;
+	int8_t samples[8];
 };
 
 DECL_BITFIELD(GBARegisterSOUNDCNT_HI, uint16_t);

@@ -416,6 +416,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		value |= gba->memory.io[REG_SOUNDCNT_X >> 1] & 0xF;
 		break;
 	case REG_SOUNDBIAS:
+		value &= 0xC3FE;
 		GBAAudioWriteSOUNDBIAS(&gba->audio, value);
 		break;
 
@@ -842,7 +843,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		gba->memory.io[REG_JOYSTAT >> 1] &= ~JOYSTAT_RECV;
 		break;
 
-	case REG_SOUNDBIAS:
 	case REG_POSTFLG:
 		mLOG(GBA_IO, STUB, "Stub I/O register read: %03x", address);
 		break;
@@ -878,6 +878,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_SOUND4CNT_LO:
 	case REG_SOUND4CNT_HI:
 	case REG_SOUNDCNT_LO:
+	case REG_SOUNDBIAS:
 		if (!GBAudioEnableIsEnable(gba->memory.io[REG_SOUNDCNT_X >> 1])) {
 			// TODO: Is writing allowed when the circuit is disabled?
 			return 0;

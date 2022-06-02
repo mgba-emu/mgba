@@ -19,7 +19,7 @@ extern MGBA_EXPORT const uint32_t GBSavestateVersion;
 mLOG_DECLARE_CATEGORY(GB_STATE);
 
 /* Savestate format:
- * 0x00000 - 0x00003: Version Magic (0x01000002)
+ * 0x00000 - 0x00003: Version Magic (0x00400003)
  * 0x00004 - 0x00007: ROM CRC32
  * 0x00008: Game Boy model
  * 0x00009 - 0x0000B: Reserved (leave zero)
@@ -56,20 +56,23 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  *   | bits 0 - 6: Remaining length
  *   | bits 7 - 9: Next step
  *   | bits 10 - 20: Shadow frequency register
- *   | bits 21 - 31: Reserved
+ *   | bits 21 - 23: Duty index
+ *   | bits 24 - 31: Reserved
  * | 0x0004C - 0x0004F: Next frame
- * | 0x00050 - 0x00053: Next channel 3 fade
+ * | 0x00050 - 0x00053: Reserved
  * | 0x00054 - 0x00057: Sweep state
  *   | bits 0 - 2: Timesteps
  *   | bits 3 - 31: Reserved
- * | 0x00058 - 0x0005B: Next event
+ * | 0x00058 - 0x0005B: Last update
  * 0x0005C - 0x0006B: Audio channel 2 state
  * | 0x0005C - 0x0005F: Envelepe timing
  *   | bits 0 - 2: Remaining length
  *   | bits 3 - 5: Next step
- *   | bits 6 - 31: Reserved
+ *   | bits 6 - 20: Reserved
+ *   | bits 21 - 23: Duty index
+ *   | bits 24 - 31: Reserved
  * | 0x00060 - 0x00067: Reserved
- * | 0x00068 - 0x0006B: Next event
+ * | 0x00068 - 0x0006B: Last update
  * 0x0006C - 0x00093: Audio channel 3 state
  * | 0x0006C - 0x0008B: Wave banks
  * | 0x0008C - 0x0008D: Remaining length
@@ -208,7 +211,7 @@ DECL_BITFIELD(GBSerializedAudioEnvelope, uint32_t);
 DECL_BITS(GBSerializedAudioEnvelope, Length, 0, 7);
 DECL_BITS(GBSerializedAudioEnvelope, NextStep, 7, 3);
 DECL_BITS(GBSerializedAudioEnvelope, Frequency, 10, 11);
-
+DECL_BITS(GBSerializedAudioEnvelope, DutyIndex, 21, 3);
 
 DECL_BITFIELD(GBSerializedAudioSweep, uint32_t);
 DECL_BITS(GBSerializedAudioSweep, Time, 0, 3);
@@ -217,14 +220,14 @@ struct GBSerializedPSGState {
 	struct {
 		GBSerializedAudioEnvelope envelope;
 		int32_t nextFrame;
-		int32_t nextCh3Fade;
+		int32_t reserved;
 		GBSerializedAudioSweep sweep;
-		uint32_t nextEvent;
+		uint32_t lastUpdate;
 	} ch1;
 	struct {
 		GBSerializedAudioEnvelope envelope;
 		int32_t reserved[2];
-		int32_t nextEvent;
+		uint32_t lastUpdate;
 	} ch2;
 	struct {
 		uint32_t wavebanks[8];
