@@ -224,7 +224,10 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x00320 - 0x00323: Next IRQ event
  * 0x00324 - 0x00327: Interruptable BIOS stall cycles
  * 0x00328 - 0x00367: Matrix memory mapping table
- * 0x00368 - 0x003FF: Reserved (leave zero)
+ * 0x00368 - 0x0036F: Reserved (leave zero)
+ * 0x00370 - 0x00377: Audio FIFO A samples
+ * 0x00378 - 0x0037F: Audio FIFO B samples
+ * 0x00380 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -381,8 +384,14 @@ struct GBASerializedState {
 	int32_t biosStall;
 
 	uint32_t matrixMappings[16];
+    uint32_t reservedMatrix[2];
 
-	uint32_t reserved[38];
+    struct {
+        int8_t chA[8];
+        int8_t chB[8];
+    } samples;
+
+	uint32_t reserved[32];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];
