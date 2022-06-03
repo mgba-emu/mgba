@@ -449,13 +449,16 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 						}
 					}
 				} else {
+					GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[0]);
 					GBAVideoSoftwareRendererDrawBackgroundMode0(softwareRenderer, &softwareRenderer->bg[0], y);
 				}
 			}
 			if (TEST_LAYER_ENABLED(1)) {
+				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[1]);
 				GBAVideoSoftwareRendererDrawBackgroundMode0(softwareRenderer, &softwareRenderer->bg[1], y);
 			}
 			if (TEST_LAYER_ENABLED(2)) {
+				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[2]);
 				switch (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt)) {
 				case 0:
 				case 1:
@@ -478,6 +481,7 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 				}
 			}
 			if (TEST_LAYER_ENABLED(3)) {
+				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[3]);
 				switch (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt)) {
 				case 0:
 					GBAVideoSoftwareRendererDrawBackgroundMode0(softwareRenderer, &softwareRenderer->bg[3], y);

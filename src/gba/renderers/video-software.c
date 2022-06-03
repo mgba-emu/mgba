@@ -36,7 +36,6 @@ static void GBAVideoSoftwareRendererWriteBGY_HI(struct GBAVideoSoftwareBackgroun
 static void GBAVideoSoftwareRendererWriteBLDCNT(struct GBAVideoSoftwareRenderer* renderer, uint16_t value);
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
-static void _updateFlags(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg);
 
 static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win, int y);
 static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win);
@@ -615,33 +614,33 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		switch (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt)) {
 		case 0:
 			if (softwareRenderer->bg[0].enabled == ENABLED_MAX) {
-				_updateFlags(softwareRenderer, &softwareRenderer->bg[0]);
+				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[0]);
 			}
 			if (softwareRenderer->bg[1].enabled == ENABLED_MAX) {
-				_updateFlags(softwareRenderer, &softwareRenderer->bg[1]);
+				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[1]);
 			}
 			// Fall through
 		case 2:
 			if (softwareRenderer->bg[3].enabled == ENABLED_MAX) {
-				_updateFlags(softwareRenderer, &softwareRenderer->bg[3]);
+				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[3]);
 			}
 			// Fall through
 		case 3:
 		case 4:
 		case 5:
 			if (softwareRenderer->bg[2].enabled == ENABLED_MAX) {
-				_updateFlags(softwareRenderer, &softwareRenderer->bg[2]);
+				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[2]);
 			}
 			break;
 		case 1:
 			if (softwareRenderer->bg[0].enabled == ENABLED_MAX) {
-				_updateFlags(softwareRenderer, &softwareRenderer->bg[0]);
+				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[0]);
 			}
 			if (softwareRenderer->bg[1].enabled == ENABLED_MAX) {
-				_updateFlags(softwareRenderer, &softwareRenderer->bg[1]);
+				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[1]);
 			}
 			if (softwareRenderer->bg[2].enabled == ENABLED_MAX) {
-				_updateFlags(softwareRenderer, &softwareRenderer->bg[2]);
+				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[2]);
 			}
 			break;
 		}
@@ -832,7 +831,7 @@ static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* 
 	bg->control = value;
 	bg->yCache = -1;
 
-	_updateFlags(renderer, bg);
+	GBAVideoSoftwareRendererUpdateFlags(renderer, bg);
 }
 
 static void GBAVideoSoftwareRendererWriteBGX_LO(struct GBAVideoSoftwareBackground* bg, uint16_t value) {
@@ -1083,7 +1082,7 @@ static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
 	}
 }
 
-void _updateFlags(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background) {
+void GBAVideoSoftwareRendererUpdateFlags(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background) {
 	uint32_t flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND;
 	if (background->target2) {
 		flags |= FLAG_TARGET_2;
