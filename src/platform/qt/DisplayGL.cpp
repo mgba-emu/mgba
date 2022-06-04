@@ -203,6 +203,8 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	QMetaObject::invokeMethod(m_painter.get(), "start");
 	if (!m_gl) {
 		setUpdatesEnabled(false);
+	} else {
+		show();
 	}
 }
 
@@ -265,6 +267,9 @@ void DisplayGL::stopDrawing() {
 		m_hasStarted = false;
 		CoreController::Interrupter interrupter(m_context);
 		QMetaObject::invokeMethod(m_painter.get(), "stop", Qt::BlockingQueuedConnection);
+		if (m_gl) {
+			hide();
+		}
 		setUpdatesEnabled(true);
 	}
 	m_context.reset();
@@ -274,9 +279,7 @@ void DisplayGL::pauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = false;
 		QMetaObject::invokeMethod(m_painter.get(), "pause", Qt::BlockingQueuedConnection);
-#ifndef Q_OS_MAC
 		setUpdatesEnabled(true);
-#endif
 	}
 }
 
@@ -284,11 +287,9 @@ void DisplayGL::unpauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = true;
 		QMetaObject::invokeMethod(m_painter.get(), "unpause", Qt::BlockingQueuedConnection);
-#ifndef Q_OS_MAC
 		if (!m_gl) {
 			setUpdatesEnabled(false);
 		}
-#endif
 	}
 }
 
