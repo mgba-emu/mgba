@@ -25,7 +25,7 @@ mLOG_DEFINE_CATEGORY(GBA_AUDIO, "GBA Audio", "gba.audio");
 const unsigned GBA_AUDIO_SAMPLES = 2048;
 const int GBA_AUDIO_VOLUME_MAX = 0x100;
 
-static const int SAMPLE_INTERVAL = GBA_ARM7TDMI_FREQUENCY / 0x8000;
+static const int SAMPLE_INTERVAL = GBA_ARM7TDMI_FREQUENCY / 0x4000;
 static const int CLOCKS_PER_FRAME = 0x800;
 
 static int _applyBias(struct GBAAudio* audio, int sample);
@@ -305,14 +305,11 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 		}
 	}
 	int32_t until = mTimingUntil(&audio->p->timing, &audio->sampleEvent) - 1;
-	int bits = 1 << GBARegisterSOUNDBIASGetResolution(audio->soundbias);
+	int bits = 2 << GBARegisterSOUNDBIASGetResolution(audio->soundbias);
 	until += 1 << (9 - GBARegisterSOUNDBIASGetResolution(audio->soundbias));
 	until >>= 9 - GBARegisterSOUNDBIASGetResolution(audio->soundbias);
 	int i;
 	for (i = bits - until; i < bits; ++i) {
-		if (i < 0 || i >= bits) {
-			abort();
-		}
 		channel->samples[i] = channel->internalSample;
 	}
 	if (channel->internalRemaining) {
@@ -333,8 +330,8 @@ static int _applyBias(struct GBAAudio* audio, int sample) {
 
 static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	struct GBAAudio* audio = user;
-	int16_t samplesLeft[8];
-	int16_t samplesRight[8];
+	int16_t samplesLeft[GBA_MAX_SAMPLES];
+	int16_t samplesRight[GBA_MAX_SAMPLES];
 	int32_t timestamp = mTimingCurrentTime(&audio->p->timing) - cyclesLate - SAMPLE_INTERVAL;
 	int sample;
 	for (sample = 0; sample * audio->sampleInterval < (int32_t) SAMPLE_INTERVAL; ++sample) {

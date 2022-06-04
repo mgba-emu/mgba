@@ -566,29 +566,28 @@ void GBAudioRun(struct GBAudio* audio, int32_t timestamp, int channels) {
 		cycles <<= audio->ch4.frequency;
 		cycles *= 8 * audio->timingFactor;
 
-		int32_t last = 0;
 		int32_t diff = timestamp - audio->ch4.lastEvent;
-		int samples = 0;
-		int positiveSamples = 0;
-		int lsb;
-		int coeff = 0x60;
-		if (!audio->ch4.power) {
-			coeff <<= 8;
-		}
-		for (; last + cycles <= diff; last += cycles) {
-			lsb = audio->ch4.lfsr & 1;
-			audio->ch4.lfsr >>= 1;
-			audio->ch4.lfsr ^= lsb * coeff;
-			++samples;
-			positiveSamples += lsb;
-		}
-		if (samples) {
+		if (diff >= cycles) {
+			int32_t last;
+			int samples = 0;
+			int positiveSamples = 0;
+			int lsb;
+			int coeff = 0x60;
+			if (!audio->ch4.power) {
+				coeff <<= 8;
+			}
+			for (last = 0; last + cycles <= diff; last += cycles) {
+				lsb = audio->ch4.lfsr & 1;
+				audio->ch4.lfsr >>= 1;
+				audio->ch4.lfsr ^= lsb * coeff;
+				++samples;
+				positiveSamples += lsb;
+			}
 			audio->ch4.sample = lsb * audio->ch4.envelope.currentVolume;
 			audio->ch4.nSamples += samples;
 			audio->ch4.samples += positiveSamples * audio->ch4.envelope.currentVolume;
+			audio->ch4.lastEvent += last;
 		}
-
-		audio->ch4.lastEvent += last;
 	}
 }
 

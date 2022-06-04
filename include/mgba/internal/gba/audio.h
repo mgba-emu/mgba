@@ -16,6 +16,7 @@ CXX_GUARD_START
 #include <mgba-util/circle-buffer.h>
 
 #define GBA_AUDIO_FIFO_SIZE 8
+#define GBA_MAX_SAMPLES 16
 
 #define MP2K_MAGIC 0x68736D53
 #define MP2K_MAX_SOUND_CHANNELS 12
@@ -34,7 +35,7 @@ struct GBAAudioFIFO {
 	uint32_t internalSample;
 	int internalRemaining;
 	int dmaSource;
-	int8_t samples[8];
+	int8_t samples[GBA_MAX_SAMPLES];
 };
 
 DECL_BITFIELD(GBARegisterSOUNDCNT_HI, uint16_t);
