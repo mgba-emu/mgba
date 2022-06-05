@@ -106,6 +106,7 @@ static const luaL_Reg _mSTTable[] = {
 	{ "__index", _luaGetTable },
 	{ "__len", _luaLenTable },
 	{ "__pairs", _luaPairsTable },
+	{ "__gc", _luaGcObject },
 	{ NULL, NULL }
 };
 
@@ -412,7 +413,6 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 			*newValue = mSCRIPT_MAKE(WEAKREF, weakref);
 		} else {
 			mScriptValueWrap(value, newValue);
-			mScriptValueDeref(value);
 		}
 		luaL_setmetatable(luaContext->lua, "mSTList");
 		break;
@@ -422,7 +422,6 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 			*newValue = mSCRIPT_MAKE(WEAKREF, weakref);
 		} else {
 			mScriptValueWrap(value, newValue);
-			mScriptValueDeref(value);
 		}
 		luaL_setmetatable(luaContext->lua, "mSTTable");
 		break;
@@ -440,7 +439,6 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 			*newValue = mSCRIPT_MAKE(WEAKREF, weakref);
 		} else {
 			mScriptValueWrap(value, newValue);
-			mScriptValueDeref(value);
 		}
 		luaL_setmetatable(luaContext->lua, "mSTStruct");
 		break;
