@@ -61,8 +61,22 @@ static void testV1(struct Test* a, int b) {
 	a->i += b;
 }
 
+static int32_t sum(struct mScriptList* list) {
+	int32_t sum = 0;
+	size_t i;
+	for (i = 0; i < mScriptListSize(list); ++i) {
+		struct mScriptValue value;
+		if (!mScriptCast(mSCRIPT_TYPE_MS_S32, mScriptListGetPointer(list, i), &value)) {
+			continue;
+		}
+		sum += value.value.s32;
+	}
+	return sum;
+}
+
 mSCRIPT_BIND_FUNCTION(boundIdentityInt, S32, identityInt, 1, S32, a);
 mSCRIPT_BIND_FUNCTION(boundAddInts, S32, addInts, 2, S32, a, S32, b);
+mSCRIPT_BIND_FUNCTION(boundSum, S32, sum, 1, LIST, list);
 
 mSCRIPT_DECLARE_STRUCT(Test);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(Test, S32, ifn0, 0);
@@ -619,6 +633,24 @@ M_TEST_DEFINE(tableIterate) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(callList) {
+	SETUP_LUA;
+
+	struct mScriptValue a = mSCRIPT_MAKE_S32(6);
+	struct mScriptValue* val;
+
+	assert_true(lua->setGlobal(lua, "sum", &boundSum));
+	TEST_PROGRAM("a = sum({1, 2, 3})");
+	assert_null(lua->getError(lua));
+
+	val = lua->getGlobal(lua, "a");
+	assert_non_null(val);
+	assert_true(mSCRIPT_TYPE_MS_S32->equal(&a, val));
+	mScriptValueDeref(val);
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(create),
 	cmocka_unit_test(loadGood),
@@ -634,4 +666,5 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(errorReporting),
 	cmocka_unit_test(tableLookup),
 	cmocka_unit_test(tableIterate),
+	cmocka_unit_test(callList),
 )
