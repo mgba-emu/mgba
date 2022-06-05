@@ -57,6 +57,7 @@ void mScriptContextInit(struct mScriptContext* context) {
 	context->nextWeakref = 1;
 	HashTableInit(&context->callbacks, 0, (void (*)(void*)) mScriptValueDeref);
 	context->constants = NULL;
+	HashTableInit(&context->docstrings, 0, NULL);
 }
 
 void mScriptContextDeinit(struct mScriptContext* context) {
@@ -66,6 +67,7 @@ void mScriptContextDeinit(struct mScriptContext* context) {
 	mScriptListDeinit(&context->refPool);
 	HashTableDeinit(&context->callbacks);
 	HashTableDeinit(&context->engines);
+	HashTableDeinit(&context->docstrings);
 }
 
 void mScriptContextFillPool(struct mScriptContext* context, struct mScriptValue* value) {
@@ -235,6 +237,26 @@ void mScriptContextExportConstants(struct mScriptContext* context, const char* n
 	mScriptTableInsert(context->constants, key, table);
 	mScriptValueDeref(key);
 	mScriptValueDeref(table);
+}
+
+void mScriptContextExportNamespace(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* values) {
+	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+	size_t i;
+	for (i = 0; values[i].key; ++i) {
+		struct mScriptValue* key = mScriptStringCreateFromUTF8(values[i].key);
+		mScriptTableInsert(table, key, values[i].value);
+		mScriptValueDeref(key);
+		mScriptValueDeref(values[i].value);
+	}
+	mScriptContextSetGlobal(context, nspace, table);
+}
+
+void mScriptContextSetDocstring(struct mScriptContext* context, const char* key, const char* docstring) {
+	HashTableInsert(&context->docstrings, key, docstring);
+}
+
+const char* mScriptContextGetDocstring(struct mScriptContext* context, const char* key) {
+	return HashTableLookup(&context->docstrings, key);
 }
 
 bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, struct VFile* vf) {

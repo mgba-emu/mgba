@@ -416,6 +416,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		value |= gba->memory.io[REG_SOUNDCNT_X >> 1] & 0xF;
 		break;
 	case REG_SOUNDBIAS:
+		value &= 0xC3FE;
 		GBAAudioWriteSOUNDBIAS(&gba->audio, value);
 		break;
 
@@ -842,7 +843,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		gba->memory.io[REG_JOYSTAT >> 1] &= ~JOYSTAT_RECV;
 		break;
 
-	case REG_SOUNDBIAS:
 	case REG_POSTFLG:
 		mLOG(GBA_IO, STUB, "Stub I/O register read: %03x", address);
 		break;
@@ -897,6 +897,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_BLDALPHA:
 	case REG_SOUNDCNT_HI:
 	case REG_SOUNDCNT_X:
+	case REG_SOUNDBIAS:
 	case REG_DMA0CNT_HI:
 	case REG_DMA1CNT_HI:
 	case REG_DMA2CNT_HI:

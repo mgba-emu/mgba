@@ -974,14 +974,17 @@ if(BUILD_OPENEMU)
 	install(TARGETS ${BINARY_NAME}-openemu LIBRARY DESTINATION ${OE_LIBDIR} COMPONENT ${BINARY_NAME}.oecoreplugin NAMELINK_SKIP)
 endif()
 
-if(BUILD_QT AND (WIN32 OR APPLE))
+if(BUILD_QT AND (WIN32 OR APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Linux"))
 	set(BUILD_UPDATER ON)
 endif()
 
 if(BUILD_UPDATER)
-	add_executable(updater-stub WIN32 ${CMAKE_CURRENT_SOURCE_DIR}/src/feature/updater-main.c)
-	target_link_libraries(updater-stub ${OS_LIB} ${PLATFORM_LIBRARY} ${BINARY_NAME})
-	set_target_properties(updater-stub PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FUNCTION_DEFINES}")
+	add_executable(updater-stub WIN32 ${CORE_VFS_SRC} ${OS_SRC} ${UTIL_SRC} ${THIRD_PARTY_SRC}
+		${CMAKE_CURRENT_SOURCE_DIR}/src/core/config.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/feature/updater.c
+		${CMAKE_CURRENT_SOURCE_DIR}/src/feature/updater-main.c)
+	target_link_libraries(updater-stub ${OS_LIB} ${PLATFORM_LIBRARY})
+	set_target_properties(updater-stub PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FUNCTION_DEFINES};BUILD_STATIC")
 	if(MSVC)
 		set_target_properties(updater-stub PROPERTIES LINK_FLAGS /ENTRY:mainCRTStartup)
 	else()

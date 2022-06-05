@@ -173,24 +173,72 @@ int main(int argc, char* argv[]) {
 			prefix = false;
 			needsUnmount = true;
 #endif
-		} else {
+		} else if (strcmp(extension, "appimage") != 0) {
 			archive = VDirOpenArchive(updateArchive);
 		}
-		if (!archive) {
-			puts("Cannot open update archive");
-		} else {
+		if (archive) {
 			puts("Extracting update");
 			if (extractArchive(archive, root, prefix)) {
-				puts("Complete");
-				const char* command = mUpdateGetCommand(&config);
-				strlcpy(bin, command, sizeof(bin));
 				ok = 0;
-				mUpdateDeregister(&config);
 			} else {
 				puts("An error occurred");
 			}
 			archive->close(archive);
 			unlink(updateArchive);
+		}
+#ifdef __linux__
+		else if (strcmp(extension, "appimage") == 0) {
+			const char* command = mUpdateGetCommand(&config);
+			strlcpy(bin, command, sizeof(bin));
+			if (rename(updateArchive, bin) < 0) {
+				if (errno == EXDEV) {
+					// Cross-dev, need to copy manually
+					int infd = open(updateArchive, O_RDONLY);
+					int outfd = -1;
+					if (infd >= 0) {
+						ok = 2;
+					} else {
+						outfd = open(bin, O_CREAT | O_WRONLY | O_TRUNC, 0755);
+					}
+					if (outfd < 0) {
+						ok = 2;
+					} else {
+						uint8_t buffer[2048];
+						ssize_t size;
+						while ((size = read(infd, buffer, sizeof(buffer))) > 0) {
+							if (write(outfd, buffer, size) < size) {
+								ok = 2;
+								break;
+							}
+						}
+						if (size < 0) {
+							ok = 2;
+						}
+						close(outfd);
+						close(infd);
+					}
+					if (ok == 2) {
+						puts("Cannot move update over old file");
+					}
+				} else {
+					puts("Cannot move update over old file");
+				}
+			} else {
+				ok = 0;
+			}
+			if (ok == 0) {
+				chmod(bin, 0755);
+			}
+		}
+#endif
+		else {
+			puts("Cannot open update archive");
+		}
+		if (ok == 0) {
+			puts("Complete");
+			const char* command = mUpdateGetCommand(&config);
+			strlcpy(bin, command, sizeof(bin));
+			mUpdateDeregister(&config);
 		}
 #ifdef __APPLE__
 		if (needsUnmount) {

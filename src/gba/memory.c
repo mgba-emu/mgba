@@ -1239,9 +1239,13 @@ void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* o
 		if ((address & 0x0001FFFF) < SIZE_VRAM) {
 			LOAD_32(oldValue, address & 0x0001FFFC, gba->video.vram);
 			STORE_32(value, address & 0x0001FFFC, gba->video.vram);
+			gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x0001FFFC);
+			gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x0001FFFC) | 2);
 		} else {
 			LOAD_32(oldValue, address & 0x00017FFC, gba->video.vram);
 			STORE_32(value, address & 0x00017FFC, gba->video.vram);
+			gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x00017FFC);
+			gba->video.renderer->writeVRAM(gba->video.renderer, (address & 0x00017FFC) | 2);
 		}
 		break;
 	case REGION_OAM:
@@ -1308,9 +1312,11 @@ void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* o
 		if ((address & 0x0001FFFF) < SIZE_VRAM) {
 			LOAD_16(oldValue, address & 0x0001FFFE, gba->video.vram);
 			STORE_16(value, address & 0x0001FFFE, gba->video.vram);
+			gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x0001FFFE);
 		} else {
 			LOAD_16(oldValue, address & 0x00017FFE, gba->video.vram);
 			STORE_16(value, address & 0x00017FFE, gba->video.vram);
+			gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x00017FFE);
 		}
 		break;
 	case REGION_OAM:

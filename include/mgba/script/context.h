@@ -14,8 +14,9 @@ CXX_GUARD_START
 #include <mgba-util/table.h>
 #include <mgba-util/vfs.h>
 
+#define mSCRIPT_KV_PAIR(KEY, VALUE) { #KEY, VALUE }
 #define mSCRIPT_CONSTANT_PAIR(NS, CONST) { #CONST, mScriptValueCreateFromSInt(NS ## _ ## CONST) }
-#define mSCRIPT_CONSTANT_SENTINEL { NULL, NULL }
+#define mSCRIPT_KV_SENTINEL { NULL, NULL }
 
 struct mScriptFrame;
 struct mScriptFunction;
@@ -29,6 +30,7 @@ struct mScriptContext {
 	uint32_t nextWeakref;
 	struct Table callbacks;
 	struct mScriptValue* constants;
+	struct Table docstrings;
 };
 
 struct mScriptEngine2 {
@@ -80,9 +82,13 @@ void mScriptContextClearWeakref(struct mScriptContext*, uint32_t weakref);
 
 void mScriptContextAttachStdlib(struct mScriptContext* context);
 void mScriptContextExportConstants(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* constants);
+void mScriptContextExportNamespace(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* value);
 
 void mScriptContextTriggerCallback(struct mScriptContext*, const char* callback);
 void mScriptContextAddCallback(struct mScriptContext*, const char* callback, struct mScriptValue* value);
+
+void mScriptContextSetDocstring(struct mScriptContext*, const char* key, const char* docstring);
+const char* mScriptContextGetDocstring(struct mScriptContext*, const char* key);
 
 struct VFile;
 bool mScriptContextLoadVF(struct mScriptContext*, const char* name, struct VFile* vf);

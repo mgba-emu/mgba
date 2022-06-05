@@ -710,14 +710,20 @@ mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mScriptConsole, createBuffer)
 	mSCRIPT_CHARP(NULL)
 mSCRIPT_DEFINE_DEFAULTS_END;
 
-void mScriptContextAttachLogger(struct mScriptContext* context, struct mLogger* logger) {
+static struct mScriptConsole* _ensureConsole(struct mScriptContext* context) {
 	struct mScriptValue* value = mScriptContextEnsureGlobal(context, "console", mSCRIPT_TYPE_MS_S(mScriptConsole));
 	struct mScriptConsole* console = value->value.opaque;
 	if (!console) {
 		console = calloc(1, sizeof(*console));
 		value->value.opaque = console;
 		value->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+		mScriptContextSetDocstring(context, "console", "Singleton instance of struct::mScriptConsole");
 	}
+	return console;
+}
+
+void mScriptContextAttachLogger(struct mScriptContext* context, struct mLogger* logger) {
+	struct mScriptConsole* console = _ensureConsole(context);
 	console->logger = logger;
 }
 
@@ -771,14 +777,7 @@ mSCRIPT_DEFINE_STRUCT(mScriptTextBuffer)
 mSCRIPT_DEFINE_END;
 
 void mScriptContextSetTextBufferFactory(struct mScriptContext* context, mScriptContextBufferFactory factory, void* cbContext) {
-	struct mScriptValue* value = mScriptContextEnsureGlobal(context, "console", mSCRIPT_TYPE_MS_S(mScriptConsole));
-	struct mScriptConsole* console = value->value.opaque;
-	if (!console) {
-		console = calloc(1, sizeof(*console));
-		console->logger = mLogGetContext();
-		value->value.opaque = console;
-		value->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
-	}
+	struct mScriptConsole* console = _ensureConsole(context);
 	console->textBufferFactory = factory;
 	console->textBufferContext = cbContext;
 }

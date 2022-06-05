@@ -268,7 +268,14 @@ else()
 endif()
 
 if(BUILD_UPDATER)
-	file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc INPUT ${CMAKE_CURRENT_SOURCE_DIR}/updater.qrc.in)
+	if(DEFINED CMAKE_CONFIGURATION_TYPES)
+		# Required for e.g. MSVC
+		file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc INPUT ${CMAKE_CURRENT_SOURCE_DIR}/updater.qrc.in)
+	else()
+		# Required for qt_add_resources to manage dependencies properly
+		# TODO: Figure out how to do this with MSVC too
+		configure_file(${CMAKE_CURRENT_SOURCE_DIR}/updater-config.qrc.in ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc)
+	endif()
 	if(TARGET Qt6::Core)
 		qt_add_resources(UPDATER_RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc)
 	else()

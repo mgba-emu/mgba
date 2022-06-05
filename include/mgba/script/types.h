@@ -41,6 +41,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_C_PS(X) void
 #define mSCRIPT_TYPE_C_PCS(X) void
 #define mSCRIPT_TYPE_C_WSTR struct mScriptValue*
+#define mSCRIPT_TYPE_C_WLIST struct mScriptValue*
 #define mSCRIPT_TYPE_C_W(X) struct mScriptValue*
 #define mSCRIPT_TYPE_C_CW(X) const struct mScriptValue*
 
@@ -67,6 +68,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_PS(STRUCT) opaque
 #define mSCRIPT_TYPE_FIELD_PCS(STRUCT) copaque
 #define mSCRIPT_TYPE_FIELD_WSTR opaque
+#define mSCRIPT_TYPE_FIELD_WLIST opaque
 #define mSCRIPT_TYPE_FIELD_W(TYPE) opaque
 #define mSCRIPT_TYPE_FIELD_CW(TYPE) opaque
 
@@ -92,6 +94,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_MS_PS(STRUCT) (&mSTStructPtr_ ## STRUCT)
 #define mSCRIPT_TYPE_MS_PCS(STRUCT) (&mSTStructConstPtr_ ## STRUCT)
 #define mSCRIPT_TYPE_MS_WSTR (&mSTStringWrapper)
+#define mSCRIPT_TYPE_MS_WLIST (&mSTListWrapper)
 #define mSCRIPT_TYPE_MS_W(TYPE) (&mSTWrapper_ ## TYPE)
 #define mSCRIPT_TYPE_MS_CW(TYPE) (&mSTWrapperConst_ ## TYPE)
 
@@ -108,6 +111,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_CMP_F64(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_F64, TYPE)
 #define mSCRIPT_TYPE_CMP_STR(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_STR, TYPE)
 #define mSCRIPT_TYPE_CMP_CHARP(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_CHARP, TYPE)
+#define mSCRIPT_TYPE_CMP_LIST(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_LIST, TYPE)
 #define mSCRIPT_TYPE_CMP_PTR(TYPE) ((TYPE)->base >= mSCRIPT_TYPE_OPAQUE)
 #define mSCRIPT_TYPE_CMP_WRAPPER(TYPE) (true)
 #define mSCRIPT_TYPE_CMP_S(STRUCT) mSCRIPT_TYPE_MS_S(STRUCT)->name == _mSCRIPT_FIELD_NAME
@@ -115,6 +119,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_CMP_S_METHOD(STRUCT, NAME) mSCRIPT_TYPE_MS_S_METHOD(STRUCT, NAME)->name == _mSCRIPT_FIELD_NAME
 #define mSCRIPT_TYPE_CMP(TYPE0, TYPE1) mSCRIPT_TYPE_CMP_ ## TYPE0(TYPE1)
 #define mSCRIPT_TYPE_CMP_WSTR(TYPE) (mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_STR, TYPE) || mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_CHARP, TYPE))
+#define mSCRIPT_TYPE_CMP_WLIST(TYPE) (mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_LIST, TYPE))
 
 enum mScriptTypeBase {
 	mSCRIPT_TYPE_VOID = 0,
@@ -167,6 +172,7 @@ extern const struct mScriptType mSTTable;
 extern const struct mScriptType mSTWrapper;
 extern const struct mScriptType mSTWeakref;
 extern const struct mScriptType mSTStringWrapper;
+extern const struct mScriptType mSTListWrapper;
 
 struct mScriptType;
 struct mScriptValue {

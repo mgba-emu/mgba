@@ -52,6 +52,30 @@ static int isHello(const char* str) {
 	return strcmp(str, "hello") == 0;
 }
 
+static int isSequential(struct mScriptList* list) {
+	int last;
+	if (mScriptListSize(list) == 0) {
+		return true;
+	}
+	size_t i;
+	for (i = 0; i < mScriptListSize(list); ++i) {
+		struct mScriptValue* value = mScriptListGetPointer(list, i);
+		struct mScriptValue intValue;
+		if (!mScriptCast(mSCRIPT_TYPE_MS_S32, value, &intValue)) {
+			return false;
+		}
+		if (!i) {
+			last = intValue.value.s32;
+		} else {
+			if (intValue.value.s32 != last + 1) {
+				return false;
+			}
+			++last;
+		}
+	}
+	return true;
+}
+
 mSCRIPT_BIND_FUNCTION(boundVoidOne, S32, voidOne, 0);
 mSCRIPT_BIND_VOID_FUNCTION(boundDiscard, discard, 1, S32, ignored);
 mSCRIPT_BIND_FUNCTION(boundIdentityInt, S32, identityInt, 1, S32, in);
@@ -61,6 +85,7 @@ mSCRIPT_BIND_FUNCTION(boundIdentityStruct, S(Test), identityStruct, 1, S(Test), 
 mSCRIPT_BIND_FUNCTION(boundAddInts, S32, addInts, 2, S32, a, S32, b);
 mSCRIPT_BIND_FUNCTION(boundSubInts, S32, subInts, 2, S32, a, S32, b);
 mSCRIPT_BIND_FUNCTION(boundIsHello, S32, isHello, 1, CHARP, str);
+mSCRIPT_BIND_FUNCTION(boundIsSequential, S32, isSequential, 1, LIST, list);
 
 M_TEST_DEFINE(voidArgs) {
 	struct mScriptFrame frame;
@@ -919,6 +944,47 @@ M_TEST_DEFINE(stringIsNotHello) {
 	mScriptFrameDeinit(&frame);
 }
 
+M_TEST_DEFINE(invokeList) {
+	struct mScriptFrame frame;
+	struct mScriptList list;
+	int val;
+
+	mScriptListInit(&list, 0);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, LIST, &list);
+	assert_true(mScriptInvoke(&boundIsSequential, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 1);
+	mScriptFrameDeinit(&frame);
+
+	*mScriptListAppend(&list) = mSCRIPT_MAKE_S32(1);
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, LIST, &list);
+	assert_true(mScriptInvoke(&boundIsSequential, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 1);
+	mScriptFrameDeinit(&frame);
+
+	*mScriptListAppend(&list) = mSCRIPT_MAKE_S32(2);
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, LIST, &list);
+	assert_true(mScriptInvoke(&boundIsSequential, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 1);
+	mScriptFrameDeinit(&frame);
+
+	*mScriptListAppend(&list) = mSCRIPT_MAKE_S32(4);
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, LIST, &list);
+	assert_true(mScriptInvoke(&boundIsSequential, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 0);
+	mScriptFrameDeinit(&frame);
+
+	mScriptListDeinit(&list);
+}
+
 M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(voidArgs),
 	cmocka_unit_test(voidFunc),
@@ -948,4 +1014,6 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(hashTableBasic),
 	cmocka_unit_test(hashTableString),
 	cmocka_unit_test(stringIsHello),
-	cmocka_unit_test(stringIsNotHello))
+	cmocka_unit_test(stringIsNotHello),
+	cmocka_unit_test(invokeList),
+)

@@ -20,7 +20,7 @@ extern MGBA_EXPORT const uint32_t GBASavestateVersion;
 mLOG_DECLARE_CATEGORY(GBA_STATE);
 
 /* Savestate format:
- * 0x00000 - 0x00003: Version Magic (0x01000004)
+ * 0x00000 - 0x00003: Version Magic (0x01000005)
  * 0x00004 - 0x00007: BIOS checksum (e.g. 0xBAAE187F for official BIOS)
  * 0x00008 - 0x0000B: ROM CRC32
  * 0x0000C - 0x0000F: Master cycles
@@ -39,20 +39,23 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 0 - 6: Remaining length
  *   | bits 7 - 9: Next step
  *   | bits 10 - 20: Shadow frequency register
- *   | bits 21 - 31: Reserved
+ *   | bits 21 - 23: Duty index
+ *   | bits 24 - 31: Reserved
  * | 0x00134 - 0x00137: Next frame
- * | 0x00138 - 0x0013B: Next channel 3 fade
+ * | 0x00138 - 0x0013B: Reserved
  * | 0x0013C - 0x0013F: Sweep state
  *   | bits 0 - 2: Timesteps
  *   | bits 3 - 7: Reserved
- * | 0x00140 - 0x00143: Next event
+ * | 0x00140 - 0x00143: Last update
  * 0x00144 - 0x00153: Audio channel 2 state
  * | 0x00144 - 0x00147: Envelepe timing
  *   | bits 0 - 2: Remaining length
  *   | bits 3 - 5: Next step
- *   | bits 6 - 31: Reserved
+ *   | bits 6 - 20: Reserved
+ *   | bits 21 - 23: Duty index
+ *   | bits 24 - 31: Reserved
  * | 0x00148 - 0x0014F: Reserved
- * | 0x00150 - 0x00153: Next event
+ * | 0x00150 - 0x00153: Last update
  * 0x00154 - 0x0017B: Audio channel 3 state
  * | 0x00154 - 0x00173: Wave banks
  * | 0x00174 - 0x00175: Remaining length
@@ -221,7 +224,10 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x00320 - 0x00323: Next IRQ event
  * 0x00324 - 0x00327: Interruptable BIOS stall cycles
  * 0x00328 - 0x00367: Matrix memory mapping table
- * 0x00368 - 0x003FF: Reserved (leave zero)
+ * 0x00368 - 0x0036F: Reserved (leave zero)
+ * 0x00370 - 0x0037F: Audio FIFO A samples
+ * 0x00380 - 0x0038F: Audio FIFO B samples
+ * 0x00380 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -378,8 +384,14 @@ struct GBASerializedState {
 	int32_t biosStall;
 
 	uint32_t matrixMappings[16];
+    uint32_t reservedMatrix[2];
 
-	uint32_t reserved[38];
+    struct {
+        int8_t chA[16];
+        int8_t chB[16];
+    } samples;
+
+	uint32_t reserved[28];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];
