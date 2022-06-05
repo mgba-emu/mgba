@@ -237,6 +237,18 @@ void mScriptContextExportConstants(struct mScriptContext* context, const char* n
 	mScriptValueDeref(table);
 }
 
+void mScriptContextExportNamespace(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* values) {
+	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+	size_t i;
+	for (i = 0; values[i].key; ++i) {
+		struct mScriptValue* key = mScriptStringCreateFromUTF8(values[i].key);
+		mScriptTableInsert(table, key, values[i].value);
+		mScriptValueDeref(key);
+		mScriptValueDeref(values[i].value);
+	}
+	mScriptContextSetGlobal(context, nspace, table);
+}
+
 bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, struct VFile* vf) {
 	struct mScriptFileInfo info = {
 		.name = name,

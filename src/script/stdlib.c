@@ -30,6 +30,38 @@ static void _mScriptCallbackAdd(struct mScriptCallbackManager* adapter, struct m
 mSCRIPT_DECLARE_STRUCT(mScriptCallbackManager);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCallbackManager, add, _mScriptCallbackAdd, 2, STR, callback, WRAPPER, function);
 
+static uint64_t mScriptMakeBitmask(struct mScriptList* list) {
+	size_t i;
+	uint64_t mask = 0;
+	for (i = 0; i < mScriptListSize(list); ++i) {
+		struct mScriptValue bit;
+		struct mScriptValue* value = mScriptListGetPointer(list, i);
+		if (value->type->base == mSCRIPT_TYPE_WRAPPER) {
+			value = mScriptValueUnwrap(value);
+		}
+		if (!mScriptCast(mSCRIPT_TYPE_MS_U64, value, &bit)) {
+			continue;
+		}
+		mask |= 1ULL << bit.value.u64;
+	}
+	return mask;
+}
+
+static struct mScriptValue* mScriptExpandBitmask(uint64_t mask) {
+	struct mScriptValue* list = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
+	size_t i;
+	for (i = 0; mask; ++i, mask >>= 1) {
+		if (!(mask & 1)) {
+			continue;
+		}
+		*mScriptListAppend(list->value.list) = mSCRIPT_MAKE_U32(i);
+	}
+	return list;
+}
+
+mSCRIPT_BIND_FUNCTION(mScriptMakeBitmask_Binding, U64, mScriptMakeBitmask, 1, LIST, bits);
+mSCRIPT_BIND_FUNCTION(mScriptExpandBitmask_Binding, WLIST, mScriptExpandBitmask, 1, U64, mask);
+
 mSCRIPT_DEFINE_STRUCT(mScriptCallbackManager)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
 		"A global singleton object `callbacks` used for managing callbacks. The following callbacks are defined:\n\n"
@@ -66,17 +98,17 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 		mSCRIPT_CONSTANT_PAIR(SAVESTATE, RTC),
 		mSCRIPT_CONSTANT_PAIR(SAVESTATE, METADATA),
 		mSCRIPT_CONSTANT_PAIR(SAVESTATE, ALL),
-		mSCRIPT_CONSTANT_SENTINEL
+		mSCRIPT_KV_SENTINEL
 	});
 	mScriptContextExportConstants(context, "PLATFORM", (struct mScriptKVPair[]) {
 		mSCRIPT_CONSTANT_PAIR(mPLATFORM, NONE),
 		mSCRIPT_CONSTANT_PAIR(mPLATFORM, GBA),
 		mSCRIPT_CONSTANT_PAIR(mPLATFORM, GB),
-		mSCRIPT_CONSTANT_SENTINEL
+		mSCRIPT_KV_SENTINEL
 	});
 	mScriptContextExportConstants(context, "CHECKSUM", (struct mScriptKVPair[]) {
 		mSCRIPT_CONSTANT_PAIR(mCHECKSUM, CRC32),
-		mSCRIPT_CONSTANT_SENTINEL
+		mSCRIPT_KV_SENTINEL
 	});
 #ifdef M_CORE_GBA
 	mScriptContextExportConstants(context, "GBA_KEY", (struct mScriptKVPair[]) {
@@ -90,7 +122,7 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 		mSCRIPT_CONSTANT_PAIR(GBA_KEY, DOWN),
 		mSCRIPT_CONSTANT_PAIR(GBA_KEY, R),
 		mSCRIPT_CONSTANT_PAIR(GBA_KEY, L),
-		mSCRIPT_CONSTANT_SENTINEL
+		mSCRIPT_KV_SENTINEL
 	});
 #endif
 #ifdef M_CORE_GB
@@ -103,8 +135,14 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 		mSCRIPT_CONSTANT_PAIR(GB_KEY, LEFT),
 		mSCRIPT_CONSTANT_PAIR(GB_KEY, UP),
 		mSCRIPT_CONSTANT_PAIR(GB_KEY, DOWN),
-		mSCRIPT_CONSTANT_SENTINEL
+		mSCRIPT_KV_SENTINEL
 	});
 #endif
 	mScriptContextSetGlobal(context, "C", context->constants);
+
+	mScriptContextExportNamespace(context, "util", (struct mScriptKVPair[]) {
+		mSCRIPT_KV_PAIR(makeBitmask, &mScriptMakeBitmask_Binding),
+		mSCRIPT_KV_PAIR(expandBitmask, &mScriptExpandBitmask_Binding),
+		mSCRIPT_KV_SENTINEL
+	});
 }
