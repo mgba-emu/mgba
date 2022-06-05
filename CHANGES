@@ -28,6 +28,7 @@ Bugfixes:
  - DS GX: Fix overflow causing a division crash
  - DS Video: Use separate value for maximum sprite cycles (fixes mgba.io/i/624)
  - DS Memory: Fix crash when overflowing misaligned WRAM jump
+ - DS Video: Fix forced blank GBA-mode rendering
 Misc:
  - ARM: Add F-block instruction decoding
  - DS Audio: Defer mixer updates until needed

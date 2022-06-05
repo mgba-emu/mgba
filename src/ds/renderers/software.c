@@ -391,10 +391,9 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 	}
 
 	int x;
-	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	if (GBARegisterDISPCNTIsForcedBlank(softwareRenderer->dispcnt)) {
 		for (x = 0; x < softwareRenderer->masterEnd; ++x) {
-			row[x] = M_COLOR_WHITE;
+			softwareRenderer->row[x] = M_COLOR_WHITE;
 		}
 		return;
 	}
