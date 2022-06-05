@@ -405,11 +405,11 @@ static FlashROMBlock* _findBlock(struct GBAMemory* memory, uint32_t offset) {
 	memory->savedata.vf->unmap(memory->savedata.vf, memory->savedata.flashrom.blocks, memory->savedata.flashrom.blockCount * (FLASHROM_BLOCK_SIZE + 4));
 	memory->savedata.flashrom.blocks = memory->savedata.vf->map(memory->savedata.vf, (memory->savedata.flashrom.blockCount + 1) * (FLASHROM_BLOCK_SIZE + 4), MAP_WRITE);
 	offsetList = _offsetList(&memory->savedata.flashrom);
-	memcpy(offsetList + FLASHROM_BLOCK_SIZE, offsetList, memory->savedata.flashrom.blockCount * 4);
+	memcpy(offsetList + (FLASHROM_BLOCK_SIZE / 4), offsetList, memory->savedata.flashrom.blockCount * 4);
 	memcpy(offsetList, ((uint8_t*) memory->rom) + offset, FLASHROM_BLOCK_SIZE);
 	++memory->savedata.flashrom.blockCount;
 	offsetList = _offsetList(&memory->savedata.flashrom);
-	STORE_32(offset, memory->savedata.flashrom.blockCount - 1, offsetList);
+	STORE_32(offset, 4 * (memory->savedata.flashrom.blockCount - 1), offsetList);
 	return &memory->savedata.flashrom.blocks[memory->savedata.flashrom.blockCount - 1];
 }
 
