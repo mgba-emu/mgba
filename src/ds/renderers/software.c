@@ -592,6 +592,9 @@ static void _drawScanlineA(struct DSVideoSoftwareRenderer* softwareRenderer, int
 		break;
 	}
 	case 3:
+		// TODO: Main Memory DMA
+		// Fill with zeros for now
+		memset(softwareRenderer->engA.row, 0, sizeof(softwareRenderer->engA.row));
 		break;
 	}
 
