@@ -12,7 +12,7 @@ struct mScriptContext context;
 struct Table types;
 FILE* out;
 
-void explainValue(struct mScriptValue* value, int level);
+void explainValue(struct mScriptValue* value, const char* name, int level);
 void explainType(struct mScriptType* type, int level);
 
 void addTypesFromTuple(const struct mScriptTypeTuple*);
@@ -154,7 +154,7 @@ bool printval(const struct mScriptValue* value, char* buffer, size_t bufferSize)
 	return false;
 }
 
-void explainTable(struct mScriptValue* value, int level) {
+void explainTable(struct mScriptValue* value, const char* name, int level) {
 	char indent[(level + 1) * 2 + 1];
 	memset(indent, ' ', sizeof(indent) - 1);
 	indent[sizeof(indent) - 1] = '\0';
@@ -167,7 +167,14 @@ void explainTable(struct mScriptValue* value, int level) {
 			printval(k, keyval, sizeof(keyval));
 			fprintf(out, "%s- key: %s\n", indent, keyval);
 			struct mScriptValue* v = mScriptTableIteratorGetValue(value, &iter);
-			explainValue(v, level + 1);
+
+			struct mScriptValue string;
+			if (mScriptCast(mSCRIPT_TYPE_MS_CHARP, k, &string)) {
+				snprintf(keyval, sizeof(keyval), "%s.%s", name, (const char*) string.value.opaque);
+				explainValue(v, keyval, level + 1);
+			} else {
+				explainValue(v, NULL, level + 1);
+			}
 		} while (mScriptTableIteratorNext(value, &iter));
 	}
 }
@@ -234,15 +241,15 @@ void explainObject(struct mScriptValue* value, int level) {
 			struct mScriptValue* unwrappedMember;
 			if (member.type->base == mSCRIPT_TYPE_WRAPPER) {
 				unwrappedMember = mScriptValueUnwrap(&member);
-				explainValue(unwrappedMember, level + 2);
+				explainValue(unwrappedMember, NULL, level + 2);
 			} else {
-				explainValue(&member, level + 2);
+				explainValue(&member, NULL, level + 2);
 			}
 		}
 	}
 }
 
-void explainValue(struct mScriptValue* value, int level) {
+void explainValue(struct mScriptValue* value, const char* name, int level) {
 	char valstring[1024];
 	char indent[(level + 1) * 2 + 1];
 	memset(indent, ' ', sizeof(indent) - 1);
@@ -250,10 +257,19 @@ void explainValue(struct mScriptValue* value, int level) {
 	value = mScriptContextAccessWeakref(&context, value);
 	addType(value->type);
 	fprintf(out, "%stype: %s\n", indent, value->type->name);
+
+	const char* docstring = NULL;
+	if (name) {
+		docstring = mScriptContextGetDocstring(&context, name);
+	}
+	if (docstring) {
+		fprintf(out, "%scomment: \"%s\"\n", indent, docstring);
+	}
+
 	switch (value->type->base) {
 	case mSCRIPT_TYPE_TABLE:
 		fprintf(out, "%svalue:\n", indent);
-		explainTable(value, level);
+		explainTable(value, name, level);
 		break;
 	case mSCRIPT_TYPE_SINT:
 	case mSCRIPT_TYPE_UINT:
@@ -462,7 +478,7 @@ int main(int argc, char* argv[]) {
 			const char* name = HashTableIteratorGetKey(&context.rootScope, &iter);
 			fprintf(out, "  %s:\n", name);
 			struct mScriptValue* value = HashTableIteratorGetValue(&context.rootScope, &iter);
-			explainValue(value, 1);
+			explainValue(value, name, 1);
 		} while (HashTableIteratorNext(&context.rootScope, &iter));
 	}
 	fputs("emu:\n", out);

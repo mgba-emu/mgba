@@ -30,6 +30,7 @@ struct mScriptContext {
 	uint32_t nextWeakref;
 	struct Table callbacks;
 	struct mScriptValue* constants;
+	struct Table docstrings;
 };
 
 struct mScriptEngine2 {
@@ -85,6 +86,9 @@ void mScriptContextExportNamespace(struct mScriptContext* context, const char* n
 
 void mScriptContextTriggerCallback(struct mScriptContext*, const char* callback);
 void mScriptContextAddCallback(struct mScriptContext*, const char* callback, struct mScriptValue* value);
+
+void mScriptContextSetDocstring(struct mScriptContext*, const char* key, const char* docstring);
+const char* mScriptContextGetDocstring(struct mScriptContext*, const char* key);
 
 struct VFile;
 bool mScriptContextLoadVF(struct mScriptContext*, const char* name, struct VFile* vf);

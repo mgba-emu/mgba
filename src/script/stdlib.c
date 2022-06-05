@@ -90,6 +90,7 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 	};
 	lib->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 	mScriptContextSetGlobal(context, "callbacks", lib);
+	mScriptContextSetDocstring(context, "callbacks", "Singleton instance of struct::mScriptCallbackManager");
 
 	mScriptContextExportConstants(context, "SAVESTATE", (struct mScriptKVPair[]) {
 		mSCRIPT_CONSTANT_PAIR(SAVESTATE, SCREENSHOT),
@@ -139,10 +140,14 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 	});
 #endif
 	mScriptContextSetGlobal(context, "C", context->constants);
+	mScriptContextSetDocstring(context, "C", "A table containing the [exported constants](#constants)");
 
 	mScriptContextExportNamespace(context, "util", (struct mScriptKVPair[]) {
 		mSCRIPT_KV_PAIR(makeBitmask, &mScriptMakeBitmask_Binding),
 		mSCRIPT_KV_PAIR(expandBitmask, &mScriptExpandBitmask_Binding),
 		mSCRIPT_KV_SENTINEL
 	});
+	mScriptContextSetDocstring(context, "util", "Basic utility library");
+	mScriptContextSetDocstring(context, "util.makeBitmask", "Compile a list of bit indices into a bitmask");
+	mScriptContextSetDocstring(context, "util.expandBitmask", "Expand a bitmask into a list of bit indices");
 }
