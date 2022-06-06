@@ -6120,12 +6120,12 @@ Tamaño de la descarga: %3</translation>
     <message>
         <location filename="../TileView.ui" line="125"/>
         <source>Only BG tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Solo BG tiles</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="135"/>
         <source>Only OBJ tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Solo OBJ tiles</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="145"/>
