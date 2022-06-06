@@ -378,10 +378,11 @@ static const char* _armAccessTypeStrings[] = {
 	""
 };
 
-int ARMDisassemble(struct ARMInstructionInfo* info, struct ARMCore* cpu, const struct mDebuggerSymbols* symbols, uint32_t pc, char* buffer, int blen) {
+int ARMDisassemble(const struct ARMInstructionInfo* info, struct ARMCore* cpu, const struct mDebuggerSymbols* symbols, uint32_t pc, char* buffer, int blen) {
 	const char* mnemonic = _armMnemonicStrings[info->mnemonic];
 	int written;
 	int total = 0;
+	bool skip3 = false;
 	const char* cond = "";
 	if (info->condition != ARM_CONDITION_AL && info->condition < ARM_CONDITION_NV) {
 		cond = _armConditions[info->condition];
@@ -398,6 +399,11 @@ int ARMDisassemble(struct ARMInstructionInfo* info, struct ARMCore* cpu, const s
 		flags = _armAccessTypeStrings[info->memory.width];
 		break;
 	case ARM_MN_ADD:
+		if ((info->operandFormat & (ARM_OPERAND_3 | ARM_OPERAND_4)) == ARM_OPERAND_IMMEDIATE_3 && info->op3.immediate == 0 && info->execMode == MODE_THUMB) {
+			skip3 = true;
+			mnemonic = "mov";
+		}
+		// Fall through
 	case ARM_MN_ADC:
 	case ARM_MN_AND:
 	case ARM_MN_ASR:
@@ -406,7 +412,6 @@ int ARMDisassemble(struct ARMInstructionInfo* info, struct ARMCore* cpu, const s
 	case ARM_MN_LSL:
 	case ARM_MN_LSR:
 	case ARM_MN_MLA:
-	case ARM_MN_MOV:
 	case ARM_MN_MUL:
 	case ARM_MN_MVN:
 	case ARM_MN_ORR:
@@ -497,26 +502,28 @@ int ARMDisassemble(struct ARMInstructionInfo* info, struct ARMCore* cpu, const s
 			written = _decodeShift(info->op2, false, buffer, blen);
 			ADVANCE(written);
 		}
-		if (info->operandFormat & ARM_OPERAND_3) {
-			strlcpy(buffer, ", ", blen);
-			ADVANCE(2);
-		}
-		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_3) {
-			written = snprintf(buffer, blen, "#%i", info->op3.immediate);
-			ADVANCE(written);
-		} else if (info->operandFormat & ARM_OPERAND_MEMORY_3) {
-			written = _decodeMemory(info->memory, cpu, symbols, pc, buffer, blen);
-			ADVANCE(written);
-		} else if (info->operandFormat & ARM_OPERAND_REGISTER_3) {
-			written = _decodeRegister(info->op3.reg, buffer, blen);
-			ADVANCE(written);
-		}
-		if (info->operandFormat & ARM_OPERAND_SHIFT_REGISTER_3) {
-			written = _decodeShift(info->op3, true, buffer, blen);
-			ADVANCE(written);
-		} else if (info->operandFormat & ARM_OPERAND_SHIFT_IMMEDIATE_3) {
-			written = _decodeShift(info->op3, false, buffer, blen);
-			ADVANCE(written);
+		if (!skip3) {
+			if (info->operandFormat & ARM_OPERAND_3) {
+				strlcpy(buffer, ", ", blen);
+				ADVANCE(2);
+			}
+			if (info->operandFormat & ARM_OPERAND_IMMEDIATE_3) {
+				written = snprintf(buffer, blen, "#%i", info->op3.immediate);
+				ADVANCE(written);
+			} else if (info->operandFormat & ARM_OPERAND_MEMORY_3) {
+				written = _decodeMemory(info->memory, cpu, symbols, pc, buffer, blen);
+				ADVANCE(written);
+			} else if (info->operandFormat & ARM_OPERAND_REGISTER_3) {
+				written = _decodeRegister(info->op3.reg, buffer, blen);
+				ADVANCE(written);
+			}
+			if (info->operandFormat & ARM_OPERAND_SHIFT_REGISTER_3) {
+				written = _decodeShift(info->op3, true, buffer, blen);
+				ADVANCE(written);
+			} else if (info->operandFormat & ARM_OPERAND_SHIFT_IMMEDIATE_3) {
+				written = _decodeShift(info->op3, false, buffer, blen);
+				ADVANCE(written);
+			}
 		}
 		if (info->operandFormat & ARM_OPERAND_4) {
 			strlcpy(buffer, ", ", blen);
