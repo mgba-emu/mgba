@@ -1181,19 +1181,22 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Ein Update für %1 ist verfügbar.
+</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="28"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Möchtest Du es jetzt herunterladen und installieren? Du wirst den Emulator nach Abschluss des Downloads neu starten müssen.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="31"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Automatische Updates sind für diese Plattform nicht verfügbar. Wenn Du updaten möchtest, musst Du dies manuell tun.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="35"/>
@@ -1286,23 +1289,23 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../CoreController.cpp" line="99"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>r%1-%2 %3 zurücksetzen</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="504"/>
         <location filename="../CoreController.cpp" line="524"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Rücklauf ist derzeit nicht aktiviert</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="567"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>Spiel zurücksetzen?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="568"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation type="unfinished"></translation>
+        <translation>Die meisten Spiele müssen zurückgesetzt werden, um einen neuen Spielstand zu laden. Möchtest Du das Spiel jetzt zurücksetzen?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="780"/>
@@ -1345,7 +1348,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="115"/>
         <source>Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).</source>
-        <translation type="unfinished"></translation>
+        <translation>Fehler beim Laden der Spielstand-Datei; Speicherdaten können nicht aktualisiert werden. Bitte stelle sicher, dass das Speicherdaten-Verzeichnis ohne zusätzliche Berechtigungen (z.B. UAC in Windows) beschreibbar ist.</translation>
     </message>
 </context>
 <context>
@@ -1353,7 +1356,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="171"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>CLI-Verlauf kann nicht gespeichert werden</translation>
     </message>
 </context>
 <context>
@@ -1460,22 +1463,22 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../GDBWindow.cpp" line="52"/>
         <source>Write watchpoints behavior</source>
-        <translation type="unfinished"></translation>
+        <translation>Watchpoint-Speicherverhalten</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="63"/>
         <source>Standard GDB</source>
-        <translation type="unfinished"></translation>
+        <translation>GDB-Standard</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="68"/>
         <source>Internal change detection</source>
-        <translation type="unfinished"></translation>
+        <translation>Änderungen erkennen</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="72"/>
         <source>Break on all writes</source>
-        <translation type="unfinished"></translation>
+        <translation>Bei jedem Speichervorgang unterbrechen</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
@@ -3711,7 +3714,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../MessagePainter.cpp" line="81"/>
         <source>Frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Frame %1</translation>
     </message>
 </context>
 <context>
@@ -4022,7 +4025,7 @@ Download-Größe: %3</translation>
         <location filename="../SettingsView.cpp" line="855"/>
         <source>%n hour(s) ago</source>
         <translation>
-            <numerusform>Vor %n Stunde(n)</numerusform>
+            <numerusform>Vor %n Stunde</numerusform>
             <numerusform>Vor %n Stunde(n)</numerusform>
         </translation>
     </message>
@@ -4030,8 +4033,8 @@ Download-Größe: %3</translation>
         <location filename="../SettingsView.cpp" line="859"/>
         <source>%n day(s) ago</source>
         <translation>
-            <numerusform>Vor %n Tag(en)</numerusform>
-            <numerusform>Vor %n Tag(en)</numerusform>
+            <numerusform>Vor %n Tag</numerusform>
+            <numerusform>Vor %n Tagen</numerusform>
         </translation>
     </message>
 </context>
@@ -4305,17 +4308,17 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1234"/>
         <source>Save games</source>
-        <translation type="unfinished">Spielstände</translation>
+        <translation>Spielstände</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1257"/>
         <source>Automatically determine</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatisch erkennen</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1261"/>
         <source>Use player %0 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Verwende Spielstand von Spieler %0</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1271"/>
@@ -4421,12 +4424,12 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1107"/>
         <source>Reset needed</source>
-        <translation type="unfinished"></translation>
+        <translation>Zurücksetzen erforderlich</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1108"/>
         <source>Some changes will not take effect until the game is reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>Einige Änderungen werden erst dann wirksam, wenn das Spiel zurückgesetzt wird.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1350"/>
@@ -4707,7 +4710,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../Window.cpp" line="519"/>
         <source>GameShark saves (*.gsv *.sps *.xps)</source>
-        <translation type="unfinished"></translation>
+        <translation>GameShark-Spielstände (*.gsv *.sps *.xps)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="977"/>
@@ -5133,12 +5136,12 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="529"/>
         <source>%1 SharkPort %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>SharkPort %1 Spielstand %2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="532"/>
         <source>%1 GameShark Advance SP %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 GameShark Advance SP %2 Spielstand</translation>
     </message>
 </context>
 <context>
@@ -5442,7 +5445,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="569"/>
         <source>Show filename instead of ROM name in library view</source>
-        <translation type="unfinished"></translation>
+        <translation>Zeige Dateinamen anstelle des ROM-Namens in der Bibliotheksansicht</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="616"/>
@@ -5573,12 +5576,12 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="716"/>
         <source>Show frame count in OSD</source>
-        <translation type="unfinished"></translation>
+        <translation>Frame-Anzahl im OSD anzeigen</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="723"/>
         <source>Show emulation info on reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Emulations-Informationen bei Reset anzeigen</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1110"/>
@@ -6018,7 +6021,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../TileView.ui" line="33"/>
         <source>Palette</source>
-        <translation type="unfinished">Palette</translation>
+        <translation>Palette</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="73"/>
@@ -6038,22 +6041,22 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../TileView.ui" line="119"/>
         <source>Displayed tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Angezeigte Tiles</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="125"/>
         <source>Only BG tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Nur BG-Tiles</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="135"/>
         <source>Only OBJ tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Nur OBJ-Tiles</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="145"/>
         <source>Both</source>
-        <translation type="unfinished">Beidseitig</translation>
+        <translation>Beide</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="163"/>
