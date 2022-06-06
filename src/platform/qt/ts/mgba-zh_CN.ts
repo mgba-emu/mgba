@@ -1289,23 +1289,23 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="99"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>重置 r%1-%2 %3</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="504"/>
         <location filename="../CoreController.cpp" line="524"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>当前未开启倒带</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="567"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>要重置游戏吗?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="568"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation type="unfinished"></translation>
+        <translation>大多数游戏需要重启才能加载新的存档。您要立即重置吗?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="780"/>
@@ -1348,7 +1348,7 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="115"/>
         <source>Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).</source>
-        <translation type="unfinished">无法打开存档；游戏内存档无法更新。请确保保存目录是可写的，且没有额外权限（例如 Windows 上的 UAC）。</translation>
+        <translation>无法打开存档；游戏内存档无法更新。请确保保存目录是可写的，且没有额外权限（例如 Windows 上的 UAC）。</translation>
     </message>
 </context>
 <context>
@@ -1356,7 +1356,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="171"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>无法打开要写入的 CLI 历史</translation>
     </message>
 </context>
 <context>
@@ -1463,22 +1463,22 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="52"/>
         <source>Write watchpoints behavior</source>
-        <translation type="unfinished"></translation>
+        <translation>写入监视点行为</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="63"/>
         <source>Standard GDB</source>
-        <translation type="unfinished"></translation>
+        <translation>标准 GDB</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="68"/>
         <source>Internal change detection</source>
-        <translation type="unfinished"></translation>
+        <translation>检测到内部更改</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="72"/>
         <source>Break on all writes</source>
-        <translation type="unfinished"></translation>
+        <translation>在所有写入时中断</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
@@ -1629,7 +1629,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="65"/>
         <source>Swap green components</source>
-        <translation type="unfinished">交换绿色组件</translation>
+        <translation>交换绿色组件</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="69"/>
@@ -2528,17 +2528,17 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1424"/>
         <source>Source (high)</source>
-        <translation type="unfinished">源（高）</translation>
+        <translation>源（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1428"/>
         <source>Source (low)</source>
-        <translation type="unfinished">源（低）</translation>
+        <translation>源（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1432"/>
         <source>Destination (high)</source>
-        <translation type="unfinished">目的地（高）</translation>
+        <translation>目的地（高）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1436"/>
@@ -3081,12 +3081,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1048"/>
         <source>32× clocking (CGB only)</source>
-        <translation>32× 时钟（CGB 特有）</translation>
+        <translation>32× 时钟（仅 CGB）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1049"/>
         <source>Transfer active</source>
-        <translation type="unfinished">传输处于活动状态</translation>
+        <translation>活动传输</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1067"/>
@@ -3108,7 +3108,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1093"/>
         <location filename="../IOViewer.cpp" line="1554"/>
         <source>Timer</source>
-        <translation type="unfinished">定时器</translation>
+        <translation>计时器</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1094"/>
@@ -3714,7 +3714,7 @@ Download size: %3</source>
     <message>
         <location filename="../MessagePainter.cpp" line="81"/>
         <source>Frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>帧 %1</translation>
     </message>
 </context>
 <context>
@@ -4478,12 +4478,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1107"/>
         <source>Reset needed</source>
-        <translation type="unfinished"></translation>
+        <translation>需要重启</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1108"/>
         <source>Some changes will not take effect until the game is reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>某些改动直到游戏重启后才能生效。</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1234"/>
@@ -4503,12 +4503,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1257"/>
         <source>Automatically determine</source>
-        <translation type="unfinished"></translation>
+        <translation>自动测定</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1261"/>
         <source>Use player %0 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>使用玩家 %0 的存档</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1350"/>
@@ -5453,7 +5453,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="569"/>
         <source>Show filename instead of ROM name in library view</source>
-        <translation type="unfinished"></translation>
+        <translation>在库视图中显示文件名而不是 ROM 名称</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="616"/>
@@ -5644,12 +5644,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="716"/>
         <source>Show frame count in OSD</source>
-        <translation type="unfinished"></translation>
+        <translation>在 OSD 中显示帧数</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="723"/>
         <source>Show emulation info on reset</source>
-        <translation type="unfinished"></translation>
+        <translation>重启时显示模拟信息</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="904"/>
@@ -6039,17 +6039,17 @@ Download size: %3</source>
     <message>
         <location filename="../TileView.ui" line="119"/>
         <source>Displayed tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>显示图块</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="125"/>
         <source>Only BG tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>仅 BG 图块</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="135"/>
         <source>Only OBJ tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>仅 OBJ 图块</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="145"/>
