@@ -29,6 +29,8 @@ struct mScriptContext {
 	struct Table weakrefs;
 	uint32_t nextWeakref;
 	struct Table callbacks;
+	struct Table callbackId;
+	uint32_t nextCallbackId;
 	struct mScriptValue* constants;
 	struct Table docstrings;
 };
@@ -85,7 +87,8 @@ void mScriptContextExportConstants(struct mScriptContext* context, const char* n
 void mScriptContextExportNamespace(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* value);
 
 void mScriptContextTriggerCallback(struct mScriptContext*, const char* callback);
-void mScriptContextAddCallback(struct mScriptContext*, const char* callback, struct mScriptValue* value);
+uint32_t mScriptContextAddCallback(struct mScriptContext*, const char* callback, struct mScriptValue* value);
+void mScriptContextRemoveCallback(struct mScriptContext*, uint32_t cbid);
 
 void mScriptContextSetDocstring(struct mScriptContext*, const char* key, const char* docstring);
 const char* mScriptContextGetDocstring(struct mScriptContext*, const char* key);

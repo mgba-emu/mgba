@@ -249,6 +249,9 @@ void _allocList(struct mScriptValue* val) {
 void _freeList(struct mScriptValue* val) {
 	size_t i;
 	for (i = 0; i < mScriptListSize(val->value.list); ++i) {
+		if (val->type) {
+			continue;
+		}
 		struct mScriptValue* unwrapped = mScriptValueUnwrap(mScriptListGetPointer(val->value.list, i));
 		if (unwrapped) {
 			mScriptValueDeref(unwrapped);
