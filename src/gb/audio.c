@@ -451,7 +451,7 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 		audio->skipFrame = false;
 		audio->frame = 7;
 
-		if (audio->p && audio->p->timer.internalDiv & 0x400) {
+		if (audio->p && audio->p->timer.internalDiv & (0x100 << audio->p->doubleSpeed)) {
 			audio->skipFrame = true;
 		}
 	}
