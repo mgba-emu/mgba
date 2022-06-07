@@ -205,7 +205,9 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	CoreController::Interrupter interrupter(controller);
 	QMetaObject::invokeMethod(m_painter.get(), "start");
 	if (!m_gl) {
-		setUpdatesEnabled(false);
+		if (QGuiApplication::platformName() == "windows") {
+			setUpdatesEnabled(false);
+		}
 	} else {
 		show();
 	}
@@ -290,7 +292,7 @@ void DisplayGL::unpauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = true;
 		QMetaObject::invokeMethod(m_painter.get(), "unpause", Qt::BlockingQueuedConnection);
-		if (!m_gl) {
+		if (!m_gl && QGuiApplication::platformName() == "windows") {
 			setUpdatesEnabled(false);
 		}
 	}
