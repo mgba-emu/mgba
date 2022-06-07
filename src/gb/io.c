@@ -404,9 +404,9 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case GB_REG_WAVE_E:
 	case GB_REG_WAVE_F:
 		GBAudioRun(&gb->audio, mTimingCurrentTime(gb->audio.timing), 0x4);
-		if (!gb->audio.playingCh3 || gb->audio.style != GB_AUDIO_DMG) {
+		if (!gb->audio.playingCh3) {
 			gb->audio.ch3.wavedata8[address - GB_REG_WAVE_0] = value;
-		} else if(gb->audio.ch3.readable) {
+		} else if (gb->audio.ch3.readable || gb->audio.style == GB_AUDIO_CGB) {
 			gb->audio.ch3.wavedata8[gb->audio.ch3.window >> 1] = value;
 		}
 		break;
