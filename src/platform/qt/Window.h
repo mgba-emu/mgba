@@ -167,7 +167,7 @@ private:
 	void openStateWindow(LoadSave);
 
 	void attachWidget(QWidget* widget);
-	void detachWidget(QWidget* widget);
+	void detachWidget();
 
 	void appendMRU(const QString& fname);
 	void clearMRU();
@@ -277,7 +277,6 @@ public:
 	void setDimensions(int width, int height);
 	void setLockIntegerScaling(bool lock);
 	void setLockAspectRatio(bool lock);
-	void filter(bool filter);
 
 	const QPixmap& pixmap() const { return m_pixmap; }
 
@@ -289,9 +288,6 @@ private:
 	QSize m_sizeHint;
 	int m_aspectWidth;
 	int m_aspectHeight;
-	bool m_lockAspectRatio;
-	bool m_lockIntegerScaling;
-	bool m_filter;
 };
 
 }

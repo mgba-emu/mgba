@@ -9,6 +9,7 @@
 #include "GamepadAxisEvent.h"
 #include "GamepadButtonEvent.h"
 #include "VFileDevice.h"
+#include "utils.h"
 
 #include <QAction>
 #include <QDateTime>
@@ -251,6 +252,10 @@ void LoadSaveState::focusInEvent(QFocusEvent*) {
 
 void LoadSaveState::paintEvent(QPaintEvent*) {
 	QPainter painter(this);
+
+	painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 	QRect full(QPoint(), size());
+	painter.fillRect(full, Qt::black);
+	painter.drawPixmap(clampSize(m_dims, size(), m_lockAspectRatio, m_lockIntegerScaling), m_background);
 	painter.fillRect(full, QColor(0, 0, 0, 128));
 }

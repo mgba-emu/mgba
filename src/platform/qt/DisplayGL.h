@@ -32,6 +32,7 @@
 #include <QTimer>
 
 #include <array>
+#include <memory>
 
 #include "CoreController.h"
 #include "VideoProxy.h"
@@ -62,8 +63,8 @@ private:
 	GLuint m_vbo;
 
 	bool m_vaoDone = false;
-	QOpenGLVertexArrayObject m_vao;
-	QOpenGLShaderProgram m_program;
+	std::unique_ptr<QOpenGLVertexArrayObject> m_vao;
+	std::unique_ptr<QOpenGLShaderProgram> m_program;
 	GLuint m_positionLocation;
 
 	QTimer m_refresh;

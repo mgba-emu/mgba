@@ -57,6 +57,7 @@ Other fixes:
  - Qt: Fix some hangs when using the debugger console
  - Qt: Fix crash when clicking past last tile in viewer
  - Qt: Fix preloading for ROM replacing
+ - Qt: Fix screen not displaying on Wayland (fixes mgba.io/i/2190)
  - VFS: Failed file mapping should return NULL on POSIX
 Misc:
  - Core: Suspend runloop when a core crashes
