@@ -476,24 +476,24 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 		free(luaContext->lastError);
 		luaContext->lastError = NULL;
 	}
-	char name[80];
 	if (filename) {
+		char name[strlen(filename) + 2];
 		if (*filename == '*') {
 			snprintf(name, sizeof(name), "=%s", filename + 1);
 		} else {
-			const char* lastSlash = strrchr(filename, '/');
-			const char* lastBackslash = strrchr(filename, '\\');
-			if (lastSlash && lastBackslash) {
-				if (lastSlash > lastBackslash) {
-					filename = lastSlash + 1;
-				} else {
-					filename = lastBackslash + 1;
-				}
-			} else if (lastSlash) {
-				filename = lastSlash + 1;
-			} else if (lastBackslash) {
-				filename = lastBackslash + 1;
+			char  dir[strlen(filename)];
+			char *slash, *backslash;
+			strcpy(dir, filename);
+			slash = strrchr(dir, '/');
+			backslash = strrchr(dir, '\\');
+			if (!slash || (backslash && backslash < slash)) {
+				slash = backslash;
 			}
+			if (slash) {
+				slash[1] = '\0'; // keep slash itself for some reasons
+				chdir(dir);
+			}
+
 			snprintf(name, sizeof(name), "@%s", filename);
 		}
 		filename = name;
