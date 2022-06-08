@@ -85,25 +85,37 @@ static const char* const _vertexShader =
 	"}";
 
 static const char* const _renderTile16 =
+	"#ifndef VRAM_MASK\n"
+	"#define VRAM_MASK\n"
+	"#endif\n"
 	"int renderTile(int tile, int paletteId, ivec2 localCoord) {\n"
 	"	int address = charBase + tile * 16 + (localCoord.x >> 2) + (localCoord.y << 1);\n"
-	"	int halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0).r;\n"
+	"	int halfrow = texelFetch(vram, ivec2(address & 255, (address >> 8) VRAM_MASK), 0).r;\n"
 	"	int entry = (halfrow >> (4 * (localCoord.x & 3))) & 15;\n"
 	"	if (entry == 0) {\n"
 	"		discard;\n"
 	"	}\n"
 	"	return paletteId * 16 + entry;\n"
+	"}\n"
+	"int mask(int tile) {\n"
+	"	return tile & 31;\n"
 	"}";
 
 static const char* const _renderTile256 =
+	"#ifndef VRAM_MASK\n"
+	"#define VRAM_MASK\n"
+	"#endif\n"
 	"int renderTile(int tile, int paletteId, ivec2 localCoord) {\n"
 	"	int address = charBase + tile * 32 + (localCoord.x >> 1) + (localCoord.y << 2);\n"
-	"	int halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0).r;\n"
+	"	int halfrow = texelFetch(vram, ivec2(address & 255, (address >> 8) VRAM_MASK), 0).r;\n"
 	"	int entry = (halfrow >> (8 * (localCoord.x & 1))) & 255;\n"
 	"	if (entry == 0) {\n"
 	"		discard;\n"
 	"	}\n"
 	"	return entry;\n"
+	"}"
+	"int mask(int tile) {\n"
+	"	return tile & 15;\n"
 	"}";
 
 static const struct GBAVideoGLUniform _uniformsMode0[] = {
@@ -167,7 +179,7 @@ static const char* const _renderMode0 =
 	"	int tile = map & 1023;\n"
 	"	int paletteEntry = renderTile(tile, map >> 12, coord & 7);\n"
 	"	color = texelFetch(palette, ivec2(paletteEntry, int(texCoord.y)), 0);\n"
-	"}";
+	"}\n";
 
 static const char* const _fetchTileOverflow =
 	"int fetchTile(ivec2 coord) {\n"
@@ -415,6 +427,7 @@ static const struct GBAVideoGLUniform _uniformsObj[] = {
 	{ "objwin", GBA_GL_OBJ_OBJWIN, },
 	{ "mosaic", GBA_GL_OBJ_MOSAIC, },
 	{ "cyclesRemaining", GBA_GL_OBJ_CYCLES, },
+	{ "tile", GBA_GL_OBJ_TILE, },
 	{ 0 }
 };
 
@@ -424,6 +437,7 @@ static const char* const _renderObj =
 	"uniform isampler2D vram;\n"
 	"uniform sampler2D palette;\n"
 	"uniform int charBase;\n"
+	"uniform int tile;\n"
 	"uniform int stride;\n"
 	"uniform int localPalette;\n"
 	"uniform ivec4 inflags;\n"
@@ -437,6 +451,8 @@ static const char* const _renderObj =
 	"OUT(2) out ivec4 window;\n"
 
 	"int renderTile(int tile, int paletteId, ivec2 localCoord);\n"
+	"int mask(int);\n"
+	"#define VRAM_MASK & 191\n"
 
 	"void main() {\n"
 	"	vec2 incoord = texCoord;\n"
@@ -461,12 +477,12 @@ static const char* const _renderObj =
 	"	if ((coord & ~(dims.xy - 1)) != ivec2(0, 0)) {\n"
 	"		discard;\n"
 	"	}\n"
-	"	int paletteEntry = renderTile((coord.x >> 3) + (coord.y >> 3) * stride, localPalette, coord & 7);\n"
+	"	int paletteEntry = renderTile(mask((coord.x >> 3) + tile) + (coord.y >> 3) * stride, localPalette, coord & 7);\n"
 	"	color = texelFetch(palette, ivec2(paletteEntry + 256, int(texCoord.y) + mosaic.w), 0);\n"
 	"	flags = inflags;\n"
 	"	gl_FragDepth = float(flags.x) / 16.;\n"
 	"	window = ivec4(objwin, 0);\n"
-	"}";
+	"}\n";
 
 static const struct GBAVideoGLUniform _uniformsObjPriority[] = {
 	{ "loc", GBA_GL_VS_LOC, },
@@ -1709,6 +1725,15 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 
 	int align = GBAObjAttributesAIs256Color(sprite->a) && !GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt);
 	unsigned charBase = (BASE_TILE >> 1) + (GBAObjAttributesCGetTile(sprite->c) & ~align) * 0x10;
+	unsigned tile = 0;
+	if (!GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt)) {
+		if (GBAObjAttributesAIs256Color(sprite->a)) {
+			tile = (charBase >> 5) & 0xF;
+		} else {
+			tile = (charBase >> 4) & 0x1F;
+		}
+		charBase &= ~0x1FF;
+	}
 	int stride = GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? (width >> 3) : (0x20 >> GBAObjAttributesAGet256Color(sprite->a));
 
 	int totalWidth = width;
@@ -1744,6 +1769,7 @@ void GBAVideoGLRendererDrawSprite(struct GBAVideoGLRenderer* renderer, struct GB
 	glUniform1i(uniforms[GBA_GL_OBJ_VRAM], 0);
 	glUniform1i(uniforms[GBA_GL_OBJ_PALETTE], 1);
 	glUniform1i(uniforms[GBA_GL_OBJ_CHARBASE], charBase);
+	glUniform1i(uniforms[GBA_GL_OBJ_TILE], tile);
 	glUniform1i(uniforms[GBA_GL_OBJ_STRIDE], stride);
 	glUniform1i(uniforms[GBA_GL_OBJ_LOCALPALETTE], GBAObjAttributesCGetPalette(sprite->c));
 	glUniform4i(uniforms[GBA_GL_OBJ_INFLAGS], GBAObjAttributesCGetPriority(sprite->c),
