@@ -486,7 +486,7 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 			snprintf(name, sizeof(name), "=%s", filename + 1);
 		} else {
 #ifdef _WIN32
-			char dirname[PATH_MAX] = {0};
+			wchar_t dirname[PATH_MAX] = {0};
 			const char* lastSlash = strrchr(filename, '/');
 			const char* lastBackslash = strrchr(filename, '\\');
 			if (lastSlash && lastBackslash) {
@@ -497,7 +497,7 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 				lastSlash = lastBackslash;
 			}
 			if (lastSlash) {
-				strncpy(dirname, filename, lastSlash - filename);
+				MultiByteToWideChar(CP_UTF8, 0, filename, lastSlash - filename, dirname, PATH_MAX);
 				AddDllDirectory(dirname);
 			}
 #endif
