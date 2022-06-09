@@ -986,15 +986,14 @@ static int _luaRequireShim(lua_State* lua) {
 	lua_getglobal(luaContext->lua, "package");
 
 	lua_pushliteral(luaContext->lua, "path");
-	lua_pushliteral(luaContext->lua, "path");
-	lua_gettable(luaContext->lua, -3);
-	char* oldpath = strdup(lua_tostring(luaContext->lua, -1));
-	lua_pushliteral(luaContext->lua, ";");
 	lua_pushstring(luaContext->lua, path);
 	lua_pushliteral(luaContext->lua, "/?.lua;");
 	lua_pushstring(luaContext->lua, path);
-	lua_pushliteral(luaContext->lua, "/?/init.lua");
-	lua_concat(luaContext->lua, 6);
+	lua_pushliteral(luaContext->lua, "/?/init.lua;");
+	lua_pushliteral(luaContext->lua, "path");
+	lua_gettable(luaContext->lua, -7);
+	char* oldpath = strdup(lua_tostring(luaContext->lua, -1));
+	lua_concat(luaContext->lua, 5);
 	lua_settable(luaContext->lua, -3);
 
 #ifdef _WIN32
@@ -1005,15 +1004,14 @@ static int _luaRequireShim(lua_State* lua) {
 #define DLL "so"
 #endif
 	lua_pushliteral(luaContext->lua, "cpath");
-	lua_pushliteral(luaContext->lua, "cpath");
-	lua_gettable(luaContext->lua, -3);
-	char* oldcpath = strdup(lua_tostring(luaContext->lua, -1));
-	lua_pushliteral(luaContext->lua, ";");
 	lua_pushstring(luaContext->lua, path);
 	lua_pushliteral(luaContext->lua, "/?." DLL ";");
 	lua_pushstring(luaContext->lua, path);
-	lua_pushliteral(luaContext->lua, "/?/init." DLL);
-	lua_concat(luaContext->lua, 6);
+	lua_pushliteral(luaContext->lua, "/?/init." DLL ";");
+	lua_pushliteral(luaContext->lua, "cpath");
+	lua_gettable(luaContext->lua, -7);
+	char* oldcpath = strdup(lua_tostring(luaContext->lua, -1));
+	lua_concat(luaContext->lua, 5);
 	lua_settable(luaContext->lua, -3);
 
 	lua_pop(luaContext->lua, 1);
