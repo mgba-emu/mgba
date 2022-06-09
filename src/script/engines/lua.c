@@ -182,6 +182,9 @@ void _luaDestroy(struct mScriptEngineContext* ctx) {
 	if (luaContext->func > 0) {
 		luaL_unref(luaContext->lua, LUA_REGISTRYINDEX, luaContext->func);
 	}
+	if (luaContext->require > 0) {
+		luaL_unref(luaContext->lua, LUA_REGISTRYINDEX, luaContext->require);
+	}
 	lua_close(luaContext->lua);
 	free(luaContext);
 }
@@ -1047,5 +1050,5 @@ static int _luaRequireShim(lua_State* lua) {
 		lua_error(luaContext->lua);
 	}
 
-	return 0;
+	return 1;
 }
