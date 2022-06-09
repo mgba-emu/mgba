@@ -80,7 +80,6 @@ struct mScriptEngineContextLua {
 	struct mScriptEngineContext d;
 	lua_State* lua;
 	int func;
-	char lastDirectory[PATH_MAX];
 	int require;
 	char* lastError;
 };
@@ -515,12 +514,15 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 	int ret = lua_load(luaContext->lua, _reader, &data, filename, "t");
 	switch (ret) {
 	case LUA_OK:
-		luaContext->func = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
 		if (dirname[0]) {
-			strncpy(luaContext->lastDirectory, dirname, sizeof(luaContext->lastDirectory));
-		} else {
-			memset(luaContext->lastDirectory, 0, sizeof(luaContext->lastDirectory));
+			lua_getupvalue(luaContext->lua, -1, 1);
+			lua_pushliteral(luaContext->lua, "require");
+			lua_pushstring(luaContext->lua, dirname);
+			lua_pushcclosure(luaContext->lua, _luaRequireShim, 1);
+			lua_rawset(luaContext->lua, -3);
+			lua_pop(luaContext->lua, 1);
 		}
+		luaContext->func = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
 		return true;
 	case LUA_ERRSYNTAX:
 		luaContext->lastError = strdup(lua_tostring(luaContext->lua, -1));
@@ -535,20 +537,8 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 bool _luaRun(struct mScriptEngineContext* context) {
 	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) context;
 
-	if (luaContext->lastDirectory[0]) {
-		// Shim require to look in the previous location
-		lua_pushstring(luaContext->lua, luaContext->lastDirectory);
-		lua_pushcclosure(luaContext->lua, _luaRequireShim, 1);
-		lua_setglobal(luaContext->lua, "require");
-	}
-
 	lua_rawgeti(luaContext->lua, LUA_REGISTRYINDEX, luaContext->func);
-	bool ret = _luaInvoke(luaContext, NULL);
-
-	// Restore previous value of require
-	lua_rawgeti(luaContext->lua, LUA_REGISTRYINDEX, luaContext->require);
-	lua_setglobal(luaContext->lua, "require");
-	return ret;
+	return _luaInvoke(luaContext, NULL);
 }
 
 const char* _luaGetError(struct mScriptEngineContext* context) {
