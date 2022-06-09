@@ -989,15 +989,13 @@ static int _luaRequireShim(lua_State* lua) {
 	struct mScriptEngineContextLua* luaContext = _luaGetContext(lua);
 
 	const char* path = lua_tostring(lua, lua_upvalueindex(1));
-	const char* oldpath;
-	const char* oldcpath;
 
 	lua_getglobal(luaContext->lua, "package");
 
 	lua_pushliteral(luaContext->lua, "path");
 	lua_pushliteral(luaContext->lua, "path");
 	lua_gettable(luaContext->lua, -3);
-	oldpath = strdup(lua_tostring(luaContext->lua, -1));
+	char* oldpath = strdup(lua_tostring(luaContext->lua, -1));
 	lua_pushliteral(luaContext->lua, ";");
 	lua_pushstring(luaContext->lua, path);
 	lua_pushliteral(luaContext->lua, "/?.lua;");
@@ -1016,7 +1014,7 @@ static int _luaRequireShim(lua_State* lua) {
 	lua_pushliteral(luaContext->lua, "cpath");
 	lua_pushliteral(luaContext->lua, "cpath");
 	lua_gettable(luaContext->lua, -3);
-	oldcpath = strdup(lua_tostring(luaContext->lua, -1));
+	char* oldcpath = strdup(lua_tostring(luaContext->lua, -1));
 	lua_pushliteral(luaContext->lua, ";");
 	lua_pushstring(luaContext->lua, path);
 	lua_pushliteral(luaContext->lua, "/?." DLL ";");
@@ -1043,6 +1041,8 @@ static int _luaRequireShim(lua_State* lua) {
 
 	lua_pop(luaContext->lua, 1);
 
+	free(oldpath);
+	free(oldcpath);
 	if (ret) {
 		lua_error(luaContext->lua);
 	}
