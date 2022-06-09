@@ -316,10 +316,6 @@ bool GBAFlashROMLoad(struct GBA* gba) {
 
 	struct GBASavedata* savedata = &gba->memory.savedata;
 	off_t size = savedata->vf->size(savedata->vf);
-	if (size % (FLASHROM_BLOCK_SIZE + 4)) {
-		savedata->vf->truncate(savedata->vf, 0);
-		size = 0;
-	}
 	savedata->flashrom.blockCount = size / (FLASHROM_BLOCK_SIZE + 4);
 	savedata->flashrom.blocks = savedata->vf->map(savedata->vf, size, MAP_WRITE);
 	if (size && !savedata->flashrom.blocks) {
@@ -330,16 +326,19 @@ bool GBAFlashROMLoad(struct GBA* gba) {
 	{
 		uint32_t offset;
 		LOAD_32(offset, 4 * i, offsetList);
-		if (offset != (offset & 0x01ff0000)) {
-			savedata->vf->unmap(savedata->vf, savedata->flashrom.blocks, gba->memory.romSize + gba->memory.romSize * 4 / FLASHROM_BLOCK_SIZE);
+		if (offset != ((offset & 0x01ff0000) | 0x08000000)) {
+			savedata->vf->unmap(savedata->vf, savedata->flashrom.blocks, size);
+			savedata->vf->truncate(savedata->vf, 0);
 			savedata->flashrom.blocks = NULL;
-			return false;
+			savedata->flashrom.blockCount = 0;
+			return true;
 		}
 	}
 	for (int i = 0; i < savedata->flashrom.blockCount; ++i)
 	{
 		uint32_t offset;
 		LOAD_32(offset, 4 * i, offsetList);
+		offset &= 0x01ff0000;
 		memcpy(((uint8_t*) gba->memory.rom) + offset, savedata->flashrom.blocks, FLASHROM_BLOCK_SIZE);
 	}
 
@@ -386,7 +385,7 @@ static void _eraseChip(struct GBAMemory* memory) {
 	memory->savedata.vf->truncate(memory->savedata.vf, memory->romSize + 4 * memory->savedata.flashrom.blockCount);
 	memset(memory->savedata.flashrom.blocks, 0xFF, memory->romSize);
 	for (int i = 0; i < memory->savedata.flashrom.blockCount; ++i) {
-		STORE_32(i << 16, 4 * i, _offsetList(&memory->savedata.flashrom));
+		STORE_32(i << 16 | 0x08000000, 4 * i, _offsetList(&memory->savedata.flashrom));
 	}
 	memory->savedata.dirty |= mSAVEDATA_DIRT_NEW;
 }
@@ -397,7 +396,7 @@ static FlashROMBlock* _findBlock(struct GBAMemory* memory, uint32_t offset) {
 	{
 		uint32_t foundOffset;
 		LOAD_32(foundOffset, 4 * i, offsetList);
-		if (offset == foundOffset) {
+		if ((offset | 0x08000000) == foundOffset) {
 			return &memory->savedata.flashrom.blocks[i];
 		}
 	}
@@ -409,7 +408,7 @@ static FlashROMBlock* _findBlock(struct GBAMemory* memory, uint32_t offset) {
 	memcpy(offsetList, ((uint8_t*) memory->rom) + offset, FLASHROM_BLOCK_SIZE);
 	++memory->savedata.flashrom.blockCount;
 	offsetList = _offsetList(&memory->savedata.flashrom);
-	STORE_32(offset, 4 * (memory->savedata.flashrom.blockCount - 1), offsetList);
+	STORE_32(offset | 0x08000000, 4 * (memory->savedata.flashrom.blockCount - 1), offsetList);
 	return &memory->savedata.flashrom.blocks[memory->savedata.flashrom.blockCount - 1];
 }
 
