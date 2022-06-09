@@ -337,8 +337,6 @@ void GBAOverrideSave(struct Configuration* config, const struct GBACartridgeOver
 }
 
 void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* override) {
-	
-	GBASavedataForceType(&gba->memory.savedata, SAVEDATA_FORCE_NONE);
 	GBAFlashROMInit(&gba->memory.savedata.flashrom, override->flashromtype);
 	GBAFlashROMLoad(gba);
 
