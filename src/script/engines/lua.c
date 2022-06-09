@@ -11,6 +11,10 @@
 #include <lualib.h>
 #include <lauxlib.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #define MAX_KEY_SIZE 128
 
 static struct mScriptEngineContext* _luaCreate(struct mScriptEngine2*, struct mScriptContext*);
@@ -476,24 +480,27 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 		free(luaContext->lastError);
 		luaContext->lastError = NULL;
 	}
-	char name[80];
+	char name[PATH_MAX + 1];
 	if (filename) {
 		if (*filename == '*') {
 			snprintf(name, sizeof(name), "=%s", filename + 1);
 		} else {
+#ifdef _WIN32
+			char dirname[PATH_MAX] = {0};
 			const char* lastSlash = strrchr(filename, '/');
 			const char* lastBackslash = strrchr(filename, '\\');
 			if (lastSlash && lastBackslash) {
-				if (lastSlash > lastBackslash) {
-					filename = lastSlash + 1;
-				} else {
-					filename = lastBackslash + 1;
+				if (lastSlash < lastBackslash) {
+					lastSlash = lastBackslash;
 				}
-			} else if (lastSlash) {
-				filename = lastSlash + 1;
 			} else if (lastBackslash) {
-				filename = lastBackslash + 1;
+				lastSlash = lastBackslash;
 			}
+			if (lastSlash) {
+				strncpy(dirname, filename, lastSlash - filename);
+				AddDllDirectory(dirname);
+			}
+#endif
 			snprintf(name, sizeof(name), "@%s", filename);
 		}
 		filename = name;
