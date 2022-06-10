@@ -26,6 +26,7 @@ Emulation fixes:
  - GB I/O: Fix writing to WAVE RAM behavior (fixes mgba.io/i/1334)
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
  - GB Serialize: Fix loading MBC1 states that affect bank 0 (fixes mgba.io/i/2402)
+ - GB SIO: Fix bidirectional transfer starting (fixes mgba.io/i/2290)
  - GB Video: Draw SGB border pieces that overlap GB graphics (fixes mgba.io/i/1339)
  - GBA: Improve timing when not booting from BIOS
  - GBA: Fix expected entry point for multiboot ELFs (fixes mgba.io/i/2450)
