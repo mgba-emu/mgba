@@ -55,6 +55,14 @@ static int _luaRequireShim(lua_State* lua);
 #define lua_pushinteger lua_pushnumber
 #endif
 
+#ifndef LUA_OK
+#define LUA_OK 0
+#endif
+
+#if LUA_VERSION_NUM < 502
+#define luaL_traceback(L, M, S, level) lua_pushstring(L, S)
+#endif
+
 const struct mScriptType mSTLuaFunc = {
 	.base = mSCRIPT_TYPE_FUNCTION,
 	.size = 0,
@@ -427,7 +435,8 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		} else {
 			mScriptValueWrap(value, newValue);
 		}
-		luaL_setmetatable(luaContext->lua, "mSTList");
+		lua_getfield(luaContext->lua, LUA_REGISTRYINDEX, "mSTList");
+		lua_setmetatable(luaContext->lua, -2);
 		break;
 	case mSCRIPT_TYPE_TABLE:
 		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
@@ -436,7 +445,8 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		} else {
 			mScriptValueWrap(value, newValue);
 		}
-		luaL_setmetatable(luaContext->lua, "mSTTable");
+		lua_getfield(luaContext->lua, LUA_REGISTRYINDEX, "mSTTable");
+		lua_setmetatable(luaContext->lua, -2);
 		break;
 	case mSCRIPT_TYPE_FUNCTION:
 		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
@@ -453,7 +463,8 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		} else {
 			mScriptValueWrap(value, newValue);
 		}
-		luaL_setmetatable(luaContext->lua, "mSTStruct");
+		lua_getfield(luaContext->lua, LUA_REGISTRYINDEX, "mSTStruct");
+		lua_setmetatable(luaContext->lua, -2);
 		break;
 	default:
 		ok = false;
@@ -511,7 +522,11 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 		}
 		filename = name;
 	}
+#if LUA_VERSION_NUM >= 502
 	int ret = lua_load(luaContext->lua, _reader, &data, filename, "t");
+#else
+	int ret = lua_load(luaContext->lua, _reader, &data, filename);
+#endif
 	switch (ret) {
 	case LUA_OK:
 		if (dirname[0]) {
@@ -662,8 +677,8 @@ void _luaDeref(struct mScriptValue* value) {
 
 static struct mScriptEngineContextLua* _luaGetContext(lua_State* lua) {
 	lua_pushliteral(lua, "mCtx");
-	int type = lua_rawget(lua, LUA_REGISTRYINDEX);
-	if (type != LUA_TLIGHTUSERDATA) {
+	lua_rawget(lua, LUA_REGISTRYINDEX);
+	if (lua_type(lua, -1) != LUA_TLIGHTUSERDATA) {
 		lua_pop(lua, 1);
 		lua_pushliteral(lua, "Function called from invalid context");
 		lua_error(lua);
@@ -1018,7 +1033,7 @@ static int _luaRequireShim(lua_State* lua) {
 	lua_pop(luaContext->lua, 1);
 
 	lua_rawgeti(luaContext->lua, LUA_REGISTRYINDEX, luaContext->require);
-	lua_rotate(luaContext->lua, -2, 1);
+	lua_insert(luaContext->lua, -2);
 	int ret = lua_pcall(luaContext->lua, 1, LUA_MULTRET, 0);
 
 	lua_getglobal(luaContext->lua, "package");
