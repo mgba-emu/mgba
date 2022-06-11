@@ -981,6 +981,7 @@ static int _luaLenList(lua_State* lua) {
 static int _luaRequireShim(lua_State* lua) {
 	struct mScriptEngineContextLua* luaContext = _luaGetContext(lua);
 
+	int oldtop = lua_gettop(luaContext->lua);
 	const char* path = lua_tostring(lua, lua_upvalueindex(1));
 
 	lua_getglobal(luaContext->lua, "package");
@@ -1018,7 +1019,7 @@ static int _luaRequireShim(lua_State* lua) {
 
 	lua_rawgeti(luaContext->lua, LUA_REGISTRYINDEX, luaContext->require);
 	lua_rotate(luaContext->lua, -2, 1);
-	int ret = lua_pcall(luaContext->lua, 1, 0, 0);
+	int ret = lua_pcall(luaContext->lua, 1, LUA_MULTRET, 0);
 
 	lua_getglobal(luaContext->lua, "package");
 
@@ -1038,5 +1039,6 @@ static int _luaRequireShim(lua_State* lua) {
 		lua_error(luaContext->lua);
 	}
 
-	return 1;
+	int newtop = lua_gettop(luaContext->lua);
+	return newtop - oldtop + 1;
 }
