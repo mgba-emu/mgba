@@ -3102,7 +3102,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1092"/>
         <location filename="../IOViewer.cpp" line="1553"/>
         <source>LCD STAT</source>
-        <translation type="unfinished">LCD 统计</translation>
+        <translation>LCD 状态</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1093"/>
