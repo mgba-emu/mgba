@@ -2543,7 +2543,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1436"/>
         <source>Destination (low)</source>
-        <translation type="unfinished">目的地（低）</translation>
+        <translation>目的地（低）</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1499"/>
@@ -3091,7 +3091,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1067"/>
         <source>Divider</source>
-        <translation type="unfinished">除数</translation>
+        <translation>除数</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
@@ -3155,12 +3155,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1328"/>
         <source>Double-height sprites</source>
-        <translation type="unfinished">二倍高度精灵</translation>
+        <translation>二倍高度精灵</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation type="unfinished">背景图块集</translation>
+        <translation>背景图块集</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
@@ -3177,7 +3177,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1333"/>
         <source>Background tile data</source>
-        <translation type="unfinished">背景图块数据</translation>
+        <translation>背景图块数据</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1334"/>
@@ -3192,12 +3192,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1337"/>
         <source>Enable window</source>
-        <translation type="unfinished">启用窗口</translation>
+        <translation>启用窗口</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1338"/>
         <source>Window tile map</source>
-        <translation type="unfinished">窗口图块集</translation>
+        <translation>窗口图块集</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1342"/>
@@ -3207,7 +3207,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1346"/>
         <source>Mode</source>
-        <translation type="unfinished">模式</translation>
+        <translation>模式</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1347"/>
@@ -3222,7 +3222,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1349"/>
         <source>2: OAM scan</source>
-        <translation type="unfinished">2：OAM 扫描</translation>
+        <translation>2: OAM 扫描</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1350"/>
@@ -3232,22 +3232,22 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1352"/>
         <source>In LYC</source>
-        <translation type="unfinished">在 LYC 中</translation>
+        <translation>在 LYC 中</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1353"/>
         <source>Enable HBlank (mode 0) IRQ</source>
-        <translation type="unfinished">启用 HBlank（模式 0）IRQ</translation>
+        <translation>启用 HBlank（模式 0）IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1354"/>
         <source>Enable VBlank (mode 1) IRQ</source>
-        <translation type="unfinished">启用 VBlank（模式 1）IRQ</translation>
+        <translation>启用 VBlank（模式 1）IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1355"/>
         <source>Enable OAM (mode 2) IRQ</source>
-        <translation type="unfinished">启用 OAM（模式 2）IRQ</translation>
+        <translation>启用 OAM（模式 2）IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1356"/>
@@ -3262,12 +3262,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1372"/>
         <source>Comparison Y coordinate</source>
-        <translation type="unfinished">对比 Y 坐标</translation>
+        <translation>对比 Y 坐标</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1376"/>
         <source>Start upper byte</source>
-        <translation type="unfinished">开始上部字节</translation>
+        <translation>开始上部字节</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1380"/>
@@ -3315,7 +3315,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1440"/>
         <source>Length</source>
-        <translation type="unfinished">长度</translation>
+        <translation>长度</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1441"/>
