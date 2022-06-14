@@ -45,6 +45,7 @@ Emulation fixes:
  - GBA Video: Fix rare crash in modes 3-5
  - GBA Video: Fix sprites with mid-frame palette changes in GL (fixes mgba.io/i/2476)
  - GBA Video: Fix OBJ tile wrapping with 2D char mapping (fixes mgba.io/i/2443)
+ - GBA Video: Fix horizontal lines in GL when charbase is changed (fixes mgba.io/i/1631)
 Other fixes:
  - ARM: Disassemble Thumb mov pseudo-instruction properly
  - Core: Don't attempt to restore rewind diffs past start of rewind

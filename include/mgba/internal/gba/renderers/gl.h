@@ -49,6 +49,7 @@ struct GBAVideoGLBackground {
 	int enabled;
 	unsigned priority;
 	uint32_t charBase;
+	uint32_t oldCharBase;
 	int mosaic;
 	int multipalette;
 	uint32_t screenBase;
@@ -99,6 +100,7 @@ enum {
 	GBA_GL_BG_TRANSFORM,
 	GBA_GL_BG_RANGE,
 	GBA_GL_BG_MOSAIC,
+	GBA_GL_BG_OLDCHARBASE,
 
 	GBA_GL_OBJ_VRAM = 2,
 	GBA_GL_OBJ_PALETTE,

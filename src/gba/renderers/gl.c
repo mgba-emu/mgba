@@ -204,6 +204,7 @@ static const struct GBAVideoGLUniform _uniformsMode2[] = {
 	{ "vram", GBA_GL_BG_VRAM, },
 	{ "palette", GBA_GL_BG_PALETTE, },
 	{ "screenBase", GBA_GL_BG_SCREENBASE, },
+	{ "oldCharBase", GBA_GL_BG_OLDCHARBASE, },
 	{ "charBase", GBA_GL_BG_CHARBASE, },
 	{ "size", GBA_GL_BG_SIZE, },
 	{ "offset", GBA_GL_BG_OFFSET, },
@@ -240,6 +241,7 @@ static const char* const _renderMode2 =
 	"uniform isampler2D vram;\n"
 	"uniform sampler2D palette;\n"
 	"uniform int screenBase;\n"
+	"uniform ivec2 oldCharBase;\n"
 	"uniform int charBase;\n"
 	"uniform int size;\n"
 	"uniform ivec4 transform[160];\n"
@@ -256,7 +258,17 @@ static const char* const _renderMode2 =
 	"	int mapAddress = screenBase + (map >> 1);\n"
 	"	int twomaps = texelFetch(vram, ivec2(mapAddress & 255, mapAddress >> 8), 0).r;\n"
 	"	int tile = (twomaps >> (8 * (map & 1))) & 255;\n"
-	"	int address = charBase + tile * 32 + ((coord.x >> 9) & 3) + ((coord.y >> 6) & 0x1C);\n"
+	"	int newCharBase = charBase;\n"
+	"	if (newCharBase != oldCharBase.x) {\n"
+	"		int y = int(texCoord.y);\n"
+	// If the charbase has changed (and the scale is greater than 1), we might still be drawing
+	// the tile associated with the pixel above us. If we're still on that tile, we want to use
+	// the charbase associated with it instead of the new one. Cf. https://mgba.io/i/1631
+	"		if (y == oldCharBase.y && transform[y - 1].w >> 11 == coord.y >> 11) {\n"
+	"			newCharBase = oldCharBase.x;\n"
+	"		}\n"
+	"	}\n"
+	"	int address = newCharBase + tile * 32 + ((coord.x >> 9) & 3) + ((coord.y >> 6) & 0x1C);\n"
 	"	int halfrow = texelFetch(vram, ivec2(address & 255, address >> 8), 0).r;\n"
 	"	int entry = (halfrow >> (8 * ((coord.x >> 8) & 1))) & 255;\n"
 	"	if (entry == 0) {\n"
@@ -1012,42 +1024,34 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 	case REG_BG0HOFS:
 		value &= 0x01FF;
 		glRenderer->bg[0].x = value;
-		dirty = false;
 		break;
 	case REG_BG0VOFS:
 		value &= 0x01FF;
 		glRenderer->bg[0].y = value;
-		dirty = false;
 		break;
 	case REG_BG1HOFS:
 		value &= 0x01FF;
 		glRenderer->bg[1].x = value;
-		dirty = false;
 		break;
 	case REG_BG1VOFS:
 		value &= 0x01FF;
 		glRenderer->bg[1].y = value;
-		dirty = false;
 		break;
 	case REG_BG2HOFS:
 		value &= 0x01FF;
 		glRenderer->bg[2].x = value;
-		dirty = false;
 		break;
 	case REG_BG2VOFS:
 		value &= 0x01FF;
 		glRenderer->bg[2].y = value;
-		dirty = false;
 		break;
 	case REG_BG3HOFS:
 		value &= 0x01FF;
 		glRenderer->bg[3].x = value;
-		dirty = false;
 		break;
 	case REG_BG3VOFS:
 		value &= 0x01FF;
 		glRenderer->bg[3].y = value;
-		dirty = false;
 		break;
 	case REG_BG2PA:
 		glRenderer->bg[2].affine.dx = value;
@@ -1346,6 +1350,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	if (_needsVramUpload(glRenderer, y) || glRenderer->oamDirty || glRenderer->regsDirty) {
 		if (glRenderer->firstY >= 0) {
 			_drawScanlines(glRenderer, y - 1);
+			glRenderer->firstY = y;
 			glBindVertexArray(0);
 		}
 	}
@@ -1620,6 +1625,7 @@ static void GBAVideoGLRendererUpdateDISPCNT(struct GBAVideoGLRenderer* renderer)
 
 static void GBAVideoGLRendererWriteBGCNT(struct GBAVideoGLBackground* bg, uint16_t value) {
 	bg->priority = GBARegisterBGCNTGetPriority(value);
+	bg->oldCharBase = bg->charBase;
 	bg->charBase = GBARegisterBGCNTGetCharBase(value) << 13;
 	bg->mosaic = GBARegisterBGCNTGetMosaic(value);
 	bg->multipalette = GBARegisterBGCNTGet256Color(value);
@@ -1898,10 +1904,12 @@ void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, 
 	glBindVertexArray(shader->vao);
 	_prepareTransform(renderer, background, uniforms, y);
 	glUniform1i(uniforms[GBA_GL_BG_SCREENBASE], background->screenBase);
+	glUniform2i(uniforms[GBA_GL_BG_OLDCHARBASE], background->oldCharBase, renderer->firstY);
 	glUniform1i(uniforms[GBA_GL_BG_CHARBASE], background->charBase);
 	glUniform1i(uniforms[GBA_GL_BG_SIZE], background->size);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
+	background->oldCharBase = background->charBase;
 }
 
 void GBAVideoGLRendererDrawBackgroundMode3(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
