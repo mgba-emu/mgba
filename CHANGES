@@ -25,6 +25,7 @@ Emulation fixes:
  - GB Audio: Fix APU re-enable timing glitch
  - GB I/O: Fix writing to WAVE RAM behavior (fixes mgba.io/i/1334)
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
+ - GB MBC: Fix edge case with Pocket Cam register accesses (fixes mgba.io/i/2557)
  - GB Serialize: Fix loading MBC1 states that affect bank 0 (fixes mgba.io/i/2402)
  - GB SIO: Fix bidirectional transfer starting (fixes mgba.io/i/2290)
  - GB Video: Draw SGB border pieces that overlap GB graphics (fixes mgba.io/i/1339)
