@@ -284,10 +284,10 @@
              <bool>false</bool>
             </property>
             <property name="minimum">
-             <number>-2147483647</number>
+             <number>-1073741823</number>
             </property>
             <property name="maximum">
-             <number>2147483647</number>
+             <number>1073741823</number>
             </property>
             <property name="value">
              <number>0</number>
