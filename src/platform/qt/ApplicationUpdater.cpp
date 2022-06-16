@@ -150,7 +150,13 @@ const char* ApplicationUpdater::platform() {
 	return uninstallInfo.exists() ? "win32-installer" : "win32";
 #endif
 #elif defined(Q_OS_MACOS)
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+	// Modern macOS build
+	return "macos";
+#else
+	// Legacy "OS X" build
 	return "osx";
+#endif
 #elif defined(Q_OS_LINUX) && defined(__x86_64__)
 	return "appimage-x64";
 #else
