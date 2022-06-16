@@ -71,7 +71,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | 0x00188 - 0x0018B: Next event
  * 0x0018C - 0x001AB: Audio FIFO 1
  * 0x001AC - 0x001CB: Audio FIFO 2
- * 0x001CC - 0x001DF: Audio miscellaneous state
+ * 0x001CC - 0x001EF: Audio miscellaneous state
  * | 0x001CC - 0x001CF: Channel A internal audio samples
  * | 0x001D0 - 0x001D3: Channel B internal audio samples
  * | 0x001D4 - 0x001D7: Next sample
@@ -104,9 +104,13 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bit 3: Is channel 3's memory readable?
  *   | bit 4: Skip frame
  *   | bits 5 - 7: Reserved
- * 0x001E0 - 0x001FF: Video miscellaneous state
- * | 0x001E0 - 0x001E3: Next event
- * | 0x001E4 - 0x001F7: Reserved
+ * | 0x001E0 - 0x001E3: Last sample
+ * | 0x001E4 - 0x001E7: Additional audio flags
+ *   | bits 0 - 3: Current sample index
+ * | 0x001E8 - 0x001EF: Reserved
+ * 0x001F0 - 0x001FF: Video miscellaneous state
+ * | 0x001F0 - 0x001F3: Reserved
+ * | 0x001F4 - 0x001F7: Next event
  * | 0x001F8 - 0x001FB: Miscellaneous flags
  * | 0x001FC - 0x001FF: Frame counter
  * 0x00200 - 0x00213: Timer 0
@@ -227,7 +231,8 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x00368 - 0x0036F: Reserved (leave zero)
  * 0x00370 - 0x0037F: Audio FIFO A samples
  * 0x00380 - 0x0038F: Audio FIFO B samples
- * 0x00390 - 0x003FF: Reserved (leave zero)
+ * 0x00390 - 0x003CF: Audio rendered samples
+ * 0x003D0 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -242,6 +247,9 @@ DECL_BITS(GBASerializedAudioFlags, FIFOInternalSamplesB, 0, 2);
 DECL_BITS(GBASerializedAudioFlags, FIFOSamplesB, 2, 3); // Yay legacy?
 DECL_BITS(GBASerializedAudioFlags, FIFOInternalSamplesA, 5, 2);
 DECL_BITS(GBASerializedAudioFlags, FIFOSamplesA, 7, 3);
+
+DECL_BITFIELD(GBASerializedAudioFlags2, uint32_t);
+DECL_BITS(GBASerializedAudioFlags2, SampleIndex, 0, 4);
 
 DECL_BITFIELD(GBASerializedVideoFlags, uint32_t);
 DECL_BITS(GBASerializedVideoFlags, Mode, 0, 2);
@@ -303,11 +311,14 @@ struct GBASerializedState {
 		int8_t sampleB;
 		GBASerializedAudioFlags gbaFlags;
 		GBSerializedAudioFlags flags;
+		int32_t lastSample;
+		GBASerializedAudioFlags2 gbaFlags2;
+		int32_t reserved[2];
 	} audio;
 
 	struct {
+		int32_t reserved;
 		int32_t nextEvent;
-		int32_t reserved[5];
 		GBASerializedVideoFlags flags;
 		uint32_t frameCounter;
 	} video;
@@ -384,14 +395,16 @@ struct GBASerializedState {
 	int32_t biosStall;
 
 	uint32_t matrixMappings[16];
-    uint32_t reservedMatrix[2];
+	uint32_t reservedMatrix[2];
 
-    struct {
-        int8_t chA[16];
-        int8_t chB[16];
-    } samples;
+	struct {
+		int8_t chA[16];
+		int8_t chB[16];
+	} samples;
 
-	uint32_t reserved[28];
+	struct mStereoSample currentSamples[16];
+
+	uint32_t reserved[12];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];
