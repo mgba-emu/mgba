@@ -82,6 +82,8 @@ void mGLWidget::initializeGL() {
 	m_program->setUniformValue("tex", 0);
 	m_positionLocation = m_program->attributeLocation("position");
 
+	m_vaoDone = false;
+
 	connect(&m_refresh, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
 }
 
@@ -96,6 +98,10 @@ void mGLWidget::finalizeVAO() {
 	if (fn->glGetError() == GL_NO_ERROR) {
 		m_vaoDone = true;
 	}
+}
+
+void mGLWidget::reset() {
+	m_vaoDone = false;
 }
 
 void mGLWidget::paintGL() {
@@ -210,6 +216,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 		}
 	} else {
 		show();
+		m_gl->reset();
 	}
 }
 

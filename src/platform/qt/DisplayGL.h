@@ -53,6 +53,7 @@ public:
 	void setTex(GLuint tex) { m_tex = tex; }
 	void setVBO(GLuint vbo) { m_vbo = vbo; }
 	void finalizeVAO();
+	void reset();
 
 protected:
 	void initializeGL() override;
