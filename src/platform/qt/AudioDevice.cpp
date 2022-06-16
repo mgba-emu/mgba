@@ -45,17 +45,17 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 		return 0;
 	}
 
-	maxSize /= sizeof(GBAStereoSample);
+	maxSize /= sizeof(mStereoSample);
 	mCoreSyncLockAudio(&m_context->impl->sync);
 	int available = std::min<qint64>({
 		blip_samples_avail(m_context->core->getAudioChannel(m_context->core, 0)),
 		maxSize,
 		std::numeric_limits<int>::max()
 	});
-	blip_read_samples(m_context->core->getAudioChannel(m_context->core, 0), &reinterpret_cast<GBAStereoSample*>(data)->left, available, true);
-	blip_read_samples(m_context->core->getAudioChannel(m_context->core, 1), &reinterpret_cast<GBAStereoSample*>(data)->right, available, true);
+	blip_read_samples(m_context->core->getAudioChannel(m_context->core, 0), &reinterpret_cast<mStereoSample*>(data)->left, available, true);
+	blip_read_samples(m_context->core->getAudioChannel(m_context->core, 1), &reinterpret_cast<mStereoSample*>(data)->right, available, true);
 	mCoreSyncConsumeAudio(&m_context->impl->sync);
-	return available * sizeof(GBAStereoSample);
+	return available * sizeof(mStereoSample);
 }
 
 qint64 AudioDevice::writeData(const char*, qint64) {

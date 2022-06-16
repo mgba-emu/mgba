@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/core/cpu.h>
+#include <mgba/core/interface.h>
 #include <mgba/core/log.h>
 #include <mgba/internal/gb/audio.h>
 #include <mgba-util/circle-buffer.h>
@@ -92,11 +93,6 @@ struct GBAAudio {
 	int masterVolume;
 
 	struct mTimingEvent sampleEvent;
-};
-
-struct GBAStereoSample {
-	int16_t left;
-	int16_t right;
 };
 
 struct GBAMP2kADSR {
@@ -278,7 +274,7 @@ struct GBAAudioMixer {
 	double tempo;
 	double frame;
 
-	struct GBAStereoSample last;
+	struct mStereoSample last;
 };
 
 void GBAAudioInit(struct GBAAudio* audio, size_t samples);
