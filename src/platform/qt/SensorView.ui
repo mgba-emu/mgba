@@ -73,6 +73,9 @@
         </item>
         <item row="2" column="1">
          <widget class="QSpinBox" name="offsetSeconds">
+          <property name="accelerated">
+           <bool>true</bool>
+          </property>
           <property name="suffix">
            <string> sec</string>
           </property>
@@ -84,9 +87,6 @@
           </property>
           <property name="singleStep">
            <number>1</number>
-          </property>
-          <property name="stepType">
-           <enum>QAbstractSpinBox::AdaptiveDecimalStepType</enum>
           </property>
          </widget>
         </item>
