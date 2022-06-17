@@ -174,6 +174,8 @@ extern const struct mScriptType mSTWeakref;
 extern const struct mScriptType mSTStringWrapper;
 extern const struct mScriptType mSTListWrapper;
 
+extern struct mScriptValue mScriptValueNull;
+
 struct mScriptType;
 struct mScriptValue {
 	const struct mScriptType* type;

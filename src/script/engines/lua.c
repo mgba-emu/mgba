@@ -320,6 +320,9 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext, bool
 	const void* buffer;
 	struct mScriptValue* value = NULL;
 	switch (lua_type(luaContext->lua, -1)) {
+	case LUA_TNIL:
+		value = &mScriptValueNull;
+		break;
 	case LUA_TNUMBER:
 #if LUA_VERSION_NUM >= 503
 		if (lua_isinteger(luaContext->lua, -1)) {
@@ -398,6 +401,9 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 	bool ok = true;
 	struct mScriptValue* newValue;
 	switch (value->type->base) {
+	case mSCRIPT_TYPE_VOID:
+		lua_pushnil(luaContext->lua);
+		break;
 	case mSCRIPT_TYPE_SINT:
 		if (value->type->size <= 4) {
 			lua_pushinteger(luaContext->lua, value->value.s32);

@@ -239,6 +239,11 @@ const struct mScriptType mSTWeakref = {
 	.hash = NULL,
 };
 
+struct mScriptValue mScriptValueNull = {
+	.type = &mSTVoid,
+	.refs = mSCRIPT_VALUE_UNREF
+};
+
 DEFINE_VECTOR(mScriptList, struct mScriptValue)
 
 void _allocList(struct mScriptValue* val) {
