@@ -391,6 +391,7 @@ void explainCore(struct mCore* core) {
 
 				fprintf(out, "      %s:\n", name->value.string->buffer);
 				value = mScriptContextAccessWeakref(&context, value);
+				addType(value->type);
 
 				struct mScriptFrame frame;
 				uint32_t baseVal;
