@@ -174,6 +174,7 @@ public slots:
 	void setRealTime();
 	void setFixedTime(const QDateTime& time);
 	void setFakeEpoch(const QDateTime& time);
+	void setTimeOffset(qint64 offset);
 
 	void importSharkport(const QString& path);
 	void exportSharkport(const QString& path);

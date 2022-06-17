@@ -898,6 +898,11 @@ void CoreController::setFakeEpoch(const QDateTime& time) {
 	m_threadContext.core->rtc.value = time.toMSecsSinceEpoch();
 }
 
+void CoreController::setTimeOffset(qint64 offset) {
+	m_threadContext.core->rtc.override = RTC_WALLCLOCK_OFFSET;
+	m_threadContext.core->rtc.value = offset * 1000LL;
+}
+
 void CoreController::scanCard(const QString& path) {
 #ifdef M_CORE_GBA
 	QImage image(path);
