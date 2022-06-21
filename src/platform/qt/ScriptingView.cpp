@@ -66,14 +66,19 @@ void ScriptingView::addTextBuffer(ScriptingTextBuffer* buffer) {
 	});
 	connect(buffer, &QObject::destroyed, this, [this, buffer, item]() {
 		m_textBuffers.removeAll(buffer);
-		m_ui.buffers->removeItemWidget(item);
+		delete item;
 	});
 	m_ui.buffers->addItem(item);
 	m_ui.buffers->setCurrentItem(item);
 }
 
 void ScriptingView::selectBuffer(int index) {
-	m_ui.buffer->setDocument(m_textBuffers[index]->document());
+	if (index < 0 || index >= m_textBuffers.size()) {
+		// If the selected buffer is out of bounds, clear the document.
+		m_ui.buffer->setDocument(nullptr);
+	} else {
+		m_ui.buffer->setDocument(m_textBuffers[index]->document());
+	}
 }
 
 QString ScriptingView::getFilters() const {
