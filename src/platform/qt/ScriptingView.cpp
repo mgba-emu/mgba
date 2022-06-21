@@ -74,11 +74,8 @@ void ScriptingView::addTextBuffer(ScriptingTextBuffer* buffer) {
 
 void ScriptingView::selectBuffer(int index) {
 	if (index < 0 || index >= m_textBuffers.size()) {
-		// If the selected buffer is out of bounds, use a dummy buffer.
-		// This will be automatically deleted when a different document is set.
-		QTextDocument* dummy = new QTextDocument(m_ui.buffer);
-		dummy->setDocumentLayout(new QPlainTextDocumentLayout(dummy));
-		m_ui.buffer->setDocument(dummy);
+		// If the selected buffer is out of bounds, clear the document.
+		m_ui.buffer->setDocument(nullptr);
 	} else {
 		m_ui.buffer->setDocument(m_textBuffers[index]->document());
 	}
