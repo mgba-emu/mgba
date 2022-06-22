@@ -7,7 +7,6 @@
 
 #include "CoreController.h"
 #include "ScriptingTextBuffer.h"
-class QTextDocument;
 
 using namespace QGBA;
 

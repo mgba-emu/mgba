@@ -15,6 +15,8 @@
 
 #include <memory>
 
+class QTextDocument;
+
 namespace QGBA {
 
 class CoreController;

@@ -9,7 +9,6 @@
 #include "ConfigController.h"
 #include "ScriptingController.h"
 #include "ScriptingTextBuffer.h"
-#include <QtDebug>
 
 using namespace QGBA;
 
