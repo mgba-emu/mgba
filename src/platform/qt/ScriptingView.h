@@ -25,7 +25,6 @@ private slots:
 
 	void controllerReset();
 	void selectBuffer(const QModelIndex& current, const QModelIndex& = QModelIndex());
-	void bufferAdded(const QModelIndex&, int row, int);
 
 private:
 	QString getFilters() const;

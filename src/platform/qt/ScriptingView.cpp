@@ -26,7 +26,9 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 	connect(m_ui.prompt, &QLineEdit::returnPressed, this, &ScriptingView::submitRepl);
 	connect(m_ui.runButton, &QAbstractButton::clicked, this, &ScriptingView::submitRepl);
 	connect(m_controller, &ScriptingController::modelAboutToBeReset, this, &ScriptingView::controllerReset);
-	connect(m_controller, &ScriptingController::rowsInserted, this, &ScriptingView::bufferAdded);
+	connect(m_controller, &ScriptingController::rowsInserted, this, [this](const QModelIndex&, int row, int) {
+		m_ui.buffers->setCurrentIndex(m_controller->index(row, 0));
+	});
 	connect(m_controller, &ScriptingController::log, m_ui.log, &LogWidget::log);
 	connect(m_controller, &ScriptingController::warn, m_ui.log, &LogWidget::warn);
 	connect(m_controller, &ScriptingController::error, m_ui.log, &LogWidget::error);
@@ -62,10 +64,6 @@ void ScriptingView::load() {
 
 void ScriptingView::controllerReset() {
 	selectBuffer(QModelIndex());
-}
-
-void ScriptingView::bufferAdded(const QModelIndex&, int row, int) {
-	m_ui.buffers->setCurrentIndex(m_controller->index(row, 0));
 }
 
 void ScriptingView::selectBuffer(const QModelIndex& current, const QModelIndex&) {
