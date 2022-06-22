@@ -6,7 +6,7 @@
 #pragma once
 
 #include <QHash>
-#include <QObject>
+#include <QAbstractListModel>
 
 #include <mgba/script/context.h>
 #include <mgba/core/scripting.h>
@@ -20,10 +20,14 @@ namespace QGBA {
 class CoreController;
 class ScriptingTextBuffer;
 
-class ScriptingController : public QObject {
+class ScriptingController : public QAbstractListModel {
 Q_OBJECT
 
 public:
+	enum ItemDataRole {
+		DocumentRole = Qt::UserRole + 1,
+	};
+
 	ScriptingController(QObject* parent = nullptr);
 	~ScriptingController();
 
@@ -35,6 +39,9 @@ public:
 	mScriptContext* context() { return &m_scriptContext; }
 	QList<ScriptingTextBuffer*> textBuffers() { return m_buffers; }
 
+	int rowCount(const QModelIndex& parent = QModelIndex()) const;
+	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+
 signals:
 	void log(const QString&);
 	void warn(const QString&);
@@ -45,6 +52,9 @@ public slots:
 	void clearController();
 	void reset();
 	void runCode(const QString& code);
+
+private slots:
+	void bufferNameChanged(const QString&);
 
 private:
 	void init();

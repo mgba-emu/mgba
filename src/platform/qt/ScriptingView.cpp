@@ -9,6 +9,7 @@
 #include "ConfigController.h"
 #include "ScriptingController.h"
 #include "ScriptingTextBuffer.h"
+#include <QtDebug>
 
 using namespace QGBA;
 
@@ -21,24 +22,27 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 
 	m_ui.prompt->setFont(GBAApp::app()->monospaceFont());
 	m_ui.log->setNewlineTerminated(true);
+	m_ui.buffers->setModel(controller);
 
 	connect(m_ui.prompt, &QLineEdit::returnPressed, this, &ScriptingView::submitRepl);
 	connect(m_ui.runButton, &QAbstractButton::clicked, this, &ScriptingView::submitRepl);
+	connect(m_controller, &ScriptingController::modelAboutToBeReset, this, &ScriptingView::controllerReset);
+	connect(m_controller, &ScriptingController::rowsInserted, this, &ScriptingView::bufferAdded);
 	connect(m_controller, &ScriptingController::log, m_ui.log, &LogWidget::log);
 	connect(m_controller, &ScriptingController::warn, m_ui.log, &LogWidget::warn);
 	connect(m_controller, &ScriptingController::error, m_ui.log, &LogWidget::error);
-	connect(m_controller, &ScriptingController::textBufferCreated, this, &ScriptingView::addTextBuffer);
 
-	connect(m_ui.buffers, &QListWidget::currentRowChanged, this, &ScriptingView::selectBuffer);
+	connect(m_ui.buffers->selectionModel(), &QItemSelectionModel::currentChanged, this, &ScriptingView::selectBuffer);
 	connect(m_ui.load, &QAction::triggered, this, &ScriptingView::load);
 	connect(m_ui.reset, &QAction::triggered, controller, &ScriptingController::reset);
 
 	m_mruFiles = m_config->getMRU(ConfigController::MRU::Script);
 	updateMRU();
 
-	for (ScriptingTextBuffer* buffer : controller->textBuffers()) {
-		addTextBuffer(buffer);
-	}
+	m_blankDocument = new QTextDocument(this);
+	m_blankDocument->setDocumentLayout(new QPlainTextDocumentLayout(m_blankDocument));
+
+	m_ui.buffers->setCurrentIndex(m_controller->index(0, 0));
 }
 
 void ScriptingView::submitRepl() {
@@ -57,27 +61,20 @@ void ScriptingView::load() {
 	}
 }
 
-void ScriptingView::addTextBuffer(ScriptingTextBuffer* buffer) {
-	QTextDocument* document = buffer->document();
-	m_textBuffers.append(buffer);
-	QListWidgetItem* item = new QListWidgetItem(document->metaInformation(QTextDocument::DocumentTitle));
-	connect(buffer, &ScriptingTextBuffer::bufferNameChanged, this, [item](const QString& name) {
-		item->setText(name);
-	});
-	connect(buffer, &QObject::destroyed, this, [this, buffer, item]() {
-		m_textBuffers.removeAll(buffer);
-		delete item;
-	});
-	m_ui.buffers->addItem(item);
-	m_ui.buffers->setCurrentItem(item);
+void ScriptingView::controllerReset() {
+	selectBuffer(QModelIndex());
 }
 
-void ScriptingView::selectBuffer(int index) {
-	if (index < 0 || index >= m_textBuffers.size()) {
-		// If the selected buffer is out of bounds, clear the document.
-		m_ui.buffer->setDocument(nullptr);
+void ScriptingView::bufferAdded(const QModelIndex&, int row, int) {
+	m_ui.buffers->setCurrentIndex(m_controller->index(row, 0));
+}
+
+void ScriptingView::selectBuffer(const QModelIndex& current, const QModelIndex&) {
+	if (current.isValid()) {
+		m_ui.buffer->setDocument(current.data(ScriptingController::DocumentRole).value<QTextDocument*>());
 	} else {
-		m_ui.buffer->setDocument(m_textBuffers[index]->document());
+		// If there is no selected buffer, use the blank document.
+		m_ui.buffer->setDocument(m_blankDocument);
 	}
 }
 
