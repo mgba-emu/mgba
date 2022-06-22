@@ -9,6 +9,7 @@
 #include "ConfigController.h"
 #include "ScriptingController.h"
 #include "ScriptingTextBuffer.h"
+#include <QtDebug>
 
 using namespace QGBA;
 
@@ -24,6 +25,7 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 
 	connect(m_ui.prompt, &QLineEdit::returnPressed, this, &ScriptingView::submitRepl);
 	connect(m_ui.runButton, &QAbstractButton::clicked, this, &ScriptingView::submitRepl);
+	connect(m_controller, &ScriptingController::aboutToReset, this, &ScriptingView::controllerReset);
 	connect(m_controller, &ScriptingController::log, m_ui.log, &LogWidget::log);
 	connect(m_controller, &ScriptingController::warn, m_ui.log, &LogWidget::warn);
 	connect(m_controller, &ScriptingController::error, m_ui.log, &LogWidget::error);
@@ -36,6 +38,10 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 	m_mruFiles = m_config->getMRU(ConfigController::MRU::Script);
 	updateMRU();
 
+	m_blankDocument = new QTextDocument(this);
+	m_blankDocument->setDocumentLayout(new QPlainTextDocumentLayout(m_blankDocument));
+
+	selectBuffer(-1);
 	for (ScriptingTextBuffer* buffer : controller->textBuffers()) {
 		addTextBuffer(buffer);
 	}
@@ -64,21 +70,23 @@ void ScriptingView::addTextBuffer(ScriptingTextBuffer* buffer) {
 	connect(buffer, &ScriptingTextBuffer::bufferNameChanged, this, [item](const QString& name) {
 		item->setText(name);
 	});
-	connect(buffer, &QObject::destroyed, this, [this, buffer, item]() {
-		m_textBuffers.removeAll(buffer);
-		delete item;
-	});
 	m_ui.buffers->addItem(item);
 	m_ui.buffers->setCurrentItem(item);
 }
 
 void ScriptingView::selectBuffer(int index) {
 	if (index < 0 || index >= m_textBuffers.size()) {
-		// If the selected buffer is out of bounds, clear the document.
-		m_ui.buffer->setDocument(nullptr);
+		// If the selected buffer is out of bounds, use the blank document.
+		m_ui.buffer->setDocument(m_blankDocument);
 	} else {
 		m_ui.buffer->setDocument(m_textBuffers[index]->document());
 	}
+}
+
+void ScriptingView::controllerReset() {
+	selectBuffer(-1);
+	m_ui.buffers->clear();
+	m_textBuffers.clear();
 }
 
 QString ScriptingView::getFilters() const {

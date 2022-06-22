@@ -25,6 +25,7 @@ private slots:
 
 	void addTextBuffer(ScriptingTextBuffer*);
 	void selectBuffer(int);
+	void controllerReset();
 
 private:
 	QString getFilters() const;
@@ -38,6 +39,7 @@ private:
 	ScriptingController* m_controller;
 	QList<ScriptingTextBuffer*> m_textBuffers;
 	QStringList m_mruFiles;
+	QTextDocument* m_blankDocument;
 };
 
 }

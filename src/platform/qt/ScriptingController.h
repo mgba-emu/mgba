@@ -36,6 +36,7 @@ public:
 	QList<ScriptingTextBuffer*> textBuffers() { return m_buffers; }
 
 signals:
+	void aboutToReset();
 	void log(const QString&);
 	void warn(const QString&);
 	void error(const QString&);

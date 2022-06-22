@@ -86,6 +86,7 @@ void ScriptingController::clearController() {
 }
 
 void ScriptingController::reset() {
+	emit aboutToReset();
 	CoreController::Interrupter interrupter(m_controller);
 	for (ScriptingTextBuffer* buffer : m_buffers) {
 		delete buffer;
