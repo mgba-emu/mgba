@@ -83,6 +83,7 @@ Emulation fixes:
  - GBA Video: Fix rare crash in modes 3-5
  - GBA Video: Fix sprites with mid-frame palette changes in GL (fixes mgba.io/i/2476)
 Other fixes:
+ - ARM: Disassemble Thumb mov pseudo-instruction properly
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - Core: Fix the runloop resuming after a game has crashed (fixes mgba.io/i/2451)
  - Core: Fix crash if library can't be opened

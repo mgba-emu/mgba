@@ -227,7 +227,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x00368 - 0x0036F: Reserved (leave zero)
  * 0x00370 - 0x0037F: Audio FIFO A samples
  * 0x00380 - 0x0038F: Audio FIFO B samples
- * 0x00380 - 0x003FF: Reserved (leave zero)
+ * 0x00390 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM

@@ -7,6 +7,7 @@
 
 #include <mgba/internal/script/lua.h>
 #include <mgba/script/context.h>
+#include <mgba/script/macros.h>
 #include <mgba/script/types.h>
 
 #define SETUP_LUA \
@@ -85,7 +86,36 @@ M_TEST_DEFINE(bitUnmask) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(callbacks) {
+	SETUP_LUA;
+
+	TEST_PROGRAM(
+		"val = 0\n"
+		"function cb()\n"
+		"	val = val + 1\n"
+		"end\n"
+		"id = callbacks:add('test', cb)\n"
+		"assert(id)"
+	);
+
+	TEST_VALUE(S32, "val", 0);
+
+	mScriptContextTriggerCallback(&context, "test");
+	TEST_VALUE(S32, "val", 1);
+
+	mScriptContextTriggerCallback(&context, "test");
+	TEST_VALUE(S32, "val", 2);
+
+	TEST_PROGRAM("callbacks:remove(id)");
+
+	mScriptContextTriggerCallback(&context, "test");
+	TEST_VALUE(S32, "val", 2);
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStdlib,
 	cmocka_unit_test(bitMask),
 	cmocka_unit_test(bitUnmask),
+	cmocka_unit_test(callbacks),
 )

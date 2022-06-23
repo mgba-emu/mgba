@@ -22,16 +22,22 @@ struct mScriptCallbackManager {
 	struct mScriptContext* context;
 };
 
-static void _mScriptCallbackAdd(struct mScriptCallbackManager* adapter, struct mScriptString* name, struct mScriptValue* fn) {
+static uint32_t _mScriptCallbackAdd(struct mScriptCallbackManager* adapter, struct mScriptString* name, struct mScriptValue* fn) {
 	if (fn->type->base == mSCRIPT_TYPE_WRAPPER) {
 		fn = mScriptValueUnwrap(fn);
 	}
-	mScriptContextAddCallback(adapter->context, name->buffer, fn);
+	uint32_t id = mScriptContextAddCallback(adapter->context, name->buffer, fn);
 	mScriptValueDeref(fn);
+	return id;
+}
+
+static void _mScriptCallbackRemove(struct mScriptCallbackManager* adapter, uint32_t id) {
+	mScriptContextRemoveCallback(adapter->context, id);
 }
 
 mSCRIPT_DECLARE_STRUCT(mScriptCallbackManager);
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCallbackManager, add, _mScriptCallbackAdd, 2, STR, callback, WRAPPER, function);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCallbackManager, U32, add, _mScriptCallbackAdd, 2, STR, callback, WRAPPER, function);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCallbackManager, remove, _mScriptCallbackRemove, 1, U32, cbid);
 
 static uint64_t mScriptMakeBitmask(struct mScriptList* list) {
 	size_t i;
@@ -79,8 +85,10 @@ mSCRIPT_DEFINE_STRUCT(mScriptCallbackManager)
 		"- **start**: The emulation has started\n"
 		"- **stop**: The emulation has voluntarily shut down\n"
 	)
-	mSCRIPT_DEFINE_DOCSTRING("Add a callback of the named type")
+	mSCRIPT_DEFINE_DOCSTRING("Add a callback of the named type. The returned id can be used to remove it later")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCallbackManager, add)
+	mSCRIPT_DEFINE_DOCSTRING("Remove a callback with the previously retuned id")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCallbackManager, remove)
 mSCRIPT_DEFINE_END;
 
 void mScriptContextAttachStdlib(struct mScriptContext* context) {
