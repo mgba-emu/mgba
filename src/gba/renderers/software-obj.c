@@ -71,10 +71,10 @@
 	}
 
 #define SPRITE_XBASE_16(localX) unsigned xBase = (localX & ~0x7) * 4 + ((localX >> 1) & 2);
-#define SPRITE_YBASE_16(localY) unsigned yBase = (localY & ~0x7) * stride + (localY & 0x7) * 4;
+#define SPRITE_YBASE_16(localY) unsigned yBase = (localY & ~0x7) * stride + (localY & 0x7) * 4 + maskHi;
 
 #define SPRITE_DRAW_PIXEL_16_NORMAL(localX) \
-	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x3FFFE); \
+	uint32_t spriteBase = ((yBase + ((xBase + charBase) & maskLo)) & 0x3FFFE); \
 	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
 	if (UNLIKELY(!vramBase)) { \
 		return 0; \
@@ -91,7 +91,7 @@
 	}
 
 #define SPRITE_DRAW_PIXEL_16_NORMAL_OBJWIN(localX) \
-	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x3FFFE); \
+	uint32_t spriteBase = ((yBase + ((xBase + charBase) & maskLo)) & 0x3FFFE); \
 	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
 	if (UNLIKELY(!vramBase)) { \
 		return 0; \
@@ -109,7 +109,7 @@
 	}
 
 #define SPRITE_DRAW_PIXEL_16_OBJWIN(localX) \
-	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x3FFFE); \
+	uint32_t spriteBase = ((yBase + ((xBase + charBase) & maskLo)) & 0x3FFFE); \
 	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
 	if (UNLIKELY(!vramBase)) { \
 		return 0; \
@@ -121,10 +121,10 @@
 	}
 
 #define SPRITE_XBASE_256(localX) unsigned xBase = (localX & ~0x7) * 8 + (localX & 6);
-#define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * stride + (localY & 0x7) * 8;
+#define SPRITE_YBASE_256(localY) unsigned yBase = (localY & ~0x7) * stride + (localY & 0x7) * 8 + maskHi;
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL(localX) \
-	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x3FFFE); \
+	uint32_t spriteBase = ((yBase + ((xBase + charBase) & maskLo)) & 0x3FFFE); \
 	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
 	if (UNLIKELY(!vramBase)) { \
 		return 0; \
@@ -141,7 +141,7 @@
 	}
 
 #define SPRITE_DRAW_PIXEL_256_NORMAL_OBJWIN(localX) \
-	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x3FFFE); \
+	uint32_t spriteBase = ((yBase + ((xBase + charBase) & maskLo)) & 0x3FFFE); \
 	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
 	if (UNLIKELY(!vramBase)) { \
 		return 0; \
@@ -159,7 +159,7 @@
 	}
 
 #define SPRITE_DRAW_PIXEL_256_OBJWIN(localX) \
-	uint32_t spriteBase = ((yBase + charBase + xBase) & 0x3FFFE); \
+	uint32_t spriteBase = ((yBase + ((xBase + charBase) & maskLo)) & 0x3FFFE); \
 	uint16_t* vramBase = renderer->d.vramOBJ[spriteBase >> VRAM_BLOCK_OFFSET]; \
 	if (UNLIKELY(!vramBase)) { \
 		return 0; \
@@ -246,6 +246,8 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	} else {
 		charBase *= renderer->tileStride;
 	}
+	unsigned maskLo = GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? 0x7FFFE : 0x3FE;
+	unsigned maskHi = GBARegisterDISPCNTIsObjCharacterMapping(renderer->dispcnt) ? 0 : charBase & 0x7FC00;
 	if (!renderer->d.vramOBJ[charBase >> VRAM_BLOCK_OFFSET]) {
 		return 0;
 	}

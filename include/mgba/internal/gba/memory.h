@@ -172,6 +172,7 @@ uint32_t GBAStoreMultiple(struct ARMCore*, uint32_t baseAddress, int mask, enum 
                           int* cycleCounter);
 
 void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters);
+void GBAAdjustEWRAMWaitstates(struct GBA* gba, uint16_t parameters);
 
 struct GBASerializedState;
 void GBAMemorySerialize(const struct GBAMemory* memory, struct GBASerializedState* state);

@@ -15,7 +15,7 @@
 #include <fcntl.h>
 
 MGBA_EXPORT const uint32_t GBASavestateMagic = 0x01000000;
-MGBA_EXPORT const uint32_t GBASavestateVersion = 0x00000005;
+MGBA_EXPORT const uint32_t GBASavestateVersion = 0x00000006;
 
 mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate", "gba.serialize");
 

@@ -127,6 +127,7 @@ void GBAMemoryReset(struct GBA* gba) {
 
 	memset(gba->memory.io, 0, sizeof(gba->memory.io));
 	GBAAdjustWaitstates(gba, 0);
+	GBAAdjustEWRAMWaitstates(gba, 0x0D00);
 
 	gba->memory.activeRegion = -1;
 	gba->memory.agbPrintProtect = 0;
@@ -1710,6 +1711,31 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 			STORE_16(memory->agbPrintCtxBackup.get, (AGB_PRINT_STRUCT | base) + 4, memory->rom);
 			STORE_16(memory->agbPrintCtxBackup.put, (AGB_PRINT_STRUCT | base) + 6, memory->rom);
 			STORE_32(memory->agbPrintFuncBackup, AGB_PRINT_FLUSH_ADDR | base, memory->rom);
+		}
+	}
+}
+
+void GBAAdjustEWRAMWaitstates(struct GBA* gba, uint16_t parameters) {
+	struct GBAMemory* memory = &gba->memory;
+	struct ARMCore* cpu = gba->cpu;
+
+	int wait = 15 - ((parameters >> 8) & 0xF);
+	if (wait) {
+		memory->waitstatesNonseq16[REGION_WORKING_RAM] = wait;
+		memory->waitstatesSeq16[REGION_WORKING_RAM] = wait;
+		memory->waitstatesNonseq32[REGION_WORKING_RAM] = 2 * wait + 1;
+		memory->waitstatesSeq32[REGION_WORKING_RAM] = 2 * wait + 1;
+
+		cpu->memory.activeSeqCycles32 = memory->waitstatesSeq32[memory->activeRegion];
+		cpu->memory.activeSeqCycles16 = memory->waitstatesSeq16[memory->activeRegion];
+
+		cpu->memory.activeNonseqCycles32 = memory->waitstatesNonseq32[memory->activeRegion];
+		cpu->memory.activeNonseqCycles16 = memory->waitstatesNonseq16[memory->activeRegion];
+	} else {
+		if (!gba->hardCrash) {
+			mLOG(GBA_MEM, GAME_ERROR, "Cannot set EWRAM to 0 waitstates");
+		} else {
+			mLOG(GBA_MEM, FATAL, "Cannot set EWRAM to 0 waitstates");
 		}
 	}
 }
