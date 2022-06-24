@@ -68,6 +68,8 @@ public:
 		void interrupt(std::shared_ptr<CoreController>);
 		void resume();
 
+		bool held() const;
+
 	private:
 		void interrupt();
 		void resume(CoreController*);

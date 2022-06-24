@@ -1358,3 +1358,7 @@ void CoreController::Interrupter::resume(CoreController* controller) {
 
 	mCoreThreadContinue(controller->thread());
 }
+
+bool CoreController::Interrupter::held() const {
+	return m_parent && m_parent->thread()->impl;
+}

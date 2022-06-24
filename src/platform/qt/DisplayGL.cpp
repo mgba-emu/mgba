@@ -626,6 +626,15 @@ void PainterGL::draw() {
 	if (!m_started || m_queue.isEmpty()) {
 		return;
 	}
+
+	if (m_interrupter.held()) {
+		// A resize event is pending; that needs to happen first
+		if (!m_drawTimer.isActive()) {
+			m_drawTimer.start(0);
+		}
+		return;
+	}
+
 	mCoreSync* sync = &m_context->thread()->impl->sync;
 	if (!mCoreSyncWaitFrameStart(sync)) {
 		mCoreSyncWaitFrameEnd(sync);
