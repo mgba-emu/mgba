@@ -252,6 +252,7 @@ if(ENABLE_SCRIPTING)
 	list(APPEND SOURCE_FILES
 		ScriptingController.cpp
 		ScriptingTextBuffer.cpp
+		ScriptingTextBufferModel.cpp
 		ScriptingView.cpp)
 
 	list(APPEND UI_FILES
