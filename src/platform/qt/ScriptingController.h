@@ -21,15 +21,12 @@ namespace QGBA {
 
 class CoreController;
 class ScriptingTextBuffer;
+class ScriptingTextBufferModel;
 
-class ScriptingController : public QAbstractListModel {
+class ScriptingController : public QObject {
 Q_OBJECT
 
 public:
-	enum ItemDataRole {
-		DocumentRole = Qt::UserRole + 1,
-	};
-
 	ScriptingController(QObject* parent = nullptr);
 	~ScriptingController();
 
@@ -39,10 +36,7 @@ public:
 	bool load(VFileDevice& vf, const QString& name);
 
 	mScriptContext* context() { return &m_scriptContext; }
-	QList<ScriptingTextBuffer*> textBuffers() { return m_buffers; }
-
-	int rowCount(const QModelIndex& parent = QModelIndex()) const;
-	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+	ScriptingTextBufferModel* textBufferModel() const { return m_bufferModel; }
 
 signals:
 	void log(const QString&);
@@ -54,9 +48,6 @@ public slots:
 	void clearController();
 	void reset();
 	void runCode(const QString& code);
-
-private slots:
-	void bufferNameChanged(const QString&);
 
 private:
 	void init();
@@ -71,7 +62,7 @@ private:
 
 	mScriptEngineContext* m_activeEngine = nullptr;
 	QHash<QString, mScriptEngineContext*> m_engines;
-	QList<ScriptingTextBuffer*> m_buffers;
+	ScriptingTextBufferModel* m_bufferModel;
 
 	std::shared_ptr<CoreController> m_controller;
 };

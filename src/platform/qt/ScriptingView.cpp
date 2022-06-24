@@ -9,6 +9,7 @@
 #include "ConfigController.h"
 #include "ScriptingController.h"
 #include "ScriptingTextBuffer.h"
+#include "ScriptingTextBufferModel.h"
 
 using namespace QGBA;
 
@@ -19,16 +20,19 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 {
 	m_ui.setupUi(this);
 
+	ScriptingTextBufferModel* bufferModel = controller->textBufferModel();
 	m_ui.prompt->setFont(GBAApp::app()->monospaceFont());
 	m_ui.log->setNewlineTerminated(true);
-	m_ui.buffers->setModel(controller);
+	m_ui.buffers->setModel(bufferModel);
 
 	connect(m_ui.prompt, &QLineEdit::returnPressed, this, &ScriptingView::submitRepl);
 	connect(m_ui.runButton, &QAbstractButton::clicked, this, &ScriptingView::submitRepl);
-	connect(m_controller, &ScriptingController::modelAboutToBeReset, this, &ScriptingView::controllerReset);
-	connect(m_controller, &ScriptingController::rowsInserted, this, [this](const QModelIndex&, int row, int) {
-		m_ui.buffers->setCurrentIndex(m_controller->index(row, 0));
+
+	connect(bufferModel, &QAbstractItemModel::modelAboutToBeReset, this, &ScriptingView::controllerReset);
+	connect(bufferModel, &QAbstractItemModel::rowsInserted, this, [this, bufferModel](const QModelIndex&, int row, int) {
+		m_ui.buffers->setCurrentIndex(bufferModel->index(row, 0));
 	});
+
 	connect(m_controller, &ScriptingController::log, m_ui.log, &LogWidget::log);
 	connect(m_controller, &ScriptingController::warn, m_ui.log, &LogWidget::warn);
 	connect(m_controller, &ScriptingController::error, m_ui.log, &LogWidget::error);
@@ -43,7 +47,7 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 	m_blankDocument = new QTextDocument(this);
 	m_blankDocument->setDocumentLayout(new QPlainTextDocumentLayout(m_blankDocument));
 
-	m_ui.buffers->setCurrentIndex(m_controller->index(0, 0));
+	m_ui.buffers->setCurrentIndex(bufferModel->index(0, 0));
 }
 
 void ScriptingView::submitRepl() {
@@ -68,7 +72,7 @@ void ScriptingView::controllerReset() {
 
 void ScriptingView::selectBuffer(const QModelIndex& current, const QModelIndex&) {
 	if (current.isValid()) {
-		m_ui.buffer->setDocument(current.data(ScriptingController::DocumentRole).value<QTextDocument*>());
+		m_ui.buffer->setDocument(current.data(ScriptingTextBufferModel::DocumentRole).value<QTextDocument*>());
 	} else {
 		// If there is no selected buffer, use the blank document.
 		m_ui.buffer->setDocument(m_blankDocument);

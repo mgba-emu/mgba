@@ -7,11 +7,12 @@
 
 #include "CoreController.h"
 #include "ScriptingTextBuffer.h"
+#include "ScriptingTextBufferModel.h"
 
 using namespace QGBA;
 
 ScriptingController::ScriptingController(QObject* parent)
-	: QAbstractListModel(parent)
+	: QObject(parent)
 {
 	m_logger.p = this;
 	m_logger.log = [](mLogger* log, int, enum mLogLevel level, const char* format, va_list args) {
@@ -32,6 +33,9 @@ ScriptingController::ScriptingController(QObject* parent)
 			break;
 		}
 	};
+
+	m_bufferModel = new ScriptingTextBufferModel(this);
+	QObject::connect(m_bufferModel, &ScriptingTextBufferModel::textBufferCreated, this, &ScriptingController::textBufferCreated);
 
 	init();
 }
@@ -86,14 +90,8 @@ void ScriptingController::clearController() {
 }
 
 void ScriptingController::reset() {
-	beginResetModel();
-	QList<ScriptingTextBuffer*> toDelete = m_buffers;
-	m_buffers.clear();
-	endResetModel();
 	CoreController::Interrupter interrupter(m_controller);
-	for (ScriptingTextBuffer* buffer : toDelete) {
-		delete buffer;
-	}
+	m_bufferModel->reset();
 	mScriptContextDetachCore(&m_scriptContext);
 	mScriptContextDeinit(&m_scriptContext);
 	m_engines.clear();
@@ -109,24 +107,13 @@ void ScriptingController::runCode(const QString& code) {
 	load(vf, "*prompt");
 }
 
-mScriptTextBuffer* ScriptingController::createTextBuffer(void* context) {
-	ScriptingController* self = static_cast<ScriptingController*>(context);
-	self->beginInsertRows(QModelIndex(), self->m_buffers.size(), self->m_buffers.size() + 1);
-	ScriptingTextBuffer* buffer = new ScriptingTextBuffer(self);
-	QObject::connect(buffer, &ScriptingTextBuffer::bufferNameChanged, self, &ScriptingController::bufferNameChanged);
-	self->m_buffers.append(buffer);
-	emit self->textBufferCreated(buffer);
-	self->endInsertRows();
-	return buffer->textBuffer();
-}
-
 void ScriptingController::init() {
 	mScriptContextInit(&m_scriptContext);
 	mScriptContextAttachStdlib(&m_scriptContext);
 	mScriptContextRegisterEngines(&m_scriptContext);
 
 	mScriptContextAttachLogger(&m_scriptContext, &m_logger);
-	mScriptContextSetTextBufferFactory(&m_scriptContext, &ScriptingController::createTextBuffer, this);
+	mScriptContextSetTextBufferFactory(&m_scriptContext, &ScriptingTextBufferModel::createTextBuffer, m_bufferModel);
 
 	HashTableEnumerate(&m_scriptContext.engines, [](const char* key, void* engine, void* context) {
 	ScriptingController* self = static_cast<ScriptingController*>(context);
@@ -136,33 +123,4 @@ void ScriptingController::init() {
 	if (m_engines.count() == 1) {
 		m_activeEngine = *m_engines.begin();
 	}
-}
-
-void ScriptingController::bufferNameChanged(const QString&) {
-	ScriptingTextBuffer* buffer = qobject_cast<ScriptingTextBuffer*>(sender());
-	int row = m_buffers.indexOf(buffer);
-	if (row < 0) {
-		return;
-	}
-	QModelIndex idx = index(row, 0);
-	emit dataChanged(idx, idx, { Qt::DisplayRole });
-}
-
-int ScriptingController::rowCount(const QModelIndex& parent) const {
-	if (parent.isValid()) {
-		return 0;
-	}
-	return m_buffers.size();
-}
-
-QVariant ScriptingController::data(const QModelIndex& index, int role) const {
-	if (index.parent().isValid() || index.row() < 0 || index.row() >= m_buffers.size() || index.column() != 0) {
-		return QVariant();
-	}
-	if (role == Qt::DisplayRole) {
-		return m_buffers[index.row()]->document()->metaInformation(QTextDocument::DocumentTitle);
-	} else if (role == ScriptingController::DocumentRole) {
-		return QVariant::fromValue<QTextDocument*>(m_buffers[index.row()]->document());
-	}
-	return QVariant();
 }
