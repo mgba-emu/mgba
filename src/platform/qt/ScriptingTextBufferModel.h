@@ -9,7 +9,7 @@
 
 #include <mgba/script/context.h>
 
-class mScriptTextBuffer;
+struct mScriptTextBuffer;
 
 namespace QGBA {
 
