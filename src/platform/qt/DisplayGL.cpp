@@ -87,8 +87,14 @@ void mGLWidget::initializeGL() {
 	connect(&m_refresh, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
 }
 
-void mGLWidget::finalizeVAO() {
+bool mGLWidget::finalizeVAO() {
+	if (!context() || !m_vao) {
+		return false;
+	}
 	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
+	if (!fn) {
+		return false;
+	}
 	fn->glGetError(); // Clear the error
 	m_vao->bind();
 	fn->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
@@ -98,6 +104,7 @@ void mGLWidget::finalizeVAO() {
 	if (fn->glGetError() == GL_NO_ERROR) {
 		m_vaoDone = true;
 	}
+	return m_vaoDone;
 }
 
 void mGLWidget::reset() {
@@ -105,8 +112,8 @@ void mGLWidget::reset() {
 }
 
 void mGLWidget::paintGL() {
-	if (!m_vaoDone) {
-		finalizeVAO();
+	if (!m_vaoDone && !finalizeVAO()) {
+		return;
 	}
 	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
 	m_program->bind();
