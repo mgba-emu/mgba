@@ -113,7 +113,7 @@ void ScriptingController::init() {
 	mScriptContextRegisterEngines(&m_scriptContext);
 
 	mScriptContextAttachLogger(&m_scriptContext, &m_logger);
-	mScriptContextSetTextBufferFactory(&m_scriptContext, &ScriptingTextBufferModel::createTextBuffer, m_bufferModel);
+	m_bufferModel->attachToContext(&m_scriptContext);
 
 	HashTableEnumerate(&m_scriptContext.engines, [](const char* key, void* engine, void* context) {
 	ScriptingController* self = static_cast<ScriptingController*>(context);

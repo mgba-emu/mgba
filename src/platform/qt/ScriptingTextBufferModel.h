@@ -7,6 +7,8 @@
 
 #include <QAbstractListModel>
 
+#include <mgba/script/context.h>
+
 class mScriptTextBuffer;
 
 namespace QGBA {
@@ -15,7 +17,6 @@ class ScriptingTextBuffer;
 
 class ScriptingTextBufferModel : public QAbstractListModel {
 Q_OBJECT
-friend class ScriptingController;
 
 public:
 	enum ItemDataRole {
@@ -23,6 +24,8 @@ public:
 	};
 
 	ScriptingTextBufferModel(QObject* parent = nullptr);
+
+	void attachToContext(mScriptContext* context);
 
 	int rowCount(const QModelIndex& parent = QModelIndex()) const;
 	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;

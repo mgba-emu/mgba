@@ -17,6 +17,11 @@ ScriptingTextBufferModel::ScriptingTextBufferModel(QObject* parent)
 	// initializers only
 }
 
+void ScriptingTextBufferModel::attachToContext(mScriptContext* context)
+{
+	mScriptContextSetTextBufferFactory(context, &ScriptingTextBufferModel::createTextBuffer, this);
+}
+
 void ScriptingTextBufferModel::reset() {
 	beginResetModel();
 	QList<ScriptingTextBuffer*> toDelete = m_buffers;

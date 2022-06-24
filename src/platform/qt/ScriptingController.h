@@ -6,7 +6,7 @@
 #pragma once
 
 #include <QHash>
-#include <QAbstractListModel>
+#include <QObject>
 
 #include <mgba/script/context.h>
 #include <mgba/core/scripting.h>
