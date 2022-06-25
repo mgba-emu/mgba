@@ -177,7 +177,7 @@ static const char* const _renderMode0 =
 	"		coord.y ^= 7;\n"
 	"	}\n"
 	"	int tile = map & 1023;\n"
-	"	int paletteEntry = renderTile(tile, map >> 12, coord & 7);\n"
+	"	int paletteEntry = renderTile(tile, (map >> 12) & 15, coord & 7);\n"
 	"	color = texelFetch(palette, ivec2(paletteEntry, int(texCoord.y)), 0);\n"
 	"}\n";
 
