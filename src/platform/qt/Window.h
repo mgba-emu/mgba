@@ -24,7 +24,7 @@
 #include "LogController.h"
 #include "SettingsView.h"
 #ifdef ENABLE_SCRIPTING
-#include "ScriptingController.h"
+#include "scripting/ScriptingController.h"
 #endif
 
 namespace QGBA {

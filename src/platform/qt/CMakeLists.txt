@@ -250,13 +250,13 @@ endif()
 
 if(ENABLE_SCRIPTING)
 	list(APPEND SOURCE_FILES
-		ScriptingController.cpp
-		ScriptingTextBuffer.cpp
-		ScriptingTextBufferModel.cpp
-		ScriptingView.cpp)
+		scripting/ScriptingController.cpp
+		scripting/ScriptingTextBuffer.cpp
+		scripting/ScriptingTextBufferModel.cpp
+		scripting/ScriptingView.cpp)
 
 	list(APPEND UI_FILES
-		ScriptingView.ui)
+		scripting/ScriptingView.ui)
 endif()
 
 if(TARGET Qt6::Core)

@@ -3,13 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "ScriptingView.h"
+#include "scripting/ScriptingView.h"
 
 #include "GBAApp.h"
 #include "ConfigController.h"
-#include "ScriptingController.h"
-#include "ScriptingTextBuffer.h"
-#include "ScriptingTextBufferModel.h"
+#include "scripting/ScriptingController.h"
+#include "scripting/ScriptingTextBuffer.h"
+#include "scripting/ScriptingTextBufferModel.h"
 
 using namespace QGBA;
 
