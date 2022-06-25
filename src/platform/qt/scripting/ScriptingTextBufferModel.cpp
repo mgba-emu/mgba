@@ -35,7 +35,11 @@ void ScriptingTextBufferModel::reset() {
 mScriptTextBuffer* ScriptingTextBufferModel::createTextBuffer(void* context) {
 	ScriptingTextBufferModel* self = static_cast<ScriptingTextBufferModel*>(context);
 	self->beginInsertRows(QModelIndex(), self->m_buffers.size(), self->m_buffers.size() + 1);
-	ScriptingTextBuffer* buffer = new ScriptingTextBuffer(self);
+	ScriptingTextBuffer* buffer = new ScriptingTextBuffer;
+	if (buffer->thread() != self->thread()) {
+		buffer->moveToThread(self->thread());
+	}
+	buffer->setParent(self);
 	QObject::connect(buffer, &ScriptingTextBuffer::bufferNameChanged, self, &ScriptingTextBufferModel::bufferNameChanged);
 	self->m_buffers.append(buffer);
 	emit self->textBufferCreated(buffer);

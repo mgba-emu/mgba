@@ -18,7 +18,7 @@ class ScriptingTextBuffer : public QObject {
 Q_OBJECT
 
 public:
-	ScriptingTextBuffer(QObject* parent);
+	ScriptingTextBuffer(QObject* parent = nullptr);
 
 	QTextDocument* document() { return &m_document; };
 	mScriptTextBuffer* textBuffer() { return &m_shim; }
