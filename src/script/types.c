@@ -360,13 +360,17 @@ uint32_t _hashScalar(const struct mScriptValue* val) {
 				*T = input->value.s32; \
 			} else if (input->type->size == 8) { \
 				*T = input->value.s64; \
-			} \
+			} else { \
+				return false; \
+			}\
 			break; \
 		case mSCRIPT_TYPE_UINT: \
 			if (input->type->size <= 4) { \
 				*T = input->value.u32; \
 			} else if (input->type->size == 8) { \
 				*T = input->value.u64; \
+			} else { \
+				return false; \
 			} \
 			break; \
 		case mSCRIPT_TYPE_FLOAT: \
@@ -374,6 +378,8 @@ uint32_t _hashScalar(const struct mScriptValue* val) {
 				*T = input->value.f32; \
 			} else if (input->type->size == 8) { \
 				*T = input->value.f64; \
+			} else { \
+				return false; \
 			} \
 			break; \
 		default: \
