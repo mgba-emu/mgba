@@ -39,7 +39,6 @@ if(NOT ${QT}Widgets_FOUND)
 endif()
 
 if(APPLE)
-	execute_process(COMMAND xcrun --show-sdk-version OUTPUT_VARIABLE MACOSX_SDK)
 	if(MACOSX_SDK VERSION_GREATER 10.14)
 		list(APPEND QT_DEFINES USE_SHARE_WIDGET)
 	endif()

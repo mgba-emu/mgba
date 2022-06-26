@@ -20,14 +20,12 @@ CXX_GUARD_START
 
 #ifdef USE_EPOXY
 #include <epoxy/gl.h>
-#elif defined(BUILD_GL)
-#ifdef __APPLE__
+#elif defined(__APPLE__)
 #include <OpenGL/gl3.h>
-#else
+#elif defined(BUILD_GL)
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
-#endif
 #else
 #include <GLES3/gl3.h>
 #endif
