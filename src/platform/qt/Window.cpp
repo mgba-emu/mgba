@@ -50,7 +50,7 @@
 #include "ReportView.h"
 #include "ROMInfo.h"
 #include "SaveConverter.h"
-#include "ScriptingView.h"
+#include "scripting/ScriptingView.h"
 #include "SensorView.h"
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
@@ -522,7 +522,7 @@ void Window::parseCard() {
 	                                      QString("oh"), QMessageBox::Ok);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
 	auto status = std::make_shared<QPair<int, int>>(0, filenames.size());
-	GBAApp::app()->submitWorkerJob([filenames, dialog, status]() {
+	GBAApp::app()->submitWorkerJob([filenames, status]() {
 		int success = 0;
 		for (QString filename : filenames) {
 			if (filename.isEmpty()) {
@@ -556,6 +556,9 @@ void Window::parseCard() {
 		}
 		status->first = success;
 	}, [dialog, status]() {
+		if (status->second == 0) {
+			return;
+		}
 		dialog->setText(tr("%1 of %2 e-Reader cards converted successfully.").arg(status->first).arg(status->second));
 		dialog->show();
 	});
@@ -1484,7 +1487,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	m_actions.addAction(tr("About..."), "about", openTView<AboutScreen>(), "file")->setRole(Action::Role::ABOUT);
-	m_actions.addAction(tr("E&xit"), "quit", static_cast<QWidget*>(this), &QWidget::close, "file", QKeySequence::Quit)->setRole(Action::Role::SETTINGS);
+	m_actions.addAction(tr("E&xit"), "quit", static_cast<QWidget*>(this), &QWidget::close, "file", QKeySequence::Quit)->setRole(Action::Role::QUIT);
 
 	m_actions.addMenu(tr("&Emulation"), "emu");
 

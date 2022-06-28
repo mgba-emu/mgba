@@ -52,7 +52,7 @@ Q_OBJECT
 public:
 	void setTex(GLuint tex) { m_tex = tex; }
 	void setVBO(GLuint vbo) { m_vbo = vbo; }
-	void finalizeVAO();
+	bool finalizeVAO();
 	void reset();
 
 protected:

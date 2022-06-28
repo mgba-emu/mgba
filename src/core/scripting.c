@@ -311,7 +311,7 @@ static struct mScriptValue* _mScriptCoreChecksum(const struct mCore* core, int t
 		break;
 	}
 	if (!size) {
-		return NULL;
+		return &mScriptValueNull;
 	}
 	void* data = calloc(1, size);
 	core->checksum(core, data, type);
@@ -350,7 +350,7 @@ static struct mScriptValue* _mScriptCoreReadRange(struct mCore* core, uint32_t a
 static struct mScriptValue* _mScriptCoreReadRegister(const struct mCore* core, const char* regName) {
 	int32_t out;
 	if (!core->readRegister(core, regName, &out)) {
-		return NULL;
+		return &mScriptValueNull;
 	}
 	struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S32);
 	value->value.s32 = out;
@@ -365,7 +365,7 @@ static struct mScriptValue* _mScriptCoreSaveState(struct mCore* core, int32_t fl
 	struct VFile* vf = VFileMemChunk(NULL, 0);
 	if (!mCoreSaveStateNamed(core, vf, flags)) {
 		vf->close(vf);
-		return NULL;
+		return &mScriptValueNull;
 	}
 	void* buffer = vf->map(vf, vf->size(vf), MAP_READ);
 	struct mScriptValue* value = mScriptStringCreateFromBytes(buffer, vf->size(vf));
@@ -590,7 +590,7 @@ static struct mScriptValue* _mScriptCoreAdapterGet(struct mScriptCoreAdapter* ad
 	struct mScriptValue val;
 	struct mScriptValue core = mSCRIPT_MAKE(S(mCore), adapter->core);
 	if (!mScriptObjectGet(&core, name, &val)) {
-		return NULL;
+		return &mScriptValueNull;
 	}
 
 	struct mScriptValue* ret = malloc(sizeof(*ret));

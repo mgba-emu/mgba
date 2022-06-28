@@ -3,10 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "ScriptingController.h"
+#include "scripting/ScriptingController.h"
 
 #include "CoreController.h"
-#include "ScriptingTextBuffer.h"
+#include "scripting/ScriptingTextBuffer.h"
+#include "scripting/ScriptingTextBufferModel.h"
 
 using namespace QGBA;
 
@@ -32,6 +33,9 @@ ScriptingController::ScriptingController(QObject* parent)
 			break;
 		}
 	};
+
+	m_bufferModel = new ScriptingTextBufferModel(this);
+	QObject::connect(m_bufferModel, &ScriptingTextBufferModel::textBufferCreated, this, &ScriptingController::textBufferCreated);
 
 	init();
 }
@@ -87,10 +91,7 @@ void ScriptingController::clearController() {
 
 void ScriptingController::reset() {
 	CoreController::Interrupter interrupter(m_controller);
-	for (ScriptingTextBuffer* buffer : m_buffers) {
-		delete buffer;
-	}
-	m_buffers.clear();
+	m_bufferModel->reset();
 	mScriptContextDetachCore(&m_scriptContext);
 	mScriptContextDeinit(&m_scriptContext);
 	m_engines.clear();
@@ -106,21 +107,13 @@ void ScriptingController::runCode(const QString& code) {
 	load(vf, "*prompt");
 }
 
-mScriptTextBuffer* ScriptingController::createTextBuffer(void* context) {
-	ScriptingController* self = static_cast<ScriptingController*>(context);
-	ScriptingTextBuffer* buffer = new ScriptingTextBuffer(self);
-	self->m_buffers.append(buffer);
-	emit self->textBufferCreated(buffer);
-	return buffer->textBuffer();
-}
-
 void ScriptingController::init() {
 	mScriptContextInit(&m_scriptContext);
 	mScriptContextAttachStdlib(&m_scriptContext);
 	mScriptContextRegisterEngines(&m_scriptContext);
 
 	mScriptContextAttachLogger(&m_scriptContext, &m_logger);
-	mScriptContextSetTextBufferFactory(&m_scriptContext, &ScriptingController::createTextBuffer, this);
+	m_bufferModel->attachToContext(&m_scriptContext);
 
 	HashTableEnumerate(&m_scriptContext.engines, [](const char* key, void* engine, void* context) {
 	ScriptingController* self = static_cast<ScriptingController*>(context);

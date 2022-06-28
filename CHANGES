@@ -105,6 +105,7 @@ Other fixes:
  - VFS: Failed file mapping should return NULL on POSIX
 Misc:
  - Core: Suspend runloop when a core crashes
+ - Core: Add wallclock offset RTC type
  - Debugger: Save and restore CLI history
  - Debugger: GDB now works while the game is paused
  - Debugger: Add command to load external symbol file (fixes mgba.io/i/2480)

@@ -23,8 +23,8 @@ private slots:
 	void submitRepl();
 	void load();
 
-	void addTextBuffer(ScriptingTextBuffer*);
-	void selectBuffer(int);
+	void controllerReset();
+	void selectBuffer(const QModelIndex& current, const QModelIndex& = QModelIndex());
 
 private:
 	QString getFilters() const;
@@ -36,8 +36,8 @@ private:
 
 	ConfigController* m_config;
 	ScriptingController* m_controller;
-	QList<ScriptingTextBuffer*> m_textBuffers;
 	QStringList m_mruFiles;
+	QTextDocument* m_blankDocument;
 };
 
 }

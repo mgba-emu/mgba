@@ -499,10 +499,21 @@ function detectGame()
 		console:error("Unknown game!")
 	else
 		console:log("Found game: " .. game.name)
+		if not partyBuffer then
+			partyBuffer = console:createBuffer("Party")
+		end
 	end
 end
 
+function updateBuffer()
+	if not game or not partyBuffer then
+		return
+	end
+	printPartyStatus(game, partyBuffer)
+end
+
 callbacks:add("start", detectGame)
+callbacks:add("frame", updateBuffer)
 if emu then
 	detectGame()
 end

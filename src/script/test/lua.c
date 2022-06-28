@@ -254,7 +254,7 @@ M_TEST_DEFINE(setGlobal) {
 
 	assert_true(lua->setGlobal(lua, "b", NULL));
 	val = lua->getGlobal(lua, "b");
-	assert_null(val);
+	assert_ptr_equal(val, &mScriptValueNull);
 
 	mScriptContextDeinit(&context);
 }

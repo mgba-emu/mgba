@@ -381,9 +381,12 @@ size_t mLibraryGetEntries(struct mLibrary* library, struct mLibraryListing* out,
 	sqlite3_reset(library->select);
 	_bindConstraints(library->select, constraints);
 
+	if (numEntries > SSIZE_MAX) {
+		numEntries = SSIZE_MAX;
+	}
 	int countIndex = sqlite3_bind_parameter_index(library->select, ":count");
 	int offsetIndex = sqlite3_bind_parameter_index(library->select, ":offset");
-	sqlite3_bind_int64(library->select, countIndex, numEntries ? numEntries : -1);
+	sqlite3_bind_int64(library->select, countIndex, numEntries ? (ssize_t) numEntries : -1);
 	sqlite3_bind_int64(library->select, offsetIndex, offset);
 
 	size_t entryIndex;
