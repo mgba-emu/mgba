@@ -6,6 +6,7 @@
 #include "utils.h"
 
 #include <QCoreApplication>
+#include <QHostAddress>
 #include <QKeySequence>
 #include <QObject>
 
@@ -174,6 +175,47 @@ QString keyName(int key) {
 		return QObject::tr("Menu");
 	default:
 		return QKeySequence(key).toString(QKeySequence::NativeText);
+  }
+}
+
+void SpanSet::add(int pos) {
+	for (Span& span : spans) {
+		if (pos == span.left - 1) {
+			span.left = pos;
+			return;
+		} else if (pos == span.right + 1) {
+			span.right = pos;
+			return;
+		}
+	}
+	spans << Span{ pos, pos };
+}
+
+void SpanSet::merge() {
+	int numSpans = spans.size();
+	if (!numSpans) {
+		return;
+	}
+	sort();
+	QVector<Span> merged({ spans[0] });
+	int lastRight = merged[0].right;
+	for (int i = 1; i < numSpans; i++) {
+		int right = spans[i].right;
+		if (spans[i].left - 1 <= lastRight) {
+			merged.back().right = right;
+		} else {
+			merged << spans[i];
+		}
+		lastRight = right;
+	}
+	spans = merged;
+}
+
+void SpanSet::sort(bool reverse) {
+	if (reverse) {
+		std::sort(spans.begin(), spans.end(), std::greater<Span>());
+	} else {
+		std::sort(spans.begin(), spans.end());
 	}
 }
 

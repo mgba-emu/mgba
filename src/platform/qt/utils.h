@@ -13,6 +13,7 @@
 #include <QRect>
 #include <QSize>
 #include <QString>
+#include <QVector>
 
 #include <algorithm>
 #include <functional>
@@ -116,5 +117,21 @@ QString romFilters(bool includeMvl = false, mPlatform platform = mPLATFORM_NONE,
 bool extractMatchingFile(VDir* dir, std::function<QString (VDirEntry*)> filter);
 
 QString keyName(int key);
+
+struct SpanSet {
+	struct Span {
+		int left;
+		int right;
+
+		inline bool operator<(const Span& other) const { return left < other.left; }
+		inline bool operator>(const Span& other) const { return left > other.left; }
+	};
+
+	void add(int pos);
+	void merge();
+	void sort(bool reverse = false);
+
+	QVector<Span> spans;
+};
 
 }
