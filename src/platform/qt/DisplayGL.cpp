@@ -56,10 +56,13 @@ uint qHash(const QSurfaceFormat& format, uint seed) {
 }
 
 void mGLWidget::initializeGL() {
-	m_vao.create();
-	m_program.create();
+	m_vao = std::make_unique<QOpenGLVertexArrayObject>();
+	m_vao->create();
 
-	m_program.addShaderFromSourceCode(QOpenGLShader::Vertex, R"(#version 150 core
+	m_program = std::make_unique<QOpenGLShaderProgram>();
+	m_program->create();
+
+	m_program->addShaderFromSourceCode(QOpenGLShader::Vertex, R"(#version 150 core
 		in vec4 position;
 		out vec2 texCoord;
 		void main() {
@@ -67,7 +70,7 @@ void mGLWidget::initializeGL() {
 			texCoord = (position.st + 1.0) * 0.5;
 		})");
 
-	m_program.addShaderFromSourceCode(QOpenGLShader::Fragment, R"(#version 150 core
+	m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, R"(#version 150 core
 		in vec2 texCoord;
 		out vec4 color;
 		uniform sampler2D tex;
@@ -75,9 +78,11 @@ void mGLWidget::initializeGL() {
 			color = vec4(texture(tex, texCoord).rgb, 1.0);
 		})");
 
-	m_program.link();
-	m_program.setUniformValue("tex", 0);
-	m_positionLocation = m_program.attributeLocation("position");
+	m_program->link();
+	m_program->setUniformValue("tex", 0);
+	m_positionLocation = m_program->attributeLocation("position");
+
+	m_vaoDone = false;
 
 	connect(&m_refresh, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
 }
@@ -85,14 +90,18 @@ void mGLWidget::initializeGL() {
 void mGLWidget::finalizeVAO() {
 	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
 	fn->glGetError(); // Clear the error
-	m_vao.bind();
+	m_vao->bind();
 	fn->glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 	fn->glEnableVertexAttribArray(m_positionLocation);
 	fn->glVertexAttribPointer(m_positionLocation, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-	m_vao.release();
+	m_vao->release();
 	if (fn->glGetError() == GL_NO_ERROR) {
 		m_vaoDone = true;
 	}
+}
+
+void mGLWidget::reset() {
+	m_vaoDone = false;
 }
 
 void mGLWidget::paintGL() {
@@ -100,13 +109,13 @@ void mGLWidget::paintGL() {
 		finalizeVAO();
 	}
 	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
-	m_program.bind();
-	m_vao.bind();
+	m_program->bind();
+	m_vao->bind();
 	fn->glBindTexture(GL_TEXTURE_2D, m_tex);
 	fn->glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	fn->glBindTexture(GL_TEXTURE_2D, 0);
-	m_vao.release();
-	m_program.release();
+	m_vao->release();
+	m_program->release();
 
 	// TODO: Better timing
 	++m_refreshResidue;
@@ -205,9 +214,12 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	CoreController::Interrupter interrupter(controller);
 	QMetaObject::invokeMethod(m_painter.get(), "start");
 	if (!m_gl) {
-		setUpdatesEnabled(false);
+		if (QGuiApplication::platformName() == "windows") {
+			setUpdatesEnabled(false);
+		}
 	} else {
 		show();
+		m_gl->reset();
 	}
 }
 
@@ -290,7 +302,7 @@ void DisplayGL::unpauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = true;
 		QMetaObject::invokeMethod(m_painter.get(), "unpause", Qt::BlockingQueuedConnection);
-		if (!m_gl) {
+		if (!m_gl && QGuiApplication::platformName() == "windows") {
 			setUpdatesEnabled(false);
 		}
 	}

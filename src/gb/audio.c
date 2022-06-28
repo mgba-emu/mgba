@@ -11,6 +11,9 @@
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/serialize.h>
 #include <mgba/internal/gb/io.h>
+#ifdef M_CORE_GBA
+#include <mgba/internal/gba/audio.h>
+#endif
 
 #ifdef __3DS__
 #define blip_add_delta blip_add_delta_fast
@@ -69,7 +72,6 @@ void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAu
 		audio->timingFactor = 2;
 	}
 
-	audio->frameEvent.context = audio;
 	audio->frameEvent.name = "GB Audio Frame Sequencer";
 	audio->frameEvent.callback = _updateFrame;
 	audio->frameEvent.priority = 0x10;
@@ -85,13 +87,9 @@ void GBAudioDeinit(struct GBAudio* audio) {
 }
 
 void GBAudioReset(struct GBAudio* audio) {
-	mTimingDeschedule(audio->timing, &audio->frameEvent);
 	mTimingDeschedule(audio->timing, &audio->sampleEvent);
 	if (audio->style != GB_AUDIO_GBA) {
 		mTimingSchedule(audio->timing, &audio->sampleEvent, 0);
-	}
-	if (audio->style == GB_AUDIO_GBA) {
-		mTimingSchedule(audio->timing, &audio->frameEvent, 0);
 	}
 	audio->ch1 = (struct GBAudioSquareChannel) { .sweep = { .time = 8 }, .envelope = { .dead = 2 } };
 	audio->ch2 = (struct GBAudioSquareChannel) { .envelope = { .dead = 2 } };
@@ -458,11 +456,12 @@ void GBAudioWriteNR52(struct GBAudio* audio, uint8_t value) {
 }
 
 void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate) {
-	struct GBAudio* audio = user;
-	GBAudioUpdateFrame(audio);
-	if (audio->style == GB_AUDIO_GBA) {
-		mTimingSchedule(timing, &audio->frameEvent, audio->timingFactor * FRAME_CYCLES - cyclesLate);
-	}
+#ifdef M_CORE_GBA
+	struct GBAAudio* audio = user;
+	GBAAudioSample(audio, mTimingCurrentTime(timing));
+	mTimingSchedule(timing, &audio->psg.frameEvent, audio->psg.timingFactor * FRAME_CYCLES - cyclesLate);
+	GBAudioUpdateFrame(&audio->psg);
+#endif
 }
 
 void GBAudioRun(struct GBAudio* audio, int32_t timestamp, int channels) {

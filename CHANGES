@@ -66,7 +66,9 @@ Emulation fixes:
  - GB Audio: Fix APU re-enable timing glitch
  - GB I/O: Fix writing to WAVE RAM behavior (fixes mgba.io/i/1334)
  - GB Memory: Add cursory cartridge open bus emulation (fixes mgba.io/i/2032)
+ - GB MBC: Fix edge case with Pocket Cam register accesses (fixes mgba.io/i/2557)
  - GB Serialize: Fix loading MBC1 states that affect bank 0 (fixes mgba.io/i/2402)
+ - GB SIO: Fix bidirectional transfer starting (fixes mgba.io/i/2290)
  - GB Video: Draw SGB border pieces that overlap GB graphics (fixes mgba.io/i/1339)
  - GBA: Improve timing when not booting from BIOS
  - GBA: Fix expected entry point for multiboot ELFs (fixes mgba.io/i/2450)
@@ -85,6 +87,7 @@ Emulation fixes:
  - GBA Video: Fix rare crash in modes 3-5
  - GBA Video: Fix sprites with mid-frame palette changes in GL (fixes mgba.io/i/2476)
  - GBA Video: Fix OBJ tile wrapping with 2D char mapping (fixes mgba.io/i/2443)
+ - GBA Video: Fix horizontal lines in GL when charbase is changed (fixes mgba.io/i/1631)
 Other fixes:
  - ARM: Disassemble Thumb mov pseudo-instruction properly
  - Core: Don't attempt to restore rewind diffs past start of rewind
@@ -98,6 +101,7 @@ Other fixes:
  - Qt: Fix some hangs when using the debugger console
  - Qt: Fix crash when clicking past last tile in viewer
  - Qt: Fix preloading for ROM replacing
+ - Qt: Fix screen not displaying on Wayland (fixes mgba.io/i/2190)
  - VFS: Failed file mapping should return NULL on POSIX
 Misc:
  - Core: Suspend runloop when a core crashes
@@ -129,6 +133,7 @@ Misc:
  - Qt: Add e-Card passing to the command line (closes mgba.io/i/2474)
  - Qt: Boot both a multiboot image and ROM with CLI args (closes mgba.io/i/1941)
  - Qt: Improve cheat parsing (fixes mgba.io/i/2297)
+ - SDL: Support exposing an axis directly as the gyro value (closes mgba.io/i/2531)
  - Windows: Attach to console if present
  - Vita: Add bilinear filtering option (closes mgba.io/i/344)
 

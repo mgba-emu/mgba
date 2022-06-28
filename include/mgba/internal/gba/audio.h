@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/core/cpu.h>
+#include <mgba/core/interface.h>
 #include <mgba/core/log.h>
 #include <mgba/internal/gb/audio.h>
 #include <mgba-util/circle-buffer.h>
@@ -79,24 +80,21 @@ struct GBAAudio {
 	bool enable;
 
 	size_t samples;
-	unsigned sampleRate;
-
 	GBARegisterSOUNDBIAS soundbias;
 
 	struct GBAAudioMixer* mixer;
 	bool externalMixing;
 	int32_t sampleInterval;
 
+	int32_t lastSample;
+	int sampleIndex;
+	struct mStereoSample currentSamples[GBA_MAX_SAMPLES];
+
 	bool forceDisableChA;
 	bool forceDisableChB;
 	int masterVolume;
 
 	struct mTimingEvent sampleEvent;
-};
-
-struct GBAStereoSample {
-	int16_t left;
-	int16_t right;
 };
 
 struct GBAMP2kADSR {
@@ -278,7 +276,7 @@ struct GBAAudioMixer {
 	double tempo;
 	double frame;
 
-	struct GBAStereoSample last;
+	struct mStereoSample last;
 };
 
 void GBAAudioInit(struct GBAAudio* audio, size_t samples);
@@ -308,6 +306,8 @@ void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value);
 uint32_t GBAAudioReadWaveRAM(struct GBAAudio* audio, int address);
 uint32_t GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value);
 void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles);
+
+void GBAAudioSample(struct GBAAudio* audio, int32_t timestamp);
 
 struct GBASerializedState;
 void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* state);

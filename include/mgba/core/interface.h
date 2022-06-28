@@ -195,6 +195,11 @@ struct mAVStream {
 	void (*videoFrameRateChanged)(struct mAVStream*, unsigned numerator, unsigned denominator);
 };
 
+struct mStereoSample {
+	int16_t left;
+	int16_t right;
+};
+
 struct mKeyCallback {
 	uint16_t (*readKeys)(struct mKeyCallback*);
 	bool requireOpposingDirections;

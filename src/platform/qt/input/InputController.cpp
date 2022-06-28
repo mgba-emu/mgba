@@ -461,6 +461,11 @@ void InputController::registerGyroAxisX(int axis) {
 #ifdef BUILD_SDL
 	if (m_playerAttached) {
 		m_sdlPlayer.rotation.gyroX = axis;
+		if (m_sdlPlayer.rotation.gyroY == axis) {
+			m_sdlPlayer.rotation.gyroZ = axis;
+		} else {
+			m_sdlPlayer.rotation.gyroZ = -1;
+		}
 	}
 #endif
 }
@@ -469,6 +474,11 @@ void InputController::registerGyroAxisY(int axis) {
 #ifdef BUILD_SDL
 	if (m_playerAttached) {
 		m_sdlPlayer.rotation.gyroY = axis;
+		if (m_sdlPlayer.rotation.gyroX == axis) {
+			m_sdlPlayer.rotation.gyroZ = axis;
+		} else {
+			m_sdlPlayer.rotation.gyroZ = -1;
+		}
 	}
 #endif
 }

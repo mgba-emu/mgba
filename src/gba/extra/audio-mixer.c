@@ -125,7 +125,7 @@ static void _stepSample(struct GBAAudioMixer* mixer, struct GBAMP2kTrack* track)
 	for (nSample = 0; nSample < updates; ++nSample) {
 		int8_t sample = memory->load8(cpu, sampleBase + sampleI, 0);
 
-		struct GBAStereoSample stereo = {
+		struct mStereoSample stereo = {
 			(sample * track->channel->leftVolume * track->channel->envelopeV) >> 9,
 			(sample * track->channel->rightVolume * track->channel->envelopeV) >> 9
 		};
@@ -277,7 +277,7 @@ void _mp2kStep(struct GBAAudioMixer* mixer) {
 	uint32_t interval = mixer->p->sampleInterval / OVERSAMPLE;
 	int i;
 	for (i = 0; i < OVERSAMPLE; ++i) {
-		struct GBAStereoSample sample = {0};
+		struct mStereoSample sample = {0};
 		size_t track;
 		for (track = 0; track < MP2K_MAX_SOUND_CHANNELS; ++track) {
 			if (!mixer->activeTracks[track].channel->status) {

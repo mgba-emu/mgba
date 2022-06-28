@@ -56,6 +56,9 @@ elseif(APPLE)
 	if(NOT CMAKE_SYSTEM_VERSION VERSION_LESS "17.0") # Darwin 17.x is macOS 10.13
 		list(APPEND SDL_LIBRARY "-framework Metal")
 	endif()
+	if(NOT CMAKE_SYSTEM_VERSION VERSION_LESS "19.0") # Darwin 19.x is macOS 10.15
+		list(APPEND SDL_LIBRARY "-framework GameController" "-framework CoreHaptics")
+	endif()
 endif()
 
 if(NOT SDLMAIN_LIBRARY)

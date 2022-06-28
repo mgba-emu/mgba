@@ -141,7 +141,7 @@ static void* framebuffer[2] = { 0, 0 };
 static int whichFb = 0;
 
 static struct AudioBuffer {
-	struct GBAStereoSample samples[SAMPLES] __attribute__((__aligned__(32)));
+	struct mStereoSample samples[SAMPLES] __attribute__((__aligned__(32)));
 	volatile size_t size;
 } audioBuffer[BUFFERS] = {0};
 static volatile int currentAudioBuffer = 0;
@@ -685,8 +685,8 @@ static void _audioDMA(void) {
 	if (buffer->size != SAMPLES) {
 		return;
 	}
-	DCFlushRange(buffer->samples, SAMPLES * sizeof(struct GBAStereoSample));
-	AUDIO_InitDMA((u32) buffer->samples, SAMPLES * sizeof(struct GBAStereoSample));
+	DCFlushRange(buffer->samples, SAMPLES * sizeof(struct mStereoSample));
+	AUDIO_InitDMA((u32) buffer->samples, SAMPLES * sizeof(struct mStereoSample));
 	buffer->size = 0;
 	currentAudioBuffer = (currentAudioBuffer + 1) % BUFFERS;
 }

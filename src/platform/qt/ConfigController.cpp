@@ -136,7 +136,7 @@ ConfigController::ConfigController(QObject* parent)
 
 	m_subparsers[1].usage = "Frontend options:\n"
 	    "  --ecard FILE  Scan an e-Reader card in the first loaded game\n"
-	    "                Can be paassed multiple times for multiple cards\n"
+	    "                Can be passed multiple times for multiple cards\n"
 	    "  --mb FILE     Boot a multiboot image with FILE inserted into the ROM slot";
 	m_subparsers[1].parse = nullptr;
 	m_subparsers[1].parseLong = [](struct mSubParser* parser, const char* option, const char* arg) {
