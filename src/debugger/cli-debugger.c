@@ -226,11 +226,9 @@ static bool _parseExpression(struct mDebugger* debugger, struct CLIDebugVector* 
 	}
 	if (!mDebuggerEvaluateParseTree(debugger, tree, intValue, segmentValue)) {
 		parseFree(tree);
-		free(tree);
 		return false;
 	}
 	parseFree(tree);
-	free(tree);
 	return true;
 }
 
@@ -599,7 +597,6 @@ static struct ParseTree* _parseTree(const char** string) {
 	if (error) {
 		if (tree) {
 			parseFree(tree);
-			free(tree);
 		}
 		return NULL;
 	} else {

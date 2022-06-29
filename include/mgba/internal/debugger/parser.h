@@ -43,7 +43,7 @@ enum Operation {
 
 struct Token {
 	enum TokenType {
-		TOKEN_ERROR_TYPE,
+		TOKEN_ERROR_TYPE = 0,
 		TOKEN_UINT_TYPE,
 		TOKEN_IDENTIFIER_TYPE,
 		TOKEN_OPERATOR_TYPE,
@@ -60,8 +60,10 @@ struct Token {
 
 struct ParseTree {
 	struct Token token;
+	struct ParseTree* p;
 	struct ParseTree* lhs;
 	struct ParseTree* rhs;
+	int precedence;
 };
 
 size_t lexExpression(struct LexVector* lv, const char* string, size_t length, const char* eol);

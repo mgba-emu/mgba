@@ -88,11 +88,13 @@ Emulation fixes:
  - GBA Video: Fix sprites with mid-frame palette changes in GL (fixes mgba.io/i/2476)
  - GBA Video: Fix OBJ tile wrapping with 2D char mapping (fixes mgba.io/i/2443)
  - GBA Video: Fix horizontal lines in GL when charbase is changed (fixes mgba.io/i/1631)
+ - GBA Video: Fix sprite layer priority updating in GL
 Other fixes:
  - ARM: Disassemble Thumb mov pseudo-instruction properly
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - Core: Fix the runloop resuming after a game has crashed (fixes mgba.io/i/2451)
  - Core: Fix crash if library can't be opened
+ - Debugger: Fix crash with extremely long CLI strings
  - FFmpeg: Fix crash when encoding audio with some containers
  - FFmpeg: Fix GIF recording (fixes mgba.io/i/2393)
  - GB: Fix temporary saves
