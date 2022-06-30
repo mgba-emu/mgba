@@ -126,7 +126,7 @@ The recommended way to build for most platforms is to use Docker. Several Docker
 
 To use a Docker image to build mGBA, simply run the following command while in the root of an mGBA checkout:
 
-	docker run --rm -t -v $PWD:/home/mgba/src mgba/windows:w32
+	docker run --rm -t -v ${PWD}:/home/mgba/src mgba/windows:w32
 
 This will produce a `build-win32` directory with the build products. Replace `mgba/windows:w32` with another Docker image for other platforms, which will produce a corresponding other directory. The following Docker images available on Docker Hub:
 
