@@ -62,13 +62,16 @@ CoreController* CoreManager::loadGame(const QString& path) {
 		VFile* vfOriginal = VDirFindFirst(archive, [](VFile* vf) {
 			return mCoreIsCompatible(vf) != mPLATFORM_NONE;
 		});
-		ssize_t size;
-		if (vfOriginal && (size = vfOriginal->size(vfOriginal)) > 0) {
-			void* mem = vfOriginal->map(vfOriginal, size, MAP_READ);
-			vf = VFileMemChunk(mem, size);
-			vfOriginal->unmap(vfOriginal, mem, size);
+		if (vfOriginal) {
+			ssize_t size = vfOriginal->size(vfOriginal);
+			if (size > 0) {
+				void* mem = vfOriginal->map(vfOriginal, size, MAP_READ);
+				vf = VFileMemChunk(mem, size);
+				vfOriginal->unmap(vfOriginal, mem, size);
+			}
 			vfOriginal->close(vfOriginal);
 		}
+		archive->close(archive);
 	}
 	QDir dir(info.dir());
 	if (!vf) {
