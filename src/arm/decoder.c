@@ -190,6 +190,9 @@ static int _decodeMemory(struct ARMMemoryAccess memory, struct ARMCore* cpu, con
 				case 4:
 					value = cpu->memory.load32(cpu, addrBase, NULL);
 					break;
+				default:
+					// Should never be reached
+					abort();
 				}
 				const char* label = NULL;
 				if (symbols) {

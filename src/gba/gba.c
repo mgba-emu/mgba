@@ -583,6 +583,10 @@ void GBADebug(struct GBA* gba, uint16_t flags) {
 }
 
 bool GBAIsROM(struct VFile* vf) {
+	if (!vf) {
+		return false;
+	}
+
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
@@ -594,9 +598,6 @@ bool GBAIsROM(struct VFile* vf) {
 		return isGBA;
 	}
 #endif
-	if (!vf) {
-		return false;
-	}
 
 	uint8_t signature[sizeof(GBA_ROM_MAGIC) + sizeof(GBA_ROM_MAGIC2)];
 	if (vf->seek(vf, GBA_ROM_MAGIC_OFFSET, SEEK_SET) < 0) {

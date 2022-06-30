@@ -413,6 +413,9 @@ size_t SM83Decode(uint8_t opcode, struct SM83InstructionInfo* info) {
 			info->op1.immediate |= opcode << ((info->opcodeSize - 2) * 8);
 		}
 		return 0;
+	default:
+		// Should never be reached
+		abort();
 	}
 	++info->opcodeSize;
 	return decoder(opcode, info);

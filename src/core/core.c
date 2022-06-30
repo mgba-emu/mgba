@@ -357,6 +357,8 @@ bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf) {
 	PNGWriteClose(png, info);
 	return success;
 #else
+	UNUSED(core);
+	UNUSED(vf);
 	return false;
 #endif
 }
