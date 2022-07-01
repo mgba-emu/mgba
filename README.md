@@ -40,8 +40,8 @@ Features
 - Cores available for RetroArch/Libretro and OpenEmu.
 - Community-provided translations for several languages via [Weblate](https://hosted.weblate.org/engage/mgba).
 - Many, many smaller things.
-#### Game Boy mappers
 
+#### Game Boy mappers
 
 The following mappers are fully supported:
 
