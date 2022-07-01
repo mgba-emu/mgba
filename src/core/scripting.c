@@ -373,6 +373,16 @@ static struct mScriptValue* _mScriptCoreSaveState(struct mCore* core, int32_t fl
 	return value;
 }
 
+static int _mScriptCoreSaveStateFile(struct mCore* core, const char* path, int flags) {
+	struct VFile* vf = VFileOpen(path, O_WRONLY | O_TRUNC | O_CREAT);
+	if (!vf) {
+		return false;
+	}
+	bool ok = mCoreSaveStateNamed(core, vf, flags);
+	vf->close(vf);
+	return ok;
+}
+
 static int32_t _mScriptCoreLoadState(struct mCore* core, struct mScriptString* buffer, int32_t flags) {
 	struct VFile* vf = VFileFromConstMemory(buffer->buffer, buffer->size);
 	int ret = mCoreLoadStateNamed(core, vf, flags);
@@ -380,6 +390,15 @@ static int32_t _mScriptCoreLoadState(struct mCore* core, struct mScriptString* b
 	return ret;
 }
 
+static int _mScriptCoreLoadStateFile(struct mCore* core, const char* path, int flags) {
+	struct VFile* vf = VFileOpen(path, O_RDONLY);
+	if (!vf) {
+		return false;
+	}
+	bool ok = mCoreLoadStateNamed(core, vf, flags);
+	vf->close(vf);
+	return ok;
+}
 static void _mScriptCoreTakeScreenshot(struct mCore* core, const char* filename) {
 	if (filename) {
 		struct VFile* vf = VFileOpen(filename, O_WRONLY | O_CREAT | O_TRUNC);
@@ -437,8 +456,10 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, writeRegister, _mScriptCoreWriteRegist
 // Savestate functions
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, saveStateSlot, mCoreSaveState, 2, S32, slot, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, WSTR, saveStateBuffer, _mScriptCoreSaveState, 1, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, saveStateFile, _mScriptCoreSaveStateFile, 2, CHARP, path, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateSlot, mCoreLoadState, 2, S32, slot, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateBuffer, _mScriptCoreLoadState, 2, STR, buffer, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateFile, _mScriptCoreLoadStateFile, 2, CHARP, path, S32, flags);
 
 // Miscellaneous functions
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD_WITH_DEFAULTS(mCore, screenshot, _mScriptCoreTakeScreenshot, 1, CHARP, filename);
@@ -516,10 +537,14 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateSlot)
 	mSCRIPT_DEFINE_DOCSTRING("Save state and return as a buffer. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateBuffer)
+	mSCRIPT_DEFINE_DOCSTRING("Save state to the given path. See C.SAVESTATE for possible values for `flags`")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateFile)
 	mSCRIPT_DEFINE_DOCSTRING("Load state from the slot number. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateSlot)
-	mSCRIPT_DEFINE_DOCSTRING("Load state a buffer. See C.SAVESTATE for possible values for `flags`")
+	mSCRIPT_DEFINE_DOCSTRING("Load state from a buffer. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateBuffer)
+	mSCRIPT_DEFINE_DOCSTRING("Load state from the given path. See C.SAVESTATE for possible values for `flags`")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateFile)
 
 	mSCRIPT_DEFINE_DOCSTRING("Save a screenshot")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, screenshot)
@@ -534,16 +559,26 @@ mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateSlot)
 	mSCRIPT_S32(SAVESTATE_ALL)
 mSCRIPT_DEFINE_DEFAULTS_END;
 
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateBuffer)
+	mSCRIPT_S32(SAVESTATE_ALL)
+mSCRIPT_DEFINE_DEFAULTS_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateFile)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_S32(SAVESTATE_ALL)
+mSCRIPT_DEFINE_DEFAULTS_END;
+
 mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, loadStateSlot)
 	mSCRIPT_NO_DEFAULT,
 	mSCRIPT_S32(SAVESTATE_ALL & ~SAVESTATE_SAVEDATA)
 mSCRIPT_DEFINE_DEFAULTS_END;
 
-mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateBuffer)
-	mSCRIPT_S32(SAVESTATE_ALL)
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, loadStateBuffer)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_S32(SAVESTATE_ALL & ~SAVESTATE_SAVEDATA)
 mSCRIPT_DEFINE_DEFAULTS_END;
 
-mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, loadStateBuffer)
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, loadStateFile)
 	mSCRIPT_NO_DEFAULT,
 	mSCRIPT_S32(SAVESTATE_ALL & ~SAVESTATE_SAVEDATA)
 mSCRIPT_DEFINE_DEFAULTS_END;
