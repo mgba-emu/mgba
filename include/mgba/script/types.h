@@ -27,6 +27,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_C_S64 int64_t
 #define mSCRIPT_TYPE_C_U64 uint64_t
 #define mSCRIPT_TYPE_C_F64 double
+#define mSCRIPT_TYPE_C_BOOL bool
 #define mSCRIPT_TYPE_C_STR struct mScriptString*
 #define mSCRIPT_TYPE_C_CHARP const char*
 #define mSCRIPT_TYPE_C_PTR void*
@@ -55,6 +56,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_S64 s64
 #define mSCRIPT_TYPE_FIELD_U64 u64
 #define mSCRIPT_TYPE_FIELD_F64 f64
+#define mSCRIPT_TYPE_FIELD_BOOL u32
 #define mSCRIPT_TYPE_FIELD_STR string
 #define mSCRIPT_TYPE_FIELD_CHARP copaque
 #define mSCRIPT_TYPE_FIELD_PTR opaque
@@ -82,6 +84,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_MS_S64 (&mSTSInt64)
 #define mSCRIPT_TYPE_MS_U64 (&mSTUInt64)
 #define mSCRIPT_TYPE_MS_F64 (&mSTFloat64)
+#define mSCRIPT_TYPE_MS_BOOL (&mSTBool)
 #define mSCRIPT_TYPE_MS_STR (&mSTString)
 #define mSCRIPT_TYPE_MS_CHARP (&mSTCharPtr)
 #define mSCRIPT_TYPE_MS_LIST (&mSTList)
@@ -109,6 +112,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_CMP_U64(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_U64, TYPE)
 #define mSCRIPT_TYPE_CMP_S64(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_S64, TYPE)
 #define mSCRIPT_TYPE_CMP_F64(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_F64, TYPE)
+#define mSCRIPT_TYPE_CMP_BOOL(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_BOOL, TYPE)
 #define mSCRIPT_TYPE_CMP_STR(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_STR, TYPE)
 #define mSCRIPT_TYPE_CMP_CHARP(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_CHARP, TYPE)
 #define mSCRIPT_TYPE_CMP_LIST(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_LIST, TYPE)
@@ -165,6 +169,7 @@ extern const struct mScriptType mSTFloat32;
 extern const struct mScriptType mSTSInt64;
 extern const struct mScriptType mSTUInt64;
 extern const struct mScriptType mSTFloat64;
+extern const struct mScriptType mSTBool;
 extern const struct mScriptType mSTString;
 extern const struct mScriptType mSTCharPtr;
 extern const struct mScriptType mSTList;
@@ -329,6 +334,7 @@ bool mScriptPopF32(struct mScriptList* list, float* out);
 bool mScriptPopS64(struct mScriptList* list, int64_t* out);
 bool mScriptPopU64(struct mScriptList* list, uint64_t* out);
 bool mScriptPopF64(struct mScriptList* list, double* out);
+bool mScriptPopBool(struct mScriptList* list, bool* out);
 bool mScriptPopPointer(struct mScriptList* list, void** out);
 
 bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* input, struct mScriptValue* output);

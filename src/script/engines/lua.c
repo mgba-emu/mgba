@@ -335,8 +335,8 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext, bool
 		value->value.f64 = lua_tonumber(luaContext->lua, -1);
 		break;
 	case LUA_TBOOLEAN:
-		value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S32);
-		value->value.s32 = lua_toboolean(luaContext->lua, -1);
+		value = mScriptValueAlloc(mSCRIPT_TYPE_MS_BOOL);
+		value->value.u32 = lua_toboolean(luaContext->lua, -1);
 		break;
 	case LUA_TSTRING:
 		buffer = lua_tolstring(luaContext->lua, -1, &size);
@@ -414,7 +414,9 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		}
 		break;
 	case mSCRIPT_TYPE_UINT:
-		if (value->type->size <= 4) {
+		if (value->type == mSCRIPT_TYPE_MS_BOOL) {
+			lua_pushboolean(luaContext->lua, !!value->value.u32);
+		} else if (value->type->size <= 4) {
 			lua_pushinteger(luaContext->lua, value->value.u32);
 		} else if (value->type->size == 8) {
 			lua_pushinteger(luaContext->lua, value->value.u64);
