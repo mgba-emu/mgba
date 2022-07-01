@@ -393,6 +393,11 @@ static void _mScriptCoreTakeScreenshot(struct mCore* core, const char* filename)
 	}
 }
 
+// Loading functions
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, S32, loadFile, mCoreLoadFile, 1, CHARP, path);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, S32, autoloadSave, mCoreAutoloadSave, 0);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, S32, loadSaveFile, mCoreLoadSaveFile, 2, CHARP, path, S8, temporary);
+
 // Info functions
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, platform, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, U32, frameCounter, 0);
@@ -442,6 +447,13 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
 		"An instance of an emulator core."
 	)
+	mSCRIPT_DEFINE_DOCSTRING("Load a ROM file into the current state of this core")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadFile)
+	mSCRIPT_DEFINE_DOCSTRING("Load the save data associated with the currently loaded ROM file")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, autoloadSave)
+	mSCRIPT_DEFINE_DOCSTRING("Load save data from the given path. If the `temporary` flag is set, the given save data will not be written back to disk")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadSaveFile)
+
 	mSCRIPT_DEFINE_DOCSTRING("Get which platform is being emulated. See C.PLATFORM for possible values")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, platform)
 	mSCRIPT_DEFINE_DOCSTRING("Get the number of the current frame")
