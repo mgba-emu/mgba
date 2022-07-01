@@ -40,8 +40,8 @@ Features
 - Cores available for RetroArch/Libretro and OpenEmu.
 - Community-provided translations for several languages via [Weblate](https://hosted.weblate.org/engage/mgba).
 - Many, many smaller things.
+#### Game Boy mappers
 
-## Game Boy mappers
 
 The following mappers are fully supported:
 
@@ -120,11 +120,11 @@ Compiling
 
 Compiling requires using CMake 3.1 or newer. GCC and Clang are both known to work to compile mGBA, but Visual Studio 2013 and older are known not to work. Support for Visual Studio 2015 and newer is coming soon.
 
-## Docker building
+#### Docker building
 
 The recommended way to build for most platforms is to use Docker. Several Docker images are provided that contain the requisite toolchain and dependencies for building mGBA across several platforms. 
 
-First, you need to make sure you are within the mGBA repository root directory, and it is located in a directory where it's in a *nix path. Docker is known to be stringent on this restriction. (See issue #1985 for details.) 
+Note: If you are on Windows, you need to make sure you are within the mGBA repository root directory, and it is located in a directory where it's in a *nix path. Docker is known to be stringent on this restriction. (See issue [#1985](https://mgba.io/i/1985) for details.) 
 
 Examples: On Windows, after cloning the repository, the absolute path would be:
 
@@ -135,6 +135,8 @@ On *nix systems, it would look like:
 	/home/<User>/mgba
 
 Then, open up a terminal and navigate to the `mgba` root directory.
+
+Otherwise, if you are on *nix systems, you may continue from here onwards.
 
 To use a Docker image to build mGBA, simply run the following command while in the root of an mGBA checkout:
 
@@ -157,7 +159,7 @@ When running the Docker image, this will produce a `build-win32` directory with 
 
 If you wished to speed up the build process, consider adding the flag `-e MAKEFLAGS=-j4` to do a parallel build for mGBA with 4 cores instead of one core, if your CPU supports it. Change the `4` to however many cores you have on your build machine.
 
-## *nix building
+#### *nix building
 
 To use CMake to build on a Unix-based system, the recommended commands are as follows:
 
@@ -179,9 +181,9 @@ If you are on macOS, the steps are a little different. Assuming you are using th
 
 Note that you should not do a `make install` on macOS, as it will not work properly.
 
-## Windows developer building
+#### Windows developer building
 
-### MSYS2
+##### MSYS2
 
 To build on Windows for development, using MSYS2 is recommended. Follow the installation steps found on their [website](https://msys2.github.io). Make sure you're running the 32-bit version ("MSYS2 MinGW 32-bit") (or the 64-bit version "MSYS2 MinGW 64-bit" if you want to build for x86_64) and run this additional command (including the braces) to install the needed dependencies (please note that this involves downloading over 1100MiB of packages, so it will take a long time):
 
@@ -200,7 +202,7 @@ Then finally build it by running these commands:
 
 Please note that this build of mGBA for Windows is not suitable for distribution, due to the scattering of DLLs it needs to run, but is perfect for development. However, if distributing such a build is desired (e.g. for testing on machines that don't have the MSYS2 environment installed), running `cpack -G ZIP` will prepare a zip file with all of the necessary DLLs.
 
-### Visual Studio
+##### Visual Studio
 
 To build using Visual Studio is a similarly complicated setup. To begin you will need to install [vcpkg](https://github.com/Microsoft/vcpkg). After installing vcpkg you will need to install several additional packages:
 
@@ -214,7 +216,7 @@ You will also need to install Qt. Unfortunately due to Qt being owned and run by
 
 Next, open Visual Studio, select Clone Repository, and enter `https://github.com/mgba-emu/mgba.git`. When Visual Studio is done cloning, go to File > CMake and open the CMakeLists.txt file at the root of the checked out repository. From there, mGBA can be developed in Visual Studio similarly to other Visual Studio CMake projects.
 
-## Toolchain building
+#### Toolchain building
 
 If you have devkitARM (for 3DS), devkitPPC (for Wii), devkitA64 (for Switch), or vitasdk (for PS Vita), you can use the following commands for building:
 
