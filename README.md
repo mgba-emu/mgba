@@ -124,25 +124,19 @@ Compiling requires using CMake 3.1 or newer. GCC and Clang are both known to wor
 
 The recommended way to build for most platforms is to use Docker. Several Docker images are provided that contain the requisite toolchain and dependencies for building mGBA across several platforms. 
 
-Note: If you are on Windows, you need to make sure you are within the mGBA repository root directory, and it is located in a directory where it's in a *nix path. Docker is known to be stringent on this restriction. (See issue [#1985](https://mgba.io/i/1985) for details.) 
+Note: If you are on Windows, you need to make sure your terminal session is inside the mGBA repository root directory before using Docker. (See issue [#1985](https://mgba.io/i/1985) for details.) If you are on an older Windows system, you may need to configure your Docker to use VirtualBox shared folders to correctly map your current `mgba` checkout directory to the Docker image's working directory.
 
-Examples: On Windows, after cloning the repository, the absolute path would be:
+For example, on Windows, after cloning the repository, we will assume the `mgba` checkout directory is located at `X:\github\mgba`. What you want to do is to open up the terminal (Powershell or WSL) and navigate to the `mgba` root directory before proceeding:
 
-	X:\msys2\home\<User>\mgba
-
-On *nix systems, it would look like:
-
-	/home/<User>/mgba
-
-Then, open up a terminal and navigate to the `mgba` root directory.
-
-Otherwise, if you are on *nix systems, you may continue from here onwards.
+	cd X:\github\mgba
 
 To use a Docker image to build mGBA, simply run the following command while in the root of an mGBA checkout:
 
 	docker run --rm -it -v ${PWD}:/home/mgba/src mgba/windows:w32
 
 Depending on which terminal you are running the command from and whether your current working path may contain spaces or special characters, you may need to change the `${PWD}` to `$PWD` or `"$PWD"` to run the command.
+
+What we are doing is to create a shared folder, mapping the `${PWD}` to the target directory, `/home/mgba/src`, so it can be used as volumes in the Docker image, completely managed by Docker.
 
 When running the Docker image, this will produce a `build-win32` directory with the build products. Replace `mgba/windows:w32` with another Docker image for other platforms, which will produce a corresponding other directory. The following Docker images available on Docker Hub:
 
