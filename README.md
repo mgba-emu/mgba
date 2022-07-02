@@ -122,13 +122,15 @@ Compiling requires using CMake 3.1 or newer. GCC and Clang are both known to wor
 
 #### Docker building
 
-The recommended way to build for most platforms is to use Docker. Several Docker images are provided that contain the requisite toolchain and dependencies for building mGBA across several platforms.
+The recommended way to build for most platforms is to use Docker. Several Docker images are provided that contain the requisite toolchain and dependencies for building mGBA across several platforms. 
+
+Note: If you are on an older Windows system before Windows 10, you may need to configure your Docker to use VirtualBox shared folders to correctly map your current `mgba` checkout directory to the Docker image's working directory. (See issue [#1985](https://mgba.io/i/1985) for details.) 
 
 To use a Docker image to build mGBA, simply run the following command while in the root of an mGBA checkout:
 
-	docker run --rm -t -v ${PWD}:/home/mgba/src mgba/windows:w32
+	docker run --rm -it -v ${PWD}:/home/mgba/src mgba/windows:w32
 
-This will produce a `build-win32` directory with the build products. Replace `mgba/windows:w32` with another Docker image for other platforms, which will produce a corresponding other directory. The following Docker images available on Docker Hub:
+After starting the Docker container, it will produce a `build-win32` directory with the build products. Replace `mgba/windows:w32` with another Docker image for other platforms, which will produce a corresponding other directory. The following Docker images available on Docker Hub:
 
 - mgba/3ds
 - mgba/switch
@@ -140,6 +142,8 @@ This will produce a `build-win32` directory with the build products. Replace `mg
 - mgba/wii
 - mgba/windows:w32
 - mgba/windows:w64
+
+If you want to speed up the build process, consider adding the flag `-e MAKEFLAGS=-jN` to do a parallel build for mGBA with `N` number of CPU cores.
 
 #### *nix building
 
