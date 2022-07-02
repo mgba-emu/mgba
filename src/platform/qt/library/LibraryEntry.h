@@ -25,6 +25,7 @@ struct LibraryEntry {
 	bool isNull() const;
 
 	QString displayTitle(bool showFilename = false) const;
+	QString displayPlatform() const;
 
 	QString base;
 	QString filename;
@@ -33,6 +34,7 @@ struct LibraryEntry {
 	QByteArray internalTitle;
 	QByteArray internalCode;
 	mPlatform platform;
+	int platformModels;
 	size_t filesize;
 	uint32_t crc32;
 

@@ -6,6 +6,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "LibraryEntry.h"
 
+#include "utils.h"
+
 #include <mgba/core/library.h>
 
 using namespace QGBA;
@@ -22,6 +24,7 @@ LibraryEntry::LibraryEntry(const mLibraryEntry* entry)
 	, internalTitle(entry->internalTitle)
 	, internalCode(entry->internalCode)
 	, platform(entry->platform)
+	, platformModels(entry->platformModels)
 	, filesize(entry->filesize)
 	, crc32(entry->crc32)
 {
@@ -36,6 +39,10 @@ QString LibraryEntry::displayTitle(bool showFilename) const {
 		return filename;
 	}
 	return title;
+}
+
+QString LibraryEntry::displayPlatform() const {
+	return nicePlatformFormat(platform, platformModels);
 }
 
 bool LibraryEntry::operator==(const LibraryEntry& other) const {
