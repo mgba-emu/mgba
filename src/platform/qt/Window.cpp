@@ -1316,10 +1316,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 #ifdef M_CORE_GBA
 	Action* scanCard = addGameAction(tr("Scan e-Reader dotcodes..."), "scanCard", this, &Window::scanCard, "file");
 	m_platformActions.insert(mPLATFORM_GBA, scanCard);
-
-#ifdef USE_FFMPEG
-	m_actions.addAction(tr("Convert e-Reader card image to raw..."), "parseCard", this, &Window::parseCard, "file");
-#endif
 #endif
 
 	addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");
@@ -1646,6 +1642,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow",  openNamedControllerTView<SensorView>(&m_sensorView, &m_inputController), "tools");
 
 	addGameAction(tr("&Cheats..."), "cheatsWindow", openControllerTView<CheatsView>(), "tools");
+#ifdef ENABLE_SCRIPTING
+	m_actions.addAction(tr("Scripting..."), "scripting", this, &Window::scriptingOpen, "tools");
+#endif
 
 	m_actions.addSeparator("tools");
 	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools")->setRole(Action::Role::SETTINGS);
@@ -1659,17 +1658,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_platformActions.insert(mPLATFORM_GBA, gdbWindow);
 #endif
 #endif
-#ifdef ENABLE_SCRIPTING
-	m_actions.addAction(tr("Scripting..."), "scripting", this, &Window::scriptingOpen, "tools");
-#endif
 #if defined(USE_DEBUGGERS) || defined(ENABLE_SCRIPTING)
 	m_actions.addSeparator("tools");
 #endif
 
-	addGameAction(tr("View &palette..."), "paletteWindow", openControllerTView<PaletteView>(), "tools");
-	addGameAction(tr("View &sprites..."), "spriteWindow", openControllerTView<ObjView>(), "tools");
-	addGameAction(tr("View &tiles..."), "tileWindow", openControllerTView<TileView>(), "tools");
-	addGameAction(tr("View &map..."), "mapWindow", openControllerTView<MapView>(), "tools");
+	m_actions.addMenu(tr("Game state views"), "stateViews", "tools");
+	addGameAction(tr("View &palette..."), "paletteWindow", openControllerTView<PaletteView>(), "stateViews");
+	addGameAction(tr("View &sprites..."), "spriteWindow", openControllerTView<ObjView>(), "stateViews");
+	addGameAction(tr("View &tiles..."), "tileWindow", openControllerTView<TileView>(), "stateViews");
+	addGameAction(tr("View &map..."), "mapWindow", openControllerTView<MapView>(), "stateViews");
 
 	addGameAction(tr("&Frame inspector..."), "frameWindow", [this]() {
 		if (!m_frameView) {
@@ -1685,11 +1682,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 			m_frameView->setAttribute(Qt::WA_DeleteOnClose);
 		}
 		m_frameView->show();
-	}, "tools");
+	}, "stateViews");
 
-	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "tools");
-	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "tools");
-	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "tools");
+	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "stateViews");
+	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "stateViews");
+	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "stateViews");
+
+#if defined(USE_FFMPEG) && defined(M_CORE_GBA)
+	m_actions.addSeparator("tools");
+	m_actions.addAction(tr("Convert e-Reader card image to raw..."), "parseCard", this, &Window::parseCard, "tools");
+#endif
 
 	m_actions.addSeparator("tools");
 	addGameAction(tr("Record debug video log..."), "recordVL", this, &Window::startVideoLog, "tools");
