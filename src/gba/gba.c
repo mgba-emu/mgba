@@ -399,14 +399,15 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	}
 	GBAUnloadROM(gba);
 	gba->romVf = vf;
+	gba->isPristine = true;
 	gba->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
 	if (gba->pristineRomSize > SIZE_CART0) {
-		gba->isPristine = false;
 		char ident;
 		vf->seek(vf, 0xAC, SEEK_SET);
 		vf->read(vf, &ident, 1);
 		if (ident == 'M') {
+			gba->isPristine = false;
 			gba->memory.romSize = 0x01000000;
 #ifdef FIXED_ROM_BUFFER
 			gba->memory.rom = romBuffer;
@@ -417,8 +418,8 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 			gba->memory.rom = vf->map(vf, SIZE_CART0, MAP_READ);
 			gba->memory.romSize = SIZE_CART0;
 		}
+		gba->pristineRomSize = SIZE_CART0;
 	} else {
-		gba->isPristine = true;
 		gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ);
 		gba->memory.romSize = gba->pristineRomSize;
 	}
