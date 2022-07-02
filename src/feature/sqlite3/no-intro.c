@@ -260,8 +260,16 @@ bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf) {
 
 	free((void*) buffer.name);
 	free((void*) buffer.romName);
-	free((void*) dbType);
-	free((void*) dbVersion);
+
+	if (dbType) {
+		free(dbType);
+	}
+	if (dbVersion) {
+		free(dbVersion);
+	}
+	if (fieldName) {
+		free(fieldName);
+	}
 
 	sqlite3_finalize(gamedbTable);
 	sqlite3_finalize(gamedbDrop);
