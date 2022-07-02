@@ -143,7 +143,7 @@ After starting the Docker container, it will produce a `build-win32` directory w
 - mgba/windows:w32
 - mgba/windows:w64
 
-If you wished to speed up the build process, consider adding the flag `-e MAKEFLAGS=-jN` to do a parallel build for mGBA with `N` number of CPU cores.
+If you want to speed up the build process, consider adding the flag `-e MAKEFLAGS=-jN` to do a parallel build for mGBA with `N` number of CPU cores.
 
 #### *nix building
 
