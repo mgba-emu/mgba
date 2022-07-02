@@ -377,7 +377,12 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 		break;
 	}
 	uint32_t when;
-	LOAD_32(when, 0, &state->video.nextEvent);
+	if (state->versionMagic < 0x01000007) {
+		// This field was moved in v7
+		LOAD_32(when, 0, &state->audio.lastSample);
+	} else {
+		LOAD_32(when, 0, &state->video.nextEvent);
+	}
 	mTimingSchedule(&video->p->timing, &video->event, when);
 
 	LOAD_16(video->vcount, REG_VCOUNT, state->io);

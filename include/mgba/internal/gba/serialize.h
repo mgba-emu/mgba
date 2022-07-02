@@ -20,7 +20,7 @@ extern MGBA_EXPORT const uint32_t GBASavestateVersion;
 mLOG_DECLARE_CATEGORY(GBA_STATE);
 
 /* Savestate format:
- * 0x00000 - 0x00003: Version Magic (0x01000004)
+ * 0x00000 - 0x00003: Version Magic (0x01000006)
  * 0x00004 - 0x00007: BIOS checksum (e.g. 0xBAAE187F for official BIOS)
  * 0x00008 - 0x0000B: ROM CRC32
  * 0x0000C - 0x0000F: Master cycles
@@ -39,20 +39,23 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 0 - 6: Remaining length
  *   | bits 7 - 9: Next step
  *   | bits 10 - 20: Shadow frequency register
- *   | bits 21 - 31: Reserved
+ *   | bits 21 - 23: Duty index
+ *   | bits 24 - 31: Reserved
  * | 0x00134 - 0x00137: Next frame
- * | 0x00138 - 0x0013B: Next channel 3 fade
+ * | 0x00138 - 0x0013B: Reserved
  * | 0x0013C - 0x0013F: Sweep state
  *   | bits 0 - 2: Timesteps
  *   | bits 3 - 7: Reserved
- * | 0x00140 - 0x00143: Next event
+ * | 0x00140 - 0x00143: Last update
  * 0x00144 - 0x00153: Audio channel 2 state
  * | 0x00144 - 0x00147: Envelepe timing
  *   | bits 0 - 2: Remaining length
  *   | bits 3 - 5: Next step
- *   | bits 6 - 31: Reserved
+ *   | bits 6 - 20: Reserved
+ *   | bits 21 - 23: Duty index
+ *   | bits 24 - 31: Reserved
  * | 0x00148 - 0x0014F: Reserved
- * | 0x00150 - 0x00153: Next event
+ * | 0x00150 - 0x00153: Last update
  * 0x00154 - 0x0017B: Audio channel 3 state
  * | 0x00154 - 0x00173: Wave banks
  * | 0x00174 - 0x00175: Remaining length
@@ -68,7 +71,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | 0x00188 - 0x0018B: Next event
  * 0x0018C - 0x001AB: Audio FIFO 1
  * 0x001AC - 0x001CB: Audio FIFO 2
- * 0x001CC - 0x001DF: Audio miscellaneous state
+ * 0x001CC - 0x001EF: Audio miscellaneous state
  * | 0x001CC - 0x001CF: Channel A internal audio samples
  * | 0x001D0 - 0x001D3: Channel B internal audio samples
  * | 0x001D4 - 0x001D7: Next sample
@@ -101,9 +104,13 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bit 3: Is channel 3's memory readable?
  *   | bit 4: Skip frame
  *   | bits 5 - 7: Reserved
- * 0x001E0 - 0x001FF: Video miscellaneous state
- * | 0x001E0 - 0x001E3: Next event
- * | 0x001E4 - 0x001F7: Reserved
+ * | 0x001E0 - 0x001E3: Last sample
+ * | 0x001E4 - 0x001E7: Additional audio flags
+ *   | bits 0 - 3: Current sample index
+ * | 0x001E8 - 0x001EF: Reserved
+ * 0x001F0 - 0x001FF: Video miscellaneous state
+ * | 0x001F0 - 0x001F3: Reserved
+ * | 0x001F4 - 0x001F7: Next event
  * | 0x001F8 - 0x001FB: Miscellaneous flags
  * | 0x001FC - 0x001FF: Frame counter
  * 0x00200 - 0x00213: Timer 0
@@ -221,7 +228,11 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x00320 - 0x00323: Next IRQ event
  * 0x00324 - 0x00327: Interruptable BIOS stall cycles
  * 0x00328 - 0x00367: Matrix memory mapping table
- * 0x00368 - 0x003FF: Reserved (leave zero)
+ * 0x00368 - 0x0036F: Reserved (leave zero)
+ * 0x00370 - 0x0037F: Audio FIFO A samples
+ * 0x00380 - 0x0038F: Audio FIFO B samples
+ * 0x00390 - 0x003CF: Audio rendered samples
+ * 0x003D0 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -236,6 +247,9 @@ DECL_BITS(GBASerializedAudioFlags, FIFOInternalSamplesB, 0, 2);
 DECL_BITS(GBASerializedAudioFlags, FIFOSamplesB, 2, 3); // Yay legacy?
 DECL_BITS(GBASerializedAudioFlags, FIFOInternalSamplesA, 5, 2);
 DECL_BITS(GBASerializedAudioFlags, FIFOSamplesA, 7, 3);
+
+DECL_BITFIELD(GBASerializedAudioFlags2, uint32_t);
+DECL_BITS(GBASerializedAudioFlags2, SampleIndex, 0, 4);
 
 DECL_BITFIELD(GBASerializedVideoFlags, uint32_t);
 DECL_BITS(GBASerializedVideoFlags, Mode, 0, 2);
@@ -297,11 +311,14 @@ struct GBASerializedState {
 		int8_t sampleB;
 		GBASerializedAudioFlags gbaFlags;
 		GBSerializedAudioFlags flags;
+		int32_t lastSample;
+		GBASerializedAudioFlags2 gbaFlags2;
+		int32_t reserved[2];
 	} audio;
 
 	struct {
+		int32_t reserved;
 		int32_t nextEvent;
-		int32_t reserved[5];
 		GBASerializedVideoFlags flags;
 		uint32_t frameCounter;
 	} video;
@@ -378,8 +395,16 @@ struct GBASerializedState {
 	int32_t biosStall;
 
 	uint32_t matrixMappings[16];
+	uint32_t reservedMatrix[2];
 
-	uint32_t reserved[38];
+	struct {
+		int8_t chA[16];
+		int8_t chB[16];
+	} samples;
+
+	struct mStereoSample currentSamples[16];
+
+	uint32_t reserved[12];
 
 	uint16_t io[SIZE_IO >> 1];
 	uint16_t pram[SIZE_PALETTE_RAM >> 1];

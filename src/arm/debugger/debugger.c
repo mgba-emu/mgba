@@ -190,14 +190,12 @@ static struct ARMDebugBreakpoint* _lookupBreakpoint(struct ARMDebugBreakpointLis
 static void _destroyBreakpoint(struct ARMDebugBreakpoint* breakpoint) {
 	if (breakpoint->d.condition) {
 		parseFree(breakpoint->d.condition);
-		free(breakpoint->d.condition);
 	}
 }
 
 static void _destroyWatchpoint(struct mWatchpoint* watchpoint) {
 	if (watchpoint->condition) {
 		parseFree(watchpoint->condition);
-		free(watchpoint->condition);
 	}
 }
 

@@ -141,30 +141,11 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 
 	for (i = 0; i < 4; ++i) {
 		struct GBAVideoSoftwareBackground* bg = &softwareRenderer->bg[i];
+		memset(bg, 0, sizeof(*bg));
 		bg->index = i;
-		bg->enabled = 0;
-		bg->priority = 0;
-		bg->charBase = 0;
-		bg->mosaic = 0;
-		bg->multipalette = 0;
-		bg->screenBase = 0;
-		bg->overflow = 0;
-		bg->size = 0;
-		bg->target1 = 0;
-		bg->target2 = 0;
-		bg->x = 0;
-		bg->y = 0;
-		bg->refx = 0;
-		bg->refy = 0;
 		bg->dx = 256;
-		bg->dmx = 0;
-		bg->dy = 0;
 		bg->dmy = 256;
-		bg->sx = 0;
-		bg->sy = 0;
 		bg->yCache = -1;
-		bg->offsetX = 0;
-		bg->offsetY = 0;
 	}
 }
 

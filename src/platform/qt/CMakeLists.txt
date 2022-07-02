@@ -250,12 +250,13 @@ endif()
 
 if(ENABLE_SCRIPTING)
 	list(APPEND SOURCE_FILES
-		ScriptingController.cpp
-		ScriptingTextBuffer.cpp
-		ScriptingView.cpp)
+		scripting/ScriptingController.cpp
+		scripting/ScriptingTextBuffer.cpp
+		scripting/ScriptingTextBufferModel.cpp
+		scripting/ScriptingView.cpp)
 
 	list(APPEND UI_FILES
-		ScriptingView.ui)
+		scripting/ScriptingView.ui)
 endif()
 
 if(TARGET Qt6::Core)
@@ -265,7 +266,14 @@ else()
 endif()
 
 if(BUILD_UPDATER)
-	file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc INPUT ${CMAKE_CURRENT_SOURCE_DIR}/updater.qrc.in)
+	if(DEFINED CMAKE_CONFIGURATION_TYPES)
+		# Required for e.g. MSVC
+		file(GENERATE OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc INPUT ${CMAKE_CURRENT_SOURCE_DIR}/updater.qrc.in)
+	else()
+		# Required for qt_add_resources to manage dependencies properly
+		# TODO: Figure out how to do this with MSVC too
+		configure_file(${CMAKE_CURRENT_SOURCE_DIR}/updater-config.qrc.in ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc)
+	endif()
 	if(TARGET Qt6::Core)
 		qt_add_resources(UPDATER_RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/updater.qrc)
 	else()
@@ -304,7 +312,6 @@ if(BUILD_GL OR BUILD_GLES2 OR BUILD_EPOXY)
 	install(DIRECTORY ${CMAKE_SOURCE_DIR}/res/shaders DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
 endif()
 if(ENABLE_SCRIPTING AND USE_LUA)
-	message(STATUS ${CMAKE_SOURCE_DIR}/res/scripts)
 	install(DIRECTORY ${CMAKE_SOURCE_DIR}/res/scripts DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
 endif()
 install(FILES ${CMAKE_SOURCE_DIR}/res/nointro.dat DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
@@ -395,7 +402,10 @@ if(QT_STATIC)
 		find_package(Cups)
 		find_package(${QT}PrintSupport)
 		list(APPEND QT_LIBRARIES Cups ${QT}::PrintSupport ${QT}::QCocoaIntegrationPlugin ${QT}::CoreAudioPlugin ${QT}::AVFServicePlugin ${QT}::QCocoaPrinterSupportPlugin)
-		list(APPEND QT_LIBRARIES ${QT}AccessibilitySupport ${QT}CglSupport ${QT}ClipboardSupport ${QT}FontDatabaseSupport ${QT}GraphicsSupport ${QT}ThemeSupport)
+		list(APPEND QT_LIBRARIES ${QT}AccessibilitySupport ${QT}ClipboardSupport ${QT}FontDatabaseSupport ${QT}GraphicsSupport ${QT}ThemeSupport)
+		if(CMAKE_SYSTEM_VERSION VERSION_LESS "19.0")
+			list(APPEND QT_LIBRARIES ${QT}CglSupport)
+		endif()
 		list(APPEND QT_LIBRARIES "-framework AVFoundation" "-framework CoreMedia" "-framework SystemConfiguration" "-framework Security")
 		set_target_properties(${QT}::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE}")
 	elseif(UNIX)

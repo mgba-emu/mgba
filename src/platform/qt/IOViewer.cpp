@@ -1584,6 +1584,9 @@ IOViewer::IOViewer(std::shared_ptr<CoreController> controller, QWidget* parent)
 		m_width = 1;
 		break;
 #endif
+	case mPLATFORM_NONE:
+		maxRegs = 0;
+		break;
 	}
 
 	for (unsigned i = 0; i < maxRegs; ++i) {

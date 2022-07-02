@@ -87,7 +87,6 @@ struct GBAudioSquareControl {
 	int frequency;
 	int length;
 	bool stop;
-	int hi;
 };
 
 struct GBAudioSweep {
@@ -104,6 +103,8 @@ struct GBAudioSquareChannel {
 	struct GBAudioSweep sweep;
 	struct GBAudioEnvelope envelope;
 	struct GBAudioSquareControl control;
+	int32_t lastUpdate;
+	uint8_t index;
 	int8_t sample;
 };
 
@@ -112,6 +113,7 @@ struct GBAudioWaveChannel {
 	bool bank;
 	bool enable;
 
+	int8_t sample;
 	unsigned length;
 	int volume;
 
@@ -124,7 +126,7 @@ struct GBAudioWaveChannel {
 		uint32_t wavedata32[8];
 		uint8_t wavedata8[16];
 	};
-	int8_t sample;
+	int32_t nextUpdate;
 };
 
 struct GBAudioNoiseChannel {
@@ -194,11 +196,6 @@ struct GBAudio {
 	enum GBAudioStyle style;
 
 	struct mTimingEvent frameEvent;
-	struct mTimingEvent ch1Event;
-	struct mTimingEvent ch2Event;
-	struct mTimingEvent ch3Event;
-	struct mTimingEvent ch3Fade;
-	struct mTimingEvent ch4Event;
 	struct mTimingEvent sampleEvent;
 	bool enable;
 
@@ -239,8 +236,8 @@ void GBAudioWriteNR50(struct GBAudio* audio, uint8_t);
 void GBAudioWriteNR51(struct GBAudio* audio, uint8_t);
 void GBAudioWriteNR52(struct GBAudio* audio, uint8_t);
 
+void GBAudioRun(struct GBAudio* audio, int32_t timestamp, int channels);
 void GBAudioUpdateFrame(struct GBAudio* audio);
-void GBAudioUpdateChannel4(struct GBAudio* audio);
 
 void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right);
 

@@ -52,6 +52,30 @@ static int isHello(const char* str) {
 	return strcmp(str, "hello") == 0;
 }
 
+static int isSequential(struct mScriptList* list) {
+	int last;
+	if (mScriptListSize(list) == 0) {
+		return true;
+	}
+	size_t i;
+	for (i = 0; i < mScriptListSize(list); ++i) {
+		struct mScriptValue* value = mScriptListGetPointer(list, i);
+		struct mScriptValue intValue;
+		if (!mScriptCast(mSCRIPT_TYPE_MS_S32, value, &intValue)) {
+			return false;
+		}
+		if (!i) {
+			last = intValue.value.s32;
+		} else {
+			if (intValue.value.s32 != last + 1) {
+				return false;
+			}
+			++last;
+		}
+	}
+	return true;
+}
+
 mSCRIPT_BIND_FUNCTION(boundVoidOne, S32, voidOne, 0);
 mSCRIPT_BIND_VOID_FUNCTION(boundDiscard, discard, 1, S32, ignored);
 mSCRIPT_BIND_FUNCTION(boundIdentityInt, S32, identityInt, 1, S32, in);
@@ -61,6 +85,7 @@ mSCRIPT_BIND_FUNCTION(boundIdentityStruct, S(Test), identityStruct, 1, S(Test), 
 mSCRIPT_BIND_FUNCTION(boundAddInts, S32, addInts, 2, S32, a, S32, b);
 mSCRIPT_BIND_FUNCTION(boundSubInts, S32, subInts, 2, S32, a, S32, b);
 mSCRIPT_BIND_FUNCTION(boundIsHello, S32, isHello, 1, CHARP, str);
+mSCRIPT_BIND_FUNCTION(boundIsSequential, S32, isSequential, 1, LIST, list);
 
 M_TEST_DEFINE(voidArgs) {
 	struct mScriptFrame frame;
@@ -181,41 +206,58 @@ M_TEST_DEFINE(wrongPopType) {
 	uint64_t u64;
 	float f32;
 	double f64;
+	bool b;
 
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, S32, 0);
 	assert_false(mScriptPopU32(&frame.arguments, &u32));
 	assert_false(mScriptPopF32(&frame.arguments, &f32));
+	assert_false(mScriptPopBool(&frame.arguments, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, S64, 0);
 	assert_false(mScriptPopU64(&frame.arguments, &u64));
 	assert_false(mScriptPopF64(&frame.arguments, &f64));
+	assert_false(mScriptPopBool(&frame.arguments, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, U32, 0);
 	assert_false(mScriptPopS32(&frame.arguments, &s32));
 	assert_false(mScriptPopF32(&frame.arguments, &f32));
+	assert_false(mScriptPopBool(&frame.arguments, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, U64, 0);
 	assert_false(mScriptPopS64(&frame.arguments, &s64));
 	assert_false(mScriptPopF64(&frame.arguments, &f64));
+	assert_false(mScriptPopBool(&frame.arguments, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, F32, 0);
 	assert_false(mScriptPopS32(&frame.arguments, &s32));
 	assert_false(mScriptPopU32(&frame.arguments, &u32));
+	assert_false(mScriptPopBool(&frame.arguments, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, F64, 0);
 	assert_false(mScriptPopS64(&frame.arguments, &s64));
 	assert_false(mScriptPopU64(&frame.arguments, &u64));
+	assert_false(mScriptPopBool(&frame.arguments, &b));
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, BOOL, 0);
+	assert_false(mScriptPopS32(&frame.arguments, &s32));
+	assert_false(mScriptPopU32(&frame.arguments, &u32));
+	assert_false(mScriptPopS64(&frame.arguments, &s64));
+	assert_false(mScriptPopU64(&frame.arguments, &u64));
+	assert_false(mScriptPopF32(&frame.arguments, &f32));
+	assert_false(mScriptPopF64(&frame.arguments, &f64));
 	mScriptFrameDeinit(&frame);
 }
 
@@ -357,6 +399,100 @@ M_TEST_DEFINE(coerceFromFloat) {
 	mScriptFrameDeinit(&frame);
 }
 
+M_TEST_DEFINE(coerceToBool) {
+	struct mScriptValue a;
+	struct mScriptValue b;
+
+	a = mSCRIPT_MAKE_S32(0);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_BOOL, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(false)));
+	assert_false(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(true)));
+
+	a = mSCRIPT_MAKE_S32(1);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_BOOL, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(true)));
+	assert_false(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(false)));
+
+	a = mSCRIPT_MAKE_S32(-1);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_BOOL, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(true)));
+	assert_false(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(false)));
+
+	a = mSCRIPT_MAKE_S32(INT_MAX);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_BOOL, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(true)));
+	assert_false(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(false)));
+
+	a = mSCRIPT_MAKE_S32(INT_MIN);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_BOOL, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(true)));
+	assert_false(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(false)));
+
+	a = mSCRIPT_MAKE_U32(0);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_BOOL, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(false)));
+	assert_false(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(true)));
+
+	a = mSCRIPT_MAKE_U32(1);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_BOOL, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(true)));
+	assert_false(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(false)));
+
+	a = mSCRIPT_MAKE_U32(UINT_MAX);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_BOOL, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(true)));
+	assert_false(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(false)));
+
+	a = mSCRIPT_MAKE_F32(0);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_BOOL, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(false)));
+	assert_false(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(true)));
+
+	a = mSCRIPT_MAKE_F32(1);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_BOOL, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(true)));
+	assert_false(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(false)));
+
+	a = mSCRIPT_MAKE_F32(1e30f);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_BOOL, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(true)));
+	assert_false(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(false)));
+
+	a = mSCRIPT_MAKE_F32(1e-30f);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_BOOL, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(true)));
+	assert_false(mSCRIPT_TYPE_MS_BOOL->equal(&b, &mSCRIPT_MAKE_BOOL(false)));
+}
+
+M_TEST_DEFINE(coerceFromBool) {
+	struct mScriptValue a;
+	struct mScriptValue b;
+
+	a = mSCRIPT_MAKE_BOOL(false);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_S32, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_S32->equal(&b, &mSCRIPT_MAKE_S32(0)));
+
+	a = mSCRIPT_MAKE_BOOL(true);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_S32, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_S32->equal(&b, &mSCRIPT_MAKE_S32(1)));
+
+	a = mSCRIPT_MAKE_BOOL(true);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_S32, &a, &b));
+	assert_false(mSCRIPT_TYPE_MS_S32->equal(&b, &mSCRIPT_MAKE_S32(-1)));
+
+	a = mSCRIPT_MAKE_BOOL(false);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_U32, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_U32->equal(&b, &mSCRIPT_MAKE_U32(0)));
+
+	a = mSCRIPT_MAKE_BOOL(true);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_U32, &a, &b));
+	assert_true(mSCRIPT_TYPE_MS_U32->equal(&b, &mSCRIPT_MAKE_U32(1)));
+
+	a = mSCRIPT_MAKE_BOOL(true);
+	assert_true(mScriptCast(mSCRIPT_TYPE_MS_U32, &a, &b));
+	assert_false(mSCRIPT_TYPE_MS_U32->equal(&b, &mSCRIPT_MAKE_U32(2)));
+}
+
 M_TEST_DEFINE(coerceWiden) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
@@ -446,6 +582,20 @@ M_TEST_DEFINE(s32Equality) {
 	COMPARE_BOOL(false, S32,           0, F64,  0.1);
 	COMPARE_BOOL(true,  S32,  0x40000000, F64,  0x40000000);
 	COMPARE_BOOL(true,  S32, -0x40000000, F64, -0x40000000);
+
+	// BOOL
+	COMPARE_BOOL(true,  S32,           0, BOOL, false);
+	COMPARE_BOOL(false, S32,           0, BOOL, true);
+	COMPARE_BOOL(false, S32,           1, BOOL, false);
+	COMPARE_BOOL(true,  S32,           1, BOOL, true);
+	COMPARE_BOOL(false, S32,          -1, BOOL, false);
+	COMPARE_BOOL(true,  S32,          -1, BOOL, true);
+	COMPARE_BOOL(false, S32,           2, BOOL, false);
+	COMPARE_BOOL(true,  S32,           2, BOOL, true);
+	COMPARE_BOOL(false, S32,  0x7FFFFFFF, BOOL, false);
+	COMPARE_BOOL(true,  S32,  0x7FFFFFFF, BOOL, true);
+	COMPARE_BOOL(false, S32, -0x80000000, BOOL, false);
+	COMPARE_BOOL(true,  S32, -0x80000000, BOOL, true);
 }
 
 M_TEST_DEFINE(s64Equality) {
@@ -527,6 +677,20 @@ M_TEST_DEFINE(s64Equality) {
 	COMPARE_BOOL(false, S64,                     0, F64,  0.1);
 	COMPARE_BOOL(true,  S64,  0x4000000000000000LL, F64,  0x4000000000000000LL);
 	COMPARE_BOOL(true,  S64, -0x4000000000000000LL, F64, -0x4000000000000000LL);
+
+	// BOOL
+	COMPARE_BOOL(true,  S64,                     0, BOOL, false);
+	COMPARE_BOOL(false, S64,                     0, BOOL, true);
+	COMPARE_BOOL(false, S64,                     1, BOOL, false);
+	COMPARE_BOOL(true,  S64,                     1, BOOL, true);
+	COMPARE_BOOL(false, S64,                    -1, BOOL, false);
+	COMPARE_BOOL(true,  S64,                    -1, BOOL, true);
+	COMPARE_BOOL(false, S64,                     2, BOOL, false);
+	COMPARE_BOOL(true,  S64,                     2, BOOL, true);
+	COMPARE_BOOL(false, S64,  0x7FFFFFFFFFFFFFFFLL, BOOL, false);
+	COMPARE_BOOL(true,  S64,  0x7FFFFFFFFFFFFFFFLL, BOOL, true);
+	COMPARE_BOOL(false, S64, -0x8000000000000000LL, BOOL, false);
+	COMPARE_BOOL(true,  S64, -0x8000000000000000LL, BOOL, true);
 }
 
 M_TEST_DEFINE(u32Equality) {
@@ -598,6 +762,18 @@ M_TEST_DEFINE(u32Equality) {
 	COMPARE_BOOL(false, U32, 0x80000000U, F64,  0);
 	COMPARE_BOOL(false, U32,           1, F64,  1.1);
 	COMPARE_BOOL(false, U32,           0, F64,  0.1);
+
+	// BOOL
+	COMPARE_BOOL(true,  U32,           0, BOOL, false);
+	COMPARE_BOOL(false, U32,           0, BOOL, true);
+	COMPARE_BOOL(false, U32,           1, BOOL, false);
+	COMPARE_BOOL(true,  U32,           1, BOOL, true);
+	COMPARE_BOOL(false, U32,           2, BOOL, false);
+	COMPARE_BOOL(true,  U32,           2, BOOL, true);
+	COMPARE_BOOL(false, U32, 0xFFFFFFFFU, BOOL, false);
+	COMPARE_BOOL(true,  U32, 0xFFFFFFFFU, BOOL, true);
+	COMPARE_BOOL(false, U32, 0x80000000U, BOOL, false);
+	COMPARE_BOOL(true,  U32, 0x80000000U, BOOL, true);
 }
 
 M_TEST_DEFINE(u64Equality) {
@@ -676,6 +852,18 @@ M_TEST_DEFINE(u64Equality) {
 	COMPARE_BOOL(false, U64, 0x8000000000000000ULL, F64,  0);
 	COMPARE_BOOL(false, U64,                     1, F64,  1.1);
 	COMPARE_BOOL(false, U64,                     0, F64,  0.1);
+
+	// BOOL
+	COMPARE_BOOL(true,  U64,                     0, BOOL, false);
+	COMPARE_BOOL(false, U64,                     0, BOOL, true);
+	COMPARE_BOOL(false, U64,                     1, BOOL, false);
+	COMPARE_BOOL(true,  U64,                     1, BOOL, true);
+	COMPARE_BOOL(false, U64,                     2, BOOL, false);
+	COMPARE_BOOL(true,  U64,                     2, BOOL, true);
+	COMPARE_BOOL(false, U64, 0xFFFFFFFFFFFFFFFFULL, BOOL, false);
+	COMPARE_BOOL(true,  U64, 0xFFFFFFFFFFFFFFFFULL, BOOL, true);
+	COMPARE_BOOL(false, U64, 0x8000000000000000ULL, BOOL, false);
+	COMPARE_BOOL(true,  U64, 0x8000000000000000ULL, BOOL, true);
 }
 
 M_TEST_DEFINE(f32Equality) {
@@ -743,6 +931,18 @@ M_TEST_DEFINE(f32Equality) {
 	COMPARE_BOOL(true,  F32, 0x100000000ULL, U64, 0x100000000ULL);
 	COMPARE_BOOL(false, F32, 0x100000000ULL, U64, 0);
 	COMPARE_BOOL(false, F32,              0, U64, 0x100000000ULL);
+
+	// BOOL
+	COMPARE_BOOL(true,  F32,              0, BOOL, false);
+	COMPARE_BOOL(false, F32,              0, BOOL, true);
+	COMPARE_BOOL(false, F32,              1, BOOL, false);
+	COMPARE_BOOL(true,  F32,              1, BOOL, true);
+	COMPARE_BOOL(false, F32,            1.1, BOOL, false);
+	COMPARE_BOOL(true,  F32,            1.1, BOOL, true);
+	COMPARE_BOOL(false, F32, 0x040000000ULL, BOOL, false);
+	COMPARE_BOOL(true,  F32, 0x040000000ULL, BOOL, true);
+	COMPARE_BOOL(false, F32, 0x100000000ULL, BOOL, false);
+	COMPARE_BOOL(true,  F32, 0x100000000ULL, BOOL, true);
 }
 
 M_TEST_DEFINE(f64Equality) {
@@ -810,6 +1010,107 @@ M_TEST_DEFINE(f64Equality) {
 	COMPARE_BOOL(true,  F64, 0x100000000ULL, U64, 0x100000000ULL);
 	COMPARE_BOOL(false, F64, 0x100000000ULL, U64, 0);
 	COMPARE_BOOL(false, F64,              0, U64, 0x100000000ULL);
+
+	// BOOL
+	COMPARE_BOOL(true,  F64,              0, BOOL, false);
+	COMPARE_BOOL(false, F64,              0, BOOL, true);
+	COMPARE_BOOL(false, F64,              1, BOOL, false);
+	COMPARE_BOOL(true,  F64,              1, BOOL, true);
+	COMPARE_BOOL(false, F64,            1.1, BOOL, false);
+	COMPARE_BOOL(true,  F64,            1.1, BOOL, true);
+	COMPARE_BOOL(false, F64, 0x040000000ULL, BOOL, false);
+	COMPARE_BOOL(true,  F64, 0x040000000ULL, BOOL, true);
+	COMPARE_BOOL(false, F64, 0x100000000ULL, BOOL, false);
+	COMPARE_BOOL(true,  F64, 0x100000000ULL, BOOL, true);
+}
+
+M_TEST_DEFINE(boolEquality) {
+	struct mScriptValue a;
+	struct mScriptValue b;
+
+	// S32
+	COMPARE_BOOL(true,  BOOL, false, S32,  0);
+	COMPARE_BOOL(false, BOOL, false, S32,  1);
+	COMPARE_BOOL(false, BOOL, false, S32, -1);
+	COMPARE_BOOL(false, BOOL, false, S32,  2);
+	COMPARE_BOOL(false, BOOL, false, S32,  0x7FFFFFFF);
+	COMPARE_BOOL(false, BOOL, false, S32, -0x80000000);
+	COMPARE_BOOL(false, BOOL,  true, S32,  0);
+	COMPARE_BOOL(true,  BOOL,  true, S32,  1);
+	COMPARE_BOOL(true,  BOOL,  true, S32, -1);
+	COMPARE_BOOL(true,  BOOL,  true, S32,  2);
+	COMPARE_BOOL(true,  BOOL,  true, S32,  0x7FFFFFFF);
+	COMPARE_BOOL(true,  BOOL,  true, S32, -0x80000000);
+
+	// S64
+	COMPARE_BOOL(true,  BOOL, false, S64,  0);
+	COMPARE_BOOL(false, BOOL, false, S64,  1);
+	COMPARE_BOOL(false, BOOL, false, S64, -1);
+	COMPARE_BOOL(false, BOOL, false, S64,  2);
+	COMPARE_BOOL(false, BOOL, false, S64,  INT64_MIN);
+	COMPARE_BOOL(false, BOOL, false, S64,  INT64_MAX);
+	COMPARE_BOOL(false, BOOL,  true, S64,  0);
+	COMPARE_BOOL(true,  BOOL,  true, S64,  1);
+	COMPARE_BOOL(true,  BOOL,  true, S64, -1);
+	COMPARE_BOOL(true,  BOOL,  true, S64,  2);
+	COMPARE_BOOL(true,  BOOL,  true, S64,  INT64_MIN);
+	COMPARE_BOOL(true,  BOOL,  true, S64,  INT64_MAX);
+
+	// U32
+	COMPARE_BOOL(true,  BOOL, false, U32,  0);
+	COMPARE_BOOL(false, BOOL, false, U32,  1);
+	COMPARE_BOOL(false, BOOL, false, U32,  2);
+	COMPARE_BOOL(false, BOOL, false, U32,  UINT32_MAX);
+	COMPARE_BOOL(false, BOOL,  true, U32,  0);
+	COMPARE_BOOL(true,  BOOL,  true, U32,  1);
+	COMPARE_BOOL(true,  BOOL,  true, U32,  2);
+	COMPARE_BOOL(true,  BOOL,  true, U32,  UINT32_MAX);
+
+	// U64
+	COMPARE_BOOL(true,  BOOL, false, U64,  0);
+	COMPARE_BOOL(false, BOOL, false, U64,  1);
+	COMPARE_BOOL(false, BOOL, false, U64,  2);
+	COMPARE_BOOL(false, BOOL, false, U64,  INT64_MAX);
+	COMPARE_BOOL(false, BOOL,  true, U64,  0);
+	COMPARE_BOOL(true,  BOOL,  true, U64,  1);
+	COMPARE_BOOL(true,  BOOL,  true, U64,  2);
+	COMPARE_BOOL(true,  BOOL,  true, U64,  INT64_MAX);
+
+	// F32
+	COMPARE_BOOL(true,  BOOL, false, F32,  0);
+	COMPARE_BOOL(false, BOOL,  true, F32,  0);
+	COMPARE_BOOL(false, BOOL, false, F32,  1);
+	COMPARE_BOOL(true,  BOOL,  true, F32,  1);
+	COMPARE_BOOL(false, BOOL, false, F32,  1.1f);
+	COMPARE_BOOL(true,  BOOL,  true, F32,  1.1f);
+	COMPARE_BOOL(false, BOOL, false, F32,  1e30f);
+	COMPARE_BOOL(true,  BOOL,  true, F32,  1e30f);
+	COMPARE_BOOL(false, BOOL, false, F32, -1);
+	COMPARE_BOOL(true,  BOOL,  true, F32, -1);
+	COMPARE_BOOL(false, BOOL, false, F32, -1.1f);
+	COMPARE_BOOL(true,  BOOL,  true, F32, -1.1f);
+	COMPARE_BOOL(false, BOOL, false, F32, -0.1e-30f);
+	COMPARE_BOOL(true,  BOOL,  true, F32, -0.1e-30f);
+	COMPARE_BOOL(false, BOOL, false, F32, -1e30f);
+	COMPARE_BOOL(true,  BOOL,  true, F32, -1e30f);
+
+	// F64
+	COMPARE_BOOL(true,  BOOL, false, F64,  0);
+	COMPARE_BOOL(false, BOOL,  true, F64,  0);
+	COMPARE_BOOL(false, BOOL, false, F64,  1);
+	COMPARE_BOOL(true,  BOOL,  true, F64,  1);
+	COMPARE_BOOL(false, BOOL, false, F64,  1.1);
+	COMPARE_BOOL(true,  BOOL,  true, F64,  1.1);
+	COMPARE_BOOL(false, BOOL, false, F64,  1e30);
+	COMPARE_BOOL(true,  BOOL,  true, F64,  1e30);
+	COMPARE_BOOL(false, BOOL, false, F64, -1);
+	COMPARE_BOOL(true,  BOOL,  true, F64, -1);
+	COMPARE_BOOL(false, BOOL, false, F64, -1.1);
+	COMPARE_BOOL(true,  BOOL,  true, F64, -1.1);
+	COMPARE_BOOL(false, BOOL, false, F64, -0.1e-300);
+	COMPARE_BOOL(true,  BOOL,  true, F64, -0.1e-300);
+	COMPARE_BOOL(false, BOOL, false, F64, -1e300);
+	COMPARE_BOOL(true,  BOOL,  true, F64, -1e300);
 }
 
 M_TEST_DEFINE(stringEquality) {
@@ -919,6 +1220,47 @@ M_TEST_DEFINE(stringIsNotHello) {
 	mScriptFrameDeinit(&frame);
 }
 
+M_TEST_DEFINE(invokeList) {
+	struct mScriptFrame frame;
+	struct mScriptList list;
+	int val;
+
+	mScriptListInit(&list, 0);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, LIST, &list);
+	assert_true(mScriptInvoke(&boundIsSequential, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 1);
+	mScriptFrameDeinit(&frame);
+
+	*mScriptListAppend(&list) = mSCRIPT_MAKE_S32(1);
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, LIST, &list);
+	assert_true(mScriptInvoke(&boundIsSequential, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 1);
+	mScriptFrameDeinit(&frame);
+
+	*mScriptListAppend(&list) = mSCRIPT_MAKE_S32(2);
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, LIST, &list);
+	assert_true(mScriptInvoke(&boundIsSequential, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 1);
+	mScriptFrameDeinit(&frame);
+
+	*mScriptListAppend(&list) = mSCRIPT_MAKE_S32(4);
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, LIST, &list);
+	assert_true(mScriptInvoke(&boundIsSequential, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 0);
+	mScriptFrameDeinit(&frame);
+
+	mScriptListDeinit(&list);
+}
+
 M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(voidArgs),
 	cmocka_unit_test(voidFunc),
@@ -936,6 +1278,8 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(wrongConst),
 	cmocka_unit_test(coerceToFloat),
 	cmocka_unit_test(coerceFromFloat),
+	cmocka_unit_test(coerceToBool),
+	cmocka_unit_test(coerceFromBool),
 	cmocka_unit_test(coerceNarrow),
 	cmocka_unit_test(coerceWiden),
 	cmocka_unit_test(s32Equality),
@@ -944,8 +1288,11 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(u64Equality),
 	cmocka_unit_test(f32Equality),
 	cmocka_unit_test(f64Equality),
+	cmocka_unit_test(boolEquality),
 	cmocka_unit_test(stringEquality),
 	cmocka_unit_test(hashTableBasic),
 	cmocka_unit_test(hashTableString),
 	cmocka_unit_test(stringIsHello),
-	cmocka_unit_test(stringIsNotHello))
+	cmocka_unit_test(stringIsNotHello),
+	cmocka_unit_test(invokeList),
+)

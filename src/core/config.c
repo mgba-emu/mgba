@@ -242,7 +242,7 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 	CreateDirectoryW(wpath, NULL);
 	if (PATH_SEP[0] != '\\') {
 		WCHAR* pathSep;
-		for (pathSep = wpath; pathSep = wcschr(pathSep, L'\\');) {
+		for (pathSep = wpath; (pathSep = wcschr(pathSep, L'\\'));) {
 			pathSep[0] = PATH_SEP[0];
 		}
 	}
@@ -284,7 +284,7 @@ void mCoreConfigPortablePath(char* out, size_t outLength) {
 	PathRemoveFileSpecW(wpath);
 	if (PATH_SEP[0] != '\\') {
 		WCHAR* pathSep;
-		for (pathSep = wpath; pathSep = wcschr(pathSep, L'\\');) {
+		for (pathSep = wpath; (pathSep = wcschr(pathSep, L'\\'));) {
 			pathSep[0] = PATH_SEP[0];
 		}
 	}

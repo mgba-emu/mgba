@@ -24,13 +24,23 @@ ApplicationUpdatePrompt::ApplicationUpdatePrompt(QWidget* parent)
 	ApplicationUpdater* updater = GBAApp::app()->updater();
 	ApplicationUpdater::UpdateInfo info = updater->updateInfo();
 	QString updateText(tr("An update to %1 is available.\n").arg(QLatin1String(projectName)));
+	bool available;
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
-	updateText += tr("\nDo you want to download and install it now? You will need to restart the emulator when the download is complete.");
-	m_okDownload = connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &ApplicationUpdatePrompt::startUpdate);
+	available = true;
+#elif defined(Q_OS_LINUX)
+	QString path = QCoreApplication::applicationDirPath();
+	QFileInfo finfo(path + "/../../AppRun");
+	available = finfo.exists() && finfo.isExecutable();
 #else
-	updateText += tr("\nAuto-update is not available on this platform. If you wish to update you will need to do it manually.");
-	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &QWidget::close);
+	available = false;
 #endif
+	if (available) {
+		updateText += tr("\nDo you want to download and install it now? You will need to restart the emulator when the download is complete.");
+		m_okDownload = connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &ApplicationUpdatePrompt::startUpdate);
+	} else {
+		updateText += tr("\nAuto-update is not available on this platform. If you wish to update you will need to do it manually.");
+		connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &QWidget::close);
+	}
 	m_ui.text->setText(updateText);
 	m_ui.details->setText(tr("Current version: %1\nNew version: %2\nDownload size: %3")
 		.arg(QLatin1String(projectVersion))

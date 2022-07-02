@@ -15,10 +15,13 @@
 
 #include <memory>
 
+class QTextDocument;
+
 namespace QGBA {
 
 class CoreController;
 class ScriptingTextBuffer;
+class ScriptingTextBufferModel;
 
 class ScriptingController : public QObject {
 Q_OBJECT
@@ -33,7 +36,7 @@ public:
 	bool load(VFileDevice& vf, const QString& name);
 
 	mScriptContext* context() { return &m_scriptContext; }
-	QList<ScriptingTextBuffer*> textBuffers() { return m_buffers; }
+	ScriptingTextBufferModel* textBufferModel() const { return m_bufferModel; }
 
 signals:
 	void log(const QString&);
@@ -59,7 +62,7 @@ private:
 
 	mScriptEngineContext* m_activeEngine = nullptr;
 	QHash<QString, mScriptEngineContext*> m_engines;
-	QList<ScriptingTextBuffer*> m_buffers;
+	ScriptingTextBufferModel* m_bufferModel;
 
 	std::shared_ptr<CoreController> m_controller;
 };

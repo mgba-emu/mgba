@@ -1402,11 +1402,16 @@ void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value) {
 		if (value < 0x10) {
 			GBMBCSwitchSramBank(gb, value);
 			memory->mbcState.pocketCam.registersActive = false;
+			memory->directSramAccess = true;
 		} else {
 			memory->mbcState.pocketCam.registersActive = true;
+			memory->directSramAccess = false;
 		}
 		break;
 	case 0x5:
+		if (!memory->mbcState.pocketCam.registersActive) {
+			break;
+		}
 		address &= 0x7F;
 		if (address == 0 && value & 1) {
 			value &= 6; // TODO: Timing

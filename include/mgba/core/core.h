@@ -181,6 +181,8 @@ bool mCoreAutoloadSave(struct mCore* core);
 bool mCoreAutoloadPatch(struct mCore* core);
 bool mCoreAutoloadCheats(struct mCore* core);
 
+bool mCoreLoadSaveFile(struct mCore* core, const char* path, bool temporary);
+
 bool mCoreSaveState(struct mCore* core, int slot, int flags);
 bool mCoreLoadState(struct mCore* core, int slot, int flags);
 struct VFile* mCoreGetState(struct mCore* core, int slot, bool write);

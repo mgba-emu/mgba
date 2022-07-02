@@ -14,6 +14,11 @@ struct mScriptFileInfo {
 	struct mScriptEngineContext* context;
 };
 
+struct mScriptCallbackInfo {
+	const char* callback;
+	size_t id;
+};
+
 static void _engineContextDestroy(void* ctx) {
 	struct mScriptEngineContext* context = ctx;
 	context->destroy(context);
@@ -56,7 +61,10 @@ void mScriptContextInit(struct mScriptContext* context) {
 	TableInit(&context->weakrefs, 0, (void (*)(void*)) mScriptValueDeref);
 	context->nextWeakref = 1;
 	HashTableInit(&context->callbacks, 0, (void (*)(void*)) mScriptValueDeref);
+	TableInit(&context->callbackId, 0, free);
+	context->nextCallbackId = 1;
 	context->constants = NULL;
+	HashTableInit(&context->docstrings, 0, NULL);
 }
 
 void mScriptContextDeinit(struct mScriptContext* context) {
@@ -65,7 +73,9 @@ void mScriptContextDeinit(struct mScriptContext* context) {
 	mScriptContextDrainPool(context);
 	mScriptListDeinit(&context->refPool);
 	HashTableDeinit(&context->callbacks);
+	TableDeinit(&context->callbackId);
 	HashTableDeinit(&context->engines);
+	HashTableDeinit(&context->docstrings);
 }
 
 void mScriptContextFillPool(struct mScriptContext* context, struct mScriptValue* value) {
@@ -197,8 +207,11 @@ void mScriptContextTriggerCallback(struct mScriptContext* context, const char* c
 	size_t i;
 	for (i = 0; i < mScriptListSize(list->value.list); ++i) {
 		struct mScriptFrame frame;
-		mScriptFrameInit(&frame);
 		struct mScriptValue* fn = mScriptListGetPointer(list->value.list, i);
+		if (!fn->type) {
+			continue;
+		}
+		mScriptFrameInit(&frame);
 		if (fn->type->base == mSCRIPT_TYPE_WRAPPER) {
 			fn = mScriptValueUnwrap(fn);
 		}
@@ -207,16 +220,48 @@ void mScriptContextTriggerCallback(struct mScriptContext* context, const char* c
 	}
 }
 
-void mScriptContextAddCallback(struct mScriptContext* context, const char* callback, struct mScriptValue* fn) {
+uint32_t mScriptContextAddCallback(struct mScriptContext* context, const char* callback, struct mScriptValue* fn) {
 	if (fn->type->base != mSCRIPT_TYPE_FUNCTION) {
-		return;
+		return 0;
 	}
 	struct mScriptValue* list = HashTableLookup(&context->callbacks, callback);
 	if (!list) {
 		list = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
 		HashTableInsert(&context->callbacks, callback, list);
 	}
+	struct mScriptCallbackInfo* info = malloc(sizeof(*info));
+	// Steal the string from the table key, since it's guaranteed to outlive this struct
+	struct TableIterator iter;
+	HashTableIteratorLookup(&context->callbacks, &iter, callback);
+	info->callback = HashTableIteratorGetKey(&context->callbacks, &iter);
+	info->id = mScriptListSize(list->value.list);
 	mScriptValueWrap(fn, mScriptListAppend(list->value.list));
+	while (true) {
+		uint32_t id = context->nextCallbackId;
+		++context->nextCallbackId;
+		if (TableLookup(&context->callbackId, id)) {
+			continue;
+		}
+		TableInsert(&context->callbackId, id, info);
+		return id;
+	}
+}
+
+void mScriptContextRemoveCallback(struct mScriptContext* context, uint32_t cbid) {
+	struct mScriptCallbackInfo* info = TableLookup(&context->callbackId, cbid);
+	if (!info) {
+		return;
+	}
+	struct mScriptValue* list = HashTableLookup(&context->callbacks, info->callback);
+	if (!list) {
+		return;
+	}
+	if (info->id >= mScriptListSize(list->value.list)) {
+		return;
+	}
+	struct mScriptValue* fn = mScriptValueUnwrap(mScriptListGetPointer(list->value.list, info->id));
+	mScriptValueDeref(fn);
+	mScriptListGetPointer(list->value.list, info->id)->type = NULL;
 }
 
 void mScriptContextExportConstants(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* constants) {
@@ -235,6 +280,26 @@ void mScriptContextExportConstants(struct mScriptContext* context, const char* n
 	mScriptTableInsert(context->constants, key, table);
 	mScriptValueDeref(key);
 	mScriptValueDeref(table);
+}
+
+void mScriptContextExportNamespace(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* values) {
+	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+	size_t i;
+	for (i = 0; values[i].key; ++i) {
+		struct mScriptValue* key = mScriptStringCreateFromUTF8(values[i].key);
+		mScriptTableInsert(table, key, values[i].value);
+		mScriptValueDeref(key);
+		mScriptValueDeref(values[i].value);
+	}
+	mScriptContextSetGlobal(context, nspace, table);
+}
+
+void mScriptContextSetDocstring(struct mScriptContext* context, const char* key, const char* docstring) {
+	HashTableInsert(&context->docstrings, key, (char*) docstring);
+}
+
+const char* mScriptContextGetDocstring(struct mScriptContext* context, const char* key) {
+	return HashTableLookup(&context->docstrings, key);
 }
 
 bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, struct VFile* vf) {

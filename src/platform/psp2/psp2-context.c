@@ -88,7 +88,7 @@ static vita2d_texture* backdrop = 0;
 #define PSP2_AUDIO_BUFFER_SIZE (PSP2_SAMPLES * 16)
 
 static struct mPSP2AudioContext {
-	struct GBAStereoSample buffer[PSP2_AUDIO_BUFFER_SIZE];
+	struct mStereoSample buffer[PSP2_AUDIO_BUFFER_SIZE];
 	size_t writeOffset;
 	size_t readOffset;
 	size_t samples;
@@ -255,7 +255,7 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 		}
 		ConditionWait(&audioContext.cond, &audioContext.mutex);
 	}
-	struct GBAStereoSample* samples = &audioContext.buffer[audioContext.writeOffset];
+	struct mStereoSample* samples = &audioContext.buffer[audioContext.writeOffset];
 	blip_read_samples(left, &samples[0].left, PSP2_SAMPLES, true);
 	blip_read_samples(right, &samples[0].right, PSP2_SAMPLES, true);
 	audioContext.samples += PSP2_SAMPLES;

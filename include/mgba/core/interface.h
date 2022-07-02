@@ -194,6 +194,11 @@ struct mAVStream {
 	void (*postAudioBuffer)(struct mAVStream*, struct blip_t* left, struct blip_t* right);
 };
 
+struct mStereoSample {
+	int16_t left;
+	int16_t right;
+};
+
 struct mKeyCallback {
 	uint16_t (*readKeys)(struct mKeyCallback*);
 	bool requireOpposingDirections;
@@ -234,6 +239,7 @@ enum mRTCGenericType {
 	RTC_NO_OVERRIDE,
 	RTC_FIXED,
 	RTC_FAKE_EPOCH,
+	RTC_WALLCLOCK_OFFSET,
 	RTC_CUSTOM_START = 0x1000
 };
 

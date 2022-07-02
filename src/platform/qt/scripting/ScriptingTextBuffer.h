@@ -18,7 +18,7 @@ class ScriptingTextBuffer : public QObject {
 Q_OBJECT
 
 public:
-	ScriptingTextBuffer(QObject* parent);
+	ScriptingTextBuffer(QObject* parent = nullptr);
 
 	QTextDocument* document() { return &m_document; };
 	mScriptTextBuffer* textBuffer() { return &m_shim; }
@@ -47,12 +47,12 @@ private:
 	static void deinit(struct mScriptTextBuffer*);
 
 	static void setName(struct mScriptTextBuffer*, const char* name);
- 
+
 	static uint32_t getX(const struct mScriptTextBuffer*);
 	static uint32_t getY(const struct mScriptTextBuffer*);
 	static uint32_t cols(const struct mScriptTextBuffer*);
 	static uint32_t rows(const struct mScriptTextBuffer*);
- 
+
 	static void print(struct mScriptTextBuffer*, const char* text);
 	static void clear(struct mScriptTextBuffer*);
 	static void setSize(struct mScriptTextBuffer*, uint32_t cols, uint32_t rows);

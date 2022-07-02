@@ -70,11 +70,20 @@ void mMapCacheDeinit(struct mMapCache* cache) {
 
 void mMapCacheWriteVRAM(struct mMapCache* cache, uint32_t address) {
 	if (address >= cache->mapStart && address < cache->mapStart + cache->mapSize) {
+		uint32_t align = 1 << (mMapCacheSystemInfoGetWriteAlign(cache->sysConfig) - mMapCacheSystemInfoGetMapAlign(cache->sysConfig));
 		address -= cache->mapStart;
-		struct mMapCacheEntry* status = &cache->status[address >> mMapCacheSystemInfoGetMapAlign(cache->sysConfig)];
-		++status->vramVersion;
-		status->flags = mMapCacheEntryFlagsClearVramClean(status->flags);
-		status->tileStatus[mMapCacheEntryFlagsGetPaletteId(status->flags)].vramClean = 0;
+		address >>= mMapCacheSystemInfoGetMapAlign(cache->sysConfig);
+
+		uint32_t i;
+		for (i = 0; i < align; ++i) {
+			if (address + i >= (cache->mapSize >> mMapCacheSystemInfoGetMapAlign(cache->sysConfig))) {
+				break;
+			}
+			struct mMapCacheEntry* status = &cache->status[address + i];
+			++status->vramVersion;
+			status->flags = mMapCacheEntryFlagsClearVramClean(status->flags);
+			status->tileStatus[mMapCacheEntryFlagsGetPaletteId(status->flags)].vramClean = 0;
+		}
 	}
 }
 

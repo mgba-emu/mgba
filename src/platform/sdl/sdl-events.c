@@ -199,6 +199,7 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 	player->rotation.gyroSensitivity = 2.2e9f;
 	player->rotation.gyroX = 0;
 	player->rotation.gyroY = 1;
+	player->rotation.gyroZ = -1;
 	player->rotation.zDelta = 0;
 	CircleBufferInit(&player->rotation.zHistory, sizeof(float) * GYRO_STEPS);
 	player->rotation.p = player;
@@ -327,6 +328,13 @@ void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration
 				context->rotation.gyroY = axis;
 			}
 		}
+		value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroAxisZ", name);
+		if (value) {
+			axis = strtol(value, &end, 0);
+			if (axis >= 0 && axis < numAxes && end && !*end) {
+				context->rotation.gyroZ = axis;
+			}
+		}
 		value = mInputGetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroSensitivity", name);
 		if (value) {
 			float sensitivity = strtof_u(value, &end);
@@ -357,6 +365,8 @@ void mSDLPlayerSaveConfig(const struct mSDLPlayer* context, struct Configuration
 		mInputSetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroAxisX", value, name);
 		snprintf(value, sizeof(value), "%i", context->rotation.gyroY);
 		mInputSetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroAxisY", value, name);
+		snprintf(value, sizeof(value), "%i", context->rotation.gyroZ);
+		mInputSetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroAxisZ", value, name);
 		snprintf(value, sizeof(value), "%g", context->rotation.gyroSensitivity);
 		mInputSetCustomValue(config, "gba", SDL_BINDING_BUTTON, "gyroSensitivity", value, name);
 	}
@@ -750,6 +760,10 @@ static void _mSDLRotationSample(struct mRotationSource* source) {
 		}
 	}
 #endif
+	if (rotation->gyroZ >= 0) {
+		rotation->zDelta = SDL_JoystickGetAxis(rotation->p->joystick->joystick, rotation->gyroZ) / 1.e5f;
+		return;
+	}
 
 	int x = SDL_JoystickGetAxis(rotation->p->joystick->joystick, rotation->gyroX);
 	int y = SDL_JoystickGetAxis(rotation->p->joystick->joystick, rotation->gyroY);

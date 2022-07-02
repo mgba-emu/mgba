@@ -243,9 +243,11 @@ void mLibraryLoadDirectory(struct mLibrary* library, const char* base, bool recu
 		struct VFile* vf = dir->openFile(dir, current->filename, O_RDONLY);
 		_mLibraryDeleteEntry(library, current);
 		if (!vf) {
+			mLibraryEntryFree(current);
 			continue;
 		}
 		_mLibraryAddEntry(library, current->filename, base, vf);
+		mLibraryEntryFree(current);
 	}
 	mLibraryListingDeinit(&entries);
 
@@ -381,9 +383,12 @@ size_t mLibraryGetEntries(struct mLibrary* library, struct mLibraryListing* out,
 	sqlite3_reset(library->select);
 	_bindConstraints(library->select, constraints);
 
+	if (numEntries > SSIZE_MAX) {
+		numEntries = SSIZE_MAX;
+	}
 	int countIndex = sqlite3_bind_parameter_index(library->select, ":count");
 	int offsetIndex = sqlite3_bind_parameter_index(library->select, ":offset");
-	sqlite3_bind_int64(library->select, countIndex, numEntries ? numEntries : -1);
+	sqlite3_bind_int64(library->select, countIndex, numEntries ? (ssize_t) numEntries : -1);
 	sqlite3_bind_int64(library->select, offsetIndex, offset);
 
 	size_t entryIndex;

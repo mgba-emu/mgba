@@ -28,14 +28,12 @@ static struct mBreakpoint* _lookupBreakpoint(struct mBreakpointList* breakpoints
 static void _destroyBreakpoint(struct mBreakpoint* breakpoint) {
 	if (breakpoint->condition) {
 		parseFree(breakpoint->condition);
-		free(breakpoint->condition);
 	}
 }
 
 static void _destroyWatchpoint(struct mWatchpoint* watchpoint) {
 	if (watchpoint->condition) {
 		parseFree(watchpoint->condition);
-		free(watchpoint->condition);
 	}
 }
 

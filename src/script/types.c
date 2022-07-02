@@ -38,6 +38,7 @@ static bool _f32Equal(const struct mScriptValue*, const struct mScriptValue*);
 static bool _s64Equal(const struct mScriptValue*, const struct mScriptValue*);
 static bool _u64Equal(const struct mScriptValue*, const struct mScriptValue*);
 static bool _f64Equal(const struct mScriptValue*, const struct mScriptValue*);
+static bool _boolEqual(const struct mScriptValue*, const struct mScriptValue*);
 static bool _charpEqual(const struct mScriptValue*, const struct mScriptValue*);
 static bool _stringEqual(const struct mScriptValue*, const struct mScriptValue*);
 
@@ -162,6 +163,17 @@ const struct mScriptType mSTFloat64 = {
 	.cast = _castScalar,
 };
 
+const struct mScriptType mSTBool = {
+	.base = mSCRIPT_TYPE_UINT,
+	.size = 1,
+	.name = "bool",
+	.alloc = NULL,
+	.free = NULL,
+	.hash = _hashScalar,
+	.equal = _boolEqual,
+	.cast = _castScalar,
+};
+
 const struct mScriptType mSTString = {
 	.base = mSCRIPT_TYPE_STRING,
 	.size = sizeof(struct mScriptString),
@@ -221,6 +233,15 @@ const struct mScriptType mSTStringWrapper = {
 	.hash = NULL,
 };
 
+const struct mScriptType mSTListWrapper = {
+	.base = mSCRIPT_TYPE_WRAPPER,
+	.size = sizeof(struct mScriptValue),
+	.name = "wrapper list",
+	.alloc = NULL,
+	.free = NULL,
+	.hash = NULL,
+};
+
 const struct mScriptType mSTWeakref = {
 	.base = mSCRIPT_TYPE_WEAKREF,
 	.size = sizeof(uint32_t),
@@ -228,6 +249,11 @@ const struct mScriptType mSTWeakref = {
 	.alloc = NULL,
 	.free = NULL,
 	.hash = NULL,
+};
+
+struct mScriptValue mScriptValueNull = {
+	.type = &mSTVoid,
+	.refs = mSCRIPT_VALUE_UNREF
 };
 
 DEFINE_VECTOR(mScriptList, struct mScriptValue)
@@ -240,6 +266,9 @@ void _allocList(struct mScriptValue* val) {
 void _freeList(struct mScriptValue* val) {
 	size_t i;
 	for (i = 0; i < mScriptListSize(val->value.list); ++i) {
+		if (val->type) {
+			continue;
+		}
 		struct mScriptValue* unwrapped = mScriptValueUnwrap(mScriptListGetPointer(val->value.list, i));
 		if (unwrapped) {
 			mScriptValueDeref(unwrapped);
@@ -343,13 +372,17 @@ uint32_t _hashScalar(const struct mScriptValue* val) {
 				*T = input->value.s32; \
 			} else if (input->type->size == 8) { \
 				*T = input->value.s64; \
-			} \
+			} else { \
+				return false; \
+			}\
 			break; \
 		case mSCRIPT_TYPE_UINT: \
 			if (input->type->size <= 4) { \
 				*T = input->value.u32; \
 			} else if (input->type->size == 8) { \
 				*T = input->value.u64; \
+			} else { \
+				return false; \
 			} \
 			break; \
 		case mSCRIPT_TYPE_FLOAT: \
@@ -357,6 +390,8 @@ uint32_t _hashScalar(const struct mScriptValue* val) {
 				*T = input->value.f32; \
 			} else if (input->type->size == 8) { \
 				*T = input->value.f64; \
+			} else { \
+				return false; \
 			} \
 			break; \
 		default: \
@@ -371,6 +406,7 @@ AS(Float32, F32);
 AS(SInt64, S64);
 AS(UInt64, U64);
 AS(Float64, F64);
+AS(Bool, BOOL);
 
 bool _castScalar(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) {
 	switch (type->base) {
@@ -388,7 +424,13 @@ bool _castScalar(const struct mScriptValue* input, const struct mScriptType* typ
 		}
 		break;
 	case mSCRIPT_TYPE_UINT:
-		if (type->size <= 4) {
+		if (type == mSCRIPT_TYPE_MS_BOOL) {
+			bool b;
+			if (!_asBool(input, &b)) {
+				return false;
+			}
+			output->value.u32 = b;
+		} else if (type->size <= 4) {
 			if (!_asUInt32(input, &output->value.u32)) {
 				return false;
 			}
@@ -462,6 +504,9 @@ bool _s32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 		}
 		break;
 	case mSCRIPT_TYPE_UINT:
+		if (b->type == mSCRIPT_TYPE_MS_BOOL) {
+			return !!a->value.s32 == b->value.u32;
+		}
 		if (a->value.s32 < 0) {
 			return false;
 		}
@@ -509,6 +554,9 @@ bool _u32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 		}
 		break;
 	case mSCRIPT_TYPE_UINT:
+		if (b->type == mSCRIPT_TYPE_MS_BOOL) {
+			return !!a->value.u32 == b->value.u32;
+		}
 		if (b->type->size <= 4) {
 			val = b->value.u32;
 		} else if (b->type->size == 8) {
@@ -531,8 +579,12 @@ bool _u32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 bool _f32Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 	float val;
 	switch (b->type->base) {
-	case mSCRIPT_TYPE_SINT:
 	case mSCRIPT_TYPE_UINT:
+		if (b->type == mSCRIPT_TYPE_MS_BOOL) {
+			return (!(uint32_t) !a->value.f32)== b->value.u32;
+		}
+		// Fall through
+	case mSCRIPT_TYPE_SINT:
 	case mSCRIPT_TYPE_FLOAT:
 		if (!_asFloat32(b, &val)) {
 			return false;
@@ -559,6 +611,9 @@ bool _s64Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 		}
 		break;
 	case mSCRIPT_TYPE_UINT:
+		if (b->type == mSCRIPT_TYPE_MS_BOOL) {
+			return !!a->value.s64 == b->value.u32;
+		}
 		if (a->value.s64 < 0) {
 			return false;
 		}
@@ -606,6 +661,9 @@ bool _u64Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 		}
 		break;
 	case mSCRIPT_TYPE_UINT:
+		if (b->type == mSCRIPT_TYPE_MS_BOOL) {
+			return !!a->value.u64 == b->value.u32;
+		}
 		if (b->type->size <= 4) {
 			val = b->value.u32;
 		} else if (b->type->size == 8) {
@@ -625,8 +683,12 @@ bool _u64Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 bool _f64Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 	double val;
 	switch (b->type->base) {
-	case mSCRIPT_TYPE_SINT:
 	case mSCRIPT_TYPE_UINT:
+		if (b->type == mSCRIPT_TYPE_MS_BOOL) {
+			return (!(uint32_t) !a->value.f64)== b->value.u32;
+		}
+		// Fall through
+	case mSCRIPT_TYPE_SINT:
 	case mSCRIPT_TYPE_FLOAT:
 		if (!_asFloat64(b, &val)) {
 			return false;
@@ -638,6 +700,29 @@ bool _f64Equal(const struct mScriptValue* a, const struct mScriptValue* b) {
 		return b->type->equal && b->type->equal(b, a);
 	}
 	return a->value.f64 == val;
+}
+
+bool _boolEqual(const struct mScriptValue* a, const struct mScriptValue* b) {
+	switch (b->type->base) {
+	case mSCRIPT_TYPE_SINT:
+		if (b->type->size <= 4) {
+			return a->value.u32 == !!b->value.s32;
+		} else if (b->type->size == 8) {
+			return a->value.u32 == !!b->value.s64;
+		}
+		return false;
+	case mSCRIPT_TYPE_UINT:
+		if (b->type->size <= 4) {
+			return a->value.u32 == !!b->value.u32;
+		} else if (b->type->size == 8) {
+			return a->value.u32 == !!b->value.u64;
+		}
+		return false;
+	case mSCRIPT_TYPE_VOID:
+		return false;
+	default:
+		return b->type->equal && b->type->equal(b, a);
+	}
 }
 
 bool _charpEqual(const struct mScriptValue* a, const struct mScriptValue* b) {
@@ -1341,6 +1426,12 @@ bool mScriptPopF32(struct mScriptList* list, float* out) {
 
 bool mScriptPopF64(struct mScriptList* list, double* out) {
 	mSCRIPT_POP(list, F64, val);
+	*out = val;
+	return true;
+}
+
+bool mScriptPopBool(struct mScriptList* list, bool* out) {
+	mSCRIPT_POP(list, BOOL, val);
 	*out = val;
 	return true;
 }

@@ -259,6 +259,18 @@ bool mCoreAutoloadCheats(struct mCore* core) {
 	return success;
 }
 
+bool mCoreLoadSaveFile(struct mCore* core, const char* path, bool temporary) {
+	struct VFile* vf = VFileOpen(path, O_CREAT | O_RDWR);
+	if (!vf) {
+		return false;
+	}
+	if (temporary) {
+		return core->loadTemporarySave(core, vf);
+	} else {
+		return core->loadSave(core, vf);
+	}
+}
+
 bool mCoreSaveState(struct mCore* core, int slot, int flags) {
 	struct VFile* vf = mCoreGetState(core, slot, true);
 	if (!vf) {
@@ -357,6 +369,8 @@ bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf) {
 	PNGWriteClose(png, info);
 	return success;
 #else
+	UNUSED(core);
+	UNUSED(vf);
 	return false;
 #endif
 }

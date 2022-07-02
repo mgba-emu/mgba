@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>434</width>
-    <height>319</height>
+    <width>448</width>
+    <height>332</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -19,28 +19,18 @@
   <property name="windowTitle">
    <string>Sensors</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="sizeConstraint">
     <enum>QLayout::SetFixedSize</enum>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <widget class="QGroupBox" name="groupBox">
        <property name="title">
         <string>Realtime clock</string>
        </property>
        <layout class="QGridLayout" name="gridLayout_4">
-        <item row="1" column="0">
-         <widget class="QRadioButton" name="timeFixed">
-          <property name="text">
-           <string>Fixed time</string>
-          </property>
-          <attribute name="buttonGroup">
-           <string notr="true">timeButtons</string>
-          </attribute>
-         </widget>
-        </item>
         <item row="0" column="0">
          <widget class="QRadioButton" name="timeNoOverride">
           <property name="text">
@@ -54,7 +44,53 @@
           </attribute>
          </widget>
         </item>
+        <item row="1" column="0">
+         <widget class="QRadioButton" name="timeFixed">
+          <property name="text">
+           <string>Fixed time</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">timeButtons</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="timeNow">
+          <property name="text">
+           <string>Now</string>
+          </property>
+         </widget>
+        </item>
         <item row="2" column="0">
+         <widget class="QRadioButton" name="timeOffset">
+          <property name="text">
+           <string>Offset time</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">timeButtons</string>
+          </attribute>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QSpinBox" name="offsetSeconds">
+          <property name="accelerated">
+           <bool>true</bool>
+          </property>
+          <property name="suffix">
+           <string> sec</string>
+          </property>
+          <property name="minimum">
+           <number>-99999999</number>
+          </property>
+          <property name="maximum">
+           <number>99999999</number>
+          </property>
+          <property name="singleStep">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
          <widget class="QRadioButton" name="timeFakeEpoch">
           <property name="text">
            <string>Start time at</string>
@@ -64,14 +100,7 @@
           </attribute>
          </widget>
         </item>
-        <item row="0" column="1" rowspan="3">
-         <widget class="QPushButton" name="timeNow">
-          <property name="text">
-           <string>Now</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="2">
+        <item row="4" column="0" colspan="2">
          <widget class="QDateTimeEdit" name="time">
           <property name="wrapping">
            <bool>true</bool>
@@ -143,7 +172,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
       <widget class="QGroupBox" name="tilt">
        <property name="title">
@@ -284,10 +313,10 @@
              <bool>false</bool>
             </property>
             <property name="minimum">
-             <number>-2147483647</number>
+             <number>-1073741823</number>
             </property>
             <property name="maximum">
-             <number>2147483647</number>
+             <number>1073741823</number>
             </property>
             <property name="value">
              <number>0</number>
