@@ -31,7 +31,7 @@ enum class Endian {
 };
 
 QString niceSizeFormat(size_t filesize);
-QString nicePlatformFormat(mPlatform platform);
+QString nicePlatformFormat(mPlatform platform, int validModels = 0);
 
 bool convertAddress(const QHostAddress* input, Address* output);
 
