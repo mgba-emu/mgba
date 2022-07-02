@@ -1286,7 +1286,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>Algumas trapaças não puderam ser adicionadas. Por favor tenha certeza que eles estão formatadas corretamente e/ou tente outros tipos de trapaça.</translation>
     </message>
 </context>
 <context>
@@ -3942,7 +3942,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingTextBuffer.cpp" line="42"/>
         <source>Untitled buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>Buffer sem título</translation>
     </message>
 </context>
 <context>
@@ -4803,12 +4803,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1646"/>
         <source>Scripting...</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripting...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1665"/>
         <source>Game state views</source>
-        <translation type="unfinished"></translation>
+        <translation>Visualizações do estado do jogo</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1666"/>
@@ -5172,52 +5172,52 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="14"/>
         <source>Scripting</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripting</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="63"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>Executar</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="80"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>Arquivo</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="84"/>
         <source>Load recent script</source>
-        <translation type="unfinished"></translation>
+        <translation>Carregar script recente</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="97"/>
         <source>Load script...</source>
-        <translation type="unfinished"></translation>
+        <translation>Carregar script...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="102"/>
         <source>&amp;Reset</source>
-        <translation type="unfinished">&amp;Resetar</translation>
+        <translation>&amp;Resetar</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="107"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="60"/>
         <source>Select script to load</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecionar o script a carregar</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="85"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripts do lua (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="87"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Todos os arquivos (*.*)</translation>
     </message>
 </context>
 <context>
@@ -5255,12 +5255,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SensorView.ui" line="67"/>
         <source>Offset time</source>
-        <translation type="unfinished"></translation>
+        <translation>Tempo do deslocamento</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="80"/>
         <source> sec</source>
-        <translation type="unfinished"></translation>
+        <translation> segs</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="126"/>
