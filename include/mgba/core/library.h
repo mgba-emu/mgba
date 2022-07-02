@@ -15,6 +15,8 @@ CXX_GUARD_START
 #include <mgba/core/core.h>
 #include <mgba-util/vector.h>
 
+#define M_LIBRARY_MODEL_UNKNOWN -1
+
 struct mLibraryEntry {
 	const char* base;
 	const char* filename;
@@ -26,6 +28,7 @@ struct mLibraryEntry {
 	uint32_t crc32;
 	uint8_t md5[16];
 	uint8_t sha1[20];
+	int platformModels;
 };
 
 #ifdef USE_SQLITE3

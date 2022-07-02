@@ -21,6 +21,7 @@ static const QStringList iconSets{
 	"GBA",
 	"GBC",
 	"GB",
+	"SGB",
 	// "DS",
 };
 
@@ -348,7 +349,7 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const {
 			switch (index.column()) {
 			case COL_NAME:
 				if (role == Qt::DecorationRole) {
-					return m_icons.value(nicePlatformFormat(entry->platform), qApp->style()->standardIcon(QStyle::SP_FileIcon));
+					return m_icons.value(entry->displayPlatform(), qApp->style()->standardIcon(QStyle::SP_FileIcon));
 				}
 				return entry->displayTitle(m_showFilename);
 			case COL_LOCATION:
