@@ -124,19 +124,11 @@ Compiling requires using CMake 3.1 or newer. GCC and Clang are both known to wor
 
 The recommended way to build for most platforms is to use Docker. Several Docker images are provided that contain the requisite toolchain and dependencies for building mGBA across several platforms. 
 
-Note: If you are on Windows, you need to make sure your terminal session is inside the mGBA repository root directory before using Docker. (See issue [#1985](https://mgba.io/i/1985) for details.) If you are on an older Windows system, you may need to configure your Docker to use VirtualBox shared folders to correctly map your current `mgba` checkout directory to the Docker image's working directory.
-
-For example, on Windows, after cloning the repository, we will assume the `mgba` checkout directory is located at `X:\github\mgba`. What you want to do is to open up the terminal (Powershell or WSL) and navigate to the `mgba` root directory before proceeding:
-
-	cd X:\github\mgba
+Note: If you are on an older Windows system before Windows 10, you may need to configure your Docker to use VirtualBox shared folders to correctly map your current `mgba` checkout directory to the Docker image's working directory. (See issue [#1985](https://mgba.io/i/1985) for details.) 
 
 To use a Docker image to build mGBA, simply run the following command while in the root of an mGBA checkout:
 
 	docker run --rm -it -v ${PWD}:/home/mgba/src mgba/windows:w32
-
-Depending on which terminal you are running the command from and whether your current working path may contain spaces or special characters, you may need to change the `${PWD}` to `$PWD` or `"$PWD"` to run the command.
-
-What we are doing is to create a shared folder, mapping the `${PWD}` to the target directory, `/home/mgba/src`, so it can be used as volumes in the Docker image, completely managed by Docker.
 
 When running the Docker image, this will produce a `build-win32` directory with the build products. Replace `mgba/windows:w32` with another Docker image for other platforms, which will produce a corresponding other directory. The following Docker images available on Docker Hub:
 
@@ -151,7 +143,7 @@ When running the Docker image, this will produce a `build-win32` directory with 
 - mgba/windows:w32
 - mgba/windows:w64
 
-If you wished to speed up the build process, consider adding the flag `-e MAKEFLAGS=-j4` to do a parallel build for mGBA with 4 cores instead of one core, if your CPU supports it. Change the `4` to however many cores you have on your build machine.
+If you wished to speed up the build process, consider adding the flag `-e MAKEFLAGS=-jN` to do a parallel build for mGBA with `N` number of CPU cores.
 
 #### *nix building
 
