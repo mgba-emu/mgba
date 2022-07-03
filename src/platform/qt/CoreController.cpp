@@ -1238,24 +1238,21 @@ void CoreController::updateFastForward() {
 		if (m_fastForwardMute >= 0) {
 			m_threadContext.core->opts.mute = m_fastForwardMute || m_mute;
 		}
+		setSync(false);
 
 		// If we aren't holding the fast forward button
 		// then use the non "(held)" ratio
 		if(!m_fastForward) {
 			if (m_fastForwardRatio > 0) {
 				m_threadContext.impl->sync.fpsTarget = m_fpsTarget * m_fastForwardRatio;
-				setSync(true);
-			}	else {
-				setSync(false);
+				m_threadContext.impl->sync.audioWait = true;
 			}
 		} else {
 			// If we are holding the fast forward button,
 			// then use the held ratio
 			if (m_fastForwardHeldRatio > 0) {
 				m_threadContext.impl->sync.fpsTarget = m_fpsTarget * m_fastForwardHeldRatio;
-				setSync(true);
-			} else {
-				setSync(false);
+				m_threadContext.impl->sync.audioWait = true;
 			}
 		}
 	} else {
