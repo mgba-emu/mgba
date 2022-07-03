@@ -285,7 +285,7 @@ void DisplayGL::stopDrawing() {
 		m_isDrawing = false;
 		m_hasStarted = false;
 		CoreController::Interrupter interrupter(m_context);
-		QMetaObject::invokeMethod(m_painter.get(), "stop", Qt::BlockingQueuedConnection);
+		m_painter->stop();
 		if (m_gl) {
 			hide();
 		}
@@ -685,6 +685,11 @@ void PainterGL::forceDraw() {
 }
 
 void PainterGL::stop() {
+	m_started = false;
+	QMetaObject::invokeMethod(this, "doStop", Qt::BlockingQueuedConnection);
+}
+
+void PainterGL::doStop() {
 	m_drawTimer.stop();
 	m_active = false;
 	m_started = false;

@@ -135,6 +135,8 @@ public:
 	void setMessagePainter(MessagePainter*);
 	void enqueue(const uint32_t* backing);
 
+	void stop();
+
 	bool supportsShaders() const { return m_supportsShaders; }
 	int glTex();
 
@@ -148,7 +150,6 @@ public slots:
 	void forceDraw();
 	void draw();
 	void start();
-	void stop();
 	void pause();
 	void unpause();
 	void resize(const QSize& size);
@@ -166,6 +167,9 @@ public slots:
 
 signals:
 	void started();
+
+private slots:
+	void doStop();
 
 private:
 	void makeCurrent();
