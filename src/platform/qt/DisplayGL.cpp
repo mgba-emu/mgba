@@ -619,11 +619,12 @@ void PainterGL::start() {
 	m_buffer = nullptr;
 	m_active = true;
 	m_started = true;
+	resetTiming();
 	emit started();
 }
 
 void PainterGL::draw() {
-	if (!m_started || m_queue.isEmpty()) {
+	if (!m_started) {
 		return;
 	}
 
@@ -636,12 +637,14 @@ void PainterGL::draw() {
 	}
 
 	mCoreSync* sync = &m_context->thread()->impl->sync;
+
+	qint64 targetNsec = 1000000000 / sync->fpsTarget;
+	qint64 refreshNsec = 1000000000 / m_window->screen()->refreshRate();
+	qint64 delay = m_timerResidue;
+
 	if (!mCoreSyncWaitFrameStart(sync)) {
 		mCoreSyncWaitFrameEnd(sync);
 		if (!sync->audioWait && !sync->videoFrameWait) {
-			return;
-		}
-		if (m_delayTimer.elapsed() >= 1000 / m_window->screen()->refreshRate()) {
 			return;
 		}
 		if (!m_drawTimer.isActive()) {
@@ -651,23 +654,30 @@ void PainterGL::draw() {
 	}
 	dequeue();
 	bool forceRedraw = !m_videoProxy;
-	if (!m_delayTimer.isValid()) {
-		m_delayTimer.start();
-	} else {
-		if (sync->audioWait || sync->videoFrameWait) {
-			while (m_delayTimer.nsecsElapsed() + OVERHEAD_NSEC < 1000000000 / sync->fpsTarget) {
-				QThread::usleep(500);
-			}
-			forceRedraw = sync->videoFrameWait;
+	if (sync->audioWait || sync->videoFrameWait) {
+		while (delay + m_delayTimer.nsecsElapsed() + OVERHEAD_NSEC < targetNsec) {
+			QThread::usleep(200);
 		}
-		if (!forceRedraw) {
-			forceRedraw = m_delayTimer.nsecsElapsed() + OVERHEAD_NSEC >= 1000000000 / m_window->screen()->refreshRate();
-		}
+		forceRedraw = sync->videoFrameWait;
+	}
+	if (!forceRedraw) {
+		forceRedraw = delay + m_delayTimer.nsecsElapsed() + OVERHEAD_NSEC >= refreshNsec;
 	}
 	mCoreSyncWaitFrameEnd(sync);
 
 	if (forceRedraw) {
+		delay += m_delayTimer.nsecsElapsed();
 		m_delayTimer.restart();
+
+		delay -= targetNsec;
+		m_timerResidue = (m_timerResidue + delay) / 2;
+
+		if (m_timerResidue > refreshNsec) {
+			if (!m_drawTimer.isActive()) {
+				m_drawTimer.start(1);
+			}
+		}
+
 		performDraw();
 		m_backend->swap(m_backend);
 	}
@@ -679,9 +689,14 @@ void PainterGL::forceDraw() {
 		if (m_delayTimer.elapsed() < 1000 / m_window->screen()->refreshRate()) {
 			return;
 		}
-		m_delayTimer.restart();
+		resetTiming();
 	}
 	m_backend->swap(m_backend);
+}
+
+void PainterGL::resetTiming() {
+	m_delayTimer.restart();
+	m_timerResidue = 0;
 }
 
 void PainterGL::stop() {
@@ -721,6 +736,7 @@ void PainterGL::pause() {
 
 void PainterGL::unpause() {
 	m_active = true;
+	resetTiming();
 }
 
 void PainterGL::performDraw() {
