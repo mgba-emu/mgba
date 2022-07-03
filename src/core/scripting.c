@@ -215,19 +215,19 @@ static struct mScriptValue* mScriptMemoryDomainReadRange(struct mScriptMemoryDom
 static void mScriptMemoryDomainWrite8(struct mScriptMemoryDomain* adapter, uint32_t address, uint8_t value) {
 	CALCULATE_SEGMENT_INFO;
 	CALCULATE_SEGMENT_ADDRESS;
-	adapter->core->rawWrite8(adapter->core, address, segmentAddress, value);
+	adapter->core->rawWrite8(adapter->core, segmentAddress, segment, value);
 }
 
 static void mScriptMemoryDomainWrite16(struct mScriptMemoryDomain* adapter, uint32_t address, uint16_t value) {
 	CALCULATE_SEGMENT_INFO;
 	CALCULATE_SEGMENT_ADDRESS;
-	adapter->core->rawWrite16(adapter->core, address, segmentAddress, value);
+	adapter->core->rawWrite16(adapter->core, segmentAddress, segment, value);
 }
 
 static void mScriptMemoryDomainWrite32(struct mScriptMemoryDomain* adapter, uint32_t address, uint32_t value) {
 	CALCULATE_SEGMENT_INFO;
 	CALCULATE_SEGMENT_ADDRESS;
-	adapter->core->rawWrite32(adapter->core, address, segmentAddress, value);
+	adapter->core->rawWrite32(adapter->core, segmentAddress, segment, value);
 }
 
 static uint32_t mScriptMemoryDomainBase(struct mScriptMemoryDomain* adapter) {
