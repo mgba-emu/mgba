@@ -568,8 +568,16 @@ static void _GBACoreUnloadROM(struct mCore* core) {
 	GBAUnloadROM(core->board);
 }
 
+static size_t _GBACoreROMSize(const struct mCore* core) {
+	const struct GBA* gba = (const struct GBA*) core->board;
+	if (gba->romVf) {
+		return gba->romVf->size(gba->romVf);
+	}
+	return gba->pristineRomSize;
+}
+
 static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
-	struct GBA* gba = (struct GBA*) core->board;
+	const struct GBA* gba = (const struct GBA*) core->board;
 	switch (type) {
 	case mCHECKSUM_CRC32:
 		memcpy(data, &gba->romCrc32, sizeof(gba->romCrc32));
@@ -1362,6 +1370,7 @@ struct mCore* GBACoreCreate(void) {
 	core->loadTemporarySave = _GBACoreLoadTemporarySave;
 	core->loadPatch = _GBACoreLoadPatch;
 	core->unloadROM = _GBACoreUnloadROM;
+	core->romSize = _GBACoreROMSize;
 	core->checksum = _GBACoreChecksum;
 	core->reset = _GBACoreReset;
 	core->runFrame = _GBACoreRunFrame;

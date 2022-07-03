@@ -473,8 +473,16 @@ static void _GBCoreUnloadROM(struct mCore* core) {
 	GBUnloadROM(core->board);
 }
 
+static size_t _GBCoreROMSize(const struct mCore* core) {
+	const struct GB* gb = (const struct GB*) core->board;
+	if (gb->romVf) {
+		return gb->romVf->size(gb->romVf);
+	}
+	return gb->pristineRomSize;
+}
+
 static void _GBCoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
-	struct GB* gb = (struct GB*) core->board;
+	const struct GB* gb = (const struct GB*) core->board;
 	switch (type) {
 	case mCHECKSUM_CRC32:
 		memcpy(data, &gb->romCrc32, sizeof(gb->romCrc32));
@@ -1237,6 +1245,7 @@ struct mCore* GBCoreCreate(void) {
 	core->loadTemporarySave = _GBCoreLoadTemporarySave;
 	core->loadPatch = _GBCoreLoadPatch;
 	core->unloadROM = _GBCoreUnloadROM;
+	core->romSize = _GBCoreROMSize;
 	core->checksum = _GBCoreChecksum;
 	core->reset = _GBCoreReset;
 	core->runFrame = _GBCoreRunFrame;

@@ -424,6 +424,7 @@ mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frameCycles, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frequency, 0);
 mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WSTR, getGameTitle, _mScriptCoreGetGameTitle, 0);
 mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WSTR, getGameCode, _mScriptCoreGetGameCode, 0);
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S64, romSize, 0);
 mSCRIPT_DECLARE_STRUCT_C_METHOD_WITH_DEFAULTS(mCore, WSTR, checksum, _mScriptCoreChecksum, 1, S32, type);
 
 // Run functions
@@ -483,6 +484,8 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frameCycles)
 	mSCRIPT_DEFINE_DOCSTRING("Get the number of cycles per second")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frequency)
+	mSCRIPT_DEFINE_DOCSTRING("Get the size of the loaded ROM")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, romSize)
 	mSCRIPT_DEFINE_DOCSTRING("Get the checksum of the loaded ROM")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, checksum)
 
