@@ -64,6 +64,7 @@ Other fixes:
  - Qt: Fix crash when clicking past last tile in viewer
  - Qt: Fix preloading for ROM replacing
  - Qt: Fix screen not displaying on Wayland (fixes mgba.io/i/2190)
+ - Qt: Fix crash when selecting 256-color sprite in sprite view
  - VFS: Failed file mapping should return NULL on POSIX
 Misc:
  - Core: Suspend runloop when a core crashes
