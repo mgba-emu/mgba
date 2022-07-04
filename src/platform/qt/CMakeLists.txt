@@ -358,9 +358,14 @@ if(${QT}LinguistTools_FOUND)
 		endforeach()
 		list(APPEND TRANSLATION_FILES ${QT_QM_FILES})
 	endif()
-	add_custom_command(OUTPUT ${TRANSLATION_QRC}
-		               COMMAND ${CMAKE_COMMAND} -DTRANSLATION_QRC:FILEPATH="${TRANSLATION_QRC}" -DQM_BASE="${CMAKE_CURRENT_BINARY_DIR}" "-DTRANSLATION_FILES='${TRANSLATION_FILES}'" -P "${CMAKE_CURRENT_SOURCE_DIR}/ts.cmake"
-		               DEPENDS ${TRANSLATION_FILES})
+
+	file(WRITE ${TRANSLATION_QRC} "<RCC>\n\t<qresource prefix=\"/translations/\">\n")
+	foreach(TS ${TRANSLATION_FILES})
+		get_filename_component(TS_BASE "${TS}" NAME)
+		file(APPEND ${TRANSLATION_QRC} "\t\t<file alias=\"${TS_BASE}\">${TS}</file>\n")
+	endforeach()
+	file(APPEND ${TRANSLATION_QRC} "\t</qresource>\n</RCC>")
+
 	if(TARGET Qt6::Core)
 		qt_add_resources(TRANSLATION_RESOURCES ${TRANSLATION_QRC})
 	else()
