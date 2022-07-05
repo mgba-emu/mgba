@@ -196,6 +196,7 @@ private:
 	bool m_started = false;
 	QTimer m_drawTimer;
 	qint64 m_timerResidue;
+	qint64 m_overage;
 	std::shared_ptr<CoreController> m_context;
 	CoreController::Interrupter m_interrupter;
 	bool m_supportsShaders;
