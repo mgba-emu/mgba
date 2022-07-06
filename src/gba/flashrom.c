@@ -339,7 +339,7 @@ bool GBAFlashROMLoad(struct GBA* gba) {
 		uint32_t offset;
 		LOAD_32(offset, 4 * i, offsetList);
 		offset &= 0x01ff0000;
-		memcpy(((uint8_t*) gba->memory.rom) + offset, savedata->flashrom.blocks, FLASHROM_BLOCK_SIZE);
+		memcpy(((uint8_t*) gba->memory.rom) + offset, savedata->flashrom.blocks[i], FLASHROM_BLOCK_SIZE);
 	}
 
 	return true;
