@@ -75,7 +75,7 @@ CoreController* CoreManager::loadGame(const QString& path) {
 	}
 	QDir dir(info.dir());
 	if (!vf) {
-		vf = VFileOpen(info.canonicalFilePath().toUtf8().constData(), O_RDWR);
+		vf = VFileOpen(info.canonicalFilePath().toUtf8().constData(), O_RDONLY);
 	}
 	return loadGame(vf, info.fileName(), dir.canonicalPath());
 }

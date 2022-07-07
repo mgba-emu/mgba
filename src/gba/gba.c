@@ -415,13 +415,13 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 			gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
 #endif
 		} else {
-			gba->memory.rom = vf->map(vf, SIZE_CART0, MAP_READ | MAP_WRITE);
+			gba->memory.rom = vf->map(vf, SIZE_CART0, MAP_READ);
 			gba->memory.romSize = SIZE_CART0;
 		}
 		gba->pristineRomSize = SIZE_CART0;
 	} else {
 		gba->isPristine = true;
-		gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ | MAP_WRITE);]
+		gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ);
 		gba->memory.romSize = gba->pristineRomSize;
 	}
 	if (!gba->memory.rom) {
