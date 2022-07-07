@@ -420,7 +420,6 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 		}
 		gba->pristineRomSize = SIZE_CART0;
 	} else {
-		gba->isPristine = true;
 		gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ);
 		gba->memory.romSize = gba->pristineRomSize;
 	}
