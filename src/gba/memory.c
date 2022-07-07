@@ -576,7 +576,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case REGION_CART1_EX:
 	case REGION_CART2:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
-	    if (memory->savedata.flashrom.type == FLASHROM_22XX && GBAFlashROMRead22xx(memory, address, &value)) {
+		if (memory->savedata.flashrom.type == FLASHROM_22XX && GBAFlashROMRead22xx(memory, address, &value)) {
 			break;
 		} else if (memory->savedata.flashrom.type == FLASHROM_INTEL && GBAFlashROMReadIntel(memory, address, &value)) {
 			break;
@@ -739,7 +739,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = GBAHardwareTiltRead(&memory->hw, address & OFFSET_MASK);
 		} else if (memory->savedata.type == SAVEDATA_SRAM512) {
 			value = memory->savedata.data[address & (SIZE_CART_SRAM512 - 1)];
-	    } else if (memory->savedata.type == SAVEDATA_SRAM1M) {
+		} else if (memory->savedata.type == SAVEDATA_SRAM1M) {
 			value = memory->savedata.currentBank[address & (SIZE_CART_SRAM512 - 1)];
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Reading from non-existent SRAM: 0x%08X", address);

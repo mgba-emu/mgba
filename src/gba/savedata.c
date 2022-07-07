@@ -76,7 +76,7 @@ void GBASavedataDeinit(struct GBASavedata* savedata) {
 			mappedMemoryFree(savedata->data, SIZE_CART_SRAM512);
 			break;
 		case SAVEDATA_SRAM1M:
-		    mappedMemoryFree(savedata->data, SIZE_CART_SRAM1M);
+			mappedMemoryFree(savedata->data, SIZE_CART_SRAM1M);
 			break;
 		case SAVEDATA_FLASH512:
 			mappedMemoryFree(savedata->data, SIZE_CART_FLASH512);
@@ -137,7 +137,7 @@ bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out) {
 		case SAVEDATA_SRAM512:
 			return out->write(out, savedata->data, SIZE_CART_SRAM512) == SIZE_CART_SRAM512;
 		case SAVEDATA_SRAM1M:
-		    return out->write(out, savedata->data, SIZE_CART_SRAM1M) == SIZE_CART_SRAM1M;
+			return out->write(out, savedata->data, SIZE_CART_SRAM1M) == SIZE_CART_SRAM1M;
 		case SAVEDATA_FLASH512:
 			return out->write(out, savedata->data, SIZE_CART_FLASH512) == SIZE_CART_FLASH512;
 		case SAVEDATA_FLASH1M:
@@ -173,7 +173,7 @@ size_t GBASavedataSize(const struct GBASavedata* savedata) {
 	case SAVEDATA_SRAM512:
 		return SIZE_CART_SRAM512;
 	case SAVEDATA_SRAM1M:
-	    return SIZE_CART_SRAM1M;
+		return SIZE_CART_SRAM1M;
 	case SAVEDATA_FLASH512:
 		return SIZE_CART_FLASH512;
 	case SAVEDATA_FLASH1M:

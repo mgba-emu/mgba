@@ -156,7 +156,7 @@
                 <string>SRAM 64kB (bootlegs only)</string>
                </property>
               </item>
-            <item>
+              <item>
                <property name="text">
                 <string>SRAM 128kB (bootlegs only)</string>
                </property>
@@ -216,32 +216,32 @@
             </property>
            </widget>
           </item>
-       <item row="3" column="0">
-         <widget class="QLabel">
-          <property name="text">
-           <string>FlashROM (bootlegs)</string>
-          </property>
-         </widget>
-       </item>
-       <item row="3" column="1">
-             <widget class="QComboBox" name="flashrom">
-              <item>
-               <property name="text">
-                <string>None</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>22xx</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Intel</string>
-               </property>
-              </item>
-             </widget>
+          <item row="3" column="0">
+           <widget class="QLabel">
+            <property name="text">
+             <string>FlashROM (bootlegs)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="flashrom">
+            <item>
+             <property name="text">
+              <string>None</string>
+             </property>
             </item>
+            <item>
+             <property name="text">
+              <string>22xx</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Intel</string>
+             </property>
+            </item>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

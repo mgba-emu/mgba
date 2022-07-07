@@ -42,8 +42,8 @@ bool GBAFlashROMRead22xx(struct GBAMemory* memory, uint32_t address, uint32_t* v
 			*value = flashrom->manufacturerId;
 			return true;
 		} else if ((address & 0x06) == 2) { 
-		   *value = flashrom->deviceId;
-		   return true;
+			*value = flashrom->deviceId;
+			return true;
 		}
 		mLOG(GBA_MEM, GAME_ERROR, "Unexpected FlashROM register: 0x%08X", address);
 		return false;
@@ -279,9 +279,9 @@ bool GBAFlashROMWriteIntel(struct GBAMemory* memory, uint32_t address, uint16_t 
 		break;
 	case FLASHROM_INTEL_PROGRAM:
 		_programWord(memory, address, value);
-		 flashrom->state = FLASHROM_INTEL_STATUS;
-		 flashrom->status = 0x80;
-		 return true;
+			flashrom->state = FLASHROM_INTEL_STATUS;
+			flashrom->status = 0x80;
+			return true;
 	default:
 		mLOG(GBA_MEM, GAME_ERROR, "Write during unhandled FlashROM state");
 		break;
@@ -346,7 +346,7 @@ bool GBAFlashROMLoad(struct GBA* gba) {
 }
 
 static bool _programWord(struct GBAMemory* memory, uint32_t address, uint16_t value) {
-    uint32_t offset = address & 0x01FFFFFF;
+	uint32_t offset = address & 0x01FFFFFF;
 	if (offset >= memory->romSize) {
 		mLOG(GBA_MEM, GAME_ERROR, "FlashROM program out of bounds: 0x%08X", offset);
 		return false;
@@ -364,7 +364,7 @@ static bool _programWord(struct GBAMemory* memory, uint32_t address, uint16_t va
 }
 
 static bool _eraseBlock(struct GBAMemory* memory, uint32_t address) {
-    uint32_t offset = address & 0x01FF0000;	
+	uint32_t offset = address & 0x01FF0000;	
 	if (offset >= memory->romSize) {
 		mLOG(GBA_MEM, GAME_ERROR, "FlashROM block erase out of bounds: 0x%08X", offset);
 		return false;
@@ -380,7 +380,7 @@ static bool _eraseBlock(struct GBAMemory* memory, uint32_t address) {
 }
 
 static void _eraseChip(struct GBAMemory* memory) {
-    memset(memory->rom, 0xFF, memory->romSize);
+	memset(memory->rom, 0xFF, memory->romSize);
 	memory->savedata.flashrom.blockCount = memory->romSize / FLASHROM_BLOCK_SIZE;
 	memory->savedata.vf->truncate(memory->savedata.vf, memory->romSize + 4 * memory->savedata.flashrom.blockCount);
 	memset(memory->savedata.flashrom.blocks, 0xFF, memory->romSize);
