@@ -61,7 +61,7 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 }
 
 void GBASavedataDeinit(struct GBASavedata* savedata) {
-	if (savedata->vf) {
+	if (savedata->vf && savedata->flashrom.type == FLASHROM_NONE) {
 		size_t size = GBASavedataSize(savedata);
 		if (savedata->data) {
 			savedata->vf->unmap(savedata->vf, savedata->data, size);
