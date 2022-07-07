@@ -67,10 +67,11 @@ struct ParseTree {
 };
 
 size_t lexExpression(struct LexVector* lv, const char* string, size_t length, const char* eol);
-void parseLexedExpression(struct ParseTree* tree, struct LexVector* lv);
-
 void lexFree(struct LexVector* lv);
+
+struct ParseTree* parseTreeCreate(void);
 void parseFree(struct ParseTree* tree);
+bool parseLexedExpression(struct ParseTree* tree, struct LexVector* lv);
 
 struct mDebugger;
 bool mDebuggerEvaluateParseTree(struct mDebugger* debugger, struct ParseTree* tree, int32_t* value, int* segment);

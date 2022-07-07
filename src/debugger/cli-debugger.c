@@ -588,7 +588,7 @@ static struct ParseTree* _parseTree(const char** string) {
 	}
 	struct ParseTree* tree = NULL;
 	if (!error) {
-		tree = malloc(sizeof(*tree));
+		tree = parseTreeCreate();
 		parseLexedExpression(tree, &lv);
 	}
 	lexFree(&lv);
@@ -796,17 +796,16 @@ struct CLIDebugVector* CLIDVParse(struct CLIDebugger* debugger, const char* stri
 		dvTemp.type = CLIDV_ERROR_TYPE;
 	}
 
-	struct ParseTree tree;
-	parseLexedExpression(&tree, &lv);
-	if (tree.token.type == TOKEN_ERROR_TYPE) {
+	struct ParseTree* tree = parseTreeCreate();
+	if (!parseLexedExpression(tree, &lv)) {
 		dvTemp.type = CLIDV_ERROR_TYPE;
 	} else {
-		if (!mDebuggerEvaluateParseTree(&debugger->d, &tree, &dvTemp.intValue, &dvTemp.segmentValue)) {
+		if (!mDebuggerEvaluateParseTree(&debugger->d, tree, &dvTemp.intValue, &dvTemp.segmentValue)) {
 			dvTemp.type = CLIDV_ERROR_TYPE;
 		}
 	}
 
-	parseFree(&tree);
+	parseFree(tree);
 
 	lexFree(&lv);
 	LexVectorDeinit(&lv);
