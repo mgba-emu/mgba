@@ -158,7 +158,7 @@
               </item>
             <item>
                <property name="text">
-                <string>SRAM 128kB (bootlegs)</string>
+                <string>SRAM 128kB (bootlegs only)</string>
                </property>
               </item>
              </widget>
