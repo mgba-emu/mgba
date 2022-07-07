@@ -104,7 +104,6 @@ void GBAHardwareInitGyro(struct GBACartridgeHardware* gpio);
 void GBAHardwareInitRumble(struct GBACartridgeHardware* gpio);
 void GBAHardwareInitLight(struct GBACartridgeHardware* gpio);
 void GBAHardwareInitTilt(struct GBACartridgeHardware* gpio);
-void GBAHardwareInitFlashROM(struct GBACartridgeHardware* gpio);
 
 void GBAHardwareGPIOWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint16_t value);
 void GBAHardwareTiltWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint8_t value);
