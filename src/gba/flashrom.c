@@ -279,9 +279,9 @@ bool GBAFlashROMWriteIntel(struct GBAMemory* memory, uint32_t address, uint16_t 
 		break;
 	case FLASHROM_INTEL_PROGRAM:
 		_programWord(memory, address, value);
-			flashrom->state = FLASHROM_INTEL_STATUS;
-			flashrom->status = 0x80;
-			return true;
+		flashrom->state = FLASHROM_INTEL_STATUS;
+		flashrom->status = 0x80;
+		return true;
 	default:
 		mLOG(GBA_MEM, GAME_ERROR, "Write during unhandled FlashROM state");
 		break;
