@@ -241,6 +241,9 @@ private:
 	void updateROMInfo();
 
 	mCoreThread m_threadContext{};
+	struct CoreLogger : public mLogger {
+		CoreController* self;
+	} m_logger{};
 
 	bool m_patched = false;
 	bool m_preload = false;

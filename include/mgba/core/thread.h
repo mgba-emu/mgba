@@ -21,6 +21,7 @@ struct mCoreThread;
 struct mThreadLogger {
 	struct mLogger d;
 	struct mCoreThread* p;
+	struct mLogger* logger;
 };
 
 #ifdef ENABLE_SCRIPTING

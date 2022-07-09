@@ -144,19 +144,19 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		QMetaObject::invokeMethod(controller, "unpaused");
 	};
 
-	m_threadContext.logger.d.log = [](mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
-		mThreadLogger* logContext = reinterpret_cast<mThreadLogger*>(logger);
-		mCoreThread* context = logContext->p;
+	m_logger.self = this;
+	m_logger.log = [](mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
+		CoreLogger* logContext = static_cast<CoreLogger*>(logger);
 
 		static const char* savestateMessage = "State %i saved";
 		static const char* loadstateMessage = "State %i loaded";
 		static const char* savestateFailedMessage = "State %i failed to load";
 		static int biosCat = -1;
 		static int statusCat = -1;
-		if (!context) {
+		if (!logContext) {
 			return;
 		}
-		CoreController* controller = static_cast<CoreController*>(context->userData);
+		CoreController* controller = logContext->self;
 		QString message;
 		if (biosCat < 0) {
 			biosCat = mLogCategoryById("gba.bios");
@@ -201,10 +201,10 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		message = QString::vasprintf(format, args);
 		QMetaObject::invokeMethod(controller, "logPosted", Q_ARG(int, level), Q_ARG(int, category), Q_ARG(const QString&, message));
 		if (level == mLOG_FATAL) {
-			mCoreThreadMarkCrashed(controller->thread());
 			QMetaObject::invokeMethod(controller, "crashed", Q_ARG(const QString&, message));
 		}
 	};
+	m_threadContext.logger.logger = &m_logger;
 }
 
 CoreController::~CoreController() {
@@ -424,7 +424,7 @@ void CoreController::setInputController(InputController* inputController) {
 void CoreController::setLogger(LogController* logger) {
 	disconnect(m_log);
 	m_log = logger;
-	m_threadContext.logger.d.filter = logger->filter();
+	m_logger.filter = logger->filter();
 	connect(this, &CoreController::logPosted, m_log, &LogController::postLog);
 }
 
