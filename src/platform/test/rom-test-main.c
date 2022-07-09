@@ -236,14 +236,18 @@ static bool _romTestCheckResiger(void) {
 
 static void _romTestCallback(void* context) {
 	UNUSED(context);
-	core->readRegister(core, _returnCodeRegister, &_exitCode);
+	if (_returnCodeRegister) {
+		core->readRegister(core, _returnCodeRegister, &_exitCode);
+	}
 	_dispatchExiting = true;
 }
 
 #ifdef M_CORE_GBA
 static void _romTestSwi16(struct ARMCore* cpu, int immediate) {
 	if (immediate == _exitSwiImmediate) {
-		core->readRegister(core, _returnCodeRegister, &_exitCode);
+		if (_returnCodeRegister) {
+			core->readRegister(core, _returnCodeRegister, &_exitCode);
+		}
 		_dispatchExiting = true;
 		return;
 	}
@@ -252,7 +256,9 @@ static void _romTestSwi16(struct ARMCore* cpu, int immediate) {
 
 static void _romTestSwi32(struct ARMCore* cpu, int immediate) {
 	if (immediate == _exitSwiImmediate) {
-		core->readRegister(core, _returnCodeRegister, &_exitCode);
+		if (_returnCodeRegister) {
+			core->readRegister(core, _returnCodeRegister, &_exitCode);
+		}
 		_dispatchExiting = true;
 		return;
 	}
