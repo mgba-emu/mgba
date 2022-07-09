@@ -8,6 +8,7 @@
 #include <mgba/core/cheats.h>
 #include <mgba/core/config.h>
 #include <mgba/core/core.h>
+#include <mgba/core/log.h>
 #include <mgba/core/serialize.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
@@ -40,6 +41,7 @@ static bool _parseNamedRegister(const char* regStr, unsigned int* oRegister);
 
 static bool _dispatchExiting = false;
 static int _exitCode = 0;
+static struct mStandardLogger _logger;
 
 #ifdef M_CORE_GBA
 static void _romTestSwi3Callback(void* context);
@@ -102,6 +104,11 @@ int main(int argc, char * argv[]) {
 	mArgumentsApply(&args, NULL, 0, &core->config);
 
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
+	mCoreConfigSetDefaultIntValue(&core->config, "logToStdout", true);
+
+	mStandardLoggerInit(&_logger);
+	mStandardLoggerConfig(&_logger, &core->config);
+	mLogSetDefaultLogger(&_logger.d);
 
 	bool cleanExit = false;
 	struct mCoreCallbacks callbacks = {0};
@@ -185,6 +192,7 @@ int main(int argc, char * argv[]) {
 
 loadError:
 	mArgumentsDeinit(&args);
+	mStandardLoggerDeinit(&_logger);
 	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 
