@@ -300,6 +300,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 			if (mCoreThreadHasCrashed(&thread)) {
 				didFail = true;
 				printf("The game crashed!\n");
+				mCoreThreadEnd(&thread);
 			}
 		} else {
 			didFail = true;
