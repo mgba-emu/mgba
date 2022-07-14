@@ -644,9 +644,6 @@ void PainterGL::draw() {
 
 	if (!mCoreSyncWaitFrameStart(sync)) {
 		mCoreSyncWaitFrameEnd(sync);
-		if (m_timerResidue > targetNsec) {
-			m_timerResidue %= targetNsec;
-		}
 		if (!sync->audioWait && !sync->videoFrameWait) {
 			return;
 		}
@@ -658,13 +655,13 @@ void PainterGL::draw() {
 	dequeue();
 	bool forceRedraw = !m_videoProxy;
 	if (sync->audioWait || sync->videoFrameWait) {
-		while (delay + m_overage + m_delayTimer.nsecsElapsed() + OVERHEAD_NSEC < targetNsec) {
+		while (delay + m_delayTimer.nsecsElapsed() + OVERHEAD_NSEC < targetNsec) {
 			QThread::usleep(200);
 		}
 		forceRedraw = sync->videoFrameWait;
 	}
 	if (!forceRedraw) {
-		forceRedraw = delay + m_overage + m_delayTimer.nsecsElapsed() + OVERHEAD_NSEC >= refreshNsec;
+		forceRedraw = delay + m_delayTimer.nsecsElapsed() + OVERHEAD_NSEC >= refreshNsec;
 	}
 	mCoreSyncWaitFrameEnd(sync);
 
@@ -673,8 +670,7 @@ void PainterGL::draw() {
 		m_delayTimer.restart();
 
 		delay -= targetNsec;
-		m_overage = (m_overage + delay) / 2;
-		m_timerResidue = delay;
+		m_timerResidue = (m_timerResidue + delay) / 2;
 
 		if (m_timerResidue > refreshNsec) {
 			if (!m_drawTimer.isActive()) {
