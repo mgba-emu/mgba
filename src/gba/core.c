@@ -446,6 +446,7 @@ static void _GBACoreSetVideoGLTex(struct mCore* core, unsigned texid) {
 #ifdef BUILD_GLES3
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->glRenderer.outputTex = texid;
+	gbacore->glRenderer.outputTexDirty = true;
 #else
 	UNUSED(core);
 	UNUSED(texid);
