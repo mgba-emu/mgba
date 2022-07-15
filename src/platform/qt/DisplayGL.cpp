@@ -457,8 +457,7 @@ void PainterGL::create() {
 	m_paintDev = std::make_unique<QOpenGLPaintDevice>();
 
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
-	auto version = m_format.version();
-	if (version >= qMakePair(2, 0)) {
+	if (m_supportsShaders) {
 		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
