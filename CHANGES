@@ -50,6 +50,8 @@ Emulation fixes:
  - GBA Video: Fix sprite layer priority updating in GL
 Other fixes:
  - ARM: Disassemble Thumb mov pseudo-instruction properly
+ - ARM: Disassemble ARM asr/lsr #32 properly
+ - ARM: Disassemble ARM movs properly
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - Core: Fix the runloop resuming after a game has crashed (fixes mgba.io/i/2451)
  - Core: Fix crash if library can't be opened

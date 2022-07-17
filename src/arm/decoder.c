@@ -416,6 +416,7 @@ int ARMDisassemble(const struct ARMInstructionInfo* info, struct ARMCore* cpu, c
 	case ARM_MN_LSR:
 	case ARM_MN_MLA:
 	case ARM_MN_MUL:
+	case ARM_MN_MOV:
 	case ARM_MN_MVN:
 	case ARM_MN_ORR:
 	case ARM_MN_ROR:
