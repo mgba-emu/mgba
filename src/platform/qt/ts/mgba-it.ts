@@ -11,7 +11,7 @@
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;Sito web&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forum / Supporto&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donazioni&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Codice sorgente&lt;/a&gt;</translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;Sito web&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forum / Supporto&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Dona&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Codice sorgente&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
@@ -358,7 +358,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>Non è stato possibile aggiungere alcuni trucchi. Assicurati che siano formattati correttamente e / o prova altri tipi di trucchi.</translation>
     </message>
 </context>
 <context>
@@ -372,17 +372,17 @@ Dimensione del download: %3</translation>
         <location filename="../CoreController.cpp" line="505"/>
         <location filename="../CoreController.cpp" line="525"/>
         <source>Rewinding not currently enabled</source>
-        <translation>Rewind attualmente disattivato</translation>
+        <translation>La funzione &apos;riavvolgi&apos; non è attualmente abilitata</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="568"/>
         <source>Reset the game?</source>
-        <translation>Resettare il gioco?</translation>
+        <translation>Riavviare il gioco?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="569"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation>La maggior parte dei giochi richiederà un reset per caricare il nuovo salvataggio. Vuoi resettare ora?</translation>
+        <translation>La maggior parte dei giochi richiede un riavvio per caricare il nuovo salvataggio. Vuoi riavviare ora?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="781"/>
@@ -2103,7 +2103,7 @@ Dimensione del download: %3</translation>
         <location filename="../IOViewer.cpp" line="689"/>
         <location filename="../IOViewer.cpp" line="735"/>
         <source>Audio FIFO</source>
-        <translation>Audio FIFO</translation>
+        <translation>FIFO audio</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="726"/>
@@ -4294,7 +4294,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingTextBuffer.cpp" line="42"/>
         <source>Untitled buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>Buffer senza nome</translation>
     </message>
 </context>
 <context>
@@ -4302,52 +4302,52 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="14"/>
         <source>Scripting</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripting</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="45"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>Esegui</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="92"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>File</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="96"/>
         <source>Load recent script</source>
-        <translation type="unfinished"></translation>
+        <translation>Carica script recente</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="109"/>
         <source>Load script...</source>
-        <translation type="unfinished"></translation>
+        <translation>Carica script...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="114"/>
         <source>&amp;Reset</source>
-        <translation type="unfinished">Reset</translation>
+        <translation>&amp;Ripristina</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="119"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="60"/>
         <source>Select script to load</source>
-        <translation type="unfinished"></translation>
+        <translation>Selezionare lo script da caricare</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="85"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished"></translation>
+        <translation>Script Lua (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="87"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tutti i file (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4385,12 +4385,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SensorView.ui" line="67"/>
         <source>Offset time</source>
-        <translation type="unfinished"></translation>
+        <translation>Tempo di sfasamento</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="80"/>
         <source> sec</source>
-        <translation type="unfinished"></translation>
+        <translation> sec</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="126"/>
@@ -5412,7 +5412,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../TileView.ui" line="33"/>
         <source>Palette</source>
-        <translation>Palette</translation>
+        <translation>Tavolozza</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="73"/>
@@ -5734,7 +5734,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="463"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
-        <translation>e-Reader card (*.raw *.bin *.bmp)</translation>
+        <translation>Scheda e-Reader (*.raw *.bin *.bmp)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="471"/>
@@ -6014,7 +6014,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1405"/>
         <source>Yank game pak</source>
-        <translation>Yank game pak</translation>
+        <translation>Stacca game pak</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1409"/>
@@ -6335,12 +6335,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1646"/>
         <source>Scripting...</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripting...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1665"/>
         <source>Game state views</source>
-        <translation type="unfinished"></translation>
+        <translation>Viste degli stati del gioco</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1666"/>

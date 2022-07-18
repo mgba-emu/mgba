@@ -358,7 +358,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>Algumas trapaças não puderam ser adicionadas. Por favor tenha certeza que eles estão formatadas corretamente e/ou tente outros tipos de trapaça.</translation>
     </message>
 </context>
 <context>
@@ -4294,7 +4294,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingTextBuffer.cpp" line="42"/>
         <source>Untitled buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>Buffer sem título</translation>
     </message>
 </context>
 <context>
@@ -6340,12 +6340,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1646"/>
         <source>Scripting...</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripting...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1665"/>
         <source>Game state views</source>
-        <translation type="unfinished"></translation>
+        <translation>Visualizações do estado do jogo</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1666"/>
