@@ -170,17 +170,17 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../AudioDevice.cpp" line="26"/>
         <source>Can&apos;t set format of context-less audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Format des kontextlosen Audio-Gerätes konnte nicht gesetzt werden</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="44"/>
         <source>Audio device is missing its core</source>
-        <translation type="unfinished"></translation>
+        <translation>Dem Audio-Gerät fehlt ein Core</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="62"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Schreibe Daten an ein schreibgeschütztes Audio-Gerät</translation>
     </message>
 </context>
 <context>
@@ -188,7 +188,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="43"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Ohne Eingabe kann ein Audio-Prozessor nicht gestartet werden</translation>
     </message>
 </context>
 <context>
@@ -196,7 +196,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Ohne Eingabe kann ein Audio-Prozessor nicht gestartet werden</translation>
     </message>
 </context>
 <context>
@@ -264,28 +264,28 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip-Daten fehlen</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip-Daten fehlen. BattleChip Gates wird weiterhin funktionieren, einige Grafiken werden jedoch fehlen. Möchtest Du die Daten jetzt herunterladen?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="184"/>
         <location filename="../BattleChipView.cpp" line="203"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>Deck-Datei auswählen</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="215"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>Inkompatibles Deck</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="216"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>Das gewählte Deck ist nicht mit diesem Chip Gate kompatibel</translation>
     </message>
 </context>
 <context>
@@ -358,7 +358,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>Einige Cheats konnten nicht hinzugefügt werden. Bitte stelle sicher, dass sie korrekt formatiert sind und/oder probiere es mit anderen Cheat-Typen.</translation>
     </message>
 </context>
 <context>
@@ -433,7 +433,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../DebuggerConsole.ui" line="14"/>
         <source>Debugger</source>
-        <translation>Debugger</translation>
+        <translation>1Debugger</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="20"/>
@@ -494,12 +494,12 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
         <source>Couldn&apos;t Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Verbindung fehlgeschlagen</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Could not connect to Dolphin.</source>
-        <translation type="unfinished"></translation>
+        <translation>Verbindung zu Dolphin konnte nicht hergestellt werden.</translation>
     </message>
 </context>
 <context>
@@ -753,147 +753,147 @@ Download-Größe: %3</translation>
         <location filename="../GameBoy.cpp" line="55"/>
         <location filename="../GameBoy.cpp" line="74"/>
         <source>Autodetect</source>
-        <translation type="unfinished">Automatisch erkennen</translation>
+        <translation>Automatisch erkennen</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="56"/>
         <source>Game Boy (DMG)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy (DMG)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="57"/>
         <source>Game Boy Pocket (MGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Pocket (MGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="58"/>
         <source>Super Game Boy (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="59"/>
         <source>Super Game Boy 2 (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy 2 (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="60"/>
         <source>Game Boy Color (CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Color (CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="61"/>
         <source>Game Boy Advance (AGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance (AGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="62"/>
         <source>Super Game Boy Color (SGB + CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy Color (SGB + CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="75"/>
         <source>ROM Only</source>
-        <translation type="unfinished"></translation>
+        <translation>Nur ROM</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="76"/>
         <source>MBC1</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="77"/>
         <source>MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="78"/>
         <source>MBC3</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="79"/>
         <source>MBC3 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="80"/>
         <source>MBC5</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC5</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
         <source>MBC5 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC5 + Rumble</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="82"/>
         <source>MBC6</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="83"/>
         <source>MBC7 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC7 (Tilt)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="84"/>
         <source>MMM01</source>
-        <translation type="unfinished"></translation>
+        <translation>MMM01</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="85"/>
         <source>HuC-1</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
         <source>HuC-3</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
         <source>Pocket Cam</source>
-        <translation type="unfinished"></translation>
+        <translation>Pocket Cam</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
         <source>TAMA5</source>
-        <translation type="unfinished">TAMA5</translation>
+        <translation>TAMA5</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
         <source>Wisdom Tree</source>
-        <translation type="unfinished"></translation>
+        <translation>Wisdom Tree</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>NT (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT (neu)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="91"/>
         <source>Pokémon Jade/Diamond</source>
-        <translation type="unfinished"></translation>
+        <translation>Pokémon Jade/Diamond</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="92"/>
         <source>BBD</source>
-        <translation type="unfinished"></translation>
+        <translation>BBD</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="93"/>
         <source>Hitek</source>
-        <translation type="unfinished"></translation>
+        <translation>Hitek</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="94"/>
         <source>Sachen (MMC1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sachen (MMC1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="95"/>
         <source>Sachen (MMC2)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sachen (MMC2)</translation>
     </message>
 </context>
 <context>
@@ -3776,12 +3776,12 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="146"/>
         <source>EEPROM 8kB</source>
-        <translation>EEPROM 8kB</translation>
+        <translation>EEPROM mit 8kB</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="151"/>
         <source>EEPROM 512 bytes</source>
-        <translation>EEPROM 512 bytes</translation>
+        <translation>EEPROM mit 512 Byte</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="156"/>
@@ -4008,12 +4008,12 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Save Printout</source>
-        <translation type="unfinished"></translation>
+        <translation>Ausdruck speichern</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished">Portable Network Graphics (*.png)</translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -4294,7 +4294,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../scripting/ScriptingTextBuffer.cpp" line="42"/>
         <source>Untitled buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>Unbenannter Puffer</translation>
     </message>
 </context>
 <context>
@@ -4302,52 +4302,52 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="14"/>
         <source>Scripting</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripting</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="45"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>Abspielen</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="92"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>Datei</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="96"/>
         <source>Load recent script</source>
-        <translation type="unfinished"></translation>
+        <translation>Kürzlich geöffnetes Skript laden</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="109"/>
         <source>Load script...</source>
-        <translation type="unfinished"></translation>
+        <translation>Skript laden...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="114"/>
         <source>&amp;Reset</source>
-        <translation type="unfinished">Zu&amp;rücksetzen</translation>
+        <translation>Zu&amp;rücksetzen</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="119"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="60"/>
         <source>Select script to load</source>
-        <translation type="unfinished"></translation>
+        <translation>Skript auswählen, welches geladen werden soll</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="85"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished"></translation>
+        <translation>Lua-Skripte (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="87"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Alle Dateien (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4385,12 +4385,12 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../SensorView.ui" line="67"/>
         <source>Offset time</source>
-        <translation type="unfinished"></translation>
+        <translation>Zeitversatz</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="80"/>
         <source> sec</source>
-        <translation type="unfinished"></translation>
+        <translation> Sek.</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="126"/>
@@ -4554,7 +4554,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="50"/>
         <source>Gameplay</source>
-        <translation type="unfinished"></translation>
+        <translation>Gameplay</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
@@ -4788,27 +4788,27 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="548"/>
         <source>On loading a game:</source>
-        <translation type="unfinished"></translation>
+        <translation>Wenn ein Spiel geladen wird:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="555"/>
         <source>Load last state</source>
-        <translation type="unfinished"></translation>
+        <translation>Letzten Savestate laden</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="565"/>
         <source>Load cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>Cheats laden</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="582"/>
         <source>Periodally autosave state</source>
-        <translation type="unfinished"></translation>
+        <translation>Savestate regelmäßig automatisch speichern</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="592"/>
         <source>Save entered cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>Eingegebene Cheats speichern</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="813"/>
@@ -6164,12 +6164,12 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1646"/>
         <source>Scripting...</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripting...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1665"/>
         <source>Game state views</source>
-        <translation type="unfinished"></translation>
+        <translation>Spiel-Zustände ansehen</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1932"/>
