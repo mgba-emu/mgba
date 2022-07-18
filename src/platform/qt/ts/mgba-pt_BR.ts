@@ -170,17 +170,17 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../AudioDevice.cpp" line="26"/>
         <source>Can&apos;t set format of context-less audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Não pôde definir o formato do dispositivo de áudio sem contexto</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="44"/>
         <source>Audio device is missing its core</source>
-        <translation type="unfinished"></translation>
+        <translation>O núcleo do dispositivo de áudio está ausente</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="62"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Gravando dados no dispositivo somente-leitura do áudio</translation>
     </message>
 </context>
 <context>
@@ -188,7 +188,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="43"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Não pôde iniciar um processador de áudio sem entrada</translation>
     </message>
 </context>
 <context>
@@ -196,7 +196,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Não pôde iniciar um processador de áudio sem entrada</translation>
     </message>
 </context>
 <context>
@@ -204,7 +204,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../BattleChipView.ui" line="14"/>
         <source>BattleChip Gate</source>
-        <translation>BattleChip Gate</translation>
+        <translation>Portal do BattleChip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="67"/>
@@ -239,7 +239,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../BattleChipView.ui" line="138"/>
         <source>Gate type</source>
-        <translation>Tipo de Gate</translation>
+        <translation>Tipo de Portal</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="180"/>
@@ -254,7 +254,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
         <source>Update Chip data</source>
-        <translation>Atualizar dados do Chip</translation>
+        <translation>Atualizar os dados do Chip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
@@ -264,28 +264,28 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>Portal do BattleChip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>Os dados do BattleChip estão ausente. Os Portais do BattleChip Gates ainda funcionarão mas alguns gráficos estarão ausentes. Você gostaria de baixar os dados agora?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="184"/>
         <location filename="../BattleChipView.cpp" line="203"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecionar o arquivo do deck</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="215"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>Deck incompatível</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="216"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>O deck selecionado não é compatível com este Portal do Chip</translation>
     </message>
 </context>
 <context>
@@ -311,7 +311,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished"></translation>
+        <translation>Adicionar Novo Código</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
@@ -321,12 +321,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CheatsView.ui" line="93"/>
         <source>Add Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Adicionar Linhas</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="100"/>
         <source>Code type</source>
-        <translation type="unfinished"></translation>
+        <translation>Tipo de código</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
@@ -443,7 +443,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DebuggerConsole.ui" line="27"/>
         <source>Break</source>
-        <translation>Pausar</translation>
+        <translation>Parar</translation>
     </message>
 </context>
 <context>
@@ -469,7 +469,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
         <source>IP address</source>
-        <translation>Endereço de IP</translation>
+        <translation>Endereço do IP</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
@@ -494,12 +494,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
         <source>Couldn&apos;t Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Não Pôde Conectar</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Could not connect to Dolphin.</source>
-        <translation type="unfinished"></translation>
+        <translation>Não pôde conectar com o Dolphin.</translation>
     </message>
 </context>
 <context>
@@ -522,12 +522,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../FrameView.ui" line="84"/>
         <source>Backdrop color</source>
-        <translation>Cor de fundo</translation>
+        <translation>Cor do 2º plano</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="132"/>
         <source>Disable scanline effects</source>
-        <translation>Desativar efeitos de scanline</translation>
+        <translation>Desativar efeitos da scanline</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="145"/>
@@ -694,7 +694,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GIFView.ui" line="30"/>
         <source>Loop</source>
-        <translation>Repetir animação</translation>
+        <translation>Repetição</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="51"/>
@@ -729,7 +729,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GIFView.ui" line="145"/>
         <source>Frameskip</source>
-        <translation>Frameskip</translation>
+        <translation>Pulo dos Frames</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="61"/>
@@ -753,147 +753,147 @@ Tamanho do download: %3</translation>
         <location filename="../GameBoy.cpp" line="55"/>
         <location filename="../GameBoy.cpp" line="74"/>
         <source>Autodetect</source>
-        <translation type="unfinished">Auto-detectar</translation>
+        <translation>Auto-detectar</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="56"/>
         <source>Game Boy (DMG)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy (DMG)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="57"/>
         <source>Game Boy Pocket (MGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Pocket (MGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="58"/>
         <source>Super Game Boy (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="59"/>
         <source>Super Game Boy 2 (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy 2 (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="60"/>
         <source>Game Boy Color (CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Color (CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="61"/>
         <source>Game Boy Advance (AGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance (AGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="62"/>
         <source>Super Game Boy Color (SGB + CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy Color (SGB + CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="75"/>
         <source>ROM Only</source>
-        <translation type="unfinished"></translation>
+        <translation>So a ROM</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="76"/>
         <source>MBC1</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="77"/>
         <source>MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="78"/>
         <source>MBC3</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="79"/>
         <source>MBC3 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="80"/>
         <source>MBC5</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC5</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
         <source>MBC5 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC5 + Rumble</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="82"/>
         <source>MBC6</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="83"/>
         <source>MBC7 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC7 (Inclinação)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="84"/>
         <source>MMM01</source>
-        <translation type="unfinished"></translation>
+        <translation>MMM01</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="85"/>
         <source>HuC-1</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
         <source>HuC-3</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
         <source>Pocket Cam</source>
-        <translation type="unfinished"></translation>
+        <translation>Câmara de Bolso</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
         <source>TAMA5</source>
-        <translation type="unfinished">TAMA5</translation>
+        <translation>TAMA5</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
         <source>Wisdom Tree</source>
-        <translation type="unfinished"></translation>
+        <translation>Árvore da Sabedoria</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>NT (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT (novo)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="91"/>
         <source>Pokémon Jade/Diamond</source>
-        <translation type="unfinished"></translation>
+        <translation>Pokémon Jade/Diamond</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="92"/>
         <source>BBD</source>
-        <translation type="unfinished"></translation>
+        <translation>BBD</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="93"/>
         <source>Hitek</source>
-        <translation type="unfinished"></translation>
+        <translation>Hitek</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="94"/>
         <source>Sachen (MMC1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sachen (MMC1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="95"/>
         <source>Sachen (MMC2)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sachen (MMC2)</translation>
     </message>
 </context>
 <context>
@@ -3032,7 +3032,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation>Info</translation>
+        <translation>Informações</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
@@ -3178,7 +3178,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MemoryDump.ui" line="14"/>
         <source>Save Memory Range</source>
-        <translation>Salvar Faixa de Memória</translation>
+        <translation>Salvar o Alcance da Memória</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="20"/>
@@ -3188,12 +3188,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MemoryDump.ui" line="76"/>
         <source>Byte Count:</source>
-        <translation>Quantidade de Bytes:</translation>
+        <translation>Contagem dos Bytes:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="108"/>
         <source>Dump across banks</source>
-        <translation>Salvar através de vários bancos</translation>
+        <translation>Dumpar através dos bancos</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="24"/>
@@ -3274,7 +3274,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MemorySearch.ui" line="26"/>
         <source>Memory Search</source>
-        <translation>Pesquisa de Memória</translation>
+        <translation>Busca na Memória</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="51"/>
@@ -3340,7 +3340,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MemorySearch.ui" line="216"/>
         <source>Search type</source>
-        <translation>Tipo de pesquisa</translation>
+        <translation>Tipo de busca</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="223"/>
@@ -3360,12 +3360,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MemorySearch.ui" line="256"/>
         <source>Unknown/changed</source>
-        <translation>Desconhecido/alterado</translation>
+        <translation>Desconhecido/mudado</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="269"/>
         <source>Changed by value</source>
-        <translation>Alterado por quantia</translation>
+        <translation>Mudado pelo valor</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="282"/>
@@ -3390,7 +3390,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MemorySearch.ui" line="336"/>
         <source>New Search</source>
-        <translation>Nova Pesquisa</translation>
+        <translation>Nova Busca</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="195"/>
@@ -3401,12 +3401,12 @@ Tamanho do download: %3</translation>
         <location filename="../MemorySearch.ui" line="125"/>
         <location filename="../MemorySearch.ui" line="185"/>
         <source>Guess</source>
-        <translation>Detectar</translation>
+        <translation>Palpite</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="343"/>
         <source>Search Within</source>
-        <translation>Pesquisar nos Resultados</translation>
+        <translation>Procurar por Dentro</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="350"/>
@@ -3474,12 +3474,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="187"/>
         <source>Unsigned Integer:</source>
-        <translation>Inteiro sem sinal:</translation>
+        <translation>Inteiro não Assinado:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="208"/>
         <source>Signed Integer:</source>
-        <translation>Inteiro com sinal:</translation>
+        <translation>Inteiro com Sinal:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="229"/>
@@ -3509,7 +3509,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="290"/>
         <source>Save Range</source>
-        <translation>Salvar Intervalo</translation>
+        <translation>Salvar Alcance</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="297"/>
@@ -3556,7 +3556,7 @@ Tamanho do download: %3</translation>
         <location filename="../ObjView.ui" line="430"/>
         <location filename="../ObjView.cpp" line="181"/>
         <source>Off</source>
-        <translation>Não</translation>
+        <translation>Desligado</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="444"/>
@@ -3726,7 +3726,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="55"/>
         <source>Realtime clock</source>
-        <translation>Relógio de tempo real</translation>
+        <translation>Relógio em tempo real</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="65"/>
@@ -3776,22 +3776,22 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="146"/>
         <source>EEPROM 8kB</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM de 8 kBs</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="151"/>
         <source>EEPROM 512 bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM de 512 bytes</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="156"/>
         <source>SRAM 64kB (bootlegs only)</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM de 64 kBs (só bootlegs)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="164"/>
         <source>Idle loop</source>
-        <translation>Loop inativo</translation>
+        <translation>Repetição inativa</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="190"/>
@@ -3826,12 +3826,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="352"/>
         <source>Sprite Colors 1</source>
-        <translation>Cores de Sprite 1</translation>
+        <translation>Cores da Imagem Móvel 1</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="359"/>
         <source>Sprite Colors 2</source>
-        <translation>Cores de Sprite 2</translation>
+        <translation>Cores da Imagem Móvel 2</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="529"/>
@@ -3904,7 +3904,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../PaletteView.ui" line="267"/>
         <source>Palette index</source>
-        <translation>Índice da paleta</translation>
+        <translation>Indice da paleta</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="340"/>
@@ -3960,7 +3960,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../PlacementControl.ui" line="26"/>
         <source>All</source>
-        <translation>Todos</translation>
+        <translation>Tudo</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="65"/>
@@ -4008,12 +4008,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Save Printout</source>
-        <translation type="unfinished"></translation>
+        <translation>Salvar impressão</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished">Gráficos Portáteis da Rede (*.png)</translation>
+        <translation>Gráficos Portáteis da Rede (*.png)</translation>
     </message>
 </context>
 <context>
@@ -4087,7 +4087,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ReportView.ui" line="67"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pra apresentar um relatório de bug, por favor primeiro gere um arquivo de relatório pra anexar ao relatório do bug. É recomendado que  você inclua os arquivos dos saves como estes frequentemente ajudam com problemas de debugging. Isto coletará um pouco de  informação sobre a versão do {projectName} que você está em executando, suas configurações, seu computador e o jogo que você abriu atualmente (se algum). Uma vez que esta coleção estiver completada você pode rever toda a informação coletada abaixo e salvá-la num arquivo zip. A coleção tentará automaticamente reescrever qualquer informação pessoal, tal como seu nome de usuário se está em qualquer dos caminhos coletados, mas em qualquer caso você pode editá-lo mais tarde. Depois que você o gerou e o salvou, por favor clique no botão abaixo ou vá em &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; pra apresentar o relatório no GitHub. Tenha a certeza de anexar o relatório que você gerou!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pra apresentar um relatório de bug por favor gere primeiro um arquivo de relatório pra anexar ao relatório do bug que você está pra apresentar. É recomendado que você inclua os arquivos dos saves como estes frequentemente ajudam com problemas de debugging. Isto coletará um pouco de informação sobre a versão do {projectName} que você está em executando, suas configurações, seu computador e o jogo que você abriu atualmente (se algum). Uma vez que esta coleção estiver completada você pode rever toda a informação coletada abaixo e salvá-la num arquivo zip. A coleção tentará automaticamente reescrever qualquer informação pessoal, tal como seu nome de usuário se está em quaisquer dos caminhos coletados, mas no caso você pode editá-lo mais tarde. Depois que você o gerou e o salvou, por favor clique no botão abaixo ou vá em &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; pra apresentar o relatório do bug no GitHub. Tenha a certeza de anexar o relatório que você gerou!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="85"/>
@@ -4191,7 +4191,7 @@ Tamanho do download: %3</translation>
         <location filename="../SaveConverter.ui" line="29"/>
         <location filename="../SaveConverter.ui" line="55"/>
         <source>Browse</source>
-        <translation>Navegar</translation>
+        <translation>Explorar</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="46"/>
@@ -4261,7 +4261,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="506"/>
         <source>MBC6 SRAM</source>
-        <translation>MBC6 SRAM</translation>
+        <translation>SRAM do MBC6</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="510"/>
@@ -4281,12 +4281,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="529"/>
         <source>%1 SharkPort %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 SharkPort %2 save do jogo</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="532"/>
         <source>%1 GameShark Advance SP %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 GameShark Advance SP %2 save do jogo</translation>
     </message>
 </context>
 <context>
@@ -4302,52 +4302,52 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="14"/>
         <source>Scripting</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripting</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="45"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>Executar</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="92"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>Arquivo</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="96"/>
         <source>Load recent script</source>
-        <translation type="unfinished"></translation>
+        <translation>Carregar script recente</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="109"/>
         <source>Load script...</source>
-        <translation type="unfinished"></translation>
+        <translation>Carregar script...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="114"/>
         <source>&amp;Reset</source>
-        <translation type="unfinished">&amp;Resetar</translation>
+        <translation>&amp;Resetar</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="119"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="60"/>
         <source>Select script to load</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecionar o script a carregar</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="85"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripts do lua (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="87"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Todos os arquivos (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4385,12 +4385,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SensorView.ui" line="67"/>
         <source>Offset time</source>
-        <translation type="unfinished"></translation>
+        <translation>Tempo do deslocamento</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="80"/>
         <source> sec</source>
-        <translation type="unfinished"></translation>
+        <translation> segs</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="126"/>
@@ -4554,7 +4554,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="50"/>
         <source>Gameplay</source>
-        <translation type="unfinished"></translation>
+        <translation>Jogabilidade</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
@@ -4564,7 +4564,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>Atualizar</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
@@ -4694,32 +4694,32 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="285"/>
         <source>Fast forward volume:</source>
-        <translation>Avançar o volume rápido:</translation>
+        <translation>Avanço rápido do volume:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="325"/>
         <source>Audio in multiplayer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Áudio no multiplayer:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="332"/>
         <source>All windows</source>
-        <translation type="unfinished"></translation>
+        <translation>Todas as janelas</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="345"/>
         <source>Player 1 window only</source>
-        <translation type="unfinished"></translation>
+        <translation>Só a janela do jogador 1</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="355"/>
         <source>Currently active player window</source>
-        <translation type="unfinished"></translation>
+        <translation>Atualmente na janela do jogador ativo</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="388"/>
         <source>Display driver:</source>
-        <translation>Driver de exibição:</translation>
+        <translation>Driver de vídeo:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="405"/>
@@ -4767,7 +4767,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="433"/>
         <source>Lock aspect ratio</source>
-        <translation>Trancar proporção do aspecto</translation>
+        <translation>Travar a proporção do aspecto</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="454"/>
@@ -4777,98 +4777,98 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="750"/>
         <source>Show filename instead of ROM name in library view</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar o nome do arquivo ao invés do nome da ROM na visualização da biblioteca</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="797"/>
         <location filename="../SettingsView.ui" line="822"/>
         <source>Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>Pausa</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="788"/>
         <source>When inactive:</source>
-        <translation type="unfinished"></translation>
+        <translation>Quando inativo:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="548"/>
         <source>On loading a game:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ao carregar um jogo:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="555"/>
         <source>Load last state</source>
-        <translation type="unfinished"></translation>
+        <translation>Carregar o último state</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="565"/>
         <source>Load cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>Carregar trapaças</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="582"/>
         <source>Periodally autosave state</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto-salvar o state periodicamente</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="592"/>
         <source>Save entered cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>Salvar as trapaças inseridas</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="813"/>
         <source>When minimized:</source>
-        <translation type="unfinished"></translation>
+        <translation>Quando minimizado:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="897"/>
         <source>Show frame count in OSD</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar contagem dos frames no OSD</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="904"/>
         <source>Show emulation info on reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Mostrar informações da emulação no reset</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="917"/>
         <source>Current channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Canal atual:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="931"/>
         <source>Current version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Versão atual:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="955"/>
         <source>Update channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Canal da atualização:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="965"/>
         <source>Available version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Versão disponível:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="972"/>
         <source>(Unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Desconhecido)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="982"/>
         <source>Last checked:</source>
-        <translation type="unfinished"></translation>
+        <translation>Verificado pela última vez:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1003"/>
         <source>Automatically check on start</source>
-        <translation type="unfinished"></translation>
+        <translation>Verificar automaticamente ao iniciar</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1010"/>
         <source>Check now</source>
-        <translation type="unfinished"></translation>
+        <translation>Verificar agora</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2097"/>
@@ -4878,7 +4878,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="2107"/>
         <source>SGB color palette if available</source>
-        <translation>Paleta das cores SGB se disponível</translation>
+        <translation>Paleta das cores do SGB se disponível</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2117"/>
@@ -4923,7 +4923,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="882"/>
         <source>Show OSD messages</source>
-        <translation>Mostrarr mensagens do OSD</translation>
+        <translation>Mostrar mensagens do OSD</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="609"/>
@@ -4954,7 +4954,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="865"/>
         <source>Show filename instead of ROM name in title bar</source>
-        <translation>Mostrar nome do arquivo em vez do nome da ROM na barra de título</translation>
+        <translation>Mostrar o nome do arquivo ao invés do nome da ROM na barra de título</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1067"/>
@@ -4984,7 +4984,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="440"/>
         <source>Force integer scaling</source>
-        <translation>Forçar dimensionamento da integral</translation>
+        <translation>Forçar dimensionamento do inteiro</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="702"/>
@@ -5024,7 +5024,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="778"/>
         <source>Suspend screensaver</source>
-        <translation>Suspender proteção de tela</translation>
+        <translation>Suspender a proteção de tela</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="855"/>
@@ -5034,12 +5034,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="691"/>
         <source>Enable Discord Rich Presence</source>
-        <translation>Ativar Discord Rich Presence</translation>
+        <translation>Ativar o Discord Rich Presence</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1024"/>
         <source>Fast forward speed:</source>
-        <translation>Velocidade de avanço rápido:</translation>
+        <translation>Velocidade do avanço rápido:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1055"/>
@@ -5060,7 +5060,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1173"/>
         <source>Idle loops:</source>
-        <translation>Loops inativos:</translation>
+        <translation>Repetições inativas:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1181"/>
@@ -5097,7 +5097,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1110"/>
         <source>Autofire interval:</source>
-        <translation>Intervalo do Auto-Disparo:</translation>
+        <translation>Intervalo do auto-disparo:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1206"/>
@@ -5122,7 +5122,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1261"/>
         <source>High-resolution scale:</source>
-        <translation>Escala de alta-resolução:</translation>
+        <translation>Escala da alta-resolução:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1248"/>
@@ -5132,7 +5132,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1328"/>
         <source>GB BIOS file:</source>
-        <translation>Arquivo do GB BIOS:</translation>
+        <translation>Arquivo da BIOS do GB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1347"/>
@@ -5145,7 +5145,7 @@ Tamanho do download: %3</translation>
         <location filename="../SettingsView.ui" line="1633"/>
         <location filename="../SettingsView.ui" line="1681"/>
         <source>Browse</source>
-        <translation>Navegar</translation>
+        <translation>Explorar</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1440"/>
@@ -5155,7 +5155,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1450"/>
         <source>Skip BIOS intro</source>
-        <translation>Ignorar introdução da BIOS</translation>
+        <translation>Ignorar a introdução da BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1412"/>
@@ -5214,12 +5214,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1753"/>
         <source>GB only:</source>
-        <translation>Só GB:</translation>
+        <translation>Só no GB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1763"/>
         <source>SGB compatible:</source>
-        <translation>Compatível com SGB:</translation>
+        <translation>Compatível com o SGB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1773"/>
@@ -5229,12 +5229,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1783"/>
         <source>GBC compatible:</source>
-        <translation>Compatível com GBC:</translation>
+        <translation>Compatível com o GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1793"/>
         <source>SGB and GBC compatible:</source>
-        <translation>Compatível com SGB e GBC:</translation>
+        <translation>Compatível com o SGB e o GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1813"/>
@@ -5254,12 +5254,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1916"/>
         <source>Default sprite colors 1:</source>
-        <translation>Cores padrão de sprite 1:</translation>
+        <translation>Cores padrão da imagem móvel 1:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2003"/>
         <source>Default sprite colors 2:</source>
-        <translation>Cores padrão de sprite 2:</translation>
+        <translation>Cores padrão da imagem móvel 2:</translation>
     </message>
 </context>
 <context>
@@ -5412,7 +5412,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../TileView.ui" line="33"/>
         <source>Palette</source>
-        <translation type="unfinished">Paleta</translation>
+        <translation>Paleta</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="73"/>
@@ -5432,22 +5432,22 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../TileView.ui" line="119"/>
         <source>Displayed tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Mosaicos exibidos</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="125"/>
         <source>Only BG tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Só os mosaicos do 2º plano</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="135"/>
         <source>Only OBJ tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Só os mosaicos do OBJ</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="145"/>
         <source>Both</source>
-        <translation type="unfinished">Ambos</translation>
+        <translation>Ambos</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="163"/>
@@ -5668,12 +5668,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../VideoView.ui" line="550"/>
         <source>Lock aspect ratio</source>
-        <translation>Trancar proporção do aspecto</translation>
+        <translation>Travar a proporção do aspecto</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="565"/>
         <source>Show advanced</source>
-        <translation>Mostrar as avançadas</translation>
+        <translation>Mostrar as opções avançadas</translation>
     </message>
 </context>
 <context>
