@@ -35,16 +35,17 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.setupUi(this);
 
 	m_pageIndex[Page::AV] = 0;
-	m_pageIndex[Page::INTERFACE] = 1;
-	m_pageIndex[Page::UPDATE] = 2;
-	m_pageIndex[Page::EMULATION] = 3;
-	m_pageIndex[Page::ENHANCEMENTS] = 4;
-	m_pageIndex[Page::BIOS] = 5;
-	m_pageIndex[Page::PATHS] = 6;
-	m_pageIndex[Page::LOGGING] = 7;
+	m_pageIndex[Page::GAMEPLAY] = 1;
+	m_pageIndex[Page::INTERFACE] = 2;
+	m_pageIndex[Page::UPDATE] = 3;
+	m_pageIndex[Page::EMULATION] = 4;
+	m_pageIndex[Page::ENHANCEMENTS] = 5;
+	m_pageIndex[Page::BIOS] = 6;
+	m_pageIndex[Page::PATHS] = 7;
+	m_pageIndex[Page::LOGGING] = 8;
 
 #ifdef M_CORE_GB
-	m_pageIndex[Page::GB] = 8;
+	m_pageIndex[Page::GB] = 9;
 
 	for (auto model : GameBoy::modelList()) {
 		m_ui.gbModel->addItem(GameBoy::modelName(model), model);
