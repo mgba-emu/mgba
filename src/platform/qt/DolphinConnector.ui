@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DolphinConnector</class>
- <widget class="QDialog" name="DolphinConnector">
+ <class>QGBA::DolphinConnector</class>
+ <widget class="QDialog" name="QGBA::DolphinConnector">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -98,7 +98,7 @@
   <connection>
    <sender>close</sender>
    <signal>clicked()</signal>
-   <receiver>DolphinConnector</receiver>
+   <receiver>QGBA::DolphinConnector</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">

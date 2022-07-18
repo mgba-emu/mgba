@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PrinterView</class>
- <widget class="QWidget" name="PrinterView">
+ <class>QGBA::PrinterView</class>
+ <widget class="QWidget" name="QGBA::PrinterView">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -250,7 +250,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>PrinterView</receiver>
+   <receiver>QGBA::PrinterView</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">

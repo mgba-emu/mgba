@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ScriptingView</class>
- <widget class="QMainWindow" name="ScriptingView">
+ <class>QGBA::ScriptingView</class>
+ <widget class="QMainWindow" name="QGBA::ScriptingView">
   <property name="geometry">
    <rect>
     <x>0</x>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>LoadSaveState</class>
- <widget class="QWidget" name="LoadSaveState">
+ <class>QGBA::LoadSaveState</class>
+ <widget class="QWidget" name="QGBA::LoadSaveState">
   <property name="geometry">
    <rect>
     <x>0</x>
