@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PaletteView</class>
- <widget class="QWidget" name="PaletteView">
+ <class>QGBA::PaletteView</class>
+ <widget class="QWidget" name="QGBA::PaletteView">
   <property name="geometry">
    <rect>
     <x>0</x>

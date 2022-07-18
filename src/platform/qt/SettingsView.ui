@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SettingsView</class>
- <widget class="QWidget" name="SettingsView">
+ <class>QGBA::SettingsView</class>
+ <widget class="QWidget" name="QGBA::SettingsView">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -47,6 +47,11 @@
      </item>
      <item>
       <property name="text">
+       <string>Gameplay</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
        <string>Interface</string>
       </property>
      </item>
@@ -87,337 +92,391 @@
      </item>
     </widget>
    </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="1">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>9</number>
      </property>
      <widget class="QWidget" name="av">
-      <layout class="QFormLayout" name="formLayout">
-       <property name="fieldGrowthPolicy">
-        <enum>QFormLayout::FieldsStayAtSizeHint</enum>
-       </property>
+      <layout class="QVBoxLayout" name="formLayout">
+       <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Audio</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_12">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_14">
+            <property name="text">
+             <string>Audio driver:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="audioDriver">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="audioBufferSizeLabel">
+            <property name="text">
+             <string>Audio buffer:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_11">
+            <item>
+             <widget class="QComboBox" name="audioBufferSize">
+              <property name="editable">
+               <bool>true</bool>
+              </property>
+              <property name="currentText">
+               <string>1536</string>
+              </property>
+              <property name="currentIndex">
+               <number>3</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>512</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>768</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1024</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1536</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2048</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>3072</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>4096</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_16">
+              <property name="text">
+               <string>samples</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_19">
+            <property name="text">
+             <string>Sample rate:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_14">
+            <item>
+             <widget class="QComboBox" name="sampleRate">
+              <property name="editable">
+               <bool>true</bool>
+              </property>
+              <property name="currentText">
+               <string>44100</string>
+              </property>
+              <property name="currentIndex">
+               <number>2</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>22050</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>32000</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>44100</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>48000</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_20">
+              <property name="text">
+               <string>Hz</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_17">
+            <property name="text">
+             <string>Volume:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QSlider" name="volume">
+              <property name="minimumSize">
+               <size>
+                <width>128</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximum">
+               <number>256</number>
+              </property>
+              <property name="pageStep">
+               <number>16</number>
+              </property>
+              <property name="value">
+               <number>256</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="mute">
+              <property name="text">
+               <string>Mute</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_34">
+            <property name="text">
+             <string>Fast forward volume:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_17">
+            <item>
+             <widget class="QSlider" name="volumeFf">
+              <property name="minimumSize">
+               <size>
+                <width>128</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximum">
+               <number>256</number>
+              </property>
+              <property name="pageStep">
+               <number>16</number>
+              </property>
+              <property name="value">
+               <number>256</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QCheckBox" name="muteFf">
+              <property name="text">
+               <string>Mute</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="label_43">
+            <property name="text">
+             <string>Audio in multiplayer:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QRadioButton" name="multiplayerAudioAll">
+            <property name="text">
+             <string>All windows</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">multiplayerAudio</string>
+            </attribute>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QRadioButton" name="multiplayerAudio1">
+            <property name="text">
+             <string>Player 1 window only</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">multiplayerAudio</string>
+            </attribute>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QRadioButton" name="multiplayerAudioActive">
+            <property name="text">
+             <string>Currently active player window</string>
+            </property>
+            <attribute name="buttonGroup">
+             <string notr="true">multiplayerAudio</string>
+            </attribute>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="Line" name="line_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0" colspan="2">
+           <widget class="Line" name="line_5">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_5">
+         <property name="title">
+          <string>Video</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_13">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Display driver:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="displayDriver">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_9">
+            <property name="text">
+             <string>Frameskip:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_16">
+            <item>
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>Skip every</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="frameskip"/>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_13">
+              <property name="text">
+               <string>frames</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="3" column="1">
+           <widget class="QCheckBox" name="lockAspectRatio">
+            <property name="text">
+             <string>Lock aspect ratio</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QCheckBox" name="lockIntegerScaling">
+            <property name="text">
+             <string>Force integer scaling</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QCheckBox" name="interframeBlending">
+            <property name="text">
+             <string>Interframe blending</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QCheckBox" name="resampleVideo">
+            <property name="text">
+             <string>Bilinear filtering</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="Line" name="line_12">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="gameplay">
+      <layout class="QFormLayout" name="formLayout_14">
        <item row="0" column="0">
-        <widget class="QLabel" name="label_14">
-         <property name="text">
-          <string>Audio driver:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QComboBox" name="audioDriver">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="audioBufferSizeLabel">
-         <property name="text">
-          <string>Audio buffer:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_11">
-         <item>
-          <widget class="QComboBox" name="audioBufferSize">
-           <property name="editable">
-            <bool>true</bool>
-           </property>
-           <property name="currentText">
-            <string>1536</string>
-           </property>
-           <property name="currentIndex">
-            <number>3</number>
-           </property>
-           <item>
-            <property name="text">
-             <string>512</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>768</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>1024</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>1536</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>2048</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>3072</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>4096</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_16">
-           <property name="text">
-            <string>samples</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_19">
-         <property name="text">
-          <string>Sample rate:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_14">
-         <item>
-          <widget class="QComboBox" name="sampleRate">
-           <property name="editable">
-            <bool>true</bool>
-           </property>
-           <property name="currentText">
-            <string>44100</string>
-           </property>
-           <property name="currentIndex">
-            <number>2</number>
-           </property>
-           <item>
-            <property name="text">
-             <string>22050</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>32000</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>44100</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>48000</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_20">
-           <property name="text">
-            <string>Hz</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_17">
-         <property name="text">
-          <string>Volume:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_6">
-         <item>
-          <widget class="QSlider" name="volume">
-           <property name="minimumSize">
-            <size>
-             <width>128</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximum">
-            <number>256</number>
-           </property>
-           <property name="pageStep">
-            <number>16</number>
-           </property>
-           <property name="value">
-            <number>256</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="mute">
-           <property name="text">
-            <string>Mute</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_34">
-         <property name="text">
-          <string>Fast forward volume:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_17">
-         <item>
-          <widget class="QSlider" name="volumeFf">
-           <property name="minimumSize">
-            <size>
-             <width>128</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="maximum">
-            <number>256</number>
-           </property>
-           <property name="pageStep">
-            <number>16</number>
-           </property>
-           <property name="value">
-            <number>256</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="muteFf">
-           <property name="text">
-            <string>Mute</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_43">
-         <property name="text">
-          <string>Audio in multiplayer:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1">
-        <widget class="QRadioButton" name="multiplayerAudioAll">
-         <property name="text">
-          <string>All windows</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-         <attribute name="buttonGroup">
-          <string notr="true">multiplayerAudio</string>
-         </attribute>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="QRadioButton" name="multiplayerAudio1">
-         <property name="text">
-          <string>Player 1 window only</string>
-         </property>
-         <attribute name="buttonGroup">
-          <string notr="true">multiplayerAudio</string>
-         </attribute>
-        </widget>
-       </item>
-       <item row="7" column="1">
-        <widget class="QRadioButton" name="multiplayerAudioActive">
-         <property name="text">
-          <string>Currently active player window</string>
-         </property>
-         <attribute name="buttonGroup">
-          <string notr="true">multiplayerAudio</string>
-         </attribute>
-        </widget>
-       </item>
-       <item row="8" column="0" colspan="2">
-        <widget class="Line" name="line_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0">
-        <widget class="QLabel" name="label_10">
-         <property name="text">
-          <string>Display driver:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="1">
-        <widget class="QComboBox" name="displayDriver">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>Frameskip:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="10" column="1">
-        <layout class="QHBoxLayout" name="horizontalLayout_16">
-         <item>
-          <widget class="QLabel" name="label_12">
-           <property name="text">
-            <string>Skip every</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSpinBox" name="frameskip"/>
-         </item>
-         <item>
-          <widget class="QLabel" name="label_13">
-           <property name="text">
-            <string>frames</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="11" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
           <string>FPS target:</string>
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
+       <item row="0" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <widget class="QDoubleSpinBox" name="fpsTarget">
@@ -444,28 +503,21 @@
          </item>
         </layout>
        </item>
-       <item row="12" column="1">
+       <item row="1" column="1">
         <widget class="QPushButton" name="nativeGB">
          <property name="text">
           <string>Native (59.7275)</string>
          </property>
         </widget>
        </item>
-       <item row="13" column="0" colspan="2">
-        <widget class="Line" name="line_5">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="0">
+       <item row="2" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
           <string>Sync:</string>
          </property>
         </widget>
        </item>
-       <item row="14" column="1">
+       <item row="2" column="1">
         <layout class="QHBoxLayout" name="horizontalLayout_10">
          <item>
           <widget class="QCheckBox" name="videoSync">
@@ -483,31 +535,160 @@
          </item>
         </layout>
        </item>
-       <item row="15" column="1">
-        <widget class="QCheckBox" name="lockAspectRatio">
+       <item row="3" column="0" colspan="2">
+        <widget class="Line" name="line_16">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_24">
          <property name="text">
-          <string>Lock aspect ratio</string>
+          <string>On loading a game:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="autoload">
+         <property name="text">
+          <string>Load last state</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QCheckBox" name="cheatAutoload">
+         <property name="text">
+          <string>Load cheats</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0" colspan="2">
+        <widget class="Line" name="line_9">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QCheckBox" name="autosave">
+         <property name="text">
+          <string>Periodally autosave state</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="1">
+        <widget class="QCheckBox" name="cheatAutosave">
+         <property name="text">
+          <string>Save entered cheats</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0" colspan="2">
+        <widget class="Line" name="line_21">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="0">
+        <widget class="QLabel" name="label_51">
+         <property name="text">
+          <string>Save state extra data:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="10" column="1">
+        <widget class="QCheckBox" name="saveStateScreenshot">
+         <property name="text">
+          <string>Screenshot</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="11" column="1">
+        <widget class="QCheckBox" name="saveStateSave">
+         <property name="text">
+          <string>Save game</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="1">
+        <widget class="QCheckBox" name="saveStateCheats">
+         <property name="text">
+          <string>Cheat codes</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="13" column="0" colspan="2">
+        <widget class="Line" name="line_22">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="0">
+        <widget class="QLabel" name="label_52">
+         <property name="text">
+          <string>Load state extra data:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="14" column="1">
+        <widget class="QCheckBox" name="loadStateScreenshot">
+         <property name="text">
+          <string>Screenshot</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="1">
+        <widget class="QCheckBox" name="loadStateSave">
+         <property name="text">
+          <string>Save game</string>
          </property>
         </widget>
        </item>
        <item row="16" column="1">
-        <widget class="QCheckBox" name="lockIntegerScaling">
+        <widget class="QCheckBox" name="loadStateCheats">
          <property name="text">
-          <string>Force integer scaling</string>
+          <string>Cheat codes</string>
          </property>
         </widget>
        </item>
-       <item row="17" column="1">
-        <widget class="QCheckBox" name="interframeBlending">
-         <property name="text">
-          <string>Interframe blending</string>
+       <item row="17" column="0" colspan="2">
+        <widget class="Line" name="line_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
        <item row="18" column="1">
-        <widget class="QCheckBox" name="resampleVideo">
+        <widget class="QCheckBox" name="useDiscordPresence">
          <property name="text">
-          <string>Bilinear filtering</string>
+          <string>Enable Discord Rich Presence</string>
          </property>
         </widget>
        </item>
@@ -725,67 +906,6 @@
           </widget>
          </item>
         </layout>
-       </item>
-       <item row="18" column="1">
-        <widget class="QCheckBox" name="useDiscordPresence">
-         <property name="text">
-          <string>Enable Discord Rich Presence</string>
-         </property>
-        </widget>
-       </item>
-       <item row="19" column="0" colspan="2">
-        <widget class="Line" name="line_13">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="20" column="1">
-        <widget class="QCheckBox" name="autosave">
-         <property name="text">
-          <string>Automatically save state</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="21" column="1">
-        <widget class="QCheckBox" name="autoload">
-         <property name="text">
-          <string>Automatically load state</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="22" column="0" colspan="2">
-        <widget class="Line" name="line_16">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="23" column="1">
-        <widget class="QCheckBox" name="cheatAutosave">
-         <property name="text">
-          <string>Automatically save cheats</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="24" column="1">
-        <widget class="QCheckBox" name="cheatAutoload">
-         <property name="text">
-          <string>Automatically load cheats</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
        </item>
       </layout>
      </widget>
@@ -1094,88 +1214,6 @@
          </property>
          <property name="checked">
           <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="11" column="0" colspan="2">
-        <widget class="Line" name="line_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="0">
-        <widget class="QLabel" name="label_24">
-         <property name="text">
-          <string>Save state extra data:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="1">
-        <widget class="QCheckBox" name="saveStateScreenshot">
-         <property name="text">
-          <string>Screenshot</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="13" column="1">
-        <widget class="QCheckBox" name="saveStateSave">
-         <property name="text">
-          <string>Save game</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="14" column="1">
-        <widget class="QCheckBox" name="saveStateCheats">
-         <property name="text">
-          <string>Cheat codes</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="15" column="0" colspan="2">
-        <widget class="Line" name="line_9">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="0">
-        <widget class="QLabel" name="label_25">
-         <property name="text">
-          <string>Load state extra data:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="1">
-        <widget class="QCheckBox" name="loadStateScreenshot">
-         <property name="text">
-          <string>Screenshot</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item row="17" column="1">
-        <widget class="QCheckBox" name="loadStateSave">
-         <property name="text">
-          <string>Save game</string>
-         </property>
-        </widget>
-       </item>
-       <item row="18" column="1">
-        <widget class="QCheckBox" name="loadStateCheats">
-         <property name="text">
-          <string>Cheat codes</string>
          </property>
         </widget>
        </item>
@@ -2146,6 +2184,13 @@
      </widget>
     </widget>
    </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>
@@ -2153,7 +2198,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>SettingsView</receiver>
+   <receiver>QGBA::SettingsView</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -2169,7 +2214,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>SettingsView</receiver>
+   <receiver>QGBA::SettingsView</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">

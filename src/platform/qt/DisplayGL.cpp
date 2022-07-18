@@ -285,7 +285,7 @@ void DisplayGL::stopDrawing() {
 		m_isDrawing = false;
 		m_hasStarted = false;
 		CoreController::Interrupter interrupter(m_context);
-		QMetaObject::invokeMethod(m_painter.get(), "stop", Qt::BlockingQueuedConnection);
+		m_painter->stop();
 		if (m_gl) {
 			hide();
 		}
@@ -457,8 +457,7 @@ void PainterGL::create() {
 	m_paintDev = std::make_unique<QOpenGLPaintDevice>();
 
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
-	auto version = m_format.version();
-	if (version >= qMakePair(2, 0)) {
+	if (m_supportsShaders) {
 		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
@@ -626,6 +625,15 @@ void PainterGL::draw() {
 	if (!m_started || m_queue.isEmpty()) {
 		return;
 	}
+
+	if (m_interrupter.held()) {
+		// A resize event is pending; that needs to happen first
+		if (!m_drawTimer.isActive()) {
+			m_drawTimer.start(0);
+		}
+		return;
+	}
+
 	mCoreSync* sync = &m_context->thread()->impl->sync;
 	if (!mCoreSyncWaitFrameStart(sync)) {
 		mCoreSyncWaitFrameEnd(sync);
@@ -676,6 +684,11 @@ void PainterGL::forceDraw() {
 }
 
 void PainterGL::stop() {
+	m_started = false;
+	QMetaObject::invokeMethod(this, "doStop", Qt::BlockingQueuedConnection);
+}
+
+void PainterGL::doStop() {
 	m_drawTimer.stop();
 	m_active = false;
 	m_started = false;

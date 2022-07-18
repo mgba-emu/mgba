@@ -50,6 +50,8 @@ Emulation fixes:
  - GBA Video: Fix sprite layer priority updating in GL
 Other fixes:
  - ARM: Disassemble Thumb mov pseudo-instruction properly
+ - ARM: Disassemble ARM asr/lsr #32 properly
+ - ARM: Disassemble ARM movs properly
  - Core: Don't attempt to restore rewind diffs past start of rewind
  - Core: Fix the runloop resuming after a game has crashed (fixes mgba.io/i/2451)
  - Core: Fix crash if library can't be opened
@@ -64,6 +66,7 @@ Other fixes:
  - Qt: Fix crash when clicking past last tile in viewer
  - Qt: Fix preloading for ROM replacing
  - Qt: Fix screen not displaying on Wayland (fixes mgba.io/i/2190)
+ - Qt: Fix crash when selecting 256-color sprite in sprite view
  - VFS: Failed file mapping should return NULL on POSIX
 Misc:
  - Core: Suspend runloop when a core crashes

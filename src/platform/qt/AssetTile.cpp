@@ -82,6 +82,9 @@ void AssetTile::setBoundary(int boundary, int set0, int set1) {
 }
 
 void AssetTile::selectIndex(int index) {
+	if (index > m_maxTile) {
+		return;
+	}
 	m_index = index;
 	const color_t* data;
 	mTileCache* tileCache = m_tileCaches[index >= m_boundary];
@@ -140,4 +143,8 @@ void AssetTile::selectColor(int index) {
 	m_ui.r->setText(tr("0x%0 (%1)").arg(r, 2, 16, QChar('0')).arg(r, 2, 10, QChar('0')));
 	m_ui.g->setText(tr("0x%0 (%1)").arg(g, 2, 16, QChar('0')).arg(g, 2, 10, QChar('0')));
 	m_ui.b->setText(tr("0x%0 (%1)").arg(b, 2, 16, QChar('0')).arg(b, 2, 10, QChar('0')));
+}
+
+void AssetTile::setMaxTile(int tile) {
+	m_maxTile = tile;
 }

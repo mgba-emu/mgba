@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>AssetTile</class>
- <widget class="QGBA::AssetInfo" name="AssetTile">
+ <class>QGBA::AssetTile</class>
+ <widget class="QGBA::AssetInfo" name="QGBA::AssetTile">
   <property name="geometry">
    <rect>
     <x>0</x>

@@ -447,14 +447,14 @@ SaveConverter::AnnotatedSave::operator QString() const {
 	QString typeFormat("%1");
 	QString endianStr;
 	QString saveType;
-	QString format = QCoreApplication::translate("SaveConverter", "%1 %2 save game");
+	QString format = QCoreApplication::translate("QGBA::SaveConverter", "%1 %2 save game");
 
 	switch (endianness) {
 	case Endian::LITTLE:
-		endianStr = QCoreApplication::translate("SaveConverter", "little endian");
+		endianStr = QCoreApplication::translate("QGBA::SaveConverter", "little endian");
 		break;
 	case Endian::BIG:
-		endianStr = QCoreApplication::translate("SaveConverter", "big endian");
+		endianStr = QCoreApplication::translate("QGBA::SaveConverter", "big endian");
 		break;
 	default:
 		break;
@@ -465,15 +465,15 @@ SaveConverter::AnnotatedSave::operator QString() const {
 	case mPLATFORM_GBA:
 		switch (gba.type) {
 		case SAVEDATA_SRAM:
-			typeFormat = QCoreApplication::translate("SaveConverter", "SRAM");
+			typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "SRAM");
 			break;
 		case SAVEDATA_FLASH512:
 		case SAVEDATA_FLASH1M:
-			typeFormat = QCoreApplication::translate("SaveConverter", "%1 flash");
+			typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 flash");
 			break;
 		case SAVEDATA_EEPROM:
 		case SAVEDATA_EEPROM512:
-			typeFormat = QCoreApplication::translate("SaveConverter", "%1 EEPROM");
+			typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 EEPROM");
 			break;
 		default:
 			break;
@@ -485,29 +485,29 @@ SaveConverter::AnnotatedSave::operator QString() const {
 		switch (gb.type) {
 		case GB_MBC_AUTODETECT:
 			if (size & 0xFF) {
-				typeFormat = QCoreApplication::translate("SaveConverter", "%1 SRAM + RTC");
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 SRAM + RTC");
 			} else {
-				typeFormat = QCoreApplication::translate("SaveConverter", "%1 SRAM");				
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 SRAM");				
 			}
 			break;
 		case GB_MBC2:
 			if (size == 0x100) {
-				typeFormat = QCoreApplication::translate("SaveConverter", "packed MBC2");
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "packed MBC2");
 			} else {
-				typeFormat = QCoreApplication::translate("SaveConverter", "unpacked MBC2");				
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "unpacked MBC2");				
 			}
 			break;
 		case GB_MBC6:
 			if (size == GB_SIZE_MBC6_FLASH) {
-				typeFormat = QCoreApplication::translate("SaveConverter", "MBC6 flash");
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 flash");
 			} else if (size > GB_SIZE_MBC6_FLASH) {
-				typeFormat = QCoreApplication::translate("SaveConverter", "MBC6 combined SRAM + flash");				
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 combined SRAM + flash");				
 			} else {
-				typeFormat = QCoreApplication::translate("SaveConverter", "MBC6 SRAM");
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 SRAM");
 			}
 			break;
 		case GB_TAMA5:
-			typeFormat = QCoreApplication::translate("SaveConverter", "TAMA5");
+			typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "TAMA5");
 			break;
 		default:
 			break;
@@ -519,17 +519,17 @@ SaveConverter::AnnotatedSave::operator QString() const {
 	}
 	saveType = typeFormat.arg(sizeStr);
 	if (!endianStr.isEmpty()) {
-		saveType = QCoreApplication::translate("SaveConverter", "%1 (%2)").arg(saveType).arg(endianStr);
+		saveType = QCoreApplication::translate("QGBA::SaveConverter", "%1 (%2)").arg(saveType).arg(endianStr);
 	}
 	switch (container) {
 	case Container::SAVESTATE:
-		format = QCoreApplication::translate("SaveConverter", "%1 save state with embedded %2 save game");
+		format = QCoreApplication::translate("QGBA::SaveConverter", "%1 save state with embedded %2 save game");
 		break;
 	case Container::SHARKPORT:
-		format = QCoreApplication::translate("SaveConverter", "%1 SharkPort %2 save game");
+		format = QCoreApplication::translate("QGBA::SaveConverter", "%1 SharkPort %2 save game");
 		break;
 	case Container::GSV:
-		format = QCoreApplication::translate("SaveConverter", "%1 GameShark Advance SP %2 save game");
+		format = QCoreApplication::translate("QGBA::SaveConverter", "%1 GameShark Advance SP %2 save game");
 		break;
 	case Container::NONE:
 		break;

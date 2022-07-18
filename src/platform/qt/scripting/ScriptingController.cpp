@@ -61,6 +61,9 @@ void ScriptingController::setController(std::shared_ptr<CoreController> controll
 
 bool ScriptingController::loadFile(const QString& path) {
 	VFileDevice vf(path, QIODevice::ReadOnly);
+	if (!vf.isOpen()) {
+		return false;
+	}
 	return load(vf, path);
 }
 

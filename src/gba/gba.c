@@ -257,7 +257,7 @@ void GBAReset(struct ARMCore* cpu) {
 	memset(gba->debugString, 0, sizeof(gba->debugString));
 
 
-	if (gba->romVf && gba->pristineRomSize > SIZE_CART0) {
+	if (gba->romVf && gba->romVf->size(gba->romVf) > SIZE_CART0) {
 		char ident;
 		gba->romVf->seek(gba->romVf, 0xAC, SEEK_SET);
 		gba->romVf->read(gba->romVf, &ident, 1);
