@@ -44,9 +44,7 @@ static const QList<GBMemoryBankControllerType> s_mbcList{
 static QMap<GBModel, QString> s_gbModelNames;
 static QMap<GBMemoryBankControllerType, QString> s_mbcNames;
 
-static QString tr(const char* str) {
-	return QCoreApplication::translate("Game Boy", str);
-}
+#define tr(STR) QCoreApplication::translate("QGBA::GameBoy", STR)
 
 QList<GBModel> GameBoy::modelList() {
 	return s_gbModelList;
