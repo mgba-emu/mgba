@@ -579,7 +579,7 @@
        <item row="7" column="1">
         <widget class="QCheckBox" name="autosave">
          <property name="text">
-          <string>Periodally autosave state</string>
+          <string>Periodically autosave state</string>
          </property>
          <property name="checked">
           <bool>true</bool>
