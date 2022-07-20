@@ -4796,11 +4796,6 @@ Dimensione del download: %3</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="582"/>
-        <source>Periodally autosave state</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../SettingsView.ui" line="592"/>
         <source>Save entered cheats</source>
         <translation type="unfinished"></translation>
@@ -4980,6 +4975,11 @@ Dimensione del download: %3</translation>
         <location filename="../SettingsView.ui" line="882"/>
         <source>Show OSD messages</source>
         <translation>Mostra messaggi OSD</translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="582"/>
+        <source>Periodically autosave state</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="865"/>
