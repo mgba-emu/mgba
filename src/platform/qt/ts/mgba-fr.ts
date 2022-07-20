@@ -4815,6 +4815,11 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../SettingsView.ui" line="582"/>
+        <source>Periodically autosave state</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../SettingsView.ui" line="813"/>
         <source>When minimized:</source>
         <translation type="unfinished"></translation>
@@ -4887,11 +4892,6 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../SettingsView.ui" line="565"/>
         <source>Load cheats</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../SettingsView.ui" line="582"/>
-        <source>Periodally autosave state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

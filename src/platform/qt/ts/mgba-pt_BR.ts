@@ -4806,11 +4806,6 @@ Tamanho do download: %3</translation>
         <translation>Carregar trapaças</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="582"/>
-        <source>Periodally autosave state</source>
-        <translation>Auto-salvar o state periodicamente</translation>
-    </message>
-    <message>
         <location filename="../SettingsView.ui" line="592"/>
         <source>Save entered cheats</source>
         <translation>Salvar as trapaças inseridas</translation>
@@ -5171,6 +5166,11 @@ Tamanho do download: %3</translation>
         <location filename="../SettingsView.ui" line="1356"/>
         <source>SGB BIOS file:</source>
         <translation>Arquivo da BIOS do SGB:</translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="582"/>
+        <source>Periodically autosave state</source>
+        <translation>Auto-salvar o state periodicamente</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1464"/>

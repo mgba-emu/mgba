@@ -4801,11 +4801,6 @@ Download-Größe: %3</translation>
         <translation>Cheats laden</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="582"/>
-        <source>Periodally autosave state</source>
-        <translation>Savestate regelmäßig automatisch speichern</translation>
-    </message>
-    <message>
         <location filename="../SettingsView.ui" line="592"/>
         <source>Save entered cheats</source>
         <translation>Eingegebene Cheats speichern</translation>
@@ -4939,6 +4934,11 @@ Download-Größe: %3</translation>
         <location filename="../SettingsView.ui" line="609"/>
         <source>Save state extra data:</source>
         <translation>Zusätzliche Savestate-Daten:</translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="582"/>
+        <source>Periodically autosave state</source>
+        <translation>Savestate regelmäßig automatisch speichern</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="626"/>
