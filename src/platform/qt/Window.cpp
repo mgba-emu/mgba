@@ -1312,7 +1312,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Boot BIOS"), "bootBIOS", this, &Window::bootBIOS, "file");
 #endif
 
-	addGameAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "file");
 #ifdef M_CORE_GBA
 	Action* scanCard = addGameAction(tr("Scan e-Reader dotcodes..."), "scanCard", this, &Window::scanCard, "file");
 	m_platformActions.insert(mPLATFORM_GBA, scanCard);
@@ -1402,8 +1401,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addMenu(tr("&Emulation"), "emu");
 	addGameAction(tr("&Reset"), "reset", &CoreController::reset, "emu", QKeySequence("Ctrl+R"));
 	addGameAction(tr("Sh&utdown"), "shutdown", &CoreController::stop, "emu");
-	addGameAction(tr("Yank game pak"), "yank", &CoreController::yankPak, "emu");
+	m_actions.addSeparator("emu");
 
+	addGameAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "emu");
+	addGameAction(tr("Yank game pak"), "yank", &CoreController::yankPak, "emu");
 	m_actions.addSeparator("emu");
 
 	Action* pause = m_actions.addBooleanAction(tr("&Pause"), "pause", [this](bool paused) {
