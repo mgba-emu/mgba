@@ -67,6 +67,7 @@ Other fixes:
  - Qt: Fix preloading for ROM replacing
  - Qt: Fix screen not displaying on Wayland (fixes mgba.io/i/2190)
  - Qt: Fix crash when selecting 256-color sprite in sprite view
+ - Qt: Fix coloration of swatches on styles with distinct frame backgrounds
  - VFS: Failed file mapping should return NULL on POSIX
 Misc:
  - Core: Suspend runloop when a core crashes
