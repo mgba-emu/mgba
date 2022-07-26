@@ -117,7 +117,7 @@ Download size: %3</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation>在压缩文件中打开...</translation>
+        <translation>打开压缩文件...</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
@@ -170,17 +170,17 @@ Download size: %3</source>
     <message>
         <location filename="../AudioDevice.cpp" line="26"/>
         <source>Can&apos;t set format of context-less audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>无法设置无上下文音频设备的格式</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="44"/>
         <source>Audio device is missing its core</source>
-        <translation type="unfinished"></translation>
+        <translation>音频设备缺少其核心</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="62"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>将数据写入只读音频设备</translation>
     </message>
 </context>
 <context>
@@ -188,7 +188,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="43"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>没有输入无法启动音频处理器</translation>
     </message>
 </context>
 <context>
@@ -196,7 +196,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>没有输入无法启动音频处理器</translation>
     </message>
 </context>
 <context>
@@ -264,28 +264,28 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>缺失 BattleChip 数据</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>缺少 BattleChip 数据。BattleChip Gate 仍然可以使用,但一些图形将会丢失。您要立即下载数据吗？</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="184"/>
         <location filename="../BattleChipView.cpp" line="203"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>选择卡座文件</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="215"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>不兼容的卡座</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="216"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>选定的卡座与此 Chip Gate 不兼容</translation>
     </message>
 </context>
 <context>
@@ -494,12 +494,12 @@ Download size: %3</source>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
         <source>Couldn&apos;t Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>无法连接</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Could not connect to Dolphin.</source>
-        <translation type="unfinished"></translation>
+        <translation>无法连接到 Dolphin。</translation>
     </message>
 </context>
 <context>
@@ -793,7 +793,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="75"/>
         <source>ROM Only</source>
-        <translation type="unfinished"></translation>
+        <translation>仅 ROM</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="76"/>
@@ -823,7 +823,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
         <source>MBC5 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>MB5 + 震动</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="82"/>
@@ -853,7 +853,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
         <source>Pocket Cam</source>
-        <translation type="unfinished"></translation>
+        <translation>口袋摄像机</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
@@ -868,12 +868,12 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>NT (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT(新)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="91"/>
         <source>Pokémon Jade/Diamond</source>
-        <translation type="unfinished"></translation>
+        <translation>宝可梦翡翠/钻石</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="92"/>
