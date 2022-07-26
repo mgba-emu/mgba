@@ -4008,12 +4008,12 @@ Download size: %3</source>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Save Printout</source>
-        <translation type="unfinished"></translation>
+        <translation>保存打印输出</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished">便携式网络图形 (*.png)</translation>
+        <translation>便携式网络图形 (*.png)</translation>
     </message>
 </context>
 <context>
@@ -4337,17 +4337,17 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="60"/>
         <source>Select script to load</source>
-        <translation type="unfinished">选择要载入的脚本</translation>
+        <translation>选择要载入的脚本</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="85"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished">Lua 脚本 (*.lua)</translation>
+        <translation>Lua 脚本 (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="87"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished">所有文件 (*.*)</translation>
+        <translation>所有文件 (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4796,22 +4796,22 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="548"/>
         <source>On loading a game:</source>
-        <translation type="unfinished"></translation>
+        <translation>在加载游戏时:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="555"/>
         <source>Load last state</source>
-        <translation type="unfinished"></translation>
+        <translation>加载最后的即时存档</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="565"/>
         <source>Load cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>加载作弊</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="592"/>
         <source>Save entered cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>保存已输入的作弊码</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="813"/>
@@ -5641,12 +5641,12 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="277"/>
         <source>H.264</source>
-        <translation type="unfinished">H.264</translation>
+        <translation>H.264</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="282"/>
         <source>H.264 (NVENC)</source>
-        <translation type="unfinished">H.264 (NVENC)</translation>
+        <translation>H.264 (NVENC)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="455"/>
@@ -5656,7 +5656,7 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="468"/>
         <source>CRF</source>
-        <translation type="unfinished">CRF</translation>
+        <translation>CRF</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="484"/>
@@ -6338,7 +6338,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1665"/>
         <source>Game state views</source>
-        <translation type="unfinished"></translation>
+        <translation>游戏状态视图</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1666"/>
@@ -6363,7 +6363,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1671"/>
         <source>&amp;Frame inspector...</source>
-        <translation>框架检查器(&amp;F)...</translation>
+        <translation>帧检查器(&amp;F)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1687"/>
