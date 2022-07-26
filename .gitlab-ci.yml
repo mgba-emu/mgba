@@ -140,7 +140,7 @@ libretro-build-linux-i686:
 # MacOS 64-bit
 libretro-build-osx-x64:
   extends:
-    - .libretro-osx-x64-make-default
+    - .libretro-osx-x64-make-10-7
     - .core-defs
 
 # MacOS ARM 64-bit
