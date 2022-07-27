@@ -13,6 +13,12 @@
 
 #include <mgba/feature/commandline.h>
 
+static const mOption s_frontendOptions[] = {
+	{ "ecard", true, '\0' },
+	{ "mb", true, '\0' },
+	{ 0 }
+};
+
 using namespace QGBA;
 
 ConfigOption::ConfigOption(const QString& name, QObject* parent)
@@ -63,9 +69,9 @@ Action* ConfigOption::addBoolean(const QString& text, ActionMapper* actions, con
 	}
 
 	QObject::connect(action, &QObject::destroyed, this, [this, action]() {
-		m_actions.removeAll(std::make_pair(action, 1));
+		m_actions.removeAll(std::make_pair(action, QVariant(1)));
 	});
-	m_actions.append(std::make_pair(action, 1));
+	m_actions.append(std::make_pair(action, QVariant(1)));
 
 	return action;
 }
@@ -125,18 +131,57 @@ ConfigController::ConfigController(QObject* parent)
 	mCoreConfigSetDefaultIntValue(&m_config, "sgb.borders", 1);
 	mCoreConfigSetDefaultIntValue(&m_config, "useCgbColors", 1);
 	mCoreConfigMap(&m_config, &m_opts);
+
+	mSubParserGraphicsInit(&m_subparsers[0], &m_graphicsOpts);
+
+	m_subparsers[1].usage = "Frontend options:\n"
+	    "  --ecard FILE  Scan an e-Reader card in the first loaded game\n"
+	    "                Can be passed multiple times for multiple cards\n"
+	    "  --mb FILE     Boot a multiboot image with FILE inserted into the ROM slot";
+	m_subparsers[1].parse = nullptr;
+	m_subparsers[1].parseLong = [](struct mSubParser* parser, const char* option, const char* arg) {
+		ConfigController* self = static_cast<ConfigController*>(parser->opts);
+		QString optionName(QString::fromUtf8(option));
+		if (optionName == QLatin1String("ecard")) {
+			QStringList ecards;
+			if (self->m_argvOptions.contains(optionName)) {
+				ecards = self->m_argvOptions[optionName].toStringList();
+			}
+			ecards.append(QString::fromUtf8(arg));
+			self->m_argvOptions[optionName] = ecards;
+			return true;
+		}
+		if (optionName == QLatin1String("mb")) {
+			self->m_argvOptions[optionName] = QString::fromUtf8(arg);
+			return true;
+		}
+		return false;
+	};
+	m_subparsers[1].apply = nullptr;
+	m_subparsers[1].extraOptions = nullptr;
+	m_subparsers[1].longOptions = s_frontendOptions;
+	m_subparsers[1].opts = this;
 }
 
 ConfigController::~ConfigController() {
 	mCoreConfigDeinit(&m_config);
 	mCoreConfigFreeOpts(&m_opts);
+
+	if (m_parsed) {
+		mArgumentsDeinit(&m_args);
+	}
 }
 
-bool ConfigController::parseArguments(mArguments* args, int argc, char* argv[], mSubParser* subparser) {
-	if (::parseArguments(args, argc, argv, subparser)) {
+bool ConfigController::parseArguments(int argc, char* argv[]) {
+	if (m_parsed) {
+		return false;
+	}
+
+	if (mArgumentsParse(&m_args, argc, argv, m_subparsers.data(), m_subparsers.size())) {
 		mCoreConfigFreeOpts(&m_opts);
-		applyArguments(args, subparser, &m_config);
+		mArgumentsApply(&m_args, m_subparsers.data(), m_subparsers.size(), &m_config);
 		mCoreConfigMap(&m_config, &m_opts);
+		m_parsed = true;
 		return true;
 	}
 	return false;
@@ -190,6 +235,14 @@ QVariant ConfigController::getQtOption(const QString& key, const QString& group)
 		m_settings->endGroup();
 	}
 	return value;
+}
+
+QVariant ConfigController::getArgvOption(const QString& key) const {
+	return m_argvOptions.value(key);
+}
+
+QVariant ConfigController::takeArgvOption(const QString& key) {
+		return m_argvOptions.take(key);
 }
 
 void ConfigController::saveOverride(const Override& override) {
@@ -248,9 +301,9 @@ void ConfigController::setQtOption(const QString& key, const QVariant& value, co
 	}
 }
 
-QList<QString> ConfigController::getMRU() const {
-	QList<QString> mru;
-	m_settings->beginGroup("mru");
+QStringList ConfigController::getMRU(ConfigController::MRU mruType) const {
+	QStringList mru;
+	m_settings->beginGroup(mruName(mruType));
 	for (int i = 0; i < MRU_LIST_SIZE; ++i) {
 		QString item = m_settings->value(QString::number(i)).toString();
 		if (item.isNull()) {
@@ -262,9 +315,9 @@ QList<QString> ConfigController::getMRU() const {
 	return mru;
 }
 
-void ConfigController::setMRU(const QList<QString>& mru) {
+void ConfigController::setMRU(const QStringList& mru, ConfigController::MRU mruType) {
 	int i = 0;
-	m_settings->beginGroup("mru");
+	m_settings->beginGroup(mruName(mruType));
 	for (const QString& item : mru) {
 		m_settings->setValue(QString::number(i), item);
 		++i;
@@ -276,6 +329,15 @@ void ConfigController::setMRU(const QList<QString>& mru) {
 		m_settings->remove(QString::number(i));
 	}
 	m_settings->endGroup();
+}
+
+constexpr const char* ConfigController::mruName(ConfigController::MRU mru) {
+	switch (mru) {
+	case MRU::ROM:
+		return "mru";
+	case MRU::Script:
+		return "recentScripts";
+	}
 }
 
 void ConfigController::write() {
@@ -297,6 +359,10 @@ void ConfigController::makePortable() {
 		settings2->setValue(key, m_settings->value(key));
 	}
 	m_settings = std::move(settings2);
+}
+
+void ConfigController::usage(const char* arg0) const {
+	::usage(arg0, nullptr, nullptr, m_subparsers.data(), m_subparsers.size());
 }
 
 bool ConfigController::isPortable() {

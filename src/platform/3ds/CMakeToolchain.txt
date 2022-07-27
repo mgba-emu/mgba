@@ -15,7 +15,7 @@ set(CMAKE_SYSTEM_PROCESSOR arm CACHE INTERNAL "processor")
 set(CMAKE_LIBRARY_ARCHITECTURE arm-none-eabi CACHE INTERNAL "abi")
 
 set(3DS ON)
-add_definitions(-D_3DS -DARM11)
+add_definitions(-D__3DS__)
 
 create_devkit(ARM)
 

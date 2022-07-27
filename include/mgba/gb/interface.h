@@ -41,8 +41,11 @@ enum GBMemoryBankControllerType {
 	GB_MBC5_RUMBLE = 0x105,
 	GB_UNL_WISDOM_TREE = 0x200,
 	GB_UNL_PKJD = 0x203,
+	GB_UNL_NT_NEW = 0x212,
 	GB_UNL_BBD = 0x220, // Also used as a mask for MBCs that need special read behavior
 	GB_UNL_HITEK = 0x221,
+	GB_UNL_SACHEN_MMC1 = 0x230,
+	GB_UNL_SACHEN_MMC2 = 0x231,
 };
 
 enum GBVideoLayer {

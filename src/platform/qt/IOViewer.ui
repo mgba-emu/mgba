@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>IOViewer</class>
- <widget class="QWidget" name="IOViewer">
+ <class>QGBA::IOViewer</class>
+ <widget class="QWidget" name="QGBA::IOViewer">
   <property name="geometry">
    <rect>
     <x>0</x>

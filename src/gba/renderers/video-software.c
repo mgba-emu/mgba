@@ -40,6 +40,7 @@ static void GBAVideoSoftwareRendererPostprocessBuffer(struct GBAVideoSoftwareRen
 static int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRenderer* renderer, int y);
 
 static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer);
+static void _updateFlags(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* bg);
 
 static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win, int y);
 static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win);
@@ -140,30 +141,11 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 
 	for (i = 0; i < 4; ++i) {
 		struct GBAVideoSoftwareBackground* bg = &softwareRenderer->bg[i];
+		memset(bg, 0, sizeof(*bg));
 		bg->index = i;
-		bg->enabled = 0;
-		bg->priority = 0;
-		bg->charBase = 0;
-		bg->mosaic = 0;
-		bg->multipalette = 0;
-		bg->screenBase = 0;
-		bg->overflow = 0;
-		bg->size = 0;
-		bg->target1 = 0;
-		bg->target2 = 0;
-		bg->x = 0;
-		bg->y = 0;
-		bg->refx = 0;
-		bg->refy = 0;
 		bg->dx = 256;
-		bg->dmx = 0;
-		bg->dy = 0;
 		bg->dmy = 256;
-		bg->sx = 0;
-		bg->sy = 0;
 		bg->yCache = -1;
-		bg->offsetX = 0;
-		bg->offsetY = 0;
 	}
 }
 
@@ -436,6 +418,14 @@ static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* render
 	} else if (softwareRenderer->blendEffect == BLEND_DARKEN) {
 		softwareRenderer->variantPalette[address >> 1] = _darken(color, softwareRenderer->bldy);
 	}
+	int highlightAmount = renderer->highlightAmount >> 4;
+	if (highlightAmount) {
+		softwareRenderer->highlightPalette[address >> 1] = mColorMix5Bit(0x10 - highlightAmount, softwareRenderer->normalPalette[address >> 1], highlightAmount, renderer->highlightColor);
+		softwareRenderer->highlightVariantPalette[address >> 1] = mColorMix5Bit(0x10 - highlightAmount, softwareRenderer->variantPalette[address >> 1], highlightAmount, renderer->highlightColor);
+	} else {
+		softwareRenderer->highlightPalette[address >> 1] = softwareRenderer->normalPalette[address >> 1];
+		softwareRenderer->highlightVariantPalette[address >> 1] = softwareRenderer->variantPalette[address >> 1];
+	}
 	if (renderer->cache) {
 		mCacheSetWritePalette(renderer->cache, address >> 1, color);
 	}
@@ -545,11 +535,11 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 
 	if (!dirty) {
 		if (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) != 0) {
-			if (softwareRenderer->bg[2].enabled == 4) {
+			if (softwareRenderer->bg[2].enabled == ENABLED_MAX) {
 				softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
 				softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
 			}
-			if (softwareRenderer->bg[3].enabled == 4) {
+			if (softwareRenderer->bg[3].enabled == ENABLED_MAX) {
 				softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
 				softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
 			}
@@ -579,6 +569,40 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		softwareRenderer->start = softwareRenderer->end;
 		softwareRenderer->end = softwareRenderer->windows[w].endX;
 		softwareRenderer->currentWindow = softwareRenderer->windows[w].control;
+		switch (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt)) {
+		case 0:
+			if (softwareRenderer->bg[0].enabled == ENABLED_MAX) {
+				_updateFlags(softwareRenderer, &softwareRenderer->bg[0]);
+			}
+			if (softwareRenderer->bg[1].enabled == ENABLED_MAX) {
+				_updateFlags(softwareRenderer, &softwareRenderer->bg[1]);
+			}
+			// Fall through
+		case 2:
+			if (softwareRenderer->bg[3].enabled == ENABLED_MAX) {
+				_updateFlags(softwareRenderer, &softwareRenderer->bg[3]);
+			}
+			// Fall through
+		case 3:
+		case 4:
+		case 5:
+			if (softwareRenderer->bg[2].enabled == ENABLED_MAX) {
+				_updateFlags(softwareRenderer, &softwareRenderer->bg[2]);
+			}
+			break;
+		case 1:
+			if (softwareRenderer->bg[0].enabled == ENABLED_MAX) {
+				_updateFlags(softwareRenderer, &softwareRenderer->bg[0]);
+			}
+			if (softwareRenderer->bg[1].enabled == ENABLED_MAX) {
+				_updateFlags(softwareRenderer, &softwareRenderer->bg[1]);
+			}
+			if (softwareRenderer->bg[2].enabled == ENABLED_MAX) {
+				_updateFlags(softwareRenderer, &softwareRenderer->bg[2]);
+			}
+			break;
+		}
+
 		for (priority = 0; priority < 4; ++priority) {
 			if (spriteLayers & (1 << priority)) {
 				GBAVideoSoftwareRendererPostprocessSprite(softwareRenderer, priority);
@@ -625,29 +649,29 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	GBAVideoSoftwareRendererPostprocessBuffer(softwareRenderer);
 
 	if (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt) != 0) {
-		if (softwareRenderer->bg[2].enabled == 4) {
+		if (softwareRenderer->bg[2].enabled == ENABLED_MAX) {
 			softwareRenderer->bg[2].sx += softwareRenderer->bg[2].dmx;
 			softwareRenderer->bg[2].sy += softwareRenderer->bg[2].dmy;
 		}
-		if (softwareRenderer->bg[3].enabled == 4) {
+		if (softwareRenderer->bg[3].enabled == ENABLED_MAX) {
 			softwareRenderer->bg[3].sx += softwareRenderer->bg[3].dmx;
 			softwareRenderer->bg[3].sy += softwareRenderer->bg[3].dmy;
 		}
 	}
 
-	if (softwareRenderer->bg[0].enabled != 0 && softwareRenderer->bg[0].enabled < 4) {
+	if (softwareRenderer->bg[0].enabled != 0 && softwareRenderer->bg[0].enabled < ENABLED_MAX) {
 		++softwareRenderer->bg[0].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-	if (softwareRenderer->bg[1].enabled != 0 && softwareRenderer->bg[1].enabled < 4) {
+	if (softwareRenderer->bg[1].enabled != 0 && softwareRenderer->bg[1].enabled < ENABLED_MAX) {
 		++softwareRenderer->bg[1].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-	if (softwareRenderer->bg[2].enabled != 0 && softwareRenderer->bg[2].enabled < 4) {
+	if (softwareRenderer->bg[2].enabled != 0 && softwareRenderer->bg[2].enabled < ENABLED_MAX) {
 		++softwareRenderer->bg[2].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
-	if (softwareRenderer->bg[3].enabled != 0 && softwareRenderer->bg[3].enabled < 4) {
+	if (softwareRenderer->bg[3].enabled != 0 && softwareRenderer->bg[3].enabled < ENABLED_MAX) {
 		++softwareRenderer->bg[3].enabled;
 		DIRTY_SCANLINE(softwareRenderer, y);
 	}
@@ -693,16 +717,16 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
 	softwareRenderer->bg[3].sy = softwareRenderer->bg[3].refy;
 
 	if (softwareRenderer->bg[0].enabled > 0) {
-		softwareRenderer->bg[0].enabled = 4;
+		softwareRenderer->bg[0].enabled = ENABLED_MAX;
 	}
 	if (softwareRenderer->bg[1].enabled > 0) {
-		softwareRenderer->bg[1].enabled = 4;
+		softwareRenderer->bg[1].enabled = ENABLED_MAX;
 	}
 	if (softwareRenderer->bg[2].enabled > 0) {
-		softwareRenderer->bg[2].enabled = 4;
+		softwareRenderer->bg[2].enabled = ENABLED_MAX;
 	}
 	if (softwareRenderer->bg[3].enabled > 0) {
-		softwareRenderer->bg[3].enabled = 4;
+		softwareRenderer->bg[3].enabled = ENABLED_MAX;
 	}
 }
 
@@ -725,22 +749,22 @@ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer,
 static void _enableBg(struct GBAVideoSoftwareRenderer* renderer, int bg, bool active) {
 	int wasActive = renderer->bg[bg].enabled;
 	if (!active) {
-		if (renderer->nextY == 0 || (wasActive > 0 && wasActive < 4)) {
+		if (renderer->nextY == 0 || (wasActive > 0 && wasActive < ENABLED_MAX)) {
 			renderer->bg[bg].enabled = 0;
-		} else if (wasActive == 4) {
+		} else if (wasActive == ENABLED_MAX) {
 			renderer->bg[bg].enabled = -2;
 		}
 	} else if (!wasActive && active) {
 		if (renderer->nextY == 0) {
 			// TODO: Investigate in more depth how switching background works in different modes
-			renderer->bg[bg].enabled = 4;
+			renderer->bg[bg].enabled = ENABLED_MAX;
 		} else if (GBARegisterDISPCNTGetMode(renderer->dispcnt) > 2) {
 			renderer->bg[bg].enabled = 2;
 		} else {
 			renderer->bg[bg].enabled = 1;
 		}
 	} else if (wasActive < 0 && active) {
-		renderer->bg[bg].enabled = 4;
+		renderer->bg[bg].enabled = ENABLED_MAX;
 	}
 }
 
@@ -761,6 +785,8 @@ static void GBAVideoSoftwareRendererWriteBGCNT(struct GBAVideoSoftwareRenderer* 
 	bg->overflow = GBARegisterBGCNTGetOverflow(value);
 	bg->size = GBARegisterBGCNTGetSize(value);
 	bg->yCache = -1;
+
+	_updateFlags(renderer, bg);
 }
 
 static void GBAVideoSoftwareRendererWriteBGX_LO(struct GBAVideoSoftwareBackground* bg, uint16_t value) {
@@ -1006,4 +1032,28 @@ static void _updatePalettes(struct GBAVideoSoftwareRenderer* renderer) {
 			renderer->highlightVariantPalette[i] = mColorMix5Bit(0x10 - highlightAmount, renderer->variantPalette[i], highlightAmount, renderer->d.highlightColor);
 		}
 	}
+}
+
+void _updateFlags(struct GBAVideoSoftwareRenderer* renderer, struct GBAVideoSoftwareBackground* background) {
+	uint32_t flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND;
+	if (background->target2) {
+		flags |= FLAG_TARGET_2;
+	}
+	uint32_t objwinFlags = flags;
+	if (renderer->blendEffect == BLEND_ALPHA) {
+		if (renderer->blda == 0x10 && renderer->bldb == 0) {
+			flags &= ~FLAG_TARGET_2;
+			objwinFlags &= ~FLAG_TARGET_2;
+		} else if (background->target1) {
+			if (GBAWindowControlIsBlendEnable(renderer->currentWindow.packed)) {
+				flags |= FLAG_TARGET_1;
+			}
+			if (GBAWindowControlIsBlendEnable(renderer->objwin.packed)) {
+				objwinFlags |= FLAG_TARGET_1;
+			}
+		}
+	}
+	background->flags = flags;
+	background->objwinFlags = objwinFlags;
+	background->variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 }

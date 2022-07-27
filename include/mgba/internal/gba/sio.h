@@ -21,7 +21,7 @@ extern const int GBASIOCyclesPerTransfer[4][MAX_GBAS];
 mLOG_DECLARE_CATEGORY(GBA_SIO);
 
 enum {
-	RCNT_INITIAL = 0x8000
+	RCNT_INITIAL = -0x8000
 };
 
 enum {

@@ -23,6 +23,8 @@ Q_OBJECT
 public:
 	DebuggerConsoleController(QObject* parent = nullptr);
 
+	QStringList history() const { return m_history; }
+
 signals:
 	void log(const QString&);
 	void lineAppend(const QString&);
@@ -30,6 +32,8 @@ signals:
 public slots:
 	void enterLine(const QString&);
 	virtual void detach() override;
+	void historyLoad();
+	void historySave();
 
 protected:
 	virtual void attachInternal() override;
@@ -42,6 +46,7 @@ private:
 	static void lineAppend(struct CLIDebuggerBackend* be, const char* line);
 	static const char* historyLast(struct CLIDebuggerBackend* be, size_t* len);
 	static void historyAppend(struct CLIDebuggerBackend* be, const char* line);
+	static void interrupt(struct CLIDebuggerBackend* be);
 
 	CLIDebugger m_cliDebugger{};
 

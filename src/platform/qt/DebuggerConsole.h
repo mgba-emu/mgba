@@ -18,7 +18,6 @@ public:
 	DebuggerConsole(DebuggerConsoleController* controller, QWidget* parent = nullptr);
 
 private slots:
-	void log(const QString&);
 	void postLine();
 
 protected:
@@ -26,7 +25,6 @@ protected:
 
 private:
 	Ui::DebuggerConsole m_ui;
-	QStringList m_history;
 	int m_historyOffset;
 
 	DebuggerConsoleController* m_consoleController;

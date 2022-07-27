@@ -16,12 +16,12 @@
 using namespace QGBA;
 
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
-Display::Driver Display::s_driver = Display::Driver::OPENGL;
+QGBA::Display::Driver Display::s_driver = QGBA::Display::Driver::OPENGL;
 #else
-Display::Driver Display::s_driver = Display::Driver::QT;
+QGBA::Display::Driver Display::s_driver = QGBA::Display::Driver::QT;
 #endif
 
-Display* Display::create(QWidget* parent) {
+QGBA::Display* QGBA::Display::create(QWidget* parent) {
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 	QSurfaceFormat format;
 	format.setSwapInterval(1);
@@ -35,10 +35,12 @@ Display* Display::create(QWidget* parent) {
 		if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
 			format.setVersion(2, 0);
 		} else {
-			format.setVersion(3, 2);
+			format.setVersion(3, 3);
 		}
 		format.setProfile(QSurfaceFormat::CoreProfile);
-		if (!DisplayGL::supportsFormat(format)) {
+		if (DisplayGL::supportsFormat(format)) {
+			QSurfaceFormat::setDefaultFormat(format);
+		} else {
 #ifdef BUILD_GL
 			LOG(QT, WARN) << ("Failed to create an OpenGL Core context, trying old-style...");
 			format.setVersion(1, 4);
@@ -74,7 +76,7 @@ Display* Display::create(QWidget* parent) {
 	}
 }
 
-Display::Display(QWidget* parent)
+QGBA::Display::Display(QWidget* parent)
 	: QWidget(parent)
 {
 	setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -84,24 +86,31 @@ Display::Display(QWidget* parent)
 	setMouseTracking(true);
 }
 
-void Display::attach(std::shared_ptr<CoreController> controller) {
-	connect(controller.get(), &CoreController::stateLoaded, this, &Display::resizeContext);
-	connect(controller.get(), &CoreController::stateLoaded, this, &Display::forceDraw);
-	connect(controller.get(), &CoreController::rewound, this, &Display::forceDraw);
-	connect(controller.get(), &CoreController::paused, this, &Display::pauseDrawing);
-	connect(controller.get(), &CoreController::unpaused, this, &Display::unpauseDrawing);
-	connect(controller.get(), &CoreController::frameAvailable, this, &Display::framePosted);
-	connect(controller.get(), &CoreController::statusPosted, this, &Display::showMessage);
-	connect(controller.get(), &CoreController::didReset, this, &Display::resizeContext);
+void QGBA::Display::attach(std::shared_ptr<CoreController> controller) {
+	CoreController* controllerP = controller.get();
+	connect(controllerP, &CoreController::stateLoaded, this, &Display::resizeContext);
+	connect(controllerP, &CoreController::stateLoaded, this, &Display::forceDraw);
+	connect(controllerP, &CoreController::rewound, this, &Display::forceDraw);
+	connect(controllerP, &CoreController::paused, this, &Display::pauseDrawing);
+	connect(controllerP, &CoreController::unpaused, this, &Display::unpauseDrawing);
+	connect(controllerP, &CoreController::frameAvailable, this, &Display::framePosted);
+	connect(controllerP, &CoreController::frameAvailable, this, [controllerP, this]() {
+		if (m_showFrameCounter) {
+			m_messagePainter.showFrameCounter(controllerP->frameCounter());
+		}
+	});
+	connect(controllerP, &CoreController::statusPosted, this, &Display::showMessage);
+	connect(controllerP, &CoreController::didReset, this, &Display::resizeContext);
 }
 
-void Display::configure(ConfigController* config) {
+void QGBA::Display::configure(ConfigController* config) {
 	const mCoreOptions* opts = config->options();
 	lockAspectRatio(opts->lockAspectRatio);
 	lockIntegerScaling(opts->lockIntegerScaling);
 	interframeBlending(opts->interframeBlending);
 	filter(opts->resampleVideo);
 	config->updateOption("showOSD");
+	config->updateOption("showFrameCounter");
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (opts->shader) {
 		struct VDir* shader = VDirOpen(opts->shader);
@@ -113,39 +122,49 @@ void Display::configure(ConfigController* config) {
 #endif
 }
 
-void Display::resizeEvent(QResizeEvent*) {
-	m_messagePainter.resize(size(), m_lockAspectRatio, devicePixelRatio());
+void QGBA::Display::resizeEvent(QResizeEvent*) {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+	m_messagePainter.resize(size(), devicePixelRatioF());
+#else
+	m_messagePainter.resize(size(), devicePixelRatio());
+#endif
 }
 
-void Display::lockAspectRatio(bool lock) {
+void QGBA::Display::lockAspectRatio(bool lock) {
 	m_lockAspectRatio = lock;
-	m_messagePainter.resize(size(), m_lockAspectRatio, devicePixelRatio());
 }
 
-void Display::lockIntegerScaling(bool lock) {
+void QGBA::Display::lockIntegerScaling(bool lock) {
 	m_lockIntegerScaling = lock;
 }
 
-void Display::interframeBlending(bool lock) {
+void QGBA::Display::interframeBlending(bool lock) {
 	m_interframeBlending = lock;
 }
 
-void Display::showOSDMessages(bool enable) {
+void QGBA::Display::showOSDMessages(bool enable) {
 	m_showOSD = enable;
 }
 
-void Display::filter(bool filter) {
+void QGBA::Display::showFrameCounter(bool enable) {
+	m_showFrameCounter = enable;
+	if (!enable) {
+		m_messagePainter.clearFrameCounter();
+	}
+}
+
+void QGBA::Display::filter(bool filter) {
 	m_filter = filter;
 }
 
-void Display::showMessage(const QString& message) {
+void QGBA::Display::showMessage(const QString& message) {
 	m_messagePainter.showMessage(message);
 	if (!isDrawing()) {
 		forceDraw();
 	}
 }
 
-void Display::mouseMoveEvent(QMouseEvent*) {
+void QGBA::Display::mouseMoveEvent(QMouseEvent*) {
 	emit showCursor();
 	m_mouseTimer.stop();
 	m_mouseTimer.start();

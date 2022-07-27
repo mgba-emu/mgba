@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>GIFView</class>
- <widget class="QWidget" name="GIFView">
+ <class>QGBA::GIFView</class>
+ <widget class="QWidget" name="QGBA::GIFView">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -180,7 +180,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>GIFView</receiver>
+   <receiver>QGBA::GIFView</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">

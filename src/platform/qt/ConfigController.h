@@ -12,6 +12,7 @@
 #include <QSettings>
 #include <QVariant>
 
+#include <array>
 #include <functional>
 #include <memory>
 
@@ -66,11 +67,16 @@ public:
 	constexpr static const char* const PORT = "qt";
 	static const int MRU_LIST_SIZE = 10;
 
+	enum class MRU {
+		ROM,
+		Script
+	};
+
 	ConfigController(QObject* parent = nullptr);
 	~ConfigController();
 
 	const mCoreOptions* options() const { return &m_opts; }
-	bool parseArguments(mArguments* args, int argc, char* argv[], mSubParser* subparser = nullptr);
+	bool parseArguments(int argc, char* argv[]);
 
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
@@ -80,8 +86,11 @@ public:
 
 	QVariant getQtOption(const QString& key, const QString& group = QString()) const;
 
-	QList<QString> getMRU() const;
-	void setMRU(const QList<QString>& mru);
+	QVariant getArgvOption(const QString& key) const;
+	QVariant takeArgvOption(const QString& key);
+
+	QStringList getMRU(MRU = MRU::ROM) const;
+	void setMRU(const QStringList& mru, MRU = MRU::ROM);
 
 	Configuration* overrides() { return mCoreConfigGetOverrides(&m_config); }
 	void saveOverride(const Override&);
@@ -90,6 +99,10 @@ public:
 
 	const mCoreConfig* config() const { return &m_config; }
 	mCoreConfig* config() { return &m_config; }
+
+	const mArguments* args() const { return &m_args; }
+	const mGraphicsOpts* graphicsOpts() const { return &m_graphicsOpts; }
+	void usage(const char* arg0) const;
 
 	static const QString& configDir();
 	static bool isPortable();
@@ -106,11 +119,18 @@ public slots:
 	void write();
 
 private:
+	static constexpr const char* mruName(ConfigController::MRU);
+
 	Configuration* defaults() { return &m_config.defaultsTable; }
 
 	mCoreConfig m_config;
 	mCoreOptions m_opts{};
-
+	mArguments m_args{};
+	mGraphicsOpts m_graphicsOpts{};
+	std::array<mSubParser, 2> m_subparsers;
+	bool m_parsed = false;
+	
+	QHash<QString, QVariant> m_argvOptions;
 	QHash<QString, ConfigOption*> m_optionSet;
 	std::unique_ptr<QSettings> m_settings;
 	static QString s_configDir;

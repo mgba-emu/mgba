@@ -25,8 +25,24 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	m_ui.setupUi(this);
 	m_ui.tile->setController(controller);
 
-	connect(m_ui.tiles, &TilePainter::indexPressed, m_ui.tile, &AssetTile::selectIndex);
+	connect(m_ui.tiles, &TilePainter::indexPressed, this, [this](int index) {
+		if (m_ui.tilesObj->isChecked()) {
+			switch (m_controller->platform()) {
+#ifdef M_CORE_GBA
+			case mPLATFORM_GBA:
+				index += 2048 >> m_ui.palette256->isChecked();
+				break;
+#endif
+			default:
+				break;
+			}
+		}
+		m_ui.tile->selectIndex(index);
+	});
 	connect(m_ui.tiles, &TilePainter::needsRedraw, this, [this]() {
+		updateTiles(true);
+	});
+	connect(m_ui.tilesSelector, qOverload<QAbstractButton*>(&QButtonGroup::buttonClicked), this, [this]() {
 		updateTiles(true);
 	});
 	connect(m_ui.paletteId, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &TileView::updatePalette);
@@ -35,12 +51,17 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
 		m_ui.tile->setBoundary(2048, 0, 2);
+		m_ui.tile->setMaxTile(3096);
 		break;
 #endif
 #ifdef M_CORE_GB
 	case mPLATFORM_GB:
+		m_ui.tilesBg->setEnabled(false);
+		m_ui.tilesObj->setEnabled(false);
+		m_ui.tilesBoth->setEnabled(false);
 		m_ui.palette256->setEnabled(false);
 		m_ui.tile->setBoundary(1024, 0, 0);
+		m_ui.tile->setMaxTile(512);
 		break;
 #endif
 	default:
@@ -55,6 +76,7 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 #ifdef M_CORE_GBA
 		case mPLATFORM_GBA:
 			m_ui.tile->setBoundary(2048 >> selected, selected, selected + 2);
+			m_ui.tile->setMaxTile(3096 >> selected);
 			break;
 #endif
 #ifdef M_CORE_GB
@@ -107,43 +129,69 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 #ifdef M_CORE_GBA
 void TileView::updateTilesGBA(bool force) {
 	if (m_ui.palette256->isChecked()) {
-		m_ui.tiles->setTileCount(1536);
-		mTileCache* cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 1);
-		for (int i = 0; i < 1024; ++i) {
-			const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i, 0);
-			if (data) {
-				m_ui.tiles->setTile(i, data);
-			} else if (force) {
-				m_ui.tiles->setTile(i, mTileCacheGetTile(cache, i, 0));
+		if (m_ui.tilesBg->isChecked()) {
+			m_ui.tiles->setTileCount(1024);
+		} else if (m_ui.tilesObj->isChecked()) {
+			m_ui.tiles->setTileCount(512);			
+		} else {
+			m_ui.tiles->setTileCount(1536);
+		}
+		mTileCache* cache;
+		int objOffset = 1024;
+		if (!m_ui.tilesObj->isChecked()) {
+			objOffset = 0;
+			cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 1);
+			for (int i = 0; i < 1024; ++i) {
+				const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i, 0);
+				if (data) {
+					m_ui.tiles->setTile(i, data);
+				} else if (force) {
+					m_ui.tiles->setTile(i, mTileCacheGetTile(cache, i, 0));
+				}
 			}
 		}
-		cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 3);
-		for (int i = 1024; i < 1536; ++i) {
-			const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i - 1024, 0);
-			if (data) {
-				m_ui.tiles->setTile(i, data);
-			} else if (force) {
-				m_ui.tiles->setTile(i, mTileCacheGetTile(cache, i - 1024, 0));
+		if (!m_ui.tilesBg->isChecked()) {
+			cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 3);
+			for (int i = 1024; i < 1536; ++i) {
+				const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i - 1024, 0);
+				if (data) {
+					m_ui.tiles->setTile(i - objOffset, data);
+				} else if (force) {
+					m_ui.tiles->setTile(i - objOffset, mTileCacheGetTile(cache, i - 1024, 0));
+				}
 			}
 		}
 	} else {
-		mTileCache* cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 0);
-		m_ui.tiles->setTileCount(3072);
-		for (int i = 0; i < 2048; ++i) {
-			const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i, m_paletteId);
-			if (data) {
-				m_ui.tiles->setTile(i, data);
-			} else if (force) {
-				m_ui.tiles->setTile(i, mTileCacheGetTile(cache, i, m_paletteId));
+		if (m_ui.tilesBg->isChecked()) {
+			m_ui.tiles->setTileCount(2048);
+		} else if (m_ui.tilesObj->isChecked()) {
+			m_ui.tiles->setTileCount(1024);			
+		} else {
+			m_ui.tiles->setTileCount(3072);
+		}
+		mTileCache* cache;
+		int objOffset = 2048;
+		if (!m_ui.tilesObj->isChecked()) {
+			objOffset = 0;
+			cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 0);
+			for (int i = 0; i < 2048; ++i) {
+				const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i, m_paletteId);
+				if (data) {
+					m_ui.tiles->setTile(i, data);
+				} else if (force) {
+					m_ui.tiles->setTile(i, mTileCacheGetTile(cache, i, m_paletteId));
+				}
 			}
 		}
-		cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 2);
-		for (int i = 2048; i < 3072; ++i) {
-			const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i - 2048, m_paletteId);
-			if (data) {
-				m_ui.tiles->setTile(i, data);
-			} else if (force) {
-				m_ui.tiles->setTile(i, mTileCacheGetTile(cache, i - 2048, m_paletteId));
+		if (!m_ui.tilesBg->isChecked()) {
+			cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 2);
+			for (int i = 2048; i < 3072; ++i) {
+				const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i - 2048, m_paletteId);
+				if (data) {
+					m_ui.tiles->setTile(i - objOffset, data);
+				} else if (force) {
+					m_ui.tiles->setTile(i - objOffset, mTileCacheGetTile(cache, i - 2048, m_paletteId));
+				}
 			}
 		}
 	}

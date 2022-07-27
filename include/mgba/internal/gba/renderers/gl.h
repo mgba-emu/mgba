@@ -49,6 +49,7 @@ struct GBAVideoGLBackground {
 	int enabled;
 	unsigned priority;
 	uint32_t charBase;
+	uint32_t oldCharBase;
 	int mosaic;
 	int multipalette;
 	uint32_t screenBase;
@@ -60,6 +61,8 @@ struct GBAVideoGLBackground {
 	uint16_t y;
 	int32_t refx;
 	int32_t refy;
+	int32_t offsetX;
+	int32_t offsetY;
 
 	struct GBAVideoGLAffine affine;
 
@@ -97,10 +100,12 @@ enum {
 	GBA_GL_BG_TRANSFORM,
 	GBA_GL_BG_RANGE,
 	GBA_GL_BG_MOSAIC,
+	GBA_GL_BG_OLDCHARBASE,
 
 	GBA_GL_OBJ_VRAM = 2,
 	GBA_GL_OBJ_PALETTE,
 	GBA_GL_OBJ_CHARBASE,
+	GBA_GL_OBJ_TILE,
 	GBA_GL_OBJ_STRIDE,
 	GBA_GL_OBJ_LOCALPALETTE,
 	GBA_GL_OBJ_INFLAGS,
@@ -142,12 +147,15 @@ struct GBAVideoGLRenderer {
 	int oamMax;
 	bool oamDirty;
 	struct GBAVideoRendererSprite sprites[128];
+	int16_t objOffsetX;
+	int16_t objOffsetY;
 
 	GLuint fbo[GBA_GL_FBO_MAX];
 	GLuint layers[GBA_GL_TEX_MAX];
 	GLuint vbo;
 
 	GLuint outputTex;
+	bool outputTexDirty;
 
 	GLuint paletteTex;
 	uint16_t shadowPalette[GBA_VIDEO_VERTICAL_PIXELS][512];
@@ -183,6 +191,8 @@ struct GBAVideoGLRenderer {
 		struct GBAVideoWindowRegion h;
 		struct GBAVideoWindowRegion v;
 		GBAWindowControl control;
+		int16_t offsetX;
+		int16_t offsetY;
 	} winN[2];
 
 	GLint winNHistory[2][GBA_VIDEO_VERTICAL_PIXELS * 4];

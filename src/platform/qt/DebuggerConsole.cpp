@@ -8,7 +8,7 @@
 #include "DebuggerConsoleController.h"
 #include "GBAApp.h"
 
-#include <QScrollBar>
+#include <QKeyEvent>
 
 using namespace QGBA;
 
@@ -19,19 +19,14 @@ DebuggerConsole::DebuggerConsole(DebuggerConsoleController* controller, QWidget*
 	m_ui.setupUi(this);
 
 	m_ui.prompt->installEventFilter(this);
-	m_ui.log->setFont(GBAApp::app()->monospaceFont());
 	m_ui.prompt->setFont(GBAApp::app()->monospaceFont());
 
 	connect(m_ui.prompt, &QLineEdit::returnPressed, this, &DebuggerConsole::postLine);
-	connect(controller, &DebuggerConsoleController::log, this, &DebuggerConsole::log);
+	connect(controller, &DebuggerConsoleController::log, m_ui.log, &LogWidget::log);
 	connect(m_ui.breakpoint, &QAbstractButton::clicked, controller, &DebuggerController::attach);
 	connect(m_ui.breakpoint, &QAbstractButton::clicked, controller, &DebuggerController::breakInto);
-}
 
-void DebuggerConsole::log(const QString& line) {
-	m_ui.log->moveCursor(QTextCursor::End);
-	m_ui.log->insertPlainText(line);
-	m_ui.log->verticalScrollBar()->setValue(m_ui.log->verticalScrollBar()->maximum());
+	controller->historyLoad();
 }
 
 void DebuggerConsole::postLine() {
@@ -41,9 +36,8 @@ void DebuggerConsole::postLine() {
 	if (line.isEmpty()) {
 		m_consoleController->enterLine(QString("\n"));
 	} else {
-		m_history.append(line);
 		m_historyOffset = 0;
-		log(QString("> %1\n").arg(line));
+		m_ui.log->log(QString("> %1\n").arg(line));
 		m_consoleController->enterLine(line);
 	}
 }
@@ -52,7 +46,8 @@ bool DebuggerConsole::eventFilter(QObject*, QEvent* event) {
 	if (event->type() != QEvent::KeyPress) {
 		return false;
 	}
-	if (m_history.isEmpty()) {
+	QStringList history = m_consoleController->history();
+	if (history.isEmpty()) {
 		return false;
 	}
 	QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
@@ -64,7 +59,7 @@ bool DebuggerConsole::eventFilter(QObject*, QEvent* event) {
 		--m_historyOffset;
 		break;
 	case Qt::Key_Up:
-		if (m_historyOffset >= m_history.size()) {
+		if (m_historyOffset >= history.size()) {
 			return false;
 		}
 		++m_historyOffset;
@@ -73,7 +68,7 @@ bool DebuggerConsole::eventFilter(QObject*, QEvent* event) {
 		m_historyOffset = 0;
 		break;
 	case Qt::Key_Home:
-		m_historyOffset = m_history.size();
+		m_historyOffset = history.size();
 		break;
 	default:
 		return false;
@@ -81,7 +76,7 @@ bool DebuggerConsole::eventFilter(QObject*, QEvent* event) {
 	if (m_historyOffset == 0) {
 		m_ui.prompt->clear();
 	} else {
-		m_ui.prompt->setText(m_history[m_history.size() - m_historyOffset]);
+		m_ui.prompt->setText(history[history.size() - m_historyOffset]);
 	}
 	return true;
 }

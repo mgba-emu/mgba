@@ -160,7 +160,7 @@ static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t
 	int size = GBARegisterBGCNTGetSize(value);
 	int tilesWide = 0;
 	int tilesHigh = 0;
-	mMapCacheSystemInfo sysconfig = 0;
+	mMapCacheSystemInfo sysconfig = mMapCacheSystemInfoSetWriteAlign(0, 1);
 	if (map->mapParser == mapParser0) {
 		map->tileCache = mTileCacheSetGetPointer(&cache->tiles, p);
 		sysconfig = mMapCacheSystemInfoSetPaletteBPP(sysconfig, 2 + p);

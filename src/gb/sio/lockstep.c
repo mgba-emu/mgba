@@ -157,7 +157,7 @@ static int32_t _masterUpdate(struct GBSIOLockstepNode* node) {
 		}
 	}
 	// Tell the other GBs they can continue up to where we were
-	node->p->d.addCycles(&node->p->d, 0, node->eventDiff);
+	node->p->d.addCycles(&node->p->d, node->id, node->eventDiff);
 #ifndef NDEBUG
 	node->phase = node->p->d.transferActive;
 #endif
@@ -252,6 +252,12 @@ static uint8_t GBSIOLockstepNodeWriteSC(struct GBSIODriver* driver, uint8_t valu
 		mLockstepLock(&node->p->d);
 		bool claimed = false;
 		if (ATOMIC_CMPXCHG(node->p->masterClaimed, claimed, true)) {
+			if (node->id != 0) {
+				node->p->players[0]->id = 1;
+				node->p->players[1] = node->p->players[0];
+				node->p->players[0] = node->p->players[1];
+				node->id = 0;
+			}
 			ATOMIC_STORE(node->p->d.transferActive, TRANSFER_STARTING);
 			ATOMIC_STORE(node->p->d.transferCycles, GBSIOCyclesPerTransfer[(value >> 1) & 1]);
 			mTimingDeschedule(&driver->p->p->timing, &driver->p->event);

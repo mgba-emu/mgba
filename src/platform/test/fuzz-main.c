@@ -22,7 +22,7 @@
 
 #define FUZZ_OPTIONS "F:NO:S:V:"
 #define FUZZ_USAGE \
-	"\nAdditional options:\n" \
+	"Additional options:\n" \
 	"  -F FRAMES        Run for the specified number of FRAMES before exiting\n" \
 	"  -N               Disable video rendering entirely\n" \
 	"  -O OFFSET        Offset to apply savestate overlay\n" \
@@ -53,12 +53,12 @@ int main(int argc, char** argv) {
 	};
 
 	struct mArguments args;
-	bool parsed = parseArguments(&args, argc, argv, &subparser);
+	bool parsed = mArgumentsParse(&args, argc, argv, &subparser, 1);
 	if (!args.fname) {
 		parsed = false;
 	}
 	if (!parsed || args.showHelp) {
-		usage(argv[0], FUZZ_USAGE);
+		usage(argv[0], NULL, NULL, &subparser, 1);
 		return !parsed;
 	}
 	if (args.showVersion) {
@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
 	}
 	core->init(core);
 	mCoreInitConfig(core, "fuzz");
-	applyArguments(&args, NULL, &core->config);
+	mArgumentsApply(&args, NULL, 0, &core->config);
 
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
 
@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
 	}
 
 loadError:
-	freeArguments(&args);
+	mArgumentsDeinit(&args);
 	if (outputBuffer) {
 		free(outputBuffer);
 	}

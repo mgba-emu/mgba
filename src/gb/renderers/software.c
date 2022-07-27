@@ -627,7 +627,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	if (startX == 0) {
 		_cleanOAM(softwareRenderer, y);
 	}
-	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc) && !softwareRenderer->d.disableOBJ) {
+	if (GBRegisterLCDCIsObjEnable(softwareRenderer->lcdc) && !softwareRenderer->d.disableOBJ && (softwareRenderer->model != GB_MODEL_SCGB || softwareRenderer->sgbTransfer != 1)) {
 		int i;
 		for (i = 0; i < softwareRenderer->objMax; ++i) {
 			GBVideoSoftwareRendererDrawObj(softwareRenderer, &softwareRenderer->obj[i], startX, endX, y);
@@ -917,7 +917,7 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 				bgTile = ((int8_t*) maps)[topX + topY];
 			}
 			int p = highlight ? PAL_HIGHLIGHT_BG : PAL_BG;
-			if (renderer->model >= GB_MODEL_CGB) {
+			if (renderer->model >= GB_MODEL_CGB && (!(renderer->model & GB_MODEL_SGB) || renderer->sgbTransfer != 1)) {
 				GBObjAttributes attrs = attr[topX + topY];
 				p |= GBObjAttributesGetCGBPalette(attrs) * 4;
 				if (GBObjAttributesIsPriority(attrs) && GBRegisterLCDCIsBgEnable(renderer->lcdc)) {
@@ -952,7 +952,7 @@ static void GBVideoSoftwareRendererDrawBackground(struct GBVideoSoftwareRenderer
 			bgTile = ((int8_t*) maps)[topX + topY];
 		}
 		int p = highlight ? PAL_HIGHLIGHT_BG : PAL_BG;
-		if (renderer->model >= GB_MODEL_CGB) {
+		if (renderer->model >= GB_MODEL_CGB && (!(renderer->model & GB_MODEL_SGB) || renderer->sgbTransfer != 1)) {
 			GBObjAttributes attrs = attr[topX + topY];
 			p |= GBObjAttributesGetCGBPalette(attrs) * 4;
 			if (GBObjAttributesIsPriority(attrs) && GBRegisterLCDCIsBgEnable(renderer->lcdc)) {

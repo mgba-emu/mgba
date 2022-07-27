@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ObjView</class>
- <widget class="QWidget" name="ObjView">
+ <class>QGBA::ObjView</class>
+ <widget class="QWidget" name="QGBA::ObjView">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -181,7 +181,7 @@
         <item>
          <widget class="QLabel" name="tileId_3">
           <property name="text">
-           <string>, </string>
+           <string notr="true">, </string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -260,7 +260,7 @@
         <item>
          <widget class="QLabel" name="tileId_5">
           <property name="text">
-           <string>×</string>
+           <string notr="true">×</string>
           </property>
           <property name="alignment">
            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>

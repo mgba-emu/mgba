@@ -1,4 +1,5 @@
 /* Copyright (c) 2014-2017 waddlesplash
+ * Copyright (c) 2013-2022 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -47,11 +48,11 @@ LibraryTree::LibraryTree(LibraryController* parent)
 	m_widget->setAlternatingRowColors(true);
 
 	QTreeWidgetItem* header = new QTreeWidgetItem({
-		QApplication::translate("LibraryTree", "Name", nullptr),
-		QApplication::translate("LibraryTree", "Location", nullptr),
-		QApplication::translate("LibraryTree", "Platform", nullptr),
-		QApplication::translate("LibraryTree", "Size", nullptr),
-		QApplication::translate("LibraryTree", "CRC32", nullptr),
+		QApplication::translate("QGBA::LibraryTree", "Name", nullptr),
+		QApplication::translate("QGBA::LibraryTree", "Location", nullptr),
+		QApplication::translate("QGBA::LibraryTree", "Platform", nullptr),
+		QApplication::translate("QGBA::LibraryTree", "Size", nullptr),
+		QApplication::translate("QGBA::LibraryTree", "CRC32", nullptr),
 	});
 	header->setTextAlignment(3, Qt::AlignTrailing | Qt::AlignVCenter);
 	m_widget->setHeaderItem(header);
@@ -140,7 +141,7 @@ void LibraryTree::updateEntry(const LibraryEntry& item) {
 	m_entries[item.fullpath] = item;
 
 	LibraryTreeItem* i = static_cast<LibraryTreeItem*>(m_items.value(item.fullpath));
-	i->setText(COL_NAME, item.displayTitle());
+	i->setText(COL_NAME, m_showFilename ? item.filename : item.displayTitle());
 	i->setText(COL_PLATFORM, nicePlatformFormat(item.platform));
 	i->setFilesize(item.filesize);
 	i->setText(COL_CRC32, QString("%0").arg(item.crc32, 8, 16, QChar('0')));
@@ -194,7 +195,7 @@ void LibraryTree::rebuildTree() {
 		i->setText(COL_LOCATION, QDir::toNativeSeparators(item.base));
 		i->setText(COL_PLATFORM, nicePlatformFormat(item.platform));
 		i->setFilesize(item.filesize);
-		i->setTextAlignment(COL_SIZE, Qt::AlignRight);
+		i->setTextAlignment(COL_SIZE, Qt::AlignTrailing | Qt::AlignVCenter);
 		i->setText(COL_CRC32, QString("%0").arg(item.crc32, 8, 16, QChar('0')));
 		m_items.insert(item.fullpath, i);
 

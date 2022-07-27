@@ -21,8 +21,12 @@ struct mCoreThread;
 struct mThreadLogger {
 	struct mLogger d;
 	struct mCoreThread* p;
+	struct mLogger* logger;
 };
 
+#ifdef ENABLE_SCRIPTING
+struct mScriptContext;
+#endif
 struct mCoreThreadInternal;
 struct mCoreThread {
 	// Input
@@ -39,6 +43,10 @@ struct mCoreThread {
 	void* userData;
 	void (*run)(struct mCoreThread*);
 
+#ifdef ENABLE_SCRIPTING
+	struct mScriptContext* scriptContext;
+#endif
+
 	struct mCoreThreadInternal* impl;
 };
 
@@ -54,14 +62,15 @@ enum mCoreThreadState {
 
 	mTHREAD_INTERRUPTED,
 	mTHREAD_PAUSED,
-	mTHREAD_MIN_WAITING = mTHREAD_INTERRUPTED,
 	mTHREAD_CRASHED,
-	mTHREAD_MAX_WAITING = mTHREAD_PAUSED,
 
 	mTHREAD_INTERRUPTING,
 	mTHREAD_EXITING,
 
-	mTHREAD_SHUTDOWN
+	mTHREAD_SHUTDOWN,
+
+	mTHREAD_MIN_WAITING = mTHREAD_INTERRUPTED,
+	mTHREAD_MAX_WAITING = mTHREAD_CRASHED
 };
 
 enum mCoreThreadRequest {
@@ -84,6 +93,7 @@ struct mCoreThreadInternal {
 
 	struct mCoreSync sync;
 	struct mCoreRewindContext rewind;
+	struct mCore* core;
 };
 
 #endif

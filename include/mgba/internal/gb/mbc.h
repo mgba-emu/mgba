@@ -24,6 +24,8 @@ void GBMBCSwitchHalfBank(struct GB* gb, int half, int bank);
 void GBMBCSwitchSramBank(struct GB* gb, int bank);
 void GBMBCSwitchSramHalfBank(struct GB* gb, int half, int bank);
 
+enum GBMemoryBankControllerType GBMBCFromGBX(const void* fourcc);
+
 enum GBCam {
 	GBCAM_WIDTH = 128,
 	GBCAM_HEIGHT = 112
@@ -42,8 +44,17 @@ struct GBMBCRTCSaveBuffer {
 	uint32_t latchedDaysHi;
 	uint64_t unixTime;
 };
+
+struct GBMBCHuC3SaveBuffer {
+	uint8_t regs[0x80];
+	uint64_t latchedUnix;
+};
+
 void GBMBCRTCRead(struct GB* gb);
 void GBMBCRTCWrite(struct GB* gb);
+
+void GBMBCHuC3Read(struct GB* gb);
+void GBMBCHuC3Write(struct GB* gb);
 
 CXX_GUARD_END
 

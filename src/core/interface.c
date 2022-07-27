@@ -21,6 +21,7 @@ static void _rtcGenericSample(struct mRTCSource* source) {
 	case RTC_NO_OVERRIDE:
 	case RTC_FIXED:
 	case RTC_FAKE_EPOCH:
+	case RTC_WALLCLOCK_OFFSET:
 		break;
 	}
 }
@@ -39,6 +40,8 @@ static time_t _rtcGenericCallback(struct mRTCSource* source) {
 		return rtc->value / 1000LL;
 	case RTC_FAKE_EPOCH:
 		return (rtc->value + rtc->p->frameCounter(rtc->p) * (rtc->p->frameCycles(rtc->p) * 1000LL) / rtc->p->frequency(rtc->p)) / 1000LL;
+	case RTC_WALLCLOCK_OFFSET:
+		return time(0) + rtc->value / 1000LL;
 	}
 }
 
