@@ -87,8 +87,8 @@ void DisplayQt::resizeContext() {
 	if (m_width != size.width() || m_height != size.height()) {
 		m_width = size.width();
 		m_height = size.height();
-		m_oldBacking = std::move(QImage());
-		m_backing = std::move(QImage());
+		m_oldBacking = QImage();
+		m_backing = QImage();
 	}
 }
 
@@ -106,7 +106,7 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 	}
 	painter.drawImage(full, m_backing, QRect(0, 0, m_width, m_height));
 	painter.setOpacity(1);
-	if (isShowOSD()) {
+	if (isShowOSD() || isShowFrameCounter()) {
 		messagePainter()->paint(&painter);
 	}
 }

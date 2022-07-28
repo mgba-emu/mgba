@@ -6,6 +6,7 @@
 #include <mgba-util/platform/psp2/sce-vfs.h>
 
 #include <psp2/io/dirent.h>
+#include <psp2/io/stat.h>
 
 #include <mgba-util/vfs.h>
 #include <mgba-util/memory.h>

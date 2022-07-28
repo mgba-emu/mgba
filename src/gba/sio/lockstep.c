@@ -230,7 +230,7 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 		sio->siocnt = GBASIOMultiplayerClearBusy(sio->siocnt);
 		sio->siocnt = GBASIOMultiplayerSetId(sio->siocnt, node->id);
 		if (GBASIOMultiplayerIsIrq(sio->siocnt)) {
-			GBARaiseIRQ(sio->p, IRQ_SIO, 0);
+			GBARaiseIRQ(sio->p, GBA_IRQ_SIO, 0);
 		}
 		break;
 	case SIO_NORMAL_8:
@@ -243,7 +243,7 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 			node->d.p->p->memory.io[REG_SIODATA8 >> 1] = 0xFFFF;
 		}
 		if (GBASIONormalIsIrq(sio->siocnt)) {
-			GBARaiseIRQ(sio->p, IRQ_SIO, 0);
+			GBARaiseIRQ(sio->p, GBA_IRQ_SIO, 0);
 		}
 		break;
 	case SIO_NORMAL_32:
@@ -258,7 +258,7 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 			node->d.p->p->memory.io[REG_SIODATA32_HI >> 1] = 0xFFFF;
 		}
 		if (GBASIONormalIsIrq(sio->siocnt)) {
-			GBARaiseIRQ(sio->p, IRQ_SIO, 0);
+			GBARaiseIRQ(sio->p, GBA_IRQ_SIO, 0);
 		}
 		break;
 	default:

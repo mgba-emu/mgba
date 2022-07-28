@@ -92,7 +92,7 @@ bool mUpdaterInit(struct mUpdaterContext* context, const char* manifest) {
 	ConfigurationInit(&context->manifest);
 
 	struct VFile* vf = VFileFromConstMemory(manifest, strlen(manifest) + 1);
-	bool success = vf && ConfigurationReadVFile(&context->manifest, vf);
+	bool success = ConfigurationReadVFile(&context->manifest, vf);
 	vf->close(vf);
 	if (!success) {
 		ConfigurationDeinit(&context->manifest);

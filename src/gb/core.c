@@ -60,6 +60,23 @@ static const struct mCoreMemoryBlock _GBCMemoryBlocks[] = {
 	{ GB_BASE_HRAM, "hram", "HRAM", "High RAM", GB_BASE_HRAM, GB_BASE_HRAM + GB_SIZE_HRAM, GB_SIZE_HRAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
 };
 
+static const struct mCoreRegisterInfo _GBRegisters[] = {
+	{ "b", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "c", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "d", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "e", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "h", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "l", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "a", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "f", NULL, 1, 0xF0, mCORE_REGISTER_GPR },
+	{ "bc", NULL, 2, 0xFFFF, mCORE_REGISTER_GPR },
+	{ "de", NULL, 2, 0xFFFF, mCORE_REGISTER_GPR },
+	{ "hl", NULL, 2, 0xFFFF, mCORE_REGISTER_GPR },
+	{ "af", NULL, 2, 0xFFF0, mCORE_REGISTER_GPR },
+	{ "pc", NULL, 2, 0xFFFF, mCORE_REGISTER_GPR },
+	{ "sp", NULL, 2, 0xFFFF, mCORE_REGISTER_GPR },
+};
+
 struct mVideoLogContext;
 struct GBCore {
 	struct mCore d;
@@ -453,11 +470,19 @@ static void _GBCoreUnloadROM(struct mCore* core) {
 		mCheatDeviceDestroy(gbcore->cheatDevice);
 		gbcore->cheatDevice = NULL;
 	}
-	return GBUnloadROM(core->board);
+	GBUnloadROM(core->board);
+}
+
+static size_t _GBCoreROMSize(const struct mCore* core) {
+	const struct GB* gb = (const struct GB*) core->board;
+	if (gb->romVf) {
+		return gb->romVf->size(gb->romVf);
+	}
+	return gb->pristineRomSize;
 }
 
 static void _GBCoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
-	struct GB* gb = (struct GB*) core->board;
+	const struct GB* gb = (const struct GB*) core->board;
 	switch (type) {
 	case mCHECKSUM_CRC32:
 		memcpy(data, &gb->romCrc32, sizeof(gb->romCrc32));
@@ -636,7 +661,7 @@ static void _GBCoreReset(struct mCore* core) {
 
 static void _GBCoreRunFrame(struct mCore* core) {
 	struct GB* gb = core->board;
-	int32_t frameCounter = gb->video.frameCounter;
+	uint32_t frameCounter = gb->video.frameCounter;
 	while (gb->video.frameCounter == frameCounter) {
 		SM83Run(core->cpu);
 	}
@@ -688,7 +713,12 @@ static void _GBCoreClearKeys(struct mCore* core, uint32_t keys) {
 	gbcore->keys &= ~keys;
 }
 
-static int32_t _GBCoreFrameCounter(const struct mCore* core) {
+static uint32_t _GBCoreGetKeys(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	return gbcore->keys;
+}
+
+static uint32_t _GBCoreFrameCounter(const struct mCore* core) {
 	const struct GB* gb = core->board;
 	return gb->video.frameCounter;
 }
@@ -830,6 +860,141 @@ void* _GBGetMemoryBlock(struct mCore* core, size_t id, size_t* sizeOut) {
 		*sizeOut = GB_SIZE_HRAM;
 		return gb->memory.hram;
 	}
+}
+
+static size_t _GBCoreListRegisters(const struct mCore* core, const struct mCoreRegisterInfo** list) {
+	UNUSED(core);
+	*list = _GBRegisters;
+	return sizeof(_GBRegisters) / sizeof(*_GBRegisters);
+}
+
+static bool _GBCoreReadRegister(const struct mCore* core, const char* name, void* out) {
+	struct SM83Core* cpu = core->cpu;
+	uint16_t* value16 = out;
+	uint8_t* value8 = out;
+
+	if (strcasecmp(name, "b") == 0) {
+		*value8 = cpu->b;
+		return true;
+	}
+	if (strcasecmp(name, "c") == 0) {
+		*value8 = cpu->c;
+		return true;
+	}
+	if (strcasecmp(name, "d") == 0) {
+		*value8 = cpu->d;
+		return true;
+	}
+	if (strcasecmp(name, "e") == 0) {
+		*value8 = cpu->e;
+		return true;
+	}
+	if (strcasecmp(name, "a") == 0) {
+		*value8 = cpu->a;
+		return true;
+	}
+	if (strcasecmp(name, "f") == 0) {
+		*value8 = cpu->f.packed;
+		return true;
+	}
+	if (strcasecmp(name, "h") == 0) {
+		*value8 = cpu->h;
+		return true;
+	}
+	if (strcasecmp(name, "l") == 0) {
+		*value8 = cpu->l;
+		return true;
+	}
+	if (strcasecmp(name, "bc") == 0) {
+		*value16 = cpu->bc;
+		return true;
+	}
+	if (strcasecmp(name, "de") == 0) {
+		*value16 = cpu->de;
+		return true;
+	}
+	if (strcasecmp(name, "hl") == 0) {
+		*value16 = cpu->hl;
+		return true;
+	}
+	if (strcasecmp(name, "af") == 0) {
+		*value16 = cpu->af;
+		return true;
+	}
+	if (strcasecmp(name, "pc") == 0) {
+		*value16 = cpu->pc;
+		return true;
+	}
+	if (strcasecmp(name, "sp") == 0) {
+		*value16 = cpu->sp;
+		return true;
+	}
+	return false;
+}
+
+static bool _GBCoreWriteRegister(struct mCore* core, const char* name, const void* in) {
+	struct SM83Core* cpu = core->cpu;
+	uint32_t value = *(uint32_t*) in;
+
+	if (strcmp(name, "b") == 0) {
+		cpu->b = value;
+		return true;
+	}
+	if (strcmp(name, "c") == 0) {
+		cpu->c = value;
+		return true;
+	}
+	if (strcmp(name, "d") == 0) {
+		cpu->d = value;
+		return true;
+	}
+	if (strcmp(name, "e") == 0) {
+		cpu->e = value;
+		return true;
+	}
+	if (strcmp(name, "h") == 0) {
+		cpu->h = value;
+		return true;
+	}
+	if (strcmp(name, "l") == 0) {
+		cpu->l = value;
+		return true;
+	}
+	if (strcmp(name, "a") == 0) {
+		cpu->a = value;
+		return true;
+	}
+	if (strcmp(name, "f") == 0) {
+		cpu->f.packed = value & 0xF0;
+		return true;
+	}
+	if (strcmp(name, "bc") == 0) {
+		cpu->bc = value;
+		return true;
+	}
+	if (strcmp(name, "de") == 0) {
+		cpu->de = value;
+		return true;
+	}
+	if (strcmp(name, "hl") == 0) {
+		cpu->hl = value;
+		return true;
+	}
+	if (strcmp(name, "af") == 0) {
+		cpu->af = value;
+		cpu->f.packed &= 0xF0;
+		return true;
+	}
+	if (strcmp(name, "pc") == 0) {
+		cpu->pc = value;
+		cpu->memory.setActiveRegion(cpu, cpu->pc);
+		return true;
+	}
+	if (strcmp(name, "sp") == 0) {
+		cpu->sp = value;
+		return true;
+	}
+	return false;
 }
 
 #ifdef USE_DEBUGGERS
@@ -1080,6 +1245,7 @@ struct mCore* GBCoreCreate(void) {
 	core->loadTemporarySave = _GBCoreLoadTemporarySave;
 	core->loadPatch = _GBCoreLoadPatch;
 	core->unloadROM = _GBCoreUnloadROM;
+	core->romSize = _GBCoreROMSize;
 	core->checksum = _GBCoreChecksum;
 	core->reset = _GBCoreReset;
 	core->runFrame = _GBCoreRunFrame;
@@ -1091,6 +1257,7 @@ struct mCore* GBCoreCreate(void) {
 	core->setKeys = _GBCoreSetKeys;
 	core->addKeys = _GBCoreAddKeys;
 	core->clearKeys = _GBCoreClearKeys;
+	core->getKeys = _GBCoreGetKeys;
 	core->frameCounter = _GBCoreFrameCounter;
 	core->frameCycles = _GBCoreFrameCycles;
 	core->frequency = _GBCoreFrequency;
@@ -1111,6 +1278,9 @@ struct mCore* GBCoreCreate(void) {
 	core->rawWrite32 = _GBCoreRawWrite32;
 	core->listMemoryBlocks = _GBListMemoryBlocks;
 	core->getMemoryBlock = _GBGetMemoryBlock;
+	core->listRegisters = _GBCoreListRegisters;
+	core->readRegister = _GBCoreReadRegister;
+	core->writeRegister = _GBCoreWriteRegister;
 #ifdef USE_DEBUGGERS
 	core->supportsDebuggerType = _GBCoreSupportsDebuggerType;
 	core->debuggerPlatform = _GBCoreDebuggerPlatform;

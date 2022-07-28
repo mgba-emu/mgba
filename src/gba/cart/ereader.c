@@ -718,7 +718,7 @@ void _eReaderReadData(struct GBACartEReader* ereader) {
 		if (led > 0x4000) {
 			led = 0x4000;
 		}
-		GBARaiseIRQ(ereader->p, IRQ_GAMEPAK, -led);
+		GBARaiseIRQ(ereader->p, GBA_IRQ_GAMEPAK, -led);
 	}
 }
 

@@ -207,6 +207,9 @@ QString GBAApp::getOpenDirectoryName(QWidget* owner, const QString& title, const
 QString GBAApp::dataDir() {
 #ifdef DATADIR
 	QString path = QString::fromUtf8(DATADIR);
+	if (path.startsWith("./") || path.startsWith("../")) {
+		path = QCoreApplication::applicationDirPath() + "/" + path;
+	}
 #else
 	QString path = QCoreApplication::applicationDirPath();
 #ifdef Q_OS_MAC

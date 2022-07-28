@@ -36,6 +36,12 @@ struct mLogger {
 	struct mLogFilter* filter;
 };
 
+struct mStandardLogger {
+	struct mLogger d;
+	bool logToStdout;
+	struct VFile* logFile;
+};
+
 struct mLogger* mLogGetContext(void);
 void mLogSetDefaultLogger(struct mLogger*);
 int mLogGenerateCategory(const char*, const char*);
@@ -44,6 +50,10 @@ const char* mLogCategoryId(int);
 int mLogCategoryById(const char*);
 
 struct mCoreConfig;
+void mStandardLoggerInit(struct mStandardLogger*);
+void mStandardLoggerDeinit(struct mStandardLogger*);
+void mStandardLoggerConfig(struct mStandardLogger*, struct mCoreConfig* config);
+
 void mLogFilterInit(struct mLogFilter*);
 void mLogFilterDeinit(struct mLogFilter*);
 void mLogFilterLoad(struct mLogFilter*, const struct mCoreConfig*);
@@ -55,6 +65,9 @@ int mLogFilterLevels(const struct mLogFilter*, int category);
 
 ATTRIBUTE_FORMAT(printf, 3, 4)
 void mLog(int category, enum mLogLevel level, const char* format, ...);
+
+ATTRIBUTE_FORMAT(printf, 4, 5)
+void mLogExplicit(struct mLogger*, int category, enum mLogLevel level, const char* format, ...);
 
 #define mLOG(CATEGORY, LEVEL, ...) mLog(_mLOG_CAT_ ## CATEGORY, mLOG_ ## LEVEL, __VA_ARGS__)
 

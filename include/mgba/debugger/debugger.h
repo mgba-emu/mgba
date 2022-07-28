@@ -118,8 +118,6 @@ struct mDebuggerPlatform {
 
 	void (*trace)(struct mDebuggerPlatform*, char* out, size_t* length);
 
-	bool (*getRegister)(struct mDebuggerPlatform*, const char* name, int32_t* value);
-	bool (*setRegister)(struct mDebuggerPlatform*, const char* name, int32_t value);
 	bool (*lookupIdentifier)(struct mDebuggerPlatform*, const char* name, int32_t* value, int* segment);
 
 	uint32_t (*getStackTraceMode)(struct mDebuggerPlatform*);
@@ -140,8 +138,11 @@ struct mDebugger {
 	void (*deinit)(struct mDebugger*);
 
 	void (*paused)(struct mDebugger*);
+	void (*update)(struct mDebugger*);
 	void (*entered)(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 	void (*custom)(struct mDebugger*);
+
+	void (*interrupt)(struct mDebugger*);
 };
 
 struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore*);

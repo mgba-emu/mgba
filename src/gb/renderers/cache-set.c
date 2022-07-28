@@ -119,6 +119,7 @@ void GBVideoCacheWriteVideoRegister(struct mCacheSet* cache, uint16_t address, u
 	sysconfig = mMapCacheSystemInfoSetMacroTileSize(sysconfig, 5);
 	sysconfig = mMapCacheSystemInfoSetPaletteBPP(sysconfig, 1);
 	sysconfig = mMapCacheSystemInfoSetMapAlign(sysconfig, 0);
+	sysconfig = mMapCacheSystemInfoSetWriteAlign(sysconfig, 0);
 	sysconfig = mMapCacheSystemInfoSetTilesHigh(sysconfig, 5);
 	sysconfig = mMapCacheSystemInfoSetTilesWide(sysconfig, 5);
 	mMapCacheConfigureSystem(map, sysconfig);

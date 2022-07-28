@@ -75,6 +75,8 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	GBAMemoryInit(gba);
 
 	gba->memory.savedata.timing = &gba->timing;
+	gba->memory.savedata.vf = NULL;
+	gba->memory.savedata.realVf = NULL;
 	GBASavedataInit(&gba->memory.savedata, NULL);
 
 	gba->video.p = gba;
@@ -92,13 +94,14 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 
 	gba->keysActive = 0;
 	gba->keysLast = 0x400;
-	gba->rotationSource = 0;
-	gba->luminanceSource = 0;
-	gba->rtcSource = 0;
-	gba->rumble = 0;
+	gba->rotationSource = NULL;
+	gba->luminanceSource = NULL;
+	gba->rtcSource = NULL;
+	gba->rumble = NULL;
 
-	gba->romVf = 0;
-	gba->biosVf = 0;
+	gba->romVf = NULL;
+	gba->mbVf = NULL;
+	gba->biosVf = NULL;
 
 	gba->stream = NULL;
 	gba->keyCallback = NULL;
@@ -139,7 +142,7 @@ void GBAUnloadROM(struct GBA* gba) {
 
 	if (gba->romVf) {
 #ifndef FIXED_ROM_BUFFER
-		if (gba->isPristine) {
+		if (gba->isPristine && gba->memory.rom) {
 			gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->pristineRomSize);
 		}
 #endif
@@ -147,9 +150,13 @@ void GBAUnloadROM(struct GBA* gba) {
 		gba->romVf = NULL;
 	}
 	gba->memory.rom = NULL;
+	gba->memory.romSize = 0;
+	gba->memory.romMask = 0;
 	gba->isPristine = false;
 
-	gba->memory.savedata.maskWriteback = false;
+	if (!gba->memory.savedata.dirty) {
+		gba->memory.savedata.maskWriteback = false;
+	}
 	GBASavedataUnmask(&gba->memory.savedata);
 	GBASavedataDeinit(&gba->memory.savedata);
 	if (gba->memory.savedata.realVf) {
@@ -161,6 +168,7 @@ void GBAUnloadROM(struct GBA* gba) {
 
 void GBADestroy(struct GBA* gba) {
 	GBAUnloadROM(gba);
+	GBAUnloadMB(gba);
 
 	if (gba->biosVf) {
 		gba->biosVf->unmap(gba->biosVf, gba->memory.bios, SIZE_BIOS);
@@ -190,11 +198,11 @@ void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {
 
 void GBAReset(struct ARMCore* cpu) {
 	ARMSetPrivilegeMode(cpu, MODE_IRQ);
-	cpu->gprs[ARM_SP] = SP_BASE_IRQ;
+	cpu->gprs[ARM_SP] = GBA_SP_BASE_IRQ;
 	ARMSetPrivilegeMode(cpu, MODE_SUPERVISOR);
-	cpu->gprs[ARM_SP] = SP_BASE_SUPERVISOR;
+	cpu->gprs[ARM_SP] = GBA_SP_BASE_SUPERVISOR;
 	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
-	cpu->gprs[ARM_SP] = SP_BASE_SYSTEM;
+	cpu->gprs[ARM_SP] = GBA_SP_BASE_SYSTEM;
 
 	struct GBA* gba = (struct GBA*) cpu->master;
 	gba->memory.savedata.maskWriteback = false;
@@ -226,16 +234,18 @@ void GBAReset(struct ARMCore* cpu) {
 
 	bool isELF = false;
 #ifdef USE_ELF
-	struct ELF* elf = ELFOpen(gba->romVf);
-	if (elf) {
-		isELF = true;
-		ELFClose(elf);
+	if (gba->mbVf) {
+		struct ELF* elf = ELFOpen(gba->mbVf);
+		if (elf) {
+			isELF = true;
+			ELFClose(elf);
+		}
 	}
 #endif
 
-	if (GBAIsMB(gba->romVf) && !isELF) {
-		gba->romVf->seek(gba->romVf, 0, SEEK_SET);
-		gba->romVf->read(gba->romVf, gba->memory.wram, gba->pristineRomSize);
+	if (GBAIsMB(gba->mbVf) && !isELF) {
+		gba->mbVf->seek(gba->mbVf, 0, SEEK_SET);
+		gba->mbVf->read(gba->mbVf, gba->memory.wram, SIZE_WORKING_RAM);
 	}
 
 	gba->lastJump = 0;
@@ -247,7 +257,7 @@ void GBAReset(struct ARMCore* cpu) {
 	memset(gba->debugString, 0, sizeof(gba->debugString));
 
 
-	if (gba->romVf && gba->pristineRomSize > SIZE_CART0) {
+	if (gba->romVf && gba->romVf->size(gba->romVf) > SIZE_CART0) {
 		char ident;
 		gba->romVf->seek(gba->romVf, 0xAC, SEEK_SET);
 		gba->romVf->read(gba->romVf, &ident, 1);
@@ -365,23 +375,22 @@ bool GBALoadNull(struct GBA* gba) {
 }
 
 bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
-	GBAUnloadROM(gba);
-	gba->romVf = vf;
-	gba->pristineRomSize = vf->size(vf);
+	GBAUnloadMB(gba);
+	gba->mbVf = vf;
 	vf->seek(vf, 0, SEEK_SET);
-	if (gba->pristineRomSize > SIZE_WORKING_RAM) {
-		gba->pristineRomSize = SIZE_WORKING_RAM;
-	}
-	gba->isPristine = true;
 	memset(gba->memory.wram, 0, SIZE_WORKING_RAM);
-	gba->yankedRomSize = 0;
-	gba->memory.romSize = 0;
-	gba->memory.romMask = 0;
-	gba->romCrc32 = doCrc32(gba->memory.wram, gba->pristineRomSize);
+	vf->read(vf, gba->memory.wram, SIZE_WORKING_RAM);
 	if (gba->cpu && gba->memory.activeRegion == REGION_WORKING_RAM) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
 	return true;
+}
+
+void GBAUnloadMB(struct GBA* gba) {
+	if (gba->mbVf) {
+		gba->mbVf->close(gba->mbVf);
+		gba->mbVf = NULL;
+	}
 }
 
 bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
@@ -390,14 +399,15 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	}
 	GBAUnloadROM(gba);
 	gba->romVf = vf;
+	gba->isPristine = true;
 	gba->pristineRomSize = vf->size(vf);
 	vf->seek(vf, 0, SEEK_SET);
 	if (gba->pristineRomSize > SIZE_CART0) {
-		gba->isPristine = false;
 		char ident;
 		vf->seek(vf, 0xAC, SEEK_SET);
 		vf->read(vf, &ident, 1);
 		if (ident == 'M') {
+			gba->isPristine = false;
 			gba->memory.romSize = 0x01000000;
 #ifdef FIXED_ROM_BUFFER
 			gba->memory.rom = romBuffer;
@@ -408,8 +418,8 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 			gba->memory.rom = vf->map(vf, SIZE_CART0, MAP_READ);
 			gba->memory.romSize = SIZE_CART0;
 		}
+		gba->pristineRomSize = SIZE_CART0;
 	} else {
-		gba->isPristine = true;
 		gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ);
 		gba->memory.romSize = gba->pristineRomSize;
 	}
@@ -456,7 +466,7 @@ void GBAYankROM(struct GBA* gba) {
 	gba->yankedRomSize = gba->memory.romSize;
 	gba->memory.romSize = 0;
 	gba->memory.romMask = 0;
-	GBARaiseIRQ(gba, IRQ_GAMEPAK, 0);
+	GBARaiseIRQ(gba, GBA_IRQ_GAMEPAK, 0);
 }
 
 void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
@@ -545,7 +555,7 @@ void GBAHalt(struct GBA* gba) {
 }
 
 void GBAStop(struct GBA* gba) {
-	int validIrqs = (1 << IRQ_GAMEPAK) | (1 << IRQ_KEYPAD) | (1 << IRQ_SIO);
+	int validIrqs = (1 << GBA_IRQ_GAMEPAK) | (1 << GBA_IRQ_KEYPAD) | (1 << GBA_IRQ_SIO);
 	int sleep = gba->memory.io[REG_IE >> 1] & validIrqs;
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
@@ -574,20 +584,21 @@ void GBADebug(struct GBA* gba, uint16_t flags) {
 }
 
 bool GBAIsROM(struct VFile* vf) {
+	if (!vf) {
+		return false;
+	}
+
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
 		uint32_t entry = ELFEntry(elf);
 		bool isGBA = true;
 		isGBA = isGBA && ELFMachine(elf) == EM_ARM;
-		isGBA = isGBA && (entry == BASE_CART0 || entry == BASE_WORKING_RAM);
+		isGBA = isGBA && (entry == BASE_CART0 || entry == BASE_WORKING_RAM + 0xC0);
 		ELFClose(elf);
 		return isGBA;
 	}
 #endif
-	if (!vf) {
-		return false;
-	}
 
 	uint8_t signature[sizeof(GBA_ROM_MAGIC) + sizeof(GBA_ROM_MAGIC2)];
 	if (vf->seek(vf, GBA_ROM_MAGIC_OFFSET, SEEK_SET) < 0) {
@@ -639,7 +650,7 @@ bool GBAIsMB(struct VFile* vf) {
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
-		bool isMB = ELFEntry(elf) == BASE_WORKING_RAM;
+		bool isMB = ELFEntry(elf) == BASE_WORKING_RAM + 0xC0;
 		ELFClose(elf);
 		return isMB;
 	}
@@ -670,13 +681,23 @@ bool GBAIsMB(struct VFile* vf) {
 	}
 
 	uint32_t pc = GBA_MB_MAGIC_OFFSET;
+	int wramAddrs = 0;
+	int wramLoads = 0;
+	int romAddrs = 0;
+	int romLoads = 0;
 	int i;
-	for (i = 0; i < 80; ++i) {
+	for (i = 0; i < 128; ++i) {
 		if (vf->read(vf, &signature, sizeof(signature)) != sizeof(signature)) {
 			break;
 		}
 		pc += 4;
 		LOAD_32(opcode, 0, &signature);
+		if ((opcode & ~0x1FFFF) == BASE_WORKING_RAM) {
+			++wramAddrs;
+		}
+		if ((opcode & ~0x1FFFF) == BASE_CART0) {
+			++romAddrs;
+		}
 		ARMDecodeARM(opcode, &info);
 		if (info.mnemonic != ARM_MN_LDR) {
 			continue;
@@ -697,10 +718,19 @@ bool GBAIsMB(struct VFile* vf) {
 			if (vf->seek(vf, pc, SEEK_SET) < 0) {
 				break;
 			}
-			if ((immediate & ~0x7FF) == BASE_WORKING_RAM) {
-				return true;
+			if ((immediate & ~0x1FFFF) == BASE_WORKING_RAM) {
+				++wramLoads;
+			}
+			if ((immediate & ~0x1FFFF) == BASE_CART0) {
+				++romLoads;
 			}
 		}
+	}
+	if (romLoads + romAddrs >= 2) {
+		return false;
+	}
+	if (wramLoads + wramAddrs) {
+		return true;
 	}
 	// Found a libgba-linked cart...these are a bit harder to detect.
 	return false;
@@ -893,9 +923,9 @@ void GBATestKeypadIRQ(struct GBA* gba) {
 		if (keysLast == keysActive) {
 			return;
 		}
-		GBARaiseIRQ(gba, IRQ_KEYPAD, 0);
+		GBARaiseIRQ(gba, GBA_IRQ_KEYPAD, 0);
 	} else if (!isAnd && (keysActive & keycnt)) {
-		GBARaiseIRQ(gba, IRQ_KEYPAD, 0);
+		GBARaiseIRQ(gba, GBA_IRQ_KEYPAD, 0);
 	} else {
 		gba->keysLast = 0x400;
 	}

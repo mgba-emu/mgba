@@ -61,6 +61,10 @@
 #include <zip.h>
 #endif
 
+#ifdef USE_LUA
+#include <lua.h>
+#endif
+
 #ifdef USE_LZMA
 #include <7zVersion.h>
 #endif
@@ -167,6 +171,11 @@ void ReportView::generateReport() {
 	swReport << QString("libLZMA version: %1").arg(QLatin1String(MY_VERSION_NUMBERS));
 #else
 	swReport << QString("libLZMA not linked");
+#endif
+#ifdef USE_LUA
+	swReport << QString("Lua version: %1").arg(QLatin1String(LUA_RELEASE));
+#else
+	swReport << QString("Lua not linked");
 #endif
 #ifdef USE_MINIZIP
 	swReport << QString("minizip linked");

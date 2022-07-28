@@ -5,7 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "DebuggerConsoleController.h"
 
+#include "ConfigController.h"
 #include "CoreController.h"
+#include "LogController.h"
 
 #include <QMutexLocker>
 #include <QThread>
@@ -24,6 +26,7 @@ DebuggerConsoleController::DebuggerConsoleController(QObject* parent)
 	m_backend.d.lineAppend = lineAppend;
 	m_backend.d.historyLast = historyLast;
 	m_backend.d.historyAppend = historyAppend;
+	m_backend.d.interrupt = interrupt;
 	m_backend.self = this;
 
 	CLIDebuggerCreate(&m_cliDebugger);
@@ -50,12 +53,12 @@ void DebuggerConsoleController::detach() {
 		}
 	}
 	DebuggerController::detach();
+	historySave();
 }
 
 void DebuggerConsoleController::attachInternal() {
 	CoreController::Interrupter interrupter(m_gameController);
 	QMutexLocker lock(&m_mutex);
-	m_history.clear();
 	mCore* core = m_gameController->thread()->core;
 	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend.d);
 	CLIDebuggerAttachSystem(&m_cliDebugger, core->cliDebuggerSystem(core));
@@ -66,7 +69,7 @@ void DebuggerConsoleController::printf(struct CLIDebuggerBackend* be, const char
 	DebuggerConsoleController* self = consoleBe->self;
 	va_list args;
 	va_start(args, fmt);
-	self->log(QString().vsprintf(fmt, args));
+	self->log(QString::vasprintf(fmt, args));
 	va_end(args);
 }
 
@@ -88,7 +91,6 @@ void DebuggerConsoleController::deinit(struct CLIDebuggerBackend* be) {
 const char* DebuggerConsoleController::readLine(struct CLIDebuggerBackend* be, size_t* len) {
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
-	CoreController::Interrupter interrupter(self->m_gameController);
 	QMutexLocker lock(&self->m_mutex);
 	while (self->m_lines.isEmpty()) {
 		self->m_cond.wait(&self->m_mutex);
@@ -128,4 +130,49 @@ void DebuggerConsoleController::historyAppend(struct CLIDebuggerBackend* be, con
 	CoreController::Interrupter interrupter(self->m_gameController);
 	QMutexLocker lock(&self->m_mutex);
 	self->m_history.append(QString::fromUtf8(line));
+}
+
+void DebuggerConsoleController::interrupt(struct CLIDebuggerBackend* be) {
+	Backend* consoleBe = reinterpret_cast<Backend*>(be);
+	DebuggerConsoleController* self = consoleBe->self;
+	QMutexLocker lock(&self->m_mutex);
+	self->m_cond.wakeOne();
+	if (!self->m_lines.isEmpty()) {
+		return;
+	}
+	self->m_lines.append("\033");
+}
+
+void DebuggerConsoleController::historyLoad() {
+	QFile log(ConfigController::configDir() + "/cli_history.log");
+	QStringList history;
+	if (!log.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		return;
+	}
+	while (true) {
+		QByteArray line = log.readLine();
+		if (line.isEmpty()) {
+			break;
+		}
+		if (line.endsWith("\r\n")) {
+			line.chop(2);
+		} else if (line.endsWith("\n")) {
+			line.chop(1);			
+		}
+		history.append(QString::fromUtf8(line));
+	}
+	QMutexLocker lock(&m_mutex);
+	m_history = history;
+}
+
+void DebuggerConsoleController::historySave() {
+	QFile log(ConfigController::configDir() + "/cli_history.log");
+	if (!log.open(QIODevice::WriteOnly | QIODevice::Text)) {
+		LOG(QT, WARN) << tr("Could not open CLI history for writing");
+		return;
+	}
+	for (const QString& line : m_history) {
+		log.write(line.toUtf8());
+		log.write("\n");
+	}
 }

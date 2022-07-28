@@ -199,7 +199,7 @@ const char* const GBAIORegisterNames[] = {
 	"IME"
 };
 
-static const int _isValidRegister[REG_MAX >> 1] = {
+static const int _isValidRegister[REG_INTERNAL_MAX >> 1] = {
 	// Video
 	1, 0, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 1, 1, 1, 1,
@@ -238,10 +238,12 @@ static const int _isValidRegister[REG_MAX >> 1] = {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	// Interrupts
-	1, 1, 1, 0, 1
+	1, 1, 1, 0, 1, 0, 0, 0,
+	// Internal registers
+	1, 1
 };
 
-static const int _isRSpecialRegister[REG_MAX >> 1] = {
+static const int _isRSpecialRegister[REG_INTERNAL_MAX >> 1] = {
 	// Video
 	0, 0, 1, 1, 0, 0, 0, 0,
 	1, 1, 1, 1, 1, 1, 1, 1,
@@ -280,9 +282,12 @@ static const int _isRSpecialRegister[REG_MAX >> 1] = {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	// Interrupts
+	0, 0, 0, 0, 0, 0, 0, 0,
+	// Internal registers
+	1, 1
 };
 
-static const int _isWSpecialRegister[REG_MAX >> 1] = {
+static const int _isWSpecialRegister[REG_INTERNAL_MAX >> 1] = {
 	// Video
 	0, 0, 1, 1, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
@@ -321,7 +326,9 @@ static const int _isWSpecialRegister[REG_MAX >> 1] = {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	// Interrupts
-	1, 1, 0, 0, 1
+	1, 1, 0, 0, 1, 0, 0, 0,
+	// Internal registers
+	1, 1
 };
 
 void GBAIOInit(struct GBA* gba) {
@@ -333,6 +340,8 @@ void GBAIOInit(struct GBA* gba) {
 	gba->memory.io[REG_BG2PD >> 1] = 0x100;
 	gba->memory.io[REG_BG3PA >> 1] = 0x100;
 	gba->memory.io[REG_BG3PD >> 1] = 0x100;
+	gba->memory.io[REG_INTERNAL_EXWAITCNT_LO >> 1] = 0x20;
+	gba->memory.io[REG_INTERNAL_EXWAITCNT_HI >> 1] = 0xD00;
 
 	if (!gba->biosVf) {
 		gba->memory.io[REG_VCOUNT >> 1] = 0x7E;
@@ -416,6 +425,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		value |= gba->memory.io[REG_SOUNDCNT_X >> 1] & 0xF;
 		break;
 	case REG_SOUNDBIAS:
+		value &= 0xC3FE;
 		GBAAudioWriteSOUNDBIAS(&gba->audio, value);
 		break;
 
@@ -572,6 +582,12 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		return;
 	case REG_MAX:
 		// Some bad interrupt libraries will write to this
+		break;
+	case REG_EXWAITCNT_HI:
+		// This register sits outside of the normal I/O block, so we need to stash it somewhere unused
+		address = REG_INTERNAL_EXWAITCNT_HI;
+		value &= 0xFF00;
+		GBAAdjustEWRAMWaitstates(gba, value);
 		break;
 	case REG_DEBUG_ENABLE:
 		gba->debug = value == 0xC0DE;
@@ -842,7 +858,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		gba->memory.io[REG_JOYSTAT >> 1] &= ~JOYSTAT_RECV;
 		break;
 
-	case REG_SOUNDBIAS:
 	case REG_POSTFLG:
 		mLOG(GBA_IO, STUB, "Stub I/O register read: %03x", address);
 		break;
@@ -897,6 +912,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_BLDALPHA:
 	case REG_SOUNDCNT_HI:
 	case REG_SOUNDCNT_X:
+	case REG_SOUNDBIAS:
 	case REG_DMA0CNT_HI:
 	case REG_DMA1CNT_HI:
 	case REG_DMA2CNT_HI:
@@ -935,6 +951,11 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case 0x206:
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return 0;
+	// These registers sit outside of the normal I/O block, so we need to stash them somewhere unused
+	case REG_EXWAITCNT_LO:
+	case REG_EXWAITCNT_HI:
+		address += REG_INTERNAL_EXWAITCNT_LO - REG_EXWAITCNT_LO;
+		break;
 	case REG_DEBUG_ENABLE:
 		if (gba->debug) {
 			return 0x1DEA;
@@ -949,7 +970,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 
 void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 	int i;
-	for (i = 0; i < REG_MAX; i += 2) {
+	for (i = 0; i < REG_INTERNAL_MAX; i += 2) {
 		if (_isRSpecialRegister[i >> 1]) {
 			STORE_16(gba->memory.io[i >> 1], i, state->io);
 		} else if (_isValidRegister[i >> 1]) {
@@ -989,6 +1010,9 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 			LOAD_16(reg, i, state->io);
 			GBAIOWrite(gba, i, reg);
 		}
+	}
+	if (state->versionMagic >= 0x01000006) {
+		GBAIOWrite(gba, REG_EXWAITCNT_HI, gba->memory.io[REG_INTERNAL_EXWAITCNT_HI >> 1]);
 	}
 
 	uint32_t when;

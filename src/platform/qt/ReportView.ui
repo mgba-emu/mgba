@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ReportView</class>
- <widget class="QDialog" name="ReportView">
+ <class>QGBA::ReportView</class>
+ <widget class="QDialog" name="QGBA::ReportView">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -163,7 +163,7 @@
   <connection>
    <sender>openList</sender>
    <signal>clicked()</signal>
-   <receiver>ReportView</receiver>
+   <receiver>QGBA::ReportView</receiver>
    <slot>openBugReportPage()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -179,7 +179,7 @@
   <connection>
    <sender>generate</sender>
    <signal>clicked()</signal>
-   <receiver>ReportView</receiver>
+   <receiver>QGBA::ReportView</receiver>
    <slot>generateReport()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -195,7 +195,7 @@
   <connection>
    <sender>save</sender>
    <signal>clicked()</signal>
-   <receiver>ReportView</receiver>
+   <receiver>QGBA::ReportView</receiver>
    <slot>save()</slot>
    <hints>
     <hint type="sourcelabel">

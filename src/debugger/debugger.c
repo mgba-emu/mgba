@@ -53,7 +53,7 @@ struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore* core) {
 	case DEBUGGER_GDB:
 #ifdef USE_GDB_STUB
 		GDBStubCreate(&debugger->gdb);
-		GDBStubListen(&debugger->gdb, 2345, 0);
+		GDBStubListen(&debugger->gdb, 2345, 0, GDB_WATCHPOINT_STANDARD_LOGIC);
 		break;
 #endif
 	case DEBUGGER_NONE:
@@ -108,7 +108,7 @@ void mDebuggerRun(struct mDebugger* debugger) {
 }
 
 void mDebuggerRunFrame(struct mDebugger* debugger) {
-	int32_t frame = debugger->core->frameCounter(debugger->core);
+	uint32_t frame = debugger->core->frameCounter(debugger->core);
 	do {
 		mDebuggerRun(debugger);
 	} while (debugger->core->frameCounter(debugger->core) == frame);
@@ -156,7 +156,7 @@ bool mDebuggerLookupIdentifier(struct mDebugger* debugger, const char* name, int
 	if (debugger->core->lookupIdentifier(debugger->core, name, value, segment)) {
 		return true;
 	}
-	if (debugger->platform && debugger->platform->getRegister(debugger->platform, name, value)) {
+	if (debugger->platform && debugger->core->readRegister(debugger->core, name, value)) {
 		return true;
 	}
 	return false;

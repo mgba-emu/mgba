@@ -517,19 +517,12 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 
 	unsigned xBase;
 
-	uint32_t flags = (background->priority << OFFSET_PRIORITY) | (background->index << OFFSET_INDEX) | FLAG_IS_BACKGROUND;
-	flags |= FLAG_TARGET_2 * background->target2;
-	int objwinFlags = FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->objwin.packed));
-	objwinFlags |= flags;
-	flags |= FLAG_TARGET_1 * (background->target1 && renderer->blendEffect == BLEND_ALPHA && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed));
-	if (renderer->blendEffect == BLEND_ALPHA && renderer->blda == 0x10 && renderer->bldb == 0) {
-		flags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);
-		objwinFlags &= ~(FLAG_TARGET_1 | FLAG_TARGET_2);
-	}
+	uint32_t flags = background->flags;
+	uint32_t objwinFlags = background->objwinFlags;
+	bool variant = background->variant;
 
 	uint32_t screenBase;
 	uint32_t charBase;
-	int variant = background->target1 && GBAWindowControlIsBlendEnable(renderer->currentWindow.packed) && (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	color_t* mainPalette = renderer->normalPalette;
 	if (renderer->d.highlightAmount && background->highlight) {
 		mainPalette = renderer->highlightPalette;

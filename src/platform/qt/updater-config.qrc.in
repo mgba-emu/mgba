@@ -1,0 +1,5 @@
+<RCC>
+	<qresource>
+		<file alias="updater">${PROJECT_BINARY_DIR}/updater-stub${CMAKE_EXECUTABLE_SUFFIX}</file>
+	</qresource>
+</RCC>

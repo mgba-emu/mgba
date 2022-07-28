@@ -8,6 +8,8 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 
+mLOG_DEFINE_CATEGORY(GBA_DMA, "GBA DMA", "gba.dma");
+
 static void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate);
 
 static void GBADMAService(struct GBA* gba, int number, struct GBADMA* info);
@@ -43,10 +45,10 @@ static bool _isValidDMADAD(int dma, uint32_t address) {
 
 uint32_t GBADMAWriteSAD(struct GBA* gba, int dma, uint32_t address) {
 	struct GBAMemory* memory = &gba->memory;
-	address &= 0x0FFFFFFE;
 	if (_isValidDMASAD(dma, address)) {
-		memory->dma[dma].source = address;
+		memory->dma[dma].source = address & 0x0FFFFFFE;
 	} else {
+		mLOG(GBA_DMA, GAME_ERROR, "Invalid DMA source address: 0x%08X", address);
 		memory->dma[dma].source = 0;
 	}
 	return memory->dma[dma].source;
@@ -57,6 +59,8 @@ uint32_t GBADMAWriteDAD(struct GBA* gba, int dma, uint32_t address) {
 	address &= 0x0FFFFFFE;
 	if (_isValidDMADAD(dma, address)) {
 		memory->dma[dma].dest = address;
+	} else {
+		mLOG(GBA_DMA, GAME_ERROR, "Invalid DMA destination address: 0x%08X", address);
 	}
 	return memory->dma[dma].dest;
 }
@@ -78,23 +82,24 @@ uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control) {
 	currentDma->reg = control;
 
 	if (GBADMARegisterIsDRQ(currentDma->reg)) {
-		mLOG(GBA_MEM, STUB, "DRQ not implemented");
+		mLOG(GBA_DMA, STUB, "DRQ not implemented");
 	}
 
 	if (!wasEnabled && GBADMARegisterIsEnable(currentDma->reg)) {
 		currentDma->nextSource = currentDma->source;
-		if (currentDma->nextSource >= BASE_CART0 && currentDma->nextSource < BASE_CART_SRAM && GBADMARegisterGetSrcControl(currentDma->reg) < 3) {
-			currentDma->reg = GBADMARegisterClearSrcControl(currentDma->reg);
-		}
 		currentDma->nextDest = currentDma->dest;
 
 		uint32_t width = 2 << GBADMARegisterGetWidth(currentDma->reg);
 		if (currentDma->nextSource & (width - 1)) {
-			mLOG(GBA_MEM, GAME_ERROR, "Misaligned DMA source address: 0x%08X", currentDma->nextSource);
+			mLOG(GBA_DMA, GAME_ERROR, "Misaligned DMA source address: 0x%08X", currentDma->nextSource);
 		}
 		if (currentDma->nextDest & (width - 1)) {
-			mLOG(GBA_MEM, GAME_ERROR, "Misaligned DMA destination address: 0x%08X", currentDma->nextDest);
+			mLOG(GBA_DMA, GAME_ERROR, "Misaligned DMA destination address: 0x%08X", currentDma->nextDest);
 		}
+		mLOG(GBA_DMA, INFO, "Starting DMA %i 0x%08X -> 0x%08X (%04X:%04X)", dma,
+		     currentDma->nextSource, currentDma->nextDest,
+		     currentDma->reg, currentDma->count & 0xFFFF);
+
 		currentDma->nextSource &= -width;
 		currentDma->nextDest &= -width;
 
@@ -117,7 +122,7 @@ void GBADMASchedule(struct GBA* gba, int number, struct GBADMA* info) {
 	case GBA_DMA_TIMING_CUSTOM:
 		switch (number) {
 		case 0:
-			mLOG(GBA_MEM, WARN, "Discarding invalid DMA0 scheduling");
+			mLOG(GBA_DMA, WARN, "Discarding invalid DMA0 scheduling");
 			return;
 		case 1:
 		case 2:
@@ -203,7 +208,7 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 			dma->nextDest = dma->dest;
 		}
 		if (GBADMARegisterIsDoIRQ(dma->reg)) {
-			GBARaiseIRQ(gba, IRQ_DMA0 + memory->activeDMA, cyclesLate);
+			GBARaiseIRQ(gba, GBA_IRQ_DMA0 + memory->activeDMA, cyclesLate);
 		}
 		GBADMAUpdate(gba);
 	}
@@ -291,7 +296,13 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		}
 		gba->bus = memory->dmaTransferRegister;
 	}
-	int sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
+
+	int sourceOffset;
+	if (info->nextSource >= BASE_CART0 && info->nextSource < BASE_CART_SRAM && GBADMARegisterGetSrcControl(info->reg) < 3) {
+		sourceOffset = width;
+	} else {
+		sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
+	}
 	int destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(info->reg)] * width;
 	if (source) {
 		source += sourceOffset;

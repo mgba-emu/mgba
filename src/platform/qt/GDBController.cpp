@@ -32,8 +32,12 @@ void GDBController::setBindAddress(const Address& address) {
 	m_bindAddress = address;
 }
 
+void GDBController::setWatchpointsBehavior(int watchpointsBehaviorId) {
+	m_watchpointsBehavior = static_cast<GDBWatchpointsBehvaior>(watchpointsBehaviorId);
+}
+
 void GDBController::listen() {
-	if (GDBStubListen(&m_gdbStub, m_port, &m_bindAddress)) {
+	if (GDBStubListen(&m_gdbStub, m_port, &m_bindAddress, m_watchpointsBehavior)) {
 		if (!isAttached()) {
 			attach();
 		}

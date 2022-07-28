@@ -126,7 +126,7 @@ ssize_t _vf3dRead(struct VFile* vf, void* buffer, size_t size) {
 ssize_t _vf3dWrite(struct VFile* vf, const void* buffer, size_t size) {
 	struct VFile3DS* vf3d = (struct VFile3DS*) vf;
 	u32 sizeWritten;
-	Result res = FSFILE_Write(vf3d->handle, &sizeWritten, vf3d->offset, buffer, size, FS_WRITE_FLUSH);
+	Result res = FSFILE_Write(vf3d->handle, &sizeWritten, vf3d->offset, buffer, size, FS_WRITE_FLUSH | FS_WRITE_UPDATE_TIME);
 	if (res) {
 		return -1;
 	}
@@ -148,7 +148,7 @@ static void* _vf3dMap(struct VFile* vf, size_t size, int flags) {
 static void _vf3dUnmap(struct VFile* vf, void* memory, size_t size) {
 	struct VFile3DS* vf3d = (struct VFile3DS*) vf;
 	u32 sizeWritten;
-	FSFILE_Write(vf3d->handle, &sizeWritten, 0, memory, size, FS_WRITE_FLUSH);
+	FSFILE_Write(vf3d->handle, &sizeWritten, 0, memory, size, FS_WRITE_FLUSH | FS_WRITE_UPDATE_TIME);
 	mappedMemoryFree(memory, size);
 }
 
@@ -168,7 +168,7 @@ static bool _vf3dSync(struct VFile* vf, void* buffer, size_t size) {
 	struct VFile3DS* vf3d = (struct VFile3DS*) vf;
 	if (buffer) {
 		u32 sizeWritten;
-		Result res = FSFILE_Write(vf3d->handle, &sizeWritten, 0, buffer, size, FS_WRITE_FLUSH);
+		Result res = FSFILE_Write(vf3d->handle, &sizeWritten, 0, buffer, size, FS_WRITE_FLUSH | FS_WRITE_UPDATE_TIME);
 		return R_SUCCEEDED(res);
 	}
 	FSFILE_Flush(vf3d->handle);

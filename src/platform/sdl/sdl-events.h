@@ -95,6 +95,7 @@ struct mSDLPlayer {
 		// Gyro
 		int gyroX;
 		int gyroY;
+		int gyroZ;
 		float gyroSensitivity;
 		struct CircleBuffer zHistory;
 		int oldX;

@@ -41,7 +41,10 @@ void TilePainter::resizeEvent(QResizeEvent*) {
 void TilePainter::mousePressEvent(QMouseEvent* event) {
 	int x = event->x() / m_size;
 	int y = event->y() / m_size;
-	emit indexPressed(y * (width() / m_size) + x);
+	int index = y * (width() / m_size) + x;
+	if (index < m_tileCount) {
+		emit indexPressed(index);
+	}
 }
 
 void TilePainter::clearTile(int index) {

@@ -5,7 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "cli-el-backend.h"
 
+#include <mgba/core/config.h>
 #include <mgba/core/version.h>
+#include <mgba-util/vfs.h>
 
 #include <signal.h>
 
@@ -60,12 +62,47 @@ void _CLIDebuggerEditLineInit(struct CLIDebuggerBackend* be) {
 	HistEvent ev;
 	history(elbe->histate, &ev, H_SETSIZE, 200);
 	el_set(elbe->elstate, EL_HIST, history, elbe->histate);
+
+	char path[PATH_MAX + 1];
+	mCoreConfigDirectory(path, PATH_MAX);
+	if (path[0]) {
+		strncat(path, PATH_SEP, PATH_MAX);
+		strncat(path, "cli_history.log", PATH_MAX);
+		struct VFile* vf = VFileOpen(path, O_RDONLY);
+		if (vf) {
+			char line[512];
+			while (vf->readline(vf, line, sizeof(line)) > 0) {
+				history(elbe->histate, &ev, H_ENTER, line);
+			}
+			vf->close(vf);
+		}
+	}
+
 	_activeDebugger = be->p;
 	signal(SIGINT, _breakIntoDefault);
 }
 
 void _CLIDebuggerEditLineDeinit(struct CLIDebuggerBackend* be) {
 	struct CLIDebuggerEditLineBackend* elbe = (struct CLIDebuggerEditLineBackend*) be;
+	char path[PATH_MAX + 1];
+	mCoreConfigDirectory(path, PATH_MAX);
+	if (path[0]) {
+		strncat(path, PATH_SEP, PATH_MAX);
+		strncat(path, "cli_history.log", PATH_MAX);
+		struct VFile* vf = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+		if (vf) {
+			HistEvent ev = {0};
+			if (history(elbe->histate, &ev, H_FIRST) >= 0) {
+				do {
+					if (!ev.str || ev.str[0] == '\n') {
+						continue;
+					}
+					vf->write(vf, ev.str, strlen(ev.str));
+				} while (history(elbe->histate, &ev, H_NEXT) >= 0);
+			}
+			vf->close(vf);
+		}
+	}
 	history_end(elbe->histate);
 	el_end(elbe->elstate);
 	free(elbe);
@@ -115,7 +152,7 @@ void _CLIDebuggerEditLineHistoryAppend(struct CLIDebuggerBackend* be, const char
 }
 
 struct CLIDebuggerBackend* CLIDebuggerEditLineBackendCreate(void) {
-	struct CLIDebuggerEditLineBackend* elbe = malloc(sizeof(*elbe));
+	struct CLIDebuggerEditLineBackend* elbe = calloc(1, sizeof(*elbe));
 	elbe->d.printf = _CLIDebuggerEditLinePrintf;
 	elbe->d.init = _CLIDebuggerEditLineInit;
 	elbe->d.deinit = _CLIDebuggerEditLineDeinit;
@@ -123,5 +160,6 @@ struct CLIDebuggerBackend* CLIDebuggerEditLineBackendCreate(void) {
 	elbe->d.lineAppend = _CLIDebuggerEditLineLineAppend;
 	elbe->d.historyLast = _CLIDebuggerEditLineHistoryLast;
 	elbe->d.historyAppend = _CLIDebuggerEditLineHistoryAppend;
+	elbe->d.interrupt = NULL;
 	return &elbe->d;
 }

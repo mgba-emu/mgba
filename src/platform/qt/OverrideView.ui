@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OverrideView</class>
- <widget class="QWidget" name="OverrideView">
+ <class>QGBA::OverrideView</class>
+ <widget class="QWidget" name="QGBA::OverrideView">
   <property name="geometry">
    <rect>
     <x>0</x>

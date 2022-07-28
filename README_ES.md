@@ -80,7 +80,7 @@ Plataformas soportadas
 -------------------
 
 - Windows 7 o más reciente
-- OS X 10.8 (Mountain Lion)[<sup>[3]</sup>](#osxver) o más reciente
+- OS X 10.9 (Mavericks)[<sup>[3]</sup>](#osxver) o más reciente
 - Linux
 - FreeBSD
 - Nintendo 3DS
@@ -234,7 +234,7 @@ Notas a pie
 
 <a name="flashdetect">[2]</a> La detección del tamaño de la memoria flash no funciona en algunos casos. Se pueden configurar en tiempo de ejecución, pero se recomienda ingresar un bug si se encuentra un caso así.
 
-<a name="osxver">[3]</a> 10.8 sólo se necesita para la versión con Qt. Puede ser posible compilar o hacer funcionar la versión Qt en 10.7 o versiones más antigas, pero esto no está oficialmente soportado. La versión SDL funciona en 10.5, y puede funcionar en versiones anteriores.
+<a name="osxver">[3]</a> 10.9 sólo se necesita para la versión con Qt. Puede ser posible compilar o hacer funcionar la versión Qt en 10.7 o versiones más antigas, pero esto no está oficialmente soportado. La versión SDL funciona en 10.5, y puede funcionar en versiones anteriores.
 
 [downloads]: http://mgba.io/downloads.html
 [source]: https://github.com/mgba-emu/mgba/

@@ -521,6 +521,11 @@ void GBVideoSkipBIOS(struct GBVideo* video) {
 
 	int32_t next;
 	if (video->p->model & GB_MODEL_CGB) {
+		int i;
+		for (i = 0; i < 0x40; ++i) {
+			video->palette[i] = 0x7FFF;
+			video->renderer->writePalette(video->renderer, i, video->palette[i]);
+		}
 		video->ly = GB_VIDEO_VERTICAL_PIXELS;
 		video->p->memory.io[GB_REG_LY] = video->ly;
 		video->stat = GBRegisterSTATClearLYC(video->stat);

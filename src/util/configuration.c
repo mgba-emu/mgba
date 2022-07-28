@@ -183,7 +183,7 @@ bool ConfigurationWrite(const struct Configuration* configuration, const char* p
 	}
 	bool res = ConfigurationWriteVFile(configuration, vf);
 	vf->close(vf);
-	return true;
+	return res;
 }
 
 bool ConfigurationWriteVFile(const struct Configuration* configuration, struct VFile* vf) {

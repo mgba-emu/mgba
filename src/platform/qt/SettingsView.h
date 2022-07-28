@@ -34,6 +34,7 @@ public:
 	enum class Page {
 		AV,
 		INTERFACE,
+		GAMEPLAY,
 		UPDATE,
 		EMULATION,
 		ENHANCEMENTS,
@@ -62,6 +63,7 @@ signals:
 	void pathsChanged();
 	void languageChanged();
 	void libraryCleared();
+	void audioHleChanged();
 
 public slots:
 	void selectPage(Page);
