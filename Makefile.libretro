@@ -311,7 +311,7 @@ else ifeq ($(platform), ctr)
    TARGET := $(TARGET_NAME)_libretro_$(platform).a
    CC = $(DEVKITARM)/bin/arm-none-eabi-gcc$(EXE_EXT)
    AR = $(DEVKITARM)/bin/arm-none-eabi-ar$(EXE_EXT)
-   PLATFORM_DEFINES := -DARM11 -D_3DS
+   PLATFORM_DEFINES := -DARM11 -D_3DS -D__3DS__
 	 PLATFORM_DEFINES += -DHAVE_STRTOF_L -DHAVE_LOCALE -D_GNU_SOURCE
 
    CFLAGS += -march=armv6k -mtune=mpcore -mfloat-abi=hard
