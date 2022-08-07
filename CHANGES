@@ -100,6 +100,7 @@ Misc:
  - Qt: Add e-Card passing to the command line (closes mgba.io/i/2474)
  - Qt: Boot both a multiboot image and ROM with CLI args (closes mgba.io/i/1941)
  - Qt: Improve cheat parsing (fixes mgba.io/i/2297)
+ - Qt: Change lossless setting to use WavPack audio
  - SDL: Support exposing an axis directly as the gyro value (closes mgba.io/i/2531)
  - Windows: Attach to console if present
  - Vita: Add bilinear filtering option (closes mgba.io/i/344)
