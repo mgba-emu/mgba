@@ -6338,7 +6338,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1665"/>
         <source>Game state views</source>
-        <translation>游戏即时存档视图</translation>
+        <translation>游戏状态视图</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1666"/>
