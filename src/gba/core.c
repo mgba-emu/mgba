@@ -503,6 +503,9 @@ static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 		core->desiredVideoDimensions(core, &width, &height);
 		stream->videoDimensionsChanged(stream, width, height);
 	}
+	if (stream && stream->audioRateChanged) {
+		stream->audioRateChanged(stream, GBA_ARM7TDMI_FREQUENCY / gba->audio.sampleInterval);
+	}
 }
 
 static bool _GBACoreLoadROM(struct mCore* core, struct VFile* vf) {
