@@ -164,7 +164,12 @@ mLOG_DECLARE_CATEGORY(GB_STATE);
  * | 0x00197: Reserved (leave zero)
  * 0x00198 - 0x0019F: Global cycle counter
  * 0x001A0 - 0x001A1: Program counter for last cartridge read
- * 0x001A2 - 0x0025F: Reserved (leave zero)
+ * 0x001A2 - 0x00247: Reserved (leave zero)
+ * 0x00248 - 0x0025F: Additional audio state
+ * | 0x00248 - 0x0024B: Last sample timestamp
+ * | 0x0024C: Current audio sample index
+ * | 0x0024D - 0x0024F: Reserved (leave zero)
+ * | 0x00250 - 0x0025F: Audio rendered samples
  * 0x00260 - 0x002FF: OAM
  * 0x00300 - 0x0037F: I/O memory
  * 0x00380 - 0x003FE: HRAM
@@ -430,7 +435,15 @@ struct GBSerializedState {
 	uint64_t globalCycles;
 
 	uint16_t cartBusPc;
-	uint16_t reserved[95];
+
+	uint16_t reserved[27];
+
+	struct {
+		int32_t lastSample;
+		uint8_t sampleIndex;
+		uint8_t reserved[3];
+		struct mStereoSample currentSamples[32];
+	} audio2;
 
 	uint8_t oam[GB_SIZE_OAM];
 

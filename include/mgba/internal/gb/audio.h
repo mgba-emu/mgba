@@ -10,7 +10,10 @@
 
 CXX_GUARD_START
 
+#include <mgba/core/interface.h>
 #include <mgba/core/timing.h>
+
+#define GB_MAX_SAMPLES 32
 
 DECL_BITFIELD(GBAudioRegisterDuty, uint8_t);
 DECL_BITS(GBAudioRegisterDuty, Length, 0, 6);
@@ -194,6 +197,10 @@ struct GBAudio {
 
 	int32_t sampleInterval;
 	enum GBAudioStyle style;
+
+	int32_t lastSample;
+	int sampleIndex;
+	struct mStereoSample currentSamples[GB_MAX_SAMPLES];
 
 	struct mTimingEvent frameEvent;
 	struct mTimingEvent sampleEvent;

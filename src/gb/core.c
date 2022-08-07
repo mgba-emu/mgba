@@ -428,7 +428,7 @@ static void _GBCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 		stream->videoDimensionsChanged(stream, width, height);
 	}
 	if (stream && stream->audioRateChanged) {
-		stream->audioRateChanged(stream, DMG_SM83_FREQUENCY / gb->audio.sampleInterval);
+		stream->audioRateChanged(stream, DMG_SM83_FREQUENCY / 32);
 	}
 }
 
