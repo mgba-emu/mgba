@@ -442,7 +442,7 @@ struct GBSerializedState {
 		int32_t lastSample;
 		uint8_t sampleIndex;
 		uint8_t reserved[3];
-		struct mStereoSample currentSamples[32];
+		struct mStereoSample currentSamples[GB_MAX_SAMPLES];
 	} audio2;
 
 	uint8_t oam[GB_SIZE_OAM];
@@ -472,6 +472,8 @@ struct GBSerializedState {
 	} sgb;
 };
 #pragma pack(pop)
+
+static_assert(sizeof(struct GBSerializedState) == 0x11800, "GB savestate struct sized wrong");
 
 bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state);
 void GBSerialize(struct GB* gb, struct GBSerializedState* state);

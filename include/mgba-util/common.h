@@ -20,6 +20,7 @@
 
 CXX_GUARD_START
 
+#include <assert.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <inttypes.h>
