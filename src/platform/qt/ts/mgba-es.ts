@@ -180,7 +180,7 @@ Tamaño de la descarga: %3</translation>
     <message>
         <location filename="../AudioDevice.cpp" line="62"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Escribiendo datos a dispositivo de audio de sólo lectura</translation>
     </message>
 </context>
 <context>
@@ -188,7 +188,7 @@ Tamaño de la descarga: %3</translation>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="43"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Sin entrada no se puede iniciar un procesador de audio</translation>
     </message>
 </context>
 <context>
@@ -196,7 +196,7 @@ Tamaño de la descarga: %3</translation>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Sin entrada no se puede iniciar un procesador de audio</translation>
     </message>
 </context>
 <context>
@@ -264,12 +264,12 @@ Tamaño de la descarga: %3</translation>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Faltan los datos de BattleChip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>Faltan los datos de BattleChip. BattleChip Gates seguirán funcionando, pero faltarán algunos gráficos. ¿Quiere descargar los datos ahora?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="184"/>
@@ -358,7 +358,7 @@ Tamaño de la descarga: %3</translation>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Algunos trucos no se pudieron añadir. Asegúrese de que están formateados correctamente y/o pruebe otros tipos de trucos.</translation>
     </message>
 </context>
 <context>
@@ -793,7 +793,7 @@ Tamaño de la descarga: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="75"/>
         <source>ROM Only</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sólo ROM</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="76"/>
