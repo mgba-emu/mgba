@@ -88,8 +88,9 @@ struct mBreakpoint {
 
 struct mWatchpoint {
 	ssize_t id;
-	uint32_t address;
 	int segment;
+	uint32_t minAddress;
+	uint32_t maxAddress;
 	enum mWatchpointType type;
 	struct ParseTree* condition;
 };
