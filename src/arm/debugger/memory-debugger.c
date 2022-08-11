@@ -92,12 +92,13 @@ CREATE_MULTIPLE_WATCHPOINT_SHIM(storeMultiple, WATCHPOINT_WRITE)
 CREATE_SHIM(setActiveRegion, void, (struct ARMCore* cpu, uint32_t address), address)
 
 static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct mDebuggerEntryInfo* info, enum mWatchpointType type, uint32_t newValue, int width) {
-	--width;
 	struct mWatchpoint* watchpoint;
 	size_t i;
+	uint32_t minAddress = address & ~(width - 1);
+	uint32_t maxAddress = minAddress + width;
 	for (i = 0; i < mWatchpointListSize(&debugger->watchpoints); ++i) {
 		watchpoint = mWatchpointListGetPointer(&debugger->watchpoints, i);
-		if (!((watchpoint->address ^ address) & ~width) && watchpoint->type & type) {
+		if (watchpoint->type & type && watchpoint->minAddress < maxAddress && minAddress < watchpoint->maxAddress) {
 			if (watchpoint->condition) {
 				int32_t value;
 				int segment;
@@ -107,7 +108,7 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 			}
 
 			uint32_t oldValue;
-			switch (width + 1) {
+			switch (width) {
 			case 1:
 				oldValue = debugger->originalMemory.load8(debugger->cpu, address, 0);
 				break;
