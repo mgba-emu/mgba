@@ -218,7 +218,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	CoreController::Interrupter interrupter(controller);
 	QMetaObject::invokeMethod(m_painter.get(), "start");
 	if (!m_gl) {
-		if (QGuiApplication::platformName() == "windows") {
+		if (shouldDisableUpdates()) {
 			setUpdatesEnabled(false);
 		}
 	} else {
@@ -306,7 +306,7 @@ void DisplayGL::unpauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = true;
 		QMetaObject::invokeMethod(m_painter.get(), "unpause", Qt::BlockingQueuedConnection);
-		if (!m_gl && QGuiApplication::platformName() == "windows") {
+		if (!m_gl && shouldDisableUpdates()) {
 			setUpdatesEnabled(false);
 		}
 	}
@@ -383,6 +383,16 @@ void DisplayGL::resizePainter() {
 	if (m_hasStarted) {
 		QMetaObject::invokeMethod(m_painter.get(), "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, size()));
 	}
+}
+
+bool DisplayGL::shouldDisableUpdates() {
+	if (QGuiApplication::platformName() == "windows") {
+		return true;
+	}
+	if (QGuiApplication::platformName() == "xcb") {
+		return true;
+	}
+	return false;
 }
 
 void DisplayGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {

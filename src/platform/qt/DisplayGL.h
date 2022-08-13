@@ -112,6 +112,7 @@ protected:
 
 private:
 	void resizePainter();
+	bool shouldDisableUpdates();
 
 	static QHash<QSurfaceFormat, bool> s_supports;
 
