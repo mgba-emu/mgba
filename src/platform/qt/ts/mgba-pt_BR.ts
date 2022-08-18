@@ -259,7 +259,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
         <source>Show advanced</source>
-        <translation>Mostrar opções avançadas</translation>
+        <translation>Mostrar as opções avançadas</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
@@ -5673,7 +5673,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../VideoView.ui" line="565"/>
         <source>Show advanced</source>
-        <translation>Mostrar as opções avançadas</translation>
+        <translation>Mostrar opções avançadas</translation>
     </message>
 </context>
 <context>
