@@ -860,7 +860,7 @@ void Window::exitFullScreen() {
 	if (!isFullScreen()) {
 		return;
 	}
-	m_screenWidget->unsetCursor();
+	centralWidget()->unsetCursor();
 	menuBar()->show();
 	showNormal();
 }
@@ -908,7 +908,7 @@ void Window::gameStarted() {
 	}
 	m_focusCheck.start();
 	if (m_display->underMouse()) {
-		m_screenWidget->setCursor(Qt::BlankCursor);
+		centralWidget()->setCursor(Qt::BlankCursor);
 	}
 
 	CoreController::Interrupter interrupter(m_controller);
@@ -1052,11 +1052,11 @@ void Window::reloadDisplayDriver() {
 
 	connect(m_display.get(), &QGBA::Display::hideCursor, [this]() {
 		if (centralWidget() == m_display.get()) {
-			m_screenWidget->setCursor(Qt::BlankCursor);
+			centralWidget()->setCursor(Qt::BlankCursor);
 		}
 	});
 	connect(m_display.get(), &QGBA::Display::showCursor, [this]() {
-		m_screenWidget->unsetCursor();
+		centralWidget()->unsetCursor();
 	});
 
 	m_display->configure(m_config);
@@ -2167,7 +2167,7 @@ void Window::updateMute() {
 void Window::setLogo() {
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
-	m_screenWidget->unsetCursor();
+	centralWidget()->unsetCursor();
 }
 
 WindowBackground::WindowBackground(QWidget* parent)
