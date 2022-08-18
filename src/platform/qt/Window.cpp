@@ -230,9 +230,8 @@ void Window::resizeFrame(const QSize& size) {
 			newSize.setHeight(geom.height());
 		}
 	}
-	m_screenWidget->setSizeHint(newSize);
-	newSize -= m_screenWidget->size();
 	newSize += this->size();
+	newSize -= centralWidget()->size();
 	if (!isFullScreen()) {
 		resize(newSize);
 	}
@@ -698,9 +697,10 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 }
 
 void Window::resizeEvent(QResizeEvent*) {
+	QSize newSize = centralWidget()->size();
 	if (!isFullScreen()) {
-		m_config->setOption("height", m_screenWidget->height());
-		m_config->setOption("width", m_screenWidget->width());
+		m_config->setOption("height", newSize.height());
+		m_config->setOption("width", newSize.width());
 	}
 
 	int factor = 0;
@@ -708,9 +708,9 @@ void Window::resizeEvent(QResizeEvent*) {
 	if (m_controller) {
 		size = m_controller->screenDimensions();
 	}
-	if (m_screenWidget->width() % size.width() == 0 && m_screenWidget->height() % size.height() == 0 &&
-	    m_screenWidget->width() / size.width() == m_screenWidget->height() / size.height()) {
-		factor = m_screenWidget->width() / size.width();
+	if (newSize.width() % size.width() == 0 && newSize.height() % size.height() == 0 &&
+	    newSize.width() / size.width() == newSize.height() / size.height()) {
+		factor = newSize.width() / size.width();
 	}
 	m_savedScale = factor;
 	for (QMap<int, Action*>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
@@ -737,7 +737,7 @@ void Window::showEvent(QShowEvent* event) {
 		return;
 	}
 	m_wasOpened = true;
-	resizeFrame(m_screenWidget->sizeHint());
+	resizeFrame(centralWidget()->sizeHint());
 	QVariant windowPos = m_config->getQtOption("windowPos", m_playerId > 0 ? QString("player%0").arg(m_playerId) : QString());
 	bool maximized = m_config->getQtOption("maximized").toBool();
 	QRect geom = windowHandle()->screen()->availableGeometry();
