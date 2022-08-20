@@ -141,10 +141,14 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	});
 #endif
 #if defined(M_CORE_GBA)
-	resizeFrame(QSize(GBA_VIDEO_HORIZONTAL_PIXELS * i, GBA_VIDEO_VERTICAL_PIXELS * i));
+	QSize minimumSize = QSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 #elif defined(M_CORE_GB)
-	resizeFrame(QSize(GB_VIDEO_HORIZONTAL_PIXELS * i, GB_VIDEO_VERTICAL_PIXELS * i));
+	QSize minimumSize = QSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #endif
+	setMinimumSize(minimumSize);
+	if (i > 0) {
+		resizeFrame(minimumSize * i);
+	}
 	setLogo();
 
 	connect(this, &Window::shutdown, m_logView, &QWidget::hide);
