@@ -147,7 +147,9 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 #endif
 	setMinimumSize(minimumSize);
 	if (i > 0) {
-		resizeFrame(minimumSize * i);
+		m_initialSize = minimumSize * i;
+	} else {
+		m_initialSize = minimumSize * 2;
 	}
 	setLogo();
 
@@ -203,7 +205,7 @@ void Window::argumentsPassed() {
 	}
 #endif
 
-	if (m_config->graphicsOpts()->multiplier) {
+	if (m_config->graphicsOpts()->multiplier > 0) {
 		m_savedScale = m_config->graphicsOpts()->multiplier;
 
 #if defined(M_CORE_GBA)
@@ -211,7 +213,7 @@ void Window::argumentsPassed() {
 #elif defined(M_CORE_GB)
 		QSize size(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #endif
-		resizeFrame(size * m_savedScale);
+		m_initialSize = size * m_savedScale;
 	}
 
 	if (args->fname) {
@@ -265,7 +267,7 @@ void Window::loadConfig() {
 	reloadConfig();
 
 	if (opts->width && opts->height) {
-		resizeFrame(QSize(opts->width, opts->height));
+		m_initialSize = QSize(opts->width, opts->height);
 	}
 
 	if (opts->fullscreen) {
@@ -741,7 +743,9 @@ void Window::showEvent(QShowEvent* event) {
 		return;
 	}
 	m_wasOpened = true;
-	resizeFrame(centralWidget()->sizeHint());
+	if (m_initialSize.isValid()) {
+		resizeFrame(m_initialSize);
+	}
 	QVariant windowPos = m_config->getQtOption("windowPos", m_playerId > 0 ? QString("player%0").arg(m_playerId) : QString());
 	bool maximized = m_config->getQtOption("maximized").toBool();
 	QRect geom = windowHandle()->screen()->availableGeometry();
