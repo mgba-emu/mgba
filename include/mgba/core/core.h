@@ -88,6 +88,7 @@ struct mCore {
 	bool (*loadSave)(struct mCore*, struct VFile* vf);
 	bool (*loadTemporarySave)(struct mCore*, struct VFile* vf);
 	void (*unloadROM)(struct mCore*);
+	size_t (*romSize)(const struct mCore*);
 	void (*checksum)(const struct mCore*, void* data, enum mCoreChecksumType type);
 
 	bool (*loadBIOS)(struct mCore*, struct VFile* vf, int biosID);
@@ -185,6 +186,8 @@ bool mCorePreloadFileCB(struct mCore* core, const char* path, void (cb)(size_t, 
 bool mCoreAutoloadSave(struct mCore* core);
 bool mCoreAutoloadPatch(struct mCore* core);
 bool mCoreAutoloadCheats(struct mCore* core);
+
+bool mCoreLoadSaveFile(struct mCore* core, const char* path, bool temporary);
 
 bool mCoreSaveState(struct mCore* core, int slot, int flags);
 bool mCoreLoadState(struct mCore* core, int slot, int flags);

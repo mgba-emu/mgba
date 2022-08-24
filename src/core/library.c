@@ -243,9 +243,11 @@ void mLibraryLoadDirectory(struct mLibrary* library, const char* base, bool recu
 		struct VFile* vf = dir->openFile(dir, current->filename, O_RDONLY);
 		_mLibraryDeleteEntry(library, current);
 		if (!vf) {
+			mLibraryEntryFree(current);
 			continue;
 		}
 		_mLibraryAddEntry(library, current->filename, base, vf);
+		mLibraryEntryFree(current);
 	}
 	mLibraryListingDeinit(&entries);
 

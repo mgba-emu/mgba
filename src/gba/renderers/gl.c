@@ -779,6 +779,7 @@ static void _initFramebuffers(struct GBAVideoGLRenderer* glRenderer) {
 
 	glBindFramebuffer(GL_FRAMEBUFFER, glRenderer->fbo[GBA_GL_FBO_OUTPUT]);
 	_initFramebufferTexture(glRenderer->outputTex, GL_RGB, GL_COLOR_ATTACHMENT0, glRenderer->scale);
+	glRenderer->outputTexDirty = false;
 
 	int i;
 	for (i = 0; i < 4; ++i) {
@@ -1684,6 +1685,10 @@ static void GBAVideoGLRendererWriteBLDCNT(struct GBAVideoGLRenderer* renderer, u
 void _finalizeLayers(struct GBAVideoGLRenderer* renderer) {
 	const GLuint* uniforms = renderer->finalizeShader.uniforms;
 	glBindFramebuffer(GL_FRAMEBUFFER, renderer->fbo[GBA_GL_FBO_OUTPUT]);
+	if (renderer->outputTexDirty) {
+		_initFramebufferTexture(renderer->outputTex, GL_RGB, GL_COLOR_ATTACHMENT0, renderer->scale);
+		renderer->outputTexDirty = false;
+	}
 	glViewport(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, GBA_VIDEO_VERTICAL_PIXELS * renderer->scale);
 	glScissor(0, 0, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, GBA_VIDEO_VERTICAL_PIXELS * renderer->scale);
 	if (GBARegisterDISPCNTIsForcedBlank(renderer->dispcnt)) {

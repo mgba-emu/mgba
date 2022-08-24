@@ -35,6 +35,7 @@ public:
 	enum class Page {
 		AV,
 		INTERFACE,
+		GAMEPLAY,
 		UPDATE,
 		EMULATION,
 		ENHANCEMENTS,

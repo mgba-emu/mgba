@@ -155,6 +155,7 @@ struct GBAVideoGLRenderer {
 	GLuint vbo;
 
 	GLuint outputTex;
+	bool outputTexDirty;
 
 	GLuint paletteTex;
 	uint16_t shadowPalette[GBA_VIDEO_VERTICAL_PIXELS][512];

@@ -19,6 +19,9 @@
 		info->operandFormat |= ARM_OPERAND_SHIFT_REGISTER_3; \
 	} else { \
 		info->op3.shifterImm = (opcode >> 7) & 0x1F; \
+		if (!info->op3.shifterImm && (ARM_SHIFT_ ## OP == ARM_SHIFT_LSR || ARM_SHIFT_ ## OP == ARM_SHIFT_ASR)) { \
+			info->op3.shifterImm = 32; \
+		} \
 		info->operandFormat |= ARM_OPERAND_SHIFT_IMMEDIATE_3; \
 	}
 

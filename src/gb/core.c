@@ -485,8 +485,16 @@ static void _GBCoreUnloadROM(struct mCore* core) {
 	GBUnloadROM(core->board);
 }
 
+static size_t _GBCoreROMSize(const struct mCore* core) {
+	const struct GB* gb = (const struct GB*) core->board;
+	if (gb->romVf) {
+		return gb->romVf->size(gb->romVf);
+	}
+	return gb->pristineRomSize;
+}
+
 static void _GBCoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
-	struct GB* gb = (struct GB*) core->board;
+	const struct GB* gb = (const struct GB*) core->board;
 	switch (type) {
 	case mCHECKSUM_CRC32:
 		memcpy(data, &gb->romCrc32, sizeof(gb->romCrc32));
@@ -888,59 +896,59 @@ static bool _GBCoreReadRegister(const struct mCore* core, const char* name, void
 	uint16_t* value16 = out;
 	uint8_t* value8 = out;
 
-	if (strcmp(name, "b") == 0) {
+	if (strcasecmp(name, "b") == 0) {
 		*value8 = cpu->b;
 		return true;
 	}
-	if (strcmp(name, "c") == 0) {
+	if (strcasecmp(name, "c") == 0) {
 		*value8 = cpu->c;
 		return true;
 	}
-	if (strcmp(name, "d") == 0) {
+	if (strcasecmp(name, "d") == 0) {
 		*value8 = cpu->d;
 		return true;
 	}
-	if (strcmp(name, "e") == 0) {
+	if (strcasecmp(name, "e") == 0) {
 		*value8 = cpu->e;
 		return true;
 	}
-	if (strcmp(name, "a") == 0) {
+	if (strcasecmp(name, "a") == 0) {
 		*value8 = cpu->a;
 		return true;
 	}
-	if (strcmp(name, "f") == 0) {
+	if (strcasecmp(name, "f") == 0) {
 		*value8 = cpu->f.packed;
 		return true;
 	}
-	if (strcmp(name, "h") == 0) {
+	if (strcasecmp(name, "h") == 0) {
 		*value8 = cpu->h;
 		return true;
 	}
-	if (strcmp(name, "l") == 0) {
+	if (strcasecmp(name, "l") == 0) {
 		*value8 = cpu->l;
 		return true;
 	}
-	if (strcmp(name, "bc") == 0) {
+	if (strcasecmp(name, "bc") == 0) {
 		*value16 = cpu->bc;
 		return true;
 	}
-	if (strcmp(name, "de") == 0) {
+	if (strcasecmp(name, "de") == 0) {
 		*value16 = cpu->de;
 		return true;
 	}
-	if (strcmp(name, "hl") == 0) {
+	if (strcasecmp(name, "hl") == 0) {
 		*value16 = cpu->hl;
 		return true;
 	}
-	if (strcmp(name, "af") == 0) {
+	if (strcasecmp(name, "af") == 0) {
 		*value16 = cpu->af;
 		return true;
 	}
-	if (strcmp(name, "pc") == 0) {
+	if (strcasecmp(name, "pc") == 0) {
 		*value16 = cpu->pc;
 		return true;
 	}
-	if (strcmp(name, "sp") == 0) {
+	if (strcasecmp(name, "sp") == 0) {
 		*value16 = cpu->sp;
 		return true;
 	}
@@ -1260,6 +1268,7 @@ struct mCore* GBCoreCreate(void) {
 	core->loadTemporarySave = _GBCoreLoadTemporarySave;
 	core->loadPatch = _GBCoreLoadPatch;
 	core->unloadROM = _GBCoreUnloadROM;
+	core->romSize = _GBCoreROMSize;
 	core->checksum = _GBCoreChecksum;
 	core->reset = _GBCoreReset;
 	core->runFrame = _GBCoreRunFrame;

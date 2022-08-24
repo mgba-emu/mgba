@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MemoryDump</class>
- <widget class="QDialog" name="MemoryDump">
+ <class>QGBA::MemoryDump</class>
+ <widget class="QDialog" name="QGBA::MemoryDump">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -126,7 +126,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>MemoryDump</receiver>
+   <receiver>QGBA::MemoryDump</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -142,7 +142,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>MemoryDump</receiver>
+   <receiver>QGBA::MemoryDump</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

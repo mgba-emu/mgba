@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>BattleChipView</class>
- <widget class="QDialog" name="BattleChipView">
+ <class>QGBA::BattleChipView</class>
+ <widget class="QDialog" name="QGBA::BattleChipView">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -238,7 +238,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>BattleChipView</receiver>
+   <receiver>QGBA::BattleChipView</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

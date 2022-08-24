@@ -295,7 +295,7 @@ void mScriptContextExportNamespace(struct mScriptContext* context, const char* n
 }
 
 void mScriptContextSetDocstring(struct mScriptContext* context, const char* key, const char* docstring) {
-	HashTableInsert(&context->docstrings, key, docstring);
+	HashTableInsert(&context->docstrings, key, (char*) docstring);
 }
 
 const char* mScriptContextGetDocstring(struct mScriptContext* context, const char* key) {

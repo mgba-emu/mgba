@@ -190,6 +190,9 @@ static int _decodeMemory(struct ARMMemoryAccess memory, struct ARMCore* cpu, con
 				case 4:
 					value = cpu->memory.load32(cpu, addrBase, NULL);
 					break;
+				default:
+					// Should never be reached
+					abort();
 				}
 				const char* label = NULL;
 				if (symbols) {
@@ -432,6 +435,7 @@ int ARMDisassemble(const struct ARMInstructionInfo* info, struct ARMCore* cpu, c
 	case ARM_MN_LSR:
 	case ARM_MN_MLA:
 	case ARM_MN_MUL:
+	case ARM_MN_MOV:
 	case ARM_MN_MVN:
 	case ARM_MN_ORR:
 	case ARM_MN_ROR:

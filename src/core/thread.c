@@ -253,10 +253,13 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	core->setSync(core, &threadContext->impl->sync);
 
 	struct mLogFilter filter;
-	if (!threadContext->logger.d.filter) {
-		threadContext->logger.d.filter = &filter;
-		mLogFilterInit(threadContext->logger.d.filter);
-		mLogFilterLoad(threadContext->logger.d.filter, &core->config);
+	struct mLogger* logger = &threadContext->logger.d;
+	if (threadContext->logger.logger) {
+		logger->filter = threadContext->logger.logger->filter;
+	} else {
+		logger->filter = &filter;
+		mLogFilterInit(logger->filter);
+		mLogFilterLoad(logger->filter, &core->config);
 	}
 
 #ifdef ENABLE_SCRIPTING
@@ -431,10 +434,10 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 #endif
 	core->clearCoreCallbacks(core);
 
-	if (threadContext->logger.d.filter == &filter) {
+	if (logger->filter == &filter) {
 		mLogFilterDeinit(&filter);
 	}
-	threadContext->logger.d.filter = NULL;
+	logger->filter = NULL;
 
 	return 0;
 }
@@ -444,10 +447,8 @@ bool mCoreThreadStart(struct mCoreThread* threadContext) {
 	threadContext->impl->state = mTHREAD_INITIALIZED;
 	threadContext->impl->requested = 0;
 	threadContext->logger.p = threadContext;
-	if (!threadContext->logger.d.log) {
-		threadContext->logger.d.log = _mCoreLog;
-		threadContext->logger.d.filter = NULL;
-	}
+	threadContext->logger.d.log = _mCoreLog;
+	threadContext->logger.d.filter = NULL;
 
 	if (!threadContext->impl->sync.fpsTarget) {
 		threadContext->impl->sync.fpsTarget = _defaultFPSTarget;
@@ -718,14 +719,17 @@ struct mCoreThread* mCoreThreadGet(void) {
 }
 
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
-	UNUSED(logger);
-	UNUSED(level);
-	printf("%s: ", mLogCategoryName(category));
-	vprintf(format, args);
-	printf("\n");
-	struct mCoreThread* thread = mCoreThreadGet();
-	if (thread && level == mLOG_FATAL) {
-		mCoreThreadMarkCrashed(thread);
+	struct mThreadLogger* threadLogger = (struct mThreadLogger*) logger;
+	if (level == mLOG_FATAL) {
+		mCoreThreadMarkCrashed(threadLogger->p);
+	}
+	if (!threadLogger->p->logger.logger) {
+		printf("%s: ", mLogCategoryName(category));
+		vprintf(format, args);
+		printf("\n");
+	} else {
+		logger = threadLogger->p->logger.logger;
+		logger->log(logger, category, level, format, args);
 	}
 }
 #else

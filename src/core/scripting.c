@@ -215,19 +215,19 @@ static struct mScriptValue* mScriptMemoryDomainReadRange(struct mScriptMemoryDom
 static void mScriptMemoryDomainWrite8(struct mScriptMemoryDomain* adapter, uint32_t address, uint8_t value) {
 	CALCULATE_SEGMENT_INFO;
 	CALCULATE_SEGMENT_ADDRESS;
-	adapter->core->rawWrite8(adapter->core, address, segmentAddress, value);
+	adapter->core->rawWrite8(adapter->core, segmentAddress, segment, value);
 }
 
 static void mScriptMemoryDomainWrite16(struct mScriptMemoryDomain* adapter, uint32_t address, uint16_t value) {
 	CALCULATE_SEGMENT_INFO;
 	CALCULATE_SEGMENT_ADDRESS;
-	adapter->core->rawWrite16(adapter->core, address, segmentAddress, value);
+	adapter->core->rawWrite16(adapter->core, segmentAddress, segment, value);
 }
 
 static void mScriptMemoryDomainWrite32(struct mScriptMemoryDomain* adapter, uint32_t address, uint32_t value) {
 	CALCULATE_SEGMENT_INFO;
 	CALCULATE_SEGMENT_ADDRESS;
-	adapter->core->rawWrite32(adapter->core, address, segmentAddress, value);
+	adapter->core->rawWrite32(adapter->core, segmentAddress, segment, value);
 }
 
 static uint32_t mScriptMemoryDomainBase(struct mScriptMemoryDomain* adapter) {
@@ -373,6 +373,16 @@ static struct mScriptValue* _mScriptCoreSaveState(struct mCore* core, int32_t fl
 	return value;
 }
 
+static int _mScriptCoreSaveStateFile(struct mCore* core, const char* path, int flags) {
+	struct VFile* vf = VFileOpen(path, O_WRONLY | O_TRUNC | O_CREAT);
+	if (!vf) {
+		return false;
+	}
+	bool ok = mCoreSaveStateNamed(core, vf, flags);
+	vf->close(vf);
+	return ok;
+}
+
 static int32_t _mScriptCoreLoadState(struct mCore* core, struct mScriptString* buffer, int32_t flags) {
 	struct VFile* vf = VFileFromConstMemory(buffer->buffer, buffer->size);
 	int ret = mCoreLoadStateNamed(core, vf, flags);
@@ -380,6 +390,15 @@ static int32_t _mScriptCoreLoadState(struct mCore* core, struct mScriptString* b
 	return ret;
 }
 
+static int _mScriptCoreLoadStateFile(struct mCore* core, const char* path, int flags) {
+	struct VFile* vf = VFileOpen(path, O_RDONLY);
+	if (!vf) {
+		return false;
+	}
+	bool ok = mCoreLoadStateNamed(core, vf, flags);
+	vf->close(vf);
+	return ok;
+}
 static void _mScriptCoreTakeScreenshot(struct mCore* core, const char* filename) {
 	if (filename) {
 		struct VFile* vf = VFileOpen(filename, O_WRONLY | O_CREAT | O_TRUNC);
@@ -393,6 +412,11 @@ static void _mScriptCoreTakeScreenshot(struct mCore* core, const char* filename)
 	}
 }
 
+// Loading functions
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, BOOL, loadFile, mCoreLoadFile, 1, CHARP, path);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, BOOL, autoloadSave, mCoreAutoloadSave, 0);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, BOOL, loadSaveFile, mCoreLoadSaveFile, 2, CHARP, path, BOOL, temporary);
+
 // Info functions
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, platform, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, U32, frameCounter, 0);
@@ -400,6 +424,7 @@ mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frameCycles, 0);
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, frequency, 0);
 mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WSTR, getGameTitle, _mScriptCoreGetGameTitle, 0);
 mSCRIPT_DECLARE_STRUCT_C_METHOD(mCore, WSTR, getGameCode, _mScriptCoreGetGameCode, 0);
+mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S64, romSize, 0);
 mSCRIPT_DECLARE_STRUCT_C_METHOD_WITH_DEFAULTS(mCore, WSTR, checksum, _mScriptCoreChecksum, 1, S32, type);
 
 // Run functions
@@ -430,10 +455,12 @@ mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WSTR, readRegister, _mScriptCoreReadRegiste
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, writeRegister, _mScriptCoreWriteRegister, 2, CHARP, regName, S32, value);
 
 // Savestate functions
-mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, saveStateSlot, mCoreSaveState, 2, S32, slot, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, saveStateSlot, mCoreSaveState, 2, S32, slot, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, WSTR, saveStateBuffer, _mScriptCoreSaveState, 1, S32, flags);
-mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateSlot, mCoreLoadState, 2, S32, slot, S32, flags);
-mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, S32, loadStateBuffer, _mScriptCoreLoadState, 2, STR, buffer, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, saveStateFile, _mScriptCoreSaveStateFile, 2, CHARP, path, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, loadStateSlot, mCoreLoadState, 2, S32, slot, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, loadStateBuffer, _mScriptCoreLoadState, 2, STR, buffer, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, loadStateFile, _mScriptCoreLoadStateFile, 2, CHARP, path, S32, flags);
 
 // Miscellaneous functions
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD_WITH_DEFAULTS(mCore, screenshot, _mScriptCoreTakeScreenshot, 1, CHARP, filename);
@@ -442,6 +469,13 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
 		"An instance of an emulator core."
 	)
+	mSCRIPT_DEFINE_DOCSTRING("Load a ROM file into the current state of this core")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadFile)
+	mSCRIPT_DEFINE_DOCSTRING("Load the save data associated with the currently loaded ROM file")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, autoloadSave)
+	mSCRIPT_DEFINE_DOCSTRING("Load save data from the given path. If the `temporary` flag is set, the given save data will not be written back to disk")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadSaveFile)
+
 	mSCRIPT_DEFINE_DOCSTRING("Get which platform is being emulated. See C.PLATFORM for possible values")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, platform)
 	mSCRIPT_DEFINE_DOCSTRING("Get the number of the current frame")
@@ -450,6 +484,8 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frameCycles)
 	mSCRIPT_DEFINE_DOCSTRING("Get the number of cycles per second")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, frequency)
+	mSCRIPT_DEFINE_DOCSTRING("Get the size of the loaded ROM")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, romSize)
 	mSCRIPT_DEFINE_DOCSTRING("Get the checksum of the loaded ROM")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, checksum)
 
@@ -504,10 +540,14 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateSlot)
 	mSCRIPT_DEFINE_DOCSTRING("Save state and return as a buffer. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateBuffer)
+	mSCRIPT_DEFINE_DOCSTRING("Save state to the given path. See C.SAVESTATE for possible values for `flags`")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateFile)
 	mSCRIPT_DEFINE_DOCSTRING("Load state from the slot number. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateSlot)
-	mSCRIPT_DEFINE_DOCSTRING("Load state a buffer. See C.SAVESTATE for possible values for `flags`")
+	mSCRIPT_DEFINE_DOCSTRING("Load state from a buffer. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateBuffer)
+	mSCRIPT_DEFINE_DOCSTRING("Load state from the given path. See C.SAVESTATE for possible values for `flags`")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateFile)
 
 	mSCRIPT_DEFINE_DOCSTRING("Save a screenshot")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, screenshot)
@@ -522,16 +562,26 @@ mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateSlot)
 	mSCRIPT_S32(SAVESTATE_ALL)
 mSCRIPT_DEFINE_DEFAULTS_END;
 
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateBuffer)
+	mSCRIPT_S32(SAVESTATE_ALL)
+mSCRIPT_DEFINE_DEFAULTS_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateFile)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_S32(SAVESTATE_ALL)
+mSCRIPT_DEFINE_DEFAULTS_END;
+
 mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, loadStateSlot)
 	mSCRIPT_NO_DEFAULT,
 	mSCRIPT_S32(SAVESTATE_ALL & ~SAVESTATE_SAVEDATA)
 mSCRIPT_DEFINE_DEFAULTS_END;
 
-mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, saveStateBuffer)
-	mSCRIPT_S32(SAVESTATE_ALL)
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, loadStateBuffer)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_S32(SAVESTATE_ALL & ~SAVESTATE_SAVEDATA)
 mSCRIPT_DEFINE_DEFAULTS_END;
 
-mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, loadStateBuffer)
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, loadStateFile)
 	mSCRIPT_NO_DEFAULT,
 	mSCRIPT_S32(SAVESTATE_ALL & ~SAVESTATE_SAVEDATA)
 mSCRIPT_DEFINE_DEFAULTS_END;

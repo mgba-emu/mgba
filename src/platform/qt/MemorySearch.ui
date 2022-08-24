@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MemorySearch</class>
- <widget class="QWidget" name="MemorySearch">
+ <class>QGBA::MemorySearch</class>
+ <widget class="QWidget" name="QGBA::MemorySearch">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -367,7 +367,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>MemorySearch</receiver>
+   <receiver>QGBA::MemorySearch</receiver>
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">

@@ -8,6 +8,7 @@
 #include <mgba/core/cheats.h>
 #include <mgba/core/config.h>
 #include <mgba/core/core.h>
+#include <mgba/core/log.h>
 #include <mgba/core/serialize.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
@@ -30,49 +31,37 @@
 
 struct RomTestOpts {
 	int exitSwiImmediate;
-	unsigned int returnCodeRegister;
+	char* returnCodeRegister;
 };
 
 static void _romTestShutdown(int signal);
 static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char* arg);
 static bool _parseSwi(const char* regStr, int* oSwi);
-static bool _parseNamedRegister(const char* regStr, unsigned int* oRegister);
+
+static bool _romTestCheckResiger(void);
+
+static struct mCore* core;
 
 static bool _dispatchExiting = false;
 static int _exitCode = 0;
+static struct mStandardLogger _logger;
 
+static void _romTestCallback(void* context);
 #ifdef M_CORE_GBA
-static void _romTestSwi3Callback(void* context);
-
 static void _romTestSwi16(struct ARMCore* cpu, int immediate);
 static void _romTestSwi32(struct ARMCore* cpu, int immediate);
 
 static int _exitSwiImmediate;
-static unsigned int _returnCodeRegister;
+static char* _returnCodeRegister;
 
 void (*_armSwi16)(struct ARMCore* cpu, int immediate);
 void (*_armSwi32)(struct ARMCore* cpu, int immediate);
 #endif
 
-#ifdef M_CORE_GB
-enum GBReg {
-	GB_REG_A = 16,
-	GB_REG_F,
-	GB_REG_B,
-	GB_REG_C,
-	GB_REG_D,
-	GB_REG_E,
-	GB_REG_H,
-	GB_REG_L
-};
-
-static void _romTestGBCallback(void* context);
-#endif
-
 int main(int argc, char * argv[]) {
 	signal(SIGINT, _romTestShutdown);
 
-	struct RomTestOpts romTestOpts = { 3, 0 };
+	struct RomTestOpts romTestOpts = { 3, NULL };
 	struct mSubParser subparser = {
 		.usage = ROM_TEST_USAGE,
 		.parse = _parseRomTestOpts,
@@ -93,7 +82,7 @@ int main(int argc, char * argv[]) {
 		version(argv[0]);
 		return 0;
 	}
-	struct mCore* core = mCoreFind(args.fname);
+	core = mCoreFind(args.fname);
 	if (!core) {
 		return 1;
 	}
@@ -102,24 +91,29 @@ int main(int argc, char * argv[]) {
 	mArgumentsApply(&args, NULL, 0, &core->config);
 
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
+	mCoreConfigSetDefaultIntValue(&core->config, "logToStdout", true);
+
+	mStandardLoggerInit(&_logger);
+	mStandardLoggerConfig(&_logger, &core->config);
+	mLogSetDefaultLogger(&_logger.d);
 
 	bool cleanExit = false;
 	struct mCoreCallbacks callbacks = {0};
-	callbacks.context = core;
+
+	_returnCodeRegister = romTestOpts.returnCodeRegister;
+	if (!_romTestCheckResiger()) {
+		goto loadError;
+	}
+
 	switch (core->platform(core)) {
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
 		((struct GBA*) core->board)->hardCrash = false;
-		if (romTestOpts.returnCodeRegister >= 16) {
-			goto loadError;
-		}
-
 		_exitSwiImmediate = romTestOpts.exitSwiImmediate;
-		_returnCodeRegister = romTestOpts.returnCodeRegister;
 
 		if (_exitSwiImmediate == 3) {
 			// Hook into SWI 3 (shutdown)
-			callbacks.shutdown = _romTestSwi3Callback;
+			callbacks.shutdown = _romTestCallback;
 			core->addCoreCallbacks(core, &callbacks);
 		} else {
 			// Custom SWI hooks
@@ -132,13 +126,7 @@ int main(int argc, char * argv[]) {
 #endif
 #ifdef M_CORE_GB
 	case mPLATFORM_GB:
-		if (romTestOpts.returnCodeRegister < GB_REG_A) {
-			goto loadError;
-		}
-
-		_returnCodeRegister = romTestOpts.returnCodeRegister;
-
-		callbacks.shutdown = _romTestGBCallback;
+		callbacks.shutdown = _romTestCallback;
 		core->addCoreCallbacks(core, &callbacks);
 		break;
 #endif
@@ -185,8 +173,12 @@ int main(int argc, char * argv[]) {
 
 loadError:
 	mArgumentsDeinit(&args);
+	mStandardLoggerDeinit(&_logger);
 	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
+	if (_returnCodeRegister) {
+		free(_returnCodeRegister);
+	}
 
 	return cleanExit ? _exitCode : 1;
 }
@@ -196,16 +188,66 @@ static void _romTestShutdown(int signal) {
 	_dispatchExiting = true;
 }
 
-#ifdef M_CORE_GBA
-static void _romTestSwi3Callback(void* context) {
-	struct mCore* core = context;
-	_exitCode = ((struct GBA*) core->board)->cpu->regs.gprs[_returnCodeRegister];
+static bool _romTestCheckResiger(void) {
+	if (!_returnCodeRegister) {
+		return true;
+	}
+
+	const struct mCoreRegisterInfo* registers;
+	const struct mCoreRegisterInfo* reg = NULL;
+	size_t regCount = core->listRegisters(core, &registers);
+	size_t i;
+	for (i = 0; i < regCount; ++i) {
+		if (strcasecmp(_returnCodeRegister, registers[i].name) == 0) {
+			reg = &registers[i];
+			break;
+		}
+		if (registers[i].aliases) {
+			size_t j;
+			for (j = 0; registers[i].aliases[j]; ++j) {
+				if (strcasecmp(_returnCodeRegister, registers[i].aliases[j]) == 0) {
+					reg = &registers[i];
+					break;
+				}
+			}
+			if (reg) {
+				break;
+			}
+		}
+	}
+	if (!reg) {
+		return false;
+	}
+
+	if (reg->width > 4) {
+		return false;
+	}
+
+	if (reg->type != mCORE_REGISTER_GPR) {
+		return false;
+	}
+
+	if (reg->mask != 0xFFFFFFFFU >> (4 - reg->width) * 8) {
+		return false;
+	}
+
+	return true;
+}
+
+static void _romTestCallback(void* context) {
+	UNUSED(context);
+	if (_returnCodeRegister) {
+		core->readRegister(core, _returnCodeRegister, &_exitCode);
+	}
 	_dispatchExiting = true;
 }
 
+#ifdef M_CORE_GBA
 static void _romTestSwi16(struct ARMCore* cpu, int immediate) {
 	if (immediate == _exitSwiImmediate) {
-		_exitCode = cpu->regs.gprs[_returnCodeRegister];
+		if (_returnCodeRegister) {
+			core->readRegister(core, _returnCodeRegister, &_exitCode);
+		}
 		_dispatchExiting = true;
 		return;
 	}
@@ -214,46 +256,13 @@ static void _romTestSwi16(struct ARMCore* cpu, int immediate) {
 
 static void _romTestSwi32(struct ARMCore* cpu, int immediate) {
 	if (immediate == _exitSwiImmediate) {
-		_exitCode = cpu->regs.gprs[_returnCodeRegister];
+		if (_returnCodeRegister) {
+			core->readRegister(core, _returnCodeRegister, &_exitCode);
+		}
 		_dispatchExiting = true;
 		return;
 	}
 	_armSwi32(cpu, immediate);
-}
-#endif
-
-#ifdef M_CORE_GB
-static void _romTestGBCallback(void* context) {
-	struct mCore* core = context;
-	struct SM83Core* cpu = core->cpu;
-
-	switch (_returnCodeRegister) {
-	case GB_REG_A:
-		_exitCode = cpu->a;
-		break;
-	case GB_REG_B:
-		_exitCode = cpu->b;
-		break;
-	case GB_REG_C:
-		_exitCode = cpu->c;
-		break;
-	case GB_REG_D:
-		_exitCode = cpu->d;
-		break;
-	case GB_REG_E:
-		_exitCode = cpu->e;
-		break;
-	case GB_REG_F:
-		_exitCode = cpu->f.packed;
-		break;
-	case GB_REG_H:
-		_exitCode = cpu->h;
-		break;
-	case GB_REG_L:
-		_exitCode = cpu->l;
-		break;
-	}
-	_dispatchExiting = true;
 }
 #endif
 
@@ -264,7 +273,8 @@ static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char*
 	case 'S':
 		return _parseSwi(arg, &opts->exitSwiImmediate);
 	case 'R':
-		return _parseNamedRegister(arg, &opts->returnCodeRegister);
+		opts->returnCodeRegister = strdup(arg);
+		return true;
 	default:
 		return false;
 	}
@@ -277,74 +287,5 @@ static bool _parseSwi(const char* swiStr, int* oSwi) {
 		return false;
 	}
 	*oSwi = swi;
-	return true;
-}
-
-static bool _parseNamedRegister(const char* regStr, unsigned int* oRegister) {
-#ifdef M_CORE_GB
-	static const enum GBReg gbMapping[] = {
-		['a' - 'a'] = GB_REG_A,
-		['b' - 'a'] = GB_REG_B,
-		['c' - 'a'] = GB_REG_C,
-		['d' - 'a'] = GB_REG_D,
-		['e' - 'a'] = GB_REG_E,
-		['f' - 'a'] = GB_REG_F,
-		['h' - 'a'] = GB_REG_H,
-		['l' - 'a'] = GB_REG_L,
-	};
-#endif
-
-	switch (regStr[0]) {
-	case 'r':
-	case 'R':
-		++regStr;
-		break;
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		break;
-#ifdef M_CORE_GB
-	case 'a':
-	case 'b':
-	case 'c':
-	case 'd':
-	case 'e':
-	case 'f':
-	case 'h':
-	case 'l':
-		if (regStr[1] != '\0') {
-			return false;
-		}
-		*oRegister = gbMapping[regStr[0] - 'a'];
-		break;
-	case 'A':
-	case 'B':
-	case 'C':
-	case 'D':
-	case 'E':
-	case 'F':
-	case 'H':
-	case 'L':
-		if (regStr[1] != '\0') {
-			return false;
-		}
-		*oRegister = gbMapping[regStr[0] - 'A'];
-		return true;
-#endif
-	}
-
-	char* parseEnd;
-	unsigned long regId = strtoul(regStr, &parseEnd, 10);
-	if (errno || regId > 15 || *parseEnd) {
-		return false;
-	}
-	*oRegister = regId;
 	return true;
 }

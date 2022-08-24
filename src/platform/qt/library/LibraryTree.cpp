@@ -48,11 +48,11 @@ LibraryTree::LibraryTree(LibraryController* parent)
 	m_widget->setAlternatingRowColors(true);
 
 	QTreeWidgetItem* header = new QTreeWidgetItem({
-		QApplication::translate("LibraryTree", "Name", nullptr),
-		QApplication::translate("LibraryTree", "Location", nullptr),
-		QApplication::translate("LibraryTree", "Platform", nullptr),
-		QApplication::translate("LibraryTree", "Size", nullptr),
-		QApplication::translate("LibraryTree", "CRC32", nullptr),
+		QApplication::translate("QGBA::LibraryTree", "Name", nullptr),
+		QApplication::translate("QGBA::LibraryTree", "Location", nullptr),
+		QApplication::translate("QGBA::LibraryTree", "Platform", nullptr),
+		QApplication::translate("QGBA::LibraryTree", "Size", nullptr),
+		QApplication::translate("QGBA::LibraryTree", "CRC32", nullptr),
 	});
 	header->setTextAlignment(3, Qt::AlignTrailing | Qt::AlignVCenter);
 	m_widget->setHeaderItem(header);
