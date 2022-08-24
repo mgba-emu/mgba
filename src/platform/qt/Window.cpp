@@ -165,10 +165,16 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	});
 #endif
 #if defined(M_CORE_GBA)
-	resizeFrame(QSize(GBA_VIDEO_HORIZONTAL_PIXELS * i, GBA_VIDEO_VERTICAL_PIXELS * i));
+	QSize minimumSize = QSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 #elif defined(M_CORE_GB)
-	resizeFrame(QSize(GB_VIDEO_HORIZONTAL_PIXELS * i, GB_VIDEO_VERTICAL_PIXELS * i));
+	QSize minimumSize = QSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #endif
+	setMinimumSize(minimumSize);
+	if (i > 0) {
+		m_initialSize = minimumSize * i;
+	} else {
+		m_initialSize = minimumSize * 2;
+	}
 	setLogo();
 
 	connect(this, &Window::shutdown, m_logView, &QWidget::hide);
@@ -232,7 +238,7 @@ void Window::argumentsPassed() {
 	}
 #endif
 
-	if (m_config->graphicsOpts()->multiplier) {
+	if (m_config->graphicsOpts()->multiplier > 0) {
 		m_savedScale = m_config->graphicsOpts()->multiplier;
 
 #if defined(M_CORE_GBA)
@@ -240,7 +246,7 @@ void Window::argumentsPassed() {
 #elif defined(M_CORE_GB)
 		QSize size(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #endif
-		resizeFrame(size * m_savedScale);
+		m_initialSize = size * m_savedScale;
 	}
 
 	if (args->fname) {
@@ -263,9 +269,8 @@ void Window::resizeFrame(const QSize& size) {
 			newSize.setHeight(geom.height());
 		}
 	}
-	m_screenWidget->setSizeHint(newSize);
-	newSize -= m_screenWidget->size();
 	newSize += this->size();
+	newSize -= centralWidget()->size();
 	if (!isFullScreen()) {
 		resize(newSize);
 	}
@@ -295,7 +300,7 @@ void Window::loadConfig() {
 	reloadConfig();
 
 	if (opts->width && opts->height) {
-		resizeFrame(QSize(opts->width, opts->height));
+		m_initialSize = QSize(opts->width, opts->height);
 	}
 
 	if (opts->fullscreen) {
@@ -715,9 +720,10 @@ void Window::scriptingOpen() {
 #endif
 
 void Window::resizeEvent(QResizeEvent*) {
+	QSize newSize = centralWidget()->size();
 	if (!isFullScreen()) {
-		m_config->setOption("height", m_screenWidget->height());
-		m_config->setOption("width", m_screenWidget->width());
+		m_config->setOption("height", newSize.height());
+		m_config->setOption("width", newSize.width());
 	}
 
 	int factor = 0;
@@ -725,9 +731,9 @@ void Window::resizeEvent(QResizeEvent*) {
 	if (m_controller) {
 		size = m_controller->screenDimensions();
 	}
-	if (m_screenWidget->width() % size.width() == 0 && m_screenWidget->height() % size.height() == 0 &&
-	    m_screenWidget->width() / size.width() == m_screenWidget->height() / size.height()) {
-		factor = m_screenWidget->width() / size.width();
+	if (newSize.width() % size.width() == 0 && newSize.height() % size.height() == 0 &&
+	    newSize.width() / size.width() == newSize.height() / size.height()) {
+		factor = newSize.width() / size.width();
 	}
 	m_savedScale = factor;
 	for (QMap<int, Action*>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
@@ -754,7 +760,9 @@ void Window::showEvent(QShowEvent* event) {
 		return;
 	}
 	m_wasOpened = true;
-	resizeFrame(m_screenWidget->sizeHint());
+	if (m_initialSize.isValid()) {
+		resizeFrame(m_initialSize);
+	}
 	QVariant windowPos = m_config->getQtOption("windowPos", m_playerId > 0 ? QString("player%0").arg(m_playerId) : QString());
 	bool maximized = m_config->getQtOption("maximized").toBool();
 	QRect geom = windowHandle()->screen()->availableGeometry();
@@ -910,7 +918,7 @@ void Window::exitFullScreen() {
 	if (!isFullScreen()) {
 		return;
 	}
-	m_screenWidget->unsetCursor();
+	centralWidget()->unsetCursor();
 	menuBar()->show();
 	showNormal();
 }
@@ -973,7 +981,7 @@ void Window::gameStarted() {
 	}
 	m_focusCheck.start();
 	if (m_display->underMouse()) {
-		m_screenWidget->setCursor(Qt::BlankCursor);
+		centralWidget()->setCursor(Qt::BlankCursor);
 	}
 
 	CoreController::Interrupter interrupter(m_controller);
@@ -1118,11 +1126,11 @@ void Window::reloadDisplayDriver() {
 
 	connect(m_display.get(), &QGBA::Display::hideCursor, [this]() {
 		if (centralWidget() == m_display.get()) {
-			m_screenWidget->setCursor(Qt::BlankCursor);
+			centralWidget()->setCursor(Qt::BlankCursor);
 		}
 	});
 	connect(m_display.get(), &QGBA::Display::showCursor, [this]() {
-		m_screenWidget->unsetCursor();
+		centralWidget()->unsetCursor();
 	});
 
 	m_display->configure(m_config);
@@ -2207,7 +2215,7 @@ void Window::updateMute() {
 void Window::setLogo() {
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
-	m_screenWidget->unsetCursor();
+	centralWidget()->unsetCursor();
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

@@ -474,9 +474,8 @@ void GBAudioRun(struct GBAudio* audio, int32_t timestamp, int channels) {
 	if (!audio->enable) {
 		return;
 	}
-	if (audio->p && channels != 0xF && timestamp - audio->lastSample > SAMPLE_INTERVAL) {
+	if (audio->p && channels != 0xF && timestamp - audio->lastSample > (int) (SAMPLE_INTERVAL * audio->timingFactor)) {
 		GBAudioSample(audio, timestamp);
-		return;
 	}
 
 	if (audio->playingCh1 && (channels & 0x1)) {
@@ -747,10 +746,9 @@ void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 }
 
 void GBAudioSample(struct GBAudio* audio, int32_t timestamp) {
-	timestamp -= audio->lastSample;
-	timestamp -= audio->sampleIndex * SAMPLE_INTERVAL;
-
 	int interval = SAMPLE_INTERVAL * audio->timingFactor;
+	timestamp -= audio->lastSample;
+	timestamp -= audio->sampleIndex * interval;
 
 	int sample;
 	for (sample = audio->sampleIndex; timestamp >= interval && sample < GB_MAX_SAMPLES; ++sample, timestamp -= interval) {

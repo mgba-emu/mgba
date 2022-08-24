@@ -97,6 +97,7 @@ Other fixes:
  - Core: Fix the runloop resuming after a game has crashed (fixes mgba.io/i/2451)
  - Core: Fix crash if library can't be opened
  - Debugger: Fix crash with extremely long CLI strings
+ - Debugger: Fix multiple conditional watchpoints at the same address
  - FFmpeg: Fix crash when encoding audio with some containers
  - FFmpeg: Fix GIF recording (fixes mgba.io/i/2393)
  - GB: Fix temporary saves

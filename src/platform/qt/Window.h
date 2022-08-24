@@ -195,6 +195,7 @@ private:
 	std::unique_ptr<AudioProcessor> m_audioProcessor;
 
 	std::unique_ptr<QGBA::Display> m_display;
+	QSize m_initialSize;
 	int m_savedScale;
 
 	// TODO: Move these to a new class

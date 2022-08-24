@@ -17,7 +17,6 @@ typedef struct {
 } Condition;
 #define THREAD_ENTRY int
 typedef THREAD_ENTRY (*ThreadEntry)(void*);
-typedef int ThreadLocal;
 
 static inline int MutexInit(Mutex* mutex) {
 	Mutex id = sceKernelCreateMutex("mutex", 0, 0, 0);
@@ -145,6 +144,9 @@ static inline int ThreadSetName(const char* name) {
 	return -1;
 }
 
+#if (__STDC_VERSION__ < 201112L) || (__STDC_NO_THREADS__ == 1)
+typedef int ThreadLocal;
+
 static inline void ThreadLocalInitKey(ThreadLocal* key) {
 	static int base = 0x90;
 	*key = __atomic_fetch_add(&base, 1, __ATOMIC_SEQ_CST);
@@ -159,4 +161,5 @@ static inline void* ThreadLocalGetValue(ThreadLocal key) {
 	void** tls = sceKernelGetTLSAddr(key);
 	return *tls;
 }
+#endif
 #endif

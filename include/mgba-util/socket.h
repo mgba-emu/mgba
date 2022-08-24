@@ -39,6 +39,10 @@ typedef SOCKET Socket;
 typedef int Socket;
 #endif
 
+#if !defined(__3DS__) && !defined(GEKKO)
+#define HAS_IPV6
+#endif
+
 enum IP {
 	IPV4,
 	IPV6
@@ -152,12 +156,36 @@ static inline int SocketClose(Socket socket) {
 #endif
 }
 
-static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
-#ifdef GEKKO
-	Socket sock = net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+static inline void SocketCloseQuiet(Socket socket) {
+	int savedErrno = SocketError();
+	SocketClose(socket);
+#ifdef _WIN32
+	WSASetLastError(savedErrno);
 #else
-	Socket sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	errno = savedErrno;
 #endif
+}
+
+static inline Socket SocketCreate(bool useIPv6, int protocol) {
+	if (useIPv6) {
+#ifdef HAS_IPV6
+		return socket(AF_INET6, SOCK_STREAM, protocol);
+#else
+		errno = EAFNOSUPPORT;
+		return INVALID_SOCKET;
+#endif
+	} else {
+#ifdef GEKKO
+		return net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+#else
+		return socket(AF_INET, SOCK_STREAM, protocol);
+#endif
+	}
+}
+
+static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
+	bool useIPv6 = bindAddress && (bindAddress->version == IPV6);
+	Socket sock = SocketCreate(useIPv6, IPPROTO_TCP);
 	if (SOCKET_FAILED(sock)) {
 		return sock;
 	}
@@ -178,7 +206,7 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 #else
 		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
 #endif
-	} else if (bindAddress->version == IPV4) {
+	} else if (!useIPv6) {
 		struct sockaddr_in bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
 		bindInfo.sin_family = AF_INET;
@@ -200,18 +228,15 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 #endif
 	}
 	if (err) {
-		SocketClose(sock);
+		SocketCloseQuiet(sock);
 		return INVALID_SOCKET;
 	}
 	return sock;
 }
 
 static inline Socket SocketConnectTCP(int port, const struct Address* destinationAddress) {
-#ifdef GEKKO
-	Socket sock = net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-#else
-	Socket sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-#endif
+	bool useIPv6 = destinationAddress && (destinationAddress->version == IPV6);
+	Socket sock = SocketCreate(useIPv6, IPPROTO_TCP);
 	if (SOCKET_FAILED(sock)) {
 		return sock;
 	}
@@ -238,7 +263,7 @@ static inline Socket SocketConnectTCP(int port, const struct Address* destinatio
 #else
 		err = connect(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
 #endif
-#if !defined(__3DS__) && !defined(GEKKO)
+#ifdef HAS_IPV6
 	} else {
 		struct sockaddr_in6 bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
@@ -250,7 +275,7 @@ static inline Socket SocketConnectTCP(int port, const struct Address* destinatio
 	}
 
 	if (err) {
-		SocketClose(sock);
+		SocketCloseQuiet(sock);
 		return INVALID_SOCKET;
 	}
 	return sock;

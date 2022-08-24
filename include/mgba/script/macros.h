@@ -84,7 +84,9 @@ CXX_GUARD_START
 	extern const struct mScriptType mSTStruct_ ## STRUCT; \
 	extern const struct mScriptType mSTStructConst_ ## STRUCT; \
 	extern const struct mScriptType mSTStructPtr_ ## STRUCT; \
-	extern const struct mScriptType mSTStructPtrConst_ ## STRUCT;
+	extern const struct mScriptType mSTStructPtrConst_ ## STRUCT; \
+	extern const struct mScriptType mSTWrapper_ ## STRUCT; \
+	extern const struct mScriptType mSTWrapperConst_ ## STRUCT;
 
 #define mSCRIPT_DEFINE_STRUCT(STRUCT) \
 	const struct mScriptType mSTStruct_ ## STRUCT; \
