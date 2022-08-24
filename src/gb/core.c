@@ -439,6 +439,9 @@ static void _GBCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	if (stream && stream->videoFrameRateChanged) {
 		stream->videoFrameRateChanged(stream, core->frameCycles(core), core->frequency(core));
 	}
+	if (stream && stream->audioRateChanged) {
+		stream->audioRateChanged(stream, DMG_SM83_FREQUENCY / 32);
+	}
 }
 
 static bool _GBCoreLoadROM(struct mCore* core, struct VFile* vf) {

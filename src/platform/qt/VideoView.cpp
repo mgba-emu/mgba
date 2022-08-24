@@ -167,7 +167,7 @@ void VideoView::updatePresets() {
 		addPreset(m_ui.presetLossless, {
 			"MKV",
 			"libx264rgb",
-			"FLAC",
+			"WavPack",
 			-1,
 			0,
 			{ m_nativeWidth, m_nativeHeight }
