@@ -76,7 +76,6 @@ The following mappers are partially supported:
 - Dolphin/JOY bus link cable support.
 - MP2k audio mixing, for higher quality sound than hardware.
 - Re-recording support for tool-assist runs.
-- Lua support for scripting.
 - A comprehensive debug suite.
 - Wireless adapter support.
 
