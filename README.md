@@ -65,7 +65,7 @@ The following mappers are partially supported:
 - MBC6 (missing flash memory write support)
 - MMM01
 - Pocket Cam
-- TAMA5 (missing RTC support)
+- TAMA5 (incomplete RTC support)
 - HuC-1 (missing IR support)
 - HuC-3 (missing IR support)
 - Sachen MMC2 (missing alternate wiring support)

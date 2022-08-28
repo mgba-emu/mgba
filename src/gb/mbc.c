@@ -453,8 +453,6 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcRead = _GBHuC3Read;
 		break;
 	case GB_TAMA5:
-		mLOG(GB_MBC, WARN, "unimplemented MBC: TAMA5");
-		memset(gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
 		gb->memory.mbcWrite = _GBTAMA5;
 		gb->memory.mbcRead = _GBTAMA5Read;
 		gb->sramSize = 0x20;
@@ -540,6 +538,8 @@ void GBMBCInit(struct GB* gb) {
 		GBMBCRTCRead(gb);
 	} else if (gb->memory.mbcType == GB_HuC3) {
 		GBMBCHuC3Read(gb);
+	} else if (gb->memory.mbcType == GB_TAMA5) {
+		GBMBCTAMA5Read(gb);
 	}
 }
 
@@ -1514,6 +1514,150 @@ void _GBPocketCamCapture(struct GBMemory* memory) {
 	}
 }
 
+static const int _daysToMonth[] = {
+	[ 1] = 0,
+	[ 2] = 31,
+	[ 3] = 31 + 28,
+	[ 4] = 31 + 28 + 31,
+	[ 5] = 31 + 28 + 31 + 30,
+	[ 6] = 31 + 28 + 31 + 30 + 31,
+	[ 7] = 31 + 28 + 31 + 30 + 31 + 30,
+	[ 8] = 31 + 28 + 31 + 30 + 31 + 30 + 31,
+	[ 9] = 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31,
+	[10] = 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30,
+	[11] = 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31,
+	[12] = 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30,
+};
+
+static int _tama6DMYToDayOfYear(int day, int month, int year) {
+	if (month < 1 || month > 12) {
+		return -1;
+	}
+	day += _daysToMonth[month];
+	if (month > 2 && (year % 4) == 0) {
+		++day;
+	}
+	return day;
+}
+
+static int _tama6DayOfYearToMonth(int day, int year) {
+	int month;
+	for (month = 1; month < 12; ++month) {
+		if (day <= _daysToMonth[month + 1]) {
+			return month;
+		}
+		if (month == 2 && year % 4 == 0) {
+			if (day == 60) {
+				return 2;
+			}
+			--day;
+		}
+	}
+	return 12;
+}
+
+static int _tama6DayOfYearToDayOfMonth(int day, int year) {
+	int month;
+	for (month = 1; month < 12; ++month) {
+		if (day <= _daysToMonth[month + 1]) {
+			return day - _daysToMonth[month];
+		}
+		if (month == 2 && year % 4 == 0) {
+			if (day == 60) {
+				return 29;
+			}
+			--day;
+		}
+	}
+	return day - _daysToMonth[12];
+}
+
+static void _latchTAMA6Rtc(struct mRTCSource* rtc, uint8_t* timerRegs, time_t* rtcLastLatch) {
+	time_t t;
+	if (rtc) {
+		if (rtc->sample) {
+			rtc->sample(rtc);
+		}
+		t = rtc->unixTime(rtc);
+	} else {
+		t = time(0);
+	}
+	time_t currentLatch = t;
+	t -= *rtcLastLatch;
+	*rtcLastLatch = currentLatch;
+	if (!t) {
+		return;
+	}
+
+	int64_t diff;
+	diff = timerRegs[GBTAMA6_RTC_PA0_SECOND_1] + timerRegs[GBTAMA6_RTC_PA0_SECOND_10] * 10 + t % 60;
+	if (diff < 0) {
+		diff += 60;
+		t -= 60;
+	}
+	timerRegs[GBTAMA6_RTC_PA0_SECOND_1] = diff % 10;
+	timerRegs[GBTAMA6_RTC_PA0_SECOND_10] = (diff % 60) / 10;
+	t /= 60;
+	t += diff / 60;
+
+	diff = timerRegs[GBTAMA6_RTC_PA0_MINUTE_1] + timerRegs[GBTAMA6_RTC_PA0_MINUTE_10] * 10 + t % 60;
+	if (diff < 0) {
+		diff += 60;
+		t -= 60;
+	}
+	timerRegs[GBTAMA6_RTC_PA0_MINUTE_1] = diff % 10;
+	timerRegs[GBTAMA6_RTC_PA0_MINUTE_10] = (diff % 60) / 10;
+	t /= 60;
+	t += diff / 60;
+
+	diff = timerRegs[GBTAMA6_RTC_PA0_HOUR_1] + timerRegs[GBTAMA6_RTC_PA0_HOUR_10] * 10 + t % 24;
+	if (diff < 0) {
+		diff += 24;
+		t -= 24;
+	}
+	timerRegs[GBTAMA6_RTC_PA0_HOUR_1] = (diff % 24) % 10;
+	timerRegs[GBTAMA6_RTC_PA0_HOUR_10] = (diff % 24) / 10;
+	t /= 24;
+	t += diff / 24;
+
+	int day = timerRegs[GBTAMA6_RTC_PA0_DAY_1] + timerRegs[GBTAMA6_RTC_PA0_DAY_10] * 10;
+	int month = timerRegs[GBTAMA6_RTC_PA0_MONTH_1] + timerRegs[GBTAMA6_RTC_PA0_MONTH_10] * 10;
+	int year = timerRegs[GBTAMA6_RTC_PA0_YEAR_1] + timerRegs[GBTAMA6_RTC_PA0_YEAR_10] * 10;
+	int dayInYear = _tama6DMYToDayOfYear(day, month, year);
+	diff = dayInYear + t;
+	while (diff <= 0) {
+		// Previous year
+		if (year % 4) {
+			diff += 365;
+		} else {
+			diff += 366;
+		}
+		--year;
+	}
+	while (diff > (year % 4 ? 365 : 366)) {
+		// Future year
+		if (year % 4) {
+			diff -= 365;
+		} else {
+			diff -= 366;
+		}
+		++year;
+	}
+	year %= 100;
+
+	day = _tama6DayOfYearToDayOfMonth(diff, year);
+	month = _tama6DayOfYearToMonth(diff, year);
+
+	timerRegs[GBTAMA6_RTC_PA0_DAY_1] = day % 10;
+	timerRegs[GBTAMA6_RTC_PA0_DAY_10] = day / 10;
+
+	timerRegs[GBTAMA6_RTC_PA0_MONTH_1] = month % 10;
+	timerRegs[GBTAMA6_RTC_PA0_MONTH_10] = month / 10;
+
+	timerRegs[GBTAMA6_RTC_PA0_YEAR_1] = year % 10;
+	timerRegs[GBTAMA6_RTC_PA0_YEAR_10] = year / 10;
+}
+
 void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value) {
 	struct GBMemory* memory = &gb->memory;
 	struct GBTAMA5State* tama5 = &memory->mbcState.tama5;
@@ -1524,8 +1668,9 @@ void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value) {
 		} else {
 			value &= 0xF;
 			if (tama5->reg < GBTAMA5_MAX) {
+				mLOG(GB_MBC, DEBUG, "TAMA5 write: %02X:%X", tama5->reg, value);
 				tama5->registers[tama5->reg] = value;
-				uint8_t address = ((tama5->registers[GBTAMA5_CS] << 4) & 0x10) | tama5->registers[GBTAMA5_ADDR_LO];
+				uint8_t address = ((tama5->registers[GBTAMA5_ADDR_HI] << 4) & 0x10) | tama5->registers[GBTAMA5_ADDR_LO];
 				uint8_t out = (tama5->registers[GBTAMA5_WRITE_HI] << 4) | tama5->registers[GBTAMA5_WRITE_LO];
 				switch (tama5->reg) {
 				case GBTAMA5_BANK_LO:
@@ -1534,18 +1679,36 @@ void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value) {
 					break;
 				case GBTAMA5_WRITE_LO:
 				case GBTAMA5_WRITE_HI:
-				case GBTAMA5_CS:
+				case GBTAMA5_ADDR_HI:
 					break;
 				case GBTAMA5_ADDR_LO:
-					switch (tama5->registers[GBTAMA5_CS] >> 1) {
+					switch (tama5->registers[GBTAMA5_ADDR_HI] >> 1) {
 					case 0x0: // RAM write
 						memory->sram[address] = out;
 						gb->sramDirty |= mSAVEDATA_DIRT_NEW;
 						break;
 					case 0x1: // RAM read
 						break;
+					case 0x2: // Other commands
+						switch (address) {
+						case GBTAMA6_MINUTE_WRITE:
+							tama5->rtcTimerPage[GBTAMA6_RTC_PA0_MINUTE_1] = out & 0xF;
+							tama5->rtcTimerPage[GBTAMA6_RTC_PA0_MINUTE_10] = out >> 4;
+							break;
+						case GBTAMA6_HOUR_WRITE:
+							tama5->rtcTimerPage[GBTAMA6_RTC_PA0_HOUR_1] = out & 0xF;
+							tama5->rtcTimerPage[GBTAMA6_RTC_PA0_HOUR_10] = out >> 4;
+							break;
+						}
+						break;
+					case 0x4: // RTC access
+						if (!(address & 1)) {
+							tama5->rtcTimerPage[out & 0xF] = out >> 4;
+						}
+						break;
 					default:
-						mLOG(GB_MBC, STUB, "TAMA5 unknown address: %X-%02X:%02X", tama5->registers[GBTAMA5_CS] >> 1, address, out);
+						mLOG(GB_MBC, STUB, "TAMA5 unknown address: %02X:%02X", address, out);
+						break;
 					}
 					break;
 				default:
@@ -1571,18 +1734,41 @@ uint8_t _GBTAMA5Read(struct GBMemory* memory, uint16_t address) {
 		return 0xFF;
 	} else {
 		uint8_t value = 0xF0;
-		uint8_t address = ((tama5->registers[GBTAMA5_CS] << 4) & 0x10) | tama5->registers[GBTAMA5_ADDR_LO];
+		uint8_t address = ((tama5->registers[GBTAMA5_ADDR_HI] << 4) & 0x10) | tama5->registers[GBTAMA5_ADDR_LO];
 		switch (tama5->reg) {
 		case GBTAMA5_ACTIVE:
 			return 0xF1;
 		case GBTAMA5_READ_LO:
 		case GBTAMA5_READ_HI:
-			switch (tama5->registers[GBTAMA5_CS] >> 1) {
-			case 1:
+			switch (tama5->registers[GBTAMA5_ADDR_HI] >> 1) {
+			case 0x1:
 				value = memory->sram[address];
 				break;
+			case 0x2:
+				mLOG(GB_MBC, STUB, "TAMA5 unknown read %s: %02X", tama5->reg == GBTAMA5_READ_HI ? "hi" : "lo", address);
+				_latchTAMA6Rtc(memory->rtc, tama5->rtcTimerPage, &memory->rtcLastLatch);
+				switch (address) {
+				case GBTAMA6_MINUTE_READ:
+					value = (tama5->rtcTimerPage[GBTAMA6_RTC_PA0_MINUTE_10] << 4) | tama5->rtcTimerPage[GBTAMA6_RTC_PA0_MINUTE_1];
+					break;
+				case GBTAMA6_HOUR_READ:
+					value = (tama5->rtcTimerPage[GBTAMA6_RTC_PA0_HOUR_10] << 4) | tama5->rtcTimerPage[GBTAMA6_RTC_PA0_HOUR_1];
+					break;
+				default:
+					value = address;
+					break;
+				}
+				break;
+			case 0x4:
+				if (tama5->reg == GBTAMA5_READ_HI) {
+					mLOG(GB_MBC, GAME_ERROR, "TAMA5 reading RTC incorrectly");
+					break;
+				}
+				_latchTAMA6Rtc(memory->rtc, tama5->rtcTimerPage, &memory->rtcLastLatch);
+				value = tama5->rtcTimerPage[tama5->registers[GBTAMA5_WRITE_LO]];
+				break;
 			default:
-				mLOG(GB_MBC, STUB, "TAMA5 unknown read: %02X", tama5->reg);
+				mLOG(GB_MBC, STUB, "TAMA5 unknown read %s: %02X", tama5->reg == GBTAMA5_READ_HI ? "hi" : "lo", address);
 				break;
 			}
 			if (tama5->reg == GBTAMA5_READ_HI) {
@@ -2010,6 +2196,45 @@ void GBMBCHuC3Write(struct GB* gb) {
 	for (i = 0; i < 0x80; ++i) {
 		buffer.regs[i] = gb->memory.mbcState.huc3.registers[i * 2] & 0xF;
 		buffer.regs[i] |= gb->memory.mbcState.huc3.registers[i * 2 + 1] << 4;
+	}
+	STORE_64LE(gb->memory.rtcLastLatch, 0, &buffer.latchedUnix);
+
+	_appendSaveSuffix(gb, &buffer, sizeof(buffer));
+}
+
+void GBMBCTAMA5Read(struct GB* gb) {
+	struct GBMBCTAMA5SaveBuffer buffer;
+	struct VFile* vf = gb->sramVf;
+	if (!vf) {
+		return;
+	}
+	vf->seek(vf, gb->sramSize, SEEK_SET);
+	if (vf->read(vf, &buffer, sizeof(buffer)) < (ssize_t) sizeof(buffer)) {
+		return;
+	}
+
+	size_t i;
+	for (i = 0; i < 0x8; ++i) {
+		gb->memory.mbcState.tama5.rtcTimerPage[i * 2] = buffer.rtcTimerPage[i] & 0xF;
+		gb->memory.mbcState.tama5.rtcTimerPage[i * 2 + 1] = buffer.rtcTimerPage[i] >> 4;
+	}
+	LOAD_64LE(gb->memory.rtcLastLatch, 0, &buffer.latchedUnix);
+}
+
+void GBMBCTAMA5Write(struct GB* gb) {
+	struct VFile* vf = gb->sramVf;
+	if (!vf) {
+		return;
+	}
+
+	struct GBMBCTAMA5SaveBuffer buffer;
+	size_t i;
+	for (i = 0; i < 8; ++i) {
+		buffer.rtcTimerPage[i] = gb->memory.mbcState.tama5.rtcTimerPage[i * 2] & 0xF;
+		buffer.rtcTimerPage[i] |= gb->memory.mbcState.tama5.rtcTimerPage[i * 2 + 1] << 4;
+		buffer.rtcAlarmPage[i] = 0;
+		buffer.rtcFreePage0[i] = 0;
+		buffer.rtcFreePage1[i] = 0;
 	}
 	STORE_64LE(gb->memory.rtcLastLatch, 0, &buffer.latchedUnix);
 

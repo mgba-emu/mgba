@@ -78,6 +78,7 @@ Misc:
  - FFmpeg: Support dynamic audio sample rate
  - GB Audio: Increase sample rate
  - GB MBC: Filter out MBC errors when cartridge is yanked (fixes mgba.io/i/2488)
+ - GB MBC: Partially implement TAMA5 RTC
  - GB Video: Add default SGB border
  - GBA: Automatically skip BIOS if ROM has invalid logo
  - GBA: Refine multiboot detection (fixes mgba.io/i/2192)

@@ -408,6 +408,10 @@ struct GBSerializedState {
 			} mmm01;
 			struct {
 				uint64_t lastLatch;
+				uint8_t reg;
+			} tama5;
+			struct {
+				uint64_t lastLatch;
 				uint8_t index;
 				uint8_t value;
 				uint8_t mode;
@@ -456,7 +460,13 @@ struct GBSerializedState {
 
 	uint32_t reserved2[0xA4];
 
-	uint8_t huc3Registers[0x80];
+	union {
+		uint8_t huc3Registers[0x80];
+		struct {
+			uint8_t registers[8];
+			uint8_t rtcTimerPage[8];
+		} tama5Registers;
+	};
 
 	struct {
 		uint8_t attributes[90];
