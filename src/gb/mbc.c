@@ -455,6 +455,9 @@ void GBMBCInit(struct GB* gb) {
 	case GB_TAMA5:
 		gb->memory.mbcWrite = _GBTAMA5;
 		gb->memory.mbcRead = _GBTAMA5Read;
+		gb->memory.mbcState.tama5.rtcAlarmPage[GBTAMA6_RTC_PAGE] = 1;
+		gb->memory.mbcState.tama5.rtcFreePage0[GBTAMA6_RTC_PAGE] = 2;
+		gb->memory.mbcState.tama5.rtcFreePage1[GBTAMA6_RTC_PAGE] = 3;
 		gb->sramSize = 0x20;
 		break;
 	case GB_MBC3_RTC:
@@ -1694,11 +1697,19 @@ void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value) {
 						switch (address) {
 						case GBTAMA6_DISABLE_TIMER:
 							tama5->disabled = true;
+							tama5->rtcTimerPage[GBTAMA6_RTC_PAGE] &= 0x7;
+							tama5->rtcAlarmPage[GBTAMA6_RTC_PAGE] &= 0x7;
+							tama5->rtcFreePage0[GBTAMA6_RTC_PAGE] &= 0x7;
+							tama5->rtcFreePage1[GBTAMA6_RTC_PAGE] &= 0x7;
 							break;
 						case GBTAMA6_ENABLE_TIMER:
 							tama5->disabled = false;
 							tama5->rtcTimerPage[GBTAMA6_RTC_PA0_SECOND_1] = 0;
 							tama5->rtcTimerPage[GBTAMA6_RTC_PA0_SECOND_10] = 0;
+							tama5->rtcTimerPage[GBTAMA6_RTC_PAGE] |= 0x8;
+							tama5->rtcAlarmPage[GBTAMA6_RTC_PAGE] |= 0x8;
+							tama5->rtcFreePage0[GBTAMA6_RTC_PAGE] |= 0x8;
+							tama5->rtcFreePage1[GBTAMA6_RTC_PAGE] |= 0x8;
 							break;
 						case GBTAMA6_MINUTE_WRITE:
 							tama5->rtcTimerPage[GBTAMA6_RTC_PA0_MINUTE_1] = out & 0xF;
@@ -1711,8 +1722,19 @@ void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value) {
 						}
 						break;
 					case 0x4: // RTC access
-						if (!(address & 1)) {
+						switch (tama5->registers[GBTAMA5_ADDR_LO]) {
+						case 0:
 							tama5->rtcTimerPage[out & 0xF] = out >> 4;
+							break;
+						case 2:
+							tama5->rtcAlarmPage[out & 0xF] = out >> 4;
+							break;
+						case 4:
+							tama5->rtcFreePage0[out & 0xF] = out >> 4;
+							break;
+						case 6:
+							tama5->rtcFreePage1[out & 0xF] = out >> 4;
+							break;
 						}
 						break;
 					default:
@@ -1774,7 +1796,20 @@ uint8_t _GBTAMA5Read(struct GBMemory* memory, uint16_t address) {
 					break;
 				}
 				_latchTAMA6Rtc(memory->rtc, tama5, &memory->rtcLastLatch);
-				value = tama5->rtcTimerPage[tama5->registers[GBTAMA5_WRITE_LO]];
+				switch (tama5->registers[GBTAMA5_ADDR_LO]) {
+				case 1:
+					value = tama5->rtcTimerPage[tama5->registers[GBTAMA5_WRITE_LO]];
+					break;
+				case 3:
+					value = tama5->rtcTimerPage[tama5->registers[GBTAMA5_WRITE_LO]];
+					break;
+				case 5:
+					value = tama5->rtcTimerPage[tama5->registers[GBTAMA5_WRITE_LO]];
+					break;
+				case 7:
+					value = tama5->rtcTimerPage[tama5->registers[GBTAMA5_WRITE_LO]];
+					break;
+				}
 				break;
 			default:
 				mLOG(GB_MBC, STUB, "TAMA5 unknown read %s: %02X", tama5->reg == GBTAMA5_READ_HI ? "hi" : "lo", address);
@@ -2219,6 +2254,7 @@ void GBMBCTAMA5Read(struct GB* gb) {
 	}
 	vf->seek(vf, gb->sramSize, SEEK_SET);
 	if (vf->read(vf, &buffer, sizeof(buffer)) < (ssize_t) sizeof(buffer)) {
+		gb->memory.mbcState.tama5.disabled = false;
 		return;
 	}
 
@@ -2226,12 +2262,24 @@ void GBMBCTAMA5Read(struct GB* gb) {
 	for (i = 0; i < 0x8; ++i) {
 		gb->memory.mbcState.tama5.rtcTimerPage[i * 2] = buffer.rtcTimerPage[i] & 0xF;
 		gb->memory.mbcState.tama5.rtcTimerPage[i * 2 + 1] = buffer.rtcTimerPage[i] >> 4;
+		gb->memory.mbcState.tama5.rtcAlarmPage[i * 2] = buffer.rtcAlarmPage[i] & 0xF;
+		gb->memory.mbcState.tama5.rtcAlarmPage[i * 2 + 1] = buffer.rtcAlarmPage[i] >> 4;
+		gb->memory.mbcState.tama5.rtcFreePage0[i * 2] = buffer.rtcFreePage0[i] & 0xF;
+		gb->memory.mbcState.tama5.rtcFreePage0[i * 2 + 1] = buffer.rtcFreePage0[i] >> 4;
+		gb->memory.mbcState.tama5.rtcFreePage1[i * 2] = buffer.rtcFreePage1[i] & 0xF;
+		gb->memory.mbcState.tama5.rtcFreePage1[i * 2 + 1] = buffer.rtcFreePage1[i] >> 4;
 	}
 	LOAD_64LE(gb->memory.rtcLastLatch, 0, &buffer.latchedUnix);
 
-	uint32_t flags;
-	LOAD_32LE(flags, 0, &buffer.flags);
-	gb->memory.mbcState.tama5.disabled = GBMBCTAMA5SaveFlagsGetDisabled(flags);
+	gb->memory.mbcState.tama5.disabled = !(gb->memory.mbcState.tama5.rtcTimerPage[GBTAMA6_RTC_PAGE] & 0x8);
+
+	gb->memory.mbcState.tama5.rtcTimerPage[GBTAMA6_RTC_PAGE] &= 0xC;
+	gb->memory.mbcState.tama5.rtcAlarmPage[GBTAMA6_RTC_PAGE] &= 0xC;
+	gb->memory.mbcState.tama5.rtcAlarmPage[GBTAMA6_RTC_PAGE] |= 1;
+	gb->memory.mbcState.tama5.rtcFreePage0[GBTAMA6_RTC_PAGE] &= 0xC;
+	gb->memory.mbcState.tama5.rtcFreePage0[GBTAMA6_RTC_PAGE] |= 2;
+	gb->memory.mbcState.tama5.rtcFreePage1[GBTAMA6_RTC_PAGE] &= 0xC;
+	gb->memory.mbcState.tama5.rtcFreePage1[GBTAMA6_RTC_PAGE] |= 3;
 }
 
 void GBMBCTAMA5Write(struct GB* gb) {
@@ -2245,15 +2293,14 @@ void GBMBCTAMA5Write(struct GB* gb) {
 	for (i = 0; i < 8; ++i) {
 		buffer.rtcTimerPage[i] = gb->memory.mbcState.tama5.rtcTimerPage[i * 2] & 0xF;
 		buffer.rtcTimerPage[i] |= gb->memory.mbcState.tama5.rtcTimerPage[i * 2 + 1] << 4;
-		buffer.rtcAlarmPage[i] = 0;
-		buffer.rtcFreePage0[i] = 0;
-		buffer.rtcFreePage1[i] = 0;
+		buffer.rtcAlarmPage[i] = gb->memory.mbcState.tama5.rtcAlarmPage[i * 2] & 0xF;
+		buffer.rtcAlarmPage[i] |= gb->memory.mbcState.tama5.rtcAlarmPage[i * 2 + 1] << 4;
+		buffer.rtcFreePage0[i] = gb->memory.mbcState.tama5.rtcFreePage0[i * 2] & 0xF;
+		buffer.rtcFreePage0[i] |= gb->memory.mbcState.tama5.rtcFreePage0[i * 2 + 1] << 4;
+		buffer.rtcFreePage1[i] = gb->memory.mbcState.tama5.rtcFreePage1[i * 2] & 0xF;
+		buffer.rtcFreePage1[i] |= gb->memory.mbcState.tama5.rtcFreePage1[i * 2 + 1] << 4;
 	}
 	STORE_64LE(gb->memory.rtcLastLatch, 0, &buffer.latchedUnix);
-
-	uint32_t flags = 0;
-	flags = GBMBCTAMA5SaveFlagsSetDisabled(flags, gb->memory.mbcState.tama5.disabled);
-	STORE_32LE(flags, 0, &buffer.flags);
 
 	_appendSaveSuffix(gb, &buffer, sizeof(buffer));
 }
