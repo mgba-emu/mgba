@@ -123,6 +123,8 @@ enum GBTAMA6RTCRegister {
 };
 
 enum GBTAMA6Command {
+	GBTAMA6_DISABLE_TIMER = 0x0,
+	GBTAMA6_ENABLE_TIMER = 0x1,
 	GBTAMA6_MINUTE_WRITE = 0x4,
 	GBTAMA6_HOUR_WRITE = 0x5,
 	GBTAMA6_MINUTE_READ = 0x6,
@@ -206,6 +208,7 @@ struct GBPocketCamState {
 
 struct GBTAMA5State {
 	uint8_t reg;
+	bool disabled;
 	uint8_t registers[GBTAMA5_MAX];
 	uint8_t rtcTimerPage[GBTAMA6_RTC_MAX];
 };

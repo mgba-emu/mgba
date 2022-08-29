@@ -50,12 +50,17 @@ struct GBMBCHuC3SaveBuffer {
 	uint64_t latchedUnix;
 };
 
+DECL_BITFIELD(GBMBCTAMA5SaveFlags, uint32_t);
+DECL_BIT(GBMBCTAMA5SaveFlags, Disabled, 0);
+
 struct GBMBCTAMA5SaveBuffer {
 	uint8_t rtcTimerPage[0x8];
 	uint8_t rtcAlarmPage[0x8];
 	uint8_t rtcFreePage0[0x8];
 	uint8_t rtcFreePage1[0x8];
 	uint64_t latchedUnix;
+	GBMBCTAMA5SaveFlags flags;
+	uint32_t padding;
 };
 
 void GBMBCRTCRead(struct GB* gb);
