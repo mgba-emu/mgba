@@ -6,12 +6,12 @@
     <message>
         <location filename="../AboutScreen.ui" line="14"/>
         <source>About</source>
-        <translation>관하여</translation>
+        <translation>정보</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;웹사이트&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;포럼 / 지원&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;기부&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;소스&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
@@ -28,7 +28,7 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation>{projectName}은 오픈 소스 Game Boy Advance 에뮬레이터입니다.</translation>
+        <translation>{projectName}은(는) 오픈 소스 게임 보이 어드밴스 에뮬레이터입니다</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
@@ -41,47 +41,52 @@ Game Boy Advance는 Nintendo Co., Ltd.의 등록 상표입니다.</translation>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>업데이트를 사용할 수 있습니다</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>%1에 대한 업데이트를 사용할 수 있습니다.
+</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="38"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+지금 다운로드하여 설치하시겠습니까? 다운로드가 완료되면 에뮬레이터를 다시 시작해야 합니다.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+이 플랫폼에서는 자동 업데이트를 사용할 수 없습니다. 업데이트하려면 수동으로 업데이트해야 합니다.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="45"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 버전: %1 
+새로운 버전: %2 
+다운로드 크기: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>업데이트 다운로드 중...</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="79"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>다운로드에 실패했습니다. 수동으로 업데이트하세요.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>다운로드 완료. 확인을 눌러 %1을(를) 다시 시작하고 업데이트를 설치하세요.</translation>
     </message>
 </context>
 <context>
@@ -89,22 +94,22 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="88"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>안정적인</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="91"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>개발</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="93"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>미확인</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="224"/>
         <source>(None)</source>
-        <translation type="unfinished"></translation>
+        <translation>(없음)</translation>
     </message>
 </context>
 <context>
@@ -165,17 +170,17 @@ Download size: %3</source>
     <message>
         <location filename="../AudioDevice.cpp" line="26"/>
         <source>Can&apos;t set format of context-less audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>컨텍스트 없는 오디오 장치의 형식을 설정할 수 없음</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="44"/>
         <source>Audio device is missing its core</source>
-        <translation type="unfinished"></translation>
+        <translation>오디오 장치에 코어가 없음</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="62"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>읽기 전용 오디오 장치에 데이터 쓰기</translation>
     </message>
 </context>
 <context>
@@ -183,7 +188,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="43"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>입력 없이 오디오 프로세서를 시작할 수 없음</translation>
     </message>
 </context>
 <context>
@@ -191,7 +196,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>입력 없이 오디오 프로세서를 시작할 수 없음</translation>
     </message>
 </context>
 <context>
@@ -199,88 +204,88 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.ui" line="14"/>
         <source>BattleChip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>배틀칩 게이트</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="67"/>
         <source>Chip name</source>
-        <translation type="unfinished"></translation>
+        <translation>칩 이름</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
         <source>Insert</source>
-        <translation type="unfinished"></translation>
+        <translation>삽입</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
         <source>Save</source>
-        <translation type="unfinished">저장</translation>
+        <translation>저장</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="94"/>
         <source>Load</source>
-        <translation type="unfinished">로드</translation>
+        <translation>로드</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="114"/>
         <source>Add</source>
-        <translation type="unfinished">추가</translation>
+        <translation>추가</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="121"/>
         <source>Remove</source>
-        <translation type="unfinished">삭제</translation>
+        <translation>삭제</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="138"/>
         <source>Gate type</source>
-        <translation type="unfinished"></translation>
+        <translation>게이트 유형</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="180"/>
         <source>Inserted</source>
-        <translation type="unfinished"></translation>
+        <translation>삽입됨</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
-        <translation type="unfinished"></translation>
+        <translation>칩 ID</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
         <source>Update Chip data</source>
-        <translation type="unfinished"></translation>
+        <translation>칩 데이터 업데이트</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
         <source>Show advanced</source>
-        <translation type="unfinished">고급 보기</translation>
+        <translation>고급 보기</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>배틀칩 데이터 누락</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>배트칩 데이터가 없습니다. 배틀칩 게이트는 계속 작동하지만 일부 그래픽이 누락됩니다. 지금 데이터를 다운로드하겠습니까?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="184"/>
         <location filename="../BattleChipView.cpp" line="203"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>덱 파일 선택</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="215"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>호환되지 않는 덱</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="216"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>선택한 덱은 이 칩 게이트와 호환되지 않음</translation>
     </message>
 </context>
 <context>
@@ -306,7 +311,7 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished"></translation>
+        <translation>새로운 코드 추가</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
@@ -316,12 +321,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="93"/>
         <source>Add Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>라인 추가</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="100"/>
         <source>Code type</source>
-        <translation type="unfinished"></translation>
+        <translation>코드 유형</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
@@ -336,13 +341,13 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="86"/>
         <source>Enter codes here...</source>
-        <translation type="unfinished"></translation>
+        <translation>여기에 코드를 입력하세요...</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="50"/>
         <location filename="../CheatsView.cpp" line="58"/>
         <source>Autodetect (recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation>자동 감지 (권장)</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="88"/>
@@ -353,7 +358,7 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>일부 치트를 추가할 수 없습니다. 형식이 올바른지 확인하고 다른 치트 유형을 시도하세요.</translation>
     </message>
 </context>
 <context>
@@ -361,23 +366,23 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="99"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>r%1-%2 %3 재설정</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="505"/>
         <location filename="../CoreController.cpp" line="525"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 활성화되지 않은 되감기</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="568"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>게임을 재설정하겠습니까?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="569"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation type="unfinished"></translation>
+        <translation>대부분의 게임은 새로운 저장을 로드하려면 재설정이 필요합니다. 지금 재설정하겠습니까?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="781"/>
@@ -392,7 +397,7 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="856"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
-        <translation type="unfinished"></translation>
+        <translation>예기치 않은 플랫폼에서 팩을 잡아당길 수 없습니다!</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="967"/>
@@ -415,12 +420,12 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="91"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
-        <translation type="unfinished">게임을 로드할 수 없습니다. 올바른 형식인지 확인하십시오.</translation>
+        <translation>게임을 로드할 수 없습니다. 올바른 형식인지 확인했나요?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="118"/>
         <source>Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 파일을 열지 못했습니다. 게임 내 저장은 업데이트할 수 없습니다. 저장 디렉토리가 추가 권한 없이 쓰기 가능한지 확인하세요 (예: 윈도우즈의 UAC).</translation>
     </message>
 </context>
 <context>
@@ -446,7 +451,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="171"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>쓰기 위해 CLI 기록을 열 수 없음</translation>
     </message>
 </context>
 <context>
@@ -454,47 +459,47 @@ Download size: %3</source>
     <message>
         <location filename="../DolphinConnector.ui" line="14"/>
         <source>Connect to Dolphin</source>
-        <translation type="unfinished"></translation>
+        <translation>돌핀 연결</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="23"/>
         <source>Local computer</source>
-        <translation type="unfinished"></translation>
+        <translation>로컬 컴퓨터</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
         <source>IP address</source>
-        <translation type="unfinished"></translation>
+        <translation>IP 주소</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>연결</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="68"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>연결 해제</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="78"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>닫기</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="90"/>
         <source>Reset on connect</source>
-        <translation type="unfinished"></translation>
+        <translation>연결 시 재설정</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
         <source>Couldn&apos;t Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>연결할 수 없음</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Could not connect to Dolphin.</source>
-        <translation type="unfinished"></translation>
+        <translation>돌핀에 연결할 수 없습니다.</translation>
     </message>
 </context>
 <context>
@@ -502,87 +507,87 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.ui" line="14"/>
         <source>Inspect frame</source>
-        <translation type="unfinished"></translation>
+        <translation>프레임 검사</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="41"/>
         <source>Magnification</source>
-        <translation type="unfinished">확대</translation>
+        <translation>확대</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="50"/>
         <source>Freeze frame</source>
-        <translation type="unfinished"></translation>
+        <translation>정지 프레임</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="84"/>
         <source>Backdrop color</source>
-        <translation type="unfinished"></translation>
+        <translation>배경색</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="132"/>
         <source>Disable scanline effects</source>
-        <translation type="unfinished"></translation>
+        <translation>스캔라인 효과 비활성화</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="145"/>
         <source>Export</source>
-        <translation type="unfinished">내보내기</translation>
+        <translation>내보내기</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="152"/>
         <source>Reset</source>
-        <translation type="unfinished">재설정</translation>
+        <translation>재설정</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="578"/>
         <source>Export frame</source>
-        <translation type="unfinished"></translation>
+        <translation>프레임 내보내기</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="579"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished">휴대용 네트워크 그래픽 (*.png)</translation>
+        <translation>휴대용 네트워크 그래픽 (*.png)</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="600"/>
         <source>None</source>
-        <translation type="unfinished">없음</translation>
+        <translation>없음</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="602"/>
         <source>Background</source>
-        <translation type="unfinished">배경</translation>
+        <translation>배경</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="605"/>
         <source>Window</source>
-        <translation type="unfinished"></translation>
+        <translation>창</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="608"/>
         <source>Objwin</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="613"/>
         <source>Sprite</source>
-        <translation type="unfinished"></translation>
+        <translation>스프라이트</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="616"/>
         <source>Backdrop</source>
-        <translation type="unfinished"></translation>
+        <translation>배경</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="619"/>
         <source>Frame</source>
-        <translation type="unfinished"></translation>
+        <translation>프레임</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="625"/>
         <source>%1 %2</source>
-        <translation type="unfinished">%1x {1 %2?}</translation>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -590,7 +595,7 @@ Download size: %3</source>
     <message>
         <location filename="../GBAApp.cpp" line="73"/>
         <source>Enable Discord Rich Presence</source>
-        <translation type="unfinished"></translation>
+        <translation>디스코드 Rich Presence 활성화</translation>
     </message>
 </context>
 <context>
@@ -636,22 +641,22 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="52"/>
         <source>Write watchpoints behavior</source>
-        <translation type="unfinished"></translation>
+        <translation>감시 동작 작성</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="63"/>
         <source>Standard GDB</source>
-        <translation type="unfinished"></translation>
+        <translation>표준 GDB</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="68"/>
         <source>Internal change detection</source>
-        <translation type="unfinished"></translation>
+        <translation>내부 변경 감지</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="72"/>
         <source>Break on all writes</source>
-        <translation type="unfinished"></translation>
+        <translation>모든 쓰기 중단</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
@@ -676,7 +681,7 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="145"/>
         <source>Could not start GDB server</source>
-        <translation>GDB 서버를 시작할 수 없습니다.</translation>
+        <translation>GDB 서버를 시작할 수 없음</translation>
     </message>
 </context>
 <context>
@@ -684,12 +689,12 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.ui" line="14"/>
         <source>Record GIF/WebP/APNG</source>
-        <translation type="unfinished"></translation>
+        <translation>GIF/WebP/APNG 녹화</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="30"/>
         <source>Loop</source>
-        <translation type="unfinished"></translation>
+        <translation>루프</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="51"/>
@@ -729,7 +734,7 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.cpp" line="61"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished">출력 파일을 열지 못했습니다: %1</translation>
+        <translation>출력 파일을 열기 실패: %1</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
@@ -739,7 +744,7 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
-        <translation type="unfinished"></translation>
+        <translation>그래픽 교환 형식 (*.gif);;WebP ( *.webp);;애니메이션 휴대용 네트워크 그래픽 (*.png *.apng)</translation>
     </message>
 </context>
 <context>
@@ -748,47 +753,47 @@ Download size: %3</source>
         <location filename="../GameBoy.cpp" line="55"/>
         <location filename="../GameBoy.cpp" line="74"/>
         <source>Autodetect</source>
-        <translation type="unfinished">자동 감지</translation>
+        <translation>자동 감지</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="56"/>
         <source>Game Boy (DMG)</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 보이 (DMG)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="57"/>
         <source>Game Boy Pocket (MGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 보이 포켓 (MGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="58"/>
         <source>Super Game Boy (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>슈퍼 게임 보이 (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="59"/>
         <source>Super Game Boy 2 (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>슈퍼 게임 보이 2 (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="60"/>
         <source>Game Boy Color (CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 보이 컬러 (CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="61"/>
         <source>Game Boy Advance (AGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 보이 어드밴스 (AGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="62"/>
         <source>Super Game Boy Color (SGB + CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>슈퍼 게임 보이 컬러 (SGB + CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="75"/>
         <source>ROM Only</source>
-        <translation type="unfinished"></translation>
+        <translation>롬 전용</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="76"/>
@@ -818,7 +823,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
         <source>MBC5 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC5 + 진동</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="82"/>
@@ -828,7 +833,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="83"/>
         <source>MBC7 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC7 (틸트)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="84"/>
@@ -848,7 +853,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
         <source>Pocket Cam</source>
-        <translation type="unfinished"></translation>
+        <translation>포켓 캠</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
@@ -858,17 +863,17 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
         <source>Wisdom Tree</source>
-        <translation type="unfinished"></translation>
+        <translation>지혜의 나무</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>NT (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT (신규)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="91"/>
         <source>Pokémon Jade/Diamond</source>
-        <translation type="unfinished"></translation>
+        <translation>포켓몬 제이드/다이아몬드</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="92"/>
@@ -878,17 +883,17 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="93"/>
         <source>Hitek</source>
-        <translation type="unfinished"></translation>
+        <translation>하이텍</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="94"/>
         <source>Sachen (MMC1)</source>
-        <translation type="unfinished"></translation>
+        <translation>사첸 (MMC1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="95"/>
         <source>Sachen (MMC2)</source>
-        <translation type="unfinished"></translation>
+        <translation>사첸 (MMC2)</translation>
     </message>
 </context>
 <context>
@@ -1013,7 +1018,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="65"/>
         <source>Swap green components</source>
-        <translation type="unfinished"></translation>
+        <translation>녹색 구성 요소 교체</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="69"/>
@@ -1163,7 +1168,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="212"/>
         <location filename="../IOViewer.cpp" line="221"/>
         <source>Integer part (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>정수 부분 (낮음)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="178"/>
@@ -1171,7 +1176,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="216"/>
         <location filename="../IOViewer.cpp" line="225"/>
         <source>Integer part (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>정수 부분 (높음)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="229"/>
@@ -1385,12 +1390,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="297"/>
         <source>Brighten</source>
-        <translation type="unfinished"></translation>
+        <translation>선명</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="298"/>
         <source>Darken</source>
-        <translation type="unfinished"></translation>
+        <translation>어둠</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="300"/>
@@ -1881,7 +1886,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="696"/>
         <location filename="../IOViewer.cpp" line="704"/>
         <source>Address (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>주소 (낮음)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="565"/>
@@ -1893,53 +1898,53 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="700"/>
         <location filename="../IOViewer.cpp" line="708"/>
         <source>Address (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>주소 (높음)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1116"/>
         <location filename="../IOViewer.cpp" line="1139"/>
         <location filename="../IOViewer.cpp" line="1166"/>
         <source>Sound frequency (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>음향 주파수 (낮음)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1120"/>
         <location filename="../IOViewer.cpp" line="1143"/>
         <location filename="../IOViewer.cpp" line="1170"/>
         <source>Sound frequency (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>음향 주파수 (높음)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1424"/>
         <source>Source (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>소스 (높음)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1428"/>
         <source>Source (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>소스 (낮음)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1432"/>
         <source>Destination (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>대상 (높음)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1436"/>
         <source>Destination (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>대상 (낮음)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1499"/>
         <location filename="../IOViewer.cpp" line="1511"/>
         <source>Green (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>녹색 (낮음)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1500"/>
         <location filename="../IOViewer.cpp" line="1512"/>
         <source>Green (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>녹색 (높음)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="577"/>
@@ -2052,7 +2057,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1091"/>
         <location filename="../IOViewer.cpp" line="1552"/>
         <source>VBlank</source>
-        <translation>VBlank</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="598"/>
@@ -2063,7 +2068,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="962"/>
         <location filename="../IOViewer.cpp" line="1443"/>
         <source>HBlank</source>
-        <translation>HBlank</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="601"/>
@@ -2247,7 +2252,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="946"/>
         <location filename="../IOViewer.cpp" line="963"/>
         <source>VCounter</source>
-        <translation>VCounter</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="947"/>
@@ -2424,57 +2429,57 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1034"/>
         <source>Right/A</source>
-        <translation type="unfinished"></translation>
+        <translation>오른쪽/A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1035"/>
         <source>Left/B</source>
-        <translation type="unfinished"></translation>
+        <translation>왼쪽/B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1036"/>
         <source>Up/Select</source>
-        <translation type="unfinished"></translation>
+        <translation>위쪽/선택</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1037"/>
         <source>Down/Start</source>
-        <translation type="unfinished"></translation>
+        <translation>아래쪽/시작</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1038"/>
         <source>Active D-pad</source>
-        <translation type="unfinished"></translation>
+        <translation>D-패드 확성화</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1039"/>
         <source>Active face buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>메인 버튼 활성화</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1047"/>
         <source>Internal clock</source>
-        <translation type="unfinished"></translation>
+        <translation>내부 클럭</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1048"/>
         <source>32× clocking (CGB only)</source>
-        <translation type="unfinished"></translation>
+        <translation>32× 클락킹 (CGB만 해당)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1049"/>
         <source>Transfer active</source>
-        <translation type="unfinished"></translation>
+        <translation>전송 활성</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1067"/>
         <source>Divider</source>
-        <translation type="unfinished"></translation>
+        <translation>분할기</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/16</source>
-        <translation type="unfinished">1/16</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1092"/>
@@ -2486,59 +2491,59 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1093"/>
         <location filename="../IOViewer.cpp" line="1554"/>
         <source>Timer</source>
-        <translation type="unfinished"></translation>
+        <translation>타이머</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1094"/>
         <location filename="../IOViewer.cpp" line="1555"/>
         <source>Serial</source>
-        <translation type="unfinished"></translation>
+        <translation>시리얼</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1095"/>
         <location filename="../IOViewer.cpp" line="1556"/>
         <source>Joypad</source>
-        <translation type="unfinished"></translation>
+        <translation>조이패드</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1202"/>
         <source>Volume right</source>
-        <translation type="unfinished"></translation>
+        <translation>볼륨 오른쪽</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1203"/>
         <source>Output right</source>
-        <translation type="unfinished"></translation>
+        <translation>출력 오른쪽</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1204"/>
         <source>Volume left</source>
-        <translation type="unfinished"></translation>
+        <translation>볼륨 왼쪽</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1205"/>
         <source>Output left</source>
-        <translation type="unfinished"></translation>
+        <translation>출력 왼쪽</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1326"/>
         <source>Background enable/priority</source>
-        <translation type="unfinished"></translation>
+        <translation>배경 활성화/우선순위</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1327"/>
         <source>Enable sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>스프라이트 활성화</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1328"/>
         <source>Double-height sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>이중 높이 스프라이트</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation type="unfinished"></translation>
+        <translation>배경 타일 지도</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
@@ -2555,7 +2560,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1333"/>
         <source>Background tile data</source>
-        <translation type="unfinished"></translation>
+        <translation>배경 타일 데이터</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1334"/>
@@ -2570,22 +2575,22 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1337"/>
         <source>Enable window</source>
-        <translation type="unfinished"></translation>
+        <translation>창 활성화</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1338"/>
         <source>Window tile map</source>
-        <translation type="unfinished"></translation>
+        <translation>창 타일 지도</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1342"/>
         <source>Enable LCD</source>
-        <translation type="unfinished"></translation>
+        <translation>LCD 활성화</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1346"/>
         <source>Mode</source>
-        <translation type="unfinished">모드</translation>
+        <translation>모드</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1347"/>
@@ -2600,7 +2605,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1349"/>
         <source>2: OAM scan</source>
-        <translation type="unfinished"></translation>
+        <translation>2: OAM 스캔</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1350"/>
@@ -2610,155 +2615,155 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1352"/>
         <source>In LYC</source>
-        <translation type="unfinished"></translation>
+        <translation>LYC</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1353"/>
         <source>Enable HBlank (mode 0) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>HBlank (모드 0) IRQ 활성화</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1354"/>
         <source>Enable VBlank (mode 1) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>VBlank (모드 1) IRQ 활성화</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1355"/>
         <source>Enable OAM (mode 2) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>OAM (모드 2) IRQ 활성화</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1356"/>
         <source>Enable LYC IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>LYC IRQ 활성화</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1368"/>
         <source>Current Y coordinate</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 Y 좌표</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1372"/>
         <source>Comparison Y coordinate</source>
-        <translation type="unfinished"></translation>
+        <translation>비교 Y 좌표</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1376"/>
         <source>Start upper byte</source>
-        <translation type="unfinished"></translation>
+        <translation>상위 바이트 시작</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1380"/>
         <location filename="../IOViewer.cpp" line="1387"/>
         <location filename="../IOViewer.cpp" line="1394"/>
         <source>Color 0 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>색상 0 음영</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1381"/>
         <location filename="../IOViewer.cpp" line="1388"/>
         <location filename="../IOViewer.cpp" line="1395"/>
         <source>Color 1 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>색상 1 음영</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1382"/>
         <location filename="../IOViewer.cpp" line="1389"/>
         <location filename="../IOViewer.cpp" line="1396"/>
         <source>Color 2 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>색상 2 음영</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1383"/>
         <location filename="../IOViewer.cpp" line="1390"/>
         <location filename="../IOViewer.cpp" line="1397"/>
         <source>Color 3 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>색상 3 음영</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1411"/>
         <source>Prepare to switch speed</source>
-        <translation type="unfinished"></translation>
+        <translation>속도 전환 준비</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1412"/>
         <source>Double speed</source>
-        <translation type="unfinished"></translation>
+        <translation>2배속</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1418"/>
         <source>VRAM bank</source>
-        <translation type="unfinished"></translation>
+        <translation>VRAM 뱅크</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1440"/>
         <source>Length</source>
-        <translation type="unfinished"></translation>
+        <translation>길이</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1441"/>
         <source>Timing</source>
-        <translation type="unfinished"></translation>
+        <translation>타이밍</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1448"/>
         <source>Write bit</source>
-        <translation type="unfinished"></translation>
+        <translation>비트 쓰기</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1449"/>
         <source>Read bit</source>
-        <translation type="unfinished"></translation>
+        <translation>비트 읽기</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1452"/>
         <location filename="../IOViewer.cpp" line="1453"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>미확인</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1493"/>
         <location filename="../IOViewer.cpp" line="1505"/>
         <source>Current index</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 인덱스</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1494"/>
         <location filename="../IOViewer.cpp" line="1506"/>
         <source>Auto-increment</source>
-        <translation type="unfinished"></translation>
+        <translation>자동 증가</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1498"/>
         <location filename="../IOViewer.cpp" line="1510"/>
         <source>Red</source>
-        <translation type="unfinished">빨간색</translation>
+        <translation>빨간색</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1501"/>
         <location filename="../IOViewer.cpp" line="1513"/>
         <source>Blue</source>
-        <translation type="unfinished">파란색</translation>
+        <translation>파란색</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1517"/>
         <source>Sprite ordering</source>
-        <translation type="unfinished"></translation>
+        <translation>스프라이트 명령</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1518"/>
         <source>OAM order</source>
-        <translation type="unfinished"></translation>
+        <translation>OAM 명령</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1519"/>
         <source>x coordinate sorting</source>
-        <translation type="unfinished"></translation>
+        <translation>x 좌표 정렬</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1530"/>
         <source>WRAM bank</source>
-        <translation type="unfinished"></translation>
+        <translation>WRAM 뱅크</translation>
     </message>
 </context>
 <context>
@@ -2772,17 +2777,17 @@ Download size: %3</source>
     <message>
         <location filename="../KeyEditor.cpp" line="53"/>
         <source>Super (L)</source>
-        <translation type="unfinished"></translation>
+        <translation>슈퍼 (L)</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="56"/>
         <source>Super (R)</source>
-        <translation type="unfinished"></translation>
+        <translation>슈퍼 (R)</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="59"/>
         <source>Menu</source>
-        <translation type="unfinished"></translation>
+        <translation>메뉴</translation>
     </message>
 </context>
 <context>
@@ -2847,7 +2852,7 @@ Download size: %3</source>
     <message>
         <location filename="../LoadSaveState.ui" line="261"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>취소</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="182"/>
@@ -2916,42 +2921,42 @@ Download size: %3</source>
         <location filename="../LogConfigModel.cpp" line="90"/>
         <location filename="../LogConfigModel.cpp" line="111"/>
         <source>Default</source>
-        <translation type="unfinished"></translation>
+        <translation>기본</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="92"/>
         <source>Fatal</source>
-        <translation type="unfinished">치명적</translation>
+        <translation>치명적</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="94"/>
         <source>Error</source>
-        <translation type="unfinished">오류</translation>
+        <translation>오류</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="96"/>
         <source>Warning</source>
-        <translation type="unfinished">경고</translation>
+        <translation>경고</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="98"/>
         <source>Info</source>
-        <translation type="unfinished">정보</translation>
+        <translation>정보</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="100"/>
         <source>Debug</source>
-        <translation type="unfinished">디버그</translation>
+        <translation>디버그</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="102"/>
         <source>Stub</source>
-        <translation type="unfinished">매트릭스</translation>
+        <translation>스텁</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="104"/>
         <source>Game Error</source>
-        <translation type="unfinished">게임 오류</translation>
+        <translation>게임 오류</translation>
     </message>
 </context>
 <context>
@@ -2964,7 +2969,7 @@ Download size: %3</source>
     <message>
         <location filename="../LogController.cpp" line="83"/>
         <source>An error occurred</source>
-        <translation type="unfinished"></translation>
+        <translation>오류 발생</translation>
     </message>
     <message>
         <location filename="../LogController.cpp" line="155"/>
@@ -3052,7 +3057,7 @@ Download size: %3</source>
     <message>
         <location filename="../LogView.ui" line="108"/>
         <source>Advanced settings</source>
-        <translation type="unfinished"></translation>
+        <translation>고급 설정</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="128"/>
@@ -3085,35 +3090,35 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.ui" line="139"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>복사</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="48"/>
         <source>Priority</source>
-        <translation type="unfinished">우선 순위</translation>
+        <translation>우선 순위</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="49"/>
         <location filename="../MapView.cpp" line="62"/>
         <source>Map base</source>
-        <translation type="unfinished"></translation>
+        <translation>지도 기반</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="50"/>
         <location filename="../MapView.cpp" line="63"/>
         <source>Tile base</source>
-        <translation type="unfinished"></translation>
+        <translation>타일 기반</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="51"/>
         <source>Size</source>
-        <translation type="unfinished">크기</translation>
+        <translation>크기</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="52"/>
         <location filename="../MapView.cpp" line="64"/>
         <source>Offset</source>
-        <translation type="unfinished">오프셋</translation>
+        <translation>오프셋</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="53"/>
@@ -3123,7 +3128,7 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="108"/>
         <source>Map Addr.</source>
-        <translation>맵 주소</translation>
+        <translation>지도 주소</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="109"/>
@@ -3155,7 +3160,7 @@ Download size: %3</source>
         <location filename="../MapView.cpp" line="176"/>
         <location filename="../MapView.cpp" line="224"/>
         <source>N/A</source>
-        <translation type="unfinished">N/A</translation>
+        <translation>해당 없음</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="267"/>
@@ -3173,32 +3178,32 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryDump.ui" line="14"/>
         <source>Save Memory Range</source>
-        <translation type="unfinished"></translation>
+        <translation>메모리 범위 저장</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="20"/>
         <source>Start Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>시작 주소:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="76"/>
         <source>Byte Count:</source>
-        <translation type="unfinished"></translation>
+        <translation>바이트 수:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="108"/>
         <source>Dump across banks</source>
-        <translation type="unfinished"></translation>
+        <translation>뱅크 간 덤프</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="24"/>
         <source>Save memory region</source>
-        <translation type="unfinished"></translation>
+        <translation>메모리 영역 저장</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="30"/>
         <source>Failed to open output file: %1</source>
-        <translation type="unfinished">출력 파일을 열지 못했습니다: %1</translation>
+        <translation>출력 파일 열기 실패: %1</translation>
     </message>
 </context>
 <context>
@@ -3346,57 +3351,57 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="216"/>
         <source>Search type</source>
-        <translation type="unfinished"></translation>
+        <translation>검색 유형</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="223"/>
         <source>Equal to value</source>
-        <translation type="unfinished"></translation>
+        <translation>값과 동일</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="236"/>
         <source>Greater than value</source>
-        <translation type="unfinished"></translation>
+        <translation>값보다 큼</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="246"/>
         <source>Less than value</source>
-        <translation type="unfinished"></translation>
+        <translation>값보다 작음</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="256"/>
         <source>Unknown/changed</source>
-        <translation type="unfinished"></translation>
+        <translation>알 수 없음/변경됨</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="269"/>
         <source>Changed by value</source>
-        <translation type="unfinished"></translation>
+        <translation>값에 따라 변경됨</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="282"/>
         <source>Unchanged</source>
-        <translation type="unfinished"></translation>
+        <translation>변하지 않음</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="295"/>
         <source>Increased</source>
-        <translation type="unfinished"></translation>
+        <translation>증가함</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="308"/>
         <source>Decreased</source>
-        <translation type="unfinished"></translation>
+        <translation>감소함</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="318"/>
         <source>Search ROM</source>
-        <translation type="unfinished"></translation>
+        <translation>롬 검색</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="336"/>
         <source>New Search</source>
-        <translation type="unfinished"></translation>
+        <translation>새로운 검색</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="343"/>
@@ -3454,17 +3459,17 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="108"/>
         <source>&amp;1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;1 바이트</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="131"/>
         <source>&amp;2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;2 바이트</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="151"/>
         <source>&amp;4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;4 바이트</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="208"/>
@@ -3499,7 +3504,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="290"/>
         <source>Save Range</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 범위</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="297"/>
@@ -3517,7 +3522,7 @@ Download size: %3</source>
     <message>
         <location filename="../MessagePainter.cpp" line="81"/>
         <source>Frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 프레임</translation>
     </message>
 </context>
 <context>
@@ -3535,12 +3540,12 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.ui" line="94"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>복사</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="316"/>
         <source>Matrix</source>
-        <translation type="unfinished"></translation>
+        <translation>매트릭스</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="389"/>
@@ -3664,7 +3669,7 @@ Download size: %3</source>
         <location filename="../ObjView.cpp" line="259"/>
         <location filename="../ObjView.cpp" line="260"/>
         <source>---</source>
-        <translation type="unfinished">---</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="193"/>
@@ -3771,17 +3776,17 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="146"/>
         <source>EEPROM 8kB</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 8킬로바이트</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="151"/>
         <source>EEPROM 512 bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 512 바이트</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="156"/>
         <source>SRAM 64kB (bootlegs only)</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM 64kB (해적판 전용)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="164"/>
@@ -3796,7 +3801,7 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="197"/>
         <source>VBA bug compatibility mode</source>
-        <translation type="unfinished"></translation>
+        <translation>VBA 버그 호환 모드</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="227"/>
@@ -3831,22 +3836,22 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="529"/>
         <source>Palette preset</source>
-        <translation type="unfinished"></translation>
+        <translation>팔레트 사전 설정</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="54"/>
         <source>Official MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>공식 MBC</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="58"/>
         <source>Licensed MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>라이센스 MBC</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="62"/>
         <source>Unlicensed MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>라이센스 없는 MBC</translation>
     </message>
 </context>
 <context>
@@ -3993,22 +3998,22 @@ Download size: %3</source>
     <message>
         <location filename="../PrinterView.ui" line="180"/>
         <source>Magnification</source>
-        <translation type="unfinished">확대</translation>
+        <translation>확대</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="223"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>복사</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Save Printout</source>
-        <translation type="unfinished"></translation>
+        <translation>인쇄물 저장</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished">휴대용 네트워크 그래픽 (*.png)</translation>
+        <translation>휴대용 네트워크 그래픽 (*.png)</translation>
     </message>
 </context>
 <context>
@@ -4067,47 +4072,47 @@ Download size: %3</source>
     <message>
         <location filename="../ReportView.cpp" line="339"/>
         <source>Bug report archive</source>
-        <translation type="unfinished"></translation>
+        <translation>버그 보고서 파일</translation>
     </message>
     <message>
         <location filename="../ReportView.cpp" line="339"/>
         <source>ZIP archive (*.zip)</source>
-        <translation type="unfinished"></translation>
+        <translation>ZIP 파일 (*.zip)</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="14"/>
         <source>Generate Bug Report</source>
-        <translation type="unfinished"></translation>
+        <translation>버그 보고서 생성</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="67"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;버그 보고서를 제출하려면 먼저 보고하려는 버그 보고서에 첨부할 보고서 파일을 생성하세요. 디버깅 문제에 도움이 되는 경우가 많으므로 저장 파일을 포함하는 것이 좋습니다. 이렇게 하면 실행 중인 {projectName} 버전, 구성, 컴퓨터, 현재 열려 있는 게임에 대한 일부 정보가 수집됩니다. 이 수집이 완료되면 아래에 수집된 모든 정보를 검토하고 zip 파일로 저장할 수 있습니다. 컬렉션은 사용자 이름과 같은 개인 정보가 수집된 경로에 있는 경우 자동으로 수정을 시도하지만 나중에 수정할 수 있는 경우를 대비하여 수정합니다. 생성 및 저장한 후 아래 버튼을 클릭하거나 &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot; &gt;mgba.io/i&lt;/span&gt;&lt;/a&gt;를 방문하여 GitHub에 버그 보고서를 제출하세요. 생성한 보고서를 반드시 첨부하세요!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="85"/>
         <source>Generate report</source>
-        <translation type="unfinished"></translation>
+        <translation>보고서 생성</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="99"/>
         <source>Save</source>
-        <translation type="unfinished">저장</translation>
+        <translation>저장</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="113"/>
         <source>Open issue list in browser</source>
-        <translation type="unfinished"></translation>
+        <translation>브라우저에서 문제 목록 열기</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="134"/>
         <source>Include save file</source>
-        <translation type="unfinished"></translation>
+        <translation>세이브 파일 포함</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="150"/>
         <source>Create and include savestate</source>
-        <translation type="unfinished"></translation>
+        <translation>저장상태 생성 및 포함</translation>
     </message>
 </context>
 <context>
@@ -4115,108 +4120,108 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="39"/>
         <source>Save games and save states (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 저장 및 상태 저장 (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="40"/>
         <source>Select save game or save state</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 저장 또는 상태 저장 선택</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="52"/>
         <source>Save games (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 (%1) 저장</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="53"/>
         <source>Select save game</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 게임 선택</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="74"/>
         <source>Conversion failed</source>
-        <translation type="unfinished"></translation>
+        <translation>변환 실패</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="74"/>
         <source>Failed to convert the save game. This is probably a bug.</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 게임을 변환하지 못했습니다. 이것은 아마도 버그일 것입니다.</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="90"/>
         <source>No file selected</source>
-        <translation type="unfinished"></translation>
+        <translation>파일 선택되지 않았음</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="97"/>
         <source>Could not open file</source>
-        <translation type="unfinished"></translation>
+        <translation>파일 열 수 없음</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="112"/>
         <source>No valid formats found</source>
-        <translation type="unfinished"></translation>
+        <translation>유효한 형식 없음</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="120"/>
         <source>Please select a valid input file</source>
-        <translation type="unfinished"></translation>
+        <translation>유효한 입력 파일 선택</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="131"/>
         <source>No valid conversions found</source>
-        <translation type="unfinished"></translation>
+        <translation>유효한 전환 없음</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="638"/>
         <source>Cannot convert save games between platforms</source>
-        <translation type="unfinished"></translation>
+        <translation>플랫폼 간에 저장 게임 변환할 수 없음</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="14"/>
         <source>Convert/Extract Save Game</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 게임 변환/추출</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="20"/>
         <source>Input file</source>
-        <translation type="unfinished"></translation>
+        <translation>입력 파일</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="29"/>
         <location filename="../SaveConverter.ui" line="55"/>
         <source>Browse</source>
-        <translation type="unfinished">브라우저</translation>
+        <translation>브라우저</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="46"/>
         <source>Output file</source>
-        <translation type="unfinished"></translation>
+        <translation>출력 파일</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="450"/>
         <source>%1 %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2 저장 게임</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="454"/>
         <source>little endian</source>
-        <translation type="unfinished"></translation>
+        <translation>리틀 엔디안</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="457"/>
         <source>big endian</source>
-        <translation type="unfinished"></translation>
+        <translation>빅 엔디안</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="468"/>
         <source>SRAM</source>
-        <translation type="unfinished">SRAM</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="472"/>
         <source>%1 flash</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 플래시</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="476"/>
@@ -4236,22 +4241,22 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="495"/>
         <source>packed MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>팩킹된 MBC2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="497"/>
         <source>unpacked MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>언팩킹된 MBC2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="502"/>
         <source>MBC6 flash</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6 플래시</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="504"/>
         <source>MBC6 combined SRAM + flash</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6 결합 SRAM + 플래시</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="506"/>
@@ -4271,17 +4276,17 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="526"/>
         <source>%1 save state with embedded %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>포함된 %2 저장 게임이 있는 %1 저장 상태</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="529"/>
         <source>%1 SharkPort %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 샤크포트 %2 게임 저장</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="532"/>
         <source>%1 GameShark Advance SP %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 게임샤크 어드밴스 SP %2 게임 저장</translation>
     </message>
 </context>
 <context>
@@ -4289,7 +4294,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingTextBuffer.cpp" line="42"/>
         <source>Untitled buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>제목 없는 버퍼</translation>
     </message>
 </context>
 <context>
@@ -4297,52 +4302,52 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="14"/>
         <source>Scripting</source>
-        <translation type="unfinished"></translation>
+        <translation>스크립팅</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="45"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>실행</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="92"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>파일</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="96"/>
         <source>Load recent script</source>
-        <translation type="unfinished"></translation>
+        <translation>최근 스크립트 로드</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="109"/>
         <source>Load script...</source>
-        <translation type="unfinished"></translation>
+        <translation>스크립트 로드...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="114"/>
         <source>&amp;Reset</source>
-        <translation type="unfinished">&amp;재설정</translation>
+        <translation>재설정 (&amp;R)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="119"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="60"/>
         <source>Select script to load</source>
-        <translation type="unfinished"></translation>
+        <translation>로드할 스크립트 선택</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="85"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished"></translation>
+        <translation>루아 스크립트 (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="87"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>모든 파일 (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4380,12 +4385,12 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="67"/>
         <source>Offset time</source>
-        <translation type="unfinished"></translation>
+        <translation>오프셋 시간</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="80"/>
         <source> sec</source>
-        <translation type="unfinished"></translation>
+        <translation> 초</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="126"/>
@@ -4462,7 +4467,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="208"/>
         <source>None</source>
-        <translation type="unfinished">없음</translation>
+        <translation>없음</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="215"/>
@@ -4498,7 +4503,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="433"/>
         <source>Select directory</source>
-        <translation type="unfinished"></translation>
+        <translation>디렉토리 선택</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="827"/>
@@ -4508,30 +4513,30 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="845"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>절대</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="850"/>
         <source>Just now</source>
-        <translation type="unfinished"></translation>
+        <translation>방금</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="854"/>
         <source>Less than an hour ago</source>
-        <translation type="unfinished"></translation>
+        <translation>1시간 미만 전</translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="859"/>
         <source>%n hour(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n 시간 전</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="863"/>
         <source>%n day(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n 일 전</numerusform>
         </translation>
     </message>
     <message>
@@ -4547,7 +4552,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="50"/>
         <source>Gameplay</source>
-        <translation type="unfinished"></translation>
+        <translation>게임플레이</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
@@ -4557,7 +4562,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>업데이트</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
@@ -4567,7 +4572,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="70"/>
         <source>Enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>개선 사항</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="80"/>
@@ -4577,7 +4582,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="85"/>
         <source>Logging</source>
-        <translation type="unfinished"></translation>
+        <translation>로깅</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="90"/>
@@ -4682,27 +4687,27 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="285"/>
         <source>Fast forward volume:</source>
-        <translation type="unfinished"></translation>
+        <translation>빨리 감기 볼륨:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="325"/>
         <source>Audio in multiplayer:</source>
-        <translation type="unfinished"></translation>
+        <translation>멀티플레이어 오디오:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="332"/>
         <source>All windows</source>
-        <translation type="unfinished"></translation>
+        <translation>모든 창</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="345"/>
         <source>Player 1 window only</source>
-        <translation type="unfinished"></translation>
+        <translation>플레이어 1 창 전용</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="355"/>
         <source>Currently active player window</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 활성 플레이어 창</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="388"/>
@@ -4760,254 +4765,254 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="750"/>
         <source>Show filename instead of ROM name in library view</source>
-        <translation type="unfinished"></translation>
+        <translation>라이브러리 보기에서 롬 이름 대신 파일 이름 표시</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="797"/>
         <location filename="../SettingsView.ui" line="822"/>
         <source>Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>일시정지</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="788"/>
         <source>When inactive:</source>
-        <translation type="unfinished"></translation>
+        <translation>비활성 상태일 때:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="548"/>
         <source>On loading a game:</source>
-        <translation type="unfinished"></translation>
+        <translation>게임을 로드할 때:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="555"/>
         <source>Load last state</source>
-        <translation type="unfinished"></translation>
+        <translation>마지막 상태 로드</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="565"/>
         <source>Load cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>치트 로드</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="592"/>
         <source>Save entered cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>입력한 치트 저장</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="813"/>
         <source>When minimized:</source>
-        <translation type="unfinished"></translation>
+        <translation>최소화할 때:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="917"/>
         <source>Current channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 채널:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="931"/>
         <source>Current version:</source>
-        <translation type="unfinished"></translation>
+        <translation>현재 버전:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="955"/>
         <source>Update channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>업데이트 채널:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="965"/>
         <source>Available version:</source>
-        <translation type="unfinished"></translation>
+        <translation>사용 가능한 버전:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="972"/>
         <source>(Unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(알 수 없음)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="982"/>
         <source>Last checked:</source>
-        <translation type="unfinished"></translation>
+        <translation>마지막 확인:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1003"/>
         <source>Automatically check on start</source>
-        <translation type="unfinished"></translation>
+        <translation>시작 시 자동으로 확인</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1010"/>
         <source>Check now</source>
-        <translation type="unfinished"></translation>
+        <translation>지금 확인</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2097"/>
         <source>Default color palette only</source>
-        <translation type="unfinished"></translation>
+        <translation>기본 색상 팔레트만</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2107"/>
         <source>SGB color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>가능한 경우 SGB 색상 팔레트</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2117"/>
         <source>GBC color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>가능한 경우 GBC 색상 팔레트</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2127"/>
         <source>SGB (preferred) or GBC color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>사용 가능한 경우 SGB (선호) 또는 GBC 색상 팔레트</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2140"/>
         <source>Game Boy Camera</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 보이 카메라</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2146"/>
         <source>Driver:</source>
-        <translation type="unfinished"></translation>
+        <translation>드라이버:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2163"/>
         <source>Source:</source>
-        <translation type="unfinished"></translation>
+        <translation>소스:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="509"/>
         <source>Native (59.7275)</source>
-        <translation type="unfinished">Nativo (59.7) {59.7275)?}</translation>
+        <translation>실기 (59.7275)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="447"/>
         <source>Interframe blending</source>
-        <translation type="unfinished"></translation>
+        <translation>프레임간 조합</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="845"/>
         <source>Dynamically update window title</source>
-        <translation type="unfinished"></translation>
+        <translation>창 제목을 동적으로 업데이트</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="865"/>
         <source>Show filename instead of ROM name in title bar</source>
-        <translation type="unfinished"></translation>
+        <translation>제목 표시줄에 롬 이름 대신 파일 이름 표시</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="882"/>
         <source>Show OSD messages</source>
-        <translation type="unfinished"></translation>
+        <translation>OSD 메시지 표시</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="897"/>
         <source>Show frame count in OSD</source>
-        <translation type="unfinished"></translation>
+        <translation>OSD에서 프레임 수 표시</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="904"/>
         <source>Show emulation info on reset</source>
-        <translation type="unfinished"></translation>
+        <translation>재설정 시 에뮬레이션 정보 표시</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="691"/>
         <source>Enable Discord Rich Presence</source>
-        <translation type="unfinished"></translation>
+        <translation>디스코드 Rich Presence 활성화</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1067"/>
         <source>Fast forward (held) speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>빨리 감기 (고정) 속도:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="609"/>
         <source>Save state extra data:</source>
-        <translation type="unfinished"></translation>
+        <translation>상태 추가 데이터 저장:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="582"/>
         <source>Periodically autosave state</source>
-        <translation type="unfinished"></translation>
+        <translation>주기적으로 자동 저장 상태</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="626"/>
         <location filename="../SettingsView.ui" line="670"/>
         <source>Save game</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 저장</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="653"/>
         <source>Load state extra data:</source>
-        <translation type="unfinished"></translation>
+        <translation>상태 추가 데이터 로드:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1747"/>
         <source>Models</source>
-        <translation type="unfinished"></translation>
+        <translation>모델</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1753"/>
         <source>GB only:</source>
-        <translation type="unfinished"></translation>
+        <translation>GB 전용:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1763"/>
         <source>SGB compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>SGB 호환:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1773"/>
         <source>GBC only:</source>
-        <translation type="unfinished"></translation>
+        <translation>GBC 전용:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1783"/>
         <source>GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>GBC 호환:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1793"/>
         <source>SGB and GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>SGB 와 GBC 호환:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1813"/>
         <source>Game Boy palette</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 보이 팔레트</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1819"/>
         <source>Preset:</source>
-        <translation type="unfinished"></translation>
+        <translation>사전 설정:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1206"/>
         <source>Enable Game Boy Player features by default</source>
-        <translation type="unfinished"></translation>
+        <translation>기본적으로 게임 보이 플레이어 기능 활성화</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1213"/>
         <source>Enable VBA bug compatibility in ROM hacks</source>
-        <translation type="unfinished"></translation>
+        <translation>롬 해킹에서 VBA 버그 호환성 활성화</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1227"/>
         <source>Video renderer:</source>
-        <translation type="unfinished"></translation>
+        <translation>비디오 렌더러:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1235"/>
         <source>Software</source>
-        <translation type="unfinished"></translation>
+        <translation>소프트웨어</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1255"/>
         <source>OpenGL enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenGL 개선 사항</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1261"/>
         <source>High-resolution scale:</source>
-        <translation type="unfinished"></translation>
+        <translation>고해상도 스케일:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1299"/>
@@ -5017,7 +5022,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1248"/>
         <source>XQ GBA audio (experimental)</source>
-        <translation type="unfinished"></translation>
+        <translation>XQ GBA 오디오 (시험용)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1656"/>
@@ -5042,17 +5047,17 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1713"/>
         <source>Log to file</source>
-        <translation type="unfinished"></translation>
+        <translation>파일에 기록</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1720"/>
         <source>Log to console</source>
-        <translation type="unfinished"></translation>
+        <translation>콘솔에 기록</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1734"/>
         <source>Select Log File</source>
-        <translation type="unfinished"></translation>
+        <translation>로그 파일 선택</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2003"/>
@@ -5193,12 +5198,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1173"/>
         <source>Idle loops:</source>
-        <translation>Idle loops:</translation>
+        <translation>유휴 루프:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1199"/>
         <source>Preload entire ROM into memory</source>
-        <translation>전체 롬을 메모리에 미리 로드하십시오.</translation>
+        <translation>전체 ROM을 메모리에 미리 로드</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1110"/>
@@ -5270,7 +5275,7 @@ Download size: %3</source>
     <message>
         <location filename="../ShaderSelector.cpp" line="103"/>
         <source>No shader loaded</source>
-        <translation>셰이더가 로드되지 않았습니다.</translation>
+        <translation>로드된 쉐이더 없음</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="111"/>
@@ -5328,17 +5333,17 @@ Download size: %3</source>
     <message>
         <location filename="../ShortcutModel.cpp" line="66"/>
         <source>Action</source>
-        <translation type="unfinished">동작</translation>
+        <translation>동작</translation>
     </message>
     <message>
         <location filename="../ShortcutModel.cpp" line="68"/>
         <source>Keyboard</source>
-        <translation type="unfinished">키보드</translation>
+        <translation>키보드</translation>
     </message>
     <message>
         <location filename="../ShortcutModel.cpp" line="70"/>
         <source>Gamepad</source>
-        <translation type="unfinished">게임패드</translation>
+        <translation>게임패드</translation>
     </message>
 </context>
 <context>
@@ -5369,18 +5374,18 @@ Download size: %3</source>
     <message>
         <location filename="../TileView.cpp" line="225"/>
         <source>Export tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>타일 내보내기</translation>
     </message>
     <message>
         <location filename="../TileView.cpp" line="226"/>
         <location filename="../TileView.cpp" line="238"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished">휴대용 네트워크 그래픽 (*.png)</translation>
+        <translation>휴대용 네트워크 그래픽 (*.png)</translation>
     </message>
     <message>
         <location filename="../TileView.cpp" line="237"/>
         <source>Export tile</source>
-        <translation type="unfinished"></translation>
+        <translation>타일 내보내기</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="14"/>
@@ -5390,12 +5395,12 @@ Download size: %3</source>
     <message>
         <location filename="../TileView.ui" line="170"/>
         <source>Export Selected</source>
-        <translation type="unfinished"></translation>
+        <translation>선택 항목 내보내기</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="184"/>
         <source>Export All</source>
-        <translation type="unfinished"></translation>
+        <translation>모두 내보내기</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="40"/>
@@ -5405,47 +5410,47 @@ Download size: %3</source>
     <message>
         <location filename="../TileView.ui" line="33"/>
         <source>Palette</source>
-        <translation type="unfinished">팔레트</translation>
+        <translation>팔레트</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="96"/>
         <source>Tiles per row</source>
-        <translation type="unfinished"></translation>
+        <translation>행당 타일 수</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="103"/>
         <source>Fit to window</source>
-        <translation type="unfinished"></translation>
+        <translation>창에 맞추기</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="119"/>
         <source>Displayed tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>표시된 타일</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="125"/>
         <source>Only BG tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>배경 타일만</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="135"/>
         <source>Only OBJ tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>객체 타일만</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="145"/>
         <source>Both</source>
-        <translation type="unfinished">둘 다</translation>
+        <translation>둘 다</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="163"/>
         <source>Copy Selected</source>
-        <translation type="unfinished"></translation>
+        <translation>선택 항목 복사</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="177"/>
         <source>Copy All</source>
-        <translation type="unfinished"></translation>
+        <translation>모두 복사</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="73"/>
@@ -5499,7 +5504,7 @@ Download size: %3</source>
         <location filename="../VideoView.ui" line="129"/>
         <location filename="../VideoView.ui" line="255"/>
         <source>WebM</source>
-        <translation>WebM</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="240"/>
@@ -5535,52 +5540,52 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="109"/>
         <source>High &amp;Quality</source>
-        <translation type="unfinished"></translation>
+        <translation>고품질 (&amp;Q)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="119"/>
         <source>&amp;YouTube</source>
-        <translation type="unfinished"></translation>
+        <translation>유튜브 (&amp;Y)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="146"/>
         <source>&amp;Lossless</source>
-        <translation type="unfinished"></translation>
+        <translation>무손실 (&amp;L)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="167"/>
         <source>4K</source>
-        <translation type="unfinished">480p {4K?}</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="174"/>
         <source>&amp;1080p</source>
-        <translation type="unfinished"></translation>
+        <translation>1080p (&amp;1)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="184"/>
         <source>&amp;720p</source>
-        <translation type="unfinished"></translation>
+        <translation>720p (&amp;7)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="194"/>
         <source>&amp;480p</source>
-        <translation type="unfinished"></translation>
+        <translation>480p (&amp;4)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="207"/>
         <source>&amp;Native</source>
-        <translation type="unfinished"></translation>
+        <translation>실기 (&amp;N)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="277"/>
         <source>H.264</source>
-        <translation type="unfinished">H.264</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="282"/>
         <source>H.264 (NVENC)</source>
-        <translation type="unfinished">H.264 (NVENC)</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="292"/>
@@ -5590,7 +5595,7 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="302"/>
         <source>VP9</source>
-        <translation type="unfinished">VP9</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="307"/>
@@ -5601,7 +5606,7 @@ Download size: %3</source>
         <location filename="../VideoView.ui" line="312"/>
         <location filename="../VideoView.ui" line="354"/>
         <source>None</source>
-        <translation type="unfinished">없음</translation>
+        <translation>없음</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="324"/>
@@ -5722,32 +5727,32 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="463"/>
         <source>Select e-Reader dotcode</source>
-        <translation type="unfinished"></translation>
+        <translation>e-리더 도트코드 선택</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="463"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>e-리더 카드 (*.raw *.bin *.bmp)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="471"/>
         <source>Select e-Reader card images</source>
-        <translation type="unfinished"></translation>
+        <translation>e-리더 카드 이미지 선택</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="471"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>이미지 파일 (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="472"/>
         <source>Conversion finished</source>
-        <translation type="unfinished"></translation>
+        <translation>변환 완료</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="513"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 e-리더 카드 중 %1이(가) 성공적으로 변환되었습니다.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="526"/>
@@ -5801,7 +5806,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1043"/>
         <source>Failed to create an appropriate display device, falling back to software display. Games may run slowly, especially with larger windows.</source>
-        <translation type="unfinished"></translation>
+        <translation>적절한 디스플레이 장치를 생성하지 못했습니다. 소프트웨어 디스플레이로 돌아갑니다. 특히 큰 창에서는 게임이 느리게 실행될 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1119"/>
@@ -5826,12 +5831,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1144"/>
         <source>Reset needed</source>
-        <translation type="unfinished"></translation>
+        <translation>재설정 필요</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1145"/>
         <source>Some changes will not take effect until the game is reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>일부 변경 사항은 게임이 재설정될 때까지 적용되지 않습니다.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1184"/>
@@ -5851,7 +5856,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1199"/>
         <source>%1 - %2 (%3 fps) - %4</source>
-        <translation>%1 - %2 (%3 fps) - %4</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1263"/>
@@ -5871,17 +5876,17 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1272"/>
         <source>Save games</source>
-        <translation type="unfinished">게임 저장</translation>
+        <translation>게임 저장</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1295"/>
         <source>Automatically determine</source>
-        <translation type="unfinished"></translation>
+        <translation>자동으로 결정</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1299"/>
         <source>Use player %0 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>플레이어 %0 저장 게임 사용</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1309"/>
@@ -5901,17 +5906,17 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1317"/>
         <source>Scan e-Reader dotcodes...</source>
-        <translation type="unfinished"></translation>
+        <translation>e-리더 도트코드 스캔...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1665"/>
         <source>Game state views</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 상태 보기</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1693"/>
         <source>Convert e-Reader card image to raw...</source>
-        <translation type="unfinished"></translation>
+        <translation>e-리더 카드 이미지를 원시 데이터로 변환...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1321"/>
@@ -5982,12 +5987,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1282"/>
         <source>Convert save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 게임 변환...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="533"/>
         <source>GameShark saves (*.gsv *.sps *.xps)</source>
-        <translation type="unfinished"></translation>
+        <translation>게임샤크 저장 (*.gsv *.sps *.xps)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1384"/>
@@ -5997,7 +6002,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1387"/>
         <source>Connect to Dolphin...</source>
-        <translation type="unfinished"></translation>
+        <translation>돌핀에 연결...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1400"/>
@@ -6187,12 +6192,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1014"/>
         <source>Couldn&apos;t Start</source>
-        <translation type="unfinished"></translation>
+        <translation>시작할 수 없음</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1015"/>
         <source>Could not start game.</source>
-        <translation type="unfinished"></translation>
+        <translation>게임을 시작할 수 없습니다.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1269"/>
@@ -6202,47 +6207,47 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1331"/>
         <source>Load state file...</source>
-        <translation type="unfinished"></translation>
+        <translation>상태 파일 로드...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1341"/>
         <source>Save state file...</source>
-        <translation type="unfinished"></translation>
+        <translation>상태 파일 저장...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1285"/>
         <source>Import GameShark Save...</source>
-        <translation type="unfinished"></translation>
+        <translation>게임샤크 저장 가져오기...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1288"/>
         <source>Export GameShark Save...</source>
-        <translation type="unfinished"></translation>
+        <translation>게임샤크 저장 내보내기...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1393"/>
         <source>Report bug...</source>
-        <translation type="unfinished"></translation>
+        <translation>버그를 제보하기...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1399"/>
         <source>About...</source>
-        <translation type="unfinished"></translation>
+        <translation>정보...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1464"/>
         <source>Solar sensor</source>
-        <translation type="unfinished"></translation>
+        <translation>태양광 센서</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1465"/>
         <source>Increase solar level</source>
-        <translation type="unfinished"></translation>
+        <translation>태양광 레벨 증가</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1466"/>
         <source>Decrease solar level</source>
-        <translation type="unfinished"></translation>
+        <translation>태양광 레벨 감소</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1540"/>
@@ -6262,63 +6267,63 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="414"/>
         <source>Save games (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 (%1) 저장</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="415"/>
         <source>Select save game</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 게임 선택</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="423"/>
         <source>mGBA save state files (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>mGBA 저장 상태 파일 (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="425"/>
         <location filename="../Window.cpp" line="430"/>
         <source>Select save state</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 상태 선택</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1273"/>
         <source>Load alternate save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>대체 저장 게임 로드...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1276"/>
         <source>Load temporary save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>임시 저장 게임 로드...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1493"/>
         <source>BattleChip Gate...</source>
-        <translation type="unfinished"></translation>
+        <translation>배틀칩 게이트...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1500"/>
         <source>%1×</source>
-        <translation type="unfinished">%1x {1×?}</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1552"/>
         <source>Interframe blending</source>
-        <translation type="unfinished"></translation>
+        <translation>프레임간 조합</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1596"/>
         <source>Native (59.7275)</source>
-        <translation type="unfinished">Nativo (59.7) {59.7275)?}</translation>
+        <translation>실기 (59.7275)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1617"/>
         <source>Record A/V...</source>
-        <translation type="unfinished"></translation>
+        <translation>A/V 녹화...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1618"/>
         <source>Record GIF/WebP/APNG...</source>
-        <translation type="unfinished"></translation>
+        <translation>GIF/WebP/APNG 녹화...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1625"/>
@@ -6328,12 +6333,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1642"/>
         <source>Game Pak sensors...</source>
-        <translation type="unfinished"></translation>
+        <translation>게임 팩 센서...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1646"/>
         <source>Scripting...</source>
-        <translation type="unfinished"></translation>
+        <translation>스크립팅...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1666"/>
@@ -6358,7 +6363,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1671"/>
         <source>&amp;Frame inspector...</source>
-        <translation type="unfinished"></translation>
+        <translation>프레임 검사기 (&amp;F)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1687"/>
@@ -6378,12 +6383,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1697"/>
         <source>Record debug video log...</source>
-        <translation type="unfinished"></translation>
+        <translation>디버그 비디오 로그 녹화...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1698"/>
         <source>Stop debug video log</source>
-        <translation type="unfinished"></translation>
+        <translation>디버그 비디오 로그 중지</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1702"/>
@@ -6428,12 +6433,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1736"/>
         <source>Autofire Select</source>
-        <translation type="unfinished"></translation>
+        <translation>연사 선택</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1932"/>
         <source>Clear</source>
-        <translation type="unfinished">정리</translation>
+        <translation>지움</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1741"/>
@@ -6461,17 +6466,17 @@ Download size: %3</source>
     <message>
         <location filename="../utils.cpp" line="14"/>
         <source>%1 byte</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 바이트</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="17"/>
         <source>%1 kiB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 키비바이트</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="21"/>
         <source>%1 MiB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 메비바이트</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="30"/>
@@ -6494,22 +6499,22 @@ Download size: %3</source>
     <message>
         <location filename="../KeyEditor.cpp" line="40"/>
         <source>Shift</source>
-        <translation type="unfinished"></translation>
+        <translation>시프트 키</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="43"/>
         <source>Control</source>
-        <translation type="unfinished"></translation>
+        <translation>콘트롤 키</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="46"/>
         <source>Alt</source>
-        <translation type="unfinished"></translation>
+        <translation>알트 키</translation>
     </message>
     <message>
         <location filename="../KeyEditor.cpp" line="49"/>
         <source>Meta</source>
-        <translation type="unfinished"></translation>
+        <translation>메타</translation>
     </message>
 </context>
 </TS>
