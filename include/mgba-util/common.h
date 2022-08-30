@@ -84,6 +84,10 @@ typedef intptr_t ssize_t;
 #define M_PI 3.141592654f
 #endif
 
+#if !defined(__cplusplus) && !defined(static_assert)
+#define static_assert(X, C) _Static_assert((X), C)
+#endif
+
 #if !defined(_MSC_VER) && (defined(__llvm__) || (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
 #define ATOMIC_STORE(DST, SRC) __atomic_store_n(&DST, SRC, __ATOMIC_RELEASE)
 #define ATOMIC_LOAD(DST, SRC) DST = __atomic_load_n(&SRC, __ATOMIC_ACQUIRE)
