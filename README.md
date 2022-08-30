@@ -117,7 +117,7 @@ Controls are configurable in the settings menu. Many game controllers should be 
 Compiling
 ---------
 
-Compiling requires using CMake 3.1 or newer. GCC, Clang and Visual Studio 2019 known to work to compile mGBA.
+Compiling requires using CMake 3.1 or newer. GCC, Clang, and Visual Studio 2019 are known to work for compiling mGBA.
 
 #### Docker building
 
