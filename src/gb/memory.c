@@ -773,6 +773,12 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 			state->tama5Registers.registers[i] |= memory->mbcState.tama5.registers[i * 2 + 1] << 4;
 			state->tama5Registers.rtcTimerPage[i] = memory->mbcState.tama5.rtcTimerPage[i * 2] & 0xF;
 			state->tama5Registers.rtcTimerPage[i] |= memory->mbcState.tama5.rtcTimerPage[i * 2 + 1] << 4;
+			state->tama5Registers.rtcAlarmPage[i] = memory->mbcState.tama5.rtcAlarmPage[i * 2] & 0xF;
+			state->tama5Registers.rtcAlarmPage[i] |= memory->mbcState.tama5.rtcAlarmPage[i * 2 + 1] << 4;
+			state->tama5Registers.rtcFreePage0[i] = memory->mbcState.tama5.rtcFreePage0[i * 2] & 0xF;
+			state->tama5Registers.rtcFreePage0[i] |= memory->mbcState.tama5.rtcFreePage0[i * 2 + 1] << 4;
+			state->tama5Registers.rtcFreePage1[i] = memory->mbcState.tama5.rtcFreePage1[i * 2] & 0xF;
+			state->tama5Registers.rtcFreePage1[i] |= memory->mbcState.tama5.rtcFreePage1[i * 2 + 1] << 4;
 		}
 		break;
 	case GB_HuC3:
@@ -892,6 +898,12 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 			memory->mbcState.tama5.registers[i * 2 + 1] = state->tama5Registers.registers[i] >> 4;
 			memory->mbcState.tama5.rtcTimerPage[i * 2] = state->tama5Registers.rtcTimerPage[i] & 0xF;
 			memory->mbcState.tama5.rtcTimerPage[i * 2 + 1] = state->tama5Registers.rtcTimerPage[i] >> 4;
+			memory->mbcState.tama5.rtcAlarmPage[i * 2] = state->tama5Registers.rtcAlarmPage[i] & 0xF;
+			memory->mbcState.tama5.rtcAlarmPage[i * 2 + 1] = state->tama5Registers.rtcAlarmPage[i] >> 4;
+			memory->mbcState.tama5.rtcFreePage0[i * 2] = state->tama5Registers.rtcFreePage0[i] & 0xF;
+			memory->mbcState.tama5.rtcFreePage0[i * 2 + 1] = state->tama5Registers.rtcFreePage0[i] >> 4;
+			memory->mbcState.tama5.rtcFreePage1[i * 2] = state->tama5Registers.rtcFreePage1[i] & 0xF;
+			memory->mbcState.tama5.rtcFreePage1[i * 2 + 1] = state->tama5Registers.rtcFreePage1[i] >> 4;
 		}
 		break;
 	case GB_HuC3:

@@ -465,6 +465,9 @@ struct GBSerializedState {
 		struct {
 			uint8_t registers[8];
 			uint8_t rtcTimerPage[8];
+			uint8_t rtcAlarmPage[8];
+			uint8_t rtcFreePage0[8];
+			uint8_t rtcFreePage1[8];
 		} tama5Registers;
 	};
 
