@@ -1719,6 +1719,18 @@ void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value) {
 							tama5->rtcTimerPage[GBTAMA6_RTC_PA0_HOUR_1] = out & 0xF;
 							tama5->rtcTimerPage[GBTAMA6_RTC_PA0_HOUR_10] = out >> 4;
 							break;
+						case GBTAMA6_DISABLE_ALARM:
+							tama5->rtcTimerPage[GBTAMA6_RTC_PAGE] &= 0xB;
+							tama5->rtcAlarmPage[GBTAMA6_RTC_PAGE] &= 0xB;
+							tama5->rtcFreePage0[GBTAMA6_RTC_PAGE] &= 0xB;
+							tama5->rtcFreePage1[GBTAMA6_RTC_PAGE] &= 0xB;
+							break;
+						case GBTAMA6_ENABLE_ALARM:
+							tama5->rtcTimerPage[GBTAMA6_RTC_PAGE] |= 0x4;
+							tama5->rtcAlarmPage[GBTAMA6_RTC_PAGE] |= 0x4;
+							tama5->rtcFreePage0[GBTAMA6_RTC_PAGE] |= 0x4;
+							tama5->rtcFreePage1[GBTAMA6_RTC_PAGE] |= 0x4;
+							break;
 						}
 						break;
 					case 0x4: // RTC access
