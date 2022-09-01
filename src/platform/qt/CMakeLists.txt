@@ -425,6 +425,7 @@ install(TARGETS ${BINARY_NAME}-qt
 	BUNDLE DESTINATION ${APPDIR} COMPONENT ${BINARY_NAME}-qt)
 if(UNIX AND NOT APPLE)
 	install(FILES ${CMAKE_SOURCE_DIR}/res/mgba-qt.desktop DESTINATION share/applications RENAME io.mgba.${PROJECT_NAME}.desktop COMPONENT ${BINARY_NAME}-qt)
+	install(FILES ${CMAKE_SOURCE_DIR}/res/io.mgba.mGBA.metainfo.xml DESTINATION share/metainfo COMPONENT ${BINARY_NAME}-qt)
 endif()
 if(UNIX AND NOT (APPLE AND DISTBUILD))
 	install(FILES ${CMAKE_SOURCE_DIR}/doc/mgba-qt.6 DESTINATION ${MANDIR}/man6 COMPONENT ${BINARY_NAME}-qt)
