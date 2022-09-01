@@ -753,7 +753,7 @@ Download size: %3</source>
         <location filename="../GameBoy.cpp" line="55"/>
         <location filename="../GameBoy.cpp" line="74"/>
         <source>Autodetect</source>
-        <translation type="unfinished">自动检测</translation>
+        <translation>自动检测</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="56"/>
@@ -858,7 +858,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
         <source>TAMA5</source>
-        <translation type="unfinished">TAMA5</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
@@ -3708,7 +3708,7 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="20"/>
         <source>Game Overrides</source>
-        <translation>游戏覆写</translation>
+        <translation>游戏替代</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="30"/>
@@ -4216,7 +4216,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="468"/>
         <source>SRAM</source>
-        <translation type="unfinished">SRAM</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="472"/>
@@ -4226,17 +4226,17 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="476"/>
         <source>%1 EEPROM</source>
-        <translation type="unfinished">%1 EEPROM</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="488"/>
         <source>%1 SRAM + RTC</source>
-        <translation type="unfinished">%1 SRAM + RTC</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="490"/>
         <source>%1 SRAM</source>
-        <translation type="unfinished">%1 SRAM</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="495"/>
@@ -4266,7 +4266,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="510"/>
         <source>TAMA5</source>
-        <translation type="unfinished">TAMA5</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="522"/>
@@ -4332,7 +4332,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="119"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="60"/>
@@ -4385,12 +4385,12 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="67"/>
         <source>Offset time</source>
-        <translation type="unfinished"></translation>
+        <translation>偏移时间</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="80"/>
         <source> sec</source>
-        <translation type="unfinished"></translation>
+        <translation> 秒</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="126"/>
@@ -4552,7 +4552,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="50"/>
         <source>Gameplay</source>
-        <translation type="unfinished"></translation>
+        <translation>游玩设置</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
@@ -4966,7 +4966,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="582"/>
         <source>Periodically autosave state</source>
-        <translation type="unfinished"></translation>
+        <translation>定时自动即时存档</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="855"/>
