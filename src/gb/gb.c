@@ -844,39 +844,67 @@ void GBUpdateIRQs(struct GB* gb) {
 	SM83RaiseIRQ(gb->cpu);
 }
 
+static void _GBAdvanceCycles(struct GB* gb) {
+	struct SM83Core* cpu = gb->cpu;
+	int stateMask = (4 * (2 - gb->doubleSpeed)) - 1;
+	int stateOffset = ((cpu->nextEvent - cpu->cycles) & stateMask) >> !gb->doubleSpeed;
+	cpu->cycles = cpu->nextEvent;
+	cpu->executionState = (cpu->executionState + stateOffset) & 3;
+}
+
 void GBProcessEvents(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-	do {
-		int32_t cycles = cpu->cycles;
-		int32_t nextEvent;
-
-		cpu->cycles = 0;
-		cpu->nextEvent = INT_MAX;
-
-		nextEvent = cycles;
-		do {
-#ifdef USE_DEBUGGERS
-			gb->timing.globalCycles += nextEvent;
+#ifndef NDEBUG
+	int stateMask = (4 * (2 - gb->doubleSpeed)) - 1;
+	int state = (mTimingGlobalTime(&gb->timing) & stateMask) >> !gb->doubleSpeed;
+	if (((state + 3) & 3) != (cpu->executionState & 3)) {
+		mLOG(GB, ERROR, "T-states and M-cycles became misaligned");
+	}
 #endif
-			nextEvent = mTimingTick(&gb->timing, nextEvent);
-		} while (gb->cpuBlocked);
-		// This loop cannot early exit until the SM83 run loop properly handles mid-M-cycle-exits
-		cpu->nextEvent = nextEvent;
+	bool wasHalted = cpu->halted;
+	while (true) {
+		do {
+			int32_t cycles = cpu->cycles;
+			int32_t nextEvent;
 
-		if (cpu->halted) {
-			cpu->cycles = cpu->nextEvent;
-			if (!gb->memory.ie || !gb->memory.ime) {
+			cpu->cycles = 0;
+			cpu->nextEvent = INT_MAX;
+
+			nextEvent = cycles;
+			do {
+#ifdef USE_DEBUGGERS
+				gb->timing.globalCycles += nextEvent;
+#endif
+				nextEvent = mTimingTick(&gb->timing, nextEvent);
+			} while (gb->cpuBlocked);
+			// This loop cannot early exit until the SM83 run loop properly handles mid-M-cycle-exits
+			cpu->nextEvent = nextEvent;
+
+			if (cpu->halted) {
+				_GBAdvanceCycles(gb);
+				if (!gb->memory.ie || !gb->memory.ime) {
+					break;
+				}
+			}
+			if (gb->earlyExit) {
 				break;
 			}
+		} while (cpu->cycles >= cpu->nextEvent);
+		if (gb->cpuBlocked) {
+			_GBAdvanceCycles(gb);
 		}
-		if (gb->earlyExit) {
+		if (!wasHalted || (cpu->executionState & 3) == SM83_CORE_FETCH) {
 			break;
 		}
-	} while (cpu->cycles >= cpu->nextEvent);
-	gb->earlyExit = false;
-	if (gb->cpuBlocked) {
-		cpu->cycles = cpu->nextEvent;
+		int nextFetch = (SM83_CORE_FETCH - cpu->executionState) * cpu->tMultiplier;
+		if (nextFetch < cpu->nextEvent) {
+			cpu->cycles += nextFetch;
+			cpu->executionState = SM83_CORE_FETCH;
+			break;
+		}
+		_GBAdvanceCycles(gb);
 	}
+	gb->earlyExit = false;
 }
 
 void GBSetInterrupts(struct SM83Core* cpu, bool enable) {
@@ -928,7 +956,8 @@ static void _enableInterrupts(struct mTiming* timing, void* user, uint32_t cycle
 void GBHalt(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	if (!(gb->memory.ie & gb->memory.io[GB_REG_IF] & 0x1F)) {
-		cpu->cycles = cpu->nextEvent;
+		_GBAdvanceCycles(gb);
+		cpu->executionState = (cpu->executionState - 1) & 3;
 		cpu->halted = true;
 	} else if (!gb->memory.ime) {
 		mLOG(GB, GAME_ERROR, "HALT bug");
