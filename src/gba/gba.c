@@ -364,7 +364,6 @@ bool GBALoadNull(struct GBA* gba) {
 	gba->yankedRomSize = 0;
 	gba->memory.romSize = SIZE_CART0;
 	gba->memory.romMask = SIZE_CART0 - 1;
-	gba->memory.mirroring = false;
 	gba->romCrc32 = 0;
 
 	if (gba->cpu) {
@@ -419,6 +418,19 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 			gba->memory.romSize = SIZE_CART0;
 		}
 		gba->pristineRomSize = SIZE_CART0;
+	} else if (gba->pristineRomSize == 0x00100000) {
+		// 1 MiB ROMs (e.g. Classic NES) all appear as 4x mirrored, but not more
+		gba->isPristine = false;
+		gba->memory.romSize = 0x00400000;
+#ifdef FIXED_ROM_BUFFER
+		gba->memory.rom = romBuffer;
+#else
+		gba->memory.rom = anonymousMemoryMap(SIZE_CART0);
+#endif
+		vf->read(vf, gba->memory.rom, gba->pristineRomSize);
+		memcpy(&gba->memory.rom[0x40000], gba->memory.rom, 0x00100000);
+		memcpy(&gba->memory.rom[0x80000], gba->memory.rom, 0x00100000);
+		memcpy(&gba->memory.rom[0xC0000], gba->memory.rom, 0x00100000);
 	} else {
 		gba->memory.rom = vf->map(vf, gba->pristineRomSize, MAP_READ);
 		gba->memory.romSize = gba->pristineRomSize;
@@ -430,8 +442,7 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 	}
 	gba->yankedRomSize = 0;
 	gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
-	gba->memory.mirroring = false;
-	gba->romCrc32 = doCrc32(gba->memory.rom, gba->memory.romSize);
+	gba->romCrc32 = doCrc32(gba->memory.rom, gba->pristineRomSize);
 	if (popcount32(gba->memory.romSize) != 1) {
 		// This ROM is either a bad dump or homebrew. Emulate flash cart behavior.
 #ifndef FIXED_ROM_BUFFER

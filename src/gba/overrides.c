@@ -229,7 +229,6 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 	if (!found && override->id[0] == 'F') {
 		// Classic NES Series
 		override->savetype = SAVEDATA_EEPROM;
-		override->mirroring = true;
 		found = true;
 	}
 
@@ -376,10 +375,6 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 		if (gba->idleOptimization == IDLE_LOOP_DETECT) {
 			gba->idleOptimization = IDLE_LOOP_REMOVE;
 		}
-	}
-
-	if (override->mirroring) {
-		gba->memory.mirroring = true;
 	}
 }
 

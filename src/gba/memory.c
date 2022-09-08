@@ -83,7 +83,6 @@ void GBAMemoryInit(struct GBA* gba) {
 	cpu->memory.activeNonseqCycles32 = 0;
 	cpu->memory.activeNonseqCycles16 = 0;
 	gba->memory.biosPrefetch = 0;
-	gba->memory.mirroring = false;
 
 	gba->memory.agbPrintProtect = 0;
 	memset(&gba->memory.agbPrintCtx, 0, sizeof(gba->memory.agbPrintCtx));
@@ -277,9 +276,6 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		if (newRegion < REGION_CART0 || (address & (SIZE_CART0 - 1)) < memory->romSize) {
 			return;
 		}
-		if (memory->mirroring && (address & memory->romMask) < memory->romSize) {
-			return;
-		}
 	}
 
 	if (memory->activeRegion == REGION_BIOS) {
@@ -411,8 +407,6 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	wait += waitstatesRegion[address >> BASE_OFFSET]; \
 	if ((address & (SIZE_CART0 - 1)) < memory->romSize) { \
 		LOAD_32(value, address & (SIZE_CART0 - 4), memory->rom); \
-	} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) { \
-		LOAD_32(value, address & memory->romMask & -4, memory->rom); \
 	} else if (memory->vfame.cartType) { \
 		value = GBAVFameGetPatternValue(address, 32); \
 	} else { \
@@ -578,8 +572,6 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
-		} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) {
-			LOAD_16(value, address & memory->romMask, memory->rom);
 		} else if (memory->vfame.cartType) {
 			value = GBAVFameGetPatternValue(address, 16);
 		} else if ((address & (SIZE_CART0 - 1)) >= AGB_PRINT_BASE) {
@@ -605,8 +597,6 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = GBACartEReaderRead(&memory->ereader, address);
 		} else if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			LOAD_16(value, address & (SIZE_CART0 - 2), memory->rom);
-		} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) {
-			LOAD_16(value, address & memory->romMask, memory->rom);
 		} else if (memory->vfame.cartType) {
 			value = GBAVFameGetPatternValue(address, 16);
 		} else {
@@ -698,8 +688,6 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
 		if ((address & (SIZE_CART0 - 1)) < memory->romSize) {
 			value = ((uint8_t*) memory->rom)[address & (SIZE_CART0 - 1)];
-		} else if (memory->mirroring && (address & memory->romMask) < memory->romSize) {
-			value = ((uint8_t*) memory->rom)[address & memory->romMask];
 		} else if (memory->vfame.cartType) {
 			value = GBAVFameGetPatternValue(address, 8);
 		} else {

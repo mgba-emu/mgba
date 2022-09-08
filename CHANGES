@@ -33,6 +33,7 @@ Emulation fixes:
  - GBA: Improve timing when not booting from BIOS
  - GBA: Fix expected entry point for multiboot ELFs (fixes mgba.io/i/2450)
  - GBA: Fix booting multiboot ROMs with no JOY entrypoint
+ - GBA: Fix 1 MiB ROM mirroring to only mirror 4 times
  - GBA Audio: Adjust PSG sampling rate with SOUNDBIAS
  - GBA Audio: Sample FIFOs at SOUNDBIAS-set frequency
  - GBA BIOS: Work around IRQ handling hiccup in Mario & Luigi (fixes mgba.io/i/1059)
