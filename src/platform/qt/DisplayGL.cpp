@@ -298,7 +298,9 @@ void DisplayGL::pauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = false;
 		QMetaObject::invokeMethod(m_painter.get(), "pause", Qt::BlockingQueuedConnection);
-		setUpdatesEnabled(true);
+		if (QGuiApplication::platformName() != "xcb") {
+			setUpdatesEnabled(true);
+		}
 	}
 }
 
