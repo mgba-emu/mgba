@@ -106,6 +106,7 @@ Misc:
  - Qt: Boot both a multiboot image and ROM with CLI args (closes mgba.io/i/1941)
  - Qt: Improve cheat parsing (fixes mgba.io/i/2297)
  - Qt: Change lossless setting to use WavPack audio
+ - Qt: Use FFmpeg to convert additional camera formats, if available
  - SDL: Support exposing an axis directly as the gyro value (closes mgba.io/i/2531)
  - Windows: Attach to console if present
  - Vita: Add bilinear filtering option (closes mgba.io/i/344)
