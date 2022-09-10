@@ -43,9 +43,11 @@ bool VideoDumper::present(const QVideoFrame& frame) {
 			case QVideoFrame::Format_YUV420P:
 				pixelFormat = AV_PIX_FMT_YUV420P;
 				break;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
 			case QVideoFrame::Format_YUV422P:
 				pixelFormat = AV_PIX_FMT_YUV422P;
 				break;
+#endif
 			case QVideoFrame::Format_YUYV:
 				pixelFormat = AV_PIX_FMT_YUYV422;
 				break;
@@ -129,7 +131,9 @@ QList<QVideoFrame::PixelFormat> VideoDumper::supportedPixelFormats(QAbstractVide
 #ifdef USE_FFMPEG
 	list.append(QVideoFrame::Format_YUYV);
 	list.append(QVideoFrame::Format_UYVY);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
 	list.append(QVideoFrame::Format_YUV422P);
+#endif
 	list.append(QVideoFrame::Format_YUV420P);
 	list.append(QVideoFrame::Format_NV12);
 	list.append(QVideoFrame::Format_NV21);
