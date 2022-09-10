@@ -266,10 +266,11 @@ void _allocList(struct mScriptValue* val) {
 void _freeList(struct mScriptValue* val) {
 	size_t i;
 	for (i = 0; i < mScriptListSize(val->value.list); ++i) {
-		if (val->type) {
+		struct mScriptValue* value = mScriptListGetPointer(val->value.list, i);
+		if (!value->type) {
 			continue;
 		}
-		struct mScriptValue* unwrapped = mScriptValueUnwrap(mScriptListGetPointer(val->value.list, i));
+		struct mScriptValue* unwrapped = mScriptValueUnwrap(value);
 		if (unwrapped) {
 			mScriptValueDeref(unwrapped);
 		}
@@ -308,7 +309,7 @@ static void _allocString(struct mScriptValue* val) {
 
 static void _freeString(struct mScriptValue* val) {
 	struct mScriptString* string = val->value.string;
-	if (string->size) {
+	if (string->buffer) {
 		free(string->buffer);
 	}
 	free(string);
