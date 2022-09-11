@@ -107,6 +107,7 @@ Misc:
  - Qt: Improve cheat parsing (fixes mgba.io/i/2297)
  - Qt: Change lossless setting to use WavPack audio
  - Qt: Use FFmpeg to convert additional camera formats, if available
+ - Qt: Resume crashed game when loading a save state
  - SDL: Support exposing an axis directly as the gyro value (closes mgba.io/i/2531)
  - Windows: Attach to console if present
  - Vita: Add bilinear filtering option (closes mgba.io/i/344)
