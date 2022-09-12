@@ -113,6 +113,7 @@ void ScriptingController::runCode(const QString& code) {
 void ScriptingController::init() {
 	mScriptContextInit(&m_scriptContext);
 	mScriptContextAttachStdlib(&m_scriptContext);
+	mScriptContextAttachSocket(&m_scriptContext);
 	mScriptContextRegisterEngines(&m_scriptContext);
 
 	mScriptContextAttachLogger(&m_scriptContext, &m_logger);

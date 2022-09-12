@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/script/lua.h>
 
+#include <mgba/internal/script/socket.h>
+#include <mgba/script/context.h>
 #include <mgba/script/macros.h>
 #include <mgba-util/string.h>
 
@@ -50,6 +52,156 @@ static int _luaGetList(lua_State* lua);
 static int _luaLenList(lua_State* lua);
 
 static int _luaRequireShim(lua_State* lua);
+
+static const char* _socketLuaSource =
+	"socket = {\n"
+	"  ERRORS = {},\n"
+	"  tcp = function() return socket._create(_socket.create(), socket._tcpMT) end,\n"
+	"  bind = function(address, port)\n"
+	"    local s = socket.tcp()\n"
+	"    local ok, err = s:bind(address, port)\n"
+	"    if ok then return s end\n"
+	"    return ok, err\n"
+	"  end,\n"
+	"  connect = function(address, port)\n"
+	"    local s = socket.tcp()\n"
+	"    local ok, err = s:connect(address, port)\n"
+	"    if ok then return s end\n"
+	"    return ok, err\n"
+	"  end,\n"
+	"  _create = function(sock, mt) return setmetatable({\n"
+	"    _s = sock,\n"
+	"    _callbacks = {},\n"
+	"    _nextCallback = 1,\n"
+	"  }, mt) end,\n"
+	"  _wrap = function(status)\n"
+	"    if status == 0 then return 1 end\n"
+	"    return nil, socket.ERRORS[status] or ('error#' .. status)\n"
+	"  end,\n"
+	"  _mt = {\n"
+	"    __index = {\n"
+	"      close = function(self)\n"
+	"        if self._onframecb then\n"
+	"          callbacks:remove(self._onframecb)\n"
+	"          self._onframecb = nil\n"
+	"        end\n"
+	"        self._callbacks = {}\n"
+	"        return self._s:close()\n"
+	"      end,\n"
+	"      add = function(self, event, callback)\n"
+	"        if not self._callbacks[event] then self._callbacks[event] = {} end\n"
+	"        local cbid = self._nextCallback\n"
+	"        self._nextCallback = cbid + 1\n"
+	"        self._callbacks[event][cbid] = callback\n"
+	"        return id\n"
+	"      end,\n"
+	"      remove = function(self, cbid)\n"
+	"        for _, group in pairs(self._callbacks) do\n"
+	"          if group[cbid] then\n"
+	"            group[cbid] = nil\n"
+	"          end\n"
+	"        end\n"
+	"      end,\n"
+	"      _dispatch = function(self, event, ...)\n"
+	"        if not self._callbacks[event] then return end\n"
+	"        for k, cb in pairs(self._callbacks[event]) do\n"
+	"          if cb then\n"
+	"            local ok, ret = pcall(cb, self, ...)\n"
+	"            if not ok then console:error(ret) end\n"
+	"          end\n"
+	"        end\n"
+	"      end,\n"
+	"    },\n"
+	"  },\n"
+	"  _tcpMT = {\n"
+	"    __index = {\n"
+	"      _hook = function(self, status)\n"
+	"        if status == 0 then\n"
+	"          self._onframecb = callbacks:add('frame', function() self:poll() end)\n"
+	"        end\n"
+	"        return socket._wrap(status)\n"
+	"      end,\n"
+	"      bind = function(self, address, port)\n"
+	"        return socket._wrap(self._s:open(address or '', port))\n"
+	"      end,\n"
+	"      connect = function(self, address, port)\n"
+	"        local status = self._s:connect(address, port)\n"
+	"      end,\n"
+	"      listen = function(self, backlog)\n"
+	"        local status = self._s:listen(backlog or 1)\n"
+	"        return self:_hook(status)\n"
+	"      end,\n"
+	"      accept = function(self)\n"
+	"        local client = self._s:accept()\n"
+	"        if client.error ~= 0 then\n"
+	"          client:close()\n"
+	"          return socket._wrap(client.error)\n"
+	"        end\n"
+	"        local sock = socket._create(client, socket._tcpMT)\n"
+	"        sock:_hook(0)\n"
+	"        return sock\n"
+	"      end,\n"
+	"      send = function(self, data, i, j)\n"
+	"        local result = self._s:send(string.sub(data, i or 1, j))\n"
+	"        if result < 0 then return socket._wrap(self._s.error) end\n"
+	"        if i then return result + i - 1 end\n"
+	"        return result\n"
+	"      end,\n"
+	// TODO: This does not match the API for LuaSocket's receive() implementation
+	"      receive = function(self, maxBytes)\n"
+	"        local result = self._s:recv(maxBytes)\n"
+	"        if (not result or #result == 0) and self._s.error ~= 0 then\n"
+	"          return socket._wrap(self._s.error)\n"
+	"        elseif not result or #result == 0 then\n"
+	"          return nil, 'disconnected'\n"
+	"        end\n"
+	"        return result or ''\n"
+	"      end,\n"
+	"      hasdata = function(self)\n"
+	"        local status = self._s:select(0)\n"
+	"        if status < 0 then\n"
+	"          return socket._wrap(self._s.error)\n"
+	"        end\n"
+	"        return status > 0\n"
+	"      end,\n"
+	"      poll = function(self)\n"
+	"        local status, err = self:hasdata()\n"
+	"        if err then\n"
+	"          self:_dispatch('error', err)\n"
+	"        elseif status then\n"
+	"          self:_dispatch('received')\n"
+	"        end\n"
+	"      end,\n"
+	"    },\n"
+	"  },\n"
+	"  _errMT = {\n"
+	"    __index = function (tbl, key)\n"
+	"      return rawget(tbl, C.SOCKERR[key])\n"
+	"    end,\n"
+	"  },\n"
+	"}\n"
+	"setmetatable(socket._tcpMT.__index, socket._mt)\n"
+	"setmetatable(socket.ERRORS, socket._errMT)\n";
+
+static const struct _mScriptSocketError {
+	enum mSocketErrorCode err;
+	const char* message;
+} _mScriptSocketErrors[] = {
+	{ mSCRIPT_SOCKERR_UNKNOWN_ERROR, "unknown error" },
+	{ mSCRIPT_SOCKERR_OK, NULL },
+	{ mSCRIPT_SOCKERR_AGAIN, "temporary failure" },
+	{ mSCRIPT_SOCKERR_ADDRESS_IN_USE, "address in use" },
+	{ mSCRIPT_SOCKERR_DENIED, "access denied" },
+	{ mSCRIPT_SOCKERR_UNSUPPORTED, "unsupported" },
+	{ mSCRIPT_SOCKERR_CONNECTION_REFUSED, "connection refused" },
+	{ mSCRIPT_SOCKERR_NETWORK_UNREACHABLE, "network unreachable" },
+	{ mSCRIPT_SOCKERR_TIMEOUT, "timeout" },
+	{ mSCRIPT_SOCKERR_FAILED, "failed" },
+	{ mSCRIPT_SOCKERR_NOT_FOUND, "not found" },
+	{ mSCRIPT_SOCKERR_NO_DATA, "no data" },
+	{ mSCRIPT_SOCKERR_OUT_OF_MEMORY, "out of memory" },
+};
+static const int _mScriptSocketNumErrors = sizeof(_mScriptSocketErrors) / sizeof(struct _mScriptSocketError);
 
 #if LUA_VERSION_NUM < 503
 #define lua_pushinteger lua_pushnumber
@@ -176,6 +328,26 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 
 	lua_getglobal(luaContext->lua, "require");
 	luaContext->require = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
+
+	int status = luaL_dostring(luaContext->lua, _socketLuaSource);
+	if (status) {
+		mLOG(SCRIPT, ERROR, "Error in dostring while initializing sockets: %s\n", lua_tostring(luaContext->lua, -1));
+		lua_pop(luaContext->lua, 1);
+	} else {
+		int i;
+		lua_getglobal(luaContext->lua, "socket");
+		lua_getfield(luaContext->lua, -1, "ERRORS");
+		for (i = 0; i < _mScriptSocketNumErrors; i++) {
+			struct _mScriptSocketError* err = &_mScriptSocketErrors[i];
+			if (err->message) {
+				lua_pushstring(luaContext->lua, err->message);
+			} else {
+				lua_pushnil(luaContext->lua);
+			}
+			lua_seti(luaContext->lua, -2, err->err);
+		}
+		lua_pop(luaContext->lua, 2);
+	}
 
 	return &luaContext->d;
 }

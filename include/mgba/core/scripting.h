@@ -10,14 +10,11 @@
 
 CXX_GUARD_START
 
-#include <mgba/core/log.h>
 #ifdef USE_DEBUGGERS
 #include <mgba/debugger/debugger.h>
 #endif
 #include <mgba/script/macros.h>
 #include <mgba/script/types.h>
-
-mLOG_DECLARE_CATEGORY(SCRIPT);
 
 struct mCore;
 struct mScriptTextBuffer;
