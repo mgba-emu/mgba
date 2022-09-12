@@ -854,13 +854,6 @@ static void _GBAdvanceCycles(struct GB* gb) {
 
 void GBProcessEvents(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
-#ifndef NDEBUG
-	int stateMask = (4 * (2 - gb->doubleSpeed)) - 1;
-	int state = (mTimingGlobalTime(&gb->timing) & stateMask) >> !gb->doubleSpeed;
-	if (((state + 3) & 3) != (cpu->executionState & 3)) {
-		mLOG(GB, ERROR, "T-states and M-cycles became misaligned");
-	}
-#endif
 	bool wasHalted = cpu->halted;
 	while (true) {
 		do {
