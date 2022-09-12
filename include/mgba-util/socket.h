@@ -21,11 +21,14 @@ CXX_GUARD_START
 typedef SOCKET Socket;
 #else
 #ifdef GEKKO
+#define USE_GETHOSTBYNAME
 #include <network.h>
 #else
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #endif
 #include <errno.h>
@@ -191,6 +194,17 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 	}
 
 	int err;
+
+	int enable = 1;
+#ifdef GEKKO
+	err = net_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
+#else
+	err = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
+#endif
+	if (err) {
+		return INVALID_SOCKET;
+	}
+
 	if (!bindAddress) {
 		struct sockaddr_in bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
@@ -435,6 +449,62 @@ static inline int SocketPoll(size_t nSockets, Socket* reads, Socket* writes, Soc
 			++e;
 		}
 	}
+	return result;
+}
+
+static inline int SocketResolveHost(const char* addrString, struct Address* destAddress) {
+	int result = 0;
+#ifdef USE_GETHOSTBYNAME
+#warning Using gethostbyname() for hostname resolution is not threadsafe
+#ifdef GEKKO
+	struct hostent* host = net_gethostbyname(addrString);
+#else
+	struct hostent* host = gethostbyname(addrString);
+#endif
+	if (!host) {
+		return errno;
+	}
+	family = host->h_addrtype;
+	if (host->h_addrtype == AF_INET && host->h_length == 4) {
+		destAddress->version = IPV4;
+		destAddress->ipv4 = ntohl(*host->h_addr_list[0]);
+	} else if (host->h_addrtype == AF_INET6 && host->h_length == 16) {
+		destAddress->version = IPV6;
+		memcpy(destAddress->ipv6, host->h_addr_list[0], 16);
+	} else {
+		result = NO_DATA;
+	}
+#else
+	struct addrinfo* addr = NULL;
+	result = getaddrinfo(addrString, NULL, NULL, &addr);
+	if (result) {
+#ifndef _WIN32
+		if (result == EAI_SYSTEM) {
+			result = errno;
+		}
+#endif
+		goto error;
+	}
+	if (addr->ai_family == AF_INET && addr->ai_addrlen == sizeof(struct sockaddr_in)) {
+		struct sockaddr_in* addr4 = (struct sockaddr_in*) addr->ai_addr;
+		destAddress->version = IPV4;
+		destAddress->ipv4 = ntohl(addr4->sin_addr.s_addr);
+	} else if (addr->ai_family == AF_INET6 && addr->ai_addrlen == sizeof(struct sockaddr_in6)) {
+		struct sockaddr_in6* addr6 = (struct sockaddr_in6*) addr->ai_addr;
+		destAddress->version = IPV6;
+		memcpy(destAddress->ipv6, addr6->sin6_addr.s6_addr, 16);
+	} else {
+#ifdef _WIN32
+		result = WSANO_DATA;
+#else
+		result = EAI_NODATA;
+#endif
+	}
+error:
+	if (addr) {
+		freeaddrinfo(addr);
+	}
+#endif
 	return result;
 }
 
