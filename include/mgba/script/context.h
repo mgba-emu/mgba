@@ -10,6 +10,7 @@
 
 CXX_GUARD_START
 
+#include <mgba/core/log.h>
 #include <mgba/script/types.h>
 #include <mgba-util/table.h>
 #include <mgba-util/vfs.h>
@@ -17,6 +18,8 @@ CXX_GUARD_START
 #define mSCRIPT_KV_PAIR(KEY, VALUE) { #KEY, VALUE }
 #define mSCRIPT_CONSTANT_PAIR(NS, CONST) { #CONST, mScriptValueCreateFromSInt(NS ## _ ## CONST) }
 #define mSCRIPT_KV_SENTINEL { NULL, NULL }
+
+mLOG_DECLARE_CATEGORY(SCRIPT);
 
 struct mScriptFrame;
 struct mScriptFunction;
@@ -83,6 +86,7 @@ struct mScriptValue* mScriptContextAccessWeakref(struct mScriptContext*, struct 
 void mScriptContextClearWeakref(struct mScriptContext*, uint32_t weakref);
 
 void mScriptContextAttachStdlib(struct mScriptContext* context);
+void mScriptContextAttachSocket(struct mScriptContext* context);
 void mScriptContextExportConstants(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* constants);
 void mScriptContextExportNamespace(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* value);
 
