@@ -259,7 +259,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
         <source>Show advanced</source>
-        <translation>Mostrar as opções avançadas</translation>
+        <translation>Mostrar opções avançadas</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
@@ -4979,7 +4979,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="440"/>
         <source>Force integer scaling</source>
-        <translation>Forçar dimensionamento do inteiro</translation>
+        <translation>Forçar o dimensionamento do inteiro</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="702"/>
@@ -5673,7 +5673,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../VideoView.ui" line="565"/>
         <source>Show advanced</source>
-        <translation>Mostrar opções avançadas</translation>
+        <translation>Mostrar as opções avançadas</translation>
     </message>
 </context>
 <context>
@@ -6195,7 +6195,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1540"/>
         <source>Force integer scaling</source>
-        <translation>Forçar o dimensionamento do inteiro</translation>
+        <translation>Forçar dimensionamento do inteiro</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1561"/>
