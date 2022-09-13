@@ -78,6 +78,7 @@ Misc:
  - Debugger: GDB now works while the game is paused
  - Debugger: Add command to load external symbol file (fixes mgba.io/i/2480)
  - FFmpeg: Support dynamic audio sample rate
+ - GB: Support CGB0 boot ROM loading
  - GB Audio: Increase sample rate
  - GB MBC: Filter out MBC errors when cartridge is yanked (fixes mgba.io/i/2488)
  - GB MBC: Partially implement TAMA5 RTC

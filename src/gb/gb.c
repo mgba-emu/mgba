@@ -33,6 +33,7 @@ static const uint8_t _registeredTrademark[] = {0x3C, 0x42, 0xB9, 0xA5, 0xB9, 0xA
 #define SGB_BIOS_CHECKSUM 0xEC8A83B9
 #define SGB2_BIOS_CHECKSUM 0X53D0DD63
 #define CGB_BIOS_CHECKSUM 0x41884E46
+#define CGB0_BIOS_CHECKSUM 0xE8EF5318
 #define AGB_BIOS_CHECKSUM 0xFFD6B0F1
 
 mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
@@ -513,6 +514,7 @@ bool GBIsBIOS(struct VFile* vf) {
 	case SGB_BIOS_CHECKSUM:
 	case SGB2_BIOS_CHECKSUM:
 	case CGB_BIOS_CHECKSUM:
+	case CGB0_BIOS_CHECKSUM:
 	case AGB_BIOS_CHECKSUM:
 		return true;
 	default:
