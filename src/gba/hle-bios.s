@@ -314,17 +314,17 @@ bhi StallCall
 bx lr
 
 resetBase:
-mov r0, #0x8000003
-ldrb r1, [r0], #-3
+mov lr, #0x8000003
+ldrb r1, [lr], #-3
 cmp r1, #0
 movne r1, #0
-bxne r0
-ldr r0, =0x20000C0
-ldr r1, [r0]
+bxne lr
+ldr lr, =0x20000C0
+ldr r1, [lr]
 cmp r1, #0
 mov r1, #0
-bxne r0
-sub r0, #0xC0
-bx r0
+bxne lr
+sub lr, #0xC0
+bx lr
 .word 0
 .word 0xE129F000
