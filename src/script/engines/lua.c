@@ -339,7 +339,7 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 		lua_getglobal(luaContext->lua, "socket");
 		lua_getfield(luaContext->lua, -1, "ERRORS");
 		for (i = 0; i < _mScriptSocketNumErrors; i++) {
-			struct _mScriptSocketError* err = &_mScriptSocketErrors[i];
+			const struct _mScriptSocketError* err = &_mScriptSocketErrors[i];
 			if (err->message) {
 				lua_pushstring(luaContext->lua, err->message);
 			} else {
