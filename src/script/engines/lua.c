@@ -25,6 +25,7 @@ static void _luaDestroy(struct mScriptEngineContext*);
 static bool _luaIsScript(struct mScriptEngineContext*, const char*, struct VFile*);
 static struct mScriptValue* _luaGetGlobal(struct mScriptEngineContext*, const char* name);
 static bool _luaSetGlobal(struct mScriptEngineContext*, const char* name, struct mScriptValue*);
+static struct mScriptValue* _luaRootScope(struct mScriptEngineContext*);
 static bool _luaLoad(struct mScriptEngineContext*, const char*, struct VFile*);
 static bool _luaRun(struct mScriptEngineContext*);
 static const char* _luaGetError(struct mScriptEngineContext*);
@@ -214,6 +215,7 @@ static const int _mScriptSocketNumErrors = sizeof(_mScriptSocketErrors) / sizeof
 
 #if LUA_VERSION_NUM < 502
 #define luaL_traceback(L, M, S, level) lua_pushstring(L, S)
+#define lua_pushglobaltable(L) lua_pushvalue(L, LUA_GLOBALSINDEX)
 #endif
 
 const struct mScriptType mSTLuaFunc = {
@@ -294,6 +296,7 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 		.isScript = _luaIsScript,
 		.getGlobal = _luaGetGlobal,
 		.setGlobal = _luaSetGlobal,
+		.rootScope = _luaRootScope,
 		.load = _luaLoad,
 		.run = _luaRun,
 		.getError = _luaGetError
@@ -393,6 +396,24 @@ bool _luaSetGlobal(struct mScriptEngineContext* ctx, const char* name, struct mS
 	}
 	lua_setglobal(luaContext->lua, name);
 	return true;
+}
+
+struct mScriptValue* _luaRootScope(struct mScriptEngineContext* ctx) {
+	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) ctx;
+
+	struct mScriptValue* list = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
+	lua_pushglobaltable(luaContext->lua);
+	lua_pushnil(luaContext->lua);
+	while (lua_next(luaContext->lua, -2) != 0) {
+		struct mScriptValue* key;
+
+		lua_pop(luaContext->lua, 1);
+		key = _luaCoerce(luaContext, false);
+		mScriptValueWrap(key, mScriptListAppend(list->value.list));
+	}
+	lua_pop(luaContext->lua, 1);
+
+	return list;
 }
 
 struct mScriptValue* _luaCoerceFunction(struct mScriptEngineContextLua* luaContext) {

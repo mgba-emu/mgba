@@ -55,6 +55,7 @@ struct mScriptEngineContext {
 
 	bool (*setGlobal)(struct mScriptEngineContext*, const char* name, struct mScriptValue*);
 	struct mScriptValue* (*getGlobal)(struct mScriptEngineContext*, const char* name);
+	struct mScriptValue* (*rootScope)(struct mScriptEngineContext*);
 
 	bool (*load)(struct mScriptEngineContext*, const char* filename, struct VFile*);
 	bool (*run)(struct mScriptEngineContext*);
