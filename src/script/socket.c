@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/script/context.h>
 
+#include <errno.h>
+
 #include <mgba/internal/script/socket.h>
 #include <mgba/script/macros.h>
 #include <mgba-util/socket.h>

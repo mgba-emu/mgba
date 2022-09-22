@@ -195,9 +195,11 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 
 	int err;
 
-	int enable = 1;
+	const int enable = 1;
 #ifdef GEKKO
 	err = net_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
+#elif defined(_WIN32)
+	err = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*) &enable, sizeof(enable));
 #else
 	err = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
 #endif
