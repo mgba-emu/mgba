@@ -78,6 +78,7 @@ struct mScriptContext;
 void mScriptContextAttachCore(struct mScriptContext*, struct mCore*);
 void mScriptContextDetachCore(struct mScriptContext*);
 
+struct mLogger;
 void mScriptContextAttachLogger(struct mScriptContext*, struct mLogger*);
 void mScriptContextDetachLogger(struct mScriptContext*);
 
