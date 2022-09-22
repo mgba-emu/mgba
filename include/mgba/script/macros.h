@@ -393,8 +393,8 @@ CXX_GUARD_START
 			.function = { \
 				.parameters = { \
 					.count = NPARAMS, \
-					.entries = { _mCALL(mSCRIPT_PREFIX_ ## NPARAMS, mSCRIPT_TYPE_MS_, _mEVEN_ ## NPARAMS(__VA_ARGS__)) }, \
-					.names = { _mCALL(_mCALL_ ## NPARAMS, _mSTRINGIFY, _mODD_ ## NPARAMS(__VA_ARGS__)) }, \
+					.entries = { _mCALL(_mIF0_ ## NPARAMS, 0) _mCALL(mSCRIPT_PREFIX_ ## NPARAMS, mSCRIPT_TYPE_MS_, _mEVEN_ ## NPARAMS(__VA_ARGS__)) }, \
+					.names = { _mCALL(_mIF0_ ## NPARAMS, 0) _mCALL(_mCALL_ ## NPARAMS, _mSTRINGIFY, _mODD_ ## NPARAMS(__VA_ARGS__)) }, \
 				}, \
 				.returnType = { \
 					.count = NRET, \
@@ -433,7 +433,7 @@ CXX_GUARD_START
 		_mSCRIPT_CALL_VOID(FUNCTION, NPARAMS); \
 		return true; \
 	} \
-	_mSCRIPT_BIND_FUNCTION(NAME, 0, , NPARAMS, __VA_ARGS__)
+	_mSCRIPT_BIND_FUNCTION(NAME, 0, 0, NPARAMS, __VA_ARGS__)
 
 #define mSCRIPT_MAKE(TYPE, VALUE) (struct mScriptValue) { \
 		.type = (mSCRIPT_TYPE_MS_ ## TYPE), \
