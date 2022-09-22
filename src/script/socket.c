@@ -47,7 +47,9 @@ static const struct _mScriptSocketErrorMapping {
 #else
 	{ EAI_AGAIN,             mSCRIPT_SOCKERR_AGAIN },
 	{ EAI_FAIL,              mSCRIPT_SOCKERR_FAILED },
+#ifdef EAI_NODATA
 	{ EAI_NODATA,            mSCRIPT_SOCKERR_NO_DATA },
+#endif
 	{ EAI_NONAME,            mSCRIPT_SOCKERR_NOT_FOUND },
 	{ EAI_MEMORY,            mSCRIPT_SOCKERR_OUT_OF_MEMORY },
 #endif

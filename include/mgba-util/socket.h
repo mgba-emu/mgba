@@ -466,21 +466,28 @@ static inline int SocketResolveHost(const char* addrString, struct Address* dest
 	if (!host) {
 		return errno;
 	}
-	family = host->h_addrtype;
 	if (host->h_addrtype == AF_INET && host->h_length == 4) {
 		destAddress->version = IPV4;
 		destAddress->ipv4 = ntohl(*host->h_addr_list[0]);
-	} else if (host->h_addrtype == AF_INET6 && host->h_length == 16) {
+	}
+#ifdef HAS_IPV6
+	else if (host->h_addrtype == AF_INET6 && host->h_length == 16) {
 		destAddress->version = IPV6;
 		memcpy(destAddress->ipv6, host->h_addr_list[0], 16);
-	} else {
-		result = NO_DATA;
+	}
+#endif
+	else {
+#ifdef GEKKO
+		result = errno;
+#else
+		result = -h_errno;
+#endif
 	}
 #else
 	struct addrinfo* addr = NULL;
 	result = getaddrinfo(addrString, NULL, NULL, &addr);
 	if (result) {
-#ifndef _WIN32
+#ifdef EAI_SYSTEM
 		if (result == EAI_SYSTEM) {
 			result = errno;
 		}
@@ -491,15 +498,19 @@ static inline int SocketResolveHost(const char* addrString, struct Address* dest
 		struct sockaddr_in* addr4 = (struct sockaddr_in*) addr->ai_addr;
 		destAddress->version = IPV4;
 		destAddress->ipv4 = ntohl(addr4->sin_addr.s_addr);
-	} else if (addr->ai_family == AF_INET6 && addr->ai_addrlen == sizeof(struct sockaddr_in6)) {
+	}
+#ifdef HAS_IPV6
+	else if (addr->ai_family == AF_INET6 && addr->ai_addrlen == sizeof(struct sockaddr_in6)) {
 		struct sockaddr_in6* addr6 = (struct sockaddr_in6*) addr->ai_addr;
 		destAddress->version = IPV6;
 		memcpy(destAddress->ipv6, addr6->sin6_addr.s6_addr, 16);
-	} else {
+	}
+#endif
+	else {
 #ifdef _WIN32
 		result = WSANO_DATA;
 #else
-		result = EAI_NODATA;
+		result = EAI_NONAME;
 #endif
 	}
 error:
