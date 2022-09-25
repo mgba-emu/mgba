@@ -83,7 +83,7 @@ server = nil
 while not server do
 	server, err = socket.bind(nil, port)
 	if err then
-		if err == "address in use" then
+		if err == socket.ERRORS.ADDRESS_IN_USE then
 			port = port + 1
 		else
 			console:error(ST_format("Bind", err, true))
