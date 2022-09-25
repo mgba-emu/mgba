@@ -126,6 +126,7 @@ static const char* _socketLuaSource =
 	"      end,\n"
 	"      connect = function(self, address, port)\n"
 	"        local status = self._s:connect(address, port)\n"
+	"        return socket._wrap(status)\n"
 	"      end,\n"
 	"      listen = function(self, backlog)\n"
 	"        local status = self._s:listen(backlog or 1)\n"
