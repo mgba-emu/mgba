@@ -7,12 +7,33 @@
 #include <mgba/core/scripting.h>
 #include <mgba/core/version.h>
 #include <mgba/script/context.h>
+#include <mgba-util/string.h>
 
 struct mScriptContext context;
 struct Table types;
 FILE* out;
 
+const struct mScriptType* const baseTypes[] = {
+	mSCRIPT_TYPE_MS_S8,
+	mSCRIPT_TYPE_MS_U8,
+	mSCRIPT_TYPE_MS_S16,
+	mSCRIPT_TYPE_MS_U16,
+	mSCRIPT_TYPE_MS_S32,
+	mSCRIPT_TYPE_MS_U32,
+	mSCRIPT_TYPE_MS_F32,
+	mSCRIPT_TYPE_MS_S64,
+	mSCRIPT_TYPE_MS_U64,
+	mSCRIPT_TYPE_MS_F64,
+	mSCRIPT_TYPE_MS_STR,
+	mSCRIPT_TYPE_MS_CHARP,
+	mSCRIPT_TYPE_MS_LIST,
+	mSCRIPT_TYPE_MS_TABLE,
+	mSCRIPT_TYPE_MS_WRAPPER,
+	NULL
+};
+
 void explainValue(struct mScriptValue* value, const char* name, int level);
+void explainValueScoped(struct mScriptValue* value, const char* name, const char* scope, int level);
 void explainType(struct mScriptType* type, int level);
 
 void addTypesFromTuple(const struct mScriptTypeTuple*);
@@ -154,7 +175,7 @@ bool printval(const struct mScriptValue* value, char* buffer, size_t bufferSize)
 	return false;
 }
 
-void explainTable(struct mScriptValue* value, const char* name, int level) {
+void explainTable(struct mScriptValue* value, const char* name, const char* scope, int level) {
 	char indent[(level + 1) * 2 + 1];
 	memset(indent, ' ', sizeof(indent) - 1);
 	indent[sizeof(indent) - 1] = '\0';
@@ -171,9 +192,9 @@ void explainTable(struct mScriptValue* value, const char* name, int level) {
 			struct mScriptValue string;
 			if (mScriptCast(mSCRIPT_TYPE_MS_CHARP, k, &string)) {
 				snprintf(keyval, sizeof(keyval), "%s.%s", name, (const char*) string.value.opaque);
-				explainValue(v, keyval, level + 1);
+				explainValueScoped(v, keyval, scope, level + 1);
 			} else {
-				explainValue(v, NULL, level + 1);
+				explainValueScoped(v, NULL, scope, level + 1);
 			}
 		} while (mScriptTableIteratorNext(value, &iter));
 	}
@@ -250,6 +271,10 @@ void explainObject(struct mScriptValue* value, int level) {
 }
 
 void explainValue(struct mScriptValue* value, const char* name, int level) {
+	explainValueScoped(value, name, NULL, level);
+}
+
+void explainValueScoped(struct mScriptValue* value, const char* name, const char* scope, int level) {
 	char valstring[1024];
 	char indent[(level + 1) * 2 + 1];
 	memset(indent, ' ', sizeof(indent) - 1);
@@ -260,7 +285,12 @@ void explainValue(struct mScriptValue* value, const char* name, int level) {
 
 	const char* docstring = NULL;
 	if (name) {
-		docstring = mScriptContextGetDocstring(&context, name);
+		if (scope) {
+			snprintf(valstring, sizeof(valstring), "%s::%s", scope, name);
+			docstring = mScriptContextGetDocstring(&context, valstring);
+		} else {
+			docstring = mScriptContextGetDocstring(&context, name);
+		}
 	}
 	if (docstring) {
 		fprintf(out, "%scomment: \"%s\"\n", indent, docstring);
@@ -269,7 +299,7 @@ void explainValue(struct mScriptValue* value, const char* name, int level) {
 	switch (value->type->base) {
 	case mSCRIPT_TYPE_TABLE:
 		fprintf(out, "%svalue:\n", indent);
-		explainTable(value, name, level);
+		explainTable(value, name, scope, level);
 		break;
 	case mSCRIPT_TYPE_SINT:
 	case mSCRIPT_TYPE_UINT:
@@ -438,6 +468,35 @@ void explainCore(struct mCore* core) {
 	mScriptContextDetachCore(&context);
 }
 
+void initTypes(void) {
+	HashTableInit(&types, 0, NULL);
+
+	size_t i;
+	for (i = 0; baseTypes[i]; ++i) {
+		addType(baseTypes[i]);
+	}
+}
+
+void explainTypes(int level, const char* prefix) {
+	char indent[level * 2 + 1];
+	memset(indent, ' ', sizeof(indent) - 1);
+	indent[sizeof(indent) - 1] = '\0';
+	fprintf(out, "%stypes:\n", indent);
+
+	struct TableIterator iter;
+	if (HashTableIteratorStart(&types, &iter)) {
+		do {
+			const char* name = HashTableIteratorGetKey(&types, &iter);
+			struct mScriptType* type = HashTableIteratorGetValue(&types, &iter);
+			if (prefix && !startswith(name, prefix)) {
+				continue;
+			}
+			fprintf(out, "%s  %s:\n", indent, name);
+			explainType(type, level + 1);
+		} while (HashTableIteratorNext(&types, &iter));
+	}
+}
+
 int main(int argc, char* argv[]) {
 	out = stdout;
 	if (argc > 1) {
@@ -450,24 +509,10 @@ int main(int argc, char* argv[]) {
 
 	mScriptContextInit(&context);
 	mScriptContextAttachStdlib(&context);
+	mScriptContextAttachSocket(&context);
 	mScriptContextSetTextBufferFactory(&context, NULL, NULL);
-	HashTableInit(&types, 0, NULL);
 
-	addType(mSCRIPT_TYPE_MS_S8);
-	addType(mSCRIPT_TYPE_MS_U8);
-	addType(mSCRIPT_TYPE_MS_S16);
-	addType(mSCRIPT_TYPE_MS_U16);
-	addType(mSCRIPT_TYPE_MS_S32);
-	addType(mSCRIPT_TYPE_MS_U32);
-	addType(mSCRIPT_TYPE_MS_F32);
-	addType(mSCRIPT_TYPE_MS_S64);
-	addType(mSCRIPT_TYPE_MS_U64);
-	addType(mSCRIPT_TYPE_MS_F64);
-	addType(mSCRIPT_TYPE_MS_STR);
-	addType(mSCRIPT_TYPE_MS_CHARP);
-	addType(mSCRIPT_TYPE_MS_LIST);
-	addType(mSCRIPT_TYPE_MS_TABLE);
-	addType(mSCRIPT_TYPE_MS_WRAPPER);
+	initTypes();
 
 	fputs("version:\n", out);
 	fprintf(out, "  string: \"%s\"\n", projectVersion);
@@ -498,16 +543,28 @@ int main(int argc, char* argv[]) {
 		explainCore(core);
 		core->deinit(core);
 	}
-	fputs("types:\n", out);
-	if (HashTableIteratorStart(&types, &iter)) {
-		do {
-			const char* name = HashTableIteratorGetKey(&types, &iter);
-			fprintf(out, "  %s:\n", name);
-			struct mScriptType* type = HashTableIteratorGetValue(&types, &iter);
-			explainType(type, 1);
-		} while (HashTableIteratorNext(&types, &iter));
-	}
+	explainTypes(0, NULL);
 
+	mScriptContextRegisterEngines(&context);
+	fputs("engines:\n", out);
+	if (HashTableIteratorStart(&context.engines, &iter)) {
+		do {
+			struct TableIterator rootIter;
+			struct mScriptEngineContext* engine = HashTableIteratorGetValue(&context.engines, &iter);
+			const char* name = HashTableIteratorGetKey(&context.engines, &iter);
+			fprintf(out, "  %s:\n    root:\n", name);
+			if (HashTableIteratorStart(&engine->docroot, &rootIter)) {
+				do {
+					const char* key = HashTableIteratorGetKey(&engine->docroot, &rootIter);
+					struct mScriptValue* value = HashTableIteratorGetValue(&engine->docroot, &rootIter);
+					fprintf(out, "      %s:\n", key);
+					explainValueScoped(value, key, name, 3);
+				} while (HashTableIteratorNext(&engine->docroot, &rootIter));
+			}
+
+			explainTypes(2, name);
+		} while (HashTableIteratorNext(&context.engines, &iter));
+	}
 	HashTableDeinit(&types);
 	mScriptContextDeinit(&context);
 	return 0;

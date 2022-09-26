@@ -62,6 +62,8 @@ struct mScriptEngineContext {
 	bool (*load)(struct mScriptEngineContext*, const char* filename, struct VFile*);
 	bool (*run)(struct mScriptEngineContext*);
 	const char* (*getError)(struct mScriptEngineContext*);
+
+	struct Table docroot;
 };
 
 struct mScriptKVPair {
@@ -99,6 +101,10 @@ void mScriptContextRemoveCallback(struct mScriptContext*, uint32_t cbid);
 
 void mScriptContextSetDocstring(struct mScriptContext*, const char* key, const char* docstring);
 const char* mScriptContextGetDocstring(struct mScriptContext*, const char* key);
+
+void mScriptEngineExportDocNamespace(struct mScriptEngineContext*, const char* nspace, struct mScriptKVPair* value);
+void mScriptEngineSetDocstring(struct mScriptEngineContext*, const char* key, const char* docstring);
+const char* mScriptEngineGetDocstring(struct mScriptEngineContext*, const char* key);
 
 struct VFile;
 bool mScriptContextLoadVF(struct mScriptContext*, const char* name, struct VFile* vf);

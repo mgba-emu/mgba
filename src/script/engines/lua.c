@@ -333,6 +333,8 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 	lua_getglobal(luaContext->lua, "require");
 	luaContext->require = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
 
+	HashTableInit(&luaContext->d.docroot, 0, (void (*)(void*)) mScriptValueDeref);
+
 	int status = luaL_dostring(luaContext->lua, _socketLuaSource);
 	if (status) {
 		mLOG(SCRIPT, ERROR, "Error in dostring while initializing sockets: %s\n", lua_tostring(luaContext->lua, -1));
@@ -369,6 +371,8 @@ void _luaDestroy(struct mScriptEngineContext* ctx) {
 		luaL_unref(luaContext->lua, LUA_REGISTRYINDEX, luaContext->require);
 	}
 	lua_close(luaContext->lua);
+
+	HashTableDeinit(&luaContext->d.docroot);
 	free(luaContext);
 }
 
