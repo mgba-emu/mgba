@@ -50,7 +50,9 @@
 #include "ReportView.h"
 #include "ROMInfo.h"
 #include "SaveConverter.h"
+#ifdef ENABLE_SCRIPTING
 #include "scripting/ScriptingView.h"
+#endif
 #include "SensorView.h"
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
