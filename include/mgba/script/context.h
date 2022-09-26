@@ -49,6 +49,8 @@ struct mScriptEngine2 {
 
 struct mScriptEngineContext {
 	struct mScriptContext* context;
+	struct mScriptEngine2* engine;
+
 	void (*destroy)(struct mScriptEngineContext*);
 
 	bool (*isScript)(struct mScriptEngineContext*, const char* name, struct VFile* vf);

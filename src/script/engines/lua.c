@@ -288,10 +288,10 @@ static const luaL_Reg _mSTList[] = {
 };
 
 struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mScriptContext* context) {
-	UNUSED(engine);
 	struct mScriptEngineContextLua* luaContext = calloc(1, sizeof(*luaContext));
 	luaContext->d = (struct mScriptEngineContext) {
 		.context = context,
+		.engine = engine,
 		.destroy = _luaDestroy,
 		.isScript = _luaIsScript,
 		.getGlobal = _luaGetGlobal,
