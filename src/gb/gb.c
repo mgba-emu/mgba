@@ -276,13 +276,17 @@ void GBResizeSram(struct GB* gb, size_t size) {
 					vf->seek(vf, size, SEEK_SET);
 					vf->write(vf, extdataBuffer, vfSize & 0xFF);
 				}
-				gb->memory.sram = vf->map(vf, size, MAP_WRITE);
-				memset(&gb->memory.sram[vfSize], 0xFF, size - vfSize);
+				if (size) {
+					gb->memory.sram = vf->map(vf, size, MAP_WRITE);
+					memset(&gb->memory.sram[vfSize], 0xFF, size - vfSize);
+				}
 			} else if (size > gb->sramSize || !gb->memory.sram) {
 				if (gb->memory.sram) {
 					vf->unmap(vf, gb->memory.sram, gb->sramSize);
 				}
-				gb->memory.sram = vf->map(vf, size, MAP_WRITE);
+				if (size) {
+					gb->memory.sram = vf->map(vf, size, MAP_WRITE);
+				}
 			}
 		} else {
 			if (gb->memory.sram) {
@@ -296,9 +300,11 @@ void GBResizeSram(struct GB* gb, size_t size) {
 				gb->sramVf = newVf;
 				vf->truncate(vf, size);
 			}
-			gb->memory.sram = vf->map(vf, size, MAP_READ);
+			if (size) {
+				gb->memory.sram = vf->map(vf, size, MAP_READ);
+			}
 		}
-		if (gb->memory.sram == (void*) -1) {
+		if (!size || gb->memory.sram == (void*) -1) {
 			gb->memory.sram = NULL;
 		}
 	} else if (size) {
