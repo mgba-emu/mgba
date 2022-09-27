@@ -112,6 +112,7 @@ Misc:
  - Qt: Resume crashed game when loading a save state
  - SDL: Support exposing an axis directly as the gyro value (closes mgba.io/i/2531)
  - Windows: Attach to console if present
+ - VFS: Early return NULL if attempting to map 0 bytes from a file
  - Vita: Add bilinear filtering option (closes mgba.io/i/344)
 
 0.9.3: (2021-12-17)
