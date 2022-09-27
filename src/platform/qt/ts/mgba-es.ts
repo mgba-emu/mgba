@@ -264,7 +264,7 @@ Tamaño de la descarga: %3</translation>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished">Faltan los datos de BattleChip</translation>
+        <translation>Faltan los datos del BattleChip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
@@ -358,7 +358,7 @@ Tamaño de la descarga: %3</translation>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished">Algunos trucos no se pudieron añadir. Asegúrese de que están formateados correctamente y/o pruebe otros tipos de trucos.</translation>
+        <translation>Algunos trucos no se pudieron añadir. Asegúrese de que están en el formato correcto y/o pruebe otro tipo de trucos.</translation>
     </message>
 </context>
 <context>
@@ -793,7 +793,7 @@ Tamaño de la descarga: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="75"/>
         <source>ROM Only</source>
-        <translation type="unfinished">Sólo ROM</translation>
+        <translation>Solo ROM</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="76"/>
