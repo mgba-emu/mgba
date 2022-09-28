@@ -110,6 +110,7 @@ Misc:
  - Qt: Change lossless setting to use WavPack audio
  - Qt: Use FFmpeg to convert additional camera formats, if available
  - Qt: Resume crashed game when loading a save state
+ - Qt: Include cheats in bug report
  - SDL: Support exposing an axis directly as the gyro value (closes mgba.io/i/2531)
  - Windows: Attach to console if present
  - VFS: Early return NULL if attempting to map 0 bytes from a file
