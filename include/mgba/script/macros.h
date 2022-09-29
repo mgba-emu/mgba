@@ -233,6 +233,10 @@ CXX_GUARD_START
 	} \
 },
 
+#define mSCRIPT_DEFINE_INTERNAL { \
+	.type = mSCRIPT_CLASS_INIT_INTERNAL \
+},
+
 #define _mSCRIPT_STRUCT_METHOD_POP(TYPE, S, NPARAMS, ...) \
 	_mCALL(_mCAT(mSCRIPT_POP_, _mSUCC_ ## NPARAMS), &frame->arguments, _mCOMMA_ ## NPARAMS(S(TYPE), __VA_ARGS__)); \
 	if (mScriptListSize(&frame->arguments)) { \

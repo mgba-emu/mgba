@@ -208,6 +208,9 @@ void explainClass(struct mScriptTypeClass* cls, int level) {
 	if (cls->parent) {
 		fprintf(out, "%sparent: %s\n", indent, cls->parent->name);
 	}
+	if (cls->internal) {
+		fprintf(out, "%sinternal: true\n", indent);
+	}
 	if (cls->docstring) {
 		if (strchr(cls->docstring, '\n')) {
 			fprintf(out, "%scomment: |-\n", indent);

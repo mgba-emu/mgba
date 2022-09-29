@@ -154,6 +154,7 @@ enum mScriptClassInitType {
 	mSCRIPT_CLASS_INIT_DEINIT,
 	mSCRIPT_CLASS_INIT_GET,
 	mSCRIPT_CLASS_INIT_SET,
+	mSCRIPT_CLASS_INIT_INTERNAL,
 };
 
 enum {
@@ -245,6 +246,7 @@ struct mScriptTypeClass {
 	const struct mScriptClassInitDetails* details;
 	const struct mScriptType* parent;
 	const char* docstring;
+	bool internal;
 	struct Table instanceMembers;
 	struct Table castToMembers;
 	struct mScriptClassMember* alloc; // TODO

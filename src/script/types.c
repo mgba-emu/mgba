@@ -1088,6 +1088,9 @@ static void _mScriptClassInit(struct mScriptTypeClass* cls, const struct mScript
 				docstring = NULL;
 			}
 			break;
+		case mSCRIPT_CLASS_INIT_INTERNAL:
+			cls->internal = true;
+			break;
 		}
 	}
 }

@@ -204,6 +204,7 @@ mSCRIPT_DECLARE_STRUCT_METHOD(mScriptSocket, WSTR, recv, _mScriptSocketRecv, 1, 
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptSocket, S32, select, _mScriptSocketSelectOne, 1, S64, timeoutMillis);
 
 mSCRIPT_DEFINE_STRUCT(mScriptSocket)
+	mSCRIPT_DEFINE_INTERNAL
 	mSCRIPT_DEFINE_CLASS_DOCSTRING("An internal implementation of a TCP network socket.")
 	mSCRIPT_DEFINE_STRUCT_DEINIT_NAMED(mScriptSocket, close)
 	mSCRIPT_DEFINE_DOCSTRING("Closes the socket. If the socket is already closed, this function does nothing.")
