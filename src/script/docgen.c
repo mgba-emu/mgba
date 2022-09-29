@@ -301,7 +301,12 @@ void explainValueScoped(struct mScriptValue* value, const char* name, const char
 		}
 	}
 	if (docstring) {
-		fprintf(out, "%scomment: \"%s\"\n", indent, docstring);
+		if (strchr(docstring, '\n')) {
+			fprintf(out, "%scomment: |-\n", indent);
+			printchomp(docstring, level + 1);
+		} else {
+			fprintf(out, "%scomment: \"%s\"\n", indent, docstring);
+		}
 	}
 
 	switch (value->type->base) {
