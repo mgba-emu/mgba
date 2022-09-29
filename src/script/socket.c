@@ -224,7 +224,7 @@ mSCRIPT_DEFINE_STRUCT(mScriptSocket)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptSocket, connect)
 	mSCRIPT_DEFINE_DOCSTRING(
 		"Begins listening for incoming connections. The socket must have first been "
-		"bound with the `open` function."
+		"bound with the struct::Socket.open method."
 	)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptSocket, listen)
 	mSCRIPT_DEFINE_DOCSTRING(
@@ -235,7 +235,7 @@ mSCRIPT_DEFINE_STRUCT(mScriptSocket)
 	mSCRIPT_DEFINE_DOCSTRING(
 		"Reads data from a socket, up to the specified number of bytes. "
 		"If the socket has been disconnected, this function returns an empty string. "
-		"Use `select` to test if data is available to be read."
+		"Use struct::Socket.select to test if data is available to be read."
 	)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptSocket, recv)
 	mSCRIPT_DEFINE_DOCSTRING(
@@ -245,7 +245,7 @@ mSCRIPT_DEFINE_STRUCT(mScriptSocket)
 	)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptSocket, select)
 	mSCRIPT_DEFINE_DOCSTRING(
-		"One of the `SOCKERR` constants describing the last error on the socket."
+		"One of the C.SOCKERR constants describing the last error on the socket."
 	)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptSocket, S32, error)
 mSCRIPT_DEFINE_END;
