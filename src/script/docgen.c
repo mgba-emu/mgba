@@ -230,7 +230,12 @@ void explainClass(struct mScriptTypeClass* cls, int level) {
 		case mSCRIPT_CLASS_INIT_INSTANCE_MEMBER:
 			fprintf(out, "%s  %s:\n", indent, details->info.member.name);
 			if (docstring) {
-				fprintf(out, "%s    comment: \"%s\"\n", indent, docstring);
+				if (strchr(docstring, '\n')) {
+					fprintf(out, "%s    comment: |-\n", indent);
+					printchomp(docstring, level + 3);
+				} else {
+					fprintf(out, "%s    comment: \"%s\"\n", indent, docstring);
+				}
 				docstring = NULL;
 			}
 			fprintf(out, "%s    type: %s\n", indent, details->info.member.type->name);
