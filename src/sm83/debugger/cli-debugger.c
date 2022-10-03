@@ -17,10 +17,6 @@ static void _printStatus(struct CLIDebuggerSystem*);
 static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVector* dv);
 static uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address, int segment);
 
-static struct CLIDebuggerCommandSummary _sm83Commands[] = {
-	{ 0, 0, 0, 0 }
-};
-
 static inline void _printFlags(struct CLIDebuggerBackend* be, union FlagRegister f) {
 	be->printf(be, "F: [%c%c%c%c]\n",
 	           f.z ? 'Z' : '-',
@@ -109,6 +105,6 @@ void SM83CLIDebuggerCreate(struct CLIDebuggerSystem* debugger) {
 	debugger->printStatus = _printStatus;
 	debugger->disassemble = _disassemble;
 	debugger->platformName = "SM83";
-	debugger->platformCommands = _sm83Commands;
+	debugger->platformCommands = NULL;
 	debugger->platformCommandAliases = NULL;
 }
