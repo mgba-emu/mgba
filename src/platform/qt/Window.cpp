@@ -1867,7 +1867,7 @@ void Window::setupOptions() {
 
 	ConfigOption* showOSD = m_config->addOption("showOSD");
 	showOSD->connect([this](const QVariant& value) {
-		if (m_display) {
+		if (m_display && !value.isNull()) {
 			m_display->showOSDMessages(value.toBool());
 		}
 	}, this);
