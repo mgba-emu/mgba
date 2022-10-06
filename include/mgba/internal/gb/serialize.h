@@ -463,7 +463,8 @@ struct GBSerializedState {
 	union {
 		uint8_t huc3Registers[0x80];
 		struct {
-			uint8_t registers[8];
+			uint8_t registers[4];
+			uint8_t reserved[4];
 			uint8_t rtcTimerPage[8];
 			uint8_t rtcAlarmPage[8];
 			uint8_t rtcFreePage0[8];
