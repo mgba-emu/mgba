@@ -72,6 +72,7 @@ struct GBASavedata {
 	uint8_t* data;
 	enum SavedataCommand command;
 	struct VFile* vf;
+	struct GBACartridgeHardware* gpio;
 
 	int mapMode;
 	bool maskWriteback;
@@ -91,6 +92,12 @@ struct GBASavedata {
 	uint32_t dirtAge;
 
 	enum FlashStateMachine flashState;
+};
+
+struct GBASavedataRTCBuffer {
+	uint8_t time[7];
+	uint8_t control;
+	uint64_t lastLatch;
 };
 
 void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf);
@@ -115,6 +122,9 @@ uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata);
 void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32_t writeSize);
 
 void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount);
+
+void GBASavedataRTCRead(struct GBASavedata* savedata);
+void GBASavedataRTCWrite(struct GBASavedata* savedata);
 
 struct GBASerializedState;
 void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state);

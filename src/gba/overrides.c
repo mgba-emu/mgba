@@ -341,6 +341,7 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 
 		if (override->hardware & HW_RTC) {
 			GBAHardwareInitRTC(&gba->memory.hw);
+			GBASavedataRTCRead(&gba->memory.savedata);
 		}
 
 		if (override->hardware & HW_GYRO) {
