@@ -585,7 +585,7 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 }
 
 void GBASavedataRTCWrite(struct GBASavedata* savedata) {
-	if (!(savedata->gpio->devices & HW_RTC)) {
+	if (!(savedata->gpio->devices & HW_RTC) || !savedata->vf) {
 		return;
 	}
 
@@ -605,6 +605,10 @@ static uint8_t _unBCD(uint8_t byte) {
 }
 
 void GBASavedataRTCRead(struct GBASavedata* savedata) {
+	if (!savedata->vf) {
+		return;
+	}
+
 	struct GBASavedataRTCBuffer buffer;
 
 	size_t size = GBASavedataSize(savedata) & ~0xFF;
