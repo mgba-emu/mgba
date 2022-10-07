@@ -66,12 +66,14 @@ Auto-update is not available on this platform. If you wish to update you will ne
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Nåværende versjon: %1
+Ny versjon: %2
+Nedlastningsstørrelse: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Laster ned ny versjon …</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="79"/>
@@ -157,7 +159,7 @@ Download size: %3</source>
         <location filename="../AssetTile.cpp" line="144"/>
         <location filename="../AssetTile.cpp" line="145"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0 (%1)</translation>
     </message>
 </context>
 <context>
@@ -175,7 +177,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioDevice.cpp" line="62"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriver data til skrivebeskyttet lydenhet</translation>
     </message>
 </context>
 <context>
@@ -582,7 +584,7 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.cpp" line="625"/>
         <source>%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -753,67 +755,67 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="56"/>
         <source>Game Boy (DMG)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy (DMG)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="57"/>
         <source>Game Boy Pocket (MGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Pocket (MGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="58"/>
         <source>Super Game Boy (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="59"/>
         <source>Super Game Boy 2 (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy 2 (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="60"/>
         <source>Game Boy Color (CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Color (CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="61"/>
         <source>Game Boy Advance (AGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance (AGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="62"/>
         <source>Super Game Boy Color (SGB + CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy Color (SGB + CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="75"/>
         <source>ROM Only</source>
-        <translation type="unfinished"></translation>
+        <translation>Kun ROM</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="76"/>
         <source>MBC1</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="77"/>
         <source>MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="78"/>
         <source>MBC3</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="79"/>
         <source>MBC3 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="80"/>
         <source>MBC5</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC5</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
@@ -823,7 +825,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="82"/>
         <source>MBC6</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="83"/>
@@ -833,17 +835,17 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="84"/>
         <source>MMM01</source>
-        <translation type="unfinished"></translation>
+        <translation>MMM01</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="85"/>
         <source>HuC-1</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
         <source>HuC-3</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
@@ -853,7 +855,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
         <source>TAMA5</source>
-        <translation type="unfinished"></translation>
+        <translation>TAMA5</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
