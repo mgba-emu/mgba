@@ -124,9 +124,24 @@ M_TEST_DEFINE(roundtrip) {
 	}
 }
 
+M_TEST_DEFINE(roundtripUnpadded) {
+	uint32_t unichar;
+	char buf[8] = {0};
+	for (unichar = 0; unichar < 0x110000; ++unichar) {
+		memset(buf, 0, sizeof(buf));
+		size_t len = toUtf8(unichar, buf);
+		const char* ptr = buf;
+		assert_true(len);
+		assert_false(buf[len]);
+		assert_int_equal(utf8Char(&ptr, &len), unichar);
+		assert_int_equal(len, 0);
+	}
+}
+
 M_TEST_SUITE_DEFINE(StringUTF8,
 	cmocka_unit_test(strlenASCII),
 	cmocka_unit_test(strlenMultibyte),
 	cmocka_unit_test(strlenDegenerate),
 	cmocka_unit_test(roundtrip),
+	cmocka_unit_test(roundtripUnpadded),
 )
