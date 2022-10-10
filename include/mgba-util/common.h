@@ -20,6 +20,7 @@
 
 CXX_GUARD_START
 
+#include <assert.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <inttypes.h>
@@ -81,6 +82,10 @@ typedef intptr_t ssize_t;
 
 #ifndef M_PI
 #define M_PI 3.141592654f
+#endif
+
+#if !defined(__cplusplus) && !defined(static_assert)
+#define static_assert(X, C) _Static_assert((X), C)
 #endif
 
 #if !defined(_MSC_VER) && (defined(__llvm__) || (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))

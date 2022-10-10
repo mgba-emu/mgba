@@ -10,7 +10,7 @@
  * without processing the image.  Notice that some header information may occur
  * after the image data. Textual data and comments are an example; the approach
  * in this file won't work reliably for such data because it only looks for the
- * information in the section of the file that preceeds the image data.
+ * information in the section of the file that precedes the image data.
  *
  * Compile and link against libpng and zlib, plus anything else required on the
  * system you use.

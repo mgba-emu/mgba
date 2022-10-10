@@ -1,6 +1,6 @@
 [Desktop Entry]
 Version=1.0
-Icon=mgba
+Icon=io.mgba.mGBA
 Exec=mgba-qt %f
 Terminal=false
 Type=Application

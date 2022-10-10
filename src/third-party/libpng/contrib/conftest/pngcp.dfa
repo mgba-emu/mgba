@@ -33,7 +33,7 @@ option WRITE_16BIT on
 option WRITE_FILTER on
 
 # pngcp needs this to preserve unknown chunks, switching all these on means that
-# pngcp can work without explicit known chunk reading suppport
+# pngcp can work without explicit known chunk reading support
 option UNKNOWN_CHUNKS on
 option SET_UNKNOWN_CHUNKS on
 option HANDLE_AS_UNKNOWN on
@@ -52,6 +52,6 @@ option TEXT on
 option USER_LIMITS on
 option SET_USER_LIMITS on
 
-# these are are just required for specific customizations
+# these are just required for specific customizations
 option WRITE_CUSTOMIZE_ZTXT_COMPRESSION on
 option WRITE_CUSTOMIZE_COMPRESSION on

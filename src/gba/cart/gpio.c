@@ -100,6 +100,9 @@ void GBAHardwareInitRTC(struct GBACartridgeHardware* hw) {
 	hw->rtc.command = 0;
 	hw->rtc.control = 0x40;
 	memset(hw->rtc.time, 0, sizeof(hw->rtc.time));
+
+	hw->rtc.lastLatch = 0;
+	hw->rtc.offset = 0;
 }
 
 void _readPins(struct GBACartridgeHardware* hw) {
@@ -278,6 +281,9 @@ void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 	} else {
 		t = time(0);
 	}
+	hw->rtc.lastLatch = t;
+	t -= hw->rtc.offset;
+
 	struct tm date;
 	localtime_r(&t, &date);
 	hw->rtc.time[0] = _rtcBCD(date.tm_year - 100);

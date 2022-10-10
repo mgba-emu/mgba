@@ -11,12 +11,6 @@
 CXX_GUARD_START
 
 #ifndef DISABLE_THREADING
-#if (__STDC_VERSION__ >= 201112L) && (__STDC_NO_THREADS__ != 1)
-#define ThreadLocal _Thread_local void*
-#define ThreadLocalInitKey(X)
-#define ThreadLocalSetKey(K, V) K = V
-#define ThreadLocalGetValue(K) K
-#endif
 #ifdef USE_PTHREADS
 #include <mgba-util/platform/posix/threading.h>
 #elif defined(_WIN32)
@@ -31,7 +25,15 @@ CXX_GUARD_START
 #define DISABLE_THREADING
 #endif
 #endif
-#ifdef DISABLE_THREADING
+
+#ifndef DISABLE_THREADING
+#if (__STDC_VERSION__ >= 201112L) && (__STDC_NO_THREADS__ != 1)
+#define ThreadLocal _Thread_local void*
+#define ThreadLocalInitKey(X)
+#define ThreadLocalSetKey(K, V) K = V
+#define ThreadLocalGetValue(K) K
+#endif
+#else
 #ifdef __3DS__
 // ctrulib already has a type called Thread
 #include <3ds/thread.h>

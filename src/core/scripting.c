@@ -717,7 +717,7 @@ static void mScriptConsoleLog(struct mScriptConsole* console, struct mScriptStri
 	if (console->logger) {
 		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_INFO, "%s", msg->buffer);
 	} else {
-		mLog(_mLOG_CAT_SCRIPT, mLOG_INFO, "%s", msg->buffer);		
+		mLog(_mLOG_CAT_SCRIPT, mLOG_INFO, "%s", msg->buffer);
 	}
 }
 
@@ -725,7 +725,7 @@ static void mScriptConsoleWarn(struct mScriptConsole* console, struct mScriptStr
 	if (console->logger) {
 		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);
 	} else {
-		mLog(_mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);		
+		mLog(_mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);
 	}
 }
 
@@ -733,7 +733,7 @@ static void mScriptConsoleError(struct mScriptConsole* console, struct mScriptSt
 	if (console->logger) {
 		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_ERROR, "%s", msg->buffer);
 	} else {
-		mLog(_mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);		
+		mLog(_mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);
 	}
 }
 
@@ -818,7 +818,7 @@ mSCRIPT_DEFINE_STRUCT(mScriptTextBuffer)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, clear)
 	mSCRIPT_DEFINE_DOCSTRING("Set the number of rows and columns")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, setSize)
-	mSCRIPT_DEFINE_DOCSTRING("Set the posiiton of the cursor")
+	mSCRIPT_DEFINE_DOCSTRING("Set the position of the cursor")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, moveCursor)
 	mSCRIPT_DEFINE_DOCSTRING("Advance the cursor a number of columns")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptTextBuffer, advance)

@@ -326,6 +326,11 @@
            </item>
            <item>
             <property name="text">
+             <string>WavPack</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
              <string>Opus</string>
             </property>
            </item>

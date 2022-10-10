@@ -348,7 +348,8 @@ struct GBASerializedState {
 		int32_t rtcBits;
 		int32_t rtcCommandActive;
 		RTCCommandData rtcCommand;
-		RTCControl rtcControl;
+		uint8_t rtcControl;
+		uint8_t reserved[3];
 		uint8_t time[7];
 		uint8_t devices;
 		uint16_t gyroSample;
@@ -402,7 +403,7 @@ struct GBASerializedState {
 		int8_t chB[16];
 	} samples;
 
-	struct mStereoSample currentSamples[16];
+	struct mStereoSample currentSamples[GBA_MAX_SAMPLES];
 
 	uint32_t reserved[12];
 
@@ -413,6 +414,8 @@ struct GBASerializedState {
 	uint8_t iwram[SIZE_WORKING_IRAM];
 	uint8_t wram[SIZE_WORKING_RAM];
 };
+
+static_assert(sizeof(struct GBASerializedState) == 0x61000, "GBA savestate struct sized wrong");
 
 struct VDir;
 

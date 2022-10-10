@@ -84,7 +84,9 @@ CXX_GUARD_START
 	extern const struct mScriptType mSTStruct_ ## STRUCT; \
 	extern const struct mScriptType mSTStructConst_ ## STRUCT; \
 	extern const struct mScriptType mSTStructPtr_ ## STRUCT; \
-	extern const struct mScriptType mSTStructPtrConst_ ## STRUCT;
+	extern const struct mScriptType mSTStructPtrConst_ ## STRUCT; \
+	extern const struct mScriptType mSTWrapper_ ## STRUCT; \
+	extern const struct mScriptType mSTWrapperConst_ ## STRUCT;
 
 #define mSCRIPT_DEFINE_STRUCT(STRUCT) \
 	const struct mScriptType mSTStruct_ ## STRUCT; \
@@ -180,6 +182,23 @@ CXX_GUARD_START
 		.init = false, \
 		.details = (const struct mScriptClassInitDetails[]) {
 
+#define mSCRIPT_DECLARE_DOC_STRUCT(SCOPE, STRUCT) \
+	static const struct mScriptType mSTStruct_doc_ ## STRUCT;
+
+#define mSCRIPT_DEFINE_DOC_STRUCT(SCOPE, STRUCT) \
+	static struct mScriptTypeClass _mSTStructDetails_doc_ ## STRUCT; \
+	static const struct mScriptType mSTStruct_doc_ ## STRUCT = { \
+		.base = mSCRIPT_TYPE_OBJECT, \
+		.details = { \
+			.cls = &_mSTStructDetails_doc_ ## STRUCT \
+		}, \
+		.size = 0, \
+		.name = SCOPE "::struct::" #STRUCT, \
+	}; \
+	static struct mScriptTypeClass _mSTStructDetails_doc_ ## STRUCT = { \
+		.init = false, \
+		.details = (const struct mScriptClassInitDetails[]) {
+
 #define mSCRIPT_DEFINE_DOCSTRING(DOCSTRING) { \
 	.type = mSCRIPT_CLASS_INIT_DOCSTRING, \
 	.info = { \
@@ -212,6 +231,10 @@ CXX_GUARD_START
 	.info = { \
 		.parent = mSCRIPT_TYPE_MS_S(PARENT) \
 	} \
+},
+
+#define mSCRIPT_DEFINE_INTERNAL { \
+	.type = mSCRIPT_CLASS_INIT_INTERNAL \
 },
 
 #define _mSCRIPT_STRUCT_METHOD_POP(TYPE, S, NPARAMS, ...) \
@@ -336,8 +359,46 @@ CXX_GUARD_START
 #define mSCRIPT_DECLARE_STRUCT_VOID_CD_METHOD_WITH_DEFAULTS(TYPE, NAME, NPARAMS, ...) \
 	mSCRIPT_DECLARE_STRUCT_VOID_C_METHOD_WITH_DEFAULTS(TYPE, NAME, p0->NAME, NPARAMS, __VA_ARGS__)
 
+#define _mSCRIPT_DECLARE_DOC_STRUCT_METHOD(SCOPE, TYPE, NAME, S, NRET, RETURN, NPARAMS, DEFAULTS, ...) \
+	static const struct mScriptType _mSTStructBindingType_doc_ ## TYPE ## _ ## NAME = { \
+		.base = mSCRIPT_TYPE_FUNCTION, \
+		.name = SCOPE "::struct::" #TYPE "." #NAME, \
+		.details = { \
+			.function = { \
+				.parameters = { \
+					.count = _mSUCC_ ## NPARAMS, \
+					.entries = { mSCRIPT_TYPE_MS_DS(TYPE), _mCALL(mSCRIPT_PREFIX_ ## NPARAMS, mSCRIPT_TYPE_MS_, _mEVEN_ ## NPARAMS(__VA_ARGS__)) }, \
+					.names = { "this", _mCALL(_mCALL_ ## NPARAMS, _mSTRINGIFY, _mODD_ ## NPARAMS(__VA_ARGS__)) }, \
+					.defaults = DEFAULTS, \
+				}, \
+				.returnType = { \
+					.count = NRET, \
+					.entries = { RETURN } \
+				}, \
+			}, \
+		} \
+	};
+
+#define mSCRIPT_DECLARE_DOC_STRUCT_METHOD(SCOPE, TYPE, RETURN, NAME, NPARAMS, ...) \
+	_mSCRIPT_DECLARE_DOC_STRUCT_METHOD(SCOPE, TYPE, NAME, S, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS, NULL, __VA_ARGS__)
+
+#define mSCRIPT_DECLARE_DOC_STRUCT_VOID_METHOD(SCOPE, TYPE, NAME, NPARAMS, ...) \
+	_mSCRIPT_DECLARE_DOC_STRUCT_METHOD(SCOPE, TYPE, NAME, S, 0, 0, NPARAMS, NULL, __VA_ARGS__)
+
+#define mSCRIPT_DECLARE_DOC_STRUCT_METHOD_WITH_DEFAULTS(SCOPE, TYPE, RETURN, NAME, NPARAMS, ...) \
+	static const struct mScriptValue _mSTStructBindingDefaults_doc_ ## TYPE ## _ ## NAME[mSCRIPT_PARAMS_MAX]; \
+	_mSCRIPT_DECLARE_DOC_STRUCT_METHOD(SCOPE, TYPE, NAME, S, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS,  _mIDENT(_mSTStructBindingDefaults_doc_ ## TYPE ## _ ## NAME), __VA_ARGS__) \
+
+#define mSCRIPT_DECLARE_DOC_STRUCT_VOID_METHOD_WITH_DEFAULTS(SCOPE, TYPE, NAME, NPARAMS, ...) \
+	static const struct mScriptValue _mSTStructBindingDefaults_doc_ ## TYPE ## _ ## NAME[mSCRIPT_PARAMS_MAX]; \
+	_mSCRIPT_DECLARE_DOC_STRUCT_METHOD(SCOPE, TYPE, NAME, S, 0, 0, NPARAMS, _mIDENT(_mSTStructBindingDefaults_doc_ ## TYPE ## _ ## NAME), __VA_ARGS__) \
+
 #define mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(TYPE, NAME) \
 	static const struct mScriptValue _mSTStructBindingDefaults_ ## TYPE ## _ ## NAME[mSCRIPT_PARAMS_MAX] = { \
+		mSCRIPT_NO_DEFAULT,
+
+#define mSCRIPT_DEFINE_DOC_STRUCT_BINDING_DEFAULTS(SCOPE, TYPE, NAME) \
+	static const struct mScriptValue _mSTStructBindingDefaults_doc_ ## TYPE ## _ ## NAME[mSCRIPT_PARAMS_MAX] = { \
 		mSCRIPT_NO_DEFAULT,
 
 #define mSCRIPT_DEFINE_DEFAULTS_END }
@@ -363,6 +424,8 @@ CXX_GUARD_START
 #define mSCRIPT_DEFINE_STRUCT_DEINIT_NAMED(TYPE, NAME) _mSCRIPT_DEFINE_STRUCT_BINDING(DEINIT, TYPE, _deinit, NAME)
 #define mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(TYPE) _mSCRIPT_DEFINE_STRUCT_BINDING(GET, TYPE, _get, _get)
 #define mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(TYPE) _mSCRIPT_DEFINE_STRUCT_BINDING(SET, TYPE, _set, _set)
+
+#define mSCRIPT_DEFINE_DOC_STRUCT_METHOD(SCOPE, TYPE, NAME) mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(doc_ ## TYPE, NAME, NAME)
 
 #define mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(TYPE, CAST_TYPE, MEMBER) { \
 	.type = mSCRIPT_CLASS_INIT_CAST_TO_MEMBER, \
@@ -391,8 +454,8 @@ CXX_GUARD_START
 			.function = { \
 				.parameters = { \
 					.count = NPARAMS, \
-					.entries = { _mCALL(mSCRIPT_PREFIX_ ## NPARAMS, mSCRIPT_TYPE_MS_, _mEVEN_ ## NPARAMS(__VA_ARGS__)) }, \
-					.names = { _mCALL(_mCALL_ ## NPARAMS, _mSTRINGIFY, _mODD_ ## NPARAMS(__VA_ARGS__)) }, \
+					.entries = { _mCALL(_mIF0_ ## NPARAMS, 0) _mCALL(mSCRIPT_PREFIX_ ## NPARAMS, mSCRIPT_TYPE_MS_, _mEVEN_ ## NPARAMS(__VA_ARGS__)) }, \
+					.names = { _mCALL(_mIF0_ ## NPARAMS, 0) _mCALL(_mCALL_ ## NPARAMS, _mSTRINGIFY, _mODD_ ## NPARAMS(__VA_ARGS__)) }, \
 				}, \
 				.returnType = { \
 					.count = NRET, \
@@ -431,7 +494,40 @@ CXX_GUARD_START
 		_mSCRIPT_CALL_VOID(FUNCTION, NPARAMS); \
 		return true; \
 	} \
-	_mSCRIPT_BIND_FUNCTION(NAME, 0, , NPARAMS, __VA_ARGS__)
+	_mSCRIPT_BIND_FUNCTION(NAME, 0, 0, NPARAMS, __VA_ARGS__)
+
+#define _mSCRIPT_DEFINE_DOC_FUNCTION(SCOPE, NAME, NRET, RETURN, NPARAMS, ...) \
+	static const struct mScriptType _mScriptDocType_ ## NAME = { \
+		.base = mSCRIPT_TYPE_FUNCTION, \
+		.name = SCOPE "::function::" #NAME, \
+		.alloc = NULL, \
+		.details = { \
+			.function = { \
+				.parameters = { \
+					.count = NPARAMS, \
+					.entries = { _mCALL(_mIF0_ ## NPARAMS, 0) _mCALL(mSCRIPT_PREFIX_ ## NPARAMS, mSCRIPT_TYPE_MS_, _mEVEN_ ## NPARAMS(__VA_ARGS__)) }, \
+					.names = { _mCALL(_mIF0_ ## NPARAMS, 0) _mCALL(_mCALL_ ## NPARAMS, _mSTRINGIFY, _mODD_ ## NPARAMS(__VA_ARGS__)) }, \
+				}, \
+				.returnType = { \
+					.count = NRET, \
+					.entries = { RETURN } \
+				}, \
+			}, \
+		} \
+	}; \
+	const struct mScriptValue _mScriptDoc_ ## NAME = { \
+		.type = &_mScriptDocType_ ## NAME, \
+		.refs = mSCRIPT_VALUE_UNREF, \
+		.value = { \
+			.copaque = NULL \
+		} \
+	}
+
+#define mSCRIPT_DEFINE_DOC_FUNCTION(SCOPE, NAME, RETURN, NPARAMS, ...) \
+	_mSCRIPT_DEFINE_DOC_FUNCTION(SCOPE, NAME, 1, mSCRIPT_TYPE_MS_ ## RETURN, NPARAMS, __VA_ARGS__)
+
+#define mSCRIPT_DEFINE_DOC_VOID_FUNCTION(SCOPE, NAME, NPARAMS, ...) \
+	_mSCRIPT_DEFINE_DOC_FUNCTION(SCOPE, NAME, 0, 0, NPARAMS, __VA_ARGS__)
 
 #define mSCRIPT_MAKE(TYPE, VALUE) (struct mScriptValue) { \
 		.type = (mSCRIPT_TYPE_MS_ ## TYPE), \

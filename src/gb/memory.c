@@ -765,6 +765,24 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 		STORE_16LE(memory->mbcState.mbc7.sr, 0, &state->memory.mbc7.sr);
 		STORE_32LE(memory->mbcState.mbc7.writable, 0, &state->memory.mbc7.writable);
 		break;
+	case GB_TAMA5:
+		STORE_64LE(memory->rtcLastLatch, 0, &state->memory.tama5.lastLatch);
+		state->memory.tama5.reg = memory->mbcState.tama5.reg;
+		for (i = 0; i < 4; ++i) {
+			state->tama5Registers.registers[i] = memory->mbcState.tama5.registers[i * 2] & 0xF;
+			state->tama5Registers.registers[i] |= memory->mbcState.tama5.registers[i * 2 + 1] << 4;
+		}
+		for (i = 0; i < 8; ++i) {
+			state->tama5Registers.rtcTimerPage[i] = memory->mbcState.tama5.rtcTimerPage[i * 2] & 0xF;
+			state->tama5Registers.rtcTimerPage[i] |= memory->mbcState.tama5.rtcTimerPage[i * 2 + 1] << 4;
+			state->tama5Registers.rtcAlarmPage[i] = memory->mbcState.tama5.rtcAlarmPage[i * 2] & 0xF;
+			state->tama5Registers.rtcAlarmPage[i] |= memory->mbcState.tama5.rtcAlarmPage[i * 2 + 1] << 4;
+			state->tama5Registers.rtcFreePage0[i] = memory->mbcState.tama5.rtcFreePage0[i * 2] & 0xF;
+			state->tama5Registers.rtcFreePage0[i] |= memory->mbcState.tama5.rtcFreePage0[i * 2 + 1] << 4;
+			state->tama5Registers.rtcFreePage1[i] = memory->mbcState.tama5.rtcFreePage1[i * 2] & 0xF;
+			state->tama5Registers.rtcFreePage1[i] |= memory->mbcState.tama5.rtcFreePage1[i * 2 + 1] << 4;
+		}
+		break;
 	case GB_HuC3:
 		STORE_64LE(memory->rtcLastLatch, 0, &state->memory.huc3.lastLatch);
 		state->memory.huc3.index = memory->mbcState.huc3.index;
@@ -873,6 +891,24 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		memory->mbcState.mbc7.srBits = state->memory.mbc7.srBits;
 		LOAD_16LE(memory->mbcState.mbc7.sr, 0, &state->memory.mbc7.sr);
 		LOAD_32LE(memory->mbcState.mbc7.writable, 0, &state->memory.mbc7.writable);
+		break;
+	case GB_TAMA5:
+		LOAD_64LE(memory->rtcLastLatch, 0, &state->memory.tama5.lastLatch);
+		memory->mbcState.tama5.reg = state->memory.tama5.reg;
+		for (i = 0; i < 4; ++i) {
+			memory->mbcState.tama5.registers[i * 2] = state->tama5Registers.registers[i] & 0xF;
+			memory->mbcState.tama5.registers[i * 2 + 1] = state->tama5Registers.registers[i] >> 4;
+		}
+		for (i = 0; i < 8; ++i) {
+			memory->mbcState.tama5.rtcTimerPage[i * 2] = state->tama5Registers.rtcTimerPage[i] & 0xF;
+			memory->mbcState.tama5.rtcTimerPage[i * 2 + 1] = state->tama5Registers.rtcTimerPage[i] >> 4;
+			memory->mbcState.tama5.rtcAlarmPage[i * 2] = state->tama5Registers.rtcAlarmPage[i] & 0xF;
+			memory->mbcState.tama5.rtcAlarmPage[i * 2 + 1] = state->tama5Registers.rtcAlarmPage[i] >> 4;
+			memory->mbcState.tama5.rtcFreePage0[i * 2] = state->tama5Registers.rtcFreePage0[i] & 0xF;
+			memory->mbcState.tama5.rtcFreePage0[i * 2 + 1] = state->tama5Registers.rtcFreePage0[i] >> 4;
+			memory->mbcState.tama5.rtcFreePage1[i * 2] = state->tama5Registers.rtcFreePage1[i] & 0xF;
+			memory->mbcState.tama5.rtcFreePage1[i * 2 + 1] = state->tama5Registers.rtcFreePage1[i] >> 4;
+		}
 		break;
 	case GB_HuC3:
 		LOAD_64LE(memory->rtcLastLatch, 0, &state->memory.huc3.lastLatch);

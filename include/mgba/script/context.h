@@ -10,6 +10,7 @@
 
 CXX_GUARD_START
 
+#include <mgba/core/log.h>
 #include <mgba/script/types.h>
 #include <mgba-util/table.h>
 #include <mgba-util/vfs.h>
@@ -17,6 +18,8 @@ CXX_GUARD_START
 #define mSCRIPT_KV_PAIR(KEY, VALUE) { #KEY, VALUE }
 #define mSCRIPT_CONSTANT_PAIR(NS, CONST) { #CONST, mScriptValueCreateFromSInt(NS ## _ ## CONST) }
 #define mSCRIPT_KV_SENTINEL { NULL, NULL }
+
+mLOG_DECLARE_CATEGORY(SCRIPT);
 
 struct mScriptFrame;
 struct mScriptFunction;
@@ -46,16 +49,21 @@ struct mScriptEngine2 {
 
 struct mScriptEngineContext {
 	struct mScriptContext* context;
+	struct mScriptEngine2* engine;
+
 	void (*destroy)(struct mScriptEngineContext*);
 
 	bool (*isScript)(struct mScriptEngineContext*, const char* name, struct VFile* vf);
 
 	bool (*setGlobal)(struct mScriptEngineContext*, const char* name, struct mScriptValue*);
 	struct mScriptValue* (*getGlobal)(struct mScriptEngineContext*, const char* name);
+	struct mScriptValue* (*rootScope)(struct mScriptEngineContext*);
 
 	bool (*load)(struct mScriptEngineContext*, const char* filename, struct VFile*);
 	bool (*run)(struct mScriptEngineContext*);
 	const char* (*getError)(struct mScriptEngineContext*);
+
+	struct Table docroot;
 };
 
 struct mScriptKVPair {
@@ -83,6 +91,7 @@ struct mScriptValue* mScriptContextAccessWeakref(struct mScriptContext*, struct 
 void mScriptContextClearWeakref(struct mScriptContext*, uint32_t weakref);
 
 void mScriptContextAttachStdlib(struct mScriptContext* context);
+void mScriptContextAttachSocket(struct mScriptContext* context);
 void mScriptContextExportConstants(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* constants);
 void mScriptContextExportNamespace(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* value);
 
@@ -92,6 +101,10 @@ void mScriptContextRemoveCallback(struct mScriptContext*, uint32_t cbid);
 
 void mScriptContextSetDocstring(struct mScriptContext*, const char* key, const char* docstring);
 const char* mScriptContextGetDocstring(struct mScriptContext*, const char* key);
+
+void mScriptEngineExportDocNamespace(struct mScriptEngineContext*, const char* nspace, struct mScriptKVPair* value);
+void mScriptEngineSetDocstring(struct mScriptEngineContext*, const char* key, const char* docstring);
+const char* mScriptEngineGetDocstring(struct mScriptEngineContext*, const char* key);
 
 struct VFile;
 bool mScriptContextLoadVF(struct mScriptContext*, const char* name, struct VFile* vf);

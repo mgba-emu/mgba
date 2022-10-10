@@ -217,8 +217,7 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 
 	gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
 
-	gb->timing.reroot = gb->timing.root;
-	gb->timing.root = NULL;
+	mTimingInterrupt(&gb->timing);
 
 	return true;
 }
