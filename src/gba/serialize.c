@@ -211,8 +211,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		GBAMatrixDeserialize(gba, state);
 	}
 
-	gba->timing.reroot = gba->timing.root;
-	gba->timing.root = NULL;
+	mTimingInterrupt(&gba->timing);
 
 	return true;
 }

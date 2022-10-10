@@ -660,6 +660,8 @@ static void _GBCoreReset(struct mCore* core) {
 	if (core->opts.skipBios) {
 		GBSkipBIOS(core->board);
 	}
+
+	mTimingInterrupt(&gb->timing);
 }
 
 static void _GBCoreRunFrame(struct mCore* core) {
