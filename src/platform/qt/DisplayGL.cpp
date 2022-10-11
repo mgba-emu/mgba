@@ -83,6 +83,7 @@ void mGLWidget::initializeGL() {
 	m_positionLocation = m_program->attributeLocation("position");
 
 	m_vaoDone = false;
+	m_tex = 0;
 
 	connect(&m_refresh, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
 }
@@ -113,6 +114,10 @@ void mGLWidget::reset() {
 
 void mGLWidget::paintGL() {
 	if (!m_vaoDone && !finalizeVAO()) {
+		return;
+	}
+	if (!m_tex) {
+		m_refresh.start(10);
 		return;
 	}
 	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
@@ -520,7 +525,6 @@ void PainterGL::create() {
 
 			m_finalTexIdx = 0;
 			gl2Backend->finalShader.tex = m_finalTex[m_finalTexIdx];
-			m_widget->setTex(m_finalTex[m_finalTexIdx]);
 		}
 		m_shader.preprocessShader = static_cast<void*>(&reinterpret_cast<mGLES2Context*>(m_backend)->initialShader);
 	}
