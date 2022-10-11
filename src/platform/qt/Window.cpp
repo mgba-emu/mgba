@@ -1121,6 +1121,11 @@ void Window::changeRenderer() {
 			m_config->updateOption("videoScale");
 		}
 	} else {
+		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
+		if (proxy) {
+			proxy->detach(m_controller.get());
+			m_display->setVideoProxy({});
+		}
 		m_controller->setFramebufferHandle(-1);
 	}
 }
