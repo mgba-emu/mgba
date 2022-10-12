@@ -5840,368 +5840,368 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <translation>Échec de la création d&apos;un périphérique d&apos;affichage approprié, retour à l&apos;affichage du logiciel. Les jeux peuvent fonctionner lentement, en particulier avec des fenêtres plus grandes.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1129"/>
+        <location filename="../Window.cpp" line="1134"/>
         <source>Really make portable?</source>
         <translation>Vraiment rendre portable ?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1130"/>
+        <location filename="../Window.cpp" line="1135"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
         <translation>Cela amènera l&apos;émulateur à charger sa configuration depuis le même répertoire que l&apos;exécutable. Souhaitez vous continuer ?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1142"/>
+        <location filename="../Window.cpp" line="1147"/>
         <source>Restart needed</source>
         <translation>Un redémarrage est nécessaire</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1143"/>
+        <location filename="../Window.cpp" line="1148"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
         <translation>Certains changements ne prendront effet qu&apos;après le redémarrage de l&apos;émulateur.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1194"/>
+        <location filename="../Window.cpp" line="1199"/>
         <source> -  Player %1 of %2</source>
         <translation> -  Joueur %1 of %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1205"/>
+        <location filename="../Window.cpp" line="1210"/>
         <source>%1 - %2</source>
         <translation>%1 - %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1207"/>
+        <location filename="../Window.cpp" line="1212"/>
         <source>%1 - %2 - %3</source>
         <translation>%1 - %2 - %3</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1209"/>
+        <location filename="../Window.cpp" line="1214"/>
         <source>%1 - %2 (%3 fps) - %4</source>
         <translation>%1 - %2 (%3 fps) - %4</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1273"/>
+        <location filename="../Window.cpp" line="1278"/>
         <source>&amp;File</source>
         <translation>&amp;Fichier</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1275"/>
+        <location filename="../Window.cpp" line="1280"/>
         <source>Load &amp;ROM...</source>
         <translation>Charger une &amp;ROM…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1278"/>
+        <location filename="../Window.cpp" line="1283"/>
         <source>Load ROM in archive...</source>
         <translation>Charger la ROM d&apos;une archive…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1279"/>
+        <location filename="../Window.cpp" line="1284"/>
         <source>Add folder to library...</source>
         <translation>Ajouter un dossier à la bibliothèque…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1319"/>
+        <location filename="../Window.cpp" line="1324"/>
         <source>Load &amp;patch...</source>
         <translation>Charger un c&amp;orrectif…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1322"/>
+        <location filename="../Window.cpp" line="1327"/>
         <source>Boot BIOS</source>
         <translation>Démarrer le BIOS</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1416"/>
+        <location filename="../Window.cpp" line="1421"/>
         <source>Replace ROM...</source>
         <translation>Remplacer la ROM…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1676"/>
+        <location filename="../Window.cpp" line="1681"/>
         <source>Game state views</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1704"/>
+        <location filename="../Window.cpp" line="1709"/>
         <source>Convert e-Reader card image to raw...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1330"/>
+        <location filename="../Window.cpp" line="1335"/>
         <source>ROM &amp;info...</source>
         <translation>&amp;Infos sur la ROM…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1332"/>
+        <location filename="../Window.cpp" line="1337"/>
         <source>Recent</source>
         <translation>Récent</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1662"/>
+        <location filename="../Window.cpp" line="1667"/>
         <source>Make portable</source>
         <translation>Rendre portable</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1335"/>
+        <location filename="../Window.cpp" line="1340"/>
         <source>&amp;Load state</source>
         <translation>&amp;Charger un état</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1345"/>
+        <location filename="../Window.cpp" line="1350"/>
         <source>&amp;Save state</source>
         <translation>&amp;Sauvegarder un état</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1355"/>
+        <location filename="../Window.cpp" line="1360"/>
         <source>Quick load</source>
         <translation>Chargement rapide</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1356"/>
+        <location filename="../Window.cpp" line="1361"/>
         <source>Quick save</source>
         <translation>Sauvegarde rapide</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1358"/>
+        <location filename="../Window.cpp" line="1363"/>
         <source>Load recent</source>
         <translation>Charger un fichier récent</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1363"/>
+        <location filename="../Window.cpp" line="1368"/>
         <source>Save recent</source>
         <translation>Sauvegarder un fichier récent</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1371"/>
+        <location filename="../Window.cpp" line="1376"/>
         <source>Undo load state</source>
         <translation>Annuler le chargement de l&apos;état</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1374"/>
+        <location filename="../Window.cpp" line="1379"/>
         <source>Undo save state</source>
         <translation>Annuler la sauvegarde de l&apos;état</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1381"/>
         <location filename="../Window.cpp" line="1386"/>
+        <location filename="../Window.cpp" line="1391"/>
         <source>State &amp;%1</source>
         <translation>État &amp;%1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1493"/>
+        <location filename="../Window.cpp" line="1498"/>
         <source>Load camera image...</source>
         <translation>Charger une image de la caméra…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1292"/>
+        <location filename="../Window.cpp" line="1297"/>
         <source>Convert save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1393"/>
+        <location filename="../Window.cpp" line="1398"/>
         <source>New multiplayer window</source>
         <translation>Nouvelle fenêtre multijoueur</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1396"/>
+        <location filename="../Window.cpp" line="1401"/>
         <source>Connect to Dolphin...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1402"/>
+        <location filename="../Window.cpp" line="1407"/>
         <source>Report bug...</source>
         <translation>Signalement de l&apos;erreur…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1409"/>
+        <location filename="../Window.cpp" line="1414"/>
         <source>E&amp;xit</source>
         <translation>&amp;Quitter</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1411"/>
+        <location filename="../Window.cpp" line="1416"/>
         <source>&amp;Emulation</source>
         <translation>&amp;Émulation</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1412"/>
+        <location filename="../Window.cpp" line="1417"/>
         <source>&amp;Reset</source>
         <translation>&amp;Réinitialiser</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1413"/>
+        <location filename="../Window.cpp" line="1418"/>
         <source>Sh&amp;utdown</source>
         <translation>Extin&amp;ction</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1417"/>
+        <location filename="../Window.cpp" line="1422"/>
         <source>Yank game pak</source>
         <translation>Yank game pak</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1420"/>
+        <location filename="../Window.cpp" line="1425"/>
         <source>&amp;Pause</source>
         <translation>&amp;Pause</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1429"/>
+        <location filename="../Window.cpp" line="1434"/>
         <source>&amp;Next frame</source>
         <translation>&amp;Image suivante</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1433"/>
+        <location filename="../Window.cpp" line="1438"/>
         <source>Fast forward (held)</source>
         <translation>Avance rapide (maintenir)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1439"/>
+        <location filename="../Window.cpp" line="1444"/>
         <source>&amp;Fast forward</source>
         <translation>A&amp;vance rapide</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1443"/>
+        <location filename="../Window.cpp" line="1448"/>
         <source>Fast forward speed</source>
         <translation>Vitesse de l&apos;avance rapide</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1448"/>
+        <location filename="../Window.cpp" line="1453"/>
         <source>Unbounded</source>
         <translation>Sans limites</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1452"/>
+        <location filename="../Window.cpp" line="1457"/>
         <source>%0x</source>
         <translation>%0x</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1456"/>
+        <location filename="../Window.cpp" line="1461"/>
         <source>Rewind (held)</source>
         <translation>Rembobiner (maintenir)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1463"/>
+        <location filename="../Window.cpp" line="1468"/>
         <source>Re&amp;wind</source>
         <translation>Rem&amp;bobiner</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1468"/>
+        <location filename="../Window.cpp" line="1473"/>
         <source>Step backwards</source>
         <translation>Retour en arrière</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1475"/>
+        <location filename="../Window.cpp" line="1480"/>
         <source>Solar sensor</source>
         <translation>Capteur solaire</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1476"/>
+        <location filename="../Window.cpp" line="1481"/>
         <source>Increase solar level</source>
         <translation>Augmenter le niveau solaire</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1477"/>
+        <location filename="../Window.cpp" line="1482"/>
         <source>Decrease solar level</source>
         <translation>Diminuer le niveau solaire</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1478"/>
+        <location filename="../Window.cpp" line="1483"/>
         <source>Brightest solar level</source>
         <translation>Tester le niveau solaire</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1481"/>
+        <location filename="../Window.cpp" line="1486"/>
         <source>Darkest solar level</source>
         <translation>Assombrir le niveau solaire</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1487"/>
+        <location filename="../Window.cpp" line="1492"/>
         <source>Brightness %1</source>
         <translation>Luminosité %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1508"/>
+        <location filename="../Window.cpp" line="1513"/>
         <source>Audio/&amp;Video</source>
         <translation>Audio/&amp;Vidéo</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1509"/>
+        <location filename="../Window.cpp" line="1514"/>
         <source>Frame size</source>
         <translation>Taille de l&apos;image</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1536"/>
+        <location filename="../Window.cpp" line="1541"/>
         <source>Toggle fullscreen</source>
         <translation>Basculer en plein écran</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1539"/>
+        <location filename="../Window.cpp" line="1544"/>
         <source>Lock aspect ratio</source>
         <translation>Bloquer les proportions</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1551"/>
+        <location filename="../Window.cpp" line="1556"/>
         <source>Force integer scaling</source>
         <translation>Forcer la mise à l&apos;échelle par des nombres entiers</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1572"/>
+        <location filename="../Window.cpp" line="1577"/>
         <source>Bilinear filtering</source>
         <translation>Filtrage bilinèaire</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1580"/>
+        <location filename="../Window.cpp" line="1585"/>
         <source>Frame&amp;skip</source>
         <translation>&amp;Saut d&apos;image</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1593"/>
+        <location filename="../Window.cpp" line="1598"/>
         <source>Mute</source>
         <translation>Muet</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1599"/>
+        <location filename="../Window.cpp" line="1604"/>
         <source>FPS target</source>
         <translation>FPS ciblé</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1622"/>
+        <location filename="../Window.cpp" line="1627"/>
         <source>Take &amp;screenshot</source>
         <translation>Prendre une ca&amp;pture d&apos;écran</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1624"/>
+        <location filename="../Window.cpp" line="1629"/>
         <source>F12</source>
         <translation>F12</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1495"/>
+        <location filename="../Window.cpp" line="1500"/>
         <source>Game Boy Printer...</source>
         <translation>Imprimante GameBoy…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1633"/>
+        <location filename="../Window.cpp" line="1638"/>
         <source>Video layers</source>
         <translation>Couches vidéo</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1634"/>
+        <location filename="../Window.cpp" line="1639"/>
         <source>Audio channels</source>
         <translation>Canaux audio</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1636"/>
+        <location filename="../Window.cpp" line="1641"/>
         <source>Adjust layer placement...</source>
         <translation>Ajuster la disposition…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1638"/>
+        <location filename="../Window.cpp" line="1643"/>
         <source>&amp;Tools</source>
         <translation>Ou&amp;tils</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1639"/>
+        <location filename="../Window.cpp" line="1644"/>
         <source>View &amp;logs...</source>
         <translation>Voir les &amp;journaux…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1641"/>
+        <location filename="../Window.cpp" line="1646"/>
         <source>Game &amp;overrides...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6242,247 +6242,247 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <translation>Impossible de démarrer le jeu.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1283"/>
+        <location filename="../Window.cpp" line="1288"/>
         <source>Load alternate save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1286"/>
+        <location filename="../Window.cpp" line="1291"/>
         <source>Load temporary save game...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1326"/>
+        <location filename="../Window.cpp" line="1331"/>
         <source>Scan e-Reader dotcodes...</source>
         <translation>Scanner les dotcodes e-Reader...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1340"/>
+        <location filename="../Window.cpp" line="1345"/>
         <source>Load state file...</source>
         <translation>Charger le fichier d&apos;état...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1350"/>
+        <location filename="../Window.cpp" line="1355"/>
         <source>Save state file...</source>
         <translation>Enregistrer le fichier d&apos;état...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1295"/>
+        <location filename="../Window.cpp" line="1300"/>
         <source>Import GameShark Save...</source>
         <translation>Importer la sauvegarde de GameShark...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1154"/>
+        <location filename="../Window.cpp" line="1159"/>
         <source>Reset needed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1155"/>
+        <location filename="../Window.cpp" line="1160"/>
         <source>Some changes will not take effect until the game is reset.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1282"/>
+        <location filename="../Window.cpp" line="1287"/>
         <source>Save games</source>
         <translation type="unfinished">Sauvegarder les jeux</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1298"/>
+        <location filename="../Window.cpp" line="1303"/>
         <source>Export GameShark Save...</source>
         <translation>Exporter la sauvegarde de GameShark...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1305"/>
+        <location filename="../Window.cpp" line="1310"/>
         <source>Automatically determine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1309"/>
+        <location filename="../Window.cpp" line="1314"/>
         <source>Use player %0 save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1408"/>
+        <location filename="../Window.cpp" line="1413"/>
         <source>About...</source>
         <translation>À propos de…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1504"/>
+        <location filename="../Window.cpp" line="1509"/>
         <source>BattleChip Gate...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1511"/>
+        <location filename="../Window.cpp" line="1516"/>
         <source>%1×</source>
         <translation>%1×</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1563"/>
+        <location filename="../Window.cpp" line="1568"/>
         <source>Interframe blending</source>
         <translation>Mélange d&apos;images</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1607"/>
+        <location filename="../Window.cpp" line="1612"/>
         <source>Native (59.7275)</source>
         <translation>Natif (59.7275)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1628"/>
+        <location filename="../Window.cpp" line="1633"/>
         <source>Record A/V...</source>
         <translation>Enregistrer A/V...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1629"/>
+        <location filename="../Window.cpp" line="1634"/>
         <source>Record GIF/WebP/APNG...</source>
         <translation>Enregistrer GIF/WebP/APNG...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1653"/>
+        <location filename="../Window.cpp" line="1658"/>
         <source>Game Pak sensors...</source>
         <translation>Capteurs de la Game Pak...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1655"/>
+        <location filename="../Window.cpp" line="1660"/>
         <source>&amp;Cheats...</source>
         <translation>&amp;Cheats…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1661"/>
+        <location filename="../Window.cpp" line="1666"/>
         <source>Settings...</source>
         <translation>Paramètres…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1666"/>
+        <location filename="../Window.cpp" line="1671"/>
         <source>Open debugger console...</source>
         <translation>Ouvrir la console de débug…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1668"/>
+        <location filename="../Window.cpp" line="1673"/>
         <source>Start &amp;GDB server...</source>
         <translation>Démarrer le serveur &amp;GDB…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1657"/>
+        <location filename="../Window.cpp" line="1662"/>
         <source>Scripting...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1677"/>
+        <location filename="../Window.cpp" line="1682"/>
         <source>View &amp;palette...</source>
         <translation>Voir la &amp;palette…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1678"/>
+        <location filename="../Window.cpp" line="1683"/>
         <source>View &amp;sprites...</source>
         <translation>Voir les &amp;sprites…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1679"/>
+        <location filename="../Window.cpp" line="1684"/>
         <source>View &amp;tiles...</source>
         <translation>Voir les &amp;tiles…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1680"/>
+        <location filename="../Window.cpp" line="1685"/>
         <source>View &amp;map...</source>
         <translation>Voir la &amp;map…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1682"/>
+        <location filename="../Window.cpp" line="1687"/>
         <source>&amp;Frame inspector...</source>
         <translation>Inspecteur de &amp;frame...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1698"/>
+        <location filename="../Window.cpp" line="1703"/>
         <source>View memory...</source>
         <translation>Voir la mémoire…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1699"/>
+        <location filename="../Window.cpp" line="1704"/>
         <source>Search memory...</source>
         <translation>Recherche dans la mémoire…</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1700"/>
+        <location filename="../Window.cpp" line="1705"/>
         <source>View &amp;I/O registers...</source>
         <translation>Voir les registres d&apos;&amp;E/S...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1708"/>
+        <location filename="../Window.cpp" line="1713"/>
         <source>Record debug video log...</source>
         <translation>Enregistrer le journal vidéo de débogage...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1709"/>
+        <location filename="../Window.cpp" line="1714"/>
         <source>Stop debug video log</source>
         <translation>Arrêter le journal vidéo de débogage</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1713"/>
+        <location filename="../Window.cpp" line="1718"/>
         <source>Exit fullscreen</source>
         <translation>Quitter le plein écran</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1715"/>
+        <location filename="../Window.cpp" line="1720"/>
         <source>GameShark Button (held)</source>
         <translation>Bouton GameShark (maintenir)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1721"/>
+        <location filename="../Window.cpp" line="1726"/>
         <source>Autofire</source>
         <translation>Tir automatique</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1722"/>
+        <location filename="../Window.cpp" line="1727"/>
         <source>Autofire A</source>
         <translation>Tir automatique A</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1727"/>
+        <location filename="../Window.cpp" line="1732"/>
         <source>Autofire B</source>
         <translation>Tir automatique B</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1732"/>
+        <location filename="../Window.cpp" line="1737"/>
         <source>Autofire L</source>
         <translation>Tir automatique L</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1737"/>
+        <location filename="../Window.cpp" line="1742"/>
         <source>Autofire R</source>
         <translation>Tir automatique R</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1742"/>
+        <location filename="../Window.cpp" line="1747"/>
         <source>Autofire Start</source>
         <translation>Tir automatique Start</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1747"/>
+        <location filename="../Window.cpp" line="1752"/>
         <source>Autofire Select</source>
         <translation>Tir automatique Select</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1752"/>
+        <location filename="../Window.cpp" line="1757"/>
         <source>Autofire Up</source>
         <translation>Tir automatique Up</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1757"/>
+        <location filename="../Window.cpp" line="1762"/>
         <source>Autofire Right</source>
         <translation>Tir automatique Right</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1762"/>
+        <location filename="../Window.cpp" line="1767"/>
         <source>Autofire Down</source>
         <translation>Tir automatique Down</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1767"/>
+        <location filename="../Window.cpp" line="1772"/>
         <source>Autofire Left</source>
         <translation>Tir automatique Gauche</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1943"/>
+        <location filename="../Window.cpp" line="1948"/>
         <source>Clear</source>
         <translation>Vider</translation>
     </message>
