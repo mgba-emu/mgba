@@ -119,11 +119,11 @@ int main(int argc, char* argv[]) {
 
 	mCoreConfigInit(&config, "updater");
 	if (!mCoreConfigLoad(&config)) {
-		fputs("Failed to load config", logfile);
+		fputs("Failed to load config\n", logfile);
 	} else if (!mUpdateGetArchivePath(&config, updateArchive, sizeof(updateArchive)) || !(root = mUpdateGetRoot(&config))) {
-		fputs("No pending update found", logfile);
+		fputs("No pending update found\n", logfile);
 	} else if (access(root, W_OK)) {
-		fputs("Cannot write to update path", logfile);
+		fputs("Cannot write to update path\n", logfile);
 	} else {
 #ifdef __APPLE__
 		char subdir[PATH_MAX];
@@ -166,7 +166,6 @@ int main(int argc, char* argv[]) {
 					}
 					off_t diff = devend - devinfo - 1;
 					memcpy(devpath, &devinfo[1], diff);
-					fputs(devpath, logfile);
 					break;
 				}
 				int retstat;
@@ -183,11 +182,11 @@ int main(int argc, char* argv[]) {
 			archive = VDirOpenArchive(updateArchive);
 		}
 		if (archive) {
-			fputs("Extracting update", logfile);
+			fputs("Extracting update\n", logfile);
 			if (extractArchive(archive, root, prefix)) {
 				ok = 0;
 			} else {
-				fputs("An error occurred", logfile);
+				fputs("An error occurred\n", logfile);
 			}
 			archive->close(archive);
 			unlink(updateArchive);
@@ -224,10 +223,10 @@ int main(int argc, char* argv[]) {
 						close(infd);
 					}
 					if (ok == 2) {
-						fputs("Cannot move update over old file", logfile);
+						fputs("Cannot move update over old file\n", logfile);
 					}
 				} else {
-					fputs("Cannot move update over old file", logfile);
+					fputs("Cannot move update over old file\n", logfile);
 				}
 			} else {
 				ok = 0;
@@ -238,7 +237,7 @@ int main(int argc, char* argv[]) {
 		}
 #endif
 		else {
-			fputs("Cannot open update archive", logfile);
+			fputs("Cannot open update archive\n", logfile);
 		}
 		if (ok == 0) {
 			fputs("Complete", logfile);
