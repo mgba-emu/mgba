@@ -50,6 +50,8 @@ class mGLWidget : public QOpenGLWidget {
 Q_OBJECT
 
 public:
+	mGLWidget(QWidget* parent = nullptr);
+
 	void setTex(GLuint tex) { m_tex = tex; }
 	void setVBO(GLuint vbo) { m_vbo = vbo; }
 	bool finalizeVAO();

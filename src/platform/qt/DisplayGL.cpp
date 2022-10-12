@@ -55,6 +55,14 @@ uint qHash(const QSurfaceFormat& format, uint seed) {
 	return qHash(representation, seed);
 }
 
+mGLWidget::mGLWidget(QWidget* parent)
+	: QOpenGLWidget(parent)
+{
+	setUpdateBehavior(QOpenGLWidget::PartialUpdate);
+
+	connect(&m_refresh, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
+}
+
 void mGLWidget::initializeGL() {
 	m_vao = std::make_unique<QOpenGLVertexArrayObject>();
 	m_vao->create();
@@ -84,8 +92,6 @@ void mGLWidget::initializeGL() {
 
 	m_vaoDone = false;
 	m_tex = 0;
-
-	connect(&m_refresh, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
 }
 
 bool mGLWidget::finalizeVAO() {
