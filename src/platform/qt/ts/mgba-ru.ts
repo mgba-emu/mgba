@@ -651,7 +651,7 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="68"/>
         <source>Internal change detection</source>
-        <translation type="unfinished"></translation>
+        <translation>Обнаружение внутренних изменений</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="72"/>
@@ -753,42 +753,42 @@ Download size: %3</source>
         <location filename="../GameBoy.cpp" line="55"/>
         <location filename="../GameBoy.cpp" line="74"/>
         <source>Autodetect</source>
-        <translation type="unfinished">Автоопределение</translation>
+        <translation>Автоопределение</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="56"/>
         <source>Game Boy (DMG)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy (DMG)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="57"/>
         <source>Game Boy Pocket (MGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Pocket (MGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="58"/>
         <source>Super Game Boy (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="59"/>
         <source>Super Game Boy 2 (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy 2 (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="60"/>
         <source>Game Boy Color (CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Color (CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="61"/>
         <source>Game Boy Advance (AGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance (AGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="62"/>
         <source>Super Game Boy Color (SGB + CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy Color (SGB + CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="75"/>
@@ -798,52 +798,52 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="76"/>
         <source>MBC1</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="77"/>
         <source>MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="78"/>
         <source>MBC3</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="79"/>
         <source>MBC3 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="80"/>
         <source>MBC5</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC5</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
         <source>MBC5 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">MBC5 + Rumble</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="82"/>
         <source>MBC6</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="83"/>
         <source>MBC7 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">MBC7 (Tilt)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="84"/>
         <source>MMM01</source>
-        <translation type="unfinished"></translation>
+        <translation>MMM01</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="85"/>
         <source>HuC-1</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
@@ -2125,7 +2125,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1059"/>
         <location filename="../IOViewer.cpp" line="1063"/>
         <source>Value</source>
-        <translation type="unfinished">Значение</translation>
+        <translation>Значение</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="778"/>
@@ -2142,7 +2142,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="827"/>
         <location filename="../IOViewer.cpp" line="1070"/>
         <source>1/64</source>
-        <translation type="unfinished">1/64</translation>
+        <translation>1/64</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="781"/>
@@ -2151,7 +2151,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="828"/>
         <location filename="../IOViewer.cpp" line="1071"/>
         <source>1/256</source>
-        <translation type="unfinished">1/256</translation>
+        <translation>1/256</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="782"/>
@@ -2160,7 +2160,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="829"/>
         <location filename="../IOViewer.cpp" line="1068"/>
         <source>1/1024</source>
-        <translation type="unfinished">1/1024</translation>
+        <translation>1/1024</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="799"/>
@@ -2479,7 +2479,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/16</source>
-        <translation type="unfinished">1/16</translation>
+        <translation>1/16</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1092"/>
@@ -2590,7 +2590,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1346"/>
         <source>Mode</source>
-        <translation type="unfinished">Режим</translation>
+        <translation>Режим</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1347"/>
@@ -2926,12 +2926,12 @@ Download size: %3</source>
     <message>
         <location filename="../LogConfigModel.cpp" line="92"/>
         <source>Fatal</source>
-        <translation type="unfinished">Фатальная ошибка</translation>
+        <translation>Фатальная ошибка</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="94"/>
         <source>Error</source>
-        <translation type="unfinished">Ошибка</translation>
+        <translation>Ошибка</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="96"/>
@@ -2956,7 +2956,7 @@ Download size: %3</source>
     <message>
         <location filename="../LogConfigModel.cpp" line="104"/>
         <source>Game Error</source>
-        <translation type="unfinished">Ошибка игры</translation>
+        <translation>Ошибка игры</translation>
     </message>
 </context>
 <context>
@@ -3123,7 +3123,7 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="53"/>
         <source>Xform</source>
-        <translation type="unfinished"></translation>
+        <translation>Xform</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="108"/>
@@ -3657,7 +3657,7 @@ Download size: %3</source>
         <location filename="../ObjView.cpp" line="160"/>
         <location filename="../ObjView.cpp" line="249"/>
         <source>0x%0</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="182"/>
@@ -3669,7 +3669,7 @@ Download size: %3</source>
         <location filename="../ObjView.cpp" line="259"/>
         <location filename="../ObjView.cpp" line="260"/>
         <source>---</source>
-        <translation type="unfinished"></translation>
+        <translation>---</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="193"/>
@@ -3679,7 +3679,7 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.cpp" line="196"/>
         <source>OBJWIN</source>
-        <translation type="unfinished"></translation>
+        <translation>OBJWIN</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="199"/>
@@ -3919,12 +3919,12 @@ Download size: %3</source>
     <message>
         <location filename="../PaletteView.cpp" line="120"/>
         <source>#%0</source>
-        <translation type="unfinished"></translation>
+        <translation>#%0</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="121"/>
         <source>0x%0</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="122"/>
@@ -3932,7 +3932,7 @@ Download size: %3</source>
         <location filename="../PaletteView.cpp" line="124"/>
         <location filename="../PaletteView.cpp" line="125"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished">0x%0 (%1)</translation>
+        <translation>0x%0 (%1)</translation>
     </message>
     <message>
         <location filename="../PaletteView.cpp" line="137"/>
@@ -4064,7 +4064,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="97"/>
         <source>CRC32:</source>
-        <translation type="unfinished">CRC32:</translation>
+        <translation>CRC32:</translation>
     </message>
 </context>
 <context>
@@ -4097,7 +4097,7 @@ Download size: %3</source>
     <message>
         <location filename="../ReportView.ui" line="99"/>
         <source>Save</source>
-        <translation type="unfinished">Сохранить</translation>
+        <translation>Сохранить</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="113"/>
@@ -4216,7 +4216,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="468"/>
         <source>SRAM</source>
-        <translation type="unfinished">SRAM</translation>
+        <translation>SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="472"/>
@@ -4332,7 +4332,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="119"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="60"/>
@@ -4441,12 +4441,12 @@ Download size: %3</source>
         <location filename="../SettingsView.cpp" line="147"/>
         <location filename="../SettingsView.cpp" line="222"/>
         <source>Qt Multimedia</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt Multimedia</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="154"/>
         <source>SDL</source>
-        <translation type="unfinished"></translation>
+        <translation>SDL</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="162"/>
@@ -4457,7 +4457,7 @@ Download size: %3</source>
         <location filename="../SettingsView.ui" line="1240"/>
         <location filename="../SettingsView.cpp" line="168"/>
         <source>OpenGL</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenGL</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="175"/>
@@ -4508,7 +4508,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="827"/>
         <source>(%1×%2)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">(%1×%2)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="845"/>
@@ -4596,7 +4596,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="90"/>
         <source>Game Boy</source>
-        <translation type="unfinished">Game Boy</translation>
+        <translation>Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="111"/>
@@ -5144,7 +5144,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1299"/>
         <source>(240×160)</source>
-        <translation type="unfinished"></translation>
+        <translation>(240×160)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1248"/>
@@ -5518,7 +5518,7 @@ Download size: %3</source>
         <location filename="../VideoView.ui" line="129"/>
         <location filename="../VideoView.ui" line="255"/>
         <source>WebM</source>
-        <translation type="unfinished"></translation>
+        <translation>WebM</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="146"/>
@@ -5528,17 +5528,17 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="174"/>
         <source>&amp;1080p</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;1080p</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="184"/>
         <source>&amp;720p</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;720p</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="194"/>
         <source>&amp;480p</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;480p</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="207"/>
@@ -5553,18 +5553,18 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="250"/>
         <source>MKV</source>
-        <translation type="unfinished"></translation>
+        <translation>MKV</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="260"/>
         <source>AVI</source>
-        <translation type="unfinished"></translation>
+        <translation>AVI</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="139"/>
         <location filename="../VideoView.ui" line="265"/>
         <source>MP4</source>
-        <translation type="unfinished"></translation>
+        <translation>MP4</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="167"/>
@@ -5574,27 +5574,27 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="287"/>
         <source>HEVC</source>
-        <translation type="unfinished"></translation>
+        <translation>HEVC</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="292"/>
         <source>HEVC (NVENC)</source>
-        <translation type="unfinished"></translation>
+        <translation>HEVC (NVENC)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="297"/>
         <source>VP8</source>
-        <translation type="unfinished"></translation>
+        <translation>VP8</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="302"/>
         <source>VP9</source>
-        <translation type="unfinished"></translation>
+        <translation>VP9</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="307"/>
         <source>FFV1</source>
-        <translation type="unfinished"></translation>
+        <translation>FFV1</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="312"/>
@@ -5605,17 +5605,17 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="324"/>
         <source>FLAC</source>
-        <translation type="unfinished"></translation>
+        <translation>FLAC</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="329"/>
         <source>WavPack</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">WavPack</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="334"/>
         <source>Opus</source>
-        <translation type="unfinished"></translation>
+        <translation>Opus</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="339"/>
@@ -5840,12 +5840,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1205"/>
         <source>%1 - %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1207"/>
         <source>%1 - %2 - %3</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2 - %3</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1209"/>
@@ -6147,7 +6147,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1452"/>
         <source>%0x</source>
-        <translation type="unfinished">%0x</translation>
+        <translation>%0x</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1456"/>
@@ -6217,7 +6217,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1511"/>
         <source>%1×</source>
-        <translation type="unfinished">%1×</translation>
+        <translation>%1×</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1536"/>
@@ -6272,7 +6272,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1624"/>
         <source>F12</source>
-        <translation type="unfinished"></translation>
+        <translation>F12</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1628"/>
@@ -6467,7 +6467,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1943"/>
         <source>Clear</source>
-        <translation type="unfinished">Очистить</translation>
+        <translation>Очистить</translation>
     </message>
 </context>
 <context>
@@ -6490,17 +6490,17 @@ Download size: %3</source>
     <message>
         <location filename="../utils.cpp" line="30"/>
         <source>GBA</source>
-        <translation type="unfinished"></translation>
+        <translation>GBA</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="34"/>
         <source>GB</source>
-        <translation type="unfinished"></translation>
+        <translation>GB</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="37"/>
         <source>?</source>
-        <translation type="unfinished"></translation>
+        <translation>?</translation>
     </message>
 </context>
 <context>
