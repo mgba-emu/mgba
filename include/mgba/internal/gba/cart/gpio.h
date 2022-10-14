@@ -42,7 +42,7 @@ enum GPIODirection {
 	GPIO_READ_WRITE = 1
 };
 
-DECL_BITFIELD(RTCControl, uint32_t);
+DECL_BITFIELD(RTCControl, uint8_t);
 DECL_BIT(RTCControl, MinIRQ, 3);
 DECL_BIT(RTCControl, Hour24, 6);
 DECL_BIT(RTCControl, Poweroff, 7);
@@ -69,6 +69,8 @@ struct GBARTC {
 	RTCCommandData command;
 	RTCControl control;
 	uint8_t time[7];
+	time_t lastLatch;
+	time_t offset;
 };
 
 DECL_BITFIELD(GPIOPin, uint16_t);

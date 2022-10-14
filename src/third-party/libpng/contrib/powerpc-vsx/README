@@ -46,7 +46,7 @@ everything should be static.  It must define the function:
 
 static int png_have_vsx(png_structp png_ptr);
 
-That function must return 1 if ARM NEON instructions are supported, 0 if not.
+That function must return 1 if POWERPC_VSX instructions are supported, 0 if not.
 It must not execute png_error unless it detects a bug.  A png_error will prevent
 the reading of the PNG and in the future, writing too.
 

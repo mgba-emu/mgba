@@ -108,7 +108,7 @@ int validation_ascii_to_fp(int count, int argc, char **argv)
 
    do
    {
-      png_size_t index;
+      size_t index;
       int state, failed = 0;
       char buffer[64];
 
@@ -176,7 +176,7 @@ int validation_ascii_to_fp(int count, int argc, char **argv)
       }
       else if (PNG_FP_IS_POSITIVE(state) && !(test > 0))
       {
-         fprintf(stderr, "%g[%d] -> '%s' but postive value not so reported\n",
+         fprintf(stderr, "%g[%d] -> '%s' but positive value not so reported\n",
             test, precision, buffer);
          failed = 1;
          assert(!PNG_FP_IS_NEGATIVE(state));
@@ -329,10 +329,10 @@ static int check_one_character(checkfp_command *co, checkfp_control c, int ch)
 {
    /* Test this character (ch) to ensure the parser does the correct thing.
     */
-   png_size_t index = 0;
+   size_t index = 0;
    const char test = (char)ch;
-   const int number_is_valid = png_check_fp_number(&test, 1, &c.state, &index);
-   const int character_accepted = (index == 1);
+   int number_is_valid = png_check_fp_number(&test, 1, &c.state, &index);
+   int character_accepted = (index == 1);
 
    if (c.check_state != exponent && isdigit(ch) && ch != '0')
       c.is_zero = 0;

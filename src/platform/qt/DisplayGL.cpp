@@ -55,6 +55,14 @@ uint qHash(const QSurfaceFormat& format, uint seed) {
 	return qHash(representation, seed);
 }
 
+mGLWidget::mGLWidget(QWidget* parent)
+	: QOpenGLWidget(parent)
+{
+	setUpdateBehavior(QOpenGLWidget::PartialUpdate);
+
+	connect(&m_refresh, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
+}
+
 void mGLWidget::initializeGL() {
 	m_vao = std::make_unique<QOpenGLVertexArrayObject>();
 	m_vao->create();
@@ -83,8 +91,7 @@ void mGLWidget::initializeGL() {
 	m_positionLocation = m_program->attributeLocation("position");
 
 	m_vaoDone = false;
-
-	connect(&m_refresh, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
+	m_tex = 0;
 }
 
 bool mGLWidget::finalizeVAO() {
@@ -113,6 +120,10 @@ void mGLWidget::reset() {
 
 void mGLWidget::paintGL() {
 	if (!m_vaoDone && !finalizeVAO()) {
+		return;
+	}
+	if (!m_tex) {
+		m_refresh.start(10);
 		return;
 	}
 	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
@@ -218,7 +229,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	CoreController::Interrupter interrupter(controller);
 	QMetaObject::invokeMethod(m_painter.get(), "start");
 	if (!m_gl) {
-		if (QGuiApplication::platformName() == "windows") {
+		if (shouldDisableUpdates()) {
 			setUpdatesEnabled(false);
 		}
 	} else {
@@ -298,7 +309,9 @@ void DisplayGL::pauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = false;
 		QMetaObject::invokeMethod(m_painter.get(), "pause", Qt::BlockingQueuedConnection);
-		setUpdatesEnabled(true);
+		if (!shouldDisableUpdates()) {
+			setUpdatesEnabled(true);
+		}
 	}
 }
 
@@ -306,7 +319,7 @@ void DisplayGL::unpauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = true;
 		QMetaObject::invokeMethod(m_painter.get(), "unpause", Qt::BlockingQueuedConnection);
-		if (!m_gl && QGuiApplication::platformName() == "windows") {
+		if (!m_gl && shouldDisableUpdates()) {
 			setUpdatesEnabled(false);
 		}
 	}
@@ -383,6 +396,16 @@ void DisplayGL::resizePainter() {
 	if (m_hasStarted) {
 		QMetaObject::invokeMethod(m_painter.get(), "resize", Qt::BlockingQueuedConnection, Q_ARG(QSize, size()));
 	}
+}
+
+bool DisplayGL::shouldDisableUpdates() {
+	if (QGuiApplication::platformName() == "windows") {
+		return true;
+	}
+	if (QGuiApplication::platformName() == "xcb") {
+		return true;
+	}
+	return false;
 }
 
 void DisplayGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
@@ -508,7 +531,6 @@ void PainterGL::create() {
 
 			m_finalTexIdx = 0;
 			gl2Backend->finalShader.tex = m_finalTex[m_finalTexIdx];
-			m_widget->setTex(m_finalTex[m_finalTexIdx]);
 		}
 		m_shader.preprocessShader = static_cast<void*>(&reinterpret_cast<mGLES2Context*>(m_backend)->initialShader);
 	}

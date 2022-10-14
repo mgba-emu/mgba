@@ -102,7 +102,7 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 				int32_t value;
 				int segment;
 				if (!mDebuggerEvaluateParseTree(debugger->d.p, watchpoint->condition, &value, &segment) || !(value || segment >= 0)) {
-					return false;
+					continue;
 				}
 			}
 

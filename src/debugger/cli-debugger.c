@@ -326,16 +326,24 @@ static void _printHelp(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 		debugger->backend->printf(debugger->backend, "Generic commands:\n");
 		_printCommands(debugger, _debuggerCommands, _debuggerCommandAliases);
 		if (debugger->system) {
-			debugger->backend->printf(debugger->backend, "\n%s commands:\n", debugger->system->platformName);
-			_printCommands(debugger, debugger->system->platformCommands, debugger->system->platformCommandAliases);
-			debugger->backend->printf(debugger->backend, "\n%s commands:\n", debugger->system->name);
-			_printCommands(debugger, debugger->system->commands, debugger->system->commandAliases);
+			if (debugger->system->platformCommands) {
+				debugger->backend->printf(debugger->backend, "\n%s commands:\n", debugger->system->platformName);
+				_printCommands(debugger, debugger->system->platformCommands, debugger->system->platformCommandAliases);
+			}
+			if (debugger->system->commands) {
+				debugger->backend->printf(debugger->backend, "\n%s commands:\n", debugger->system->name);
+				_printCommands(debugger, debugger->system->commands, debugger->system->commandAliases);
+			}
 		}
 	} else {
 		_printCommandSummary(debugger, dv->charValue, _debuggerCommands, _debuggerCommandAliases);
 		if (debugger->system) {
-			_printCommandSummary(debugger, dv->charValue, debugger->system->platformCommands, debugger->system->platformCommandAliases);
-			_printCommandSummary(debugger, dv->charValue, debugger->system->commands, debugger->system->commandAliases);
+			if (debugger->system->platformCommands) {
+				_printCommandSummary(debugger, dv->charValue, debugger->system->platformCommands, debugger->system->platformCommandAliases);
+			}
+			if (debugger->system->commands) {
+				_printCommandSummary(debugger, dv->charValue, debugger->system->commands, debugger->system->commandAliases);
+			}
 		}
 	}
 }
@@ -981,8 +989,10 @@ bool CLIDebuggerRunCommand(struct CLIDebugger* debugger, const char* line, size_
 	}
 	int result = _tryCommands(debugger, _debuggerCommands, _debuggerCommandAliases, line, cmdLength, args, count - cmdLength - 1);
 	if (result < 0 && debugger->system) {
-		result = _tryCommands(debugger, debugger->system->commands, debugger->system->commandAliases, line, cmdLength, args, count - cmdLength - 1);
-		if (result < 0) {
+		if (debugger->system->commands) {
+			result = _tryCommands(debugger, debugger->system->commands, debugger->system->commandAliases, line, cmdLength, args, count - cmdLength - 1);
+		}
+		if (result < 0 && debugger->system->platformCommands) {
 			result = _tryCommands(debugger, debugger->system->platformCommands, debugger->system->platformCommandAliases, line, cmdLength, args, count - cmdLength - 1);
 		}
 	}

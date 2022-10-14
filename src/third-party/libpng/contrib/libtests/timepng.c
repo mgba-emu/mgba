@@ -65,7 +65,7 @@ typedef struct
 }  io_data;
 
 static PNG_CALLBACK(void, read_and_copy,
-      (png_structp png_ptr, png_bytep buffer, png_size_t cb))
+      (png_structp png_ptr, png_bytep buffer, size_t cb))
 {
    io_data *io = (io_data*)png_get_io_ptr(png_ptr);
 
@@ -100,7 +100,7 @@ static void read_by_row(png_structp png_ptr, png_infop info_ptr,
    png_read_info(png_ptr, info_ptr);
 
    {
-      png_size_t rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+      size_t rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 
       row = voidcast(png_bytep,malloc(rowbytes));
       display = voidcast(png_bytep,malloc(rowbytes));

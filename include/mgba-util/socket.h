@@ -21,11 +21,14 @@ CXX_GUARD_START
 typedef SOCKET Socket;
 #else
 #ifdef GEKKO
+#define USE_GETHOSTBYNAME
 #include <network.h>
 #else
 #include <arpa/inet.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #endif
 #include <errno.h>
@@ -37,6 +40,10 @@ typedef SOCKET Socket;
 #endif
 #define SOCKET_FAILED(s) ((s) < 0)
 typedef int Socket;
+#endif
+
+#if !defined(__3DS__) && !defined(GEKKO)
+#define HAS_IPV6
 #endif
 
 enum IP {
@@ -152,17 +159,54 @@ static inline int SocketClose(Socket socket) {
 #endif
 }
 
-static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
-#ifdef GEKKO
-	Socket sock = net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+static inline void SocketCloseQuiet(Socket socket) {
+	int savedErrno = SocketError();
+	SocketClose(socket);
+#ifdef _WIN32
+	WSASetLastError(savedErrno);
 #else
-	Socket sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	errno = savedErrno;
 #endif
+}
+
+static inline Socket SocketCreate(bool useIPv6, int protocol) {
+	if (useIPv6) {
+#ifdef HAS_IPV6
+		return socket(AF_INET6, SOCK_STREAM, protocol);
+#else
+		errno = EAFNOSUPPORT;
+		return INVALID_SOCKET;
+#endif
+	} else {
+#ifdef GEKKO
+		return net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+#else
+		return socket(AF_INET, SOCK_STREAM, protocol);
+#endif
+	}
+}
+
+static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
+	bool useIPv6 = bindAddress && (bindAddress->version == IPV6);
+	Socket sock = SocketCreate(useIPv6, IPPROTO_TCP);
 	if (SOCKET_FAILED(sock)) {
 		return sock;
 	}
 
 	int err;
+
+	const int enable = 1;
+#ifdef GEKKO
+	err = net_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
+#elif defined(_WIN32)
+	err = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (const char*) &enable, sizeof(enable));
+#else
+	err = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
+#endif
+	if (err) {
+		return INVALID_SOCKET;
+	}
+
 	if (!bindAddress) {
 		struct sockaddr_in bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
@@ -178,7 +222,7 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 #else
 		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
 #endif
-	} else if (bindAddress->version == IPV4) {
+	} else if (!useIPv6) {
 		struct sockaddr_in bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
 		bindInfo.sin_family = AF_INET;
@@ -200,18 +244,15 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 #endif
 	}
 	if (err) {
-		SocketClose(sock);
+		SocketCloseQuiet(sock);
 		return INVALID_SOCKET;
 	}
 	return sock;
 }
 
 static inline Socket SocketConnectTCP(int port, const struct Address* destinationAddress) {
-#ifdef GEKKO
-	Socket sock = net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
-#else
-	Socket sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-#endif
+	bool useIPv6 = destinationAddress && (destinationAddress->version == IPV6);
+	Socket sock = SocketCreate(useIPv6, IPPROTO_TCP);
 	if (SOCKET_FAILED(sock)) {
 		return sock;
 	}
@@ -238,7 +279,7 @@ static inline Socket SocketConnectTCP(int port, const struct Address* destinatio
 #else
 		err = connect(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
 #endif
-#if !defined(__3DS__) && !defined(GEKKO)
+#ifdef HAS_IPV6
 	} else {
 		struct sockaddr_in6 bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
@@ -250,7 +291,7 @@ static inline Socket SocketConnectTCP(int port, const struct Address* destinatio
 	}
 
 	if (err) {
-		SocketClose(sock);
+		SocketCloseQuiet(sock);
 		return INVALID_SOCKET;
 	}
 	return sock;
@@ -410,6 +451,73 @@ static inline int SocketPoll(size_t nSockets, Socket* reads, Socket* writes, Soc
 			++e;
 		}
 	}
+	return result;
+}
+
+static inline int SocketResolveHost(const char* addrString, struct Address* destAddress) {
+	int result = 0;
+#ifdef USE_GETHOSTBYNAME
+#warning Using gethostbyname() for hostname resolution is not threadsafe
+#ifdef GEKKO
+	struct hostent* host = net_gethostbyname(addrString);
+#else
+	struct hostent* host = gethostbyname(addrString);
+#endif
+	if (!host) {
+		return errno;
+	}
+	if (host->h_addrtype == AF_INET && host->h_length == 4) {
+		destAddress->version = IPV4;
+		destAddress->ipv4 = ntohl(*host->h_addr_list[0]);
+	}
+#ifdef HAS_IPV6
+	else if (host->h_addrtype == AF_INET6 && host->h_length == 16) {
+		destAddress->version = IPV6;
+		memcpy(destAddress->ipv6, host->h_addr_list[0], 16);
+	}
+#endif
+	else {
+#ifdef GEKKO
+		result = errno;
+#else
+		result = -h_errno;
+#endif
+	}
+#else
+	struct addrinfo* addr = NULL;
+	result = getaddrinfo(addrString, NULL, NULL, &addr);
+	if (result) {
+#ifdef EAI_SYSTEM
+		if (result == EAI_SYSTEM) {
+			result = errno;
+		}
+#endif
+		goto error;
+	}
+	if (addr->ai_family == AF_INET && addr->ai_addrlen == sizeof(struct sockaddr_in)) {
+		struct sockaddr_in* addr4 = (struct sockaddr_in*) addr->ai_addr;
+		destAddress->version = IPV4;
+		destAddress->ipv4 = ntohl(addr4->sin_addr.s_addr);
+	}
+#ifdef HAS_IPV6
+	else if (addr->ai_family == AF_INET6 && addr->ai_addrlen == sizeof(struct sockaddr_in6)) {
+		struct sockaddr_in6* addr6 = (struct sockaddr_in6*) addr->ai_addr;
+		destAddress->version = IPV6;
+		memcpy(destAddress->ipv6, addr6->sin6_addr.s6_addr, 16);
+	}
+#endif
+	else {
+#ifdef _WIN32
+		result = WSANO_DATA;
+#else
+		result = EAI_NONAME;
+#endif
+	}
+error:
+	if (addr) {
+		freeaddrinfo(addr);
+	}
+#endif
 	return result;
 }
 

@@ -575,12 +575,78 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 		if (savedata->mapMode & MAP_WRITE) {
 			size_t size = GBASavedataSize(savedata);
 			if (savedata->data && savedata->vf->sync(savedata->vf, savedata->data, size)) {
+				GBASavedataRTCWrite(savedata);
 				mLOG(GBA_SAVE, INFO, "Savedata synced");
 			} else {
 				mLOG(GBA_SAVE, INFO, "Savedata failed to sync!");
 			}
 		}
 	}
+}
+
+void GBASavedataRTCWrite(struct GBASavedata* savedata) {
+	if (!(savedata->gpio->devices & HW_RTC) || !savedata->vf || savedata->mapMode == MAP_READ) {
+		return;
+	}
+
+	struct GBASavedataRTCBuffer buffer;
+
+	memcpy(&buffer.time, savedata->gpio->rtc.time, 7);
+	buffer.control = savedata->gpio->rtc.control;
+	STORE_64LE(savedata->gpio->rtc.lastLatch, 0, &buffer.lastLatch);
+
+	size_t size = GBASavedataSize(savedata);
+	savedata->vf->seek(savedata->vf, size & ~0xFF, SEEK_SET);
+
+	if ((savedata->vf->size(savedata->vf) & 0xFF) != sizeof(buffer)) {
+		// Writing past the end of the file can invalidate the file mapping
+		savedata->vf->unmap(savedata->vf, savedata->data, size);
+		savedata->data = NULL;
+	}
+	savedata->vf->write(savedata->vf, &buffer, sizeof(buffer));
+	if (!savedata->data) {
+		savedata->data = savedata->vf->map(savedata->vf, size, MAP_WRITE);
+	}
+}
+
+static uint8_t _unBCD(uint8_t byte) {
+	return (byte >> 4) * 10 + (byte & 0xF);
+}
+
+void GBASavedataRTCRead(struct GBASavedata* savedata) {
+	if (!savedata->vf) {
+		return;
+	}
+
+	struct GBASavedataRTCBuffer buffer;
+
+	size_t size = GBASavedataSize(savedata) & ~0xFF;
+	savedata->vf->seek(savedata->vf, size, SEEK_SET);
+	size = savedata->vf->read(savedata->vf, &buffer, sizeof(buffer));
+	if (size < sizeof(buffer)) {
+		return;
+	}
+
+	memcpy(savedata->gpio->rtc.time, &buffer.time, 7);
+
+	// Older FlashGBX sets this to 0x01 instead of the control flag.
+	// Since that bit is invalid on hardware, we can check for != 0x01
+	// to see if it's a valid value instead of just a filler value.
+	if (buffer.control != 1) {
+		savedata->gpio->rtc.control = buffer.control;
+	}
+	LOAD_64LE(savedata->gpio->rtc.lastLatch, 0, &buffer.lastLatch);
+
+	struct tm date;
+	date.tm_year = _unBCD(savedata->gpio->rtc.time[0]) + 100;
+	date.tm_mon = _unBCD(savedata->gpio->rtc.time[1]) - 1;
+	date.tm_mday = _unBCD(savedata->gpio->rtc.time[2]);
+	date.tm_hour = _unBCD(savedata->gpio->rtc.time[4]);
+	date.tm_min = _unBCD(savedata->gpio->rtc.time[5]);
+	date.tm_sec = _unBCD(savedata->gpio->rtc.time[6]);
+	date.tm_isdst = -1;
+
+	savedata->gpio->rtc.offset = savedata->gpio->rtc.lastLatch - mktime(&date);
 }
 
 void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state) {

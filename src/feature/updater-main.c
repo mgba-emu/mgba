@@ -29,6 +29,8 @@
 #define W_OK 02
 #endif
 
+FILE* logfile;
+
 bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 	char path[PATH_MAX] = {0};
 	struct VDirEntry* vde;
@@ -53,7 +55,7 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 		}
 		switch (vde->type(vde)) {
 		case VFS_DIRECTORY:
-			printf("mkdir   %s\n", fname);
+			fprintf(logfile, "mkdir   %s\n", fname);
 			if (mkdir(path, 0755) < 0 && errno != EEXIST) {
 				return false;
 			}
@@ -70,7 +72,7 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 			}
 			break;
 		case VFS_FILE:
-			printf("extract %s\n", fname);
+			fprintf(logfile, "extract %s\n", fname);
 			vfIn = archive->openFile(archive, vde->name(vde), O_RDONLY);
 			errno = 0;
 			vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
@@ -111,13 +113,17 @@ int main(int argc, char* argv[]) {
 	const char* root;
 	int ok = 1;
 
+	mCoreConfigDirectory(bin, sizeof(bin));
+	strncat(bin, "/updater.log", sizeof(bin));
+	logfile = fopen(bin, "w");
+
 	mCoreConfigInit(&config, "updater");
 	if (!mCoreConfigLoad(&config)) {
-		puts("Failed to load config");
+		fputs("Failed to load config\n", logfile);
 	} else if (!mUpdateGetArchivePath(&config, updateArchive, sizeof(updateArchive)) || !(root = mUpdateGetRoot(&config))) {
-		puts("No pending update found");
+		fputs("No pending update found\n", logfile);
 	} else if (access(root, W_OK)) {
-		puts("Cannot write to update path");
+		fputs("Cannot write to update path\n", logfile);
 	} else {
 #ifdef __APPLE__
 		char subdir[PATH_MAX];
@@ -160,7 +166,6 @@ int main(int argc, char* argv[]) {
 					}
 					off_t diff = devend - devinfo - 1;
 					memcpy(devpath, &devinfo[1], diff);
-					puts(devpath);
 					break;
 				}
 				int retstat;
@@ -177,11 +182,11 @@ int main(int argc, char* argv[]) {
 			archive = VDirOpenArchive(updateArchive);
 		}
 		if (archive) {
-			puts("Extracting update");
+			fputs("Extracting update\n", logfile);
 			if (extractArchive(archive, root, prefix)) {
 				ok = 0;
 			} else {
-				puts("An error occurred");
+				fputs("An error occurred\n", logfile);
 			}
 			archive->close(archive);
 			unlink(updateArchive);
@@ -218,10 +223,10 @@ int main(int argc, char* argv[]) {
 						close(infd);
 					}
 					if (ok == 2) {
-						puts("Cannot move update over old file");
+						fputs("Cannot move update over old file\n", logfile);
 					}
 				} else {
-					puts("Cannot move update over old file");
+					fputs("Cannot move update over old file\n", logfile);
 				}
 			} else {
 				ok = 0;
@@ -232,10 +237,10 @@ int main(int argc, char* argv[]) {
 		}
 #endif
 		else {
-			puts("Cannot open update archive");
+			fputs("Cannot open update archive\n", logfile);
 		}
 		if (ok == 0) {
-			puts("Complete");
+			fputs("Complete", logfile);
 			const char* command = mUpdateGetCommand(&config);
 			strlcpy(bin, command, sizeof(bin));
 			mUpdateDeregister(&config);
@@ -260,6 +265,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	mCoreConfigDeinit(&config);
+	fclose(logfile);
 	if (ok == 0) {
 #ifdef _WIN32
 		char qbin[PATH_MAX + 2] = {0};

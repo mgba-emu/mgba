@@ -237,7 +237,11 @@ void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
 
 void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {
 	audio->soundbias = value;
+	int32_t oldSampleInterval = audio->sampleInterval;
 	audio->sampleInterval = 0x200 >> GBARegisterSOUNDBIASGetResolution(value);
+	if (oldSampleInterval != audio->sampleInterval && audio->p->stream && audio->p->stream->audioRateChanged) {
+		audio->p->stream->audioRateChanged(audio->p->stream, GBA_ARM7TDMI_FREQUENCY / audio->sampleInterval);
+	}
 }
 
 void GBAAudioWriteWaveRAM(struct GBAAudio* audio, int address, uint32_t value) {
@@ -401,20 +405,15 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	GBAAudioSample(audio, mTimingCurrentTime(&audio->p->timing) - cyclesLate);
 
 	int samples = 2 << GBARegisterSOUNDBIASGetResolution(audio->soundbias);
-	int sampleMask = 1 << GBARegisterSOUNDBIASGetResolution(audio->soundbias);
 	memset(audio->chA.samples, audio->chA.samples[samples - 1], sizeof(audio->chA.samples));
 	memset(audio->chB.samples, audio->chB.samples[samples - 1], sizeof(audio->chB.samples));
 
 	mCoreSyncLockAudio(audio->p->sync);
 	unsigned produced;
-	int32_t sampleSumLeft = 0;
-	int32_t sampleSumRight = 0;
 	int i;
 	for (i = 0; i < samples; ++i) {
 		int16_t sampleLeft = audio->currentSamples[i].left;
 		int16_t sampleRight = audio->currentSamples[i].right;
-		sampleSumLeft += sampleLeft;
-		sampleSumRight += sampleRight;
 		if ((size_t) blip_samples_avail(audio->psg.left) < audio->samples) {
 			blip_add_delta(audio->psg.left, audio->clock, sampleLeft - audio->lastLeft);
 			blip_add_delta(audio->psg.right, audio->clock, sampleRight - audio->lastRight);
@@ -427,13 +426,9 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 				audio->clock -= CLOCKS_PER_FRAME;
 			}
 		}
-		// TODO: Post all frames
-		if (audio->p->stream && audio->p->stream->postAudioFrame && (i & (sampleMask - 1)) == sampleMask - 1) {
-			sampleSumLeft /= sampleMask;
-			sampleSumRight /= sampleMask;
-			audio->p->stream->postAudioFrame(audio->p->stream, sampleSumLeft, sampleSumRight);
-			sampleSumLeft = 0;
-			sampleSumRight = 0;
+
+		if (audio->p->stream && audio->p->stream->postAudioFrame) {
+			audio->p->stream->postAudioFrame(audio->p->stream, sampleLeft, sampleRight);
 		}
 	}
 	produced = blip_samples_avail(audio->psg.left);
