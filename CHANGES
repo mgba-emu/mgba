@@ -1,6 +1,7 @@
 0.11.0: (Future)
 Other fixes:
  - Qt: Manually split filename to avoid overzealous splitting (fixes mgba.io/i/2681)
+ - Qt: Expand criteria for tag branch names (fixes mgba.io/i/2679)
  - Res: Fix species name location in Ruby/Sapphire revs 1/2 (fixes mgba.io/i/2685)
 
 0.10.0: (2022-10-11)
