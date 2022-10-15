@@ -266,6 +266,10 @@ DECL_BITS(GBSerializedVideoFlags, Mode, 2, 2);
 DECL_BIT(GBSerializedVideoFlags, NotModeEventScheduled, 4);
 DECL_BIT(GBSerializedVideoFlags, NotFrameEventScheduled, 5);
 
+DECL_BITFIELD(GBSerializedMBC6Flags, uint8_t);
+DECL_BIT(GBSerializedMBC6Flags, FlashBank0, 0);
+DECL_BIT(GBSerializedMBC6Flags, FlashBank1, 1);
+
 DECL_BITFIELD(GBSerializedMBC7Flags, uint8_t);
 DECL_BITS(GBSerializedMBC7Flags, Command, 0, 2);
 DECL_BIT(GBSerializedMBC7Flags, Writable, 2);
@@ -393,6 +397,11 @@ struct GBSerializedState {
 				uint64_t lastLatch;
 			} rtc;
 			struct {
+				GBSerializedMBC6Flags flags;
+				uint8_t bank1;
+				uint8_t sramBank1;
+			} mbc6;
+			struct {
 				uint8_t state;
 				GBMBC7Field eeprom;
 				uint8_t address;
@@ -421,6 +430,10 @@ struct GBSerializedState {
 				uint8_t baseBank;
 				uint8_t bankCount;
 			} ntOld1;
+			struct {
+				uint8_t splitMode;
+				uint8_t bank1;
+			} ntNew;
 			struct {
 				uint8_t dataSwapMode;
 				uint8_t bankSwapMode;

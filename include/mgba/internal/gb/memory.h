@@ -191,7 +191,6 @@ struct GBMBC1State {
 };
 
 struct GBMBC6State {
-	bool sramAccess;
 	bool flashBank0;
 	bool flashBank1;
 };

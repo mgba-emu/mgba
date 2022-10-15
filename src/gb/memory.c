@@ -755,6 +755,12 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 	case GB_MBC3_RTC:
 		STORE_64LE(memory->rtcLastLatch, 0, &state->memory.rtc.lastLatch);
 		break;
+	case GB_MBC6:
+		state->memory.mbc6.flags = GBSerializedMBC6FlagsSetFlashBank0(0, memory->mbcState.mbc6.flashBank0);
+		state->memory.mbc6.flags = GBSerializedMBC6FlagsSetFlashBank1(state->memory.mbc6.flags, memory->mbcState.mbc6.flashBank1);
+		state->memory.mbc6.bank1 = memory->currentBank1;
+		state->memory.mbc6.sramBank1 = memory->currentSramBank1;
+		break;
 	case GB_MBC7:
 		state->memory.mbc7.state = memory->mbcState.mbc7.state;
 		state->memory.mbc7.eeprom = memory->mbcState.mbc7.eeprom;
@@ -802,6 +808,10 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 		state->memory.ntOld1.baseBank = memory->mbcState.ntOld1.baseBank;
 		state->memory.ntOld1.bankCount = memory->mbcState.ntOld1.bankCount;
 		break;
+	case GB_UNL_NT_NEW:
+		state->memory.ntNew.splitMode = memory->mbcState.ntNew.splitMode;
+		state->memory.ntNew.bank1 = memory->currentBank1;
+		break;
 	case GB_UNL_BBD:
 	case GB_UNL_HITEK:
 		state->memory.bbd.dataSwapMode = memory->mbcState.bbd.dataSwapMode;
@@ -828,9 +838,11 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	memory->wramCurrentBank = state->memory.wramCurrentBank;
 	memory->sramCurrentBank = state->memory.sramCurrentBank;
 
-	GBMBCSwitchBank(gb, memory->currentBank);
 	GBMemorySwitchWramBank(memory, memory->wramCurrentBank);
-	GBMBCSwitchSramBank(gb, memory->sramCurrentBank);
+	if (memory->mbcType != GB_MBC6 && memory->mbcType != GB_UNL_NT_NEW) {
+		GBMBCSwitchBank(gb, memory->currentBank);
+		GBMBCSwitchSramBank(gb, memory->sramCurrentBank);
+	}
 
 	LOAD_16LE(memory->dmaSource, 0, &state->memory.dmaSource);
 	LOAD_16LE(memory->dmaDest, 0, &state->memory.dmaDest);
@@ -887,6 +899,16 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	case GB_MBC3_RTC:
 		LOAD_64LE(memory->rtcLastLatch, 0, &state->memory.rtc.lastLatch);
 		break;
+	case GB_MBC6:
+		memory->mbcState.mbc6.flashBank0 = GBSerializedMBC6FlagsGetFlashBank0(state->memory.mbc6.flags);
+		memory->mbcState.mbc6.flashBank1 = GBSerializedMBC6FlagsGetFlashBank1(state->memory.mbc6.flags);
+		memory->currentBank1 = state->memory.mbc6.bank1;
+		memory->currentSramBank1 = state->memory.mbc6.sramBank1;
+		GBMBCSwitchHalfBank(gb, 0, memory->currentBank);
+		GBMBCSwitchHalfBank(gb, 1, memory->currentBank1);
+		GBMBCSwitchSramHalfBank(gb, 0, memory->sramCurrentBank);
+		GBMBCSwitchSramHalfBank(gb, 1, memory->currentSramBank1);
+		break;
 	case GB_MBC7:
 		memory->mbcState.mbc7.state = state->memory.mbc7.state;
 		memory->mbcState.mbc7.eeprom = state->memory.mbc7.eeprom;
@@ -939,6 +961,16 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		memory->mbcState.ntOld1.baseBank = state->memory.ntOld1.baseBank;
 		memory->mbcState.ntOld1.bankCount = state->memory.ntOld1.bankCount;
 		GBMBCSwitchBank0(gb, memory->mbcState.ntOld1.baseBank);
+		break;
+	case GB_UNL_NT_NEW:
+		memory->mbcState.ntNew.splitMode = state->memory.ntNew.splitMode;
+		memory->currentBank1 = state->memory.ntNew.bank1;
+		if (memory->mbcState.ntNew.splitMode) {
+			GBMBCSwitchHalfBank(gb, 0, memory->currentBank);
+			GBMBCSwitchHalfBank(gb, 1, memory->currentBank1);
+		} else {
+			GBMBCSwitchBank(gb, memory->currentBank);
+		}
 		break;
 	case GB_UNL_BBD:
 	case GB_UNL_HITEK:
