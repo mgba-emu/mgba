@@ -73,7 +73,7 @@ QStringList ApplicationUpdater::listChannels() {
 QString ApplicationUpdater::currentChannel() {
 	QLatin1String version(projectVersion);
 	QLatin1String branch(gitBranch);
-	if (branch == QLatin1String("heads/") + version) {
+	if (branch == QLatin1String("heads/") + version || branch == version) {
 		return QLatin1String("stable");
 	} else {
 		return QLatin1String("dev");
