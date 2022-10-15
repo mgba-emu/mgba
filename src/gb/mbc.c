@@ -45,6 +45,7 @@ static void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBWisdomTree(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBPKJD(struct GB* gb, uint16_t address, uint8_t value);
+static void _GBNTOld1(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBNTNew(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBBBD(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBHitek(struct GB* gb, uint16_t address, uint8_t value);
@@ -159,7 +160,7 @@ static struct {
 	{"BBD", GB_UNL_BBD},
 	{"HITK", GB_UNL_HITEK},
 	{"SNTX", GB_MBC_AUTODETECT}, // TODO
-	{"NTO1", GB_MBC_AUTODETECT}, // TODO
+	{"NTO1", GB_UNL_NT_OLD_1},
 	{"NTO2", GB_MBC_AUTODETECT}, // TODO
 	{"NTN", GB_UNL_NT_NEW},
 	{"LICH", GB_MBC_AUTODETECT}, // TODO
@@ -485,6 +486,9 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_UNL_WISDOM_TREE:
 		gb->memory.mbcWrite = _GBWisdomTree;
+		break;
+	case GB_UNL_NT_OLD_1:
+		gb->memory.mbcWrite = _GBNTOld1;
 		break;
 	case GB_UNL_NT_NEW:
 		gb->memory.mbcWrite = _GBNTNew;
@@ -1963,6 +1967,100 @@ static uint8_t _GBPKJDRead(struct GBMemory* memory, uint16_t address) {
 	}
 }
 
+
+static uint8_t _reorderBits(uint8_t input, const uint8_t* reorder) {
+	uint8_t newbyte = 0;
+	int i;
+	for(i = 0; i < 8; ++i) {
+		int oldbit = reorder[i];
+		int newbit = i;
+		newbyte += ((input >> oldbit) & 1) << newbit;
+	}
+
+	return newbyte;
+}
+
+static const uint8_t _ntOld1Reorder[8] = {
+	0, 2, 1, 4, 3, 5, 6, 7
+};
+
+void _GBNTOld1(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBMemory* memory = &gb->memory;
+	struct GBNTOld1State* mbcState = &memory->mbcState.ntOld1;
+	int bank = value;
+
+	switch (address >> 12) {
+	case 0x0:
+	case 0x1:
+		_GBMBC3(gb, address, value);
+		break;
+	case 0x2:
+	case 0x3:
+		bank &= 0x1F;
+		if (!bank) {
+			bank = 1;
+		}
+		if (mbcState->swapped) {
+			bank = _reorderBits(bank, _ntOld1Reorder);
+		}
+		if (mbcState->bankCount) {
+			bank &= mbcState->bankCount - 1;
+		}
+		GBMBCSwitchBank(gb, bank + mbcState->baseBank);
+		return;
+	case 0x5:
+		switch (address & 3) {
+		case 0:
+			mLOG(GB_MBC, STUB, "Unimplemented NT Old 1 address 0");
+			break;
+		case 1:
+			value &= 0x3F;
+			mbcState->baseBank = value * 2;
+			if (mbcState->baseBank) {
+				GBMBCSwitchBank0(gb, mbcState->baseBank);
+				GBMBCSwitchBank(gb, mbcState->baseBank + 1);
+			}
+			break;
+		case 2:
+			if ((value & 0xF0) == 0xE0) {
+				gb->sramSize = 0x2000;
+				GBResizeSram(gb, gb->sramSize);
+			}
+			switch (value & 0xF) {
+			case 0x00:
+				mbcState->bankCount = 32;
+				break;
+			case 0x08:
+				mbcState->bankCount = 16;
+				break;
+			case 0xC:
+				mbcState->bankCount = 8;
+				break;
+			case 0xE:
+				mbcState->bankCount = 4;
+				break;
+			case 0xF:
+				mbcState->bankCount = 2;
+				break;
+			default:
+				mbcState->bankCount = 32;
+				break;
+			}
+			break;
+		case 3:
+			mbcState->swapped = !!(value & 0x10);
+
+			bank = memory->currentBank;
+			if (mbcState->swapped) {
+				bank = _reorderBits(bank, _ntOld1Reorder);
+			}
+			GBMBCSwitchBank(gb, bank);
+			break;
+		}
+		return;
+	}
+}
+
 void _GBNTNew(struct GB* gb, uint16_t address, uint8_t value) {
 	struct GBMemory* memory = &gb->memory;
 	if (address >> 8 == 0x14) {
@@ -1984,18 +2082,6 @@ void _GBNTNew(struct GB* gb, uint16_t address, uint8_t value) {
 		}
 	}
 	_GBMBC5(gb, address, value);
-}
-
-static uint8_t _reorderBits(uint8_t input, const uint8_t* reorder) {
-	uint8_t newbyte = 0;
-	int i;
-	for(i = 0; i < 8; ++i) {
-		int oldbit = reorder[i];
-		int newbit = i;
-		newbyte += ((input >> oldbit) & 1) << newbit;
-	}
-
-	return newbyte;
 }
 
 static const uint8_t _bbdDataReordering[8][8] = {

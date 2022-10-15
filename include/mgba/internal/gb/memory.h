@@ -238,6 +238,12 @@ struct GBPKJDState {
 	uint8_t reg[2];
 };
 
+struct GBNTOld1State {
+	bool swapped;
+	uint8_t baseBank;
+	uint8_t bankCount;
+};
+
 struct GBNTNewState {
 	bool splitMode;
 };
@@ -263,6 +269,7 @@ union GBMBCState {
 	struct GBPocketCamState pocketCam;
 	struct GBTAMA5State tama5;
 	struct GBHuC3State huc3;
+	struct GBNTOld1State ntOld1;
 	struct GBNTNewState ntNew;
 	struct GBPKJDState pkjd;
 	struct GBBBDState bbd;

@@ -1,4 +1,6 @@
 0.11.0: (Future)
+Features:
+ - New unlicensed GB mapper: NT (older type 1)
 Other fixes:
  - Qt: Manually split filename to avoid overzealous splitting (fixes mgba.io/i/2681)
  - Qt: Expand criteria for tag branch names (fixes mgba.io/i/2679)

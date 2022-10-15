@@ -673,6 +673,8 @@ static const struct GBCartridgeOverride _overrides[] = {
 	{ 0x5AFF0038, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Silver (debug)
 	{ 0xA61856BD, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Silver (non-debug)
 	{ 0x30F8F86C, GB_MODEL_AUTODETECT, GB_UNL_PKJD, { 0 } }, // Pokemon Jade Version (Telefang Speed bootleg)
+	{ 0xE1147E75, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_1, { 0 } }, // Rockman 8
+	{ 0xEFF88FAA, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_1, { 0 } }, // True Color 25 in 1 (NT-9920)
 	{ 0xB289D95A, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Capcom vs SNK - Millennium Fight 2001
 	{ 0x688D6713, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Digimon 02 4
 	{ 0x8931A272, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Digimon 2

@@ -797,6 +797,11 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 		state->memory.mmm01.locked = memory->mbcState.mmm01.locked;
 		state->memory.mmm01.bank0 = memory->mbcState.mmm01.currentBank0;
 		break;
+	case GB_UNL_NT_OLD_1:
+		state->memory.ntOld1.swapped = memory->mbcState.ntOld1.swapped;
+		state->memory.ntOld1.baseBank = memory->mbcState.ntOld1.baseBank;
+		state->memory.ntOld1.bankCount = memory->mbcState.ntOld1.bankCount;
+		break;
 	case GB_UNL_BBD:
 	case GB_UNL_HITEK:
 		state->memory.bbd.dataSwapMode = memory->mbcState.bbd.dataSwapMode;
@@ -928,6 +933,12 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		} else {
 			GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
 		}
+		break;
+	case GB_UNL_NT_OLD_1:
+		memory->mbcState.ntOld1.swapped = state->memory.ntOld1.swapped;
+		memory->mbcState.ntOld1.baseBank = state->memory.ntOld1.baseBank;
+		memory->mbcState.ntOld1.bankCount = state->memory.ntOld1.bankCount;
+		GBMBCSwitchBank0(gb, memory->mbcState.ntOld1.baseBank);
 		break;
 	case GB_UNL_BBD:
 	case GB_UNL_HITEK:

@@ -417,6 +417,11 @@ struct GBSerializedState {
 				uint8_t mode;
 			} huc3;
 			struct {
+				uint8_t swapped;
+				uint8_t baseBank;
+				uint8_t bankCount;
+			} ntOld1;
+			struct {
 				uint8_t dataSwapMode;
 				uint8_t bankSwapMode;
 			} bbd;
