@@ -6,6 +6,8 @@ Other fixes:
  - Qt: Expand criteria for tag branch names (fixes mgba.io/i/2679)
  - Qt: Fix scanning specific e-Reader dotcodes (fixes mgba.io/i/2693)
  - Res: Fix species name location in Ruby/Sapphire revs 1/2 (fixes mgba.io/i/2685)
+Misc:
+ - macOS: Add category to plist (closes mgba.io/i/2691)
 
 0.10.0: (2022-10-11)
 Features:
