@@ -137,7 +137,15 @@ QUrl ApplicationUpdater::parseManifest(const QByteArray& manifest) {
 QString ApplicationUpdater::destination() const {
 	QFileInfo path(updateInfo().url.path());
 	QDir dir(ConfigController::configDir());
-	return dir.filePath(QLatin1String("update.") + path.completeSuffix());
+	// QFileInfo::completeSuffix will eat all .'s in the filename...including
+	// ones in the version string, turning mGBA-1.0.0-win32.7z into
+	// 0.0-win32.7z instead of the intended .7z
+	// As a result, so we have to split out the complete suffix manually.
+	QString suffix(path.suffix());
+	if (path.completeBaseName().endsWith(".tar")) {
+		suffix = "tar." + suffix;
+	}
+	return dir.filePath(QLatin1String("update.") + suffix);
 }
 
 const char* ApplicationUpdater::platform() {
