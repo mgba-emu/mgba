@@ -1,3 +1,7 @@
+0.11.0: (Future)
+Other fixes:
+ - Res: Fix species name location in Ruby/Sapphire revs 1/2 (fixes mgba.io/i/2685)
+
 0.10.0: (2022-10-11)
 Features:
  - Preliminary Lua scripting support
