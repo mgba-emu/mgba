@@ -50,6 +50,7 @@ static void _GBNTOld2(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBNTNew(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBBBD(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBHitek(struct GB* gb, uint16_t address, uint8_t value);
+static void _GBLiCheng(struct GB* gb, uint16_t address, uint8_t value);
 static void _GBSachen(struct GB* gb, uint16_t address, uint8_t value);
 
 static uint8_t _GBMBC2Read(struct GBMemory*, uint16_t address);
@@ -164,7 +165,7 @@ static struct {
 	{"NTO1", GB_UNL_NT_OLD_1},
 	{"NTO2", GB_UNL_NT_OLD_2},
 	{"NTN", GB_UNL_NT_NEW},
-	{"LICH", GB_MBC_AUTODETECT}, // TODO
+	{"LICH", GB_UNL_LI_CHENG},
 	{"LBMC", GB_MBC_AUTODETECT}, // TODO
 	{"LIBA", GB_MBC_AUTODETECT}, // TODO
 	{"PKJD", GB_UNL_PKJD},
@@ -257,6 +258,13 @@ static enum GBMemoryBankControllerType _detectUnlMBC(const uint8_t* mem, size_t 
 		if (mem[0x7FFF] != 0x01) { // Make sure we're not using a "fixed" version
 			return GB_UNL_BBD;
 		}
+		break;
+	case 0x20d092e2:
+	case 0xd2b57657:
+		if (cart->type == 0x01) { // Make sure we're not using a "fixed" version
+			return GB_UNL_LI_CHENG;
+		}
+		break;
 	}
 
 	if (mem[0x104] == 0xCE && mem[0x144] == 0xED && mem[0x114] == 0x66) {
@@ -512,6 +520,9 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcState.bbd.dataSwapMode = 7;
 		gb->memory.mbcState.bbd.bankSwapMode = 7;
 		gb->memory.mbcReadBank1 = true;
+		break;
+	case GB_UNL_LI_CHENG:
+		gb->memory.mbcWrite = _GBLiCheng;
 		break;
 	case GB_UNL_SACHEN_MMC1:
 		gb->memory.mbcWrite = _GBSachen;
@@ -2240,6 +2251,13 @@ uint8_t _GBHitekRead(struct GBMemory* memory, uint16_t address) {
 	case 1:
 		return _reorderBits(memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)], _hitekDataReordering[memory->mbcState.bbd.dataSwapMode]);
 	}
+}
+
+void  _GBLiCheng(struct GB* gb, uint16_t address, uint8_t value) {
+    if (address > 0x2100 && address < 0x3000) {
+        return;
+    }
+    _GBMBC5(gb, address, value);
 }
 
 void _GBSachen(struct GB* gb, uint16_t address, uint8_t value) {
