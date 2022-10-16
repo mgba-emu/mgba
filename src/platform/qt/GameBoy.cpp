@@ -39,6 +39,7 @@ static const QList<GBMemoryBankControllerType> s_mbcList{
 	GB_UNL_BBD,
 	GB_UNL_HITEK,
 	GB_UNL_SACHEN_MMC1,
+	GB_UNL_SACHEN_MMC2,
 };
 
 static QMap<GBModel, QString> s_gbModelNames;
