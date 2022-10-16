@@ -278,6 +278,10 @@ DECL_BITFIELD(GBSerializedSachenFlags, uint8_t);
 DECL_BITS(GBSerializedSachenFlags, Transition, 0, 6);
 DECL_BITS(GBSerializedSachenFlags, Locked, 6, 2);
 
+DECL_BITFIELD(GBSerializedNTOldFlags, uint8_t);
+DECL_BIT(GBSerializedNTOldFlags, Swapped, 0);
+DECL_BIT(GBSerializedNTOldFlags, Rumble, 1);
+
 DECL_BITFIELD(GBSerializedMemoryFlags, uint16_t);
 DECL_BIT(GBSerializedMemoryFlags, SramAccess, 0);
 DECL_BIT(GBSerializedMemoryFlags, RtcAccess, 1);
@@ -426,10 +430,10 @@ struct GBSerializedState {
 				uint8_t mode;
 			} huc3;
 			struct {
-				uint8_t swapped;
+				GBSerializedNTOldFlags flags;
 				uint8_t baseBank;
 				uint8_t bankCount;
-			} ntOld1;
+			} ntOld;
 			struct {
 				uint8_t splitMode;
 				uint8_t bank1;

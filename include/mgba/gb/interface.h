@@ -42,6 +42,7 @@ enum GBMemoryBankControllerType {
 	GB_UNL_WISDOM_TREE = 0x200,
 	GB_UNL_PKJD = 0x203,
 	GB_UNL_NT_OLD_1 = 0x210,
+	GB_UNL_NT_OLD_2 = 0x211,
 	GB_UNL_NT_NEW = 0x212,
 	GB_UNL_BBD = 0x220, // Also used as a mask for MBCs that need special read behavior
 	GB_UNL_HITEK = 0x221,

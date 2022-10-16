@@ -54,6 +54,7 @@ The following mappers are fully supported:
 - MBC5+Rumble
 - MBC7
 - Wisdom Tree (unlicensed)
+- NT "old type" 1 and 2 (unlicensed multicart)
 - NT "new type" (unlicensed MBC5-like)
 - Pokémon Jade/Diamond (unlicensed)
 - BBD (unlicensed MBC5-like)

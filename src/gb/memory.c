@@ -804,9 +804,11 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 		state->memory.mmm01.bank0 = memory->mbcState.mmm01.currentBank0;
 		break;
 	case GB_UNL_NT_OLD_1:
-		state->memory.ntOld1.swapped = memory->mbcState.ntOld1.swapped;
-		state->memory.ntOld1.baseBank = memory->mbcState.ntOld1.baseBank;
-		state->memory.ntOld1.bankCount = memory->mbcState.ntOld1.bankCount;
+	case GB_UNL_NT_OLD_2:
+		state->memory.ntOld.flags = GBSerializedNTOldFlagsSetSwapped(0, memory->mbcState.ntOld.swapped);
+		state->memory.ntOld.flags = GBSerializedNTOldFlagsSetRumble(state->memory.ntOld.flags, memory->mbcState.ntOld.rumble);
+		state->memory.ntOld.baseBank = memory->mbcState.ntOld.baseBank;
+		state->memory.ntOld.bankCount = memory->mbcState.ntOld.bankCount;
 		break;
 	case GB_UNL_NT_NEW:
 		state->memory.ntNew.splitMode = memory->mbcState.ntNew.splitMode;
@@ -957,10 +959,12 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		}
 		break;
 	case GB_UNL_NT_OLD_1:
-		memory->mbcState.ntOld1.swapped = state->memory.ntOld1.swapped;
-		memory->mbcState.ntOld1.baseBank = state->memory.ntOld1.baseBank;
-		memory->mbcState.ntOld1.bankCount = state->memory.ntOld1.bankCount;
-		GBMBCSwitchBank0(gb, memory->mbcState.ntOld1.baseBank);
+	case GB_UNL_NT_OLD_2:
+		memory->mbcState.ntOld.swapped = GBSerializedNTOldFlagsGetSwapped(state->memory.ntOld.flags);
+		memory->mbcState.ntOld.rumble = GBSerializedNTOldFlagsGetRumble(state->memory.ntOld.flags);
+		memory->mbcState.ntOld.baseBank = state->memory.ntOld.baseBank;
+		memory->mbcState.ntOld.bankCount = state->memory.ntOld.bankCount;
+		GBMBCSwitchBank0(gb, memory->mbcState.ntOld.baseBank);
 		break;
 	case GB_UNL_NT_NEW:
 		memory->mbcState.ntNew.splitMode = state->memory.ntNew.splitMode;
