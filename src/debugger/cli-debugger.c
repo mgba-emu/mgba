@@ -155,9 +155,13 @@ static struct CLIDebuggerCommandAlias _debuggerCommandAliases[] = {
 	{ "q", "quit" },
 	{ "w", "watch" },
 	{ "watchr", "watch-range" },
+	{ "wr", "watch-range" },
 	{ "watchr/c", "watch-range/c" },
+	{ "wr/c", "watch-range/c" },
 	{ "watchr/r", "watch-range/r" },
+	{ "wr/r", "watch-range/r" },
 	{ "watchr/w", "watch-range/w" },
+	{ "wr/w", "watch-range/w" },
 	{ ".", "source" },
 	{ 0, 0 }
 };
