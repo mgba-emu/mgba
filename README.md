@@ -50,6 +50,7 @@ The following mappers are fully supported:
 - MBC2
 - MBC3
 - MBC3+RTC
+- MBC30
 - MBC5
 - MBC5+Rumble
 - MBC7
