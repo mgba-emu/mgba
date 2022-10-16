@@ -7,6 +7,12 @@ set(SOURCE_FILES
 	input.c
 	io.c
 	mbc.c
+	mbc/huc-3.c
+	mbc/licensed.c
+	mbc/mbc.c
+	mbc/pocket-cam.c
+	mbc/tama5.c
+	mbc/unlicensed.c
 	memory.c
 	overrides.c
 	serialize.c
