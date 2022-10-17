@@ -695,6 +695,7 @@ static const struct GBCartridgeOverride _overrides[] = {
 	{ 0xBC75D7B8, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Pokemon - Mewtwo Strikes Back
 	{ 0xFF0B60CC, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Shuma Baolong 02 4
 	{ 0x14A992A6, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // /Street Fighter Zero 4
+	{ 0x3EF5AFB2, GB_MODEL_AUTODETECT, GB_UNL_LI_CHENG, { 0 } }, // Pokemon Jade Version (Telefang Speed bootleg)
 
 	{ 0, 0, 0, { 0 } }
 };

@@ -40,6 +40,7 @@ static const QList<GBMemoryBankControllerType> s_mbcList{
 	GB_UNL_NT_NEW,
 	GB_UNL_BBD,
 	GB_UNL_HITEK,
+	GB_UNL_GGB81,
 	GB_UNL_LI_CHENG,
 	GB_UNL_SACHEN_MMC1,
 	GB_UNL_SACHEN_MMC2,
@@ -97,6 +98,7 @@ QString GameBoy::mbcName(GBMemoryBankControllerType mbc) {
 		s_mbcNames[GB_UNL_PKJD] = tr("Pokémon Jade/Diamond");
 		s_mbcNames[GB_UNL_BBD] = tr("BBD");
 		s_mbcNames[GB_UNL_HITEK] = tr("Hitek");
+		s_mbcNames[GB_UNL_GGB81] = tr("GGB-81");
 		s_mbcNames[GB_UNL_LI_CHENG] = tr("Li Cheng");
 		s_mbcNames[GB_UNL_SACHEN_MMC1] = tr("Sachen (MMC1)");
 		s_mbcNames[GB_UNL_SACHEN_MMC2] = tr("Sachen (MMC2)");
