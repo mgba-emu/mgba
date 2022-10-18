@@ -1,4 +1,6 @@
 0.10.1: (Future)
+Emulation fixes:
+ - GB Serialize: Don't write BGP/OBP when loading SCGB state (fixes mgba.io/i/2694)
 Other fixes:
  - Qt: Manually split filename to avoid overzealous splitting (fixes mgba.io/i/2681)
  - Qt: Expand criteria for tag branch names (fixes mgba.io/i/2679)
