@@ -8,6 +8,7 @@ Other fixes:
  - Res: Fix species name location in Ruby/Sapphire revs 1/2 (fixes mgba.io/i/2685)
 Misc:
  - macOS: Add category to plist (closes mgba.io/i/2691)
+ - Qt: Keep track of current pslette preset name (fixes mgba.io/i/2680)
 
 0.10.0: (2022-10-11)
 Features:
