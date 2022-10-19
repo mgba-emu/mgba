@@ -12,6 +12,7 @@ Other fixes:
 Misc:
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - macOS: Add category to plist (closes mgba.io/i/2691)
+ - Qt: Keep track of current pslette preset name (fixes mgba.io/i/2680)
 
 0.10.0: (2022-10-11)
 Features:
