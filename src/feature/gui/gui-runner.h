@@ -95,6 +95,7 @@ struct mGUIRunner {
 
 void mGUIInit(struct mGUIRunner*, const char* port);
 void mGUIDeinit(struct mGUIRunner*);
+void mGUILoadInputMaps(struct mGUIRunner* runner);
 void mGUIRun(struct mGUIRunner*, const char* path);
 void mGUIRunloop(struct mGUIRunner*);
 

@@ -1067,10 +1067,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (initialPath[0] == '/' || useRomfs) {
-		size_t i;
-		for (i = 0; runner.keySources[i].id; ++i) {
-			mInputMapLoad(&runner.params.keyMap, runner.keySources[i].id, mCoreConfigGetInput(&runner.config));
-		}
+		mGUILoadInputMaps(&runner);
 		mGUIRun(&runner, initialPath);
 	} else {
 		mGUIRunloop(&runner);

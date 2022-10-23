@@ -456,11 +456,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		runner->setup(runner);
 	}
 	if (runner->config.port && runner->keySources) {
-		mLOG(GUI_RUNNER, DEBUG, "Loading key sources for %s...", runner->config.port);
-		size_t i;
-		for (i = 0; runner->keySources[i].id; ++i) {
-			mInputMapLoad(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
-		}
+		mGUILoadInputMaps(runner);
 	}
 	mLOG(GUI_RUNNER, DEBUG, "Reseting...");
 	runner->core->reset(runner->core);
@@ -751,11 +747,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 
 void mGUIRunloop(struct mGUIRunner* runner) {
 	if (runner->keySources) {
-		mLOG(GUI_RUNNER, DEBUG, "Loading key sources for %s...", runner->config.port);
-		size_t i;
-		for (i = 0; runner->keySources[i].id; ++i) {
-			mInputMapLoad(&runner->params.keyMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
-		}
+		mGUILoadInputMaps(runner);
 	}
 	while (!runner->running || runner->running(runner)) {
 		char path[PATH_MAX];
@@ -773,6 +765,14 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 		mCoreConfigSetValue(&runner->config, "lastGame", path);
 		mCoreConfigSave(&runner->config);
 		mGUIRun(runner, path);
+	}
+}
+
+void mGUILoadInputMaps(struct mGUIRunner* runner) {
+	mLOG(GUI_RUNNER, DEBUG, "Loading key sources for %s...", runner->config.port);
+	size_t i;
+	for (i = 0; runner->keySources[i].id; ++i) {
+		mInputMapLoad(&runner->params.keyMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
 	}
 }
 
