@@ -153,6 +153,8 @@ static enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 }
 
 int main() {
+	char initialPath[PATH_MAX] = { 0 };
+
 	vita2d_init();
 	struct GUIFont* font = GUIFontCreate();
 	struct mGUIRunner runner = {
@@ -278,7 +280,16 @@ int main() {
 	mPSP2MapKey(&runner.params.keyMap, SCE_CTRL_SQUARE, mGUI_INPUT_SCREEN_MODE);
 
 	scePowerSetArmClockFrequency(444);
-	mGUIRunloop(&runner);
+
+	if (mGUIGetRom(&runner, initialPath, sizeof(initialPath))) {
+		size_t i;
+		for (i = 0; runner.keySources[i].id; ++i) {
+			mInputMapLoad(&runner.params.keyMap, runner.keySources[i].id, mCoreConfigGetInput(&runner.config));
+		}
+		mGUIRun(&runner, initialPath);
+	} else {
+		mGUIRunloop(&runner);
+	}
 
 	vita2d_fini();
 	mGUIDeinit(&runner);

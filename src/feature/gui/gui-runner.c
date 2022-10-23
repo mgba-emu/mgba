@@ -19,6 +19,12 @@
 #include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 
+#ifdef PSP2
+#include <psp2/io/stat.h>
+#elif defined(__3DS__)
+#include <mgba-util/platform/3ds/3ds-vfs.h>
+#endif
+
 #include <sys/time.h>
 
 mLOG_DECLARE_CATEGORY(GUI_RUNNER);
@@ -769,6 +775,44 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 		mGUIRun(runner, path);
 	}
 }
+
+#if defined(__3DS__) || defined(PSP2)
+bool mGUIGetRom(struct mGUIRunner* runner, char* out, size_t outLength) {
+#ifdef PSP2
+	int fd = open("app0:/filename", O_RDONLY);
+	strcpy(out, "app0:/");
+#elif defined(__3DS__)
+	int fd = open("romfs:/filename", O_RDONLY);
+	strcpy(out, "romfs:/");
+#endif
+	if (fd < 0) {
+		return false;
+	}
+	size_t len = strlen(out);
+	ssize_t size = read(fd, out + len, outLength - len);
+	if (size > 0 && out[len + size - 1] == '\n') {
+		out[len + size - 1] = '\0';
+	}
+	close(fd);
+	if (size <= 0) {
+		return false;
+	}
+	char basedir[64];
+	mCoreConfigDirectory(basedir, sizeof(basedir));
+	strlcat(basedir, "/forwarders", sizeof(basedir));
+#ifdef PSP2
+	sceIoMkdir(basedir, 0777);
+#elif defined(__3DS__)
+	FSUSER_CreateDirectory(sdmcArchive, fsMakePath(PATH_ASCII, basedir), 0);
+#endif
+
+	mCoreConfigSetValue(&runner->config, "savegamePath", basedir);
+	mCoreConfigSetValue(&runner->config, "savestatePath", basedir);
+	mCoreConfigSetValue(&runner->config, "screenshotPath", basedir);
+	mCoreConfigSetValue(&runner->config, "cheatsPath", basedir);
+	return true;
+}
+#endif
 
 #ifndef DISABLE_THREADING
 THREAD_ENTRY mGUIAutosaveThread(void* context) {

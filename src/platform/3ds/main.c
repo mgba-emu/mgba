@@ -817,33 +817,6 @@ THREAD_ENTRY _core2Test(void* context) {
 	UNUSED(context);
 }
 
-bool setupRomfs(char* initialPath, size_t outLength, struct mGUIRunner* runner) {
-	int fd = open("romfs:/filename", O_RDONLY);
-	strcpy(initialPath, "romfs:/");
-	if (fd < 0) {
-		return false;
-	}
-	size_t len = strlen(initialPath);
-	ssize_t size = read(fd, initialPath + len, outLength - len);
-	if (size > 0 && initialPath[len + size - 1] == '\n') {
-		initialPath[len + size - 1] = '\0';
-	}
-	close(fd);
-	if (size <= 0) {
-		return false;
-	}
-	char basedir[64];
-	mCoreConfigDirectory(basedir, sizeof(basedir));
-	strlcat(basedir, "/forwarders", sizeof(basedir));
-	FSUSER_CreateDirectory(sdmcArchive, fsMakePath(PATH_ASCII, basedir), 0);
-
-	mCoreConfigSetValue(&runner->config, "savegamePath", basedir);
-	mCoreConfigSetValue(&runner->config, "savestatePath", basedir);
-	mCoreConfigSetValue(&runner->config, "screenshotPath", basedir);
-	mCoreConfigSetValue(&runner->config, "cheatsPath", basedir);
-	return true;
-}
-
 int main(int argc, char* argv[]) {
 	char initialPath[PATH_MAX] = { 0 };
 	if (argc > 1) {
@@ -1085,7 +1058,7 @@ int main(int argc, char* argv[]) {
 	Result res = romfsInit();
 	bool useRomfs = false;
 	if (R_SUCCEEDED(res)) {
-		useRomfs = setupRomfs(initialPath, sizeof(initialPath), &runner);
+		useRomfs = mGUIGetRom(&runner, initialPath, sizeof(initialPath));
 		if (!useRomfs) {
 			romfsExit();
 			_cleanup();
