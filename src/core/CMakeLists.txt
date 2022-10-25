@@ -25,7 +25,7 @@ set(TEST_FILES
 	test/core.c)
 
 if(ENABLE_SCRIPTING)
-	list(APPEND SOURCE_FILES
+	set(SCRIPTING_FILES
 		scripting.c)
 
 	if(USE_LUA)
@@ -35,7 +35,9 @@ if(ENABLE_SCRIPTING)
 endif()
 
 source_group("mCore" FILES ${SOURCE_FILES})
+source_group("mCore scripting" FILES ${SCRIPTING_FILES})
 source_group("mCore tests" FILES ${TEST_FILES})
 
 export_directory(CORE SOURCE_FILES)
+export_directory(CORE_SCRIPT SCRIPTING_FILES)
 export_directory(CORE_TEST TEST_FILES)

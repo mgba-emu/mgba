@@ -50,11 +50,22 @@ struct GBMBCHuC3SaveBuffer {
 	uint64_t latchedUnix;
 };
 
+struct GBMBCTAMA5SaveBuffer {
+	uint8_t rtcTimerPage[0x8];
+	uint8_t rtcAlarmPage[0x8];
+	uint8_t rtcFreePage0[0x8];
+	uint8_t rtcFreePage1[0x8];
+	uint64_t latchedUnix;
+};
+
 void GBMBCRTCRead(struct GB* gb);
 void GBMBCRTCWrite(struct GB* gb);
 
 void GBMBCHuC3Read(struct GB* gb);
 void GBMBCHuC3Write(struct GB* gb);
+
+void GBMBCTAMA5Read(struct GB* gb);
+void GBMBCTAMA5Write(struct GB* gb);
 
 CXX_GUARD_END
 

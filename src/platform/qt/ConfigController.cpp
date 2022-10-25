@@ -12,6 +12,9 @@
 #include <QMenu>
 
 #include <mgba/feature/commandline.h>
+#ifdef M_CORE_GB
+#include <mgba/internal/gb/overrides.h>
+#endif
 
 static const mOption s_frontendOptions[] = {
 	{ "ecard", true, '\0' },
@@ -128,8 +131,10 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.interframeBlending = false;
 	mCoreConfigLoad(&m_config);
 	mCoreConfigLoadDefaults(&m_config, &m_opts);
+#ifdef M_CORE_GB
 	mCoreConfigSetDefaultIntValue(&m_config, "sgb.borders", 1);
-	mCoreConfigSetDefaultIntValue(&m_config, "useCgbColors", 1);
+	mCoreConfigSetDefaultIntValue(&m_config, "gb.colors", GB_COLORS_CGB);
+#endif
 	mCoreConfigMap(&m_config, &m_opts);
 
 	mSubParserGraphicsInit(&m_subparsers[0], &m_graphicsOpts);

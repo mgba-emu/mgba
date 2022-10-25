@@ -56,7 +56,7 @@
    defined(PNG_SAVE_UNKNOWN_CHUNKS_SUPPORTED)
 
 #if PNG_LIBPNG_VER < 10500
-/* This deliberately lacks the PNG_CONST. */
+/* This deliberately lacks the const. */
 typedef png_byte *png_const_bytep;
 
 /* This is copied from 1.5.1 png.h: */
@@ -85,7 +85,7 @@ typedef png_byte *png_const_bytep;
 #define PNG_WRITE_16BIT_SUPPORTED
 #define PNG_READ_16BIT_SUPPORTED
 
-/* This comes from pnglibconf.h afer 1.5: */
+/* This comes from pnglibconf.h after 1.5: */
 #define PNG_FP_1 100000
 #define PNG_GAMMA_THRESHOLD_FIXED\
    ((png_fixed_point)(PNG_GAMMA_THRESHOLD * PNG_FP_1))

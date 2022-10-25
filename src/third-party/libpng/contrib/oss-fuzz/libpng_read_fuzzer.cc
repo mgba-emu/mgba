@@ -1,11 +1,11 @@
 
 // libpng_read_fuzzer.cc
-// Copyright 2017 Glenn Randers-Pehrson
+// Copyright 2017-2018 Glenn Randers-Pehrson
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that may
 // be found in the LICENSE file https://cs.chromium.org/chromium/src/LICENSE
 
-// Last changed in libpng 1.6.32 [August 24, 2017]
+// Last changed in libpng 1.6.35 [July 15, 2018]
 
 // The modifications in 2017 by Glenn Randers-Pehrson include
 // 1. addition of a PNG_CLEANUP macro,
@@ -13,6 +13,7 @@
 // 3. adding "#include <string.h>" which is needed on some platforms
 //    to provide memcpy().
 // 4. adding read_end_info() and creating an end_info structure.
+// 5. adding calls to png_set_*() transforms commonly used by browsers.
 
 #include <stddef.h>
 #include <stdint.h>
@@ -67,7 +68,7 @@ struct PngObjectHandler {
   }
 };
 
-void user_read_data(png_structp png_ptr, png_bytep data, png_size_t length) {
+void user_read_data(png_structp png_ptr, png_bytep data, size_t length) {
   BufState* buf_state = static_cast<BufState*>(png_get_io_ptr(png_ptr));
   if (length > buf_state->bytes_left) {
     png_error(png_ptr, "read error");
@@ -136,9 +137,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Reading.
   png_read_info(png_handler.png_ptr, png_handler.info_ptr);
-  png_handler.row_ptr = png_malloc(
-      png_handler.png_ptr, png_get_rowbytes(png_handler.png_ptr,
-                                               png_handler.info_ptr));
 
   // reset error handler to put png_deleter into scope.
   if (setjmp(png_jmpbuf(png_handler.png_ptr))) {
@@ -163,8 +161,20 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
   }
 
+  // Set several transforms that browsers typically use:
+  png_set_gray_to_rgb(png_handler.png_ptr);
+  png_set_expand(png_handler.png_ptr);
+  png_set_packing(png_handler.png_ptr);
+  png_set_scale_16(png_handler.png_ptr);
+  png_set_tRNS_to_alpha(png_handler.png_ptr);
+
   int passes = png_set_interlace_handling(png_handler.png_ptr);
-  png_start_read_image(png_handler.png_ptr);
+
+  png_read_update_info(png_handler.png_ptr, png_handler.info_ptr);
+
+  png_handler.row_ptr = png_malloc(
+      png_handler.png_ptr, png_get_rowbytes(png_handler.png_ptr,
+                                            png_handler.info_ptr));
 
   for (int pass = 0; pass < passes; ++pass) {
     for (png_uint_32 y = 0; y < height; ++y) {

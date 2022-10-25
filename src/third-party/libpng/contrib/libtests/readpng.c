@@ -60,7 +60,7 @@ read_png(FILE *fp)
    png_read_info(png_ptr, info_ptr);
 
    {
-      png_size_t rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+      size_t rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 
       /* Failure to initialize these is harmless */
       row = malloc(rowbytes);

@@ -137,6 +137,9 @@ ssize_t _vf3dWrite(struct VFile* vf, const void* buffer, size_t size) {
 static void* _vf3dMap(struct VFile* vf, size_t size, int flags) {
 	struct VFile3DS* vf3d = (struct VFile3DS*) vf;
 	UNUSED(flags);
+	if (!size) {
+		return NULL;
+	}
 	void* buffer = anonymousMemoryMap(size);
 	if (buffer) {
 		u32 sizeRead;

@@ -526,6 +526,15 @@ void mCoreThreadMarkCrashed(struct mCoreThread* threadContext) {
 	MutexUnlock(&threadContext->impl->stateMutex);
 }
 
+void mCoreThreadClearCrashed(struct mCoreThread* threadContext) {
+	MutexLock(&threadContext->impl->stateMutex);
+	if (threadContext->impl->state == mTHREAD_CRASHED) {
+		threadContext->impl->state = mTHREAD_REQUEST;
+		ConditionWake(&threadContext->impl->stateCond);
+	}
+	MutexUnlock(&threadContext->impl->stateMutex);
+}
+
 void mCoreThreadEnd(struct mCoreThread* threadContext) {
 	MutexLock(&threadContext->impl->stateMutex);
 	_waitOnInterrupt(threadContext->impl);
@@ -685,6 +694,10 @@ void mCoreThreadPauseFromThread(struct mCoreThread* threadContext) {
 void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool rewinding) {
 	MutexLock(&threadContext->impl->stateMutex);
 	threadContext->impl->rewinding = rewinding;
+	if (rewinding && threadContext->impl->state == mTHREAD_CRASHED) {
+		threadContext->impl->state = mTHREAD_REQUEST;
+		ConditionWake(&threadContext->impl->stateCond);
+	}
 	MutexUnlock(&threadContext->impl->stateMutex);
 }
 

@@ -24,6 +24,8 @@
 const uint32_t DMG_SM83_FREQUENCY = 0x400000;
 static const int CLOCKS_PER_BLIP_FRAME = 0x1000;
 static const unsigned BLIP_BUFFER_SIZE = 0x4000;
+static const int SAMPLE_INTERVAL = 32;
+static const int FILTER = 65368;
 const int GB_AUDIO_VOLUME_MAX = 0x100;
 
 static bool _writeSweep(struct GBAudioSweep* sweep, uint8_t value);
@@ -43,6 +45,8 @@ static int16_t _coalesceNoiseChannel(struct GBAudioNoiseChannel* ch);
 
 static void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate);
 static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate);
+
+static void GBAudioSample(struct GBAudio* audio, int32_t timestamp);
 
 static const int _squareChannelDuty[4][8] = {
 	{ 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -114,7 +118,9 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->ch3.wavedata8[15] = 0xFF;
 	audio->ch4 = (struct GBAudioNoiseChannel) { .envelope = { .dead = 2 } };
 	audio->frame = 0;
-	audio->sampleInterval = 128;
+	audio->sampleInterval = SAMPLE_INTERVAL * GB_MAX_SAMPLES;
+	audio->lastSample = 0;
+	audio->sampleIndex = 0;
 	audio->lastLeft = 0;
 	audio->lastRight = 0;
 	audio->capLeft = 0;
@@ -371,11 +377,13 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 }
 
 void GBAudioWriteNR50(struct GBAudio* audio, uint8_t value) {
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing), 0x2);
 	audio->volumeRight = GBRegisterNR50GetVolumeRight(value);
 	audio->volumeLeft = GBRegisterNR50GetVolumeLeft(value);
 }
 
 void GBAudioWriteNR51(struct GBAudio* audio, uint8_t value) {
+	GBAudioRun(audio, mTimingCurrentTime(audio->timing), 0x2);
 	audio->ch1Right = GBRegisterNR51GetCh1Right(value);
 	audio->ch2Right = GBRegisterNR51GetCh2Right(value);
 	audio->ch3Right = GBRegisterNR51GetCh3Right(value);
@@ -468,6 +476,10 @@ void GBAudioRun(struct GBAudio* audio, int32_t timestamp, int channels) {
 	if (!audio->enable) {
 		return;
 	}
+	if (audio->p && channels != 0xF && timestamp - audio->lastSample > (int) (SAMPLE_INTERVAL * audio->timingFactor)) {
+		GBAudioSample(audio, timestamp);
+	}
+
 	if (audio->playingCh1 && (channels & 0x1)) {
 		int period = 4 * (2048 - audio->ch1.control.frequency) * audio->timingFactor;
 		int32_t diff = timestamp - audio->ch1.lastUpdate;
@@ -735,41 +747,64 @@ void GBAudioSamplePSG(struct GBAudio* audio, int16_t* left, int16_t* right) {
 	*right = sampleRight * (1 + audio->volumeRight);
 }
 
+void GBAudioSample(struct GBAudio* audio, int32_t timestamp) {
+	int interval = SAMPLE_INTERVAL * audio->timingFactor;
+	timestamp -= audio->lastSample;
+	timestamp -= audio->sampleIndex * interval;
+
+	int sample;
+	for (sample = audio->sampleIndex; timestamp >= interval && sample < GB_MAX_SAMPLES; ++sample, timestamp -= interval) {
+		int16_t sampleLeft = 0;
+		int16_t sampleRight = 0;
+		GBAudioRun(audio, sample * interval + audio->lastSample, 0xF);
+		GBAudioSamplePSG(audio, &sampleLeft, &sampleRight);
+		sampleLeft = (sampleLeft * audio->masterVolume * 6) >> 7;
+		sampleRight = (sampleRight * audio->masterVolume * 6) >> 7;
+
+		int16_t degradedLeft = sampleLeft - (audio->capLeft >> 16);
+		int16_t degradedRight = sampleRight - (audio->capRight >> 16);
+		audio->capLeft = (sampleLeft << 16) - degradedLeft * FILTER;
+		audio->capRight = (sampleRight << 16) - degradedRight * FILTER;
+
+		audio->currentSamples[sample].left = degradedLeft;
+		audio->currentSamples[sample].right = degradedRight;
+	}
+
+	audio->sampleIndex = sample;
+	if (sample == GB_MAX_SAMPLES) {
+		audio->lastSample += interval * GB_MAX_SAMPLES;
+		audio->sampleIndex = 0;
+	}
+}
+
 static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	struct GBAudio* audio = user;
-	int16_t sampleLeft = 0;
-	int16_t sampleRight = 0;
-	GBAudioRun(audio, mTimingCurrentTime(audio->timing), 0xF);
-	GBAudioSamplePSG(audio, &sampleLeft, &sampleRight);
-	sampleLeft = (sampleLeft * audio->masterVolume * 6) >> 7;
-	sampleRight = (sampleRight * audio->masterVolume * 6) >> 7;
+	GBAudioSample(audio, mTimingCurrentTime(audio->timing));
 
 	mCoreSyncLockAudio(audio->p->sync);
 	unsigned produced;
-
-	int16_t degradedLeft = sampleLeft - (audio->capLeft >> 16);
-	int16_t degradedRight = sampleRight - (audio->capRight >> 16);
-	audio->capLeft = (sampleLeft << 16) - degradedLeft * 65184;
-	audio->capRight = (sampleRight << 16) - degradedRight * 65184;
-	sampleLeft = degradedLeft;
-	sampleRight = degradedRight;
-
-	if ((size_t) blip_samples_avail(audio->left) < audio->samples) {
-		blip_add_delta(audio->left, audio->clock, sampleLeft - audio->lastLeft);
-		blip_add_delta(audio->right, audio->clock, sampleRight - audio->lastRight);
-		audio->lastLeft = sampleLeft;
-		audio->lastRight = sampleRight;
-		audio->clock += audio->sampleInterval;
-		if (audio->clock >= CLOCKS_PER_BLIP_FRAME) {
-			blip_end_frame(audio->left, CLOCKS_PER_BLIP_FRAME);
-			blip_end_frame(audio->right, CLOCKS_PER_BLIP_FRAME);
-			audio->clock -= CLOCKS_PER_BLIP_FRAME;
+	int i;
+	for (i = 0; i < GB_MAX_SAMPLES; ++i) {
+		int16_t sampleLeft = audio->currentSamples[i].left;
+		int16_t sampleRight = audio->currentSamples[i].right;
+		if ((size_t) blip_samples_avail(audio->left) < audio->samples) {
+			blip_add_delta(audio->left, audio->clock, sampleLeft - audio->lastLeft);
+			blip_add_delta(audio->right, audio->clock, sampleRight - audio->lastRight);
+			audio->lastLeft = sampleLeft;
+			audio->lastRight = sampleRight;
+			audio->clock += SAMPLE_INTERVAL;
+			if (audio->clock >= CLOCKS_PER_BLIP_FRAME) {
+				blip_end_frame(audio->left, CLOCKS_PER_BLIP_FRAME);
+				blip_end_frame(audio->right, CLOCKS_PER_BLIP_FRAME);
+				audio->clock -= CLOCKS_PER_BLIP_FRAME;
+			}
+		}
+		if (audio->p->stream && audio->p->stream->postAudioFrame) {
+			audio->p->stream->postAudioFrame(audio->p->stream, sampleLeft, sampleRight);
 		}
 	}
+
 	produced = blip_samples_avail(audio->left);
-	if (audio->p->stream && audio->p->stream->postAudioFrame) {
-		audio->p->stream->postAudioFrame(audio->p->stream, sampleLeft, sampleRight);
-	}
 	bool wait = produced >= audio->samples;
 	if (!mCoreSyncProduceAudio(audio->p->sync, audio->left, audio->samples)) {
 		// Interrupted
@@ -1035,6 +1070,15 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 
 void GBAudioSerialize(const struct GBAudio* audio, struct GBSerializedState* state) {
 	GBAudioPSGSerialize(audio, &state->audio.psg, &state->audio.flags);
+
+	size_t i;
+	for (i = 0; i < GB_MAX_SAMPLES; ++i) {
+		STORE_16LE(audio->currentSamples[i].left, 0, &state->audio2.currentSamples[i].left);
+		STORE_16LE(audio->currentSamples[i].right, 0, &state->audio2.currentSamples[i].right);
+	}
+	STORE_32LE(audio->lastSample, 0, &state->audio2.lastSample);
+	state->audio2.sampleIndex = audio->sampleIndex;
+
 	STORE_32LE(audio->capLeft, 0, &state->audio.capLeft);
 	STORE_32LE(audio->capRight, 0, &state->audio.capRight);
 	STORE_32LE(audio->sampleEvent.when - mTimingCurrentTime(audio->timing), 0, &state->audio.nextSample);
@@ -1044,6 +1088,15 @@ void GBAudioDeserialize(struct GBAudio* audio, const struct GBSerializedState* s
 	GBAudioPSGDeserialize(audio, &state->audio.psg, &state->audio.flags);
 	LOAD_32LE(audio->capLeft, 0, &state->audio.capLeft);
 	LOAD_32LE(audio->capRight, 0, &state->audio.capRight);
+
+	size_t i;
+	for (i = 0; i < GB_MAX_SAMPLES; ++i) {
+		LOAD_16LE(audio->currentSamples[i].left, 0, &state->audio2.currentSamples[i].left);
+		LOAD_16LE(audio->currentSamples[i].right, 0, &state->audio2.currentSamples[i].right);
+	}
+	LOAD_32LE(audio->lastSample, 0, &state->audio2.lastSample);
+	audio->sampleIndex = state->audio2.sampleIndex;
+
 	uint32_t when;
 	LOAD_32LE(when, 0, &state->audio.nextSample);
 	mTimingSchedule(audio->timing, &audio->sampleEvent, when);

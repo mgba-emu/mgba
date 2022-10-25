@@ -2555,8 +2555,8 @@ static void _updateRotation(struct mRotationSource* source) {
 	gyroZ = 0;
 	_initSensors();
 	if (tiltEnabled) {
-		tiltX = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_X) * 3e8f;
-		tiltY = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_Y) * -3e8f;
+		tiltX = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_X) * -2e8f;
+		tiltY = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_Y) * 2e8f;
 	}
 	if (gyroEnabled) {
 		gyroZ = sensorGetCallback(0, RETRO_SENSOR_GYROSCOPE_Z) * -1.1e9f;

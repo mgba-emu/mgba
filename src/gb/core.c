@@ -427,6 +427,9 @@ static void _GBCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 		core->desiredVideoDimensions(core, &width, &height);
 		stream->videoDimensionsChanged(stream, width, height);
 	}
+	if (stream && stream->audioRateChanged) {
+		stream->audioRateChanged(stream, DMG_SM83_FREQUENCY / 32);
+	}
 }
 
 static bool _GBCoreLoadROM(struct mCore* core, struct VFile* vf) {
@@ -657,6 +660,8 @@ static void _GBCoreReset(struct mCore* core) {
 	if (core->opts.skipBios) {
 		GBSkipBIOS(core->board);
 	}
+
+	mTimingInterrupt(&gb->timing);
 }
 
 static void _GBCoreRunFrame(struct mCore* core) {

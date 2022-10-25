@@ -117,7 +117,7 @@ $#   3) Delete this file (config.inf).
 <<
  @$(COPY) << pngconfig.dfa
 $# pngconfig.dfa: this file contains configuration options for libpng.
-$# If emtpy the standard configuration will be built.  For this file to be
+$# If empty the standard configuration will be built.  For this file to be
 $# used a working version of the program 'awk' is required and the program
 $# must be identified in the 'before' rule of the project.
 $#
@@ -144,7 +144,7 @@ $# dependency on pnglibconf.h correctly.
 $#
 $# If awk isn't set then this file is bypassed.  If you just want the standard
 $# configuration it is automatically produced from the distributed version
-$# (scripts\pnglibconf.h.prebuilt) by editting PNG_API_RULE to 2 (to force use
+$# (scripts\pnglibconf.h.prebuilt) by editing PNG_API_RULE to 2 (to force use
 $# of the OpenWatcom library calling convention.)
 $#
 <<

@@ -8,6 +8,8 @@
 #include <mgba/internal/script/lua.h>
 #endif
 
+#define KEY_NAME_MAX 128
+
 struct mScriptFileInfo {
 	const char* name;
 	struct VFile* vf;
@@ -300,6 +302,29 @@ void mScriptContextSetDocstring(struct mScriptContext* context, const char* key,
 
 const char* mScriptContextGetDocstring(struct mScriptContext* context, const char* key) {
 	return HashTableLookup(&context->docstrings, key);
+}
+
+void mScriptEngineExportDocNamespace(struct mScriptEngineContext* ctx, const char* nspace, struct mScriptKVPair* values) {
+	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+	size_t i;
+	for (i = 0; values[i].key; ++i) {
+		struct mScriptValue* key = mScriptStringCreateFromUTF8(values[i].key);
+		mScriptTableInsert(table, key, values[i].value);
+		mScriptValueDeref(key);
+	}
+	HashTableInsert(&ctx->docroot, nspace, table);
+}
+
+void mScriptEngineSetDocstring(struct mScriptEngineContext* ctx, const char* key, const char* docstring) {
+	char scopedKey[KEY_NAME_MAX];
+	snprintf(scopedKey, sizeof(scopedKey), "%s::%s", ctx->engine->name, key);
+	HashTableInsert(&ctx->context->docstrings, scopedKey, (char*) docstring);
+}
+
+const char* mScriptEngineGetDocstring(struct mScriptEngineContext* ctx, const char* key) {
+	char scopedKey[KEY_NAME_MAX];
+	snprintf(scopedKey, sizeof(scopedKey), "%s::%s", ctx->engine->name, key);
+	return HashTableLookup(&ctx->context->docstrings, scopedKey);
 }
 
 bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, struct VFile* vf) {

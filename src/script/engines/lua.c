@@ -5,7 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/script/lua.h>
 
+#include <mgba/internal/script/socket.h>
+#include <mgba/script/context.h>
 #include <mgba/script/macros.h>
+#include <mgba/script/types.h>
 #include <mgba-util/string.h>
 
 #include <lualib.h>
@@ -16,6 +19,9 @@
 #endif
 
 #define MAX_KEY_SIZE 128
+#define LUA_NAME "lua"
+
+#define mSCRIPT_TYPE_MS_LUA_FUNC (&mSTLuaFunc)
 
 static struct mScriptEngineContext* _luaCreate(struct mScriptEngine2*, struct mScriptContext*);
 
@@ -23,6 +29,7 @@ static void _luaDestroy(struct mScriptEngineContext*);
 static bool _luaIsScript(struct mScriptEngineContext*, const char*, struct VFile*);
 static struct mScriptValue* _luaGetGlobal(struct mScriptEngineContext*, const char* name);
 static bool _luaSetGlobal(struct mScriptEngineContext*, const char* name, struct mScriptValue*);
+static struct mScriptValue* _luaRootScope(struct mScriptEngineContext*);
 static bool _luaLoad(struct mScriptEngineContext*, const char*, struct VFile*);
 static bool _luaRun(struct mScriptEngineContext*);
 static const char* _luaGetError(struct mScriptEngineContext*);
@@ -51,6 +58,157 @@ static int _luaLenList(lua_State* lua);
 
 static int _luaRequireShim(lua_State* lua);
 
+static const char* _socketLuaSource =
+	"socket = {\n"
+	"  ERRORS = {},\n"
+	"  tcp = function() return socket._create(_socket.create(), socket._tcpMT) end,\n"
+	"  bind = function(address, port)\n"
+	"    local s = socket.tcp()\n"
+	"    local ok, err = s:bind(address, port)\n"
+	"    if ok then return s end\n"
+	"    return ok, err\n"
+	"  end,\n"
+	"  connect = function(address, port)\n"
+	"    local s = socket.tcp()\n"
+	"    local ok, err = s:connect(address, port)\n"
+	"    if ok then return s end\n"
+	"    return ok, err\n"
+	"  end,\n"
+	"  _create = function(sock, mt) return setmetatable({\n"
+	"    _s = sock,\n"
+	"    _callbacks = {},\n"
+	"    _nextCallback = 1,\n"
+	"  }, mt) end,\n"
+	"  _wrap = function(status)\n"
+	"    if status == 0 then return 1 end\n"
+	"    return nil, socket.ERRORS[status] or ('error#' .. status)\n"
+	"  end,\n"
+	"  _mt = {\n"
+	"    __index = {\n"
+	"      close = function(self)\n"
+	"        if self._onframecb then\n"
+	"          callbacks:remove(self._onframecb)\n"
+	"          self._onframecb = nil\n"
+	"        end\n"
+	"        self._callbacks = {}\n"
+	"        return self._s:close()\n"
+	"      end,\n"
+	"      add = function(self, event, callback)\n"
+	"        if not self._callbacks[event] then self._callbacks[event] = {} end\n"
+	"        local cbid = self._nextCallback\n"
+	"        self._nextCallback = cbid + 1\n"
+	"        self._callbacks[event][cbid] = callback\n"
+	"        return id\n"
+	"      end,\n"
+	"      remove = function(self, cbid)\n"
+	"        for _, group in pairs(self._callbacks) do\n"
+	"          if group[cbid] then\n"
+	"            group[cbid] = nil\n"
+	"          end\n"
+	"        end\n"
+	"      end,\n"
+	"      _dispatch = function(self, event, ...)\n"
+	"        if not self._callbacks[event] then return end\n"
+	"        for k, cb in pairs(self._callbacks[event]) do\n"
+	"          if cb then\n"
+	"            local ok, ret = pcall(cb, self, ...)\n"
+	"            if not ok then console:error(ret) end\n"
+	"          end\n"
+	"        end\n"
+	"      end,\n"
+	"    },\n"
+	"  },\n"
+	"  _tcpMT = {\n"
+	"    __index = {\n"
+	"      _hook = function(self, status)\n"
+	"        if status == 0 then\n"
+	"          self._onframecb = callbacks:add('frame', function() self:poll() end)\n"
+	"        end\n"
+	"        return socket._wrap(status)\n"
+	"      end,\n"
+	"      bind = function(self, address, port)\n"
+	"        return socket._wrap(self._s:open(address or '', port))\n"
+	"      end,\n"
+	"      connect = function(self, address, port)\n"
+	"        local status = self._s:connect(address, port)\n"
+	"        return socket._wrap(status)\n"
+	"      end,\n"
+	"      listen = function(self, backlog)\n"
+	"        local status = self._s:listen(backlog or 1)\n"
+	"        return self:_hook(status)\n"
+	"      end,\n"
+	"      accept = function(self)\n"
+	"        local client = self._s:accept()\n"
+	"        if client.error ~= 0 then\n"
+	"          client:close()\n"
+	"          return socket._wrap(client.error)\n"
+	"        end\n"
+	"        local sock = socket._create(client, socket._tcpMT)\n"
+	"        sock:_hook(0)\n"
+	"        return sock\n"
+	"      end,\n"
+	"      send = function(self, data, i, j)\n"
+	"        local result = self._s:send(string.sub(data, i or 1, j))\n"
+	"        if result < 0 then return socket._wrap(self._s.error) end\n"
+	"        if i then return result + i - 1 end\n"
+	"        return result\n"
+	"      end,\n"
+	// TODO: This does not match the API for LuaSocket's receive() implementation
+	"      receive = function(self, maxBytes)\n"
+	"        local result = self._s:recv(maxBytes)\n"
+	"        if (not result or #result == 0) and self._s.error ~= 0 then\n"
+	"          return socket._wrap(self._s.error)\n"
+	"        elseif not result or #result == 0 then\n"
+	"          return nil, 'disconnected'\n"
+	"        end\n"
+	"        return result or ''\n"
+	"      end,\n"
+	"      hasdata = function(self)\n"
+	"        local status = self._s:select(0)\n"
+	"        if status < 0 then\n"
+	"          return socket._wrap(self._s.error)\n"
+	"        end\n"
+	"        return status > 0\n"
+	"      end,\n"
+	"      poll = function(self)\n"
+	"        local status, err = self:hasdata()\n"
+	"        if err then\n"
+	"          self:_dispatch('error', err)\n"
+	"        elseif status then\n"
+	"          self:_dispatch('received')\n"
+	"        end\n"
+	"      end,\n"
+	"    },\n"
+	"  },\n"
+	"  _errMT = {\n"
+	"    __index = function (tbl, key)\n"
+	"      return rawget(tbl, C.SOCKERR[key])\n"
+	"    end,\n"
+	"  },\n"
+	"}\n"
+	"setmetatable(socket._tcpMT.__index, socket._mt)\n"
+	"setmetatable(socket.ERRORS, socket._errMT)\n";
+
+static const struct _mScriptSocketError {
+	enum mSocketErrorCode err;
+	const char* message;
+} _mScriptSocketErrors[] = {
+	{ mSCRIPT_SOCKERR_UNKNOWN_ERROR, "unknown error" },
+	{ mSCRIPT_SOCKERR_OK, NULL },
+	{ mSCRIPT_SOCKERR_AGAIN, "temporary failure" },
+	{ mSCRIPT_SOCKERR_ADDRESS_IN_USE, "address in use" },
+	{ mSCRIPT_SOCKERR_DENIED, "access denied" },
+	{ mSCRIPT_SOCKERR_UNSUPPORTED, "unsupported" },
+	{ mSCRIPT_SOCKERR_CONNECTION_REFUSED, "connection refused" },
+	{ mSCRIPT_SOCKERR_NETWORK_UNREACHABLE, "network unreachable" },
+	{ mSCRIPT_SOCKERR_TIMEOUT, "timeout" },
+	{ mSCRIPT_SOCKERR_FAILED, "failed" },
+	{ mSCRIPT_SOCKERR_NOT_FOUND, "not found" },
+	{ mSCRIPT_SOCKERR_NO_DATA, "no data" },
+	{ mSCRIPT_SOCKERR_OUT_OF_MEMORY, "out of memory" },
+};
+static const int _mScriptSocketNumErrors = sizeof(_mScriptSocketErrors) / sizeof(struct _mScriptSocketError);
+
 #if LUA_VERSION_NUM < 503
 #define lua_pushinteger lua_pushnumber
 #endif
@@ -61,12 +219,87 @@ static int _luaRequireShim(lua_State* lua);
 
 #if LUA_VERSION_NUM < 502
 #define luaL_traceback(L, M, S, level) lua_pushstring(L, S)
+#define lua_pushglobaltable(L) lua_pushvalue(L, LUA_GLOBALSINDEX)
 #endif
+
+const struct mScriptType mSTLuaFunc;
+
+mSCRIPT_DECLARE_DOC_STRUCT(LUA_NAME, socket);
+mSCRIPT_DECLARE_DOC_STRUCT_METHOD(LUA_NAME, socket, S64, add, 2, STR, event, LUA_FUNC, callback);
+mSCRIPT_DECLARE_DOC_STRUCT_VOID_METHOD(LUA_NAME, socket, remove, 1, S64, cbid);
+mSCRIPT_DECLARE_DOC_STRUCT_METHOD(LUA_NAME, socket, S32, bind, 2, STR, address, U16, port);
+mSCRIPT_DECLARE_DOC_STRUCT_METHOD(LUA_NAME, socket, S32, connect, 2, STR, address, U16, port);
+mSCRIPT_DECLARE_DOC_STRUCT_METHOD_WITH_DEFAULTS(LUA_NAME, socket, S32, listen, 1, S32, backlog);
+mSCRIPT_DECLARE_DOC_STRUCT_METHOD(LUA_NAME, socket, DS(socket), accept, 0);
+mSCRIPT_DECLARE_DOC_STRUCT_METHOD_WITH_DEFAULTS(LUA_NAME, socket, S32, send, 3, STR, data, S64, i, S64, j);
+mSCRIPT_DECLARE_DOC_STRUCT_METHOD(LUA_NAME, socket, STR, receive, 1, S64, maxBytes);
+mSCRIPT_DECLARE_DOC_STRUCT_METHOD(LUA_NAME, socket, BOOL, hasdata, 0);
+mSCRIPT_DECLARE_DOC_STRUCT_VOID_METHOD(LUA_NAME, socket, poll, 0);
+
+mSCRIPT_DEFINE_DOC_STRUCT(LUA_NAME, socket)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING(
+		"An instance of a TCP socket. Most of these functions will return two values if an error occurs; "
+		"the first value is `nil` and the second value is an error string from socket.ERRORS"
+	)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Add a callback for a named event. The returned id can be used to remove it later. "
+		"Events get checked once per frame but can be checked manually using " LUA_NAME "::struct::socket.poll. "
+		"The following callbacks are defined:\n\n"
+		"- **received**: New data has been received and can be read\n"
+		"- **error**: An error has occurred on the socket\n"
+	)
+	mSCRIPT_DEFINE_DOC_STRUCT_METHOD(LUA_NAME, socket, add)
+	mSCRIPT_DEFINE_DOCSTRING("Remove a callback with the previously returned id")
+	mSCRIPT_DEFINE_DOC_STRUCT_METHOD(LUA_NAME, socket, remove)
+	mSCRIPT_DEFINE_DOCSTRING("Creates a new socket for an incoming connection from a listening server socket")
+	mSCRIPT_DEFINE_DOC_STRUCT_METHOD(LUA_NAME, socket, accept)
+	mSCRIPT_DEFINE_DOCSTRING("Bind the socket to a specific interface and port. Use `nil` for `address` to bind to all interfaces")
+	mSCRIPT_DEFINE_DOC_STRUCT_METHOD(LUA_NAME, socket, bind)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Opens a TCP connection to the specified address and port.\n\n"
+		"**Caution:** This is a blocking call. The emulator will not respond until "
+		"the connection either succeeds or fails"
+	)
+	mSCRIPT_DEFINE_DOC_STRUCT_METHOD(LUA_NAME, socket, connect)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Begins listening for incoming connections. The socket must have first been "
+		"bound with the " LUA_NAME "::struct::socket.bind function"
+	)
+	mSCRIPT_DEFINE_DOC_STRUCT_METHOD(LUA_NAME, socket, listen)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Writes a string to the socket. If `i` and `j` are provided, they have the same semantics "
+		"as the parameters to `string.sub` to write a substring. Returns the last index written"
+	)
+	mSCRIPT_DEFINE_DOC_STRUCT_METHOD(LUA_NAME, socket, send)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Read up to `maxBytes` bytes from the socket and return them. "
+		"If the socket has been disconnected or an error occurs, it will return `nil, error` instead"
+	)
+	mSCRIPT_DEFINE_DOC_STRUCT_METHOD(LUA_NAME, socket, receive)
+	mSCRIPT_DEFINE_DOCSTRING("Check if a socket has data ready to receive, and return true if so")
+	mSCRIPT_DEFINE_DOC_STRUCT_METHOD(LUA_NAME, socket, hasdata)
+	mSCRIPT_DEFINE_DOCSTRING("Manually check for events on this socket and dispatch associated callbacks")
+	mSCRIPT_DEFINE_DOC_STRUCT_METHOD(LUA_NAME, socket, poll)
+mSCRIPT_DEFINE_END;
+
+mSCRIPT_DEFINE_DOC_STRUCT_BINDING_DEFAULTS(LUA_NAME, socket, listen)
+	mSCRIPT_S32(1),
+mSCRIPT_DEFINE_DEFAULTS_END;
+
+mSCRIPT_DEFINE_DOC_STRUCT_BINDING_DEFAULTS(LUA_NAME, socket, send)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_S64(0),
+	mSCRIPT_S64(0),
+mSCRIPT_DEFINE_DEFAULTS_END;
+
+mSCRIPT_DEFINE_DOC_FUNCTION(LUA_NAME, socket_tcp, DS(socket), 0);
+mSCRIPT_DEFINE_DOC_FUNCTION(LUA_NAME, socket_bind, DS(socket), 2, STR, address, U16, port);
+mSCRIPT_DEFINE_DOC_FUNCTION(LUA_NAME, socket_connect, DS(socket), 2, STR, address, U16, port);
 
 const struct mScriptType mSTLuaFunc = {
 	.base = mSCRIPT_TYPE_FUNCTION,
 	.size = 0,
-	.name = "lua-" LUA_VERSION_ONLY "::function",
+	.name = LUA_NAME "::function",
 	.details = {
 		.function = {
 			.parameters = {
@@ -101,7 +334,7 @@ static struct mScriptEngineLua {
 	struct mScriptEngine2 d;
 } _engineLua = {
 	.d = {
-		.name = "lua-" LUA_VERSION_ONLY,
+		.name = LUA_NAME,
 		.init = NULL,
 		.deinit = NULL,
 		.create = _luaCreate
@@ -133,14 +366,15 @@ static const luaL_Reg _mSTList[] = {
 };
 
 struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mScriptContext* context) {
-	UNUSED(engine);
 	struct mScriptEngineContextLua* luaContext = calloc(1, sizeof(*luaContext));
 	luaContext->d = (struct mScriptEngineContext) {
 		.context = context,
+		.engine = engine,
 		.destroy = _luaDestroy,
 		.isScript = _luaIsScript,
 		.getGlobal = _luaGetGlobal,
 		.setGlobal = _luaSetGlobal,
+		.rootScope = _luaRootScope,
 		.load = _luaLoad,
 		.run = _luaRun,
 		.getError = _luaGetError
@@ -177,6 +411,56 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 	lua_getglobal(luaContext->lua, "require");
 	luaContext->require = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
 
+	HashTableInit(&luaContext->d.docroot, 0, (void (*)(void*)) mScriptValueDeref);
+
+	int status = luaL_dostring(luaContext->lua, _socketLuaSource);
+	if (status) {
+		mLOG(SCRIPT, ERROR, "Error in dostring while initializing sockets: %s\n", lua_tostring(luaContext->lua, -1));
+		lua_pop(luaContext->lua, 1);
+	} else {
+		struct mScriptValue* errors = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+		int i;
+		lua_getglobal(luaContext->lua, "socket");
+		lua_getfield(luaContext->lua, -1, "ERRORS");
+		for (i = 0; i < _mScriptSocketNumErrors; i++) {
+			const struct _mScriptSocketError* err = &_mScriptSocketErrors[i];
+			if (err->message) {
+				lua_pushstring(luaContext->lua, err->message);
+				struct mScriptValue* key = mScriptValueAlloc(mSCRIPT_TYPE_MS_S32);
+				key->value.s32 = err->err;
+				struct mScriptValue* message = mScriptStringCreateFromASCII(err->message);
+				mScriptTableInsert(errors, key, message);
+				mScriptValueDeref(key);
+				mScriptValueDeref(message);
+			} else {
+				lua_pushnil(luaContext->lua);
+			}
+			lua_seti(luaContext->lua, -2, err->err);
+		}
+		lua_pop(luaContext->lua, 2);
+
+		mScriptEngineExportDocNamespace(&luaContext->d, "socket", (struct mScriptKVPair[]) {
+			mSCRIPT_KV_PAIR(ERRORS, errors),
+			mSCRIPT_KV_PAIR(tcp, mSCRIPT_VALUE_DOC_FUNCTION(socket_tcp)),
+			mSCRIPT_KV_PAIR(bind, mSCRIPT_VALUE_DOC_FUNCTION(socket_bind)),
+			mSCRIPT_KV_PAIR(connect, mSCRIPT_VALUE_DOC_FUNCTION(socket_connect)),
+			mSCRIPT_KV_SENTINEL
+		});
+		mScriptValueDeref(errors);
+		mScriptEngineSetDocstring(&luaContext->d, "socket", "A basic TCP socket library");
+		mScriptEngineSetDocstring(&luaContext->d, "socket.ERRORS",
+			"Error strings corresponding to the C.SOCKERR error codes, indexed both by name and by value");
+		mScriptEngineSetDocstring(&luaContext->d, "socket.tcp",
+			"Create a new TCP socket, for use with either " LUA_NAME "::struct::socket.bind or " LUA_NAME "::struct::socket.connect later");
+		mScriptEngineSetDocstring(&luaContext->d, "socket.bind",
+			"Create and bind a new socket to a specific interface and port. "
+			"Use `nil` for `address` to bind to all interfaces");
+		mScriptEngineSetDocstring(&luaContext->d, "socket.connect",
+			"Create and return a new TCP socket with a connection to the specified address and port.\n\n"
+			"**Caution:** This is a blocking call. The emulator will not respond until "
+			"the connection either succeeds or fails");
+	}
+
 	return &luaContext->d;
 }
 
@@ -193,6 +477,8 @@ void _luaDestroy(struct mScriptEngineContext* ctx) {
 		luaL_unref(luaContext->lua, LUA_REGISTRYINDEX, luaContext->require);
 	}
 	lua_close(luaContext->lua);
+
+	HashTableDeinit(&luaContext->d.docroot);
 	free(luaContext);
 }
 
@@ -220,6 +506,24 @@ bool _luaSetGlobal(struct mScriptEngineContext* ctx, const char* name, struct mS
 	}
 	lua_setglobal(luaContext->lua, name);
 	return true;
+}
+
+struct mScriptValue* _luaRootScope(struct mScriptEngineContext* ctx) {
+	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) ctx;
+
+	struct mScriptValue* list = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
+	lua_pushglobaltable(luaContext->lua);
+	lua_pushnil(luaContext->lua);
+	while (lua_next(luaContext->lua, -2) != 0) {
+		struct mScriptValue* key;
+
+		lua_pop(luaContext->lua, 1);
+		key = _luaCoerce(luaContext, false);
+		mScriptValueWrap(key, mScriptListAppend(list->value.list));
+	}
+	lua_pop(luaContext->lua, 1);
+
+	return list;
 }
 
 struct mScriptValue* _luaCoerceFunction(struct mScriptEngineContextLua* luaContext) {

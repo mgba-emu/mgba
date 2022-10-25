@@ -52,7 +52,7 @@ static bool _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, s
 				int32_t value;
 				int segment;
 				if (!mDebuggerEvaluateParseTree(debugger->d.p, watchpoint->condition, &value, &segment) || !(value || segment >= 0)) {
-					return false;
+					continue;
 				}
 			}
 			uint8_t oldValue = debugger->originalMemory.load8(debugger->cpu, address);

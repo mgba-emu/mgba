@@ -56,6 +56,7 @@ struct FFmpegEncoder {
 	int height;
 	int iwidth;
 	int iheight;
+	int isampleRate;
 	int frameCycles;
 	int cycles;
 	int frameskip;
@@ -78,6 +79,7 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder*, const char* vcodec, int vbr, i
 bool FFmpegEncoderSetContainer(struct FFmpegEncoder*, const char* container);
 void FFmpegEncoderSetDimensions(struct FFmpegEncoder*, int width, int height);
 void FFmpegEncoderSetInputFrameRate(struct FFmpegEncoder*, int numerator, int denominator);
+void FFmpegEncoderSetInputSampleRate(struct FFmpegEncoder*, int sampleRate);
 void FFmpegEncoderSetLooping(struct FFmpegEncoder*, bool loop);
 bool FFmpegEncoderVerifyContainer(struct FFmpegEncoder*);
 bool FFmpegEncoderOpen(struct FFmpegEncoder*, const char* outfile);
