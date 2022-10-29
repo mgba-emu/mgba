@@ -184,6 +184,15 @@ VDir* VFileDevice::openArchive(const QString& path) {
 	return VDirOpenArchive(path.toUtf8().constData());
 }
 
+bool VFileDevice::copyFile(VFile* input, VFile* output) {
+	uint8_t buffer[0x800];
+	ssize_t size;
+	while ((size = input->read(input, buffer, sizeof(buffer))) > 0) {
+		output->write(output, buffer, size);
+	}
+	return size >= 0;
+}
+
 VFileAbstractWrapper::VFileAbstractWrapper(QIODevice* iodev)
 	: m_iodev(iodev)
 {

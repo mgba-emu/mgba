@@ -30,6 +30,7 @@
 #include "Display.h"
 #include "DolphinConnector.h"
 #include "CoreController.h"
+#include "ForwarderView.h"
 #include "FrameView.h"
 #include "GBAApp.h"
 #include "GDBController.h"
@@ -1614,6 +1615,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 #ifdef ENABLE_SCRIPTING
 	m_actions.addAction(tr("Scripting..."), "scripting", this, &Window::scriptingOpen, "tools");
 #endif
+
+	m_actions.addAction(tr("Create forwarder..."), "createForwarder", openTView<ForwarderView>(), "tools");
 
 	m_actions.addSeparator("tools");
 	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools")->setRole(Action::Role::SETTINGS);

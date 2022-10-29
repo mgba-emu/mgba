@@ -42,6 +42,8 @@ public:
 	static VDir* openDir(const QString& path);
 	static VDir* openArchive(const QString& path);
 
+	static bool copyFile(VFile* input, VFile* output);
+
 protected:
 	virtual qint64 readData(char* data, qint64 maxSize) override;
 	virtual qint64 writeData(const char* data, qint64 maxSize) override;

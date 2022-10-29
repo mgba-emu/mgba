@@ -94,6 +94,11 @@ set(SOURCE_FILES
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
+	ForwarderController.cpp
+	ForwarderGenerator.cpp
+	ForwarderGenerator3DS.cpp
+	ForwarderGeneratorVita.cpp
+	ForwarderView.cpp
 	FrameView.cpp
 	GBAApp.cpp
 	GBAKeyEditor.cpp
@@ -151,6 +156,7 @@ set(UI_FILES
 	CheatsView.ui
 	DebuggerConsole.ui
 	DolphinConnector.ui
+	ForwarderView.ui
 	FrameView.ui
 	GIFView.ui
 	IOViewer.ui
