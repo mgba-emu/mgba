@@ -304,53 +304,6 @@ void Window::saveConfig() {
 	m_config->write();
 }
 
-QString Window::getFilters() const {
-	QStringList filters;
-	QStringList formats;
-
-#ifdef M_CORE_GBA
-	QStringList gbaFormats{
-		"*.gba",
-#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
-		"*.zip",
-#endif
-#ifdef USE_LZMA
-		"*.7z",
-#endif
-#ifdef USE_ELF
-		"*.elf",
-#endif
-		"*.agb",
-		"*.mb",
-		"*.rom",
-		"*.bin"};
-	formats.append(gbaFormats);
-	filters.append(tr("Game Boy Advance ROMs (%1)").arg(gbaFormats.join(QChar(' '))));
-#endif
-
-#ifdef M_CORE_GB
-	QStringList gbFormats{
-		"*.gb",
-		"*.gbc",
-		"*.sgb",
-#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
-		"*.zip",
-#endif
-#ifdef USE_LZMA
-		"*.7z",
-#endif
-		"*.rom",
-		"*.bin"};
-	formats.append(gbFormats);
-	filters.append(tr("Game Boy ROMs (%1)").arg(gbFormats.join(QChar(' '))));
-#endif
-
-	formats.removeDuplicates();
-	filters.prepend(tr("All ROMs (%1)").arg(formats.join(QChar(' '))));
-	filters.append(tr("%1 Video Logs (*.mvl)").arg(projectName));
-	return filters.join(";;");
-}
-
 QString Window::getFiltersArchive() const {
 	QStringList filters;
 
@@ -367,7 +320,7 @@ QString Window::getFiltersArchive() const {
 }
 
 void Window::selectROM() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), romFilters(true));
 	if (!filename.isEmpty()) {
 		setController(m_manager->loadGame(filename), filename);
 	}
@@ -410,7 +363,7 @@ void Window::addDirToLibrary() {
 #endif
 
 void Window::replaceROM() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), romFilters());
 	if (!filename.isEmpty()) {
 		m_controller->replaceGame(filename);
 	}
