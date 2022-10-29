@@ -43,7 +43,11 @@ void ForwarderController::downloadManifest() {
 	connect(reply, &QNetworkReply::finished, this, [this, reply]() {
 		gotManifest(reply);
 	});
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
 	connect(reply, &QNetworkReply::errorOccurred, this, [this, reply]() {
+#else
+	connect(reply, qOverload<>(&QNetworkReply::error), this, [this, reply]() {
+#endif
 		emit buildFailed();
 	});
 }
