@@ -38,7 +38,7 @@ public:
 	static VFile* wrap(QBuffer*, QIODevice::OpenMode);
 
 	static VFile* open(const QString& path, int mode);
-	static VFile* openMemory();
+	static VFile* openMemory(quint64 size = 0);
 	static VDir* openDir(const QString& path);
 	static VDir* openArchive(const QString& path);
 
