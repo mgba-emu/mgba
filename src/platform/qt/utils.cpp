@@ -1,14 +1,16 @@
-/* Copyright (c) 2013-2017 Jeffrey Pfau
+/* Copyright (c) 2013-2022 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "utils.h"
 
-#include <mgba/core/version.h>
-
 #include <QCoreApplication>
 #include <QObject>
+
+#include "VFileDevice.h"
+
+#include <mgba/core/version.h>
 
 namespace QGBA {
 
@@ -109,6 +111,22 @@ QString romFilters(bool includeMvl) {
 		filters.append(QCoreApplication::translate("QGBA", "%1 Video Logs (*.mvl)", nullptr).arg(projectName));
 	}
 	return filters.join(";;");
+}
+
+bool extractMatchingFile(VDir* dir, std::function<QString (VDirEntry*)> filter) {
+	for (VDirEntry* entry = dir->listNext(dir); entry; entry = dir->listNext(dir)) {
+		QString target = filter(entry);
+		if (target.isNull()) {
+			continue;
+		}
+		VFile* outfile = VFileOpen(target.toUtf8().constData(), O_WRONLY | O_TRUNC | O_CREAT);
+		VFile* infile = dir->openFile(dir, entry->name(entry), O_RDONLY);
+		VFileDevice::copyFile(infile, outfile);
+		infile->close(infile);
+		outfile->close(outfile);
+		return true;
+	}
+	return false;
 }
 
 }

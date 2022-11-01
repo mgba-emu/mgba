@@ -8,6 +8,7 @@
 #include <QFileInfo>
 #include <QTemporaryFile>
 
+#include "utils.h"
 #include "VFileDevice.h"
 
 #include <mgba-util/sfo.h>
@@ -77,29 +78,20 @@ bool ForwarderGeneratorVita::rebuild(const QString& source, const QString& targe
 }
 
 QString ForwarderGeneratorVita::dumpVpk(const QString& archive) {
-	bool gotFile = false;
-
 	VDir* inArchive = VFileDevice::openArchive(archive);
 	if (!inArchive) {
 		return {};
 	}
-	for (VDirEntry* dirent = inArchive->listNext(inArchive); dirent; dirent = inArchive->listNext(inArchive)) {
+	bool gotFile = extractMatchingFile(inArchive, [](VDirEntry* dirent) -> QString {
 		if (dirent->type(dirent) != VFS_FILE) {
-			continue;
+			return {};
 		}
 		QString filename(dirent->name(dirent));
 		if (!filename.endsWith(".vpk")) {
-			continue;
+			return {};
 		}
-
-		VFile* outfile = VFileOpen("tmp.vpk", O_WRONLY | O_TRUNC | O_CREAT);
-		VFile* vpk = inArchive->openFile(inArchive, dirent->name(dirent), O_RDONLY);
-		VFileDevice::copyFile(vpk, outfile);
-		vpk->close(vpk);
-		outfile->close(outfile);
-		gotFile = true;
-		break;
-	}
+		return "tmp.vpk";
+	});
 	inArchive->close(inArchive);
 
 	if (gotFile) {
@@ -156,16 +148,8 @@ bool ForwarderGeneratorVita::copyAssets(const QString& vpk, VDir* outdir) {
 }
 
 QString ForwarderGeneratorVita::makeSerial() const {
-	QByteArray hash = hashRom();
-	quint32 hashBits = (hash[0] << 24) | (hash[1] << 16) | (hash[2] << 8) | hash[3];
-
-	QString serial("MFXXXXXXX");
-	for (int i = 0; i < 7; ++i) {
-		static const char alphabet[37] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-		serial[i + 2] = alphabet[hashBits % 36];
-		hashBits /= 36;
-	}
-
+	QString serial("MF");
+	serial += base36(hashRom(), 7);
 	return serial;
 }
 

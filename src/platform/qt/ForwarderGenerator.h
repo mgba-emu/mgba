@@ -48,6 +48,8 @@ public:
 protected:
 	ForwarderGenerator(int imageTypes, QObject* parent = nullptr);
 
+	static QString base36(const QByteArray&, int length);
+
 private:
 	QString m_title;
 	QString m_romPath;
