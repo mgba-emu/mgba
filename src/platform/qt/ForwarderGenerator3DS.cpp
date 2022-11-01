@@ -17,8 +17,6 @@
 #include <mgba/core/version.h>
 #include <mgba-util/vfs.h>
 
-#include <QDebug>
-
 using namespace QGBA;
 
 ForwarderGenerator3DS::ForwarderGenerator3DS()
@@ -277,8 +275,6 @@ void ForwarderGenerator3DS::buildBanner() {
 }
 
 void ForwarderGenerator3DS::buildExefs() {
-	QByteArray out = m_currentProc->readAll();
-	qDebug() << out;
 	m_currentProc = std::make_unique<QProcess>();
 	m_currentProc->setProgram("3dstool");
 
