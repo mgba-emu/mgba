@@ -38,6 +38,7 @@ signals:
 private slots:
 	void gotManifest(QNetworkReply*);
 	void gotBuild(QNetworkReply*);
+	void gotForwarderKit(QNetworkReply*);
 
 private:
 	void downloadForwarderKit();
@@ -46,12 +47,15 @@ private:
 	bool toolInstalled(const QString& tool);
 	void cleanup();
 
+	void connectErrorFailure(QNetworkReply*);
+
 	QString m_channel{"dev"};
 	QString m_outFilename;
 	QNetworkAccessManager* m_netman;
 	std::unique_ptr<ForwarderGenerator> m_generator;
 	QFile m_sourceFile;
 	bool m_inProgress = false;
+	QByteArray m_originalPath;
 };
 
 }
