@@ -78,7 +78,7 @@ void ForwarderController::gotManifest(QNetworkReply* reply) {
 void ForwarderController::downloadBuild(const QUrl& url) {
 	QString extension(QFileInfo(url.path()).suffix());
 	// TODO: cache this
-	QString configDir(ConfigController::configDir());
+	QString configDir(ConfigController::cacheDir());
 	m_sourceFile.setFileName(QString("%1/%2-%3-%4.%5").arg(configDir)
 		.arg(projectName)
 		.arg(m_generator->systemName())
