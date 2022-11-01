@@ -74,7 +74,7 @@ void ForwarderGenerator3DS::extractCia() {
 	m_currentProc->setProgram("ctrtool");
 
 	QStringList args;
-	args << QLatin1String("--contents=%0/cxi").arg(ConfigController::cacheDir());
+	args << QString("--contents=%0/cxi").arg(ConfigController::cacheDir());
 	args << m_cia;
 	m_currentProc->setArguments(args);
 
