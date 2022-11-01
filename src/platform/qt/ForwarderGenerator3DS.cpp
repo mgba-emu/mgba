@@ -131,7 +131,7 @@ void ForwarderGenerator3DS::processCxi() {
 	STORE_32LE(tidNum, 0, tid.data());
 
 	QFile header(ConfigController::cacheDir() + "/header.bin");
-	if (!header.open(QIODevice::ReadWrite | QIODevice::ExistingOnly)) {
+	if (!header.open(QIODevice::ReadWrite)) {
 		emit buildFailed();
 		return;
 	}
@@ -154,7 +154,7 @@ void ForwarderGenerator3DS::processCxi() {
 	header.close();
 
 	QFile exheader(ConfigController::cacheDir() + "/exheader.bin");
-	if (!exheader.open(QIODevice::ReadWrite | QIODevice::ExistingOnly)) {
+	if (!exheader.open(QIODevice::ReadWrite)) {
 		emit buildFailed();
 		return;
 	}
