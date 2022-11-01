@@ -23,7 +23,7 @@ Q_OBJECT
 public:
 	ForwarderController(QObject* parent = nullptr);
 
-	void setGenerator(std::unique_ptr<ForwarderGenerator>&& generator) { m_generator = std::move(generator); }
+	void setGenerator(std::unique_ptr<ForwarderGenerator>&& generator);
 	ForwarderGenerator* generator() { return m_generator.get(); }
 
 	QString channel() const { return m_channel; }
@@ -40,8 +40,11 @@ private slots:
 	void gotBuild(QNetworkReply*);
 
 private:
+	void downloadForwarderKit();
 	void downloadManifest();
 	void downloadBuild(const QUrl&);
+	bool toolInstalled(const QString& tool);
+	void cleanup();
 
 	QString m_channel{"dev"};
 	QString m_outFilename;

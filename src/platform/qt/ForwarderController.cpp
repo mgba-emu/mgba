@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "ForwarderController.h"
 
+#include <QDir>
 #include <QFileInfo>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -15,6 +16,14 @@
 #include <mgba/feature/updater.h>
 
 using namespace QGBA;
+
+#ifdef Q_OS_WIN
+const QChar LIST_SPLIT{';'};
+const char* SUFFIX = ".exe";
+#else
+const QChar LIST_SPLIT{':'};
+const char* SUFFIX = "";
+#endif
 
 ForwarderController::ForwarderController(QObject* parent)
 	: QObject(parent)
@@ -29,13 +38,34 @@ ForwarderController::ForwarderController(QObject* parent)
 	});
 }
 
+void ForwarderController::setGenerator(std::unique_ptr<ForwarderGenerator>&& generator) {
+	m_generator = std::move(generator);
+	connect(m_generator.get(), &ForwarderGenerator::buildFailed, this, &ForwarderController::buildFailed);
+	connect(m_generator.get(), &ForwarderGenerator::buildFailed, this, &ForwarderController::cleanup);
+	connect(m_generator.get(), &ForwarderGenerator::buildComplete, this, &ForwarderController::buildComplete);
+	connect(m_generator.get(), &ForwarderGenerator::buildComplete, this, &ForwarderController::cleanup);
+}
+
 void ForwarderController::startBuild(const QString& outFilename) {
 	if (m_inProgress) {
 		return;
 	}
 	m_inProgress = true;
 	m_outFilename = outFilename;
+
+	QStringList neededTools = m_generator->externalTools();
+	for (const auto& tool : neededTools) {
+		if (!toolInstalled(tool)) {
+			downloadForwarderKit();
+			return;
+		}
+	}
 	downloadManifest();
+}
+
+void ForwarderController::downloadForwarderKit() {
+	// TODO
+	emit buildFailed();
 }
 
 void ForwarderController::downloadManifest() {
@@ -109,10 +139,21 @@ void ForwarderController::gotBuild(QNetworkReply* reply) {
 	QByteArray data = reply->readAll();
 	m_sourceFile.write(data);
 	m_sourceFile.close();
-	if (!m_generator->rebuild(m_sourceFile.fileName(), m_outFilename)) {
-		emit buildFailed();
-	} else {
-		emit buildComplete();
-	}
+	m_generator->rebuild(m_sourceFile.fileName(), m_outFilename);
+}
+
+void ForwarderController::cleanup() {
 	m_sourceFile.remove();
+}
+
+bool ForwarderController::toolInstalled(const QString& tool) {
+	QByteArray arr = qgetenv("PATH");
+	QStringList path = QString::fromUtf8(arr).split(LIST_SPLIT);
+	for (QDir dir : path) {
+		QFileInfo exe(dir, tool + SUFFIX);
+		if (exe.isExecutable()) {
+			return true;
+		}
+	}
+	return false;
 }

@@ -29,10 +29,11 @@ QList<QPair<QString, QSize>> ForwarderGeneratorVita::imageTypes() const {
 	};
 }
 
-bool ForwarderGeneratorVita::rebuild(const QString& source, const QString& target) {
+void ForwarderGeneratorVita::rebuild(const QString& source, const QString& target) {
 	QString vpk = dumpVpk(source);
 	if (vpk.isNull()) {
-		return false;
+		emit buildFailed();
+		return;
 	}
 
 	QFile vpkFile(vpk);
@@ -43,7 +44,8 @@ bool ForwarderGeneratorVita::rebuild(const QString& source, const QString& targe
 	}
 	vpkFile.remove();
 	if (!outdir) {
-		return false;
+		emit buildFailed();
+		return;
 	}
 
 	VFile* sfo = outdir->openFile(outdir, "sce_sys/param.sfo", O_WRONLY);
@@ -74,7 +76,7 @@ bool ForwarderGeneratorVita::rebuild(const QString& source, const QString& targe
 
 	outdir->close(outdir);
 
-	return true;
+	emit buildComplete();
 }
 
 QString ForwarderGeneratorVita::dumpVpk(const QString& archive) {

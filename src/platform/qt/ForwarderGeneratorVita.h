@@ -22,7 +22,7 @@ public:
 	System system() const override { return System::VITA; }
 	QString extension() const override { return QLatin1String("vpk"); }
 
-	bool rebuild(const QString& source, const QString& target) override;
+	void rebuild(const QString& source, const QString& target) override;
 
 private:
 	QString dumpVpk(const QString& archive);

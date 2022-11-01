@@ -9,6 +9,7 @@
 #include <QImage>
 #include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QVector>
 
 #include <memory>
@@ -41,9 +42,15 @@ public:
 	QString systemName() const { return systemName(system()); }
 	virtual QString extension() const = 0;
 
+	virtual QStringList externalTools() const { return {}; }
+
 	static QString systemName(System);
 
-	virtual bool rebuild(const QString& source, const QString& target) = 0;
+	virtual void rebuild(const QString& source, const QString& target) = 0;
+
+signals:
+	void buildComplete();
+	void buildFailed();
 
 protected:
 	ForwarderGenerator(int imageTypes, QObject* parent = nullptr);
