@@ -19,6 +19,10 @@ CXX_GUARD_START
 #include <mgba/internal/gba/sio.h>
 #include <mgba/internal/gba/timer.h>
 
+#ifdef USE_ELF
+#include <mgba-util/elf-read.h>
+#endif
+
 #define GBA_ARM7TDMI_FREQUENCY 0x1000000U
 
 enum GBAIRQ {
@@ -153,6 +157,10 @@ void GBATestIRQ(struct GBA* gba, uint32_t cyclesLate);
 void GBAHalt(struct GBA* gba);
 void GBAStop(struct GBA* gba);
 void GBADebug(struct GBA* gba, uint16_t value);
+
+#ifdef USE_ELF
+bool GBAVerifyELFEntry(struct ELF* elf, uint32_t target);
+#endif
 
 #ifdef USE_DEBUGGERS
 struct mDebugger;
