@@ -151,10 +151,18 @@ void ForwarderView::setSystem(ForwarderGenerator::System system) {
 void ForwarderView::connectBrowseButton(QAbstractButton* button, QLineEdit* lineEdit, const QString& title, bool save, const QString& filter) {
 	connect(button, &QAbstractButton::clicked, lineEdit, [this, lineEdit, save, title, filter]() {
 		QString filename;
+		QString usedFilter = filter;
+		if (filter.isEmpty()) {
+			// Use the forwarder type, if selected
+			ForwarderGenerator* generator = m_controller.generator();
+			if (generator) {
+				usedFilter = tr("%1 installable package (*.%2)").arg(generator->systemHumanName()).arg(generator->extension());
+			}
+		}
 		if (save) {
-			filename = GBAApp::app()->getSaveFileName(this, title, filter);
+			filename = GBAApp::app()->getSaveFileName(this, title, usedFilter);
 		} else {
-			filename = GBAApp::app()->getOpenFileName(this, title, filter);			
+			filename = GBAApp::app()->getOpenFileName(this, title, usedFilter);
 		}
 		if (filename.isEmpty()) {
 			return;

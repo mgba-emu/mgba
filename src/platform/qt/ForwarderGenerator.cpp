@@ -73,6 +73,17 @@ QString ForwarderGenerator::systemName(ForwarderGenerator::System system) {
 	return {};
 }
 
+QString ForwarderGenerator::systemHumanName(ForwarderGenerator::System system) {
+	switch (system) {
+	case ForwarderGenerator::System::N3DS:
+		return tr("3DS");
+	case ForwarderGenerator::System::VITA:
+		return tr("Vita");
+	}
+
+	return {};
+}
+
 QString ForwarderGenerator::base36(const QByteArray& bytes, int length) {
 	static const char* alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	QString buffer(length, 'X');
