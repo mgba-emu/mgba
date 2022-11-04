@@ -32,13 +32,49 @@ ForwarderView::ForwarderView(QWidget* parent)
 	connect(m_ui.imageSelect, qOverload<int>(&QComboBox::currentIndexChanged), this, &ForwarderView::setActiveImage);
 	connect(m_ui.imageBrowse, &QAbstractButton::clicked, this, &ForwarderView::selectImage);
 
-	connect(&m_controller, &ForwarderController::buildComplete, this, &QDialog::accept);
+	connect(&m_controller, &ForwarderController::buildComplete, this, [this]() {
+		QMessageBox* message = new QMessageBox(QMessageBox::Information, tr("Build finished"),
+		                                       tr("Forwarder finished building"),
+		                                       QMessageBox::Ok, parentWidget(), Qt::Sheet);
+		message->setAttribute(Qt::WA_DeleteOnClose);
+		message->show();
+		accept();
+	});
 	connect(&m_controller, &ForwarderController::buildFailed, this, [this]() {
 		QMessageBox* error = new QMessageBox(QMessageBox::Critical, tr("Build failed"),
 		                                     tr("Failed to build forwarder"),
 		                                     QMessageBox::Ok, this, Qt::Sheet);
 		error->setAttribute(Qt::WA_DeleteOnClose);
 		error->show();
+
+		m_ui.progressBar->setValue(0);
+		m_ui.progressBar->setEnabled(false);
+		validate();
+	});
+	connect(&m_controller, &ForwarderController::downloadStarted, this, [this](ForwarderController::Download download) {
+		m_currentDownload = download;
+		m_downloadProgress = 0;
+		if (download == ForwarderController::FORWARDER_KIT) {
+			m_needsForwarderKit = true;
+		}
+		updateProgress();
+	});
+	connect(&m_controller, &ForwarderController::downloadComplete, this, [this](ForwarderController::Download download) {
+		if (m_currentDownload != download) {
+			return;
+		}
+		m_downloadProgress = 1;
+		updateProgress();
+	});
+	connect(&m_controller, &ForwarderController::downloadProgress, this, [this](ForwarderController::Download download, qint64 bytesReceived, qint64 bytesTotal) {
+		if (m_currentDownload != download) {
+			return;
+		}
+		if (bytesTotal <= 0 || bytesTotal < bytesReceived) {
+			return;
+		}
+		m_downloadProgress = bytesReceived / static_cast<qreal>(bytesTotal);
+		updateProgress();
 	});
 
 	connect(m_ui.system3DS, &QAbstractButton::clicked, this, [this]() {
@@ -59,6 +95,13 @@ void ForwarderView::build() {
 	m_controller.generator()->setTitle(m_ui.title->text());
 	m_controller.generator()->setRom(m_ui.romFilename->text());
 	m_controller.startBuild(m_ui.outputFilename->text());
+	m_ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+	m_ui.progressBar->setEnabled(true);
+
+	m_currentDownload = ForwarderController::FORWARDER_KIT;
+	m_downloadProgress = 0;
+	m_needsForwarderKit = false;
+	updateProgress();
 }
 
 void ForwarderView::validate() {
@@ -78,6 +121,9 @@ void ForwarderView::validate() {
 		valid = false;
 	}
 	if (m_ui.baseType->currentIndex() != 1) {
+		valid = false;
+	}
+	if (m_controller.inProgress()) {
 		valid = false;
 	}
 	m_ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(valid);
@@ -153,4 +199,26 @@ void ForwarderView::setActiveImage(int index) {
 	m_ui.preferredHeight->setText(QString::number(m_activeSize.height()));
 	m_ui.imagePreview->setMaximumSize(m_activeSize);
 	m_ui.imagePreview->setPixmap(QPixmap::fromImage(m_controller.generator()->image(index)));
+}
+
+void ForwarderView::updateProgress() {
+	switch (m_currentDownload) {
+	case ForwarderController::FORWARDER_KIT:
+		m_ui.progressBar->setValue(m_downloadProgress * 450);
+		break;
+	case ForwarderController::MANIFEST:
+		if (m_needsForwarderKit) {
+			m_ui.progressBar->setValue(450 + m_downloadProgress * 50);
+		} else {
+			m_ui.progressBar->setValue(m_downloadProgress * 100);		
+		}
+		break;
+	case ForwarderController::BASE:
+		if (m_needsForwarderKit) {
+			m_ui.progressBar->setValue(500 + m_downloadProgress * 500);
+		} else {
+			m_ui.progressBar->setValue(100 + m_downloadProgress * 900);			
+		}
+		break;
+	}
 }
