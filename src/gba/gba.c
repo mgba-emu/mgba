@@ -615,30 +615,34 @@ bool GBAVerifyELFEntry(struct ELF* elf, uint32_t target) {
 		size_t phdr_e = phdr_s + phdr->p_filesz;
 
 		// Does the segment contain our target address?
-		if ((target >= phdr_s) && ((target + 4) <= phdr_e)) {
-			size_t esize;
-			char* bytes = ELFBytes(elf, &esize);
+		if ((target < phdr_s) || ((target + 4) > phdr_e)) {
+			continue;
+		}
 
-			// File offset to what should be the rom entry instruction
-			size_t off = phdr->p_offset + (target - phdr_s);
+		// File offset to what should be the rom entry instruction
+		size_t off = phdr->p_offset + target - phdr_s;
 
-			if (off >= esize) {
-				continue;
-			}
+		size_t esize;
+		const char* bytes = ELFBytes(elf, &esize);
 
-			uint32_t opcode;
-			LOAD_32(opcode, 0, &bytes[off]);
-			struct ARMInstructionInfo info;
-			ARMDecodeARM(opcode, &info);
+		if (off >= esize) {
+			continue;
+		}
 
-			if ((info.branchType == ARM_BRANCH) || (info.branchType == ARM_BRANCH_LINKED)) {
-				uint32_t b_target = target + (info.op1.immediate + 8);
+		uint32_t opcode;
+		LOAD_32(opcode, 0, &bytes[off]);
+		struct ARMInstructionInfo info;
+		ARMDecodeARM(opcode, &info);
 
-				if (ELFEntry(elf) == b_target) {
-					ELFProgramHeadersDeinit(&ph);
-					return true;
-				}
-			}
+		if ((info.branchType != ARM_BRANCH) && (info.branchType != ARM_BRANCH_LINKED)) {
+			continue;
+		}
+
+		uint32_t b_target = target + info.op1.immediate + 8;
+
+		if (ELFEntry(elf) == b_target) {
+			ELFProgramHeadersDeinit(&ph);
+			return true;
 		}
 	}
 

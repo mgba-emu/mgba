@@ -19,10 +19,6 @@ CXX_GUARD_START
 #include <mgba/internal/gba/sio.h>
 #include <mgba/internal/gba/timer.h>
 
-#ifdef USE_ELF
-#include <mgba-util/elf-read.h>
-#endif
-
 #define GBA_ARM7TDMI_FREQUENCY 0x1000000U
 
 enum GBAIRQ {
@@ -58,6 +54,10 @@ struct ARMCore;
 struct GBA;
 struct Patch;
 struct VFile;
+
+#ifdef USE_ELF
+struct ELF;
+#endif
 
 mLOG_DECLARE_CATEGORY(GBA);
 mLOG_DECLARE_CATEGORY(GBA_DEBUG);
