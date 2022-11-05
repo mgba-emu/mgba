@@ -237,7 +237,7 @@ static bool _GBACoreInit(struct mCore* core) {
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetInit(&core->dirs);
 #endif
-	
+
 	return true;
 }
 
@@ -512,7 +512,7 @@ static bool _GBACoreLoadROM(struct mCore* core, struct VFile* vf) {
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
-		if (ELFEntry(elf) == BASE_CART0) {
+		if (GBAVerifyELFEntry(elf, BASE_CART0)) {
 			GBALoadNull(core->board);
 		}
 		bool success = mCoreLoadELF(core, elf);

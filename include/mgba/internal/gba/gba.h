@@ -154,6 +154,12 @@ void GBAHalt(struct GBA* gba);
 void GBAStop(struct GBA* gba);
 void GBADebug(struct GBA* gba, uint16_t value);
 
+#ifdef USE_ELF
+struct ELF;
+
+bool GBAVerifyELFEntry(struct ELF* elf, uint32_t target);
+#endif
+
 #ifdef USE_DEBUGGERS
 struct mDebugger;
 void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger);

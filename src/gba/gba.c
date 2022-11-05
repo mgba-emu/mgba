@@ -595,6 +595,63 @@ void GBADebug(struct GBA* gba, uint16_t flags) {
 	gba->debugFlags = GBADebugFlagsClearSend(gba->debugFlags);
 }
 
+#ifdef USE_ELF
+bool GBAVerifyELFEntry(struct ELF* elf, uint32_t target) {
+	if (ELFEntry(elf) == target) {
+		return true;
+	}
+
+	struct ELFProgramHeaders ph;
+	ELFProgramHeadersInit(&ph, 0);
+	ELFGetProgramHeaders(elf, &ph);
+	size_t i;
+	for (i = 0; i < ELFProgramHeadersSize(&ph); ++i) {
+		Elf32_Phdr* phdr = ELFProgramHeadersGetPointer(&ph, i);
+		if (!phdr->p_filesz) {
+			continue;
+		}
+
+		size_t phdrS = phdr->p_paddr;
+		size_t phdrE = phdrS + phdr->p_filesz;
+
+		// Does the segment contain our target address?
+		if (target < phdrS || target + 4 > phdrE) {
+			continue;
+		}
+
+		// File offset to what should be the rom entry instruction
+		size_t off = phdr->p_offset + target - phdrS;
+
+		size_t eSize;
+		const char* bytes = ELFBytes(elf, &eSize);
+
+		// Bounds and alignment check
+		if (off >= eSize || off & 3) {
+			continue;
+		}
+
+		uint32_t opcode;
+		LOAD_32(opcode, off, bytes);
+		struct ARMInstructionInfo info;
+		ARMDecodeARM(opcode, &info);
+
+		if (info.branchType != ARM_BRANCH && info.branchType != ARM_BRANCH_LINKED) {
+			continue;
+		}
+
+		uint32_t bTarget = target + info.op1.immediate + 8;
+
+		if (ELFEntry(elf) == bTarget) {
+			ELFProgramHeadersDeinit(&ph);
+			return true;
+		}
+	}
+
+	ELFProgramHeadersDeinit(&ph);
+	return false;
+}
+#endif
+
 bool GBAIsROM(struct VFile* vf) {
 	if (!vf) {
 		return false;
@@ -606,7 +663,7 @@ bool GBAIsROM(struct VFile* vf) {
 		uint32_t entry = ELFEntry(elf);
 		bool isGBA = true;
 		isGBA = isGBA && ELFMachine(elf) == EM_ARM;
-		isGBA = isGBA && (entry == BASE_CART0 || entry == BASE_WORKING_RAM + 0xC0);
+		isGBA = isGBA && (GBAVerifyELFEntry(elf, BASE_CART0) || GBAVerifyELFEntry(elf, BASE_WORKING_RAM + 0xC0));
 		ELFClose(elf);
 		return isGBA;
 	}
@@ -662,7 +719,7 @@ bool GBAIsMB(struct VFile* vf) {
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
-		bool isMB = ELFEntry(elf) == BASE_WORKING_RAM + 0xC0;
+		bool isMB = GBAVerifyELFEntry(elf, BASE_WORKING_RAM + 0xC0);
 		ELFClose(elf);
 		return isMB;
 	}
