@@ -12,7 +12,6 @@
 
 #include <memory>
 
-class QNetworkAccessManager;
 class QNetworkReply;
 
 namespace QGBA {
@@ -61,7 +60,6 @@ private:
 
 	QString m_channel{"dev"};
 	QString m_outFilename;
-	QNetworkAccessManager* m_netman;
 	std::unique_ptr<ForwarderGenerator> m_generator;
 	QFile m_sourceFile;
 	bool m_inProgress = false;

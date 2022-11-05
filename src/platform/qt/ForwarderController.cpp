@@ -11,6 +11,7 @@
 #include <QNetworkReply>
 
 #include "ConfigController.h"
+#include "GBAApp.h"
 #include "VFileDevice.h"
 
 #include <mgba/core/version.h>
@@ -29,10 +30,8 @@ const char* SUFFIX = "";
 
 ForwarderController::ForwarderController(QObject* parent)
 	: QObject(parent)
-	, m_netman(new QNetworkAccessManager(this))
 	, m_originalPath(qgetenv("PATH"))
 {
-	m_netman->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
 	connect(this, &ForwarderController::buildFailed, this, &ForwarderController::cleanup);
 	connect(this, &ForwarderController::buildComplete, this, &ForwarderController::cleanup);
 }
@@ -83,7 +82,7 @@ void ForwarderController::downloadForwarderKit() {
 	emit buildFailed();
 	return;
 #endif
-	QNetworkReply* reply = m_netman->get(QNetworkRequest(QUrl(fkUrl)));
+	QNetworkReply* reply = GBAApp::app()->httpGet(QUrl(fkUrl));
 	connectReply(reply, FORWARDER_KIT, &ForwarderController::gotForwarderKit);
 }
 
@@ -132,7 +131,7 @@ void ForwarderController::gotForwarderKit(QNetworkReply* reply) {
 }
 
 void ForwarderController::downloadManifest() {
-	QNetworkReply* reply = m_netman->get(QNetworkRequest(QUrl("https://mgba.io/latest.ini")));
+	QNetworkReply* reply = GBAApp::app()->httpGet(QUrl("https://mgba.io/latest.ini"));
 	connectReply(reply, MANIFEST, &ForwarderController::gotManifest);
 }
 
@@ -173,7 +172,7 @@ void ForwarderController::downloadBuild(const QUrl& url) {
 		emit buildFailed();
 		return;		
 	}
-	QNetworkReply* reply = m_netman->get(QNetworkRequest(url));
+	QNetworkReply* reply = GBAApp::app()->httpGet(url);
 
 	connectReply(reply, BASE, &ForwarderController::gotBuild);
 	connect(reply, &QNetworkReply::readyRead, this, [this, reply]() {

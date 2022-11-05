@@ -9,7 +9,6 @@
 #include <QFile>
 #include <QObject>
 
-class QNetworkAccessManager;
 class QNetworkReply;
 
 namespace QGBA {
@@ -44,7 +43,6 @@ private:
 	void updateDownloaded(QNetworkReply*);
 
 	bool m_isUpdating = false;
-	QNetworkAccessManager* m_netman;
 	QByteArray m_manifest;
 };
 
