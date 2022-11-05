@@ -191,7 +191,13 @@ void ForwarderController::gotBuild(QNetworkReply* reply) {
 	QByteArray data = reply->readAll();
 	m_sourceFile.write(data);
 	m_sourceFile.close();
-	m_generator->rebuild(m_sourceFile.fileName(), m_outFilename);
+
+	QString extracted = m_generator->extract(m_sourceFile.fileName());
+	if (extracted.isNull()) {
+		emit buildFailed();
+		return;
+	}
+	m_generator->rebuild(extracted, m_outFilename);
 }
 
 void ForwarderController::cleanup() {

@@ -10,6 +10,10 @@
 
 #include "ForwarderGenerator3DS.h"
 #include "ForwarderGeneratorVita.h"
+#include "utils.h"
+#include "VFileDevice.h"
+
+#include <mgba-util/vfs.h>
 
 using namespace QGBA;
 
@@ -81,6 +85,29 @@ QString ForwarderGenerator::systemHumanName(ForwarderGenerator::System system) {
 		return tr("Vita");
 	}
 
+	return {};
+}
+
+QString ForwarderGenerator::extract(const QString& archive) {
+	VDir* inArchive = VFileDevice::openArchive(archive);
+	if (!inArchive) {
+		return {};
+	}
+	bool gotFile = extractMatchingFile(inArchive, [this](VDirEntry* dirent) -> QString {
+		if (dirent->type(dirent) != VFS_FILE) {
+			return {};
+		}
+		QString filename(dirent->name(dirent));
+		if (!filename.endsWith("." + extension())) {
+			return {};
+		}
+		return "tmp." + extension();
+	});
+	inArchive->close(inArchive);
+
+	if (gotFile) {
+		return QLatin1String("tmp.") + extension();
+	}
 	return {};
 }
 

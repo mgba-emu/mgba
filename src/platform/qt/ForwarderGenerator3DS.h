@@ -43,7 +43,6 @@ private slots:
 	void cleanup();
 
 private:
-	QString dumpCia(const QString& archive);
 	void init3dstoolArgs(QStringList& args, const QString& file, const QString& createType = {});
 
 	std::unique_ptr<QProcess> m_currentProc;

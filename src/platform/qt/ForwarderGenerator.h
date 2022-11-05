@@ -48,6 +48,7 @@ public:
 	static QString systemName(System);
 	static QString systemHumanName(System);
 
+	virtual QString extract(const QString& archive);
 	virtual void rebuild(const QString& source, const QString& target) = 0;
 
 signals:

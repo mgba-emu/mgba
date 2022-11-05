@@ -6,8 +6,6 @@
 #include "ForwarderGenerator3DS.h"
 
 #include "ConfigController.h"
-#include "utils.h"
-#include "VFileDevice.h"
 
 #include <QDir>
 #include <QFile>
@@ -34,37 +32,9 @@ QList<QPair<QString, QSize>> ForwarderGenerator3DS::imageTypes() const {
 }
 
 void ForwarderGenerator3DS::rebuild(const QString& source, const QString& target) {
-	m_cia = dumpCia(source);
-	if (m_cia.isNull()) {
-		emit buildFailed();
-		return;
-	}
-
+	m_cia = source;
 	m_target = target;
 	extractCia();
-}
-
-QString ForwarderGenerator3DS::dumpCia(const QString& archive) {
-	VDir* inArchive = VFileDevice::openArchive(archive);
-	if (!inArchive) {
-		return {};
-	}
-	bool gotFile = extractMatchingFile(inArchive, [](VDirEntry* dirent) -> QString {
-		if (dirent->type(dirent) != VFS_FILE) {
-			return {};
-		}
-		QString filename(dirent->name(dirent));
-		if (!filename.endsWith(".cia")) {
-			return {};
-		}
-		return "tmp.cia";
-	});
-	inArchive->close(inArchive);
-
-	if (gotFile) {
-		return QLatin1String("tmp.cia");
-	}
-	return {};
 }
 
 void ForwarderGenerator3DS::extractCia() {

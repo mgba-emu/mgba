@@ -8,7 +8,6 @@
 #include <QFileInfo>
 #include <QTemporaryFile>
 
-#include "utils.h"
 #include "VFileDevice.h"
 
 #include <mgba-util/sfo.h>
@@ -30,15 +29,9 @@ QList<QPair<QString, QSize>> ForwarderGeneratorVita::imageTypes() const {
 }
 
 void ForwarderGeneratorVita::rebuild(const QString& source, const QString& target) {
-	QString vpk = dumpVpk(source);
-	if (vpk.isNull()) {
-		emit buildFailed();
-		return;
-	}
-
-	QFile vpkFile(vpk);
+	QFile vpkFile(source);
 	VDir* outdir = VDirOpenZip(target.toLocal8Bit().constData(), O_WRONLY | O_CREAT | O_TRUNC);
-	if (outdir && !copyAssets(vpk, outdir)) {
+	if (outdir && !copyAssets(source, outdir)) {
 		outdir->close(outdir);
 		outdir = nullptr;
 	}
@@ -77,29 +70,6 @@ void ForwarderGeneratorVita::rebuild(const QString& source, const QString& targe
 	outdir->close(outdir);
 
 	emit buildComplete();
-}
-
-QString ForwarderGeneratorVita::dumpVpk(const QString& archive) {
-	VDir* inArchive = VFileDevice::openArchive(archive);
-	if (!inArchive) {
-		return {};
-	}
-	bool gotFile = extractMatchingFile(inArchive, [](VDirEntry* dirent) -> QString {
-		if (dirent->type(dirent) != VFS_FILE) {
-			return {};
-		}
-		QString filename(dirent->name(dirent));
-		if (!filename.endsWith(".vpk")) {
-			return {};
-		}
-		return "tmp.vpk";
-	});
-	inArchive->close(inArchive);
-
-	if (gotFile) {
-		return QLatin1String("tmp.vpk");
-	}
-	return {};
 }
 
 bool ForwarderGeneratorVita::copyAssets(const QString& vpk, VDir* outdir) {
