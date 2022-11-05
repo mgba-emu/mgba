@@ -55,10 +55,6 @@ struct GBA;
 struct Patch;
 struct VFile;
 
-#ifdef USE_ELF
-struct ELF;
-#endif
-
 mLOG_DECLARE_CATEGORY(GBA);
 mLOG_DECLARE_CATEGORY(GBA_DEBUG);
 
@@ -159,6 +155,8 @@ void GBAStop(struct GBA* gba);
 void GBADebug(struct GBA* gba, uint16_t value);
 
 #ifdef USE_ELF
+struct ELF;
+
 bool GBAVerifyELFEntry(struct ELF* elf, uint32_t target);
 #endif
 

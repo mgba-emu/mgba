@@ -12,10 +12,10 @@ Other fixes:
  - VFS: Fix minizip write returning 0 on success instead of size
 Misc:
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
+ - GBA: Improve detection of valid ELF ROMs
+ - Qt: Keep track of current pslette preset name (fixes mgba.io/i/2680)
  - macOS: Add category to plist (closes mgba.io/i/2691)
  - macOS: Fix modern build with libepoxy (fixes mgba.io/i/2700)
- - Qt: Keep track of current pslette preset name (fixes mgba.io/i/2680)
- - GBA: Improve detection of valid ELF ROMs
 
 0.10.0: (2022-10-11)
 Features:
