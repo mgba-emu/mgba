@@ -5610,7 +5610,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../VideoView.ui" line="329"/>
         <source>WavPack</source>
-        <translation type="unfinished"></translation>
+        <translation>WavPack</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="334"/>
