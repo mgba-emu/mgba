@@ -87,7 +87,7 @@
        </widget>
       </item>
       <item row="6" column="0">
-       <widget class="QLabel" name="label_6">
+       <widget class="QLabel" name="baseLabel">
         <property name="enabled">
          <bool>false</bool>
         </property>
