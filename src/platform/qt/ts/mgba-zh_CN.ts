@@ -5285,7 +5285,7 @@ Download size: %3</source>
     <message>
         <location filename="../ShaderSelector.cpp" line="122"/>
         <source>Preprocessing</source>
-        <translation>正在预处理</translation>
+        <translation>预处理</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="129"/>
