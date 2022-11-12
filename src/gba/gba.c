@@ -213,6 +213,7 @@ void GBAReset(struct ARMCore* cpu) {
 	gba->earlyExit = false;
 	gba->dmaPC = 0;
 	gba->biosStall = 0;
+	gba->keysLast = 0x400;
 	if (gba->yankedRomSize) {
 		gba->memory.romSize = gba->yankedRomSize;
 		gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
