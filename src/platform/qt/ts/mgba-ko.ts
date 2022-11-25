@@ -5616,7 +5616,7 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="329"/>
         <source>WavPack</source>
-        <translation type="unfinished"></translation>
+        <translation>Wav팩</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="334"/>
