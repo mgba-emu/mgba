@@ -6,6 +6,7 @@ Emulation fixes:
  - GB Serialize: Don't write BGP/OBP when loading SCGB state (fixes mgba.io/i/2694)
  - GBA: Fix resetting key IRQ state (fixes mgba.io/i/2716)
  - GBA Video: Ignore disabled backgrounds as OBJ blend target (fixes mgba.io/i/2489)
+ - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
  - Qt: Manually split filename to avoid overzealous splitting (fixes mgba.io/i/2681)
  - Qt: Expand criteria for tag branch names (fixes mgba.io/i/2679)

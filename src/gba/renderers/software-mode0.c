@@ -17,7 +17,6 @@
 
 #define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_16(BLEND, OBJWIN) \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
-	palette = &mainPalette[paletteData]; \
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
 	LOAD_32(tileData, charBase, vram); \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
@@ -36,7 +35,6 @@
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
 	LOAD_32(tileData, charBase, vram); \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
-	palette = &mainPalette[paletteData]; \
 	pixel = &renderer->row[outX]; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		if (outX < renderer->start) { \
@@ -93,7 +91,6 @@
 			carryData = 0; \
 		} else { \
 			paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
-			palette = &mainPalette[paletteData]; \
 			LOAD_32(tileData, charBase, vram); \
 			if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 				tileData >>= 4 * baseX; \
@@ -123,7 +120,6 @@
 					carryData = 0; \
 				} else { \
 					paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
-					palette = &mainPalette[paletteData]; \
 					LOAD_32(tileData, charBase, vram); \
 					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 						tileData >>= x * 4; \
@@ -154,7 +150,6 @@
 			localY = 7 - localY; \
 		} \
 		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
-		palette = &mainPalette[paletteData]; \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
 		if (UNLIKELY(charBase >= 0x10000)) { \
 			pixel += 8; \
@@ -517,17 +512,16 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 
 	uint32_t screenBase;
 	uint32_t charBase;
-	color_t* mainPalette = renderer->normalPalette;
+	color_t* palette = renderer->normalPalette;
 	if (renderer->d.highlightAmount && background->highlight) {
-		mainPalette = renderer->highlightPalette;
+		palette = renderer->highlightPalette;
 	}
 	if (variant) {
-		mainPalette = renderer->variantPalette;
+		palette = renderer->variantPalette;
 		if (renderer->d.highlightAmount && background->highlight) {
-			mainPalette = renderer->highlightVariantPalette;
+			palette = renderer->highlightVariantPalette;
 		}
 	}
-	color_t* palette = mainPalette;
 	PREPARE_OBJWIN;
 
 	int outX = renderer->start;
