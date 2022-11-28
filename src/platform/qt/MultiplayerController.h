@@ -5,9 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include <QList>
 #include <QMutex>
 #include <QObject>
-#include <QVector>
 
 #include <mgba/core/lockstep.h>
 #ifdef M_CORE_GBA
@@ -77,7 +77,7 @@ private:
 		GBASIOLockstep m_gbaLockstep;
 #endif
 	};
-	QVector<Player> m_players;
+	QList<Player> m_players;
 	QMutex m_lock;
 };
 
