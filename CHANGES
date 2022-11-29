@@ -3,6 +3,7 @@ Features:
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:
+ - GB Audio: Fix channels 1/2 not playing when resetting volume (fixes mgba.io/i/2614)
  - GB Serialize: Don't write BGP/OBP when loading SCGB state (fixes mgba.io/i/2694)
  - GB SIO: Further fix bidirectional transfer starting
  - GBA: Fix resetting key IRQ state (fixes mgba.io/i/2716)
