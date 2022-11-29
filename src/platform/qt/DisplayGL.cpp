@@ -532,7 +532,7 @@ void PainterGL::create() {
 #endif
 	m_backend->swap = [](VideoBackend* v) {
 		PainterGL* painter = static_cast<PainterGL*>(v->user);
-		if (!painter->m_gl->isValid()) {
+		if (!(painter->m_gl->isValid() && painter->m_window->isExposed())) {
 			return;
 		}
 		painter->m_gl->swapBuffers(painter->m_surface);
