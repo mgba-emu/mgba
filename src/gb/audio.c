@@ -269,6 +269,29 @@ void GBAudioWriteNR31(struct GBAudio* audio, uint8_t value) {
 void GBAudioWriteNR32(struct GBAudio* audio, uint8_t value) {
 	GBAudioRun(audio, mTimingCurrentTime(audio->timing), 0x4);
 	audio->ch3.volume = GBAudioRegisterBankVolumeGetVolumeGB(value);
+
+	audio->ch3.sample = audio->ch3.wavedata8[audio->ch3.window >> 1];
+	if (!(audio->ch3.window & 1)) {
+		audio->ch3.sample >>= 4;
+	}
+	audio->ch3.sample &= 0xF;
+	int volume;
+	switch (audio->ch3.volume) {
+	case 0:
+		volume = 4;
+		break;
+	case 1:
+		volume = 0;
+		break;
+	case 2:
+		volume = 1;
+		break;
+	default:
+	case 3:
+		volume = 2;
+		break;
+	}
+	audio->ch3.sample >>= volume;
 }
 
 void GBAudioWriteNR33(struct GBAudio* audio, uint8_t value) {
