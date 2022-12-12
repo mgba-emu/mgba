@@ -116,7 +116,6 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->ch3.wavedata8[13] = 0xFF;
 	audio->ch3.wavedata8[14] = 0x00;
 	audio->ch3.wavedata8[15] = 0xFF;
-	audio->ch3.window = 0;
 	audio->ch4 = (struct GBAudioNoiseChannel) { .envelope = { .dead = 2 } };
 	audio->frame = 0;
 	audio->sampleInterval = SAMPLE_INTERVAL * GB_MAX_SAMPLES;
