@@ -1061,6 +1061,8 @@ void Window::changeRenderer() {
 	if (!m_controller) {
 		return;
 	}
+
+	CoreController::Interrupter interrupter(m_controller);
 	if (m_config->getOption("hwaccelVideo").toInt() && m_display->supportsShaders() && m_controller->supportsFeature(CoreController::Feature::OPENGL)) {
 		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
 		if (!proxy) {
