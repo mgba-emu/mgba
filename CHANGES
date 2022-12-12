@@ -2,6 +2,7 @@
 Emulation fixes:
  - GB Audio: Fix channels 1/2 not playing when resetting volume (fixes mgba.io/i/2614)
  - GB Audio: Fix channel 3 volume being changed between samples (fixes mgba.io/i/1896)
+ - GB Audio: Fix up boot sequence
  - GB Memory: Actually, HDMAs should start when LCD is off (fixes mgba.io/i/2662)
  - GB Serialize: Don't write BGP/OBP when loading SCGB state (fixes mgba.io/i/2694)
  - GB SIO: Further fix bidirectional transfer starting
