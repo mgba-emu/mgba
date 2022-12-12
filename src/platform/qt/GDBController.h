@@ -23,7 +23,6 @@ public:
 
 public:
 	ushort port();
-	bool isAttached();
 
 public slots:
 	void setPort(ushort port);

@@ -37,8 +37,8 @@ void DebuggerConsoleController::enterLine(const QString& line) {
 	CoreController::Interrupter interrupter(m_gameController);
 	QMutexLocker lock(&m_mutex);
 	m_lines.append(line);
-	if (m_cliDebugger.d.state == DEBUGGER_RUNNING) {
-		mDebuggerEnter(&m_cliDebugger.d, DEBUGGER_ENTER_MANUAL, nullptr);
+	if (m_cliDebugger.d.p->state == DEBUGGER_RUNNING) {
+		mDebuggerEnter(m_cliDebugger.d.p, DEBUGGER_ENTER_MANUAL, nullptr);
 	}
 	m_cond.wakeOne();
 }
@@ -47,7 +47,7 @@ void DebuggerConsoleController::detach() {
 	{
 		CoreController::Interrupter interrupter(m_gameController);
 		QMutexLocker lock(&m_mutex);
-		if (m_cliDebugger.d.state != DEBUGGER_SHUTDOWN) {
+		if (m_cliDebugger.d.p->state != DEBUGGER_SHUTDOWN) {
 			m_lines.append(QString());
 			m_cond.wakeOne();
 		}
@@ -82,7 +82,7 @@ void DebuggerConsoleController::init(struct CLIDebuggerBackend* be) {
 void DebuggerConsoleController::deinit(struct CLIDebuggerBackend* be) {
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
-	if (QThread::currentThread() == self->thread() && be->p->d.state != DEBUGGER_SHUTDOWN) {
+	if (QThread::currentThread() == self->thread() && be->p->d.p->state != DEBUGGER_SHUTDOWN) {
 		self->m_lines.append(QString());
 		self->m_cond.wakeOne();
 	}

@@ -120,10 +120,6 @@ static void SM83DebuggerEnter(struct mDebuggerPlatform* platform, enum mDebugger
 	struct SM83Debugger* debugger = (struct SM83Debugger*) platform;
 	struct SM83Core* cpu = debugger->cpu;
 	cpu->nextEvent = cpu->cycles;
-
-	if (debugger->d.p->entered) {
-		debugger->d.p->entered(debugger->d.p, reason, info);
-	}
 }
 
 static ssize_t SM83DebuggerSetBreakpoint(struct mDebuggerPlatform* d, const struct mBreakpoint* info) {

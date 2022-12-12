@@ -323,9 +323,6 @@ static void ARMDebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerE
 			}
 		}
 	}
-	if (debugger->d.p->entered) {
-		debugger->d.p->entered(debugger->d.p, reason, info);
-	}
 }
 
 ssize_t ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* d, uint32_t address, enum ExecutionMode mode) {

@@ -66,14 +66,14 @@ static const char* TARGET_XML = "<target version=\"1.0\">"
 
 static void _sendMessage(struct GDBStub* stub);
 
-static void _gdbStubDeinit(struct mDebugger* debugger) {
+static void _gdbStubDeinit(struct mDebuggerModule* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	if (!SOCKET_FAILED(stub->socket)) {
 		GDBStubShutdown(stub);
 	}
 }
 
-static void _gdbStubEntered(struct mDebugger* debugger, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
+static void _gdbStubEntered(struct mDebuggerModule* debugger, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	switch (reason) {
 	case DEBUGGER_ENTER_MANUAL:
@@ -128,7 +128,7 @@ static void _gdbStubEntered(struct mDebugger* debugger, enum mDebuggerEntryReaso
 	_sendMessage(stub);
 }
 
-static void _gdbStubPoll(struct mDebugger* debugger) {
+static void _gdbStubPoll(struct mDebuggerModule* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	--stub->untilPoll;
 	if (stub->untilPoll > 0) {
@@ -139,13 +139,13 @@ static void _gdbStubPoll(struct mDebugger* debugger) {
 	GDBStubUpdate(stub);
 }
 
-static void _gdbStubWait(struct mDebugger* debugger) {
+static void _gdbStubWait(struct mDebuggerModule* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	stub->shouldBlock = true;
 	GDBStubUpdate(stub);
 }
 
-static void _gdbStubUpdate(struct mDebugger* debugger) {
+static void _gdbStubUpdate(struct mDebuggerModule* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
 	stub->shouldBlock = false;
 	GDBStubUpdate(stub);
@@ -252,14 +252,14 @@ static void _writeHostInfo(struct GDBStub* stub) {
 }
 
 static void _continue(struct GDBStub* stub, const char* message) {
-	stub->d.state = DEBUGGER_CALLBACK;
+	mDebuggerModuleSetNeedsCallback(&stub->d);
 	stub->untilPoll = GDB_STUB_INTERVAL;
 	// TODO: parse message
 	UNUSED(message);
 }
 
 static void _step(struct GDBStub* stub, const char* message) {
-	stub->d.core->step(stub->d.core);
+	stub->d.p->core->step(stub->d.p->core);
 	snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGTRAP);
 	_sendMessage(stub);
 	// TODO: parse message
@@ -281,7 +281,7 @@ static void _writeMemoryBinary(struct GDBStub* stub, const char* message) {
 		return;
 	}
 
-	struct ARMCore* cpu = stub->d.core->cpu;
+	struct ARMCore* cpu = stub->d.p->core->cpu;
 	for (i = 0; i < size; i++) {
 		uint8_t byte = *readAddress;
 		++readAddress;
@@ -315,7 +315,7 @@ static void _writeMemory(struct GDBStub* stub, const char* message) {
 		return;
 	}
 
-	struct ARMCore* cpu = stub->d.core->cpu;
+	struct ARMCore* cpu = stub->d.p->core->cpu;
 	for (i = 0; i < size; ++i, readAddress += 2) {
 		uint8_t byte = _hex2int(readAddress, 2);
 		GBAPatch8(cpu, address + i, byte, 0);
@@ -335,7 +335,7 @@ static void _readMemory(struct GDBStub* stub, const char* message) {
 		_error(stub, GDB_BAD_ARGUMENTS);
 		return;
 	}
-	struct ARMCore* cpu = stub->d.core->cpu;
+	struct ARMCore* cpu = stub->d.p->core->cpu;
 	int writeAddress = 0;
 	for (i = 0; i < size; ++i, writeAddress += 2) {
 		uint8_t byte = cpu->memory.load8(cpu, address + i, 0);
@@ -346,7 +346,7 @@ static void _readMemory(struct GDBStub* stub, const char* message) {
 }
 
 static void _writeGPRs(struct GDBStub* stub, const char* message) {
-	struct ARMCore* cpu = stub->d.core->cpu;
+	struct ARMCore* cpu = stub->d.p->core->cpu;
 	const char* readAddress = message;
 
 	int r;
@@ -365,7 +365,7 @@ static void _writeGPRs(struct GDBStub* stub, const char* message) {
 }
 
 static void _readGPRs(struct GDBStub* stub, const char* message) {
-	struct ARMCore* cpu = stub->d.core->cpu;
+	struct ARMCore* cpu = stub->d.p->core->cpu;
 	UNUSED(message);
 	int r;
 	int i = 0;
@@ -389,7 +389,7 @@ static void _readGPRs(struct GDBStub* stub, const char* message) {
 }
 
 static void _writeRegister(struct GDBStub* stub, const char* message) {
-	struct ARMCore* cpu = stub->d.core->cpu;
+	struct ARMCore* cpu = stub->d.p->core->cpu;
 	const char* readAddress = message;
 
 	unsigned i = 0;
@@ -422,7 +422,7 @@ static void _writeRegister(struct GDBStub* stub, const char* message) {
 }
 
 static void _readRegister(struct GDBStub* stub, const char* message) {
-	struct ARMCore* cpu = stub->d.core->cpu;
+	struct ARMCore* cpu = stub->d.p->core->cpu;
 	const char* readAddress = message;
 	unsigned i = 0;
 	uint32_t reg = _readHex(readAddress, &i);
@@ -507,7 +507,7 @@ static void _generateMemoryMapXml(struct GDBStub* stub, char* memoryMap) {
 	strncpy(memoryMap, "<memory-map version=\"1.0\">", 27);
 	index += strlen(memoryMap);
 	const struct mCoreMemoryBlock* blocks;
-	size_t nBlocks = stub->d.core->listMemoryBlocks(stub->d.core, &blocks);
+	size_t nBlocks = stub->d.p->core->listMemoryBlocks(stub->d.p->core, &blocks);
 	size_t i;
 	for (i = 0; i < nBlocks; ++i) {
 		if (!(blocks[i].flags & mCORE_MEMORY_MAPPED)) {
@@ -569,7 +569,11 @@ static void _processVReadCommand(struct GDBStub* stub, const char* message) {
 	stub->outgoing[0] = '\0';
 	if (!strncmp("Attach", message, 6)) {
 		strncpy(stub->outgoing, "1", GDB_STUB_MAX_LINE - 4);
-		mDebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL, 0);
+		stub->d.isPaused = true;
+		struct mDebuggerEntryInfo info = {
+			.target = &stub->d
+		};
+		mDebuggerEnter(stub->d.p, DEBUGGER_ENTER_MANUAL, &info);
 	}
 	_sendMessage(stub);
 }
@@ -592,19 +596,19 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 	switch (message[0]) {
 	case '0':
 	case '1':
-		stub->d.platform->setBreakpoint(stub->d.platform, &breakpoint);
+		stub->d.p->platform->setBreakpoint(stub->d.p->platform, &breakpoint);
 		break;
 	case '2':
 		watchpoint.type = stub->watchpointsBehavior == GDB_WATCHPOINT_OVERRIDE_LOGIC_ANY_WRITE ? WATCHPOINT_WRITE : WATCHPOINT_WRITE_CHANGE;
-		stub->d.platform->setWatchpoint(stub->d.platform, &watchpoint);
+		stub->d.p->platform->setWatchpoint(stub->d.p->platform, &watchpoint);
 		break;
 	case '3':
 		watchpoint.type = WATCHPOINT_READ;
-		stub->d.platform->setWatchpoint(stub->d.platform, &watchpoint);
+		stub->d.p->platform->setWatchpoint(stub->d.p->platform, &watchpoint);
 		break;
 	case '4':
 		watchpoint.type = WATCHPOINT_RW;
-		stub->d.platform->setWatchpoint(stub->d.platform, &watchpoint);
+		stub->d.p->platform->setWatchpoint(stub->d.p->platform, &watchpoint);
 		break;
 	default:
 		stub->outgoing[0] = '\0';
@@ -627,12 +631,12 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 	case '0':
 	case '1':
 		mBreakpointListInit(&breakpoints, 0);
-		stub->d.platform->listBreakpoints(stub->d.platform, &breakpoints);
+		stub->d.p->platform->listBreakpoints(stub->d.p->platform, &breakpoints);
 		for (index = 0; index < mBreakpointListSize(&breakpoints); ++index) {
 			if (mBreakpointListGetPointer(&breakpoints, index)->address != address) {
 				continue;
 			}
-			stub->d.platform->clearBreakpoint(stub->d.platform, mBreakpointListGetPointer(&breakpoints, index)->id);
+			stub->d.p->platform->clearBreakpoint(stub->d.p->platform, mBreakpointListGetPointer(&breakpoints, index)->id);
 		}
 		mBreakpointListDeinit(&breakpoints);
 		break;
@@ -640,13 +644,13 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 	case '3':
 	case '4':
 		mWatchpointListInit(&watchpoints, 0);
-		stub->d.platform->listWatchpoints(stub->d.platform, &watchpoints);
+		stub->d.p->platform->listWatchpoints(stub->d.p->platform, &watchpoints);
 		for (index = 0; index < mWatchpointListSize(&watchpoints); ++index) {
 			struct mWatchpoint* watchpoint = mWatchpointListGetPointer(&watchpoints, index);
 			if (address >= watchpoint->minAddress && address < watchpoint->maxAddress) {
 				continue;
 			}
-			stub->d.platform->clearBreakpoint(stub->d.platform, watchpoint->id);
+			stub->d.p->platform->clearBreakpoint(stub->d.p->platform, watchpoint->id);
 		}
 		mWatchpointListDeinit(&watchpoints);
 		break;
@@ -660,6 +664,9 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 	uint8_t checksum = 0;
 	int parsed = 1;
+	struct mDebuggerEntryInfo info = {
+		.target = &stub->d
+	};
 	switch (*message) {
 	case '+':
 		stub->lineAck = GDB_ACK_RECEIVED;
@@ -671,7 +678,8 @@ size_t _parseGDBMessage(struct GDBStub* stub, const char* message) {
 		++message;
 		break;
 	case '\x03':
-		mDebuggerEnter(&stub->d, DEBUGGER_ENTER_MANUAL, 0);
+		stub->d.isPaused = true;
+		mDebuggerEnter(stub->d.p, DEBUGGER_ENTER_MANUAL, &info);
 		return parsed;
 	default:
 		_nak(stub);
@@ -820,9 +828,9 @@ void GDBStubHangup(struct GDBStub* stub) {
 		SocketClose(stub->connection);
 		stub->connection = INVALID_SOCKET;
 	}
-	if (stub->d.state == DEBUGGER_PAUSED) {
-		stub->d.state = DEBUGGER_RUNNING;
-	}
+	stub->d.needsCallback = false;
+	stub->d.isPaused = false;
+	mDebuggerUpdatePaused(stub->d.p);
 }
 
 void GDBStubShutdown(struct GDBStub* stub) {
@@ -835,9 +843,9 @@ void GDBStubShutdown(struct GDBStub* stub) {
 
 void GDBStubUpdate(struct GDBStub* stub) {
 	if (stub->socket == INVALID_SOCKET) {
-		if (stub->d.state == DEBUGGER_PAUSED) {
-			stub->d.state = DEBUGGER_RUNNING;
-		}
+		stub->d.needsCallback = false;
+		stub->d.isPaused = false;
+		mDebuggerUpdatePaused(stub->d.p);
 		return;
 	}
 	if (stub->connection == INVALID_SOCKET) {
@@ -850,7 +858,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 			if (!SocketSetBlocking(stub->connection, false)) {
 				goto connectionLost;
 			}
-			mDebuggerEnter(&stub->d, DEBUGGER_ENTER_ATTACHED, 0);
+			mDebuggerEnter(stub->d.p, DEBUGGER_ENTER_ATTACHED, 0);
 		} else if (SocketWouldBlock()) {
 			return;
 		} else {

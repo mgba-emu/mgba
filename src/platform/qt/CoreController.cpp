@@ -49,6 +49,10 @@ CoreController::CoreController(mCore* core, QObject* parent)
 	GBASIODolphinCreate(&m_dolphin);
 #endif
 
+#ifdef USE_DEBUGGERS
+	mDebuggerInit(&m_debugger);
+#endif
+
 	m_resetActions.append([this]() {
 		if (m_autoload) {
 			mCoreLoadState(m_threadContext.core, 0, m_loadStateFlags);
@@ -214,6 +218,10 @@ CoreController::~CoreController() {
 
 	mCoreThreadJoin(&m_threadContext);
 
+#ifdef USE_DEBUGGERS
+	mDebuggerDeinit(&m_debugger);
+#endif
+
 	if (m_cacheSet) {
 		mCacheSetDeinit(m_cacheSet.get());
 		m_cacheSet.reset();
@@ -319,14 +327,33 @@ void CoreController::loadConfig(ConfigController* config) {
 }
 
 #ifdef USE_DEBUGGERS
-void CoreController::setDebugger(mDebugger* debugger) {
+void CoreController::attachDebugger(bool interrupt) {
 	Interrupter interrupter(this);
-	if (debugger) {
-		mDebuggerAttach(debugger, m_threadContext.core);
-		mDebuggerEnter(debugger, DEBUGGER_ENTER_ATTACHED, 0);
-	} else {
-		m_threadContext.core->detachDebugger(m_threadContext.core);
+	if (!m_threadContext.core->debugger) {
+		mDebuggerAttach(&m_debugger, m_threadContext.core);
 	}
+	if (interrupt) {
+		mDebuggerEnter(&m_debugger, DEBUGGER_ENTER_ATTACHED, 0);
+	}
+}
+
+void CoreController::detachDebugger() {
+	Interrupter interrupter(this);
+	if (!m_threadContext.core->debugger) {
+		return;
+	}
+	m_threadContext.core->detachDebugger(m_threadContext.core);
+}
+
+void CoreController::attachDebuggerModule(mDebuggerModule* module, bool interrupt) {
+	Interrupter interrupter(this);
+	mDebuggerAttachModule(&m_debugger, module);
+	attachDebugger(interrupt);
+}
+
+void CoreController::detachDebuggerModule(mDebuggerModule* module) {
+	Interrupter interrupter(this);
+	mDebuggerDetachModule(&m_debugger, module);
 }
 #endif
 
@@ -445,7 +472,7 @@ void CoreController::start() {
 void CoreController::stop() {
 	setSync(false);
 #ifdef USE_DEBUGGERS
-	setDebugger(nullptr);
+	detachDebugger();
 #endif
 	setPaused(false);
 	mCoreThreadEnd(&m_threadContext);

@@ -20,7 +20,10 @@ static char* _prompt(EditLine* el) {
 
 static void _breakIntoDefault(int signal) {
 	UNUSED(signal);
-	mDebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL, 0);
+	struct mDebuggerEntryInfo info = {
+		.target = &_activeDebugger->d
+	};
+	mDebuggerEnter(_activeDebugger->d.p, DEBUGGER_ENTER_MANUAL, &info);
 }
 
 static unsigned char _tabComplete(EditLine* elstate, int ch) {

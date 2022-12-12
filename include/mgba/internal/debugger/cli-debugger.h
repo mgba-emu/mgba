@@ -81,7 +81,7 @@ struct CLIDebuggerBackend {
 };
 
 struct CLIDebugger {
-	struct mDebugger d;
+	struct mDebuggerModule d;
 
 	struct CLIDebuggerSystem* system;
 	struct CLIDebuggerBackend* backend;

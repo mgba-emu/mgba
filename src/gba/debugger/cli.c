@@ -57,7 +57,7 @@ static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 
 	if (gbaDebugger->frameAdvance) {
 		if (!gbaDebugger->inVblank && GBARegisterDISPSTATIsInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[REG_DISPSTAT >> 1])) {
-			mDebuggerEnter(&gbaDebugger->d.p->d, DEBUGGER_ENTER_MANUAL, 0);
+			mDebuggerEnter(gbaDebugger->d.p->d.p, DEBUGGER_ENTER_MANUAL, 0);
 			gbaDebugger->frameAdvance = false;
 			return false;
 		}
@@ -69,7 +69,8 @@ static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 
 static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
-	debugger->d.state = DEBUGGER_CALLBACK;
+	debugger->d.needsCallback = true;
+	mDebuggerUpdatePaused(debugger->d.p);
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 	gbaDebugger->frameAdvance = true;

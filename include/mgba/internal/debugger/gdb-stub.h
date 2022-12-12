@@ -31,7 +31,7 @@ enum GDBWatchpointsBehvaior {
 };
 
 struct GDBStub {
-	struct mDebugger d;
+	struct mDebuggerModule d;
 
 	char line[GDB_STUB_MAX_LINE];
 	char outgoing[GDB_STUB_MAX_LINE];
