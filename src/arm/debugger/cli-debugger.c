@@ -159,7 +159,7 @@ static void _setBreakpointARM(struct CLIDebugger* debugger, struct CLIDebugVecto
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ssize_t id = ARMDebuggerSetSoftwareBreakpoint(debugger->d.p->platform, address, MODE_ARM);
+	ssize_t id = ARMDebuggerSetSoftwareBreakpoint(debugger->d.p->platform, &debugger->d, address, MODE_ARM);
 	if (id > 0) {
 		debugger->backend->printf(debugger->backend, INFO_BREAKPOINT_ADDED, id);
 	}
@@ -172,7 +172,7 @@ static void _setBreakpointThumb(struct CLIDebugger* debugger, struct CLIDebugVec
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ssize_t id = ARMDebuggerSetSoftwareBreakpoint(debugger->d.p->platform, address, MODE_THUMB);
+	ssize_t id = ARMDebuggerSetSoftwareBreakpoint(debugger->d.p->platform, &debugger->d, address, MODE_THUMB);
 	if (id > 0) {
 		debugger->backend->printf(debugger->backend, INFO_BREAKPOINT_ADDED, id);
 	}

@@ -648,7 +648,7 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 			return;
 		}
 	}
-	ssize_t id = debugger->d.p->platform->setBreakpoint(debugger->d.p->platform, &breakpoint);
+	ssize_t id = debugger->d.p->platform->setBreakpoint(debugger->d.p->platform, &debugger->d, &breakpoint);
 	if (id > 0) {
 		debugger->backend->printf(debugger->backend, INFO_BREAKPOINT_ADDED, id);
 	}
@@ -678,7 +678,7 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 			return;
 		}
 	}
-	ssize_t id = debugger->d.p->platform->setWatchpoint(debugger->d.p->platform, &watchpoint);
+	ssize_t id = debugger->d.p->platform->setWatchpoint(debugger->d.p->platform, &debugger->d, &watchpoint);
 	if (id > 0) {
 		debugger->backend->printf(debugger->backend, INFO_WATCHPOINT_ADDED, id);
 	}
@@ -720,7 +720,7 @@ static void _setRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVec
 			return;
 		}
 	}
-	ssize_t id = debugger->d.p->platform->setWatchpoint(debugger->d.p->platform, &watchpoint);
+	ssize_t id = debugger->d.p->platform->setWatchpoint(debugger->d.p->platform, &debugger->d, &watchpoint);
 	if (id > 0) {
 		debugger->backend->printf(debugger->backend, INFO_WATCHPOINT_ADDED, id);
 	}
@@ -771,7 +771,7 @@ static void _listBreakpoints(struct CLIDebugger* debugger, struct CLIDebugVector
 	UNUSED(dv);
 	struct mBreakpointList breakpoints;
 	mBreakpointListInit(&breakpoints, 0);
-	debugger->d.p->platform->listBreakpoints(debugger->d.p->platform, &breakpoints);
+	debugger->d.p->platform->listBreakpoints(debugger->d.p->platform, &debugger->d, &breakpoints);
 	size_t i;
 	for (i = 0; i < mBreakpointListSize(&breakpoints); ++i) {
 		struct mBreakpoint* breakpoint = mBreakpointListGetPointer(&breakpoints, i);
@@ -788,7 +788,7 @@ static void _listWatchpoints(struct CLIDebugger* debugger, struct CLIDebugVector
 	UNUSED(dv);
 	struct mWatchpointList watchpoints;
 	mWatchpointListInit(&watchpoints, 0);
-	debugger->d.p->platform->listWatchpoints(debugger->d.p->platform, &watchpoints);
+	debugger->d.p->platform->listWatchpoints(debugger->d.p->platform, &debugger->d, &watchpoints);
 	size_t i;
 	for (i = 0; i < mWatchpointListSize(&watchpoints); ++i) {
 		struct mWatchpoint* watchpoint = mWatchpointListGetPointer(&watchpoints, i);

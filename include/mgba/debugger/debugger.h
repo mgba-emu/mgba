@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/cpu.h>
 #include <mgba/core/log.h>
+#include <mgba-util/table.h>
 #include <mgba-util/vector.h>
 #include <mgba/internal/debugger/stack-trace.h>
 
@@ -114,11 +115,11 @@ struct mDebuggerPlatform {
 	void (*checkBreakpoints)(struct mDebuggerPlatform*);
 	bool (*clearBreakpoint)(struct mDebuggerPlatform*, ssize_t id);
 
-	ssize_t (*setBreakpoint)(struct mDebuggerPlatform*, const struct mBreakpoint*);
-	void (*listBreakpoints)(struct mDebuggerPlatform*, struct mBreakpointList*);
+	ssize_t (*setBreakpoint)(struct mDebuggerPlatform*, struct mDebuggerModule*, const struct mBreakpoint*);
+	void (*listBreakpoints)(struct mDebuggerPlatform*, struct mDebuggerModule*, struct mBreakpointList*);
 
-	ssize_t (*setWatchpoint)(struct mDebuggerPlatform*, const struct mWatchpoint*);
-	void (*listWatchpoints)(struct mDebuggerPlatform*, struct mWatchpointList*);
+	ssize_t (*setWatchpoint)(struct mDebuggerPlatform*, struct mDebuggerModule*, const struct mWatchpoint*);
+	void (*listWatchpoints)(struct mDebuggerPlatform*, struct mDebuggerModule*, struct mWatchpointList*);
 
 	void (*trace)(struct mDebuggerPlatform*, char* out, size_t* length);
 
@@ -138,6 +139,7 @@ struct mDebugger {
 	struct mStackTrace stackTrace;
 
 	struct mDebuggerModuleList modules;
+	struct Table pointOwner;
 };
 
 struct mDebuggerModule {

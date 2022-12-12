@@ -130,6 +130,7 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 			info->type.wp.watchType = watchpoint->type;
 			info->type.wp.accessType = type;
 			info->pointId = watchpoint->id;
+			info->target = TableLookup(&debugger->d.p->pointOwner, watchpoint->id);
 			return true;
 		}
 	}

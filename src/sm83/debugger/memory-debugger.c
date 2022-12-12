@@ -65,6 +65,7 @@ static bool _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, s
 			info->type.wp.watchType = watchpoint->type;
 			info->type.wp.accessType = type;
 			info->pointId = watchpoint->id;
+			info->target = TableLookup(&debugger->d.p->pointOwner, watchpoint->id);
 			return true;
 		}
 	}

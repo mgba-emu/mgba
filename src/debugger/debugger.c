@@ -71,10 +71,12 @@ struct mDebuggerModule* mDebuggerCreateModule(enum mDebuggerType type, struct mC
 void mDebuggerInit(struct mDebugger* debugger) {
 	memset(debugger, 0, sizeof(*debugger));
 	mDebuggerModuleListInit(&debugger->modules, 4);
+	TableInit(&debugger->pointOwner, 0, NULL);
 }
 
 void mDebuggerDeinit(struct mDebugger* debugger) {
 	mDebuggerModuleListDeinit(&debugger->modules);
+	TableDeinit(&debugger->pointOwner);
 }
 
 void mDebuggerAttach(struct mDebugger* debugger, struct mCore* core) {

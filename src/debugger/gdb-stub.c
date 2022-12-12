@@ -596,19 +596,19 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 	switch (message[0]) {
 	case '0':
 	case '1':
-		stub->d.p->platform->setBreakpoint(stub->d.p->platform, &breakpoint);
+		stub->d.p->platform->setBreakpoint(stub->d.p->platform, &stub->d, &breakpoint);
 		break;
 	case '2':
 		watchpoint.type = stub->watchpointsBehavior == GDB_WATCHPOINT_OVERRIDE_LOGIC_ANY_WRITE ? WATCHPOINT_WRITE : WATCHPOINT_WRITE_CHANGE;
-		stub->d.p->platform->setWatchpoint(stub->d.p->platform, &watchpoint);
+		stub->d.p->platform->setWatchpoint(stub->d.p->platform, &stub->d, &watchpoint);
 		break;
 	case '3':
 		watchpoint.type = WATCHPOINT_READ;
-		stub->d.p->platform->setWatchpoint(stub->d.p->platform, &watchpoint);
+		stub->d.p->platform->setWatchpoint(stub->d.p->platform, &stub->d, &watchpoint);
 		break;
 	case '4':
 		watchpoint.type = WATCHPOINT_RW;
-		stub->d.p->platform->setWatchpoint(stub->d.p->platform, &watchpoint);
+		stub->d.p->platform->setWatchpoint(stub->d.p->platform, &stub->d, &watchpoint);
 		break;
 	default:
 		stub->outgoing[0] = '\0';
@@ -631,7 +631,7 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 	case '0':
 	case '1':
 		mBreakpointListInit(&breakpoints, 0);
-		stub->d.p->platform->listBreakpoints(stub->d.p->platform, &breakpoints);
+		stub->d.p->platform->listBreakpoints(stub->d.p->platform, &stub->d, &breakpoints);
 		for (index = 0; index < mBreakpointListSize(&breakpoints); ++index) {
 			if (mBreakpointListGetPointer(&breakpoints, index)->address != address) {
 				continue;
@@ -644,7 +644,7 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 	case '3':
 	case '4':
 		mWatchpointListInit(&watchpoints, 0);
-		stub->d.p->platform->listWatchpoints(stub->d.p->platform, &watchpoints);
+		stub->d.p->platform->listWatchpoints(stub->d.p->platform, &stub->d, &watchpoints);
 		for (index = 0; index < mWatchpointListSize(&watchpoints); ++index) {
 			struct mWatchpoint* watchpoint = mWatchpointListGetPointer(&watchpoints, index);
 			if (address >= watchpoint->minAddress && address < watchpoint->maxAddress) {
