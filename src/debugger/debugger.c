@@ -95,11 +95,27 @@ void mDebuggerAttach(struct mDebugger* debugger, struct mCore* core) {
 void mDebuggerAttachModule(struct mDebugger* debugger, struct mDebuggerModule* module) {
 	module->p = debugger;
 	*mDebuggerModuleListAppend(&debugger->modules) = module;
+	if (debugger->state > DEBUGGER_CREATED && debugger->state < DEBUGGER_SHUTDOWN) {
+		if (module->init) {
+			module->init(module);
+		}
+	}
 }
 
 void mDebuggerDetachModule(struct mDebugger* debugger, struct mDebuggerModule* module) {
-	// TODO
-	abort();
+	size_t i;
+	for (i = 0; i < mDebuggerModuleListSize(&debugger->modules); ++i) {
+		if (module != *mDebuggerModuleListGetPointer(&debugger->modules, i)) {
+			continue;
+		}
+		if (debugger->state > DEBUGGER_CREATED && debugger->state < DEBUGGER_SHUTDOWN) {
+			if (module->deinit) {
+				module->deinit(module);
+			}
+		}
+		mDebuggerModuleListShift(&debugger->modules, i, 1);
+		break;
+	}
 }
 
 void mDebuggerRun(struct mDebugger* debugger) {
@@ -143,6 +159,9 @@ void mDebuggerRun(struct mDebugger* debugger) {
 			debugger->state = DEBUGGER_RUNNING;
 		}
 		break;
+	case DEBUGGER_CREATED:
+		mLOG(DEBUGGER, ERROR, "Attempted to run debugger before initializtion");
+		return;
 	case DEBUGGER_SHUTDOWN:
 		return;
 	}
@@ -258,6 +277,7 @@ static void _mDebuggerInit(void* cpu, struct mCPUComponent* component) {
 
 static void _mDebuggerDeinit(struct mCPUComponent* component) {
 	struct mDebugger* debugger = (struct mDebugger*) component;
+	debugger->state = DEBUGGER_SHUTDOWN;
 	size_t i;
 	for (i = 0; i < mDebuggerModuleListSize(&debugger->modules); ++i) {
 		struct mDebuggerModule* module = *mDebuggerModuleListGetPointer(&debugger->modules, i);

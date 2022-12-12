@@ -347,7 +347,9 @@ void CoreController::detachDebugger() {
 
 void CoreController::attachDebuggerModule(mDebuggerModule* module, bool interrupt) {
 	Interrupter interrupter(this);
-	mDebuggerAttachModule(&m_debugger, module);
+	if (module) {
+		mDebuggerAttachModule(&m_debugger, module);
+	}
 	attachDebugger(interrupt);
 }
 

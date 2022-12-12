@@ -29,6 +29,7 @@ enum mDebuggerType {
 };
 
 enum mDebuggerState {
+	DEBUGGER_CREATED = 0,
 	DEBUGGER_PAUSED,
 	DEBUGGER_RUNNING,
 	DEBUGGER_CALLBACK,

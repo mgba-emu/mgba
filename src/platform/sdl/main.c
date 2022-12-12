@@ -243,19 +243,33 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 #endif
 
 #ifdef USE_DEBUGGERS
-	struct mDebuggerModule* module = mDebuggerCreateModule(args->debuggerType, renderer->core);
 	struct mDebugger debugger;
+	bool hasDebugger = false;
 
 	mDebuggerInit(&debugger);
-	if (module) {
 #ifdef USE_EDITLINE
-		if (args->debuggerType == DEBUGGER_CLI) {
+	if (args->debugCli) {
+		struct mDebuggerModule* module = mDebuggerCreateModule(DEBUGGER_CLI, renderer->core);
+		if (module) {
 			struct CLIDebugger* cliDebugger = (struct CLIDebugger*) module;
 			CLIDebuggerAttachBackend(cliDebugger, CLIDebuggerEditLineBackendCreate());
+			mDebuggerAttachModule(&debugger, module);
+			hasDebugger = true;
 		}
+	}
 #endif
-		module->isPaused = true;
-		mDebuggerAttachModule(&debugger, module);
+
+#ifdef USE_GDB_STUB
+	if (args->debugGdb) {
+		struct mDebuggerModule* module = mDebuggerCreateModule(DEBUGGER_GDB, renderer->core);
+		if (module) {
+			mDebuggerAttachModule(&debugger, module);
+			hasDebugger = true;
+		}
+	}
+#endif
+
+	if (hasDebugger) {
 		mDebuggerAttach(&debugger, renderer->core);
 		mDebuggerEnter(&debugger, DEBUGGER_ENTER_MANUAL, NULL);
 #ifdef ENABLE_SCRIPTING
@@ -328,7 +342,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 #endif
 
 #ifdef USE_DEBUGGERS
-	if (module) {
+	if (hasDebugger) {
 		renderer->core->detachDebugger(renderer->core);
 		mDebuggerDeinit(&debugger);
 	}
