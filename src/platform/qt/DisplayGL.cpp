@@ -425,10 +425,10 @@ void DisplayGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
 
 void DisplayGL::setupProxyThread() {
 	m_proxyContext->moveToThread(&m_proxyThread);
+	m_proxySurface.create();
 	connect(&m_proxyThread, &QThread::started, m_proxyContext.get(), [this]() {
 		m_proxyContext->setShareContext(m_painter->shareContext());
 		m_proxyContext->create();
-		m_proxySurface.create();
 		m_proxyContext->makeCurrent(&m_proxySurface);
 #if defined(_WIN32) && defined(USE_EPOXY)
 		epoxy_handle_external_wglMakeCurrent();
@@ -576,6 +576,7 @@ void PainterGL::create() {
 	m_backend->filter = false;
 	m_backend->lockAspectRatio = false;
 	m_backend->interframeBlending = false;
+	m_gl->doneCurrent();
 
 	emit created();
 }
