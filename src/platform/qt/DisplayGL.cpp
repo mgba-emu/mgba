@@ -960,6 +960,11 @@ QOpenGLContext* PainterGL::shareContext() {
 void PainterGL::updateFramebufferHandle() {
 	QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
 	fn->glFinish();
+
+	CoreController::Interrupter interrupter(m_context);
+	if (!m_context->hardwareAccelerated()) {
+		return;
+	}
 	enqueue(m_bridgeTexIn);
 	m_context->setFramebufferHandle(m_bridgeTexIn);
 }
