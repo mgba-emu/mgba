@@ -14,6 +14,7 @@ Emulation fixes:
  - GBA Video: Ignore disabled backgrounds as OBJ blend target (fixes mgba.io/i/2489)
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
+ - GBA: Fix forceskip BIOS logic for multiboot ROMs (fixes mgba.io/i/2753)
  - Qt: Manually split filename to avoid overzealous splitting (fixes mgba.io/i/2681)
  - Qt: Expand criteria for tag branch names (fixes mgba.io/i/2679)
  - Qt: Fix scanning specific e-Reader dotcodes (fixes mgba.io/i/2693)
