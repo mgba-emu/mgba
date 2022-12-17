@@ -861,16 +861,22 @@ void PainterGL::dequeueAll(bool keep) {
 			m_free.append(buffer);
 		}
 	}
-	m_queueTex.clear();
-	m_freeTex.clear();
-	for (auto tex : m_bridgeTexes) {
-		m_freeTex.enqueue(tex);
-	}
-	m_bridgeTexIn = m_freeTex.dequeue();
-	m_bridgeTexOut = std::numeric_limits<GLuint>::max();
 	if (m_buffer && !keep) {
 		m_free.append(m_buffer);
 		m_buffer = nullptr;
+	}
+
+	m_queueTex.clear();
+	m_freeTex.clear();
+	for (auto tex : m_bridgeTexes) {
+		if (keep && tex == m_bridgeTexIn) {
+			continue;
+		}
+		m_freeTex.enqueue(tex);
+	}
+	if (!keep) {
+		m_bridgeTexIn = m_freeTex.dequeue();
+		m_bridgeTexOut = std::numeric_limits<GLuint>::max();
 	}
 }
 
