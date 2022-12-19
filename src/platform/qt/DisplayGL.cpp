@@ -959,7 +959,7 @@ QOpenGLContext* PainterGL::shareContext() {
 
 void PainterGL::updateFramebufferHandle() {
 	QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
-	fn->glFinish();
+	fn->glFlush();
 
 	CoreController::Interrupter interrupter(m_context);
 	if (!m_context->hardwareAccelerated()) {
