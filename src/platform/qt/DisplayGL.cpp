@@ -44,6 +44,8 @@ using QOpenGLFunctions_Baseline = QOpenGLFunctions_3_2_Core;
 #define OVERHEAD_NSEC 300000
 #endif
 
+#include "OpenGLBug.h"
+
 using namespace QGBA;
 
 QHash<QSurfaceFormat, bool> DisplayGL::s_supports;
@@ -959,7 +961,12 @@ QOpenGLContext* PainterGL::shareContext() {
 
 void PainterGL::updateFramebufferHandle() {
 	QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
-	fn->glFlush();
+	// TODO: Figure out why glFlush doesn't work here on Intel/Windows
+	if (glContextHasBug(OpenGLBug::CROSS_THREAD_FLUSH)) {
+		fn->glFinish();
+	} else {
+		fn->glFlush();
+	}
 
 	CoreController::Interrupter interrupter(m_context);
 	if (!m_context->hardwareAccelerated()) {
