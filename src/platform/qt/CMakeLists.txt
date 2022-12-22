@@ -123,6 +123,7 @@ set(SOURCE_FILES
 	MessagePainter.cpp
 	MultiplayerController.cpp
 	ObjView.cpp
+	OpenGLBug.cpp
 	OverrideView.cpp
 	PaletteView.cpp
 	PlacementControl.cpp
