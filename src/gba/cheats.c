@@ -105,36 +105,36 @@ static bool GBACheatAddAutodetect(struct GBACheatSet* set, uint32_t op1, uint32_
 	char line[18] = "XXXXXXXX XXXXXXXX";
 	snprintf(line, sizeof(line), "%08X %08X", op1, op2);
 
-	int gsaP, rgsaP, parP, rparP;
+	int nextProbability;
 	int maxProbability = INT_MIN;
 	switch (set->gsaVersion) {
 	case 0:
 		// Try to detect GameShark version
 		GBACheatDecryptGameShark(&o1, &o2, GBACheatGameSharkSeeds);
-		gsaP = GBACheatGameSharkProbability(o1, o2);
+		nextProbability = GBACheatGameSharkProbability(o1, o2);
 		o1 = op1;
 		o2 = op2;
-		if (gsaP > maxProbability) {
-			maxProbability = gsaP;
+		if (nextProbability > maxProbability) {
+			maxProbability = nextProbability;
 			GBACheatSetGameSharkVersion(set, GBA_GS_GSAV1);
 		}
 
 		GBACheatDecryptGameShark(&o1, &o2, GBACheatProActionReplaySeeds);
-		parP = GBACheatProActionReplayProbability(o1, o2);
-		if (parP > maxProbability) {
-			maxProbability = parP;
+		nextProbability = GBACheatProActionReplayProbability(o1, o2);
+		if (nextProbability > maxProbability) {
+			maxProbability = nextProbability;
 			GBACheatSetGameSharkVersion(set, GBA_GS_PARV3);
 		}
 
-		rgsaP = GBACheatGameSharkProbability(op1, op2);
-		if (rgsaP > maxProbability) {
-			maxProbability = rgsaP;
+		nextProbability = GBACheatGameSharkProbability(op1, op2);
+		if (nextProbability > maxProbability) {
+			maxProbability = nextProbability;
 			GBACheatSetGameSharkVersion(set, GBA_GS_GSAV1_RAW);
 		}
 
-		rparP = GBACheatProActionReplayProbability(op1, op2);
-		if (rparP > maxProbability) {
-			maxProbability = rparP;
+		nextProbability = GBACheatProActionReplayProbability(op1, op2);
+		if (nextProbability > maxProbability) {
+			maxProbability = nextProbability;
 			GBACheatSetGameSharkVersion(set, GBA_GS_PARV3_RAW);
 		}
 
