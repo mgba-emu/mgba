@@ -8,8 +8,8 @@
 namespace QGBA {
 
 enum class OpenGLBug {
-    // mgba.io/i/2761
-    CROSS_THREAD_FLUSH
+	// mgba.io/i/2761
+	CROSS_THREAD_FLUSH
 };
 
 bool glContextHasBug(OpenGLBug);
