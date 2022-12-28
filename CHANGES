@@ -4,6 +4,7 @@ Emulation fixes:
  - GB Audio: Fix channel 3 volume being changed between samples (fixes mgba.io/i/1896)
  - GB Audio: Fix up boot sequence
  - GB Audio: Fix updating channels other than 2 when writing NR5x
+ - GB BIOS: Include timing in degenerate ArcTan2 cases (fixes mgba.io/i/2763)
  - GB Memory: Actually, HDMAs should start when LCD is off (fixes mgba.io/i/2662)
  - GB Serialize: Don't write BGP/OBP when loading SCGB state (fixes mgba.io/i/2694)
  - GB SIO: Further fix bidirectional transfer starting

@@ -336,12 +336,14 @@ static int16_t _ArcTan(int32_t i, int32_t* r1, int32_t* r3, uint32_t* cycles) {
 
 static int16_t _ArcTan2(int32_t x, int32_t y, int32_t* r1, uint32_t* cycles) {
 	if (!y) {
+		*cycles = 11;
 		if (x >= 0) {
 			return 0;
 		}
 		return 0x8000;
 	}
 	if (!x) {
+		*cycles = 11;
 		if (y >= 0) {
 			return 0x4000;
 		}
