@@ -41,47 +41,52 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>アップデートが利用可能です</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>%1 のアップデートが利用可能です。
+</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="38"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+今すぐダウンロードしてインストールしますか？ダウンロードが完了したら、エミュレータを再起動する必要があります。</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+このプラットフォームでは自動アップデートは利用できません。アップデートしたい場合は手動で行う必要があります。</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="45"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>現在のバージョン: %1
+新しいバージョン: %2
+ダウンロードサイズ: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>アップデートをダウンロード中...</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="79"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>ダウンロードに失敗しました。手動で更新してください。</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>ダウンロード完了。OKで%1 を再起動し、アップデートをインストールします。</translation>
     </message>
 </context>
 <context>
@@ -89,12 +94,12 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="88"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>安定版</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="91"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>開発版</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="93"/>
@@ -104,7 +109,7 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="224"/>
         <source>(None)</source>
-        <translation type="unfinished"></translation>
+        <translation>(なし)</translation>
     </message>
 </context>
 <context>
@@ -170,7 +175,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioDevice.cpp" line="44"/>
         <source>Audio device is missing its core</source>
-        <translation type="unfinished"></translation>
+        <translation>オーディオ デバイスにコアがありません</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="62"/>
