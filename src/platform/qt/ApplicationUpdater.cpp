@@ -7,6 +7,7 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QRegularExpression>
 
 #include "ApplicationUpdatePrompt.h"
 #include "ConfigController.h"
@@ -71,9 +72,10 @@ QStringList ApplicationUpdater::listChannels() {
 }
 
 QString ApplicationUpdater::currentChannel() {
-	QLatin1String version(projectVersion);
-	QLatin1String branch(gitBranch);
-	if (branch == QLatin1String("heads/") + version || branch == version) {
+	QString version(projectVersion);
+	QString branch(gitBranch);
+	QRegularExpression stable("^(?:(?:refs/)?(?:tags|heads)/)?[0-9]+\\.[0-9]+\\.[0-9]+$");
+	if (branch.contains(stable) || (branch == "(unknown)" && version.contains(stable))) {
 		return QLatin1String("stable");
 	} else {
 		return QLatin1String("dev");
