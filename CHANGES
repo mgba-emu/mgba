@@ -18,6 +18,7 @@ Other fixes:
  - Qt: Fix scanning specific e-Reader dotcodes (fixes mgba.io/i/2693)
  - Qt: Don't re-enable sync if GBA link modes aren't the same (fixes mgba.io/i/2044)
  - Qt: Improve handling of multiplayer syncing (fixes mgba.io/i/2720)
+ - Qt: Fix initializing update revision info
  - Res: Fix species name location in Ruby/Sapphire revs 1/2 (fixes mgba.io/i/2685)
  - VFS: Fix minizip write returning 0 on success instead of size
 Misc:
