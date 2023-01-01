@@ -174,7 +174,8 @@ const char* ApplicationUpdater::platform() {
 }
 
 ApplicationUpdater::UpdateInfo::UpdateInfo(const QString& prefix, const mUpdate* update)
-	: size(update->size)
+	: rev(-1)
+	, size(update->size)
 	, url(prefix + update->path)
 {
 	if (update->rev > 0) {
