@@ -9,7 +9,7 @@ The original files will be preserved as *.v1
 """
 import core_option_regex as cor
 import os
-import sys
+import glob
 
 
 def create_v2_code_file(struct_text, file_name):
@@ -379,7 +379,8 @@ def create_v2_code_file(struct_text, file_name):
                                                                                      f'   option_defs{struct_type_name_lang[2]}\n'
                                                                                      '};',
                                                           construct.group(0)[construct.end(2) - offset:])
-         out_text = cor.re.sub(cor.re.escape(construct.group(0)), repl_text, out_text)
+         out_text = out_text.replace(construct.group(0), repl_text)
+         #out_text = cor.re.sub(cor.re.escape(construct.group(0)), repl_text, raw_out)
       else:
          return -2
    with open(file_name, 'w', encoding='utf-8') as code_file:
@@ -408,11 +409,19 @@ def create_v2_code_file(struct_text, file_name):
                       '   &options_ar,      /* RETRO_LANGUAGE_ARABIC */\n' \
                       '   &options_el,      /* RETRO_LANGUAGE_GREEK */\n' \
                       '   &options_tr,      /* RETRO_LANGUAGE_TURKISH */\n' \
-                      '   &options_sv,      /* RETRO_LANGUAGE_SLOVAK */\n' \
+                      '   &options_sk,      /* RETRO_LANGUAGE_SLOVAK */\n' \
                       '   &options_fa,      /* RETRO_LANGUAGE_PERSIAN */\n' \
                       '   &options_he,      /* RETRO_LANGUAGE_HEBREW */\n' \
                       '   &options_ast,     /* RETRO_LANGUAGE_ASTURIAN */\n' \
                       '   &options_fi,      /* RETRO_LANGUAGE_FINNISH */\n' \
+                      '   &options_id,      /* RETRO_LANGUAGE_INDONESIAN */\n' \
+                      '   &options_sv,      /* RETRO_LANGUAGE_SWEDISH */\n' \
+                      '   &options_uk,      /* RETRO_LANGUAGE_UKRAINIAN */\n' \
+                      '   &options_cs,      /* RETRO_LANGUAGE_CZECH */\n' \
+                      '   &options_val,     /* RETRO_LANGUAGE_CATALAN_VALENCIA */\n' \
+                      '   &options_ca,      /* RETRO_LANGUAGE_CATALAN */\n' \
+                      '   &options_en,      /* RETRO_LANGUAGE_BRITISH_ENGLISH */\n' \
+                      '   &options_hu,      /* RETRO_LANGUAGE_HUNGARIAN */\n' \
                     + out_text[intl.end(2):]
          out_text = p_set.sub(new_set, new_intl)
       else:
@@ -425,21 +434,36 @@ def create_v2_code_file(struct_text, file_name):
 # --------------------          MAIN          -------------------- #
 
 if __name__ == '__main__':
-   try:
-      if os.path.isfile(sys.argv[1]):
-         _temp = os.path.dirname(sys.argv[1])
-      else:
-         _temp = sys.argv[1]
-      while _temp.endswith('/') or _temp.endswith('\\'):
-         _temp = _temp[:-1]
-      DIR_PATH = _temp
-   except IndexError:
-      DIR_PATH = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-      print("No path provided, assuming parent directory:\n" + DIR_PATH)
+   DIR_PATH = os.path.dirname(os.path.realpath(__file__))
+   if os.path.basename(DIR_PATH) != "intl":
+      raise RuntimeError("Script is not in intl folder!")
 
-   H_FILE_PATH = os.path.join(DIR_PATH, 'libretro_core_options.h')
-   INTL_FILE_PATH = os.path.join(DIR_PATH, 'libretro_core_options_intl.h')
+   BASE_PATH = os.path.dirname(DIR_PATH)
+   CORE_OP_FILE = os.path.join(BASE_PATH, "**", "libretro_core_options.h")
 
+   core_options_hits = glob.glob(CORE_OP_FILE, recursive=True)
+
+   if len(core_options_hits) == 0:
+      raise RuntimeError("libretro_core_options.h not found!")
+   elif len(core_options_hits) > 1:
+      print("More than one libretro_core_options.h file found:\n\n")
+      for i, file in enumerate(core_options_hits):
+         print(f"{i} {file}\n")
+
+      while True:
+         user_choice = input("Please choose one ('q' will exit): ")
+         if user_choice == 'q':
+            exit(0)
+         elif user_choice.isdigit():
+            core_op_file = core_options_hits[int(user_choice)]
+            break
+         else:
+            print("Please make a valid choice!\n\n")
+   else:
+      core_op_file = core_options_hits[0]
+
+   H_FILE_PATH = core_op_file
+   INTL_FILE_PATH = core_op_file.replace("libretro_core_options.h", 'libretro_core_options_intl.h')
    for file in (H_FILE_PATH, INTL_FILE_PATH):
       if os.path.isfile(file):
          with open(file, 'r+', encoding='utf-8') as h_file:

@@ -182,17 +182,17 @@ def get_texts(text: str) -> dict:
       if lang not in just_string:
          hash_n_string[lang] = {}
          just_string[lang] = set()
-
-      is_v2 = False
+      is_v2_definition = 'retro_core_option_v2_definition' == struct_type_name[0]
       pre_name = ''
+      # info texts format
       p = cor.p_info
-      if 'retro_core_option_v2_definition' == struct_type_name[0]:
-         is_v2 = True
-      elif 'retro_core_option_v2_category' == struct_type_name[0]:
+      if 'retro_core_option_v2_category' == struct_type_name[0]:
+         # prepend category labels, as they can be the same as option labels
          pre_name = 'CATEGORY_'
+         # categories have different info texts format
          p = cor.p_info_cat
 
-      struct_content = struct.group(2)
+      struct_content = struct.group(4)
       # 0: full option; 1: key; 2: description; 3: additional info; 4: key/value pairs
       struct_options = cor.p_option.finditer(struct_content)
       for opt, option in enumerate(struct_options):
@@ -218,7 +218,7 @@ def get_texts(text: str) -> dict:
          if option.group(3):
             infos = option.group(3)
             option_info = p.finditer(infos)
-            if is_v2:
+            if is_v2_definition:
                desc1 = next(option_info).group(1)
                if is_viable_non_dupe(desc1, just_string[lang]):
                   just_string[lang].add(desc1)
@@ -302,8 +302,12 @@ def h2json(file_paths: dict) -> dict:
    for file_lang in file_paths:
       if not os.path.isfile(file_paths[file_lang]):
          continue
-
-      jsons[file_lang] = file_paths[file_lang][:-2] + '.json'
+      file_path = file_paths[file_lang]
+      try:
+         jsons[file_lang] = file_path[:file_path.rindex('.')] + '.json'
+      except ValueError:
+         print(f"File {file_path} has incorrect format! File ending missing?")
+         continue
 
       p = cor.p_masked
 
@@ -401,11 +405,11 @@ def get_crowdin_client(dir_path: str) -> str:
    return jar_path
 
 
-def create_intl_file(localisation_file_path: str, intl_dir_path: str, text: str, file_path: str) -> None:
+def create_intl_file(intl_file_path: str, localisations_path: str, text: str, file_path: str) -> None:
    """Creates 'libretro_core_options_intl.h' from Crowdin translations.
 
-   :param localisation_file_path: Path to 'libretro_core_options_intl.h'
-   :param intl_dir_path: Path to the intl/<core_name> directory.
+   :param intl_file_path: Path to 'libretro_core_options_intl.h'
+   :param localisations_path: Path to the intl/<core_name> directory.
    :param text: Content of the 'libretro_core_options.h' being translated.
    :param file_path: Path to the '_us.h' file, containing the original English texts.
    :return: None
@@ -501,10 +505,11 @@ def create_intl_file(localisation_file_path: str, intl_dir_path: str, text: str,
              'extern "C" {\n' \
              '#endif\n'
 
-   if os.path.isfile(localisation_file_path):
+   if os.path.isfile(intl_file_path):
       # copy top of the file for re-use
-      with open(localisation_file_path, 'r', encoding='utf-8') as intl:  # libretro_core_options_intl.h
+      with open(intl_file_path, 'r', encoding='utf-8') as intl:  # libretro_core_options_intl.h
          in_text = intl.read()
+         # attempt 1: find the distinct comment header
          intl_start = re.search(re.escape('/*\n'
                                           ' ********************************\n'
                                           ' * Core Option Definitions\n'
@@ -513,19 +518,22 @@ def create_intl_file(localisation_file_path: str, intl_dir_path: str, text: str,
          if intl_start:
             out_txt = in_text[:intl_start.end(0)]
          else:
+            # attempt 2: if no comment header present, find c++ compiler instruction (it is kind of a must)
             intl_start = re.search(re.escape('#ifdef __cplusplus\n'
                                              'extern "C" {\n'
                                              '#endif\n'), in_text)
             if intl_start:
                out_txt = in_text[:intl_start.end(0)]
+            # if all attempts fail, use default from above
 
    # only write to file, if there is anything worthwhile to write!
    overwrite = False
 
    # iterate through localisation files
    files = {}
-   for file in os.scandir(intl_dir_path):
+   for file in os.scandir(localisations_path):
       files[file.name] = {'is_file': file.is_file(), 'path': file.path}
+
    for file in sorted(files):  # intl/<core_name>/_*
       if files[file]['is_file'] \
          and file.startswith('_') \
@@ -536,6 +544,7 @@ def create_intl_file(localisation_file_path: str, intl_dir_path: str, text: str,
          struct_groups = cor.p_struct.finditer(text)
          lang_low = os.path.splitext(file)[0].lower()
          lang_up = lang_low.upper()
+         # mark each language's section with a comment, for readability
          out_txt = out_txt + f'/* RETRO_LANGUAGE{lang_up} */\n\n'  # /* RETRO_LANGUAGE_NM */
 
          # copy adjusted translations (makros)
@@ -548,22 +557,22 @@ def create_intl_file(localisation_file_path: str, intl_dir_path: str, text: str,
             if 3 > len(struct_type_name):  # no language specifier
                new_decl = re.sub(re.escape(struct_type_name[1]), struct_type_name[1] + lang_low, declaration)
             else:
-               new_decl = re.sub(re.escape(struct_type_name[2]), lang_low, declaration)
                if '_us' != struct_type_name[2]:
+                  # only use _us constructs - other languages present in the source file are not important
                   continue
+               new_decl = re.sub(re.escape(struct_type_name[2]), lang_low, declaration)
 
-            p = cor.p_info
-            if 'retro_core_option_v2_category' == struct_type_name[0]:
-               p = cor.p_info_cat
+            p = (cor.p_info_cat if 'retro_core_option_v2_category' == struct_type_name[0] else cor.p_info)
             offset_construct = construct.start(0)
+            # append localised construct name and ' = {'
             start = construct.end(1) - offset_construct
-            end = construct.start(2) - offset_construct
+            end = construct.start(4) - offset_construct
             out_txt = out_txt + new_decl + construct.group(0)[start:end]
-
-            content = construct.group(2)
+            # insert macros
+            content = construct.group(4)
             new_content = cor.p_option.sub(replace_option, content)
-
-            start = construct.end(2) - offset_construct
+            start = construct.end(4) - offset_construct
+            # append macro-filled content and close the construct
             out_txt = out_txt + new_content + construct.group(0)[start:] + '\n'
 
             # for v2
@@ -578,7 +587,7 @@ def create_intl_file(localisation_file_path: str, intl_dir_path: str, text: str,
 
    # only write to file, if there is anything worthwhile to write!
    if overwrite:
-      with open(localisation_file_path, 'w', encoding='utf-8') as intl:
+      with open(intl_file_path, 'w', encoding='utf-8') as intl:
          intl.write(out_txt + '\n#ifdef __cplusplus\n'
                               '}\n#endif\n'
                               '\n#endif')
