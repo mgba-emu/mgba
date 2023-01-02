@@ -82,15 +82,15 @@ M_TEST_DEFINE(callbacks) {
 
 	TEST_VALUE(S32, "val", 0);
 
-	mScriptContextTriggerCallback(&context, "test");
+	mScriptContextTriggerCallback(&context, "test", NULL);
 	TEST_VALUE(S32, "val", 1);
 
-	mScriptContextTriggerCallback(&context, "test");
+	mScriptContextTriggerCallback(&context, "test", NULL);
 	TEST_VALUE(S32, "val", 2);
 
 	TEST_PROGRAM("callbacks:remove(id)");
 
-	mScriptContextTriggerCallback(&context, "test");
+	mScriptContextTriggerCallback(&context, "test", NULL);
 	TEST_VALUE(S32, "val", 2);
 
 	mScriptContextDeinit(&context);

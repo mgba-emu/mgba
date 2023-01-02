@@ -194,7 +194,7 @@ void _script_ ## NAME(void* context) { \
 	if (!threadContext->scriptContext) { \
 		return; \
 	} \
-	mScriptContextTriggerCallback(threadContext->scriptContext, #NAME); \
+	mScriptContextTriggerCallback(threadContext->scriptContext, #NAME, NULL); \
 }
 
 ADD_CALLBACK(frame)
@@ -283,7 +283,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		}
 	}
 	if (scriptContext) {
-		mScriptContextTriggerCallback(scriptContext, "start");
+		mScriptContextTriggerCallback(scriptContext, "start", NULL);
 	}
 #endif
 
@@ -304,7 +304,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		}
 	}
 	if (scriptContext) {
-		mScriptContextTriggerCallback(scriptContext, "reset");
+		mScriptContextTriggerCallback(scriptContext, "reset", NULL);
 	}
 #endif
 
@@ -404,7 +404,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 			}
 #ifdef ENABLE_SCRIPTING
 			if (scriptContext) {
-				mScriptContextTriggerCallback(scriptContext, "reset");
+				mScriptContextTriggerCallback(scriptContext, "reset", NULL);
 			}
 #endif
 		}
@@ -428,7 +428,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 #ifdef ENABLE_SCRIPTING
 	if (scriptContext) {
-		mScriptContextTriggerCallback(scriptContext, "shutdown");
+		mScriptContextTriggerCallback(scriptContext, "shutdown", NULL);
 		mScriptContextDetachCore(scriptContext);
 	}
 #endif

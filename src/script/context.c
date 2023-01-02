@@ -211,7 +211,7 @@ void mScriptContextDisownWeakref(struct mScriptContext* context, uint32_t weakre
 	poolEntry->refs = mSCRIPT_VALUE_UNREF;
 }
 
-void mScriptContextTriggerCallback(struct mScriptContext* context, const char* callback) {
+void mScriptContextTriggerCallback(struct mScriptContext* context, const char* callback, struct mScriptList* args) {
 	struct mScriptValue* list = HashTableLookup(&context->callbacks, callback);
 	if (!list) {
 		return;
@@ -224,6 +224,9 @@ void mScriptContextTriggerCallback(struct mScriptContext* context, const char* c
 			continue;
 		}
 		mScriptFrameInit(&frame);
+		if (args) {
+			mScriptListCopy(&frame.arguments, args);
+		}
 		if (fn->type->base == mSCRIPT_TYPE_WRAPPER) {
 			fn = mScriptValueUnwrap(fn);
 		}
