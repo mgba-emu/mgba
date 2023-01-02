@@ -37,7 +37,36 @@ M_TEST_DEFINE(members) {
 	SETUP_LUA;
 
 	TEST_PROGRAM("assert(input)");
+	TEST_PROGRAM("assert(input.seq == 0)");
 	TEST_PROGRAM("assert(input.isKeyActive)");
+
+	mScriptContextDeinit(&context);
+}
+M_TEST_DEFINE(seq) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("assert(input.seq == 0)");
+
+	TEST_PROGRAM(
+		"seq = nil\n"
+		"function cb(ev)\n"
+		"	seq = ev.seq\n"
+		"end\n"
+		"id = callbacks:add('key', cb)\n"
+	);
+
+	struct mScriptKeyEvent keyEvent = {
+		.d = { .type = mSCRIPT_EV_TYPE_KEY },
+		.state = mSCRIPT_INPUT_STATE_DOWN,
+	};
+
+	mScriptContextFireEvent(&context, &keyEvent.d);
+	TEST_PROGRAM("assert(input.seq == 1)");
+	TEST_PROGRAM("assert(seq == 0)");
+
+	mScriptContextFireEvent(&context, &keyEvent.d);
+	TEST_PROGRAM("assert(input.seq == 2)");
+	TEST_PROGRAM("assert(seq == 1)");
 
 	mScriptContextDeinit(&context);
 }
@@ -82,5 +111,6 @@ M_TEST_DEFINE(fireKey) {
 
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptInput,
 	cmocka_unit_test(members),
+	cmocka_unit_test(seq),
 	cmocka_unit_test(fireKey),
 )

@@ -28,6 +28,7 @@ static const struct mScriptType* eventTypes[mSCRIPT_EV_TYPE_MAX] = {
 };
 
 struct mScriptInputContext {
+	uint64_t seq;
 	struct Table activeKeys;
 };
 
@@ -40,6 +41,7 @@ mSCRIPT_DECLARE_STRUCT_C_METHOD(mScriptInputContext, BOOL, isKeyActive, _mScript
 
 mSCRIPT_DEFINE_STRUCT(mScriptInputContext)
 	mSCRIPT_DEFINE_STRUCT_DEINIT(mScriptInputContext)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptInputContext, U64, seq)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptInputContext, isKeyActive)
 mSCRIPT_DEFINE_END;
 
@@ -96,6 +98,7 @@ void mScriptContextAttachInput(struct mScriptContext* context) {
 	value->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 	value->value.opaque = inputContext;
 
+	inputContext->seq = 0;
 	TableInit(&inputContext->activeKeys, 0, NULL);
 
 	mScriptContextSetGlobal(context, "input", value);
@@ -227,6 +230,12 @@ static bool _updateKeys(struct mScriptContext* context, struct mScriptKeyEvent* 
 }
 
 void mScriptContextFireEvent(struct mScriptContext* context, struct mScriptEvent* event) {
+	struct mScriptValue* input = mScriptContextGetGlobal(context, "input");
+	if (!input) {
+		return;
+	}
+	struct mScriptInputContext* inputContext = input->value.opaque;
+
 	switch (event->type) {
 	case mSCRIPT_EV_TYPE_KEY:
 		if (!_updateKeys(context, (struct mScriptKeyEvent*) event)) {
@@ -244,6 +253,8 @@ void mScriptContextFireEvent(struct mScriptContext* context, struct mScriptEvent
 	value->refs = mSCRIPT_VALUE_UNREF;
 	value->flags = 0;
 	value->value.opaque = event;
+	event->seq = inputContext->seq;
+	++inputContext->seq;
 	mScriptContextTriggerCallback(context, eventNames[event->type], &args);
 	mScriptListDeinit(&args);
 }
