@@ -62,7 +62,7 @@ if __name__ == '__main__':
    translate_txt = translate_txt.replace('<0-59>', f"{minutes}")
    translate_txt = translate_txt.replace('<0-23>', f"{hour}")
    translate_txt = translate_txt.replace('# Fridays at , UTC',
-                                         f"# Fridays at {hour%12}:{minutes} {'AM' if hour < 12 else 'PM'}, UTC")
+                                         f"# Fridays at {hour%12}:{minutes if minutes > 9 else '0' + str(minutes)} {'AM' if hour < 12 else 'PM'}, UTC")
    translate_txt = translate_txt.replace("<CORE_NAME>", CORE_NAME)
    translate_txt = translate_txt.replace('<PATH/TO>/libretro_core_options_intl.h',
                                          core_intl_file)

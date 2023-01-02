@@ -4,7 +4,7 @@ import core_option_translation as t
 
 if __name__ == '__main__':
    try:
-      if t.os.path.isfile(t.sys.argv[1]):
+      if t.os.path.isfile(t.sys.argv[1]) or t.sys.argv[1].endswith('.h'):
          _temp = t.os.path.dirname(t.sys.argv[1])
       else:
          _temp = t.sys.argv[1]
