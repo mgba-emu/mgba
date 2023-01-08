@@ -74,14 +74,14 @@ enum mScriptKeyModifier {
 	mSCRIPT_KMOD_SCROLL_LOCK = 0x400,
 };
 
-#define mSCRIPT_KEYBASE 0x200000
+#define mSCRIPT_KEYBASE 0x800000
 
 enum mScriptKey {
 	mSCRIPT_KEY_NONE = 0,
 
 	mSCRIPT_KEY_BACKSPACE = 0x000008,
 	mSCRIPT_KEY_TAB = 0x000009,
-	mSCRIPT_KEY_LINE_FEED = 0x00000A,
+	mSCRIPT_KEY_ENTER = 0x00000A,
 	mSCRIPT_KEY_ESCAPE = 0x00001B,
 	mSCRIPT_KEY_DELETE = 0x00007F,
 
@@ -121,9 +121,10 @@ enum mScriptKey {
 	mSCRIPT_KEY_INSERT,
 	mSCRIPT_KEY_BREAK,
 	mSCRIPT_KEY_CLEAR,
-	mSCRIPT_KEY_PRNTSCR,
+	mSCRIPT_KEY_PRINT_SCREEN,
 	mSCRIPT_KEY_SYSRQ,
 	mSCRIPT_KEY_MENU,
+	mSCRIPT_KEY_HELP,
 
 	mSCRIPT_KEY_LSHIFT = mSCRIPT_KEYBASE | 0x30,
 	mSCRIPT_KEY_RSHIFT,
@@ -140,6 +141,24 @@ enum mScriptKey {
 	mSCRIPT_KEY_CAPS_LOCK,
 	mSCRIPT_KEY_NUM_LOCK,
 	mSCRIPT_KEY_SCROLL_LOCK,
+
+	mSCRIPT_KEY_KP_0 = mSCRIPT_KEYBASE | 0x40,
+	mSCRIPT_KEY_KP_1,
+	mSCRIPT_KEY_KP_2,
+	mSCRIPT_KEY_KP_3,
+	mSCRIPT_KEY_KP_4,
+	mSCRIPT_KEY_KP_5,
+	mSCRIPT_KEY_KP_6,
+	mSCRIPT_KEY_KP_7,
+	mSCRIPT_KEY_KP_8,
+	mSCRIPT_KEY_KP_9,
+	mSCRIPT_KEY_KP_PLUS,
+	mSCRIPT_KEY_KP_MINUS,
+	mSCRIPT_KEY_KP_MULTIPLY,
+	mSCRIPT_KEY_KP_DIVIDE,
+	mSCRIPT_KEY_KP_COMMA,
+	mSCRIPT_KEY_KP_POINT,
+	mSCRIPT_KEY_KP_ENTER,
 };
 
 struct mScriptEvent {
@@ -151,22 +170,22 @@ struct mScriptEvent {
 struct mScriptKeyEvent {
 	struct mScriptEvent d;
 	uint8_t state;
-	uint8_t reserved;
 	uint16_t modifiers;
 	uint32_t key;
 };
 
 struct mScriptMouseButtonEvent {
 	struct mScriptEvent d;
-	uint8_t state;
 	uint8_t mouse;
+	uint8_t context;
+	uint8_t state;
 	uint8_t button;
 };
 
 struct mScriptMouseMoveEvent {
 	struct mScriptEvent d;
-	bool relative;
 	uint8_t mouse;
+	uint8_t context;
 	int32_t x;
 	int32_t y;
 };
@@ -174,8 +193,8 @@ struct mScriptMouseMoveEvent {
 struct mScriptMouseWheelEvent {
 	struct mScriptEvent d;
 	uint8_t mouse;
-	int32_t x;
-	int32_t y;
+	int16_t x;
+	int16_t y;
 };
 
 struct mScriptGamepadButtonEvent {

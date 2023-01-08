@@ -15,6 +15,7 @@
 
 #include <memory>
 
+class QKeyEvent;
 class QTextDocument;
 
 namespace QGBA {
@@ -35,6 +36,8 @@ public:
 	bool loadFile(const QString& path);
 	bool load(VFileDevice& vf, const QString& name);
 
+	void event(QObject* obj, QEvent* ev);
+
 	mScriptContext* context() { return &m_scriptContext; }
 	ScriptingTextBufferModel* textBufferModel() const { return m_bufferModel; }
 
@@ -49,10 +52,14 @@ public slots:
 	void reset();
 	void runCode(const QString& code);
 
+protected:
+	bool eventFilter(QObject*, QEvent*) override;
+
 private:
 	void init();
 
-	static mScriptTextBuffer* createTextBuffer(void* context);
+	static uint32_t qtToScriptingKey(const QKeyEvent*);
+	static uint16_t qtToScriptingModifiers(Qt::KeyboardModifiers);
 
 	struct Logger : mLogger {
 		ScriptingController* p;
