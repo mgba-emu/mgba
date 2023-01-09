@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/script/types.h>
 
+#include <mgba/internal/script/types.h>
 #include <mgba/script/context.h>
 #include <mgba/script/macros.h>
 #include <mgba-util/hash.h>
@@ -1523,4 +1524,57 @@ bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList
 		memcpy(mScriptListAppend(frame), &types->defaults[i], sizeof(struct mScriptValue));
 	}
 	return true;
+}
+
+static void addTypesFromTuple(struct Table* types, const struct mScriptTypeTuple* tuple) {
+	size_t i;
+	for (i = 0; i < tuple->count; ++i) {
+		mScriptTypeAdd(types, tuple->entries[i]);
+	}
+}
+
+static void addTypesFromTable(struct Table* types, struct Table* table) {
+	struct TableIterator iter;
+	if (!HashTableIteratorStart(table, &iter)) {
+		return;
+	}
+	do {
+		struct mScriptClassMember* member = HashTableIteratorGetValue(table, &iter);
+		mScriptTypeAdd(types, member->type);
+	} while(HashTableIteratorNext(table, &iter));
+}
+
+void mScriptTypeAdd(struct Table* types, const struct mScriptType* type) {
+	if (HashTableLookup(types, type->name) || type->isConst) {
+		return;
+	}
+	HashTableInsert(types, type->name, (struct mScriptType*) type);
+	switch (type->base) {
+	case mSCRIPT_TYPE_FUNCTION:
+		addTypesFromTuple(types, &type->details.function.parameters);
+		addTypesFromTuple(types, &type->details.function.returnType);
+		break;
+	case mSCRIPT_TYPE_OBJECT:
+		mScriptClassInit(type->details.cls);
+		if (type->details.cls->parent) {
+			mScriptTypeAdd(types, type->details.cls->parent);
+		}
+		addTypesFromTable(types, &type->details.cls->instanceMembers);
+		break;
+	case mSCRIPT_TYPE_OPAQUE:
+	case mSCRIPT_TYPE_WRAPPER:
+		if (type->details.type) {
+			mScriptTypeAdd(types, type->details.type);
+		}
+	case mSCRIPT_TYPE_VOID:
+	case mSCRIPT_TYPE_SINT:
+	case mSCRIPT_TYPE_UINT:
+	case mSCRIPT_TYPE_FLOAT:
+	case mSCRIPT_TYPE_STRING:
+	case mSCRIPT_TYPE_LIST:
+	case mSCRIPT_TYPE_TABLE:
+	case mSCRIPT_TYPE_WEAKREF:
+		// No subtypes
+		break;
+	}
 }
