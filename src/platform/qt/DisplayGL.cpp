@@ -670,8 +670,20 @@ void PainterGL::filter(bool filter) {
 	}
 }
 
+#ifndef GL_DEBUG_OUTPUT_SYNCHRONOUS
+#define GL_DEBUG_OUTPUT_SYNCHRONOUS 0x8242
+#endif
+
 void PainterGL::start() {
 	makeCurrent();
+#if defined(BUILD_GLES3) && !defined(Q_OS_MAC)
+	if (glContextHasBug(OpenGLBug::GLTHREAD_BLOCKS_SWAP)) {
+		// Suggested on Discord as a way to strongly hint that glthread should be disabled
+		// See https://gitlab.freedesktop.org/mesa/mesa/-/issues/8035
+		QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
+		fn->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	}
+#endif
 
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (m_supportsShaders && m_shader.passes) {
