@@ -97,8 +97,16 @@ CXX_GUARD_START
 		dest->size = src->size; \
 	} \
 
-DECLARE_VECTOR(StringList, char*);
 DECLARE_VECTOR(IntList, int);
+DECLARE_VECTOR(SInt8List, int8_t);
+DECLARE_VECTOR(SInt16List, int16_t);
+DECLARE_VECTOR(SInt32List, int32_t);
+DECLARE_VECTOR(SIntPtrList, intptr_t);
+DECLARE_VECTOR(UInt8List, uint8_t);
+DECLARE_VECTOR(UInt16List, uint16_t);
+DECLARE_VECTOR(UInt32List, uint32_t);
+DECLARE_VECTOR(UIntPtrList, uintptr_t);
+DECLARE_VECTOR(StringList, char*);
 
 CXX_GUARD_END
 

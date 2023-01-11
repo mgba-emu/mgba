@@ -11,8 +11,6 @@
 
 DEFINE_VECTOR(LexVector, struct Token);
 
-DEFINE_VECTOR(IntList, int32_t);
-
 enum LexState {
 	LEX_ERROR = -1,
 	LEX_ROOT = 0,

@@ -8,6 +8,7 @@ set(BASE_SOURCE_FILES
 	hash.c
 	string.c
 	table.c
+	vector.c
 	vfs.c)
 
 set(SOURCE_FILES
