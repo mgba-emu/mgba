@@ -1,4 +1,4 @@
-0.10.1: (Future)
+0.10.1: (2022-01-10)
 Emulation fixes:
  - GB Audio: Fix channels 1/2 not playing when resetting volume (fixes mgba.io/i/2614)
  - GB Audio: Fix channel 3 volume being changed between samples (fixes mgba.io/i/1896)
