@@ -3,17 +3,23 @@ Features:
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:
+ - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
+Misc:
+ - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
+ - GBA: Improve detection of valid ELF ROMs
+
+0.10.1: (2022-01-10)
+Emulation fixes:
  - GB Audio: Fix channels 1/2 not playing when resetting volume (fixes mgba.io/i/2614)
  - GB Audio: Fix channel 3 volume being changed between samples (fixes mgba.io/i/1896)
  - GB Audio: Fix up boot sequence
  - GB Audio: Fix updating channels other than 2 when writing NR5x
- - GB BIOS: Include timing in degenerate ArcTan2 cases (fixes mgba.io/i/2763)
  - GB Memory: Actually, HDMAs should start when LCD is off (fixes mgba.io/i/2662)
  - GB Serialize: Don't write BGP/OBP when loading SCGB state (fixes mgba.io/i/2694)
  - GB SIO: Further fix bidirectional transfer starting
  - GBA: Fix resetting key IRQ state (fixes mgba.io/i/2716)
+ - GBA BIOS: Include timing in degenerate ArcTan2 cases (fixes mgba.io/i/2763)
  - GBA Video: Ignore disabled backgrounds as OBJ blend target (fixes mgba.io/i/2489)
- - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
  - GBA: Fix forceskip BIOS logic for multiboot ROMs (fixes mgba.io/i/2753)
  - GBA Cheats: Fix issues detecting unencrypted cheats (fixes mgba.io/i/2724)
@@ -26,8 +32,6 @@ Other fixes:
  - Res: Fix species name location in Ruby/Sapphire revs 1/2 (fixes mgba.io/i/2685)
  - VFS: Fix minizip write returning 0 on success instead of size
 Misc:
- - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
- - GBA: Improve detection of valid ELF ROMs
  - macOS: Add category to plist (closes mgba.io/i/2691)
  - macOS: Fix modern build with libepoxy (fixes mgba.io/i/2700)
  - Qt: Keep track of current palette preset name (fixes mgba.io/i/2680)
