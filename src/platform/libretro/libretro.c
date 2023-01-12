@@ -149,7 +149,7 @@ static const int keymap[] = {
 #ifndef GIT_VERSION
 #define GIT_VERSION ""
 #endif
-const char* const projectVersion = "0.10-dev" GIT_VERSION;
+const char* const projectVersion = "0.11-dev" GIT_VERSION;
 const char* const projectName = "mGBA";
 
 /* Maximum number of consecutive frames that
@@ -1693,39 +1693,6 @@ void retro_run(void) {
 	} else {
 		videoCallback(NULL, width, height, VIDEO_WIDTH_MAX * sizeof(color_t));
 	}
-
-#ifdef M_CORE_GBA
-	if (core->platform(core) == mPLATFORM_GBA) {
-		blip_t *audioChannelLeft  = core->getAudioChannel(core, 0);
-		blip_t *audioChannelRight = core->getAudioChannel(core, 1);
-		int samplesAvail          = blip_samples_avail(audioChannelLeft);
-		if (samplesAvail > 0) {
-			/* Update 'running average' of number of
-			 * samples per frame.
-			 * Note that this is not a true running
-			 * average, but just a leaky-integrator/
-			 * exponential moving average, used because
-			 * it is simple and fast (i.e. requires no
-			 * window of samples). */
-			audioSamplesPerFrameAvg = (SAMPLES_PER_FRAME_MOVING_AVG_ALPHA * (float)samplesAvail) +
-					((1.0f - SAMPLES_PER_FRAME_MOVING_AVG_ALPHA) * audioSamplesPerFrameAvg);
-			size_t samplesToRead = (size_t)(audioSamplesPerFrameAvg);
-			/* Resize audio output buffer, if required */
-			if (audioSampleBufferSize < (samplesToRead * 2)) {
-				audioSampleBufferSize = (samplesToRead * 2);
-				audioSampleBuffer     = realloc(audioSampleBuffer, audioSampleBufferSize * sizeof(int16_t));
-			}
-			int produced = blip_read_samples(audioChannelLeft, audioSampleBuffer, samplesToRead, true);
-			blip_read_samples(audioChannelRight, audioSampleBuffer + 1, samplesToRead, true);
-			if (produced > 0) {
-				if (audioLowPassEnabled) {
-					_audioLowPassFilter(audioSampleBuffer, produced);
-				}
-				audioCallback(audioSampleBuffer, (size_t)produced);
-			}
-		}
-	}
-#endif
 
 #ifdef M_CORE_GBA
 	if (core->platform(core) == mPLATFORM_GBA) {
