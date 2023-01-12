@@ -308,6 +308,7 @@ void ReportView::generateReport() {
 						deferredBinaries.append(qMakePair(QString("Save %1").arg(winId), save));
 					}
 					mStateExtdataDeinit(&extdata);
+					vf->close(vf);
 				}
 			}
 		} else {

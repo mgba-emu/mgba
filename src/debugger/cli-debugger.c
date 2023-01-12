@@ -60,6 +60,10 @@ static void _setReadWriteWatchpoint(struct CLIDebugger*, struct CLIDebugVector*)
 static void _setReadWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setWriteWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setWriteChangedWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setReadWriteRangeWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setReadRangeWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setWriteRangeWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setWriteChangedRangeWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _listWatchpoints(struct CLIDebugger*, struct CLIDebugVector*);
 static void _trace(struct CLIDebugger*, struct CLIDebugVector*);
 static void _writeByte(struct CLIDebugger*, struct CLIDebugVector*);
@@ -114,6 +118,10 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "watch/c", _setWriteChangedWatchpoint, "Is", "Set a change watchpoint" },
 	{ "watch/r", _setReadWatchpoint, "Is", "Set a read watchpoint" },
 	{ "watch/w", _setWriteWatchpoint, "Is", "Set a write watchpoint" },
+	{ "watch-range", _setReadWriteRangeWatchpoint, "IIs", "Set a range watchpoint" },
+	{ "watch-range/c", _setWriteChangedRangeWatchpoint, "IIs", "Set a change range watchpoint" },
+	{ "watch-range/r", _setReadRangeWatchpoint, "IIs", "Set a read range watchpoint" },
+	{ "watch-range/w", _setWriteRangeWatchpoint, "IIs", "Set a write range watchpoint" },
 	{ "x/1", _dumpByte, "Ii", "Examine bytes at a specified offset" },
 	{ "x/2", _dumpHalfword, "Ii", "Examine halfwords at a specified offset" },
 	{ "x/4", _dumpWord, "Ii", "Examine words at a specified offset" },
@@ -146,6 +154,14 @@ static struct CLIDebuggerCommandAlias _debuggerCommandAliases[] = {
 	{ "p/x", "print/x" },
 	{ "q", "quit" },
 	{ "w", "watch" },
+	{ "watchr", "watch-range" },
+	{ "wr", "watch-range" },
+	{ "watchr/c", "watch-range/c" },
+	{ "wr/c", "watch-range/c" },
+	{ "watchr/r", "watch-range/r" },
+	{ "wr/r", "watch-range/r" },
+	{ "watchr/w", "watch-range/w" },
+	{ "wr/w", "watch-range/w" },
 	{ ".", "source" },
 	{ 0, 0 }
 };
@@ -647,12 +663,55 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	struct mWatchpoint watchpoint = {
-		.address = dv->intValue,
 		.segment = dv->segmentValue,
+		.minAddress = dv->intValue,
+		.maxAddress = dv->intValue + 1,
 		.type = type
 	};
 	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
 		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->charValue, NULL });
+		if (tree) {
+			watchpoint.condition = tree;
+		} else {
+			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+			return;
+		}
+	}
+	ssize_t id = debugger->d.platform->setWatchpoint(debugger->d.platform, &watchpoint);
+	if (id > 0) {
+		debugger->backend->printf(debugger->backend, INFO_WATCHPOINT_ADDED, id);
+	}
+}
+
+static void _setRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv, enum mWatchpointType type) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (!debugger->d.platform->setWatchpoint) {
+		debugger->backend->printf(debugger->backend, "Watchpoints are not supported by this platform.\n");
+		return;
+	}
+	if (dv->intValue >= dv->next->intValue) {
+		debugger->backend->printf(debugger->backend, "Range watchpoint end is before start. Note that the end of the range is not included.\n");
+		return;
+	}
+	if (dv->segmentValue != dv->next->segmentValue) {
+		debugger->backend->printf(debugger->backend, "Range watchpoint does not start and end in the same segment.\n");
+		return;
+	}
+	struct mWatchpoint watchpoint = {
+		.segment = dv->segmentValue,
+		.minAddress = dv->intValue,
+		.maxAddress = dv->next->intValue,
+		.type = type
+	};
+	if (dv->next->next && dv->next->next->type == CLIDV_CHAR_TYPE) {
+		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->next->charValue, NULL });
 		if (tree) {
 			watchpoint.condition = tree;
 		} else {
@@ -680,6 +739,22 @@ static void _setWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVec
 
 static void _setWriteChangedWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	_setWatchpoint(debugger, dv, WATCHPOINT_WRITE_CHANGE);
+}
+
+static void _setReadWriteRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	_setRangeWatchpoint(debugger, dv, WATCHPOINT_RW);
+}
+
+static void _setReadRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	_setRangeWatchpoint(debugger, dv, WATCHPOINT_READ);
+}
+
+static void _setWriteRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	_setRangeWatchpoint(debugger, dv, WATCHPOINT_WRITE);
+}
+
+static void _setWriteChangedRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	_setRangeWatchpoint(debugger, dv, WATCHPOINT_WRITE_CHANGE);
 }
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -717,9 +792,17 @@ static void _listWatchpoints(struct CLIDebugger* debugger, struct CLIDebugVector
 	for (i = 0; i < mWatchpointListSize(&watchpoints); ++i) {
 		struct mWatchpoint* watchpoint = mWatchpointListGetPointer(&watchpoints, i);
 		if (watchpoint->segment >= 0) {
-			debugger->backend->printf(debugger->backend, "%" PRIz "i: %02X:%X\n", watchpoint->id, watchpoint->segment, watchpoint->address);
+			if (watchpoint->maxAddress == watchpoint->minAddress + 1) {
+				debugger->backend->printf(debugger->backend, "%" PRIz "i: %02X:%X\n", watchpoint->id, watchpoint->segment, watchpoint->minAddress);
+			} else {
+				debugger->backend->printf(debugger->backend, "%" PRIz "i: %02X:%X-%X\n", watchpoint->id, watchpoint->segment, watchpoint->minAddress, watchpoint->maxAddress);
+			}
 		} else {
-			debugger->backend->printf(debugger->backend, "%" PRIz "i: 0x%X\n", watchpoint->id, watchpoint->address);
+			if (watchpoint->maxAddress == watchpoint->minAddress + 1) {
+				debugger->backend->printf(debugger->backend, "%" PRIz "i: 0x%X\n", watchpoint->id, watchpoint->minAddress);
+			} else {
+				debugger->backend->printf(debugger->backend, "%" PRIz "i: 0x%X-0x%X\n", watchpoint->id, watchpoint->minAddress, watchpoint->maxAddress);
+			}
 		}
 	}
 	mWatchpointListDeinit(&watchpoints);

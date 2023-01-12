@@ -6,6 +6,10 @@
 #ifndef M_SCRIPT_SOCKET_H
 #define M_SCRIPT_SOCKET_H
 
+#include <mgba-util/common.h>
+
+CXX_GUARD_START
+
 enum mSocketErrorCode {
 	mSCRIPT_SOCKERR_UNKNOWN_ERROR = -1,
 	mSCRIPT_SOCKERR_OK = 0,
@@ -21,5 +25,7 @@ enum mSocketErrorCode {
 	mSCRIPT_SOCKERR_TIMEOUT,
 	mSCRIPT_SOCKERR_UNSUPPORTED,
 };
+
+CXX_GUARD_END
 
 #endif

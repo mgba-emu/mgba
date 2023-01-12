@@ -1727,6 +1727,39 @@ void retro_run(void) {
 	}
 #endif
 
+#ifdef M_CORE_GBA
+	if (core->platform(core) == mPLATFORM_GBA) {
+		blip_t *audioChannelLeft  = core->getAudioChannel(core, 0);
+		blip_t *audioChannelRight = core->getAudioChannel(core, 1);
+		int samplesAvail          = blip_samples_avail(audioChannelLeft);
+		if (samplesAvail > 0) {
+			/* Update 'running average' of number of
+			 * samples per frame.
+			 * Note that this is not a true running
+			 * average, but just a leaky-integrator/
+			 * exponential moving average, used because
+			 * it is simple and fast (i.e. requires no
+			 * window of samples). */
+			audioSamplesPerFrameAvg = (SAMPLES_PER_FRAME_MOVING_AVG_ALPHA * (float)samplesAvail) +
+					((1.0f - SAMPLES_PER_FRAME_MOVING_AVG_ALPHA) * audioSamplesPerFrameAvg);
+			size_t samplesToRead = (size_t)(audioSamplesPerFrameAvg);
+			/* Resize audio output buffer, if required */
+			if (audioSampleBufferSize < (samplesToRead * 2)) {
+				audioSampleBufferSize = (samplesToRead * 2);
+				audioSampleBuffer     = realloc(audioSampleBuffer, audioSampleBufferSize * sizeof(int16_t));
+			}
+			int produced = blip_read_samples(audioChannelLeft, audioSampleBuffer, samplesToRead, true);
+			blip_read_samples(audioChannelRight, audioSampleBuffer + 1, samplesToRead, true);
+			if (produced > 0) {
+				if (audioLowPassEnabled) {
+					_audioLowPassFilter(audioSampleBuffer, produced);
+				}
+				audioCallback(audioSampleBuffer, (size_t)produced);
+			}
+		}
+	}
+#endif
+
 	if (rumbleCallback) {
 		if (rumbleUp) {
 			rumbleCallback(0, RETRO_RUMBLE_STRONG, rumbleUp * 0xFFFF / (rumbleUp + rumbleDown));

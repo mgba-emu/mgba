@@ -237,7 +237,7 @@ static bool _GBACoreInit(struct mCore* core) {
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	mDirectorySetInit(&core->dirs);
 #endif
-	
+
 	return true;
 }
 
@@ -512,7 +512,7 @@ static bool _GBACoreLoadROM(struct mCore* core, struct VFile* vf) {
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
-		if (ELFEntry(elf) == BASE_CART0) {
+		if (GBAVerifyELFEntry(elf, BASE_CART0)) {
 			GBALoadNull(core->board);
 		}
 		bool success = mCoreLoadELF(core, elf);
@@ -700,8 +700,8 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 
 	ARMReset(core->cpu);
-	bool forceSkip = gba->romVf && GBAIsMB(gba->romVf);
-	if (!(forceSkip || core->opts.skipBios) && (gba->romVf || gba->memory.rom) && gba->pristineRomSize >= 0xA0 && gba->biosVf) {
+	bool forceSkip = gba->mbVf || core->opts.skipBios;
+	if (!forceSkip && (gba->romVf || gba->memory.rom) && gba->pristineRomSize >= 0xA0 && gba->biosVf) {
 		uint32_t crc = doCrc32(&gba->memory.rom[1], 0x9C);
 		if (crc != LOGO_CRC32) {
 			mLOG(STATUS, WARN, "Invalid logo, skipping BIOS");
@@ -709,7 +709,7 @@ static void _GBACoreReset(struct mCore* core) {
 		}
 	}
 
-	if (forceSkip || (core->opts.skipBios && (gba->romVf || gba->memory.rom))) {
+	if (forceSkip) {
 		GBASkipBIOS(core->board);
 	}
 
