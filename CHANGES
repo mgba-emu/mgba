@@ -1,3 +1,7 @@
+0.10.2: (Future)
+Emulation fixes:
+ - GBA Memory: Make VRAM access stalls only apply to BG RAM
+
 0.10.1: (2023-01-10)
 Emulation fixes:
  - GB Audio: Fix channels 1/2 not playing when resetting volume (fixes mgba.io/i/2614)
