@@ -107,6 +107,7 @@ set(SOURCE_FILES
 	GamepadButtonEvent.cpp
 	GamepadHatEvent.cpp
 	IOViewer.cpp
+	input/InputMapper.cpp
 	InputController.cpp
 	InputProfile.cpp
 	KeyEditor.cpp

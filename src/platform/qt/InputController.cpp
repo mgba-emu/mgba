@@ -301,6 +301,10 @@ void InputController::setPreferredGamepad(uint32_t type, int index) {
 #endif
 }
 
+InputMapper InputController::mapper(uint32_t type) {
+	return InputMapper(&m_inputMap, type);
+}
+
 mRumble* InputController::rumble() {
 #ifdef BUILD_SDL
 #if SDL_VERSION_ATLEAST(2, 0, 0)
@@ -382,10 +386,6 @@ void InputController::setGyroSensitivity(float sensitivity) {
 
 GBAKey InputController::mapKeyboard(int key) const {
 	return static_cast<GBAKey>(mInputMapKey(&m_inputMap, KEYBOARD, key));
-}
-
-void InputController::bindKey(uint32_t type, int key, GBAKey gbaKey) {
-	return mInputBindKey(&m_inputMap, type, key, gbaKey);
 }
 
 void InputController::updateJoysticks() {
@@ -501,36 +501,6 @@ QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes
 	return activeAxes;
 }
 
-void InputController::bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction direction, GBAKey key) {
-	const mInputAxis* old = mInputQueryAxis(&m_inputMap, type, axis);
-	mInputAxis description = { GBA_KEY_NONE, GBA_KEY_NONE, -AXIS_THRESHOLD, AXIS_THRESHOLD };
-	if (old) {
-		description = *old;
-	}
-	int deadzone = 0;
-	if (axis > 0 && m_deadzones.size() > axis) {
-		deadzone = m_deadzones[axis];
-	}
-	switch (direction) {
-	case GamepadAxisEvent::NEGATIVE:
-		description.lowDirection = key;
-
-		description.deadLow = deadzone - AXIS_THRESHOLD;
-		break;
-	case GamepadAxisEvent::POSITIVE:
-		description.highDirection = key;
-		description.deadHigh = deadzone + AXIS_THRESHOLD;
-		break;
-	default:
-		return;
-	}
-	mInputBindAxis(&m_inputMap, type, axis, &description);
-}
-
-void InputController::unbindAllAxes(uint32_t type) {
-	mInputUnbindAllAxes(&m_inputMap, type);
-}
-
 QSet<QPair<int, GamepadHatEvent::Direction>> InputController::activeGamepadHats(int type) {
 	QSet<QPair<int, GamepadHatEvent::Direction>> activeHats;
 #ifdef BUILD_SDL
@@ -561,32 +531,6 @@ QSet<QPair<int, GamepadHatEvent::Direction>> InputController::activeGamepadHats(
 	}
 #endif
 	return activeHats;
-}
-
-void InputController::bindHat(uint32_t type, int hat, GamepadHatEvent::Direction direction, GBAKey gbaKey) {
-	mInputHatBindings bindings{ -1, -1, -1, -1 };
-	mInputQueryHat(&m_inputMap, type, hat, &bindings);
-	switch (direction) {
-	case GamepadHatEvent::UP:
-		bindings.up = gbaKey;
-		break;
-	case GamepadHatEvent::RIGHT:
-		bindings.right = gbaKey;
-		break;
-	case GamepadHatEvent::DOWN:
-		bindings.down = gbaKey;
-		break;
-	case GamepadHatEvent::LEFT:
-		bindings.left = gbaKey;
-		break;
-	default:
-		return;
-	}
-	mInputBindHat(&m_inputMap, type, hat, &bindings);
-}
-
-void InputController::unbindAllHats(uint32_t type) {
-	mInputUnbindAllHats(&m_inputMap, type);
 }
 
 void InputController::testGamepad(int type) {

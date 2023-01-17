@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "InputProfile.h"
 
+#include "input/InputMapper.h"
 #include "InputController.h"
 
 #include <QRegExp>
@@ -210,12 +211,13 @@ const InputProfile* InputProfile::findProfile(const QString& name) {
 }
 
 void InputProfile::apply(InputController* controller) const {
-	for (size_t i = 0; i < GBA_KEY_MAX; ++i) {
 #ifdef BUILD_SDL
-		controller->bindKey(SDL_BINDING_BUTTON, m_keys[i], static_cast<GBAKey>(i));
-		controller->bindAxis(SDL_BINDING_BUTTON, m_axes[i].axis, m_axes[i].direction, static_cast<GBAKey>(i));
-#endif
+	InputMapper mapper = controller->mapper(SDL_BINDING_BUTTON);
+	for (size_t i = 0; i < GBA_KEY_MAX; ++i) {
+		mapper.bindKey(m_keys[i], static_cast<GBAKey>(i));
+		mapper.bindAxis(m_axes[i].axis, m_axes[i].direction, static_cast<GBAKey>(i));
 	}
+#endif
 	controller->registerTiltAxisX(m_tiltAxis.x);
 	controller->registerTiltAxisY(m_tiltAxis.y);
 	controller->registerGyroAxisX(m_gyroAxis.x);

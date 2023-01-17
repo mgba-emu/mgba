@@ -7,6 +7,7 @@
 
 #include "GamepadAxisEvent.h"
 #include "GamepadHatEvent.h"
+#include "input/InputMapper.h"
 
 #include <QImage>
 #include <QMutex>
@@ -64,8 +65,6 @@ public:
 
 	GBAKey mapKeyboard(int key) const;
 
-	void bindKey(uint32_t type, int key, GBAKey);
-
 	const mInputMap* map() const { return &m_inputMap; }
 
 	int pollEvents();
@@ -76,16 +75,12 @@ public:
 	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
 	void recalibrateAxes();
 
-	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
-	void unbindAllAxes(uint32_t type);
-
-	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, GBAKey);
-	void unbindAllHats(uint32_t type);
-
 	QStringList connectedGamepads(uint32_t type) const;
 	int gamepad(uint32_t type) const;
 	void setGamepad(uint32_t type, int index);
 	void setPreferredGamepad(uint32_t type, int index);
+
+	InputMapper mapper(uint32_t type);
 
 	void registerTiltAxisX(int axis);
 	void registerTiltAxisY(int axis);

@@ -13,6 +13,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
+#include "input/InputMapper.h"
 #include "InputController.h"
 #include "KeyEditor.h"
 
@@ -214,8 +215,9 @@ void GBAKeyEditor::setNext() {
 
 void GBAKeyEditor::save() {
 #ifdef BUILD_SDL
-	m_controller->unbindAllAxes(m_type);
-	m_controller->unbindAllHats(m_type);
+	InputMapper mapper = m_controller->mapper(m_type);
+	mapper.unbindAllAxes();
+	mapper.unbindAllHats();
 #endif
 
 	bindKey(m_keyDU, GBA_KEY_UP);
@@ -324,15 +326,16 @@ void GBAKeyEditor::lookupHats(const mInputMap* map) {
 #endif
 
 void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, GBAKey key) {
+	InputMapper mapper = m_controller->mapper(m_type);
 #ifdef BUILD_SDL
 	if (m_type == SDL_BINDING_BUTTON && keyEditor->axis() >= 0) {
-		m_controller->bindAxis(m_type, keyEditor->axis(), keyEditor->direction(), key);
+		mapper.bindAxis(keyEditor->axis(), keyEditor->direction(), key);
 	}
 	if (m_type == SDL_BINDING_BUTTON && keyEditor->hat() >= 0) {
-		m_controller->bindHat(m_type, keyEditor->hat(), keyEditor->hatDirection(), key);
+		mapper.bindHat(keyEditor->hat(), keyEditor->hatDirection(), key);
 	}
 #endif
-	m_controller->bindKey(m_type, keyEditor->value(), key);
+	mapper.bindKey(keyEditor->value(), key);
 }
 
 bool GBAKeyEditor::findFocus(KeyEditor* needle) {
