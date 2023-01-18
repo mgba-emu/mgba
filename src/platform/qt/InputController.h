@@ -65,6 +65,7 @@ public:
 
 	GBAKey mapKeyboard(int key) const;
 
+	mInputMap* map() { return &m_inputMap; }
 	const mInputMap* map() const { return &m_inputMap; }
 
 	int pollEvents();

@@ -107,7 +107,11 @@ set(SOURCE_FILES
 	GamepadButtonEvent.cpp
 	GamepadHatEvent.cpp
 	IOViewer.cpp
+	input/Gamepad.cpp
+	input/InputDriver.cpp
+	input/InputSource.cpp
 	input/InputMapper.cpp
+	input/KeySource.cpp
 	InputController.cpp
 	InputProfile.cpp
 	KeyEditor.cpp
@@ -199,6 +203,7 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5
 
 set(AUDIO_SRC)
 if(BUILD_SDL)
+	list(APPEND SOURCE_FILES input/SDLInputDriver.cpp)
 	list(APPEND AUDIO_SRC AudioProcessorSDL.cpp)
 endif()
 
