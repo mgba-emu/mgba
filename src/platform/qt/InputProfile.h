@@ -8,6 +8,7 @@
 #include "input/GamepadAxisEvent.h"
 
 #include <mgba/gba/interface.h>
+#include <mgba/internal/gba/input.h>
 
 namespace QGBA {
 

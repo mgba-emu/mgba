@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2023 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -19,8 +19,8 @@
 
 #include <memory>
 
+#include <mgba/core/input.h>
 #include <mgba/gba/interface.h>
-#include <mgba/internal/gba/input.h>
 
 #ifdef BUILD_SDL
 #include "platform/sdl/sdl-events.h"
@@ -63,7 +63,7 @@ public:
 	void saveProfile(uint32_t type, const QString& profile);
 	const char* profileForType(uint32_t type);
 
-	GBAKey mapKeyboard(int key) const;
+	int mapKeyboard(int key) const;
 
 	mInputMap* map() { return &m_inputMap; }
 	const mInputMap* map() const { return &m_inputMap; }
@@ -132,9 +132,9 @@ private slots:
 	void teardownCam();
 
 private:
-	void postPendingEvent(GBAKey);
-	void clearPendingEvent(GBAKey);
-	bool hasPendingEvent(GBAKey) const;
+	void postPendingEvent(int);
+	void clearPendingEvent(int);
+	bool hasPendingEvent(int) const;
 	void sendGamepadEvent(QEvent*);
 
 	struct InputControllerLux : GBALuminanceSource {
@@ -180,7 +180,7 @@ private:
 	QSet<QPair<int, GamepadHatEvent::Direction>> m_activeHats;
 	QTimer m_gamepadTimer{nullptr};
 
-	QSet<GBAKey> m_pendingEvents;
+	QSet<int> m_pendingEvents;
 	QReadWriteLock m_eventsLock;
 };
 

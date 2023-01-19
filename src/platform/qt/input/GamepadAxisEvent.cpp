@@ -16,11 +16,11 @@ GamepadAxisEvent::GamepadAxisEvent(int axis, Direction direction, bool isNew, in
 	, m_axis(axis)
 	, m_direction(direction)
 	, m_isNew(isNew)
-	, m_key(GBA_KEY_NONE)
+	, m_key(-1)
 {
 	ignore();
 	if (controller) {
-		m_key = static_cast<GBAKey>(mInputMapAxis(controller->map(), type, axis, direction * INT_MAX));
+		m_key = mInputMapAxis(controller->map(), type, axis, direction * INT_MAX);
 	}
 }
 

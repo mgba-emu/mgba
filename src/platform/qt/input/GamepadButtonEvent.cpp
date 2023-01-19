@@ -15,11 +15,11 @@ QEvent::Type GamepadButtonEvent::s_upType = QEvent::None;
 GamepadButtonEvent::GamepadButtonEvent(QEvent::Type pressType, int button, int type, InputController* controller)
 	: QEvent(pressType)
 	, m_button(button)
-	, m_key(GBA_KEY_NONE)
+	, m_key(-1)
 {
 	ignore();
 	if (controller) {
-		m_key = static_cast<GBAKey>(mInputMapKey(controller->map(), type, button));
+		m_key = mInputMapKey(controller->map(), type, button);
 	}
 }
 

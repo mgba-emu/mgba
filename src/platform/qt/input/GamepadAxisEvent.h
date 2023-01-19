@@ -7,8 +7,6 @@
 
 #include <QEvent>
 
-#include <mgba/internal/gba/input.h>
-
 namespace QGBA {
 
 class InputController;
@@ -26,7 +24,7 @@ public:
 	int axis() const { return m_axis; }
 	Direction direction() const { return m_direction; }
 	bool isNew() const { return m_isNew; }
-	GBAKey gbaKey() const { return m_key; }
+	int platformKey() const { return m_key; }
 
 	static enum Type Type();
 
@@ -36,7 +34,7 @@ private:
 	int m_axis;
 	Direction m_direction;
 	bool m_isNew;
-	GBAKey m_key;
+	int m_key;
 };
 
 }

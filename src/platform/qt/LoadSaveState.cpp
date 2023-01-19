@@ -17,6 +17,7 @@
 #include <QPainter>
 
 #include <mgba/core/serialize.h>
+#include <mgba/internal/gba/input.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 
@@ -131,13 +132,13 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 	if (event->type() == GamepadButtonEvent::Down() || event->type() == GamepadAxisEvent::Type()) {
 		int column = m_currentFocus % 3;
 		int row = m_currentFocus - column;
-		GBAKey key = GBA_KEY_NONE;
+		int key = -1;
 		if (event->type() == GamepadButtonEvent::Down()) {
-			key = static_cast<GamepadButtonEvent*>(event)->gbaKey();
+			key = static_cast<GamepadButtonEvent*>(event)->platformKey();
 		} else if (event->type() == GamepadAxisEvent::Type()) {
 			GamepadAxisEvent* gae = static_cast<GamepadAxisEvent*>(event);
 			if (gae->isNew()) {
-				key = gae->gbaKey();
+				key = gae->platformKey();
 			} else {
 				return false;
 			}
