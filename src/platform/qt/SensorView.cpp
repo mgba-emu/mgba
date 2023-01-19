@@ -6,7 +6,7 @@
 #include "SensorView.h"
 
 #include "CoreController.h"
-#include "GamepadAxisEvent.h"
+#include "input/GamepadAxisEvent.h"
 #include "InputController.h"
 #include "utils.h"
 

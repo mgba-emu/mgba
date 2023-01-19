@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "GamepadAxisEvent.h"
-#include "GamepadHatEvent.h"
+#include "input/GamepadAxisEvent.h"
+#include "input/GamepadHatEvent.h"
 
 #include <QLineEdit>
 #include <QTimer>

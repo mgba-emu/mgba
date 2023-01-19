@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2014 Jeffrey Pfau
+/* Copyright (c) 2013-2023 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,8 +6,7 @@
 #include "InputController.h"
 
 #include "ConfigController.h"
-#include "GamepadAxisEvent.h"
-#include "GamepadButtonEvent.h"
+#include "input/GamepadButtonEvent.h"
 #include "InputProfile.h"
 #include "LogController.h"
 #include "utils.h"

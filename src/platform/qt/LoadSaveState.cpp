@@ -6,8 +6,8 @@
 #include "LoadSaveState.h"
 
 #include "CoreController.h"
-#include "GamepadAxisEvent.h"
-#include "GamepadButtonEvent.h"
+#include "input/GamepadAxisEvent.h"
+#include "input/GamepadButtonEvent.h"
 #include "VFileDevice.h"
 #include "utils.h"
 

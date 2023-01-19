@@ -103,11 +103,11 @@ set(SOURCE_FILES
 	GBAApp.cpp
 	GBAKeyEditor.cpp
 	GIFView.cpp
-	GamepadAxisEvent.cpp
-	GamepadButtonEvent.cpp
-	GamepadHatEvent.cpp
 	IOViewer.cpp
 	input/Gamepad.cpp
+	input/GamepadAxisEvent.cpp
+	input/GamepadButtonEvent.cpp
+	input/GamepadHatEvent.cpp
 	input/InputDriver.cpp
 	input/InputSource.cpp
 	input/InputMapper.cpp
