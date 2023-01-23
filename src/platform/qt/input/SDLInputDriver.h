@@ -46,7 +46,7 @@ public:
 
 	QList<Gamepad*> connectedGamepads() const override;
 
-	int activeGamepad() const override;
+	int activeGamepadIndex() const override;
 	void setActiveGamepad(int) override;
 
 	void registerTiltAxisX(int axis) override;

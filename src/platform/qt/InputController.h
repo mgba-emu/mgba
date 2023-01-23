@@ -107,7 +107,7 @@ signals:
 	void luminanceValueChanged(int value);
 
 public slots:
-	void testGamepad(int type);
+	void testGamepad(uint32_t type);
 	void update();
 
 	void increaseLuminanceLevel();
@@ -136,9 +136,9 @@ private:
 	Gamepad* gamepad(uint32_t type);
 	QList<Gamepad*> gamepads();
 
-	QSet<int> activeGamepadButtons(int type);
-	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(int type);
-	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
+	QSet<int> activeGamepadButtons(uint32_t type);
+	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(uint32_t type);
+	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(uint32_t type);
 
 	struct InputControllerLux : GBALuminanceSource {
 		InputController* p;

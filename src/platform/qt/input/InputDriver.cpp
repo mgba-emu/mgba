@@ -40,12 +40,30 @@ QList<Gamepad*> InputDriver::connectedGamepads() const {
 	return {};
 }
 
-int InputDriver::activeKeySource() const {
+int InputDriver::activeKeySourceIndex() const {
 	return -1;
 }
 
-int InputDriver::activeGamepad() const {
+int InputDriver::activeGamepadIndex() const {
 	return -1;
+}
+
+KeySource* InputDriver::activeKeySource() {
+	QList<KeySource*> ks(connectedKeySources());
+	int activeKeySource = activeKeySourceIndex();
+	if (activeKeySource < 0 || activeKeySource >= ks.count()) {
+		return nullptr;
+	}
+	return ks[activeKeySource];
+}
+
+Gamepad* InputDriver::activeGamepad() {
+	QList<Gamepad*> pads(connectedGamepads());
+	int activeGamepad = activeGamepadIndex();
+	if (activeGamepad < 0 || activeGamepad >= pads.count()) {
+		return nullptr;
+	}
+	return pads[activeGamepad];
 }
 
 void InputDriver::setActiveKeySource(int) {

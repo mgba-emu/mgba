@@ -240,7 +240,7 @@ int InputController::gamepadIndex(uint32_t type) const {
 	if (!driver) {
 		return -1;
 	}
-	return driver->activeGamepad();
+	return driver->activeGamepadIndex();
 }
 
 void InputController::setGamepad(uint32_t type, int index) {
@@ -361,13 +361,9 @@ Gamepad* InputController::gamepad(uint32_t type) {
 	}
 	if (!driver->supportsGamepads()) {
 		return nullptr;
-}
-	QList<Gamepad*> driverPads(driver->connectedGamepads());
-	int activeGamepad = driver->activeGamepad();
-	if (activeGamepad < 0 || activeGamepad >= driverPads.count()) {
-		return nullptr;
 	}
-	return driverPads[activeGamepad];
+
+	return driver->activeGamepad();
 }
 
 QList<Gamepad*> InputController::gamepads() {
@@ -376,16 +372,15 @@ QList<Gamepad*> InputController::gamepads() {
 		if (!driver->supportsGamepads()) {
 			continue;
 		}
-		QList<Gamepad*> driverPads(driver->connectedGamepads());
-		int activeGamepad = driver->activeGamepad();
-		if (activeGamepad >= 0 && activeGamepad < driverPads.count()) {
-			pads.append(driverPads[activeGamepad]);
+		Gamepad* pad = driver->activeGamepad();
+		if (pad) {
+			pads.append(pad);
 		}
 	}
 	return pads;
 }
 
-QSet<int> InputController::activeGamepadButtons(int type) {
+QSet<int> InputController::activeGamepadButtons(uint32_t type) {
 	QSet<int> activeButtons;
 	Gamepad* pad = gamepad(type);
 	if (!pad) {
@@ -400,7 +395,7 @@ QSet<int> InputController::activeGamepadButtons(int type) {
 	return activeButtons;
 }
 
-QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes(int type) {
+QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes(uint32_t type) {
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeAxes;
 	Gamepad* pad = gamepad(type);
 	if (!pad) {
@@ -421,7 +416,7 @@ QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes
 	return activeAxes;
 }
 
-QSet<QPair<int, GamepadHatEvent::Direction>> InputController::activeGamepadHats(int type) {
+QSet<QPair<int, GamepadHatEvent::Direction>> InputController::activeGamepadHats(uint32_t type) {
 	QSet<QPair<int, GamepadHatEvent::Direction>> activeHats;
 	Gamepad* pad = gamepad(type);
 	if (!pad) {
@@ -436,7 +431,7 @@ QSet<QPair<int, GamepadHatEvent::Direction>> InputController::activeGamepadHats(
 	return activeHats;
 }
 
-void InputController::testGamepad(int type) {
+void InputController::testGamepad(uint32_t type) {
 	QWriteLocker l(&m_eventsLock);
 	auto activeAxes = activeGamepadAxes(type);
 	auto oldAxes = m_activeAxes;
