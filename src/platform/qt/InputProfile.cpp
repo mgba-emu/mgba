@@ -10,10 +10,6 @@
 
 #include <QRegExp>
 
-#ifdef BUILD_SDL
-#include "platform/sdl/sdl-events.h"
-#endif
-
 using namespace QGBA;
 
 const InputProfile InputProfile::s_defaultMaps[] = {
@@ -215,13 +211,14 @@ const InputProfile* InputProfile::findProfile(const QString& name) {
 }
 
 void InputProfile::apply(InputController* controller) const {
-#ifdef BUILD_SDL
-	InputMapper mapper = controller->mapper(SDL_BINDING_BUTTON);
-	for (size_t i = 0; i < GBA_KEY_MAX; ++i) {
-		mapper.bindKey(m_keys[i], static_cast<GBAKey>(i));
-		mapper.bindAxis(m_axes[i].axis, m_axes[i].direction, static_cast<GBAKey>(i));
+	auto gamepadDriver = controller->gamepadDriver();
+	if (gamepadDriver) {
+		InputMapper mapper = controller->mapper(gamepadDriver);
+		for (size_t i = 0; i < GBA_KEY_MAX; ++i) {
+			mapper.bindKey(m_keys[i], i);
+			mapper.bindAxis(m_axes[i].axis, m_axes[i].direction, i);
+		}
 	}
-#endif
 
 	InputDriver* sensorDriver = controller->sensorDriver();
 	if (sensorDriver) {

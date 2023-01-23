@@ -73,14 +73,22 @@ public:
 
 	static const int32_t AXIS_THRESHOLD = 0x3000;
 
-	QStringList connectedGamepads(uint32_t type) const;
-	int gamepadIndex(uint32_t type) const;
+	void setGamepadDriver(uint32_t type);
+	const InputDriver* gamepadDriver() const { return m_inputDrivers.value(m_sensorDriver).get(); }
+	InputDriver* gamepadDriver() { return m_inputDrivers.value(m_sensorDriver).get(); }
+
+	QStringList connectedGamepads(uint32_t type = 0) const;
+	int gamepadIndex(uint32_t type = 0) const;
 	void setGamepad(uint32_t type, int index);
+	void setGamepad(int index);
 	void setPreferredGamepad(uint32_t type, int index);
+	void setPreferredGamepad(int index);
 
 	InputMapper mapper(uint32_t type);
+	InputMapper mapper(InputDriver*);
 	InputMapper mapper(InputSource*);
 
+	void setSensorDriver(uint32_t type);
 	const InputDriver* sensorDriver() const { return m_inputDrivers.value(m_sensorDriver).get(); }
 	InputDriver* sensorDriver() { return m_inputDrivers.value(m_sensorDriver).get(); }
 
@@ -162,6 +170,7 @@ private:
 	QWidget* m_focusParent;
 
 	QHash<uint32_t, std::shared_ptr<InputDriver>> m_inputDrivers;
+	uint32_t m_gamepadDriver;
 	uint32_t m_sensorDriver;
 
 	QSet<int> m_activeButtons;

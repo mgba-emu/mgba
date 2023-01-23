@@ -208,7 +208,18 @@ QString InputController::profileForType(uint32_t type) {
 	return driver->currentProfile();
 }
 
+void InputController::setGamepadDriver(uint32_t type) {
+	auto driver = m_inputDrivers.value(type);
+	if (!driver || !driver->supportsGamepads()) {
+		return;
+	}
+	m_gamepadDriver = type;
+}
+
 QStringList InputController::connectedGamepads(uint32_t type) const {
+	if (!type) {
+		type = m_gamepadDriver;
+	}
 	auto driver = m_inputDrivers.value(type);
 	if (!driver) {
 		return {};
@@ -222,6 +233,9 @@ QStringList InputController::connectedGamepads(uint32_t type) const {
 }
 
 int InputController::gamepadIndex(uint32_t type) const {
+	if (!type) {
+		type = m_gamepadDriver;
+	}
 	auto driver = m_inputDrivers.value(type);
 	if (!driver) {
 		return -1;
@@ -230,6 +244,9 @@ int InputController::gamepadIndex(uint32_t type) const {
 }
 
 void InputController::setGamepad(uint32_t type, int index) {
+	if (!type) {
+		type = m_gamepadDriver;
+	}
 	auto driver = m_inputDrivers.value(type);
 	if (!driver) {
 		return;
@@ -237,9 +254,16 @@ void InputController::setGamepad(uint32_t type, int index) {
 	driver->setActiveGamepad(index);
 }
 
+void InputController::setGamepad(int index) {
+	setGamepad(0, index);
+}
+
 void InputController::setPreferredGamepad(uint32_t type, int index) {
 	if (!m_config) {
 		return;
+	}
+	if (!type) {
+		type = m_gamepadDriver;
 	}
 	auto driver = m_inputDrivers.value(type);
 	if (!driver) {
@@ -258,13 +282,30 @@ void InputController::setPreferredGamepad(uint32_t type, int index) {
 	mInputSetPreferredDevice(m_config->input(), "gba", type, m_playerId, name.toUtf8().constData());
 }
 
+void InputController::setPreferredGamepad(int index) {
+	setPreferredGamepad(0, index);
+}
+
 InputMapper InputController::mapper(uint32_t type) {
 	return InputMapper(&m_inputMap, type);
+}
+
+InputMapper InputController::mapper(InputDriver* driver) {
+	return InputMapper(&m_inputMap, driver->type());
 }
 
 InputMapper InputController::mapper(InputSource* source) {
 	return InputMapper(&m_inputMap, source->type());
 }
+
+void InputController::setSensorDriver(uint32_t type) {
+	auto driver = m_inputDrivers.value(type);
+	if (!driver || !driver->supportsSensors()) {
+		return;
+	}
+	m_sensorDriver = type;
+}
+
 
 mRumble* InputController::rumble() {
 	auto driver = m_inputDrivers.value(m_sensorDriver);
