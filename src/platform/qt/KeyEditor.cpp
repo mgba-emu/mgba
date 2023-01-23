@@ -5,8 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "KeyEditor.h"
 
-#include "GamepadAxisEvent.h"
-#include "GamepadButtonEvent.h"
+#include "input/GamepadAxisEvent.h"
+#include "input/GamepadButtonEvent.h"
 #include "ShortcutController.h"
 
 #include <QCoreApplication>

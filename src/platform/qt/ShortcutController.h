@@ -6,7 +6,7 @@
 #pragma once
 
 #include "ActionMapper.h"
-#include "GamepadAxisEvent.h"
+#include "input/GamepadAxisEvent.h"
 
 #include <QHash>
 #include <QMap>

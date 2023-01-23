@@ -14,6 +14,10 @@
 #include <mgba/core/version.h>
 #include <mgba/gba/interface.h>
 
+#ifdef BUILD_SDL
+#include "platform/sdl/sdl-events.h"
+#endif
+
 #include <QLibraryInfo>
 #include <QTranslator>
 

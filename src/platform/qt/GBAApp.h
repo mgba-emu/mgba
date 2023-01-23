@@ -86,6 +86,10 @@ public slots:
 	void restartForUpdate();
 	Window* newWindow();
 
+	void suspendScreensaver();
+	void resumeScreensaver();
+	void setScreensaverSuspendable(bool);
+
 signals:
 	void jobFinished(qint64 jobId);
 
