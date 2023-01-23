@@ -15,6 +15,30 @@ using namespace QGBA;
 int s_sdlInited = 0;
 mSDLEvents s_sdlEvents;
 
+void SDL::suspendScreensaver() {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	if (s_sdlInited) {
+		mSDLSuspendScreensaver(&s_sdlEvents);
+	}
+#endif
+}
+
+void SDL::resumeScreensaver() {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	if (s_sdlInited) {
+		mSDLResumeScreensaver(&s_sdlEvents);
+	}
+#endif
+}
+
+void SDL::setScreensaverSuspendable(bool suspendable) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	if (s_sdlInited) {
+		mSDLSetScreensaverSuspendable(&s_sdlEvents, suspendable);
+	}
+#endif
+}
+
 SDLInputDriver::SDLInputDriver(InputController* controller, QObject* parent)
 	: InputDriver(parent)
 	, m_controller(controller)
@@ -39,6 +63,29 @@ SDLInputDriver::~SDLInputDriver() {
 	if (s_sdlInited == 0) {
 		mSDLDeinitEvents(&s_sdlEvents);
 	}
+}
+
+bool SDLInputDriver::supportsPolling() const {
+	return true;
+}
+
+bool SDLInputDriver::supportsGamepads() const {
+	return true;
+}
+
+bool SDLInputDriver::supportsSensors() const {
+	return true;
+}
+
+QString SDLInputDriver::currentProfile() const {
+	if (m_sdlPlayer.joystick) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		return SDL_JoystickName(m_sdlPlayer.joystick->joystick);
+#else
+		return SDL_JoystickName(SDL_JoystickIndex(m_sdlPlayer.joystick->joystick));
+#endif
+	}
+	return {};
 }
 
 void SDLInputDriver::loadConfiguration(ConfigController* config) {
@@ -125,6 +172,69 @@ void SDLInputDriver::updateGamepads() {
 	});
 }
 #endif
+
+int SDLInputDriver::activeGamepad() const {
+	return m_sdlPlayer.joystick ? m_sdlPlayer.joystick->index : 0;
+}
+
+void SDLInputDriver::setActiveGamepad(int index) {
+	mSDLPlayerChangeJoystick(&s_sdlEvents, &m_sdlPlayer, index);
+}
+
+void SDLInputDriver::registerTiltAxisX(int axis) {
+	if (m_playerAttached) {
+		m_sdlPlayer.rotation.axisX = axis;
+	}
+}
+
+void SDLInputDriver::registerTiltAxisY(int axis) {
+	if (m_playerAttached) {
+		m_sdlPlayer.rotation.axisY = axis;
+	}
+}
+
+void SDLInputDriver::registerGyroAxisX(int axis) {
+	if (m_playerAttached) {
+		m_sdlPlayer.rotation.gyroX = axis;
+		if (m_sdlPlayer.rotation.gyroY == axis) {
+			m_sdlPlayer.rotation.gyroZ = axis;
+		} else {
+			m_sdlPlayer.rotation.gyroZ = -1;
+		}
+	}
+}
+
+void SDLInputDriver::registerGyroAxisY(int axis) {
+	if (m_playerAttached) {
+		m_sdlPlayer.rotation.gyroY = axis;
+		if (m_sdlPlayer.rotation.gyroX == axis) {
+			m_sdlPlayer.rotation.gyroZ = axis;
+		} else {
+			m_sdlPlayer.rotation.gyroZ = -1;
+		}
+	}
+}
+
+void SDLInputDriver::registerGyroAxisZ(int axis) {
+	if (m_playerAttached) {
+		m_sdlPlayer.rotation.gyroZ = axis;
+		m_sdlPlayer.rotation.gyroX = -1;
+		m_sdlPlayer.rotation.gyroY = -1;
+	}
+}
+
+float SDLInputDriver::gyroSensitivity() const {
+	if (m_playerAttached) {
+		return m_sdlPlayer.rotation.gyroSensitivity;
+	}
+	return 0;
+}
+
+void SDLInputDriver::setGyroSensitivity(float sensitivity) {
+	if (m_playerAttached) {
+		m_sdlPlayer.rotation.gyroSensitivity = sensitivity;
+	}
+}
 
 SDLGamepad::SDLGamepad(SDLInputDriver* driver, int index, QObject* parent)
 	: Gamepad(driver, parent)

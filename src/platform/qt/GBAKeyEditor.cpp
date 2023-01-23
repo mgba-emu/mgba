@@ -398,14 +398,13 @@ void GBAKeyEditor::setLocation(QWidget* widget, qreal x, qreal y) {
 
 #ifdef BUILD_SDL
 void GBAKeyEditor::updateJoysticks() {
-	m_controller->updateJoysticks();
-	m_controller->recalibrateAxes();
+	m_controller->update();
 
 	// Block the currentIndexChanged signal while rearranging the combo box
 	auto wasBlocked = m_profileSelect->blockSignals(true);
 	m_profileSelect->clear();
 	m_profileSelect->addItems(m_controller->connectedGamepads(m_type));
-	int activeGamepad = m_controller->gamepad(m_type);
+	int activeGamepad = m_controller->gamepadIndex(m_type);
 	m_profileSelect->setCurrentIndex(activeGamepad);
 	m_profileSelect->blockSignals(wasBlocked);
 

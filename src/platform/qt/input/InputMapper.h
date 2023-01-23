@@ -24,9 +24,14 @@ public:
 	mInputMap* inputMap() const { return m_map; }
 	uint32_t type() const { return m_type; }
 
-	int mapKey(int key);
-	int mapAxis(int axis, int16_t value);
-	int mapHat(int hat, GamepadHatEvent::Direction);
+	int mapKey(int key) const;
+	int mapAxis(int axis, int16_t value) const;
+	int mapHat(int hat, GamepadHatEvent::Direction) const;
+
+	int mapKeys(QList<bool> keys) const;
+	int mapKeys(QSet<int> keys) const;
+	int mapAxes(QList<int16_t> axes) const;
+	int mapHats(QList<GamepadHatEvent::Direction> hats) const;
 
 	void bindKey(int key, int platformKey);
 	void bindAxis(int axis, GamepadAxisEvent::Direction, int platformKey);

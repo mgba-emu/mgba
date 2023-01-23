@@ -18,6 +18,10 @@
 #include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 
+#ifdef BUILD_SDL
+#include "platform/sdl/sdl-events.h"
+#endif
+
 #include "CoreController.h"
 #include "GBAApp.h"
 #include "Window.h"
@@ -316,7 +320,7 @@ void ReportView::generateReport() {
 		}
 #ifdef BUILD_SDL
 		InputController* input = window->inputController();
-		windowReport << QString("Active gamepad: %1").arg(input->gamepad(SDL_BINDING_BUTTON));
+		windowReport << QString("Active gamepad: %1").arg(input->gamepadIndex(SDL_BINDING_BUTTON));
 #endif
 		windowReport << QString("Configuration: %1").arg(configs.indexOf(config) + 1);
 		addReport(QString("Window %1").arg(winId), windowReport.join('\n'));
@@ -490,7 +494,7 @@ void ReportView::addGamepadInfo(QStringList& report) {
 		i = 0;
 		for (Window* window : GBAApp::app()->windows()) {
 			++i;
-			report << QString("Window %1 gamepad: %2").arg(i).arg(window->inputController()->gamepad(SDL_BINDING_BUTTON));
+			report << QString("Window %1 gamepad: %2").arg(i).arg(window->inputController()->gamepadIndex(SDL_BINDING_BUTTON));
 		}
 	}
 #endif

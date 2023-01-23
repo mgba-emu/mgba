@@ -16,6 +16,12 @@ namespace QGBA {
 
 class SDLGamepad;
 
+namespace SDL {
+	void suspendScreensaver();
+	void resumeScreensaver();
+	void setScreensaverSuspendable(bool);
+}
+
 class SDLInputDriver : public InputDriver {
 Q_OBJECT
 
@@ -25,6 +31,11 @@ public:
 
 	uint32_t type() const override { return SDL_BINDING_BUTTON; }
 	QString visibleName() const override { return QLatin1String("SDL"); }
+	QString currentProfile() const override;
+
+	bool supportsPolling() const override;
+	bool supportsGamepads() const override;
+	bool supportsSensors() const override;
 
 	void loadConfiguration(ConfigController* config) override;
 	void saveConfiguration(ConfigController* config) override;
@@ -34,6 +45,18 @@ public:
 	bool update() override;
 
 	QList<Gamepad*> connectedGamepads() const override;
+
+	int activeGamepad() const override;
+	void setActiveGamepad(int) override;
+
+	void registerTiltAxisX(int axis) override;
+	void registerTiltAxisY(int axis) override;
+	void registerGyroAxisX(int axis) override;
+	void registerGyroAxisY(int axis) override;
+	void registerGyroAxisZ(int axis) override;
+
+	float gyroSensitivity() const override;
+	void setGyroSensitivity(float sensitivity) override;
 
 	mRumble* rumble() override;
 	mRotationSource* rotationSource() override;

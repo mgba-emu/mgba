@@ -8,9 +8,9 @@
 #include <QObject>
 #include <QString>
 
-namespace QGBA {
+#include "input/InputDriver.h"
 
-class InputDriver;
+namespace QGBA {
 
 class InputSource : public QObject {
 Q_OBJECT
@@ -20,6 +20,7 @@ public:
 	virtual ~InputSource() = default;
 
 	InputDriver* driver() { return m_driver; }
+	uint32_t type() { return m_driver->type(); }
 
 	virtual QString name() const = 0;
 	virtual QString visibleName() const = 0;

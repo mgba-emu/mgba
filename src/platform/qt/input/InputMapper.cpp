@@ -15,16 +15,63 @@ InputMapper::InputMapper(mInputMap* map, uint32_t type)
 {
 }
 
-int InputMapper::mapKey(int key) {
+int InputMapper::mapKey(int key) const {
 	return mInputMapKey(m_map, m_type, key);
 }
 
-int InputMapper::mapAxis(int axis, int16_t value) {
+int InputMapper::mapAxis(int axis, int16_t value) const {
 	return mInputMapAxis(m_map, m_type, axis, value);
 }
 
-int InputMapper::mapHat(int hat, GamepadHatEvent::Direction direction) {
+int InputMapper::mapHat(int hat, GamepadHatEvent::Direction direction) const {
 	return mInputMapHat(m_map, m_type, hat, direction);
+}
+
+int InputMapper::mapKeys(QList<bool> keys) const {
+	int platformKeys = 0;
+	for (int i = 0; i < keys.count(); ++i) {
+		if (!keys[i]) {
+			continue;
+		}
+		int platformKey = mInputMapKey(m_map, m_type, i);
+		if (platformKey >= 0) {
+			platformKeys |= 1 << platformKey;
+		}
+	}
+	return platformKeys;
+}
+
+int InputMapper::mapKeys(QSet<int> keys) const {
+	int platformKeys = 0;
+	for (int key : keys) {
+		int platformKey = mInputMapKey(m_map, m_type, key);
+		if (platformKey >= 0) {
+			platformKeys |= 1 << platformKey;
+		}
+	}
+	return platformKeys;
+}
+
+int InputMapper::mapAxes(QList<int16_t> axes) const {
+	int platformKeys = 0;
+	for (int i = 0; i < axes.count(); ++i) {
+		int platformKey = mInputMapAxis(m_map, m_type, i, axes[i]);
+		if (platformKey >= 0) {
+			platformKeys |= 1 << platformKey;
+		}
+	}
+	return platformKeys;
+}
+
+int InputMapper::mapHats(QList<GamepadHatEvent::Direction> hats) const {
+	int platformKeys = 0;
+	for (int i = 0; i < hats.count(); ++i) {
+		int platformKey = mInputMapHat(m_map, m_type, i, hats[i]);
+		if (platformKey >= 0) {
+			platformKeys |= 1 << platformKey;
+		}
+	}
+	return platformKeys;
 }
 
 void InputMapper::bindKey(int key, int platformKey) {

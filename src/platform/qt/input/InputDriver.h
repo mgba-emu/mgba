@@ -28,6 +28,11 @@ public:
 
 	virtual uint32_t type() const = 0;
 	virtual QString visibleName() const = 0;
+	virtual QString currentProfile() const = 0;
+
+	virtual bool supportsPolling() const;
+	virtual bool supportsGamepads() const;
+	virtual bool supportsSensors() const;
 
 	virtual void loadConfiguration(ConfigController*);
 	virtual void saveConfiguration(ConfigController*);
@@ -38,6 +43,21 @@ public:
 
 	virtual QList<KeySource*> connectedKeySources() const;
 	virtual QList<Gamepad*> connectedGamepads() const;
+
+	virtual int activeKeySource() const;
+	virtual int activeGamepad() const;
+
+	virtual void setActiveKeySource(int);
+	virtual void setActiveGamepad(int);
+
+	virtual void registerTiltAxisX(int axis);
+	virtual void registerTiltAxisY(int axis);
+	virtual void registerGyroAxisX(int axis);
+	virtual void registerGyroAxisY(int axis);
+	virtual void registerGyroAxisZ(int axis);
+
+	virtual float gyroSensitivity() const;
+	virtual void setGyroSensitivity(float sensitivity);
 
 	virtual mRumble* rumble();
 	virtual mRotationSource* rotationSource();

@@ -7,8 +7,10 @@
 
 #include "input/GamepadAxisEvent.h"
 #include "input/GamepadHatEvent.h"
+#include "input/InputDriver.h"
 #include "input/InputMapper.h"
 
+#include <QHash>
 #include <QImage>
 #include <QMutex>
 #include <QReadWriteLock>
@@ -22,11 +24,6 @@
 #include <mgba/core/input.h>
 #include <mgba/gba/interface.h>
 
-#ifdef BUILD_SDL
-#include "platform/sdl/sdl-events.h"
-#endif
-
-
 #ifdef BUILD_QT_MULTIMEDIA
 #include "VideoDumper.h"
 #include <QCamera>
@@ -38,6 +35,8 @@ struct mRumble;
 namespace QGBA {
 
 class ConfigController;
+class Gamepad;
+class InputSource;
 
 class InputController : public QObject {
 Q_OBJECT
@@ -55,13 +54,15 @@ public:
 	InputController(int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
 	~InputController();
 
+	void addInputDriver(std::shared_ptr<InputDriver>);
+
 	void setConfiguration(ConfigController* config);
 	void saveConfiguration();
 	bool loadConfiguration(uint32_t type);
 	bool loadProfile(uint32_t type, const QString& profile);
 	void saveConfiguration(uint32_t type);
 	void saveProfile(uint32_t type, const QString& profile);
-	const char* profileForType(uint32_t type);
+	QString profileForType(uint32_t type);
 
 	int mapKeyboard(int key) const;
 
@@ -71,25 +72,17 @@ public:
 	int pollEvents();
 
 	static const int32_t AXIS_THRESHOLD = 0x3000;
-	QSet<int> activeGamepadButtons(int type);
-	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(int type);
-	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
-	void recalibrateAxes();
 
 	QStringList connectedGamepads(uint32_t type) const;
-	int gamepad(uint32_t type) const;
+	int gamepadIndex(uint32_t type) const;
 	void setGamepad(uint32_t type, int index);
 	void setPreferredGamepad(uint32_t type, int index);
 
 	InputMapper mapper(uint32_t type);
+	InputMapper mapper(InputSource*);
 
-	void registerTiltAxisX(int axis);
-	void registerTiltAxisY(int axis);
-	void registerGyroAxisX(int axis);
-	void registerGyroAxisY(int axis);
-
-	float gyroSensitivity() const;
-	void setGyroSensitivity(float sensitivity);
+	const InputDriver* sensorDriver() const { return m_inputDrivers.value(m_sensorDriver).get(); }
+	InputDriver* sensorDriver() { return m_inputDrivers.value(m_sensorDriver).get(); }
 
 	void stealFocus(QWidget* focus);
 	void releaseFocus(QWidget* focus);
@@ -107,12 +100,7 @@ signals:
 
 public slots:
 	void testGamepad(int type);
-	void updateJoysticks();
-
-	// TODO: Move these to somewhere that makes sense
-	void suspendScreensaver();
-	void resumeScreensaver();
-	void setScreensaverSuspendable(bool);
+	void update();
 
 	void increaseLuminanceLevel();
 	void decreaseLuminanceLevel();
@@ -136,6 +124,13 @@ private:
 	void clearPendingEvent(int);
 	bool hasPendingEvent(int) const;
 	void sendGamepadEvent(QEvent*);
+
+	Gamepad* gamepad(uint32_t type);
+	QList<Gamepad*> gamepads();
+
+	QSet<int> activeGamepadButtons(int type);
+	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(int type);
+	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
 
 	struct InputControllerLux : GBALuminanceSource {
 		InputController* p;
@@ -166,14 +161,8 @@ private:
 	QWidget* m_topLevel;
 	QWidget* m_focusParent;
 
-#ifdef BUILD_SDL
-	static int s_sdlInited;
-	static mSDLEvents s_sdlEvents;
-	mSDLPlayer m_sdlPlayer{};
-	bool m_playerAttached = false;
-#endif
-
-	QVector<int> m_deadzones;
+	QHash<uint32_t, std::shared_ptr<InputDriver>> m_inputDrivers;
+	uint32_t m_sensorDriver;
 
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;

@@ -10,6 +10,10 @@
 
 #include <QRegExp>
 
+#ifdef BUILD_SDL
+#include "platform/sdl/sdl-events.h"
+#endif
+
 using namespace QGBA;
 
 const InputProfile InputProfile::s_defaultMaps[] = {
@@ -218,11 +222,15 @@ void InputProfile::apply(InputController* controller) const {
 		mapper.bindAxis(m_axes[i].axis, m_axes[i].direction, static_cast<GBAKey>(i));
 	}
 #endif
-	controller->registerTiltAxisX(m_tiltAxis.x);
-	controller->registerTiltAxisY(m_tiltAxis.y);
-	controller->registerGyroAxisX(m_gyroAxis.x);
-	controller->registerGyroAxisY(m_gyroAxis.y);
-	controller->setGyroSensitivity(m_gyroSensitivity);
+
+	InputDriver* sensorDriver = controller->sensorDriver();
+	if (sensorDriver) {
+		sensorDriver->registerTiltAxisX(m_tiltAxis.x);
+		sensorDriver->registerTiltAxisY(m_tiltAxis.y);
+		sensorDriver->registerGyroAxisX(m_gyroAxis.x);
+		sensorDriver->registerGyroAxisY(m_gyroAxis.y);
+		sensorDriver->setGyroSensitivity(m_gyroSensitivity);
+	}
 }
 
 bool InputProfile::lookupShortcutButton(const QString& shortcutName, int* button) const {
