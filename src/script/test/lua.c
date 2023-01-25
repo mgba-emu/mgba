@@ -371,14 +371,22 @@ M_TEST_DEFINE(callCFunc) {
 
 	mScriptContextDeinit(&context);
 }
-M_TEST_DEFINE(globalStructNull) {
+M_TEST_DEFINE(globalNull) {
 	SETUP_LUA;
 
 	struct Test s = {};
-
+	struct mScriptValue* val;
 	struct mScriptValue a;
 
 	LOAD_PROGRAM("assert(a)");
+
+	a = mSCRIPT_MAKE_CHARP("hello");
+	assert_true(lua->setGlobal(lua, "a", &a));
+	assert_true(lua->run(lua));
+
+	a = mSCRIPT_MAKE_CHARP(NULL);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	assert_false(lua->run(lua));
 
 	a = mSCRIPT_MAKE_S(Test, &s);
 	assert_true(lua->setGlobal(lua, "a", &a));
@@ -728,7 +736,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(rootScope),
 	cmocka_unit_test(callLuaFunc),
 	cmocka_unit_test(callCFunc),
-	cmocka_unit_test(globalStructNull),
+	cmocka_unit_test(globalNull),
 	cmocka_unit_test(globalStructFieldGet),
 	cmocka_unit_test(globalStructFieldSet),
 	cmocka_unit_test(globalStructMethods),
