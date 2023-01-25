@@ -76,6 +76,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_W(TYPE) opaque
 #define mSCRIPT_TYPE_FIELD_CW(TYPE) opaque
 
+#define mSCRIPT_TYPE_MS_VOID (&mSTVoid)
 #define mSCRIPT_TYPE_MS_S8 (&mSTSInt8)
 #define mSCRIPT_TYPE_MS_U8 (&mSTUInt8)
 #define mSCRIPT_TYPE_MS_S16 (&mSTSInt16)
