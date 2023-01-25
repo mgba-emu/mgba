@@ -7,6 +7,7 @@
 
 #include "ActionMapper.h"
 #include "CoreController.h"
+#include "Display.h"
 
 #include <QDir>
 #include <QMenu>
@@ -113,6 +114,16 @@ ConfigController::ConfigController(QObject* parent)
 	fileName.append(QDir::separator());
 	fileName.append("qt.ini");
 	m_settings = std::make_unique<QSettings>(fileName, QSettings::IniFormat);
+
+	if (getQtOption("loadStarted").toBool()) {
+		// If the loadStarted flag is lingering in qt.ini, then that indicates that
+		// the frontend crashed before clearing the flag.
+		// Prompt the user to enter into a safe mode to try to get safely started up.
+		setQtOption("safeModeWarning", true);
+	} else {
+		setQtOption("loadStarted", true);
+		m_settings->sync();
+	}
 
 	mCoreConfigInit(&m_config, PORT);
 
@@ -306,6 +317,16 @@ void ConfigController::setQtOption(const QString& key, const QVariant& value, co
 	}
 }
 
+void ConfigController::removeQtOption(const QString& key, const QString& group) {
+	if (!group.isNull()) {
+		m_settings->beginGroup(group);
+	}
+	m_settings->remove(key);
+	if (!group.isNull()) {
+		m_settings->endGroup();
+	}
+}
+
 QStringList ConfigController::getMRU(ConfigController::MRU mruType) const {
 	QStringList mru;
 	m_settings->beginGroup(mruName(mruType));
@@ -352,6 +373,20 @@ void ConfigController::write() {
 
 	mCoreConfigFreeOpts(&m_opts);
 	mCoreConfigMap(&m_config, &m_opts);
+}
+
+void ConfigController::setLoadingComplete() {
+	removeQtOption("loadStarted");
+	write();
+}
+
+void ConfigController::setSafeMode() {
+	setQtOption("displayDriver", static_cast<int>(Display::Driver::QT));
+	removeQtOption("safeModeWarning");
+}
+
+void ConfigController::declineSafeMode() {
+	removeQtOption("safeModeWarning");
 }
 
 void ConfigController::makePortable() {

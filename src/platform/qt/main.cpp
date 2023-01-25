@@ -118,6 +118,8 @@ int main(int argc, char* argv[]) {
 	langTranslator.load(locale, binaryName, "-", ":/translations/");
 	application.installTranslator(&langTranslator);
 
+	application.checkSafeMode();
+
 	Window* w = application.newWindow();
 	w->loadConfig();
 	w->argumentsPassed();

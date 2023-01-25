@@ -122,7 +122,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 			if (value.toBool()) {
 				attachWidget(m_libraryView);
 			} else {
-				attachWidget(m_screenWidget);				
+				attachWidget(m_screenWidget);
 			}
 		}
 	}, this);
@@ -130,9 +130,9 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 
 	ConfigOption* showFilenameInLibrary = m_config->addOption("showFilenameInLibrary");
 	showFilenameInLibrary->connect([this](const QVariant& value) {
-			m_libraryView->setShowFilename(value.toBool());
-	}, this); 
-    m_config->updateOption("showFilenameInLibrary");
+		m_libraryView->setShowFilename(value.toBool());
+	}, this);
+	m_config->updateOption("showFilenameInLibrary");
 	ConfigOption* libraryStyle = m_config->addOption("libraryStyle");
 	libraryStyle->connect([this](const QVariant& value) {
 		m_libraryView->setViewStyle(static_cast<LibraryStyle>(value.toInt()));
@@ -734,6 +734,7 @@ void Window::showEvent(QShowEvent* event) {
 	}
 	reloadDisplayDriver();
 	setFocus();
+	m_config->setLoadingComplete();
 }
 
 void Window::hideEvent(QHideEvent* event) {

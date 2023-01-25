@@ -16,6 +16,7 @@ Misc:
  - GBA: Improve detection of valid ELF ROMs
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
+ - Qt: Detect failed startup and prompt for safe mode
 
 0.10.2: (2023-04-23)
 Emulation fixes:

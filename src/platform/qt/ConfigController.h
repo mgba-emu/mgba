@@ -104,6 +104,10 @@ public:
 	const mGraphicsOpts* graphicsOpts() const { return &m_graphicsOpts; }
 	void usage(const char* arg0) const;
 
+	void setLoadingComplete();
+	void setSafeMode();
+	void declineSafeMode();
+
 	static const QString& configDir();
 	static const QString& cacheDir();
 	static bool isPortable();
@@ -115,6 +119,7 @@ public slots:
 	void setOption(const char* key, const char* value);
 	void setOption(const char* key, const QVariant& value);
 	void setQtOption(const QString& key, const QVariant& value, const QString& group = QString());
+	void removeQtOption(const QString& key, const QString& group = QString());
 
 	void makePortable();
 	void write();
@@ -130,7 +135,7 @@ private:
 	mGraphicsOpts m_graphicsOpts{};
 	std::array<mSubParser, 2> m_subparsers;
 	bool m_parsed = false;
-	
+
 	QHash<QString, QVariant> m_argvOptions;
 	QHash<QString, ConfigOption*> m_optionSet;
 	std::unique_ptr<QSettings> m_settings;
