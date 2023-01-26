@@ -10,6 +10,7 @@ Other fixes:
 Misc:
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
+ - Qt: Include wayland QPA in AppImage (fixes mgba.io/i/2796)
 
 0.10.1: (2023-01-10)
 Emulation fixes:
