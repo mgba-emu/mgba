@@ -513,10 +513,10 @@ void PainterGL::create() {
 
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (m_supportsShaders) {
-		QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
 		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
+		QOpenGLFunctions* fn = m_gl->functions();
 		fn->glGenTextures(m_bridgeTexes.size(), m_bridgeTexes.data());
 		for (auto tex : m_bridgeTexes) {
 			m_freeTex.enqueue(tex);
@@ -543,7 +543,7 @@ void PainterGL::create() {
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		mGLES2Context* gl2Backend = reinterpret_cast<mGLES2Context*>(painter->m_backend);
 		if (painter->m_widget && painter->supportsShaders()) {
-			QOpenGLFunctions_Baseline* fn = painter->m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
+			QOpenGLFunctions* fn = painter->m_gl->functions();
 			fn->glFinish();
 			painter->m_widget->setTex(painter->m_finalTex[painter->m_finalTexIdx]);
 			painter->m_finalTexIdx ^= 1;
@@ -589,7 +589,7 @@ void PainterGL::destroy() {
 	}
 	makeCurrent();
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
-	QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
+	QOpenGLFunctions* fn = m_gl->functions();
 	if (m_shader.passes) {
 		mGLES2ShaderFree(&m_shader);
 	}
@@ -680,7 +680,7 @@ void PainterGL::start() {
 	if (glContextHasBug(OpenGLBug::GLTHREAD_BLOCKS_SWAP)) {
 		// Suggested on Discord as a way to strongly hint that glthread should be disabled
 		// See https://gitlab.freedesktop.org/mesa/mesa/-/issues/8035
-		QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
+		QOpenGLFunctions* fn = m_gl->functions();
 		fn->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	}
 #endif
@@ -972,7 +972,7 @@ QOpenGLContext* PainterGL::shareContext() {
 }
 
 void PainterGL::updateFramebufferHandle() {
-	QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
+	QOpenGLFunctions* fn = m_gl->functions();
 	// TODO: Figure out why glFlush doesn't work here on Intel/Windows
 	if (glContextHasBug(OpenGLBug::CROSS_THREAD_FLUSH)) {
 		fn->glFinish();
