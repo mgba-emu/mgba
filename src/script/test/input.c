@@ -109,8 +109,49 @@ M_TEST_DEFINE(fireKey) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(gamepadExport) {
+	SETUP_LUA;
+
+	struct mScriptGamepad m_gamepad;
+	mScriptGamepadInit(&m_gamepad);
+
+	TEST_PROGRAM("assert(not input.activeGamepad)");
+	assert_int_equal(mScriptContextGamepadAttach(&context, &m_gamepad), 0);
+	TEST_PROGRAM("assert(input.activeGamepad)");
+
+	TEST_PROGRAM("assert(#input.activeGamepad.axes == 0)");
+	TEST_PROGRAM("assert(#input.activeGamepad.buttons == 0)");
+	TEST_PROGRAM("assert(#input.activeGamepad.hats == 0)");
+
+	mScriptGamepadSetAxisCount(&m_gamepad, 1);
+	TEST_PROGRAM("assert(#input.activeGamepad.axes == 1)");
+	TEST_PROGRAM("assert(input.activeGamepad.axes[1] == 0)");
+	mScriptGamepadSetAxis(&m_gamepad, 0, 123);
+	TEST_PROGRAM("assert(input.activeGamepad.axes[1] == 123)");
+
+	mScriptGamepadSetButtonCount(&m_gamepad, 1);
+	TEST_PROGRAM("assert(#input.activeGamepad.buttons == 1)");
+	TEST_PROGRAM("assert(input.activeGamepad.buttons[1] == false)");
+	mScriptGamepadSetButton(&m_gamepad, 0, true);
+	TEST_PROGRAM("assert(input.activeGamepad.buttons[1] == true)");
+
+	mScriptGamepadSetHatCount(&m_gamepad, 1);
+	TEST_PROGRAM("assert(#input.activeGamepad.hats == 1)");
+	TEST_PROGRAM("assert(input.activeGamepad.hats[1] == C.INPUT_DIR.NONE)");
+	mScriptGamepadSetHat(&m_gamepad, 0, mSCRIPT_INPUT_DIR_NORTHWEST);
+	TEST_PROGRAM("assert(input.activeGamepad.hats[1] == C.INPUT_DIR.NORTHWEST)");
+
+	mScriptContextGamepadDetach(&context, 0);
+	TEST_PROGRAM("assert(not input.activeGamepad)");
+
+	mScriptGamepadDeinit(&m_gamepad);
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptInput,
 	cmocka_unit_test(members),
 	cmocka_unit_test(seq),
 	cmocka_unit_test(fireKey),
+	cmocka_unit_test(gamepadExport),
 )

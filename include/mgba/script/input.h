@@ -217,6 +217,14 @@ struct mScriptTriggerEvent {
 	bool state;
 };
 
+struct mScriptGamepad {
+	unsigned pad;
+
+	struct mScriptList axes;
+	struct mScriptList buttons;
+	struct mScriptList hats;
+};
+
 mSCRIPT_DECLARE_STRUCT(mScriptEvent);
 mSCRIPT_DECLARE_STRUCT(mScriptKeyEvent);
 mSCRIPT_DECLARE_STRUCT(mScriptMouseButtonEvent);
@@ -227,9 +235,27 @@ mSCRIPT_DECLARE_STRUCT(mScriptGamepadHatEvent);
 mSCRIPT_DECLARE_STRUCT(mScriptSensorEvent);
 mSCRIPT_DECLARE_STRUCT(mScriptTriggerEvent);
 
+mSCRIPT_DECLARE_STRUCT(mScriptGamepad);
+
 void mScriptContextAttachInput(struct mScriptContext* context);
 
 void mScriptContextFireEvent(struct mScriptContext*, struct mScriptEvent*);
+
+int mScriptContextGamepadAttach(struct mScriptContext*, struct mScriptGamepad*);
+bool mScriptContextGamepadDetach(struct mScriptContext*, int pad);
+struct mScriptGamepad* mScriptContextGamepadLookup(struct mScriptContext*, int pad);
+
+void mScriptGamepadInit(struct mScriptGamepad*);
+void mScriptGamepadDeinit(struct mScriptGamepad*);
+void mScriptGamepadSetAxisCount(struct mScriptGamepad*, unsigned);
+void mScriptGamepadSetButtonCount(struct mScriptGamepad*, unsigned);
+void mScriptGamepadSetHatCount(struct mScriptGamepad*, unsigned);
+void mScriptGamepadSetAxis(struct mScriptGamepad*, unsigned, int16_t value);
+void mScriptGamepadSetButton(struct mScriptGamepad*, unsigned, bool down);
+void mScriptGamepadSetHat(struct mScriptGamepad*, unsigned, int direction);
+int16_t mScriptGamepadGetAxis(struct mScriptGamepad*, unsigned);
+bool mScriptGamepadGetButton(struct mScriptGamepad*, unsigned);
+int mScriptGamepadGetHat(struct mScriptGamepad*, unsigned);
 
 CXX_GUARD_END
 

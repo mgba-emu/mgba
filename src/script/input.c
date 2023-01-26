@@ -30,6 +30,7 @@ static const struct mScriptType* eventTypes[mSCRIPT_EV_TYPE_MAX] = {
 struct mScriptInputContext {
 	uint64_t seq;
 	struct Table activeKeys;
+	struct mScriptGamepad* activeGamepad;
 };
 
 static void _mScriptInputDeinit(struct mScriptInputContext*);
@@ -43,6 +44,7 @@ mSCRIPT_DEFINE_STRUCT(mScriptInputContext)
 	mSCRIPT_DEFINE_STRUCT_DEINIT(mScriptInputContext)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptInputContext, U64, seq)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptInputContext, isKeyActive)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptInputContext, PCS(mScriptGamepad), activeGamepad)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptEvent)
@@ -90,6 +92,12 @@ mSCRIPT_DEFINE_STRUCT(mScriptGamepadHatEvent)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepadHatEvent, U8, pad)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepadHatEvent, U8, hat)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepadHatEvent, U8, direction)
+mSCRIPT_DEFINE_END;
+
+mSCRIPT_DEFINE_STRUCT(mScriptGamepad)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, LIST, axes)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, LIST, buttons)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, LIST, hats)
 mSCRIPT_DEFINE_END;
 
 void mScriptContextAttachInput(struct mScriptContext* context) {
@@ -257,4 +265,148 @@ void mScriptContextFireEvent(struct mScriptContext* context, struct mScriptEvent
 	++inputContext->seq;
 	mScriptContextTriggerCallback(context, eventNames[event->type], &args);
 	mScriptListDeinit(&args);
+}
+
+
+int mScriptContextGamepadAttach(struct mScriptContext* context, struct mScriptGamepad* pad) {
+	struct mScriptValue* input = mScriptContextGetGlobal(context, "input");
+	if (!input) {
+		return false;
+	}
+	struct mScriptInputContext* inputContext = input->value.opaque;
+	if (inputContext->activeGamepad) {
+		return -1;
+	}
+	inputContext->activeGamepad = pad;
+
+	return 0;
+}
+
+bool mScriptContextGamepadDetach(struct mScriptContext* context, int pad) {
+	if (pad != 0) {
+		return false;
+	}
+	struct mScriptValue* input = mScriptContextGetGlobal(context, "input");
+	if (!input) {
+		return false;
+	}
+	struct mScriptInputContext* inputContext = input->value.opaque;
+	if (!inputContext->activeGamepad) {
+		return false;
+	}
+	inputContext->activeGamepad = NULL;
+	return true;
+}
+
+struct mScriptGamepad* mScriptContextGamepadLookup(struct mScriptContext* context, int pad) {
+	if (pad != 0) {
+		return NULL;
+	}
+	struct mScriptValue* input = mScriptContextGetGlobal(context, "input");
+	if (!input) {
+		return false;
+	}
+	struct mScriptInputContext* inputContext = input->value.opaque;
+	return inputContext->activeGamepad;
+}
+
+void mScriptGamepadInit(struct mScriptGamepad* gamepad) {
+	memset(gamepad, 0, sizeof(*gamepad));
+
+	mScriptListInit(&gamepad->axes, 8);
+	mScriptListInit(&gamepad->buttons, 1);
+	mScriptListInit(&gamepad->hats, 1);
+}
+
+void mScriptGamepadDeinit(struct mScriptGamepad* gamepad) {
+	mScriptListDeinit(&gamepad->axes);
+	mScriptListDeinit(&gamepad->buttons);
+	mScriptListDeinit(&gamepad->hats);
+}
+
+void mScriptGamepadSetAxisCount(struct mScriptGamepad* gamepad, unsigned count) {
+	if (count > UINT8_MAX) {
+		count = UINT8_MAX;
+	}
+
+	unsigned oldSize = mScriptListSize(&gamepad->axes);
+	mScriptListResize(&gamepad->axes, (ssize_t) count - oldSize);
+	unsigned i;
+	for (i = oldSize; i < count; ++i) {
+		*mScriptListGetPointer(&gamepad->axes, i) = mSCRIPT_MAKE_S16(0);
+	}
+}
+
+void mScriptGamepadSetButtonCount(struct mScriptGamepad* gamepad, unsigned count) {
+	if (count > UINT16_MAX) {
+		count = UINT16_MAX;
+	}
+
+	unsigned oldSize = mScriptListSize(&gamepad->buttons);
+	mScriptListResize(&gamepad->buttons, (ssize_t) count - oldSize);
+	unsigned i;
+	for (i = oldSize; i < count; ++i) {
+		*mScriptListGetPointer(&gamepad->buttons, i) = mSCRIPT_MAKE_BOOL(false);
+	}
+}
+
+void mScriptGamepadSetHatCount(struct mScriptGamepad* gamepad, unsigned count) {
+	if (count > UINT8_MAX) {
+		count = UINT8_MAX;
+	}
+
+	unsigned oldSize = mScriptListSize(&gamepad->hats);
+	mScriptListResize(&gamepad->hats, (ssize_t) count - oldSize);
+	unsigned i;
+	for (i = oldSize; i < count; ++i) {
+		*mScriptListGetPointer(&gamepad->hats, i) = mSCRIPT_MAKE_U8(0);
+	}
+}
+
+void mScriptGamepadSetAxis(struct mScriptGamepad* gamepad, unsigned id, int16_t value) {
+	if (id >= mScriptListSize(&gamepad->axes)) {
+		return;
+	}
+
+	mScriptListGetPointer(&gamepad->axes, id)->value.s32 = value;
+}
+
+void mScriptGamepadSetButton(struct mScriptGamepad* gamepad, unsigned id, bool down) {
+	if (id >= mScriptListSize(&gamepad->buttons)) {
+		return;
+	}
+
+	mScriptListGetPointer(&gamepad->buttons, id)->value.u32 = down;
+}
+
+void mScriptGamepadSetHat(struct mScriptGamepad* gamepad, unsigned id, int direction) {
+	if (id >= mScriptListSize(&gamepad->hats)) {
+		return;
+	}
+
+	mScriptListGetPointer(&gamepad->hats, id)->value.u32 = direction;
+}
+
+int16_t mScriptGamepadGetAxis(struct mScriptGamepad* gamepad, unsigned id) {
+	if (id >= mScriptListSize(&gamepad->axes)) {
+		return 0;
+	}
+
+	return mScriptListGetPointer(&gamepad->axes, id)->value.s32;
+}
+
+bool mScriptGamepadGetButton(struct mScriptGamepad* gamepad, unsigned id) {
+	if (id >= mScriptListSize(&gamepad->buttons)) {
+		return false;
+	}
+
+	return mScriptListGetPointer(&gamepad->buttons, id)->value.u32;
+}
+
+int mScriptGamepadGetHat(struct mScriptGamepad* gamepad, unsigned id) {
+	if (id >= mScriptListSize(&gamepad->hats)) {
+		return mSCRIPT_INPUT_DIR_NONE;
+	}
+
+	return mScriptListGetPointer(&gamepad->hats, id)->value.u32;
 }
