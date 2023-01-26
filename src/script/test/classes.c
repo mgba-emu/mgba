@@ -14,6 +14,8 @@ struct TestA {
 	int32_t i2;
 	int8_t b8;
 	int16_t hUnaligned;
+	struct mScriptValue table;
+	struct mScriptList list;
 	int32_t (*ifn0)(struct TestA*);
 	int32_t (*ifn1)(struct TestA*, int);
 	void (*vfn0)(struct TestA*);
@@ -103,6 +105,8 @@ mSCRIPT_DEFINE_STRUCT(TestA)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestA, S32, i2)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestA, S8, b8)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestA, S16, hUnaligned)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(TestA, TABLE, table)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(TestA, LIST, list)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, ifn0)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, ifn1)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, icfn0)
@@ -186,6 +190,20 @@ M_TEST_DEFINE(testALayout) {
 	assert_null(member->docstring);
 	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S16);
 	assert_int_not_equal(member->offset, sizeof(int32_t) * 2 + 1);
+
+	member = HashTableLookup(&cls->instanceMembers, "table");
+	assert_non_null(member);
+	assert_string_equal(member->name, "table");
+	assert_null(member->docstring);
+	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_TABLE);
+	assert_int_equal(member->offset, &((struct TestA*) 0)->table);
+
+	member = HashTableLookup(&cls->instanceMembers, "list");
+	assert_non_null(member);
+	assert_string_equal(member->name, "list");
+	assert_null(member->docstring);
+	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_LIST);
+	assert_int_equal(member->offset, &((struct TestA*) 0)->list);
 
 	member = HashTableLookup(&cls->instanceMembers, "unknown");
 	assert_null(member);
@@ -280,6 +298,12 @@ M_TEST_DEFINE(testAGet) {
 		.hUnaligned = 4
 	};
 
+	mScriptListInit(&s.list, 1);
+	*mScriptListAppend(&s.list) = mSCRIPT_MAKE_S32(5);
+
+	s.table.type = mSCRIPT_TYPE_MS_TABLE;
+	s.table.type->alloc(&s.table);
+
 	struct mScriptValue sval = mSCRIPT_MAKE_S(TestA, &s);
 	struct mScriptValue val;
 	struct mScriptValue compare;
@@ -300,7 +324,33 @@ M_TEST_DEFINE(testAGet) {
 	assert_true(mScriptObjectGet(&sval, "hUnaligned", &val));
 	assert_true(compare.type->equal(&compare, &val));
 
+	compare = mSCRIPT_MAKE_S32(5);
+	assert_true(mScriptObjectGet(&sval, "list", &val));
+	assert_ptr_equal(val.type, mSCRIPT_TYPE_MS_LIST);
+	assert_int_equal(mScriptListSize(val.value.list), 1);
+	assert_true(compare.type->equal(&compare, mScriptListGetPointer(val.value.list, 0)));
+
+	*mScriptListAppend(&s.list) = mSCRIPT_MAKE_S32(6);
+	compare = mSCRIPT_MAKE_S32(6);
+	assert_int_equal(mScriptListSize(val.value.list), 2);
+	assert_true(compare.type->equal(&compare, mScriptListGetPointer(val.value.list, 1)));
+
+	struct mScriptValue* ival = &val;
+	assert_true(mScriptObjectGet(&sval, "table", &val));
+	if (val.type->base == mSCRIPT_TYPE_WRAPPER) {
+		ival = mScriptValueUnwrap(&val);
+	}
+	assert_ptr_equal(ival->type, mSCRIPT_TYPE_MS_TABLE);
+	assert_int_equal(mScriptTableSize(ival), 0);
+	compare = mSCRIPT_MAKE_S32(7);
+	mScriptTableInsert(&s.table, &compare, &compare);
+	assert_int_equal(mScriptTableSize(&s.table), 1);
+	assert_int_equal(mScriptTableSize(ival), 1);
+
 	assert_false(mScriptObjectGet(&sval, "unknown", &val));
+
+	mScriptListDeinit(&s.list);
+	mSCRIPT_TYPE_MS_TABLE->free(&s.table);
 
 	assert_true(cls->init);
 	mScriptClassDeinit(cls);
