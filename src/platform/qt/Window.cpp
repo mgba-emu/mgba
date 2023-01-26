@@ -627,6 +627,7 @@ void Window::consoleOpen() {
 void Window::scriptingOpen() {
 	if (!m_scripting) {
 		m_scripting = std::make_unique<ScriptingController>();
+		m_scripting->setInputController(&m_inputController);
 		m_shortcutController->setScriptingController(m_scripting.get());
 		if (m_controller) {
 			m_scripting->setController(m_controller);

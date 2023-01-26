@@ -56,6 +56,8 @@ public:
 
 	void addInputDriver(std::shared_ptr<InputDriver>);
 
+	int playerId() const { return m_playerId; }
+
 	void setConfiguration(ConfigController* config);
 	void saveConfiguration();
 	bool loadConfiguration(uint32_t type);
@@ -103,6 +105,7 @@ public:
 	GBALuminanceSource* luminance() { return &m_lux; }
 
 signals:
+	void updated();
 	void profileLoaded(const QString& profile);
 	void luminanceValueChanged(int value);
 

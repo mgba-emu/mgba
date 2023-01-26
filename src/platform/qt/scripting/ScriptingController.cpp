@@ -12,8 +12,10 @@
 
 #include "CoreController.h"
 #include "Display.h"
+#include "input/Gamepad.h"
 #include "input/GamepadButtonEvent.h"
 #include "input/GamepadHatEvent.h"
+#include "InputController.h"
 #include "scripting/ScriptingTextBuffer.h"
 #include "scripting/ScriptingTextBufferModel.h"
 
@@ -48,12 +50,15 @@ ScriptingController::ScriptingController(QObject* parent)
 	m_bufferModel = new ScriptingTextBufferModel(this);
 	QObject::connect(m_bufferModel, &ScriptingTextBufferModel::textBufferCreated, this, &ScriptingController::textBufferCreated);
 
+	mScriptGamepadInit(&m_gamepad);
+
 	init();
 }
 
 ScriptingController::~ScriptingController() {
 	clearController();
 	mScriptContextDeinit(&m_scriptContext);
+	mScriptGamepadDeinit(&m_gamepad);
 }
 
 void ScriptingController::setController(std::shared_ptr<CoreController> controller) {
@@ -68,6 +73,14 @@ void ScriptingController::setController(std::shared_ptr<CoreController> controll
 		mScriptContextAttachCore(&m_scriptContext, m_controller->thread()->core);
 	}
 	connect(m_controller.get(), &CoreController::stopping, this, &ScriptingController::clearController);
+}
+
+void ScriptingController::setInputController(InputController* input) {
+	if (m_inputController) {
+		m_inputController->disconnect(this);
+	}
+	m_inputController = input;
+	connect(m_inputController, &InputController::updated, this, &ScriptingController::updateGamepad);
 }
 
 bool ScriptingController::loadFile(const QString& path) {
@@ -204,12 +217,67 @@ void ScriptingController::event(QObject* obj, QEvent* event) {
 	}
 	if (type == GamepadHatEvent::Type()) {
 		struct mScriptGamepadHatEvent ev{mSCRIPT_EV_TYPE_GAMEPAD_HAT};
+		updateGamepad();
 		auto gamepadEvent = static_cast<GamepadHatEvent*>(event);
 		ev.pad = 0;
 		ev.hat = gamepadEvent->hatId();
 		ev.direction = gamepadEvent->direction();
 		mScriptContextFireEvent(&m_scriptContext, &ev.d);
 	}
+}
+
+void ScriptingController::updateGamepad() {
+	InputDriver* driver = m_inputController->gamepadDriver();
+	if (!driver) {
+		detachGamepad();
+		return;
+	}
+	Gamepad* gamepad = driver->activeGamepad();
+	if (!gamepad) {
+		detachGamepad();
+		return;
+	}
+	attachGamepad();
+
+	QList<bool> buttons = gamepad->currentButtons();
+	int nButtons = gamepad->buttonCount();
+	mScriptGamepadSetButtonCount(&m_gamepad, nButtons);
+	for (int i = 0; i < nButtons; ++i) {
+		mScriptGamepadSetButton(&m_gamepad, i, buttons.at(i));
+	}
+
+	QList<int16_t> axes = gamepad->currentAxes();
+	int nAxes = gamepad->axisCount();
+	mScriptGamepadSetAxisCount(&m_gamepad, nAxes);
+	for (int i = 0; i < nAxes; ++i) {
+		mScriptGamepadSetAxis(&m_gamepad, i, axes.at(i));
+	}
+
+	QList<GamepadHatEvent::Direction> hats = gamepad->currentHats();
+	int nHats = gamepad->hatCount();
+	mScriptGamepadSetHatCount(&m_gamepad, nHats);
+	for (int i = 0; i < nHats; ++i) {
+		mScriptGamepadSetHat(&m_gamepad, i, hats.at(i));
+	}
+}
+
+void ScriptingController::attachGamepad() {
+	mScriptGamepad* pad = mScriptContextGamepadLookup(&m_scriptContext, 0);
+	if (pad == &m_gamepad) {
+		return;
+	}
+	if (pad) {
+		mScriptContextGamepadDetach(&m_scriptContext, 0);
+	}
+	mScriptContextGamepadAttach(&m_scriptContext, &m_gamepad);
+}
+
+void ScriptingController::detachGamepad() {
+	mScriptGamepad* pad = mScriptContextGamepadLookup(&m_scriptContext, 0);
+	if (pad != &m_gamepad) {
+		return;
+	}
+	mScriptContextGamepadDetach(&m_scriptContext, 0);
 }
 
 void ScriptingController::init() {
