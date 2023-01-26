@@ -853,6 +853,21 @@ const struct mScriptValue* mScriptValueUnwrapConst(const struct mScriptValue* va
 	return NULL;
 }
 
+void mScriptValueFollowPointer(struct mScriptValue* ptr, struct mScriptValue* out) {
+	if (ptr->type->base != mSCRIPT_TYPE_OPAQUE || !ptr->type->details.type) {
+		return;
+	}
+
+	out->value.opaque = *(void**) ptr->value.opaque;
+	if (out->value.opaque) {
+		out->type = ptr->type->details.type;
+	} else {
+		out->type = mSCRIPT_TYPE_MS_VOID;
+	}
+	out->refs = mSCRIPT_VALUE_UNREF;
+	out->flags = 0;
+}
+
 struct mScriptValue* mScriptStringCreateEmpty(size_t size) {
 	struct mScriptValue* val = mScriptValueAlloc(mSCRIPT_TYPE_MS_STR);
 	struct mScriptString* internal = val->value.opaque;
