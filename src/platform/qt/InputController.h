@@ -74,8 +74,8 @@ public:
 	static const int32_t AXIS_THRESHOLD = 0x3000;
 
 	void setGamepadDriver(uint32_t type);
-	const InputDriver* gamepadDriver() const { return m_inputDrivers.value(m_sensorDriver).get(); }
-	InputDriver* gamepadDriver() { return m_inputDrivers.value(m_sensorDriver).get(); }
+	const InputDriver* gamepadDriver() const { return m_inputDrivers.value(m_gamepadDriver).get(); }
+	InputDriver* gamepadDriver() { return m_inputDrivers.value(m_gamepadDriver).get(); }
 
 	QStringList connectedGamepads(uint32_t type = 0) const;
 	int gamepadIndex(uint32_t type = 0) const;
