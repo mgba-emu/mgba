@@ -38,6 +38,7 @@ Q_IMPORT_PLUGIN(AVFServicePlugin);
 #endif
 #elif defined(Q_OS_UNIX)
 Q_IMPORT_PLUGIN(QXcbIntegrationPlugin);
+Q_IMPORT_PLUGIN(QWaylandIntegrationPlugin);
 #endif
 #endif
 
