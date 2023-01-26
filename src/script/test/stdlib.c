@@ -10,31 +10,13 @@
 #include <mgba/script/macros.h>
 #include <mgba/script/types.h>
 
+#include "script/test.h"
+
 #define SETUP_LUA \
 	struct mScriptContext context; \
 	mScriptContextInit(&context); \
 	struct mScriptEngineContext* lua = mScriptContextRegisterEngine(&context, mSCRIPT_ENGINE_LUA); \
 	mScriptContextAttachStdlib(&context)
-
-#define LOAD_PROGRAM(PROG) \
-	do { \
-		struct VFile* vf = VFileFromConstMemory(PROG, strlen(PROG)); \
-		assert_true(lua->load(lua, NULL, vf)); \
-		vf->close(vf); \
-	} while(0)
-
-#define TEST_PROGRAM(PROG) \
-	LOAD_PROGRAM(PROG); \
-	assert_true(lua->run(lua)); \
-
-#define TEST_VALUE(TYPE, NAME, VALUE) \
-	do { \
-		struct mScriptValue val = mSCRIPT_MAKE(TYPE, VALUE); \
-		struct mScriptValue* global = lua->getGlobal(lua, NAME); \
-		assert_non_null(global); \
-		assert_true(global->type->equal(global, &val)); \
-		mScriptValueDeref(global); \
-	} while(0)
 
 M_TEST_SUITE_SETUP(mScriptStdlib) {
 	if (mSCRIPT_ENGINE_LUA->init) {

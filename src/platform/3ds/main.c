@@ -817,7 +817,16 @@ THREAD_ENTRY _core2Test(void* context) {
 	UNUSED(context);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+	char initialPath[PATH_MAX] = { 0 };
+	if (argc > 1) {
+		strncpy(initialPath, argv[1], sizeof(PATH_MAX));
+	} else {
+		u8 hmac[0x20];
+		memset(hmac, 0, sizeof(hmac));
+		APT_ReceiveDeliverArg(initialPath, sizeof(initialPath), hmac, NULL, NULL);
+	}
+
 	rotation.d.sample = _sampleRotation;
 	rotation.d.readTiltX = _readTiltX;
 	rotation.d.readTiltY = _readTiltY;
@@ -1046,9 +1055,29 @@ int main() {
 	_map3DSKey(&runner.params.keyMap, KEY_CSTICK_UP, mGUI_INPUT_INCREASE_BRIGHTNESS);
 	_map3DSKey(&runner.params.keyMap, KEY_CSTICK_DOWN, mGUI_INPUT_DECREASE_BRIGHTNESS);
 
-	mGUIRunloop(&runner);
+	Result res = romfsInit();
+	bool useRomfs = false;
+	if (R_SUCCEEDED(res)) {
+		useRomfs = mGUIGetRom(&runner, initialPath, sizeof(initialPath));
+		if (!useRomfs) {
+			romfsExit();
+			_cleanup();
+			return 1;
+		}
+	}
+
+	if (initialPath[0] == '/' || useRomfs) {
+		mGUILoadInputMaps(&runner);
+		mGUIRun(&runner, initialPath);
+	} else {
+		mGUIRunloop(&runner);
+	}
+
 	mGUIDeinit(&runner);
 
+	if (useRomfs) {
+		romfsExit();
+	}
 	_cleanup();
 	return 0;
 }

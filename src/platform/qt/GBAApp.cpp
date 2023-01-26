@@ -19,6 +19,7 @@
 #include <QFontDatabase>
 #include <QIcon>
 
+#include <mgba/core/version.h>
 #include <mgba/feature/updater.h>
 #include <mgba-util/socket.h>
 #include <mgba-util/vfs.h>
@@ -79,6 +80,10 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 		}
 	}, this);
 	m_configController->updateOption("useDiscordPresence");
+#endif
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
+	m_netman.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
 #endif
 
 	cleanupAfterUpdate();
@@ -239,6 +244,19 @@ bool GBAApp::reloadGameDB() {
 	return false;
 }
 #endif
+
+QNetworkAccessManager* GBAApp::netman() {
+	return &m_netman;
+}
+
+QNetworkReply* GBAApp::httpGet(const QUrl& url) {
+	QNetworkRequest req(url);
+	req.setHeader(QNetworkRequest::UserAgentHeader,
+	              QString("%1/%2 (+https://mgba.io) is definitely not Mozilla/5.0")
+	              .arg(projectName)
+	              .arg(projectVersion));
+	return m_netman.get(req);
+}
 
 qint64 GBAApp::submitWorkerJob(std::function<void ()> job, std::function<void ()> callback) {
 	return submitWorkerJob(job, nullptr, callback);

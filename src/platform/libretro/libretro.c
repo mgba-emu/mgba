@@ -149,7 +149,7 @@ static const int keymap[] = {
 #ifndef GIT_VERSION
 #define GIT_VERSION ""
 #endif
-const char* const projectVersion = "0.10-dev" GIT_VERSION;
+const char* const projectVersion = "0.11-dev" GIT_VERSION;
 const char* const projectName = "mGBA";
 
 /* Maximum number of consecutive frames that

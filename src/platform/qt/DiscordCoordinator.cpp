@@ -22,7 +22,7 @@ namespace DiscordCoordinator {
 
 static bool s_gameRunning = false;
 static bool s_inited = false;
-static QString s_title;
+static QByteArray s_title;
 
 static void updatePresence() {
 	if (!s_inited) {
@@ -30,7 +30,7 @@ static void updatePresence() {
 	}
 	if (s_gameRunning) {
 		DiscordRichPresence discordPresence{};
-		discordPresence.details = s_title.toUtf8().constData();
+		discordPresence.details = s_title.constData();
 		discordPresence.instance = 1;
 		discordPresence.largeImageKey = "mgba";
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 8, 0))
@@ -74,8 +74,10 @@ void gameStarted(std::shared_ptr<CoreController> controller) {
 	s_title = controller->thread()->core->dirs.baseName;
 	QString dbTitle = controller->dbTitle();
 	if (!dbTitle.isNull()) {
-		s_title = dbTitle;
+		s_title = dbTitle.toUtf8();
 	}
+	// Non-const QByteArrays are null-terminated so we don't need to append null even after truncation
+	s_title.truncate(128);
 	updatePresence();
 }
 

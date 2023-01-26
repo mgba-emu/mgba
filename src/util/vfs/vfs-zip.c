@@ -593,7 +593,11 @@ ssize_t _vfzRead(struct VFile* vf, void* buffer, size_t size) {
 
 ssize_t _vfzWrite(struct VFile* vf, const void* buffer, size_t size) {
 	struct VFileZip* vfz = (struct VFileZip*) vf;
-	return zipWriteInFileInZip(vfz->z, buffer, size);
+	int res = zipWriteInFileInZip(vfz->z, buffer, size);
+	if (res != ZIP_OK) {
+		return res;
+	}
+	return size;
 }
 
 void* _vfzMap(struct VFile* vf, size_t size, int flags) {

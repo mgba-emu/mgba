@@ -7,6 +7,7 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QRegularExpression>
 
 #include "ApplicationUpdatePrompt.h"
 #include "ConfigController.h"
@@ -71,9 +72,10 @@ QStringList ApplicationUpdater::listChannels() {
 }
 
 QString ApplicationUpdater::currentChannel() {
-	QLatin1String version(projectVersion);
-	QLatin1String branch(gitBranch);
-	if (branch == QLatin1String("heads/") + version) {
+	QString version(projectVersion);
+	QString branch(gitBranch);
+	QRegularExpression stable("^(?:(?:refs/)?(?:tags|heads)/)?[0-9]+\\.[0-9]+\\.[0-9]+$");
+	if (branch.contains(stable) || (branch == "(unknown)" && version.contains(stable))) {
 		return QLatin1String("stable");
 	} else {
 		return QLatin1String("dev");
@@ -136,8 +138,16 @@ QUrl ApplicationUpdater::parseManifest(const QByteArray& manifest) {
 
 QString ApplicationUpdater::destination() const {
 	QFileInfo path(updateInfo().url.path());
-	QDir dir(ConfigController::configDir());
-	return dir.filePath(QLatin1String("update.") + path.completeSuffix());
+	QDir dir(ConfigController::cacheDir());
+	// QFileInfo::completeSuffix will eat all .'s in the filename...including
+	// ones in the version string, turning mGBA-1.0.0-win32.7z into
+	// 0.0-win32.7z instead of the intended .7z
+	// As a result, so we have to split out the complete suffix manually.
+	QString suffix(path.suffix());
+	if (path.completeBaseName().endsWith(".tar")) {
+		suffix = "tar." + suffix;
+	}
+	return dir.filePath(QLatin1String("update.") + suffix);
 }
 
 const char* ApplicationUpdater::platform() {
@@ -166,7 +176,8 @@ const char* ApplicationUpdater::platform() {
 }
 
 ApplicationUpdater::UpdateInfo::UpdateInfo(const QString& prefix, const mUpdate* update)
-	: size(update->size)
+	: rev(-1)
+	, size(update->size)
 	, url(prefix + update->path)
 {
 	if (update->rev > 0) {

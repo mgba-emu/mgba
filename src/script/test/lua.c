@@ -8,21 +8,12 @@
 #include <mgba/internal/script/lua.h>
 #include <mgba/script/macros.h>
 
+#include "script/test.h"
+
 #define SETUP_LUA \
 	struct mScriptContext context; \
 	mScriptContextInit(&context); \
 	struct mScriptEngineContext* lua = mScriptContextRegisterEngine(&context, mSCRIPT_ENGINE_LUA)
-
-#define LOAD_PROGRAM(PROG) \
-	do { \
-		struct VFile* vf = VFileFromConstMemory(PROG, strlen(PROG)); \
-		assert_true(lua->load(lua, NULL, vf)); \
-		vf->close(vf); \
-	} while(0)
-
-#define TEST_PROGRAM(PROG) \
-	LOAD_PROGRAM(PROG); \
-	assert_true(lua->run(lua)); \
 
 struct Test {
 	int32_t i;

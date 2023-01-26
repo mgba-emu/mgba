@@ -86,28 +86,55 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 
 #define COMPOSITE_16_OBJWIN(BLEND, IDX)  \
 	if (objwinForceEnable || (!(current & FLAG_OBJWIN)) == objwinOnly) {                                          \
-		unsigned color = (current & FLAG_OBJWIN) ? objwinPalette[paletteData | pixelData] : palette[pixelData]; \
+		unsigned color; \
 		unsigned mergedFlags = flags; \
 		if (current & FLAG_OBJWIN) { \
 			mergedFlags = objwinFlags; \
+			color = objwinPalette[paletteData | pixelData]; \
+		} else if ((current & (FLAG_IS_BACKGROUND | FLAG_REBLEND)) == FLAG_REBLEND) { \
+			color = renderer->normalPalette[paletteData | pixelData]; \
+		} else { \
+			color = palette[paletteData | pixelData]; \
 		} \
 		_composite ## BLEND ## Objwin(renderer, &pixel[IDX], color | mergedFlags, current); \
 	}
 
 #define COMPOSITE_16_NO_OBJWIN(BLEND, IDX) \
-	_composite ## BLEND ## NoObjwin(renderer, &pixel[IDX], palette[pixelData] | flags, current);
+	{ \
+		unsigned color; \
+		if ((current & (FLAG_IS_BACKGROUND | FLAG_REBLEND)) == FLAG_REBLEND) { \
+			color = renderer->normalPalette[paletteData | pixelData]; \
+		} else { \
+			color = palette[paletteData | pixelData]; \
+		} \
+		_composite ## BLEND ## NoObjwin(renderer, &pixel[IDX], color | flags, current); \
+	}
 
 #define COMPOSITE_256_OBJWIN(BLEND, IDX) \
 	if (objwinForceEnable || (!(current & FLAG_OBJWIN)) == objwinOnly) { \
-		unsigned color = (current & FLAG_OBJWIN) ? objwinPalette[pixelData] : palette[pixelData]; \
+		unsigned color; \
 		unsigned mergedFlags = flags; \
 		if (current & FLAG_OBJWIN) { \
 			mergedFlags = objwinFlags; \
+			color = objwinPalette[pixelData]; \
+		} else if ((current & (FLAG_IS_BACKGROUND | FLAG_REBLEND)) == FLAG_REBLEND) { \
+			color = renderer->normalPalette[pixelData]; \
+		} else { \
+			color = palette[pixelData]; \
 		} \
 		_composite ## BLEND ## Objwin(renderer, &pixel[IDX], color | mergedFlags, current); \
 	}
 
-#define COMPOSITE_256_NO_OBJWIN COMPOSITE_16_NO_OBJWIN
+#define COMPOSITE_256_NO_OBJWIN(BLEND, IDX) \
+	{ \
+		unsigned color; \
+		if ((current & (FLAG_IS_BACKGROUND | FLAG_REBLEND)) == FLAG_REBLEND) { \
+			color = renderer->normalPalette[pixelData]; \
+		} else { \
+			color = palette[pixelData]; \
+		} \
+		_composite ## BLEND ## NoObjwin(renderer, &pixel[IDX], color | flags, current); \
+	}
 
 #define BACKGROUND_DRAW_PIXEL_16(BLEND, OBJWIN, IDX) \
 	pixelData = tileData & 0xF; \

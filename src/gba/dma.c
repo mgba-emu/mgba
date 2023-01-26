@@ -248,7 +248,6 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	struct GBAMemory* memory = &gba->memory;
 	struct ARMCore* cpu = gba->cpu;
 	uint32_t width = 2 << GBADMARegisterGetWidth(info->reg);
-	int32_t wordsRemaining = info->nextCount;
 	uint32_t source = info->nextSource;
 	uint32_t dest = info->nextDest;
 	uint32_t sourceRegion = source >> BASE_OFFSET;
@@ -256,6 +255,8 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	int32_t cycles = 2;
 
 	gba->cpuBlocked = true;
+	gba->performingDMA = 1 | (number << 1);
+
 	if (info->count == info->nextCount) {
 		if (width == 4) {
 			cycles += memory->waitstatesNonseq32[sourceRegion] + memory->waitstatesNonseq32[destRegion];
@@ -271,12 +272,10 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	}
 	info->when += cycles;
 
-	gba->performingDMA = 1 | (number << 1);
 	if (width == 4) {
 		if (source) {
 			memory->dmaTransferRegister = cpu->memory.load32(cpu, source, 0);
 		}
-		gba->bus = memory->dmaTransferRegister;
 		cpu->memory.store32(cpu, dest, memory->dmaTransferRegister, 0);
 	} else {
 		if (sourceRegion == REGION_CART2_EX && (memory->savedata.type == SAVEDATA_EEPROM || memory->savedata.type == SAVEDATA_EEPROM512)) {
@@ -292,14 +291,13 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
 			if (memory->savedata.type == SAVEDATA_EEPROM512 || memory->savedata.type == SAVEDATA_EEPROM) {
-				GBASavedataWriteEEPROM(&memory->savedata, memory->dmaTransferRegister, wordsRemaining);
+				GBASavedataWriteEEPROM(&memory->savedata, memory->dmaTransferRegister, info->nextCount);
 			}
 		} else {
 			cpu->memory.store16(cpu, dest, memory->dmaTransferRegister, 0);
-
 		}
-		gba->bus = memory->dmaTransferRegister;
 	}
+	gba->bus = memory->dmaTransferRegister;
 
 	int sourceOffset;
 	if (info->nextSource >= BASE_CART0 && info->nextSource < BASE_CART_SRAM && GBADMARegisterGetSrcControl(info->reg) < 3) {
@@ -309,15 +307,12 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	}
 	int destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(info->reg)] * width;
 	if (source) {
-		source += sourceOffset;
+		info->nextSource += sourceOffset;
 	}
-	dest += destOffset;
-	--wordsRemaining;
-	gba->performingDMA = 0;
+	info->nextDest += destOffset;
+	--info->nextCount;
 
-	info->nextCount = wordsRemaining;
-	info->nextSource = source;
-	info->nextDest = dest;
+	gba->performingDMA = 0;
 
 	int i;
 	for (i = 0; i < 4; ++i) {
@@ -328,7 +323,7 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		}
 	}
 
-	if (!wordsRemaining) {
+	if (!info->nextCount) {
 		info->nextCount |= 0x80000000;
 		if (sourceRegion < REGION_CART0 || destRegion < REGION_CART0) {
 			info->when += 2;

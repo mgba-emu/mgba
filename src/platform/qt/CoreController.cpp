@@ -914,7 +914,10 @@ void CoreController::scanCard(const QString& path) {
 		if (!file.open(QIODevice::ReadOnly)) {
 			return;
 		}
-		m_eReaderData = file.read(2912);
+		QByteArray eReaderData = file.read(2912);
+		if (eReaderData.isEmpty()) {
+			return;
+		}
 
 		file.seek(0);
 		QStringList lines;
@@ -936,6 +939,7 @@ void CoreController::scanCard(const QString& path) {
 			}
 		}
 		scanCards(lines);
+		m_eReaderData = eReaderData;
 	} else if (image.size() == QSize(989, 44) || image.size() == QSize(639, 44)) {
 		const uchar* bits = image.constBits();
 		size_t size;

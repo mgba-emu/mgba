@@ -95,8 +95,13 @@ struct mGUIRunner {
 
 void mGUIInit(struct mGUIRunner*, const char* port);
 void mGUIDeinit(struct mGUIRunner*);
+void mGUILoadInputMaps(struct mGUIRunner* runner);
 void mGUIRun(struct mGUIRunner*, const char* path);
 void mGUIRunloop(struct mGUIRunner*);
+
+#if defined(__3DS__) || defined(PSP2)
+bool mGUIGetRom(struct mGUIRunner* runner, char* out, size_t outLength);
+#endif
 
 #ifndef DISABLE_THREADING
 THREAD_ENTRY mGUIAutosaveThread(void* context);

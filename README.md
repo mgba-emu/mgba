@@ -50,15 +50,15 @@ The following mappers are fully supported:
 - MBC2
 - MBC3
 - MBC3+RTC
+- MBC30
 - MBC5
 - MBC5+Rumble
 - MBC7
 - Wisdom Tree (unlicensed)
+- NT "old type" 1 and 2 (unlicensed multicart)
 - NT "new type" (unlicensed MBC5-like)
 - Pokémon Jade/Diamond (unlicensed)
-- BBD (unlicensed MBC5-like)
-- Hitek (unlicensed MBC5-like)
-- Sachen MMC1
+- Sachen MMC1 (unlicensed)
 
 The following mappers are partially supported:
 
@@ -69,6 +69,10 @@ The following mappers are partially supported:
 - HuC-1 (missing IR support)
 - HuC-3 (missing IR support)
 - Sachen MMC2 (missing alternate wiring support)
+- BBD (missing logo switching)
+- Hitek (missing logo switching)
+- GGB-81 (missing logo switching)
+- Li Cheng (missing logo switching)
 
 ### Planned features
 
