@@ -495,15 +495,15 @@ void InputController::testGamepad(uint32_t type) {
 
 	for (auto& hat : activeHats) {
 		GamepadHatEvent* event = new GamepadHatEvent(GamepadHatEvent::Down(), hat.first, hat.second, type, this);
-		postPendingEvent(event->platformKey());
+		postPendingEvents(event->platformKeys());
 		sendGamepadEvent(event);
 		if (!event->isAccepted()) {
-			clearPendingEvent(event->platformKey());
+			clearPendingEvents(event->platformKeys());
 		}
 	}
 	for (auto& hat : oldHats) {
 		GamepadHatEvent* event = new GamepadHatEvent(GamepadHatEvent::Up(), hat.first, hat.second, type, this);
-		clearPendingEvent(event->platformKey());
+		clearPendingEvents(event->platformKeys());
 		sendGamepadEvent(event);
 	}
 }
@@ -527,6 +527,22 @@ void InputController::postPendingEvent(int key) {
 
 void InputController::clearPendingEvent(int key) {
 	m_pendingEvents.remove(key);
+}
+
+void InputController::postPendingEvents(int keys) {
+	for (int i = 0; keys; ++i, keys >>= 1) {
+		if (keys & 1) {
+			m_pendingEvents.insert(i);
+		}
+	}
+}
+
+void InputController::clearPendingEvents(int keys) {
+	for (int i = 0; keys; ++i, keys >>= 1) {
+		if (keys & 1) {
+			m_pendingEvents.remove(i);
+		}
+	}
 }
 
 bool InputController::hasPendingEvent(int key) const {

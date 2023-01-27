@@ -25,7 +25,7 @@ public:
 
 	int hatId() const { return m_hatId; }
 	Direction direction() const { return m_direction; }
-	int platformKey() const { return m_key; }
+	int platformKeys() const { return m_keys; }
 
 	static Type Down();
 	static Type Up();
@@ -36,7 +36,7 @@ private:
 
 	int m_hatId;
 	Direction m_direction;
-	int m_key;
+	int m_keys;
 };
 
 }

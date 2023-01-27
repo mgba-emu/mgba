@@ -128,9 +128,11 @@ private slots:
 	void teardownCam();
 
 private:
-	void postPendingEvent(int);
-	void clearPendingEvent(int);
-	bool hasPendingEvent(int) const;
+	void postPendingEvent(int key);
+	void clearPendingEvent(int key);
+	void postPendingEvents(int keys);
+	void clearPendingEvents(int keys);
+	bool hasPendingEvent(int key) const;
 	void sendGamepadEvent(QEvent*);
 
 	Gamepad* gamepad(uint32_t type);
