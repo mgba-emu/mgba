@@ -118,10 +118,10 @@ void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* 
 	info->reg = GBADMARegisterSetDestControl(info->reg, GBA_DMA_FIXED);
 	info->reg = GBADMARegisterSetWidth(info->reg, 1);
 	switch (info->dest) {
-	case BASE_IO | REG_FIFO_A_LO:
+	case GBA_BASE_IO | REG_FIFO_A_LO:
 		audio->chA.dmaSource = number;
 		break;
-	case BASE_IO | REG_FIFO_B_LO:
+	case GBA_BASE_IO | REG_FIFO_B_LO:
 		audio->chB.dmaSource = number;
 		break;
 	default:

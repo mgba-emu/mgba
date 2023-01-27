@@ -54,7 +54,7 @@ MGBA_EXPORT const int GBAVideoObjSizes[16][2] = {
 
 void GBAVideoInit(struct GBAVideo* video) {
 	video->renderer = NULL;
-	video->vram = anonymousMemoryMap(SIZE_VRAM);
+	video->vram = anonymousMemoryMap(GBA_SIZE_VRAM);
 	video->frameskip = 0;
 	video->event.name = "GBA Video";
 	video->event.callback = NULL;
@@ -93,7 +93,7 @@ void GBAVideoReset(struct GBAVideo* video) {
 
 void GBAVideoDeinit(struct GBAVideo* video) {
 	video->renderer->deinit(video->renderer);
-	mappedMemoryFree(video->vram, SIZE_VRAM);
+	mappedMemoryFree(video->vram, GBA_SIZE_VRAM);
 }
 
 void GBAVideoDummyRendererCreate(struct GBAVideoRenderer* renderer) {
@@ -325,9 +325,9 @@ static void GBAVideoDummyRendererPutPixels(struct GBAVideoRenderer* renderer, si
 }
 
 void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state) {
-	memcpy(state->vram, video->vram, SIZE_VRAM);
-	memcpy(state->oam, video->oam.raw, SIZE_OAM);
-	memcpy(state->pram, video->palette, SIZE_PALETTE_RAM);
+	memcpy(state->vram, video->vram, GBA_SIZE_VRAM);
+	memcpy(state->oam, video->oam.raw, GBA_SIZE_OAM);
+	memcpy(state->pram, video->palette, GBA_SIZE_PALETTE_RAM);
 	STORE_32(video->event.when - mTimingCurrentTime(&video->p->timing), 0, &state->video.nextEvent);
 	int32_t flags = 0;
 	if (video->event.callback == _startHdraw) {
@@ -340,16 +340,16 @@ void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* 
 }
 
 void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState* state) {
-	memcpy(video->vram, state->vram, SIZE_VRAM);
+	memcpy(video->vram, state->vram, GBA_SIZE_VRAM);
 	uint16_t value;
 	int i;
-	for (i = 0; i < SIZE_OAM; i += 2) {
+	for (i = 0; i < GBA_SIZE_OAM; i += 2) {
 		LOAD_16(value, i, state->oam);
-		GBAStore16(video->p->cpu, BASE_OAM | i, value, 0);
+		GBAStore16(video->p->cpu, GBA_BASE_OAM | i, value, 0);
 	}
-	for (i = 0; i < SIZE_PALETTE_RAM; i += 2) {
+	for (i = 0; i < GBA_SIZE_PALETTE_RAM; i += 2) {
 		LOAD_16(value, i, state->pram);
-		GBAStore16(video->p->cpu, BASE_PALETTE_RAM | i, value, 0);
+		GBAStore16(video->p->cpu, GBA_BASE_PALETTE_RAM | i, value, 0);
 	}
 	LOAD_32(video->frameCounter, 0, &state->video.frameCounter);
 

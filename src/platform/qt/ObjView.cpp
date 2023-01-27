@@ -157,7 +157,7 @@ void ObjView::updateTilesGBA(bool force) {
 	m_ui.w->setText(QString::number(newInfo.width * 8));
 	m_ui.h->setText(QString::number(newInfo.height * 8));
 
-	m_ui.address->setText(tr("0x%0").arg(BASE_OAM + m_objId * sizeof(*obj), 8, 16, QChar('0')));
+	m_ui.address->setText(tr("0x%0").arg(GBA_BASE_OAM + m_objId * sizeof(*obj), 8, 16, QChar('0')));
 	m_ui.priority->setText(QString::number(newInfo.priority));
 	m_ui.flippedH->setChecked(newInfo.hflip);
 	m_ui.flippedV->setChecked(newInfo.vflip);

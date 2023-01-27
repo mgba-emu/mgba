@@ -323,49 +323,49 @@ static void GBACheatDumpDirectives(struct mCheatSet* set, struct StringList* dir
 
 int GBACheatAddressIsReal(uint32_t address) {
 	switch (address >> BASE_OFFSET) {
-	case REGION_BIOS:
+	case GBA_REGION_BIOS:
 		return -0x80;
 		break;
-	case REGION_WORKING_RAM:
-		if ((address & OFFSET_MASK) > SIZE_WORKING_RAM) {
+	case GBA_REGION_EWRAM:
+		if ((address & OFFSET_MASK) > GBA_SIZE_EWRAM) {
 			return -0x40;
 		}
 		return 0x20;
-	case REGION_WORKING_IRAM:
-		if ((address & OFFSET_MASK) > SIZE_WORKING_IRAM) {
+	case GBA_REGION_IWRAM:
+		if ((address & OFFSET_MASK) > GBA_SIZE_IWRAM) {
 			return -0x40;
 		}
 		return 0x20;
-	case REGION_IO:
-		if ((address & OFFSET_MASK) > SIZE_IO) {
+	case GBA_REGION_IO:
+		if ((address & OFFSET_MASK) > GBA_SIZE_IO) {
 			return -0x80;
 		}
 		return 0x10;
-	case REGION_OAM:
-		if ((address & OFFSET_MASK) > SIZE_OAM) {
+	case GBA_REGION_OAM:
+		if ((address & OFFSET_MASK) > GBA_SIZE_OAM) {
 			return -0x80;
 		}
 		return -0x8;
-	case REGION_VRAM:
-		if ((address & OFFSET_MASK) > SIZE_VRAM) {
+	case GBA_REGION_VRAM:
+		if ((address & OFFSET_MASK) > GBA_SIZE_VRAM) {
 			return -0x80;
 		}
 		return -0x8;
-	case REGION_PALETTE_RAM:
-		if ((address & OFFSET_MASK) > SIZE_PALETTE_RAM) {
+	case GBA_REGION_PALETTE_RAM:
+		if ((address & OFFSET_MASK) > GBA_SIZE_PALETTE_RAM) {
 			return -0x80;
 		}
 		return -0x8;
-	case REGION_CART0:
-	case REGION_CART0_EX:
-	case REGION_CART1:
-	case REGION_CART1_EX:
-	case REGION_CART2:
-	case REGION_CART2_EX:
+	case GBA_REGION_ROM0:
+	case GBA_REGION_ROM0_EX:
+	case GBA_REGION_ROM1:
+	case GBA_REGION_ROM1_EX:
+	case GBA_REGION_ROM2:
+	case GBA_REGION_ROM2_EX:
 		return -0x8;
-	case REGION_CART_SRAM:
-	case REGION_CART_SRAM_MIRROR:
-		if ((address & OFFSET_MASK) > SIZE_CART_FLASH512) {
+	case GBA_REGION_SRAM:
+	case GBA_REGION_SRAM_MIRROR:
+		if ((address & OFFSET_MASK) > GBA_SIZE_FLASH512) {
 			return -0x80;
 		}
 		return -0x8;
