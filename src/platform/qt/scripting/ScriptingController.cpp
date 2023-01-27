@@ -21,6 +21,7 @@
 
 #include <mgba/script/input.h>
 #include <mgba-util/math.h>
+#include <mgba-util/string.h>
 
 using namespace QGBA;
 
@@ -237,6 +238,11 @@ void ScriptingController::updateGamepad() {
 		detachGamepad();
 		return;
 	}
+
+	QString name = gamepad->name();
+	strlcpy(m_gamepad.internalName, name.toUtf8().constData(), sizeof(m_gamepad.internalName));
+	name = gamepad->visibleName();
+	strlcpy(m_gamepad.visibleName, name.toUtf8().constData(), sizeof(m_gamepad.visibleName));
 	attachGamepad();
 
 	QList<bool> buttons = gamepad->currentButtons();

@@ -220,6 +220,9 @@ struct mScriptTriggerEvent {
 struct mScriptGamepad {
 	unsigned pad;
 
+	char visibleName[128];
+	char internalName[64];
+
 	struct mScriptList axes;
 	struct mScriptList buttons;
 	struct mScriptList hats;

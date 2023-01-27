@@ -13,6 +13,7 @@ function readPad()
 	local buttons = gamepad.buttons
 	local hats = gamepad.hats
 
+	inputBuffer:print(gamepad.visibleName .. "\n")
 	inputBuffer:print(string.format("%i buttons, %i axes, %i hats\n", #buttons, #axes, #hats))
 
 	local sbuttons = {}

@@ -95,6 +95,8 @@ mSCRIPT_DEFINE_STRUCT(mScriptGamepadHatEvent)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptGamepad)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, CHARP, visibleName)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, CHARP, internalName)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, LIST, axes)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, LIST, buttons)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, LIST, hats)
