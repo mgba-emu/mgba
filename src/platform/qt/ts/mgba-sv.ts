@@ -6,33 +6,34 @@
     <message>
         <location filename="../AboutScreen.ui" line="14"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>Om mGBA</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;Hemsida&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forum / Hjälp&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Stödja mGBA&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Källkod&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
         <source>Branch: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revision: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Branch: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revision: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
         <source>{projectName} would like to thank the following patrons from Patreon:</source>
-        <translation type="unfinished"></translation>
+        <translation>{projectName} tackar följande donatorer från Patreon:</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
         <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation type="unfinished"></translation>
+        <translation>© 2013 – {year} Jeffrey Pfau, licensierad under Mozilla Public License, version 2.0
+Game Boy Advance är ett registrerat varumärke av Nintendo Co., Ltd.</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation type="unfinished"></translation>
+        <translation>{projectName} är en emulator för Game Boy Advance, byggt på öppen källkod</translation>
     </message>
 </context>
 <context>
@@ -40,47 +41,52 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>En uppdatering är tillgänglig</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>En uppdatering till %1 är tillgänglig.
+</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="38"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Vill du ladda ner och installera det nu? Programmet måste startas om när nedladdningen är klar.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Det finns ej automatiska uppdateringar för detta operativ system. Önskar du uppdatera programmet måste du göra det manuellt.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="45"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Nuvarande version: %1
+Nästa version: %2
+Nedladdningsstorlek: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppdatering laddas ner...</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="79"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nedladdningen misslyckades. Uppdateringen måste installeras manuellt.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nedladdning klar. Välj OK för att starta om %1 och installera uppdateringen.</translation>
     </message>
 </context>
 <context>
@@ -88,22 +94,22 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="88"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>Standard</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="91"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>Utveckling</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="93"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>Okänd</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="224"/>
         <source>(None)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Inga)</translation>
     </message>
 </context>
 <context>
@@ -111,12 +117,12 @@ Download size: %3</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation type="unfinished"></translation>
+        <translation>Öppna i arkiveringsprogram...</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Laddas...</translation>
     </message>
 </context>
 <context>
@@ -124,39 +130,39 @@ Download size: %3</source>
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation type="unfinished"></translation>
+        <translation>Tile #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
-        <translation type="unfinished"></translation>
+        <translation>Palette #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="89"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>Adress</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="138"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>Röd</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="145"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>Grön</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="152"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>Blå</translation>
     </message>
     <message>
         <location filename="../AssetTile.cpp" line="143"/>
         <location filename="../AssetTile.cpp" line="144"/>
         <location filename="../AssetTile.cpp" line="145"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0 (%1)</translation>
     </message>
 </context>
 <context>
@@ -164,17 +170,17 @@ Download size: %3</source>
     <message>
         <location filename="../AudioDevice.cpp" line="26"/>
         <source>Can&apos;t set format of context-less audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Det går inte att ställa in formatet för kontextlös ljudenhet</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="44"/>
         <source>Audio device is missing its core</source>
-        <translation type="unfinished"></translation>
+        <translation>Ljudenheten saknar kärnan</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="62"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriver data till skrivskyddad ljudenhet</translation>
     </message>
 </context>
 <context>
@@ -182,7 +188,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="43"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Kan inte starta en ljudprocessor utan ingång</translation>
     </message>
 </context>
 <context>
@@ -190,7 +196,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Kan inte starta en ljudprocessor utan ingång</translation>
     </message>
 </context>
 <context>
@@ -198,88 +204,88 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.ui" line="14"/>
         <source>BattleChip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip Gate</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="67"/>
         <source>Chip name</source>
-        <translation type="unfinished"></translation>
+        <translation>Chip namn</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
         <source>Insert</source>
-        <translation type="unfinished"></translation>
+        <translation>Infoga</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>Spara</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="94"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>Ladda</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="114"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>Lägg till</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="121"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>Ta bort</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="138"/>
         <source>Gate type</source>
-        <translation type="unfinished"></translation>
+        <translation>Gate typ</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="180"/>
         <source>Inserted</source>
-        <translation type="unfinished"></translation>
+        <translation>Infogad</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Chip ID</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
         <source>Update Chip data</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Uppdatera Chip-data</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
         <source>Show advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa avancerat</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip-data saknas</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip-data saknas. BattleChip Gates fungerar fortfarande, men viss grafik kommer att saknas. Vill du ladda ner datan nu?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="184"/>
         <location filename="../BattleChipView.cpp" line="203"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj deck-fil</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="215"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>Inkompatibelt deck</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="216"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>Den valda deck är inte kompatibel med denna Chip Gate</translation>
     </message>
 </context>
 <context>
@@ -287,12 +293,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsModel.cpp" line="53"/>
         <source>(untitled)</source>
-        <translation type="unfinished"></translation>
+        <translation>(saknar namn)</translation>
     </message>
     <message>
         <location filename="../CheatsModel.cpp" line="211"/>
         <source>Failed to open cheats file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Misslyckades att öppna cheats-filen: %1</translation>
     </message>
 </context>
 <context>
@@ -300,12 +306,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="14"/>
         <source>Cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>Cheats</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished"></translation>
+        <translation>Lägg till ny kod</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
