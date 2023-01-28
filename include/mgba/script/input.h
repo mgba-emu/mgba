@@ -161,6 +161,12 @@ enum mScriptKey {
 	mSCRIPT_KEY_KP_ENTER,
 };
 
+enum mScriptMouseButton {
+	mSCRIPT_MOUSE_BUTTON_PRIMARY = 0,
+	mSCRIPT_MOUSE_BUTTON_SECONDARY = 1,
+	mSCRIPT_MOUSE_BUTTON_MIDDLE = 2,
+};
+
 struct mScriptEvent {
 	int32_t type;
 	int32_t reserved;

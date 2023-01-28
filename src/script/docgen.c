@@ -8,6 +8,7 @@
 #include <mgba/core/version.h>
 #include <mgba/internal/script/types.h>
 #include <mgba/script/context.h>
+#include <mgba/script/input.h>
 #include <mgba-util/string.h>
 
 struct mScriptContext context;
@@ -468,9 +469,11 @@ int main(int argc, char* argv[]) {
 	mScriptContextInit(&context);
 	mScriptContextAttachStdlib(&context);
 	mScriptContextAttachSocket(&context);
+	mScriptContextAttachInput(&context);
 	mScriptContextSetTextBufferFactory(&context, NULL, NULL);
 
 	initTypes();
+	mScriptContextGetInputTypes(&types);
 
 	fputs("version:\n", out);
 	fprintf(out, "  string: \"%s\"\n", projectVersion);

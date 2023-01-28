@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/script/input.h>
 
+#include <mgba/internal/script/types.h>
 #include <mgba-util/string.h>
 #include <mgba-util/table.h>
 
@@ -42,63 +43,115 @@ mSCRIPT_DECLARE_STRUCT_C_METHOD(mScriptInputContext, BOOL, isKeyActive, _mScript
 
 mSCRIPT_DEFINE_STRUCT(mScriptInputContext)
 	mSCRIPT_DEFINE_STRUCT_DEINIT(mScriptInputContext)
+	mSCRIPT_DEFINE_DOCSTRING("Sequence number of the next event to be emitted")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptInputContext, U64, seq)
+	mSCRIPT_DEFINE_DOCSTRING("Check if a given keyboard key is currently held. The input can be either the printable character for a key, or the numerical Unicode codepoint")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptInputContext, isKeyActive)
+	mSCRIPT_DEFINE_DOCSTRING("The currently active gamepad, if any")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptInputContext, PCS(mScriptGamepad), activeGamepad)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptEvent)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING(
+		"The base class for all event types. Different events have their own subclasses."
+	)
+	mSCRIPT_DEFINE_DOCSTRING("The type of this event. See C.EV_TYPE for a list of possible types.")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptEvent, S32, type)
+	mSCRIPT_DEFINE_DOCSTRING("Sequence number of this event. This value increases monotinically.")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptEvent, U64, seq)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptKeyEvent)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING("A keyboard key event.")
 	mSCRIPT_DEFINE_INHERIT(mScriptEvent)
+	mSCRIPT_DEFINE_DOCSTRING("The state of the key, represented by a C.INPUT_STATE value")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptKeyEvent, U8, state)
+	mSCRIPT_DEFINE_DOCSTRING("A bitmask of current modifiers, represented by ORed C.KMOD values")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptKeyEvent, S16, modifiers)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"The relevant key for this event. For most printable characters, this will be the Unicode "
+		"codepoint of the character. Some special values are present as C.KEY as well."
+	)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptKeyEvent, S32, key)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptMouseButtonEvent)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING("A mouse button event.")
 	mSCRIPT_DEFINE_INHERIT(mScriptEvent)
+	mSCRIPT_DEFINE_DOCSTRING("Which mouse this event pertains to. Currently, this will always be 0.")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptMouseButtonEvent, U8, mouse)
+	mSCRIPT_DEFINE_DOCSTRING("The state of the button, represented by a C.INPUT_STATE value")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptMouseButtonEvent, U8, state)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Which mouse button this event pertains to. Symbolic names for primary (usually left), "
+		"secondary (usually right), and middle are in C.MOUSE_BUTTON, and further buttons "
+		"are numeric starting from 3."
+	)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptMouseButtonEvent, U8, button)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptMouseMoveEvent)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING("A mouse movement event.")
 	mSCRIPT_DEFINE_INHERIT(mScriptEvent)
+	mSCRIPT_DEFINE_DOCSTRING("Which mouse this event pertains to. Currently, this will always be 0.")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptMouseMoveEvent, U8, mouse)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"The x coordinate of the mouse in the context of game screen pixels. "
+		"This can be out of bounds of the game screen depending on the size of the window in question."
+	)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptMouseMoveEvent, S32, x)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"The y coordinate of the mouse in the context of game screen pixels. "
+		"This can be out of bounds of the game screen depending on the size of the window in question."
+	)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptMouseMoveEvent, S32, y)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptMouseWheelEvent)
 	mSCRIPT_DEFINE_INHERIT(mScriptEvent)
+	mSCRIPT_DEFINE_DOCSTRING("Which mouse this event pertains to. Currently, this will always be 0.")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptMouseWheelEvent, U8, mouse)
+	mSCRIPT_DEFINE_DOCSTRING("The amount scrolled horizontally")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptMouseWheelEvent, S32, x)
+	mSCRIPT_DEFINE_DOCSTRING("The amount scrolled vertically")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptMouseWheelEvent, S32, y)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptGamepadButtonEvent)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING("A gamead button event.")
 	mSCRIPT_DEFINE_INHERIT(mScriptEvent)
+	mSCRIPT_DEFINE_DOCSTRING("The state of the button, represented by a C.INPUT_STATE value")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepadButtonEvent, U8, state)
+	mSCRIPT_DEFINE_DOCSTRING("Which gamepad this event pertains to. Currently, this will always be 0.")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepadButtonEvent, U8, pad)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Which button this event pertains to. There is currently no guaranteed button mapping, "
+		"and it might change between different controllers."
+	)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepadButtonEvent, U16, button)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptGamepadHatEvent)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING("A gamepad POV hat event.")
 	mSCRIPT_DEFINE_INHERIT(mScriptEvent)
+	mSCRIPT_DEFINE_DOCSTRING("Which gamepad this event pertains to. Currently, this will always be 0.")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepadHatEvent, U8, pad)
+	mSCRIPT_DEFINE_DOCSTRING("Which hat this event pertains to. For most gamepads this will be 0.")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepadHatEvent, U8, hat)
+	mSCRIPT_DEFINE_DOCSTRING("The current direction of the hat. See C.INPUT_DIR for possible values.")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepadHatEvent, U8, direction)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptGamepad)
+	mSCRIPT_DEFINE_DOCSTRING("The human-readable name of this gamepad")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, CHARP, visibleName)
+	mSCRIPT_DEFINE_DOCSTRING("The internal name of this gamepad, generally unique to the specific type of gamepad")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, CHARP, internalName)
+	mSCRIPT_DEFINE_DOCSTRING("An indexed list of the current values of each axis")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, LIST, axes)
+	mSCRIPT_DEFINE_DOCSTRING("An indexed list of the current values of each button")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, LIST, buttons)
+	mSCRIPT_DEFINE_DOCSTRING("An indexed list of the current values of POV hat")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepad, LIST, hats)
 mSCRIPT_DEFINE_END;
 
@@ -149,6 +202,87 @@ void mScriptContextAttachInput(struct mScriptContext* context) {
 		mSCRIPT_KV_SENTINEL
 	});
 
+	mScriptContextExportConstants(context, "KEY", (struct mScriptKVPair[]) {
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, NONE),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, BACKSPACE),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, TAB),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, ENTER),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, ESCAPE),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, DELETE),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F1),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F2),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F3),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F4),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F5),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F6),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F7),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F8),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F9),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F10),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F11),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F12),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F13),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F14),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F15),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F16),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F17),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F18),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F19),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F20),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F21),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F22),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F23),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, F24),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, UP),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, RIGHT),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, DOWN),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, LEFT),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, PAGE_UP),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, PAGE_DOWN),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, HOME),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, END),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, INSERT),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, BREAK),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, CLEAR),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, PRINT_SCREEN),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, SYSRQ),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, MENU),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, HELP),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, LSHIFT),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, RSHIFT),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, SHIFT),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, LCONTROL),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, RCONTROL),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, CONTROL),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, LALT),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, RALT),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, ALT),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, LSUPER),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, RSUPER),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, SUPER),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, CAPS_LOCK),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, NUM_LOCK),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, SCROLL_LOCK),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_0),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_1),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_2),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_3),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_4),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_5),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_6),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_7),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_8),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_9),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_PLUS),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_MINUS),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_MULTIPLY),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_DIVIDE),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_COMMA),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_POINT),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KEY, KP_ENTER),
+		mSCRIPT_KV_SENTINEL
+	});
+
 	mScriptContextExportConstants(context, "KMOD", (struct mScriptKVPair[]) {
 		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KMOD, NONE),
 		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KMOD, LSHIFT),
@@ -166,6 +300,13 @@ void mScriptContextAttachInput(struct mScriptContext* context) {
 		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KMOD, CAPS_LOCK),
 		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KMOD, NUM_LOCK),
 		mSCRIPT_CONSTANT_PAIR(mSCRIPT_KMOD, SCROLL_LOCK),
+		mSCRIPT_KV_SENTINEL
+	});
+
+	mScriptContextExportConstants(context, "MOUSE_BUTTON", (struct mScriptKVPair[]) {
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_MOUSE_BUTTON, PRIMARY),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_MOUSE_BUTTON, SECONDARY),
+		mSCRIPT_CONSTANT_PAIR(mSCRIPT_MOUSE_BUTTON, MIDDLE),
 		mSCRIPT_KV_SENTINEL
 	});
 }
@@ -268,7 +409,6 @@ void mScriptContextFireEvent(struct mScriptContext* context, struct mScriptEvent
 	mScriptContextTriggerCallback(context, eventNames[event->type], &args);
 	mScriptListDeinit(&args);
 }
-
 
 int mScriptContextGamepadAttach(struct mScriptContext* context, struct mScriptGamepad* pad) {
 	struct mScriptValue* input = mScriptContextGetGlobal(context, "input");
@@ -411,4 +551,14 @@ int mScriptGamepadGetHat(struct mScriptGamepad* gamepad, unsigned id) {
 	}
 
 	return mScriptListGetPointer(&gamepad->hats, id)->value.u32;
+}
+
+void mScriptContextGetInputTypes(struct Table* types) {
+	mScriptTypeAdd(types, mSCRIPT_TYPE_MS_S(mScriptEvent));
+	mScriptTypeAdd(types, mSCRIPT_TYPE_MS_S(mScriptKeyEvent));
+	mScriptTypeAdd(types, mSCRIPT_TYPE_MS_S(mScriptMouseMoveEvent));
+	mScriptTypeAdd(types, mSCRIPT_TYPE_MS_S(mScriptMouseButtonEvent));
+	mScriptTypeAdd(types, mSCRIPT_TYPE_MS_S(mScriptGamepadButtonEvent));
+	mScriptTypeAdd(types, mSCRIPT_TYPE_MS_S(mScriptGamepadHatEvent));
+	mScriptTypeAdd(types, mSCRIPT_TYPE_MS_S(mScriptGamepad));
 }
