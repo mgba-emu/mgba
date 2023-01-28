@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "scripting/ScriptingController.h"
 
+#include "AudioProcessor.h"
 #include "CoreController.h"
 #include "scripting/ScriptingTextBuffer.h"
 #include "scripting/ScriptingTextBufferModel.h"
@@ -73,11 +74,20 @@ bool ScriptingController::load(VFileDevice& vf, const QString& name) {
 	}
 	QByteArray utf8 = name.toUtf8();
 	CoreController::Interrupter interrupter(m_controller);
+	if (m_controller) {
+		m_controller->setSync(false);
+		m_controller->unpaused();
+	}
+	bool ok = true;
 	if (!m_activeEngine->load(m_activeEngine, utf8.constData(), vf) || !m_activeEngine->run(m_activeEngine)) {
 		emit error(QString::fromUtf8(m_activeEngine->getError(m_activeEngine)));
-		return false;
+		ok = false;
 	}
-	return true;
+	if (m_controller && m_controller->isPaused()) {
+		m_controller->setSync(true);
+		m_controller->paused();
+	}
+	return ok;
 }
 
 void ScriptingController::clearController() {
