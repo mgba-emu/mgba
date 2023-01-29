@@ -6,22 +6,22 @@
     <message>
         <location filename="../utils.cpp" line="88"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished">ROMs do Game Boy Advance (%1)</translation>
+        <translation>ROMs do Game Boy Advance (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="105"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished">ROMs do Game Boy (%1)</translation>
+        <translation>ROMs do Game Boy (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="109"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished">Todas as ROMs (%1)</translation>
+        <translation>Todas as ROMs (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="111"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished">%1 Registros do Vídeo (*.mvl)</translation>
+        <translation>%1 Registros do Vídeo (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -448,7 +448,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="116"/>
         <source>Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).</source>
-        <translation>Falhou em abrir o abrir o arquivo de salvamento; Os salvamentos dentro do jogo não podem ser atualizados. Por favor tenha certeza que o diretório de salvamento seja gravável sem privilégios adicionais (ex: UAC no Windows).</translation>
+        <translation>Falhou em abrir o abrir o arquivo de save; Os saves dentro do jogo não podem ser atualizados. Por favor tenha certeza que o diretório de save seja gravável sem privilégios adicionais (ex: UAC no Windows).</translation>
     </message>
 </context>
 <context>
@@ -530,12 +530,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="83"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="85"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
 </context>
 <context>
@@ -543,12 +543,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="29"/>
         <source>Icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Ícone</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="30"/>
         <source>Banner</source>
-        <translation type="unfinished"></translation>
+        <translation>Banner</translation>
     </message>
 </context>
 <context>
@@ -556,17 +556,17 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="25"/>
         <source>Bubble</source>
-        <translation type="unfinished"></translation>
+        <translation>Bolha</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Background</source>
-        <translation type="unfinished">2º plano</translation>
+        <translation>2º plano</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
         <source>Startup</source>
-        <translation type="unfinished"></translation>
+        <translation>Inicialização</translation>
     </message>
 </context>
 <context>
@@ -574,144 +574,144 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="14"/>
         <source>Create forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Criar encaminhador</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="20"/>
         <source>Files</source>
-        <translation type="unfinished"></translation>
+        <translation>Arquivos</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="26"/>
         <source>ROM file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Arquivo da ROM:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="36"/>
         <location filename="../ForwarderView.ui" line="53"/>
         <location filename="../ForwarderView.ui" line="112"/>
         <source>Browse</source>
-        <translation type="unfinished">Explorar</translation>
+        <translation>Explorar</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="43"/>
         <source>Output filename:</source>
-        <translation type="unfinished"></translation>
+        <translation>Nome do arquivo de saída:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="60"/>
         <source>Forwarder base:</source>
-        <translation type="unfinished"></translation>
+        <translation>Base do encaminhador:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="74"/>
         <source>Latest stable version</source>
-        <translation type="unfinished"></translation>
+        <translation>Última versão estável</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="79"/>
         <source>Latest development build</source>
-        <translation type="unfinished"></translation>
+        <translation>Último build de desenvolvimento</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="84"/>
         <source>Specific file</source>
-        <translation type="unfinished"></translation>
+        <translation>Arquivo específico</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="95"/>
         <source>Base file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Arquivo base:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="135"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>Sistema</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="141"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="151"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="174"/>
         <source>Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>Apresentação</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="182"/>
         <source>Title:</source>
-        <translation type="unfinished"></translation>
+        <translation>Título:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="195"/>
         <source>Images:</source>
-        <translation type="unfinished"></translation>
+        <translation>Imagens:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="215"/>
         <source>Use default image</source>
-        <translation type="unfinished"></translation>
+        <translation>Usar imagem padrão</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="328"/>
         <source>Preferred size:</source>
-        <translation type="unfinished"></translation>
+        <translation>Tamanho preferido:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="395"/>
         <source>Select image file</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecionar arquivo de imagem</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="22"/>
         <source>Select ROM file</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecione o arquivo da ROM</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="23"/>
         <source>Select output filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecionar o nome do arquivo de saída</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="24"/>
         <source>Select base file</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecionar o arquivo base</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="36"/>
         <source>Build finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Compilação concluída</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="37"/>
         <source>Forwarder finished building</source>
-        <translation type="unfinished"></translation>
+        <translation>O encaminhador encerrou a compilação</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="44"/>
         <source>Build failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Falhou em criar o build</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
         <source>Failed to build forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Falhou em criar o encaminhador</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="176"/>
         <source>%1 installable package (*.%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 pacote instalável (*.%2)</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Select an image</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecione uma imagem</translation>
     </message>
 </context>
 <context>
@@ -873,7 +873,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
         <source>Break</source>
-        <translation>Pausar</translation>
+        <translation>Parar</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="124"/>
@@ -1080,12 +1080,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="95"/>
         <source>NT (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT (antigo 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="96"/>
         <source>NT (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT (antigo 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="97"/>
@@ -1110,12 +1110,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="101"/>
         <source>GGB-81</source>
-        <translation type="unfinished"></translation>
+        <translation>GGB-81</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="102"/>
         <source>Li Cheng</source>
-        <translation type="unfinished"></translation>
+        <translation>Li Cheng</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="103"/>
@@ -4319,7 +4319,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ReportView.ui" line="67"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pra apresentar um relatório de bug por favor gere primeiro um arquivo de relatório pra anexar ao relatório do bug que você está pra apresentar. É recomendado que você inclua os arquivos dos saves como estes frequentemente ajudam com problemas de debugging. Isto coletará um pouco de informação sobre a versão do {projectName} que você está em executando, suas configurações, seu computador e o jogo que você abriu atualmente (se algum). Uma vez que esta coleção estiver completada você pode rever toda a informação coletada abaixo e salvá-la num arquivo zip. A coleção tentará automaticamente reescrever qualquer informação pessoal, tal como seu nome de usuário se está em quaisquer dos caminhos coletados, mas no caso você pode editá-lo mais tarde. Depois que você o gerou e o salvou, por favor clique no botão abaixo ou vá em &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; pra apresentar o relatório do bug no GitHub. Tenha a certeza de anexar o relatório que você gerou!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pra apresentar um relatório de bug por favor gere primeiro um arquivo de relatório pra anexar ao relatório do bug que você está pra apresentar. É recomendado que você inclua os arquivos dos saves como estes frequentemente ajudam com problemas de debugging. Isto coletará um pouco de informação sobre a versão do {projectName} que você está em executando, suas configurações, seu computador e o jogo que você abriu atualmente (se houver algum). Uma vez que esta coleção estiver completada você pode rever toda a informação coletada abaixo e salvá-la num arquivo zip. A coleção tentará automaticamente reescrever qualquer informação pessoal tal como seu nome de usuário se ele estiver em quaisquer dos caminhos coletados mas dependendo do caso você pode editá-lo mais tarde. Depois que você o gerou e o salvou por favor clique no botão abaixo ou vá em &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; pra apresentar o relatório do bug no GitHub. Tenha a certeza de anexar o relatório que você gerou!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="85"/>
@@ -4508,7 +4508,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="526"/>
         <source>%1 save state with embedded %2 save game</source>
-        <translation>%1 save state com %2 saves dos jogos embutidos</translation>
+        <translation>%1 save state com %2 saves do jogo embutido</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="529"/>
@@ -4569,7 +4569,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="60"/>
         <source>Select script to load</source>
-        <translation>Selecionar o script a carregar</translation>
+        <translation>Selecione o script a carregar</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="85"/>
@@ -4627,7 +4627,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SensorView.ui" line="126"/>
         <source>MM/dd/yy hh:mm:ss AP</source>
-        <translation>MM/dd/yy hh:mm:ss AP</translation>
+        <translation>MM/dd/aa hh:mm:ss AP</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="136"/>
@@ -4877,7 +4877,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="185"/>
         <source>samples</source>
-        <translation>amostras</translation>
+        <translation>Amostras</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="194"/>
@@ -4977,7 +4977,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="500"/>
         <source>frames per second</source>
-        <translation>frames por segundo</translation>
+        <translation>Frames por segundo</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="516"/>
@@ -5055,7 +5055,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="904"/>
         <source>Show emulation info on reset</source>
-        <translation>Mostrar informações da emulação no reset</translation>
+        <translation>Mostrar informações da emulação ao resetar</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="917"/>
@@ -5186,7 +5186,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1067"/>
         <source>Fast forward (held) speed:</source>
-        <translation>Velocidade do avanço rápido (segurado):</translation>
+        <translation>Velocidade do avanço rápido (pressionado):</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1299"/>
@@ -5256,12 +5256,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="855"/>
         <source>Show FPS in title bar</source>
-        <translation>Mostrar FPS na barra de título</translation>
+        <translation>Mostrar o FPS na barra do título</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="691"/>
         <source>Enable Discord Rich Presence</source>
-        <translation>Ativar o Discord Rich Presence</translation>
+        <translation>Ativar a Presença Rica do Discord</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1024"/>
@@ -5349,7 +5349,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1261"/>
         <source>High-resolution scale:</source>
-        <translation>Escala da alta-resolução:</translation>
+        <translation>Escala de alta-resolução:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1248"/>
@@ -5446,7 +5446,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1753"/>
         <source>GB only:</source>
-        <translation>Só no GB:</translation>
+        <translation>Só pro GB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1763"/>
@@ -5456,7 +5456,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1773"/>
         <source>GBC only:</source>
-        <translation>Só no GBC:</translation>
+        <translation>Só pro GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1783"/>
@@ -5476,7 +5476,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1829"/>
         <source>Default BG colors:</source>
-        <translation>Cores padrão do BG:</translation>
+        <translation>Cores padrão do 2º plano:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1803"/>
@@ -5684,7 +5684,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../TileView.ui" line="163"/>
         <source>Copy Selected</source>
-        <translation>Copiar Selecionado</translation>
+        <translation>Copiar o Selecionado</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="177"/>
@@ -5870,7 +5870,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../VideoView.ui" line="370"/>
         <source> Bitrate (kbps)</source>
-        <translation> Taxa dos bits (kbps)</translation>
+        <translation> Taxa dos bits (Kbps)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="415"/>
@@ -6241,7 +6241,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1348"/>
         <source>Undo save state</source>
-        <translation>Desfazer o salvamento do state</translation>
+        <translation>Desfazer o save state</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1355"/>
@@ -6412,7 +6412,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1525"/>
         <source>Force integer scaling</source>
-        <translation>Forçar dimensionamento do inteiro</translation>
+        <translation>Forçar o dimensionamento do inteiro</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1546"/>
@@ -6562,7 +6562,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1634"/>
         <source>Create forwarder...</source>
-        <translation type="unfinished"></translation>
+        <translation>Criar encaminhador...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1652"/>
