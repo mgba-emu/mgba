@@ -58,8 +58,19 @@ static void _waitOnInterrupt(struct mCoreThreadInternal* threadContext) {
 }
 
 static void _pokeRequest(struct mCoreThreadInternal* threadContext) {
-	if (threadContext->state == mTHREAD_RUNNING || threadContext->state == mTHREAD_PAUSED) {
+	switch (threadContext->state) {
+	case mTHREAD_RUNNING:
+	case mTHREAD_PAUSED:
+	case mTHREAD_CRASHED:
 		threadContext->state = mTHREAD_REQUEST;
+		break;
+	case mTHREAD_INITIALIZED:
+	case mTHREAD_REQUEST:
+	case mTHREAD_INTERRUPTED:
+	case mTHREAD_INTERRUPTING:
+	case mTHREAD_EXITING:
+	case mTHREAD_SHUTDOWN:
+		break;
 	}
 }
 
