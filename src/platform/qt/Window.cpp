@@ -1723,7 +1723,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		if (m_controller) {
 			mCheatPressButton(m_controller->cheatDevice(), held);
 		}
-	}, "tools", QKeySequence(Qt::Key_Apostrophe));
+	}, "tools");
 
 	m_actions.addHiddenMenu(tr("Autofire"), "autofire");
 	m_actions.addHeldAction(tr("Autofire A"), "autofireA", [this](bool held) {
