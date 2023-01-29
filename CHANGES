@@ -8,6 +8,7 @@ Emulation fixes:
 Other fixes:
  - Qt: Fix crash when attempting to use OpenGL 2.1 to 3.1 (fixes mgba.io/i/2794)
  - Qt: Disable sync while running scripts from main thread (fixes mgba.io/i/2738)
+ - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
 Misc:
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
