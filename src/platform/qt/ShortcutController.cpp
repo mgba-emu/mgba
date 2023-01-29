@@ -149,7 +149,6 @@ bool ShortcutController::eventFilter(QObject*, QEvent* event) {
 			Action::BooleanFunction fn = item.value()->action()->booleanAction();
 			fn(event->type() == QEvent::KeyPress);
 			event->accept();
-			return true;
 		}
 	}
 	if (event->type() == GamepadButtonEvent::Down()) {
