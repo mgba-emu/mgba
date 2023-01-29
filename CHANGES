@@ -2,7 +2,7 @@
 Emulation fixes:
  - GBA Memory: Make VRAM access stalls only apply to BG RAM
 Other fixes:
- - Core: Allow sending thread requests to a crashed core (fixes mgba.io/i/2785)
+ - Core: Allow sending thread requests to a crashed core (fixes mgba.io/i/2784)
  - Qt: Fix crash when attempting to use OpenGL 2.1 to 3.1 (fixes mgba.io/i/2794)
  - Qt: Disable sync while running scripts from main thread (fixes mgba.io/i/2738)
 Misc:
