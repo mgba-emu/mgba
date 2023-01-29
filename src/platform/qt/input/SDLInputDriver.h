@@ -62,6 +62,7 @@ public:
 	mRotationSource* rotationSource() override;
 
 private:
+	ConfigController* m_config = nullptr;
 	InputController* m_controller;
 	mSDLPlayer m_sdlPlayer{};
 	bool m_playerAttached = false;

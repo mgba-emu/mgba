@@ -89,6 +89,7 @@ QString SDLInputDriver::currentProfile() const {
 }
 
 void SDLInputDriver::loadConfiguration(ConfigController* config) {
+	m_config = config;
 	mSDLEventsLoadConfig(&s_sdlEvents, config->input());
 	if (!m_playerAttached) {
 		m_playerAttached = mSDLAttachPlayer(&s_sdlEvents, &m_sdlPlayer);
@@ -126,7 +127,7 @@ mRotationSource* SDLInputDriver::rotationSource() {
 
 
 bool SDLInputDriver::update() {
-	if (!m_playerAttached || !m_sdlPlayer.joystick) {
+	if (!m_playerAttached) {
 		return false;
 	}
 
@@ -148,6 +149,9 @@ QList<Gamepad*> SDLInputDriver::connectedGamepads() const {
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 void SDLInputDriver::updateGamepads() {
+	if (m_config) {
+		mSDLUpdateJoysticks(&s_sdlEvents, m_config->input());
+	}
 	for (int i = 0; i < m_gamepads.size(); ++i) {
 		if (m_gamepads.at(i)->updateIndex()) {
 			continue;
@@ -160,10 +164,12 @@ void SDLInputDriver::updateGamepads() {
 	});
 
 	for (size_t i = 0, j = 0; i < SDL_JoystickListSize(&s_sdlEvents.joysticks); ++i) {
-		std::shared_ptr<SDLGamepad> gamepad = m_gamepads.at(j);
-		if (gamepad->m_index == i) {
-			++j;
-			continue;
+		if ((ssize_t) j < m_gamepads.size()) {
+			std::shared_ptr<SDLGamepad> gamepad = m_gamepads.at(j);
+			if (gamepad->m_index == i) {
+				++j;
+				continue;
+			}
 		}
 		m_gamepads.append(std::make_shared<SDLGamepad>(this, i));
 	}
