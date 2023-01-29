@@ -39,7 +39,6 @@ if(NOT ${QT}Widgets_FOUND)
 endif()
 
 if(APPLE)
-	execute_process(COMMAND xcrun --show-sdk-version OUTPUT_VARIABLE MACOSX_SDK)
 	if(MACOSX_SDK VERSION_GREATER 10.14)
 		list(APPEND QT_DEFINES USE_SHARE_WIDGET)
 	endif()
@@ -95,14 +94,24 @@ set(SOURCE_FILES
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
+	ForwarderController.cpp
+	ForwarderGenerator.cpp
+	ForwarderGenerator3DS.cpp
+	ForwarderGeneratorVita.cpp
+	ForwarderView.cpp
 	FrameView.cpp
 	GBAApp.cpp
 	GBAKeyEditor.cpp
 	GIFView.cpp
-	GamepadAxisEvent.cpp
-	GamepadButtonEvent.cpp
-	GamepadHatEvent.cpp
 	IOViewer.cpp
+	input/Gamepad.cpp
+	input/GamepadAxisEvent.cpp
+	input/GamepadButtonEvent.cpp
+	input/GamepadHatEvent.cpp
+	input/InputDriver.cpp
+	input/InputSource.cpp
+	input/InputMapper.cpp
+	input/KeySource.cpp
 	InputController.cpp
 	InputProfile.cpp
 	KeyEditor.cpp
@@ -119,6 +128,7 @@ set(SOURCE_FILES
 	MessagePainter.cpp
 	MultiplayerController.cpp
 	ObjView.cpp
+	OpenGLBug.cpp
 	OverrideView.cpp
 	PaletteView.cpp
 	PlacementControl.cpp
@@ -152,6 +162,7 @@ set(UI_FILES
 	CheatsView.ui
 	DebuggerConsole.ui
 	DolphinConnector.ui
+	ForwarderView.ui
 	FrameView.ui
 	GIFView.ui
 	IOViewer.ui
@@ -192,6 +203,7 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5
 
 set(AUDIO_SRC)
 if(BUILD_SDL)
+	list(APPEND SOURCE_FILES input/SDLInputDriver.cpp)
 	list(APPEND AUDIO_SRC AudioProcessorSDL.cpp)
 endif()
 
@@ -414,7 +426,7 @@ if(QT_STATIC)
 		list(APPEND QT_LIBRARIES "-framework AVFoundation" "-framework CoreMedia" "-framework SystemConfiguration" "-framework Security")
 		set_target_properties(${QT}::Core PROPERTIES INTERFACE_LINK_LIBRARIES "${QTPCRE}")
 	elseif(UNIX)
-		list(APPEND QT_LIBRARIES ${QT}::FontDatabaseSupport ${QT}::XcbQpa)
+		list(APPEND QT_LIBRARIES ${QT}::FontDatabaseSupport ${QT}::XcbQpa ${QT}::QWaylandIntegrationPlugin)
 	endif()
 endif()
 target_link_libraries(${BINARY_NAME}-qt ${PLATFORM_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES})

@@ -105,6 +105,7 @@ public:
 	void usage(const char* arg0) const;
 
 	static const QString& configDir();
+	static const QString& cacheDir();
 	static bool isPortable();
 
 public slots:

@@ -596,13 +596,13 @@ void GBReset(struct SM83Core* cpu) {
 	GBVideoReset(&gb->video);
 	GBTimerReset(&gb->timer);
 	GBIOReset(gb);
+	GBAudioReset(&gb->audio);
 	if (!gb->biosVf && gb->memory.rom) {
 		GBSkipBIOS(gb);
 	} else {
 		mTimingSchedule(&gb->timing, &gb->timer.event, 0);
 	}
 
-	GBAudioReset(&gb->audio);
 	GBSIOReset(&gb->sio);
 
 	cpu->memory.setActiveRegion(cpu, cpu->pc);
@@ -744,6 +744,25 @@ void GBSkipBIOS(struct GB* gb) {
 		GBUnmapBIOS(gb);
 	}
 
+	GBIOWrite(gb, GB_REG_NR52, 0xF1);
+	GBIOWrite(gb, GB_REG_NR14, 0x3F);
+	GBIOWrite(gb, GB_REG_NR10, 0x80);
+	GBIOWrite(gb, GB_REG_NR11, 0xBF);
+	GBIOWrite(gb, GB_REG_NR12, 0xF3);
+	GBIOWrite(gb, GB_REG_NR13, 0xF3);
+	GBIOWrite(gb, GB_REG_NR24, 0x3F);
+	GBIOWrite(gb, GB_REG_NR21, 0x3F);
+	GBIOWrite(gb, GB_REG_NR22, 0x00);
+	GBIOWrite(gb, GB_REG_NR34, 0x3F);
+	GBIOWrite(gb, GB_REG_NR30, 0x7F);
+	GBIOWrite(gb, GB_REG_NR31, 0xFF);
+	GBIOWrite(gb, GB_REG_NR32, 0x9F);
+	GBIOWrite(gb, GB_REG_NR44, 0x3F);
+	GBIOWrite(gb, GB_REG_NR41, 0xFF);
+	GBIOWrite(gb, GB_REG_NR42, 0x00);
+	GBIOWrite(gb, GB_REG_NR43, 0x00);
+	GBIOWrite(gb, GB_REG_NR50, 0x77);
+	GBIOWrite(gb, GB_REG_NR51, 0xF3);
 	GBIOWrite(gb, GB_REG_LCDC, 0x91);
 	gb->memory.io[GB_REG_BANK] = 0x1;
 	GBVideoSkipBIOS(&gb->video);

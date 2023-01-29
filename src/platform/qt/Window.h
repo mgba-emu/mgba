@@ -187,7 +187,6 @@ private:
 
 	void updateTitle(float fps = -1);
 
-	QString getFilters() const;
 	QString getFiltersArchive() const;
 
 	CoreManager* m_manager;

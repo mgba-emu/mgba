@@ -12,10 +12,12 @@
 #include <mgba/script/context.h>
 #include <mgba/script/types.h>
 
+#include "script/test.h"
+
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/memory.h>
 #define TEST_PLATFORM mPLATFORM_GBA
-#define RAM_BASE BASE_WORKING_IRAM
+#define RAM_BASE GBA_BASE_IWRAM
 #elif defined(M_CORE_GB)
 #include <mgba/internal/gb/memory.h>
 #define TEST_PLATFORM mPLATFORM_GB
@@ -65,22 +67,6 @@ static const uint8_t _fakeGBROM[0x4000] = {
 #define TEARDOWN_CORE \
 	mCoreConfigDeinit(&core->config); \
 	core->deinit(core)
-
-#define LOAD_PROGRAM(PROG) \
-	do { \
-		struct VFile* vf = VFileFromConstMemory(PROG, strlen(PROG)); \
-		assert_true(lua->load(lua, NULL, vf)); \
-		vf->close(vf); \
-	} while(0)
-
-#define TEST_VALUE(TYPE, NAME, VALUE) \
-	do { \
-		struct mScriptValue val = mSCRIPT_MAKE(TYPE, VALUE); \
-		struct mScriptValue* global = lua->getGlobal(lua, NAME); \
-		assert_non_null(global); \
-		assert_true(global->type->equal(global, &val)); \
-		mScriptValueDeref(global); \
-	} while(0)
 
 static void _mScriptTestLog(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args) {
 	UNUSED(category);

@@ -71,8 +71,8 @@ void mScriptContextInit(struct mScriptContext* context) {
 
 void mScriptContextDeinit(struct mScriptContext* context) {
 	HashTableDeinit(&context->rootScope);
-	HashTableDeinit(&context->weakrefs);
 	mScriptContextDrainPool(context);
+	HashTableDeinit(&context->weakrefs);
 	mScriptListDeinit(&context->refPool);
 	HashTableDeinit(&context->callbacks);
 	TableDeinit(&context->callbackId);
@@ -102,9 +102,12 @@ void mScriptContextFillPool(struct mScriptContext* context, struct mScriptValue*
 void mScriptContextDrainPool(struct mScriptContext* context) {
 	size_t i;
 	for (i = 0; i < mScriptListSize(&context->refPool); ++i) {
-		struct mScriptValue* value = mScriptValueUnwrap(mScriptListGetPointer(&context->refPool, i));
-		if (value) {
+		struct mScriptValue* value = mScriptListGetPointer(&context->refPool, i);
+		if (value->type->base == mSCRIPT_TYPE_WRAPPER) {
+			value = mScriptValueUnwrap(value);
 			mScriptValueDeref(value);
+		} else if (value->type == mSCRIPT_TYPE_MS_WEAKREF) {
+			mScriptContextClearWeakref(context, value->value.u32);
 		}
 	}
 	mScriptListClear(&context->refPool);
@@ -201,7 +204,14 @@ void mScriptContextClearWeakref(struct mScriptContext* context, uint32_t weakref
 	TableRemove(&context->weakrefs, weakref);
 }
 
-void mScriptContextTriggerCallback(struct mScriptContext* context, const char* callback) {
+void mScriptContextDisownWeakref(struct mScriptContext* context, uint32_t weakref) {
+	struct mScriptValue* poolEntry = mScriptListAppend(&context->refPool);
+	poolEntry->type = mSCRIPT_TYPE_MS_WEAKREF;
+	poolEntry->value.u32 = weakref;
+	poolEntry->refs = mSCRIPT_VALUE_UNREF;
+}
+
+void mScriptContextTriggerCallback(struct mScriptContext* context, const char* callback, struct mScriptList* args) {
 	struct mScriptValue* list = HashTableLookup(&context->callbacks, callback);
 	if (!list) {
 		return;
@@ -214,6 +224,9 @@ void mScriptContextTriggerCallback(struct mScriptContext* context, const char* c
 			continue;
 		}
 		mScriptFrameInit(&frame);
+		if (args) {
+			mScriptListCopy(&frame.arguments, args);
+		}
 		if (fn->type->base == mSCRIPT_TYPE_WRAPPER) {
 			fn = mScriptValueUnwrap(fn);
 		}

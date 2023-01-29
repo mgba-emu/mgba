@@ -1,24 +1,29 @@
 include(ExportDirectory)
-set(SOURCE_FILES
+set(BASE_SOURCE_FILES
 	circle-buffer.c
 	configuration.c
-	convolve.c
 	crc32.c
-	elf-read.c
-	export.c
 	formatting.c
 	gbk-table.c
 	hash.c
+	string.c
+	table.c
+	vector.c
+	vfs.c)
+
+set(SOURCE_FILES
+	${BASE_SOURCE_FILES}
+	convolve.c
+	elf-read.c
+	export.c
 	patch.c
 	patch-fast.c
 	patch-ips.c
 	patch-ups.c
 	png-io.c
 	ring-fifo.c
-	string.c
-	table.c
-	text-codec.c
-	vfs.c)
+	sfo.c
+	text-codec.c)
 
 set(GUI_FILES
 	gui.c
@@ -28,6 +33,7 @@ set(GUI_FILES
 	gui/menu.c)
 
 set(TEST_FILES
+	test/sfo.c
 	test/string-parser.c
 	test/string-utf8.c
 	test/table.c
@@ -43,6 +49,7 @@ source_group("Utilities" FILES ${SOURCE_FILES})
 source_group("GUI source" FILES ${GUI_FILES})
 source_group("Utilities tests" FILES ${TEST_FILES})
 
+export_directory(UTIL_BASE BASE_SOURCE_FILES)
 export_directory(UTIL SOURCE_FILES)
 export_directory(GUI GUI_FILES)
 export_directory(UTIL_TEST TEST_FILES)

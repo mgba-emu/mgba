@@ -672,7 +672,19 @@ static const struct GBCartridgeOverride _overrides[] = {
 	{ 0x630ED957, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Gold (non-debug)
 	{ 0x5AFF0038, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Silver (debug)
 	{ 0xA61856BD, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Silver (non-debug)
+	// Unlicensed bootlegs
 	{ 0x30F8F86C, GB_MODEL_AUTODETECT, GB_UNL_PKJD, { 0 } }, // Pokemon Jade Version (Telefang Speed bootleg)
+	{ 0xE1147E75, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_1, { 0 } }, // Rockman 8
+	{ 0xEFF88FAA, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_1, { 0 } }, // True Color 25 in 1 (NT-9920)
+	{ 0x811925D9, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_2, { 0 } }, // 23 in 1 (CR2011)
+	{ 0x62A8016A, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_2, { 0 } }, // 29 in 1 (CR2020)
+	{ 0x5758D6D9, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_2, { 0 } }, // Caise Gedou 24 in 1 Diannao Huamian Xuan Game (CY2060)
+	{ 0x62A8016A, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_2, { 0 } }, // Caise Gedou 29 in 1 Diannao Huamian Xuan Game (CY2061)
+	{ 0x80265A64, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_2, { 0 } }, // Rockman X4 (Megaman X4)
+	{ 0x805459DE, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_2, { 0 } }, // Sonic Adventure 8
+	{ 0x0B1B808A, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_2, { 0 } }, // Super Donkey Kong 5
+	{ 0x0B1B808A, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_2, { 0 } }, // Super Donkey Kong 5 (Alt)
+	{ 0x4650EB9A, GB_MODEL_AUTODETECT, GB_UNL_NT_OLD_2, { 0 } }, // Super Mario Special 3
 	{ 0xB289D95A, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Capcom vs SNK - Millennium Fight 2001
 	{ 0x688D6713, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Digimon 02 4
 	{ 0x8931A272, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Digimon 2
@@ -683,6 +695,7 @@ static const struct GBCartridgeOverride _overrides[] = {
 	{ 0xBC75D7B8, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Pokemon - Mewtwo Strikes Back
 	{ 0xFF0B60CC, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // Shuma Baolong 02 4
 	{ 0x14A992A6, GB_MODEL_AUTODETECT, GB_UNL_NT_NEW, { 0 } }, // /Street Fighter Zero 4
+	{ 0x3EF5AFB2, GB_MODEL_AUTODETECT, GB_UNL_LI_CHENG, { 0 } }, // Pokemon Jade Version (Telefang Speed bootleg)
 
 	{ 0, 0, 0, { 0 } }
 };

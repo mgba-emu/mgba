@@ -8,21 +8,12 @@
 #include <mgba/internal/script/lua.h>
 #include <mgba/script/macros.h>
 
+#include "script/test.h"
+
 #define SETUP_LUA \
 	struct mScriptContext context; \
 	mScriptContextInit(&context); \
 	struct mScriptEngineContext* lua = mScriptContextRegisterEngine(&context, mSCRIPT_ENGINE_LUA)
-
-#define LOAD_PROGRAM(PROG) \
-	do { \
-		struct VFile* vf = VFileFromConstMemory(PROG, strlen(PROG)); \
-		assert_true(lua->load(lua, NULL, vf)); \
-		vf->close(vf); \
-	} while(0)
-
-#define TEST_PROGRAM(PROG) \
-	LOAD_PROGRAM(PROG); \
-	assert_true(lua->run(lua)); \
 
 struct Test {
 	int32_t i;
@@ -31,6 +22,7 @@ struct Test {
 	void (*vfn0)(struct Test*);
 	void (*vfn1)(struct Test*, int);
 	int32_t (*icfn0)(const struct Test*);
+	struct Test* next;
 };
 
 static int identityInt(int in) {
@@ -92,6 +84,7 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(Test, v1, testV1, 1, S32, b);
 
 mSCRIPT_DEFINE_STRUCT(Test)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(Test, S32, i)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(Test, PS(Test), next)
 	mSCRIPT_DEFINE_STRUCT_METHOD(Test, ifn0)
 	mSCRIPT_DEFINE_STRUCT_METHOD(Test, ifn1)
 	mSCRIPT_DEFINE_STRUCT_METHOD(Test, icfn0)
@@ -377,6 +370,33 @@ M_TEST_DEFINE(callCFunc) {
 	assert_non_null(val);
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
+
+	mScriptContextDeinit(&context);
+}
+M_TEST_DEFINE(globalNull) {
+	SETUP_LUA;
+
+	struct Test s = {};
+	struct mScriptValue* val;
+	struct mScriptValue a;
+
+	LOAD_PROGRAM("assert(a)");
+
+	a = mSCRIPT_MAKE_CHARP("hello");
+	assert_true(lua->setGlobal(lua, "a", &a));
+	assert_true(lua->run(lua));
+
+	a = mSCRIPT_MAKE_CHARP(NULL);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	assert_false(lua->run(lua));
+
+	a = mSCRIPT_MAKE_S(Test, &s);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	assert_true(lua->run(lua));
+
+	a = mSCRIPT_MAKE_S(Test, NULL);
+	assert_true(lua->setGlobal(lua, "a", &a));
+	assert_false(lua->run(lua));
 
 	mScriptContextDeinit(&context);
 }
@@ -708,6 +728,42 @@ M_TEST_DEFINE(callList) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(linkedList) {
+	SETUP_LUA;
+
+	struct Test first = {
+		.i = 1
+	};
+	struct Test second = {
+		.i = 2
+	};
+	struct mScriptValue a = mSCRIPT_MAKE_S(Test, &first);
+
+	assert_true(lua->setGlobal(lua, "l", &a));
+	TEST_PROGRAM("assert(l)");
+	TEST_PROGRAM("assert(l.i == 1)");
+	TEST_PROGRAM("assert(not l.next)");
+
+	first.next = &second;
+	TEST_PROGRAM("assert(l)");
+	TEST_PROGRAM("assert(l.i == 1)");
+	TEST_PROGRAM("assert(l.next)");
+	TEST_PROGRAM("assert(l.next.i == 2)");
+	TEST_PROGRAM("assert(not l.next.next)");
+
+	TEST_PROGRAM(
+		"n = l.next\n"
+		"function readN()\n"
+		"	assert(n)\n"
+		"	assert(n.i or not n.i)\n"
+		"end\n"
+		"assert(pcall(readN))\n");
+	// The weakref stored in `n` gets pruned between executions to avoid stale pointers
+	TEST_PROGRAM("assert(not pcall(readN))");
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(create),
 	cmocka_unit_test(loadGood),
@@ -718,6 +774,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(rootScope),
 	cmocka_unit_test(callLuaFunc),
 	cmocka_unit_test(callCFunc),
+	cmocka_unit_test(globalNull),
 	cmocka_unit_test(globalStructFieldGet),
 	cmocka_unit_test(globalStructFieldSet),
 	cmocka_unit_test(globalStructMethods),
@@ -725,4 +782,5 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(tableLookup),
 	cmocka_unit_test(tableIterate),
 	cmocka_unit_test(callList),
+	cmocka_unit_test(linkedList)
 )

@@ -6,7 +6,9 @@
 #include <mgba/core/core.h>
 #include <mgba/core/scripting.h>
 #include <mgba/core/version.h>
+#include <mgba/internal/script/types.h>
 #include <mgba/script/context.h>
+#include <mgba/script/input.h>
 #include <mgba-util/string.h>
 
 struct mScriptContext context;
@@ -35,62 +37,6 @@ const struct mScriptType* const baseTypes[] = {
 void explainValue(struct mScriptValue* value, const char* name, int level);
 void explainValueScoped(struct mScriptValue* value, const char* name, const char* scope, int level);
 void explainType(struct mScriptType* type, int level);
-
-void addTypesFromTuple(const struct mScriptTypeTuple*);
-void addTypesFromTable(struct Table*);
-
-void addType(const struct mScriptType* type) {
-	if (HashTableLookup(&types, type->name) || type->isConst) {
-		return;
-	}
-	HashTableInsert(&types, type->name, (struct mScriptType*) type);
-	switch (type->base) {
-	case mSCRIPT_TYPE_FUNCTION:
-		addTypesFromTuple(&type->details.function.parameters);
-		addTypesFromTuple(&type->details.function.returnType);
-		break;
-	case mSCRIPT_TYPE_OBJECT:
-		mScriptClassInit(type->details.cls);
-		if (type->details.cls->parent) {
-			addType(type->details.cls->parent);
-		}
-		addTypesFromTable(&type->details.cls->instanceMembers);
-		break;
-	case mSCRIPT_TYPE_OPAQUE:
-	case mSCRIPT_TYPE_WRAPPER:
-		if (type->details.type) {
-			addType(type->details.type);
-		}
-	case mSCRIPT_TYPE_VOID:
-	case mSCRIPT_TYPE_SINT:
-	case mSCRIPT_TYPE_UINT:
-	case mSCRIPT_TYPE_FLOAT:
-	case mSCRIPT_TYPE_STRING:
-	case mSCRIPT_TYPE_LIST:
-	case mSCRIPT_TYPE_TABLE:
-	case mSCRIPT_TYPE_WEAKREF:
-		// No subtypes
-		break;
-	}
-}
-
-void addTypesFromTuple(const struct mScriptTypeTuple* tuple) {
-	size_t i;
-	for (i = 0; i < tuple->count; ++i) {
-		addType(tuple->entries[i]);
-	}
-}
-
-void addTypesFromTable(struct Table* table) {
-	struct TableIterator iter;
-	if (!HashTableIteratorStart(table, &iter)) {
-		return;
-	}
-	do {
-		struct mScriptClassMember* member = HashTableIteratorGetValue(table, &iter);
-		addType(member->type);
-	} while(HashTableIteratorNext(table, &iter));
-}
 
 void printchomp(const char* string, int level) {
 	char indent[(level + 1) * 2 + 1];
@@ -265,7 +211,7 @@ void explainObject(struct mScriptValue* value, int level) {
 			continue;
 		}
 		fprintf(out, "%s%s:\n", indent, details->info.member.name);
-		addType(details->info.member.type);
+		mScriptTypeAdd(&types, details->info.member.type);
 		if (mScriptObjectGet(value, details->info.member.name, &member)) {
 			struct mScriptValue* unwrappedMember;
 			if (member.type->base == mSCRIPT_TYPE_WRAPPER) {
@@ -288,7 +234,7 @@ void explainValueScoped(struct mScriptValue* value, const char* name, const char
 	memset(indent, ' ', sizeof(indent) - 1);
 	indent[sizeof(indent) - 1] = '\0';
 	value = mScriptContextAccessWeakref(&context, value);
-	addType(value->type);
+	mScriptTypeAdd(&types, value->type);
 	fprintf(out, "%stype: %s\n", indent, value->type->name);
 
 	const char* docstring = NULL;
@@ -421,7 +367,7 @@ void explainCore(struct mCore* core) {
 	mScriptContextAttachCore(&context, core);
 
 	struct mScriptValue* emu = mScriptContextGetGlobal(&context, "emu");
-	addType(emu->type);
+	mScriptTypeAdd(&types, emu->type);
 
 	if (mScriptObjectGet(emu, "memory", &wrapper)) {
 		struct mScriptValue* memory = mScriptValueUnwrap(&wrapper);
@@ -434,7 +380,7 @@ void explainCore(struct mCore* core) {
 
 				fprintf(out, "      %s:\n", name->value.string->buffer);
 				value = mScriptContextAccessWeakref(&context, value);
-				addType(value->type);
+				mScriptTypeAdd(&types, value->type);
 
 				struct mScriptFrame frame;
 				uint32_t baseVal;
@@ -486,7 +432,7 @@ void initTypes(void) {
 
 	size_t i;
 	for (i = 0; baseTypes[i]; ++i) {
-		addType(baseTypes[i]);
+		mScriptTypeAdd(&types, baseTypes[i]);
 	}
 }
 
@@ -523,9 +469,11 @@ int main(int argc, char* argv[]) {
 	mScriptContextInit(&context);
 	mScriptContextAttachStdlib(&context);
 	mScriptContextAttachSocket(&context);
+	mScriptContextAttachInput(&context);
 	mScriptContextSetTextBufferFactory(&context, NULL, NULL);
 
 	initTypes();
+	mScriptContextGetInputTypes(&types);
 
 	fputs("version:\n", out);
 	fprintf(out, "  string: \"%s\"\n", projectVersion);

@@ -14,23 +14,45 @@
 #include <mgba/internal/gb/gb.h>
 #endif
 
+#include <algorithm>
+
 using namespace QGBA;
 
 #ifdef M_CORE_GB
-MultiplayerController::Player::Player(CoreController* coreController, GBSIOLockstepNode* node)
+MultiplayerController::Player::Player(CoreController* coreController, GBSIOLockstepNode* gbNode)
 	: controller(coreController)
-	, gbNode(node)
 {
+	node.gb = gbNode;
 }
 #endif
 
 #ifdef M_CORE_GBA
-MultiplayerController::Player::Player(CoreController* coreController, GBASIOLockstepNode* node)
+MultiplayerController::Player::Player(CoreController* coreController, GBASIOLockstepNode* gbaNode)
 	: controller(coreController)
-	, gbaNode(node)
 {
+	node.gba = gbaNode;
 }
 #endif
+
+int MultiplayerController::Player::id() const {
+	switch (controller->platform()) {
+#ifdef M_CORE_GBA
+	case mPLATFORM_GBA:
+		return node.gba->id;
+#endif
+#ifdef M_CORE_GB
+	case mPLATFORM_GB:
+		return node.gb->id;
+#endif
+	case mPLATFORM_NONE:
+		break;
+	}
+	return -1;
+}
+
+bool MultiplayerController::Player::operator<(const MultiplayerController::Player& other) const {
+	return id() < other.id();
+}
 
 MultiplayerController::MultiplayerController() {
 	mLockstepInit(&m_lockstep);
@@ -65,6 +87,7 @@ MultiplayerController::MultiplayerController() {
 			player->awake = 0;
 			slept = true;
 		}
+		player->controller->setSync(true);
 		return slept;
 	};
 	m_lockstep.addCycles = [](mLockstep* lockstep, int id, int32_t cycles) {
@@ -72,44 +95,51 @@ MultiplayerController::MultiplayerController() {
 			abort();
 		}
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		if (!id) {
-			for (int i = 1; i < controller->m_players.count(); ++i) {
-				Player* player = &controller->m_players[i];
+		Player* player = controller->player(id);
+		switch (player->controller->platform()) {
 #ifdef M_CORE_GBA
-				if (player->controller->platform() == mPLATFORM_GBA && player->gbaNode->d.p->mode != controller->m_players[0].gbaNode->d.p->mode) {
-					player->controller->setSync(true);
-					continue;
-				}
-#endif
-				player->controller->setSync(false);
-				player->cyclesPosted += cycles;
-				if (player->awake < 1) {
-					switch (player->controller->platform()) {
-#ifdef M_CORE_GBA
-					case mPLATFORM_GBA:
-						player->gbaNode->nextEvent += player->cyclesPosted;
-						break;
-#endif
-#ifdef M_CORE_GB
-					case mPLATFORM_GB:
-						player->gbNode->nextEvent += player->cyclesPosted;
-						break;
-#endif
-					default:
-						break;
+		case mPLATFORM_GBA:
+			if (!id) {
+				for (int i = 1; i < controller->m_players.count(); ++i) {
+					player = controller->player(i);
+					player->controller->setSync(false);
+					player->cyclesPosted += cycles;
+					if (player->awake < 1) {
+						player->node.gba->nextEvent += player->cyclesPosted;
 					}
 					mCoreThreadStopWaiting(player->controller->thread());
 					player->awake = 1;
 				}
+			} else {
+				player->controller->setSync(true);
+				player->cyclesPosted += cycles;
 			}
-		} else {
-			controller->m_players[id].controller->setSync(true);
-			controller->m_players[id].cyclesPosted += cycles;
+			break;
+#endif
+#ifdef M_CORE_GB
+		case mPLATFORM_GB:
+			if (!id) {
+				player = controller->player(1);
+				player->controller->setSync(false);
+				player->cyclesPosted += cycles;
+				if (player->awake < 1) {
+					player->node.gb->nextEvent += player->cyclesPosted;
+				}
+				mCoreThreadStopWaiting(player->controller->thread());
+				player->awake = 1;
+			} else {
+				player->controller->setSync(true);
+				player->cyclesPosted += cycles;
+			}
+			break;
+#endif
+		default:
+			break;
 		}
 	};
 	m_lockstep.useCycles = [](mLockstep* lockstep, int id, int32_t cycles) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		Player* player = &controller->m_players[id];
+		Player* player = controller->player(id);
 		player->cyclesPosted -= cycles;
 		if (player->cyclesPosted <= 0) {
 			mCoreThreadWaitFromThread(player->controller->thread());
@@ -118,21 +148,21 @@ MultiplayerController::MultiplayerController() {
 		cycles = player->cyclesPosted;
 		return cycles;
 	};
-	m_lockstep.unusedCycles= [](mLockstep* lockstep, int id) {
+	m_lockstep.unusedCycles = [](mLockstep* lockstep, int id) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
-		Player* player = &controller->m_players[id];
+		Player* player = controller->player(id);
 		auto cycles = player->cyclesPosted;
 		return cycles;
 	};
 	m_lockstep.unload = [](mLockstep* lockstep, int id) {
 		MultiplayerController* controller = static_cast<MultiplayerController*>(lockstep->context);
 		if (id) {
-			Player* player = &controller->m_players[id];
+			Player* player = controller->player(id);
 			player->controller->setSync(true);
 			player->cyclesPosted = 0;
 
 			// release master GBA if it is waiting for this GBA
-			player = &controller->m_players[0];
+			player = controller->player(0);
 			player->waitMask &= ~(1 << id);
 			if (!player->waitMask && player->awake < 1) {
 				mCoreThreadStopWaiting(player->controller->thread());
@@ -140,7 +170,7 @@ MultiplayerController::MultiplayerController() {
 			}
 		} else {
 			for (int i = 1; i < controller->m_players.count(); ++i) {
-				Player* player = &controller->m_players[i];
+				Player* player = controller->player(i);
 				player->controller->setSync(true);
 				switch (player->controller->platform()) {
 #ifdef M_CORE_GBA
@@ -160,12 +190,12 @@ MultiplayerController::MultiplayerController() {
 					switch (player->controller->platform()) {
 #ifdef M_CORE_GBA
 					case mPLATFORM_GBA:
-						player->gbaNode->nextEvent += player->cyclesPosted;
+						player->node.gba->nextEvent += player->cyclesPosted;
 						break;
 #endif
 #ifdef M_CORE_GB
 					case mPLATFORM_GB:
-						player->gbNode->nextEvent += player->cyclesPosted;
+						player->node.gb->nextEvent += player->cyclesPosted;
 						break;
 #endif
 					default:
@@ -314,4 +344,30 @@ int MultiplayerController::attached() {
 	int num;
 	num = m_lockstep.attached;
 	return num;
+}
+
+MultiplayerController::Player* MultiplayerController::player(int id) {
+	Player* player = &m_players[id];
+	switch (player->controller->platform()) {
+#ifdef M_CORE_GBA
+	case mPLATFORM_GBA:
+		if (player->node.gba->id != id) {
+			std::sort(m_players.begin(), m_players.end());
+			player = &m_players[id];
+		}
+		break;
+#endif
+#ifdef M_CORE_GB
+	case mPLATFORM_GB:
+		if (player->node.gb->id != id) {
+			std::swap(m_players[0], m_players[1]);
+			player = &m_players[id];
+		}
+		break;
+#endif
+	case mPLATFORM_NONE:
+		break;
+	}
+
+	return player;
 }

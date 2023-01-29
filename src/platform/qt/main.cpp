@@ -14,6 +14,10 @@
 #include <mgba/core/version.h>
 #include <mgba/gba/interface.h>
 
+#ifdef BUILD_SDL
+#include "platform/sdl/sdl-events.h"
+#endif
+
 #include <QLibraryInfo>
 #include <QTranslator>
 
@@ -38,6 +42,7 @@ Q_IMPORT_PLUGIN(AVFServicePlugin);
 #endif
 #elif defined(Q_OS_UNIX)
 Q_IMPORT_PLUGIN(QXcbIntegrationPlugin);
+Q_IMPORT_PLUGIN(QWaylandIntegrationPlugin);
 #endif
 #endif
 

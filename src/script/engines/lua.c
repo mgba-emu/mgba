@@ -693,6 +693,31 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 			return true;
 		}
 	}
+	struct mScriptValue derefPtr;
+	if (value->type->base == mSCRIPT_TYPE_OPAQUE) {
+		if (!value->type->details.type) {
+			return false;
+		}
+		mScriptValueFollowPointer(value, &derefPtr);
+		switch (derefPtr.type->base) {
+		case mSCRIPT_TYPE_VOID:
+		case mSCRIPT_TYPE_SINT:
+		case mSCRIPT_TYPE_UINT:
+		case mSCRIPT_TYPE_FLOAT:
+			value = &derefPtr;
+			break;
+		case mSCRIPT_TYPE_OBJECT:
+			value = mScriptValueAlloc(derefPtr.type);
+			value->value.opaque = derefPtr.value.opaque;
+			weakref = mScriptContextSetWeakref(luaContext->d.context, value);
+			needsWeakref = true;
+			mScriptContextDisownWeakref(luaContext->d.context, weakref);
+			mScriptValueDeref(value);
+			break;
+		default:
+			return false;
+		}
+	}
 	if (value->type == mSCRIPT_TYPE_MS_WEAKREF) {
 		weakref = value->value.u32;
 		value = mScriptContextAccessWeakref(luaContext->d.context, value);
@@ -738,7 +763,19 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		}
 		break;
 	case mSCRIPT_TYPE_STRING:
-		lua_pushlstring(luaContext->lua, value->value.string->buffer, value->value.string->size);
+		if (!value->value.string) {
+			lua_pushnil(luaContext->lua);
+			break;
+		}
+		if (value->type == mSCRIPT_TYPE_MS_STR) {
+			lua_pushlstring(luaContext->lua, value->value.string->buffer, value->value.string->size);
+			break;
+		}
+		if (value->type == mSCRIPT_TYPE_MS_CHARP) {
+			lua_pushstring(luaContext->lua, value->value.copaque);
+			break;
+		}
+		ok = false;
 		break;
 	case mSCRIPT_TYPE_LIST:
 		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
@@ -769,6 +806,10 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		mScriptValueDeref(value);
 		break;
 	case mSCRIPT_TYPE_OBJECT:
+		if (!value->value.opaque) {
+			lua_pushnil(luaContext->lua);
+			break;
+		}
 		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
 		if (needsWeakref) {
 			*newValue = mSCRIPT_MAKE(WEAKREF, weakref);

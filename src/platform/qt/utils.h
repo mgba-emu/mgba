@@ -7,6 +7,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba-util/socket.h>
+#include <mgba-util/vfs.h>
 
 #include <QHostAddress>
 #include <QRect>
@@ -14,6 +15,10 @@
 #include <QString>
 
 #include <algorithm>
+#include <functional>
+
+struct VDir;
+struct VDirEntry;
 
 namespace QGBA {
 
@@ -66,5 +71,8 @@ constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
 	return std::max(lo, std::min(hi, v));
 }
 #endif
+
+QString romFilters(bool includeMvl = false);
+bool extractMatchingFile(VDir* dir, std::function<QString (VDirEntry*)> filter);
 
 }

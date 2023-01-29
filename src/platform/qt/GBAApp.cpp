@@ -19,6 +19,7 @@
 #include <QFontDatabase>
 #include <QIcon>
 
+#include <mgba/core/version.h>
 #include <mgba/feature/updater.h>
 #include <mgba-util/socket.h>
 #include <mgba-util/vfs.h>
@@ -29,6 +30,10 @@
 
 #ifdef USE_DISCORD_RPC
 #include "DiscordCoordinator.h"
+#endif
+
+#ifdef BUILD_SDL
+#include "input/SDLInputDriver.h"
 #endif
 
 using namespace QGBA;
@@ -79,6 +84,10 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 		}
 	}, this);
 	m_configController->updateOption("useDiscordPresence");
+#endif
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
+	m_netman.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
 #endif
 
 	cleanupAfterUpdate();
@@ -240,6 +249,19 @@ bool GBAApp::reloadGameDB() {
 }
 #endif
 
+QNetworkAccessManager* GBAApp::netman() {
+	return &m_netman;
+}
+
+QNetworkReply* GBAApp::httpGet(const QUrl& url) {
+	QNetworkRequest req(url);
+	req.setHeader(QNetworkRequest::UserAgentHeader,
+	              QString("%1/%2 (+https://mgba.io) is definitely not Mozilla/5.0")
+	              .arg(projectName)
+	              .arg(projectVersion));
+	return m_netman.get(req);
+}
+
 qint64 GBAApp::submitWorkerJob(std::function<void ()> job, std::function<void ()> callback) {
 	return submitWorkerJob(job, nullptr, callback);
 }
@@ -289,6 +311,25 @@ bool GBAApp::waitOnJob(qint64 jobId, QObject* context, std::function<void ()> ca
 	});
 	m_workerJobCallbacks.insert(m_nextJob, connection);
 	return true;
+}
+
+void GBAApp::suspendScreensaver() {
+#ifdef BUILD_SDL
+	SDL::suspendScreensaver();
+#endif
+}
+
+void GBAApp::resumeScreensaver() {
+#ifdef BUILD_SDL
+	SDL::resumeScreensaver();
+#endif
+}
+
+void GBAApp::setScreensaverSuspendable(bool suspendable) {
+	UNUSED(suspendable);
+#ifdef BUILD_SDL
+	SDL::setScreensaverSuspendable(suspendable);
+#endif
 }
 
 void GBAApp::cleanupAfterUpdate() {

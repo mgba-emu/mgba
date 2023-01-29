@@ -25,6 +25,10 @@
 #include <mgba/core/version.h>
 #include <mgba/internal/gba/gba.h>
 
+#ifdef BUILD_SDL
+#include "platform/sdl/sdl-events.h"
+#endif
+
 using namespace QGBA;
 
 SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, LogController* logController, QWidget* parent)
@@ -296,9 +300,14 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	}
 
 	const GBColorPreset* colorPresets;
+	QString usedPreset = m_controller->getQtOption("gb.pal").toString();
 	size_t nPresets = GBColorPresetList(&colorPresets);
 	for (size_t i = 0; i < nPresets; ++i) {
-		m_ui.colorPreset->addItem(QString(colorPresets[i].name));
+		QString presetName(colorPresets[i].name);
+		m_ui.colorPreset->addItem(presetName);
+		if (usedPreset == presetName) {
+			m_ui.colorPreset->setCurrentIndex(i);
+		}
 	}
 	connect(m_ui.colorPreset, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this, colorPresets](int n) {
 		const GBColorPreset* preset = &colorPresets[n];
@@ -321,8 +330,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 	GBAKeyEditor* buttonEditor = nullptr;
 #ifdef BUILD_SDL
-	inputController->recalibrateAxes();
-	const char* profile = inputController->profileForType(SDL_BINDING_BUTTON);
+	QString profile = inputController->profileForType(SDL_BINDING_BUTTON);
 	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
 	addPage(tr("Controllers"), buttonEditor, Page::CONTROLLERS);
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, buttonEditor, &GBAKeyEditor::save);
@@ -640,6 +648,7 @@ void SettingsView::updateConfig() {
 		m_controller->setOption(color.toUtf8().constData(), m_gbColors[colorId] & ~0xFF000000);
 
 	}
+	m_controller->setQtOption("gb.pal", m_ui.colorPreset->currentText());
 
 	int gbColors = GB_COLORS_CGB;
 	if (m_ui.gbColor->isChecked()) {

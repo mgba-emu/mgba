@@ -30,11 +30,15 @@
 #include "Display.h"
 #include "DolphinConnector.h"
 #include "CoreController.h"
+#include "ForwarderView.h"
 #include "FrameView.h"
 #include "GBAApp.h"
 #include "GDBController.h"
 #include "GDBWindow.h"
 #include "GIFView.h"
+#ifdef BUILD_SDL
+#include "input/SDLInputDriver.h"
+#endif
 #include "IOViewer.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
@@ -75,6 +79,7 @@
 #include <mgba/internal/gba/gba.h>
 #endif
 #include <mgba/feature/commandline.h>
+#include <mgba/internal/gba/input.h>
 #include <mgba-util/vfs.h>
 
 #include <mgba-util/convolve.h>
@@ -168,6 +173,12 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	m_mustRestart.setSingleShot(true);
 	m_mustReset.setInterval(MUST_RESTART_TIMEOUT);
 	m_mustReset.setSingleShot(true);
+
+#ifdef BUILD_SDL
+	m_inputController.addInputDriver(std::make_shared<SDLInputDriver>(&m_inputController));
+	m_inputController.setGamepadDriver(SDL_BINDING_BUTTON);
+	m_inputController.setSensorDriver(SDL_BINDING_BUTTON);
+#endif
 
 	m_shortcutController->setConfigController(m_config);
 	m_shortcutController->setActionMapper(&m_actions);
@@ -296,59 +307,12 @@ void Window::reloadConfig() {
 		m_display->resizeContext();
 	}
 
-	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
+	GBAApp::app()->setScreensaverSuspendable(opts->suspendScreensaver);
 }
 
 void Window::saveConfig() {
 	m_inputController.saveConfiguration();
 	m_config->write();
-}
-
-QString Window::getFilters() const {
-	QStringList filters;
-	QStringList formats;
-
-#ifdef M_CORE_GBA
-	QStringList gbaFormats{
-		"*.gba",
-#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
-		"*.zip",
-#endif
-#ifdef USE_LZMA
-		"*.7z",
-#endif
-#ifdef USE_ELF
-		"*.elf",
-#endif
-		"*.agb",
-		"*.mb",
-		"*.rom",
-		"*.bin"};
-	formats.append(gbaFormats);
-	filters.append(tr("Game Boy Advance ROMs (%1)").arg(gbaFormats.join(QChar(' '))));
-#endif
-
-#ifdef M_CORE_GB
-	QStringList gbFormats{
-		"*.gb",
-		"*.gbc",
-		"*.sgb",
-#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
-		"*.zip",
-#endif
-#ifdef USE_LZMA
-		"*.7z",
-#endif
-		"*.rom",
-		"*.bin"};
-	formats.append(gbFormats);
-	filters.append(tr("Game Boy ROMs (%1)").arg(gbFormats.join(QChar(' '))));
-#endif
-
-	formats.removeDuplicates();
-	filters.prepend(tr("All ROMs (%1)").arg(formats.join(QChar(' '))));
-	filters.append(tr("%1 Video Logs (*.mvl)").arg(projectName));
-	return filters.join(";;");
 }
 
 QString Window::getFiltersArchive() const {
@@ -367,7 +331,7 @@ QString Window::getFiltersArchive() const {
 }
 
 void Window::selectROM() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), romFilters(true));
 	if (!filename.isEmpty()) {
 		setController(m_manager->loadGame(filename), filename);
 	}
@@ -410,7 +374,7 @@ void Window::addDirToLibrary() {
 #endif
 
 void Window::replaceROM() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), romFilters());
 	if (!filename.isEmpty()) {
 		m_controller->replaceGame(filename);
 	}
@@ -663,8 +627,11 @@ void Window::consoleOpen() {
 void Window::scriptingOpen() {
 	if (!m_scripting) {
 		m_scripting = std::make_unique<ScriptingController>();
+		m_scripting->setInputController(&m_inputController);
+		m_shortcutController->setScriptingController(m_scripting.get());
 		if (m_controller) {
 			m_scripting->setController(m_controller);
+			m_display->installEventFilter(m_scripting.get());
 		}
 	}
 	ScriptingView* view = new ScriptingView(m_scripting.get(), m_config);
@@ -677,8 +644,8 @@ void Window::keyPressEvent(QKeyEvent* event) {
 		QWidget::keyPressEvent(event);
 		return;
 	}
-	GBAKey key = m_inputController.mapKeyboard(event->key());
-	if (key == GBA_KEY_NONE) {
+	int key = m_inputController.mapKeyboard(event->key());
+	if (key == -1) {
 		QWidget::keyPressEvent(event);
 		return;
 	}
@@ -693,8 +660,8 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 		QWidget::keyReleaseEvent(event);
 		return;
 	}
-	GBAKey key = m_inputController.mapKeyboard(event->key());
-	if (key == GBA_KEY_NONE) {
+	int key = m_inputController.mapKeyboard(event->key());
+	if (key == -1) {
 		QWidget::keyPressEvent(event);
 		return;
 	}
@@ -1107,6 +1074,8 @@ void Window::changeRenderer() {
 	if (!m_controller) {
 		return;
 	}
+
+	CoreController::Interrupter interrupter(m_controller);
 	if (m_config->getOption("hwaccelVideo").toInt() && m_display->supportsShaders() && m_controller->supportsFeature(CoreController::Feature::OPENGL)) {
 		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
 		if (!proxy) {
@@ -1121,6 +1090,11 @@ void Window::changeRenderer() {
 			m_config->updateOption("videoScale");
 		}
 	} else {
+		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
+		if (proxy) {
+			proxy->detach(m_controller.get());
+			m_display->setVideoProxy({});
+		}
 		m_controller->setFramebufferHandle(-1);
 	}
 }
@@ -1657,6 +1631,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Scripting..."), "scripting", this, &Window::scriptingOpen, "tools");
 #endif
 
+	m_actions.addAction(tr("Create forwarder..."), "createForwarder", openTView<ForwarderView>(), "tools");
+
 	m_actions.addSeparator("tools");
 	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools")->setRole(Action::Role::SETTINGS);
 	m_actions.addAction(tr("Make portable"), "makePortable", this, &Window::tryMakePortable, "tools");
@@ -2036,7 +2012,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	}
 
 	m_controller = std::shared_ptr<CoreController>(controller);
-	m_inputController.recalibrateAxes();
 	m_controller->setInputController(&m_inputController);
 	m_controller->setLogger(&m_log);
 
@@ -2049,14 +2024,14 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	});
 
 	connect(m_controller.get(), &CoreController::started, this, &Window::gameStarted);
-	connect(m_controller.get(), &CoreController::started, &m_inputController, &InputController::suspendScreensaver);
+	connect(m_controller.get(), &CoreController::started, GBAApp::app(), &GBAApp::suspendScreensaver);
 	connect(m_controller.get(), &CoreController::stopping, this, &Window::gameStopped);
 	{
 		connect(m_controller.get(), &CoreController::stopping, [this]() {
 			m_controller.reset();
 		});
 	}
-	connect(m_controller.get(), &CoreController::stopping, &m_inputController, &InputController::resumeScreensaver);
+	connect(m_controller.get(), &CoreController::stopping, GBAApp::app(), &GBAApp::resumeScreensaver);
 	connect(m_controller.get(), &CoreController::paused, this, &Window::updateFrame);
 
 #ifndef Q_OS_MAC
@@ -2068,14 +2043,14 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	});
 #endif
 
-	connect(m_controller.get(), &CoreController::paused, &m_inputController, &InputController::resumeScreensaver);
+	connect(m_controller.get(), &CoreController::paused, GBAApp::app(), &GBAApp::resumeScreensaver);
 	connect(m_controller.get(), &CoreController::paused, [this]() {
 		emit paused(true);
 	});
 	connect(m_controller.get(), &CoreController::unpaused, [this]() {
 		emit paused(false);
 	});
-	connect(m_controller.get(), &CoreController::unpaused, &m_inputController, &InputController::suspendScreensaver);
+	connect(m_controller.get(), &CoreController::unpaused, GBAApp::app(), &GBAApp::suspendScreensaver);
 	connect(m_controller.get(), &CoreController::frameAvailable, this, &Window::recordFrame);
 	connect(m_controller.get(), &CoreController::crashed, this, &Window::gameCrashed);
 	connect(m_controller.get(), &CoreController::failed, this, &Window::gameFailed);
@@ -2153,6 +2128,12 @@ void Window::attachDisplay() {
 	m_display->attach(m_controller);
 	connect(m_display.get(), &QGBA::Display::drawingStarted, this, &Window::changeRenderer);
 	m_display->startDrawing(m_controller);
+
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_display->installEventFilter(m_scripting.get());
+	}
+#endif
 }
 
 void Window::updateMute() {

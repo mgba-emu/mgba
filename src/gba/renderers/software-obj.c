@@ -169,10 +169,10 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 	              (renderer->blendEffect == BLEND_BRIGHTEN || renderer->blendEffect == BLEND_DARKEN);
 	if (GBAObjAttributesAGetMode(sprite->a) == OBJ_MODE_SEMITRANSPARENT || (renderer->target1Obj && renderer->blendEffect == BLEND_ALPHA) || objwinSlowPath) {
 		int target2 = renderer->target2Bd;
-		target2 |= renderer->bg[0].target2;
-		target2 |= renderer->bg[1].target2;
-		target2 |= renderer->bg[2].target2;
-		target2 |= renderer->bg[3].target2;
+		target2 |= renderer->bg[0].target2 && renderer->bg[0].enabled;
+		target2 |= renderer->bg[1].target2 && renderer->bg[1].enabled;
+		target2 |= renderer->bg[2].target2 && renderer->bg[2].enabled;
+		target2 |= renderer->bg[3].target2 && renderer->bg[3].enabled;
 		if (target2) {
 			renderer->forceTarget1 = true;
 			flags |= FLAG_REBLEND;

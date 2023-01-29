@@ -1,9 +1,9 @@
-/* Copyright (c) 2013-2017 Jeffrey Pfau
+/* Copyright (c) 2013-2023 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include "GamepadHatEvent.h"
+#include "input/GamepadHatEvent.h"
 
 #include "InputController.h"
 
@@ -16,11 +16,11 @@ GamepadHatEvent::GamepadHatEvent(QEvent::Type pressType, int hatId, Direction di
 	: QEvent(pressType)
 	, m_hatId(hatId)
 	, m_direction(direction)
-	, m_key(GBA_KEY_NONE)
+	, m_keys(0)
 {
 	ignore();
 	if (controller) {
-		m_key = static_cast<GBAKey>(mInputMapHat(controller->map(), type, hatId, direction));
+		m_keys = mInputMapHat(controller->map(), type, hatId, direction);
 	}
 }
 

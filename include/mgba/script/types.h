@@ -76,6 +76,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_W(TYPE) opaque
 #define mSCRIPT_TYPE_FIELD_CW(TYPE) opaque
 
+#define mSCRIPT_TYPE_MS_VOID (&mSTVoid)
 #define mSCRIPT_TYPE_MS_S8 (&mSTSInt8)
 #define mSCRIPT_TYPE_MS_U8 (&mSTUInt8)
 #define mSCRIPT_TYPE_MS_S16 (&mSTSInt16)
@@ -97,7 +98,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_MS_CS(STRUCT) (&mSTStructConst_ ## STRUCT)
 #define mSCRIPT_TYPE_MS_S_METHOD(STRUCT, NAME) (&_mSTStructBindingType_ ## STRUCT ## _ ## NAME)
 #define mSCRIPT_TYPE_MS_PS(STRUCT) (&mSTStructPtr_ ## STRUCT)
-#define mSCRIPT_TYPE_MS_PCS(STRUCT) (&mSTStructConstPtr_ ## STRUCT)
+#define mSCRIPT_TYPE_MS_PCS(STRUCT) (&mSTStructPtrConst_ ## STRUCT)
 #define mSCRIPT_TYPE_MS_WSTR (&mSTStringWrapper)
 #define mSCRIPT_TYPE_MS_WLIST (&mSTListWrapper)
 #define mSCRIPT_TYPE_MS_W(TYPE) (&mSTWrapper_ ## TYPE)
@@ -302,6 +303,8 @@ void mScriptValueDeref(struct mScriptValue* val);
 void mScriptValueWrap(struct mScriptValue* val, struct mScriptValue* out);
 struct mScriptValue* mScriptValueUnwrap(struct mScriptValue* val);
 const struct mScriptValue* mScriptValueUnwrapConst(const struct mScriptValue* val);
+
+void mScriptValueFollowPointer(struct mScriptValue* ptr, struct mScriptValue* out);
 
 struct mScriptValue* mScriptStringCreateEmpty(size_t size);
 struct mScriptValue* mScriptStringCreateFromBytes(const void* string, size_t size);

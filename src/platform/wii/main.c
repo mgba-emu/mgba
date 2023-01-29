@@ -271,7 +271,7 @@ int main(int argc, char* argv[]) {
 
 	memset(audioBuffer, 0, sizeof(audioBuffer));
 #ifdef FIXED_ROM_BUFFER
-	romBufferSize = SIZE_CART0;
+	romBufferSize = GBA_SIZE_ROM0;
 	romBuffer = SYS_GetArena2Lo();
 	SYS_SetArena2Lo((void*)((intptr_t) romBuffer + romBufferSize));
 #endif
@@ -653,10 +653,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (argc > 1) {
-		size_t i;
-		for (i = 0; runner.keySources[i].id; ++i) {
-			mInputMapLoad(&runner.params.keyMap, runner.keySources[i].id, mCoreConfigGetInput(&runner.config));
-		}
+		mGUILoadInputMaps(&runner);
 		mGUIRun(&runner, argv[1]);
 	} else {
 		mGUIRunloop(&runner);

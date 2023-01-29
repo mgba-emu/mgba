@@ -3,6 +3,7 @@
  <qresource>
   <file>../../../res/mgba-1024.png</file>
   <file>../../../res/mgba-256.png</file>
+  <file>../../../res/mgba-48.png</file>
   <file>../../../res/keymap.qpic</file>
   <file>../../../res/patrons.txt</file>
   <file>../../../res/no-cam.png</file>

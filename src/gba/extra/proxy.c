@@ -63,9 +63,9 @@ void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct 
 	renderer->logger->parsePacket = _parsePacket;
 	renderer->logger->handleEvent = _handleEvent;
 	renderer->logger->vramBlock = _vramBlock;
-	renderer->logger->paletteSize = SIZE_PALETTE_RAM;
-	renderer->logger->vramSize = SIZE_VRAM;
-	renderer->logger->oamSize = SIZE_OAM;
+	renderer->logger->paletteSize = GBA_SIZE_PALETTE_RAM;
+	renderer->logger->vramSize = GBA_SIZE_VRAM;
+	renderer->logger->oamSize = GBA_SIZE_OAM;
 
 	renderer->backend = backend;
 }
@@ -82,9 +82,9 @@ static void _init(struct GBAVideoProxyRenderer* proxyRenderer) {
 }
 
 static void _reset(struct GBAVideoProxyRenderer* proxyRenderer) {
-	memcpy(proxyRenderer->logger->oam, &proxyRenderer->d.oam->raw, SIZE_OAM);
-	memcpy(proxyRenderer->logger->palette, proxyRenderer->d.palette, SIZE_PALETTE_RAM);
-	memcpy(proxyRenderer->logger->vram, proxyRenderer->d.vram, SIZE_VRAM);
+	memcpy(proxyRenderer->logger->oam, &proxyRenderer->d.oam->raw, GBA_SIZE_OAM);
+	memcpy(proxyRenderer->logger->palette, proxyRenderer->d.palette, GBA_SIZE_PALETTE_RAM);
+	memcpy(proxyRenderer->logger->vram, proxyRenderer->d.vram, GBA_SIZE_VRAM);
 
 	mVideoLoggerRendererReset(proxyRenderer->logger);
 }
@@ -199,19 +199,19 @@ static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerD
 		proxyRenderer->backend->writeVideoRegister(proxyRenderer->backend, item->address, item->value);
 		break;
 	case DIRTY_PALETTE:
-		if (item->address < SIZE_PALETTE_RAM) {
+		if (item->address < GBA_SIZE_PALETTE_RAM) {
 			STORE_16LE(item->value, item->address, logger->palette);
 			proxyRenderer->backend->writePalette(proxyRenderer->backend, item->address, item->value);
 		}
 		break;
 	case DIRTY_OAM:
-		if (item->address < SIZE_OAM) {
+		if (item->address < GBA_SIZE_OAM) {
 			STORE_16LE(item->value, item->address << 1, logger->oam);
 			proxyRenderer->backend->writeOAM(proxyRenderer->backend, item->address);
 		}
 		break;
 	case DIRTY_VRAM:
-		if (item->address <= SIZE_VRAM - 0x1000) {
+		if (item->address <= GBA_SIZE_VRAM - 0x1000) {
 			logger->readData(logger, &logger->vram[item->address >> 1], 0x1000, true);
 			proxyRenderer->backend->writeVRAM(proxyRenderer->backend, item->address);
 		} else {

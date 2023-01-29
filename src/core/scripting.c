@@ -651,7 +651,7 @@ static struct mScriptValue* _mScriptCoreAdapterGet(struct mScriptCoreAdapter* ad
 
 static void _mScriptCoreAdapterReset(struct mScriptCoreAdapter* adapter) {
 	adapter->core->reset(adapter->core);
-	mScriptContextTriggerCallback(adapter->context, "reset");
+	mScriptContextTriggerCallback(adapter->context, "reset", NULL);
 }
 
 mSCRIPT_DECLARE_STRUCT(mScriptCoreAdapter);
@@ -761,14 +761,16 @@ mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mScriptConsole, createBuffer)
 mSCRIPT_DEFINE_DEFAULTS_END;
 
 static struct mScriptConsole* _ensureConsole(struct mScriptContext* context) {
-	struct mScriptValue* value = mScriptContextEnsureGlobal(context, "console", mSCRIPT_TYPE_MS_S(mScriptConsole));
-	struct mScriptConsole* console = value->value.opaque;
-	if (!console) {
-		console = calloc(1, sizeof(*console));
-		value->value.opaque = console;
-		value->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
-		mScriptContextSetDocstring(context, "console", "Singleton instance of struct::mScriptConsole");
+	struct mScriptValue* value = mScriptContextGetGlobal(context, "console");
+	if (value) {
+		return value->value.opaque;
 	}
+	struct mScriptConsole* console = calloc(1, sizeof(*console));
+	value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mScriptConsole));
+	value->value.opaque = console;
+	value->flags = mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+	mScriptContextSetGlobal(context, "console", value);
+	mScriptContextSetDocstring(context, "console", "Singleton instance of struct::mScriptConsole");
 	return console;
 }
 
