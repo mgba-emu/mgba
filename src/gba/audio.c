@@ -506,6 +506,16 @@ void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* 
 void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState* state) {
 	GBAudioPSGDeserialize(&audio->psg, &state->audio.psg, &state->audio.flags);
 
+	uint16_t reg;
+	LOAD_16(reg, REG_SOUND1CNT_X, state->io);
+	GBAIOWrite(audio->p, REG_SOUND1CNT_X, reg & 0x7FFF);
+	LOAD_16(reg, REG_SOUND2CNT_HI, state->io);
+	GBAIOWrite(audio->p, REG_SOUND2CNT_HI, reg & 0x7FFF);
+	LOAD_16(reg, REG_SOUND3CNT_X, state->io);
+	GBAIOWrite(audio->p, REG_SOUND3CNT_X, reg & 0x7FFF);
+	LOAD_16(reg, REG_SOUND4CNT_HI, state->io);
+	GBAIOWrite(audio->p, REG_SOUND4CNT_HI, reg & 0x7FFF);
+
 	LOAD_32(audio->chA.internalSample, 0, &state->audio.internalA);
 	LOAD_32(audio->chB.internalSample, 0, &state->audio.internalB);
 	memcpy(audio->chA.samples, state->samples.chA, sizeof(audio->chA.samples));

@@ -1,5 +1,6 @@
 0.10.2: (Future)
 Emulation fixes:
+ - GBA Audio: Fix improperly deserializing GB audio registers (fixes mgba.io/i/2793)
  - GBA Memory: Make VRAM access stalls only apply to BG RAM
 Other fixes:
  - Core: Allow sending thread requests to a crashed core (fixes mgba.io/i/2784)
