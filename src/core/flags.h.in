@@ -79,6 +79,10 @@
 #cmakedefine USE_GDB_STUB
 #endif
 
+#ifndef USE_JSON_C
+#cmakedefine USE_JSON_C
+#endif
+
 #ifndef USE_LIBAV
 #cmakedefine USE_LIBAV
 #endif
