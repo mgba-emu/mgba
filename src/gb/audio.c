@@ -1089,6 +1089,8 @@ void GBAudioPSGDeserialize(struct GBAudio* audio, const struct GBSerializedPSGSt
 			audio->ch4.lastEvent = currentTime + (when & (cycles - 1)) - cycles;
 		}
 	}
+	audio->ch4.nSamples = 0;
+	audio->ch4.samples = 0;
 }
 
 void GBAudioSerialize(const struct GBAudio* audio, struct GBSerializedState* state) {

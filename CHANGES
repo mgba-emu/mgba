@@ -3,6 +3,7 @@ Features:
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:
+ - GBA Audio: Fix improperly deserializing GB audio registers (fixes mgba.io/i/2793)
  - GBA Memory: Make VRAM access stalls only apply to BG RAM
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
