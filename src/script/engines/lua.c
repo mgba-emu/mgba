@@ -591,6 +591,7 @@ struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext)
 
 	size_t len = mScriptTableSize(table);
 	if (!isList || !len) {
+		mScriptContextFillPool(luaContext->d.context, table);
 		return table;
 	}
 
@@ -600,6 +601,7 @@ struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext)
 		struct mScriptValue* value = mScriptTableLookup(table, &mSCRIPT_MAKE_S64(i));
 		if (!value) {
 			mScriptValueDeref(list);
+			mScriptContextFillPool(luaContext->d.context, table);
 			return table;
 		}
 		mScriptValueWrap(value, mScriptListAppend(list->value.list));
