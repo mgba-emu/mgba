@@ -189,7 +189,7 @@ void ForwarderView::connectBrowseButton(QAbstractButton* button, QLineEdit* line
 }
 
 void ForwarderView::selectImage() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select an image"), {});
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select an image"), tr("Image files (*.png *.jpg *.bmp)"));
 	if (filename.isEmpty()) {
 		return;
 	}
