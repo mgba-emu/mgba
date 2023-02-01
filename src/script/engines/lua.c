@@ -584,7 +584,11 @@ struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext)
 			return false;
 		}
 		mScriptTableInsert(table, key, value);
-		mScriptValueDeref(key);
+		if (key->type != mSCRIPT_TYPE_MS_STR) {
+			// Strings are added to the ref pool, so we need to keep it
+			// ref'd to prevent it from being collected prematurely
+			mScriptValueDeref(key);
+		}
 		mScriptValueDeref(value);
 	}
 	lua_pop(luaContext->lua, 1);
