@@ -538,11 +538,13 @@ struct mScriptValue* _luaCoerceFunction(struct mScriptEngineContextLua* luaConte
 	return value;
 }
 
-struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext) {
+struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext, struct Table* markedObjects) {
 	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
 	bool isList = true;
 
 	lua_pushnil(luaContext->lua);
+
+	void* tablePointer;
 	while (lua_next(luaContext->lua, -2) != 0) {
 		struct mScriptValue* value = NULL;
 		int type = lua_type(luaContext->lua, -1);
@@ -553,14 +555,23 @@ struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext)
 		case LUA_TFUNCTION:
 			value = _luaCoerce(luaContext, true);
 			break;
+		case LUA_TTABLE:
+			tablePointer = lua_topointer(luaContext->lua, -1);
+			// Ensure this table doesn't contain any cycles
+			if (!HashTableLookupBinary(markedObjects, &tablePointer, sizeof(tablePointer))) {
+				HashTableInsertBinary(markedObjects, &tablePointer, sizeof(tablePointer), tablePointer);
+				value = _luaCoerceTable(luaContext, markedObjects);
+				if (value) {
+					mScriptValueRef(value);
+				}
+			}
 		default:
-			// Don't let values be something that could contain themselves
 			break;
 		}
 		if (!value) {
-			lua_pop(luaContext->lua, 3);
+			lua_pop(luaContext->lua, type == LUA_TTABLE ? 2 : 3);
 			mScriptValueDeref(table);
-			return false;
+			return NULL;
 		}
 
 		struct mScriptValue* key = NULL;
@@ -628,6 +639,7 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext, bool
 
 	size_t size;
 	const void* buffer;
+	struct Table markedObjects;
 	struct mScriptValue* value = NULL;
 	switch (lua_type(luaContext->lua, -1)) {
 	case LUA_TNIL:
@@ -664,7 +676,10 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext, bool
 		if (!pop) {
 			break;
 		}
-		return _luaCoerceTable(luaContext);
+		HashTableInit(&markedObjects, 0, NULL);
+		value = _luaCoerceTable(luaContext, &markedObjects);
+		HashTableDeinit(&markedObjects);
+		return value;
 	case LUA_TUSERDATA:
 		if (!lua_getmetatable(luaContext->lua, -1)) {
 			break;
