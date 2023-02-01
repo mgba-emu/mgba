@@ -15,7 +15,7 @@
 using namespace QGBA;
 
 ForwarderView::ForwarderView(QWidget* parent)
-	: QDialog(parent)
+	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 {
 	m_ui.setupUi(this);
 
