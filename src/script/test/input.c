@@ -109,6 +109,28 @@ M_TEST_DEFINE(fireKey) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(activeKeys) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("assert(#input:activeKeys() == 0)");
+
+	struct mScriptKeyEvent keyEvent = {
+		.d = { .type = mSCRIPT_EV_TYPE_KEY },
+		.state = mSCRIPT_INPUT_STATE_DOWN,
+		.key = 'a'
+	};
+	mScriptContextFireEvent(&context, &keyEvent.d);
+	TEST_PROGRAM("assert(#input:activeKeys() == 1)");
+	TEST_PROGRAM("assert(input:activeKeys()[1] == string.byte('a'))");
+
+	keyEvent.state = mSCRIPT_INPUT_STATE_UP;
+	mScriptContextFireEvent(&context, &keyEvent.d);
+
+	TEST_PROGRAM("assert(#input:activeKeys() == 0)");
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_DEFINE(gamepadExport) {
 	SETUP_LUA;
 
@@ -153,5 +175,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptInput,
 	cmocka_unit_test(members),
 	cmocka_unit_test(seq),
 	cmocka_unit_test(fireKey),
+	cmocka_unit_test(activeKeys),
 	cmocka_unit_test(gamepadExport),
 )
