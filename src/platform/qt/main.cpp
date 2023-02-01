@@ -28,6 +28,7 @@
 #ifdef QT_STATIC
 #include <QtPlugin>
 #ifdef Q_OS_WIN
+Q_IMPORT_PLUGIN(QJpegPlugin);
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
 Q_IMPORT_PLUGIN(QWindowsVistaStylePlugin);
 #ifdef BUILD_QT_MULTIMEDIA
