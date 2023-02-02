@@ -1262,7 +1262,7 @@ bool mScriptObjectGet(struct mScriptValue* obj, const char* member, struct mScri
 		this->type = obj->type;
 		this->refs = mSCRIPT_VALUE_UNREF;
 		this->flags = 0;
-		this->value.opaque = obj;
+		this->value.opaque = obj->value.opaque;
 		mSCRIPT_PUSH(&frame.arguments, CHARP, member);
 		if (!mScriptInvoke(&getMember, &frame) || mScriptListSize(&frame.returnValues) != 1) {
 			mScriptFrameDeinit(&frame);
