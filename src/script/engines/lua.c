@@ -1202,8 +1202,11 @@ int _luaGetTable(lua_State* lua) {
 	}
 	lua_pop(lua, 2);
 
-	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
-	if (!obj) {
+	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);	
+	if (obj->type->base == mSCRIPT_TYPE_WRAPPER) {
+		obj = mScriptValueUnwrap(obj);
+	}
+	if (!obj || obj->type != mSCRIPT_TYPE_MS_TABLE) {
 		luaL_traceback(lua, lua, "Invalid table", 1);
 		return lua_error(lua);
 	}
@@ -1235,7 +1238,10 @@ int _luaLenTable(lua_State* lua) {
 	lua_pop(lua, 1);
 
 	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
-	if (!obj) {
+	if (obj->type->base == mSCRIPT_TYPE_WRAPPER) {
+		obj = mScriptValueUnwrap(obj);
+	}
+	if (!obj || obj->type != mSCRIPT_TYPE_MS_TABLE) {
 		luaL_traceback(lua, lua, "Invalid table", 1);
 		return lua_error(lua);
 	}
@@ -1271,7 +1277,10 @@ static int _luaNextTable(lua_State* lua) {
 	lua_pop(lua, 2);
 
 	table = mScriptContextAccessWeakref(luaContext->d.context, table);
-	if (!table) {
+	if (table->type->base == mSCRIPT_TYPE_WRAPPER) {
+		table = mScriptValueUnwrap(table);
+	}
+	if (!table || table->type != mSCRIPT_TYPE_MS_TABLE) {
 		luaL_traceback(lua, lua, "Invalid table", 1);
 		return lua_error(lua);
 	}

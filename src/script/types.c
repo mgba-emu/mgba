@@ -944,14 +944,11 @@ bool mScriptTableRemove(struct mScriptValue* table, struct mScriptValue* key) {
 }
 
 struct mScriptValue* mScriptTableLookup(struct mScriptValue* table, struct mScriptValue* key) {
-	if (table->type->base == mSCRIPT_TYPE_WRAPPER) {
-		table = mScriptValueUnwrap(table);
-	}
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
-		return false;
+		return NULL;
 	}
 	if (!key->type->hash) {
-		return false;
+		return NULL;
 	}
 	return HashTableLookupCustom(table->value.table, key);
 }
