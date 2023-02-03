@@ -532,7 +532,7 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 				}
 			}
 		}
-		if (value & 0x0080) {
+		if ((value & 0x0081) == 0x0081) {
 			if (!node->id) {
 				// Frequency
 				int32_t cycles;
@@ -559,7 +559,7 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 					value &= ~0x0080;
 				}
 			} else {
-
+				// TODO
 			}
 		}
 	} else if (address == REG_SIODATA32_LO) {
