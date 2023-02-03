@@ -110,13 +110,13 @@ typedef intptr_t ssize_t;
 #define ATOMIC_LOAD_PTR(DST, SRC) DST = InterlockedCompareExchangePointer(&SRC, 0, 0)
 #else
 // TODO
-#define ATOMIC_STORE(DST, SRC) DST = SRC
-#define ATOMIC_LOAD(DST, SRC) DST = SRC
-#define ATOMIC_ADD(DST, OP) DST += OP
-#define ATOMIC_SUB(DST, OP) DST -= OP
-#define ATOMIC_OR(DST, OP) DST |= OP
-#define ATOMIC_AND(DST, OP) DST &= OP
-#define ATOMIC_CMPXCHG(DST, EXPECTED, OP) ((DST == EXPECTED) ? ((DST = OP), true) : false)
+#define ATOMIC_STORE(DST, SRC) ((DST) = (SRC))
+#define ATOMIC_LOAD(DST, SRC) ((DST) = (SRC))
+#define ATOMIC_ADD(DST, OP) ((DST) += (OP))
+#define ATOMIC_SUB(DST, OP) ((DST) -= (OP))
+#define ATOMIC_OR(DST, OP) ((DST) |= (OP))
+#define ATOMIC_AND(DST, OP) ((DST) &= (OP))
+#define ATOMIC_CMPXCHG(DST, EXPECTED, OP) (((DST) == (EXPECTED)) ? (((DST) = (OP)), true) : false)
 #define ATOMIC_STORE_PTR(DST, SRC) ATOMIC_STORE(DST, SRC)
 #define ATOMIC_LOAD_PTR(DST, SRC) ATOMIC_LOAD(DST, SRC)
 #endif
