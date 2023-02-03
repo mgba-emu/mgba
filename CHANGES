@@ -7,6 +7,7 @@ Emulation fixes:
  - GBA Audio: Fix improperly deserializing GB audio registers (fixes mgba.io/i/2793)
  - GBA Memory: Make VRAM access stalls only apply to BG RAM
  - GBA SIO: Fix SIOCNT SI pin value after attaching player 2 (fixes mgba.io/i/2805)
+ - GBA SIO: Fix unconnected normal mode SIOCNT SI bit (fixes mgba.io/i/2810)
  - GBA Timers: Cascading timers don't tick when disabled (fixes mgba.io/i/2812)
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
