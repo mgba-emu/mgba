@@ -127,7 +127,11 @@ bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver) {
 		break;
 	case SIO_NORMAL_8:
 	case SIO_NORMAL_32:
-		ATOMIC_ADD(node->p->attachedNormal, 1);
+		if (ATOMIC_ADD(node->p->attachedNormal, 1) > node->id + 1 && node->id < 3) {
+			node->d.p->siocnt = GBASIONormalSetSi(node->d.p->siocnt, GBASIONormalGetIdleSo(node->p->players[node->id + 1]->d.p->siocnt));
+		} else {
+			node->d.p->siocnt = GBASIONormalFillSi(node->d.p->siocnt);
+		}
 		node->d.writeRegister = GBASIOLockstepNodeNormalWriteRegister;
 		break;
 	default:
@@ -507,9 +511,26 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 
 	if (address == REG_SIOCNT) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOCNT <- %04X", node->id, value);
+		int attached;
+		ATOMIC_LOAD(attached, node->p->attachedNormal);
 		value &= 0xFF8B;
-		if (!node->id) {
-			value = GBASIONormalClearSi(value);
+		if (node->id < 3 && attached > node->id + 1) {
+			value = GBASIONormalSetSi(value, GBASIONormalGetIdleSo(node->p->players[node->id + 1]->d.p->siocnt));
+		} else {
+			value = GBASIONormalFillSi(value);
+		}
+
+		enum mLockstepPhase transferActive;
+		ATOMIC_LOAD(transferActive, node->p->d.transferActive);
+		if (node->id > 0 && transferActive == TRANSFER_IDLE) {
+			int try;
+			for (try = 0; try < 3; ++try) {
+				GBASIONormal parentSiocnt;
+				ATOMIC_LOAD(parentSiocnt, node->p->players[node->id - 1]->d.p->siocnt);
+				if (ATOMIC_CMPXCHG(node->p->players[node->id - 1]->d.p->siocnt, parentSiocnt, GBASIONormalSetSi(parentSiocnt, GBASIONormalGetIdleSo(value)))) {
+					break;
+				}
+			}
 		}
 		if (value & 0x0080) {
 			if (!node->id) {
@@ -523,9 +544,6 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 				if (value & 0x1000) {
 					cycles *= 4;
 				}
-
-				enum mLockstepPhase transferActive;
-				ATOMIC_LOAD(transferActive, node->p->d.transferActive);
 
 				if (transferActive == TRANSFER_IDLE) {
 					mLOG(GBA_SIO, DEBUG, "Lockstep %i: Transfer initiated", node->id);
