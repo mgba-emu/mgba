@@ -427,6 +427,44 @@ void mScriptContextFireEvent(struct mScriptContext* context, struct mScriptEvent
 	mScriptListDeinit(&args);
 }
 
+void mScriptContextClearKeys(struct mScriptContext* context) {
+	struct mScriptValue* input = mScriptContextGetGlobal(context, "input");
+	if (!input) {
+		return;
+	}
+	struct mScriptInputContext* inputContext = input->value.opaque;
+	size_t keyCount = TableSize(&inputContext->activeKeys);
+	uint32_t* keys = calloc(keyCount, sizeof(uint32_t));
+	struct TableIterator iter;
+	size_t i = 0;
+	if (!TableIteratorStart(&inputContext->activeKeys, &iter)) {
+		free(keys);
+		return;
+	}
+	do {
+		keys[i] = TableIteratorGetKey(&inputContext->activeKeys, &iter);
+		++i;
+	} while (TableIteratorNext(&inputContext->activeKeys, &iter));
+
+	struct mScriptKeyEvent event = {
+		.d = {
+			.type = mSCRIPT_EV_TYPE_KEY
+		},
+		.state = mSCRIPT_INPUT_STATE_UP,
+		.modifiers = 0
+	};
+	for (i = 0; i < keyCount; ++i) {
+		event.key = keys[i];
+		intptr_t value = (intptr_t) TableLookup(&inputContext->activeKeys, event.key);
+		if (value > 1) {
+			TableInsert(&inputContext->activeKeys, event.key, (void*) 1);
+		}
+		mScriptContextFireEvent(context, &event.d);
+	}
+
+	free(keys);
+}
+
 int mScriptContextGamepadAttach(struct mScriptContext* context, struct mScriptGamepad* pad) {
 	struct mScriptValue* input = mScriptContextGetGlobal(context, "input");
 	if (!input) {

@@ -249,6 +249,7 @@ mSCRIPT_DECLARE_STRUCT(mScriptGamepad);
 void mScriptContextAttachInput(struct mScriptContext* context);
 
 void mScriptContextFireEvent(struct mScriptContext*, struct mScriptEvent*);
+void mScriptContextClearKeys(struct mScriptContext*);
 
 int mScriptContextGamepadAttach(struct mScriptContext*, struct mScriptGamepad*);
 bool mScriptContextGamepadDetach(struct mScriptContext*, int pad);
