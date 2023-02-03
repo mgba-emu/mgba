@@ -34,7 +34,7 @@ static void GBATimerUpdate(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 
 	if (timerId < 3) {
 		struct GBATimer* nextTimer = &gba->timers[timerId + 1];
-		if (GBATimerFlagsIsCountUp(nextTimer->flags)) { // TODO: Does this increment while disabled?
+		if (GBATimerFlagsIsCountUp(nextTimer->flags) && GBATimerFlagsIsEnable(nextTimer->flags)) {
 			++gba->memory.io[REG_TMCNT_LO(timerId + 1) >> 1];
 			if (!gba->memory.io[REG_TMCNT_LO(timerId + 1) >> 1] && GBATimerFlagsIsEnable(nextTimer->flags)) {
 				GBATimerUpdate(gba, timerId + 1, cyclesLate);
