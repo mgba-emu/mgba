@@ -27,6 +27,10 @@ static bool _stringCast(const struct mScriptValue*, const struct mScriptType*, s
 static bool _castScalar(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
 static uint32_t _hashScalar(const struct mScriptValue*);
 
+static bool _wstrCast(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
+static bool _wlistCast(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
+static bool _wtableCast(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
+
 static uint32_t _valHash(const void* val, size_t len, uint32_t seed);
 static bool _valEqual(const void* a, const void* b);
 static void* _valRef(void*);
@@ -232,6 +236,7 @@ const struct mScriptType mSTStringWrapper = {
 	.alloc = NULL,
 	.free = NULL,
 	.hash = NULL,
+	.cast = _wstrCast,
 };
 
 const struct mScriptType mSTListWrapper = {
@@ -241,6 +246,7 @@ const struct mScriptType mSTListWrapper = {
 	.alloc = NULL,
 	.free = NULL,
 	.hash = NULL,
+	.cast = _wlistCast,
 };
 
 const struct mScriptType mSTTableWrapper = {
@@ -250,6 +256,7 @@ const struct mScriptType mSTTableWrapper = {
 	.alloc = NULL,
 	.free = NULL,
 	.hash = NULL,
+	.cast = _wtableCast,
 };
 
 const struct mScriptType mSTWeakref = {
@@ -373,6 +380,45 @@ uint32_t _hashScalar(const struct mScriptValue* val) {
 	x = ((x >> 16) ^ x) * 0x45D9F3B;
 	x = (x >> 16) ^ x;
 	return x;
+}
+
+bool _wstrCast(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) {
+	if (input->type->base != mSCRIPT_TYPE_WRAPPER) {
+		return false;
+	}
+	const struct mScriptValue* unwrapped = mScriptValueUnwrapConst(input);
+	if (unwrapped->type != mSCRIPT_TYPE_MS_STR) {
+		return false;
+	}
+	memcpy(output, input, sizeof(*output));
+	output->type = type;
+	return true;
+}
+
+bool _wlistCast(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) {
+	if (input->type->base != mSCRIPT_TYPE_WRAPPER) {
+		return false;
+	}
+	const struct mScriptValue* unwrapped = mScriptValueUnwrapConst(input);
+	if (unwrapped->type != mSCRIPT_TYPE_MS_LIST) {
+		return false;
+	}
+	memcpy(output, input, sizeof(*output));
+	output->type = type;
+	return true;
+}
+
+bool _wtableCast(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) {
+	if (input->type->base != mSCRIPT_TYPE_WRAPPER) {
+		return false;
+	}
+	const struct mScriptValue* unwrapped = mScriptValueUnwrapConst(input);
+	if (unwrapped->type != mSCRIPT_TYPE_MS_TABLE) {
+		return false;
+	}
+	memcpy(output, input, sizeof(*output));
+	output->type = type;
+	return true;
 }
 
 #define AS(NAME, TYPE) \
@@ -1484,7 +1530,7 @@ bool mScriptPopPointer(struct mScriptList* list, void** out) {
 }
 
 bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* input, struct mScriptValue* output) {
-	if (input->type->base == mSCRIPT_TYPE_WRAPPER) {
+	if (input->type->base == mSCRIPT_TYPE_WRAPPER && type->base != mSCRIPT_TYPE_WRAPPER) {
 		input = mScriptValueUnwrapConst(input);
 	}
 	if (type->cast && type->cast(input, type, output)) {
