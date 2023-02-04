@@ -1149,12 +1149,16 @@ static void _mScriptClassInit(struct mScriptTypeClass* cls, const struct mScript
 			}
 			break;
 		case mSCRIPT_CLASS_INIT_SET:
-			cls->set = calloc(1, sizeof(*member));
-			memcpy(cls->set, &detail->info.member, sizeof(*member));
+			member = calloc(1, sizeof(*member));
+			memcpy(member, &detail->info.member, sizeof(*member));
 			if (docstring) {
-				cls->set->docstring = docstring;
+				member->docstring = docstring;
 				docstring = NULL;
 			}
+			if (detail->info.member.type->details.function.parameters.count != 3) {
+				abort();
+			}
+			HashTableInsert(&cls->setters, detail->info.member.type->details.function.parameters.entries[2]->name, member);
 			break;
 		case mSCRIPT_CLASS_INIT_INTERNAL:
 			cls->internal = true;
@@ -1169,11 +1173,11 @@ void mScriptClassInit(struct mScriptTypeClass* cls) {
 	}
 	HashTableInit(&cls->instanceMembers, 0, free);
 	HashTableInit(&cls->castToMembers, 0, NULL);
+	HashTableInit(&cls->setters, 0, free);
 
 	cls->alloc = NULL;
 	cls->free = NULL;
 	cls->get = NULL;
-	cls->set = NULL;
 	_mScriptClassInit(cls, cls->details, false);
 
 	cls->init = true;
@@ -1185,6 +1189,7 @@ void mScriptClassDeinit(struct mScriptTypeClass* cls) {
 	}
 	HashTableDeinit(&cls->instanceMembers);
 	HashTableDeinit(&cls->castToMembers);
+	HashTableDeinit(&cls->setters);
 	cls->init = false;
 }
 
@@ -1352,6 +1357,91 @@ bool mScriptObjectGetConst(const struct mScriptValue* obj, const char* member, s
 	return _accessRawMember(m, obj->value.opaque, true, val);
 }
 
+static struct mScriptClassMember* _findSetter(const struct mScriptTypeClass* cls, const struct mScriptType* type) {
+	struct mScriptClassMember* m = HashTableLookup(&cls->setters, type->name);
+	if (m) {
+		return m;
+	}
+	
+	switch (type->base) {
+	case mSCRIPT_TYPE_SINT:
+		if (type->size < 2) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_S16->name);
+			if (m) {
+				return m;
+			}
+		}
+		if (type->size < 4) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_S32->name);
+			if (m) {
+				return m;
+			}
+		}
+		if (type->size < 8) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_S64->name);
+			if (m) {
+				return m;
+			}
+		}
+		break;
+	case mSCRIPT_TYPE_UINT:
+		if (type->size < 2) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_U16->name);
+			if (m) {
+				return m;
+			}
+		}
+		if (type->size < 4) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_U32->name);
+			if (m) {
+				return m;
+			}
+		}
+		if (type->size < 8) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_U64->name);
+			if (m) {
+				return m;
+			}
+		}
+		break;
+	case mSCRIPT_TYPE_FLOAT:
+		if (type->size < 8) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_F64->name);
+			if (m) {
+				return m;
+			}
+		}
+		break;
+	case mSCRIPT_TYPE_STRING:
+		if (type == mSCRIPT_TYPE_MS_STR) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_CHARP->name);
+			if (m) {
+				return m;
+			}
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_WSTR->name);
+			if (m) {
+				return m;
+			}
+		}
+		break;
+	case mSCRIPT_TYPE_LIST:
+		m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_WLIST->name);
+		if (m) {
+			return m;
+		}
+		break;
+	case mSCRIPT_TYPE_TABLE:
+		m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_WTABLE->name);
+		if (m) {
+			return m;
+		}
+		break;
+	default:
+		break;
+	}
+	return NULL;
+}
+
 bool mScriptObjectSet(struct mScriptValue* obj, const char* member, struct mScriptValue* val) {
 	if (obj->type->base != mSCRIPT_TYPE_OBJECT || obj->type->isConst) {
 		return false;
@@ -1366,7 +1456,36 @@ bool mScriptObjectSet(struct mScriptValue* obj, const char* member, struct mScri
 
 	struct mScriptClassMember* m = HashTableLookup(&cls->instanceMembers, member);
 	if (!m) {
-		return false;
+		if (val->type->base == mSCRIPT_TYPE_WRAPPER) {
+			val = mScriptValueUnwrap(val);
+		}
+		struct mScriptValue setMember;
+		m = _findSetter(cls, val->type);
+		if (!m || !_accessRawMember(m, obj->value.opaque, obj->type->isConst, &setMember)) {
+			return false;
+		}
+		struct mScriptFrame frame;
+		mScriptFrameInit(&frame);
+		struct mScriptValue* this = mScriptListAppend(&frame.arguments);
+		this->type = obj->type;
+		this->refs = mSCRIPT_VALUE_UNREF;
+		this->flags = 0;
+		this->value.opaque = obj->value.opaque;
+		mSCRIPT_PUSH(&frame.arguments, CHARP, member);
+		mScriptValueWrap(val, mScriptListAppend(&frame.arguments));
+		bool needsDeref = mScriptListGetPointer(&frame.arguments, 2)->type->base == mSCRIPT_TYPE_WRAPPER;
+		if (!mScriptInvoke(&setMember, &frame) || mScriptListSize(&frame.returnValues) != 0) {
+			mScriptFrameDeinit(&frame);
+			if (needsDeref) {
+				mScriptValueDeref(val);
+			}
+			return false;
+		}
+		mScriptFrameDeinit(&frame);
+		if (needsDeref) {
+			mScriptValueDeref(val);
+		}
+		return true;
 	}
 
 	void* rawMember = (void *)((uintptr_t) obj->value.opaque + m->offset);

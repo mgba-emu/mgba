@@ -252,10 +252,10 @@ struct mScriptTypeClass {
 	bool internal;
 	struct Table instanceMembers;
 	struct Table castToMembers;
+	struct Table setters;
 	struct mScriptClassMember* alloc; // TODO
 	struct mScriptClassMember* free;
 	struct mScriptClassMember* get;
-	struct mScriptClassMember* set; // TODO
 };
 
 struct mScriptType {
