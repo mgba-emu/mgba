@@ -243,6 +243,15 @@ const struct mScriptType mSTListWrapper = {
 	.hash = NULL,
 };
 
+const struct mScriptType mSTTableWrapper = {
+	.base = mSCRIPT_TYPE_WRAPPER,
+	.size = sizeof(struct mScriptValue),
+	.name = "wrapper table",
+	.alloc = NULL,
+	.free = NULL,
+	.hash = NULL,
+};
+
 const struct mScriptType mSTWeakref = {
 	.base = mSCRIPT_TYPE_WEAKREF,
 	.size = sizeof(uint32_t),
