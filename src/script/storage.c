@@ -36,6 +36,7 @@ void mScriptStorageContextDeinit(struct mScriptStorageContext*);
 struct mScriptStorageBucket* mScriptStorageGetBucket(struct mScriptStorageContext*, const char* name);
 
 static bool mScriptStorageToJson(struct mScriptValue* value, struct json_object** out);
+static struct mScriptValue* mScriptStorageFromJson(struct json_object* json);
 
 mSCRIPT_DECLARE_STRUCT(mScriptStorageBucket);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptStorageBucket, WRAPPER, _get, mScriptStorageBucketGet, 1, CHARP, key);
@@ -220,6 +221,7 @@ bool mScriptStorageToJson(struct mScriptValue* value, struct json_object** out) 
 bool mScriptStorageSaveBucketVF(struct mScriptContext* context, const char* bucketName, struct VFile* vf) {
 	struct mScriptValue* value = mScriptContextGetGlobal(context, "storage");
 	if (!value) {
+		vf->close(vf);
 		return false;
 	}
 	struct mScriptStorageContext* storage = value->value.opaque;
@@ -227,12 +229,14 @@ bool mScriptStorageSaveBucketVF(struct mScriptContext* context, const char* buck
 	struct json_object* rootObj;
 	bool ok = mScriptStorageToJson(bucket->root, &rootObj);
 	if (!ok) {
+		vf->close(vf);
 		return false;
 	}
 
 	const char* json = json_object_to_json_string_ext(rootObj, JSON_C_TO_STRING_PRETTY_TAB);
 	if (!json) {
 		json_object_put(rootObj);
+		vf->close(vf);
 		return false;
 	}
 
@@ -250,6 +254,113 @@ bool mScriptStorageSaveBucket(struct mScriptContext* context, const char* bucket
 	mScriptStorageGetBucketPath(bucketName, path);
 	struct VFile* vf = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
 	return mScriptStorageSaveBucketVF(context, bucketName, vf);
+}
+
+struct mScriptValue* mScriptStorageFromJson(struct json_object* json) {
+	enum json_type type = json_object_get_type(json);
+	struct mScriptValue* value = NULL;
+	switch (type) {
+	case json_type_null:
+		return &mScriptValueNull;
+	case json_type_int:
+		value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S64);
+		value->value.s64 = json_object_get_int64(json);
+		break;
+	case json_type_double:
+		value = mScriptValueAlloc(mSCRIPT_TYPE_MS_F64);
+		value->value.f64 = json_object_get_double(json);
+		break;
+	case json_type_boolean:
+		value = mScriptValueAlloc(mSCRIPT_TYPE_MS_BOOL);
+		value->value.u32 = json_object_get_boolean(json);
+		break;
+	case json_type_string:
+		value = mScriptStringCreateFromBytes(json_object_get_string(json), json_object_get_string_len(json));
+		break;
+	case json_type_array:
+		value = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
+		{
+			size_t i;
+			for (i = 0; i < json_object_array_length(json); ++i) {
+				struct mScriptValue* vval = mScriptStorageFromJson(json_object_array_get_idx(json, i));
+				if (!vval) {
+					mScriptValueDeref(value);
+					value = NULL;
+					break;
+				}
+				mScriptValueWrap(vval, mScriptListAppend(value->value.list));
+				mScriptValueDeref(vval);
+			}
+		}
+		break;
+	case json_type_object:
+		value = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+		{
+			json_object_object_foreach(json, jkey, jval) {
+				struct mScriptValue* vval = mScriptStorageFromJson(jval);
+				if (!vval) {
+					mScriptValueDeref(value);
+					value = NULL;
+					break;
+				}
+				struct mScriptValue* vkey = mScriptStringCreateFromUTF8(jkey);
+				mScriptTableInsert(value, vkey, vval);
+				mScriptValueDeref(vkey);
+				mScriptValueDeref(vval);
+			}
+		}
+		break;
+	}
+	return value;
+}
+
+bool mScriptStorageLoadBucketVF(struct mScriptContext* context, const char* bucketName, struct VFile* vf) {
+	struct mScriptValue* value = mScriptContextGetGlobal(context, "storage");
+	if (!value) {
+		vf->close(vf);
+		return false;
+	}
+	struct mScriptStorageContext* storage = value->value.opaque;
+
+	ssize_t size = vf->size(vf);
+	if (size < 2) {
+		vf->close(vf);
+		return false;
+	}
+	char* json = calloc(1, size + 1);
+	if (vf->read(vf, json, size) != size) {
+		vf->close(vf);
+		return false;
+	}
+	vf->close(vf);
+
+	struct json_object* obj = json_tokener_parse(json);
+	free(json);
+	if (!obj) {
+		return false;
+	}
+
+	struct mScriptValue* root = mScriptStorageFromJson(obj);
+	json_object_put(obj);
+	if (!root) {
+		return false;
+	}
+
+	struct mScriptStorageBucket* bucket = mScriptStorageGetBucket(storage, bucketName);
+	mScriptValueDeref(bucket->root);
+	bucket->root = root;
+
+	return true;
+}
+
+bool mScriptStorageLoadBucket(struct mScriptContext* context, const char* bucketName) {
+	char path[PATH_MAX];
+	mScriptStorageGetBucketPath(bucketName, path);
+	struct VFile* vf = VFileOpen(path, O_RDONLY);
+	if (!vf) {
+		return false;
+	}
+	return mScriptStorageLoadBucketVF(context, bucketName, vf);
 }
 
 void mScriptContextAttachStorage(struct mScriptContext* context) {

@@ -18,6 +18,8 @@ void mScriptContextAttachStorage(struct mScriptContext* context);
 
 bool mScriptStorageSaveBucket(struct mScriptContext* context, const char* bucket);
 bool mScriptStorageSaveBucketVF(struct mScriptContext* context, const char* bucket, struct VFile* vf);
+bool mScriptStorageLoadBucket(struct mScriptContext* context, const char* bucket);
+bool mScriptStorageLoadBucketVF(struct mScriptContext* context, const char* bucket, struct VFile* vf);
 void mScriptStorageGetBucketPath(const char* bucket, char* out);
 
 CXX_GUARD_END

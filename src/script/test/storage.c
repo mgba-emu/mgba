@@ -324,6 +324,137 @@ M_TEST_DEFINE(serializeNullByteString) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(deserializeInt) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("assert(not bucket.a)");
+
+	static const char* json = "{\"a\":1}";
+	struct VFile* vf = VFileFromConstMemory(json, strlen(json));
+	assert_true(mScriptStorageLoadBucketVF(&context, "xtest", vf));
+	TEST_PROGRAM("assert(bucket.a == 1)");
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(deserializeFloat) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("assert(not bucket.a)");
+
+	static const char* json = "{\"a\":0.5}";
+	struct VFile* vf = VFileFromConstMemory(json, strlen(json));
+	assert_true(mScriptStorageLoadBucketVF(&context, "xtest", vf));
+	TEST_PROGRAM("assert(bucket.a == 0.5)");
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(deserializeBool) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("assert(not bucket.a)");
+
+	static const char* json = "{\"a\":true}";
+	struct VFile* vf = VFileFromConstMemory(json, strlen(json));
+	assert_true(mScriptStorageLoadBucketVF(&context, "xtest", vf));
+	TEST_PROGRAM("assert(bucket.a == true)");
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(deserializeNil) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("assert(not bucket.a)");
+
+	static const char* json = "{\"a\":null}";
+	struct VFile* vf = VFileFromConstMemory(json, strlen(json));
+	assert_true(mScriptStorageLoadBucketVF(&context, "xtest", vf));
+	TEST_PROGRAM("assert(bucket.a == nil)");
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(deserializeString) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("assert(not bucket.a)");
+
+	static const char* json = "{\"a\":\"hello\"}";
+	struct VFile* vf = VFileFromConstMemory(json, strlen(json));
+	assert_true(mScriptStorageLoadBucketVF(&context, "xtest", vf));
+	TEST_PROGRAM("assert(bucket.a == 'hello')");
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(deserializeList) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("assert(not bucket.a)");
+
+	static const char* json = "{\"a\":[1,2]}";
+	struct VFile* vf = VFileFromConstMemory(json, strlen(json));
+	assert_true(mScriptStorageLoadBucketVF(&context, "xtest", vf));
+	TEST_PROGRAM("assert(#bucket.a == 2)");
+	TEST_PROGRAM("assert(bucket.a[1] == 1)");
+	TEST_PROGRAM("assert(bucket.a[2] == 2)");
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(deserializeTable) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("assert(not bucket.a)");
+
+	static const char* json = "{\"a\":{\"b\":1}}";
+	struct VFile* vf = VFileFromConstMemory(json, strlen(json));
+	assert_true(mScriptStorageLoadBucketVF(&context, "xtest", vf));
+	TEST_PROGRAM("assert(bucket.a.b == 1)");
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(deserializeNullByteString) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("assert(not bucket.a)");
+
+	static const char* json = "{\"a\":\"a\\u0000b\"}";
+	struct VFile* vf = VFileFromConstMemory(json, strlen(json));
+	assert_true(mScriptStorageLoadBucketVF(&context, "xtest", vf));
+	TEST_PROGRAM("assert(bucket.a == 'a\\x00b')");
+	TEST_PROGRAM("assert(bucket.a ~= 'a\\x00c')");
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStorage,
 	cmocka_unit_test(basicInt),
 	cmocka_unit_test(basicFloat),
@@ -342,4 +473,12 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStorage,
 	cmocka_unit_test(serializeList),
 	cmocka_unit_test(serializeTable),
 	cmocka_unit_test(serializeNullByteString),
+	cmocka_unit_test(deserializeInt),
+	cmocka_unit_test(deserializeFloat),
+	cmocka_unit_test(deserializeBool),
+	cmocka_unit_test(deserializeNil),
+	cmocka_unit_test(deserializeString),
+	cmocka_unit_test(deserializeList),
+	cmocka_unit_test(deserializeTable),
+	cmocka_unit_test(deserializeNullByteString),
 )
