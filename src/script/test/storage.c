@@ -156,6 +156,18 @@ M_TEST_DEFINE(structured) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(invalidObject) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+	TEST_PROGRAM("assert(not bucket.a)");
+	LOAD_PROGRAM("bucket.a = bucket");
+	assert_false(lua->run(lua));
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_DEFINE(serializeInt) {
 	SETUP_LUA;
 
@@ -455,6 +467,58 @@ M_TEST_DEFINE(deserializeNullByteString) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(deserializeError) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("assert(not bucket.a)");
+
+	static const char* json = "{a:1}";
+	struct VFile* vf = VFileFromConstMemory(json, strlen(json));
+	assert_false(mScriptStorageLoadBucketVF(&context, "xtest", vf));
+	TEST_PROGRAM("assert(not bucket.a)");
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(structuredRoundTrip) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+	TEST_PROGRAM("assert(not bucket.a)");
+	TEST_PROGRAM(
+		"bucket.a = {\n"
+		"	['a'] = 1,\n"
+		"	['b'] = {1},\n"
+		"	['c'] = {\n"
+		"		['d'] = 1\n"
+		"	}\n"
+		"}"
+	);
+
+	struct VFile* vf = VFileOpen("test.json", O_CREAT | O_TRUNC | O_WRONLY);
+	assert_true(mScriptStorageSaveBucketVF(&context, "xtest", vf));
+
+	TEST_PROGRAM("bucket.a = nil")
+	TEST_PROGRAM("assert(not bucket.a)");
+
+	vf = VFileOpen("test.json", O_RDONLY);
+	assert_non_null(vf);
+	assert_true(mScriptStorageLoadBucketVF(&context, "xtest", vf));
+
+	TEST_PROGRAM("assert(bucket.a)");
+	TEST_PROGRAM("assert(bucket.a.a == 1)");
+	TEST_PROGRAM("assert(#bucket.a.b == 1)");
+	TEST_PROGRAM("assert(bucket.a.b[1] == 1)");
+	TEST_PROGRAM("assert(#bucket.a.c == 1)");
+	TEST_PROGRAM("assert(bucket.a.c.d == 1)");
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStorage,
 	cmocka_unit_test(basicInt),
 	cmocka_unit_test(basicFloat),
@@ -464,6 +528,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStorage,
 	cmocka_unit_test(basicList),
 	cmocka_unit_test(basicTable),
 	cmocka_unit_test(nullByteString),
+	cmocka_unit_test(invalidObject),
 	cmocka_unit_test(structured),
 	cmocka_unit_test(serializeInt),
 	cmocka_unit_test(serializeFloat),
@@ -481,4 +546,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStorage,
 	cmocka_unit_test(deserializeList),
 	cmocka_unit_test(deserializeTable),
 	cmocka_unit_test(deserializeNullByteString),
+	cmocka_unit_test(deserializeError),
+	cmocka_unit_test(structuredRoundTrip),
 )
