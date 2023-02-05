@@ -5,6 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/script/storage.h>
 
+#include <mgba/core/config.h>
+#include <mgba-util/vfs.h>
+
+#include <json.h>
+#include <sys/stat.h>
+
 #define STORAGE_LEN_MAX 64
 
 struct mScriptStorageBucket {
@@ -28,6 +34,8 @@ static void mScriptStorageBucketSetBool(struct mScriptStorageBucket* adapter, co
 
 void mScriptStorageContextDeinit(struct mScriptStorageContext*);
 struct mScriptStorageBucket* mScriptStorageGetBucket(struct mScriptStorageContext*, const char* name);
+
+static bool mScriptStorageToJson(struct mScriptValue* value, struct json_object** out);
 
 mSCRIPT_DECLARE_STRUCT(mScriptStorageBucket);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptStorageBucket, WRAPPER, _get, mScriptStorageBucketGet, 1, CHARP, key);
@@ -102,6 +110,147 @@ MAKE_SCALAR_SETTER(SInt, S64)
 MAKE_SCALAR_SETTER(UInt, U64)
 MAKE_SCALAR_SETTER(Float, F64)
 MAKE_SCALAR_SETTER(Bool, BOOL)
+
+void mScriptStorageGetBucketPath(const char* bucket, char* out) {
+	mCoreConfigDirectory(out, PATH_MAX);
+
+	strncat(out, PATH_SEP "storage" PATH_SEP, PATH_MAX);
+	mkdir(out, 0755);
+
+	char suffix[STORAGE_LEN_MAX + 6];
+	snprintf(suffix, sizeof(suffix), "%s.json", bucket);
+	strncat(out, suffix, PATH_MAX);
+}
+
+static struct json_object* _tableToJson(struct mScriptValue* rootVal) {
+	bool ok = true;
+
+	struct TableIterator iter;
+	struct json_object* rootObj = json_object_new_object();
+	if (mScriptTableIteratorStart(rootVal, &iter)) {
+		do {
+			struct mScriptValue* key = mScriptTableIteratorGetKey(rootVal, &iter);
+			struct mScriptValue* value = mScriptTableIteratorGetValue(rootVal, &iter);
+			const char* ckey;
+			if (key->type == mSCRIPT_TYPE_MS_CHARP) {
+				ckey = key->value.copaque;
+			} else if (key->type == mSCRIPT_TYPE_MS_STR) {
+				ckey = key->value.string->buffer;
+			} else {
+				ok = false;
+				break;
+			}
+
+			struct json_object* obj;
+			ok = mScriptStorageToJson(value, &obj);
+
+			if (!ok || json_object_object_add(rootObj, ckey, obj) < 0) {
+				ok = false;
+			}
+		} while (mScriptTableIteratorNext(rootVal, &iter) && ok);
+	}
+	if (!ok) {
+		json_object_put(rootObj);
+		return NULL;
+	}
+	return rootObj;
+}
+
+bool mScriptStorageToJson(struct mScriptValue* value, struct json_object** out) {
+	if (value->type->base == mSCRIPT_TYPE_WRAPPER) {
+		value = mScriptValueUnwrap(value);
+	}
+
+	size_t i;
+	bool ok = true;
+	struct json_object* obj = NULL;
+	switch (value->type->base) {
+	case mSCRIPT_TYPE_SINT:
+		obj = json_object_new_int64(value->value.s64);
+		break;
+	case mSCRIPT_TYPE_UINT:
+		if (value->type == mSCRIPT_TYPE_MS_BOOL) {
+			obj = json_object_new_boolean(value->value.u32);
+			break;
+		}
+		obj = json_object_new_uint64(value->value.u64);
+		break;
+	case mSCRIPT_TYPE_FLOAT:
+		obj = json_object_new_double(value->value.f64);
+		break;
+	case mSCRIPT_TYPE_STRING:
+		obj = json_object_new_string_len(value->value.string->buffer, value->value.string->size);
+		break;
+	case mSCRIPT_TYPE_LIST:
+		obj = json_object_new_array_ext(mScriptListSize(value->value.list));
+		for (i = 0; i < mScriptListSize(value->value.list); ++i) {
+			struct json_object* listObj;
+			ok = mScriptStorageToJson(mScriptListGetPointer(value->value.list, i), &listObj);
+			if (!ok) {
+				break;
+			}
+			json_object_array_add(obj, listObj);
+		}
+		break;
+	case mSCRIPT_TYPE_TABLE:
+		obj = _tableToJson(value);
+		if (!obj) {
+			ok = false;
+		}
+		break;
+	case mSCRIPT_TYPE_VOID:
+		obj = NULL;
+		break;
+	default:
+		ok = false;
+		break;
+	}
+
+	if (!ok) {
+		if (obj) {
+			json_object_put(obj);
+		}
+		*out = NULL;
+	} else {
+		*out = obj;
+	}
+	return ok;
+}
+
+bool mScriptStorageSaveBucketVF(struct mScriptContext* context, const char* bucketName, struct VFile* vf) {
+	struct mScriptValue* value = mScriptContextGetGlobal(context, "storage");
+	if (!value) {
+		return false;
+	}
+	struct mScriptStorageContext* storage = value->value.opaque;
+	struct mScriptStorageBucket* bucket = mScriptStorageGetBucket(storage, bucketName);
+	struct json_object* rootObj;
+	bool ok = mScriptStorageToJson(bucket->root, &rootObj);
+	if (!ok) {
+		return false;
+	}
+
+	const char* json = json_object_to_json_string_ext(rootObj, JSON_C_TO_STRING_PRETTY_TAB);
+	if (!json) {
+		json_object_put(rootObj);
+		return false;
+	}
+
+	vf->write(vf, json, strlen(json));
+	vf->close(vf);
+
+	bucket->dirty = false;
+
+	json_object_put(rootObj);
+	return true;
+}
+
+bool mScriptStorageSaveBucket(struct mScriptContext* context, const char* bucketName) {
+	char path[PATH_MAX];
+	mScriptStorageGetBucketPath(bucketName, path);
+	struct VFile* vf = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+	return mScriptStorageSaveBucketVF(context, bucketName, vf);
+}
 
 void mScriptContextAttachStorage(struct mScriptContext* context) {
 	struct mScriptStorageContext* storage = calloc(1, sizeof(*storage));

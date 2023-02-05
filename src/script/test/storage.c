@@ -156,6 +156,174 @@ M_TEST_DEFINE(structured) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(serializeInt) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("bucket.a = 1");
+	struct VFile* vf = VFileOpen("test.json", O_CREAT | O_TRUNC | O_WRONLY);
+	assert_true(mScriptStorageSaveBucketVF(&context, "xtest", vf));
+	vf = VFileOpen("test.json", O_RDONLY);
+	assert_non_null(vf);
+	ssize_t size = vf->size(vf);
+	char* buf = calloc(1, size + 1);
+	assert_int_equal(vf->read(vf, buf, size), size);
+	assert_string_equal(buf, "{\"a\":1}");
+	free(buf);
+	vf->close(vf);
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(serializeFloat) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("bucket.a = 0.5");
+	struct VFile* vf = VFileOpen("test.json", O_CREAT | O_TRUNC | O_WRONLY);
+	assert_true(mScriptStorageSaveBucketVF(&context, "xtest", vf));
+	vf = VFileOpen("test.json", O_RDONLY);
+	assert_non_null(vf);
+	ssize_t size = vf->size(vf);
+	char* buf = calloc(1, size + 1);
+	assert_int_equal(vf->read(vf, buf, size), size);
+	assert_string_equal(buf, "{\"a\":0.5}");
+	free(buf);
+	vf->close(vf);
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(serializeBool) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("bucket.a = true");
+	struct VFile* vf = VFileOpen("test.json", O_CREAT | O_TRUNC | O_WRONLY);
+	assert_true(mScriptStorageSaveBucketVF(&context, "xtest", vf));
+	vf = VFileOpen("test.json", O_RDONLY);
+	assert_non_null(vf);
+	ssize_t size = vf->size(vf);
+	char* buf = calloc(1, size + 1);
+	assert_int_equal(vf->read(vf, buf, size), size);
+	assert_string_equal(buf, "{\"a\":true}");
+	free(buf);
+	vf->close(vf);
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(serializeNil) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("bucket.a = nil");
+	struct VFile* vf = VFileOpen("test.json", O_CREAT | O_TRUNC | O_WRONLY);
+	assert_true(mScriptStorageSaveBucketVF(&context, "xtest", vf));
+	vf = VFileOpen("test.json", O_RDONLY);
+	assert_non_null(vf);
+	ssize_t size = vf->size(vf);
+	char* buf = calloc(1, size + 1);
+	assert_int_equal(vf->read(vf, buf, size), size);
+	assert_string_equal(buf, "{\"a\":null}");
+	free(buf);
+	vf->close(vf);
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(serializeString) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("bucket.a = 'hello'");
+	struct VFile* vf = VFileOpen("test.json", O_CREAT | O_TRUNC | O_WRONLY);
+	assert_true(mScriptStorageSaveBucketVF(&context, "xtest", vf));
+	vf = VFileOpen("test.json", O_RDONLY);
+	assert_non_null(vf);
+	ssize_t size = vf->size(vf);
+	char* buf = calloc(1, size + 1);
+	assert_int_equal(vf->read(vf, buf, size), size);
+	assert_string_equal(buf, "{\"a\":\"hello\"}");
+	free(buf);
+	vf->close(vf);
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(serializeList) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("bucket.a = {1, 2}");
+	struct VFile* vf = VFileOpen("test.json", O_CREAT | O_TRUNC | O_WRONLY);
+	assert_true(mScriptStorageSaveBucketVF(&context, "xtest", vf));
+	vf = VFileOpen("test.json", O_RDONLY);
+	assert_non_null(vf);
+	ssize_t size = vf->size(vf);
+	char* buf = calloc(1, size + 1);
+	assert_int_equal(vf->read(vf, buf, size), size);
+	assert_string_equal(buf, "{\"a\":[1,2]}");
+	free(buf);
+	vf->close(vf);
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(serializeTable) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("bucket.a = {['b']=1}");
+	struct VFile* vf = VFileOpen("test.json", O_CREAT | O_TRUNC | O_WRONLY);
+	assert_true(mScriptStorageSaveBucketVF(&context, "xtest", vf));
+	vf = VFileOpen("test.json", O_RDONLY);
+	assert_non_null(vf);
+	ssize_t size = vf->size(vf);
+	char* buf = calloc(1, size + 1);
+	assert_int_equal(vf->read(vf, buf, size), size);
+	assert_string_equal(buf, "{\"a\":{\"b\":1}}");
+	free(buf);
+	vf->close(vf);
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(serializeNullByteString) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+
+	TEST_PROGRAM("bucket.a = 'a\\x00b'");
+	struct VFile* vf = VFileOpen("test.json", O_CREAT | O_TRUNC | O_WRONLY);
+	assert_true(mScriptStorageSaveBucketVF(&context, "xtest", vf));
+	vf = VFileOpen("test.json", O_RDONLY);
+	assert_non_null(vf);
+	ssize_t size = vf->size(vf);
+	char* buf = calloc(1, size + 1);
+	assert_int_equal(vf->read(vf, buf, size), size);
+	assert_string_equal(buf, "{\"a\":\"a\\u0000b\"}");
+	free(buf);
+	vf->close(vf);
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStorage,
 	cmocka_unit_test(basicInt),
 	cmocka_unit_test(basicFloat),
@@ -166,4 +334,12 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStorage,
 	cmocka_unit_test(basicTable),
 	cmocka_unit_test(nullByteString),
 	cmocka_unit_test(structured),
+	cmocka_unit_test(serializeInt),
+	cmocka_unit_test(serializeFloat),
+	cmocka_unit_test(serializeBool),
+	cmocka_unit_test(serializeNil),
+	cmocka_unit_test(serializeString),
+	cmocka_unit_test(serializeList),
+	cmocka_unit_test(serializeTable),
+	cmocka_unit_test(serializeNullByteString),
 )
