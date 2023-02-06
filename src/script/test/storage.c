@@ -16,7 +16,10 @@
 	mScriptContextInit(&context); \
 	struct mScriptEngineContext* lua = mScriptContextRegisterEngine(&context, mSCRIPT_ENGINE_LUA); \
 	mScriptContextAttachStdlib(&context); \
-	mScriptContextAttachStorage(&context)
+	mScriptContextAttachStorage(&context); \
+	char bucketPath[PATH_MAX]; \
+	mScriptStorageGetBucketPath("xtest", bucketPath); \
+	remove(bucketPath)
 
 M_TEST_SUITE_SETUP(mScriptStorage) {
 	if (mSCRIPT_ENGINE_LUA->init) {

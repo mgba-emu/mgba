@@ -15,6 +15,7 @@ CXX_GUARD_START
 
 struct VFile;
 void mScriptContextAttachStorage(struct mScriptContext* context);
+void mScriptStorageFlushAll(struct mScriptContext* context);
 
 bool mScriptStorageSaveBucket(struct mScriptContext* context, const char* bucket);
 bool mScriptStorageSaveBucketVF(struct mScriptContext* context, const char* bucket, struct VFile* vf);
