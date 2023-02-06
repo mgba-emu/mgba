@@ -9,6 +9,7 @@
 #include <mgba/internal/script/types.h>
 #include <mgba/script/context.h>
 #include <mgba/script/input.h>
+#include <mgba/script/storage.h>
 #include <mgba-util/string.h>
 
 struct mScriptContext context;
@@ -469,6 +470,7 @@ int main(int argc, char* argv[]) {
 	mScriptContextInit(&context);
 	mScriptContextAttachStdlib(&context);
 	mScriptContextAttachSocket(&context);
+	mScriptContextAttachStorage(&context);
 	mScriptContextAttachInput(&context);
 	mScriptContextSetTextBufferFactory(&context, NULL, NULL);
 

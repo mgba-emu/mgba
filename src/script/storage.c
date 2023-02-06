@@ -55,6 +55,14 @@ mSCRIPT_DECLARE_STRUCT_METHOD(mScriptStorageBucket, BOOL, reload, mScriptStorage
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptStorageBucket, BOOL, flush, mScriptStorageBucketFlush, 0);
 
 mSCRIPT_DEFINE_STRUCT(mScriptStorageBucket)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING(
+		"A single 'bucket' of stored data, appropriate for a single script to store its data. "
+		"Fields can be set directly on the bucket objct, e.g. if you want to store a value called "
+		"`foo` on a bucket named `bucket`, you can directly assign to it as `bucket.foo = value`, "
+		"and retrieve it in the same way later. Primitive types (numbers, strings, lists and tables) "
+		"can be stored in buckets, but complex data types (e.g. a bucket itself) cannot. Data "
+		"stored in a bucket is periodically flushed to disk and persists between sessions."
+	)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(mScriptStorageBucket, setSInt)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(mScriptStorageBucket, setUInt)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(mScriptStorageBucket, setFloat)
@@ -64,7 +72,9 @@ mSCRIPT_DEFINE_STRUCT(mScriptStorageBucket)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(mScriptStorageBucket, setTable)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(mScriptStorageBucket, setVoid)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(mScriptStorageBucket)
+	mSCRIPT_DEFINE_DOCSTRING("Reload the state of the bucket from disk")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptStorageBucket, reload)
+	mSCRIPT_DEFINE_DOCSTRING("Flush the bucket to disk manually")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptStorageBucket, flush)
 mSCRIPT_DEFINE_END;
 
@@ -75,7 +85,12 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptStorageContext, flushAll, mScriptStora
 
 mSCRIPT_DEFINE_STRUCT(mScriptStorageContext)
 	mSCRIPT_DEFINE_STRUCT_DEINIT(mScriptStorageContext)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Get a bucket with the given name. Names can contain letters, numbers, "
+		"underscores and periods. If a given bucket doesn't exist, it is created."
+	)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptStorageContext, getBucket)
+	mSCRIPT_DEFINE_DOCSTRING("Flush all buckets to disk manually")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptStorageContext, flushAll)
 mSCRIPT_DEFINE_END;
 
