@@ -249,7 +249,7 @@ Footnotes
 <a name="osxver">[3]</a> 10.9 is only needed for the Qt port. It may be possible to build or running the Qt port on 10.7 or older, but this is not officially supported. The SDL port is known to work on 10.5, and may work on older.
 
 [downloads]: http://mgba.io/downloads.html
-[source]: https://github.com/mgba-emu/mgba/
+[source]: https://github.com/mgba-emu/mgba/ 
 
 Copyright
 ---------
