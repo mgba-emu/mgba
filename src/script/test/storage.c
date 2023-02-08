@@ -185,7 +185,7 @@ M_TEST_DEFINE(serializeInt) {
 	ssize_t size = vf->size(vf);
 	char* buf = calloc(1, size + 1);
 	assert_int_equal(vf->read(vf, buf, size), size);
-	assert_string_equal(buf, "{\"a\":1}");
+	assert_string_equal(buf, "{\n\t\"a\":1\n}");
 	free(buf);
 	vf->close(vf);
 
@@ -206,7 +206,7 @@ M_TEST_DEFINE(serializeFloat) {
 	ssize_t size = vf->size(vf);
 	char* buf = calloc(1, size + 1);
 	assert_int_equal(vf->read(vf, buf, size), size);
-	assert_string_equal(buf, "{\"a\":0.5}");
+	assert_string_equal(buf, "{\n\t\"a\":0.5\n}");
 	free(buf);
 	vf->close(vf);
 
@@ -227,7 +227,7 @@ M_TEST_DEFINE(serializeBool) {
 	ssize_t size = vf->size(vf);
 	char* buf = calloc(1, size + 1);
 	assert_int_equal(vf->read(vf, buf, size), size);
-	assert_string_equal(buf, "{\"a\":true}");
+	assert_string_equal(buf, "{\n\t\"a\":true\n}");
 	free(buf);
 	vf->close(vf);
 
@@ -248,7 +248,7 @@ M_TEST_DEFINE(serializeNil) {
 	ssize_t size = vf->size(vf);
 	char* buf = calloc(1, size + 1);
 	assert_int_equal(vf->read(vf, buf, size), size);
-	assert_string_equal(buf, "{\"a\":null}");
+	assert_string_equal(buf, "{\n\t\"a\":null\n}");
 	free(buf);
 	vf->close(vf);
 
@@ -269,7 +269,7 @@ M_TEST_DEFINE(serializeString) {
 	ssize_t size = vf->size(vf);
 	char* buf = calloc(1, size + 1);
 	assert_int_equal(vf->read(vf, buf, size), size);
-	assert_string_equal(buf, "{\"a\":\"hello\"}");
+	assert_string_equal(buf, "{\n\t\"a\":\"hello\"\n}");
 	free(buf);
 	vf->close(vf);
 
@@ -290,7 +290,7 @@ M_TEST_DEFINE(serializeList) {
 	ssize_t size = vf->size(vf);
 	char* buf = calloc(1, size + 1);
 	assert_int_equal(vf->read(vf, buf, size), size);
-	assert_string_equal(buf, "{\"a\":[1,2]}");
+	assert_string_equal(buf, "{\n\t\"a\":[\n\t\t1,\n\t\t2\n\t]\n}");
 	free(buf);
 	vf->close(vf);
 
@@ -311,7 +311,7 @@ M_TEST_DEFINE(serializeTable) {
 	ssize_t size = vf->size(vf);
 	char* buf = calloc(1, size + 1);
 	assert_int_equal(vf->read(vf, buf, size), size);
-	assert_string_equal(buf, "{\"a\":{\"b\":1}}");
+	assert_string_equal(buf, "{\n\t\"a\":{\n\t\t\"b\":1\n\t}\n}");
 	free(buf);
 	vf->close(vf);
 
@@ -332,7 +332,7 @@ M_TEST_DEFINE(serializeNullByteString) {
 	ssize_t size = vf->size(vf);
 	char* buf = calloc(1, size + 1);
 	assert_int_equal(vf->read(vf, buf, size), size);
-	assert_string_equal(buf, "{\"a\":\"a\\u0000b\"}");
+	assert_string_equal(buf, "{\n\t\"a\":\"a\\u0000b\"\n}");
 	free(buf);
 	vf->close(vf);
 
