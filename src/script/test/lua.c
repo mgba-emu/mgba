@@ -385,9 +385,6 @@ M_TEST_DEFINE(callCFunc) {
 M_TEST_DEFINE(callCTable) {
 	SETUP_LUA;
 
-	struct mScriptValue a = mSCRIPT_MAKE_S32(1);
-	struct mScriptValue* val;
-
 	assert_true(lua->setGlobal(lua, "b", &boundTableSize));
 
 	TEST_PROGRAM("assert(b({}) == 0)");
@@ -424,7 +421,6 @@ M_TEST_DEFINE(globalNull) {
 	SETUP_LUA;
 
 	struct Test s = {};
-	struct mScriptValue* val;
 	struct mScriptValue a;
 
 	LOAD_PROGRAM("assert(a)");
