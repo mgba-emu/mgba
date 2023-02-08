@@ -679,8 +679,16 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext, bool
 		}
 		luaL_getmetatable(luaContext->lua, "mSTStruct");
 		if (!lua_rawequal(luaContext->lua, -1, -2)) {
-			lua_pop(luaContext->lua, 2);
-			break;
+			lua_pop(luaContext->lua, 1);
+			luaL_getmetatable(luaContext->lua, "mSTList");
+			if (!lua_rawequal(luaContext->lua, -1, -2)) {
+				lua_pop(luaContext->lua, 1);
+				luaL_getmetatable(luaContext->lua, "mSTTable");
+				if (!lua_rawequal(luaContext->lua, -1, -2)) {
+					lua_pop(luaContext->lua, 2);
+					break;
+				}
+			}
 		}
 		lua_pop(luaContext->lua, 2);
 		value = lua_touserdata(luaContext->lua, -1);

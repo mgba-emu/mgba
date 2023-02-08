@@ -811,6 +811,48 @@ M_TEST_DEFINE(linkedList) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(listConvert) {
+	SETUP_LUA;
+
+	struct mScriptValue* list = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
+
+	assert_true(lua->setGlobal(lua, "l", list));
+	TEST_PROGRAM("assert(l)");
+
+	struct mScriptValue* val = lua->getGlobal(lua, "l");
+	assert_non_null(val);
+	if (val->type->base == mSCRIPT_TYPE_WRAPPER) {
+		val = mScriptValueUnwrap(val);
+	}
+	assert_ptr_equal(val->type, mSCRIPT_TYPE_MS_LIST);
+	assert_ptr_equal(val->value.list, list->value.list);
+	mScriptValueDeref(val);
+	mScriptValueDeref(list);
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(tableConvert) {
+	SETUP_LUA;
+
+	struct mScriptValue* list = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+
+	assert_true(lua->setGlobal(lua, "l", list));
+	TEST_PROGRAM("assert(l)");
+
+	struct mScriptValue* val = lua->getGlobal(lua, "l");
+	assert_non_null(val);
+	if (val->type->base == mSCRIPT_TYPE_WRAPPER) {
+		val = mScriptValueUnwrap(val);
+	}
+	assert_ptr_equal(val->type, mSCRIPT_TYPE_MS_TABLE);
+	assert_ptr_equal(val->value.table, list->value.table);
+	mScriptValueDeref(val);
+	mScriptValueDeref(list);
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(create),
 	cmocka_unit_test(loadGood),
@@ -831,4 +873,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(tableIterate),
 	cmocka_unit_test(callList),
 	cmocka_unit_test(linkedList),
+	cmocka_unit_test(listConvert),
+	cmocka_unit_test(tableConvert),
 )

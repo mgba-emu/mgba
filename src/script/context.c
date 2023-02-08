@@ -84,14 +84,6 @@ void mScriptContextFillPool(struct mScriptContext* context, struct mScriptValue*
 	if (value->refs == mSCRIPT_VALUE_UNREF) {
 		return;
 	}
-	switch (value->type->base) {
-	case mSCRIPT_TYPE_SINT:
-	case mSCRIPT_TYPE_UINT:
-	case mSCRIPT_TYPE_FLOAT:
-		return;
-	default:
-		break;
-	}
 
 	struct mScriptValue* poolEntry = mScriptListAppend(&context->refPool);
 	poolEntry->type = mSCRIPT_TYPE_MS_WRAPPER;
