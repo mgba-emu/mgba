@@ -7,6 +7,7 @@
 
 #include <QHash>
 #include <QObject>
+#include <QTimer>
 
 #include <mgba/script/context.h>
 #include <mgba/script/input.h>
@@ -55,6 +56,8 @@ public slots:
 	void reset();
 	void runCode(const QString& code);
 
+	void flushStorage();
+
 protected:
 	bool eventFilter(QObject*, QEvent*) override;
 
@@ -84,6 +87,8 @@ private:
 
 	std::shared_ptr<CoreController> m_controller;
 	InputController* m_inputController = nullptr;
+
+	QTimer m_storageFlush;
 };
 
 }

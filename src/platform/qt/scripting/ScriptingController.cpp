@@ -20,6 +20,7 @@
 #include "scripting/ScriptingTextBufferModel.h"
 
 #include <mgba/script/input.h>
+#include <mgba/script/storage.h>
 #include <mgba-util/math.h>
 #include <mgba-util/string.h>
 
@@ -50,6 +51,9 @@ ScriptingController::ScriptingController(QObject* parent)
 
 	m_bufferModel = new ScriptingTextBufferModel(this);
 	QObject::connect(m_bufferModel, &ScriptingTextBufferModel::textBufferCreated, this, &ScriptingController::textBufferCreated);
+
+	connect(&m_storageFlush, &QTimer::timeout, this, &ScriptingController::flushStorage);
+	m_storageFlush.setInterval(5);
 
 	mScriptGamepadInit(&m_gamepad);
 
@@ -142,6 +146,10 @@ void ScriptingController::reset() {
 void ScriptingController::runCode(const QString& code) {
 	VFileDevice vf(code.toUtf8());
 	load(vf, "*prompt");
+}
+
+void ScriptingController::flushStorage() {
+	mScriptStorageFlushAll(&m_scriptContext);
 }
 
 bool ScriptingController::eventFilter(QObject* obj, QEvent* ev) {
@@ -293,6 +301,7 @@ void ScriptingController::detachGamepad() {
 void ScriptingController::init() {
 	mScriptContextInit(&m_scriptContext);
 	mScriptContextAttachStdlib(&m_scriptContext);
+	mScriptContextAttachStorage(&m_scriptContext);
 	mScriptContextAttachSocket(&m_scriptContext);
 	mScriptContextAttachInput(&m_scriptContext);
 	mScriptContextRegisterEngines(&m_scriptContext);
@@ -308,6 +317,8 @@ void ScriptingController::init() {
 	if (m_engines.count() == 1) {
 		m_activeEngine = *m_engines.begin();
 	}
+
+	m_storageFlush.start();
 }
 
 uint32_t ScriptingController::qtToScriptingKey(const QKeyEvent* event) {
