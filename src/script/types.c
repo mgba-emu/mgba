@@ -892,7 +892,6 @@ void mScriptValueWrap(struct mScriptValue* value, struct mScriptValue* out) {
 
 	out->type = mSCRIPT_TYPE_MS_WRAPPER;
 	out->value.opaque = value;
-	mScriptValueRef(value);
 }
 
 struct mScriptValue* mScriptValueUnwrap(struct mScriptValue* value) {
@@ -1473,18 +1472,11 @@ bool mScriptObjectSet(struct mScriptValue* obj, const char* member, struct mScri
 		this->value.opaque = obj->value.opaque;
 		mSCRIPT_PUSH(&frame.arguments, CHARP, member);
 		mScriptValueWrap(val, mScriptListAppend(&frame.arguments));
-		bool needsDeref = mScriptListGetPointer(&frame.arguments, 2)->type->base == mSCRIPT_TYPE_WRAPPER;
 		if (!mScriptInvoke(&setMember, &frame) || mScriptListSize(&frame.returnValues) != 0) {
 			mScriptFrameDeinit(&frame);
-			if (needsDeref) {
-				mScriptValueDeref(val);
-			}
 			return false;
 		}
 		mScriptFrameDeinit(&frame);
-		if (needsDeref) {
-			mScriptValueDeref(val);
-		}
 		return true;
 	}
 

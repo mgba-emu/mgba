@@ -24,7 +24,6 @@ static uint32_t _mScriptCallbackAdd(struct mScriptCallbackManager* adapter, stru
 		fn = mScriptValueUnwrap(fn);
 	}
 	uint32_t id = mScriptContextAddCallback(adapter->context, name->buffer, fn);
-	mScriptValueDeref(fn);
 	return id;
 }
 

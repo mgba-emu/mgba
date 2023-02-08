@@ -250,6 +250,7 @@ uint32_t mScriptContextAddCallback(struct mScriptContext* context, const char* c
 	HashTableIteratorLookup(&context->callbacks, &iter, callback);
 	info->callback = HashTableIteratorGetKey(&context->callbacks, &iter);
 	info->id = mScriptListSize(list->value.list);
+	mScriptValueRef(fn);
 	mScriptValueWrap(fn, mScriptListAppend(list->value.list));
 	while (true) {
 		uint32_t id = context->nextCallbackId;
