@@ -1,6 +1,7 @@
 0.11.0: (Future)
 Features:
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
+ - Scripting: New `storage` API for saving data for a script, e.g. settings
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:
