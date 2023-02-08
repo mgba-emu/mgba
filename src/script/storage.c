@@ -140,7 +140,14 @@ void mScriptStorageGetBucketPath(const char* bucket, char* out) {
 	mCoreConfigDirectory(out, PATH_MAX);
 
 	strncat(out, PATH_SEP "storage" PATH_SEP, PATH_MAX);
+#ifdef _WIN32
+	// TODO: Move this to vfs somewhere
+	WCHAR wout[MAX_PATH];
+	MultiByteToWideChar(CP_UTF8, 0, out, -1, wout, MAX_PATH);
+	CreateDirectoryW(wout, NULL);
+#else
 	mkdir(out, 0755);
+#endif
 
 	char suffix[STORAGE_LEN_MAX + 6];
 	snprintf(suffix, sizeof(suffix), "%s.json", bucket);
@@ -169,8 +176,12 @@ static struct json_object* _tableToJson(struct mScriptValue* rootVal) {
 			struct json_object* obj;
 			ok = mScriptStorageToJson(value, &obj);
 
-			if (!ok || json_object_object_add(rootObj, ckey, obj) < 0) {
-				ok = false;
+			if (ok) {
+#if JSON_C_VERSION_NUM >= (13 << 8)
+				ok = json_object_object_add(rootObj, ckey, obj) >= 0;
+#else
+				json_object_object_add(rootObj, ckey, obj);
+#endif
 			}
 		} while (mScriptTableIteratorNext(rootVal, &iter) && ok);
 	}
@@ -198,7 +209,15 @@ bool mScriptStorageToJson(struct mScriptValue* value, struct json_object** out) 
 			obj = json_object_new_boolean(value->value.u32);
 			break;
 		}
+#if JSON_C_VERSION_NUM >= (14 << 8)
 		obj = json_object_new_uint64(value->value.u64);
+#else
+		if (value->value.u64 < (uint64_t) INT64_MAX) {
+			obj = json_object_new_int64(value->value.u64);
+		} else {
+			obj = json_object_new_double(value->value.u64);
+		}
+#endif
 		break;
 	case mSCRIPT_TYPE_FLOAT:
 		obj = json_object_new_double(value->value.f64);
@@ -207,7 +226,11 @@ bool mScriptStorageToJson(struct mScriptValue* value, struct json_object** out) 
 		obj = json_object_new_string_len(value->value.string->buffer, value->value.string->size);
 		break;
 	case mSCRIPT_TYPE_LIST:
+#if JSON_C_VERSION_NUM >= (15 << 8)
 		obj = json_object_new_array_ext(mScriptListSize(value->value.list));
+#else
+		obj = json_object_new_array();
+#endif
 		for (i = 0; i < mScriptListSize(value->value.list); ++i) {
 			struct json_object* listObj;
 			ok = mScriptStorageToJson(mScriptListGetPointer(value->value.list, i), &listObj);
@@ -242,6 +265,10 @@ bool mScriptStorageToJson(struct mScriptValue* value, struct json_object** out) 
 	return ok;
 }
 
+#ifndef JSON_C_TO_STRING_PRETTY_TAB
+#define JSON_C_TO_STRING_PRETTY_TAB 0
+#endif
+
 static bool _mScriptStorageBucketFlushVF(struct mScriptStorageBucket* bucket, struct VFile* vf) {
 	struct json_object* rootObj;
 	bool ok = mScriptStorageToJson(bucket->root, &rootObj);
@@ -250,7 +277,7 @@ static bool _mScriptStorageBucketFlushVF(struct mScriptStorageBucket* bucket, st
 		return false;
 	}
 
-	const char* json = json_object_to_json_string_ext(rootObj, JSON_C_TO_STRING_PRETTY_TAB);
+	const char* json = json_object_to_json_string_ext(rootObj, JSON_C_TO_STRING_PRETTY | JSON_C_TO_STRING_PRETTY_TAB);
 	if (!json) {
 		json_object_put(rootObj);
 		vf->close(vf);

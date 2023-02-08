@@ -779,6 +779,12 @@ if(ENABLE_SCRIPTING)
 			list(APPEND DEPENDENCY_LIB json-c::json-c)
 			get_target_property(JSON_C_SONAME json-c::json-c IMPORTED_SONAME_NONE)
 			string(SUBSTRING "${JSON_C_SONAME}" 13 -1 JSON_C_SOVER)
+
+			# This is only needed on 0.15, but the target unhelpfully does not contain version info
+			get_target_property(JSON_C_INCLUDE_DIR json-c::json-c INTERFACE_INCLUDE_DIRECTORIES)
+			if(NOT JSON_C_INCLUDE_DIR MATCHES json-c$)
+				include_directories(AFTER "${JSON_C_INCLUDE_DIR}/json-c")
+			endif()
 		else()
 			if(${json-c_VERSION} VERSION_LESS 0.13.0)
 				set(JSON_C_SOVER 3)
