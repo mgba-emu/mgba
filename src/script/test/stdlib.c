@@ -96,8 +96,41 @@ M_TEST_DEFINE(callbacks) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(oneshot) {
+	SETUP_LUA;
+
+	TEST_PROGRAM(
+		"val = 0\n"
+		"function cb()\n"
+		"	val = val + 1\n"
+		"end\n"
+		"id = callbacks:oneshot('test', cb)\n"
+		"assert(id)"
+	);
+
+	TEST_VALUE(S32, "val", 0);
+
+	mScriptContextTriggerCallback(&context, "test", NULL);
+	TEST_VALUE(S32, "val", 1);
+
+	mScriptContextTriggerCallback(&context, "test", NULL);
+	TEST_VALUE(S32, "val", 1);
+
+	TEST_PROGRAM(
+		"id = callbacks:oneshot('test', cb)\n"
+		"assert(id)\n"
+		"callbacks:remove(id)"
+	);
+
+	mScriptContextTriggerCallback(&context, "test", NULL);
+	TEST_VALUE(S32, "val", 1);
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStdlib,
 	cmocka_unit_test(bitMask),
 	cmocka_unit_test(bitUnmask),
 	cmocka_unit_test(callbacks),
+	cmocka_unit_test(oneshot),
 )

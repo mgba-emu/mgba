@@ -98,6 +98,7 @@ void mScriptContextExportNamespace(struct mScriptContext* context, const char* n
 
 void mScriptContextTriggerCallback(struct mScriptContext*, const char* callback, struct mScriptList* args);
 uint32_t mScriptContextAddCallback(struct mScriptContext*, const char* callback, struct mScriptValue* value);
+uint32_t mScriptContextAddOneshot(struct mScriptContext*, const char* callback, struct mScriptValue* value);
 void mScriptContextRemoveCallback(struct mScriptContext*, uint32_t cbid);
 
 void mScriptContextSetDocstring(struct mScriptContext*, const char* key, const char* docstring);
