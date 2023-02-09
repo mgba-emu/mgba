@@ -229,6 +229,9 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 		default:
 			return false;
 		}
+		m_platform = controller->platform();
+	} else if (controller->platform() != m_platform) {
+		return false;
 	}
 
 	mCoreThread* thread = controller->thread();
