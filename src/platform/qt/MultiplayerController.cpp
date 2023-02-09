@@ -214,10 +214,6 @@ MultiplayerController::~MultiplayerController() {
 }
 
 bool MultiplayerController::attachGame(CoreController* controller) {
-	if (m_lockstep.attached == MAX_GBAS) {
-		return false;
-	}
-
 	if (m_lockstep.attached == 0) {
 		switch (controller->platform()) {
 #ifdef M_CORE_GBA
@@ -243,6 +239,10 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 	switch (controller->platform()) {
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA: {
+		if (m_lockstep.attached >= MAX_GBAS) {
+			return false;
+		}
+
 		GBA* gba = static_cast<GBA*>(thread->core->board);
 
 		GBASIOLockstepNode* node = new GBASIOLockstepNode;
@@ -259,6 +259,10 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 #endif
 #ifdef M_CORE_GB
 	case mPLATFORM_GB: {
+		if (m_lockstep.attached >= 2) {
+			return false;
+		}
+
 		GB* gb = static_cast<GB*>(thread->core->board);
 
 		GBSIOLockstepNode* node = new GBSIOLockstepNode;

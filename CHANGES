@@ -10,6 +10,7 @@ Other fixes:
  - Core: Allow sending thread requests to a crashed core (fixes mgba.io/i/2784)
  - Qt: Fix crash when attempting to use OpenGL 2.1 to 3.1 (fixes mgba.io/i/2794)
  - Qt: Disable sync while running scripts from main thread (fixes mgba.io/i/2738)
+ - Qt: Properly cap number of attached players by platform (fixes mgba.io/i/2807)
 Misc:
  - Qt: Include wayland QPA in AppImage (fixes mgba.io/i/2796)
  - Qt: Stop eating boolean action key events (fixes mgba.io/i/2636)
