@@ -149,7 +149,9 @@ void ScriptingController::runCode(const QString& code) {
 }
 
 void ScriptingController::flushStorage() {
+#ifdef USE_JSON_C
 	mScriptStorageFlushAll(&m_scriptContext);
+#endif
 }
 
 bool ScriptingController::eventFilter(QObject* obj, QEvent* ev) {
@@ -320,7 +322,9 @@ void ScriptingController::init() {
 		m_activeEngine = *m_engines.begin();
 	}
 
+#ifdef USE_JSON_C
 	m_storageFlush.start();
+#endif
 }
 
 uint32_t ScriptingController::qtToScriptingKey(const QKeyEvent* event) {
