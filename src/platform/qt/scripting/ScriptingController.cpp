@@ -301,7 +301,9 @@ void ScriptingController::detachGamepad() {
 void ScriptingController::init() {
 	mScriptContextInit(&m_scriptContext);
 	mScriptContextAttachStdlib(&m_scriptContext);
+#ifdef USE_JSON_C
 	mScriptContextAttachStorage(&m_scriptContext);
+#endif
 	mScriptContextAttachSocket(&m_scriptContext);
 	mScriptContextAttachInput(&m_scriptContext);
 	mScriptContextRegisterEngines(&m_scriptContext);
