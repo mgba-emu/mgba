@@ -4,7 +4,6 @@ set(SOURCE_FILES
 	input.c
 	socket.c
 	stdlib.c
-	storage.c
 	types.c)
 
 set(TEST_FILES
