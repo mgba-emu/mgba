@@ -16,6 +16,7 @@
 struct mScriptStorageBucket {
 	char* name;
 	struct mScriptValue* root;
+	bool autoflush;
 	bool dirty;
 };
 
@@ -33,6 +34,7 @@ static void mScriptStorageBucketSetFloat(struct mScriptStorageBucket* bucket, co
 static void mScriptStorageBucketSetBool(struct mScriptStorageBucket* bucket, const char* key, bool value);
 static bool mScriptStorageBucketReload(struct mScriptStorageBucket* bucket);
 static bool mScriptStorageBucketFlush(struct mScriptStorageBucket* bucket);
+static void mScriptStorageBucketEnableAutoFlush(struct mScriptStorageBucket* bucket, bool enable);
 
 static void mScriptStorageContextDeinit(struct mScriptStorageContext*);
 static void mScriptStorageContextFlushAll(struct mScriptStorageContext*);
@@ -53,6 +55,7 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptStorageBucket, setTable, mScriptStorag
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptStorageBucket, setVoid, mScriptStorageBucketSetVoid, 2, CHARP, key, NUL, value);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptStorageBucket, BOOL, reload, mScriptStorageBucketReload, 0);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptStorageBucket, BOOL, flush, mScriptStorageBucketFlush, 0);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptStorageBucket, enableAutoFlush, mScriptStorageBucketEnableAutoFlush, 1, BOOL, enable);
 
 mSCRIPT_DEFINE_STRUCT(mScriptStorageBucket)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
@@ -76,6 +79,13 @@ mSCRIPT_DEFINE_STRUCT(mScriptStorageBucket)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptStorageBucket, reload)
 	mSCRIPT_DEFINE_DOCSTRING("Flush the bucket to disk manually")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptStorageBucket, flush)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Enable or disable the automatic flushing of this bucket. This is good for ensuring buckets "
+		"don't get flushed in an inconsistent state. It will also disable flushing to disk when the "
+		"emulator is shut down, so make sure to either manually flush the bucket or re-enable "
+		"automatic flushing whenever you're done updating it if you do disable it prior."
+	)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptStorageBucket, enableAutoFlush)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DECLARE_STRUCT(mScriptStorageContext);
@@ -300,6 +310,10 @@ bool mScriptStorageBucketFlush(struct mScriptStorageBucket* bucket) {
 	return _mScriptStorageBucketFlushVF(bucket, vf);
 }
 
+void mScriptStorageBucketEnableAutoFlush(struct mScriptStorageBucket* bucket, bool enable) {
+	bucket->autoflush = enable;
+}
+
 bool mScriptStorageSaveBucketVF(struct mScriptContext* context, const char* bucketName, struct VFile* vf) {
 	struct mScriptValue* value = mScriptContextGetGlobal(context, "storage");
 	if (!value) {
@@ -481,7 +495,9 @@ void mScriptStorageContextFlushAll(struct mScriptStorageContext* storage) {
 	if (HashTableIteratorStart(&storage->buckets, &iter)) {
 		do {
 			struct mScriptStorageBucket* bucket = HashTableIteratorGetValue(&storage->buckets, &iter);
-			mScriptStorageBucketFlush(bucket);
+			if (bucket->autoflush) {
+				mScriptStorageBucketFlush(bucket);
+			}
 		} while (HashTableIteratorNext(&storage->buckets, &iter));
 	}
 }
@@ -509,6 +525,7 @@ struct mScriptStorageBucket* mScriptStorageGetBucket(struct mScriptStorageContex
 
 	bucket = calloc(1, sizeof(*bucket));
 	bucket->name = strdup(name);
+	bucket->autoflush = true;
 	if (!mScriptStorageBucketReload(bucket)) {
 		bucket->root = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
 	}

@@ -522,6 +522,36 @@ M_TEST_DEFINE(structuredRoundTrip) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(autoflush) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("bucket = storage:getBucket('xtest')");
+	TEST_PROGRAM("assert(bucket)");
+	TEST_PROGRAM("assert(not bucket.a)");
+
+	TEST_PROGRAM("bucket:enableAutoFlush(true)")
+	TEST_PROGRAM("bucket.a = 1");
+	TEST_PROGRAM("storage:flushAll()");
+	TEST_PROGRAM("assert(bucket:reload())")
+	TEST_PROGRAM("assert(bucket.a == 1)");
+
+	TEST_PROGRAM("bucket:enableAutoFlush(false)")
+	TEST_PROGRAM("bucket.a = 2");
+	TEST_PROGRAM("storage:flushAll()");
+	TEST_PROGRAM("assert(bucket:reload())")
+	TEST_PROGRAM("assert(bucket.a == 1)");
+
+	TEST_PROGRAM("bucket:enableAutoFlush(false)")
+	TEST_PROGRAM("bucket.a = 3");
+	TEST_PROGRAM("storage:flushAll()");
+	TEST_PROGRAM("bucket:enableAutoFlush(true)")
+	TEST_PROGRAM("storage:flushAll()");
+	TEST_PROGRAM("assert(bucket:reload())")
+	TEST_PROGRAM("assert(bucket.a == 3)");
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStorage,
 	cmocka_unit_test(basicInt),
 	cmocka_unit_test(basicFloat),
@@ -551,4 +581,5 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStorage,
 	cmocka_unit_test(deserializeNullByteString),
 	cmocka_unit_test(deserializeError),
 	cmocka_unit_test(structuredRoundTrip),
+	cmocka_unit_test(autoflush),
 )
