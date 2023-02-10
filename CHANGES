@@ -19,6 +19,7 @@ Other fixes:
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Properly cap number of attached players by platform (fixes mgba.io/i/2807)
  - Qt: Disable attempted linking betwen incompatible platforms (fixes mgba.io/i/2702)
+ - Qt: Fix modifier key names in shortcut editor (fixes mgba.io/i/2817)
 Misc:
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
