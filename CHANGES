@@ -12,6 +12,7 @@ Other fixes:
  - Qt: Disable sync while running scripts from main thread (fixes mgba.io/i/2738)
  - Qt: Properly cap number of attached players by platform (fixes mgba.io/i/2807)
  - Qt: Disable attempted linking betwen incompatible platforms (fixes mgba.io/i/2702)
+ - Qt: Fix modifier key names in shortcut editor (fixes mgba.io/i/2817)
 Misc:
  - Qt: Include wayland QPA in AppImage (fixes mgba.io/i/2796)
  - Qt: Stop eating boolean action key events (fixes mgba.io/i/2636)
