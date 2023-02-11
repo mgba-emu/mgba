@@ -6,17 +6,17 @@
     <message>
         <location filename="../utils.cpp" line="88"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance ROMok (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="105"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy ROMok (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="109"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Összes ROM (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="111"/>
