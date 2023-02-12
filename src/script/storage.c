@@ -508,15 +508,22 @@ struct mScriptStorageBucket* mScriptStorageGetBucket(struct mScriptStorageContex
 	}
 
 	// Check if name is allowed
-	// Currently only names matching /[0-9A-Za-z_.]+/ are allowed
+	// Currently only names matching /[0-9A-Za-z][0-9A-Za-z_.]*/ are allowed
 	size_t i;
 	for (i = 0; name[i]; ++i) {
 		if (i >= STORAGE_LEN_MAX) {
 			return NULL;
 		}
-		if (!isalnum(name[i]) && name[i] != '_' && name[i] != '.') {
-			return NULL;
+		if (isalnum(name[i])) {
+			continue;
 		}
+		if (name[i] == '_') {
+			continue;
+		}
+		if (i > 0 && name[i] == '.') {
+			continue;
+		}
+		return NULL;
 	}
 	struct mScriptStorageBucket* bucket = HashTableLookup(&storage->buckets, name);
 	if (bucket) {
