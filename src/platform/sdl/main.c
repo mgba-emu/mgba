@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
+	renderer.core->baseVideoSize(renderer.core, &renderer.width, &renderer.height);
 	renderer.ratio = graphicsOpts.multiplier;
 	if (renderer.ratio == 0) {
 		renderer.ratio = 1;
@@ -275,7 +275,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 
 	if (!didFail) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		renderer->core->desiredVideoDimensions(renderer->core, &renderer->width, &renderer->height);
+		renderer->core->currentVideoSize(renderer->core, &renderer->width, &renderer->height);
 		unsigned width = renderer->width * renderer->ratio;
 		unsigned height = renderer->height * renderer->ratio;
 		if (width != (unsigned) renderer->viewportWidth && height != (unsigned) renderer->viewportHeight) {

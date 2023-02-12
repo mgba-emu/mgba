@@ -414,19 +414,13 @@ void retro_get_system_info(struct retro_system_info* info) {
 
 void retro_get_system_av_info(struct retro_system_av_info* info) {
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
 	info->geometry.base_width = width;
 	info->geometry.base_height = height;
-#ifdef M_CORE_GB
-	if (core->platform(core) == mPLATFORM_GB) {
-		info->geometry.max_width = 256;
-		info->geometry.max_height = 224;
-	} else
-#endif
-	{
-		info->geometry.max_width = width;
-		info->geometry.max_height = height;
-	}
+
+	core->baseVideoSize(core, &width, &height);
+	info->geometry.max_width = width;
+	info->geometry.max_height = height;
 
 	info->geometry.aspect_ratio = width / (double) height;
 	info->timing.fps = core->frequency(core) / (float) core->frameCycles(core);
@@ -614,7 +608,7 @@ void retro_run(void) {
 
 	core->runFrame(core);
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
 	videoCallback(outputBuffer, width, height, BYTES_PER_PIXEL * 256);
 
 #ifdef M_CORE_GBA

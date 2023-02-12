@@ -1511,7 +1511,7 @@ void _prepareForFrame(struct mGUIRunner* runner) {
 }
 
 void _drawFrame(struct mGUIRunner* runner, bool faded) {
-	runner->core->desiredVideoDimensions(runner->core, &corew, &coreh);
+	runner->core->currentVideoSize(runner->core, &corew, &coreh);
 	uint32_t color = 0xFFFFFF3F;
 	if (!faded) {
 		color |= 0xC0;

@@ -83,7 +83,7 @@ bool _mExampleRun(const struct mArguments* args, Socket client) {
 
 	// Get the dimensions required for this core and send them to the client.
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->baseVideoSize(core, &width, &height);
 	ssize_t bufferSize = width * height * BYTES_PER_PIXEL;
 	uint32_t sendNO;
 	sendNO = htonl(width);

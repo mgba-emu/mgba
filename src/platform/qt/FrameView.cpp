@@ -559,7 +559,7 @@ void FrameView::newVl() {
 	}
 #endif
 	unsigned width, height;
-	m_vl->desiredVideoDimensions(m_vl, &width, &height);
+	m_vl->baseVideoSize(m_vl, &width, &height);
 	m_framebuffer = QImage(width, height, QImage::Format_RGBX8888);
 	m_vl->setVideoBuffer(m_vl, reinterpret_cast<color_t*>(m_framebuffer.bits()), width);
 	m_vl->reset(m_vl);
