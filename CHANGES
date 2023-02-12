@@ -49,6 +49,7 @@ Other fixes:
  - Qt: Fix initializing update revision info
  - Qt: Redo stable branch detection heuristic (fixes mgba.io/i/2679)
  - Res: Fix species name location in Ruby/Sapphire revs 1/2 (fixes mgba.io/i/2685)
+ - Scripting: Fix receiving packets for client sockets
  - VFS: Fix minizip write returning 0 on success instead of size
 Misc:
  - macOS: Add category to plist (closes mgba.io/i/2691)
