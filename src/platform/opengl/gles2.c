@@ -1010,8 +1010,11 @@ bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 					}
 				}
 				u = mGLES2UniformListSize(&uniformVector);
-				struct mGLES2Uniform* uniformBlock = calloc(u, sizeof(*uniformBlock));
-				memcpy(uniformBlock, mGLES2UniformListGetPointer(&uniformVector, 0), sizeof(*uniformBlock) * u);
+				struct mGLES2Uniform* uniformBlock;
+				if (u) {
+					uniformBlock = calloc(u, sizeof(*uniformBlock));
+					memcpy(uniformBlock, mGLES2UniformListGetPointer(&uniformVector, 0), sizeof(*uniformBlock) * u);
+				}
 				mGLES2UniformListDeinit(&uniformVector);
 
 				mGLES2ShaderInit(&shaderBlock[n], vssrc, fssrc, width, height, scaling, uniformBlock, u);
