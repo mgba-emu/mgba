@@ -36,6 +36,7 @@ public slots:
 	void setShaders(struct VDir*) override {}
 	void clearShaders() override {}
 	void resizeContext() override;
+	void setBackgroundImage(const QImage&) override;
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override;
@@ -46,6 +47,7 @@ private:
 	int m_height;
 	QImage m_backing{nullptr};
 	QImage m_oldBacking{nullptr};
+	QImage m_background;
 	std::shared_ptr<CoreController> m_context = nullptr;
 };
 

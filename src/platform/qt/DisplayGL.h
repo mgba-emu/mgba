@@ -107,6 +107,8 @@ public slots:
 	void clearShaders() override;
 	void resizeContext() override;
 	void setVideoScale(int scale) override;
+	void setBackgroundImage(const QImage&) override;
+
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override { forceDraw(); }

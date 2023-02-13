@@ -396,6 +396,10 @@ void DisplayGL::setVideoScale(int scale) {
 	QMetaObject::invokeMethod(m_painter.get(), "resizeContext");
 }
 
+void DisplayGL::setBackgroundImage(const QImage& image) {
+	// TODO
+}
+
 void DisplayGL::resizeEvent(QResizeEvent* event) {
 	Display::resizeEvent(event);
 	resizePainter();

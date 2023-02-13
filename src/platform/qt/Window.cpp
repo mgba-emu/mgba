@@ -1053,6 +1053,8 @@ void Window::reloadDisplayDriver() {
 #elif defined(M_CORE_GBA)
 	m_display->setMinimumSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 #endif
+
+	m_display->setBackgroundImage(QImage{m_config->getOption("backgroundImage")});
 }
 
 void Window::reloadAudioDriver() {
@@ -1875,6 +1877,13 @@ void Window::setupOptions() {
 		updateTitle();
 	}, this);
 
+	ConfigOption* backgroundImage = m_config->addOption("backgroundImage");
+	backgroundImage->connect([this](const QVariant& value) {
+		if (m_display) {
+			m_display->setBackgroundImage(QImage{value.toString()});
+		}
+	}, this);
+	m_config->updateOption("backgroundImage");
 }
 
 void Window::attachWidget(QWidget* widget) {
