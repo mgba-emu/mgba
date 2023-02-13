@@ -8,7 +8,7 @@
 #include <mgba/core/version.h>
 
 void mSDLGLDoViewport(int w, int h, struct VideoBackend* v) {
-	v->resized(v, w, h);
+	v->contextResized(v, w, h);
 	v->clear(v);
 	v->swap(v);
 	v->clear(v);

@@ -624,7 +624,9 @@ void PainterGL::resizeContext() {
 		return;
 	}
 	dequeueAll(false);
-	m_backend->setDimensions(m_backend, size.width(), size.height());
+
+	Rectangle dims = {0, 0, size.width(), size.height()};
+	m_backend->setLayerDimensions(m_backend, VIDEO_LAYER_IMAGE, &dims);
 }
 
 void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
@@ -797,9 +799,9 @@ void PainterGL::unpause() {
 
 void PainterGL::performDraw() {
 	float r = m_window->devicePixelRatio();
-	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
+	m_backend->contextResized(m_backend, m_size.width() * r, m_size.height() * r);
 	if (m_buffer) {
-		m_backend->postFrame(m_backend, m_buffer);
+		m_backend->setImage(m_backend, VIDEO_LAYER_IMAGE, m_buffer);
 	}
 	m_backend->drawFrame(m_backend);
 	if (m_showOSD && m_messagePainter && !glContextHasBug(OpenGLBug::IG4ICD_CRASH)) {
@@ -855,7 +857,7 @@ void PainterGL::dequeue() {
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		if (supportsShaders()) {
 			mGLES2Context* gl2Backend = reinterpret_cast<mGLES2Context*>(m_backend);
-			gl2Backend->tex = m_bridgeTexOut;
+			gl2Backend->tex[VIDEO_LAYER_IMAGE] = m_bridgeTexOut;
 		}
 #endif
 	}
@@ -953,7 +955,7 @@ int PainterGL::glTex() {
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (supportsShaders()) {
 		mGLES2Context* gl2Backend = reinterpret_cast<mGLES2Context*>(m_backend);
-		return gl2Backend->tex;
+		return gl2Backend->tex[VIDEO_LAYER_IMAGE];
 	}
 #endif
 #ifdef BUILD_GL

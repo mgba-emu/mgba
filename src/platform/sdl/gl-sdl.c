@@ -37,7 +37,13 @@ bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	renderer->gl.d.filter = renderer->filter;
 	renderer->gl.d.swap = mSDLGLCommonSwap;
 	renderer->gl.d.init(&renderer->gl.d, 0);
-	renderer->gl.d.setDimensions(&renderer->gl.d, renderer->width, renderer->height);
+	struct Rectangle dims = {
+		.x = 0,
+		.y = 0,
+		.width = renderer->width,
+		.height = renderer->height
+	};
+	renderer->gl.d.setLayerDimensions(&renderer->gl.d, VIDEO_LAYER_IMAGE, &dims);
 
 	mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
 	return true;
@@ -65,13 +71,17 @@ void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
 			}
 		}
 		renderer->core->currentVideoSize(renderer->core, &renderer->width, &renderer->height);
-		if (renderer->width != v->width || renderer->height != v->height) {
+		struct Rectangle dims;
+		v->layerDimensions(v, VIDEO_LAYER_IMAGE, &dims);
+		if (renderer->width != dims.width || renderer->height != dims.height) {
 			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
-			v->setDimensions(v, renderer->width, renderer->height);
+			dims.width = renderer->width;
+			dims.height = renderer->height;
+			v->setLayerDimensions(v, VIDEO_LAYER_IMAGE, &dims);
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
-			v->postFrame(v, renderer->outputBuffer);
+			v->setImage(v, VIDEO_LAYER_IMAGE, renderer->outputBuffer);
 		}
 		mCoreSyncWaitFrameEnd(&context->impl->sync);
 		v->drawFrame(v);
