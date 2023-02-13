@@ -6,17 +6,17 @@
     <message>
         <location filename="../utils.cpp" line="88"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>رومات غيم بوي أدفنس (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="105"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>رومات غيم بوي (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="109"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>كل الرومات (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="111"/>
@@ -29,22 +29,22 @@
     <message>
         <location filename="../AboutScreen.ui" line="14"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>عن</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;الموقع&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;المنتديات/الدعم الفني&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;تبرع&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;المصدر&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
         <source>Branch: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revision: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>الفرع : &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;المراجعة : &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
         <source>{projectName} would like to thank the following patrons from Patreon:</source>
-        <translation type="unfinished"></translation>
+        <translation>{projectName} يقدم شكره لكل المتبرعين من باتريون:</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
@@ -55,7 +55,7 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation type="unfinished"></translation>
+        <translation>{projectName} هو محاكي غيم بوي أدفنس مفتوح المصدر</translation>
     </message>
 </context>
 <context>
@@ -63,47 +63,52 @@ Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>يوجد تحديث متاح</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>التحديث الى %1 متاح.
+</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="38"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+هل تريد تحميله وتثبيته الآن ؟ ستكون بحاجة الى اعادة تشغيل المحاكي عندما يكتمل التحميل.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+التحديث التلقائي ليس متوفرا على هذه المنصة. ان أردت التحديث ستحتاج الى فعل ذلك يدويا.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="45"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>النسخة الحالية: %1
+النسخة الجديدة: %2
+حجم التنزيل: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>تنزيل التحديث...</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="79"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>فشل التنزيل.من فضلك قم بالتحديث اليدوي.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>تم التنزيل.اضغط على زر موافق لاعادة التشغيل %1 وتثبيت التحديث.</translation>
     </message>
 </context>
 <context>
@@ -111,12 +116,12 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="90"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>مستقرة</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="93"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>تطوير</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="95"/>
@@ -139,7 +144,7 @@ Download size: %3</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation type="unfinished"></translation>
+        <translation>تحميل..</translation>
     </message>
 </context>
 <context>
@@ -157,29 +162,29 @@ Download size: %3</source>
     <message>
         <location filename="../AssetTile.ui" line="89"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>عنوان</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="138"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>أحمر</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="145"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>أخضر</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="152"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>أزرق</translation>
     </message>
     <message>
         <location filename="../AssetTile.cpp" line="143"/>
         <location filename="../AssetTile.cpp" line="144"/>
         <location filename="../AssetTile.cpp" line="145"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0 (%1)</translation>
     </message>
 </context>
 <context>
@@ -226,7 +231,7 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.ui" line="67"/>
         <source>Chip name</source>
-        <translation type="unfinished"></translation>
+        <translation>اسم الرقاقة</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
@@ -236,12 +241,12 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>حفظ</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="94"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>شحن</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="114"/>
@@ -1840,13 +1845,13 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="407"/>
         <location filename="../IOViewer.cpp" line="1190"/>
         <source>15</source>
-        <translation type="unfinished"></translation>
+        <translation>15</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="408"/>
         <location filename="../IOViewer.cpp" line="1191"/>
         <source>7</source>
-        <translation type="unfinished"></translation>
+        <translation>7</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="410"/>
@@ -1959,7 +1964,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1002"/>
         <location filename="../IOViewer.cpp" line="1012"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="445"/>
@@ -6705,7 +6710,7 @@ Download size: %3</source>
     <message>
         <location filename="../utils.cpp" line="42"/>
         <source>?</source>
-        <translation type="unfinished"></translation>
+        <translation>؟</translation>
     </message>
 </context>
 <context>
