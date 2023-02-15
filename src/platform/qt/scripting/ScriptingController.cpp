@@ -111,9 +111,11 @@ bool ScriptingController::load(VFileDevice& vf, const QString& name) {
 		emit error(QString::fromUtf8(m_activeEngine->getError(m_activeEngine)));
 		ok = false;
 	}
-	if (m_controller && m_controller->isPaused()) {
+	if (m_controller) {
 		m_controller->setSync(true);
-		m_controller->paused();
+		if (m_controller->isPaused()) {
+			m_controller->paused();
+		}
 	}
 	return ok;
 }
