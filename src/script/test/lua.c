@@ -259,6 +259,63 @@ M_TEST_DEFINE(setGlobal) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(rootScope) {
+	SETUP_LUA;
+
+	struct mScriptValue* baseline = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+
+	struct mScriptValue* val;
+	val = lua->rootScope(lua);
+	assert_non_null(val);
+	assert_int_equal(val->type->base, mSCRIPT_TYPE_LIST);
+
+	struct mScriptValue one = mSCRIPT_MAKE_S32(1);
+	size_t i;
+	for (i = 0; i < mScriptListSize(val->value.list); ++i) {
+		struct mScriptValue* key = mScriptListGetPointer(val->value.list, i);
+		if (key->type->base == mSCRIPT_TYPE_WRAPPER) {
+			key = mScriptValueUnwrap(key);
+		}
+		mScriptTableInsert(baseline, key, &one);
+	}
+	mScriptValueDeref(val);
+
+	TEST_PROGRAM("foo = 1; bar = 2;");
+
+	bool fooFound = false;
+	bool barFound = false;
+
+	val = lua->rootScope(lua);
+	assert_non_null(val);
+	assert_int_equal(val->type->base, mSCRIPT_TYPE_LIST);
+	assert_int_equal(mScriptListSize(val->value.list), mScriptTableSize(baseline) + 2);
+
+	for (i = 0; i < mScriptListSize(val->value.list); ++i) {
+		struct mScriptValue* key = mScriptListGetPointer(val->value.list, i);
+		if (key->type->base == mSCRIPT_TYPE_WRAPPER) {
+			key = mScriptValueUnwrap(key);
+		}
+		if (mScriptTableLookup(baseline, key)) {
+			continue;
+		}
+		assert_int_equal(key->type->base, mSCRIPT_TYPE_STRING);
+
+		if (strncmp(key->value.string->buffer, "foo", key->value.string->size) == 0) {
+			fooFound = true;
+		}
+		if (strncmp(key->value.string->buffer, "bar", key->value.string->size) == 0) {
+			barFound = true;
+		}
+	}
+	mScriptValueDeref(val);
+
+	assert_true(fooFound);
+	assert_true(barFound);
+
+	mScriptValueDeref(baseline);
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_DEFINE(callLuaFunc) {
 	SETUP_LUA;
 
@@ -658,6 +715,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(runNop),
 	cmocka_unit_test(getGlobal),
 	cmocka_unit_test(setGlobal),
+	cmocka_unit_test(rootScope),
 	cmocka_unit_test(callLuaFunc),
 	cmocka_unit_test(callCFunc),
 	cmocka_unit_test(globalStructFieldGet),

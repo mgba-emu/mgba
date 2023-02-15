@@ -348,7 +348,8 @@ struct GBASerializedState {
 		int32_t rtcBits;
 		int32_t rtcCommandActive;
 		RTCCommandData rtcCommand;
-		RTCControl rtcControl;
+		uint8_t rtcControl;
+		uint8_t reserved[3];
 		uint8_t time[7];
 		uint8_t devices;
 		uint16_t gyroSample;

@@ -618,6 +618,7 @@ void CoreController::loadState(int slot) {
 		m_stateSlot = slot;
 		m_backupSaveState.clear();
 	}
+	mCoreThreadClearCrashed(&m_threadContext);
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
 		if (!controller->m_backupLoadState.isOpen()) {
@@ -637,6 +638,7 @@ void CoreController::loadState(const QString& path, int flags) {
 	if (flags != -1) {
 		m_loadStateFlags = flags;
 	}
+	mCoreThreadClearCrashed(&m_threadContext);
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
 		VFile* vf = VFileDevice::open(controller->m_statePath, O_RDONLY);
@@ -665,6 +667,7 @@ void CoreController::loadState(QIODevice* iodev, int flags) {
 	if (flags != -1) {
 		m_loadStateFlags = flags;
 	}
+	mCoreThreadClearCrashed(&m_threadContext);
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
 		VFile* vf = controller->m_stateVf;

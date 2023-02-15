@@ -1,6 +1,7 @@
 include(ExportDirectory)
 set(SOURCE_FILES
 	context.c
+	socket.c
 	stdlib.c
 	types.c)
 

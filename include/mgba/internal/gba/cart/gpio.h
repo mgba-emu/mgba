@@ -86,6 +86,8 @@ struct GBARTC {
 	uint8_t control; // Used for status2 on DS
 	uint8_t alarm2[3];
 	uint8_t time[7];
+	time_t lastLatch;
+	time_t offset;
 };
 
 DECL_BITFIELD(GPIOPin, uint16_t);

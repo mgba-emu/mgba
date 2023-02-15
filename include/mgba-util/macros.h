@@ -57,6 +57,17 @@
 #define _mODD_8(A, B, ...) B, _mIDENT(_mODD_7(__VA_ARGS__))
 #define _mODD_9(A, B, ...) B, _mIDENT(_mODD_7(__VA_ARGS__))
 
+#define _mIF0_0(...) __VA_ARGS__
+#define _mIF0_1(...)
+#define _mIF0_2(...)
+#define _mIF0_3(...)
+#define _mIF0_4(...)
+#define _mIF0_5(...)
+#define _mIF0_6(...)
+#define _mIF0_7(...)
+#define _mIF0_8(...)
+#define _mIF0_9(...)
+
 #define _mSUCC_0 1
 #define _mSUCC_1 2
 #define _mSUCC_2 3

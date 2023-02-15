@@ -60,6 +60,7 @@ Features:
 Emulation fixes:
  - ARM7: Fix unsigned multiply timing
  - GB: Copy logo from ROM if not running the BIOS intro (fixes mgba.io/i/2378)
+ - GB: Fix HALT breaking M-cycle alignment (fixes mgba.io/i/250)
  - GB Audio: Fix channel 1/2 reseting edge cases (fixes mgba.io/i/1925)
  - GB Audio: Properly apply per-model audio differences
  - GB Audio: Revamp channel rendering
@@ -73,6 +74,7 @@ Emulation fixes:
  - GBA: Improve timing when not booting from BIOS
  - GBA: Fix expected entry point for multiboot ELFs (fixes mgba.io/i/2450)
  - GBA: Fix booting multiboot ROMs with no JOY entrypoint
+ - GBA: Fix 1 MiB ROM mirroring to only mirror 4 times
  - GBA Audio: Adjust PSG sampling rate with SOUNDBIAS
  - GBA Audio: Sample FIFOs at SOUNDBIAS-set frequency
  - GBA BIOS: Work around IRQ handling hiccup in Mario & Luigi (fixes mgba.io/i/1059)
@@ -102,6 +104,7 @@ Other fixes:
  - FFmpeg: Fix GIF recording (fixes mgba.io/i/2393)
  - GB: Fix temporary saves
  - GB: Fix replacing the ROM crashing when accessing ROM base
+ - GB: Don't try to map a 0-byte SRAM (fixes mgba.io/i/2668)
  - GB, GBA: Save writeback-pending masked saves on unload (fixes mgba.io/i/2396)
  - mGUI: Fix FPS counter after closing menu
  - Qt: Fix some hangs when using the debugger console
@@ -117,6 +120,7 @@ Misc:
  - Debugger: GDB now works while the game is paused
  - Debugger: Add command to load external symbol file (fixes mgba.io/i/2480)
  - FFmpeg: Support dynamic audio sample rate
+ - GB: Support CGB0 boot ROM loading
  - GB Audio: Increase sample rate
  - GB MBC: Filter out MBC errors when cartridge is yanked (fixes mgba.io/i/2488)
  - GB MBC: Partially implement TAMA5 RTC
@@ -124,8 +128,9 @@ Misc:
  - GBA: Automatically skip BIOS if ROM has invalid logo
  - GBA: Refine multiboot detection (fixes mgba.io/i/2192)
  - GBA Cheats: Implement "never" type codes (closes mgba.io/i/915)
- - GBA Memory: Implement adjustable EWRAM waitstates (closes mgba.io/i/1276)
  - GBA DMA: Enhanced logging (closes mgba.io/i/2454)
+ - GBA Memory: Implement adjustable EWRAM waitstates (closes mgba.io/i/1276)
+ - GBA Savedata: Store RTC data in savegames (closes mgba.io/i/240)
  - GBA Video: Implement layer placement for OpenGL renderer (fixes mgba.io/i/1962)
  - GBA Video: Fix highlighting for sprites with mid-frame palette changes
  - mGUI: Add margin to right-aligned menu text (fixes mgba.io/i/871)
@@ -145,8 +150,12 @@ Misc:
  - Qt: Boot both a multiboot image and ROM with CLI args (closes mgba.io/i/1941)
  - Qt: Improve cheat parsing (fixes mgba.io/i/2297)
  - Qt: Change lossless setting to use WavPack audio
+ - Qt: Use FFmpeg to convert additional camera formats, if available
+ - Qt: Resume crashed game when loading a save state
+ - Qt: Include cheats in bug report
  - SDL: Support exposing an axis directly as the gyro value (closes mgba.io/i/2531)
  - Windows: Attach to console if present
+ - VFS: Early return NULL if attempting to map 0 bytes from a file
  - Vita: Add bilinear filtering option (closes mgba.io/i/344)
 
 0.9.3: (2021-12-17)

@@ -50,7 +50,9 @@
 #include "ReportView.h"
 #include "ROMInfo.h"
 #include "SaveConverter.h"
+#ifdef ENABLE_SCRIPTING
 #include "scripting/ScriptingView.h"
+#endif
 #include "SensorView.h"
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
@@ -1906,7 +1908,7 @@ void Window::setupOptions() {
 
 	ConfigOption* showOSD = m_config->addOption("showOSD");
 	showOSD->connect([this](const QVariant& value) {
-		if (m_display) {
+		if (m_display && !value.isNull()) {
 			m_display->showOSDMessages(value.toBool());
 		}
 	}, this);

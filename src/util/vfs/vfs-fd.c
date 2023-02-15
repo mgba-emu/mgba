@@ -134,6 +134,9 @@ ssize_t _vfdWrite(struct VFile* vf, const void* buffer, size_t size) {
 #ifdef _POSIX_MAPPED_FILES
 static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
+	if (!size) {
+		return NULL;
+	}
 	int mmapFlags = MAP_PRIVATE;
 	if (flags & MAP_WRITE) {
 		mmapFlags = MAP_SHARED;
@@ -153,6 +156,9 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 #elif defined(_WIN32)
 static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
+	if (!size) {
+		return NULL;
+	}
 	int createFlags = PAGE_WRITECOPY;
 	int mapFiles = FILE_MAP_COPY;
 	if (flags & MAP_WRITE) {
@@ -192,12 +198,16 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 #else
 static void* _vfdMap(struct VFile* vf, size_t size, int flags) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
+	if (!size) {
+		vfd->writable = false;
+		return NULL;
+	}
 	if (flags & MAP_WRITE) {
 		vfd->writable = true;
 	}
 	void* mem = anonymousMemoryMap(size);
 	if (!mem) {
-		return 0;
+		return NULL;
 	}
 
 	off_t pos = lseek(vfd->fd, 0, SEEK_CUR);

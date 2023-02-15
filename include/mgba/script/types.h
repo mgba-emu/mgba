@@ -17,6 +17,8 @@ CXX_GUARD_START
 #define mSCRIPT_VALUE_UNREF -1
 #define mSCRIPT_PARAMS_MAX 8
 
+#define mSCRIPT_VALUE_DOC_FUNCTION(NAME) (&_mScriptDoc_ ## NAME)
+
 #define mSCRIPT_TYPE_C_S8 int8_t
 #define mSCRIPT_TYPE_C_U8 uint8_t
 #define mSCRIPT_TYPE_C_S16 int16_t
@@ -100,6 +102,7 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_MS_WLIST (&mSTListWrapper)
 #define mSCRIPT_TYPE_MS_W(TYPE) (&mSTWrapper_ ## TYPE)
 #define mSCRIPT_TYPE_MS_CW(TYPE) (&mSTWrapperConst_ ## TYPE)
+#define mSCRIPT_TYPE_MS_DS(STRUCT) (&mSTStruct_doc_ ## STRUCT)
 
 #define mSCRIPT_TYPE_CMP_GENERIC(TYPE0, TYPE1) (TYPE0 == TYPE1)
 #define mSCRIPT_TYPE_CMP_U8(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_U8, TYPE)
@@ -151,6 +154,7 @@ enum mScriptClassInitType {
 	mSCRIPT_CLASS_INIT_DEINIT,
 	mSCRIPT_CLASS_INIT_GET,
 	mSCRIPT_CLASS_INIT_SET,
+	mSCRIPT_CLASS_INIT_INTERNAL,
 };
 
 enum {
@@ -242,6 +246,7 @@ struct mScriptTypeClass {
 	const struct mScriptClassInitDetails* details;
 	const struct mScriptType* parent;
 	const char* docstring;
+	bool internal;
 	struct Table instanceMembers;
 	struct Table castToMembers;
 	struct mScriptClassMember* alloc; // TODO

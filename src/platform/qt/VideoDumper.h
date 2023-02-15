@@ -7,6 +7,12 @@
 
 #include <QAbstractVideoSurface>
 
+#ifdef USE_FFMPEG
+extern "C" {
+#include <libswscale/swscale.h>
+}
+#endif
+
 namespace QGBA {
 
 class VideoDumper : public QAbstractVideoSurface {
@@ -20,6 +26,13 @@ public:
 
 signals:
 	void imageAvailable(const QImage& image);
+
+private:
+#ifdef USE_FFMPEG
+	AVPixelFormat m_pixfmt = AV_PIX_FMT_NONE;
+	SwsContext* m_scaler = nullptr;
+	QSize m_scalerSize;
+#endif
 };
 
 }
