@@ -136,7 +136,7 @@ QUrl ApplicationUpdater::parseManifest(const QByteArray& manifest) {
 
 QString ApplicationUpdater::destination() const {
 	QFileInfo path(updateInfo().url.path());
-	QDir dir(ConfigController::configDir());
+	QDir dir(ConfigController::cacheDir());
 	// QFileInfo::completeSuffix will eat all .'s in the filename...including
 	// ones in the version string, turning mGBA-1.0.0-win32.7z into
 	// 0.0-win32.7z instead of the intended .7z

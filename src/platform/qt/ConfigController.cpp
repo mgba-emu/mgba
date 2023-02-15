@@ -382,3 +382,7 @@ const QString& ConfigController::configDir() {
 	}
 	return s_configDir;
 }
+
+const QString& ConfigController::cacheDir() {
+	return configDir();
+}

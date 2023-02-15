@@ -5,6 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "utils.h"
 
+#include <mgba/core/version.h>
+
+#include <QCoreApplication>
 #include <QObject>
 
 namespace QGBA {
@@ -57,6 +60,71 @@ bool convertAddress(const QHostAddress* input, Address* output) {
 		return false;
 	}
 	return true;
+}
+
+QString romFilters(bool includeMvl) {
+	QStringList filters;
+	QStringList formats;
+
+#ifdef M_CORE_GBA
+	QStringList gbaFormats{
+		"*.gba",
+#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
+		"*.zip",
+#endif
+#ifdef USE_LZMA
+		"*.7z",
+#endif
+#ifdef USE_ELF
+		"*.elf",
+#endif
+		"*.agb",
+		"*.mb",
+		"*.rom",
+		"*.bin"};
+	formats.append(gbaFormats);
+	filters.append(QCoreApplication::translate("QGBA", "Game Boy Advance ROMs (%1)", nullptr).arg(gbaFormats.join(QChar(' '))));
+#endif
+
+#ifdef M_CORE_DS
+	QStringList dsFormats{
+		"*.nds",
+		"*.srl",
+#if defined(USE_LIBZIP) || defined(USE_ZLIB)
+		"*.zip",
+#endif
+#ifdef USE_LZMA
+		"*.7z",
+#endif
+		"*.rom",
+		"*.bin"};
+	formats.append(dsFormats);
+	filters.append(QCoreApplication::translate("QGBA", "DS ROMs (%1)").arg(dsFormats.join(QChar(' '))));
+#endif
+
+#ifdef M_CORE_GB
+	QStringList gbFormats{
+		"*.gb",
+		"*.gbc",
+		"*.sgb",
+#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
+		"*.zip",
+#endif
+#ifdef USE_LZMA
+		"*.7z",
+#endif
+		"*.rom",
+		"*.bin"};
+	formats.append(gbFormats);
+	filters.append(QCoreApplication::translate("QGBA", "Game Boy ROMs (%1)", nullptr).arg(gbFormats.join(QChar(' '))));
+#endif
+
+	formats.removeDuplicates();
+	filters.prepend(QCoreApplication::translate("QGBA", "All ROMs (%1)", nullptr).arg(formats.join(QChar(' '))));
+	if (includeMvl) {
+		filters.append(QCoreApplication::translate("QGBA", "%1 Video Logs (*.mvl)", nullptr).arg(projectName));
+	}
+	return filters.join(";;");
 }
 
 }

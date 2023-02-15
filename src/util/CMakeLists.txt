@@ -21,6 +21,7 @@ set(SOURCE_FILES
 	patch-ups.c
 	png-io.c
 	ring-fifo.c
+	sfo.c
 	text-codec.c)
 
 set(GUI_FILES
@@ -31,6 +32,7 @@ set(GUI_FILES
 	gui/menu.c)
 
 set(TEST_FILES
+	test/sfo.c
 	test/string-parser.c
 	test/string-utf8.c
 	test/table.c

@@ -362,6 +362,37 @@ uint8_t _GBHitekRead(struct GBMemory* memory, uint16_t address) {
 	}
 }
 
+static const uint8_t _ggb81DataReordering[8][8] = {
+	{ 0, 1, 2, 3, 4, 5, 6, 7 },
+	{ 0, 2, 1, 3, 4, 6, 5, 7 },
+	{ 0, 6, 5, 3, 4, 2, 1, 7 },
+	{ 0, 5, 1, 3, 4, 2, 6, 7 },
+	{ 0, 5, 2, 3, 4, 1, 6, 7 },
+	{ 0, 2, 6, 3, 4, 5, 1, 7 },
+	{ 0, 1, 6, 3, 4, 2, 5, 7 },
+	{ 0, 2, 5, 3, 4, 6, 1, 7 },
+};
+
+void  _GBGGB81(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBMemory* memory = &gb->memory;
+	switch (address & 0xF0FF) {
+	case 0x2001:
+		memory->mbcState.bbd.dataSwapMode = value & 0x07;
+		break;
+	}
+	_GBMBC5(gb, address, value);
+}
+
+uint8_t _GBGGB81Read(struct GBMemory* memory, uint16_t address) {
+	switch (address >> 14) {
+	case 0:
+	default:
+		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)];
+	case 1:
+		return _reorderBits(memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)], _ggb81DataReordering[memory->mbcState.bbd.dataSwapMode]);
+	}
+}
+
 void  _GBLiCheng(struct GB* gb, uint16_t address, uint8_t value) {
     if (address > 0x2100 && address < 0x3000) {
         return;

@@ -172,8 +172,8 @@ VFile* VFileDevice::open(const QString& path, int mode) {
 	return VFileOpen(path.toUtf8().constData(), mode);
 }
 
-VFile* VFileDevice::openMemory() {
-	return VFileMemChunk(nullptr, 0);
+VFile* VFileDevice::openMemory(quint64 size) {
+	return VFileMemChunk(nullptr, size);
 }
 
 VDir* VFileDevice::openDir(const QString& path) {
@@ -182,6 +182,19 @@ VDir* VFileDevice::openDir(const QString& path) {
 
 VDir* VFileDevice::openArchive(const QString& path) {
 	return VDirOpenArchive(path.toUtf8().constData());
+}
+
+bool VFileDevice::copyFile(VFile* input, VFile* output) {
+	uint8_t buffer[0x800];
+
+	input->seek(input, 0, SEEK_SET);
+	output->seek(output, 0, SEEK_SET);
+
+	ssize_t size;
+	while ((size = input->read(input, buffer, sizeof(buffer))) > 0) {
+		output->write(output, buffer, size);
+	}
+	return size >= 0;
 }
 
 VFileAbstractWrapper::VFileAbstractWrapper(QIODevice* iodev)

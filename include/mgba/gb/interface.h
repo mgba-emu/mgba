@@ -47,6 +47,7 @@ enum GBMemoryBankControllerType {
 	GB_UNL_BBD = 0x220,
 	GB_UNL_HITEK = 0x221,
 	GB_UNL_LI_CHENG = 0x222,
+	GB_UNL_GGB81 = 0x223,
 	GB_UNL_SACHEN_MMC1 = 0x230,
 	GB_UNL_SACHEN_MMC2 = 0x231,
 };

@@ -51,6 +51,7 @@ The following mappers are fully supported:
 - MBC2
 - MBC3
 - MBC3+RTC
+- MBC30
 - MBC5
 - MBC5+Rumble
 - MBC7
@@ -71,6 +72,7 @@ The following mappers are partially supported:
 - Sachen MMC2 (missing alternate wiring support)
 - BBD (missing logo switching)
 - Hitek (missing logo switching)
+- GGB-81 (missing logo switching)
 - Li Cheng (missing logo switching)
 
 ### Planned features

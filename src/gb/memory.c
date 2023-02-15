@@ -816,6 +816,7 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 		break;
 	case GB_UNL_BBD:
 	case GB_UNL_HITEK:
+	case GB_UNL_GGB81:
 		state->memory.bbd.dataSwapMode = memory->mbcState.bbd.dataSwapMode;
 		state->memory.bbd.bankSwapMode = memory->mbcState.bbd.bankSwapMode;
 		break;
@@ -978,6 +979,7 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		break;
 	case GB_UNL_BBD:
 	case GB_UNL_HITEK:
+	case GB_UNL_GGB81:
 		memory->mbcState.bbd.dataSwapMode = state->memory.bbd.dataSwapMode & 0x7;
 		memory->mbcState.bbd.bankSwapMode = state->memory.bbd.bankSwapMode & 0x7;
 		break;

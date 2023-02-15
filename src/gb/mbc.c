@@ -126,7 +126,7 @@ static struct {
 	{"SAM2", GB_UNL_SACHEN_MMC2},
 	{"ROCK", GB_MBC_AUTODETECT}, // TODO
 	{"NGHK", GB_MBC_AUTODETECT}, // TODO
-	{"GB81", GB_MBC_AUTODETECT}, // TODO
+	{"GB81", GB_UNL_GGB81},
 	{"TPP1", GB_MBC_AUTODETECT}, // TODO
 
 	{NULL, GB_MBC_AUTODETECT},
@@ -211,9 +211,15 @@ static enum GBMemoryBankControllerType _detectUnlMBC(const uint8_t* mem, size_t 
 			return GB_UNL_BBD;
 		}
 		break;
+	case 0x79f34594: // DATA.
+	case 0x7e8c539b: // TD-SOFT
+		return GB_UNL_GGB81;
 	case 0x20d092e2:
 	case 0xd2b57657:
 		if (cart->type == 0x01) { // Make sure we're not using a "fixed" version
+			return GB_UNL_LI_CHENG;
+		}
+		if ((0x8000 << cart->romSize) != size) {
 			return GB_UNL_LI_CHENG;
 		}
 		break;
@@ -475,6 +481,11 @@ void GBMBCInit(struct GB* gb) {
 		break;
 	case GB_UNL_LI_CHENG:
 		gb->memory.mbcWrite = _GBLiCheng;
+		break;
+	case GB_UNL_GGB81:
+		gb->memory.mbcWrite = _GBGGB81;
+		gb->memory.mbcRead = _GBGGB81Read;
+		gb->memory.mbcReadBank1 = true;
 		break;
 	case GB_UNL_SACHEN_MMC1:
 		gb->memory.mbcWrite = _GBSachen;

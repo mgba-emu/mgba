@@ -36,6 +36,7 @@ void _GBNTNew(struct GB* gb, uint16_t address, uint8_t value);
 void _GBBBD(struct GB* gb, uint16_t address, uint8_t value);
 void _GBHitek(struct GB* gb, uint16_t address, uint8_t value);
 void _GBLiCheng(struct GB* gb, uint16_t address, uint8_t value);
+void _GBGGB81(struct GB* gb, uint16_t address, uint8_t value);
 void _GBSachen(struct GB* gb, uint16_t address, uint8_t value);
 
 uint8_t _GBMBC2Read(struct GBMemory*, uint16_t address);
@@ -50,6 +51,7 @@ uint8_t _GBHuC3Read(struct GBMemory*, uint16_t address);
 uint8_t _GBPKJDRead(struct GBMemory*, uint16_t address);
 uint8_t _GBBBDRead(struct GBMemory*, uint16_t address);
 uint8_t _GBHitekRead(struct GBMemory*, uint16_t address);
+uint8_t _GBGGB81Read(struct GBMemory*, uint16_t address);
 uint8_t _GBSachenMMC1Read(struct GBMemory*, uint16_t address);
 uint8_t _GBSachenMMC2Read(struct GBMemory*, uint16_t address);
 

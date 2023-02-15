@@ -77,4 +77,6 @@ constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
 }
 #endif
 
+QString romFilters(bool includeMvl = false);
+
 }
