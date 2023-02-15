@@ -39,6 +39,18 @@ Misc:
  - DS Core: Backport symbol loading changes from GBA core (fixes mgba.io/i/1834)
  - DS I/O: Mark BGCNT registers as readable
 
+0.11.0: (Future)
+Features:
+ - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng
+ - Debugger: Add range watchpoints
+Other fixes:
+ - Qt: Manually split filename to avoid overzealous splitting (fixes mgba.io/i/2681)
+ - Qt: Expand criteria for tag branch names (fixes mgba.io/i/2679)
+ - Res: Fix species name location in Ruby/Sapphire revs 1/2 (fixes mgba.io/i/2685)
+Misc:
+ - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
+ - macOS: Add category to plist (closes mgba.io/i/2691)
+
 0.10.0: (2022-10-11)
 Features:
  - Preliminary Lua scripting support

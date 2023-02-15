@@ -412,11 +412,25 @@ local gameRubyEn = Generation3En:new{
 	_speciesNameTable=0x1f716c,
 }
 
+local gameRubyEnR1 = Generation3En:new{
+	name="Ruby (USA)",
+	_party=0x3004360,
+	_partyCount=0x3004350,
+	_speciesNameTable=0x1f7184,
+}
+
 local gameSapphireEn = Generation3En:new{
 	name="Sapphire (USA)",
 	_party=0x3004360,
 	_partyCount=0x3004350,
 	_speciesNameTable=0x1f70fc,
+}
+
+local gameSapphireEnR1 = Generation3En:new{
+	name="Sapphire (USA)",
+	_party=0x3004360,
+	_partyCount=0x3004350,
+	_speciesNameTable=0x1f7114,
 }
 
 local gameEmeraldEn = Generation3En:new{
@@ -471,6 +485,10 @@ gameCrc32 = {
 	[0x7d527d62] = gameYellowEn,
 	[0x84ee4776] = gameFireRedEnR1,
 	[0xdaffecec] = gameLeafGreenEnR1,
+	[0x61641576] = gameRubyEnR1, -- Rev 1
+	[0xaeac73e6] = gameRubyEnR1, -- Rev 2
+	[0xbafedae5] = gameSapphireEnR1, -- Rev 1
+	[0x9cc4410e] = gameSapphireEnR1, -- Rev 2
 }
 
 function printPartyStatus(game, buffer)

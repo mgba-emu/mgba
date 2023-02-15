@@ -532,7 +532,7 @@ static void _processQReadCommand(struct GDBStub* stub, const char* message) {
 	} else if (!strncmp("Xfer:memory-map:read::", message, 22)) {
 		if (strlen(stub->memoryMapXml) == 0) {
 			_generateMemoryMapXml(stub, stub->memoryMapXml);
-		} 
+		}
 		_processQXferCommand(stub, message + 22, stub->memoryMapXml);
 	} else if (!strncmp("Supported:", message, 10)) {
 		_processQSupportedCommand(stub, message + 10);
@@ -575,7 +575,8 @@ static void _setBreakpoint(struct GDBStub* stub, const char* message) {
 		.type = BREAKPOINT_HARDWARE
 	};
 	struct mWatchpoint watchpoint = {
-		.address = address
+		.minAddress = address,
+		.maxAddress = address + 1
 	};
 
 	switch (message[0]) {
@@ -631,10 +632,11 @@ static void _clearBreakpoint(struct GDBStub* stub, const char* message) {
 		mWatchpointListInit(&watchpoints, 0);
 		stub->d.platform->listWatchpoints(stub->d.platform, &watchpoints);
 		for (index = 0; index < mWatchpointListSize(&watchpoints); ++index) {
-			if (mWatchpointListGetPointer(&watchpoints, index)->address != address) {
+			struct mWatchpoint* watchpoint = mWatchpointListGetPointer(&watchpoints, index);
+			if (address >= watchpoint->minAddress && address < watchpoint->maxAddress) {
 				continue;
 			}
-			stub->d.platform->clearBreakpoint(stub->d.platform, mWatchpointListGetPointer(&watchpoints, index)->id);
+			stub->d.platform->clearBreakpoint(stub->d.platform, watchpoint->id);
 		}
 		mWatchpointListDeinit(&watchpoints);
 		break;

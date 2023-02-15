@@ -66,5 +66,7 @@
 			<string>Viewer</string>
 		</dict>
 	</array>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.games</string>
 </dict>
 </plist>
