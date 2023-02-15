@@ -1,6 +1,6 @@
 [Desktop Entry]
 Version=1.0
-Icon=medusa-emu
+Icon=io.mgba.medusa
 Exec=medusa-emu-qt %f
 Terminal=false
 Type=Application

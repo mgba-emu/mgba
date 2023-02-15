@@ -17,6 +17,12 @@ const uint32_t GB_LOGO_HASH = 0x46195417;
 
 mLOG_DEFINE_CATEGORY(GB_MBC, "GB MBC", "gb.mbc");
 
+static const uint8_t _tama6RTCMask[32] = {
+	//0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
+	0xF, 0x7, 0xF, 0x7, 0xF, 0x3, 0x7, 0xF, 0x3, 0xF, 0x1, 0xF, 0xF, 0x0, 0x0, 0x0,
+	0x0, 0x0, 0xF, 0x7, 0xF, 0x3, 0x7, 0xF, 0x3, 0x0, 0x1, 0x3, 0x0, 0x0, 0x0, 0x0,
+};
+
 static void _GBMBCNone(struct GB* gb, uint16_t address, uint8_t value) {
 	UNUSED(address);
 	UNUSED(value);
@@ -1537,7 +1543,7 @@ static int _tama6DMYToDayOfYear(int day, int month, int year) {
 		return -1;
 	}
 	day += _daysToMonth[month];
-	if (month > 2 && (year % 4) == 0) {
+	if (month > 2 && (year & 3) == 0) {
 		++day;
 	}
 	return day;
@@ -1549,7 +1555,7 @@ static int _tama6DayOfYearToMonth(int day, int year) {
 		if (day <= _daysToMonth[month + 1]) {
 			return month;
 		}
-		if (month == 2 && year % 4 == 0) {
+		if (month == 2 && (year & 3) == 0) {
 			if (day == 60) {
 				return 2;
 			}
@@ -1565,7 +1571,7 @@ static int _tama6DayOfYearToDayOfMonth(int day, int year) {
 		if (day <= _daysToMonth[month + 1]) {
 			return day - _daysToMonth[month];
 		}
-		if (month == 2 && year % 4 == 0) {
+		if (month == 2 && (year & 3) == 0) {
 			if (day == 60) {
 				return 29;
 			}
@@ -1593,6 +1599,7 @@ static void _latchTAMA6Rtc(struct mRTCSource* rtc, struct GBTAMA5State* tama5, t
 	}
 
 	uint8_t* timerRegs = tama5->rtcTimerPage;
+	bool is24hour = tama5->rtcAlarmPage[GBTAMA6_RTC_PA1_24_HOUR];
 	int64_t diff;
 	diff = timerRegs[GBTAMA6_RTC_PA0_SECOND_1] + timerRegs[GBTAMA6_RTC_PA0_SECOND_10] * 10 + t % 60;
 	if (diff < 0) {
@@ -1614,31 +1621,47 @@ static void _latchTAMA6Rtc(struct mRTCSource* rtc, struct GBTAMA5State* tama5, t
 	t /= 60;
 	t += diff / 60;
 
-	diff = timerRegs[GBTAMA6_RTC_PA0_HOUR_1] + timerRegs[GBTAMA6_RTC_PA0_HOUR_10] * 10 + t % 24;
+	diff = timerRegs[GBTAMA6_RTC_PA0_HOUR_1];
+	if (is24hour) {
+		diff += timerRegs[GBTAMA6_RTC_PA0_HOUR_10] * 10;
+	} else {
+		int hour10 = timerRegs[GBTAMA6_RTC_PA0_HOUR_10];
+		diff += (hour10 & 1) * 10;
+		diff += (hour10 & 2) * 12;
+	}
+	diff += t % 24;
 	if (diff < 0) {
 		diff += 24;
 		t -= 24;
 	}
-	timerRegs[GBTAMA6_RTC_PA0_HOUR_1] = (diff % 24) % 10;
-	timerRegs[GBTAMA6_RTC_PA0_HOUR_10] = (diff % 24) / 10;
+	if (is24hour) {
+		timerRegs[GBTAMA6_RTC_PA0_HOUR_1] = (diff % 24) % 10;
+		timerRegs[GBTAMA6_RTC_PA0_HOUR_10] = (diff % 24) / 10;
+	} else {
+		timerRegs[GBTAMA6_RTC_PA0_HOUR_1] = (diff % 12) % 10;
+		timerRegs[GBTAMA6_RTC_PA0_HOUR_10] = (diff % 12) / 10 + (diff / 12) * 2;		
+	}
 	t /= 24;
 	t += diff / 24;
 
 	int day = timerRegs[GBTAMA6_RTC_PA0_DAY_1] + timerRegs[GBTAMA6_RTC_PA0_DAY_10] * 10;
 	int month = timerRegs[GBTAMA6_RTC_PA0_MONTH_1] + timerRegs[GBTAMA6_RTC_PA0_MONTH_10] * 10;
 	int year = timerRegs[GBTAMA6_RTC_PA0_YEAR_1] + timerRegs[GBTAMA6_RTC_PA0_YEAR_10] * 10;
-	int dayInYear = _tama6DMYToDayOfYear(day, month, year);
+	int leapYear = tama5->rtcAlarmPage[GBTAMA6_RTC_PA1_LEAP_YEAR];
+	int dayOfWeek = timerRegs[GBTAMA6_RTC_PA0_WEEK];
+	int dayInYear = _tama6DMYToDayOfYear(day, month, leapYear);
 	diff = dayInYear + t;
 	while (diff <= 0) {
 		// Previous year
-		if (year % 4) {
+		if (leapYear & 3) {
 			diff += 365;
 		} else {
 			diff += 366;
 		}
 		--year;
+		--leapYear;
 	}
-	while (diff > (year % 4 ? 365 : 366)) {
+	while (diff > (leapYear & 3 ? 365 : 366)) {
 		// Future year
 		if (year % 4) {
 			diff -= 365;
@@ -1646,11 +1669,17 @@ static void _latchTAMA6Rtc(struct mRTCSource* rtc, struct GBTAMA5State* tama5, t
 			diff -= 366;
 		}
 		++year;
+		++leapYear;
 	}
+	dayOfWeek = (dayOfWeek + diff) % 7;
 	year %= 100;
+	leapYear &= 3;
 
-	day = _tama6DayOfYearToDayOfMonth(diff, year);
-	month = _tama6DayOfYearToMonth(diff, year);
+	day = _tama6DayOfYearToDayOfMonth(diff, leapYear);
+	month = _tama6DayOfYearToMonth(diff, leapYear);
+
+	timerRegs[GBTAMA6_RTC_PA0_WEEK] = dayOfWeek;
+	tama5->rtcAlarmPage[GBTAMA6_RTC_PA1_LEAP_YEAR] = leapYear;
 
 	timerRegs[GBTAMA6_RTC_PA0_DAY_1] = day % 10;
 	timerRegs[GBTAMA6_RTC_PA0_DAY_10] = day / 10;
@@ -1719,21 +1748,40 @@ void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value) {
 							tama5->rtcTimerPage[GBTAMA6_RTC_PA0_HOUR_1] = out & 0xF;
 							tama5->rtcTimerPage[GBTAMA6_RTC_PA0_HOUR_10] = out >> 4;
 							break;
+						case GBTAMA6_DISABLE_ALARM:
+							tama5->rtcTimerPage[GBTAMA6_RTC_PAGE] &= 0xB;
+							tama5->rtcAlarmPage[GBTAMA6_RTC_PAGE] &= 0xB;
+							tama5->rtcFreePage0[GBTAMA6_RTC_PAGE] &= 0xB;
+							tama5->rtcFreePage1[GBTAMA6_RTC_PAGE] &= 0xB;
+							break;
+						case GBTAMA6_ENABLE_ALARM:
+							tama5->rtcTimerPage[GBTAMA6_RTC_PAGE] |= 0x4;
+							tama5->rtcAlarmPage[GBTAMA6_RTC_PAGE] |= 0x4;
+							tama5->rtcFreePage0[GBTAMA6_RTC_PAGE] |= 0x4;
+							tama5->rtcFreePage1[GBTAMA6_RTC_PAGE] |= 0x4;
+							break;
 						}
 						break;
 					case 0x4: // RTC access
+						address = tama5->registers[GBTAMA5_WRITE_LO];
+						if (address >= GBTAMA6_RTC_PAGE) {
+							break;
+						}
+						out = tama5->registers[GBTAMA5_WRITE_HI];
 						switch (tama5->registers[GBTAMA5_ADDR_LO]) {
 						case 0:
-							tama5->rtcTimerPage[out & 0xF] = out >> 4;
+							out &= _tama6RTCMask[address];
+							tama5->rtcTimerPage[address] = out;
 							break;
 						case 2:
-							tama5->rtcAlarmPage[out & 0xF] = out >> 4;
+							out &= _tama6RTCMask[address | 0x10];
+							tama5->rtcAlarmPage[address] = out;
 							break;
 						case 4:
-							tama5->rtcFreePage0[out & 0xF] = out >> 4;
+							tama5->rtcFreePage0[address] = out;
 							break;
 						case 6:
-							tama5->rtcFreePage1[out & 0xF] = out >> 4;
+							tama5->rtcFreePage1[address] = out;
 							break;
 						}
 						break;
@@ -1796,18 +1844,23 @@ uint8_t _GBTAMA5Read(struct GBMemory* memory, uint16_t address) {
 					break;
 				}
 				_latchTAMA6Rtc(memory->rtc, tama5, &memory->rtcLastLatch);
+				address = tama5->registers[GBTAMA5_WRITE_LO];
+				if (address > GBTAMA6_RTC_PAGE) {
+					value = 0;
+					break;
+				}
 				switch (tama5->registers[GBTAMA5_ADDR_LO]) {
 				case 1:
-					value = tama5->rtcTimerPage[tama5->registers[GBTAMA5_WRITE_LO]];
+					value = tama5->rtcTimerPage[address];
 					break;
 				case 3:
-					value = tama5->rtcTimerPage[tama5->registers[GBTAMA5_WRITE_LO]];
+					value = tama5->rtcTimerPage[address];
 					break;
 				case 5:
-					value = tama5->rtcTimerPage[tama5->registers[GBTAMA5_WRITE_LO]];
+					value = tama5->rtcTimerPage[address];
 					break;
 				case 7:
-					value = tama5->rtcTimerPage[tama5->registers[GBTAMA5_WRITE_LO]];
+					value = tama5->rtcTimerPage[address];
 					break;
 				}
 				break;
