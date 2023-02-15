@@ -55,6 +55,14 @@ uint qHash(const QSurfaceFormat& format, uint seed) {
 	return qHash(representation, seed);
 }
 
+mGLWidget::mGLWidget(QWidget* parent)
+	: QOpenGLWidget(parent)
+{
+	setUpdateBehavior(QOpenGLWidget::PartialUpdate);
+
+	connect(&m_refresh, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
+}
+
 void mGLWidget::initializeGL() {
 	m_vao = std::make_unique<QOpenGLVertexArrayObject>();
 	m_vao->create();
@@ -84,8 +92,6 @@ void mGLWidget::initializeGL() {
 
 	m_vaoDone = false;
 	m_tex = 0;
-
-	connect(&m_refresh, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
 }
 
 bool mGLWidget::finalizeVAO() {
@@ -306,7 +312,7 @@ void DisplayGL::pauseDrawing() {
 	if (m_hasStarted) {
 		m_isDrawing = false;
 		QMetaObject::invokeMethod(m_painter.get(), "pause", Qt::BlockingQueuedConnection);
-		if (QGuiApplication::platformName() != "xcb") {
+		if (!shouldDisableUpdates()) {
 			setUpdatesEnabled(true);
 		}
 	}
