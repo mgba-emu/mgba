@@ -74,7 +74,7 @@ case "$1" in
    --coverage)
       # Comments below indicate cases known to be required and not duplicated
       # in other (required) cases; the aim is to get a minimal set that gives
-      # the maxium code coverage.
+      # the maximum code coverage.
       mpg none gray-alpha 8 # required: code coverage, sRGB opaque component
       mpg none palette 8 # required: basic palette read
       mpg 1.8 gray 2 # required: tests gamma threshold code

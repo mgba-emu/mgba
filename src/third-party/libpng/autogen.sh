@@ -194,7 +194,7 @@ case "$mode" in
       if test -d .git
       then
          exec >&2
-         echo "ERROR: running autoreconf on an initialized sytem"
+         echo "ERROR: running autoreconf on an initialized system"
          echo "  This is not necessary; it is only necessary to remake the"
          echo "  autotools generated files if Makefile.am or configure.ac"
          echo "  change and make does the right thing with:"

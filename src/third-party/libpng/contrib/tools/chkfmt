@@ -54,7 +54,7 @@ doed(){
 }
 
 # In beta versions the version string which appears in files can be a little
-# long and cause spuriously overlong lines.  To avoid this subtitute the version
+# long and cause spuriously overlong lines.  To avoid this substitute the version
 # string with a 'standard' version a.b.cc before checking for long lines.
 if test -r png.h
 then

@@ -410,15 +410,14 @@ BOOL PngSaveImage (PTSTR pstrFileName, png_byte *pDiData,
 #ifndef PNG_STDIO_SUPPORTED
 
 static void
-png_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
+png_read_data(png_structp png_ptr, png_bytep data, size_t length)
 {
-   png_size_t check;
+   size_t check;
 
-   /* fread() returns 0 on error, so it is OK to store this in a png_size_t
+   /* fread() returns 0 on error, so it is OK to store this in a size_t
     * instead of an int, which is what fread() actually returns.
     */
-   check = (png_size_t)fread(data, (png_size_t)1, length,
-      (FILE *)png_ptr->io_ptr);
+   check = fread(data, 1, length, (FILE *)png_ptr->io_ptr);
 
    if (check != length)
    {
@@ -427,7 +426,7 @@ png_read_data(png_structp png_ptr, png_bytep data, png_size_t length)
 }
 
 static void
-png_write_data(png_structp png_ptr, png_bytep data, png_size_t length)
+png_write_data(png_structp png_ptr, png_bytep data, size_t length)
 {
    png_uint_32 check;
 

@@ -8,7 +8,8 @@ com pnglibconf.h - library build configuration
 com
 version
 com
-com Copyright (c) 1998-2017 Glenn Randers-Pehrson
+com Copyright (c) 2018-2019 Cosmin Truta
+com Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
 com
 com This code is released under the libpng license.
 com For conditions of distribution and use, see the disclaimer
@@ -189,7 +190,7 @@ setting USER_VERSIONINFO_LEGALTRADEMARKS
 
 setting API_RULE default 0
 
-# This allows a prefix to be added to the front of every API functon name (and
+# This allows a prefix to be added to the front of every API function name (and
 # therefore every symbol) by redefining all the function names with the prefix
 # at the end of pnglibconf.h.  It also turns on similar internal symbol renaming
 # by causing a similar build-time only file, pngprefix.h, to be generated.
@@ -324,7 +325,7 @@ option WRITE_INT_FUNCTIONS disabled
 #     By default recoverable errors on write should just generate warnings,
 #     not generally safe because this allows the application to write invalid
 #     PNG files.  Applications should enable this themselves; it's useful
-#     because it means that a failure to write an ancilliary chunk can often be
+#     because it means that a failure to write an ancillary chunk can often be
 #     ignored.
 
 option WARNINGS
@@ -395,7 +396,7 @@ option IO_STATE
 option USER_LIMITS requires READ
 
 # The default settings given below for the limits mean that libpng will
-# limit the size of images or the size of data in ancilliary chunks to less
+# limit the size of images or the size of data in ancillary chunks to less
 # than the specification or implementation limits. Settings have the
 # following interpretations:
 #
@@ -559,7 +560,7 @@ option WRITE_CUSTOMIZE_ZTXT_COMPRESSION requires WRITE
 option WRITE_CUSTOMIZE_COMPRESSION requires WRITE
 
 # Any chunks you are not interested in, you can undef here.  The
-# ones that allocate memory may be expecially important (hIST,
+# ones that allocate memory may be especially important (hIST,
 # tEXt, zTXt, tRNS, pCAL).  Others will just save time and make png_info
 # a bit smaller.
 
@@ -715,7 +716,7 @@ setting sCAL_PRECISION default 5
 setting ZBUF_SIZE default 8192
 
 # This is the size of the decompression buffer used when counting or checking
-# the decompressed size of an LZ stream from a compressed ancilliary chunk; the
+# the decompressed size of an LZ stream from a compressed ancillary chunk; the
 # decompressed data is never used so a different size may be optimal.  This size
 # was determined using contrib/libtests/timepng.c with compressed zTXt data
 # around 11MByte in size.  Slight speed improvements (up to about 14% in

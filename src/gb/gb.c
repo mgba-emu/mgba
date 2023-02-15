@@ -220,6 +220,8 @@ static void GBSramDeinit(struct GB* gb) {
 				GBMBCRTCWrite(gb);
 			} else if (gb->memory.mbcType == GB_HuC3) {
 				GBMBCHuC3Write(gb);
+			} else if (gb->memory.mbcType == GB_TAMA5) {
+				GBMBCTAMA5Write(gb);
 			}
 		}
 		gb->sramVf = NULL;
@@ -244,6 +246,8 @@ bool GBLoadSave(struct GB* gb, struct VFile* vf) {
 			GBMBCRTCRead(gb);
 		} else if (gb->memory.mbcType == GB_HuC3) {
 			GBMBCHuC3Read(gb);
+		} else if (gb->memory.mbcType == GB_TAMA5) {
+			GBMBCTAMA5Read(gb);
 		}
 	}
 	return vf;
@@ -329,6 +333,8 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 			GBMBCRTCWrite(gb);
 		} else if (gb->memory.mbcType == GB_HuC3) {
 			GBMBCHuC3Write(gb);
+		} else if (gb->memory.mbcType == GB_TAMA5) {
+			GBMBCTAMA5Write(gb);
 		}
 		if (gb->sramVf == gb->sramRealVf) {
 			if (gb->memory.sram && gb->sramVf->sync(gb->sramVf, gb->memory.sram, gb->sramSize)) {

@@ -66,7 +66,7 @@ The following mappers are partially supported:
 - MBC6 (missing flash memory write support)
 - MMM01
 - Pocket Cam
-- TAMA5 (missing RTC support)
+- TAMA5 (incomplete RTC support)
 - HuC-1 (missing IR support)
 - HuC-3 (missing IR support)
 - Sachen MMC2 (missing alternate wiring support)
@@ -77,7 +77,6 @@ The following mappers are partially supported:
 - Dolphin/JOY bus link cable support.
 - MP2k audio mixing, for higher quality sound than hardware.
 - Re-recording support for tool-assist runs.
-- Lua support for scripting.
 - A comprehensive debug suite.
 - Wireless adapter support.
 - OpenGL renderer.
@@ -136,7 +135,7 @@ DS default controls are slightly different:
 Compiling
 ---------
 
-Compiling requires using CMake 3.1 or newer. GCC, Clang and Visual Studio 2019 known to work to compile medusa.
+Compiling requires using CMake 3.1 or newer. GCC, Clang, and Visual Studio 2019 are known to work to compile medusa.
 
 #### Docker building
 
