@@ -585,7 +585,7 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 }
 
 void GBASavedataRTCWrite(struct GBASavedata* savedata) {
-	if (!(savedata->gpio->devices & HW_RTC)) {
+	if (!(savedata->gpio->devices & HW_RTC) || !savedata->vf || savedata->mapMode == MAP_READ) {
 		return;
 	}
 
@@ -595,9 +595,18 @@ void GBASavedataRTCWrite(struct GBASavedata* savedata) {
 	buffer.control = savedata->gpio->rtc.control;
 	STORE_64LE(savedata->gpio->rtc.lastLatch, 0, &buffer.lastLatch);
 
-	size_t size = GBASavedataSize(savedata) & ~0xFF;
-	savedata->vf->seek(savedata->vf, size, SEEK_SET);
+	size_t size = GBASavedataSize(savedata);
+	savedata->vf->seek(savedata->vf, size & ~0xFF, SEEK_SET);
+
+	if ((savedata->vf->size(savedata->vf) & 0xFF) != sizeof(buffer)) {
+		// Writing past the end of the file can invalidate the file mapping
+		savedata->vf->unmap(savedata->vf, savedata->data, size);
+		savedata->data = NULL;
+	}
 	savedata->vf->write(savedata->vf, &buffer, sizeof(buffer));
+	if (!savedata->data) {
+		savedata->data = savedata->vf->map(savedata->vf, size, MAP_WRITE);
+	}
 }
 
 static uint8_t _unBCD(uint8_t byte) {
@@ -605,6 +614,10 @@ static uint8_t _unBCD(uint8_t byte) {
 }
 
 void GBASavedataRTCRead(struct GBASavedata* savedata) {
+	if (!savedata->vf) {
+		return;
+	}
+
 	struct GBASavedataRTCBuffer buffer;
 
 	size_t size = GBASavedataSize(savedata) & ~0xFF;

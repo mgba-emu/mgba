@@ -768,9 +768,11 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 	case GB_TAMA5:
 		STORE_64LE(memory->rtcLastLatch, 0, &state->memory.tama5.lastLatch);
 		state->memory.tama5.reg = memory->mbcState.tama5.reg;
-		for (i = 0; i < 8; ++i) {
+		for (i = 0; i < 4; ++i) {
 			state->tama5Registers.registers[i] = memory->mbcState.tama5.registers[i * 2] & 0xF;
 			state->tama5Registers.registers[i] |= memory->mbcState.tama5.registers[i * 2 + 1] << 4;
+		}
+		for (i = 0; i < 8; ++i) {
 			state->tama5Registers.rtcTimerPage[i] = memory->mbcState.tama5.rtcTimerPage[i * 2] & 0xF;
 			state->tama5Registers.rtcTimerPage[i] |= memory->mbcState.tama5.rtcTimerPage[i * 2 + 1] << 4;
 			state->tama5Registers.rtcAlarmPage[i] = memory->mbcState.tama5.rtcAlarmPage[i * 2] & 0xF;
@@ -893,9 +895,11 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	case GB_TAMA5:
 		LOAD_64LE(memory->rtcLastLatch, 0, &state->memory.tama5.lastLatch);
 		memory->mbcState.tama5.reg = state->memory.tama5.reg;
-		for (i = 0; i < 8; ++i) {
+		for (i = 0; i < 4; ++i) {
 			memory->mbcState.tama5.registers[i * 2] = state->tama5Registers.registers[i] & 0xF;
 			memory->mbcState.tama5.registers[i * 2 + 1] = state->tama5Registers.registers[i] >> 4;
+		}
+		for (i = 0; i < 8; ++i) {
 			memory->mbcState.tama5.rtcTimerPage[i * 2] = state->tama5Registers.rtcTimerPage[i] & 0xF;
 			memory->mbcState.tama5.rtcTimerPage[i * 2 + 1] = state->tama5Registers.rtcTimerPage[i] >> 4;
 			memory->mbcState.tama5.rtcAlarmPage[i * 2] = state->tama5Registers.rtcAlarmPage[i] & 0xF;

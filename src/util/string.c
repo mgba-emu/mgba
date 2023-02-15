@@ -144,7 +144,7 @@ uint32_t utf8Char(const char** unicode, size_t* length) {
 	if (numBytes == 0) {
 		return 0xFFFD;
 	}
-	if (*length < numBytes) {
+	if (*length + 1 < numBytes) {
 		*length = 0;
 		return 0xFFFD;
 	}

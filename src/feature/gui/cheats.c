@@ -94,7 +94,7 @@ static void mGUIShowCheatSet(struct mGUIRunner* runner, struct mCheatDevice* dev
 		switch (action) {
 		case CHEAT_ADD_LINE:
 			strlcpy(keyboard.title, "Add line", sizeof(keyboard.title));
-			keyboard.maxLen = 12;
+			keyboard.maxLen = 17;
 			if (runner->params.getText(&keyboard) == GUI_KEYBOARD_DONE) {
 				mCheatAddLine(set, keyboard.result, 0);
 				_rebuildCheatView(&view.items, set);

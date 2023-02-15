@@ -132,9 +132,17 @@ static enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 	utf16Buffer = params.inputTextBuffer;
 	utf8Buffer = keyboard->result;
 	i = keyboard->maxLen;
-	while (i > 0 && *utf16Buffer) {
-		uint32_t unichar = utf16Char((const uint16_t**) &utf16Buffer, &i);
-		utf8Buffer += toUtf8(unichar, utf8Buffer);
+	size_t bufferSize = sizeof(SceWChar16) * keyboard->maxLen;
+	while (bufferSize && *utf16Buffer) {
+		char buffer[4];
+		uint32_t unichar = utf16Char((const uint16_t**) &utf16Buffer, &bufferSize);
+		size_t bytes = toUtf8(unichar, buffer);
+		if (i < bytes) {
+			break;
+		}
+		memcpy(utf8Buffer, buffer, bytes);
+		utf8Buffer += bytes;
+		i -= bytes;
 	}
 	utf8Buffer[0] = 0;
 

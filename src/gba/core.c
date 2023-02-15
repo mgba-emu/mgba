@@ -723,6 +723,8 @@ static void _GBACoreReset(struct mCore* core) {
 	if (forceSkip || (core->opts.skipBios && (gba->romVf || gba->memory.rom))) {
 		GBASkipBIOS(core->board);
 	}
+
+	mTimingInterrupt(&gba->timing);
 }
 
 static void _GBACoreRunFrame(struct mCore* core) {

@@ -1187,6 +1187,11 @@ void Window::changeRenderer() {
 			m_config->updateOption("videoScale");
 		}
 	} else {
+		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
+		if (proxy) {
+			proxy->detach(m_controller.get());
+			m_display->setVideoProxy({});
+		}
 		m_controller->setFramebufferHandle(-1);
 	}
 }
@@ -1388,7 +1393,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Boot BIOS"), "bootBIOS", this, &Window::bootBIOS, "file");
 #endif
 
-	addGameAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "file");
 #ifdef M_CORE_GBA
 	Action* scanCard = addGameAction(tr("Scan e-Reader dotcodes..."), "scanCard", this, &Window::scanCard, "file");
 	m_platformActions.insert(mPLATFORM_GBA, scanCard);
@@ -1499,10 +1503,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	addGameAction(tr("&Reset"), "reset", &CoreController::reset, "emu", QKeySequence("Ctrl+R"));
 	addGameAction(tr("Sh&utdown"), "shutdown", &CoreController::stop, "emu");
+	m_actions.addSeparator("emu");
+
+	addGameAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "emu");
 	Action* yank = addGameAction(tr("Yank game pak"), "yank", &CoreController::yankPak, "emu");
 	m_platformActions.insert(mPLATFORM_GBA, yank);
 	m_platformActions.insert(mPLATFORM_GB, yank);
-
 	m_actions.addSeparator("emu");
 
 	Action* pause = m_actions.addBooleanAction(tr("&Pause"), "pause", [this](bool paused) {
