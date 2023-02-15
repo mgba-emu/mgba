@@ -42,7 +42,7 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
 		m_boundary = 2048;
-		m_ui.tile->setMaxTile(3096);
+		m_ui.tile->setMaxTile(3072);
 		m_addressBase = GBA_BASE_VRAM;
 		m_addressWidth = 8;
 		m_ui.bgInfo->addCustomProperty("priority", tr("Priority"));
@@ -119,6 +119,9 @@ void MapView::selectMap(int map) {
 	}
 	m_map = map;
 	m_mapStatus.fill({});
+	// Different maps can have different max palette counts; set it to
+	// 0 immediately to avoid tile lookups with state palette IDs break
+	m_ui.tile->setPalette(0);
 	updateTiles(true);
 }
 
@@ -184,11 +187,18 @@ void MapView::updateTilesGBA(bool) {
 					frame = GBARegisterDISPCNTGetFrameSelect(io[REG_DISPCNT >> 1]);
 				}
 			}
+			m_boundary = 1024;
+			m_ui.tile->setMaxTile(1536);
 			priority = GBARegisterBGCNTGetPriority(io[(REG_BG0CNT >> 1) + m_map]);
 			if (mode == 0 || (mode == 1 && m_map != 2)) {
 				offset = QString("%1, %2")
 					.arg(io[(REG_BG0HOFS >> 1) + (m_map << 1)])
 					.arg(io[(REG_BG0VOFS >> 1) + (m_map << 1)]);
+
+				if (!GBARegisterBGCNTIs256Color(io[(REG_BG0CNT >> 1) + m_map])) {
+					m_boundary = 2048;
+					m_ui.tile->setMaxTile(3072);
+				}
 			} else if ((mode > 0 && m_map == 2) || (mode == 2 && m_map == 3)) {
 				int32_t refX = io[(REG_BG2X_LO >> 1) + ((m_map - 2) << 2)];
 				refX |= io[(REG_BG2X_HI >> 1) + ((m_map - 2) << 2)] << 16;
