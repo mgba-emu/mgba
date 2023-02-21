@@ -109,7 +109,6 @@ public slots:
 	void setVideoScale(int scale) override;
 	void setBackgroundImage(const QImage&) override;
 
-
 protected:
 	virtual void paintEvent(QPaintEvent*) override { forceDraw(); }
 	virtual void resizeEvent(QResizeEvent*) override;
@@ -178,6 +177,7 @@ public slots:
 	void filter(bool filter);
 	void resizeContext();
 	void updateFramebufferHandle();
+	void setBackgroundImage(const QImage&);
 
 	void setShaders(struct VDir*);
 	void clearShaders();
@@ -196,6 +196,7 @@ private:
 	void performDraw();
 	void dequeue();
 	void dequeueAll(bool keep = false);
+	void recenterLayers();
 
 	std::array<std::array<uint32_t, 0x100000>, 3> m_buffers;
 	QList<uint32_t*> m_free;
@@ -214,6 +215,7 @@ private:
 	QWindow* m_window;
 	QSurface* m_surface;
 	QSurfaceFormat m_format;
+	QImage m_background;
 	std::unique_ptr<QOpenGLPaintDevice> m_paintDev;
 	std::unique_ptr<QOpenGLContext> m_gl;
 	int m_finalTexIdx = 0;

@@ -21,6 +21,7 @@ typedef void* WHandle;
 
 enum VideoLayer {
 	VIDEO_LAYER_BACKGROUND = 0,
+	VIDEO_LAYER_BEZEL,
 	VIDEO_LAYER_IMAGE,
 	VIDEO_LAYER_OVERLAY,
 	VIDEO_LAYER_MAX
@@ -54,6 +55,8 @@ struct VideoShader {
 	void* passes;
 	size_t nPasses;
 };
+
+void VideoBackendGetFrameSize(const struct VideoBackend*, unsigned* width, unsigned* height);
 
 CXX_GUARD_END
 

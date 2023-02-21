@@ -240,12 +240,17 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	unsigned drawW = w;
 	unsigned drawH = h;
+
+	unsigned maxW;
+	unsigned maxH;
+	VideoBackendGetFrameSize(v, &maxW, &maxH);
+
 	if (v->lockAspectRatio) {
-		lockAspectRatioUInt(context->layerDims[VIDEO_LAYER_IMAGE].width, context->layerDims[VIDEO_LAYER_IMAGE].height, &drawW, &drawH);
+		lockAspectRatioUInt(maxW, maxH, &drawW, &drawH);
 	}
 	if (v->lockIntegerScaling) {
-		lockIntegerRatioUInt(context->layerDims[VIDEO_LAYER_IMAGE].width, &drawW);
-		lockIntegerRatioUInt(context->layerDims[VIDEO_LAYER_IMAGE].height, &drawH);
+		lockIntegerRatioUInt(maxW, &drawW);
+		lockIntegerRatioUInt(maxH, &drawH);
 	}
 	size_t n;
 	for (n = 0; n < context->nShaders; ++n) {

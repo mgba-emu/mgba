@@ -9,9 +9,9 @@
 
 static const GLint _glVertices[] = {
 	0, 0,
-	256, 0,
-	256, 256,
-	0, 256
+	1, 0,
+	1, 1,
+	0, 1
 };
 
 static const GLint _glTexCoords[] = {
@@ -101,15 +101,19 @@ static void mGLContextDeinit(struct VideoBackend* v) {
 }
 
 static void mGLContextResized(struct VideoBackend* v, unsigned w, unsigned h) {
-	struct mGLContext* context = (struct mGLContext*) v;
 	unsigned drawW = w;
 	unsigned drawH = h;
+
+	unsigned maxW;
+	unsigned maxH;
+	VideoBackendGetFrameSize(v, &maxW, &maxH);
+
 	if (v->lockAspectRatio) {
-		lockAspectRatioUInt(context->layerDims[VIDEO_LAYER_IMAGE].width, context->layerDims[VIDEO_LAYER_IMAGE].height, &drawW, &drawH);
+		lockAspectRatioUInt(maxW, maxH, &drawW, &drawH);
 	}
 	if (v->lockIntegerScaling) {
-		lockIntegerRatioUInt(context->layerDims[VIDEO_LAYER_IMAGE].width, &drawW);
-		lockIntegerRatioUInt(context->layerDims[VIDEO_LAYER_IMAGE].height, &drawH);
+		lockIntegerRatioUInt(maxW, &drawW);
+		lockIntegerRatioUInt(maxH, &drawH);
 	}
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -124,33 +128,7 @@ static void mGLContextClear(struct VideoBackend* v) {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void mGLContextDrawFrame(struct VideoBackend* v) {
-	struct mGLContext* context = (struct mGLContext*) v;
-	glEnable(GL_TEXTURE_2D);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(2, GL_INT, 0, _glVertices);
-	glTexCoordPointer(2, GL_INT, 0, _glTexCoords);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, context->layerDims[VIDEO_LAYER_IMAGE].width, context->layerDims[VIDEO_LAYER_IMAGE].height, 0, 0, 1);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	if (v->interframeBlending) {
-		glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
-		glBlendColor(1, 1, 1, 0.5);
-		glBindTexture(GL_TEXTURE_2D, context->tex[context->activeTex ^ 1]);
-		if (v->filter) {
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		} else {
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		}
-		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-		glEnable(GL_BLEND);
-	}
-	glBindTexture(GL_TEXTURE_2D, context->tex[context->activeTex]);
+static void _setFilter(struct VideoBackend* v) {
 	if (v->filter) {
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -158,6 +136,61 @@ void mGLContextDrawFrame(struct VideoBackend* v) {
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	}
+}
+
+static void _setFrame(struct Rectangle* dims, int frameW, int frameH) {
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	glScissor(viewport[0] + dims->x * viewport[2] / frameW,
+	          viewport[1] + dims->y * viewport[3] / frameH,
+	          dims->width * viewport[2] / frameW,
+	          dims->height * viewport[3] / frameH);
+	glTranslatef(dims->x, dims->y, 0);
+	glScalef(toPow2(dims->width), toPow2(dims->height), 1);
+}
+
+void mGLContextDrawFrame(struct VideoBackend* v) {
+	struct mGLContext* context = (struct mGLContext*) v;
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_SCISSOR_TEST);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glVertexPointer(2, GL_INT, 0, _glVertices);
+	glTexCoordPointer(2, GL_INT, 0, _glTexCoords);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	unsigned frameW, frameH;
+	VideoBackendGetFrameSize(v, &frameW, &frameH);
+	glOrtho(0, frameW, frameH, 0, 0, 1);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	int layer;
+	for (layer = 0; layer < VIDEO_LAYER_IMAGE; ++layer) {
+		if (context->layerDims[layer].width < 1 || context->layerDims[layer].height < 1) {
+			continue;
+		}
+
+		glDisable(GL_BLEND);
+		glBindTexture(GL_TEXTURE_2D, context->layers[layer]);
+		_setFilter(v);
+		glPushMatrix();
+		_setFrame(&context->layerDims[layer], frameW, frameH);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		glPopMatrix();
+	}
+
+	_setFrame(&context->layerDims[VIDEO_LAYER_IMAGE], frameW, frameH);
+	if (v->interframeBlending) {
+		glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
+		glBlendColor(1, 1, 1, 0.5);
+		glBindTexture(GL_TEXTURE_2D, context->tex[context->activeTex ^ 1]);
+		_setFilter(v);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		glEnable(GL_BLEND);
+	}
+	glBindTexture(GL_TEXTURE_2D, context->tex[context->activeTex]);
+	_setFilter(v);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glDisable(GL_BLEND);
 }

@@ -397,7 +397,7 @@ void DisplayGL::setVideoScale(int scale) {
 }
 
 void DisplayGL::setBackgroundImage(const QImage& image) {
-	// TODO
+	QMetaObject::invokeMethod(m_painter.get(), "setBackgroundImage", Q_ARG(const QImage&, image));
 }
 
 void DisplayGL::resizeEvent(QResizeEvent* event) {
@@ -631,10 +631,27 @@ void PainterGL::resizeContext() {
 
 	Rectangle dims = {0, 0, size.width(), size.height()};
 	m_backend->setLayerDimensions(m_backend, VIDEO_LAYER_IMAGE, &dims);
+	recenterLayers();
 }
 
 void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
 	m_messagePainter = messagePainter;
+}
+
+void PainterGL::recenterLayers() {
+	const static std::initializer_list<VideoLayer> centeredLayers{VIDEO_LAYER_BACKGROUND, VIDEO_LAYER_IMAGE};
+	Rectangle frame = {0};
+	for (VideoLayer l : centeredLayers) {
+		Rectangle dims;
+		m_backend->layerDimensions(m_backend, l, &dims);
+		RectangleUnion(&frame, &dims);
+	}
+	for (VideoLayer l : centeredLayers) {
+		Rectangle dims;
+		m_backend->layerDimensions(m_backend, l, &dims);
+		RectangleCenter(&frame, &dims);
+		m_backend->setLayerDimensions(m_backend, l, &dims);
+	}
 }
 
 void PainterGL::resize(const QSize& size) {
@@ -993,6 +1010,32 @@ void PainterGL::updateFramebufferHandle() {
 	}
 	enqueue(m_bridgeTexIn);
 	m_context->setFramebufferHandle(m_bridgeTexIn);
+}
+
+void PainterGL::setBackgroundImage(const QImage& image) {
+	if (!m_started) {
+		makeCurrent();
+	}
+
+	Rectangle dims = {0, 0, 0, 0};
+	if (!image.isNull()) {
+		dims.width = static_cast<unsigned>(image.width());
+		dims.height = static_cast<unsigned>(image.height());
+	}
+	m_backend->setLayerDimensions(m_backend, VIDEO_LAYER_BACKGROUND, &dims);
+	recenterLayers();
+
+	if (!image.isNull()) {
+		m_background = image.convertToFormat(QImage::Format_RGB32);
+		m_background = m_background.rgbSwapped();
+		m_backend->setImage(m_backend, VIDEO_LAYER_BACKGROUND, m_background.constBits());
+	} else {
+		m_background = QImage();
+	}
+
+	if (!m_started) {
+		m_gl->doneCurrent();
+	}
 }
 
 void PainterGL::swapTex() {
