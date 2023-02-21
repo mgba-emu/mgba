@@ -13,9 +13,12 @@ CXX_GUARD_START
 struct Rectangle {
     int x;
     int y;
-    unsigned width;
-    unsigned height;
+    int width;
+    int height;
 };
+
+void RectangleUnion(struct Rectangle* dst, const struct Rectangle* add);
+void RectangleCenter(const struct Rectangle* ref, struct Rectangle* rect);
 
 CXX_GUARD_END
 
