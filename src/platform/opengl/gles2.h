@@ -83,6 +83,8 @@ struct mGLES2Context {
 	GLuint vbo;
 
 	struct Rectangle layerDims[VIDEO_LAYER_MAX];
+	unsigned width;
+	unsigned height;
 
 	struct mGLES2Shader initialShader;
 	struct mGLES2Shader finalShader;

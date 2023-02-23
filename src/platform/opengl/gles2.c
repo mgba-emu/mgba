@@ -206,7 +206,10 @@ static void mGLES2ContextSetLayerDimensions(struct VideoBackend* v, enum VideoLa
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dims->width, dims->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 #endif
 
-	if (layer == VIDEO_LAYER_BACKGROUND) {
+	unsigned newW;
+	unsigned newH;
+	VideoBackendGetFrameSize(v, &newW, &newH);
+	if (newW != context->width || newH != context->height) {
 		size_t n;
 		for (n = 0; n < context->nShaders; ++n) {
 			if (context->shaders[n].width < 0 || context->shaders[n].height < 0) {
@@ -215,6 +218,8 @@ static void mGLES2ContextSetLayerDimensions(struct VideoBackend* v, enum VideoLa
 		}
 		context->initialShader.dirty = true;
 		context->interframeShader.dirty = true;
+		context->width = newW;
+		context->height = newH;
 	}
 }
 
@@ -241,9 +246,8 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 	unsigned drawW = w;
 	unsigned drawH = h;
 
-	unsigned maxW;
-	unsigned maxH;
-	VideoBackendGetFrameSize(v, &maxW, &maxH);
+	unsigned maxW = context->width;
+	unsigned maxH = context->height;
 
 	if (v->lockAspectRatio) {
 		lockAspectRatioUInt(maxW, maxH, &drawW, &drawH);
@@ -272,7 +276,7 @@ static void mGLES2ContextClear(struct VideoBackend* v) {
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
-void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
+static void _drawShaderEx(struct mGLES2Context* context, struct mGLES2Shader* shader, int layer) {
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	int drawW = shader->width;
@@ -283,19 +287,19 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 		drawW = viewport[2];
 		padW = viewport[0];
 	} else if (shader->width < 0) {
-		drawW = context->layerDims[VIDEO_LAYER_IMAGE].width * -shader->width;
+		drawW = context->width * -shader->width;
 	}
 	if (!drawH) {
 		drawH = viewport[3];
 		padH = viewport[1];
 	} else if (shader->height < 0) {
-		drawH = context->layerDims[VIDEO_LAYER_IMAGE].height * -shader->height;
+		drawH = context->height * -shader->height;
 	}
 	if (shader->integerScaling) {
 		padW = 0;
 		padH = 0;
-		drawW -= drawW % context->layerDims[VIDEO_LAYER_IMAGE].width;
-		drawH -= drawH % context->layerDims[VIDEO_LAYER_IMAGE].height;
+		drawW -= drawW % context->width;
+		drawH -= drawH % context->height;
 	}
 
 	if (shader->dirty) {
@@ -309,22 +313,29 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 		shader->dirty = false;
 	}
 
+	if (layer >= 0 && layer < VIDEO_LAYER_MAX) {
+		glViewport(context->layerDims[layer].x, context->layerDims[layer].y, context->layerDims[layer].width, context->layerDims[layer].height);
+	} else {
+		glViewport(padW, padH, drawW, drawH);
+	}
+
 	glBindFramebuffer(GL_FRAMEBUFFER, shader->fbo);
-	glViewport(padW, padH, drawW, drawH);
 	if (shader->blend) {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	} else {
 		glDisable(GL_BLEND);
-		glClearColor(0.f, 0.f, 0.f, 1.f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		if (layer <= VIDEO_LAYER_BACKGROUND) {
+			glClearColor(0.f, 0.f, 0.f, 1.f);
+			glClear(GL_COLOR_BUFFER_BIT);
+		}
 	}
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, shader->filter ? GL_LINEAR : GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shader->filter ? GL_LINEAR : GL_NEAREST);
 	glUseProgram(shader->program);
 	glUniform1i(shader->texLocation, 0);
-	glUniform2f(shader->texSizeLocation, context->layerDims[VIDEO_LAYER_IMAGE].width, context->layerDims[VIDEO_LAYER_IMAGE].height);
+	glUniform2f(shader->texSizeLocation, context->width, context->height);
 	glUniform2f(shader->outputSizeLocation, drawW, drawH);
 #ifdef BUILD_GLES3
 	if (shader->vao != (GLuint) -1) {
@@ -391,21 +402,36 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 	glBindTexture(GL_TEXTURE_2D, shader->tex);
 }
 
+static void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
+	_drawShaderEx(context, shader, -1);
+}
+
 void mGLES2ContextDrawFrame(struct VideoBackend* v) {
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, context->tex[VIDEO_LAYER_IMAGE]);
 
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 
 	context->finalShader.filter = v->filter;
-	_drawShader(context, &context->initialShader);
-	if (v->interframeBlending) {
-		context->interframeShader.blend = true;
-		glViewport(0, 0, viewport[2], viewport[3]);
-		_drawShader(context, &context->interframeShader);
+
+	int layer;
+	for (layer = 0; layer <= VIDEO_LAYER_IMAGE; ++layer) {
+		if (context->layerDims[layer].width < 1 || context->layerDims[layer].height < 1) {
+			continue;
+		}
+		glBindTexture(GL_TEXTURE_2D, context->tex[layer]);
+		_drawShaderEx(context, &context->initialShader, layer);
+		if (layer != VIDEO_LAYER_IMAGE) {
+			continue;
+		}
+		if (v->interframeBlending) {
+			context->interframeShader.blend = true;
+			glViewport(0, 0, viewport[2], viewport[3]);
+			_drawShader(context, &context->interframeShader);
+		}
 	}
+
 	size_t n;
 	for (n = 0; n < context->nShaders; ++n) {
 		glViewport(0, 0, viewport[2], viewport[3]);
@@ -416,7 +442,7 @@ void mGLES2ContextDrawFrame(struct VideoBackend* v) {
 	if (v->interframeBlending) {
 		context->interframeShader.blend = false;
 		glBindTexture(GL_TEXTURE_2D, context->tex[VIDEO_LAYER_IMAGE]);
-		_drawShader(context, &context->initialShader);
+		_drawShaderEx(context, &context->initialShader, VIDEO_LAYER_IMAGE);
 		glViewport(0, 0, viewport[2], viewport[3]);
 		_drawShader(context, &context->interframeShader);
 	}
