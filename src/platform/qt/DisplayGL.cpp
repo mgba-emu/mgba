@@ -245,6 +245,8 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 		show();
 		m_gl->reset();
 	}
+
+	QTimer::singleShot(8, this, &DisplayGL::updateContentSize);
 }
 
 bool DisplayGL::supportsFormat(const QSurfaceFormat& format) {
@@ -331,12 +333,14 @@ void DisplayGL::unpauseDrawing() {
 		if (!m_gl && shouldDisableUpdates()) {
 			setUpdatesEnabled(false);
 		}
+		QMetaObject::invokeMethod(this, "updateContentSize", Qt::QueuedConnection);
 	}
 }
 
 void DisplayGL::forceDraw() {
 	if (m_hasStarted) {
 		QMetaObject::invokeMethod(m_painter.get(), "forceDraw");
+		QMetaObject::invokeMethod(this, "updateContentSize", Qt::QueuedConnection);
 	}
 }
 
@@ -398,6 +402,7 @@ void DisplayGL::setVideoScale(int scale) {
 
 void DisplayGL::setBackgroundImage(const QImage& image) {
 	QMetaObject::invokeMethod(m_painter.get(), "setBackgroundImage", Q_ARG(const QImage&, image));
+	QMetaObject::invokeMethod(this, "updateContentSize", Qt::QueuedConnection);
 }
 
 void DisplayGL::resizeEvent(QResizeEvent* event) {
@@ -450,6 +455,10 @@ void DisplayGL::setupProxyThread() {
 		m_painter->updateFramebufferHandle();
 	}, Qt::BlockingQueuedConnection);
 	m_proxyThread.start();
+}
+
+void DisplayGL::updateContentSize() {
+	QMetaObject::invokeMethod(m_painter.get(), "contentSize", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QSize, m_cachedContentSize));
 }
 
 int DisplayGL::framebufferHandle() {
@@ -970,6 +979,13 @@ void PainterGL::clearShaders() {
 
 VideoShader* PainterGL::shaders() {
 	return &m_shader;
+}
+
+QSize PainterGL::contentSize() const {
+	unsigned width, height;
+	VideoBackendGetFrameSize(m_backend, &width, &height);
+	return {static_cast<int>(width > static_cast<unsigned>(INT_MAX) ? INT_MAX : width),
+	        static_cast<int>(height > static_cast<unsigned>(INT_MAX) ? INT_MAX : height)};
 }
 
 int PainterGL::glTex() {

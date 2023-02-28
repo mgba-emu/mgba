@@ -22,6 +22,7 @@ public:
 	bool isDrawing() const override { return m_isDrawing; }
 	bool supportsShaders() const override { return false; }
 	VideoShader* shaders() override { return nullptr; }
+	QSize contentSize() const override;
 
 public slots:
 	void stopDrawing() override;

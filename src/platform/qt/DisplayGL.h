@@ -88,6 +88,7 @@ public:
 	VideoShader* shaders() override;
 	void setVideoProxy(std::shared_ptr<VideoProxy>) override;
 	int framebufferHandle() override;
+	QSize contentSize() const override { return m_cachedContentSize; }
 
 	static bool supportsFormat(const QSurfaceFormat&);
 
@@ -115,6 +116,7 @@ protected:
 
 private slots:
 	void setupProxyThread();
+	void updateContentSize();
 
 private:
 	void resizePainter();
@@ -131,6 +133,7 @@ private:
 	mGLWidget* m_gl;
 	QOffscreenSurface m_proxySurface;
 	std::unique_ptr<QOpenGLContext> m_proxyContext;
+	QSize m_cachedContentSize;
 };
 
 class PainterGL : public QObject {
@@ -182,6 +185,7 @@ public slots:
 	void setShaders(struct VDir*);
 	void clearShaders();
 	VideoShader* shaders();
+	QSize contentSize() const;
 
 signals:
 	void created();

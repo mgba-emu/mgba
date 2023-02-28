@@ -106,22 +106,18 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 
 	QRect bgRect(0, 0, m_background.width(), m_background.height());
 	QRect imRect(0, 0, m_width, m_height);
-	QSize outerFrame;
+	QSize outerFrame = contentSize();
 
 	if (bgRect.width() > imRect.width()) {
 		imRect.moveLeft(bgRect.width() - imRect.width());
-		outerFrame.setWidth(bgRect.width());
 	} else {
 		bgRect.moveLeft(imRect.width() - bgRect.width());
-		outerFrame.setWidth(imRect.width());
 	}
 
 	if (bgRect.height() > imRect.height()) {
 		imRect.moveTop(bgRect.height() - imRect.height());
-		outerFrame.setHeight(bgRect.height());
 	} else {
 		bgRect.moveTop(imRect.height() - bgRect.height());
-		outerFrame.setHeight(imRect.height());
 	}
 
 	QRect full(clampSize(outerFrame, size(), isAspectRatioLocked(), isIntegerScalingLocked()));
@@ -183,4 +179,16 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 	if (isShowOSD() || isShowFrameCounter()) {
 		messagePainter()->paint(&painter);
 	}
+}
+
+QSize DisplayQt::contentSize() const {
+	QSize outerFrame(m_width, m_height);
+
+	if (m_background.width() > outerFrame.width()) {
+		outerFrame.setWidth(m_background.width());
+	}
+	if (m_background.height() > outerFrame.height()) {
+		outerFrame.setHeight(m_background.height());
+	}
+	return outerFrame;
 }

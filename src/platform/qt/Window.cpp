@@ -1488,8 +1488,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 			Action* setSize = m_frameSizes[i];
 			showNormal();
 			QSize size(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-			if (m_controller) {
-				size = m_controller->screenDimensions();
+			if (m_display) {
+				size = m_display->contentSize();
 			}
 			size *= i;
 			m_savedScale = i;
