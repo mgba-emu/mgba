@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "main.h"
 
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
 #include <mgba/core/version.h>
 
 void mSDLGLDoViewport(int w, int h, struct VideoBackend* v) {
@@ -65,4 +67,44 @@ bool mSDLGLCommonInit(struct mSDLRenderer* renderer) {
 	SDL_WM_SetCaption(projectName, "");
 #endif
 	return true;
+}
+
+void mSDLGLCommonRunloop(struct mSDLRenderer* renderer, void* user) {
+	struct mCoreThread* context = user;
+	SDL_Event event;
+	struct VideoBackend* v = renderer->backend;
+
+	while (mCoreThreadIsActive(context)) {
+		while (SDL_PollEvent(&event)) {
+			mSDLHandleEvent(context, &renderer->player, &event);
+			// Event handling can change the size of the screen
+			if (renderer->player.windowUpdated) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
+#else
+				renderer->viewportWidth = renderer->player.newWidth;
+				renderer->viewportHeight = renderer->player.newHeight;
+				mSDLGLCommonInit(renderer);
+#endif
+				mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, v);
+				renderer->player.windowUpdated = 0;
+			}
+		}
+		renderer->core->currentVideoSize(renderer->core, &renderer->width, &renderer->height);
+		struct Rectangle dims;
+		v->layerDimensions(v, VIDEO_LAYER_IMAGE, &dims);
+		if (renderer->width != dims.width || renderer->height != dims.height) {
+			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
+			dims.width = renderer->width;
+			dims.height = renderer->height;
+			v->setLayerDimensions(v, VIDEO_LAYER_IMAGE, &dims);
+		}
+
+		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
+			v->setImage(v, VIDEO_LAYER_IMAGE, renderer->outputBuffer);
+		}
+		mCoreSyncWaitFrameEnd(&context->impl->sync);
+		v->drawFrame(v);
+		v->swap(v);
+	}
 }

@@ -11,20 +11,19 @@
 #endif
 
 #include <mgba/core/core.h>
-#include <mgba/core/thread.h>
 
 #ifdef __linux__
 #include <malloc.h>
 #endif
 
 static bool mSDLGLES2Init(struct mSDLRenderer* renderer);
-static void mSDLGLES2Runloop(struct mSDLRenderer* renderer, void* user);
 static void mSDLGLES2Deinit(struct mSDLRenderer* renderer);
 
 void mSDLGLES2Create(struct mSDLRenderer* renderer) {
 	renderer->init = mSDLGLES2Init;
 	renderer->deinit = mSDLGLES2Deinit;
-	renderer->runloop = mSDLGLES2Runloop;
+	renderer->runloop = mSDLGLCommonRunloop;
+	renderer->backend = &renderer->gl2.d;
 }
 
 bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
@@ -61,37 +60,6 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 
 	mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl2.d);
 	return true;
-}
-
-void mSDLGLES2Runloop(struct mSDLRenderer* renderer, void* user) {
-	struct mCoreThread* context = user;
-	SDL_Event event;
-	struct VideoBackend* v = &renderer->gl2.d;
-
-	while (mCoreThreadIsActive(context)) {
-		while (SDL_PollEvent(&event)) {
-			mSDLHandleEvent(context, &renderer->player, &event);
-			// Event handling can change the size of the screen
-			if (renderer->player.windowUpdated) {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
-#else
-				renderer->viewportWidth = renderer->player.newWidth;
-				renderer->viewportHeight = renderer->player.newHeight;
-				mSDLGLCommonInit(renderer);
-#endif
-				mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, v);
-				renderer->player.windowUpdated = 0;
-			}
-		}
-
-		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
-			v->setImage(v, VIDEO_LAYER_IMAGE, renderer->outputBuffer);
-		}
-		mCoreSyncWaitFrameEnd(&context->impl->sync);
-		v->drawFrame(v);
-		v->swap(v);
-	}
 }
 
 void mSDLGLES2Deinit(struct mSDLRenderer* renderer) {

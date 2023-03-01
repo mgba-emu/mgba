@@ -8,19 +8,17 @@
 #include "gl-common.h"
 
 #include <mgba/core/core.h>
-#include <mgba/core/thread.h>
-#include <mgba-util/math.h>
 
 #include "platform/opengl/gl.h"
 
 static bool mSDLGLInit(struct mSDLRenderer* renderer);
-static void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user);
 static void mSDLGLDeinit(struct mSDLRenderer* renderer);
 
 void mSDLGLCreate(struct mSDLRenderer* renderer) {
 	renderer->init = mSDLGLInit;
 	renderer->deinit = mSDLGLDeinit;
-	renderer->runloop = mSDLGLRunloop;
+	renderer->runloop = mSDLGLCommonRunloop;
+	renderer->backend = &renderer->gl.d;
 }
 
 bool mSDLGLInit(struct mSDLRenderer* renderer) {
@@ -47,46 +45,6 @@ bool mSDLGLInit(struct mSDLRenderer* renderer) {
 
 	mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, &renderer->gl.d);
 	return true;
-}
-
-void mSDLGLRunloop(struct mSDLRenderer* renderer, void* user) {
-	struct mCoreThread* context = user;
-	SDL_Event event;
-	struct VideoBackend* v = &renderer->gl.d;
-
-	while (mCoreThreadIsActive(context)) {
-		while (SDL_PollEvent(&event)) {
-			mSDLHandleEvent(context, &renderer->player, &event);
-			// Event handling can change the size of the screen
-			if (renderer->player.windowUpdated) {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
-#else
-				renderer->viewportWidth = renderer->player.newWidth;
-				renderer->viewportHeight = renderer->player.newHeight;
-				mSDLGLCommonInit(renderer);
-#endif
-				mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, v);
-				renderer->player.windowUpdated = 0;
-			}
-		}
-		renderer->core->currentVideoSize(renderer->core, &renderer->width, &renderer->height);
-		struct Rectangle dims;
-		v->layerDimensions(v, VIDEO_LAYER_IMAGE, &dims);
-		if (renderer->width != dims.width || renderer->height != dims.height) {
-			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
-			dims.width = renderer->width;
-			dims.height = renderer->height;
-			v->setLayerDimensions(v, VIDEO_LAYER_IMAGE, &dims);
-		}
-
-		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
-			v->setImage(v, VIDEO_LAYER_IMAGE, renderer->outputBuffer);
-		}
-		mCoreSyncWaitFrameEnd(&context->impl->sync);
-		v->drawFrame(v);
-		v->swap(v);
-	}
 }
 
 void mSDLGLDeinit(struct mSDLRenderer* renderer) {
