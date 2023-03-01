@@ -159,6 +159,10 @@ static const struct GBACartridgeOverride _overrides[] = {
 	// Shin Bokura no Taiyou: Gyakushuu no Sabata
 	{ "U33J", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE, false },
 
+	// Stuart Little 2
+	{ "ASLE", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "ASLF", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE, false },
+
 	// Super Mario Advance 2
 	{ "AA2J", SAVEDATA_EEPROM, HW_NONE, 0x800052E, false },
 	{ "AA2E", SAVEDATA_EEPROM, HW_NONE, 0x800052E, false },
