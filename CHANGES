@@ -21,6 +21,7 @@ Other fixes:
  - Qt: Disable attempted linking betwen incompatible platforms (fixes mgba.io/i/2702)
  - Qt: Fix modifier key names in shortcut editor (fixes mgba.io/i/2817)
  - Qt: Fix a handful of edge cases with graphics viewers (fixes mgba.io/i/2827)
+ - Qt: Fix full-buffer rewind
  - Scripting: Fix receiving packets for client sockets
  - Scripting: Fix empty receive calls returning unknown error on Windows
 Misc:
