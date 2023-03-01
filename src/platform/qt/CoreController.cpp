@@ -80,7 +80,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 	m_threadContext.resetCallback = [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
-		for (auto action : controller->m_resetActions) {
+		for (auto& action : controller->m_resetActions) {
 			action();
 		}
 
