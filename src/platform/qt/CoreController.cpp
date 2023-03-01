@@ -518,9 +518,6 @@ void CoreController::setRewinding(bool rewind) {
 }
 
 void CoreController::rewind(int states) {
-	if (!states) {
-		return;
-	}
 	if (!m_threadContext.core->opts.rewindEnable) {
 		emit statusPosted(tr("Rewinding not currently enabled"));
 	}
