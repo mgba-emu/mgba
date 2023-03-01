@@ -56,6 +56,7 @@ struct VideoShader {
 	size_t nPasses;
 };
 
+void VideoBackendGetFrame(const struct VideoBackend*, struct Rectangle* frame);
 void VideoBackendGetFrameSize(const struct VideoBackend*, unsigned* width, unsigned* height);
 
 CXX_GUARD_END

@@ -9,6 +9,11 @@
 #include <mgba/core/thread.h>
 #include <mgba/core/version.h>
 
+#ifdef USE_PNG
+#include <mgba-util/png-io.h>
+#include <mgba-util/vfs.h>
+#endif
+
 void mSDLGLDoViewport(int w, int h, struct VideoBackend* v) {
 	v->contextResized(v, w, h);
 	v->clear(v);
@@ -23,6 +28,60 @@ void mSDLGLCommonSwap(struct VideoBackend* context) {
 #else
 	UNUSED(renderer);
 	SDL_GL_SwapBuffers();
+#endif
+}
+
+bool mSDLGLCommonLoadBackground(struct VideoBackend* context) {
+#ifdef USE_PNG
+	struct mSDLRenderer* renderer = context->user;
+	const char* bgImage = mCoreConfigGetValue(&renderer->core->config, "backgroundImage");
+	if (!bgImage) {
+		return false;
+	}
+	struct VFile* vf = VFileOpen(bgImage, O_RDONLY);
+	if (!vf) {
+		return false;
+	}
+
+	bool ok = false;
+	png_structp png = PNGReadOpen(vf, 0);
+	png_infop info = png_create_info_struct(png);
+	png_infop end = png_create_info_struct(png);
+	if (!png || !info || !end) {
+		goto done;
+	}
+
+	if (!PNGReadHeader(png, info)) {
+		goto done;
+	}
+	unsigned width = png_get_image_width(png, info);
+	unsigned height = png_get_image_height(png, info);
+	uint32_t* pixels = malloc(width * height * 4);
+	if (!pixels) {
+		goto done;
+	}
+
+	if (!PNGReadPixels(png, info, pixels, width, height, width) || !PNGReadFooter(png, end)) {
+		free(pixels);
+		goto done;
+	}
+
+	struct Rectangle dims = {
+		.width = width,
+		.height = height
+	};
+	context->setLayerDimensions(context, VIDEO_LAYER_BACKGROUND, &dims);
+	context->setImage(context, VIDEO_LAYER_BACKGROUND, pixels);
+	free(pixels);
+	ok = true;
+
+done:
+	PNGReadClose(png, info, end);
+	vf->close(vf);
+	return ok;
+#else
+	UNUSED(context);
+	return false;
 #endif
 }
 
@@ -73,6 +132,24 @@ void mSDLGLCommonRunloop(struct mSDLRenderer* renderer, void* user) {
 	struct mCoreThread* context = user;
 	SDL_Event event;
 	struct VideoBackend* v = renderer->backend;
+
+	if (mSDLGLCommonLoadBackground(v)) {
+		renderer->player.windowUpdated = true;
+
+		struct Rectangle frame;
+		VideoBackendGetFrame(v, &frame);
+		int i;
+		for (i = 0; i <= VIDEO_LAYER_IMAGE; ++i) {
+			struct Rectangle dims;
+			v->layerDimensions(v, i, &dims);
+			RectangleCenter(&frame, &dims);
+			v->setLayerDimensions(v, i, &dims);
+		}
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		SDL_SetWindowSize(renderer->window, frame.width * renderer->ratio, frame.height * renderer->ratio);
+#endif
+	}
 
 	while (mCoreThreadIsActive(context)) {
 		while (SDL_PollEvent(&event)) {
