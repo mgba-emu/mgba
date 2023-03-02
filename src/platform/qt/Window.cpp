@@ -1138,13 +1138,13 @@ void Window::recordFrame() {
 }
 
 void Window::showFPS() {
-	if (m_frameList.isEmpty()) {
-		updateTitle();
-		return;
-	}
 	qint64 total = 0;
 	for (qint64 t : m_frameList) {
 		total += t;
+	}
+	if (!total) {
+		updateTitle();
+		return;
 	}
 	double fps = (m_frameList.size() * 1e10) / total;
 	m_frameList.clear();
