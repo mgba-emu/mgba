@@ -17,7 +17,7 @@ struct NoIntroDB {
 };
 
 struct NoIntroDB* NoIntroDBLoad(const char* path) {
-	struct NoIntroDB* db = malloc(sizeof(*db));
+	struct NoIntroDB* db = calloc(1, sizeof(*db));
 
 	if (sqlite3_open_v2(path, &db->db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL)) {
 		goto error;
@@ -60,9 +60,6 @@ struct NoIntroDB* NoIntroDBLoad(const char* path) {
 	return db;
 
 error:
-	if (db->crc32) {
-		sqlite3_finalize(db->crc32);
-	}
 	NoIntroDBDestroy(db);
 	return NULL;
 
@@ -285,8 +282,12 @@ bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf) {
 }
 
 void NoIntroDBDestroy(struct NoIntroDB* db) {
-	sqlite3_finalize(db->crc32);
-	sqlite3_close(db->db);
+	if (db->crc32) {
+		sqlite3_finalize(db->crc32);
+	}
+	if (db->db) {
+		sqlite3_close(db->db);
+	}
 	free(db);
 }
 
