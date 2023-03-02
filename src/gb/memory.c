@@ -14,6 +14,7 @@
 #include <mgba/internal/sm83/sm83.h>
 
 #include <mgba-util/memory.h>
+#include <mgba-util/vfs.h>
 
 mLOG_DEFINE_CATEGORY(GB_MEM, "GB Memory", "gb.memory");
 
@@ -956,6 +957,11 @@ void _pristineCow(struct GB* gb) {
 	memset(((uint8_t*) newRom) + gb->memory.romSize, 0xFF, GB_SIZE_CART_MAX - gb->memory.romSize);
 	if (gb->memory.rom == gb->memory.romBase) {
 		gb->memory.romBase = newRom;
+	}
+	if (gb->romVf) {
+		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->memory.romSize);
+		gb->romVf->close(gb->romVf);
+		gb->romVf = NULL;
 	}
 	gb->memory.rom = newRom;
 	GBMBCSwitchBank(gb, gb->memory.currentBank);
