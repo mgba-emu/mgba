@@ -1053,6 +1053,7 @@ bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 				for (n = 0; n < inShaders; ++n) {
 					mGLES2ShaderDeinit(&shaderBlock[n]);
 				}
+				free(shaderBlock);
 			}
 		}
 	}
