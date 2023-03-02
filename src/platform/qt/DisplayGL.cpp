@@ -915,8 +915,9 @@ void PainterGL::setShaders(struct VDir* dir) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
 	}
-	mGLES2ShaderLoad(&m_shader, dir);
-	mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
+	if (mGLES2ShaderLoad(&m_shader, dir)) {
+		mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
+	}
 
 	if (!m_started) {
 		m_gl->doneCurrent();
