@@ -169,14 +169,14 @@ void mCoreConfigDeinit(struct mCoreConfig* config) {
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 bool mCoreConfigLoad(struct mCoreConfig* config) {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	mCoreConfigDirectory(path, PATH_MAX);
 	strncat(path, PATH_SEP "config.ini", PATH_MAX - strlen(path));
 	return mCoreConfigLoadPath(config, path);
 }
 
 bool mCoreConfigSave(const struct mCoreConfig* config) {
-	char path[PATH_MAX];
+	char path[PATH_MAX + 1];
 	mCoreConfigDirectory(path, PATH_MAX);
 	strncat(path, PATH_SEP "config.ini", PATH_MAX - strlen(path));
 	return mCoreConfigSavePath(config, path);
@@ -304,7 +304,7 @@ void mCoreConfigPortablePath(char* out, size_t outLength) {
 		CFRelease(suburl);
 	}
 #endif
-	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out));
+	strncat(out, PATH_SEP "portable.ini", outLength - strlen(out) - 1);
 #endif
 }
 

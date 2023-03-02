@@ -684,7 +684,7 @@ static void _GBACoreReset(struct mCore* core) {
 		if (!found) {
 			char path[PATH_MAX];
 			mCoreConfigDirectory(path, PATH_MAX);
-			strncat(path, PATH_SEP "gba_bios.bin", PATH_MAX - strlen(path));
+			strncat(path, PATH_SEP "gba_bios.bin", PATH_MAX - strlen(path) - 1);
 			bios = VFileOpen(path, O_RDONLY);
 			if (bios && GBAIsBIOS(bios)) {
 				found = true;
