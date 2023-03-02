@@ -149,7 +149,7 @@ MAKE_SCALAR_SETTER(Bool, BOOL)
 void mScriptStorageGetBucketPath(const char* bucket, char* out) {
 	mCoreConfigDirectory(out, PATH_MAX);
 
-	strncat(out, PATH_SEP "storage" PATH_SEP, PATH_MAX);
+	strncat(out, PATH_SEP "storage" PATH_SEP, PATH_MAX - 1);
 #ifdef _WIN32
 	// TODO: Move this to vfs somewhere
 	WCHAR wout[MAX_PATH];
@@ -161,7 +161,7 @@ void mScriptStorageGetBucketPath(const char* bucket, char* out) {
 
 	char suffix[STORAGE_LEN_MAX + 6];
 	snprintf(suffix, sizeof(suffix), "%s.json", bucket);
-	strncat(out, suffix, PATH_MAX);
+	strncat(out, suffix, PATH_MAX - 1);
 }
 
 static struct json_object* _tableToJson(struct mScriptValue* rootVal) {

@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
 	int ok = 1;
 
 	mCoreConfigDirectory(bin, sizeof(bin));
-	strncat(bin, "/updater.log", sizeof(bin));
+	strncat(bin, "/updater.log", sizeof(bin) - 1);
 	logfile = fopen(bin, "w");
 
 	mCoreConfigInit(&config, "updater");
