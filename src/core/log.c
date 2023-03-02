@@ -50,7 +50,7 @@ const char* mLogCategoryName(int category) {
 }
 
 const char* mLogCategoryId(int category) {
-	if (category < MAX_CATEGORY) {
+	if (category >= 0 && category < MAX_CATEGORY) {
 		return _categoryIds[category];
 	}
 	return NULL;
