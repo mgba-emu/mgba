@@ -463,7 +463,7 @@ static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* user,
 	struct GBASIOLockstepNode* node = user;
 	mLockstepLock(&node->p->d);
 
-	int32_t cycles = cycles = node->nextEvent;
+	int32_t cycles = node->nextEvent;
 	node->nextEvent -= cyclesLate;
 	node->eventDiff += cyclesLate;
 	if (node->p->d.attached < 2) {
