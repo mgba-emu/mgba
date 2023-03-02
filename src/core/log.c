@@ -88,6 +88,7 @@ void mLogExplicit(struct mLogger* context, int category, enum mLogLevel level, c
 	if (!context->filter || mLogFilterTest(context->filter, category, level)) {
 		context->log(context, category, level, format, args);
 	}
+	va_end(args);
 }
 
 void mLogFilterInit(struct mLogFilter* filter) {
