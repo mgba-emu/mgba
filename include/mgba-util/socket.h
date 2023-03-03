@@ -204,6 +204,7 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 	err = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable));
 #endif
 	if (err) {
+		SocketCloseQuiet(sock);
 		return INVALID_SOCKET;
 	}
 
