@@ -307,6 +307,9 @@ bool mScriptStorageBucketFlush(struct mScriptStorageBucket* bucket) {
 	char path[PATH_MAX];
 	mScriptStorageGetBucketPath(bucket->name, path);
 	struct VFile* vf = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+	if (!vf) {
+		return false;
+	}
 	return _mScriptStorageBucketFlushVF(bucket, vf);
 }
 
@@ -329,6 +332,9 @@ bool mScriptStorageSaveBucket(struct mScriptContext* context, const char* bucket
 	char path[PATH_MAX];
 	mScriptStorageGetBucketPath(bucketName, path);
 	struct VFile* vf = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+	if (!vf) {
+		return false;
+	}
 	return mScriptStorageSaveBucketVF(context, bucketName, vf);
 }
 
