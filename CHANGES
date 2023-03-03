@@ -5,6 +5,7 @@ Features:
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:
+ - GB Video: Implement DMG-style sprite ordering
  - GBA Audio: Fix improperly deserializing GB audio registers (fixes mgba.io/i/2793)
  - GBA Memory: Make VRAM access stalls only apply to BG RAM
  - GBA SIO: Fix SIOCNT SI pin value after attaching player 2 (fixes mgba.io/i/2805)
