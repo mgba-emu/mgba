@@ -184,7 +184,7 @@ size_t GBASavedataSize(const struct GBASavedata* savedata) {
 
 bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in) {
 	if (savedata->data) {
-		if (!in || savedata->type != SAVEDATA_FORCE_NONE) {
+		if (!in || savedata->type == SAVEDATA_FORCE_NONE) {
 			return false;
 		}
 		ssize_t size = GBASavedataSize(savedata);
