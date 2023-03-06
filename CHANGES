@@ -24,6 +24,7 @@ Other fixes:
  - Qt: Fix a handful of edge cases with graphics viewers (fixes mgba.io/i/2827)
  - Qt: Fix full-buffer rewind
  - Qt: Fix crash if loading a shader fails
+ - Qt: Fix black screen when starting with a game (fixes mgba.io/i/2781)
  - Scripting: Fix receiving packets for client sockets
  - Scripting: Fix empty receive calls returning unknown error on Windows
 Misc:
