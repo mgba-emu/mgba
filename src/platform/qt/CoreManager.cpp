@@ -16,6 +16,7 @@
 #endif
 
 #include <mgba/core/core.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 using namespace QGBA;
@@ -161,7 +162,7 @@ CoreController* CoreManager::loadBIOS(int platform, const QString& path) {
 	mCoreConfigSetOverrideIntValue(&core->config, "skipBios", 0);
 
 	QByteArray bytes(info.baseName().toUtf8());
-	strncpy(core->dirs.baseName, bytes.constData(), sizeof(core->dirs.baseName));
+	strlcpy(core->dirs.baseName, bytes.constData(), sizeof(core->dirs.baseName));
 
 	bytes = info.dir().canonicalPath().toUtf8();
 	mDirectorySetAttachBase(&core->dirs, VDirOpen(bytes.constData()));
