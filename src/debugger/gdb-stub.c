@@ -844,7 +844,7 @@ void GDBStubUpdate(struct GDBStub* stub) {
 		} else {
 			goto connectionLost;
 		}
-		SocketSetTCPPush(stub->connection);
+		SocketSetTCPPush(stub->connection, 1);
 	}
 	while (true) {
 		if (stub->shouldBlock) {
