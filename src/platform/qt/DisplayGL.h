@@ -113,6 +113,7 @@ protected:
 	virtual void resizeEvent(QResizeEvent*) override;
 
 private slots:
+	void startThread(int);
 	void setupProxyThread();
 
 private:
@@ -123,6 +124,7 @@ private:
 
 	bool m_isDrawing = false;
 	bool m_hasStarted = false;
+	int m_threadStartPending = 0;
 	std::unique_ptr<PainterGL> m_painter;
 	QThread m_drawThread;
 	QThread m_proxyThread;
