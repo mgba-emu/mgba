@@ -42,8 +42,8 @@ protected:
 
 private:
 	bool m_isDrawing = false;
-	int m_width;
-	int m_height;
+	int m_width = -1;
+	int m_height = -1;
 	QImage m_backing{nullptr};
 	QImage m_oldBacking{nullptr};
 	std::shared_ptr<CoreController> m_context = nullptr;
