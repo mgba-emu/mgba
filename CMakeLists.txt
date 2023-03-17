@@ -338,6 +338,8 @@ find_function(popcount32)
 find_function(futimens)
 find_function(futimes)
 
+find_function(realpath)
+
 if(ANDROID AND ANDROID_NDK_MAJOR GREATER 13)
 	find_function(localtime_r)
 	set(HAVE_STRTOF_L ON)

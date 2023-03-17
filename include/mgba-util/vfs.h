@@ -100,6 +100,9 @@ struct VFile* VFileFromFILE(FILE* file);
 
 void separatePath(const char* path, char* dirname, char* basename, char* extension);
 
+bool isAbsolute(const char* path);
+void makeAbsolute(const char* path, const char* base, char* out);
+
 struct VFile* VDirFindFirst(struct VDir* dir, bool (*filter)(struct VFile*));
 struct VFile* VDirFindNextAvailable(struct VDir*, const char* basename, const char* infix, const char* suffix, int mode);
 
