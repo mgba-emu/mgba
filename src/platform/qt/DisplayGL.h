@@ -51,9 +51,12 @@ Q_OBJECT
 
 public:
 	mGLWidget(QWidget* parent = nullptr);
+	~mGLWidget();
 
 	void setTex(GLuint tex) { m_tex = tex; }
 	void setVBO(GLuint vbo) { m_vbo = vbo; }
+	void setMessagePainter(MessagePainter*);
+	void setShowOSD(bool showOSD);
 	bool finalizeVAO();
 	void reset();
 
@@ -72,6 +75,9 @@ private:
 
 	QTimer m_refresh;
 	int m_refreshResidue = 0;
+	std::unique_ptr<QOpenGLPaintDevice> m_paintDev;
+	MessagePainter* m_messagePainter = nullptr;
+	bool m_showOSD = false;
 };
 
 class PainterGL;

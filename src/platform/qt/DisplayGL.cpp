@@ -70,6 +70,10 @@ mGLWidget::mGLWidget(QWidget* parent)
 	connect(&m_refresh, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
 }
 
+mGLWidget::~mGLWidget() {
+	// This is needed for unique_ptr<QOpenGLPaintDevice> to work
+}
+
 void mGLWidget::initializeGL() {
 	m_vao = std::make_unique<QOpenGLVertexArrayObject>();
 	m_vao->create();
@@ -99,6 +103,8 @@ void mGLWidget::initializeGL() {
 
 	m_vaoDone = false;
 	m_tex = 0;
+
+	m_paintDev = std::make_unique<QOpenGLPaintDevice>();
 }
 
 bool mGLWidget::finalizeVAO() {
@@ -150,6 +156,23 @@ void mGLWidget::paintGL() {
 	} else {
 		m_refresh.start(17);
 	}
+
+	if (m_showOSD && m_messagePainter) {
+		qreal r = window()->devicePixelRatio();
+		m_paintDev->setDevicePixelRatio(r);
+		m_paintDev->setSize(size() * r);
+		QPainter painter(m_paintDev.get());
+		m_messagePainter->paint(&painter);
+		painter.end();
+	}
+}
+
+void mGLWidget::setMessagePainter(MessagePainter* messagePainter) {
+	m_messagePainter = messagePainter;
+}
+
+void mGLWidget::setShowOSD(bool showOSD) {
+	m_showOSD = showOSD;
 }
 
 DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
@@ -170,6 +193,7 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 		m_gl = new mGLWidget;
 		m_gl->setAttribute(Qt::WA_NativeWindow);
 		m_gl->setFormat(format);
+		m_gl->setMessagePainter(messagePainter());
 		QBoxLayout* layout = new QVBoxLayout;
 		layout->addWidget(m_gl);
 		layout->setContentsMargins(0, 0, 0, 0);
@@ -372,6 +396,9 @@ void DisplayGL::interframeBlending(bool enable) {
 
 void DisplayGL::showOSDMessages(bool enable) {
 	Display::showOSDMessages(enable);
+	if (m_gl) {
+		m_gl->setShowOSD(enable);
+	}
 	QMetaObject::invokeMethod(m_painter.get(), "showOSD", Q_ARG(bool, enable));
 }
 
@@ -525,7 +552,9 @@ void PainterGL::create() {
 	mGLES2Context* gl2Backend;
 #endif
 
-	m_paintDev = std::make_unique<QOpenGLPaintDevice>();
+	if (!m_widget) {
+		m_paintDev = std::make_unique<QOpenGLPaintDevice>();
+	}
 
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (m_supportsShaders) {
@@ -650,8 +679,10 @@ void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
 void PainterGL::resize(const QSize& size) {
 	qreal r = m_window->devicePixelRatio();
 	m_size = size;
-	m_paintDev->setSize(m_size * r);
-	m_paintDev->setDevicePixelRatio(r);
+	if (m_paintDev) {
+		m_paintDev->setSize(m_size * r);
+		m_paintDev->setDevicePixelRatio(r);
+	}
 	if (m_started && !m_active) {
 		forceDraw();
 	}
@@ -818,7 +849,7 @@ void PainterGL::performDraw() {
 		m_backend->postFrame(m_backend, m_buffer);
 	}
 	m_backend->drawFrame(m_backend);
-	if (m_showOSD && m_messagePainter && !glContextHasBug(OpenGLBug::IG4ICD_CRASH)) {
+	if (m_showOSD && m_messagePainter && m_paintDev && !glContextHasBug(OpenGLBug::IG4ICD_CRASH)) {
 		m_painter.begin(m_paintDev.get());
 		m_messagePainter->paint(&m_painter);
 		m_painter.end();
