@@ -78,7 +78,7 @@ O Game Boy Advance é uma marca registada da Nintendo Co., Ltd.</translation>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
         <translation>
-Quer deacarregar e instalá-lo agora? Precisará reiniciar o emulador quando o download estiver completo.</translation>
+Quer descarregar e instalá-lo agora? Precisará reiniciar o emulador quando a descarga estiver completa.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
@@ -94,7 +94,7 @@ New version: %2
 Download size: %3</source>
         <translation>Versão atual: %1
 Nova versão: %2
-Tamanho do download: %3</translation>
+Tamanho da descarga: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
@@ -104,12 +104,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="79"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation>O download falhou. Por favor atualize manualmente.</translation>
+        <translation>A descarga falhou. Por favor, atualize manualmente.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation>Download concluído. Pressione Ok para reiniciar o %1 e instalar a atualização.</translation>
+        <translation>Descarga concluída. Pressione Ok para reiniciar o %1 e instalar a atualização.</translation>
     </message>
 </context>
 <context>
