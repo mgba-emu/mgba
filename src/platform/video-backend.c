@@ -5,18 +5,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "video-backend.h"
 
-void VideoBackendGetFrame(const struct VideoBackend* v, struct Rectangle* frame) {
+void VideoBackendGetFrame(const struct VideoBackend* v, struct mRectangle* frame) {
 	memset(frame, 0, sizeof(*frame));
 	int i;
 	for (i = 0; i < VIDEO_LAYER_MAX; ++i) {
-		struct Rectangle dims;
+		struct mRectangle dims;
 		v->layerDimensions(v, i, &dims);
-		RectangleUnion(frame, &dims);
+		mRectangleUnion(frame, &dims);
 	}
 }
 
 void VideoBackendGetFrameSize(const struct VideoBackend* v, unsigned* width, unsigned* height) {
-	struct Rectangle frame;
+	struct mRectangle frame;
 	VideoBackendGetFrame(v, &frame);
 	*width = frame.width;
 	*height = frame.height;

@@ -63,7 +63,7 @@ static inline void _setTexDims(int width, int height) {
 #endif
 }
 
-static void mGLContextSetLayerDimensions(struct VideoBackend* v, enum VideoLayer layer, const struct Rectangle* dims) {
+static void mGLContextSetLayerDimensions(struct VideoBackend* v, enum VideoLayer layer, const struct mRectangle* dims) {
 	struct mGLContext* context = (struct mGLContext*) v;
 	if (layer >= VIDEO_LAYER_MAX) {
 		return;
@@ -89,7 +89,7 @@ static void mGLContextSetLayerDimensions(struct VideoBackend* v, enum VideoLayer
 	}
 }
 
-static void mGLContextLayerDimensions(const struct VideoBackend* v, enum VideoLayer layer, struct Rectangle* dims) {
+static void mGLContextLayerDimensions(const struct VideoBackend* v, enum VideoLayer layer, struct mRectangle* dims) {
 	struct mGLContext* context = (struct mGLContext*) v;
 	if (layer >= VIDEO_LAYER_MAX) {
 		return;
@@ -141,7 +141,7 @@ static void _setFilter(struct VideoBackend* v) {
 	}
 }
 
-static void _setFrame(struct Rectangle* dims, int frameW, int frameH) {
+static void _setFrame(struct mRectangle* dims, int frameW, int frameH) {
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glScissor(viewport[0] + dims->x * viewport[2] / frameW,

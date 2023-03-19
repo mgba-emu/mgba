@@ -35,7 +35,7 @@ bool mSDLGLInit(struct mSDLRenderer* renderer) {
 	renderer->gl.d.filter = renderer->filter;
 	renderer->gl.d.swap = mSDLGLCommonSwap;
 	renderer->gl.d.init(&renderer->gl.d, 0);
-	struct Rectangle dims = {
+	struct mRectangle dims = {
 		.x = 0,
 		.y = 0,
 		.width = renderer->width,

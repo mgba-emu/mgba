@@ -194,7 +194,7 @@ static inline void _setTexDims(int width, int height) {
 #endif
 }
 
-static void mGLES2ContextSetLayerDimensions(struct VideoBackend* v, enum VideoLayer layer, const struct Rectangle* dims) {
+static void mGLES2ContextSetLayerDimensions(struct VideoBackend* v, enum VideoLayer layer, const struct mRectangle* dims) {
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	if (layer >= VIDEO_LAYER_MAX) {
 		return;
@@ -229,7 +229,7 @@ static void mGLES2ContextSetLayerDimensions(struct VideoBackend* v, enum VideoLa
 	}
 }
 
-static void mGLES2ContextLayerDimensions(const struct VideoBackend* v, enum VideoLayer layer, struct Rectangle* dims) {
+static void mGLES2ContextLayerDimensions(const struct VideoBackend* v, enum VideoLayer layer, struct mRectangle* dims) {
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	if (layer >= VIDEO_LAYER_MAX) {
 		return;

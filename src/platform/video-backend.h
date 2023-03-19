@@ -30,8 +30,8 @@ enum VideoLayer {
 struct VideoBackend {
 	void (*init)(struct VideoBackend*, WHandle handle);
 	void (*deinit)(struct VideoBackend*);
-	void (*setLayerDimensions)(struct VideoBackend*, enum VideoLayer, const struct Rectangle*);
-	void (*layerDimensions)(const struct VideoBackend*, enum VideoLayer, struct Rectangle*);
+	void (*setLayerDimensions)(struct VideoBackend*, enum VideoLayer, const struct mRectangle*);
+	void (*layerDimensions)(const struct VideoBackend*, enum VideoLayer, struct mRectangle*);
 	void (*swap)(struct VideoBackend*);
 	void (*clear)(struct VideoBackend*);
 	void (*contextResized)(struct VideoBackend*, unsigned w, unsigned h);
@@ -58,7 +58,7 @@ struct VideoShader {
 	size_t nPasses;
 };
 
-void VideoBackendGetFrame(const struct VideoBackend*, struct Rectangle* frame);
+void VideoBackendGetFrame(const struct VideoBackend*, struct mRectangle* frame);
 void VideoBackendGetFrameSize(const struct VideoBackend*, unsigned* width, unsigned* height);
 
 CXX_GUARD_END

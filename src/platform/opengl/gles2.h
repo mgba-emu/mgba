@@ -82,8 +82,8 @@ struct mGLES2Context {
 	GLuint tex[VIDEO_LAYER_MAX];
 	GLuint vbo;
 
-	struct Rectangle layerDims[VIDEO_LAYER_MAX];
-	struct Size imageSizes[VIDEO_LAYER_MAX];
+	struct mRectangle layerDims[VIDEO_LAYER_MAX];
+	struct mSize imageSizes[VIDEO_LAYER_MAX];
 	unsigned width;
 	unsigned height;
 

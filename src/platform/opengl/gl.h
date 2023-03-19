@@ -29,8 +29,8 @@ struct mGLContext {
 	int activeTex;
 	GLuint tex[2];
 	GLuint layers[VIDEO_LAYER_MAX];
-	struct Rectangle layerDims[VIDEO_LAYER_MAX];
-	struct Size imageSizes[VIDEO_LAYER_MAX];
+	struct mRectangle layerDims[VIDEO_LAYER_MAX];
+	struct mSize imageSizes[VIDEO_LAYER_MAX];
 };
 
 void mGLContextCreate(struct mGLContext*);

@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba-util/geometry.h>
 
-void RectangleUnion(struct Rectangle* dst, const struct Rectangle* add) {
+void mRectangleUnion(struct mRectangle* dst, const struct mRectangle* add) {
 	int x0 = dst->x;
 	int y0 = dst->y;
 	int x1 = dst->x + dst->width;
@@ -30,7 +30,7 @@ void RectangleUnion(struct Rectangle* dst, const struct Rectangle* add) {
 	dst->height = y1 - y0;
 }
 
-void RectangleCenter(const struct Rectangle* ref, struct Rectangle* rect) {
+void mRectangleCenter(const struct mRectangle* ref, struct mRectangle* rect) {
 	rect->x = ref->x + (ref->width - rect->width) / 2;
 	rect->y = ref->y + (ref->height - rect->height) / 2;
 }
