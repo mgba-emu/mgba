@@ -10,6 +10,11 @@
 
 CXX_GUARD_START
 
+struct Size {
+    int width;
+    int height;
+};
+
 struct Rectangle {
     int x;
     int y;

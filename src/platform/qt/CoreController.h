@@ -94,6 +94,7 @@ public:
 
 	mPlatform platform() const;
 	QSize screenDimensions() const;
+	unsigned videoScale() const;
 	bool supportsFeature(Feature feature) const { return m_threadContext.core->supportsFeature(m_threadContext.core, static_cast<mCoreFeature>(feature)); }
 	bool hardwareAccelerated() const { return m_hwaccel; }
 

@@ -271,6 +271,10 @@ QSize CoreController::screenDimensions() const {
 	return QSize(width, height);
 }
 
+unsigned CoreController::videoScale() const {
+	return m_threadContext.core->videoScale(m_threadContext.core);
+}
+
 void CoreController::loadConfig(ConfigController* config) {
 	Interrupter interrupter(this);
 	m_loadStateFlags = config->getOption("loadStateExtdata", m_loadStateFlags).toInt();

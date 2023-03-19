@@ -33,6 +33,7 @@ static void mGLContextInit(struct VideoBackend* v, WHandle handle) {
 	UNUSED(handle);
 	struct mGLContext* context = (struct mGLContext*) v;
 	memset(context->layerDims, 0, sizeof(context->layerDims));
+	memset(context->imageSizes, -1, sizeof(context->imageSizes));
 	glGenTextures(2, context->tex);
 	glBindTexture(GL_TEXTURE_2D, context->tex[0]);
 	_initTex();
@@ -48,17 +49,17 @@ static void mGLContextInit(struct VideoBackend* v, WHandle handle) {
 	}
 }
 
-static inline void _setTexDims(const struct Rectangle* dims) {
+static inline void _setTexDims(int width, int height) {
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(dims->width), toPow2(dims->height), 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(dims->width), toPow2(dims->height), 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
 #endif
 #elif defined(__BIG_ENDIAN__)
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(dims->width), toPow2(dims->height), 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, 0);
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(dims->width), toPow2(dims->height), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, toPow2(width), toPow2(height), 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 #endif
 }
 
@@ -75,14 +76,16 @@ static void mGLContextSetLayerDimensions(struct VideoBackend* v, enum VideoLayer
 	context->layerDims[layer].width = dims->width;
 	context->layerDims[layer].height = dims->height;
 
-	if (layer == VIDEO_LAYER_IMAGE) {
-		glBindTexture(GL_TEXTURE_2D, context->tex[0]);
-		_setTexDims(dims);
-		glBindTexture(GL_TEXTURE_2D, context->tex[1]);
-		_setTexDims(dims);
-	} else {
-		glBindTexture(GL_TEXTURE_2D, context->layers[layer]);
-		_setTexDims(dims);
+	if (context->imageSizes[layer].width <= 0 || context->imageSizes[layer].height <= 0) {
+		if (layer == VIDEO_LAYER_IMAGE) {
+			glBindTexture(GL_TEXTURE_2D, context->tex[0]);
+			_setTexDims(dims->width, dims->height);
+			glBindTexture(GL_TEXTURE_2D, context->tex[1]);
+			_setTexDims(dims->width, dims->height);
+		} else {
+			glBindTexture(GL_TEXTURE_2D, context->layers[layer]);
+			_setTexDims(dims->width, dims->height);
+		}
 	}
 }
 
@@ -195,6 +198,46 @@ void mGLContextDrawFrame(struct VideoBackend* v) {
 	glDisable(GL_BLEND);
 }
 
+static void mGLContextSetImageSize(struct VideoBackend* v, enum VideoLayer layer, int width, int height) {
+	struct mGLContext* context = (struct mGLContext*) v;
+	if (layer >= VIDEO_LAYER_MAX) {
+		return;
+	}
+	if (width <= 0 || height <= 0) {
+		context->imageSizes[layer].width = -1;
+		context->imageSizes[layer].height = -1;
+		width = context->layerDims[layer].width;
+		height = context->layerDims[layer].height;
+	} else {
+		context->imageSizes[layer].width = width;
+		context->imageSizes[layer].height = height;
+	}
+	if (layer == VIDEO_LAYER_IMAGE) {
+		glBindTexture(GL_TEXTURE_2D, context->tex[0]);
+		_setTexDims(width, height);
+		glBindTexture(GL_TEXTURE_2D, context->tex[1]);
+		_setTexDims(width, height);
+	} else {
+		glBindTexture(GL_TEXTURE_2D, context->layers[layer]);
+		_setTexDims(width, height);
+	}
+}
+
+static void mGLContextImageSize(struct VideoBackend* v, enum VideoLayer layer, int* width, int* height) {
+	struct mGLContext* context = (struct mGLContext*) v;
+	if (layer >= VIDEO_LAYER_MAX) {
+		return;
+	}
+
+	if (context->imageSizes[layer].width <= 0 || context->imageSizes[layer].height <= 0) {
+		*width = context->layerDims[layer].width;
+		*height = context->layerDims[layer].height;
+	} else {
+		*width = context->imageSizes[layer].width;
+		*height = context->imageSizes[layer].height;		
+	}
+}
+
 void mGLContextPostFrame(struct VideoBackend* v, enum VideoLayer layer, const void* frame) {
 	struct mGLContext* context = (struct mGLContext*) v;
 	if (layer >= VIDEO_LAYER_MAX) {
@@ -206,16 +249,24 @@ void mGLContextPostFrame(struct VideoBackend* v, enum VideoLayer layer, const vo
 	} else {
 		glBindTexture(GL_TEXTURE_2D, context->layers[layer]);		
 	}
+
+	int width = context->imageSizes[layer].width;
+	int height = context->imageSizes[layer].height;
+
+	if (width <= 0 || height <= 0) {
+		width = context->layerDims[layer].width;
+		height = context->layerDims[layer].height;
+	}
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, context->layerDims[layer].width, context->layerDims[layer].height, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frame);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frame);
 #else
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, context->layerDims[layer].width, context->layerDims[layer].height, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, frame);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, frame);
 #endif
 #elif defined(__BIG_ENDIAN__)
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, context->layerDims[layer].width, context->layerDims[layer].height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, frame);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, frame);
 #else
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, context->layerDims[layer].width, context->layerDims[layer].height,  GL_RGBA, GL_UNSIGNED_BYTE, frame);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, frame);
 #endif
 }
 
@@ -227,6 +278,8 @@ void mGLContextCreate(struct mGLContext* context) {
 	context->d.contextResized = mGLContextResized;
 	context->d.swap = NULL;
 	context->d.clear = mGLContextClear;
+	context->d.setImageSize = mGLContextSetImageSize;
+	context->d.imageSize = mGLContextImageSize;
 	context->d.setImage = mGLContextPostFrame;
 	context->d.drawFrame = mGLContextDrawFrame;
 }

@@ -35,6 +35,8 @@ struct VideoBackend {
 	void (*swap)(struct VideoBackend*);
 	void (*clear)(struct VideoBackend*);
 	void (*contextResized)(struct VideoBackend*, unsigned w, unsigned h);
+	void (*setImageSize)(struct VideoBackend*, enum VideoLayer, int w, int h);
+	void (*imageSize)(struct VideoBackend*, enum VideoLayer, int* w, int* h);
 	void (*setImage)(struct VideoBackend*, enum VideoLayer, const void* frame);
 	void (*drawFrame)(struct VideoBackend*);
 

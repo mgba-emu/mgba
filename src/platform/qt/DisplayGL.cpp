@@ -648,13 +648,23 @@ void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
 }
 
 void PainterGL::recenterLayers() {
+	if (!m_context) {
+		return;
+	}
 	const static std::initializer_list<VideoLayer> centeredLayers{VIDEO_LAYER_BACKGROUND, VIDEO_LAYER_IMAGE};
 	Rectangle frame = {0};
+	unsigned scale = std::max(1U, m_context->videoScale());
 	for (VideoLayer l : centeredLayers) {
-		Rectangle dims;
-		m_backend->layerDimensions(m_backend, l, &dims);
-		dims.x = 0;
-		dims.y = 0;
+		Rectangle dims{};
+		int width, height;
+		m_backend->imageSize(m_backend, l, &width, &height);
+		dims.width = width;
+		dims.height = height;
+		if (l != VIDEO_LAYER_IMAGE) {
+			dims.width *= scale;
+			dims.height *= scale;
+			m_backend->setLayerDimensions(m_backend, l, &dims);
+		}
 		RectangleUnion(&frame, &dims);
 	}
 	for (VideoLayer l : centeredLayers) {
@@ -1035,12 +1045,7 @@ void PainterGL::setBackgroundImage(const QImage& image) {
 		makeCurrent();
 	}
 
-	Rectangle dims = {0, 0, 0, 0};
-	if (!image.isNull()) {
-		dims.width = static_cast<unsigned>(image.width());
-		dims.height = static_cast<unsigned>(image.height());
-	}
-	m_backend->setLayerDimensions(m_backend, VIDEO_LAYER_BACKGROUND, &dims);
+	m_backend->setImageSize(m_backend, VIDEO_LAYER_BACKGROUND, image.width(), image.height());
 	recenterLayers();
 
 	if (!image.isNull()) {
