@@ -185,26 +185,26 @@ static void mGLES2ContextSetLayerDimensions(struct VideoBackend* v, enum VideoLa
 	if (layer >= VIDEO_LAYER_MAX) {
 		return;
 	}
-	context->layerDims[layer].x = dims->x;
-	context->layerDims[layer].y = dims->y;
-	if (dims->width == context->layerDims[layer].width && dims->height == context->layerDims[layer].height) {
-		return;
-	}
-	context->layerDims[layer].width = dims->width;
-	context->layerDims[layer].height = dims->height;
+	if (dims->width != context->layerDims[layer].width && dims->height != context->layerDims[layer].height) {
+		context->layerDims[layer].width = dims->width;
+		context->layerDims[layer].height = dims->height;
 
-	glBindTexture(GL_TEXTURE_2D, context->tex[layer]);
+		glBindTexture(GL_TEXTURE_2D, context->tex[layer]);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dims->width, dims->height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dims->width, dims->height, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, 0);
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dims->width, dims->height, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dims->width, dims->height, 0, GL_RGBA, GL_UNSIGNED_SHORT_1_5_5_5_REV, 0);
 #endif
 #elif defined(__BIG_ENDIAN__)
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dims->width, dims->height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dims->width, dims->height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8_REV, 0);
 #else
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dims->width, dims->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dims->width, dims->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 #endif
+	}
+
+	context->layerDims[layer].x = dims->x;
+	context->layerDims[layer].y = dims->y;
 
 	unsigned newW;
 	unsigned newH;

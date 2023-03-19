@@ -653,6 +653,8 @@ void PainterGL::recenterLayers() {
 	for (VideoLayer l : centeredLayers) {
 		Rectangle dims;
 		m_backend->layerDimensions(m_backend, l, &dims);
+		dims.x = 0;
+		dims.y = 0;
 		RectangleUnion(&frame, &dims);
 	}
 	for (VideoLayer l : centeredLayers) {
