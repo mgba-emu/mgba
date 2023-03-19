@@ -24,6 +24,7 @@ Other fixes:
  - Qt: Fix checked state of mute menu option at load (fixes mgba.io/i/2701)
  - Scripting: Fix receiving packets for client sockets
  - Scripting: Fix empty receive calls returning unknown error on Windows
+ - Scripting: Return proper callback ID from socket.add
 Misc:
  - Qt: Include wayland QPA in AppImage (fixes mgba.io/i/2796)
  - Qt: Stop eating boolean action key events (fixes mgba.io/i/2636)
