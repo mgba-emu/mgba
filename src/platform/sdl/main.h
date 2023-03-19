@@ -76,6 +76,8 @@ struct mSDLRenderer {
 	struct mGLES2Context gl2;
 #endif
 
+	struct VideoBackend* backend;
+
 #ifdef USE_PIXMAN
 	pixman_image_t* pix;
 	pixman_image_t* screenpix;

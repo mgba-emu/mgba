@@ -94,6 +94,7 @@ public:
 	VideoShader* shaders() override;
 	void setVideoProxy(std::shared_ptr<VideoProxy>) override;
 	int framebufferHandle() override;
+	QSize contentSize() const override { return m_cachedContentSize; }
 
 	static bool supportsFormat(const QSurfaceFormat&);
 
@@ -113,6 +114,7 @@ public slots:
 	void clearShaders() override;
 	void resizeContext() override;
 	void setVideoScale(int scale) override;
+	void setBackgroundImage(const QImage&) override;
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override { forceDraw(); }
@@ -121,6 +123,7 @@ protected:
 private slots:
 	void startThread(int);
 	void setupProxyThread();
+	void updateContentSize();
 
 private:
 	void resizePainter();
@@ -138,6 +141,7 @@ private:
 	mGLWidget* m_gl;
 	QOffscreenSurface m_proxySurface;
 	std::unique_ptr<QOpenGLContext> m_proxyContext;
+	QSize m_cachedContentSize;
 };
 
 class PainterGL : public QObject {
@@ -184,10 +188,12 @@ public slots:
 	void filter(bool filter);
 	void resizeContext();
 	void updateFramebufferHandle();
+	void setBackgroundImage(const QImage&);
 
 	void setShaders(struct VDir*);
 	void clearShaders();
 	VideoShader* shaders();
+	QSize contentSize() const;
 
 signals:
 	void created();
@@ -202,6 +208,7 @@ private:
 	void performDraw();
 	void dequeue();
 	void dequeueAll(bool keep = false);
+	void recenterLayers();
 
 	std::array<std::array<uint32_t, 0x100000>, 3> m_buffers;
 	QList<uint32_t*> m_free;
@@ -220,6 +227,7 @@ private:
 	QWindow* m_window;
 	QSurface* m_surface;
 	QSurfaceFormat m_format;
+	QImage m_background;
 	std::unique_ptr<QOpenGLPaintDevice> m_paintDev;
 	std::unique_ptr<QOpenGLContext> m_gl;
 	int m_finalTexIdx = 0;

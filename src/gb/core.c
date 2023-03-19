@@ -60,6 +60,15 @@ static const struct mCoreMemoryBlock _GBCMemoryBlocks[] = {
 	{ GB_BASE_HRAM, "hram", "HRAM", "High RAM", GB_BASE_HRAM, GB_BASE_HRAM + GB_SIZE_HRAM, GB_SIZE_HRAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
 };
 
+static const struct mCoreScreenRegion _GBScreenRegions[] = {
+	{ 0, "Screen", 0, 0, GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS }
+};
+
+static const struct mCoreScreenRegion _SGBScreenRegions[] = {
+	{ 0, "Screen", (SGB_VIDEO_HORIZONTAL_PIXELS - GB_VIDEO_HORIZONTAL_PIXELS) / 2, (SGB_VIDEO_VERTICAL_PIXELS - GB_VIDEO_VERTICAL_PIXELS) / 2, GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS },
+	{ 1, "Border", 0, 0, SGB_VIDEO_HORIZONTAL_PIXELS, SGB_VIDEO_VERTICAL_PIXELS },
+};
+
 static const struct mCoreRegisterInfo _GBRegisters[] = {
 	{ "b", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
 	{ "c", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
@@ -355,14 +364,36 @@ static void _GBCoreReloadConfigOption(struct mCore* core, const char* option, co
 	}
 }
 
-static void _GBCoreDesiredVideoDimensions(const struct mCore* core, unsigned* width, unsigned* height) {
+static void _GBCoreBaseVideoSize(const struct mCore* core, unsigned* width, unsigned* height) {
+	UNUSED(core);
+	*width = SGB_VIDEO_HORIZONTAL_PIXELS;
+	*height = SGB_VIDEO_VERTICAL_PIXELS;
+}
+
+static void _GBCoreCurrentVideoSize(const struct mCore* core, unsigned* width, unsigned* height) {
 	const struct GB* gb = core->board;
 	if (gb && (!(gb->model & GB_MODEL_SGB) || !gb->video.sgbBorders)) {
 		*width = GB_VIDEO_HORIZONTAL_PIXELS;
 		*height = GB_VIDEO_VERTICAL_PIXELS;
 	} else {
-		*width = 256;
-		*height = 224;
+		*width = SGB_VIDEO_HORIZONTAL_PIXELS;
+		*height = SGB_VIDEO_VERTICAL_PIXELS;
+	}
+}
+
+static unsigned _GBCoreVideoScale(const struct mCore* core) {
+	UNUSED(core);
+	return 1;
+}
+
+static size_t _GBCoreScreenRegions(const struct mCore* core, const struct mCoreScreenRegion** regions) {
+	const struct GB* gb = core->board;
+	if (gb && (!(gb->model & GB_MODEL_SGB) || !gb->video.sgbBorders)) {
+		*regions = _GBScreenRegions;
+		return 1;
+	} else {
+		*regions = _SGBScreenRegions;
+		return 2;
 	}
 }
 
@@ -424,7 +455,7 @@ static void _GBCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	gb->stream = stream;
 	if (stream && stream->videoDimensionsChanged) {
 		unsigned width, height;
-		core->desiredVideoDimensions(core, &width, &height);
+		core->currentVideoSize(core, &width, &height);
 		stream->videoDimensionsChanged(stream, width, height);
 	}
 	if (stream && stream->audioRateChanged) {
@@ -1232,7 +1263,10 @@ struct mCore* GBCoreCreate(void) {
 	core->setSync = _GBCoreSetSync;
 	core->loadConfig = _GBCoreLoadConfig;
 	core->reloadConfigOption = _GBCoreReloadConfigOption;
-	core->desiredVideoDimensions = _GBCoreDesiredVideoDimensions;
+	core->baseVideoSize = _GBCoreBaseVideoSize;
+	core->currentVideoSize = _GBCoreCurrentVideoSize;
+	core->videoScale = _GBCoreVideoScale;
+	core->screenRegions = _GBCoreScreenRegions;
 	core->setVideoBuffer = _GBCoreSetVideoBuffer;
 	core->setVideoGLTex = _GBCoreSetVideoGLTex;
 	core->getPixels = _GBCoreGetPixels;

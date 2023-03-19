@@ -66,7 +66,11 @@ struct mCore {
 	void (*loadConfig)(struct mCore*, const struct mCoreConfig*);
 	void (*reloadConfigOption)(struct mCore*, const char* option, const struct mCoreConfig*);
 
-	void (*desiredVideoDimensions)(const struct mCore*, unsigned* width, unsigned* height);
+	void (*baseVideoSize)(const struct mCore*, unsigned* width, unsigned* height);
+	void (*currentVideoSize)(const struct mCore*, unsigned* width, unsigned* height);
+	unsigned (*videoScale)(const struct mCore*);
+	size_t (*screenRegions)(const struct mCore*, const struct mCoreScreenRegion**);
+
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
 	void (*setVideoGLTex)(struct mCore*, unsigned texid);
 

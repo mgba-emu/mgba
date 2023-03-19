@@ -293,6 +293,15 @@ struct mCoreMemoryBlock {
 	uint32_t segmentStart;
 };
 
+struct mCoreScreenRegion {
+	size_t id;
+	const char* description;
+	int16_t x;
+	int16_t y;
+	int16_t w;
+	int16_t h;
+};
+
 enum mCoreRegisterType {
 	mCORE_REGISTER_GPR = 0,
 	mCORE_REGISTER_FPR,

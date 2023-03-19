@@ -10,6 +10,8 @@
 
 CXX_GUARD_START
 
+#include <mgba-util/geometry.h>
+
 #ifdef _WIN32
 #include <windows.h>
 typedef HWND WHandle;
@@ -17,26 +19,34 @@ typedef HWND WHandle;
 typedef void* WHandle;
 #endif
 
+enum VideoLayer {
+	VIDEO_LAYER_BACKGROUND = 0,
+	VIDEO_LAYER_BEZEL,
+	VIDEO_LAYER_IMAGE,
+	VIDEO_LAYER_OVERLAY,
+	VIDEO_LAYER_MAX
+};
+
 struct VideoBackend {
 	void (*init)(struct VideoBackend*, WHandle handle);
 	void (*deinit)(struct VideoBackend*);
-	void (*setDimensions)(struct VideoBackend*, unsigned width, unsigned height);
+	void (*setLayerDimensions)(struct VideoBackend*, enum VideoLayer, const struct Rectangle*);
+	void (*layerDimensions)(const struct VideoBackend*, enum VideoLayer, struct Rectangle*);
 	void (*swap)(struct VideoBackend*);
 	void (*clear)(struct VideoBackend*);
-	void (*resized)(struct VideoBackend*, unsigned w, unsigned h);
-	void (*postFrame)(struct VideoBackend*, const void* frame);
+	void (*contextResized)(struct VideoBackend*, unsigned w, unsigned h);
+	void (*setImageSize)(struct VideoBackend*, enum VideoLayer, int w, int h);
+	void (*imageSize)(struct VideoBackend*, enum VideoLayer, int* w, int* h);
+	void (*setImage)(struct VideoBackend*, enum VideoLayer, const void* frame);
 	void (*drawFrame)(struct VideoBackend*);
-	void (*setMessage)(struct VideoBackend*, const char* message);
-	void (*clearMessage)(struct VideoBackend*);
 
 	void* user;
-	unsigned width;
-	unsigned height;
 
 	bool filter;
 	bool lockAspectRatio;
 	bool lockIntegerScaling;
 	bool interframeBlending;
+	enum VideoLayer cropToLayer;
 };
 
 struct VideoShader {
@@ -47,6 +57,9 @@ struct VideoShader {
 	void* passes;
 	size_t nPasses;
 };
+
+void VideoBackendGetFrame(const struct VideoBackend*, struct Rectangle* frame);
+void VideoBackendGetFrameSize(const struct VideoBackend*, unsigned* width, unsigned* height);
 
 CXX_GUARD_END
 

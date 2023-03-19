@@ -361,7 +361,7 @@ bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf) {
 	size_t stride;
 	const void* pixels = 0;
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
 	core->getPixels(core, &pixels, &stride);
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeader(png, width, height);

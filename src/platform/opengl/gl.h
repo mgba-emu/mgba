@@ -26,8 +26,11 @@ CXX_GUARD_START
 struct mGLContext {
 	struct VideoBackend d;
 
-	GLuint tex[2];
 	int activeTex;
+	GLuint tex[2];
+	GLuint layers[VIDEO_LAYER_MAX];
+	struct Rectangle layerDims[VIDEO_LAYER_MAX];
+	struct Size imageSizes[VIDEO_LAYER_MAX];
 };
 
 void mGLContextCreate(struct mGLContext*);

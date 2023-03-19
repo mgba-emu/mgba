@@ -68,7 +68,7 @@
 		outputBuffer = nil;
 
 		unsigned width, height;
-		core->desiredVideoDimensions(core, &width, &height);
+		core->baseVideoSize(core, &width, &height);
 		outputBuffer = malloc(width * height * BYTES_PER_PIXEL);
 		core->setVideoBuffer(core, outputBuffer, width);
 		core->setAudioBufferSize(core, SAMPLES);
@@ -143,14 +143,14 @@
 - (OEIntRect)screenRect
 {
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
     return OEIntRectMake(0, 0, width, height);
 }
 
 - (OEIntSize)bufferSize
 {
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->baseVideoSize(core, &width, &height);
     return OEIntSizeMake(width, height);
 }
 
