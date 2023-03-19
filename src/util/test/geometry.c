@@ -8,19 +8,19 @@
 #include <mgba-util/geometry.h>
 
 M_TEST_DEFINE(unionRectOrigin) {
-	struct Rectangle a = {
+	struct mRectangle a = {
 		.x = 0,
 		.y = 0,
 		.width = 1,
 		.height = 1
 	};
-	struct Rectangle b = {
+	struct mRectangle b = {
 		.x = 1,
 		.y = 1,
 		.width = 1,
 		.height = 1
 	};
-	RectangleUnion(&a, &b);
+	mRectangleUnion(&a, &b);
 	assert_int_equal(a.x, 0);
 	assert_int_equal(a.y, 0);
 	assert_int_equal(a.width, 2);
@@ -28,19 +28,19 @@ M_TEST_DEFINE(unionRectOrigin) {
 }
 
 M_TEST_DEFINE(unionRectOriginSwapped) {
-	struct Rectangle a = {
+	struct mRectangle a = {
 		.x = 1,
 		.y = 1,
 		.width = 1,
 		.height = 1
 	};
-	struct Rectangle b = {
+	struct mRectangle b = {
 		.x = 0,
 		.y = 0,
 		.width = 1,
 		.height = 1
 	};
-	RectangleUnion(&a, &b);
+	mRectangleUnion(&a, &b);
 	assert_int_equal(a.x, 0);
 	assert_int_equal(a.y, 0);
 	assert_int_equal(a.width, 2);
@@ -48,19 +48,19 @@ M_TEST_DEFINE(unionRectOriginSwapped) {
 }
 
 M_TEST_DEFINE(unionRectNonOrigin) {
-	struct Rectangle a = {
+	struct mRectangle a = {
 		.x = 1,
 		.y = 1,
 		.width = 1,
 		.height = 1
 	};
-	struct Rectangle b = {
+	struct mRectangle b = {
 		.x = 2,
 		.y = 2,
 		.width = 1,
 		.height = 1
 	};
-	RectangleUnion(&a, &b);
+	mRectangleUnion(&a, &b);
 	assert_int_equal(a.x, 1);
 	assert_int_equal(a.y, 1);
 	assert_int_equal(a.width, 2);
@@ -68,19 +68,19 @@ M_TEST_DEFINE(unionRectNonOrigin) {
 }
 
 M_TEST_DEFINE(unionRectOverlapping) {
-	struct Rectangle a = {
+	struct mRectangle a = {
 		.x = 0,
 		.y = 0,
 		.width = 2,
 		.height = 2
 	};
-	struct Rectangle b = {
+	struct mRectangle b = {
 		.x = 1,
 		.y = 1,
 		.width = 2,
 		.height = 2
 	};
-	RectangleUnion(&a, &b);
+	mRectangleUnion(&a, &b);
 	assert_int_equal(a.x, 0);
 	assert_int_equal(a.y, 0);
 	assert_int_equal(a.width, 3);
@@ -88,19 +88,19 @@ M_TEST_DEFINE(unionRectOverlapping) {
 }
 
 M_TEST_DEFINE(unionRectSubRect) {
-	struct Rectangle a = {
+	struct mRectangle a = {
 		.x = 0,
 		.y = 0,
 		.width = 3,
 		.height = 3
 	};
-	struct Rectangle b = {
+	struct mRectangle b = {
 		.x = 1,
 		.y = 1,
 		.width = 1,
 		.height = 1
 	};
-	RectangleUnion(&a, &b);
+	mRectangleUnion(&a, &b);
 	assert_int_equal(a.x, 0);
 	assert_int_equal(a.y, 0);
 	assert_int_equal(a.width, 3);
@@ -108,19 +108,19 @@ M_TEST_DEFINE(unionRectSubRect) {
 }
 
 M_TEST_DEFINE(unionRectNegativeOrigin) {
-	struct Rectangle a = {
+	struct mRectangle a = {
 		.x = -1,
 		.y = -1,
 		.width = 1,
 		.height = 1
 	};
-	struct Rectangle b = {
+	struct mRectangle b = {
 		.x = 0,
 		.y = 0,
 		.width = 1,
 		.height = 1
 	};
-	RectangleUnion(&a, &b);
+	mRectangleUnion(&a, &b);
 	assert_int_equal(a.x, -1);
 	assert_int_equal(a.y, -1);
 	assert_int_equal(a.width, 2);
@@ -128,73 +128,73 @@ M_TEST_DEFINE(unionRectNegativeOrigin) {
 }
 
 M_TEST_DEFINE(centerRectBasic) {
-	struct Rectangle ref = {
+	struct mRectangle ref = {
 		.x = 0,
 		.y = 0,
 		.width = 4,
 		.height = 4
 	};
-	struct Rectangle a = {
+	struct mRectangle a = {
 		.x = 0,
 		.y = 0,
 		.width = 2,
 		.height = 2
 	};
-	RectangleCenter(&ref, &a);
+	mRectangleCenter(&ref, &a);
 	assert_int_equal(a.x, 1);
 	assert_int_equal(a.y, 1);
 }
 
 M_TEST_DEFINE(centerRectRoundDown) {
-	struct Rectangle ref = {
+	struct mRectangle ref = {
 		.x = 0,
 		.y = 0,
 		.width = 4,
 		.height = 4
 	};
-	struct Rectangle a = {
+	struct mRectangle a = {
 		.x = 0,
 		.y = 0,
 		.width = 1,
 		.height = 1
 	};
-	RectangleCenter(&ref, &a);
+	mRectangleCenter(&ref, &a);
 	assert_int_equal(a.x, 1);
 	assert_int_equal(a.y, 1);
 }
 
 M_TEST_DEFINE(centerRectRoundDown2) {
-	struct Rectangle ref = {
+	struct mRectangle ref = {
 		.x = 0,
 		.y = 0,
 		.width = 4,
 		.height = 4
 	};
-	struct Rectangle a = {
+	struct mRectangle a = {
 		.x = 0,
 		.y = 0,
 		.width = 3,
 		.height = 2
 	};
-	RectangleCenter(&ref, &a);
+	mRectangleCenter(&ref, &a);
 	assert_int_equal(a.x, 0);
 	assert_int_equal(a.y, 1);
 }
 
 M_TEST_DEFINE(centerRectOffset) {
-	struct Rectangle ref = {
+	struct mRectangle ref = {
 		.x = 1,
 		.y = 1,
 		.width = 4,
 		.height = 4
 	};
-	struct Rectangle a = {
+	struct mRectangle a = {
 		.x = 0,
 		.y = 0,
 		.width = 2,
 		.height = 2
 	};
-	RectangleCenter(&ref, &a);
+	mRectangleCenter(&ref, &a);
 	assert_int_equal(a.x, 2);
 	assert_int_equal(a.y, 2);
 }
