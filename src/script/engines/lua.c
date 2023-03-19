@@ -101,7 +101,7 @@ static const char* _socketLuaSource =
 	"        local cbid = self._nextCallback\n"
 	"        self._nextCallback = cbid + 1\n"
 	"        self._callbacks[event][cbid] = callback\n"
-	"        return id\n"
+	"        return cbid\n"
 	"      end,\n"
 	"      remove = function(self, cbid)\n"
 	"        for _, group in pairs(self._callbacks) do\n"

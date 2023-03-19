@@ -28,6 +28,7 @@ Other fixes:
  - Qt: Fix OSD on modern macOS (fixes mgba.io/i/2736)
  - Scripting: Fix receiving packets for client sockets
  - Scripting: Fix empty receive calls returning unknown error on Windows
+ - Scripting: Return proper callback ID from socket.add
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
