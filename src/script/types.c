@@ -364,24 +364,6 @@ static uint32_t _hashString(const struct mScriptValue* val) {
 	return hash32(buffer, size, 0);
 }
 
-uint32_t _hashScalar(const struct mScriptValue* val) {
-	// From https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
-	uint32_t x = 0;
-	switch (val->type->base) {
-	case mSCRIPT_TYPE_SINT:
-		x = val->value.s32;
-		break;
-	case mSCRIPT_TYPE_UINT:
-	default:
-		x = val->value.u32;
-		break;
-	}
-	x = ((x >> 16) ^ x) * 0x45D9F3B;
-	x = ((x >> 16) ^ x) * 0x45D9F3B;
-	x = (x >> 16) ^ x;
-	return x;
-}
-
 bool _wstrCast(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) {
 	if (input->type->base != mSCRIPT_TYPE_WRAPPER) {
 		return false;
@@ -517,6 +499,16 @@ bool _castScalar(const struct mScriptValue* input, const struct mScriptType* typ
 	}
 	output->type = type;
 	return true;
+}
+
+uint32_t _hashScalar(const struct mScriptValue* val) {
+	// From https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
+	uint32_t x = 0;
+	_asUInt32(val, &x);
+	x = ((x >> 16) ^ x) * 0x45D9F3B;
+	x = ((x >> 16) ^ x) * 0x45D9F3B;
+	x = (x >> 16) ^ x;
+	return x;
 }
 
 uint32_t _valHash(const void* val, size_t len, uint32_t seed) {
