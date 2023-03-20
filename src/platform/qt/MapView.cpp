@@ -9,7 +9,7 @@
 #include "GBAApp.h"
 #include "LogController.h"
 
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/vfs.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>

@@ -87,7 +87,7 @@ struct mCore* mCoreCreate(enum mPlatform platform) {
 }
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 
 #ifdef PSP2
 #include <psp2/photoexport.h>

@@ -10,7 +10,7 @@
 #include <mgba/feature/commandline.h>
 #include <mgba/feature/video-logger.h>
 
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/string.h>
 #include <mgba-util/table.h>
 #include <mgba-util/threading.h>

@@ -15,8 +15,8 @@
 #include <mgba-util/gui/file-select.h>
 #include <mgba-util/gui/font.h>
 #include <mgba-util/gui/menu.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/memory.h>
-#include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 
 #ifdef PSP2

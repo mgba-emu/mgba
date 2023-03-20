@@ -13,7 +13,7 @@
 #include <mgba-util/vfs.h>
 
 #ifdef USE_PNG
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <png.h>
 #include <zlib.h>
 #endif

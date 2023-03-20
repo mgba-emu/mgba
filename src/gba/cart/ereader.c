@@ -13,7 +13,7 @@
 #ifdef USE_FFMPEG
 #include <mgba-util/convolve.h>
 #ifdef USE_PNG
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/vfs.h>
 #endif
 

@@ -1,14 +1,14 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2023 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include <mgba-util/export.h>
+#include <mgba-util/image/export.h>
 
 #include <mgba/core/interface.h>
 #include <mgba-util/vfs.h>
 
-bool exportPaletteRIFF(struct VFile* vf, size_t entries, const uint16_t* colors) {
+bool mPaletteExportRIFF(struct VFile* vf, size_t entries, const uint16_t* colors) {
 	if (entries > 0xFFFF) {
 		return false;
 	}
@@ -56,7 +56,7 @@ bool exportPaletteRIFF(struct VFile* vf, size_t entries, const uint16_t* colors)
 	return true;
 }
 
-bool exportPaletteACT(struct VFile* vf, size_t entries, const uint16_t* colors) {
+bool mPaletteExportACT(struct VFile* vf, size_t entries, const uint16_t* colors) {
 	if (entries > 256) {
 		return false;
 	}

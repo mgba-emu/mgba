@@ -10,7 +10,7 @@
 #include <mgba/core/version.h>
 
 #ifdef USE_PNG
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/vfs.h>
 #endif
 

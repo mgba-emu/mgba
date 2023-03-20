@@ -15,13 +15,13 @@ set(SOURCE_FILES
 	${BASE_SOURCE_FILES}
 	convolve.c
 	elf-read.c
-	export.c
 	geometry.c
+	image/export.c
+	image/png-io.c
 	patch.c
 	patch-fast.c
 	patch-ips.c
 	patch-ups.c
-	png-io.c
 	ring-fifo.c
 	sfo.c
 	text-codec.c)

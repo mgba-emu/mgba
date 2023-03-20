@@ -15,7 +15,7 @@
 #include <mgba/core/cheats.h>
 #include <mgba/core/serialize.h>
 #include <mgba/core/version.h>
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/vfs.h>
 
 #include "CoreController.h"
