@@ -22,9 +22,9 @@ typedef uint32_t color_t;
 #define M_G5(X) (((X) >> 5) & 0x1F)
 #define M_B5(X) (((X) >> 10) & 0x1F)
 
-#define M_R8(X) (((((X) << 3) & 0xF8) * 0x21) >> 2)
-#define M_G8(X) (((((X) >> 2) & 0xF8) * 0x21) >> 2)
-#define M_B8(X) (((((X) >> 7) & 0xF8) * 0x21) >> 2)
+#define M_R8(X) ((M_R5(X) * 0x21) >> 2)
+#define M_G8(X) ((M_G5(X) * 0x21) >> 2)
+#define M_B8(X) ((M_B5(X) * 0x21) >> 2)
 
 #define M_RGB5_TO_BGR8(X) ((M_R5(X) << 3) | (M_G5(X) << 11) | (M_B5(X) << 19))
 #define M_RGB5_TO_RGB8(X) ((M_R5(X) << 19) | (M_G5(X) << 11) | (M_B5(X) << 3))
@@ -81,7 +81,54 @@ enum mColorFormat {
 	mCOLOR_ANY    = -1
 };
 
+struct mImage {
+	void* data;
+	unsigned width;
+	unsigned height;
+	unsigned stride;
+	unsigned depth;
+	enum mColorFormat format;
+};
+
+uint32_t mImageGetPixel(const struct mImage* image, unsigned x, unsigned y);
+uint32_t mImageGetPixelRaw(const struct mImage* image, unsigned x, unsigned y);
+void mImageSetPixel(struct mImage* image, unsigned x, unsigned y, uint32_t color);
+void mImageSetPixelRaw(struct mImage* image, unsigned x, unsigned y, uint32_t color);
+
+uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to);
+
 #ifndef PYCPARSE
+static inline unsigned mColorFormatBytes(enum mColorFormat format) {
+	switch (format) {
+	case mCOLOR_XBGR8:
+	case mCOLOR_XRGB8:
+	case mCOLOR_BGRX8:
+	case mCOLOR_RGBX8:
+	case mCOLOR_ABGR8:
+	case mCOLOR_ARGB8:
+	case mCOLOR_BGRA8:
+	case mCOLOR_RGBA8:
+		return 4;
+	case mCOLOR_RGB5:
+	case mCOLOR_BGR5:
+	case mCOLOR_RGB565:
+	case mCOLOR_BGR565:
+	case mCOLOR_ARGB5:
+	case mCOLOR_ABGR5:
+	case mCOLOR_RGBA5:
+	case mCOLOR_BGRA5:
+		return 2;
+	case mCOLOR_RGB8:
+	case mCOLOR_BGR8:
+		return 3;
+	case mCOLOR_L8:
+		return 1;
+	case mCOLOR_ANY:
+		break;
+	}
+	return 0;
+}
+
 static inline color_t mColorFrom555(uint16_t value) {
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5

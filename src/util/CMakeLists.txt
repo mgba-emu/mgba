@@ -16,6 +16,7 @@ set(SOURCE_FILES
 	convolve.c
 	elf-read.c
 	geometry.c
+	image.c
 	image/export.c
 	image/png-io.c
 	patch.c
@@ -34,7 +35,9 @@ set(GUI_FILES
 	gui/menu.c)
 
 set(TEST_FILES
+	test/color.c
 	test/geometry.c
+	test/image.c
 	test/sfo.c
 	test/string-parser.c
 	test/string-utf8.c
