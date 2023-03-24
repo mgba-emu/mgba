@@ -2,6 +2,7 @@
 Emulation fixes:
  - GBA Audio: Fix improperly deserializing GB audio registers (fixes mgba.io/i/2793)
  - GBA Memory: Make VRAM access stalls only apply to BG RAM
+ - GBA Overrides: Fix saving in PMD:RRT (JP) (fixes mgba.io/i/2862)
  - GBA SIO: Fix SIOCNT SI pin value after attaching player 2 (fixes mgba.io/i/2805)
  - GBA SIO: Fix unconnected normal mode SIOCNT SI bit (fixes mgba.io/i/2810)
  - GBA SIO: Normal mode transfers with no clock should not finish (fixes mgba.io/i/2811)
