@@ -123,10 +123,8 @@ static const struct GBACartridgeOverride _overrides[] = {
 	{ "BPEF", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6, false },
 
 	// Pokemon Mystery Dungeon
-	{ "B24J", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
 	{ "B24E", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
 	{ "B24P", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "B24U", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
 
 	// Pokemon FireRed
 	{ "BPRJ", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
