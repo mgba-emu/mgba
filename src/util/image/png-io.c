@@ -279,6 +279,14 @@ bool PNGReadPixels(png_structp png, png_infop info, void* pixels, unsigned width
 		return false;
 	}
 
+	if (png_get_bit_depth(png, info) == 16) {
+#ifdef PNG_READ_SCALE_16_TO_8_SUPPORTED
+		png_set_scale_16(png);
+#else
+		png_set_strip_16(png);
+#endif
+	}
+
 	uint8_t* pixelData = pixels;
 	unsigned pngHeight = png_get_image_height(png, info);
 	if (height < pngHeight) {
@@ -334,6 +342,14 @@ bool PNGReadPixelsA(png_structp png, png_infop info, void* pixels, unsigned widt
 		return false;
 	}
 
+	if (png_get_bit_depth(png, info) == 16) {
+#ifdef PNG_READ_SCALE_16_TO_8_SUPPORTED
+		png_set_scale_16(png);
+#else
+		png_set_strip_16(png);
+#endif
+	}
+
 	uint8_t* pixelData = pixels;
 	unsigned pngHeight = png_get_image_height(png, info);
 	if (height < pngHeight) {
@@ -387,6 +403,14 @@ bool PNGReadPixels8(png_structp png, png_infop info, void* pixels, unsigned widt
 
 	if (setjmp(png_jmpbuf(png))) {
 		return false;
+	}
+
+	if (png_get_bit_depth(png, info) == 16) {
+#ifdef PNG_READ_SCALE_16_TO_8_SUPPORTED
+		png_set_scale_16(png);
+#else
+		png_set_strip_16(png);
+#endif
 	}
 
 	uint8_t* pixelData = pixels;
