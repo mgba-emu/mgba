@@ -289,13 +289,6 @@ void CoreController::loadConfig(ConfigController* config) {
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
 	m_preload = config->getOption("preload").toInt();
 
-	int playerId = m_multiplayer->playerId(this) + 1;
-	QVariant savePlayerId = config->getOption("savePlayerId");
-	if (m_multiplayer->attached() < 2 && savePlayerId.canConvert<int>()) {
-		playerId = savePlayerId.toInt();
-	}
-	mCoreConfigSetOverrideIntValue(&m_threadContext.core->config, "savePlayerId", playerId);
-
 	QSize sizeBefore = screenDimensions();
 	m_activeBuffer.resize(256 * 224 * sizeof(color_t));
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), sizeBefore.width());
@@ -1216,7 +1209,12 @@ void CoreController::updatePlayerSave() {
 	int savePlayerId = 0;
 	mCoreConfigGetIntValue(&m_threadContext.core->config, "savePlayerId", &savePlayerId);
 	if (savePlayerId == 0 || m_multiplayer->attached() > 1) {
-		savePlayerId = m_multiplayer->playerId(this) + 1;
+		if (savePlayerId == m_multiplayer->playerId(this) + 1) {
+			// Player 1 is using our save, so let's use theirs, at least for now.
+			savePlayerId = 1;
+		} else {
+			savePlayerId = m_multiplayer->playerId(this) + 1;
+		}
 	}
 
 	QString saveSuffix;

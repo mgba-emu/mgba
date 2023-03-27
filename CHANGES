@@ -25,6 +25,7 @@ Misc:
  - Qt: Include wayland QPA in AppImage (fixes mgba.io/i/2796)
  - Qt: Stop eating boolean action key events (fixes mgba.io/i/2636)
  - Qt: Automatically change video file extension as appropriate
+ - Qt: Swap P1 and other player's save if P1 loaded it first (closes mgba.io/i/2750)
 
 0.10.1: (2023-01-10)
 Emulation fixes:
