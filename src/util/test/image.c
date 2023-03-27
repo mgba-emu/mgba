@@ -441,6 +441,7 @@ M_TEST_DEFINE(oobWrite) {
 	assert_memory_equal(buffer, (&(uint8_t[8]) { 0xFF, 0xFF, 0xFF, 0xFF }), sizeof(buffer));
 }
 
+#ifdef USE_PNG
 M_TEST_DEFINE(loadPng24) {
 	const uint8_t data[] = {
 		0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d,
@@ -499,6 +500,7 @@ M_TEST_DEFINE(loadPng32) {
 
 	mImageDestroy(image);
 }
+#endif
 
 M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(pitchRead),
@@ -507,6 +509,8 @@ M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(pitchWrite),
 	cmocka_unit_test(strideWrite),
 	cmocka_unit_test(oobWrite),
+#ifdef USE_PNG
 	cmocka_unit_test(loadPng24),
 	cmocka_unit_test(loadPng32),
+#endif
 )

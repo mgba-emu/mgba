@@ -39,6 +39,7 @@ struct mImage* mImageLoad(const char* path) {
 	return image;
 }
 
+#ifdef USE_PNG
 static struct mImage* mImageLoadPNG(struct VFile* vf) {
 	png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
 	png_infop info = png_create_info_struct(png);
@@ -92,13 +93,16 @@ static struct mImage* mImageLoadPNG(struct VFile* vf) {
 	}
 	return image;
 }
+#endif
 
 struct mImage* mImageLoadVF(struct VFile* vf) {
 	vf->seek(vf, 0, SEEK_SET);
+#ifdef USE_PNG
 	if (isPNG(vf)) {
 		return mImageLoadPNG(vf);
 	}
 	vf->seek(vf, 0, SEEK_SET);
+#endif
 	return NULL;
 }
 
