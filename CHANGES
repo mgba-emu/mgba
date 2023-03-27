@@ -28,6 +28,7 @@ Other fixes:
  - Qt: Fix crash if loading a shader fails
  - Qt: Fix black screen when starting with a game (fixes mgba.io/i/2781)
  - Qt: Fix OSD on modern macOS (fixes mgba.io/i/2736)
+ - Qt: Fix checked state of mute menu option at load (fixes mgba.io/i/2701)
  - Scripting: Fix receiving packets for client sockets
  - Scripting: Fix empty receive calls returning unknown error on Windows
  - Scripting: Return proper callback ID from socket.add
