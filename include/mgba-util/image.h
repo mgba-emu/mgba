@@ -90,6 +90,12 @@ struct mImage {
 	enum mColorFormat format;
 };
 
+struct VFile;
+struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat format);
+struct mImage* mImageLoad(const char* path);
+struct mImage* mImageLoadVF(struct VFile* vf);
+void mImageDestroy(struct mImage*);
+
 uint32_t mImageGetPixel(const struct mImage* image, unsigned x, unsigned y);
 uint32_t mImageGetPixelRaw(const struct mImage* image, unsigned x, unsigned y);
 void mImageSetPixel(struct mImage* image, unsigned x, unsigned y, uint32_t color);

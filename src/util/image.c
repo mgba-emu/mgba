@@ -5,8 +5,107 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba-util/image.h>
 
+#include <mgba-util/image/png-io.h>
+#include <mgba-util/vfs.h>
+
 #define PIXEL(IM, X, Y) \
 	(void*) (((IM)->stride * (Y) + (X)) * (IM)->depth + (uintptr_t) (IM)->data)
+
+struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat format) {
+	struct mImage* image = calloc(1, sizeof(struct mImage));
+	if (!image) {
+		return NULL;
+	}
+	image->width = width;
+	image->height = height;
+	image->stride = width;
+	image->format = format;
+	image->depth = mColorFormatBytes(format);
+	image->data = calloc(width * height, image->depth);
+	if (!image->data) {
+		free(image);
+		return NULL;
+	}
+	return image;
+}
+
+struct mImage* mImageLoad(const char* path) {
+	struct VFile* vf = VFileOpen(path, O_RDONLY);
+	if (!vf) {
+		return NULL;
+	}
+	struct mImage* image = mImageLoadVF(vf);
+	vf->close(vf);
+	return image;
+}
+
+static struct mImage* mImageLoadPNG(struct VFile* vf) {
+	png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
+	png_infop info = png_create_info_struct(png);
+	png_infop end = png_create_info_struct(png);
+	if (!png || !info || !end) {
+		PNGReadClose(png, info, end);
+		return NULL;
+	}
+
+	if (!PNGReadHeader(png, info)) {
+		PNGReadClose(png, info, end);
+		return NULL;
+	}
+	unsigned width = png_get_image_width(png, info);
+	unsigned height = png_get_image_height(png, info);
+
+	struct mImage* image = calloc(1, sizeof(*image));
+
+	image->width = width;
+	image->height = height;
+	image->stride = width;
+
+	switch (png_get_channels(png, info)) {
+	case 3:
+		image->format = mCOLOR_XBGR8;
+		image->depth = 4;
+		image->data = malloc(width * height * 4);
+		if (!PNGReadPixels(png, info, image->data, width, height, width)) {
+			free(image->data);
+			free(image);
+			PNGReadClose(png, info, end);
+			return NULL;
+		}
+		break;
+	case 4:
+		image->format = mCOLOR_ABGR8;
+		image->depth = 4;
+		image->data = malloc(width * height * 4);
+		if (!PNGReadPixelsA(png, info, image->data, width, height, width)) {
+			free(image->data);
+			free(image);
+			PNGReadClose(png, info, end);
+			return NULL;
+		}
+		break;
+	default:
+		// Not supported yet
+		free(image);
+		PNGReadClose(png, info, end);
+		return NULL;
+	}
+	return image;
+}
+
+struct mImage* mImageLoadVF(struct VFile* vf) {
+	vf->seek(vf, 0, SEEK_SET);
+	if (isPNG(vf)) {
+		return mImageLoadPNG(vf);
+	}
+	vf->seek(vf, 0, SEEK_SET);
+	return NULL;
+}
+
+void mImageDestroy(struct mImage* image) {
+	free(image->data);
+	free(image);
+}
 
 uint32_t mImageGetPixelRaw(const struct mImage* image, unsigned x, unsigned y) {
 	if (x >= image->width || y >= image->height) {
