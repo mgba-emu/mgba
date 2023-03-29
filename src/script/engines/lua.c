@@ -449,7 +449,6 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 			mSCRIPT_KV_PAIR(connect, mSCRIPT_VALUE_DOC_FUNCTION(socket_connect)),
 			mSCRIPT_KV_SENTINEL
 		});
-		mScriptValueDeref(errors);
 		mScriptEngineSetDocstring(&luaContext->d, "socket", "A basic TCP socket library");
 		mScriptEngineSetDocstring(&luaContext->d, "socket.ERRORS",
 			"Error strings corresponding to the C.SOCKERR error codes, indexed both by name and by value");

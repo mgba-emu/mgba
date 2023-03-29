@@ -356,6 +356,7 @@ void mScriptEngineExportDocNamespace(struct mScriptEngineContext* ctx, const cha
 		struct mScriptValue* key = mScriptStringCreateFromUTF8(values[i].key);
 		mScriptTableInsert(table, key, values[i].value);
 		mScriptValueDeref(key);
+		mScriptValueDeref(values[i].value);
 	}
 	HashTableInsert(&ctx->docroot, nspace, table);
 }
