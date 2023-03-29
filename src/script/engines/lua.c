@@ -463,6 +463,16 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 			"the connection either succeeds or fails");
 	}
 
+	mScriptEngineExportDocNamespace(&luaContext->d, "script", (struct mScriptKVPair[]) {
+		mSCRIPT_KV_PAIR(dir, mScriptStringCreateFromASCII("/")),
+		mSCRIPT_KV_PAIR(path, mScriptStringCreateFromASCII("/lua")),
+		mSCRIPT_KV_SENTINEL
+	});
+
+	mScriptEngineSetDocstring(&luaContext->d, "script", "Information about the currently loaded script");
+	mScriptEngineSetDocstring(&luaContext->d, "script.dir", "The path to the directory containing the script");
+	mScriptEngineSetDocstring(&luaContext->d, "script.path", "The path of the current script file");
+
 	return &luaContext->d;
 }
 
@@ -912,14 +922,43 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 #endif
 	switch (ret) {
 	case LUA_OK:
+		// Create new _ENV
+		lua_newtable(luaContext->lua);
+
+		// Make the old _ENV the __index in the metatable
+		lua_newtable(luaContext->lua);
+		lua_pushliteral(luaContext->lua, "__index");
+		lua_getupvalue(luaContext->lua, -4, 1);
+		lua_rawset(luaContext->lua, -3);
+
+		lua_pushliteral(luaContext->lua, "__newindex");
+		lua_getupvalue(luaContext->lua, -4, 1);
+		lua_rawset(luaContext->lua, -3);
+
+		lua_setmetatable(luaContext->lua, -2);
+
+		lua_pushliteral(luaContext->lua, "script");
+		lua_newtable(luaContext->lua);
+
 		if (dirname[0]) {
-			lua_getupvalue(luaContext->lua, -1, 1);
 			lua_pushliteral(luaContext->lua, "require");
 			lua_pushstring(luaContext->lua, dirname);
 			lua_pushcclosure(luaContext->lua, _luaRequireShim, 1);
+			lua_rawset(luaContext->lua, -5);
+
+			lua_pushliteral(luaContext->lua, "dir");
+			lua_pushstring(luaContext->lua, dirname);
 			lua_rawset(luaContext->lua, -3);
-			lua_pop(luaContext->lua, 1);
 		}
+
+		if (name[0] == '@') {
+			lua_pushliteral(luaContext->lua, "path");
+			lua_pushstring(luaContext->lua, &name[1]);
+			lua_rawset(luaContext->lua, -3);
+		}
+
+		lua_rawset(luaContext->lua, -3);
+		lua_setupvalue(luaContext->lua, -2, 1);
 		luaContext->func = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
 		return true;
 	case LUA_ERRSYNTAX:
