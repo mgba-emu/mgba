@@ -54,6 +54,11 @@ struct TestG {
 	const char* c;
 };
 
+struct TestH {
+	int32_t i;
+	int32_t j;
+};
+
 static int32_t testAi0(struct TestA* a) {
 	return a->i;
 }
@@ -196,6 +201,12 @@ mSCRIPT_DEFINE_STRUCT(TestG)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(TestG, setU)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(TestG, setF)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(TestG, setC)
+mSCRIPT_DEFINE_END;
+
+
+mSCRIPT_DEFINE_STRUCT(TestH)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(TestH, S32, i)
+	mSCRIPT_DEFINE_STRUCT_CONST_MEMBER(TestH, S32, j)
 mSCRIPT_DEFINE_END;
 
 M_TEST_DEFINE(testALayout) {
@@ -1134,6 +1145,47 @@ M_TEST_DEFINE(testGSet) {
 	assert_false(cls->init);
 }
 
+M_TEST_DEFINE(testHSet) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestH)->details.cls;
+
+	struct TestH s = {
+		.i = 1,
+		.j = 2,
+	};
+
+	struct mScriptValue sval = mSCRIPT_MAKE_S(TestH, &s);
+	struct mScriptValue val;
+	struct mScriptValue compare;
+
+	compare = mSCRIPT_MAKE_S32(1);
+	assert_true(mScriptObjectGet(&sval, "i", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32(2);
+	assert_true(mScriptObjectGet(&sval, "j", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	val = mSCRIPT_MAKE_S32(3);
+	assert_true(mScriptObjectSet(&sval, "i", &val));
+	assert_int_equal(s.i, 3);
+
+	val = mSCRIPT_MAKE_S32(4);
+	assert_false(mScriptObjectSet(&sval, "j", &val));
+	assert_int_equal(s.j, 2);
+
+	compare = mSCRIPT_MAKE_S32(3);
+	assert_true(mScriptObjectGet(&sval, "i", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32(2);
+	assert_true(mScriptObjectGet(&sval, "j", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	assert_true(cls->init);
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
 M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testALayout),
 	cmocka_unit_test(testASignatures),
@@ -1150,4 +1202,5 @@ M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testEGet),
 	cmocka_unit_test(testFDeinit),
 	cmocka_unit_test(testGSet),
+	cmocka_unit_test(testHSet),
 )

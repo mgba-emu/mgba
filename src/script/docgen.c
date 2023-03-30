@@ -188,6 +188,9 @@ void explainClass(struct mScriptTypeClass* cls, int level) {
 				}
 				docstring = NULL;
 			}
+			if (details->info.member.readonly) {
+				fprintf(out, "%s    readonly: true\n", indent);
+			}
 			fprintf(out, "%s    type: %s\n", indent, details->info.member.type->name);
 			break;
 		case mSCRIPT_CLASS_INIT_END:

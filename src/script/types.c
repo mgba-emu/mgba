@@ -1472,6 +1472,10 @@ bool mScriptObjectSet(struct mScriptValue* obj, const char* member, struct mScri
 		return true;
 	}
 
+	if (m->readonly) {
+		return false;
+	}
+
 	void* rawMember = (void *)((uintptr_t) obj->value.opaque + m->offset);
 	if (m->type != val->type) {
 		if (!mScriptCast(m->type, val, val)) {

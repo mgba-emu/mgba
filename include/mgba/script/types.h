@@ -231,6 +231,7 @@ struct mScriptClassMember {
 	const char* docstring;
 	const struct mScriptType* type;
 	size_t offset;
+	bool readonly;
 };
 
 struct mScriptClassCastMember {
