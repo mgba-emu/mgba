@@ -6,8 +6,7 @@
 #include "util/test/suite.h"
 
 #include <mgba/internal/script/lua.h>
-#include <mgba/script/storage.h>
-#include <mgba/script/types.h>
+#include <mgba/script.h>
 
 #include "script/test.h"
 

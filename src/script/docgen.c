@@ -7,6 +7,7 @@
 #include <mgba/core/scripting.h>
 #include <mgba/core/version.h>
 #include <mgba/internal/script/types.h>
+#include <mgba/script/base.h>
 #include <mgba/script/context.h>
 #include <mgba/script/input.h>
 #include <mgba/script/storage.h>

@@ -19,8 +19,7 @@
 #include "scripting/ScriptingTextBuffer.h"
 #include "scripting/ScriptingTextBufferModel.h"
 
-#include <mgba/script/input.h>
-#include <mgba/script/storage.h>
+#include <mgba/script.h>
 #include <mgba-util/math.h>
 #include <mgba-util/string.h>
 

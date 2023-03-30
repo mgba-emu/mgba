@@ -3,10 +3,11 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include <mgba/script/context.h>
+#include <mgba/script/base.h>
 
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
+#include <mgba/script/context.h>
 #include <mgba/script/macros.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/input.h>

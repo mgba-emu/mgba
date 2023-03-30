@@ -91,8 +91,6 @@ struct mScriptValue* mScriptContextAccessWeakref(struct mScriptContext*, struct 
 void mScriptContextClearWeakref(struct mScriptContext*, uint32_t weakref);
 void mScriptContextDisownWeakref(struct mScriptContext*, uint32_t weakref);
 
-void mScriptContextAttachStdlib(struct mScriptContext* context);
-void mScriptContextAttachSocket(struct mScriptContext* context);
 void mScriptContextExportConstants(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* constants);
 void mScriptContextExportNamespace(struct mScriptContext* context, const char* nspace, struct mScriptKVPair* value);
 
