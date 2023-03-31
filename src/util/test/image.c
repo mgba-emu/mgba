@@ -6,6 +6,9 @@
 #include "util/test/suite.h"
 
 #include <mgba-util/image.h>
+#ifdef USE_PNG
+#include <mgba-util/image/png-io.h>
+#endif
 #include <mgba-util/vfs.h>
 
 M_TEST_DEFINE(pitchRead) {
@@ -500,6 +503,45 @@ M_TEST_DEFINE(loadPng32) {
 
 	mImageDestroy(image);
 }
+
+M_TEST_DEFINE(savePngNative) {
+	struct mImage* image = mImageCreate(1, 1, mCOLOR_ABGR8);
+	mImageSetPixel(image, 0, 0, 0x01234567);
+
+	struct VFile* vf = VFileMemChunk(NULL, 0);
+	assert_true(mImageSaveVF(image, vf, "png"));
+	mImageDestroy(image);
+
+	assert_int_equal(vf->seek(vf, 0, SEEK_SET), 0);
+	assert_true(isPNG(vf));
+	assert_int_equal(vf->seek(vf, 0, SEEK_SET), 0);
+
+	image = mImageLoadVF(vf);
+	vf->close(vf);
+	assert_non_null(image);
+	assert_int_equal(mImageGetPixel(image, 0, 0), 0x01234567);
+	mImageDestroy(image);
+}
+
+M_TEST_DEFINE(savePngNonNative) {
+	struct mImage* image = mImageCreate(1, 1, mCOLOR_ARGB8);
+	mImageSetPixel(image, 0, 0, 0x01234567);
+
+	struct VFile* vf = VFileMemChunk(NULL, 0);
+	assert_true(mImageSaveVF(image, vf, "png"));
+	mImageDestroy(image);
+
+	assert_int_equal(vf->seek(vf, 0, SEEK_SET), 0);
+	assert_true(isPNG(vf));
+	assert_int_equal(vf->seek(vf, 0, SEEK_SET), 0);
+
+	image = mImageLoadVF(vf);
+	vf->close(vf);
+	assert_non_null(image);
+	assert_int_equal(image->format, mCOLOR_ABGR8);
+	assert_int_equal(mImageGetPixel(image, 0, 0), 0x01234567);
+	mImageDestroy(image);
+}
 #endif
 
 M_TEST_DEFINE(convert1x1) {
@@ -662,6 +704,8 @@ M_TEST_SUITE_DEFINE(Image,
 #ifdef USE_PNG
 	cmocka_unit_test(loadPng24),
 	cmocka_unit_test(loadPng32),
+	cmocka_unit_test(savePngNative),
+	cmocka_unit_test(savePngNonNative),
 #endif
 	cmocka_unit_test(convert1x1),
 	cmocka_unit_test(convert2x1),

@@ -155,6 +155,66 @@ void mImageDestroy(struct mImage* image) {
 	free(image);
 }
 
+bool mImageSave(const struct mImage* image, const char* path, const char* format) {
+	struct VFile* vf = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+	if (!vf) {
+		return false;
+	}
+
+	char extension[PATH_MAX];
+	if (!format) {
+		separatePath(path, NULL, NULL, extension);
+		format = extension;
+	}
+	bool success = mImageSaveVF(image, vf, format);
+	vf->close(vf);
+	return success;
+}
+
+#ifdef USE_PNG
+bool mImageSavePNG(const struct mImage* image, struct VFile* vf) {
+	if (image->format != mCOLOR_XBGR8 && image->format != mCOLOR_ABGR8) {
+		struct mImage* newImage;
+		if (mColorFormatHasAlpha(image->format)) {
+			newImage = mImageConvertToFormat(image, mCOLOR_ABGR8);
+		} else {
+			newImage = mImageConvertToFormat(image, mCOLOR_XBGR8);			
+		}
+		bool ret = mImageSavePNG(newImage, vf);
+		mImageDestroy(newImage);
+		return ret;
+	}
+
+	png_structp png = PNGWriteOpen(vf);
+	png_infop info = NULL;
+	bool ok = false;
+	if (png) {
+		if (image->format == mCOLOR_XBGR8) {
+			info = PNGWriteHeader(png, image->width, image->height);
+			if (info) {
+				ok = PNGWritePixels(png, image->width, image->height, image->stride, image->data);
+			}
+		} else {
+			info = PNGWriteHeaderA(png, image->width, image->height);		
+			if (info) {
+				ok = PNGWritePixelsA(png, image->width, image->height, image->stride, image->data);
+			}
+		}
+		PNGWriteClose(png, info);
+	}
+	return ok;
+}
+#endif
+
+bool mImageSaveVF(const struct mImage* image, struct VFile* vf, const char* format) {
+#ifdef USE_PNG
+	if (strcasecmp(format, "png") == 0) {
+		return mImageSavePNG(image, vf);
+	}
+#endif
+	return false;
+}
+
 uint32_t mImageGetPixelRaw(const struct mImage* image, unsigned x, unsigned y) {
 	if (x >= image->width || y >= image->height) {
 		return 0;

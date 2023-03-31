@@ -97,6 +97,8 @@ struct mImage* mImageLoadVF(struct VFile* vf);
 struct mImage* mImageConvertToFormat(const struct mImage*, enum mColorFormat format);
 void mImageDestroy(struct mImage*);
 
+bool mImageSave(const struct mImage*, const char* path, const char* format);
+bool mImageSaveVF(const struct mImage*, struct VFile* vf, const char* format);
 uint32_t mImageGetPixel(const struct mImage* image, unsigned x, unsigned y);
 uint32_t mImageGetPixelRaw(const struct mImage* image, unsigned x, unsigned y);
 void mImageSetPixel(struct mImage* image, unsigned x, unsigned y, uint32_t color);
@@ -134,6 +136,35 @@ static inline unsigned mColorFormatBytes(enum mColorFormat format) {
 		break;
 	}
 	return 0;
+}
+
+static inline bool mColorFormatHasAlpha(enum mColorFormat format) {
+	switch (format) {
+	case mCOLOR_XBGR8:
+	case mCOLOR_XRGB8:
+	case mCOLOR_BGRX8:
+	case mCOLOR_RGBX8:
+	case mCOLOR_RGB5:
+	case mCOLOR_BGR5:
+	case mCOLOR_RGB565:
+	case mCOLOR_BGR565:
+	case mCOLOR_RGB8:
+	case mCOLOR_BGR8:
+	case mCOLOR_L8:
+		return false;
+	case mCOLOR_ABGR8:
+	case mCOLOR_ARGB8:
+	case mCOLOR_BGRA8:
+	case mCOLOR_RGBA8:
+	case mCOLOR_ARGB5:
+	case mCOLOR_ABGR5:
+	case mCOLOR_RGBA5:
+	case mCOLOR_BGRA5:
+		return true;
+	case mCOLOR_ANY:
+		break;
+	}
+	return false;
 }
 
 static inline color_t mColorFrom555(uint16_t value) {
