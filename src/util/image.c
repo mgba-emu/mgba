@@ -91,6 +91,7 @@ static struct mImage* mImageLoadPNG(struct VFile* vf) {
 		PNGReadClose(png, info, end);
 		return NULL;
 	}
+	PNGReadClose(png, info, end);
 	return image;
 }
 #endif
