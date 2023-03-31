@@ -11,6 +11,8 @@
 #define PIXEL(IM, X, Y) \
 	(void*) (((IM)->stride * (Y) + (X)) * (IM)->depth + (uintptr_t) (IM)->data)
 
+#define ROW(IM, Y) PIXEL(IM, 0, Y)
+
 struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat format) {
 	struct mImage* image = calloc(1, sizeof(struct mImage));
 	if (!image) {
@@ -105,6 +107,47 @@ struct mImage* mImageLoadVF(struct VFile* vf) {
 	vf->seek(vf, 0, SEEK_SET);
 #endif
 	return NULL;
+}
+
+struct mImage* mImageConvertToFormat(const struct mImage* image, enum mColorFormat format) {
+	struct mImage* newImage = calloc(1, sizeof(*newImage));
+	newImage->width = image->width;
+	newImage->height = image->height;
+	newImage->format = format;
+	if (format == image->format) {
+		newImage->depth = image->depth;
+		newImage->stride = image->stride;
+		newImage->data = malloc(image->stride * image->height * image->depth);
+		memcpy(newImage->data, image->data, image->stride * image->height * image->depth);
+		return newImage;
+	}
+	newImage->depth = mColorFormatBytes(format);
+	newImage->stride = image->width;
+	newImage->data = malloc(image->width * image->height * newImage->depth);
+
+	// TODO: Implement more specializations, e.g. alpha narrowing/widening, channel swapping
+	size_t x, y;
+	for (y = 0; y < newImage->height; ++y) {
+		uintptr_t src = (uintptr_t) ROW(image, y);
+		uintptr_t dst = (uintptr_t) ROW(newImage, y);
+		for (x = 0; x < newImage->width; ++x, src += image->depth, dst += newImage->depth) {
+			uint32_t color = 0;
+			memcpy(&color, (void*) src, image->depth);
+#ifdef __BIG_ENDIAN__
+			if (image->depth < 4) {
+				color >>= (32 - 8 * image->depth);
+			}
+#endif
+			color = mColorConvert(color, image->format, format);
+#ifdef __BIG_ENDIAN__
+			if (newImage->depth < 4) {
+				color <<= (32 - 8 * newImage->depth);
+			}
+#endif
+			memcpy((void*) dst, &color, newImage->depth);
+		}
+	}
+	return newImage;
 }
 
 void mImageDestroy(struct mImage* image) {

@@ -502,6 +502,156 @@ M_TEST_DEFINE(loadPng32) {
 }
 #endif
 
+M_TEST_DEFINE(convert1x1) {
+	const enum mColorFormat formats[] = {
+		mCOLOR_XBGR8, mCOLOR_XRGB8,
+		mCOLOR_BGRX8, mCOLOR_RGBX8,
+		mCOLOR_ABGR8, mCOLOR_ARGB8,
+		mCOLOR_BGRA8, mCOLOR_RGBA8,
+		mCOLOR_RGB5, mCOLOR_BGR5,
+		mCOLOR_RGB565, mCOLOR_BGR565,
+		mCOLOR_ARGB5, mCOLOR_ABGR5,
+		mCOLOR_RGBA5, mCOLOR_BGRA5,
+		mCOLOR_RGB8, mCOLOR_BGR8,
+		mCOLOR_L8,
+		0
+	};
+
+	int i, j;
+	for (i = 0; formats[i]; ++i) {
+		for (j = 0; formats[j]; ++j) {
+			struct mImage* src = mImageCreate(1, 1, formats[i]);
+			mImageSetPixel(src, 0, 0, 0xFF181818);
+
+			struct mImage* dst = mImageConvertToFormat(src, formats[j]);
+			assert_non_null(dst);
+			assert_int_equal(dst->format, formats[j]);
+			assert_int_equal(mImageGetPixel(dst, 0, 0), 0xFF181818);
+
+			mImageDestroy(src);
+			mImageDestroy(dst);
+		}
+	}
+}
+
+M_TEST_DEFINE(convert2x1) {
+	const enum mColorFormat formats[] = {
+		mCOLOR_XBGR8, mCOLOR_XRGB8,
+		mCOLOR_BGRX8, mCOLOR_RGBX8,
+		mCOLOR_ABGR8, mCOLOR_ARGB8,
+		mCOLOR_BGRA8, mCOLOR_RGBA8,
+		mCOLOR_RGB5, mCOLOR_BGR5,
+		mCOLOR_RGB565, mCOLOR_BGR565,
+		mCOLOR_ARGB5, mCOLOR_ABGR5,
+		mCOLOR_RGBA5, mCOLOR_BGRA5,
+		mCOLOR_RGB8, mCOLOR_BGR8,
+		mCOLOR_L8,
+		0
+	};
+
+	int i, j;
+	for (i = 0; formats[i]; ++i) {
+		for (j = 0; formats[j]; ++j) {
+			struct mImage* src = mImageCreate(2, 1, formats[i]);
+			mImageSetPixel(src, 0, 0, 0xFF181818);
+			mImageSetPixel(src, 1, 0, 0xFF101010);
+
+			struct mImage* dst = mImageConvertToFormat(src, formats[j]);
+			assert_non_null(dst);
+			assert_int_equal(dst->format, formats[j]);
+			assert_int_equal(mImageGetPixel(dst, 0, 0), 0xFF181818);
+			assert_int_equal(mImageGetPixel(dst, 1, 0), 0xFF101010);
+
+			mImageDestroy(src);
+			mImageDestroy(dst);
+		}
+	}
+}
+
+M_TEST_DEFINE(convert1x2) {
+	const enum mColorFormat formats[] = {
+		mCOLOR_XBGR8, mCOLOR_XRGB8,
+		mCOLOR_BGRX8, mCOLOR_RGBX8,
+		mCOLOR_ABGR8, mCOLOR_ARGB8,
+		mCOLOR_BGRA8, mCOLOR_RGBA8,
+		mCOLOR_RGB5, mCOLOR_BGR5,
+		mCOLOR_RGB565, mCOLOR_BGR565,
+		mCOLOR_ARGB5, mCOLOR_ABGR5,
+		mCOLOR_RGBA5, mCOLOR_BGRA5,
+		mCOLOR_RGB8, mCOLOR_BGR8,
+		mCOLOR_L8,
+		0
+	};
+
+	int i, j;
+	for (i = 0; formats[i]; ++i) {
+		for (j = 0; formats[j]; ++j) {
+			struct mImage* src = calloc(1, sizeof(*src));
+			src->width = 1;
+			src->height = 2;
+			src->stride = 8; // Use an unusual stride to make sure the right parts get copied
+			src->format = formats[i];
+			src->depth = mColorFormatBytes(src->format);
+			src->data = calloc(src->stride * src->depth, src->height);
+			mImageSetPixel(src, 0, 0, 0xFF181818);
+			mImageSetPixel(src, 0, 1, 0xFF101010);
+
+			struct mImage* dst = mImageConvertToFormat(src, formats[j]);
+			assert_non_null(dst);
+			assert_int_equal(dst->format, formats[j]);
+			assert_int_equal(mImageGetPixel(dst, 0, 0), 0xFF181818);
+			assert_int_equal(mImageGetPixel(dst, 0, 1), 0xFF101010);
+
+			mImageDestroy(src);
+			mImageDestroy(dst);
+		}
+	}
+}
+
+M_TEST_DEFINE(convert2x2) {
+	const enum mColorFormat formats[] = {
+		mCOLOR_XBGR8, mCOLOR_XRGB8,
+		mCOLOR_BGRX8, mCOLOR_RGBX8,
+		mCOLOR_ABGR8, mCOLOR_ARGB8,
+		mCOLOR_BGRA8, mCOLOR_RGBA8,
+		mCOLOR_RGB5, mCOLOR_BGR5,
+		mCOLOR_RGB565, mCOLOR_BGR565,
+		mCOLOR_ARGB5, mCOLOR_ABGR5,
+		mCOLOR_RGBA5, mCOLOR_BGRA5,
+		mCOLOR_RGB8, mCOLOR_BGR8,
+		mCOLOR_L8,
+		0
+	};
+
+	int i, j;
+	for (i = 0; formats[i]; ++i) {
+		for (j = 0; formats[j]; ++j) {
+			struct mImage* src = calloc(1, sizeof(*src));
+			src->width = 2;
+			src->height = 2;
+			src->stride = 8; // Use an unusual stride to make sure the right parts get copied
+			src->format = formats[i];
+			src->depth = mColorFormatBytes(src->format);
+			src->data = calloc(src->stride * src->depth, src->height);
+			mImageSetPixel(src, 0, 0, 0xFF181818);
+			mImageSetPixel(src, 0, 1, 0xFF101010);
+			mImageSetPixel(src, 1, 0, 0xFF000000);
+			mImageSetPixel(src, 1, 1, 0xFF080808);
+
+			struct mImage* dst = mImageConvertToFormat(src, formats[j]);
+			assert_non_null(dst);
+			assert_int_equal(dst->format, formats[j]);
+			assert_int_equal(mImageGetPixel(dst, 0, 0), 0xFF181818);
+			assert_int_equal(mImageGetPixel(dst, 0, 1), 0xFF101010);
+			assert_int_equal(mImageGetPixel(dst, 1, 0), 0xFF000000);
+			assert_int_equal(mImageGetPixel(dst, 1, 1), 0xFF080808);
+
+			mImageDestroy(src);
+			mImageDestroy(dst);
+		}
+	}
+}
+
 M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(pitchRead),
 	cmocka_unit_test(strideRead),
@@ -513,4 +663,8 @@ M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(loadPng24),
 	cmocka_unit_test(loadPng32),
 #endif
+	cmocka_unit_test(convert1x1),
+	cmocka_unit_test(convert2x1),
+	cmocka_unit_test(convert1x2),
+	cmocka_unit_test(convert2x2),
 )

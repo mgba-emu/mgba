@@ -94,6 +94,7 @@ struct VFile;
 struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat format);
 struct mImage* mImageLoad(const char* path);
 struct mImage* mImageLoadVF(struct VFile* vf);
+struct mImage* mImageConvertToFormat(const struct mImage*, enum mColorFormat format);
 void mImageDestroy(struct mImage*);
 
 uint32_t mImageGetPixel(const struct mImage* image, unsigned x, unsigned y);
