@@ -261,12 +261,12 @@ uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat
 		break;
 
 	case mCOLOR_RGB565:
-		r = (((color >> 10) & 0x1F) * 0x21) >> 2;
+		r = (((color >> 11) & 0x1F) * 0x21) >> 2;
 		g = (((color >> 5) & 0x3F) * 0x41) >> 4;
 		b = ((color & 0x1F) * 0x21) >> 2;
 		break;
 	case mCOLOR_BGR565:
-		b = (((color >> 10) & 0x1F) * 0x21) >> 2;
+		b = (((color >> 11) & 0x1F) * 0x21) >> 2;
 		g = (((color >> 5) & 0x3F) * 0x41) >> 4;
 		r = ((color & 0x1F) * 0x21) >> 2;
 		break;
