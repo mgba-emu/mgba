@@ -11,12 +11,12 @@
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;Kotisivut&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Foorumit / Tuki&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Lahjoita&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Lähdekoodi&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
         <source>Branch: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revision: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</source>
-        <translation>Oksa: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Reviisio: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
+        <translation>Haara: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Reviisio: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
@@ -41,7 +41,7 @@ Game Boy Advance on Nintendo Co., Ltd rekisteröimä tuotemerkki.</translation>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>Päivitys on saatavilla</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
