@@ -92,6 +92,8 @@ struct mImage {
 
 struct VFile;
 struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat format);
+struct mImage* mImageCreateWithStride(unsigned width, unsigned height, unsigned stride, enum mColorFormat format);
+struct mImage* mImageCreateFromConstBuffer(unsigned width, unsigned height, unsigned stride, enum mColorFormat format, const void* pixels);
 struct mImage* mImageLoad(const char* path);
 struct mImage* mImageLoadVF(struct VFile* vf);
 struct mImage* mImageConvertToFormat(const struct mImage*, enum mColorFormat format);

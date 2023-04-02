@@ -14,6 +14,10 @@
 #define ROW(IM, Y) PIXEL(IM, 0, Y)
 
 struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat format) {
+	return mImageCreateWithStride(width, height, width, format);
+}
+
+struct mImage* mImageCreateWithStride(unsigned width, unsigned height, unsigned stride, enum mColorFormat format) {
 	if (width < 1 || height < 1) {
 		return NULL;
 	}
@@ -23,7 +27,7 @@ struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat f
 	}
 	image->width = width;
 	image->height = height;
-	image->stride = width;
+	image->stride = stride;
 	image->format = format;
 	image->depth = mColorFormatBytes(format);
 	image->data = calloc(width * height, image->depth);
@@ -31,6 +35,15 @@ struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat f
 		free(image);
 		return NULL;
 	}
+	return image;
+}
+
+struct mImage* mImageCreateFromConstBuffer(unsigned width, unsigned height, unsigned stride, enum mColorFormat format, const void* pixels) {
+	struct mImage* image = mImageCreateWithStride(width, height, stride, format);
+	if (!image) {
+		return NULL;
+	}
+	memcpy(image->data, pixels, height * stride * image->depth);
 	return image;
 }
 
