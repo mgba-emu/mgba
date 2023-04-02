@@ -310,6 +310,24 @@ M_TEST_DEFINE(logging) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(screenshot) {
+	SETUP_LUA;
+	CREATE_CORE;
+	color_t* buffer = malloc(240 * 160 * sizeof(color_t));
+	core->setVideoBuffer(core, buffer, 240);
+	core->reset(core);
+	core->runFrame(core);
+
+	TEST_PROGRAM("im = emu:screenshotToImage()");
+	TEST_PROGRAM("assert(im)");
+	TEST_PROGRAM("assert(im.width >= 160)");
+	TEST_PROGRAM("assert(im.height >= 144)");
+
+	TEARDOWN_CORE;
+	free(buffer);
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(globals),
 	cmocka_unit_test(infoFuncs),
@@ -318,4 +336,5 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(memoryRead),
 	cmocka_unit_test(memoryWrite),
 	cmocka_unit_test(logging),
+	cmocka_unit_test(screenshot),
 )

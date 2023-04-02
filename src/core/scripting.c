@@ -7,6 +7,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
+#include <mgba/script/base.h>
 #include <mgba/script/context.h>
 #include <mgba-util/table.h>
 #include <mgba-util/vfs.h>
@@ -399,6 +400,7 @@ static int _mScriptCoreLoadStateFile(struct mCore* core, const char* path, int f
 	vf->close(vf);
 	return ok;
 }
+
 static void _mScriptCoreTakeScreenshot(struct mCore* core, const char* filename) {
 	if (filename) {
 		struct VFile* vf = VFileOpen(filename, O_WRONLY | O_CREAT | O_TRUNC);
@@ -410,6 +412,29 @@ static void _mScriptCoreTakeScreenshot(struct mCore* core, const char* filename)
 	} else {
 		mCoreTakeScreenshot(core);
 	}
+}
+
+static struct mScriptValue* _mScriptCoreTakeScreenshotToImage(struct mCore* core) {
+	size_t stride;
+	const void* pixels = 0;
+	unsigned width, height;
+	core->currentVideoSize(core, &width, &height);
+	core->getPixels(core, &pixels, &stride);
+	if (!pixels) {
+		return NULL;
+	}
+#ifndef COLOR_16_BIT
+	struct mImage* image = mImageCreateFromConstBuffer(width, height, stride, mCOLOR_XBGR8, pixels);
+#elif COLOR_5_6_5
+	struct mImage* image = mImageCreateFromConstBuffer(width, height, stride, mCOLOR_RGB565, pixels);
+#else
+	struct mImage* image = mImageCreateFromConstBuffer(width, height, stride, mCOLOR_BGR5, pixels);
+#endif
+
+	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mImage));
+	result->value.opaque = image;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT;
+	return result;
 }
 
 // Loading functions
@@ -464,6 +489,7 @@ mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, loadStateFile, _mScript
 
 // Miscellaneous functions
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD_WITH_DEFAULTS(mCore, screenshot, _mScriptCoreTakeScreenshot, 1, CHARP, filename);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, W(mImage), screenshotToImage, _mScriptCoreTakeScreenshotToImage, 0);
 
 mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
@@ -549,8 +575,10 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_DOCSTRING("Load state from the given path. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateFile)
 
-	mSCRIPT_DEFINE_DOCSTRING("Save a screenshot")
+	mSCRIPT_DEFINE_DOCSTRING("Save a screenshot to a file")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, screenshot)
+	mSCRIPT_DEFINE_DOCSTRING("Get a screenshot in an struct::mImage")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, screenshotToImage)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mCore, checksum)
