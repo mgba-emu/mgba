@@ -11,6 +11,15 @@
 #endif
 #include <mgba-util/vfs.h>
 
+M_TEST_DEFINE(zeroDim) {
+	assert_null(mImageCreate(0, 0, mCOLOR_ABGR8));
+	assert_null(mImageCreate(1, 0, mCOLOR_ABGR8));
+	assert_null(mImageCreate(0, 1, mCOLOR_ABGR8));
+	struct mImage* image = mImageCreate(1, 1, mCOLOR_ABGR8);
+	assert_non_null(image);
+	mImageDestroy(image);
+}
+
 M_TEST_DEFINE(pitchRead) {
 	static uint8_t buffer[12] = {
 		0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xA, 0xB
@@ -695,6 +704,7 @@ M_TEST_DEFINE(convert2x2) {
 }
 
 M_TEST_SUITE_DEFINE(Image,
+	cmocka_unit_test(zeroDim),
 	cmocka_unit_test(pitchRead),
 	cmocka_unit_test(strideRead),
 	cmocka_unit_test(oobRead),

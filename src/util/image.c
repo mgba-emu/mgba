@@ -14,6 +14,9 @@
 #define ROW(IM, Y) PIXEL(IM, 0, Y)
 
 struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat format) {
+	if (width < 1 || height < 1) {
+		return NULL;
+	}
 	struct mImage* image = calloc(1, sizeof(struct mImage));
 	if (!image) {
 		return NULL;
