@@ -1568,7 +1568,7 @@ void mScriptObjectFree(struct mScriptValue* value) {
 	if (value->type->base != mSCRIPT_TYPE_OBJECT) {
 		return;
 	}
-	if (value->flags & mSCRIPT_VALUE_FLAG_FREE_BUFFER) {
+	if (value->flags & (mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER)) {
 		mScriptClassInit(value->type->details.cls);
 		if (value->type->details.cls->free) {
 			struct mScriptValue deinitMember;
@@ -1584,6 +1584,8 @@ void mScriptObjectFree(struct mScriptValue* value) {
 				mScriptFrameDeinit(&frame);
 			}
 		}
+	}
+	if (value->flags & mSCRIPT_VALUE_FLAG_FREE_BUFFER) {
 		free(value->value.opaque);
 	}
 }

@@ -164,7 +164,8 @@ enum mScriptClassInitType {
 };
 
 enum {
-	mSCRIPT_VALUE_FLAG_FREE_BUFFER = 1
+	mSCRIPT_VALUE_FLAG_FREE_BUFFER = 1,
+	mSCRIPT_VALUE_FLAG_DEINIT = 2,
 };
 
 struct mScriptType;
