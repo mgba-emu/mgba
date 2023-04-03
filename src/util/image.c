@@ -13,6 +13,34 @@
 
 #define ROW(IM, Y) PIXEL(IM, 0, Y)
 
+#ifdef __BIG_ENDIAN__
+#define SHIFT_IN(COLOR, DEPTH) \
+	if ((DEPTH) < 4) { \
+		(COLOR) >>= (32 - 8 * (DEPTH)); \
+	}
+
+#define SHIFT_OUT(COLOR, DEPTH) \
+	if ((DEPTH) < 4) { \
+		(COLOR) <<= (32 - 8 *(DEPTH)); \
+	}
+#else
+#define SHIFT_IN(COLOR, DEPTH)
+#define SHIFT_OUT(COLOR, DEPTH)
+#endif
+
+#define GET_PIXEL(DST, SRC, DEPTH) do { \
+	uint32_t _color = 0; \
+	memcpy(&_color, (void*) (SRC), (DEPTH)); \
+	SHIFT_IN(_color, (DEPTH)); \
+	(DST) = _color; \
+} while (0)
+
+#define PUT_PIXEL(SRC, DST, DEPTH) do { \
+	uint32_t _color = (SRC); \
+	SHIFT_OUT(_color, (DEPTH)); \
+	memcpy((void*) (DST), &_color, (DEPTH)); \
+} while (0);
+
 struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat format) {
 	return mImageCreateWithStride(width, height, width, format);
 }
@@ -147,20 +175,10 @@ struct mImage* mImageConvertToFormat(const struct mImage* image, enum mColorForm
 		uintptr_t src = (uintptr_t) ROW(image, y);
 		uintptr_t dst = (uintptr_t) ROW(newImage, y);
 		for (x = 0; x < newImage->width; ++x, src += image->depth, dst += newImage->depth) {
-			uint32_t color = 0;
-			memcpy(&color, (void*) src, image->depth);
-#ifdef __BIG_ENDIAN__
-			if (image->depth < 4) {
-				color >>= (32 - 8 * image->depth);
-			}
-#endif
+			uint32_t color;
+			GET_PIXEL(color, src, image->depth);
 			color = mColorConvert(color, image->format, format);
-#ifdef __BIG_ENDIAN__
-			if (newImage->depth < 4) {
-				color <<= (32 - 8 * newImage->depth);
-			}
-#endif
-			memcpy((void*) dst, &color, newImage->depth);
+			PUT_PIXEL(color, dst, newImage->depth);
 		}
 	}
 	return newImage;
