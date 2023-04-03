@@ -108,6 +108,8 @@ void mImageSetPixel(struct mImage* image, unsigned x, unsigned y, uint32_t color
 void mImageSetPixelRaw(struct mImage* image, unsigned x, unsigned y, uint32_t color);
 
 void mImageBlit(struct mImage* image, const struct mImage* source, int x, int y);
+void mImageComposite(struct mImage* image, const struct mImage* source, int x, int y);
+void mImageCompositeWithAlpha(struct mImage* image, const struct mImage* source, int x, int y, float alpha);
 
 uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to);
 
@@ -249,6 +251,56 @@ ATTRIBUTE_UNUSED static unsigned mColorMix5Bit(int weightA, unsigned colorA, int
 	}
 #endif
 	return c;
+}
+
+ATTRIBUTE_UNUSED static uint32_t mColorMixARGB8(uint32_t colorA, uint32_t colorB) {
+	uint32_t alpha = colorA >> 24;
+	if (!alpha) {
+		return colorB;
+	}
+
+	uint32_t color = 0;
+	uint32_t a, b;
+	a = colorA & 0xFF00FF;
+	a *= alpha + 1;
+	color += (a >> 8) & 0xFF00FF;
+
+	a = colorB & 0xFF00FF;
+	a *= 0x100 - alpha;
+	color += (a >> 8) & 0xFF00FF;
+
+	if (color & 0x100) {
+		color &= ~0xFF;
+		color |= 0xFF;
+	}
+	if (color & 0x1000000) {
+		color &= ~0xFF0000;
+		color |= 0xFF0000;
+	}
+
+	b = 0;
+	a = colorA & 0xFF00;
+	a *= alpha + 1;
+	b += a & 0xFF0000;
+
+	a = colorB & 0xFF00;
+	a *= 0x100 - alpha;
+	b += a & 0xFF0000;
+
+	if (b & 0x1000000) {
+		b &= ~0xFF0000;
+		b |= 0xFF0000;
+	}
+	color |= b >> 8;
+
+	alpha += colorB >> 24;
+	if (alpha > 0xFF) {
+		color |= 0xFF000000;
+	} else {
+		color |= alpha << 24;
+	}
+
+	return color;
 }
 #endif
 

@@ -318,43 +318,43 @@ void mImageSetPixel(struct mImage* image, unsigned x, unsigned y, uint32_t color
 	mImageSetPixelRaw(image, x, y, mColorConvert(color, mCOLOR_ARGB8, image->format));
 }
 
+#define COMPOSITE_BOUNDS_INIT \
+	struct mRectangle dstRect = { \
+		.x = 0, \
+		.y = 0, \
+		.width = image->width, \
+		.height = image->height \
+	}; \
+	struct mRectangle srcRect = { \
+		.x = x, \
+		.y = y, \
+		.width = source->width, \
+		.height = source->height \
+	}; \
+	if (!mRectangleIntersection(&srcRect, &dstRect)) { \
+		return; \
+	} \
+	int srcStartX; \
+	int srcStartY; \
+	int dstStartX; \
+	int dstStartY; \
+	if (x < 0) { \
+		dstStartX = 0; \
+		srcStartX = -x; \
+	} else { \
+		srcStartX = 0; \
+		dstStartX = srcRect.x; \
+	} \
+	if (y < 0) { \
+		dstStartY = 0; \
+		srcStartY = -y; \
+	} else { \
+		srcStartY = 0; \
+		dstStartY = srcRect.y; \
+	}
+
 void mImageBlit(struct mImage* image, const struct mImage* source, int x, int y) {
-	struct mRectangle dstRect = {
-		.x = 0,
-		.y = 0,
-		.width = image->width,
-		.height = image->height
-	};
-	struct mRectangle srcRect = {
-		.x = x,
-		.y = y,
-		.width = source->width,
-		.height = source->height
-	};
-	if (!mRectangleIntersection(&srcRect, &dstRect)) {
-		return;
-	}
-
-	int srcStartX;
-	int srcStartY;
-	int dstStartX;
-	int dstStartY;
-
-	if (x < 0) {
-		dstStartX = 0;
-		srcStartX = -x;
-	} else {
-		srcStartX = 0;
-		dstStartX = srcRect.x;
-	}
-
-	if (y < 0) {
-		dstStartY = 0;
-		srcStartY = -y;
-	} else {
-		srcStartY = 0;
-		dstStartY = srcRect.y;
-	}
+	COMPOSITE_BOUNDS_INIT;
 
 	for (y = 0; y < srcRect.height; ++y) {
 		uintptr_t srcPixel = (uintptr_t) PIXEL(source, srcStartX, srcStartY + y);
@@ -363,6 +363,74 @@ void mImageBlit(struct mImage* image, const struct mImage* source, int x, int y)
 			uint32_t color;
 			GET_PIXEL(color, srcPixel, source->depth);
 			color = mColorConvert(color, source->format, image->format);
+			PUT_PIXEL(color, dstPixel, image->depth);
+		}
+	}
+}
+
+void mImageComposite(struct mImage* image, const struct mImage* source, int x, int y) {
+	if (!mColorFormatHasAlpha(source->format)) {
+		mImageBlit(image, source, x, y);
+		return;
+	}
+
+	COMPOSITE_BOUNDS_INIT;
+
+	for (y = 0; y < srcRect.height; ++y) {
+		uintptr_t srcPixel = (uintptr_t) PIXEL(source, srcStartX, srcStartY + y);
+		uintptr_t dstPixel = (uintptr_t) PIXEL(image, dstStartX, dstStartY + y);
+		for (x = 0; x < srcRect.width; ++x, srcPixel += source->depth, dstPixel += image->depth) {
+			uint32_t color, colorB;
+			GET_PIXEL(color, srcPixel, source->depth);
+			color = mColorConvert(color, source->format, mCOLOR_ARGB8);
+			if (color < 0xFF000000) {
+				GET_PIXEL(colorB, dstPixel, image->depth);
+				colorB = mColorConvert(colorB, image->format, mCOLOR_ARGB8);
+				color = mColorMixARGB8(color, colorB);
+			}
+			color = mColorConvert(color, mCOLOR_ARGB8, image->format);
+			PUT_PIXEL(color, dstPixel, image->depth);
+		}
+	}
+}
+
+void mImageCompositeWithAlpha(struct mImage* image, const struct mImage* source, int x, int y, float alpha) {
+	if (alpha >= 1 && alpha < 257.f / 256.f) {
+		mImageComposite(image, source, x, y);
+		return;
+	}
+	if (alpha <= 0) {
+		return;
+	}
+	if (alpha > 256) {
+		// TODO: Add a slow path for alpha > 1, since we need to check saturation only on this path
+		alpha = 256;
+	}
+
+	COMPOSITE_BOUNDS_INIT;
+
+	int fixedAlpha = alpha * 0x200;
+
+	for (y = 0; y < srcRect.height; ++y) {
+		uintptr_t srcPixel = (uintptr_t) PIXEL(source, srcStartX, srcStartY + y);
+		uintptr_t dstPixel = (uintptr_t) PIXEL(image, dstStartX, dstStartY + y);
+		for (x = 0; x < srcRect.width; ++x, srcPixel += source->depth, dstPixel += image->depth) {
+			uint32_t color, colorB;
+			GET_PIXEL(color, srcPixel, source->depth);
+			color = mColorConvert(color, source->format, mCOLOR_ARGB8);
+			uint32_t alpha = (color >> 24) * fixedAlpha;
+			alpha >>= 9;
+			if (alpha > 0xFF) {
+				alpha = 0xFF;
+			}
+			color &= 0x00FFFFFF;
+			color |= alpha << 24;
+
+			GET_PIXEL(colorB, dstPixel, image->depth);
+			colorB = mColorConvert(colorB, image->format, mCOLOR_ARGB8);
+
+			color = mColorMixARGB8(color, colorB);
+			color = mColorConvert(color, mCOLOR_ARGB8, image->format);
 			PUT_PIXEL(color, dstPixel, image->depth);
 		}
 	}
