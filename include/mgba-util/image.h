@@ -101,10 +101,13 @@ void mImageDestroy(struct mImage*);
 
 bool mImageSave(const struct mImage*, const char* path, const char* format);
 bool mImageSaveVF(const struct mImage*, struct VFile* vf, const char* format);
+
 uint32_t mImageGetPixel(const struct mImage* image, unsigned x, unsigned y);
 uint32_t mImageGetPixelRaw(const struct mImage* image, unsigned x, unsigned y);
 void mImageSetPixel(struct mImage* image, unsigned x, unsigned y, uint32_t color);
 void mImageSetPixelRaw(struct mImage* image, unsigned x, unsigned y, uint32_t color);
+
+void mImageBlit(struct mImage* image, const struct mImage* source, int x, int y);
 
 uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to);
 

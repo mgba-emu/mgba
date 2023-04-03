@@ -703,6 +703,287 @@ M_TEST_DEFINE(convert2x2) {
 	}
 }
 
+M_TEST_DEFINE(blitBoundaries) {
+	static const uint32_t spriteBuffer[4] = {
+		0xFF000F00, 0xFF000F01,
+		0xFF000F10, 0xFF000F11
+	};
+	static const uint32_t canvasBuffer[9] = {
+		0xFF000000, 0xFF000000, 0xFF000000,
+		0xFF000000, 0xFF000000, 0xFF000000,
+		0xFF000000, 0xFF000000, 0xFF000000
+	};
+
+	struct mImage* sprite = mImageCreateFromConstBuffer(2, 2, 2, mCOLOR_XRGB8, spriteBuffer);
+	struct mImage* canvas;
+
+#define COMPARE(AA, BA, CA, AB, BB, CB, AC, BC, CC) \
+	assert_int_equal(mImageGetPixel(canvas, 0, 0), 0xFF000000 | (AA)); \
+	assert_int_equal(mImageGetPixel(canvas, 1, 0), 0xFF000000 | (BA)); \
+	assert_int_equal(mImageGetPixel(canvas, 2, 0), 0xFF000000 | (CA)); \
+	assert_int_equal(mImageGetPixel(canvas, 0, 1), 0xFF000000 | (AB)); \
+	assert_int_equal(mImageGetPixel(canvas, 1, 1), 0xFF000000 | (BB)); \
+	assert_int_equal(mImageGetPixel(canvas, 2, 1), 0xFF000000 | (CB)); \
+	assert_int_equal(mImageGetPixel(canvas, 0, 2), 0xFF000000 | (AC)); \
+	assert_int_equal(mImageGetPixel(canvas, 1, 2), 0xFF000000 | (BC)); \
+	assert_int_equal(mImageGetPixel(canvas, 2, 2), 0xFF000000 | (CC))
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, -2, -2);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, -1, -2);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 0, -2);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 1, -2);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 2, -2);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 3, -2);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, -2, -1);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, -1, -1);
+	COMPARE(0xF11, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 0, -1);
+	COMPARE(0xF10, 0xF11, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 1, -1);
+	COMPARE(0x000, 0xF10, 0xF11,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 2, -1);
+	COMPARE(0x000, 0x000, 0xF10,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 3, -1);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, -2, 0);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, -1, 0);
+	COMPARE(0xF01, 0x000, 0x000,
+	        0xF11, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 0, 0);
+	COMPARE(0xF00, 0xF01, 0x000,
+	        0xF10, 0xF11, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 1, 0);
+	COMPARE(0x000, 0xF00, 0xF01,
+	        0x000, 0xF10, 0xF11,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 2, 0);
+	COMPARE(0x000, 0x000, 0xF00,
+	        0x000, 0x000, 0xF10,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 3, 0);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, -2, 1);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, -1, 1);
+	COMPARE(0x000, 0x000, 0x000,
+	        0xF01, 0x000, 0x000,
+	        0xF11, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 0, 1);
+	COMPARE(0x000, 0x000, 0x000,
+	        0xF00, 0xF01, 0x000,
+	        0xF10, 0xF11, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 1, 1);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0xF00, 0xF01,
+	        0x000, 0xF10, 0xF11);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 2, 1);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0xF00,
+	        0x000, 0x000, 0xF10);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 3, 1);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, -2, 2);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, -1, 2);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0xF01, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 0, 2);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0xF00, 0xF01, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 1, 2);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0xF00, 0xF01);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 2, 2);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0xF00);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 3, 2);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, -2, 3);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, -1, 3);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 0, 3);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 1, 3);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 2, 3);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+	canvas = mImageCreateFromConstBuffer(3, 3, 3, mCOLOR_XRGB8, canvasBuffer);
+	mImageBlit(canvas, sprite, 3, 3);
+	COMPARE(0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000,
+	        0x000, 0x000, 0x000);
+	mImageDestroy(canvas);
+
+#undef COMPARE
+	mImageDestroy(sprite);
+}
+
 M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(zeroDim),
 	cmocka_unit_test(pitchRead),
@@ -721,4 +1002,5 @@ M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(convert2x1),
 	cmocka_unit_test(convert1x2),
 	cmocka_unit_test(convert2x2),
+	cmocka_unit_test(blitBoundaries),
 )

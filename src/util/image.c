@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba-util/image.h>
 
+#include <mgba-util/geometry.h>
 #include <mgba-util/image/png-io.h>
 #include <mgba-util/vfs.h>
 
@@ -315,6 +316,56 @@ void mImageSetPixelRaw(struct mImage* image, unsigned x, unsigned y, uint32_t co
 
 void mImageSetPixel(struct mImage* image, unsigned x, unsigned y, uint32_t color) {
 	mImageSetPixelRaw(image, x, y, mColorConvert(color, mCOLOR_ARGB8, image->format));
+}
+
+void mImageBlit(struct mImage* image, const struct mImage* source, int x, int y) {
+	struct mRectangle dstRect = {
+		.x = 0,
+		.y = 0,
+		.width = image->width,
+		.height = image->height
+	};
+	struct mRectangle srcRect = {
+		.x = x,
+		.y = y,
+		.width = source->width,
+		.height = source->height
+	};
+	if (!mRectangleIntersection(&srcRect, &dstRect)) {
+		return;
+	}
+
+	int srcStartX;
+	int srcStartY;
+	int dstStartX;
+	int dstStartY;
+
+	if (x < 0) {
+		dstStartX = 0;
+		srcStartX = -x;
+	} else {
+		srcStartX = 0;
+		dstStartX = srcRect.x;
+	}
+
+	if (y < 0) {
+		dstStartY = 0;
+		srcStartY = -y;
+	} else {
+		srcStartY = 0;
+		dstStartY = srcRect.y;
+	}
+
+	for (y = 0; y < srcRect.height; ++y) {
+		uintptr_t srcPixel = (uintptr_t) PIXEL(source, srcStartX, srcStartY + y);
+		uintptr_t dstPixel = (uintptr_t) PIXEL(image, dstStartX, dstStartY + y);
+		for (x = 0; x < srcRect.width; ++x, srcPixel += source->depth, dstPixel += image->depth) {
+			uint32_t color;
+			GET_PIXEL(color, srcPixel, source->depth);
+			color = mColorConvert(color, source->format, image->format);
+			PUT_PIXEL(color, dstPixel, image->depth);
+		}
+	}
 }
 
 uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to) {
