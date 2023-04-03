@@ -30,15 +30,23 @@ static struct mScriptValue* _mImageLoad(const char* path) {
 	result->flags = mSCRIPT_VALUE_FLAG_DEINIT;
 	return result;
 }
-
 mSCRIPT_DECLARE_STRUCT_C_METHOD(mImage, U32, getPixel, mImageGetPixel, 2, U32, x, U32, y);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mImage, setPixel, mImageSetPixel, 3, U32, x, U32, y, U32, color);
 mSCRIPT_DECLARE_STRUCT_C_METHOD_WITH_DEFAULTS(mImage, BOOL, save, mImageSave, 2, CHARP, path, CHARP, format);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mImage, _deinit, mImageDestroy, 0);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mImage, drawImageOpaque, mImageBlit, 3, CS(mImage), image, U32, x, U32, y);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD_WITH_DEFAULTS(mImage, drawImage, mImageCompositeWithAlpha, 4, CS(mImage), image, U32, x, U32, y, F32, alpha);
 
 mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mImage, save)
 	mSCRIPT_NO_DEFAULT,
 	mSCRIPT_CHARP("PNG")
+mSCRIPT_DEFINE_DEFAULTS_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mImage, drawImage)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_F32(1.0f)
 mSCRIPT_DEFINE_DEFAULTS_END;
 
 mSCRIPT_DEFINE_STRUCT(mImage)
@@ -52,6 +60,10 @@ mSCRIPT_DEFINE_STRUCT(mImage)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mImage, getPixel)
 	mSCRIPT_DEFINE_DOCSTRING("Set the ARGB value of the pixel at a given coordinate")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mImage, setPixel)
+	mSCRIPT_DEFINE_DOCSTRING("Draw another image onto this image without any alpha blending, overwriting what was already there")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mImage, drawImageOpaque)
+	mSCRIPT_DEFINE_DOCSTRING("Draw another image onto this image with alpha blending as needed, optionally specifying a coefficient for adjusting the opacity")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mImage, drawImage)
 	mSCRIPT_DEFINE_DOCSTRING("The width of the image, in pixels")
 	mSCRIPT_DEFINE_STRUCT_CONST_MEMBER(mImage, U32, width)
 	mSCRIPT_DEFINE_DOCSTRING("The height of the image, in pixels")
