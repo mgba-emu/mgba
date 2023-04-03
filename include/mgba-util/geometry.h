@@ -23,6 +23,7 @@ struct mRectangle {
 };
 
 void mRectangleUnion(struct mRectangle* dst, const struct mRectangle* add);
+bool mRectangleIntersection(struct mRectangle* dst, const struct mRectangle* add);
 void mRectangleCenter(const struct mRectangle* ref, struct mRectangle* rect);
 
 CXX_GUARD_END

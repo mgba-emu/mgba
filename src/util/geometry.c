@@ -30,6 +30,64 @@ void mRectangleUnion(struct mRectangle* dst, const struct mRectangle* add) {
 	dst->height = y1 - y0;
 }
 
+bool mRectangleIntersection(struct mRectangle* dst, const struct mRectangle* add) {
+	int x[3];
+	int y[3];
+
+	if (dst == add) {
+		return true;
+	}
+
+#define SORT(Z, M) \
+	if (dst->Z < add->Z) { \
+		Z[0] = dst->Z; \
+		Z[1] = add->Z; \
+	} else { \
+		Z[0] = add->Z; \
+		Z[1] = dst->Z; \
+	} \
+	if (dst->Z + dst->M < add->Z + add->M) { \
+		/* dst is entirely before add */ \
+		if (dst->Z + dst->M <= add->Z) { \
+			return false; \
+		} \
+		if (dst->Z + dst->M < Z[1]) { \
+			Z[2] = Z[1]; \
+			Z[1] = dst->Z + dst->M; \
+		} else { \
+			Z[2] = dst->Z + dst->M; \
+		} \
+		if (add->Z + add->M < Z[2]) { \
+			Z[2] = add->Z + add->M; \
+		} \
+	} else { \
+		/* dst is after before add */ \
+		if (dst->Z >= add->Z + add->M) { \
+			return false; \
+		} \
+		if (add->Z + add->M < Z[1]) { \
+			Z[2] = Z[1]; \
+			Z[1] = add->Z + add->M; \
+		} else { \
+			Z[2] = add->Z + add->M; \
+		} \
+		if (dst->Z + dst->M < Z[2]) { \
+			Z[2] = dst->Z + dst->M; \
+		} \
+	}
+
+	SORT(x, width);
+	SORT(y, height);
+
+#undef SORT
+
+	dst->x = x[1];
+	dst->width = x[2] - x[1];
+	dst->y = y[1];
+	dst->height = y[2] - y[1];
+	return true;
+}
+
 void mRectangleCenter(const struct mRectangle* ref, struct mRectangle* rect) {
 	rect->x = ref->x + (ref->width - rect->width) / 2;
 	rect->y = ref->y + (ref->height - rect->height) / 2;
