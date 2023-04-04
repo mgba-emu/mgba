@@ -137,9 +137,9 @@ void mSDLGLCommonRunloop(struct mSDLRenderer* renderer, void* user) {
 		renderer->player.windowUpdated = true;
 
 		struct mRectangle frame;
-		VideoBackendGetFrame(v, &frame);
+		v->layerDimensions(v, VIDEO_LAYER_IMAGE, &frame);
 		int i;
-		for (i = 0; i <= VIDEO_LAYER_IMAGE; ++i) {
+		for (i = 0; i < VIDEO_LAYER_IMAGE; ++i) {
 			struct mRectangle dims;
 			v->layerDimensions(v, i, &dims);
 			mRectangleCenter(&frame, &dims);

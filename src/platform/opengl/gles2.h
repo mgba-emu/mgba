@@ -84,6 +84,8 @@ struct mGLES2Context {
 
 	struct mRectangle layerDims[VIDEO_LAYER_MAX];
 	struct mSize imageSizes[VIDEO_LAYER_MAX];
+	int x;
+	int y;
 	unsigned width;
 	unsigned height;
 

@@ -696,25 +696,19 @@ void PainterGL::recenterLayers() {
 	if (!m_context) {
 		return;
 	}
-	const static std::initializer_list<VideoLayer> centeredLayers{VIDEO_LAYER_BACKGROUND, VIDEO_LAYER_IMAGE};
+	const static std::initializer_list<VideoLayer> centeredLayers{VIDEO_LAYER_BACKGROUND};
+	int width, height;
 	mRectangle frame = {0};
+	m_backend->imageSize(m_backend, VIDEO_LAYER_IMAGE, &width, &height);
+	frame.width = width;
+	frame.height = height;
 	unsigned scale = std::max(1U, m_context->videoScale());
+
 	for (VideoLayer l : centeredLayers) {
 		mRectangle dims{};
-		int width, height;
 		m_backend->imageSize(m_backend, l, &width, &height);
-		dims.width = width;
-		dims.height = height;
-		if (l != VIDEO_LAYER_IMAGE) {
-			dims.width *= scale;
-			dims.height *= scale;
-			m_backend->setLayerDimensions(m_backend, l, &dims);
-		}
-		mRectangleUnion(&frame, &dims);
-	}
-	for (VideoLayer l : centeredLayers) {
-		mRectangle dims;
-		m_backend->layerDimensions(m_backend, l, &dims);
+		dims.width = width * scale;
+		dims.height = height * scale;
 		mRectangleCenter(&frame, &dims);
 		m_backend->setLayerDimensions(m_backend, l, &dims);
 	}
