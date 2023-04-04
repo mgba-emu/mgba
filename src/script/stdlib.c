@@ -7,6 +7,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
+#include <mgba/core/version.h>
 #include <mgba/script/context.h>
 #include <mgba/script/macros.h>
 #ifdef M_CORE_GBA
@@ -169,4 +170,27 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 	mScriptContextSetDocstring(context, "util", "Basic utility library");
 	mScriptContextSetDocstring(context, "util.makeBitmask", "Compile a list of bit indices into a bitmask");
 	mScriptContextSetDocstring(context, "util.expandBitmask", "Expand a bitmask into a list of bit indices");
+
+	struct mScriptValue* systemVersion = mScriptStringCreateFromUTF8(projectVersion);
+	struct mScriptValue* systemProgram = mScriptStringCreateFromUTF8(projectName);
+	struct mScriptValue* systemBranch = mScriptStringCreateFromUTF8(gitBranch);
+	struct mScriptValue* systemCommit = mScriptStringCreateFromUTF8(gitCommit);
+	struct mScriptValue* systemRevision = mScriptValueAlloc(mSCRIPT_TYPE_MS_S32);
+	systemRevision->value.s32 = gitRevision;
+
+	mScriptContextExportNamespace(context, "system", (struct mScriptKVPair[]) {
+		mSCRIPT_KV_PAIR(version, systemVersion),
+		mSCRIPT_KV_PAIR(program, systemProgram),
+		mSCRIPT_KV_PAIR(branch, systemBranch),
+		mSCRIPT_KV_PAIR(commit, systemCommit),
+		mSCRIPT_KV_PAIR(revision, systemRevision),
+		mSCRIPT_KV_SENTINEL
+	});
+
+	mScriptContextSetDocstring(context, "system", "Information about the system the script is running under");
+	mScriptContextSetDocstring(context, "system.version", "The current version of this build of the program");
+	mScriptContextSetDocstring(context, "system.program", "The name of the program. Generally this will be \"mGBA\", but forks may change it to differentiate");
+	mScriptContextSetDocstring(context, "system.branch", "The current git branch of this build of the program, if known");
+	mScriptContextSetDocstring(context, "system.commit", "The current git commit hash of this build of the program, if known");
+	mScriptContextSetDocstring(context, "system.revision", "The current git revision number of this build of the program, or -1 if unknown");
 }
