@@ -548,6 +548,11 @@ void FrameView::newVl() {
 		m_vl->deinit(m_vl);
 	}
 	m_vl = mCoreFindVF(m_currentFrame);
+	if (!m_vl) {
+		m_currentFrame->close(m_currentFrame);
+		m_currentFrame = nullptr;
+		return;
+	}
 	m_vl->init(m_vl);
 	m_vl->loadROM(m_vl, m_currentFrame);
 	m_currentFrame = nullptr;
