@@ -894,7 +894,9 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 		luaContext->lastError = NULL;
 	}
 	char name[PATH_MAX + 1];
-	char dirname[PATH_MAX] = {0};
+	char dirname[PATH_MAX];
+	name[0] = '\0';
+	dirname[0] = '\0';
 	if (filename) {
 		if (*filename == '*') {
 			snprintf(name, sizeof(name), "=%s", filename + 1);
@@ -909,7 +911,7 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 				lastSlash = lastBackslash;
 			}
 			if (lastSlash) {
-				strncpy(dirname, filename, lastSlash - filename);
+				strlcpy(dirname, filename, lastSlash - filename);
 			}
 			snprintf(name, sizeof(name), "@%s", filename);
 		}
