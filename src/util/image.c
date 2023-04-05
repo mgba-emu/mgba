@@ -277,6 +277,9 @@ uint32_t mImageGetPixelRaw(const struct mImage* image, unsigned x, unsigned y) {
 		color |= ((const uint8_t*) pixel)[2] << 16;
 #endif
 		break;
+	default:
+		// This should never be reached
+		abort();
 	}
 	return color;
 }
