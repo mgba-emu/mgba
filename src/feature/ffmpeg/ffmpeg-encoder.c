@@ -179,7 +179,7 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 			encoder->sampleRate -= encoder->isampleRate % 10;
 		}
 	} else if (codec->id == AV_CODEC_ID_VORBIS) {
-		// HACK: FLAC doesn't support > 48000Hz but doesn't tell us
+		// HACK: Vorbis doesn't support > 48000Hz but doesn't tell us
 		if (encoder->sampleRate > 48000) {
 			encoder->sampleRate = 48000;
 		}
