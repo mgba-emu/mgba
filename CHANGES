@@ -10,6 +10,7 @@ Emulation fixes:
  - GBA Timers: Cascading timers don't tick when disabled (fixes mgba.io/i/2812)
 Other fixes:
  - Core: Allow sending thread requests to a crashed core (fixes mgba.io/i/2784)
+ - FFmpeg: Force lower sample rate for codecs not supporting high rates (fixes mgba.io/i/2869)
  - Qt: Fix crash when attempting to use OpenGL 2.1 to 3.1 (fixes mgba.io/i/2794)
  - Qt: Disable sync while running scripts from main thread (fixes mgba.io/i/2738)
  - Qt: Properly cap number of attached players by platform (fixes mgba.io/i/2807)
