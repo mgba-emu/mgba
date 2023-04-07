@@ -881,7 +881,7 @@ void FFmpegEncoderSetInputSampleRate(struct FFmpegEncoder* encoder, int sampleRa
 }
 
 void _ffmpegOpenResampleContext(struct FFmpegEncoder* encoder) {
-	encoder->audioBufferSize = av_rescale_q(encoder->audioFrame->nb_samples, (AVRational) { 4, encoder->sampleRate }, (AVRational) { 1, encoder->isampleRate });
+	encoder->audioBufferSize = av_rescale_q(encoder->audioFrame->nb_samples, (AVRational) { 1, encoder->sampleRate }, (AVRational) { 1, encoder->isampleRate }) * 4;
 	encoder->audioBuffer = av_malloc(encoder->audioBufferSize);
 #ifdef USE_LIBAVRESAMPLE
 	encoder->resampleContext = avresample_alloc_context();
