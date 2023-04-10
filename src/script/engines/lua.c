@@ -911,7 +911,11 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 				lastSlash = lastBackslash;
 			}
 			if (lastSlash) {
-				strlcpy(dirname, filename, lastSlash - filename);
+				size_t len = lastSlash - filename + 1;
+				if (sizeof(dirname) < len) {
+					len = sizeof(dirname);
+				}
+				strlcpy(dirname, filename, len);
 			}
 			snprintf(name, sizeof(name), "@%s", filename);
 		}
