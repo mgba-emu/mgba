@@ -60,6 +60,7 @@ static int _luaGetList(lua_State* lua);
 static int _luaLenList(lua_State* lua);
 
 static int _luaRequireShim(lua_State* lua);
+static int _luaPrintShim(lua_State* lua);
 
 static const char* _socketLuaSource =
 	"socket = {\n"
@@ -413,6 +414,14 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 
 	lua_getglobal(luaContext->lua, "require");
 	luaContext->require = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
+
+	lua_pushliteral(luaContext->lua, "log");
+	lua_pushcclosure(luaContext->lua, _luaPrintShim, 1);
+	lua_setglobal(luaContext->lua, "print");
+
+	lua_pushliteral(luaContext->lua, "warn");
+	lua_pushcclosure(luaContext->lua, _luaPrintShim, 1);
+	lua_setglobal(luaContext->lua, "warn");
 
 	HashTableInit(&luaContext->d.docroot, 0, (void (*)(void*)) mScriptValueDeref);
 
@@ -1289,7 +1298,7 @@ int _luaGetTable(lua_State* lua) {
 	}
 	lua_pop(lua, 2);
 
-	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);	
+	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
 	if (obj->type->base == mSCRIPT_TYPE_WRAPPER) {
 		obj = mScriptValueUnwrap(obj);
 	}
@@ -1526,4 +1535,38 @@ static int _luaRequireShim(lua_State* lua) {
 
 	int newtop = lua_gettop(luaContext->lua);
 	return newtop - oldtop + 1;
+}
+
+static int _luaPrintShim(lua_State* lua) {
+	int n = lua_gettop(lua);
+
+	lua_getglobal(lua, "console");
+	lua_insert(lua, 1);
+
+	// The first upvalue is either "log" or "warn"
+	lua_getglobal(lua, "console");
+	lua_pushvalue(lua, lua_upvalueindex(1));
+	lua_gettable(lua, -2);
+
+	lua_insert(lua, 1);
+	lua_pop(lua, 1);
+
+	// TODO when console:log is variadic and stringifies by itself:
+	// lua_call(lua, n + 1, 0);
+
+	// Until then, stringify and concatenate:
+	for (int i = 0; i < n; i++) {
+		luaL_tolstring(lua, i * 2 + 3, NULL);
+		lua_replace(lua, i * 2 + 3);
+		if (i == 0) {
+			lua_pushliteral(lua, "");
+		} else {
+			lua_pushliteral(lua, "\t");
+		}
+		lua_insert(lua, i * 2 + 3);
+	}
+	n = n * 2 - 1;
+	lua_concat(lua, n + 1);
+	lua_call(lua, 2, 0);
+	return 0;
 }
