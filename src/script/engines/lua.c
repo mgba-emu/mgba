@@ -630,6 +630,14 @@ struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext,
 		mScriptValueDeref(list);
 		return table;
 	}
+	for (i = 0; i < mScriptListSize(list->value.list); ++i) {
+		struct mScriptValue* value = mScriptListGetPointer(list->value.list, i);
+		if (value->type->base != mSCRIPT_TYPE_WRAPPER) {
+			continue;
+		}
+		value = mScriptValueUnwrap(value);
+		mScriptValueRef(value);
+	}
 	mScriptValueDeref(table);
 	return list;
 }
