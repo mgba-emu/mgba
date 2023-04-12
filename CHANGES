@@ -25,6 +25,7 @@ Other fixes:
  - Scripting: Fix receiving packets for client sockets
  - Scripting: Fix empty receive calls returning unknown error on Windows
  - Scripting: Return proper callback ID from socket.add
+ - Vita: Work around broken mktime implementation in Vita SDK (fixes mgba.io/i/2876)
 Misc:
  - Qt: Include wayland QPA in AppImage (fixes mgba.io/i/2796)
  - Qt: Stop eating boolean action key events (fixes mgba.io/i/2636)
