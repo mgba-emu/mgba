@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba-util/geometry.h>
+#include <mgba/core/log.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -18,6 +19,8 @@ typedef HWND WHandle;
 #else
 typedef void* WHandle;
 #endif
+
+mLOG_DECLARE_CATEGORY(VIDEO);
 
 enum VideoLayer {
 	VIDEO_LAYER_BACKGROUND = 0,
