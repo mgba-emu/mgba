@@ -20,6 +20,8 @@
 class QKeyEvent;
 class QTextDocument;
 
+struct VideoBackend;
+
 namespace QGBA {
 
 class CoreController;
@@ -36,6 +38,7 @@ public:
 
 	void setController(std::shared_ptr<CoreController> controller);
 	void setInputController(InputController* controller);
+	void setVideoBackend(VideoBackend* backend);
 
 	bool loadFile(const QString& path);
 	bool load(VFileDevice& vf, const QString& name);

@@ -1,5 +1,6 @@
 include(ExportDirectory)
 set(SOURCE_FILES
+	canvas.c
 	context.c
 	input.c
 	image.c

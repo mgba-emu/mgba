@@ -87,6 +87,10 @@ void ScriptingController::setInputController(InputController* input) {
 	connect(m_inputController, &InputController::updated, this, &ScriptingController::updateGamepad);
 }
 
+void ScriptingController::setVideoBackend(VideoBackend* backend) {
+	mScriptCanvasUpdateBackend(&m_scriptContext, backend);
+}
+
 bool ScriptingController::loadFile(const QString& path) {
 	VFileDevice vf(path, QIODevice::ReadOnly);
 	if (!vf.isOpen()) {
@@ -304,11 +308,13 @@ void ScriptingController::detachGamepad() {
 void ScriptingController::init() {
 	mScriptContextInit(&m_scriptContext);
 	mScriptContextAttachStdlib(&m_scriptContext);
+	mScriptContextAttachCanvas(&m_scriptContext);
+	mScriptContextAttachImage(&m_scriptContext);
+	mScriptContextAttachInput(&m_scriptContext);
+	mScriptContextAttachSocket(&m_scriptContext);
 #ifdef USE_JSON_C
 	mScriptContextAttachStorage(&m_scriptContext);
 #endif
-	mScriptContextAttachSocket(&m_scriptContext);
-	mScriptContextAttachInput(&m_scriptContext);
 	mScriptContextRegisterEngines(&m_scriptContext);
 
 	mScriptContextAttachLogger(&m_scriptContext, &m_logger);

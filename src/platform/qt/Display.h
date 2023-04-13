@@ -14,6 +14,7 @@
 #include "MessagePainter.h"
 
 struct VDir;
+struct VideoBackend;
 struct VideoShader;
 
 namespace QGBA {

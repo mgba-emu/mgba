@@ -970,6 +970,12 @@ void Window::gameStopped() {
 	updateTitle();
 
 	if (m_pendingClose) {
+#ifdef ENABLE_SCRIPTING
+		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
+		if (m_scripting && proxy) {
+			m_scripting->setVideoBackend(nullptr);
+		}
+#endif
 		m_display.reset();
 		close();
 	}
@@ -1020,6 +1026,15 @@ void Window::reloadDisplayDriver() {
 		m_display->stopDrawing();
 		detachWidget();
 	}
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_scripting->setVideoBackend(nullptr);
+	}
+#endif
+	std::shared_ptr<VideoProxy> proxy;
+	if (m_display) {
+		proxy = m_display->videoProxy();
+	}
 	m_display = std::unique_ptr<QGBA::Display>(Display::create(this));
 	if (!m_display) {
 		LOG(QT, ERROR) << tr("Failed to create an appropriate display device, falling back to software display. "
@@ -1061,8 +1076,15 @@ void Window::reloadDisplayDriver() {
 
 	m_display->setBackgroundImage(QImage{m_config->getOption("backgroundImage")});
 
-	std::shared_ptr<VideoProxy> proxy = std::make_shared<VideoProxy>();
+	if (!proxy) {
+		proxy = std::make_shared<VideoProxy>();
+	}
 	m_display->setVideoProxy(proxy);
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_scripting->setVideoBackend(proxy->backend());
+	}
+#endif
 }
 
 void Window::reloadAudioDriver() {
