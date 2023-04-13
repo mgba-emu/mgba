@@ -453,7 +453,7 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	UNUSED(flags);
 #endif
 		vf->truncate(vf, stateSize);
-		struct GBASerializedState* state = vf->map(vf, stateSize, MAP_WRITE);
+		void* state = vf->map(vf, stateSize, MAP_WRITE);
 		if (!state) {
 			mStateExtdataDeinit(&extdata);
 			if (cheatVf) {

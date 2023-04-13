@@ -279,8 +279,7 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 void mCoreConfigPortablePath(char* out, size_t outLength) {
 #ifdef _WIN32
 	wchar_t wpath[MAX_PATH];
-	HMODULE hModule = GetModuleHandleW(NULL);
-	GetModuleFileNameW(hModule, wpath, MAX_PATH);
+	GetModuleFileNameW(NULL, wpath, MAX_PATH);
 	PathRemoveFileSpecW(wpath);
 	if (PATH_SEP[0] != '\\') {
 		WCHAR* pathSep;
