@@ -14,7 +14,7 @@ CXX_GUARD_START
 
 #include <mgba-util/socket.h>
 
-#define GDB_STUB_MAX_LINE 1200
+#define GDB_STUB_MAX_LINE 1400
 #define GDB_STUB_INTERVAL 32
 
 enum GDBStubAckState {
