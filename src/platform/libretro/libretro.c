@@ -258,6 +258,40 @@ static void _printImage(struct GBPrinter* printer, int height, const uint8_t* da
 	GBPrinterDonePrinting(printer);
 }
 #endif
+#ifdef USE_DEVTERM
+static void _printDevTerm(struct GBPrinter* printer, int height, const uint8_t* data) {
+	int fd = open("/tmp/DEVTERM_PRINTER_IN", O_RDWR);
+
+	/* upscale 2x */
+	char header[14] = {
+		0x1b, 'a', '1', /*align center*/
+		0x12, '#', 9, /*set print density*/
+		0x1d, 'v', '0', 'p', 0,0,0,0 /*image header*/};
+	header[10] = (GB_VIDEO_HORIZONTAL_PIXELS * 2 / 8) % 256;
+	header[11] = (GB_VIDEO_HORIZONTAL_PIXELS * 2 / 8) / 256;
+	header[12] = (height * 2) % 256;
+	header[13] = (height * 2) / 256;
+	write(fd, header, 14);
+
+	char line_buffer [GB_VIDEO_HORIZONTAL_PIXELS / 4];
+	for (int y = 0; y < height * 2; ++y) {
+		for (int x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 4) {
+			line_buffer[x/4] =
+				((((data[(x + 0 + y / 2 * GB_VIDEO_HORIZONTAL_PIXELS)/4] & 0xC0) >> 6) > 1) << 7) +
+				((((data[(x + 0 + y / 2 * GB_VIDEO_HORIZONTAL_PIXELS)/4] & 0xC0) >> 6) > 1) << 6) +
+				((((data[(x + 1 + y / 2 * GB_VIDEO_HORIZONTAL_PIXELS)/4] & 0x30) >> 4) > 1) << 5) +
+				((((data[(x + 1 + y / 2 * GB_VIDEO_HORIZONTAL_PIXELS)/4] & 0x30) >> 4) > 1) << 4) +
+				((((data[(x + 2 + y / 2 * GB_VIDEO_HORIZONTAL_PIXELS)/4] & 0x0C) >> 2) > 1) << 3) +
+				((((data[(x + 2 + y / 2 * GB_VIDEO_HORIZONTAL_PIXELS)/4] & 0x0C) >> 2) > 1) << 2) +
+				((((data[(x + 3 + y / 2 * GB_VIDEO_HORIZONTAL_PIXELS)/4] & 0x03) >> 0) > 1) << 1) +
+				((((data[(x + 3 + y / 2 * GB_VIDEO_HORIZONTAL_PIXELS)/4] & 0x03) >> 0) > 1) << 0) ;
+		}
+		write(fd, line_buffer, GB_VIDEO_HORIZONTAL_PIXELS / 4);
+	}
+	close(fd);
+	GBPrinterDonePrinting(printer);
+}
+#endif
 static void _initPrinter(void) {
 
 	if (printerInitDone) {
@@ -267,8 +301,12 @@ static void _initPrinter(void) {
 	if (core->platform(core) == mPLATFORM_GB) {
 		struct GB* gb = core->board;
 		GBPrinterCreate(&gbPrinter);
+#ifdef USE_DEVTERM
+		gbPrinter.print = _printDevTerm;
+#else
 #ifdef USE_PNG
 		gbPrinter.print = _printImage;
+#endif
 #endif
 		GBSIOSetDriver(&gb->sio, &(gbPrinter.d));
 		printerInitDone = true;
