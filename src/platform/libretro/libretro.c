@@ -18,6 +18,7 @@
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/mbc.h>
 #include <mgba/internal/gb/overrides.h>
+#include <mgba/internal/gb/sio/printer.h>
 #endif
 #ifdef M_CORE_GBA
 #include <mgba/gba/core.h>
@@ -108,6 +109,8 @@ static bool audioLowPassEnabled = false;
 static int32_t audioLowPassRange = 0;
 static int32_t audioLowPassLeftPrev = 0;
 static int32_t audioLowPassRightPrev = 0;
+static bool printerInitDone;
+static struct GBPrinter gbPrinter;
 
 static const int keymap[] = {
 	RETRO_DEVICE_ID_JOYPAD_A,
@@ -204,6 +207,74 @@ static void _initSensors(void) {
 
 	sensorsInitDone = true;
 }
+#ifdef USE_PNG
+static void _printImage(struct GBPrinter* printer, int height, const uint8_t* data) {
+	struct mImage* image = mImageCreate(GB_VIDEO_HORIZONTAL_PIXELS, height, mCOLOR_RGB565);
+
+	uint32_t colors[4] = {
+		0xF8F8F8F8,
+		0xA8A8A8A8,
+		0x50505050,
+		0x00000000
+	};
+	for (int y = 0; y < height*2; ++y) {
+		for (int x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 4) {
+			uint8_t byte = data[(x + y * GB_VIDEO_HORIZONTAL_PIXELS) / 4];
+			mImageSetPixel(image, x + 0, y, colors[(byte & 0xC0) >> 6]);
+			mImageSetPixel(image, x + 1, y, colors[(byte & 0x30) >> 4]);
+			mImageSetPixel(image, x + 2, y, colors[(byte & 0x0C) >> 2]);
+			mImageSetPixel(image, x + 3, y, colors[(byte & 0x03) >> 0]);
+		}
+	}
+	uint64_t* creationUsec = malloc(sizeof(*creationUsec));
+	if (creationUsec) {
+#ifndef _MSC_VER
+		struct timeval tv;
+		if (!gettimeofday(&tv, 0)) {
+			uint64_t usec = tv.tv_usec;
+			usec += tv.tv_sec * 1000000LL;
+			STORE_64LE(usec, 0, creationUsec);
+		}
+#else
+		struct timespec ts;
+		if (timespec_get(&ts, TIME_UTC)) {
+			uint64_t usec = ts.tv_nsec / 1000;
+			usec += ts.tv_sec * 1000000LL;
+			STORE_64LE(usec, 0, creationUsec);
+		}
+#endif
+		else {
+			free(creationUsec);
+			creationUsec = 0;
+		}
+	}
+	const char* saveDir = 0;
+	environCallback(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &saveDir);
+	char buf[512];
+	snprintf(buf, 512, "%sgbprinter-%llu.png", saveDir, *creationUsec);
+	free(creationUsec);
+	bool status = mImageSave(image, buf, NULL);
+	mImageDestroy(image);
+	GBPrinterDonePrinting(printer);
+}
+#endif
+static void _initPrinter(void) {
+
+	if (printerInitDone) {
+		return;
+	}
+#ifdef M_CORE_GB
+	if (core->platform(core) == mPLATFORM_GB) {
+		struct GB* gb = core->board;
+		GBPrinterCreate(&gbPrinter);
+#ifdef USE_PNG
+		gbPrinter.print = _printImage;
+#endif
+		GBSIOSetDriver(&gb->sio, &(gbPrinter.d));
+		printerInitDone = true;
+	}
+#endif
+}
 
 static void _initRumble(void) {
 	if (rumbleInitDone) {
@@ -295,6 +366,9 @@ static void _reloadSettings(void) {
 	}
 
 	_updateGbPal();
+
+	printerInitDone = false;
+	_initPrinter();
 #endif
 
 	var.key = "mgba_use_bios";
