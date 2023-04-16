@@ -21,6 +21,9 @@ CXX_GUARD_START
 #ifdef USE_DEBUGGERS
 #include <mgba/debugger/debugger.h>
 #endif
+#ifdef USE_PNG
+#include <mgba-util/image/png-io.h>
+#endif
 
 enum mPlatform {
 	mPLATFORM_NONE = -1,
