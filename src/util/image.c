@@ -208,6 +208,8 @@ bool mImageSave(const struct mImage* image, const char* path, const char* format
 
 #ifdef USE_PNG
 bool mImageSavePNG(const struct mImage* image, struct VFile* vf) {
+#ifndef COLOR_16_BIT
+#ifndef COLOR_5_6_5
 	if (image->format != mCOLOR_XBGR8 && image->format != mCOLOR_ABGR8) {
 		struct mImage* newImage;
 		if (mColorFormatHasAlpha(image->format)) {
@@ -219,12 +221,14 @@ bool mImageSavePNG(const struct mImage* image, struct VFile* vf) {
 		mImageDestroy(newImage);
 		return ret;
 	}
+#endif
+#endif
 
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = NULL;
 	bool ok = false;
 	if (png) {
-		if (image->format == mCOLOR_XBGR8) {
+		if (image->format == mCOLOR_XBGR8 || (image->format == mCOLOR_RGB565 || image->format == mCOLOR_BGR565 /*valid only with COLOR_5_6_5*/)) {
 			info = PNGWriteHeader(png, image->width, image->height);
 			if (info) {
 				ok = PNGWritePixels(png, image->width, image->height, image->stride, image->data);
