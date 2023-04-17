@@ -9,6 +9,8 @@
 
 #include <mgba-util/vfs.h>
 
+static bool PNGWritePalette(png_structp png, png_infop info, const uint32_t* palette, unsigned entries);
+
 static void _pngWrite(png_structp png, png_bytep buffer, png_size_t size) {
 	struct VFile* vf = png_get_io_ptr(png);
 	size_t written = vf->write(vf, buffer, size);
@@ -38,15 +40,23 @@ png_structp PNGWriteOpen(struct VFile* source) {
 	return png;
 }
 
-static png_infop _pngWriteHeader(png_structp png, unsigned width, unsigned height, int type) {
+static png_infop _pngWriteHeader(png_structp png, unsigned width, unsigned height, const uint32_t* palette, unsigned entries, int type) {
 	png_infop info = png_create_info_struct(png);
 	if (!info) {
-		return 0;
+		return NULL;
 	}
 	if (setjmp(png_jmpbuf(png))) {
-		return 0;
+		return NULL;
 	}
 	png_set_IHDR(png, info, width, height, 8, type, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+	if (type == PNG_COLOR_TYPE_PALETTE) {
+		if (!palette) {
+			return NULL;
+		}
+		if (!PNGWritePalette(png, info, palette, entries)) {
+			return NULL;
+		}
+	}
 	png_write_info(png, info);
 	return info;
 }
@@ -80,15 +90,18 @@ png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height, enum 
 	case mCOLOR_L8:
 		type = PNG_COLOR_TYPE_GRAY;
 		break;
+	case mCOLOR_PAL8:
+		type = PNG_COLOR_TYPE_PALETTE;
+		break;
 	}
-	return _pngWriteHeader(png, width, height, type);
+	return _pngWriteHeader(png, width, height, NULL, 0, type);
 }
 
-png_infop PNGWriteHeader8(png_structp png, unsigned width, unsigned height) {
-	return _pngWriteHeader(png, width, height, PNG_COLOR_TYPE_PALETTE);
+png_infop PNGWriteHeaderPalette(png_structp png, unsigned width, unsigned height, const uint32_t* palette, unsigned entries) {
+	return _pngWriteHeader(png, width, height, palette, entries, PNG_COLOR_TYPE_PALETTE);
 }
 
-bool PNGWritePalette(png_structp png, png_infop info, const uint32_t* palette, unsigned entries) {
+static bool PNGWritePalette(png_structp png, png_infop info, const uint32_t* palette, unsigned entries) {
 	if (!palette || !entries) {
 		return false;
 	}
@@ -99,14 +112,13 @@ bool PNGWritePalette(png_structp png, png_infop info, const uint32_t* palette, u
 	png_byte trans[256];
 	unsigned i;
 	for (i = 0; i < entries && i < 256; ++i) {
-		colors[i].red = palette[i];
+		colors[i].red = palette[i] >> 16;
 		colors[i].green = palette[i] >> 8;
-		colors[i].blue = palette[i] >> 16;
+		colors[i].blue = palette[i];
 		trans[i] = palette[i] >> 24;
 	}
 	png_set_PLTE(png, info, colors, entries);
 	png_set_tRNS(png, info, trans, entries, NULL);
-	png_write_info(png, info);
 	return true;
 }
 
@@ -430,6 +442,7 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 			_convertRowRGB8(row, pixelRow, width);
 			break;
 		case mCOLOR_L8:
+		case mCOLOR_PAL8:
 			memcpy(row, pixelRow, width);
 			break;
 		case mCOLOR_ANY:
@@ -442,7 +455,7 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 	return true;
 }
 
-bool PNGWritePixels8(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels) {
+bool PNGWritePixelsPalette(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels) {
 	UNUSED(width);
 	const png_byte* pixelData = pixels;
 	if (setjmp(png_jmpbuf(png))) {

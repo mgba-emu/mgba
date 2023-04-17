@@ -453,6 +453,22 @@ M_TEST_DEFINE(oobWrite) {
 	assert_memory_equal(buffer, (&(uint8_t[8]) { 0xFF, 0xFF, 0xFF, 0xFF }), sizeof(buffer));
 }
 
+M_TEST_DEFINE(paletteAccess) {
+	struct mImage* image = mImageCreate(1, 1, mCOLOR_PAL8);
+	mImageSetPaletteSize(image, 1);
+
+	mImageSetPaletteEntry(image, 0, 0xFF00FF00);
+	mImageSetPixelRaw(image, 0, 0, 0);
+	assert_int_equal(mImageGetPixelRaw(image, 0, 0), 0);
+	assert_int_equal(mImageGetPixel(image, 0, 0), 0xFF00FF00);
+
+	mImageSetPaletteEntry(image, 0, 0x01234567);
+	assert_int_equal(mImageGetPixelRaw(image, 0, 0), 0);
+	assert_int_equal(mImageGetPixel(image, 0, 0), 0x01234567);
+
+	mImageDestroy(image);
+}
+
 #ifdef USE_PNG
 M_TEST_DEFINE(loadPng24) {
 	const uint8_t data[] = {
@@ -651,6 +667,46 @@ M_TEST_DEFINE(savePngL8) {
 	assert_int_equal(mImageGetPixel(image, 1, 0), 0xFF555555);
 	assert_int_equal(mImageGetPixel(image, 0, 1), 0xFFAAAAAA);
 	assert_int_equal(mImageGetPixel(image, 1, 1), 0xFFFFFFFF);
+	mImageDestroy(image);
+}
+
+M_TEST_DEFINE(savePngPal8) {
+	struct mImage* image = mImageCreate(2, 2, mCOLOR_PAL8);
+	mImageSetPaletteSize(image, 4);
+	mImageSetPaletteEntry(image, 0, 0x00000000);
+	mImageSetPaletteEntry(image, 1, 0x40FF0000);
+	mImageSetPaletteEntry(image, 2, 0x8000FF00);
+	mImageSetPaletteEntry(image, 3, 0xC00000FF);
+
+	mImageSetPixelRaw(image, 0, 0, 0);
+	mImageSetPixelRaw(image, 1, 0, 1);
+	mImageSetPixelRaw(image, 0, 1, 2);
+	mImageSetPixelRaw(image, 1, 1, 3);
+	assert_int_equal(mImageGetPixel(image, 0, 0), 0x00000000);
+	assert_int_equal(mImageGetPixel(image, 1, 0), 0x40FF0000);
+	assert_int_equal(mImageGetPixel(image, 0, 1), 0x8000FF00);
+	assert_int_equal(mImageGetPixel(image, 1, 1), 0xC00000FF);
+
+	struct VFile* vf = VFileMemChunk(NULL, 0);
+	assert_true(mImageSaveVF(image, vf, "png"));
+	mImageDestroy(image);
+
+	assert_int_equal(vf->seek(vf, 0, SEEK_SET), 0);
+	assert_true(isPNG(vf));
+	assert_int_equal(vf->seek(vf, 0, SEEK_SET), 0);
+
+	image = mImageLoadVF(vf);
+	vf->close(vf);
+	assert_non_null(image);
+	assert_int_equal(image->format, mCOLOR_PAL8);
+	assert_int_equal(mImageGetPixelRaw(image, 0, 0), 0);
+	assert_int_equal(mImageGetPixelRaw(image, 1, 0), 1);
+	assert_int_equal(mImageGetPixelRaw(image, 0, 1), 2);
+	assert_int_equal(mImageGetPixelRaw(image, 1, 1), 3);
+	assert_int_equal(mImageGetPixel(image, 0, 0), 0x00000000);
+	assert_int_equal(mImageGetPixel(image, 1, 0), 0x40FF0000);
+	assert_int_equal(mImageGetPixel(image, 0, 1), 0x8000FF00);
+	assert_int_equal(mImageGetPixel(image, 1, 1), 0xC00000FF);
 	mImageDestroy(image);
 }
 #endif
@@ -1094,6 +1150,7 @@ M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(pitchWrite),
 	cmocka_unit_test(strideWrite),
 	cmocka_unit_test(oobWrite),
+	cmocka_unit_test(paletteAccess),
 #ifdef USE_PNG
 	cmocka_unit_test(loadPng24),
 	cmocka_unit_test(loadPng32),
@@ -1102,6 +1159,7 @@ M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(savePngNonNative),
 	cmocka_unit_test(savePngRoundTrip),
 	cmocka_unit_test(savePngL8),
+	cmocka_unit_test(savePngPal8),
 #endif
 	cmocka_unit_test(convert1x1),
 	cmocka_unit_test(convert2x1),

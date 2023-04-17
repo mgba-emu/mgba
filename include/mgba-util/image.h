@@ -118,11 +118,15 @@ uint32_t mImageGetPixelRaw(const struct mImage* image, unsigned x, unsigned y);
 void mImageSetPixel(struct mImage* image, unsigned x, unsigned y, uint32_t color);
 void mImageSetPixelRaw(struct mImage* image, unsigned x, unsigned y, uint32_t color);
 
+void mImageSetPaletteSize(struct mImage* image, unsigned count);
+void mImageSetPaletteEntry(struct mImage* image, unsigned index, uint32_t color);
+
 void mImageBlit(struct mImage* image, const struct mImage* source, int x, int y);
 void mImageComposite(struct mImage* image, const struct mImage* source, int x, int y);
 void mImageCompositeWithAlpha(struct mImage* image, const struct mImage* source, int x, int y, float alpha);
 
 uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to);
+uint32_t mImageColorConvert(uint32_t color, const struct mImage* from, enum mColorFormat to);
 
 #ifndef PYCPARSE
 static inline unsigned mColorFormatBytes(enum mColorFormat format) {

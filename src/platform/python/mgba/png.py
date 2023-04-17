@@ -24,8 +24,6 @@ class PNG:
             self._info = lib.PNGWriteHeader(self._png, image.width, image.height, lib.mCOLOR_XBGR8)
         if self.mode == MODE_RGBA:
             self._info = lib.PNGWriteHeader(self._png, image.width, image.height, lib.mCOLOR_ABGR8)
-        if self.mode == MODE_INDEX:
-            self._info = lib.PNGWriteHeader8(self._png, image.width, image.height)
         return self._info != ffi.NULL
 
     def write_pixels(self, image):
@@ -33,8 +31,6 @@ class PNG:
             return lib.PNGWritePixels(self._png, image.width, image.height, image.stride, image.buffer, lib.mCOLOR_XBGR8)
         if self.mode == MODE_RGBA:
             return lib.PNGWritePixels(self._png, image.width, image.height, image.stride, image.buffer, lib.mCOLOR_ABGR8)
-        if self.mode == MODE_INDEX:
-            return lib.PNGWritePixels8(self._png, image.width, image.height, image.stride, image.buffer)
         return False
 
     def write_close(self):

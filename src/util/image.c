@@ -64,6 +64,15 @@ struct mImage* mImageCreateWithStride(unsigned width, unsigned height, unsigned 
 		free(image);
 		return NULL;
 	}
+	if (format == mCOLOR_PAL8) {
+		image->palette = malloc(1024);
+		if (!image->palette) {
+			free(image->data);
+			free(image);
+			return NULL;
+		}
+		image->palSize = 1;
+	}
 	return image;
 }
 
@@ -224,27 +233,14 @@ struct mImage* mImageConvertToFormat(const struct mImage* image, enum mColorForm
 
 	// TODO: Implement more specializations, e.g. alpha narrowing/widening, channel swapping
 	size_t x, y;
-	if (image->format == mCOLOR_PAL8) {
-		for (y = 0; y < newImage->height; ++y) {
-			uintptr_t src = (uintptr_t) ROW(image, y);
-			uintptr_t dst = (uintptr_t) ROW(newImage, y);
-			for (x = 0; x < newImage->width; ++x, src += image->depth, dst += newImage->depth) {
-				uint32_t color;
-				GET_PIXEL(color, src, image->depth);
-				color = image->palette[color];
-				PUT_PIXEL(color, dst, newImage->depth);
-			}
-		}
-	} else {
-		for (y = 0; y < newImage->height; ++y) {
-			uintptr_t src = (uintptr_t) ROW(image, y);
-			uintptr_t dst = (uintptr_t) ROW(newImage, y);
-			for (x = 0; x < newImage->width; ++x, src += image->depth, dst += newImage->depth) {
-				uint32_t color;
-				GET_PIXEL(color, src, image->depth);
-				color = mColorConvert(color, image->format, format);
-				PUT_PIXEL(color, dst, newImage->depth);
-			}
+	for (y = 0; y < newImage->height; ++y) {
+		uintptr_t src = (uintptr_t) ROW(image, y);
+		uintptr_t dst = (uintptr_t) ROW(newImage, y);
+		for (x = 0; x < newImage->width; ++x, src += image->depth, dst += newImage->depth) {
+			uint32_t color;
+			GET_PIXEL(color, src, image->depth);
+			color = mImageColorConvert(color, image, format);
+			PUT_PIXEL(color, dst, newImage->depth);
 		}
 	}
 	return newImage;
@@ -280,9 +276,16 @@ bool mImageSavePNG(const struct mImage* image, struct VFile* vf) {
 	png_infop info = NULL;
 	bool ok = false;
 	if (png) {
-		info = PNGWriteHeader(png, image->width, image->height, image->format);
-		if (info) {
-			ok = PNGWritePixels(png, image->width, image->height, image->stride, image->data, image->format);
+		if (image->format == mCOLOR_PAL8) {
+			info = PNGWriteHeaderPalette(png, image->width, image->height, image->palette, image->palSize);
+			if (info) {
+				ok = PNGWritePixelsPalette(png, image->width, image->height, image->stride, image->data);
+			}
+		} else {
+			info = PNGWriteHeader(png, image->width, image->height, image->format);
+			if (info) {
+				ok = PNGWritePixels(png, image->width, image->height, image->stride, image->data, image->format);
+			}
 		}
 		PNGWriteClose(png, info);
 	}
@@ -334,12 +337,7 @@ uint32_t mImageGetPixelRaw(const struct mImage* image, unsigned x, unsigned y) {
 }
 
 uint32_t mImageGetPixel(const struct mImage* image, unsigned x, unsigned y) {
-	uint32_t raw = mImageGetPixelRaw(image, x, y);
-	if (image->format == mCOLOR_PAL8) {
-		return image->palette[raw];
-	} else {
-		return mColorConvert(raw, image->format, mCOLOR_ARGB8);
-	}
+	return mImageColorConvert(mImageGetPixelRaw(image, x, y), image, mCOLOR_ARGB8);
 }
 
 void mImageSetPixelRaw(struct mImage* image, unsigned x, unsigned y, uint32_t color) {
@@ -373,6 +371,26 @@ void mImageSetPixelRaw(struct mImage* image, unsigned x, unsigned y, uint32_t co
 
 void mImageSetPixel(struct mImage* image, unsigned x, unsigned y, uint32_t color) {
 	mImageSetPixelRaw(image, x, y, mColorConvert(color, mCOLOR_ARGB8, image->format));
+}
+
+void mImageSetPaletteSize(struct mImage* image, unsigned count) {
+	if (image->format != mCOLOR_PAL8) {
+		return;
+	}
+	if (count > 256) {
+		count = 256;
+	}
+	image->palSize = count;
+}
+
+void mImageSetPaletteEntry(struct mImage* image, unsigned index, uint32_t color) {
+	if (image->format != mCOLOR_PAL8) {
+		return;
+	}
+	if (index > 256) {
+		return;
+	}
+	image->palette[index] = color;
 }
 
 #define COMPOSITE_BOUNDS_INIT \
@@ -411,6 +429,11 @@ void mImageSetPixel(struct mImage* image, unsigned x, unsigned y, uint32_t color
 	}
 
 void mImageBlit(struct mImage* image, const struct mImage* source, int x, int y) {
+	if (image->format == mCOLOR_PAL8) {
+		// Can't blit to paletted image
+		return;
+	}
+
 	COMPOSITE_BOUNDS_INIT;
 
 	for (y = 0; y < srcRect.height; ++y) {
@@ -419,7 +442,7 @@ void mImageBlit(struct mImage* image, const struct mImage* source, int x, int y)
 		for (x = 0; x < srcRect.width; ++x, srcPixel += source->depth, dstPixel += image->depth) {
 			uint32_t color;
 			GET_PIXEL(color, srcPixel, source->depth);
-			color = mColorConvert(color, source->format, image->format);
+			color = mImageColorConvert(color, source, image->format);
 			PUT_PIXEL(color, dstPixel, image->depth);
 		}
 	}
@@ -431,6 +454,11 @@ void mImageComposite(struct mImage* image, const struct mImage* source, int x, i
 		return;
 	}
 
+	if (image->format == mCOLOR_PAL8) {
+		// Can't blit to paletted image
+		return;
+	}
+
 	COMPOSITE_BOUNDS_INIT;
 
 	for (y = 0; y < srcRect.height; ++y) {
@@ -439,7 +467,7 @@ void mImageComposite(struct mImage* image, const struct mImage* source, int x, i
 		for (x = 0; x < srcRect.width; ++x, srcPixel += source->depth, dstPixel += image->depth) {
 			uint32_t color, colorB;
 			GET_PIXEL(color, srcPixel, source->depth);
-			color = mColorConvert(color, source->format, mCOLOR_ARGB8);
+			color = mImageColorConvert(color, source, mCOLOR_ARGB8);
 			if (color < 0xFF000000) {
 				GET_PIXEL(colorB, dstPixel, image->depth);
 				colorB = mColorConvert(colorB, image->format, mCOLOR_ARGB8);
@@ -454,6 +482,10 @@ void mImageComposite(struct mImage* image, const struct mImage* source, int x, i
 void mImageCompositeWithAlpha(struct mImage* image, const struct mImage* source, int x, int y, float alpha) {
 	if (alpha >= 1 && alpha < 257.f / 256.f) {
 		mImageComposite(image, source, x, y);
+		return;
+	}
+	if (image->format == mCOLOR_PAL8) {
+		// Can't blit to paletted image
 		return;
 	}
 	if (alpha <= 0) {
@@ -474,7 +506,7 @@ void mImageCompositeWithAlpha(struct mImage* image, const struct mImage* source,
 		for (x = 0; x < srcRect.width; ++x, srcPixel += source->depth, dstPixel += image->depth) {
 			uint32_t color, colorB;
 			GET_PIXEL(color, srcPixel, source->depth);
-			color = mColorConvert(color, source->format, mCOLOR_ARGB8);
+			color = mImageColorConvert(color, source, mCOLOR_ARGB8);
 			uint32_t alpha = (color >> 24) * fixedAlpha;
 			alpha >>= 9;
 			if (alpha > 0xFF) {
@@ -685,4 +717,14 @@ uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat
 	}
 
 	return color;
+}
+
+uint32_t mImageColorConvert(uint32_t color, const struct mImage* from, enum mColorFormat to) {
+	if (from->format != mCOLOR_PAL8) {
+		return mColorConvert(color, from->format, to);
+	}
+	if (color < from->palSize) {
+		color = from->palette[color];
+	}
+	return mColorConvert(color, mCOLOR_ARGB8, to);
 }
