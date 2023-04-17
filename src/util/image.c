@@ -132,6 +132,20 @@ static struct mImage* mImageLoadPNG(struct VFile* vf) {
 			return NULL;
 		}
 		break;
+	case 1:
+		if (png_get_color_type(png, info) == PNG_COLOR_TYPE_GRAY) {
+			image->format = mCOLOR_L8;
+			image->depth = 1;
+			image->data = malloc(width * height);
+			if (!PNGReadPixels8(png, info, image->data, width, height, width)) {
+				free(image->data);
+				free(image);
+				PNGReadClose(png, info, end);
+				return NULL;
+			}
+			break;
+		}
+		// Fall through
 	default:
 		// Not supported yet
 		free(image);

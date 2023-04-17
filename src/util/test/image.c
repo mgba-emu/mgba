@@ -596,6 +596,35 @@ M_TEST_DEFINE(savePngRoundTrip) {
 		mImageDestroy(image);
 	}
 }
+
+M_TEST_DEFINE(savePngL8) {
+	struct mImage* image = mImageCreate(2, 2, mCOLOR_L8);
+	mImageSetPixel(image, 0, 0, 0xFF000000);
+	mImageSetPixel(image, 1, 0, 0xFF555555);
+	mImageSetPixel(image, 0, 1, 0xFFAAAAAA);
+	mImageSetPixel(image, 1, 1, 0xFFFFFFFF);
+	assert_int_equal(mImageGetPixel(image, 0, 0), 0xFF000000);
+	assert_int_equal(mImageGetPixel(image, 1, 0), 0xFF555555);
+	assert_int_equal(mImageGetPixel(image, 0, 1), 0xFFAAAAAA);
+	assert_int_equal(mImageGetPixel(image, 1, 1), 0xFFFFFFFF);
+
+	struct VFile* vf = VFileMemChunk(NULL, 0);
+	assert_true(mImageSaveVF(image, vf, "png"));
+	mImageDestroy(image);
+
+	assert_int_equal(vf->seek(vf, 0, SEEK_SET), 0);
+	assert_true(isPNG(vf));
+	assert_int_equal(vf->seek(vf, 0, SEEK_SET), 0);
+
+	image = mImageLoadVF(vf);
+	vf->close(vf);
+	assert_non_null(image);
+	assert_int_equal(mImageGetPixel(image, 0, 0), 0xFF000000);
+	assert_int_equal(mImageGetPixel(image, 1, 0), 0xFF555555);
+	assert_int_equal(mImageGetPixel(image, 0, 1), 0xFFAAAAAA);
+	assert_int_equal(mImageGetPixel(image, 1, 1), 0xFFFFFFFF);
+	mImageDestroy(image);
+}
 #endif
 
 M_TEST_DEFINE(convert1x1) {
@@ -1043,6 +1072,7 @@ M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(savePngNative),
 	cmocka_unit_test(savePngNonNative),
 	cmocka_unit_test(savePngRoundTrip),
+	cmocka_unit_test(savePngL8),
 #endif
 	cmocka_unit_test(convert1x1),
 	cmocka_unit_test(convert2x1),
