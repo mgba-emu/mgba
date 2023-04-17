@@ -551,6 +551,51 @@ M_TEST_DEFINE(savePngNonNative) {
 	assert_int_equal(mImageGetPixel(image, 0, 0), 0x01234567);
 	mImageDestroy(image);
 }
+
+M_TEST_DEFINE(savePngRoundTrip) {
+	const enum mColorFormat formats[] = {
+		mCOLOR_XBGR8, mCOLOR_XRGB8,
+		mCOLOR_BGRX8, mCOLOR_RGBX8,
+		mCOLOR_ABGR8, mCOLOR_ARGB8,
+		mCOLOR_BGRA8, mCOLOR_RGBA8,
+		mCOLOR_RGB5, mCOLOR_BGR5,
+		mCOLOR_ARGB5, mCOLOR_ABGR5,
+		mCOLOR_RGBA5, mCOLOR_BGRA5,
+		mCOLOR_RGB565, mCOLOR_BGR565,
+		mCOLOR_RGB8, mCOLOR_BGR8,
+		0
+	};
+
+	int i;
+	for (i = 0; formats[i]; ++i) {
+		struct mImage* image = mImageCreate(2, 2, formats[i]);
+		mImageSetPixel(image, 0, 0, 0xFF181008);
+		mImageSetPixel(image, 1, 0, 0xFF100818);
+		mImageSetPixel(image, 0, 1, 0xFF081810);
+		mImageSetPixel(image, 1, 1, 0xFF181008);
+		assert_int_equal(mImageGetPixel(image, 0, 0), 0xFF181008);
+		assert_int_equal(mImageGetPixel(image, 1, 0), 0xFF100818);
+		assert_int_equal(mImageGetPixel(image, 0, 1), 0xFF081810);
+		assert_int_equal(mImageGetPixel(image, 1, 1), 0xFF181008);
+
+		struct VFile* vf = VFileMemChunk(NULL, 0);
+		assert_true(mImageSaveVF(image, vf, "png"));
+		mImageDestroy(image);
+
+		assert_int_equal(vf->seek(vf, 0, SEEK_SET), 0);
+		assert_true(isPNG(vf));
+		assert_int_equal(vf->seek(vf, 0, SEEK_SET), 0);
+
+		image = mImageLoadVF(vf);
+		vf->close(vf);
+		assert_non_null(image);
+		assert_int_equal(mImageGetPixel(image, 0, 0), 0xFF181008);
+		assert_int_equal(mImageGetPixel(image, 1, 0), 0xFF100818);
+		assert_int_equal(mImageGetPixel(image, 0, 1), 0xFF081810);
+		assert_int_equal(mImageGetPixel(image, 1, 1), 0xFF181008);
+		mImageDestroy(image);
+	}
+}
 #endif
 
 M_TEST_DEFINE(convert1x1) {
@@ -997,6 +1042,7 @@ M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(loadPng32),
 	cmocka_unit_test(savePngNative),
 	cmocka_unit_test(savePngNonNative),
+	cmocka_unit_test(savePngRoundTrip),
 #endif
 	cmocka_unit_test(convert1x1),
 	cmocka_unit_test(convert2x1),

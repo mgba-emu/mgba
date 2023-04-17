@@ -81,6 +81,14 @@ enum mColorFormat {
 	mCOLOR_ANY    = -1
 };
 
+#ifndef COLOR_16_BIT
+#define mCOLOR_NATIVE mCOLOR_XBGR8
+#elif !defined(COLOR_5_6_5)
+#define mCOLOR_NATIVE mCOLOR_BGR5
+#else
+#define mCOLOR_NATIVE mCOLOR_RGB565
+#endif
+
 struct mImage {
 	void* data;
 	unsigned width;

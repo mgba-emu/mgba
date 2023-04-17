@@ -178,13 +178,13 @@ static bool _savePNGState(struct mCore* core, struct VFile* vf, struct mStateExt
 	unsigned width, height;
 	core->currentVideoSize(core, &width, &height);
 	png_structp png = PNGWriteOpen(vf);
-	png_infop info = PNGWriteHeader(png, width, height);
+	png_infop info = PNGWriteHeader(png, width, height, mCOLOR_NATIVE);
 	if (!png || !info) {
 		PNGWriteClose(png, info);
 		free(buffer);
 		return false;
 	}
-	PNGWritePixels(png, width, height, stride, pixels);
+	PNGWritePixels(png, width, height, stride, pixels, mCOLOR_NATIVE);
 	PNGWriteCustomChunk(png, "gbAs", len, buffer);
 	if (extdata) {
 		uint32_t i;

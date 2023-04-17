@@ -51,12 +51,37 @@ static png_infop _pngWriteHeader(png_structp png, unsigned width, unsigned heigh
 	return info;
 }
 
-png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height) {
-	return _pngWriteHeader(png, width, height, PNG_COLOR_TYPE_RGB);
-}
-
-png_infop PNGWriteHeaderA(png_structp png, unsigned width, unsigned height) {
-	return _pngWriteHeader(png, width, height, PNG_COLOR_TYPE_RGB_ALPHA);
+png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height, enum mColorFormat fmt) {
+	int type;
+	switch (fmt) {
+	case mCOLOR_XBGR8:
+	case mCOLOR_XRGB8:
+	case mCOLOR_BGRX8:
+	case mCOLOR_RGBX8:
+	case mCOLOR_RGB5:
+	case mCOLOR_BGR5:
+	case mCOLOR_RGB565:
+	case mCOLOR_BGR565:
+	case mCOLOR_RGB8:
+	case mCOLOR_BGR8:
+		type = PNG_COLOR_TYPE_RGB;
+		break;
+	case mCOLOR_ABGR8:
+	case mCOLOR_ARGB8:
+	case mCOLOR_BGRA8:
+	case mCOLOR_RGBA8:
+	case mCOLOR_ARGB5:
+	case mCOLOR_ABGR5:
+	case mCOLOR_RGBA5:
+	case mCOLOR_BGRA5:
+	case mCOLOR_ANY:
+		type = PNG_COLOR_TYPE_RGB_ALPHA;
+		break;
+	case mCOLOR_L8:
+		type = PNG_COLOR_TYPE_GRAY;
+		break;
+	}
+	return _pngWriteHeader(png, width, height, type);
 }
 
 png_infop PNGWriteHeader8(png_structp png, unsigned width, unsigned height) {
@@ -85,51 +110,258 @@ bool PNGWritePalette(png_structp png, png_infop info, const uint32_t* palette, u
 	return true;
 }
 
-bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels) {
-	png_bytep row = malloc(sizeof(png_byte) * width * 3);
-	if (!row) {
-		return false;
-	}
-	const png_byte* pixelData = pixels;
-	if (setjmp(png_jmpbuf(png))) {
-		free(row);
-		return false;
-	}
-	unsigned i;
-	for (i = 0; i < height; ++i) {
-		unsigned x;
-		for (x = 0; x < width; ++x) {
-#ifdef COLOR_16_BIT
-			uint16_t c = ((uint16_t*) pixelData)[stride * i + x];
-#ifdef COLOR_5_6_5
-			row[x * 3] = (c >> 8) & 0xF8;
-			row[x * 3 + 1] = (c >> 3) & 0xFC;
-			row[x * 3 + 2] = (c << 3) & 0xF8;
-#else
-			row[x * 3] = (c >> 7) & 0xF8;
-			row[x * 3 + 1] = (c >> 2) & 0xF8;
-			row[x * 3 + 2] = (c << 3) & 0xF8;
-#endif
-#else
+static void _convertRowXBGR8(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
 #ifdef __BIG_ENDIAN__
-			row[x * 3] = pixelData[stride * i * 4 + x * 4 + 3];
-			row[x * 3 + 1] = pixelData[stride * i * 4 + x * 4 + 2];
-			row[x * 3 + 2] = pixelData[stride * i * 4 + x * 4 + 1];
+		row[x * 3] = pixelData[x * 4 + 3];
+		row[x * 3 + 1] = pixelData[x * 4 + 2];
+		row[x * 3 + 2] = pixelData[x * 4 + 1];
 #else
-			row[x * 3] = pixelData[stride * i * 4 + x * 4];
-			row[x * 3 + 1] = pixelData[stride * i * 4 + x * 4 + 1];
-			row[x * 3 + 2] = pixelData[stride * i * 4 + x * 4 + 2];
+		row[x * 3] = pixelData[x * 4];
+		row[x * 3 + 1] = pixelData[x * 4 + 1];
+		row[x * 3 + 2] = pixelData[x * 4 + 2];
 #endif
-#endif
-		}
-		png_write_row(png, row);
 	}
-	free(row);
-	return true;
 }
 
-bool PNGWritePixelsA(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels) {
-	png_bytep row = malloc(sizeof(png_byte) * width * 4);
+static void _convertRowXRGB8(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+#ifdef __BIG_ENDIAN__
+		row[x * 3] = pixelData[x * 4 + 1];
+		row[x * 3 + 1] = pixelData[x * 4 + 2];
+		row[x * 3 + 2] = pixelData[x * 4 + 3];
+#else
+		row[x * 3] = pixelData[x * 4 + 2];
+		row[x * 3 + 1] = pixelData[x * 4 + 1];
+		row[x * 3 + 2] = pixelData[x * 4];
+#endif
+	}
+}
+
+static void _convertRowBGRX8(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+#ifdef __BIG_ENDIAN__
+		row[x * 3] = pixelData[x * 4 + 2];
+		row[x * 3 + 1] = pixelData[x * 4 + 1];
+		row[x * 3 + 2] = pixelData[x * 4];
+#else
+		row[x * 3] = pixelData[x * 4 + 1];
+		row[x * 3 + 1] = pixelData[x * 4 + 2];
+		row[x * 3 + 2] = pixelData[x * 4 + 3];
+#endif
+	}
+}
+
+static void _convertRowRGBX8(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+#ifdef __BIG_ENDIAN__
+		row[x * 3] = pixelData[x * 4];
+		row[x * 3 + 1] = pixelData[x * 4 + 1];
+		row[x * 3 + 2] = pixelData[x * 4 + 2];
+#else
+		row[x * 3] = pixelData[x * 4 + 3];
+		row[x * 3 + 1] = pixelData[x * 4 + 2];
+		row[x * 3 + 2] = pixelData[x * 4 + 1];
+#endif
+	}
+}
+
+static void _convertRowABGR8(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+#ifdef __BIG_ENDIAN__
+		row[x * 4] = pixelData[x * 4 + 3];
+		row[x * 4 + 1] = pixelData[x * 4 + 2];
+		row[x * 4 + 2] = pixelData[x * 4 + 1];
+		row[x * 4 + 3] = pixelData[x * 4];
+#else
+		row[x * 4] = pixelData[x * 4];
+		row[x * 4 + 1] = pixelData[x * 4 + 1];
+		row[x * 4 + 2] = pixelData[x * 4 + 2];
+		row[x * 4 + 3] = pixelData[x * 4 + 3];
+#endif
+	}
+}
+
+static void _convertRowARGB8(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+#ifdef __BIG_ENDIAN__
+		row[x * 4] = pixelData[x * 4 + 1];
+		row[x * 4 + 1] = pixelData[x * 4 + 2];
+		row[x * 4 + 2] = pixelData[x * 4 + 3];
+		row[x * 4 + 3] = pixelData[x * 4];
+#else
+		row[x * 4] = pixelData[x * 4 + 2];
+		row[x * 4 + 1] = pixelData[x * 4 + 1];
+		row[x * 4 + 2] = pixelData[x * 4];
+		row[x * 4 + 3] = pixelData[x * 4 + 3];
+#endif
+	}
+}
+
+static void _convertRowBGRA8(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+#ifdef __BIG_ENDIAN__
+		row[x * 4] = pixelData[x * 4 + 2];
+		row[x * 4 + 1] = pixelData[x * 4 + 1];
+		row[x * 4 + 2] = pixelData[x * 4];
+		row[x * 4 + 3] = pixelData[x * 4 + 3];
+#else
+		row[x * 4] = pixelData[x * 4 + 1];
+		row[x * 4 + 1] = pixelData[x * 4 + 2];
+		row[x * 4 + 2] = pixelData[x * 4 + 3];
+		row[x * 4 + 3] = pixelData[x * 4];
+#endif
+	}
+}
+
+static void _convertRowRGBA8(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+#ifdef __BIG_ENDIAN__
+		row[x * 4] = pixelData[x * 4];
+		row[x * 4 + 1] = pixelData[x * 4 + 1];
+		row[x * 4 + 2] = pixelData[x * 4 + 2];
+		row[x * 4 + 3] = pixelData[x * 4 + 3];
+#else
+		row[x * 4] = pixelData[x * 4 + 3];
+		row[x * 4 + 1] = pixelData[x * 4 + 2];
+		row[x * 4 + 2] = pixelData[x * 4 + 1];
+		row[x * 4 + 3] = pixelData[x * 4];
+#endif
+	}
+}
+
+static void _convertRowRGB5(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+		uint16_t c = ((uint16_t*) pixelData)[x];
+		row[x * 3] = (c >> 7) & 0xF8;
+		row[x * 3 + 1] = (c >> 2) & 0xF8;
+		row[x * 3 + 2] = (c << 3) & 0xF8;
+	}
+}
+
+static void _convertRowBGR5(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+		uint16_t c = ((uint16_t*) pixelData)[x];
+		row[x * 3] = (c << 3) & 0xF8;
+		row[x * 3 + 1] = (c >> 2) & 0xF8;
+		row[x * 3 + 2] = (c >> 7) & 0xF8;
+	}
+}
+
+static void _convertRowARGB5(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+		uint16_t c = ((uint16_t*) pixelData)[x];
+		row[x * 4] = (c >> 7) & 0xF8;
+		row[x * 4 + 1] = (c >> 2) & 0xF8;
+		row[x * 4 + 2] = (c << 3) & 0xF8;
+		row[x * 4 + 3] = (c >> 15) * 0xFF;
+	}
+}
+
+static void _convertRowABGR5(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+		uint16_t c = ((uint16_t*) pixelData)[x];
+		row[x * 4] = (c << 3) & 0xF8;
+		row[x * 4 + 1] = (c >> 2) & 0xF8;
+		row[x * 4 + 2] = (c >> 7) & 0xF8;
+		row[x * 4 + 3] = (c >> 15) * 0xFF;
+	}
+}
+
+static void _convertRowRGBA5(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+		uint16_t c = ((uint16_t*) pixelData)[x];
+		row[x * 4] = (c >> 8) & 0xF8;
+		row[x * 4 + 1] = (c >> 3) & 0xF8;
+		row[x * 4 + 2] = (c << 2) & 0xF8;
+		row[x * 4 + 3] = (c & 1) * 0xFF;
+	}
+}
+
+static void _convertRowBGRA5(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+		uint16_t c = ((uint16_t*) pixelData)[x];
+		row[x * 4] = (c << 2) & 0xF8;
+		row[x * 4 + 1] = (c >> 3) & 0xF8;
+		row[x * 4 + 2] = (c >> 8) & 0xF8;
+		row[x * 4 + 3] = (c & 1) * 0xFF;
+	}
+}
+
+static void _convertRowRGB565(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+		uint16_t c = ((uint16_t*) pixelData)[x];
+		row[x * 3] = (c >> 8) & 0xF8;
+		row[x * 3 + 1] = (c >> 3) & 0xFC;
+		row[x * 3 + 2] = (c << 3) & 0xF8;
+	}
+}
+
+static void _convertRowBGR565(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+		uint16_t c = ((uint16_t*) pixelData)[x];
+		row[x * 3] = (c << 3) & 0xF8;
+		row[x * 3 + 1] = (c >> 3) & 0xFC;
+		row[x * 3 + 2] = (c >> 8) & 0xF8;
+	}
+}
+
+static void _convertRowBGR8(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+#ifdef __BIG_ENDIAN__
+		row[x * 3] = pixelData[x * 3 + 2];
+		row[x * 3 + 1] = pixelData[x * 3 + 1];
+		row[x * 3 + 2] = pixelData[x * 3];
+#else
+		row[x * 3] = pixelData[x * 3];
+		row[x * 3 + 1] = pixelData[x * 3 + 1];
+		row[x * 3 + 2] = pixelData[x * 3 + 2];
+#endif
+	}
+}
+
+static void _convertRowRGB8(png_bytep row, const png_byte* pixelData, unsigned width) {
+	unsigned x;
+	for (x = 0; x < width; ++x) {
+#ifdef __BIG_ENDIAN__
+		row[x * 3] = pixelData[x * 3];
+		row[x * 3 + 1] = pixelData[x * 3 + 1];
+		row[x * 3 + 2] = pixelData[x * 3 + 2];
+#else
+		row[x * 3] = pixelData[x * 3 + 2];
+		row[x * 3 + 1] = pixelData[x * 3 + 1];
+		row[x * 3 + 2] = pixelData[x * 3];
+#endif
+	}
+}
+
+bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels, enum mColorFormat fmt) {
+	int depth;
+	if (fmt == mCOLOR_L8) {
+		depth = 1;
+	} else if (mColorFormatHasAlpha(fmt)) {
+		depth = 4;
+	} else {
+		depth = 3;
+	}
+	png_bytep row = malloc(sizeof(png_byte) * width * depth);
 	if (!row) {
 		return false;
 	}
@@ -138,36 +370,71 @@ bool PNGWritePixelsA(png_structp png, unsigned width, unsigned height, unsigned 
 		free(row);
 		return false;
 	}
+	const png_byte* pixelRow = pixelData;
+	stride *= mColorFormatBytes(fmt);
 	unsigned i;
-	for (i = 0; i < height; ++i) {
-		unsigned x;
-		for (x = 0; x < width; ++x) {
-#ifdef COLOR_16_BIT
-			uint16_t c = ((uint16_t*) pixelData)[stride * i + x];
-#ifdef COLOR_5_6_5
-			row[x * 4] = (c >> 8) & 0xF8;
-			row[x * 4 + 1] = (c >> 3) & 0xFC;
-			row[x * 4 + 2] = (c << 3) & 0xF8;
-			row[x * 4 + 3] = 0xFF;
-#else
-			row[x * 4] = (c >> 7) & 0xF8;
-			row[x * 4 + 1] = (c >> 2) & 0xF8;
-			row[x * 4 + 2] = (c << 3) & 0xF8;
-			row[x * 4 + 3] = (c >> 15) * 0xFF;
-#endif
-#else
-#ifdef __BIG_ENDIAN__
-			row[x * 4] = pixelData[stride * i * 4 + x * 4 + 3];
-			row[x * 4 + 1] = pixelData[stride * i * 4 + x * 4 + 2];
-			row[x * 4 + 2] = pixelData[stride * i * 4 + x * 4 + 1];
-			row[x * 4 + 3] = pixelData[stride * i * 4 + x * 4];
-#else
-			row[x * 4] = pixelData[stride * i * 4 + x * 4];
-			row[x * 4 + 1] = pixelData[stride * i * 4 + x * 4 + 1];
-			row[x * 4 + 2] = pixelData[stride * i * 4 + x * 4 + 2];
-			row[x * 4 + 3] = pixelData[stride * i * 4 + x * 4 + 3];
-#endif
-#endif
+	for (i = 0; i < height; ++i, pixelRow += stride) {
+		switch (fmt) {
+		case mCOLOR_XBGR8:
+			_convertRowXBGR8(row, pixelRow, width);
+			break;
+		case mCOLOR_XRGB8:
+			_convertRowXRGB8(row, pixelRow, width);
+			break;
+		case mCOLOR_BGRX8:
+			_convertRowBGRX8(row, pixelRow, width);
+			break;
+		case mCOLOR_RGBX8:
+			_convertRowRGBX8(row, pixelRow, width);
+			break;
+		case mCOLOR_ABGR8:
+			_convertRowABGR8(row, pixelRow, width);
+			break;
+		case mCOLOR_ARGB8:
+			_convertRowARGB8(row, pixelRow, width);
+			break;
+		case mCOLOR_BGRA8:
+			_convertRowBGRA8(row, pixelRow, width);
+			break;
+		case mCOLOR_RGBA8:
+			_convertRowRGBA8(row, pixelRow, width);
+			break;
+		case mCOLOR_RGB5:
+			_convertRowRGB5(row, pixelRow, width);
+			break;
+		case mCOLOR_BGR5:
+			_convertRowBGR5(row, pixelRow, width);
+			break;
+		case mCOLOR_ARGB5:
+			_convertRowARGB5(row, pixelRow, width);
+			break;
+		case mCOLOR_ABGR5:
+			_convertRowABGR5(row, pixelRow, width);
+			break;
+		case mCOLOR_RGBA5:
+			_convertRowRGBA5(row, pixelRow, width);
+			break;
+		case mCOLOR_BGRA5:
+			_convertRowBGRA5(row, pixelRow, width);
+			break;
+		case mCOLOR_RGB565:
+			_convertRowRGB565(row, pixelRow, width);
+			break;
+		case mCOLOR_BGR565:
+			_convertRowBGR565(row, pixelRow, width);
+			break;
+		case mCOLOR_BGR8:
+			_convertRowBGR8(row, pixelRow, width);
+			break;
+		case mCOLOR_RGB8:
+			_convertRowRGB8(row, pixelRow, width);
+			break;
+		case mCOLOR_L8:
+			memcpy(row, pixelRow, width);
+			break;
+		case mCOLOR_ANY:
+			// Invalid value
+			longjmp(png_jmpbuf(png), 1);
 		}
 		png_write_row(png, row);
 	}

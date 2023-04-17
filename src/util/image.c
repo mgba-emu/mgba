@@ -208,32 +208,13 @@ bool mImageSave(const struct mImage* image, const char* path, const char* format
 
 #ifdef USE_PNG
 bool mImageSavePNG(const struct mImage* image, struct VFile* vf) {
-	if (image->format != mCOLOR_XBGR8 && image->format != mCOLOR_ABGR8) {
-		struct mImage* newImage;
-		if (mColorFormatHasAlpha(image->format)) {
-			newImage = mImageConvertToFormat(image, mCOLOR_ABGR8);
-		} else {
-			newImage = mImageConvertToFormat(image, mCOLOR_XBGR8);			
-		}
-		bool ret = mImageSavePNG(newImage, vf);
-		mImageDestroy(newImage);
-		return ret;
-	}
-
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = NULL;
 	bool ok = false;
 	if (png) {
-		if (image->format == mCOLOR_XBGR8) {
-			info = PNGWriteHeader(png, image->width, image->height);
-			if (info) {
-				ok = PNGWritePixels(png, image->width, image->height, image->stride, image->data);
-			}
-		} else {
-			info = PNGWriteHeaderA(png, image->width, image->height);		
-			if (info) {
-				ok = PNGWritePixelsA(png, image->width, image->height, image->stride, image->data);
-			}
+		info = PNGWriteHeader(png, image->width, image->height, image->format);
+		if (info) {
+			ok = PNGWritePixels(png, image->width, image->height, image->stride, image->data, image->format);
 		}
 		PNGWriteClose(png, info);
 	}

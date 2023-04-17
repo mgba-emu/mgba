@@ -364,8 +364,8 @@ bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf) {
 	core->currentVideoSize(core, &width, &height);
 	core->getPixels(core, &pixels, &stride);
 	png_structp png = PNGWriteOpen(vf);
-	png_infop info = PNGWriteHeader(png, width, height);
-	bool success = PNGWritePixels(png, width, height, stride, pixels);
+	png_infop info = PNGWriteHeader(png, width, height, mCOLOR_NATIVE);
+	bool success = PNGWritePixels(png, width, height, stride, pixels, mCOLOR_NATIVE);
 	PNGWriteClose(png, info);
 	return success;
 #else
