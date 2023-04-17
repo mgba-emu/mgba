@@ -77,6 +77,7 @@ enum mColorFormat {
 	mCOLOR_RGB8   = 0x10000,
 	mCOLOR_BGR8   = 0x20000,
 	mCOLOR_L8     = 0x40000,
+	mCOLOR_PAL8   = 0x80000,
 
 	mCOLOR_ANY    = -1
 };
@@ -91,10 +92,12 @@ enum mColorFormat {
 
 struct mImage {
 	void* data;
+	uint32_t* palette;
 	unsigned width;
 	unsigned height;
 	unsigned stride;
 	unsigned depth;
+	unsigned palSize;
 	enum mColorFormat format;
 };
 
@@ -146,6 +149,7 @@ static inline unsigned mColorFormatBytes(enum mColorFormat format) {
 	case mCOLOR_BGR8:
 		return 3;
 	case mCOLOR_L8:
+	case mCOLOR_PAL8:
 		return 1;
 	case mCOLOR_ANY:
 		break;
@@ -175,6 +179,7 @@ static inline bool mColorFormatHasAlpha(enum mColorFormat format) {
 	case mCOLOR_ABGR5:
 	case mCOLOR_RGBA5:
 	case mCOLOR_BGRA5:
+	case mCOLOR_PAL8:
 		return true;
 	case mCOLOR_ANY:
 		break;

@@ -135,17 +135,51 @@ static struct mImage* mImageLoadPNG(struct VFile* vf) {
 	case 1:
 		if (png_get_color_type(png, info) == PNG_COLOR_TYPE_GRAY) {
 			image->format = mCOLOR_L8;
-			image->depth = 1;
-			image->data = malloc(width * height);
-			if (!PNGReadPixels8(png, info, image->data, width, height, width)) {
-				free(image->data);
-				free(image);
-				PNGReadClose(png, info, end);
+		} else {
+			png_colorp palette;
+			png_bytep trns;
+			int count;
+			int trnsCount = 0;
+			image->format = mCOLOR_PAL8;
+			if (png_get_PLTE(png, info, &palette, &count) == 0) {
 				return NULL;
 			}
-			break;
+			if (count > 256) {
+				count = 256;
+#ifndef NDEBUG
+				abort();
+#endif
+			}
+			image->palette = malloc(1024);
+			image->palSize = count;
+			png_get_tRNS(png, info, &trns, &trnsCount, NULL);
+
+			int i;
+			for (i = 0; i < count; ++i) {
+				uint32_t color = palette[i].red << 16;
+				color |= palette[i].green << 8;
+				color |= palette[i].blue;
+
+				if (i < trnsCount) {
+					color |= trns[i] << 24;
+				} else {
+					color |= 0xFF000000;
+				}
+				image->palette[i] = color;
+			}
 		}
-		// Fall through
+		image->depth = 1;
+		image->data = malloc(width * height);
+		if (!PNGReadPixels8(png, info, image->data, width, height, width)) {
+			if (image->palette) {
+				free(image->palette);
+			}
+			free(image->data);
+			free(image);
+			PNGReadClose(png, info, end);
+			return NULL;
+		}
+		break;
 	default:
 		// Not supported yet
 		free(image);
@@ -169,6 +203,10 @@ struct mImage* mImageLoadVF(struct VFile* vf) {
 }
 
 struct mImage* mImageConvertToFormat(const struct mImage* image, enum mColorFormat format) {
+	if (format == mCOLOR_PAL8) {
+		// Quantization shouldn't be handled here
+		return NULL;
+	}
 	struct mImage* newImage = calloc(1, sizeof(*newImage));
 	newImage->width = image->width;
 	newImage->height = image->height;
@@ -186,20 +224,36 @@ struct mImage* mImageConvertToFormat(const struct mImage* image, enum mColorForm
 
 	// TODO: Implement more specializations, e.g. alpha narrowing/widening, channel swapping
 	size_t x, y;
-	for (y = 0; y < newImage->height; ++y) {
-		uintptr_t src = (uintptr_t) ROW(image, y);
-		uintptr_t dst = (uintptr_t) ROW(newImage, y);
-		for (x = 0; x < newImage->width; ++x, src += image->depth, dst += newImage->depth) {
-			uint32_t color;
-			GET_PIXEL(color, src, image->depth);
-			color = mColorConvert(color, image->format, format);
-			PUT_PIXEL(color, dst, newImage->depth);
+	if (image->format == mCOLOR_PAL8) {
+		for (y = 0; y < newImage->height; ++y) {
+			uintptr_t src = (uintptr_t) ROW(image, y);
+			uintptr_t dst = (uintptr_t) ROW(newImage, y);
+			for (x = 0; x < newImage->width; ++x, src += image->depth, dst += newImage->depth) {
+				uint32_t color;
+				GET_PIXEL(color, src, image->depth);
+				color = image->palette[color];
+				PUT_PIXEL(color, dst, newImage->depth);
+			}
+		}
+	} else {
+		for (y = 0; y < newImage->height; ++y) {
+			uintptr_t src = (uintptr_t) ROW(image, y);
+			uintptr_t dst = (uintptr_t) ROW(newImage, y);
+			for (x = 0; x < newImage->width; ++x, src += image->depth, dst += newImage->depth) {
+				uint32_t color;
+				GET_PIXEL(color, src, image->depth);
+				color = mColorConvert(color, image->format, format);
+				PUT_PIXEL(color, dst, newImage->depth);
+			}
 		}
 	}
 	return newImage;
 }
 
 void mImageDestroy(struct mImage* image) {
+	if (image->palette) {
+		free(image->palette);
+	}
 	free(image->data);
 	free(image);
 }
@@ -280,7 +334,12 @@ uint32_t mImageGetPixelRaw(const struct mImage* image, unsigned x, unsigned y) {
 }
 
 uint32_t mImageGetPixel(const struct mImage* image, unsigned x, unsigned y) {
-	return mColorConvert(mImageGetPixelRaw(image, x, y), image->format, mCOLOR_ARGB8);
+	uint32_t raw = mImageGetPixelRaw(image, x, y);
+	if (image->format == mCOLOR_PAL8) {
+		return image->palette[raw];
+	} else {
+		return mColorConvert(raw, image->format, mCOLOR_ARGB8);
+	}
 }
 
 void mImageSetPixelRaw(struct mImage* image, unsigned x, unsigned y, uint32_t color) {
@@ -531,6 +590,7 @@ uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat
 		b = color;
 		break;
 
+	case mCOLOR_PAL8:
 	case mCOLOR_ANY:
 		return 0;
 	}
@@ -619,6 +679,7 @@ uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat
 		// sRGB primaries in fixed point, roughly fudged to saturate to 0xFFFF
 		color = (55 * r + 184 * g + 18 * b) >> 8;
 		break;
+	case mCOLOR_PAL8:
 	case mCOLOR_ANY:
 		return 0;
 	}
