@@ -113,6 +113,11 @@ static struct mImage* mImageLoadPNG(struct VFile* vf) {
 	unsigned height = png_get_image_height(png, info);
 
 	struct mImage* image = calloc(1, sizeof(*image));
+	if (!image) {
+		PNGReadClose(png, info, end);
+		return NULL;
+	}
+	bool ok = true;
 
 	image->width = width;
 	image->height = height;
@@ -124,10 +129,7 @@ static struct mImage* mImageLoadPNG(struct VFile* vf) {
 		image->depth = 4;
 		image->data = malloc(width * height * 4);
 		if (!PNGReadPixels(png, info, image->data, width, height, width)) {
-			free(image->data);
-			free(image);
-			PNGReadClose(png, info, end);
-			return NULL;
+			ok = false;
 		}
 		break;
 	case 4:
@@ -135,10 +137,7 @@ static struct mImage* mImageLoadPNG(struct VFile* vf) {
 		image->depth = 4;
 		image->data = malloc(width * height * 4);
 		if (!PNGReadPixelsA(png, info, image->data, width, height, width)) {
-			free(image->data);
-			free(image);
-			PNGReadClose(png, info, end);
-			return NULL;
+			ok = false;
 		}
 		break;
 	case 1:
@@ -151,7 +150,8 @@ static struct mImage* mImageLoadPNG(struct VFile* vf) {
 			int trnsCount = 0;
 			image->format = mCOLOR_PAL8;
 			if (png_get_PLTE(png, info, &palette, &count) == 0) {
-				return NULL;
+				ok = false;
+				break;
 			}
 			if (count > 256) {
 				count = 256;
@@ -180,22 +180,20 @@ static struct mImage* mImageLoadPNG(struct VFile* vf) {
 		image->depth = 1;
 		image->data = malloc(width * height);
 		if (!PNGReadPixels8(png, info, image->data, width, height, width)) {
-			if (image->palette) {
-				free(image->palette);
-			}
-			free(image->data);
-			free(image);
-			PNGReadClose(png, info, end);
-			return NULL;
+			ok = false;
 		}
 		break;
 	default:
 		// Not supported yet
-		free(image);
-		PNGReadClose(png, info, end);
-		return NULL;
+		ok = false;
+		break;
 	}
+
 	PNGReadClose(png, info, end);
+	if (!ok) {
+		mImageDestroy(image);
+		image = NULL;
+	}
 	return image;
 }
 #endif
