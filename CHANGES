@@ -8,6 +8,7 @@ Emulation fixes:
  - GBA SIO: Fix unconnected normal mode SIOCNT SI bit (fixes mgba.io/i/2810)
  - GBA SIO: Normal mode transfers with no clock should not finish (fixes mgba.io/i/2811)
  - GBA Timers: Cascading timers don't tick when disabled (fixes mgba.io/i/2812)
+ - GBA Video: Fix interpolation issues with OpenGL renderer
 Other fixes:
  - Core: Allow sending thread requests to a crashed core (fixes mgba.io/i/2784)
  - FFmpeg: Force lower sample rate for codecs not supporting high rates (fixes mgba.io/i/2869)
