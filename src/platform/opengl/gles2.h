@@ -24,7 +24,7 @@ CXX_GUARD_START
 #include <GLES2/gl2.h>
 #endif
 
-#include "platform/video-backend.h"
+#include <mgba/feature/video-backend.h>
 
 union mGLES2UniformValue {
 	GLfloat f;

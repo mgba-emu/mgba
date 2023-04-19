@@ -19,8 +19,8 @@
 #include <QSpinBox>
 
 #include <mgba/core/version.h>
+#include <mgba/feature/video-backend.h>
 #include <mgba-util/vfs.h>
-#include "platform/video-backend.h"
 
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 

@@ -37,7 +37,7 @@
 #include "CoreController.h"
 #include "VideoProxy.h"
 
-#include "platform/video-backend.h"
+#include <mgba/feature/video-backend.h>
 
 class QOpenGLPaintDevice;
 class QOpenGLWidget;

@@ -21,7 +21,7 @@ CXX_GUARD_START
 #include <GL/gl.h>
 #endif
 
-#include "platform/video-backend.h"
+#include <mgba/feature/video-backend.h>
 
 struct mGLContext {
 	struct VideoBackend d;
