@@ -39,6 +39,21 @@ using QOpenGLFunctions_Baseline = QOpenGLFunctions_3_2_Core;
 #endif
 
 #ifdef _WIN32
+#include <windows.h>
+#elif defined(Q_OS_MAC)
+#include <OpenGL/OpenGL.h>
+#endif
+#ifdef USE_GLX
+#define GLX_GLXEXT_PROTOTYPES
+typedef struct _XDisplay Display;
+#include <GL/glx.h>
+#include <GL/glxext.h>
+#endif
+#ifdef USE_EGL
+#include <EGL/egl.h>
+#endif
+
+#ifdef _WIN32
 #define OVERHEAD_NSEC 1000000
 #else
 #define OVERHEAD_NSEC 300000
@@ -416,6 +431,10 @@ void DisplayGL::filter(bool filter) {
 	QMetaObject::invokeMethod(m_painter.get(), "filter", Q_ARG(bool, filter));
 }
 
+void DisplayGL::swapInterval(int interval) {
+	QMetaObject::invokeMethod(m_painter.get(), "swapInterval", Q_ARG(int, interval));
+}
+
 void DisplayGL::framePosted() {
 	m_painter->enqueue(m_context->drawContext());
 	QMetaObject::invokeMethod(m_painter.get(), "draw");
@@ -755,6 +774,32 @@ void PainterGL::filter(bool filter) {
 	}
 }
 
+void PainterGL::swapInterval(int interval) {
+	if (!m_started) {
+		return;
+	}
+	m_swapInterval = interval;
+#ifdef Q_OS_WIN
+	wglSwapIntervalEXT(interval);
+#elif defined(Q_OS_MAC)
+	CGLSetParameter(CGLGetCurrentContext(), kCGLCPSwapInterval, &interval);
+#else
+#ifdef USE_GLX
+	if (QGuiApplication::platformName() == "xcb") {
+		::Display* display = glXGetCurrentDisplay();
+		GLXDrawable drawable = glXGetCurrentDrawable();
+		glXSwapIntervalEXT(display, drawable, interval);
+	}
+#endif
+#ifdef USE_EGL
+	if (QGuiApplication::platformName().contains("egl")) {
+		EGLDisplay display = eglGetCurrentDisplay();
+		eglSwapInterval(display, interval);
+	}
+#endif
+#endif
+}
+
 #ifndef GL_DEBUG_OUTPUT_SYNCHRONOUS
 #define GL_DEBUG_OUTPUT_SYNCHRONOUS 0x8242
 #endif
@@ -810,6 +855,9 @@ void PainterGL::draw() {
 			m_drawTimer.start(1);
 		}
 		return;
+	}
+	if (m_swapInterval != !!sync->videoFrameWait) {
+		swapInterval(!!sync->videoFrameWait);
 	}
 	dequeue();
 	bool forceRedraw = true;
