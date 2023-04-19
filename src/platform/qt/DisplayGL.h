@@ -119,10 +119,6 @@ protected:
 	virtual void paintEvent(QPaintEvent*) override { forceDraw(); }
 	virtual void resizeEvent(QResizeEvent*) override;
 
-private slots:
-	void startThread(int);
-	void setupProxyThread();
-
 private:
 	void resizePainter();
 	bool shouldDisableUpdates();
@@ -131,14 +127,10 @@ private:
 
 	bool m_isDrawing = false;
 	bool m_hasStarted = false;
-	int m_threadStartPending = 0;
 	std::unique_ptr<PainterGL> m_painter;
 	QThread m_drawThread;
-	QThread m_proxyThread;
 	std::shared_ptr<CoreController> m_context;
 	mGLWidget* m_gl;
-	QOffscreenSurface m_proxySurface;
-	std::unique_ptr<QOpenGLContext> m_proxyContext;
 };
 
 class PainterGL : public QObject {
@@ -152,7 +144,6 @@ public:
 	void setContext(std::shared_ptr<CoreController>);
 	void setMessagePainter(MessagePainter*);
 	void enqueue(const uint32_t* backing);
-	void enqueue(GLuint tex);
 
 	void stop();
 
@@ -163,9 +154,6 @@ public:
 
 	void setVideoProxy(std::shared_ptr<VideoProxy>);
 	void interrupt();
-
-	// Run on main thread
-	void swapTex();
 
 public slots:
 	void create();
@@ -185,7 +173,6 @@ public slots:
 	void filter(bool filter);
 	void swapInterval(int interval);
 	void resizeContext();
-	void updateFramebufferHandle();
 
 	void setShaders(struct VDir*);
 	void clearShaders();
@@ -209,13 +196,6 @@ private:
 	QList<uint32_t*> m_free;
 	QQueue<uint32_t*> m_queue;
 	uint32_t* m_buffer = nullptr;
-
-	std::array<GLuint, 3> m_bridgeTexes;
-	QQueue<GLuint> m_freeTex;
-	QQueue<GLuint> m_queueTex;
-
-	GLuint m_bridgeTexIn = std::numeric_limits<GLuint>::max();
-	GLuint m_bridgeTexOut = std::numeric_limits<GLuint>::max();
 
 	QPainter m_painter;
 	QMutex m_mutex;
