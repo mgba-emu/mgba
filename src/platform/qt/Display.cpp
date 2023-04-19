@@ -111,6 +111,7 @@ void QGBA::Display::configure(ConfigController* config) {
 	filter(opts->resampleVideo);
 	config->updateOption("showOSD");
 	config->updateOption("showFrameCounter");
+	config->updateOption("videoSync");
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (opts->shader && supportsShaders()) {
 		struct VDir* shader = VDirOpen(opts->shader);

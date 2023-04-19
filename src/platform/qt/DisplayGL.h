@@ -108,6 +108,7 @@ public slots:
 	void showOSDMessages(bool enable) override;
 	void showFrameCounter(bool enable) override;
 	void filter(bool filter) override;
+	void swapInterval(int interval) override;
 	void framePosted() override;
 	void setShaders(struct VDir*) override;
 	void clearShaders() override;
@@ -182,6 +183,7 @@ public slots:
 	void showOSD(bool enable);
 	void showFrameCounter(bool enable);
 	void filter(bool filter);
+	void swapInterval(int interval);
 	void resizeContext();
 	void updateFramebufferHandle();
 
@@ -240,6 +242,7 @@ private:
 	MessagePainter* m_messagePainter = nullptr;
 	QElapsedTimer m_delayTimer;
 	std::shared_ptr<VideoProxy> m_videoProxy;
+	int m_swapInterval = -1;
 };
 
 }
