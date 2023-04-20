@@ -314,8 +314,7 @@ private:
 	VFile* m_vlVf = nullptr;
 
 #ifdef M_CORE_GB
-	struct QGBPrinter {
-		GBPrinter d;
+	struct QGBPrinter : public GBPrinter {
 		CoreController* parent;
 	} m_printer;
 #endif

@@ -24,7 +24,7 @@ public:
 
 	void attach(CoreController*);
 	void detach(CoreController*);
-	void setBlocking(bool block) { m_logger.d.waitOnFlush = block; }
+	void setBlocking(bool block) { m_logger.waitOnFlush = block; }
 
 signals:
 	void dataAvailable();
@@ -51,17 +51,16 @@ private:
 		using type = T (VideoProxy::*)(A...);
 
 		template<type F> static T func(mVideoLogger* logger, A... args) {
-			VideoProxy* proxy = reinterpret_cast<Logger*>(logger)->p;
+			VideoProxy* proxy = static_cast<Logger*>(logger)->p;
 			return (proxy->*F)(args...);
 		}
 	};
 
 	template<void (VideoProxy::*F)()> static void cbind(mVideoLogger* logger) { callback<void>::func<F>(logger); }
 
-	struct Logger {
-		mVideoLogger d;
+	struct Logger : public mVideoLogger {
 		VideoProxy* p;
-	} m_logger = {{}, this};
+	} m_logger;
 
 	RingFIFO m_dirtyQueue;
 	QMutex m_mutex;

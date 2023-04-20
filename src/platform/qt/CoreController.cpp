@@ -998,9 +998,9 @@ void CoreController::attachPrinter() {
 	}
 	GB* gb = static_cast<GB*>(m_threadContext.core->board);
 	clearMultiplayerController();
-	GBPrinterCreate(&m_printer.d);
+	GBPrinterCreate(&m_printer);
 	m_printer.parent = this;
-	m_printer.d.print = [](GBPrinter* printer, int height, const uint8_t* data) {
+	m_printer.print = [](GBPrinter* printer, int height, const uint8_t* data) {
 		QGBPrinter* qPrinter = reinterpret_cast<QGBPrinter*>(printer);
 		QImage image(GB_VIDEO_HORIZONTAL_PIXELS, height, QImage::Format_Indexed8);
 		QVector<QRgb> colors;
@@ -1021,7 +1021,7 @@ void CoreController::attachPrinter() {
 		QMetaObject::invokeMethod(qPrinter->parent, "imagePrinted", Q_ARG(const QImage&, image));
 	};
 	Interrupter interrupter(this);
-	GBSIOSetDriver(&gb->sio, &m_printer.d.d);
+	GBSIOSetDriver(&gb->sio, &m_printer.d);
 }
 
 void CoreController::detachPrinter() {
@@ -1030,7 +1030,7 @@ void CoreController::detachPrinter() {
 	}
 	Interrupter interrupter(this);
 	GB* gb = static_cast<GB*>(m_threadContext.core->board);
-	GBPrinterDonePrinting(&m_printer.d);
+	GBPrinterDonePrinting(&m_printer);
 	GBSIOSetDriver(&gb->sio, nullptr);
 }
 
@@ -1039,7 +1039,7 @@ void CoreController::endPrint() {
 		return;
 	}
 	Interrupter interrupter(this);
-	GBPrinterDonePrinting(&m_printer.d);
+	GBPrinterDonePrinting(&m_printer);
 }
 #endif
 

@@ -56,8 +56,7 @@ private:
 	QStringList m_lines;
 	QByteArray m_last;
 
-	struct Backend {
-		CLIDebuggerBackend d;
+	struct Backend : public CLIDebuggerBackend {
 		DebuggerConsoleController* self;
 	} m_backend;
 };
