@@ -738,7 +738,7 @@ void PainterGL::swapInterval(int interval) {
 	}
 #endif
 #ifdef USE_EGL
-	if (QGuiApplication::platformName().contains("egl")) {
+	if (QGuiApplication::platformName().contains("egl") || QGuiApplication::platformName() == "wayland") {
 		EGLDisplay display = eglGetCurrentDisplay();
 		eglSwapInterval(display, interval);
 	}
