@@ -633,6 +633,11 @@ void Window::scriptingOpen() {
 			m_scripting->setController(m_controller);
 			m_display->installEventFilter(m_scripting.get());
 		}
+
+		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
+		if (proxy) {
+			m_scripting->setVideoBackend(proxy->backend());
+		}
 	}
 	ScriptingView* view = new ScriptingView(m_scripting.get(), m_config);
 	openView(view);
@@ -1055,6 +1060,9 @@ void Window::reloadDisplayDriver() {
 #endif
 
 	m_display->setBackgroundImage(QImage{m_config->getOption("backgroundImage")});
+
+	std::shared_ptr<VideoProxy> proxy = std::make_shared<VideoProxy>();
+	m_display->setVideoProxy(proxy);
 }
 
 void Window::reloadAudioDriver() {
@@ -1079,12 +1087,7 @@ void Window::changeRenderer() {
 
 	CoreController::Interrupter interrupter(m_controller);
 	if (m_config->getOption("hwaccelVideo").toInt() && m_display->supportsShaders() && m_controller->supportsFeature(CoreController::Feature::OPENGL)) {
-		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
-		if (!proxy) {
-			proxy = std::make_shared<VideoProxy>();
-		}
-		m_display->setVideoProxy(proxy);
-		proxy->attach(m_controller.get());
+		m_display->videoProxy()->attach(m_controller.get());
 
 		int fb = m_display->framebufferHandle();
 		if (fb >= 0) {
@@ -1092,11 +1095,7 @@ void Window::changeRenderer() {
 			m_config->updateOption("videoScale");
 		}
 	} else {
-		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
-		if (proxy) {
-			proxy->detach(m_controller.get());
-			m_display->setVideoProxy({});
-		}
+		m_display->videoProxy()->detach(m_controller.get());
 		m_controller->setFramebufferHandle(-1);
 	}
 }
@@ -2113,6 +2112,11 @@ void Window::setController(CoreController* controller, const QString& fname) {
 #ifdef ENABLE_SCRIPTING
 	if (m_scripting) {
 		m_scripting->setController(m_controller);
+
+		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
+		if (proxy) {
+			m_scripting->setVideoBackend(proxy->backend());
+		}
 	}
 #endif
 

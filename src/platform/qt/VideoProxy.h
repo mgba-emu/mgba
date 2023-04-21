@@ -7,9 +7,12 @@
 
 #include <QMutex>
 #include <QObject>
+#include <QQueue>
+#include <QReadWriteLock>
 #include <QWaitCondition>
 
 #include <mgba/feature/video-logger.h>
+#include <mgba/feature/proxy-backend.h>
 #include <mgba-util/ring-fifo.h>
 
 namespace QGBA {
@@ -21,16 +24,22 @@ Q_OBJECT
 
 public:
 	VideoProxy();
+	~VideoProxy();
 
 	void attach(CoreController*);
 	void detach(CoreController*);
 	void setBlocking(bool block) { m_logger.waitOnFlush = block; }
 
+	VideoBackend* backend() { return &m_backend.d; }
+	void setProxiedBackend(VideoBackend*);
+
 signals:
 	void dataAvailable();
+	void commandAvailable();
 
 public slots:
 	void processData();
+	void processCommands();
 	void reset();
 	void handleEvent(int);
 
@@ -62,10 +71,19 @@ private:
 		VideoProxy* p;
 	} m_logger;
 
+	struct mVideoProxyBackend m_backend;
+
 	RingFIFO m_dirtyQueue;
 	QMutex m_mutex;
 	QWaitCondition m_toThreadCond;
 	QWaitCondition m_fromThreadCond;
+
+	QReadWriteLock m_backendInLock;
+	QReadWriteLock m_backendOutLock;
+	QQueue<QByteArray> m_backendIn;
+	QQueue<QByteArray> m_backendOut;
+	QWaitCondition m_toBackendThreadCond;
+	QWaitCondition m_fromBackendThreadCond;
 };
 
 }

@@ -944,6 +944,9 @@ void PainterGL::dequeueAll(bool keep) {
 
 void PainterGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
 	m_videoProxy = proxy;
+	if (proxy) {
+		proxy->setProxiedBackend(m_backend);
+	}
 }
 
 void PainterGL::interrupt() {
