@@ -106,6 +106,9 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 }
 
 void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
+	if (samples > 0x2000) {
+		samples = 0x2000;
+	}
 	mCoreSyncLockAudio(audio->p->sync);
 	audio->samples = samples;
 	blip_clear(audio->psg.left);
