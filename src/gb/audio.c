@@ -138,6 +138,9 @@ void GBAudioReset(struct GBAudio* audio) {
 }
 
 void GBAudioResizeBuffer(struct GBAudio* audio, size_t samples) {
+	if (samples > BLIP_BUFFER_SIZE / 2) {
+		samples = BLIP_BUFFER_SIZE / 2;
+	}
 	mCoreSyncLockAudio(audio->p->sync);
 	audio->samples = samples;
 	blip_clear(audio->left);
