@@ -1682,6 +1682,40 @@ void mScriptObjectFree(struct mScriptValue* value) {
 	}
 }
 
+struct mScriptValue* mScriptObjectBindLambda(struct mScriptValue* obj, const char* member, struct mScriptList* args) {
+	if (obj->type->base != mSCRIPT_TYPE_OBJECT) {
+		return false;
+	}
+
+	struct mScriptTypeClass* cls = obj->type->details.cls;
+	if (!cls) {
+		return false;
+	}
+
+	mScriptClassInit(cls);
+
+	struct mScriptList arguments;
+	struct mScriptValue fn;
+	if (!mScriptObjectGetConst(obj, member, &fn)) {
+		return NULL;
+	}
+
+	mScriptListInit(&arguments, 0);
+	mScriptValueWrap(obj, mScriptListAppend(&arguments));
+	if (args) {
+		size_t i;
+		for (i = 0; i < mScriptListSize(args); ++i) {
+			memcpy(mScriptListAppend(&arguments), mScriptListGetConstPointer(args, i), sizeof(struct mScriptValue));
+		}
+	}
+
+	struct mScriptValue* value = mScriptValueAlloc(fn.type);
+	struct mScriptValue* lambda = mScriptLambdaCreate0(value, &arguments);
+	mScriptValueDeref(value);
+	mScriptListDeinit(&arguments);
+	return lambda;
+}
+
 bool mScriptPopS32(struct mScriptList* list, int32_t* out) {
 	mSCRIPT_POP(list, S32, val);
 	*out = val;
