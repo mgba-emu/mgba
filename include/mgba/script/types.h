@@ -335,6 +335,8 @@ bool mScriptTableIteratorLookup(struct mScriptValue* table, struct TableIterator
 void mScriptFrameInit(struct mScriptFrame* frame);
 void mScriptFrameDeinit(struct mScriptFrame* frame);
 
+struct mScriptValue* mScriptLambdaCreate0(struct mScriptValue* fn, struct mScriptList* args);
+
 void mScriptClassInit(struct mScriptTypeClass* cls);
 void mScriptClassDeinit(struct mScriptTypeClass* cls);
 
