@@ -1789,13 +1789,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 void Window::setupOptions() {
 	ConfigOption* videoSync = m_config->addOption("videoSync");
 	videoSync->connect([this](const QVariant& variant) {
-		if (m_display) {
-			bool ok;
-			int interval = variant.toInt(&ok);
-			if (ok) {
-				m_display->swapInterval(interval);
-			}
-		}
 		reloadConfig();
 	}, this);
 
