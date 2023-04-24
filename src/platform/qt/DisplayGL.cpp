@@ -771,6 +771,7 @@ void PainterGL::start() {
 	m_buffer = nullptr;
 	m_active = true;
 	m_started = true;
+	swapInterval(1);
 	emit started();
 }
 
@@ -801,15 +802,16 @@ void PainterGL::draw() {
 		}
 		return;
 	}
-	if (m_swapInterval != !!sync->videoFrameWait) {
-		swapInterval(!!sync->videoFrameWait);
+	int wantSwap = sync->audioWait || sync->videoFrameWait;
+	if (m_swapInterval != wantSwap) {
+		swapInterval(wantSwap);
 	}
 	dequeue();
 	bool forceRedraw = true;
 	if (!m_delayTimer.isValid()) {
 		m_delayTimer.start();
 	} else {
-		if (sync->audioWait || sync->videoFrameWait) {
+		if (wantSwap) {
 			while (m_delayTimer.nsecsElapsed() + OVERHEAD_NSEC < 1000000000 / sync->fpsTarget) {
 				QThread::usleep(500);
 			}
