@@ -124,6 +124,7 @@ void mCheatAutosave(struct mCheatDevice*);
 
 void mCheatRefresh(struct mCheatDevice*, struct mCheatSet*);
 void mCheatPressButton(struct mCheatDevice*, bool down);
+void mCheatDisableAll(struct mCheatDevice*);
 
 CXX_GUARD_END
 

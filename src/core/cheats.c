@@ -802,3 +802,15 @@ void mCheatDeviceDeinit(struct mCPUComponent* component) {
 		}
 	}
 }
+
+void mCheatDisableAll(struct mCheatDevice* device) {
+	size_t i;
+	for (i = 0; i < mCheatSetsSize(&device->cheats); ++i) {
+		struct mCheatSet* cheat = *mCheatSetsGetPointer(&device->cheats, i);
+		if (cheat->enabled) {
+			_unpatchROM(device, cheat);
+			cheat->enabled = false;
+		}
+	}
+	return;
+}
