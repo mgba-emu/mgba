@@ -24,6 +24,7 @@ VideoProxy::VideoProxy() {
 	m_logger.unlock = &cbind<&VideoProxy::unlock>;
 	m_logger.wait = &cbind<&VideoProxy::wait>;
 	m_logger.wake = &callback<void, int>::func<&VideoProxy::wake>;
+	RingFIFOInit(&m_dirtyQueue, 0x80000);
 
 	m_logger.writeData = &callback<bool, const void*, size_t>::func<&VideoProxy::writeData>;
 	m_logger.readData = &callback<bool, void*, size_t, bool>::func<&VideoProxy::readData>;
@@ -42,6 +43,7 @@ VideoProxy::VideoProxy() {
 
 VideoProxy::~VideoProxy() {
 	mVideoProxyBackendDeinit(&m_backend);
+	RingFIFODeinit(&m_dirtyQueue);
 }
 
 void VideoProxy::attach(CoreController* controller) {
@@ -71,7 +73,6 @@ void VideoProxy::processCommands() {
 }
 
 void VideoProxy::init() {
-	RingFIFOInit(&m_dirtyQueue, 0x80000);
 }
 
 void VideoProxy::reset() {
@@ -82,7 +83,6 @@ void VideoProxy::reset() {
 }
 
 void VideoProxy::deinit() {
-	RingFIFODeinit(&m_dirtyQueue);
 }
 
 bool VideoProxy::writeData(const void* data, size_t length) {
