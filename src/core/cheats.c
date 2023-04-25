@@ -812,5 +812,4 @@ void mCheatDisableAll(struct mCheatDevice* device) {
 			cheat->enabled = false;
 		}
 	}
-	return;
 }
