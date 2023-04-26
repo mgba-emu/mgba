@@ -726,8 +726,12 @@ static void _listWatchpoints(struct CLIDebugger* debugger, struct CLIDebugVector
 }
 
 static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	if (!dv || dv->type != CLIDV_INT_TYPE) {
+	if (!dv) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (dv->type != CLIDV_INT_TYPE || dv->intValue < 0) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
 		return;
 	}
 
