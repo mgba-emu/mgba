@@ -1632,6 +1632,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("&Cheats..."), "cheatsWindow", openControllerTView<CheatsView>(), "tools");
 #ifdef ENABLE_SCRIPTING
 	m_actions.addAction(tr("Scripting..."), "scripting", this, &Window::scriptingOpen, "tools");
+	
+	addGameAction(tr("Load recent script"), "loadscript", [this] {
+		m_mruFiles = m_config->getMRU(ConfigController::MRU::Script);
+		m_scripting->loadFile(m_mruFiles.at(0));
+	}, "tools");
 #endif
 
 	m_actions.addAction(tr("Create forwarder..."), "createForwarder", openTView<ForwarderView>(), "tools");
