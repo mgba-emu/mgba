@@ -456,6 +456,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	mLOG(GUI_RUNNER, DEBUG, "Loading save...");
 	mCoreAutoloadSave(runner->core);
 	mCoreAutoloadCheats(runner->core);
+	mCoreAutoloadPatch(runner->core);
 	if (runner->setup) {
 		mLOG(GUI_RUNNER, DEBUG, "Setting up runner...");
 		runner->setup(runner);

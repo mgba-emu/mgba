@@ -14,6 +14,7 @@ Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
+ - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
 
 0.10.2: (2023-04-23)
