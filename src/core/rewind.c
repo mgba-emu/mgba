@@ -30,6 +30,7 @@ void mCoreRewindContextInit(struct mCoreRewindContext* context, size_t entries, 
 	context->previousState = VFileMemChunk(0, 0);
 	context->currentState = VFileMemChunk(0, 0);
 	context->size = 0;
+	context->rewindFrameCounter = 0;
 #ifndef DISABLE_THREADING
 	context->onThread = onThread;
 	context->ready = false;

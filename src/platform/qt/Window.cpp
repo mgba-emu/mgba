@@ -1813,6 +1813,11 @@ void Window::setupOptions() {
 		reloadConfig();
 	}, this);
 
+	ConfigOption* rewindRatio = m_config->addOption("rewindRatio");
+	rewindRatio->connect([this](const QVariant&) {
+		reloadConfig();
+	}, this);
+
 	ConfigOption* allowOpposingDirections = m_config->addOption("allowOpposingDirections");
 	allowOpposingDirections->connect([this](const QVariant&) {
 		reloadConfig();
