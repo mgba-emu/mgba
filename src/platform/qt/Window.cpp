@@ -1813,8 +1813,8 @@ void Window::setupOptions() {
 		reloadConfig();
 	}, this);
 
-	ConfigOption* rewindRatio = m_config->addOption("rewindRatio");
-	rewindRatio->connect([this](const QVariant&) {
+	ConfigOption* rewindBufferInterval = m_config->addOption("rewindBufferInterval");
+	rewindBufferInterval->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
