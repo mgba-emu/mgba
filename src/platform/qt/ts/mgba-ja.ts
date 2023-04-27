@@ -16,7 +16,7 @@
     <message>
         <location filename="../utils.cpp" line="109"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished">すべてのファイル (%1)</translation>
+        <translation>すべてのROM (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="111"/>
@@ -287,28 +287,28 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>バトルチップのデータが見つかりません</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>バトルチップの画像データが見つかりません。このままでもチップゲートは動作しますが、チップの画像が表示されないまま使う事になります。今すぐダウンロードしますか？</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="184"/>
         <location filename="../BattleChipView.cpp" line="203"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>デッキファイルを選択</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="215"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>互換性のないデッキ</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="216"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>選択したデッキはこのチップゲートでは使用できません</translation>
     </message>
 </context>
 <context>
@@ -334,7 +334,7 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished"></translation>
+        <translation>新しいコード</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
@@ -344,12 +344,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="93"/>
         <source>Add Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>入力したコードを追加</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="100"/>
         <source>Code type</source>
-        <translation type="unfinished"></translation>
+        <translation>コード形式</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
@@ -370,7 +370,7 @@ Download size: %3</source>
         <location filename="../CheatsView.cpp" line="50"/>
         <location filename="../CheatsView.cpp" line="58"/>
         <source>Autodetect (recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation>自動検出 (推奨)</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="88"/>
@@ -381,7 +381,7 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>一部のコードが追加できませんでした。フォーマットが正常かどうかを確認してください。もしくは、違う形式に変換して試してみてください。</translation>
     </message>
 </context>
 <context>
@@ -517,12 +517,12 @@ Download size: %3</source>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
         <source>Couldn&apos;t Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>接続失敗</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Could not connect to Dolphin.</source>
-        <translation type="unfinished"></translation>
+        <translation>Dolphinと接続できませんでした。</translation>
     </message>
 </context>
 <context>
@@ -3542,7 +3542,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="118"/>
         <source>Width</source>
-        <translation>値幅</translation>
+        <translation>サイズ</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="138"/>
@@ -3572,7 +3572,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="216"/>
         <source>Search type</source>
-        <translation>検索タイプ</translation>
+        <translation>検索方法</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="223"/>
@@ -3592,7 +3592,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="256"/>
         <source>Unknown/changed</source>
-        <translation>不明/変更した</translation>
+        <translation>不明/変化した値</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="269"/>
@@ -3643,7 +3643,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="350"/>
         <source>Open in Memory Viewer</source>
-        <translation>メモリービューアーを開く</translation>
+        <translation>メモリビューアーを開く</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="357"/>
@@ -3676,7 +3676,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="14"/>
         <source>Memory</source>
-        <translation>メモリービューアー</translation>
+        <translation>メモリビューアー</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="38"/>
@@ -4352,7 +4352,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="39"/>
         <source>Save games and save states (%1)</source>
-        <translation>ゲームとステートをセーブ（％1）</translation>
+        <translation>セーブデータ または ステートセーブ (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="40"/>
@@ -4362,27 +4362,27 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="52"/>
         <source>Save games (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>セーブデータ (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="53"/>
         <source>Select save game</source>
-        <translation type="unfinished"></translation>
+        <translation>セーブデータを選択</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="74"/>
         <source>Conversion failed</source>
-        <translation type="unfinished"></translation>
+        <translation>変換に失敗しました</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="74"/>
         <source>Failed to convert the save game. This is probably a bug.</source>
-        <translation type="unfinished"></translation>
+        <translation>セーブデータの変換に失敗しました。バグによるものである可能性があります。</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="90"/>
         <source>No file selected</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイルが選択されていません</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="97"/>
@@ -4397,12 +4397,12 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="120"/>
         <source>Please select a valid input file</source>
-        <translation type="unfinished"></translation>
+        <translation>有効な入力ファイルを選択してください</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="131"/>
         <source>No valid conversions found</source>
-        <translation type="unfinished"></translation>
+        <translation>利用可能な変換先がありません</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="638"/>
@@ -4412,12 +4412,12 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.ui" line="14"/>
         <source>Convert/Extract Save Game</source>
-        <translation type="unfinished"></translation>
+        <translation>セーブデータの変換/抽出</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="20"/>
         <source>Input file</source>
-        <translation type="unfinished"></translation>
+        <translation>入力</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="29"/>
@@ -4428,7 +4428,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.ui" line="46"/>
         <source>Output file</source>
-        <translation type="unfinished"></translation>
+        <translation>出力</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="450"/>
@@ -4508,7 +4508,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="526"/>
         <source>%1 save state with embedded %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>%2 形式のセーブデータが埋め込まれた %1 のステートセーブ</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="529"/>
@@ -4617,12 +4617,12 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="67"/>
         <source>Offset time</source>
-        <translation type="unfinished"></translation>
+        <translation>オフセット</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="80"/>
         <source> sec</source>
-        <translation type="unfinished"></translation>
+        <translation> 秒</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="126"/>
@@ -4735,7 +4735,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="441"/>
         <source>Select directory</source>
-        <translation type="unfinished"></translation>
+        <translation>フォルダを選択</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="836"/>
@@ -4745,30 +4745,30 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="854"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>一度もしていない</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="859"/>
         <source>Just now</source>
-        <translation type="unfinished"></translation>
+        <translation>たった今</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="863"/>
         <source>Less than an hour ago</source>
-        <translation type="unfinished"></translation>
+        <translation>1時間以内</translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="868"/>
         <source>%n hour(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n 時間前</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="872"/>
         <source>%n day(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n 日前</numerusform>
         </translation>
     </message>
     <message>
@@ -4784,7 +4784,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="50"/>
         <source>Gameplay</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲームプレイ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
@@ -4794,7 +4794,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>アップデート</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
@@ -4819,7 +4819,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="85"/>
         <source>Logging</source>
-        <translation>ロギング</translation>
+        <translation>ログ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="90"/>
@@ -4929,22 +4929,22 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="325"/>
         <source>Audio in multiplayer:</source>
-        <translation type="unfinished"></translation>
+        <translation>マルチプレイ時に音を出すウィンドウ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="332"/>
         <source>All windows</source>
-        <translation type="unfinished"></translation>
+        <translation>全て</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="345"/>
         <source>Player 1 window only</source>
-        <translation type="unfinished"></translation>
+        <translation>プレイヤー1のみ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="355"/>
         <source>Currently active player window</source>
-        <translation type="unfinished"></translation>
+        <translation>アクティブなウィンドウ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="388"/>
@@ -5007,43 +5007,43 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="750"/>
         <source>Show filename instead of ROM name in library view</source>
-        <translation type="unfinished"></translation>
+        <translation>ライブラリにゲーム名ではなくファイル名を表示する</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="797"/>
         <location filename="../SettingsView.ui" line="822"/>
         <source>Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>ポーズ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="788"/>
         <source>When inactive:</source>
-        <translation type="unfinished"></translation>
+        <translation>非アクティブ時:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="548"/>
         <source>On loading a game:</source>
-        <translation type="unfinished"></translation>
+        <translation>ゲーム起動時:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="555"/>
         <source>Load last state</source>
-        <translation type="unfinished"></translation>
+        <translation>最新のステートセーブを読み込む</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="565"/>
         <source>Load cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>チートコードを読み込む</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="592"/>
         <source>Save entered cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>入力されたチートコードを保存する</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="813"/>
         <source>When minimized:</source>
-        <translation type="unfinished"></translation>
+        <translation>最小化時:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="897"/>
@@ -5058,42 +5058,42 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="917"/>
         <source>Current channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>現在のチャネル:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="931"/>
         <source>Current version:</source>
-        <translation type="unfinished"></translation>
+        <translation>現在のバージョン:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="955"/>
         <source>Update channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>更新チャネル:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="965"/>
         <source>Available version:</source>
-        <translation type="unfinished"></translation>
+        <translation>利用可能なバージョン:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="972"/>
         <source>(Unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(不明)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="982"/>
         <source>Last checked:</source>
-        <translation type="unfinished"></translation>
+        <translation>最終確認:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1003"/>
         <source>Automatically check on start</source>
-        <translation type="unfinished"></translation>
+        <translation>起動時に自動的に確認する</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1010"/>
         <source>Check now</source>
-        <translation type="unfinished"></translation>
+        <translation>更新を確認</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2106"/>
@@ -5133,7 +5133,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="509"/>
         <source>Native (59.7275)</source>
-        <translation>ネイティブ (59,7275)</translation>
+        <translation>ネイティブ (59.7275)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="447"/>
@@ -5158,23 +5158,23 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="609"/>
         <source>Save state extra data:</source>
-        <translation type="unfinished"></translation>
+        <translation>ステートセーブに含める:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="582"/>
         <source>Periodically autosave state</source>
-        <translation type="unfinished"></translation>
+        <translation>定期的に自動でステートセーブする</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="626"/>
         <location filename="../SettingsView.ui" line="670"/>
         <source>Save game</source>
-        <translation type="unfinished"></translation>
+        <translation>セーブデータ</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="653"/>
         <source>Load state extra data:</source>
-        <translation type="unfinished"></translation>
+        <translation>ステートロード時に読み込む:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1747"/>
@@ -5229,12 +5229,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1713"/>
         <source>Log to file</source>
-        <translation>ファイル出力</translation>
+        <translation>ファイルに出力する</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1720"/>
         <source>Log to console</source>
-        <translation>コンソール出力</translation>
+        <translation>コンソールに出力する</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1734"/>
@@ -5397,7 +5397,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1328"/>
         <source>GB BIOS file:</source>
-        <translation>ゲームボーイBIOS:</translation>
+        <translation>ゲームボーイ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1347"/>
@@ -5425,17 +5425,17 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1412"/>
         <source>GBA BIOS file:</source>
-        <translation>ゲームボーイアドバンスBIOS:</translation>
+        <translation>ゲームボーイアドバンス:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1384"/>
         <source>GBC BIOS file:</source>
-        <translation>ゲームボーイカラーBIOS:</translation>
+        <translation>ゲームボーイカラー:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1356"/>
         <source>SGB BIOS file:</source>
-        <translation>スーパーゲームボーイBIOS:</translation>
+        <translation>スーパーゲームボーイ:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1464"/>
@@ -6023,12 +6023,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1103"/>
         <source>Really make portable?</source>
-        <translation>本当にポータブルにしますか？</translation>
+        <translation>本当にポータブル化しますか？</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1104"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
-        <translation>これによりエミュレータは実行ファイルと同じディレクトリにある設定ファイルをロードします。続けますか？</translation>
+        <translation>ポータブル化すると、以降は実行ファイルと同じディレクトリに設定ファイルが置かれるようになります。続行しますか？</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1116"/>
@@ -6229,12 +6229,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1332"/>
         <source>Load recent</source>
-        <translation>最近使ったクイックロットからロード</translation>
+        <translation>最後に使ったクイックスロットからロード</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1337"/>
         <source>Save recent</source>
-        <translation>最近使ったクイックロットにセーブ</translation>
+        <translation>最後に使ったクイックスロットにセーブ</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1345"/>
@@ -6260,7 +6260,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1266"/>
         <source>Convert save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>セーブデータを変換...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="504"/>
@@ -6285,7 +6285,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1370"/>
         <source>Connect to Dolphin...</source>
-        <translation type="unfinished"></translation>
+        <translation>Dolphinに接続...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1383"/>
@@ -6310,7 +6310,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1391"/>
         <source>Yank game pak</source>
-        <translation>ゲームパックをヤンク</translation>
+        <translation>カートリッジを抜く</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1394"/>
@@ -6485,7 +6485,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1478"/>
         <source>BattleChip Gate...</source>
-        <translation>チップゲート...</translation>
+        <translation>バトルチップゲート...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1485"/>
