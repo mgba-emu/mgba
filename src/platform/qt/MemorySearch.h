@@ -31,6 +31,7 @@ public slots:
 
 private slots:
 	void openMemory();
+	void exportSearch();
 
 private:
 	bool createParams(mCoreMemorySearchParams*);

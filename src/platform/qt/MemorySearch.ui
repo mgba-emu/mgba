@@ -358,6 +358,13 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="exportSearch">
+       <property name="text">
+        <string>Export results</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
   </layout>

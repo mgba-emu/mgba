@@ -11,6 +11,9 @@
 #include "CoreController.h"
 #include "MemoryView.h"
 
+#include <QFileDialog>
+#include <QTextStream>
+
 using namespace QGBA;
 
 MemorySearch::MemorySearch(std::shared_ptr<CoreController> controller, QWidget* parent)
@@ -27,6 +30,7 @@ MemorySearch::MemorySearch(std::shared_ptr<CoreController> controller, QWidget* 
 	connect(m_ui.numHex, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.numDec, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.viewMem, &QPushButton::clicked, this, &MemorySearch::openMemory);
+	connect(m_ui.exportSearch, &QPushButton::clicked, this, &MemorySearch::exportSearch);
 
 	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 }
@@ -274,4 +278,20 @@ void MemorySearch::openMemory() {
 
 	memView->setAttribute(Qt::WA_DeleteOnClose);
 	memView->show();
+}
+
+void MemorySearch::exportSearch() {
+	QString outpath = QFileDialog::getSaveFileName(this, tr("Save"), "", tr("CSV files (*.csv)"));
+	QFile out(outpath);
+	if (outpath.size() && out.open(QIODevice::WriteOnly)) {
+		QTextStream outs(&out);
+		// use the actual QT widget data instead of the internal mgba data because the widget data matches what the user is expecting to see
+		for (int i = 0; i < m_ui.results->rowCount(); i++) {
+			outs << m_ui.results->item(i, 0)->text();
+			for (int j = 1; j < m_ui.results->columnCount(); j++) {
+				outs << "," << m_ui.results->item(i, j)->text();
+			}
+			outs << "\n";
+		}
+	}
 }
