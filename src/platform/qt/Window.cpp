@@ -1430,17 +1430,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_config->updateOption("fastForwardRatio");
 
 	addGameAction(tr("Fast forward speed increment"), "fastForwardUp", [this] {
-		float oldRatio = 0.0;
-		oldRatio = m_config->getOption("fastForwardRatio", oldRatio).toFloat();
-		float newRatio = oldRatio + 1.0;
+		float newRatio = m_config->getOption("fastForwardRatio", newRatio).toFloat() + 1.0;
 		m_config->setOption("fastForwardRatio", QVariant(newRatio));
 	}, "emu");
 
 	addGameAction(tr("Fast forward speed decrement"), "fastForwardDown", [this] {
-		float oldRatio = 0.0;
-		oldRatio = m_config->getOption("fastForwardRatio", oldRatio).toFloat();
-		float newRatio = oldRatio - 1.0;
-		m_config->setOption("fastForwardRatio", QVariant(newRatio));
+		float newRatio = m_config->getOption("fastForwardRatio", newRatio).toFloat() - 1.0;
+		if (newRatio >= 2.0){
+			m_config->setOption("fastForwardRatio", QVariant(newRatio));
+		}
 	}, "emu");
 
 	Action* rewindHeld = m_actions.addHeldAction(tr("Rewind (held)"), "holdRewind", [this](bool held) {
