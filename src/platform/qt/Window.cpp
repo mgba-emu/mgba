@@ -1430,7 +1430,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_config->updateOption("fastForwardRatio");
 
 	addGameAction(tr("Fast forward speed increment"), "fastForwardUp", [this] {
-		float newRatio = m_config->getOption("fastForwardRatio", newRatio).toFloat() + 1.0;
+		float newRatio = m_config->getOption("fastForwardRatio", 1.0f).toFloat() + 1.0f;
 		m_config->setOption("fastForwardRatio", QVariant(newRatio));
 	}, "emu");
 
