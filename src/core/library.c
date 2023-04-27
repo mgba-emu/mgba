@@ -38,6 +38,7 @@ struct mLibrary {
 #define CONSTRAINTS_ROMONLY \
 	"CASE WHEN :useSize THEN roms.size = :size ELSE 1 END AND " \
 	"CASE WHEN :usePlatform THEN roms.platform = :platform ELSE 1 END AND " \
+	"CASE WHEN :useModels THEN roms.models & :models ELSE 1 END AND " \
 	"CASE WHEN :useCrc32 THEN roms.crc32 = :crc32 ELSE 1 END AND " \
 	"CASE WHEN :useInternalCode THEN roms.internalCode = :internalCode ELSE 1 END"
 
@@ -99,7 +100,9 @@ static void _bindConstraints(sqlite3_stmt* statement, const struct mLibraryEntry
 	}
 
 	if (constraints->platformModels != M_LIBRARY_MODEL_UNKNOWN) {
+		useIndex = sqlite3_bind_parameter_index(statement, ":useModels");
 		index = sqlite3_bind_parameter_index(statement, ":models");
+		sqlite3_bind_int(statement, useIndex, 1);
 		sqlite3_bind_int(statement, index, constraints->platformModels);
 	}
 }
@@ -184,8 +187,8 @@ struct mLibrary* mLibraryLoad(const char* path) {
 		goto error;
 	} else if (romsTableVersion < 2) {
 		static const char upgradeRomsTable[] =
-			"  ALTER TABLE roms"
-			"\nADD COLUMN models INTEGER NULL";
+			"   ALTER TABLE roms"
+			"\n ADD COLUMN models INTEGER NULL";
 		if (sqlite3_exec(library->db, upgradeRomsTable, NULL, NULL, NULL)) {
 			goto error;
 		}

@@ -185,7 +185,7 @@ QString keyName(int key) {
 		return QObject::tr("Menu");
 	default:
 		return QKeySequence(key).toString(QKeySequence::NativeText);
-  }
+	}
 }
 
 void SpanSet::add(int pos) {
