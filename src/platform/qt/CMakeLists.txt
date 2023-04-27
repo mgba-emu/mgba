@@ -566,7 +566,7 @@ if(BUILD_SUITE)
 			add_test(platform-qt-${TEST_NAME} test-qt-${TEST_NAME})
 		endforeach()
 	else()
-		message("${QT}Test not found")
+		message(WARNING "${QT}Test not found")
 	endif()
 endif()
 

@@ -340,13 +340,13 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const {
 		QString path = m_pathOrder[index.parent().row()];
 		entry = m_pathIndex[path][index.row()];
 	} else if (!index.parent().isValid() && index.row() < m_games.size()) {
-			entry = &m_games[index.row()];
+		entry = &m_games[index.row()];
+	}
+	if (entry) {
+		if (role == FullPathRole) {
+			return entry->fullpath;
 		}
-		if (entry) {
-			if (role == FullPathRole) {
-				return entry->fullpath;
-			}
-			switch (index.column()) {
+		switch (index.column()) {
 			case COL_NAME:
 				if (role == Qt::DecorationRole) {
 					return m_icons.value(entry->displayPlatform(), qApp->style()->standardIcon(QStyle::SP_FileIcon));
@@ -360,8 +360,8 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const {
 				return (role == Qt::DisplayRole) ? QVariant(niceSizeFormat(entry->filesize)) : QVariant(int(entry->filesize));
 			case COL_CRC32:
 				return (role == Qt::DisplayRole) ? QVariant(QStringLiteral("%0").arg(entry->crc32, 8, 16, QChar('0'))) : QVariant(entry->crc32);
-			}
 		}
+	}
 	return QVariant();
 }
 
