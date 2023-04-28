@@ -37,6 +37,11 @@ void DisplayQt::stopDrawing() {
 	m_context.reset();
 }
 
+void DisplayQt::disableFullScreenToggle(bool enabled) {
+	Display::disableFullScreenToggle(enabled);
+	update();
+}
+
 void DisplayQt::lockAspectRatio(bool lock) {
 	Display::lockAspectRatio(lock);
 	update();

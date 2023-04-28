@@ -276,6 +276,7 @@ public:
 	virtual QSize sizeHint() const override;
 	void setDimensions(int width, int height);
 	void setLockIntegerScaling(bool lock);
+	void disableFullScreenToggle(bool enabled);	
 	void setLockAspectRatio(bool lock);
 
 	const QPixmap& pixmap() const { return m_pixmap; }

@@ -468,6 +468,7 @@ void SettingsView::updateConfig() {
 	saveSetting("audioSync", m_ui.audioSync);
 	saveSetting("frameskip", m_ui.frameskip);
 	saveSetting("autofireThreshold", m_ui.autofireThreshold);
+	saveSetting("disableFullScreenToggle", m_ui.disableFullScreenToggle);
 	saveSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	saveSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	saveSetting("interframeBlending", m_ui.interframeBlending);
@@ -696,6 +697,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("frameskip", m_ui.frameskip);
 	loadSetting("fpsTarget", m_ui.fpsTarget);
 	loadSetting("autofireThreshold", m_ui.autofireThreshold);
+	loadSetting("disableFullScreenToggle", m_ui.disableFullScreenToggle);	
 	loadSetting("lockAspectRatio", m_ui.lockAspectRatio);
 	loadSetting("lockIntegerScaling", m_ui.lockIntegerScaling);
 	loadSetting("interframeBlending", m_ui.interframeBlending);

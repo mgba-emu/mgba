@@ -29,6 +29,7 @@ public slots:
 	void pauseDrawing() override { m_isDrawing = false; }
 	void unpauseDrawing() override { m_isDrawing = true; }
 	void forceDraw() override { update(); }
+	void disableFullScreenToggle(bool enabled) override;
 	void lockAspectRatio(bool lock) override;
 	void lockIntegerScaling(bool lock) override;
 	void interframeBlending(bool enable) override;

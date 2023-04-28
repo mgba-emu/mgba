@@ -106,6 +106,7 @@ void QGBA::Display::attach(std::shared_ptr<CoreController> controller) {
 
 void QGBA::Display::configure(ConfigController* config) {
 	const mCoreOptions* opts = config->options();
+	disableFullScreenToggle(opts->disableFullScreenToggle);	
 	lockAspectRatio(opts->lockAspectRatio);
 	lockIntegerScaling(opts->lockIntegerScaling);
 	interframeBlending(opts->interframeBlending);

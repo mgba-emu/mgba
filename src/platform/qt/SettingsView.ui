@@ -455,6 +455,13 @@
             </property>
            </widget>
           </item>
+          <item row="7" column="1">
+            <widget class="QCheckBox" name="disableFullScreenToggle">
+            <property name="text">
+             <string>Disable fullscreen double-click</string>
+            </property>
+           </widget>
+          </item>       
           <item row="2" column="0" colspan="2">
            <widget class="Line" name="line_12">
             <property name="orientation">

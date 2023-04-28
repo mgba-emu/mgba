@@ -37,6 +37,7 @@ public:
 	static Display* create(QWidget* parent = nullptr);
 	static void setDriver(Driver driver) { s_driver = driver; }
 
+	bool isSetFullScreenDisabled() const { return m_disableFullScreenToggle; }	
 	bool isAspectRatioLocked() const { return m_lockAspectRatio; }
 	bool isIntegerScalingLocked() const { return m_lockIntegerScaling; }
 	bool hasInterframeBlending() const { return m_interframeBlending; }
@@ -70,6 +71,7 @@ public slots:
 	virtual void pauseDrawing() = 0;
 	virtual void unpauseDrawing() = 0;
 	virtual void forceDraw() = 0;
+	virtual void disableFullScreenToggle(bool enabled);
 	virtual void lockAspectRatio(bool lock);
 	virtual void lockIntegerScaling(bool lock);
 	virtual void interframeBlending(bool enable);
@@ -97,6 +99,7 @@ private:
 	MessagePainter m_messagePainter;
 	bool m_showOSD = true;
 	bool m_showFrameCounter = false;
+	bool m_disableFullScreenToggle = true;
 	bool m_lockAspectRatio = false;
 	bool m_lockIntegerScaling = false;
 	bool m_interframeBlending = false;

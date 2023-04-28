@@ -40,6 +40,7 @@ struct mCoreOptions {
 	int fullscreen;
 	int width;
 	int height;
+	bool disableFullScreenToggle;
 	bool lockAspectRatio;
 	bool lockIntegerScaling;
 	bool interframeBlending;

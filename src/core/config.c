@@ -416,6 +416,7 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts)
 	_lookupBoolValue(config, "audioSync", &opts->audioSync);
 	_lookupBoolValue(config, "videoSync", &opts->videoSync);
 
+	_lookupBoolValue(config, "disableFullScreenToggle", &opts->disableFullScreenToggle);
 	_lookupBoolValue(config, "lockAspectRatio", &opts->lockAspectRatio);
 	_lookupBoolValue(config, "lockIntegerScaling", &opts->lockIntegerScaling);
 	_lookupBoolValue(config, "interframeBlending", &opts->interframeBlending);
@@ -458,6 +459,7 @@ void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptio
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "height", opts->height);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "volume", opts->volume);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "mute", opts->mute);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "disableFullScreenToggle", opts->disableFullScreenToggle);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockAspectRatio", opts->lockAspectRatio);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "lockIntegerScaling", opts->lockIntegerScaling);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "resampleVideo", opts->resampleVideo);

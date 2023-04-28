@@ -859,6 +859,7 @@ void Window::gameStarted() {
 	}
 	QSize size = m_controller->screenDimensions();
 	m_config->updateOption("lockIntegerScaling");
+	m_config->updateOption("disableFullScreenToggle");
 	m_config->updateOption("lockAspectRatio");
 	m_config->updateOption("interframeBlending");
 	m_config->updateOption("resampleVideo");
@@ -1510,6 +1511,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 	fullscreenKeys = QKeySequence("Ctrl+F");
 #endif
 	m_actions.addAction(tr("Toggle fullscreen"), "fullscreen", this, &Window::toggleFullScreen, "frame", fullscreenKeys);
+
+	ConfigOption* disableDoubleClickFullScreen = m_config->addOption("disableFullScreenToggle");
+	disableDoubleClickFullScreen->addBoolean(tr("Disable fullscreen double-click"), &m_actions, "av");
+	disableDoubleClickFullScreen->connect([this](const QVariant& value) {
+		if (m_display) {
+			m_display->disableFullScreenToggle(value.toBool());
+		}
+	}, this);
+	m_config->updateOption("disableFullScreenToggle");
 
 	ConfigOption* lockAspectRatio = m_config->addOption("lockAspectRatio");
 	lockAspectRatio->addBoolean(tr("Lock aspect ratio"), &m_actions, "av");
