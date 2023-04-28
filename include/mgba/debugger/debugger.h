@@ -57,8 +57,8 @@ enum mDebuggerEntryReason {
 };
 
 enum mDisassemblyStyle {
-    DISASSEMBLY_STYLE_DECIMAL,
-    DISASSEMBLY_STYLE_HEX
+	DISASSEMBLY_STYLE_DECIMAL,
+	DISASSEMBLY_STYLE_HEX
 };
 
 struct mDebuggerEntryInfo {
@@ -107,7 +107,7 @@ struct mDebugger;
 struct ParseTree;
 struct mDebuggerPlatform {
 	struct mDebugger* p;
-    enum mDisassemblyStyle disassemblyStyle;
+	enum mDisassemblyStyle disassemblyStyle;
 
 	void (*init)(void* cpu, struct mDebuggerPlatform*);
 	void (*deinit)(struct mDebuggerPlatform*);
