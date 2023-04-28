@@ -40,6 +40,7 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 	connect(m_ui.buffers->selectionModel(), &QItemSelectionModel::currentChanged, this, &ScriptingView::selectBuffer);
 	connect(m_ui.load, &QAction::triggered, this, &ScriptingView::load);
 	connect(m_ui.reset, &QAction::triggered, controller, &ScriptingController::reset);
+	connect(m_ui.recent, &QAction::triggered, this, &ScriptingView::recent);
 
 	m_mruFiles = m_config->getMRU(ConfigController::MRU::Script);
 	updateMRU();
@@ -62,8 +63,13 @@ void ScriptingView::load() {
 		if (!m_controller->loadFile(filename)) {
 			return;
 		}
+		setMRS(filename);
 		appendMRU(filename);
 	}
+}
+
+void ScriptingView::recent() {
+	m_controller->loadFile(getMRS());
 }
 
 void ScriptingView::controllerReset() {
@@ -106,6 +112,16 @@ void ScriptingView::updateMRU() {
 	for (const auto& fname : m_mruFiles) {
 		m_ui.mru->addAction(fname, [this, fname]() {
 			m_controller->loadFile(fname);
+			setMRS(fname);
 		});
 	}
+}
+
+
+QString ScriptingView::getMRS() {
+	return mostRecentScript;
+}
+
+void ScriptingView::setMRS(const QString& fname) {
+	mostRecentScript = fname;
 }

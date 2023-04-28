@@ -22,6 +22,7 @@ public:
 private slots:
 	void submitRepl();
 	void load();
+	void recent();
 
 	void controllerReset();
 	void selectBuffer(const QModelIndex& current, const QModelIndex& = QModelIndex());
@@ -31,12 +32,15 @@ private:
 
 	void appendMRU(const QString&);
 	void updateMRU();
+	QString getMRS();
+	void setMRS(const QString&);
 
 	Ui::ScriptingView m_ui;
 
 	ConfigController* m_config;
 	ScriptingController* m_controller;
 	QStringList m_mruFiles;
+	QString mostRecentScript;
 	QTextDocument* m_blankDocument;
 };
 
