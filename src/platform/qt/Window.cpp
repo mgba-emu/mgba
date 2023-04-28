@@ -814,7 +814,8 @@ void Window::mouseDoubleClickEvent(QMouseEvent* event) {
 	if (event->button() != Qt::LeftButton) {
 		return;
 	}
-	toggleFullScreen();
+	if(!m_display->isSetFullScreenDisabled())
+		toggleFullScreen();
 }
 
 void Window::enterFullScreen() {
