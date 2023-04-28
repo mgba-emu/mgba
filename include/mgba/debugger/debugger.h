@@ -56,6 +56,11 @@ enum mDebuggerEntryReason {
 	DEBUGGER_ENTER_STACK
 };
 
+enum mDisassemblyStyle {
+    DISASSEMBLY_STYLE_DECIMAL,
+    DISASSEMBLY_STYLE_HEX
+};
+
 struct mDebuggerEntryInfo {
 	uint32_t address;
 	union {
@@ -102,6 +107,7 @@ struct mDebugger;
 struct ParseTree;
 struct mDebuggerPlatform {
 	struct mDebugger* p;
+    enum mDisassemblyStyle disassemblyStyle;
 
 	void (*init)(void* cpu, struct mDebuggerPlatform*);
 	void (*deinit)(struct mDebuggerPlatform*);

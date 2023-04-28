@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/internal/arm/arm.h>
+#include <mgba/debugger/debugger.h>
 
 // Bit 0: a register is involved with this operand
 // Bit 1: an immediate is invovled with this operand
@@ -223,7 +224,7 @@ uint32_t ARMResolveMemoryAccess(struct ARMInstructionInfo* info, struct ARMRegis
 
 #ifdef USE_DEBUGGERS
 struct mDebuggerSymbols;
-int ARMDisassemble(const struct ARMInstructionInfo* info, struct ARMCore* core, const struct mDebuggerSymbols* symbols, uint32_t pc, char* buffer, int blen);
+int ARMDisassemble(const struct ARMInstructionInfo* info, struct ARMCore* core, const struct mDebuggerSymbols* symbols, uint32_t pc, enum mDisassemblyStyle disassemblyStyle, char* buffer, int blen);
 #endif
 
 CXX_GUARD_END

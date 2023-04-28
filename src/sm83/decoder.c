@@ -502,7 +502,7 @@ static const char* _sm83MnemonicStrings[] = {
 };
 
 
-static int _decodeOperand(struct SM83Operand op, uint16_t pc, char* buffer, int blen) {
+static int _decodeOperand(struct SM83Operand op, uint16_t pc, enum mDisassemblyStyle disassemblyStyle, char* buffer, int blen) {
 	int total = 0;
 	if (op.flags & SM83_OP_FLAG_IMPLICIT) {
 		return 0;
@@ -521,9 +521,18 @@ static int _decodeOperand(struct SM83Operand op, uint16_t pc, char* buffer, int 
 	} else {
 		int written;
 		if (op.flags & SM83_OP_FLAG_RELATIVE) {
-			written = snprintf(buffer, blen, "$%04X", pc + (int8_t) op.immediate);
+            if(disassemblyStyle == DISASSEMBLY_STYLE_HEX) {
+                written = snprintf(buffer, blen, "$0x%04X", pc + (int8_t) op.immediate);
+            } else {
+                written = snprintf(buffer, blen, "$%05i", pc + (int8_t) op.immediate);
+            }
+
 		} else {
-			written = snprintf(buffer, blen, "$%02X", op.immediate);
+            if(disassemblyStyle == DISASSEMBLY_STYLE_HEX) {
+                written = snprintf(buffer, blen, "$0x%02X", pc + (int8_t) op.immediate);
+            } else {
+                written = snprintf(buffer, blen, "$%03i", pc + (int8_t) op.immediate);
+            }
 		}
 		ADVANCE(written);
 		if (op.reg) {
@@ -546,7 +555,7 @@ static int _decodeOperand(struct SM83Operand op, uint16_t pc, char* buffer, int 
 	return total;
 }
 
-int SM83Disassemble(struct SM83InstructionInfo* info, uint16_t pc, char* buffer, int blen) {
+int SM83Disassemble(struct SM83InstructionInfo* info, uint16_t pc, enum mDisassemblyStyle disassemblyStyle, char* buffer, int blen) {
 	const char* mnemonic = _sm83MnemonicStrings[info->mnemonic];
 	int written;
 	int total = 0;
@@ -566,7 +575,7 @@ int SM83Disassemble(struct SM83InstructionInfo* info, uint16_t pc, char* buffer,
 	}
 
 	if (info->op1.reg || info->op1.immediate || info->op2.reg || info->op2.immediate) {
-		written = _decodeOperand(info->op1, pc, buffer, blen);
+		written = _decodeOperand(info->op1, pc, disassemblyStyle, buffer, blen);
 		ADVANCE(written);
 	}
 
@@ -575,7 +584,7 @@ int SM83Disassemble(struct SM83InstructionInfo* info, uint16_t pc, char* buffer,
 			strlcpy(buffer, ",", blen);
 			ADVANCE(1);
 		}
-		written = _decodeOperand(info->op2, pc, buffer, blen);
+		written = _decodeOperand(info->op2, pc, disassemblyStyle, buffer, blen);
 		ADVANCE(written);
 	}
 

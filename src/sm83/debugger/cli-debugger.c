@@ -71,7 +71,7 @@ static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address
 	};
 	disPtr[0] = '\t';
 	++disPtr;
-	SM83Disassemble(&info, address, disPtr, sizeof(disassembly) - (disPtr - disassembly));
+	SM83Disassemble(&info, address, debugger->d.platform->disassemblyStyle, disPtr, sizeof(disassembly) - (disPtr - disassembly));
 	be->printf(be, "%s\n", disassembly);
 	return address;
 }

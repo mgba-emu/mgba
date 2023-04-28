@@ -7,6 +7,7 @@
 
 #include <mgba/internal/arm/decoder-inlines.h>
 #include <mgba/internal/debugger/symbols.h>
+#include <mgba/debugger/debugger.h>
 #include <mgba-util/string.h>
 
 #ifdef USE_DEBUGGERS
@@ -19,12 +20,13 @@
 	buffer += AMOUNT; \
 	blen -= AMOUNT;
 
+static int _decodeImmediate(int imm, enum mDisassemblyStyle disassemblyStyle, char* buffer, int blen);
 static int _decodeRegister(int reg, char* buffer, int blen);
 static int _decodeRegisterList(int list, char* buffer, int blen);
 static int _decodePSR(int bits, char* buffer, int blen);
 static int _decodePCRelative(uint32_t address, const struct mDebuggerSymbols* symbols, uint32_t pc, bool thumbBranch, char* buffer, int blen);
-static int _decodeMemory(struct ARMMemoryAccess memory, struct ARMCore* cpu, const struct mDebuggerSymbols* symbols, int pc, char* buffer, int blen);
-static int _decodeShift(union ARMOperand operand, bool reg, char* buffer, int blen);
+static int _decodeMemory(struct ARMMemoryAccess memory, struct ARMCore* cpu, const struct mDebuggerSymbols* symbols, int pc, enum mDisassemblyStyle disassemblyStyle, char* buffer, int blen);
+static int _decodeShift(union ARMOperand operand, bool reg, enum mDisassemblyStyle disassemblyStyle, char* buffer, int blen);
 
 static const char* _armConditions[] = {
 	"eq",
@@ -44,6 +46,17 @@ static const char* _armConditions[] = {
 	"al",
 	"nv"
 };
+
+static int _decodeImmediate(int imm, enum mDisassemblyStyle disassemblyStyle, char* buffer, int blen) {
+   switch(disassemblyStyle) {
+   case DISASSEMBLY_STYLE_DECIMAL:
+        return snprintf(buffer, blen, "#%i", imm);
+   case DISASSEMBLY_STYLE_HEX:
+        return snprintf(buffer, blen, "#0x%x", imm);
+   default:
+        return snprintf(buffer, blen, "#%i", imm);
+   }
+}
 
 static int _decodeRegister(int reg, char* buffer, int blen) {
 	switch (reg) {
@@ -159,7 +172,7 @@ static int _decodePCRelative(uint32_t address, const struct mDebuggerSymbols* sy
 	}
 }
 
-static int _decodeMemory(struct ARMMemoryAccess memory, struct ARMCore* cpu, const struct mDebuggerSymbols* symbols, int pc, char* buffer, int blen) {
+static int _decodeMemory(struct ARMMemoryAccess memory, struct ARMCore* cpu, const struct mDebuggerSymbols* symbols, int pc, enum mDisassemblyStyle disassemblyStyle, char* buffer, int blen) {
 	if (blen <= 1) {
 		return 0;
 	}
@@ -227,10 +240,10 @@ static int _decodeMemory(struct ARMMemoryAccess memory, struct ARMCore* cpu, con
 	}
 	if (memory.format & ARM_MEMORY_IMMEDIATE_OFFSET && memory.baseReg != ARM_PC) {
 		if (memory.format & ARM_MEMORY_OFFSET_SUBTRACT) {
-			written = snprintf(buffer, blen, "#-%i", memory.offset.immediate);
+            written = _decodeImmediate(-memory.offset.immediate, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		} else {
-			written = snprintf(buffer, blen, "#%i", memory.offset.immediate);
+            written = _decodeImmediate(memory.offset.immediate, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		}
 	} else if (memory.format & ARM_MEMORY_REGISTER_OFFSET) {
@@ -242,7 +255,7 @@ static int _decodeMemory(struct ARMMemoryAccess memory, struct ARMCore* cpu, con
 		ADVANCE(written);
 	}
 	if (memory.format & ARM_MEMORY_SHIFTED_OFFSET) {
-		written = _decodeShift(memory.offset, false, buffer, blen);
+		written = _decodeShift(memory.offset, false, disassemblyStyle, buffer, blen);
 		ADVANCE(written);
 	}
 
@@ -261,7 +274,7 @@ static int _decodeMemory(struct ARMMemoryAccess memory, struct ARMCore* cpu, con
 	return total;
 }
 
-static int _decodeShift(union ARMOperand op, bool reg, char* buffer, int blen) {
+static int _decodeShift(union ARMOperand op, bool reg, enum mDisassemblyStyle disassemblyStyle, char* buffer, int blen) {
 	if (blen <= 1) {
 		return 0;
 	}
@@ -292,7 +305,7 @@ static int _decodeShift(union ARMOperand op, bool reg, char* buffer, int blen) {
 		return total;
 	}
 	if (!reg) {
-		written = snprintf(buffer, blen, "#%i", op.shifterImm);
+        written = _decodeImmediate(op.shifterImm, disassemblyStyle, buffer, blen);
 	} else {
 		written = _decodeRegister(op.shifterReg, buffer, blen);
 	}
@@ -381,7 +394,7 @@ static const char* _armAccessTypeStrings[] = {
 	""
 };
 
-int ARMDisassemble(const struct ARMInstructionInfo* info, struct ARMCore* cpu, const struct mDebuggerSymbols* symbols, uint32_t pc, char* buffer, int blen) {
+int ARMDisassemble(const struct ARMInstructionInfo* info, struct ARMCore* cpu, const struct mDebuggerSymbols* symbols, uint32_t pc, enum mDisassemblyStyle disassemblyStyle, char* buffer, int blen) {
 	const char* mnemonic = _armMnemonicStrings[info->mnemonic];
 	int written;
 	int total = 0;
@@ -465,10 +478,10 @@ int ARMDisassemble(const struct ARMInstructionInfo* info, struct ARMCore* cpu, c
 		break;
 	default:
 		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_1) {
-			written = snprintf(buffer, blen, "#%i", info->op1.immediate);
+			written = _decodeImmediate(info->op1.immediate, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_MEMORY_1) {
-			written = _decodeMemory(info->memory, cpu, symbols, pc, buffer, blen);
+			written = _decodeMemory(info->memory, cpu, symbols, pc, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_REGISTER_1) {
 			written = _decodeRegister(info->op1.reg, buffer, blen);
@@ -479,10 +492,10 @@ int ARMDisassemble(const struct ARMInstructionInfo* info, struct ARMCore* cpu, c
 			}
 		}
 		if (info->operandFormat & ARM_OPERAND_SHIFT_REGISTER_1) {
-			written = _decodeShift(info->op1, true, buffer, blen);
+			written = _decodeShift(info->op1, true, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_SHIFT_IMMEDIATE_1) {
-			written = _decodeShift(info->op1, false, buffer, blen);
+			written = _decodeShift(info->op1, false, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		}
 		if (info->operandFormat & ARM_OPERAND_2) {
@@ -490,20 +503,20 @@ int ARMDisassemble(const struct ARMInstructionInfo* info, struct ARMCore* cpu, c
 			ADVANCE(2);
 		}
 		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_2) {
-			written = snprintf(buffer, blen, "#%i", info->op2.immediate);
+			written = _decodeImmediate(info->op2.immediate, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_MEMORY_2) {
-			written = _decodeMemory(info->memory, cpu, symbols, pc, buffer, blen);
+			written = _decodeMemory(info->memory, cpu, symbols, pc, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_REGISTER_2) {
 			written = _decodeRegister(info->op2.reg, buffer, blen);
 			ADVANCE(written);
 		}
 		if (info->operandFormat & ARM_OPERAND_SHIFT_REGISTER_2) {
-			written = _decodeShift(info->op2, true, buffer, blen);
+			written = _decodeShift(info->op2, true, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_SHIFT_IMMEDIATE_2) {
-			written = _decodeShift(info->op2, false, buffer, blen);
+			written = _decodeShift(info->op2, false, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		}
 		if (!skip3) {
@@ -512,20 +525,20 @@ int ARMDisassemble(const struct ARMInstructionInfo* info, struct ARMCore* cpu, c
 				ADVANCE(2);
 			}
 			if (info->operandFormat & ARM_OPERAND_IMMEDIATE_3) {
-				written = snprintf(buffer, blen, "#%i", info->op3.immediate);
+                written = _decodeImmediate(info->op3.immediate, disassemblyStyle, buffer, blen);
 				ADVANCE(written);
 			} else if (info->operandFormat & ARM_OPERAND_MEMORY_3) {
-				written = _decodeMemory(info->memory, cpu, symbols, pc, buffer, blen);
+				written = _decodeMemory(info->memory, cpu, symbols, pc, disassemblyStyle, buffer, blen);
 				ADVANCE(written);
 			} else if (info->operandFormat & ARM_OPERAND_REGISTER_3) {
 				written = _decodeRegister(info->op3.reg, buffer, blen);
 				ADVANCE(written);
 			}
 			if (info->operandFormat & ARM_OPERAND_SHIFT_REGISTER_3) {
-				written = _decodeShift(info->op3, true, buffer, blen);
+				written = _decodeShift(info->op3, true, disassemblyStyle, buffer, blen);
 				ADVANCE(written);
 			} else if (info->operandFormat & ARM_OPERAND_SHIFT_IMMEDIATE_3) {
-				written = _decodeShift(info->op3, false, buffer, blen);
+				written = _decodeShift(info->op3, false, disassemblyStyle, buffer, blen);
 				ADVANCE(written);
 			}
 		}
@@ -534,20 +547,20 @@ int ARMDisassemble(const struct ARMInstructionInfo* info, struct ARMCore* cpu, c
 			ADVANCE(2);
 		}
 		if (info->operandFormat & ARM_OPERAND_IMMEDIATE_4) {
-			written = snprintf(buffer, blen, "#%i", info->op4.immediate);
+            written = _decodeImmediate(info->op4.immediate, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_MEMORY_4) {
-			written = _decodeMemory(info->memory, cpu, symbols, pc, buffer, blen);
+			written = _decodeMemory(info->memory, cpu, symbols, pc, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_REGISTER_4) {
 			written = _decodeRegister(info->op4.reg, buffer, blen);
 			ADVANCE(written);
 		}
 		if (info->operandFormat & ARM_OPERAND_SHIFT_REGISTER_4) {
-			written = _decodeShift(info->op4, true, buffer, blen);
+			written = _decodeShift(info->op4, true, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		} else if (info->operandFormat & ARM_OPERAND_SHIFT_IMMEDIATE_4) {
-			written = _decodeShift(info->op4, false, buffer, blen);
+			written = _decodeShift(info->op4, false, disassemblyStyle, buffer, blen);
 			ADVANCE(written);
 		}
 		break;

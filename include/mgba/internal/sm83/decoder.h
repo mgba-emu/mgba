@@ -10,6 +10,8 @@
 
 CXX_GUARD_START
 
+#include <mgba/debugger/debugger.h>
+
 enum SM83Condition {
 	SM83_COND_NONE = 0x0,
 	SM83_COND_C = 0x1,
@@ -105,7 +107,7 @@ struct SM83InstructionInfo {
 };
 
 size_t SM83Decode(uint8_t opcode, struct SM83InstructionInfo* info);
-int SM83Disassemble(struct SM83InstructionInfo* info, uint16_t pc, char* buffer, int blen);
+int SM83Disassemble(struct SM83InstructionInfo* info, uint16_t pc, enum mDisassemblyStyle, char* buffer, int blen);
 
 CXX_GUARD_END
 

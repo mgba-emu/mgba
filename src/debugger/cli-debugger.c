@@ -73,6 +73,7 @@ static void _writeWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpWord(struct CLIDebugger*, struct CLIDebugVector*);
+static void _setDisassemblyStyle(struct CLIDebugger*, struct CLIDebugVector*);
 static void _events(struct CLIDebugger*, struct CLIDebugVector*);
 #ifdef ENABLE_SCRIPTING
 static void _source(struct CLIDebugger*, struct CLIDebugVector*);
@@ -125,6 +126,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "x/1", _dumpByte, "Ii", "Examine bytes at a specified offset" },
 	{ "x/2", _dumpHalfword, "Ii", "Examine halfwords at a specified offset" },
 	{ "x/4", _dumpWord, "Ii", "Examine words at a specified offset" },
+	{ "disass-style", _setDisassemblyStyle, "S", "Set the disassembly style" },
 #ifdef ENABLE_SCRIPTING
 	{ "source", _source, "S", "Load a script" },
 #endif
@@ -584,6 +586,26 @@ static void _dumpWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	}
 }
 
+static void _setDisassemblyStyle(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv) {
+		debugger->backend->printf(debugger->backend, "decimal    disassemble instruction immediates as decimal(default)\n");
+		debugger->backend->printf(debugger->backend, "hex        disassemble instruction immediates as hex\n");
+		return;
+	}
+	if (dv->type != CLIDV_CHAR_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+		return;
+	}
+	struct mDebuggerPlatform* platform = debugger->d.platform;
+	if (strcmp(dv->charValue, "decimal") == 0) {
+        platform->disassemblyStyle = DISASSEMBLY_STYLE_DECIMAL;
+	} else if (strcmp(dv->charValue, "hex") == 0) {
+        platform->disassemblyStyle = DISASSEMBLY_STYLE_HEX;
+	} else {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+	}
+}
+
 #ifdef ENABLE_SCRIPTING
 static void _source(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv) {
@@ -809,14 +831,14 @@ static void _listWatchpoints(struct CLIDebugger* debugger, struct CLIDebugVector
 }
 
 static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	if (!dv) {
+    if (!dv) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
-	if (dv->type != CLIDV_INT_TYPE || dv->intValue < 0) {
-		debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
-		return;
-	}
+    if (dv->type != CLIDV_INT_TYPE || dv->intValue < 0) {
+        debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+        return;
+    }
 
 	debugger->traceRemaining = dv->intValue;
 	if (debugger->traceVf) {

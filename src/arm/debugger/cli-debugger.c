@@ -106,7 +106,7 @@ static inline uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address
 	if (mode == MODE_ARM) {
 		uint32_t instruction = core->busRead32(core, address & ~(WORD_SIZE_ARM - 1));
 		ARMDecodeARM(instruction, &info);
-		ARMDisassemble(&info, core->cpu, core->symbolTable, address + WORD_SIZE_ARM * 2, disassembly, sizeof(disassembly));
+		ARMDisassemble(&info, core->cpu, core->symbolTable, address + WORD_SIZE_ARM * 2, debugger->d.platform->disassemblyStyle, disassembly, sizeof(disassembly));
 		be->printf(be, "%08X\t%s\n", instruction, disassembly);
 		return WORD_SIZE_ARM;
 	} else {
@@ -117,11 +117,11 @@ static inline uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address
 		ARMDecodeThumb(instruction, &info);
 		ARMDecodeThumb(instruction2, &info2);
 		if (ARMDecodeThumbCombine(&info, &info2, &combined)) {
-			ARMDisassemble(&combined, core->cpu, core->symbolTable, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
+			ARMDisassemble(&combined, core->cpu, core->symbolTable, address + WORD_SIZE_THUMB * 2, debugger->d.platform->disassemblyStyle, disassembly, sizeof(disassembly));
 			be->printf(be, "%04X %04X\t%s\n", instruction, instruction2, disassembly);
 			return WORD_SIZE_THUMB * 2;
 		} else {
-			ARMDisassemble(&info, core->cpu, core->symbolTable, address + WORD_SIZE_THUMB * 2, disassembly, sizeof(disassembly));
+			ARMDisassemble(&info, core->cpu, core->symbolTable, address + WORD_SIZE_THUMB * 2, debugger->d.platform->disassemblyStyle, disassembly, sizeof(disassembly));
 			be->printf(be, "%04X     \t%s\n", instruction, disassembly);
 			return WORD_SIZE_THUMB;
 		}

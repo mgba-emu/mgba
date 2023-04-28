@@ -214,7 +214,7 @@ static void SM83DebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t* le
 	disPtr[0] = ':';
 	disPtr[1] = ' ';
 	disPtr += 2;
-	SM83Disassemble(&info, address, disPtr, sizeof(disassembly) - (disPtr - disassembly));
+	SM83Disassemble(&info, address, d->disassemblyStyle, disPtr, sizeof(disassembly) - (disPtr - disassembly));
 
 	*length = snprintf(out, *length, "A: %02X F: %02X B: %02X C: %02X D: %02X E: %02X H: %02X L: %02X SP: %04X PC: %02X:%04X | %s",
 		               cpu->a, cpu->f.packed, cpu->b, cpu->c,
