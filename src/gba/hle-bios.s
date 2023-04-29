@@ -209,10 +209,10 @@ tst    r2, #0x04000000
 beq    1f
 @ Word
 add    r4, r5, r4, lsr #10
-ldmia  r12!, {r3}
+ldmia  r0!, {r3}
 2:
-cmp    r5, r4
-stmltia  r5!, {r3}
+cmp    r1, r4
+stmltia  r1!, {r3}
 blt    2b
 b      3f
 @ Halfword
@@ -233,9 +233,9 @@ beq    1f
 @ Word
 add    r4, r5, r4, lsr #10
 2:
-cmp    r5, r4
-ldmltia r12!, {r3}
-stmltia r5!, {r3}
+cmp    r1, r4
+ldmltia r0!, {r3}
+stmltia r1!, {r3}
 blt    2b
 b      3f
 @ Halfword

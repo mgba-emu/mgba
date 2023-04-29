@@ -8,6 +8,7 @@ Emulation fixes:
  - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
  - GB Serialize: Add missing Pocket Cam state to savestates
  - GB Video: Implement DMG-style sprite ordering
+ - GBA BIOS: Fix clobbering registers with word-sized CpuSet
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
