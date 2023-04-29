@@ -1888,6 +1888,11 @@ void Window::setupOptions() {
 	videoScale->connect([this](const QVariant& value) {
 		if (m_display) {
 			m_display->setVideoScale(value.toInt());
+#ifdef ENABLE_SCRIPTING
+			if (m_controller && m_scripting) {
+				m_scripting->updateVideoScale();
+			}
+#endif
 		}
 	}, this);
 

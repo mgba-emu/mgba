@@ -16,6 +16,7 @@ struct mScriptCanvasLayer {
 	struct mImage* image;
 	int x;
 	int y;
+	unsigned scale;
 	bool dirty;
 	bool sizeDirty;
 	bool dimsDirty;
@@ -27,6 +28,7 @@ struct mScriptCanvasContext {
 	struct VideoBackend* backend;
 	struct mScriptContext* context;
 	uint32_t frameCbid;
+	unsigned scale;
 };
 
 mSCRIPT_DECLARE_STRUCT(mScriptCanvasContext);
@@ -77,6 +79,22 @@ void mScriptCanvasUpdateBackend(struct mScriptContext* context, struct VideoBack
 	}
 }
 
+void mScriptCanvasSetInternalScale(struct mScriptContext* context, unsigned scale) {
+	struct mScriptValue* value = mScriptContextGetGlobal(context, "canvas");
+	if (!value) {
+		return;
+	}
+	struct mScriptCanvasContext* canvas = value->value.opaque;
+	if (scale < 1) {
+		scale = 1;
+	}
+	canvas->scale = scale;
+	size_t i;
+	for (i = 0; i < VIDEO_LAYER_OVERLAY_COUNT; ++i) {
+		canvas->overlays[i].scale = scale;
+	}
+}
+
 static void _mScriptCanvasUpdate(struct mScriptCanvasContext* canvas) {
 	size_t i;
 	for (i = 0; i < VIDEO_LAYER_OVERLAY_COUNT; ++i) {
@@ -90,7 +108,7 @@ static unsigned _mScriptCanvasWidth(struct mScriptCanvasContext* canvas) {
 	}
 	unsigned w, h;
 	VideoBackendGetFrameSize(canvas->backend, &w, &h);
-	return w;
+	return w / canvas->scale;
 }
 
 static unsigned _mScriptCanvasHeight(struct mScriptCanvasContext* canvas) {
@@ -99,7 +117,7 @@ static unsigned _mScriptCanvasHeight(struct mScriptCanvasContext* canvas) {
 	}
 	unsigned w, h;
 	VideoBackendGetFrameSize(canvas->backend, &w, &h);
-	return h;
+	return h / canvas->scale;
 }
 
 static int _mScriptCanvasScreenWidth(struct mScriptCanvasContext* canvas) {
@@ -108,7 +126,7 @@ static int _mScriptCanvasScreenWidth(struct mScriptCanvasContext* canvas) {
 	}
 	struct mRectangle dims;
 	canvas->backend->layerDimensions(canvas->backend, VIDEO_LAYER_IMAGE, &dims);
-	return dims.width;
+	return dims.width / canvas->scale;
 }
 
 static int _mScriptCanvasScreenHeight(struct mScriptCanvasContext* canvas) {
@@ -117,7 +135,7 @@ static int _mScriptCanvasScreenHeight(struct mScriptCanvasContext* canvas) {
 	}
 	struct mRectangle dims;
 	canvas->backend->layerDimensions(canvas->backend, VIDEO_LAYER_IMAGE, &dims);
-	return dims.height;
+	return dims.height / canvas->scale;
 }
 
 void mScriptCanvasUpdate(struct mScriptContext* context) {
@@ -149,6 +167,7 @@ static struct mScriptValue* mScriptCanvasLayerCreate(struct mScriptCanvasContext
 	layer->dimsDirty = true;
 	layer->sizeDirty = true;
 	layer->contentsDirty = true;
+	layer->scale = context->scale;
 	mScriptCanvasLayerUpdate(layer);
 
 	struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mScriptCanvasLayer));
@@ -180,10 +199,10 @@ static void mScriptCanvasLayerUpdate(struct mScriptCanvasLayer* layer) {
 	}
 	if (layer->dimsDirty) {
 		struct mRectangle frame = {
-			.x = layer->x,
-			.y = layer->y,
-			.width = layer->image->width,
-			.height = layer->image->height,
+			.x = layer->x * layer->scale,
+			.y = layer->y * layer->scale,
+			.width = layer->image->width * layer->scale,
+			.height = layer->image->height * layer->scale,
 		};
 		backend->setLayerDimensions(backend, layer->layer, &frame);
 		layer->dimsDirty = false;
@@ -210,6 +229,7 @@ static void mScriptCanvasLayerInvalidate(struct mScriptCanvasLayer* layer) {
 
 void mScriptContextAttachCanvas(struct mScriptContext* context) {
 	struct mScriptCanvasContext* canvas = calloc(1, sizeof(*canvas));
+	canvas->scale = 1;
 	size_t i;
 	for (i = 0; i < VIDEO_LAYER_OVERLAY_COUNT; ++i) {
 		canvas->overlays[i].layer = VIDEO_LAYER_OVERLAY0 + i;

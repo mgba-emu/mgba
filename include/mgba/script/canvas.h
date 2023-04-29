@@ -17,6 +17,7 @@ struct VideoBackend;
 void mScriptContextAttachCanvas(struct mScriptContext* context);
 void mScriptCanvasUpdate(struct mScriptContext* context);
 void mScriptCanvasUpdateBackend(struct mScriptContext* context, struct VideoBackend*);
+void mScriptCanvasSetInternalScale(struct mScriptContext* context, unsigned scale);
 
 CXX_GUARD_END
 

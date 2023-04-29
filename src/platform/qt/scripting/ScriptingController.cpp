@@ -70,12 +70,16 @@ void ScriptingController::setController(std::shared_ptr<CoreController> controll
 		return;
 	}
 	clearController();
+	if (!controller) {
+		return;
+	}
 	m_controller = controller;
 	CoreController::Interrupter interrupter(m_controller);
 	m_controller->thread()->scriptContext = &m_scriptContext;
 	if (m_controller->hasStarted()) {
 		mScriptContextAttachCore(&m_scriptContext, m_controller->thread()->core);
 	}
+	updateVideoScale();
 	connect(m_controller.get(), &CoreController::stopping, this, &ScriptingController::clearController);
 }
 
@@ -133,6 +137,13 @@ void ScriptingController::clearController() {
 		m_controller->thread()->scriptContext = nullptr;
 	}
 	m_controller.reset();
+}
+
+void ScriptingController::updateVideoScale() {
+	if (!m_controller) {
+		return;
+	}
+	mScriptCanvasSetInternalScale(&m_scriptContext, m_controller->videoScale());
 }
 
 void ScriptingController::reset() {

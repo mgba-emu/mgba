@@ -56,6 +56,7 @@ signals:
 
 public slots:
 	void clearController();
+	void updateVideoScale();
 	void reset();
 	void runCode(const QString& code);
 
