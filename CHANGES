@@ -5,6 +5,7 @@ Features:
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:
+ - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
  - GB Serialize: Add missing Pocket Cam state to savestates
  - GB Video: Implement DMG-style sprite ordering
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
