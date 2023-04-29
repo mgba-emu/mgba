@@ -1,3 +1,7 @@
+0.10.3: (Future)
+Emulation fixes:
+ - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
+
 0.10.2: (2023-04-23)
 Emulation fixes:
  - GBA Audio: Fix improperly deserializing GB audio registers (fixes mgba.io/i/2793)

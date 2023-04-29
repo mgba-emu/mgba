@@ -202,6 +202,7 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 				--audio->ch1.control.length;
 			}
 		}
+		audio->ch1.lastUpdate = mTimingCurrentTime(audio->timing);
 		_updateSquareSample(&audio->ch1);
 	}
 	*audio->nr52 &= ~0x0001;
@@ -249,6 +250,7 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 				--audio->ch2.control.length;
 			}
 		}
+		audio->ch2.lastUpdate = mTimingCurrentTime(audio->timing);
 		_updateSquareSample(&audio->ch2);
 	}
 	*audio->nr52 &= ~0x0002;
