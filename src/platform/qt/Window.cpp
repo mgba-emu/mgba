@@ -1827,6 +1827,11 @@ void Window::setupOptions() {
 		reloadConfig();
 	}, this);
 
+	ConfigOption* rewindBufferInterval = m_config->addOption("rewindBufferInterval");
+	rewindBufferInterval->connect([this](const QVariant&) {
+		reloadConfig();
+	}, this);
+
 	ConfigOption* allowOpposingDirections = m_config->addOption("allowOpposingDirections");
 	allowOpposingDirections->connect([this](const QVariant&) {
 		reloadConfig();
