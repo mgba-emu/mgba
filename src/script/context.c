@@ -235,12 +235,15 @@ void mScriptContextTriggerCallback(struct mScriptContext* context, const char* c
 	do {
 		struct mScriptFrame frame;
 		struct mScriptCallbackInfo* info = TableIteratorGetValue(table, &iter);
-		mScriptFrameInit(&frame);
-		if (args) {
-			mScriptListCopy(&frame.arguments, args);
+		struct mScriptValue* fn = mScriptContextAccessWeakref(context, info->fn);
+		if (fn) {
+			mScriptFrameInit(&frame);
+			if (args) {
+				mScriptListCopy(&frame.arguments, args);
+			}
+			mScriptInvoke(fn, &frame);
+			mScriptFrameDeinit(&frame);
 		}
-		mScriptInvoke(info->fn, &frame);
-		mScriptFrameDeinit(&frame);
 
 		if (info->oneshot) {
 			*UInt32ListAppend(&oneshots) = info->id;
@@ -255,7 +258,15 @@ void mScriptContextTriggerCallback(struct mScriptContext* context, const char* c
 }
 
 static uint32_t mScriptContextAddCallbackInternal(struct mScriptContext* context, const char* callback, struct mScriptValue* fn, bool oneshot) {
-	if (fn->type->base != mSCRIPT_TYPE_FUNCTION) {
+	if (fn->type == mSCRIPT_TYPE_MS_WEAKREF) {
+		struct mScriptValue* weakref = mScriptContextAccessWeakref(context, fn);
+		if (!weakref) {
+			return 0;
+		}
+		if (weakref->type->base != mSCRIPT_TYPE_FUNCTION) {
+			return 0;
+		}
+	} else if (fn->type->base != mSCRIPT_TYPE_FUNCTION) {
 		return 0;
 	}
 	struct Table* table = HashTableLookup(&context->callbacks, callback);

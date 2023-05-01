@@ -126,9 +126,53 @@ M_TEST_DEFINE(oneshot) {
 	mScriptContextDeinit(&context);
 }
 
+static void _tableIncrement(struct mScriptValue* table) {
+	assert_non_null(table);
+	struct mScriptValue* value = mScriptTableLookup(table, &mSCRIPT_MAKE_CHARP("key"));
+	assert_non_null(value);
+	assert_ptr_equal(value->type, mSCRIPT_TYPE_MS_S32);
+	++value->value.s32;
+}
+
+mSCRIPT_BIND_VOID_FUNCTION(tableIncrement, _tableIncrement, 1, WTABLE, table);
+
+M_TEST_DEFINE(callbackWeakref) {
+	SETUP_LUA;
+
+	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+	struct mScriptList args;
+	mScriptListInit(&args, 1);
+	mScriptValueWrap(table, mScriptListAppend(&args));
+	struct mScriptValue* lambda = mScriptLambdaCreate0(&tableIncrement, &args);
+	mScriptListDeinit(&args);
+	struct mScriptValue* weakref = mScriptContextMakeWeakref(&context, lambda);
+	mScriptContextAddCallback(&context, "test", weakref);
+
+	struct mScriptValue* key = mScriptStringCreateFromUTF8("key");
+	struct mScriptValue* value = mScriptValueAlloc(mSCRIPT_TYPE_MS_S32);
+	value->value.s32 = 1;
+	mScriptTableInsert(table, key, value);
+
+	mScriptContextTriggerCallback(&context, "test", NULL);
+	assert_int_equal(value->value.s32, 2);
+
+	mScriptContextClearWeakref(&context, weakref->value.u32);
+	mScriptValueDeref(weakref);
+
+	mScriptContextTriggerCallback(&context, "test", NULL);
+	assert_int_equal(value->value.s32, 2);
+
+	mScriptValueDeref(table);
+	mScriptValueDeref(key);
+	mScriptValueDeref(value);
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStdlib,
 	cmocka_unit_test(bitMask),
 	cmocka_unit_test(bitUnmask),
 	cmocka_unit_test(callbacks),
 	cmocka_unit_test(oneshot),
+	cmocka_unit_test(callbackWeakref),
 )
