@@ -634,10 +634,7 @@ void Window::scriptingOpen() {
 			m_display->installEventFilter(m_scripting.get());
 		}
 
-		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
-		if (proxy) {
-			m_scripting->setVideoBackend(proxy->backend());
-		}
+		m_scripting->setVideoBackend(m_display->videoBackend());
 	}
 	ScriptingView* view = new ScriptingView(m_scripting.get(), m_config);
 	openView(view);
@@ -1082,7 +1079,7 @@ void Window::reloadDisplayDriver() {
 	m_display->setVideoProxy(proxy);
 #ifdef ENABLE_SCRIPTING
 	if (m_scripting) {
-		m_scripting->setVideoBackend(proxy->backend());
+		m_scripting->setVideoBackend(m_display->videoBackend());
 	}
 #endif
 }
@@ -2135,10 +2132,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	if (m_scripting) {
 		m_scripting->setController(m_controller);
 
-		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
-		if (proxy) {
-			m_scripting->setVideoBackend(proxy->backend());
-		}
+		m_scripting->setVideoBackend(m_display->videoBackend());
 	}
 #endif
 
