@@ -181,7 +181,7 @@ void DisplayQt::redoBounds() {
 QSize DisplayQt::contentSize() const {
 	unsigned w, h;
 	VideoBackendGetFrameSize(&m_backend, &w, &h);
-	return {w, h};
+	return {saturateCast<int>(w), saturateCast<int>(h)};
 }
 
 void DisplayQt::init(struct VideoBackend*, WHandle) {
