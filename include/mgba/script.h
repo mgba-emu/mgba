@@ -7,6 +7,7 @@
 #define M_SCRIPT_H
 
 #include <mgba/script/base.h>
+#include <mgba/script/canvas.h>
 #include <mgba/script/context.h>
 #include <mgba/script/input.h>
 #include <mgba/script/macros.h>

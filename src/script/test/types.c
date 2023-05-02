@@ -82,6 +82,10 @@ static bool isNullStruct(struct Test* arg) {
 	return !arg;
 }
 
+static void increment(struct Test* t) {
+	++t->a;
+}
+
 mSCRIPT_BIND_FUNCTION(boundVoidOne, S32, voidOne, 0);
 mSCRIPT_BIND_VOID_FUNCTION(boundDiscard, discard, 1, S32, ignored);
 mSCRIPT_BIND_FUNCTION(boundIdentityInt, S32, identityInt, 1, S32, in);
@@ -95,6 +99,7 @@ mSCRIPT_BIND_FUNCTION(boundIsSequential, S32, isSequential, 1, LIST, list);
 mSCRIPT_BIND_FUNCTION(boundIsNullCharp, BOOL, isNullCharp, 1, CHARP, arg);
 mSCRIPT_BIND_FUNCTION(boundIsNullStruct, BOOL, isNullStruct, 1, S(Test), arg);
 mSCRIPT_BIND_FUNCTION_WITH_DEFAULTS(boundAddIntWithDefaults, S32, addInts, 2, S32, a, S32, b);
+mSCRIPT_BIND_VOID_FUNCTION(boundIncrement, increment, 1, S(Test), this);
 
 mSCRIPT_DEFINE_FUNCTION_BINDING_DEFAULTS(boundAddIntWithDefaults)
 	mSCRIPT_NO_DEFAULT,
@@ -1336,6 +1341,28 @@ M_TEST_DEFINE(nullStruct) {
 	mScriptFrameDeinit(&frame);
 }
 
+M_TEST_DEFINE(lambda0) {
+	struct mScriptList args;
+	struct Test t = {
+		.a = 0
+	};
+
+	mScriptListInit(&args, 1);
+	mSCRIPT_PUSH(&args, S(Test), &t);
+	struct mScriptValue* fn = mScriptLambdaCreate0(&boundIncrement, &args);
+	assert_non_null(fn);
+	mScriptListDeinit(&args);
+
+	struct mScriptFrame frame;
+	mScriptFrameInit(&frame);
+	assert_int_equal(t.a, 0);
+	assert_true(mScriptInvoke(fn, &frame));
+	assert_int_equal(t.a, 1);
+	mScriptFrameDeinit(&frame);
+
+	mScriptValueDeref(fn);
+}
+
 M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(voidArgs),
 	cmocka_unit_test(voidFunc),
@@ -1373,4 +1400,5 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(invokeList),
 	cmocka_unit_test(nullString),
 	cmocka_unit_test(nullStruct),
+	cmocka_unit_test(lambda0),
 )

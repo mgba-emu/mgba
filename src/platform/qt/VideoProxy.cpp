@@ -24,12 +24,26 @@ VideoProxy::VideoProxy() {
 	m_logger.unlock = &cbind<&VideoProxy::unlock>;
 	m_logger.wait = &cbind<&VideoProxy::wait>;
 	m_logger.wake = &callback<void, int>::func<&VideoProxy::wake>;
+	RingFIFOInit(&m_dirtyQueue, 0x80000);
 
 	m_logger.writeData = &callback<bool, const void*, size_t>::func<&VideoProxy::writeData>;
 	m_logger.readData = &callback<bool, void*, size_t, bool>::func<&VideoProxy::readData>;
 	m_logger.postEvent = &callback<void, enum mVideoLoggerEvent>::func<&VideoProxy::postEvent>;
 
+	mVideoProxyBackendInit(&m_backend, nullptr);
+	m_backend.context = this;
+	m_backend.wakeupCb = [](struct mVideoProxyBackend*, void* context) {
+		VideoProxy* self = static_cast<VideoProxy*>(context);
+		QMetaObject::invokeMethod(self, "commandAvailable");
+	};
+
 	connect(this, &VideoProxy::dataAvailable, this, &VideoProxy::processData);
+	connect(this, &VideoProxy::commandAvailable, this, &VideoProxy::processCommands);
+}
+
+VideoProxy::~VideoProxy() {
+	mVideoProxyBackendDeinit(&m_backend);
+	RingFIFODeinit(&m_dirtyQueue);
 }
 
 void VideoProxy::attach(CoreController* controller) {
@@ -44,13 +58,21 @@ void VideoProxy::detach(CoreController* controller) {
 	}
 }
 
+void VideoProxy::setProxiedBackend(VideoBackend* backend) {
+	// TODO: This needs some safety around it
+	m_backend.backend = backend;
+}
+
 void VideoProxy::processData() {
 	mVideoLoggerRendererRun(&m_logger, false);
 	m_fromThreadCond.wakeAll();
 }
 
+void VideoProxy::processCommands() {
+	mVideoProxyBackendRun(&m_backend, false);
+}
+
 void VideoProxy::init() {
-	RingFIFOInit(&m_dirtyQueue, 0x80000);
 }
 
 void VideoProxy::reset() {
@@ -61,7 +83,6 @@ void VideoProxy::reset() {
 }
 
 void VideoProxy::deinit() {
-	RingFIFODeinit(&m_dirtyQueue);
 }
 
 bool VideoProxy::writeData(const void* data, size_t length) {

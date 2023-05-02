@@ -14,6 +14,7 @@
 #include "MessagePainter.h"
 
 struct VDir;
+struct VideoBackend;
 struct VideoShader;
 
 namespace QGBA {
@@ -59,6 +60,7 @@ public:
 
 	virtual void setVideoProxy(std::shared_ptr<VideoProxy> proxy) { m_videoProxy = proxy; }
 	std::shared_ptr<VideoProxy> videoProxy() { return m_videoProxy; }
+	virtual VideoBackend* videoBackend();
 	
 signals:
 	void drawingStarted();

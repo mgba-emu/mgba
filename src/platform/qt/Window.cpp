@@ -633,6 +633,8 @@ void Window::scriptingOpen() {
 			m_scripting->setController(m_controller);
 			m_display->installEventFilter(m_scripting.get());
 		}
+
+		m_scripting->setVideoBackend(m_display->videoBackend());
 	}
 	ScriptingView* view = new ScriptingView(m_scripting.get(), m_config);
 	openView(view);
@@ -965,6 +967,12 @@ void Window::gameStopped() {
 	updateTitle();
 
 	if (m_pendingClose) {
+#ifdef ENABLE_SCRIPTING
+		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
+		if (m_scripting && proxy) {
+			m_scripting->setVideoBackend(nullptr);
+		}
+#endif
 		m_display.reset();
 		close();
 	}
@@ -1015,6 +1023,15 @@ void Window::reloadDisplayDriver() {
 		m_display->stopDrawing();
 		detachWidget();
 	}
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_scripting->setVideoBackend(nullptr);
+	}
+#endif
+	std::shared_ptr<VideoProxy> proxy;
+	if (m_display) {
+		proxy = m_display->videoProxy();
+	}
 	m_display = std::unique_ptr<QGBA::Display>(Display::create(this));
 	if (!m_display) {
 		LOG(QT, ERROR) << tr("Failed to create an appropriate display device, falling back to software display. "
@@ -1055,6 +1072,16 @@ void Window::reloadDisplayDriver() {
 #endif
 
 	m_display->setBackgroundImage(QImage{m_config->getOption("backgroundImage")});
+
+	if (!proxy) {
+		proxy = std::make_shared<VideoProxy>();
+	}
+	m_display->setVideoProxy(proxy);
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_scripting->setVideoBackend(m_display->videoBackend());
+	}
+#endif
 }
 
 void Window::reloadAudioDriver() {
@@ -1079,12 +1106,7 @@ void Window::changeRenderer() {
 
 	CoreController::Interrupter interrupter(m_controller);
 	if (m_config->getOption("hwaccelVideo").toInt() && m_display->supportsShaders() && m_controller->supportsFeature(CoreController::Feature::OPENGL)) {
-		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
-		if (!proxy) {
-			proxy = std::make_shared<VideoProxy>();
-		}
-		m_display->setVideoProxy(proxy);
-		proxy->attach(m_controller.get());
+		m_display->videoProxy()->attach(m_controller.get());
 
 		int fb = m_display->framebufferHandle();
 		if (fb >= 0) {
@@ -1092,11 +1114,7 @@ void Window::changeRenderer() {
 			m_config->updateOption("videoScale");
 		}
 	} else {
-		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
-		if (proxy) {
-			proxy->detach(m_controller.get());
-			m_display->setVideoProxy({});
-		}
+		m_display->videoProxy()->detach(m_controller.get());
 		m_controller->setFramebufferHandle(-1);
 	}
 }
@@ -1889,6 +1907,11 @@ void Window::setupOptions() {
 	videoScale->connect([this](const QVariant& value) {
 		if (m_display) {
 			m_display->setVideoScale(value.toInt());
+#ifdef ENABLE_SCRIPTING
+			if (m_controller && m_scripting) {
+				m_scripting->updateVideoScale();
+			}
+#endif
 		}
 	}, this);
 
@@ -2132,6 +2155,8 @@ void Window::setController(CoreController* controller, const QString& fname) {
 #ifdef ENABLE_SCRIPTING
 	if (m_scripting) {
 		m_scripting->setController(m_controller);
+
+		m_scripting->setVideoBackend(m_display->videoBackend());
 	}
 #endif
 
