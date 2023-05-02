@@ -10,8 +10,8 @@
 
 CXX_GUARD_START
 
-#include <mgba/internal/arm/arm.h>
 #include <mgba/debugger/debugger.h>
+#include <mgba/internal/arm/arm.h>
 
 // Bit 0: a register is involved with this operand
 // Bit 1: an immediate is invovled with this operand
