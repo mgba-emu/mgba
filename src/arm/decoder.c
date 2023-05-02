@@ -49,12 +49,10 @@ static const char* _armConditions[] = {
 
 static int _decodeImmediate(int imm, enum mDisassemblyStyle disassemblyStyle, char* buffer, int blen) {
 	switch(disassemblyStyle) {
-	case DISASSEMBLY_STYLE_DECIMAL:
-		return snprintf(buffer, blen, "#%i", imm);
 	case DISASSEMBLY_STYLE_HEX:
 		return snprintf(buffer, blen, "#0x%x", imm);
 	default:
-	return snprintf(buffer, blen, "#%i", imm);
+		return snprintf(buffer, blen, "#%i", imm);
 	}
 }
 

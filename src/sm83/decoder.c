@@ -522,15 +522,15 @@ static int _decodeOperand(struct SM83Operand op, uint16_t pc, enum mDisassemblyS
 		int written;
 		if (op.flags & SM83_OP_FLAG_RELATIVE) {
 			if (disassemblyStyle == DISASSEMBLY_STYLE_HEX) {
-				written = snprintf(buffer, blen, "$0x%04X", pc + (int8_t) op.immediate);
+				written = snprintf(buffer, blen, "$%04X", pc + (int8_t) op.immediate);
 			} else {
-				written = snprintf(buffer, blen, "$%05i", pc + (int8_t) op.immediate);
+				written = snprintf(buffer, blen, "%05i", pc + (int8_t) op.immediate);
 			}
 		} else {
 			if(disassemblyStyle == DISASSEMBLY_STYLE_HEX) {
-				written = snprintf(buffer, blen, "$0x%02X", pc + (int8_t) op.immediate);
+				written = snprintf(buffer, blen, "$%02X", pc + (int8_t) op.immediate);
 			} else {
-				written = snprintf(buffer, blen, "$%03i", pc + (int8_t) op.immediate);
+				written = snprintf(buffer, blen, "%03i", pc + (int8_t) op.immediate);
 			}
 		}
 		ADVANCE(written);
