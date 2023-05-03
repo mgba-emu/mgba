@@ -49,10 +49,7 @@ ForwarderView::ForwarderView(QWidget* parent)
 	});
 
 	m_ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-	connect(m_ui.buttonBox->button(QDialogButtonBox::Ok), &QAbstractButton::clicked, [this]() {
-		m_controller.generator()->setRom(m_ui.romFilename->text());
-		m_controller.startBuild(m_ui.outputFilename->text());
-	});
+	connect(m_ui.buttonBox->button(QDialogButtonBox::Ok), &QAbstractButton::clicked, this, &ForwarderView::build);
 }
 
 void ForwarderView::build() {

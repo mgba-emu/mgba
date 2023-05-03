@@ -72,3 +72,19 @@ QString ForwarderGenerator::systemName(ForwarderGenerator::System system) {
 
 	return {};
 }
+
+QString ForwarderGenerator::base36(const QByteArray& bytes, int length) {
+	static const char* alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	QString buffer(length, 'X');
+	quint32 running = 0;
+	for (int i = 0, j = 0; i < length; ++i) {
+		if (running < 36) {
+			running <<= 8;
+			running |= static_cast<quint8>(bytes[j]);
+			++j;
+		}
+		buffer[i] = alphabet[running % 36];
+		running /= 36;
+	}
+	return buffer;
+}
