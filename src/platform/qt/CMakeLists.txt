@@ -25,7 +25,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(QT_LIBRARIES)
 
-find_package(Qt5 COMPONENTS Core Widgets Network Multimedia)
+find_package(Qt5 COMPONENTS Core Widgets Network OPTIONAL_COMPONENTS Multimedia)
 set(QT Qt5)
 
 if(NOT BUILD_GL AND NOT BUILD_GLES2 AND NOT BUILD_GLES3)
