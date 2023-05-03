@@ -10,10 +10,12 @@
 *.a
 *.dylib
 *.dll
+*.lib
 *.exe
 *.o
 *.so
 CMakeCache.txt
 CMakeFiles
 CMakeSettings.json
+cmake_install.cmake
 version.c
