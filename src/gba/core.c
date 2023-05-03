@@ -245,7 +245,7 @@ static bool _GBACoreInit(struct mCore* core) {
 #ifndef MINIMAL_CORE
 	core->inputInfo = &GBAInputInfo;
 #endif
-	
+
 	return true;
 }
 
@@ -523,7 +523,7 @@ static bool _GBACoreLoadROM(struct mCore* core, struct VFile* vf) {
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
-		if (ELFEntry(elf) == BASE_CART0) {
+		if (GBAVerifyELFEntry(elf, BASE_CART0)) {
 			GBALoadNull(core->board);
 		}
 		bool success = mCoreLoadELF(core, elf);

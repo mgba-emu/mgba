@@ -25,7 +25,6 @@ public:
 	void rebuild(const QString& source, const QString& target) override;
 
 private:
-	QString dumpVpk(const QString& archive);
 	bool copyAssets(const QString& vpk, VDir* out);
 	QString makeSerial() const;
 	void writeSfo(VFile* out);

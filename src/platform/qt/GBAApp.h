@@ -11,7 +11,8 @@
 #include <QList>
 #include <QMap>
 #include <QMultiMap>
-#include <QObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QRunnable>
 #include <QString>
 #include <QThreadPool>
@@ -69,6 +70,9 @@ public:
 
 	const NoIntroDB* gameDB() const { return m_db; }
 	bool reloadGameDB();
+
+	QNetworkAccessManager* netman();
+	QNetworkReply* httpGet(const QUrl&);
 
 	qint64 submitWorkerJob(std::function<void ()> job, std::function<void ()> callback = {});
 	qint64 submitWorkerJob(std::function<void ()> job, QObject* context, std::function<void ()> callback);
@@ -128,6 +132,8 @@ private:
 	QFont m_monospace;
 
 	NoIntroDB* m_db = nullptr;
+
+	QNetworkAccessManager m_netman;
 };
 
 }

@@ -40,12 +40,15 @@ public:
 	virtual QList<QPair<QString, QSize>> imageTypes() const = 0;
 	virtual System system() const = 0;
 	QString systemName() const { return systemName(system()); }
+	QString systemHumanName() const { return systemHumanName(system()); }
 	virtual QString extension() const = 0;
 
 	virtual QStringList externalTools() const { return {}; }
 
 	static QString systemName(System);
+	static QString systemHumanName(System);
 
+	virtual QString extract(const QString& archive);
 	virtual void rebuild(const QString& source, const QString& target) = 0;
 
 signals:

@@ -11,6 +11,7 @@
 #include <QNetworkReply>
 
 #include "ConfigController.h"
+#include "GBAApp.h"
 #include "VFileDevice.h"
 
 #include <mgba/core/version.h>
@@ -29,10 +30,8 @@ const char* SUFFIX = "";
 
 ForwarderController::ForwarderController(QObject* parent)
 	: QObject(parent)
-	, m_netman(new QNetworkAccessManager(this))
 	, m_originalPath(qgetenv("PATH"))
 {
-	m_netman->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
 	connect(this, &ForwarderController::buildFailed, this, &ForwarderController::cleanup);
 	connect(this, &ForwarderController::buildComplete, this, &ForwarderController::cleanup);
 }
@@ -83,14 +82,12 @@ void ForwarderController::downloadForwarderKit() {
 	emit buildFailed();
 	return;
 #endif
-	QNetworkReply* reply = m_netman->get(QNetworkRequest(QUrl(fkUrl)));
-	connect(reply, &QNetworkReply::finished, this, [this, reply]() {
-		gotForwarderKit(reply);
-	});
-	connectErrorFailure(reply);
+	QNetworkReply* reply = GBAApp::app()->httpGet(QUrl(fkUrl));
+	connectReply(reply, FORWARDER_KIT, &ForwarderController::gotForwarderKit);
 }
 
 void ForwarderController::gotForwarderKit(QNetworkReply* reply) {
+	emit downloadComplete(FORWARDER_KIT);
 	if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() != 200) {
 		emit buildFailed();
 		return;
@@ -134,14 +131,12 @@ void ForwarderController::gotForwarderKit(QNetworkReply* reply) {
 }
 
 void ForwarderController::downloadManifest() {
-	QNetworkReply* reply = m_netman->get(QNetworkRequest(QUrl("https://mgba.io/latest.ini")));
-	connect(reply, &QNetworkReply::finished, this, [this, reply]() {
-		gotManifest(reply);
-	});
-	connectErrorFailure(reply);
+	QNetworkReply* reply = GBAApp::app()->httpGet(QUrl("https://mgba.io/latest.ini"));
+	connectReply(reply, MANIFEST, &ForwarderController::gotManifest);
 }
 
 void ForwarderController::gotManifest(QNetworkReply* reply) {
+	emit downloadComplete(MANIFEST);
 	if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() != 200) {
 		emit buildFailed();
 		return;
@@ -177,20 +172,17 @@ void ForwarderController::downloadBuild(const QUrl& url) {
 		emit buildFailed();
 		return;		
 	}
-	QNetworkReply* reply = m_netman->get(QNetworkRequest(url));
+	QNetworkReply* reply = GBAApp::app()->httpGet(url);
 
-	connect(reply, &QNetworkReply::finished, this, [this, reply]() {
-		gotBuild(reply);
-	});
-
+	connectReply(reply, BASE, &ForwarderController::gotBuild);
 	connect(reply, &QNetworkReply::readyRead, this, [this, reply]() {
 		QByteArray data = reply->readAll();
 		m_sourceFile.write(data);
 	});
-	connectErrorFailure(reply);
 }
 
 void ForwarderController::gotBuild(QNetworkReply* reply) {
+	emit downloadComplete(BASE);
 	if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() != 200) {
 		emit buildFailed();
 		return;
@@ -199,7 +191,13 @@ void ForwarderController::gotBuild(QNetworkReply* reply) {
 	QByteArray data = reply->readAll();
 	m_sourceFile.write(data);
 	m_sourceFile.close();
-	m_generator->rebuild(m_sourceFile.fileName(), m_outFilename);
+
+	QString extracted = m_generator->extract(m_sourceFile.fileName());
+	if (extracted.isNull()) {
+		emit buildFailed();
+		return;
+	}
+	m_generator->rebuild(extracted, m_outFilename);
 }
 
 void ForwarderController::cleanup() {
@@ -223,7 +221,7 @@ bool ForwarderController::toolInstalled(const QString& tool) {
 	return false;
 }
 
-void ForwarderController::connectErrorFailure(QNetworkReply* reply) {
+void ForwarderController::connectReply(QNetworkReply* reply, Download download, void (ForwarderController::*next)(QNetworkReply*)) {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
 	connect(reply, &QNetworkReply::errorOccurred, this, [this, reply]() {
 #else
@@ -231,4 +229,12 @@ void ForwarderController::connectErrorFailure(QNetworkReply* reply) {
 #endif
 		emit buildFailed();
 	});
+
+	connect(reply, &QNetworkReply::finished, this, [this, reply, next]() {
+		(this->*next)(reply);
+	});
+	connect(reply, &QNetworkReply::downloadProgress, this, [this, download](qint64 bytesReceived, qint64 bytesTotal) {
+		emit downloadProgress(download, bytesReceived, bytesTotal);
+	});
+	emit downloadStarted(download);
 }

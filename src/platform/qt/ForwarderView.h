@@ -30,11 +30,16 @@ private:
 	void connectBrowseButton(QAbstractButton* button, QLineEdit* lineEdit, const QString& title, bool save = false, const QString& filter = {});
 	void selectImage();
 	void setActiveImage(int);
+	void updateProgress();
 
 	ForwarderController m_controller;
 	QVector<QImage> m_images;
 	int m_currentImage;
 	QSize m_activeSize;
+
+	qreal m_downloadProgress;
+	ForwarderController::Download m_currentDownload;
+	bool m_needsForwarderKit;
 
 	Ui::ForwarderView m_ui;
 };
