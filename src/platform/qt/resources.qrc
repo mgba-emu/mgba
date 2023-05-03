@@ -2,6 +2,7 @@
 <RCC version="1.0">
  <qresource>
   <file>../../../res/medusa-bg.jpg</file>
+  <file>../../../res/keymap.qpic</file>
   <file>../../../res/patrons.txt</file>
   <file>../../../res/no-cam.png</file>
   <file>input/default-profiles.ini</file>
