@@ -162,36 +162,7 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, GB_REG_TMA, 0);
 	GBIOWrite(gb, GB_REG_TAC, 0);
 	GBIOWrite(gb, GB_REG_IF, 1);
-	gb->audio.playingCh1 = false;
-	gb->audio.playingCh2 = false;
-	gb->audio.playingCh3 = false;
-	gb->audio.playingCh4 = false;
-	GBIOWrite(gb, GB_REG_NR52, 0xF1);
-	GBIOWrite(gb, GB_REG_NR14, 0x3F);
-	GBIOWrite(gb, GB_REG_NR10, 0x80);
-	GBIOWrite(gb, GB_REG_NR11, 0xBF);
-	GBIOWrite(gb, GB_REG_NR12, 0xF3);
-	GBIOWrite(gb, GB_REG_NR13, 0xF3);
-	GBIOWrite(gb, GB_REG_NR24, 0x3F);
-	GBIOWrite(gb, GB_REG_NR21, 0x3F);
-	GBIOWrite(gb, GB_REG_NR22, 0x00);
-	GBIOWrite(gb, GB_REG_NR34, 0x3F);
-	GBIOWrite(gb, GB_REG_NR30, 0x7F);
-	GBIOWrite(gb, GB_REG_NR31, 0xFF);
-	GBIOWrite(gb, GB_REG_NR32, 0x9F);
-	GBIOWrite(gb, GB_REG_NR44, 0x3F);
-	GBIOWrite(gb, GB_REG_NR41, 0xFF);
-	GBIOWrite(gb, GB_REG_NR42, 0x00);
-	GBIOWrite(gb, GB_REG_NR43, 0x00);
-	GBIOWrite(gb, GB_REG_NR50, 0x77);
-	GBIOWrite(gb, GB_REG_NR51, 0xF3);
-	if (!gb->biosVf) {
-		GBIOWrite(gb, GB_REG_LCDC, 0x91);
-		gb->memory.io[GB_REG_BANK] = 1;
-	} else {
-		GBIOWrite(gb, GB_REG_LCDC, 0x00);
-		gb->memory.io[GB_REG_BANK] = 0xFF;
-	}
+	GBIOWrite(gb, GB_REG_LCDC, 0x00);
 	GBIOWrite(gb, GB_REG_SCY, 0x00);
 	GBIOWrite(gb, GB_REG_SCX, 0x00);
 	GBIOWrite(gb, GB_REG_LYC, 0x00);
@@ -203,6 +174,7 @@ void GBIOReset(struct GB* gb) {
 	}
 	GBIOWrite(gb, GB_REG_WY, 0x00);
 	GBIOWrite(gb, GB_REG_WX, 0x00);
+	gb->memory.io[GB_REG_BANK] = 0xFF;
 	if (gb->model & GB_MODEL_CGB) {
 		GBIOWrite(gb, GB_REG_KEY0, 0);
 		GBIOWrite(gb, GB_REG_JOYP, 0xFF);

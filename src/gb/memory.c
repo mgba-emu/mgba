@@ -558,7 +558,7 @@ uint8_t GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 	gb->memory.hdmaDest |= 0x8000;
 	bool wasHdma = gb->memory.isHdma;
 	gb->memory.isHdma = value & 0x80;
-	if ((!wasHdma && !gb->memory.isHdma) || (GBRegisterLCDCIsEnable(gb->memory.io[GB_REG_LCDC]) && gb->video.mode == 0)) {
+	if ((!wasHdma && !gb->memory.isHdma) || gb->video.mode == 0) {
 		if (gb->memory.isHdma) {
 			gb->memory.hdmaRemaining = 0x10;
 		} else {
@@ -566,8 +566,6 @@ uint8_t GBMemoryWriteHDMA5(struct GB* gb, uint8_t value) {
 		}
 		gb->cpuBlocked = true;
 		mTimingSchedule(&gb->timing, &gb->memory.hdmaEvent, 0);
-	} else if (gb->memory.isHdma && !GBRegisterLCDCIsEnable(gb->memory.io[GB_REG_LCDC])) {
-		return 0x80 | ((value + 1) & 0x7F);
 	}
 	return value & 0x7F;
 }

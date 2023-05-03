@@ -180,6 +180,9 @@ void ForwarderController::downloadBuild(const QUrl& url) {
 
 	connectReply(reply, BASE, &ForwarderController::gotBuild);
 	connect(reply, &QNetworkReply::readyRead, this, [this, reply]() {
+		if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() / 100 != 2) {
+			return;
+		}
 		QByteArray data = reply->readAll();
 		m_sourceFile.write(data);
 	});
@@ -236,8 +239,13 @@ void ForwarderController::connectReply(QNetworkReply* reply, Download download, 
 		emit buildFailed();
 	});
 
-	connect(reply, &QNetworkReply::finished, this, [this, reply, next]() {
-		(this->*next)(reply);
+	connect(reply, &QNetworkReply::finished, this, [this, reply, download, next]() {
+		if (reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt() / 100 == 3) {
+			QNetworkReply* newReply = GBAApp::app()->httpGet(reply->header(QNetworkRequest::LocationHeader).toString());
+			connectReply(newReply, download, next);
+		} else {
+			(this->*next)(reply);
+		}
 	});
 	connect(reply, &QNetworkReply::downloadProgress, this, [this, download](qint64 bytesReceived, qint64 bytesTotal) {
 		emit downloadProgress(download, bytesReceived, bytesTotal);

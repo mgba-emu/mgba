@@ -44,6 +44,8 @@ using QOpenGLFunctions_Baseline = QOpenGLFunctions_3_2_Core;
 #define OVERHEAD_NSEC 300000
 #endif
 
+#include "OpenGLBug.h"
+
 using namespace QGBA;
 
 QHash<QSurfaceFormat, bool> DisplayGL::s_supports;
@@ -428,10 +430,10 @@ void DisplayGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
 
 void DisplayGL::setupProxyThread() {
 	m_proxyContext->moveToThread(&m_proxyThread);
+	m_proxySurface.create();
 	connect(&m_proxyThread, &QThread::started, m_proxyContext.get(), [this]() {
 		m_proxyContext->setShareContext(m_painter->shareContext());
 		m_proxyContext->create();
-		m_proxySurface.create();
 		m_proxyContext->makeCurrent(&m_proxySurface);
 #if defined(_WIN32) && defined(USE_EPOXY)
 		epoxy_handle_external_wglMakeCurrent();
@@ -579,6 +581,7 @@ void PainterGL::create() {
 	m_backend->filter = false;
 	m_backend->lockAspectRatio = false;
 	m_backend->interframeBlending = false;
+	m_gl->doneCurrent();
 
 	emit created();
 }
@@ -863,16 +866,22 @@ void PainterGL::dequeueAll(bool keep) {
 			m_free.append(buffer);
 		}
 	}
-	m_queueTex.clear();
-	m_freeTex.clear();
-	for (auto tex : m_bridgeTexes) {
-		m_freeTex.enqueue(tex);
-	}
-	m_bridgeTexIn = m_freeTex.dequeue();
-	m_bridgeTexOut = std::numeric_limits<GLuint>::max();
 	if (m_buffer && !keep) {
 		m_free.append(m_buffer);
 		m_buffer = nullptr;
+	}
+
+	m_queueTex.clear();
+	m_freeTex.clear();
+	for (auto tex : m_bridgeTexes) {
+		if (keep && tex == m_bridgeTexIn) {
+			continue;
+		}
+		m_freeTex.enqueue(tex);
+	}
+	if (!keep) {
+		m_bridgeTexIn = m_freeTex.dequeue();
+		m_bridgeTexOut = std::numeric_limits<GLuint>::max();
 	}
 }
 
@@ -889,12 +898,20 @@ void PainterGL::setShaders(struct VDir* dir) {
 		return;
 	}
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
+	if (!m_started) {
+		makeCurrent();
+	}
+
 	if (m_shader.passes) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
 	}
 	mGLES2ShaderLoad(&m_shader, dir);
 	mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
+
+	if (!m_started) {
+		m_gl->doneCurrent();
+	}
 #endif
 }
 
@@ -903,9 +920,17 @@ void PainterGL::clearShaders() {
 		return;
 	}
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
+	if (!m_started) {
+		makeCurrent();
+	}
+
 	if (m_shader.passes) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
+	}
+
+	if (!m_started) {
+		m_gl->doneCurrent();
 	}
 #endif
 }
@@ -939,7 +964,17 @@ QOpenGLContext* PainterGL::shareContext() {
 
 void PainterGL::updateFramebufferHandle() {
 	QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
-	fn->glFinish();
+	// TODO: Figure out why glFlush doesn't work here on Intel/Windows
+	if (glContextHasBug(OpenGLBug::CROSS_THREAD_FLUSH)) {
+		fn->glFinish();
+	} else {
+		fn->glFlush();
+	}
+
+	CoreController::Interrupter interrupter(m_context);
+	if (!m_context->hardwareAccelerated()) {
+		return;
+	}
 	enqueue(m_bridgeTexIn);
 	m_context->setFramebufferHandle(m_bridgeTexIn);
 }

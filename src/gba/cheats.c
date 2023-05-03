@@ -126,13 +126,13 @@ static bool GBACheatAddAutodetect(struct GBACheatSet* set, uint32_t op1, uint32_
 			GBACheatSetGameSharkVersion(set, GBA_GS_PARV3);
 		}
 
-		rgsaP = GBACheatGameSharkProbability(op1, op1);
+		rgsaP = GBACheatGameSharkProbability(op1, op2);
 		if (rgsaP > maxProbability) {
 			maxProbability = rgsaP;
 			GBACheatSetGameSharkVersion(set, GBA_GS_GSAV1_RAW);
 		}
 
-		rparP = GBACheatProActionReplayProbability(op1, op1);
+		rparP = GBACheatProActionReplayProbability(op1, op2);
 		if (rparP > maxProbability) {
 			maxProbability = rparP;
 			GBACheatSetGameSharkVersion(set, GBA_GS_PARV3_RAW);

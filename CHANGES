@@ -44,12 +44,19 @@ Features:
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:
+ - GB Audio: Fix channels 1/2 not playing when resetting volume (fixes mgba.io/i/2614)
+ - GB Audio: Fix channel 3 volume being changed between samples (fixes mgba.io/i/1896)
+ - GB Audio: Fix up boot sequence
+ - GB Audio: Fix updating channels other than 2 when writing NR5x
+ - GB Memory: Actually, HDMAs should start when LCD is off (fixes mgba.io/i/2662)
  - GB Serialize: Don't write BGP/OBP when loading SCGB state (fixes mgba.io/i/2694)
  - GB SIO: Further fix bidirectional transfer starting
  - GBA: Fix resetting key IRQ state (fixes mgba.io/i/2716)
  - GBA Video: Ignore disabled backgrounds as OBJ blend target (fixes mgba.io/i/2489)
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
+ - GBA: Fix forceskip BIOS logic for multiboot ROMs (fixes mgba.io/i/2753)
+ - GBA Cheats: Fix issues detecting unencrypted cheats (fixes mgba.io/i/2724)
  - Qt: Manually split filename to avoid overzealous splitting (fixes mgba.io/i/2681)
  - Qt: Expand criteria for tag branch names (fixes mgba.io/i/2679)
  - Qt: Fix scanning specific e-Reader dotcodes (fixes mgba.io/i/2693)

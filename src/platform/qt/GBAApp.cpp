@@ -82,7 +82,9 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	m_configController->updateOption("useDiscordPresence");
 #endif
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 9, 0))
 	m_netman.setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
+#endif
 
 	cleanupAfterUpdate();
 
