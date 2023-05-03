@@ -45,10 +45,16 @@ Features:
  - Debugger: Add range watchpoints
 Emulation fixes:
  - GB Serialize: Don't write BGP/OBP when loading SCGB state (fixes mgba.io/i/2694)
+ - GB SIO: Further fix bidirectional transfer starting
+ - GBA: Fix resetting key IRQ state (fixes mgba.io/i/2716)
+ - GBA Video: Ignore disabled backgrounds as OBJ blend target (fixes mgba.io/i/2489)
+ - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
  - Qt: Manually split filename to avoid overzealous splitting (fixes mgba.io/i/2681)
  - Qt: Expand criteria for tag branch names (fixes mgba.io/i/2679)
  - Qt: Fix scanning specific e-Reader dotcodes (fixes mgba.io/i/2693)
+ - Qt: Don't re-enable sync if GBA link modes aren't the same (fixes mgba.io/i/2044)
+ - Qt: Improve handling of multiplayer syncing (fixes mgba.io/i/2720)
  - Res: Fix species name location in Ruby/Sapphire revs 1/2 (fixes mgba.io/i/2685)
  - VFS: Fix minizip write returning 0 on success instead of size
 Misc:
@@ -56,7 +62,8 @@ Misc:
  - GBA: Improve detection of valid ELF ROMs
  - macOS: Add category to plist (closes mgba.io/i/2691)
  - macOS: Fix modern build with libepoxy (fixes mgba.io/i/2700)
- - Qt: Keep track of current pslette preset name (fixes mgba.io/i/2680)
+ - Qt: Keep track of current palette preset name (fixes mgba.io/i/2680)
+ - Qt: Move OpenGL proxy onto its own thread (fixes mgba.io/i/2493)
 
 0.10.0: (2022-10-11)
 Features:
@@ -66,7 +73,7 @@ Features:
  - Tool for converting scanned pictures of e-Reader cards to raw dotcode data
  - Options for muting when inactive, minimized, or for different players in multiplayer
  - Cheat code support in homebrew ports
- - Acclerometer and gyro support for controllers on PC
+ - Accelerometer and gyro support for controllers on PC
  - Support for combo "Super Game Boy Color" SGB + GBC ROM hacks
  - Improved support for HuC-3 mapper, including RTC
  - Support for 64 kiB SRAM saves used in some bootlegs
@@ -80,7 +87,7 @@ Emulation fixes:
  - ARM7: Fix unsigned multiply timing
  - GB: Copy logo from ROM if not running the BIOS intro (fixes mgba.io/i/2378)
  - GB: Fix HALT breaking M-cycle alignment (fixes mgba.io/i/250)
- - GB Audio: Fix channel 1/2 reseting edge cases (fixes mgba.io/i/1925)
+ - GB Audio: Fix channel 1/2 resetting edge cases (fixes mgba.io/i/1925)
  - GB Audio: Properly apply per-model audio differences
  - GB Audio: Revamp channel rendering
  - GB Audio: Fix APU re-enable timing glitch
@@ -190,7 +197,7 @@ Emulation fixes:
 Other fixes:
  - ARM Decoder: Fix decoding of lsl r0 (fixes mgba.io/i/2349)
  - FFmpeg: Don't attempt to use YUV 4:2:0 for lossless videos (fixes mgba.io/i/2084)
- - GB Video: Fix memory leak when reseting SGB games
+ - GB Video: Fix memory leak when resetting SGB games
  - GBA: Fix out of bounds ROM accesses on patched ROMs smaller than 32 MiB
  - GBA: Fix maximum tile ID in caching for 256-color modes
  - GBA Video: Fix cache updating with proxy and GL renderers
@@ -301,7 +308,7 @@ Emulation fixes:
  - GBA BIOS: Implement dummy sound driver calls
  - GBA BIOS: Improve HLE BIOS timing
  - GBA BIOS: Fix reloading video registers after reset (fixes mgba.io/i/1808)
- - GBA BIOS: Make HLE BIOS calls interruptable (fixes mgba.io/i/1711 and mgba.io/i/1823)
+ - GBA BIOS: Make HLE BIOS calls interruptible (fixes mgba.io/i/1711 and mgba.io/i/1823)
  - GBA BIOS: Fix invalid decompression bounds checking
  - GBA DMA: Linger last DMA on bus (fixes mgba.io/i/301 and mgba.io/i/1320)
  - GBA DMA: Fix ordering and timing of overlapping DMAs
@@ -317,7 +324,7 @@ Emulation fixes:
  - GBA Serialize: Fix alignment check when loading states
  - GBA SIO: Fix copying Normal mode transfer values
  - GBA SIO: Fix Normal mode being totally broken (fixes mgba.io/i/1800)
- - GBA SIO: Fix deseralizing SIO registers
+ - GBA SIO: Fix deserializing SIO registers
  - GBA SIO: Fix hanging on starting a second multiplayer window (fixes mgba.io/i/854)
  - GBA SIO: Fix Normal mode transfer start timing (fixes mgba.io/i/425)
  - GBA Timers: Fix toggling timer cascading while timer is active (fixes mgba.io/i/2043)

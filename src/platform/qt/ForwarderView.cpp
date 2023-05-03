@@ -94,6 +94,11 @@ void ForwarderView::build() {
 	}
 	m_controller.generator()->setTitle(m_ui.title->text());
 	m_controller.generator()->setRom(m_ui.romFilename->text());
+	if (m_ui.baseType->currentIndex() == 2) {
+		m_controller.setBaseFilename(m_ui.baseFilename->text());
+	} else {
+		m_controller.clearBaseFilename();		
+	}
 	m_controller.startBuild(m_ui.outputFilename->text());
 	m_ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 	m_ui.progressBar->setEnabled(true);
@@ -120,8 +125,20 @@ void ForwarderView::validate() {
 	if (!m_ui.system->checkedButton()) {
 		valid = false;
 	}
-	if (m_ui.baseType->currentIndex() != 1) {
+	if (m_ui.baseType->currentIndex() < 1) {
 		valid = false;
+	}
+	if (m_ui.baseType->currentIndex() == 2) {
+		m_ui.baseFilename->setEnabled(true);
+		m_ui.baseLabel->setEnabled(true);
+		m_ui.baseBrowse->setEnabled(true);
+		if (m_ui.baseFilename->text().isEmpty()) {
+			valid = false;
+		}
+	} else {
+		m_ui.baseFilename->setEnabled(true);
+		m_ui.baseLabel->setEnabled(true);
+		m_ui.baseBrowse->setEnabled(true);
 	}
 	if (m_controller.inProgress()) {
 		valid = false;

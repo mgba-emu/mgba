@@ -65,7 +65,11 @@ void ForwarderController::startBuild(const QString& outFilename) {
 			return;
 		}
 	}
-	downloadManifest();
+	if (m_baseFilename.isEmpty()) {
+		downloadManifest();
+	} else {
+		m_generator->rebuild(m_baseFilename, m_outFilename);
+	}
 }
 
 void ForwarderController::downloadForwarderKit() {
@@ -201,7 +205,9 @@ void ForwarderController::gotBuild(QNetworkReply* reply) {
 }
 
 void ForwarderController::cleanup() {
-	m_sourceFile.remove();
+	if (m_sourceFile.exists()) {
+		m_sourceFile.remove();
+	}
 	m_inProgress = false;
 
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)

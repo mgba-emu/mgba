@@ -22,7 +22,6 @@
 
 #define DRAW_BACKGROUND_MODE_0_TILE_SUFFIX_16(BLEND, OBJWIN) \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
-	palette = &mainPalette[paletteData]; \
 	charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
 	vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 	if (LIKELY(vram)) { \
@@ -47,7 +46,6 @@
 	} \
 	LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
-	palette = &mainPalette[paletteData]; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		if (outX < renderer->start) { \
 			tileData >>= 4 * (renderer->start - outX); \
@@ -101,7 +99,6 @@
 			carryData = 0; \
 		} else { \
 			paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
-			palette = &mainPalette[paletteData]; \
 			LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 			if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 				tileData >>= 4 * baseX; \
@@ -132,7 +129,6 @@
 					carryData = 0; \
 				} else { \
 					paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
-					palette = &mainPalette[paletteData]; \
 					LOAD_32(tileData, charBase & VRAM_BLOCK_MASK, vram); \
 					if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 						tileData >>= x * 4; \
@@ -163,7 +159,6 @@
 			localY = 7 - localY; \
 		} \
 		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 4; \
-		palette = &mainPalette[paletteData]; \
 		charBase = (background->charBase + (GBA_TEXT_MAP_TILE(mapData) << 5)) + (localY << 2); \
 		vram = renderer->d.vramBG[charBase >> VRAM_BLOCK_OFFSET]; \
 		if (UNLIKELY(!vram)) { \
@@ -425,7 +420,6 @@
 	if (LIKELY(vram)) { \
 		int end2 = end - 4; \
 		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
-		palette = &mainPalette[paletteData]; \
 		if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 			int shift = inX & 0x3; \
 			if (end2 > outX) { \
@@ -467,7 +461,6 @@
 		return; \
 	} \
 	paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
-	palette = &mainPalette[paletteData]; \
 	int end = mod8 - 4; \
 	if (!GBA_TEXT_MAP_HFLIP(mapData)) { \
 		if (end > 0) { \
@@ -510,7 +503,6 @@
 	for (; tileX < tileEnd; ++tileX) { \
 		mapData = background->mapCache[(localX >> 3) & 0x3F]; \
 		paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
-		palette = &mainPalette[paletteData]; \
 		localX += 8; \
 		localY = inY & 0x7; \
 		if (GBA_TEXT_MAP_VFLIP(mapData)) { \
@@ -623,7 +615,6 @@
 		for (; x < 8 && length; ++x, --length) { \
 			if (!mosaicWait) { \
 				paletteData = GBA_TEXT_MAP_PALETTE(mapData) << 8; \
-				palette = &mainPalette[paletteData]; \
 				if (UNLIKELY(!vram)) { \
 					carryData = 0; \
 				} else { \
@@ -747,24 +738,23 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 
 	uint32_t screenBase;
 	uint32_t charBase;
-	color_t* mainPalette = renderer->normalPalette;
+	color_t* palette = renderer->normalPalette;
 	if (background->multipalette && background->extPalette) {
-		mainPalette = background->extPalette;
+		palette = background->extPalette;
 		if (variant) {
-			mainPalette = background->variantPalette;
+			palette = background->variantPalette;
 		}
 	} else {
 		if (renderer->d.highlightAmount && background->highlight) {
-			mainPalette = renderer->highlightPalette;
+			palette = renderer->highlightPalette;
 		}
 		if (variant) {
-			mainPalette = renderer->variantPalette;
+			palette = renderer->variantPalette;
 			if (renderer->d.highlightAmount && background->highlight) {
-				mainPalette = renderer->highlightVariantPalette;
+				palette = renderer->highlightVariantPalette;
 			}
 		}
 	}
-	color_t* palette = mainPalette;
 	PREPARE_OBJWIN;
 
 	int outX = renderer->start;

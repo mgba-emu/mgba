@@ -30,6 +30,10 @@ public:
 	void setGenerator(std::unique_ptr<ForwarderGenerator>&& generator);
 	ForwarderGenerator* generator() { return m_generator.get(); }
 
+	void setBaseFilename(const QString& path) { m_baseFilename = path; }
+	void clearBaseFilename() { m_baseFilename = QString(); }
+	QString baseFilename() const { return m_baseFilename; }
+
 	QString channel() const { return m_channel; }
 	bool inProgress() const { return m_inProgress; }
 
@@ -62,6 +66,7 @@ private:
 	QString m_outFilename;
 	std::unique_ptr<ForwarderGenerator> m_generator;
 	QFile m_sourceFile;
+	QString m_baseFilename;
 	bool m_inProgress = false;
 	QByteArray m_originalPath;
 };
