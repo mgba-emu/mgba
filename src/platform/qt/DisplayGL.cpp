@@ -805,7 +805,7 @@ void PainterGL::performDraw() {
 		m_backend->postFrame(m_backend, m_buffer);
 	}
 	m_backend->drawFrame(m_backend);
-	if (m_showOSD && m_messagePainter) {
+	if (m_showOSD && m_messagePainter && !glContextHasBug(OpenGLBug::IG4ICD_CRASH)) {
 		m_painter.begin(m_paintDev.get());
 		m_messagePainter->paint(&m_painter);
 		m_painter.end();

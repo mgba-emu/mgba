@@ -397,7 +397,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		LOAD_32(value, address & 0x0001FFFC, gba->video.vram); \
 	} \
 	++wait; \
-	if (gba->video.shouldStall) { \
+	if (gba->video.shouldStall && (address & 0x0001FFFF) < ((GBARegisterDISPCNTGetMode(gba->memory.io[REG_DISPCNT >> 1]) >= 3) ? 0x00014000 : 0x00010000)) { \
 		wait += GBAMemoryStallVRAM(gba, wait, 1); \
 	}
 
@@ -557,7 +557,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		} else {
 			LOAD_16(value, address & 0x0001FFFE, gba->video.vram);
 		}
-		if (gba->video.shouldStall) {
+		if (gba->video.shouldStall && (address & 0x0001FFFF) < ((GBARegisterDISPCNTGetMode(gba->memory.io[REG_DISPCNT >> 1]) >= 3) ? 0x00014000 : 0x00010000)) {
 			wait += GBAMemoryStallVRAM(gba, wait, 0);
 		}
 		break;
@@ -777,7 +777,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		} \
 	} \
 	++wait; \
-	if (gba->video.shouldStall) { \
+	if (gba->video.shouldStall && (address & 0x0001FFFF) < ((GBARegisterDISPCNTGetMode(gba->memory.io[REG_DISPCNT >> 1]) >= 3) ? 0x00014000 : 0x00010000)) { \
 		wait += GBAMemoryStallVRAM(gba, wait, 1); \
 	}
 
@@ -904,7 +904,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 				gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x0001FFFE);
 			}
 		}
-		if (gba->video.shouldStall) {
+		if (gba->video.shouldStall && (address & 0x0001FFFF) < ((GBARegisterDISPCNTGetMode(gba->memory.io[REG_DISPCNT >> 1]) >= 3) ? 0x00014000 : 0x00010000)) {
 			wait += GBAMemoryStallVRAM(gba, wait, 0);
 		}
 		break;
