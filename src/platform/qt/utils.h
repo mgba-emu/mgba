@@ -74,7 +74,7 @@ constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
 
 template<typename T, typename U>
 constexpr T saturateCast(U value) {
-	if (std::numeric_limits<T>::is_signed == std::numeric_limits<T>::is_signed) {
+	if (std::numeric_limits<T>::is_signed == std::numeric_limits<U>::is_signed) {
 		if (value > std::numeric_limits<T>::max()) {
 			return std::numeric_limits<T>::max();
 		}
