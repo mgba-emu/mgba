@@ -1,6 +1,7 @@
 0.10.3: (Future)
 Emulation fixes:
  - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
+ - GB SIO: Disabling SIO should cancel pending transfers (fixes mgba.io/i/2537)
  - GBA BIOS: Fix clobbering registers with word-sized CpuSet
 
 0.10.2: (2023-04-23)
