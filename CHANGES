@@ -6,6 +6,7 @@ Features:
  - Debugger: Add range watchpoints
 Emulation fixes:
  - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
+ - GB I/O: Read back proper SVBK value after writing 0 (fixes mgba.io/i/2921)
  - GB Serialize: Add missing Pocket Cam state to savestates
  - GB SIO: Disabling SIO should cancel pending transfers (fixes mgba.io/i/2537)
  - GB Video: Implement DMG-style sprite ordering
