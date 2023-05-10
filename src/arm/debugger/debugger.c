@@ -408,7 +408,7 @@ static void ARMDebuggerListBreakpoints(struct mDebuggerPlatform* d, struct mDebu
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	mBreakpointListClear(list);
 	size_t i, s;
-	for (i = 0; i < ARMDebugBreakpointListSize(&debugger->breakpoints) || s < ARMDebugBreakpointListSize(&debugger->swBreakpoints);) {
+	for (i = 0, s = 0; i < ARMDebugBreakpointListSize(&debugger->breakpoints) || s < ARMDebugBreakpointListSize(&debugger->swBreakpoints);) {
 		struct ARMDebugBreakpoint* hw = NULL;
 		struct ARMDebugBreakpoint* sw = NULL;
 		if (i < ARMDebugBreakpointListSize(&debugger->breakpoints)) {
