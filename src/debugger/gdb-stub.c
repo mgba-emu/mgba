@@ -17,8 +17,6 @@
 #define SIGTRAP 5 /* Win32 Signals do not include SIGTRAP */
 #endif
 
-#define SOCKET_TIMEOUT 50
-
 enum GDBError {
 	GDB_NO_ERROR = 0x00,
 	GDB_BAD_ARGUMENTS = 0x06,
@@ -135,20 +133,17 @@ static void _gdbStubPoll(struct mDebuggerModule* debugger) {
 		return;
 	}
 	stub->untilPoll = GDB_STUB_INTERVAL;
-	stub->shouldBlock = false;
-	GDBStubUpdate(stub);
+	GDBStubUpdate(stub, 0);
 }
 
-static void _gdbStubWait(struct mDebuggerModule* debugger) {
+static void _gdbStubWait(struct mDebuggerModule* debugger, int32_t timeoutMs) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
-	stub->shouldBlock = true;
-	GDBStubUpdate(stub);
+	GDBStubUpdate(stub, timeoutMs);
 }
 
 static void _gdbStubUpdate(struct mDebuggerModule* debugger) {
 	struct GDBStub* stub = (struct GDBStub*) debugger;
-	stub->shouldBlock = false;
-	GDBStubUpdate(stub);
+	GDBStubUpdate(stub, 0);
 }
 
 static void _ack(struct GDBStub* stub) {
@@ -254,6 +249,7 @@ static void _writeHostInfo(struct GDBStub* stub) {
 static void _continue(struct GDBStub* stub, const char* message) {
 	mDebuggerModuleSetNeedsCallback(&stub->d);
 	stub->untilPoll = GDB_STUB_INTERVAL;
+	stub->d.isPaused = false;
 	// TODO: parse message
 	UNUSED(message);
 }
@@ -791,7 +787,6 @@ void GDBStubCreate(struct GDBStub* stub) {
 	stub->d.type = DEBUGGER_GDB;
 	stub->untilPoll = GDB_STUB_INTERVAL;
 	stub->lineAck = GDB_ACK_PENDING;
-	stub->shouldBlock = false;
 }
 
 bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAddress, enum GDBWatchpointsBehvaior watchpointsBehavior) {
@@ -841,17 +836,17 @@ void GDBStubShutdown(struct GDBStub* stub) {
 	}
 }
 
-void GDBStubUpdate(struct GDBStub* stub) {
+bool GDBStubUpdate(struct GDBStub* stub, int32_t timeoutMs) {
 	if (stub->socket == INVALID_SOCKET) {
 		stub->d.needsCallback = false;
 		stub->d.isPaused = false;
 		mDebuggerUpdatePaused(stub->d.p);
-		return;
+		return false;
 	}
 	if (stub->connection == INVALID_SOCKET) {
-		if (stub->shouldBlock) {
+		if (timeoutMs) {
 			Socket reads = stub->socket;
-			SocketPoll(1, &reads, 0, 0, SOCKET_TIMEOUT);
+			SocketPoll(1, &reads, 0, 0, timeoutMs);
 		}
 		stub->connection = SocketAccept(stub->socket, 0);
 		if (!SOCKET_FAILED(stub->connection)) {
@@ -860,36 +855,38 @@ void GDBStubUpdate(struct GDBStub* stub) {
 			}
 			mDebuggerEnter(stub->d.p, DEBUGGER_ENTER_ATTACHED, 0);
 		} else if (SocketWouldBlock()) {
-			return;
+			return false;
 		} else {
 			goto connectionLost;
 		}
 		SocketSetTCPPush(stub->connection, 1);
 	}
-	while (true) {
-		if (stub->shouldBlock) {
-			Socket reads = stub->connection;
-			SocketPoll(1, &reads, 0, 0, SOCKET_TIMEOUT);
-		}
-		ssize_t messageLen = SocketRecv(stub->connection, stub->line, GDB_STUB_MAX_LINE - 1);
-		if (messageLen == 0) {
-			goto connectionLost;
-		}
-		if (messageLen == -1) {
-			if (SocketWouldBlock()) {
-				return;
-			}
-			goto connectionLost;
-		}
-		stub->line[messageLen] = '\0';
-		mLOG(DEBUGGER, DEBUG, "< %s", stub->line);
-		ssize_t position = 0;
-		while (position < messageLen) {
-			position += _parseGDBMessage(stub, &stub->line[position]);
-		}
+
+	if (timeoutMs) {
+		Socket reads = stub->connection;
+		SocketPoll(1, &reads, 0, 0, timeoutMs);
 	}
+	ssize_t messageLen = SocketRecv(stub->connection, stub->line, GDB_STUB_MAX_LINE - 1);
+	if (messageLen == 0) {
+		goto connectionLost;
+	}
+	if (messageLen == -1) {
+		if (SocketWouldBlock()) {
+			return false;
+		}
+		goto connectionLost;
+	}
+
+	stub->line[messageLen] = '\0';
+	mLOG(DEBUGGER, DEBUG, "< %s", stub->line);
+	ssize_t position = 0;
+	while (position < messageLen) {
+		position += _parseGDBMessage(stub, &stub->line[position]);
+	}
+	return true;
 
 connectionLost:
 	mLOG(DEBUGGER, WARN, "Connection lost");
 	GDBStubHangup(stub);
+	return false;
 }

@@ -1092,7 +1092,7 @@ bool CLIDebuggerRunCommand(struct CLIDebugger* debugger, const char* line, size_
 	return false;
 }
 
-static void _commandLine(struct mDebuggerModule* debugger) {
+static void _commandLine(struct mDebuggerModule* debugger, int32_t timeoutMs) {
 	struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
 	const char* line;
 	size_t len;
@@ -1102,13 +1102,18 @@ static void _commandLine(struct mDebuggerModule* debugger) {
 		_printStatus(cliDebugger, 0);
 	}
 	while (debugger->isPaused && !mDebuggerIsShutdown(debugger->p)) {
+		int poll = cliDebugger->backend->poll(cliDebugger->backend, timeoutMs);
+		if (poll <= 0) {
+			if (poll < 0) {
+				mDebuggerShutdown(debugger->p);
+			} else {
+				cliDebugger->skipStatus = true;
+			}
+			return;
+		}
 		line = cliDebugger->backend->readline(cliDebugger->backend, &len);
 		if (!line || len == 0) {
 			mDebuggerShutdown(debugger->p);
-			return;
-		}
-		if (line[0] == '\033') {
-			cliDebugger->skipStatus = true;
 			return;
 		}
 		if (line[0] == '\n') {

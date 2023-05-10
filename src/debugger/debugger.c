@@ -118,7 +118,7 @@ void mDebuggerDetachModule(struct mDebugger* debugger, struct mDebuggerModule* m
 	}
 }
 
-void mDebuggerRun(struct mDebugger* debugger) {
+void mDebuggerRunTimeout(struct mDebugger* debugger, int32_t timeoutMs) {
 	size_t i;
 	size_t anyPaused = 0;
 
@@ -146,7 +146,7 @@ void mDebuggerRun(struct mDebugger* debugger) {
 			struct mDebuggerModule* module = *mDebuggerModuleListGetPointer(&debugger->modules, i);
 			if (module->isPaused) {
 				if (module->paused) {
-					module->paused(module);
+					module->paused(module, timeoutMs);
 				}
 				if (module->isPaused) {
 					++anyPaused;
@@ -165,6 +165,10 @@ void mDebuggerRun(struct mDebugger* debugger) {
 	case DEBUGGER_SHUTDOWN:
 		return;
 	}
+}
+
+void mDebuggerRun(struct mDebugger* debugger) {
+	mDebuggerRunTimeout(debugger, 50);
 }
 
 void mDebuggerRunFrame(struct mDebugger* debugger) {
@@ -309,7 +313,5 @@ bool mDebuggerLookupIdentifier(struct mDebugger* debugger, const char* name, int
 
 void mDebuggerModuleSetNeedsCallback(struct mDebuggerModule* debugger) {
 	debugger->needsCallback = true;
-	if (debugger->p->state == DEBUGGER_RUNNING) {
-		debugger->p->state = DEBUGGER_CALLBACK;
-	}
+	mDebuggerUpdatePaused(debugger->p);
 }

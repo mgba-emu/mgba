@@ -42,6 +42,7 @@ private:
 	static void printf(struct CLIDebuggerBackend* be, const char* fmt, ...);
 	static void init(struct CLIDebuggerBackend* be);
 	static void deinit(struct CLIDebuggerBackend* be);
+	static int poll(struct CLIDebuggerBackend* be, int32_t timeoutMs);
 	static const char* readLine(struct CLIDebuggerBackend* be, size_t* len);
 	static void lineAppend(struct CLIDebuggerBackend* be, const char* line);
 	static const char* historyLast(struct CLIDebuggerBackend* be, size_t* len);

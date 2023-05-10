@@ -22,6 +22,7 @@ DebuggerConsoleController::DebuggerConsoleController(QObject* parent)
 	m_backend.printf = printf;
 	m_backend.init = init;
 	m_backend.deinit = deinit;
+	m_backend.poll = poll;
 	m_backend.readline = readLine;
 	m_backend.lineAppend = lineAppend;
 	m_backend.historyLast = historyLast;
@@ -88,6 +89,14 @@ void DebuggerConsoleController::deinit(struct CLIDebuggerBackend* be) {
 	}
 }
 
+int DebuggerConsoleController::poll(struct CLIDebuggerBackend* be, int32_t timeoutMs) {
+	Backend* consoleBe = reinterpret_cast<Backend*>(be);
+	DebuggerConsoleController* self = consoleBe->self;
+	QMutexLocker lock(&self->m_mutex);
+	self->m_cond.wait(&self->m_mutex, timeoutMs < 0 ? ULONG_MAX : static_cast<unsigned long>(timeoutMs));
+	return !self->m_lines.isEmpty();
+}
+
 const char* DebuggerConsoleController::readLine(struct CLIDebuggerBackend* be, size_t* len) {
 	Backend* consoleBe = reinterpret_cast<Backend*>(be);
 	DebuggerConsoleController* self = consoleBe->self;
@@ -137,10 +146,6 @@ void DebuggerConsoleController::interrupt(struct CLIDebuggerBackend* be) {
 	DebuggerConsoleController* self = consoleBe->self;
 	QMutexLocker lock(&self->m_mutex);
 	self->m_cond.wakeOne();
-	if (!self->m_lines.isEmpty()) {
-		return;
-	}
-	self->m_lines.append("\033");
 }
 
 void DebuggerConsoleController::historyLoad() {

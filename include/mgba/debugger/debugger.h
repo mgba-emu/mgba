@@ -152,7 +152,7 @@ struct mDebuggerModule {
 	void (*init)(struct mDebuggerModule*);
 	void (*deinit)(struct mDebuggerModule*);
 
-	void (*paused)(struct mDebuggerModule*);
+	void (*paused)(struct mDebuggerModule*, int32_t timeoutMs);
 	void (*update)(struct mDebuggerModule*);
 	void (*entered)(struct mDebuggerModule*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 	void (*custom)(struct mDebuggerModule*);
@@ -166,6 +166,7 @@ void mDebuggerDeinit(struct mDebugger*);
 void mDebuggerAttach(struct mDebugger*, struct mCore*);
 void mDebuggerAttachModule(struct mDebugger*, struct mDebuggerModule*);
 void mDebuggerDetachModule(struct mDebugger*, struct mDebuggerModule*);
+void mDebuggerRunTimeout(struct mDebugger* debugger, int32_t timeoutMs);
 void mDebuggerRun(struct mDebugger*);
 void mDebuggerRunFrame(struct mDebugger*);
 void mDebuggerEnter(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);

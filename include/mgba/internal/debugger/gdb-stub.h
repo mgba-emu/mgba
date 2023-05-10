@@ -41,7 +41,6 @@ struct GDBStub {
 	Socket socket;
 	Socket connection;
 
-	bool shouldBlock;
 	int untilPoll;
 
 	bool supportsSwbreak;
@@ -56,7 +55,7 @@ bool GDBStubListen(struct GDBStub*, int port, const struct Address* bindAddress,
 void GDBStubHangup(struct GDBStub*);
 void GDBStubShutdown(struct GDBStub*);
 
-void GDBStubUpdate(struct GDBStub*);
+bool GDBStubUpdate(struct GDBStub*, int timeoutMs);
 
 CXX_GUARD_END
 
