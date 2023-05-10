@@ -20,6 +20,7 @@ CXX_GUARD_START
 
 #define THREAD_ENTRY void*
 typedef THREAD_ENTRY (*ThreadEntry)(void*);
+#define THREAD_EXIT(RES) return RES
 
 typedef pthread_t Thread;
 typedef pthread_mutex_t Mutex;

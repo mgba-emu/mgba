@@ -159,6 +159,7 @@ static THREAD_ENTRY _promptThread(void* context) {
 		ConditionWait(&elbe->promptWrite, &elbe->promptMutex);
 	}
 	MutexUnlock(&elbe->promptMutex);
+	THREAD_EXIT(0);
 }
 
 static int CLIDebuggerEditLinePoll(struct CLIDebuggerBackend* be, int32_t timeoutMs) {

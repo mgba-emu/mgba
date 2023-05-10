@@ -12,6 +12,7 @@
 #include <windows.h>
 #define THREAD_ENTRY DWORD WINAPI
 typedef THREAD_ENTRY ThreadEntry(LPVOID);
+#define THREAD_EXIT(RES) return RES
 
 typedef HANDLE Thread;
 typedef CRITICAL_SECTION Mutex;

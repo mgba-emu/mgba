@@ -841,5 +841,6 @@ THREAD_ENTRY mGUIAutosaveThread(void* context) {
 		}
 	}
 	MutexUnlock(&autosave->mutex);
+	THREAD_EXIT(0);
 }
 #endif

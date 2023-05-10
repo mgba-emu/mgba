@@ -129,7 +129,7 @@ static THREAD_ENTRY _audioThread(void* context) {
 		sceAudioOutOutput(audioPort, buffer);
 	}
 	sceAudioOutReleasePort(audioPort);
-	return 0;
+	THREAD_EXIT(0);
 }
 
 static void _sampleRotation(struct mRotationSource* source) {

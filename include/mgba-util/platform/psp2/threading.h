@@ -17,6 +17,7 @@ typedef struct {
 } Condition;
 #define THREAD_ENTRY int
 typedef THREAD_ENTRY (*ThreadEntry)(void*);
+#define THREAD_EXIT(RES) return RES
 
 static inline int MutexInit(Mutex* mutex) {
 	Mutex id = sceKernelCreateMutex("mutex", 0, 0, 0);
