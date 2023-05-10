@@ -450,7 +450,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 	logger->filter = NULL;
 
-	return 0;
+	THREAD_EXIT(0);
 }
 
 bool mCoreThreadStart(struct mCoreThread* threadContext) {

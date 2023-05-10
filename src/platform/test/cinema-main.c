@@ -1365,6 +1365,7 @@ static THREAD_ENTRY CInemaJob(void* context) {
 	CIflush(&stream.err, stderr);
 	StringListDeinit(&stream.err.lines);
 	StringListDeinit(&stream.err.partial);
+	THREAD_EXIT(0);
 }
 
 void _log(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args) {
