@@ -1061,6 +1061,9 @@ static struct CLIDebuggerSystem* _GBCoreCliDebuggerSystem(struct mCore* core) {
 
 static void _GBCoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {
 	struct SM83Core* cpu = core->cpu;
+	if (core->debugger == debugger) {
+		return;
+	}
 	if (core->debugger) {
 		SM83HotplugDetach(cpu, CPU_COMPONENT_DEBUGGER);
 	}

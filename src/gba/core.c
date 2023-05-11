@@ -1129,6 +1129,9 @@ static struct CLIDebuggerSystem* _GBACoreCliDebuggerSystem(struct mCore* core) {
 }
 
 static void _GBACoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {
+	if (core->debugger == debugger) {
+		return;
+	}
 	if (core->debugger) {
 		GBADetachDebugger(core->board);
 	}
