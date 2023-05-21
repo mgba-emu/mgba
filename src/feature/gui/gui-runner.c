@@ -658,8 +658,9 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				break;
 			case RUNNER_SAVE_STATE:
 				struct mGUIBackground* gbaBackground = (struct mGUIBackground*) stateSaveMenu.background;
-				gbaBackground->screenshotId = (item->data.v.u >> 16) | SCREENSHOT_STALE;
-				mCoreSaveState(runner->core, item->data.v.u >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
+				unsigned stateId = item->data.v.u >> 16;
+				gbaBackground->screenshotId = stateId | SCREENSHOT_STALE;
+				mCoreSaveState(runner->core, stateId, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
 				break;
 			case RUNNER_LOAD_STATE:
 				mCoreLoadState(runner->core, item->data.v.u >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
