@@ -51,6 +51,7 @@ enum {
 enum {
 	SCREENSHOT_VALID = 0x10000,
 	SCREENSHOT_INVALID = 0x20000,
+	SCREENSHOT_STALE = 0x30000,
 };
 
 static const struct mInputPlatformInfo _mGUIKeyInfo = {
@@ -127,7 +128,7 @@ static void _drawState(struct GUIBackground* background, void* id) {
 		if (pixels && gbaBackground->screenshotId == (stateId | SCREENSHOT_VALID)) {
 			gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, gbaBackground->w, gbaBackground->h, true);
 			return;
-		} else if (gbaBackground->screenshotId != (stateId | SCREENSHOT_INVALID)) {
+		} else if ((gbaBackground->screenshotId != (stateId | SCREENSHOT_INVALID)) || (gbaBackground->screenshotId == (stateId | SCREENSHOT_STALE))) {
 			struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
 			bool success = false;
 			unsigned w, h;
@@ -656,6 +657,8 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				runner->core->reset(runner->core);
 				break;
 			case RUNNER_SAVE_STATE:
+				struct mGUIBackground* gbaBackground = (struct mGUIBackground*) stateSaveMenu.background;
+				gbaBackground->screenshotId = (item->data.v.u >> 16) | SCREENSHOT_STALE;
 				mCoreSaveState(runner->core, item->data.v.u >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
 				break;
 			case RUNNER_LOAD_STATE:
