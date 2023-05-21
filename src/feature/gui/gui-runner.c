@@ -658,11 +658,10 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				break;
 			case RUNNER_SAVE_STATE:
 				struct mGUIBackground* gbaBackground = (struct mGUIBackground*) stateSaveMenu.background;
-				unsigned stateId = item->data.v.u >> 16;
 				// If we are saving state, then the screenshot stored for the state previously should no longer be considered up-to-date.
 				// Therefore, mark it as stale, so that at draw time, we will re-draw to the new save state's screenshot.
-				gbaBackground->screenshotId = stateId | SCREENSHOT_STALE;
-				mCoreSaveState(runner->core, stateId, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
+				gbaBackground->screenshotId |= SCREENSHOT_STALE;
+				mCoreSaveState(runner->core, item->data.v.u >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
 				break;
 			case RUNNER_LOAD_STATE:
 				mCoreLoadState(runner->core, item->data.v.u >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
