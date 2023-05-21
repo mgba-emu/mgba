@@ -127,7 +127,7 @@ static void _drawState(struct GUIBackground* background, void* id) {
 		if (pixels && gbaBackground->screenshotId == (stateId | SCREENSHOT_VALID)) {
 			gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, gbaBackground->w, gbaBackground->h, true);
 			return;
-		} else if ((gbaBackground->screenshotId != (stateId | SCREENSHOT_INVALID))) {
+		} else if (gbaBackground->screenshotId != (stateId | SCREENSHOT_INVALID)) {
 			struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
 			bool success = false;
 			unsigned w, h;
