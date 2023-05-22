@@ -247,22 +247,22 @@
            </property>
            <item>
             <property name="text">
-             <string>MKV</string>
+             <string notr="true">MKV</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>WebM</string>
+             <string notr="true">WebM</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>AVI</string>
+             <string notr="true">AVI</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>MP4</string>
+             <string notr="true">MP4</string>
             </property>
            </item>
           </widget>
@@ -274,42 +274,42 @@
            </property>
            <item>
             <property name="text">
-             <string>H.264</string>
+             <string notr="true">H.264</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>H.264 (NVENC)</string>
+             <string notr="true">H.264 (NVENC)</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>HEVC</string>
+             <string notr="true">HEVC</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>HEVC (NVENC)</string>
+             <string notr="true">HEVC (NVENC)</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>VP8</string>
+             <string notr="true">VP8</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>VP9</string>
+             <string notr="true">VP9</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>FFV1</string>
+             <string notr="true">FFV1</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>None</string>
+             <string notr="true">None</string>
             </property>
            </item>
           </widget>
@@ -321,42 +321,42 @@
            </property>
            <item>
             <property name="text">
-             <string>FLAC</string>
+             <string notr="true">FLAC</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>WavPack</string>
+             <string notr="true">WavPack</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>Opus</string>
+             <string notr="true">Opus</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>Vorbis</string>
+             <string notr="true">Vorbis</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>MP3</string>
+             <string notr="true">MP3</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>AAC</string>
+             <string notr="true">AAC</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>Uncompressed</string>
+             <string notr="true">Uncompressed</string>
             </property>
            </item>
            <item>
             <property name="text">
-             <string>None</string>
+             <string notr="true">None</string>
             </property>
            </item>
           </widget>
