@@ -271,7 +271,7 @@ void VideoView::setFilename(const QString& fname) {
 void VideoView::setAudioCodec(const QString& codec) {
 	free(m_audioCodecCstr);
 	m_audioCodec = sanitizeCodec(codec, s_acodecMap);
-	if (m_audioCodec == "none") {
+	if (m_audioCodec == "no audio") {
 		m_audioCodecCstr = nullptr;
 	} else {
 		m_audioCodecCstr = strdup(m_audioCodec.toUtf8().constData());
@@ -288,7 +288,7 @@ void VideoView::setAudioCodec(const QString& codec) {
 void VideoView::setVideoCodec(const QString& codec) {
 	free(m_videoCodecCstr);
 	m_videoCodec = sanitizeCodec(codec, s_vcodecMap);
-	if (m_videoCodec == "none") {
+	if (m_videoCodec == "no video") {
 		m_videoCodecCstr = nullptr;
 	} else {
 		m_videoCodecCstr = strdup(m_videoCodec.toUtf8().constData());

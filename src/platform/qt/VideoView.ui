@@ -309,7 +309,7 @@
            </item>
            <item>
             <property name="text">
-             <string notr="true">None</string>
+             <string notr="true">No Video</string>
             </property>
            </item>
           </widget>
@@ -356,7 +356,7 @@
            </item>
            <item>
             <property name="text">
-             <string notr="true">None</string>
+             <string notr="true">No Audio</string>
             </property>
            </item>
           </widget>
