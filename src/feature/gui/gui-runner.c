@@ -657,7 +657,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				break;
 			case RUNNER_SAVE_STATE:
 				// If we are saving state, then the screenshot stored for the state previously should no longer be considered up-to-date.
-				// Therefore, mark it as stale, so that at draw time, we will re-draw to the new save state's screenshot.
+				// Therefore, mark it as stale so that at draw time we load the new save state's screenshot.
 				((struct mGUIBackground*) stateSaveMenu.background)->screenshotId |= SCREENSHOT_INVALID;
 				mCoreSaveState(runner->core, item->data.v.u >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
 				break;
