@@ -1149,12 +1149,12 @@ static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	core->symbolTable = mDebuggerSymbolTableCreate();
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 #ifdef USE_ELF
-	if (!vf) {
+	if (!vf && core->dirs.base) {
 		closeAfter = true;
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".elf", O_RDONLY);
 	}
 #endif
-	if (!vf) {
+	if (!vf && core->dirs.base) {
 		closeAfter = true;
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
 	}
