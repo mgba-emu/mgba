@@ -438,7 +438,7 @@ static void _writeByte(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 		return;
 	}
 	if (dv->segmentValue >= 0) {
-		debugger->d.p->core->rawWrite8(debugger->d.p->core, address, value, dv->segmentValue);
+		debugger->d.p->core->rawWrite8(debugger->d.p->core, address, dv->segmentValue, value);
 	} else {
 		debugger->d.p->core->busWrite8(debugger->d.p->core, address, value);
 	}
@@ -460,7 +460,7 @@ static void _writeHalfword(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		return;
 	}
 	if (dv->segmentValue >= 0) {
-		debugger->d.p->core->rawWrite16(debugger->d.p->core, address, value, dv->segmentValue);
+		debugger->d.p->core->rawWrite16(debugger->d.p->core, address, dv->segmentValue, value);
 	} else {
 		debugger->d.p->core->busWrite16(debugger->d.p->core, address, value);
 	}
@@ -492,7 +492,7 @@ static void _writeWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	uint32_t address = dv->intValue;
 	uint32_t value = dv->next->intValue;
 	if (dv->segmentValue >= 0) {
-		debugger->d.p->core->rawWrite32(debugger->d.p->core, address, value, dv->segmentValue);
+		debugger->d.p->core->rawWrite32(debugger->d.p->core, address, dv->segmentValue, value);
 	} else {
 		debugger->d.p->core->busWrite32(debugger->d.p->core, address, value);
 	}
