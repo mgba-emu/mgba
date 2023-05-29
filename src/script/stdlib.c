@@ -159,6 +159,15 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 		mSCRIPT_KV_SENTINEL
 	});
 #endif
+#ifdef USE_DEBUGGERS
+	mScriptContextExportConstants(context, "WATCHPOINT_TYPE", (struct mScriptKVPair[]) {
+		mSCRIPT_CONSTANT_PAIR(WATCHPOINT, WRITE),
+		mSCRIPT_CONSTANT_PAIR(WATCHPOINT, READ),
+		mSCRIPT_CONSTANT_PAIR(WATCHPOINT, RW),
+		mSCRIPT_CONSTANT_PAIR(WATCHPOINT, WRITE_CHANGE),
+		mSCRIPT_KV_SENTINEL
+	});
+#endif
 	mScriptContextSetGlobal(context, "C", context->constants);
 	mScriptContextSetDocstring(context, "C", "A table containing the [exported constants](#constants)");
 

@@ -2,6 +2,7 @@
 Features:
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
  - Scripting: New `storage` API for saving data for a script, e.g. settings
+ - Scripting: Debugger integration to allow for breakpoints and watchpoints
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:

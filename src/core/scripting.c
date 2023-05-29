@@ -156,10 +156,39 @@ struct mScriptMemoryDomain {
 	struct mCoreMemoryBlock block;
 };
 
+#ifdef USE_DEBUGGERS
+struct mScriptBreakpointName {
+	uint32_t address;
+	uint32_t maxAddress;
+	int segment : 9;
+	int type : 1;
+	int subtype : 3;
+};
+
+struct mScriptBreakpoint {
+	ssize_t id;
+	struct mScriptBreakpointName name;
+	struct Table callbacks;
+};
+
+struct mScriptCoreAdapter;
+struct mScriptDebugger {
+	struct mDebuggerModule d;
+	struct mScriptCoreAdapter* p;
+	struct Table breakpoints;
+	struct Table cbidMap;
+	struct Table bpidMap;
+	int64_t nextBreakpoint;
+};
+#endif
+
 struct mScriptCoreAdapter {
 	struct mCore* core;
 	struct mScriptContext* context;
 	struct mScriptValue memory;
+#ifdef USE_DEBUGGERS
+	struct mScriptDebugger debugger;
+#endif
 };
 
 struct mScriptConsole {
@@ -659,9 +688,239 @@ static void _rebuildMemoryMap(struct mScriptContext* context, struct mScriptCore
 	}
 }
 
+#ifdef USE_DEBUGGERS
+static void _freeBreakpoint(void* bp) {
+	struct mScriptBreakpoint* point = bp;
+	HashTableDeinit(&point->callbacks);
+	free(bp);
+}
+
+static struct mScriptBreakpoint* _ensureBreakpoint(struct mScriptDebugger* debugger, struct mBreakpoint* breakpoint) {
+	struct mDebuggerModule* module = &debugger->d;
+	struct mScriptBreakpointName name = {
+		.address = breakpoint->address,
+		.maxAddress = 0,
+		.segment = breakpoint->segment,
+		.type = 0,
+		.subtype = breakpoint->type
+	};
+	struct mScriptBreakpoint* point = HashTableLookupBinary(&debugger->breakpoints, &name, sizeof(name));
+	if (point) {
+		return point;
+	}
+	point = calloc(1, sizeof(*point));
+	point->id = module->p->platform->setBreakpoint(module->p->platform, module, breakpoint);
+	point->name = name;
+	HashTableInit(&point->callbacks, 0, (void (*)(void*)) mScriptValueDeref);
+	HashTableInsertBinary(&debugger->bpidMap, &point->id, sizeof(point->id), point);
+	HashTableInsertBinary(&debugger->breakpoints, &name, sizeof(name), point);
+	return point;
+}
+
+static struct mScriptBreakpoint* _ensureWatchpoint(struct mScriptDebugger* debugger, struct mWatchpoint* watchpoint) {
+	struct mDebuggerModule* module = &debugger->d;
+	struct mScriptBreakpointName name = {
+		.address = watchpoint->minAddress,
+		.maxAddress = watchpoint->maxAddress,
+		.segment = watchpoint->segment,
+		.type = 1,
+		.subtype = watchpoint->type
+	};
+	struct mScriptBreakpoint* point = HashTableLookupBinary(&debugger->breakpoints, &name, sizeof(name));
+	if (point) {
+		return point;
+	}
+	point = calloc(1, sizeof(*point));
+	point->id = module->p->platform->setWatchpoint(module->p->platform, module, watchpoint);
+	point->name = name;
+	HashTableInit(&point->callbacks, 0, (void (*)(void*)) mScriptValueDeref);
+	HashTableInsertBinary(&debugger->bpidMap, &point->id, sizeof(point->id), point);
+	HashTableInsertBinary(&debugger->breakpoints, &name, sizeof(name), point);
+	return point;
+}
+
+static int64_t _addCallbackToBreakpoint(struct mScriptDebugger* debugger, struct mScriptBreakpoint* point, struct mScriptValue* callback) {
+	int64_t cbid = debugger->nextBreakpoint;
+	++debugger->nextBreakpoint;
+	HashTableInsertBinary(&debugger->cbidMap, &cbid, sizeof(cbid), point);
+	mScriptValueRef(callback);
+	HashTableInsertBinary(&point->callbacks, &cbid, sizeof(cbid), callback);
+	return cbid;
+}
+
+static void _runCallbacks(struct mScriptBreakpoint* point) {
+	struct TableIterator iter;
+	if (!HashTableIteratorStart(&point->callbacks, &iter)) {
+		return;
+	}
+	do {
+		struct mScriptValue* fn = HashTableIteratorGetValue(&point->callbacks, &iter);
+		struct mScriptFrame frame;
+		mScriptFrameInit(&frame);
+		mScriptInvoke(fn, &frame);
+		mScriptFrameDeinit(&frame);
+	} while (HashTableIteratorNext(&point->callbacks, &iter));
+}
+
+static void _scriptDebuggerInit(struct mDebuggerModule* debugger) {
+	struct mScriptDebugger* scriptDebugger = (struct mScriptDebugger*) debugger;
+	debugger->isPaused = false;
+	debugger->needsCallback = false;
+
+	HashTableInit(&scriptDebugger->breakpoints, 0, _freeBreakpoint);
+	HashTableInit(&scriptDebugger->cbidMap, 0, NULL);
+	HashTableInit(&scriptDebugger->bpidMap, 0, NULL);
+}
+
+static void _scriptDebuggerDeinit(struct mDebuggerModule* debugger) {
+	struct mScriptDebugger* scriptDebugger = (struct mScriptDebugger*) debugger;
+	HashTableDeinit(&scriptDebugger->cbidMap);
+	HashTableDeinit(&scriptDebugger->bpidMap);
+	HashTableDeinit(&scriptDebugger->breakpoints);
+}
+
+static void _scriptDebuggerPaused(struct mDebuggerModule* debugger, int32_t timeoutMs) {
+	UNUSED(debugger);
+	UNUSED(timeoutMs);
+}
+
+static void _scriptDebuggerUpdate(struct mDebuggerModule* debugger) {
+	UNUSED(debugger);
+}
+
+static void _scriptDebuggerEntered(struct mDebuggerModule* debugger, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
+	struct mScriptDebugger* scriptDebugger = (struct mScriptDebugger*) debugger;
+	struct mScriptBreakpoint* point;
+	switch (reason) {
+	case DEBUGGER_ENTER_BREAKPOINT:
+	case DEBUGGER_ENTER_WATCHPOINT:
+		point = HashTableLookupBinary(&scriptDebugger->bpidMap, &info->pointId, sizeof(info->pointId));
+		break;
+	default:
+		return;
+	}
+	_runCallbacks(point);
+	debugger->isPaused = false;
+}
+
+static void _scriptDebuggerCustom(struct mDebuggerModule* debugger) {
+	UNUSED(debugger);
+}
+
+static void _scriptDebuggerInterrupt(struct mDebuggerModule* debugger) {
+	UNUSED(debugger);
+}
+
+static bool _setupDebugger(struct mScriptCoreAdapter* adapter) {
+	if (!adapter->core->debugger) {
+		return false;
+	}
+
+	if (adapter->debugger.d.p) {
+		return true;
+	}
+	adapter->debugger.p = adapter;
+	adapter->debugger.d.type = DEBUGGER_CUSTOM;
+	adapter->debugger.d.init = _scriptDebuggerInit;
+	adapter->debugger.d.deinit = _scriptDebuggerDeinit;
+	adapter->debugger.d.paused = _scriptDebuggerPaused;
+	adapter->debugger.d.update = _scriptDebuggerUpdate;
+	adapter->debugger.d.entered = _scriptDebuggerEntered;
+	adapter->debugger.d.custom = _scriptDebuggerCustom;
+	adapter->debugger.d.interrupt = _scriptDebuggerInterrupt;
+	adapter->debugger.d.isPaused = false;
+	adapter->debugger.d.needsCallback = false;
+	adapter->debugger.nextBreakpoint = 1;
+	mDebuggerAttachModule(adapter->core->debugger, &adapter->debugger.d);
+	return true;
+}
+
+static int64_t _mScriptCoreAdapterSetBreakpoint(struct mScriptCoreAdapter* adapter, struct mScriptValue* callback, uint32_t address, int32_t segment) {
+	if (!_setupDebugger(adapter)) {
+		return -1;
+	}
+	struct mBreakpoint breakpoint = {
+		.address = address,
+		.segment = segment,
+		.type = BREAKPOINT_HARDWARE
+	};
+
+	struct mDebuggerModule* module = &adapter->debugger.d;
+	if (!module->p->platform->setBreakpoint) {
+		return -1;
+	}
+	struct mScriptBreakpoint* point = _ensureBreakpoint(&adapter->debugger, &breakpoint);
+	return _addCallbackToBreakpoint(&adapter->debugger, point, callback);
+}
+
+static int64_t _mScriptCoreAdapterSetWatchpoint(struct mScriptCoreAdapter* adapter, struct mScriptValue* callback, uint32_t address, int type, int32_t segment) {
+	if (!_setupDebugger(adapter)) {
+		return -1;
+	}
+
+	struct mWatchpoint watchpoint = {
+		.minAddress = address,
+		.maxAddress = address + 1,
+		.segment = segment,
+		.type = type,
+	};
+	struct mDebuggerModule* module = &adapter->debugger.d;
+	if (!module->p->platform->setWatchpoint) {
+		return -1;
+	}
+	struct mScriptBreakpoint* point = _ensureWatchpoint(&adapter->debugger, &watchpoint);
+	return _addCallbackToBreakpoint(&adapter->debugger, point, callback);
+}
+
+static int64_t _mScriptCoreAdapterSetRangeWatchpoint(struct mScriptCoreAdapter* adapter, struct mScriptValue* callback, uint32_t minAddress, uint32_t maxAddress, int type, int32_t segment) {
+	if (!_setupDebugger(adapter)) {
+		return -1;
+	}
+
+	struct mWatchpoint watchpoint = {
+		.minAddress = minAddress,
+		.maxAddress = maxAddress,
+		.segment = segment,
+		.type = type,
+	};
+	struct mDebuggerModule* module = &adapter->debugger.d;
+	if (!module->p->platform->setWatchpoint) {
+		return -1;
+	}
+	struct mScriptBreakpoint* point = _ensureWatchpoint(&adapter->debugger, &watchpoint);
+	return _addCallbackToBreakpoint(&adapter->debugger, point, callback);
+}
+
+static bool _mScriptCoreAdapterClearBreakpoint(struct mScriptCoreAdapter* adapter, int64_t cbid) {
+	if (!_setupDebugger(adapter)) {
+		return false;
+	}
+	struct mScriptBreakpoint* point = HashTableLookupBinary(&adapter->debugger.cbidMap, &cbid, sizeof(cbid));
+	if (!point) {
+		return false;
+	}
+	HashTableRemoveBinary(&adapter->debugger.cbidMap, &cbid, sizeof(cbid));
+	HashTableRemoveBinary(&point->callbacks, &cbid, sizeof(cbid));
+
+	if (!HashTableSize(&point->callbacks)) {
+		struct mDebuggerModule* module = &adapter->debugger.d;
+		module->p->platform->clearBreakpoint(module->p->platform, point->id);
+
+		struct mScriptBreakpointName name = point->name;
+		HashTableRemoveBinary(&adapter->debugger.breakpoints, &name, sizeof(name));
+	}
+	return true;
+}
+#endif
+
 static void _mScriptCoreAdapterDeinit(struct mScriptCoreAdapter* adapter) {
 	_clearMemoryMap(adapter->context, adapter, false);
 	adapter->memory.type->free(&adapter->memory);
+#ifdef USE_DEBUGGERS
+	if (adapter->core->debugger) {
+		mDebuggerDetachModule(adapter->core->debugger, &adapter->debugger.d);
+	}
+#endif
 }
 
 static struct mScriptValue* _mScriptCoreAdapterGet(struct mScriptCoreAdapter* adapter, const char* name) {
@@ -686,6 +945,33 @@ mSCRIPT_DECLARE_STRUCT(mScriptCoreAdapter);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, W(mCore), _get, _mScriptCoreAdapterGet, 1, CHARP, name);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, _deinit, _mScriptCoreAdapterDeinit, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, reset, _mScriptCoreAdapterReset, 0);
+#ifdef USE_DEBUGGERS
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setBreakpoint, _mScriptCoreAdapterSetBreakpoint, 3, WRAPPER, callback, U32, address, S32, segment);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setWatchpoint, _mScriptCoreAdapterSetWatchpoint, 4, WRAPPER, callback, U32, address, S32, type, S32, segment);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setRangeWatchpoint, _mScriptCoreAdapterSetRangeWatchpoint, 5, WRAPPER, callback, U32, minAddress, U32, maxAddress, S32, type, S32, segment);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, BOOL, clearBreakpoint, _mScriptCoreAdapterClearBreakpoint, 1, S64, cbid);
+#endif
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mScriptCoreAdapter, setBreakpoint)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_S32(-1)
+mSCRIPT_DEFINE_DEFAULTS_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mScriptCoreAdapter, setWatchpoint)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_S32(-1)
+mSCRIPT_DEFINE_DEFAULTS_END;
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mScriptCoreAdapter, setRangeWatchpoint)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_S32(-1)
+mSCRIPT_DEFINE_DEFAULTS_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
@@ -700,6 +986,19 @@ mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_DOCSTRING("Reset the emulation. As opposed to struct::mCore.reset, this version calls the **reset** callback")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, reset)
+#ifdef USE_DEBUGGERS
+	mSCRIPT_DEFINE_DOCSTRING("Set a breakpoint at a given address")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, setBreakpoint)
+	mSCRIPT_DEFINE_DOCSTRING("Clear a breakpoint or watchpoint for a given id returned by a previous call")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, clearBreakpoint)
+	mSCRIPT_DEFINE_DOCSTRING("Set a watchpoint at a given address of a given type")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, setWatchpoint)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Set a watchpoint in a given range of a given type. Note that the range is exclusive on the end, "
+		"as though you've added the size, i.e. a 4-byte watch would specify the maximum as the minimum address + 4"
+	)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, setRangeWatchpoint)
+#endif
 	mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, S(mCore), _core)
 	mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, CS(mCore), _core)
 mSCRIPT_DEFINE_END;
