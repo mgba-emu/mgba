@@ -61,6 +61,7 @@ enum mDebuggerEntryReason {
 struct mDebuggerModule;
 struct mDebuggerEntryInfo {
 	uint32_t address;
+	int segment;
 	union {
 		struct {
 			uint32_t oldValue;

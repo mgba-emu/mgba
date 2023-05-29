@@ -62,6 +62,7 @@ static bool _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, s
 			info->type.wp.oldValue = oldValue;
 			info->type.wp.newValue = newValue;
 			info->address = address;
+			info->segment = debugger->originalMemory.currentSegment(debugger->cpu, address);
 			info->type.wp.watchType = watchpoint->type;
 			info->type.wp.accessType = type;
 			info->pointId = watchpoint->id;

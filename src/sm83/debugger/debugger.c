@@ -54,6 +54,7 @@ static void SM83DebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	}
 	struct mDebuggerEntryInfo info = {
 		.address = breakpoint->address,
+		.segment = debugger->cpu->memory.currentSegment(debugger->cpu, breakpoint->address),
 		.pointId = breakpoint->id,
 		.target = TableLookup(&d->p->pointOwner, breakpoint->id)
 	};
