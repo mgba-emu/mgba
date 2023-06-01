@@ -844,6 +844,20 @@ static void _GBACoreSetPeripheral(struct mCore* core, int type, void* periph) {
 	}
 }
 
+static void* _GBACoreGetPeripheral(struct mCore* core, int type) {
+	struct GBA* gba = core->board;
+	switch (type) {
+	case mPERIPH_ROTATION:
+		return gba->rotationSource;
+	case mPERIPH_RUMBLE:
+		return gba->rumble;
+	case mPERIPH_GBA_LUMINANCE:
+		return gba->luminanceSource;
+	default:
+		return NULL;
+	}
+}
+
 static uint32_t _GBACoreBusRead8(struct mCore* core, uint32_t address) {
 	struct ARMCore* cpu = core->cpu;
 	return cpu->memory.load8(cpu, address, 0);
@@ -1431,6 +1445,7 @@ struct mCore* GBACoreCreate(void) {
 	core->getGameTitle = _GBACoreGetGameTitle;
 	core->getGameCode = _GBACoreGetGameCode;
 	core->setPeripheral = _GBACoreSetPeripheral;
+	core->getPeripheral = _GBACoreGetPeripheral;
 	core->busRead8 = _GBACoreBusRead8;
 	core->busRead16 = _GBACoreBusRead16;
 	core->busRead32 = _GBACoreBusRead32;
