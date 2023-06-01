@@ -1790,7 +1790,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 void Window::setupOptions() {
 	ConfigOption* videoSync = m_config->addOption("videoSync");
-	videoSync->connect([this](const QVariant& variant) {
+	videoSync->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 
