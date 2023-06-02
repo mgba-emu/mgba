@@ -1,0 +1,157 @@
+name: CI
+
+on:
+  push:
+    paths-ignore:
+      - 'CHANGES'
+      - '.github/*'
+      - '.gitignore'
+      - '*.yml'
+      - 'docs/**'
+#  pull_request:
+
+jobs:
+  build-windows-docker:
+    runs-on: ubuntu-latest
+    #container: mgba/windows:w64
+    steps:
+      - uses: actions/checkout@v3
+      #- run: mkdir -p build-win64
+      - name: Docker
+        run: docker run --rm -v ${PWD}:/home/mgba/src mgba/windows:w64
+      - run: ls
+
+  build-windows-msys2:
+    runs-on: windows-latest
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: 1
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: msys2/setup-msys2@v2
+      - name: Setup
+        env:
+          MINGW_PACKAGE_PREFIX: mingw64
+        run: |
+          pacman -Sy --noconfirm --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,lua,pkgconf,qt5,SDL2,ntldd-git,7zip}
+          mkdir -p build
+      - name: CMake
+        working-directory: build
+        run: cmake .. -G"MSYS Makefiles"
+      - name: Build
+        working-directory: build
+        run: cmake --build . -j$NUMBER_OF_PROCESSORS
+      - name: Create artifact
+        id: artifact
+        working-directory: build
+        run: |
+          cpack -G ZIP
+          zip=$(ls *.zip)
+          7z x "$zip"
+          echo "name=${zip//.zip}" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.artifact.outputs.name }}
+          path: build\${{ steps.artifact.outputs.name }}
+          if-no-files-found: error
+
+  build-windows-vcpkg:
+    runs-on: windows-2019 #latest
+    strategy:
+      #fail-fast: false
+      matrix:
+        configuration: [Release] #, Debug
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: 1
+      VCPKG_BUILD_TYPE: ${{ matrix.configuration }}
+      VCPKG_DEFAULT_TRIPLET: x64-windows-release
+      VCPKG_DISABLE_METRICS: 1
+      #VCPKG_TARGET_ARCHITECTURE: x64
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup
+        run: |
+          C:\vcpkg\bootstrap-vcpkg.bat
+          vcpkg install ffmpeg[vpx,x264] libepoxy libpng libzip lua sdl2 sqlite3
+          vcpkg --no-dry-run upgrade
+      - uses: jurplel/install-qt-action@v3.2.1
+        with:
+          cache: true
+          #setup-python: false
+      - name: CMake
+        working-directory: build
+        run: cmake .. -DCMAKE_CONFIGURATION_TYPES=$env:VCPKG_BUILD_TYPE -DZLIB_LIBRARY=zlib
+      - name: Build
+        working-directory: build
+        run: cmake --build . -j$env:NUMBER_OF_PROCESSORS
+
+  build-windows-cross:
+    runs-on: ubuntu-latest
+    #env:
+    #  CC: x86_64-w64-mingw32-gcc
+    #  CXX: x86_64-w64-mingw32-g++
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install libepoxy-dev libsdl2-dev libglu1-mesa-dev mesa-common-dev mingw-w64
+          mkdir -p build
+      - uses: jurplel/install-qt-action@v3.2.1
+        with:
+          cache: true
+          setup-python: false
+      - name: CMake
+        working-directory: build
+        run: cmake .. -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++
+      - name: Build
+        working-directory: build
+        #env:
+        #  CC: x86_64-w64-mingw32-gcc
+        #  CXX: x86_64-w64-mingw32-g++
+        #run: make -j$(nproc)
+        run: cmake --build . -j$(nproc)
+      - name: Create artifacts
+        working-directory: build
+        run: cpack -G ZIP
+      - uses: actions/upload-artifact@v3
+        with:
+          name: mgba-windows-cross
+          path: build/*.zip
+          if-no-files-found: error
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install libsdl2-dev
+      - uses: jurplel/install-qt-action@v3.2.1
+        with:
+          cache: true
+          setup-python: false
+      - name: CMake
+        run: cmake -Bbuild
+      - name: Build
+        run: cmake --build build -j$(nproc)
+
+  build-macos:
+    runs-on: macos-latest
+    env:
+      HOMEBREW_NO_ANALYTICS: 1
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup
+        run: brew install cmake ffmpeg libzip qt5 sdl2 libedit lua pkg-config
+      #- uses: jurplel/install-qt-action@v3.2.1
+      #  with:
+      #    cache: true
+      #    #setup-python: false
+      - name: CMake
+        run: cmake -Bbuild #-DCMAKE_PREFIX_PATH=$(brew --prefix qt5) # prefix might not be needed
+      - name: Build
+        run: cmake --build build -j$(getconf _NPROCESSORS_ONLN)
