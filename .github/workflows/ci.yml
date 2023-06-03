@@ -79,6 +79,7 @@ jobs:
           vcpkg install ffmpeg[vpx,x264] libepoxy libpng libzip lua sdl2 sqlite3
           vcpkg --no-dry-run upgrade
           vcpkg integrate install
+          echo "${env:VCPKG_INSTALLATION_ROOT}\installed\x64-windows-release\bin" >> "$GITHUB_PATH"
           cd -
           mkdir build
       - uses: jurplel/install-qt-action@v3.2.1
