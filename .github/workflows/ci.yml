@@ -34,12 +34,12 @@ jobs:
       - name: Setup
         env:
           MINGW_PACKAGE_PREFIX: mingw64
-        run: pacman -Sy --noconfirm --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,lua,pkgconf,qt5,SDL2,ntldd-git,7zip}
-      - name: CMake
         run: |
+          pacman -Sy --noconfirm --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,lua,pkgconf,qt5,SDL2,ntldd-git,7zip}
           mkdir build
-          cd build
-          cmake .. -G"MSYS Makefiles"
+      - name: CMake
+        working-directory: build
+        run: cmake .. -G"MSYS Makefiles"
       - name: Build
         working-directory: build
         run: cmake --build . -j$NUMBER_OF_PROCESSORS
@@ -76,6 +76,7 @@ jobs:
           C:\vcpkg\bootstrap-vcpkg.bat
           vcpkg install ffmpeg[vpx,x264] libepoxy libpng libzip lua sdl2 sqlite3
           vcpkg --no-dry-run upgrade
+          mkdir build
       - uses: jurplel/install-qt-action@v3.2.1
         with:
           cache: true
