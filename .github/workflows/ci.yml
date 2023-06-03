@@ -83,7 +83,7 @@ jobs:
           #setup-python: false
       - name: CMake
         working-directory: build
-        run: cmake .. -DCMAKE_CONFIGURATION_TYPES=$env:VCPKG_BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE=${env:VCPKG_INSTALLATION_ROOT}\scripts\buildsystems\vcpkg.cmake #-DZLIB_LIBRARY=zlib
+        run: cmake .. -DCMAKE_CONFIGURATION_TYPES=$env:VCPKG_BUILD_TYPE -DCMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
       - name: Build
         working-directory: build
         run: cmake --build . -j$env:NUMBER_OF_PROCESSORS
