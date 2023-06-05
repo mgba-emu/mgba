@@ -86,6 +86,7 @@ mSCRIPT_DEFINE_STRUCT(mScriptCallbackManager)
 		"- **frame**: The emulation finished a frame\n"
 		"- **keysRead**: The emulation is about to read the key input\n"
 		"- **reset**: The emulation has been reset\n"
+		"- **rumble**: The state of the rumble motor was changed. This callback is passed a single argument that specifies if it was turned on (true) or off (false)\n"
 		"- **savedataUpdated**: The emulation has just finished modifying save data\n"
 		"- **sleep**: The emulation has used the sleep feature to enter a low-power mode\n"
 		"- **shutdown**: The emulation has been powered off\n"

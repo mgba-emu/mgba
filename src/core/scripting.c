@@ -7,6 +7,9 @@
 
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
+#ifdef M_CORE_GBA
+#include <mgba/gba/interface.h>
+#endif
 #include <mgba/script/base.h>
 #include <mgba/script/context.h>
 #include <mgba-util/table.h>
@@ -189,6 +192,8 @@ struct mScriptCoreAdapter {
 #ifdef USE_DEBUGGERS
 	struct mScriptDebugger debugger;
 #endif
+	struct mRumble rumble;
+	struct mRumble* oldRumble;
 };
 
 struct mScriptConsole {
@@ -1003,6 +1008,20 @@ mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, CS(mCore), _core)
 mSCRIPT_DEFINE_END;
 
+static void _setRumble(struct mRumble* rumble, int enable) {
+	struct mScriptCoreAdapter* adapter = containerof(rumble, struct mScriptCoreAdapter, rumble);
+
+	if (adapter->oldRumble) {
+		adapter->oldRumble->setRumble(adapter->oldRumble, enable);
+	}
+
+	struct mScriptList args;
+	mScriptListInit(&args, 1);
+	*mScriptListAppend(&args) = mSCRIPT_MAKE_BOOL(!!enable);
+	mScriptContextTriggerCallback(adapter->context, "rumble", &args);
+	mScriptListDeinit(&args);
+}
+
 void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core) {
 	struct mScriptValue* coreValue = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mScriptCoreAdapter));
 	struct mScriptCoreAdapter* adapter = calloc(1, sizeof(*adapter));
@@ -1013,6 +1032,10 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 	adapter->memory.flags = 0;
 	adapter->memory.type = mSCRIPT_TYPE_MS_TABLE;
 	adapter->memory.type->alloc(&adapter->memory);
+
+	adapter->rumble.setRumble = _setRumble;
+	adapter->oldRumble = core->getPeripheral(core, mPERIPH_RUMBLE);
+	core->setPeripheral(core, mPERIPH_RUMBLE, &adapter->rumble);
 
 	_rebuildMemoryMap(context, adapter);
 
