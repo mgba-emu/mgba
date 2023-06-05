@@ -424,6 +424,7 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 		lua_getfield(luaContext->lua, -1, "ERRORS");
 		for (i = 0; i < _mScriptSocketNumErrors; i++) {
 			const struct _mScriptSocketError* err = &_mScriptSocketErrors[i];
+			lua_pushinteger(luaContext->lua, err->err);
 			if (err->message) {
 				lua_pushstring(luaContext->lua, err->message);
 				struct mScriptValue* key = mScriptValueAlloc(mSCRIPT_TYPE_MS_S32);
@@ -435,7 +436,7 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 			} else {
 				lua_pushnil(luaContext->lua);
 			}
-			lua_seti(luaContext->lua, -2, err->err);
+			lua_settable(luaContext->lua, -3);
 		}
 		lua_pop(luaContext->lua, 2);
 
