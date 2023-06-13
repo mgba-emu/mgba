@@ -95,7 +95,7 @@
    <item row="1" column="1">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="av">
       <layout class="QVBoxLayout" name="formLayout">
@@ -1836,8 +1836,8 @@
              <widget class="QFrame" name="color0">
               <property name="minimumSize">
                <size>
-                <width>30</width>
-                <height>30</height>
+                <width>24</width>
+                <height>24</height>
                </size>
               </property>
               <property name="autoFillBackground">
@@ -1855,8 +1855,8 @@
              <widget class="QFrame" name="color1">
               <property name="minimumSize">
                <size>
-                <width>30</width>
-                <height>30</height>
+                <width>24</width>
+                <height>24</height>
                </size>
               </property>
               <property name="autoFillBackground">
@@ -1874,8 +1874,8 @@
              <widget class="QFrame" name="color2">
               <property name="minimumSize">
                <size>
-                <width>30</width>
-                <height>30</height>
+                <width>24</width>
+                <height>24</height>
                </size>
               </property>
               <property name="autoFillBackground">
@@ -1893,8 +1893,8 @@
              <widget class="QFrame" name="color3">
               <property name="minimumSize">
                <size>
-                <width>30</width>
-                <height>30</height>
+                <width>24</width>
+                <height>24</height>
                </size>
               </property>
               <property name="autoFillBackground">
@@ -1923,8 +1923,8 @@
              <widget class="QFrame" name="color4">
               <property name="minimumSize">
                <size>
-                <width>30</width>
-                <height>30</height>
+                <width>24</width>
+                <height>24</height>
                </size>
               </property>
               <property name="autoFillBackground">
@@ -1942,8 +1942,8 @@
              <widget class="QFrame" name="color5">
               <property name="minimumSize">
                <size>
-                <width>30</width>
-                <height>30</height>
+                <width>24</width>
+                <height>24</height>
                </size>
               </property>
               <property name="autoFillBackground">
@@ -1961,8 +1961,8 @@
              <widget class="QFrame" name="color6">
               <property name="minimumSize">
                <size>
-                <width>30</width>
-                <height>30</height>
+                <width>24</width>
+                <height>24</height>
                </size>
               </property>
               <property name="autoFillBackground">
@@ -1980,8 +1980,8 @@
              <widget class="QFrame" name="color7">
               <property name="minimumSize">
                <size>
-                <width>30</width>
-                <height>30</height>
+                <width>24</width>
+                <height>24</height>
                </size>
               </property>
               <property name="autoFillBackground">
@@ -2010,8 +2010,8 @@
              <widget class="QFrame" name="color8">
               <property name="minimumSize">
                <size>
-                <width>30</width>
-                <height>30</height>
+                <width>24</width>
+                <height>24</height>
                </size>
               </property>
               <property name="autoFillBackground">
@@ -2029,8 +2029,8 @@
              <widget class="QFrame" name="color9">
               <property name="minimumSize">
                <size>
-                <width>30</width>
-                <height>30</height>
+                <width>24</width>
+                <height>24</height>
                </size>
               </property>
               <property name="autoFillBackground">
@@ -2048,8 +2048,8 @@
              <widget class="QFrame" name="color10">
               <property name="minimumSize">
                <size>
-                <width>30</width>
-                <height>30</height>
+                <width>24</width>
+                <height>24</height>
                </size>
               </property>
               <property name="autoFillBackground">
@@ -2067,8 +2067,8 @@
              <widget class="QFrame" name="color11">
               <property name="minimumSize">
                <size>
-                <width>30</width>
-                <height>30</height>
+                <width>24</width>
+                <height>24</height>
                </size>
               </property>
               <property name="autoFillBackground">
