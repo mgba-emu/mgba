@@ -198,19 +198,24 @@ void SaveConverter::detectFromSize(std::shared_ptr<VFileDevice> vf) {
 #ifdef M_CORE_GBA
 	switch (vf->size()) {
 	case SIZE_CART_SRAM:
+	case SIZE_CART_SRAM + 16:
 		m_validSaves.append(AnnotatedSave{SAVEDATA_SRAM, vf});
 		break;
 	case SIZE_CART_FLASH512:
+	case SIZE_CART_FLASH512 + 16:
 		m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH512, vf});
 		break;
 	case SIZE_CART_FLASH1M:
+	case SIZE_CART_FLASH1M + 16:
 		m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, vf});
 		break;
 	case SIZE_CART_EEPROM:
+	case SIZE_CART_EEPROM + 16:
 		m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, vf, Endian::LITTLE});
 		m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, vf, Endian::BIG});
 		break;
 	case SIZE_CART_EEPROM512:
+	case SIZE_CART_EEPROM512 + 16:
 		m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, vf, Endian::LITTLE});
 		m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, vf, Endian::BIG});
 		break;
@@ -478,6 +483,9 @@ SaveConverter::AnnotatedSave::operator QString() const {
 		default:
 			break;
 		}
+		if ((size & 0xFF) == 0x10) {
+			typeFormat += QCoreApplication::translate("QGBA::SaveConverter", " + RTC");
+		}
 		break;
 #endif
 #ifdef M_CORE_GB
@@ -619,6 +627,15 @@ QList<SaveConverter::AnnotatedSave> SaveConverter::AnnotatedSave::possibleConver
 		}
 		break;
 #endif
+#ifdef M_CORE_GBA
+	case mPLATFORM_GBA:
+		if ((size & 0xFF) == 0x10) {
+			AnnotatedSave noRtc = same;
+			noRtc.size &= ~0xFF;
+			possible.append(noRtc);
+		}
+		break;
+#endif
 	default:
 		break;
 	}
@@ -650,7 +667,7 @@ QByteArray SaveConverter::AnnotatedSave::convertTo(const SaveConverter::Annotate
 			}
 			converted.resize(target.size);
 			buffer = backing->readAll();
-			for (int i = 0; i < size; i += 8) {
+			for (int i = 0; i < (size & ~0xFF); i += 8) {
 				uint64_t word;
 				const uint64_t* in = reinterpret_cast<const uint64_t*>(buffer.constData());
 				uint64_t* out = reinterpret_cast<uint64_t*>(converted.data());
@@ -660,6 +677,9 @@ QByteArray SaveConverter::AnnotatedSave::convertTo(const SaveConverter::Annotate
 			break;
 		default:
 			break;
+		}
+		if (endianness == target.endianness && size > target.size) {
+			converted = backing->read(target.size);
 		}
 		break;
 #endif
