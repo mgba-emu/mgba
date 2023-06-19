@@ -194,6 +194,9 @@ struct mScriptCoreAdapter {
 #endif
 	struct mRumble rumble;
 	struct mRumble* oldRumble;
+	struct mRotationSource rotation;
+	struct mScriptValue* rotationCbTable;
+	struct mRotationSource* oldRotation;
 };
 
 struct mScriptConsole {
@@ -946,10 +949,20 @@ static void _mScriptCoreAdapterReset(struct mScriptCoreAdapter* adapter) {
 	mScriptContextTriggerCallback(adapter->context, "reset", NULL);
 }
 
+static struct mScriptValue* _mScriptCoreAdapterSetRotationCbTable(struct mScriptCoreAdapter* adapter, struct mScriptValue* cbTable) {
+	if (cbTable) {
+		mScriptValueRef(cbTable);
+	}
+	struct mScriptValue* oldTable = adapter->rotationCbTable;
+	adapter->rotationCbTable = cbTable;
+	return oldTable;
+}
+
 mSCRIPT_DECLARE_STRUCT(mScriptCoreAdapter);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, W(mCore), _get, _mScriptCoreAdapterGet, 1, CHARP, name);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, _deinit, _mScriptCoreAdapterDeinit, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, reset, _mScriptCoreAdapterReset, 0);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, WTABLE, setRotationCallbacks, _mScriptCoreAdapterSetRotationCbTable, 1, WTABLE, cbTable);
 #ifdef USE_DEBUGGERS
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setBreakpoint, _mScriptCoreAdapterSetBreakpoint, 3, WRAPPER, callback, U32, address, S32, segment);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setWatchpoint, _mScriptCoreAdapterSetWatchpoint, 4, WRAPPER, callback, U32, address, S32, type, S32, segment);
@@ -991,6 +1004,18 @@ mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_DOCSTRING("Reset the emulation. As opposed to struct::mCore.reset, this version calls the **reset** callback")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, reset)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Sets the table of functions to be called when the game requests rotation data, for either a gyroscope or accelerometer. "
+		"The following functions are supported, and if any isn't set then then default implementation for that function is called instead:\n\n"
+		"- `sample`: Update (\"sample\") the values returned by the other functions. The values returned shouldn't change until the next time this is called\n"
+		"- `readTiltX`: Return a value between -1.0 and +1.0 representing the X (left/right axis) direction of the linear acceleration vector, as for an accelerometer.\n"
+		"- `readTiltY`: Return a value between -1.0 and +1.0 representing the Y (up/down axis) direction of the linear acceleration vector, as for an accelerometer.\n"
+		"- `readGyroZ`: Return a value between -1.0 and +1.0 representing the roll (front/back axis) value of the rotational acceleration vector, as for an gyroscope.\n\n"
+		"Optionally, you can also set a value `context` on the table that will be passed to the callbacks. This table is copied by value, so changes made to the table "
+		"after being passed to this function will not be seen unless the function is called again. Therefore, the recommended usage of the `context` field is as an index "
+		"or key into a separate table. Use cases may vary. If this function is called more than once, the previous value of the table is returned."
+	)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, setRotationCallbacks)
 #ifdef USE_DEBUGGERS
 	mSCRIPT_DEFINE_DOCSTRING("Set a breakpoint at a given address")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, setBreakpoint)
@@ -1022,6 +1047,82 @@ static void _setRumble(struct mRumble* rumble, int enable) {
 	mScriptListDeinit(&args);
 }
 
+static bool _callRotationCb(struct mScriptCoreAdapter* adapter, const char* cbName, struct mScriptValue* out) {
+	if (!adapter->rotationCbTable) {
+		return false;
+	}
+	struct mScriptValue* cb = mScriptTableLookup(adapter->rotationCbTable, &mSCRIPT_MAKE_CHARP(cbName));
+	if (!cb || cb->type->base != mSCRIPT_TYPE_FUNCTION) {
+		return false;
+	}
+	struct mScriptFrame frame;
+	struct mScriptValue* context = mScriptTableLookup(adapter->rotationCbTable, &mSCRIPT_MAKE_CHARP("context"));
+	mScriptFrameInit(&frame);
+	if (context) {
+		mScriptValueWrap(context, mScriptListAppend(&frame.arguments));
+	}
+	bool ok = mScriptInvoke(cb, &frame);
+	if (ok && out && mScriptListSize(&frame.returnValues) == 1) {
+		if (!mScriptCast(mSCRIPT_TYPE_MS_F32, mScriptListGetPointer(&frame.returnValues, 0), out)) {
+			ok = false;
+		}
+	}
+	mScriptFrameDeinit(&frame);
+	return ok;
+}
+
+static void _rotationSample(struct mRotationSource* rotation) {
+	struct mScriptCoreAdapter* adapter = containerof(rotation, struct mScriptCoreAdapter, rotation);
+
+	_callRotationCb(adapter, "sample", NULL);
+
+	if (adapter->oldRotation && adapter->oldRotation->sample) {
+		adapter->oldRotation->sample(adapter->oldRotation);
+	}
+}
+
+static int32_t _rotationReadTiltX(struct mRotationSource* rotation) {
+	struct mScriptCoreAdapter* adapter = containerof(rotation, struct mScriptCoreAdapter, rotation);
+
+	struct mScriptValue out;
+	if (_callRotationCb(adapter, "readTiltX", &out)) {
+		return out.value.f32 * INT32_MAX;
+	}
+
+	if (adapter->oldRotation && adapter->oldRotation->readTiltX) {
+		return adapter->oldRotation->readTiltX(adapter->oldRotation);
+	}
+	return 0;
+}
+
+static int32_t _rotationReadTiltY(struct mRotationSource* rotation) {
+	struct mScriptCoreAdapter* adapter = containerof(rotation, struct mScriptCoreAdapter, rotation);
+
+	struct mScriptValue out;
+	if (_callRotationCb(adapter, "readTiltY", &out)) {
+		return out.value.f32 * INT32_MAX;
+	}
+
+	if (adapter->oldRotation && adapter->oldRotation->readTiltY) {
+		return adapter->oldRotation->readTiltY(adapter->oldRotation);
+	}
+	return 0;
+}
+
+static int32_t _rotationReadGyroZ(struct mRotationSource* rotation) {
+	struct mScriptCoreAdapter* adapter = containerof(rotation, struct mScriptCoreAdapter, rotation);
+
+	struct mScriptValue out;
+	if (_callRotationCb(adapter, "readGyroZ", &out)) {
+		return out.value.f32 * INT32_MAX;
+	}
+
+	if (adapter->oldRotation && adapter->oldRotation->readGyroZ) {
+		return adapter->oldRotation->readGyroZ(adapter->oldRotation);
+	}
+	return 0;
+}
+
 void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core) {
 	struct mScriptValue* coreValue = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mScriptCoreAdapter));
 	struct mScriptCoreAdapter* adapter = calloc(1, sizeof(*adapter));
@@ -1034,8 +1135,15 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 	adapter->memory.type->alloc(&adapter->memory);
 
 	adapter->rumble.setRumble = _setRumble;
+	adapter->rotation.sample = _rotationSample;
+	adapter->rotation.readTiltX = _rotationReadTiltX;
+	adapter->rotation.readTiltY = _rotationReadTiltY;
+	adapter->rotation.readGyroZ = _rotationReadGyroZ;
+
 	adapter->oldRumble = core->getPeripheral(core, mPERIPH_RUMBLE);
+	adapter->oldRotation = core->getPeripheral(core, mPERIPH_ROTATION);
 	core->setPeripheral(core, mPERIPH_RUMBLE, &adapter->rumble);
+	core->setPeripheral(core, mPERIPH_ROTATION, &adapter->rotation);
 
 	_rebuildMemoryMap(context, adapter);
 
@@ -1057,6 +1165,10 @@ void mScriptContextDetachCore(struct mScriptContext* context) {
 	struct mScriptCoreAdapter* adapter = value->value.opaque;
 	_clearMemoryMap(context, adapter, true);
 	adapter->core->setPeripheral(adapter->core, mPERIPH_RUMBLE, adapter->oldRumble);
+	adapter->core->setPeripheral(adapter->core, mPERIPH_ROTATION, adapter->oldRotation);
+	if (adapter->rotationCbTable) {
+		mScriptValueDeref(adapter->rotationCbTable);
+	}
 
 	mScriptContextRemoveGlobal(context, "emu");
 }
