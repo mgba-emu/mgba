@@ -10,121 +10,104 @@
 
 DEFINE_VECTOR(mCoreMemorySearchResults, struct mCoreMemorySearchResult);
 
-static bool _op(int32_t value, int32_t match, enum mCoreMemorySearchOp op) {
+static bool _op(int64_t value, int64_t refVal, enum mCoreMemorySearchOp op) {
 	switch (op) {
+	case mCORE_MEMORY_SEARCH_INCREASE:
 	case mCORE_MEMORY_SEARCH_GREATER:
-		return value > match;
+		return value > refVal;
+	case mCORE_MEMORY_SEARCH_NOT_INCREASE:
+	case mCORE_MEMORY_SEARCH_NOT_GREATER:
+		return value <= refVal;
+	case mCORE_MEMORY_SEARCH_DECREASE:
 	case mCORE_MEMORY_SEARCH_LESS:
-		return value < match;
+		return value < refVal;
+	case mCORE_MEMORY_SEARCH_NOT_DECREASE:
+	case mCORE_MEMORY_SEARCH_NOT_LESS:
+		return value >= refVal;
+	case mCORE_MEMORY_SEARCH_NOT_CHANGED:
 	case mCORE_MEMORY_SEARCH_EQUAL:
-	case mCORE_MEMORY_SEARCH_DELTA:
-		return value == match;
-	case mCORE_MEMORY_SEARCH_DELTA_POSITIVE:
-		return value > 0;
-	case mCORE_MEMORY_SEARCH_DELTA_NEGATIVE:
-		return value < 0;
-	case mCORE_MEMORY_SEARCH_DELTA_ANY:
-		return value != 0;
+	case mCORE_MEMORY_SEARCH_CHANGED_BY:
+	case mCORE_MEMORY_SEARCH_INCREASE_BY:
+	case mCORE_MEMORY_SEARCH_DECREASE_BY:
+		return value == refVal;
 	case mCORE_MEMORY_SEARCH_ANY:
 		return true;
+	case mCORE_MEMORY_SEARCH_CHANGED:
+	case mCORE_MEMORY_SEARCH_NOT_EQUAL:
+		return value != refVal;
 	}
 	return false;
 }
 
-static size_t _search32(const void* mem, size_t size, const struct mCoreMemoryBlock* block, uint32_t value32, enum mCoreMemorySearchOp op, struct mCoreMemorySearchResults* out, size_t limit) {
-	const uint32_t* mem32 = mem;
-	size_t found = 0;
-	uint32_t start = block->start;
-	uint32_t end = size; // TODO: Segments
-	size_t i;
-	// TODO: Big endian
-	for (i = 0; (!limit || found < limit) && i < end; i += 4) {
-		if (_op(mem32[i >> 2], value32, op)) {
-			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
-			res->address = start + i;
-			res->type = mCORE_MEMORY_SEARCH_INT;
-			res->width = 4;
-			res->segment = -1; // TODO
-			res->guessDivisor = 1;
-			res->guessMultiplier = 1;
-			res->oldValue = mem32[i >> 2];
-			++found;
-		}
-	}
-	return found;
+static void _addResult(struct mCoreMemorySearchResults* out, uint32_t address, int segment,
+                       enum mCoreMemorySearchType type, int width, int64_t curValue, bool signedNum) {
+	struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
+	res->address = address;
+	res->type = type;
+	res->width = width;
+	res->segment = segment; 
+	res->signedNum = signedNum;
+	res->curValue = curValue;
+	res->oldValue = res->curValue;
 }
 
-static size_t _search16(const void* mem, size_t size, const struct mCoreMemoryBlock* block, uint16_t value16, enum mCoreMemorySearchOp op, struct mCoreMemorySearchResults* out, size_t limit) {
-	const uint16_t* mem16 = mem;
+static size_t _searchInt(const void* mem, size_t size, const struct mCoreMemoryBlock* block,
+                         const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* out,
+                         size_t limit) {
 	size_t found = 0;
-	uint32_t start = block->start;
-	uint32_t end = size; // TODO: Segments
-	size_t i;
-	// TODO: Big endian
-	for (i = 0; (!limit || found < limit) && i < end; i += 2) {
-		if (_op(mem16[i >> 1], value16, op)) {
-			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
-			res->address = start + i;
-			res->type = mCORE_MEMORY_SEARCH_INT;
-			res->width = 2;
-			res->segment = -1; // TODO
-			res->guessDivisor = 1;
-			res->guessMultiplier = 1;
-			res->oldValue = mem16[i >> 1];
-			++found;
-		}
-	}
-	return found;
-}
-
-static size_t _search8(const void* mem, size_t size, const struct mCoreMemoryBlock* block, uint8_t value8, enum mCoreMemorySearchOp op, struct mCoreMemorySearchResults* out, size_t limit) {
-	const uint8_t* mem8 = mem;
-	size_t found = 0;
-	uint32_t start = block->start;
-	uint32_t end = size; // TODO: Segments
-	size_t i;
-	for (i = 0; (!limit || found < limit) && i < end; ++i) {
-		if (_op(mem8[i], value8, op)) {
-			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
-			res->address = start + i;
-			res->type = mCORE_MEMORY_SEARCH_INT;
-			res->width = 1;
-			res->segment = -1; // TODO
-			res->guessDivisor = 1;
-			res->guessMultiplier = 1;
-			res->oldValue = mem8[i];
-			++found;
-		}
-	}
-	return found;
-}
-
-static size_t _searchInt(const void* mem, size_t size, const struct mCoreMemoryBlock* block, const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* out, size_t limit) {
 	if (params->align == params->width || params->align == -1) {
-		switch (params->width) {
-		case 4:
-			return _search32(mem, size, block, params->valueInt, params->op, out, limit);
-		case 2:
-			return _search16(mem, size, block, params->valueInt, params->op, out, limit);
-		case 1:
-			return _search8(mem, size, block, params->valueInt, params->op, out, limit);
+		const uint32_t* mem32 = mem;
+		const uint16_t* mem16 = mem;
+		const uint8_t* mem8 = mem;
+		const int32_t* mem32s = mem;
+		const int16_t* mem16s = mem;
+		const int8_t* mem8s = mem;
+
+		uint32_t start = block->start;
+		uint32_t end = size; // TODO: Segments
+		size_t i;
+		// TODO: Big endian
+		uint32_t r_start = (int32_t) (params->start - start) < 0 ? 0 : (params->start - start);
+		uint32_t r_end = (params->end - start) < end ? (params->end - start) : end;
+		for (i = r_start; (!limit || found < limit) && i < r_end; i += 1) {
+			if ((params->width & 4) && (i % 4 == 0) &&
+			    (params->signedNum ? _op(mem32s[i >> 2], params->valueInt, params->op) : _op(mem32[i >> 2], params->valueInt, params->op))) { 
+				_addResult(out, start + i, -1, mCORE_MEMORY_SEARCH_INT, 4,
+				           params->signedNum ? (int64_t) mem32s[i >> 2] : (int64_t) mem32[i >> 2] , params->signedNum);
+				++found;
+			}
+			if ((params->width & 2) && (i % 2 == 0) &&
+			    (params->signedNum ? _op(mem16s[i >> 1], params->valueInt, params->op) : _op(mem16[i >> 1], params->valueInt, params->op))) {
+				_addResult(out, start + i, -1, mCORE_MEMORY_SEARCH_INT, 2,
+				           params->signedNum ? mem16s[i >> 1] : mem16[i >> 1], params->signedNum);
+				++found;
+			}
+			if ((params->width & 1) && (params->signedNum ? _op(mem8s[i], params->valueInt, params->op) : _op(mem8[i], params->valueInt, params->op))) {
+				_addResult(out, start + i, -1, mCORE_MEMORY_SEARCH_INT, 1,
+				           params->signedNum ? mem8s[i] : mem8[i], params->signedNum);
+				++found;
+			}	
 		}
 	}
-	return 0;
+	return found;
 }
 
-static size_t _searchStr(const void* mem, size_t size, const struct mCoreMemoryBlock* block, const char* valueStr, int len, struct mCoreMemorySearchResults* out, size_t limit) {
+static size_t _searchStr(const void* mem, size_t size, const struct mCoreMemoryBlock* block,
+                         const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* out, size_t limit) {
 	const char* memStr = mem;
 	size_t found = 0;
 	uint32_t start = block->start;
 	uint32_t end = size; // TODO: Segments
 	size_t i;
-	for (i = 0; (!limit || found < limit) && i < end - len; ++i) {
-		if (!memcmp(valueStr, &memStr[i], len)) {
+	uint32_t r_start = (int32_t) (params->start - start) < 0 ? 0 : (params->start - start);
+	uint32_t r_end = (params->end-start) < end  ? (params->end-start) : end;
+	r_end = r_end < (uint32_t)params->width ? 0 : r_end - params->width;
+	for (i = r_start; (!limit || found < limit) && i < r_end; i += 1) {
+		if (!memcmp(params->valueStr, &memStr[i], params->width)) {
 			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsAppend(out);
 			res->address = start + i;
 			res->type = mCORE_MEMORY_SEARCH_STRING;
-			res->width = len;
+			res->width = params->width;
 			res->segment = -1; // TODO
 			++found;
 		}
@@ -132,104 +115,25 @@ static size_t _searchStr(const void* mem, size_t size, const struct mCoreMemoryB
 	return found;
 }
 
-static size_t _searchGuess(const void* mem, size_t size, const struct mCoreMemoryBlock* block, const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* out, size_t limit) {
-	// TODO: As str
-
-	char* end;
-	int64_t value;
-
-	size_t found = 0;
-
-	struct mCoreMemorySearchResults tmp;
-	mCoreMemorySearchResultsInit(&tmp, 0);
-
-	// Decimal:
-	value = strtoll(params->valueStr, &end, 10);
-	if (end && !end[0]) {
-		if ((params->width == -1 && value > 0x10000) || params->width == 4) {
-			found += _search32(mem, size, block, value, params->op, out, limit ? limit - found : 0);
-		} else if ((params->width == -1 && value > 0x100) || params->width == 2) {
-			found += _search16(mem, size, block, value, params->op, out, limit ? limit - found : 0);
-		} else {
-			found += _search8(mem, size, block, value, params->op, out, limit ? limit - found : 0);
-		}
-
-		uint32_t divisor = 1;
-		while (value && !(value % 10)) {
-			mCoreMemorySearchResultsClear(&tmp);
-			value /= 10;
-			divisor *= 10;
-
-			if ((params->width == -1 && value > 0x10000) || params->width == 4) {
-				found += _search32(mem, size, block, value, params->op, &tmp, limit ? limit - found : 0);
-			} else if ((params->width == -1 && value > 0x100) || params->width == 2) {
-				found += _search16(mem, size, block, value, params->op, &tmp, limit ? limit - found : 0);
-			} else {
-				found += _search8(mem, size, block, value, params->op, &tmp, limit ? limit - found : 0);
-			}
-			size_t i;
-			for (i = 0; i < mCoreMemorySearchResultsSize(&tmp); ++i) {
-				struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsGetPointer(&tmp, i);
-				res->guessDivisor = divisor;
-				*mCoreMemorySearchResultsAppend(out) = *res;
-			}
-		}
-	}
-
-	// Hex:
-	value = strtoll(params->valueStr, &end, 16);
-	if (end && !end[0]) {
-		if ((params->width == -1 && value > 0x10000) || params->width == 4) {
-			found += _search32(mem, size, block, value, params->op, out, limit ? limit - found : 0);
-		} else if ((params->width == -1 && value > 0x100) || params->width == 2) {
-			found += _search16(mem, size, block, value, params->op, out, limit ? limit - found : 0);
-		} else {
-			found += _search8(mem, size, block, value, params->op, out, limit ? limit - found : 0);
-		}
-
-		uint32_t divisor = 1;
-		while (value && !(value & 0xF)) {
-			mCoreMemorySearchResultsClear(&tmp);
-			value >>= 4;
-			divisor <<= 4;
-
-			if ((params->width == -1 && value > 0x10000) || params->width == 4) {
-				found += _search32(mem, size, block, value, params->op, &tmp, limit ? limit - found : 0);
-			} else if ((params->width == -1 && value > 0x100) || params->width == 2) {
-				found += _search16(mem, size, block, value, params->op, &tmp, limit ? limit - found : 0);
-			} else {
-				found += _search8(mem, size, block, value, params->op, &tmp, limit ? limit - found : 0);
-			}
-			size_t i;
-			for (i = 0; i < mCoreMemorySearchResultsSize(&tmp); ++i) {
-				struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsGetPointer(&tmp, i);
-				res->guessDivisor = divisor;
-				*mCoreMemorySearchResultsAppend(out) = *res;
-			}
-		}
-	}
-
-	mCoreMemorySearchResultsDeinit(&tmp);
-	return found;
-}
-
-static size_t _search(const void* mem, size_t size, const struct mCoreMemoryBlock* block, const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* out, size_t limit) {
+static size_t _search(const void* mem, size_t size, const struct mCoreMemoryBlock* block,
+                      const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* out,
+                      size_t limit) {
 	switch (params->type) {
 	case mCORE_MEMORY_SEARCH_INT:
 		return _searchInt(mem, size, block, params, out, limit);
 	case mCORE_MEMORY_SEARCH_STRING:
-		return _searchStr(mem, size, block, params->valueStr, params->width, out, limit);
-	case mCORE_MEMORY_SEARCH_GUESS:
-		return _searchGuess(mem, size, block, params, out, limit);
+		return _searchStr(mem, size, block, params, out, limit);
+	default:
+		return 0;
 	}
-	return 0;
 }
 
-void mCoreMemorySearch(struct mCore* core, const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* out, size_t limit) {
+void mCoreMemorySearch(struct mCore* core, const struct mCoreMemorySearchParams* params,
+                       struct mCoreMemorySearchResults* out, size_t limit) {
 	const struct mCoreMemoryBlock* blocks;
 	size_t nBlocks = core->listMemoryBlocks(core, &blocks);
 	size_t found = 0;
-
+	
 	size_t b;
 	for (b = 0; (!limit || found < limit) && b < nBlocks; ++b) {
 		size_t size;
@@ -244,99 +148,111 @@ void mCoreMemorySearch(struct mCore* core, const struct mCoreMemorySearchParams*
 		if (size > block->end - block->start) {
 			size = block->end - block->start; // TOOD: Segments
 		}
+		if ((block->start > params->end) || (block->end < params->start)) {
+			continue;
+		}
 		found += _search(mem, size, block, params, out, limit ? limit - found : 0);
 	}
 }
 
-bool _testSpecificGuess(struct mCore* core, struct mCoreMemorySearchResult* res, int64_t opValue, enum mCoreMemorySearchOp op) {
-	int32_t offset = 0;
-	if (op >= mCORE_MEMORY_SEARCH_DELTA) {
-		offset = res->oldValue;
-	}
 
-	res->oldValue += opValue;
-	int64_t value = core->rawRead8(core, res->address, res->segment);
-	if (_op(value * res->guessDivisor / res->guessMultiplier - offset, opValue, op)) {
-		res->oldValue = value;
-		return true;
-	}
-	if (!(res->address & 1) && (res->width >= 2 || res->width == -1)) {
-		value = core->rawRead16(core, res->address, res->segment);
-		if (_op(value * res->guessDivisor / res->guessMultiplier - offset, opValue, op)) {
-			res->oldValue = value;
-			return true;
+void mCoreMemorySearchRepeat(struct mCore* core, const struct mCoreMemorySearchParams* params,
+                             struct mCoreMemorySearchResults* inout) {
+	if (params->type == mCORE_MEMORY_SEARCH_STRING) {
+		if (params->op == mCORE_MEMORY_SEARCH_CHANGED){
+			// TODO
 		}
-	}
-	if (!(res->address & 3) && (res->width >= 4 || res->width == -1)) {
-		value = core->rawRead32(core, res->address, res->segment);
-		if (_op(value * res->guessDivisor / res->guessMultiplier - offset, opValue, op)) {
-			res->oldValue = value;
-			return true;
-		}
-	}
-	res->oldValue -= opValue;
-	return false;
-}
-
-bool _testGuess(struct mCore* core, struct mCoreMemorySearchResult* res, const struct mCoreMemorySearchParams* params) {
-	char* end;
-	int64_t value = strtoll(params->valueStr, &end, 10);
-	if (end && _testSpecificGuess(core, res, value, params->op)) {
-		return true;
-	}
-
-	value = strtoll(params->valueStr, &end, 16);
-	if (end && _testSpecificGuess(core, res, value, params->op)) {
-		return true;
-	}
-	return false;
-}
-
-void mCoreMemorySearchRepeat(struct mCore* core, const struct mCoreMemorySearchParams* params, struct mCoreMemorySearchResults* inout) {
-	size_t i;
-	for (i = 0; i < mCoreMemorySearchResultsSize(inout); ++i) {
-		struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsGetPointer(inout, i);
-		switch (res->type) {
-		case mCORE_MEMORY_SEARCH_INT:
-			if (params->type == mCORE_MEMORY_SEARCH_GUESS) {
-				if (!_testGuess(core, res, params)) {
-					*res = *mCoreMemorySearchResultsGetPointer(inout, mCoreMemorySearchResultsSize(inout) - 1);
-					mCoreMemorySearchResultsResize(inout, -1);
-					--i;
-				}
-			} else if (params->type == mCORE_MEMORY_SEARCH_INT) {
-				int32_t match = params->valueInt;
-				int32_t value = 0;
-				switch (params->width) {
+		return;
+	} else {
+		size_t i;
+		for (i = 0; i < mCoreMemorySearchResultsSize(inout); ++i) {
+			struct mCoreMemorySearchResult* res = mCoreMemorySearchResultsGetPointer(inout, i);
+			if (res->address > params->end || res->address < params->start) {
+				*res = *mCoreMemorySearchResultsGetPointer(inout, mCoreMemorySearchResultsSize(inout) - 1);
+				mCoreMemorySearchResultsResize(inout, -1);
+				--i;
+			} else {
+				res->oldValue = res->curValue;
+				res->signedNum |= params->signedNum;
+				int64_t value = 0;
+				uint32_t rawVal;
+				switch (res->width) {
 				case 1:
-					value = core->rawRead8(core, res->address, res->segment);
+					rawVal = core->rawRead8(core, res->address, res->segment);
+					if (res->signedNum) {
+						int8_t temp;
+						memcpy(&temp, &rawVal, 1);
+						value = temp;
+					} else {
+						value = rawVal;
+					}
 					break;
 				case 2:
-					value = core->rawRead16(core, res->address, res->segment);
+					rawVal = core->rawRead16(core, res->address, res->segment);
+					if (res->signedNum) {
+						int16_t temp;
+						memcpy(&temp, &rawVal, 2);
+						value = temp;
+					} else {
+						value = rawVal;
+					}
 					break;
 				case 4:
-					value = core->rawRead32(core, res->address, res->segment);
+					rawVal = core->rawRead32(core, res->address, res->segment);
+					if (res->signedNum) {
+						int32_t temp;
+						memcpy(&temp, &rawVal, 4);
+						value = temp;
+					} else {
+						value = rawVal;
+					}
 					break;
 				default:
 					break;
 				}
-				int32_t opValue = value;
-				if (params->op >= mCORE_MEMORY_SEARCH_DELTA) {
-					opValue -= res->oldValue;
+				int64_t curVal;
+				int64_t refVal;
+				switch (params->op) {
+				case mCORE_MEMORY_SEARCH_INCREASE_BY:
+					curVal = value - res->oldValue;
+					refVal = params->valueInt;
+					break;
+				case mCORE_MEMORY_SEARCH_DECREASE_BY:
+					curVal = res->oldValue - value;
+					refVal = params->valueInt;
+					break;
+				case mCORE_MEMORY_SEARCH_CHANGED_BY:
+					curVal = llabs(value - res->oldValue);
+					refVal = params->valueInt;
+					break;
+				case mCORE_MEMORY_SEARCH_EQUAL:
+				case mCORE_MEMORY_SEARCH_NOT_EQUAL:
+				case mCORE_MEMORY_SEARCH_GREATER:
+				case mCORE_MEMORY_SEARCH_NOT_GREATER:
+				case mCORE_MEMORY_SEARCH_LESS:
+				case mCORE_MEMORY_SEARCH_NOT_LESS:
+					curVal = value;
+					refVal = params->valueInt;
+					break;
+				case mCORE_MEMORY_SEARCH_DECREASE:
+				case mCORE_MEMORY_SEARCH_INCREASE:
+				case mCORE_MEMORY_SEARCH_NOT_INCREASE:
+				case mCORE_MEMORY_SEARCH_NOT_DECREASE:
+				case mCORE_MEMORY_SEARCH_CHANGED:
+				case mCORE_MEMORY_SEARCH_NOT_CHANGED:
+				default:
+					curVal = value;
+					refVal = res->oldValue;
+					break;
 				}
-				if (!_op(opValue, match, params->op)) {
+				if (!_op(curVal, refVal, params->op)) {
 					*res = *mCoreMemorySearchResultsGetPointer(inout, mCoreMemorySearchResultsSize(inout) - 1);
 					mCoreMemorySearchResultsResize(inout, -1);
 					--i;
 				} else {
-					res->oldValue = value;
+					res->curValue = value;
 				}
 			}
-			break;
-		case mCORE_MEMORY_SEARCH_STRING:
-		case mCORE_MEMORY_SEARCH_GUESS:
-			// TODO
-			break;
 		}
 	}
 }
