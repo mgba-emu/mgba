@@ -11,6 +11,8 @@
 
 #include <mgba/core/mem-search.h>
 
+#include "MemoryView.h"
+
 namespace QGBA {
 
 class CoreController;
@@ -19,7 +21,8 @@ class MemorySearch : public QWidget {
 Q_OBJECT
 
 public:
-	static constexpr size_t LIMIT = 10000;
+	static constexpr size_t LIMIT = 0x48000; //WRAM size 256KB +32KB
+	static constexpr size_t DISP_LIMIT = 100;
 
 	MemorySearch(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 	~MemorySearch();
@@ -30,15 +33,15 @@ public slots:
 	void searchWithin();
 
 private slots:
-	void openMemory();
+	void openMemory(int, int);
 
 private:
-	bool createParams(mCoreMemorySearchParams*);
+	bool createParams(mCoreMemorySearchParams*, QByteArray&);
 
 	Ui::MemorySearch m_ui;
+	MemoryView* memView;
 
 	std::shared_ptr<CoreController> m_controller;
-
 	mCoreMemorySearchResults m_results;
 	QByteArray m_string;
 };
