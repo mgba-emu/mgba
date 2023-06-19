@@ -1053,7 +1053,11 @@ void mScriptContextDetachCore(struct mScriptContext* context) {
 	if (!value) {
 		return;
 	}
-	_clearMemoryMap(context, value->value.opaque, true);
+
+	struct mScriptCoreAdapter* adapter = value->value.opaque;
+	_clearMemoryMap(context, adapter, true);
+	adapter->core->setPeripheral(adapter->core, mPERIPH_RUMBLE, adapter->oldRumble);
+
 	mScriptContextRemoveGlobal(context, "emu");
 }
 
