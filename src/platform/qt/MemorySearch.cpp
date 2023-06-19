@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <QTextCodec>
 #include "MemorySearch.h"
 
 #include <mgba/core/core.h>
@@ -125,9 +126,16 @@ bool MemorySearch::createParams(mCoreMemorySearchParams* params) {
 	}
 	if (m_ui.typeStr->isChecked()) {
 		params->type = mCORE_MEMORY_SEARCH_STRING;
-		m_string = m_ui.value->text().toLocal8Bit();
+		QString enc = m_ui.encoding->currentText();
+		if (enc == "ASCII") {
+			m_string = m_ui.value->text().toLatin1();
+		} else {
+			QTextCodec* codec = QTextCodec::codecForName(enc.toLatin1());
+			m_string = codec->fromUnicode(m_ui.value->text());
+		}
 		params->valueStr = m_string.constData();
-		params->width = m_ui.value->text().size();
+		params->width = m_string.size();
+	
 		ok = true;
 	}
 	return ok;
@@ -180,6 +188,7 @@ void MemorySearch::refresh() {
 		m_ui.results->setItem(i, 0, item);
 		QTableWidgetItem* type = nullptr;
 		QByteArray string;
+		QString enc = m_ui.encoding->currentText();
 		if (result->type == mCORE_MEMORY_SEARCH_INT && m_ui.numHex->isChecked()) {
 			switch (result->width) {
 			case 1:
@@ -212,7 +221,12 @@ void MemorySearch::refresh() {
 				for (int i = 0; i < result->width; ++i) {
 					string.append(core->rawRead8(core, result->address + i, result->segment));
 				}
-				item = new QTableWidgetItem(QLatin1String(string)); // TODO
+				if (enc == "ASCII") {
+					item = new QTableWidgetItem(QLatin1String(string));
+				} else {
+					QTextCodec* codec = QTextCodec::codecForName(enc.toLatin1());
+					item = new QTableWidgetItem(codec->toUnicode(string));
+				}
 				break;
 			case mCORE_MEMORY_SEARCH_GUESS:
 				item = nullptr;

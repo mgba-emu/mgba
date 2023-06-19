@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>725</width>
-    <height>813</height>
+    <height>675</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -105,21 +105,21 @@
        </attribute>
       </widget>
      </item>
-     <item row="4" column="0" colspan="2">
+     <item row="5" column="0" colspan="2">
       <widget class="Line" name="line">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Width</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="6" column="1">
       <widget class="QRadioButton" name="bitsGuess">
        <property name="text">
         <string>Guess</string>
@@ -132,7 +132,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="6" column="1">
+     <item row="7" column="1">
       <widget class="QRadioButton" name="bits8">
        <property name="text">
         <string>1 Byte (8-bit)</string>
@@ -142,7 +142,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="7" column="1">
+     <item row="8" column="1">
       <widget class="QRadioButton" name="bits16">
        <property name="text">
         <string>2 Bytes (16-bit)</string>
@@ -152,7 +152,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="8" column="1">
+     <item row="9" column="1">
       <widget class="QRadioButton" name="bits32">
        <property name="text">
         <string>4 Bytes (32-bit)</string>
@@ -165,59 +165,59 @@
        </attribute>
       </widget>
      </item>
-     <item row="9" column="0" colspan="2">
+     <item row="10" column="0" colspan="2">
       <widget class="Line" name="line_2">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
-     <item row="10" column="0">
+     <item row="11" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>Number type</string>
        </property>
       </widget>
      </item>
-     <item row="10" column="1">
+     <item row="11" column="1">
       <widget class="QRadioButton" name="numGuess">
        <property name="text">
         <string>Guess</string>
        </property>
        <property name="checked">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>
-     <item row="11" column="1">
+     <item row="12" column="1">
       <widget class="QRadioButton" name="numDec">
        <property name="text">
         <string>Decimal</string>
        </property>
       </widget>
      </item>
-     <item row="12" column="1">
+     <item row="13" column="1">
       <widget class="QRadioButton" name="numHex">
        <property name="text">
         <string>Hexadecimal</string>
        </property>
       </widget>
      </item>
-     <item row="13" column="0" colspan="2">
+     <item row="14" column="0" colspan="2">
       <widget class="Line" name="line_3">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
-     <item row="14" column="0">
+     <item row="15" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Search type</string>
        </property>
       </widget>
      </item>
-     <item row="14" column="1">
+     <item row="15" column="1">
       <widget class="QRadioButton" name="opEqual">
        <property name="text">
         <string>Equal to value</string>
@@ -230,7 +230,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="15" column="1">
+     <item row="16" column="1">
       <widget class="QRadioButton" name="opGreater">
        <property name="text">
         <string>Greater than value</string>
@@ -240,7 +240,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="16" column="1">
+     <item row="17" column="1">
       <widget class="QRadioButton" name="opLess">
        <property name="text">
         <string>Less than value</string>
@@ -250,7 +250,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="17" column="1">
+     <item row="18" column="1">
       <widget class="QRadioButton" name="opUnknown">
        <property name="text">
         <string>Unknown/changed</string>
@@ -260,7 +260,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="18" column="1">
+     <item row="19" column="1">
       <widget class="QRadioButton" name="opDelta">
        <property name="enabled">
         <bool>false</bool>
@@ -273,7 +273,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="21" column="1">
+     <item row="22" column="1">
       <widget class="QRadioButton" name="opDelta0">
        <property name="enabled">
         <bool>false</bool>
@@ -286,7 +286,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="19" column="1">
+     <item row="20" column="1">
       <widget class="QRadioButton" name="opDeltaPositive">
        <property name="enabled">
         <bool>false</bool>
@@ -299,7 +299,7 @@
        </attribute>
       </widget>
      </item>
-     <item row="20" column="1">
+     <item row="21" column="1">
       <widget class="QRadioButton" name="opDeltaNegative">
        <property name="enabled">
         <bool>false</bool>
@@ -312,11 +312,38 @@
        </attribute>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="4" column="1">
       <widget class="QCheckBox" name="searchROM">
        <property name="text">
         <string>Search ROM</string>
        </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QComboBox" name="encoding">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <item>
+        <property name="text">
+         <string>ASCII</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>UTF-8</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>UTF-16LE</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Shift-JIS</string>
+        </property>
+       </item>
       </widget>
      </item>
     </layout>
@@ -371,8 +398,8 @@
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>315</x>
-     <y>357</y>
+     <x>333</x>
+     <y>665</y>
     </hint>
     <hint type="destinationlabel">
      <x>315</x>
@@ -387,19 +414,35 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>231</x>
-     <y>768</y>
+     <x>218</x>
+     <y>600</y>
     </hint>
     <hint type="destinationlabel">
-     <x>272</x>
-     <y>26</y>
+     <x>218</x>
+     <y>33</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>typeStr</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>encoding</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>93</x>
+     <y>87</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>218</x>
+     <y>119</y>
     </hint>
    </hints>
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="type"/>
   <buttongroup name="op"/>
+  <buttongroup name="type"/>
   <buttongroup name="width"/>
  </buttongroups>
 </ui>
