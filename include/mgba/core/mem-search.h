@@ -15,19 +15,27 @@ CXX_GUARD_START
 enum mCoreMemorySearchType {
 	mCORE_MEMORY_SEARCH_INT,
 	mCORE_MEMORY_SEARCH_STRING,
-	mCORE_MEMORY_SEARCH_GUESS,
 };
 
 enum mCoreMemorySearchOp {
 	mCORE_MEMORY_SEARCH_EQUAL,
+	mCORE_MEMORY_SEARCH_NOT_EQUAL,
 	mCORE_MEMORY_SEARCH_GREATER,
+	mCORE_MEMORY_SEARCH_NOT_GREATER,
 	mCORE_MEMORY_SEARCH_LESS,
+	mCORE_MEMORY_SEARCH_NOT_LESS,
 	mCORE_MEMORY_SEARCH_ANY,
-	mCORE_MEMORY_SEARCH_DELTA,
-	mCORE_MEMORY_SEARCH_DELTA_POSITIVE,
-	mCORE_MEMORY_SEARCH_DELTA_NEGATIVE,
-	mCORE_MEMORY_SEARCH_DELTA_ANY,
+	mCORE_MEMORY_SEARCH_CHANGED,
+	mCORE_MEMORY_SEARCH_NOT_CHANGED,
+	mCORE_MEMORY_SEARCH_CHANGED_BY,
+	mCORE_MEMORY_SEARCH_INCREASE,
+	mCORE_MEMORY_SEARCH_NOT_INCREASE,
+	mCORE_MEMORY_SEARCH_INCREASE_BY,
+	mCORE_MEMORY_SEARCH_DECREASE,
+	mCORE_MEMORY_SEARCH_NOT_DECREASE,
+	mCORE_MEMORY_SEARCH_DECREASE_BY,
 };
+
 
 struct mCoreMemorySearchParams {
 	int memoryFlags;
@@ -37,18 +45,21 @@ struct mCoreMemorySearchParams {
 	int width;
 	union {
 		const char* valueStr;
-		int32_t valueInt;
+		int64_t valueInt;
 	};
+	uint32_t start;
+	uint32_t end;
+	bool signedNum;
 };
 
 struct mCoreMemorySearchResult {
 	uint32_t address;
 	int segment;
-	uint32_t guessDivisor;
-	uint32_t guessMultiplier;
 	enum mCoreMemorySearchType type;
 	int width;
-	int32_t oldValue;
+	int64_t curValue;
+	int64_t oldValue;
+	bool signedNum;
 };
 
 DECLARE_VECTOR(mCoreMemorySearchResults, struct mCoreMemorySearchResult);
