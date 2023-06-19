@@ -199,7 +199,7 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 
 	mScriptContextSetDocstring(context, "system", "Information about the system the script is running under");
 	mScriptContextSetDocstring(context, "system.version", "The current version of this build of the program");
-	mScriptContextSetDocstring(context, "system.program", "The name of the program. Generally this will be \"mGBA\", but forks may change it to differentiate");
+	mScriptContextSetDocstring(context, "system.program", "The name of the program. Generally this will be \\\"mGBA\\\", but forks may change it to differentiate");
 	mScriptContextSetDocstring(context, "system.branch", "The current git branch of this build of the program, if known");
 	mScriptContextSetDocstring(context, "system.commit", "The current git commit hash of this build of the program, if known");
 	mScriptContextSetDocstring(context, "system.revision", "The current git revision number of this build of the program, or -1 if unknown");
