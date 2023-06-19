@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <QTextCodec>
 
 #include "MemoryView.h"
 
@@ -105,24 +106,20 @@ QValidator::State IntValidator::validate(QString& input, int&) const {
 }
 
 MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* parent)
-	: QWidget(parent)
-	, m_controller(controller)
-{
+    : QWidget(parent)
+    , m_controller(controller) {
 	m_ui.setupUi(this);
 
 	m_ui.hexfield->setController(controller);
-
-	m_ui.sintVal->setValidator(&m_sintValidator);
-	m_ui.uintVal->setValidator(&m_uintValidator);
 
 	mCore* core = m_controller->thread()->core;
 	const mCoreMemoryBlock* info;
 	size_t nBlocks = core->listMemoryBlocks(core, &info);
 
-	connect(m_ui.regions, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-	        this, &MemoryView::setIndex);
-	connect(m_ui.segments, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-	        this, &MemoryView::setSegment);
+	connect(m_ui.regions, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+	        &MemoryView::setIndex);
+	connect(m_ui.segments, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
+	        &MemoryView::setSegment);
 
 	if (info) {
 		for (size_t i = 0; i < nBlocks; ++i) {
@@ -133,23 +130,11 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 		}
 	}
 
-	connect(m_ui.width8, &QAbstractButton::clicked, [this]() {
-		m_ui.hexfield->setAlignment(1);
-		m_sintValidator.setWidth(1);
-		m_uintValidator.setWidth(1);
-	});
-	connect(m_ui.width16, &QAbstractButton::clicked, [this]() {
-		m_ui.hexfield->setAlignment(2);
-		m_sintValidator.setWidth(2);
-		m_uintValidator.setWidth(2);
-	});
-	connect(m_ui.width32, &QAbstractButton::clicked, [this]() {
-		m_ui.hexfield->setAlignment(4);
-		m_sintValidator.setWidth(4);
-		m_uintValidator.setWidth(4);
-	});
-	connect(m_ui.setAddress, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-	        this, static_cast<void (MemoryView::*)(uint32_t)>(&MemoryView::jumpToAddress));
+	connect(m_ui.width8, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(1); });
+	connect(m_ui.width16, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(2); });
+	connect(m_ui.width32, &QAbstractButton::clicked, [this]() { m_ui.hexfield->setAlignment(4); });
+	connect(m_ui.setAddress, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
+	        static_cast<void (MemoryView::*)(uint32_t)>(&MemoryView::jumpToAddress));
 	connect(m_ui.hexfield, &MemoryModel::selectionChanged, this, &MemoryView::updateSelection);
 	connect(m_ui.saveRange, &QAbstractButton::clicked, this, &MemoryView::saveRange);
 
@@ -166,41 +151,6 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 	connect(m_ui.load, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::load);
 
 	connect(m_ui.loadTBL, &QAbstractButton::clicked, m_ui.hexfield, &MemoryModel::loadTBL);
-
-	connect(m_ui.sintVal, &QLineEdit::returnPressed, this, [this]() {
-		int align = m_ui.hexfield->alignment();
-		mCore* core = m_controller->thread()->core;
-		int32_t value = m_ui.sintVal->text().toInt();
-		switch (align) {
-		case 1:
-			core->rawWrite8(core, m_selection.first, m_ui.segments->value(), value);
-			break;
-		case 2:
-			core->rawWrite16(core, m_selection.first, m_ui.segments->value(), value);
-			break;
-		case 4:
-			core->rawWrite32(core, m_selection.first, m_ui.segments->value(), value);
-			break;
-		}
-		update();
-	});
-	connect(m_ui.uintVal, &QLineEdit::returnPressed, this, [this]() {
-		int align = m_ui.hexfield->alignment();
-		mCore* core = m_controller->thread()->core;
-		uint32_t value = m_ui.uintVal->text().toUInt();
-		switch (align) {
-		case 1:
-			core->rawWrite8(core, m_selection.first, m_ui.segments->value(), value);
-			break;
-		case 2:
-			core->rawWrite16(core, m_selection.first, m_ui.segments->value(), value);
-			break;
-		case 4:
-			core->rawWrite32(core, m_selection.first, m_ui.segments->value(), value);
-			break;
-		}
-		update();
-	});
 }
 
 void MemoryView::setIndex(int index) {
@@ -256,19 +206,24 @@ void MemoryView::updateSelection(uint32_t start, uint32_t end) {
 }
 
 void MemoryView::updateStatus() {
-	unsigned align = m_ui.hexfield->alignment();
 	mCore* core = m_controller->thread()->core;
-	QByteArray selection(m_ui.hexfield->serialize());
-	QString text(m_ui.hexfield->decodeText(selection));
-	m_ui.stringVal->setText(text);
+	QByteArray txt;
+	uint8_t chr;
+	int i = 0;
+	do {
+		chr = core->rawRead8(core, m_selection.first + i, m_ui.segments->value());
+		txt.append(chr);
+		++i;
+	} while (chr);
 
-	if (m_selection.first & (align - 1) || m_selection.second - m_selection.first != align) {
-		m_ui.sintVal->clear();
-		m_ui.sintVal->setReadOnly(true);
-		m_ui.uintVal->clear();
-		m_ui.uintVal->setReadOnly(true);
-		return;
+	QString enc = m_ui.encoding->currentText();
+	if (enc == "ASCII") {
+		m_ui.stringVal->setText(QString::fromLatin1(txt.constData()));
+	} else {
+		QTextCodec* codec = QTextCodec::codecForName(enc.toLatin1());
+		m_ui.stringVal->setText(codec->toUnicode(txt.constData()));
 	}
+		
 	union {
 		uint32_t u32;
 		int32_t i32;
@@ -277,25 +232,21 @@ void MemoryView::updateStatus() {
 		uint8_t u8;
 		int8_t i8;
 	} value;
-	switch (align) {
-	case 1:
-		value.u8 = core->rawRead8(core, m_selection.first, m_ui.segments->value());
-		m_ui.sintVal->setText(QString::number(value.i8));
-		m_ui.uintVal->setText(QString::number(value.u8));
-		break;
-	case 2:
-		value.u16 = core->rawRead16(core, m_selection.first, m_ui.segments->value());
-		m_ui.sintVal->setText(QString::number(value.i16));
-		m_ui.uintVal->setText(QString::number(value.u16));
-		break;
-	case 4:
-		value.u32 = core->rawRead32(core, m_selection.first, m_ui.segments->value());
-		m_ui.sintVal->setText(QString::number(value.i32));
-		m_ui.uintVal->setText(QString::number(value.u32));
-		break;
-	}
-	m_ui.sintVal->setReadOnly(false);
-	m_ui.uintVal->setReadOnly(false);
+	
+	value.u32 = core->rawRead8(core, m_selection.first, m_ui.segments->value()) |
+	    core->rawRead8(core, m_selection.first + 1, m_ui.segments->value()) << 8 |
+	    core->rawRead8(core, m_selection.first + 2, m_ui.segments->value()) <<16 |
+	    core->rawRead8(core, m_selection.first + 3, m_ui.segments->value()) << 24;
+	
+	m_ui.int8->setText(QString::number(value.i8));
+	m_ui.uint8->setText(QString::number(value.u8));
+
+	m_ui.int16->setText(QString::number(value.i16));
+	m_ui.uint16->setText(QString::number(value.u16));
+
+	m_ui.int32->setText(QString::number(value.i32));
+	m_ui.uint32->setText(QString::number(value.u32));
+	
 }
 
 void MemoryView::saveRange() {
