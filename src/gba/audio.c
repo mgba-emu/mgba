@@ -253,11 +253,16 @@ void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {
+	GBAAudioSample(audio, mTimingCurrentTime(&audio->p->timing));
 	audio->soundbias = value;
 	int32_t oldSampleInterval = audio->sampleInterval;
 	audio->sampleInterval = 0x200 >> GBARegisterSOUNDBIASGetResolution(value);
-	if (oldSampleInterval != audio->sampleInterval && audio->p->stream && audio->p->stream->audioRateChanged) {
-		audio->p->stream->audioRateChanged(audio->p->stream, GBA_ARM7TDMI_FREQUENCY / audio->sampleInterval);
+	if (oldSampleInterval != audio->sampleInterval) {
+		audio->lastSample += oldSampleInterval * audio->sampleIndex;
+		audio->sampleIndex = 0;
+		if (audio->p->stream && audio->p->stream->audioRateChanged) {
+			audio->p->stream->audioRateChanged(audio->p->stream, GBA_ARM7TDMI_FREQUENCY / audio->sampleInterval);
+		}
 	}
 }
 

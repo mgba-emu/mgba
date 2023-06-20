@@ -3,6 +3,7 @@ Emulation fixes:
  - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
  - GB I/O: Read back proper SVBK value after writing 0 (fixes mgba.io/i/2921)
  - GB SIO: Disabling SIO should cancel pending transfers (fixes mgba.io/i/2537)
+ - GBA Audio: Fix sample timing drifting when changing sample interval
  - GBA BIOS: Fix clobbering registers with word-sized CpuSet
 Other fixes:
  - mGUI: Fix cases where an older save state screenshot would be shown (fixes mgba.io/i/2183)
