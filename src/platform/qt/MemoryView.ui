@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>874</width>
-    <height>900</height>
+    <height>585</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -228,6 +228,33 @@
          <property name="text">
           <string>String:</string>
          </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="encoding">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <item>
+          <property name="text">
+           <string>ASCII</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>UTF-8</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>UTF-16LE</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Shift-JIS</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item>

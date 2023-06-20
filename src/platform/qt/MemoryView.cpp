@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+#include <QTextCodec>
 
 #include "MemoryView.h"
 
@@ -14,10 +15,8 @@
 using namespace QGBA;
 
 IntValidator::IntValidator(bool isSigned, QObject* parent)
-	: QValidator(parent)
-	, m_signed(isSigned)
-{
-}
+    : QValidator(parent)
+    , m_signed(isSigned) { }
 
 QValidator::State IntValidator::validate(QString& input, int&) const {
 	if (input.isEmpty()) {
@@ -105,9 +104,8 @@ QValidator::State IntValidator::validate(QString& input, int&) const {
 }
 
 MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* parent)
-	: QWidget(parent)
-	, m_controller(controller)
-{
+    : QWidget(parent)
+    , m_controller(controller) {
 	m_ui.setupUi(this);
 
 	m_ui.hexfield->setController(controller);
@@ -119,10 +117,10 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 	const mCoreMemoryBlock* info;
 	size_t nBlocks = core->listMemoryBlocks(core, &info);
 
-	connect(m_ui.regions, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-	        this, &MemoryView::setIndex);
-	connect(m_ui.segments, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-	        this, &MemoryView::setSegment);
+	connect(m_ui.regions, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
+	        &MemoryView::setIndex);
+	connect(m_ui.segments, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
+	        &MemoryView::setSegment);
 
 	if (info) {
 		for (size_t i = 0; i < nBlocks; ++i) {
@@ -148,8 +146,8 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 		m_sintValidator.setWidth(4);
 		m_uintValidator.setWidth(4);
 	});
-	connect(m_ui.setAddress, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-	        this, static_cast<void (MemoryView::*)(uint32_t)>(&MemoryView::jumpToAddress));
+	connect(m_ui.setAddress, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this,
+	        static_cast<void (MemoryView::*)(uint32_t)>(&MemoryView::jumpToAddress));
 	connect(m_ui.hexfield, &MemoryModel::selectionChanged, this, &MemoryView::updateSelection);
 	connect(m_ui.saveRange, &QAbstractButton::clicked, this, &MemoryView::saveRange);
 
@@ -258,9 +256,22 @@ void MemoryView::updateSelection(uint32_t start, uint32_t end) {
 void MemoryView::updateStatus() {
 	unsigned align = m_ui.hexfield->alignment();
 	mCore* core = m_controller->thread()->core;
-	QByteArray selection(m_ui.hexfield->serialize());
-	QString text(m_ui.hexfield->decodeText(selection));
-	m_ui.stringVal->setText(text);
+	QByteArray txt;
+	uint8_t chr;
+	int i = 0;
+	do {
+		chr = core->rawRead8(core, m_selection.first + i, m_ui.segments->value());
+		txt.append(chr);
+		++i;
+	} while (chr);
+
+	QString enc = m_ui.encoding->currentText();
+	if (enc == "ASCII") {
+		m_ui.stringVal->setText(QString::fromLatin1(txt.constData()));
+	} else {
+		QTextCodec* codec = QTextCodec::codecForName(enc.toLatin1());
+		m_ui.stringVal->setText(codec->toUnicode(txt.constData()));
+	}
 
 	if (m_selection.first & (align - 1) || m_selection.second - m_selection.first != align) {
 		m_ui.sintVal->clear();
