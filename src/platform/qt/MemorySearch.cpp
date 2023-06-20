@@ -176,13 +176,16 @@ void MemorySearch::refresh() {
 	CoreController::Interrupter interrupter(m_controller);
 	mCore* core = m_controller->thread()->core;
 
+	size_t resSize = mCoreMemorySearchResultsSize(&m_results);
+	size_t dispCount = m_ui.dispAll->isChecked() ? resSize : (resSize > DISP_LIMIT ? DISP_LIMIT : resSize);
+
 	m_ui.results->clearContents();
-	m_ui.results->setRowCount(mCoreMemorySearchResultsSize(&m_results));
+	m_ui.results->setRowCount(dispCount);
 	m_ui.opDelta->setEnabled(false);
 	m_ui.opDelta0->setEnabled(false);
 	m_ui.opDeltaPositive->setEnabled(false);
 	m_ui.opDeltaNegative->setEnabled(false);
-	for (size_t i = 0; i < mCoreMemorySearchResultsSize(&m_results); ++i) {
+	for (size_t i = 0; i < dispCount; ++i) {
 		mCoreMemorySearchResult* result = mCoreMemorySearchResultsGetPointer(&m_results, i);
 		QTableWidgetItem* item = new QTableWidgetItem(QString("%1").arg(result->address, 8, 16, QChar('0')));
 		m_ui.results->setItem(i, 0, item);
@@ -273,6 +276,7 @@ void MemorySearch::refresh() {
 		m_ui.opEqual->setChecked(true);
 	}
 	m_ui.results->sortItems(0);
+	m_ui.msg->setText(QString("MSG: display %1 of %2 results").arg(dispCount).arg(resSize));
 }
 
 void MemorySearch::openMemory() {
