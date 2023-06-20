@@ -180,6 +180,8 @@ void ScriptingController::event(QObject* obj, QEvent* event) {
 		return;
 	}
 
+	CoreController::Interrupter interrupter(m_controller);
+
 	switch (event->type()) {
 	case QEvent::FocusOut:
 	case QEvent::WindowDeactivate:

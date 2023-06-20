@@ -81,17 +81,17 @@ mSCRIPT_BIND_FUNCTION(mScriptExpandBitmask_Binding, WLIST, mScriptExpandBitmask,
 mSCRIPT_DEFINE_STRUCT(mScriptCallbackManager)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
 		"A global singleton object `callbacks` used for managing callbacks. The following callbacks are defined:\n\n"
-		"- **alarm**: An in-game alarm went off\n"
-		"- **crashed**: The emulation crashed\n"
-		"- **frame**: The emulation finished a frame\n"
-		"- **keysRead**: The emulation is about to read the key input\n"
-		"- **reset**: The emulation has been reset\n"
-		"- **rumble**: The state of the rumble motor was changed. This callback is passed a single argument that specifies if it was turned on (true) or off (false)\n"
-		"- **savedataUpdated**: The emulation has just finished modifying save data\n"
-		"- **sleep**: The emulation has used the sleep feature to enter a low-power mode\n"
-		"- **shutdown**: The emulation has been powered off\n"
-		"- **start**: The emulation has started\n"
-		"- **stop**: The emulation has voluntarily shut down\n"
+		"- `alarm`: An in-game alarm went off\n"
+		"- `crashed`: The emulation crashed\n"
+		"- `frame`: The emulation finished a frame\n"
+		"- `keysRead`: The emulation is about to read the key input\n"
+		"- `reset`: The emulation has been reset\n"
+		"- `rumble`: The state of the rumble motor was changed. This callback is passed a single argument that specifies if it was turned on (true) or off (false)\n"
+		"- `savedataUpdated`: The emulation has just finished modifying save data\n"
+		"- `sleep`: The emulation has used the sleep feature to enter a low-power mode\n"
+		"- `shutdown`: The emulation has been powered off\n"
+		"- `start`: The emulation has started\n"
+		"- `stop`: The emulation has voluntarily shut down\n"
 	)
 	mSCRIPT_DEFINE_DOCSTRING("Add a callback of the named type. The returned id can be used to remove it later")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCallbackManager, add)
