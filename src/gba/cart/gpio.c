@@ -374,7 +374,9 @@ void _lightReadPins(struct GBACartridgeHardware* hw) {
 		mLOG(GBA_HW, DEBUG, "[SOLAR] Got reset");
 		hw->lightCounter = 0;
 		if (lux) {
-			lux->sample(lux);
+			if (lux->sample) {
+				lux->sample(lux);
+			}
 			hw->lightSample = lux->readLuminance(lux);
 		} else {
 			hw->lightSample = 0xFF;
