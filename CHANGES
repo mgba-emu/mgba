@@ -16,6 +16,7 @@ Emulation fixes:
  - GBA BIOS: Fix clobbering registers with word-sized CpuSet
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
+ - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
  - Debugger: Fix writing to specific segment in command-line debugger
  - mGUI: Fix cases where an older save state screenshot would be shown. (fixes mgba.io/i/2183)
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)

@@ -65,6 +65,7 @@ struct mCore {
 	void (*setSync)(struct mCore*, struct mCoreSync*);
 	void (*loadConfig)(struct mCore*, const struct mCoreConfig*);
 	void (*reloadConfigOption)(struct mCore*, const char* option, const struct mCoreConfig*);
+	void (*setOverride)(struct mCore*, const void* override);
 
 	void (*baseVideoSize)(const struct mCore*, unsigned* width, unsigned* height);
 	void (*currentVideoSize)(const struct mCore*, unsigned* width, unsigned* height);
