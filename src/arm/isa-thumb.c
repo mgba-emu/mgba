@@ -401,11 +401,7 @@ DEFINE_INSTRUCTION_THUMB(BL2,
 DEFINE_INSTRUCTION_THUMB(BX,
 	int rm = (opcode >> 3) & 0xF;
 	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001);
-	int misalign = 0;
-	if (rm == ARM_PC) {
-		misalign = cpu->gprs[rm] & 0x00000002;
-	}
-	cpu->gprs[ARM_PC] = (cpu->gprs[rm] & 0xFFFFFFFE) - misalign;
+	cpu->gprs[ARM_PC] = cpu->gprs[rm] & 0xFFFFFFFE;
 	if (cpu->executionMode == MODE_THUMB) {
 		currentCycles += ThumbWritePC(cpu);
 	} else {
