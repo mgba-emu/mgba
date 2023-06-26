@@ -100,22 +100,24 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->ch3 = (struct GBAudioWaveChannel) { .bank = 0 };
 	audio->ch4 = (struct GBAudioNoiseChannel) { .nSamples = 0 };
 	// TODO: DMG randomness
-	audio->ch3.wavedata8[0] = 0x00;
-	audio->ch3.wavedata8[1] = 0xFF;
-	audio->ch3.wavedata8[2] = 0x00;
-	audio->ch3.wavedata8[3] = 0xFF;
-	audio->ch3.wavedata8[4] = 0x00;
-	audio->ch3.wavedata8[5] = 0xFF;
-	audio->ch3.wavedata8[6] = 0x00;
-	audio->ch3.wavedata8[7] = 0xFF;
-	audio->ch3.wavedata8[8] = 0x00;
-	audio->ch3.wavedata8[9] = 0xFF;
-	audio->ch3.wavedata8[10] = 0x00;
-	audio->ch3.wavedata8[11] = 0xFF;
-	audio->ch3.wavedata8[12] = 0x00;
-	audio->ch3.wavedata8[13] = 0xFF;
-	audio->ch3.wavedata8[14] = 0x00;
-	audio->ch3.wavedata8[15] = 0xFF;
+	if (audio->style != GB_AUDIO_GBA) {
+		audio->ch3.wavedata8[0] = 0x00;
+		audio->ch3.wavedata8[1] = 0xFF;
+		audio->ch3.wavedata8[2] = 0x00;
+		audio->ch3.wavedata8[3] = 0xFF;
+		audio->ch3.wavedata8[4] = 0x00;
+		audio->ch3.wavedata8[5] = 0xFF;
+		audio->ch3.wavedata8[6] = 0x00;
+		audio->ch3.wavedata8[7] = 0xFF;
+		audio->ch3.wavedata8[8] = 0x00;
+		audio->ch3.wavedata8[9] = 0xFF;
+		audio->ch3.wavedata8[10] = 0x00;
+		audio->ch3.wavedata8[11] = 0xFF;
+		audio->ch3.wavedata8[12] = 0x00;
+		audio->ch3.wavedata8[13] = 0xFF;
+		audio->ch3.wavedata8[14] = 0x00;
+		audio->ch3.wavedata8[15] = 0xFF;
+	}
 	audio->ch4 = (struct GBAudioNoiseChannel) { .envelope = { .dead = 2 } };
 	audio->frame = 0;
 	audio->sampleInterval = SAMPLE_INTERVAL * GB_MAX_SAMPLES;
