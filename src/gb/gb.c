@@ -530,6 +530,23 @@ bool GBIsBIOS(struct VFile* vf) {
 	}
 }
 
+bool GBIsCompatibleBIOS(struct VFile* vf, enum GBModel model) {
+	switch (_GBBiosCRC32(vf)) {
+	case DMG_BIOS_CHECKSUM:
+	case DMG0_BIOS_CHECKSUM:
+	case MGB_BIOS_CHECKSUM:
+	case SGB_BIOS_CHECKSUM:
+	case SGB2_BIOS_CHECKSUM:
+		return model < GB_MODEL_CGB;
+	case CGB_BIOS_CHECKSUM:
+	case CGB0_BIOS_CHECKSUM:
+	case AGB_BIOS_CHECKSUM:
+		return model >= GB_MODEL_CGB;
+	default:
+		return false;
+	}
+}
+
 void GBReset(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	gb->memory.romBase = gb->memory.rom;
@@ -562,7 +579,7 @@ void GBReset(struct SM83Core* cpu) {
 	GBMemoryReset(gb);
 
 	if (gb->biosVf) {
-		if (!GBIsBIOS(gb->biosVf)) {
+		if (!GBIsCompatibleBIOS(gb->biosVf, gb->model)) {
 			gb->biosVf->close(gb->biosVf);
 			gb->biosVf = NULL;
 		} else {

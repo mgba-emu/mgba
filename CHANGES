@@ -21,6 +21,7 @@ Other fixes:
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
+ - GB: Prevent incompatible BIOSes from being used on differing models
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
