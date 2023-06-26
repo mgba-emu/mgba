@@ -817,6 +817,7 @@ void GBDetectModel(struct GB* gb) {
 			gb->model = GB_MODEL_SGB2;
 			break;
 		case CGB_BIOS_CHECKSUM:
+		case CGB0_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;
 			break;
 		case AGB_BIOS_CHECKSUM:
