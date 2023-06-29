@@ -25,7 +25,7 @@ static inline unsigned clz32(uint32_t bits) {
 	}
 	return __builtin_clz(bits);
 #else
-	static const int table[256] = {
+	static const int8_t table[256] = {
 		8, 7, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4,
 		3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 		2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
@@ -52,6 +52,43 @@ static inline unsigned clz32(uint32_t bits) {
 		return table[bits >> 8] + 16;
 	}
 	return table[bits] + 24;
+#endif
+}
+
+static inline unsigned ctz32(uint32_t bits) {
+#if defined(__GNUC__) || __clang__
+	if (!bits) {
+		return 32;
+	}
+	return __builtin_ctz(bits);
+#else
+	static const int8_t table[256] = {
+		8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+		4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+	};
+
+	if (bits & 0x000000FF) {
+		return table[bits & 0xFF];
+	} else if (bits & 0x0000FF00) {
+		return table[(bits >> 8) & 0xFF] + 8;
+	} else if (bits & 0x00FF0000) {
+		return table[(bits >> 16) & 0xFF] + 16;
+	}
+	return table[bits >> 24] + 24;
 #endif
 }
 
