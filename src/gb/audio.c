@@ -651,7 +651,9 @@ void GBAudioUpdateFrame(struct GBAudio* audio) {
 		if (audio->ch1.sweep.enable) {
 			--audio->ch1.sweep.step;
 			if (audio->ch1.sweep.step == 0) {
-				audio->playingCh1 = _updateSweep(&audio->ch1, false);
+				if (!_updateSweep(&audio->ch1, false)) {
+					audio->playingCh1 = false;
+				}
 				*audio->nr52 &= ~0x0001;
 				*audio->nr52 |= audio->playingCh1;
 			}
