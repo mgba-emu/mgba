@@ -204,7 +204,6 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 				--audio->ch1.control.length;
 			}
 		}
-		audio->ch1.lastUpdate = mTimingCurrentTime(audio->timing);
 		_updateSquareSample(&audio->ch1);
 	}
 	*audio->nr52 &= ~0x0001;
@@ -252,7 +251,6 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 				--audio->ch2.control.length;
 			}
 		}
-		audio->ch2.lastUpdate = mTimingCurrentTime(audio->timing);
 		_updateSquareSample(&audio->ch2);
 	}
 	*audio->nr52 &= ~0x0002;
@@ -510,7 +508,7 @@ void GBAudioRun(struct GBAudio* audio, int32_t timestamp, int channels) {
 		GBAudioSample(audio, timestamp);
 	}
 
-	if (audio->playingCh1 && (channels & 0x1) && audio->ch1.envelope.dead != 2) {
+	if ((channels & 0x1) && ((audio->playingCh1 && audio->ch1.envelope.dead != 2) || timestamp - audio->ch1.lastUpdate > 0x40000000)) {
 		int period = 4 * (2048 - audio->ch1.control.frequency) * audio->timingFactor;
 		int32_t diff = timestamp - audio->ch1.lastUpdate;
 		if (diff >= period) {
@@ -520,7 +518,7 @@ void GBAudioRun(struct GBAudio* audio, int32_t timestamp, int channels) {
 			_updateSquareSample(&audio->ch1);
 		}
 	}
-	if (audio->playingCh2 && (channels & 0x2) && audio->ch2.envelope.dead != 2) {
+	if ((channels & 0x2) && ((audio->playingCh2 && audio->ch2.envelope.dead != 2) || timestamp - audio->ch2.lastUpdate > 0x40000000)) {
 		int period = 4 * (2048 - audio->ch2.control.frequency) * audio->timingFactor;
 		int32_t diff = timestamp - audio->ch2.lastUpdate;
 		if (diff >= period) {
