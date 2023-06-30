@@ -385,11 +385,7 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 	if (GBAudioRegisterNoiseControlIsRestart(value)) {
 		audio->playingCh4 = _resetEnvelope(&audio->ch4.envelope);
 
-		if (audio->ch4.power) {
-			audio->ch4.lfsr = 0x7F;
-		} else {
-			audio->ch4.lfsr = 0x7FFF;
-		}
+		audio->ch4.lfsr = 0;
 		if (!audio->ch4.length) {
 			audio->ch4.length = 64;
 			if (audio->ch4.stop && !(audio->frame & 1)) {
@@ -601,24 +597,58 @@ void GBAudioRun(struct GBAudio* audio, int32_t timestamp, int channels) {
 		}
 	}
 	if (audio->playingCh4 && (channels & 0x8)) {
+		const uint16_t noiseMaskTable[0x40] = {
+			0x3f, 0x3e, 0x3c, 0x3d, 0x39, 0x38, 0x3a, 0x3b,
+			0x33, 0x32, 0x30, 0x31, 0x35, 0x34, 0x36, 0x37,
+			0x27, 0x26, 0x24, 0x25, 0x21, 0x20, 0x22, 0x23,
+			0x2b, 0x2a, 0x28, 0x29, 0x2d, 0x2c, 0x2e, 0x2f,
+			0x0f, 0x0e, 0x0c, 0x0d, 0x09, 0x08, 0x0a, 0x0b,
+			0x03, 0x02, 0x00, 0x01, 0x05, 0x04, 0x06, 0x07,
+			0x17, 0x16, 0x14, 0x15, 0x11, 0x10, 0x12, 0x13,
+			0x1b, 0x1a, 0x18, 0x19, 0x1d, 0x1c, 0x1e, 0x1f
+		};
+		const uint16_t noisePopulationTable[0x40] = {
+			6, 5, 4, 5, 4, 3, 4, 5, 4, 3, 2, 3, 4, 3, 4, 5,
+			4, 3, 2, 3, 2, 1, 2, 3, 4, 3, 2, 3, 4, 3, 4, 5,
+			4, 3, 2, 3, 2, 1, 2, 3, 2, 1, 0, 1, 2, 1, 2, 3,
+			4, 3, 2, 3, 2, 1, 2, 3, 4, 3, 2, 3, 4, 3, 4, 5
+		};
 		int32_t cycles = audio->ch4.ratio ? 2 * audio->ch4.ratio : 1;
 		cycles <<= audio->ch4.frequency;
 		cycles *= 8 * audio->timingFactor;
 
 		int32_t diff = timestamp - audio->ch4.lastEvent;
 		if (diff >= cycles) {
-			int32_t last;
+			int32_t last = 0;
 			int samples = 0;
 			int positiveSamples = 0;
 			int lsb;
-			int coeff = 0x60;
-			if (!audio->ch4.power) {
-				coeff <<= 8;
+			int coeff;
+			if (audio->ch4.power) {
+				// TODO: Can this be batched too?
+				coeff = 0x4040;
+			} else {
+				int bits = 0;
+				// Batch 5 steps at a time when possible
+				for (; last + cycles * 5 <= diff; last += cycles * 5) {
+					bits = audio->ch4.lfsr & 0x3F;
+					audio->ch4.lfsr >>= 5;
+					audio->ch4.lfsr |= 0x4000 * noiseMaskTable[bits] >> 4;
+					audio->ch4.lfsr &= 0x7FFF;
+					samples += 5;
+					positiveSamples += noisePopulationTable[bits];
+				}
+				lsb = noiseMaskTable[bits] & 1;
+				coeff = 0x4000;
 			}
-			for (last = 0; last + cycles <= diff; last += cycles) {
-				lsb = audio->ch4.lfsr & 1;
+			for (; last + cycles <= diff; last += cycles) {
+				lsb = (audio->ch4.lfsr ^ (audio->ch4.lfsr >> 1) ^ 1) & 1;
 				audio->ch4.lfsr >>= 1;
-				audio->ch4.lfsr ^= lsb * coeff;
+				if (lsb) {
+					audio->ch4.lfsr |= coeff;
+				} else {
+					audio->ch4.lfsr &= ~coeff;
+				}
 				++samples;
 				positiveSamples += lsb;
 			}
