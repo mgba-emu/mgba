@@ -28,7 +28,7 @@ Misc:
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
- - Qt: Add exporting of SAV + RTC GBA saves from Save Converter to strip RTC data
+ - Qt: Add exporting of SAV + RTC saves from Save Converter to strip RTC data
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
 
 0.10.2: (2023-04-23)
