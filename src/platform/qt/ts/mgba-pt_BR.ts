@@ -873,7 +873,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
         <source>Break</source>
-        <translation>Pausar</translation>
+        <translation>Parar</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="124"/>
