@@ -623,6 +623,11 @@ QList<SaveConverter::AnnotatedSave> SaveConverter::AnnotatedSave::possibleConver
 			}
 			break;
 		default:
+			if (size & 0xFF) {
+				AnnotatedSave noRtc = same;
+				noRtc.size &= ~0xFF;
+				possible.append(noRtc);
+			}
 			break;
 		}
 		break;
@@ -731,6 +736,9 @@ QByteArray SaveConverter::AnnotatedSave::convertTo(const SaveConverter::Annotate
 			}
 			break;
 		default:
+			if (endianness == target.endianness && size > target.size) {
+				converted = backing->read(target.size);
+			}
 			break;
 		}
 		break;

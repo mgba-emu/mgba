@@ -11,7 +11,7 @@ Emulation fixes:
 Other fixes:
  - mGUI: Fix cases where an older save state screenshot would be shown (fixes mgba.io/i/2183)
 Misc:
- - Qt: Add exporting of SAV + RTC GBA saves from Save Converter to strip RTC data
+ - Qt: Add exporting of SAV + RTC saves from Save Converter to strip RTC data
 
 0.10.2: (2023-04-23)
 Emulation fixes:
