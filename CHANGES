@@ -16,6 +16,7 @@ Emulation fixes:
  - GBA Audio: Fix sample timing drifting when changing sample interval
  - GBA Audio: Fix initial channel 3 wave RAM (fixes mgba.io/i/2947)
  - GBA BIOS: Fix clobbering registers with word-sized CpuSet
+ - GBA SIO: Fix normal mode SI/SO semantics (fixes mgba.io/i/2925)
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
