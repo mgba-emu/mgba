@@ -8,6 +8,7 @@ Emulation fixes:
  - GBA Audio: Fix sample timing drifting when changing sample interval
  - GBA Audio: Fix initial channel 3 wave RAM (fixes mgba.io/i/2947)
  - GBA BIOS: Fix clobbering registers with word-sized CpuSet
+ - GBA SIO: Fix normal mode SI/SO semantics (fixes mgba.io/i/2925)
 Other fixes:
  - mGUI: Fix cases where an older save state screenshot would be shown (fixes mgba.io/i/2183)
 Misc:
