@@ -13,6 +13,7 @@ Emulation fixes:
  - GB Serialize: Add missing Pocket Cam state to savestates
  - GB SIO: Disabling SIO should cancel pending transfers (fixes mgba.io/i/2537)
  - GB Video: Implement DMG-style sprite ordering
+ - GBA: Unhandled bkpt should be treated as an undefined exception
  - GBA Audio: Fix sample timing drifting when changing sample interval
  - GBA Audio: Fix initial channel 3 wave RAM (fixes mgba.io/i/2947)
  - GBA BIOS: Fix clobbering registers with word-sized CpuSet
