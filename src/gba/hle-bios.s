@@ -123,7 +123,7 @@ subs   pc, lr, #4
 .word 0
 .word 0xE55EC002
 
-undefBase:
+@ Padding for back compat
 subs   pc, lr, #4
 .word 0
 .word 0x03A0E004
@@ -328,3 +328,32 @@ sub lr, #0xC0
 bx lr
 .word 0
 .word 0xE129F000
+
+.ltorg
+
+undefBase:
+pabtBase:
+dabtBase:
+fiqBase:
+ldr sp, =0x03007FF0
+stmdb sp!, {r12, lr}
+mrs r12, spsr
+mrs lr, cpsr
+stmdb sp!, {r12, lr}
+mov lr, #0x08000000
+ldrb r12, [lr, #0x9C]
+cmp r12, #0xA5
+bne 1f
+ldrb r12, [lr, #0xB4]
+tst r12, #0x80
+adr lr, 1f
+ldrne pc, =0x09FE2000
+ldreq pc, =0x09FFC000
+1:
+ldr sp, =0x03007FF0
+ldr r12, [sp, #-0x10]
+msr spsr, r12
+ldmdb sp!, {r12, lr}
+subs pc, lr, #4
+.word 0
+.word 0x03A0E004
