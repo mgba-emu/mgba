@@ -7,6 +7,7 @@ Features:
  - Debugger: Add range watchpoints
 Emulation fixes:
  - ARM: Remove obsolete force-alignment in `bx pc` (fixes mgba.io/i/2964)
+ - ARM: Fake bpkt instruction should take no cycles (fixes mgba.io/i/2551)
  - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
  - GB Audio: Fix channel 1 restarting if sweep applies after stop (fixes mgba.io/i/2965)
  - GB I/O: Read back proper SVBK value after writing 0 (fixes mgba.io/i/2921)
