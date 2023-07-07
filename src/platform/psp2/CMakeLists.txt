@@ -24,9 +24,11 @@ set(OS_LIB -lvita2d -l${M_LIBRARY}
     -lSceGxm_stub
     -lSceIme_stub
     -lSceMotion_stub
+    -lSceNetCtl_stub
     -lScePgf_stub
     -lScePhotoExport_stub
     -lScePower_stub
+    -lSceRtc_stub
     -lSceSysmodule_stub
     -lSceTouch_stub)
 set(OS_LIB ${OS_LIB} PARENT_SCOPE)

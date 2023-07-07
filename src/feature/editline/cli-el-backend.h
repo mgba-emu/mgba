@@ -14,13 +14,6 @@ CXX_GUARD_START
 
 #include <histedit.h>
 
-struct CLIDebuggerEditLineBackend {
-	struct CLIDebuggerBackend d;
-
-	EditLine* elstate;
-	History* histate;
-};
-
 struct CLIDebuggerBackend* CLIDebuggerEditLineBackendCreate(void);
 
 CXX_GUARD_END

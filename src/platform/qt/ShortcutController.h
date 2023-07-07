@@ -6,7 +6,7 @@
 #pragma once
 
 #include "ActionMapper.h"
-#include "GamepadAxisEvent.h"
+#include "input/GamepadAxisEvent.h"
 
 #include <QHash>
 #include <QMap>
@@ -21,6 +21,7 @@ namespace QGBA {
 
 class ConfigController;
 class InputProfile;
+class ScriptingController;
 
 class Shortcut : public QObject {
 Q_OBJECT
@@ -56,7 +57,7 @@ private:
 	int m_shortcut = 0;
 	int m_button = -1;
 	int m_axis = -1;
-	GamepadAxisEvent::Direction m_direction;
+	GamepadAxisEvent::Direction m_direction = GamepadAxisEvent::NEUTRAL;
 };
 
 class ShortcutController : public QObject {
@@ -74,6 +75,7 @@ public:
 
 	void setConfigController(ConfigController* controller);
 	void setActionMapper(ActionMapper* actionMapper);
+	void setScriptingController(ScriptingController* scriptingController);
 
 	void setProfile(const QString& profile);
 
@@ -121,6 +123,7 @@ private:
 	QHash<int, std::shared_ptr<Shortcut>> m_heldKeys;
 	ActionMapper* m_actions = nullptr;
 	ConfigController* m_config = nullptr;
+	ScriptingController* m_scripting = nullptr;
 	QString m_profileName;
 	const InputProfile* m_profile = nullptr;
 };

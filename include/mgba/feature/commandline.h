@@ -25,8 +25,9 @@ struct mArguments {
 
 	struct Table configOverrides;
 
-	enum mDebuggerType debuggerType;
 	bool debugAtStart;
+	bool debugCli;
+	bool debugGdb;
 	bool showHelp;
 	bool showVersion;
 };

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ROMInfo</class>
- <widget class="QDialog" name="ROMInfo">
+ <class>QGBA::ROMInfo</class>
+ <widget class="QDialog" name="QGBA::ROMInfo">
   <property name="geometry">
    <rect>
     <x>0</x>

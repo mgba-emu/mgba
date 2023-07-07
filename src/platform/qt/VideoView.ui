@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>VideoView</class>
- <widget class="QWidget" name="VideoView">
+ <class>QGBA::VideoView</class>
+ <widget class="QWidget" name="QGBA::VideoView">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -322,6 +322,11 @@
            <item>
             <property name="text">
              <string>FLAC</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>WavPack</string>
             </property>
            </item>
            <item>

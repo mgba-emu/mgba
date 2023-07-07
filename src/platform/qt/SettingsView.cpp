@@ -6,6 +6,7 @@
 #include "SettingsView.h"
 
 #include "AudioProcessor.h"
+#include "CheckBoxDelegate.h"
 #include "ConfigController.h"
 #include "Display.h"
 #include "GBAApp.h"
@@ -24,6 +25,10 @@
 #include <mgba/core/version.h>
 #include <mgba/internal/gba/gba.h>
 
+#ifdef BUILD_SDL
+#include "platform/sdl/sdl-events.h"
+#endif
+
 using namespace QGBA;
 
 SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, LogController* logController, QWidget* parent)
@@ -34,18 +39,19 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	m_ui.setupUi(this);
 
 	m_pageIndex[Page::AV] = 0;
-	m_pageIndex[Page::INTERFACE] = 1;
-	m_pageIndex[Page::UPDATE] = 2;
-	m_pageIndex[Page::EMULATION] = 3;
-	m_pageIndex[Page::ENHANCEMENTS] = 4;
-	m_pageIndex[Page::BIOS] = 5;
-	m_pageIndex[Page::PATHS] = 6;
-	m_pageIndex[Page::LOGGING] = 7;
+	m_pageIndex[Page::GAMEPLAY] = 1;
+	m_pageIndex[Page::INTERFACE] = 2;
+	m_pageIndex[Page::UPDATE] = 3;
+	m_pageIndex[Page::EMULATION] = 4;
+	m_pageIndex[Page::ENHANCEMENTS] = 5;
+	m_pageIndex[Page::BIOS] = 6;
+	m_pageIndex[Page::PATHS] = 7;
+	m_pageIndex[Page::LOGGING] = 8;
 
 #ifdef M_CORE_GB
-	m_pageIndex[Page::GB] = 8;
+	m_pageIndex[Page::GB] = 9;
 
-	for (auto model : GameBoy::modelList()) {
+	for (auto& model : GameBoy::modelList()) {
 		m_ui.gbModel->addItem(GameBoy::modelName(model), model);
 		m_ui.sgbModel->addItem(GameBoy::modelName(model), model);
 		m_ui.cgbModel->addItem(GameBoy::modelName(model), model);
@@ -136,6 +142,9 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	});
 	connect(m_ui.cheatsBrowse, &QAbstractButton::pressed, [this] () {
 		selectPath(m_ui.cheatsPath, m_ui.cheatsSameDir);
+	});
+	connect(m_ui.bgImageBrowse, &QAbstractButton::pressed, [this] () {
+		selectImage(m_ui.bgImage);
 	});
 	connect(m_ui.clearCache, &QAbstractButton::pressed, this, &SettingsView::libraryCleared);
 
@@ -294,9 +303,14 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	}
 
 	const GBColorPreset* colorPresets;
+	QString usedPreset = m_controller->getQtOption("gb.pal").toString();
 	size_t nPresets = GBColorPresetList(&colorPresets);
 	for (size_t i = 0; i < nPresets; ++i) {
-		m_ui.colorPreset->addItem(QString(colorPresets[i].name));
+		QString presetName(colorPresets[i].name);
+		m_ui.colorPreset->addItem(presetName);
+		if (usedPreset == presetName) {
+			m_ui.colorPreset->setCurrentIndex(i);
+		}
 	}
 	connect(m_ui.colorPreset, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this, colorPresets](int n) {
 		const GBColorPreset* preset = &colorPresets[n];
@@ -319,8 +333,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 	GBAKeyEditor* buttonEditor = nullptr;
 #ifdef BUILD_SDL
-	inputController->recalibrateAxes();
-	const char* profile = inputController->profileForType(SDL_BINDING_BUTTON);
+	QString profile = inputController->profileForType(SDL_BINDING_BUTTON);
 	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
 	addPage(tr("Controllers"), buttonEditor, Page::CONTROLLERS);
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, buttonEditor, &GBAKeyEditor::save);
@@ -340,7 +353,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	QLocale englishLocale("en");
 	m_ui.languages->addItem(englishLocale.nativeLanguageName(), englishLocale);
 	QDir ts(":/translations/");
-	for (auto name : ts.entryList()) {
+	for (auto& name : ts.entryList()) {
 		if (!name.endsWith(".qm") || !name.startsWith(binaryName)) {
 			continue;
 		}
@@ -355,9 +368,11 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	}
 
 	m_ui.loggingView->setModel(&m_logModel);
+	m_ui.loggingView->setItemDelegate(new CheckBoxDelegate(m_ui.loggingView));
 	m_ui.loggingView->setHorizontalHeader(new RotatedHeaderView(Qt::Horizontal));
 	m_ui.loggingView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 	m_ui.loggingView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+	connect(m_ui.loggingView, SIGNAL(clicked(QModelIndex)), m_ui.loggingView, SLOT(setCurrentIndex(QModelIndex)));
 
 	connect(m_ui.logFileBrowse, &QAbstractButton::pressed, [this] () {
 		QString path = GBAApp::app()->getSaveFileName(this, "Select log file");
@@ -433,6 +448,13 @@ void SettingsView::selectPath(QLineEdit* field, QCheckBox* sameDir) {
 	}
 }
 
+void SettingsView::selectImage(QLineEdit* field) {
+	QString path = GBAApp::app()->getOpenFileName(this, tr("Select image"), tr("Image file (*.png *.jpg *.jpeg)"));
+	if (!path.isNull()) {
+		field->setText(makePortablePath(path));
+	}
+}
+
 void SettingsView::updateConfig() {
 	saveSetting("gba.bios", m_ui.gbaBios);
 	saveSetting("gb.bios", m_ui.gbBios);
@@ -458,6 +480,7 @@ void SettingsView::updateConfig() {
 	saveSetting("fastForwardMute", m_ui.muteFf);
 	saveSetting("rewindEnable", m_ui.rewind);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
+	saveSetting("rewindBufferInterval", m_ui.rewindBufferInterval);
 	saveSetting("resampleVideo", m_ui.resampleVideo);
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
@@ -489,6 +512,7 @@ void SettingsView::updateConfig() {
 	saveSetting("vbaBugCompat", m_ui.vbaBugCompat);
 	saveSetting("updateAutoCheck", m_ui.updateAutoCheck);
 	saveSetting("showFilenameInLibrary", m_ui.showFilenameInLibrary);
+	saveSetting("backgroundImage", m_ui.bgImage);
 
 	if (m_ui.audioBufferSize->currentText().toInt() > 8192) {
 		m_ui.audioBufferSize->setCurrentText("8192");
@@ -636,6 +660,7 @@ void SettingsView::updateConfig() {
 		m_controller->setOption(color.toUtf8().constData(), m_gbColors[colorId] & ~0xFF000000);
 
 	}
+	m_controller->setQtOption("gb.pal", m_ui.colorPreset->currentText());
 
 	int gbColors = GB_COLORS_CGB;
 	if (m_ui.gbColor->isChecked()) {
@@ -684,6 +709,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("fastForwardMute", m_ui.muteFf, m_ui.mute->isChecked());
 	loadSetting("rewindEnable", m_ui.rewind);
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
+	loadSetting("rewindBufferInterval", m_ui.rewindBufferInterval);
 	loadSetting("resampleVideo", m_ui.resampleVideo);
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
@@ -712,6 +738,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("vbaBugCompat", m_ui.vbaBugCompat, true);
 	loadSetting("updateAutoCheck", m_ui.updateAutoCheck);
 	loadSetting("showFilenameInLibrary", m_ui.showFilenameInLibrary);
+	loadSetting("backgroundImage", m_ui.bgImage);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 

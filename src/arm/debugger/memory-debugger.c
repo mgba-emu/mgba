@@ -12,7 +12,7 @@
 
 #include <string.h>
 
-static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct mDebuggerEntryInfo* info, enum mWatchpointType type, uint32_t newValue, int width);
+static void _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, enum mWatchpointType type, uint32_t newValue, int width);
 
 #define FIND_DEBUGGER(DEBUGGER, CPU) \
 	do { \
@@ -39,10 +39,7 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 	static RETURN DebuggerShim_ ## NAME TYPES { \
 		struct ARMDebugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
-		struct mDebuggerEntryInfo info; \
-		if (_checkWatchpoints(debugger, address, &info, WATCHPOINT_READ, 0, WIDTH)) { \
-			mDebuggerEnter(debugger->d.p, DEBUGGER_ENTER_WATCHPOINT, &info); \
-		} \
+		_checkWatchpoints(debugger, address, WATCHPOINT_READ, 0, WIDTH); \
 		return debugger->originalMemory.NAME(cpu, __VA_ARGS__); \
 	}
 
@@ -50,10 +47,7 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 	static RETURN DebuggerShim_ ## NAME TYPES { \
 		struct ARMDebugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
-		struct mDebuggerEntryInfo info; \
-		if (_checkWatchpoints(debugger, address, &info, WATCHPOINT_WRITE, value, WIDTH)) { \
-			mDebuggerEnter(debugger->d.p, DEBUGGER_ENTER_WATCHPOINT, &info); \
-		} \
+		_checkWatchpoints(debugger, address, WATCHPOINT_WRITE, value, WIDTH); \
 		return debugger->originalMemory.NAME(cpu, __VA_ARGS__); \
 	}
 
@@ -73,10 +67,7 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 		} \
 		unsigned i; \
 		for (i = 0; i < popcount; ++i) { \
-			struct mDebuggerEntryInfo info; \
-			if (_checkWatchpoints(debugger, base + 4 * i, &info, ACCESS_TYPE, 0, 4)) { \
-				mDebuggerEnter(debugger->d.p, DEBUGGER_ENTER_WATCHPOINT, &info); \
-			} \
+			_checkWatchpoints(debugger, base + 4 * i, ACCESS_TYPE, 0, 4); \
 		} \
 		return debugger->originalMemory.NAME(cpu, address, mask, direction, cycleCounter); \
 	}
@@ -91,23 +82,24 @@ CREATE_MULTIPLE_WATCHPOINT_SHIM(loadMultiple, WATCHPOINT_READ)
 CREATE_MULTIPLE_WATCHPOINT_SHIM(storeMultiple, WATCHPOINT_WRITE)
 CREATE_SHIM(setActiveRegion, void, (struct ARMCore* cpu, uint32_t address), address)
 
-static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, struct mDebuggerEntryInfo* info, enum mWatchpointType type, uint32_t newValue, int width) {
-	--width;
+static void _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, enum mWatchpointType type, uint32_t newValue, int width) {
 	struct mWatchpoint* watchpoint;
 	size_t i;
+	uint32_t minAddress = address & ~(width - 1);
+	uint32_t maxAddress = minAddress + width;
 	for (i = 0; i < mWatchpointListSize(&debugger->watchpoints); ++i) {
 		watchpoint = mWatchpointListGetPointer(&debugger->watchpoints, i);
-		if (!((watchpoint->address ^ address) & ~width) && watchpoint->type & type) {
+		if (watchpoint->type & type && watchpoint->minAddress < maxAddress && minAddress < watchpoint->maxAddress) {
 			if (watchpoint->condition) {
 				int32_t value;
 				int segment;
 				if (!mDebuggerEvaluateParseTree(debugger->d.p, watchpoint->condition, &value, &segment) || !(value || segment >= 0)) {
-					return false;
+					continue;
 				}
 			}
 
 			uint32_t oldValue;
-			switch (width + 1) {
+			switch (width) {
 			case 1:
 				oldValue = debugger->originalMemory.load8(debugger->cpu, address, 0);
 				break;
@@ -123,16 +115,18 @@ static bool _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, st
 			if ((watchpoint->type & WATCHPOINT_CHANGE) && newValue == oldValue) {
 				continue;
 			}
-			info->type.wp.oldValue = oldValue;
-			info->type.wp.newValue = newValue;
-			info->address = address;
-			info->type.wp.watchType = watchpoint->type;
-			info->type.wp.accessType = type;
-			info->pointId = watchpoint->id;
-			return true;
+
+			struct mDebuggerEntryInfo info;
+			info.type.wp.oldValue = oldValue;
+			info.type.wp.newValue = newValue;
+			info.address = address;
+			info.type.wp.watchType = watchpoint->type;
+			info.type.wp.accessType = type;
+			info.pointId = watchpoint->id;
+			info.target = TableLookup(&debugger->d.p->pointOwner, watchpoint->id);
+			mDebuggerEnter(debugger->d.p, DEBUGGER_ENTER_WATCHPOINT, &info);
 		}
 	}
-	return false;
 }
 
 void ARMDebuggerInstallMemoryShim(struct ARMDebugger* debugger) {

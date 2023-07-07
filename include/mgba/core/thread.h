@@ -21,8 +21,12 @@ struct mCoreThread;
 struct mThreadLogger {
 	struct mLogger d;
 	struct mCoreThread* p;
+	struct mLogger* logger;
 };
 
+#ifdef ENABLE_SCRIPTING
+struct mScriptContext;
+#endif
 struct mCoreThreadInternal;
 struct mCoreThread {
 	// Input
@@ -38,6 +42,10 @@ struct mCoreThread {
 	ThreadCallback unpauseCallback;
 	void* userData;
 	void (*run)(struct mCoreThread*);
+
+#ifdef ENABLE_SCRIPTING
+	struct mScriptContext* scriptContext;
+#endif
 
 	struct mCoreThreadInternal* impl;
 };
@@ -93,8 +101,6 @@ struct mCoreThreadInternal {
 bool mCoreThreadStart(struct mCoreThread* threadContext);
 bool mCoreThreadHasStarted(struct mCoreThread* threadContext);
 bool mCoreThreadHasExited(struct mCoreThread* threadContext);
-bool mCoreThreadHasCrashed(struct mCoreThread* threadContext);
-void mCoreThreadMarkCrashed(struct mCoreThread* threadContext);
 void mCoreThreadEnd(struct mCoreThread* threadContext);
 void mCoreThreadReset(struct mCoreThread* threadContext);
 void mCoreThreadJoin(struct mCoreThread* threadContext);
@@ -113,6 +119,10 @@ void mCoreThreadTogglePause(struct mCoreThread* threadContext);
 void mCoreThreadPauseFromThread(struct mCoreThread* threadContext);
 void mCoreThreadWaitFromThread(struct mCoreThread* threadContext);
 void mCoreThreadStopWaiting(struct mCoreThread* threadContext);
+
+bool mCoreThreadHasCrashed(struct mCoreThread* threadContext);
+void mCoreThreadMarkCrashed(struct mCoreThread* threadContext);
+void mCoreThreadClearCrashed(struct mCoreThread* threadContext);
 
 void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool);
 void mCoreThreadRewindParamsChanged(struct mCoreThread* threadContext);

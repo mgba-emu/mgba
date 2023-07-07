@@ -12,6 +12,9 @@
 #include <QMenu>
 
 #include <mgba/feature/commandline.h>
+#ifdef M_CORE_GB
+#include <mgba/internal/gb/overrides.h>
+#endif
 
 static const mOption s_frontendOptions[] = {
 	{ "ecard", true, '\0' },
@@ -122,21 +125,24 @@ ConfigController::ConfigController(QObject* parent)
 	m_opts.logLevel = mLOG_WARN | mLOG_ERROR | mLOG_FATAL;
 	m_opts.rewindEnable = false;
 	m_opts.rewindBufferCapacity = 300;
+	m_opts.rewindBufferInterval = 1;
 	m_opts.useBios = true;
 	m_opts.suspendScreensaver = true;
 	m_opts.lockAspectRatio = true;
 	m_opts.interframeBlending = false;
 	mCoreConfigLoad(&m_config);
 	mCoreConfigLoadDefaults(&m_config, &m_opts);
+#ifdef M_CORE_GB
 	mCoreConfigSetDefaultIntValue(&m_config, "sgb.borders", 1);
-	mCoreConfigSetDefaultIntValue(&m_config, "useCgbColors", 1);
+	mCoreConfigSetDefaultIntValue(&m_config, "gb.colors", GB_COLORS_CGB);
+#endif
 	mCoreConfigMap(&m_config, &m_opts);
 
 	mSubParserGraphicsInit(&m_subparsers[0], &m_graphicsOpts);
 
 	m_subparsers[1].usage = "Frontend options:\n"
 	    "  --ecard FILE  Scan an e-Reader card in the first loaded game\n"
-	    "                Can be paassed multiple times for multiple cards\n"
+	    "                Can be passed multiple times for multiple cards\n"
 	    "  --mb FILE     Boot a multiboot image with FILE inserted into the ROM slot";
 	m_subparsers[1].parse = nullptr;
 	m_subparsers[1].parseLong = [](struct mSubParser* parser, const char* option, const char* arg) {
@@ -301,9 +307,9 @@ void ConfigController::setQtOption(const QString& key, const QVariant& value, co
 	}
 }
 
-QList<QString> ConfigController::getMRU() const {
-	QList<QString> mru;
-	m_settings->beginGroup("mru");
+QStringList ConfigController::getMRU(ConfigController::MRU mruType) const {
+	QStringList mru;
+	m_settings->beginGroup(mruName(mruType));
 	for (int i = 0; i < MRU_LIST_SIZE; ++i) {
 		QString item = m_settings->value(QString::number(i)).toString();
 		if (item.isNull()) {
@@ -315,9 +321,9 @@ QList<QString> ConfigController::getMRU() const {
 	return mru;
 }
 
-void ConfigController::setMRU(const QList<QString>& mru) {
+void ConfigController::setMRU(const QStringList& mru, ConfigController::MRU mruType) {
 	int i = 0;
-	m_settings->beginGroup("mru");
+	m_settings->beginGroup(mruName(mruType));
 	for (const QString& item : mru) {
 		m_settings->setValue(QString::number(i), item);
 		++i;
@@ -329,6 +335,16 @@ void ConfigController::setMRU(const QList<QString>& mru) {
 		m_settings->remove(QString::number(i));
 	}
 	m_settings->endGroup();
+}
+
+constexpr const char* ConfigController::mruName(ConfigController::MRU mru) {
+	switch (mru) {
+	case MRU::ROM:
+		return "mru";
+	case MRU::Script:
+		return "recentScripts";
+	}
+	Q_UNREACHABLE();
 }
 
 void ConfigController::write() {
@@ -367,4 +383,8 @@ const QString& ConfigController::configDir() {
 		s_configDir = QString::fromUtf8(path);
 	}
 	return s_configDir;
+}
+
+const QString& ConfigController::cacheDir() {
+	return configDir();
 }

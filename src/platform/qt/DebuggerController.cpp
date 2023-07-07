@@ -9,7 +9,7 @@
 
 using namespace QGBA;
 
-DebuggerController::DebuggerController(mDebugger* debugger, QObject* parent)
+DebuggerController::DebuggerController(mDebuggerModule* debugger, QObject* parent)
 	: QObject(parent)
 	, m_debugger(debugger)
 {
@@ -19,7 +19,7 @@ bool DebuggerController::isAttached() {
 	if (!m_gameController) {
 		return false;
 	}
-	return m_gameController->debugger() == m_debugger;
+	return m_gameController->debugger() == m_debugger->p;
 }
 
 void DebuggerController::setController(std::shared_ptr<CoreController> controller) {
@@ -45,7 +45,7 @@ void DebuggerController::attach() {
 	}
 	if (m_gameController) {
 		attachInternal();
-		m_gameController->setDebugger(m_debugger);
+		m_gameController->attachDebuggerModule(m_debugger);
 	} else {
 		m_autoattach = true;
 	}
@@ -58,7 +58,7 @@ void DebuggerController::detach() {
 	if (m_gameController) {
 		CoreController::Interrupter interrupter(m_gameController);
 		shutdownInternal();
-		m_gameController->setDebugger(nullptr);
+		m_gameController->detachDebuggerModule(m_debugger);
 	} else {
 		m_autoattach = false;
 	}
@@ -69,7 +69,7 @@ void DebuggerController::breakInto() {
 		return;
 	}
 	CoreController::Interrupter interrupter(m_gameController);
-	mDebuggerEnter(m_debugger, DEBUGGER_ENTER_MANUAL, 0);
+	mDebuggerEnter(m_debugger->p, DEBUGGER_ENTER_MANUAL, 0);
 }
 
 void DebuggerController::shutdown() {

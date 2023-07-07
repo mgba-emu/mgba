@@ -61,7 +61,7 @@ void GBAVideoCacheAssociate(struct mCacheSet* cache, struct GBAVideo* video) {
 	mCacheSetAssignVRAM(cache, video->vram);
 	video->renderer->cache = cache;
 	size_t i;
-	for (i = 0; i < SIZE_PALETTE_RAM / 2; ++i) {
+	for (i = 0; i < GBA_SIZE_PALETTE_RAM / 2; ++i) {
 		mCacheSetWritePalette(cache, i, mColorFrom555(video->palette[i]));
 	}
 	GBAVideoCacheWriteVideoRegister(cache, REG_DISPCNT, video->p->memory.io[REG_DISPCNT >> 1]);
@@ -160,7 +160,7 @@ static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t
 	int size = GBARegisterBGCNTGetSize(value);
 	int tilesWide = 0;
 	int tilesHigh = 0;
-	mMapCacheSystemInfo sysconfig = 0;
+	mMapCacheSystemInfo sysconfig = mMapCacheSystemInfoSetWriteAlign(0, 1);
 	if (map->mapParser == mapParser0) {
 		map->tileCache = mTileCacheSetGetPointer(&cache->tiles, p);
 		sysconfig = mMapCacheSystemInfoSetPaletteBPP(sysconfig, 2 + p);

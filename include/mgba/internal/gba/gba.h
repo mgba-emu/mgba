@@ -22,20 +22,20 @@ CXX_GUARD_START
 #define GBA_ARM7TDMI_FREQUENCY 0x1000000U
 
 enum GBAIRQ {
-	IRQ_VBLANK = 0x0,
-	IRQ_HBLANK = 0x1,
-	IRQ_VCOUNTER = 0x2,
-	IRQ_TIMER0 = 0x3,
-	IRQ_TIMER1 = 0x4,
-	IRQ_TIMER2 = 0x5,
-	IRQ_TIMER3 = 0x6,
-	IRQ_SIO = 0x7,
-	IRQ_DMA0 = 0x8,
-	IRQ_DMA1 = 0x9,
-	IRQ_DMA2 = 0xA,
-	IRQ_DMA3 = 0xB,
-	IRQ_KEYPAD = 0xC,
-	IRQ_GAMEPAK = 0xD
+	GBA_IRQ_VBLANK = 0x0,
+	GBA_IRQ_HBLANK = 0x1,
+	GBA_IRQ_VCOUNTER = 0x2,
+	GBA_IRQ_TIMER0 = 0x3,
+	GBA_IRQ_TIMER1 = 0x4,
+	GBA_IRQ_TIMER2 = 0x5,
+	GBA_IRQ_TIMER3 = 0x6,
+	GBA_IRQ_SIO = 0x7,
+	GBA_IRQ_DMA0 = 0x8,
+	GBA_IRQ_DMA1 = 0x9,
+	GBA_IRQ_DMA2 = 0xA,
+	GBA_IRQ_DMA3 = 0xB,
+	GBA_IRQ_KEYPAD = 0xC,
+	GBA_IRQ_GAMEPAK = 0xD
 };
 
 enum GBAIdleLoopOptimization {
@@ -45,9 +45,9 @@ enum GBAIdleLoopOptimization {
 };
 
 enum {
-	SP_BASE_SYSTEM = 0x03007F00,
-	SP_BASE_IRQ = 0x03007FA0,
-	SP_BASE_SUPERVISOR = 0x03007FE0
+	GBA_SP_BASE_SYSTEM = 0x03007F00,
+	GBA_SP_BASE_IRQ = 0x03007FA0,
+	GBA_SP_BASE_SUPERVISOR = 0x03007FE0
 };
 
 struct ARMCore;
@@ -153,6 +153,12 @@ void GBATestIRQ(struct GBA* gba, uint32_t cyclesLate);
 void GBAHalt(struct GBA* gba);
 void GBAStop(struct GBA* gba);
 void GBADebug(struct GBA* gba, uint16_t value);
+
+#ifdef USE_ELF
+struct ELF;
+
+bool GBAVerifyELFEntry(struct ELF* elf, uint32_t target);
+#endif
 
 #ifdef USE_DEBUGGERS
 struct mDebugger;

@@ -67,6 +67,11 @@ public:
 	constexpr static const char* const PORT = "qt";
 	static const int MRU_LIST_SIZE = 10;
 
+	enum class MRU {
+		ROM,
+		Script
+	};
+
 	ConfigController(QObject* parent = nullptr);
 	~ConfigController();
 
@@ -84,8 +89,8 @@ public:
 	QVariant getArgvOption(const QString& key) const;
 	QVariant takeArgvOption(const QString& key);
 
-	QList<QString> getMRU() const;
-	void setMRU(const QList<QString>& mru);
+	QStringList getMRU(MRU = MRU::ROM) const;
+	void setMRU(const QStringList& mru, MRU = MRU::ROM);
 
 	Configuration* overrides() { return mCoreConfigGetOverrides(&m_config); }
 	void saveOverride(const Override&);
@@ -100,6 +105,7 @@ public:
 	void usage(const char* arg0) const;
 
 	static const QString& configDir();
+	static const QString& cacheDir();
 	static bool isPortable();
 
 public slots:
@@ -114,7 +120,7 @@ public slots:
 	void write();
 
 private:
-	void addArgvOption(const QString& key, const QVariant& value);
+	static constexpr const char* mruName(ConfigController::MRU);
 
 	Configuration* defaults() { return &m_config.defaultsTable; }
 

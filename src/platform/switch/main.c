@@ -82,6 +82,7 @@ static GLuint insizeLocation;
 static GLuint colorLocation;
 static GLuint tex;
 static GLuint oldTex;
+static GLuint screenshotTex;
 
 static struct GUIFont* font;
 static color_t* frameBuffer;
@@ -115,7 +116,7 @@ static float gyroZ = 0;
 static float tiltX = 0;
 static float tiltY = 0;
 
-static struct GBAStereoSample audioBuffer[N_BUFFERS][BUFFER_SIZE / 4] __attribute__((__aligned__(0x1000)));
+static struct mStereoSample audioBuffer[N_BUFFERS][BUFFER_SIZE / 4] __attribute__((__aligned__(0x1000)));
 
 static enum ScreenMode {
 	SM_PA,
@@ -379,8 +380,6 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 
 static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded, bool blendTop) {
 	glViewport(0, 1080 - vheight, vwidth, vheight);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glUseProgram(program);
 	glBindVertexArray(vao);
@@ -478,7 +477,7 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	}
 
 	unsigned width, height;
-	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+	runner->core->currentVideoSize(runner->core, &width, &height);
 
 	glActiveTexture(GL_TEXTURE0);
 	if (usePbo) {
@@ -493,11 +492,16 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	}
 
 	if (interframeBlending) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		glBindTexture(GL_TEXTURE_2D, oldTex);
 		_drawTex(runner, width, height, faded, false);
 		glBindTexture(GL_TEXTURE_2D, tex);
 		_drawTex(runner, width, height, faded, true);
 	} else {
+		glDisable(GL_BLEND);
+
 		_drawTex(runner, width, height, faded, false);
 	}
 
@@ -523,10 +527,15 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 
 static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+	glBindTexture(GL_TEXTURE_2D, screenshotTex);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
+	runner->core->currentVideoSize(runner->core, &width, &height);
+	glDisable(GL_BLEND);
+	bool wasPbo = usePbo;
+	usePbo = false;
 	_drawTex(runner, width, height, faded, false);
+	usePbo = wasPbo;
 }
 
 static uint16_t _pollGameInput(struct mGUIRunner* runner) {
@@ -584,7 +593,7 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 		blip_clear(right);
 		return;
 	}
-	struct GBAStereoSample* samples = audioBuffer[audioBufferActive];
+	struct mStereoSample* samples = audioBuffer[audioBufferActive];
 	blip_read_samples(left, &samples[0].left, SAMPLES, true);
 	blip_read_samples(right, &samples[0].right, SAMPLES, true);
 	audoutAppendAudioOutBuffer(&audoutBuffer[audioBufferActive]);
@@ -711,6 +720,13 @@ static void glInit(void) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+	glGenTextures(1, &screenshotTex);
+	glBindTexture(GL_TEXTURE_2D, screenshotTex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
 	glGenBuffers(1, &pbo);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
 	glBufferData(GL_PIXEL_UNPACK_BUFFER, 256 * 256 * 4, NULL, GL_STREAM_DRAW);
@@ -790,6 +806,7 @@ static void glDeinit(void) {
 	glDeleteFramebuffers(1, &copyFbo);
 	glDeleteTextures(1, &tex);
 	glDeleteTextures(1, &oldTex);
+	glDeleteTextures(1, &screenshotTex);
 	glDeleteBuffers(1, &vbo);
 	glDeleteProgram(program);
 	glDeleteVertexArrays(1, &vao);
@@ -1061,10 +1078,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	if (argc > 1) {
-		size_t i;
-		for (i = 0; runner.keySources[i].id; ++i) {
-			mInputMapLoad(&runner.params.keyMap, runner.keySources[i].id, mCoreConfigGetInput(&runner.config));
-		}
+		mGUILoadInputMaps(&runner);
 		mGUIRun(&runner, argv[1]);
 	} else {
 		mGUIRunloop(&runner);

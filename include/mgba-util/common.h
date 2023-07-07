@@ -20,6 +20,7 @@
 
 CXX_GUARD_START
 
+#include <assert.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <inttypes.h>
@@ -41,6 +42,10 @@ CXX_GUARD_START
 
 #if defined(_MSC_VER) || defined(__cplusplus)
 #define restrict __restrict
+#endif
+
+#ifndef containerof
+#define containerof(PTR, TYPE, MEMBER) ((TYPE*) ((uintptr_t) (PTR) - offsetof(TYPE, MEMBER)))
 #endif
 
 #ifdef _MSC_VER
@@ -83,6 +88,10 @@ typedef intptr_t ssize_t;
 #define M_PI 3.141592654f
 #endif
 
+#if !defined(__cplusplus) && !defined(static_assert)
+#define static_assert(X, C) _Static_assert((X), C)
+#endif
+
 #if !defined(_MSC_VER) && (defined(__llvm__) || (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
 #define ATOMIC_STORE(DST, SRC) __atomic_store_n(&DST, SRC, __ATOMIC_RELEASE)
 #define ATOMIC_LOAD(DST, SRC) DST = __atomic_load_n(&SRC, __ATOMIC_ACQUIRE)
@@ -105,13 +114,13 @@ typedef intptr_t ssize_t;
 #define ATOMIC_LOAD_PTR(DST, SRC) DST = InterlockedCompareExchangePointer(&SRC, 0, 0)
 #else
 // TODO
-#define ATOMIC_STORE(DST, SRC) DST = SRC
-#define ATOMIC_LOAD(DST, SRC) DST = SRC
-#define ATOMIC_ADD(DST, OP) DST += OP
-#define ATOMIC_SUB(DST, OP) DST -= OP
-#define ATOMIC_OR(DST, OP) DST |= OP
-#define ATOMIC_AND(DST, OP) DST &= OP
-#define ATOMIC_CMPXCHG(DST, EXPECTED, OP) ((DST == EXPECTED) ? ((DST = OP), true) : false)
+#define ATOMIC_STORE(DST, SRC) ((DST) = (SRC))
+#define ATOMIC_LOAD(DST, SRC) ((DST) = (SRC))
+#define ATOMIC_ADD(DST, OP) ((DST) += (OP))
+#define ATOMIC_SUB(DST, OP) ((DST) -= (OP))
+#define ATOMIC_OR(DST, OP) ((DST) |= (OP))
+#define ATOMIC_AND(DST, OP) ((DST) &= (OP))
+#define ATOMIC_CMPXCHG(DST, EXPECTED, OP) (((DST) == (EXPECTED)) ? (((DST) = (OP)), true) : false)
 #define ATOMIC_STORE_PTR(DST, SRC) ATOMIC_STORE(DST, SRC)
 #define ATOMIC_LOAD_PTR(DST, SRC) ATOMIC_LOAD(DST, SRC)
 #endif

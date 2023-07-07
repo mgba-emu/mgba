@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CheatsView</class>
- <widget class="QWidget" name="CheatsView">
+ <class>QGBA::CheatsView</class>
+ <widget class="QWidget" name="QGBA::CheatsView">
   <property name="geometry">
    <rect>
     <x>0</x>

@@ -84,7 +84,11 @@ void MessagePainter::paint(QPainter* painter) {
 		painter->setRenderHint(QPainter::Antialiasing);
 		painter->setFont(m_frameFont);
 		painter->setPen(Qt::black);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+		painter->translate(-metrics.horizontalAdvance(frame), 0);
+#else
 		painter->translate(-metrics.width(frame), 0);
+#endif
 		const static int ITERATIONS = 11;
 		for (int i = 0; i < ITERATIONS; ++i) {
 			painter->save();

@@ -6,6 +6,7 @@
 #include <mgba-util/platform/psp2/sce-vfs.h>
 
 #include <psp2/io/dirent.h>
+#include <psp2/io/stat.h>
 
 #include <mgba-util/vfs.h>
 #include <mgba-util/memory.h>
@@ -112,6 +113,9 @@ ssize_t _vfsceWrite(struct VFile* vf, const void* buffer, size_t size) {
 static void* _vfsceMap(struct VFile* vf, size_t size, int flags) {
 	struct VFileSce* vfsce = (struct VFileSce*) vf;
 	UNUSED(flags);
+	if (!size) {
+		return NULL;
+	}
 	void* buffer = anonymousMemoryMap(size);
 	if (buffer) {
 		SceOff cur = sceIoLseek(vfsce->fd, 0, SEEK_CUR);

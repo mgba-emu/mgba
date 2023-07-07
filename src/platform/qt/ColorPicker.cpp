@@ -15,11 +15,8 @@ ColorPicker::ColorPicker() {
 
 ColorPicker::ColorPicker(QWidget* parent, const QColor& defaultColor)
 	: m_parent(parent)
-	, m_defaultColor(defaultColor)
 {
-	QPalette palette = parent->palette();
-	palette.setColor(parent->backgroundRole(), defaultColor);
-	parent->setPalette(palette);
+	setColor(defaultColor);
 	parent->installEventFilter(this);
 }
 
@@ -36,10 +33,7 @@ ColorPicker& ColorPicker::operator=(const ColorPicker& other) {
 
 void ColorPicker::setColor(const QColor& color) {
 	m_defaultColor = color;
-
-	QPalette palette = m_parent->palette();
-	palette.setColor(m_parent->backgroundRole(), color);
-	m_parent->setPalette(palette);
+	m_parent->setStyleSheet(QString("background-color: %1;").arg(color.name()));
 }
 
 bool ColorPicker::eventFilter(QObject* obj, QEvent* event) {
@@ -57,10 +51,7 @@ bool ColorPicker::eventFilter(QObject* obj, QEvent* event) {
 	colorPicker->setCurrentColor(m_defaultColor);
 	colorPicker->open();
 	connect(colorPicker, &QColorDialog::colorSelected, [this, swatch](const QColor& color) {
-		m_defaultColor = color;
-		QPalette palette = swatch->palette();
-		palette.setColor(swatch->backgroundRole(), color);
-		swatch->setPalette(palette);
+		setColor(color);
 		emit colorChanged(color);
 	});
 	return true;

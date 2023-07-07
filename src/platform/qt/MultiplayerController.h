@@ -5,10 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include <QMutex>
 #include <QList>
+#include <QMutex>
 #include <QObject>
 
+#include <mgba/core/core.h>
 #include <mgba/core/lockstep.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/sio/lockstep.h>
@@ -44,6 +45,10 @@ signals:
 	void gameDetached();
 
 private:
+	union Node {
+		GBSIOLockstepNode* gb;
+		GBASIOLockstepNode* gba;
+	};
 	struct Player {
 #ifdef M_CORE_GB
 		Player(CoreController* controller, GBSIOLockstepNode* node);
@@ -52,13 +57,18 @@ private:
 		Player(CoreController* controller, GBASIOLockstepNode* node);
 #endif
 
+		int id() const;
+		bool operator<(const Player&) const;
+
 		CoreController* controller;
-		GBSIOLockstepNode* gbNode = nullptr;
-		GBASIOLockstepNode* gbaNode = nullptr;
+		Node node = {nullptr};
 		int awake = 1;
 		int32_t cyclesPosted = 0;
 		unsigned waitMask = 0;
 	};
+
+	Player* player(int id);
+
 	union {
 		mLockstep m_lockstep;
 #ifdef M_CORE_GB
@@ -68,6 +78,8 @@ private:
 		GBASIOLockstep m_gbaLockstep;
 #endif
 	};
+
+	mPlatform m_platform = mPLATFORM_NONE;
 	QList<Player> m_players;
 	QMutex m_lock;
 };

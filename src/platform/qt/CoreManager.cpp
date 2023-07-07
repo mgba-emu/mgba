@@ -16,6 +16,7 @@
 #endif
 
 #include <mgba/core/core.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 using namespace QGBA;
@@ -31,6 +32,7 @@ void CoreManager::setMultiplayerController(MultiplayerController* multiplayer) {
 CoreController* CoreManager::loadGame(const QString& path) {
 	QFileInfo info(path);
 	if (!info.isReadable()) {
+		// Open specific file in archive
 		QString fname = info.fileName();
 		QString base = info.path();
 		if (base.endsWith("/") || base.endsWith(QDir::separator())) {
@@ -40,13 +42,8 @@ CoreController* CoreManager::loadGame(const QString& path) {
 		if (dir) {
 			VFile* vf = dir->openFile(dir, fname.toUtf8().constData(), O_RDONLY);
 			if (vf) {
-				struct VFile* vfclone = VFileMemChunk(NULL, vf->size(vf));
-				uint8_t buffer[2048];
-				ssize_t read;
-				while ((read = vf->read(vf, buffer, sizeof(buffer))) > 0) {
-					vfclone->write(vfclone, buffer, read);
-				}
-				vf->close(vf);
+				struct VFile* vfclone = VFileDevice::openMemory(vf->size(vf));
+				VFileDevice::copyFile(vf, vfclone);
 				vf = vfclone;
 			}
 			dir->close(dir);
@@ -59,19 +56,24 @@ CoreController* CoreManager::loadGame(const QString& path) {
 	VFile* vf = nullptr;
 	VDir* archive = VDirOpenArchive(path.toUtf8().constData());
 	if (archive) {
+		// Open first file in archive
 		VFile* vfOriginal = VDirFindFirst(archive, [](VFile* vf) {
 			return mCoreIsCompatible(vf) != mPLATFORM_NONE;
 		});
-		ssize_t size;
-		if (vfOriginal && (size = vfOriginal->size(vfOriginal)) > 0) {
-			void* mem = vfOriginal->map(vfOriginal, size, MAP_READ);
-			vf = VFileMemChunk(mem, size);
-			vfOriginal->unmap(vfOriginal, mem, size);
+		if (vfOriginal) {
+			ssize_t size = vfOriginal->size(vfOriginal);
+			if (size > 0) {
+				struct VFile* vfclone = VFileDevice::openMemory(vfOriginal->size(vfOriginal));
+				VFileDevice::copyFile(vfOriginal, vfclone);
+				vf = vfclone;
+			}
 			vfOriginal->close(vfOriginal);
 		}
+		archive->close(archive);
 	}
 	QDir dir(info.dir());
 	if (!vf) {
+		// Open bare file
 		vf = VFileOpen(info.canonicalFilePath().toUtf8().constData(), O_RDONLY);
 	}
 	return loadGame(vf, info.fileName(), dir.canonicalPath());
@@ -160,7 +162,7 @@ CoreController* CoreManager::loadBIOS(int platform, const QString& path) {
 	mCoreConfigSetOverrideIntValue(&core->config, "skipBios", 0);
 
 	QByteArray bytes(info.baseName().toUtf8());
-	strncpy(core->dirs.baseName, bytes.constData(), sizeof(core->dirs.baseName));
+	strlcpy(core->dirs.baseName, bytes.constData(), sizeof(core->dirs.baseName));
 
 	bytes = info.dir().canonicalPath().toUtf8();
 	mDirectorySetAttachBase(&core->dirs, VDirOpen(bytes.constData()));

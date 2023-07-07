@@ -9,12 +9,6 @@
 #include "CoreController.h"
 
 #include <mgba/core/core.h>
-#ifdef M_CORE_GB
-#include <mgba/internal/gb/gb.h>
-#endif
-#ifdef M_CORE_GBA
-#include <mgba/internal/gba/gba.h>
-#endif
 #ifdef USE_SQLITE3
 #include "feature/sqlite3/no-intro.h"
 #endif
@@ -46,25 +40,8 @@ ROMInfo::ROMInfo(std::shared_ptr<CoreController> controller, QWidget* parent)
 
 	core->checksum(core, &crc32, mCHECKSUM_CRC32);
 
-	switch (controller->thread()->core->platform(controller->thread()->core)) {
-#ifdef M_CORE_GBA
-	case mPLATFORM_GBA: {
-		GBA* gba = static_cast<GBA*>(core->board);
-		m_ui.size->setText(QString::number(gba->pristineRomSize) + tr(" bytes"));
-		break;
-	}
-#endif
-#ifdef M_CORE_GB
-	case mPLATFORM_GB: {
-		GB* gb = static_cast<GB*>(core->board);
-		m_ui.size->setText(QString::number(gb->pristineRomSize) + tr(" bytes"));
-		break;
-	}
-#endif
-	default:
-		m_ui.size->setText(tr("(unknown)"));
-		break;
-	}
+	m_ui.size->setText(QString::number(core->romSize(core)) + tr(" bytes"));
+
 	if (crc32) {
 		m_ui.crc->setText(QString::number(crc32, 16));
 #ifdef USE_SQLITE3

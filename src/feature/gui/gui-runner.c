@@ -15,9 +15,15 @@
 #include <mgba-util/gui/file-select.h>
 #include <mgba-util/gui/font.h>
 #include <mgba-util/gui/menu.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/memory.h>
-#include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
+
+#ifdef PSP2
+#include <psp2/io/stat.h>
+#elif defined(__3DS__)
+#include <mgba-util/platform/3ds/3ds-vfs.h>
+#endif
 
 #include <sys/time.h>
 
@@ -117,34 +123,39 @@ static void _drawState(struct GUIBackground* background, void* id) {
 	struct mGUIBackground* gbaBackground = (struct mGUIBackground*) background;
 	unsigned stateId = ((uint32_t) id) >> 16;
 	if (gbaBackground->p->drawScreenshot) {
-		unsigned w, h;
-		gbaBackground->p->core->desiredVideoDimensions(gbaBackground->p->core, &w, &h);
-		size_t size = w * h * BYTES_PER_PIXEL;
-		if (size != gbaBackground->imageSize) {
-			mappedMemoryFree(gbaBackground->image, gbaBackground->imageSize);
-			gbaBackground->image = NULL;
-		}
-		if (gbaBackground->image && gbaBackground->screenshotId == (stateId | SCREENSHOT_VALID)) {
-			gbaBackground->p->drawScreenshot(gbaBackground->p, gbaBackground->image, w, h, true);
+		color_t* pixels = gbaBackground->image;
+		if (pixels && gbaBackground->screenshotId == (stateId | SCREENSHOT_VALID)) {
+			gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, gbaBackground->w, gbaBackground->h, true);
 			return;
 		} else if (gbaBackground->screenshotId != (stateId | SCREENSHOT_INVALID)) {
 			struct VFile* vf = mCoreGetState(gbaBackground->p->core, stateId, false);
-			color_t* pixels = gbaBackground->image;
-			if (!pixels) {
-				pixels = anonymousMemoryMap(size);
-				gbaBackground->image = pixels;
-				gbaBackground->imageSize = size;
-			}
 			bool success = false;
-			if (vf && isPNG(vf) && pixels) {
+			unsigned w, h;
+			if (vf && isPNG(vf)) {
 				png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
 				png_infop info = png_create_info_struct(png);
 				png_infop end = png_create_info_struct(png);
-				if (png && info && end) {
-					success = PNGReadHeader(png, info);
-					success = success && PNGReadPixels(png, info, pixels, w, h, w);
-					success = success && PNGReadFooter(png, end);
+				success = png && info && end;
+				success = success && PNGReadHeader(png, info);
+				w = png_get_image_width(png, info);
+				h = png_get_image_height(png, info);
+				size_t size = w * h * BYTES_PER_PIXEL;
+				success = success && (w < 0x4000) && (h < 0x4000);
+				if (success) {
+					if (size != gbaBackground->imageSize) {
+						mappedMemoryFree(pixels, gbaBackground->imageSize);
+						pixels = anonymousMemoryMap(size);
+						gbaBackground->image = pixels;
+						gbaBackground->imageSize = size;
+					}
+					success = pixels;
 				}
+				success = success && PNGReadPixels(png, info, pixels, w, h, w);
+				if (success) {
+					gbaBackground->w = w;
+					gbaBackground->h = h;
+				}
+				success = success && PNGReadFooter(png, end);
 				PNGReadClose(png, info, end);
 			}
 			if (vf) {
@@ -445,16 +456,13 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	mLOG(GUI_RUNNER, DEBUG, "Loading save...");
 	mCoreAutoloadSave(runner->core);
 	mCoreAutoloadCheats(runner->core);
+	mCoreAutoloadPatch(runner->core);
 	if (runner->setup) {
 		mLOG(GUI_RUNNER, DEBUG, "Setting up runner...");
 		runner->setup(runner);
 	}
 	if (runner->config.port && runner->keySources) {
-		mLOG(GUI_RUNNER, DEBUG, "Loading key sources for %s...", runner->config.port);
-		size_t i;
-		for (i = 0; runner->keySources[i].id; ++i) {
-			mInputMapLoad(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
-		}
+		mGUILoadInputMaps(runner);
 	}
 	mLOG(GUI_RUNNER, DEBUG, "Reseting...");
 	runner->core->reset(runner->core);
@@ -648,6 +656,9 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				runner->core->reset(runner->core);
 				break;
 			case RUNNER_SAVE_STATE:
+				// If we are saving state, then the screenshot stored for the state previously should no longer be considered up-to-date.
+				// Therefore, mark it as stale so that at draw time we load the new save state's screenshot.
+				((struct mGUIBackground*) stateSaveMenu.background)->screenshotId |= SCREENSHOT_INVALID;
 				mCoreSaveState(runner->core, item->data.v.u >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
 				break;
 			case RUNNER_LOAD_STATE:
@@ -745,11 +756,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 
 void mGUIRunloop(struct mGUIRunner* runner) {
 	if (runner->keySources) {
-		mLOG(GUI_RUNNER, DEBUG, "Loading key sources for %s...", runner->config.port);
-		size_t i;
-		for (i = 0; runner->keySources[i].id; ++i) {
-			mInputMapLoad(&runner->params.keyMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
-		}
+		mGUILoadInputMaps(runner);
 	}
 	while (!runner->running || runner->running(runner)) {
 		char path[PATH_MAX];
@@ -769,6 +776,52 @@ void mGUIRunloop(struct mGUIRunner* runner) {
 		mGUIRun(runner, path);
 	}
 }
+
+void mGUILoadInputMaps(struct mGUIRunner* runner) {
+	mLOG(GUI_RUNNER, DEBUG, "Loading key sources for %s...", runner->config.port);
+	size_t i;
+	for (i = 0; runner->keySources[i].id; ++i) {
+		mInputMapLoad(&runner->params.keyMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+	}
+}
+
+#if defined(__3DS__) || defined(PSP2)
+bool mGUIGetRom(struct mGUIRunner* runner, char* out, size_t outLength) {
+#ifdef PSP2
+	int fd = open("app0:/filename", O_RDONLY);
+	strcpy(out, "app0:/");
+#elif defined(__3DS__)
+	int fd = open("romfs:/filename", O_RDONLY);
+	strcpy(out, "romfs:/");
+#endif
+	if (fd < 0) {
+		return false;
+	}
+	size_t len = strlen(out);
+	ssize_t size = read(fd, out + len, outLength - len);
+	if (size > 0 && out[len + size - 1] == '\n') {
+		out[len + size - 1] = '\0';
+	}
+	close(fd);
+	if (size <= 0) {
+		return false;
+	}
+	char basedir[64];
+	mCoreConfigDirectory(basedir, sizeof(basedir));
+	strlcat(basedir, "/forwarders", sizeof(basedir));
+#ifdef PSP2
+	sceIoMkdir(basedir, 0777);
+#elif defined(__3DS__)
+	FSUSER_CreateDirectory(sdmcArchive, fsMakePath(PATH_ASCII, basedir), 0);
+#endif
+
+	mCoreConfigSetValue(&runner->config, "savegamePath", basedir);
+	mCoreConfigSetValue(&runner->config, "savestatePath", basedir);
+	mCoreConfigSetValue(&runner->config, "screenshotPath", basedir);
+	mCoreConfigSetValue(&runner->config, "cheatsPath", basedir);
+	return true;
+}
+#endif
 
 #ifndef DISABLE_THREADING
 THREAD_ENTRY mGUIAutosaveThread(void* context) {
@@ -791,5 +844,6 @@ THREAD_ENTRY mGUIAutosaveThread(void* context) {
 		}
 	}
 	MutexUnlock(&autosave->mutex);
+	THREAD_EXIT(0);
 }
 #endif

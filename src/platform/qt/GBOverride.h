@@ -13,9 +13,9 @@ namespace QGBA {
 
 class GBOverride : public Override {
 public:
-	void apply(struct mCore*) override;
 	void identify(const struct mCore*) override;
 	void save(struct Configuration*) const override;
+	const void* raw() const override;
 
 	struct GBCartridgeOverride override;
 };

@@ -12,9 +12,10 @@
 #include <QSysInfo>
 #include <QWindow>
 
+#include <mgba/core/cheats.h>
 #include <mgba/core/serialize.h>
 #include <mgba/core/version.h>
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/vfs.h>
 
 #include "CoreController.h"
@@ -59,6 +60,10 @@
 
 #ifdef USE_LIBZIP
 #include <zip.h>
+#endif
+
+#ifdef USE_LUA
+#include <lua.h>
 #endif
 
 #ifdef USE_LZMA
@@ -122,6 +127,7 @@ void ReportView::generateReport() {
 	swReport << QString("Build architecture: %1").arg(QSysInfo::buildCpuArchitecture());
 	swReport << QString("Run architecture: %1").arg(QSysInfo::currentCpuArchitecture());
 	swReport << QString("Qt version: %1").arg(QLatin1String(qVersion()));
+	swReport << QString("Qt QPA platform: %1").arg(QGuiApplication::platformName());
 #ifdef USE_FFMPEG
 	QStringList libavVers;
 	libavVers << QLatin1String(LIBAVCODEC_IDENT);
@@ -167,6 +173,11 @@ void ReportView::generateReport() {
 	swReport << QString("libLZMA version: %1").arg(QLatin1String(MY_VERSION_NUMBERS));
 #else
 	swReport << QString("libLZMA not linked");
+#endif
+#ifdef USE_LUA
+	swReport << QString("Lua version: %1").arg(QLatin1String(LUA_RELEASE));
+#else
+	swReport << QString("Lua not linked");
 #endif
 #ifdef USE_MINIZIP
 	swReport << QString("minizip linked");
@@ -257,6 +268,17 @@ void ReportView::generateReport() {
 				}
 				addROMInfo(windowReport, controller.get());
 
+				mCheatDevice* device = controller->cheatDevice();
+				if (device) {
+					VFileDevice vf(VFileDevice::openMemory());
+					mCheatSaveFile(device, vf);
+					vf.seek(0);
+					QByteArray cheats(vf.readAll());
+					if (cheats.size()) {
+						addReport(QString("Cheats %1").arg(winId), QString::fromUtf8(cheats));
+					}
+				}
+
 				if (m_ui.includeSave->isChecked() && !m_ui.includeState->isChecked()) {
 					// Only do the save separately if savestates aren't enabled, to guarantee consistency
 					mCore* core = controller->thread()->core;
@@ -287,15 +309,14 @@ void ReportView::generateReport() {
 						deferredBinaries.append(qMakePair(QString("Save %1").arg(winId), save));
 					}
 					mStateExtdataDeinit(&extdata);
+					vf->close(vf);
 				}
 			}
 		} else {
 			windowReport << QString("ROM open: No");
 		}
-#ifdef BUILD_SDL
 		InputController* input = window->inputController();
-		windowReport << QString("Active gamepad: %1").arg(input->gamepad(SDL_BINDING_BUTTON));
-#endif
+		windowReport << QString("Active gamepad: %1").arg(input->gamepadIndex());
 		windowReport << QString("Configuration: %1").arg(configs.indexOf(config) + 1);
 		addReport(QString("Window %1").arg(winId), windowReport.join('\n'));
 	}
@@ -455,9 +476,8 @@ void ReportView::addGLInfo(QStringList& report) {
 }
 
 void ReportView::addGamepadInfo(QStringList& report) {
-#ifdef BUILD_SDL
 	InputController* input = GBAApp::app()->windows()[0]->inputController();
-	QStringList gamepads = input->connectedGamepads(SDL_BINDING_BUTTON);
+	QStringList gamepads = input->connectedGamepads();
 	report << QString("Connected gamepads: %1").arg(gamepads.size());
 	int i = 0;
 	for (const auto& gamepad : gamepads) {
@@ -468,10 +488,9 @@ void ReportView::addGamepadInfo(QStringList& report) {
 		i = 0;
 		for (Window* window : GBAApp::app()->windows()) {
 			++i;
-			report << QString("Window %1 gamepad: %2").arg(i).arg(window->inputController()->gamepad(SDL_BINDING_BUTTON));
+			report << QString("Window %1 gamepad: %2").arg(i).arg(window->inputController()->gamepadIndex());
 		}
 	}
-#endif
 }
 
 void ReportView::addROMInfo(QStringList& report, CoreController* controller) {

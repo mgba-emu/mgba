@@ -87,7 +87,7 @@ struct mCore* mCoreCreate(enum mPlatform platform) {
 }
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 
 #ifdef PSP2
 #include <psp2/photoexport.h>
@@ -259,6 +259,18 @@ bool mCoreAutoloadCheats(struct mCore* core) {
 	return success;
 }
 
+bool mCoreLoadSaveFile(struct mCore* core, const char* path, bool temporary) {
+	struct VFile* vf = VFileOpen(path, O_CREAT | O_RDWR);
+	if (!vf) {
+		return false;
+	}
+	if (temporary) {
+		return core->loadTemporarySave(core, vf);
+	} else {
+		return core->loadSave(core, vf);
+	}
+}
+
 bool mCoreSaveState(struct mCore* core, int slot, int flags) {
 	struct VFile* vf = mCoreGetState(core, slot, true);
 	if (!vf) {
@@ -295,6 +307,9 @@ struct VFile* mCoreGetState(struct mCore* core, int slot, bool write) {
 	if (!core->dirs.state) {
 		return NULL;
 	}
+	if (slot < 0) {
+		return NULL;
+	}
 	char name[PATH_MAX + 14]; // Quash warning
 	snprintf(name, sizeof(name), "%s.ss%i", core->dirs.baseName, slot);
 	return core->dirs.state->openFile(core->dirs.state, name, write ? (O_CREAT | O_TRUNC | O_RDWR) : O_RDONLY);
@@ -308,10 +323,6 @@ void mCoreDeleteState(struct mCore* core, int slot) {
 
 void mCoreTakeScreenshot(struct mCore* core) {
 #ifdef USE_PNG
-	size_t stride;
-	const void* pixels = 0;
-	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
 	struct VFile* vf;
 #ifndef PSP2
 	vf = VDirFindNextAvailable(core->dirs.screenshot, core->dirs.baseName, "-", ".png", O_CREAT | O_TRUNC | O_WRONLY);
@@ -320,11 +331,7 @@ void mCoreTakeScreenshot(struct mCore* core) {
 #endif
 	bool success = false;
 	if (vf) {
-		core->getPixels(core, &pixels, &stride);
-		png_structp png = PNGWriteOpen(vf);
-		png_infop info = PNGWriteHeader(png, width, height);
-		success = PNGWritePixels(png, width, height, stride, pixels);
-		PNGWriteClose(png, info);
+		success = mCoreTakeScreenshotVF(core, vf);
 #ifdef PSP2
 		void* data = vf->map(vf, 0, 0);
 		PhotoExportParam param = {
@@ -348,6 +355,25 @@ void mCoreTakeScreenshot(struct mCore* core) {
 	mLOG(STATUS, WARN, "Failed to take screenshot");
 }
 #endif
+
+bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf) {
+#ifdef USE_PNG
+	size_t stride;
+	const void* pixels = 0;
+	unsigned width, height;
+	core->currentVideoSize(core, &width, &height);
+	core->getPixels(core, &pixels, &stride);
+	png_structp png = PNGWriteOpen(vf);
+	png_infop info = PNGWriteHeader(png, width, height, mCOLOR_NATIVE);
+	bool success = PNGWritePixels(png, width, height, stride, pixels, mCOLOR_NATIVE);
+	PNGWriteClose(png, info);
+	return success;
+#else
+	UNUSED(core);
+	UNUSED(vf);
+	return false;
+#endif
+}
 
 void mCoreInitConfig(struct mCore* core, const char* port) {
 	mCoreConfigInit(&core->config, port);

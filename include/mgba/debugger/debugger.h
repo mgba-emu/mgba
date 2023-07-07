@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/cpu.h>
 #include <mgba/core/log.h>
+#include <mgba-util/table.h>
 #include <mgba-util/vector.h>
 #include <mgba/internal/debugger/stack-trace.h>
 
@@ -28,6 +29,7 @@ enum mDebuggerType {
 };
 
 enum mDebuggerState {
+	DEBUGGER_CREATED = 0,
 	DEBUGGER_PAUSED,
 	DEBUGGER_RUNNING,
 	DEBUGGER_CALLBACK,
@@ -56,8 +58,10 @@ enum mDebuggerEntryReason {
 	DEBUGGER_ENTER_STACK
 };
 
+struct mDebuggerModule;
 struct mDebuggerEntryInfo {
 	uint32_t address;
+	int segment;
 	union {
 		struct {
 			uint32_t oldValue;
@@ -76,6 +80,7 @@ struct mDebuggerEntryInfo {
 		} st;
 	} type;
 	ssize_t pointId;
+	struct mDebuggerModule* target;
 };
 
 struct mBreakpoint {
@@ -88,14 +93,16 @@ struct mBreakpoint {
 
 struct mWatchpoint {
 	ssize_t id;
-	uint32_t address;
 	int segment;
+	uint32_t minAddress;
+	uint32_t maxAddress;
 	enum mWatchpointType type;
 	struct ParseTree* condition;
 };
 
 DECLARE_VECTOR(mBreakpointList, struct mBreakpoint);
 DECLARE_VECTOR(mWatchpointList, struct mWatchpoint);
+DECLARE_VECTOR(mDebuggerModuleList, struct mDebuggerModule*);
 
 struct mDebugger;
 struct ParseTree;
@@ -110,16 +117,14 @@ struct mDebuggerPlatform {
 	void (*checkBreakpoints)(struct mDebuggerPlatform*);
 	bool (*clearBreakpoint)(struct mDebuggerPlatform*, ssize_t id);
 
-	ssize_t (*setBreakpoint)(struct mDebuggerPlatform*, const struct mBreakpoint*);
-	void (*listBreakpoints)(struct mDebuggerPlatform*, struct mBreakpointList*);
+	ssize_t (*setBreakpoint)(struct mDebuggerPlatform*, struct mDebuggerModule*, const struct mBreakpoint*);
+	void (*listBreakpoints)(struct mDebuggerPlatform*, struct mDebuggerModule*, struct mBreakpointList*);
 
-	ssize_t (*setWatchpoint)(struct mDebuggerPlatform*, const struct mWatchpoint*);
-	void (*listWatchpoints)(struct mDebuggerPlatform*, struct mWatchpointList*);
+	ssize_t (*setWatchpoint)(struct mDebuggerPlatform*, struct mDebuggerModule*, const struct mWatchpoint*);
+	void (*listWatchpoints)(struct mDebuggerPlatform*, struct mDebuggerModule*, struct mWatchpointList*);
 
 	void (*trace)(struct mDebuggerPlatform*, char* out, size_t* length);
 
-	bool (*getRegister)(struct mDebuggerPlatform*, const char* name, int32_t* value);
-	bool (*setRegister)(struct mDebuggerPlatform*, const char* name, int32_t value);
 	bool (*lookupIdentifier)(struct mDebuggerPlatform*, const char* name, int32_t* value, int* segment);
 
 	uint32_t (*getStackTraceMode)(struct mDebuggerPlatform*);
@@ -131,27 +136,51 @@ struct mDebugger {
 	struct mCPUComponent d;
 	struct mDebuggerPlatform* platform;
 	enum mDebuggerState state;
-	enum mDebuggerType type;
 	struct mCore* core;
 	struct mScriptBridge* bridge;
 	struct mStackTrace stackTrace;
 
-	void (*init)(struct mDebugger*);
-	void (*deinit)(struct mDebugger*);
-
-	void (*paused)(struct mDebugger*);
-	void (*update)(struct mDebugger*);
-	void (*entered)(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
-	void (*custom)(struct mDebugger*);
-
-	void (*interrupt)(struct mDebugger*);
+	struct mDebuggerModuleList modules;
+	struct Table pointOwner;
 };
 
-struct mDebugger* mDebuggerCreate(enum mDebuggerType type, struct mCore*);
+struct mDebuggerModule {
+	struct mDebugger* p;
+	enum mDebuggerType type;
+	bool isPaused;
+	bool needsCallback;
+
+	void (*init)(struct mDebuggerModule*);
+	void (*deinit)(struct mDebuggerModule*);
+
+	void (*paused)(struct mDebuggerModule*, int32_t timeoutMs);
+	void (*update)(struct mDebuggerModule*);
+	void (*entered)(struct mDebuggerModule*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
+	void (*custom)(struct mDebuggerModule*);
+
+	void (*interrupt)(struct mDebuggerModule*);
+};
+
+void mDebuggerInit(struct mDebugger*);
+void mDebuggerDeinit(struct mDebugger*);
+
 void mDebuggerAttach(struct mDebugger*, struct mCore*);
+void mDebuggerAttachModule(struct mDebugger*, struct mDebuggerModule*);
+void mDebuggerDetachModule(struct mDebugger*, struct mDebuggerModule*);
+void mDebuggerRunTimeout(struct mDebugger* debugger, int32_t timeoutMs);
 void mDebuggerRun(struct mDebugger*);
 void mDebuggerRunFrame(struct mDebugger*);
 void mDebuggerEnter(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
+
+void mDebuggerInterrupt(struct mDebugger*);
+void mDebuggerUpdatePaused(struct mDebugger*);
+void mDebuggerShutdown(struct mDebugger*);
+void mDebuggerUpdate(struct mDebugger*);
+
+bool mDebuggerIsShutdown(const struct mDebugger*);
+
+struct mDebuggerModule* mDebuggerCreateModule(enum mDebuggerType type, struct mCore*);
+void mDebuggerModuleSetNeedsCallback(struct mDebuggerModule*);
 
 bool mDebuggerLookupIdentifier(struct mDebugger* debugger, const char* name, int32_t* value, int* segment);
 

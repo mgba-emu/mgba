@@ -12,21 +12,19 @@ CXX_GUARD_START
 
 #ifdef USE_EPOXY
 #include <epoxy/gl.h>
-#elif defined(BUILD_GL)
-#ifdef __APPLE__
+#elif defined(__APPLE__)
 #include <OpenGL/gl3.h>
-#else
+#elif defined(BUILD_GL)
 #define GL_GLEXT_PROTOTYPES
 #include <GL/gl.h>
 #include <GL/glext.h>
-#endif
 #elif defined(BUILD_GLES3)
 #include <GLES3/gl3.h>
 #else
 #include <GLES2/gl2.h>
 #endif
 
-#include "platform/video-backend.h"
+#include <mgba/feature/video-backend.h>
 
 union mGLES2UniformValue {
 	GLfloat f;
@@ -72,6 +70,7 @@ struct mGLES2Shader {
 	GLuint texLocation;
 	GLuint texSizeLocation;
 	GLuint positionLocation;
+	GLuint outputSizeLocation;
 
 	struct mGLES2Uniform* uniforms;
 	size_t nUniforms;
@@ -80,12 +79,20 @@ struct mGLES2Shader {
 struct mGLES2Context {
 	struct VideoBackend d;
 
-	GLuint tex;
+	GLuint tex[VIDEO_LAYER_MAX];
 	GLuint vbo;
+
+	struct mRectangle layerDims[VIDEO_LAYER_MAX];
+	struct mSize imageSizes[VIDEO_LAYER_MAX];
+	int x;
+	int y;
+	unsigned width;
+	unsigned height;
 
 	struct mGLES2Shader initialShader;
 	struct mGLES2Shader finalShader;
 	struct mGLES2Shader interframeShader;
+	struct mGLES2Shader overlayShader;
 
 	struct mGLES2Shader* shaders;
 	size_t nShaders;

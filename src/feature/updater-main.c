@@ -29,6 +29,8 @@
 #define W_OK 02
 #endif
 
+FILE* logfile;
+
 bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 	char path[PATH_MAX] = {0};
 	struct VDirEntry* vde;
@@ -53,7 +55,7 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 		}
 		switch (vde->type(vde)) {
 		case VFS_DIRECTORY:
-			printf("mkdir   %s\n", fname);
+			fprintf(logfile, "mkdir   %s\n", fname);
 			if (mkdir(path, 0755) < 0 && errno != EEXIST) {
 				return false;
 			}
@@ -70,7 +72,7 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 			}
 			break;
 		case VFS_FILE:
-			printf("extract %s\n", fname);
+			fprintf(logfile, "extract %s\n", fname);
 			vfIn = archive->openFile(archive, vde->name(vde), O_RDONLY);
 			errno = 0;
 			vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
@@ -111,13 +113,17 @@ int main(int argc, char* argv[]) {
 	const char* root;
 	int ok = 1;
 
+	mCoreConfigDirectory(bin, sizeof(bin));
+	strncat(bin, "/updater.log", sizeof(bin) - 1);
+	logfile = fopen(bin, "w");
+
 	mCoreConfigInit(&config, "updater");
 	if (!mCoreConfigLoad(&config)) {
-		puts("Failed to load config");
+		fputs("Failed to load config\n", logfile);
 	} else if (!mUpdateGetArchivePath(&config, updateArchive, sizeof(updateArchive)) || !(root = mUpdateGetRoot(&config))) {
-		puts("No pending update found");
+		fputs("No pending update found\n", logfile);
 	} else if (access(root, W_OK)) {
-		puts("Cannot write to update path");
+		fputs("Cannot write to update path\n", logfile);
 	} else {
 #ifdef __APPLE__
 		char subdir[PATH_MAX];
@@ -160,7 +166,6 @@ int main(int argc, char* argv[]) {
 					}
 					off_t diff = devend - devinfo - 1;
 					memcpy(devpath, &devinfo[1], diff);
-					puts(devpath);
 					break;
 				}
 				int retstat;
@@ -173,24 +178,72 @@ int main(int argc, char* argv[]) {
 			prefix = false;
 			needsUnmount = true;
 #endif
-		} else {
+		} else if (strcmp(extension, "appimage") != 0) {
 			archive = VDirOpenArchive(updateArchive);
 		}
-		if (!archive) {
-			puts("Cannot open update archive");
-		} else {
-			puts("Extracting update");
+		if (archive) {
+			fputs("Extracting update\n", logfile);
 			if (extractArchive(archive, root, prefix)) {
-				puts("Complete");
-				const char* command = mUpdateGetCommand(&config);
-				strlcpy(bin, command, sizeof(bin));
 				ok = 0;
-				mUpdateDeregister(&config);
 			} else {
-				puts("An error occurred");
+				fputs("An error occurred\n", logfile);
 			}
 			archive->close(archive);
 			unlink(updateArchive);
+		}
+#ifdef __linux__
+		else if (strcmp(extension, "appimage") == 0) {
+			const char* command = mUpdateGetCommand(&config);
+			strlcpy(bin, command, sizeof(bin));
+			if (rename(updateArchive, bin) < 0) {
+				if (errno == EXDEV) {
+					// Cross-dev, need to copy manually
+					int infd = open(updateArchive, O_RDONLY);
+					int outfd = -1;
+					if (infd >= 0) {
+						ok = 2;
+					} else {
+						outfd = open(bin, O_CREAT | O_WRONLY | O_TRUNC, 0755);
+					}
+					if (outfd < 0) {
+						ok = 2;
+					} else {
+						uint8_t buffer[2048];
+						ssize_t size;
+						while ((size = read(infd, buffer, sizeof(buffer))) > 0) {
+							if (write(outfd, buffer, size) < size) {
+								ok = 2;
+								break;
+							}
+						}
+						if (size < 0) {
+							ok = 2;
+						}
+						close(outfd);
+						close(infd);
+					}
+					if (ok == 2) {
+						fputs("Cannot move update over old file\n", logfile);
+					}
+				} else {
+					fputs("Cannot move update over old file\n", logfile);
+				}
+			} else {
+				ok = 0;
+			}
+			if (ok == 0) {
+				chmod(bin, 0755);
+			}
+		}
+#endif
+		else {
+			fputs("Cannot open update archive\n", logfile);
+		}
+		if (ok == 0) {
+			fputs("Complete", logfile);
+			const char* command = mUpdateGetCommand(&config);
+			strlcpy(bin, command, sizeof(bin));
+			mUpdateDeregister(&config);
 		}
 #ifdef __APPLE__
 		if (needsUnmount) {
@@ -212,6 +265,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	mCoreConfigDeinit(&config);
+	fclose(logfile);
 	if (ok == 0) {
 #ifdef _WIN32
 		char qbin[PATH_MAX + 2] = {0};
@@ -220,7 +274,7 @@ int main(int argc, char* argv[]) {
 		const char* argv[] = { qbin, NULL };
 		_execv(bin, argv);
 #elif defined(_POSIX_C_SOURCE) || defined(__APPLE__)
-		const char* argv[] = { bin, NULL };
+		char* const argv[] = { bin, NULL };
 		execv(bin, argv);
 #endif
 	}

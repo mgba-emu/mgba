@@ -68,6 +68,8 @@ public:
 		void interrupt(std::shared_ptr<CoreController>);
 		void resume();
 
+		bool held() const;
+
 	private:
 		void interrupt();
 		void resume(CoreController*);
@@ -92,6 +94,7 @@ public:
 
 	mPlatform platform() const;
 	QSize screenDimensions() const;
+	unsigned videoScale() const;
 	bool supportsFeature(Feature feature) const { return m_threadContext.core->supportsFeature(m_threadContext.core, static_cast<mCoreFeature>(feature)); }
 	bool hardwareAccelerated() const { return m_hwaccel; }
 
@@ -100,8 +103,11 @@ public:
 	mCheatDevice* cheatDevice() { return m_threadContext.core->cheatDevice(m_threadContext.core); }
 
 #ifdef USE_DEBUGGERS
-	mDebugger* debugger() { return m_threadContext.core->debugger; }
-	void setDebugger(mDebugger*);
+	mDebugger* debugger() { return &m_debugger; }
+	void attachDebugger(bool interrupt = true);
+	void detachDebugger();
+	void attachDebuggerModule(mDebuggerModule*, bool interrupt = true);
+	void detachDebuggerModule(mDebuggerModule*);
 #endif
 
 	void setMultiplayerController(MultiplayerController*);
@@ -174,6 +180,7 @@ public slots:
 	void setRealTime();
 	void setFixedTime(const QDateTime& time);
 	void setFakeEpoch(const QDateTime& time);
+	void setTimeOffset(qint64 offset);
 
 	void importSharkport(const QString& path);
 	void exportSharkport(const QString& path);
@@ -238,8 +245,12 @@ private:
 	void updateROMInfo();
 
 	mCoreThread m_threadContext{};
+	struct CoreLogger : public mLogger {
+		CoreController* self;
+	} m_logger{};
 
 	bool m_patched = false;
+	bool m_preload = false;
 
 	uint32_t m_crc32;
 	QString m_internalTitle;
@@ -265,6 +276,7 @@ private:
 	QMutex m_bufferMutex;
 
 	int m_activeKeys = 0;
+	int m_removedKeys = 0;
 	bool m_autofire[32] = {};
 	int m_autofireStatus[32] = {};
 	int m_autofireThreshold = 1;
@@ -283,6 +295,10 @@ private:
 	bool m_autosave;
 	bool m_autoload;
 	int m_autosaveCounter = 0;
+
+#ifdef USE_DEBUGGERS
+	struct mDebugger m_debugger;
+#endif
 
 	int m_fastForward = false;
 	int m_fastForwardForced = false;
@@ -305,8 +321,7 @@ private:
 	VFile* m_vlVf = nullptr;
 
 #ifdef M_CORE_GB
-	struct QGBPrinter {
-		GBPrinter d;
+	struct QGBPrinter : public GBPrinter {
 		CoreController* parent;
 	} m_printer;
 #endif

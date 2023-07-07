@@ -1,20 +1,30 @@
+# Generic files
 .DS_Store
 *.user*
 *~
 *.swp
 *.pyc
 
+# Build directories
 /build
 /build-*
 /.vs
 
+# Build files
 *.a
 *.dylib
 *.dll
+*.lib
 *.exe
 *.o
 *.so
 CMakeCache.txt
 CMakeFiles
 CMakeSettings.json
+cmake_install.cmake
+hle-bios.bin
 version.c
+
+# Runtime generated cruft
+*.sav
+*.ss0

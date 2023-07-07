@@ -551,7 +551,7 @@ struct display
    png_structp    original_pp;       /* used on the original read */
    png_infop      original_ip;       /* set by the original read */
 
-   png_size_t     original_rowbytes; /* of the original rows: */
+   size_t         original_rowbytes; /* of the original rows: */
    png_bytepp     original_rows;     /* from the original read */
 
    /* Original chunks valid */
@@ -807,7 +807,7 @@ display_cache_file(struct display *dp, const char *filename)
 
 static void
 buffer_read(struct display *dp, struct buffer *bp, png_bytep data,
-   png_size_t size)
+   size_t size)
 {
    struct buffer_list *last = bp->current;
    size_t read_count = bp->read_count;
@@ -855,7 +855,7 @@ buffer_read(struct display *dp, struct buffer *bp, png_bytep data,
 }
 
 static void PNGCBAPI
-read_function(png_structp pp, png_bytep data, png_size_t size)
+read_function(png_structp pp, png_bytep data, size_t size)
 {
    buffer_read(get_dp(pp), get_buffer(pp), data, size);
 }
@@ -927,7 +927,7 @@ update_display(struct display *dp)
    png_structp pp;
    png_infop   ip;
 
-   /* Now perform the initial read with a 0 tranform. */
+   /* Now perform the initial read with a 0 transform. */
    read_png(dp, &dp->original_file, "original read", 0/*no transform*/);
 
    /* Move the result to the 'original' fields */
@@ -1267,7 +1267,7 @@ compare_read(struct display *dp, int applied_transforms)
 #ifdef PNG_WRITE_PNG_SUPPORTED
 static void
 buffer_write(struct display *dp, struct buffer *buffer, png_bytep data,
-   png_size_t size)
+   size_t size)
    /* Generic write function used both from the write callback provided to
     * libpng and from the generic read code.
     */
@@ -1311,7 +1311,7 @@ buffer_write(struct display *dp, struct buffer *buffer, png_bytep data,
 }
 
 static void PNGCBAPI
-write_function(png_structp pp, png_bytep data, png_size_t size)
+write_function(png_structp pp, png_bytep data, size_t size)
 {
    buffer_write(get_dp(pp), get_buffer(pp), data, size);
 }
@@ -1446,7 +1446,7 @@ test_one_file(struct display *dp, const char *filename)
        * unsigned, because some transforms are negative on a 16-bit system.
        */
       unsigned int active = dp->active_transforms;
-      const int exhaustive = (dp->options & EXHAUSTIVE) != 0;
+      int exhaustive = (dp->options & EXHAUSTIVE) != 0;
       unsigned int current = first_transform(active);
       unsigned int bad_transforms = 0;
       unsigned int bad_combo = ~0U;    /* bitwise AND of failing transforms */
@@ -1572,7 +1572,7 @@ do_test(struct display *dp, const char *file)
 }
 
 int
-main(const int argc, const char * const * const argv)
+main(int argc, char **argv)
 {
    /* For each file on the command line test it with a range of transforms */
    int option_end, ilog = 0;
@@ -1674,7 +1674,7 @@ main(const int argc, const char * const * const argv)
          /* Here on any return, including failures, except user/internal issues
           */
          {
-            const int pass = (d.options & STRICT) ?
+            int pass = (d.options & STRICT) ?
                RESULT_STRICT(d.results) : RESULT_RELAXED(d.results);
 
             if (!pass)

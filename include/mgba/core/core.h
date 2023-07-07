@@ -65,8 +65,13 @@ struct mCore {
 	void (*setSync)(struct mCore*, struct mCoreSync*);
 	void (*loadConfig)(struct mCore*, const struct mCoreConfig*);
 	void (*reloadConfigOption)(struct mCore*, const char* option, const struct mCoreConfig*);
+	void (*setOverride)(struct mCore*, const void* override);
 
-	void (*desiredVideoDimensions)(const struct mCore*, unsigned* width, unsigned* height);
+	void (*baseVideoSize)(const struct mCore*, unsigned* width, unsigned* height);
+	void (*currentVideoSize)(const struct mCore*, unsigned* width, unsigned* height);
+	unsigned (*videoScale)(const struct mCore*);
+	size_t (*screenRegions)(const struct mCore*, const struct mCoreScreenRegion**);
+
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
 	void (*setVideoGLTex)(struct mCore*, unsigned texid);
 
@@ -86,6 +91,7 @@ struct mCore {
 	bool (*loadSave)(struct mCore*, struct VFile* vf);
 	bool (*loadTemporarySave)(struct mCore*, struct VFile* vf);
 	void (*unloadROM)(struct mCore*);
+	size_t (*romSize)(const struct mCore*);
 	void (*checksum)(const struct mCore*, void* data, enum mCoreChecksumType type);
 
 	bool (*loadBIOS)(struct mCore*, struct VFile* vf, int biosID);
@@ -105,6 +111,7 @@ struct mCore {
 	void (*setKeys)(struct mCore*, uint32_t keys);
 	void (*addKeys)(struct mCore*, uint32_t keys);
 	void (*clearKeys)(struct mCore*, uint32_t keys);
+	uint32_t (*getKeys)(struct mCore*);
 
 	uint32_t (*frameCounter)(const struct mCore*);
 	int32_t (*frameCycles)(const struct mCore*);
@@ -114,6 +121,7 @@ struct mCore {
 	void (*getGameCode)(const struct mCore*, char* title);
 
 	void (*setPeripheral)(struct mCore*, int type, void*);
+	void* (*getPeripheral)(struct mCore*, int type);
 
 	uint32_t (*busRead8)(struct mCore*, uint32_t address);
 	uint32_t (*busRead16)(struct mCore*, uint32_t address);
@@ -133,6 +141,10 @@ struct mCore {
 
 	size_t (*listMemoryBlocks)(const struct mCore*, const struct mCoreMemoryBlock**);
 	void* (*getMemoryBlock)(struct mCore*, size_t id, size_t* sizeOut);
+
+	size_t (*listRegisters)(const struct mCore*, const struct mCoreRegisterInfo**);
+	bool (*readRegister)(const struct mCore*, const char* name, void* out);
+	bool (*writeRegister)(struct mCore*, const char* name, const void* in);
 
 #ifdef USE_DEBUGGERS
 	bool (*supportsDebuggerType)(struct mCore*, enum mDebuggerType);
@@ -176,12 +188,15 @@ bool mCoreAutoloadSave(struct mCore* core);
 bool mCoreAutoloadPatch(struct mCore* core);
 bool mCoreAutoloadCheats(struct mCore* core);
 
+bool mCoreLoadSaveFile(struct mCore* core, const char* path, bool temporary);
+
 bool mCoreSaveState(struct mCore* core, int slot, int flags);
 bool mCoreLoadState(struct mCore* core, int slot, int flags);
 struct VFile* mCoreGetState(struct mCore* core, int slot, bool write);
 void mCoreDeleteState(struct mCore* core, int slot);
 
 void mCoreTakeScreenshot(struct mCore* core);
+bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf);
 #endif
 
 struct mCore* mCoreFindVF(struct VFile* vf);

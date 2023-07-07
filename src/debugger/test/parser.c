@@ -9,7 +9,7 @@
 
 struct LPTest {
 	struct LexVector lv;
-	struct ParseTree tree;
+	struct ParseTree* tree;
 };
 
 #define PARSE(STR) \
@@ -18,7 +18,8 @@ struct LPTest {
 	LexVectorClear(&lp->lv); \
 	size_t adjusted = lexExpression(&lp->lv, STR, strlen(STR), ""); \
 	assert_false(adjusted > strlen(STR)); \
-	struct ParseTree* tree = &lp->tree; \
+	lp->tree = malloc(sizeof(*lp->tree)); \
+	struct ParseTree* tree = lp->tree; \
 	parseLexedExpression(tree, &lp->lv)
 
 static int parseSetup(void** state) {
@@ -30,7 +31,7 @@ static int parseSetup(void** state) {
 
 static int parseTeardown(void** state) {
 	struct LPTest* lp = *state;
-	parseFree(&lp->tree);
+	parseFree(lp->tree);
 	lexFree(&lp->lv);
 	LexVectorDeinit(&lp->lv);
 	free(lp);

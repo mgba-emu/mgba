@@ -1,13 +1,9 @@
 # Makefile for zlib using Microsoft (Visual) C
-# zlib is copyright (C) 1995-2006 Jean-loup Gailly and Mark Adler
+# zlib is copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler
 #
 # Usage:
 #   nmake -f win32/Makefile.msc                          (standard build)
 #   nmake -f win32/Makefile.msc LOC=-DFOO                (nonstandard build)
-#   nmake -f win32/Makefile.msc LOC="-DASMV -DASMINF" \
-#         OBJA="inffas32.obj match686.obj"               (use ASM code, x86)
-#   nmake -f win32/Makefile.msc AS=ml64 LOC="-DASMV -DASMINF -I." \
-#         OBJA="inffasx64.obj gvmat64.obj inffas8664.obj"  (use ASM code, x64)
 
 # The toplevel directory of the source tree.
 #

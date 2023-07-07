@@ -23,6 +23,9 @@
 #include "LoadSaveState.h"
 #include "LogController.h"
 #include "SettingsView.h"
+#ifdef ENABLE_SCRIPTING
+#include "scripting/ScriptingController.h"
+#endif
 
 namespace QGBA {
 
@@ -113,6 +116,10 @@ public slots:
 	void gdbOpen();
 #endif
 
+#ifdef ENABLE_SCRIPTING
+	void scriptingOpen();
+#endif
+
 protected:
 	virtual void keyPressEvent(QKeyEvent* event) override;
 	virtual void keyReleaseEvent(QKeyEvent* event) override;
@@ -160,7 +167,7 @@ private:
 	void openStateWindow(LoadSave);
 
 	void attachWidget(QWidget* widget);
-	void detachWidget(QWidget* widget);
+	void detachWidget();
 
 	void appendMRU(const QString& fname);
 	void clearMRU();
@@ -180,7 +187,6 @@ private:
 
 	void updateTitle(float fps = -1);
 
-	QString getFilters() const;
 	QString getFiltersArchive() const;
 
 	CoreManager* m_manager;
@@ -188,6 +194,7 @@ private:
 	std::unique_ptr<AudioProcessor> m_audioProcessor;
 
 	std::unique_ptr<QGBA::Display> m_display;
+	QSize m_initialSize;
 	int m_savedScale;
 
 	// TODO: Move these to a new class
@@ -215,7 +222,7 @@ private:
 	QTimer m_fpsTimer;
 	QTimer m_mustRestart;
 	QTimer m_mustReset;
-	QList<QString> m_mruFiles;
+	QStringList m_mruFiles;
 	ShortcutController* m_shortcutController;
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	std::unique_ptr<ShaderSelector> m_shaderView;
@@ -252,6 +259,10 @@ private:
 #ifdef USE_SQLITE3
 	LibraryController* m_libraryView;
 #endif
+
+#ifdef ENABLE_SCRIPTING
+	std::unique_ptr<ScriptingController> m_scripting;
+#endif
 };
 
 class WindowBackground : public QWidget {
@@ -266,7 +277,6 @@ public:
 	void setDimensions(int width, int height);
 	void setLockIntegerScaling(bool lock);
 	void setLockAspectRatio(bool lock);
-	void filter(bool filter);
 
 	const QPixmap& pixmap() const { return m_pixmap; }
 
@@ -278,9 +288,6 @@ private:
 	QSize m_sizeHint;
 	int m_aspectWidth;
 	int m_aspectHeight;
-	bool m_lockAspectRatio;
-	bool m_lockIntegerScaling;
-	bool m_filter;
 };
 
 }

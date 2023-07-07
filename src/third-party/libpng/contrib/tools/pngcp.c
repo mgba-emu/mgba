@@ -191,7 +191,7 @@ vl_strategy[] =
    /* This controls the order of search. */
    { "huffman", Z_HUFFMAN_ONLY },
    { "RLE", Z_RLE },
-   { "fixed", Z_FIXED }, /* the remainder do window searchs */
+   { "fixed", Z_FIXED }, /* the remainder do window searches */
    { "filtered", Z_FILTERED },
    { "default", Z_DEFAULT_STRATEGY },
    { all, 0 }
@@ -336,7 +336,7 @@ static const option options[] =
 #  define VLC(name) VLCIDAT(name) VLCiCCP(name) VLCzTXt(name)
 
 #  ifdef PNG_SW_COMPRESS_png_level
-      /* The libpng compression level isn't searched beause it justs sets the
+      /* The libpng compression level isn't searched because it justs sets the
        * other things that are searched!
        */
       VLO("compression", compression, 0)
@@ -735,7 +735,7 @@ option_index(struct display *dp, const char *opt, size_t len)
 static int
 get_option(struct display *dp, const char *opt, int *value)
 {
-   const png_byte i = option_index(dp, opt, strlen(opt));
+   png_byte i = option_index(dp, opt, strlen(opt));
 
    if (dp->entry[i]) /* option was set on command line */
    {
@@ -789,7 +789,7 @@ record_opt(struct display *dp, png_byte opt, const char *entry_name)
     * numerical value.
     */
 {
-   const unsigned int sp = dp->csp; /* stack entry of next searched option */
+   unsigned int sp = dp->csp; /* stack entry of next searched option */
 
    if (sp >= dp->tsp)
    {
@@ -797,7 +797,7 @@ record_opt(struct display *dp, png_byte opt, const char *entry_name)
        * searched entry or the start of the dp->curr buffer if there is nothing
        * on the stack yet (sp == 0).
        */
-      const int offset = set_opt_string_(dp, sp, opt, entry_name);
+      int offset = set_opt_string_(dp, sp, opt, entry_name);
 
       if (sp > 0)
          dp->stack[sp-1].opt_string_end = offset;
@@ -1222,7 +1222,7 @@ advance_opt(struct display *dp, png_byte opt, int search)
 }
 
 static int
-getallopts_(struct display *dp, const png_byte opt, int *value, int record)
+getallopts_(struct display *dp, png_byte opt, int *value, int record)
    /* Like getop but iterate over all the values if the option was set to "all".
     */
 {
@@ -1259,7 +1259,7 @@ getsearchopts(struct display *dp, const char *opt_str, int *value)
    /* As above except that if the option was not set try a search */
 {
    png_byte istrat;
-   const png_byte opt = option_index(dp, opt_str, strlen(opt_str));
+   png_byte opt = option_index(dp, opt_str, strlen(opt_str));
    int record = options[opt].search;
    const char *entry_name;
 
@@ -1725,7 +1725,7 @@ display_start_read(struct display *dp, const char *filename)
 }
 
 static void PNGCBAPI
-read_function(png_structp pp, png_bytep data, png_size_t size)
+read_function(png_structp pp, png_bytep data, size_t size)
 {
    struct display *dp = get_dp(pp);
 
@@ -1881,7 +1881,7 @@ display_start_write(struct display *dp, const char *filename)
 }
 
 static void PNGCBAPI
-write_function(png_structp pp, png_bytep data, png_size_t size)
+write_function(png_structp pp, png_bytep data, size_t size)
 {
    struct display *dp = get_dp(pp);
 
@@ -2117,7 +2117,7 @@ better_options(const struct display *dp)
     *
     * This function looks through the stack from the bottom up looking for an
     * option that does not match the current best value.  When it finds one it
-    * checks to see if it is more or less desireable and returns true or false
+    * checks to see if it is more or less desirable and returns true or false
     * as appropriate.
     *
     * Notice that this means that the order options are pushed onto the stack
@@ -2220,7 +2220,7 @@ cp_one_file(struct display *dp, const char *filename, const char *destname)
    strcpy(dp->best, dp->curr);
    dp->best_size = dp->write_size;
 
-   if (dp->nsp > 0) /* interating over lists */
+   if (dp->nsp > 0) /* iterating over lists */
    {
       char *tmpname, tmpbuf[(sizeof dp->namebuf) + 4];
       assert(dp->curr[0] == ' ' && dp->tsp > 0);
@@ -2302,7 +2302,7 @@ cppng(struct display *dp, const char *file, const char *gv dest)
 }
 
 int
-main(const int argc, const char * const * const argv)
+main(int argc, char **argv)
 {
    /* For each file on the command line test it with a range of transforms */
    int option_end;
@@ -2379,7 +2379,7 @@ main(const int argc, const char * const * const argv)
          /* Here on any return, including failures, except user/internal issues
           */
          {
-            const int pass = (d.options & STRICT) ?
+            int pass = (d.options & STRICT) ?
                RESULT_STRICT(d.results) : RESULT_RELAXED(d.results);
 
             if (!pass)

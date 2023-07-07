@@ -116,14 +116,16 @@ void ObjView::updateTilesGBA(bool force) {
 	if (GBAObjAttributesAIs256Color(obj->a)) {
 		m_ui.palette->setText("256-color");
 		m_ui.tile->setBoundary(1024, 1, 3);
-		m_ui.tile->setPalette(0);
 		m_boundary = 1024;
 		tileBase *= 2;
+		m_ui.tile->setMaxTile(1536);
+		m_ui.tile->setPalette(0);
 	} else {
 		m_ui.palette->setText(QString::number(newInfo.paletteId));
 		m_ui.tile->setBoundary(2048, 0, 2);
-		m_ui.tile->setPalette(newInfo.paletteId);
 		m_boundary = 2048;
+		m_ui.tile->setMaxTile(3072);
+		m_ui.tile->setPalette(newInfo.paletteId);
 	}
 	if (newInfo != m_objInfo) {
 		force = true;
@@ -155,7 +157,7 @@ void ObjView::updateTilesGBA(bool force) {
 	m_ui.w->setText(QString::number(newInfo.width * 8));
 	m_ui.h->setText(QString::number(newInfo.height * 8));
 
-	m_ui.address->setText(tr("0x%0").arg(BASE_OAM + m_objId * sizeof(*obj), 8, 16, QChar('0')));
+	m_ui.address->setText(tr("0x%0").arg(GBA_BASE_OAM + m_objId * sizeof(*obj), 8, 16, QChar('0')));
 	m_ui.priority->setText(QString::number(newInfo.priority));
 	m_ui.flippedH->setChecked(newInfo.hflip);
 	m_ui.flippedV->setChecked(newInfo.vflip);
@@ -225,6 +227,7 @@ void ObjView::updateTilesGB(bool force) {
 	m_objInfo = newInfo;
 	m_tileOffset = tile;
 	m_boundary = 1024;
+	m_ui.tile->setMaxTile(512);
 
 	int i = 0;
 	m_ui.tile->setPalette(newInfo.paletteId);

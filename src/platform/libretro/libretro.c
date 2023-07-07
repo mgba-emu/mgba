@@ -346,7 +346,7 @@ static void _doDeferredSetup(void) {
 	// On the off-hand chance that a core actually expects its buffers to be populated when
 	// you actually first get them, you're out of luck without workarounds. Yup, seriously.
 	// Here's that workaround, but really the API needs to be thrown out and rewritten.
-	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
+	struct VFile* save = VFileFromMemory(savedata, GBA_SIZE_FLASH1M);
 	if (!core->loadSave(core, save)) {
 		save->close(save);
 	}
@@ -414,19 +414,13 @@ void retro_get_system_info(struct retro_system_info* info) {
 
 void retro_get_system_av_info(struct retro_system_av_info* info) {
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
 	info->geometry.base_width = width;
 	info->geometry.base_height = height;
-#ifdef M_CORE_GB
-	if (core->platform(core) == mPLATFORM_GB) {
-		info->geometry.max_width = 256;
-		info->geometry.max_height = 224;
-	} else
-#endif
-	{
-		info->geometry.max_width = width;
-		info->geometry.max_height = height;
-	}
+
+	core->baseVideoSize(core, &width, &height);
+	info->geometry.max_width = width;
+	info->geometry.max_height = height;
 
 	info->geometry.aspect_ratio = width / (double) height;
 	info->timing.fps = core->frequency(core) / (float) core->frameCycles(core);
@@ -614,8 +608,41 @@ void retro_run(void) {
 
 	core->runFrame(core);
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
 	videoCallback(outputBuffer, width, height, BYTES_PER_PIXEL * 256);
+
+#ifdef M_CORE_GBA
+	if (core->platform(core) == mPLATFORM_GBA) {
+		blip_t *audioChannelLeft  = core->getAudioChannel(core, 0);
+		blip_t *audioChannelRight = core->getAudioChannel(core, 1);
+		int samplesAvail          = blip_samples_avail(audioChannelLeft);
+		if (samplesAvail > 0) {
+			/* Update 'running average' of number of
+			 * samples per frame.
+			 * Note that this is not a true running
+			 * average, but just a leaky-integrator/
+			 * exponential moving average, used because
+			 * it is simple and fast (i.e. requires no
+			 * window of samples). */
+			audioSamplesPerFrameAvg = (SAMPLES_PER_FRAME_MOVING_AVG_ALPHA * (float)samplesAvail) +
+					((1.0f - SAMPLES_PER_FRAME_MOVING_AVG_ALPHA) * audioSamplesPerFrameAvg);
+			size_t samplesToRead = (size_t)(audioSamplesPerFrameAvg);
+			/* Resize audio output buffer, if required */
+			if (audioSampleBufferSize < (samplesToRead * 2)) {
+				audioSampleBufferSize = (samplesToRead * 2);
+				audioSampleBuffer     = realloc(audioSampleBuffer, audioSampleBufferSize * sizeof(int16_t));
+			}
+			int produced = blip_read_samples(audioChannelLeft, audioSampleBuffer, samplesToRead, true);
+			blip_read_samples(audioChannelRight, audioSampleBuffer + 1, samplesToRead, true);
+			if (produced > 0) {
+				if (audioLowPassEnabled) {
+					_audioLowPassFilter(audioSampleBuffer, produced);
+				}
+				audioCallback(audioSampleBuffer, (size_t)produced);
+			}
+		}
+	}
+#endif
 
 	if (rumbleCallback) {
 		if (rumbleUp) {
@@ -643,66 +670,66 @@ static void _setupMaps(struct mCore* core) {
 
 		/* Map internal working RAM */
 		descs[0].ptr    = gba->memory.iwram;
-		descs[0].start  = BASE_WORKING_IRAM;
-		descs[0].len    = SIZE_WORKING_IRAM;
+		descs[0].start  = GBA_BASE_IWRAM;
+		descs[0].len    = GBA_SIZE_IWRAM;
 		descs[0].select = 0xFF000000;
 
 		/* Map working RAM */
 		descs[1].ptr    = gba->memory.wram;
-		descs[1].start  = BASE_WORKING_RAM;
-		descs[1].len    = SIZE_WORKING_RAM;
+		descs[1].start  = GBA_BASE_EWRAM;
+		descs[1].len    = GBA_SIZE_EWRAM;
 		descs[1].select = 0xFF000000;
 
 		/* Map save RAM */
 		/* TODO: if SRAM is flash, use start=0 addrspace="S" instead */
 		descs[2].ptr    = savedataSize ? savedata : NULL;
-		descs[2].start  = BASE_CART_SRAM;
+		descs[2].start  = GBA_BASE_SRAM;
 		descs[2].len    = savedataSize;
 
 		/* Map ROM */
 		descs[3].ptr    = gba->memory.rom;
-		descs[3].start  = BASE_CART0;
+		descs[3].start  = GBA_BASE_ROM0;
 		descs[3].len    = romSize;
 		descs[3].flags  = RETRO_MEMDESC_CONST;
 
 		descs[4].ptr    = gba->memory.rom;
-		descs[4].start  = BASE_CART1;
+		descs[4].start  = GBA_BASE_ROM1;
 		descs[4].len    = romSize;
 		descs[4].flags  = RETRO_MEMDESC_CONST;
 
 		descs[5].ptr    = gba->memory.rom;
-		descs[5].start  = BASE_CART2;
+		descs[5].start  = GBA_BASE_ROM2;
 		descs[5].len    = romSize;
 		descs[5].flags  = RETRO_MEMDESC_CONST;
 
 		/* Map BIOS */
 		descs[6].ptr    = gba->memory.bios;
-		descs[6].start  = BASE_BIOS;
-		descs[6].len    = SIZE_BIOS;
+		descs[6].start  = GBA_BASE_BIOS;
+		descs[6].len    = GBA_SIZE_BIOS;
 		descs[6].flags  = RETRO_MEMDESC_CONST;
 
 		/* Map VRAM */
 		descs[7].ptr    = gba->video.vram;
-		descs[7].start  = BASE_VRAM;
-		descs[7].len    = SIZE_VRAM;
+		descs[7].start  = GBA_BASE_VRAM;
+		descs[7].len    = GBA_SIZE_VRAM;
 		descs[7].select = 0xFF000000;
 
 		/* Map palette RAM */
 		descs[8].ptr    = gba->video.palette;
-		descs[8].start  = BASE_PALETTE_RAM;
-		descs[8].len    = SIZE_PALETTE_RAM;
+		descs[8].start  = GBA_BASE_PALETTE_RAM;
+		descs[8].len    = GBA_SIZE_PALETTE_RAM;
 		descs[8].select = 0xFF000000;
 
 		/* Map OAM */
 		descs[9].ptr    = &gba->video.oam; /* video.oam is a structure */
-		descs[9].start  = BASE_OAM;
-		descs[9].len    = SIZE_OAM;
+		descs[9].start  = GBA_BASE_OAM;
+		descs[9].len    = GBA_SIZE_OAM;
 		descs[9].select = 0xFF000000;
 
 		/* Map mmapped I/O */
 		descs[10].ptr    = gba->memory.io;
-		descs[10].start  = BASE_IO;
-		descs[10].len    = SIZE_IO;
+		descs[10].start  = GBA_BASE_IO;
+		descs[10].len    = GBA_SIZE_IO;
 
 		mmaps.descriptors = descs;
 		mmaps.num_descriptors = sizeof(descs) / sizeof(descs[0]);
@@ -897,8 +924,8 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->setPeripheral(core, mPERIPH_RUMBLE, &rumble);
 	core->setPeripheral(core, mPERIPH_ROTATION, &rotation);
 
-	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
-	memset(savedata, 0xFF, SIZE_CART_FLASH1M);
+	savedata = anonymousMemoryMap(GBA_SIZE_FLASH1M);
+	memset(savedata, 0xFF, GBA_SIZE_FLASH1M);
 
 	_reloadSettings();
 	core->loadROM(core, rom);
@@ -975,7 +1002,7 @@ void retro_unload_game(void) {
 	core->deinit(core);
 	mappedMemoryFree(data, dataSize);
 	data = 0;
-	mappedMemoryFree(savedata, SIZE_CART_FLASH1M);
+	mappedMemoryFree(savedata, GBA_SIZE_FLASH1M);
 	savedata = 0;
 }
 
@@ -1130,7 +1157,7 @@ size_t retro_get_memory_size(unsigned id) {
 		case mPLATFORM_GBA:
 			switch (((struct GBA*) core->board)->memory.savedata.type) {
 			case SAVEDATA_AUTODETECT:
-				return SIZE_CART_FLASH1M;
+				return GBA_SIZE_FLASH1M;
 			default:
 				return GBASavedataSize(&((struct GBA*) core->board)->memory.savedata);
 			}
@@ -1329,7 +1356,7 @@ static void _startImage(struct mImageSource* image, unsigned w, unsigned h, int 
 
 static void _stopImage(struct mImageSource* image) {
 	UNUSED(image);
-	cam.stop();	
+	cam.stop();
 }
 
 static void _requestImage(struct mImageSource* image, const void** buffer, size_t* stride, enum mColorFormat* colorFormat) {
@@ -1359,8 +1386,8 @@ static void _updateRotation(struct mRotationSource* source) {
 	gyroZ = 0;
 	_initSensors();
 	if (tiltEnabled) {
-		tiltX = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_X) * 3e8f;
-		tiltY = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_Y) * -3e8f;
+		tiltX = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_X) * -2e8f;
+		tiltY = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_Y) * 2e8f;
 	}
 	if (gyroEnabled) {
 		gyroZ = sensorGetCallback(0, RETRO_SENSOR_GYROSCOPE_Z) * -1.1e9f;

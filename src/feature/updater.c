@@ -78,21 +78,14 @@ static void _updateMatch(const char* key, const char* value, void* user) {
 		return;
 	}
 	const char* item = &key[dotLoc + 1];
-
-	struct Table* out = user;
-	struct mUpdate* update = HashTableLookup(out, match->channel);
-	if (!update) {
-		update = calloc(1, sizeof(*update));
-		HashTableInsert(out, match->channel, update);
-	}
-	_updateUpdate(update, item, value);
+	_updateUpdate(match->out, item, value);
 }
 
 bool mUpdaterInit(struct mUpdaterContext* context, const char* manifest) {
 	ConfigurationInit(&context->manifest);
 
 	struct VFile* vf = VFileFromConstMemory(manifest, strlen(manifest) + 1);
-	bool success = vf && ConfigurationReadVFile(&context->manifest, vf);
+	bool success = ConfigurationReadVFile(&context->manifest, vf);
 	vf->close(vf);
 	if (!success) {
 		ConfigurationDeinit(&context->manifest);
@@ -155,7 +148,7 @@ bool mUpdateLoad(const struct mCoreConfig* config, const char* prefix, struct mU
 	snprintf(key, sizeof(key), "%s.path", prefix);
 	update->path = mCoreConfigGetValue(config, key);
 	snprintf(key, sizeof(key), "%s.size", prefix);
-	uint32_t size = 0;
+	unsigned size = 0;
 	mCoreConfigGetUIntValue(config, key, &size);
 	if (!update->path && !size) {
 		return false;

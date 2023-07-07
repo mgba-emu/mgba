@@ -151,7 +151,9 @@ static bool _vffSync(struct VFile* vf, void* buffer, size_t size) {
 		fseek(vff->file, 0, SEEK_SET);
 		size_t res = fwrite(buffer, size, 1, vff->file);
 		fseek(vff->file, pos, SEEK_SET);
-		return res == 1;
+		if (res != 1) {
+			return false;
+		}
 	}
 	return fflush(vff->file) == 0;
 }

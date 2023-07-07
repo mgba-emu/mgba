@@ -32,11 +32,12 @@
 #include <QTimer>
 
 #include <array>
+#include <memory>
 
 #include "CoreController.h"
 #include "VideoProxy.h"
 
-#include "platform/video-backend.h"
+#include <mgba/feature/video-backend.h>
 
 class QOpenGLPaintDevice;
 class QOpenGLWidget;
@@ -49,9 +50,15 @@ class mGLWidget : public QOpenGLWidget {
 Q_OBJECT
 
 public:
+	mGLWidget(QWidget* parent = nullptr);
+	~mGLWidget();
+
 	void setTex(GLuint tex) { m_tex = tex; }
 	void setVBO(GLuint vbo) { m_vbo = vbo; }
-	void finalizeVAO();
+	void setMessagePainter(MessagePainter*);
+	void setShowOSD(bool showOSD);
+	bool finalizeVAO();
+	void reset();
 
 protected:
 	void initializeGL() override;
@@ -62,12 +69,15 @@ private:
 	GLuint m_vbo;
 
 	bool m_vaoDone = false;
-	QOpenGLVertexArrayObject m_vao;
-	QOpenGLShaderProgram m_program;
+	std::unique_ptr<QOpenGLVertexArrayObject> m_vao;
+	std::unique_ptr<QOpenGLShaderProgram> m_program;
 	GLuint m_positionLocation;
 
 	QTimer m_refresh;
 	int m_refreshResidue = 0;
+	std::unique_ptr<QOpenGLPaintDevice> m_paintDev;
+	MessagePainter* m_messagePainter = nullptr;
+	bool m_showOSD = false;
 };
 
 class PainterGL;
@@ -84,6 +94,7 @@ public:
 	VideoShader* shaders() override;
 	void setVideoProxy(std::shared_ptr<VideoProxy>) override;
 	int framebufferHandle() override;
+	QSize contentSize() const override { return m_cachedContentSize; }
 
 	static bool supportsFormat(const QSurfaceFormat&);
 
@@ -98,18 +109,24 @@ public slots:
 	void showOSDMessages(bool enable) override;
 	void showFrameCounter(bool enable) override;
 	void filter(bool filter) override;
+	void swapInterval(int interval) override;
 	void framePosted() override;
 	void setShaders(struct VDir*) override;
 	void clearShaders() override;
 	void resizeContext() override;
 	void setVideoScale(int scale) override;
+	void setBackgroundImage(const QImage&) override;
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override { forceDraw(); }
 	virtual void resizeEvent(QResizeEvent*) override;
 
+private slots:
+	void updateContentSize();
+
 private:
 	void resizePainter();
+	bool shouldDisableUpdates();
 
 	static QHash<QSurfaceFormat, bool> s_supports;
 
@@ -119,6 +136,7 @@ private:
 	QThread m_drawThread;
 	std::shared_ptr<CoreController> m_context;
 	mGLWidget* m_gl;
+	QSize m_cachedContentSize;
 };
 
 class PainterGL : public QObject {
@@ -133,8 +151,12 @@ public:
 	void setMessagePainter(MessagePainter*);
 	void enqueue(const uint32_t* backing);
 
+	void stop();
+
 	bool supportsShaders() const { return m_supportsShaders; }
 	int glTex();
+
+	QOpenGLContext* shareContext();
 
 	void setVideoProxy(std::shared_ptr<VideoProxy>);
 	void interrupt();
@@ -146,7 +168,6 @@ public slots:
 	void forceDraw();
 	void draw();
 	void start();
-	void stop();
 	void pause();
 	void unpause();
 	void resize(const QSize& size);
@@ -156,30 +177,41 @@ public slots:
 	void showOSD(bool enable);
 	void showFrameCounter(bool enable);
 	void filter(bool filter);
+	void swapInterval(int interval);
 	void resizeContext();
+	void setBackgroundImage(const QImage&);
 
 	void setShaders(struct VDir*);
 	void clearShaders();
 	VideoShader* shaders();
+	QSize contentSize() const;
 
 signals:
+	void created();
 	void started();
+	void texSwapped();
+
+private slots:
+	void doStop();
 
 private:
 	void makeCurrent();
 	void performDraw();
 	void dequeue();
 	void dequeueAll(bool keep = false);
+	void recenterLayers();
 
 	std::array<std::array<uint32_t, 0x100000>, 3> m_buffers;
 	QList<uint32_t*> m_free;
 	QQueue<uint32_t*> m_queue;
 	uint32_t* m_buffer = nullptr;
+
 	QPainter m_painter;
 	QMutex m_mutex;
 	QWindow* m_window;
 	QSurface* m_surface;
 	QSurfaceFormat m_format;
+	QImage m_background;
 	std::unique_ptr<QOpenGLPaintDevice> m_paintDev;
 	std::unique_ptr<QOpenGLContext> m_gl;
 	int m_finalTexIdx = 0;
@@ -200,6 +232,7 @@ private:
 	MessagePainter* m_messagePainter = nullptr;
 	QElapsedTimer m_delayTimer;
 	std::shared_ptr<VideoProxy> m_videoProxy;
+	int m_swapInterval = -1;
 };
 
 }

@@ -80,7 +80,7 @@ Unterstützte Plattformen
 ------------------------
 
 - Windows 7 oder neuer
-- OS X 10.8 (Mountain Lion)[<sup>[3]</sup>](#osxver) oder neuer
+- OS X 10.9 (Mavericks)[<sup>[3]</sup>](#osxver) oder neuer
 - Linux
 - FreeBSD
 - Nintendo 3DS
@@ -234,7 +234,7 @@ Fußnoten
 
 <a name="flashdetect">[2]</a> In manchen Fällen ist es nicht möglich, die Größe des Flash-Speichers automatisch zu ermitteln. Diese kann dann zur Laufzeit konfiguriert werden, es wird jedoch empfohlen, den Fehler zu melden.
 
-<a name="osxver">[3]</a> 10.8 wird nur für die Qt-Portierung benötigt. Es ist wahrscheinlich möglich, die Qt-Portierung unter macOS 10.7 und älter zu bauen und zu nutzen, aber das wird nicht offiziell unterstützt. Die SDL-Portierung ist dafür bekannt, mit 10.7 und möglicherweise auf älteren Versionen zu funktionieren.
+<a name="osxver">[3]</a> 10.9 wird nur für die Qt-Portierung benötigt. Es ist wahrscheinlich möglich, die Qt-Portierung unter macOS 10.7 und älter zu bauen und zu nutzen, aber das wird nicht offiziell unterstützt. Die SDL-Portierung ist dafür bekannt, mit 10.7 und möglicherweise auf älteren Versionen zu funktionieren.
 
 [downloads]: http://mgba.io/downloads.html
 [source]: https://github.com/mgba-emu/mgba/

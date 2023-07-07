@@ -162,36 +162,7 @@ void GBIOReset(struct GB* gb) {
 	GBIOWrite(gb, GB_REG_TMA, 0);
 	GBIOWrite(gb, GB_REG_TAC, 0);
 	GBIOWrite(gb, GB_REG_IF, 1);
-	gb->audio.playingCh1 = false;
-	gb->audio.playingCh2 = false;
-	gb->audio.playingCh3 = false;
-	gb->audio.playingCh4 = false;
-	GBIOWrite(gb, GB_REG_NR52, 0xF1);
-	GBIOWrite(gb, GB_REG_NR14, 0x3F);
-	GBIOWrite(gb, GB_REG_NR10, 0x80);
-	GBIOWrite(gb, GB_REG_NR11, 0xBF);
-	GBIOWrite(gb, GB_REG_NR12, 0xF3);
-	GBIOWrite(gb, GB_REG_NR13, 0xF3);
-	GBIOWrite(gb, GB_REG_NR24, 0x3F);
-	GBIOWrite(gb, GB_REG_NR21, 0x3F);
-	GBIOWrite(gb, GB_REG_NR22, 0x00);
-	GBIOWrite(gb, GB_REG_NR34, 0x3F);
-	GBIOWrite(gb, GB_REG_NR30, 0x7F);
-	GBIOWrite(gb, GB_REG_NR31, 0xFF);
-	GBIOWrite(gb, GB_REG_NR32, 0x9F);
-	GBIOWrite(gb, GB_REG_NR44, 0x3F);
-	GBIOWrite(gb, GB_REG_NR41, 0xFF);
-	GBIOWrite(gb, GB_REG_NR42, 0x00);
-	GBIOWrite(gb, GB_REG_NR43, 0x00);
-	GBIOWrite(gb, GB_REG_NR50, 0x77);
-	GBIOWrite(gb, GB_REG_NR51, 0xF3);
-	if (!gb->biosVf) {
-		GBIOWrite(gb, GB_REG_LCDC, 0x91);
-		gb->memory.io[GB_REG_BANK] = 1;
-	} else {
-		GBIOWrite(gb, GB_REG_LCDC, 0x00);
-		gb->memory.io[GB_REG_BANK] = 0xFF;
-	}
+	GBIOWrite(gb, GB_REG_LCDC, 0x00);
 	GBIOWrite(gb, GB_REG_SCY, 0x00);
 	GBIOWrite(gb, GB_REG_SCX, 0x00);
 	GBIOWrite(gb, GB_REG_LYC, 0x00);
@@ -203,6 +174,7 @@ void GBIOReset(struct GB* gb) {
 	}
 	GBIOWrite(gb, GB_REG_WY, 0x00);
 	GBIOWrite(gb, GB_REG_WX, 0x00);
+	gb->memory.io[GB_REG_BANK] = 0xFF;
 	if (gb->model & GB_MODEL_CGB) {
 		GBIOWrite(gb, GB_REG_KEY0, 0);
 		GBIOWrite(gb, GB_REG_JOYP, 0xFF);
@@ -403,9 +375,10 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 	case GB_REG_WAVE_D:
 	case GB_REG_WAVE_E:
 	case GB_REG_WAVE_F:
-		if (!gb->audio.playingCh3 || gb->audio.style != GB_AUDIO_DMG) {
+		GBAudioRun(&gb->audio, mTimingCurrentTime(gb->audio.timing), 0x4);
+		if (!gb->audio.playingCh3) {
 			gb->audio.ch3.wavedata8[address - GB_REG_WAVE_0] = value;
-		} else if(gb->audio.ch3.readable) {
+		} else if (gb->audio.ch3.readable || gb->audio.style == GB_AUDIO_CGB) {
 			gb->audio.ch3.wavedata8[gb->audio.ch3.window >> 1] = value;
 		}
 		break;
@@ -518,7 +491,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				return;
 			case GB_REG_SVBK:
 				GBMemorySwitchWramBank(&gb->memory, value);
-				value = gb->memory.wramCurrentBank;
+				value &= 7;
 				break;
 			default:
 				goto failed;
@@ -607,7 +580,8 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 	case GB_REG_WAVE_E:
 	case GB_REG_WAVE_F:
 		if (gb->audio.playingCh3) {
-			if (gb->audio.ch3.readable || gb->audio.style != GB_AUDIO_DMG) {
+			GBAudioRun(&gb->audio, mTimingCurrentTime(gb->audio.timing), 0x4);
+			if (gb->audio.ch3.readable || gb->audio.style == GB_AUDIO_CGB) {
 				return gb->audio.ch3.wavedata8[gb->audio.ch3.window >> 1];
 			} else {
 				return 0xFF;
@@ -620,6 +594,7 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 		if (gb->model < GB_MODEL_CGB) {
 			mLOG(GB_IO, GAME_ERROR, "Reading from CGB register FF%02X in DMG mode", address);
 		} else if (gb->audio.enable) {
+			GBAudioRun(&gb->audio, mTimingCurrentTime(gb->audio.timing), 0x3);
 			return (gb->audio.ch1.sample) | (gb->audio.ch2.sample << 4);
 		}
 		break;
@@ -627,7 +602,7 @@ uint8_t GBIORead(struct GB* gb, unsigned address) {
 		if (gb->model < GB_MODEL_CGB) {
 			mLOG(GB_IO, GAME_ERROR, "Reading from CGB register FF%02X in DMG mode", address);
 		} else if (gb->audio.enable) {
-			GBAudioUpdateChannel4(&gb->audio);
+			GBAudioRun(&gb->audio, mTimingCurrentTime(gb->audio.timing), 0xC);
 			return (gb->audio.ch3.sample) | (gb->audio.ch4.sample << 4);
 		}
 		break;
@@ -751,7 +726,7 @@ void GBIODeserialize(struct GB* gb, const struct GBSerializedState* state) {
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, GB_REG_SCX, state->io[GB_REG_SCX]);
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, GB_REG_WY, state->io[GB_REG_WY]);
 	gb->video.renderer->writeVideoRegister(gb->video.renderer, GB_REG_WX, state->io[GB_REG_WX]);
-	if (gb->model & GB_MODEL_SGB) {
+	if (gb->model == GB_MODEL_SGB) {
 		gb->video.renderer->writeVideoRegister(gb->video.renderer, GB_REG_BGP, state->io[GB_REG_BGP]);
 		gb->video.renderer->writeVideoRegister(gb->video.renderer, GB_REG_OBP0, state->io[GB_REG_OBP0]);
 		gb->video.renderer->writeVideoRegister(gb->video.renderer, GB_REG_OBP1, state->io[GB_REG_OBP1]);

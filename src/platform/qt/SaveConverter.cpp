@@ -197,20 +197,25 @@ void SaveConverter::detectFromSavestate(VFile* vf) {
 void SaveConverter::detectFromSize(std::shared_ptr<VFileDevice> vf) {
 #ifdef M_CORE_GBA
 	switch (vf->size()) {
-	case SIZE_CART_SRAM:
+	case GBA_SIZE_SRAM:
+	case GBA_SIZE_SRAM + 16:
 		m_validSaves.append(AnnotatedSave{SAVEDATA_SRAM, vf});
 		break;
-	case SIZE_CART_FLASH512:
+	case GBA_SIZE_FLASH512:
+	case GBA_SIZE_FLASH512 + 16:
 		m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH512, vf});
 		break;
-	case SIZE_CART_FLASH1M:
+	case GBA_SIZE_FLASH1M:
+	case GBA_SIZE_FLASH1M + 16:
 		m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, vf});
 		break;
-	case SIZE_CART_EEPROM:
+	case GBA_SIZE_EEPROM:
+	case GBA_SIZE_EEPROM + 16:
 		m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, vf, Endian::LITTLE});
 		m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, vf, Endian::BIG});
 		break;
-	case SIZE_CART_EEPROM512:
+	case GBA_SIZE_EEPROM512:
+	case GBA_SIZE_EEPROM512 + 16:
 		m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, vf, Endian::LITTLE});
 		m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, vf, Endian::BIG});
 		break;
@@ -267,13 +272,13 @@ void SaveConverter::detectFromHeaders(std::shared_ptr<VFileDevice> vf) {
 		if (data) {
 			QByteArray bytes = QByteArray::fromRawData(static_cast<const char*>(data), size);
 			bytes.data(); // Trigger a deep copy before we delete the backing
-			if (size == SIZE_CART_FLASH1M) {
+			if (size == GBA_SIZE_FLASH1M) {
 				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::SHARKPORT});
 			} else {
-				m_validSaves.append(AnnotatedSave{SAVEDATA_SRAM, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_SRAM)), Endian::NONE, Container::SHARKPORT});
-				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH512, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_FLASH512)), Endian::NONE, Container::SHARKPORT});
-				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_EEPROM)), Endian::BIG, Container::SHARKPORT});
-				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_EEPROM512)), Endian::BIG, Container::SHARKPORT});
+				m_validSaves.append(AnnotatedSave{SAVEDATA_SRAM, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_SRAM)), Endian::NONE, Container::SHARKPORT});
+				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH512, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_FLASH512)), Endian::NONE, Container::SHARKPORT});
+				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_EEPROM)), Endian::BIG, Container::SHARKPORT});
+				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_EEPROM512)), Endian::BIG, Container::SHARKPORT});
 			}
 			free(data);
 		}
@@ -284,21 +289,21 @@ void SaveConverter::detectFromHeaders(std::shared_ptr<VFileDevice> vf) {
 			QByteArray bytes = QByteArray::fromRawData(static_cast<const char*>(data), size);
 			bytes.data(); // Trigger a deep copy before we delete the backing
 			switch (size) {
-			case SIZE_CART_FLASH1M:
+			case GBA_SIZE_FLASH1M:
 				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
 				break;
-			case SIZE_CART_FLASH512:
+			case GBA_SIZE_FLASH512:
 				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH512, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
 				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
 				break;
-			case SIZE_CART_SRAM:
-				m_validSaves.append(AnnotatedSave{SAVEDATA_SRAM, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_SRAM)), Endian::NONE, Container::GSV});
+			case GBA_SIZE_SRAM:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_SRAM, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_SRAM)), Endian::NONE, Container::GSV});
 				break;
-			case SIZE_CART_EEPROM:
-				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_EEPROM)), Endian::BIG, Container::GSV});
+			case GBA_SIZE_EEPROM:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_EEPROM)), Endian::BIG, Container::GSV});
 				break;
-			case SIZE_CART_EEPROM512:
-				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, std::make_shared<VFileDevice>(bytes.left(SIZE_CART_EEPROM512)), Endian::BIG, Container::GSV});
+			case GBA_SIZE_EEPROM512:
+				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_EEPROM512)), Endian::BIG, Container::GSV});
 				break;
 			}
 			free(data);
@@ -447,14 +452,14 @@ SaveConverter::AnnotatedSave::operator QString() const {
 	QString typeFormat("%1");
 	QString endianStr;
 	QString saveType;
-	QString format = QCoreApplication::translate("SaveConverter", "%1 %2 save game");
+	QString format = QCoreApplication::translate("QGBA::SaveConverter", "%1 %2 save game");
 
 	switch (endianness) {
 	case Endian::LITTLE:
-		endianStr = QCoreApplication::translate("SaveConverter", "little endian");
+		endianStr = QCoreApplication::translate("QGBA::SaveConverter", "little endian");
 		break;
 	case Endian::BIG:
-		endianStr = QCoreApplication::translate("SaveConverter", "big endian");
+		endianStr = QCoreApplication::translate("QGBA::SaveConverter", "big endian");
 		break;
 	default:
 		break;
@@ -465,18 +470,21 @@ SaveConverter::AnnotatedSave::operator QString() const {
 	case mPLATFORM_GBA:
 		switch (gba.type) {
 		case SAVEDATA_SRAM:
-			typeFormat = QCoreApplication::translate("SaveConverter", "SRAM");
+			typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "SRAM");
 			break;
 		case SAVEDATA_FLASH512:
 		case SAVEDATA_FLASH1M:
-			typeFormat = QCoreApplication::translate("SaveConverter", "%1 flash");
+			typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 flash");
 			break;
 		case SAVEDATA_EEPROM:
 		case SAVEDATA_EEPROM512:
-			typeFormat = QCoreApplication::translate("SaveConverter", "%1 EEPROM");
+			typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 EEPROM");
 			break;
 		default:
 			break;
+		}
+		if ((size & 0xFF) == 0x10) {
+			typeFormat += QCoreApplication::translate("QGBA::SaveConverter", " + RTC");
 		}
 		break;
 #endif
@@ -485,29 +493,29 @@ SaveConverter::AnnotatedSave::operator QString() const {
 		switch (gb.type) {
 		case GB_MBC_AUTODETECT:
 			if (size & 0xFF) {
-				typeFormat = QCoreApplication::translate("SaveConverter", "%1 SRAM + RTC");
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 SRAM + RTC");
 			} else {
-				typeFormat = QCoreApplication::translate("SaveConverter", "%1 SRAM");				
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 SRAM");				
 			}
 			break;
 		case GB_MBC2:
 			if (size == 0x100) {
-				typeFormat = QCoreApplication::translate("SaveConverter", "packed MBC2");
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "packed MBC2");
 			} else {
-				typeFormat = QCoreApplication::translate("SaveConverter", "unpacked MBC2");				
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "unpacked MBC2");				
 			}
 			break;
 		case GB_MBC6:
 			if (size == GB_SIZE_MBC6_FLASH) {
-				typeFormat = QCoreApplication::translate("SaveConverter", "MBC6 flash");
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 flash");
 			} else if (size > GB_SIZE_MBC6_FLASH) {
-				typeFormat = QCoreApplication::translate("SaveConverter", "MBC6 combined SRAM + flash");				
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 combined SRAM + flash");				
 			} else {
-				typeFormat = QCoreApplication::translate("SaveConverter", "MBC6 SRAM");
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 SRAM");
 			}
 			break;
 		case GB_TAMA5:
-			typeFormat = QCoreApplication::translate("SaveConverter", "TAMA5");
+			typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "TAMA5");
 			break;
 		default:
 			break;
@@ -519,17 +527,17 @@ SaveConverter::AnnotatedSave::operator QString() const {
 	}
 	saveType = typeFormat.arg(sizeStr);
 	if (!endianStr.isEmpty()) {
-		saveType = QCoreApplication::translate("SaveConverter", "%1 (%2)").arg(saveType).arg(endianStr);
+		saveType = QCoreApplication::translate("QGBA::SaveConverter", "%1 (%2)").arg(saveType).arg(endianStr);
 	}
 	switch (container) {
 	case Container::SAVESTATE:
-		format = QCoreApplication::translate("SaveConverter", "%1 save state with embedded %2 save game");
+		format = QCoreApplication::translate("QGBA::SaveConverter", "%1 save state with embedded %2 save game");
 		break;
 	case Container::SHARKPORT:
-		format = QCoreApplication::translate("SaveConverter", "%1 SharkPort %2 save game");
+		format = QCoreApplication::translate("QGBA::SaveConverter", "%1 SharkPort %2 save game");
 		break;
 	case Container::GSV:
-		format = QCoreApplication::translate("SaveConverter", "%1 GameShark Advance SP %2 save game");
+		format = QCoreApplication::translate("QGBA::SaveConverter", "%1 GameShark Advance SP %2 save game");
 		break;
 	case Container::NONE:
 		break;
@@ -615,7 +623,21 @@ QList<SaveConverter::AnnotatedSave> SaveConverter::AnnotatedSave::possibleConver
 			}
 			break;
 		default:
+			if (size & 0xFF) {
+				AnnotatedSave noRtc = same;
+				noRtc.size &= ~0xFF;
+				possible.append(noRtc);
+			}
 			break;
+		}
+		break;
+#endif
+#ifdef M_CORE_GBA
+	case mPLATFORM_GBA:
+		if ((size & 0xFF) == 0x10) {
+			AnnotatedSave noRtc = same;
+			noRtc.size &= ~0xFF;
+			possible.append(noRtc);
 		}
 		break;
 #endif
@@ -650,7 +672,7 @@ QByteArray SaveConverter::AnnotatedSave::convertTo(const SaveConverter::Annotate
 			}
 			converted.resize(target.size);
 			buffer = backing->readAll();
-			for (int i = 0; i < size; i += 8) {
+			for (int i = 0; i < (size & ~0xFF); i += 8) {
 				uint64_t word;
 				const uint64_t* in = reinterpret_cast<const uint64_t*>(buffer.constData());
 				uint64_t* out = reinterpret_cast<uint64_t*>(converted.data());
@@ -660,6 +682,9 @@ QByteArray SaveConverter::AnnotatedSave::convertTo(const SaveConverter::Annotate
 			break;
 		default:
 			break;
+		}
+		if (endianness == target.endianness && size > target.size) {
+			converted = backing->read(target.size);
 		}
 		break;
 #endif
@@ -711,6 +736,9 @@ QByteArray SaveConverter::AnnotatedSave::convertTo(const SaveConverter::Annotate
 			}
 			break;
 		default:
+			if (endianness == target.endianness && size > target.size) {
+				converted = backing->read(target.size);
+			}
 			break;
 		}
 		break;

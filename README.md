@@ -22,6 +22,7 @@ Features
 - Solar sensor support for Boktai games.
 - Game Boy Camera and Game Boy Printer support.
 - A built-in BIOS implementation, and ability to load external BIOS files.
+- Scripting support using Lua.
 - Turbo/fast-forward support by holding Tab.
 - Rewind by holding Backquote.
 - Frameskip, configurable up to 10.
@@ -49,23 +50,29 @@ The following mappers are fully supported:
 - MBC2
 - MBC3
 - MBC3+RTC
+- MBC30
 - MBC5
 - MBC5+Rumble
 - MBC7
 - Wisdom Tree (unlicensed)
+- NT "old type" 1 and 2 (unlicensed multicart)
 - NT "new type" (unlicensed MBC5-like)
 - Pokémon Jade/Diamond (unlicensed)
-- BBD (unlicensed MBC5-like)
-- Hitek (unlicensed MBC5-like)
+- Sachen MMC1 (unlicensed)
 
 The following mappers are partially supported:
 
 - MBC6 (missing flash memory write support)
 - MMM01
 - Pocket Cam
-- TAMA5 (missing RTC support)
+- TAMA5 (incomplete RTC support)
 - HuC-1 (missing IR support)
 - HuC-3 (missing IR support)
+- Sachen MMC2 (missing alternate wiring support)
+- BBD (missing logo switching)
+- Hitek (missing logo switching)
+- GGB-81 (missing logo switching)
+- Li Cheng (missing logo switching)
 
 ### Planned features
 
@@ -73,7 +80,6 @@ The following mappers are partially supported:
 - Dolphin/JOY bus link cable support.
 - MP2k audio mixing, for higher quality sound than hardware.
 - Re-recording support for tool-assist runs.
-- Lua support for scripting.
 - A comprehensive debug suite.
 - Wireless adapter support.
 
@@ -81,7 +87,7 @@ Supported Platforms
 -------------------
 
 - Windows 7 or newer
-- OS X 10.8 (Mountain Lion)[<sup>[3]</sup>](#osxver) or newer
+- OS X 10.9 (Mavericks)[<sup>[3]</sup>](#osxver) or newer
 - Linux
 - FreeBSD
 - Nintendo 3DS
@@ -115,17 +121,19 @@ Controls are configurable in the settings menu. Many game controllers should be 
 Compiling
 ---------
 
-Compiling requires using CMake 3.1 or newer. GCC and Clang are both known to work to compile mGBA, but Visual Studio 2013 and older are known not to work. Support for Visual Studio 2015 and newer is coming soon.
+Compiling requires using CMake 3.1 or newer. GCC, Clang, and Visual Studio 2019 are known to work for compiling mGBA.
 
 #### Docker building
 
 The recommended way to build for most platforms is to use Docker. Several Docker images are provided that contain the requisite toolchain and dependencies for building mGBA across several platforms.
 
+Note: If you are on an older Windows system before Windows 10, you may need to configure your Docker to use VirtualBox shared folders to correctly map your current `mgba` checkout directory to the Docker image's working directory. (See issue [#1985](https://mgba.io/i/1985) for details.)
+
 To use a Docker image to build mGBA, simply run the following command while in the root of an mGBA checkout:
 
-	docker run --rm -t -v $PWD:/home/mgba/src mgba/windows:w32
+	docker run --rm -it -v ${PWD}:/home/mgba/src mgba/windows:w32
 
-This will produce a `build-win32` directory with the build products. Replace `mgba/windows:w32` with another Docker image for other platforms, which will produce a corresponding other directory. The following Docker images available on Docker Hub:
+After starting the Docker container, it will produce a `build-win32` directory with the build products. Replace `mgba/windows:w32` with another Docker image for other platforms, which will produce a corresponding other directory. The following Docker images available on Docker Hub:
 
 - mgba/3ds
 - mgba/switch
@@ -137,6 +145,8 @@ This will produce a `build-win32` directory with the build products. Replace `mg
 - mgba/wii
 - mgba/windows:w32
 - mgba/windows:w64
+
+If you want to speed up the build process, consider adding the flag `-e MAKEFLAGS=-jN` to do a parallel build for mGBA with `N` number of CPU cores.
 
 #### *nix building
 
@@ -152,7 +162,7 @@ This will build and install mGBA into `/usr/bin` and `/usr/lib`. Dependencies th
 
 If you are on macOS, the steps are a little different. Assuming you are using the homebrew package manager, the recommended commands to obtain the dependencies and build are:
 
-	brew install cmake ffmpeg libzip qt5 sdl2 libedit pkg-config
+	brew install cmake ffmpeg libzip qt5 sdl2 libedit lua pkg-config
 	mkdir build
 	cd build
 	cmake -DCMAKE_PREFIX_PATH=`brew --prefix qt5` ..
@@ -166,7 +176,7 @@ Note that you should not do a `make install` on macOS, as it will not work prope
 
 To build on Windows for development, using MSYS2 is recommended. Follow the installation steps found on their [website](https://msys2.github.io). Make sure you're running the 32-bit version ("MSYS2 MinGW 32-bit") (or the 64-bit version "MSYS2 MinGW 64-bit" if you want to build for x86_64) and run this additional command (including the braces) to install the needed dependencies (please note that this involves downloading over 1100MiB of packages, so it will take a long time):
 
-	pacman -Sy --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,pkgconf,qt5,SDL2,ntldd-git}
+	pacman -Sy --needed base-devel git ${MINGW_PACKAGE_PREFIX}-{cmake,ffmpeg,gcc,gdb,libelf,libepoxy,libzip,lua,pkgconf,qt5,SDL2,ntldd-git}
 
 Check out the source code by running this command:
 
@@ -185,7 +195,7 @@ Please note that this build of mGBA for Windows is not suitable for distribution
 
 To build using Visual Studio is a similarly complicated setup. To begin you will need to install [vcpkg](https://github.com/Microsoft/vcpkg). After installing vcpkg you will need to install several additional packages:
 
-    vcpkg install ffmpeg[vpx,x264] libepoxy libpng libzip sdl2 sqlite3
+    vcpkg install ffmpeg[vpx,x264] libepoxy libpng libzip lua sdl2 sqlite3
 
 Note that this installation won't support hardware accelerated video encoding on Nvidia hardware. If you care about this, you'll need to install CUDA beforehand, and then substitute `ffmpeg[vpx,x264,nvcodec]` into the previous command.
 
@@ -223,6 +233,8 @@ mGBA has no hard dependencies, however, the following optional dependencies are 
 - libzip or zlib: for loading ROMs stored in zip files.
 - SQLite3: for game databases.
 - libelf: for ELF loading.
+- Lua: for scripting.
+- json-c: for the scripting `storage` API.
 
 SQLite3, libpng, and zlib are included with the emulator, so they do not need to be externally compiled first.
 
@@ -235,7 +247,7 @@ Footnotes
 
 <a name="flashdetect">[2]</a> Flash memory size detection does not work in some cases. These can be configured at runtime, but filing a bug is recommended if such a case is encountered.
 
-<a name="osxver">[3]</a> 10.8 is only needed for the Qt port. It may be possible to build or running the Qt port on 10.7 or older, but this is not officially supported. The SDL port is known to work on 10.5, and may work on older.
+<a name="osxver">[3]</a> 10.9 is only needed for the Qt port. It may be possible to build or running the Qt port on 10.7 or older, but this is not officially supported. The SDL port is known to work on 10.5, and may work on older.
 
 [downloads]: http://mgba.io/downloads.html
 [source]: https://github.com/mgba-emu/mgba/
@@ -243,7 +255,7 @@ Footnotes
 Copyright
 ---------
 
-mGBA is Copyright © 2013 – 2022 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
+mGBA is Copyright © 2013 – 2023 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
 
 mGBA contains the following third-party libraries:
 

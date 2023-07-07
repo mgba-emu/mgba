@@ -38,19 +38,12 @@
 #include <signal.h>
 
 #define PORT "sdl"
-#define MAX_LOG_BUF 1024
 
 static void mSDLDeinit(struct mSDLRenderer* renderer);
 
 static int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args);
 
-static void _setLogger(struct mCore* core);
-static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
-
-static bool _logToStdout = true;
-static struct VFile* _logFile = NULL;
-static struct mLogFilter _filter;
-static struct mLogger _logger;
+static struct mStandardLogger _logger;
 
 static struct VFile* _state = NULL;
 
@@ -68,6 +61,7 @@ int main(int argc, char** argv) {
 		.useBios = true,
 		.rewindEnable = true,
 		.rewindBufferCapacity = 600,
+		.rewindBufferInterval = 1,
 		.audioBuffers = 1024,
 		.videoSync = false,
 		.audioSync = true,
@@ -114,7 +108,7 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
+	renderer.core->baseVideoSize(renderer.core, &renderer.width, &renderer.height);
 	renderer.ratio = graphicsOpts.multiplier;
 	if (renderer.ratio == 0) {
 		renderer.ratio = 1;
@@ -136,6 +130,7 @@ int main(int argc, char** argv) {
 	mCoreInitConfig(renderer.core, PORT);
 	mArgumentsApply(&args, &subparser, 1, &renderer.core->config);
 
+	mCoreConfigSetDefaultIntValue(&renderer.core->config, "logToStdout", true);
 	mCoreConfigLoadDefaults(&renderer.core->config, &opts);
 	mCoreLoadConfig(renderer.core);
 
@@ -188,7 +183,8 @@ int main(int argc, char** argv) {
 	int ret;
 
 	// TODO: Use opts and config
-	_setLogger(renderer.core);
+	mStandardLoggerInit(&_logger);
+	mStandardLoggerConfig(&_logger, &renderer.core->config);
 	ret = mSDLRun(&renderer, &args);
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&renderer.core->inputMap);
@@ -198,6 +194,7 @@ int main(int argc, char** argv) {
 	}
 
 	mSDLDeinit(&renderer);
+	mStandardLoggerDeinit(&_logger);
 
 	mArgumentsDeinit(&args);
 	mCoreConfigFreeOpts(&opts);
@@ -246,18 +243,37 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 #endif
 
 #ifdef USE_DEBUGGERS
-	struct mDebugger* debugger = mDebuggerCreate(args->debuggerType, renderer->core);
-	if (debugger) {
+	struct mDebugger debugger;
+	bool hasDebugger = false;
+
+	mDebuggerInit(&debugger);
 #ifdef USE_EDITLINE
-		if (args->debuggerType == DEBUGGER_CLI) {
-			struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
+	if (args->debugCli) {
+		struct mDebuggerModule* module = mDebuggerCreateModule(DEBUGGER_CLI, renderer->core);
+		if (module) {
+			struct CLIDebugger* cliDebugger = (struct CLIDebugger*) module;
 			CLIDebuggerAttachBackend(cliDebugger, CLIDebuggerEditLineBackendCreate());
+			mDebuggerAttachModule(&debugger, module);
+			hasDebugger = true;
 		}
+	}
 #endif
-		mDebuggerAttach(debugger, renderer->core);
-		mDebuggerEnter(debugger, DEBUGGER_ENTER_MANUAL, NULL);
+
+#ifdef USE_GDB_STUB
+	if (args->debugGdb) {
+		struct mDebuggerModule* module = mDebuggerCreateModule(DEBUGGER_GDB, renderer->core);
+		if (module) {
+			mDebuggerAttachModule(&debugger, module);
+			hasDebugger = true;
+		}
+	}
+#endif
+
+	if (hasDebugger) {
+		mDebuggerAttach(&debugger, renderer->core);
+		mDebuggerEnter(&debugger, DEBUGGER_ENTER_MANUAL, NULL);
 #ifdef ENABLE_SCRIPTING
-		mScriptBridgeSetDebugger(bridge, debugger);
+		mScriptBridgeSetDebugger(bridge, &debugger);
 #endif
 	}
 #endif
@@ -273,17 +289,13 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 
 	renderer->audio.samples = renderer->core->opts.audioBuffers;
 	renderer->audio.sampleRate = 44100;
-		
-	struct mThreadLogger threadLogger;
-	threadLogger.d = _logger;
-	threadLogger.p = &thread;
-	thread.logger = threadLogger;
-	
+	thread.logger.logger = &_logger.d;
+
 	bool didFail = !mCoreThreadStart(&thread);
 
 	if (!didFail) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		renderer->core->desiredVideoDimensions(renderer->core, &renderer->width, &renderer->height);
+		renderer->core->currentVideoSize(renderer->core, &renderer->width, &renderer->height);
 		unsigned width = renderer->width * renderer->ratio;
 		unsigned height = renderer->height * renderer->ratio;
 		if (width != (unsigned) renderer->viewportWidth && height != (unsigned) renderer->viewportHeight) {
@@ -308,6 +320,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 			if (mCoreThreadHasCrashed(&thread)) {
 				didFail = true;
 				printf("The game crashed!\n");
+				mCoreThreadEnd(&thread);
 			}
 		} else {
 			didFail = true;
@@ -328,6 +341,13 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	mScriptBridgeDestroy(bridge);
 #endif
 
+#ifdef USE_DEBUGGERS
+	if (hasDebugger) {
+		renderer->core->detachDebugger(renderer->core);
+		mDebuggerDeinit(&debugger);
+	}
+#endif
+
 	return didFail;
 }
 
@@ -341,64 +361,4 @@ static void mSDLDeinit(struct mSDLRenderer* renderer) {
 	renderer->deinit(renderer);
 
 	SDL_Quit();
-}
-
-static void _setLogger(struct mCore* core) {
-	int fakeBool = 0;
-	bool logToFile = false;
-
-	if (mCoreConfigGetIntValue(&core->config, "logToStdout", &fakeBool)) {
-		_logToStdout = fakeBool;
-	}
-	if (mCoreConfigGetIntValue(&core->config, "logToFile", &fakeBool)) {
-		logToFile = fakeBool;
-	}
-	const char* logFile = mCoreConfigGetValue(&core->config, "logFile");
-	
-	if (logToFile && logFile) {
-		_logFile = VFileOpen(logFile, O_WRONLY | O_CREAT | O_APPEND);
-	}
-
-	// Create the filter
-	mLogFilterInit(&_filter);
-	mLogFilterLoad(&_filter, &core->config);
-
-	// Fill the logger
-	_logger.log = _mCoreLog;
-	_logger.filter = &_filter;
-}
-
-static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args) {
-	struct mCoreThread* thread = mCoreThreadGet();
-	if (thread && level == mLOG_FATAL) {
-		mCoreThreadMarkCrashed(thread);
-	}
-	
-	if (!mLogFilterTest(logger->filter, category, level)) {
-		return;
-	}
-
-	char buffer[MAX_LOG_BUF];
-
-	// Prepare the string
-	size_t length = snprintf(buffer, sizeof(buffer), "%s: ", mLogCategoryName(category));
-	if (length < sizeof(buffer)) {
-		length += vsnprintf(buffer + length, sizeof(buffer) - length, format, args);
-	}
-	if (length < sizeof(buffer)) {
-		length += snprintf(buffer + length, sizeof(buffer) - length, "\n");
-	}
-
-	// Make sure the length doesn't exceed the size of the buffer when actually writing
-	if (length > sizeof(buffer)) {
-		length = sizeof(buffer);
-	}
-
-	if (_logToStdout) {
-		printf("%s", buffer);
-	}
-
-	if (_logFile) {
-		_logFile->write(_logFile, buffer, length);
-	}
 }

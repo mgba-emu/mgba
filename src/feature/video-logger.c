@@ -382,10 +382,7 @@ static void _copyVf(struct VFile* dest, struct VFile* src) {
 static void _compress(struct VFile* dest, struct VFile* src) {
 	uint8_t writeBuffer[0x800];
 	uint8_t compressBuffer[0x400];
-	z_stream zstr;
-	zstr.zalloc = Z_NULL;
-	zstr.zfree = Z_NULL;
-	zstr.opaque = Z_NULL;
+	z_stream zstr = {0};
 	zstr.avail_in = 0;
 	zstr.avail_out = sizeof(compressBuffer);
 	zstr.next_out = (Bytef*) compressBuffer;
@@ -425,10 +422,7 @@ static void _compress(struct VFile* dest, struct VFile* src) {
 static bool _decompress(struct VFile* dest, struct VFile* src, size_t compressedLength) {
 	uint8_t fbuffer[0x400];
 	uint8_t zbuffer[0x800];
-	z_stream zstr;
-	zstr.zalloc = Z_NULL;
-	zstr.zfree = Z_NULL;
-	zstr.opaque = Z_NULL;
+	z_stream zstr = {0};
 	zstr.avail_in = 0;
 	zstr.avail_out = sizeof(zbuffer);
 	zstr.next_out = (Bytef*) zbuffer;

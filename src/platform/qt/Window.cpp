@@ -12,7 +12,6 @@
 #include <QMimeData>
 #include <QPainter>
 #include <QScreen>
-#include <QStackedLayout>
 #include <QWindow>
 
 #ifdef USE_SQLITE3
@@ -31,11 +30,15 @@
 #include "Display.h"
 #include "DolphinConnector.h"
 #include "CoreController.h"
+#include "ForwarderView.h"
 #include "FrameView.h"
 #include "GBAApp.h"
 #include "GDBController.h"
 #include "GDBWindow.h"
 #include "GIFView.h"
+#ifdef BUILD_SDL
+#include "input/SDLInputDriver.h"
+#endif
 #include "IOViewer.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
@@ -51,13 +54,15 @@
 #include "ReportView.h"
 #include "ROMInfo.h"
 #include "SaveConverter.h"
+#ifdef ENABLE_SCRIPTING
+#include "scripting/ScriptingView.h"
+#endif
 #include "SensorView.h"
 #include "ShaderSelector.h"
 #include "ShortcutController.h"
 #include "TileView.h"
 #include "VideoProxy.h"
 #include "VideoView.h"
-#include "utils.h"
 
 #ifdef USE_DISCORD_RPC
 #include "DiscordCoordinator.h"
@@ -74,6 +79,7 @@
 #include <mgba/internal/gba/gba.h>
 #endif
 #include <mgba/feature/commandline.h>
+#include <mgba/internal/gba/input.h>
 #include <mgba-util/vfs.h>
 
 #include <mgba-util/convolve.h>
@@ -112,14 +118,12 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	m_libraryView = new LibraryController(nullptr, ConfigController::configDir() + "/library.sqlite3", m_config);
 	ConfigOption* showLibrary = m_config->addOption("showLibrary");
 	showLibrary->connect([this](const QVariant& value) {
-		if (value.toBool()) {
-			if (m_controller) {
-				m_screenWidget->layout()->addWidget(m_libraryView);
-			} else {
+		if (!m_controller) {
+			if (value.toBool()) {
 				attachWidget(m_libraryView);
+			} else {
+				attachWidget(m_screenWidget);				
 			}
-		} else {
-			detachWidget(m_libraryView);
 		}
 	}, this);
 	m_config->updateOption("showLibrary");
@@ -144,12 +148,17 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	});
 #endif
 #if defined(M_CORE_GBA)
-	resizeFrame(QSize(GBA_VIDEO_HORIZONTAL_PIXELS * i, GBA_VIDEO_VERTICAL_PIXELS * i));
+	QSize minimumSize = QSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 #elif defined(M_CORE_GB)
-	resizeFrame(QSize(GB_VIDEO_HORIZONTAL_PIXELS * i, GB_VIDEO_VERTICAL_PIXELS * i));
+	QSize minimumSize = QSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #endif
+	setMinimumSize(minimumSize);
+	if (i > 0) {
+		m_initialSize = minimumSize * i;
+	} else {
+		m_initialSize = minimumSize * 2;
+	}
 	setLogo();
-	setCentralWidget(m_screenWidget);
 
 	connect(this, &Window::shutdown, m_logView, &QWidget::hide);
 	connect(&m_fpsTimer, &QTimer::timeout, this, &Window::showFPS);
@@ -164,6 +173,12 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	m_mustRestart.setSingleShot(true);
 	m_mustReset.setInterval(MUST_RESTART_TIMEOUT);
 	m_mustReset.setSingleShot(true);
+
+#ifdef BUILD_SDL
+	m_inputController.addInputDriver(std::make_shared<SDLInputDriver>(&m_inputController));
+	m_inputController.setGamepadDriver(SDL_BINDING_BUTTON);
+	m_inputController.setSensorDriver(SDL_BINDING_BUTTON);
+#endif
 
 	m_shortcutController->setConfigController(m_config);
 	m_shortcutController->setActionMapper(&m_actions);
@@ -191,19 +206,18 @@ void Window::argumentsPassed() {
 	}
 
 #ifdef USE_GDB_STUB
-	if (args->debuggerType == DEBUGGER_GDB) {
-		if (!m_gdbController) {
-			m_gdbController = new GDBController(this);
-			if (m_controller) {
-				m_gdbController->setController(m_controller);
-			}
-			m_gdbController->attach();
-			m_gdbController->listen();
-		}
+	if (args->debugGdb) {
+		gdbOpen();
 	}
 #endif
 
-	if (m_config->graphicsOpts()->multiplier) {
+#ifdef USE_DEBUGGERS
+	if (args->debugCli) {
+		consoleOpen();
+	}
+#endif
+
+	if (m_config->graphicsOpts()->multiplier > 0) {
 		m_savedScale = m_config->graphicsOpts()->multiplier;
 
 #if defined(M_CORE_GBA)
@@ -211,7 +225,7 @@ void Window::argumentsPassed() {
 #elif defined(M_CORE_GB)
 		QSize size(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #endif
-		resizeFrame(size * m_savedScale);
+		m_initialSize = size * m_savedScale;
 	}
 
 	if (args->fname) {
@@ -234,9 +248,8 @@ void Window::resizeFrame(const QSize& size) {
 			newSize.setHeight(geom.height());
 		}
 	}
-	m_screenWidget->setSizeHint(newSize);
-	newSize -= m_screenWidget->size();
 	newSize += this->size();
+	newSize -= centralWidget()->size();
 	if (!isFullScreen()) {
 		resize(newSize);
 	}
@@ -266,7 +279,7 @@ void Window::loadConfig() {
 	reloadConfig();
 
 	if (opts->width && opts->height) {
-		resizeFrame(QSize(opts->width, opts->height));
+		m_initialSize = QSize(opts->width, opts->height);
 	}
 
 	if (opts->fullscreen) {
@@ -293,59 +306,12 @@ void Window::reloadConfig() {
 		m_display->resizeContext();
 	}
 
-	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
+	GBAApp::app()->setScreensaverSuspendable(opts->suspendScreensaver);
 }
 
 void Window::saveConfig() {
 	m_inputController.saveConfiguration();
 	m_config->write();
-}
-
-QString Window::getFilters() const {
-	QStringList filters;
-	QStringList formats;
-
-#ifdef M_CORE_GBA
-	QStringList gbaFormats{
-		"*.gba",
-#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
-		"*.zip",
-#endif
-#ifdef USE_LZMA
-		"*.7z",
-#endif
-#ifdef USE_ELF
-		"*.elf",
-#endif
-		"*.agb",
-		"*.mb",
-		"*.rom",
-		"*.bin"};
-	formats.append(gbaFormats);
-	filters.append(tr("Game Boy Advance ROMs (%1)").arg(gbaFormats.join(QChar(' '))));
-#endif
-
-#ifdef M_CORE_GB
-	QStringList gbFormats{
-		"*.gb",
-		"*.gbc",
-		"*.sgb",
-#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
-		"*.zip",
-#endif
-#ifdef USE_LZMA
-		"*.7z",
-#endif
-		"*.rom",
-		"*.bin"};
-	formats.append(gbFormats);
-	filters.append(tr("Game Boy ROMs (%1)").arg(gbFormats.join(QChar(' '))));
-#endif
-
-	formats.removeDuplicates();
-	filters.prepend(tr("All ROMs (%1)").arg(formats.join(QChar(' '))));
-	filters.append(tr("%1 Video Logs (*.mvl)").arg(projectName));
-	return filters.join(";;");
 }
 
 QString Window::getFiltersArchive() const {
@@ -364,7 +330,7 @@ QString Window::getFiltersArchive() const {
 }
 
 void Window::selectROM() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), romFilters(true));
 	if (!filename.isEmpty()) {
 		setController(m_manager->loadGame(filename), filename);
 	}
@@ -407,7 +373,7 @@ void Window::addDirToLibrary() {
 #endif
 
 void Window::replaceROM() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), getFilters());
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select ROM"), romFilters());
 	if (!filename.isEmpty()) {
 		m_controller->replaceGame(filename);
 	}
@@ -477,7 +443,7 @@ void Window::parseCard() {
 	                                      QString("oh"), QMessageBox::Ok);
 	dialog->setAttribute(Qt::WA_DeleteOnClose);
 	auto status = std::make_shared<QPair<int, int>>(0, filenames.size());
-	GBAApp::app()->submitWorkerJob([filenames, dialog, status]() {
+	GBAApp::app()->submitWorkerJob([filenames, status]() {
 		int success = 0;
 		for (QString filename : filenames) {
 			if (filename.isEmpty()) {
@@ -511,6 +477,9 @@ void Window::parseCard() {
 		}
 		status->first = success;
 	}, [dialog, status]() {
+		if (status->second == 0) {
+			return;
+		}
 		dialog->setText(tr("%1 of %2 e-Reader cards converted successfully.").arg(status->first).arg(status->second));
 		dialog->show();
 	});
@@ -653,13 +622,31 @@ void Window::consoleOpen() {
 }
 #endif
 
+#ifdef ENABLE_SCRIPTING
+void Window::scriptingOpen() {
+	if (!m_scripting) {
+		m_scripting = std::make_unique<ScriptingController>();
+		m_scripting->setInputController(&m_inputController);
+		m_shortcutController->setScriptingController(m_scripting.get());
+		if (m_controller) {
+			m_scripting->setController(m_controller);
+			m_display->installEventFilter(m_scripting.get());
+		}
+
+		m_scripting->setVideoBackend(m_display->videoBackend());
+	}
+	ScriptingView* view = new ScriptingView(m_scripting.get(), m_config);
+	openView(view);
+}
+#endif
+
 void Window::keyPressEvent(QKeyEvent* event) {
 	if (event->isAutoRepeat()) {
 		QWidget::keyPressEvent(event);
 		return;
 	}
-	GBAKey key = m_inputController.mapKeyboard(event->key());
-	if (key == GBA_KEY_NONE) {
+	int key = m_inputController.mapKeyboard(event->key());
+	if (key == -1) {
 		QWidget::keyPressEvent(event);
 		return;
 	}
@@ -674,8 +661,8 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 		QWidget::keyReleaseEvent(event);
 		return;
 	}
-	GBAKey key = m_inputController.mapKeyboard(event->key());
-	if (key == GBA_KEY_NONE) {
+	int key = m_inputController.mapKeyboard(event->key());
+	if (key == -1) {
 		QWidget::keyPressEvent(event);
 		return;
 	}
@@ -686,9 +673,10 @@ void Window::keyReleaseEvent(QKeyEvent* event) {
 }
 
 void Window::resizeEvent(QResizeEvent*) {
+	QSize newSize = centralWidget()->size();
 	if (!isFullScreen()) {
-		m_config->setOption("height", m_screenWidget->height());
-		m_config->setOption("width", m_screenWidget->width());
+		m_config->setOption("height", newSize.height());
+		m_config->setOption("width", newSize.width());
 	}
 
 	int factor = 0;
@@ -696,9 +684,9 @@ void Window::resizeEvent(QResizeEvent*) {
 	if (m_controller) {
 		size = m_controller->screenDimensions();
 	}
-	if (m_screenWidget->width() % size.width() == 0 && m_screenWidget->height() % size.height() == 0 &&
-	    m_screenWidget->width() / size.width() == m_screenWidget->height() / size.height()) {
-		factor = m_screenWidget->width() / size.width();
+	if (newSize.width() % size.width() == 0 && newSize.height() % size.height() == 0 &&
+	    newSize.width() / size.width() == newSize.height() / size.height()) {
+		factor = newSize.width() / size.width();
 	}
 	m_savedScale = factor;
 	for (QMap<int, Action*>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
@@ -725,7 +713,9 @@ void Window::showEvent(QShowEvent* event) {
 		return;
 	}
 	m_wasOpened = true;
-	resizeFrame(m_screenWidget->sizeHint());
+	if (m_initialSize.isValid()) {
+		resizeFrame(m_initialSize);
+	}
 	QVariant windowPos = m_config->getQtOption("windowPos", m_playerId > 0 ? QString("player%0").arg(m_playerId) : QString());
 	bool maximized = m_config->getQtOption("maximized").toBool();
 	QRect geom = windowHandle()->screen()->availableGeometry();
@@ -848,7 +838,7 @@ void Window::exitFullScreen() {
 	if (!isFullScreen()) {
 		return;
 	}
-	m_screenWidget->unsetCursor();
+	centralWidget()->unsetCursor();
 	menuBar()->show();
 	showNormal();
 }
@@ -869,7 +859,6 @@ void Window::gameStarted() {
 		action.value()->setEnabled(m_controller->platform() == action.key());
 	}
 	QSize size = m_controller->screenDimensions();
-	m_screenWidget->setDimensions(size.width(), size.height());
 	m_config->updateOption("lockIntegerScaling");
 	m_config->updateOption("lockAspectRatio");
 	m_config->updateOption("interframeBlending");
@@ -897,7 +886,7 @@ void Window::gameStarted() {
 	}
 	m_focusCheck.start();
 	if (m_display->underMouse()) {
-		m_screenWidget->setCursor(Qt::BlankCursor);
+		centralWidget()->setCursor(Qt::BlankCursor);
 	}
 
 	CoreController::Interrupter interrupter(m_controller);
@@ -963,7 +952,6 @@ void Window::gameStopped() {
 		m_audioProcessor.reset();
 	}
 	m_display->stopDrawing();
-	detachWidget(m_display.get());
 	setLogo();
 	if (m_display) {
 #ifdef M_CORE_GB
@@ -974,9 +962,16 @@ void Window::gameStopped() {
 	}
 
 	m_controller.reset();
+	detachWidget();
 	updateTitle();
 
 	if (m_pendingClose) {
+#ifdef ENABLE_SCRIPTING
+		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
+		if (m_scripting && proxy) {
+			m_scripting->setVideoBackend(nullptr);
+		}
+#endif
 		m_display.reset();
 		close();
 	}
@@ -1025,9 +1020,18 @@ void Window::unimplementedBiosCall(int) {
 void Window::reloadDisplayDriver() {
 	if (m_controller) {
 		m_display->stopDrawing();
-		detachWidget(m_display.get());
+		detachWidget();
 	}
-	m_display = std::unique_ptr<Display>(Display::create(this));
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_scripting->setVideoBackend(nullptr);
+	}
+#endif
+	std::shared_ptr<VideoProxy> proxy;
+	if (m_display) {
+		proxy = m_display->videoProxy();
+	}
+	m_display = std::unique_ptr<QGBA::Display>(Display::create(this));
 	if (!m_display) {
 		LOG(QT, ERROR) << tr("Failed to create an appropriate display device, falling back to software display. "
 		                     "Games may run slowly, especially with larger windows.");
@@ -1039,13 +1043,13 @@ void Window::reloadDisplayDriver() {
 	m_shaderView = std::make_unique<ShaderSelector>(m_display.get(), m_config);
 #endif
 
-	connect(m_display.get(), &Display::hideCursor, [this]() {
-		if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() == m_display.get()) {
-			m_screenWidget->setCursor(Qt::BlankCursor);
+	connect(m_display.get(), &QGBA::Display::hideCursor, [this]() {
+		if (centralWidget() == m_display.get()) {
+			centralWidget()->setCursor(Qt::BlankCursor);
 		}
 	});
-	connect(m_display.get(), &Display::showCursor, [this]() {
-		m_screenWidget->unsetCursor();
+	connect(m_display.get(), &QGBA::Display::showCursor, [this]() {
+		centralWidget()->unsetCursor();
 	});
 
 	m_display->configure(m_config);
@@ -1064,6 +1068,18 @@ void Window::reloadDisplayDriver() {
 	m_display->setMinimumSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
 #elif defined(M_CORE_GBA)
 	m_display->setMinimumSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+#endif
+
+	m_display->setBackgroundImage(QImage{m_config->getOption("backgroundImage")});
+
+	if (!proxy) {
+		proxy = std::make_shared<VideoProxy>();
+	}
+	m_display->setVideoProxy(proxy);
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_scripting->setVideoBackend(m_display->videoBackend());
+	}
 #endif
 }
 
@@ -1086,13 +1102,10 @@ void Window::changeRenderer() {
 	if (!m_controller) {
 		return;
 	}
+
+	CoreController::Interrupter interrupter(m_controller);
 	if (m_config->getOption("hwaccelVideo").toInt() && m_display->supportsShaders() && m_controller->supportsFeature(CoreController::Feature::OPENGL)) {
-		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
-		if (!proxy) {
-			proxy = std::make_shared<VideoProxy>();
-		}
-		m_display->setVideoProxy(proxy);
-		proxy->attach(m_controller.get());
+		m_display->videoProxy()->attach(m_controller.get());
 
 		int fb = m_display->framebufferHandle();
 		if (fb >= 0) {
@@ -1100,6 +1113,7 @@ void Window::changeRenderer() {
 			m_config->updateOption("videoScale");
 		}
 	} else {
+		m_display->videoProxy()->detach(m_controller.get());
 		m_controller->setFramebufferHandle(-1);
 	}
 }
@@ -1143,13 +1157,13 @@ void Window::recordFrame() {
 }
 
 void Window::showFPS() {
-	if (m_frameList.isEmpty()) {
-		updateTitle();
-		return;
-	}
 	qint64 total = 0;
 	for (qint64 t : m_frameList) {
 		total += t;
+	}
+	if (!total) {
+		updateTitle();
+		return;
 	}
 	double fps = (m_frameList.size() * 1e10) / total;
 	m_frameList.clear();
@@ -1201,15 +1215,13 @@ void Window::openStateWindow(LoadSave ls) {
 	m_stateWindow = new LoadSaveState(m_controller);
 	connect(this, &Window::shutdown, m_stateWindow, &QWidget::close);
 	connect(m_stateWindow, &LoadSaveState::closed, [this]() {
-		detachWidget(m_stateWindow);
-		static_cast<QStackedLayout*>(m_screenWidget->layout())->setCurrentWidget(m_display.get());
+		attachWidget(m_display.get());
 		m_stateWindow = nullptr;
 		QMetaObject::invokeMethod(this, "setFocus", Qt::QueuedConnection);
 	});
 	if (!wasPaused) {
 		m_controller->setPaused(true);
 		connect(m_stateWindow, &LoadSaveState::closed, [this]() {
-			m_screenWidget->filter(m_config->getOption("resampleVideo").toInt());
 			if (m_controller) {
 				m_controller->setPaused(false);
 			}
@@ -1217,6 +1229,10 @@ void Window::openStateWindow(LoadSave ls) {
 	}
 	m_stateWindow->setAttribute(Qt::WA_DeleteOnClose);
 	m_stateWindow->setMode(ls);
+
+	m_stateWindow->setDimensions(m_controller->screenDimensions());
+	m_config->updateOption("lockAspectRatio");
+	m_config->updateOption("lockIntegerScaling");
 
 	QImage still(m_controller->getPixels());
 	if (still.format() != QImage::Format_RGB888) {
@@ -1235,8 +1251,7 @@ void Window::openStateWindow(LoadSave ls) {
 
 	QPixmap pixmap;
 	pixmap.convertFromImage(output);
-	m_screenWidget->setPixmap(pixmap);
-	m_screenWidget->filter(true);
+	m_stateWindow->setBackground(pixmap);
 
 #ifndef Q_OS_MAC
 	menuBar()->show();
@@ -1300,14 +1315,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Boot BIOS"), "bootBIOS", this, &Window::bootBIOS, "file");
 #endif
 
-	addGameAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "file");
 #ifdef M_CORE_GBA
 	Action* scanCard = addGameAction(tr("Scan e-Reader dotcodes..."), "scanCard", this, &Window::scanCard, "file");
 	m_platformActions.insert(mPLATFORM_GBA, scanCard);
-
-#ifdef USE_FFMPEG
-	m_actions.addAction(tr("Convert e-Reader card image to raw..."), "parseCard", this, &Window::parseCard, "file");
-#endif
 #endif
 
 	addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");
@@ -1373,9 +1383,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 
 	m_actions.addSeparator("file");
-	m_multiWindow = m_actions.addAction(tr("New multiplayer window"), "multiWindow", [this]() {
-		GBAApp::app()->newWindow();
-	}, "file");
+	m_multiWindow = m_actions.addAction(tr("New multiplayer window"), "multiWindow", GBAApp::app(), &GBAApp::newWindow, "file");
 
 #ifdef M_CORE_GBA
 	Action* dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openNamedTView<DolphinConnector>(&m_dolphinView, this), "file");
@@ -1391,13 +1399,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	m_actions.addAction(tr("About..."), "about", openTView<AboutScreen>(), "file")->setRole(Action::Role::ABOUT);
-	m_actions.addAction(tr("E&xit"), "quit", static_cast<QWidget*>(this), &QWidget::close, "file", QKeySequence::Quit)->setRole(Action::Role::SETTINGS);
+	m_actions.addAction(tr("E&xit"), "quit", static_cast<QWidget*>(this), &QWidget::close, "file", QKeySequence::Quit)->setRole(Action::Role::QUIT);
 
 	m_actions.addMenu(tr("&Emulation"), "emu");
 	addGameAction(tr("&Reset"), "reset", &CoreController::reset, "emu", QKeySequence("Ctrl+R"));
 	addGameAction(tr("Sh&utdown"), "shutdown", &CoreController::stop, "emu");
-	addGameAction(tr("Yank game pak"), "yank", &CoreController::yankPak, "emu");
+	m_actions.addSeparator("emu");
 
+	addGameAction(tr("Replace ROM..."), "replaceROM", this, &Window::replaceROM, "emu");
+	addGameAction(tr("Yank game pak"), "yank", &CoreController::yankPak, "emu");
 	m_actions.addSeparator("emu");
 
 	Action* pause = m_actions.addBooleanAction(tr("&Pause"), "pause", [this](bool paused) {
@@ -1435,6 +1445,20 @@ void Window::setupMenu(QMenuBar* menubar) {
 		ffspeed->addValue(tr("%0x").arg(i), i, &m_actions, "fastForwardSpeed");
 	}
 	m_config->updateOption("fastForwardRatio");
+
+	addGameAction(tr("Increase fast forward speed"), "fastForwardUp", [this] {
+		float newRatio = m_config->getOption("fastForwardRatio", 1.0f).toFloat() + 1.0f;
+		if (newRatio >= 3.0f) {
+			m_config->setOption("fastForwardRatio", QVariant(newRatio));
+		}
+	}, "emu");
+
+	addGameAction(tr("Decrease fast forward speed"), "fastForwardDown", [this] {
+		float newRatio = m_config->getOption("fastForwardRatio").toFloat() - 1.0f;
+		if (newRatio >= 2.0f) {
+			m_config->setOption("fastForwardRatio", QVariant(newRatio));
+		}
+	}, "emu");
 
 	Action* rewindHeld = m_actions.addHeldAction(tr("Rewind (held)"), "holdRewind", [this](bool held) {
 		if (m_controller) {
@@ -1495,8 +1519,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 			Action* setSize = m_frameSizes[i];
 			showNormal();
 			QSize size(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-			if (m_controller) {
-				size = m_controller->screenDimensions();
+			if (m_display) {
+				size = m_display->contentSize();
 			}
 			size *= i;
 			m_savedScale = i;
@@ -1524,8 +1548,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 		if (m_display) {
 			m_display->lockAspectRatio(value.toBool());
 		}
-		if (m_controller) {
-			m_screenWidget->setLockAspectRatio(value.toBool());
+		if (m_stateWindow) {
+			m_stateWindow->setLockAspectRatio(value.toBool());
 		}
 	}, this);
 	m_config->updateOption("lockAspectRatio");
@@ -1536,8 +1560,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 		if (m_display) {
 			m_display->lockIntegerScaling(value.toBool());
 		}
-		if (m_controller) {
-			m_screenWidget->setLockIntegerScaling(value.toBool());
+		if (m_stateWindow) {
+			m_stateWindow->setLockIntegerScaling(value.toBool());
 		}
 	}, this);
 	m_config->updateOption("lockIntegerScaling");
@@ -1557,9 +1581,6 @@ void Window::setupMenu(QMenuBar* menubar) {
 		if (m_display) {
 			m_display->filter(value.toBool());
 		}
-		if (m_controller) {
-			m_screenWidget->filter(value.toBool());
-		}
 	}, this);
 	m_config->updateOption("resampleVideo");
 
@@ -1576,7 +1597,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addSeparator("av");
 
 	ConfigOption* mute = m_config->addOption("mute");
-	mute->addBoolean(tr("Mute"), &m_actions, "av");
+	Action* muteAction = mute->addBoolean(tr("Mute"), &m_actions, "av");
+	muteAction->setActive(m_config->getOption("mute").toInt());
 	mute->connect([this](const QVariant& value) {
 		m_config->setOption("fastForwardMute", static_cast<bool>(value.toInt()));
 		reloadConfig();
@@ -1639,25 +1661,33 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow",  openNamedControllerTView<SensorView>(&m_sensorView, &m_inputController), "tools");
 
 	addGameAction(tr("&Cheats..."), "cheatsWindow", openControllerTView<CheatsView>(), "tools");
+#ifdef ENABLE_SCRIPTING
+	m_actions.addAction(tr("Scripting..."), "scripting", this, &Window::scriptingOpen, "tools");
+#endif
+
+	m_actions.addAction(tr("Create forwarder..."), "createForwarder", openTView<ForwarderView>(), "tools");
 
 	m_actions.addSeparator("tools");
 	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools")->setRole(Action::Role::SETTINGS);
 	m_actions.addAction(tr("Make portable"), "makePortable", this, &Window::tryMakePortable, "tools");
 
-#ifdef USE_DEBUGGERS
 	m_actions.addSeparator("tools");
+#ifdef USE_DEBUGGERS
 	m_actions.addAction(tr("Open debugger console..."), "debuggerWindow", this, &Window::consoleOpen, "tools");
 #ifdef USE_GDB_STUB
 	Action* gdbWindow = addGameAction(tr("Start &GDB server..."), "gdbWindow", this, &Window::gdbOpen, "tools");
 	m_platformActions.insert(mPLATFORM_GBA, gdbWindow);
 #endif
 #endif
+#if defined(USE_DEBUGGERS) || defined(ENABLE_SCRIPTING)
 	m_actions.addSeparator("tools");
+#endif
 
-	addGameAction(tr("View &palette..."), "paletteWindow", openControllerTView<PaletteView>(), "tools");
-	addGameAction(tr("View &sprites..."), "spriteWindow", openControllerTView<ObjView>(), "tools");
-	addGameAction(tr("View &tiles..."), "tileWindow", openControllerTView<TileView>(), "tools");
-	addGameAction(tr("View &map..."), "mapWindow", openControllerTView<MapView>(), "tools");
+	m_actions.addMenu(tr("Game state views"), "stateViews", "tools");
+	addGameAction(tr("View &palette..."), "paletteWindow", openControllerTView<PaletteView>(), "stateViews");
+	addGameAction(tr("View &sprites..."), "spriteWindow", openControllerTView<ObjView>(), "stateViews");
+	addGameAction(tr("View &tiles..."), "tileWindow", openControllerTView<TileView>(), "stateViews");
+	addGameAction(tr("View &map..."), "mapWindow", openControllerTView<MapView>(), "stateViews");
 
 	addGameAction(tr("&Frame inspector..."), "frameWindow", [this]() {
 		if (!m_frameView) {
@@ -1673,11 +1703,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 			m_frameView->setAttribute(Qt::WA_DeleteOnClose);
 		}
 		m_frameView->show();
-	}, "tools");
+	}, "stateViews");
 
-	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "tools");
-	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "tools");
-	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "tools");
+	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "stateViews");
+	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "stateViews");
+	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "stateViews");
+
+#if defined(USE_FFMPEG) && defined(M_CORE_GBA)
+	m_actions.addSeparator("tools");
+	m_actions.addAction(tr("Convert e-Reader card image to raw..."), "parseCard", this, &Window::parseCard, "tools");
+#endif
 
 	m_actions.addSeparator("tools");
 	addGameAction(tr("Record debug video log..."), "recordVL", this, &Window::startVideoLog, "tools");
@@ -1691,7 +1726,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		if (m_controller) {
 			mCheatPressButton(m_controller->cheatDevice(), held);
 		}
-	}, "tools", QKeySequence(Qt::Key_Apostrophe));
+	}, "tools");
 
 	m_actions.addHiddenMenu(tr("Autofire"), "autofire");
 	m_actions.addHeldAction(tr("Autofire A"), "autofireA", [this](bool held) {
@@ -1809,6 +1844,11 @@ void Window::setupOptions() {
 		reloadConfig();
 	}, this);
 
+	ConfigOption* rewindBufferInterval = m_config->addOption("rewindBufferInterval");
+	rewindBufferInterval->connect([this](const QVariant&) {
+		reloadConfig();
+	}, this);
+
 	ConfigOption* allowOpposingDirections = m_config->addOption("allowOpposingDirections");
 	allowOpposingDirections->connect([this](const QVariant&) {
 		reloadConfig();
@@ -1843,7 +1883,7 @@ void Window::setupOptions() {
 
 	ConfigOption* showOSD = m_config->addOption("showOSD");
 	showOSD->connect([this](const QVariant& value) {
-		if (m_display) {
+		if (m_display && !value.isNull()) {
 			m_display->showOSDMessages(value.toBool());
 		}
 	}, this);
@@ -1866,6 +1906,11 @@ void Window::setupOptions() {
 	videoScale->connect([this](const QVariant& value) {
 		if (m_display) {
 			m_display->setVideoScale(value.toInt());
+#ifdef ENABLE_SCRIPTING
+			if (m_controller && m_scripting) {
+				m_scripting->updateVideoScale();
+			}
+#endif
 		}
 	}, this);
 
@@ -1874,16 +1919,22 @@ void Window::setupOptions() {
 		updateTitle();
 	}, this);
 
+	ConfigOption* backgroundImage = m_config->addOption("backgroundImage");
+	backgroundImage->connect([this](const QVariant& value) {
+		if (m_display) {
+			m_display->setBackgroundImage(QImage{value.toString()});
+		}
+	}, this);
+	m_config->updateOption("backgroundImage");
 }
 
 void Window::attachWidget(QWidget* widget) {
-	m_screenWidget->layout()->addWidget(widget);
-	m_screenWidget->unsetCursor();
-	static_cast<QStackedLayout*>(m_screenWidget->layout())->setCurrentWidget(widget);
+	takeCentralWidget();
+	setCentralWidget(widget);
 }
 
-void Window::detachWidget(QWidget* widget) {
-	m_screenWidget->layout()->removeWidget(widget);
+void Window::detachWidget() {
+	m_config->updateOption("showLibrary");
 }
 
 void Window::appendMRU(const QString& fname) {
@@ -1933,7 +1984,7 @@ Action* Window::addGameAction(const QString& visibleName, const QString& name, A
 
 template<typename T, typename V>
 Action* Window::addGameAction(const QString& visibleName, const QString& name, T* obj, V (T::*method)(), const QString& menu, const QKeySequence& shortcut) {
-	return addGameAction(visibleName, name, [this, obj, method]() {
+	return addGameAction(visibleName, name, [obj, method]() {
 		(obj->*method)();
 	}, menu, shortcut);
 }
@@ -1979,7 +2030,7 @@ void Window::focusCheck() {
 }
 
 void Window::updateFrame() {
-	if (static_cast<QStackedLayout*>(m_screenWidget->layout())->currentWidget() != m_display.get()) {
+	if (!m_controller) {
 		return;
 	}
 	QPixmap pixmap;
@@ -2012,7 +2063,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	}
 
 	m_controller = std::shared_ptr<CoreController>(controller);
-	m_inputController.recalibrateAxes();
 	m_controller->setInputController(&m_inputController);
 	m_controller->setLogger(&m_log);
 
@@ -2025,14 +2075,14 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	});
 
 	connect(m_controller.get(), &CoreController::started, this, &Window::gameStarted);
-	connect(m_controller.get(), &CoreController::started, &m_inputController, &InputController::suspendScreensaver);
+	connect(m_controller.get(), &CoreController::started, GBAApp::app(), &GBAApp::suspendScreensaver);
 	connect(m_controller.get(), &CoreController::stopping, this, &Window::gameStopped);
 	{
 		connect(m_controller.get(), &CoreController::stopping, [this]() {
 			m_controller.reset();
 		});
 	}
-	connect(m_controller.get(), &CoreController::stopping, &m_inputController, &InputController::resumeScreensaver);
+	connect(m_controller.get(), &CoreController::stopping, GBAApp::app(), &GBAApp::resumeScreensaver);
 	connect(m_controller.get(), &CoreController::paused, this, &Window::updateFrame);
 
 #ifndef Q_OS_MAC
@@ -2044,14 +2094,14 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	});
 #endif
 
-	connect(m_controller.get(), &CoreController::paused, &m_inputController, &InputController::resumeScreensaver);
+	connect(m_controller.get(), &CoreController::paused, GBAApp::app(), &GBAApp::resumeScreensaver);
 	connect(m_controller.get(), &CoreController::paused, [this]() {
 		emit paused(true);
 	});
 	connect(m_controller.get(), &CoreController::unpaused, [this]() {
 		emit paused(false);
 	});
-	connect(m_controller.get(), &CoreController::unpaused, &m_inputController, &InputController::suspendScreensaver);
+	connect(m_controller.get(), &CoreController::unpaused, GBAApp::app(), &GBAApp::suspendScreensaver);
 	connect(m_controller.get(), &CoreController::frameAvailable, this, &Window::recordFrame);
 	connect(m_controller.get(), &CoreController::crashed, this, &Window::gameCrashed);
 	connect(m_controller.get(), &CoreController::failed, this, &Window::gameFailed);
@@ -2101,6 +2151,14 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		m_pendingPatch = QString();
 	}
 
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_scripting->setController(m_controller);
+
+		m_scripting->setVideoBackend(m_display->videoBackend());
+	}
+#endif
+
 	attachDisplay();
 	m_controller->loadConfig(m_config);
 	m_config->updateOption("showOSD");
@@ -2121,8 +2179,14 @@ void Window::setController(CoreController* controller, const QString& fname) {
 
 void Window::attachDisplay() {
 	m_display->attach(m_controller);
-	connect(m_display.get(), &Display::drawingStarted, this, &Window::changeRenderer);
+	connect(m_display.get(), &QGBA::Display::drawingStarted, this, &Window::changeRenderer);
 	m_display->startDrawing(m_controller);
+
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_display->installEventFilter(m_scripting.get());
+	}
+#endif
 }
 
 void Window::updateMute() {
@@ -2148,17 +2212,12 @@ void Window::updateMute() {
 void Window::setLogo() {
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
-	m_screenWidget->setLockIntegerScaling(false);
-	m_screenWidget->setLockAspectRatio(true);
-	m_screenWidget->filter(true);
-	m_screenWidget->unsetCursor();
+	centralWidget()->unsetCursor();
 }
 
 WindowBackground::WindowBackground(QWidget* parent)
 	: QWidget(parent)
 {
-	setLayout(new QStackedLayout());
-	layout()->setContentsMargins(0, 0, 0, 0);
 }
 
 void WindowBackground::setPixmap(const QPixmap& pmap) {
@@ -2179,24 +2238,12 @@ void WindowBackground::setDimensions(int width, int height) {
 	m_aspectHeight = height;
 }
 
-void WindowBackground::setLockIntegerScaling(bool lock) {
-	m_lockIntegerScaling = lock;
-}
-
-void WindowBackground::setLockAspectRatio(bool lock) {
-	m_lockAspectRatio = lock;
-}
-
-void WindowBackground::filter(bool filter) {
-	m_filter = filter;
-}
-
 void WindowBackground::paintEvent(QPaintEvent* event) {
 	QWidget::paintEvent(event);
 	const QPixmap& logo = pixmap();
 	QPainter painter(this);
-	painter.setRenderHint(QPainter::SmoothPixmapTransform, m_filter);
+	painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
-	QRect full(clampSize(QSize(m_aspectWidth, m_aspectHeight), size(), m_lockAspectRatio, m_lockIntegerScaling));
+	QRect full(clampSize(QSize(m_aspectWidth, m_aspectHeight), size(), true, false));
 	painter.drawPixmap(full, logo);
 }

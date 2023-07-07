@@ -52,7 +52,7 @@ static inline void _printPSR(struct CLIDebuggerBackend* be, union PSR psr) {
 }
 
 static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVector* dv) {
-	struct ARMCore* cpu = debugger->p->d.core->cpu;
+	struct ARMCore* cpu = debugger->p->d.p->core->cpu;
 	_disassembleMode(debugger->p, dv, cpu->executionMode);
 }
 
@@ -65,7 +65,7 @@ static void _disassembleThumb(struct CLIDebugger* debugger, struct CLIDebugVecto
 }
 
 static void _disassembleMode(struct CLIDebugger* debugger, struct CLIDebugVector* dv, enum ExecutionMode mode) {
-	struct ARMCore* cpu = debugger->d.core->cpu;
+	struct ARMCore* cpu = debugger->d.p->core->cpu;
 	uint32_t address;
 	int size;
 	int wordSize;
@@ -98,7 +98,7 @@ static void _disassembleMode(struct CLIDebugger* debugger, struct CLIDebugVector
 
 static inline uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address, enum ExecutionMode mode) {
 	struct CLIDebuggerBackend* be = debugger->backend;
-	struct mCore* core = debugger->d.core;
+	struct mCore* core = debugger->d.p->core;
 	char disassembly[64];
 	struct ARMInstructionInfo info;
 	address &= ~(WORD_SIZE_THUMB - 1);
@@ -130,7 +130,7 @@ static inline uint32_t _printLine(struct CLIDebugger* debugger, uint32_t address
 
 static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	struct CLIDebuggerBackend* be = debugger->p->backend;
-	struct ARMCore* cpu = debugger->p->d.core->cpu;
+	struct ARMCore* cpu = debugger->p->d.p->core->cpu;
 	int r;
 	for (r = 0; r < 16; r += 4) {
 		be->printf(be, "%sr%i: %08X  %sr%i: %08X  %sr%i: %08X  %sr%i: %08X\n",
@@ -141,7 +141,7 @@ static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	}
 	be->printf(be, "cpsr: ");
 	_printPSR(be, cpu->cpsr);
-	be->printf(be, "Cycle: %" PRIu64 "\n", mTimingGlobalTime(debugger->p->d.core->timing));
+	be->printf(be, "Cycle: %" PRIu64 "\n", mTimingGlobalTime(debugger->p->d.p->core->timing));
 	int instructionLength;
 	enum ExecutionMode mode = cpu->cpsr.t;
 	if (mode == MODE_ARM) {
@@ -159,7 +159,7 @@ static void _setBreakpointARM(struct CLIDebugger* debugger, struct CLIDebugVecto
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ssize_t id = ARMDebuggerSetSoftwareBreakpoint(debugger->d.platform, address, MODE_ARM);
+	ssize_t id = ARMDebuggerSetSoftwareBreakpoint(debugger->d.p->platform, &debugger->d, address, MODE_ARM);
 	if (id > 0) {
 		debugger->backend->printf(debugger->backend, INFO_BREAKPOINT_ADDED, id);
 	}
@@ -172,7 +172,7 @@ static void _setBreakpointThumb(struct CLIDebugger* debugger, struct CLIDebugVec
 		return;
 	}
 	uint32_t address = dv->intValue;
-	ssize_t id = ARMDebuggerSetSoftwareBreakpoint(debugger->d.platform, address, MODE_THUMB);
+	ssize_t id = ARMDebuggerSetSoftwareBreakpoint(debugger->d.p->platform, &debugger->d, address, MODE_THUMB);
 	if (id > 0) {
 		debugger->backend->printf(debugger->backend, INFO_BREAKPOINT_ADDED, id);
 	}

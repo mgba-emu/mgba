@@ -60,6 +60,32 @@ static const struct mCoreMemoryBlock _GBCMemoryBlocks[] = {
 	{ GB_BASE_HRAM, "hram", "HRAM", "High RAM", GB_BASE_HRAM, GB_BASE_HRAM + GB_SIZE_HRAM, GB_SIZE_HRAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
 };
 
+static const struct mCoreScreenRegion _GBScreenRegions[] = {
+	{ 0, "Screen", 0, 0, GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS }
+};
+
+static const struct mCoreScreenRegion _SGBScreenRegions[] = {
+	{ 0, "Screen", (SGB_VIDEO_HORIZONTAL_PIXELS - GB_VIDEO_HORIZONTAL_PIXELS) / 2, (SGB_VIDEO_VERTICAL_PIXELS - GB_VIDEO_VERTICAL_PIXELS) / 2, GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS },
+	{ 1, "Border", 0, 0, SGB_VIDEO_HORIZONTAL_PIXELS, SGB_VIDEO_VERTICAL_PIXELS },
+};
+
+static const struct mCoreRegisterInfo _GBRegisters[] = {
+	{ "b", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "c", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "d", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "e", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "h", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "l", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "a", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
+	{ "f", NULL, 1, 0xF0, mCORE_REGISTER_GPR },
+	{ "bc", NULL, 2, 0xFFFF, mCORE_REGISTER_GPR },
+	{ "de", NULL, 2, 0xFFFF, mCORE_REGISTER_GPR },
+	{ "hl", NULL, 2, 0xFFFF, mCORE_REGISTER_GPR },
+	{ "af", NULL, 2, 0xFFF0, mCORE_REGISTER_GPR },
+	{ "pc", NULL, 2, 0xFFFF, mCORE_REGISTER_GPR },
+	{ "sp", NULL, 2, 0xFFFF, mCORE_REGISTER_GPR },
+};
+
 struct mVideoLogContext;
 struct GBCore {
 	struct mCore d;
@@ -73,6 +99,8 @@ struct GBCore {
 	uint8_t keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	const struct Configuration* overrides;
+	struct GBCartridgeOverride override;
+	bool hasOverride;
 	struct mDebuggerPlatform* debuggerPlatform;
 	struct mCheatDevice* cheatDevice;
 	struct mCoreMemoryBlock memoryBlocks[8];
@@ -98,6 +126,8 @@ static bool _GBCoreInit(struct mCore* core) {
 	gbcore->logContext = NULL;
 #endif
 	memcpy(gbcore->memoryBlocks, _GBMemoryBlocks, sizeof(_GBMemoryBlocks));
+	memset(&gbcore->override, 0, sizeof(gbcore->override));
+	gbcore->hasOverride = false;
 
 	GBCreate(gb);
 	memset(gbcore->components, 0, sizeof(gbcore->components));
@@ -338,14 +368,42 @@ static void _GBCoreReloadConfigOption(struct mCore* core, const char* option, co
 	}
 }
 
-static void _GBCoreDesiredVideoDimensions(const struct mCore* core, unsigned* width, unsigned* height) {
+static void _GBCoreSetOverride(struct mCore* core, const void* override) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	memcpy(&gbcore->override, override, sizeof(gbcore->override));
+	gbcore->hasOverride = true;
+}
+
+static void _GBCoreBaseVideoSize(const struct mCore* core, unsigned* width, unsigned* height) {
+	UNUSED(core);
+	*width = SGB_VIDEO_HORIZONTAL_PIXELS;
+	*height = SGB_VIDEO_VERTICAL_PIXELS;
+}
+
+static void _GBCoreCurrentVideoSize(const struct mCore* core, unsigned* width, unsigned* height) {
 	const struct GB* gb = core->board;
 	if (gb && (!(gb->model & GB_MODEL_SGB) || !gb->video.sgbBorders)) {
 		*width = GB_VIDEO_HORIZONTAL_PIXELS;
 		*height = GB_VIDEO_VERTICAL_PIXELS;
 	} else {
-		*width = 256;
-		*height = 224;
+		*width = SGB_VIDEO_HORIZONTAL_PIXELS;
+		*height = SGB_VIDEO_VERTICAL_PIXELS;
+	}
+}
+
+static unsigned _GBCoreVideoScale(const struct mCore* core) {
+	UNUSED(core);
+	return 1;
+}
+
+static size_t _GBCoreScreenRegions(const struct mCore* core, const struct mCoreScreenRegion** regions) {
+	const struct GB* gb = core->board;
+	if (gb && (!(gb->model & GB_MODEL_SGB) || !gb->video.sgbBorders)) {
+		*regions = _GBScreenRegions;
+		return 1;
+	} else {
+		*regions = _SGBScreenRegions;
+		return 2;
 	}
 }
 
@@ -407,8 +465,11 @@ static void _GBCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	gb->stream = stream;
 	if (stream && stream->videoDimensionsChanged) {
 		unsigned width, height;
-		core->desiredVideoDimensions(core, &width, &height);
+		core->currentVideoSize(core, &width, &height);
 		stream->videoDimensionsChanged(stream, width, height);
+	}
+	if (stream && stream->audioRateChanged) {
+		stream->audioRateChanged(stream, DMG_SM83_FREQUENCY / 32);
 	}
 }
 
@@ -456,8 +517,16 @@ static void _GBCoreUnloadROM(struct mCore* core) {
 	GBUnloadROM(core->board);
 }
 
+static size_t _GBCoreROMSize(const struct mCore* core) {
+	const struct GB* gb = (const struct GB*) core->board;
+	if (gb->romVf) {
+		return gb->romVf->size(gb->romVf);
+	}
+	return gb->pristineRomSize;
+}
+
 static void _GBCoreChecksum(const struct mCore* core, void* data, enum mCoreChecksumType type) {
-	struct GB* gb = (struct GB*) core->board;
+	const struct GB* gb = (const struct GB*) core->board;
 	switch (type) {
 	case mCHECKSUM_CRC32:
 		memcpy(data, &gb->romCrc32, sizeof(gb->romCrc32));
@@ -482,14 +551,15 @@ static void _GBCoreReset(struct mCore* core) {
 			mCoreConfigGetIntValue(&core->config, "useCgbColors", &doColorOverride);
 		}
 
-		struct GBCartridgeOverride override;
 		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-		override.headerCrc32 = doCrc32(cart, sizeof(*cart));
-		bool modelOverride = GBOverrideFind(gbcore->overrides, &override) || (doColorOverride && GBOverrideColorFind(&override, doColorOverride));
-		if (modelOverride) {
-			GBOverrideApply(gb, &override);
+		if (!gbcore->hasOverride) {
+			gbcore->override.headerCrc32 = doCrc32(cart, sizeof(*cart));
+			gbcore->hasOverride = GBOverrideFind(gbcore->overrides, &gbcore->override) || (doColorOverride && GBOverrideColorFind(&gbcore->override, doColorOverride));
 		}
-		if (!modelOverride || override.model == GB_MODEL_AUTODETECT) {
+		if (gbcore->hasOverride) {
+			GBOverrideApply(gb, &gbcore->override);
+		}
+		if (!gbcore->hasOverride || gbcore->override.model == GB_MODEL_AUTODETECT) {
 			const char* modelGB = mCoreConfigGetValue(&core->config, "gb.model");
 			const char* modelSGB = mCoreConfigGetValue(&core->config, "sgb.model");
 			const char* modelCGB = mCoreConfigGetValue(&core->config, "cgb.model");
@@ -579,16 +649,16 @@ static void _GBCoreReset(struct mCore* core) {
 			switch (gb->model) {
 			case GB_MODEL_DMG:
 			case GB_MODEL_MGB: // TODO
-				strncat(path, PATH_SEP "gb_bios.bin", PATH_MAX - strlen(path));
+				strncat(path, PATH_SEP "gb_bios.bin", PATH_MAX - strlen(path) - 1);
 				break;
 			case GB_MODEL_SGB:
 			case GB_MODEL_SGB2: // TODO
-				strncat(path, PATH_SEP "sgb_bios.bin", PATH_MAX - strlen(path));
+				strncat(path, PATH_SEP "sgb_bios.bin", PATH_MAX - strlen(path) - 1);
 				break;
 			case GB_MODEL_CGB:
 			case GB_MODEL_AGB:
 			case GB_MODEL_SCGB:
-				strncat(path, PATH_SEP "gbc_bios.bin", PATH_MAX - strlen(path));
+				strncat(path, PATH_SEP "gbc_bios.bin", PATH_MAX - strlen(path) - 1);
 				break;
 			default:
 				break;
@@ -632,6 +702,8 @@ static void _GBCoreReset(struct mCore* core) {
 	if (core->opts.skipBios) {
 		GBSkipBIOS(core->board);
 	}
+
+	mTimingInterrupt(&gb->timing);
 }
 
 static void _GBCoreRunFrame(struct mCore* core) {
@@ -688,6 +760,11 @@ static void _GBCoreClearKeys(struct mCore* core, uint32_t keys) {
 	gbcore->keys &= ~keys;
 }
 
+static uint32_t _GBCoreGetKeys(struct mCore* core) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	return gbcore->keys;
+}
+
 static uint32_t _GBCoreFrameCounter(const struct mCore* core) {
 	const struct GB* gb = core->board;
 	return gb->video.frameCounter;
@@ -726,6 +803,20 @@ static void _GBCoreSetPeripheral(struct mCore* core, int type, void* periph) {
 		break;
 	default:
 		return;
+	}
+}
+
+static void* _GBCoreGetPeripheral(struct mCore* core, int type) {
+	struct GB* gb = core->board;
+	switch (type) {
+	case mPERIPH_ROTATION:
+		return gb->memory.rotation;
+	case mPERIPH_RUMBLE:
+		return gb->memory.rumble;
+	case mPERIPH_IMAGE_SOURCE:
+		return gb->memory.cam;
+	default:
+		return NULL;
 	}
 }
 
@@ -832,6 +923,141 @@ void* _GBGetMemoryBlock(struct mCore* core, size_t id, size_t* sizeOut) {
 	}
 }
 
+static size_t _GBCoreListRegisters(const struct mCore* core, const struct mCoreRegisterInfo** list) {
+	UNUSED(core);
+	*list = _GBRegisters;
+	return sizeof(_GBRegisters) / sizeof(*_GBRegisters);
+}
+
+static bool _GBCoreReadRegister(const struct mCore* core, const char* name, void* out) {
+	struct SM83Core* cpu = core->cpu;
+	uint16_t* value16 = out;
+	uint8_t* value8 = out;
+
+	if (strcasecmp(name, "b") == 0) {
+		*value8 = cpu->b;
+		return true;
+	}
+	if (strcasecmp(name, "c") == 0) {
+		*value8 = cpu->c;
+		return true;
+	}
+	if (strcasecmp(name, "d") == 0) {
+		*value8 = cpu->d;
+		return true;
+	}
+	if (strcasecmp(name, "e") == 0) {
+		*value8 = cpu->e;
+		return true;
+	}
+	if (strcasecmp(name, "a") == 0) {
+		*value8 = cpu->a;
+		return true;
+	}
+	if (strcasecmp(name, "f") == 0) {
+		*value8 = cpu->f.packed;
+		return true;
+	}
+	if (strcasecmp(name, "h") == 0) {
+		*value8 = cpu->h;
+		return true;
+	}
+	if (strcasecmp(name, "l") == 0) {
+		*value8 = cpu->l;
+		return true;
+	}
+	if (strcasecmp(name, "bc") == 0) {
+		*value16 = cpu->bc;
+		return true;
+	}
+	if (strcasecmp(name, "de") == 0) {
+		*value16 = cpu->de;
+		return true;
+	}
+	if (strcasecmp(name, "hl") == 0) {
+		*value16 = cpu->hl;
+		return true;
+	}
+	if (strcasecmp(name, "af") == 0) {
+		*value16 = cpu->af;
+		return true;
+	}
+	if (strcasecmp(name, "pc") == 0) {
+		*value16 = cpu->pc;
+		return true;
+	}
+	if (strcasecmp(name, "sp") == 0) {
+		*value16 = cpu->sp;
+		return true;
+	}
+	return false;
+}
+
+static bool _GBCoreWriteRegister(struct mCore* core, const char* name, const void* in) {
+	struct SM83Core* cpu = core->cpu;
+	uint32_t value = *(uint32_t*) in;
+
+	if (strcmp(name, "b") == 0) {
+		cpu->b = value;
+		return true;
+	}
+	if (strcmp(name, "c") == 0) {
+		cpu->c = value;
+		return true;
+	}
+	if (strcmp(name, "d") == 0) {
+		cpu->d = value;
+		return true;
+	}
+	if (strcmp(name, "e") == 0) {
+		cpu->e = value;
+		return true;
+	}
+	if (strcmp(name, "h") == 0) {
+		cpu->h = value;
+		return true;
+	}
+	if (strcmp(name, "l") == 0) {
+		cpu->l = value;
+		return true;
+	}
+	if (strcmp(name, "a") == 0) {
+		cpu->a = value;
+		return true;
+	}
+	if (strcmp(name, "f") == 0) {
+		cpu->f.packed = value & 0xF0;
+		return true;
+	}
+	if (strcmp(name, "bc") == 0) {
+		cpu->bc = value;
+		return true;
+	}
+	if (strcmp(name, "de") == 0) {
+		cpu->de = value;
+		return true;
+	}
+	if (strcmp(name, "hl") == 0) {
+		cpu->hl = value;
+		return true;
+	}
+	if (strcmp(name, "af") == 0) {
+		cpu->af = value;
+		cpu->f.packed &= 0xF0;
+		return true;
+	}
+	if (strcmp(name, "pc") == 0) {
+		cpu->pc = value;
+		cpu->memory.setActiveRegion(cpu, cpu->pc);
+		return true;
+	}
+	if (strcmp(name, "sp") == 0) {
+		cpu->sp = value;
+		return true;
+	}
+	return false;
+}
+
 #ifdef USE_DEBUGGERS
 static bool _GBCoreSupportsDebuggerType(struct mCore* core, enum mDebuggerType type) {
 	UNUSED(core);
@@ -860,6 +1086,9 @@ static struct CLIDebuggerSystem* _GBCoreCliDebuggerSystem(struct mCore* core) {
 
 static void _GBCoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {
 	struct SM83Core* cpu = core->cpu;
+	if (core->debugger == debugger) {
+		return;
+	}
 	if (core->debugger) {
 		SM83HotplugDetach(cpu, CPU_COMPONENT_DEBUGGER);
 	}
@@ -880,7 +1109,7 @@ static void _GBCoreDetachDebugger(struct mCore* core) {
 static void _GBCoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	core->symbolTable = mDebuggerSymbolTableCreate();
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	if (!vf) {
+	if (!vf && core->dirs.base) {
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
 	}
 #endif
@@ -1062,7 +1291,11 @@ struct mCore* GBCoreCreate(void) {
 	core->setSync = _GBCoreSetSync;
 	core->loadConfig = _GBCoreLoadConfig;
 	core->reloadConfigOption = _GBCoreReloadConfigOption;
-	core->desiredVideoDimensions = _GBCoreDesiredVideoDimensions;
+	core->setOverride = _GBCoreSetOverride;
+	core->baseVideoSize = _GBCoreBaseVideoSize;
+	core->currentVideoSize = _GBCoreCurrentVideoSize;
+	core->videoScale = _GBCoreVideoScale;
+	core->screenRegions = _GBCoreScreenRegions;
 	core->setVideoBuffer = _GBCoreSetVideoBuffer;
 	core->setVideoGLTex = _GBCoreSetVideoGLTex;
 	core->getPixels = _GBCoreGetPixels;
@@ -1080,6 +1313,7 @@ struct mCore* GBCoreCreate(void) {
 	core->loadTemporarySave = _GBCoreLoadTemporarySave;
 	core->loadPatch = _GBCoreLoadPatch;
 	core->unloadROM = _GBCoreUnloadROM;
+	core->romSize = _GBCoreROMSize;
 	core->checksum = _GBCoreChecksum;
 	core->reset = _GBCoreReset;
 	core->runFrame = _GBCoreRunFrame;
@@ -1091,12 +1325,14 @@ struct mCore* GBCoreCreate(void) {
 	core->setKeys = _GBCoreSetKeys;
 	core->addKeys = _GBCoreAddKeys;
 	core->clearKeys = _GBCoreClearKeys;
+	core->getKeys = _GBCoreGetKeys;
 	core->frameCounter = _GBCoreFrameCounter;
 	core->frameCycles = _GBCoreFrameCycles;
 	core->frequency = _GBCoreFrequency;
 	core->getGameTitle = _GBCoreGetGameTitle;
 	core->getGameCode = _GBCoreGetGameCode;
 	core->setPeripheral = _GBCoreSetPeripheral;
+	core->getPeripheral = _GBCoreGetPeripheral;
 	core->busRead8 = _GBCoreBusRead8;
 	core->busRead16 = _GBCoreBusRead16;
 	core->busRead32 = _GBCoreBusRead32;
@@ -1111,6 +1347,9 @@ struct mCore* GBCoreCreate(void) {
 	core->rawWrite32 = _GBCoreRawWrite32;
 	core->listMemoryBlocks = _GBListMemoryBlocks;
 	core->getMemoryBlock = _GBGetMemoryBlock;
+	core->listRegisters = _GBCoreListRegisters;
+	core->readRegister = _GBCoreReadRegister;
+	core->writeRegister = _GBCoreWriteRegister;
 #ifdef USE_DEBUGGERS
 	core->supportsDebuggerType = _GBCoreSupportsDebuggerType;
 	core->debuggerPlatform = _GBCoreDebuggerPlatform;
