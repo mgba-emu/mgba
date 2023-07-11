@@ -62,13 +62,13 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->audioCodec = NULL;
 	encoder->videoCodec = NULL;
 	encoder->containerFormat = NULL;
+	encoder->isampleRate = PREFERRED_SAMPLE_RATE;
 	FFmpegEncoderSetAudio(encoder, "flac", 0);
 	FFmpegEncoderSetVideo(encoder, "libx264", 0, 0);
 	FFmpegEncoderSetContainer(encoder, "matroska");
 	FFmpegEncoderSetDimensions(encoder, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 	encoder->iwidth = GBA_VIDEO_HORIZONTAL_PIXELS;
 	encoder->iheight = GBA_VIDEO_VERTICAL_PIXELS;
-	encoder->isampleRate = PREFERRED_SAMPLE_RATE;
 	encoder->frameskip = 1;
 	encoder->skipResidue = 0;
 	encoder->loop = false;
