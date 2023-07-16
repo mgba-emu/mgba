@@ -338,7 +338,7 @@ void MultiplayerController::detachGame(CoreController* controller) {
 	emit gameDetached();
 }
 
-int MultiplayerController::playerId(CoreController* controller) {
+int MultiplayerController::playerId(CoreController* controller) const {
 	for (int i = 0; i < m_players.count(); ++i) {
 		if (m_players[i].controller == controller) {
 			return i;
