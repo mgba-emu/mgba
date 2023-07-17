@@ -133,7 +133,7 @@ bool _vdDeleteFile(struct VDir* vd, const char* path) {
 	char* combined = malloc(sizeof(char) * (strlen(path) + strlen(dir) + 2));
 	sprintf(combined, "%s%s%s", dir, PATH_SEP, path);
 
-	bool ret = !unlink(combined);
+	bool ret = !remove(combined);
 	free(combined);
 	return ret;
 }
