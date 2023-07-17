@@ -151,7 +151,12 @@ bool _vdwDeleteFile(struct VDir* vd, const char* path) {
 	MultiByteToWideChar(CP_UTF8, 0, path, -1, pathw, MAX_PATH);
 	StringCchPrintfW(combined, MAX_PATH, L"%ws\\%ws", dir, pathw);
 
-	return DeleteFileW(combined);
+	DWORD attrs = GetFileAttributesW(combined);
+	if (attrs & FILE_ATTRIBUTE_DIRECTORY) {
+		return RemoveDirectoryW(combined);
+	} else {
+		return DeleteFileW(combined);
+	}
 }
 
 const char* _vdweName(struct VDirEntry* vde) {
