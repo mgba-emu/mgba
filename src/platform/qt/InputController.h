@@ -53,7 +53,7 @@ public:
 
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
-	InputController(int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
+	InputController(QWidget* topLevel = nullptr, QObject* parent = nullptr);
 	~InputController();
 
 	void addInputDriver(std::shared_ptr<InputDriver>);
@@ -140,6 +140,9 @@ private:
 	bool hasPendingEvent(int key) const;
 	void sendGamepadEvent(QEvent*);
 
+	static int claimPlayer();
+	static void freePlayer(int);
+
 	Gamepad* gamepad(uint32_t type);
 	QList<Gamepad*> gamepads();
 
@@ -172,6 +175,7 @@ private:
 #endif
 #endif
 
+	static int s_claimedPlayers;
 	mInputMap m_inputMap;
 	ConfigController* m_config = nullptr;
 	int m_playerId;

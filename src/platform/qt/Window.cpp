@@ -92,7 +92,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	, m_logView(new LogView(&m_log, this))
 	, m_screenWidget(new WindowBackground())
 	, m_config(config)
-	, m_inputController(playerId, this)
+	, m_inputController(this)
 	, m_shortcutController(new ShortcutController(this))
 	, m_playerId(playerId)
 {
@@ -257,12 +257,7 @@ void Window::resizeFrame(const QSize& size) {
 
 void Window::updateMultiplayerStatus(bool canOpenAnother) {
 	m_multiWindow->setEnabled(canOpenAnother);
-	if (m_controller) {
-		MultiplayerController* multiplayer = m_controller->multiplayerController();
-		if (multiplayer) {
-			m_playerId = multiplayer->playerId(m_controller.get());
-		}
-	}
+	multiplayerChanged();
 }
 
 void Window::updateMultiplayerActive(bool active) {
@@ -412,6 +407,7 @@ void Window::multiplayerChanged() {
 	MultiplayerController* multiplayer = m_controller->multiplayerController();
 	if (multiplayer) {
 		attached = multiplayer->attached();
+		m_playerId = multiplayer->playerId(m_controller.get());
 	}
 	for (Action* action : m_nonMpActions) {
 		action->setEnabled(attached < 2);
