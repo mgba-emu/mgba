@@ -62,4 +62,11 @@ ROMInfo::ROMInfo(std::shared_ptr<CoreController> controller, QWidget* parent)
 		m_ui.crc->setText(tr("(unknown)"));
 		m_ui.name->setText(tr("(unknown)"));
 	}
+
+	QString savePath = controller->savePath();
+	if (!savePath.isEmpty()) {
+		m_ui.savefile->setText(savePath);
+	} else {
+		m_ui.savefile->setText(tr("(unknown)"));
+	}
 }

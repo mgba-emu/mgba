@@ -82,6 +82,11 @@ public:
 
 	mCoreThread* thread() { return &m_threadContext; }
 
+	void setPath(const QString& path, const QString& base = {});
+	QString path() const { return m_path; }
+	QString baseDirectory() const { return m_baseDirectory; }
+	QString savePath() const { return m_savePath; }
+
 	const color_t* drawContext();
 	QImage getPixels();
 
@@ -162,7 +167,7 @@ public slots:
 	void saveBackupState();
 
 	void loadSave(const QString&, bool temporary);
-	void loadSave(VFile*, bool temporary);
+	void loadSave(VFile*, bool temporary, const QString& path = {});
 	void loadPatch(const QString&);
 	void scanCard(const QString&);
 	void scanCards(const QStringList&);
@@ -248,6 +253,10 @@ private:
 	struct CoreLogger : public mLogger {
 		CoreController* self;
 	} m_logger{};
+
+	QString m_path;
+	QString m_baseDirectory;
+	QString m_savePath;
 
 	bool m_patched = false;
 	bool m_preload = false;
