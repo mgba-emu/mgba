@@ -775,10 +775,14 @@ void CoreController::loadSave(const QString& path, bool temporary) {
 			return;
 		}
 
+		bool ok;
 		if (temporary) {
-			m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
+			ok = m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
 		} else {
-			m_threadContext.core->loadSave(m_threadContext.core, vf);
+			ok = m_threadContext.core->loadSave(m_threadContext.core, vf);
+		}
+		if (!ok) {
+			vf->close(vf);
 		}
 	});
 	if (hasStarted()) {
@@ -788,10 +792,14 @@ void CoreController::loadSave(const QString& path, bool temporary) {
 
 void CoreController::loadSave(VFile* vf, bool temporary) {
 	m_resetActions.append([this, vf, temporary]() {
+		bool ok;
 		if (temporary) {
-			m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
+			ok = m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
 		} else {
-			m_threadContext.core->loadSave(m_threadContext.core, vf);
+			ok = m_threadContext.core->loadSave(m_threadContext.core, vf);
+		}
+		if (!ok) {
+			vf->close(vf);
 		}
 	});
 	if (hasStarted()) {
