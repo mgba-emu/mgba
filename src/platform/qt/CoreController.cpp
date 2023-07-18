@@ -878,6 +878,7 @@ void CoreController::replaceGame(const QString& path) {
 	} else {
 		mCoreLoadFile(m_threadContext.core, fname.toUtf8().constData());
 	}
+	// TODO: Make sure updating the path is handled properly by everything that calls path() and baseDirectory()
 	updateROMInfo();
 }
 
@@ -1256,16 +1257,7 @@ void CoreController::finishFrame() {
 }
 
 void CoreController::updatePlayerSave() {
-	int savePlayerId = 0;
-	mCoreConfigGetIntValue(&m_threadContext.core->config, "savePlayerId", &savePlayerId);
-	if (savePlayerId == 0 || m_multiplayer->attached() > 1) {
-		if (savePlayerId == m_multiplayer->playerId(this) + 1) {
-			// Player 1 is using our save, so let's use theirs, at least for now.
-			savePlayerId = 1;
-		} else {
-			savePlayerId = m_multiplayer->playerId(this) + 1;
-		}
-	}
+	int savePlayerId = m_multiplayer->saveId(this);
 
 	QString saveSuffix;
 	if (savePlayerId < 2) {

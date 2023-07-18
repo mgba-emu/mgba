@@ -40,6 +40,7 @@ public:
 
 	int attached();
 	int playerId(CoreController*) const;
+	int saveId(CoreController*) const;
 
 signals:
 	void gameAttached();
@@ -61,6 +62,7 @@ private:
 		int awake = 1;
 		int32_t cyclesPosted = 0;
 		unsigned waitMask = 0;
+		int saveId = 1;
 	};
 
 	Player* player(int id);
@@ -82,6 +84,7 @@ private:
 	QHash<int, Player> m_pids;
 	QList<int> m_players;
 	QMutex m_lock;
+	QHash<QPair<QString, QString>, int> m_claimed;
 };
 
 }

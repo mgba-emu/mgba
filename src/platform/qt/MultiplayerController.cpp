@@ -276,6 +276,32 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 		return false;
 	}
 
+	QPair<QString, QString> path(controller->path(), controller->baseDirectory());
+	int claimed = m_claimed[path];
+
+	int saveId = 0;
+	mCoreConfigGetIntValue(&controller->thread()->core->config, "savePlayerId", &saveId);
+
+	if (claimed) {
+		player.saveId = 0;
+		for (int i = 0; i < MAX_GBAS; ++i) {
+			if (claimed & (1 << i)) {
+				continue;
+			}
+			player.saveId = i + 1;
+			break;
+		}
+		if (!player.saveId) {
+			LOG(QT, ERROR) << "Couldn't find available save ID";
+			player.saveId = 1;
+		}
+	} else if (saveId) {
+		player.saveId = saveId;
+	} else {
+		player.saveId = 1;
+	}
+	m_claimed[path] |= 1 << (player.saveId - 1);
+
 	m_pids.insert(m_nextPid, player);
 	++m_nextPid;
 	fixOrder();
@@ -337,6 +363,18 @@ void MultiplayerController::detachGame(CoreController* controller) {
 		break;
 	}
 
+	// TODO: This might change if we replace the ROM--make sure to handle this properly
+	QPair<QString, QString> path(controller->path(), controller->baseDirectory());
+	Player& p = m_pids.find(pid).value();
+	if (!p.saveId) {
+		LOG(QT, ERROR) << "Clearing invalid save ID";
+	} else {
+		m_claimed[path] &= ~(1 << (p.saveId - 1));
+		if (!m_claimed[path]) {
+			m_claimed.remove(path);
+		}
+	}
+
 	m_pids.remove(pid);
 	if (m_pids.size() == 0) {
 		m_platform = mPLATFORM_NONE;
@@ -355,6 +393,20 @@ int MultiplayerController::playerId(CoreController* controller) const {
 		}
 		if (p->controller == controller) {
 			return i;
+		}
+	}
+	return -1;
+}
+
+int MultiplayerController::saveId(CoreController* controller) const {
+	for (int i = 0; i < m_players.count(); ++i) {
+		const Player* p = player(i);
+		if (!p) {
+			LOG(QT, ERROR) << tr("Trying to get save ID for a multiplayer player that's not attached");
+			return -1;
+		}
+		if (p->controller == controller) {
+			return p->saveId;
 		}
 	}
 	return -1;
