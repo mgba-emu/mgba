@@ -734,7 +734,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../FrameView.ui" line="84"/>
         <source>Backdrop color</source>
-        <translation>Cor do segundo plano</translation>
+        <translation>Cor do 2º plano</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="132"/>
