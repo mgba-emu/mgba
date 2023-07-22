@@ -946,7 +946,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GIFView.cpp" line="61"/>
         <source>Failed to open output file: %1</source>
-        <translation>Falha ao abrir o arquivo de saída: %1</translation>
+        <translation>Falhou em abrir o arquivo de saída: %1</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
