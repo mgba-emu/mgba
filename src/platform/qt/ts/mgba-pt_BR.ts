@@ -696,7 +696,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="44"/>
         <source>Build failed</source>
-        <translation>Falha ao criar o build</translation>
+        <translation>Falhou em criar o build</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
