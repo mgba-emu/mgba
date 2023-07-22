@@ -425,7 +425,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreController.cpp" line="974"/>
         <source>Failed to open snapshot file for reading: %1</source>
-        <translation>Falha ao abrir o arquivo de snapshot para leitura: %1</translation>
+        <translation>Falhou em abrir o arquivo do snapshot pra leitura: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="991"/>
