@@ -70,7 +70,7 @@ O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation>Uma atualização para o %1 está disponível.
+        <translation>Uma atualização pro %1 está disponível.
 </translation>
     </message>
     <message>
@@ -1065,7 +1065,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="92"/>
         <source>Pocket Cam</source>
-        <translation>Câmera de Bolso</translation>
+        <translation>Câmara de Bolso</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="93"/>
@@ -3863,7 +3863,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ObjView.ui" line="715"/>
         <source>Tile</source>
-        <translation>Ladrilho</translation>
+        <translation>Mosaico</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="137"/>
