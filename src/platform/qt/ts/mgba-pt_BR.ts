@@ -193,7 +193,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../AudioDevice.cpp" line="26"/>
         <source>Can&apos;t set format of context-less audio device</source>
-        <translation>Não é possível definir o formato de dispositivos de áudio sem contexto</translation>
+        <translation>Não pôde definir o formato do dispositivo de áudio sem contexto</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="44"/>
