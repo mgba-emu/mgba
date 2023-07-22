@@ -807,7 +807,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GBAApp.cpp" line="78"/>
         <source>Enable Discord Rich Presence</source>
-        <translation>Habilitar Discord Rich Presence</translation>
+        <translation>Ativar o Discord Rich Presence</translation>
     </message>
 </context>
 <context>
