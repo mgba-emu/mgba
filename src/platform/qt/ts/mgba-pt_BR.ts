@@ -381,7 +381,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation>Algumas trapaças não foram adicionadas. Por favor, tenha certeza que elas estão formatadas corretamente e/ou tente outros tipos de trapaça.</translation>
+        <translation>Algumas trapaças não puderam ser adicionadas. Por favor tenha certeza que eles estão formatadas corretamente e/ou tente outros tipos de trapaça.</translation>
     </message>
 </context>
 <context>
