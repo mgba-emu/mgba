@@ -420,7 +420,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreController.cpp" line="859"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
-        <translation>Não é possível arrancar o pacote numa plataforma inesperada!</translation>
+        <translation>Não pode arrancar o pacote numa plataforma inesperada!</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="974"/>
