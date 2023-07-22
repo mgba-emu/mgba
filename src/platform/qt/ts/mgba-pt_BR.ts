@@ -461,7 +461,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DebuggerConsole.ui" line="20"/>
         <source>Enter command (try `help` for more info)</source>
-        <translation>Insira o comando (tente `help` para mais informações)</translation>
+        <translation>Insira o comando (tente `help` pra mais informações)</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="27"/>
