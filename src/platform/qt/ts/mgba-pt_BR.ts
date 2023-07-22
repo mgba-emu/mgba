@@ -1005,7 +1005,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="80"/>
         <source>ROM Only</source>
-        <translation>Apenas ROM</translation>
+        <translation>So a ROM</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
