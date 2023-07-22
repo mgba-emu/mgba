@@ -522,7 +522,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Could not connect to Dolphin.</source>
-        <translation>Não foi possível conectar-se ao Dolphin.</translation>
+        <translation>Não pôde conectar com o Dolphin.</translation>
     </message>
 </context>
 <context>
@@ -739,7 +739,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../FrameView.ui" line="132"/>
         <source>Disable scanline effects</source>
-        <translation>Desativar efeitos do scanline</translation>
+        <translation>Desativar efeitos da scanline</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="145"/>
@@ -3264,7 +3264,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation>Informações</translation>
+        <translation>Info</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
