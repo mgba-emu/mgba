@@ -405,7 +405,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreController.cpp" line="569"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation>A maioria dos jogos precisam ser reiniciados para carregar o novo save. Você deseja reiniciar agora?</translation>
+        <translation>A maioria dos jogos requerirão um reset pra carregar o novo save. Você quer resetar agora?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="784"/>
