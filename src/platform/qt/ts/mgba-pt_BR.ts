@@ -376,7 +376,7 @@ Tamanho do download: %3</translation>
         <location filename="../CheatsView.cpp" line="88"/>
         <location filename="../CheatsView.cpp" line="95"/>
         <source>Select cheats file</source>
-        <translation>Selecionar arquivo das trapaças</translation>
+        <translation>Selecionar o arquivo das trapaças</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
