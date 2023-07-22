@@ -671,7 +671,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="22"/>
         <source>Select ROM file</source>
-        <translation>Selecione o arquivo ROM</translation>
+        <translation>Selecione o arquivo da ROM</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="23"/>
