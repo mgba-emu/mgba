@@ -517,7 +517,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
         <source>Couldn&apos;t Connect</source>
-        <translation>Falha ao Conectar</translation>
+        <translation>Não Pôde Conectar</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
