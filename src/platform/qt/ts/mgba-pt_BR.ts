@@ -70,7 +70,7 @@ O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation>Uma atualização para o %1 está disponível.
+        <translation>Uma atualização pro %1 está disponível.
 </translation>
     </message>
     <message>
@@ -78,14 +78,14 @@ O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
         <translation>
-Você deseja fazer o download e instalar agora? Será necessário reiniciar o emulador quando o processo for concluído.</translation>
+Você que baixar e instalá-lo agora? Você precisará reiniciar o emulador quando o download estiver completo.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
         <translation>
-Atualizações automáticas não estão disponíveis nesta plataforma. Para realizar atualizações, você precisará fazê-lo manualmente.</translation>
+Uma auto-atualização não está disponível nesta plataforma. Se você deseja atualizar você precisará fazê-lo manualmente.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="45"/>
@@ -193,7 +193,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../AudioDevice.cpp" line="26"/>
         <source>Can&apos;t set format of context-less audio device</source>
-        <translation>Não é possível definir o formato de dispositivos de áudio sem contexto</translation>
+        <translation>Não pôde definir o formato do dispositivo de áudio sem contexto</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="44"/>
@@ -211,7 +211,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="43"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation>Não é possível iniciar um processador de áudio sem entrada</translation>
+        <translation>Não pôde iniciar um processador de áudio sem entrada</translation>
     </message>
 </context>
 <context>
@@ -219,7 +219,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation>Não é possível iniciar um processador de áudio sem entrada</translation>
+        <translation>Não pôde iniciar um processador de áudio sem entrada</translation>
     </message>
 </context>
 <context>
@@ -282,17 +282,17 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
         <source>Show advanced</source>
-        <translation>Mostrar opções avançadas</translation>
+        <translation>Mostrar as opções avançadas</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation>Dados do BattleChip não encontrados</translation>
+        <translation>Dados do BattleChip ausentes</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation>Os dados do BattleChip estão ausentes. Os Portais do BattleChip ainda funcionarão, mas alguns gráficos estarão ausentes. Você gostaria de fazer download dos dados agora?</translation>
+        <translation>Os dados do BattleChip estão ausente. Os Portais do BattleChip Gates ainda funcionarão mas alguns gráficos estarão ausentes. Você gostaria de baixar os dados agora?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="184"/>
@@ -376,12 +376,12 @@ Tamanho do download: %3</translation>
         <location filename="../CheatsView.cpp" line="88"/>
         <location filename="../CheatsView.cpp" line="95"/>
         <source>Select cheats file</source>
-        <translation>Selecionar arquivo das trapaças</translation>
+        <translation>Selecionar o arquivo das trapaças</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation>Algumas trapaças não foram adicionadas. Por favor, tenha certeza que elas estão formatadas corretamente e/ou tente outros tipos de trapaça.</translation>
+        <translation>Algumas trapaças não puderam ser adicionadas. Por favor tenha certeza que eles estão formatadas corretamente e/ou tente outros tipos de trapaça.</translation>
     </message>
 </context>
 <context>
@@ -405,32 +405,32 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreController.cpp" line="569"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation>A maioria dos jogos precisam ser reiniciados para carregar o novo save. Você deseja reiniciar agora?</translation>
+        <translation>A maioria dos jogos requerirão um reset pra carregar o novo save. Você quer resetar agora?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="784"/>
         <source>Failed to open save file: %1</source>
-        <translation>Falha ao abrir o arquivo de save: %1</translation>
+        <translation>Falhou em abrir o arquivo do save: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="830"/>
         <source>Failed to open game file: %1</source>
-        <translation>Falha ao abrir o arquivo do jogo: %1</translation>
+        <translation>Falhou em abrir o arquivo do jogo: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="859"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
-        <translation>Não é possível arrancar o pacote numa plataforma inesperada!</translation>
+        <translation>Não pode arrancar o pacote numa plataforma inesperada!</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="974"/>
         <source>Failed to open snapshot file for reading: %1</source>
-        <translation>Falha ao abrir o arquivo de snapshot para leitura: %1</translation>
+        <translation>Falhou em abrir o arquivo do snapshot pra leitura: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="991"/>
         <source>Failed to open snapshot file for writing: %1</source>
-        <translation>Falha ao abrir o arquivo de snapshot pra gravação: %1</translation>
+        <translation>Falhou em abrir o arquivo do snapshot pra gravação: %1</translation>
     </message>
 </context>
 <context>
@@ -438,17 +438,17 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="51"/>
         <source>Failed to open game file: %1</source>
-        <translation>Falha ao abrir o arquivo do jogo: %1</translation>
+        <translation>Falhou em abrir o arquivo do jogo: %1</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="89"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
-        <translation>Não foi possível carregar o jogo. Você tem certeza que o mesmo está no formato correto?</translation>
+        <translation>Não pôde carregar o jogo. Você tem certeza que está no formato correto?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="116"/>
         <source>Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).</source>
-        <translation>Falha ao abrir o abrir o arquivo de save; Os saves dentro do jogo não podem ser atualizados. Por favor, tenha certeza que o diretório de save tenha permissões de gravação sem uso de privilégios adicionais (ex: UAC no Windows).</translation>
+        <translation>Falhou em abrir o abrir o arquivo de save; Os saves dentro do jogo não podem ser atualizados. Por favor tenha certeza que o diretório de save seja gravável sem privilégios adicionais (ex: UAC no Windows).</translation>
     </message>
 </context>
 <context>
@@ -461,7 +461,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DebuggerConsole.ui" line="20"/>
         <source>Enter command (try `help` for more info)</source>
-        <translation>Insira o comando (tente `help` para mais informações)</translation>
+        <translation>Insira o comando (tente `help` pra mais informações)</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="27"/>
@@ -474,7 +474,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="171"/>
         <source>Could not open CLI history for writing</source>
-        <translation>Não foi possível abrir o histórico do CLI para gravar</translation>
+        <translation>Não pôde abrir o histórico do CLI pra gravar</translation>
     </message>
 </context>
 <context>
@@ -492,7 +492,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
         <source>IP address</source>
-        <translation>Endereço IP</translation>
+        <translation>Endereço do IP</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
@@ -517,12 +517,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
         <source>Couldn&apos;t Connect</source>
-        <translation>Falha ao Conectar</translation>
+        <translation>Não Pôde Conectar</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Could not connect to Dolphin.</source>
-        <translation>Não foi possível conectar-se ao Dolphin.</translation>
+        <translation>Não pôde conectar com o Dolphin.</translation>
     </message>
 </context>
 <context>
@@ -561,7 +561,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Background</source>
-        <translation>Segundo plano</translation>
+        <translation>2º plano</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
@@ -584,7 +584,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="26"/>
         <source>ROM file:</source>
-        <translation>Arquivo ROM:</translation>
+        <translation>Arquivo da ROM:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="36"/>
@@ -611,7 +611,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="79"/>
         <source>Latest development build</source>
-        <translation>Última build de desenvolvimento</translation>
+        <translation>Último build de desenvolvimento</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="84"/>
@@ -671,7 +671,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="22"/>
         <source>Select ROM file</source>
-        <translation>Selecione o arquivo ROM</translation>
+        <translation>Selecione o arquivo da ROM</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="23"/>
@@ -696,12 +696,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="44"/>
         <source>Build failed</source>
-        <translation>Falha ao criar o build</translation>
+        <translation>Falhou em criar o build</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
         <source>Failed to build forwarder</source>
-        <translation>Falha ao criar o encaminhador</translation>
+        <translation>Falhou em criar o encaminhador</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="176"/>
@@ -734,12 +734,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../FrameView.ui" line="84"/>
         <source>Backdrop color</source>
-        <translation>Cor do segundo plano</translation>
+        <translation>Cor do 2º plano</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="132"/>
         <source>Disable scanline effects</source>
-        <translation>Desativar efeitos de scanline</translation>
+        <translation>Desativar efeitos da scanline</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="145"/>
@@ -759,7 +759,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../FrameView.cpp" line="579"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished">Portable Network Graphics (*.png)</translation>
+        <translation>Gráficos Portáteis da Rede (*.png)</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="600"/>
@@ -769,7 +769,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../FrameView.cpp" line="602"/>
         <source>Background</source>
-        <translation>Segundo plano</translation>
+        <translation>2º plano</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="605"/>
@@ -789,7 +789,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../FrameView.cpp" line="616"/>
         <source>Backdrop</source>
-        <translation>Segundo plano</translation>
+        <translation>2º Plano</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="619"/>
@@ -807,7 +807,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GBAApp.cpp" line="78"/>
         <source>Enable Discord Rich Presence</source>
-        <translation>Habilitar Discord Rich Presence</translation>
+        <translation>Ativar a Presença Rica no Discord</translation>
     </message>
 </context>
 <context>
@@ -873,7 +873,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
         <source>Break</source>
-        <translation>Parar</translation>
+        <translation>Pausar</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="124"/>
@@ -893,7 +893,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GDBWindow.cpp" line="145"/>
         <source>Could not start GDB server</source>
-        <translation>Não foi possível iniciar o servidor do GDB</translation>
+        <translation>Não pôde iniciar o servidor do GDB</translation>
     </message>
 </context>
 <context>
@@ -941,12 +941,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GIFView.ui" line="145"/>
         <source>Frameskip</source>
-        <translation>Salto de frames</translation>
+        <translation>Frameskip</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="61"/>
         <source>Failed to open output file: %1</source>
-        <translation>Falha ao abrir o arquivo de saída: %1</translation>
+        <translation>Falhou em abrir o arquivo de saída: %1</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
@@ -956,7 +956,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
-        <translation>Arquivos Graphics Interchange Format (*.gif); Arquivos WebP ( *.webp); Arquivos Animated Portable Network Graphics (*.png *.apng)</translation>
+        <translation>Formato da Inter-Mudança dos Gráficos (*.gif);;WebP ( *.webp);;Gráficos da Rede Animada Portátil (*.png *.apng)</translation>
     </message>
 </context>
 <context>
@@ -1005,7 +1005,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="80"/>
         <source>ROM Only</source>
-        <translation>Apenas ROM</translation>
+        <translation>So a ROM</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
@@ -1065,7 +1065,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="92"/>
         <source>Pocket Cam</source>
-        <translation>Câmera de Bolso</translation>
+        <translation>Câmara de Bolso</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="93"/>
@@ -1155,17 +1155,17 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="40"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation>Modo 0: 4 camadas de ladrilhos</translation>
+        <translation>Modo 0: 4 camadas de mosaicos</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="41"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation>Modo 1: 2 camadas de ladrilhos + 1 camada de ladrilhos rotacionada/redimensionada</translation>
+        <translation>Modo 1: 2 camadas de mosaicos + 1 camada de mosaico rotacionada/redimensionada</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="42"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
-        <translation>Modo 2: 2 camadas de ladrilhos rotacionadas/redimensionadas</translation>
+        <translation>Modo 2: 2 camadas de mosaicos rotacionadas/redimensionadas</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="43"/>
@@ -1200,7 +1200,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="52"/>
         <source>Linear OBJ tile mapping</source>
-        <translation>Mapeamento do ladrilho do OBJ linear</translation>
+        <translation>Mapeamento do mosaico do OBJ linear</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="53"/>
@@ -1306,7 +1306,7 @@ Tamanho do download: %3</translation>
         <location filename="../IOViewer.cpp" line="102"/>
         <location filename="../IOViewer.cpp" line="112"/>
         <source>Tile data base (* 16kB)</source>
-        <translation>Banco de dados dos ladrilhos (* 16 kBs)</translation>
+        <translation>Banco de dados dos mosaicos (* 16 kBs)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="85"/>
@@ -1330,7 +1330,7 @@ Tamanho do download: %3</translation>
         <location filename="../IOViewer.cpp" line="105"/>
         <location filename="../IOViewer.cpp" line="115"/>
         <source>Tile map base (* 2kB)</source>
-        <translation>Base do mapa dos ladrilhos (* 2 kBs)</translation>
+        <translation>Base do mapa dos mosaicos (* 2 kBs)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="88"/>
@@ -2775,7 +2775,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation>Mapa dos ladrilhos do 2º plano</translation>
+        <translation>Mapa dos mosaicos do 2º plano</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
@@ -2792,7 +2792,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1333"/>
         <source>Background tile data</source>
-        <translation>Dados dos ladrilhos do 2º plano</translation>
+        <translation>Dados dos mosaicos do 2º plano</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1334"/>
@@ -2812,7 +2812,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1338"/>
         <source>Window tile map</source>
-        <translation>Mapa dos ladrilhos da janela</translation>
+        <translation>Mapa dos mosaicos da janela</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1342"/>
@@ -3339,7 +3339,7 @@ Tamanho do download: %3</translation>
         <location filename="../MapView.cpp" line="50"/>
         <location filename="../MapView.cpp" line="63"/>
         <source>Tile base</source>
-        <translation>Base dos ladrilhos</translation>
+        <translation>Base dos mosaicos</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="51"/>
@@ -3863,7 +3863,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ObjView.ui" line="715"/>
         <source>Tile</source>
-        <translation>Ladrilho</translation>
+        <translation>Mosaico</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="137"/>
@@ -4344,7 +4344,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ReportView.ui" line="150"/>
         <source>Create and include savestate</source>
-        <translation>Criar e incluir savestate</translation>
+        <translation>Criar e incluir o save state</translation>
     </message>
 </context>
 <context>
@@ -4473,12 +4473,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="495"/>
         <source>packed MBC2</source>
-        <translation>empacotou o MBC2</translation>
+        <translation>Empacotou o MBC2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="497"/>
         <source>unpacked MBC2</source>
-        <translation>desempacotou o MBC2</translation>
+        <translation>Desempacotou o MBC2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="502"/>
@@ -5206,7 +5206,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1734"/>
         <source>Select Log File</source>
-        <translation>Selecionar Arquivo de Registro</translation>
+        <translation>Selecionar Arquivo do Registro</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="440"/>
@@ -5608,7 +5608,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../TileView.cpp" line="225"/>
         <source>Export tiles</source>
-        <translation>Exportar ladrilhos</translation>
+        <translation>Exportar mosaicos</translation>
     </message>
     <message>
         <location filename="../TileView.cpp" line="226"/>
@@ -5619,12 +5619,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../TileView.cpp" line="237"/>
         <source>Export tile</source>
-        <translation>Exportar ladrilho</translation>
+        <translation>Exportar mosaico</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="14"/>
         <source>Tiles</source>
-        <translation>Ladrilhos</translation>
+        <translation>Mosaicos</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="170"/>
@@ -5654,7 +5654,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../TileView.ui" line="96"/>
         <source>Tiles per row</source>
-        <translation>Ladrilhos por linha</translation>
+        <translation>Mosaicos por linha</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="103"/>
@@ -6582,7 +6582,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1655"/>
         <source>View &amp;tiles...</source>
-        <translation>Visualizar &amp;ladrilhos...</translation>
+        <translation>Visualizar &amp;mosaicos...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1656"/>
