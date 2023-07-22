@@ -78,7 +78,7 @@ O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
         <translation>
-Você deseja fazer o download e instalar agora? Será necessário reiniciar o emulador quando o processo for concluído.</translation>
+Você que baixar e instalá-lo agora? Você precisará reiniciar o emulador quando o download estiver completo.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
