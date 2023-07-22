@@ -287,7 +287,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation>Portal do BattleChip</translation>
+        <translation>Dados do BattleChip ausentes</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
@@ -807,7 +807,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GBAApp.cpp" line="78"/>
         <source>Enable Discord Rich Presence</source>
-        <translation>Ativar o Discord Rich Presence</translation>
+        <translation>Ativar a Presença Rica no Discord</translation>
     </message>
 </context>
 <context>
@@ -956,7 +956,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GIFView.cpp" line="88"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
-        <translation>Arquivos Graphics Interchange Format (*.gif); Arquivos WebP ( *.webp); Arquivos Animated Portable Network Graphics (*.png *.apng)</translation>
+        <translation>Formato da Inter-Mudança dos Gráficos (*.gif);;WebP ( *.webp);;Gráficos da Rede Animada Portátil (*.png *.apng)</translation>
     </message>
 </context>
 <context>
@@ -1155,17 +1155,17 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="40"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation>Modo 0: 4 camadas de ladrilhos</translation>
+        <translation>Modo 0: 4 camadas de mosaicos</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="41"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation>Modo 1: 2 camadas de ladrilhos + 1 camada de ladrilhos rotacionada/redimensionada</translation>
+        <translation>Modo 1: 2 camadas de mosaicos + 1 camada de mosaico rotacionada/redimensionada</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="42"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
-        <translation>Modo 2: 2 camadas de ladrilhos rotacionadas/redimensionadas</translation>
+        <translation>Modo 2: 2 camadas de mosaicos rotacionadas/redimensionadas</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="43"/>
@@ -1200,7 +1200,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="52"/>
         <source>Linear OBJ tile mapping</source>
-        <translation>Mapeamento do ladrilho do OBJ linear</translation>
+        <translation>Mapeamento do mosaico do OBJ linear</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="53"/>
@@ -1306,7 +1306,7 @@ Tamanho do download: %3</translation>
         <location filename="../IOViewer.cpp" line="102"/>
         <location filename="../IOViewer.cpp" line="112"/>
         <source>Tile data base (* 16kB)</source>
-        <translation>Banco de dados dos ladrilhos (* 16 kBs)</translation>
+        <translation>Banco de dados dos mosaicos (* 16 kBs)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="85"/>
@@ -1330,7 +1330,7 @@ Tamanho do download: %3</translation>
         <location filename="../IOViewer.cpp" line="105"/>
         <location filename="../IOViewer.cpp" line="115"/>
         <source>Tile map base (* 2kB)</source>
-        <translation>Base do mapa dos ladrilhos (* 2 kBs)</translation>
+        <translation>Base do mapa dos mosaicos (* 2 kBs)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="88"/>
@@ -2775,7 +2775,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation>Mapa dos ladrilhos do 2º plano</translation>
+        <translation>Mapa dos mosaicos do 2º plano</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
@@ -2792,7 +2792,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1333"/>
         <source>Background tile data</source>
-        <translation>Dados dos ladrilhos do 2º plano</translation>
+        <translation>Dados dos mosaicos do 2º plano</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1334"/>
@@ -2812,7 +2812,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1338"/>
         <source>Window tile map</source>
-        <translation>Mapa dos ladrilhos da janela</translation>
+        <translation>Mapa dos mosaicos da janela</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1342"/>
@@ -3264,7 +3264,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation>Info</translation>
+        <translation>Informações</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
@@ -3339,7 +3339,7 @@ Tamanho do download: %3</translation>
         <location filename="../MapView.cpp" line="50"/>
         <location filename="../MapView.cpp" line="63"/>
         <source>Tile base</source>
-        <translation>Base dos ladrilhos</translation>
+        <translation>Base dos mosaicos</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="51"/>
@@ -4344,7 +4344,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ReportView.ui" line="150"/>
         <source>Create and include savestate</source>
-        <translation>Criar e incluir savestate</translation>
+        <translation>Criar e incluir o save state</translation>
     </message>
 </context>
 <context>
@@ -4473,12 +4473,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="495"/>
         <source>packed MBC2</source>
-        <translation>empacotou o MBC2</translation>
+        <translation>Empacotou o MBC2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="497"/>
         <source>unpacked MBC2</source>
-        <translation>desempacotou o MBC2</translation>
+        <translation>Desempacotou o MBC2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="502"/>
@@ -5206,7 +5206,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1734"/>
         <source>Select Log File</source>
-        <translation>Selecionar Arquivo de Registro</translation>
+        <translation>Selecionar Arquivo do Registro</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="440"/>
@@ -5608,7 +5608,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../TileView.cpp" line="225"/>
         <source>Export tiles</source>
-        <translation>Exportar ladrilhos</translation>
+        <translation>Exportar mosaicos</translation>
     </message>
     <message>
         <location filename="../TileView.cpp" line="226"/>
@@ -5619,12 +5619,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../TileView.cpp" line="237"/>
         <source>Export tile</source>
-        <translation>Exportar ladrilho</translation>
+        <translation>Exportar mosaico</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="14"/>
         <source>Tiles</source>
-        <translation>Ladrilhos</translation>
+        <translation>Mosaicos</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="170"/>
@@ -5654,7 +5654,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../TileView.ui" line="96"/>
         <source>Tiles per row</source>
-        <translation>Ladrilhos por linha</translation>
+        <translation>Mosaicos por linha</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="103"/>
@@ -6582,7 +6582,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1655"/>
         <source>View &amp;tiles...</source>
-        <translation>Visualizar &amp;ladrilhos...</translation>
+        <translation>Visualizar &amp;mosaicos...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1656"/>
