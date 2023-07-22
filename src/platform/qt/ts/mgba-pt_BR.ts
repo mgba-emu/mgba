@@ -443,7 +443,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="89"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
-        <translation>Não foi possível carregar o jogo. Você tem certeza que o mesmo está no formato correto?</translation>
+        <translation>Não pôde carregar o jogo. Você tem certeza que está no formato correto?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="116"/>
