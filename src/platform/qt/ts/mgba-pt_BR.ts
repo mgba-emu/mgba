@@ -287,7 +287,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation>Dados do BattleChip não encontrados</translation>
+        <translation>Portal do BattleChip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
