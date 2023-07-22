@@ -739,7 +739,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../FrameView.ui" line="132"/>
         <source>Disable scanline effects</source>
-        <translation>Desativar efeitos de scanline</translation>
+        <translation>Desativar efeitos do scanline</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="145"/>
