@@ -561,7 +561,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Background</source>
-        <translation>Segundo plano</translation>
+        <translation>2º plano</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
