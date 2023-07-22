@@ -584,7 +584,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="26"/>
         <source>ROM file:</source>
-        <translation>Arquivo ROM:</translation>
+        <translation>Arquivo da ROM:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="36"/>
