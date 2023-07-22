@@ -292,7 +292,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation>Os dados do BattleChip estão ausentes. Os Portais do BattleChip ainda funcionarão, mas alguns gráficos estarão ausentes. Você gostaria de fazer download dos dados agora?</translation>
+        <translation>Os dados do BattleChip estão ausente. Os Portais do BattleChip Gates ainda funcionarão mas alguns gráficos estarão ausentes. Você gostaria de baixar os dados agora?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="184"/>
