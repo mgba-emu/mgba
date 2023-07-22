@@ -492,7 +492,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
         <source>IP address</source>
-        <translation>Endereço IP</translation>
+        <translation>Endereço do IP</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
