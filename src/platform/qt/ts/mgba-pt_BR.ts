@@ -611,7 +611,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="79"/>
         <source>Latest development build</source>
-        <translation>Última build de desenvolvimento</translation>
+        <translation>Último build de desenvolvimento</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="84"/>
