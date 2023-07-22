@@ -769,7 +769,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../FrameView.cpp" line="602"/>
         <source>Background</source>
-        <translation>Segundo plano</translation>
+        <translation>2º plano</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="605"/>
