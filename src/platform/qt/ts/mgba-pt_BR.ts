@@ -701,7 +701,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
         <source>Failed to build forwarder</source>
-        <translation>Falha ao criar o encaminhador</translation>
+        <translation>Falhou em criar o encaminhador</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="176"/>
