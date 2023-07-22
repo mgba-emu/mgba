@@ -415,7 +415,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreController.cpp" line="830"/>
         <source>Failed to open game file: %1</source>
-        <translation>Falha ao abrir o arquivo do jogo: %1</translation>
+        <translation>Falhou em abrir o arquivo do jogo: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="859"/>
