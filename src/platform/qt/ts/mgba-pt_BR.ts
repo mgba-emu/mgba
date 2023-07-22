@@ -474,7 +474,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="171"/>
         <source>Could not open CLI history for writing</source>
-        <translation>Não foi possível abrir o histórico do CLI para gravar</translation>
+        <translation>Não pôde abrir o histórico do CLI pra gravar</translation>
     </message>
 </context>
 <context>
@@ -873,7 +873,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
         <source>Break</source>
-        <translation>Parar</translation>
+        <translation>Pausar</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="124"/>
