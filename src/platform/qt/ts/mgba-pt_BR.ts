@@ -759,7 +759,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../FrameView.cpp" line="579"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished">Portable Network Graphics (*.png)</translation>
+        <translation>Gráficos Portáteis da Rede (*.png)</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="600"/>
