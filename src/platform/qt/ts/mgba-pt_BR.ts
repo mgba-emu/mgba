@@ -219,7 +219,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation>Não é possível iniciar um processador de áudio sem entrada</translation>
+        <translation>Não pôde iniciar um processador de áudio sem entrada</translation>
     </message>
 </context>
 <context>
