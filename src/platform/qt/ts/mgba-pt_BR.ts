@@ -893,7 +893,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GDBWindow.cpp" line="145"/>
         <source>Could not start GDB server</source>
-        <translation>Não foi possível iniciar o servidor do GDB</translation>
+        <translation>Não pôde iniciar o servidor do GDB</translation>
     </message>
 </context>
 <context>
