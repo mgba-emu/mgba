@@ -941,7 +941,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GIFView.ui" line="145"/>
         <source>Frameskip</source>
-        <translation>Salto de frames</translation>
+        <translation>Frameskip</translation>
     </message>
     <message>
         <location filename="../GIFView.cpp" line="61"/>
