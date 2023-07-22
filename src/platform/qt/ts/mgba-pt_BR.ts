@@ -448,7 +448,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="116"/>
         <source>Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).</source>
-        <translation>Falha ao abrir o abrir o arquivo de save; Os saves dentro do jogo não podem ser atualizados. Por favor, tenha certeza que o diretório de save tenha permissões de gravação sem uso de privilégios adicionais (ex: UAC no Windows).</translation>
+        <translation>Falhou em abrir o abrir o arquivo de save; Os saves dentro do jogo não podem ser atualizados. Por favor tenha certeza que o diretório de save seja gravável sem privilégios adicionais (ex: UAC no Windows).</translation>
     </message>
 </context>
 <context>
