@@ -85,7 +85,7 @@ Você que baixar e instalá-lo agora? Você precisará reiniciar o emulador quan
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
         <translation>
-Atualizações automáticas não estão disponíveis nesta plataforma. Para realizar atualizações, você precisará fazê-lo manualmente.</translation>
+Uma auto-atualização não está disponível nesta plataforma. Se você deseja atualizar você precisará fazê-lo manualmente.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="45"/>
