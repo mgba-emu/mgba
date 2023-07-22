@@ -410,7 +410,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreController.cpp" line="784"/>
         <source>Failed to open save file: %1</source>
-        <translation>Falha ao abrir o arquivo de save: %1</translation>
+        <translation>Falhou em abrir o arquivo do save: %1</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="830"/>
