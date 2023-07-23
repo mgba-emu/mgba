@@ -271,51 +271,108 @@ ATTRIBUTE_UNUSED static unsigned mColorMix5Bit(int weightA, unsigned colorA, int
 }
 
 ATTRIBUTE_UNUSED static uint32_t mColorMixARGB8(uint32_t colorA, uint32_t colorB) {
-	uint32_t alpha = colorA >> 24;
-	if (!alpha) {
+	uint32_t alphaA = colorA >> 24;
+	if (!alphaA) {
 		return colorB;
 	}
-
+	uint32_t alphaB = colorB >> 24;
 	uint32_t color = 0;
+
+#if 1
+	// TODO: Benchmark integer and float versions
 	uint32_t a, b;
-	a = colorA & 0xFF00FF;
-	a *= alpha + 1;
-	color += (a >> 8) & 0xFF00FF;
+	uint32_t alpha = (alphaA * 0xFF) + alphaB * (0xFF - alphaA);
 
-	a = colorB & 0xFF00FF;
-	a *= 0x100 - alpha;
-	color += (a >> 8) & 0xFF00FF;
+	a = colorA & 0xFF;
+	a *= alphaA * 0xFF;
+	b = a;
 
-	if (color & 0x100) {
-		color &= ~0xFF;
+	a = colorB & 0xFF;
+	a *= alphaB * (0xFF - alphaA);
+	b += a;
+
+	b /= alpha;
+	if (b > 0xFF) {
 		color |= 0xFF;
+	} else {
+		color |= b;
 	}
-	if (color & 0x1000000) {
-		color &= ~0xFF0000;
+
+	a = (colorA >> 8) & 0xFF;
+	a *= alphaA * 0xFF;
+	b = a;
+
+	a = (colorB >> 8) & 0xFF;
+	a *= alphaB * (0xFF - alphaA);
+	b += a;
+
+	b /= alpha;
+	if (b > 0xFF) {
+		color |= 0xFF00;
+	} else {
+		color |= b << 8;
+	}
+
+	a = (colorA >> 16) & 0xFF;
+	a *= alphaA * 0xFF;
+	b = a;
+
+	a = (colorB >> 16) & 0xFF;
+	a *= alphaB * (0xFF - alphaA);
+	b += a;
+
+	b /= alpha;
+	if (b > 0xFF) {
 		color |= 0xFF0000;
+	} else {
+		color |= b << 16;
 	}
 
-	b = 0;
-	a = colorA & 0xFF00;
-	a *= alpha + 1;
-	b += a & 0xFF0000;
-
-	a = colorB & 0xFF00;
-	a *= 0x100 - alpha;
-	b += a & 0xFF0000;
-
-	if (b & 0x1000000) {
-		b &= ~0xFF0000;
-		b |= 0xFF0000;
-	}
-	color |= b >> 8;
-
-	alpha += colorB >> 24;
+	alpha /= 0xFF;
 	if (alpha > 0xFF) {
 		color |= 0xFF000000;
 	} else {
 		color |= alpha << 24;
 	}
+#else
+	float ca, aa;
+	float cb, ab;
+
+	static const float r255 = 1 / 255.f;
+	aa = alphaA * r255;
+	ab = alphaB * r255;
+	float alpha = aa + ab * (1.f - aa);
+	float ralpha = 1.f / alpha;
+	alpha = alpha * 255.f;
+	color = ((int) alpha) << 24;
+
+	ca = ((colorA >> 16) & 0xFF) * r255;
+	cb = ((colorB >> 16) & 0xFF) * r255;
+	ca = ca * aa + cb * ab * (1.f - aa);
+	ca = ca * ralpha * 255.f;
+	if (ca > 255.f) {
+		ca = 255.f;
+	}
+	color |= ((int) ca) << 16;
+
+	ca = ((colorA >> 8) & 0xFF) * r255;
+	cb = ((colorB >> 8) & 0xFF) * r255;
+	ca = ca * aa + cb * ab * (1.f - aa);
+	ca = ca * ralpha * 255.f;
+	if (ca > 255.f) {
+		ca = 255.f;
+	}
+	color |= ((int) ca) << 8;
+
+	ca = (colorA & 0xFF) * r255;
+	cb = (colorB & 0xFF) * r255;
+	ca = ca * aa + cb * ab * (1.f - aa);
+	ca = ca * ralpha * 255.f;
+	if (ca > 255.f) {
+		ca = 255.f;
+	}
+	color |= (int) ca;
+#endif
 
 	return color;
 }
