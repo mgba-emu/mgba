@@ -523,6 +523,97 @@ void mImageCompositeWithAlpha(struct mImage* image, const struct mImage* source,
 	}
 }
 
+#define FILL_BOUNDS_INIT(X, Y, W, H) \
+	struct mRectangle dstRect = { \
+		.x = 0, \
+		.y = 0, \
+		.width = painter->backing->width, \
+		.height = painter->backing->height \
+	}; \
+	struct mRectangle srcRect = { \
+		.x = (X), \
+		.y = (Y), \
+		.width = (W), \
+		.height = (H) \
+	}; \
+	if (!mRectangleIntersection(&srcRect, &dstRect)) { \
+		return; \
+	} \
+	int dstStartX; \
+	int dstStartY; \
+	if ((X) < 0) { \
+		dstStartX = 0; \
+	} else { \
+		dstStartX = srcRect.x; \
+	} \
+	if ((Y) < 0) { \
+		dstStartY = 0; \
+	} else { \
+		dstStartY = srcRect.y; \
+	}
+
+void mPainterInit(struct mPainter* painter, struct mImage* backing) {
+	memset(painter, 0, sizeof(*painter));
+	painter->backing = backing;
+}
+
+static void mPainterFillRectangle(struct mPainter* painter, int x, int y, int width, int height) {
+	FILL_BOUNDS_INIT(x, y, width, height);
+
+	if (!painter->blend || painter->fillColor >= 0xFF000000) {
+		uint32_t color = mColorConvert(painter->fillColor, mCOLOR_ARGB8, painter->backing->format);
+		for (y = 0; y < srcRect.height; ++y) {
+			uintptr_t dstPixel = (uintptr_t) PIXEL(painter->backing, dstStartX, dstStartY + y);
+			for (x = 0; x < srcRect.width; ++x, dstPixel += painter->backing->depth) {
+				PUT_PIXEL(color, dstPixel, painter->backing->depth);
+			}
+		}
+	} else {
+		for (y = 0; y < srcRect.height; ++y) {
+			uintptr_t dstPixel = (uintptr_t) PIXEL(painter->backing, dstStartX, dstStartY + y);
+			for (x = 0; x < srcRect.width; ++x, dstPixel += painter->backing->depth) {
+				uint32_t color;
+				GET_PIXEL(color, dstPixel, painter->backing->depth);
+				color = mColorConvert(color, painter->backing->format, mCOLOR_ARGB8);
+				color = mColorMixARGB8(painter->fillColor, color);
+				color = mColorConvert(color, mCOLOR_ARGB8, painter->backing->format);
+				PUT_PIXEL(color, dstPixel, painter->backing->depth);
+			}
+		}
+	}
+}
+
+static void mPainterStrokeRectangle(struct mPainter* painter, int x, int y, int width, int height) {
+	uint32_t fillColor = painter->fillColor;
+	painter->fillColor = painter->strokeColor;
+	if (width <= painter->strokeWidth * 2 || height <= painter->strokeWidth * 2) {
+		mPainterFillRectangle(painter, x, y, width, height);
+	} else {
+		int lr = height - painter->strokeWidth;
+		int tb = width - painter->strokeWidth;
+		// Top, top-left corner
+		mPainterFillRectangle(painter, x, y, tb, painter->strokeWidth);
+		// Left, bottom-left corner
+		mPainterFillRectangle(painter, x, y + painter->strokeWidth, painter->strokeWidth, lr);
+		// Bottom, bottom-right corner
+		mPainterFillRectangle(painter, x + painter->strokeWidth, y + height - painter->strokeWidth, tb, painter->strokeWidth);
+		// Right, top-right corner
+		mPainterFillRectangle(painter, x + width - painter->strokeWidth, y, painter->strokeWidth, lr);
+	}
+	painter->fillColor = fillColor;
+}
+
+void mPainterDrawRectangle(struct mPainter* painter, int x, int y, int width, int height) {
+	int interiorW = width - painter->strokeWidth * 2;
+	int interiorH = height - painter->strokeWidth * 2;
+	if (painter->fill && interiorW > 0 && interiorH > 0) {
+		mPainterFillRectangle(painter, x + painter->strokeWidth, y + painter->strokeWidth, interiorW, interiorH);
+	}
+	if (painter->strokeWidth) {
+		mPainterStrokeRectangle(painter, x, y, width, height);
+	}
+}
+
 uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to) {
 	if (from == to) {
 		return color;

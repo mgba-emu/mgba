@@ -101,6 +101,15 @@ struct mImage {
 	enum mColorFormat format;
 };
 
+struct mPainter {
+	struct mImage* backing;
+	bool blend;
+	bool fill;
+	unsigned strokeWidth;
+	uint32_t strokeColor;
+	uint32_t fillColor;
+};
+
 struct VFile;
 struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat format);
 struct mImage* mImageCreateWithStride(unsigned width, unsigned height, unsigned stride, enum mColorFormat format);
@@ -124,6 +133,9 @@ void mImageSetPaletteEntry(struct mImage* image, unsigned index, uint32_t color)
 void mImageBlit(struct mImage* image, const struct mImage* source, int x, int y);
 void mImageComposite(struct mImage* image, const struct mImage* source, int x, int y);
 void mImageCompositeWithAlpha(struct mImage* image, const struct mImage* source, int x, int y, float alpha);
+
+void mPainterInit(struct mPainter*, struct mImage* backing);
+void mPainterDrawRectangle(struct mPainter*, int x, int y, int width, int height);
 
 uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to);
 uint32_t mImageColorConvert(uint32_t color, const struct mImage* from, enum mColorFormat to);
