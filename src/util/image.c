@@ -614,6 +614,75 @@ void mPainterDrawRectangle(struct mPainter* painter, int x, int y, int width, in
 	}
 }
 
+void mPainterDrawLine(struct mPainter* painter, int x1, int y1, int x2, int y2) {
+	if (!painter->strokeWidth) {
+		return;
+	}
+	int dx = x2 - x1;
+	int dy = y2 - y1;
+	int x, y;
+	int xi = 1;
+	int yi = 1;
+	int residual;
+
+	int mx = dx;
+	int my = dy;
+	if (mx < 0) {
+		mx = -mx;
+	}
+	if (my < 0) {
+		my = -my;
+	}
+
+	if (dx < 0) {
+		xi = -1;
+		dx = -dx;
+	}
+	if (dy < 0) {
+		yi = -1;
+		dy = -dy;
+	}
+
+	unsigned i;
+	uint32_t color = painter->strokeColor;
+
+	if (mx > my) {
+		residual = 2 * dy - dx;
+		y = y1;
+		for (x = x1; x != x2 + xi; x += xi) {
+			for (i = 0; i < painter->strokeWidth; ++i) {
+				if (painter->blend) {
+					color = mColorMixARGB8(painter->strokeColor, mImageGetPixel(painter->backing, x, y - painter->strokeWidth / 2 + i));
+				}
+				mImageSetPixel(painter->backing, x, y - painter->strokeWidth / 2 + i, color);
+			}
+			if (residual > 0) {
+				y += yi;
+				residual -= 2 * dx;
+			}
+			residual += 2 * dy;
+		}
+	} else {
+		residual = 2 * dx - dy;
+		x = x1;
+		for (y = y1; y != y2 + yi; y += yi) {
+			for (i = 0; i < painter->strokeWidth; ++i) {
+				if (painter->blend) {
+					color = mColorMixARGB8(painter->strokeColor, mImageGetPixel(painter->backing, x - painter->strokeWidth / 2 + i, y));
+				}
+				mImageSetPixel(painter->backing, x - painter->strokeWidth / 2 + i, y, color);
+			}
+			if (residual > 0) {
+				x += xi;
+				residual -= 2 * dy;
+			}
+			residual += 2 * dx;
+		}
+	}
+
+	// TODO: Draw endcaps for widths >2
+}
+
 uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to) {
 	if (from == to) {
 		return color;
