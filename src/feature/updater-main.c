@@ -21,6 +21,9 @@
 #include <synchapi.h>
 
 #define mkdir(X, Y) _mkdir(X)
+#ifndef S_ISDIR
+#define S_ISDIR(MODE) (((MODE) & _S_IFMT) == _S_IFDIR)
+#endif
 #elif defined(_POSIX_C_SOURCE)
 #include <unistd.h>
 #endif
