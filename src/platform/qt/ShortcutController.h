@@ -57,7 +57,7 @@ private:
 	int m_shortcut = 0;
 	int m_button = -1;
 	int m_axis = -1;
-	GamepadAxisEvent::Direction m_direction;
+	GamepadAxisEvent::Direction m_direction = GamepadAxisEvent::NEUTRAL;
 };
 
 class ShortcutController : public QObject {

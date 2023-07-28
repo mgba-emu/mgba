@@ -477,7 +477,7 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	}
 
 	unsigned width, height;
-	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+	runner->core->currentVideoSize(runner->core, &width, &height);
 
 	glActiveTexture(GL_TEXTURE0);
 	if (usePbo) {
@@ -530,7 +530,7 @@ static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, un
 	glBindTexture(GL_TEXTURE_2D, screenshotTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+	runner->core->currentVideoSize(runner->core, &width, &height);
 	glDisable(GL_BLEND);
 	bool wasPbo = usePbo;
 	usePbo = false;

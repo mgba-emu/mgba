@@ -36,6 +36,7 @@ static const struct _mScriptSocketErrorMapping {
 #ifndef USE_GETHOSTBYNAME
 #ifdef _WIN32
 	{ WSATRY_AGAIN,          mSCRIPT_SOCKERR_AGAIN },
+	{ WSAEWOULDBLOCK,        mSCRIPT_SOCKERR_AGAIN },
 	{ WSANO_RECOVERY,        mSCRIPT_SOCKERR_FAILED },
 	{ WSANO_DATA,            mSCRIPT_SOCKERR_NO_DATA },
 	{ WSAHOST_NOT_FOUND,     mSCRIPT_SOCKERR_NOT_FOUND },

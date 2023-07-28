@@ -63,9 +63,9 @@ public:
 
 	QList<Window*> windows() { return m_windows; }
 
-	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = {});
-	QStringList getOpenFileNames(QWidget* owner, const QString& title, const QString& filter = {});
-	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = {});
+	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = {}, const QString& path = {});
+	QStringList getOpenFileNames(QWidget* owner, const QString& title, const QString& filter = {}, const QString& path = {});
+	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = {}, const QString& path = {});
 	QString getOpenDirectoryName(QWidget* owner, const QString& title, const QString& path = {});
 
 	const NoIntroDB* gameDB() const { return m_db; }

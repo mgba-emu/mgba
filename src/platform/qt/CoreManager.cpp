@@ -16,6 +16,7 @@
 #endif
 
 #include <mgba/core/core.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 using namespace QGBA;
@@ -121,6 +122,7 @@ CoreController* CoreManager::loadGame(VFile* vf, const QString& path, const QStr
 	if (m_multiplayer) {
 		cc->setMultiplayerController(m_multiplayer);
 	}
+	cc->setPath(path, info.dir().canonicalPath());
 	emit coreLoaded(cc);
 	return cc;
 }
@@ -161,7 +163,7 @@ CoreController* CoreManager::loadBIOS(int platform, const QString& path) {
 	mCoreConfigSetOverrideIntValue(&core->config, "skipBios", 0);
 
 	QByteArray bytes(info.baseName().toUtf8());
-	strncpy(core->dirs.baseName, bytes.constData(), sizeof(core->dirs.baseName));
+	strlcpy(core->dirs.baseName, bytes.constData(), sizeof(core->dirs.baseName));
 
 	bytes = info.dir().canonicalPath().toUtf8();
 	mDirectorySetAttachBase(&core->dirs, VDirOpen(bytes.constData()));
@@ -170,6 +172,7 @@ CoreController* CoreManager::loadBIOS(int platform, const QString& path) {
 	if (m_multiplayer) {
 		cc->setMultiplayerController(m_multiplayer);
 	}
+	cc->setPath(path, info.dir().canonicalPath());
 	emit coreLoaded(cc);
 	return cc;
 }

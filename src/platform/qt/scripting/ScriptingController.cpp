@@ -19,7 +19,7 @@
 #include "scripting/ScriptingTextBuffer.h"
 #include "scripting/ScriptingTextBufferModel.h"
 
-#include <mgba/script/input.h>
+#include <mgba/script.h>
 #include <mgba-util/math.h>
 #include <mgba-util/string.h>
 
@@ -51,6 +51,9 @@ ScriptingController::ScriptingController(QObject* parent)
 	m_bufferModel = new ScriptingTextBufferModel(this);
 	QObject::connect(m_bufferModel, &ScriptingTextBufferModel::textBufferCreated, this, &ScriptingController::textBufferCreated);
 
+	connect(&m_storageFlush, &QTimer::timeout, this, &ScriptingController::flushStorage);
+	m_storageFlush.setInterval(5);
+
 	mScriptGamepadInit(&m_gamepad);
 
 	init();
@@ -67,12 +70,16 @@ void ScriptingController::setController(std::shared_ptr<CoreController> controll
 		return;
 	}
 	clearController();
+	if (!controller) {
+		return;
+	}
 	m_controller = controller;
 	CoreController::Interrupter interrupter(m_controller);
 	m_controller->thread()->scriptContext = &m_scriptContext;
 	if (m_controller->hasStarted()) {
 		mScriptContextAttachCore(&m_scriptContext, m_controller->thread()->core);
 	}
+	updateVideoScale();
 	connect(m_controller.get(), &CoreController::stopping, this, &ScriptingController::clearController);
 }
 
@@ -82,6 +89,10 @@ void ScriptingController::setInputController(InputController* input) {
 	}
 	m_inputController = input;
 	connect(m_inputController, &InputController::updated, this, &ScriptingController::updateGamepad);
+}
+
+void ScriptingController::setVideoBackend(VideoBackend* backend) {
+	mScriptCanvasUpdateBackend(&m_scriptContext, backend);
 }
 
 bool ScriptingController::loadFile(const QString& path) {
@@ -107,9 +118,11 @@ bool ScriptingController::load(VFileDevice& vf, const QString& name) {
 		emit error(QString::fromUtf8(m_activeEngine->getError(m_activeEngine)));
 		ok = false;
 	}
-	if (m_controller && m_controller->isPaused()) {
+	if (m_controller) {
 		m_controller->setSync(true);
-		m_controller->paused();
+		if (m_controller->isPaused()) {
+			m_controller->paused();
+		}
 	}
 	return ok;
 }
@@ -124,6 +137,13 @@ void ScriptingController::clearController() {
 		m_controller->thread()->scriptContext = nullptr;
 	}
 	m_controller.reset();
+}
+
+void ScriptingController::updateVideoScale() {
+	if (!m_controller) {
+		return;
+	}
+	mScriptCanvasSetInternalScale(&m_scriptContext, m_controller->videoScale());
 }
 
 void ScriptingController::reset() {
@@ -144,6 +164,12 @@ void ScriptingController::runCode(const QString& code) {
 	load(vf, "*prompt");
 }
 
+void ScriptingController::flushStorage() {
+#ifdef USE_JSON_C
+	mScriptStorageFlushAll(&m_scriptContext);
+#endif
+}
+
 bool ScriptingController::eventFilter(QObject* obj, QEvent* ev) {
 	event(obj, ev);
 	return false;
@@ -154,7 +180,13 @@ void ScriptingController::event(QObject* obj, QEvent* event) {
 		return;
 	}
 
+	CoreController::Interrupter interrupter(m_controller);
+
 	switch (event->type()) {
+	case QEvent::FocusOut:
+	case QEvent::WindowDeactivate:
+		mScriptContextClearKeys(&m_scriptContext);
+		return;
 	case QEvent::KeyPress:
 	case QEvent::KeyRelease: {
 		struct mScriptKeyEvent ev{mSCRIPT_EV_TYPE_KEY};
@@ -289,8 +321,13 @@ void ScriptingController::detachGamepad() {
 void ScriptingController::init() {
 	mScriptContextInit(&m_scriptContext);
 	mScriptContextAttachStdlib(&m_scriptContext);
-	mScriptContextAttachSocket(&m_scriptContext);
+	mScriptContextAttachCanvas(&m_scriptContext);
+	mScriptContextAttachImage(&m_scriptContext);
 	mScriptContextAttachInput(&m_scriptContext);
+	mScriptContextAttachSocket(&m_scriptContext);
+#ifdef USE_JSON_C
+	mScriptContextAttachStorage(&m_scriptContext);
+#endif
 	mScriptContextRegisterEngines(&m_scriptContext);
 
 	mScriptContextAttachLogger(&m_scriptContext, &m_logger);
@@ -304,6 +341,10 @@ void ScriptingController::init() {
 	if (m_engines.count() == 1) {
 		m_activeEngine = *m_engines.begin();
 	}
+
+#ifdef USE_JSON_C
+	m_storageFlush.start();
+#endif
 }
 
 uint32_t ScriptingController::qtToScriptingKey(const QKeyEvent* event) {

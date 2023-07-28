@@ -10,6 +10,7 @@
 #include "DisplayGL.h"
 #include "DisplayQt.h"
 #include "LogController.h"
+#include "VideoProxy.h"
 #include "utils.h"
 
 #include <mgba-util/vfs.h>
@@ -112,15 +113,23 @@ void QGBA::Display::configure(ConfigController* config) {
 	filter(opts->resampleVideo);
 	config->updateOption("showOSD");
 	config->updateOption("showFrameCounter");
+	config->updateOption("videoSync");
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3)
-	if (opts->shader) {
+	if (opts->shader && supportsShaders()) {
 		struct VDir* shader = VDirOpen(opts->shader);
-		if (shader && supportsShaders()) {
+		if (shader) {
 			setShaders(shader);
 			shader->close(shader);
 		}
 	}
 #endif
+}
+
+VideoBackend* QGBA::Display::videoBackend() {
+	if (m_videoProxy) {
+		return m_videoProxy->backend();
+	}
+	return nullptr;
 }
 
 void QGBA::Display::resizeEvent(QResizeEvent*) {

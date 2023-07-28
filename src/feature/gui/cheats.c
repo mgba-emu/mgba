@@ -9,6 +9,7 @@
 #include <mgba/core/core.h>
 #include "feature/gui/gui-runner.h"
 #include <mgba-util/gui/menu.h>
+#include <mgba-util/string.h>
 
 enum mGUICheatAction {
 	CHEAT_BACK = 0,

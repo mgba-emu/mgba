@@ -374,7 +374,9 @@ void _lightReadPins(struct GBACartridgeHardware* hw) {
 		mLOG(GBA_HW, DEBUG, "[SOLAR] Got reset");
 		hw->lightCounter = 0;
 		if (lux) {
-			lux->sample(lux);
+			if (lux->sample) {
+				lux->sample(lux);
+			}
 			hw->lightSample = lux->readLuminance(lux);
 		} else {
 			hw->lightSample = 0xFF;
@@ -421,8 +423,8 @@ void GBAHardwareTiltWrite(struct GBACartridgeHardware* hw, uint32_t address, uin
 			int32_t x = rotationSource->readTiltX(rotationSource);
 			int32_t y = rotationSource->readTiltY(rotationSource);
 			// Normalize to ~12 bits, focused on 0x3A0
-			hw->tiltX = (x >> 21) + 0x3A0; // Crop off an extra bit so that we can't go negative
-			hw->tiltY = (y >> 21) + 0x3A0;
+			hw->tiltX = 0x3A0 - (x >> 22);
+			hw->tiltY = 0x3A0 - (y >> 22);
 		} else {
 			mLOG(GBA_HW, GAME_ERROR, "Tilt sensor wrote wrong byte to %04x: %02x", address, value);
 		}

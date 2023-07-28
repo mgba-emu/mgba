@@ -21,6 +21,9 @@
 #include <synchapi.h>
 
 #define mkdir(X, Y) _mkdir(X)
+#ifndef S_ISDIR
+#define S_ISDIR(MODE) (((MODE) & _S_IFMT) == _S_IFDIR)
+#endif
 #elif defined(_POSIX_C_SOURCE)
 #include <unistd.h>
 #endif
@@ -30,6 +33,39 @@
 #endif
 
 FILE* logfile;
+
+bool rmdirRecursive(struct VDir* dir) {
+	if (!dir) {
+		return false;
+	}
+	bool ok = true;
+	struct VDirEntry* vde;
+	while ((vde = dir->listNext(dir))) {
+		const char* name = vde->name(vde);
+		if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) {
+			continue;
+		}
+		switch (vde->type(vde)) {
+		case VFS_DIRECTORY:
+			fprintf(logfile, "cd   %s\n", name);
+			if (!rmdirRecursive(dir->openDir(dir, name))) {
+				ok = false;
+			}
+			fprintf(logfile, "cd   ..\n");
+			// Fall through
+		case VFS_FILE:
+		case VFS_UNKNOWN:
+			fprintf(logfile, "rm      %s\n", name);
+			if (!dir->deleteFile(dir, name)) {
+				fprintf(logfile, "error\n");
+				ok = false;
+			}
+			break;
+		}
+	}
+	dir->close(dir);
+	return ok;
+}
 
 bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 	char path[PATH_MAX] = {0};
@@ -56,12 +92,32 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 		switch (vde->type(vde)) {
 		case VFS_DIRECTORY:
 			fprintf(logfile, "mkdir   %s\n", fname);
-			if (mkdir(path, 0755) < 0 && errno != EEXIST) {
-				return false;
+			if (mkdir(path, 0755) < 0) {
+				bool redo = false;
+				if (errno == EEXIST) {
+					struct stat st;
+					if (stat(path, &st) >= 0 && !S_ISDIR(st.st_mode)) {
+#ifdef _WIN32
+						wchar_t wpath[MAX_PATH + 1];
+						MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, MAX_PATH);
+						DeleteFileW(wpath);
+#else
+						unlink(path);
+#endif
+						if (mkdir(path, 0755) >= 0) {
+							redo = true;
+						}
+					}
+				}
+				if (!redo) {
+					fprintf(logfile, "error   %i\n", errno);
+					return false;
+				}
 			}
 			if (!prefix) {
 				struct VDir* subdir = archive->openDir(archive, fname);
 				if (!subdir) {
+					fprintf(logfile, "error\n");
 					return false;
 				}
 				if (!extractArchive(subdir, path, false)) {
@@ -76,13 +132,28 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 			vfIn = archive->openFile(archive, vde->name(vde), O_RDONLY);
 			errno = 0;
 			vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
-			if (!vfOut && errno == EACCES) {
+			if (!vfOut) {
+				if (errno == EACCES) {
 #ifdef _WIN32
-				Sleep(1000);
+					Sleep(1000);
 #else
-				sleep(1);
+					sleep(1);
 #endif
-				vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+					vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+				} else if (errno == EISDIR) {
+					fprintf(logfile, "rm -r   %s\n", path);
+					if (!rmdirRecursive(VDirOpen(path))) {
+						return false;
+					}
+#ifdef _WIN32
+					wchar_t wpath[MAX_PATH + 1];
+					MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, MAX_PATH);
+					RemoveDirectoryW(wpath);
+#else
+					rmdir(path);
+#endif
+					vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+				}
 			}
 			if (!vfOut) {
 				vfIn->close(vfIn);
@@ -114,7 +185,7 @@ int main(int argc, char* argv[]) {
 	int ok = 1;
 
 	mCoreConfigDirectory(bin, sizeof(bin));
-	strncat(bin, "/updater.log", sizeof(bin));
+	strncat(bin, "/updater.log", sizeof(bin) - 1);
 	logfile = fopen(bin, "w");
 
 	mCoreConfigInit(&config, "updater");
@@ -274,7 +345,7 @@ int main(int argc, char* argv[]) {
 		const char* argv[] = { qbin, NULL };
 		_execv(bin, argv);
 #elif defined(_POSIX_C_SOURCE) || defined(__APPLE__)
-		const char* argv[] = { bin, NULL };
+		char* const argv[] = { bin, NULL };
 		execv(bin, argv);
 #endif
 	}

@@ -36,17 +36,21 @@ struct mScriptInputContext {
 
 static void _mScriptInputDeinit(struct mScriptInputContext*);
 static bool _mScriptInputIsKeyActive(const struct mScriptInputContext*, struct mScriptValue*);
+static struct mScriptValue* _mScriptInputActiveKeys(const struct mScriptInputContext*);
 
 mSCRIPT_DECLARE_STRUCT(mScriptInputContext);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptInputContext, _deinit, _mScriptInputDeinit, 0);
 mSCRIPT_DECLARE_STRUCT_C_METHOD(mScriptInputContext, BOOL, isKeyActive, _mScriptInputIsKeyActive, 1, WRAPPER, key);
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mScriptInputContext, WLIST, activeKeys, _mScriptInputActiveKeys, 0);
 
 mSCRIPT_DEFINE_STRUCT(mScriptInputContext)
 	mSCRIPT_DEFINE_STRUCT_DEINIT(mScriptInputContext)
 	mSCRIPT_DEFINE_DOCSTRING("Sequence number of the next event to be emitted")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptInputContext, U64, seq)
-	mSCRIPT_DEFINE_DOCSTRING("Check if a given keyboard key is currently held. The input can be either the printable character for a key, or the numerical Unicode codepoint")
+	mSCRIPT_DEFINE_DOCSTRING("Check if a given keyboard key is currently held. The input can be either the printable character for a key, the numerical Unicode codepoint, or a special value from C.KEY")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptInputContext, isKeyActive)
+	mSCRIPT_DEFINE_DOCSTRING("Get a list of the currently active keys. The values are Unicode codepoints or special key values from C.KEY, not strings, so make sure to convert as needed")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptInputContext, activeKeys)
 	mSCRIPT_DEFINE_DOCSTRING("The currently active gamepad, if any")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptInputContext, PCS(mScriptGamepad), activeGamepad)
 mSCRIPT_DEFINE_END;
@@ -346,6 +350,19 @@ bool _mScriptInputIsKeyActive(const struct mScriptInputContext* context, struct 
 	return down != NULL;
 }
 
+static struct mScriptValue* _mScriptInputActiveKeys(const struct mScriptInputContext* context) {
+	struct mScriptValue* list = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
+	struct TableIterator iter;
+	if (!TableIteratorStart(&context->activeKeys, &iter)) {
+		return list;
+	}
+	do {
+		uint32_t key = TableIteratorGetKey(&context->activeKeys, &iter);
+		*mScriptListAppend(list->value.list) = mSCRIPT_MAKE_U32(key);
+	} while (TableIteratorNext(&context->activeKeys, &iter));
+	return list;
+}
+
 static bool _updateKeys(struct mScriptContext* context, struct mScriptKeyEvent* event) {
 	int offset = 0;
 	switch (event->state) {
@@ -408,6 +425,44 @@ void mScriptContextFireEvent(struct mScriptContext* context, struct mScriptEvent
 	++inputContext->seq;
 	mScriptContextTriggerCallback(context, eventNames[event->type], &args);
 	mScriptListDeinit(&args);
+}
+
+void mScriptContextClearKeys(struct mScriptContext* context) {
+	struct mScriptValue* input = mScriptContextGetGlobal(context, "input");
+	if (!input) {
+		return;
+	}
+	struct mScriptInputContext* inputContext = input->value.opaque;
+	size_t keyCount = TableSize(&inputContext->activeKeys);
+	uint32_t* keys = calloc(keyCount, sizeof(uint32_t));
+	struct TableIterator iter;
+	size_t i = 0;
+	if (!TableIteratorStart(&inputContext->activeKeys, &iter)) {
+		free(keys);
+		return;
+	}
+	do {
+		keys[i] = TableIteratorGetKey(&inputContext->activeKeys, &iter);
+		++i;
+	} while (TableIteratorNext(&inputContext->activeKeys, &iter));
+
+	struct mScriptKeyEvent event = {
+		.d = {
+			.type = mSCRIPT_EV_TYPE_KEY
+		},
+		.state = mSCRIPT_INPUT_STATE_UP,
+		.modifiers = 0
+	};
+	for (i = 0; i < keyCount; ++i) {
+		event.key = keys[i];
+		intptr_t value = (intptr_t) TableLookup(&inputContext->activeKeys, event.key);
+		if (value > 1) {
+			TableInsert(&inputContext->activeKeys, event.key, (void*) 1);
+		}
+		mScriptContextFireEvent(context, &event.d);
+	}
+
+	free(keys);
 }
 
 int mScriptContextGamepadAttach(struct mScriptContext* context, struct mScriptGamepad* pad) {

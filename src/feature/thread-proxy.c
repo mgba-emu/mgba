@@ -207,7 +207,7 @@ static THREAD_ENTRY _proxyThread(void* logger) {
 		}
 	}
 	MutexUnlock(&proxyRenderer->mutex);
-	return 0;
+	THREAD_EXIT(0);
 }
 
 #endif

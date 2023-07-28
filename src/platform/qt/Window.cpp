@@ -92,7 +92,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	, m_logView(new LogView(&m_log, this))
 	, m_screenWidget(new WindowBackground())
 	, m_config(config)
-	, m_inputController(playerId, this)
+	, m_inputController(this)
 	, m_shortcutController(new ShortcutController(this))
 	, m_playerId(playerId)
 {
@@ -206,15 +206,14 @@ void Window::argumentsPassed() {
 	}
 
 #ifdef USE_GDB_STUB
-	if (args->debuggerType == DEBUGGER_GDB) {
-		if (!m_gdbController) {
-			m_gdbController = new GDBController(this);
-			if (m_controller) {
-				m_gdbController->setController(m_controller);
-			}
-			m_gdbController->attach();
-			m_gdbController->listen();
-		}
+	if (args->debugGdb) {
+		gdbOpen();
+	}
+#endif
+
+#ifdef USE_DEBUGGERS
+	if (args->debugCli) {
+		consoleOpen();
 	}
 #endif
 
@@ -258,12 +257,7 @@ void Window::resizeFrame(const QSize& size) {
 
 void Window::updateMultiplayerStatus(bool canOpenAnother) {
 	m_multiWindow->setEnabled(canOpenAnother);
-	if (m_controller) {
-		MultiplayerController* multiplayer = m_controller->multiplayerController();
-		if (multiplayer) {
-			m_playerId = multiplayer->playerId(m_controller.get());
-		}
-	}
+	multiplayerChanged();
 }
 
 void Window::updateMultiplayerActive(bool active) {
@@ -413,6 +407,7 @@ void Window::multiplayerChanged() {
 	MultiplayerController* multiplayer = m_controller->multiplayerController();
 	if (multiplayer) {
 		attached = multiplayer->attached();
+		m_playerId = multiplayer->playerId(m_controller.get());
 	}
 	for (Action* action : m_nonMpActions) {
 		action->setEnabled(attached < 2);
@@ -633,6 +628,8 @@ void Window::scriptingOpen() {
 			m_scripting->setController(m_controller);
 			m_display->installEventFilter(m_scripting.get());
 		}
+
+		m_scripting->setVideoBackend(m_display->videoBackend());
 	}
 	ScriptingView* view = new ScriptingView(m_scripting.get(), m_config);
 	openView(view);
@@ -965,6 +962,12 @@ void Window::gameStopped() {
 	updateTitle();
 
 	if (m_pendingClose) {
+#ifdef ENABLE_SCRIPTING
+		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
+		if (m_scripting && proxy) {
+			m_scripting->setVideoBackend(nullptr);
+		}
+#endif
 		m_display.reset();
 		close();
 	}
@@ -1015,6 +1018,15 @@ void Window::reloadDisplayDriver() {
 		m_display->stopDrawing();
 		detachWidget();
 	}
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_scripting->setVideoBackend(nullptr);
+	}
+#endif
+	std::shared_ptr<VideoProxy> proxy;
+	if (m_display) {
+		proxy = m_display->videoProxy();
+	}
 	m_display = std::unique_ptr<QGBA::Display>(Display::create(this));
 	if (!m_display) {
 		LOG(QT, ERROR) << tr("Failed to create an appropriate display device, falling back to software display. "
@@ -1053,6 +1065,18 @@ void Window::reloadDisplayDriver() {
 #elif defined(M_CORE_GBA)
 	m_display->setMinimumSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 #endif
+
+	m_display->setBackgroundImage(QImage{m_config->getOption("backgroundImage")});
+
+	if (!proxy) {
+		proxy = std::make_shared<VideoProxy>();
+	}
+	m_display->setVideoProxy(proxy);
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_scripting->setVideoBackend(m_display->videoBackend());
+	}
+#endif
 }
 
 void Window::reloadAudioDriver() {
@@ -1077,12 +1101,7 @@ void Window::changeRenderer() {
 
 	CoreController::Interrupter interrupter(m_controller);
 	if (m_config->getOption("hwaccelVideo").toInt() && m_display->supportsShaders() && m_controller->supportsFeature(CoreController::Feature::OPENGL)) {
-		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
-		if (!proxy) {
-			proxy = std::make_shared<VideoProxy>();
-		}
-		m_display->setVideoProxy(proxy);
-		proxy->attach(m_controller.get());
+		m_display->videoProxy()->attach(m_controller.get());
 
 		int fb = m_display->framebufferHandle();
 		if (fb >= 0) {
@@ -1090,11 +1109,7 @@ void Window::changeRenderer() {
 			m_config->updateOption("videoScale");
 		}
 	} else {
-		std::shared_ptr<VideoProxy> proxy = m_display->videoProxy();
-		if (proxy) {
-			proxy->detach(m_controller.get());
-			m_display->setVideoProxy({});
-		}
+		m_display->videoProxy()->detach(m_controller.get());
 		m_controller->setFramebufferHandle(-1);
 	}
 }
@@ -1138,13 +1153,13 @@ void Window::recordFrame() {
 }
 
 void Window::showFPS() {
-	if (m_frameList.isEmpty()) {
-		updateTitle();
-		return;
-	}
 	qint64 total = 0;
 	for (qint64 t : m_frameList) {
 		total += t;
+	}
+	if (!total) {
+		updateTitle();
+		return;
 	}
 	double fps = (m_frameList.size() * 1e10) / total;
 	m_frameList.clear();
@@ -1427,6 +1442,20 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 	m_config->updateOption("fastForwardRatio");
 
+	addGameAction(tr("Increase fast forward speed"), "fastForwardUp", [this] {
+		float newRatio = m_config->getOption("fastForwardRatio", 1.0f).toFloat() + 1.0f;
+		if (newRatio >= 3.0f) {
+			m_config->setOption("fastForwardRatio", QVariant(newRatio));
+		}
+	}, "emu");
+
+	addGameAction(tr("Decrease fast forward speed"), "fastForwardDown", [this] {
+		float newRatio = m_config->getOption("fastForwardRatio").toFloat() - 1.0f;
+		if (newRatio >= 2.0f) {
+			m_config->setOption("fastForwardRatio", QVariant(newRatio));
+		}
+	}, "emu");
+
 	Action* rewindHeld = m_actions.addHeldAction(tr("Rewind (held)"), "holdRewind", [this](bool held) {
 		if (m_controller) {
 			m_controller->setRewinding(held);
@@ -1486,8 +1515,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 			Action* setSize = m_frameSizes[i];
 			showNormal();
 			QSize size(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
-			if (m_controller) {
-				size = m_controller->screenDimensions();
+			if (m_display) {
+				size = m_display->contentSize();
 			}
 			size *= i;
 			m_savedScale = i;
@@ -1564,7 +1593,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addSeparator("av");
 
 	ConfigOption* mute = m_config->addOption("mute");
-	mute->addBoolean(tr("Mute"), &m_actions, "av");
+	Action* muteAction = mute->addBoolean(tr("Mute"), &m_actions, "av");
+	muteAction->setActive(m_config->getOption("mute").toInt());
 	mute->connect([this](const QVariant& value) {
 		m_config->setOption("fastForwardMute", static_cast<bool>(value.toInt()));
 		reloadConfig();
@@ -1810,6 +1840,11 @@ void Window::setupOptions() {
 		reloadConfig();
 	}, this);
 
+	ConfigOption* rewindBufferInterval = m_config->addOption("rewindBufferInterval");
+	rewindBufferInterval->connect([this](const QVariant&) {
+		reloadConfig();
+	}, this);
+
 	ConfigOption* allowOpposingDirections = m_config->addOption("allowOpposingDirections");
 	allowOpposingDirections->connect([this](const QVariant&) {
 		reloadConfig();
@@ -1867,6 +1902,11 @@ void Window::setupOptions() {
 	videoScale->connect([this](const QVariant& value) {
 		if (m_display) {
 			m_display->setVideoScale(value.toInt());
+#ifdef ENABLE_SCRIPTING
+			if (m_controller && m_scripting) {
+				m_scripting->updateVideoScale();
+			}
+#endif
 		}
 	}, this);
 
@@ -1875,6 +1915,13 @@ void Window::setupOptions() {
 		updateTitle();
 	}, this);
 
+	ConfigOption* backgroundImage = m_config->addOption("backgroundImage");
+	backgroundImage->connect([this](const QVariant& value) {
+		if (m_display) {
+			m_display->setBackgroundImage(QImage{value.toString()});
+		}
+	}, this);
+	m_config->updateOption("backgroundImage");
 }
 
 void Window::attachWidget(QWidget* widget) {
@@ -2103,6 +2150,8 @@ void Window::setController(CoreController* controller, const QString& fname) {
 #ifdef ENABLE_SCRIPTING
 	if (m_scripting) {
 		m_scripting->setController(m_controller);
+
+		m_scripting->setVideoBackend(m_display->videoBackend());
 	}
 #endif
 

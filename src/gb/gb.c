@@ -405,7 +405,9 @@ void GBUnloadROM(struct GB* gb) {
 
 	if (gb->romVf) {
 #ifndef FIXED_ROM_BUFFER
-		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
+		if (gb->isPristine && gb->memory.rom) {
+			gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
+		}
 #endif
 		gb->romVf->close(gb->romVf);
 		gb->romVf = NULL;
@@ -528,6 +530,23 @@ bool GBIsBIOS(struct VFile* vf) {
 	}
 }
 
+bool GBIsCompatibleBIOS(struct VFile* vf, enum GBModel model) {
+	switch (_GBBiosCRC32(vf)) {
+	case DMG_BIOS_CHECKSUM:
+	case DMG0_BIOS_CHECKSUM:
+	case MGB_BIOS_CHECKSUM:
+	case SGB_BIOS_CHECKSUM:
+	case SGB2_BIOS_CHECKSUM:
+		return model < GB_MODEL_CGB;
+	case CGB_BIOS_CHECKSUM:
+	case CGB0_BIOS_CHECKSUM:
+	case AGB_BIOS_CHECKSUM:
+		return model >= GB_MODEL_CGB;
+	default:
+		return false;
+	}
+}
+
 void GBReset(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	gb->memory.romBase = gb->memory.rom;
@@ -560,7 +579,7 @@ void GBReset(struct SM83Core* cpu) {
 	GBMemoryReset(gb);
 
 	if (gb->biosVf) {
-		if (!GBIsBIOS(gb->biosVf)) {
+		if (!GBIsCompatibleBIOS(gb->biosVf, gb->model)) {
 			gb->biosVf->close(gb->biosVf);
 			gb->biosVf = NULL;
 		} else {
@@ -815,6 +834,7 @@ void GBDetectModel(struct GB* gb) {
 			gb->model = GB_MODEL_SGB2;
 			break;
 		case CGB_BIOS_CHECKSUM:
+		case CGB0_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;
 			break;
 		case AGB_BIOS_CHECKSUM:

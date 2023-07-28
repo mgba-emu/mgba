@@ -51,7 +51,7 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
 		m_ui.tile->setBoundary(2048, 0, 2);
-		m_ui.tile->setMaxTile(3096);
+		m_ui.tile->setMaxTile(3072);
 		break;
 #endif
 #ifdef M_CORE_GB
@@ -76,7 +76,7 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 #ifdef M_CORE_GBA
 		case mPLATFORM_GBA:
 			m_ui.tile->setBoundary(2048 >> selected, selected, selected + 2);
-			m_ui.tile->setMaxTile(3096 >> selected);
+			m_ui.tile->setMaxTile(3072 >> selected);
 			break;
 #endif
 #ifdef M_CORE_GB

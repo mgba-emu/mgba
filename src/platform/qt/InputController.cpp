@@ -25,9 +25,11 @@
 
 using namespace QGBA;
 
-InputController::InputController(int playerId, QWidget* topLevel, QObject* parent)
+int InputController::s_claimedPlayers = 0;
+
+InputController::InputController(QWidget* topLevel, QObject* parent)
 	: QObject(parent)
-	, m_playerId(playerId)
+	, m_playerId(claimPlayer())
 	, m_topLevel(topLevel)
 	, m_focusParent(topLevel)
 {
@@ -130,6 +132,7 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 
 InputController::~InputController() {
 	mInputMapDeinit(&m_inputMap);
+	freePlayer(m_playerId);
 }
 
 void InputController::addInputDriver(std::shared_ptr<InputDriver> driver) {
@@ -151,7 +154,7 @@ bool InputController::loadConfiguration(uint32_t type) {
 	if (!mInputMapLoad(&m_inputMap, type, m_config->input())) {
 		return false;
 	}
-	auto driver = m_inputDrivers.value(type);
+	auto& driver = m_inputDrivers.value(type);
 	if (!driver) {
 		return false;
 	}
@@ -185,7 +188,7 @@ void InputController::saveConfiguration() {
 
 void InputController::saveConfiguration(uint32_t type) {
 	mInputMapSave(&m_inputMap, type, m_config->input());
-	auto driver = m_inputDrivers.value(type);
+	auto& driver = m_inputDrivers.value(type);
 	if (driver) {
 		driver->saveConfiguration(m_config);
 	}
@@ -201,7 +204,7 @@ void InputController::saveProfile(uint32_t type, const QString& profile) {
 }
 
 QString InputController::profileForType(uint32_t type) {
-	auto driver = m_inputDrivers.value(type);
+	auto& driver = m_inputDrivers.value(type);
 	if (!driver) {
 		return {};
 	}
@@ -209,7 +212,7 @@ QString InputController::profileForType(uint32_t type) {
 }
 
 void InputController::setGamepadDriver(uint32_t type) {
-	auto driver = m_inputDrivers.value(type);
+	auto& driver = m_inputDrivers.value(type);
 	if (!driver || !driver->supportsGamepads()) {
 		return;
 	}
@@ -220,13 +223,13 @@ QStringList InputController::connectedGamepads(uint32_t type) const {
 	if (!type) {
 		type = m_gamepadDriver;
 	}
-	auto driver = m_inputDrivers.value(type);
+	auto& driver = m_inputDrivers.value(type);
 	if (!driver) {
 		return {};
 	}
 
 	QStringList pads;
-	for (auto pad : driver->connectedGamepads()) {
+	for (auto& pad : driver->connectedGamepads()) {
 		pads.append(pad->visibleName());
 	}
 	return pads;
@@ -236,7 +239,7 @@ int InputController::gamepadIndex(uint32_t type) const {
 	if (!type) {
 		type = m_gamepadDriver;
 	}
-	auto driver = m_inputDrivers.value(type);
+	auto& driver = m_inputDrivers.value(type);
 	if (!driver) {
 		return -1;
 	}
@@ -247,7 +250,7 @@ void InputController::setGamepad(uint32_t type, int index) {
 	if (!type) {
 		type = m_gamepadDriver;
 	}
-	auto driver = m_inputDrivers.value(type);
+	auto& driver = m_inputDrivers.value(type);
 	if (!driver) {
 		return;
 	}
@@ -265,7 +268,7 @@ void InputController::setPreferredGamepad(uint32_t type, int index) {
 	if (!type) {
 		type = m_gamepadDriver;
 	}
-	auto driver = m_inputDrivers.value(type);
+	auto& driver = m_inputDrivers.value(type);
 	if (!driver) {
 		return;
 	}
@@ -299,7 +302,7 @@ InputMapper InputController::mapper(InputSource* source) {
 }
 
 void InputController::setSensorDriver(uint32_t type) {
-	auto driver = m_inputDrivers.value(type);
+	auto& driver = m_inputDrivers.value(type);
 	if (!driver || !driver->supportsSensors()) {
 		return;
 	}
@@ -308,7 +311,7 @@ void InputController::setSensorDriver(uint32_t type) {
 
 
 mRumble* InputController::rumble() {
-	auto driver = m_inputDrivers.value(m_sensorDriver);
+	auto& driver = m_inputDrivers.value(m_sensorDriver);
 	if (driver) {
 		return driver->rumble();
 	}
@@ -316,7 +319,7 @@ mRumble* InputController::rumble() {
 }
 
 mRotationSource* InputController::rotationSource() {
-	auto driver = m_inputDrivers.value(m_sensorDriver);
+	auto& driver = m_inputDrivers.value(m_sensorDriver);
 	if (driver) {
 		return driver->rotationSource();
 	}
@@ -341,7 +344,7 @@ void InputController::update() {
 
 int InputController::pollEvents() {
 	int activeButtons = 0;
-	for (auto pad : gamepads()) {
+	for (auto& pad : gamepads()) {
 		InputMapper im(mapper(pad));
 		activeButtons |= im.mapKeys(pad->currentButtons());
 		activeButtons |= im.mapAxes(pad->currentAxes());
@@ -356,7 +359,7 @@ int InputController::pollEvents() {
 }
 
 Gamepad* InputController::gamepad(uint32_t type) {
-	auto driver = m_inputDrivers.value(type);
+	auto& driver = m_inputDrivers.value(type);
 	if (!driver) {
 		return nullptr;
 	}
@@ -464,7 +467,7 @@ void InputController::testGamepad(uint32_t type) {
 			}
 		}
 	}
-	for (auto axis : oldAxes) {
+	for (auto& axis : oldAxes) {
 		GamepadAxisEvent* event = new GamepadAxisEvent(axis.first, axis.second, false, type, this);
 		clearPendingEvent(event->platformKey());
 		sendGamepadEvent(event);
@@ -548,6 +551,20 @@ void InputController::clearPendingEvents(int keys) {
 
 bool InputController::hasPendingEvent(int key) const {
 	return m_pendingEvents.contains(key);
+}
+
+int InputController::claimPlayer() {
+	for (int i = 0; i < MAX_GBAS; ++i) {
+		if (!(s_claimedPlayers & (1 << i))) {
+			s_claimedPlayers |= 1 << i;
+			return i;
+		}
+	}
+	qFatal("Can't claim 5th player. Please report this bug.");
+}
+
+void InputController::freePlayer(int player) {
+	s_claimedPlayers &= ~(1 << player);
 }
 
 void InputController::stealFocus(QWidget* focus) {

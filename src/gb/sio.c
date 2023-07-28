@@ -91,11 +91,13 @@ void GBSIOWriteSB(struct GBSIO* sio, uint8_t sb) {
 void GBSIOWriteSC(struct GBSIO* sio, uint8_t sc) {
 	sio->period = GBSIOCyclesPerTransfer[GBRegisterSCGetClockSpeed(sc)]; // TODO Shift Clock
 	if (GBRegisterSCIsEnable(sc)) {
-		mTimingDeschedule(&sio->p->timing, &sio->event);
 		if (GBRegisterSCIsShiftClock(sc)) {
+			mTimingDeschedule(&sio->p->timing, &sio->event);
 			mTimingSchedule(&sio->p->timing, &sio->event, sio->period * (2 - sio->p->doubleSpeed));
 			sio->remainingBits = 8;
 		}
+	} else {
+		mTimingDeschedule(&sio->p->timing, &sio->event);
 	}
 	if (sio->driver) {
 		sio->driver->writeSC(sio->driver, sc);

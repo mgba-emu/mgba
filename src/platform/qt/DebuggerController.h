@@ -9,7 +9,7 @@
 
 #include <memory>
 
-struct mDebugger;
+struct mDebuggerModule;
 
 namespace QGBA {
 
@@ -19,7 +19,7 @@ class DebuggerController : public QObject {
 Q_OBJECT
 
 public:
-	DebuggerController(mDebugger* debugger, QObject* parent = nullptr);
+	DebuggerController(mDebuggerModule* debugger, QObject* parent = nullptr);
 
 public:
 	bool isAttached();
@@ -35,7 +35,7 @@ protected:
 	virtual void attachInternal();
 	virtual void shutdownInternal();
 
-	mDebugger* const m_debugger;
+	mDebuggerModule* const m_debugger;
 	std::shared_ptr<CoreController> m_gameController;
 
 private:

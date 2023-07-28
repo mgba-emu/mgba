@@ -15,8 +15,8 @@
 #include <mgba-util/gui/file-select.h>
 #include <mgba-util/gui/font.h>
 #include <mgba-util/gui/menu.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/memory.h>
-#include <mgba-util/png-io.h>
 #include <mgba-util/vfs.h>
 
 #ifdef PSP2
@@ -456,6 +456,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	mLOG(GUI_RUNNER, DEBUG, "Loading save...");
 	mCoreAutoloadSave(runner->core);
 	mCoreAutoloadCheats(runner->core);
+	mCoreAutoloadPatch(runner->core);
 	if (runner->setup) {
 		mLOG(GUI_RUNNER, DEBUG, "Setting up runner...");
 		runner->setup(runner);
@@ -655,6 +656,9 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 				runner->core->reset(runner->core);
 				break;
 			case RUNNER_SAVE_STATE:
+				// If we are saving state, then the screenshot stored for the state previously should no longer be considered up-to-date.
+				// Therefore, mark it as stale so that at draw time we load the new save state's screenshot.
+				((struct mGUIBackground*) stateSaveMenu.background)->screenshotId |= SCREENSHOT_INVALID;
 				mCoreSaveState(runner->core, item->data.v.u >> 16, SAVESTATE_SCREENSHOT | SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
 				break;
 			case RUNNER_LOAD_STATE:
@@ -840,5 +844,6 @@ THREAD_ENTRY mGUIAutosaveThread(void* context) {
 		}
 	}
 	MutexUnlock(&autosave->mutex);
+	THREAD_EXIT(0);
 }
 #endif

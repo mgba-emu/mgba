@@ -496,7 +496,7 @@ static void _drawTex(struct mCore* core, bool faded, bool both) {
 	int wide = isWide ? 2 : 1;
 
 	unsigned corew, coreh;
-	core->desiredVideoDimensions(core, &corew, &coreh);
+	core->currentVideoSize(core, &corew, &coreh);
 
 	int w = corew;
 	int h = coreh;
@@ -872,7 +872,7 @@ int main(int argc, char* argv[]) {
 	u8 model = 0;
 	cfguInit();
 	CFGU_GetSystemModel(&model);
-	if (model != 3 /* o2DS */) {
+	if (model != CFG_MODEL_2DS) {
 		gfxSetWide(true);
 	}
 	cfguExit();

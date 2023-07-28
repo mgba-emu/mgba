@@ -9,8 +9,6 @@
 #include <mgba-util/table.h>
 #include <mgba-util/vector.h>
 
-#include <inttypes.h>
-
 #define SECTION_NAME_MAX 128
 #define KEY_NAME_MAX 32
 #define KEY_VALUE_MAX 16

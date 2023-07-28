@@ -19,8 +19,8 @@
 #include <QSpinBox>
 
 #include <mgba/core/version.h>
+#include <mgba/feature/video-backend.h>
 #include <mgba-util/vfs.h>
-#include "platform/video-backend.h"
 
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 
@@ -63,7 +63,11 @@ void ShaderSelector::clear() {
 void ShaderSelector::selectShader() {
 	QDir path(GBAApp::dataDir());
 	path.cd(QLatin1String("shaders"));
+#if !defined(USE_LIBZIP) && !defined(USE_MINIZIP)
 	QString name = GBAApp::app()->getOpenDirectoryName(this, tr("Load shader"), path.absolutePath());
+#else
+	QString name = GBAApp::app()->getOpenFileName(this, tr("Load shader"), "mGBA Shaders (*.shader)", path.absolutePath());
+#endif
 	if (!name.isNull()) {
 		loadShader(name);
 		refreshShaders();

@@ -56,7 +56,7 @@ O Game Boy Advance é uma marca registrada da Nintendo Co., Ltd.</translation>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation>O {projectName} é um emulador de Game Boy Advance de código fonte aberto</translation>
+        <translation>O {projectName} é um emulador de Game Boy Advance de código-fonte aberto</translation>
     </message>
 </context>
 <context>

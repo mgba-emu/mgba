@@ -87,7 +87,7 @@ struct mCore* mCoreCreate(enum mPlatform platform) {
 }
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 
 #ifdef PSP2
 #include <psp2/photoexport.h>
@@ -361,11 +361,11 @@ bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf) {
 	size_t stride;
 	const void* pixels = 0;
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
 	core->getPixels(core, &pixels, &stride);
 	png_structp png = PNGWriteOpen(vf);
-	png_infop info = PNGWriteHeader(png, width, height);
-	bool success = PNGWritePixels(png, width, height, stride, pixels);
+	png_infop info = PNGWriteHeader(png, width, height, mCOLOR_NATIVE);
+	bool success = PNGWritePixels(png, width, height, stride, pixels, mCOLOR_NATIVE);
 	PNGWriteClose(png, info);
 	return success;
 #else

@@ -7,6 +7,7 @@
 
 #include <QHash>
 #include <QObject>
+#include <QTimer>
 
 #include <mgba/script/context.h>
 #include <mgba/script/input.h>
@@ -18,6 +19,8 @@
 
 class QKeyEvent;
 class QTextDocument;
+
+struct VideoBackend;
 
 namespace QGBA {
 
@@ -35,6 +38,7 @@ public:
 
 	void setController(std::shared_ptr<CoreController> controller);
 	void setInputController(InputController* controller);
+	void setVideoBackend(VideoBackend* backend);
 
 	bool loadFile(const QString& path);
 	bool load(VFileDevice& vf, const QString& name);
@@ -52,8 +56,11 @@ signals:
 
 public slots:
 	void clearController();
+	void updateVideoScale();
 	void reset();
 	void runCode(const QString& code);
+
+	void flushStorage();
 
 protected:
 	bool eventFilter(QObject*, QEvent*) override;
@@ -84,6 +91,8 @@ private:
 
 	std::shared_ptr<CoreController> m_controller;
 	InputController* m_inputController = nullptr;
+
+	QTimer m_storageFlush;
 };
 
 }

@@ -66,9 +66,14 @@ static int32_t sum(struct mScriptList* list) {
 	return sum;
 }
 
+static unsigned tableSize(struct Table* table) {
+	return TableSize(table);
+}
+
 mSCRIPT_BIND_FUNCTION(boundIdentityInt, S32, identityInt, 1, S32, a);
 mSCRIPT_BIND_FUNCTION(boundAddInts, S32, addInts, 2, S32, a, S32, b);
 mSCRIPT_BIND_FUNCTION(boundSum, S32, sum, 1, LIST, list);
+mSCRIPT_BIND_FUNCTION(boundTableSize, U32, tableSize, 1, TABLE, table);
 
 mSCRIPT_DECLARE_STRUCT(Test);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(Test, S32, ifn0, 0);
@@ -371,13 +376,51 @@ M_TEST_DEFINE(callCFunc) {
 	assert_true(a.type->equal(&a, val));
 	mScriptValueDeref(val);
 
+	LOAD_PROGRAM("b('a')");
+	assert_false(lua->run(lua));
+
 	mScriptContextDeinit(&context);
 }
+
+M_TEST_DEFINE(callCTable) {
+	SETUP_LUA;
+
+	assert_true(lua->setGlobal(lua, "b", &boundTableSize));
+
+	TEST_PROGRAM("assert(b({}) == 0)");
+	assert_null(lua->getError(lua));
+
+	TEST_PROGRAM("assert(b({[2]=1}) == 1)");
+	assert_null(lua->getError(lua));
+
+	TEST_PROGRAM("assert(b({a=1}) == 1)");
+	assert_null(lua->getError(lua));
+
+	TEST_PROGRAM("assert(b({a={}}) == 1)");
+	assert_null(lua->getError(lua));
+
+	LOAD_PROGRAM(
+		"a = {}\n"
+		"a.b = a\n"
+		"assert(b(a) == 1)\n"
+	);
+	assert_false(lua->run(lua));
+
+	LOAD_PROGRAM(
+		"a = {}\n"
+		"a.b = {}\n"
+		"a.b.c = a\n"
+		"assert(b(a) == 1)\n"
+	);
+	assert_false(lua->run(lua));
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_DEFINE(globalNull) {
 	SETUP_LUA;
 
 	struct Test s = {};
-	struct mScriptValue* val;
 	struct mScriptValue a;
 
 	LOAD_PROGRAM("assert(a)");
@@ -764,6 +807,48 @@ M_TEST_DEFINE(linkedList) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(listConvert) {
+	SETUP_LUA;
+
+	struct mScriptValue* list = mScriptValueAlloc(mSCRIPT_TYPE_MS_LIST);
+
+	assert_true(lua->setGlobal(lua, "l", list));
+	TEST_PROGRAM("assert(l)");
+
+	struct mScriptValue* val = lua->getGlobal(lua, "l");
+	assert_non_null(val);
+	if (val->type->base == mSCRIPT_TYPE_WRAPPER) {
+		val = mScriptValueUnwrap(val);
+	}
+	assert_ptr_equal(val->type, mSCRIPT_TYPE_MS_LIST);
+	assert_ptr_equal(val->value.list, list->value.list);
+	mScriptValueDeref(val);
+	mScriptValueDeref(list);
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(tableConvert) {
+	SETUP_LUA;
+
+	struct mScriptValue* list = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+
+	assert_true(lua->setGlobal(lua, "l", list));
+	TEST_PROGRAM("assert(l)");
+
+	struct mScriptValue* val = lua->getGlobal(lua, "l");
+	assert_non_null(val);
+	if (val->type->base == mSCRIPT_TYPE_WRAPPER) {
+		val = mScriptValueUnwrap(val);
+	}
+	assert_ptr_equal(val->type, mSCRIPT_TYPE_MS_TABLE);
+	assert_ptr_equal(val->value.table, list->value.table);
+	mScriptValueDeref(val);
+	mScriptValueDeref(list);
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(create),
 	cmocka_unit_test(loadGood),
@@ -774,6 +859,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(rootScope),
 	cmocka_unit_test(callLuaFunc),
 	cmocka_unit_test(callCFunc),
+	cmocka_unit_test(callCTable),
 	cmocka_unit_test(globalNull),
 	cmocka_unit_test(globalStructFieldGet),
 	cmocka_unit_test(globalStructFieldSet),
@@ -782,5 +868,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(tableLookup),
 	cmocka_unit_test(tableIterate),
 	cmocka_unit_test(callList),
-	cmocka_unit_test(linkedList)
+	cmocka_unit_test(linkedList),
+	cmocka_unit_test(listConvert),
+	cmocka_unit_test(tableConvert),
 )

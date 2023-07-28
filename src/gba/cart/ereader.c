@@ -13,7 +13,7 @@
 #ifdef USE_FFMPEG
 #include <mgba-util/convolve.h>
 #ifdef USE_PNG
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/vfs.h>
 #endif
 
@@ -888,7 +888,11 @@ struct EReaderScan* EReaderScanLoadImagePNG(const char* filename) {
 	}
 	png_infop info = png_create_info_struct(png);
 	png_infop end = png_create_info_struct(png);
-	PNGReadHeader(png, info);
+	if (!PNGReadHeader(png, info)) {
+		PNGReadClose(png, info, end);
+		vf->close(vf);
+		return NULL;
+	}
 	unsigned height = png_get_image_height(png, info);
 	unsigned width = png_get_image_width(png, info);
 	int type = png_get_color_type(png, info);
@@ -900,19 +904,34 @@ struct EReaderScan* EReaderScanLoadImagePNG(const char* filename) {
 			break;
 		}
 		image = malloc(height * width * 3);
-		PNGReadPixels(png, info, image, width, height, width);
+		if (!image) {
+			goto out;
+		}
+		if (!PNGReadPixels(png, info, image, width, height, width)) {
+			free(image);
+			image = NULL;
+			goto out;
+		}
 		break;
 	case PNG_COLOR_TYPE_RGBA:
 		if (depth != 8) {
 			break;
 		}
 		image = malloc(height * width * 4);
-		PNGReadPixelsA(png, info, image, width, height, width);
+		if (!image) {
+			goto out;
+		}
+		if (!PNGReadPixelsA(png, info, image, width, height, width)) {
+			free(image);
+			image = NULL;
+			goto out;
+		}
 		break;
 	default:
 		break;
 	}
 	PNGReadFooter(png, end);
+out:
 	PNGReadClose(png, info, end);
 	vf->close(vf);
 	if (!image) {
@@ -1480,7 +1499,7 @@ bool EReaderScanCard(struct EReaderScan* scan) {
 	size_t i;
 	for (i = 0; i < blocks; ++i) {
 		EReaderScanDetectBlockThreshold(scan, i);
-		int errors = 36 * 36;
+		unsigned errors = 36 * 36;
 		while (!EReaderScanScanBlock(scan, i, true)) {
 			if (errors < EReaderBlockListGetPointer(&scan->blocks, i)->errors) {
 				return false;

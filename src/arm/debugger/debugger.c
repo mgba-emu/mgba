@@ -187,16 +187,18 @@ static struct ARMDebugBreakpoint* _lookupBreakpoint(struct ARMDebugBreakpointLis
 	return 0;
 }
 
-static void _destroyBreakpoint(struct ARMDebugBreakpoint* breakpoint) {
+static void _destroyBreakpoint(struct mDebugger* debugger, struct ARMDebugBreakpoint* breakpoint) {
 	if (breakpoint->d.condition) {
 		parseFree(breakpoint->d.condition);
 	}
+	TableRemove(&debugger->pointOwner, breakpoint->d.id);
 }
 
-static void _destroyWatchpoint(struct mWatchpoint* watchpoint) {
+static void _destroyWatchpoint(struct mDebugger* debugger, struct mWatchpoint* watchpoint) {
 	if (watchpoint->condition) {
 		parseFree(watchpoint->condition);
 	}
+	TableRemove(&debugger->pointOwner, watchpoint->id);
 }
 
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
@@ -220,7 +222,8 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	struct mDebuggerEntryInfo info = {
 		.address = breakpoint->d.address,
 		.type.bp.breakType = BREAKPOINT_HARDWARE,
-		.pointId = breakpoint->d.id
+		.pointId = breakpoint->d.id,
+		.target = TableLookup(&d->p->pointOwner, breakpoint->d.id)
 	};
 	mDebuggerEnter(d->p, DEBUGGER_ENTER_BREAKPOINT, &info);
 }
@@ -230,11 +233,11 @@ static void ARMDebuggerDeinit(struct mDebuggerPlatform* platform);
 
 static void ARMDebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info);
 
-static ssize_t ARMDebuggerSetBreakpoint(struct mDebuggerPlatform*, const struct mBreakpoint*);
+static ssize_t ARMDebuggerSetBreakpoint(struct mDebuggerPlatform*, struct mDebuggerModule* owner, const struct mBreakpoint*);
 static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform*, ssize_t id);
-static void ARMDebuggerListBreakpoints(struct mDebuggerPlatform*, struct mBreakpointList*);
-static ssize_t ARMDebuggerSetWatchpoint(struct mDebuggerPlatform*, const struct mWatchpoint*);
-static void ARMDebuggerListWatchpoints(struct mDebuggerPlatform*, struct mWatchpointList*);
+static void ARMDebuggerListBreakpoints(struct mDebuggerPlatform*, struct mDebuggerModule* owner, struct mBreakpointList*);
+static ssize_t ARMDebuggerSetWatchpoint(struct mDebuggerPlatform*, struct mDebuggerModule* owner, const struct mWatchpoint*);
+static void ARMDebuggerListWatchpoints(struct mDebuggerPlatform*, struct mDebuggerModule* owner, struct mWatchpointList*);
 static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform*);
 static void ARMDebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
@@ -291,12 +294,12 @@ void ARMDebuggerDeinit(struct mDebuggerPlatform* platform) {
 
 	size_t i;
 	for (i = 0; i < ARMDebugBreakpointListSize(&debugger->breakpoints); ++i) {
-		_destroyBreakpoint(ARMDebugBreakpointListGetPointer(&debugger->breakpoints, i));
+		_destroyBreakpoint(debugger->d.p, ARMDebugBreakpointListGetPointer(&debugger->breakpoints, i));
 	}
 	ARMDebugBreakpointListDeinit(&debugger->breakpoints);
 
 	for (i = 0; i < mWatchpointListSize(&debugger->watchpoints); ++i) {
-		_destroyWatchpoint(mWatchpointListGetPointer(&debugger->watchpoints, i));
+		_destroyWatchpoint(debugger->d.p, mWatchpointListGetPointer(&debugger->watchpoints, i));
 	}
 	ARMDebugBreakpointListDeinit(&debugger->swBreakpoints);
 	mWatchpointListDeinit(&debugger->watchpoints);
@@ -323,12 +326,9 @@ static void ARMDebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerE
 			}
 		}
 	}
-	if (debugger->d.p->entered) {
-		debugger->d.p->entered(debugger->d.p, reason, info);
-	}
 }
 
-ssize_t ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* d, uint32_t address, enum ExecutionMode mode) {
+ssize_t ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* d, struct mDebuggerModule* owner, uint32_t address, enum ExecutionMode mode) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	uint32_t opcode;
 	if (!debugger->setSoftwareBreakpoint || !debugger->setSoftwareBreakpoint(debugger, address, mode, &opcode)) {
@@ -345,11 +345,12 @@ ssize_t ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* d, uint32_t a
 	breakpoint->d.type = BREAKPOINT_SOFTWARE;
 	breakpoint->sw.opcode = opcode;
 	breakpoint->sw.mode = mode;
+	TableInsert(&debugger->d.p->pointOwner, id, owner);
 
 	return id;
 }
 
-static ssize_t ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, const struct mBreakpoint* info) {
+static ssize_t ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, struct mDebuggerModule* owner, const struct mBreakpoint* info) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListAppend(&debugger->breakpoints);
 	ssize_t id = debugger->nextId;
@@ -357,6 +358,7 @@ static ssize_t ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, const struc
 	breakpoint->d = *info;
 	breakpoint->d.address &= ~1; // Clear Thumb bit since it's not part of a valid address
 	breakpoint->d.id = id;
+	TableInsert(&debugger->d.p->pointOwner, id, owner);
 	if (info->type == BREAKPOINT_SOFTWARE) {
 		// TODO
 		abort();
@@ -371,7 +373,7 @@ static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t id) 
 	struct ARMDebugBreakpointList* breakpoints = &debugger->breakpoints;
 	for (i = 0; i < ARMDebugBreakpointListSize(breakpoints); ++i) {
 		if (ARMDebugBreakpointListGetPointer(breakpoints, i)->d.id == id) {
-			_destroyBreakpoint(ARMDebugBreakpointListGetPointer(breakpoints, i));
+			_destroyBreakpoint(debugger->d.p, ARMDebugBreakpointListGetPointer(breakpoints, i));
 			ARMDebugBreakpointListShift(breakpoints, i, 1);
 			return true;
 		}
@@ -391,7 +393,7 @@ static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t id) 
 	struct mWatchpointList* watchpoints = &debugger->watchpoints;
 	for (i = 0; i < mWatchpointListSize(watchpoints); ++i) {
 		if (mWatchpointListGetPointer(watchpoints, i)->id == id) {
-			_destroyWatchpoint(mWatchpointListGetPointer(watchpoints, i));
+			_destroyWatchpoint(debugger->d.p, mWatchpointListGetPointer(watchpoints, i));
 			mWatchpointListShift(watchpoints, i, 1);
 			if (!mWatchpointListSize(&debugger->watchpoints)) {
 				ARMDebuggerRemoveMemoryShim(debugger);
@@ -402,7 +404,7 @@ static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t id) 
 	return false;
 }
 
-static void ARMDebuggerListBreakpoints(struct mDebuggerPlatform* d, struct mBreakpointList* list) {
+static void ARMDebuggerListBreakpoints(struct mDebuggerPlatform* d, struct mDebuggerModule* owner, struct mBreakpointList* list) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	mBreakpointListClear(list);
 	size_t i, s;
@@ -411,10 +413,20 @@ static void ARMDebuggerListBreakpoints(struct mDebuggerPlatform* d, struct mBrea
 		struct ARMDebugBreakpoint* sw = NULL;
 		if (i < ARMDebugBreakpointListSize(&debugger->breakpoints)) {
 			hw = ARMDebugBreakpointListGetPointer(&debugger->breakpoints, i);
+			if (owner && TableLookup(&debugger->d.p->pointOwner, hw->d.id) != owner) {
+				hw = NULL;
+			}
 		}
 		if (s < ARMDebugBreakpointListSize(&debugger->swBreakpoints)) {
 			sw = ARMDebugBreakpointListGetPointer(&debugger->swBreakpoints, s);
+			if (owner && TableLookup(&debugger->d.p->pointOwner, sw->d.id) != owner) {
+				sw = NULL;
+			}
 		}
+		if (!hw && !sw) {
+			continue;
+		}
+
 		struct mBreakpoint* b = mBreakpointListAppend(list);
 		if (hw && sw) {
 			if (hw->d.id < sw->d.id) {
@@ -430,8 +442,6 @@ static void ARMDebuggerListBreakpoints(struct mDebuggerPlatform* d, struct mBrea
 		} else if (sw) {
 			*b = sw->d;
 			++s;
-		} else {
-			abort(); // Should be unreachable
 		}
 	}
 }
@@ -441,7 +451,7 @@ static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform* d) {
 	return ARMDebugBreakpointListSize(&debugger->breakpoints) || mWatchpointListSize(&debugger->watchpoints) || debugger->stackTraceMode != STACK_TRACE_DISABLED;
 }
 
-static ssize_t ARMDebuggerSetWatchpoint(struct mDebuggerPlatform* d, const struct mWatchpoint* info) {
+static ssize_t ARMDebuggerSetWatchpoint(struct mDebuggerPlatform* d, struct mDebuggerModule* owner, const struct mWatchpoint* info) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	if (!mWatchpointListSize(&debugger->watchpoints)) {
 		ARMDebuggerInstallMemoryShim(debugger);
@@ -451,13 +461,25 @@ static ssize_t ARMDebuggerSetWatchpoint(struct mDebuggerPlatform* d, const struc
 	++debugger->nextId;
 	*watchpoint = *info;
 	watchpoint->id = id;
+	TableInsert(&debugger->d.p->pointOwner, id, owner);
 	return id;
 }
 
-static void ARMDebuggerListWatchpoints(struct mDebuggerPlatform* d, struct mWatchpointList* list) {
+static void ARMDebuggerListWatchpoints(struct mDebuggerPlatform* d, struct mDebuggerModule* owner, struct mWatchpointList* list) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	mWatchpointListClear(list);
-	mWatchpointListCopy(list, &debugger->watchpoints);
+	if (owner) {
+		size_t i;
+		for (i = 0; i < mWatchpointListSize(&debugger->watchpoints); ++i) {
+			struct mWatchpoint* point = mWatchpointListGetPointer(&debugger->watchpoints, i);
+			if (TableLookup(&debugger->d.p->pointOwner, point->id) != owner) {
+				continue;
+			}
+			memcpy(mWatchpointListAppend(list), point, sizeof(*point));
+		}
+	} else {
+		mWatchpointListCopy(list, &debugger->watchpoints);
+	}
 }
 
 static void ARMDebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t* length) {

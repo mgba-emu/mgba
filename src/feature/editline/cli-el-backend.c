@@ -7,11 +7,30 @@
 
 #include <mgba/core/config.h>
 #include <mgba/core/version.h>
+#include <mgba-util/threading.h>
 #include <mgba-util/vfs.h>
 
 #include <signal.h>
 
+struct CLIDebuggerEditLineBackend {
+	struct CLIDebuggerBackend d;
+
+	EditLine* elstate;
+	History* histate;
+
+	int count;
+	const char* prompt;
+	bool doPrompt;
+	Thread promptThread;
+	Mutex promptMutex;
+	Condition promptRead;
+	Condition promptWrite;
+	bool exitThread;
+};
+
 static struct CLIDebugger* _activeDebugger;
+
+static THREAD_ENTRY _promptThread(void*);
 
 static char* _prompt(EditLine* el) {
 	UNUSED(el);
@@ -20,7 +39,10 @@ static char* _prompt(EditLine* el) {
 
 static void _breakIntoDefault(int signal) {
 	UNUSED(signal);
-	mDebuggerEnter(&_activeDebugger->d, DEBUGGER_ENTER_MANUAL, 0);
+	struct mDebuggerEntryInfo info = {
+		.target = &_activeDebugger->d
+	};
+	mDebuggerEnter(_activeDebugger->d.p, DEBUGGER_ENTER_MANUAL, &info);
 }
 
 static unsigned char _tabComplete(EditLine* elstate, int ch) {
@@ -40,7 +62,7 @@ static unsigned char _tabComplete(EditLine* elstate, int ch) {
 }
 
 ATTRIBUTE_FORMAT(printf, 2, 3)
-void _CLIDebuggerEditLinePrintf(struct CLIDebuggerBackend* be, const char* fmt, ...) {
+static void CLIDebuggerEditLinePrintf(struct CLIDebuggerBackend* be, const char* fmt, ...) {
 	UNUSED(be);
 	va_list args;
 	va_start(args, fmt);
@@ -48,7 +70,7 @@ void _CLIDebuggerEditLinePrintf(struct CLIDebuggerBackend* be, const char* fmt, 
 	va_end(args);
 }
 
-void _CLIDebuggerEditLineInit(struct CLIDebuggerBackend* be) {
+static void CLIDebuggerEditLineInit(struct CLIDebuggerBackend* be) {
 	struct CLIDebuggerEditLineBackend* elbe = (struct CLIDebuggerEditLineBackend*) be;
 	// TODO: get argv[0]
 	elbe->elstate = el_init(binaryName, stdin, stdout, stderr);
@@ -78,12 +100,26 @@ void _CLIDebuggerEditLineInit(struct CLIDebuggerBackend* be) {
 		}
 	}
 
+	MutexInit(&elbe->promptMutex);
+	ConditionInit(&elbe->promptRead);
+	ConditionInit(&elbe->promptWrite);
+	elbe->prompt = NULL;
+	elbe->exitThread = false;
+	elbe->doPrompt = false;
+	ThreadCreate(&elbe->promptThread, _promptThread, elbe);
+
 	_activeDebugger = be->p;
 	signal(SIGINT, _breakIntoDefault);
 }
 
-void _CLIDebuggerEditLineDeinit(struct CLIDebuggerBackend* be) {
+static void CLIDebuggerEditLineDeinit(struct CLIDebuggerBackend* be) {
 	struct CLIDebuggerEditLineBackend* elbe = (struct CLIDebuggerEditLineBackend*) be;
+	MutexLock(&elbe->promptMutex);
+	elbe->exitThread = true;
+	ConditionWake(&elbe->promptWrite);
+	MutexUnlock(&elbe->promptMutex);
+	ThreadJoin(&elbe->promptThread);
+
 	char path[PATH_MAX + 1];
 	mCoreConfigDirectory(path, PATH_MAX);
 	if (path[0]) {
@@ -108,11 +144,52 @@ void _CLIDebuggerEditLineDeinit(struct CLIDebuggerBackend* be) {
 	free(elbe);
 }
 
-const char* _CLIDebuggerEditLineReadLine(struct CLIDebuggerBackend* be, size_t* len) {
+static THREAD_ENTRY _promptThread(void* context) {
+	struct CLIDebuggerEditLineBackend* elbe = context;
+
+	MutexLock(&elbe->promptMutex);
+	while (!elbe->exitThread) {
+		if (elbe->doPrompt) {
+			MutexUnlock(&elbe->promptMutex);
+			elbe->prompt = el_gets(elbe->elstate, &elbe->count);
+			MutexLock(&elbe->promptMutex);
+			elbe->doPrompt = false;
+			ConditionWake(&elbe->promptRead);
+		}
+		ConditionWait(&elbe->promptWrite, &elbe->promptMutex);
+	}
+	MutexUnlock(&elbe->promptMutex);
+	THREAD_EXIT(0);
+}
+
+static int CLIDebuggerEditLinePoll(struct CLIDebuggerBackend* be, int32_t timeoutMs) {
 	struct CLIDebuggerEditLineBackend* elbe = (struct CLIDebuggerEditLineBackend*) be;
-	int count;
+	int gotPrompt = 0;
+	MutexLock(&elbe->promptMutex);
+	if (!elbe->prompt) {
+		elbe->doPrompt = true;
+		ConditionWake(&elbe->promptWrite);
+		ConditionWaitTimed(&elbe->promptRead, &elbe->promptMutex, timeoutMs);
+	}
+	if (elbe->prompt) {
+		gotPrompt = 1;
+	}
+	MutexUnlock(&elbe->promptMutex);
+
+	return gotPrompt;
+}
+
+static const char* CLIDebuggerEditLineReadLine(struct CLIDebuggerBackend* be, size_t* len) {
+	struct CLIDebuggerEditLineBackend* elbe = (struct CLIDebuggerEditLineBackend*) be;
 	*len = 0;
-	const char* line = el_gets(elbe->elstate, &count);
+	if (CLIDebuggerEditLinePoll(be, -1) != 1) {
+		return NULL;
+	}
+	MutexLock(&elbe->promptMutex);
+	int count = elbe->count;
+	const char* line = elbe->prompt;
+	elbe->prompt = NULL;
+	MutexUnlock(&elbe->promptMutex);
 	if (line) {
 		if (count > 1) {
 			// Crop off newline
@@ -123,12 +200,13 @@ const char* _CLIDebuggerEditLineReadLine(struct CLIDebuggerBackend* be, size_t* 
 	}
 	return line;
 }
-void _CLIDebuggerEditLineLineAppend(struct CLIDebuggerBackend* be, const char* line) {
+
+static void CLIDebuggerEditLineLineAppend(struct CLIDebuggerBackend* be, const char* line) {
 	struct CLIDebuggerEditLineBackend* elbe = (struct CLIDebuggerEditLineBackend*) be;
 	el_insertstr(elbe->elstate, line);
 }
 
-const char* _CLIDebuggerEditLineHistoryLast(struct CLIDebuggerBackend* be, size_t* len) {
+static const char* CLIDebuggerEditLineHistoryLast(struct CLIDebuggerBackend* be, size_t* len) {
 	struct CLIDebuggerEditLineBackend* elbe = (struct CLIDebuggerEditLineBackend*) be;
 	HistEvent ev;
 	if (history(elbe->histate, &ev, H_FIRST) < 0) {
@@ -145,7 +223,7 @@ const char* _CLIDebuggerEditLineHistoryLast(struct CLIDebuggerBackend* be, size_
 	return ev.str;
 }
 
-void _CLIDebuggerEditLineHistoryAppend(struct CLIDebuggerBackend* be, const char* line) {
+static void CLIDebuggerEditLineHistoryAppend(struct CLIDebuggerBackend* be, const char* line) {
 	struct CLIDebuggerEditLineBackend* elbe = (struct CLIDebuggerEditLineBackend*) be;
 	HistEvent ev;
 	history(elbe->histate, &ev, H_ENTER, line);
@@ -153,13 +231,14 @@ void _CLIDebuggerEditLineHistoryAppend(struct CLIDebuggerBackend* be, const char
 
 struct CLIDebuggerBackend* CLIDebuggerEditLineBackendCreate(void) {
 	struct CLIDebuggerEditLineBackend* elbe = calloc(1, sizeof(*elbe));
-	elbe->d.printf = _CLIDebuggerEditLinePrintf;
-	elbe->d.init = _CLIDebuggerEditLineInit;
-	elbe->d.deinit = _CLIDebuggerEditLineDeinit;
-	elbe->d.readline = _CLIDebuggerEditLineReadLine;
-	elbe->d.lineAppend = _CLIDebuggerEditLineLineAppend;
-	elbe->d.historyLast = _CLIDebuggerEditLineHistoryLast;
-	elbe->d.historyAppend = _CLIDebuggerEditLineHistoryAppend;
+	elbe->d.printf = CLIDebuggerEditLinePrintf;
+	elbe->d.init = CLIDebuggerEditLineInit;
+	elbe->d.deinit = CLIDebuggerEditLineDeinit;
+	elbe->d.poll = CLIDebuggerEditLinePoll;
+	elbe->d.readline = CLIDebuggerEditLineReadLine;
+	elbe->d.lineAppend = CLIDebuggerEditLineLineAppend;
+	elbe->d.historyLast = CLIDebuggerEditLineHistoryLast;
+	elbe->d.historyAppend = CLIDebuggerEditLineHistoryAppend;
 	elbe->d.interrupt = NULL;
 	return &elbe->d;
 }

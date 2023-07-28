@@ -6,6 +6,7 @@
 #include "utils.h"
 
 #include <QCoreApplication>
+#include <QKeySequence>
 #include <QObject>
 
 #include "VFileDevice.h"
@@ -127,6 +128,29 @@ bool extractMatchingFile(VDir* dir, std::function<QString (VDirEntry*)> filter) 
 		return true;
 	}
 	return false;
+}
+
+QString keyName(int key) {
+	switch (key) {
+#ifndef Q_OS_MAC
+	case Qt::Key_Shift:
+		return QCoreApplication::translate("QShortcut", "Shift");
+	case Qt::Key_Control:
+		return QCoreApplication::translate("QShortcut", "Control");
+	case Qt::Key_Alt:
+		return QCoreApplication::translate("QShortcut", "Alt");
+	case Qt::Key_Meta:
+		return QCoreApplication::translate("QShortcut", "Meta");
+#endif
+	case Qt::Key_Super_L:
+		return QObject::tr("Super (L)");
+	case Qt::Key_Super_R:
+		return QObject::tr("Super (R)");
+	case Qt::Key_Menu:
+		return QObject::tr("Menu");
+	default:
+		return QKeySequence(key).toString(QKeySequence::NativeText);
+	}
 }
 
 }

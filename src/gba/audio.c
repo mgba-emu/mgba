@@ -106,6 +106,9 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 }
 
 void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
+	if (samples > 0x2000) {
+		samples = 0x2000;
+	}
 	mCoreSyncLockAudio(audio->p->sync);
 	audio->samples = samples;
 	blip_clear(audio->psg.left);
@@ -231,16 +234,35 @@ void GBAAudioWriteSOUNDCNT_HI(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
+	GBAAudioSample(audio, mTimingCurrentTime(&audio->p->timing));
 	audio->enable = GBAudioEnableGetEnable(value);
 	GBAudioWriteNR52(&audio->psg, value);
+	if (!audio->enable) {
+		int i;
+		for (i = REG_SOUND1CNT_LO; i < REG_SOUNDCNT_HI; i += 2) {
+			audio->p->memory.io[i >> 1] = 0;
+		}
+		audio->psg.ch3.size = 0;
+		audio->psg.ch3.bank = 0;
+		audio->psg.ch3.volume = 0;
+		audio->volume = 0;
+		audio->volumeChA = 0;
+		audio->volumeChB = 0;
+		audio->p->memory.io[REG_SOUNDCNT_HI >> 1] &= 0xFF00;
+	}
 }
 
 void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {
+	GBAAudioSample(audio, mTimingCurrentTime(&audio->p->timing));
 	audio->soundbias = value;
 	int32_t oldSampleInterval = audio->sampleInterval;
 	audio->sampleInterval = 0x200 >> GBARegisterSOUNDBIASGetResolution(value);
-	if (oldSampleInterval != audio->sampleInterval && audio->p->stream && audio->p->stream->audioRateChanged) {
-		audio->p->stream->audioRateChanged(audio->p->stream, GBA_ARM7TDMI_FREQUENCY / audio->sampleInterval);
+	if (oldSampleInterval != audio->sampleInterval) {
+		audio->lastSample += oldSampleInterval * audio->sampleIndex;
+		audio->sampleIndex = 0;
+		if (audio->p->stream && audio->p->stream->audioRateChanged) {
+			audio->p->stream->audioRateChanged(audio->p->stream, GBA_ARM7TDMI_FREQUENCY / audio->sampleInterval);
+		}
 	}
 }
 
@@ -505,6 +527,16 @@ void GBAAudioSerialize(const struct GBAAudio* audio, struct GBASerializedState* 
 
 void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState* state) {
 	GBAudioPSGDeserialize(&audio->psg, &state->audio.psg, &state->audio.flags);
+
+	uint16_t reg;
+	LOAD_16(reg, REG_SOUND1CNT_X, state->io);
+	GBAIOWrite(audio->p, REG_SOUND1CNT_X, reg & 0x7FFF);
+	LOAD_16(reg, REG_SOUND2CNT_HI, state->io);
+	GBAIOWrite(audio->p, REG_SOUND2CNT_HI, reg & 0x7FFF);
+	LOAD_16(reg, REG_SOUND3CNT_X, state->io);
+	GBAIOWrite(audio->p, REG_SOUND3CNT_X, reg & 0x7FFF);
+	LOAD_16(reg, REG_SOUND4CNT_HI, state->io);
+	GBAIOWrite(audio->p, REG_SOUND4CNT_HI, reg & 0x7FFF);
 
 	LOAD_32(audio->chA.internalSample, 0, &state->audio.internalA);
 	LOAD_32(audio->chB.internalSample, 0, &state->audio.internalB);

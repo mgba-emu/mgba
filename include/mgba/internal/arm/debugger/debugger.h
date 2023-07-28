@@ -45,7 +45,7 @@ struct ARMDebugger {
 };
 
 struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void);
-ssize_t ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* debugger, uint32_t address, enum ExecutionMode mode);
+ssize_t ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* debugger, struct mDebuggerModule* owner, uint32_t address, enum ExecutionMode mode);
 
 CXX_GUARD_END
 

@@ -381,7 +381,9 @@ DEFINE_LOAD_STORE_MULTIPLE_THUMB(PUSHR,
 	cpu->gprs[ARM_SP] = address)
 
 DEFINE_INSTRUCTION_THUMB(ILL, ARM_ILL)
-DEFINE_INSTRUCTION_THUMB(BKPT, cpu->irqh.bkpt16(cpu, opcode & 0xFF);)
+DEFINE_INSTRUCTION_THUMB(BKPT,
+	cpu->irqh.bkpt16(cpu, opcode & 0xFF);
+	currentCycles = 0;) // Not strictly in ARMv4T, but here for convenience
 DEFINE_INSTRUCTION_THUMB(B,
 	int16_t immediate = (opcode & 0x07FF) << 5;
 	cpu->gprs[ARM_PC] += (((int32_t) immediate) >> 4);
@@ -401,11 +403,7 @@ DEFINE_INSTRUCTION_THUMB(BL2,
 DEFINE_INSTRUCTION_THUMB(BX,
 	int rm = (opcode >> 3) & 0xF;
 	_ARMSetMode(cpu, cpu->gprs[rm] & 0x00000001);
-	int misalign = 0;
-	if (rm == ARM_PC) {
-		misalign = cpu->gprs[rm] & 0x00000002;
-	}
-	cpu->gprs[ARM_PC] = (cpu->gprs[rm] & 0xFFFFFFFE) - misalign;
+	cpu->gprs[ARM_PC] = cpu->gprs[rm] & 0xFFFFFFFE;
 	if (cpu->executionMode == MODE_THUMB) {
 		currentCycles += ThumbWritePC(cpu);
 	} else {

@@ -5,9 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/test/suite.h"
 
-#include <mgba/script/context.h>
-#include <mgba/script/macros.h>
-#include <mgba/script/types.h>
+#include <mgba/script.h>
 
 struct TestA {
 	int32_t i;
@@ -46,6 +44,19 @@ struct TestF {
 	int* ref;
 };
 
+struct TestG {
+	const char* name;
+	int64_t s;
+	uint64_t u;
+	double f;
+	const char* c;
+};
+
+struct TestH {
+	int32_t i;
+	int32_t j;
+};
+
 static int32_t testAi0(struct TestA* a) {
 	return a->i;
 }
@@ -81,6 +92,26 @@ static int32_t testGet(struct TestE* e, const char* name) {
 
 static void testDeinit(struct TestF* f) {
 	++*f->ref;
+}
+
+static void testSetS(struct TestG* g, const char* name, int64_t val) {
+	g->name = name;
+	g->s = val;
+}
+
+static void testSetU(struct TestG* g, const char* name, uint64_t val) {
+	g->name = name;
+	g->u = val;
+}
+
+static void testSetF(struct TestG* g, const char* name, double val) {
+	g->name = name;
+	g->f = val;
+}
+
+static void testSetC(struct TestG* g, const char* name, const char* val) {
+	g->name = name;
+	g->c = val;
 }
 
 #define MEMBER_A_DOCSTRING "Member a"
@@ -155,6 +186,25 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestF, _deinit, testDeinit, 0);
 
 mSCRIPT_DEFINE_STRUCT(TestF)
 	mSCRIPT_DEFINE_STRUCT_DEINIT(TestF)
+mSCRIPT_DEFINE_END;
+
+mSCRIPT_DECLARE_STRUCT(TestG);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestG, setS, testSetS, 2, CHARP, name, S64, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestG, setU, testSetU, 2, CHARP, name, U64, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestG, setF, testSetF, 2, CHARP, name, F64, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestG, setC, testSetC, 2, CHARP, name, CHARP, value);
+
+mSCRIPT_DEFINE_STRUCT(TestG)
+	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(TestG, setS)
+	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(TestG, setU)
+	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(TestG, setF)
+	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(TestG, setC)
+mSCRIPT_DEFINE_END;
+
+
+mSCRIPT_DEFINE_STRUCT(TestH)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(TestH, S32, i)
+	mSCRIPT_DEFINE_STRUCT_CONST_MEMBER(TestH, S32, j)
 mSCRIPT_DEFINE_END;
 
 M_TEST_DEFINE(testALayout) {
@@ -1032,6 +1082,108 @@ M_TEST_DEFINE(testFDeinit) {
 	assert_false(cls->init);
 }
 
+M_TEST_DEFINE(testGSet) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestG)->details.cls;
+
+	struct TestG s = {
+	};
+
+	assert_int_equal(s.s, 0);
+	assert_int_equal(s.u, 0);
+	assert_float_equal(s.f, 0, 0);
+	assert_null(s.c);
+
+	struct mScriptValue sval = mSCRIPT_MAKE_S(TestG, &s);
+	struct mScriptValue val;
+	struct mScriptValue* pval;
+
+	val = mSCRIPT_MAKE_S64(1);
+	assert_true(mScriptObjectSet(&sval, "a", &val));
+	assert_int_equal(s.s, 1);
+	assert_string_equal(s.name, "a");
+
+	val = mSCRIPT_MAKE_U64(2);
+	assert_true(mScriptObjectSet(&sval, "b", &val));
+	assert_int_equal(s.u, 2);
+	assert_string_equal(s.name, "b");
+
+	val = mSCRIPT_MAKE_F64(1.5);
+	assert_true(mScriptObjectSet(&sval, "c", &val));
+	assert_float_equal(s.f, 1.5, 0);
+	assert_string_equal(s.name, "c");
+
+	val = mSCRIPT_MAKE_CHARP("hello");
+	assert_true(mScriptObjectSet(&sval, "d", &val));
+	assert_string_equal(s.c, "hello");
+	assert_string_equal(s.name, "d");
+
+	val = mSCRIPT_MAKE_S32(3);
+	assert_true(mScriptObjectSet(&sval, "a", &val));
+	assert_int_equal(s.s, 3);
+
+	val = mSCRIPT_MAKE_S16(4);
+	assert_true(mScriptObjectSet(&sval, "a", &val));
+	assert_int_equal(s.s, 4);
+
+	val = mSCRIPT_MAKE_S8(5);
+	assert_true(mScriptObjectSet(&sval, "a", &val));
+	assert_int_equal(s.s, 5);
+
+	val = mSCRIPT_MAKE_BOOL(false);
+	assert_true(mScriptObjectSet(&sval, "a", &val));
+	assert_int_equal(s.u, 0);
+
+	pval = mScriptStringCreateFromASCII("goodbye");
+	assert_true(mScriptObjectSet(&sval, "a", pval));
+	assert_string_equal(s.c, "goodbye");
+	mScriptValueDeref(pval);
+
+	assert_true(cls->init);
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
+M_TEST_DEFINE(testHSet) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestH)->details.cls;
+
+	struct TestH s = {
+		.i = 1,
+		.j = 2,
+	};
+
+	struct mScriptValue sval = mSCRIPT_MAKE_S(TestH, &s);
+	struct mScriptValue val;
+	struct mScriptValue compare;
+
+	compare = mSCRIPT_MAKE_S32(1);
+	assert_true(mScriptObjectGet(&sval, "i", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32(2);
+	assert_true(mScriptObjectGet(&sval, "j", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	val = mSCRIPT_MAKE_S32(3);
+	assert_true(mScriptObjectSet(&sval, "i", &val));
+	assert_int_equal(s.i, 3);
+
+	val = mSCRIPT_MAKE_S32(4);
+	assert_false(mScriptObjectSet(&sval, "j", &val));
+	assert_int_equal(s.j, 2);
+
+	compare = mSCRIPT_MAKE_S32(3);
+	assert_true(mScriptObjectGet(&sval, "i", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_S32(2);
+	assert_true(mScriptObjectGet(&sval, "j", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	assert_true(cls->init);
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
 M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testALayout),
 	cmocka_unit_test(testASignatures),
@@ -1047,4 +1199,6 @@ M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testDSet),
 	cmocka_unit_test(testEGet),
 	cmocka_unit_test(testFDeinit),
+	cmocka_unit_test(testGSet),
+	cmocka_unit_test(testHSet),
 )

@@ -28,7 +28,7 @@ static const struct SM83Segment _GBCSegments[] = {
 
 static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	struct CLIDebuggerBackend* be = debugger->p->backend;
-	struct GB* gb = debugger->p->d.core->board;
+	struct GB* gb = debugger->p->d.p->core->board;
 	be->printf(be, "IE: %02X  IF: %02X  IME: %i\n", gb->memory.ie, gb->memory.io[GB_REG_IF], gb->memory.ime);
 	be->printf(be, "LCDC: %02X  STAT: %02X  LY: %02X\n", gb->memory.io[GB_REG_LCDC], gb->memory.io[GB_REG_STAT] | 0x80, gb->memory.io[GB_REG_LY]);
 	be->printf(be, "Next video mode: %i\n", mTimingUntil(&gb->timing, &gb->video.modeEvent) / 4);

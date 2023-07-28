@@ -148,7 +148,7 @@ bool mUpdateLoad(const struct mCoreConfig* config, const char* prefix, struct mU
 	snprintf(key, sizeof(key), "%s.path", prefix);
 	update->path = mCoreConfigGetValue(config, key);
 	snprintf(key, sizeof(key), "%s.size", prefix);
-	uint32_t size = 0;
+	unsigned size = 0;
 	mCoreConfigGetUIntValue(config, key, &size);
 	if (!update->path && !size) {
 		return false;
