@@ -1849,6 +1849,95 @@ M_TEST_DEFINE(painterDrawLineBlend) {
 	mImageDestroy(image);
 }
 
+M_TEST_DEFINE(painterDrawCircleArea) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	int i;
+	for (i = 4; i < 50; ++i) {
+		image = mImageCreate(i, i, mCOLOR_XRGB8);
+		mPainterInit(&painter, image);
+		painter.blend = false;
+		painter.fill = true;
+		painter.strokeWidth = 0;
+		painter.fillColor = 0xFF0000FF;
+		mPainterDrawCircle(&painter, 0, 0, i);
+
+		int filled = 0;
+
+		int x, y;
+		for (y = 0; y < i; ++y) {
+			for (x = 0; x < i; ++x) {
+				uint32_t color = mImageGetPixel(image, x, y);
+				if (color == painter.fillColor) {
+					++filled;
+				}
+			}
+		}
+		float area = i * i;
+		assert_float_equal(filled / area, M_PI / 4, 0.12);
+	}
+}
+
+M_TEST_DEFINE(painterDrawCircleCircumference) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	int i;
+	for (i = 25; i < 100; ++i) {
+		image = mImageCreate(i, i, mCOLOR_XRGB8);
+		mPainterInit(&painter, image);
+		painter.blend = false;
+		painter.fill = false;
+		painter.strokeWidth = 1;
+		painter.strokeColor = 0xFF0000FF;
+		mPainterDrawCircle(&painter, 0, 0, i);
+
+		int filled = 0;
+
+		int x, y;
+		for (y = 0; y < i; ++y) {
+			for (x = 0; x < i; ++x) {
+				uint32_t color = mImageGetPixel(image, x, y);
+				if (color == painter.strokeColor) {
+					++filled;
+				}
+			}
+		}
+		assert_float_equal(filled / (float) i, M_PI, M_PI * 0.11);
+	}
+}
+
+
+M_TEST_DEFINE(painterDrawCircleOffset) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	int i;
+	for (i = 4; i < 20; ++i) {
+		image = mImageCreate(i * 2, i * 2, mCOLOR_XRGB8);
+		mPainterInit(&painter, image);
+		painter.blend = false;
+		painter.fill = true;
+		painter.strokeWidth = 0;
+		painter.fillColor = 0xFF0000FF;
+		mPainterDrawCircle(&painter, 0, 0, i);
+		mPainterDrawCircle(&painter, i, 0, i);
+		mPainterDrawCircle(&painter, 0, i, i);
+		mPainterDrawCircle(&painter, i, i, i);
+
+		int x, y;
+		for (y = 0; y < i; ++y) {
+			for (x = 0; x < i; ++x) {
+				uint32_t color = mImageGetPixel(image, x, y);
+				assert_int_equal(color, mImageGetPixel(image, x + i, y));
+				assert_int_equal(color, mImageGetPixel(image, x, y + i));
+				assert_int_equal(color, mImageGetPixel(image, x + i, y + i));
+			}
+		}
+	}
+}
+
 #undef COMPARE3X
 #undef COMPARE3
 #undef COMPARE4X
@@ -1887,4 +1976,7 @@ M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(painterDrawLineOctants),
 	cmocka_unit_test(painterDrawLineWidth),
 	cmocka_unit_test(painterDrawLineBlend),
+	cmocka_unit_test(painterDrawCircleArea),
+	cmocka_unit_test(painterDrawCircleCircumference),
+	cmocka_unit_test(painterDrawCircleOffset),
 )
