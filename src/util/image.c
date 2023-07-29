@@ -705,6 +705,9 @@ static void _drawCircle2x2(struct mPainter* painter, int x, int y, uint32_t colo
 }
 
 void mPainterDrawCircle(struct mPainter* painter, int x, int y, int diameter) {
+	if (diameter < 1) {
+		return;
+	}
 	int radius = diameter / 2;
 	int offset = (diameter ^ 1) & 1;
 	int stroke = painter->strokeWidth;
@@ -740,7 +743,7 @@ void mPainterDrawCircle(struct mPainter* painter, int x, int y, int diameter) {
 			mPainterDrawPixel(painter, x + i, y + radius, painter->strokeColor);
 		}
 		if (painter->fill) {
-			for (i = i; i < y1 + 1; ++i) {
+			for (i = 1; i < y1 + 1; ++i) {
 				mPainterDrawPixel(painter, x + radius, y + radius - i, painter->fillColor);
 				mPainterDrawPixel(painter, x + radius, y + radius + i, painter->fillColor);
 				mPainterDrawPixel(painter, x + radius - i, y + radius, painter->fillColor);
