@@ -716,7 +716,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Archivos de imagen (*.png *.jpg *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -3752,12 +3752,12 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="327"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Intentando desvincular a un multijugador que no está conectado</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="391"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Intentando obtener el ID de un multijugador que no está conectado</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="405"/>
