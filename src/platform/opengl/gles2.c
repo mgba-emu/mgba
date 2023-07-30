@@ -118,7 +118,11 @@ static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 		glBindTexture(GL_TEXTURE_2D, context->tex[i]);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		context->imageSizes[i].width = -1;
+		context->imageSizes[i].height = -1;
 	}
+	context->width = 1;
+	context->height = 1;
 
 	glGenBuffers(1, &context->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
