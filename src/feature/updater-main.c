@@ -93,20 +93,20 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 		case VFS_DIRECTORY:
 			fprintf(logfile, "mkdir   %s\n", fname);
 			if (mkdir(path, 0755) < 0) {
-				bool redo = false;
-				if (errno == EEXIST) {
-					struct stat st;
-					if (stat(path, &st) >= 0 && !S_ISDIR(st.st_mode)) {
+				bool redo = true;
+				struct stat st;
+				if (errno != EEXIST || stat(path, &st) < 0) {
+					redo = false;
+				} else if (!S_ISDIR(st.st_mode)) {
 #ifdef _WIN32
-						wchar_t wpath[MAX_PATH + 1];
-						MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, MAX_PATH);
-						DeleteFileW(wpath);
+					wchar_t wpath[MAX_PATH + 1];
+					MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, MAX_PATH);
+					DeleteFileW(wpath);
 #else
-						unlink(path);
+					unlink(path);
 #endif
-						if (mkdir(path, 0755) >= 0) {
-							redo = true;
-						}
+					if (mkdir(path, 0755) < 0) {
+						redo = false;
 					}
 				}
 				if (!redo) {
