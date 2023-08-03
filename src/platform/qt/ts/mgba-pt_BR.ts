@@ -4792,6 +4792,7 @@ Tamanho do download: %3</translation>
         <translation>
             <numerusform>%n hora atrás</numerusform>
             <numerusform>%n horas atrás</numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -4800,6 +4801,7 @@ Tamanho do download: %3</translation>
         <translation>
             <numerusform>%n dia atrás</numerusform>
             <numerusform>%n dias atrás</numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
