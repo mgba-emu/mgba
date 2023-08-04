@@ -9,6 +9,7 @@
 #define _mCPP_CAT(A, B) A ## B
 
 #define _mIDENT(...) __VA_ARGS__
+#define _mVOID(...)
 #define _mCALL(FN, ...) _mIDENT(FN(__VA_ARGS__))
 #define _mCAT(A, B) _mCPP_CAT(A, B)
 #define _mSTRINGIFY(X, ...) #X

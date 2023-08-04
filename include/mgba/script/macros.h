@@ -15,11 +15,11 @@ CXX_GUARD_START
 	do { \
 		struct mScriptValue* _val = mScriptListGetPointer(STACK, mScriptListSize(STACK) - 1); \
 		bool deref = true; \
-		if (!(mSCRIPT_TYPE_CMP(TYPE, _val->type))) { \
+		if (!(mSCRIPT_TYPE_CMP(TYPE, _val))) { \
 			if (_val->type->base == mSCRIPT_TYPE_WRAPPER) { \
 				_val = mScriptValueUnwrap(_val); \
 				deref = false; \
-				if (!(mSCRIPT_TYPE_CMP(TYPE, _val->type))) { \
+				if (!(mSCRIPT_TYPE_CMP(TYPE, _val))) { \
 					return false; \
 				} \
 			} else { \
@@ -73,7 +73,8 @@ CXX_GUARD_START
 #define mSCRIPT_PREFIX_8(PREFIX, T0, T1, T2, T3, T4, T5, T6, T7) PREFIX ## T0, PREFIX ## T1, PREFIX ## T2, PREFIX ## T3, PREFIX ## T4, PREFIX ## T5, PREFIX ## T6, PREFIX ## T7
 #define mSCRIPT_PREFIX_N(N) mSCRIPT_PREFIX_ ## N
 
-#define _mSCRIPT_FIELD_NAME(V) (V)->name
+#define _mSCRIPT_FIELD_NAME(V) (V)->type->name
+#define _mSCRIPT_WRAPPED_FIELD_NAME(V) (V)->value.wrapped->type->name
 
 #define _mSCRIPT_CALL_VOID(FUNCTION, NPARAMS) FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS))
 #define _mSCRIPT_CALL(RETURN, FUNCTION, NPARAMS) \

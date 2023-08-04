@@ -937,12 +937,12 @@ void mScriptValueWrap(struct mScriptValue* value, struct mScriptValue* out) {
 	}
 
 	out->type = mSCRIPT_TYPE_MS_WRAPPER;
-	out->value.opaque = value;
+	out->value.wrapped = value;
 }
 
 struct mScriptValue* mScriptValueUnwrap(struct mScriptValue* value) {
 	if (value->type->base == mSCRIPT_TYPE_WRAPPER) {
-		return value->value.opaque;
+		return value->value.wrapped;
 	}
 	return NULL;
 }
@@ -1792,7 +1792,11 @@ bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList
 		struct mScriptValue* unwrapped = NULL;
 		if (mScriptListGetPointer(frame, i)->type->base == mSCRIPT_TYPE_WRAPPER) {
 			unwrapped = mScriptValueUnwrap(mScriptListGetPointer(frame, i));
-			if (types->entries[i] == unwrapped->type) {
+			if (types->entries[i]->base == mSCRIPT_TYPE_WRAPPER) {
+				if (types->entries[i]->details.type == unwrapped->type) {
+					continue;
+				}
+			} else if (types->entries[i] == unwrapped->type) {
 				continue;
 			}
 		}
