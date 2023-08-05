@@ -102,6 +102,10 @@ MultiplayerController::MultiplayerController() {
 			if (!id) {
 				for (int i = 1; i < controller->m_players.count(); ++i) {
 					player = controller->player(i);
+					if (player->node.gba->d.p->mode > SIO_MULTI) {
+						player->controller->setSync(true);
+						continue;
+					}
 					player->controller->setSync(false);
 					player->cyclesPosted += cycles;
 					if (player->awake < 1) {
