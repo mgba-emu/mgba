@@ -122,7 +122,7 @@ mSCRIPT_DEFINE_STRUCT(mScriptMouseWheelEvent)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptGamepadButtonEvent)
-	mSCRIPT_DEFINE_CLASS_DOCSTRING("A gamead button event.")
+	mSCRIPT_DEFINE_CLASS_DOCSTRING("A gamepad button event.")
 	mSCRIPT_DEFINE_INHERIT(mScriptEvent)
 	mSCRIPT_DEFINE_DOCSTRING("The state of the button, represented by a C.INPUT_STATE value")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptGamepadButtonEvent, U8, state)
