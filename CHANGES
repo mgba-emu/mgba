@@ -35,6 +35,7 @@ Misc:
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
  - Qt: Add exporting of SAV + RTC saves from Save Converter to strip RTC data
  - Qt: Handle multiple save game files for disparate games separately (fixes mgba.io/i/2887)
+ - Qt: Remove maligned double-click-to-fullscreen shortcut (closes mgba.io/i/2632)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
 
 0.10.2: (2023-04-23)

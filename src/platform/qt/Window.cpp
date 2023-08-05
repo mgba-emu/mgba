@@ -807,13 +807,6 @@ void Window::dropEvent(QDropEvent* event) {
 	setController(m_manager->loadGame(url.toLocalFile()), url.toLocalFile());
 }
 
-void Window::mouseDoubleClickEvent(QMouseEvent* event) {
-	if (event->button() != Qt::LeftButton) {
-		return;
-	}
-	toggleFullScreen();
-}
-
 void Window::enterFullScreen() {
 	if (!isVisible()) {
 		m_fullscreenOnStart = true;
