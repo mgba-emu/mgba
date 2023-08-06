@@ -207,7 +207,14 @@ void Window::argumentsPassed() {
 
 #ifdef USE_GDB_STUB
 	if (args->debugGdb) {
-		gdbOpen();
+		if (!m_gdbController) {
+			m_gdbController = new GDBController(this);
+		}
+		if (m_controller) {
+			m_gdbController->setController(m_controller);
+		}
+		m_gdbController->attach();
+		m_gdbController->listen();
 	}
 #endif
 
