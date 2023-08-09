@@ -27,6 +27,7 @@ Other fixes:
  - mGUI: Fix cases where an older save state screenshot would be shown. (fixes mgba.io/i/2183)
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Re-enable sync for multiplayer windows that aren't connected (fixes mgba.io/i/2974)
+ - Qt: Fix mute settings not being loaded on setting screen (fixes mgba.io/i/2990)
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - GB: Prevent incompatible BIOSes from being used on differing models
