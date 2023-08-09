@@ -14,6 +14,7 @@ Emulation fixes:
 Other fixes:
  - mGUI: Fix cases where an older save state screenshot would be shown (fixes mgba.io/i/2183)
  - Qt: Re-enable sync for multiplayer windows that aren't connected (fixes mgba.io/i/2974)
+ - Qt: Fix mute settings not being loaded on setting screen (fixes mgba.io/i/2990)
 Misc:
  - Qt: Add exporting of SAV + RTC saves from Save Converter to strip RTC data
 
