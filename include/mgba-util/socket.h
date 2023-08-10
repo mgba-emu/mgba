@@ -269,9 +269,9 @@ static inline Socket SocketCreateDgram(bool useIPv6, int protocol) {
 	}
 }
 
-static inline Socket SocketOpen(Socket sock, int port, const struct Address* bindAddress) {
+static inline int SocketOpen(Socket sock, int port, const struct Address* bindAddress) {
 	bool useIPv6 = bindAddress && (bindAddress->version == IPV6);
-	int err;
+	int err = -1;
 
 	const int enable = 1;
 #ifdef GEKKO
@@ -322,11 +322,8 @@ static inline Socket SocketOpen(Socket sock, int port, const struct Address* bin
 		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
 #endif
 	}
-	if (err) {
-		SocketCloseQuiet(sock);
-		return INVALID_SOCKET;
-	}
-	return sock;
+
+	return err;
 }
 
 static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
@@ -336,7 +333,12 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 		return sock;
 	}
 
-	return SocketOpen(sock, port, bindAddress);
+	int err = SocketOpen(sock, port, bindAddress);
+	if (err) {
+		SocketCloseQuiet(sock);
+		return INVALID_SOCKET;
+	}
+	return sock;
 }
 
 static inline Socket SocketOpenUDP(int port, const struct Address* bindAddress) {
@@ -346,17 +348,17 @@ static inline Socket SocketOpenUDP(int port, const struct Address* bindAddress) 
 		return sock;
 	}
 
-	return SocketOpen(sock, port, bindAddress);
+	int err = SocketOpen(sock, port, bindAddress);
+	if (err) {
+		SocketCloseQuiet(sock);
+		return INVALID_SOCKET;
+	}
+	return sock;
 }
 
-static inline Socket SocketConnectTCP(int port, const struct Address* destinationAddress) {
-	bool useIPv6 = destinationAddress && (destinationAddress->version == IPV6);
-	Socket sock = SocketCreate(useIPv6, IPPROTO_TCP);
-	if (SOCKET_FAILED(sock)) {
-		return sock;
-	}
+static inline int SocketConnect(Socket sock, int port, const struct Address* destinationAddress) {
+	int err = -1;
 
-	int err;
 	if (!destinationAddress) {
 		struct sockaddr_in bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
@@ -389,6 +391,17 @@ static inline Socket SocketConnectTCP(int port, const struct Address* destinatio
 #endif
 	}
 
+	return err;
+}
+
+static inline Socket SocketConnectTCP(int port, const struct Address* destinationAddress) {
+	bool useIPv6 = destinationAddress && (destinationAddress->version == IPV6);
+	Socket sock = SocketCreate(useIPv6, IPPROTO_TCP);
+	if (SOCKET_FAILED(sock)) {
+		return sock;
+	}
+
+	int err = SocketConnect(sock, port, destinationAddress);
 	if (err) {
 		SocketCloseQuiet(sock);
 		return INVALID_SOCKET;

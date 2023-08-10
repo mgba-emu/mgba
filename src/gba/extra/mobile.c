@@ -60,29 +60,57 @@ bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum mobile
 }
 
 void sock_close(void* user, unsigned conn) {
-	SocketClose(USER1.socket[conn].fd);
+	if (USER1.socket[conn].fd != INVALID_SOCKET) {
+		SocketClose(USER1.socket[conn].fd);
+	}
 	USER1.socket[conn].fd = INVALID_SOCKET;
 	USER1.socket[conn].addrtype = MOBILE_ADDRTYPE_NONE;
 	USER1.socket[conn].bindport = 0;
 }
 
 int sock_connect(void* user, unsigned conn, const struct mobile_addr* addr) {
-	Socket fd;
+	Socket fd = USER1.socket[conn].fd;
+
+	if (fd == INVALID_SOCKET) {
+		fd = SocketCreate(addr->type == MOBILE_ADDRTYPE_IPV6, IPPROTO_TCP);
+		if (fd == INVALID_SOCKET) return -1;
+		if (!SocketSetBlocking(fd, false)) return -1;
+		USER1.socket[conn].fd = fd;
+	}
+
 	struct Address connaddr;
 	int connport;
 	if (addr->type == MOBILE_ADDRTYPE_IPV6) {
 		connaddr.version = IPV6;
 		memcpy(&connaddr.ipv6, &ADDR6.host, MOBILE_HOSTLEN_IPV6);
-		connport = ntohs(ADDR6.port);
+		connport = ADDR6.port;
 	} else {
 		connaddr.version = IPV4;
 		connaddr.ipv4 = ntohl(*(uint32_t*) &ADDR4.host);
-		connport = ntohs(ADDR4.port);
+		connport = ADDR4.port;
 	}
-	fd = SocketConnectTCP(connport, &connaddr);
-	/* the socket connects or it doesn't; we can't disable blocking until it does. */
-	if (fd != INVALID_SOCKET) SocketSetBlocking(fd, false);
-	return (USER1.socket[conn].fd = fd) == INVALID_SOCKET ? -1 : 1;
+
+	int rc = SocketConnect(fd, connport, &connaddr);
+	if (!rc) return 1;
+
+	// Non-portable error checking
+#ifdef _WIN32
+#define _SOCKERR(x) WSA##x
+#else
+#define _SOCKERR(x) x
+#endif
+	int err = SocketError();
+	if (err == _SOCKERR(EWOULDBLOCK) ||
+			err == _SOCKERR(EINPROGRESS) ||
+			err == _SOCKERR(EALREADY)) {
+		return 0;
+	}
+	if (err == _SOCKERR(EISCONN)) {
+		return 1;
+	}
+#undef _SOCKERR
+
+	return -1;
 }
 
 bool sock_listen(void* user, unsigned conn) {
@@ -202,7 +230,6 @@ bool GBASIOMobileAdapterInit(struct GBASIODriver* driver) {
 	_MOBILE_SETCB(update_number);
 #undef _MOBILE_SETCB
 	mobile_start(mobile->adapter);
-	mobile_loop(mobile->adapter);
 	return true;
 }
 
@@ -246,9 +273,7 @@ void _mobileEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	UNUSED(timing);
 	struct GBASIOMobileAdapter* mobile = user;
 
-	do {
-		GBASIOMobileAdapterUpdate(mobile);
-	} while (mobile->serial == 0);
+	GBASIOMobileAdapterUpdate(mobile);
 
 	if (mobile->d.p->mode == SIO_NORMAL_32 && mobile->serial == 4) {
 		uint8_t buf[4];
@@ -258,15 +283,11 @@ void _mobileEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 #undef _SIO_DATA
 		for (int i = 3; i >= 0; --i) {
 			mobile->nextData[i] = mobile_transfer(mobile->adapter, buf[i]);
-			do {
-				GBASIOMobileAdapterUpdate(mobile);
-			} while (i != 0 && mobile->serial == 0);
 		}
 	} else if (mobile->d.p->mode == SIO_NORMAL_8 && mobile->serial == 1) {
 		uint8_t tmp = *(uint8_t*) &mobile->d.p->p->memory.io[REG_SIODATA8 >> 1];
 		*(uint8_t*) &mobile->d.p->p->memory.io[REG_SIODATA8 >> 1] = mobile->nextData[3];
 		mobile->nextData[3] = mobile_transfer(mobile->adapter, tmp);
-		GBASIOMobileAdapterUpdate(mobile);
 	}
 
 	mobile->d.p->siocnt = GBASIONormalClearStart(mobile->d.p->siocnt);
