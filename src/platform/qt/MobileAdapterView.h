@@ -23,11 +23,11 @@ public:
 public slots:
 	void setType(int type);
 	void setUnmetered(bool unmetered);
-	void setDns1(const QString& dns1);
-	void setDns2(const QString& dns2);
+	void setDns1();
+	void setDns2();
 	void setPort(int port);
-	void setRelay(const QString& relay);
-	void setToken(const QString& token);
+	void setRelay();
+	void setToken();
 	void copyToken(bool checked);
 
 private slots:
