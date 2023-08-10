@@ -27,6 +27,7 @@ Other fixes:
  - mGUI: Fix cases where an older save state screenshot would be shown. (fixes mgba.io/i/2183)
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Re-enable sync for multiplayer windows that aren't connected (fixes mgba.io/i/2974)
+ - Qt: Fix mute settings not being loaded on setting screen (fixes mgba.io/i/2990)
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - GB: Prevent incompatible BIOSes from being used on differing models
@@ -35,6 +36,7 @@ Misc:
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
  - Qt: Add exporting of SAV + RTC saves from Save Converter to strip RTC data
  - Qt: Handle multiple save game files for disparate games separately (fixes mgba.io/i/2887)
+ - Qt: Remove maligned double-click-to-fullscreen shortcut (closes mgba.io/i/2632)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
 
 0.10.2: (2023-04-23)

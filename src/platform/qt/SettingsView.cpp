@@ -715,6 +715,8 @@ void SettingsView::reloadConfig() {
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
 	loadSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
 	loadSetting("pauseOnMinimize", m_ui.pauseOnMinimize);
+	loadSetting("muteOnFocusLost", m_ui.muteOnFocusLost);
+	loadSetting("muteOnMinimize", m_ui.muteOnMinimize);
 	loadSetting("savegamePath", m_ui.savegamePath);
 	loadSetting("savestatePath", m_ui.savestatePath);
 	loadSetting("screenshotPath", m_ui.screenshotPath);

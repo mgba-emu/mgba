@@ -208,7 +208,14 @@ void Window::argumentsPassed() {
 
 #ifdef USE_GDB_STUB
 	if (args->debugGdb) {
-		gdbOpen();
+		if (!m_gdbController) {
+			m_gdbController = new GDBController(this);
+		}
+		if (m_controller) {
+			m_gdbController->setController(m_controller);
+		}
+		m_gdbController->attach();
+		m_gdbController->listen();
 	}
 #endif
 
@@ -806,13 +813,6 @@ void Window::dropEvent(QDropEvent* event) {
 	}
 	event->accept();
 	setController(m_manager->loadGame(url.toLocalFile()), url.toLocalFile());
-}
-
-void Window::mouseDoubleClickEvent(QMouseEvent* event) {
-	if (event->button() != Qt::LeftButton) {
-		return;
-	}
-	toggleFullScreen();
 }
 
 void Window::enterFullScreen() {
