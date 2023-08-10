@@ -244,7 +244,7 @@ if(APPLE)
 	add_definitions(-D_DARWIN_C_SOURCE)
 	list(APPEND OS_LIB "-framework Foundation")
 	if(NOT CMAKE_SYSTEM_VERSION VERSION_LESS "10.0") # Darwin 10.x is Mac OS X 10.6
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.7")
 	endif()
 	# Not supported until Xcode 9
 	if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "9")
@@ -777,6 +777,12 @@ if (USE_DISCORD_RPC)
 	list(APPEND FEATURES DISCORD_RPC)
 	include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/discord-rpc/include)
 endif()
+
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/libmobile libmobile EXCLUDE_FROM_ALL)
+include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/libmobile)
+list(APPEND DEPENDENCY_LIB libmobile)
+file(GLOB LIBMOBILE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/libmobile/*.c)
+list(APPEND THIRD_PARTY_SRC ${LIBMOBILE_SRC})
 
 if(ENABLE_SCRIPTING)
 	list(APPEND ENABLES SCRIPTING)

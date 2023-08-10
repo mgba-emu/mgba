@@ -13,6 +13,9 @@ CXX_GUARD_START
 #include <mgba/core/interface.h>
 #include <mgba/core/timing.h>
 
+#include <mgba-util/socket.h>
+#include "third-party/libmobile/mobile.h"
+
 enum {
 	GBA_VIDEO_HORIZONTAL_PIXELS = 240,
 	GBA_VIDEO_VERTICAL_PIXELS = 160,
@@ -56,6 +59,7 @@ extern MGBA_EXPORT const int GBA_LUX_LEVELS[10];
 enum {
 	mPERIPH_GBA_LUMINANCE = 0x1000,
 	mPERIPH_GBA_BATTLECHIP_GATE,
+	mPERIPH_GBA_MOBILE_ADAPTER
 };
 
 bool GBAIsROM(struct VFile* vf);
@@ -79,6 +83,25 @@ struct GBASIODriver {
 };
 
 void GBASIOJOYCreate(struct GBASIODriver* sio);
+
+struct GBASIOMobileAdapter {
+	struct GBASIODriver d;
+	struct mTimingEvent event;
+	struct mobile_adapter *adapter;
+	uint8_t config[MOBILE_CONFIG_SIZE];
+	struct {
+		Socket fd;
+		enum mobile_addrtype addrtype;
+		unsigned bindport;
+	} socket[MOBILE_MAX_CONNECTIONS];
+	int32_t timeLatch[MOBILE_MAX_TIMERS];
+	int serial;
+	uint8_t nextData[4];
+	char number[2][MOBILE_MAX_NUMBER_SIZE + 1];
+};
+
+void GBASIOMobileAdapterCreate(struct GBASIOMobileAdapter*);
+void GBASIOMobileAdapterUpdate(struct GBASIOMobileAdapter*);
 
 enum GBASIOBattleChipGateFlavor {
 	GBA_FLAVOR_BATTLECHIP_GATE = 4,

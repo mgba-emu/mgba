@@ -1091,6 +1091,196 @@ void CoreController::endPrint() {
 #endif
 
 #ifdef M_CORE_GBA
+void CoreController::attachMobileAdapter() {
+	if (platform() != mPLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	clearMultiplayerController();
+	GBASIOMobileAdapterCreate(&m_mobile);
+	QFile fconfig(ConfigController::configDir() + "/mobile_config.bin");
+	if (fconfig.open(QIODevice::ReadOnly)) {
+		fconfig.read((char*) &m_mobile.config, MOBILE_CONFIG_SIZE);
+		fconfig.close();
+	}
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_MOBILE_ADAPTER, &m_mobile);
+}
+
+void CoreController::detachMobileAdapter() {
+	if (platform() != mPLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	QFile fconfig(ConfigController::configDir() + "/mobile_config.bin");
+	if (fconfig.open(QIODevice::WriteOnly)) {
+		fconfig.write((char*) &m_mobile.config, MOBILE_CONFIG_SIZE);
+		fconfig.close();
+	}
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_MOBILE_ADAPTER, nullptr);
+}
+
+void CoreController::getMobileAdapterConfig(int* type, bool* unmetered, QString* dns1, QString* dns2, int* port, QString* relay) {
+	if (platform() != mPLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	mobile_config_load(m_mobile.adapter);
+	enum mobile_adapter_device device;
+	mobile_config_get_device(m_mobile.adapter, &device, unmetered);
+	*type = (int) (device - MOBILE_ADAPTER_BLUE);
+	struct mobile_addr dns1_get, dns2_get;
+	mobile_config_get_dns(m_mobile.adapter, &dns1_get, &dns2_get);
+	dns1->clear();
+	if (dns1_get.type == MOBILE_ADDRTYPE_IPV4) {
+		for (int i = 0; i < MOBILE_HOSTLEN_IPV4; ++i) {
+			QString tmp;
+			tmp.setNum((*(struct mobile_addr4*) &dns1_get).host[i]);
+			*dns1 += tmp.rightJustified(3, '_') + ".";
+		}
+		dns1->chop(1);
+	}
+	dns2->clear();
+	if (dns2_get.type == MOBILE_ADDRTYPE_IPV4) {
+		for (int i = 0; i < MOBILE_HOSTLEN_IPV4; ++i) {
+			QString tmp;
+			tmp.setNum((*(struct mobile_addr4*) &dns2_get).host[i]);
+			*dns2 += tmp.rightJustified(3, '_') + ".";
+		}
+		dns2->chop(1);
+	}
+	mobile_config_get_p2p_port(m_mobile.adapter, (unsigned*) port);
+	struct mobile_addr relay_get;
+	mobile_config_get_relay(m_mobile.adapter, &relay_get);
+	relay->clear();
+	if (relay_get.type == MOBILE_ADDRTYPE_IPV4) {
+		for (int i = 0; i < MOBILE_HOSTLEN_IPV4; ++i) {
+			QString tmp;
+			tmp.setNum((*(struct mobile_addr4*) &relay_get).host[i]);
+			*relay += tmp.rightJustified(3, '_') + ".";
+		}
+		relay->chop(1);
+	}
+}
+
+void CoreController::updateMobileAdapter(QString* userNumber, QString* peerNumber, QString* token) {
+	if (platform() != mPLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	GBASIOMobileAdapterUpdate(&m_mobile);
+	*userNumber = QString(m_mobile.number[0]);
+	*peerNumber = QString(m_mobile.number[1]);
+	token->clear();
+	unsigned char token_get[MOBILE_RELAY_TOKEN_SIZE];
+	if (!mobile_config_get_relay_token(m_mobile.adapter, token_get)) {
+		return;
+	}
+	for (int i = 0; i < MOBILE_RELAY_TOKEN_SIZE; ++i) {
+		QString tmp;
+		tmp.setNum(token_get[i], 0x10);
+		*token += tmp;
+	}
+}
+
+void CoreController::setMobileAdapterType(int type) {
+	if (platform() != mPLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	enum mobile_adapter_device tmp;
+	bool unmetered;
+	mobile_config_get_device(m_mobile.adapter, &tmp, &unmetered);
+	mobile_config_set_device(m_mobile.adapter, (enum mobile_adapter_device) (MOBILE_ADAPTER_BLUE + type), unmetered);
+}
+
+void CoreController::setMobileAdapterUnmetered(bool unmetered) {
+	if (platform() != mPLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	enum mobile_adapter_device device;
+	bool tmp;
+	mobile_config_get_device(m_mobile.adapter, &device, &tmp);
+	mobile_config_set_device(m_mobile.adapter, device, unmetered);
+}
+
+void CoreController::setMobileAdapterDns1(const QString& host, int port) {
+	if (platform() != mPLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	struct mobile_addr dns1;
+	struct mobile_addr dns2;
+	mobile_config_get_dns(m_mobile.adapter, &dns1, &dns2);
+	dns1.type = MOBILE_ADDRTYPE_IPV4;
+	(*(struct mobile_addr4*) &dns1).port = port;
+	for (int i = 0; i < MOBILE_HOSTLEN_IPV4; ++i) {
+		(*(struct mobile_addr4*) &dns1).host[i] = host.section('.', i, i).toInt();
+	}
+	mobile_config_set_dns(m_mobile.adapter, &dns1, &dns2);
+}
+
+void CoreController::setMobileAdapterDns2(const QString& host, int port) {
+	if (platform() != mPLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	struct mobile_addr dns1;
+	struct mobile_addr dns2;
+	mobile_config_get_dns(m_mobile.adapter, &dns1, &dns2);
+	dns2.type = MOBILE_ADDRTYPE_IPV4;
+	(*(struct mobile_addr4*) &dns2).port = port;
+	for (int i = 0; i < MOBILE_HOSTLEN_IPV4; ++i) {
+		(*(struct mobile_addr4*) &dns2).host[i] = host.section('.', i, i).toInt();
+	}
+	mobile_config_set_dns(m_mobile.adapter, &dns1, &dns2);
+}
+
+void CoreController::setMobileAdapterPort(int port) {
+	if (platform() != mPLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	mobile_config_set_p2p_port(m_mobile.adapter, (unsigned) port);
+}
+
+void CoreController::setMobileAdapterRelay(const QString& host, int port) {
+	if (platform() != mPLATFORM_GBA) {
+		return;
+	}
+	Interrupter interrupter(this);
+	struct mobile_addr relay;
+	relay.type = MOBILE_ADDRTYPE_IPV4;
+	(*(struct mobile_addr4*) &relay).port = port;
+	for (int i = 0; i < MOBILE_HOSTLEN_IPV4; ++i) {
+		(*(struct mobile_addr4*) &relay).host[i] = host.section('.', i, i).toInt();
+	}
+	mobile_config_set_relay(m_mobile.adapter, &relay);
+}
+
+bool CoreController::setMobileAdapterToken(const QString& qToken) {
+	if (platform() != mPLATFORM_GBA) {
+		return false;
+	}
+	Interrupter interrupter(this);
+	QString qTokenSimp = qToken.simplified();
+	if (qTokenSimp.size() != MOBILE_RELAY_TOKEN_SIZE * 2 || qTokenSimp.contains(' ')) {
+		mobile_config_set_relay_token(m_mobile.adapter, nullptr);
+		return false;
+	}
+	unsigned char token[MOBILE_RELAY_TOKEN_SIZE];
+	for (int i = 0; i < MOBILE_RELAY_TOKEN_SIZE * 2; i += 2) {
+		bool ok = false;
+		token[i / 2] = qTokenSimp.mid(i, 2).toInt(&ok, 0x10);
+		if (!ok) {
+			mobile_config_set_relay_token(m_mobile.adapter, nullptr);
+			return false;
+		}
+	}
+	mobile_config_set_relay_token(m_mobile.adapter, token);
+	return true;
+}
+
 void CoreController::attachBattleChipGate() {
 	if (platform() != mPLATFORM_GBA) {
 		return;

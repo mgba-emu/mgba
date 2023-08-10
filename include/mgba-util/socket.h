@@ -139,6 +139,39 @@ static inline ssize_t SocketSend(Socket socket, const void* buffer, size_t size)
 #endif
 }
 
+static inline ssize_t SocketSendTo(Socket socket, const void* buffer, size_t size, int port, const struct Address *address) {
+	bool useIPv6 = address && (address->version == IPV6);
+	union {
+		struct sockaddr sa;
+		struct sockaddr_in sin;
+#if !defined(__3DS__) && !defined(GEKKO)
+		struct sockaddr_in6 sin6;
+#endif
+	} destInfo;
+	memset(&destInfo, 0, sizeof(destInfo));
+	socklen_t destSize;
+	if (!address) {
+		return SocketSend(socket, buffer, size);
+	} else if (!useIPv6) {
+		destInfo.sin.sin_family = AF_INET;
+		destInfo.sin.sin_port = htons(port);
+		destInfo.sin.sin_addr.s_addr = htonl(address->ipv4);
+		destSize = sizeof(destInfo.sin);
+#if !defined(__3DS__) && !defined(GEKKO)
+	} else {
+		destInfo.sin6.sin6_family = AF_INET6;
+		destInfo.sin6.sin6_port = htons(port);
+		memcpy(destInfo.sin6.sin6_addr.s6_addr, address->ipv6, sizeof(address->ipv6));
+		destSize = sizeof(destInfo.sin6);
+#endif
+	}
+#ifdef GEKKO
+	return net_sendto(socket, buffer, size, &destInfo.sa, destSize);
+#else
+	return sendto(socket, (const char*) buffer, size, 0, &destInfo.sa, destSize);
+#endif
+}
+
 static inline ssize_t SocketRecv(Socket socket, void* buffer, size_t size) {
 #if defined(_WIN32) || defined(__SWITCH__)
 	return recv(socket, (char*) buffer, size, 0);
@@ -147,6 +180,39 @@ static inline ssize_t SocketRecv(Socket socket, void* buffer, size_t size) {
 #else
 	return read(socket, buffer, size);
 #endif
+}
+
+static inline ssize_t SocketRecvFrom(Socket socket, void* buffer, size_t size, int *port, struct Address *address) {
+	union {
+		struct sockaddr sa;
+		struct sockaddr_in sin;
+#if !defined(__3DS__) && !defined(GEKKO)
+		struct sockaddr_in6 sin6;
+#endif
+	} srcInfo;
+	socklen_t srcSize;
+	if (!address) {
+		return SocketRecv(socket, buffer, size);
+	} else {
+		ssize_t res;
+#ifdef GEKKO
+		res = net_recvfrom(socket, buffer, size, &srcInfo.sa, &srcSize);
+#else
+		res = recvfrom(socket, (char*) buffer, size, 0, &srcInfo.sa, &srcSize);
+#endif
+		if (srcInfo.sa.sa_family != AF_INET6) {
+			*port = ntohs(srcInfo.sin.sin_port);
+			address->version = IPV4;
+			address->ipv4 = ntohl(srcInfo.sin.sin_addr.s_addr);
+#if !defined(__3DS__) && !defined(GEKKO)
+		} else {
+			*port = ntohs(srcInfo.sin6.sin6_port);
+			address->version = IPV6;
+			memcpy(address->ipv6, srcInfo.sin6.sin6_addr.s6_addr, sizeof(address->ipv6));
+#endif
+		}
+		return res;
+	}
 }
 
 static inline int SocketClose(Socket socket) {
@@ -186,13 +252,25 @@ static inline Socket SocketCreate(bool useIPv6, int protocol) {
 	}
 }
 
-static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
-	bool useIPv6 = bindAddress && (bindAddress->version == IPV6);
-	Socket sock = SocketCreate(useIPv6, IPPROTO_TCP);
-	if (SOCKET_FAILED(sock)) {
-		return sock;
+static inline Socket SocketCreateDgram(bool useIPv6, int protocol) {
+	if (useIPv6) {
+#ifdef HAS_IPV6
+		return socket(AF_INET6, SOCK_DGRAM, protocol);
+#else
+		errno = EAFNOSUPPORT;
+		return INVALID_SOCKET;
+#endif
+	} else {
+#ifdef GEKKO
+		return net_socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
+#else
+		return socket(AF_INET, SOCK_DGRAM, protocol);
+#endif
 	}
+}
 
+static inline Socket SocketOpen(Socket sock, int port, const struct Address* bindAddress) {
+	bool useIPv6 = bindAddress && (bindAddress->version == IPV6);
 	int err;
 
 	const int enable = 1;
@@ -249,6 +327,26 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 		return INVALID_SOCKET;
 	}
 	return sock;
+}
+
+static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
+	bool useIPv6 = bindAddress && (bindAddress->version == IPV6);
+	Socket sock = SocketCreate(useIPv6, IPPROTO_TCP);
+	if (SOCKET_FAILED(sock)) {
+		return sock;
+	}
+
+	return SocketOpen(sock, port, bindAddress);
+}
+
+static inline Socket SocketOpenUDP(int port, const struct Address* bindAddress) {
+	bool useIPv6 = bindAddress && (bindAddress->version == IPV6);
+	Socket sock = SocketCreateDgram(useIPv6, IPPROTO_UDP);
+	if (SOCKET_FAILED(sock)) {
+		return sock;
+	}
+
+	return SocketOpen(sock, port, bindAddress);
 }
 
 static inline Socket SocketConnectTCP(int port, const struct Address* destinationAddress) {

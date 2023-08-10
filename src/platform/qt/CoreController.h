@@ -197,6 +197,18 @@ public slots:
 #endif
 
 #ifdef M_CORE_GBA
+	void attachMobileAdapter();
+	void detachMobileAdapter();
+	void getMobileAdapterConfig(int* type, bool* unmetered, QString* dns1, QString* dns2, int* port, QString* relay);
+	void updateMobileAdapter(QString* userNumber, QString* peerNumber, QString* token);
+	void setMobileAdapterType(int type);
+	void setMobileAdapterUnmetered(bool unmetered);
+	void setMobileAdapterDns1(const QString& host, int port);
+	void setMobileAdapterDns2(const QString& host, int port);
+	void setMobileAdapterPort(int port);
+	void setMobileAdapterRelay(const QString& host, int port);
+	bool setMobileAdapterToken(const QString& qToken);
+
 	void attachBattleChipGate();
 	void detachBattleChipGate();
 	void setBattleChipId(uint16_t id);
@@ -336,6 +348,7 @@ private:
 #endif
 
 #ifdef M_CORE_GBA
+	GBASIOMobileAdapter m_mobile;
 	GBASIOBattlechipGate m_battlechip;
 	QByteArray m_eReaderData;
 #endif
