@@ -148,7 +148,13 @@ int sock_recv(void* user, unsigned conn, void* data, unsigned size, struct mobil
 }
 
 void update_number(void* user, enum mobile_number type, const char* number) {
-	strncpy(USER1.number[type], number, MOBILE_MAX_NUMBER_SIZE);
+	char* dest = USER1.number[type];
+	if (number) {
+		strncpy(dest, number, MOBILE_MAX_NUMBER_SIZE);
+		dest[MOBILE_MAX_NUMBER_SIZE] = '\0';
+	} else {
+		dest[0] = '\0';
+	}
 }
 
 static bool GBASIOMobileAdapterInit(struct GBASIODriver* driver);
