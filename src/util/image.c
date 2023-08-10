@@ -296,6 +296,10 @@ bool mImageSaveVF(const struct mImage* image, struct VFile* vf, const char* form
 	if (strcasecmp(format, "png") == 0) {
 		return mImageSavePNG(image, vf);
 	}
+#else
+	UNUSED(image);
+	UNUSED(vf);
+	UNUSED(format);
 #endif
 	return false;
 }
