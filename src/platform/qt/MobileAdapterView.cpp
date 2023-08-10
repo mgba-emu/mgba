@@ -75,11 +75,11 @@ void MobileAdapterView::setUnmetered(bool unmetered) {
 }
 
 void MobileAdapterView::setDns1() {
-	m_controller->setMobileAdapterDns1(m_ui.setDns1->text(), 53);
+	m_controller->setMobileAdapterDns1(m_ui.setDns1->text().replace('_', ""), 53);
 }
 
 void MobileAdapterView::setDns2() {
-	m_controller->setMobileAdapterDns2(m_ui.setDns2->text(), 53);
+	m_controller->setMobileAdapterDns2(m_ui.setDns2->text().replace('_', ""), 53);
 }
 
 void MobileAdapterView::setPort(int port) {
@@ -87,7 +87,7 @@ void MobileAdapterView::setPort(int port) {
 }
 
 void MobileAdapterView::setRelay() {
-	m_controller->setMobileAdapterRelay(m_ui.setRelay->text(), 31227);
+	m_controller->setMobileAdapterRelay(m_ui.setRelay->text().replace('_', ""), 31227);
 }
 
 void MobileAdapterView::setToken() {
