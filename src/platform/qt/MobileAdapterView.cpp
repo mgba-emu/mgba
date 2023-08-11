@@ -41,13 +41,13 @@ MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller,
 
 	QRegularExpression reDns("((_[_\\d]\\d|[01]\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(_[_\\d]\\d|[01]\\d\\d|2[0-4]\\d|25[0-5])");
 	QRegularExpressionValidator vDns1(reDns, m_ui.setDns1);
-	m_ui.setDns1->setValidator(vDns1);
+	m_ui.setDns1->setValidator(&vDns1);
 	QRegularExpressionValidator vDns2(reDns, m_ui.setDns2);
-	m_ui.setDns1->setValidator(vDns2);
+	m_ui.setDns1->setValidator(&vDns2);
 
 	QRegularExpression reRelay("((_[_\\d]\\d|[01]\\d\\d|2[0-4]\\d|25[0-5])\\.){3}(_[_\\d]\\d|[01]\\d\\d|2[0-4]\\d|25[0-5])|___\\.___\\.___\\.___");
 	QRegularExpressionValidator vRelay(reRelay, m_ui.setRelay);
-	m_ui.setRelay->setValidator(vRelay);
+	m_ui.setRelay->setValidator(&vRelay);
 
 	QRegularExpression reToken("[\\dA-Fa-f]{32}?");
 	QRegularExpressionValidator vToken(reToken, m_ui.setToken);
