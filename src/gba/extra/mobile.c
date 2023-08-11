@@ -146,11 +146,11 @@ int sock_send(void* user, unsigned conn, const void* data, unsigned size, const 
 		if (addr->type == MOBILE_ADDRTYPE_IPV6) {
 			destaddr.version = IPV6;
 			memcpy(&destaddr.ipv6, &ADDR6.host, MOBILE_HOSTLEN_IPV6);
-			destport = ntohs(ADDR6.port);
+			destport = ADDR6.port;
 		} else {
 			destaddr.version = IPV4;
 			destaddr.ipv4 = ntohl(*(uint32_t*) &ADDR4.host);
-			destport = ntohs(ADDR4.port);
+			destport = ADDR4.port;
 		}
 		return SocketSendTo(USER1.socket[conn].fd, data, size, destport, &destaddr);
 	}
@@ -171,11 +171,11 @@ int sock_recv(void* user, unsigned conn, void* data, unsigned size, struct mobil
 		if (srcaddr.version == IPV6) {
 			addr->type = MOBILE_ADDRTYPE_IPV6;
 			memcpy(&ADDR6.host, &srcaddr.ipv6, MOBILE_HOSTLEN_IPV6);
-			ADDR6.port = htons(srcport);
+			ADDR6.port = srcport;
 		} else {
 			addr->type = MOBILE_ADDRTYPE_IPV4;
 			*(uint32_t*) &ADDR4.host = htonl(srcaddr.ipv4);
-			ADDR4.port = htons(srcport);
+			ADDR4.port = srcport;
 		}
 		if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
 			return 0;
@@ -186,7 +186,7 @@ int sock_recv(void* user, unsigned conn, void* data, unsigned size, struct mobil
 	if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
 		return 0;
 	}
-	return res ? res : -2;
+	return (res || (USER1.socket[conn].bindport == 0)) ? res : -2;
 }
 
 void update_number(void* user, enum mobile_number type, const char* number) {
