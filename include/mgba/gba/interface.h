@@ -94,6 +94,7 @@ struct GBASIOMobileAdapter {
 	uint8_t config[MOBILE_CONFIG_SIZE];
 	struct {
 		Socket fd;
+		enum mobile_socktype socktype;
 		enum mobile_addrtype addrtype;
 		unsigned bindport;
 	} socket[MOBILE_MAX_CONNECTIONS];

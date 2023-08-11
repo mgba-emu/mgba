@@ -7,7 +7,7 @@
 #include <mgba/internal/gba/sio.h>
 
 mLOG_DECLARE_CATEGORY(GBA_MOBILE);
-mLOG_DEFINE_CATEGORY(GBA_MOBILE, "Mobile Adapter", "gba.mobile");
+mLOG_DEFINE_CATEGORY(GBA_MOBILE, "Mobile Adapter (GBA)", "gba.mobile");
 
 #define USER1 (*(struct GBASIOMobileAdapter*) (user))
 #define ADDR4 (*(struct mobile_addr4*) (addr))
@@ -45,6 +45,7 @@ static bool time_check_ms(void* user, unsigned timer, unsigned ms) {
 
 static bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
 	Socket fd;
+	USER1.socket[conn].socktype = type;
 	if (type != MOBILE_SOCKTYPE_UDP) {
 		fd = INVALID_SOCKET;
 		USER1.socket[conn].addrtype = addrtype;
@@ -69,6 +70,7 @@ static void sock_close(void* user, unsigned conn) {
 		SocketClose(USER1.socket[conn].fd);
 	}
 	USER1.socket[conn].fd = INVALID_SOCKET;
+	USER1.socket[conn].socktype = (enum mobile_socktype) 0;
 	USER1.socket[conn].addrtype = MOBILE_ADDRTYPE_NONE;
 	USER1.socket[conn].bindport = 0;
 }
@@ -187,13 +189,13 @@ static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struc
 		if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
 			return 0;
 		}
-		return (res || (USER1.socket[conn].addrtype == MOBILE_ADDRTYPE_NONE)) ? res : -2;
+		return (res || (USER1.socket[conn].socktype == MOBILE_SOCKTYPE_UDP)) ? res : -2;
 	}
 	res = (int) SocketRecv(USER1.socket[conn].fd, data, size);
 	if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
 		return 0;
 	}
-	return (res || (USER1.socket[conn].addrtype == MOBILE_ADDRTYPE_NONE)) ? res : -2;
+	return (res || (USER1.socket[conn].socktype == MOBILE_SOCKTYPE_UDP)) ? res : -2;
 }
 
 static void update_number(void* user, enum mobile_number type, const char* number) {
