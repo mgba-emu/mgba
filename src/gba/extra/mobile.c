@@ -37,7 +37,8 @@ static void time_latch(void* user, unsigned timer) {
 }
 
 static bool time_check_ms(void* user, unsigned timer, unsigned ms) {
-	return (unsigned) (mTimingCurrentTime(&USER1.d.p->p->timing) - USER1.timeLatch[timer]) * 1000U / GBA_ARM7TDMI_FREQUENCY >= ms;
+	uint64_t diff = mTimingCurrentTime(&USER1.d.p->p->timing) - USER1.timeLatch[timer];
+	return (unsigned) (diff * 1000ULL / GBA_ARM7TDMI_FREQUENCY) >= ms;
 }
 
 static bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
@@ -180,13 +181,13 @@ static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struc
 		if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
 			return 0;
 		}
-		return res;
+		return (res || (USER1.socket[conn].addrtype == MOBILE_ADDRTYPE_NONE)) ? res : -2;
 	}
 	res = (int) SocketRecv(USER1.socket[conn].fd, data, size);
 	if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
 		return 0;
 	}
-	return (res || (USER1.socket[conn].bindport == 0)) ? res : -2;
+	return (res || (USER1.socket[conn].addrtype == MOBILE_ADDRTYPE_NONE)) ? res : -2;
 }
 
 static void update_number(void* user, enum mobile_number type, const char* number) {
@@ -277,7 +278,7 @@ void _mobileTransfer(struct GBASIOMobileAdapter* mobile) {
 	if (mobile->d.p->mode == SIO_NORMAL_32) {
 		cycles = GBA_ARM7TDMI_FREQUENCY / 0x40000;
 	} else {
-		cycles = GBASIOCyclesPerTransfer[GBASIOMultiplayerGetBaud(mobile->d.p->siocnt)][1];
+		cycles = GBA_ARM7TDMI_FREQUENCY / 0x100000;
 	}
 	mTimingDeschedule(&mobile->d.p->p->timing, &mobile->event);
 	mTimingSchedule(&mobile->d.p->p->timing, &mobile->event, cycles);

@@ -166,7 +166,7 @@ static inline ssize_t SocketSendTo(Socket socket, const void* buffer, size_t siz
 #endif
 	}
 #ifdef GEKKO
-	return net_sendto(socket, buffer, size, &destInfo.sa, destSize);
+	return net_sendto(socket, buffer, size, 0, &destInfo.sa, destSize);
 #else
 	return sendto(socket, (const char*) buffer, size, 0, &destInfo.sa, destSize);
 #endif
@@ -196,7 +196,7 @@ static inline ssize_t SocketRecvFrom(Socket socket, void* buffer, size_t size, i
 	} else {
 		ssize_t res;
 #ifdef GEKKO
-		res = net_recvfrom(socket, buffer, size, &srcInfo.sa, &srcSize);
+		res = net_recvfrom(socket, buffer, size, 0, &srcInfo.sa, &srcSize);
 #else
 		res = recvfrom(socket, (char*) buffer, size, 0, &srcInfo.sa, &srcSize);
 #endif
