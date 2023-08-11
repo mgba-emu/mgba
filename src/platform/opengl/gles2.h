@@ -86,8 +86,8 @@ struct mGLES2Context {
 	struct mSize imageSizes[VIDEO_LAYER_MAX];
 	int x;
 	int y;
-	unsigned width;
-	unsigned height;
+	int width;
+	int height;
 
 	struct mGLES2Shader initialShader;
 	struct mGLES2Shader finalShader;

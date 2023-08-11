@@ -15,7 +15,7 @@ CXX_GUARD_START
 #include <mgba-util/table.h>
 #include <mgba-util/vfs.h>
 
-#define mSCRIPT_KV_PAIR(KEY, VALUE) { #KEY, VALUE }
+#define mSCRIPT_KV_PAIR(KEY, VALUE) { #KEY, (struct mScriptValue*) VALUE }
 #define mSCRIPT_CONSTANT_PAIR(NS, CONST) { #CONST, mScriptValueCreateFromSInt(NS ## _ ## CONST) }
 #define mSCRIPT_KV_SENTINEL { NULL, NULL }
 

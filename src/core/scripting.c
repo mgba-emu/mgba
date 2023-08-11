@@ -1110,7 +1110,7 @@ static int32_t _rotationReadTiltX(struct mRotationSource* rotation) {
 
 	struct mScriptValue out;
 	if (_callRotationCb(adapter, "readTiltX", &out)) {
-		return out.value.f32 * INT32_MAX;
+		return out.value.f32 * (double) INT32_MAX;
 	}
 
 	if (adapter->oldRotation && adapter->oldRotation->readTiltX) {
@@ -1124,7 +1124,7 @@ static int32_t _rotationReadTiltY(struct mRotationSource* rotation) {
 
 	struct mScriptValue out;
 	if (_callRotationCb(adapter, "readTiltY", &out)) {
-		return out.value.f32 * INT32_MAX;
+		return out.value.f32 * (double) INT32_MAX;
 	}
 
 	if (adapter->oldRotation && adapter->oldRotation->readTiltY) {
@@ -1138,7 +1138,7 @@ static int32_t _rotationReadGyroZ(struct mRotationSource* rotation) {
 
 	struct mScriptValue out;
 	if (_callRotationCb(adapter, "readGyroZ", &out)) {
-		return out.value.f32 * INT32_MAX;
+		return out.value.f32 * (double) INT32_MAX;
 	}
 
 	if (adapter->oldRotation && adapter->oldRotation->readGyroZ) {

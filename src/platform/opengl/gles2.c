@@ -1146,7 +1146,7 @@ bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 					}
 				}
 				u = mGLES2UniformListSize(&uniformVector);
-				struct mGLES2Uniform* uniformBlock;
+				struct mGLES2Uniform* uniformBlock = NULL;
 				if (u) {
 					uniformBlock = calloc(u, sizeof(*uniformBlock));
 					memcpy(uniformBlock, mGLES2UniformListGetPointer(&uniformVector, 0), sizeof(*uniformBlock) * u);

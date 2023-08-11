@@ -296,6 +296,10 @@ bool mImageSaveVF(const struct mImage* image, struct VFile* vf, const char* form
 	if (strcasecmp(format, "png") == 0) {
 		return mImageSavePNG(image, vf);
 	}
+#else
+	UNUSED(image);
+	UNUSED(vf);
+	UNUSED(format);
 #endif
 	return false;
 }
@@ -593,7 +597,10 @@ static void mPainterFillRectangle(struct mPainter* painter, int x, int y, int wi
 static void mPainterStrokeRectangle(struct mPainter* painter, int x, int y, int width, int height) {
 	uint32_t fillColor = painter->fillColor;
 	painter->fillColor = painter->strokeColor;
-	if (width <= painter->strokeWidth * 2 || height <= painter->strokeWidth * 2) {
+	if (width < 0 || height < 0) {
+		return;
+	}
+	if ((unsigned) width <= painter->strokeWidth * 2 || (unsigned) height <= painter->strokeWidth * 2) {
 		mPainterFillRectangle(painter, x, y, width, height);
 	} else {
 		int lr = height - painter->strokeWidth;
