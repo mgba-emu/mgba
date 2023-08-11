@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef USE_LIBMOBILE
+
 #include <QDialog>
 
 #include <memory>
@@ -43,3 +45,5 @@ private:
 };
 
 }
+
+#endif /* defined(USE_LIBMOBILE) */

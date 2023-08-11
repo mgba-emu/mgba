@@ -1,3 +1,5 @@
+#ifdef USE_LIBMOBILE
+
 #include <mgba/gba/interface.h>
 
 #include <mgba/internal/gba/gba.h>
@@ -315,3 +317,5 @@ void _mobileEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 #undef USER1
 #undef ADDR4
 #undef ADDR6
+
+#endif /* defined(USE_LIBMOBILE) */
