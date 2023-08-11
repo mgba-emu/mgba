@@ -779,10 +779,8 @@ if (USE_DISCORD_RPC)
 endif()
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/libmobile libmobile EXCLUDE_FROM_ALL)
-include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/libmobile)
-list(APPEND DEPENDENCY_LIB libmobile)
-file(GLOB LIBMOBILE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/libmobile/*.c)
-list(APPEND THIRD_PARTY_SRC ${LIBMOBILE_SRC})
+list(APPEND DEPENDENCY_LIB libmobile_static)
+set_target_properties(libmobile_static PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 if(ENABLE_SCRIPTING)
 	list(APPEND ENABLES SCRIPTING)
