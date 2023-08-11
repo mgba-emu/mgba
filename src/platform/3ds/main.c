@@ -47,8 +47,9 @@ static enum FilterMode {
 	FM_NEAREST,
 	FM_LINEAR_1x,
 	FM_LINEAR_2x,
+	FM_LINEAR_3x,
 	FM_MAX
-} filterMode = FM_LINEAR_2x;
+} filterMode = FM_LINEAR_3x;
 
 static enum DarkenMode {
 	DM_NATIVE,
@@ -97,9 +98,8 @@ static int bufferId = 0;
 static bool frameLimiter = true;
 static u32 frameCounter;
 
-static C3D_RenderTarget* topScreen[2];
-static C3D_RenderTarget* bottomScreen[2];
-static int doubleBuffer = 0;
+static C3D_RenderTarget* topScreen;
+static C3D_RenderTarget* bottomScreen;
 static bool frameStarted = false;
 
 static C3D_RenderTarget* upscaleBuffer;
@@ -115,28 +115,26 @@ static bool _initGpu(void) {
 	}
 
 	if (gfxIsWide()) {
-		topScreen[0] = C3D_RenderTargetCreate(240, 800, GPU_RB_RGB8, 0);
-		topScreen[1] = C3D_RenderTargetCreate(240, 800, GPU_RB_RGB8, 0);
+		topScreen = C3D_RenderTargetCreate(240, 800, GPU_RB_RGB8, 0);
 	} else {
-		topScreen[0] = C3D_RenderTargetCreate(240, 400, GPU_RB_RGB8, 0);
-		topScreen[1] = C3D_RenderTargetCreate(240, 400, GPU_RB_RGB8, 0);
+		topScreen = C3D_RenderTargetCreate(240, 400, GPU_RB_RGB8, 0);
 	}
-	bottomScreen[0] = C3D_RenderTargetCreate(240, 320, GPU_RB_RGB8, 0);
-	bottomScreen[1] = C3D_RenderTargetCreate(240, 320, GPU_RB_RGB8, 0);
-	if (!topScreen[0] || !topScreen[1] || !bottomScreen[0] || !bottomScreen[1]) {
+	bottomScreen = C3D_RenderTargetCreate(240, 320, GPU_RB_RGB8, 0);
+	if (!topScreen || !bottomScreen) {
 		return false;
 	}
 
 	C3D_FrameBegin(0);
-	C3D_FrameDrawOn(bottomScreen[0]);
-	C3D_RenderTargetClear(bottomScreen[0], C3D_CLEAR_COLOR, 0, 0);
-	C3D_FrameDrawOn(topScreen[0]);
-	C3D_RenderTargetClear(topScreen[0], C3D_CLEAR_COLOR, 0, 0);
-	C3D_RenderTargetSetOutput(topScreen[0], GFX_TOP, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
-	C3D_RenderTargetSetOutput(bottomScreen[0], GFX_BOTTOM, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
+	C3D_FrameDrawOn(bottomScreen);
+	C3D_RenderTargetClear(bottomScreen, C3D_CLEAR_COLOR, 0, 0);
+	C3D_FrameDrawOn(topScreen);
+	C3D_RenderTargetClear(topScreen, C3D_CLEAR_COLOR, 0, 0);
+	C3D_RenderTargetSetOutput(topScreen, GFX_TOP, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
+	C3D_RenderTargetSetOutput(bottomScreen, GFX_BOTTOM, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
 	C3D_FrameEnd(0);
 
-	if (!C3D_TexInitVRAM(&upscaleBufferTex, 512, 512, GPU_RGB8)) {
+	if (!C3D_TexInitVRAM(&upscaleBufferTex, 1024, 512, GPU_RGB8)) {
+		__builtin_trap();
 		return false;
 	}
 	upscaleBuffer = C3D_RenderTargetCreateFromTex(&upscaleBufferTex, GPU_TEXFACE_2D, 0, 0);
@@ -164,10 +162,8 @@ static void _cleanup(void) {
 		screenshotBuffer = NULL;
 	}
 
-	C3D_RenderTargetDelete(topScreen[0]);
-	C3D_RenderTargetDelete(topScreen[1]);
-	C3D_RenderTargetDelete(bottomScreen[0]);
-	C3D_RenderTargetDelete(bottomScreen[1]);
+	C3D_RenderTargetDelete(topScreen);
+	C3D_RenderTargetDelete(bottomScreen);
 	C3D_RenderTargetDelete(upscaleBuffer);
 	C3D_TexDelete(&upscaleBufferTex);
 	C3D_TexDelete(&outputTexture[0]);
@@ -216,10 +212,10 @@ static void _drawStart(void) {
 	C3D_FrameBegin(0);
 	ctrStartFrame();
 
-	C3D_FrameDrawOn(bottomScreen[doubleBuffer]);
-	C3D_RenderTargetClear(bottomScreen[doubleBuffer], C3D_CLEAR_COLOR, 0, 0);
-	C3D_FrameDrawOn(topScreen[doubleBuffer]);
-	C3D_RenderTargetClear(topScreen[doubleBuffer], C3D_CLEAR_COLOR, 0, 0);
+	C3D_FrameDrawOn(bottomScreen);
+	C3D_RenderTargetClear(bottomScreen, C3D_CLEAR_COLOR, 0, 0);
+	C3D_FrameDrawOn(topScreen);
+	C3D_RenderTargetClear(topScreen, C3D_CLEAR_COLOR, 0, 0);
 }
 
 static void _drawEnd(void) {
@@ -227,12 +223,10 @@ static void _drawEnd(void) {
 		return;
 	}
 	ctrEndFrame();
-	C3D_RenderTargetSetOutput(topScreen[doubleBuffer], GFX_TOP, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
-	C3D_RenderTargetSetOutput(bottomScreen[doubleBuffer], GFX_BOTTOM, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
+	C3D_RenderTargetSetOutput(topScreen, GFX_TOP, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
+	C3D_RenderTargetSetOutput(bottomScreen, GFX_BOTTOM, GFX_LEFT, GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8));
 	C3D_FrameEnd(0);
 	frameStarted = false;
-
-	doubleBuffer ^= 1;
 }
 
 static int _batteryState(void) {
@@ -256,7 +250,7 @@ static int _batteryState(void) {
 }
 
 static void _guiPrepare(void) {
-	C3D_FrameDrawOn(bottomScreen[doubleBuffer]);
+	C3D_FrameDrawOn(bottomScreen);
 	ctrSetViewportSize(320, 240, true);
 }
 
@@ -476,21 +470,33 @@ static u32 _setupTex(int out, bool faded) {
 static void _drawTex(struct mCore* core, bool faded, bool both) {
 	unsigned screen_w, screen_h;
 	bool isWide = screenMode >= SM_PA_TOP && gfxIsWide();
+
+	if (filterMode < FM_LINEAR_1x || filterMode > FM_LINEAR_3x) {
+		// Out-of-range filtering modes are not supported
+		filterMode = FM_LINEAR_3x;
+	}
+	int mult = 1 + filterMode - FM_LINEAR_1x;
+
 	switch (screenMode) {
 	case SM_PA_BOTTOM:
-		C3D_FrameDrawOn(bottomScreen[doubleBuffer]);
+		C3D_FrameDrawOn(bottomScreen);
 		screen_w = 320;
 		screen_h = 240;
 		break;
 	case SM_PA_TOP:
-		C3D_FrameDrawOn(topScreen[doubleBuffer]);
+		C3D_FrameDrawOn(topScreen);
 		screen_w = isWide ? 800 : 400;
 		screen_h = 240;
 		break;
 	default:
 		C3D_FrameDrawOn(upscaleBuffer);
-		screen_w = 512;
-		screen_h = 512;
+		// PICA200 erratum: if viewport X coord exceeds 1023, entire polygon
+		// is not rendered. If viewport Y coord exceeds 1016, GPU hangs.
+		// This can not be mitigated by scissor testing.
+		// C3D_FrameDrawOn sets the viewport dims to the texture's dims,
+		// thus we must re-set the viewport ourselves.
+		screen_w = 256 * mult;
+		screen_h = 256 * mult;
 		break;
 	}
 	int wide = isWide ? 2 : 1;
@@ -523,16 +529,12 @@ static void _drawTex(struct mCore* core, bool faded, bool both) {
 	case SM_AF_BOTTOM:
 	case SM_SF_TOP:
 	case SM_SF_BOTTOM:
-	default:
-		if (filterMode == FM_LINEAR_1x) {
-			w = corew;
-			h = coreh;
-		} else {
-			w = corew * 2;
-			h = coreh * 2;
-		}
+	default: {
+		w = corew * mult;
+		h = coreh * mult;
 		ctrSetViewportSize(screen_w, screen_h, false);
 		break;
+	}
 	}
 
 	uint32_t color = _setupTex(activeOutputTexture, faded);
@@ -549,10 +551,10 @@ static void _drawTex(struct mCore* core, bool faded, bool both) {
 	coreh = h;
 	screen_h = 240;
 	if (screenMode < SM_PA_TOP) {
-		C3D_FrameDrawOn(bottomScreen[doubleBuffer]);
+		C3D_FrameDrawOn(bottomScreen);
 		screen_w = 320;
 	} else {
-		C3D_FrameDrawOn(topScreen[doubleBuffer]);
+		C3D_FrameDrawOn(topScreen);
 		screen_w = isWide ? 800 : 400;
 	}
 	ctrSetViewportSize(screen_w, screen_h, true);
@@ -979,13 +981,14 @@ int main(int argc, char* argv[]) {
 				.title = "Filtering",
 				.data = GUI_V_S("filterMode"),
 				.submenu = 0,
-				.state = FM_LINEAR_2x,
+				.state = FM_LINEAR_3x,
 				.validStates = (const char*[]) {
 					NULL, // Disable choosing nearest neighbor; it always looks bad
 					"Bilinear (smoother)",
 					"Bilinear (pixelated)",
+					"Bilinear (ultrasharp)",
 				},
-				.nStates = 3
+				.nStates = 4
 			},
 			{
 				.title = "Screen darkening",
