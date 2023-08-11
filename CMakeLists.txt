@@ -245,7 +245,7 @@ if(APPLE)
 	add_definitions(-D_DARWIN_C_SOURCE)
 	list(APPEND OS_LIB "-framework Foundation")
 	if(NOT CMAKE_SYSTEM_VERSION VERSION_LESS "10.0") # Darwin 10.x is Mac OS X 10.6
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.7")
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
 	endif()
 	# Not supported until Xcode 9
 	if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "9")
