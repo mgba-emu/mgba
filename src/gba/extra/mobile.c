@@ -57,13 +57,15 @@ static bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum
 			bindptr = &bindaddr;
 		}
 		fd = SocketOpenUDP(bindport, bindptr);
-		if (fd != INVALID_SOCKET) SocketSetBlocking(fd, false);
+		if (!SOCKET_FAILED(fd)) {
+			SocketSetBlocking(fd, false);
+		}
 	}
-	return (USER1.socket[conn].fd = fd) != INVALID_SOCKET || type != MOBILE_SOCKTYPE_UDP;
+	return !SOCKET_FAILED(USER1.socket[conn].fd = fd) || type != MOBILE_SOCKTYPE_UDP;
 }
 
 static void sock_close(void* user, unsigned conn) {
-	if (USER1.socket[conn].fd != INVALID_SOCKET) {
+	if (!SOCKET_FAILED(USER1.socket[conn].fd)) {
 		SocketClose(USER1.socket[conn].fd);
 	}
 	USER1.socket[conn].fd = INVALID_SOCKET;
@@ -127,7 +129,9 @@ static bool sock_listen(void* user, unsigned conn) {
 			bindptr = &bindaddr;
 		}
 		fd = SocketOpenTCP(USER1.socket[conn].bindport, bindptr);
-		if (fd != INVALID_SOCKET) SocketSetBlocking(fd, false);
+		if (!SOCKET_FAILED(fd)) {
+			SocketSetBlocking(fd, false);
+		}
 		USER1.socket[conn].fd = fd;
 	}
 	return !SOCKET_FAILED(SocketListen(USER1.socket[conn].fd, 1));

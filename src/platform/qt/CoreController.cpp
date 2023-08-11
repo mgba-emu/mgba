@@ -1251,10 +1251,14 @@ void CoreController::setMobileAdapterRelay(const QString& host, int port) {
 	}
 	Interrupter interrupter(this);
 	struct mobile_addr relay;
-	relay.type = MOBILE_ADDRTYPE_IPV4;
-	(*(struct mobile_addr4*) &relay).port = port;
-	for (int i = 0; i < MOBILE_HOSTLEN_IPV4; ++i) {
-		(*(struct mobile_addr4*) &relay).host[i] = host.section('.', i, i).toInt();
+	if (host == "...") {
+		relay.type = MOBILE_ADDRTYPE_NONE;
+	} else {
+		relay.type = MOBILE_ADDRTYPE_IPV4;
+		(*(struct mobile_addr4*) &relay).port = port;
+		for (int i = 0; i < MOBILE_HOSTLEN_IPV4; ++i) {
+			(*(struct mobile_addr4*) &relay).host[i] = host.section('.', i, i).toInt();
+		}
 	}
 	mobile_config_set_relay(m_mobile.adapter, &relay);
 }
