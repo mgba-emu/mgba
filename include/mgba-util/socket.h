@@ -166,7 +166,7 @@ static inline ssize_t SocketSendTo(Socket socket, const void* buffer, size_t siz
 #endif
 	}
 #ifdef GEKKO
-	return net_sendto(socket, buffer, size, 0, &destInfo.sa, destSize);
+	return net_sendto(socket, buffer, size, &destInfo.sa, destSize);
 #else
 	return sendto(socket, (const char*) buffer, size, 0, &destInfo.sa, destSize);
 #endif
@@ -196,7 +196,7 @@ static inline ssize_t SocketRecvFrom(Socket socket, void* buffer, size_t size, i
 	} else {
 		ssize_t res;
 #ifdef GEKKO
-		res = net_recvfrom(socket, buffer, size, 0, &srcInfo.sa, &srcSize);
+		res = net_recvfrom(socket, buffer, size, &srcInfo.sa, &srcSize);
 #else
 		res = recvfrom(socket, (char*) buffer, size, 0, &srcInfo.sa, &srcSize);
 #endif
@@ -541,9 +541,9 @@ static inline int SocketPoll(size_t nSockets, Socket* reads, Socket* writes, Soc
 	tv.tv_sec = timeoutMillis / 1000;
 	tv.tv_usec = (timeoutMillis % 1000) * 1000;
 #ifdef GEKKO
-	int result = net_select((int) maxFd + 1, &rset, &wset, &eset, timeoutMillis < 0 ? 0 : &tv);
+	int result = net_select(maxFd, &rset, &wset, &eset, timeoutMillis < 0 ? 0 : &tv);
 #else
-	int result = select((int) maxFd + 1, &rset, &wset, &eset, timeoutMillis < 0 ? 0 : &tv);
+	int result = select(maxFd, &rset, &wset, &eset, timeoutMillis < 0 ? 0 : &tv);
 #endif
 	size_t r = 0;
 	size_t w = 0;
