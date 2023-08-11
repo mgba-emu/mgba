@@ -9,6 +9,9 @@ CXX_GUARD_START
 
 #include <mgba/gb/interface.h>
 
+#include <mgba-util/socket.h>
+#include "third-party/libmobile/mobile.h"
+
 struct GBMobileAdapter {
 	struct GBSIODriver d;
 	struct mobile_adapter *adapter;
@@ -21,11 +24,11 @@ struct GBMobileAdapter {
 	} socket[MOBILE_MAX_CONNECTIONS];
 	int32_t timeLatch[MOBILE_MAX_TIMERS];
 	int serial;
-	uint8_t nextData;
+	uint8_t nextData[2];
 	char number[2][MOBILE_MAX_NUMBER_SIZE + 1];
 };
 
-void GBAMobileAdapterCreate(struct GBMobileAdapter*);
+void GBMobileAdapterCreate(struct GBMobileAdapter*);
 
 CXX_GUARD_END
 

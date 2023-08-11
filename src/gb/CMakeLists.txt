@@ -24,6 +24,7 @@ set(SOURCE_FILES
 
 set(SIO_FILES
 	sio/lockstep.c
+	sio/mobile.c
 	sio/printer.c)
 
 set(EXTRA_FILES

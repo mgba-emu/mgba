@@ -1105,6 +1105,7 @@ void CoreController::attachMobileAdapter() {
 	} else {
 		GB* gb = static_cast<GB*>(m_threadContext.core->board);
 		GBMobileAdapterCreate(&m_gbmobile);
+		m_gbmobile.parent = this;
 		QFile fconfig(ConfigController::configDir() + "/mobile_config.bin");
 		if (fconfig.open(QIODevice::ReadOnly)) {
 			fconfig.read((char*) &m_gbmobile.config, MOBILE_CONFIG_SIZE);
@@ -1116,7 +1117,7 @@ void CoreController::attachMobileAdapter() {
 
 void CoreController::detachMobileAdapter() {
 	Interrupter interrupter(this);
-	uint8_t* config = (platform() == mPLATFORM_GBA) ? &m_mobile.config : &m_gbmobile.config;
+	uint8_t* config = (platform() == mPLATFORM_GBA) ? m_mobile.config : m_gbmobile.config;
 	QFile fconfig(ConfigController::configDir() + "/mobile_config.bin");
 	if (fconfig.open(QIODevice::WriteOnly)) {
 		fconfig.write((char*) config, MOBILE_CONFIG_SIZE);
@@ -1172,7 +1173,7 @@ void CoreController::updateMobileAdapter(QString* userNumber, QString* peerNumbe
 	char* number = (char*) ((platform() == mPLATFORM_GBA) ? &m_mobile.number : &m_gbmobile.number);
 	mobile_loop(adapter);
 	*userNumber = QString(number);
-	*peerNumber = QString(number + MOBILE_NUMBER_SIZE + 1);
+	*peerNumber = QString(number + MOBILE_MAX_NUMBER_SIZE + 1);
 	token->clear();
 	unsigned char token_get[MOBILE_RELAY_TOKEN_SIZE];
 	if (!mobile_config_get_relay_token(adapter, token_get)) {

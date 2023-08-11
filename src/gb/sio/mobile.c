@@ -255,15 +255,16 @@ void GBMobileAdapterDeinit(struct GBSIODriver* driver) {
 }
 
 void GBMobileAdapterWriteSB(struct GBSIODriver* driver, uint8_t value) {
-	(*(struct GBMobileAdapter*) driver).nextData = value;
+	(*(struct GBMobileAdapter*) driver).nextData[0] = value;
 }
 
 uint8_t GBMobileAdapterWriteSC(struct GBSIODriver* driver, uint8_t value) {
 	struct GBMobileAdapter* mobile = (struct GBMobileAdapter*) driver;
-	if (value & 0x81 == 0x81) {
+	if ((value & 0x81) == 0x81) {
 		mobile_loop(mobile->adapter);
 		if (mobile->serial == 1) {
-			driver->p->pendingSB = mobile_transfer(mobile->adapter, mobile->nextData);
+			driver->p->pendingSB = mobile->nextData[1];
+			mobile->nextData[1] = mobile_transfer(mobile->adapter, mobile->nextData[0]);
 		}
 	}
 	return value;

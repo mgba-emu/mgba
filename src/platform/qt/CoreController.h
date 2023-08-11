@@ -24,6 +24,9 @@
 
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/sio/printer.h>
+#ifdef USE_LIBMOBILE
+#include <mgba/internal/gb/sio/mobile.h>
+#endif
 #endif
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/sio/dolphin.h>
@@ -347,14 +350,17 @@ private:
 	struct QGBPrinter : public GBPrinter {
 		CoreController* parent;
 	} m_printer;
-#endif
-
 #ifdef USE_LIBMOBILE
-	GBASIOMobileAdapter m_mobile;
-	GBMobileAdapter m_gbmobile;
+	struct QGBMobileAdapter: public GBMobileAdapter {
+		CoreController* parent;
+	} m_gbmobile;
+#endif
 #endif
 
 #ifdef M_CORE_GBA
+#ifdef USE_LIBMOBILE
+	GBASIOMobileAdapter m_mobile;
+#endif
 	GBASIOBattlechipGate m_battlechip;
 	QByteArray m_eReaderData;
 #endif
