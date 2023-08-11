@@ -105,7 +105,6 @@ struct GBASIOMobileAdapter {
 };
 
 void GBASIOMobileAdapterCreate(struct GBASIOMobileAdapter*);
-void GBASIOMobileAdapterUpdate(struct GBASIOMobileAdapter*);
 #endif
 
 enum GBASIOBattleChipGateFlavor {

@@ -1,21 +1,20 @@
 #ifdef USE_LIBMOBILE
 
-#include <mgba/gba/interface.h>
+#include <mgba/internal/gb/sio/mobile.h>
 
-#include <mgba/internal/gba/gba.h>
-#include <mgba/internal/gba/io.h>
-#include <mgba/internal/gba/sio.h>
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/io.h>
 
-mLOG_DECLARE_CATEGORY(GBA_MOBILE);
-mLOG_DEFINE_CATEGORY(GBA_MOBILE, "Mobile Adapter (GBA)", "gba.mobile");
+mLOG_DECLARE_CATEGORY(GB_MOBILE);
+mLOG_DEFINE_CATEGORY(GB_MOBILE, "Mobile Adapter (GBC)", "gb.mobile");
 
-#define USER1 (*(struct GBASIOMobileAdapter*) (user))
+#define USER1 (*(struct GBMobileAdapter*) (user))
 #define ADDR4 (*(struct mobile_addr4*) (addr))
 #define ADDR6 (*(struct mobile_addr6*) (addr))
 
 static void debug_log(void* user, const char* line) {
 	UNUSED(user);
-	mLOG(GBA_MOBILE, DEBUG, "%s", line);
+	mLOG(GB_MOBILE, DEBUG, "%s", line);
 }
 
 static void serial_disable(void* user) {
@@ -40,7 +39,7 @@ static void time_latch(void* user, unsigned timer) {
 
 static bool time_check_ms(void* user, unsigned timer, unsigned ms) {
 	uint64_t diff = mTimingCurrentTime(&USER1.d.p->p->timing) - USER1.timeLatch[timer];
-	return (unsigned) (diff * 1000ULL / GBA_ARM7TDMI_FREQUENCY) >= ms;
+	return (unsigned) (diff * 1000ULL / CGB_SM83_FREQUENCY) >= ms;
 }
 
 static bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
@@ -208,29 +207,22 @@ static void update_number(void* user, enum mobile_number type, const char* numbe
 	}
 }
 
-static bool GBASIOMobileAdapterInit(struct GBASIODriver* driver);
-static void GBASIOMobileAdapterDeinit(struct GBASIODriver* driver);
-static uint16_t GBASIOMobileAdapterWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
+static bool GBMobileAdapterInit(struct GBSIODriver* driver);
+static void GBMobileAdapterDeinit(struct GBSIODriver* driver);
+static void GBMobileAdapterWriteSB(struct GBSIODriver* driver, uint8_t value);
+static uint8_t GBMobileAdapterWriteSC(struct GBSIODriver* driver, uint8_t value);
 
-static void _mobileTransfer(struct GBASIOMobileAdapter* mobile);
-static void _mobileEvent(struct mTiming* timing, void* mobile, uint32_t cyclesLate);
+void GBMobileAdapterCreate(struct GBMobileAdapter* mobile) {
+	mobile->d.init = GBMobileAdapterInit;
+	mobile->d.deinit = GBMobileAdapterDeinit;
+	mobile->d.writeSB = GBMobileAdapterWriteSB;
+	mobile->d.writeSC = GBMobileAdapterWriteSC;
 
-void GBASIOMobileAdapterCreate(struct GBASIOMobileAdapter* mobile) {
-	mobile->d.init = GBASIOMobileAdapterInit;
-	mobile->d.deinit = GBASIOMobileAdapterDeinit;
-	mobile->d.load = NULL;
-	mobile->d.unload = NULL;
-	mobile->d.writeRegister = GBASIOMobileAdapterWriteRegister;
-
-	mobile->event.context = mobile;
-	mobile->event.callback = _mobileEvent;
-	mobile->event.priority = 0x80;
-
-	memset(&mobile->adapter, 0, sizeof(*mobile) - sizeof(mobile->d) - sizeof(mobile->event));
+	memset(&mobile->adapter, 0, sizeof(*mobile) - sizeof(mobile->d));
 }
 
-bool GBASIOMobileAdapterInit(struct GBASIODriver* driver) {
-	struct GBASIOMobileAdapter* mobile = (struct GBASIOMobileAdapter*) driver;
+bool GBMobileAdapterInit(struct GBSIODriver* driver) {
+	struct GBMobileAdapter* mobile = (struct GBMobileAdapter*) driver;
 	mobile->adapter = mobile_new(mobile);
 	if (!mobile->adapter) {
 		return false;
@@ -256,64 +248,25 @@ bool GBASIOMobileAdapterInit(struct GBASIODriver* driver) {
 	return true;
 }
 
-void GBASIOMobileAdapterDeinit(struct GBASIODriver* driver) {
-	struct GBASIOMobileAdapter* mobile = (struct GBASIOMobileAdapter*) driver;
+void GBMobileAdapterDeinit(struct GBSIODriver* driver) {
+	struct GBMobileAdapter* mobile = (struct GBMobileAdapter*) driver;
 	mobile_config_save(mobile->adapter);
 	mobile_stop(mobile->adapter);
 }
 
-uint16_t GBASIOMobileAdapterWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
-	struct GBASIOMobileAdapter* mobile = (struct GBASIOMobileAdapter*) driver;
-	switch (address) {
-	case REG_SIOCNT:
-		value &= ~0x4;
-		if (value & 0x80) {
-			_mobileTransfer(mobile);
+void GBMobileAdapterWriteSB(struct GBSIODriver* driver, uint8_t value) {
+	(*(struct GBMobileAdapter*) driver).nextData = value;
+}
+
+uint8_t GBMobileAdapterWriteSC(struct GBSIODriver* driver, uint8_t value) {
+	struct GBMobileAdapter* mobile = (struct GBMobileAdapter*) driver;
+	if (value & 0x81 == 0x81) {
+		mobile_loop(mobile->adapter);
+		if (mobile->serial == 1) {
+			driver->p->pendingSB = mobile_transfer(mobile->adapter, mobile->nextData);
 		}
-		break;
-	default:
-		break;
 	}
 	return value;
-}
-
-void _mobileTransfer(struct GBASIOMobileAdapter* mobile) {
-	int32_t cycles;
-	if (mobile->d.p->mode == SIO_NORMAL_32) {
-		cycles = GBA_ARM7TDMI_FREQUENCY / 0x40000;
-	} else {
-		cycles = GBA_ARM7TDMI_FREQUENCY / 0x100000;
-	}
-	mTimingDeschedule(&mobile->d.p->p->timing, &mobile->event);
-	mTimingSchedule(&mobile->d.p->p->timing, &mobile->event, cycles);
-}
-
-void _mobileEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
-	UNUSED(timing);
-	struct GBASIOMobileAdapter* mobile = user;
-
-	mobile_loop(mobile->adapter);
-
-	if (mobile->d.p->mode == SIO_NORMAL_32 && mobile->serial == 4) {
-		uint8_t buf[4];
-#define _SIO_DATA (&mobile->d.p->p->memory.io[REG_SIODATA32_LO >> 1])
-		memcpy(buf, _SIO_DATA, sizeof(buf));
-		memcpy(_SIO_DATA, mobile->nextData, sizeof(mobile->nextData));
-#undef _SIO_DATA
-		for (int i = 3; i >= 0; --i) {
-			mobile->nextData[i] = mobile_transfer(mobile->adapter, buf[i]);
-		}
-	} else if (mobile->d.p->mode == SIO_NORMAL_8 && mobile->serial == 1) {
-		uint8_t tmp = *(uint8_t*) &mobile->d.p->p->memory.io[REG_SIODATA8 >> 1];
-		*(uint8_t*) &mobile->d.p->p->memory.io[REG_SIODATA8 >> 1] = mobile->nextData[3];
-		mobile->nextData[3] = mobile_transfer(mobile->adapter, tmp);
-	}
-
-	mobile->d.p->siocnt = GBASIONormalClearStart(mobile->d.p->siocnt);
-
-	if (GBASIOMultiplayerIsIrq(mobile->d.p->siocnt)) {
-		GBARaiseIRQ(mobile->d.p->p, GBA_IRQ_SIO, cyclesLate);
-	}
 }
 
 #undef USER1
