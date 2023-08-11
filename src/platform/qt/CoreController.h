@@ -349,10 +349,12 @@ private:
 	} m_printer;
 #endif
 
-#ifdef M_CORE_GBA
 #ifdef USE_LIBMOBILE
 	GBASIOMobileAdapter m_mobile;
+	GBMobileAdapter m_gbmobile;
 #endif
+
+#ifdef M_CORE_GBA
 	GBASIOBattlechipGate m_battlechip;
 	QByteArray m_eReaderData;
 #endif

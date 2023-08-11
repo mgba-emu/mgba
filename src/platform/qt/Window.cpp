@@ -1506,12 +1506,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_platformActions.insert(mPLATFORM_GB, gbPrint);
 #endif
 
-#ifdef M_CORE_GBA
 #ifdef USE_LIBMOBILE
-	Action* mbAdapter = addGameAction(tr("Mobile Game Boy Adapter..."), "mbAdapter", openControllerTView<MobileAdapterView>(this), "emu");
-	m_platformActions.insert(mPLATFORM_GBA, mbAdapter);
+	m_actions.addAction(tr("Mobile Game Boy Adapter..."), "mbAdapter", openControllerTView<MobileAdapterView>(this), "emu");
 #endif
 	
+#ifdef M_CORE_GBA
 	Action* bcGate = addGameAction(tr("BattleChip Gate..."), "bcGate", openControllerTView<BattleChipView>(this), "emu");
 	m_platformActions.insert(mPLATFORM_GBA, bcGate);
 #endif
