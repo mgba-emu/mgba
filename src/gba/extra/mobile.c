@@ -71,9 +71,9 @@ void sock_close(void* user, unsigned conn) {
 int sock_connect(void* user, unsigned conn, const struct mobile_addr* addr) {
 	Socket fd = USER1.socket[conn].fd;
 
-	if (fd == INVALID_SOCKET) {
+	if (SOCKET_FAILED(fd)) {
 		fd = SocketCreate(addr->type == MOBILE_ADDRTYPE_IPV6, IPPROTO_TCP);
-		if (fd == INVALID_SOCKET) return -1;
+		if (SOCKET_FAILED(fd)) return -1;
 		if (!SocketSetBlocking(fd, false)) return -1;
 		USER1.socket[conn].fd = fd;
 	}
@@ -94,8 +94,9 @@ int sock_connect(void* user, unsigned conn, const struct mobile_addr* addr) {
 	if (!rc) return 1;
 
 	// Non-portable error checking
+	// TODO: should this go in socket.h? x_ Wit-MKW
 #ifdef _WIN32
-#define _SOCKERR(x) WSA##x
+#define _SOCKERR(x) WSA ## x
 #else
 #define _SOCKERR(x) x
 #endif
@@ -114,7 +115,7 @@ int sock_connect(void* user, unsigned conn, const struct mobile_addr* addr) {
 }
 
 bool sock_listen(void* user, unsigned conn) {
-	if (USER1.socket[conn].fd == INVALID_SOCKET) {
+	if (SOCKET_FAILED(USER1.socket[conn].fd)) {
 		Socket fd;
 		struct Address bindaddr, *bindptr = NULL;
 		if (USER1.socket[conn].addrtype == MOBILE_ADDRTYPE_IPV6) {
@@ -157,10 +158,16 @@ int sock_send(void* user, unsigned conn, const void* data, unsigned size, const 
 }
 
 int sock_recv(void* user, unsigned conn, void* data, unsigned size, struct mobile_addr* addr) {
+	int res;
+	Socket r = USER1.socket[conn].fd;
+	Socket e = USER1.socket[conn].fd;
+	if (SocketPoll(1, &r, NULL, &e, 0) <= 0) {
+		return 0;
+	}
 	if (addr) {
 		struct Address srcaddr;
 		int srcport;
-		int res = (int) SocketRecvFrom(USER1.socket[conn].fd, data, size, &srcport, &srcaddr);
+		res = (int) SocketRecvFrom(USER1.socket[conn].fd, data, size, &srcport, &srcaddr);
 		if (srcaddr.version == IPV6) {
 			addr->type = MOBILE_ADDRTYPE_IPV6;
 			memcpy(&ADDR6.host, &srcaddr.ipv6, MOBILE_HOSTLEN_IPV6);
@@ -170,9 +177,16 @@ int sock_recv(void* user, unsigned conn, void* data, unsigned size, struct mobil
 			*(uint32_t*) &ADDR4.host = htonl(srcaddr.ipv4);
 			ADDR4.port = htons(srcport);
 		}
+		if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
+			return 0;
+		}
 		return res;
 	}
-	return SocketRecv(USER1.socket[conn].fd, data, size);
+	res = (int) SocketRecv(USER1.socket[conn].fd, data, size);
+	if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
+		return 0;
+	}
+	return res ? res : -2;
 }
 
 void update_number(void* user, enum mobile_number type, const char* number) {
