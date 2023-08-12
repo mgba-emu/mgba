@@ -100,7 +100,7 @@ struct GBASIOMobileAdapter {
 	} socket[MOBILE_MAX_CONNECTIONS];
 	int32_t timeLatch[MOBILE_MAX_TIMERS];
 	int serial;
-	uint8_t nextData[4];
+	uint32_t nextData;
 	char number[2][MOBILE_MAX_NUMBER_SIZE + 1];
 };
 
