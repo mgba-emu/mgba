@@ -35,12 +35,12 @@ static bool config_write(void* user, const void* src, uintptr_t offset, size_t s
 }
 
 static void time_latch(void* user, unsigned timer) {
-	USER1.timeLatch[timer] = mTimingCurrentTime(&USER1.d.p->p->timing);
+	USER1.timeLatch[timer] = (unsigned) mTimingCurrentTime(&USER1.d.p->p->timing);
 }
 
 static bool time_check_ms(void* user, unsigned timer, unsigned ms) {
-	uint64_t diff = (uint64_t) mTimingCurrentTime(&USER1.d.p->p->timing) - (uint64_t) USER1.timeLatch[timer];
-	return (unsigned) (diff * 1000ULL / GBA_ARM7TDMI_FREQUENCY) >= ms;
+	unsigned diff = (unsigned) mTimingCurrentTime(&USER1.d.p->p->timing) - (unsigned) USER1.timeLatch[timer];
+	return (unsigned) ((uint64_t) diff * 1000ULL / (uint64_t) GBA_ARM7TDMI_FREQUENCY) >= ms;
 }
 
 static bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
@@ -177,16 +177,17 @@ static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struc
 		struct Address srcaddr;
 		int srcport;
 		res = (int) SocketRecvFrom(USER1.socket[conn].fd, data, size, &srcport, &srcaddr);
-		if (srcaddr.version == IPV6) {
-			addr->type = MOBILE_ADDRTYPE_IPV6;
-			memcpy(&ADDR6.host, &srcaddr.ipv6, MOBILE_HOSTLEN_IPV6);
-			ADDR6.port = srcport;
-		} else {
-			addr->type = MOBILE_ADDRTYPE_IPV4;
-			*(uint32_t*) &ADDR4.host = htonl(srcaddr.ipv4);
-			ADDR4.port = srcport;
-		}
-		if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
+		if (res > 0) {
+			if (srcaddr.version == IPV6) {
+				addr->type = MOBILE_ADDRTYPE_IPV6;
+				memcpy(&ADDR6.host, &srcaddr.ipv6, MOBILE_HOSTLEN_IPV6);
+				ADDR6.port = srcport;
+			} else {
+				addr->type = MOBILE_ADDRTYPE_IPV4;
+				*(uint32_t*) &ADDR4.host = htonl(srcaddr.ipv4);
+				ADDR4.port = srcport;
+			}
+		} else if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
 			return 0;
 		}
 		return (res || (USER1.socket[conn].socktype == MOBILE_SOCKTYPE_UDP)) ? res : -2;
@@ -295,18 +296,15 @@ void _mobileEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	mobile_loop(mobile->adapter);
 
 	if (mobile->d.p->mode == SIO_NORMAL_32 && mobile->serial == 4) {
-		uint8_t buf[4];
-#define _SIO_DATA (&mobile->d.p->p->memory.io[REG_SIODATA32_LO >> 1])
-		memcpy(buf, _SIO_DATA, sizeof(buf));
-		memcpy(_SIO_DATA, mobile->nextData, sizeof(mobile->nextData));
-#undef _SIO_DATA
-		for (int i = 3; i >= 0; --i) {
-			mobile->nextData[i] = mobile_transfer(mobile->adapter, buf[i]);
-		}
+		uint32_t tmp = htonl((uint32_t) mobile->d.p->p->memory.io[REG_SIODATA32_LO >> 1] |
+			                 (uint32_t) mobile->d.p->p->memory.io[REG_SIODATA32_HI >> 1] << 16);
+		mobile->d.p->p->memory.io[REG_SIODATA32_LO >> 1] = (uint16_t) (mobile->nextData & 0xFFFF);
+		mobile->d.p->p->memory.io[REG_SIODATA32_HI >> 1] = (uint16_t) (mobile->nextData >> 16);
+		mobile->nextData = mobile_transfer_32bit(mobile->adapter, tmp);
 	} else if (mobile->d.p->mode == SIO_NORMAL_8 && mobile->serial == 1) {
-		uint8_t tmp = *(uint8_t*) &mobile->d.p->p->memory.io[REG_SIODATA8 >> 1];
-		*(uint8_t*) &mobile->d.p->p->memory.io[REG_SIODATA8 >> 1] = mobile->nextData[3];
-		mobile->nextData[3] = mobile_transfer(mobile->adapter, tmp);
+		uint8_t tmp = (uint8_t) mobile->d.p->p->memory.io[REG_SIODATA8 >> 1];
+		mobile->d.p->p->memory.io[REG_SIODATA8 >> 1] = (uint16_t) (mobile->nextData >> 24);
+		mobile->nextData = (uint32_t) mobile_transfer(mobile->adapter, tmp) << 24;
 	}
 
 	mobile->d.p->siocnt = GBASIONormalClearStart(mobile->d.p->siocnt);

@@ -34,12 +34,12 @@ static bool config_write(void* user, const void* src, uintptr_t offset, size_t s
 }
 
 static void time_latch(void* user, unsigned timer) {
-	USER1.timeLatch[timer] = mTimingCurrentTime(&USER1.d.p->p->timing);
+	USER1.timeLatch[timer] = (unsigned) mTimingCurrentTime(&USER1.d.p->p->timing);
 }
 
 static bool time_check_ms(void* user, unsigned timer, unsigned ms) {
-	uint64_t diff = (uint64_t) mTimingCurrentTime(&USER1.d.p->p->timing) - (uint64_t) USER1.timeLatch[timer];
-	return (unsigned) (diff * 1000ULL / CGB_SM83_FREQUENCY) >= ms;
+	unsigned diff = (unsigned) mTimingCurrentTime(&USER1.d.p->p->timing) - (unsigned) USER1.timeLatch[timer];
+	return (unsigned) ((uint64_t) diff * 1000ULL / (uint64_t) CGB_SM83_FREQUENCY) >= ms;
 }
 
 static bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
@@ -176,16 +176,17 @@ static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struc
 		struct Address srcaddr;
 		int srcport;
 		res = (int) SocketRecvFrom(USER1.socket[conn].fd, data, size, &srcport, &srcaddr);
-		if (srcaddr.version == IPV6) {
-			addr->type = MOBILE_ADDRTYPE_IPV6;
-			memcpy(&ADDR6.host, &srcaddr.ipv6, MOBILE_HOSTLEN_IPV6);
-			ADDR6.port = srcport;
-		} else {
-			addr->type = MOBILE_ADDRTYPE_IPV4;
-			*(uint32_t*) &ADDR4.host = htonl(srcaddr.ipv4);
-			ADDR4.port = srcport;
-		}
-		if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
+		if (res > 0) {
+			if (srcaddr.version == IPV6) {
+				addr->type = MOBILE_ADDRTYPE_IPV6;
+				memcpy(&ADDR6.host, &srcaddr.ipv6, MOBILE_HOSTLEN_IPV6);
+				ADDR6.port = srcport;
+			} else {
+				addr->type = MOBILE_ADDRTYPE_IPV4;
+				*(uint32_t*) &ADDR4.host = htonl(srcaddr.ipv4);
+				ADDR4.port = srcport;
+			}
+		} else if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
 			return 0;
 		}
 		return (res || (USER1.socket[conn].socktype == MOBILE_SOCKTYPE_UDP)) ? res : -2;
