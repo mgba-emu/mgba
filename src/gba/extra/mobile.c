@@ -296,15 +296,17 @@ void _mobileEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	mobile_loop(mobile->adapter);
 
 	if (mobile->d.p->mode == SIO_NORMAL_32 && mobile->serial == 4) {
-		uint32_t tmp = htonl((uint32_t) mobile->d.p->p->memory.io[REG_SIODATA32_LO >> 1] |
-			                 (uint32_t) mobile->d.p->p->memory.io[REG_SIODATA32_HI >> 1] << 16);
-		mobile->d.p->p->memory.io[REG_SIODATA32_LO >> 1] = (uint16_t) (mobile->nextData & 0xFFFF);
-		mobile->d.p->p->memory.io[REG_SIODATA32_HI >> 1] = (uint16_t) (mobile->nextData >> 16);
+		uint16_t* reg_lo = &mobile->d.p->p->memory.io[REG_SIODATA32_LO >> 1];
+		uint16_t* reg_hi = &mobile->d.p->p->memory.io[REG_SIODATA32_HI >> 1];
+		uint32_t tmp = *reg_hi << 16 | *reg_lo;
+		*reg_hi = mobile->nextData >> 16;
+		*reg_lo = mobile->nextData;
 		mobile->nextData = mobile_transfer_32bit(mobile->adapter, tmp);
 	} else if (mobile->d.p->mode == SIO_NORMAL_8 && mobile->serial == 1) {
-		uint8_t tmp = (uint8_t) mobile->d.p->p->memory.io[REG_SIODATA8 >> 1];
-		mobile->d.p->p->memory.io[REG_SIODATA8 >> 1] = (uint16_t) (mobile->nextData >> 24);
-		mobile->nextData = (uint32_t) mobile_transfer(mobile->adapter, tmp) << 24;
+		uint16_t* reg = &mobile->d.p->p->memory.io[REG_SIODATA8 >> 1];
+		uint8_t tmp = *reg;
+		*reg = mobile->nextData;
+		mobile->nextData = mobile_transfer(mobile->adapter, tmp);
 	}
 
 	mobile->d.p->siocnt = GBASIONormalClearStart(mobile->d.p->siocnt);
