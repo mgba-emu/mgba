@@ -38,7 +38,7 @@ static void time_latch(void* user, unsigned timer) {
 }
 
 static bool time_check_ms(void* user, unsigned timer, unsigned ms) {
-	uint64_t diff = mTimingCurrentTime(&USER1.d.p->p->timing) - USER1.timeLatch[timer];
+	uint64_t diff = (uint64_t) mTimingCurrentTime(&USER1.d.p->p->timing) - (uint64_t) USER1.timeLatch[timer];
 	return (unsigned) (diff * 1000ULL / CGB_SM83_FREQUENCY) >= ms;
 }
 

@@ -39,7 +39,7 @@ static void time_latch(void* user, unsigned timer) {
 }
 
 static bool time_check_ms(void* user, unsigned timer, unsigned ms) {
-	uint64_t diff = mTimingCurrentTime(&USER1.d.p->p->timing) - USER1.timeLatch[timer];
+	uint64_t diff = (uint64_t) mTimingCurrentTime(&USER1.d.p->p->timing) - (uint64_t) USER1.timeLatch[timer];
 	return (unsigned) (diff * 1000ULL / GBA_ARM7TDMI_FREQUENCY) >= ms;
 }
 
@@ -311,7 +311,7 @@ void _mobileEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 
 	mobile->d.p->siocnt = GBASIONormalClearStart(mobile->d.p->siocnt);
 
-	if (GBASIOMultiplayerIsIrq(mobile->d.p->siocnt)) {
+	if (GBASIONormalIsIrq(mobile->d.p->siocnt)) {
 		GBARaiseIRQ(mobile->d.p->p, GBA_IRQ_SIO, cyclesLate);
 	}
 }
