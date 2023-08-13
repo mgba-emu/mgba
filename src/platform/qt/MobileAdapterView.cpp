@@ -49,9 +49,9 @@ MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller,
 	QRegularExpressionValidator vRelay(reRelay, m_ui.setRelay);
 	m_ui.setRelay->setValidator(&vRelay);
 
-	QRegularExpression reToken("[\\dA-Fa-f]{32}?");
-	QRegularExpressionValidator vToken(reToken, m_ui.setToken);
-	m_ui.setToken->setValidator(&vToken);
+	//QRegularExpression reToken("[\\dA-Fa-f]{,32}");
+	//QRegularExpressionValidator vToken(reToken, m_ui.setToken);
+	//m_ui.setToken->setValidator(&vToken);
 
 	connect(m_ui.setType, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MobileAdapterView::setType);
 	connect(m_ui.setUnmetered, &QAbstractButton::toggled, this, &MobileAdapterView::setUnmetered);
@@ -98,9 +98,9 @@ void MobileAdapterView::setRelay() {
 }
 
 void MobileAdapterView::setToken() {
-	QString token = m_ui.setToken->text();
+	QString token = m_ui.setToken->text().simplified();
 	if (m_controller->setMobileAdapterToken(token)) {
-		m_ui.setToken->setText(token.simplified());
+		m_ui.setToken->setText(token);
 	} else {
 		m_ui.setToken->setText("");
 	}

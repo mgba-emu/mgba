@@ -1257,15 +1257,14 @@ void CoreController::setMobileAdapterRelay(const QString& host, int port) {
 bool CoreController::setMobileAdapterToken(const QString& qToken) {
 	Interrupter interrupter(this);
 	struct mobile_adapter* adapter = (platform() == mPLATFORM_GBA) ? m_mobile.adapter : m_gbmobile.adapter;
-	QString qTokenSimp = qToken.simplified();
-	if (qTokenSimp.size() != MOBILE_RELAY_TOKEN_SIZE * 2 || qTokenSimp.contains(' ')) {
+	if (qToken.size() != MOBILE_RELAY_TOKEN_SIZE * 2 || qToken.contains(' ')) {
 		mobile_config_set_relay_token(adapter, nullptr);
 		return false;
 	}
 	unsigned char token[MOBILE_RELAY_TOKEN_SIZE];
 	for (int i = 0; i < MOBILE_RELAY_TOKEN_SIZE * 2; i += 2) {
 		bool ok = false;
-		token[i / 2] = qTokenSimp.mid(i, 2).toInt(&ok, 0x10);
+		token[i / 2] = qToken.mid(i, 2).toInt(&ok, 0x10);
 		if (!ok) {
 			mobile_config_set_relay_token(adapter, nullptr);
 			return false;

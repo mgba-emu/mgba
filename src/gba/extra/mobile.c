@@ -13,6 +13,14 @@ mLOG_DEFINE_CATEGORY(GBA_MOBILE, "Mobile Adapter (GBA)", "gba.mobile");
 #define ADDR4 (*(struct mobile_addr4*) (addr))
 #define ADDR6 (*(struct mobile_addr6*) (addr))
 
+// Non-portable error checking
+// TODO: should this go in socket.h? x_ Wit-MKW
+#ifdef _WIN32
+#define _SOCKERR(x) WSA ## x
+#else
+#define _SOCKERR(x) x
+#endif
+
 static void debug_log(void* user, const char* line) {
 	UNUSED(user);
 	mLOG(GBA_MOBILE, DEBUG, "%s", line);
@@ -100,13 +108,6 @@ static int sock_connect(void* user, unsigned conn, const struct mobile_addr* add
 	int rc = SocketConnect(fd, connport, &connaddr);
 	if (!rc) return 1;
 
-	// Non-portable error checking
-	// TODO: should this go in socket.h? x_ Wit-MKW
-#ifdef _WIN32
-#define _SOCKERR(x) WSA ## x
-#else
-#define _SOCKERR(x) x
-#endif
 	int err = SocketError();
 	if (err == _SOCKERR(EWOULDBLOCK) ||
 			err == _SOCKERR(EINPROGRESS) ||
@@ -116,7 +117,6 @@ static int sock_connect(void* user, unsigned conn, const struct mobile_addr* add
 	if (err == _SOCKERR(EISCONN)) {
 		return 1;
 	}
-#undef _SOCKERR
 
 	return -1;
 }
@@ -187,7 +187,7 @@ static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struc
 				*(uint32_t*) &ADDR4.host = htonl(srcaddr.ipv4);
 				ADDR4.port = srcport;
 			}
-		} else if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
+		} else if (res == -1 && (SocketWouldBlock(USER1.socket[conn].fd) || SocketError(USER1.socket[conn].fd) == _SOCKERR(EFAULT))) {
 			return 0;
 		}
 		return (res || (USER1.socket[conn].socktype == MOBILE_SOCKTYPE_UDP)) ? res : -2;
@@ -319,5 +319,6 @@ void _mobileEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 #undef USER1
 #undef ADDR4
 #undef ADDR6
+#undef _SOCKERR
 
 #endif /* defined(USE_LIBMOBILE) */

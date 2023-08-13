@@ -12,6 +12,14 @@ mLOG_DEFINE_CATEGORY(GB_MOBILE, "Mobile Adapter (GBC)", "gb.mobile");
 #define ADDR4 (*(struct mobile_addr4*) (addr))
 #define ADDR6 (*(struct mobile_addr6*) (addr))
 
+// Non-portable error checking
+// TODO: should this go in socket.h? x_ Wit-MKW
+#ifdef _WIN32
+#define _SOCKERR(x) WSA ## x
+#else
+#define _SOCKERR(x) x
+#endif
+
 static void debug_log(void* user, const char* line) {
 	UNUSED(user);
 	mLOG(GB_MOBILE, DEBUG, "%s", line);
@@ -99,13 +107,6 @@ static int sock_connect(void* user, unsigned conn, const struct mobile_addr* add
 	int rc = SocketConnect(fd, connport, &connaddr);
 	if (!rc) return 1;
 
-	// Non-portable error checking
-	// TODO: should this go in socket.h? x_ Wit-MKW
-#ifdef _WIN32
-#define _SOCKERR(x) WSA ## x
-#else
-#define _SOCKERR(x) x
-#endif
 	int err = SocketError();
 	if (err == _SOCKERR(EWOULDBLOCK) ||
 			err == _SOCKERR(EINPROGRESS) ||
@@ -274,5 +275,6 @@ uint8_t GBMobileAdapterWriteSC(struct GBSIODriver* driver, uint8_t value) {
 #undef USER1
 #undef ADDR4
 #undef ADDR6
+#undef _SOCKERR
 
 #endif /* defined(USE_LIBMOBILE) */
