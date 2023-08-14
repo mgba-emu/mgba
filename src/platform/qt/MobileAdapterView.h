@@ -37,6 +37,8 @@ private slots:
 	void advanceFrameCounter();
 
 private:
+	bool m_tokenFilled;
+	
 	Ui::MobileAdapterView m_ui;
 
 	std::shared_ptr<CoreController> m_controller;

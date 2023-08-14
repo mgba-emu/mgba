@@ -21,6 +21,7 @@ using namespace QGBA;
 
 MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller, Window* window, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
+	, m_tokenFilled(false)
 	, m_controller(controller)
 	, m_window(window)
 {
@@ -49,9 +50,9 @@ MobileAdapterView::MobileAdapterView(std::shared_ptr<CoreController> controller,
 	QRegularExpressionValidator vRelay(reRelay, m_ui.setRelay);
 	m_ui.setRelay->setValidator(&vRelay);
 
-	//QRegularExpression reToken("[\\dA-Fa-f]{,32}");
-	//QRegularExpressionValidator vToken(reToken, m_ui.setToken);
-	//m_ui.setToken->setValidator(&vToken);
+	QRegularExpression reToken("[\\dA-Fa-f]{32}?");
+	QRegularExpressionValidator vToken(reToken, m_ui.setToken);
+	m_ui.setToken->setValidator(&vToken);
 
 	connect(m_ui.setType, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &MobileAdapterView::setType);
 	connect(m_ui.setUnmetered, &QAbstractButton::toggled, this, &MobileAdapterView::setUnmetered);
@@ -101,8 +102,10 @@ void MobileAdapterView::setToken() {
 	QString token = m_ui.setToken->text().simplified();
 	if (m_controller->setMobileAdapterToken(token)) {
 		m_ui.setToken->setText(token);
+		m_tokenFilled = true;
 	} else {
 		m_ui.setToken->setText("");
+		m_tokenFilled = false;
 	}
 }
 
@@ -132,7 +135,10 @@ void MobileAdapterView::advanceFrameCounter() {
 	m_controller->updateMobileAdapter(&userNumber, &peerNumber, &token);
 	m_ui.userNumber->setText(userNumber);
 	m_ui.peerNumber->setText(peerNumber);
-	m_ui.setToken->setText(token);
+	if (!m_tokenFilled && m_ui.setToken->text() == "") {
+		m_ui.setToken->setText(token);
+		m_tokenFilled = token != "";
+	}
 }
 
 #endif /* defined(USE_LIBMOBILE) */
