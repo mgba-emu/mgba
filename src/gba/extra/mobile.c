@@ -187,7 +187,7 @@ static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struc
 				*(uint32_t*) &ADDR4.host = htonl(srcaddr.ipv4);
 				ADDR4.port = srcport;
 			}
-		} else if (res == -1 && (SocketWouldBlock(USER1.socket[conn].fd) || SocketError(USER1.socket[conn].fd) == _SOCKERR(EFAULT))) {
+		} else if (res == -1 && SocketWouldBlock(USER1.socket[conn].fd)) {
 			return 0;
 		}
 		return (res || (USER1.socket[conn].socktype == MOBILE_SOCKTYPE_UDP)) ? res : -2;

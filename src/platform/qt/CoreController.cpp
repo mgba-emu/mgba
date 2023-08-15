@@ -1117,13 +1117,22 @@ void CoreController::attachMobileAdapter() {
 
 void CoreController::detachMobileAdapter() {
 	Interrupter interrupter(this);
-	uint8_t* config = (platform() == mPLATFORM_GBA) ? m_mobile.config : m_gbmobile.config;
-	QFile fconfig(ConfigController::configDir() + "/mobile_config.bin");
-	if (fconfig.open(QIODevice::WriteOnly)) {
-		fconfig.write((char*) config, MOBILE_CONFIG_SIZE);
-		fconfig.close();
+	if (platform() == mPLATFORM_GBA) {
+		QFile fconfig(ConfigController::configDir() + "/mobile_config.bin");
+		if (fconfig.open(QIODevice::WriteOnly)) {
+			fconfig.write((char*) &m_mobile.config, MOBILE_CONFIG_SIZE);
+			fconfig.close();
+		}
+		m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_MOBILE_ADAPTER, nullptr);
+	} else {
+		GB* gb = static_cast<GB*>(m_threadContext.core->board);
+		QFile fconfig(ConfigController::configDir() + "/mobile_config.bin");
+		if (fconfig.open(QIODevice::WriteOnly)) {
+			fconfig.write((char*) &m_gbmobile.config, MOBILE_CONFIG_SIZE);
+			fconfig.close();
+		}
+		GBSIOSetDriver(&gb->sio, nullptr);
 	}
-	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_MOBILE_ADAPTER, nullptr);
 }
 
 void CoreController::getMobileAdapterConfig(int* type, bool* unmetered, QString* dns1, QString* dns2, int* port, QString* relay) {

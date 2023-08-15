@@ -156,13 +156,13 @@ static inline ssize_t SocketSendTo(Socket socket, const void* buffer, size_t siz
 		destInfo.sin.sin_family = AF_INET;
 		destInfo.sin.sin_port = htons(port);
 		destInfo.sin.sin_addr.s_addr = htonl(address->ipv4);
-		destSize = sizeof(destInfo.sin);
+		destSize = sizeof(destInfo.sin) > sizeof(destInfo.sa) ? sizeof(destInfo.sin) : sizeof(destInfo.sa);
 #if !defined(__3DS__) && !defined(GEKKO)
 	} else {
 		destInfo.sin6.sin6_family = AF_INET6;
 		destInfo.sin6.sin6_port = htons(port);
 		memcpy(destInfo.sin6.sin6_addr.s6_addr, address->ipv6, sizeof(address->ipv6));
-		destSize = sizeof(destInfo.sin6);
+		destSize = sizeof(destInfo.sin6) > sizeof(destInfo.sa) ? sizeof(destInfo.sin6) : sizeof(destInfo.sa);
 #endif
 	}
 #ifdef GEKKO
@@ -190,7 +190,7 @@ static inline ssize_t SocketRecvFrom(Socket socket, void* buffer, size_t size, i
 		struct sockaddr_in6 sin6;
 #endif
 	} srcInfo;
-	socklen_t srcSize;
+	socklen_t srcSize = sizeof(srcInfo);
 	if (!address) {
 		return SocketRecv(socket, buffer, size);
 	} else {
