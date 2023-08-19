@@ -37,8 +37,8 @@ void ConfigOption::connect(std::function<void(const QVariant&)> slot, QObject* p
 	});
 }
 
-Action* ConfigOption::addValue(const QString& text, const QVariant& value, ActionMapper* actions, const QString& menu) {
-	Action* action;
+std::shared_ptr<Action> ConfigOption::addValue(const QString& text, const QVariant& value, ActionMapper* actions, const QString& menu) {
+	std::shared_ptr<Action> action;
 	auto function = [this, value]() {
 		emit valueChanged(value);
 	};
@@ -46,32 +46,32 @@ Action* ConfigOption::addValue(const QString& text, const QVariant& value, Actio
 	if (actions) {
 		action = actions->addAction(text, name, function, menu);
 	} else {
-		action = new Action(function, name, text, this);
+		action = std::make_shared<Action>(function, name, text, this);
 	}
 	action->setExclusive();
-	QObject::connect(action, &QObject::destroyed, this, [this, action, value]() {
+	QObject::connect(action.get(), &QObject::destroyed, this, [this, action, value]() {
 		m_actions.removeAll(std::make_pair(action, value));
 	});
 	m_actions.append(std::make_pair(action, value));
 	return action;
 }
 
-Action* ConfigOption::addValue(const QString& text, const char* value, ActionMapper* actions, const QString& menu) {
+std::shared_ptr<Action> ConfigOption::addValue(const QString& text, const char* value, ActionMapper* actions, const QString& menu) {
 	return addValue(text, QString(value), actions, menu);
 }
 
-Action* ConfigOption::addBoolean(const QString& text, ActionMapper* actions, const QString& menu) {
-	Action* action;
+std::shared_ptr<Action> ConfigOption::addBoolean(const QString& text, ActionMapper* actions, const QString& menu) {
+	std::shared_ptr<Action> action;
 	auto function = [this](bool value) {
 		emit valueChanged(value);
 	};
 	if (actions) {
 		action = actions->addBooleanAction(text, m_name, function, menu);
 	} else {
-		action = new Action(function, m_name, text, this);
+		action = std::make_shared<Action>(function, m_name, text, this);
 	}
 
-	QObject::connect(action, &QObject::destroyed, this, [this, action]() {
+	QObject::connect(action.get(), &QObject::destroyed, this, [this, action]() {
 		m_actions.removeAll(std::make_pair(action, QVariant(1)));
 	});
 	m_actions.append(std::make_pair(action, QVariant(1)));
@@ -96,7 +96,7 @@ void ConfigOption::setValue(const char* value) {
 }
 
 void ConfigOption::setValue(const QVariant& value) {
-	for (std::pair<Action*, QVariant>& action : m_actions) {
+	for (std::pair<std::shared_ptr<Action>, QVariant>& action : m_actions) {
 		action.first->setActive(value == action.second);
 	}
 	for (std::function<void(const QVariant&)>& slot : m_slots.values()) {

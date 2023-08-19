@@ -38,9 +38,9 @@ public:
 
 	void connect(std::function<void(const QVariant&)>, QObject* parent = nullptr);
 
-	Action* addValue(const QString& text, const QVariant& value, ActionMapper* actions = nullptr, const QString& menu = {});
-	Action* addValue(const QString& text, const char* value, ActionMapper* actions = nullptr, const QString& menu = {});
-	Action* addBoolean(const QString& text, ActionMapper* actions = nullptr, const QString& menu = {});
+	std::shared_ptr<Action> addValue(const QString& text, const QVariant& value, ActionMapper* actions = nullptr, const QString& menu = {});
+	std::shared_ptr<Action> addValue(const QString& text, const char* value, ActionMapper* actions = nullptr, const QString& menu = {});
+	std::shared_ptr<Action> addBoolean(const QString& text, ActionMapper* actions = nullptr, const QString& menu = {});
 
 	QString name() const { return m_name; }
 
@@ -56,7 +56,7 @@ signals:
 
 private:
 	QHash<QObject*, std::function<void(const QVariant&)>> m_slots;
-	QList<std::pair<Action*, QVariant>> m_actions;
+	QList<std::pair<std::shared_ptr<Action>, QVariant>> m_actions;
 	QString m_name;
 };
 

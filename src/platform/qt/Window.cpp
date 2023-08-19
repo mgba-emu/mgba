@@ -416,7 +416,7 @@ void Window::multiplayerChanged() {
 		attached = multiplayer->attached();
 		m_playerId = multiplayer->playerId(m_controller.get());
 	}
-	for (Action* action : m_nonMpActions) {
+	for (auto action : m_nonMpActions) {
 		action->setEnabled(attached < 2);
 	}
 }
@@ -692,7 +692,7 @@ void Window::resizeEvent(QResizeEvent*) {
 		factor = newSize.width() / size.width();
 	}
 	m_savedScale = factor;
-	for (QMap<int, Action*>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
+	for (QMap<int, std::shared_ptr<Action>>::iterator iter = m_frameSizes.begin(); iter != m_frameSizes.end(); ++iter) {
 		iter.value()->setActive(iter.key() == factor);
 	}
 
@@ -848,7 +848,7 @@ void Window::toggleFullScreen() {
 }
 
 void Window::gameStarted() {
-	for (Action* action : m_gameActions) {
+	for (auto action : m_gameActions) {
 		action->setEnabled(true);
 	}
 	for (auto action = m_platformActions.begin(); action != m_platformActions.end(); ++action) {
@@ -896,7 +896,7 @@ void Window::gameStarted() {
 
 	if (nVideo) {
 		for (size_t i = 0; i < nVideo; ++i) {
-			Action* action = m_actions.addBooleanAction(videoLayers[i].visibleName, QString("videoLayer.%1").arg(videoLayers[i].internalName), [this, videoLayers, i](bool enable) {
+			auto action = m_actions.addBooleanAction(videoLayers[i].visibleName, QString("videoLayer.%1").arg(videoLayers[i].internalName), [this, videoLayers, i](bool enable) {
 				m_controller->thread()->core->enableVideoLayer(m_controller->thread()->core, videoLayers[i].id, enable);
 			}, "videoLayers");
 			action->setActive(true);
@@ -904,7 +904,7 @@ void Window::gameStarted() {
 	}
 	if (nAudio) {
 		for (size_t i = 0; i < nAudio; ++i) {
-			Action* action = m_actions.addBooleanAction(audioChannels[i].visibleName, QString("audioChannel.%1").arg(audioChannels[i].internalName), [this, audioChannels, i](bool enable) {
+			auto action = m_actions.addBooleanAction(audioChannels[i].visibleName, QString("audioChannel.%1").arg(audioChannels[i].internalName), [this, audioChannels, i](bool enable) {
 				m_controller->thread()->core->enableAudioChannel(m_controller->thread()->core, audioChannels[i].id, enable);
 			}, "audioChannels");
 			action->setActive(true);
@@ -929,10 +929,10 @@ void Window::gameStarted() {
 }
 
 void Window::gameStopped() {
-	for (Action* action : m_platformActions) {
+	for (auto action : m_platformActions) {
 		action->setEnabled(true);
 	}
-	for (Action* action : m_gameActions) {
+	for (auto action : m_gameActions) {
 		action->setEnabled(false);
 	}
 	setWindowFilePath(QString());
@@ -1181,11 +1181,11 @@ void Window::updateTitle(float fps) {
 		MultiplayerController* multiplayer = m_controller->multiplayerController();
 		if (multiplayer && multiplayer->attached() > 1) {
 			title += tr(" -  Player %1 of %2").arg(m_playerId + 1).arg(multiplayer->attached());
-			for (Action* action : m_nonMpActions) {
+			for (auto action : m_nonMpActions) {
 				action->setEnabled(false);
 			}
 		} else {
-			for (Action* action : m_nonMpActions) {
+			for (auto action : m_nonMpActions) {
 				action->setEnabled(true);
 			}
 		}
@@ -1286,15 +1286,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Convert save game..."), "convertSave", openControllerTView<SaveConverter>(), "saves");
 
 #ifdef M_CORE_GBA
-	Action* importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "saves");
+	auto importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "saves");
 	m_platformActions.insert(mPLATFORM_GBA, importShark);
 
-	Action* exportShark = addGameAction(tr("Export GameShark Save..."), "exportShark", this, &Window::exportSharkport, "saves");
+	auto exportShark = addGameAction(tr("Export GameShark Save..."), "exportShark", this, &Window::exportSharkport, "saves");
 	m_platformActions.insert(mPLATFORM_GBA, exportShark);
 #endif
 
 	m_actions.addSeparator("saves");
-	Action* savePlayerAction;
+	std::shared_ptr<Action> savePlayerAction;
 	ConfigOption* savePlayer = m_config->addOption("savePlayerId");
 	savePlayerAction = savePlayer->addValue(tr("Automatically determine"), 0, &m_actions, "saves");
 	m_nonMpActions.append(savePlayerAction);
@@ -1317,7 +1317,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 #ifdef M_CORE_GBA
-	Action* scanCard = addGameAction(tr("Scan e-Reader dotcodes..."), "scanCard", this, &Window::scanCard, "file");
+	auto scanCard = addGameAction(tr("Scan e-Reader dotcodes..."), "scanCard", this, &Window::scanCard, "file");
 	m_platformActions.insert(mPLATFORM_GBA, scanCard);
 #endif
 
@@ -1326,22 +1326,22 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addMenu(tr("Recent"), "mru", "file");
 	m_actions.addSeparator("file");
 
-	Action* loadState = addGameAction(tr("&Load state"), "loadState", [this]() {
+	auto loadState = addGameAction(tr("&Load state"), "loadState", [this]() {
 		this->openStateWindow(LoadSave::LOAD);
 	}, "file", QKeySequence("F10"));
 	m_nonMpActions.append(loadState);
 
-	Action* loadStateFile = addGameAction(tr("Load state file..."), "loadStateFile", [this]() {
+	auto loadStateFile = addGameAction(tr("Load state file..."), "loadStateFile", [this]() {
 		this->selectState(true);
 	}, "file");
 	m_nonMpActions.append(loadStateFile);
 
-	Action* saveState = addGameAction(tr("&Save state"), "saveState", [this]() {
+	auto saveState = addGameAction(tr("&Save state"), "saveState", [this]() {
 		this->openStateWindow(LoadSave::SAVE);
 	}, "file", QKeySequence("Shift+F10"));
 	m_nonMpActions.append(saveState);
 
-	Action* saveStateFile = addGameAction(tr("Save state file..."), "saveStateFile", [this]() {
+	auto saveStateFile = addGameAction(tr("Save state file..."), "saveStateFile", [this]() {
 		this->selectState(false);
 	}, "file");
 	m_nonMpActions.append(saveStateFile);
@@ -1349,12 +1349,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addMenu(tr("Quick load"), "quickLoad", "file");
 	m_actions.addMenu(tr("Quick save"), "quickSave", "file");
 
-	Action* quickLoad = addGameAction(tr("Load recent"), "quickLoad", [this] {
+	auto quickLoad = addGameAction(tr("Load recent"), "quickLoad", [this] {
 		m_controller->loadState();
 	}, "quickLoad");
 	m_nonMpActions.append(quickLoad);
 
-	Action* quickSave = addGameAction(tr("Save recent"), "quickSave", [this] {
+	auto quickSave = addGameAction(tr("Save recent"), "quickSave", [this] {
 		m_controller->saveState();
 	}, "quickSave");
 	m_nonMpActions.append(quickSave);
@@ -1362,22 +1362,22 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addSeparator("quickLoad");
 	m_actions.addSeparator("quickSave");
 
-	Action* undoLoadState = addGameAction(tr("Undo load state"), "undoLoadState", &CoreController::loadBackupState, "quickLoad", QKeySequence("F11"));
+	auto undoLoadState = addGameAction(tr("Undo load state"), "undoLoadState", &CoreController::loadBackupState, "quickLoad", QKeySequence("F11"));
 	m_nonMpActions.append(undoLoadState);
 
-	Action* undoSaveState = addGameAction(tr("Undo save state"), "undoSaveState", &CoreController::saveBackupState, "quickSave", QKeySequence("Shift+F11"));
+	auto undoSaveState = addGameAction(tr("Undo save state"), "undoSaveState", &CoreController::saveBackupState, "quickSave", QKeySequence("Shift+F11"));
 	m_nonMpActions.append(undoSaveState);
 
 	m_actions.addSeparator("quickLoad");
 	m_actions.addSeparator("quickSave");
 
 	for (int i = 1; i < 10; ++i) {
-		Action* quickLoad = addGameAction(tr("State &%1").arg(i),  QString("quickLoad.%1").arg(i), [this, i]() {
+		auto quickLoad = addGameAction(tr("State &%1").arg(i),  QString("quickLoad.%1").arg(i), [this, i]() {
 			m_controller->loadState(i);
 		}, "quickLoad", QString("F%1").arg(i));
 		m_nonMpActions.append(quickLoad);
 
-		Action* quickSave = addGameAction(tr("State &%1").arg(i),  QString("quickSave.%1").arg(i), [this, i]() {
+		auto quickSave = addGameAction(tr("State &%1").arg(i),  QString("quickSave.%1").arg(i), [this, i]() {
 			m_controller->saveState(i);
 		}, "quickSave", QString("Shift+F%1").arg(i));
 		m_nonMpActions.append(quickSave);
@@ -1387,7 +1387,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_multiWindow = m_actions.addAction(tr("New multiplayer window"), "multiWindow", GBAApp::app(), &GBAApp::newWindow, "file");
 
 #ifdef M_CORE_GBA
-	Action* dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openNamedTView<DolphinConnector>(&m_dolphinView, this), "file");
+	auto dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openNamedTView<DolphinConnector>(&m_dolphinView, this), "file");
 	m_platformActions.insert(mPLATFORM_GBA, dolphin);
 #endif
 
@@ -1411,14 +1411,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("Yank game pak"), "yank", &CoreController::yankPak, "emu");
 	m_actions.addSeparator("emu");
 
-	Action* pause = m_actions.addBooleanAction(tr("&Pause"), "pause", [this](bool paused) {
+	auto pause = m_actions.addBooleanAction(tr("&Pause"), "pause", [this](bool paused) {
 		if (m_controller) {
 			m_controller->setPaused(paused);
 		} else {
 			m_pendingPause = paused;
 		}
 	}, "emu", QKeySequence("Ctrl+P"));
-	connect(this, &Window::paused, pause, &Action::setActive);
+	connect(this, &Window::paused, pause.get(), &Action::setActive);
 
 	addGameAction(tr("&Next frame"), "frameAdvance", &CoreController::frameAdvance, "emu", QKeySequence("Ctrl+N"));
 
@@ -1461,19 +1461,19 @@ void Window::setupMenu(QMenuBar* menubar) {
 		}
 	}, "emu");
 
-	Action* rewindHeld = m_actions.addHeldAction(tr("Rewind (held)"), "holdRewind", [this](bool held) {
+	auto rewindHeld = m_actions.addHeldAction(tr("Rewind (held)"), "holdRewind", [this](bool held) {
 		if (m_controller) {
 			m_controller->setRewinding(held);
 		}
 	}, "emu", QKeySequence("`"));
 	m_nonMpActions.append(rewindHeld);
 
-	Action* rewind = addGameAction(tr("Re&wind"), "rewind", [this]() {
+	auto rewind = addGameAction(tr("Re&wind"), "rewind", [this]() {
 		m_controller->rewind();
 	}, "emu", QKeySequence("~"));
 	m_nonMpActions.append(rewind);
 
-	Action* frameRewind = addGameAction(tr("Step backwards"), "frameRewind", [this] () {
+	auto frameRewind = addGameAction(tr("Step backwards"), "frameRewind", [this] () {
 		m_controller->rewind(1);
 	}, "emu", QKeySequence("Ctrl+B"));
 	m_nonMpActions.append(frameRewind);
@@ -1500,7 +1500,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #ifdef M_CORE_GB
 	m_actions.addAction(tr("Load camera image..."), "loadCamImage", this, &Window::loadCamImage, "emu");
 
-	Action* gbPrint = addGameAction(tr("Game Boy Printer..."), "gbPrint", [this]() {
+	auto gbPrint = addGameAction(tr("Game Boy Printer..."), "gbPrint", [this]() {
 		PrinterView* view = new PrinterView(m_controller);
 		openView(view);
 		m_controller->attachPrinter();
@@ -1509,15 +1509,15 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 #ifdef M_CORE_GBA
-	Action* bcGate = addGameAction(tr("BattleChip Gate..."), "bcGate", openControllerTView<BattleChipView>(this), "emu");
+	auto bcGate = addGameAction(tr("BattleChip Gate..."), "bcGate", openControllerTView<BattleChipView>(this), "emu");
 	m_platformActions.insert(mPLATFORM_GBA, bcGate);
 #endif
 
 	m_actions.addMenu(tr("Audio/&Video"), "av");
 	m_actions.addMenu(tr("Frame size"), "frame", "av");
 	for (int i = 1; i <= 8; ++i) {
-		Action* setSize = m_actions.addAction(tr("%1×").arg(QString::number(i)), QString("frame.%1x").arg(QString::number(i)), [this, i]() {
-			Action* setSize = m_frameSizes[i];
+		auto setSize = m_actions.addAction(tr("%1×").arg(QString::number(i)), QString("frame.%1x").arg(QString::number(i)), [this, i]() {
+			auto setSize = m_frameSizes[i];
 			showNormal();
 			QSize size(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 			if (m_display) {
@@ -1598,7 +1598,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addSeparator("av");
 
 	ConfigOption* mute = m_config->addOption("mute");
-	Action* muteAction = mute->addBoolean(tr("Mute"), &m_actions, "av");
+	auto muteAction = mute->addBoolean(tr("Mute"), &m_actions, "av");
 	muteAction->setActive(m_config->getOption("mute").toInt());
 	mute->connect([this](const QVariant& value) {
 		m_config->setOption("fastForwardMute", static_cast<bool>(value.toInt()));
@@ -1607,7 +1607,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addMenu(tr("FPS target"),"target", "av");
 	ConfigOption* fpsTargetOption = m_config->addOption("fpsTarget");
-	QMap<double, Action*> fpsTargets;
+	QMap<double, std::shared_ptr<Action>> fpsTargets;
 	for (int fps : {15, 30, 45, 60, 90, 120, 240}) {
 		fpsTargets[fps] = fpsTargetOption->addValue(QString::number(fps), fps, &m_actions, "target");
 	}
@@ -1676,7 +1676,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #ifdef USE_DEBUGGERS
 	m_actions.addAction(tr("Open debugger console..."), "debuggerWindow", this, &Window::consoleOpen, "tools");
 #ifdef USE_GDB_STUB
-	Action* gdbWindow = addGameAction(tr("Start &GDB server..."), "gdbWindow", this, &Window::gdbOpen, "tools");
+	auto gdbWindow = addGameAction(tr("Start &GDB server..."), "gdbWindow", this, &Window::gdbOpen, "tools");
 	m_platformActions.insert(mPLATFORM_GBA, gdbWindow);
 #endif
 #endif
@@ -1781,7 +1781,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		}
 	}, "autofire");
 
-	for (Action* action : m_gameActions) {
+	for (auto action : m_gameActions) {
 		action->setEnabled(false);
 	}
 
@@ -1973,8 +1973,8 @@ void Window::updateMRU() {
 	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
 }
 
-Action* Window::addGameAction(const QString& visibleName, const QString& name, Action::Function function, const QString& menu, const QKeySequence& shortcut) {
-	Action* action = m_actions.addAction(visibleName, name, [this, function]() {
+std::shared_ptr<Action> Window::addGameAction(const QString& visibleName, const QString& name, Action::Function function, const QString& menu, const QKeySequence& shortcut) {
+	auto action = m_actions.addAction(visibleName, name, [this, function]() {
 		if (m_controller) {
 			function();
 		}
@@ -1984,21 +1984,21 @@ Action* Window::addGameAction(const QString& visibleName, const QString& name, A
 }
 
 template<typename T, typename V>
-Action* Window::addGameAction(const QString& visibleName, const QString& name, T* obj, V (T::*method)(), const QString& menu, const QKeySequence& shortcut) {
+std::shared_ptr<Action> Window::addGameAction(const QString& visibleName, const QString& name, T* obj, V (T::*method)(), const QString& menu, const QKeySequence& shortcut) {
 	return addGameAction(visibleName, name, [obj, method]() {
 		(obj->*method)();
 	}, menu, shortcut);
 }
 
 template<typename V>
-Action* Window::addGameAction(const QString& visibleName, const QString& name, V (CoreController::*method)(), const QString& menu, const QKeySequence& shortcut) {
+std::shared_ptr<Action> Window::addGameAction(const QString& visibleName, const QString& name, V (CoreController::*method)(), const QString& menu, const QKeySequence& shortcut) {
 	return addGameAction(visibleName, name, [this, method]() {
 		(m_controller.get()->*method)();
 	}, menu, shortcut);
 }
 
-Action* Window::addGameAction(const QString& visibleName, const QString& name, Action::BooleanFunction function, const QString& menu, const QKeySequence& shortcut) {
-	Action* action = m_actions.addBooleanAction(visibleName, name, [this, function](bool value) {
+std::shared_ptr<Action> Window::addGameAction(const QString& visibleName, const QString& name, Action::BooleanFunction function, const QString& menu, const QKeySequence& shortcut) {
+	auto action = m_actions.addBooleanAction(visibleName, name, [this, function](bool value) {
 		if (m_controller) {
 			function(value);
 		}
