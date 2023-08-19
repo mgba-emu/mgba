@@ -9,14 +9,8 @@
 
 #include <QApplication>
 #include <QMutexLocker>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLFunctions>
-#ifdef QT_OPENGL_ES_2
-#include <QOpenGLFunctions_ES2>
-using QOpenGLFunctions_Baseline = QOpenGLFunctions_ES2;
-#else
-#include <QOpenGLFunctions_3_2_Core>
-using QOpenGLFunctions_Baseline = QOpenGLFunctions_3_2_Core;
-#endif
 #include <QOpenGLPaintDevice>
 #include <QResizeEvent>
 #include <QScreen>
@@ -122,7 +116,7 @@ bool mGLWidget::finalizeVAO() {
 	if (!context() || !m_vao) {
 		return false;
 	}
-	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
+	QOpenGLExtraFunctions* fn = context()->extraFunctions();
 	if (!fn) {
 		return false;
 	}
@@ -150,7 +144,7 @@ void mGLWidget::paintGL() {
 		m_refresh.start(10);
 		return;
 	}
-	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
+	QOpenGLExtraFunctions* fn = context()->extraFunctions();
 	m_program->bind();
 	m_vao->bind();
 	fn->glBindTexture(GL_TEXTURE_2D, m_tex);
