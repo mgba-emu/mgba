@@ -1259,6 +1259,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	installEventFilter(m_shortcutController);
 
 	menubar->clear();
+	m_gameActions.clear();
+	m_nonMpActions.clear();
+	m_platformActions.clear();
+	m_config->clearOptions();
+
 	m_actions.addMenu(tr("&File"), "file");
 
 	m_actions.addAction(tr("Load &ROM..."), "loadROM", this, &Window::selectROM, "file", QKeySequence::Open);
