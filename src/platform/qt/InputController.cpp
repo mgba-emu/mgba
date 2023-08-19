@@ -36,7 +36,7 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 	mInputMapInit(&m_inputMap, &GBAInputInfo);
 
 	connect(&m_gamepadTimer, &QTimer::timeout, [this]() {
-		for (auto driver : m_inputDrivers) {
+		for (auto& driver : m_inputDrivers) {
 			if (driver->supportsPolling() && driver->supportsGamepads()) {
 				testGamepad(driver->type());
 			}
@@ -180,7 +180,7 @@ bool InputController::loadProfile(uint32_t type, const QString& profile) {
 
 void InputController::saveConfiguration() {
 	saveConfiguration(KEYBOARD);
-	for (auto driver : m_inputDrivers) {
+	for (auto& driver : m_inputDrivers) {
 		driver->saveConfiguration(m_config);
 	}
 	m_config->write();
@@ -331,7 +331,7 @@ int InputController::mapKeyboard(int key) const {
 }
 
 void InputController::update() {
-	for (auto driver : m_inputDrivers) {
+	for (auto& driver : m_inputDrivers) {
 		QString profile = profileForType(driver->type());
 		driver->update();
 		QString newProfile = profileForType(driver->type());
@@ -372,7 +372,7 @@ Gamepad* InputController::gamepad(uint32_t type) {
 
 QList<Gamepad*> InputController::gamepads() {
 	QList<Gamepad*> pads;
-	for (auto driver : m_inputDrivers) {
+	for (auto& driver : m_inputDrivers) {
 		if (!driver->supportsGamepads()) {
 			continue;
 		}

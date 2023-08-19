@@ -416,7 +416,7 @@ void Window::multiplayerChanged() {
 		attached = multiplayer->attached();
 		m_playerId = multiplayer->playerId(m_controller.get());
 	}
-	for (auto action : m_nonMpActions) {
+	for (auto& action : m_nonMpActions) {
 		action->setEnabled(attached < 2);
 	}
 }
@@ -848,7 +848,7 @@ void Window::toggleFullScreen() {
 }
 
 void Window::gameStarted() {
-	for (auto action : m_gameActions) {
+	for (auto& action : m_gameActions) {
 		action->setEnabled(true);
 	}
 	for (auto action = m_platformActions.begin(); action != m_platformActions.end(); ++action) {
@@ -929,10 +929,10 @@ void Window::gameStarted() {
 }
 
 void Window::gameStopped() {
-	for (auto action : m_platformActions) {
+	for (auto& action : m_platformActions) {
 		action->setEnabled(true);
 	}
-	for (auto action : m_gameActions) {
+	for (auto& action : m_gameActions) {
 		action->setEnabled(false);
 	}
 	setWindowFilePath(QString());
@@ -1181,11 +1181,11 @@ void Window::updateTitle(float fps) {
 		MultiplayerController* multiplayer = m_controller->multiplayerController();
 		if (multiplayer && multiplayer->attached() > 1) {
 			title += tr(" -  Player %1 of %2").arg(m_playerId + 1).arg(multiplayer->attached());
-			for (auto action : m_nonMpActions) {
+			for (auto& action : m_nonMpActions) {
 				action->setEnabled(false);
 			}
 		} else {
-			for (auto action : m_nonMpActions) {
+			for (auto& action : m_nonMpActions) {
 				action->setEnabled(true);
 			}
 		}
@@ -1781,7 +1781,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		}
 	}, "autofire");
 
-	for (auto action : m_gameActions) {
+	for (auto& action : m_gameActions) {
 		action->setEnabled(false);
 	}
 
