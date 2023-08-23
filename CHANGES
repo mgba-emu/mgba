@@ -1,6 +1,7 @@
 0.10.4: (Future)
 Emulation fixes:
  - GB Audio: Fix audio envelope timing resetting too often (fixes mgba.io/i/3164)
+ - GB I/O: Fix STAT writing IRQ trigger conditions (fixes mgba.io/i/2501)
  - GBA GPIO: Fix gyro read-out start (fixes mgba.io/i/3141)
  - GBA SIO: Fix MULTI mode SIOCNT bit 7 writes on secondary GBAs (fixes mgba.io/i/3110)
 Other fixes:
