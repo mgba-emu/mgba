@@ -1143,7 +1143,8 @@ void CoreController::getMobileAdapterConfig(int* type, bool* unmetered, QString*
 	mobile_config_get_device(adapter, &device, unmetered);
 	*type = (int) (device - MOBILE_ADAPTER_BLUE);
 	struct mobile_addr dns1_get, dns2_get;
-	mobile_config_get_dns(adapter, &dns1_get, &dns2_get);
+	mobile_config_get_dns(adapter, &dns1_get, MOBILE_DNS1);
+	mobile_config_get_dns(adapter, &dns2_get, MOBILE_DNS2);
 	dns1->clear();
 	if (dns1_get.type == MOBILE_ADDRTYPE_IPV4) {
 		for (int i = 0; i < MOBILE_HOSTLEN_IPV4; ++i) {
@@ -1217,28 +1218,24 @@ void CoreController::setMobileAdapterDns1(const QString& host, int port) {
 	Interrupter interrupter(this);
 	struct mobile_adapter* adapter = (platform() == mPLATFORM_GBA) ? m_mobile.adapter : m_gbmobile.adapter;
 	struct mobile_addr dns1;
-	struct mobile_addr dns2;
-	mobile_config_get_dns(adapter, &dns1, &dns2);
 	dns1.type = MOBILE_ADDRTYPE_IPV4;
 	(*(struct mobile_addr4*) &dns1).port = port;
 	for (int i = 0; i < MOBILE_HOSTLEN_IPV4; ++i) {
 		(*(struct mobile_addr4*) &dns1).host[i] = host.section('.', i, i).toInt();
 	}
-	mobile_config_set_dns(adapter, &dns1, &dns2);
+	mobile_config_set_dns(adapter, &dns1, MOBILE_DNS1);
 }
 
 void CoreController::setMobileAdapterDns2(const QString& host, int port) {
 	Interrupter interrupter(this);
 	struct mobile_adapter* adapter = (platform() == mPLATFORM_GBA) ? m_mobile.adapter : m_gbmobile.adapter;
-	struct mobile_addr dns1;
 	struct mobile_addr dns2;
-	mobile_config_get_dns(adapter, &dns1, &dns2);
 	dns2.type = MOBILE_ADDRTYPE_IPV4;
 	(*(struct mobile_addr4*) &dns2).port = port;
 	for (int i = 0; i < MOBILE_HOSTLEN_IPV4; ++i) {
 		(*(struct mobile_addr4*) &dns2).host[i] = host.section('.', i, i).toInt();
 	}
-	mobile_config_set_dns(adapter, &dns1, &dns2);
+	mobile_config_set_dns(adapter, &dns2, MOBILE_DNS2);
 }
 
 void CoreController::setMobileAdapterPort(int port) {
