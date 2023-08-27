@@ -15,7 +15,7 @@ CXX_GUARD_START
 
 #ifdef USE_LIBMOBILE
 #include <mgba-util/socket.h>
-#include "third-party/libmobile/mobile.h"
+#include <mobile.h>
 #endif
 
 enum {

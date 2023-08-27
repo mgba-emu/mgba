@@ -10,7 +10,7 @@ CXX_GUARD_START
 #include <mgba/gb/interface.h>
 
 #include <mgba-util/socket.h>
-#include "third-party/libmobile/mobile.h"
+#include <mobile.h>
 
 struct GBMobileAdapter {
 	struct GBSIODriver d;
