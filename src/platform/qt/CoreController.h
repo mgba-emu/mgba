@@ -199,7 +199,6 @@ public slots:
 	void endPrint();
 #endif
 
-#ifdef M_CORE_GBA
 #ifdef USE_LIBMOBILE
 	void attachMobileAdapter();
 	void detachMobileAdapter();
@@ -214,6 +213,7 @@ public slots:
 	bool setMobileAdapterToken(const QString& qToken);
 #endif
 
+#ifdef M_CORE_GBA
 	void attachBattleChipGate();
 	void detachBattleChipGate();
 	void setBattleChipId(uint16_t id);

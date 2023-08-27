@@ -1279,7 +1279,7 @@ bool CoreController::setMobileAdapterToken(const QString& qToken) {
 	mobile_config_set_relay_token(adapter, token);
 	return true;
 }
-#endif /* defined(USE_LIBMOBILE) */
+#endif
 
 #ifdef M_CORE_GBA
 void CoreController::attachBattleChipGate() {

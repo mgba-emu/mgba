@@ -116,7 +116,6 @@ static int sock_connect(void* user, unsigned conn, const struct mobile_addr* add
 	if (err == _SOCKERR(EISCONN)) {
 		return 1;
 	}
-#undef _SOCKERR
 
 	return -1;
 }
@@ -272,9 +271,4 @@ uint8_t GBMobileAdapterWriteSC(struct GBSIODriver* driver, uint8_t value) {
 	return value;
 }
 
-#undef USER1
-#undef ADDR4
-#undef ADDR6
-#undef _SOCKERR
-
-#endif /* defined(USE_LIBMOBILE) */
+#endif

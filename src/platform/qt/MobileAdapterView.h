@@ -38,7 +38,7 @@ private slots:
 
 private:
 	bool m_tokenFilled;
-	
+
 	Ui::MobileAdapterView m_ui;
 
 	std::shared_ptr<CoreController> m_controller;
@@ -48,4 +48,4 @@ private:
 
 }
 
-#endif /* defined(USE_LIBMOBILE) */
+#endif

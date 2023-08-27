@@ -33,4 +33,5 @@ void GBMobileAdapterCreate(struct GBMobileAdapter*);
 CXX_GUARD_END
 
 #endif
+
 #endif

@@ -141,4 +141,4 @@ void MobileAdapterView::advanceFrameCounter() {
 	}
 }
 
-#endif /* defined(USE_LIBMOBILE) */
+#endif

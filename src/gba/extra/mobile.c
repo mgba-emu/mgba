@@ -316,9 +316,4 @@ void _mobileEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	}
 }
 
-#undef USER1
-#undef ADDR4
-#undef ADDR6
-#undef _SOCKERR
-
-#endif /* defined(USE_LIBMOBILE) */
+#endif
