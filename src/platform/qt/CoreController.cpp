@@ -1103,7 +1103,7 @@ void CoreController::attachMobileAdapter() {
 		}
 		m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_MOBILE_ADAPTER, &m_mobile);
 	} else {
-		GBMobileAdapterCreate(&m_gbmobile);
+		GBSIOMobileAdapterCreate(&m_gbmobile);
 		QFile fconfig(ConfigController::configDir() + "/mobile_config.bin");
 		if (fconfig.open(QIODevice::ReadOnly)) {
 			fconfig.read((char*) &m_gbmobile.m.config, MOBILE_CONFIG_SIZE);

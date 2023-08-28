@@ -350,7 +350,7 @@ private:
 		CoreController* parent;
 	} m_printer;
 #ifdef USE_LIBMOBILE
-	GBMobileAdapter m_gbmobile;
+	GBSIOMobileAdapter m_gbmobile;
 #endif
 #endif
 

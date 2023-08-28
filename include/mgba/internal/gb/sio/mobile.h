@@ -10,13 +10,13 @@ CXX_GUARD_START
 #include <mgba/gb/interface.h>
 #include <mgba-util/mobile.h>
 
-struct GBMobileAdapter {
+struct GBSIOMobileAdapter {
 	struct GBSIODriver d;
 	struct MobileAdapterGB m;
 	uint8_t nextData[2];
 };
 
-void GBMobileAdapterCreate(struct GBMobileAdapter*);
+void GBSIOMobileAdapterCreate(struct GBSIOMobileAdapter*);
 
 CXX_GUARD_END
 

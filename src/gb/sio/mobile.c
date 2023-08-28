@@ -14,35 +14,35 @@ static void debug_log(void* user, const char* line) {
 }
 
 static void time_latch(void* user, unsigned timer) {
-	struct GBMobileAdapter* adapter = ((struct MobileAdapterGB*) user)->p;
+	struct GBSIOMobileAdapter* adapter = ((struct MobileAdapterGB*) user)->p;
 
 	adapter->m.timeLatch[timer] = (unsigned) mTimingCurrentTime(&adapter->d.p->p->timing);
 }
 
 static bool time_check_ms(void* user, unsigned timer, unsigned ms) {
-	struct GBMobileAdapter* adapter = ((struct MobileAdapterGB*) user)->p;
+	struct GBSIOMobileAdapter* adapter = ((struct MobileAdapterGB*) user)->p;
 
 	unsigned diff = (unsigned) mTimingCurrentTime(&adapter->d.p->p->timing) - (unsigned) adapter->m.timeLatch[timer];
 	return (unsigned) ((uint64_t) diff * 1000ULL / (uint64_t) CGB_SM83_FREQUENCY) >= ms;
 }
 
-static bool GBMobileAdapterInit(struct GBSIODriver* driver);
-static void GBMobileAdapterDeinit(struct GBSIODriver* driver);
-static void GBMobileAdapterWriteSB(struct GBSIODriver* driver, uint8_t value);
-static uint8_t GBMobileAdapterWriteSC(struct GBSIODriver* driver, uint8_t value);
+static bool GBSIOMobileAdapterInit(struct GBSIODriver* driver);
+static void GBSIOMobileAdapterDeinit(struct GBSIODriver* driver);
+static void GBSIOMobileAdapterWriteSB(struct GBSIODriver* driver, uint8_t value);
+static uint8_t GBSIOMobileAdapterWriteSC(struct GBSIODriver* driver, uint8_t value);
 
-void GBMobileAdapterCreate(struct GBMobileAdapter* mobile) {
-	mobile->d.init = GBMobileAdapterInit;
-	mobile->d.deinit = GBMobileAdapterDeinit;
-	mobile->d.writeSB = GBMobileAdapterWriteSB;
-	mobile->d.writeSC = GBMobileAdapterWriteSC;
+void GBSIOMobileAdapterCreate(struct GBSIOMobileAdapter* mobile) {
+	mobile->d.init = GBSIOMobileAdapterInit;
+	mobile->d.deinit = GBSIOMobileAdapterDeinit;
+	mobile->d.writeSB = GBSIOMobileAdapterWriteSB;
+	mobile->d.writeSC = GBSIOMobileAdapterWriteSC;
 
 	memset(&mobile->m, 0, sizeof(mobile->m));
 	mobile->m.p = mobile;
 }
 
-bool GBMobileAdapterInit(struct GBSIODriver* driver) {
-	struct GBMobileAdapter* mobile = (struct GBMobileAdapter*) driver;
+bool GBSIOMobileAdapterInit(struct GBSIODriver* driver) {
+	struct GBSIOMobileAdapter* mobile = (struct GBSIOMobileAdapter*) driver;
 	mobile->m.adapter = mobile_new(&mobile->m);
 	if (!mobile->m.adapter) {
 		return false;
@@ -68,18 +68,18 @@ bool GBMobileAdapterInit(struct GBSIODriver* driver) {
 	return true;
 }
 
-void GBMobileAdapterDeinit(struct GBSIODriver* driver) {
-	struct GBMobileAdapter* mobile = (struct GBMobileAdapter*) driver;
+void GBSIOMobileAdapterDeinit(struct GBSIODriver* driver) {
+	struct GBSIOMobileAdapter* mobile = (struct GBSIOMobileAdapter*) driver;
 	mobile_config_save(mobile->m.adapter);
 	mobile_stop(mobile->m.adapter);
 }
 
-void GBMobileAdapterWriteSB(struct GBSIODriver* driver, uint8_t value) {
-	(*(struct GBMobileAdapter*) driver).nextData[0] = value;
+void GBSIOMobileAdapterWriteSB(struct GBSIODriver* driver, uint8_t value) {
+	(*(struct GBSIOMobileAdapter*) driver).nextData[0] = value;
 }
 
-uint8_t GBMobileAdapterWriteSC(struct GBSIODriver* driver, uint8_t value) {
-	struct GBMobileAdapter* mobile = (struct GBMobileAdapter*) driver;
+uint8_t GBSIOMobileAdapterWriteSC(struct GBSIODriver* driver, uint8_t value) {
+	struct GBSIOMobileAdapter* mobile = (struct GBSIOMobileAdapter*) driver;
 	if ((value & 0x81) == 0x81) {
 		mobile_loop(mobile->m.adapter);
 		if (mobile->m.serial == 1) {
