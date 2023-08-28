@@ -1103,15 +1103,13 @@ void CoreController::attachMobileAdapter() {
 		}
 		m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_MOBILE_ADAPTER, &m_mobile);
 	} else {
-		GB* gb = static_cast<GB*>(m_threadContext.core->board);
 		GBMobileAdapterCreate(&m_gbmobile);
-		m_gbmobile.parent = this;
 		QFile fconfig(ConfigController::configDir() + "/mobile_config.bin");
 		if (fconfig.open(QIODevice::ReadOnly)) {
 			fconfig.read((char*) &m_gbmobile.m.config, MOBILE_CONFIG_SIZE);
 			fconfig.close();
 		}
-		GBSIOSetDriver(&gb->sio, &m_gbmobile.d);
+		m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GB_MOBILE_ADAPTER, &m_gbmobile);
 	}
 }
 
@@ -1125,13 +1123,12 @@ void CoreController::detachMobileAdapter() {
 		}
 		m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_MOBILE_ADAPTER, nullptr);
 	} else {
-		GB* gb = static_cast<GB*>(m_threadContext.core->board);
 		QFile fconfig(ConfigController::configDir() + "/mobile_config.bin");
 		if (fconfig.open(QIODevice::WriteOnly)) {
 			fconfig.write((char*) &m_gbmobile.m.config, MOBILE_CONFIG_SIZE);
 			fconfig.close();
 		}
-		GBSIOSetDriver(&gb->sio, nullptr);
+		m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GB_MOBILE_ADAPTER, nullptr);
 	}
 }
 

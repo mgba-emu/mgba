@@ -58,6 +58,10 @@ enum GBVideoLayer {
 	GB_LAYER_OBJ
 };
 
+enum {
+	mPERIPH_GB_MOBILE_ADAPTER = 0x1000
+};
+
 struct GBSIODriver {
 	struct GBSIO* p;
 
