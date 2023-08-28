@@ -231,7 +231,7 @@ int main() {
 			},
 			{ .id = 0 }
 		},
-		.nConfigExtra = 2,
+		.nConfigExtra = 3,
 		.setup = mPSP2Setup,
 		.teardown = mPSP2Teardown,
 		.gameLoaded = mPSP2LoadROM,

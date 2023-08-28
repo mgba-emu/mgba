@@ -30,6 +30,7 @@ Other fixes:
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Re-enable sync for multiplayer windows that aren't connected (fixes mgba.io/i/2974)
  - Qt: Fix mute settings not being loaded on setting screen (fixes mgba.io/i/2990)
+ - Vita: Fix camera setting not appearing (fixes mgba.io/i/3012)
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - GB: Prevent incompatible BIOSes from being used on differing models
