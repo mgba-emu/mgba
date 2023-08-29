@@ -19,6 +19,7 @@ set(SOURCE_FILES
 	image.c
 	image/export.c
 	image/png-io.c
+	mobile.c
 	patch.c
 	patch-fast.c
 	patch-ips.c
