@@ -16,14 +16,16 @@ static void debug_log(void* user, const char* line) {
 static void time_latch(void* user, unsigned timer) {
 	struct GBSIOMobileAdapter* adapter = ((struct MobileAdapterGB*) user)->p;
 
-	adapter->m.timeLatch[timer] = (unsigned) mTimingCurrentTime(&adapter->d.p->p->timing);
+	adapter->timeLatch[timer] = mTimingCurrentTime(&adapter->d.p->p->timing);
 }
 
 static bool time_check_ms(void* user, unsigned timer, unsigned ms) {
 	struct GBSIOMobileAdapter* adapter = ((struct MobileAdapterGB*) user)->p;
 
-	unsigned diff = (unsigned) mTimingCurrentTime(&adapter->d.p->p->timing) - (unsigned) adapter->m.timeLatch[timer];
-	return (unsigned) ((uint64_t) diff * 1000ULL / (uint64_t) CGB_SM83_FREQUENCY) >= ms;
+	uint32_t time = mTimingCurrentTime(&adapter->d.p->p->timing);
+	uint32_t diff = time - adapter->timeLatch[timer];
+	uint32_t cycles = (double) ms * CGB_SM83_FREQUENCY / 1000;
+	return diff >= cycles;
 }
 
 static bool GBSIOMobileAdapterInit(struct GBSIODriver* driver);

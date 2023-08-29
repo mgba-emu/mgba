@@ -23,7 +23,6 @@ struct MobileAdapterGB {
 		enum mobile_addrtype addrtype;
 		unsigned bindport;
 	} socket[MOBILE_MAX_CONNECTIONS];
-	unsigned timeLatch[MOBILE_MAX_TIMERS];
 	int serial;
 	char number[2][MOBILE_MAX_NUMBER_SIZE + 1];
 };
