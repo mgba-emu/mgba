@@ -83,15 +83,8 @@ void GBASIOMobileAdapterDeinit(struct GBASIODriver* driver) {
 
 uint16_t GBASIOMobileAdapterWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
 	struct GBASIOMobileAdapter* mobile = (struct GBASIOMobileAdapter*) driver;
-	switch (address) {
-	case REG_SIOCNT:
-		value &= ~0x4;
-		if (value & 0x80) {
-			_mobileTransfer(mobile);
-		}
-		break;
-	default:
-		break;
+	if (address == REG_SIOCNT && (value & 0x81) == 0x81) {
+		_mobileTransfer(mobile);
 	}
 	return value;
 }
@@ -111,20 +104,18 @@ void _mobileEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	UNUSED(timing);
 	struct GBASIOMobileAdapter* mobile = user;
 
-	mobile_loop(mobile->m.adapter);
-
 	if (mobile->d.p->mode == SIO_NORMAL_32 && mobile->m.serial == 4) {
 		uint16_t* reg_lo = &mobile->d.p->p->memory.io[REG_SIODATA32_LO >> 1];
 		uint16_t* reg_hi = &mobile->d.p->p->memory.io[REG_SIODATA32_HI >> 1];
 		uint32_t tmp = *reg_hi << 16 | *reg_lo;
-		*reg_hi = mobile->nextData >> 16;
-		*reg_lo = mobile->nextData;
-		mobile->nextData = mobile_transfer_32bit(mobile->m.adapter, tmp);
+		*reg_hi = mobile->next >> 16;
+		*reg_lo = mobile->next;
+		mobile->next = mobile_transfer_32bit(mobile->m.adapter, tmp);
 	} else if (mobile->d.p->mode == SIO_NORMAL_8 && mobile->m.serial == 1) {
 		uint16_t* reg = &mobile->d.p->p->memory.io[REG_SIODATA8 >> 1];
 		uint8_t tmp = *reg;
-		*reg = mobile->nextData;
-		mobile->nextData = mobile_transfer(mobile->m.adapter, tmp);
+		*reg = mobile->next;
+		mobile->next = mobile_transfer(mobile->m.adapter, tmp);
 	}
 
 	mobile->d.p->siocnt = GBASIONormalClearStart(mobile->d.p->siocnt);

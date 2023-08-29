@@ -13,7 +13,8 @@ CXX_GUARD_START
 struct GBSIOMobileAdapter {
 	struct GBSIODriver d;
 	struct MobileAdapterGB m;
-	uint8_t nextData[2];
+	uint8_t byte;
+	uint8_t next;
 };
 
 void GBSIOMobileAdapterCreate(struct GBSIOMobileAdapter*);

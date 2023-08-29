@@ -14,7 +14,7 @@ struct GBASIOMobileAdapter {
 	struct GBASIODriver d;
 	struct mTimingEvent event;
 	struct MobileAdapterGB m;
-	uint32_t nextData;
+	uint32_t next;
 };
 
 void GBASIOMobileAdapterCreate(struct GBASIOMobileAdapter*);
