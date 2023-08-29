@@ -30,10 +30,9 @@
 #endif
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/sio/dolphin.h>
+#ifdef USE_LIBMOBILE
+#include <mgba/internal/gba/sio/mobile.h>
 #endif
-
-#ifdef M_CORE_GBA
-#include <mgba/gba/interface.h>
 #endif
 
 struct mCore;
@@ -351,18 +350,16 @@ private:
 		CoreController* parent;
 	} m_printer;
 #ifdef USE_LIBMOBILE
-	struct QGBMobileAdapter: public GBMobileAdapter {
-		CoreController* parent;
-	} m_gbmobile;
+	GBSIOMobileAdapter m_gbmobile;
 #endif
 #endif
 
 #ifdef M_CORE_GBA
+	GBASIOBattlechipGate m_battlechip;
+	QByteArray m_eReaderData;
 #ifdef USE_LIBMOBILE
 	GBASIOMobileAdapter m_mobile;
 #endif
-	GBASIOBattlechipGate m_battlechip;
-	QByteArray m_eReaderData;
 #endif
 };
 

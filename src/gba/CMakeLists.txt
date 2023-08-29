@@ -37,12 +37,12 @@ set(SOURCE_FILES
 
 set(SIO_FILES
 	sio/dolphin.c
-	sio/lockstep.c)
+	sio/lockstep.c
+	sio/mobile.c)
 
 set(EXTRA_FILES
 	extra/audio-mixer.c
 	extra/battlechip.c
-	extra/mobile.c
 	extra/proxy.c)
 
 set(DEBUGGER_FILES

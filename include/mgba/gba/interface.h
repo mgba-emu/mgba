@@ -13,11 +13,6 @@ CXX_GUARD_START
 #include <mgba/core/interface.h>
 #include <mgba/core/timing.h>
 
-#ifdef USE_LIBMOBILE
-#include <mgba-util/socket.h>
-#include <mobile.h>
-#endif
-
 enum {
 	GBA_VIDEO_HORIZONTAL_PIXELS = 240,
 	GBA_VIDEO_VERTICAL_PIXELS = 160,
@@ -85,27 +80,6 @@ struct GBASIODriver {
 };
 
 void GBASIOJOYCreate(struct GBASIODriver* sio);
-
-#ifdef USE_LIBMOBILE
-struct GBASIOMobileAdapter {
-	struct GBASIODriver d;
-	struct mTimingEvent event;
-	struct mobile_adapter *adapter;
-	uint8_t config[MOBILE_CONFIG_SIZE];
-	struct {
-		Socket fd;
-		enum mobile_socktype socktype;
-		enum mobile_addrtype addrtype;
-		unsigned bindport;
-	} socket[MOBILE_MAX_CONNECTIONS];
-	unsigned timeLatch[MOBILE_MAX_TIMERS];
-	int serial;
-	uint32_t nextData;
-	char number[2][MOBILE_MAX_NUMBER_SIZE + 1];
-};
-
-void GBASIOMobileAdapterCreate(struct GBASIOMobileAdapter*);
-#endif
 
 enum GBASIOBattleChipGateFlavor {
 	GBA_FLAVOR_BATTLECHIP_GATE = 4,
