@@ -11,12 +11,14 @@ Emulation fixes:
  - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
  - GB Audio: Fix channel 1 restarting if sweep applies after stop (fixes mgba.io/i/2965)
  - GB I/O: Read back proper SVBK value after writing 0 (fixes mgba.io/i/2921)
+ - GB I/O: Fix STAT writing IRQ trigger conditions (fixes mgba.io/i/2501)
  - GB Serialize: Add missing Pocket Cam state to savestates
  - GB SIO: Disabling SIO should cancel pending transfers (fixes mgba.io/i/2537)
  - GB Video: Implement DMG-style sprite ordering
  - GBA: Unhandled bkpt should be treated as an undefined exception
  - GBA Audio: Fix sample timing drifting when changing sample interval
  - GBA Audio: Fix initial channel 3 wave RAM (fixes mgba.io/i/2947)
+ - GBA Audio: Fix sample position issues when rate changes (fixes mgba.io/i/3006)
  - GBA GPIO: Fix tilt scale and orientation (fixes mgba.io/i/2703)
  - GBA BIOS: Fix clobbering registers with word-sized CpuSet
  - GBA SIO: Fix normal mode SI/SO semantics (fixes mgba.io/i/2925)
@@ -28,6 +30,7 @@ Other fixes:
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Re-enable sync for multiplayer windows that aren't connected (fixes mgba.io/i/2974)
  - Qt: Fix mute settings not being loaded on setting screen (fixes mgba.io/i/2990)
+ - Vita: Fix camera setting not appearing (fixes mgba.io/i/3012)
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - GB: Prevent incompatible BIOSes from being used on differing models
