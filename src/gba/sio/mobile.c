@@ -30,7 +30,7 @@ static bool GBASIOMobileAdapterInit(struct GBASIODriver* driver);
 static void GBASIOMobileAdapterDeinit(struct GBASIODriver* driver);
 static uint16_t GBASIOMobileAdapterWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 
-static void _mobileTransfer(struct GBASIOMobileAdapter* mobile);
+static void _mobileTransfer(struct GBASIOMobileAdapter* mobile, bool fastClock);
 static void _mobileEvent(struct mTiming* timing, void* mobile, uint32_t cyclesLate);
 
 void GBASIOMobileAdapterCreate(struct GBASIOMobileAdapter* mobile) {
@@ -84,18 +84,16 @@ void GBASIOMobileAdapterDeinit(struct GBASIODriver* driver) {
 uint16_t GBASIOMobileAdapterWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
 	struct GBASIOMobileAdapter* mobile = (struct GBASIOMobileAdapter*) driver;
 	if (address == REG_SIOCNT && (value & 0x81) == 0x81) {
-		_mobileTransfer(mobile);
+		_mobileTransfer(mobile, value & 0x2);
 	}
 	return value;
 }
 
-void _mobileTransfer(struct GBASIOMobileAdapter* mobile) {
-	int32_t cycles;
-	if (mobile->d.p->mode == SIO_NORMAL_32) {
-		cycles = GBA_ARM7TDMI_FREQUENCY / 0x40000;
-	} else {
-		cycles = GBA_ARM7TDMI_FREQUENCY / 0x100000;
-	}
+void _mobileTransfer(struct GBASIOMobileAdapter* mobile, bool fastClock) {
+	int32_t cycles = GBA_ARM7TDMI_FREQUENCY / 0x40000; // 2MHz
+	if (!fastClock) cycles *= 8; // 256kHz
+	if (mobile->d.p->mode == SIO_NORMAL_32) cycles *= 4; // Four bytes
+
 	mTimingDeschedule(&mobile->d.p->p->timing, &mobile->event);
 	mTimingSchedule(&mobile->d.p->p->timing, &mobile->event, cycles);
 }
@@ -119,7 +117,6 @@ void _mobileEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	}
 
 	mobile->d.p->siocnt = GBASIONormalClearStart(mobile->d.p->siocnt);
-
 	if (GBASIONormalIsIrq(mobile->d.p->siocnt)) {
 		GBARaiseIRQ(mobile->d.p->p, GBA_IRQ_SIO, cyclesLate);
 	}
