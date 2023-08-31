@@ -12,23 +12,23 @@
 #define _SOCKERR(x) x
 #endif
 
-void serial_disable(void* user) {
+static void serial_disable(void* user) {
 	USER1.serial = 0;
 }
 
-void serial_enable(void* user, bool mode_32bit) {
+static void serial_enable(void* user, bool mode_32bit) {
 	USER1.serial = mode_32bit ? 4 : 1;
 }
 
-bool config_read(void* user, void* dest, uintptr_t offset, size_t size) {
+static bool config_read(void* user, void* dest, uintptr_t offset, size_t size) {
 	return memcpy(dest, USER1.config + offset, size) == dest;
 }
 
-bool config_write(void* user, const void* src, uintptr_t offset, size_t size) {
+static bool config_write(void* user, const void* src, uintptr_t offset, size_t size) {
 	return memcpy(USER1.config + offset, src, size) == USER1.config + offset;
 }
 
-bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
+static bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport) {
 	Socket fd;
 	USER1.socket[conn].socktype = type;
 	if (type != MOBILE_SOCKTYPE_UDP) {
@@ -50,7 +50,7 @@ bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum mobile
 	return !SOCKET_FAILED(USER1.socket[conn].fd = fd) || type != MOBILE_SOCKTYPE_UDP;
 }
 
-void sock_close(void* user, unsigned conn) {
+static void sock_close(void* user, unsigned conn) {
 	if (!SOCKET_FAILED(USER1.socket[conn].fd)) {
 		SocketClose(USER1.socket[conn].fd);
 	}
@@ -60,7 +60,7 @@ void sock_close(void* user, unsigned conn) {
 	USER1.socket[conn].bindport = 0;
 }
 
-int sock_connect(void* user, unsigned conn, const struct mobile_addr* addr) {
+static int sock_connect(void* user, unsigned conn, const struct mobile_addr* addr) {
 	Socket fd = USER1.socket[conn].fd;
 
 	if (SOCKET_FAILED(fd)) {
@@ -98,7 +98,7 @@ int sock_connect(void* user, unsigned conn, const struct mobile_addr* addr) {
 	return -1;
 }
 
-bool sock_listen(void* user, unsigned conn) {
+static bool sock_listen(void* user, unsigned conn) {
 	if (SOCKET_FAILED(USER1.socket[conn].fd)) {
 		Socket fd;
 		struct Address bindaddr, *bindptr = NULL;
@@ -116,7 +116,7 @@ bool sock_listen(void* user, unsigned conn) {
 	return !SOCKET_FAILED(SocketListen(USER1.socket[conn].fd, 1));
 }
 
-bool sock_accept(void* user, unsigned conn) {
+static bool sock_accept(void* user, unsigned conn) {
 	Socket fd = SocketAccept(USER1.socket[conn].fd, NULL);
 	if (SOCKET_FAILED(fd)) return false;
 	SocketSetBlocking(fd, false);
@@ -125,7 +125,7 @@ bool sock_accept(void* user, unsigned conn) {
 	return true;
 }
 
-int sock_send(void* user, unsigned conn, const void* data, unsigned size, const struct mobile_addr* addr) {
+static int sock_send(void* user, unsigned conn, const void* data, unsigned size, const struct mobile_addr* addr) {
 	if (addr) {
 		struct Address destaddr;
 		int destport;
@@ -143,7 +143,7 @@ int sock_send(void* user, unsigned conn, const void* data, unsigned size, const 
 	return SocketSend(USER1.socket[conn].fd, data, size);
 }
 
-int sock_recv(void* user, unsigned conn, void* data, unsigned size, struct mobile_addr* addr) {
+static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struct mobile_addr* addr) {
 	int res;
 	Socket r = USER1.socket[conn].fd;
 	Socket e = USER1.socket[conn].fd;
@@ -176,7 +176,7 @@ int sock_recv(void* user, unsigned conn, void* data, unsigned size, struct mobil
 	return (res || (USER1.socket[conn].socktype == MOBILE_SOCKTYPE_UDP)) ? res : -2;
 }
 
-void update_number(void* user, enum mobile_number type, const char* number) {
+static void update_number(void* user, enum mobile_number type, const char* number) {
 	char* dest = USER1.number[type];
 	if (number) {
 		strncpy(dest, number, MOBILE_MAX_NUMBER_SIZE);
@@ -184,4 +184,24 @@ void update_number(void* user, enum mobile_number type, const char* number) {
 	} else {
 		dest[0] = '\0';
 	}
+}
+
+struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB *mobile) {
+	struct mobile_adapter* adapter = mobile_new(mobile);
+	if (!adapter) return NULL;
+
+	mobile_def_serial_disable(adapter, serial_disable);
+	mobile_def_serial_enable(adapter, serial_enable);
+	mobile_def_config_read(adapter, config_read);
+	mobile_def_config_write(adapter, config_write);
+	mobile_def_sock_open(adapter, sock_open);
+	mobile_def_sock_close(adapter, sock_close);
+	mobile_def_sock_connect(adapter, sock_connect);
+	mobile_def_sock_listen(adapter, sock_listen);
+	mobile_def_sock_accept(adapter, sock_accept);
+	mobile_def_sock_send(adapter, sock_send);
+	mobile_def_sock_recv(adapter, sock_recv);
+	mobile_def_update_number(adapter, update_number);
+
+	return adapter;
 }

@@ -45,35 +45,25 @@ void GBSIOMobileAdapterCreate(struct GBSIOMobileAdapter* mobile) {
 
 bool GBSIOMobileAdapterInit(struct GBSIODriver* driver) {
 	struct GBSIOMobileAdapter* mobile = (struct GBSIOMobileAdapter*) driver;
-	mobile->m.adapter = mobile_new(&mobile->m);
-	if (!mobile->m.adapter) {
-		return false;
-	}
-#define _MOBILE_SETCB(NAME) mobile_def_ ## NAME(mobile->m.adapter, NAME);
-	_MOBILE_SETCB(debug_log);
-	_MOBILE_SETCB(serial_disable);
-	_MOBILE_SETCB(serial_enable);
-	_MOBILE_SETCB(config_read);
-	_MOBILE_SETCB(config_write);
-	_MOBILE_SETCB(time_latch);
-	_MOBILE_SETCB(time_check_ms);
-	_MOBILE_SETCB(sock_open);
-	_MOBILE_SETCB(sock_close);
-	_MOBILE_SETCB(sock_connect);
-	_MOBILE_SETCB(sock_listen);
-	_MOBILE_SETCB(sock_accept);
-	_MOBILE_SETCB(sock_send);
-	_MOBILE_SETCB(sock_recv);
-	_MOBILE_SETCB(update_number);
-#undef _MOBILE_SETCB
+	mobile->m.adapter = MobileAdapterGBNew(&mobile->m);
+	if (!mobile->m.adapter) return false;
+
+	mobile_def_debug_log(mobile->m.adapter, debug_log);
+	mobile_def_time_latch(mobile->m.adapter, time_latch);
+	mobile_def_time_check_ms(mobile->m.adapter, time_check_ms);
+
 	mobile_start(mobile->m.adapter);
 	return true;
 }
 
 void GBSIOMobileAdapterDeinit(struct GBSIODriver* driver) {
 	struct GBSIOMobileAdapter* mobile = (struct GBSIOMobileAdapter*) driver;
+	if (!mobile->m.adapter) return;
+
 	mobile_config_save(mobile->m.adapter);
 	mobile_stop(mobile->m.adapter);
+	free(mobile->m.adapter);
+	mobile->m.adapter = NULL;
 }
 
 void GBSIOMobileAdapterWriteSB(struct GBSIODriver* driver, uint8_t value) {

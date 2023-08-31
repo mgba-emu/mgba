@@ -25,18 +25,7 @@ struct MobileAdapterGB {
 	char number[2][MOBILE_MAX_NUMBER_SIZE + 1];
 };
 
-void serial_disable(void* user);
-void serial_enable(void* user, bool mode_32bit);
-bool config_read(void* user, void* dest, uintptr_t offset, size_t size);
-bool config_write(void* user, const void* src, uintptr_t offset, size_t size);
-bool sock_open(void* user, unsigned conn, enum mobile_socktype type, enum mobile_addrtype addrtype, unsigned bindport);
-void sock_close(void* user, unsigned conn);
-int sock_connect(void* user, unsigned conn, const struct mobile_addr* addr);
-bool sock_listen(void* user, unsigned conn);
-bool sock_accept(void* user, unsigned conn);
-int sock_send(void* user, unsigned conn, const void* data, unsigned size, const struct mobile_addr* addr);
-int sock_recv(void* user, unsigned conn, void* data, unsigned size, struct mobile_addr* addr);
-void update_number(void* user, enum mobile_number type, const char* number);
+struct mobile_adapter* MobileAdapterGBNew(struct MobileAdapterGB *mobile);
 
 CXX_GUARD_END
 
