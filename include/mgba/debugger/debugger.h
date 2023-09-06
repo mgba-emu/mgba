@@ -24,6 +24,7 @@ enum mDebuggerType {
 	DEBUGGER_CUSTOM,
 	DEBUGGER_CLI,
 	DEBUGGER_GDB,
+	DEBUGGER_ACCESS_LOGGER,
 	DEBUGGER_MAX
 };
 
@@ -69,6 +70,7 @@ struct mDebuggerModule;
 struct mDebuggerEntryInfo {
 	uint32_t address;
 	int segment;
+	int width;
 	union {
 		struct {
 			uint32_t oldValue;

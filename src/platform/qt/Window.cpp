@@ -43,6 +43,7 @@
 #include "LoadSaveState.h"
 #include "LogView.h"
 #include "MapView.h"
+#include "MemoryAccessLogView.h"
 #include "MemorySearch.h"
 #include "MemoryView.h"
 #include "MultiplayerController.h"
@@ -1710,6 +1711,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "stateViews");
 	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "stateViews");
 	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "stateViews");
+
+	addGameAction(tr("Log memory &accesses..."), "memoryAccessView", openControllerTView<MemoryAccessLogView>(), "tools");
 
 #if defined(USE_FFMPEG) && defined(M_CORE_GBA)
 	m_actions.addSeparator("tools");

@@ -59,10 +59,11 @@ static void _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, e
 			struct mDebuggerEntryInfo info;
 			info.type.wp.oldValue = oldValue;
 			info.type.wp.newValue = newValue;
-			info.address = address;
-			info.segment = debugger->originalMemory.currentSegment(debugger->cpu, address);
 			info.type.wp.watchType = watchpoint->type;
 			info.type.wp.accessType = type;
+			info.address = address;
+			info.segment = debugger->originalMemory.currentSegment(debugger->cpu, address);
+			info.width = 1;
 			info.pointId = watchpoint->id;
 			info.target = TableLookup(&debugger->d.p->pointOwner, watchpoint->id);
 			mDebuggerEnter(debugger->d.p, DEBUGGER_ENTER_WATCHPOINT, &info);
