@@ -8,13 +8,6 @@
 #include <mgba/core/core.h>
 #include <mgba-util/vfs.h>
 
-#ifdef M_CORE_GBA
-#include <mgba/internal/arm/isa-inlines.h>
-#endif
-#ifdef M_CORE_GB
-#include <mgba/internal/sm83/sm83.h>
-#endif
-
 #define DEFAULT_MAX_REGIONS 20
 
 const char mAL_MAGIC[] = "mAL\1";
@@ -143,42 +136,20 @@ static void _mDebuggerAccessLoggerEntered(struct mDebuggerModule* debugger, enum
 static void _mDebuggerAccessLoggerCallback(struct mDebuggerModule* debugger) {
 	struct mDebuggerAccessLogger* logger = (struct mDebuggerAccessLogger*) debugger;
 
-	struct mCore* core = logger->d.p->core;
-	enum mPlatform platform = core->platform(core);
-	uint32_t address;
-	int segment = -1;
-	unsigned width = 1;
-
-	switch (platform) {
-	// TODO: Move to debugger->platform
-#ifdef M_CORE_GBA
-	case mPLATFORM_GBA:
-		address = ((struct ARMCore*) core->cpu)->gprs[ARM_PC];
-		width = ((struct ARMCore*) core->cpu)->executionMode == MODE_THUMB ? 2 : 4;
-		address -= width;
-		break;
-#endif
-#ifdef M_CORE_GB
-	case mPLATFORM_GB:
-		address = ((struct SM83Core*) core->cpu)->regs.pc;
-		segment = ((struct SM83Core*) core->cpu)->memory.currentSegment(core->cpu, address);
-		break;
-#endif
-	case mPLATFORM_NONE:
-		return;
-	}
+	struct mDebuggerInstructionInfo info;
+	logger->d.p->platform->nextInstructionInfo(logger->d.p->platform, &info);
 
 	size_t i;
 	for (i = 0; i < mDebuggerAccessLogRegionListSize(&logger->regions); ++i) {
 		struct mDebuggerAccessLogRegion* region = mDebuggerAccessLogRegionListGetPointer(&logger->regions, i);
-		if (address < region->start || address >= region->end) {
+		if (info.address < region->start || info.address >= region->end) {
 			continue;
 		}
-		size_t offset = address - region->start;
-		if (segment > 0) {
+		size_t offset = info.address - region->start;
+		if (info.segment > 0) {
 			uint32_t segmentSize = region->end - region->segmentStart;
 			offset %= segmentSize;
-			offset += segmentSize * segment;
+			offset += segmentSize * info.segment;
 		}
 
 		if (offset >= region->size) {
@@ -186,45 +157,15 @@ static void _mDebuggerAccessLoggerCallback(struct mDebuggerModule* debugger) {
 		}
 
 		size_t j;
-		for (j = 0; j < width; ++j) {
+		for (j = 0; j < info.width; ++j) {
+			uint16_t ex = 0;
 			region->block[offset + j] = mDebuggerAccessLogFlagsFillExecute(region->block[offset + j]);
+			region->block[offset + j] |= info.flags[j];
 
-			switch (platform) {
-			// TODO: Move to debugger->platform
-#ifdef M_CORE_GBA
-			case mPLATFORM_GBA:
-				if (((struct ARMCore*) core->cpu)->executionMode == MODE_ARM) {
-					region->block[offset + j] = mDebuggerAccessLogFlagsFillAccess32(region->block[offset + j]);
-					if (region->blockEx) {
-						uint16_t ex;
-						LOAD_16LE(ex, 0, &region->blockEx[offset + j]);
-						ex = mDebuggerAccessLogFlagsExFillExecuteARM(ex);
-						STORE_16LE(ex, 0, &region->blockEx[offset + j]);
-					}
-				} else {
-					region->block[offset + j] = mDebuggerAccessLogFlagsFillAccess16(region->block[offset]);
-					if (region->blockEx) {
-						uint16_t ex;
-						LOAD_16LE(ex, 0, &region->blockEx[offset + j]);
-						ex = mDebuggerAccessLogFlagsExFillExecuteThumb(ex);
-						STORE_16LE(ex, 0, &region->blockEx[offset + j]);
-					}		
-				}
-				break;
-#endif
-#ifdef M_CORE_GB
-			case mPLATFORM_GB:
-				region->block[offset + j] = mDebuggerAccessLogFlagsFillAccess8(region->block[offset + j]);
-				if (region->blockEx) {
-					uint16_t ex;
-					LOAD_16LE(ex, 0, &region->blockEx[offset + j]);
-					ex = mDebuggerAccessLogFlagsExFillExecuteOpcode(ex);
-					STORE_16LE(ex, 0, &region->blockEx[offset + j]);
-				}
-				break;
-#endif
-			case mPLATFORM_NONE:
-				return;
+			if (region->blockEx) {
+				LOAD_16LE(ex, 0, &region->blockEx[offset + j]);
+				ex |= info.flagsEx[j];
+				STORE_16LE(ex, 0, &region->blockEx[offset + j]);
 			}
 		}
 	}

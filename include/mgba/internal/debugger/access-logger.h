@@ -13,33 +13,6 @@ CXX_GUARD_START
 #include <mgba/debugger/debugger.h>
 #include <mgba-util/vector.h>
 
-DECL_BITFIELD(mDebuggerAccessLogFlags, uint8_t);
-DECL_BIT(mDebuggerAccessLogFlags, Read, 0);
-DECL_BIT(mDebuggerAccessLogFlags, Write, 1);
-DECL_BIT(mDebuggerAccessLogFlags, Execute, 2);
-DECL_BIT(mDebuggerAccessLogFlags, Abort, 3);
-DECL_BIT(mDebuggerAccessLogFlags, Access8, 4);
-DECL_BIT(mDebuggerAccessLogFlags, Access16, 5);
-DECL_BIT(mDebuggerAccessLogFlags, Access32, 6);
-DECL_BIT(mDebuggerAccessLogFlags, Access64, 7);
-
-DECL_BITFIELD(mDebuggerAccessLogFlagsEx, uint16_t);
-DECL_BIT(mDebuggerAccessLogFlagsEx, AccessProgram, 0);
-DECL_BIT(mDebuggerAccessLogFlagsEx, AccessDMA, 1);
-DECL_BIT(mDebuggerAccessLogFlagsEx, AccessSystem, 2);
-DECL_BIT(mDebuggerAccessLogFlagsEx, AccessDecompress, 3);
-DECL_BIT(mDebuggerAccessLogFlagsEx, AccessCopy, 4);
-DECL_BIT(mDebuggerAccessLogFlagsEx, ErrorIllegalOpcode, 8);
-DECL_BIT(mDebuggerAccessLogFlagsEx, ErrorAccessRead, 9);
-DECL_BIT(mDebuggerAccessLogFlagsEx, ErrorAccessWrite, 10);
-DECL_BIT(mDebuggerAccessLogFlagsEx, ErrorAccessExecute, 11);
-
-DECL_BIT(mDebuggerAccessLogFlagsEx, ExecuteARM, 14);
-DECL_BIT(mDebuggerAccessLogFlagsEx, ExecuteThumb, 15);
-
-DECL_BIT(mDebuggerAccessLogFlagsEx, ExecuteOpcode, 14);
-DECL_BIT(mDebuggerAccessLogFlagsEx, ExecuteOperand, 15);
-
 DECL_BITFIELD(mDebuggerAccessLogRegionFlags, uint64_t);
 DECL_BIT(mDebuggerAccessLogRegionFlags, HasExBlock, 0);
 
