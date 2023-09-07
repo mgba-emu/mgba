@@ -12,6 +12,8 @@ CXX_GUARD_START
 
 #include <mgba/core/log.h>
 
+#define GBA_REG(X) (REG_ ## X >> 1)
+
 enum GBAIORegisters {
 	// Video
 	REG_DISPCNT = 0x000,
