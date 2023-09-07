@@ -243,8 +243,8 @@ static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform*);
 static void ARMDebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
 static void ARMDebuggerFormatRegisters(struct ARMRegisterFile* regs, char* out, size_t* length);
 static void ARMDebuggerFrameFormatRegisters(struct mStackFrame* frame, char* out, size_t* length);
-static uint32_t ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform*);
-static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform*, uint32_t);
+static enum mStackTraceMode ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform*);
+static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform*, enum mStackTraceMode);
 static bool ARMDebuggerUpdateStackTrace(struct mDebuggerPlatform* d);
 
 struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
@@ -527,12 +527,12 @@ static void ARMDebuggerFrameFormatRegisters(struct mStackFrame* frame, char* out
 	ARMDebuggerFormatRegisters(frame->regs, out, length);
 }
 
-static uint32_t ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform* d) {
+static enum mStackTraceMode ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform* d) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	return debugger->stackTraceMode;
 }
 
-static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform* d, uint32_t mode) {
+static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform* d, enum mStackTraceMode mode) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	struct mStackTrace* stack = &d->p->stackTrace;
 	if (mode == STACK_TRACE_DISABLED && debugger->stackTraceMode != STACK_TRACE_DISABLED) {

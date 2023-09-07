@@ -14,6 +14,7 @@
 #include <mgba/core/timing.h>
 #include <mgba/core/version.h>
 #include <mgba/internal/debugger/parser.h>
+#include <mgba/internal/debugger/stack-trace.h>
 #ifdef USE_ELF
 #include <mgba-util/elf-read.h>
 #endif

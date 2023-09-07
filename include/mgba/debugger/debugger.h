@@ -14,7 +14,6 @@ CXX_GUARD_START
 #include <mgba/core/log.h>
 #include <mgba-util/table.h>
 #include <mgba-util/vector.h>
-#include <mgba/internal/debugger/stack-trace.h>
 
 mLOG_DECLARE_CATEGORY(DEBUGGER);
 
@@ -56,6 +55,14 @@ enum mDebuggerEntryReason {
 	DEBUGGER_ENTER_WATCHPOINT,
 	DEBUGGER_ENTER_ILLEGAL_OP,
 	DEBUGGER_ENTER_STACK
+};
+
+enum mStackTraceMode {
+	STACK_TRACE_DISABLED = 0,
+	STACK_TRACE_ENABLED = 1,
+	STACK_TRACE_BREAK_ON_RETURN = 2,
+	STACK_TRACE_BREAK_ON_CALL = 4,
+	STACK_TRACE_BREAK_ON_BOTH = STACK_TRACE_BREAK_ON_RETURN | STACK_TRACE_BREAK_ON_CALL
 };
 
 struct mDebuggerModule;
@@ -104,6 +111,28 @@ DECLARE_VECTOR(mBreakpointList, struct mBreakpoint);
 DECLARE_VECTOR(mWatchpointList, struct mWatchpoint);
 DECLARE_VECTOR(mDebuggerModuleList, struct mDebuggerModule*);
 
+struct mStackFrame {
+	int callSegment;
+	uint32_t callAddress;
+	int entrySegment;
+	uint32_t entryAddress;
+	int frameBaseSegment;
+	uint32_t frameBaseAddress;
+	void* regs;
+	bool finished;
+	bool breakWhenFinished;
+	bool interrupt;
+};
+
+DECLARE_VECTOR(mStackFrames, struct mStackFrame);
+
+struct mStackTrace {
+	struct mStackFrames stack;
+	size_t registersSize;
+
+	void (*formatRegisters)(struct mStackFrame* frame, char* out, size_t* length);
+};
+
 struct mDebugger;
 struct ParseTree;
 struct mDebuggerPlatform {
@@ -127,8 +156,8 @@ struct mDebuggerPlatform {
 
 	bool (*lookupIdentifier)(struct mDebuggerPlatform*, const char* name, int32_t* value, int* segment);
 
-	uint32_t (*getStackTraceMode)(struct mDebuggerPlatform*);
-	void (*setStackTraceMode)(struct mDebuggerPlatform*, uint32_t mode);
+	enum mStackTraceMode (*getStackTraceMode)(struct mDebuggerPlatform*);
+	void (*setStackTraceMode)(struct mDebuggerPlatform*, enum mStackTraceMode mode);
 	bool (*updateStackTrace)(struct mDebuggerPlatform* d);
 };
 
