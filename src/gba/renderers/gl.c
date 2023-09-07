@@ -894,7 +894,7 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	glRenderer->nextPalette = 0;
 	glRenderer->paletteDirtyScanlines = GBA_VIDEO_VERTICAL_PIXELS;
 	memset(glRenderer->shadowRegs, 0, sizeof(glRenderer->shadowRegs));
-	glRenderer->shadowRegs[REG_DISPCNT >> 1] = glRenderer->dispcnt;
+	glRenderer->shadowRegs[GBA_REG(DISPCNT)] = glRenderer->dispcnt;
 	glRenderer->regsDirty = 0xFFFFFFFFFFFEULL;
 
 	glRenderer->objOffsetX = 0;
@@ -978,107 +978,107 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 
 	bool dirty = false;
 	switch (address) {
-	case REG_DISPCNT:
+	case GBA_REG_DISPCNT:
 		value &= 0xFFF7;
 		dirty = true;
 		break;
-	case REG_BG0CNT:
-	case REG_BG1CNT:
+	case GBA_REG_BG0CNT:
+	case GBA_REG_BG1CNT:
 		value &= 0xDFFF;
 		dirty = true;
 		break;
-	case REG_BG0HOFS:
+	case GBA_REG_BG0HOFS:
 		value &= 0x01FF;
 		glRenderer->bg[0].x = value;
 		break;
-	case REG_BG0VOFS:
+	case GBA_REG_BG0VOFS:
 		value &= 0x01FF;
 		glRenderer->bg[0].y = value;
 		break;
-	case REG_BG1HOFS:
+	case GBA_REG_BG1HOFS:
 		value &= 0x01FF;
 		glRenderer->bg[1].x = value;
 		break;
-	case REG_BG1VOFS:
+	case GBA_REG_BG1VOFS:
 		value &= 0x01FF;
 		glRenderer->bg[1].y = value;
 		break;
-	case REG_BG2HOFS:
+	case GBA_REG_BG2HOFS:
 		value &= 0x01FF;
 		glRenderer->bg[2].x = value;
 		break;
-	case REG_BG2VOFS:
+	case GBA_REG_BG2VOFS:
 		value &= 0x01FF;
 		glRenderer->bg[2].y = value;
 		break;
-	case REG_BG3HOFS:
+	case GBA_REG_BG3HOFS:
 		value &= 0x01FF;
 		glRenderer->bg[3].x = value;
 		break;
-	case REG_BG3VOFS:
+	case GBA_REG_BG3VOFS:
 		value &= 0x01FF;
 		glRenderer->bg[3].y = value;
 		break;
-	case REG_BG2PA:
+	case GBA_REG_BG2PA:
 		glRenderer->bg[2].affine.dx = value;
 		break;
-	case REG_BG2PB:
+	case GBA_REG_BG2PB:
 		glRenderer->bg[2].affine.dmx = value;
 		break;
-	case REG_BG2PC:
+	case GBA_REG_BG2PC:
 		glRenderer->bg[2].affine.dy = value;
 		break;
-	case REG_BG2PD:
+	case GBA_REG_BG2PD:
 		glRenderer->bg[2].affine.dmy = value;
 		break;
-	case REG_BG2X_LO:
+	case GBA_REG_BG2X_LO:
 		GBAVideoGLRendererWriteBGX_LO(&glRenderer->bg[2], value);
 		break;
-	case REG_BG2X_HI:
+	case GBA_REG_BG2X_HI:
 		GBAVideoGLRendererWriteBGX_HI(&glRenderer->bg[2], value);
 		break;
-	case REG_BG2Y_LO:
+	case GBA_REG_BG2Y_LO:
 		GBAVideoGLRendererWriteBGY_LO(&glRenderer->bg[2], value);
 		break;
-	case REG_BG2Y_HI:
+	case GBA_REG_BG2Y_HI:
 		GBAVideoGLRendererWriteBGY_HI(&glRenderer->bg[2], value);
 		break;
-	case REG_BG3PA:
+	case GBA_REG_BG3PA:
 		glRenderer->bg[3].affine.dx = value;
 		break;
-	case REG_BG3PB:
+	case GBA_REG_BG3PB:
 		glRenderer->bg[3].affine.dmx = value;
 		break;
-	case REG_BG3PC:
+	case GBA_REG_BG3PC:
 		glRenderer->bg[3].affine.dy = value;
 		break;
-	case REG_BG3PD:
+	case GBA_REG_BG3PD:
 		glRenderer->bg[3].affine.dmy = value;
 		break;
-	case REG_BG3X_LO:
+	case GBA_REG_BG3X_LO:
 		GBAVideoGLRendererWriteBGX_LO(&glRenderer->bg[3], value);
 		break;
-	case REG_BG3X_HI:
+	case GBA_REG_BG3X_HI:
 		GBAVideoGLRendererWriteBGX_HI(&glRenderer->bg[3], value);
 		break;
-	case REG_BG3Y_LO:
+	case GBA_REG_BG3Y_LO:
 		GBAVideoGLRendererWriteBGY_LO(&glRenderer->bg[3], value);
 		break;
-	case REG_BG3Y_HI:
+	case GBA_REG_BG3Y_HI:
 		GBAVideoGLRendererWriteBGY_HI(&glRenderer->bg[3], value);
 		break;
-	case REG_BLDALPHA:
+	case GBA_REG_BLDALPHA:
 		value &= 0x1F1F;
 		dirty = true;
 		break;
-	case REG_BLDY:
+	case GBA_REG_BLDY:
 		value &= 0x1F;
 		if (value > 0x10) {
 			value = 0x10;
 		}
 		dirty = true;
 		break;
-			case REG_WIN0H:
+			case GBA_REG_WIN0H:
 		glRenderer->winN[0].h.end = value;
 		glRenderer->winN[0].h.start = value >> 8;
 		if (glRenderer->winN[0].h.start > GBA_VIDEO_HORIZONTAL_PIXELS && glRenderer->winN[0].h.start > glRenderer->winN[0].h.end) {
@@ -1091,7 +1091,7 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 			}
 		}
 		break;
-	case REG_WIN1H:
+	case GBA_REG_WIN1H:
 		glRenderer->winN[1].h.end = value;
 		glRenderer->winN[1].h.start = value >> 8;
 		if (glRenderer->winN[1].h.start > GBA_VIDEO_HORIZONTAL_PIXELS && glRenderer->winN[1].h.start > glRenderer->winN[1].h.end) {
@@ -1104,7 +1104,7 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 			}
 		}
 		break;
-	case REG_WIN0V:
+	case GBA_REG_WIN0V:
 		glRenderer->winN[0].v.end = value;
 		glRenderer->winN[0].v.start = value >> 8;
 		if (glRenderer->winN[0].v.start > GBA_VIDEO_VERTICAL_PIXELS && glRenderer->winN[0].v.start > glRenderer->winN[0].v.end) {
@@ -1117,7 +1117,7 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 			}
 		}
 		break;
-	case REG_WIN1V:
+	case GBA_REG_WIN1V:
 		glRenderer->winN[1].v.end = value;
 		glRenderer->winN[1].v.start = value >> 8;
 		if (glRenderer->winN[1].v.start > GBA_VIDEO_VERTICAL_PIXELS && glRenderer->winN[1].v.start > glRenderer->winN[1].v.end) {
@@ -1130,8 +1130,8 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 			}
 		}
 		break;
-	case REG_WININ:
-	case REG_WINOUT:
+	case GBA_REG_WININ:
+	case GBA_REG_WINOUT:
 		value &= 0x3F3F;
 		dirty = true;
 		break;
@@ -1152,26 +1152,26 @@ uint16_t GBAVideoGLRendererWriteVideoRegister(struct GBAVideoRenderer* renderer,
 
 void _cleanRegister(struct GBAVideoGLRenderer* glRenderer, int address, uint16_t value) {
 	switch (address) {
-	case REG_DISPCNT:
+	case GBA_REG_DISPCNT:
 		glRenderer->dispcnt = value;
 		GBAVideoGLRendererUpdateDISPCNT(glRenderer);
 		break;
-	case REG_BG0CNT:
+	case GBA_REG_BG0CNT:
 		GBAVideoGLRendererWriteBGCNT(&glRenderer->bg[0], value);
 		break;
-	case REG_BG1CNT:
+	case GBA_REG_BG1CNT:
 		GBAVideoGLRendererWriteBGCNT(&glRenderer->bg[1], value);
 		break;
-	case REG_BG2CNT:
+	case GBA_REG_BG2CNT:
 		GBAVideoGLRendererWriteBGCNT(&glRenderer->bg[2], value);
 		break;
-	case REG_BG3CNT:
+	case GBA_REG_BG3CNT:
 		GBAVideoGLRendererWriteBGCNT(&glRenderer->bg[3], value);
 		break;
-	case REG_BLDCNT:
+	case GBA_REG_BLDCNT:
 		GBAVideoGLRendererWriteBLDCNT(glRenderer, value);
 		break;
-	case REG_BLDALPHA:
+	case GBA_REG_BLDALPHA:
 		glRenderer->blda = value & 0x1F;
 		if (glRenderer->blda > 0x10) {
 			glRenderer->blda = 0x10;
@@ -1181,18 +1181,18 @@ void _cleanRegister(struct GBAVideoGLRenderer* glRenderer, int address, uint16_t
 			glRenderer->bldb = 0x10;
 		}
 		break;
-	case REG_BLDY:
+	case GBA_REG_BLDY:
 		glRenderer->bldy = value;
 		break;
-	case REG_WININ:
+	case GBA_REG_WININ:
 		glRenderer->winN[0].control = value;
 		glRenderer->winN[1].control = value >> 8;
 		break;
-	case REG_WINOUT:
+	case GBA_REG_WINOUT:
 		glRenderer->winout = value;
 		glRenderer->objwin = value >> 8;
 		break;
-	case REG_MOSAIC:
+	case GBA_REG_MOSAIC:
 		glRenderer->mosaic = value;
 		break;
 	default:

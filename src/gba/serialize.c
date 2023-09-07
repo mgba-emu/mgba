@@ -62,7 +62,7 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 
 	GBASerializedMiscFlags miscFlags = 0;
 	miscFlags = GBASerializedMiscFlagsSetHalted(miscFlags, gba->cpu->halted);
-	miscFlags = GBASerializedMiscFlagsSetPOSTFLG(miscFlags, gba->memory.io[REG_POSTFLG >> 1] & 1);
+	miscFlags = GBASerializedMiscFlagsSetPOSTFLG(miscFlags, gba->memory.io[GBA_REG(POSTFLG)] & 1);
 	if (mTimingIsScheduled(&gba->timing, &gba->irqEvent)) {
 		miscFlags = GBASerializedMiscFlagsFillIrqPending(miscFlags);
 		STORE_32(gba->irqEvent.when - mTimingCurrentTime(&gba->timing), 0, &state->nextIrq);
@@ -191,7 +191,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	GBASerializedMiscFlags miscFlags = 0;
 	LOAD_32(miscFlags, 0, &state->miscFlags);
 	gba->cpu->halted = GBASerializedMiscFlagsGetHalted(miscFlags);
-	gba->memory.io[REG_POSTFLG >> 1] = GBASerializedMiscFlagsGetPOSTFLG(miscFlags);
+	gba->memory.io[GBA_REG(POSTFLG)] = GBASerializedMiscFlagsGetPOSTFLG(miscFlags);
 	if (GBASerializedMiscFlagsIsIrqPending(miscFlags)) {
 		int32_t when;
 		LOAD_32(when, 0, &state->nextIrq);

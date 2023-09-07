@@ -281,10 +281,10 @@ void GBASkipBIOS(struct GBA* gba) {
 			cpu->gprs[ARM_PC] = GBA_BASE_EWRAM;
 		}
 		gba->video.vcount = 0x7E;
-		gba->memory.io[REG_VCOUNT >> 1] = 0x7E;
+		gba->memory.io[GBA_REG(VCOUNT)] = 0x7E;
 		mTimingDeschedule(&gba->timing, &gba->video.event);
 		mTimingSchedule(&gba->timing, &gba->video.event, 117);
-		gba->memory.io[REG_POSTFLG >> 1] = 1;
+		gba->memory.io[GBA_REG(POSTFLG)] = 1;
 		ARMWritePC(cpu);
 	}
 }
@@ -318,7 +318,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		cpu->nextEvent = nextEvent;
 		if (cpu->halted) {
 			cpu->cycles = nextEvent;
-			if (!gba->memory.io[REG_IME >> 1] || !gba->memory.io[REG_IE >> 1]) {
+			if (!gba->memory.io[GBA_REG(IME)] || !gba->memory.io[GBA_REG(IE)]) {
 				break;
 			}
 		}
@@ -547,7 +547,7 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 }
 
 void GBARaiseIRQ(struct GBA* gba, enum GBAIRQ irq, uint32_t cyclesLate) {
-	gba->memory.io[REG_IF >> 1] |= 1 << irq;
+	gba->memory.io[GBA_REG(IF)] |= 1 << irq;
 	GBATestIRQ(gba, cyclesLate);
 }
 
@@ -557,7 +557,7 @@ void GBATestIRQNoDelay(struct ARMCore* cpu) {
 }
 
 void GBATestIRQ(struct GBA* gba, uint32_t cyclesLate) {
-	if (gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1]) {
+	if (gba->memory.io[GBA_REG(IE)] & gba->memory.io[GBA_REG(IF)]) {
 		if (!mTimingIsScheduled(&gba->timing, &gba->irqEvent)) {
 			mTimingSchedule(&gba->timing, &gba->irqEvent, GBA_IRQ_DELAY - cyclesLate);
 		}
@@ -571,7 +571,7 @@ void GBAHalt(struct GBA* gba) {
 
 void GBAStop(struct GBA* gba) {
 	int validIrqs = (1 << GBA_IRQ_GAMEPAK) | (1 << GBA_IRQ_KEYPAD) | (1 << GBA_IRQ_SIO);
-	int sleep = gba->memory.io[REG_IE >> 1] & validIrqs;
+	int sleep = gba->memory.io[GBA_REG(IE)] & validIrqs;
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
 		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
@@ -982,7 +982,7 @@ void GBATestKeypadIRQ(struct GBA* gba) {
 	uint16_t keysLast = gba->keysLast;
 	uint16_t keysActive = gba->keysActive;
 
-	uint16_t keycnt = gba->memory.io[REG_KEYCNT >> 1];
+	uint16_t keycnt = gba->memory.io[GBA_REG(KEYCNT)];
 	if (!(keycnt & 0x4000)) {
 		return;
 	}
@@ -1007,11 +1007,11 @@ static void _triggerIRQ(struct mTiming* timing, void* user, uint32_t cyclesLate)
 	UNUSED(cyclesLate);
 	struct GBA* gba = user;
 	gba->cpu->halted = 0;
-	if (!(gba->memory.io[REG_IE >> 1] & gba->memory.io[REG_IF >> 1])) {
+	if (!(gba->memory.io[GBA_REG(IE)] & gba->memory.io[GBA_REG(IF)])) {
 		return;
 	}
 
-	if (gba->memory.io[REG_IME >> 1] && !gba->cpu->cpsr.i) {
+	if (gba->memory.io[GBA_REG(IME)] && !gba->cpu->cpsr.i) {
 		ARMRaiseIRQ(gba->cpu);
 	}
 }

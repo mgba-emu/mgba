@@ -1210,7 +1210,7 @@ static bool _GBACoreLookupIdentifier(struct mCore* core, const char* name, int32
 	UNUSED(core);
 	*segment = -1;
 	int i;
-	for (i = 0; i < REG_MAX; i += 2) {
+	for (i = 0; i < GBA_REG_MAX; i += 2) {
 		const char* reg = GBAIORegisterNames[i >> 1];
 		if (reg && strcasecmp(reg, name) == 0) {
 			*value = GBA_BASE_IO | i;
@@ -1555,8 +1555,8 @@ static void _GBAVLPReset(struct mCore* core) {
 
 	// Make sure CPU loop never spins
 	GBAHalt(gba);
-	gba->cpu->memory.store16(gba->cpu, GBA_BASE_IO | REG_IME, 0, NULL);
-	gba->cpu->memory.store16(gba->cpu, GBA_BASE_IO | REG_IE, 0, NULL);
+	gba->cpu->memory.store16(gba->cpu, GBA_BASE_IO | GBA_REG_IME, 0, NULL);
+	gba->cpu->memory.store16(gba->cpu, GBA_BASE_IO | GBA_REG_IE, 0, NULL);
 }
 
 static bool _GBAVLPLoadROM(struct mCore* core, struct VFile* vf) {
@@ -1580,8 +1580,8 @@ static bool _GBAVLPLoadState(struct mCore* core, const void* state) {
 
 	// Make sure CPU loop never spins
 	GBAHalt(gba);
-	gba->cpu->memory.store16(gba->cpu, GBA_BASE_IO | REG_IME, 0, NULL);
-	gba->cpu->memory.store16(gba->cpu, GBA_BASE_IO | REG_IE, 0, NULL);
+	gba->cpu->memory.store16(gba->cpu, GBA_BASE_IO | GBA_REG_IME, 0, NULL);
+	gba->cpu->memory.store16(gba->cpu, GBA_BASE_IO | GBA_REG_IE, 0, NULL);
 	GBAVideoDeserialize(&gba->video, state);
 	GBAIODeserialize(gba, state);
 	GBAAudioReset(&gba->audio);
