@@ -13,8 +13,8 @@
 #include <mgba/internal/gba/cheats.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/debugger/cli.h>
 #include <mgba/internal/gba/extra/audio-mixer.h>
-#include <mgba/internal/gba/extra/cli.h>
 #include <mgba/internal/gba/overrides.h>
 #ifndef DISABLE_THREADING
 #include <mgba/feature/thread-proxy.h>

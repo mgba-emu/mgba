@@ -8,9 +8,9 @@
 #include <mgba/core/core.h>
 #include <mgba/internal/debugger/symbols.h>
 #include <mgba/internal/gb/cheats.h>
+#include <mgba/internal/gb/debugger/cli.h>
 #include <mgba/internal/gb/debugger/debugger.h>
 #include <mgba/internal/gb/debugger/symbols.h>
-#include <mgba/internal/gb/extra/cli.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/mbc.h>
