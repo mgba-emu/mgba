@@ -27,9 +27,8 @@
 
 using namespace QGBA;
 
-SaveConverter::SaveConverter(std::shared_ptr<CoreController> controller, QWidget* parent)
+SaveConverter::SaveConverter(QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
-	, m_controller(controller)
 {
 	m_ui.setupUi(this);
 

@@ -31,7 +31,7 @@ class SaveConverter : public QDialog {
 Q_OBJECT
 
 public:
-	SaveConverter(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	SaveConverter(QWidget* parent = nullptr);
 
 	static mPlatform getStatePlatform(VFile*);
 	static QByteArray getState(VFile*, mPlatform);
@@ -100,7 +100,6 @@ private:
 
 	Ui::SaveConverter m_ui;
 
-	std::shared_ptr<CoreController> m_controller;
 	QList<AnnotatedSave> m_validSaves;
 	QList<AnnotatedSave> m_validOutputs;
 };
