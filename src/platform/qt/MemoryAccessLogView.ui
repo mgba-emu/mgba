@@ -17,38 +17,21 @@
    <property name="sizeConstraint">
     <enum>QLayout::SetFixedSize</enum>
    </property>
-   <item row="2" column="0">
-    <widget class="QPushButton" name="start">
-     <property name="text">
-      <string>Start</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QPushButton" name="stop">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="text">
-      <string>Stop</string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="0" colspan="2">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Log file</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="QLineEdit" name="filename"/>
+      </item>
       <item row="0" column="1">
        <widget class="QPushButton" name="browse">
         <property name="text">
          <string>Browse</string>
         </property>
        </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLineEdit" name="filename"/>
       </item>
       <item row="1" column="0" colspan="2">
        <widget class="QCheckBox" name="logExtra">
@@ -76,6 +59,33 @@
       <string>Regions</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout"/>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QPushButton" name="exportButton">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Export ROM snapshot</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QPushButton" name="start">
+     <property name="text">
+      <string>Start</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QPushButton" name="stop">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Stop</string>
+     </property>
     </widget>
    </item>
   </layout>

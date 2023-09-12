@@ -8,6 +8,7 @@
 #include <QVBoxLayout>
 
 #include "GBAApp.h"
+#include "utils.h"
 #include "VFileDevice.h"
 
 using namespace QGBA;
@@ -19,6 +20,7 @@ MemoryAccessLogView::MemoryAccessLogView(std::shared_ptr<CoreController> control
 	m_ui.setupUi(this);
 
 	connect(m_ui.browse, &QAbstractButton::clicked, this, &MemoryAccessLogView::selectFile);
+	connect(m_ui.exportButton, &QAbstractButton::clicked, this, &MemoryAccessLogView::exportFile);
 	connect(this, &MemoryAccessLogView::loggingChanged, m_ui.start, &QWidget::setDisabled);
 	connect(this, &MemoryAccessLogView::loggingChanged, m_ui.stop, &QWidget::setEnabled);
 	connect(this, &MemoryAccessLogView::loggingChanged, m_ui.filename, &QWidget::setDisabled);
@@ -58,7 +60,7 @@ void MemoryAccessLogView::updateRegion(const QString& internalName, bool checked
 		return;
 	}
 	m_regionBoxes[internalName]->setEnabled(false);
-	mDebuggerAccessLoggerWatchMemoryBlockName(&m_logger, internalName.toUtf8().constData(), activeFlags());
+	m_regionMapping[internalName] = mDebuggerAccessLoggerWatchMemoryBlockName(&m_logger, internalName.toUtf8().constData(), activeFlags());
 }
 
 void MemoryAccessLogView::start() {
@@ -72,6 +74,7 @@ void MemoryAccessLogView::start() {
 		return;
 	}
 	mDebuggerAccessLoggerInit(&m_logger);
+	CoreController::Interrupter interrupter(m_controller);
 	m_controller->attachDebuggerModule(&m_logger.d);
 	if (!mDebuggerAccessLoggerOpen(&m_logger, vf, flags)) {
 		mDebuggerAccessLoggerDeinit(&m_logger);
@@ -83,7 +86,12 @@ void MemoryAccessLogView::start() {
 	emit loggingChanged(true);
 	for (const auto& region : m_watchedRegions) {
 		m_regionBoxes[region]->setEnabled(false);
-		mDebuggerAccessLoggerWatchMemoryBlockName(&m_logger, region.toUtf8().constData(), activeFlags());
+		m_regionMapping[region] = mDebuggerAccessLoggerWatchMemoryBlockName(&m_logger, region.toUtf8().constData(), activeFlags());
+	}
+	interrupter.resume();
+
+	if (m_watchedRegions.contains(QString("cart0"))) {
+		m_ui.exportButton->setEnabled(true);
 	}
 }
 
@@ -91,12 +99,16 @@ void MemoryAccessLogView::stop() {
 	if (!m_active) {
 		return;
 	}
+	CoreController::Interrupter interrupter(m_controller);
 	m_controller->detachDebuggerModule(&m_logger.d);
 	mDebuggerAccessLoggerDeinit(&m_logger);
 	emit loggingChanged(false);
+	interrupter.resume();
+
 	for (const auto& region : m_watchedRegions) {
 		m_regionBoxes[region]->setEnabled(true);
 	}
+	m_ui.exportButton->setEnabled(false);
 }
 
 void MemoryAccessLogView::selectFile() {
@@ -112,4 +124,24 @@ mDebuggerAccessLogRegionFlags MemoryAccessLogView::activeFlags() const {
 		loggerFlags = mDebuggerAccessLogRegionFlagsFillHasExBlock(loggerFlags);
 	}
 	return loggerFlags;
+}
+
+void MemoryAccessLogView::exportFile() {
+	if (!m_regionMapping.contains("cart0")) {
+		return;
+	}
+
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select access log file"), romFilters(false, m_controller->platform(), true));
+	if (filename.isEmpty()) {
+		return;
+	}
+	VFile* vf = VFileDevice::open(filename, O_CREAT | O_TRUNC | O_WRONLY);
+	if (!vf) {
+		// log error
+		return;
+	}
+
+	CoreController::Interrupter interrupter(m_controller);
+	mDebuggerAccessLoggerCreateShadowFile(&m_logger, m_regionMapping[QString("cart0")], vf, 0);
+	vf->close(vf);
 }

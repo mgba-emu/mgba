@@ -32,6 +32,8 @@ private slots:
 	void start();
 	void stop();
 
+	void exportFile();
+
 signals:
 	void loggingChanged(bool active);
 
@@ -41,6 +43,7 @@ private:
 	std::shared_ptr<CoreController> m_controller;
 	QSet<QString> m_watchedRegions;
 	QHash<QString, QCheckBox*> m_regionBoxes;
+	QHash<QString, int> m_regionMapping;
 	struct mDebuggerAccessLogger m_logger;
 	bool m_active = false;
 
