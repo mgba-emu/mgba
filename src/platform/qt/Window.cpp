@@ -569,6 +569,7 @@ template <typename T, typename... A>
 std::function<void()> Window::openControllerTView(A... arg) {
 	return [=]() {
 		T* view = new T(m_controller, arg...);
+		connect(m_controller.get(), &CoreController::stopping, view, &QWidget::close);
 		openView(view);
 	};
 }

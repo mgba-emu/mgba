@@ -60,8 +60,6 @@ PaletteView::PaletteView(std::shared_ptr<CoreController> controller, QWidget* pa
 	connect(m_ui.objGrid, &Swatch::indexPressed, [this, count] (int index) { selectIndex(index + count); });
 	connect(m_ui.exportBG, &QAbstractButton::clicked, [this, count] () { exportPalette(0, count); });
 	connect(m_ui.exportOBJ, &QAbstractButton::clicked, [this, count] () { exportPalette(count, count); });
-
-	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 }
 
 void PaletteView::updatePalette() {
