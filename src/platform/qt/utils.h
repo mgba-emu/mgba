@@ -112,7 +112,7 @@ constexpr int saturateCast<int, unsigned>(unsigned value) {
 	return static_cast<int>(value);
 }
 
-QString romFilters(bool includeMvl = false);
+QString romFilters(bool includeMvl = false, mPlatform platform = mPLATFORM_NONE, bool rawOnly = false);
 bool extractMatchingFile(VDir* dir, std::function<QString (VDirEntry*)> filter);
 
 QString keyName(int key);
