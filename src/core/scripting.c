@@ -733,7 +733,7 @@ static void mScriptConsoleError(struct mScriptConsole* console, struct mScriptSt
 	if (console->logger) {
 		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_ERROR, "%s", msg->buffer);
 	} else {
-		mLog(_mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);
+		mLog(_mLOG_CAT_SCRIPT, mLOG_ERROR, "%s", msg->buffer);
 	}
 }
 
