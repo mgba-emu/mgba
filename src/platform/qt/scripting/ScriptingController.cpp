@@ -115,7 +115,6 @@ bool ScriptingController::load(VFileDevice& vf, const QString& name) {
 	}
 	bool ok = true;
 	if (!m_activeEngine->load(m_activeEngine, utf8.constData(), vf) || !m_activeEngine->run(m_activeEngine)) {
-		emit error(QString::fromUtf8(m_activeEngine->getError(m_activeEngine)));
 		ok = false;
 	}
 	if (m_controller) {

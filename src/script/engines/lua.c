@@ -902,6 +902,30 @@ static const char* _reader(lua_State* lua, void* context, size_t* size) {
 	return reader->block;
 }
 
+void _luaError(struct mScriptEngineContextLua* luaContext) {
+	struct mScriptValue* console = mScriptContextGetGlobal(luaContext->d.context, "console");
+	struct mScriptValue error = {0};
+	bool ok = false;
+	if (console) {
+		ok = mScriptObjectGet(console, "error", &error);
+	}
+	if (ok) {
+		struct mScriptFrame frame;
+		mScriptFrameInit(&frame);
+		struct mScriptValue* this = mScriptListAppend(&frame.arguments);
+		this->type = console->type;
+		this->refs = mSCRIPT_VALUE_UNREF;
+		this->flags = 0;
+		this->value.opaque = console->value.opaque;
+		mSCRIPT_PUSH(&frame.arguments, CHARP, luaContext->lastError);
+		ok = mScriptInvoke(&error, &frame);
+		mScriptFrameDeinit(&frame);
+	}
+	if (!ok) {
+		mLOG(SCRIPT, ERROR, "%s", luaContext->lastError);
+	}
+}
+
 bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFile* vf) {
 	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) ctx;
 	struct mScriptEngineLuaReader data = {
@@ -988,6 +1012,7 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 	case LUA_ERRSYNTAX:
 		luaContext->lastError = strdup(lua_tostring(luaContext->lua, -1));
 		lua_pop(luaContext->lua, 1);
+		_luaError(luaContext);
 		break;
 	default:
 		break;
@@ -1118,6 +1143,8 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 	if (ret == LUA_ERRRUN) {
 		luaContext->lastError = strdup(lua_tostring(luaContext->lua, -1));
 		lua_pop(luaContext->lua, 1);
+	
+		_luaError(luaContext);
 	}
 	mScriptContextDeactivate(luaContext->d.context);
 	if (ret) {
