@@ -1667,11 +1667,7 @@ void mScriptObjectFree(struct mScriptValue* value) {
 			if (_accessRawMember(value->type->details.cls->free, value->value.opaque, value->type->isConst, &deinitMember)) {
 				struct mScriptFrame frame;
 				mScriptFrameInit(&frame);
-				struct mScriptValue* this = mScriptListAppend(&frame.arguments);
-				this->type = mSCRIPT_TYPE_MS_WRAPPER;
-				this->refs = mSCRIPT_VALUE_UNREF;
-				this->flags = 0;
-				this->value.opaque = value;
+				mSCRIPT_PUSH(&frame.arguments, WRAPPER, value);
 				mScriptInvoke(&deinitMember, &frame);
 				mScriptFrameDeinit(&frame);
 			}

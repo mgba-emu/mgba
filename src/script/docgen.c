@@ -354,11 +354,7 @@ bool call(struct mScriptValue* obj, const char* method, struct mScriptFrame* fra
 	if (!mScriptObjectGet(obj, method, &fn)) {
 		return false;
 	}
-	struct mScriptValue* this = mScriptListAppend(&frame->arguments);
-	this->type = mSCRIPT_TYPE_MS_WRAPPER;
-	this->refs = mSCRIPT_VALUE_UNREF;
-	this->flags = 0;
-	this->value.opaque = obj;
+	mSCRIPT_PUSH(&frame->arguments, WRAPPER, obj);
 	return mScriptInvoke(&fn, frame);
 }
 
