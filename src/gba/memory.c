@@ -128,6 +128,21 @@ void GBAMemoryReset(struct GBA* gba) {
 	GBAAdjustWaitstates(gba, 0);
 	GBAAdjustEWRAMWaitstates(gba, 0x0D00);
 
+	GBAMemoryClearAGBPrint(gba);
+
+	gba->memory.prefetch = false;
+	gba->memory.lastPrefetchedPc = 0;
+
+	if (!gba->memory.wram || !gba->memory.iwram) {
+		GBAMemoryDeinit(gba);
+		mLOG(GBA_MEM, FATAL, "Could not map memory");
+	}
+
+	GBADMAReset(gba);
+	memset(&gba->memory.matrix, 0, sizeof(gba->memory.matrix));
+}
+
+void GBAMemoryClearAGBPrint(struct GBA* gba) {
 	gba->memory.activeRegion = -1;
 	gba->memory.agbPrintProtect = 0;
 	gba->memory.agbPrintBase = 0;
@@ -140,17 +155,6 @@ void GBAMemoryReset(struct GBA* gba) {
 		mappedMemoryFree(gba->memory.agbPrintBufferBackup, SIZE_AGB_PRINT);
 		gba->memory.agbPrintBufferBackup = NULL;
 	}
-
-	gba->memory.prefetch = false;
-	gba->memory.lastPrefetchedPc = 0;
-
-	if (!gba->memory.wram || !gba->memory.iwram) {
-		GBAMemoryDeinit(gba);
-		mLOG(GBA_MEM, FATAL, "Could not map memory");
-	}
-
-	GBADMAReset(gba);
-	memset(&gba->memory.matrix, 0, sizeof(gba->memory.matrix));
 }
 
 static void _analyzeForIdleLoop(struct GBA* gba, struct ARMCore* cpu, uint32_t address) {
