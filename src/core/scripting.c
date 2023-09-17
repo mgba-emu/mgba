@@ -243,6 +243,24 @@ static uint32_t mScriptMemoryDomainRead32(struct mScriptMemoryDomain* adapter, u
 	return adapter->core->rawRead32(adapter->core, segmentAddress, segment);
 }
 
+static int32_t mScriptMemoryDomainReadS8(struct mScriptMemoryDomain* adapter, uint32_t address) {
+	CALCULATE_SEGMENT_INFO;
+	CALCULATE_SEGMENT_ADDRESS;
+	return ((int32_t) adapter->core->rawRead8(adapter->core, segmentAddress, segment) << 24) >> 24;
+}
+
+static int32_t mScriptMemoryDomainReadS16(struct mScriptMemoryDomain* adapter, uint32_t address) {
+	CALCULATE_SEGMENT_INFO;
+	CALCULATE_SEGMENT_ADDRESS;
+	return ((int32_t) adapter->core->rawRead16(adapter->core, segmentAddress, segment) << 16) >> 16;
+}
+
+static int32_t mScriptMemoryDomainReadS32(struct mScriptMemoryDomain* adapter, uint32_t address) {
+	CALCULATE_SEGMENT_INFO;
+	CALCULATE_SEGMENT_ADDRESS;
+	return (int32_t) adapter->core->rawRead32(adapter->core, segmentAddress, segment);
+}
+
 static struct mScriptValue* mScriptMemoryDomainReadRange(struct mScriptMemoryDomain* adapter, uint32_t address, uint32_t length) {
 	CALCULATE_SEGMENT_INFO;
 	struct mScriptValue* value = mScriptStringCreateEmpty(length);
@@ -273,6 +291,24 @@ static void mScriptMemoryDomainWrite32(struct mScriptMemoryDomain* adapter, uint
 	adapter->core->rawWrite32(adapter->core, segmentAddress, segment, value);
 }
 
+static void mScriptMemoryDomainWriteS8(struct mScriptMemoryDomain* adapter, uint32_t address, int8_t value) {
+	CALCULATE_SEGMENT_INFO;
+	CALCULATE_SEGMENT_ADDRESS;
+	adapter->core->rawWrite8(adapter->core, segmentAddress, segment, (uint8_t) value);
+}
+
+static void mScriptMemoryDomainWriteS16(struct mScriptMemoryDomain* adapter, uint32_t address, int16_t value) {
+	CALCULATE_SEGMENT_INFO;
+	CALCULATE_SEGMENT_ADDRESS;
+	adapter->core->rawWrite16(adapter->core, segmentAddress, segment, (uint16_t) value);
+}
+
+static void mScriptMemoryDomainWriteS32(struct mScriptMemoryDomain* adapter, uint32_t address, int32_t value) {
+	CALCULATE_SEGMENT_INFO;
+	CALCULATE_SEGMENT_ADDRESS;
+	adapter->core->rawWrite32(adapter->core, segmentAddress, segment, (uint32_t) value);
+}
+
 static uint32_t mScriptMemoryDomainBase(struct mScriptMemoryDomain* adapter) {
 	return adapter->block.start;
 }
@@ -293,10 +329,22 @@ mSCRIPT_DECLARE_STRUCT(mScriptMemoryDomain);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, read8, mScriptMemoryDomainRead8, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, read16, mScriptMemoryDomainRead16, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, read32, mScriptMemoryDomainRead32, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, readU8, mScriptMemoryDomainRead8, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, readU16, mScriptMemoryDomainRead16, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, readU32, mScriptMemoryDomainRead32, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, S32, readS8, mScriptMemoryDomainReadS8, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, S32, readS16, mScriptMemoryDomainReadS16, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, S32, readS32, mScriptMemoryDomainReadS32, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, WSTR, readRange, mScriptMemoryDomainReadRange, 2, U32, address, U32, length);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write8, mScriptMemoryDomainWrite8, 2, U32, address, U8, value);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write16, mScriptMemoryDomainWrite16, 2, U32, address, U16, value);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, write32, mScriptMemoryDomainWrite32, 2, U32, address, U32, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, writeU8, mScriptMemoryDomainWrite8, 2, U32, address, U8, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, writeU16, mScriptMemoryDomainWrite16, 2, U32, address, U16, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, writeU32, mScriptMemoryDomainWrite32, 2, U32, address, U32, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, writeS8, mScriptMemoryDomainWriteS8, 2, U32, address, S8, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, writeS16, mScriptMemoryDomainWriteS16, 2, U32, address, S16, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptMemoryDomain, writeS32, mScriptMemoryDomainWriteS32, 2, U32, address, S32, value);
 
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, base, mScriptMemoryDomainBase, 0);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptMemoryDomain, U32, bound, mScriptMemoryDomainEnd, 0);
@@ -308,20 +356,38 @@ mSCRIPT_DEFINE_STRUCT(mScriptMemoryDomain)
 		"An object used for access directly to a memory domain, e.g. the cartridge, "
 		"instead of through a whole address space, as with the functions directly on struct::mCore."
 	)
-	mSCRIPT_DEFINE_DOCSTRING("Read an 8-bit value from the given offset")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, read8)
-	mSCRIPT_DEFINE_DOCSTRING("Read a 16-bit value from the given offset")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, read16)
-	mSCRIPT_DEFINE_DOCSTRING("Read a 32-bit value from the given offset")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, read32)
+	mSCRIPT_DEFINE_DOCSTRING("Read an unsigned 8-bit value from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, readU8)
+	mSCRIPT_DEFINE_DOCSTRING("Read an unsigned 16-bit value from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, readU16)
+	mSCRIPT_DEFINE_DOCSTRING("Read an unsigned 32-bit value from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, readU32)
+	mSCRIPT_DEFINE_DOCSTRING("Read a signed 8-bit value from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, readS8)
+	mSCRIPT_DEFINE_DOCSTRING("Read a signed 16-bit value from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, readS16)
+	mSCRIPT_DEFINE_DOCSTRING("Read a signed 32-bit value from the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, readS32)
 	mSCRIPT_DEFINE_DOCSTRING("Read byte range from the given offset")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, readRange)
-	mSCRIPT_DEFINE_DOCSTRING("Write an 8-bit value from the given offset")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, write8)
-	mSCRIPT_DEFINE_DOCSTRING("Write a 16-bit value from the given offset")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, write16)
-	mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given offset")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, write32)
+	mSCRIPT_DEFINE_DOCSTRING("Write an unsigned 8-bit value to the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, writeU8)
+	mSCRIPT_DEFINE_DOCSTRING("Write an unsigned 16-bit value to the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, writeU16)
+	mSCRIPT_DEFINE_DOCSTRING("Write an unsigned 32-bit value to the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, writeU32)
+	mSCRIPT_DEFINE_DOCSTRING("Write a signed 8-bit value to the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, writeS8)
+	mSCRIPT_DEFINE_DOCSTRING("Write a signed 16-bit value to the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, writeS16)
+	mSCRIPT_DEFINE_DOCSTRING("Write a signed 32-bit value to the given offset")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, writeS32)
 
 	mSCRIPT_DEFINE_DOCSTRING("Get the address of the base of this memory domain")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptMemoryDomain, base)
