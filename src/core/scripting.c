@@ -446,6 +446,18 @@ static int32_t _mScriptCoreGetKey(struct mCore* core, int32_t key) {
 	return (core->getKeys(core) >> key) & 1;
 }
 
+static int32_t _mScriptCoreReadS8(struct mCore* core, uint32_t address) {
+	return ((int32_t) core->busRead8(core, address) << 24) >> 24;
+}
+
+static int32_t _mScriptCoreReadS16(struct mCore* core, uint32_t address) {
+	return ((int32_t) core->busRead8(core, address) << 16) >> 16;
+}
+
+static int32_t _mScriptCoreReadS32(struct mCore* core, uint32_t address) {
+	return (int32_t) core->busRead8(core, address);
+}
+
 static struct mScriptValue* _mScriptCoreReadRange(struct mCore* core, uint32_t address, uint32_t length) {
 	struct mScriptValue* value = mScriptStringCreateEmpty(length);
 	char* buffer = value->value.string->buffer;
@@ -454,6 +466,18 @@ static struct mScriptValue* _mScriptCoreReadRange(struct mCore* core, uint32_t a
 		buffer[i] = core->busRead8(core, address);
 	}
 	return value;
+}
+
+static void _mScriptCoreWriteS8(struct mCore* core, uint32_t address, int8_t value) {
+	core->busWrite8(core, address, (uint8_t) value);
+}
+
+static void _mScriptCoreWriteS16(struct mCore* core, uint32_t address, int16_t value) {
+	core->busWrite8(core, address, (uint16_t) value);
+}
+
+static void _mScriptCoreWriteS32(struct mCore* core, uint32_t address, int32_t value) {
+	core->busWrite8(core, address, (uint32_t) value);
 }
 
 static struct mScriptValue* _mScriptCoreReadRegister(const struct mCore* core, const char* regName) {
@@ -578,10 +602,16 @@ mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, getKeys, 0);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead8, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead16, 1, U32, address);
 mSCRIPT_DECLARE_STRUCT_D_METHOD(mCore, U32, busRead32, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, U32, busReadS8, _mScriptCoreReadS8, 1, S32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, U32, busReadS16, _mScriptCoreReadS16, 1, S32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, U32, busReadS32, _mScriptCoreReadS32, 1, S32, address);
 mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WSTR, readRange, _mScriptCoreReadRange, 2, U32, address, U32, length);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite8, 2, U32, address, U8, value);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite16, 2, U32, address, U16, value);
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite32, 2, U32, address, U32, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, busWriteS8, _mScriptCoreWriteS8, 2, S32, address, S8, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, busWriteS16, _mScriptCoreWriteS16, 2, S32, address, S16, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, busWriteS32, _mScriptCoreWriteS32, 2, S32, address, S32, value);
 
 // Register functions
 mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WSTR, readRegister, _mScriptCoreReadRegister, 1, CHARP, regName);
@@ -650,20 +680,38 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_DOCSTRING("Get the currently active keys as a bitmask")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, getKeys)
 
-	mSCRIPT_DEFINE_DOCSTRING("Read an 8-bit value from the given bus address")
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read8, busRead8)
-	mSCRIPT_DEFINE_DOCSTRING("Read a 16-bit value from the given bus address")
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read16, busRead16)
-	mSCRIPT_DEFINE_DOCSTRING("Read a 32-bit value from the given bus address")
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, read32, busRead32)
+	mSCRIPT_DEFINE_DOCSTRING("Read an unsigned 8-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, readU8, busRead8)
+	mSCRIPT_DEFINE_DOCSTRING("Read an unsigned 16-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, readU16, busRead16)
+	mSCRIPT_DEFINE_DOCSTRING("Read an unsigned 32-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, readU32, busRead32)
+	mSCRIPT_DEFINE_DOCSTRING("Read a signed 8-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, readS8, busReadS8)
+	mSCRIPT_DEFINE_DOCSTRING("Read a signed 16-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, readS16, busReadS16)
+	mSCRIPT_DEFINE_DOCSTRING("Read a signed 32-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, readS32, busReadS32)
 	mSCRIPT_DEFINE_DOCSTRING("Read byte range from the given offset")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, readRange)
-	mSCRIPT_DEFINE_DOCSTRING("Write an 8-bit value from the given bus address")
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write8, busWrite8)
-	mSCRIPT_DEFINE_DOCSTRING("Write a 16-bit value from the given bus address")
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write16, busWrite16)
-	mSCRIPT_DEFINE_DOCSTRING("Write a 32-bit value from the given bus address")
 	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, write32, busWrite32)
+	mSCRIPT_DEFINE_DOCSTRING("Write an unsigned 8-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, writeU8, busWrite8)
+	mSCRIPT_DEFINE_DOCSTRING("Write an unsigned 16-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, writeU16, busWrite16)
+	mSCRIPT_DEFINE_DOCSTRING("Write an unsigned 32-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, writeU32, busWrite32)
+	mSCRIPT_DEFINE_DOCSTRING("Write a signed 8-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, writeS8, busWriteS8)
+	mSCRIPT_DEFINE_DOCSTRING("Write a signed 16-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, writeS16, busWriteS16)
+	mSCRIPT_DEFINE_DOCSTRING("Write a signed 32-bit value from the given bus address")
+	mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(mCore, writeS32, busWriteS32)
 
 	mSCRIPT_DEFINE_DOCSTRING("Read the value of the register with the given name")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, readRegister)
