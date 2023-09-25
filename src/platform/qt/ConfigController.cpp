@@ -220,10 +220,6 @@ void ConfigController::updateOption(const char* key) {
 	m_optionSet[optionName]->setValue(mCoreConfigGetValue(&m_config, key));
 }
 
-void ConfigController::clearOptions() {
-	m_optionSet.clear();
-}
-
 QString ConfigController::getOption(const char* key, const QVariant& defaultVal) const {
 	const char* val = mCoreConfigGetValue(&m_config, key);
 	if (val) {

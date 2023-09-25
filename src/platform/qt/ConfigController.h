@@ -80,7 +80,6 @@ public:
 
 	ConfigOption* addOption(const char* key);
 	void updateOption(const char* key);
-	void clearOptions();
 
 	QString getOption(const char* key, const QVariant& defaultVal = QVariant()) const;
 	QString getOption(const QString& key, const QVariant& defaultVal = QVariant()) const;
