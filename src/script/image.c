@@ -184,5 +184,5 @@ void mScriptContextAttachImage(struct mScriptContext* context) {
 	mScriptContextSetDocstring(context, "image", "Methods for creating struct::mImage and struct::mPainter instances");
 	mScriptContextSetDocstring(context, "image.new", "Create a new image with the given dimensions");
 	mScriptContextSetDocstring(context, "image.load", "Load an image from a path. Currently, only `PNG` format is supported");
-	mScriptContextSetDocstring(context, "image.newPainter", "Create a new painter from an existing imamge");
+	mScriptContextSetDocstring(context, "image.newPainter", "Create a new painter from an existing image");
 }
