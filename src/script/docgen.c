@@ -466,6 +466,7 @@ int main(int argc, char* argv[]) {
 
 	mScriptContextInit(&context);
 	mScriptContextAttachStdlib(&context);
+	mScriptContextAttachCanvas(&context);
 	mScriptContextAttachImage(&context);
 	mScriptContextAttachInput(&context);
 	mScriptContextAttachSocket(&context);
