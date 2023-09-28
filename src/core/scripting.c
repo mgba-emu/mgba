@@ -163,9 +163,9 @@ struct mScriptMemoryDomain {
 struct mScriptBreakpointName {
 	uint32_t address;
 	uint32_t maxAddress;
-	int segment : 9;
-	int type : 1;
-	int subtype : 3;
+	int16_t segment;
+	uint8_t type;
+	uint8_t subtype;
 };
 
 struct mScriptBreakpoint {
