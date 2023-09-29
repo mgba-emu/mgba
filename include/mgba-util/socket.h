@@ -129,6 +129,14 @@ static inline bool SocketWouldBlock() {
 #endif
 }
 
+static inline bool SocketIsConnected() {
+#ifdef _WIN32
+	return SocketError() == WSAEISCONN;
+#else
+	return SocketError() == EISCONN;
+#endif
+}
+
 static inline ssize_t SocketSend(Socket socket, const void* buffer, size_t size) {
 #ifdef _WIN32
 	return send(socket, (const char*) buffer, size, 0);
@@ -235,36 +243,19 @@ static inline void SocketCloseQuiet(Socket socket) {
 #endif
 }
 
-static inline Socket SocketCreate(bool useIPv6, int protocol) {
+static inline Socket SocketCreate(bool useIPv6, int type, int protocol) {
 	if (useIPv6) {
 #ifdef HAS_IPV6
-		return socket(AF_INET6, SOCK_STREAM, protocol);
+		return socket(AF_INET6, type, protocol);
 #else
 		errno = EAFNOSUPPORT;
 		return INVALID_SOCKET;
 #endif
 	} else {
 #ifdef GEKKO
-		return net_socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+		return net_socket(AF_INET, type, IPPROTO_IP);
 #else
-		return socket(AF_INET, SOCK_STREAM, protocol);
-#endif
-	}
-}
-
-static inline Socket SocketCreateDgram(bool useIPv6, int protocol) {
-	if (useIPv6) {
-#ifdef HAS_IPV6
-		return socket(AF_INET6, SOCK_DGRAM, protocol);
-#else
-		errno = EAFNOSUPPORT;
-		return INVALID_SOCKET;
-#endif
-	} else {
-#ifdef GEKKO
-		return net_socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
-#else
-		return socket(AF_INET, SOCK_DGRAM, protocol);
+		return socket(AF_INET, type, protocol);
 #endif
 	}
 }
@@ -328,7 +319,7 @@ static inline int SocketOpen(Socket sock, int port, const struct Address* bindAd
 
 static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) {
 	bool useIPv6 = bindAddress && (bindAddress->version == IPV6);
-	Socket sock = SocketCreate(useIPv6, IPPROTO_TCP);
+	Socket sock = SocketCreate(useIPv6, SOCK_STREAM, IPPROTO_TCP);
 	if (SOCKET_FAILED(sock)) {
 		return sock;
 	}
@@ -343,7 +334,7 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 
 static inline Socket SocketOpenUDP(int port, const struct Address* bindAddress) {
 	bool useIPv6 = bindAddress && (bindAddress->version == IPV6);
-	Socket sock = SocketCreateDgram(useIPv6, IPPROTO_UDP);
+	Socket sock = SocketCreate(useIPv6, SOCK_DGRAM, IPPROTO_UDP);
 	if (SOCKET_FAILED(sock)) {
 		return sock;
 	}
@@ -396,7 +387,7 @@ static inline int SocketConnect(Socket sock, int port, const struct Address* des
 
 static inline Socket SocketConnectTCP(int port, const struct Address* destinationAddress) {
 	bool useIPv6 = destinationAddress && (destinationAddress->version == IPV6);
-	Socket sock = SocketCreate(useIPv6, IPPROTO_TCP);
+	Socket sock = SocketCreate(useIPv6, SOCK_STREAM, IPPROTO_TCP);
 	if (SOCKET_FAILED(sock)) {
 		return sock;
 	}
@@ -430,7 +421,7 @@ static inline Socket SocketAccept(Socket socket, struct Address* address) {
 		socklen_t len = sizeof(addrInfo);
 		return net_accept(socket, (struct sockaddr*) &addrInfo, &len);
 #else
-		return accept(socket, 0, 0);
+		return accept(socket, NULL, NULL);
 #endif
 	}
 	if (address->version == IPV4) {
