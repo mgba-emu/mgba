@@ -87,18 +87,17 @@ static int sock_connect(void* user, unsigned conn, const struct mobile_addr* add
 	// - It works on a socket that has been obtained through SocketOpenTCP/UDP()
 	// - It doesn't block when SocketSetBlocking() has been used
 	int rc = SocketConnect(fd, connport, &connaddr);
-	if (!rc) return 1;
-	if (SocketIsConnected()) {
+	if (!rc || SocketIsConnected()) {
 		return 1;
 	}
 
-	return SocketWouldBlock() ? 0 : -1;
+	return SocketIsConnecting() ? 0 : -1;
 }
 
 static bool sock_listen(void* user, unsigned conn) {
 	struct MobileAdapterGB* mobile = user;
 
-	return !SOCKET_FAILED(SocketListen(mobile->socket[conn].fd, 1));
+	return !SOCKET_RESERROR(SocketListen(mobile->socket[conn].fd, 1));
 }
 
 static bool sock_accept(void* user, unsigned conn) {
@@ -137,7 +136,8 @@ static int sock_send(void* user, unsigned conn, const void* data, unsigned size,
 		}
 	}
 
-	return SocketSendTo(mobile->socket[conn].fd, data, size, destport, destaddr);
+	ssize_t res = SocketSendTo(mobile->socket[conn].fd, data, size, destport, destaddr);
+	return !SOCKET_RESERROR(res) ? res : -1;
 }
 
 static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struct mobile_addr* addr) {
@@ -152,8 +152,8 @@ static int sock_recv(void* user, unsigned conn, void* data, unsigned size, struc
 	struct Address srcaddr;
 	int srcport;
 	ssize_t res = SocketRecvFrom(mobile->socket[conn].fd, data, size, &srcport, &srcaddr);
-	if (res == -1 && SocketWouldBlock()) {
-		return 0;
+	if (SOCKET_RESERROR(res)) {
+		return SocketWouldBlock() ? 0 : -1;
 	}
 
 	if (res > 0 && addr) {

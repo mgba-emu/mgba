@@ -17,7 +17,10 @@ CXX_GUARD_START
 #ifdef _WIN32
 #include <ws2tcpip.h>
 
+// Returned by functions that return SOCKET (socket() and accept())
 #define SOCKET_FAILED(s) ((s) == INVALID_SOCKET)
+// Returned by functions that operate on SOCKET
+#define SOCKET_RESERROR(s) ((s) == SOCKET_ERROR)
 typedef SOCKET Socket;
 #else
 #ifdef GEKKO
@@ -39,6 +42,7 @@ typedef SOCKET Socket;
 #define INVALID_SOCKET (-1)
 #endif
 #define SOCKET_FAILED(s) ((s) < 0)
+#define SOCKET_RESERROR(s) ((s) < 0)
 typedef int Socket;
 #endif
 
@@ -126,6 +130,14 @@ static inline bool SocketWouldBlock() {
 	return SocketError() == WSAEWOULDBLOCK;
 #else
 	return SocketError() == EWOULDBLOCK || SocketError() == EAGAIN;
+#endif
+}
+
+static inline bool SocketIsConnecting() {
+#ifdef _WIN32
+	return SocketError() == WSAEINPROGRESS || SocketError() == WSAEALREADY;
+#else
+	return SocketError() == EINPROGRESS || SocketError() == EALREADY;
 #endif
 }
 
