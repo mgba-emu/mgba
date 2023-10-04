@@ -247,9 +247,9 @@ static void _writeHostInfo(struct GDBStub* stub) {
 }
 
 static void _continue(struct GDBStub* stub, const char* message) {
-	mDebuggerModuleSetNeedsCallback(&stub->d);
 	stub->untilPoll = GDB_STUB_INTERVAL;
 	stub->d.isPaused = false;
+	mDebuggerModuleSetNeedsCallback(&stub->d);
 	// TODO: parse message
 	UNUSED(message);
 }
