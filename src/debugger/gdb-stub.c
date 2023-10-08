@@ -469,7 +469,7 @@ static void _processQSupportedCommand(struct GDBStub* stub, const char* message)
 		}
 		message = end + 1;
 	}
-	strncpy(stub->outgoing, "swbreak+;hwbreak+;qXfer:features:read+;qXfer:memory-map:read+", GDB_STUB_MAX_LINE - 4);
+	strncpy(stub->outgoing, "swbreak+;hwbreak+;qXfer:features:read+;qXfer:memory-map:read+;QStartNoAckMode+", GDB_STUB_MAX_LINE - 4);
 }
 
 static void _processQXferCommand(struct GDBStub* stub, const char* params, const char* data) {
