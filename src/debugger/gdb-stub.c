@@ -548,7 +548,7 @@ static void _processQReadCommand(struct GDBStub* stub, const char* message) {
 
 static void _processQWriteCommand(struct GDBStub* stub, const char* message) {
 	stub->outgoing[0] = '\0';
-	if (!strncmp("StartNoAckMode#", message, 16)) {
+	if (!strncmp("StartNoAckMode#", message, 15)) {
 		stub->lineAck = GDB_ACK_OFF;
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 	}
