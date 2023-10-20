@@ -21,7 +21,7 @@
     <message>
         <location filename="../utils.cpp" line="112"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 Videonaplók (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -50,8 +50,9 @@
         <location filename="../AboutScreen.ui" line="86"/>
         <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation type="unfinished">© 2013 – {year} Jeffrey Pfau, a Mozilla Public License 2.0 alatt licencelve
-A Game Boy Advance a Nintendo Co., Ltd. bejegyzett védjegye</translation>
+        <translation>© 2013 – {year} Jeffrey Pfau, a Mozilla Public License 2.0 alatt licencelve.
+
+A Game Boy Advance a Nintendo Co., Ltd. bejegyzett védjegye.</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
@@ -64,47 +65,52 @@ A Game Boy Advance a Nintendo Co., Ltd. bejegyzett védjegye</translation>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>Egy frissítés érhető el</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Egy frissítés elérhető %1 verzióra.
+</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="38"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Szeretné most letöleni és telepíteni? Az emulátor újraindítására lesz szükség a letöltés befejezésekor.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Az automatikus frisítés ezen platformon nem elérhető, a frissítéseket manuálisan telepíthetők.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="45"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Jelenlegi verzió: %1
+Új verzió: %2
+Letöltendő adat: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>Frissítés letöltése...</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="79"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>A letöltés meghiúsult. Próbálja meg manuálisan frissíteni aprogramot.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>A letöltés kész. Nyomja meg az OK gombot %1 újraindításához és a frissítés telepítéséhez.</translation>
     </message>
 </context>
 <context>
@@ -112,22 +118,22 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="90"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>Stabil</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="93"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>Fejlesztési</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem ismert</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="236"/>
         <source>(None)</source>
-        <translation type="unfinished"></translation>
+        <translation>(nincs)</translation>
     </message>
 </context>
 <context>
@@ -148,7 +154,7 @@ Download size: %3</source>
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation type="unfinished"></translation>
+        <translation>Cím #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
@@ -232,7 +238,7 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
         <source>Insert</source>
-        <translation type="unfinished"></translation>
+        <translation>Beszúrás</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
@@ -329,7 +335,7 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished"></translation>
+        <translation>Új kód hozzáadása</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
@@ -339,12 +345,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="93"/>
         <source>Add Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Sorok hozzáadása</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="100"/>
         <source>Code type</source>
-        <translation type="unfinished"></translation>
+        <translation>Kód típusa</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
@@ -365,7 +371,7 @@ Download size: %3</source>
         <location filename="../CheatsView.cpp" line="50"/>
         <location filename="../CheatsView.cpp" line="58"/>
         <source>Autodetect (recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation>Automatikus felisnerés (javasolt)</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="88"/>
@@ -376,7 +382,7 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>Néhány csalást nem sikerült betölteni. Ellenőrizze, hogy helyesen formázottak-e és/vagy próbáljon ki más csalástípust!</translation>
     </message>
 </context>
 <context>
@@ -390,7 +396,7 @@ Download size: %3</source>
         <location filename="../CoreController.cpp" line="536"/>
         <location filename="../CoreController.cpp" line="553"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Visszatekerés jelenleg nem engedélyezett</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="596"/>
@@ -451,7 +457,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsole.ui" line="14"/>
         <source>Debugger</source>
-        <translation type="unfinished">Hibakereső</translation>
+        <translation>Hibakereső</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="20"/>
@@ -477,7 +483,7 @@ Download size: %3</source>
     <message>
         <location filename="../DolphinConnector.ui" line="14"/>
         <source>Connect to Dolphin</source>
-        <translation type="unfinished">Csatlakozás Dolphin emulátorhoz</translation>
+        <translation>Csatlakozás Dolphin emulátorhoz</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="23"/>
@@ -512,12 +518,12 @@ Download size: %3</source>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
         <source>Couldn&apos;t Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült csatlakozni</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Could not connect to Dolphin.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nem sikerült csatlakozni Dolphin emulátorhoz.</translation>
     </message>
 </context>
 <context>
@@ -719,7 +725,7 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.ui" line="14"/>
         <source>Inspect frame</source>
-        <translation type="unfinished">Képkocka vizsgáló</translation>
+        <translation>Képkocka vizsgálata</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="41"/>
@@ -965,22 +971,22 @@ Download size: %3</source>
         <location filename="../GameBoy.cpp" line="60"/>
         <location filename="../GameBoy.cpp" line="79"/>
         <source>Autodetect</source>
-        <translation type="unfinished">Automatikus észlelés</translation>
+        <translation>Automatikus észlelés</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="61"/>
         <source>Game Boy (DMG)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy (DMG)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="62"/>
         <source>Game Boy Pocket (MGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Pocket (MGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="63"/>
         <source>Super Game Boy (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Super Game Boy (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="64"/>
@@ -1138,7 +1144,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.ui" line="26"/>
         <source>0x0000</source>
-        <translation type="unfinished"></translation>
+        <translation>0x0000</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="367"/>
