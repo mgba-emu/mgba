@@ -301,7 +301,9 @@ void ScriptingController::updateGamepad() {
 void ScriptingController::attach() {
 	CoreController::Interrupter interrupter(m_controller);
 	mScriptContextAttachCore(&m_scriptContext, m_controller->thread()->core);
+#ifdef USE_DEBUGGERS
 	m_controller->attachDebugger(false);
+#endif
 }
 
 void ScriptingController::attachGamepad() {

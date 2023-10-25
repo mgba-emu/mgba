@@ -125,7 +125,6 @@ set(SOURCE_FILES
 	LogView.cpp
 	LogWidget.cpp
 	MapView.cpp
-	MemoryAccessLogView.cpp
 	MemoryDump.cpp
 	MemoryModel.cpp
 	MemorySearch.cpp
@@ -248,7 +247,8 @@ if(USE_DEBUGGERS)
 	list(APPEND SOURCE_FILES
 		DebuggerController.cpp
 		DebuggerConsole.cpp
-		DebuggerConsoleController.cpp)
+		DebuggerConsoleController.cpp
+		MemoryAccessLogView.cpp)
 endif()
 
 if(USE_GDB_STUB)

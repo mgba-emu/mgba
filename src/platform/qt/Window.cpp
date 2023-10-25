@@ -1707,7 +1707,9 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "stateViews");
 	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "stateViews");
 
+#ifdef USE_DEBUGGERS
 	addGameAction(tr("Log memory &accesses..."), "memoryAccessView", openControllerTView<MemoryAccessLogView>(), "tools");
+#endif
 
 #if defined(USE_FFMPEG) && defined(M_CORE_GBA)
 	m_actions.addSeparator("tools");
