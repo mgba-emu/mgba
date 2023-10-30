@@ -131,17 +131,24 @@ void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* 
 		mLOG(GBA_AUDIO, GAME_ERROR, "Invalid FIFO destination: 0x%08X", info->dest);
 		return;
 	}
-	uint32_t source = info->source;
-	uint32_t magic[2] = {
-		audio->p->cpu->memory.load32(audio->p->cpu, source - 0x350, NULL),
-		audio->p->cpu->memory.load32(audio->p->cpu, source - 0x980, NULL)
-	};
 	if (audio->mixer) {
-		if (magic[0] - MP2K_MAGIC <= MP2K_LOCK_MAX) {
-			audio->mixer->engage(audio->mixer, source - 0x350);
-		} else if (magic[1] - MP2K_MAGIC <= MP2K_LOCK_MAX) {
-			audio->mixer->engage(audio->mixer, source - 0x980);
-		} else {
+		uint32_t source = info->source;
+		uint32_t offsets[] = { 0x350, 0x980 };
+		size_t i;
+		for (i = 0; i < sizeof(offsets) / sizeof(*offsets); ++i) {
+			if (source < BASE_WORKING_RAM + offsets[i]) {
+				continue;
+			}
+			if (source >= BASE_IO + offsets[i]) {
+				continue;
+			}
+			uint32_t value = GBALoad32(audio->p->cpu, source - offsets[i], NULL);
+			if (value - MP2K_MAGIC <= MP2K_LOCK_MAX) {
+				audio->mixer->engage(audio->mixer, source - offsets[i]);
+				break;
+			}
+		}
+		if (i == sizeof(offsets) / sizeof(*offsets)) {
 			audio->externalMixing = false;
 		}
 	}
