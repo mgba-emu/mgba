@@ -70,7 +70,7 @@ Game Boy Advance ist eine eingetragene Marke von Nintendo Co., Ltd.</translation
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation>Ein Update für %1 ist verfügbar.
+        <translation>Ein Update auf %1 ist verfügbar.
 </translation>
     </message>
     <message>
@@ -132,7 +132,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="236"/>
         <source>(None)</source>
-        <translation>(keiner)</translation>
+        <translation>(Nichts)</translation>
     </message>
 </context>
 <context>
@@ -145,7 +145,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation>Laden&#xa0;…</translation>
+        <translation>Lädt&#xa0;…</translation>
     </message>
 </context>
 <context>
@@ -198,7 +198,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../AudioDevice.cpp" line="44"/>
         <source>Audio device is missing its core</source>
-        <translation>Dem Audio-Gerät fehlt ein Core</translation>
+        <translation>Dem Audio-Gerät fehlt sein Core</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="62"/>
@@ -395,7 +395,7 @@ Download-Größe: %3</translation>
         <location filename="../CoreController.cpp" line="536"/>
         <location filename="../CoreController.cpp" line="553"/>
         <source>Rewinding not currently enabled</source>
-        <translation>Rücklauf ist derzeit nicht aktiviert</translation>
+        <translation>Zurückspulen ist derzeit nicht aktiviert</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="596"/>
@@ -716,7 +716,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Bilddateien (*.png *.jpg *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -724,7 +724,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../FrameView.ui" line="14"/>
         <source>Inspect frame</source>
-        <translation>Bild beobachten</translation>
+        <translation>Frame untersuchen</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="41"/>
@@ -734,7 +734,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../FrameView.ui" line="50"/>
         <source>Freeze frame</source>
-        <translation>Bild einfrieren</translation>
+        <translation>Frame einfrieren</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="84"/>
@@ -3752,17 +3752,17 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="327"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Versuch Multiplayer-Spieler zu trennen der nicht verbunden ist</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="391"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Versuch Spieler-ID festzustellen von einem Multiplayer-Spieler der nicht verbunden ist</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="405"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Versuch Speicherstand-ID festzustellen von einem Multiplayer-Spieler der nicht verbunden ist</translation>
     </message>
 </context>
 <context>
@@ -4310,7 +4310,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="114"/>
         <source>Save file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Speicherstand:</translation>
     </message>
 </context>
 <context>
@@ -4477,7 +4477,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="487"/>
         <source> + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation> + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="496"/>
@@ -4759,12 +4759,12 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Select image</source>
-        <translation type="unfinished">Bild auswählen</translation>
+        <translation>Bild auswählen</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished">Bilddatei (*.png *.jpg *.jpeg)</translation>
+        <translation>Bilddatei (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="850"/>
@@ -5074,7 +5074,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="941"/>
         <source>Custom border:</source>
-        <translation type="unfinished"></translation>
+        <translation>Benutzerdefinierter Rand:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="952"/>
@@ -5119,7 +5119,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1201"/>
         <source>Rewind speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Zurückspulgeschwindigkeit:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2171"/>
@@ -5457,7 +5457,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1169"/>
         <source>Enable rewind</source>
-        <translation>Rücklauf aktivieren</translation>
+        <translation>Zurückspulen aktivieren</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="454"/>
@@ -5467,7 +5467,7 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1176"/>
         <source>Rewind history:</source>
-        <translation>Rücklauf-Verlauf:</translation>
+        <translation>Zurückspulverlauf:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1238"/>
@@ -6317,12 +6317,12 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1445"/>
         <source>Increase fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Vorspulgeschwindigkeit erhöhen</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1452"/>
         <source>Decrease fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Vorspulgeschwindigkeit senken</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1459"/>
@@ -6771,17 +6771,17 @@ Download-Größe: %3</translation>
     <message>
         <location filename="../utils.cpp" line="146"/>
         <source>Super (L)</source>
-        <translation type="unfinished">Super (L)</translation>
+        <translation>Super (L)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="148"/>
         <source>Super (R)</source>
-        <translation type="unfinished">Super (R)</translation>
+        <translation>Super (R)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="150"/>
         <source>Menu</source>
-        <translation type="unfinished">Menü</translation>
+        <translation>Menü</translation>
     </message>
 </context>
 <context>
