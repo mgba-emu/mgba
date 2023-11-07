@@ -34,6 +34,10 @@ CXX_GUARD_START
 #define FFMPEG_USE_PACKET_UNREF
 #endif
 
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(59, 24, 0)
+#define FFMPEG_USE_NEW_CH_LAYOUT
+#endif
+
 static inline enum AVPixelFormat mColorFormatToFFmpegPixFmt(enum mColorFormat format) {
 	switch (format) {
 #ifndef USE_LIBAV
