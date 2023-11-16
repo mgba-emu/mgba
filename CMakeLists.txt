@@ -1031,7 +1031,7 @@ if(BUILD_UPDATER)
 	add_executable(updater-stub WIN32 ${CORE_VFS_SRC} ${VFS_SRC} ${OS_SRC} ${UTIL_BASE_SRC} ${THIRD_PARTY_SRC}
 		${CMAKE_CURRENT_SOURCE_DIR}/src/core/config.c
 		${CMAKE_CURRENT_SOURCE_DIR}/src/feature/updater.c
-		${CMAKE_CURRENT_SOURCE_DIR}/src/feature/updater-main.c)
+		${CMAKE_CURRENT_SOURCE_DIR}/src/tools/updater-main.c)
 	target_link_libraries(updater-stub ${ZLIB_LIBRARY} ${ZLIB_LIBRARY} ${ZIP_LIBRARIES} ${OS_LIB} ${PLATFORM_LIBRARY})
 	set_target_properties(updater-stub PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FUNCTION_DEFINES};${FEATURE_DEFINES};BUILD_STATIC")
 	if(MSVC)
@@ -1043,7 +1043,7 @@ if(BUILD_UPDATER)
 endif()
 
 if(ENABLE_SCRIPTING AND BUILD_DOCGEN)
-	add_executable(docgen ${CMAKE_CURRENT_SOURCE_DIR}/src/script/docgen.c)
+	add_executable(docgen ${CMAKE_CURRENT_SOURCE_DIR}/src/tools/docgen.c)
 	target_link_libraries(docgen ${OS_LIB} ${PLATFORM_LIBRARY} ${BINARY_NAME})
 endif()
 
