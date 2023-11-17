@@ -432,6 +432,10 @@ void GBAOverrideApplyDefaults(struct GBA* gba, const struct Configuration* overr
 			GBAOverrideApply(gba, &override);
 		} else if (GBAOverrideFind(overrides, &override)) {
 			GBAOverrideApply(gba, &override);
+		} else {
+			// Enable RTC for unknown ROMs
+			override.hardware = HW_RTC;
+			GBAOverrideApply(gba, &override);
 		}
 	}
 }
