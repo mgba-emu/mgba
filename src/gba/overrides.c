@@ -433,6 +433,21 @@ void GBAOverrideApplyDefaults(struct GBA* gba, const struct Configuration* overr
 		} else if (GBAOverrideFind(overrides, &override)) {
 			GBAOverrideApply(gba, &override);
 		} else {
+			// Apply Everdrive UTTD save detection
+			switch (override.id[0]) {
+			case '1':
+				override.savetype = SAVEDATA_EEPROM;
+				break;
+			case '2':
+				override.savetype = SAVEDATA_SRAM;
+				break;
+			case '3':
+				override.savetype = SAVEDATA_FLASH512;
+				break;
+			case '4':
+				override.savetype = SAVEDATA_FLASH1M;
+				break;
+			}
 			// Enable RTC for unknown ROMs
 			override.hardware = HW_RTC;
 			GBAOverrideApply(gba, &override);
