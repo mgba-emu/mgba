@@ -13,6 +13,7 @@ Emulation fixes:
  - GBA BIOS: Fix clobbering registers with word-sized CpuSet
  - GBA SIO: Fix normal mode SI/SO semantics (fixes mgba.io/i/2925)
 Other fixes:
+ - GBA Savedata: Fix crash when resizing flash save games for RTC data
  - mGUI: Fix cases where an older save state screenshot would be shown (fixes mgba.io/i/2183)
  - Qt: Re-enable sync for multiplayer windows that aren't connected (fixes mgba.io/i/2974)
  - Qt: Fix mute settings not being loaded on setting screen (fixes mgba.io/i/2990)

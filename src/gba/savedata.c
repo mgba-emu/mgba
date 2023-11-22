@@ -602,14 +602,23 @@ void GBASavedataRTCWrite(struct GBASavedata* savedata) {
 	size_t size = GBASavedataSize(savedata);
 	savedata->vf->seek(savedata->vf, size & ~0xFF, SEEK_SET);
 
+	int bank = 0;
 	if ((savedata->vf->size(savedata->vf) & 0xFF) != sizeof(buffer)) {
 		// Writing past the end of the file can invalidate the file mapping
+		if (savedata->type == SAVEDATA_FLASH1M) {
+			bank = savedata->currentBank == &savedata->data[0x10000];
+		}
 		savedata->vf->unmap(savedata->vf, savedata->data, size);
 		savedata->data = NULL;
 	}
 	savedata->vf->write(savedata->vf, &buffer, sizeof(buffer));
 	if (!savedata->data) {
 		savedata->data = savedata->vf->map(savedata->vf, size, MAP_WRITE);
+		if (savedata->type == SAVEDATA_FLASH1M) {
+			savedata->currentBank = &savedata->data[bank << 16];
+		} else if (savedata->type == SAVEDATA_FLASH512) {
+			savedata->currentBank = savedata->data;
+		}
 	}
 }
 
