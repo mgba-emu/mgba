@@ -139,6 +139,19 @@ int main(int argc, char * argv[]) {
 		goto loadError;
 	}
 
+#ifdef USE_DEBUGGERS
+	struct mDebugger debugger;
+	mDebuggerInit(&debugger);
+	bool hasDebugger = mArgumentsApplyDebugger(&args, core, &debugger);
+
+	if (hasDebugger) {
+		mDebuggerAttach(&debugger, core);
+		mDebuggerEnter(&debugger, DEBUGGER_ENTER_MANUAL, NULL);
+	} else {
+		mDebuggerDeinit(&debugger);
+	}
+#endif
+
 	core->reset(core);
 
 	mArgumentsApplyFileLoads(&args, core);
@@ -152,11 +165,25 @@ int main(int argc, char * argv[]) {
 		savestate->close(savestate);
 	}
 
+#ifdef USE_DEBUGGERS
+	if (hasDebugger) {
+		do {
+			mDebuggerRun(&debugger);
+		} while (!_dispatchExiting && debugger.state != DEBUGGER_SHUTDOWN);
+	} else
+#endif
 	do {
 		core->runLoop(core);
 	} while (!_dispatchExiting);
 
 	core->unloadROM(core);
+
+#ifdef USE_DEBUGGERS
+	if (hasDebugger) {
+		core->detachDebugger(core);
+		mDebuggerDeinit(&debugger);
+	}
+#endif
 	cleanExit = true;
 
 loadError:
