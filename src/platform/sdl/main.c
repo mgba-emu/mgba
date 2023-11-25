@@ -11,7 +11,7 @@
 #include <mgba/internal/debugger/gdb-stub.h>
 #endif
 #ifdef USE_EDITLINE
-#include "feature/editline/cli-el-backend.h"
+#include <mgba/internal/debugger/cli-el-backend.h>
 #endif
 #ifdef ENABLE_SCRIPTING
 #include <mgba/core/scripting.h>

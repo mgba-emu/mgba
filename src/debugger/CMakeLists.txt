@@ -11,6 +11,14 @@ if(ENABLE_SCRIPTING)
 	list(APPEND SOURCE_FILES cli-debugger-scripting.c)
 endif()
 
+if(USE_EDITLINE)
+	list(APPEND SOURCE_FILES cli-el-backend.c)
+endif()
+
+if(USE_GDB_STUB)
+	list(APPEND SOURCE_FILES gdb-stub.c)
+endif()
+
 set(TEST_FILES
 	test/lexer.c
 	test/parser.c)
