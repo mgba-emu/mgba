@@ -247,6 +247,8 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 #ifdef ENABLE_SCRIPTING
 		mScriptBridgeSetDebugger(bridge, &debugger);
 #endif
+	} else {
+		mDebuggerDeinit(&debugger);
 	}
 #endif
 
