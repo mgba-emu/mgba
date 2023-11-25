@@ -9,6 +9,13 @@
 #include <mgba/core/version.h>
 #include <mgba-util/string.h>
 
+#ifdef USE_GDB_STUB
+#include <mgba/internal/debugger/gdb-stub.h>
+#endif
+#ifdef USE_EDITLINE
+#include <mgba/internal/debugger/cli-el-backend.h>
+#endif
+
 #include <fcntl.h>
 #ifdef _MSC_VER
 #include <mgba-util/platform/windows/getopt.h>
@@ -204,6 +211,34 @@ void mArgumentsApply(const struct mArguments* args, struct mSubParser* subparser
 			subparsers[i].apply(&subparsers[i], config);
 		}
 	}
+}
+
+bool mArgumentsApplyDebugger(const struct mArguments* args, struct mCore* core, struct mDebugger* debugger) {
+	bool hasDebugger = false;
+
+	#ifdef USE_EDITLINE
+	if (args->debugCli) {
+		struct mDebuggerModule* module = mDebuggerCreateModule(DEBUGGER_CLI, core);
+		if (module) {
+			struct CLIDebugger* cliDebugger = (struct CLIDebugger*) module;
+			CLIDebuggerAttachBackend(cliDebugger, CLIDebuggerEditLineBackendCreate());
+			mDebuggerAttachModule(debugger, module);
+			hasDebugger = true;
+		}
+	}
+#endif
+
+#ifdef USE_GDB_STUB
+	if (args->debugGdb) {
+		struct mDebuggerModule* module = mDebuggerCreateModule(DEBUGGER_GDB, core);
+		if (module) {
+			mDebuggerAttachModule(debugger, module);
+			hasDebugger = true;
+		}
+	}
+#endif
+
+	return hasDebugger;
 }
 
 void mArgumentsDeinit(struct mArguments* args) {

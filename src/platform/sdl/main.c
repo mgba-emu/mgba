@@ -7,12 +7,6 @@
 
 #include <mgba/internal/debugger/cli-debugger.h>
 
-#ifdef USE_GDB_STUB
-#include <mgba/internal/debugger/gdb-stub.h>
-#endif
-#ifdef USE_EDITLINE
-#include <mgba/internal/debugger/cli-el-backend.h>
-#endif
 #ifdef ENABLE_SCRIPTING
 #include <mgba/core/scripting.h>
 
@@ -244,30 +238,8 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 
 #ifdef USE_DEBUGGERS
 	struct mDebugger debugger;
-	bool hasDebugger = false;
-
 	mDebuggerInit(&debugger);
-#ifdef USE_EDITLINE
-	if (args->debugCli) {
-		struct mDebuggerModule* module = mDebuggerCreateModule(DEBUGGER_CLI, renderer->core);
-		if (module) {
-			struct CLIDebugger* cliDebugger = (struct CLIDebugger*) module;
-			CLIDebuggerAttachBackend(cliDebugger, CLIDebuggerEditLineBackendCreate());
-			mDebuggerAttachModule(&debugger, module);
-			hasDebugger = true;
-		}
-	}
-#endif
-
-#ifdef USE_GDB_STUB
-	if (args->debugGdb) {
-		struct mDebuggerModule* module = mDebuggerCreateModule(DEBUGGER_GDB, renderer->core);
-		if (module) {
-			mDebuggerAttachModule(&debugger, module);
-			hasDebugger = true;
-		}
-	}
-#endif
+	bool hasDebugger = mArgumentsApplyDebugger(args, renderer->core, &debugger);
 
 	if (hasDebugger) {
 		mDebuggerAttach(&debugger, renderer->core);
