@@ -15,7 +15,6 @@
 #endif
 #endif
 
-#include <mgba/core/cheats.h>
 #include <mgba/core/core.h>
 #include <mgba/core/config.h>
 #include <mgba/core/input.h>
@@ -110,16 +109,6 @@ int main(int argc, char** argv) {
 	opts.width = renderer.width * renderer.ratio;
 	opts.height = renderer.height * renderer.ratio;
 
-	struct mCheatDevice* device = NULL;
-	if (args.cheatsFile && (device = renderer.core->cheatDevice(renderer.core))) {
-		struct VFile* vf = VFileOpen(args.cheatsFile, O_RDONLY);
-		if (vf) {
-			mCheatDeviceClear(device);
-			mCheatParseFile(device, vf);
-			vf->close(vf);
-		}
-	}
-
 	mInputMapInit(&renderer.core->inputMap, &GBAInputInfo);
 	mCoreInitConfig(renderer.core, PORT);
 	mArgumentsApply(&args, &subparser, 1, &renderer.core->config);
@@ -183,10 +172,6 @@ int main(int argc, char** argv) {
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&renderer.core->inputMap);
 
-	if (device) {
-		mCheatDeviceDestroy(device);
-	}
-
 	mSDLDeinit(&renderer);
 	mStandardLoggerDeinit(&_logger);
 
@@ -225,7 +210,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		return 1;
 	}
 	mCoreAutoloadSave(renderer->core);
-	mCoreAutoloadCheats(renderer->core);
+	mArgumentsApplyFileLoads(args, renderer->core);
 #ifdef ENABLE_SCRIPTING
 	struct mScriptBridge* bridge = mScriptBridgeCreate();
 #ifdef ENABLE_PYTHON
@@ -251,15 +236,6 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		mDebuggerDeinit(&debugger);
 	}
 #endif
-
-	if (args->patch) {
-		struct VFile* patch = VFileOpen(args->patch, O_RDONLY);
-		if (patch) {
-			renderer->core->loadPatch(renderer->core, patch);
-		}
-	} else {
-		mCoreAutoloadPatch(renderer->core);
-	}
 
 	renderer->audio.samples = renderer->core->opts.audioBuffers;
 	renderer->audio.sampleRate = 44100;

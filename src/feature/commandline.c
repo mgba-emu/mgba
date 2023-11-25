@@ -5,9 +5,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/feature/commandline.h>
 
+#include <mgba/core/cheats.h>
 #include <mgba/core/config.h>
+#include <mgba/core/core.h>
 #include <mgba/core/version.h>
 #include <mgba-util/string.h>
+#include <mgba-util/vfs.h>
 
 #ifdef USE_GDB_STUB
 #include <mgba/internal/debugger/gdb-stub.h>
@@ -239,6 +242,30 @@ bool mArgumentsApplyDebugger(const struct mArguments* args, struct mCore* core, 
 #endif
 
 	return hasDebugger;
+}
+
+void mArgumentsApplyFileLoads(const struct mArguments* args, struct mCore* core) {
+	if (args->patch) {
+		struct VFile* patch = VFileOpen(args->patch, O_RDONLY);
+		if (patch) {
+			core->loadPatch(core, patch);
+			patch->close(patch);
+		}
+	} else {
+		mCoreAutoloadPatch(core);
+	}
+
+	struct mCheatDevice* device = NULL;
+	if (args->cheatsFile && (device = core->cheatDevice(core))) {
+		struct VFile* vf = VFileOpen(args->cheatsFile, O_RDONLY);
+		if (vf) {
+			mCheatDeviceClear(device);
+			mCheatParseFile(device, vf);
+			vf->close(vf);
+		}
+	} else {
+		mCoreAutoloadCheats(core);
+	}
 }
 
 void mArgumentsDeinit(struct mArguments* args) {
