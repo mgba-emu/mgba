@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2022 Jeffrey Pfau
+/* Copyright (c) 2013-2023 Jeffrey Pfau
 *  Copyright (c) 2022 Felix Jones
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,6 +10,7 @@
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
 #include <mgba/core/serialize.h>
+#include <mgba/debugger/debugger.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
 #endif
@@ -137,28 +138,15 @@ int main(int argc, char * argv[]) {
 	if (!mCoreLoadFile(core, args.fname)) {
 		goto loadError;
 	}
-	if (args.patch) {
-		core->loadPatch(core, VFileOpen(args.patch, O_RDONLY));
-	}
-
-	struct VFile* savestate = NULL;
-
-	if (args.savestate) {
-		savestate = VFileOpen(args.savestate, O_RDONLY);
-	}
 
 	core->reset(core);
 
-	struct mCheatDevice* device;
-	if (args.cheatsFile && (device = core->cheatDevice(core))) {
-		struct VFile* vf = VFileOpen(args.cheatsFile, O_RDONLY);
-		if (vf) {
-			mCheatDeviceClear(device);
-			mCheatParseFile(device, vf);
-			vf->close(vf);
-		}
-	}
+	mArgumentsApplyFileLoads(&args, core);
 
+	struct VFile* savestate = NULL;
+	if (args.savestate) {
+		savestate = VFileOpen(args.savestate, O_RDONLY);
+	}
 	if (savestate) {
 		mCoreLoadStateNamed(core, savestate, 0);
 		savestate->close(savestate);
