@@ -455,6 +455,9 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 	if (patchedSize > GB_SIZE_CART_MAX) {
 		patchedSize = GB_SIZE_CART_MAX;
 	}
+
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	uint8_t type = cart->type;
 	void* newRom = anonymousMemoryMap(GB_SIZE_CART_MAX);
 	if (!patch->applyPatch(patch, gb->memory.rom, gb->pristineRomSize, newRom, patchedSize)) {
 		mappedMemoryFree(newRom, GB_SIZE_CART_MAX);
@@ -473,6 +476,12 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 	}
 	gb->memory.rom = newRom;
 	gb->memory.romSize = patchedSize;
+
+	cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	if (cart->type != type) {
+		gb->memory.mbcType = GB_MBC_AUTODETECT;
+		GBMBCInit(gb);
+	}
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
 	gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
 }
