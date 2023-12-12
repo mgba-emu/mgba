@@ -483,7 +483,7 @@ if(APPLE)
 		   fixup_bundle(\"${BUNDLE_PATH}\"   \"${PLUGINS}\"   \"\")
 		   " COMPONENT ${BINARY_NAME}-qt)
 		if(CODESIGN_IDENTITY)
-			install(CODE "execute_process(COMMAND codesign -s \"${CODESIGN_IDENTITY}\" -vf -o runtime --entitlements \"${CMAKE_SOURCE_DIR}/res/entitlements.xml\" \"${BUNDLE_PATH}\")"
+			install(CODE "execute_process(COMMAND codesign -s \"${CODESIGN_IDENTITY}\" -vf -o runtime --timestamp --entitlements \"${CMAKE_SOURCE_DIR}/res/entitlements.plist\" \"${BUNDLE_PATH}\")"
 				COMPONENT ${BINARY_NAME}-qt)
 		endif()
 	else()
