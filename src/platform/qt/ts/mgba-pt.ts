@@ -716,7 +716,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Ficheiro da imagem (*.png *.jpg *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -3752,17 +3752,17 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="327"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>A tentar desconectar um jogador multiplayer que não está conectado</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="391"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>A tentar obter a ID do jogador para um jogador multiplayer que não está conectado</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="405"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>A tentar obter a ID gravada para um jogador multiplayer que não está conectado</translation>
     </message>
 </context>
 <context>
@@ -4310,7 +4310,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="114"/>
         <source>Save file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Ficheiro do save:</translation>
     </message>
 </context>
 <context>
@@ -4477,7 +4477,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="487"/>
         <source> + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation> + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="496"/>
@@ -4759,12 +4759,12 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Select image</source>
-        <translation type="unfinished">Selecionar imagem</translation>
+        <translation>Selecionar imagem</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished">Ficheiro da imagem (*.png *.jpg *.jpeg)</translation>
+        <translation>Ficheiro da imagem (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="850"/>
@@ -4792,6 +4792,7 @@ Tamanho da descarga: %3</translation>
         <translation>
             <numerusform>%n hora atrás</numerusform>
             <numerusform>%n horas atrás</numerusform>
+            <numerusform>%n horas atrás</numerusform>
         </translation>
     </message>
     <message numerus="yes">
@@ -4799,6 +4800,7 @@ Tamanho da descarga: %3</translation>
         <source>%n day(s) ago</source>
         <translation>
             <numerusform>%n dia atrás</numerusform>
+            <numerusform>%n dias atrás</numerusform>
             <numerusform>%n dias atrás</numerusform>
         </translation>
     </message>
@@ -5249,7 +5251,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="941"/>
         <source>Custom border:</source>
-        <translation type="unfinished"></translation>
+        <translation>Borda personalizada:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1059"/>
@@ -5285,7 +5287,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1201"/>
         <source>Rewind speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Velocidade do retrocesso:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1238"/>
@@ -6403,12 +6405,12 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1445"/>
         <source>Increase fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Aumentar a velocidade do avanço rápido</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1452"/>
         <source>Decrease fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Diminuir a velocidade do avanço rápido</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1459"/>
@@ -6771,17 +6773,17 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../utils.cpp" line="146"/>
         <source>Super (L)</source>
-        <translation type="unfinished">Super (E)</translation>
+        <translation>Super (E)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="148"/>
         <source>Super (R)</source>
-        <translation type="unfinished">Super (D)</translation>
+        <translation>Super (D)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="150"/>
         <source>Menu</source>
-        <translation type="unfinished">Menu</translation>
+        <translation>Menu</translation>
     </message>
 </context>
 <context>
