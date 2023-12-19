@@ -20,6 +20,7 @@ Other fixes:
  - Qt: Fix mute settings not being loaded on setting screen (fixes mgba.io/i/2990)
  - Vita: Fix camera setting not appearing (fixes mgba.io/i/3012)
 Misc:
+ - mGUI: Persist fast forwarding after closing menu (fixes mgba.io/i/2414)
  - Qt: Add exporting of SAV + RTC saves from Save Converter to strip RTC data
 
 0.10.2: (2023-04-23)
