@@ -850,9 +850,6 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 bool _resetEnvelope(struct GBAudioEnvelope* envelope) {
 	envelope->currentVolume = envelope->initialVolume;
 	_updateEnvelopeDead(envelope);
-	if (!envelope->dead) {
-		envelope->nextStep = envelope->stepTime;
-	}
 	return envelope->initialVolume || envelope->direction;
 }
 
@@ -937,6 +934,7 @@ static void _updateEnvelopeDead(struct GBAudioEnvelope* envelope) {
 		envelope->dead = 1;
 	} else {
 		envelope->dead = 0;
+		envelope->nextStep = envelope->stepTime;
 	}
 }
 

@@ -4,6 +4,7 @@ Emulation fixes:
  - ARM: Fake bpkt instruction should take no cycles (fixes mgba.io/i/2551)
  - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
  - GB Audio: Fix channel 1 restarting if sweep applies after stop (fixes mgba.io/i/2965)
+ - GB Audio: Fix restarting envelope when writing to register (fixes mgba.io/i/3067)
  - GB I/O: Read back proper SVBK value after writing 0 (fixes mgba.io/i/2921)
  - GB SIO: Disabling SIO should cancel pending transfers (fixes mgba.io/i/2537)
  - GBA Audio: Fix sample timing drifting when changing sample interval
