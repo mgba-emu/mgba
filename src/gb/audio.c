@@ -881,12 +881,25 @@ void _writeDuty(struct GBAudioEnvelope* envelope, uint8_t value) {
 }
 
 bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value, enum GBAudioStyle style) {
+	bool oldDirection = envelope->direction;
 	envelope->stepTime = GBAudioRegisterSweepGetStepTime(value);
 	envelope->direction = GBAudioRegisterSweepGetDirection(value);
 	envelope->initialVolume = GBAudioRegisterSweepGetInitialVolume(value);
-	if (style == GB_AUDIO_DMG && !envelope->stepTime) {
+	if (!envelope->stepTime) {
 		// TODO: Improve "zombie" mode
-		++envelope->currentVolume;
+		if (style == GB_AUDIO_DMG) {
+			++envelope->currentVolume;
+		} else if (style == GB_AUDIO_CGB) {
+			if (envelope->direction == oldDirection) {
+				if (envelope->direction) {
+					++envelope->currentVolume;
+				} else {
+					envelope->currentVolume += 2;
+				}
+			} else {
+				envelope->currentVolume = 0;
+			}
+		}
 		envelope->currentVolume &= 0xF;
 	}
 	_updateEnvelopeDead(envelope);
