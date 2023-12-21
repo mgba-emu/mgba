@@ -583,6 +583,21 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	case REG_MAX:
 		// Some bad interrupt libraries will write to this
 		break;
+	case REG_POSTFLG:
+		if (gba->memory.activeRegion == REGION_BIOS) {
+			if (gba->memory.io[address >> 1]) {
+				if (value & 0x8000) {
+					GBAStop(gba);
+				} else {
+					GBAHalt(gba);
+				}
+			}
+			value &= ~0x8000;
+		} else {
+			mLOG(GBA_IO, GAME_ERROR, "Write to BIOS-only I/O register: %03X", address);
+			return;
+		}
+		break;
 	case REG_EXWAITCNT_HI:
 		// This register sits outside of the normal I/O block, so we need to stash it somewhere unused
 		address = REG_INTERNAL_EXWAITCNT_HI;
@@ -615,19 +630,6 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 }
 
 void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
-	if (address == REG_HALTCNT) {
-		value &= 0x80;
-		if (!value) {
-			GBAHalt(gba);
-		} else {
-			GBAStop(gba);
-		}
-		return;
-	}
-	if (address == REG_POSTFLG) {
-		gba->memory.io[(address & (SIZE_IO - 1)) >> 1] = value;
-		return;
-	}
 	if (address >= REG_DEBUG_STRING && address - REG_DEBUG_STRING < sizeof(gba->debugString)) {
 		gba->debugString[address - REG_DEBUG_STRING] = value;
 		return;
@@ -858,10 +860,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		gba->memory.io[REG_JOYSTAT >> 1] &= ~JOYSTAT_RECV;
 		break;
 
-	case REG_POSTFLG:
-		mLOG(GBA_IO, STUB, "Stub I/O register read: %03x", address);
-		break;
-
 	// Wave RAM can be written and read even if the audio hardware is disabled.
 	// However, it is not possible to switch between the two banks because it
 	// isn't possible to write to register SOUND3CNT_LO.
@@ -935,6 +933,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case REG_IF:
 	case REG_WAITCNT:
 	case REG_IME:
+	case REG_POSTFLG:
 		// Handled transparently by registers
 		break;
 	case 0x066:
@@ -949,6 +948,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case 0x142:
 	case 0x15A:
 	case 0x206:
+	case 0x302:
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return 0;
 	// These registers sit outside of the normal I/O block, so we need to stash them somewhere unused
