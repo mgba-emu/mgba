@@ -345,7 +345,7 @@ void InputController::update() {
 int InputController::pollEvents() {
 	int activeButtons = 0;
 	for (auto& pad : gamepads()) {
-		InputMapper im(mapper(pad));
+		InputMapper im(mapper(pad.get()));
 		activeButtons |= im.mapKeys(pad->currentButtons());
 		activeButtons |= im.mapAxes(pad->currentAxes());
 		activeButtons |= im.mapHats(pad->currentHats());
@@ -358,7 +358,7 @@ int InputController::pollEvents() {
 	return activeButtons;
 }
 
-Gamepad* InputController::gamepad(uint32_t type) {
+std::shared_ptr<Gamepad> InputController::gamepad(uint32_t type) {
 	auto driver = m_inputDrivers.value(type);
 	if (!driver) {
 		return nullptr;
@@ -370,13 +370,13 @@ Gamepad* InputController::gamepad(uint32_t type) {
 	return driver->activeGamepad();
 }
 
-QList<Gamepad*> InputController::gamepads() {
-	QList<Gamepad*> pads;
+QList<std::shared_ptr<Gamepad>> InputController::gamepads() {
+	QList<std::shared_ptr<Gamepad>> pads;
 	for (auto& driver : m_inputDrivers) {
 		if (!driver->supportsGamepads()) {
 			continue;
 		}
-		Gamepad* pad = driver->activeGamepad();
+		std::shared_ptr<Gamepad> pad = driver->activeGamepad();
 		if (pad) {
 			pads.append(pad);
 		}
@@ -386,7 +386,7 @@ QList<Gamepad*> InputController::gamepads() {
 
 QSet<int> InputController::activeGamepadButtons(uint32_t type) {
 	QSet<int> activeButtons;
-	Gamepad* pad = gamepad(type);
+	std::shared_ptr<Gamepad> pad = gamepad(type);
 	if (!pad) {
 		return {};
 	}
@@ -401,7 +401,7 @@ QSet<int> InputController::activeGamepadButtons(uint32_t type) {
 
 QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes(uint32_t type) {
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeAxes;
-	Gamepad* pad = gamepad(type);
+	std::shared_ptr<Gamepad> pad = gamepad(type);
 	if (!pad) {
 		return {};
 	}
@@ -422,7 +422,7 @@ QSet<QPair<int, GamepadAxisEvent::Direction>> InputController::activeGamepadAxes
 
 QSet<QPair<int, GamepadHatEvent::Direction>> InputController::activeGamepadHats(uint32_t type) {
 	QSet<QPair<int, GamepadHatEvent::Direction>> activeHats;
-	Gamepad* pad = gamepad(type);
+	std::shared_ptr<Gamepad> pad = gamepad(type);
 	if (!pad) {
 		return {};
 	}

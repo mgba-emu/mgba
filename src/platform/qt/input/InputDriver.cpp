@@ -36,7 +36,7 @@ QList<KeySource*> InputDriver::connectedKeySources() const {
 	return {};
 }
 
-QList<Gamepad*> InputDriver::connectedGamepads() const {
+QList<std::shared_ptr<Gamepad>> InputDriver::connectedGamepads() const {
 	return {};
 }
 
@@ -57,8 +57,8 @@ KeySource* InputDriver::activeKeySource() {
 	return ks[activeKeySource];
 }
 
-Gamepad* InputDriver::activeGamepad() {
-	QList<Gamepad*> pads(connectedGamepads());
+std::shared_ptr<Gamepad> InputDriver::activeGamepad() {
+	QList<std::shared_ptr<Gamepad>> pads(connectedGamepads());
 	int activeGamepad = activeGamepadIndex();
 	if (activeGamepad < 0 || activeGamepad >= pads.count()) {
 		return nullptr;

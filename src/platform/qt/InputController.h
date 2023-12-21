@@ -143,8 +143,8 @@ private:
 	static int claimPlayer();
 	static void freePlayer(int);
 
-	Gamepad* gamepad(uint32_t type);
-	QList<Gamepad*> gamepads();
+	std::shared_ptr<Gamepad> gamepad(uint32_t type);
+	QList<std::shared_ptr<Gamepad>> gamepads();
 
 	QSet<int> activeGamepadButtons(uint32_t type);
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(uint32_t type);

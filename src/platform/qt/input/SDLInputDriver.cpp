@@ -139,10 +139,10 @@ bool SDLInputDriver::update() {
 	return true;
 }
 
-QList<Gamepad*> SDLInputDriver::connectedGamepads() const {
-	QList<Gamepad*> pads;
+QList<std::shared_ptr<Gamepad>> SDLInputDriver::connectedGamepads() const {
+	QList<std::shared_ptr<Gamepad>> pads;
 	for (auto& pad : m_gamepads) {
-		pads.append(pad.get());
+		pads.append(pad);
 	}
 	return pads;
 }
