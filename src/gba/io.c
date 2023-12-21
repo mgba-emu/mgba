@@ -531,6 +531,21 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	case GBA_REG_MAX:
 		// Some bad interrupt libraries will write to this
 		break;
+	case GBA_REG_POSTFLG:
+		if (gba->memory.activeRegion == GBA_REGION_BIOS) {
+			if (gba->memory.io[address >> 1]) {
+				if (value & 0x8000) {
+					GBAStop(gba);
+				} else {
+					GBAHalt(gba);
+				}
+			}
+			value &= ~0x8000;
+		} else {
+			mLOG(GBA_IO, GAME_ERROR, "Write to BIOS-only I/O register: %03X", address);
+			return;
+		}
+		break;
 	case GBA_REG_EXWAITCNT_HI:
 		// This register sits outside of the normal I/O block, so we need to stash it somewhere unused
 		address = GBA_REG_INTERNAL_EXWAITCNT_HI;
@@ -563,19 +578,6 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 }
 
 void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
-	if (address == GBA_REG_HALTCNT) {
-		value &= 0x80;
-		if (!value) {
-			GBAHalt(gba);
-		} else {
-			GBAStop(gba);
-		}
-		return;
-	}
-	if (address == GBA_REG_POSTFLG) {
-		gba->memory.io[(address & (GBA_SIZE_IO - 1)) >> 1] = value;
-		return;
-	}
 	if (address >= GBA_REG_DEBUG_STRING && address - GBA_REG_DEBUG_STRING < sizeof(gba->debugString)) {
 		gba->debugString[address - GBA_REG_DEBUG_STRING] = value;
 		return;
@@ -806,10 +808,6 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		gba->memory.io[GBA_REG(JOYSTAT)] &= ~JOYSTAT_RECV;
 		break;
 
-	case GBA_REG_POSTFLG:
-		mLOG(GBA_IO, STUB, "Stub I/O register read: %03x", address);
-		break;
-
 	// Wave RAM can be written and read even if the audio hardware is disabled.
 	// However, it is not possible to switch between the two banks because it
 	// isn't possible to write to register SOUND3CNT_LO.
@@ -883,6 +881,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case GBA_REG_IF:
 	case GBA_REG_WAITCNT:
 	case GBA_REG_IME:
+	case GBA_REG_POSTFLG:
 		// Handled transparently by registers
 		break;
 	case 0x066:
@@ -897,6 +896,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 	case 0x142:
 	case 0x15A:
 	case 0x206:
+	case 0x302:
 		mLOG(GBA_IO, GAME_ERROR, "Read from unused I/O register: %03X", address);
 		return 0;
 	// These registers sit outside of the normal I/O block, so we need to stash them somewhere unused
