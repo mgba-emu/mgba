@@ -1,0 +1,140 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component type="desktop">
+  <!--Created with jdAppdataEdit 5.0-->
+  <id>io.mgba.mGBA</id>
+  <name>mGBA</name>
+  <summary>Nintendo Game Boy Advance Emulator</summary>
+  <developer_name>endrift</developer_name>
+  <launchable type="desktop-id">io.mgba.mGBA.desktop</launchable>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MPL-2.0</project_license>
+  <description>
+    <p>mGBA is an emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack. It also supports Game Boy and Game Boy Color games.</p>
+    <p xml:lang="de">mGBA ist ein Emulator für Game Boy Advance-Spiele. Das Ziel von mGBA ist, schneller und genauer als viele existierende Game Boy Advance-Emulatoren zu sein. Außerdem verfügt mGBA über Funktionen, die anderen Emulatoren fehlen. Zusätzlich werden auch Game Boy- und Game Boy Color-Spiele unterstützt.</p>
+    <p xml:lang="es">mGBA es un emulador para juegos de Game Boy Advance. Su objetivo es ser más rápido y más preciso que muchos emuladores de Game Boy Advance existentes, además de añadir funciones que otros emuladores no tienen. También es compatible con juegos de Game Boy y Game Boy Color.</p>
+    <p xml:lang="zh_CN">mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比众多现有的 Game Boy Advance 模拟器更快、更准确，并增加其他模拟器所缺少的功能。mGBA 还支持 Game Boy 和 Game Boy Color 游戏。</p>
+  </description>
+  <releases>
+    <release version="0.9.3" date="2021-12-18" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.9.3</url>
+    </release>
+    <release version="0.9.2" date="2021-07-11" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.9.2</url>
+    </release>
+    <release version="0.9.1" date="2021-04-19" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.9.1</url>
+    </release>
+    <release version="0.9.0" date="2021-03-29" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.9.0</url>
+    </release>
+    <release version="0.8.4" date="2020-10-30" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.8.4</url>
+    </release>
+    <release version="0.8.3" date="2020-08-04" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.8.3</url>
+    </release>
+    <release version="0.8.2" date="2020-06-15" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.8.2</url>
+    </release>
+    <release version="0.8.1" date="2020-02-17" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.8.1</url>
+    </release>
+    <release version="0.8.0" date="2020-01-22" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.8.0</url>
+    </release>
+    <release version="0.8-b1" date="2019-10-21" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.8-b1</url>
+    </release>
+    <release version="0.7.3" date="2019-09-15" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.7.3</url>
+    </release>
+    <release version="0.7.2" date="2019-05-25" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.7.2</url>
+    </release>
+    <release version="0.7.1" date="2019-02-25" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.7.1</url>
+    </release>
+    <release version="0.7.0" date="2019-01-27" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.7.0</url>
+    </release>
+    <release version="0.7-b1" date="2018-09-25" type="development">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.7-b1</url>
+    </release>
+    <release version="0.6.3" date="2018-04-14" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.6.3</url>
+    </release>
+    <release version="0.6.2" date="2018-04-04" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.6.2</url>
+    </release>
+    <release version="0.6.1" date="2017-10-01" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.6.1</url>
+    </release>
+    <release version="0.6.0" date="2017-07-16" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.6.0</url>
+    </release>
+    <release version="0.6-b1" date="2017-06-30" type="development">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.6-b1</url>
+    </release>
+    <release version="medusa-a2" date="2017-04-26" type="development">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/medusa-a2</url>
+    </release>
+    <release version="medusa-a1" date="2017-04-08" type="development">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/medusa-a1</url>
+    </release>
+    <release version="0.5.2" date="2016-12-31" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.5.2</url>
+    </release>
+    <release version="0.5.1" date="2016-10-05" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.5.1</url>
+    </release>
+    <release version="0.5.0" date="2016-09-19" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.5.0</url>
+    </release>
+    <release version="0.4.1" date="2016-07-12" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.4.1</url>
+    </release>
+    <release version="0.4.0" date="2016-02-03" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.4.0</url>
+    </release>
+    <release version="0.3.2" date="2015-12-17" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.3.2</url>
+    </release>
+    <release version="0.3.1" date="2015-10-28" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.3.1</url>
+    </release>
+    <release version="0.3.0" date="2015-11-09" type="stable">
+      <url>https://github.com/mgba-emu/mgba/releases/tag/0.3.0</url>
+    </release>
+  </releases>
+  <url type="homepage">https://mgba.io</url>
+  <url type="bugtracker">https://github.com/mgba-emu/mgba/issues</url>
+  <url type="faq">https://mgba.io/faq.html</url>
+  <url type="donation">https://patreon.com/mgba</url>
+  <url type="translate">https://hosted.weblate.org/engage/mgba</url>
+  <url type="vcs-browser">https://github.com/mgba-emu</url>
+  <url type="contribute">https://github.com/mgba-emu/mgba/blob/master/CONTRIBUTING.md</url>
+  <categories>
+    <category>Game</category>
+    <category>Emulator</category>
+  </categories>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>gamepad</control>
+  </supports>
+  <content_rating type="oars-1.1"/>
+  <provides>
+    <binary>mgba</binary>
+    <binary>mgba-qt</binary>
+    <mediatype>application/x-gameboy-advance-rom</mediatype>
+    <mediatype>application/x-agb-rom</mediatype>
+    <mediatype>application/x-gba-rom</mediatype>
+  </provides>
+  <keywords>
+    <keyword>emulator</keyword>
+    <keyword>Nintendo</keyword>
+    <keyword>advance</keyword>
+    <keyword>gba</keyword>
+    <keyword>Game Boy Advance</keyword>
+  </keywords>
+</component>
