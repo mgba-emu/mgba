@@ -24,6 +24,7 @@ Other fixes:
 Misc:
  - mGUI: Persist fast forwarding after closing menu (fixes mgba.io/i/2414)
  - Qt: Add exporting of SAV + RTC saves from Save Converter to strip RTC data
+ - VFS: Use anonymousMemoryMap for large 7z allocations (fixes mgba.io/i/3013)
 
 0.10.2: (2023-04-23)
 Emulation fixes:
