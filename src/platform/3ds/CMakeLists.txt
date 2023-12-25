@@ -19,8 +19,12 @@ if(${CMAKE_BUILD_TYPE} STREQUAL Debug OR ${CMAKE_BUILD_TYPE} STREQUAL RelWithDeb
 else()
 	list(APPEND OS_LIB citro3d ctru)
 endif()
-file(GLOB OS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/3ds-*.c ${CMAKE_CURRENT_SOURCE_DIR}/ctru-heap.c ${CMAKE_CURRENT_SOURCE_DIR}/socket.c)
-set(OS_SRC ${OS_SRC} PARENT_SCOPE)
+set(OS_SRC
+	${PROJECT_SOURCE_DIR}/src/util/memory.c
+	${CMAKE_CURRENT_SOURCE_DIR}/3ds-vfs.c
+	${CMAKE_CURRENT_SOURCE_DIR}/ctru-heap.c
+	${CMAKE_CURRENT_SOURCE_DIR}/socket.c
+	PARENT_SCOPE)
 set(OS_LIB ${OS_LIB} PARENT_SCOPE)
 source_group("3DS-specific code" FILES ${OS_SRC})
 
