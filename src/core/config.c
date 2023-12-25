@@ -290,6 +290,7 @@ void mCoreConfigPortablePath(char* out, size_t outLength) {
 	WideCharToMultiByte(CP_UTF8, 0, wpath, -1, out, outLength, 0, 0);
 	StringCchCatA(out, outLength, PATH_SEP "portable.ini");
 #elif defined(PSP2) || defined(GEKKO) || defined(__SWITCH__) || defined(__3DS__)
+	UNUSED(outLength);
 	out[0] = '\0';
 #else
 	getcwd(out, outLength);
