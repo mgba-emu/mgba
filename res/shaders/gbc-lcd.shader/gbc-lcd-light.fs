@@ -56,8 +56,10 @@ uniform vec2 ReflectionDistance;
 
 #define M_PI 3.1415926535897932384626433832795
 
-// Helper to compute backlight bleed intensity
-// for a texCoord input.
+/**
+ * Helper to compute backlight bleed intensity
+ * for a texCoord input.
+ */
 float getLightIntensity(vec2 coord) {
     vec2 coordCentered = coord - vec2(0.5, 0.5);
     float coordDistCenter = (
@@ -78,11 +80,13 @@ float getLightIntensity(vec2 coord) {
     return clamp(lightIntensity, 0.0, 1.0);
 }
 
-// Helper to convert an intensity value into a white
-// gray color with that intensity. A radial distortion
-// effect with subtle chromatic abberation is applied that
-// makes it look a little more like a real old or cheap
-// backlight, and also helps to reduce color banding.
+/**
+ * Helper to convert an intensity value into a white
+ * gray color with that intensity. A radial distortion
+ * effect with subtle chromatic abberation is applied that
+ * makes it look a little more like a real old or cheap
+ * backlight, and also helps to reduce color banding.
+ */
 vec3 getWhiteVector(float intensity) {
     const float DeformAmount = 0.0025;
     vec2 texCoordCentered = texCoord - vec2(0.5, 0.5);
