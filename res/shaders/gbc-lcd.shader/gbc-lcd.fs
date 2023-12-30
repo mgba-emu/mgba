@@ -58,26 +58,86 @@ uniform float SubpixelGamma;
  */
 uniform float SubpixelColorBleed;
 
-// Subpixel colors are loosely based on this resource:
-// R: #FF7145, G: #C1D650, B: #3BCEFF
-// https://gbcc.dev/technology/
-const vec3 SubpixelColorRed = vec3(1.00, 0.38, 0.22);
-const vec3 SubpixelColorGreen = vec3(0.60, 0.88, 0.30);
-const vec3 SubpixelColorBlue = vec3(0.23, 0.65, 1.00);
+/**
+ * Determines the distance between subpixels.
+ * Lower values put the red, green, and blue subpixels
+ * within a single pixel closer together.
+ * Higher values put them farther apart.
+ * You'll normally want this to be a number from 0 to 1.
+ */
+uniform float SubpixelSpread;
 
-// These values determine the size and fade-off of subpixels.
-const float SubpixelGlowWidthMin = 0.08;
-const float SubpixelGlowWidthMax = 0.36;
-const float SubpixelGlowHeightMin = 0.30;
-const float SubpixelGlowHeightMax = 0.65;
-const float SubpixelGlowWidthDelta = (
-    SubpixelGlowWidthMax - SubpixelGlowWidthMin
-);
-const float SubpixelGlowHeightDelta = (
-    SubpixelGlowHeightMax - SubpixelGlowHeightMin
-);
+/**
+ * Determines the vertical offset of subpixels within
+ * a pixel.
+ * Lower values put the red, green, and blue subpixels
+ * within a single pixel higher up.
+ * Higher values put them further down.
+ * You'll normally want this to be a number from 0 to 1.
+ */
+uniform float SubpixelVerticalOffset;
 
-// Helper to get luminosity of an RGB color.
+/**
+ * Lower values make the subpixels horizontally thinner,
+ * and higher values make them thicker.
+ * You'll normally want this to be a number from 0 to 1.
+ */
+uniform float SubpixelLightWidth;
+
+/**
+ * Lower values make the subpixels vertically taller,
+ * and higher values make them shorter.
+ * You'll normally want this to be a number from 0 to 1.
+ */
+uniform float SubpixelLightHeight;
+
+/**
+ * Lower values make the subpixels sharper and more
+ * individually distinct.
+ * Higher values add an increasingly intense glowing
+ * effect around each subpixel.
+ * You'll normally want this to be a number from 0 to 1.
+ */
+uniform float SubpixelLightGlow;
+
+/**
+ * Scale the size of pixels up or down.
+ * Useful for looking at larger than 8x8 subpixel sizes.
+ * You'll normally want this number to be exactly 1,
+ * meaning that every group of 3 subpixels corresponds
+ * to one pixel in the display.
+ */
+uniform float SubpixelScale;
+
+/**
+ * GBC subpixels are roughly rectangular shaped, but
+ * with a rectangular gap in the lower-right corner.
+ * Lower values make the lower-right gap in each GBC
+ * subpixel less distinct. A value of 0 results in no
+ * gap being shown at all.
+ * Higher values make the gap more distinct.
+ * You'll normally want this to be a number from 0 to 1.
+ */
+uniform float SubpixelTabHeight;
+
+/**
+ * The following three uniforms decide the base colors
+ * of each of the subpixels.
+ * 
+ * Default subpixel colors are based on this resource:
+ * https://gbcc.dev/technology/
+ * R: #FF7145 (1.00, 0.44, 0.27)
+ * G: #C1D650 (0.75, 0.84, 0.31)
+ * B: #3BCEFF (0.23, 0.81, 1.00)
+ */ 
+uniform vec3 SubpixelColorRed; // vec3(1.00, 0.38, 0.22);
+uniform vec3 SubpixelColorGreen; // vec3(0.60, 0.88, 0.30);
+uniform vec3 SubpixelColorBlue; // vec3(0.23, 0.65, 1.00);
+
+/**
+ * Helper to get luminosity of an RGB color.
+ * Used with HCL color space related code.
+ */
 float getColorLumosity(in vec3 rgb) {
     return (
         (rgb.r * (5.0 / 16.0)) +
@@ -86,7 +146,9 @@ float getColorLumosity(in vec3 rgb) {
     );
 }
 
-// Helper to convert RGB color to HCL. (Hue, Chroma, Luma)
+/**
+ * Helper to convert RGB color to HCL. (Hue, Chroma, Luma)
+ */
 vec3 convertRgbToHcl(in vec3 rgb) {
     float xMin = min(rgb.r, min(rgb.g, rgb.b));
     float xMax = max(rgb.r, max(rgb.g, rgb.b));
@@ -102,7 +164,9 @@ vec3 convertRgbToHcl(in vec3 rgb) {
     return vec3(h, c, l);
 }
 
-// Helper to convert HCL color to RGB. (Hue, Chroma, Luma)
+/**
+ * Helper to convert HCL color to RGB. (Hue, Chroma, Luma)
+ */
 vec3 convertHclToRgb(in vec3 hcl) {
     vec3 rgb;
     float h = mod(hcl.x, 6.0);
@@ -132,22 +196,182 @@ vec3 convertHclToRgb(in vec3 hcl) {
     return clamp(vec3(m, m, m) + rgb, 0.0, 1.0);
 }
 
-float mixColor(float distColor, float colorSourceAdjustedChannel) {
+/**
+ * Helper to check if a point is contained within
+ * a rectangular area.
+ */
+bool getPointInRect(
+    vec2 point,
+    vec2 rectTopLeft,
+    vec2 rectBottomRight
+) {
     return (
-        max(0.0, (
-            SubpixelGlowWidthDelta -
-            max(0.0, distColor - SubpixelGlowWidthMin)
-        )) /
-        SubpixelGlowWidthDelta
-    ) * (
+        point.x >= rectTopLeft.x &&
+        point.y >= rectTopLeft.y &&
+        point.x <= rectBottomRight.x &&
+        point.y <= rectBottomRight.y
+    );
+}
+
+/**
+ * Helper to get the nearest offset vector from a
+ * point to a line segment.
+ * (The length of this offset vector is the nearest
+ * distance from the point to the line segment.)
+ * Thank you to https://stackoverflow.com/a/1501725
+ */
+vec2 getPointLineDistance(
+    vec2 point,
+    vec2 line0,
+    vec2 line1
+) {
+    vec2 lineDelta = line0 - line1;
+    float lineLengthSq = dot(lineDelta, lineDelta);
+    if(lineLengthSq <= 0) {
+        return line0 - point;
+    }
+    float t = (
+        dot(point - line0, line1 - line0) / lineLengthSq
+    );
+    vec2 projection = (
+        line0 + clamp(t, 0.0, 1.0) * (line1 - line0)
+    );
+    return projection - point;
+}
+
+/**
+ * Helper to get the nearest offset vector from a
+ * point to a rectangle.
+ * Returns (0, 0) for points within the rectangle.
+ */
+vec2 getPointRectDistance(
+    vec2 point,
+    vec2 rectTopLeft,
+    vec2 rectBottomRight
+) {
+    if(getPointInRect(point, rectTopLeft, rectBottomRight)) {
+        return vec2(0.0, 0.0);
+    }
+    vec2 rectTopRight = vec2(rectBottomRight.x, rectTopLeft.y);
+    vec2 rectBottomLeft = vec2(rectTopLeft.x, rectBottomRight.y);
+    vec2 v0 = getPointLineDistance(point, rectTopLeft, rectTopRight);
+    vec2 v1 = getPointLineDistance(point, rectBottomLeft, rectBottomRight);
+    vec2 v2 = getPointLineDistance(point, rectTopLeft, rectBottomLeft);
+    vec2 v3 = getPointLineDistance(point, rectTopRight, rectBottomRight);
+    float v0Length = length(v0);
+    float v1Length = length(v1);
+    float v2Length = length(v2);
+    float v3Length = length(v3);
+    float minLength = min(
+        min(v0Length, v1Length),
+        min(v2Length, v3Length)
+    );
+    if(minLength == v0Length) {
+        return v0;
+    }
+    else if(minLength == v1Length) {
+        return v1;
+    }
+    else if(minLength == v2Length) {
+        return v2;
+    }
+    else {
+        return v3;
+    }
+}
+
+/**
+ * Helper to get the nearest offset vector from a
+ * point to a subpixel.
+ * GBC subpixels are roughly rectangular in shape,
+ * but have a rectangular gap in their bottom-left
+ * corner.
+ * Returns (0, 0) for points within the subpixel.
+ */
+vec2 getPointSubpixelDistance(
+    vec2 point,
+    vec2 subpixelCenter,
+    vec2 subpixelSizeHalf
+) {
+    float rectLeft = subpixelCenter.x - subpixelSizeHalf.x;
+    float rectRight = subpixelCenter.x + subpixelSizeHalf.x;
+    float rectTop = subpixelCenter.y - subpixelSizeHalf.y;
+    float rectBottom = subpixelCenter.y + subpixelSizeHalf.y;
+    vec2 offsetLeft = getPointRectDistance(
+        point,
+        vec2(rectLeft, rectTop + SubpixelTabHeight),
+        vec2(subpixelCenter.x, rectBottom)
+    );
+    vec2 offsetRight = getPointRectDistance(
+        point,
+        vec2(subpixelCenter.x, rectTop),
+        vec2(rectRight, rectBottom)
+    );
+    if(length(offsetLeft) <= length(offsetRight)) {
+        return offsetLeft;
+    }
+    else {
+        return offsetRight;
+    }
+}
+
+/**
+ * Helper to get the intensity of light from a
+ * subpixel.
+ * The pixelPosition argument represents a
+ * fragment's position within a pixel.
+ * Spread represents the subpixel's horizontal
+ * position within the pixel.
+ */
+float getSubpixelIntensity(
+    vec2 pixelPosition,
+    float spread
+) {
+    vec2 subpixelCenter = vec2(
+        0.5 + (spread * SubpixelSpread),
+        1.0 - SubpixelVerticalOffset
+    );
+    vec2 subpixelSizeHalf = 0.5 * vec2(
+        SubpixelLightWidth,
+        SubpixelLightHeight
+    );
+    vec2 offset = getPointSubpixelDistance(
+        pixelPosition,
+        subpixelCenter,
+        subpixelSizeHalf
+    );
+    if(SubpixelLightGlow <= 0) {
+        return dot(offset, offset) <= 0.0 ? 1.0 : 0.0;
+    }
+    else {
+        float dist = length(offset);
+        float glow = max(0.0,
+            1.0 - (dist / SubpixelLightGlow)
+        );
+        return glow;
+    }
+}
+
+/**
+ * Helper to apply SubpixelColorBleed to the intensity
+ * value computed for a fragment and subpixel.
+ * Subpixel color bleed allows subpixel colors to be
+ * more strongly coerced to more accurately represent
+ * the underlying pixel color.
+ */
+float applySubpixelBleed(
+    float subpixelIntensity,
+    float colorSourceChannel
+) {
+    return subpixelIntensity * (
         SubpixelColorBleed +
-        ((1.0 - SubpixelColorBleed) * colorSourceAdjustedChannel)
+        ((1.0 - SubpixelColorBleed) * colorSourceChannel)
     );
 }
 
 void main() {
-    // Get base color of the pixel, adjust based on contrast
-    // and luminosity settings
+    // Get base color of the pixel, adjust based on
+    // contrast and luminosity settings.
     vec3 colorSource = texture2D(tex, texCoord).rgb;
     vec3 colorSourceHcl = convertRgbToHcl(colorSource);
     vec3 colorSourceAdjusted = convertHclToRgb(vec3(
@@ -155,27 +379,27 @@ void main() {
         colorSourceHcl.y * SourceContrast,
         colorSourceHcl.z * SourceLuminosity
     ));
-    // Determine how much each subpixel color should affect
-    // this fragment
-    vec2 subpixelPos = mod(texCoord * texSize, 1.0);
-    float distRed = abs(subpixelPos.x - (1.35 / 8.0));
-    float distGreen = abs(subpixelPos.x - (4.0 / 8.0));
-    float distBlue = abs(subpixelPos.x - (6.65 / 8.0));
-    float mixRed = mixColor(distRed, colorSourceAdjusted.r);
-    float mixGreen = mixColor(distGreen, colorSourceAdjusted.g);
-    float mixBlue = mixColor(distBlue, colorSourceAdjusted.b);
-    float distVertical = abs(subpixelPos.y - 0.55);
-    float mixVertical = (
-        max(0.0, (
-            SubpixelGlowHeightDelta -
-            max(0.0, distVertical - SubpixelGlowHeightMin)
-        )) /
-        SubpixelGlowHeightDelta
+    // Determine how much each subpixel's light should
+    // affect this fragment.
+    vec2 pixelPosition = (
+        mod(texCoord * texSize * SubpixelScale, 1.0)
     );
-    vec3 subpixelLightColor = SubpixelGamma * mixVertical * (
-        (mixRed * SubpixelColorRed) +
-        (mixGreen * SubpixelColorGreen) +
-        (mixBlue * SubpixelColorBlue)
+    float subpixelIntensityRed = applySubpixelBleed(
+        getSubpixelIntensity(pixelPosition, -1.0),
+        colorSourceAdjusted.r
+    );
+    float subpixelIntensityGreen = applySubpixelBleed(
+        getSubpixelIntensity(pixelPosition, +0.0),
+        colorSourceAdjusted.g
+    );
+    float subpixelIntensityBlue = applySubpixelBleed(
+        getSubpixelIntensity(pixelPosition, +1.0),
+        colorSourceAdjusted.b
+    );
+    vec3 subpixelLightColor = SubpixelGamma * (
+        (subpixelIntensityRed * SubpixelColorRed) +
+        (subpixelIntensityGreen * SubpixelColorGreen) +
+        (subpixelIntensityBlue * SubpixelColorBlue)
     );
     // Compute final color
     vec3 colorResult = clamp(
