@@ -258,21 +258,21 @@ vec2 getPointRectDistance(
     vec2 v1 = getPointLineDistance(point, rectBottomLeft, rectBottomRight);
     vec2 v2 = getPointLineDistance(point, rectTopLeft, rectBottomLeft);
     vec2 v3 = getPointLineDistance(point, rectTopRight, rectBottomRight);
-    float v0Length = length(v0);
-    float v1Length = length(v1);
-    float v2Length = length(v2);
-    float v3Length = length(v3);
-    float minLength = min(
-        min(v0Length, v1Length),
-        min(v2Length, v3Length)
+    float v0LengthSq = dot(v0, v0);
+    float v1LengthSq = dot(v1, v1);
+    float v2LengthSq = dot(v2, v2);
+    float v3LengthSq = dot(v3, v3);
+    float minLengthSq = min(
+        min(v0LengthSq, v1LengthSq),
+        min(v2LengthSq, v3LengthSq)
     );
-    if(minLength == v0Length) {
+    if(minLengthSq == v0LengthSq) {
         return v0;
     }
-    else if(minLength == v1Length) {
+    else if(minLengthSq == v1LengthSq) {
         return v1;
     }
-    else if(minLength == v2Length) {
+    else if(minLengthSq == v2LengthSq) {
         return v2;
     }
     else {
@@ -307,7 +307,9 @@ vec2 getPointSubpixelDistance(
         vec2(subpixelCenter.x, rectTop),
         vec2(rectRight, rectBottom)
     );
-    if(length(offsetLeft) <= length(offsetRight)) {
+    float offsetLeftLengthSq = dot(offsetLeft, offsetLeft);
+    float offsetRightLengthSq = dot(offsetRight, offsetRight);
+    if(offsetLeftLengthSq <= offsetRightLengthSq) {
         return offsetLeft;
     }
     else {
