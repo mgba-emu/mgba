@@ -78,7 +78,7 @@ const float SubpixelGlowHeightDelta = (
 );
 
 // Helper to get luminosity of an RGB color.
-float GetColorLumosity(in vec3 rgb) {
+float getColorLumosity(in vec3 rgb) {
     return (
         (rgb.r * (5.0 / 16.0)) +
         (rgb.g * (9.0 / 16.0)) +
@@ -87,11 +87,11 @@ float GetColorLumosity(in vec3 rgb) {
 }
 
 // Helper to convert RGB color to HCL. (Hue, Chroma, Luma)
-vec3 ConvertRgbToHcl(in vec3 rgb) {
+vec3 convertRgbToHcl(in vec3 rgb) {
     float xMin = min(rgb.r, min(rgb.g, rgb.b));
     float xMax = max(rgb.r, max(rgb.g, rgb.b));
     float c = xMax - xMin;
-    float l = GetColorLumosity(rgb);
+    float l = getColorLumosity(rgb);
     float h = mod((
         c == 0 ? 0.0 :
         xMax == rgb.r ? ((rgb.g - rgb.b) / c) :
@@ -103,7 +103,7 @@ vec3 ConvertRgbToHcl(in vec3 rgb) {
 }
 
 // Helper to convert HCL color to RGB. (Hue, Chroma, Luma)
-vec3 ConvertHclToRgb(in vec3 hcl) {
+vec3 convertHclToRgb(in vec3 hcl) {
     vec3 rgb;
     float h = mod(hcl.x, 6.0);
     float c = hcl.y;
@@ -127,17 +127,30 @@ vec3 ConvertHclToRgb(in vec3 hcl) {
     else {
         rgb = vec3(c, 0.0, x);
     }
-    float lRgb = GetColorLumosity(rgb);
+    float lRgb = getColorLumosity(rgb);
     float m = l - lRgb;
     return clamp(vec3(m, m, m) + rgb, 0.0, 1.0);
+}
+
+float mixColor(float distColor, float colorSourceAdjustedChannel) {
+    return (
+        max(0.0, (
+            SubpixelGlowWidthDelta -
+            max(0.0, distColor - SubpixelGlowWidthMin)
+        )) /
+        SubpixelGlowWidthDelta
+    ) * (
+        SubpixelColorBleed +
+        ((1.0 - SubpixelColorBleed) * colorSourceAdjustedChannel)
+    );
 }
 
 void main() {
     // Get base color of the pixel, adjust based on contrast
     // and luminosity settings
     vec3 colorSource = texture2D(tex, texCoord).rgb;
-    vec3 colorSourceHcl = ConvertRgbToHcl(colorSource);
-    vec3 colorSourceAdjusted = ConvertHclToRgb(vec3(
+    vec3 colorSourceHcl = convertRgbToHcl(colorSource);
+    vec3 colorSourceAdjusted = convertHclToRgb(vec3(
         colorSourceHcl.x,
         colorSourceHcl.y * SourceContrast,
         colorSourceHcl.z * SourceLuminosity
@@ -148,27 +161,9 @@ void main() {
     float distRed = abs(subpixelPos.x - (1.35 / 8.0));
     float distGreen = abs(subpixelPos.x - (4.0 / 8.0));
     float distBlue = abs(subpixelPos.x - (6.65 / 8.0));
-    float mixRed = (
-        max(0.0, (
-            SubpixelGlowWidthDelta -
-            max(0.0, distRed - SubpixelGlowWidthMin)
-        )) /
-        SubpixelGlowWidthDelta
-    );
-    float mixGreen = (
-        max(0.0, (
-            SubpixelGlowWidthDelta -
-            max(0.0, distGreen - SubpixelGlowWidthMin)
-        )) /
-        SubpixelGlowWidthDelta
-    );
-    float mixBlue = (
-        max(0.0, (
-            SubpixelGlowWidthDelta -
-            max(0.0, distBlue - SubpixelGlowWidthMin)
-        )) /
-        SubpixelGlowWidthDelta
-    );
+    float mixRed = mixColor(distRed, colorSourceAdjusted.r);
+    float mixGreen = mixColor(distGreen, colorSourceAdjusted.g);
+    float mixBlue = mixColor(distBlue, colorSourceAdjusted.b);
     float distVertical = abs(subpixelPos.y - 0.55);
     float mixVertical = (
         max(0.0, (
@@ -176,18 +171,6 @@ void main() {
             max(0.0, distVertical - SubpixelGlowHeightMin)
         )) /
         SubpixelGlowHeightDelta
-    );
-    mixRed *= (
-        SubpixelColorBleed +
-        ((1.0 - SubpixelColorBleed) * colorSourceAdjusted.r)
-    );
-    mixGreen *= (
-        SubpixelColorBleed +
-        ((1.0 - SubpixelColorBleed) * colorSourceAdjusted.g)
-    );
-    mixBlue *= (
-        SubpixelColorBleed +
-        ((1.0 - SubpixelColorBleed) * colorSourceAdjusted.b)
     );
     vec3 subpixelLightColor = SubpixelGamma * mixVertical * (
         (mixRed * SubpixelColorRed) +
