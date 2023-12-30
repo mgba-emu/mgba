@@ -45,7 +45,7 @@ uniform float SubpixelBlendAmount;
 /**
  * Lower values make subpixels darker.
  * Higher values make them lighter and over-bright.
- * * A value of 1 represents a normal, baseline gamma value.
+ * A value of 1 represents a normal, baseline gamma value.
  * You'll normally want this to be somewhere around 1.
  */
 uniform float SubpixelGamma;
