@@ -36,6 +36,7 @@ ShaderSelector::ShaderSelector(Display* display, ConfigController* config, QWidg
 	, m_config(config)
 	, m_shaderPath(config->getOption("shader"))
 {
+	loadShader(m_shaderPath);
 	m_ui.setupUi(this);
 
 	refreshShaders();
