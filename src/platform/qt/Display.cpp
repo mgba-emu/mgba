@@ -116,7 +116,11 @@ void QGBA::Display::configure(ConfigController* config) {
 	config->updateOption("videoSync");
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (opts->shader && supportsShaders()) {
+#if !defined(USE_LIBZIP) && !defined(USE_MINIZIP)
 		struct VDir* shader = VDirOpen(opts->shader);
+#else
+		struct VDir* shader = VDirOpenArchive(opts->shader);
+#endif
 		if (shader) {
 			setShaders(shader);
 			shader->close(shader);
