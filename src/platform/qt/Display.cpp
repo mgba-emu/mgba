@@ -117,16 +117,14 @@ void QGBA::Display::configure(ConfigController* config) {
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (opts->shader && supportsShaders()) {
 		struct VDir* shader = VDirOpenArchive(opts->shader);
-		if (shader) {
-			setShaders(shader);
-			shader->close(shader);
-			return;
+		if (!shader) {
+			shader = VDirOpen(opts->shader);
+			if (!shader) {
+				return;
+			}
 		}
-		shader = VDirOpen(opts->shader);
-		if (shader) {
-			setShaders(shader);
-			shader->close(shader);
-		}
+		setShaders(shader);
+		shader->close(shader);
 	}
 #endif
 }
