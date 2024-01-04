@@ -116,18 +116,16 @@ void QGBA::Display::configure(ConfigController* config) {
 	config->updateOption("videoSync");
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (opts->shader && supportsShaders()) {
-		auto loadshader = [this](struct VDir* shader) {
-			setShaders(shader);
-			shader->close(shader);
-		};
 		struct VDir* shader = VDirOpenArchive(opts->shader);
 		if (shader) {
-			loadshader(shader);
+			setShaders(shader);
+			shader->close(shader);
 			return;
 		}
 		shader = VDirOpen(opts->shader);
 		if (shader) {
-			loadshader(shader);
+			setShaders(shader);
+			shader->close(shader);
 		}
 	}
 #endif
