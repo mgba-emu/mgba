@@ -119,12 +119,11 @@ void QGBA::Display::configure(ConfigController* config) {
 		struct VDir* shader = VDirOpenArchive(opts->shader);
 		if (!shader) {
 			shader = VDirOpen(opts->shader);
-			if (!shader) {
-				return;
-			}
 		}
-		setShaders(shader);
-		shader->close(shader);
+		if (shader) {
+			setShaders(shader);
+			shader->close(shader);
+		}
 	}
 #endif
 }
