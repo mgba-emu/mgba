@@ -43,7 +43,7 @@ public:
 	bool loadFile(const QString& path);
 	bool load(VFileDevice& vf, const QString& name);
 
-	void event(QObject* obj, QEvent* ev);
+	void scriptingEvent(QObject* obj, QEvent* ev);
 
 	mScriptContext* context() { return &m_scriptContext; }
 	ScriptingTextBufferModel* textBufferModel() const { return m_bufferModel; }

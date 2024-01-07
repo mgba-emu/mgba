@@ -143,7 +143,7 @@ bool ShortcutController::eventFilter(QObject* obj, QEvent* event) {
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
 #ifdef ENABLE_SCRIPTING
 		if (m_scripting) {
-			m_scripting->event(obj, event);
+			m_scripting->scriptingEvent(obj, event);
 		}
 #endif
 		if (keyEvent->isAutoRepeat()) {
@@ -165,7 +165,7 @@ bool ShortcutController::eventFilter(QObject* obj, QEvent* event) {
 	if (event->type() == GamepadButtonEvent::Down()) {
 #ifdef ENABLE_SCRIPTING
 		if (m_scripting) {
-			m_scripting->event(obj, event);
+			m_scripting->scriptingEvent(obj, event);
 		}
 #endif
 		auto item = m_buttons.find(static_cast<GamepadButtonEvent*>(event)->value());
@@ -186,7 +186,7 @@ bool ShortcutController::eventFilter(QObject* obj, QEvent* event) {
 	if (event->type() == GamepadButtonEvent::Up()) {
 #ifdef ENABLE_SCRIPTING
 		if (m_scripting) {
-			m_scripting->event(obj, event);
+			m_scripting->scriptingEvent(obj, event);
 		}
 #endif
 		auto item = m_buttons.find(static_cast<GamepadButtonEvent*>(event)->value());
@@ -224,7 +224,7 @@ bool ShortcutController::eventFilter(QObject* obj, QEvent* event) {
 #ifdef ENABLE_SCRIPTING
 	if (event->type() == GamepadHatEvent::Type()) {
 		if (m_scripting) {
-			m_scripting->event(obj, event);
+			m_scripting->scriptingEvent(obj, event);
 		}
 	}
 #endif

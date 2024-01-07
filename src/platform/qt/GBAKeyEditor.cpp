@@ -18,6 +18,7 @@
 #include "KeyEditor.h"
 
 #ifdef BUILD_SDL
+#define SDL_MAIN_HANDLED
 #include "platform/sdl/sdl-events.h"
 #endif
 
