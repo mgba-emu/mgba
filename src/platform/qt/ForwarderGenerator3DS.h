@@ -23,7 +23,7 @@ public:
 	System system() const override { return System::N3DS; }
 	QString extension() const override { return QLatin1String("cia"); }
 
-	virtual QStringList externalTools() const { return {"bannertool", "3dstool", "ctrtool", "makerom"}; }
+	virtual QStringList externalTools() const override { return {"bannertool", "3dstool", "ctrtool", "makerom"}; }
 
 	void rebuild(const QString& source, const QString& target) override;
 

@@ -8,6 +8,8 @@
 #include "input/Gamepad.h"
 #include "input/InputDriver.h"
 
+#define SDL_MAIN_HANDLED
+
 #include "platform/sdl/sdl-events.h"
 
 #include <memory>

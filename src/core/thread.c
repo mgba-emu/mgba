@@ -218,17 +218,17 @@ ADD_CALLBACK(savedataUpdated)
 ADD_CALLBACK(alarm)
 
 #undef ADD_CALLBACK
-#define CALLBACK(NAME) _script_ ## NAME
+#define SCRIPT(NAME) _script_ ## NAME
 
 static void _mCoreThreadAddCallbacks(struct mCoreThread* threadContext) {
 	struct mCoreCallbacks callbacks = {
-		.videoFrameEnded = CALLBACK(frame),
-		.coreCrashed = CALLBACK(crashed),
-		.sleep = CALLBACK(sleep),
-		.shutdown = CALLBACK(stop),
-		.keysRead = CALLBACK(keysRead),
-		.savedataUpdated = CALLBACK(savedataUpdated),
-		.alarm = CALLBACK(alarm),
+		.videoFrameEnded = SCRIPT(frame),
+		.coreCrashed = SCRIPT(crashed),
+		.sleep = SCRIPT(sleep),
+		.shutdown = SCRIPT(stop),
+		.keysRead = SCRIPT(keysRead),
+		.savedataUpdated = SCRIPT(savedataUpdated),
+		.alarm = SCRIPT(alarm),
 		.context = threadContext
 	};
 	threadContext->core->addCoreCallbacks(threadContext->core, &callbacks);
