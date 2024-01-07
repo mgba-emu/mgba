@@ -125,6 +125,7 @@ target_link_libraries(${BINARY_NAME}-sdl ${BINARY_NAME} ${PLATFORM_LIBRARY} ${OP
 if(NOT WIN32)
 	set_target_properties(${BINARY_NAME}-sdl PROPERTIES OUTPUT_NAME ${BINARY_NAME})
 else()
+	target_compile_definitions(${BINARY_NAME}-sdl PRIVATE _WIN32_WINNT=0x0600)
 	set_target_properties(${BINARY_NAME}-sdl PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 endif()
 install(TARGETS ${BINARY_NAME}-sdl DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${BINARY_NAME}-sdl)
