@@ -1,4 +1,4 @@
-0.10.3: (Future)
+0.10.3: (2024-01-07)
 Emulation fixes:
  - ARM: Remove obsolete force-alignment in `bx pc` (fixes mgba.io/i/2964)
  - ARM: Fake bpkt instruction should take no cycles (fixes mgba.io/i/2551)
