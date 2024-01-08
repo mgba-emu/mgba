@@ -35,6 +35,7 @@ Other fixes:
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Re-enable sync for multiplayer windows that aren't connected (fixes mgba.io/i/2974)
  - Qt: Fix mute settings not being loaded on setting screen (fixes mgba.io/i/2990)
+ - Qt: Fix screen freezing on macOS after closing save state window (fixes mgba.io/i/2885)
  - Vita: Fix camera setting not appearing (fixes mgba.io/i/3012)
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
