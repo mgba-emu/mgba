@@ -20,6 +20,7 @@ Other fixes:
  - mGUI: Fix cases where an older save state screenshot would be shown (fixes mgba.io/i/2183)
  - Qt: Re-enable sync for multiplayer windows that aren't connected (fixes mgba.io/i/2974)
  - Qt: Fix mute settings not being loaded on setting screen (fixes mgba.io/i/2990)
+ - Qt: Fix screen freezing on macOS after closing save state window (fixes mgba.io/i/2885)
  - Vita: Fix camera setting not appearing (fixes mgba.io/i/3012)
 Misc:
  - mGUI: Persist fast forwarding after closing menu (fixes mgba.io/i/2414)
