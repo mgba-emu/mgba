@@ -18,6 +18,7 @@
 #include <QFileOpenEvent>
 #include <QFontDatabase>
 #include <QIcon>
+#include <QMessageBox>
 
 #include <mgba/core/version.h>
 #include <mgba/feature/updater.h>
@@ -394,6 +395,19 @@ void GBAApp::finishJob(qint64 jobId) {
 	m_workerJobs.remove(jobId);
 	emit jobFinished(jobId);
 	m_workerJobCallbacks.remove(jobId);
+}
+
+void GBAApp::checkSafeMode() {
+	if (m_configController->getQtOption("safeModeWarning").toBool()) {
+		int choice = QMessageBox::warning(nullptr, tr("Safe Mode"),
+		                                  tr("mGBA detected a problem while starting.\n\nWould you like to reset settings to failsafe values?"),
+		                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+		if (choice == QMessageBox::Yes) {
+			m_configController->setSafeMode();
+		} else {
+			m_configController->declineSafeMode();
+		}
+	}
 }
 
 GBAApp::WorkerJob::WorkerJob(qint64 id, std::function<void ()> job, GBAApp* owner)

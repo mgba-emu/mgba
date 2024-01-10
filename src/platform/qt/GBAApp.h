@@ -82,6 +82,8 @@ public:
 	ApplicationUpdater* updater() { return &m_updater; }
 	QString invokeOnExit() { return m_invokeOnExit; }
 
+	void checkSafeMode();
+
 public slots:
 	void restartForUpdate();
 	Window* newWindow();

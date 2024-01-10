@@ -27,6 +27,7 @@ Misc:
  - Qt: Handle multiple save game files for disparate games separately (fixes mgba.io/i/2887)
  - Qt: Remove maligned double-click-to-fullscreen shortcut (closes mgba.io/i/2632)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
+ - Qt: Detect failed startup and prompt for safe mode
 
 0.10.3: (2024-01-07)
 Emulation fixes:
