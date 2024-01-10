@@ -42,6 +42,8 @@ struct GBAVideoSoftwareBackground {
 	uint16_t mapCache[64];
 	uint32_t flags;
 	uint32_t objwinFlags;
+	int objwinForceEnable;
+	bool objwinOnly;
 	bool variant;
 	int32_t offsetX;
 	int32_t offsetY;
