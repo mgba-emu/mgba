@@ -11,7 +11,7 @@
 #define BACKGROUND_BITMAP_ITERATE(W, H) \
 	x += background->dx; \
 	y += background->dy; \
-	if ((x < 0 || y < 0 || (x >> 8) >= W || (y >> 8) >= H) && !mosaicWait) { \
+	if (((x | y) < 0 || x >= (W << 8) || y >= (H << 8)) && !mosaicWait) { \
 		continue; \
 	} \
 	localX = x; \
