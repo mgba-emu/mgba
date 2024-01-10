@@ -170,7 +170,7 @@ void mSDLGLCommonRunloop(struct mSDLRenderer* renderer, void* user) {
 		renderer->core->currentVideoSize(renderer->core, &renderer->width, &renderer->height);
 		struct mRectangle dims;
 		v->layerDimensions(v, VIDEO_LAYER_IMAGE, &dims);
-		if (renderer->width != dims.width || renderer->height != dims.height) {
+		if (dims.width < 0 || dims.height < 0 || renderer->width != (unsigned) dims.width || renderer->height != (unsigned) dims.height) {
 			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
 			dims.width = renderer->width;
 			dims.height = renderer->height;

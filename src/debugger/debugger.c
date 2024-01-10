@@ -58,10 +58,11 @@ struct mDebuggerModule* mDebuggerCreateModule(enum mDebuggerType type, struct mC
 		break;
 #endif
 	case DEBUGGER_NONE:
+	case DEBUGGER_ACCESS_LOGGER:
 	case DEBUGGER_CUSTOM:
 	case DEBUGGER_MAX:
 		free(debugger);
-		return 0;
+		return NULL;
 		break;
 	}
 
