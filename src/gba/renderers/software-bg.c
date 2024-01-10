@@ -18,20 +18,18 @@
 	localY = y;
 
 #define MODE_2_COORD_OVERFLOW \
-	localX = x & (sizeAdjusted - 1); \
-	localY = y & (sizeAdjusted - 1); \
+	x &= (sizeAdjusted - 1); \
+	y &= (sizeAdjusted - 1); \
 
 #define MODE_2_COORD_NO_OVERFLOW \
 	if ((x | y) & ~(sizeAdjusted - 1)) { \
 		continue; \
-	} \
-	localX = x; \
-	localY = y;
+	}
 
 #define MODE_2_NO_MOSAIC(COORD) \
 	COORD \
-	mapData = screenBase[(localX >> 11) + (((localY >> 7) & 0x7F0) << background->size)]; \
-	pixelData = charBase[(mapData << 6) + ((localY & 0x700) >> 5) + ((localX & 0x700) >> 8)];
+	mapData = screenBase[(x >> 11) + (((y >> 7) & 0x7F0) << background->size)]; \
+	pixelData = charBase[(mapData << 6) + ((y & 0x700) >> 5) + ((x & 0x700) >> 8)];
 
 #define MODE_2_MOSAIC(COORD) \
 		if (!mosaicWait) { \
@@ -56,9 +54,13 @@
 #define DRAW_BACKGROUND_MODE_2(BLEND, OBJWIN) \
 	if (background->overflow) { \
 		if (mosaicH > 1) { \
-			localX &= sizeAdjusted - 1; \
-			localY &= sizeAdjusted - 1; \
+			int tmpX = x; \
+			int tmpY = y; \
+			x = localX & (sizeAdjusted - 1); \
+			y = localY & (sizeAdjusted - 1); \
 			MODE_2_NO_MOSAIC(); \
+			x = tmpX; \
+			y = tmpY; \
 			MODE_2_LOOP(MODE_2_MOSAIC, MODE_2_COORD_OVERFLOW, BLEND, OBJWIN); \
 		} else { \
 			MODE_2_LOOP(MODE_2_NO_MOSAIC, MODE_2_COORD_OVERFLOW, BLEND, OBJWIN); \
@@ -66,9 +68,13 @@
 	} else { \
 		if (mosaicH > 1) { \
 			if (!((x | y) & ~(sizeAdjusted - 1))) { \
-				localX &= sizeAdjusted - 1; \
-				localY &= sizeAdjusted - 1; \
+				int tmpX = x; \
+				int tmpY = y; \
+				x = localX & (sizeAdjusted - 1); \
+				y = localY & (sizeAdjusted - 1); \
 				MODE_2_NO_MOSAIC(); \
+				x = tmpX; \
+				y = tmpY; \
 			} \
 			MODE_2_LOOP(MODE_2_MOSAIC, MODE_2_COORD_NO_OVERFLOW, BLEND, OBJWIN); \
 		} else { \
