@@ -71,19 +71,22 @@ A Game Boy Advance a Nintendo Co., Ltd. bejegyzett védjegye.</translation>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Egy frissítés elérhető %1 verzióra.
+</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="38"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Szeretné most letöleni és telepíteni? Az emulátor újraindítására lesz szükség a letöltés befejezésekor.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Az automatikus frisítés ezen platformon nem elérhető, a frissítéseket manuálisan telepíthetők.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="45"/>
@@ -235,7 +238,7 @@ Letöltendő adat: %3</translation>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
         <source>Insert</source>
-        <translation type="unfinished"></translation>
+        <translation>Beszúrás</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
