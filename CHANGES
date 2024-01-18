@@ -14,6 +14,7 @@ Other fixes:
  - Qt: Fix LCDC background priority/enable bit being mis-mapped in I/O view
  - Updater: Fix updating appimage across filesystems
 Misc:
+ - Switch: Add bilinear filtering option (closes mgba.io/i/3111)
  - Vita: Add imc0 and xmc0 mount point support
 
 0.10.3: (2024-01-07)
