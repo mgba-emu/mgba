@@ -1049,7 +1049,7 @@ int main(int argc, char* argv[]) {
 				.nStates = 2
 			},
 		},
-		.nConfigExtra = 5,
+		.nConfigExtra = 6,
 		.setup = _setup,
 		.teardown = NULL,
 		.gameLoaded = _gameLoaded,
