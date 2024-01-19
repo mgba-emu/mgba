@@ -2184,6 +2184,18 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		m_controller->setPaused(true);
 		m_pendingPause = false;
 	}
+
+#ifdef ENABLE_SCRIPTING
+	if (!m_scripting) {
+		QStringList scripts = m_config->getArgvOption("script").toStringList();
+		if (!scripts.isEmpty()) {
+			scriptingOpen();
+			for (const auto& scriptPath : scripts) {
+				m_scripting->loadFile(scriptPath);
+			}
+		}
+	}
+#endif
 }
 
 void Window::attachDisplay() {
