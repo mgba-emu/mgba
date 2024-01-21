@@ -153,11 +153,10 @@ ssize_t _vfsceSize(struct VFile* vf) {
 bool _vfsceSync(struct VFile* vf, void* buffer, size_t size) {
 	struct VFileSce* vfsce = (struct VFileSce*) vf;
 	if (buffer && size) {
-		SceOff cur = sceIoLseek(vfsce->fd, 0, SEEK_CUR);
-		sceIoLseek(vfsce->fd, 0, SEEK_SET);
-		int res = sceIoWrite(vfsce->fd, buffer, size);
-		sceIoLseek(vfsce->fd, cur, SEEK_SET);
-		return res == size;
+		int res = sceIoPwrite(vfsce->fd, buffer, size, 0);
+		if (res < 0 || (size_t) res != size) {
+			return false;
+		}
 	}
 	return sceIoSyncByFd(vfsce->fd, 0) >= 0;
 }
