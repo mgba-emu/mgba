@@ -29,6 +29,7 @@ Misc:
  - Qt: Remove maligned double-click-to-fullscreen shortcut (closes mgba.io/i/2632)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
  - Switch: Add bilinear filtering option (closes mgba.io/i/3111)
+ - Vita: Add imc0 and xmc0 mount point support
 
 0.10.3: (2024-01-07)
 Emulation fixes:
