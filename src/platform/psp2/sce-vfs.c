@@ -284,7 +284,10 @@ struct VDirSceDevList {
 static const char* _devs[] = {
 	"ux0:",
 	"ur0:",
-	"uma0:"
+	"uma0:",
+	"imc0:",
+	"xmc0:",
+	NULL
 };
 
 struct VDir* VDeviceList() {
@@ -322,7 +325,7 @@ static void _vdlsceRewind(struct VDir* vd) {
 
 static struct VDirEntry* _vdlsceListNext(struct VDir* vd) {
 	struct VDirSceDevList* vdl = (struct VDirSceDevList*) vd;
-	while (vdl->vde.index < 3) {
+	while (vdl->vde.index < 0 || _devs[vdl->vde.index]) {
 		++vdl->vde.index;
 		vdl->vde.name = _devs[vdl->vde.index];
 		SceUID dir = sceIoDopen(vdl->vde.name);
