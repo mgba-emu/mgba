@@ -365,8 +365,8 @@ void ConfigController::write() {
 	mCoreConfigMap(&m_config, &m_opts);
 }
 
-void ConfigController::makePortable() {
-	mCoreConfigMakePortable(&m_config, nullptr);
+void ConfigController::makePortable(const char* path) {
+	mCoreConfigMakePortable(&m_config, path);
 
 	QString fileName(configDir());
 	fileName.append(QDir::separator());
