@@ -211,7 +211,7 @@ Yeni sürüm: %2
     <message>
         <location filename="../AudioProcessorQt.cpp" line="43"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Girişsiz ses işlemcisi başlatılamaz</translation>
     </message>
 </context>
 <context>
@@ -219,7 +219,7 @@ Yeni sürüm: %2
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Girişsiz ses işlemcisi başlatılamaz</translation>
     </message>
 </context>
 <context>
@@ -287,28 +287,28 @@ Yeni sürüm: %2
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip verisi yok</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip verisi yok. Bazı grafikler olmadan BattleChip Gates hala çalışır. Verileri şimdi indirmek istermisin?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="184"/>
         <location filename="../BattleChipView.cpp" line="203"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>Deste dosyası seç</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="215"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>Uyumsuz deste</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="216"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>Seçilen deste bu Chip Gate ile uyumlu değildir</translation>
     </message>
 </context>
 <context>
@@ -334,7 +334,7 @@ Yeni sürüm: %2
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished"></translation>
+        <translation>Yeni Kod Ekle</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
@@ -344,12 +344,12 @@ Yeni sürüm: %2
     <message>
         <location filename="../CheatsView.ui" line="93"/>
         <source>Add Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Satır ekle</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="100"/>
         <source>Code type</source>
-        <translation type="unfinished"></translation>
+        <translation>Kod tipi</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
@@ -370,7 +370,7 @@ Yeni sürüm: %2
         <location filename="../CheatsView.cpp" line="50"/>
         <location filename="../CheatsView.cpp" line="58"/>
         <source>Autodetect (recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation>Otoseç (tavsiye edilir)</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="88"/>
@@ -381,7 +381,7 @@ Yeni sürüm: %2
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bazı hileler eklenemedi. Lütfen onların doğru formatlandığından emin ol ve/yada başa hile tiplerini dene.</translation>
     </message>
 </context>
 <context>
@@ -400,7 +400,7 @@ Yeni sürüm: %2
     <message>
         <location filename="../CoreController.cpp" line="596"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>Oyun sıfırlansım mı?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="597"/>
