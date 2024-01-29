@@ -135,19 +135,11 @@ void mSDLGLCommonRunloop(struct mSDLRenderer* renderer, void* user) {
 
 	if (mSDLGLCommonLoadBackground(v)) {
 		renderer->player.windowUpdated = true;
-
-		struct mRectangle frame;
-		v->layerDimensions(v, VIDEO_LAYER_IMAGE, &frame);
-		int i;
-		for (i = 0; i < VIDEO_LAYER_IMAGE; ++i) {
-			struct mRectangle dims;
-			v->layerDimensions(v, i, &dims);
-			mRectangleCenter(&frame, &dims);
-			v->setLayerDimensions(v, i, &dims);
-		}
-
+		VideoBackendRecenter(v, 1);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		SDL_SetWindowSize(renderer->window, frame.width * renderer->ratio, frame.height * renderer->ratio);
+		int width, height;
+		v->imageSize(v, VIDEO_LAYER_IMAGE, &width, &height);
+		SDL_SetWindowSize(renderer->window, width * renderer->ratio, height * renderer->ratio);
 #endif
 	}
 
@@ -175,6 +167,7 @@ void mSDLGLCommonRunloop(struct mSDLRenderer* renderer, void* user) {
 			dims.width = renderer->width;
 			dims.height = renderer->height;
 			v->setLayerDimensions(v, VIDEO_LAYER_IMAGE, &dims);
+			VideoBackendRecenter(v, 1);
 		}
 
 		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
