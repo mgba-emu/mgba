@@ -76,10 +76,9 @@ void VideoProxy::init() {
 }
 
 void VideoProxy::reset() {
-	m_mutex.lock();
+	QMutexLocker locker(&m_mutex);
 	RingFIFOClear(&m_dirtyQueue);
 	m_toThreadCond.wakeAll();
-	m_mutex.unlock();
 }
 
 void VideoProxy::deinit() {
@@ -92,10 +91,9 @@ bool VideoProxy::writeData(const void* data, size_t length) {
 			mVideoLoggerRendererRun(&m_logger, false);
 		} else {
 			emit dataAvailable();
-			m_mutex.lock();
+			QMutexLocker locker(&m_mutex);
 			m_toThreadCond.wakeAll();
 			m_fromThreadCond.wait(&m_mutex);
-			m_mutex.unlock();
 		}
 	}
 	return true;
@@ -108,10 +106,9 @@ bool VideoProxy::readData(void* data, size_t length, bool block) {
 		if (!block || read) {
 			break;
 		}
-		m_mutex.lock();
+		QMutexLocker locker(&m_mutex);
 		m_fromThreadCond.wakeAll();
 		m_toThreadCond.wait(&m_mutex);
-		m_mutex.unlock();
 	}
 	return read;
 }
@@ -126,9 +123,8 @@ void VideoProxy::postEvent(enum mVideoLoggerEvent event) {
 }
 
 void VideoProxy::handleEvent(int event) {
-	m_mutex.lock();
+	QMutexLocker locker(&m_mutex);
 	m_logger.handleEvent(&m_logger, static_cast<enum mVideoLoggerEvent>(event));
-	m_mutex.unlock();
 }
 
 void VideoProxy::lock() {
@@ -140,7 +136,7 @@ void VideoProxy::unlock() {
 }
 
 void VideoProxy::wait() {
-	m_mutex.lock();
+	QMutexLocker locker(&m_mutex);
 	while (RingFIFOSize(&m_dirtyQueue)) {
 		if (QThread::currentThread() == thread()) {
 			// We're on the main thread
@@ -151,7 +147,6 @@ void VideoProxy::wait() {
 			m_fromThreadCond.wait(&m_mutex, 1);
 		}
 	}
-	m_mutex.unlock();
 }
 
 void VideoProxy::wake(int y) {
