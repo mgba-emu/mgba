@@ -24,8 +24,8 @@ public:
 		QUIT,
 	};
 
-	Action(Function, const QString& name, const QString& visibleName, QObject* parent = nullptr);
-	Action(BooleanFunction, const QString& name, const QString& visibleName, QObject* parent = nullptr);
+	Action(Function&&, const QString& name, const QString& visibleName, QObject* parent = nullptr);
+	Action(BooleanFunction&&, const QString& name, const QString& visibleName, QObject* parent = nullptr);
 	Action(const QString& name, const QString& visibleName, QObject* parent = nullptr);
 
 	Action(QObject* parent = nullptr);

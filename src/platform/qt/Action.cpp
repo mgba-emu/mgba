@@ -12,7 +12,7 @@ Action::Action(QObject* parent)
 {
 }
 
-Action::Action(Function function, const QString& name, const QString& visibleName, QObject* parent)
+Action::Action(Function&& function, const QString& name, const QString& visibleName, QObject* parent)
 	: QObject(parent)
 	, m_function(function)
 	, m_name(name)
@@ -20,7 +20,7 @@ Action::Action(Function function, const QString& name, const QString& visibleNam
 {
 }
 
-Action::Action(Action::BooleanFunction function, const QString& name, const QString& visibleName, QObject* parent)
+Action::Action(Action::BooleanFunction&& function, const QString& name, const QString& visibleName, QObject* parent)
 	: QObject(parent)
 	, m_booleanFunction(function)
 	, m_name(name)
