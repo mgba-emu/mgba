@@ -162,6 +162,7 @@ bool SfoWrite(struct Table* sfo, struct VFile* vf) {
 				sortedEntries[i].size = 4;
 				break;
 			default:
+				free(sortedEntries);
 				return false;
 			}
 		}
