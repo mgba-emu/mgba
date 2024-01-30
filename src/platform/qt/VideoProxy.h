@@ -11,6 +11,7 @@
 #include <QReadWriteLock>
 #include <QWaitCondition>
 
+#include <mgba/core/log.h>
 #include <mgba/feature/video-logger.h>
 #include <mgba/feature/proxy-backend.h>
 #include <mgba-util/ring-fifo.h>
@@ -72,6 +73,7 @@ private:
 	} m_logger;
 
 	struct mVideoProxyBackend m_backend;
+	struct mLogger* m_logContext = nullptr;
 
 	RingFIFO m_dirtyQueue;
 	QMutex m_mutex;

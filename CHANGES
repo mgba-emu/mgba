@@ -28,6 +28,7 @@ Misc:
  - mGUI: Persist fast forwarding after closing menu (fixes mgba.io/i/2414)
  - Qt: Handle multiple save game files for disparate games separately (fixes mgba.io/i/2887)
  - Qt: Remove maligned double-click-to-fullscreen shortcut (closes mgba.io/i/2632)
+ - Qt: Pass logging context through to video proxy thread (fixes mgba.io/i/3095)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
  - Switch: Add bilinear filtering option (closes mgba.io/i/3111)
  - Vita: Add imc0 and xmc0 mount point support

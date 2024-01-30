@@ -48,12 +48,14 @@ VideoProxy::~VideoProxy() {
 
 void VideoProxy::attach(CoreController* controller) {
 	CoreController::Interrupter interrupter(controller);
+	m_logContext = &controller->thread()->logger.d;
 	controller->thread()->core->videoLogger = &m_logger;
 }
 
 void VideoProxy::detach(CoreController* controller) {
 	CoreController::Interrupter interrupter(controller);
 	if (controller->thread()->core->videoLogger == &m_logger) {
+		m_logContext = nullptr;
 		controller->thread()->core->videoLogger = nullptr;
 	}
 }
@@ -64,11 +66,13 @@ void VideoProxy::setProxiedBackend(VideoBackend* backend) {
 }
 
 void VideoProxy::processData() {
+	mLogSetThreadLogger(m_logContext);
 	mVideoLoggerRendererRun(&m_logger, false);
 	m_fromThreadCond.wakeAll();
 }
 
 void VideoProxy::processCommands() {
+	mLogSetThreadLogger(m_logContext);
 	mVideoProxyBackendRun(&m_backend, false);
 }
 
@@ -88,6 +92,7 @@ bool VideoProxy::writeData(const void* data, size_t length) {
 	while (!RingFIFOWrite(&m_dirtyQueue, data, length)) {
 		if (QThread::currentThread() == thread()) {
 			// We're on the main thread
+			mLogSetThreadLogger(m_logContext);
 			mVideoLoggerRendererRun(&m_logger, false);
 		} else {
 			emit dataAvailable();
@@ -124,6 +129,7 @@ void VideoProxy::postEvent(enum mVideoLoggerEvent event) {
 
 void VideoProxy::handleEvent(int event) {
 	QMutexLocker locker(&m_mutex);
+	mLogSetThreadLogger(m_logContext);
 	m_logger.handleEvent(&m_logger, static_cast<enum mVideoLoggerEvent>(event));
 }
 
@@ -140,6 +146,7 @@ void VideoProxy::wait() {
 	while (RingFIFOSize(&m_dirtyQueue)) {
 		if (QThread::currentThread() == thread()) {
 			// We're on the main thread
+			mLogSetThreadLogger(m_logContext);
 			mVideoLoggerRendererRun(&m_logger, false);
 		} else {
 			emit dataAvailable();
