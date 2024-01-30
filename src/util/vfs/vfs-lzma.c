@@ -94,12 +94,12 @@ static void _vd7zFree(ISzAllocPtr p, void* address) {
 	struct VDir7zAlloc* alloc = (struct VDir7zAlloc*) p;
 	size_t size = (size_t) TableLookup(&alloc->allocs, (uintptr_t) address >> 2);
 	if (size) {
+		TableRemove(&alloc->allocs, (uintptr_t) address >> 2);
 		if (size >= 0x10000) {
 			mappedMemoryFree(address, size);
 		} else {
 			free(address);
 		}
-		TableRemove(&alloc->allocs, (uintptr_t) address >> 2);
 	}
 }
 
