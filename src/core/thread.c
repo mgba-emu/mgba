@@ -246,6 +246,8 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	ThreadLocalSetKey(_contextKey, threadContext);
 	ThreadSetName("CPU Thread");
 
+	mLogSetThreadLogger(&threadContext->logger.d);
+
 #if !defined(_WIN32) && defined(USE_PTHREADS)
 	sigset_t signals;
 	sigemptyset(&signals);
@@ -762,12 +764,3 @@ struct mCoreThread* mCoreThreadGet(void) {
 	return NULL;
 }
 #endif
-
-struct mLogger* mCoreThreadLogger(void) {
-	struct mCoreThread* thread = mCoreThreadGet();
-	if (thread) {
-		return &thread->logger.d;
-	}
-	return NULL;
-}
-
