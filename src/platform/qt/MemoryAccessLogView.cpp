@@ -8,6 +8,7 @@
 #include <QVBoxLayout>
 
 #include "GBAApp.h"
+#include "LogController.h"
 #include "utils.h"
 #include "VFileDevice.h"
 
@@ -78,7 +79,7 @@ void MemoryAccessLogView::start() {
 	m_controller->attachDebuggerModule(&m_logger.d);
 	if (!mDebuggerAccessLoggerOpen(&m_logger, vf, flags)) {
 		mDebuggerAccessLoggerDeinit(&m_logger);
-		// log error
+		LOG(QT, ERROR) << tr("Failed to open memory log file");
 		return;
 	}
 

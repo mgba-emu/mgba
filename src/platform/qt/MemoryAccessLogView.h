@@ -44,7 +44,7 @@ private:
 	QSet<QString> m_watchedRegions;
 	QHash<QString, QCheckBox*> m_regionBoxes;
 	QHash<QString, int> m_regionMapping;
-	struct mDebuggerAccessLogger m_logger;
+	struct mDebuggerAccessLogger m_logger{};
 	bool m_active = false;
 
 	mDebuggerAccessLogRegionFlags activeFlags() const;
