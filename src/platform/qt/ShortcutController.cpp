@@ -326,7 +326,7 @@ void ShortcutController::loadProfile(const QString& profile) {
 	m_profileName = profile;
 	m_profile = InputProfile::findProfile(profile);
 	onSubitems({}, [this](std::shared_ptr<Shortcut> item) {
-		loadGamepadShortcuts(item);
+		loadGamepadShortcuts(std::move(item));
 	});
 }
 

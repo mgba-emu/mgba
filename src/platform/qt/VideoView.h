@@ -75,7 +75,7 @@ private:
 		QSize dims;
 
 		Preset() {}
-		Preset(QString container, QString vcodec, QString acodec, int vbr, int abr, QSize dims = QSize())
+		Preset(const QString& container, const QString& vcodec, const QString& acodec, int vbr, int abr, QSize dims = QSize())
 		    : container(container)
 		    , vcodec(vcodec)
 		    , acodec(acodec)

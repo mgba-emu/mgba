@@ -73,7 +73,7 @@ void ScriptingController::setController(std::shared_ptr<CoreController> controll
 	if (!controller) {
 		return;
 	}
-	m_controller = controller;
+	m_controller = std::move(controller);
 	CoreController::Interrupter interrupter(m_controller);
 	m_controller->thread()->scriptContext = &m_scriptContext;
 	if (m_controller->hasStarted()) {
