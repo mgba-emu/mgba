@@ -271,7 +271,7 @@ int main(int argc, char* argv[]) {
 					// Cross-dev, need to copy manually
 					int infd = open(updateArchive, O_RDONLY);
 					int outfd = -1;
-					if (infd >= 0) {
+					if (infd < 0) {
 						ok = 2;
 					} else {
 						outfd = open(bin, O_CREAT | O_WRONLY | O_TRUNC, 0755);

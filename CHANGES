@@ -19,6 +19,7 @@ Other fixes:
  - Debugger: Fix writing to specific segment in command-line debugger
  - GB: Fix uninitialized save data when loading undersized temporary saves
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
+ - Updater: Fix updating appimage across filesystems
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - GB: Prevent incompatible BIOSes from being used on differing models
