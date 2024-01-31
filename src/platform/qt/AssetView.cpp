@@ -199,7 +199,7 @@ bool AssetView::lookupObjGBA(int id, struct ObjInfo* info) {
 		paletteSet = 2;
 		bits = 4;
 	}
-	*info = (ObjInfo) {
+	*info = ObjInfo{
 		tile,
 		width / 8,
 		height / 8,
@@ -257,7 +257,7 @@ bool AssetView::lookupObjGB(int id, struct ObjInfo* info) {
 	}
 	palette += 8;
 
-	*info = (ObjInfo) {
+	*info = ObjInfo{
 		tile,
 		1,
 		height / 8,
