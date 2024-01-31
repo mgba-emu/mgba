@@ -1,6 +1,8 @@
 0.10.4: (Future)
 Emulation fixes:
  - GBA SIO: Fix MULTI mode SIOCNT bit 7 writes on secondary GBAs (fixes mgba.io/i/3110)
+Other fixes:
+ - Updater: Fix updating appimage across filesystems
 Misc:
  - Vita: Add imc0 and xmc0 mount point support
 
