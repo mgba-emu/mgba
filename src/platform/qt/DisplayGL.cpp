@@ -245,7 +245,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	m_isDrawing = true;
 	m_painter->setContext(controller);
 	m_painter->setMessagePainter(messagePainter());
-	m_context = controller;
+	m_context = std::move(controller);
 	if (videoProxy()) {
 		videoProxy()->moveToThread(&m_drawThread);
 	}
@@ -466,7 +466,7 @@ void DisplayGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
 	if (proxy) {
 		proxy->moveToThread(&m_drawThread);
 	}
-	m_painter->setVideoProxy(proxy);
+	m_painter->setVideoProxy(std::move(proxy));
 }
 
 void DisplayGL::updateContentSize() {
@@ -624,7 +624,7 @@ void PainterGL::destroy() {
 }
 
 void PainterGL::setContext(std::shared_ptr<CoreController> context) {
-	m_context = context;
+	m_context = std::move(context);
 }
 
 void PainterGL::resizeContext() {

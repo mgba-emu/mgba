@@ -315,7 +315,8 @@ bool GBAApp::waitOnJob(qint64 jobId, QObject* context, std::function<void ()>&& 
 	if (!context) {
 		context = this;
 	}
-	QMetaObject::Connection connection = connect(this, &GBAApp::jobFinished, context, [jobId, callback](qint64 testedJobId) {
+	QMetaObject::Connection connection = connect(this, &GBAApp::jobFinished, context,
+	                                             [jobId, callback = std::move(callback)](qint64 testedJobId) {
 		if (jobId != testedJobId) {
 			return;
 		}
@@ -381,7 +382,7 @@ void GBAApp::restartForUpdate() {
 	#ifndef Q_OS_WIN
 		QFile(extractedPath).setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);
 	#endif
-		m_invokeOnExit = extractedPath;
+		m_invokeOnExit = std::move(extractedPath);
 	}
 
 	for (auto& window : m_windows) {
@@ -398,7 +399,7 @@ void GBAApp::finishJob(qint64 jobId) {
 
 GBAApp::WorkerJob::WorkerJob(qint64 id, std::function<void ()>&& job, GBAApp* owner)
 	: m_id(id)
-	, m_job(job)
+	, m_job(std::move(job))
 	, m_owner(owner)
 {
 	setAutoDelete(true);

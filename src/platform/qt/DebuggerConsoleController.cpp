@@ -167,7 +167,7 @@ void DebuggerConsoleController::historyLoad() {
 		history.append(QString::fromUtf8(line));
 	}
 	QMutexLocker lock(&m_mutex);
-	m_history = history;
+	m_history = std::move(history);
 }
 
 void DebuggerConsoleController::historySave() {

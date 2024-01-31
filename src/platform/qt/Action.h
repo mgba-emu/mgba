@@ -45,7 +45,7 @@ public:
 		return m_name == other.m_name;
 	}
 
-	void connect(Function);
+	void connect(Function&&);
 
 	bool isEnabled() const { return m_enabled; }
 	bool isActive() const { return m_active; }

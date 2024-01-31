@@ -16,7 +16,7 @@ using namespace QGBA;
 
 MemoryAccessLogView::MemoryAccessLogView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QWidget(parent)
-	, m_controller(controller)
+	, m_controller(std::move(controller))
 {
 	m_ui.setupUi(this);
 

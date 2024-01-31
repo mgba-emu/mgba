@@ -107,7 +107,7 @@ void ActionMapper::rebuildMenu(const QString& menu, QMenu* qmenu, QWidget* conte
 			}
 		});
 		QObject::connect(action.get(), &Action::enabled, qaction, &QAction::setEnabled);
-		QObject::connect(action.get(), &Action::activated, [qaction, weakAction](bool active) {
+		QObject::connect(action.get(), &Action::activated, [qaction, weakAction = std::move(weakAction)](bool active) {
 			std::shared_ptr<Action> action(weakAction.lock());
 			if (qaction->isCheckable()) {
 				qaction->setChecked(active);

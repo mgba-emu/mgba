@@ -60,11 +60,11 @@ void AudioProcessor::configure(ConfigController* config) {
 }
 
 void AudioProcessor::setInput(std::shared_ptr<CoreController> input) {
-	m_context = input;
-	connect(input.get(), &CoreController::stopping, this, &AudioProcessor::stop);
-	connect(input.get(), &CoreController::fastForwardChanged, this, &AudioProcessor::inputParametersChanged);
-	connect(input.get(), &CoreController::paused, this, &AudioProcessor::pause);
-	connect(input.get(), &CoreController::unpaused, this, &AudioProcessor::start);
+	m_context = std::move(input);
+	connect(m_context.get(), &CoreController::stopping, this, &AudioProcessor::stop);
+	connect(m_context.get(), &CoreController::fastForwardChanged, this, &AudioProcessor::inputParametersChanged);
+	connect(m_context.get(), &CoreController::paused, this, &AudioProcessor::pause);
+	connect(m_context.get(), &CoreController::unpaused, this, &AudioProcessor::start);
 }
 
 void AudioProcessor::stop() {

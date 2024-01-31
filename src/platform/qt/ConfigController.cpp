@@ -34,7 +34,7 @@ ConfigOption::ConfigOption(const QString& name, QObject* parent)
 }
 
 void ConfigOption::connect(std::function<void(const QVariant&)> slot, QObject* parent) {
-	m_slots[parent] = slot;
+	m_slots[parent] = std::move(slot);
 	QObject::connect(parent, &QObject::destroyed, this, [this, parent]() {
 		m_slots.remove(parent);
 	});
@@ -53,7 +53,7 @@ std::shared_ptr<Action> ConfigOption::addValue(const QString& text, const QVaria
 	}
 	action->setExclusive();
 	std::weak_ptr<Action> weakAction(action);
-	QObject::connect(action.get(), &QObject::destroyed, this, [this, weakAction, value]() {
+	QObject::connect(action.get(), &QObject::destroyed, this, [this, weakAction = std::move(weakAction), value]() {
 		if (weakAction.expired()) {
 			return;
 		}

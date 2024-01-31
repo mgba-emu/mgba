@@ -21,7 +21,7 @@ AudioProcessorQt::AudioProcessorQt(QObject* parent)
 }
 
 void AudioProcessorQt::setInput(std::shared_ptr<CoreController> controller) {
-	AudioProcessor::setInput(controller);
+	AudioProcessor::setInput(std::move(controller));
 	if (m_device) {
 		m_device->setInput(input());
 		if (m_audioOutput) {
