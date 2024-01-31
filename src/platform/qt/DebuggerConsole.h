@@ -25,7 +25,7 @@ protected:
 
 private:
 	Ui::DebuggerConsole m_ui;
-	int m_historyOffset;
+	int m_historyOffset = 0;
 
 	DebuggerConsoleController* m_consoleController;
 };
