@@ -27,8 +27,6 @@ MemorySearch::MemorySearch(std::shared_ptr<CoreController> controller, QWidget* 
 	connect(m_ui.numHex, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.numDec, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.viewMem, &QPushButton::clicked, this, &MemorySearch::openMemory);
-
-	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 }
 
 MemorySearch::~MemorySearch() {
@@ -178,7 +176,7 @@ void MemorySearch::refresh() {
 		mCoreMemorySearchResult* result = mCoreMemorySearchResultsGetPointer(&m_results, i);
 		QTableWidgetItem* item = new QTableWidgetItem(QString("%1").arg(result->address, 8, 16, QChar('0')));
 		m_ui.results->setItem(i, 0, item);
-		QTableWidgetItem* type;
+		QTableWidgetItem* type = nullptr;
 		QByteArray string;
 		if (result->type == mCORE_MEMORY_SEARCH_INT && m_ui.numHex->isChecked()) {
 			switch (result->width) {
@@ -213,7 +211,12 @@ void MemorySearch::refresh() {
 					string.append(core->rawRead8(core, result->address + i, result->segment));
 				}
 				item = new QTableWidgetItem(QLatin1String(string)); // TODO
+				break;
+			case mCORE_MEMORY_SEARCH_GUESS:
+				item = nullptr;
+				break;
 			}
+			Q_ASSERT(item);
 		}
 		QString divisor;
 		if (result->guessDivisor > 1) {
@@ -231,7 +234,12 @@ void MemorySearch::refresh() {
 			break;
 		case mCORE_MEMORY_SEARCH_STRING:
 			type = new QTableWidgetItem("string");
+			break;
+		case mCORE_MEMORY_SEARCH_GUESS:
+			break;
 		}
+		Q_ASSERT(type);
+
 		m_ui.results->setItem(i, 1, item);
 		m_ui.results->setItem(i, 2, type);
 		m_ui.opDelta->setEnabled(true);

@@ -65,8 +65,13 @@ struct mCore {
 	void (*setSync)(struct mCore*, struct mCoreSync*);
 	void (*loadConfig)(struct mCore*, const struct mCoreConfig*);
 	void (*reloadConfigOption)(struct mCore*, const char* option, const struct mCoreConfig*);
+	void (*setOverride)(struct mCore*, const void* override);
 
-	void (*desiredVideoDimensions)(const struct mCore*, unsigned* width, unsigned* height);
+	void (*baseVideoSize)(const struct mCore*, unsigned* width, unsigned* height);
+	void (*currentVideoSize)(const struct mCore*, unsigned* width, unsigned* height);
+	unsigned (*videoScale)(const struct mCore*);
+	size_t (*screenRegions)(const struct mCore*, const struct mCoreScreenRegion**);
+
 	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
 	void (*setVideoGLTex)(struct mCore*, unsigned texid);
 
@@ -116,6 +121,7 @@ struct mCore {
 	void (*getGameCode)(const struct mCore*, char* title);
 
 	void (*setPeripheral)(struct mCore*, int type, void*);
+	void* (*getPeripheral)(struct mCore*, int type);
 
 	uint32_t (*busRead8)(struct mCore*, uint32_t address);
 	uint32_t (*busRead16)(struct mCore*, uint32_t address);

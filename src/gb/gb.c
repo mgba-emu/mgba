@@ -260,9 +260,13 @@ void GBResizeSram(struct GB* gb, size_t size) {
 	}
 	struct VFile* vf = gb->sramVf;
 	if (vf) {
+		// We have a vf
+		ssize_t vfSize = vf->size(vf);
 		if (vf == gb->sramRealVf) {
-			ssize_t vfSize = vf->size(vf);
+			// This is the real save file, not a masked one
 			if (vfSize >= 0 && (size_t) vfSize < size) {
+				// We need to grow the file
+				// Make sure to copy the footer data, if any
 				uint8_t extdataBuffer[0x100];
 				if (vfSize & 0xFF) {
 					vf->seek(vf, -(vfSize & 0xFF), SEEK_END);
@@ -270,6 +274,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 				}
 				if (gb->memory.sram) {
 					vf->unmap(vf, gb->memory.sram, gb->sramSize);
+					gb->memory.sram = NULL;
 				}
 				vf->truncate(vf, size + (vfSize & 0xFF));
 				if (vfSize & 0xFF) {
@@ -281,24 +286,36 @@ void GBResizeSram(struct GB* gb, size_t size) {
 					memset(&gb->memory.sram[vfSize], 0xFF, size - vfSize);
 				}
 			} else if (size > gb->sramSize || !gb->memory.sram) {
+				// We aren't growing the file, but we are changing our mapping of it
 				if (gb->memory.sram) {
 					vf->unmap(vf, gb->memory.sram, gb->sramSize);
+					gb->memory.sram = NULL;
 				}
 				if (size) {
 					gb->memory.sram = vf->map(vf, size, MAP_WRITE);
 				}
 			}
 		} else {
+			// This is a masked save file
 			if (gb->memory.sram) {
 				vf->unmap(vf, gb->memory.sram, gb->sramSize);
 			}
-			if (vf->size(vf) < gb->sramSize) {
-				void* sram = vf->map(vf, vf->size(vf), MAP_READ);
-				struct VFile* newVf = VFileMemChunk(sram, vf->size(vf));
-				vf->unmap(vf, sram,vf->size(vf));
-				vf = newVf;
-				gb->sramVf = newVf;
-				vf->truncate(vf, size);
+			if ((vfSize <= 0 && size) || (size_t) vfSize < size) {
+				// The loaded mask file is too small. Since these can be read-only,
+				// we need to make a new one of the right size
+				if (vfSize < 0) {
+					vfSize = 0;
+				}
+				gb->sramVf = VFileMemChunk(NULL, size);
+				uint8_t* sram = gb->sramVf->map(gb->sramVf, size, MAP_WRITE);
+				if (vfSize > 0) {
+					vf->seek(vf, 0, SEEK_SET);
+					vf->read(vf, sram, vfSize);
+				}
+				memset(&sram[vfSize], 0xFF, size - vfSize);
+				gb->sramVf->unmap(gb->sramVf, sram, size);
+				vf->close(vf);
+				vf = gb->sramVf;
 			}
 			if (size) {
 				gb->memory.sram = vf->map(vf, size, MAP_READ);
@@ -308,6 +325,8 @@ void GBResizeSram(struct GB* gb, size_t size) {
 			gb->memory.sram = NULL;
 		}
 	} else if (size) {
+		// There's no vf, so let's make it only memory-backed
+		// TODO: Investigate just using a VFileMemChunk instead of this hybrid approach
 		uint8_t* newSram = anonymousMemoryMap(size);
 		if (gb->memory.sram) {
 			if (size > gb->sramSize) {
@@ -405,7 +424,9 @@ void GBUnloadROM(struct GB* gb) {
 
 	if (gb->romVf) {
 #ifndef FIXED_ROM_BUFFER
-		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
+		if (gb->isPristine && gb->memory.rom) {
+			gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
+		}
 #endif
 		gb->romVf->close(gb->romVf);
 		gb->romVf = NULL;
@@ -453,6 +474,9 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 	if (patchedSize > GB_SIZE_CART_MAX) {
 		patchedSize = GB_SIZE_CART_MAX;
 	}
+
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	uint8_t type = cart->type;
 	void* newRom = anonymousMemoryMap(GB_SIZE_CART_MAX);
 	if (!patch->applyPatch(patch, gb->memory.rom, gb->pristineRomSize, newRom, patchedSize)) {
 		mappedMemoryFree(newRom, GB_SIZE_CART_MAX);
@@ -471,6 +495,12 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 	}
 	gb->memory.rom = newRom;
 	gb->memory.romSize = patchedSize;
+
+	cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	if (cart->type != type) {
+		gb->memory.mbcType = GB_MBC_AUTODETECT;
+		GBMBCInit(gb);
+	}
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
 	gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
 }
@@ -528,6 +558,23 @@ bool GBIsBIOS(struct VFile* vf) {
 	}
 }
 
+bool GBIsCompatibleBIOS(struct VFile* vf, enum GBModel model) {
+	switch (_GBBiosCRC32(vf)) {
+	case DMG_BIOS_CHECKSUM:
+	case DMG0_BIOS_CHECKSUM:
+	case MGB_BIOS_CHECKSUM:
+	case SGB_BIOS_CHECKSUM:
+	case SGB2_BIOS_CHECKSUM:
+		return model < GB_MODEL_CGB;
+	case CGB_BIOS_CHECKSUM:
+	case CGB0_BIOS_CHECKSUM:
+	case AGB_BIOS_CHECKSUM:
+		return model >= GB_MODEL_CGB;
+	default:
+		return false;
+	}
+}
+
 void GBReset(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	gb->memory.romBase = gb->memory.rom;
@@ -560,7 +607,7 @@ void GBReset(struct SM83Core* cpu) {
 	GBMemoryReset(gb);
 
 	if (gb->biosVf) {
-		if (!GBIsBIOS(gb->biosVf)) {
+		if (!GBIsCompatibleBIOS(gb->biosVf, gb->model)) {
 			gb->biosVf->close(gb->biosVf);
 			gb->biosVf = NULL;
 		} else {
@@ -815,6 +862,7 @@ void GBDetectModel(struct GB* gb) {
 			gb->model = GB_MODEL_SGB2;
 			break;
 		case CGB_BIOS_CHECKSUM:
+		case CGB0_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;
 			break;
 		case AGB_BIOS_CHECKSUM:

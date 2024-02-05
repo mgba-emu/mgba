@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include <mgba/internal/gb/extra/cli.h>
+#include <mgba/internal/gb/debugger/cli.h>
 
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
@@ -58,7 +58,7 @@ static bool _GBCLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 
 	if (gbDebugger->frameAdvance) {
 		if (!gbDebugger->inVblank && GBRegisterSTATGetMode(((struct GB*) gbDebugger->core->board)->memory.io[GB_REG_STAT]) == 1) {
-			mDebuggerEnter(&gbDebugger->d.p->d, DEBUGGER_ENTER_MANUAL, 0);
+			mDebuggerEnter(gbDebugger->d.p->d.p, DEBUGGER_ENTER_MANUAL, 0);
 			gbDebugger->frameAdvance = false;
 			return false;
 		}
@@ -70,7 +70,8 @@ static bool _GBCLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 
 static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
-	debugger->d.state = DEBUGGER_CALLBACK;
+	debugger->d.needsCallback = true;
+	mDebuggerUpdatePaused(debugger->d.p);
 
 	struct GBCLIDebugger* gbDebugger = (struct GBCLIDebugger*) debugger->system;
 	gbDebugger->frameAdvance = true;

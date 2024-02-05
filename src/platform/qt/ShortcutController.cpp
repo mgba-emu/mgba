@@ -6,8 +6,10 @@
 #include "ShortcutController.h"
 
 #include "ConfigController.h"
-#include "GamepadButtonEvent.h"
+#include "input/GamepadButtonEvent.h"
+#include "input/GamepadHatEvent.h"
 #include "InputProfile.h"
+#include "scripting/ScriptingController.h"
 
 #include <QAction>
 #include <QKeyEvent>
@@ -30,6 +32,10 @@ void ShortcutController::setActionMapper(ActionMapper* actions) {
 	connect(actions, &ActionMapper::actionAdded, this, &ShortcutController::generateItem);
 	connect(actions, &ActionMapper::menuCleared, this, &ShortcutController::menuCleared);
 	rebuildItems();
+}
+
+void ShortcutController::setScriptingController(ScriptingController* controller) {
+	m_scripting = controller;
 }
 
 void ShortcutController::updateKey(const QString& name, int keySequence) {
@@ -132,9 +138,14 @@ void ShortcutController::rebuildItems() {
 	onSubitems({}, std::bind(&ShortcutController::generateItem, this, std::placeholders::_1));
 }
 
-bool ShortcutController::eventFilter(QObject*, QEvent* event) {
+bool ShortcutController::eventFilter(QObject* obj, QEvent* event) {
 	if (event->type() == QEvent::KeyPress || event->type() == QEvent::KeyRelease) {
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+#ifdef ENABLE_SCRIPTING
+		if (m_scripting) {
+			m_scripting->event(obj, event);
+		}
+#endif
 		if (keyEvent->isAutoRepeat()) {
 			return false;
 		}
@@ -149,15 +160,19 @@ bool ShortcutController::eventFilter(QObject*, QEvent* event) {
 			Action::BooleanFunction fn = item.value()->action()->booleanAction();
 			fn(event->type() == QEvent::KeyPress);
 			event->accept();
-			return true;
 		}
 	}
 	if (event->type() == GamepadButtonEvent::Down()) {
+#ifdef ENABLE_SCRIPTING
+		if (m_scripting) {
+			m_scripting->event(obj, event);
+		}
+#endif
 		auto item = m_buttons.find(static_cast<GamepadButtonEvent*>(event)->value());
 		if (item == m_buttons.end()) {
 			return false;
 		}
-		Action* action = item.value()->action();
+		auto action = item.value()->action();
 		if (action) {
 			if (m_actions->isHeld(action->name())) {
 				action->trigger(true);
@@ -169,11 +184,16 @@ bool ShortcutController::eventFilter(QObject*, QEvent* event) {
 		return true;
 	}
 	if (event->type() == GamepadButtonEvent::Up()) {
+#ifdef ENABLE_SCRIPTING
+		if (m_scripting) {
+			m_scripting->event(obj, event);
+		}
+#endif
 		auto item = m_buttons.find(static_cast<GamepadButtonEvent*>(event)->value());
 		if (item == m_buttons.end()) {
 			return false;
 		}
-		Action* action = item.value()->action();
+		auto action = item.value()->action();
 		if (action && m_actions->isHeld(action->name())) {
 			action->trigger(false);
 		}
@@ -186,7 +206,7 @@ bool ShortcutController::eventFilter(QObject*, QEvent* event) {
 		if (item == m_axes.end()) {
 			return false;
 		}
-		Action* action = item.value()->action();
+		auto action = item.value()->action();
 		if (action) {
 			if (gae->isNew()) {
 				if (m_actions->isHeld(action->name())) {
@@ -201,6 +221,13 @@ bool ShortcutController::eventFilter(QObject*, QEvent* event) {
 		event->accept();
 		return true;
 	}
+#ifdef ENABLE_SCRIPTING
+	if (event->type() == GamepadHatEvent::Type()) {
+		if (m_scripting) {
+			m_scripting->event(obj, event);
+		}
+	}
+#endif
 	return false;
 }
 
@@ -208,7 +235,7 @@ void ShortcutController::generateItem(const QString& itemName) {
 	if (itemName.isNull() || itemName[0] == '.') {
 		return;
 	}
-	Action* action = m_actions->getAction(itemName);
+	auto action = m_actions->getAction(itemName);
 	if (action) {
 		std::shared_ptr<Shortcut> item = std::make_shared<Shortcut>(action);
 		m_items[itemName] = item;
@@ -299,7 +326,7 @@ void ShortcutController::loadProfile(const QString& profile) {
 	m_profileName = profile;
 	m_profile = InputProfile::findProfile(profile);
 	onSubitems({}, [this](std::shared_ptr<Shortcut> item) {
-		loadGamepadShortcuts(item);
+		loadGamepadShortcuts(std::move(item));
 	});
 }
 
@@ -435,7 +462,7 @@ int ShortcutController::count(const QString& name) const {
 	return menu.count();
 }
 
-Shortcut::Shortcut(Action* action)
+Shortcut::Shortcut(std::shared_ptr<Action> action)
 	: m_action(action)
 {
 }

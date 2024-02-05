@@ -71,6 +71,7 @@ struct VFile;
 
 bool GBIsROM(struct VFile* vf);
 bool GBIsBIOS(struct VFile* vf);
+bool GBIsCompatibleBIOS(struct VFile* vf, enum GBModel model);
 
 enum GBModel GBNameToModel(const char*);
 const char* GBModelToName(enum GBModel);

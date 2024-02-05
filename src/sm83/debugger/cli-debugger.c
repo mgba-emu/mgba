@@ -26,7 +26,7 @@ static inline void _printFlags(struct CLIDebuggerBackend* be, union FlagRegister
 }
 
 static void _disassemble(struct CLIDebuggerSystem* debugger, struct CLIDebugVector* dv) {
-	struct SM83Core* cpu = debugger->p->d.core->cpu;
+	struct SM83Core* cpu = debugger->p->d.p->core->cpu;
 
 	uint16_t address;
 	int segment = -1;
@@ -64,7 +64,7 @@ static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address
 	uint8_t instruction;
 	size_t bytesRemaining = 1;
 	for (bytesRemaining = 1; bytesRemaining; --bytesRemaining) {
-		instruction = debugger->d.core->rawRead8(debugger->d.core, address, segment);
+		instruction = debugger->d.p->core->rawRead8(debugger->d.p->core, address, segment);
 		disPtr += snprintf(disPtr, sizeof(disassembly) - (disPtr - disassembly), "%02X", instruction);
 		++address;
 		bytesRemaining += SM83Decode(instruction, &info);
@@ -78,16 +78,16 @@ static inline uint16_t _printLine(struct CLIDebugger* debugger, uint16_t address
 
 static void _printStatus(struct CLIDebuggerSystem* debugger) {
 	struct CLIDebuggerBackend* be = debugger->p->backend;
-	struct SM83Core* cpu = debugger->p->d.core->cpu;
+	struct SM83Core* cpu = debugger->p->d.p->core->cpu;
 	be->printf(be, "A: %02X  F: %02X  (AF: %04X)\n", cpu->a, cpu->f.packed, cpu->af);
 	be->printf(be, "B: %02X  C: %02X  (BC: %04X)\n", cpu->b, cpu->c, cpu->bc);
 	be->printf(be, "D: %02X  E: %02X  (DE: %04X)\n", cpu->d, cpu->e, cpu->de);
 	be->printf(be, "H: %02X  L: %02X  (HL: %04X)\n", cpu->h, cpu->l, cpu->hl);
 	be->printf(be, "PC: %04X  SP: %04X\n", cpu->pc, cpu->sp);
 	_printFlags(be, cpu->f);
-	be->printf(be, "T-cycle: %" PRIu64 "\n", mTimingGlobalTime(debugger->p->d.core->timing));
+	be->printf(be, "T-cycle: %" PRIu64 "\n", mTimingGlobalTime(debugger->p->d.p->core->timing));
 
-	struct SM83Debugger* platDebugger = (struct SM83Debugger*) debugger->p->d.platform;
+	struct SM83Debugger* platDebugger = (struct SM83Debugger*) debugger->p->d.p->platform;
 	size_t i;
 	for (i = 0; platDebugger->segments[i].name; ++i) {
 		be->printf(be, "%s%s: %02X", i ? "  " : "", platDebugger->segments[i].name, cpu->memory.currentSegment(cpu, platDebugger->segments[i].start));

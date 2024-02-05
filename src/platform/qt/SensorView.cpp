@@ -6,7 +6,8 @@
 #include "SensorView.h"
 
 #include "CoreController.h"
-#include "GamepadAxisEvent.h"
+#include "input/GamepadAxisEvent.h"
+#include "input/InputDriver.h"
 #include "InputController.h"
 #include "utils.h"
 
@@ -47,14 +48,20 @@ SensorView::SensorView(InputController* input, QWidget* parent)
 		m_timer.start();
 	}
 
-	jiggerer(m_ui.tiltSetX, &InputController::registerTiltAxisX);
-	jiggerer(m_ui.tiltSetY, &InputController::registerTiltAxisY);
-	jiggerer(m_ui.gyroSetX, &InputController::registerGyroAxisX);
-	jiggerer(m_ui.gyroSetY, &InputController::registerGyroAxisY);
+	jiggerer(m_ui.tiltSetX, &InputDriver::registerTiltAxisX);
+	jiggerer(m_ui.tiltSetY, &InputDriver::registerTiltAxisY);
+	jiggerer(m_ui.gyroSetX, &InputDriver::registerGyroAxisX);
+	jiggerer(m_ui.gyroSetY, &InputDriver::registerGyroAxisY);
 
-	m_ui.gyroSensitivity->setValue(m_input->gyroSensitivity() / 1e8f);
+	InputDriver* sensorDriver = m_input->sensorDriver();
+	if (sensorDriver) {
+		m_ui.gyroSensitivity->setValue(sensorDriver->gyroSensitivity() / 1e8f);
+	}
 	connect(m_ui.gyroSensitivity, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [this](double value) {
-		m_input->setGyroSensitivity(value * 1e8f);
+		InputDriver* sensorDriver = m_input->sensorDriver();
+		if (sensorDriver) {
+			sensorDriver->setGyroSensitivity(value * 1e8f);
+		}
 	});
 	m_input->stealFocus(this);
 	connect(m_input, &InputController::luminanceValueChanged, this, &SensorView::luminanceValueChanged);
@@ -84,7 +91,7 @@ void SensorView::setController(std::shared_ptr<CoreController> controller) {
 	});
 }
 
-void SensorView::jiggerer(QAbstractButton* button, void (InputController::*setter)(int)) {
+void SensorView::jiggerer(QAbstractButton* button, void (InputDriver::*setter)(int)) {
 	connect(button, &QAbstractButton::toggled, [this, button, setter](bool checked) {
 		if (!checked) {
 			m_button = nullptr;
@@ -115,7 +122,10 @@ bool SensorView::eventFilter(QObject*, QEvent* event) {
 			m_button->removeEventFilter(this);
 			m_button->clearFocus();
 			m_button->setChecked(false);
-			(m_input->*m_setter)(gae->axis());
+			InputDriver* sensorDriver = m_input->sensorDriver();
+			if (sensorDriver) {
+				(sensorDriver->*m_setter)(gae->axis());
+			}
 			m_button = nullptr;
 		}
 		return true;

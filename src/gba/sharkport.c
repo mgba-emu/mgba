@@ -19,7 +19,7 @@ static bool _importSavedata(struct GBA* gba, void* payload, size_t size) {
 	bool success = false;
 	switch (gba->memory.savedata.type) {
 	case SAVEDATA_FLASH512:
-		if (size > SIZE_CART_FLASH512) {
+		if (size > GBA_SIZE_FLASH512) {
 			GBASavedataForceType(&gba->memory.savedata, SAVEDATA_FLASH1M);
 		}
 	// Fall through
@@ -33,7 +33,7 @@ static bool _importSavedata(struct GBA* gba, void* payload, size_t size) {
 		goto cleanup;
 	}
 
-	if (size == SIZE_CART_EEPROM || size == SIZE_CART_EEPROM512) {
+	if (size == GBA_SIZE_EEPROM || size == GBA_SIZE_EEPROM512) {
 		size_t i;
 		for (i = 0; i < size; i += 8) {
 			uint32_t lo, hi;
@@ -119,7 +119,7 @@ int GBASavedataSharkPortPayloadSize(struct VFile* vf) {
 
 void* GBASavedataSharkPortGetPayload(struct VFile* vf, size_t* osize, uint8_t* oheader, bool testChecksum) {
 	int32_t size = GBASavedataSharkPortPayloadSize(vf);
-	if (size < 0x1C || size > SIZE_CART_FLASH1M + 0x1C) {
+	if (size < 0x1C || size > GBA_SIZE_FLASH1M + 0x1C) {
 		return NULL;
 	}
 	size -= 0x1C;
@@ -336,15 +336,15 @@ int GBASavedataGSVPayloadSize(struct VFile* vf) {
 	LOAD_32(type, 0, &header.type);
 	switch (type) {
 	case 2:
-		return SIZE_CART_SRAM;
+		return GBA_SIZE_SRAM;
 	case 3:
-		return SIZE_CART_EEPROM512;
+		return GBA_SIZE_EEPROM512;
 	case 4:
-		return SIZE_CART_EEPROM;
+		return GBA_SIZE_EEPROM;
 	case 5:
-		return SIZE_CART_FLASH512;
+		return GBA_SIZE_FLASH512;
 	case 6:
-		return SIZE_CART_FLASH1M; // Unconfirmed
+		return GBA_SIZE_FLASH1M; // Unconfirmed
 	default:
 		return vf->size(vf) - GSV_PAYLOAD_OFFSET;
 	}
@@ -352,7 +352,7 @@ int GBASavedataGSVPayloadSize(struct VFile* vf) {
 
 void* GBASavedataGSVGetPayload(struct VFile* vf, size_t* osize, uint8_t* ident, bool testChecksum) {
 	int32_t size = GBASavedataGSVPayloadSize(vf);
-	if (!size || size > SIZE_CART_FLASH1M) {
+	if (!size || size > GBA_SIZE_FLASH1M) {
 		return NULL;
 	}
 

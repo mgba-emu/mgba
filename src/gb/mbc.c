@@ -219,7 +219,7 @@ static enum GBMemoryBankControllerType _detectUnlMBC(const uint8_t* mem, size_t 
 		if (cart->type == 0x01) { // Make sure we're not using a "fixed" version
 			return GB_UNL_LI_CHENG;
 		}
-		if ((0x8000 << cart->romSize) != size) {
+		if ((0x8000U << cart->romSize) != size) {
 			return GB_UNL_LI_CHENG;
 		}
 		break;

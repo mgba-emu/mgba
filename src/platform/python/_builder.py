@@ -40,7 +40,7 @@ ffi.set_source("mgba._pylib", """
 #include <mgba/internal/sm83/sm83.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/renderers/cache-set.h>
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/vfs.h>
 
 #define PYEXPORT

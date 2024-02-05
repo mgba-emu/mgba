@@ -106,6 +106,7 @@ struct SM83InstructionInfo {
 
 size_t SM83Decode(uint8_t opcode, struct SM83InstructionInfo* info);
 int SM83Disassemble(struct SM83InstructionInfo* info, uint16_t pc, char* buffer, int blen);
+int SM83InstructionLength(uint8_t opcode);
 
 CXX_GUARD_END
 

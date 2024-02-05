@@ -32,6 +32,10 @@
 #include "DiscordCoordinator.h"
 #endif
 
+#ifdef BUILD_SDL
+#include "input/SDLInputDriver.h"
+#endif
+
 using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
@@ -165,10 +169,14 @@ void GBAApp::continueAll(const QList<Window*>& paused) {
 	}
 }
 
-QString GBAApp::getOpenFileName(QWidget* owner, const QString& title, const QString& filter) {
+QString GBAApp::getOpenFileName(QWidget* owner, const QString& title, const QString& filter, const QString& path) {
 	QList<Window*> paused;
+	QString base(path);
+	if (base.isNull()) {
+		base = m_configController->getOption("lastDirectory");
+	}
 	pauseAll(&paused);
-	QString filename = QFileDialog::getOpenFileName(owner, title, m_configController->getOption("lastDirectory"), filter);
+	QString filename = QFileDialog::getOpenFileName(owner, title, base, filter);
 	continueAll(paused);
 	if (!filename.isEmpty()) {
 		m_configController->setOption("lastDirectory", QFileInfo(filename).dir().canonicalPath());
@@ -176,10 +184,14 @@ QString GBAApp::getOpenFileName(QWidget* owner, const QString& title, const QStr
 	return filename;
 }
 
-QStringList GBAApp::getOpenFileNames(QWidget* owner, const QString& title, const QString& filter) {
+QStringList GBAApp::getOpenFileNames(QWidget* owner, const QString& title, const QString& filter, const QString& path) {
 	QList<Window*> paused;
+	QString base(path);
+	if (base.isNull()) {
+		base = m_configController->getOption("lastDirectory");
+	}
 	pauseAll(&paused);
-	QStringList filenames = QFileDialog::getOpenFileNames(owner, title, m_configController->getOption("lastDirectory"), filter);
+	QStringList filenames = QFileDialog::getOpenFileNames(owner, title, base, filter);
 	continueAll(paused);
 	if (!filenames.isEmpty()) {
 		m_configController->setOption("lastDirectory", QFileInfo(filenames.at(0)).dir().canonicalPath());
@@ -187,10 +199,14 @@ QStringList GBAApp::getOpenFileNames(QWidget* owner, const QString& title, const
 	return filenames;
 }
 
-QString GBAApp::getSaveFileName(QWidget* owner, const QString& title, const QString& filter) {
+QString GBAApp::getSaveFileName(QWidget* owner, const QString& title, const QString& filter, const QString& path) {
 	QList<Window*> paused;
+	QString base(path);
+	if (base.isNull()) {
+		base = m_configController->getOption("lastDirectory");
+	}
 	pauseAll(&paused);
-	QString filename = QFileDialog::getSaveFileName(owner, title, m_configController->getOption("lastDirectory"), filter);
+	QString filename = QFileDialog::getSaveFileName(owner, title, base, filter);
 	continueAll(paused);
 	if (!filename.isEmpty()) {
 		m_configController->setOption("lastDirectory", QFileInfo(filename).dir().canonicalPath());
@@ -258,17 +274,17 @@ QNetworkReply* GBAApp::httpGet(const QUrl& url) {
 	return m_netman.get(req);
 }
 
-qint64 GBAApp::submitWorkerJob(std::function<void ()> job, std::function<void ()> callback) {
-	return submitWorkerJob(job, nullptr, callback);
+qint64 GBAApp::submitWorkerJob(std::function<void ()>&& job, std::function<void ()>&& callback) {
+	return submitWorkerJob(std::move(job), nullptr, std::move(callback));
 }
 
-qint64 GBAApp::submitWorkerJob(std::function<void ()> job, QObject* context, std::function<void ()> callback) {
+qint64 GBAApp::submitWorkerJob(std::function<void ()>&& job, QObject* context, std::function<void ()>&& callback) {
 	qint64 jobId = m_nextJob;
 	++m_nextJob;
-	WorkerJob* jobRunnable = new WorkerJob(jobId, job, this);
+	WorkerJob* jobRunnable = new WorkerJob(jobId, std::move(job), this);
 	m_workerJobs.insert(jobId, jobRunnable);
 	if (callback) {
-		waitOnJob(jobId, context, callback);
+		waitOnJob(jobId, context, std::move(callback));
 	}
 	m_workerThreads.start(jobRunnable);
 	return jobId;
@@ -292,14 +308,15 @@ bool GBAApp::removeWorkerJob(qint64 jobId) {
 	return success;
 }
 
-bool GBAApp::waitOnJob(qint64 jobId, QObject* context, std::function<void ()> callback) {
+bool GBAApp::waitOnJob(qint64 jobId, QObject* context, std::function<void ()>&& callback) {
 	if (!m_workerJobs.contains(jobId)) {
 		return false;
 	}
 	if (!context) {
 		context = this;
 	}
-	QMetaObject::Connection connection = connect(this, &GBAApp::jobFinished, context, [jobId, callback](qint64 testedJobId) {
+	QMetaObject::Connection connection = connect(this, &GBAApp::jobFinished, context,
+	                                             [jobId, callback = std::move(callback)](qint64 testedJobId) {
 		if (jobId != testedJobId) {
 			return;
 		}
@@ -307,6 +324,25 @@ bool GBAApp::waitOnJob(qint64 jobId, QObject* context, std::function<void ()> ca
 	});
 	m_workerJobCallbacks.insert(m_nextJob, connection);
 	return true;
+}
+
+void GBAApp::suspendScreensaver() {
+#ifdef BUILD_SDL
+	SDL::suspendScreensaver();
+#endif
+}
+
+void GBAApp::resumeScreensaver() {
+#ifdef BUILD_SDL
+	SDL::resumeScreensaver();
+#endif
+}
+
+void GBAApp::setScreensaverSuspendable(bool suspendable) {
+	UNUSED(suspendable);
+#ifdef BUILD_SDL
+	SDL::setScreensaverSuspendable(suspendable);
+#endif
 }
 
 void GBAApp::cleanupAfterUpdate() {
@@ -346,7 +382,7 @@ void GBAApp::restartForUpdate() {
 	#ifndef Q_OS_WIN
 		QFile(extractedPath).setPermissions(QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner);
 	#endif
-		m_invokeOnExit = extractedPath;
+		m_invokeOnExit = std::move(extractedPath);
 	}
 
 	for (auto& window : m_windows) {
@@ -361,9 +397,9 @@ void GBAApp::finishJob(qint64 jobId) {
 	m_workerJobCallbacks.remove(jobId);
 }
 
-GBAApp::WorkerJob::WorkerJob(qint64 id, std::function<void ()> job, GBAApp* owner)
+GBAApp::WorkerJob::WorkerJob(qint64 id, std::function<void ()>&& job, GBAApp* owner)
 	: m_id(id)
-	, m_job(job)
+	, m_job(std::move(job))
 	, m_owner(owner)
 {
 	setAutoDelete(true);

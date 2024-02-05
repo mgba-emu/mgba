@@ -65,16 +65,16 @@ bool GBASIOBattlechipGateLoad(struct GBASIODriver* driver) {
 uint16_t GBASIOBattlechipGateWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
 	struct GBASIOBattlechipGate* gate = (struct GBASIOBattlechipGate*) driver;
 	switch (address) {
-	case REG_SIOCNT:
+	case GBA_REG_SIOCNT:
 		value &= ~0xC;
 		value |= 0x8;
 		if (value & 0x80) {
 			_battlechipTransfer(gate);
 		}
 		break;
-	case REG_SIOMLT_SEND:
+	case GBA_REG_SIOMLT_SEND:
 		break;
-	case REG_RCNT:
+	case GBA_REG_RCNT:
 		break;
 	default:
 		break;
@@ -98,8 +98,8 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 	struct GBASIOBattlechipGate* gate = user;
 
 	if (gate->d.p->mode == SIO_NORMAL_32) {
-		gate->d.p->p->memory.io[REG_SIODATA32_LO >> 1] = 0;
-		gate->d.p->p->memory.io[REG_SIODATA32_HI >> 1] = 0;
+		gate->d.p->p->memory.io[GBA_REG(SIODATA32_LO)] = 0;
+		gate->d.p->p->memory.io[GBA_REG(SIODATA32_HI)] = 0;
 		gate->d.p->siocnt = GBASIONormalClearStart(gate->d.p->siocnt);
 		if (GBASIONormalIsIrq(gate->d.p->siocnt)) {
 			GBARaiseIRQ(gate->d.p->p, GBA_IRQ_SIO, cyclesLate);
@@ -107,11 +107,11 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		return;
 	}
 
-	uint16_t cmd = gate->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
+	uint16_t cmd = gate->d.p->p->memory.io[GBA_REG(SIOMLT_SEND)];
 	uint16_t reply = 0xFFFF;
-	gate->d.p->p->memory.io[REG_SIOMULTI0 >> 1] = cmd;
-	gate->d.p->p->memory.io[REG_SIOMULTI2 >> 1] = 0xFFFF;
-	gate->d.p->p->memory.io[REG_SIOMULTI3 >> 1] = 0xFFFF;
+	gate->d.p->p->memory.io[GBA_REG(SIOMULTI0)] = cmd;
+	gate->d.p->p->memory.io[GBA_REG(SIOMULTI2)] = 0xFFFF;
+	gate->d.p->p->memory.io[GBA_REG(SIOMULTI3)] = 0xFFFF;
 	gate->d.p->siocnt = GBASIOMultiplayerClearBusy(gate->d.p->siocnt);
 	gate->d.p->siocnt = GBASIOMultiplayerSetId(gate->d.p->siocnt, 0);
 
@@ -191,7 +191,7 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 	mLOG(GBA_BATTLECHIP, DEBUG, "Gate: %04X (%i)", reply, gate->state);
 	++gate->state;
 
-	gate->d.p->p->memory.io[REG_SIOMULTI1 >> 1] = reply;
+	gate->d.p->p->memory.io[GBA_REG(SIOMULTI1)] = reply;
 
 	if (GBASIOMultiplayerIsIrq(gate->d.p->siocnt)) {
 		GBARaiseIRQ(gate->d.p->p, GBA_IRQ_SIO, cyclesLate);

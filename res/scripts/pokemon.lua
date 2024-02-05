@@ -174,7 +174,7 @@ function Generation1En._readPartyMon(game, address, nameAddress, otAddress)
 	return mon
 end
 
-function  Generation2En._readBoxMon(game, address, nameAddress, otAddress)
+function Generation2En._readBoxMon(game, address, nameAddress, otAddress)
 	local mon = {}
 	mon.species = emu:read8(address + 0)
 	mon.item = emu:read8(address + 1)

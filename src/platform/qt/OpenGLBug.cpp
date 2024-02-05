@@ -31,6 +31,17 @@ bool glContextHasBug(OpenGLBug bug) {
 	case OpenGLBug::GLTHREAD_BLOCKS_SWAP:
 		return version.contains(" Mesa ");
 
+	case OpenGLBug::IG4ICD_CRASH:
+#ifdef Q_OS_WIN
+		if (vendor != "Intel") {
+			return false;
+		}
+		if (renderer == "Intel Pineview Platform") {
+			return true;
+		}
+#endif
+		return false;
+
 	default:
 		return false;
 	}

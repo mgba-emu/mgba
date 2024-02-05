@@ -84,7 +84,7 @@ M_TEST_DEFINE(resizeMem) {
 }
 
 M_TEST_DEFINE(resizeConstMem) {
-	uint8_t bytes[32];
+	uint8_t bytes[32] = {0};
 	struct VFile* vf = VFileFromConstMemory(bytes, 32);
 	assert_non_null(vf);
 	assert_int_equal(vf->size(vf), 32);
@@ -96,7 +96,7 @@ M_TEST_DEFINE(resizeConstMem) {
 }
 
 M_TEST_DEFINE(resizeMemChunk) {
-	uint8_t bytes[32];
+	uint8_t bytes[32] = {0};
 	struct VFile* vf = VFileMemChunk(bytes, 32);
 	assert_non_null(vf);
 	assert_int_equal(vf->size(vf), 32);

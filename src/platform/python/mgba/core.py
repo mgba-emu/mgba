@@ -235,7 +235,7 @@ class Core(object):
     def desired_video_dimensions(self):
         width = ffi.new("unsigned*")
         height = ffi.new("unsigned*")
-        self._core.desiredVideoDimensions(self._core, width, height)
+        self._core.currentVideoSize(self._core, width, height)
         return width[0], height[0]
 
     @protected

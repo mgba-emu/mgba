@@ -321,7 +321,7 @@ QString MemoryModel::decodeText(const QByteArray& bytes) {
 		text = QString::fromUtf8(array);
 	} else {
 		for (uint8_t c : bytes) {
-			text.append((uchar) c);
+			text.append(QChar(c));
 		}
 	}
 	return text;
@@ -488,7 +488,7 @@ void MemoryModel::paintEvent(QPaintEvent*) {
 			for (int i = 0; i < text.size() && i < m_align; ++i) {
 				const QChar c = text.at(i);
 				const QPointF location(viewport()->size().width() - (16 - x - i) * m_margins.right() / 17.0 - m_letterWidth * 0.5, yp);
-				if (c < 256) {
+				if (c.unicode() < 256) {
 					painter.drawStaticText(location, m_staticLatin1[c.cell()]);
 				} else {
 					painter.drawText(location, c);

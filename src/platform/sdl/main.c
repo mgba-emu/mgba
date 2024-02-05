@@ -7,12 +7,6 @@
 
 #include <mgba/internal/debugger/cli-debugger.h>
 
-#ifdef USE_GDB_STUB
-#include <mgba/internal/debugger/gdb-stub.h>
-#endif
-#ifdef USE_EDITLINE
-#include "feature/editline/cli-el-backend.h"
-#endif
 #ifdef ENABLE_SCRIPTING
 #include <mgba/core/scripting.h>
 
@@ -21,7 +15,6 @@
 #endif
 #endif
 
-#include <mgba/core/cheats.h>
 #include <mgba/core/core.h>
 #include <mgba/core/config.h>
 #include <mgba/core/input.h>
@@ -61,6 +54,7 @@ int main(int argc, char** argv) {
 		.useBios = true,
 		.rewindEnable = true,
 		.rewindBufferCapacity = 600,
+		.rewindBufferInterval = 1,
 		.audioBuffers = 1024,
 		.videoSync = false,
 		.audioSync = true,
@@ -107,23 +101,13 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 
-	renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
+	renderer.core->baseVideoSize(renderer.core, &renderer.width, &renderer.height);
 	renderer.ratio = graphicsOpts.multiplier;
 	if (renderer.ratio == 0) {
 		renderer.ratio = 1;
 	}
 	opts.width = renderer.width * renderer.ratio;
 	opts.height = renderer.height * renderer.ratio;
-
-	struct mCheatDevice* device = NULL;
-	if (args.cheatsFile && (device = renderer.core->cheatDevice(renderer.core))) {
-		struct VFile* vf = VFileOpen(args.cheatsFile, O_RDONLY);
-		if (vf) {
-			mCheatDeviceClear(device);
-			mCheatParseFile(device, vf);
-			vf->close(vf);
-		}
-	}
 
 	mInputMapInit(&renderer.core->inputMap, &GBAInputInfo);
 	mCoreInitConfig(renderer.core, PORT);
@@ -188,10 +172,6 @@ int main(int argc, char** argv) {
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&renderer.core->inputMap);
 
-	if (device) {
-		mCheatDeviceDestroy(device);
-	}
-
 	mSDLDeinit(&renderer);
 	mStandardLoggerDeinit(&_logger);
 
@@ -230,7 +210,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		return 1;
 	}
 	mCoreAutoloadSave(renderer->core);
-	mCoreAutoloadCheats(renderer->core);
+	mArgumentsApplyFileLoads(args, renderer->core);
 #ifdef ENABLE_SCRIPTING
 	struct mScriptBridge* bridge = mScriptBridgeCreate();
 #ifdef ENABLE_PYTHON
@@ -242,30 +222,20 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 #endif
 
 #ifdef USE_DEBUGGERS
-	struct mDebugger* debugger = mDebuggerCreate(args->debuggerType, renderer->core);
-	if (debugger) {
-#ifdef USE_EDITLINE
-		if (args->debuggerType == DEBUGGER_CLI) {
-			struct CLIDebugger* cliDebugger = (struct CLIDebugger*) debugger;
-			CLIDebuggerAttachBackend(cliDebugger, CLIDebuggerEditLineBackendCreate());
-		}
-#endif
-		mDebuggerAttach(debugger, renderer->core);
-		mDebuggerEnter(debugger, DEBUGGER_ENTER_MANUAL, NULL);
-#ifdef ENABLE_SCRIPTING
-		mScriptBridgeSetDebugger(bridge, debugger);
-#endif
-	}
-#endif
+	struct mDebugger debugger;
+	mDebuggerInit(&debugger);
+	bool hasDebugger = mArgumentsApplyDebugger(args, renderer->core, &debugger);
 
-	if (args->patch) {
-		struct VFile* patch = VFileOpen(args->patch, O_RDONLY);
-		if (patch) {
-			renderer->core->loadPatch(renderer->core, patch);
-		}
+	if (hasDebugger) {
+		mDebuggerAttach(&debugger, renderer->core);
+		mDebuggerEnter(&debugger, DEBUGGER_ENTER_MANUAL, NULL);
+#ifdef ENABLE_SCRIPTING
+		mScriptBridgeSetDebugger(bridge, &debugger);
+#endif
 	} else {
-		mCoreAutoloadPatch(renderer->core);
+		mDebuggerDeinit(&debugger);
 	}
+#endif
 
 	renderer->audio.samples = renderer->core->opts.audioBuffers;
 	renderer->audio.sampleRate = 44100;
@@ -275,7 +245,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 
 	if (!didFail) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-		renderer->core->desiredVideoDimensions(renderer->core, &renderer->width, &renderer->height);
+		renderer->core->currentVideoSize(renderer->core, &renderer->width, &renderer->height);
 		unsigned width = renderer->width * renderer->ratio;
 		unsigned height = renderer->height * renderer->ratio;
 		if (width != (unsigned) renderer->viewportWidth && height != (unsigned) renderer->viewportHeight) {
@@ -319,6 +289,13 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 
 #ifdef ENABLE_SCRIPTING
 	mScriptBridgeDestroy(bridge);
+#endif
+
+#ifdef USE_DEBUGGERS
+	if (hasDebugger) {
+		renderer->core->detachDebugger(renderer->core);
+		mDebuggerDeinit(&debugger);
+	}
 #endif
 
 	return didFail;

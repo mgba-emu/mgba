@@ -7,9 +7,6 @@
 
 #include <mgba-util/common.h>
 
-u32 __ctru_heap_size = 0x02400000;
-u32 __ctru_linear_heap_size = 0x01400000;
-
 uint32_t* romBuffer = NULL;
 size_t romBufferSize;
 

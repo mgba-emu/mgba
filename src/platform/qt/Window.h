@@ -131,7 +131,6 @@ protected:
 	virtual void focusOutEvent(QFocusEvent*) override;
 	virtual void dragEnterEvent(QDragEnterEvent*) override;
 	virtual void dropEvent(QDropEvent*) override;
-	virtual void mouseDoubleClickEvent(QMouseEvent*) override;
 
 private slots:
 	void gameStarted();
@@ -180,10 +179,10 @@ private:
 	template <typename T, typename... A> std::function<void()> openNamedTView(std::unique_ptr<T>*, A... arg);
 	template <typename T, typename... A> std::function<void()> openNamedControllerTView(std::unique_ptr<T>*, A... arg);
 
-	Action* addGameAction(const QString& visibleName, const QString& name, Action::Function action, const QString& menu = {}, const QKeySequence& = {});
-	template<typename T, typename V> Action* addGameAction(const QString& visibleName, const QString& name, T* obj, V (T::*action)(), const QString& menu = {}, const QKeySequence& = {});
-	template<typename V> Action* addGameAction(const QString& visibleName, const QString& name, V (CoreController::*action)(), const QString& menu = {}, const QKeySequence& = {});
-	Action* addGameAction(const QString& visibleName, const QString& name, Action::BooleanFunction action, const QString& menu = {}, const QKeySequence& = {});
+	std::shared_ptr<Action> addGameAction(const QString& visibleName, const QString& name, Action::Function action, const QString& menu = {}, const QKeySequence& = {});
+	template<typename T, typename V> std::shared_ptr<Action> addGameAction(const QString& visibleName, const QString& name, T* obj, V (T::*action)(), const QString& menu = {}, const QKeySequence& = {});
+	template<typename V> std::shared_ptr<Action> addGameAction(const QString& visibleName, const QString& name, V (CoreController::*action)(), const QString& menu = {}, const QKeySequence& = {});
+	std::shared_ptr<Action> addGameAction(const QString& visibleName, const QString& name, Action::BooleanFunction action, const QString& menu = {}, const QKeySequence& = {});
 
 	void updateTitle(float fps = -1);
 
@@ -199,13 +198,11 @@ private:
 
 	// TODO: Move these to a new class
 	ActionMapper m_actions;
-	QList<Action*> m_gameActions;
-	QList<Action*> m_nonMpActions;
-#ifdef M_CORE_GBA
-	QMultiMap<mPlatform, Action*> m_platformActions;
-#endif
-	Action* m_multiWindow;
-	QMap<int, Action*> m_frameSizes;
+	QList<std::shared_ptr<Action>> m_gameActions;
+	QList<std::shared_ptr<Action>> m_nonMpActions;
+	QMultiMap<mPlatform, std::shared_ptr<Action>> m_platformActions;
+	std::shared_ptr<Action> m_multiWindow;
+	QMap<int, std::shared_ptr<Action>> m_frameSizes;
 
 	LogController m_log{0};
 	LogView* m_logView;

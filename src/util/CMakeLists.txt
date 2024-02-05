@@ -8,18 +8,21 @@ set(BASE_SOURCE_FILES
 	hash.c
 	string.c
 	table.c
+	vector.c
 	vfs.c)
 
 set(SOURCE_FILES
 	${BASE_SOURCE_FILES}
 	convolve.c
 	elf-read.c
-	export.c
+	geometry.c
+	image.c
+	image/export.c
+	image/png-io.c
 	patch.c
 	patch-fast.c
 	patch-ips.c
 	patch-ups.c
-	png-io.c
 	ring-fifo.c
 	sfo.c
 	text-codec.c)
@@ -32,6 +35,9 @@ set(GUI_FILES
 	gui/menu.c)
 
 set(TEST_FILES
+	test/color.c
+	test/geometry.c
+	test/image.c
 	test/sfo.c
 	test/string-parser.c
 	test/string-utf8.c

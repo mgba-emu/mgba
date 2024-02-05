@@ -129,7 +129,7 @@ static THREAD_ENTRY _audioThread(void* context) {
 		sceAudioOutOutput(audioPort, buffer);
 	}
 	sceAudioOutReleasePort(audioPort);
-	return 0;
+	THREAD_EXIT(0);
 }
 
 static void _sampleRotation(struct mRotationSource* source) {
@@ -323,7 +323,7 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	mInputBindAxis(&runner->core->inputMap, PSP2_INPUT, 1, &desc);
 
 	unsigned width, height;
-	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+	runner->core->baseVideoSize(runner->core, &width, &height);
 	tex[0] = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 	tex[1] = vita2d_create_empty_texture_format(256, toPow2(height), SCE_GXM_TEXTURE_FORMAT_X8U8U8U8_1BGR);
 	currentTex = 0;
@@ -614,7 +614,7 @@ void mPSP2Swap(struct mGUIRunner* runner) {
 
 void mPSP2Draw(struct mGUIRunner* runner, bool faded) {
 	unsigned width, height;
-	runner->core->desiredVideoDimensions(runner->core, &width, &height);
+	runner->core->currentVideoSize(runner->core, &width, &height);
 	if (interframeBlending) {
 		_drawTex(tex[!currentTex], width, height, faded, false);
 	}

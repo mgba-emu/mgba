@@ -7,9 +7,13 @@
 
 #include <QMutex>
 #include <QObject>
+#include <QQueue>
+#include <QReadWriteLock>
 #include <QWaitCondition>
 
+#include <mgba/core/log.h>
 #include <mgba/feature/video-logger.h>
+#include <mgba/feature/proxy-backend.h>
 #include <mgba-util/ring-fifo.h>
 
 namespace QGBA {
@@ -21,16 +25,22 @@ Q_OBJECT
 
 public:
 	VideoProxy();
+	~VideoProxy();
 
 	void attach(CoreController*);
 	void detach(CoreController*);
-	void setBlocking(bool block) { m_logger.d.waitOnFlush = block; }
+	void setBlocking(bool block) { m_logger.waitOnFlush = block; }
+
+	VideoBackend* backend() { return &m_backend.d; }
+	void setProxiedBackend(VideoBackend*);
 
 signals:
 	void dataAvailable();
+	void commandAvailable();
 
 public slots:
 	void processData();
+	void processCommands();
 	void reset();
 	void handleEvent(int);
 
@@ -51,22 +61,31 @@ private:
 		using type = T (VideoProxy::*)(A...);
 
 		template<type F> static T func(mVideoLogger* logger, A... args) {
-			VideoProxy* proxy = reinterpret_cast<Logger*>(logger)->p;
+			VideoProxy* proxy = static_cast<Logger*>(logger)->p;
 			return (proxy->*F)(args...);
 		}
 	};
 
 	template<void (VideoProxy::*F)()> static void cbind(mVideoLogger* logger) { callback<void>::func<F>(logger); }
 
-	struct Logger {
-		mVideoLogger d;
+	struct Logger : public mVideoLogger {
 		VideoProxy* p;
-	} m_logger = {{}, this};
+	} m_logger;
+
+	struct mVideoProxyBackend m_backend;
+	struct mLogger* m_logContext = nullptr;
 
 	RingFIFO m_dirtyQueue;
 	QMutex m_mutex;
 	QWaitCondition m_toThreadCond;
 	QWaitCondition m_fromThreadCond;
+
+	QReadWriteLock m_backendInLock;
+	QReadWriteLock m_backendOutLock;
+	QQueue<QByteArray> m_backendIn;
+	QQueue<QByteArray> m_backendOut;
+	QWaitCondition m_toBackendThreadCond;
+	QWaitCondition m_fromBackendThreadCond;
 };
 
 }

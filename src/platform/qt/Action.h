@@ -24,8 +24,8 @@ public:
 		QUIT,
 	};
 
-	Action(Function, const QString& name, const QString& visibleName, QObject* parent = nullptr);
-	Action(BooleanFunction, const QString& name, const QString& visibleName, QObject* parent = nullptr);
+	Action(Function&&, const QString& name, const QString& visibleName, QObject* parent = nullptr);
+	Action(BooleanFunction&&, const QString& name, const QString& visibleName, QObject* parent = nullptr);
 	Action(const QString& name, const QString& visibleName, QObject* parent = nullptr);
 
 	Action(QObject* parent = nullptr);
@@ -45,7 +45,7 @@ public:
 		return m_name == other.m_name;
 	}
 
-	void connect(Function);
+	void connect(Function&&);
 
 	bool isEnabled() const { return m_enabled; }
 	bool isActive() const { return m_active; }

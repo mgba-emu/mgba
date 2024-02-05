@@ -6,8 +6,8 @@
 #include "LoadSaveState.h"
 
 #include "CoreController.h"
-#include "GamepadAxisEvent.h"
-#include "GamepadButtonEvent.h"
+#include "input/GamepadAxisEvent.h"
+#include "input/GamepadButtonEvent.h"
 #include "VFileDevice.h"
 #include "utils.h"
 
@@ -17,6 +17,7 @@
 #include <QPainter>
 
 #include <mgba/core/serialize.h>
+#include <mgba/internal/gba/input.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
 
@@ -42,13 +43,12 @@ LoadSaveState::LoadSaveState(std::shared_ptr<CoreController> controller, QWidget
 	m_slots[7] = m_ui.state8;
 	m_slots[8] = m_ui.state9;
 
-	unsigned width, height;
-	controller->thread()->core->desiredVideoDimensions(controller->thread()->core, &width, &height);
+	QSize size = controller->screenDimensions();
 	int i;
 	for (i = 0; i < NUM_SLOTS; ++i) {
 		loadState(i + 1);
 		m_slots[i]->installEventFilter(this);
-		m_slots[i]->setMaximumSize(width + 2, height + 2);
+		m_slots[i]->setMaximumSize(size.width() + 2, size.height() + 2);
 		connect(m_slots[i], &QAbstractButton::clicked, this, [this, i]() { triggerState(i + 1); });
 	}
 
@@ -131,13 +131,13 @@ bool LoadSaveState::eventFilter(QObject* object, QEvent* event) {
 	if (event->type() == GamepadButtonEvent::Down() || event->type() == GamepadAxisEvent::Type()) {
 		int column = m_currentFocus % 3;
 		int row = m_currentFocus - column;
-		GBAKey key = GBA_KEY_NONE;
+		int key = -1;
 		if (event->type() == GamepadButtonEvent::Down()) {
-			key = static_cast<GamepadButtonEvent*>(event)->gbaKey();
+			key = static_cast<GamepadButtonEvent*>(event)->platformKey();
 		} else if (event->type() == GamepadAxisEvent::Type()) {
 			GamepadAxisEvent* gae = static_cast<GamepadAxisEvent*>(event);
 			if (gae->isNew()) {
-				key = gae->gbaKey();
+				key = gae->platformKey();
 			} else {
 				return false;
 			}
@@ -198,11 +198,17 @@ void LoadSaveState::loadState(int slot) {
 	QDateTime creation;
 	QImage stateImage;
 
-	unsigned width, height;
-	thread->core->desiredVideoDimensions(thread->core, &width, &height);
+	QSize size = m_controller->screenDimensions();
 	mStateExtdataItem item;
-	if (mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item) && item.size >= static_cast<int32_t>(width * height * 4)) {
-		stateImage = QImage((uchar*) item.data, width, height, QImage::Format_ARGB32).rgbSwapped();
+	if (mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item)) {
+		mStateExtdataItem dims;
+		if (mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT_DIMENSIONS, &dims) && dims.size == sizeof(uint16_t[2])) {
+			size.setWidth(static_cast<uint16_t*>(dims.data)[0]);
+			size.setHeight(static_cast<uint16_t*>(dims.data)[1]);
+		}
+		if (item.size >= static_cast<int32_t>(size.width() * size.height() * 4)) {
+			stateImage = QImage((uchar*) item.data, size.width(), size.height(), QImage::Format_ARGB32).rgbSwapped();
+		}
 	}
 
 	if (mStateExtdataGet(&extdata, EXTDATA_META_TIME, &item) && item.size == sizeof(uint64_t)) {

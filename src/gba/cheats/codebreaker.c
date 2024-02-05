@@ -215,7 +215,7 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 			return false;
 		}
 		cheats->hook = malloc(sizeof(*cheats->hook));
-		cheats->hook->address = BASE_CART0 | (op1 & (SIZE_CART0 - 1));
+		cheats->hook->address = GBA_BASE_ROM0 | (op1 & (GBA_SIZE_ROM0 - 1));
 		cheats->hook->mode = MODE_THUMB;
 		cheats->hook->refs = 1;
 		cheats->hook->reentries = 0;
@@ -278,7 +278,7 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 			cheat = mCheatListAppend(&cheats->d.list);
 			cheat->type = CHEAT_IF_NAND;
 			cheat->width = 2;
-			cheat->address = BASE_IO | REG_KEYINPUT;
+			cheat->address = GBA_BASE_IO | GBA_REG_KEYINPUT;
 			cheat->operand = op2;
 			cheat->repeat = 1;
 			return true;

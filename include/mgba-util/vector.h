@@ -34,6 +34,16 @@ CXX_GUARD_START
 	size_t NAME ## Index(const struct NAME* vector, const TYPE* member); \
 	void NAME ## Copy(struct NAME* dest, const struct NAME* src);
 
+#ifdef NDEBUG
+#define VECTOR_BOUNDS_CHECK(NAME, V, L)
+#else
+#define VECTOR_BOUNDS_CHECK(NAME, V, L) \
+	if ((L) >= (V)->size) { \
+		fprintf(stderr, "Vector type %s invalid access of index %" PRIuPTR " into vector of size %" PRIuPTR "\n", #NAME, (L), (V)->size); \
+		abort(); \
+	}
+#endif
+
 #define DEFINE_VECTOR(NAME, TYPE) \
 	void NAME ## Init(struct NAME* vector, size_t capacity) { \
 		vector->size = 0; \
@@ -50,9 +60,11 @@ CXX_GUARD_START
 		vector->size = 0; \
 	} \
 	TYPE* NAME ## GetPointer(struct NAME* vector, size_t location) { \
+		VECTOR_BOUNDS_CHECK(NAME, vector, location); \
 		return &vector->vector[location]; \
 	} \
 	TYPE const* NAME ## GetConstPointer(const struct NAME* vector, size_t location) { \
+		VECTOR_BOUNDS_CHECK(NAME, vector, location); \
 		return &vector->vector[location]; \
 	} \
 	TYPE* NAME ## Append(struct NAME* vector) { \
@@ -78,10 +90,12 @@ CXX_GUARD_START
 		vector->vector = realloc(vector->vector, vector->capacity * sizeof(TYPE)); \
 	} \
 	void NAME ## Shift(struct NAME* vector, size_t location, size_t difference) { \
+		VECTOR_BOUNDS_CHECK(NAME, vector, location); \
 		memmove(&vector->vector[location], &vector->vector[location + difference], (vector->size - location - difference) * sizeof(TYPE)); \
 		vector->size -= difference; \
 	} \
 	void NAME ## Unshift(struct NAME* vector, size_t location, size_t difference) { \
+		VECTOR_BOUNDS_CHECK(NAME, vector, location); \
 		NAME ## Resize(vector, difference); \
 		memmove(&vector->vector[location + difference], &vector->vector[location], (vector->size - location - difference) * sizeof(TYPE)); \
 	} \
@@ -97,8 +111,16 @@ CXX_GUARD_START
 		dest->size = src->size; \
 	} \
 
-DECLARE_VECTOR(StringList, char*);
 DECLARE_VECTOR(IntList, int);
+DECLARE_VECTOR(SInt8List, int8_t);
+DECLARE_VECTOR(SInt16List, int16_t);
+DECLARE_VECTOR(SInt32List, int32_t);
+DECLARE_VECTOR(SIntPtrList, intptr_t);
+DECLARE_VECTOR(UInt8List, uint8_t);
+DECLARE_VECTOR(UInt16List, uint16_t);
+DECLARE_VECTOR(UInt32List, uint32_t);
+DECLARE_VECTOR(UIntPtrList, uintptr_t);
+DECLARE_VECTOR(StringList, char*);
 
 CXX_GUARD_END
 

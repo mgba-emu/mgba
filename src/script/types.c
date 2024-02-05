@@ -5,11 +5,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/script/types.h>
 
+#include <mgba/internal/script/types.h>
 #include <mgba/script/context.h>
 #include <mgba/script/macros.h>
 #include <mgba-util/hash.h>
 #include <mgba-util/string.h>
 #include <mgba-util/table.h>
+
+struct mScriptLambda {
+	struct mScriptValue* fn;
+	struct mScriptList arguments;
+};
 
 static void _allocList(struct mScriptValue*);
 static void _freeList(struct mScriptValue*);
@@ -26,6 +32,10 @@ static bool _stringCast(const struct mScriptValue*, const struct mScriptType*, s
 static bool _castScalar(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
 static uint32_t _hashScalar(const struct mScriptValue*);
 
+static bool _wstrCast(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
+static bool _wlistCast(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
+static bool _wtableCast(const struct mScriptValue*, const struct mScriptType*, struct mScriptValue*);
+
 static uint32_t _valHash(const void* val, size_t len, uint32_t seed);
 static bool _valEqual(const void* a, const void* b);
 static void* _valRef(void*);
@@ -41,6 +51,10 @@ static bool _f64Equal(const struct mScriptValue*, const struct mScriptValue*);
 static bool _boolEqual(const struct mScriptValue*, const struct mScriptValue*);
 static bool _charpEqual(const struct mScriptValue*, const struct mScriptValue*);
 static bool _stringEqual(const struct mScriptValue*, const struct mScriptValue*);
+
+static void _lambdaAlloc(struct mScriptValue* val);
+static void _lambdaFree(struct mScriptValue* val);
+static bool _callLambda0(struct mScriptFrame* frame, void* context);
 
 const struct mScriptType mSTVoid = {
 	.base = mSCRIPT_TYPE_VOID,
@@ -231,6 +245,7 @@ const struct mScriptType mSTStringWrapper = {
 	.alloc = NULL,
 	.free = NULL,
 	.hash = NULL,
+	.cast = _wstrCast,
 };
 
 const struct mScriptType mSTListWrapper = {
@@ -240,6 +255,17 @@ const struct mScriptType mSTListWrapper = {
 	.alloc = NULL,
 	.free = NULL,
 	.hash = NULL,
+	.cast = _wlistCast,
+};
+
+const struct mScriptType mSTTableWrapper = {
+	.base = mSCRIPT_TYPE_WRAPPER,
+	.size = sizeof(struct mScriptValue),
+	.name = "wrapper table",
+	.alloc = NULL,
+	.free = NULL,
+	.hash = NULL,
+	.cast = _wtableCast,
 };
 
 const struct mScriptType mSTWeakref = {
@@ -248,6 +274,25 @@ const struct mScriptType mSTWeakref = {
 	.name = "weakref",
 	.alloc = NULL,
 	.free = NULL,
+	.hash = NULL,
+};
+
+const struct mScriptType mSTLambda0 = {
+	.base = mSCRIPT_TYPE_FUNCTION,
+	.size = sizeof(struct mScriptLambda),
+	.name = "lambda",
+	.details = {
+		.function = {
+			.parameters = {
+				.count = 0,
+			},
+			.returnType = {
+				.count = 0,
+			},
+		},
+	},
+	.alloc = _lambdaAlloc,
+	.free = _lambdaFree,
 	.hash = NULL,
 };
 
@@ -347,22 +392,43 @@ static uint32_t _hashString(const struct mScriptValue* val) {
 	return hash32(buffer, size, 0);
 }
 
-uint32_t _hashScalar(const struct mScriptValue* val) {
-	// From https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
-	uint32_t x = 0;
-	switch (val->type->base) {
-	case mSCRIPT_TYPE_SINT:
-		x = val->value.s32;
-		break;
-	case mSCRIPT_TYPE_UINT:
-	default:
-		x = val->value.u32;
-		break;
+bool _wstrCast(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) {
+	if (input->type->base != mSCRIPT_TYPE_WRAPPER) {
+		return false;
 	}
-	x = ((x >> 16) ^ x) * 0x45D9F3B;
-	x = ((x >> 16) ^ x) * 0x45D9F3B;
-	x = (x >> 16) ^ x;
-	return x;
+	const struct mScriptValue* unwrapped = mScriptValueUnwrapConst(input);
+	if (unwrapped->type != mSCRIPT_TYPE_MS_STR) {
+		return false;
+	}
+	memcpy(output, input, sizeof(*output));
+	output->type = type;
+	return true;
+}
+
+bool _wlistCast(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) {
+	if (input->type->base != mSCRIPT_TYPE_WRAPPER) {
+		return false;
+	}
+	const struct mScriptValue* unwrapped = mScriptValueUnwrapConst(input);
+	if (unwrapped->type != mSCRIPT_TYPE_MS_LIST) {
+		return false;
+	}
+	memcpy(output, input, sizeof(*output));
+	output->type = type;
+	return true;
+}
+
+bool _wtableCast(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) {
+	if (input->type->base != mSCRIPT_TYPE_WRAPPER) {
+		return false;
+	}
+	const struct mScriptValue* unwrapped = mScriptValueUnwrapConst(input);
+	if (unwrapped->type != mSCRIPT_TYPE_MS_TABLE) {
+		return false;
+	}
+	memcpy(output, input, sizeof(*output));
+	output->type = type;
+	return true;
 }
 
 #define AS(NAME, TYPE) \
@@ -461,6 +527,16 @@ bool _castScalar(const struct mScriptValue* input, const struct mScriptType* typ
 	}
 	output->type = type;
 	return true;
+}
+
+uint32_t _hashScalar(const struct mScriptValue* val) {
+	// From https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
+	uint32_t x = 0;
+	_asUInt32(val, &x);
+	x = ((x >> 16) ^ x) * 0x45D9F3B;
+	x = ((x >> 16) ^ x) * 0x45D9F3B;
+	x = (x >> 16) ^ x;
+	return x;
 }
 
 uint32_t _valHash(const void* val, size_t len, uint32_t seed) {
@@ -778,6 +854,32 @@ bool _stringEqual(const struct mScriptValue* a, const struct mScriptValue* b) {
 	return strncmp(valA, valB, lenA) == 0;
 }
 
+void _lambdaAlloc(struct mScriptValue* value) {
+	struct mScriptLambda* lambda = calloc(1, sizeof(*lambda));
+	struct mScriptFunction* fn = calloc(1, sizeof(*fn));
+	fn->context = lambda;
+	mScriptListInit(&lambda->arguments, 0);
+	value->value.opaque = fn;
+}
+
+void _lambdaFree(struct mScriptValue* value) {
+	struct mScriptFunction* fn = value->value.opaque;
+	struct mScriptLambda* lambda = fn->context;
+	size_t i;
+	for (i = 0; i < mScriptListSize(&lambda->arguments); ++i) {
+		struct mScriptValue* val = mScriptListGetPointer(&lambda->arguments, i);
+		if (val->type->base != mSCRIPT_TYPE_WRAPPER) {
+			continue;
+		}
+		val = mScriptValueUnwrap(val);
+		mScriptValueDeref(val);
+	}
+	mScriptListDeinit(&lambda->arguments);
+	mScriptValueDeref(lambda->fn);
+	free(lambda);
+	free(fn);
+}
+
 struct mScriptValue* mScriptValueAlloc(const struct mScriptType* type) {
 	// TODO: Use an arena instead of just the generic heap
 	struct mScriptValue* val = malloc(sizeof(*val));
@@ -835,13 +937,12 @@ void mScriptValueWrap(struct mScriptValue* value, struct mScriptValue* out) {
 	}
 
 	out->type = mSCRIPT_TYPE_MS_WRAPPER;
-	out->value.opaque = value;
-	mScriptValueRef(value);
+	out->value.wrapped = value;
 }
 
 struct mScriptValue* mScriptValueUnwrap(struct mScriptValue* value) {
 	if (value->type->base == mSCRIPT_TYPE_WRAPPER) {
-		return value->value.opaque;
+		return value->value.wrapped;
 	}
 	return NULL;
 }
@@ -851,6 +952,21 @@ const struct mScriptValue* mScriptValueUnwrapConst(const struct mScriptValue* va
 		return value->value.copaque;
 	}
 	return NULL;
+}
+
+void mScriptValueFollowPointer(struct mScriptValue* ptr, struct mScriptValue* out) {
+	if (ptr->type->base != mSCRIPT_TYPE_OPAQUE || !ptr->type->details.type) {
+		return;
+	}
+
+	out->value.opaque = *(void**) ptr->value.opaque;
+	if (out->value.opaque) {
+		out->type = ptr->type->details.type;
+	} else {
+		out->type = mSCRIPT_TYPE_MS_VOID;
+	}
+	out->refs = mSCRIPT_VALUE_UNREF;
+	out->flags = 0;
 }
 
 struct mScriptValue* mScriptStringCreateEmpty(size_t size) {
@@ -928,14 +1044,11 @@ bool mScriptTableRemove(struct mScriptValue* table, struct mScriptValue* key) {
 }
 
 struct mScriptValue* mScriptTableLookup(struct mScriptValue* table, struct mScriptValue* key) {
-	if (table->type->base == mSCRIPT_TYPE_WRAPPER) {
-		table = mScriptValueUnwrap(table);
-	}
 	if (table->type != mSCRIPT_TYPE_MS_TABLE) {
-		return false;
+		return NULL;
 	}
 	if (!key->type->hash) {
-		return false;
+		return NULL;
 	}
 	return HashTableLookupCustom(table->value.table, key);
 }
@@ -1015,6 +1128,44 @@ void mScriptFrameDeinit(struct mScriptFrame* frame) {
 	mScriptListDeinit(&frame->arguments);
 }
 
+struct mScriptValue* mScriptLambdaCreate0(struct mScriptValue* fn, struct mScriptList* args) {
+	struct mScriptValue* value = mScriptValueAlloc(&mSTLambda0);
+	struct mScriptFunction* lfn = value->value.opaque;
+	struct mScriptLambda* lambda = lfn->context;
+	lfn->call = _callLambda0;
+	lambda->fn = fn;
+	mScriptValueRef(fn);
+	if (args) {
+		mScriptListCopy(&lambda->arguments, args);
+		size_t i;
+		for (i = 0; i < mScriptListSize(args); ++i) {
+			struct mScriptValue* val = mScriptListGetPointer(args, i);
+			if (val->type->base != mSCRIPT_TYPE_WRAPPER) {
+				continue;
+			}
+			val = mScriptValueUnwrap(val);
+			mScriptValueRef(val);
+		}
+	}
+	return value;
+}
+
+bool _callLambda0(struct mScriptFrame* frame, void* context) {
+	if (mScriptListSize(&frame->arguments)) {
+		return false;
+	}
+	struct mScriptLambda* lambda = context;
+	struct mScriptFrame subframe;
+	mScriptFrameInit(&subframe);
+	mScriptListCopy(&subframe.arguments, &lambda->arguments);
+	bool ok = mScriptInvoke(lambda->fn, &subframe);
+	if (mScriptListSize(&subframe.returnValues)) {
+		ok = false;
+	}
+	mScriptFrameDeinit(&subframe);
+	return ok;
+}
+
 static void _mScriptClassInit(struct mScriptTypeClass* cls, const struct mScriptClassInitDetails* details, bool child) {
 	const char* docstring = NULL;
 
@@ -1081,12 +1232,16 @@ static void _mScriptClassInit(struct mScriptTypeClass* cls, const struct mScript
 			}
 			break;
 		case mSCRIPT_CLASS_INIT_SET:
-			cls->set = calloc(1, sizeof(*member));
-			memcpy(cls->set, &detail->info.member, sizeof(*member));
+			member = calloc(1, sizeof(*member));
+			memcpy(member, &detail->info.member, sizeof(*member));
 			if (docstring) {
-				cls->set->docstring = docstring;
+				member->docstring = docstring;
 				docstring = NULL;
 			}
+			if (detail->info.member.type->details.function.parameters.count != 3) {
+				abort();
+			}
+			HashTableInsert(&cls->setters, detail->info.member.type->details.function.parameters.entries[2]->name, member);
 			break;
 		case mSCRIPT_CLASS_INIT_INTERNAL:
 			cls->internal = true;
@@ -1101,11 +1256,11 @@ void mScriptClassInit(struct mScriptTypeClass* cls) {
 	}
 	HashTableInit(&cls->instanceMembers, 0, free);
 	HashTableInit(&cls->castToMembers, 0, NULL);
+	HashTableInit(&cls->setters, 0, free);
 
 	cls->alloc = NULL;
 	cls->free = NULL;
 	cls->get = NULL;
-	cls->set = NULL;
 	_mScriptClassInit(cls, cls->details, false);
 
 	cls->init = true;
@@ -1117,6 +1272,7 @@ void mScriptClassDeinit(struct mScriptTypeClass* cls) {
 	}
 	HashTableDeinit(&cls->instanceMembers);
 	HashTableDeinit(&cls->castToMembers);
+	HashTableDeinit(&cls->setters);
 	cls->init = false;
 }
 
@@ -1178,6 +1334,21 @@ static bool _accessRawMember(struct mScriptClassMember* member, void* raw, bool 
 		val->type = mSCRIPT_TYPE_MS_WRAPPER;
 		val->value.table = raw;
 		break;
+	case mSCRIPT_TYPE_STRING:
+		if (member->type == mSCRIPT_TYPE_MS_CHARP) {
+			val->refs = mSCRIPT_VALUE_UNREF;
+			val->flags = 0;
+			val->type = mSCRIPT_TYPE_MS_CHARP;
+			val->value.opaque = raw;
+			break;
+		}
+		return false;
+	case mSCRIPT_TYPE_LIST:
+		val->refs = mSCRIPT_VALUE_UNREF;
+		val->flags = 0;
+		val->type = mSCRIPT_TYPE_MS_LIST;
+		val->value.list = raw;
+		break;
 	case mSCRIPT_TYPE_FUNCTION:
 		val->refs = mSCRIPT_VALUE_UNREF;
 		val->flags = 0;
@@ -1234,7 +1405,7 @@ bool mScriptObjectGet(struct mScriptValue* obj, const char* member, struct mScri
 		this->type = obj->type;
 		this->refs = mSCRIPT_VALUE_UNREF;
 		this->flags = 0;
-		this->value.opaque = obj;
+		this->value.opaque = obj->value.opaque;
 		mSCRIPT_PUSH(&frame.arguments, CHARP, member);
 		if (!mScriptInvoke(&getMember, &frame) || mScriptListSize(&frame.returnValues) != 1) {
 			mScriptFrameDeinit(&frame);
@@ -1269,6 +1440,91 @@ bool mScriptObjectGetConst(const struct mScriptValue* obj, const char* member, s
 	return _accessRawMember(m, obj->value.opaque, true, val);
 }
 
+static struct mScriptClassMember* _findSetter(const struct mScriptTypeClass* cls, const struct mScriptType* type) {
+	struct mScriptClassMember* m = HashTableLookup(&cls->setters, type->name);
+	if (m) {
+		return m;
+	}
+	
+	switch (type->base) {
+	case mSCRIPT_TYPE_SINT:
+		if (type->size < 2) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_S16->name);
+			if (m) {
+				return m;
+			}
+		}
+		if (type->size < 4) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_S32->name);
+			if (m) {
+				return m;
+			}
+		}
+		if (type->size < 8) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_S64->name);
+			if (m) {
+				return m;
+			}
+		}
+		break;
+	case mSCRIPT_TYPE_UINT:
+		if (type->size < 2) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_U16->name);
+			if (m) {
+				return m;
+			}
+		}
+		if (type->size < 4) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_U32->name);
+			if (m) {
+				return m;
+			}
+		}
+		if (type->size < 8) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_U64->name);
+			if (m) {
+				return m;
+			}
+		}
+		break;
+	case mSCRIPT_TYPE_FLOAT:
+		if (type->size < 8) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_F64->name);
+			if (m) {
+				return m;
+			}
+		}
+		break;
+	case mSCRIPT_TYPE_STRING:
+		if (type == mSCRIPT_TYPE_MS_STR) {
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_CHARP->name);
+			if (m) {
+				return m;
+			}
+			m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_WSTR->name);
+			if (m) {
+				return m;
+			}
+		}
+		break;
+	case mSCRIPT_TYPE_LIST:
+		m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_WLIST->name);
+		if (m) {
+			return m;
+		}
+		break;
+	case mSCRIPT_TYPE_TABLE:
+		m = HashTableLookup(&cls->setters, mSCRIPT_TYPE_MS_WTABLE->name);
+		if (m) {
+			return m;
+		}
+		break;
+	default:
+		break;
+	}
+	return NULL;
+}
+
 bool mScriptObjectSet(struct mScriptValue* obj, const char* member, struct mScriptValue* val) {
 	if (obj->type->base != mSCRIPT_TYPE_OBJECT || obj->type->isConst) {
 		return false;
@@ -1283,6 +1539,32 @@ bool mScriptObjectSet(struct mScriptValue* obj, const char* member, struct mScri
 
 	struct mScriptClassMember* m = HashTableLookup(&cls->instanceMembers, member);
 	if (!m) {
+		if (val->type->base == mSCRIPT_TYPE_WRAPPER) {
+			val = mScriptValueUnwrap(val);
+		}
+		struct mScriptValue setMember;
+		m = _findSetter(cls, val->type);
+		if (!m || !_accessRawMember(m, obj->value.opaque, obj->type->isConst, &setMember)) {
+			return false;
+		}
+		struct mScriptFrame frame;
+		mScriptFrameInit(&frame);
+		struct mScriptValue* this = mScriptListAppend(&frame.arguments);
+		this->type = obj->type;
+		this->refs = mSCRIPT_VALUE_UNREF;
+		this->flags = 0;
+		this->value.opaque = obj->value.opaque;
+		mSCRIPT_PUSH(&frame.arguments, CHARP, member);
+		mScriptValueWrap(val, mScriptListAppend(&frame.arguments));
+		if (!mScriptInvoke(&setMember, &frame) || mScriptListSize(&frame.returnValues) != 0) {
+			mScriptFrameDeinit(&frame);
+			return false;
+		}
+		mScriptFrameDeinit(&frame);
+		return true;
+	}
+
+	if (m->readonly) {
 		return false;
 	}
 
@@ -1378,24 +1660,56 @@ void mScriptObjectFree(struct mScriptValue* value) {
 	if (value->type->base != mSCRIPT_TYPE_OBJECT) {
 		return;
 	}
-	if (value->flags & mSCRIPT_VALUE_FLAG_FREE_BUFFER) {
+	if (value->flags & (mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER)) {
 		mScriptClassInit(value->type->details.cls);
 		if (value->type->details.cls->free) {
 			struct mScriptValue deinitMember;
 			if (_accessRawMember(value->type->details.cls->free, value->value.opaque, value->type->isConst, &deinitMember)) {
 				struct mScriptFrame frame;
 				mScriptFrameInit(&frame);
-				struct mScriptValue* this = mScriptListAppend(&frame.arguments);
-				this->type = mSCRIPT_TYPE_MS_WRAPPER;
-				this->refs = mSCRIPT_VALUE_UNREF;
-				this->flags = 0;
-				this->value.opaque = value;
+				mSCRIPT_PUSH(&frame.arguments, WRAPPER, value);
 				mScriptInvoke(&deinitMember, &frame);
 				mScriptFrameDeinit(&frame);
 			}
 		}
+	}
+	if (value->flags & mSCRIPT_VALUE_FLAG_FREE_BUFFER) {
 		free(value->value.opaque);
 	}
+}
+
+struct mScriptValue* mScriptObjectBindLambda(struct mScriptValue* obj, const char* member, struct mScriptList* args) {
+	if (obj->type->base != mSCRIPT_TYPE_OBJECT) {
+		return false;
+	}
+
+	struct mScriptTypeClass* cls = obj->type->details.cls;
+	if (!cls) {
+		return false;
+	}
+
+	mScriptClassInit(cls);
+
+	struct mScriptList arguments;
+	struct mScriptValue fn;
+	if (!mScriptObjectGetConst(obj, member, &fn)) {
+		return NULL;
+	}
+
+	mScriptListInit(&arguments, 0);
+	mScriptValueWrap(obj, mScriptListAppend(&arguments));
+	if (args) {
+		size_t i;
+		for (i = 0; i < mScriptListSize(args); ++i) {
+			memcpy(mScriptListAppend(&arguments), mScriptListGetConstPointer(args, i), sizeof(struct mScriptValue));
+		}
+	}
+
+	struct mScriptValue* value = mScriptValueAlloc(fn.type);
+	struct mScriptValue* lambda = mScriptLambdaCreate0(value, &arguments);
+	mScriptValueDeref(value);
+	mScriptListDeinit(&arguments);
+	return lambda;
 }
 
 bool mScriptPopS32(struct mScriptList* list, int32_t* out) {
@@ -1447,7 +1761,7 @@ bool mScriptPopPointer(struct mScriptList* list, void** out) {
 }
 
 bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* input, struct mScriptValue* output) {
-	if (input->type->base == mSCRIPT_TYPE_WRAPPER) {
+	if (input->type->base == mSCRIPT_TYPE_WRAPPER && type->base != mSCRIPT_TYPE_WRAPPER) {
 		input = mScriptValueUnwrapConst(input);
 	}
 	if (type->cast && type->cast(input, type, output)) {
@@ -1474,7 +1788,11 @@ bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList
 		struct mScriptValue* unwrapped = NULL;
 		if (mScriptListGetPointer(frame, i)->type->base == mSCRIPT_TYPE_WRAPPER) {
 			unwrapped = mScriptValueUnwrap(mScriptListGetPointer(frame, i));
-			if (types->entries[i] == unwrapped->type) {
+			if (types->entries[i]->base == mSCRIPT_TYPE_WRAPPER) {
+				if (types->entries[i]->details.type == unwrapped->type) {
+					continue;
+				}
+			} else if (types->entries[i] == unwrapped->type) {
 				continue;
 			}
 		}
@@ -1493,4 +1811,57 @@ bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList
 		memcpy(mScriptListAppend(frame), &types->defaults[i], sizeof(struct mScriptValue));
 	}
 	return true;
+}
+
+static void addTypesFromTuple(struct Table* types, const struct mScriptTypeTuple* tuple) {
+	size_t i;
+	for (i = 0; i < tuple->count; ++i) {
+		mScriptTypeAdd(types, tuple->entries[i]);
+	}
+}
+
+static void addTypesFromTable(struct Table* types, struct Table* table) {
+	struct TableIterator iter;
+	if (!HashTableIteratorStart(table, &iter)) {
+		return;
+	}
+	do {
+		struct mScriptClassMember* member = HashTableIteratorGetValue(table, &iter);
+		mScriptTypeAdd(types, member->type);
+	} while(HashTableIteratorNext(table, &iter));
+}
+
+void mScriptTypeAdd(struct Table* types, const struct mScriptType* type) {
+	if (HashTableLookup(types, type->name) || type->isConst) {
+		return;
+	}
+	HashTableInsert(types, type->name, (struct mScriptType*) type);
+	switch (type->base) {
+	case mSCRIPT_TYPE_FUNCTION:
+		addTypesFromTuple(types, &type->details.function.parameters);
+		addTypesFromTuple(types, &type->details.function.returnType);
+		break;
+	case mSCRIPT_TYPE_OBJECT:
+		mScriptClassInit(type->details.cls);
+		if (type->details.cls->parent) {
+			mScriptTypeAdd(types, type->details.cls->parent);
+		}
+		addTypesFromTable(types, &type->details.cls->instanceMembers);
+		break;
+	case mSCRIPT_TYPE_OPAQUE:
+	case mSCRIPT_TYPE_WRAPPER:
+		if (type->details.type) {
+			mScriptTypeAdd(types, type->details.type);
+		}
+	case mSCRIPT_TYPE_VOID:
+	case mSCRIPT_TYPE_SINT:
+	case mSCRIPT_TYPE_UINT:
+	case mSCRIPT_TYPE_FLOAT:
+	case mSCRIPT_TYPE_STRING:
+	case mSCRIPT_TYPE_LIST:
+	case mSCRIPT_TYPE_TABLE:
+	case mSCRIPT_TYPE_WEAKREF:
+		// No subtypes
+		break;
+	}
 }

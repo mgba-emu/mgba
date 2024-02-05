@@ -9,15 +9,14 @@
 #include <mgba/core/log.h>
 #include <mgba/core/scripting.h>
 #include <mgba/internal/script/lua.h>
-#include <mgba/script/context.h>
-#include <mgba/script/types.h>
+#include <mgba/script.h>
 
 #include "script/test.h"
 
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/memory.h>
 #define TEST_PLATFORM mPLATFORM_GBA
-#define RAM_BASE BASE_WORKING_IRAM
+#define RAM_BASE GBA_BASE_IWRAM
 #elif defined(M_CORE_GB)
 #include <mgba/internal/gb/memory.h>
 #define TEST_PLATFORM mPLATFORM_GB
@@ -143,8 +142,8 @@ M_TEST_DEFINE(globals) {
 	LOAD_PROGRAM("assert(emu)");
 	assert_true(lua->run(lua));
 
-	TEARDOWN_CORE;
 	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
 }
 
 M_TEST_DEFINE(infoFuncs) {
@@ -161,8 +160,8 @@ M_TEST_DEFINE(infoFuncs) {
 	TEST_VALUE(S32, "frequency", core->frequency(core));
 	TEST_VALUE(S32, "frameCycles", core->frameCycles(core));
 
-	TEARDOWN_CORE;
 	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
 }
 
 M_TEST_DEFINE(detach) {
@@ -195,8 +194,8 @@ M_TEST_DEFINE(detach) {
 	);
 	assert_false(lua->run(lua));
 
-	TEARDOWN_CORE;
 	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
 }
 
 M_TEST_DEFINE(runFrame) {
@@ -215,8 +214,8 @@ M_TEST_DEFINE(runFrame) {
 		TEST_VALUE(S32, "frame", i);
 	}
 
-	TEARDOWN_CORE;
 	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
 }
 
 M_TEST_DEFINE(memoryRead) {
@@ -250,8 +249,8 @@ M_TEST_DEFINE(memoryRead) {
 	TEST_VALUE(S32, "b16", 0x0807);
 	TEST_VALUE(S32, "a32", 0x0C0B0A09);
 
-	TEARDOWN_CORE;
 	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
 }
 
 M_TEST_DEFINE(memoryWrite) {
@@ -278,8 +277,8 @@ M_TEST_DEFINE(memoryWrite) {
 		assert_int_equal(core->busRead8(core, RAM_BASE + i), i + 1);
 	}
 
-	TEARDOWN_CORE;
 	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
 }
 
 M_TEST_DEFINE(logging) {
@@ -310,6 +309,415 @@ M_TEST_DEFINE(logging) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(screenshot) {
+	SETUP_LUA;
+	CREATE_CORE;
+	color_t* buffer = malloc(240 * 160 * sizeof(color_t));
+	core->setVideoBuffer(core, buffer, 240);
+	core->reset(core);
+	core->runFrame(core);
+
+	TEST_PROGRAM("im = emu:screenshotToImage()");
+	TEST_PROGRAM("assert(im)");
+	TEST_PROGRAM("assert(im.width >= 160)");
+	TEST_PROGRAM("assert(im.height >= 144)");
+
+	free(buffer);
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+}
+
+#ifdef USE_DEBUGGERS
+void _setupBp(struct mCore* core) {
+	switch (core->platform(core)) {
+#ifdef M_CORE_GBA
+	case mPLATFORM_GBA:
+		core->busWrite32(core, 0x020000C0, 0xE0000000); // nop
+		core->busWrite32(core, 0x020000C4, 0xE0000000); // nop
+		core->busWrite32(core, 0x020000C8, 0xEAFFFFFD); // b 0x020000C4
+		break;
+#endif
+#ifdef M_CORE_GB
+	case mPLATFORM_GB:
+		core->rawWrite8(core, 0x101, 0, 0xEE); // Jump to 0xF0
+		core->rawWrite8(core, 0xF0, 0, 0x00); // nop
+		core->rawWrite8(core, 0xF1, 0, 0x18); // Loop forecer
+		core->rawWrite8(core, 0xF2, 0, 0xFD); // jr $-3
+		break;
+#endif
+	}
+}
+
+#ifdef M_CORE_GBA
+M_TEST_DEFINE(basicBreakpointGBA) {
+	SETUP_LUA;
+	struct mCore* core = mCoreCreate(mPLATFORM_GBA);
+	struct mDebugger debugger;
+	assert_non_null(core);
+	assert_true(core->init(core));
+	mCoreInitConfig(core, NULL);
+	core->reset(core);
+	_setupBp(core);
+	mScriptContextAttachCore(&context, core);
+
+	mDebuggerInit(&debugger);
+	mDebuggerAttach(&debugger, core);
+
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"function bkpt()\n"
+		"	hit = hit + 1\n"
+		"end"
+	);
+	TEST_PROGRAM("cbid = emu:setBreakpoint(bkpt, 0x020000C4)");
+	TEST_PROGRAM("assert(cbid == 1)");
+
+	int i;
+	for (i = 0; i < 20; ++i) {
+		mDebuggerRun(&debugger);
+	}
+
+	assert_int_equal(debugger.state, DEBUGGER_RUNNING);
+	TEST_PROGRAM("assert(hit >= 1)");
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+	mDebuggerDeinit(&debugger);
+}
+#endif
+
+#ifdef M_CORE_GB
+M_TEST_DEFINE(basicBreakpointGB) {
+	SETUP_LUA;
+	struct mCore* core = mCoreCreate(mPLATFORM_GB);
+	struct mDebugger debugger;
+	assert_non_null(core);
+	assert_true(core->init(core));
+	mCoreInitConfig(core, NULL);
+	assert_true(core->loadROM(core, VFileFromConstMemory(_fakeGBROM, sizeof(_fakeGBROM))));
+	core->reset(core);
+	_setupBp(core);
+	mScriptContextAttachCore(&context, core);
+
+	mDebuggerInit(&debugger);
+	mDebuggerAttach(&debugger, core);
+
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"function bkpt()\n"
+		"	hit = hit + 1\n"
+		"end"
+	);
+	TEST_PROGRAM("cbid = emu:setBreakpoint(bkpt, 0xF0)");
+	TEST_PROGRAM("assert(cbid == 1)");
+
+	int i;
+	for (i = 0; i < 20; ++i) {
+		mDebuggerRun(&debugger);
+	}
+
+	assert_int_equal(debugger.state, DEBUGGER_RUNNING);
+	TEST_PROGRAM("assert(hit >= 1)");
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+	mDebuggerDeinit(&debugger);
+}
+#endif
+
+M_TEST_DEFINE(multipleBreakpoint) {
+	SETUP_LUA;
+	struct mCore* core = mCoreCreate(TEST_PLATFORM);
+	struct mDebugger debugger;
+	assert_non_null(core);
+	assert_true(core->init(core));
+	mCoreInitConfig(core, NULL);
+	core->reset(core);
+	_setupBp(core);
+	mScriptContextAttachCore(&context, core);
+
+	mDebuggerInit(&debugger);
+	mDebuggerAttach(&debugger, core);
+
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"function bkpt1()\n"
+		"	hit = hit + 1\n"
+		"end\n"
+		"function bkpt2()\n"
+		"	hit = hit + 100\n"
+		"end"
+	);
+#ifdef M_CORE_GBA
+	TEST_PROGRAM("cbid1 = emu:setBreakpoint(bkpt1, 0x020000C4)");
+	TEST_PROGRAM("cbid2 = emu:setBreakpoint(bkpt2, 0x020000C8)");
+#else
+	TEST_PROGRAM("cbid1 = emu:setBreakpoint(bkpt1, 0xF0)");
+	TEST_PROGRAM("cbid2 = emu:setBreakpoint(bkpt2, 0xF1)");
+#endif
+	TEST_PROGRAM("assert(cbid1 == 1)");
+	TEST_PROGRAM("assert(cbid2 == 2)");
+
+	int i;
+	for (i = 0; i < 20; ++i) {
+		mDebuggerRun(&debugger);
+	}
+
+	assert_int_equal(debugger.state, DEBUGGER_RUNNING);
+	TEST_PROGRAM("assert(hit >= 101)");
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+	mDebuggerDeinit(&debugger);
+}
+
+M_TEST_DEFINE(basicWatchpoint) {
+	SETUP_LUA;
+	mScriptContextAttachStdlib(&context);
+	CREATE_CORE;
+	struct mDebugger debugger;
+	core->reset(core);
+	mScriptContextAttachCore(&context, core);
+
+	mDebuggerInit(&debugger);
+	mDebuggerAttach(&debugger, core);
+
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"function bkpt()\n"
+		"	hit = hit + 1\n"
+		"end"
+	);
+	struct mScriptValue base = mSCRIPT_MAKE_S32(RAM_BASE);
+	lua->setGlobal(lua, "base", &base);
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base, C.WATCHPOINT_TYPE.READ))");
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base + 1, C.WATCHPOINT_TYPE.WRITE))");
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base + 2, C.WATCHPOINT_TYPE.RW))");
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base + 3, C.WATCHPOINT_TYPE.WRITE_CHANGE))");
+	TEST_PROGRAM("assert(hit == 0)");
+
+	uint8_t value;
+
+	// Read
+	TEST_PROGRAM("hit = 0");
+	value = core->rawRead8(core, RAM_BASE, -1);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busRead8(core, RAM_BASE);
+	TEST_PROGRAM("assert(hit == 1)");
+	core->busWrite8(core, RAM_BASE, value);
+	TEST_PROGRAM("assert(hit == 1)");
+	core->busWrite8(core, RAM_BASE, ~value);
+	TEST_PROGRAM("assert(hit == 1)");
+
+	// Write
+	TEST_PROGRAM("hit = 0");
+	value = core->rawRead8(core, RAM_BASE + 1, -1);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busRead8(core, RAM_BASE + 1);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busWrite8(core, RAM_BASE + 1, value);
+	TEST_PROGRAM("assert(hit == 1)");
+	core->busWrite8(core, RAM_BASE + 1, ~value);
+	TEST_PROGRAM("assert(hit == 2)");
+
+	// RW
+	TEST_PROGRAM("hit = 0");
+	value = core->rawRead8(core, RAM_BASE + 2, -1);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busRead8(core, RAM_BASE + 2);
+	TEST_PROGRAM("assert(hit == 1)");
+	core->busWrite8(core, RAM_BASE + 2, value);
+	TEST_PROGRAM("assert(hit == 2)");
+	core->busWrite8(core, RAM_BASE + 2, ~value);
+	TEST_PROGRAM("assert(hit == 3)");
+
+	// Change
+	TEST_PROGRAM("hit = 0");
+	value = core->rawRead8(core, RAM_BASE + 3, -1);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busRead8(core, RAM_BASE + 3);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busWrite8(core, RAM_BASE + 3, value);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busWrite8(core, RAM_BASE + 3, ~value);
+	TEST_PROGRAM("assert(hit == 1)");
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+	mDebuggerDeinit(&debugger);
+}
+
+M_TEST_DEFINE(removeBreakpoint) {
+	SETUP_LUA;
+	mScriptContextAttachStdlib(&context);
+	CREATE_CORE;
+	struct mDebugger debugger;
+	core->reset(core);
+	mScriptContextAttachCore(&context, core);
+
+	mDebuggerInit(&debugger);
+	mDebuggerAttach(&debugger, core);
+
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"function bkpt()\n"
+		"	hit = hit + 1\n"
+		"end"
+	);
+	struct mScriptValue base = mSCRIPT_MAKE_S32(RAM_BASE);
+	lua->setGlobal(lua, "base", &base);
+	TEST_PROGRAM("cbid = emu:setWatchpoint(bkpt, base, C.WATCHPOINT_TYPE.READ)");
+
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busRead8(core, RAM_BASE);
+	TEST_PROGRAM("assert(hit == 1)");
+	core->busRead8(core, RAM_BASE);
+	TEST_PROGRAM("assert(hit == 2)");
+	TEST_PROGRAM("assert(emu:clearBreakpoint(cbid))");
+	core->busRead8(core, RAM_BASE);
+	TEST_PROGRAM("assert(hit == 2)");
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+	mDebuggerDeinit(&debugger);
+}
+
+
+M_TEST_DEFINE(overlappingBreakpoint) {
+	SETUP_LUA;
+	struct mCore* core = mCoreCreate(TEST_PLATFORM);
+	struct mDebugger debugger;
+	assert_non_null(core);
+	assert_true(core->init(core));
+	mCoreInitConfig(core, NULL);
+	core->reset(core);
+	_setupBp(core);
+	mScriptContextAttachCore(&context, core);
+
+	mDebuggerInit(&debugger);
+	mDebuggerAttach(&debugger, core);
+
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"function bkpt1()\n"
+		"	hit = hit + 1\n"
+		"end\n"
+		"function bkpt2()\n"
+		"	hit = hit + 100\n"
+		"end"
+	);
+#ifdef M_CORE_GBA
+	TEST_PROGRAM("cbid1 = emu:setBreakpoint(bkpt1, 0x020000C4)");
+	TEST_PROGRAM("cbid2 = emu:setBreakpoint(bkpt2, 0x020000C4)");
+#else
+	TEST_PROGRAM("cbid1 = emu:setBreakpoint(bkpt1, 0xF0)");
+	TEST_PROGRAM("cbid2 = emu:setBreakpoint(bkpt2, 0xF0)");
+#endif
+	TEST_PROGRAM("assert(cbid1 == 1)");
+	TEST_PROGRAM("assert(cbid2 == 2)");
+
+	int i;
+	for (i = 0; i < 20; ++i) {
+		mDebuggerRun(&debugger);
+	}
+
+	assert_int_equal(debugger.state, DEBUGGER_RUNNING);
+	TEST_PROGRAM("assert(hit >= 101)");
+	TEST_PROGRAM("oldHit = hit");
+
+	TEST_PROGRAM("assert(emu:clearBreakpoint(cbid2))");
+
+	for (i = 0; i < 10; ++i) {
+		mDebuggerRun(&debugger);
+	}
+	TEST_PROGRAM("assert(hit - oldHit > 0)");
+	TEST_PROGRAM("assert(hit - oldHit < 100)");
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+	mDebuggerDeinit(&debugger);
+}
+
+M_TEST_DEFINE(overlappingWatchpoint) {
+	SETUP_LUA;
+	mScriptContextAttachStdlib(&context);
+	CREATE_CORE;
+	struct mDebugger debugger;
+	core->reset(core);
+	mScriptContextAttachCore(&context, core);
+
+	mDebuggerInit(&debugger);
+	mDebuggerAttach(&debugger, core);
+
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"function bkpt()\n"
+		"	hit = hit + 1\n"
+		"end"
+	);
+	struct mScriptValue base = mSCRIPT_MAKE_S32(RAM_BASE);
+	lua->setGlobal(lua, "base", &base);
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base, C.WATCHPOINT_TYPE.READ))");
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base, C.WATCHPOINT_TYPE.WRITE))");
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base, C.WATCHPOINT_TYPE.RW))");
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base, C.WATCHPOINT_TYPE.WRITE_CHANGE))");
+	TEST_PROGRAM("assert(hit == 0)");
+
+	uint8_t value;
+
+	// Read
+	TEST_PROGRAM("hit = 0");
+	value = core->rawRead8(core, RAM_BASE, -1);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busRead8(core, RAM_BASE);
+	TEST_PROGRAM("assert(hit == 2)"); // Read, RW
+	core->busWrite8(core, RAM_BASE, value);
+	TEST_PROGRAM("assert(hit == 4)"); // Write, RW
+	core->busWrite8(core, RAM_BASE, ~value);
+	TEST_PROGRAM("assert(hit == 7)"); // Write, RW, change
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+	mDebuggerDeinit(&debugger);
+}
+
+M_TEST_DEFINE(rangeWatchpoint) {
+	SETUP_LUA;
+	mScriptContextAttachStdlib(&context);
+	CREATE_CORE;
+	struct mDebugger debugger;
+	core->reset(core);
+	mScriptContextAttachCore(&context, core);
+
+	mDebuggerInit(&debugger);
+	mDebuggerAttach(&debugger, core);
+
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"function bkpt()\n"
+		"	hit = hit + 1\n"
+		"end"
+	);
+	struct mScriptValue base = mSCRIPT_MAKE_S32(RAM_BASE);
+	lua->setGlobal(lua, "base", &base);
+	TEST_PROGRAM("assert(0 < emu:setRangeWatchpoint(bkpt, base, base + 2, C.WATCHPOINT_TYPE.READ))");
+	TEST_PROGRAM("assert(0 < emu:setRangeWatchpoint(bkpt, base + 1, base + 3, C.WATCHPOINT_TYPE.READ))");
+
+	// Read
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busRead8(core, RAM_BASE);
+	TEST_PROGRAM("assert(hit == 1)");
+	core->busRead8(core, RAM_BASE + 1);
+	TEST_PROGRAM("assert(hit == 3)");
+	core->busRead8(core, RAM_BASE + 2);
+	TEST_PROGRAM("assert(hit == 4)");
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+	mDebuggerDeinit(&debugger);
+}
+#endif
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(globals),
 	cmocka_unit_test(infoFuncs),
@@ -318,4 +726,19 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(memoryRead),
 	cmocka_unit_test(memoryWrite),
 	cmocka_unit_test(logging),
+	cmocka_unit_test(screenshot),
+#ifdef USE_DEBUGGERS
+#ifdef M_CORE_GBA
+	cmocka_unit_test(basicBreakpointGBA),
+#endif
+#ifdef M_CORE_GB
+	cmocka_unit_test(basicBreakpointGB),
+#endif
+	cmocka_unit_test(multipleBreakpoint),
+	cmocka_unit_test(basicWatchpoint),
+	cmocka_unit_test(removeBreakpoint),
+	cmocka_unit_test(overlappingBreakpoint),
+	cmocka_unit_test(overlappingWatchpoint),
+	cmocka_unit_test(rangeWatchpoint),
+#endif
 )

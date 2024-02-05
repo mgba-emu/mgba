@@ -28,6 +28,7 @@ set(OS_LIB -lvita2d -l${M_LIBRARY}
     -lScePgf_stub
     -lScePhotoExport_stub
     -lScePower_stub
+    -lSceRtc_stub
     -lSceSysmodule_stub
     -lSceTouch_stub)
 set(OS_LIB ${OS_LIB} PARENT_SCOPE)
@@ -46,7 +47,7 @@ target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${OS_LIB})
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.o
                    COMMAND ${OBJCOPY_CMD} icons2x.png ${CMAKE_CURRENT_BINARY_DIR}/icons.o
-                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/res)
+                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/res)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o
                    COMMAND ${OBJCOPY_CMD} backdrop.png ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o

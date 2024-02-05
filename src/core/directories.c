@@ -116,10 +116,15 @@ struct VFile* mDirectorySetOpenSuffix(struct mDirectorySet* dirs, struct VDir* d
 }
 
 void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct mCoreOptions* opts) {
+	char abspath[PATH_MAX + 1];
+	char configDir[PATH_MAX + 1];
+	mCoreConfigDirectory(configDir, sizeof(configDir));
+
 	if (opts->savegamePath) {
-		struct VDir* dir = VDirOpen(opts->savegamePath);
-		if (!dir && VDirCreate(opts->savegamePath)) {
-			dir = VDirOpen(opts->savegamePath);
+		makeAbsolute(opts->savegamePath, configDir, abspath);
+		struct VDir* dir = VDirOpen(abspath);
+		if (!dir && VDirCreate(abspath)) {
+			dir = VDirOpen(abspath);
 		}
 		if (dir) {
 			if (dirs->save && dirs->save != dirs->base) {
@@ -130,9 +135,10 @@ void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct mCoreOptio
 	}
 
 	if (opts->savestatePath) {
-		struct VDir* dir = VDirOpen(opts->savestatePath);
-		if (!dir && VDirCreate(opts->savestatePath)) {
-			dir = VDirOpen(opts->savestatePath);
+		makeAbsolute(opts->savestatePath, configDir, abspath);
+		struct VDir* dir = VDirOpen(abspath);
+		if (!dir && VDirCreate(abspath)) {
+			dir = VDirOpen(abspath);
 		}
 		if (dir) {
 			if (dirs->state && dirs->state != dirs->base) {
@@ -143,9 +149,10 @@ void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct mCoreOptio
 	}
 
 	if (opts->screenshotPath) {
-		struct VDir* dir = VDirOpen(opts->screenshotPath);
-		if (!dir && VDirCreate(opts->screenshotPath)) {
-			dir = VDirOpen(opts->screenshotPath);
+		makeAbsolute(opts->screenshotPath, configDir, abspath);
+		struct VDir* dir = VDirOpen(abspath);
+		if (!dir && VDirCreate(abspath)) {
+			dir = VDirOpen(abspath);
 		}
 		if (dir) {
 			if (dirs->screenshot && dirs->screenshot != dirs->base) {
@@ -156,9 +163,10 @@ void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct mCoreOptio
 	}
 
 	if (opts->patchPath) {
-		struct VDir* dir = VDirOpen(opts->patchPath);
-		if (!dir && VDirCreate(opts->patchPath)) {
-			dir = VDirOpen(opts->patchPath);
+		makeAbsolute(opts->patchPath, configDir, abspath);
+		struct VDir* dir = VDirOpen(abspath);
+		if (!dir && VDirCreate(abspath)) {
+			dir = VDirOpen(abspath);
 		}
 		if (dir) {
 			if (dirs->patch && dirs->patch != dirs->base) {
@@ -169,9 +177,10 @@ void mDirectorySetMapOptions(struct mDirectorySet* dirs, const struct mCoreOptio
 	}
 
 	if (opts->cheatsPath) {
-		struct VDir* dir = VDirOpen(opts->cheatsPath);
-		if (!dir && VDirCreate(opts->cheatsPath)) {
-			dir = VDirOpen(opts->cheatsPath);
+		makeAbsolute(opts->cheatsPath, configDir, abspath);
+		struct VDir* dir = VDirOpen(abspath);
+		if (!dir && VDirCreate(abspath)) {
+			dir = VDirOpen(abspath);
 		}
 		if (dir) {
 			if (dirs->cheats && dirs->cheats != dirs->base) {

@@ -25,8 +25,9 @@ struct mArguments {
 
 	struct Table configOverrides;
 
-	enum mDebuggerType debuggerType;
 	bool debugAtStart;
+	bool debugCli;
+	bool debugGdb;
 	bool showHelp;
 	bool showVersion;
 };
@@ -58,6 +59,8 @@ void version(const char* arg0);
 
 bool mArgumentsParse(struct mArguments* args, int argc, char* const* argv, struct mSubParser* subparsers, int nSubparsers);
 void mArgumentsApply(const struct mArguments* args, struct mSubParser* subparsers, int nSubparsers, struct mCoreConfig* config);
+bool mArgumentsApplyDebugger(const struct mArguments*, struct mCore*, struct mDebugger*);
+void mArgumentsApplyFileLoads(const struct mArguments*, struct mCore*);
 void mArgumentsDeinit(struct mArguments* args);
 
 void mSubParserGraphicsInit(struct mSubParser* parser, struct mGraphicsOpts* opts);

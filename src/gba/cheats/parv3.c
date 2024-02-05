@@ -233,7 +233,7 @@ static bool _addPAR3Special(struct GBACheatSet* cheats, uint32_t op2) {
 	}
 	if (romPatch >= 0) {
 		struct mCheatPatch* patch = mCheatPatchListAppend(&cheats->d.romPatches);
-		patch->address = BASE_CART0 | ((op2 & 0xFFFFFF) << 1);
+		patch->address = GBA_BASE_ROM0 | ((op2 & 0xFFFFFF) << 1);
 		patch->applied = false;
 		patch->check = false;
 		patch->width = 2;
@@ -282,7 +282,7 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 			return false;
 		}
 		cheats->hook = malloc(sizeof(*cheats->hook));
-		cheats->hook->address = BASE_CART0 | (op1 & (SIZE_CART0 - 2));
+		cheats->hook->address = GBA_BASE_ROM0 | (op1 & (GBA_SIZE_ROM0 - 2));
 		cheats->hook->mode = MODE_THUMB;
 		cheats->hook->refs = 1;
 		cheats->hook->reentries = 0;
@@ -320,7 +320,7 @@ bool GBACheatAddProActionReplayRaw(struct GBACheatSet* cheats, uint32_t op1, uin
 	case PAR3_BASE_OTHER:
 		width = ((op1 >> 24) & 1) + 1;
 		cheat->type = CHEAT_ASSIGN;
-		cheat->address = BASE_IO | (op1 & OFFSET_MASK);
+		cheat->address = GBA_BASE_IO | (op1 & OFFSET_MASK);
 		break;
 	}
 	if (op1 & 0x01000000 && (op1 & 0xFE000000) != 0xC6000000) {

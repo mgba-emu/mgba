@@ -62,13 +62,13 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->audioCodec = NULL;
 	encoder->videoCodec = NULL;
 	encoder->containerFormat = NULL;
+	encoder->isampleRate = PREFERRED_SAMPLE_RATE;
 	FFmpegEncoderSetAudio(encoder, "flac", 0);
 	FFmpegEncoderSetVideo(encoder, "libx264", 0, 0);
 	FFmpegEncoderSetContainer(encoder, "matroska");
 	FFmpegEncoderSetDimensions(encoder, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 	encoder->iwidth = GBA_VIDEO_HORIZONTAL_PIXELS;
 	encoder->iheight = GBA_VIDEO_VERTICAL_PIXELS;
-	encoder->isampleRate = PREFERRED_SAMPLE_RATE;
 	encoder->frameskip = 1;
 	encoder->skipResidue = 0;
 	encoder->loop = false;
@@ -154,18 +154,34 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 	}
 	encoder->sampleRate = encoder->isampleRate;
 	if (codec->supported_samplerates) {
+		bool gotSampleRate = false;
+		int highestSampleRate = 0;
 		for (i = 0; codec->supported_samplerates[i]; ++i) {
+			if (codec->supported_samplerates[i] > highestSampleRate) {
+				highestSampleRate = codec->supported_samplerates[i];
+			}
 			if (codec->supported_samplerates[i] < encoder->isampleRate) {
 				continue;
 			}
-			if (encoder->sampleRate == encoder->isampleRate || encoder->sampleRate > codec->supported_samplerates[i]) {
+			if (!gotSampleRate || encoder->sampleRate > codec->supported_samplerates[i]) {
 				encoder->sampleRate = codec->supported_samplerates[i];
+				gotSampleRate = true;
 			}
+		}
+		if (!gotSampleRate) {
+			// There are no available sample rates that are higher than the input sample rate
+			// Let's use the highest available instead
+			encoder->sampleRate = highestSampleRate;
 		}
 	} else if (codec->id == AV_CODEC_ID_FLAC) {
 		// HACK: FLAC doesn't support > 65535Hz unless it's divisible by 10
 		if (encoder->sampleRate >= 65535) {
 			encoder->sampleRate -= encoder->isampleRate % 10;
+		}
+	} else if (codec->id == AV_CODEC_ID_VORBIS) {
+		// HACK: FLAC doesn't support > 48000Hz but doesn't tell us
+		if (encoder->sampleRate > 48000) {
+			encoder->sampleRate = 48000;
 		}
 	} else if (codec->id == AV_CODEC_ID_AAC) {
 		// HACK: AAC doesn't support 32768Hz (it rounds to 32000), but libfaac doesn't tell us that
@@ -304,8 +320,12 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->audio = encoder->audioStream->codec;
 #endif
 		encoder->audio->bit_rate = encoder->audioBitrate;
+#ifdef FFMPEG_USE_NEW_CH_LAYOUT
+		av_channel_layout_copy(&encoder->audio->ch_layout, &(AVChannelLayout) AV_CHANNEL_LAYOUT_STEREO);
+#else
 		encoder->audio->channels = 2;
 		encoder->audio->channel_layout = AV_CH_LAYOUT_STEREO;
+#endif
 		encoder->audio->sample_rate = encoder->sampleRate;
 		encoder->audio->sample_fmt = encoder->sampleFormat;
 		AVDictionary* opts = 0;
@@ -330,7 +350,11 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->audioFrame->nb_samples = encoder->audio->frame_size;
 		encoder->audioFrame->format = encoder->audio->sample_fmt;
 		encoder->audioFrame->pts = 0;
+#ifdef FFMPEG_USE_NEW_CH_LAYOUT
+		av_channel_layout_copy(&encoder->audioFrame->ch_layout, &(AVChannelLayout) AV_CHANNEL_LAYOUT_STEREO);
+#else
 		encoder->audioFrame->channel_layout = AV_CH_LAYOUT_STEREO;
+#endif
 		_ffmpegOpenResampleContext(encoder);
 		av_frame_get_buffer(encoder->audioFrame, 0);
 
@@ -881,7 +905,7 @@ void FFmpegEncoderSetInputSampleRate(struct FFmpegEncoder* encoder, int sampleRa
 }
 
 void _ffmpegOpenResampleContext(struct FFmpegEncoder* encoder) {
-	encoder->audioBufferSize = av_rescale_q(encoder->audioFrame->nb_samples, (AVRational) { 4, encoder->sampleRate }, (AVRational) { 1, encoder->isampleRate });
+	encoder->audioBufferSize = av_rescale_q(encoder->audioFrame->nb_samples, (AVRational) { 1, encoder->sampleRate }, (AVRational) { 1, encoder->isampleRate }) * 4;
 	encoder->audioBuffer = av_malloc(encoder->audioBufferSize);
 #ifdef USE_LIBAVRESAMPLE
 	encoder->resampleContext = avresample_alloc_context();
@@ -893,8 +917,13 @@ void _ffmpegOpenResampleContext(struct FFmpegEncoder* encoder) {
 	av_opt_set_int(encoder->resampleContext, "out_sample_fmt", encoder->sampleFormat, 0);
 	avresample_open(encoder->resampleContext);
 #else
+#ifdef FFMPEG_USE_NEW_CH_LAYOUT
+	swr_alloc_set_opts2(&encoder->resampleContext, &(AVChannelLayout) AV_CHANNEL_LAYOUT_STEREO, encoder->sampleFormat, encoder->sampleRate,
+	                    &(AVChannelLayout) AV_CHANNEL_LAYOUT_STEREO, AV_SAMPLE_FMT_S16, encoder->isampleRate, 0, NULL);
+#else
 	encoder->resampleContext = swr_alloc_set_opts(NULL, AV_CH_LAYOUT_STEREO, encoder->sampleFormat, encoder->sampleRate,
 	                                              AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S16, encoder->isampleRate, 0, NULL);
+#endif
 	swr_init(encoder->resampleContext);
 #endif
 }

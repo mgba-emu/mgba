@@ -15,7 +15,7 @@
 #include <mgba/core/cheats.h>
 #include <mgba/core/serialize.h>
 #include <mgba/core/version.h>
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/vfs.h>
 
 #include "CoreController.h"
@@ -127,6 +127,7 @@ void ReportView::generateReport() {
 	swReport << QString("Build architecture: %1").arg(QSysInfo::buildCpuArchitecture());
 	swReport << QString("Run architecture: %1").arg(QSysInfo::currentCpuArchitecture());
 	swReport << QString("Qt version: %1").arg(QLatin1String(qVersion()));
+	swReport << QString("Qt QPA platform: %1").arg(QGuiApplication::platformName());
 #ifdef USE_FFMPEG
 	QStringList libavVers;
 	libavVers << QLatin1String(LIBAVCODEC_IDENT);
@@ -314,10 +315,8 @@ void ReportView::generateReport() {
 		} else {
 			windowReport << QString("ROM open: No");
 		}
-#ifdef BUILD_SDL
 		InputController* input = window->inputController();
-		windowReport << QString("Active gamepad: %1").arg(input->gamepad(SDL_BINDING_BUTTON));
-#endif
+		windowReport << QString("Active gamepad: %1").arg(input->gamepadIndex());
 		windowReport << QString("Configuration: %1").arg(configs.indexOf(config) + 1);
 		addReport(QString("Window %1").arg(winId), windowReport.join('\n'));
 	}
@@ -477,9 +476,8 @@ void ReportView::addGLInfo(QStringList& report) {
 }
 
 void ReportView::addGamepadInfo(QStringList& report) {
-#ifdef BUILD_SDL
 	InputController* input = GBAApp::app()->windows()[0]->inputController();
-	QStringList gamepads = input->connectedGamepads(SDL_BINDING_BUTTON);
+	QStringList gamepads = input->connectedGamepads();
 	report << QString("Connected gamepads: %1").arg(gamepads.size());
 	int i = 0;
 	for (const auto& gamepad : gamepads) {
@@ -490,10 +488,9 @@ void ReportView::addGamepadInfo(QStringList& report) {
 		i = 0;
 		for (Window* window : GBAApp::app()->windows()) {
 			++i;
-			report << QString("Window %1 gamepad: %2").arg(i).arg(window->inputController()->gamepad(SDL_BINDING_BUTTON));
+			report << QString("Window %1 gamepad: %2").arg(i).arg(window->inputController()->gamepadIndex());
 		}
 	}
-#endif
 }
 
 void ReportView::addROMInfo(QStringList& report, CoreController* controller) {

@@ -10,17 +10,6 @@
 
 using namespace QGBA;
 
-void GBAOverride::apply(struct mCore* core) {
-	if (core->platform(core) != mPLATFORM_GBA) {
-		return;
-	}
-	GBA* gba = static_cast<GBA*>(core->board);
-	if (!vbaBugCompatSet) {
-		override.vbaBugCompat = gba->vbaBugCompat;
-	}
-	GBAOverrideApply(gba, &override);
-}
-
 void GBAOverride::identify(const struct mCore* core) {
 	if (core->platform(core) != mPLATFORM_GBA) {
 		return;
@@ -32,4 +21,8 @@ void GBAOverride::identify(const struct mCore* core) {
 
 void GBAOverride::save(struct Configuration* config) const {
 	GBAOverrideSave(config, &override);
+}
+
+const void* GBAOverride::raw() const {
+	return &override;
 }

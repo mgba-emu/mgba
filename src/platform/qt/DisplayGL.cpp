@@ -9,14 +9,8 @@
 
 #include <QApplication>
 #include <QMutexLocker>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLFunctions>
-#ifdef QT_OPENGL_ES_2
-#include <QOpenGLFunctions_ES2>
-using QOpenGLFunctions_Baseline = QOpenGLFunctions_ES2;
-#else
-#include <QOpenGLFunctions_3_2_Core>
-using QOpenGLFunctions_Baseline = QOpenGLFunctions_3_2_Core;
-#endif
 #include <QOpenGLPaintDevice>
 #include <QResizeEvent>
 #include <QScreen>
@@ -39,12 +33,28 @@ using QOpenGLFunctions_Baseline = QOpenGLFunctions_3_2_Core;
 #endif
 
 #ifdef _WIN32
+#include <windows.h>
+#elif defined(Q_OS_MAC)
+#include <OpenGL/OpenGL.h>
+#endif
+#ifdef USE_GLX
+#define GLX_GLXEXT_PROTOTYPES
+typedef struct _XDisplay Display;
+#include <GL/glx.h>
+#include <GL/glxext.h>
+#endif
+#ifdef USE_EGL
+#include <EGL/egl.h>
+#endif
+
+#ifdef _WIN32
 #define OVERHEAD_NSEC 1000000
 #else
 #define OVERHEAD_NSEC 300000
 #endif
 
 #include "OpenGLBug.h"
+#include "utils.h"
 
 using namespace QGBA;
 
@@ -63,6 +73,10 @@ mGLWidget::mGLWidget(QWidget* parent)
 	setUpdateBehavior(QOpenGLWidget::PartialUpdate);
 
 	connect(&m_refresh, &QTimer::timeout, this, static_cast<void (QWidget::*)()>(&QWidget::update));
+}
+
+mGLWidget::~mGLWidget() {
+	// This is needed for unique_ptr<QOpenGLPaintDevice> to work
 }
 
 void mGLWidget::initializeGL() {
@@ -94,13 +108,15 @@ void mGLWidget::initializeGL() {
 
 	m_vaoDone = false;
 	m_tex = 0;
+
+	m_paintDev = std::make_unique<QOpenGLPaintDevice>();
 }
 
 bool mGLWidget::finalizeVAO() {
 	if (!context() || !m_vao) {
 		return false;
 	}
-	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
+	QOpenGLExtraFunctions* fn = context()->extraFunctions();
 	if (!fn) {
 		return false;
 	}
@@ -128,7 +144,7 @@ void mGLWidget::paintGL() {
 		m_refresh.start(10);
 		return;
 	}
-	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
+	QOpenGLExtraFunctions* fn = context()->extraFunctions();
 	m_program->bind();
 	m_vao->bind();
 	fn->glBindTexture(GL_TEXTURE_2D, m_tex);
@@ -145,6 +161,23 @@ void mGLWidget::paintGL() {
 	} else {
 		m_refresh.start(17);
 	}
+
+	if (m_showOSD && m_messagePainter) {
+		qreal r = window()->devicePixelRatio();
+		m_paintDev->setDevicePixelRatio(r);
+		m_paintDev->setSize(size() * r);
+		QPainter painter(m_paintDev.get());
+		m_messagePainter->paint(&painter);
+		painter.end();
+	}
+}
+
+void mGLWidget::setMessagePainter(MessagePainter* messagePainter) {
+	m_messagePainter = messagePainter;
+}
+
+void mGLWidget::setShowOSD(bool showOSD) {
+	m_showOSD = showOSD;
 }
 
 DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
@@ -152,6 +185,7 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 {
 	setAttribute(Qt::WA_NativeWindow);
 	window()->windowHandle()->setFormat(format);
+	windowHandle()->setSurfaceType(QSurface::OpenGLSurface);
 	windowHandle()->create();
 
 #ifdef USE_SHARE_WIDGET
@@ -165,6 +199,7 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 		m_gl = new mGLWidget;
 		m_gl->setAttribute(Qt::WA_NativeWindow);
 		m_gl->setFormat(format);
+		m_gl->setMessagePainter(messagePainter());
 		QBoxLayout* layout = new QVBoxLayout;
 		layout->addWidget(m_gl);
 		layout->setContentsMargins(0, 0, 0, 0);
@@ -176,11 +211,6 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 	m_painter = std::make_unique<PainterGL>(windowHandle(), m_gl, format);
 	m_drawThread.setObjectName("Painter Thread");
 	m_painter->setThread(&m_drawThread);
-
-	m_proxyThread.setObjectName("OpenGL Proxy Thread");
-	m_proxyContext = std::make_unique<QOpenGLContext>();
-	m_proxyContext->setFormat(format);
-	connect(m_painter.get(), &PainterGL::created, this, &DisplayGL::setupProxyThread);
 
 	connect(&m_drawThread, &QThread::started, m_painter.get(), &PainterGL::create);
 	connect(m_painter.get(), &PainterGL::started, this, [this] {
@@ -196,11 +226,6 @@ DisplayGL::~DisplayGL() {
 	QMetaObject::invokeMethod(m_painter.get(), "destroy", Qt::BlockingQueuedConnection);
 	m_drawThread.exit();
 	m_drawThread.wait();
-
-	if (m_proxyThread.isRunning()) {
-		m_proxyThread.exit();
-		m_proxyThread.wait();
-	}
 }
 
 bool DisplayGL::supportsShaders() const {
@@ -220,7 +245,10 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	m_isDrawing = true;
 	m_painter->setContext(controller);
 	m_painter->setMessagePainter(messagePainter());
-	m_context = controller;
+	m_context = std::move(controller);
+	if (videoProxy()) {
+		videoProxy()->moveToThread(&m_drawThread);
+	}
 
 	lockAspectRatio(isAspectRatioLocked());
 	lockIntegerScaling(isIntegerScalingLocked());
@@ -235,7 +263,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	messagePainter()->resize(size(), devicePixelRatio());
 #endif
 
-	CoreController::Interrupter interrupter(controller);
+	CoreController::Interrupter interrupter(m_context);
 	QMetaObject::invokeMethod(m_painter.get(), "start");
 	if (!m_gl) {
 		if (shouldDisableUpdates()) {
@@ -245,6 +273,8 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 		show();
 		m_gl->reset();
 	}
+
+	QTimer::singleShot(8, this, &DisplayGL::updateContentSize);
 }
 
 bool DisplayGL::supportsFormat(const QSurfaceFormat& format) {
@@ -331,12 +361,14 @@ void DisplayGL::unpauseDrawing() {
 		if (!m_gl && shouldDisableUpdates()) {
 			setUpdatesEnabled(false);
 		}
+		QMetaObject::invokeMethod(this, "updateContentSize", Qt::QueuedConnection);
 	}
 }
 
 void DisplayGL::forceDraw() {
 	if (m_hasStarted) {
 		QMetaObject::invokeMethod(m_painter.get(), "forceDraw");
+		QMetaObject::invokeMethod(this, "updateContentSize", Qt::QueuedConnection);
 	}
 }
 
@@ -357,6 +389,9 @@ void DisplayGL::interframeBlending(bool enable) {
 
 void DisplayGL::showOSDMessages(bool enable) {
 	Display::showOSDMessages(enable);
+	if (m_gl) {
+		m_gl->setShowOSD(enable);
+	}
 	QMetaObject::invokeMethod(m_painter.get(), "showOSD", Q_ARG(bool, enable));
 }
 
@@ -368,6 +403,10 @@ void DisplayGL::showFrameCounter(bool enable) {
 void DisplayGL::filter(bool filter) {
 	Display::filter(filter);
 	QMetaObject::invokeMethod(m_painter.get(), "filter", Q_ARG(bool, filter));
+}
+
+void DisplayGL::swapInterval(int interval) {
+	QMetaObject::invokeMethod(m_painter.get(), "swapInterval", Q_ARG(int, interval));
 }
 
 void DisplayGL::framePosted() {
@@ -396,6 +435,11 @@ void DisplayGL::setVideoScale(int scale) {
 	QMetaObject::invokeMethod(m_painter.get(), "resizeContext");
 }
 
+void DisplayGL::setBackgroundImage(const QImage& image) {
+	QMetaObject::invokeMethod(m_painter.get(), "setBackgroundImage", Q_ARG(const QImage&, image));
+	QMetaObject::invokeMethod(this, "updateContentSize", Qt::QueuedConnection);
+}
+
 void DisplayGL::resizeEvent(QResizeEvent* event) {
 	Display::resizeEvent(event);
 	resizePainter();
@@ -420,32 +464,13 @@ bool DisplayGL::shouldDisableUpdates() {
 void DisplayGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
 	Display::setVideoProxy(proxy);
 	if (proxy) {
-		proxy->moveToThread(&m_proxyThread);
+		proxy->moveToThread(&m_drawThread);
 	}
-	m_painter->setVideoProxy(proxy);
+	m_painter->setVideoProxy(std::move(proxy));
 }
 
-void DisplayGL::setupProxyThread() {
-	m_proxyContext->moveToThread(&m_proxyThread);
-	m_proxySurface.create();
-	connect(&m_proxyThread, &QThread::started, m_proxyContext.get(), [this]() {
-		m_proxyContext->setShareContext(m_painter->shareContext());
-		m_proxyContext->create();
-		m_proxyContext->makeCurrent(&m_proxySurface);
-#if defined(_WIN32) && defined(USE_EPOXY)
-		epoxy_handle_external_wglMakeCurrent();
-#endif
-	});
-	connect(m_painter.get(), &PainterGL::texSwapped, m_proxyContext.get(), [this]() {
-		if (!m_context->hardwareAccelerated()) {
-			return;
-		}
-		if (videoProxy()) {
-			videoProxy()->processData();
-		}
-		m_painter->updateFramebufferHandle();
-	}, Qt::BlockingQueuedConnection);
-	m_proxyThread.start();
+void DisplayGL::updateContentSize() {
+	QMetaObject::invokeMethod(m_painter.get(), "contentSize", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QSize, m_cachedContentSize));
 }
 
 int DisplayGL::framebufferHandle() {
@@ -509,19 +534,15 @@ void PainterGL::create() {
 	mGLES2Context* gl2Backend;
 #endif
 
-	m_paintDev = std::make_unique<QOpenGLPaintDevice>();
+	if (!m_widget) {
+		m_paintDev = std::make_unique<QOpenGLPaintDevice>();
+	}
 
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (m_supportsShaders) {
-		QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
 		gl2Backend = static_cast<mGLES2Context*>(malloc(sizeof(mGLES2Context)));
 		mGLES2ContextCreate(gl2Backend);
 		m_backend = &gl2Backend->d;
-		fn->glGenTextures(m_bridgeTexes.size(), m_bridgeTexes.data());
-		for (auto tex : m_bridgeTexes) {
-			m_freeTex.enqueue(tex);
-		}
-		m_bridgeTexIn = m_freeTex.dequeue();
 	}
 #endif
 
@@ -543,7 +564,7 @@ void PainterGL::create() {
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 		mGLES2Context* gl2Backend = reinterpret_cast<mGLES2Context*>(painter->m_backend);
 		if (painter->m_widget && painter->supportsShaders()) {
-			QOpenGLFunctions_Baseline* fn = painter->m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
+			QOpenGLFunctions* fn = painter->m_gl->functions();
 			fn->glFinish();
 			painter->m_widget->setTex(painter->m_finalTex[painter->m_finalTexIdx]);
 			painter->m_finalTexIdx ^= 1;
@@ -589,11 +610,9 @@ void PainterGL::destroy() {
 	}
 	makeCurrent();
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
-	QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
 	if (m_shader.passes) {
 		mGLES2ShaderFree(&m_shader);
 	}
-	fn->glDeleteTextures(m_bridgeTexes.size(), m_bridgeTexes.data());
 #endif
 	m_backend->deinit(m_backend);
 	m_gl->doneCurrent();
@@ -605,7 +624,7 @@ void PainterGL::destroy() {
 }
 
 void PainterGL::setContext(std::shared_ptr<CoreController> context) {
-	m_context = context;
+	m_context = std::move(context);
 }
 
 void PainterGL::resizeContext() {
@@ -624,18 +643,31 @@ void PainterGL::resizeContext() {
 		return;
 	}
 	dequeueAll(false);
-	m_backend->setDimensions(m_backend, size.width(), size.height());
+
+	mRectangle dims = {0, 0, size.width(), size.height()};
+	m_backend->setLayerDimensions(m_backend, VIDEO_LAYER_IMAGE, &dims);
+	recenterLayers();
+	m_dims = size;
 }
 
 void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
 	m_messagePainter = messagePainter;
 }
 
+void PainterGL::recenterLayers() {
+	if (!m_context) {
+		return;
+	}
+	VideoBackendRecenter(m_backend, std::max(1U, m_context->videoScale()));
+}
+
 void PainterGL::resize(const QSize& size) {
 	qreal r = m_window->devicePixelRatio();
 	m_size = size;
-	m_paintDev->setSize(m_size * r);
-	m_paintDev->setDevicePixelRatio(r);
+	if (m_paintDev) {
+		m_paintDev->setSize(m_size * r);
+		m_paintDev->setDevicePixelRatio(r);
+	}
 	if (m_started && !m_active) {
 		forceDraw();
 	}
@@ -670,6 +702,32 @@ void PainterGL::filter(bool filter) {
 	}
 }
 
+void PainterGL::swapInterval(int interval) {
+	if (!m_started) {
+		return;
+	}
+	m_swapInterval = interval;
+#ifdef Q_OS_WIN
+	wglSwapIntervalEXT(interval);
+#elif defined(Q_OS_MAC)
+	CGLSetParameter(CGLGetCurrentContext(), kCGLCPSwapInterval, &interval);
+#else
+#ifdef USE_GLX
+	if (QGuiApplication::platformName() == "xcb") {
+		::Display* display = glXGetCurrentDisplay();
+		GLXDrawable drawable = glXGetCurrentDrawable();
+		glXSwapIntervalEXT(display, drawable, interval);
+	}
+#endif
+#ifdef USE_EGL
+	if (QGuiApplication::platformName().contains("egl") || QGuiApplication::platformName() == "wayland") {
+		EGLDisplay display = eglGetCurrentDisplay();
+		eglSwapInterval(display, interval);
+	}
+#endif
+#endif
+}
+
 #ifndef GL_DEBUG_OUTPUT_SYNCHRONOUS
 #define GL_DEBUG_OUTPUT_SYNCHRONOUS 0x8242
 #endif
@@ -680,7 +738,7 @@ void PainterGL::start() {
 	if (glContextHasBug(OpenGLBug::GLTHREAD_BLOCKS_SWAP)) {
 		// Suggested on Discord as a way to strongly hint that glthread should be disabled
 		// See https://gitlab.freedesktop.org/mesa/mesa/-/issues/8035
-		QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
+		QOpenGLFunctions* fn = m_gl->functions();
 		fn->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	}
 #endif
@@ -691,16 +749,16 @@ void PainterGL::start() {
 	}
 #endif
 	resizeContext();
-	m_context->addFrameAction(std::bind(&PainterGL::swapTex, this));
 
 	m_buffer = nullptr;
 	m_active = true;
 	m_started = true;
+	swapInterval(1);
 	emit started();
 }
 
 void PainterGL::draw() {
-	if (!m_started || (m_queue.isEmpty() && m_queueTex.isEmpty())) {
+	if (!m_started || m_queue.isEmpty()) {
 		return;
 	}
 
@@ -726,12 +784,16 @@ void PainterGL::draw() {
 		}
 		return;
 	}
+	int wantSwap = sync->audioWait || sync->videoFrameWait;
+	if (m_swapInterval != wantSwap) {
+		swapInterval(wantSwap);
+	}
 	dequeue();
 	bool forceRedraw = true;
 	if (!m_delayTimer.isValid()) {
 		m_delayTimer.start();
 	} else {
-		if (sync->audioWait || sync->videoFrameWait) {
+		if (wantSwap) {
 			while (m_delayTimer.nsecsElapsed() + OVERHEAD_NSEC < 1000000000 / sync->fpsTarget) {
 				QThread::usleep(500);
 			}
@@ -783,6 +845,11 @@ void PainterGL::doStop() {
 	}
 	m_backend->clear(m_backend);
 	m_backend->swap(m_backend);
+	if (m_videoProxy) {
+		m_videoProxy->reset();
+		m_videoProxy->moveToThread(m_window->thread());
+		m_videoProxy.reset();
+	}
 }
 
 void PainterGL::pause() {
@@ -797,12 +864,12 @@ void PainterGL::unpause() {
 
 void PainterGL::performDraw() {
 	float r = m_window->devicePixelRatio();
-	m_backend->resized(m_backend, m_size.width() * r, m_size.height() * r);
+	m_backend->contextResized(m_backend, m_size.width() * r, m_size.height() * r);
 	if (m_buffer) {
-		m_backend->postFrame(m_backend, m_buffer);
+		m_backend->setImage(m_backend, VIDEO_LAYER_IMAGE, m_buffer);
 	}
 	m_backend->drawFrame(m_backend);
-	if (m_showOSD && m_messagePainter) {
+	if (m_showOSD && m_messagePainter && m_paintDev && !glContextHasBug(OpenGLBug::IG4ICD_CRASH)) {
 		m_painter.begin(m_paintDev.get());
 		m_messagePainter->paint(&m_painter);
 		m_painter.end();
@@ -810,31 +877,20 @@ void PainterGL::performDraw() {
 }
 
 void PainterGL::enqueue(const uint32_t* backing) {
-	if (!backing) {
-		return;
-	}
 	QMutexLocker locker(&m_mutex);
 	uint32_t* buffer = nullptr;
-	if (m_free.isEmpty()) {
-		buffer = m_queue.dequeue();
-	} else {
-		buffer = m_free.takeLast();
-	}
-	if (buffer) {
-		QSize size = m_context->screenDimensions();
-		memcpy(buffer, backing, size.width() * size.height() * BYTES_PER_PIXEL);
+	if (backing) {
+		if (m_free.isEmpty()) {
+			buffer = m_queue.dequeue();
+		} else {
+			buffer = m_free.takeLast();
+		}
+		if (buffer) {
+			QSize size = m_context->screenDimensions();
+			memcpy(buffer, backing, size.width() * size.height() * BYTES_PER_PIXEL);
+		}
 	}
 	m_queue.enqueue(buffer);
-}
-
-void PainterGL::enqueue(GLuint tex) {
-	QMutexLocker locker(&m_mutex);
-	if (m_freeTex.isEmpty()) {
-		m_bridgeTexIn = m_queueTex.dequeue();
-	} else {
-		m_bridgeTexIn = m_freeTex.takeLast();
-	}
-	m_queueTex.enqueue(tex);
 }
 
 void PainterGL::dequeue() {
@@ -845,19 +901,6 @@ void PainterGL::dequeue() {
 			m_free.append(m_buffer);
 		}
 		m_buffer = buffer;
-	}
-
-	if (!m_queueTex.isEmpty()) {
-		if (m_bridgeTexOut != std::numeric_limits<GLuint>::max()) {
-			m_freeTex.enqueue(m_bridgeTexOut);
-		}
-		m_bridgeTexOut = m_queueTex.dequeue();
-#if defined(BUILD_GLES2) || defined(BUILD_GLES3)
-		if (supportsShaders()) {
-			mGLES2Context* gl2Backend = reinterpret_cast<mGLES2Context*>(m_backend);
-			gl2Backend->tex = m_bridgeTexOut;
-		}
-#endif
 	}
 }
 
@@ -879,23 +922,13 @@ void PainterGL::dequeueAll(bool keep) {
 		m_free.append(m_buffer);
 		m_buffer = nullptr;
 	}
-
-	m_queueTex.clear();
-	m_freeTex.clear();
-	for (auto tex : m_bridgeTexes) {
-		if (keep && tex == m_bridgeTexIn) {
-			continue;
-		}
-		m_freeTex.enqueue(tex);
-	}
-	if (!keep) {
-		m_bridgeTexIn = m_freeTex.dequeue();
-		m_bridgeTexOut = std::numeric_limits<GLuint>::max();
-	}
 }
 
 void PainterGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
 	m_videoProxy = proxy;
+	if (proxy) {
+		proxy->setProxiedBackend(m_backend);
+	}
 }
 
 void PainterGL::interrupt() {
@@ -915,8 +948,9 @@ void PainterGL::setShaders(struct VDir* dir) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
 	}
-	mGLES2ShaderLoad(&m_shader, dir);
-	mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
+	if (mGLES2ShaderLoad(&m_shader, dir)) {
+		mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
+	}
 
 	if (!m_started) {
 		m_gl->doneCurrent();
@@ -948,11 +982,18 @@ VideoShader* PainterGL::shaders() {
 	return &m_shader;
 }
 
+QSize PainterGL::contentSize() const {
+	unsigned width, height;
+	VideoBackendGetFrameSize(m_backend, &width, &height);
+	return {saturateCast<int>(width),
+	        saturateCast<int>(height)};
+}
+
 int PainterGL::glTex() {
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (supportsShaders()) {
 		mGLES2Context* gl2Backend = reinterpret_cast<mGLES2Context*>(m_backend);
-		return gl2Backend->tex;
+		return gl2Backend->tex[VIDEO_LAYER_IMAGE];
 	}
 #endif
 #ifdef BUILD_GL
@@ -971,31 +1012,25 @@ QOpenGLContext* PainterGL::shareContext() {
 	}
 }
 
-void PainterGL::updateFramebufferHandle() {
-	QOpenGLFunctions_Baseline* fn = m_gl->versionFunctions<QOpenGLFunctions_Baseline>();
-	// TODO: Figure out why glFlush doesn't work here on Intel/Windows
-	if (glContextHasBug(OpenGLBug::CROSS_THREAD_FLUSH)) {
-		fn->glFinish();
-	} else {
-		fn->glFlush();
-	}
-
-	CoreController::Interrupter interrupter(m_context);
-	if (!m_context->hardwareAccelerated()) {
-		return;
-	}
-	enqueue(m_bridgeTexIn);
-	m_context->setFramebufferHandle(m_bridgeTexIn);
-}
-
-void PainterGL::swapTex() {
+void PainterGL::setBackgroundImage(const QImage& image) {
 	if (!m_started) {
-		return;
+		makeCurrent();
 	}
 
-	CoreController::Interrupter interrupter(m_context);
-	emit texSwapped();
-	m_context->addFrameAction(std::bind(&PainterGL::swapTex, this));
+	m_backend->setImageSize(m_backend, VIDEO_LAYER_BACKGROUND, image.width(), image.height());
+	recenterLayers();
+
+	if (!image.isNull()) {
+		m_background = image.convertToFormat(QImage::Format_RGB32);
+		m_background = m_background.rgbSwapped();
+		m_backend->setImage(m_backend, VIDEO_LAYER_BACKGROUND, m_background.constBits());
+	} else {
+		m_background = QImage();
+	}
+
+	if (!m_started) {
+		m_gl->doneCurrent();
+	}
 }
 
 #endif
