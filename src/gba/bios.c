@@ -185,14 +185,6 @@ static void _RegisterRamReset(struct GBA* gba) {
 			gba->video.renderer->writeVideoRegister(gba->video.renderer, i, gba->memory.io[i >> 1]);
 		}
 	}
-	if (registers & 0x9C) {
-		gba->video.renderer->reset(gba->video.renderer);
-		gba->video.renderer->writeVideoRegister(gba->video.renderer, REG_DISPCNT, gba->memory.io[REG_DISPCNT >> 1]);
-		int i;
-		for (i = REG_BG0CNT; i < REG_SOUND1CNT_LO; i += 2) {
-			gba->video.renderer->writeVideoRegister(gba->video.renderer, i, gba->memory.io[i >> 1]);
-		}
-	}
 }
 
 static void _BgAffineSet(struct GBA* gba) {

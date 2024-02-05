@@ -211,6 +211,7 @@ void separatePath(const char* path, char* dirname, char* basename, char* extensi
 	}
 }
 
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 bool isAbsolute(const char* path) {
 	// XXX: Is this robust?
 #ifdef _WIN32
@@ -245,6 +246,7 @@ void makeAbsolute(const char* path, const char* base, char* out) {
 #endif
 	strncpy(out, buf, PATH_MAX);
 }
+#endif
 
 struct VFile* VDirFindFirst(struct VDir* dir, bool (*filter)(struct VFile*)) {
 	dir->rewind(dir);

@@ -2345,9 +2345,9 @@ size_t retro_get_memory_size(unsigned id) {
 		}
 		break;
 	case RETRO_MEMORY_SYSTEM_RAM:
-		return SIZE_WORKING_RAM;
+		return GB_SIZE_WORKING_RAM;
 	case RETRO_MEMORY_VIDEO_RAM:
-		return SIZE_VRAM;
+		return GBA_SIZE_VRAM;
 	default:
 		break;
 	}
@@ -2367,6 +2367,7 @@ void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, con
 	switch (level) {
 	case mLOG_ERROR:
 	case mLOG_FATAL:
+    case mLOG_ALL:
 		retroLevel = RETRO_LOG_ERROR;
 		break;
 	case mLOG_WARN:
