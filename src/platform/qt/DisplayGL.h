@@ -96,6 +96,7 @@ public:
 	int framebufferHandle() override;
 	QSize contentSize() const override { return m_cachedContentSize; }
 
+	static bool highestCompatible(QSurfaceFormat&);
 	static bool supportsFormat(const QSurfaceFormat&);
 
 public slots:
