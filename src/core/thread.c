@@ -153,7 +153,7 @@ void _frameStarted(void* context) {
 		return;
 	}
 	if (thread->core->opts.rewindEnable && thread->core->opts.rewindBufferCapacity > 0) {
-		if (!thread->impl->rewinding || !mCoreRewindRestore(&thread->impl->rewind, thread->core)) {
+		if (!thread->impl->rewinding || !mCoreRewindRestore(&thread->impl->rewind, thread->core, 1)) {
 			if (thread->impl->rewind.rewindFrameCounter == 0) {
 				mCoreRewindAppend(&thread->impl->rewind, thread->core);
 				thread->impl->rewind.rewindFrameCounter = thread->core->opts.rewindBufferInterval;

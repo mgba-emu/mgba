@@ -556,11 +556,7 @@ void CoreController::rewind(int states) {
 	if (!states) {
 		states = INT_MAX;
 	}
-	for (int i = 0; i < states; ++i) {
-		if (!mCoreRewindRestore(&m_threadContext.impl->rewind, m_threadContext.core)) {
-			break;
-		}
-	}
+	mCoreRewindRestore(&m_threadContext.impl->rewind, m_threadContext.core, states);
 	interrupter.resume();
 	emit frameAvailable();
 	emit rewound();
