@@ -530,12 +530,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="83"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="85"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
 </context>
 <context>
@@ -543,12 +543,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="29"/>
         <source>Icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Icona</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="30"/>
         <source>Banner</source>
-        <translation type="unfinished"></translation>
+        <translation>Striscia</translation>
     </message>
 </context>
 <context>
@@ -556,7 +556,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="25"/>
         <source>Bubble</source>
-        <translation type="unfinished"></translation>
+        <translation>Bolla</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
@@ -566,7 +566,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
         <source>Startup</source>
-        <translation type="unfinished"></translation>
+        <translation>Avvio</translation>
     </message>
 </context>
 <context>
@@ -574,17 +574,17 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="14"/>
         <source>Create forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Crea Icona di avvio</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="20"/>
         <source>Files</source>
-        <translation type="unfinished"></translation>
+        <translation>File</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="26"/>
         <source>ROM file:</source>
-        <translation type="unfinished"></translation>
+        <translation>File ROM:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="36"/>
@@ -596,127 +596,127 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="43"/>
         <source>Output filename:</source>
-        <translation type="unfinished"></translation>
+        <translation>Nome file in uscita:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="60"/>
         <source>Forwarder base:</source>
-        <translation type="unfinished"></translation>
+        <translation>Base dell&apos;Icona di avvio:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="74"/>
         <source>Latest stable version</source>
-        <translation type="unfinished"></translation>
+        <translation>Ultima versione stabile</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="79"/>
         <source>Latest development build</source>
-        <translation type="unfinished"></translation>
+        <translation>Ultima development build</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="84"/>
         <source>Specific file</source>
-        <translation type="unfinished"></translation>
+        <translation>File specifico</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="95"/>
         <source>Base file:</source>
-        <translation type="unfinished"></translation>
+        <translation>File base:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="135"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>Sistema</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="141"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="151"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="174"/>
         <source>Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>Presentazione</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="182"/>
         <source>Title:</source>
-        <translation type="unfinished"></translation>
+        <translation>Titolo:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="195"/>
         <source>Images:</source>
-        <translation type="unfinished"></translation>
+        <translation>Immagini:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="215"/>
         <source>Use default image</source>
-        <translation type="unfinished"></translation>
+        <translation>Usa immagine predefinita</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="328"/>
         <source>Preferred size:</source>
-        <translation type="unfinished"></translation>
+        <translation>Dimensione preferita:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="395"/>
         <source>Select image file</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleziona file immagine</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="22"/>
         <source>Select ROM file</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleziona file ROM</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="23"/>
         <source>Select output filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Selezione nome file in uscita</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="24"/>
         <source>Select base file</source>
-        <translation type="unfinished"></translation>
+        <translation>Selezione file base</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="36"/>
         <source>Build finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Build completata</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="37"/>
         <source>Forwarder finished building</source>
-        <translation type="unfinished"></translation>
+        <translation>Icona di avvio compilazione completata</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="44"/>
         <source>Build failed</source>
-        <translation type="unfinished"></translation>
+        <translation>Build fallita</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
         <source>Failed to build forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossibile compilare Icona di avvio</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="176"/>
         <source>%1 installable package (*.%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 pacchetto installabile (*.%2)</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Select an image</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleziona una immagine</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>File immagine (*.png *.jpg *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -1085,12 +1085,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="95"/>
         <source>NT (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT (vec. 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="96"/>
         <source>NT (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT (vec. 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="97"/>
@@ -1115,12 +1115,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="101"/>
         <source>GGB-81</source>
-        <translation type="unfinished"></translation>
+        <translation>GGB-81</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="102"/>
         <source>Li Cheng</source>
-        <translation type="unfinished"></translation>
+        <translation>Li Cheng</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="103"/>
@@ -3752,17 +3752,17 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="327"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Tentativo di scollegare un giocatore in multi che non è collegato</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="391"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Cerco di ottenere l&apos;ID giocatore per un giocatore in multi non collegato</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="405"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Cerco di ottenere l&apos;ID di salvataggio per un giocatore in multi non collegato</translation>
     </message>
 </context>
 <context>
@@ -4310,7 +4310,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="114"/>
         <source>Save file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Salva file:</translation>
     </message>
 </context>
 <context>
@@ -4477,7 +4477,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="487"/>
         <source> + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation> + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="496"/>
@@ -4779,7 +4779,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.cpp" line="873"/>
         <source>Just now</source>
-        <translation>Solo adesso</translation>
+        <translation>Proprio adesso</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="877"/>
@@ -5079,7 +5079,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="941"/>
         <source>Custom border:</source>
-        <translation type="unfinished"></translation>
+        <translation>Bordo personalizzato:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="952"/>
@@ -5109,7 +5109,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1017"/>
         <source>Last checked:</source>
-        <translation>Vista l&apos;ultima volta:</translation>
+        <translation>Ultimo controllo:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1038"/>
@@ -5124,7 +5124,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1201"/>
         <source>Rewind speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Velocità riavvolgimento:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1812"/>
@@ -5891,7 +5891,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../VideoView.ui" line="329"/>
         <source>WavPack</source>
-        <translation type="unfinished"></translation>
+        <translation>WavPack</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="334"/>
@@ -6312,12 +6312,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1445"/>
         <source>Increase fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Aumenta la velocità di avvolgimento veloce</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1452"/>
         <source>Decrease fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Diminuisci la velocità di avvolgimento veloce</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1459"/>
@@ -6447,7 +6447,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1664"/>
         <source>Create forwarder...</source>
-        <translation type="unfinished"></translation>
+        <translation>Crea Icona di avvio...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1672"/>
