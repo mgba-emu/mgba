@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "Window.h"
 
+#include <QInputDialog>
 #include <QKeyEvent>
 #include <QKeySequence>
 #include <QMenuBar>
@@ -1117,12 +1118,14 @@ void Window::changeRenderer() {
 }
 
 void Window::tryMakePortable() {
-	QMessageBox* confirm = new QMessageBox(QMessageBox::Question, tr("Really make portable?"),
-	                                       tr("This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?"),
-	                                       QMessageBox::Yes | QMessageBox::Cancel, this, Qt::Sheet);
-	confirm->setAttribute(Qt::WA_DeleteOnClose);
-	connect(confirm->button(QMessageBox::Yes), &QAbstractButton::clicked, m_config, &ConfigController::makePortable);
-	confirm->show();
+	bool accepted;
+	QString text = QInputDialog::getText(this, tr("Make portable"),
+	                                     tr("This will make the emulator load its configuration from the specified directory.\n\n"
+	                                        "Portable Directory (leave empty for the executable directory):"),
+	                                     QLineEdit::Normal, "", &accepted);
+	if (accepted) {
+		m_config->makePortable(text.toLocal8Bit().data());
+	}
 }
 
 void Window::mustRestart() {
