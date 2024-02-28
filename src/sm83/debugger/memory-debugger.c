@@ -12,7 +12,7 @@
 
 #include <string.h>
 
-static bool _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, struct mDebuggerEntryInfo* info, enum mWatchpointType type, uint8_t newValue);
+static void _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, enum mWatchpointType type, uint8_t newValue);
 
 #define FIND_DEBUGGER(DEBUGGER, CPU) \
 	do { \
@@ -32,17 +32,14 @@ static bool _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, s
 	static RETURN DebuggerShim_ ## NAME TYPES { \
 		struct SM83Debugger* debugger; \
 		FIND_DEBUGGER(debugger, cpu); \
-		struct mDebuggerEntryInfo info; \
-		if (_checkWatchpoints(debugger, address, &info, WATCHPOINT_ ## RW, VALUE)) { \
-			mDebuggerEnter(debugger->d.p, DEBUGGER_ENTER_WATCHPOINT, &info); \
-		} \
+		_checkWatchpoints(debugger, address, WATCHPOINT_ ## RW, VALUE); \
 		return debugger->originalMemory.NAME(cpu, __VA_ARGS__); \
 	}
 
 CREATE_WATCHPOINT_SHIM(load8, READ, 0, uint8_t, (struct SM83Core* cpu, uint16_t address), address)
 CREATE_WATCHPOINT_SHIM(store8, WRITE, value, void, (struct SM83Core* cpu, uint16_t address, int8_t value), address, value)
 
-static bool _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, struct mDebuggerEntryInfo* info, enum mWatchpointType type, uint8_t newValue) {
+static void _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, enum mWatchpointType type, uint8_t newValue) {
 	struct mWatchpoint* watchpoint;
 	size_t i;
 	for (i = 0; i < mWatchpointListSize(&debugger->watchpoints); ++i) {
@@ -59,16 +56,19 @@ static bool _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, s
 			if ((watchpoint->type & WATCHPOINT_CHANGE) && newValue == oldValue) {
 				continue;
 			}
-			info->type.wp.oldValue = oldValue;
-			info->type.wp.newValue = newValue;
-			info->address = address;
-			info->type.wp.watchType = watchpoint->type;
-			info->type.wp.accessType = type;
-			info->pointId = watchpoint->id;
-			return true;
+			struct mDebuggerEntryInfo info;
+			info.type.wp.oldValue = oldValue;
+			info.type.wp.newValue = newValue;
+			info.type.wp.watchType = watchpoint->type;
+			info.type.wp.accessType = type;
+			info.address = address;
+			info.segment = debugger->originalMemory.currentSegment(debugger->cpu, address);
+			info.width = 1;
+			info.pointId = watchpoint->id;
+			info.target = TableLookup(&debugger->d.p->pointOwner, watchpoint->id);
+			mDebuggerEnter(debugger->d.p, DEBUGGER_ENTER_WATCHPOINT, &info);
 		}
 	}
-	return false;
 }
 
 void SM83DebuggerInstallMemoryShim(struct SM83Debugger* debugger) {

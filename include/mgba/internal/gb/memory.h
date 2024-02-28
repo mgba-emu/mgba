@@ -292,7 +292,7 @@ struct GBMemory {
 	int currentSramBank1;
 	uint8_t* sramBank1;
 
-	unsigned cartBusDecay;
+	int cartBusDecay;
 	uint16_t cartBusPc;
 	uint8_t cartBus;
 

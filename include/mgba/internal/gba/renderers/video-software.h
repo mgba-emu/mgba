@@ -42,6 +42,8 @@ struct GBAVideoSoftwareBackground {
 	uint16_t mapCache[64];
 	uint32_t flags;
 	uint32_t objwinFlags;
+	int objwinForceEnable;
+	bool objwinOnly;
 	bool variant;
 	int32_t offsetX;
 	int32_t offsetY;
@@ -136,9 +138,9 @@ struct GBAVideoSoftwareRenderer {
 	int16_t objOffsetY;
 
 	uint32_t scanlineDirty[5];
-	uint16_t nextIo[REG_SOUND1CNT_LO >> 1];
+	uint16_t nextIo[GBA_REG(SOUND1CNT_LO)];
 	struct ScanlineCache {
-		uint16_t io[REG_SOUND1CNT_LO >> 1];
+		uint16_t io[GBA_REG(SOUND1CNT_LO)];
 		int32_t scale[2][2];
 	} cache[GBA_VIDEO_VERTICAL_PIXELS];
 	int nextY;

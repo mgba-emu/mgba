@@ -573,7 +573,7 @@ uint32_t ARMResolveMemoryAccess(struct ARMInstructionInfo* info, struct ARMRegis
 	if (info->memory.format & ARM_MEMORY_IMMEDIATE_OFFSET) {
 		offset = info->memory.offset.immediate;
 	} else if (info->memory.format & ARM_MEMORY_REGISTER_OFFSET) {
-		offset = info->memory.offset.reg == ARM_PC ? pc : regs->gprs[info->memory.offset.reg];
+		offset = info->memory.offset.reg == ARM_PC ? pc : (uint32_t) regs->gprs[info->memory.offset.reg];
 	}
 	if (info->memory.format & ARM_MEMORY_SHIFTED_OFFSET) {
 		uint8_t shiftSize = info->memory.offset.shifterImm;

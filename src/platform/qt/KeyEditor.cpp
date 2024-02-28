@@ -5,9 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "KeyEditor.h"
 
-#include "GamepadAxisEvent.h"
-#include "GamepadButtonEvent.h"
+#include "input/GamepadAxisEvent.h"
+#include "input/GamepadButtonEvent.h"
 #include "ShortcutController.h"
+#include "utils.h"
 
 #include <QCoreApplication>
 #include <QFontMetrics>
@@ -33,35 +34,7 @@ void KeyEditor::setValue(int key) {
 		if (key < 0) {
 			setText(tr("---"));
 		} else {
-			QKeySequence seq(key);
-			switch (key) {
-#ifndef Q_OS_MAC
-				case Qt::Key_Shift:
-					setText(QCoreApplication::translate("QShortcut", "Shift"));
-					break;
-				case Qt::Key_Control:
-					setText(QCoreApplication::translate("QShortcut", "Control"));
-					break;
-				case Qt::Key_Alt:
-					setText(QCoreApplication::translate("QShortcut", "Alt"));
-					break;
-				case Qt::Key_Meta:
-					setText(QCoreApplication::translate("QShortcut", "Meta"));
-					break;
-#endif
-				case Qt::Key_Super_L:
-					setText(tr("Super (L)"));
-					break;
-				case Qt::Key_Super_R:
-					setText(tr("Super (R)"));
-					break;
-				case Qt::Key_Menu:
-					setText(tr("Menu"));
-					break;
-				default:
-					setText(QKeySequence(key).toString(QKeySequence::NativeText));
-					break;
-				}
+			setText(keyName(key));
 		}
 	}
 	emit valueChanged(key);

@@ -63,9 +63,9 @@ public:
 
 	QList<Window*> windows() { return m_windows; }
 
-	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = {});
-	QStringList getOpenFileNames(QWidget* owner, const QString& title, const QString& filter = {});
-	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = {});
+	QString getOpenFileName(QWidget* owner, const QString& title, const QString& filter = {}, const QString& path = {});
+	QStringList getOpenFileNames(QWidget* owner, const QString& title, const QString& filter = {}, const QString& path = {});
+	QString getSaveFileName(QWidget* owner, const QString& title, const QString& filter = {}, const QString& path = {});
 	QString getOpenDirectoryName(QWidget* owner, const QString& title, const QString& path = {});
 
 	const NoIntroDB* gameDB() const { return m_db; }
@@ -74,10 +74,10 @@ public:
 	QNetworkAccessManager* netman();
 	QNetworkReply* httpGet(const QUrl&);
 
-	qint64 submitWorkerJob(std::function<void ()> job, std::function<void ()> callback = {});
-	qint64 submitWorkerJob(std::function<void ()> job, QObject* context, std::function<void ()> callback);
+	qint64 submitWorkerJob(std::function<void ()>&& job, std::function<void ()>&& callback = {});
+	qint64 submitWorkerJob(std::function<void ()>&& job, QObject* context, std::function<void ()>&& callback);
 	bool removeWorkerJob(qint64 jobId);
-	bool waitOnJob(qint64 jobId, QObject* context, std::function<void ()> callback);
+	bool waitOnJob(qint64 jobId, QObject* context, std::function<void ()>&& callback);
 
 	ApplicationUpdater* updater() { return &m_updater; }
 	QString invokeOnExit() { return m_invokeOnExit; }
@@ -85,6 +85,10 @@ public:
 public slots:
 	void restartForUpdate();
 	Window* newWindow();
+
+	void suspendScreensaver();
+	void resumeScreensaver();
+	void setScreensaverSuspendable(bool);
 
 signals:
 	void jobFinished(qint64 jobId);
@@ -99,7 +103,7 @@ private slots:
 private:
 	class WorkerJob : public QRunnable {
 	public:
-		WorkerJob(qint64 id, std::function<void ()> job, GBAApp* owner);
+		WorkerJob(qint64 id, std::function<void ()>&& job, GBAApp* owner);
 
 	public:
 		void run() override;

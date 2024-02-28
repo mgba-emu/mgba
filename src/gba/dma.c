@@ -33,14 +33,14 @@ void GBADMAReset(struct GBA* gba) {
 	gba->memory.activeDMA = -1;
 }
 static bool _isValidDMASAD(int dma, uint32_t address) {
-	if (dma == 0 && address >= BASE_CART0 && address < BASE_CART_SRAM) {
+	if (dma == 0 && address >= GBA_BASE_ROM0 && address < GBA_BASE_SRAM) {
 		return false;
 	}
-	return address >= BASE_WORKING_RAM;
+	return address >= GBA_BASE_EWRAM;
 }
 
 static bool _isValidDMADAD(int dma, uint32_t address) {
-	return dma == 3 || address < BASE_CART0;
+	return dma == 3 || address < GBA_BASE_ROM0;
 }
 
 uint32_t GBADMAWriteSAD(struct GBA* gba, int dma, uint32_t address) {
@@ -206,7 +206,7 @@ void _dmaEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 			dma->reg = GBADMARegisterClearEnable(dma->reg);
 
 			// Clear the enable bit in memory
-			memory->io[(REG_DMA0CNT_HI + memory->activeDMA * (REG_DMA1CNT_HI - REG_DMA0CNT_HI)) >> 1] &= 0x7FE0;
+			memory->io[(GBA_REG_DMA0CNT_HI + memory->activeDMA * (GBA_REG_DMA1CNT_HI - GBA_REG_DMA0CNT_HI)) >> 1] &= 0x7FE0;
 		}
 		if (GBADMARegisterGetDestControl(dma->reg) == GBA_DMA_INCREMENT_RELOAD) {
 			dma->nextDest = dma->dest;
@@ -278,14 +278,14 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		}
 		cpu->memory.store32(cpu, dest, memory->dmaTransferRegister, 0);
 	} else {
-		if (sourceRegion == REGION_CART2_EX && (memory->savedata.type == SAVEDATA_EEPROM || memory->savedata.type == SAVEDATA_EEPROM512)) {
+		if (sourceRegion == GBA_REGION_ROM2_EX && (memory->savedata.type == SAVEDATA_EEPROM || memory->savedata.type == SAVEDATA_EEPROM512)) {
 			memory->dmaTransferRegister = GBASavedataReadEEPROM(&memory->savedata);
 			memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
 		} else if (source) {
 			memory->dmaTransferRegister = cpu->memory.load16(cpu, source, 0);
 			memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
 		}
-		if (destRegion == REGION_CART2_EX) {
+		if (destRegion == GBA_REGION_ROM2_EX) {
 			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
 				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
 				GBASavedataInitEEPROM(&memory->savedata);
@@ -300,7 +300,7 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	gba->bus = memory->dmaTransferRegister;
 
 	int sourceOffset;
-	if (info->nextSource >= BASE_CART0 && info->nextSource < BASE_CART_SRAM && GBADMARegisterGetSrcControl(info->reg) < 3) {
+	if (info->nextSource >= GBA_BASE_ROM0 && info->nextSource < GBA_BASE_SRAM && GBADMARegisterGetSrcControl(info->reg) < 3) {
 		sourceOffset = width;
 	} else {
 		sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
@@ -325,7 +325,7 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 
 	if (!info->nextCount) {
 		info->nextCount |= 0x80000000;
-		if (sourceRegion < REGION_CART0 || destRegion < REGION_CART0) {
+		if (sourceRegion < GBA_REGION_ROM0 || destRegion < GBA_REGION_ROM0) {
 			info->when += 2;
 		}
 	}

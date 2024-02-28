@@ -61,14 +61,14 @@ void GBAVideoCacheAssociate(struct mCacheSet* cache, struct GBAVideo* video) {
 	mCacheSetAssignVRAM(cache, video->vram);
 	video->renderer->cache = cache;
 	size_t i;
-	for (i = 0; i < SIZE_PALETTE_RAM / 2; ++i) {
+	for (i = 0; i < GBA_SIZE_PALETTE_RAM / 2; ++i) {
 		mCacheSetWritePalette(cache, i, mColorFrom555(video->palette[i]));
 	}
-	GBAVideoCacheWriteVideoRegister(cache, REG_DISPCNT, video->p->memory.io[REG_DISPCNT >> 1]);
-	GBAVideoCacheWriteVideoRegister(cache, REG_BG0CNT, video->p->memory.io[REG_BG0CNT >> 1]);
-	GBAVideoCacheWriteVideoRegister(cache, REG_BG1CNT, video->p->memory.io[REG_BG1CNT >> 1]);
-	GBAVideoCacheWriteVideoRegister(cache, REG_BG2CNT, video->p->memory.io[REG_BG2CNT >> 1]);
-	GBAVideoCacheWriteVideoRegister(cache, REG_BG3CNT, video->p->memory.io[REG_BG3CNT >> 1]);
+	GBAVideoCacheWriteVideoRegister(cache, GBA_REG_DISPCNT, video->p->memory.io[GBA_REG(DISPCNT)]);
+	GBAVideoCacheWriteVideoRegister(cache, GBA_REG_BG0CNT, video->p->memory.io[GBA_REG(BG0CNT)]);
+	GBAVideoCacheWriteVideoRegister(cache, GBA_REG_BG1CNT, video->p->memory.io[GBA_REG(BG1CNT)]);
+	GBAVideoCacheWriteVideoRegister(cache, GBA_REG_BG2CNT, video->p->memory.io[GBA_REG(BG2CNT)]);
+	GBAVideoCacheWriteVideoRegister(cache, GBA_REG_BG3CNT, video->p->memory.io[GBA_REG(BG3CNT)]);
 }
 
 static void mapParser0(struct mMapCache* cache, struct mMapCacheEntry* entry, void* vram) {
@@ -195,23 +195,23 @@ static void GBAVideoCacheWriteBGCNT(struct mCacheSet* cache, size_t bg, uint16_t
 
 void GBAVideoCacheWriteVideoRegister(struct mCacheSet* cache, uint32_t address, uint16_t value) {
 	switch (address) {
-	case REG_DISPCNT:
+	case GBA_REG_DISPCNT:
 		GBAVideoCacheWriteDISPCNT(cache, value);
 		GBAVideoCacheWriteBGCNT(cache, 0, (uintptr_t) mMapCacheSetGetPointer(&cache->maps, 0)->context);
 		GBAVideoCacheWriteBGCNT(cache, 1, (uintptr_t) mMapCacheSetGetPointer(&cache->maps, 1)->context);
 		GBAVideoCacheWriteBGCNT(cache, 2, (uintptr_t) mMapCacheSetGetPointer(&cache->maps, 2)->context);
 		GBAVideoCacheWriteBGCNT(cache, 3, (uintptr_t) mMapCacheSetGetPointer(&cache->maps, 3)->context);
 		break;
-	case REG_BG0CNT:
+	case GBA_REG_BG0CNT:
 		GBAVideoCacheWriteBGCNT(cache, 0, value);
 		break;
-	case REG_BG1CNT:
+	case GBA_REG_BG1CNT:
 		GBAVideoCacheWriteBGCNT(cache, 1, value);
 		break;
-	case REG_BG2CNT:
+	case GBA_REG_BG2CNT:
 		GBAVideoCacheWriteBGCNT(cache, 2, value);
 		break;
-	case REG_BG3CNT:
+	case GBA_REG_BG3CNT:
 		GBAVideoCacheWriteBGCNT(cache, 3, value);
 		break;
 

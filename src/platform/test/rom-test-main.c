@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2022 Jeffrey Pfau
+/* Copyright (c) 2013-2023 Jeffrey Pfau
 *  Copyright (c) 2022 Felix Jones
 *
 * This Source Code Form is subject to the terms of the Mozilla Public
@@ -10,6 +10,7 @@
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
 #include <mgba/core/serialize.h>
+#include <mgba/debugger/debugger.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/gba.h>
 #endif
@@ -137,38 +138,52 @@ int main(int argc, char * argv[]) {
 	if (!mCoreLoadFile(core, args.fname)) {
 		goto loadError;
 	}
-	if (args.patch) {
-		core->loadPatch(core, VFileOpen(args.patch, O_RDONLY));
-	}
 
-	struct VFile* savestate = NULL;
+#ifdef USE_DEBUGGERS
+	struct mDebugger debugger;
+	mDebuggerInit(&debugger);
+	bool hasDebugger = mArgumentsApplyDebugger(&args, core, &debugger);
 
-	if (args.savestate) {
-		savestate = VFileOpen(args.savestate, O_RDONLY);
+	if (hasDebugger) {
+		mDebuggerAttach(&debugger, core);
+		mDebuggerEnter(&debugger, DEBUGGER_ENTER_MANUAL, NULL);
+	} else {
+		mDebuggerDeinit(&debugger);
 	}
+#endif
 
 	core->reset(core);
 
-	struct mCheatDevice* device;
-	if (args.cheatsFile && (device = core->cheatDevice(core))) {
-		struct VFile* vf = VFileOpen(args.cheatsFile, O_RDONLY);
-		if (vf) {
-			mCheatDeviceClear(device);
-			mCheatParseFile(device, vf);
-			vf->close(vf);
-		}
-	}
+	mArgumentsApplyFileLoads(&args, core);
 
+	struct VFile* savestate = NULL;
+	if (args.savestate) {
+		savestate = VFileOpen(args.savestate, O_RDONLY);
+	}
 	if (savestate) {
 		mCoreLoadStateNamed(core, savestate, 0);
 		savestate->close(savestate);
 	}
 
+#ifdef USE_DEBUGGERS
+	if (hasDebugger) {
+		do {
+			mDebuggerRun(&debugger);
+		} while (!_dispatchExiting && debugger.state != DEBUGGER_SHUTDOWN);
+	} else
+#endif
 	do {
 		core->runLoop(core);
 	} while (!_dispatchExiting);
 
 	core->unloadROM(core);
+
+#ifdef USE_DEBUGGERS
+	if (hasDebugger) {
+		core->detachDebugger(core);
+		mDebuggerDeinit(&debugger);
+	}
+#endif
 	cleanExit = true;
 
 loadError:

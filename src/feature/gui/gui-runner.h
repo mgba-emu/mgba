@@ -33,6 +33,8 @@ struct mGUIBackground {
 
 	color_t* image;
 	size_t imageSize;
+	uint16_t w;
+	uint16_t h;
 
 	unsigned screenshotId;
 };

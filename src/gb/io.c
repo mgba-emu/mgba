@@ -491,7 +491,7 @@ void GBIOWrite(struct GB* gb, unsigned address, uint8_t value) {
 				return;
 			case GB_REG_SVBK:
 				GBMemorySwitchWramBank(&gb->memory, value);
-				value = gb->memory.wramCurrentBank;
+				value &= 7;
 				break;
 			default:
 				goto failed;

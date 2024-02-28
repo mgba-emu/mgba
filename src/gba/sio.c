@@ -172,7 +172,7 @@ void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
 	sio->rcnt |= value & ~0xF;
 	_switchMode(sio);
 	if (sio->activeDriver && sio->activeDriver->writeRegister) {
-		sio->activeDriver->writeRegister(sio->activeDriver, REG_RCNT, value);
+		sio->activeDriver->writeRegister(sio->activeDriver, GBA_REG_RCNT, value);
 	}
 }
 
@@ -182,19 +182,19 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 		_switchMode(sio);
 	}
 	if (sio->activeDriver && sio->activeDriver->writeRegister) {
-		value = sio->activeDriver->writeRegister(sio->activeDriver, REG_SIOCNT, value);
+		value = sio->activeDriver->writeRegister(sio->activeDriver, GBA_REG_SIOCNT, value);
 	} else {
 		// Dummy drivers
 		switch (sio->mode) {
 		case SIO_NORMAL_8:
 		case SIO_NORMAL_32:
-			value |= 0x0004;
+			value = GBASIONormalFillSi(value);
 			if ((value & 0x0081) == 0x0081) {
-				if (value & 0x4000) {
+				if (GBASIONormalIsIrq(value)) {
 					// TODO: Test this on hardware to see if this is correct
 					GBARaiseIRQ(sio->p, GBA_IRQ_SIO, 0);
 				}
-				value &= ~0x0080;
+				value = GBASIONormalClearStart(value);
 			}
 			break;
 		case SIO_MULTI:
@@ -217,10 +217,10 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 	switch (sio->mode) {
 	case SIO_JOYBUS:
 		switch (address) {
-		case REG_JOYCNT:
-			return (value & 0x0040) | (sio->p->memory.io[REG_JOYCNT >> 1] & ~(value & 0x7) & ~0x0040);
-		case REG_JOYSTAT:
-			return (value & 0x0030) | (sio->p->memory.io[REG_JOYSTAT >> 1] & ~0x30);
+		case GBA_REG_JOYCNT:
+			return (value & 0x0040) | (sio->p->memory.io[GBA_REG(JOYCNT)] & ~(value & 0x7) & ~0x0040);
+		case GBA_REG_JOYSTAT:
+			return (value & 0x0030) | (sio->p->memory.io[GBA_REG(JOYSTAT)] & ~0x30);
 		}
 		break;
 	default:

@@ -1266,7 +1266,7 @@ static void _doDeferredSetup(void) {
 	// On the off-hand chance that a core actually expects its buffers to be populated when
 	// you actually first get them, you're out of luck without workarounds. Yup, seriously.
 	// Here's that workaround, but really the API needs to be thrown out and rewritten.
-	struct VFile* save = VFileFromMemory(savedata, SIZE_CART_FLASH1M);
+	struct VFile* save = VFileFromMemory(savedata, GBA_SIZE_FLASH1M);
 	if (!core->loadSave(core, save)) {
 		save->close(save);
 	}
@@ -1339,19 +1339,13 @@ void retro_get_system_info(struct retro_system_info* info) {
 
 void retro_get_system_av_info(struct retro_system_av_info* info) {
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
 	info->geometry.base_width = width;
 	info->geometry.base_height = height;
-#ifdef M_CORE_GB
-	if (core->platform(core) == mPLATFORM_GB) {
-		info->geometry.max_width = VIDEO_WIDTH_MAX;
-		info->geometry.max_height = VIDEO_HEIGHT_MAX;
-	} else
-#endif
-	{
-		info->geometry.max_width = width;
-		info->geometry.max_height = height;
-	}
+
+	core->baseVideoSize(core, &width, &height);
+	info->geometry.max_width = width;
+	info->geometry.max_height = height;
 
 	info->geometry.aspect_ratio = width / (double) height;
 	info->timing.fps = core->frequency(core) / (float) core->frameCycles(core);
@@ -1661,7 +1655,7 @@ void retro_run(void) {
 
 	core->runFrame(core);
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
 
 	/* If using 'Fixed Interval' frameskipping, check
 	 * whether a frame is currently available  */
@@ -1753,66 +1747,66 @@ static void _setupMaps(struct mCore* core) {
 
 		/* Map internal working RAM */
 		descs[0].ptr    = gba->memory.iwram;
-		descs[0].start  = BASE_WORKING_IRAM;
-		descs[0].len    = SIZE_WORKING_IRAM;
+		descs[0].start  = GBA_BASE_IWRAM;
+		descs[0].len    = GBA_SIZE_IWRAM;
 		descs[0].select = 0xFF000000;
 
 		/* Map working RAM */
 		descs[1].ptr    = gba->memory.wram;
-		descs[1].start  = BASE_WORKING_RAM;
-		descs[1].len    = SIZE_WORKING_RAM;
+		descs[1].start  = GBA_BASE_EWRAM;
+		descs[1].len    = GBA_SIZE_EWRAM;
 		descs[1].select = 0xFF000000;
 
 		/* Map save RAM */
 		/* TODO: if SRAM is flash, use start=0 addrspace="S" instead */
 		descs[2].ptr    = savedataSize ? savedata : NULL;
-		descs[2].start  = BASE_CART_SRAM;
+		descs[2].start  = GBA_BASE_SRAM;
 		descs[2].len    = savedataSize;
 
 		/* Map ROM */
 		descs[3].ptr    = gba->memory.rom;
-		descs[3].start  = BASE_CART0;
+		descs[3].start  = GBA_BASE_ROM0;
 		descs[3].len    = romSize;
 		descs[3].flags  = RETRO_MEMDESC_CONST;
 
 		descs[4].ptr    = gba->memory.rom;
-		descs[4].start  = BASE_CART1;
+		descs[4].start  = GBA_BASE_ROM1;
 		descs[4].len    = romSize;
 		descs[4].flags  = RETRO_MEMDESC_CONST;
 
 		descs[5].ptr    = gba->memory.rom;
-		descs[5].start  = BASE_CART2;
+		descs[5].start  = GBA_BASE_ROM2;
 		descs[5].len    = romSize;
 		descs[5].flags  = RETRO_MEMDESC_CONST;
 
 		/* Map BIOS */
 		descs[6].ptr    = gba->memory.bios;
-		descs[6].start  = BASE_BIOS;
-		descs[6].len    = SIZE_BIOS;
+		descs[6].start  = GBA_BASE_BIOS;
+		descs[6].len    = GBA_SIZE_BIOS;
 		descs[6].flags  = RETRO_MEMDESC_CONST;
 
 		/* Map VRAM */
 		descs[7].ptr    = gba->video.vram;
-		descs[7].start  = BASE_VRAM;
-		descs[7].len    = SIZE_VRAM;
+		descs[7].start  = GBA_BASE_VRAM;
+		descs[7].len    = GBA_SIZE_VRAM;
 		descs[7].select = 0xFF000000;
 
 		/* Map palette RAM */
 		descs[8].ptr    = gba->video.palette;
-		descs[8].start  = BASE_PALETTE_RAM;
-		descs[8].len    = SIZE_PALETTE_RAM;
+		descs[8].start  = GBA_BASE_PALETTE_RAM;
+		descs[8].len    = GBA_SIZE_PALETTE_RAM;
 		descs[8].select = 0xFF000000;
 
 		/* Map OAM */
 		descs[9].ptr    = &gba->video.oam; /* video.oam is a structure */
-		descs[9].start  = BASE_OAM;
-		descs[9].len    = SIZE_OAM;
+		descs[9].start  = GBA_BASE_OAM;
+		descs[9].len    = GBA_SIZE_OAM;
 		descs[9].select = 0xFF000000;
 
 		/* Map mmapped I/O */
 		descs[10].ptr    = gba->memory.io;
-		descs[10].start  = BASE_IO;
-		descs[10].len    = SIZE_IO;
+		descs[10].start  = GBA_BASE_IO;
+		descs[10].len    = GBA_SIZE_IO;
 
 		mmaps.descriptors = descs;
 		mmaps.num_descriptors = sizeof(descs) / sizeof(descs[0]);
@@ -2058,8 +2052,8 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->setPeripheral(core, mPERIPH_RUMBLE, &rumble);
 	core->setPeripheral(core, mPERIPH_ROTATION, &rotation);
 
-	savedata = anonymousMemoryMap(SIZE_CART_FLASH1M);
-	memset(savedata, 0xFF, SIZE_CART_FLASH1M);
+	savedata = anonymousMemoryMap(GBA_SIZE_FLASH1M);
+	memset(savedata, 0xFF, GBA_SIZE_FLASH1M);
 
 	_reloadSettings();
 	core->loadROM(core, rom);
@@ -2139,7 +2133,7 @@ void retro_unload_game(void) {
 	core->deinit(core);
 	mappedMemoryFree(data, dataSize);
 	data = 0;
-	mappedMemoryFree(savedata, SIZE_CART_FLASH1M);
+	mappedMemoryFree(savedata, GBA_SIZE_FLASH1M);
 	savedata = 0;
 }
 
@@ -2322,7 +2316,7 @@ size_t retro_get_memory_size(unsigned id) {
 		case mPLATFORM_GBA:
 			switch (((struct GBA*) core->board)->memory.savedata.type) {
 			case SAVEDATA_AUTODETECT:
-				return SIZE_CART_FLASH1M;
+				return GBA_SIZE_FLASH1M;
 			default:
 				return GBASavedataSize(&((struct GBA*) core->board)->memory.savedata);
 			}
@@ -2351,9 +2345,9 @@ size_t retro_get_memory_size(unsigned id) {
 		}
 		break;
 	case RETRO_MEMORY_SYSTEM_RAM:
-		return SIZE_WORKING_RAM;
+		return GB_SIZE_WORKING_RAM;
 	case RETRO_MEMORY_VIDEO_RAM:
-		return SIZE_VRAM;
+		return GBA_SIZE_VRAM;
 	default:
 		break;
 	}
@@ -2373,6 +2367,7 @@ void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, con
 	switch (level) {
 	case mLOG_ERROR:
 	case mLOG_FATAL:
+    case mLOG_ALL:
 		retroLevel = RETRO_LOG_ERROR;
 		break;
 	case mLOG_WARN:
@@ -2525,7 +2520,7 @@ static void _startImage(struct mImageSource* image, unsigned w, unsigned h, int 
 
 static void _stopImage(struct mImageSource* image) {
 	UNUSED(image);
-	cam.stop();	
+	cam.stop();
 }
 
 static void _requestImage(struct mImageSource* image, const void** buffer, size_t* stride, enum mColorFormat* colorFormat) {

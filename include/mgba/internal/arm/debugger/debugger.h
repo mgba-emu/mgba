@@ -36,7 +36,7 @@ struct ARMDebugger {
 	struct ARMMemory originalMemory;
 
 	ssize_t nextId;
-	uint32_t stackTraceMode;
+	enum mStackTraceMode stackTraceMode;
 
 	void (*entered)(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 
@@ -45,7 +45,7 @@ struct ARMDebugger {
 };
 
 struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void);
-ssize_t ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* debugger, uint32_t address, enum ExecutionMode mode);
+ssize_t ARMDebuggerSetSoftwareBreakpoint(struct mDebuggerPlatform* debugger, struct mDebuggerModule* owner, uint32_t address, enum ExecutionMode mode);
 
 CXX_GUARD_END
 

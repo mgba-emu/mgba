@@ -8,12 +8,12 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 
-#define REG_TMCNT_LO(X) (REG_TM0CNT_LO + ((X) << 2))
+#define GBA_REG_TMCNT_LO(X) (GBA_REG_TM0CNT_LO + ((X) << 2))
 
 static void GBATimerUpdate(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 	struct GBATimer* timer = &gba->timers[timerId];
 	if (GBATimerFlagsIsCountUp(timer->flags)) {
-		gba->memory.io[REG_TMCNT_LO(timerId) >> 1] = timer->reload;
+		gba->memory.io[GBA_REG_TMCNT_LO(timerId) >> 1] = timer->reload;
 	} else {
 		GBATimerUpdateRegister(gba, timerId, cyclesLate);
 	}
@@ -34,9 +34,9 @@ static void GBATimerUpdate(struct GBA* gba, int timerId, uint32_t cyclesLate) {
 
 	if (timerId < 3) {
 		struct GBATimer* nextTimer = &gba->timers[timerId + 1];
-		if (GBATimerFlagsIsCountUp(nextTimer->flags)) { // TODO: Does this increment while disabled?
-			++gba->memory.io[REG_TMCNT_LO(timerId + 1) >> 1];
-			if (!gba->memory.io[REG_TMCNT_LO(timerId + 1) >> 1] && GBATimerFlagsIsEnable(nextTimer->flags)) {
+		if (GBATimerFlagsIsCountUp(nextTimer->flags) && GBATimerFlagsIsEnable(nextTimer->flags)) {
+			++gba->memory.io[GBA_REG_TMCNT_LO(timerId + 1) >> 1];
+			if (!gba->memory.io[GBA_REG_TMCNT_LO(timerId + 1) >> 1] && GBATimerFlagsIsEnable(nextTimer->flags)) {
 				GBATimerUpdate(gba, timerId + 1, cyclesLate);
 			}
 		}
@@ -99,11 +99,11 @@ void GBATimerUpdateRegister(struct GBA* gba, int timer, int32_t cyclesLate) {
 	int32_t tickIncrement = currentTime - currentTimer->lastEvent;
 	currentTimer->lastEvent = currentTime;
 	tickIncrement >>= prescaleBits;
-	tickIncrement += gba->memory.io[REG_TMCNT_LO(timer) >> 1];
+	tickIncrement += gba->memory.io[GBA_REG_TMCNT_LO(timer) >> 1];
 	while (tickIncrement >= 0x10000) {
 		tickIncrement -= 0x10000 - currentTimer->reload;
 	}
-	gba->memory.io[REG_TMCNT_LO(timer) >> 1] = tickIncrement;
+	gba->memory.io[GBA_REG_TMCNT_LO(timer) >> 1] = tickIncrement;
 
 	// Schedule next update
 	tickIncrement = (0x10000 - tickIncrement) << prescaleBits;
@@ -134,7 +134,7 @@ void GBATimerWriteTMCNT_HI(struct GBA* gba, int timer, uint16_t control) {
 	if (GBATimerFlagsIsEnable(oldFlags) != GBATimerFlagsIsEnable(currentTimer->flags)) {
 		reschedule = true;
 		if (GBATimerFlagsIsEnable(currentTimer->flags)) {
-			gba->memory.io[REG_TMCNT_LO(timer) >> 1] = currentTimer->reload;
+			gba->memory.io[GBA_REG_TMCNT_LO(timer) >> 1] = currentTimer->reload;
 		}
 	} else if (GBATimerFlagsIsCountUp(oldFlags) != GBATimerFlagsIsCountUp(currentTimer->flags)) {
 		reschedule = true;

@@ -13,6 +13,10 @@
 #ifdef __3DS__
 #include <mgba-util/platform/3ds/3ds-vfs.h>
 #endif
+#ifdef _WIN32
+#include <shlwapi.h>
+#include <windows.h>
+#endif
 
 struct VFile* VFileOpen(const char* path, int flags) {
 #ifdef USE_VFS_FILE
@@ -206,6 +210,43 @@ void separatePath(const char* path, char* dirname, char* basename, char* extensi
 		}
 	}
 }
+
+#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+bool isAbsolute(const char* path) {
+	// XXX: Is this robust?
+#ifdef _WIN32
+	WCHAR wpath[PATH_MAX];
+	MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, PATH_MAX);
+	return !PathIsRelativeW(wpath);
+#else
+	return path[0] == '/';
+#endif
+}
+
+void makeAbsolute(const char* path, const char* base, char* out) {
+	if (isAbsolute(path)) {
+		strncpy(out, path, PATH_MAX);
+		return;
+	}
+
+	char buf[PATH_MAX];
+	snprintf(buf, sizeof(buf), "%s" PATH_SEP "%s", base, path);
+#ifdef _WIN32
+	WCHAR wbuf[PATH_MAX];
+	WCHAR wout[PATH_MAX];
+	MultiByteToWideChar(CP_UTF8, 0, buf, -1, wbuf, PATH_MAX);
+	if (GetFullPathNameW(wbuf, PATH_MAX, wout, NULL)) {
+		WideCharToMultiByte(CP_UTF8, 0, wout, -1, out, PATH_MAX, 0, 0);
+		return;
+	}
+#elif defined(HAVE_REALPATH)
+	if (realpath(buf, out)) {
+		return;
+	}
+#endif
+	strncpy(out, buf, PATH_MAX);
+}
+#endif
 
 struct VFile* VDirFindFirst(struct VDir* dir, bool (*filter)(struct VFile*)) {
 	dir->rewind(dir);

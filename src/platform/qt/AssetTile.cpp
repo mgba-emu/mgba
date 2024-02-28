@@ -51,8 +51,8 @@ void AssetTile::setController(std::shared_ptr<CoreController> controller) {
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
 		m_addressWidth = 8;
-		m_addressBase = BASE_VRAM;
-		m_boundaryBase = BASE_VRAM | 0x10000;
+		m_addressBase = GBA_BASE_VRAM;
+		m_boundaryBase = GBA_BASE_VRAM | 0x10000;
 		break;
 #endif
 #ifdef M_CORE_GB

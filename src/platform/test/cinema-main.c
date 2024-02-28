@@ -10,7 +10,7 @@
 #include <mgba/feature/commandline.h>
 #include <mgba/feature/video-logger.h>
 
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/string.h>
 #include <mgba-util/table.h>
 #include <mgba-util/threading.h>
@@ -731,8 +731,8 @@ static struct VDir* _makeOutDir(const char* testName) {
 
 static void _writeImage(struct VFile* vf, const struct CInemaImage* image) {
 	png_structp png = PNGWriteOpen(vf);
-	png_infop info = PNGWriteHeader(png, image->width, image->height);
-	if (!PNGWritePixels(png, image->width, image->height, image->stride, image->data)) {
+	png_infop info = PNGWriteHeader(png, image->width, image->height, mCOLOR_NATIVE);
+	if (!PNGWritePixels(png, image->width, image->height, image->stride, image->data, mCOLOR_NATIVE)) {
 		CIerr(0, "Could not write output image\n");
 	}
 	PNGWriteClose(png, info);
@@ -1032,7 +1032,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 		return;
 	}
 	struct CInemaImage image;
-	core->desiredVideoDimensions(core, &image.width, &image.height);
+	core->baseVideoSize(core, &image.width, &image.height);
 	ssize_t bufferSize = image.width * image.height * BYTES_PER_PIXEL;
 	image.data = malloc(bufferSize);
 	image.stride = image.width;
@@ -1075,7 +1075,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 	for (frame = 0; frame < skip; ++frame) {
 		core->runFrame(core);
 	}
-	core->desiredVideoDimensions(core, &image.width, &image.height);
+	core->currentVideoSize(core, &image.width, &image.height);
 
 #ifdef USE_FFMPEG
 	struct FFmpegDecoder decoder;
@@ -1139,7 +1139,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 			break;
 		}
 		CIlog(3, "Test frame: %u\n", frameCounter);
-		core->desiredVideoDimensions(core, &image.width, &image.height);
+		core->currentVideoSize(core, &image.width, &image.height);
 		uint8_t* diff = NULL;
 		struct CInemaImage expected = {
 			.data = NULL,
@@ -1177,7 +1177,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 		if (test->status == CI_ERROR) {
 			break;
 		}
-		bool failed = false;
+		bool failed = true;
 		if (baselineFound) {
 			int max = 0;
 			failed = !_compareImages(test, &image, &expected, &max, diffs ? &diff : NULL);
@@ -1365,6 +1365,7 @@ static THREAD_ENTRY CInemaJob(void* context) {
 	CIflush(&stream.err, stderr);
 	StringListDeinit(&stream.err.lines);
 	StringListDeinit(&stream.err.partial);
+	THREAD_EXIT(0);
 }
 
 void _log(struct mLogger* log, int category, enum mLogLevel level, const char* format, va_list args) {

@@ -71,6 +71,7 @@ public slots:
 private slots:
 	void selectBios(QLineEdit*);
 	void selectPath(QLineEdit*, QCheckBox*);
+	void selectImage(QLineEdit*);
 	void updateConfig();
 	void reloadConfig();
 	void updateChecked();

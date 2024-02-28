@@ -25,6 +25,10 @@
 #include <mgba/core/version.h>
 #include <mgba/internal/gba/gba.h>
 
+#ifdef BUILD_SDL
+#include "platform/sdl/sdl-events.h"
+#endif
+
 using namespace QGBA;
 
 SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, LogController* logController, QWidget* parent)
@@ -47,7 +51,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 #ifdef M_CORE_GB
 	m_pageIndex[Page::GB] = 9;
 
-	for (auto model : GameBoy::modelList()) {
+	for (auto& model : GameBoy::modelList()) {
 		m_ui.gbModel->addItem(GameBoy::modelName(model), model);
 		m_ui.sgbModel->addItem(GameBoy::modelName(model), model);
 		m_ui.cgbModel->addItem(GameBoy::modelName(model), model);
@@ -138,6 +142,9 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	});
 	connect(m_ui.cheatsBrowse, &QAbstractButton::pressed, [this] () {
 		selectPath(m_ui.cheatsPath, m_ui.cheatsSameDir);
+	});
+	connect(m_ui.bgImageBrowse, &QAbstractButton::pressed, [this] () {
+		selectImage(m_ui.bgImage);
 	});
 	connect(m_ui.clearCache, &QAbstractButton::pressed, this, &SettingsView::libraryCleared);
 
@@ -326,8 +333,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 	GBAKeyEditor* buttonEditor = nullptr;
 #ifdef BUILD_SDL
-	inputController->recalibrateAxes();
-	const char* profile = inputController->profileForType(SDL_BINDING_BUTTON);
+	QString profile = inputController->profileForType(SDL_BINDING_BUTTON);
 	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
 	addPage(tr("Controllers"), buttonEditor, Page::CONTROLLERS);
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, buttonEditor, &GBAKeyEditor::save);
@@ -347,7 +353,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	QLocale englishLocale("en");
 	m_ui.languages->addItem(englishLocale.nativeLanguageName(), englishLocale);
 	QDir ts(":/translations/");
-	for (auto name : ts.entryList()) {
+	for (auto& name : ts.entryList()) {
 		if (!name.endsWith(".qm") || !name.startsWith(binaryName)) {
 			continue;
 		}
@@ -442,6 +448,13 @@ void SettingsView::selectPath(QLineEdit* field, QCheckBox* sameDir) {
 	}
 }
 
+void SettingsView::selectImage(QLineEdit* field) {
+	QString path = GBAApp::app()->getOpenFileName(this, tr("Select image"), tr("Image file (*.png *.jpg *.jpeg)"));
+	if (!path.isNull()) {
+		field->setText(makePortablePath(path));
+	}
+}
+
 void SettingsView::updateConfig() {
 	saveSetting("gba.bios", m_ui.gbaBios);
 	saveSetting("gb.bios", m_ui.gbBios);
@@ -467,6 +480,7 @@ void SettingsView::updateConfig() {
 	saveSetting("fastForwardMute", m_ui.muteFf);
 	saveSetting("rewindEnable", m_ui.rewind);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
+	saveSetting("rewindBufferInterval", m_ui.rewindBufferInterval);
 	saveSetting("resampleVideo", m_ui.resampleVideo);
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
@@ -498,6 +512,7 @@ void SettingsView::updateConfig() {
 	saveSetting("vbaBugCompat", m_ui.vbaBugCompat);
 	saveSetting("updateAutoCheck", m_ui.updateAutoCheck);
 	saveSetting("showFilenameInLibrary", m_ui.showFilenameInLibrary);
+	saveSetting("backgroundImage", m_ui.bgImage);
 
 	if (m_ui.audioBufferSize->currentText().toInt() > 8192) {
 		m_ui.audioBufferSize->setCurrentText("8192");
@@ -694,11 +709,14 @@ void SettingsView::reloadConfig() {
 	loadSetting("fastForwardMute", m_ui.muteFf, m_ui.mute->isChecked());
 	loadSetting("rewindEnable", m_ui.rewind);
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
+	loadSetting("rewindBufferInterval", m_ui.rewindBufferInterval);
 	loadSetting("resampleVideo", m_ui.resampleVideo);
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
 	loadSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
 	loadSetting("pauseOnMinimize", m_ui.pauseOnMinimize);
+	loadSetting("muteOnFocusLost", m_ui.muteOnFocusLost);
+	loadSetting("muteOnMinimize", m_ui.muteOnMinimize);
 	loadSetting("savegamePath", m_ui.savegamePath);
 	loadSetting("savestatePath", m_ui.savestatePath);
 	loadSetting("screenshotPath", m_ui.screenshotPath);
@@ -722,6 +740,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("vbaBugCompat", m_ui.vbaBugCompat, true);
 	loadSetting("updateAutoCheck", m_ui.updateAutoCheck);
 	loadSetting("showFilenameInLibrary", m_ui.showFilenameInLibrary);
+	loadSetting("backgroundImage", m_ui.bgImage);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 

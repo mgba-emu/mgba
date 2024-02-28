@@ -5,10 +5,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "main.h"
 
+#include <mgba/core/core.h>
+#include <mgba/core/thread.h>
 #include <mgba/core/version.h>
 
+#ifdef USE_PNG
+#include <mgba-util/image/png-io.h>
+#include <mgba-util/vfs.h>
+#endif
+
 void mSDLGLDoViewport(int w, int h, struct VideoBackend* v) {
-	v->resized(v, w, h);
+	v->contextResized(v, w, h);
 	v->clear(v);
 	v->swap(v);
 	v->clear(v);
@@ -21,6 +28,60 @@ void mSDLGLCommonSwap(struct VideoBackend* context) {
 #else
 	UNUSED(renderer);
 	SDL_GL_SwapBuffers();
+#endif
+}
+
+bool mSDLGLCommonLoadBackground(struct VideoBackend* context) {
+#ifdef USE_PNG
+	struct mSDLRenderer* renderer = context->user;
+	const char* bgImage = mCoreConfigGetValue(&renderer->core->config, "backgroundImage");
+	if (!bgImage) {
+		return false;
+	}
+	struct VFile* vf = VFileOpen(bgImage, O_RDONLY);
+	if (!vf) {
+		return false;
+	}
+
+	bool ok = false;
+	png_structp png = PNGReadOpen(vf, 0);
+	png_infop info = png_create_info_struct(png);
+	png_infop end = png_create_info_struct(png);
+	if (!png || !info || !end) {
+		goto done;
+	}
+
+	if (!PNGReadHeader(png, info)) {
+		goto done;
+	}
+	unsigned width = png_get_image_width(png, info);
+	unsigned height = png_get_image_height(png, info);
+	uint32_t* pixels = malloc(width * height * 4);
+	if (!pixels) {
+		goto done;
+	}
+
+	if (!PNGReadPixels(png, info, pixels, width, height, width) || !PNGReadFooter(png, end)) {
+		free(pixels);
+		goto done;
+	}
+
+	struct mRectangle dims = {
+		.width = width,
+		.height = height
+	};
+	context->setLayerDimensions(context, VIDEO_LAYER_BACKGROUND, &dims);
+	context->setImage(context, VIDEO_LAYER_BACKGROUND, pixels);
+	free(pixels);
+	ok = true;
+
+done:
+	PNGReadClose(png, info, end);
+	vf->close(vf);
+	return ok;
+#else
+	UNUSED(context);
+	return false;
 #endif
 }
 
@@ -65,4 +126,55 @@ bool mSDLGLCommonInit(struct mSDLRenderer* renderer) {
 	SDL_WM_SetCaption(projectName, "");
 #endif
 	return true;
+}
+
+void mSDLGLCommonRunloop(struct mSDLRenderer* renderer, void* user) {
+	struct mCoreThread* context = user;
+	SDL_Event event;
+	struct VideoBackend* v = renderer->backend;
+
+	if (mSDLGLCommonLoadBackground(v)) {
+		renderer->player.windowUpdated = true;
+		VideoBackendRecenter(v, 1);
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		int width, height;
+		v->imageSize(v, VIDEO_LAYER_IMAGE, &width, &height);
+		SDL_SetWindowSize(renderer->window, width * renderer->ratio, height * renderer->ratio);
+#endif
+	}
+
+	while (mCoreThreadIsActive(context)) {
+		while (SDL_PollEvent(&event)) {
+			mSDLHandleEvent(context, &renderer->player, &event);
+			// Event handling can change the size of the screen
+			if (renderer->player.windowUpdated) {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+				SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
+#else
+				renderer->viewportWidth = renderer->player.newWidth;
+				renderer->viewportHeight = renderer->player.newHeight;
+				mSDLGLCommonInit(renderer);
+#endif
+				mSDLGLDoViewport(renderer->viewportWidth, renderer->viewportHeight, v);
+				renderer->player.windowUpdated = 0;
+			}
+		}
+		renderer->core->currentVideoSize(renderer->core, &renderer->width, &renderer->height);
+		struct mRectangle dims;
+		v->layerDimensions(v, VIDEO_LAYER_IMAGE, &dims);
+		if (dims.width < 0 || dims.height < 0 || renderer->width != (unsigned) dims.width || renderer->height != (unsigned) dims.height) {
+			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);
+			dims.width = renderer->width;
+			dims.height = renderer->height;
+			v->setLayerDimensions(v, VIDEO_LAYER_IMAGE, &dims);
+			VideoBackendRecenter(v, 1);
+		}
+
+		if (mCoreSyncWaitFrameStart(&context->impl->sync)) {
+			v->setImage(v, VIDEO_LAYER_IMAGE, renderer->outputBuffer);
+		}
+		mCoreSyncWaitFrameEnd(&context->impl->sync);
+		v->drawFrame(v);
+		v->swap(v);
+	}
 }

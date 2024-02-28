@@ -44,7 +44,7 @@ GDBWindow::GDBWindow(GDBController* controller, QWidget* parent)
 	connect(m_portEdit, &QLineEdit::textChanged, this, &GDBWindow::portChanged);
 	settingsGrid->addWidget(m_portEdit, 0, 1, Qt::AlignLeft);
 
-	m_bindAddressEdit = new QLineEdit("0.0.0.0");
+	m_bindAddressEdit = new QLineEdit("127.0.0.1");
 	m_bindAddressEdit->setMaxLength(15);
 	connect(m_bindAddressEdit, &QLineEdit::textChanged, this, &GDBWindow::bindAddressChanged);
 	settingsGrid->addWidget(m_bindAddressEdit, 1, 1, Qt::AlignLeft);

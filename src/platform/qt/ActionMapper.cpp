@@ -61,7 +61,7 @@ void ActionMapper::rebuildMenu(const QString& menu, QMenu* qmenu, QWidget* conte
 			rebuildMenu(name, newMenu, context, shortcuts);
 			continue;
 		}
-		Action* action = &m_actions[actionName];
+		auto action = getAction(actionName);
 		QAction* qaction = qmenu->addAction(action->visibleName());
 		qaction->setEnabled(action->isEnabled());
 		qaction->setShortcutContext(Qt::WidgetShortcut);
@@ -93,22 +93,29 @@ void ActionMapper::rebuildMenu(const QString& menu, QMenu* qmenu, QWidget* conte
 			qaction->setMenuRole(QAction::QuitRole);
 			break;
 		}
-		QObject::connect(qaction, &QAction::triggered, [qaction, action](bool enabled) {
+
+		std::weak_ptr<Action> weakAction(action);
+		QObject::connect(qaction, &QAction::triggered, [qaction, weakAction](bool enabled) {
+			if (weakAction.expired()) {
+				return;
+			}
+			std::shared_ptr<Action> action(weakAction.lock());
 			if (qaction->isCheckable()) {
 				action->trigger(enabled);
 			} else {
 				action->trigger();
 			}
 		});
-		QObject::connect(action, &Action::enabled, qaction, &QAction::setEnabled);
-		QObject::connect(action, &Action::activated, [qaction, action](bool active) {
+		QObject::connect(action.get(), &Action::enabled, qaction, &QAction::setEnabled);
+		QObject::connect(action.get(), &Action::activated, [qaction, weakAction = std::move(weakAction)](bool active) {
+			std::shared_ptr<Action> action(weakAction.lock());
 			if (qaction->isCheckable()) {
 				qaction->setChecked(active);
 			} else if (active) {
 				action->setActive(false);
 			}
 		});
-		QObject::connect(action, &Action::destroyed, qaction, &QAction::deleteLater);
+		QObject::connect(action.get(), &Action::destroyed, qaction, &QAction::deleteLater);
 		if (shortcut) {
 			QObject::connect(shortcut, &Shortcut::shortcutChanged, qaction, [qaction](int shortcut) {
 				qaction->setShortcut(QKeySequence(shortcut));
@@ -122,8 +129,8 @@ void ActionMapper::addSeparator(const QString& menu) {
 	m_menus[menu].append(QString{});
 }
 
-Action* ActionMapper::addAction(const Action& act, const QString& name, const QString& menu, const QKeySequence& shortcut) {
-	m_actions.insert(name, act);
+std::shared_ptr<Action> ActionMapper::addAction(const Action& act, const QString& name, const QString& menu, const QKeySequence& shortcut) {
+	m_actions.insert(name, std::make_shared<Action>(act));
 	m_reverseMenus[name] = menu;
 	m_menus[menu].append(name);
 	if (!shortcut.isEmpty()) {
@@ -131,38 +138,38 @@ Action* ActionMapper::addAction(const Action& act, const QString& name, const QS
 	}
 	emit actionAdded(name);
 
-	return &m_actions[name];
+	return getAction(name);
 }
 
-Action* ActionMapper::addAction(const QString& visibleName, const QString& name, Action::Function action, const QString& menu, const QKeySequence& shortcut) {
-	return addAction(Action(action, name, visibleName), name, menu, shortcut);
+std::shared_ptr<Action> ActionMapper::addAction(const QString& visibleName, const QString& name, Action::Function&& action, const QString& menu, const QKeySequence& shortcut) {
+	return addAction(Action(std::move(action), name, visibleName), name, menu, shortcut);
 }
 
-Action* ActionMapper::addAction(const QString& visibleName, ConfigOption* option, const QVariant& variant, const QString& menu) {
+std::shared_ptr<Action> ActionMapper::addAction(const QString& visibleName, ConfigOption* option, const QVariant& variant, const QString& menu) {
 	return addAction(Action([option, variant]() {
 		option->setValue(variant);
 	}, option->name(), visibleName), QString("%1.%2").arg(option->name()).arg(variant.toString()), menu, {});
 }
 
-Action* ActionMapper::addBooleanAction(const QString& visibleName, const QString& name, Action::BooleanFunction action, const QString& menu, const QKeySequence& shortcut) {
-	return addAction(Action(action, name, visibleName), name, menu, shortcut);
+std::shared_ptr<Action> ActionMapper::addBooleanAction(const QString& visibleName, const QString& name, Action::BooleanFunction&& action, const QString& menu, const QKeySequence& shortcut) {
+	return addAction(Action(std::move(action), name, visibleName), name, menu, shortcut);
 }
 
-Action* ActionMapper::addBooleanAction(const QString& visibleName, ConfigOption* option, const QString& menu) {
+std::shared_ptr<Action> ActionMapper::addBooleanAction(const QString& visibleName, ConfigOption* option, const QString& menu) {
 	return addAction(Action([option](bool value) {
 		option->setValue(value);
 	}, option->name(), visibleName), option->name(), menu, {});
 }
 
-Action* ActionMapper::addHeldAction(const QString& visibleName, const QString& name, Action::BooleanFunction action, const QString& menu, const QKeySequence& shortcut) {
+std::shared_ptr<Action> ActionMapper::addHeldAction(const QString& visibleName, const QString& name, Action::BooleanFunction&& action, const QString& menu, const QKeySequence& shortcut) {
 	m_hiddenActions.insert(name);
 	m_heldActions.insert(name);
-	return addBooleanAction(visibleName, name, action, menu, shortcut);
+	return addBooleanAction(visibleName, name, std::move(action), menu, shortcut);
 }
 
-Action* ActionMapper::addHiddenAction(const QString& visibleName, const QString& name, Action::Function action, const QString& menu, const QKeySequence& shortcut) {
+std::shared_ptr<Action> ActionMapper::addHiddenAction(const QString& visibleName, const QString& name, Action::Function&& action, const QString& menu, const QKeySequence& shortcut) {
 	m_hiddenActions.insert(name);
-	return addAction(visibleName, name, action, menu, shortcut);
+	return addAction(visibleName, name, std::move(action), menu, shortcut);
 }
 
 QStringList ActionMapper::menuItems(const QString& menu) const {
@@ -180,8 +187,8 @@ QString ActionMapper::menuName(const QString& menu) const {
 	return m_menuNames[menu];
 }
 
-Action* ActionMapper::getAction(const QString& itemName) {
-	return &m_actions[itemName];
+std::shared_ptr<Action> ActionMapper::getAction(const QString& itemName) {
+	return m_actions.value(itemName);
 }
 
 QKeySequence ActionMapper::defaultShortcut(const QString& itemName) {

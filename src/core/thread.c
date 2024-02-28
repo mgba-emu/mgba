@@ -58,8 +58,19 @@ static void _waitOnInterrupt(struct mCoreThreadInternal* threadContext) {
 }
 
 static void _pokeRequest(struct mCoreThreadInternal* threadContext) {
-	if (threadContext->state == mTHREAD_RUNNING || threadContext->state == mTHREAD_PAUSED) {
+	switch (threadContext->state) {
+	case mTHREAD_RUNNING:
+	case mTHREAD_PAUSED:
+	case mTHREAD_CRASHED:
 		threadContext->state = mTHREAD_REQUEST;
+		break;
+	case mTHREAD_INITIALIZED:
+	case mTHREAD_REQUEST:
+	case mTHREAD_INTERRUPTED:
+	case mTHREAD_INTERRUPTING:
+	case mTHREAD_EXITING:
+	case mTHREAD_SHUTDOWN:
+		break;
 	}
 }
 
@@ -98,10 +109,7 @@ static void _wait(struct mCoreThreadInternal* threadContext) {
 
 #ifdef USE_DEBUGGERS
 	if (threadContext->core && threadContext->core->debugger) {
-		struct mDebugger* debugger = threadContext->core->debugger;
-		if (debugger->interrupt) {
-			debugger->interrupt(debugger);
-		}
+		mDebuggerInterrupt(threadContext->core->debugger);
 	}
 #endif
 
@@ -146,7 +154,11 @@ void _frameStarted(void* context) {
 	}
 	if (thread->core->opts.rewindEnable && thread->core->opts.rewindBufferCapacity > 0) {
 		if (!thread->impl->rewinding || !mCoreRewindRestore(&thread->impl->rewind, thread->core)) {
-			mCoreRewindAppend(&thread->impl->rewind, thread->core);
+			if (thread->impl->rewind.rewindFrameCounter == 0) {
+				mCoreRewindAppend(&thread->impl->rewind, thread->core);
+				thread->impl->rewind.rewindFrameCounter = thread->core->opts.rewindBufferInterval;
+			}
+			thread->impl->rewind.rewindFrameCounter--;
 		}
 	}
 }
@@ -194,7 +206,7 @@ void _script_ ## NAME(void* context) { \
 	if (!threadContext->scriptContext) { \
 		return; \
 	} \
-	mScriptContextTriggerCallback(threadContext->scriptContext, #NAME); \
+	mScriptContextTriggerCallback(threadContext->scriptContext, #NAME, NULL); \
 }
 
 ADD_CALLBACK(frame)
@@ -233,6 +245,8 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 
 	ThreadLocalSetKey(_contextKey, threadContext);
 	ThreadSetName("CPU Thread");
+
+	mLogSetThreadLogger(&threadContext->logger.d);
 
 #if !defined(_WIN32) && defined(USE_PTHREADS)
 	sigset_t signals;
@@ -283,7 +297,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		}
 	}
 	if (scriptContext) {
-		mScriptContextTriggerCallback(scriptContext, "start");
+		mScriptContextTriggerCallback(scriptContext, "start", NULL);
 	}
 #endif
 
@@ -304,7 +318,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		}
 	}
 	if (scriptContext) {
-		mScriptContextTriggerCallback(scriptContext, "reset");
+		mScriptContextTriggerCallback(scriptContext, "reset", NULL);
 	}
 #endif
 
@@ -337,8 +351,8 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 
 			while (impl->state >= mTHREAD_MIN_WAITING && impl->state <= mTHREAD_MAX_WAITING) {
 #ifdef USE_DEBUGGERS
-				if (debugger && debugger->update && debugger->state != DEBUGGER_SHUTDOWN) {
-					debugger->update(debugger);
+				if (debugger && debugger->state != DEBUGGER_SHUTDOWN) {
+					mDebuggerUpdate(debugger);
 					ConditionWaitTimed(&impl->stateCond, &impl->stateMutex, 10);
 				} else
 #endif
@@ -404,7 +418,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 			}
 #ifdef ENABLE_SCRIPTING
 			if (scriptContext) {
-				mScriptContextTriggerCallback(scriptContext, "reset");
+				mScriptContextTriggerCallback(scriptContext, "reset", NULL);
 			}
 #endif
 		}
@@ -428,7 +442,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 #ifdef ENABLE_SCRIPTING
 	if (scriptContext) {
-		mScriptContextTriggerCallback(scriptContext, "shutdown");
+		mScriptContextTriggerCallback(scriptContext, "shutdown", NULL);
 		mScriptContextDetachCore(scriptContext);
 	}
 #endif
@@ -750,12 +764,3 @@ struct mCoreThread* mCoreThreadGet(void) {
 	return NULL;
 }
 #endif
-
-struct mLogger* mCoreThreadLogger(void) {
-	struct mCoreThread* thread = mCoreThreadGet();
-	if (thread) {
-		return &thread->logger.d;
-	}
-	return NULL;
-}
-

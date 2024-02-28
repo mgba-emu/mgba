@@ -181,6 +181,9 @@ void SM83Tick(struct SM83Core* cpu) {
 		cpu->irqh.processEvents(cpu);
 	}
 	_SM83TickInternal(cpu);
+	while (cpu->cycles >= cpu->nextEvent) {
+		cpu->irqh.processEvents(cpu);
+	}
 }
 
 void SM83Run(struct SM83Core* cpu) {

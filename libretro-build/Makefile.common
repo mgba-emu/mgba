@@ -126,6 +126,7 @@ SOURCES_C :=   $(CORE_DIR)/src/arm/arm.c \
 					$(CORE_DIR)/src/util/patch-ups.c \
 					$(CORE_DIR)/src/util/string.c \
 					$(CORE_DIR)/src/util/table.c \
+					$(CORE_DIR)/src/util/vector.c \
 					$(CORE_DIR)/src/util/vfs.c \
 					$(CORE_DIR)/src/util/vfs/vfs-mem.c \
 					$(CORE_DIR)/src/util/crc32.c

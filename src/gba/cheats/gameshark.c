@@ -150,7 +150,7 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 		break;
 	case GSA_PATCH:
 		romPatch = mCheatPatchListAppend(&cheats->d.romPatches);
-		romPatch->address = BASE_CART0 | ((op1 & 0xFFFFFF) << 1);
+		romPatch->address = GBA_BASE_ROM0 | ((op1 & 0xFFFFFF) << 1);
 		romPatch->value = op2;
 		romPatch->applied = false;
 		romPatch->width = 2;
@@ -207,7 +207,7 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 			return false;
 		}
 		cheats->hook = malloc(sizeof(*cheats->hook));
-		cheats->hook->address = BASE_CART0 | (op1 & (SIZE_CART0 - 1));
+		cheats->hook->address = GBA_BASE_ROM0 | (op1 & (GBA_SIZE_ROM0 - 1));
 		cheats->hook->mode = MODE_THUMB;
 		cheats->hook->refs = 1;
 		cheats->hook->reentries = 0;

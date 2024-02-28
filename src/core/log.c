@@ -6,7 +6,7 @@
 #include <mgba/core/log.h>
 
 #include <mgba/core/config.h>
-#include <mgba/core/thread.h>
+#include <mgba-util/threading.h>
 #include <mgba-util/vfs.h>
 
 #define MAX_CATEGORY 64
@@ -14,11 +14,56 @@
 
 static struct mLogger* _defaultLogger = NULL;
 
-struct mLogger* mLogGetContext(void) {
-	struct mLogger* logger = NULL;
 #ifndef DISABLE_THREADING
-	logger = mCoreThreadLogger();
+static ThreadLocal _contextKey;
+
+#ifdef USE_PTHREADS
+static pthread_once_t _contextOnce = PTHREAD_ONCE_INIT;
+
+static void _createTLS(void) {
+	ThreadLocalInitKey(&_contextKey);
+}
+#elif _WIN32
+static INIT_ONCE _contextOnce = INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK _createTLS(PINIT_ONCE once, PVOID param, PVOID* context) {
+	UNUSED(once);
+	UNUSED(param);
+	UNUSED(context);
+	ThreadLocalInitKey(&_contextKey);
+	return TRUE;
+}
 #endif
+
+static void _setupTLS(void) {
+#ifdef USE_PTHREADS
+	pthread_once(&_contextOnce, _createTLS);
+#elif _WIN32
+	InitOnceExecuteOnce(&_contextOnce, _createTLS, NULL, 0);
+#endif
+}
+#endif
+
+void mLogSetThreadLogger(struct mLogger* logger) {
+#ifndef DISABLE_THREADING
+	_setupTLS();
+	ThreadLocalSetKey(_contextKey, logger);
+#else
+	UNUSED(logger);
+#endif
+}
+
+struct mLogger* mLogGetThreadLogger(void) {
+#ifndef DISABLE_THREADING
+	_setupTLS();
+	return ThreadLocalGetValue(_contextKey);
+#else
+	return NULL;
+#endif
+}
+
+struct mLogger* mLogGetContext(void) {
+	struct mLogger* logger = mLogGetThreadLogger();
 	if (logger) {
 		return logger;
 	}
@@ -50,7 +95,7 @@ const char* mLogCategoryName(int category) {
 }
 
 const char* mLogCategoryId(int category) {
-	if (category < MAX_CATEGORY) {
+	if (category >= 0 && category < MAX_CATEGORY) {
 		return _categoryIds[category];
 	}
 	return NULL;
@@ -88,6 +133,7 @@ void mLogExplicit(struct mLogger* context, int category, enum mLogLevel level, c
 	if (!context->filter || mLogFilterTest(context->filter, category, level)) {
 		context->log(context, category, level, format, args);
 	}
+	va_end(args);
 }
 
 void mLogFilterInit(struct mLogFilter* filter) {

@@ -1025,7 +1025,7 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 	regGBA.append({
 		{ tr("Enable IRQs"), 0 },
 	});
-	s_registers[mPLATFORM_GBA] = regGBA;
+	s_registers[mPLATFORM_GBA] = std::move(regGBA);
 #endif
 #ifdef M_CORE_GB
 	QList<IOViewer::RegisterDescription> regGB;
@@ -1555,7 +1555,7 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 		{ tr("Serial"), 3 },
 		{ tr("Joypad"), 4 },
 	});
-	s_registers[mPLATFORM_GB] = regGB;
+	s_registers[mPLATFORM_GB] = std::move(regGB);
 #endif
 	return s_registers[platform];
 }
@@ -1579,8 +1579,8 @@ IOViewer::IOViewer(std::shared_ptr<CoreController> controller, QWidget* parent)
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
 		regs = GBAIORegisterNames;
-		maxRegs = REG_MAX >> 1;
-		m_base = BASE_IO;
+		maxRegs = GBA_REG_MAX >> 1;
+		m_base = GBA_BASE_IO;
 		m_width = 1;
 		break;
 #endif
@@ -1651,8 +1651,6 @@ IOViewer::IOViewer(std::shared_ptr<CoreController> controller, QWidget* parent)
 	}
 
 	selectRegister(0);
-
-	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 }
 
 void IOViewer::updateRegister() {

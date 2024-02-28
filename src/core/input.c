@@ -9,8 +9,6 @@
 #include <mgba-util/table.h>
 #include <mgba-util/vector.h>
 
-#include <inttypes.h>
-
 #define SECTION_NAME_MAX 128
 #define KEY_NAME_MAX 32
 #define KEY_VALUE_MAX 16
@@ -35,6 +33,11 @@ struct mInputAxisSave {
 
 struct mInputAxisEnumerate {
 	void (*handler)(int axis, const struct mInputAxis* description, void* user);
+	void* user;
+};
+
+struct mInputHatEnumerate {
+	void (*handler)(int axis, const struct mInputHatBindings* bindings, void* user);
 	void* user;
 };
 
@@ -304,6 +307,12 @@ void _unbindAxis(uint32_t axis, void* dp, void* user) {
 	}
 }
 
+void _enumerateHat(uint32_t axis, void* dp, void* ep) {
+	struct mInputHatEnumerate* enumUser = ep;
+	const struct mInputHatBindings* description = dp;
+	enumUser->handler(axis, description, enumUser->user);
+}
+
 static bool _loadAll(struct mInputMap* map, uint32_t type, const char* sectionName, const struct Configuration* config) {
 	if (!ConfigurationHasSection(config, sectionName)) {
 		return false;
@@ -412,6 +421,16 @@ void mInputUnbindKey(struct mInputMap* map, uint32_t type, int input) {
 	}
 	if (impl) {
 		impl->map[input] = -1;
+	}
+}
+
+void mInputUnbindAllKeys(struct mInputMap* map, uint32_t type) {
+	struct mInputMapImpl* impl = _lookupMap(map, type);
+	if (impl) {
+		size_t i;
+		for (i = 0; i < map->info->nKeys; ++i) {
+			impl->map[i] = -1;
+		}
 	}
 }
 
@@ -576,6 +595,18 @@ void mInputUnbindAllHats(struct mInputMap* map, uint32_t type) {
 		struct mInputHatBindings* description = mInputHatListGetPointer(&impl->hats, id);
 		memset(description, -1, sizeof(*description));
 	}
+}
+
+void mInputEnumerateHats(const struct mInputMap* map, uint32_t type, void (handler(int hat, const struct mInputHatBindings* bindings, void* user)), void* user) {
+	const struct mInputMapImpl* impl = _lookupMapConst(map, type);
+	if (!impl) {
+		return;
+	}
+	struct mInputHatEnumerate enumUser = {
+		handler,
+		user
+	};
+	TableEnumerate(&impl->axes, _enumerateHat, &enumUser);
 }
 
 bool mInputMapLoad(struct mInputMap* map, uint32_t type, const struct Configuration* config) {

@@ -54,8 +54,8 @@ private:
 
 	void setLocation(QWidget* widget, qreal x, qreal y);
 
-	void lookupBinding(const mInputMap*, KeyEditor*, GBAKey);
-	void bindKey(const KeyEditor*, GBAKey);
+	void lookupBinding(const mInputMap*, KeyEditor*, int key);
+	void bindKey(const KeyEditor*, int key);
 
 	bool findFocus(KeyEditor* needle = nullptr);
 
@@ -64,7 +64,7 @@ private:
 	void lookupHats(const mInputMap*);
 #endif
 
-	KeyEditor* keyById(GBAKey);
+	KeyEditor* keyById(int);
 
 	QComboBox* m_profileSelect = nullptr;
 	QWidget* m_clear = nullptr;

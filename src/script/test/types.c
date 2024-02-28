@@ -5,9 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/test/suite.h"
 
-#include <mgba/script/context.h>
-#include <mgba/script/macros.h>
-#include <mgba/script/types.h>
+#include <mgba/script.h>
 
 struct Test {
 	int32_t a;
@@ -76,6 +74,18 @@ static int isSequential(struct mScriptList* list) {
 	return true;
 }
 
+static bool isNullCharp(const char* arg) {
+	return !arg;
+}
+
+static bool isNullStruct(struct Test* arg) {
+	return !arg;
+}
+
+static void increment(struct Test* t) {
+	++t->a;
+}
+
 mSCRIPT_BIND_FUNCTION(boundVoidOne, S32, voidOne, 0);
 mSCRIPT_BIND_VOID_FUNCTION(boundDiscard, discard, 1, S32, ignored);
 mSCRIPT_BIND_FUNCTION(boundIdentityInt, S32, identityInt, 1, S32, in);
@@ -86,6 +96,15 @@ mSCRIPT_BIND_FUNCTION(boundAddInts, S32, addInts, 2, S32, a, S32, b);
 mSCRIPT_BIND_FUNCTION(boundSubInts, S32, subInts, 2, S32, a, S32, b);
 mSCRIPT_BIND_FUNCTION(boundIsHello, S32, isHello, 1, CHARP, str);
 mSCRIPT_BIND_FUNCTION(boundIsSequential, S32, isSequential, 1, LIST, list);
+mSCRIPT_BIND_FUNCTION(boundIsNullCharp, BOOL, isNullCharp, 1, CHARP, arg);
+mSCRIPT_BIND_FUNCTION(boundIsNullStruct, BOOL, isNullStruct, 1, S(Test), arg);
+mSCRIPT_BIND_FUNCTION_WITH_DEFAULTS(boundAddIntWithDefaults, S32, addInts, 2, S32, a, S32, b);
+mSCRIPT_BIND_VOID_FUNCTION(boundIncrement, increment, 1, S(Test), this);
+
+mSCRIPT_DEFINE_FUNCTION_BINDING_DEFAULTS(boundAddIntWithDefaults)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_S32(0)
+mSCRIPT_DEFINE_DEFAULTS_END;
 
 M_TEST_DEFINE(voidArgs) {
 	struct mScriptFrame frame;
@@ -159,6 +178,30 @@ M_TEST_DEFINE(addS32) {
 	int32_t val;
 	assert_true(mScriptPopS32(&frame.returnValues, &val));
 	assert_int_equal(val, 3);
+	mScriptFrameDeinit(&frame);
+}
+
+M_TEST_DEFINE(addS32Defaults) {
+	struct mScriptFrame frame;
+	int32_t val;
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	mSCRIPT_PUSH(&frame.arguments, S32, 2);
+	assert_true(mScriptInvoke(&boundAddIntWithDefaults, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 3);
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	assert_true(mScriptInvoke(&boundAddIntWithDefaults, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 1);
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	assert_false(mScriptInvoke(&boundAddIntWithDefaults, &frame));
 	mScriptFrameDeinit(&frame);
 }
 
@@ -1261,6 +1304,65 @@ M_TEST_DEFINE(invokeList) {
 	mScriptListDeinit(&list);
 }
 
+M_TEST_DEFINE(nullString) {
+	struct mScriptFrame frame;
+	bool res;
+	mScriptFrameInit(&frame);
+
+	mSCRIPT_PUSH(&frame.arguments, CHARP, "hi");
+	assert_true(mScriptInvoke(&boundIsNullCharp, &frame));
+	assert_true(mScriptPopBool(&frame.returnValues, &res));
+	assert_false(res);
+
+	mSCRIPT_PUSH(&frame.arguments, CHARP, NULL);
+	assert_true(mScriptInvoke(&boundIsNullCharp, &frame));
+	assert_true(mScriptPopBool(&frame.returnValues, &res));
+	assert_true(res);
+
+	mScriptFrameDeinit(&frame);
+}
+
+M_TEST_DEFINE(nullStruct) {
+	struct mScriptFrame frame;
+	struct Test v = {};
+	bool res;
+	mScriptFrameInit(&frame);
+
+	mSCRIPT_PUSH(&frame.arguments, S(Test), &v);
+	assert_true(mScriptInvoke(&boundIsNullStruct, &frame));
+	assert_true(mScriptPopBool(&frame.returnValues, &res));
+	assert_false(res);
+
+	mSCRIPT_PUSH(&frame.arguments, S(Test), NULL);
+	assert_true(mScriptInvoke(&boundIsNullStruct, &frame));
+	assert_true(mScriptPopBool(&frame.returnValues, &res));
+	assert_true(res);
+
+	mScriptFrameDeinit(&frame);
+}
+
+M_TEST_DEFINE(lambda0) {
+	struct mScriptList args;
+	struct Test t = {
+		.a = 0
+	};
+
+	mScriptListInit(&args, 1);
+	mSCRIPT_PUSH(&args, S(Test), &t);
+	struct mScriptValue* fn = mScriptLambdaCreate0(&boundIncrement, &args);
+	assert_non_null(fn);
+	mScriptListDeinit(&args);
+
+	struct mScriptFrame frame;
+	mScriptFrameInit(&frame);
+	assert_int_equal(t.a, 0);
+	assert_true(mScriptInvoke(fn, &frame));
+	assert_int_equal(t.a, 1);
+	mScriptFrameDeinit(&frame);
+
+	mScriptValueDeref(fn);
+}
+
 M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(voidArgs),
 	cmocka_unit_test(voidFunc),
@@ -1269,6 +1371,7 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(identityFunctionF32),
 	cmocka_unit_test(identityFunctionStruct),
 	cmocka_unit_test(addS32),
+	cmocka_unit_test(addS32Defaults),
 	cmocka_unit_test(subS32),
 	cmocka_unit_test(wrongArgCountLo),
 	cmocka_unit_test(wrongArgCountHi),
@@ -1295,4 +1398,7 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(stringIsHello),
 	cmocka_unit_test(stringIsNotHello),
 	cmocka_unit_test(invokeList),
+	cmocka_unit_test(nullString),
+	cmocka_unit_test(nullStruct),
+	cmocka_unit_test(lambda0),
 )

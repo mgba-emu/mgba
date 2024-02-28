@@ -161,6 +161,9 @@ bool SfoWrite(struct Table* sfo, struct VFile* vf) {
 			case PSF_TYPE_U32:
 				sortedEntries[i].size = 4;
 				break;
+			default:
+				free(sortedEntries);
+				return false;
 			}
 		}
 		dataSize += ALIGN4(sortedEntries[i].size);

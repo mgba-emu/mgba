@@ -13,7 +13,7 @@
 #include <mgba-util/vfs.h>
 
 #ifdef USE_PNG
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <png.h>
 #include <zlib.h>
 #endif
@@ -176,15 +176,15 @@ static bool _savePNGState(struct mCore* core, struct VFile* vf, struct mStateExt
 	mappedMemoryFree(state, stateSize);
 
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
 	png_structp png = PNGWriteOpen(vf);
-	png_infop info = PNGWriteHeader(png, width, height);
+	png_infop info = PNGWriteHeader(png, width, height, mCOLOR_NATIVE);
 	if (!png || !info) {
 		PNGWriteClose(png, info);
 		free(buffer);
 		return false;
 	}
-	PNGWritePixels(png, width, height, stride, pixels);
+	PNGWritePixels(png, width, height, stride, pixels, mCOLOR_NATIVE);
 	PNGWriteCustomChunk(png, "gbAs", len, buffer);
 	if (extdata) {
 		uint32_t i;
@@ -262,8 +262,18 @@ static void* _loadPNGState(struct mCore* core, struct VFile* vf, struct mStateEx
 		PNGReadClose(png, info, end);
 		return false;
 	}
-	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+
+	if (!PNGReadHeader(png, info)) {
+		PNGReadClose(png, info, end);
+		return false;
+	}
+	unsigned width = png_get_image_width(png, info);
+	unsigned height = png_get_image_height(png, info);
+	if (width > 0x4000 || height > 0x4000) {
+		// These images are ridiculously large...let's assume a DOS attempt and reject
+		PNGReadClose(png, info, end);
+		return false;
+	}
 	uint32_t* pixels = malloc(width * height * 4);
 	if (!pixels) {
 		PNGReadClose(png, info, end);
@@ -278,8 +288,8 @@ static void* _loadPNGState(struct mCore* core, struct VFile* vf, struct mStateEx
 		.extdata = extdata
 	};
 
+	bool success = true;
 	PNGInstallChunkHandler(png, &bundle, _loadPNGChunkHandler, "gbAs gbAx");
-	bool success = PNGReadHeader(png, info);
 	success = success && PNGReadPixels(png, info, pixels, width, height, width);
 	success = success && PNGReadFooter(png, end);
 	PNGReadClose(png, info, end);
@@ -295,6 +305,12 @@ static void* _loadPNGState(struct mCore* core, struct VFile* vf, struct mStateEx
 			.clean = free
 		};
 		mStateExtdataPut(extdata, EXTDATA_SCREENSHOT, &item);
+
+		uint16_t dims[2] = { width, height };
+		item.size = sizeof(dims);
+		item.data = malloc(item.size);
+		memcpy(item.data, dims, item.size);
+		mStateExtdataPut(extdata, EXTDATA_SCREENSHOT_DIMENSIONS, &item);
 	} else {
 		free(pixels);
 	}
@@ -437,7 +453,7 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	UNUSED(flags);
 #endif
 		vf->truncate(vf, stateSize);
-		struct GBASerializedState* state = vf->map(vf, stateSize, MAP_WRITE);
+		void* state = vf->map(vf, stateSize, MAP_WRITE);
 		if (!state) {
 			mStateExtdataDeinit(&extdata);
 			if (cheatVf) {
@@ -513,7 +529,7 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	mappedMemoryFree(state, core->stateSize(core));
 
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
 
 	struct mStateExtdataItem item;
 	if (flags & SAVESTATE_SCREENSHOT && mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item)) {

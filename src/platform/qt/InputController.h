@@ -1,13 +1,16 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2023 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "GamepadAxisEvent.h"
-#include "GamepadHatEvent.h"
+#include "input/GamepadAxisEvent.h"
+#include "input/GamepadHatEvent.h"
+#include "input/InputDriver.h"
+#include "input/InputMapper.h"
 
+#include <QHash>
 #include <QImage>
 #include <QMutex>
 #include <QReadWriteLock>
@@ -18,16 +21,13 @@
 
 #include <memory>
 
+#include <mgba/core/input.h>
 #include <mgba/gba/interface.h>
-#include <mgba/internal/gba/input.h>
-
-#ifdef BUILD_SDL
-#include "platform/sdl/sdl-events.h"
-#endif
-
 
 #ifdef BUILD_QT_MULTIMEDIA
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #include "VideoDumper.h"
+#endif
 #include <QCamera>
 #endif
 
@@ -37,6 +37,8 @@ struct mRumble;
 namespace QGBA {
 
 class ConfigController;
+class Gamepad;
+class InputSource;
 
 class InputController : public QObject {
 Q_OBJECT
@@ -51,8 +53,12 @@ public:
 
 	static const uint32_t KEYBOARD = 0x51545F4B;
 
-	InputController(int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
+	InputController(QWidget* topLevel = nullptr, QObject* parent = nullptr);
 	~InputController();
+
+	void addInputDriver(std::shared_ptr<InputDriver>);
+
+	int playerId() const { return m_playerId; }
 
 	void setConfiguration(ConfigController* config);
 	void saveConfiguration();
@@ -60,40 +66,35 @@ public:
 	bool loadProfile(uint32_t type, const QString& profile);
 	void saveConfiguration(uint32_t type);
 	void saveProfile(uint32_t type, const QString& profile);
-	const char* profileForType(uint32_t type);
+	QString profileForType(uint32_t type);
 
-	GBAKey mapKeyboard(int key) const;
+	int mapKeyboard(int key) const;
 
-	void bindKey(uint32_t type, int key, GBAKey);
-
+	mInputMap* map() { return &m_inputMap; }
 	const mInputMap* map() const { return &m_inputMap; }
 
 	int pollEvents();
 
 	static const int32_t AXIS_THRESHOLD = 0x3000;
-	QSet<int> activeGamepadButtons(int type);
-	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(int type);
-	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
-	void recalibrateAxes();
 
-	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, GBAKey);
-	void unbindAllAxes(uint32_t type);
+	void setGamepadDriver(uint32_t type);
+	const InputDriver* gamepadDriver() const { return m_inputDrivers.value(m_gamepadDriver).get(); }
+	InputDriver* gamepadDriver() { return m_inputDrivers.value(m_gamepadDriver).get(); }
 
-	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, GBAKey);
-	void unbindAllHats(uint32_t type);
-
-	QStringList connectedGamepads(uint32_t type) const;
-	int gamepad(uint32_t type) const;
+	QStringList connectedGamepads(uint32_t type = 0) const;
+	int gamepadIndex(uint32_t type = 0) const;
 	void setGamepad(uint32_t type, int index);
+	void setGamepad(int index);
 	void setPreferredGamepad(uint32_t type, int index);
+	void setPreferredGamepad(int index);
 
-	void registerTiltAxisX(int axis);
-	void registerTiltAxisY(int axis);
-	void registerGyroAxisX(int axis);
-	void registerGyroAxisY(int axis);
+	InputMapper mapper(uint32_t type);
+	InputMapper mapper(InputDriver*);
+	InputMapper mapper(InputSource*);
 
-	float gyroSensitivity() const;
-	void setGyroSensitivity(float sensitivity);
+	void setSensorDriver(uint32_t type);
+	const InputDriver* sensorDriver() const { return m_inputDrivers.value(m_sensorDriver).get(); }
+	InputDriver* sensorDriver() { return m_inputDrivers.value(m_sensorDriver).get(); }
 
 	void stealFocus(QWidget* focus);
 	void releaseFocus(QWidget* focus);
@@ -106,17 +107,13 @@ public:
 	GBALuminanceSource* luminance() { return &m_lux; }
 
 signals:
+	void updated();
 	void profileLoaded(const QString& profile);
 	void luminanceValueChanged(int value);
 
 public slots:
-	void testGamepad(int type);
-	void updateJoysticks();
-
-	// TODO: Move these to somewhere that makes sense
-	void suspendScreensaver();
-	void resumeScreensaver();
-	void setScreensaverSuspendable(bool);
+	void testGamepad(uint32_t type);
+	void update();
 
 	void increaseLuminanceLevel();
 	void decreaseLuminanceLevel();
@@ -136,10 +133,22 @@ private slots:
 	void teardownCam();
 
 private:
-	void postPendingEvent(GBAKey);
-	void clearPendingEvent(GBAKey);
-	bool hasPendingEvent(GBAKey) const;
+	void postPendingEvent(int key);
+	void clearPendingEvent(int key);
+	void postPendingEvents(int keys);
+	void clearPendingEvents(int keys);
+	bool hasPendingEvent(int key) const;
 	void sendGamepadEvent(QEvent*);
+
+	static int claimPlayer();
+	static void freePlayer(int);
+
+	std::shared_ptr<Gamepad> gamepad(uint32_t type);
+	QList<std::shared_ptr<Gamepad>> gamepads();
+
+	QSet<int> activeGamepadButtons(uint32_t type);
+	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(uint32_t type);
+	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(uint32_t type);
 
 	struct InputControllerLux : GBALuminanceSource {
 		InputController* p;
@@ -161,30 +170,28 @@ private:
 	bool m_cameraActive = false;
 	QByteArray m_cameraDevice;
 	std::unique_ptr<QCamera> m_camera;
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	VideoDumper m_videoDumper;
 #endif
+#endif
 
+	static int s_claimedPlayers;
 	mInputMap m_inputMap;
 	ConfigController* m_config = nullptr;
 	int m_playerId;
 	QWidget* m_topLevel;
 	QWidget* m_focusParent;
 
-#ifdef BUILD_SDL
-	static int s_sdlInited;
-	static mSDLEvents s_sdlEvents;
-	mSDLPlayer m_sdlPlayer{};
-	bool m_playerAttached = false;
-#endif
-
-	QVector<int> m_deadzones;
+	QHash<uint32_t, std::shared_ptr<InputDriver>> m_inputDrivers;
+	uint32_t m_gamepadDriver = 0;
+	uint32_t m_sensorDriver = 0;
 
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;
 	QSet<QPair<int, GamepadHatEvent::Direction>> m_activeHats;
 	QTimer m_gamepadTimer{nullptr};
 
-	QSet<GBAKey> m_pendingEvents;
+	QSet<int> m_pendingEvents;
 	QReadWriteLock m_eventsLock;
 };
 

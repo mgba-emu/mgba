@@ -9,6 +9,7 @@
 #define _mCPP_CAT(A, B) A ## B
 
 #define _mIDENT(...) __VA_ARGS__
+#define _mVOID(...)
 #define _mCALL(FN, ...) _mIDENT(FN(__VA_ARGS__))
 #define _mCAT(A, B) _mCPP_CAT(A, B)
 #define _mSTRINGIFY(X, ...) #X
@@ -16,13 +17,13 @@
 #define _mCALL_0(FN, ...)
 #define _mCALL_1(FN, A) FN(A)
 #define _mCALL_2(FN, A, B) FN(A), FN(B)
-#define _mCALL_3(FN, A, ...) FN(A), _mCALL_2(FN, __VA_ARGS__)
-#define _mCALL_4(FN, A, ...) FN(A), _mCALL_3(FN, __VA_ARGS__)
-#define _mCALL_5(FN, A, ...) FN(A), _mCALL_4(FN, __VA_ARGS__)
-#define _mCALL_6(FN, A, ...) FN(A), _mCALL_5(FN, __VA_ARGS__)
-#define _mCALL_7(FN, A, ...) FN(A), _mCALL_6(FN, __VA_ARGS__)
-#define _mCALL_8(FN, A, ...) FN(A), _mCALL_7(FN, __VA_ARGS__)
-#define _mCALL_9(FN, A, ...) FN(A), _mCALL_8(FN, __VA_ARGS__)
+#define _mCALL_3(FN, A, B, C) FN(A), FN(B), FN(C)
+#define _mCALL_4(FN, A, B, C, D) FN(A), FN(B), FN(C), FN(D)
+#define _mCALL_5(FN, A, B, C, D, E) FN(A), FN(B), FN(C), FN(D), FN(E)
+#define _mCALL_6(FN, A, B, C, D, E, F) FN(A), FN(B), FN(C), FN(D), FN(E), FN(F)
+#define _mCALL_7(FN, A, B, C, D, E, F, G) FN(A), FN(B), FN(C), FN(D), FN(E), FN(F), FN(G)
+#define _mCALL_8(FN, A, B, C, D, E, F, G, H) FN(A), FN(B), FN(C), FN(D), FN(E), FN(F), FN(G), FN(H)
+#define _mCALL_9(FN, A, B, C, D, E, F, G, H, I) FN(A), FN(B), FN(C), FN(D), FN(E), FN(F), FN(G), FN(H), FN(I)
 
 #define _mCOMMA_0(N, ...) N
 #define _mCOMMA_1(N, ...) N, __VA_ARGS__
@@ -37,25 +38,25 @@
 
 #define _mEVEN_0(...)
 #define _mEVEN_1(A, B, ...) A
-#define _mEVEN_2(A, B, ...) A, _mIDENT(_mEVEN_1(__VA_ARGS__))
-#define _mEVEN_3(A, B, ...) A, _mIDENT(_mEVEN_2(__VA_ARGS__))
-#define _mEVEN_4(A, B, ...) A, _mIDENT(_mEVEN_3(__VA_ARGS__))
-#define _mEVEN_5(A, B, ...) A, _mIDENT(_mEVEN_4(__VA_ARGS__))
+#define _mEVEN_2(A, B, C, D, ...) A, C
+#define _mEVEN_3(A, B, C, D, E, F, ...) A, C, E
+#define _mEVEN_4(A, B, C, D, E, F, G, H, ...) A, C, E, G
+#define _mEVEN_5(A, B, C, D, E, F, G, H, I, J, ...) A, C, E, G, I
 #define _mEVEN_6(A, B, ...) A, _mIDENT(_mEVEN_5(__VA_ARGS__))
-#define _mEVEN_7(A, B, ...) A, _mIDENT(_mEVEN_6(__VA_ARGS__))
-#define _mEVEN_8(A, B, ...) A, _mIDENT(_mEVEN_7(__VA_ARGS__))
-#define _mEVEN_9(A, B, ...) A, _mIDENT(_mEVEN_7(__VA_ARGS__))
+#define _mEVEN_7(A, B, C, D, ...) A, C, _mIDENT(_mEVEN_5(__VA_ARGS__))
+#define _mEVEN_8(A, B, C, D, E, F, ...) A, C, E, _mIDENT(_mEVEN_5(__VA_ARGS__))
+#define _mEVEN_9(A, B, C, D, E, F, G, H, ...) A, C, E, G, _mIDENT(_mEVEN_5(__VA_ARGS__))
 
 #define _mODD_0(...)
 #define _mODD_1(A, B, ...) B
-#define _mODD_2(A, B, ...) B, _mIDENT(_mODD_1(__VA_ARGS__))
-#define _mODD_3(A, B, ...) B, _mIDENT(_mODD_2(__VA_ARGS__))
-#define _mODD_4(A, B, ...) B, _mIDENT(_mODD_3(__VA_ARGS__))
-#define _mODD_5(A, B, ...) B, _mIDENT(_mODD_4(__VA_ARGS__))
+#define _mODD_2(A, B, C, D, ...) B, D
+#define _mODD_3(A, B, C, D, E, F, ...) B, D, F
+#define _mODD_4(A, B, C, D, E, F, G, H, ...) B, D, F, H
+#define _mODD_5(A, B, C, D, E, F, G, H, I, J, ...) B, D, F, H, J
 #define _mODD_6(A, B, ...) B, _mIDENT(_mODD_5(__VA_ARGS__))
-#define _mODD_7(A, B, ...) B, _mIDENT(_mODD_6(__VA_ARGS__))
-#define _mODD_8(A, B, ...) B, _mIDENT(_mODD_7(__VA_ARGS__))
-#define _mODD_9(A, B, ...) B, _mIDENT(_mODD_7(__VA_ARGS__))
+#define _mODD_7(A, B, C, D, ...) B, D, _mIDENT(_mODD_5(__VA_ARGS__))
+#define _mODD_8(A, B, C, D, E, F, ...) B, D, F, _mIDENT(_mODD_5(__VA_ARGS__))
+#define _mODD_9(A, B, C, D, E, F, G, H, ...) B, D, F, H, _mIDENT(_mODD_5(__VA_ARGS__))
 
 #define _mIF0_0(...) __VA_ARGS__
 #define _mIF0_1(...)

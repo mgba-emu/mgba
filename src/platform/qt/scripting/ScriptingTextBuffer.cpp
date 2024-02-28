@@ -6,6 +6,7 @@
 #include "ScriptingTextBuffer.h"
 
 #include "GBAApp.h"
+#include "utils.h"
 
 #include <QMutexLocker>
 #include <QPlainTextDocumentLayout>
@@ -205,13 +206,8 @@ void ScriptingTextBuffer::setSize(struct mScriptTextBuffer* buffer, uint32_t col
 
 void ScriptingTextBuffer::moveCursor(struct mScriptTextBuffer* buffer, uint32_t x, uint32_t y) {
 	ScriptingTextBuffer* self = static_cast<ScriptingTextBuffer::ScriptingBufferShim*>(buffer)->p;
-	if (x > INT_MAX) {
-		x = INT_MAX;
-	}
-	if (y > INT_MAX) {
-		y = INT_MAX;
-	}
-	QMetaObject::invokeMethod(self, "moveCursor", Q_ARG(QPoint, QPoint(x, y)));
+	QPoint point(saturateCast<int>(x), saturateCast<int>(y));
+	QMetaObject::invokeMethod(self, "moveCursor", Q_ARG(QPoint, point));
 }
 
 void ScriptingTextBuffer::advance(struct mScriptTextBuffer* buffer, int32_t adv) {

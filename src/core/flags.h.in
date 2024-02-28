@@ -79,6 +79,10 @@
 #cmakedefine USE_GDB_STUB
 #endif
 
+#ifndef USE_JSON_C
+#cmakedefine USE_JSON_C
+#endif
+
 #ifndef USE_LIBAV
 #cmakedefine USE_LIBAV
 #endif
@@ -93,6 +97,10 @@
 
 #ifndef USE_LIBZIP
 #cmakedefine USE_LIBZIP
+#endif
+
+#ifndef USE_LUA
+#cmakedefine USE_LUA
 #endif
 
 #ifndef USE_LZMA
@@ -121,8 +129,44 @@
 
 // HAVE flags
 
+#ifndef HAVE_CRC32
+#cmakedefine HAVE_CRC32
+#endif
+
+#ifndef HAVE_LOCALTIME_R
+#cmakedefine HAVE_LOCALTIME_R
+#endif
+
 #ifndef HAVE_POPCOUNT32
 #cmakedefine HAVE_POPCOUNT32
+#endif
+
+#ifndef HAVE_PTHREAD_NP_H
+#cmakedefine HAVE_PTHREAD_NP_H
+#endif
+
+#ifndef HAVE_PTHREAD_SETNAME_NP
+#cmakedefine HAVE_PTHREAD_SETNAME_NP
+#endif
+
+#ifndef HAVE_STRDUP
+#cmakedefine HAVE_STRDUP
+#endif
+
+#ifndef HAVE_STRLCPY
+#cmakedefine HAVE_STRLCPY
+#endif
+
+#ifndef HAVE_STRDUP
+#cmakedefine HAVE_STRDUP
+#endif
+
+#ifndef HAVE_STRTOF_L
+#cmakedefine HAVE_STRTOF_L
+#endif
+
+#ifndef HAVE_XLOCALE
+#cmakedefine HAVE_XLOCALE
 #endif
 
 #endif

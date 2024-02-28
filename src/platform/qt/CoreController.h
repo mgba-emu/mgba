@@ -82,6 +82,11 @@ public:
 
 	mCoreThread* thread() { return &m_threadContext; }
 
+	void setPath(const QString& path, const QString& base = {});
+	QString path() const { return m_path; }
+	QString baseDirectory() const { return m_baseDirectory; }
+	QString savePath() const { return m_savePath; }
+
 	const color_t* drawContext();
 	QImage getPixels();
 
@@ -94,6 +99,7 @@ public:
 
 	mPlatform platform() const;
 	QSize screenDimensions() const;
+	unsigned videoScale() const;
 	bool supportsFeature(Feature feature) const { return m_threadContext.core->supportsFeature(m_threadContext.core, static_cast<mCoreFeature>(feature)); }
 	bool hardwareAccelerated() const { return m_hwaccel; }
 
@@ -102,8 +108,11 @@ public:
 	mCheatDevice* cheatDevice() { return m_threadContext.core->cheatDevice(m_threadContext.core); }
 
 #ifdef USE_DEBUGGERS
-	mDebugger* debugger() { return m_threadContext.core->debugger; }
-	void setDebugger(mDebugger*);
+	mDebugger* debugger() { return &m_debugger; }
+	void attachDebugger(bool interrupt = true);
+	void detachDebugger();
+	void attachDebuggerModule(mDebuggerModule*, bool interrupt = true);
+	void detachDebuggerModule(mDebuggerModule*);
 #endif
 
 	void setMultiplayerController(MultiplayerController*);
@@ -158,7 +167,7 @@ public slots:
 	void saveBackupState();
 
 	void loadSave(const QString&, bool temporary);
-	void loadSave(VFile*, bool temporary);
+	void loadSave(VFile*, bool temporary, const QString& path = {});
 	void loadPatch(const QString&);
 	void scanCard(const QString&);
 	void scanCards(const QStringList&);
@@ -245,6 +254,10 @@ private:
 		CoreController* self;
 	} m_logger{};
 
+	QString m_path;
+	QString m_baseDirectory;
+	QString m_savePath;
+
 	bool m_patched = false;
 	bool m_preload = false;
 
@@ -292,6 +305,10 @@ private:
 	bool m_autoload;
 	int m_autosaveCounter = 0;
 
+#ifdef USE_DEBUGGERS
+	struct mDebugger m_debugger;
+#endif
+
 	int m_fastForward = false;
 	int m_fastForwardForced = false;
 	int m_fastForwardVolume = -1;
@@ -313,8 +330,7 @@ private:
 	VFile* m_vlVf = nullptr;
 
 #ifdef M_CORE_GB
-	struct QGBPrinter {
-		GBPrinter d;
+	struct QGBPrinter : public GBPrinter {
 		CoreController* parent;
 	} m_printer;
 #endif

@@ -8,9 +8,9 @@
 #include <mgba/core/core.h>
 #include <mgba/internal/debugger/symbols.h>
 #include <mgba/internal/gb/cheats.h>
+#include <mgba/internal/gb/debugger/cli.h>
 #include <mgba/internal/gb/debugger/debugger.h>
 #include <mgba/internal/gb/debugger/symbols.h>
-#include <mgba/internal/gb/extra/cli.h>
 #include <mgba/internal/gb/io.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/mbc.h>
@@ -60,6 +60,15 @@ static const struct mCoreMemoryBlock _GBCMemoryBlocks[] = {
 	{ GB_BASE_HRAM, "hram", "HRAM", "High RAM", GB_BASE_HRAM, GB_BASE_HRAM + GB_SIZE_HRAM, GB_SIZE_HRAM, mCORE_MEMORY_RW | mCORE_MEMORY_MAPPED },
 };
 
+static const struct mCoreScreenRegion _GBScreenRegions[] = {
+	{ 0, "Screen", 0, 0, GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS }
+};
+
+static const struct mCoreScreenRegion _SGBScreenRegions[] = {
+	{ 0, "Screen", (SGB_VIDEO_HORIZONTAL_PIXELS - GB_VIDEO_HORIZONTAL_PIXELS) / 2, (SGB_VIDEO_VERTICAL_PIXELS - GB_VIDEO_VERTICAL_PIXELS) / 2, GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS },
+	{ 1, "Border", 0, 0, SGB_VIDEO_HORIZONTAL_PIXELS, SGB_VIDEO_VERTICAL_PIXELS },
+};
+
 static const struct mCoreRegisterInfo _GBRegisters[] = {
 	{ "b", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
 	{ "c", NULL, 1, 0xFF, mCORE_REGISTER_GPR },
@@ -90,6 +99,8 @@ struct GBCore {
 	uint8_t keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	const struct Configuration* overrides;
+	struct GBCartridgeOverride override;
+	bool hasOverride;
 	struct mDebuggerPlatform* debuggerPlatform;
 	struct mCheatDevice* cheatDevice;
 	struct mCoreMemoryBlock memoryBlocks[8];
@@ -115,6 +126,8 @@ static bool _GBCoreInit(struct mCore* core) {
 	gbcore->logContext = NULL;
 #endif
 	memcpy(gbcore->memoryBlocks, _GBMemoryBlocks, sizeof(_GBMemoryBlocks));
+	memset(&gbcore->override, 0, sizeof(gbcore->override));
+	gbcore->hasOverride = false;
 
 	GBCreate(gb);
 	memset(gbcore->components, 0, sizeof(gbcore->components));
@@ -355,14 +368,42 @@ static void _GBCoreReloadConfigOption(struct mCore* core, const char* option, co
 	}
 }
 
-static void _GBCoreDesiredVideoDimensions(const struct mCore* core, unsigned* width, unsigned* height) {
+static void _GBCoreSetOverride(struct mCore* core, const void* override) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	memcpy(&gbcore->override, override, sizeof(gbcore->override));
+	gbcore->hasOverride = true;
+}
+
+static void _GBCoreBaseVideoSize(const struct mCore* core, unsigned* width, unsigned* height) {
+	UNUSED(core);
+	*width = SGB_VIDEO_HORIZONTAL_PIXELS;
+	*height = SGB_VIDEO_VERTICAL_PIXELS;
+}
+
+static void _GBCoreCurrentVideoSize(const struct mCore* core, unsigned* width, unsigned* height) {
 	const struct GB* gb = core->board;
 	if (gb && (!(gb->model & GB_MODEL_SGB) || !gb->video.sgbBorders)) {
 		*width = GB_VIDEO_HORIZONTAL_PIXELS;
 		*height = GB_VIDEO_VERTICAL_PIXELS;
 	} else {
-		*width = 256;
-		*height = 224;
+		*width = SGB_VIDEO_HORIZONTAL_PIXELS;
+		*height = SGB_VIDEO_VERTICAL_PIXELS;
+	}
+}
+
+static unsigned _GBCoreVideoScale(const struct mCore* core) {
+	UNUSED(core);
+	return 1;
+}
+
+static size_t _GBCoreScreenRegions(const struct mCore* core, const struct mCoreScreenRegion** regions) {
+	const struct GB* gb = core->board;
+	if (gb && (!(gb->model & GB_MODEL_SGB) || !gb->video.sgbBorders)) {
+		*regions = _GBScreenRegions;
+		return 1;
+	} else {
+		*regions = _SGBScreenRegions;
+		return 2;
 	}
 }
 
@@ -424,7 +465,7 @@ static void _GBCoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	gb->stream = stream;
 	if (stream && stream->videoDimensionsChanged) {
 		unsigned width, height;
-		core->desiredVideoDimensions(core, &width, &height);
+		core->currentVideoSize(core, &width, &height);
 		stream->videoDimensionsChanged(stream, width, height);
 	}
 	if (stream && stream->audioRateChanged) {
@@ -510,14 +551,15 @@ static void _GBCoreReset(struct mCore* core) {
 			mCoreConfigGetIntValue(&core->config, "useCgbColors", &doColorOverride);
 		}
 
-		struct GBCartridgeOverride override;
 		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-		override.headerCrc32 = doCrc32(cart, sizeof(*cart));
-		bool modelOverride = GBOverrideFind(gbcore->overrides, &override) || (doColorOverride && GBOverrideColorFind(&override, doColorOverride));
-		if (modelOverride) {
-			GBOverrideApply(gb, &override);
+		if (!gbcore->hasOverride) {
+			gbcore->override.headerCrc32 = doCrc32(cart, sizeof(*cart));
+			gbcore->hasOverride = GBOverrideFind(gbcore->overrides, &gbcore->override) || (doColorOverride && GBOverrideColorFind(&gbcore->override, doColorOverride));
 		}
-		if (!modelOverride || override.model == GB_MODEL_AUTODETECT) {
+		if (gbcore->hasOverride) {
+			GBOverrideApply(gb, &gbcore->override);
+		}
+		if (!gbcore->hasOverride || gbcore->override.model == GB_MODEL_AUTODETECT) {
 			const char* modelGB = mCoreConfigGetValue(&core->config, "gb.model");
 			const char* modelSGB = mCoreConfigGetValue(&core->config, "sgb.model");
 			const char* modelCGB = mCoreConfigGetValue(&core->config, "cgb.model");
@@ -607,16 +649,16 @@ static void _GBCoreReset(struct mCore* core) {
 			switch (gb->model) {
 			case GB_MODEL_DMG:
 			case GB_MODEL_MGB: // TODO
-				strncat(path, PATH_SEP "gb_bios.bin", PATH_MAX - strlen(path));
+				strncat(path, PATH_SEP "gb_bios.bin", PATH_MAX - strlen(path) - 1);
 				break;
 			case GB_MODEL_SGB:
 			case GB_MODEL_SGB2: // TODO
-				strncat(path, PATH_SEP "sgb_bios.bin", PATH_MAX - strlen(path));
+				strncat(path, PATH_SEP "sgb_bios.bin", PATH_MAX - strlen(path) - 1);
 				break;
 			case GB_MODEL_CGB:
 			case GB_MODEL_AGB:
 			case GB_MODEL_SCGB:
-				strncat(path, PATH_SEP "gbc_bios.bin", PATH_MAX - strlen(path));
+				strncat(path, PATH_SEP "gbc_bios.bin", PATH_MAX - strlen(path) - 1);
 				break;
 			default:
 				break;
@@ -644,8 +686,10 @@ static void _GBCoreReset(struct mCore* core) {
 	size_t i;
 	for (i = 0; i < sizeof(gbcore->memoryBlocks) / sizeof(*gbcore->memoryBlocks); ++i) {
 		if (gbcore->memoryBlocks[i].id == GB_REGION_CART_BANK0) {
+			gbcore->memoryBlocks[i].size = gb->memory.romSize;
 			gbcore->memoryBlocks[i].maxSegment = gb->memory.romSize / GB_SIZE_CART_BANK0;
 		} else if (gbcore->memoryBlocks[i].id == GB_REGION_EXTERNAL_RAM) {
+			gbcore->memoryBlocks[i].size = gb->sramSize;
 			gbcore->memoryBlocks[i].maxSegment = gb->sramSize / GB_SIZE_EXTERNAL_RAM;
 		} else {
 			continue;
@@ -761,6 +805,20 @@ static void _GBCoreSetPeripheral(struct mCore* core, int type, void* periph) {
 		break;
 	default:
 		return;
+	}
+}
+
+static void* _GBCoreGetPeripheral(struct mCore* core, int type) {
+	struct GB* gb = core->board;
+	switch (type) {
+	case mPERIPH_ROTATION:
+		return gb->memory.rotation;
+	case mPERIPH_RUMBLE:
+		return gb->memory.rumble;
+	case mPERIPH_IMAGE_SOURCE:
+		return gb->memory.cam;
+	default:
+		return NULL;
 	}
 }
 
@@ -1030,6 +1088,9 @@ static struct CLIDebuggerSystem* _GBCoreCliDebuggerSystem(struct mCore* core) {
 
 static void _GBCoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {
 	struct SM83Core* cpu = core->cpu;
+	if (core->debugger == debugger) {
+		return;
+	}
 	if (core->debugger) {
 		SM83HotplugDetach(cpu, CPU_COMPONENT_DEBUGGER);
 	}
@@ -1050,7 +1111,7 @@ static void _GBCoreDetachDebugger(struct mCore* core) {
 static void _GBCoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	core->symbolTable = mDebuggerSymbolTableCreate();
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	if (!vf) {
+	if (!vf && core->dirs.base) {
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
 	}
 #endif
@@ -1232,7 +1293,11 @@ struct mCore* GBCoreCreate(void) {
 	core->setSync = _GBCoreSetSync;
 	core->loadConfig = _GBCoreLoadConfig;
 	core->reloadConfigOption = _GBCoreReloadConfigOption;
-	core->desiredVideoDimensions = _GBCoreDesiredVideoDimensions;
+	core->setOverride = _GBCoreSetOverride;
+	core->baseVideoSize = _GBCoreBaseVideoSize;
+	core->currentVideoSize = _GBCoreCurrentVideoSize;
+	core->videoScale = _GBCoreVideoScale;
+	core->screenRegions = _GBCoreScreenRegions;
 	core->setVideoBuffer = _GBCoreSetVideoBuffer;
 	core->setVideoGLTex = _GBCoreSetVideoGLTex;
 	core->getPixels = _GBCoreGetPixels;
@@ -1269,6 +1334,7 @@ struct mCore* GBCoreCreate(void) {
 	core->getGameTitle = _GBCoreGetGameTitle;
 	core->getGameCode = _GBCoreGetGameCode;
 	core->setPeripheral = _GBCoreSetPeripheral;
+	core->getPeripheral = _GBCoreGetPeripheral;
 	core->busRead8 = _GBCoreBusRead8;
 	core->busRead16 = _GBCoreBusRead16;
 	core->busRead32 = _GBCoreBusRead32;
