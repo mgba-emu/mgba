@@ -8,8 +8,6 @@
 
 #include <mgba-util/common.h>
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 #define THREAD_ENTRY DWORD WINAPI
 typedef THREAD_ENTRY ThreadEntry(LPVOID);
 #define THREAD_EXIT(RES) return RES
