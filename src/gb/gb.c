@@ -106,7 +106,7 @@ static void GBDeinit(struct mCPUComponent* component) {
 
 bool GBLoadGBX(struct GBXMetadata* metadata, struct VFile* vf) {
 	uint8_t footer[16];
-	if (vf->seek(vf, -sizeof(footer), SEEK_END) < 0) {
+	if (vf->seek(vf, -(off_t) sizeof(footer), SEEK_END) < 0) {
 		return false;
 	}
 	if (vf->read(vf, footer, sizeof(footer)) < (ssize_t) sizeof(footer)) {
@@ -1100,7 +1100,7 @@ bool GBIsROM(struct VFile* vf) {
 	}
 
 	uint8_t footer[16];
-	vf->seek(vf, -sizeof(footer), SEEK_END);
+	vf->seek(vf, -(off_t) sizeof(footer), SEEK_END);
 	if (vf->read(vf, footer, sizeof(footer)) < (ssize_t) sizeof(footer)) {
 		return false;
 	}
