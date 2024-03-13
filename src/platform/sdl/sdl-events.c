@@ -665,13 +665,22 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _mSDLSetRumble(struct mRumble* rumble, int enable) {
 	struct mSDLRumble* sdlRumble = (struct mSDLRumble*) rumble;
-	if (!sdlRumble->p->joystick
-#if !SDL_VERSION_ATLEAST(2, 0, 9)
-		|| !sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)
-#endif
-	 ) {
+	if (!sdlRumble->p->joystick) {
 		return;
 	}
+
+#if !SDL_VERSION_ATLEAST(2, 0, 9)
+	if (!sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)) {
+		return;
+	}
+#endif
+
+#if SDL_VERSION_ATLEAST(2, 0, 18)
+	if (!sdlRumble->p->joystick->controller || !SDL_GameControllerHasRumble(sdlRumble->p->joystick->controller)) {
+		return;
+	}
+#endif
+
 	int8_t originalLevel = sdlRumble->level;
 	sdlRumble->level += enable;
 	if (CircleBufferSize(&sdlRumble->history) == RUMBLE_PWM) {
@@ -689,7 +698,11 @@ static void _mSDLSetRumble(struct mRumble* rumble, int enable) {
 	}
 	sdlRumble->activeLevel = activeLevel;
 #if SDL_VERSION_ATLEAST(2, 0, 9)
-	SDL_JoystickRumble(sdlRumble->p->joystick->joystick, activeLevel * 0xFFFF, activeLevel * 0xFFFF, 500);
+	if (sdlRumble->p->joystick->controller) {
+		SDL_GameControllerRumble(sdlRumble->p->joystick->controller, activeLevel * 0xFFFF, activeLevel * 0xFFFF, 500);
+	} else {
+		SDL_JoystickRumble(sdlRumble->p->joystick->joystick, activeLevel * 0xFFFF, activeLevel * 0xFFFF, 500);
+	}
 #else
 	if (sdlRumble->activeLevel > 0.5 / RUMBLE_STEPS) {
 		SDL_HapticRumbleStop(sdlRumble->p->joystick->haptic);
