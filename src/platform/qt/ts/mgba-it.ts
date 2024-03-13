@@ -4779,7 +4779,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.cpp" line="873"/>
         <source>Just now</source>
-        <translation>Solo adesso</translation>
+        <translation>Proprio adesso</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="877"/>
@@ -5109,7 +5109,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1017"/>
         <source>Last checked:</source>
-        <translation>Vista l&apos;ultima volta:</translation>
+        <translation>Ultimo controllo:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1038"/>
