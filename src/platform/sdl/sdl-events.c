@@ -21,6 +21,13 @@
 #define GUI_MOD KMOD_CTRL
 #endif
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+#define USE_SCANCODES 1
+#define SDL_BINDING_KEY SDL_BINDING_SCANCODE
+#else
+#define SDL_BINDING_KEY SDL_BINDING_KEYCODE
+#endif
+
 #define GYRO_STEPS 100
 #define RUMBLE_PWM 16
 #define RUMBLE_STEPS 2
@@ -143,6 +150,31 @@ void mSDLEventsLoadConfig(struct mSDLEvents* context, const struct Configuration
 }
 
 void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
+#if USE_SCANCODES
+#ifdef BUILD_PANDORA
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_PAGEDOWN, GBA_KEY_A);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_END, GBA_KEY_B);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_RSHIFT, GBA_KEY_L);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_RCTRL, GBA_KEY_R);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_LALT, GBA_KEY_START);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_LCTRL, GBA_KEY_SELECT);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_UP, GBA_KEY_UP);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_DOWN, GBA_KEY_DOWN);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_LEFT, GBA_KEY_LEFT);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_RIGHT, GBA_KEY_RIGHT);
+#else
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_X, GBA_KEY_A);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_Z, GBA_KEY_B);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_A, GBA_KEY_L);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_S, GBA_KEY_R);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_RETURN, GBA_KEY_START);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_BACKSPACE, GBA_KEY_SELECT);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_UP, GBA_KEY_UP);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_DOWN, GBA_KEY_DOWN);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_LEFT, GBA_KEY_LEFT);
+	mInputBindKey(inputMap, SDL_BINDING_KEY, SDL_SCANCODE_RIGHT, GBA_KEY_RIGHT);
+#endif
+#else
 #ifdef BUILD_PANDORA
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_PAGEDOWN, GBA_KEY_A);
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_END, GBA_KEY_B);
@@ -165,6 +197,7 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_DOWN, GBA_KEY_DOWN);
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_LEFT, GBA_KEY_LEFT);
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
+#endif
 #endif
 
 	struct mInputAxis description = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x4000, -0x4000 };
@@ -463,9 +496,13 @@ static void _pauseAfterFrame(struct mCoreThread* context) {
 
 static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
 	int key = -1;
+#if USE_SCANCODES
+	key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.scancode);
+#else
 	if (!(event->keysym.mod & ~(KMOD_NUM | KMOD_CAPS))) {
 		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
 	}
+#endif
 	if (key != -1) {
 		mCoreThreadInterrupt(context);
 		if (event->type == SDL_KEYDOWN) {
