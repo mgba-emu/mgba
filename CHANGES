@@ -6,6 +6,7 @@ Features:
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:
+ - GB Audio: Fix audio envelope timing resetting too often (fixes mgba.io/i/3164)
  - GB I/O: Fix STAT writing IRQ trigger conditions (fixes mgba.io/i/2501)
  - GB Serialize: Add missing Pocket Cam state to savestates
  - GB Video: Implement DMG-style sprite ordering
