@@ -42,6 +42,53 @@
 	memcpy((void*) (DST), &_color, (DEPTH)); \
 } while (0);
 
+static uint32_t _mColorMultiply(uint32_t colorA, uint32_t colorB) {
+	uint32_t color = 0;
+
+	uint32_t a, b;
+	a = colorA & 0xFF;
+	b = colorB & 0xFF;
+	b = a * b;
+	b /= 0xFF;
+	if (b > 0xFF) {
+		color |= 0xFF;
+	} else {
+		color |= b;
+	}
+
+	a = (colorA >> 8) & 0xFF;
+	b = (colorB >> 8) & 0xFF;
+	b = a * b;
+	b /= 0xFF;
+	if (b > 0xFF) {
+		color |= 0xFF00;
+	} else {
+		color |= b << 8;
+	}
+
+	a = (colorA >> 16) & 0xFF;
+	b = (colorB >> 16) & 0xFF;
+	b = a * b;
+	b /= 0xFF;
+	if (b > 0xFF) {
+		color |= 0xFF0000;
+	} else {
+		color |= b << 16;
+	}
+
+	a = (colorA >> 24) & 0xFF;
+	b = (colorB >> 24) & 0xFF;
+	b = a * b;
+	b /= 0xFF;
+	if (b > 0xFF) {
+		color |= 0xFF000000;
+	} else {
+		color |= b << 24;
+	}
+
+	return color;
+}
+
 struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat format) {
 	return mImageCreateWithStride(width, height, width, format);
 }
@@ -395,18 +442,18 @@ void mImageSetPaletteEntry(struct mImage* image, unsigned index, uint32_t color)
 	image->palette[index] = color;
 }
 
-#define COMPOSITE_BOUNDS_INIT \
+#define COMPOSITE_BOUNDS_INIT(SOURCE, DEST) \
 	struct mRectangle dstRect = { \
 		.x = 0, \
 		.y = 0, \
-		.width = image->width, \
-		.height = image->height \
+		.width = (DEST)->width, \
+		.height = (DEST)->height \
 	}; \
 	struct mRectangle srcRect = { \
 		.x = x, \
 		.y = y, \
-		.width = source->width, \
-		.height = source->height \
+		.width = (SOURCE)->width, \
+		.height = (SOURCE)->height \
 	}; \
 	if (!mRectangleIntersection(&srcRect, &dstRect)) { \
 		return; \
@@ -436,7 +483,7 @@ void mImageBlit(struct mImage* image, const struct mImage* source, int x, int y)
 		return;
 	}
 
-	COMPOSITE_BOUNDS_INIT;
+	COMPOSITE_BOUNDS_INIT(source, image);
 
 	for (y = 0; y < srcRect.height; ++y) {
 		uintptr_t srcPixel = (uintptr_t) PIXEL(source, srcStartX, srcStartY + y);
@@ -461,7 +508,7 @@ void mImageComposite(struct mImage* image, const struct mImage* source, int x, i
 		return;
 	}
 
-	COMPOSITE_BOUNDS_INIT;
+	COMPOSITE_BOUNDS_INIT(source, image);
 
 	for (y = 0; y < srcRect.height; ++y) {
 		uintptr_t srcPixel = (uintptr_t) PIXEL(source, srcStartX, srcStartY + y);
@@ -498,7 +545,7 @@ void mImageCompositeWithAlpha(struct mImage* image, const struct mImage* source,
 		alpha = 256;
 	}
 
-	COMPOSITE_BOUNDS_INIT;
+	COMPOSITE_BOUNDS_INIT(source, image);
 
 	int fixedAlpha = alpha * 0x200;
 
@@ -817,6 +864,33 @@ void mPainterDrawCircle(struct mPainter* painter, int x, int y, int diameter) {
 					_drawCircleOctants(painter, x + radius, y + radius, offx, offy, offset, painter->fillColor);
 				}
 			}
+		}
+	}
+}
+
+void mPainterDrawMask(struct mPainter* painter, const struct mImage* mask, int x, int y) {
+	if (!painter->fill) {
+		return;
+	}
+
+	COMPOSITE_BOUNDS_INIT(mask, painter->backing);
+
+	for (y = 0; y < srcRect.height; ++y) {
+		uintptr_t dstPixel = (uintptr_t) PIXEL(painter->backing, dstStartX, dstStartY + y);
+		uintptr_t maskPixel = (uintptr_t) PIXEL(mask, srcStartX, srcStartY + y);
+		for (x = 0; x < srcRect.width; ++x, dstPixel += painter->backing->depth, maskPixel += mask->depth) {
+			uint32_t color;
+			GET_PIXEL(color, maskPixel, mask->depth);
+			color = mColorConvert(color, mask->format, mCOLOR_ARGB8);
+			color = _mColorMultiply(painter->fillColor, color);
+			if (painter->blend || painter->fillColor < 0xFF000000) {
+				uint32_t current;
+				GET_PIXEL(current, dstPixel, painter->backing->depth);
+				current = mColorConvert(current, painter->backing->format, mCOLOR_ARGB8);
+				color = mColorMixARGB8(color, current);
+			}
+			color = mColorConvert(color, mCOLOR_ARGB8, painter->backing->format);
+			PUT_PIXEL(color, dstPixel, painter->backing->depth);
 		}
 	}
 }

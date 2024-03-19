@@ -141,6 +141,7 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, setStrokeColor, _mPainterSetStrokeC
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawRectangle, mPainterDrawRectangle, 4, S32, x, S32, y, S32, width, S32, height);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawLine, mPainterDrawLine, 4, S32, x1, S32, y1, S32, x2, S32, y2);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawCircle, mPainterDrawCircle, 3, S32, x, S32, y, S32, diameter);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawMask, mPainterDrawMask, 3, CS(mImage), mask, S32, x, S32, y);
 
 mSCRIPT_DEFINE_STRUCT(mPainter)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
@@ -162,6 +163,13 @@ mSCRIPT_DEFINE_STRUCT(mPainter)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, drawLine)
 	mSCRIPT_DEFINE_DOCSTRING("Draw a circle with the specified diameter with the given origin at the top-left corner of the bounding box")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, drawCircle)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Draw a mask image with each color channel multiplied by the current fill color. This can "
+		"be useful for displaying graphics with dynamic colors. By making a grayscale template "
+		"image on a transparent background in advance, a script can set the fill color to a desired "
+		"target color and use this function to draw it into a destination image."
+	)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, drawMask)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptPainter, W(mPainter), _get, _mScriptPainterGet, 1, CHARP, name);
