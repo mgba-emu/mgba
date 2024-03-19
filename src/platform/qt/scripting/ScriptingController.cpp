@@ -92,6 +92,7 @@ void ScriptingController::setInputController(InputController* input) {
 }
 
 void ScriptingController::setVideoBackend(VideoBackend* backend) {
+	m_videoBackend = backend;
 	mScriptCanvasUpdateBackend(&m_scriptContext, backend);
 }
 
@@ -339,6 +340,7 @@ void ScriptingController::init() {
 
 	mScriptContextAttachLogger(&m_scriptContext, &m_logger);
 	m_bufferModel->attachToContext(&m_scriptContext);
+	mScriptCanvasUpdateBackend(&m_scriptContext, m_videoBackend);
 
 	HashTableEnumerate(&m_scriptContext.engines, [](const char* key, void* engine, void* context) {
 	ScriptingController* self = static_cast<ScriptingController*>(context);

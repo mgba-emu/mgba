@@ -87,6 +87,7 @@ private:
 	mScriptEngineContext* m_activeEngine = nullptr;
 	QHash<QString, mScriptEngineContext*> m_engines;
 	ScriptingTextBufferModel* m_bufferModel;
+	VideoBackend* m_videoBackend = nullptr;
 
 	mScriptGamepad m_gamepad;
 
