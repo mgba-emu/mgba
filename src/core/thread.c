@@ -42,13 +42,9 @@ static BOOL CALLBACK _createTLS(PINIT_ONCE once, PVOID param, PVOID* context) {
 
 static void _mCoreLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
 
-static void _changeState(struct mCoreThreadInternal* threadContext, enum mCoreThreadState newState, bool broadcast) {
-	MutexLock(&threadContext->stateMutex);
+static void _changeState(struct mCoreThreadInternal* threadContext, enum mCoreThreadState newState) {
 	threadContext->state = newState;
-	if (broadcast) {
-		ConditionWake(&threadContext->stateCond);
-	}
-	MutexUnlock(&threadContext->stateMutex);
+	ConditionWake(&threadContext->stateCond);
 }
 
 static void _waitOnInterrupt(struct mCoreThreadInternal* threadContext) {
@@ -178,7 +174,9 @@ void _crashed(void* context) {
 	if (!thread) {
 		return;
 	}
-	_changeState(thread->impl, mTHREAD_CRASHED, true);
+	MutexLock(&thread->impl->stateMutex);
+	_changeState(thread->impl, mTHREAD_CRASHED);
+	MutexUnlock(&thread->impl->stateMutex);
 }
 
 void _coreSleep(void* context) {
@@ -196,7 +194,9 @@ void _coreShutdown(void* context) {
 	if (!thread) {
 		return;
 	}
-	_changeState(thread->impl, mTHREAD_EXITING, true);
+	MutexLock(&thread->impl->stateMutex);
+	_changeState(thread->impl, mTHREAD_EXITING);
+	MutexUnlock(&thread->impl->stateMutex);
 }
 
 #ifdef ENABLE_SCRIPTING
@@ -303,7 +303,9 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 
 	core->reset(core);
 	threadContext->impl->core = core;
-	_changeState(threadContext->impl, mTHREAD_RUNNING, true);
+	MutexLock(&threadContext->impl->stateMutex);
+	_changeState(threadContext->impl, mTHREAD_RUNNING);
+	MutexUnlock(&threadContext->impl->stateMutex);
 
 	if (threadContext->resetCallback) {
 		threadContext->resetCallback(threadContext);
@@ -326,23 +328,27 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	bool wasPaused = false;
 	int pendingRequests = 0;
 
+	MutexLock(&impl->stateMutex);
 	while (impl->state < mTHREAD_EXITING) {
 #ifdef USE_DEBUGGERS
 		struct mDebugger* debugger = core->debugger;
 		if (debugger) {
+			MutexUnlock(&impl->stateMutex);
 			mDebuggerRun(debugger);
+			MutexLock(&impl->stateMutex);
 			if (debugger->state == DEBUGGER_SHUTDOWN) {
-				_changeState(impl, mTHREAD_EXITING, false);
+				impl->state = mTHREAD_EXITING;
 			}
 		} else
 #endif
 		{
 			while (impl->state == mTHREAD_RUNNING) {
+				MutexUnlock(&impl->stateMutex);
 				core->runLoop(core);
+				MutexLock(&impl->stateMutex);
 			}
 		}
 
-		MutexLock(&impl->stateMutex);
 		while (impl->state >= mTHREAD_MIN_WAITING && impl->state < mTHREAD_EXITING) {
 			if (impl->state == mTHREAD_INTERRUPTING) {
 				impl->state = mTHREAD_INTERRUPTED;
@@ -430,7 +436,9 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 
 	while (impl->state < mTHREAD_SHUTDOWN) {
-		_changeState(impl, mTHREAD_SHUTDOWN, false);
+		MutexLock(&impl->stateMutex);
+		impl->state = mTHREAD_SHUTDOWN;
+		MutexUnlock(&impl->stateMutex);
 	}
 
 	if (core->opts.rewindEnable) {
