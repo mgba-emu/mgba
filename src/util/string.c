@@ -177,16 +177,12 @@ size_t toUtf8(uint32_t unichar, char* buffer) {
 		buffer[2] = (unichar & 0x3F) | 0x80;
 		return 3;
 	}
-	if (unichar < 0x200000) {
-		buffer[0] = (unichar >> 18) | 0xF0;
-		buffer[1] = ((unichar >> 12) & 0x3F) | 0x80;
-		buffer[2] = ((unichar >> 6) & 0x3F) | 0x80;
-		buffer[3] = (unichar & 0x3F) | 0x80;
-		return 4;
-	}
 
-	// This shouldn't be possible
-	return 0;
+	buffer[0] = (unichar >> 18) | 0xF0;
+	buffer[1] = ((unichar >> 12) & 0x3F) | 0x80;
+	buffer[2] = ((unichar >> 6) & 0x3F) | 0x80;
+	buffer[3] = (unichar & 0x3F) | 0x80;
+	return 4;
 }
 
 size_t toUtf16(uint32_t unichar, uint16_t* buffer) {
