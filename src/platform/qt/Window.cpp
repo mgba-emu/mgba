@@ -1093,7 +1093,9 @@ void Window::reloadAudioDriver() {
 	m_audioProcessor = std::unique_ptr<AudioProcessor>(AudioProcessor::create());
 	m_audioProcessor->setInput(m_controller);
 	m_audioProcessor->configure(m_config);
-	m_audioProcessor->start();
+	if (!m_audioProcessor->start()) {
+		LOG(QT, WARN) << "Failed to start audio processor";
+	}
 }
 
 void Window::changeRenderer() {

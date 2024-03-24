@@ -9,6 +9,9 @@
 #include "LogController.h"
 
 #include <QAudioOutput>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+#include <QMediaDevices>
+#endif
 
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
@@ -31,10 +34,13 @@ void AudioProcessorQt::setInput(std::shared_ptr<CoreController> controller) {
 }
 
 void AudioProcessorQt::stop() {
+	if (m_audioOutput) {
+		m_audioOutput->stop();
+		m_audioOutput.reset();
+	}
 	if (m_device) {
 		m_device.reset();
 	}
-	pause();
 	AudioProcessor::stop();
 }
 
@@ -52,25 +58,36 @@ bool AudioProcessorQt::start() {
 		QAudioFormat format;
 		format.setSampleRate(m_sampleRate);
 		format.setChannelCount(2);
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 		format.setSampleSize(16);
 		format.setCodec("audio/pcm");
 		format.setByteOrder(QAudioFormat::Endian(QSysInfo::ByteOrder));
 		format.setSampleType(QAudioFormat::SignedInt);
 
-		m_audioOutput = new QAudioOutput(format, this);
+		m_audioOutput = std::make_unique<QAudioOutput>(format);
 		m_audioOutput->setCategory("game");
+#else
+		format.setSampleFormat(QAudioFormat::Int16);
+
+		QAudioDevice device(QMediaDevices::defaultAudioOutput());
+		m_audioOutput = std::make_unique<QAudioSink>(device, format);
+		LOG(QT, INFO) << "Audio outputting to " << device.description();
+#endif
 	}
 
-	m_device->setInput(input());
-	m_device->setFormat(m_audioOutput->format());
-
-	m_audioOutput->start(m_device.get());
-	return m_audioOutput->state() == QAudio::ActiveState;
+	if (m_audioOutput->state() == QAudio::SuspendedState) {
+		m_audioOutput->resume();
+	} else {
+		m_device->setInput(input());
+		m_device->setFormat(m_audioOutput->format());
+		m_audioOutput->start(m_device.get());
+	}
+	return m_audioOutput->state() == QAudio::ActiveState && m_audioOutput->error() == QAudio::NoError;
 }
 
 void AudioProcessorQt::pause() {
 	if (m_audioOutput) {
-		m_audioOutput->stop();
+		m_audioOutput->suspend();
 	}
 }
 
