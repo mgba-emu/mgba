@@ -27,6 +27,8 @@
 #ifdef BUILD_QT_MULTIMEDIA
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #include "VideoDumper.h"
+#else
+#include <QMediaCaptureSession>
 #endif
 #include <QCamera>
 #endif
@@ -126,7 +128,7 @@ public slots:
 	void setCamera(const QByteArray& id);
 
 private slots:
-#ifdef BUILD_QT_MULTIMEDIA
+#if defined(BUILD_QT_MULTIMEDIA) && (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	void prepareCamSettings(QCamera::Status);
 #endif
 	void setupCam();
@@ -168,10 +170,13 @@ private:
 
 #ifdef BUILD_QT_MULTIMEDIA
 	bool m_cameraActive = false;
-	QByteArray m_cameraDevice;
 	std::unique_ptr<QCamera> m_camera;
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+	QByteArray m_cameraDevice;
 	VideoDumper m_videoDumper;
+#else
+	QCameraDevice m_cameraDevice;
+	QMediaCaptureSession m_captureSession;
 #endif
 #endif
 

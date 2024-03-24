@@ -16,8 +16,13 @@
 #include <QTimer>
 #include <QWidget>
 #ifdef BUILD_QT_MULTIMEDIA
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #include <QCameraInfo>
 #include <QVideoSurfaceFormat>
+#else
+#include <QCameraDevice>
+#include <QMediaDevices>
+#endif
 #endif
 
 #include <mgba/core/interface.h>
@@ -50,7 +55,9 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 	m_gamepadTimer.start();
 
 #ifdef BUILD_QT_MULTIMEDIA
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	connect(&m_videoDumper, &VideoDumper::imageAvailable, this, &InputController::setCamImage);
+#endif
 #endif
 
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
@@ -90,10 +97,20 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 #ifdef BUILD_QT_MULTIMEDIA
 		image->p->m_cameraActive = true;
 		QByteArray camera = image->p->m_config->getQtOption("camera").toByteArray();
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 		if (!camera.isNull()) {
 			image->p->m_cameraDevice = camera;
 		}
 		QMetaObject::invokeMethod(image->p, "setupCam");
+#else
+		if (!camera.isNull()) {
+			for (const auto& cam : QMediaDevices::videoInputs()) {
+				if (cam.id() == camera) {
+					image->p->m_cameraDevice = cam;
+				}
+			}
+		}
+#endif
 #endif
 	};
 
@@ -595,9 +612,13 @@ void InputController::setCamImage(const QImage& image) {
 QList<QPair<QByteArray, QString>> InputController::listCameras() const {
 	QList<QPair<QByteArray, QString>> out;
 #ifdef BUILD_QT_MULTIMEDIA
-	QList<QCameraInfo> cams = QCameraInfo::availableCameras();
-	for (const auto& cam : cams) {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+	for (const auto& cam : QCameraInfo::availableCameras()) {
 		out.append(qMakePair(cam.deviceName().toLatin1(), cam.description()));
+#else
+	for (const auto& cam : QMediaDevices::videoInputs()) {
+		out.append(qMakePair(cam.id(), cam.description()));
+#endif
 	}
 #endif
 	return out;
@@ -639,6 +660,7 @@ void InputController::setupCam() {
 		return;
 	}
 
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	if (!m_camera) {
 		m_camera = std::make_unique<QCamera>(m_cameraDevice);
 		connect(m_camera.get(), &QCamera::statusChanged, this, &InputController::prepareCamSettings, Qt::QueuedConnection);
@@ -650,10 +672,16 @@ void InputController::setupCam() {
 	m_camera->setCaptureMode(QCamera::CaptureVideo);
 	m_camera->setViewfinder(&m_videoDumper);
 	m_camera->load();
+#else
+	if (!m_camera) {
+		m_camera = std::make_unique<QCamera>(m_cameraDevice);
+		m_captureSession.setCamera(m_camera.get());
+	}
+#endif
 #endif
 }
 
-#ifdef BUILD_QT_MULTIMEDIA
+#if defined(BUILD_QT_MULTIMEDIA) && (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 void InputController::prepareCamSettings(QCamera::Status status) {
 	if (status != QCamera::LoadedStatus || m_camera->state() == QCamera::ActiveState) {
 		return;
@@ -697,7 +725,11 @@ void InputController::prepareCamSettings(QCamera::Status status) {
 void InputController::teardownCam() {
 #ifdef BUILD_QT_MULTIMEDIA
 	if (m_camera) {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 		m_camera->unload();
+#else
+		m_captureSession.setCamera(nullptr);
+#endif
 		m_camera.reset();
 	}
 #endif
@@ -705,6 +737,7 @@ void InputController::teardownCam() {
 
 void InputController::setCamera(const QByteArray& name) {
 #ifdef BUILD_QT_MULTIMEDIA
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	if (m_cameraDevice == name) {
 		return;
 	}
@@ -715,5 +748,15 @@ void InputController::setCamera(const QByteArray& name) {
 	if (m_cameraActive) {
 		setupCam();
 	}
+#else
+	if (m_cameraDevice.id() == name) {
+		return;
+	}
+	for (const auto& cam : QMediaDevices::videoInputs()) {
+		if (cam.id() == name) {
+			m_cameraDevice = cam;
+		}
+	}
+#endif
 #endif
 }
