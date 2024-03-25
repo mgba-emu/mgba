@@ -54,11 +54,11 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 	m_gamepadTimer.setInterval(15);
 	m_gamepadTimer.start();
 
-#ifdef BUILD_QT_MULTIMEDIA
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#if defined(BUILD_QT_MULTIMEDIA) && (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+	m_captureSession.setVideoSink(&m_videoSink);
+	connect(&m_videoSink, &QVideoSink::videoFrameChanged, &m_videoDumper, &VideoDumper::present);
+#endif
 	connect(&m_videoDumper, &VideoDumper::imageAvailable, this, &InputController::setCamImage);
-#endif
-#endif
 
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Z, GBA_KEY_B);
@@ -101,7 +101,6 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 		if (!camera.isNull()) {
 			image->p->m_cameraDevice = camera;
 		}
-		QMetaObject::invokeMethod(image->p, "setupCam");
 #else
 		if (!camera.isNull()) {
 			for (const auto& cam : QMediaDevices::videoInputs()) {
@@ -111,6 +110,7 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 			}
 		}
 #endif
+		QMetaObject::invokeMethod(image->p, "setupCam");
 #endif
 	};
 
@@ -677,18 +677,26 @@ void InputController::setupCam() {
 		m_camera = std::make_unique<QCamera>(m_cameraDevice);
 		m_captureSession.setCamera(m_camera.get());
 	}
+	prepareCamFormat();
 #endif
 #endif
 }
 
-#if defined(BUILD_QT_MULTIMEDIA) && (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#ifdef BUILD_QT_MULTIMEDIA
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 void InputController::prepareCamSettings(QCamera::Status status) {
 	if (status != QCamera::LoadedStatus || m_camera->state() == QCamera::ActiveState) {
 		return;
 	}
+	prepareCamFormat();
+}
+#endif
+
+void InputController::prepareCamFormat() {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 5, 0))
-	QCameraViewfinderSettings settings;
 	QSize size(1280, 720);
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+	QCameraViewfinderSettings settings;
 	auto cameraRes = m_camera->supportedViewfinderResolutions(settings);
 	for (auto& cameraSize : cameraRes) {
 		if (cameraSize.width() < m_image.w || cameraSize.height() < m_image.h) {
@@ -717,6 +725,25 @@ void InputController::prepareCamSettings(QCamera::Status status) {
 		}
 	}
 	m_camera->setViewfinderSettings(settings);
+#else
+	bool goodFormatFound = false;
+	auto goodFormats = m_videoDumper.supportedPixelFormats();
+	QCameraFormat bestFormat;
+	for (const auto& format : m_cameraDevice.videoFormats()) {
+		if (!goodFormats.contains(format.pixelFormat())) {
+			continue;
+		}
+		if (format.resolution().width() <= size.width() && format.resolution().height() <= size.height()) {
+			size = format.resolution();
+			bestFormat = format;
+			goodFormatFound = true;
+		}
+	}
+	if (!goodFormatFound) {
+		LOG(QT, WARN) << "Could not find a valid camera format!";
+	}
+	m_camera->setCameraFormat(bestFormat);
+#endif
 #endif
 	m_camera->start();
 }
@@ -745,9 +772,6 @@ void InputController::setCamera(const QByteArray& name) {
 	if (m_camera && m_camera->state() == QCamera::ActiveState) {
 		teardownCam();
 	}
-	if (m_cameraActive) {
-		setupCam();
-	}
 #else
 	if (m_cameraDevice.id() == name) {
 		return;
@@ -758,5 +782,8 @@ void InputController::setCamera(const QByteArray& name) {
 		}
 	}
 #endif
+	if (m_cameraActive) {
+		setupCam();
+	}
 #endif
 }
