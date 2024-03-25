@@ -153,14 +153,14 @@ void OverrideView::updateOverrides() {
 	if (m_ui.tabWidget->currentWidget() == m_ui.tabGBA) {
 		auto gba = std::make_unique<GBAOverride>();
 		memset(gba->override.id, 0, 4);
-		gba->override.savetype = static_cast<SavedataType>(m_ui.savetype->currentIndex() - 1);
+		gba->override.savetype = static_cast<GBASavedataType>(m_ui.savetype->currentIndex() - 1);
 		gba->override.hardware = HW_NO_OVERRIDE;
 		gba->override.idleLoop = IDLE_LOOP_NONE;
 		gba->override.mirroring = false;
 		gba->override.vbaBugCompat = false;
 		gba->vbaBugCompatSet = false;
 
-		if (gba->override.savetype != SAVEDATA_AUTODETECT) {
+		if (gba->override.savetype != GBA_SAVEDATA_AUTODETECT) {
 			hasOverride = true;
 		}
 		if (!m_ui.hwAutodetect->isChecked()) {

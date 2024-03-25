@@ -274,7 +274,7 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		}
 		cpu->memory.store32(cpu, dest, memory->dmaTransferRegister, 0);
 	} else {
-		if (sourceRegion == GBA_REGION_ROM2_EX && (memory->savedata.type == SAVEDATA_EEPROM || memory->savedata.type == SAVEDATA_EEPROM512)) {
+		if (sourceRegion == GBA_REGION_ROM2_EX && (memory->savedata.type == GBA_SAVEDATA_EEPROM || memory->savedata.type == GBA_SAVEDATA_EEPROM512)) {
 			memory->dmaTransferRegister = GBASavedataReadEEPROM(&memory->savedata);
 			memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
 		} else if (source) {
@@ -282,11 +282,11 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 			memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
 		}
 		if (destRegion == GBA_REGION_ROM2_EX) {
-			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
+			if (memory->savedata.type == GBA_SAVEDATA_AUTODETECT) {
 				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
-			if (memory->savedata.type == SAVEDATA_EEPROM512 || memory->savedata.type == SAVEDATA_EEPROM) {
+			if (memory->savedata.type == GBA_SAVEDATA_EEPROM512 || memory->savedata.type == GBA_SAVEDATA_EEPROM) {
 				GBASavedataWriteEEPROM(&memory->savedata, memory->dmaTransferRegister, info->nextCount);
 			}
 		} else {

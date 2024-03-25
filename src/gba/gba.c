@@ -469,10 +469,10 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 }
 
 bool GBALoadSave(struct GBA* gba, struct VFile* sav) {
-	enum SavedataType type = gba->memory.savedata.type;
+	enum GBASavedataType type = gba->memory.savedata.type;
 	GBASavedataDeinit(&gba->memory.savedata);
 	GBASavedataInit(&gba->memory.savedata, sav);
-	if (type != SAVEDATA_AUTODETECT) {
+	if (type != GBA_SAVEDATA_AUTODETECT) {
 		GBASavedataForceType(&gba->memory.savedata, type);
 	}
 	return sav;

@@ -1004,27 +1004,27 @@ size_t _GBACoreListMemoryBlocks(const struct mCore* core, const struct mCoreMemo
 
 	if (gbacore->memoryBlockType != gba->memory.savedata.type) {
 		switch (gba->memory.savedata.type) {
-		case SAVEDATA_SRAM:
+		case GBA_SAVEDATA_SRAM:
 			memcpy(gbacore->memoryBlocks, _GBAMemoryBlocksSRAM, sizeof(_GBAMemoryBlocksSRAM));
 			gbacore->nMemoryBlocks = sizeof(_GBAMemoryBlocksSRAM) / sizeof(*_GBAMemoryBlocksSRAM);
 			break;
-		case SAVEDATA_SRAM512:
+		case GBA_SAVEDATA_SRAM512:
 			memcpy(gbacore->memoryBlocks, _GBAMemoryBlocksSRAM512, sizeof(_GBAMemoryBlocksSRAM512));
 			gbacore->nMemoryBlocks = sizeof(_GBAMemoryBlocksSRAM512) / sizeof(*_GBAMemoryBlocksSRAM512);
 			break;
-		case SAVEDATA_FLASH512:
+		case GBA_SAVEDATA_FLASH512:
 			memcpy(gbacore->memoryBlocks, _GBAMemoryBlocksFlash512, sizeof(_GBAMemoryBlocksFlash512));
 			gbacore->nMemoryBlocks = sizeof(_GBAMemoryBlocksFlash512) / sizeof(*_GBAMemoryBlocksFlash512);
 			break;
-		case SAVEDATA_FLASH1M:
+		case GBA_SAVEDATA_FLASH1M:
 			memcpy(gbacore->memoryBlocks, _GBAMemoryBlocksFlash1M, sizeof(_GBAMemoryBlocksFlash1M));
 			gbacore->nMemoryBlocks = sizeof(_GBAMemoryBlocksFlash1M) / sizeof(*_GBAMemoryBlocksFlash1M);
 			break;
-		case SAVEDATA_EEPROM:
+		case GBA_SAVEDATA_EEPROM:
 			memcpy(gbacore->memoryBlocks, _GBAMemoryBlocksEEPROM, sizeof(_GBAMemoryBlocksEEPROM));
 			gbacore->nMemoryBlocks = sizeof(_GBAMemoryBlocksEEPROM) / sizeof(*_GBAMemoryBlocksEEPROM);
 			break;
-		case SAVEDATA_EEPROM512:
+		case GBA_SAVEDATA_EEPROM512:
 			memcpy(gbacore->memoryBlocks, _GBAMemoryBlocksEEPROM512, sizeof(_GBAMemoryBlocksEEPROM512));
 			gbacore->nMemoryBlocks = sizeof(_GBAMemoryBlocksEEPROM512) / sizeof(*_GBAMemoryBlocksEEPROM512);
 			break;
@@ -1076,7 +1076,7 @@ void* _GBACoreGetMemoryBlock(struct mCore* core, size_t id, size_t* sizeOut) {
 		*sizeOut = gba->memory.romSize;
 		return gba->memory.rom;
 	case GBA_REGION_SRAM:
-		if (gba->memory.savedata.type == SAVEDATA_FLASH1M) {
+		if (gba->memory.savedata.type == GBA_SAVEDATA_FLASH1M) {
 			*sizeOut = GBA_SIZE_FLASH1M;
 			return gba->memory.savedata.currentBank;
 		}

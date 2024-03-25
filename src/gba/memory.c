@@ -595,7 +595,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		break;
 	case GBA_REGION_ROM2_EX:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
-		if (memory->savedata.type == SAVEDATA_EEPROM || memory->savedata.type == SAVEDATA_EEPROM512) {
+		if (memory->savedata.type == GBA_SAVEDATA_EEPROM || memory->savedata.type == GBA_SAVEDATA_EEPROM512) {
 			value = GBASavedataReadEEPROM(&memory->savedata);
 		} else if ((address & 0x0DFC0000) >= 0x0DF80000 && memory->hw.devices & HW_EREADER) {
 			value = GBACartEReaderRead(&memory->ereader, address);
@@ -702,7 +702,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case GBA_REGION_SRAM:
 	case GBA_REGION_SRAM_MIRROR:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
-		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
+		if (memory->savedata.type == GBA_SAVEDATA_AUTODETECT) {
 			mLOG(GBA_MEM, INFO, "Detected SRAM savegame");
 			GBASavedataInitSRAM(&memory->savedata);
 		}
@@ -711,13 +711,13 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		}
 		if (memory->hw.devices & HW_EREADER && (address & 0xE00FF80) >= 0xE00FF80) {
 			value = GBACartEReaderReadFlash(&memory->ereader, address);
-		} else if (memory->savedata.type == SAVEDATA_SRAM) {
+		} else if (memory->savedata.type == GBA_SAVEDATA_SRAM) {
 			value = memory->savedata.data[address & (GBA_SIZE_SRAM - 1)];
-		} else if (memory->savedata.type == SAVEDATA_FLASH512 || memory->savedata.type == SAVEDATA_FLASH1M) {
+		} else if (memory->savedata.type == GBA_SAVEDATA_FLASH512 || memory->savedata.type == GBA_SAVEDATA_FLASH1M) {
 			value = GBASavedataReadFlash(&memory->savedata, address);
 		} else if (memory->hw.devices & HW_TILT) {
 			value = GBAHardwareTiltRead(&memory->hw, address & OFFSET_MASK);
-		} else if (memory->savedata.type == SAVEDATA_SRAM512) {
+		} else if (memory->savedata.type == GBA_SAVEDATA_SRAM512) {
 			value = memory->savedata.data[address & (GBA_SIZE_SRAM512 - 1)];
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Reading from non-existent SRAM: 0x%08X", address);
@@ -975,11 +975,11 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		if ((address & 0x0DFC0000) >= 0x0DF80000 && memory->hw.devices & HW_EREADER) {
 			GBACartEReaderWrite(&memory->ereader, address, value);
 			break;
-		} else if (memory->savedata.type == SAVEDATA_AUTODETECT) {
+		} else if (memory->savedata.type == GBA_SAVEDATA_AUTODETECT) {
 			mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
 			GBASavedataInitEEPROM(&memory->savedata);
 		}
-		if (memory->savedata.type == SAVEDATA_EEPROM512 || memory->savedata.type == SAVEDATA_EEPROM) {
+		if (memory->savedata.type == GBA_SAVEDATA_EEPROM512 || memory->savedata.type == GBA_SAVEDATA_EEPROM) {
 			GBASavedataWriteEEPROM(&memory->savedata, value, 1);
 			break;
 		}
@@ -1050,7 +1050,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		break;
 	case GBA_REGION_SRAM:
 	case GBA_REGION_SRAM_MIRROR:
-		if (memory->savedata.type == SAVEDATA_AUTODETECT) {
+		if (memory->savedata.type == GBA_SAVEDATA_AUTODETECT) {
 			if (address == SAVEDATA_FLASH_BASE) {
 				mLOG(GBA_MEM, INFO, "Detected Flash savegame");
 				GBASavedataInitFlash(&memory->savedata);
@@ -1061,9 +1061,9 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		}
 		if (memory->hw.devices & HW_EREADER && (address & 0xE00FF80) >= 0xE00FF80) {
 			GBACartEReaderWriteFlash(&memory->ereader, address, value);
-		} else if (memory->savedata.type == SAVEDATA_FLASH512 || memory->savedata.type == SAVEDATA_FLASH1M) {
+		} else if (memory->savedata.type == GBA_SAVEDATA_FLASH512 || memory->savedata.type == GBA_SAVEDATA_FLASH1M) {
 			GBASavedataWriteFlash(&memory->savedata, address, value);
-		} else if (memory->savedata.type == SAVEDATA_SRAM) {
+		} else if (memory->savedata.type == GBA_SAVEDATA_SRAM) {
 			if (memory->vfame.cartType) {
 				GBAVFameSramWrite(&memory->vfame, address, value, memory->savedata.data);
 			} else {
@@ -1072,7 +1072,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 			memory->savedata.dirty |= mSAVEDATA_DIRT_NEW;
 		} else if (memory->hw.devices & HW_TILT) {
 			GBAHardwareTiltWrite(&memory->hw, address & OFFSET_MASK, value);
-		} else if (memory->savedata.type == SAVEDATA_SRAM512) {
+		} else if (memory->savedata.type == GBA_SAVEDATA_SRAM512) {
 			memory->savedata.data[address & (GBA_SIZE_SRAM512 - 1)] = value;
 			memory->savedata.dirty |= mSAVEDATA_DIRT_NEW;
 		} else {
@@ -1263,7 +1263,7 @@ void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* o
 		break;
 	case GBA_REGION_SRAM:
 	case GBA_REGION_SRAM_MIRROR:
-		if (memory->savedata.type == SAVEDATA_SRAM) {
+		if (memory->savedata.type == GBA_SAVEDATA_SRAM) {
 			LOAD_32(oldValue, address & (GBA_SIZE_SRAM - 4), memory->savedata.data);
 			STORE_32(value, address & (GBA_SIZE_SRAM - 4), memory->savedata.data);
 		} else {
@@ -1333,7 +1333,7 @@ void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* o
 		break;
 	case GBA_REGION_SRAM:
 	case GBA_REGION_SRAM_MIRROR:
-		if (memory->savedata.type == SAVEDATA_SRAM) {
+		if (memory->savedata.type == GBA_SAVEDATA_SRAM) {
 			LOAD_16(oldValue, address & (GBA_SIZE_SRAM - 2), memory->savedata.data);
 			STORE_16(value, address & (GBA_SIZE_SRAM - 2), memory->savedata.data);
 		} else {
@@ -1391,7 +1391,7 @@ void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old)
 		break;
 	case GBA_REGION_SRAM:
 	case GBA_REGION_SRAM_MIRROR:
-		if (memory->savedata.type == SAVEDATA_SRAM) {
+		if (memory->savedata.type == GBA_SAVEDATA_SRAM) {
 			oldValue = ((int8_t*) memory->savedata.data)[address & (GBA_SIZE_SRAM - 1)];
 			((int8_t*) memory->savedata.data)[address & (GBA_SIZE_SRAM - 1)] = value;
 		} else {

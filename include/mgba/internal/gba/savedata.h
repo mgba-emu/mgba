@@ -17,15 +17,15 @@ mLOG_DECLARE_CATEGORY(GBA_SAVE);
 
 struct VFile;
 
-enum SavedataType {
-	SAVEDATA_AUTODETECT = -1,
-	SAVEDATA_FORCE_NONE = 0,
-	SAVEDATA_SRAM = 1,
-	SAVEDATA_FLASH512 = 2,
-	SAVEDATA_FLASH1M = 3,
-	SAVEDATA_EEPROM = 4,
-	SAVEDATA_EEPROM512 = 5,
-	SAVEDATA_SRAM512 = 6,
+enum GBASavedataType {
+	GBA_SAVEDATA_AUTODETECT = -1,
+	GBA_SAVEDATA_FORCE_NONE = 0,
+	GBA_SAVEDATA_SRAM = 1,
+	GBA_SAVEDATA_FLASH512 = 2,
+	GBA_SAVEDATA_FLASH1M = 3,
+	GBA_SAVEDATA_EEPROM = 4,
+	GBA_SAVEDATA_EEPROM512 = 5,
+	GBA_SAVEDATA_SRAM512 = 6,
 };
 
 enum SavedataCommand {
@@ -68,7 +68,7 @@ enum {
 };
 
 struct GBASavedata {
-	enum SavedataType type;
+	enum GBASavedataType type;
 	uint8_t* data;
 	enum SavedataCommand command;
 	struct VFile* vf;
@@ -108,7 +108,7 @@ void GBASavedataUnmask(struct GBASavedata* savedata);
 size_t GBASavedataSize(const struct GBASavedata* savedata);
 bool GBASavedataClone(struct GBASavedata* savedata, struct VFile* out);
 bool GBASavedataLoad(struct GBASavedata* savedata, struct VFile* in);
-void GBASavedataForceType(struct GBASavedata* savedata, enum SavedataType type);
+void GBASavedataForceType(struct GBASavedata* savedata, enum GBASavedataType type);
 
 void GBASavedataInitFlash(struct GBASavedata* savedata);
 void GBASavedataInitEEPROM(struct GBASavedata* savedata);

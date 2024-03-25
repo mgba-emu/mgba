@@ -16,7 +16,7 @@ CXX_GUARD_START
 
 struct GBACartridgeOverride {
 	char id[4];
-	enum SavedataType savetype;
+	enum GBASavedataType savetype;
 	int hardware;
 	uint32_t idleLoop;
 	bool mirroring;
