@@ -12,21 +12,11 @@ CXX_GUARD_START
 
 #include <mgba/core/log.h>
 #include <mgba/core/timing.h>
+#include <mgba/gba/interface.h>
 
 mLOG_DECLARE_CATEGORY(GBA_SAVE);
 
 struct VFile;
-
-enum GBASavedataType {
-	GBA_SAVEDATA_AUTODETECT = -1,
-	GBA_SAVEDATA_FORCE_NONE = 0,
-	GBA_SAVEDATA_SRAM = 1,
-	GBA_SAVEDATA_FLASH512 = 2,
-	GBA_SAVEDATA_FLASH1M = 3,
-	GBA_SAVEDATA_EEPROM = 4,
-	GBA_SAVEDATA_EEPROM512 = 5,
-	GBA_SAVEDATA_SRAM512 = 6,
-};
 
 enum SavedataCommand {
 	EEPROM_COMMAND_NULL = 0,

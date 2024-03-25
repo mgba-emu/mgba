@@ -58,6 +58,13 @@ enum GBVideoLayer {
 	GB_LAYER_OBJ
 };
 
+enum GBColorLookup {
+	GB_COLORS_NONE = 0,
+	GB_COLORS_CGB = 1,
+	GB_COLORS_SGB = 2,
+	GB_COLORS_SGB_CGB_FALLBACK = GB_COLORS_CGB | GB_COLORS_SGB
+};
+
 struct GBSIODriver {
 	struct GBSIO* p;
 
@@ -65,6 +72,14 @@ struct GBSIODriver {
 	void (*deinit)(struct GBSIODriver* driver);
 	void (*writeSB)(struct GBSIODriver* driver, uint8_t value);
 	uint8_t (*writeSC)(struct GBSIODriver* driver, uint8_t value);
+};
+
+struct GBCartridgeOverride {
+	int headerCrc32;
+	enum GBModel model;
+	enum GBMemoryBankControllerType mbc;
+
+	uint32_t gbColors[12];
 };
 
 struct VFile;

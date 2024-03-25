@@ -13,6 +13,8 @@ CXX_GUARD_START
 #include <mgba/core/interface.h>
 #include <mgba/core/timing.h>
 
+#define GBA_IDLE_LOOP_NONE 0xFFFFFFFF
+
 enum {
 	GBA_VIDEO_HORIZONTAL_PIXELS = 240,
 	GBA_VIDEO_VERTICAL_PIXELS = 160,
@@ -43,6 +45,17 @@ enum GBAVideoLayer {
 	GBA_LAYER_WIN0,
 	GBA_LAYER_WIN1,
 	GBA_LAYER_OBJWIN,
+};
+
+enum GBASavedataType {
+	GBA_SAVEDATA_AUTODETECT = -1,
+	GBA_SAVEDATA_FORCE_NONE = 0,
+	GBA_SAVEDATA_SRAM = 1,
+	GBA_SAVEDATA_FLASH512 = 2,
+	GBA_SAVEDATA_FLASH1M = 3,
+	GBA_SAVEDATA_EEPROM = 4,
+	GBA_SAVEDATA_EEPROM512 = 5,
+	GBA_SAVEDATA_SRAM512 = 6,
 };
 
 struct GBA;
@@ -76,6 +89,15 @@ struct GBASIODriver {
 	bool (*load)(struct GBASIODriver* driver);
 	bool (*unload)(struct GBASIODriver* driver);
 	uint16_t (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
+};
+
+struct GBACartridgeOverride {
+	char id[4];
+	enum GBASavedataType savetype;
+	int hardware;
+	uint32_t idleLoop;
+	bool mirroring;
+	bool vbaBugCompat;
 };
 
 void GBASIOJOYCreate(struct GBASIODriver* sio);

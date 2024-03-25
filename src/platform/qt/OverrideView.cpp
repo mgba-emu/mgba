@@ -155,7 +155,7 @@ void OverrideView::updateOverrides() {
 		memset(gba->override.id, 0, 4);
 		gba->override.savetype = static_cast<GBASavedataType>(m_ui.savetype->currentIndex() - 1);
 		gba->override.hardware = HW_NO_OVERRIDE;
-		gba->override.idleLoop = IDLE_LOOP_NONE;
+		gba->override.idleLoop = GBA_IDLE_LOOP_NONE;
 		gba->override.mirroring = false;
 		gba->override.vbaBugCompat = false;
 		gba->vbaBugCompatSet = false;
@@ -246,7 +246,7 @@ void OverrideView::gameStarted() {
 		m_ui.hwGBPlayer->setChecked(gba->memory.hw.devices & HW_GB_PLAYER_DETECTION);
 		m_ui.vbaBugCompat->setChecked(gba->vbaBugCompat);
 
-		if (gba->idleLoop != IDLE_LOOP_NONE) {
+		if (gba->idleLoop != GBA_IDLE_LOOP_NONE) {
 			m_ui.idleLoop->setText(QString::number(gba->idleLoop, 16));
 		} else {
 			m_ui.idleLoop->clear();

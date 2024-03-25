@@ -12,21 +12,6 @@ CXX_GUARD_START
 
 #include <mgba/gb/interface.h>
 
-enum GBColorLookup {
-	GB_COLORS_NONE = 0,
-	GB_COLORS_CGB = 1,
-	GB_COLORS_SGB = 2,
-	GB_COLORS_SGB_CGB_FALLBACK = GB_COLORS_CGB | GB_COLORS_SGB
-};
-
-struct GBCartridgeOverride {
-	int headerCrc32;
-	enum GBModel model;
-	enum GBMemoryBankControllerType mbc;
-
-	uint32_t gbColors[12];
-};
-
 struct GBColorPreset {
 	const char* name;
 	uint32_t colors[12];

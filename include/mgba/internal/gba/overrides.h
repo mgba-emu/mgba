@@ -10,18 +10,7 @@
 
 CXX_GUARD_START
 
-#include <mgba/internal/gba/savedata.h>
-
-#define IDLE_LOOP_NONE 0xFFFFFFFF
-
-struct GBACartridgeOverride {
-	char id[4];
-	enum GBASavedataType savetype;
-	int hardware;
-	uint32_t idleLoop;
-	bool mirroring;
-	bool vbaBugCompat;
-};
+#include <mgba/gba/interface.h>
 
 struct Configuration;
 bool GBAOverrideFind(const struct Configuration*, struct GBACartridgeOverride* override);
