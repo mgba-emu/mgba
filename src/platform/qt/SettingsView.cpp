@@ -18,7 +18,7 @@
 
 #ifdef M_CORE_GB
 #include "GameBoy.h"
-#include <mgba/internal/gb/overrides.h>
+#include <mgba/gb/interface.h>
 #endif
 
 #include <mgba/core/serialize.h>

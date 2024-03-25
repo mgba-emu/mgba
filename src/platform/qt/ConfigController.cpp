@@ -13,7 +13,7 @@
 
 #include <mgba/feature/commandline.h>
 #ifdef M_CORE_GB
-#include <mgba/internal/gb/overrides.h>
+#include <mgba/gb/interface.h>
 #endif
 
 static const mOption s_frontendOptions[] = {

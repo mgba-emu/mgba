@@ -12,10 +12,6 @@ CXX_GUARD_START
 
 #include <mgba/gba/interface.h>
 
-struct Configuration;
-bool GBAOverrideFind(const struct Configuration*, struct GBACartridgeOverride* override);
-void GBAOverrideSave(struct Configuration*, const struct GBACartridgeOverride* override);
-
 struct GBA;
 void GBAOverrideApply(struct GBA*, const struct GBACartridgeOverride*);
 void GBAOverrideApplyDefaults(struct GBA*, const struct Configuration*);

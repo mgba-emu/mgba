@@ -12,18 +12,6 @@ CXX_GUARD_START
 
 #include <mgba/gb/interface.h>
 
-struct GBColorPreset {
-	const char* name;
-	uint32_t colors[12];
-};
-
-struct Configuration;
-bool GBOverrideFind(const struct Configuration*, struct GBCartridgeOverride* override);
-bool GBOverrideColorFind(struct GBCartridgeOverride* override, enum GBColorLookup);
-void GBOverrideSave(struct Configuration*, const struct GBCartridgeOverride* override);
-
-size_t GBColorPresetList(const struct GBColorPreset** presets);
-
 struct GB;
 void GBOverrideApply(struct GB*, const struct GBCartridgeOverride*);
 void GBOverrideApplyDefaults(struct GB*);

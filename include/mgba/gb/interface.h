@@ -82,6 +82,12 @@ struct GBCartridgeOverride {
 	uint32_t gbColors[12];
 };
 
+struct GBColorPreset {
+	const char* name;
+	uint32_t colors[12];
+};
+
+struct Configuration;
 struct VFile;
 
 bool GBIsROM(struct VFile* vf);
@@ -92,6 +98,12 @@ enum GBModel GBNameToModel(const char*);
 const char* GBModelToName(enum GBModel);
 
 int GBValidModels(const uint8_t* bank0);
+
+bool GBOverrideFind(const struct Configuration*, struct GBCartridgeOverride* override);
+bool GBOverrideColorFind(struct GBCartridgeOverride* override, enum GBColorLookup);
+void GBOverrideSave(struct Configuration*, const struct GBCartridgeOverride* override);
+
+size_t GBColorPresetList(const struct GBColorPreset** presets);
 
 CXX_GUARD_END
 

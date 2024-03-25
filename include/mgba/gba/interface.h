@@ -71,7 +71,7 @@ enum GBAHardwareDevice {
 	HW_EREADER = 128
 };
 
-struct GBA;
+struct Configuration;
 struct GBAAudio;
 struct GBASIO;
 struct GBAVideoRenderer;
@@ -84,15 +84,26 @@ enum {
 	mPERIPH_GBA_BATTLECHIP_GATE,
 };
 
-bool GBAIsROM(struct VFile* vf);
-bool GBAIsMB(struct VFile* vf);
-bool GBAIsBIOS(struct VFile* vf);
+struct GBACartridgeOverride {
+	char id[4];
+	enum GBASavedataType savetype;
+	int hardware;
+	uint32_t idleLoop;
+	bool vbaBugCompat;
+};
 
 struct GBALuminanceSource {
 	void (*sample)(struct GBALuminanceSource*);
 
 	uint8_t (*readLuminance)(struct GBALuminanceSource*);
 };
+
+bool GBAIsROM(struct VFile* vf);
+bool GBAIsMB(struct VFile* vf);
+bool GBAIsBIOS(struct VFile* vf);
+
+bool GBAOverrideFind(const struct Configuration*, struct GBACartridgeOverride* override);
+void GBAOverrideSave(struct Configuration*, const struct GBACartridgeOverride* override);
 
 struct GBASIODriver {
 	struct GBASIO* p;
@@ -102,14 +113,6 @@ struct GBASIODriver {
 	bool (*load)(struct GBASIODriver* driver);
 	bool (*unload)(struct GBASIODriver* driver);
 	uint16_t (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
-};
-
-struct GBACartridgeOverride {
-	char id[4];
-	enum GBASavedataType savetype;
-	int hardware;
-	uint32_t idleLoop;
-	bool vbaBugCompat;
 };
 
 void GBASIOJOYCreate(struct GBASIODriver* sio);
@@ -132,6 +135,7 @@ struct GBASIOBattlechipGate {
 
 void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate*);
 
+struct GBA;
 void GBACartEReaderQueueCard(struct GBA* gba, const void* data, size_t size);
 
 struct EReaderScan;
