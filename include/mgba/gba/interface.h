@@ -58,6 +58,19 @@ enum GBASavedataType {
 	GBA_SAVEDATA_SRAM512 = 6,
 };
 
+enum GBAHardwareDevice {
+	HW_NO_OVERRIDE = 0x8000,
+	HW_NONE = 0,
+	HW_RTC = 1,
+	HW_RUMBLE = 2,
+	HW_LIGHT_SENSOR = 4,
+	HW_GYRO = 8,
+	HW_TILT = 16,
+	HW_GB_PLAYER = 32,
+	HW_GB_PLAYER_DETECTION = 64,
+	HW_EREADER = 128
+};
+
 struct GBA;
 struct GBAAudio;
 struct GBASIO;
