@@ -54,11 +54,13 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 	m_gamepadTimer.setInterval(15);
 	m_gamepadTimer.start();
 
-#if defined(BUILD_QT_MULTIMEDIA) && (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+#ifdef BUILD_QT_MULTIMEDIA
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
 	m_captureSession.setVideoSink(&m_videoSink);
 	connect(&m_videoSink, &QVideoSink::videoFrameChanged, &m_videoDumper, &VideoDumper::present);
 #endif
 	connect(&m_videoDumper, &VideoDumper::imageAvailable, this, &InputController::setCamImage);
+#endif
 
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_X, GBA_KEY_A);
 	mInputBindKey(&m_inputMap, KEYBOARD, Qt::Key_Z, GBA_KEY_B);
@@ -115,10 +117,12 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 	};
 
 	m_image.stopRequestImage = [](mImageSource* context) {
-		InputControllerImage* image = static_cast<InputControllerImage*>(context);
 #ifdef BUILD_QT_MULTIMEDIA
+		InputControllerImage* image = static_cast<InputControllerImage*>(context);
 		image->p->m_cameraActive = false;
 		QMetaObject::invokeMethod(image->p, "teardownCam");
+#else
+		UNUSED(context);
 #endif
 	};
 
@@ -785,5 +789,7 @@ void InputController::setCamera(const QByteArray& name) {
 	if (m_cameraActive) {
 		setupCam();
 	}
+#else
+	UNUSED(name);
 #endif
 }
