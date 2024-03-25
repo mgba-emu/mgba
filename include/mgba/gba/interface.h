@@ -96,7 +96,6 @@ struct GBACartridgeOverride {
 	enum GBASavedataType savetype;
 	int hardware;
 	uint32_t idleLoop;
-	bool mirroring;
 	bool vbaBugCompat;
 };
 

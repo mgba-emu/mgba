@@ -156,7 +156,6 @@ void OverrideView::updateOverrides() {
 		gba->override.savetype = static_cast<GBASavedataType>(m_ui.savetype->currentIndex() - 1);
 		gba->override.hardware = HW_NO_OVERRIDE;
 		gba->override.idleLoop = GBA_IDLE_LOOP_NONE;
-		gba->override.mirroring = false;
 		gba->override.vbaBugCompat = false;
 		gba->vbaBugCompatSet = false;
 

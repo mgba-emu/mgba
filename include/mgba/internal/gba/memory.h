@@ -138,8 +138,6 @@ struct GBAMemory {
 	struct GBAPrintContext agbPrintCtxBackup;
 	uint32_t agbPrintFuncBackup;
 	uint16_t* agbPrintBufferBackup;
-
-	bool mirroring;
 };
 
 struct GBA;
