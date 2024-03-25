@@ -3780,7 +3780,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ObjView.ui" line="389"/>
         <source>Export</source>
-        <translation>Esportar</translation>
+        <translation>Exportar</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="402"/>
