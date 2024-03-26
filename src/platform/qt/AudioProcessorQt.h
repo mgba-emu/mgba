@@ -11,6 +11,7 @@
 #include <QAudioOutput>
 #else
 #include <QAudioSink>
+#include <QTimer>
 #endif
 
 class QAudioOutput;
@@ -38,10 +39,15 @@ public slots:
 
 	virtual void requestSampleRate(unsigned) override;
 
-private:
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+private slots:
+	void recheckUnderflow();
+
+private:
+	QTimer m_recheckTimer;
 	std::unique_ptr<QAudioSink> m_audioOutput;
 #else
+private:
 	std::unique_ptr<QAudioOutput> m_audioOutput;
 #endif
 	std::unique_ptr<AudioDevice> m_device;
