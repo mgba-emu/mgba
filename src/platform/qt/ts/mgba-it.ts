@@ -574,7 +574,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="14"/>
         <source>Create forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Crea Icona di avvio</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="20"/>
@@ -601,7 +601,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="60"/>
         <source>Forwarder base:</source>
-        <translation type="unfinished"></translation>
+        <translation>Base dell&apos;Icona di avvio:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="74"/>
@@ -691,7 +691,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="37"/>
         <source>Forwarder finished building</source>
-        <translation type="unfinished"></translation>
+        <translation>Icona di avvio compilazione completata</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="44"/>
@@ -701,7 +701,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
         <source>Failed to build forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossibile compilare Icona di avvio</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="176"/>
@@ -6447,7 +6447,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1664"/>
         <source>Create forwarder...</source>
-        <translation type="unfinished"></translation>
+        <translation>Crea Icona di avvio...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1672"/>
