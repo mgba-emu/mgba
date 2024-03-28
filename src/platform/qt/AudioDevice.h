@@ -21,6 +21,7 @@ public:
 	void setInput(mCoreThread* input);
 	void setFormat(const QAudioFormat& format);
 	bool atEnd() const override;
+	qint64 bytesAvailable() const override;
 
 protected:
 	virtual qint64 readData(char* data, qint64 maxSize) override;
