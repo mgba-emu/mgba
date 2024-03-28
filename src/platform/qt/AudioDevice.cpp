@@ -64,11 +64,15 @@ qint64 AudioDevice::writeData(const char*, qint64) {
 }
 
 bool AudioDevice::atEnd() const {
+	return !bytesAvailable();
+}
+
+qint64 AudioDevice::bytesAvailable() const {
 	if (!m_context->core) {
 		return true;
 	}
 	mCoreSyncLockAudio(&m_context->impl->sync);
-	bool available = blip_samples_avail(m_context->core->getAudioChannel(m_context->core, 0)) == 0;
+	int available = blip_samples_avail(m_context->core->getAudioChannel(m_context->core, 0));
 	mCoreSyncUnlockAudio(&m_context->impl->sync);
-	return available;
+	return available * sizeof(mStereoSample);
 }
