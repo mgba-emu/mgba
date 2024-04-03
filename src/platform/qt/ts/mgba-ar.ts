@@ -50,7 +50,8 @@
         <location filename="../AboutScreen.ui" line="86"/>
         <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation type="unfinished"></translation>
+        <translation>© 2013 – {year} جيفري بفاو، برخصة موزيلا العمومية، نسخة 2.0
+غيم بوي أدفانس هو علامة مسجلة لشركة نينتندو .، المحدودة.</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
@@ -139,7 +140,7 @@ Download size: %3</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation type="unfinished"></translation>
+        <translation>فتح ملف مضغوط...</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
@@ -152,12 +153,12 @@ Download size: %3</source>
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation type="unfinished"></translation>
+        <translation>تايل رقم</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
-        <translation type="unfinished"></translation>
+        <translation>لوحة الألوان رقم</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="89"/>
