@@ -172,15 +172,16 @@ void InputController::setConfiguration(ConfigController* config) {
 }
 
 bool InputController::loadConfiguration(uint32_t type) {
-	if (!mInputMapLoad(&m_inputMap, type, m_config->input())) {
-		return false;
-	}
+	bool loaded = mInputMapLoad(&m_inputMap, type, m_config->input());
 	auto driver = m_inputDrivers.value(type);
 	if (!driver) {
 		return false;
 	}
+	if (!loaded) {
+		driver->bindDefaults(this);
+	}
 	driver->loadConfiguration(m_config);
-	return true;
+	return loaded;
 }
 
 bool InputController::loadProfile(uint32_t type, const QString& profile) {
