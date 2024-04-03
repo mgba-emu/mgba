@@ -177,8 +177,13 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 
 #ifdef BUILD_SDL
 	m_inputController.addInputDriver(std::make_shared<SDLInputDriver>(&m_inputController));
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	m_inputController.setGamepadDriver(SDL_BINDING_CONTROLLER);
+	m_inputController.setSensorDriver(SDL_BINDING_CONTROLLER);
+#else
 	m_inputController.setGamepadDriver(SDL_BINDING_BUTTON);
 	m_inputController.setSensorDriver(SDL_BINDING_BUTTON);
+#endif
 #endif
 
 	m_shortcutController->setConfigController(m_config);

@@ -334,8 +334,13 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 	GBAKeyEditor* buttonEditor = nullptr;
 #ifdef BUILD_SDL
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	QString profile = inputController->profileForType(SDL_BINDING_CONTROLLER);
+	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_CONTROLLER, profile);
+#else
 	QString profile = inputController->profileForType(SDL_BINDING_BUTTON);
 	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
+#endif
 	addPage(tr("Controllers"), buttonEditor, Page::CONTROLLERS);
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, buttonEditor, &GBAKeyEditor::save);
 #endif

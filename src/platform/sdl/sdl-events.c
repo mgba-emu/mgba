@@ -167,12 +167,30 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
 #endif
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_A, GBA_KEY_A);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_B, GBA_KEY_B);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, GBA_KEY_L);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, GBA_KEY_R);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_START, GBA_KEY_START);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_BACK, GBA_KEY_SELECT);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_DPAD_UP, GBA_KEY_UP);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_DPAD_DOWN, GBA_KEY_DOWN);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_DPAD_LEFT, GBA_KEY_LEFT);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, GBA_KEY_RIGHT);
+
+	struct mInputAxis description = (struct mInputAxis) { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x4000, -0x4000 };
+	mInputBindAxis(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_AXIS_LEFTX, &description);
+	description = (struct mInputAxis) { GBA_KEY_DOWN, GBA_KEY_UP, 0x4000, -0x4000 };
+	mInputBindAxis(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_AXIS_LEFTY, &description);
+#else
 	struct mInputAxis description = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x4000, -0x4000 };
 	mInputBindAxis(inputMap, SDL_BINDING_BUTTON, 0, &description);
 	description = (struct mInputAxis) { GBA_KEY_DOWN, GBA_KEY_UP, 0x4000, -0x4000 };
 	mInputBindAxis(inputMap, SDL_BINDING_BUTTON, 1, &description);
 
 	mInputBindHat(inputMap, SDL_BINDING_BUTTON, 0, &GBAInputInfo.hat);
+#endif
 }
 
 bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
@@ -284,17 +302,19 @@ void mSDLDetachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration* config) {
 	mInputMapLoad(context->bindings, SDL_BINDING_KEY, config);
 	if (context->joystick) {
-		mInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+		mInputMapLoad(context->bindings, SDL_BINDING_CONTROLLER, config);
 		char name[34] = {0};
 		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
+		mInputProfileLoad(context->bindings, SDL_BINDING_CONTROLLER, config, name);
 #else
+		mInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
 		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick->joystick));
 		if (!name) {
 			return;
 		}
-#endif
 		mInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, name);
+#endif
 
 		const char* value;
 		char* end;
@@ -410,7 +430,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				if (events->preferredJoysticks[i] && strcmp(events->preferredJoysticks[i], joystickName) == 0) {
 					events->players[i]->joystick = joystick;
 					if (config) {
-						mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_BUTTON, config, joystickName);
+						mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_CONTROLLER, config, joystickName);
 					}
 					return;
 				}
@@ -421,7 +441,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				}
 				events->players[i]->joystick = joystick;
 				if (config && joystickName[0]) {
-					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_BUTTON, config, joystickName);
+					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_CONTROLLER, config, joystickName);
 				}
 				break;
 			}
@@ -574,6 +594,45 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 	}
 }
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+static void _mSDLHandleControllerButton(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_ControllerButtonEvent* event) {
+	int key = 0;
+	key = mInputMapKey(sdlContext->bindings, SDL_BINDING_CONTROLLER, event->button);
+	if (key == -1) {
+		return;
+	}
+
+	mCoreThreadInterrupt(context);
+	if (event->type == SDL_CONTROLLERBUTTONDOWN) {
+		context->core->addKeys(context->core, 1 << key);
+	} else {
+		context->core->clearKeys(context->core, 1 << key);
+	}
+	mCoreThreadContinue(context);
+}
+
+static void _mSDLHandleControllerAxis(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_ControllerAxisEvent* event) {
+	int clearKeys = ~mInputClearAxis(sdlContext->bindings, SDL_BINDING_CONTROLLER, event->axis, -1);
+	int newKeys = 0;
+	int key = mInputMapAxis(sdlContext->bindings, SDL_BINDING_CONTROLLER, event->axis, event->value);
+	if (key != -1) {
+		newKeys |= 1 << key;
+	}
+	clearKeys &= ~newKeys;
+	mCoreThreadInterrupt(context);
+	context->core->clearKeys(context->core, clearKeys);
+	context->core->addKeys(context->core, newKeys);
+	mCoreThreadContinue(context);
+}
+
+static void _mSDLHandleWindowEvent(struct mSDLPlayer* sdlContext, const struct SDL_WindowEvent* event) {
+	switch (event->event) {
+	case SDL_WINDOWEVENT_SIZE_CHANGED:
+		sdlContext->windowUpdated = 1;
+		break;
+	}
+}
+#else
 static void _mSDLHandleJoyButton(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_JoyButtonEvent* event) {
 	int key = 0;
 	key = mInputMapKey(sdlContext->bindings, SDL_BINDING_BUTTON, event->button);
@@ -616,16 +675,6 @@ static void _mSDLHandleJoyAxis(struct mCoreThread* context, struct mSDLPlayer* s
 	context->core->clearKeys(context->core, clearKeys);
 	context->core->addKeys(context->core, newKeys);
 	mCoreThreadContinue(context);
-
-}
-
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-static void _mSDLHandleWindowEvent(struct mSDLPlayer* sdlContext, const struct SDL_WindowEvent* event) {
-	switch (event->event) {
-	case SDL_WINDOWEVENT_SIZE_CHANGED:
-		sdlContext->windowUpdated = 1;
-		break;
-	}
 }
 #endif
 
@@ -638,16 +687,18 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 	case SDL_WINDOWEVENT:
 		_mSDLHandleWindowEvent(sdlContext, &event->window);
 		break;
+	case SDL_CONTROLLERBUTTONDOWN:
+	case SDL_CONTROLLERBUTTONUP:
+		_mSDLHandleControllerButton(context, sdlContext, &event->cbutton);
+		break;
+	case SDL_CONTROLLERAXISMOTION:
+		_mSDLHandleControllerAxis(context, sdlContext, &event->caxis);
+		break;
 #else
 	case SDL_VIDEORESIZE:
 		sdlContext->newWidth = event->resize.w;
 		sdlContext->newHeight = event->resize.h;
 		sdlContext->windowUpdated = 1;
-		break;
-#endif
-	case SDL_KEYDOWN:
-	case SDL_KEYUP:
-		_mSDLHandleKeypress(context, sdlContext, &event->key);
 		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
@@ -658,6 +709,11 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 		break;
 	case SDL_JOYAXISMOTION:
 		_mSDLHandleJoyAxis(context, sdlContext, &event->jaxis);
+		break;
+#endif
+	case SDL_KEYDOWN:
+	case SDL_KEYUP:
+		_mSDLHandleKeypress(context, sdlContext, &event->key);
 		break;
 	}
 }

@@ -31,7 +31,11 @@ public:
 	SDLInputDriver(InputController*, QObject* parent = nullptr);
 	~SDLInputDriver();
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	uint32_t type() const override { return SDL_BINDING_CONTROLLER; }
+#else
 	uint32_t type() const override { return SDL_BINDING_BUTTON; }
+#endif
 	QString visibleName() const override { return QLatin1String("SDL"); }
 	QString currentProfile() const override;
 
