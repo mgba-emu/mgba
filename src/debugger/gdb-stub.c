@@ -247,9 +247,9 @@ static void _writeHostInfo(struct GDBStub* stub) {
 }
 
 static void _continue(struct GDBStub* stub, const char* message) {
-	mDebuggerModuleSetNeedsCallback(&stub->d);
 	stub->untilPoll = GDB_STUB_INTERVAL;
 	stub->d.isPaused = false;
+	mDebuggerModuleSetNeedsCallback(&stub->d);
 	// TODO: parse message
 	UNUSED(message);
 }
@@ -360,6 +360,10 @@ static void _writeGPRs(struct GDBStub* stub, const char* message) {
 	_sendMessage(stub);
 }
 
+static int32_t _readPC(struct ARMCore* cpu) {
+	return cpu->gprs[ARM_PC] - (cpu->cpsr.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM);
+}
+
 static void _readGPRs(struct GDBStub* stub, const char* message) {
 	struct ARMCore* cpu = stub->d.p->core->cpu;
 	UNUSED(message);
@@ -373,7 +377,7 @@ static void _readGPRs(struct GDBStub* stub, const char* message) {
 	}
 
 	// Program counter
-	_int2hex32(cpu->gprs[ARM_PC] - (cpu->cpsr.t ? WORD_SIZE_THUMB : WORD_SIZE_ARM), &stub->outgoing[i]);
+	_int2hex32(_readPC(cpu), &stub->outgoing[i]);
 	i += 8;
 
 	// CPU status
@@ -423,8 +427,10 @@ static void _readRegister(struct GDBStub* stub, const char* message) {
 	unsigned i = 0;
 	uint32_t reg = _readHex(readAddress, &i);
 	uint32_t value;
-	if (reg < 0x10) {
+	if (reg < ARM_PC) {
 		value = cpu->gprs[reg];
+	} else if (reg == ARM_PC) {
+		value = _readPC(cpu);
 	} else if (reg == 0x19) {
 		value = cpu->cpsr.packed;
 	} else {
@@ -463,7 +469,7 @@ static void _processQSupportedCommand(struct GDBStub* stub, const char* message)
 		}
 		message = end + 1;
 	}
-	strncpy(stub->outgoing, "swbreak+;hwbreak+;qXfer:features:read+;qXfer:memory-map:read+", GDB_STUB_MAX_LINE - 4);
+	strncpy(stub->outgoing, "swbreak+;hwbreak+;qXfer:features:read+;qXfer:memory-map:read+;QStartNoAckMode+", GDB_STUB_MAX_LINE - 4);
 }
 
 static void _processQXferCommand(struct GDBStub* stub, const char* params, const char* data) {
@@ -548,7 +554,7 @@ static void _processQReadCommand(struct GDBStub* stub, const char* message) {
 
 static void _processQWriteCommand(struct GDBStub* stub, const char* message) {
 	stub->outgoing[0] = '\0';
-	if (!strncmp("StartNoAckMode#", message, 16)) {
+	if (!strncmp("StartNoAckMode#", message, 15)) {
 		stub->lineAck = GDB_ACK_OFF;
 		strncpy(stub->outgoing, "OK", GDB_STUB_MAX_LINE - 4);
 	}

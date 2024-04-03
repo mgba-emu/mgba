@@ -71,7 +71,7 @@ void GBAVideoReset(struct GBAVideo* video) {
 		video->vcount = 0x7E;
 		nextEvent = 117;
 	}
-	video->p->memory.io[REG_VCOUNT >> 1] = video->vcount;
+	video->p->memory.io[GBA_REG(VCOUNT)] = video->vcount;
 
 	video->event.callback = _startHblank;
 	mTimingSchedule(&video->p->timing, &video->event, nextEvent);
@@ -126,10 +126,10 @@ void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* 
 	renderer->oam = &video->oam;
 	video->renderer->init(video->renderer);
 	video->renderer->reset(video->renderer);
-	renderer->writeVideoRegister(renderer, REG_DISPCNT, video->p->memory.io[REG_DISPCNT >> 1]);
-	renderer->writeVideoRegister(renderer, REG_GREENSWP, video->p->memory.io[REG_GREENSWP >> 1]);
+	renderer->writeVideoRegister(renderer, GBA_REG_DISPCNT, video->p->memory.io[GBA_REG(DISPCNT)]);
+	renderer->writeVideoRegister(renderer, GBA_REG_GREENSWP, video->p->memory.io[GBA_REG(GREENSWP)]);
 	int address;
-	for (address = REG_BG0CNT; address < 0x56; address += 2) {
+	for (address = GBA_REG_BG0CNT; address < 0x56; address += 2) {
 		if (address == 0x4E) {
 			continue;
 		}
@@ -146,13 +146,13 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	if (video->vcount == VIDEO_VERTICAL_TOTAL_PIXELS) {
 		video->vcount = 0;
 	}
-	video->p->memory.io[REG_VCOUNT >> 1] = video->vcount;
+	video->p->memory.io[GBA_REG(VCOUNT)] = video->vcount;
 
 	if (video->vcount < GBA_VIDEO_VERTICAL_PIXELS) {
 		video->shouldStall = 1;
 	}
 
-	GBARegisterDISPSTAT dispstat = video->p->memory.io[REG_DISPSTAT >> 1];
+	GBARegisterDISPSTAT dispstat = video->p->memory.io[GBA_REG(DISPSTAT)];
 	dispstat = GBARegisterDISPSTATClearInHblank(dispstat);
 	if (video->vcount == GBARegisterDISPSTATGetVcountSetting(dispstat)) {
 		dispstat = GBARegisterDISPSTATFillVcounter(dispstat);
@@ -162,7 +162,7 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	} else {
 		dispstat = GBARegisterDISPSTATClearVcounter(dispstat);
 	}
-	video->p->memory.io[REG_DISPSTAT >> 1] = dispstat;
+	video->p->memory.io[GBA_REG(DISPSTAT)] = dispstat;
 
 	// Note: state may be recorded during callbacks, so ensure it is consistent!
 	switch (video->vcount) {
@@ -170,7 +170,7 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		GBAFrameStarted(video->p);
 		break;
 	case GBA_VIDEO_VERTICAL_PIXELS:
-		video->p->memory.io[REG_DISPSTAT >> 1] = GBARegisterDISPSTATFillInVblank(dispstat);
+		video->p->memory.io[GBA_REG(DISPSTAT)] = GBARegisterDISPSTATFillInVblank(dispstat);
 		if (video->frameskipCounter <= 0) {
 			video->renderer->finishFrame(video->renderer);
 		}
@@ -188,7 +188,7 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		video->p->earlyExit = true;
 		break;
 	case VIDEO_VERTICAL_TOTAL_PIXELS - 1:
-		video->p->memory.io[REG_DISPSTAT >> 1] = GBARegisterDISPSTATClearInVblank(dispstat);
+		video->p->memory.io[GBA_REG(DISPSTAT)] = GBARegisterDISPSTATClearInVblank(dispstat);
 		break;
 	}
 }
@@ -199,7 +199,7 @@ void _startHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	mTimingSchedule(timing, &video->event, VIDEO_HBLANK_LENGTH - cyclesLate);
 
 	// Begin Hblank
-	GBARegisterDISPSTAT dispstat = video->p->memory.io[REG_DISPSTAT >> 1];
+	GBARegisterDISPSTAT dispstat = video->p->memory.io[GBA_REG(DISPSTAT)];
 	dispstat = GBARegisterDISPSTATFillInHblank(dispstat);
 	if (video->vcount < GBA_VIDEO_VERTICAL_PIXELS && video->frameskipCounter <= 0) {
 		video->renderer->drawScanline(video->renderer, video->vcount);
@@ -215,12 +215,12 @@ void _startHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 		GBARaiseIRQ(video->p, GBA_IRQ_HBLANK, cyclesLate - 6); // TODO: Where does this fudge factor come from?
 	}
 	video->shouldStall = 0;
-	video->p->memory.io[REG_DISPSTAT >> 1] = dispstat;
+	video->p->memory.io[GBA_REG(DISPSTAT)] = dispstat;
 }
 
 void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
-	video->p->memory.io[REG_DISPSTAT >> 1] &= 0x7;
-	video->p->memory.io[REG_DISPSTAT >> 1] |= value;
+	video->p->memory.io[GBA_REG(DISPSTAT)] &= 0x7;
+	video->p->memory.io[GBA_REG(DISPSTAT)] |= value;
 	// TODO: Does a VCounter IRQ trigger on write?
 }
 
@@ -244,35 +244,35 @@ static uint16_t GBAVideoDummyRendererWriteVideoRegister(struct GBAVideoRenderer*
 		GBAVideoCacheWriteVideoRegister(renderer->cache, address, value);
 	}
 	switch (address) {
-	case REG_DISPCNT:
+	case GBA_REG_DISPCNT:
 		value &= 0xFFF7;
 		break;
-	case REG_BG0CNT:
-	case REG_BG1CNT:
+	case GBA_REG_BG0CNT:
+	case GBA_REG_BG1CNT:
 		value &= 0xDFFF;
 		break;
-	case REG_BG2CNT:
-	case REG_BG3CNT:
+	case GBA_REG_BG2CNT:
+	case GBA_REG_BG3CNT:
 		value &= 0xFFFF;
 		break;
-	case REG_BG0HOFS:
-	case REG_BG0VOFS:
-	case REG_BG1HOFS:
-	case REG_BG1VOFS:
-	case REG_BG2HOFS:
-	case REG_BG2VOFS:
-	case REG_BG3HOFS:
-	case REG_BG3VOFS:
+	case GBA_REG_BG0HOFS:
+	case GBA_REG_BG0VOFS:
+	case GBA_REG_BG1HOFS:
+	case GBA_REG_BG1VOFS:
+	case GBA_REG_BG2HOFS:
+	case GBA_REG_BG2VOFS:
+	case GBA_REG_BG3HOFS:
+	case GBA_REG_BG3VOFS:
 		value &= 0x01FF;
 		break;
-	case REG_BLDCNT:
+	case GBA_REG_BLDCNT:
 		value &= 0x3FFF;
 		break;
-	case REG_BLDALPHA:
+	case GBA_REG_BLDALPHA:
 		value &= 0x1F1F;
 		break;
-	case REG_WININ:
-	case REG_WINOUT:
+	case GBA_REG_WININ:
+	case GBA_REG_WINOUT:
 		value &= 0x3F3F;
 		break;
 	default:
@@ -356,7 +356,7 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 	video->shouldStall = 0;
 	int32_t flags;
 	LOAD_32(flags, 0, &state->video.flags);
-	GBARegisterDISPSTAT dispstat = state->io[REG_DISPSTAT >> 1];
+	GBARegisterDISPSTAT dispstat = state->io[GBA_REG(DISPSTAT)];
 	switch (GBASerializedVideoFlagsGetMode(flags)) {
 	case 0:
 		if (GBARegisterDISPSTATIsInHblank(dispstat)) {
@@ -385,6 +385,6 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 	}
 	mTimingSchedule(&video->p->timing, &video->event, when);
 
-	LOAD_16(video->vcount, REG_VCOUNT, state->io);
+	LOAD_16(video->vcount, GBA_REG_VCOUNT, state->io);
 	video->renderer->reset(video->renderer);
 }

@@ -13,6 +13,8 @@ CXX_GUARD_START
 #include <mgba/core/interface.h>
 #include <mgba/core/timing.h>
 
+#define GBA_IDLE_LOOP_NONE 0xFFFFFFFF
+
 enum {
 	GBA_VIDEO_HORIZONTAL_PIXELS = 240,
 	GBA_VIDEO_VERTICAL_PIXELS = 160,
@@ -45,7 +47,31 @@ enum GBAVideoLayer {
 	GBA_LAYER_OBJWIN,
 };
 
-struct GBA;
+enum GBASavedataType {
+	GBA_SAVEDATA_AUTODETECT = -1,
+	GBA_SAVEDATA_FORCE_NONE = 0,
+	GBA_SAVEDATA_SRAM = 1,
+	GBA_SAVEDATA_FLASH512 = 2,
+	GBA_SAVEDATA_FLASH1M = 3,
+	GBA_SAVEDATA_EEPROM = 4,
+	GBA_SAVEDATA_EEPROM512 = 5,
+	GBA_SAVEDATA_SRAM512 = 6,
+};
+
+enum GBAHardwareDevice {
+	HW_NO_OVERRIDE = 0x8000,
+	HW_NONE = 0,
+	HW_RTC = 1,
+	HW_RUMBLE = 2,
+	HW_LIGHT_SENSOR = 4,
+	HW_GYRO = 8,
+	HW_TILT = 16,
+	HW_GB_PLAYER = 32,
+	HW_GB_PLAYER_DETECTION = 64,
+	HW_EREADER = 128
+};
+
+struct Configuration;
 struct GBAAudio;
 struct GBASIO;
 struct GBAVideoRenderer;
@@ -58,15 +84,26 @@ enum {
 	mPERIPH_GBA_BATTLECHIP_GATE,
 };
 
-bool GBAIsROM(struct VFile* vf);
-bool GBAIsMB(struct VFile* vf);
-bool GBAIsBIOS(struct VFile* vf);
+struct GBACartridgeOverride {
+	char id[4];
+	enum GBASavedataType savetype;
+	int hardware;
+	uint32_t idleLoop;
+	bool vbaBugCompat;
+};
 
 struct GBALuminanceSource {
 	void (*sample)(struct GBALuminanceSource*);
 
 	uint8_t (*readLuminance)(struct GBALuminanceSource*);
 };
+
+bool GBAIsROM(struct VFile* vf);
+bool GBAIsMB(struct VFile* vf);
+bool GBAIsBIOS(struct VFile* vf);
+
+bool GBAOverrideFind(const struct Configuration*, struct GBACartridgeOverride* override);
+void GBAOverrideSave(struct Configuration*, const struct GBACartridgeOverride* override);
 
 struct GBASIODriver {
 	struct GBASIO* p;
@@ -98,6 +135,7 @@ struct GBASIOBattlechipGate {
 
 void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate*);
 
+struct GBA;
 void GBACartEReaderQueueCard(struct GBA* gba, const void* data, size_t size);
 
 struct EReaderScan;

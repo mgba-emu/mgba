@@ -243,29 +243,29 @@ static uint16_t* _vramBlock(struct mVideoLogger* logger, uint32_t address) {
 uint16_t GBAVideoProxyRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
 	switch (address) {
-	case REG_DISPCNT:
+	case GBA_REG_DISPCNT:
 		value &= 0xFFF7;
 		break;
-	case REG_BG0CNT:
-	case REG_BG1CNT:
+	case GBA_REG_BG0CNT:
+	case GBA_REG_BG1CNT:
 		value &= 0xDFFF;
 		break;
-	case REG_BG2CNT:
-	case REG_BG3CNT:
+	case GBA_REG_BG2CNT:
+	case GBA_REG_BG3CNT:
 		value &= 0xFFFF;
 		break;
-	case REG_BG0HOFS:
-	case REG_BG0VOFS:
-	case REG_BG1HOFS:
-	case REG_BG1VOFS:
-	case REG_BG2HOFS:
-	case REG_BG2VOFS:
-	case REG_BG3HOFS:
-	case REG_BG3VOFS:
+	case GBA_REG_BG0HOFS:
+	case GBA_REG_BG0VOFS:
+	case GBA_REG_BG1HOFS:
+	case GBA_REG_BG1VOFS:
+	case GBA_REG_BG2HOFS:
+	case GBA_REG_BG2VOFS:
+	case GBA_REG_BG3HOFS:
+	case GBA_REG_BG3VOFS:
 		value &= 0x01FF;
 		break;
 	}
-	if (address > REG_BLDY) {
+	if (address > GBA_REG_BLDY) {
 		return value;
 	}
 	if (renderer->cache) {

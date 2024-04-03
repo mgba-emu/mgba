@@ -6,22 +6,22 @@
     <message>
         <location filename="../utils.cpp" line="89"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished">Game Boy Advance ROMları (%1)</translation>
+        <translation>Game Boy Advance ROM&apos;ları (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="106"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished">Game Boy ROMları (%1)</translation>
+        <translation>Game Boy ROM&apos;ları (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="110"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished">Bütün ROMlar (%1)</translation>
+        <translation>Bütün ROM&apos;lar (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="112"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 Video Günlükleri (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -64,47 +64,52 @@ Game Boy Advance, Nintendo Co., Ltd.&apos;nin tescilli ticari markasıdır.</tra
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished"></translation>
+        <translation>Bir güncelleme mevcut</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>%1 için bir güncelleme mevcut.
+</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="38"/>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Şimdi indirip yüklemek istiyor musunuz? İndirme işlemi tamamlandığında öykünücüyü yeniden başlatmanız gerekecektir.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
         <source>
 Auto-update is not available on this platform. If you wish to update you will need to do it manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>
+Otomatik güncelleme bu platformda mevcut değildir. Güncellemek istiyorsanız bunu manuel olarak yapmanız gerekecektir.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="45"/>
         <source>Current version: %1
 New version: %2
 Download size: %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Güncel sürüm: %1
+Yeni sürüm: %2
+İndirme boyutu: %3</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="63"/>
         <source>Downloading update...</source>
-        <translation type="unfinished"></translation>
+        <translation>Güncelleme indiriliyor...</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="79"/>
         <source>Downloading failed. Please update manually.</source>
-        <translation type="unfinished"></translation>
+        <translation>İndirme başarısız oldu. Lütfen manuel olarak güncelleyin.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation type="unfinished"></translation>
+        <translation>İndirme tamamlandı. %1 yeniden başlatmak ve güncellemeyi yüklemek için Tamam&apos;a basın.</translation>
     </message>
 </context>
 <context>
@@ -112,22 +117,22 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="90"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>Kararlı</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="93"/>
         <source>Development</source>
-        <translation type="unfinished"></translation>
+        <translation>Geliştirme</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Unknown</source>
-        <translation type="unfinished">Bilinmeyen</translation>
+        <translation>Bilinmeyen</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="236"/>
         <source>(None)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Yok)</translation>
     </message>
 </context>
 <context>
@@ -188,17 +193,17 @@ Download size: %3</source>
     <message>
         <location filename="../AudioDevice.cpp" line="26"/>
         <source>Can&apos;t set format of context-less audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Bağlamdan bağımsız ses cihazının formatı ayarlanamıyor</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="44"/>
         <source>Audio device is missing its core</source>
-        <translation type="unfinished"></translation>
+        <translation>Ses cihazının çekirdeği eksik</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="62"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Salt okunur ses cihazına veri yazma</translation>
     </message>
 </context>
 <context>
@@ -206,7 +211,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="43"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Girişsiz ses işlemcisi başlatılamaz</translation>
     </message>
 </context>
 <context>
@@ -214,7 +219,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Girişsiz ses işlemcisi başlatılamaz</translation>
     </message>
 </context>
 <context>
@@ -282,28 +287,28 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.cpp" line="117"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip verisi yok</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="118"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip verisi yok. Bazı grafikler olmadan BattleChip Gates hala çalışır. Verileri şimdi indirmek istermisin?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="184"/>
         <location filename="../BattleChipView.cpp" line="203"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>Deste dosyası seç</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="215"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>Uyumsuz deste</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="216"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>Seçilen deste bu Chip Gate ile uyumlu değildir</translation>
     </message>
 </context>
 <context>
@@ -329,7 +334,7 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished"></translation>
+        <translation>Yeni Kod Ekle</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
@@ -339,12 +344,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="93"/>
         <source>Add Lines</source>
-        <translation type="unfinished"></translation>
+        <translation>Satır ekle</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="100"/>
         <source>Code type</source>
-        <translation type="unfinished"></translation>
+        <translation>Kod tipi</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
@@ -365,7 +370,7 @@ Download size: %3</source>
         <location filename="../CheatsView.cpp" line="50"/>
         <location filename="../CheatsView.cpp" line="58"/>
         <source>Autodetect (recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation>Otoseç (tavsiye edilir)</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="88"/>
@@ -376,7 +381,7 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.cpp" line="187"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bazı hileler eklenemedi. Lütfen onların doğru formatlandığından emin ol ve/yada başa hile tiplerini dene.</translation>
     </message>
 </context>
 <context>
@@ -395,7 +400,7 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="596"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>Oyun sıfırlansım mı?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="597"/>
@@ -6074,7 +6079,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1119"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
-        <translation>Emülatörün yapılandırmasını yürütülebilir dosya ile aynı dizinden yüklemesini sağlar. Devam etmek istiyor musun?</translation>
+        <translation>Öyküncünün yapılandırmasını yürütülebilir dosya ile aynı dizinden yüklemesini sağlar. Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1131"/>
@@ -6084,7 +6089,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1132"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
-        <translation>Bazı değişiklikler emülatör yeniden başlatılıncaya kadar etkili olmaz.</translation>
+        <translation>Bazı değişiklikler öyküncü yeniden başlatılıncaya kadar etkili olmaz.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1183"/>

@@ -118,8 +118,7 @@ void BattleChipModel::setFlavor(int flavor) {
 		if (line.trimmed().isEmpty()) {
 			continue;
 		}
-		QString name = QString::fromUtf8(line).trimmed();
-		m_chipIdToName[id] = name;
+		m_chipIdToName[id] = QString::fromUtf8(line).trimmed();
 	}
 
 }

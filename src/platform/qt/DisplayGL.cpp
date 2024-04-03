@@ -9,14 +9,8 @@
 
 #include <QApplication>
 #include <QMutexLocker>
+#include <QOpenGLExtraFunctions>
 #include <QOpenGLFunctions>
-#ifdef QT_OPENGL_ES_2
-#include <QOpenGLFunctions_ES2>
-using QOpenGLFunctions_Baseline = QOpenGLFunctions_ES2;
-#else
-#include <QOpenGLFunctions_3_2_Core>
-using QOpenGLFunctions_Baseline = QOpenGLFunctions_3_2_Core;
-#endif
 #include <QOpenGLPaintDevice>
 #include <QResizeEvent>
 #include <QScreen>
@@ -59,6 +53,12 @@ typedef struct _XDisplay Display;
 #define OVERHEAD_NSEC 300000
 #endif
 
+// Legacy define from X11/X.h
+#ifdef Unsorted
+#undef Unsorted
+#endif
+
+#include "LogController.h"
 #include "OpenGLBug.h"
 #include "utils.h"
 
@@ -122,7 +122,7 @@ bool mGLWidget::finalizeVAO() {
 	if (!context() || !m_vao) {
 		return false;
 	}
-	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
+	QOpenGLExtraFunctions* fn = context()->extraFunctions();
 	if (!fn) {
 		return false;
 	}
@@ -150,7 +150,7 @@ void mGLWidget::paintGL() {
 		m_refresh.start(10);
 		return;
 	}
-	QOpenGLFunctions_Baseline* fn = context()->versionFunctions<QOpenGLFunctions_Baseline>();
+	QOpenGLExtraFunctions* fn = context()->extraFunctions();
 	m_program->bind();
 	m_vao->bind();
 	fn->glBindTexture(GL_TEXTURE_2D, m_tex);
@@ -191,6 +191,7 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 {
 	setAttribute(Qt::WA_NativeWindow);
 	window()->windowHandle()->setFormat(format);
+	windowHandle()->setSurfaceType(QSurface::OpenGLSurface);
 	windowHandle()->create();
 
 #ifdef USE_SHARE_WIDGET
@@ -250,7 +251,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	m_isDrawing = true;
 	m_painter->setContext(controller);
 	m_painter->setMessagePainter(messagePainter());
-	m_context = controller;
+	m_context = std::move(controller);
 	if (videoProxy()) {
 		videoProxy()->moveToThread(&m_drawThread);
 	}
@@ -280,6 +281,47 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	}
 
 	QTimer::singleShot(8, this, &DisplayGL::updateContentSize);
+}
+
+bool DisplayGL::highestCompatible(QSurfaceFormat& format) {
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
+	if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
+		format.setVersion(3, 3);
+		format.setProfile(QSurfaceFormat::CoreProfile);
+		if (DisplayGL::supportsFormat(format)) {
+			return true;
+		}
+	} else {
+#if defined(BUILD_GLES3) || defined(USE_EPOXY)
+		format.setVersion(3, 1);
+		if (DisplayGL::supportsFormat(format)) {
+			return true;
+		}
+#endif
+#if defined(BUILD_GLES2) || defined(USE_EPOXY)
+		format.setVersion(2, 0);
+		if (DisplayGL::supportsFormat(format)) {
+			return true;
+		}
+#endif
+	}
+#endif
+
+#ifdef BUILD_GL
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
+	LOG(QT, WARN) << tr("Failed to create an OpenGL 3 context, trying old-style...");
+#endif
+	if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
+		format.setVersion(1, 4);
+	} else {
+		format.setVersion(1, 1);			
+	}
+	format.setOption(QSurfaceFormat::DeprecatedFunctions);
+	if (DisplayGL::supportsFormat(format)) {
+			return true;
+	}
+#endif
+	return false;
 }
 
 bool DisplayGL::supportsFormat(const QSurfaceFormat& format) {
@@ -471,7 +513,7 @@ void DisplayGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
 	if (proxy) {
 		proxy->moveToThread(&m_drawThread);
 	}
-	m_painter->setVideoProxy(proxy);
+	m_painter->setVideoProxy(std::move(proxy));
 }
 
 void DisplayGL::updateContentSize() {
@@ -629,7 +671,7 @@ void PainterGL::destroy() {
 }
 
 void PainterGL::setContext(std::shared_ptr<CoreController> context) {
-	m_context = context;
+	m_context = std::move(context);
 }
 
 void PainterGL::resizeContext() {
@@ -652,6 +694,7 @@ void PainterGL::resizeContext() {
 	mRectangle dims = {0, 0, size.width(), size.height()};
 	m_backend->setLayerDimensions(m_backend, VIDEO_LAYER_IMAGE, &dims);
 	recenterLayers();
+	m_dims = size;
 }
 
 void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
@@ -662,22 +705,7 @@ void PainterGL::recenterLayers() {
 	if (!m_context) {
 		return;
 	}
-	const static std::initializer_list<VideoLayer> centeredLayers{VIDEO_LAYER_BACKGROUND};
-	int width, height;
-	mRectangle frame = {0};
-	m_backend->imageSize(m_backend, VIDEO_LAYER_IMAGE, &width, &height);
-	frame.width = width;
-	frame.height = height;
-	unsigned scale = std::max(1U, m_context->videoScale());
-
-	for (VideoLayer l : centeredLayers) {
-		mRectangle dims{};
-		m_backend->imageSize(m_backend, l, &width, &height);
-		dims.width = width * scale;
-		dims.height = height * scale;
-		mRectangleCenter(&frame, &dims);
-		m_backend->setLayerDimensions(m_backend, l, &dims);
-	}
+	VideoBackendRecenter(m_backend, std::max(1U, m_context->videoScale()));
 }
 
 void PainterGL::resize(const QSize& size) {

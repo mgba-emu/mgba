@@ -130,6 +130,8 @@ if __name__ == '__main__':
 	parser.add_argument('-I', '--install-name-tool', metavar='INSTALL_NAME_TOOL', default='install_name_tool', help='path to install_name_tool')
 	parser.add_argument('-O', '--otool', metavar='OTOOL', default='otool', help='path to otool')
 	parser.add_argument('-p', '--qt-plugins', metavar='PLUGINS', default='', help='Qt plugins to include (comma-separated)')
+	parser.add_argument('-s', '--sign', metavar='IDENTITY', help='sign with a given identity')
+	parser.add_argument('-E', '--entitlements', metavar='ENTITLEMENTS', help='use a given file for entitlements when signing')
 	parser.add_argument('-v', '--verbose', action='store_true', default=False, help='output more information')
 	parser.add_argument('bundle', help='application bundle to deploy')
 	args = parser.parse_args()
@@ -168,3 +170,9 @@ if __name__ == '__main__':
 			newPath = os.path.join(newDir, plug)
 			shutil.copy2(os.path.join(qtPath, 'plugins', plugin), newPath)
 			updateMachO(newPath, splitPath(os.path.join(args.bundle, 'Contents/MacOS')), splitPath(args.root))
+	if args.sign:
+		args = ['codesign', '-s', args.sign, '-vf', '-o', 'runtime']
+		if args.entitlements:
+			args.extend(['--entitlements', args.entitlements])
+		args.append(args.bundle)
+		subprocess.check_call(args)

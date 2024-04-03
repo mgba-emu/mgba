@@ -27,8 +27,6 @@ MemorySearch::MemorySearch(std::shared_ptr<CoreController> controller, QWidget* 
 	connect(m_ui.numHex, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.numDec, &QPushButton::clicked, this, &MemorySearch::refresh);
 	connect(m_ui.viewMem, &QPushButton::clicked, this, &MemorySearch::openMemory);
-
-	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 }
 
 MemorySearch::~MemorySearch() {

@@ -716,7 +716,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Obrazy (*.png *.jpg *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -3752,17 +3752,17 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="327"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Próba odłączenia gracza multiplayer, który nie jest dołączony</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="391"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Próba uzyskania ID gracza w trybie wieloosobowym, który nie jest połączony</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="405"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Próba uzyskania identyfikatora zapisu dla gracza multiplayer, który nie jest połączony</translation>
     </message>
 </context>
 <context>
@@ -4310,7 +4310,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="114"/>
         <source>Save file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Zapisz plik:</translation>
     </message>
 </context>
 <context>
@@ -4477,7 +4477,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="487"/>
         <source> + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation> + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="496"/>
@@ -4759,12 +4759,12 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Select image</source>
-        <translation type="unfinished">Wybierz obraz</translation>
+        <translation>Wybierz obraz</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished">Plik graficzny (*.png *.jpg *.jpeg)</translation>
+        <translation>Plik graficzny (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="850"/>
@@ -5251,7 +5251,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="941"/>
         <source>Custom border:</source>
-        <translation type="unfinished"></translation>
+        <translation>Niestandardowa ramka:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1059"/>
@@ -5287,7 +5287,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1201"/>
         <source>Rewind speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Prędkość przewijania:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1238"/>
@@ -6405,12 +6405,12 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1445"/>
         <source>Increase fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Zwiększenie prędkości przewijania do przodu</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1452"/>
         <source>Decrease fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Zmiejszenie prędkości przewijania do przodu</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1459"/>
@@ -6773,17 +6773,17 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../utils.cpp" line="146"/>
         <source>Super (L)</source>
-        <translation type="unfinished">Super (L)</translation>
+        <translation>Super (L)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="148"/>
         <source>Super (R)</source>
-        <translation type="unfinished">Super (R)</translation>
+        <translation>Super (R)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="150"/>
         <source>Menu</source>
-        <translation type="unfinished">Menu</translation>
+        <translation>Menu</translation>
     </message>
 </context>
 <context>

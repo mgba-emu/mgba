@@ -8,6 +8,8 @@
 #include "input/Gamepad.h"
 #include "input/InputDriver.h"
 
+#define SDL_MAIN_HANDLED
+
 #include "platform/sdl/sdl-events.h"
 
 #include <memory>
@@ -29,7 +31,11 @@ public:
 	SDLInputDriver(InputController*, QObject* parent = nullptr);
 	~SDLInputDriver();
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	uint32_t type() const override { return SDL_BINDING_CONTROLLER; }
+#else
 	uint32_t type() const override { return SDL_BINDING_BUTTON; }
+#endif
 	QString visibleName() const override { return QLatin1String("SDL"); }
 	QString currentProfile() const override;
 
@@ -44,7 +50,7 @@ public:
 
 	bool update() override;
 
-	QList<Gamepad*> connectedGamepads() const override;
+	QList<std::shared_ptr<Gamepad>> connectedGamepads() const override;
 
 	int activeGamepadIndex() const override;
 	void setActiveGamepad(int) override;
@@ -86,6 +92,9 @@ public:
 	int buttonCount() const override;
 	int axisCount() const override;
 	int hatCount() const override;
+
+	QString buttonHumanName(int) const override;
+	QString axisHumanName(int) const override;
 
 	QString name() const override;
 	QString visibleName() const override;

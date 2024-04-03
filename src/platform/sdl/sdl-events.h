@@ -29,6 +29,7 @@ mLOG_DECLARE_CATEGORY(SDL_EVENTS);
 
 #define SDL_BINDING_KEY 0x53444C4BU
 #define SDL_BINDING_BUTTON 0x53444C42U
+#define SDL_BINDING_CONTROLLER 0x53444C43U
 
 #define MAX_PLAYERS 4
 
@@ -125,6 +126,9 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 void mSDLSuspendScreensaver(struct mSDLEvents*);
 void mSDLResumeScreensaver(struct mSDLEvents*);
 void mSDLSetScreensaverSuspendable(struct mSDLEvents*, bool suspendable);
+
+const char* mSDLButtonName(SDL_GameController*, SDL_GameControllerButton);
+const char* mSDLAxisName(SDL_GameController*, SDL_GameControllerAxis);
 #endif
 
 CXX_GUARD_END

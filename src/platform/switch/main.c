@@ -125,6 +125,12 @@ static enum ScreenMode {
 	SM_MAX
 } screenMode = SM_PA;
 
+static enum FilterMode {
+	FM_NEAREST,
+	FM_LINEAR,
+	FM_MAX
+} filterMode = FM_NEAREST;
+
 static bool eglInit() {
 	s_display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 	if (!s_display) {
@@ -314,6 +320,9 @@ static void _setup(struct mGUIRunner* runner) {
 	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
 	}
+	if (mCoreConfigGetUIntValue(&runner->config, "filterMode", &mode) && mode < FM_MAX) {
+		filterMode = mode;
+	}
 
 	runner->core->setAudioBufferSize(runner->core, SAMPLES);
 }
@@ -330,6 +339,9 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	unsigned mode;
 	if (mCoreConfigGetUIntValue(&runner->config, "screenMode", &mode) && mode < SM_MAX) {
 		screenMode = mode;
+	}
+	if (mCoreConfigGetUIntValue(&runner->config, "filterMode", &mode) && mode < FM_MAX) {
+		filterMode = mode;
 	}
 
 	int fakeBool;
@@ -380,6 +392,8 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 
 static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded, bool blendTop) {
 	glViewport(0, 1080 - vheight, vwidth, vheight);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode == FM_LINEAR ? GL_LINEAR : GL_NEAREST);
 
 	glUseProgram(program);
 	glBindVertexArray(vao);
@@ -711,21 +725,18 @@ static void glInit(void) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glGenTextures(1, &oldTex);
 	glBindTexture(GL_TEXTURE_2D, oldTex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glGenTextures(1, &screenshotTex);
 	glBindTexture(GL_TEXTURE_2D, screenshotTex);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glGenBuffers(1, &pbo);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
@@ -982,10 +993,21 @@ int main(int argc, char* argv[]) {
 				.nStates = 16
 			},
 			{
+				.title = "Filtering",
+				.data = GUI_V_S("filterMode"),
+				.submenu = 0,
+				.state = FM_NEAREST,
+				.validStates = (const char*[]) {
+					"None",
+					"Bilinear",
+				},
+				.nStates = 2
+			},
+			{
 				.title = "GPU-accelerated renderer",
 				.data = GUI_V_S("hwaccelVideo"),
 				.submenu = 0,
-				.state = 0,
+				.state = FM_NEAREST,
 				.validStates = (const char*[]) {
 					"Off",
 					"On",
@@ -1027,7 +1049,7 @@ int main(int argc, char* argv[]) {
 				.nStates = 2
 			},
 		},
-		.nConfigExtra = 5,
+		.nConfigExtra = 6,
 		.setup = _setup,
 		.teardown = NULL,
 		.gameLoaded = _gameLoaded,

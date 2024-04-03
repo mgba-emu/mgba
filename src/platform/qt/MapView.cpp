@@ -180,40 +180,40 @@ void MapView::updateTilesGBA(bool) {
 #ifdef M_CORE_GBA
 		if (m_controller->platform() == mPLATFORM_GBA) {
 			uint16_t* io = static_cast<GBA*>(m_controller->thread()->core->board)->memory.io;
-			int mode = GBARegisterDISPCNTGetMode(io[REG_DISPCNT >> 1]);
+			int mode = GBARegisterDISPCNTGetMode(io[GBA_REG(DISPCNT)]);
 			if (m_map == 2 && mode > 2) {
 				bitmap = mode == 4 ? 1 : 0;
 				if (mode != 3) {
-					frame = GBARegisterDISPCNTGetFrameSelect(io[REG_DISPCNT >> 1]);
+					frame = GBARegisterDISPCNTGetFrameSelect(io[GBA_REG(DISPCNT)]);
 				}
 			}
 			m_boundary = 1024;
 			m_ui.tile->setMaxTile(1536);
-			priority = GBARegisterBGCNTGetPriority(io[(REG_BG0CNT >> 1) + m_map]);
+			priority = GBARegisterBGCNTGetPriority(io[GBA_REG(BG0CNT) + m_map]);
 			if (mode == 0 || (mode == 1 && m_map != 2)) {
 				offset = QString("%1, %2")
-					.arg(io[(REG_BG0HOFS >> 1) + (m_map << 1)])
-					.arg(io[(REG_BG0VOFS >> 1) + (m_map << 1)]);
+					.arg(io[GBA_REG(BG0HOFS) + (m_map << 1)])
+					.arg(io[GBA_REG(BG0VOFS) + (m_map << 1)]);
 
-				if (!GBARegisterBGCNTIs256Color(io[(REG_BG0CNT >> 1) + m_map])) {
+				if (!GBARegisterBGCNTIs256Color(io[GBA_REG(BG0CNT) + m_map])) {
 					m_boundary = 2048;
 					m_ui.tile->setMaxTile(3072);
 				}
 			} else if ((mode > 0 && m_map == 2) || (mode == 2 && m_map == 3)) {
-				int32_t refX = io[(REG_BG2X_LO >> 1) + ((m_map - 2) << 2)];
-				refX |= io[(REG_BG2X_HI >> 1) + ((m_map - 2) << 2)] << 16;
-				int32_t refY = io[(REG_BG2Y_LO >> 1) + ((m_map - 2) << 2)];
-				refY |= io[(REG_BG2Y_HI >> 1) + ((m_map - 2) << 2)] << 16;
+				int32_t refX = io[GBA_REG(BG2X_LO) + ((m_map - 2) << 2)];
+				refX |= io[GBA_REG(BG2X_HI) + ((m_map - 2) << 2)] << 16;
+				int32_t refY = io[GBA_REG(BG2Y_LO) + ((m_map - 2) << 2)];
+				refY |= io[GBA_REG(BG2Y_HI) + ((m_map - 2) << 2)] << 16;
 				refX <<= 4;
 				refY <<= 4;
 				refX >>= 4;
 				refY >>= 4;
 				offset = QString("%1\n%2").arg(refX / 65536., 0, 'f', 3).arg(refY / 65536., 0, 'f', 3);
 				transform = QString("%1 %2\n%3 %4")
-					.arg(io[(REG_BG2PA >> 1) + ((m_map - 2) << 2)] / 256., 3, 'f', 2)
-					.arg(io[(REG_BG2PB >> 1) + ((m_map - 2) << 2)] / 256., 3, 'f', 2)
-					.arg(io[(REG_BG2PC >> 1) + ((m_map - 2) << 2)] / 256., 3, 'f', 2)
-					.arg(io[(REG_BG2PD >> 1) + ((m_map - 2) << 2)] / 256., 3, 'f', 2);
+					.arg(io[GBA_REG(BG2PA) + ((m_map - 2) << 2)] / 256., 3, 'f', 2)
+					.arg(io[GBA_REG(BG2PB) + ((m_map - 2) << 2)] / 256., 3, 'f', 2)
+					.arg(io[GBA_REG(BG2PC) + ((m_map - 2) << 2)] / 256., 3, 'f', 2)
+					.arg(io[GBA_REG(BG2PD) + ((m_map - 2) << 2)] / 256., 3, 'f', 2);
 
 			}
 		}

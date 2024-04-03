@@ -192,7 +192,7 @@ static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver
 
 	mLockstepLock(&node->p->d);
 
-	if (address == REG_SIOCNT) {
+	if (address == GBA_REG_SIOCNT) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOCNT <- %04X", node->id, value);
 
 		enum mLockstepPhase transferActive;
@@ -213,13 +213,11 @@ static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver
 					mTimingDeschedule(&driver->p->p->timing, &node->event);
 				}
 				mTimingSchedule(&driver->p->p->timing, &node->event, 0);
-			} else {
-				value &= ~0x0080;
 			}
 		}
 		value &= 0xFF83;
 		value |= driver->p->siocnt & 0x00FC;
-	} else if (address == REG_SIOMLT_SEND) {
+	} else if (address == GBA_REG_SIOMLT_SEND) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOMLT_SEND <- %04X", node->id, value);
 	} else {
 		mLOG(GBA_SIO, STUB, "Lockstep %i: Unknown reg %03X <- %04X", node->id, address, value);
@@ -238,10 +236,10 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 	struct GBASIO* sio = node->d.p;
 	switch (node->mode) {
 	case SIO_MULTI:
-		sio->p->memory.io[REG_SIOMULTI0 >> 1] = node->p->multiRecv[0];
-		sio->p->memory.io[REG_SIOMULTI1 >> 1] = node->p->multiRecv[1];
-		sio->p->memory.io[REG_SIOMULTI2 >> 1] = node->p->multiRecv[2];
-		sio->p->memory.io[REG_SIOMULTI3 >> 1] = node->p->multiRecv[3];
+		sio->p->memory.io[GBA_REG(SIOMULTI0)] = node->p->multiRecv[0];
+		sio->p->memory.io[GBA_REG(SIOMULTI1)] = node->p->multiRecv[1];
+		sio->p->memory.io[GBA_REG(SIOMULTI2)] = node->p->multiRecv[2];
+		sio->p->memory.io[GBA_REG(SIOMULTI3)] = node->p->multiRecv[3];
 		sio->rcnt |= 1;
 		sio->siocnt = GBASIOMultiplayerClearBusy(sio->siocnt);
 		sio->siocnt = GBASIOMultiplayerSetId(sio->siocnt, node->id);
@@ -254,9 +252,9 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 		sio->siocnt = GBASIONormalClearStart(sio->siocnt);
 		if (node->id) {
 			sio->siocnt = GBASIONormalSetSi(sio->siocnt, GBASIONormalGetIdleSo(node->p->players[node->id - 1]->d.p->siocnt));
-			node->d.p->p->memory.io[REG_SIODATA8 >> 1] = node->p->normalRecv[node->id - 1] & 0xFF;
+			node->d.p->p->memory.io[GBA_REG(SIODATA8)] = node->p->normalRecv[node->id - 1] & 0xFF;
 		} else {
-			node->d.p->p->memory.io[REG_SIODATA8 >> 1] = 0xFFFF;
+			node->d.p->p->memory.io[GBA_REG(SIODATA8)] = 0xFFFF;
 		}
 		if (GBASIONormalIsIrq(sio->siocnt)) {
 			GBARaiseIRQ(sio->p, GBA_IRQ_SIO, 0);
@@ -267,11 +265,11 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 		sio->siocnt = GBASIONormalClearStart(sio->siocnt);
 		if (node->id) {
 			sio->siocnt = GBASIONormalSetSi(sio->siocnt, GBASIONormalGetIdleSo(node->p->players[node->id - 1]->d.p->siocnt));
-			node->d.p->p->memory.io[REG_SIODATA32_LO >> 1] = node->p->normalRecv[node->id - 1];
-			node->d.p->p->memory.io[REG_SIODATA32_HI >> 1] = node->p->normalRecv[node->id - 1] >> 16;
+			node->d.p->p->memory.io[GBA_REG(SIODATA32_LO)] = node->p->normalRecv[node->id - 1];
+			node->d.p->p->memory.io[GBA_REG(SIODATA32_HI)] = node->p->normalRecv[node->id - 1] >> 16;
 		} else {
-			node->d.p->p->memory.io[REG_SIODATA32_LO >> 1] = 0xFFFF;
-			node->d.p->p->memory.io[REG_SIODATA32_HI >> 1] = 0xFFFF;
+			node->d.p->p->memory.io[GBA_REG(SIODATA32_LO)] = 0xFFFF;
+			node->d.p->p->memory.io[GBA_REG(SIODATA32_HI)] = 0xFFFF;
 		}
 		if (GBASIONormalIsIrq(sio->siocnt)) {
 			GBARaiseIRQ(sio->p, GBA_IRQ_SIO, 0);
@@ -310,25 +308,25 @@ static int32_t _masterUpdate(struct GBASIOLockstepNode* node) {
 		node->transferFinished = false;
 		switch (node->mode) {
 		case SIO_MULTI:
-			node->p->multiRecv[0] = node->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
-			node->d.p->p->memory.io[REG_SIOMULTI0 >> 1] = 0xFFFF;
-			node->d.p->p->memory.io[REG_SIOMULTI1 >> 1] = 0xFFFF;
-			node->d.p->p->memory.io[REG_SIOMULTI2 >> 1] = 0xFFFF;
-			node->d.p->p->memory.io[REG_SIOMULTI3 >> 1] = 0xFFFF;
+			node->p->multiRecv[0] = node->d.p->p->memory.io[GBA_REG(SIOMLT_SEND)];
+			node->d.p->p->memory.io[GBA_REG(SIOMULTI0)] = 0xFFFF;
+			node->d.p->p->memory.io[GBA_REG(SIOMULTI1)] = 0xFFFF;
+			node->d.p->p->memory.io[GBA_REG(SIOMULTI2)] = 0xFFFF;
+			node->d.p->p->memory.io[GBA_REG(SIOMULTI3)] = 0xFFFF;
 			node->p->multiRecv[1] = 0xFFFF;
 			node->p->multiRecv[2] = 0xFFFF;
 			node->p->multiRecv[3] = 0xFFFF;
 			break;
 		case SIO_NORMAL_8:
 			node->p->multiRecv[0] = 0xFFFF;
-			node->p->normalRecv[0] = node->d.p->p->memory.io[REG_SIODATA8 >> 1] & 0xFF;
+			node->p->normalRecv[0] = node->d.p->p->memory.io[GBA_REG(SIODATA8)] & 0xFF;
 			break;
 		case SIO_NORMAL_32:
 			node->p->multiRecv[0] = 0xFFFF;
-			mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_LO <- %04X", node->id, node->d.p->p->memory.io[REG_SIODATA32_LO >> 1]);
-			mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_HI <- %04X", node->id, node->d.p->p->memory.io[REG_SIODATA32_HI >> 1]);
-			node->p->normalRecv[0] = node->d.p->p->memory.io[REG_SIODATA32_LO >> 1];
-			node->p->normalRecv[0] |= node->d.p->p->memory.io[REG_SIODATA32_HI >> 1] << 16;
+			mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_LO <- %04X", node->id, node->d.p->p->memory.io[GBA_REG(SIODATA32_LO)]);
+			mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_HI <- %04X", node->id, node->d.p->p->memory.io[GBA_REG(SIODATA32_HI)]);
+			node->p->normalRecv[0] = node->d.p->p->memory.io[GBA_REG(SIODATA32_LO)];
+			node->p->normalRecv[0] |= node->d.p->p->memory.io[GBA_REG(SIODATA32_HI)] << 16;
 			break;
 		default:
 			node->p->multiRecv[0] = 0xFFFF;
@@ -419,21 +417,21 @@ static uint32_t _slaveUpdate(struct GBASIOLockstepNode* node) {
 		switch (node->mode) {
 		case SIO_MULTI:
 			node->d.p->rcnt &= ~1;
-			node->p->multiRecv[node->id] = node->d.p->p->memory.io[REG_SIOMLT_SEND >> 1];
-			node->d.p->p->memory.io[REG_SIOMULTI0 >> 1] = 0xFFFF;
-			node->d.p->p->memory.io[REG_SIOMULTI1 >> 1] = 0xFFFF;
-			node->d.p->p->memory.io[REG_SIOMULTI2 >> 1] = 0xFFFF;
-			node->d.p->p->memory.io[REG_SIOMULTI3 >> 1] = 0xFFFF;
+			node->p->multiRecv[node->id] = node->d.p->p->memory.io[GBA_REG(SIOMLT_SEND)];
+			node->d.p->p->memory.io[GBA_REG(SIOMULTI0)] = 0xFFFF;
+			node->d.p->p->memory.io[GBA_REG(SIOMULTI1)] = 0xFFFF;
+			node->d.p->p->memory.io[GBA_REG(SIOMULTI2)] = 0xFFFF;
+			node->d.p->p->memory.io[GBA_REG(SIOMULTI3)] = 0xFFFF;
 			node->d.p->siocnt = GBASIOMultiplayerFillBusy(node->d.p->siocnt);
 			break;
 		case SIO_NORMAL_8:
 			node->p->multiRecv[node->id] = 0xFFFF;
-			node->p->normalRecv[node->id] = node->d.p->p->memory.io[REG_SIODATA8 >> 1] & 0xFF;
+			node->p->normalRecv[node->id] = node->d.p->p->memory.io[GBA_REG(SIODATA8)] & 0xFF;
 			break;
 		case SIO_NORMAL_32:
 			node->p->multiRecv[node->id] = 0xFFFF;
-			node->p->normalRecv[node->id] = node->d.p->p->memory.io[REG_SIODATA32_LO >> 1];
-			node->p->normalRecv[node->id] |= node->d.p->p->memory.io[REG_SIODATA32_HI >> 1] << 16;
+			node->p->normalRecv[node->id] = node->d.p->p->memory.io[GBA_REG(SIODATA32_LO)];
+			node->p->normalRecv[node->id] |= node->d.p->p->memory.io[GBA_REG(SIODATA32_HI)] << 16;
 			break;
 		default:
 			node->p->multiRecv[node->id] = 0xFFFF;
@@ -509,7 +507,7 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 
 	mLockstepLock(&node->p->d);
 
-	if (address == REG_SIOCNT) {
+	if (address == GBA_REG_SIOCNT) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIOCNT <- %04X", node->id, value);
 		int attached;
 		ATOMIC_LOAD(attached, node->p->attachedNormal);
@@ -562,11 +560,11 @@ static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* drive
 				// TODO
 			}
 		}
-	} else if (address == REG_SIODATA32_LO) {
+	} else if (address == GBA_REG_SIODATA32_LO) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_LO <- %04X", node->id, value);
-	} else if (address == REG_SIODATA32_HI) {
+	} else if (address == GBA_REG_SIODATA32_HI) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA32_HI <- %04X", node->id, value);
-	} else if (address == REG_SIODATA8) {
+	} else if (address == GBA_REG_SIODATA8) {
 		mLOG(GBA_SIO, DEBUG, "Lockstep %i: SIODATA8 <- %02X", node->id, value);
 	}
 

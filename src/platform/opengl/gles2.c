@@ -118,7 +118,11 @@ static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 		glBindTexture(GL_TEXTURE_2D, context->tex[i]);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		context->imageSizes[i].width = -1;
+		context->imageSizes[i].height = -1;
 	}
+	context->width = 1;
+	context->height = 1;
 
 	glGenBuffers(1, &context->vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
@@ -289,6 +293,7 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 		}
 	}
 	context->finalShader.dirty = true;
+	context->interframeShader.dirty = true;
 	glBindTexture(GL_TEXTURE_2D, context->finalShader.tex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, drawW, drawH, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, context->finalShader.fbo);
@@ -1142,7 +1147,7 @@ bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 					}
 				}
 				u = mGLES2UniformListSize(&uniformVector);
-				struct mGLES2Uniform* uniformBlock;
+				struct mGLES2Uniform* uniformBlock = NULL;
 				if (u) {
 					uniformBlock = calloc(u, sizeof(*uniformBlock));
 					memcpy(uniformBlock, mGLES2UniformListGetPointer(&uniformVector, 0), sizeof(*uniformBlock) * u);

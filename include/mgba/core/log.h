@@ -44,6 +44,9 @@ struct mStandardLogger {
 
 struct mLogger* mLogGetContext(void);
 void mLogSetDefaultLogger(struct mLogger*);
+void mLogSetThreadLogger(struct mLogger*);
+struct mLogger* mLogGetThreadLogger(void);
+
 int mLogGenerateCategory(const char*, const char*);
 const char* mLogCategoryName(int);
 const char* mLogCategoryId(int);

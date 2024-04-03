@@ -54,14 +54,19 @@ struct mDebuggerModule* mDebuggerCreateModule(enum mDebuggerType type, struct mC
 	case DEBUGGER_GDB:
 #ifdef USE_GDB_STUB
 		GDBStubCreate(&debugger->gdb);
-		GDBStubListen(&debugger->gdb, 2345, 0, GDB_WATCHPOINT_STANDARD_LOGIC);
+		struct Address localHost = {
+			.version = IPV4,
+			.ipv4 = 0x7F000001
+		};
+		GDBStubListen(&debugger->gdb, 2345, &localHost, GDB_WATCHPOINT_STANDARD_LOGIC);
 		break;
 #endif
 	case DEBUGGER_NONE:
+	case DEBUGGER_ACCESS_LOGGER:
 	case DEBUGGER_CUSTOM:
 	case DEBUGGER_MAX:
 		free(debugger);
-		return 0;
+		return NULL;
 		break;
 	}
 

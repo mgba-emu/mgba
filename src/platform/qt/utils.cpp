@@ -65,28 +65,36 @@ bool convertAddress(const QHostAddress* input, Address* output) {
 	return true;
 }
 
-QString romFilters(bool includeMvl) {
+QString romFilters(bool includeMvl, mPlatform platform, bool rawOnly) {
 	QStringList filters;
 	QStringList formats;
 
 #ifdef M_CORE_GBA
 	QStringList gbaFormats{
 		"*.gba",
-#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
-		"*.zip",
-#endif
-#ifdef USE_LZMA
-		"*.7z",
-#endif
-#ifdef USE_ELF
-		"*.elf",
-#endif
 		"*.agb",
 		"*.mb",
 		"*.rom",
 		"*.bin"};
-	formats.append(gbaFormats);
-	filters.append(QCoreApplication::translate("QGBA", "Game Boy Advance ROMs (%1)", nullptr).arg(gbaFormats.join(QChar(' '))));
+	if (!rawOnly) {
+		gbaFormats += QStringList{
+#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
+			"*.zip",
+#endif
+#ifdef USE_LZMA
+			"*.7z",
+#endif
+#ifdef USE_ELF
+			"*.elf",
+#endif
+		};
+	}
+	if (platform == mPLATFORM_NONE || platform == mPLATFORM_GBA) {
+		formats.append(gbaFormats);
+	}
+	if (platform == mPLATFORM_NONE) {
+		filters.append(QCoreApplication::translate("QGBA", "Game Boy Advance ROMs (%1)", nullptr).arg(gbaFormats.join(QChar(' '))));
+	}
 #endif
 
 #ifdef M_CORE_GB
@@ -94,16 +102,25 @@ QString romFilters(bool includeMvl) {
 		"*.gb",
 		"*.gbc",
 		"*.sgb",
-#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
-		"*.zip",
-#endif
-#ifdef USE_LZMA
-		"*.7z",
-#endif
 		"*.rom",
 		"*.bin"};
-	formats.append(gbFormats);
-	filters.append(QCoreApplication::translate("QGBA", "Game Boy ROMs (%1)", nullptr).arg(gbFormats.join(QChar(' '))));
+
+	if (!rawOnly) {
+		gbFormats += QStringList{
+#if defined(USE_LIBZIP) || defined(USE_MINIZIP)
+			"*.zip",
+#endif
+#ifdef USE_LZMA
+			"*.7z",
+#endif
+		};
+	}
+	if (platform == mPLATFORM_NONE || platform == mPLATFORM_GBA) {
+		formats.append(gbFormats);
+	}
+	if (platform == mPLATFORM_NONE) {
+		filters.append(QCoreApplication::translate("QGBA", "Game Boy ROMs (%1)", nullptr).arg(gbFormats.join(QChar(' '))));
+	}
 #endif
 
 	formats.removeDuplicates();
@@ -121,7 +138,14 @@ bool extractMatchingFile(VDir* dir, std::function<QString (VDirEntry*)> filter) 
 			continue;
 		}
 		VFile* outfile = VFileOpen(target.toUtf8().constData(), O_WRONLY | O_TRUNC | O_CREAT);
+		if (!outfile) {
+			return false;
+		}
 		VFile* infile = dir->openFile(dir, entry->name(entry), O_RDONLY);
+		if (!infile) {
+			outfile->close(outfile);
+			return false;
+		}
 		VFileDevice::copyFile(infile, outfile);
 		infile->close(infile);
 		outfile->close(outfile);

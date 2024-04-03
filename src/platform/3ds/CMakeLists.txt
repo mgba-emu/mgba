@@ -19,15 +19,19 @@ if(${CMAKE_BUILD_TYPE} STREQUAL Debug OR ${CMAKE_BUILD_TYPE} STREQUAL RelWithDeb
 else()
 	list(APPEND OS_LIB citro3d ctru)
 endif()
-file(GLOB OS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/3ds-*.c ${CMAKE_CURRENT_SOURCE_DIR}/ctru-heap.c ${CMAKE_CURRENT_SOURCE_DIR}/socket.c)
-set(OS_SRC ${OS_SRC} PARENT_SCOPE)
+set(OS_SRC
+	${PROJECT_SOURCE_DIR}/src/util/memory.c
+	${CMAKE_CURRENT_SOURCE_DIR}/3ds-vfs.c
+	${CMAKE_CURRENT_SOURCE_DIR}/ctru-heap.c
+	${CMAKE_CURRENT_SOURCE_DIR}/socket.c
+	PARENT_SCOPE)
 set(OS_LIB ${OS_LIB} PARENT_SCOPE)
 source_group("3DS-specific code" FILES ${OS_SRC})
 
 if(USE_VFS_3DS)
 	list(APPEND OS_DEFINES USE_VFS_3DS)
 else()
-	list(APPEND CORE_VFS_SRC ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${CMAKE_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
+	list(APPEND CORE_VFS_SRC ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 endif()
 set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
 set(OS_DEFINES ${OS_DEFINES} PARENT_SCOPE)
@@ -54,8 +58,8 @@ set_target_properties(${BINARY_NAME}.elf PROPERTIES COMPILE_DEFINITIONS "${OS_DE
 target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${M_LIBRARY} ${OS_LIB})
 
 add_custom_command(OUTPUT ${BINARY_NAME}.smdh
-                   COMMAND ${BANNERTOOL} makesmdh -s "${PROJECT_NAME}" -l "${SUMMARY}" -p "endrift" -i ${CMAKE_SOURCE_DIR}/res/mgba-48.png -o ${BINARY_NAME}.smdh
-                   DEPENDS ${CMAKE_SOURCE_DIR}/res/mgba-48.png)
+                   COMMAND ${BANNERTOOL} makesmdh -s "${PROJECT_NAME}" -l "${SUMMARY}" -p "endrift" -i ${PROJECT_SOURCE_DIR}/res/mgba-48.png -o ${BINARY_NAME}.smdh
+                   DEPENDS ${PROJECT_SOURCE_DIR}/res/mgba-48.png)
 
 add_custom_command(OUTPUT ${BINARY_NAME}.xml
                    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/hbl.xml ${BINARY_NAME}.xml
@@ -67,8 +71,8 @@ add_custom_command(OUTPUT ${BINARY_NAME}.bnr
 
 # tex3ds binaries as of 2.0.1-3 crash if you try to do this
 #add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.t3x
-#                   COMMAND ${TEX3DS} -f rgb5551 -o icons.t3x ${CMAKE_SOURCE_DIR}/res/icons.png
-#                   MAIN_DEPENDENCY ${CMAKE_SOURCE_DIR}/res/icons.png
+#                   COMMAND ${TEX3DS} -f rgb5551 -o icons.t3x ${PROJECT_SOURCE_DIR}/res/icons.png
+#                   MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/res/icons.png
 #                   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.c

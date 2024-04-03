@@ -57,6 +57,11 @@ struct TestH {
 	int32_t j;
 };
 
+struct TestI {
+	uint32_t num;
+	const char* str;
+};
+
 static int32_t testAi0(struct TestA* a) {
 	return a->i;
 }
@@ -112,6 +117,14 @@ static void testSetF(struct TestG* g, const char* name, double val) {
 static void testSetC(struct TestG* g, const char* name, const char* val) {
 	g->name = name;
 	g->c = val;
+}
+
+static void callNum(struct TestI* i, uint32_t num) {
+	i->num = num;
+}
+
+static void callStr(struct TestI* i, const char* str) {
+	i->str = str;
 }
 
 #define MEMBER_A_DOCSTRING "Member a"
@@ -201,10 +214,23 @@ mSCRIPT_DEFINE_STRUCT(TestG)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(TestG, setC)
 mSCRIPT_DEFINE_END;
 
-
 mSCRIPT_DEFINE_STRUCT(TestH)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestH, S32, i)
 	mSCRIPT_DEFINE_STRUCT_CONST_MEMBER(TestH, S32, j)
+mSCRIPT_DEFINE_END;
+
+mSCRIPT_DECLARE_STRUCT(TestI);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestI, callStr, callStr, 1, CHARP, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(TestI, callNum, callNum, 1, U32, value);
+mSCRIPT_DECLARE_STRUCT_OVERLOADED_VOID_METHOD(TestI, call);
+
+mSCRIPT_DEFINE_STRUCT_METHOD_OVERLOADS(TestI, call)
+	mSCRIPT_DEFINE_STRUCT_METHOD_OVERLOAD(TestI, callStr)
+	mSCRIPT_DEFINE_STRUCT_METHOD_OVERLOAD(TestI, callNum)
+mSCRIPT_DEFINE_OVERLOADS_END;
+
+mSCRIPT_DEFINE_STRUCT(TestI)
+	mSCRIPT_DEFINE_STRUCT_OVERLOADED_METHOD(TestI, call)
 mSCRIPT_DEFINE_END;
 
 M_TEST_DEFINE(testALayout) {
@@ -1184,6 +1210,44 @@ M_TEST_DEFINE(testHSet) {
 	assert_false(cls->init);
 }
 
+M_TEST_DEFINE(testOverloadsBasic) {
+	struct mScriptTypeClass* cls = mSCRIPT_TYPE_MS_S(TestI)->details.cls;
+	assert_false(cls->init);
+	mScriptClassInit(cls);
+	assert_true(cls->init);
+
+	struct TestI s = {
+		.num = 0,
+		.str = NULL,
+	};
+
+	struct mScriptValue sval = mSCRIPT_MAKE_S(TestI, &s);
+	struct mScriptValue fn;
+	struct mScriptFrame frame;
+
+	assert_true(mScriptObjectGet(&sval, "call", &fn));
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S(TestI), &s);
+	mSCRIPT_PUSH(&frame.arguments, U32, 1);
+	assert_true(mScriptInvoke(&fn, &frame));
+	mScriptFrameDeinit(&frame);
+	assert_int_equal(s.num, 1);
+	assert_null(s.str);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S(TestI), &s);
+	mSCRIPT_PUSH(&frame.arguments, CHARP, "called");
+	assert_true(mScriptInvoke(&fn, &frame));
+	mScriptFrameDeinit(&frame);
+	assert_int_equal(s.num, 1);
+	assert_string_equal(s.str, "called");
+
+	assert_true(cls->init);
+	mScriptClassDeinit(cls);
+	assert_false(cls->init);
+}
+
 M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testALayout),
 	cmocka_unit_test(testASignatures),
@@ -1201,4 +1265,5 @@ M_TEST_SUITE_DEFINE(mScriptClasses,
 	cmocka_unit_test(testFDeinit),
 	cmocka_unit_test(testGSet),
 	cmocka_unit_test(testHSet),
+	cmocka_unit_test(testOverloadsBasic),
 )

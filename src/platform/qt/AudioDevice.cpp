@@ -62,3 +62,13 @@ qint64 AudioDevice::writeData(const char*, qint64) {
 	LOG(QT, WARN) << tr("Writing data to read-only audio device");
 	return 0;
 }
+
+bool AudioDevice::atEnd() const {
+	if (!m_context->core) {
+		return true;
+	}
+	mCoreSyncLockAudio(&m_context->impl->sync);
+	bool available = blip_samples_avail(m_context->core->getAudioChannel(m_context->core, 0)) == 0;
+	mCoreSyncUnlockAudio(&m_context->impl->sync);
+	return available;
+}

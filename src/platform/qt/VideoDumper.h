@@ -5,7 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include <QObject>
+#include <QVideoFrame>
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #include <QAbstractVideoSurface>
+#include <QVideoSurfaceFormat>
+#else
+#include <QVideoFrameFormat>
+#endif
 
 #ifdef USE_FFMPEG
 extern "C" {
@@ -15,14 +22,38 @@ extern "C" {
 
 namespace QGBA {
 
-class VideoDumper : public QAbstractVideoSurface {
+class VideoDumper : public
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+QAbstractVideoSurface
+#else
+QObject
+#endif
+{
 Q_OBJECT
 
 public:
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+	using PixelFormat = QVideoFrame::PixelFormat;
+	using Direction = QVideoSurfaceFormat::Direction;
+#else
+	using PixelFormat = QVideoFrameFormat::PixelFormat;
+	using Direction = QVideoFrameFormat::Direction;
+#endif
+
 	VideoDumper(QObject* parent = nullptr);
 
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+	QList<QVideoFrame::PixelFormat> supportedPixelFormats(QAbstractVideoBuffer::HandleType type) const override;
+#endif
+	static QList<PixelFormat> supportedPixelFormats();
+	static QImage::Format imageFormatFromPixelFormat(PixelFormat);
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	bool present(const QVideoFrame& frame) override;
-	QList<QVideoFrame::PixelFormat> supportedPixelFormats(QAbstractVideoBuffer::HandleType type = QAbstractVideoBuffer::NoHandle) const override;
+#else
+public slots:
+	bool present(const QVideoFrame& frame);
+#endif
 
 signals:
 	void imageAvailable(const QImage& image);

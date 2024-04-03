@@ -167,12 +167,30 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 	mInputBindKey(inputMap, SDL_BINDING_KEY, SDLK_RIGHT, GBA_KEY_RIGHT);
 #endif
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_A, GBA_KEY_A);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_B, GBA_KEY_B);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_LEFTSHOULDER, GBA_KEY_L);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER, GBA_KEY_R);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_START, GBA_KEY_START);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_BACK, GBA_KEY_SELECT);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_DPAD_UP, GBA_KEY_UP);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_DPAD_DOWN, GBA_KEY_DOWN);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_DPAD_LEFT, GBA_KEY_LEFT);
+	mInputBindKey(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_BUTTON_DPAD_RIGHT, GBA_KEY_RIGHT);
+
+	struct mInputAxis description = (struct mInputAxis) { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x4000, -0x4000 };
+	mInputBindAxis(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_AXIS_LEFTX, &description);
+	description = (struct mInputAxis) { GBA_KEY_DOWN, GBA_KEY_UP, 0x4000, -0x4000 };
+	mInputBindAxis(inputMap, SDL_BINDING_CONTROLLER, SDL_CONTROLLER_AXIS_LEFTY, &description);
+#else
 	struct mInputAxis description = { GBA_KEY_RIGHT, GBA_KEY_LEFT, 0x4000, -0x4000 };
 	mInputBindAxis(inputMap, SDL_BINDING_BUTTON, 0, &description);
 	description = (struct mInputAxis) { GBA_KEY_DOWN, GBA_KEY_UP, 0x4000, -0x4000 };
 	mInputBindAxis(inputMap, SDL_BINDING_BUTTON, 1, &description);
 
 	mInputBindHat(inputMap, SDL_BINDING_BUTTON, 0, &GBAInputInfo.hat);
+#endif
 }
 
 bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
@@ -284,17 +302,19 @@ void mSDLDetachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration* config) {
 	mInputMapLoad(context->bindings, SDL_BINDING_KEY, config);
 	if (context->joystick) {
-		mInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+		mInputMapLoad(context->bindings, SDL_BINDING_CONTROLLER, config);
 		char name[34] = {0};
 		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
+		mInputProfileLoad(context->bindings, SDL_BINDING_CONTROLLER, config, name);
 #else
+		mInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
 		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick->joystick));
 		if (!name) {
 			return;
 		}
-#endif
 		mInputProfileLoad(context->bindings, SDL_BINDING_BUTTON, config, name);
+#endif
 
 		const char* value;
 		char* end;
@@ -410,7 +430,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				if (events->preferredJoysticks[i] && strcmp(events->preferredJoysticks[i], joystickName) == 0) {
 					events->players[i]->joystick = joystick;
 					if (config) {
-						mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_BUTTON, config, joystickName);
+						mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_CONTROLLER, config, joystickName);
 					}
 					return;
 				}
@@ -421,7 +441,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				}
 				events->players[i]->joystick = joystick;
 				if (config && joystickName[0]) {
-					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_BUTTON, config, joystickName);
+					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_CONTROLLER, config, joystickName);
 				}
 				break;
 			}
@@ -574,6 +594,45 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 	}
 }
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+static void _mSDLHandleControllerButton(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_ControllerButtonEvent* event) {
+	int key = 0;
+	key = mInputMapKey(sdlContext->bindings, SDL_BINDING_CONTROLLER, event->button);
+	if (key == -1) {
+		return;
+	}
+
+	mCoreThreadInterrupt(context);
+	if (event->type == SDL_CONTROLLERBUTTONDOWN) {
+		context->core->addKeys(context->core, 1 << key);
+	} else {
+		context->core->clearKeys(context->core, 1 << key);
+	}
+	mCoreThreadContinue(context);
+}
+
+static void _mSDLHandleControllerAxis(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_ControllerAxisEvent* event) {
+	int clearKeys = ~mInputClearAxis(sdlContext->bindings, SDL_BINDING_CONTROLLER, event->axis, -1);
+	int newKeys = 0;
+	int key = mInputMapAxis(sdlContext->bindings, SDL_BINDING_CONTROLLER, event->axis, event->value);
+	if (key != -1) {
+		newKeys |= 1 << key;
+	}
+	clearKeys &= ~newKeys;
+	mCoreThreadInterrupt(context);
+	context->core->clearKeys(context->core, clearKeys);
+	context->core->addKeys(context->core, newKeys);
+	mCoreThreadContinue(context);
+}
+
+static void _mSDLHandleWindowEvent(struct mSDLPlayer* sdlContext, const struct SDL_WindowEvent* event) {
+	switch (event->event) {
+	case SDL_WINDOWEVENT_SIZE_CHANGED:
+		sdlContext->windowUpdated = 1;
+		break;
+	}
+}
+#else
 static void _mSDLHandleJoyButton(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_JoyButtonEvent* event) {
 	int key = 0;
 	key = mInputMapKey(sdlContext->bindings, SDL_BINDING_BUTTON, event->button);
@@ -616,16 +675,6 @@ static void _mSDLHandleJoyAxis(struct mCoreThread* context, struct mSDLPlayer* s
 	context->core->clearKeys(context->core, clearKeys);
 	context->core->addKeys(context->core, newKeys);
 	mCoreThreadContinue(context);
-
-}
-
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-static void _mSDLHandleWindowEvent(struct mSDLPlayer* sdlContext, const struct SDL_WindowEvent* event) {
-	switch (event->event) {
-	case SDL_WINDOWEVENT_SIZE_CHANGED:
-		sdlContext->windowUpdated = 1;
-		break;
-	}
 }
 #endif
 
@@ -638,16 +687,18 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 	case SDL_WINDOWEVENT:
 		_mSDLHandleWindowEvent(sdlContext, &event->window);
 		break;
+	case SDL_CONTROLLERBUTTONDOWN:
+	case SDL_CONTROLLERBUTTONUP:
+		_mSDLHandleControllerButton(context, sdlContext, &event->cbutton);
+		break;
+	case SDL_CONTROLLERAXISMOTION:
+		_mSDLHandleControllerAxis(context, sdlContext, &event->caxis);
+		break;
 #else
 	case SDL_VIDEORESIZE:
 		sdlContext->newWidth = event->resize.w;
 		sdlContext->newHeight = event->resize.h;
 		sdlContext->windowUpdated = 1;
-		break;
-#endif
-	case SDL_KEYDOWN:
-	case SDL_KEYUP:
-		_mSDLHandleKeypress(context, sdlContext, &event->key);
 		break;
 	case SDL_JOYBUTTONDOWN:
 	case SDL_JOYBUTTONUP:
@@ -659,19 +710,33 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 	case SDL_JOYAXISMOTION:
 		_mSDLHandleJoyAxis(context, sdlContext, &event->jaxis);
 		break;
+#endif
+	case SDL_KEYDOWN:
+	case SDL_KEYUP:
+		_mSDLHandleKeypress(context, sdlContext, &event->key);
+		break;
 	}
 }
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static void _mSDLSetRumble(struct mRumble* rumble, int enable) {
 	struct mSDLRumble* sdlRumble = (struct mSDLRumble*) rumble;
-	if (!sdlRumble->p->joystick
-#if !SDL_VERSION_ATLEAST(2, 0, 9)
-		|| !sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)
-#endif
-	 ) {
+	if (!sdlRumble->p->joystick) {
 		return;
 	}
+
+#if !SDL_VERSION_ATLEAST(2, 0, 9)
+	if (!sdlRumble->p->joystick->haptic || !SDL_HapticRumbleSupported(sdlRumble->p->joystick->haptic)) {
+		return;
+	}
+#endif
+
+#if SDL_VERSION_ATLEAST(2, 0, 18)
+	if (!sdlRumble->p->joystick->controller || !SDL_GameControllerHasRumble(sdlRumble->p->joystick->controller)) {
+		return;
+	}
+#endif
+
 	int8_t originalLevel = sdlRumble->level;
 	sdlRumble->level += enable;
 	if (CircleBufferSize(&sdlRumble->history) == RUMBLE_PWM) {
@@ -689,7 +754,11 @@ static void _mSDLSetRumble(struct mRumble* rumble, int enable) {
 	}
 	sdlRumble->activeLevel = activeLevel;
 #if SDL_VERSION_ATLEAST(2, 0, 9)
-	SDL_JoystickRumble(sdlRumble->p->joystick->joystick, activeLevel * 0xFFFF, activeLevel * 0xFFFF, 500);
+	if (sdlRumble->p->joystick->controller) {
+		SDL_GameControllerRumble(sdlRumble->p->joystick->controller, activeLevel * 0xFFFF, activeLevel * 0xFFFF, 500);
+	} else {
+		SDL_JoystickRumble(sdlRumble->p->joystick->joystick, activeLevel * 0xFFFF, activeLevel * 0xFFFF, 500);
+	}
 #else
 	if (sdlRumble->activeLevel > 0.5 / RUMBLE_STEPS) {
 		SDL_HapticRumbleStop(sdlRumble->p->joystick->haptic);
@@ -817,4 +886,211 @@ void mSDLSetScreensaverSuspendable(struct mSDLEvents* events, bool suspendable) 
 		SDL_EnableScreenSaver();
 	}
 }
+
+static const char* const buttonNamesXbox360[SDL_CONTROLLER_BUTTON_MAX] = {
+	[SDL_CONTROLLER_BUTTON_A] = "A",
+	[SDL_CONTROLLER_BUTTON_B] = "B",
+	[SDL_CONTROLLER_BUTTON_X] = "X",
+	[SDL_CONTROLLER_BUTTON_Y] = "Y",
+	[SDL_CONTROLLER_BUTTON_BACK] = "Back",
+	[SDL_CONTROLLER_BUTTON_GUIDE] = "Xbox",
+	[SDL_CONTROLLER_BUTTON_START] = "Start",
+	[SDL_CONTROLLER_BUTTON_LEFTSTICK] = "LS",
+	[SDL_CONTROLLER_BUTTON_RIGHTSTICK] = "RS",
+	[SDL_CONTROLLER_BUTTON_LEFTSHOULDER] = "LB",
+	[SDL_CONTROLLER_BUTTON_RIGHTSHOULDER] = "RB",
+	[SDL_CONTROLLER_BUTTON_MISC1] = "Misc",
+	[SDL_CONTROLLER_BUTTON_PADDLE1] = "P1",
+	[SDL_CONTROLLER_BUTTON_PADDLE2] = "P2",
+	[SDL_CONTROLLER_BUTTON_PADDLE3] = "P3",
+	[SDL_CONTROLLER_BUTTON_PADDLE4] = "P4",
+	[SDL_CONTROLLER_BUTTON_TOUCHPAD] = "Touch",
+};
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+static const char* const buttonNamesXboxOne[SDL_CONTROLLER_BUTTON_MAX] = {
+	[SDL_CONTROLLER_BUTTON_A] = "A",
+	[SDL_CONTROLLER_BUTTON_B] = "B",
+	[SDL_CONTROLLER_BUTTON_X] = "X",
+	[SDL_CONTROLLER_BUTTON_Y] = "Y",
+	[SDL_CONTROLLER_BUTTON_BACK] = "View",
+	[SDL_CONTROLLER_BUTTON_GUIDE] = "Xbox",
+	[SDL_CONTROLLER_BUTTON_START] = "Menu",
+	[SDL_CONTROLLER_BUTTON_LEFTSTICK] = "LS",
+	[SDL_CONTROLLER_BUTTON_RIGHTSTICK] = "RS",
+	[SDL_CONTROLLER_BUTTON_LEFTSHOULDER] = "LB",
+	[SDL_CONTROLLER_BUTTON_RIGHTSHOULDER] = "RB",
+	[SDL_CONTROLLER_BUTTON_MISC1] = "Share",
+	[SDL_CONTROLLER_BUTTON_PADDLE1] = "P1",
+	[SDL_CONTROLLER_BUTTON_PADDLE2] = "P2",
+	[SDL_CONTROLLER_BUTTON_PADDLE3] = "P3",
+	[SDL_CONTROLLER_BUTTON_PADDLE4] = "P4",
+	[SDL_CONTROLLER_BUTTON_TOUCHPAD] = "Touch",
+};
+
+static const char* const buttonNamesPlayStation[SDL_CONTROLLER_BUTTON_MAX] = {
+	[SDL_CONTROLLER_BUTTON_A] = "×",
+	[SDL_CONTROLLER_BUTTON_B] = "○",
+	[SDL_CONTROLLER_BUTTON_X] = "□",
+	[SDL_CONTROLLER_BUTTON_Y] = "△",
+	[SDL_CONTROLLER_BUTTON_BACK] = "Share",
+	[SDL_CONTROLLER_BUTTON_GUIDE] = "PS",
+	[SDL_CONTROLLER_BUTTON_START] = "Options",
+	[SDL_CONTROLLER_BUTTON_LEFTSTICK] = "L3",
+	[SDL_CONTROLLER_BUTTON_RIGHTSTICK] = "R3",
+	[SDL_CONTROLLER_BUTTON_LEFTSHOULDER] = "L1",
+	[SDL_CONTROLLER_BUTTON_RIGHTSHOULDER] = "R1",
+	[SDL_CONTROLLER_BUTTON_MISC1] = "Misc",
+	[SDL_CONTROLLER_BUTTON_PADDLE1] = "P1",
+	[SDL_CONTROLLER_BUTTON_PADDLE2] = "P2",
+	[SDL_CONTROLLER_BUTTON_PADDLE3] = "P3",
+	[SDL_CONTROLLER_BUTTON_PADDLE4] = "P4",
+	[SDL_CONTROLLER_BUTTON_TOUCHPAD] = "Touch",
+};
+
+static const char* const buttonNamesNintedo[SDL_CONTROLLER_BUTTON_MAX] = {
+	[SDL_CONTROLLER_BUTTON_A] = "A",
+	[SDL_CONTROLLER_BUTTON_B] = "B",
+	[SDL_CONTROLLER_BUTTON_X] = "X",
+	[SDL_CONTROLLER_BUTTON_Y] = "Y",
+	[SDL_CONTROLLER_BUTTON_BACK] = "-",
+	[SDL_CONTROLLER_BUTTON_GUIDE] = "Home",
+	[SDL_CONTROLLER_BUTTON_START] = "+",
+	[SDL_CONTROLLER_BUTTON_LEFTSTICK] = "LS",
+	[SDL_CONTROLLER_BUTTON_RIGHTSTICK] = "RS",
+	[SDL_CONTROLLER_BUTTON_LEFTSHOULDER] = "L",
+	[SDL_CONTROLLER_BUTTON_RIGHTSHOULDER] = "R",
+	[SDL_CONTROLLER_BUTTON_MISC1] = "Share",
+	[SDL_CONTROLLER_BUTTON_PADDLE1] = "P1",
+	[SDL_CONTROLLER_BUTTON_PADDLE2] = "P2",
+	[SDL_CONTROLLER_BUTTON_PADDLE3] = "P3",
+	[SDL_CONTROLLER_BUTTON_PADDLE4] = "P4",
+	[SDL_CONTROLLER_BUTTON_TOUCHPAD] = "Touch",
+};
+
+static const char* const buttonNamesGeneric[SDL_CONTROLLER_BUTTON_MAX] = {
+	[SDL_CONTROLLER_BUTTON_A] = "A",
+	[SDL_CONTROLLER_BUTTON_B] = "B",
+	[SDL_CONTROLLER_BUTTON_X] = "X",
+	[SDL_CONTROLLER_BUTTON_Y] = "Y",
+	[SDL_CONTROLLER_BUTTON_BACK] = "Select",
+	[SDL_CONTROLLER_BUTTON_GUIDE] = "Guide",
+	[SDL_CONTROLLER_BUTTON_START] = "Start",
+	[SDL_CONTROLLER_BUTTON_LEFTSTICK] = "LS",
+	[SDL_CONTROLLER_BUTTON_RIGHTSTICK] = "RS",
+	[SDL_CONTROLLER_BUTTON_LEFTSHOULDER] = "LB",
+	[SDL_CONTROLLER_BUTTON_RIGHTSHOULDER] = "RB",
+	[SDL_CONTROLLER_BUTTON_MISC1] = "Misc",
+	[SDL_CONTROLLER_BUTTON_PADDLE1] = "P1",
+	[SDL_CONTROLLER_BUTTON_PADDLE2] = "P2",
+	[SDL_CONTROLLER_BUTTON_PADDLE3] = "P3",
+	[SDL_CONTROLLER_BUTTON_PADDLE4] = "P4",
+	[SDL_CONTROLLER_BUTTON_TOUCHPAD] = "Touch",
+};
+#endif
+
+const char* mSDLButtonName(SDL_GameController* controller, SDL_GameControllerButton button) {
+	const char* const* buttonNames = buttonNamesXbox360;
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+	switch (SDL_GameControllerGetType(controller)) {
+	case SDL_CONTROLLER_TYPE_XBOX360:
+		buttonNames = buttonNamesXbox360;
+		break;
+	case SDL_CONTROLLER_TYPE_XBOXONE:
+		buttonNames = buttonNamesXboxOne;
+		break;
+	case SDL_CONTROLLER_TYPE_PS3:
+	case SDL_CONTROLLER_TYPE_PS4:
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+	case SDL_CONTROLLER_TYPE_PS5:
+#endif
+		buttonNames = buttonNamesPlayStation;
+		break;
+	case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
+		buttonNames = buttonNamesNintedo;
+		break;
+	default:
+		buttonNames = buttonNamesGeneric;
+		break;
+	}
+#endif
+
+	switch (button) {
+	case SDL_CONTROLLER_BUTTON_DPAD_UP:
+		return "D↑";
+	case SDL_CONTROLLER_BUTTON_DPAD_DOWN:
+		return "D↓";
+	case SDL_CONTROLLER_BUTTON_DPAD_LEFT:
+		return "D←";
+	case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:
+		return "D→";
+	default:
+		return buttonNames[button];
+	case SDL_CONTROLLER_BUTTON_INVALID:
+	case SDL_CONTROLLER_BUTTON_MAX:
+		break;
+	}
+	return NULL;
+}
+
+static const char* const axisNamesXbox[SDL_CONTROLLER_AXIS_MAX] = {
+	[SDL_CONTROLLER_AXIS_TRIGGERLEFT] = "LT",
+	[SDL_CONTROLLER_AXIS_TRIGGERRIGHT] = "RT",
+};
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+static const char* const axisNamesPlayStation[SDL_CONTROLLER_AXIS_MAX] = {
+	[SDL_CONTROLLER_AXIS_TRIGGERLEFT] = "L3",
+	[SDL_CONTROLLER_AXIS_TRIGGERRIGHT] = "R3",
+};
+
+static const char* const axisNamesNintendo[SDL_CONTROLLER_AXIS_MAX] = {
+	[SDL_CONTROLLER_AXIS_TRIGGERLEFT] = "ZL",
+	[SDL_CONTROLLER_AXIS_TRIGGERRIGHT] = "ZR",
+};
+#endif
+
+const char* mSDLAxisName(SDL_GameController* controller, SDL_GameControllerAxis axis) {
+	const char* const* axisNames = axisNamesXbox;
+
+#if SDL_VERSION_ATLEAST(2, 0, 12)
+	switch (SDL_GameControllerGetType(controller)) {
+	case SDL_CONTROLLER_TYPE_XBOX360:
+	case SDL_CONTROLLER_TYPE_XBOXONE:
+	default:
+		axisNames = axisNamesXbox;
+		break;
+	case SDL_CONTROLLER_TYPE_PS3:
+	case SDL_CONTROLLER_TYPE_PS4:
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+	case SDL_CONTROLLER_TYPE_PS5:
+#endif
+		axisNames = axisNamesPlayStation;
+		break;
+	case SDL_CONTROLLER_TYPE_NINTENDO_SWITCH_PRO:
+		axisNames = axisNamesNintendo;
+		break;
+	}
+#endif
+
+	switch (axis) {
+	case SDL_CONTROLLER_AXIS_LEFTX:
+		return "X";
+	case SDL_CONTROLLER_AXIS_LEFTY:
+		return "Y";
+	case SDL_CONTROLLER_AXIS_RIGHTX:
+		return "RX";
+	case SDL_CONTROLLER_AXIS_RIGHTY:
+		return "RY";
+	case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+	case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+		return axisNames[axis];
+	case SDL_CONTROLLER_AXIS_INVALID:
+	case SDL_CONTROLLER_AXIS_MAX:
+		break;
+	}
+	return NULL;
+}
+
 #endif

@@ -153,8 +153,6 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 	connect(m_ui.hexfield, &MemoryModel::selectionChanged, this, &MemoryView::updateSelection);
 	connect(m_ui.saveRange, &QAbstractButton::clicked, this, &MemoryView::saveRange);
 
-	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
-
 	connect(controller.get(), &CoreController::frameAvailable, this, &MemoryView::update);
 	connect(controller.get(), &CoreController::paused, this, &MemoryView::update);
 	connect(controller.get(), &CoreController::stateLoaded, this, &MemoryView::update);

@@ -18,9 +18,9 @@ static const int GSV_PAYLOAD_OFFSET = 0x430;
 static bool _importSavedata(struct GBA* gba, void* payload, size_t size) {
 	bool success = false;
 	switch (gba->memory.savedata.type) {
-	case SAVEDATA_FLASH512:
+	case GBA_SAVEDATA_FLASH512:
 		if (size > GBA_SIZE_FLASH512) {
-			GBASavedataForceType(&gba->memory.savedata, SAVEDATA_FLASH1M);
+			GBASavedataForceType(&gba->memory.savedata, GBA_SAVEDATA_FLASH1M);
 		}
 	// Fall through
 	default:
@@ -28,8 +28,8 @@ static bool _importSavedata(struct GBA* gba, void* payload, size_t size) {
 			size = GBASavedataSize(&gba->memory.savedata);
 		}
 		break;
-	case SAVEDATA_FORCE_NONE:
-	case SAVEDATA_AUTODETECT:
+	case GBA_SAVEDATA_FORCE_NONE:
+	case GBA_SAVEDATA_AUTODETECT:
 		goto cleanup;
 	}
 
@@ -276,7 +276,7 @@ bool GBASavedataExportSharkPort(const struct GBA* gba, struct VFile* vf) {
 		checksum += buffer.c[i] << (checksum % 24);
 	}
 
-	if (gba->memory.savedata.type == SAVEDATA_EEPROM) {
+	if (gba->memory.savedata.type == GBA_SAVEDATA_EEPROM) {
 		for (i = 0; i < size; ++i) {
 			char byte = gba->memory.savedata.data[i ^ 7];
 			checksum += byte << (checksum % 24);

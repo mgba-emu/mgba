@@ -74,6 +74,7 @@ struct VideoShader {
 
 void VideoBackendGetFrame(const struct VideoBackend*, struct mRectangle* frame);
 void VideoBackendGetFrameSize(const struct VideoBackend*, unsigned* width, unsigned* height);
+void VideoBackendRecenter(struct VideoBackend* v, unsigned scale);
 
 CXX_GUARD_END
 

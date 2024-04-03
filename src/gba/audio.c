@@ -37,7 +37,7 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 	audio->sampleEvent.callback = _sample;
 	audio->sampleEvent.priority = 0x18;
 	audio->psg.p = NULL;
-	uint8_t* nr52 = (uint8_t*) &audio->p->memory.io[REG_SOUNDCNT_X >> 1];
+	uint8_t* nr52 = (uint8_t*) &audio->p->memory.io[GBA_REG(SOUNDCNT_X)];
 #ifdef __BIG_ENDIAN__
 	++nr52;
 #endif
@@ -121,27 +121,34 @@ void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* 
 	info->reg = GBADMARegisterSetDestControl(info->reg, GBA_DMA_FIXED);
 	info->reg = GBADMARegisterSetWidth(info->reg, 1);
 	switch (info->dest) {
-	case GBA_BASE_IO | REG_FIFO_A_LO:
+	case GBA_BASE_IO | GBA_REG_FIFO_A_LO:
 		audio->chA.dmaSource = number;
 		break;
-	case GBA_BASE_IO | REG_FIFO_B_LO:
+	case GBA_BASE_IO | GBA_REG_FIFO_B_LO:
 		audio->chB.dmaSource = number;
 		break;
 	default:
 		mLOG(GBA_AUDIO, GAME_ERROR, "Invalid FIFO destination: 0x%08X", info->dest);
 		return;
 	}
-	uint32_t source = info->source;
-	uint32_t magic[2] = {
-		audio->p->cpu->memory.load32(audio->p->cpu, source - 0x350, NULL),
-		audio->p->cpu->memory.load32(audio->p->cpu, source - 0x980, NULL)
-	};
 	if (audio->mixer) {
-		if (magic[0] - MP2K_MAGIC <= MP2K_LOCK_MAX) {
-			audio->mixer->engage(audio->mixer, source - 0x350);
-		} else if (magic[1] - MP2K_MAGIC <= MP2K_LOCK_MAX) {
-			audio->mixer->engage(audio->mixer, source - 0x980);
-		} else {
+		uint32_t source = info->source;
+		uint32_t offsets[] = { 0x350, 0x980 };
+		size_t i;
+		for (i = 0; i < sizeof(offsets) / sizeof(*offsets); ++i) {
+			if (source < GBA_BASE_EWRAM + offsets[i]) {
+				continue;
+			}
+			if (source >= GBA_BASE_IO + offsets[i]) {
+				continue;
+			}
+			uint32_t value = GBALoad32(audio->p->cpu, source - offsets[i], NULL);
+			if (value - MP2K_MAGIC <= MP2K_LOCK_MAX) {
+				audio->mixer->engage(audio->mixer, source - offsets[i]);
+				break;
+			}
+		}
+		if (i == sizeof(offsets) / sizeof(*offsets)) {
 			audio->externalMixing = false;
 		}
 	}
@@ -239,7 +246,7 @@ void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
 	GBAudioWriteNR52(&audio->psg, value);
 	if (!audio->enable) {
 		int i;
-		for (i = REG_SOUND1CNT_LO; i < REG_SOUNDCNT_HI; i += 2) {
+		for (i = GBA_REG_SOUND1CNT_LO; i < GBA_REG_SOUNDCNT_HI; i += 2) {
 			audio->p->memory.io[i >> 1] = 0;
 		}
 		audio->psg.ch3.size = 0;
@@ -248,18 +255,19 @@ void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
 		audio->volume = 0;
 		audio->volumeChA = 0;
 		audio->volumeChB = 0;
-		audio->p->memory.io[REG_SOUNDCNT_HI >> 1] &= 0xFF00;
+		audio->p->memory.io[GBA_REG(SOUNDCNT_HI)] &= 0xFF00;
 	}
 }
 
 void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {
-	GBAAudioSample(audio, mTimingCurrentTime(&audio->p->timing));
+	int32_t timestamp = mTimingCurrentTime(&audio->p->timing);
+	GBAAudioSample(audio, timestamp);
 	audio->soundbias = value;
 	int32_t oldSampleInterval = audio->sampleInterval;
 	audio->sampleInterval = 0x200 >> GBARegisterSOUNDBIASGetResolution(value);
 	if (oldSampleInterval != audio->sampleInterval) {
-		audio->lastSample += oldSampleInterval * audio->sampleIndex;
-		audio->sampleIndex = 0;
+		timestamp -= audio->lastSample;
+		audio->sampleIndex = timestamp >> (9 - GBARegisterSOUNDBIASGetResolution(value));
 		if (audio->p->stream && audio->p->stream->audioRateChanged) {
 			audio->p->stream->audioRateChanged(audio->p->stream, GBA_ARM7TDMI_FREQUENCY / audio->sampleInterval);
 		}
@@ -295,10 +303,10 @@ uint32_t GBAAudioReadWaveRAM(struct GBAAudio* audio, int address) {
 uint32_t GBAAudioWriteFIFO(struct GBAAudio* audio, int address, uint32_t value) {
 	struct GBAAudioFIFO* channel;
 	switch (address) {
-	case REG_FIFO_A_LO:
+	case GBA_REG_FIFO_A_LO:
 		channel = &audio->chA;
 		break;
-	case REG_FIFO_B_LO:
+	case GBA_REG_FIFO_B_LO:
 		channel = &audio->chB;
 		break;
 	default:
@@ -529,14 +537,14 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 	GBAudioPSGDeserialize(&audio->psg, &state->audio.psg, &state->audio.flags);
 
 	uint16_t reg;
-	LOAD_16(reg, REG_SOUND1CNT_X, state->io);
-	GBAIOWrite(audio->p, REG_SOUND1CNT_X, reg & 0x7FFF);
-	LOAD_16(reg, REG_SOUND2CNT_HI, state->io);
-	GBAIOWrite(audio->p, REG_SOUND2CNT_HI, reg & 0x7FFF);
-	LOAD_16(reg, REG_SOUND3CNT_X, state->io);
-	GBAIOWrite(audio->p, REG_SOUND3CNT_X, reg & 0x7FFF);
-	LOAD_16(reg, REG_SOUND4CNT_HI, state->io);
-	GBAIOWrite(audio->p, REG_SOUND4CNT_HI, reg & 0x7FFF);
+	LOAD_16(reg, GBA_REG_SOUND1CNT_X, state->io);
+	GBAIOWrite(audio->p, GBA_REG_SOUND1CNT_X, reg & 0x7FFF);
+	LOAD_16(reg, GBA_REG_SOUND2CNT_HI, state->io);
+	GBAIOWrite(audio->p, GBA_REG_SOUND2CNT_HI, reg & 0x7FFF);
+	LOAD_16(reg, GBA_REG_SOUND3CNT_X, state->io);
+	GBAIOWrite(audio->p, GBA_REG_SOUND3CNT_X, reg & 0x7FFF);
+	LOAD_16(reg, GBA_REG_SOUND4CNT_HI, state->io);
+	GBAIOWrite(audio->p, GBA_REG_SOUND4CNT_HI, reg & 0x7FFF);
 
 	LOAD_32(audio->chA.internalSample, 0, &state->audio.internalA);
 	LOAD_32(audio->chB.internalSample, 0, &state->audio.internalB);

@@ -716,7 +716,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>이미지 파일 (*.png *.jpg *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -3752,17 +3752,17 @@ Download size: %3</source>
     <message>
         <location filename="../MultiplayerController.cpp" line="327"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>연결되지 않은 멀티플레이어 플레이어를 분리하려고 함</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="391"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>연결되지 않은 멀티플레이어 플레이어의 플레이어 ID를 가져오려고 함</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="405"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>연결되지 않은 멀티플레이어 플레이어의 저장 ID를 얻으려고 함</translation>
     </message>
 </context>
 <context>
@@ -4310,7 +4310,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="114"/>
         <source>Save file:</source>
-        <translation type="unfinished"></translation>
+        <translation>저장 파일:</translation>
     </message>
 </context>
 <context>
@@ -4477,7 +4477,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="487"/>
         <source> + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation> + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="496"/>
@@ -4759,12 +4759,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Select image</source>
-        <translation type="unfinished">이미지 선택</translation>
+        <translation>이미지 선택</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished">이미지 파일 (*.png *.jpg *.jpeg)</translation>
+        <translation>이미지 파일 (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="850"/>
@@ -5067,7 +5067,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="941"/>
         <source>Custom border:</source>
-        <translation type="unfinished"></translation>
+        <translation>커스텀 테두리:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="952"/>
@@ -5112,7 +5112,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1201"/>
         <source>Rewind speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>되감기 속도:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2171"/>
@@ -6325,12 +6325,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1445"/>
         <source>Increase fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>빨리 감기 속도 향상</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1452"/>
         <source>Decrease fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>빨리 감기 속도 줄이기</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1459"/>
@@ -6769,17 +6769,17 @@ Download size: %3</source>
     <message>
         <location filename="../utils.cpp" line="146"/>
         <source>Super (L)</source>
-        <translation type="unfinished">슈퍼 (L)</translation>
+        <translation>슈퍼 (L)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="148"/>
         <source>Super (R)</source>
-        <translation type="unfinished">슈퍼 (R)</translation>
+        <translation>슈퍼 (R)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="150"/>
         <source>Menu</source>
-        <translation type="unfinished">메뉴</translation>
+        <translation>메뉴</translation>
     </message>
 </context>
 <context>

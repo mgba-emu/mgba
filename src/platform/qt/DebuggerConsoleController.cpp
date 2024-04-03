@@ -38,7 +38,7 @@ void DebuggerConsoleController::enterLine(const QString& line) {
 	CoreController::Interrupter interrupter(m_gameController);
 	QMutexLocker lock(&m_mutex);
 	m_lines.append(line);
-	if (m_cliDebugger.d.p->state == DEBUGGER_RUNNING) {
+	if (m_cliDebugger.d.p && m_cliDebugger.d.p->state == DEBUGGER_RUNNING) {
 		mDebuggerEnter(m_cliDebugger.d.p, DEBUGGER_ENTER_MANUAL, nullptr);
 	}
 	m_cond.wakeOne();
@@ -167,7 +167,7 @@ void DebuggerConsoleController::historyLoad() {
 		history.append(QString::fromUtf8(line));
 	}
 	QMutexLocker lock(&m_mutex);
-	m_history = history;
+	m_history = std::move(history);
 }
 
 void DebuggerConsoleController::historySave() {

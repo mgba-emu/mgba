@@ -18,7 +18,7 @@
 
 #ifdef M_CORE_GB
 #include "GameBoy.h"
-#include <mgba/internal/gb/overrides.h>
+#include <mgba/gb/interface.h>
 #endif
 
 #include <mgba/core/serialize.h>
@@ -26,6 +26,7 @@
 #include <mgba/internal/gba/gba.h>
 
 #ifdef BUILD_SDL
+#define SDL_MAIN_HANDLED
 #include "platform/sdl/sdl-events.h"
 #endif
 
@@ -333,8 +334,13 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 	GBAKeyEditor* buttonEditor = nullptr;
 #ifdef BUILD_SDL
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	QString profile = inputController->profileForType(SDL_BINDING_CONTROLLER);
+	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_CONTROLLER, profile);
+#else
 	QString profile = inputController->profileForType(SDL_BINDING_BUTTON);
 	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
+#endif
 	addPage(tr("Controllers"), buttonEditor, Page::CONTROLLERS);
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, buttonEditor, &GBAKeyEditor::save);
 #endif
@@ -715,6 +721,8 @@ void SettingsView::reloadConfig() {
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);
 	loadSetting("pauseOnFocusLost", m_ui.pauseOnFocusLost);
 	loadSetting("pauseOnMinimize", m_ui.pauseOnMinimize);
+	loadSetting("muteOnFocusLost", m_ui.muteOnFocusLost);
+	loadSetting("muteOnMinimize", m_ui.muteOnMinimize);
 	loadSetting("savegamePath", m_ui.savegamePath);
 	loadSetting("savestatePath", m_ui.savestatePath);
 	loadSetting("screenshotPath", m_ui.screenshotPath);

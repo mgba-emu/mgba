@@ -232,9 +232,9 @@ bool ForwarderController::toolInstalled(const QString& tool) {
 
 void ForwarderController::connectReply(QNetworkReply* reply, Download download, void (ForwarderController::*next)(QNetworkReply*)) {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-	connect(reply, &QNetworkReply::errorOccurred, this, [this, reply]() {
+	connect(reply, &QNetworkReply::errorOccurred, this, [this]() {
 #else
-	connect(reply, qOverload<>(&QNetworkReply::error), this, [this, reply]() {
+	connect(reply, qOverload<>(&QNetworkReply::error), this, [this]() {
 #endif
 		emit buildFailed();
 	});

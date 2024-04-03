@@ -243,9 +243,10 @@ static bool ARMDebuggerHasBreakpoints(struct mDebuggerPlatform*);
 static void ARMDebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
 static void ARMDebuggerFormatRegisters(struct ARMRegisterFile* regs, char* out, size_t* length);
 static void ARMDebuggerFrameFormatRegisters(struct mStackFrame* frame, char* out, size_t* length);
-static uint32_t ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform*);
-static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform*, uint32_t);
+static enum mStackTraceMode ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform*);
+static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform*, enum mStackTraceMode);
 static bool ARMDebuggerUpdateStackTrace(struct mDebuggerPlatform* d);
+static void ARMDebuggerNextInstructionInfo(struct mDebuggerPlatform* d, struct mDebuggerInstructionInfo*);
 
 struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	struct mDebuggerPlatform* platform = (struct mDebuggerPlatform*) malloc(sizeof(struct ARMDebugger));
@@ -263,6 +264,7 @@ struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	platform->getStackTraceMode = ARMDebuggerGetStackTraceMode;
 	platform->setStackTraceMode = ARMDebuggerSetStackTraceMode;
 	platform->updateStackTrace = ARMDebuggerUpdateStackTrace;
+	platform->nextInstructionInfo = ARMDebuggerNextInstructionInfo;
 	return platform;
 }
 
@@ -527,12 +529,12 @@ static void ARMDebuggerFrameFormatRegisters(struct mStackFrame* frame, char* out
 	ARMDebuggerFormatRegisters(frame->regs, out, length);
 }
 
-static uint32_t ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform* d) {
+static enum mStackTraceMode ARMDebuggerGetStackTraceMode(struct mDebuggerPlatform* d) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	return debugger->stackTraceMode;
 }
 
-static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform* d, uint32_t mode) {
+static void ARMDebuggerSetStackTraceMode(struct mDebuggerPlatform* d, enum mStackTraceMode mode) {
 	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
 	struct mStackTrace* stack = &d->p->stackTrace;
 	if (mode == STACK_TRACE_DISABLED && debugger->stackTraceMode != STACK_TRACE_DISABLED) {
@@ -550,4 +552,28 @@ static bool ARMDebuggerUpdateStackTrace(struct mDebuggerPlatform* d) {
 	} else {
 		return false;
 	}
+}
+
+static void ARMDebuggerNextInstructionInfo(struct mDebuggerPlatform* d, struct mDebuggerInstructionInfo* info) {
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	info->width = _ARMInstructionLength(debugger->cpu);
+	info->address = debugger->cpu->gprs[ARM_PC] - info->width;
+	info->segment = 0;
+	if (debugger->cpu->executionMode == MODE_ARM) {
+		info->flags[0] = mDebuggerAccessLogFlagsFillAccess32(0);
+		info->flags[1] = mDebuggerAccessLogFlagsFillAccess32(0);
+		info->flags[2] = mDebuggerAccessLogFlagsFillAccess32(0);
+		info->flags[3] = mDebuggerAccessLogFlagsFillAccess32(0);
+		info->flagsEx[0] = mDebuggerAccessLogFlagsExFillExecuteARM(0);
+		info->flagsEx[1] = mDebuggerAccessLogFlagsExFillExecuteARM(0);
+		info->flagsEx[2] = mDebuggerAccessLogFlagsExFillExecuteARM(0);
+		info->flagsEx[3] = mDebuggerAccessLogFlagsExFillExecuteARM(0);
+	} else {
+		info->flags[0] = mDebuggerAccessLogFlagsFillAccess16(0);
+		info->flags[1] = mDebuggerAccessLogFlagsFillAccess16(0);
+		info->flagsEx[0] = mDebuggerAccessLogFlagsExFillExecuteThumb(0);
+		info->flagsEx[1] = mDebuggerAccessLogFlagsExFillExecuteThumb(0);
+	}
+
+	// TODO Access types
 }

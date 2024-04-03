@@ -656,7 +656,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="215"/>
         <source>Use default image</source>
-        <translation>Utilizar la imagen por defecto</translation>
+        <translation>Utilizar imagen por defecto</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="328"/>
@@ -686,17 +686,17 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="36"/>
         <source>Build finished</source>
-        <translation>Construcción finalizada</translation>
+        <translation>Compilación finalizada</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="37"/>
         <source>Forwarder finished building</source>
-        <translation>Transmisor terminado de construir</translation>
+        <translation>Transmisor terminado de compilar</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="44"/>
         <source>Build failed</source>
-        <translation>Falló la construcción</translation>
+        <translation>Falló la compilación</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
@@ -716,7 +716,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Archivos de imagen (*.png *.jpg *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -3752,17 +3752,17 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="327"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Intentando desvincular a un multijugador que no está conectado</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="391"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Intentando obtener el ID de un multijugador que no está conectado</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="405"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Intentando obtener ID de guardado para un jugador multijugador que no está conectado</translation>
     </message>
 </context>
 <context>
@@ -3780,7 +3780,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ObjView.ui" line="389"/>
         <source>Export</source>
-        <translation>Esportar</translation>
+        <translation>Exportar</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="402"/>
@@ -4228,7 +4228,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../PrinterView.ui" line="130"/>
         <source>Hurry up!</source>
-        <translation>¡Apúrate!</translation>
+        <translation>¡Apresúrate!</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="137"/>
@@ -4310,7 +4310,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="114"/>
         <source>Save file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Guardar:</translation>
     </message>
 </context>
 <context>
@@ -4477,7 +4477,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="487"/>
         <source> + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation> + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="496"/>
@@ -4759,12 +4759,12 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Select image</source>
-        <translation type="unfinished">Seleccionar imagen</translation>
+        <translation>Seleccionar imagen</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished">Archivo de imagen (*.png *.jpg *.jpeg)</translation>
+        <translation>Archivo de imagen (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="850"/>
@@ -4792,14 +4792,16 @@ Tamaño de descarga: %3</translation>
         <translation>
             <numerusform>Hace %n hora</numerusform>
             <numerusform>Hace %n horas</numerusform>
+            <numerusform>Hace %n horas</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="886"/>
         <source>%n day(s) ago</source>
         <translation>
-            <numerusform>Hace %n dia</numerusform>
-            <numerusform>Hace %n dias</numerusform>
+            <numerusform>Hace %n día</numerusform>
+            <numerusform>Hace %n días</numerusform>
+            <numerusform>Hace %n días</numerusform>
         </translation>
     </message>
     <message>
@@ -5089,7 +5091,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="941"/>
         <source>Custom border:</source>
-        <translation type="unfinished"></translation>
+        <translation>Borde personalizado:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="952"/>
@@ -5134,7 +5136,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1201"/>
         <source>Rewind speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Velocidad de rebobinado:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2171"/>
@@ -6106,7 +6108,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1267"/>
         <source>Load ROM in archive...</source>
-        <translation>Cargar ROM desde contenedor...</translation>
+        <translation>Cargar ROM desde archivo comprimido...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1268"/>
@@ -6151,7 +6153,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1321"/>
         <source>Recent</source>
-        <translation>Cargar reciente</translation>
+        <translation>Reciente</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1668"/>
@@ -6388,12 +6390,12 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1445"/>
         <source>Increase fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Aumentar la velocidad de avance rápido</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1452"/>
         <source>Decrease fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Disminuir velocidad de avance rápido</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1459"/>
@@ -6771,17 +6773,17 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../utils.cpp" line="146"/>
         <source>Super (L)</source>
-        <translation type="unfinished">Super (L)</translation>
+        <translation>Súper (L)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="148"/>
         <source>Super (R)</source>
-        <translation type="unfinished">Super (R)</translation>
+        <translation>Súper (R)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="150"/>
         <source>Menu</source>
-        <translation type="unfinished">Menú</translation>
+        <translation>Menú</translation>
     </message>
 </context>
 <context>

@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "KeyEditor.h"
 
+#include "InputController.h"
+#include "input/Gamepad.h"
 #include "input/GamepadAxisEvent.h"
 #include "input/GamepadButtonEvent.h"
 #include "ShortcutController.h"
@@ -18,12 +20,20 @@ using namespace QGBA;
 
 KeyEditor::KeyEditor(QWidget* parent)
 	: QLineEdit(parent)
+	, m_controller(nullptr)
 	, m_direction(GamepadAxisEvent::NEUTRAL)
 	, m_hatDirection(GamepadHatEvent::CENTER)
 {
 	setAlignment(Qt::AlignCenter);
 	setFocusPolicy(Qt::ClickFocus);
 	m_lastKey.setSingleShot(true);
+}
+
+void KeyEditor::setInputController(InputController* controller) {
+	m_controller = controller;
+	if (m_button) {
+		updateButtonText();
+	}
 }
 
 void KeyEditor::setValue(int key) {
@@ -204,10 +214,28 @@ void KeyEditor::updateButtonText() {
 		}
 	}
 	if (m_key >= 0) {
-		text.append(QString::number(m_key));
+		std::shared_ptr<Gamepad> gamepad;
+		if (m_controller && m_controller->gamepadDriver()) {
+			gamepad = m_controller->gamepadDriver()->activeGamepad();
+		}
+		if (!gamepad) {
+			text.append(QString::number(m_key));
+		} else {
+			text.append(gamepad->buttonHumanName(m_key));
+		}
 	}
 	if (m_direction != GamepadAxisEvent::NEUTRAL) {
-		text.append((m_direction == GamepadAxisEvent::NEGATIVE ? "-" : "+") + QString::number(m_axis));
+		QString name;
+		std::shared_ptr<Gamepad> gamepad;
+		if (m_controller && m_controller->gamepadDriver()) {
+			gamepad = m_controller->gamepadDriver()->activeGamepad();
+		}
+		if (!gamepad) {
+			name = QString::number(m_axis);
+		} else {
+			name = gamepad->axisHumanName(m_axis);
+		}
+		text.append((m_direction == GamepadAxisEvent::NEGATIVE ? "-" : "+") + name);
 	}
 	if (text.isEmpty()) {
 		setText(tr("---"));

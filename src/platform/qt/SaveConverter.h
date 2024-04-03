@@ -31,7 +31,7 @@ class SaveConverter : public QDialog {
 Q_OBJECT
 
 public:
-	SaveConverter(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	SaveConverter(QWidget* parent = nullptr);
 
 	static mPlatform getStatePlatform(VFile*);
 	static QByteArray getState(VFile*, mPlatform);
@@ -48,7 +48,7 @@ private slots:
 private:
 #ifdef M_CORE_GBA
 	struct GBASave {
-		SavedataType type;
+		GBASavedataType type;
 	};
 #endif
 #ifdef M_CORE_GB
@@ -66,7 +66,7 @@ private:
 		AnnotatedSave();
 		AnnotatedSave(mPlatform, std::shared_ptr<VFileDevice>, Endian = Endian::NONE, Container = Container::NONE);
 #ifdef M_CORE_GBA
-		AnnotatedSave(SavedataType, std::shared_ptr<VFileDevice>, Endian = Endian::NONE, Container = Container::NONE);
+		AnnotatedSave(GBASavedataType, std::shared_ptr<VFileDevice>, Endian = Endian::NONE, Container = Container::NONE);
 #endif
 #ifdef M_CORE_GB
 		AnnotatedSave(GBMemoryBankControllerType, std::shared_ptr<VFileDevice>, Endian = Endian::NONE, Container = Container::NONE);
@@ -100,7 +100,6 @@ private:
 
 	Ui::SaveConverter m_ui;
 
-	std::shared_ptr<CoreController> m_controller;
 	QList<AnnotatedSave> m_validSaves;
 	QList<AnnotatedSave> m_validOutputs;
 };

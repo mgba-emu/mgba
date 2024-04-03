@@ -119,9 +119,11 @@ static void _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, en
 			struct mDebuggerEntryInfo info;
 			info.type.wp.oldValue = oldValue;
 			info.type.wp.newValue = newValue;
-			info.address = address;
 			info.type.wp.watchType = watchpoint->type;
 			info.type.wp.accessType = type;
+			info.address = address;
+			info.segment = 0;
+			info.width = width;
 			info.pointId = watchpoint->id;
 			info.target = TableLookup(&debugger->d.p->pointOwner, watchpoint->id);
 			mDebuggerEnter(debugger->d.p, DEBUGGER_ENTER_WATCHPOINT, &info);

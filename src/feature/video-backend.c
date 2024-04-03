@@ -23,3 +23,23 @@ void VideoBackendGetFrameSize(const struct VideoBackend* v, unsigned* width, uns
 	*width = frame.width;
 	*height = frame.height;
 }
+
+void VideoBackendRecenter(struct VideoBackend* v, unsigned scale) {
+	static const int centeredLayers[] = {VIDEO_LAYER_BACKGROUND, -1};
+	struct mRectangle frame = {0};
+	v->imageSize(v, VIDEO_LAYER_IMAGE, &frame.width, &frame.height);
+	if (scale == 0) {
+		scale = 1;
+	}
+
+	size_t i;
+	for (i = 0; centeredLayers[i] >= 0; ++i) {
+		int width, height;
+		struct mRectangle dims = {0};
+		v->imageSize(v, centeredLayers[i], &width, &height);
+		dims.width = width * scale;
+		dims.height = height * scale;
+		mRectangleCenter(&frame, &dims);
+		v->setLayerDimensions(v, centeredLayers[i], &dims);
+	}
+}

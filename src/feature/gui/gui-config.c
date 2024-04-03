@@ -12,7 +12,7 @@
 #include <mgba/internal/gba/gba.h>
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
-#include <mgba/internal/gb/overrides.h>
+#include <mgba/gb/interface.h>
 #endif
 #include <mgba-util/gui/file-select.h>
 #include <mgba-util/gui/menu.h>

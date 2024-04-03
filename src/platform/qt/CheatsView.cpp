@@ -41,7 +41,6 @@ CheatsView::CheatsView(std::shared_ptr<CoreController> controller, QWidget* pare
 	connect(m_ui.addSet, &QAbstractButton::clicked, this, &CheatsView::addSet);
 	connect(m_ui.remove, &QAbstractButton::clicked, this, &CheatsView::removeSet);
 	connect(m_ui.add, &QAbstractButton::clicked, this, &CheatsView::enterCheat);
-	connect(controller.get(), &CoreController::stopping, this, &CheatsView::close);
 	connect(controller.get(), &CoreController::stateLoaded, &m_model, &CheatsModel::invalidated);
 
 	switch (controller->platform()) {

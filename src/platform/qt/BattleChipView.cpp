@@ -24,7 +24,7 @@ using namespace QGBA;
 
 BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Window* window, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
-	, m_controller(controller)
+	, m_controller(std::move(controller))
 	, m_window(window)
 {
 	m_ui.setupUi(this);
@@ -63,7 +63,6 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 	connect(m_ui.insert, &QAbstractButton::clicked, this, &BattleChipView::reinsert);
 	connect(m_ui.add, &QAbstractButton::clicked, this, &BattleChipView::addChip);
 	connect(m_ui.remove, &QAbstractButton::clicked, this, &BattleChipView::removeChip);
-	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 	connect(m_ui.save, &QAbstractButton::clicked, this, &BattleChipView::saveDeck);
 	connect(m_ui.load, &QAbstractButton::clicked, this, &BattleChipView::loadDeck);
 	connect(m_ui.updateData, &QAbstractButton::clicked, this, &BattleChipView::updateData);
