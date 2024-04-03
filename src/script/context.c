@@ -481,7 +481,7 @@ bool mScriptInvoke(const struct mScriptValue* val, struct mScriptFrame* frame) {
 		return false;
 	}
 	const struct mScriptTypeFunction* signature = &val->type->details.function;
-	if (!mScriptCoerceFrame(&signature->parameters, &frame->arguments)) {
+	if (!mScriptCoerceFrame(&signature->parameters, &frame->arguments, &frame->arguments)) {
 		return false;
 	}
 	const struct mScriptFunction* fn = val->value.opaque;

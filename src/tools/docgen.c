@@ -190,6 +190,14 @@ void explainClass(struct mScriptTypeClass* cls, int level) {
 				fprintf(out, "%s    readonly: true\n", indent);
 			}
 			fprintf(out, "%s    type: %s\n", indent, details->info.member.type->name);
+			if (details->info.member.overloads) {
+				fprintf(out, "%s    overloads:\n", indent);
+				size_t i;
+				for (i = 0; details->info.member.overloads[i].type; ++i) {
+					mScriptTypeAdd(&types, details->info.member.overloads[i].type);
+					fprintf(out, "%s      - %s\n", indent, details->info.member.overloads[i].type->name);
+				}
+			}
 			break;
 		case mSCRIPT_CLASS_INIT_END:
 			break;

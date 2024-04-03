@@ -35,20 +35,28 @@ struct mScriptInputContext {
 };
 
 static void _mScriptInputDeinit(struct mScriptInputContext*);
-static bool _mScriptInputIsKeyActive(const struct mScriptInputContext*, struct mScriptValue*);
+static bool _mScriptInputIsKeyActiveStr(const struct mScriptInputContext*, const char*);
+static bool _mScriptInputIsKeyActiveNum(const struct mScriptInputContext*, uint32_t);
 static struct mScriptValue* _mScriptInputActiveKeys(const struct mScriptInputContext*);
 
 mSCRIPT_DECLARE_STRUCT(mScriptInputContext);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptInputContext, _deinit, _mScriptInputDeinit, 0);
-mSCRIPT_DECLARE_STRUCT_C_METHOD(mScriptInputContext, BOOL, isKeyActive, _mScriptInputIsKeyActive, 1, WRAPPER, key);
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mScriptInputContext, BOOL, isKeyActiveStr, _mScriptInputIsKeyActiveStr, 1, CHARP, key);
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mScriptInputContext, BOOL, isKeyActiveNum, _mScriptInputIsKeyActiveNum, 1, U32, key);
+mSCRIPT_DECLARE_STRUCT_OVERLOADED_C_METHOD(mScriptInputContext, BOOL, isKeyActive);
 mSCRIPT_DECLARE_STRUCT_C_METHOD(mScriptInputContext, WLIST, activeKeys, _mScriptInputActiveKeys, 0);
+
+mSCRIPT_DEFINE_STRUCT_METHOD_OVERLOADS(mScriptInputContext, isKeyActive)
+	mSCRIPT_DEFINE_STRUCT_METHOD_OVERLOAD(mScriptInputContext, isKeyActiveStr)
+	mSCRIPT_DEFINE_STRUCT_METHOD_OVERLOAD(mScriptInputContext, isKeyActiveNum)
+mSCRIPT_DEFINE_OVERLOADS_END;
 
 mSCRIPT_DEFINE_STRUCT(mScriptInputContext)
 	mSCRIPT_DEFINE_STRUCT_DEINIT(mScriptInputContext)
 	mSCRIPT_DEFINE_DOCSTRING("Sequence number of the next event to be emitted")
 	mSCRIPT_DEFINE_STRUCT_MEMBER(mScriptInputContext, U64, seq)
 	mSCRIPT_DEFINE_DOCSTRING("Check if a given keyboard key is currently held. The input can be either the printable character for a key, the numerical Unicode codepoint, or a special value from C.KEY")
-	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptInputContext, isKeyActive)
+	mSCRIPT_DEFINE_STRUCT_OVERLOADED_METHOD(mScriptInputContext, isKeyActive)
 	mSCRIPT_DEFINE_DOCSTRING("Get a list of the currently active keys. The values are Unicode codepoints or special key values from C.KEY, not strings, so make sure to convert as needed")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptInputContext, activeKeys)
 	mSCRIPT_DEFINE_DOCSTRING("The currently active gamepad, if any")
@@ -319,33 +327,18 @@ void _mScriptInputDeinit(struct mScriptInputContext* context) {
 	TableDeinit(&context->activeKeys);
 }
 
-bool _mScriptInputIsKeyActive(const struct mScriptInputContext* context, struct mScriptValue* value) {
+bool _mScriptInputIsKeyActiveStr(const struct mScriptInputContext* context, const char* value) {
 	uint32_t key;
-	struct mScriptValue intValue;
-	size_t length;
-	const char* strbuf;
-
-	switch (value->type->base) {
-	case mSCRIPT_TYPE_SINT:
-	case mSCRIPT_TYPE_UINT:
-	case mSCRIPT_TYPE_FLOAT:
-		if (!mScriptCast(mSCRIPT_TYPE_MS_U32, value, &intValue)) {
-			return false;
-		}
-		key = intValue.value.u32;
-		break;
-	case mSCRIPT_TYPE_STRING:
-		if (value->value.string->length > 1) {
-			return false;
-		}
-		strbuf = value->value.string->buffer;
-		length = value->value.string->size;
-		key = utf8Char(&strbuf, &length);
-		break;
-	default:
+	size_t length = strlen(value);
+	key = utf8Char(&value, &length);
+	if (length > 0) {
 		return false;
 	}
+	void* down = TableLookup(&context->activeKeys, key);
+	return down != NULL;
+}
 
+bool _mScriptInputIsKeyActiveNum(const struct mScriptInputContext* context, uint32_t key) {
 	void* down = TableLookup(&context->activeKeys, key);
 	return down != NULL;
 }

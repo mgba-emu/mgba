@@ -1238,6 +1238,9 @@ static void _mScriptClassInit(struct mScriptTypeClass* cls, const struct mScript
 				member->docstring = docstring;
 				docstring = NULL;
 			}
+			if (detail->info.member.type->base != mSCRIPT_TYPE_FUNCTION) {
+				abort();
+			}
 			if (detail->info.member.type->details.function.parameters.count != 3) {
 				abort();
 			}
@@ -1773,21 +1776,24 @@ bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* inpu
 	return false;
 }
 
-bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList* frame) {
-	if (types->count < mScriptListSize(frame) && !types->variable) {
+bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, const struct mScriptList* input, struct mScriptList* output) {
+	if (types->count < mScriptListSize(input) && !types->variable) {
 		return false;
 	}
-	if (types->count > mScriptListSize(frame) && !types->variable && !types->defaults) {
+	if (types->count > mScriptListSize(input) && !types->variable && !types->defaults) {
 		return false;
+	}
+	if (output) {
+		mScriptListResize(output, mScriptListSize(input) - mScriptListSize(output));
 	}
 	size_t i;
-	for (i = 0; i < mScriptListSize(frame) && i < types->count; ++i) {
-		if (types->entries[i] == mScriptListGetPointer(frame, i)->type) {
+	for (i = 0; i < mScriptListSize(input) && i < types->count; ++i) {
+		if (types->entries[i] == mScriptListGetConstPointer(input, i)->type) {
 			continue;
 		}
-		struct mScriptValue* unwrapped = NULL;
-		if (mScriptListGetPointer(frame, i)->type->base == mSCRIPT_TYPE_WRAPPER) {
-			unwrapped = mScriptValueUnwrap(mScriptListGetPointer(frame, i));
+		const struct mScriptValue* unwrapped = NULL;
+		if (mScriptListGetConstPointer(input, i)->type->base == mSCRIPT_TYPE_WRAPPER) {
+			unwrapped = mScriptValueUnwrapConst(mScriptListGetConstPointer(input, i));
 			if (types->entries[i]->base == mSCRIPT_TYPE_WRAPPER) {
 				if (types->entries[i]->details.type == unwrapped->type) {
 					continue;
@@ -1796,7 +1802,12 @@ bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList
 				continue;
 			}
 		}
-		if (!mScriptCast(types->entries[i], mScriptListGetPointer(frame, i), mScriptListGetPointer(frame, i))) {
+		struct mScriptValue fakeVal;
+		struct mScriptValue* castTo = &fakeVal;
+		if (output) {
+			castTo = mScriptListGetPointer(output, i);
+		}
+		if (!mScriptCast(types->entries[i], mScriptListGetConstPointer(input, i), castTo)) {
 			return false;
 		}
 	}
@@ -1808,9 +1819,24 @@ bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList
 		if (!types->defaults[i].type) {
 			return false;
 		}
-		memcpy(mScriptListAppend(frame), &types->defaults[i], sizeof(struct mScriptValue));
+		if (output) {
+			memcpy(mScriptListAppend(output), &types->defaults[i], sizeof(struct mScriptValue));
+		}
 	}
 	return true;
+}
+
+const struct mScriptFunctionOverload* mScriptFunctionFindOverload(const struct mScriptFunctionOverload* overloads, struct mScriptList* frame) {
+	size_t i;
+	for (i = 0; overloads[i].type; ++i) {
+		if (overloads[i].type->base != mSCRIPT_TYPE_FUNCTION) {
+			continue;
+		}
+		if (mScriptCoerceFrame(&overloads[i].type->details.function.parameters, frame, NULL)) {
+			return &overloads[i];
+		}
+	}
+	return NULL;
 }
 
 static void addTypesFromTuple(struct Table* types, const struct mScriptTypeTuple* tuple) {

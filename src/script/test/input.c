@@ -172,6 +172,43 @@ M_TEST_DEFINE(clearKeys) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(numericKeys) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("assert(not input:isKeyActive(C.KEY.F1))");
+
+	TEST_PROGRAM(
+		"activeKey = false\n"
+		"state = nil\n"
+		"function cb(ev)\n"
+		"	assert(ev.type == C.EV_TYPE.KEY)\n"
+		"	activeKey = ev.key\n"
+		"	state = ev.state\n"
+		"end\n"
+		"id = callbacks:add('key', cb)\n"
+		"assert(id)\n"
+		"assert(not activeKey)\n"
+	);
+
+	struct mScriptKeyEvent keyEvent = {
+		.d = { .type = mSCRIPT_EV_TYPE_KEY },
+		.state = mSCRIPT_INPUT_STATE_DOWN,
+		.key = mSCRIPT_KEY_F1
+	};
+	mScriptContextFireEvent(&context, &keyEvent.d);
+
+	TEST_PROGRAM("assert(input:isKeyActive(C.KEY.F1))");
+	TEST_PROGRAM("assert(activeKey == C.KEY.F1)");
+	TEST_PROGRAM("assert(state == C.INPUT_STATE.DOWN)");
+
+	keyEvent.state = mSCRIPT_INPUT_STATE_UP;
+	mScriptContextFireEvent(&context, &keyEvent.d);
+
+	TEST_PROGRAM("assert(not input:isKeyActive(C.KEY.F1))");
+	TEST_PROGRAM("assert(state == C.INPUT_STATE.UP)");
+
+	mScriptContextDeinit(&context);
+}
 
 M_TEST_DEFINE(gamepadExport) {
 	SETUP_LUA;
@@ -219,5 +256,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptInput,
 	cmocka_unit_test(fireKey),
 	cmocka_unit_test(activeKeys),
 	cmocka_unit_test(clearKeys),
+	cmocka_unit_test(numericKeys),
 	cmocka_unit_test(gamepadExport),
 )

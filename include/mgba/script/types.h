@@ -259,6 +259,7 @@ struct mScriptClassMember {
 	const char* name;
 	const char* docstring;
 	const struct mScriptType* type;
+	const struct mScriptFunctionOverload* overloads;
 	size_t offset;
 	bool readonly;
 };
@@ -275,6 +276,7 @@ struct mScriptClassInitDetails {
 		const struct mScriptType* parent;
 		struct mScriptClassMember member;
 		struct mScriptClassCastMember castMember;
+		const struct mScriptFunctionOverload* overload;
 	} info;
 };
 
@@ -332,6 +334,11 @@ struct mScriptFunction {
 	void* context;
 };
 
+struct mScriptFunctionOverload {
+	const struct mScriptType* type;
+	const struct mScriptFunction* function;
+};
+
 struct mScriptValue* mScriptValueAlloc(const struct mScriptType* type);
 void mScriptValueRef(struct mScriptValue* val);
 void mScriptValueDeref(struct mScriptValue* val);
@@ -385,7 +392,8 @@ bool mScriptPopBool(struct mScriptList* list, bool* out);
 bool mScriptPopPointer(struct mScriptList* list, void** out);
 
 bool mScriptCast(const struct mScriptType* type, const struct mScriptValue* input, struct mScriptValue* output);
-bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, struct mScriptList* frame);
+bool mScriptCoerceFrame(const struct mScriptTypeTuple* types, const struct mScriptList* input, struct mScriptList* output);
+const struct mScriptFunctionOverload* mScriptFunctionFindOverload(const struct mScriptFunctionOverload* overloads, struct mScriptList* frame);
 
 CXX_GUARD_END
 
