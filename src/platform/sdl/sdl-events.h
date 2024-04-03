@@ -126,6 +126,9 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 void mSDLSuspendScreensaver(struct mSDLEvents*);
 void mSDLResumeScreensaver(struct mSDLEvents*);
 void mSDLSetScreensaverSuspendable(struct mSDLEvents*, bool suspendable);
+
+const char* mSDLButtonName(SDL_GameController*, SDL_GameControllerButton);
+const char* mSDLAxisName(SDL_GameController*, SDL_GameControllerAxis);
 #endif
 
 CXX_GUARD_END

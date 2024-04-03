@@ -122,6 +122,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 		connect(key, &KeyEditor::valueChanged, this, &GBAKeyEditor::setNext);
 		connect(key, &KeyEditor::axisChanged, this, &GBAKeyEditor::setNext);
 		connect(key, &KeyEditor::hatChanged, this, &GBAKeyEditor::setNext);
+		key->setInputController(m_controller);
 		key->installEventFilter(this);
 	}
 

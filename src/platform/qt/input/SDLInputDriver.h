@@ -93,6 +93,9 @@ public:
 	int axisCount() const override;
 	int hatCount() const override;
 
+	QString buttonHumanName(int) const override;
+	QString axisHumanName(int) const override;
+
 	QString name() const override;
 	QString visibleName() const override;
 

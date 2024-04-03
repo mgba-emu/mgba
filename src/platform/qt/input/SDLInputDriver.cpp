@@ -257,13 +257,20 @@ QList<bool> SDLGamepad::currentButtons() {
 		return {};
 	}
 
-	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	QList<bool> buttons;
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_GameController* controller = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->controller;
+	for (int i = 0; i < SDL_CONTROLLER_BUTTON_MAX; ++i) {
+		buttons.append(SDL_GameControllerGetButton(controller, static_cast<SDL_GameControllerButton>(i)));
+	}
+#else
+	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	int numButtons = SDL_JoystickNumButtons(joystick);
 	for (int i = 0; i < numButtons; ++i) {
 		buttons.append(SDL_JoystickGetButton(joystick, i));
 	}
+#endif
 
 	return buttons;
 }
@@ -273,13 +280,20 @@ QList<int16_t> SDLGamepad::currentAxes() {
 		return {};
 	}
 
-	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	QList<int16_t> axes;
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_GameController* controller = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->controller;
+	for (int i = 0; i < SDL_CONTROLLER_AXIS_MAX; ++i) {
+		axes.append(SDL_GameControllerGetAxis(controller, static_cast<SDL_GameControllerAxis>(i)));
+	}
+#else
+	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	int numAxes = SDL_JoystickNumAxes(joystick);
 	for (int i = 0; i < numAxes; ++i) {
 		axes.append(SDL_JoystickGetAxis(joystick, i));
 	}
+#endif
 
 	return axes;
 }
@@ -289,15 +303,39 @@ QList<GamepadHatEvent::Direction> SDLGamepad::currentHats() {
 		return {};
 	}
 
-	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	QList<GamepadHatEvent::Direction> hats;
 
+#if !SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	int numHats = SDL_JoystickNumHats(joystick);
 	for (int i = 0; i < numHats; ++i) {
 		hats.append(static_cast<GamepadHatEvent::Direction>(SDL_JoystickGetHat(joystick, i)));
 	}
+#endif
 
 	return hats;
+}
+
+QString SDLGamepad::buttonHumanName(int button) const {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_GameController* controller = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->controller;
+	const char* name = mSDLButtonName(controller, static_cast<SDL_GameControllerButton>(button));
+	if (name) {
+		return QString::fromUtf8(name);
+	}
+#endif
+	return QString::number(button);
+}
+
+QString SDLGamepad::axisHumanName(int axis) const {
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	SDL_GameController* controller = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->controller;
+	const char* name = mSDLAxisName(controller, static_cast<SDL_GameControllerAxis>(axis));
+	if (name) {
+		return QString::fromUtf8(name);
+	}
+#endif
+	return QString::number(axis);
 }
 
 int SDLGamepad::buttonCount() const {
@@ -305,8 +343,12 @@ int SDLGamepad::buttonCount() const {
 		return -1;
 	}
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	return SDL_CONTROLLER_BUTTON_MAX;
+#else
 	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	return SDL_JoystickNumButtons(joystick);
+#endif
 }
 
 int SDLGamepad::axisCount() const {
@@ -314,8 +356,12 @@ int SDLGamepad::axisCount() const {
 		return -1;
 	}
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	return SDL_CONTROLLER_AXIS_MAX;
+#else
 	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	return SDL_JoystickNumAxes(joystick);
+#endif
 }
 
 int SDLGamepad::hatCount() const {
@@ -323,8 +369,12 @@ int SDLGamepad::hatCount() const {
 		return -1;
 	}
 
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	return 0;
+#else
 	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	return SDL_JoystickNumHats(joystick);
+#endif
 }
 
 QString SDLGamepad::name() const {

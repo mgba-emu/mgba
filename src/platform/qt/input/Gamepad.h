@@ -22,6 +22,9 @@ public:
 	virtual QList<int16_t> currentAxes() = 0;
 	virtual QList<GamepadHatEvent::Direction> currentHats() = 0;
 
+	virtual QString buttonHumanName(int) const = 0;
+	virtual QString axisHumanName(int) const = 0;
+
 	virtual int buttonCount() const = 0;
 	virtual int axisCount() const = 0;
 	virtual int hatCount() const = 0;
