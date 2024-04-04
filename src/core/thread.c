@@ -433,13 +433,13 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 				threadContext->run(threadContext);
 			}
 		}
+		MutexLock(&impl->stateMutex);
 	}
 
-	while (impl->state < mTHREAD_SHUTDOWN) {
-		MutexLock(&impl->stateMutex);
+	if (impl->state < mTHREAD_SHUTDOWN) {
 		impl->state = mTHREAD_SHUTDOWN;
-		MutexUnlock(&impl->stateMutex);
 	}
+	MutexUnlock(&impl->stateMutex);
 
 	if (core->opts.rewindEnable) {
 		 mCoreRewindContextDeinit(&impl->rewind);
