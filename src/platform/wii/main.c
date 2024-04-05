@@ -1731,7 +1731,7 @@ void _sampleRotation(struct mRotationSource* source) {
 		return;
 	}
 	gyroZ = exp.mp.rz - 0x1FA0;
-	gyroZ <<= 18;
+	gyroZ <<= 17;
 }
 
 int32_t _readTiltX(struct mRotationSource* source) {

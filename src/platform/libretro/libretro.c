@@ -1390,7 +1390,7 @@ static void _updateRotation(struct mRotationSource* source) {
 		tiltY = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_Y) * 2e8f;
 	}
 	if (gyroEnabled) {
-		gyroZ = sensorGetCallback(0, RETRO_SENSOR_GYROSCOPE_Z) * -1.1e9f;
+		gyroZ = sensorGetCallback(0, RETRO_SENSOR_GYROSCOPE_Z) * -5.5e8f;
 	}
 }
 
