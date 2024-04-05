@@ -621,7 +621,7 @@ void _sampleRotation(struct mRotationSource* source) {
 	}
 	tiltX = sixaxis.acceleration.x * 3e8f;
 	tiltY = sixaxis.acceleration.y * -3e8f;
-	gyroZ = sixaxis.angular_velocity.z * -1.1e9f;
+	gyroZ = sixaxis.angular_velocity.z * -5.5e8f;
 }
 
 int32_t _readTiltX(struct mRotationSource* source) {

@@ -702,7 +702,7 @@ static int32_t _readTiltY(struct mRotationSource* source) {
 
 static int32_t _readGyroZ(struct mRotationSource* source) {
 	struct m3DSRotationSource* rotation = (struct m3DSRotationSource*) source;
-	return rotation->gyro.y << 18L; // Yes, y
+	return rotation->gyro.y << 17L; // Yes, y
 }
 
 static void _startRequestImage(struct mImageSource* source, unsigned w, unsigned h, int colorFormats) {

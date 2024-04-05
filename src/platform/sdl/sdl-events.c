@@ -754,14 +754,14 @@ static void _mSDLRotationSample(struct mRotationSource* source) {
 			float theta[3];
 			int count = SDL_GameControllerGetSensorData(controller, SDL_SENSOR_GYRO, theta, 3);
 			if (count >= 0) {
-				rotation->zDelta = theta[1] / -10.f;
+				rotation->zDelta = theta[1] / -20.f;
 			}
 			return;
 		}
 	}
 #endif
 	if (rotation->gyroZ >= 0) {
-		rotation->zDelta = SDL_JoystickGetAxis(rotation->p->joystick->joystick, rotation->gyroZ) / 1.e5f;
+		rotation->zDelta = SDL_JoystickGetAxis(rotation->p->joystick->joystick, rotation->gyroZ) / 2.e5f;
 		return;
 	}
 
