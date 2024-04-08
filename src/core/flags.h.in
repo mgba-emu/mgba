@@ -59,6 +59,10 @@
 #cmakedefine USE_DEBUGGERS
 #endif
 
+#ifndef USE_DISCORD_RPC
+#cmakedefine USE_DISCORD_RPC
+#endif
+
 #ifndef USE_EDITLINE
 #cmakedefine USE_EDITLINE
 #endif
@@ -133,6 +137,10 @@
 #cmakedefine HAVE_CRC32
 #endif
 
+#ifndef HAVE_LOCALE
+#cmakedefine HAVE_LOCALE
+#endif
+
 #ifndef HAVE_LOCALTIME_R
 #cmakedefine HAVE_LOCALTIME_R
 #endif
@@ -147,6 +155,10 @@
 
 #ifndef HAVE_PTHREAD_SETNAME_NP
 #cmakedefine HAVE_PTHREAD_SETNAME_NP
+#endif
+
+#ifndef HAVE_SNPRINTF_L
+#cmakedefine HAVE_SNPRINTF_L
 #endif
 
 #ifndef HAVE_STRDUP
