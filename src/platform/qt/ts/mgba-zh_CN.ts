@@ -4120,7 +4120,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="39"/>
         <source>Save games and save states (%1)</source>
-        <translation>保存游戏和即时存档（%1）</translation>
+        <translation>保存游戏和即时存档 (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="40"/>
@@ -4130,7 +4130,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="52"/>
         <source>Save games (%1)</source>
-        <translation>保存游戏（%1）</translation>
+        <translation>保存游戏 (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="53"/>
@@ -5871,7 +5871,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="421"/>
         <source>Save games (%1)</source>
-        <translation>保存游戏（%1）</translation>
+        <translation>保存游戏 (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="422"/>
@@ -5881,7 +5881,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="430"/>
         <source>mGBA save state files (%1)</source>
-        <translation>mGBA 即时存档文件（%1）</translation>
+        <translation>mGBA 即时存档文件 (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="432"/>
