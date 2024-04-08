@@ -9,7 +9,7 @@
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 #include <mgba/debugger/debugger.h>
 #endif
 
@@ -23,7 +23,7 @@ static bool mPythonScriptEngineLoadScript(struct mScriptEngine*, const char* nam
 static void mPythonScriptEngineRun(struct mScriptEngine*);
 static bool mPythonScriptEngineLookupSymbol(struct mScriptEngine*, const char* name, int32_t* out);
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 static void mPythonScriptDebuggerEntered(struct mScriptEngine*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 #endif
 
@@ -41,7 +41,7 @@ struct mPythonScriptEngine* mPythonCreateScriptEngine(void) {
 	engine->d.loadScript = mPythonScriptEngineLoadScript;
 	engine->d.run = mPythonScriptEngineRun;
 	engine->d.lookupSymbol = mPythonScriptEngineLookupSymbol;
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	engine->d.debuggerEntered = mPythonScriptDebuggerEntered;
 #endif
 	engine->sb = NULL;
@@ -82,7 +82,7 @@ bool mPythonScriptEngineLoadScript(struct mScriptEngine* se, const char* name, s
 void mPythonScriptEngineRun(struct mScriptEngine* se) {
 	struct mPythonScriptEngine* engine = (struct mPythonScriptEngine*) se;
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	struct mDebugger* debugger = mScriptBridgeGetDebugger(engine->sb);
 	if (debugger) {
 		mPythonSetDebugger(debugger);
@@ -97,7 +97,7 @@ bool mPythonScriptEngineLookupSymbol(struct mScriptEngine* se, const char* name,
 	return mPythonLookupSymbol(name, out);
 }
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 void mPythonScriptDebuggerEntered(struct mScriptEngine* se, enum mDebuggerEntryReason reason, struct mDebuggerEntryInfo* info) {
 	struct mPythonScriptEngine* engine = (struct mPythonScriptEngine*) se;
 

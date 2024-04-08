@@ -249,7 +249,7 @@ if(NOT AUDIO_SRC)
 	return()
 endif()
 
-if(USE_DEBUGGERS)
+if(ENABLE_DEBUGGERS)
 	list(APPEND SOURCE_FILES
 		DebuggerController.cpp
 		DebuggerConsole.cpp
@@ -257,7 +257,7 @@ if(USE_DEBUGGERS)
 		MemoryAccessLogView.cpp)
 endif()
 
-if(USE_GDB_STUB)
+if(ENABLE_GDB_STUB)
 	list(APPEND SOURCE_FILES GDBController.cpp GDBWindow.cpp)
 endif()
 

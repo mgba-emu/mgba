@@ -211,7 +211,7 @@ void Window::argumentsPassed() {
 		m_pendingState = args->savestate;
 	}
 
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 	if (args->debugGdb) {
 		if (!m_gdbController) {
 			m_gdbController = new GDBController(this);
@@ -224,7 +224,7 @@ void Window::argumentsPassed() {
 	}
 #endif
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (args->debugCli) {
 		consoleOpen();
 	}
@@ -607,7 +607,7 @@ std::function<void()> Window::openNamedControllerTView(std::unique_ptr<T>* name,
 	};
 }
 
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 void Window::gdbOpen() {
 	if (!m_gdbController) {
 		m_gdbController = new GDBController(this);
@@ -619,7 +619,7 @@ void Window::gdbOpen() {
 }
 #endif
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 void Window::consoleOpen() {
 	if (!m_console) {
 		m_console = new DebuggerConsoleController(this);
@@ -1677,14 +1677,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addAction(tr("Make portable"), "makePortable", this, &Window::tryMakePortable, "tools");
 
 	m_actions.addSeparator("tools");
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	m_actions.addAction(tr("Open debugger console..."), "debuggerWindow", this, &Window::consoleOpen, "tools");
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 	auto gdbWindow = addGameAction(tr("Start &GDB server..."), "gdbWindow", this, &Window::gdbOpen, "tools");
 	m_platformActions.insert(mPLATFORM_GBA, gdbWindow);
 #endif
 #endif
-#if defined(USE_DEBUGGERS) || defined(ENABLE_SCRIPTING)
+#if defined(ENABLE_DEBUGGERS) || defined(ENABLE_SCRIPTING)
 	m_actions.addSeparator("tools");
 #endif
 
@@ -1714,7 +1714,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "stateViews");
 	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "stateViews");
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	addGameAction(tr("Log memory &accesses..."), "memoryAccessView", openControllerTView<MemoryAccessLogView>(), "tools");
 #endif
 
@@ -2132,13 +2132,13 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	}
 #endif
 
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 	if (m_gdbController) {
 		m_gdbController->setController(m_controller);
 	}
 #endif
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (m_console) {
 		m_console->setController(m_controller);
 	}

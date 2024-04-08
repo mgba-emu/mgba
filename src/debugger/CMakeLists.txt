@@ -15,7 +15,7 @@ if(USE_EDITLINE)
 	list(APPEND SOURCE_FILES cli-el-backend.c)
 endif()
 
-if(USE_GDB_STUB)
+if(ENABLE_GDB_STUB)
 	list(APPEND SOURCE_FILES gdb-stub.c)
 endif()
 

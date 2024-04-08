@@ -9,7 +9,7 @@
 #include <mgba/internal/debugger/symbols.h>
 #include <mgba-util/string.h>
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 #define ADVANCE(AMOUNT) \
 	if (AMOUNT >= blen) { \
 		buffer[blen - 1] = '\0'; \

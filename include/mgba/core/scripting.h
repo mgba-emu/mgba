@@ -10,7 +10,7 @@
 
 CXX_GUARD_START
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 #include <mgba/debugger/debugger.h>
 #endif
 #include <mgba/script/macros.h>
@@ -35,7 +35,7 @@ struct mScriptEngine {
 	void (*run)(struct mScriptEngine*);
 	bool (*lookupSymbol)(struct mScriptEngine*, const char* name, int32_t* out);
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	void (*debuggerEntered)(struct mScriptEngine*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 #endif
 };
@@ -63,7 +63,7 @@ void mScriptBridgeDestroy(struct mScriptBridge*);
 
 void mScriptBridgeInstallEngine(struct mScriptBridge*, struct mScriptEngine*);
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 void mScriptBridgeSetDebugger(struct mScriptBridge*, struct mDebugger*);
 struct mDebugger* mScriptBridgeGetDebugger(struct mScriptBridge*);
 void mScriptBridgeDebuggerEntered(struct mScriptBridge*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);

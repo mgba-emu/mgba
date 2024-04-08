@@ -10,7 +10,7 @@
 #include <mgba/internal/debugger/cli-debugger.h>
 #include <mgba/internal/debugger/symbols.h>
 
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 #include <mgba/internal/debugger/gdb-stub.h>
 #endif
 
@@ -37,7 +37,7 @@ struct mDebuggerModule* mDebuggerCreateModule(enum mDebuggerType type, struct mC
 	union DebugUnion {
 		struct mDebuggerModule d;
 		struct CLIDebugger cli;
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 		struct GDBStub gdb;
 #endif
 	};
@@ -52,7 +52,7 @@ struct mDebuggerModule* mDebuggerCreateModule(enum mDebuggerType type, struct mC
 		CLIDebuggerAttachSystem(&debugger->cli, sys);
 		break;
 	case DEBUGGER_GDB:
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 		GDBStubCreate(&debugger->gdb);
 		struct Address localHost = {
 			.version = IPV4,

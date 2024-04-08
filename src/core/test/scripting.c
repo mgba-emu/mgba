@@ -327,7 +327,7 @@ M_TEST_DEFINE(screenshot) {
 	TEARDOWN_CORE;
 }
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 void _setupBp(struct mCore* core) {
 	switch (core->platform(core)) {
 #ifdef M_CORE_GBA
@@ -727,7 +727,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(memoryWrite),
 	cmocka_unit_test(logging),
 	cmocka_unit_test(screenshot),
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 #ifdef M_CORE_GBA
 	cmocka_unit_test(basicBreakpointGBA),
 #endif

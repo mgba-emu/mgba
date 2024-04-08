@@ -67,7 +67,7 @@ void free(void*);
 #include <mgba/internal/gba/input.h>
 #include <mgba/internal/gb/renderers/cache-set.h>
 #endif
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 #include <mgba/debugger/debugger.h>
 #include <mgba/internal/debugger/cli-debugger.h>
 #endif

@@ -160,7 +160,7 @@ struct ELF;
 bool GBAVerifyELFEntry(struct ELF* elf, uint32_t target);
 #endif
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 struct mDebugger;
 void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);

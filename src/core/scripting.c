@@ -64,7 +64,7 @@ static void _seRun(const char* key, void* value, void* user) {
 	se->run(se);
 }
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 struct mScriptDebuggerEntry {
 	enum mDebuggerEntryReason reason;
 	struct mDebuggerEntryInfo* info;
@@ -98,7 +98,7 @@ void mScriptBridgeInstallEngine(struct mScriptBridge* sb, struct mScriptEngine* 
 	HashTableInsert(&sb->engines, name, se);
 }
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 void mScriptBridgeSetDebugger(struct mScriptBridge* sb, struct mDebugger* debugger) {
 	if (sb->debugger == debugger) {
 		return;
@@ -159,7 +159,7 @@ struct mScriptMemoryDomain {
 	struct mCoreMemoryBlock block;
 };
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 struct mScriptBreakpointName {
 	uint32_t address;
 	uint32_t maxAddress;
@@ -189,7 +189,7 @@ struct mScriptCoreAdapter {
 	struct mCore* core;
 	struct mScriptContext* context;
 	struct mScriptValue memory;
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	struct mScriptDebugger debugger;
 #endif
 	struct mRumble rumble;
@@ -701,7 +701,7 @@ static void _rebuildMemoryMap(struct mScriptContext* context, struct mScriptCore
 	}
 }
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 static void _freeBreakpoint(void* bp) {
 	struct mScriptBreakpoint* point = bp;
 	HashTableDeinit(&point->callbacks);
@@ -929,7 +929,7 @@ static bool _mScriptCoreAdapterClearBreakpoint(struct mScriptCoreAdapter* adapte
 static void _mScriptCoreAdapterDeinit(struct mScriptCoreAdapter* adapter) {
 	_clearMemoryMap(adapter->context, adapter, false);
 	adapter->memory.type->free(&adapter->memory);
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (adapter->core->debugger) {
 		mDebuggerDetachModule(adapter->core->debugger, &adapter->debugger.d);
 	}
@@ -982,7 +982,7 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, _deinit, _mScriptCoreAdap
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, reset, _mScriptCoreAdapterReset, 0);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, WTABLE, setRotationCallbacks, _mScriptCoreAdapterSetRotationCbTable, 1, WTABLE, cbTable);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, setSolarSensorCallback, _mScriptCoreAdapterSetLuminanceCb, 1, WRAPPER, callback);
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setBreakpoint, _mScriptCoreAdapterSetBreakpoint, 3, WRAPPER, callback, U32, address, S32, segment);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setWatchpoint, _mScriptCoreAdapterSetWatchpoint, 4, WRAPPER, callback, U32, address, S32, type, S32, segment);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setRangeWatchpoint, _mScriptCoreAdapterSetRangeWatchpoint, 5, WRAPPER, callback, U32, minAddress, U32, maxAddress, S32, type, S32, segment);
@@ -1040,7 +1040,7 @@ mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 		"Note that the full range of values is not used by games, and the exact range depends on the calibration done by the game itself."
 	)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, setSolarSensorCallback)
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	mSCRIPT_DEFINE_DOCSTRING("Set a breakpoint at a given address")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, setBreakpoint)
 	mSCRIPT_DEFINE_DOCSTRING("Clear a breakpoint or watchpoint for a given id returned by a previous call")

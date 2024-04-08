@@ -103,7 +103,7 @@ static void _wait(struct mCoreThreadInternal* threadContext) {
 		MutexUnlock(&threadContext->sync.audioBufferMutex);
 	}
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (threadContext->core && threadContext->core->debugger) {
 		mDebuggerInterrupt(threadContext->core->debugger);
 	}
@@ -330,7 +330,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 
 	MutexLock(&impl->stateMutex);
 	while (impl->state < mTHREAD_EXITING) {
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 		struct mDebugger* debugger = core->debugger;
 		if (debugger) {
 			MutexUnlock(&impl->stateMutex);
@@ -355,7 +355,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 			}
 
 			while (impl->state >= mTHREAD_MIN_WAITING && impl->state <= mTHREAD_MAX_WAITING) {
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 				if (debugger && debugger->state != DEBUGGER_SHUTDOWN) {
 					mDebuggerUpdate(debugger);
 					ConditionWaitTimed(&impl->stateOnThreadCond, &impl->stateMutex, 10);

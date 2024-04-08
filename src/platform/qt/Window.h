@@ -108,11 +108,11 @@ public slots:
 
 	void startVideoLog();
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	void consoleOpen();
 #endif
 
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 	void gdbOpen();
 #endif
 
@@ -206,7 +206,7 @@ private:
 
 	LogController m_log{0};
 	LogView* m_logView;
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	DebuggerConsoleController* m_console = nullptr;
 #endif
 	LoadSaveState* m_stateWindow = nullptr;
@@ -249,7 +249,7 @@ private:
 	std::unique_ptr<GIFView> m_gifView;
 #endif
 
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 	GDBController* m_gdbController = nullptr;
 #endif
 

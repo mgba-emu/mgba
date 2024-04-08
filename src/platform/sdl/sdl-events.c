@@ -505,7 +505,7 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 	}
 	if (event->type == SDL_KEYDOWN) {
 		switch (event->keysym.sym) {
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 		case SDLK_F11:
 			if (context->core->debugger) {
 				mDebuggerEnter(context->core->debugger, DEBUGGER_ENTER_MANUAL, NULL);

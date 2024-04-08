@@ -12,7 +12,7 @@
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 #include <mgba/internal/debugger/gdb-stub.h>
 #endif
 #ifdef USE_EDITLINE
@@ -40,7 +40,7 @@ static const struct option _options[] = {
 #ifdef USE_EDITLINE
 	{ "debug",     no_argument, 0, 'd' },
 #endif
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 	{ "gdb",       no_argument, 0, 'g' },
 #endif
 	{ "help",      no_argument, 0, 'h' },
@@ -85,7 +85,7 @@ bool mArgumentsParse(struct mArguments* args, int argc, char* const* argv, struc
 #ifdef USE_EDITLINE
 		"d"
 #endif
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 		"g"
 #endif
 	;
@@ -151,7 +151,7 @@ bool mArgumentsParse(struct mArguments* args, int argc, char* const* argv, struc
 			args->debugCli = true;
 			break;
 #endif
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 		case 'g':
 			args->debugAtStart = true;
 			args->debugGdb = true;
@@ -231,7 +231,7 @@ bool mArgumentsApplyDebugger(const struct mArguments* args, struct mCore* core, 
 	}
 #endif
 
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 	if (args->debugGdb) {
 		struct mDebuggerModule* module = mDebuggerCreateModule(DEBUGGER_GDB, core);
 		if (module) {
@@ -355,7 +355,7 @@ void usage(const char* arg0, const char* prologue, const char* epilogue, const s
 #ifdef USE_EDITLINE
 	     "  -d, --debug                Use command-line debugger\n"
 #endif
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 	     "  -g, --gdb                  Start GDB session (default port 2345)\n"
 #endif
 	     "  -l, --log-level N          Log level mask\n"

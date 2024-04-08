@@ -49,7 +49,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 	GBASIODolphinCreate(&m_dolphin);
 #endif
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	mDebuggerInit(&m_debugger);
 #endif
 
@@ -218,7 +218,7 @@ CoreController::~CoreController() {
 
 	mCoreThreadJoin(&m_threadContext);
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	mDebuggerDeinit(&m_debugger);
 #endif
 
@@ -331,7 +331,7 @@ void CoreController::loadConfig(ConfigController* config) {
 #endif
 }
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 void CoreController::attachDebugger(bool interrupt) {
 	Interrupter interrupter(this);
 	if (!m_threadContext.core->debugger) {
@@ -478,7 +478,7 @@ void CoreController::start() {
 
 void CoreController::stop() {
 	setSync(false);
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	detachDebugger();
 #endif
 	setPaused(false);

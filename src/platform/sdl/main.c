@@ -217,12 +217,12 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 #ifdef ENABLE_PYTHON
 	mPythonSetup(bridge);
 #endif
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	CLIDebuggerScriptEngineInstall(bridge);
 #endif
 #endif
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	struct mDebugger debugger;
 	mDebuggerInit(&debugger);
 	bool hasDebugger = mArgumentsApplyDebugger(args, renderer->core, &debugger);
@@ -292,7 +292,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	mScriptBridgeDestroy(bridge);
 #endif
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (hasDebugger) {
 		renderer->core->detachDebugger(renderer->core);
 		mDebuggerDeinit(&debugger);

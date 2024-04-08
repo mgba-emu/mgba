@@ -49,15 +49,19 @@
 
 // ENABLE flags
 
+#ifndef ENABLE_DEBUGGERS
+#cmakedefine ENABLE_DEBUGGERS
+#endif
+
+#ifndef ENABLE_GDB_STUB
+#cmakedefine ENABLE_GDB_STUB
+#endif
+
 #ifndef ENABLE_SCRIPTING
 #cmakedefine ENABLE_SCRIPTING
 #endif
 
 // USE flags
-
-#ifndef USE_DEBUGGERS
-#cmakedefine USE_DEBUGGERS
-#endif
 
 #ifndef USE_DISCORD_RPC
 #cmakedefine USE_DISCORD_RPC
@@ -77,10 +81,6 @@
 
 #ifndef USE_FFMPEG
 #cmakedefine USE_FFMPEG
-#endif
-
-#ifndef USE_GDB_STUB
-#cmakedefine USE_GDB_STUB
 #endif
 
 #ifndef USE_JSON_C
