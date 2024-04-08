@@ -345,18 +345,14 @@ find_function(popcount32)
 
 find_function(futimens)
 find_function(futimes)
+find_function(localtime_r)
 
 find_function(realpath)
 
 if(ANDROID AND ANDROID_NDK_MAJOR GREATER 13)
-	find_function(localtime_r)
-	set(HAVE_STRTOF_L ON)
-elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-	find_function(localtime_r)
+	list(APPEND FUNCTION_DEFINES HAVE_STRTOF_L)
+elseif(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
 	# The strtof_l on Linux not actually exposed nor actually strtof_l
-	set(HAVE_STRTOF_L OFF)
-else()
-	find_function(localtime_r)
 	find_function(strtof_l)
 endif()
 
