@@ -182,6 +182,7 @@ struct mScriptDebugger {
 	struct Table cbidMap;
 	struct Table bpidMap;
 	int64_t nextBreakpoint;
+	bool reentered;
 };
 #endif
 
@@ -779,6 +780,7 @@ static void _scriptDebuggerInit(struct mDebuggerModule* debugger) {
 	struct mScriptDebugger* scriptDebugger = (struct mScriptDebugger*) debugger;
 	debugger->isPaused = false;
 	debugger->needsCallback = false;
+	scriptDebugger->reentered = false;
 
 	HashTableInit(&scriptDebugger->breakpoints, 0, _freeBreakpoint);
 	HashTableInit(&scriptDebugger->cbidMap, 0, NULL);
@@ -812,6 +814,11 @@ static void _scriptDebuggerEntered(struct mDebuggerModule* debugger, enum mDebug
 	default:
 		return;
 	}
+
+	if (scriptDebugger->reentered) {
+		return;
+	}
+
 	_runCallbacks(scriptDebugger, point);
 	debugger->isPaused = false;
 }
@@ -976,18 +983,105 @@ static void _mScriptCoreAdapterSetLuminanceCb(struct mScriptCoreAdapter* adapter
 	adapter->luminanceCb = callback;
 }
 
+static uint32_t _mScriptCoreAdapterRead8(struct mScriptCoreAdapter* adapter, uint32_t address) {
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = true;
+#endif
+	uint32_t value = adapter->core->busRead8(adapter->core, address);
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = false;
+#endif
+	return value;
+}
+
+static uint32_t _mScriptCoreAdapterRead16(struct mScriptCoreAdapter* adapter, uint32_t address) {
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = true;
+#endif
+	uint32_t value = adapter->core->busRead16(adapter->core, address);
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = false;
+#endif
+	return value;
+}
+
+static uint32_t _mScriptCoreAdapterRead32(struct mScriptCoreAdapter* adapter, uint32_t address) {
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = true;
+#endif
+	uint32_t value = adapter->core->busRead32(adapter->core, address);
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = false;
+#endif
+	return value;
+}
+
+static struct mScriptValue* _mScriptCoreAdapterReadRange(struct mScriptCoreAdapter* adapter, uint32_t address, uint32_t length) {
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = true;
+#endif
+	struct mScriptValue* value = mScriptStringCreateEmpty(length);
+	char* buffer = value->value.string->buffer;
+	uint32_t i;
+	for (i = 0; i < length; ++i, ++address) {
+		buffer[i] = adapter->core->busRead8(adapter->core, address);
+	}
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = false;
+#endif
+	return value;
+}
+
+static void _mScriptCoreAdapterWrite8(struct mScriptCoreAdapter* adapter, uint32_t address, uint8_t value) {
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = true;
+#endif
+	adapter->core->busWrite8(adapter->core, address, value);
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = false;
+#endif
+}
+
+static void _mScriptCoreAdapterWrite16(struct mScriptCoreAdapter* adapter, uint32_t address, uint16_t value) {
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = true;
+#endif
+	adapter->core->busWrite16(adapter->core, address, value);
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = false;
+#endif
+}
+
+static void _mScriptCoreAdapterWrite32(struct mScriptCoreAdapter* adapter, uint32_t address, uint32_t value) {
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = true;
+#endif
+	adapter->core->busWrite32(adapter->core, address, value);
+#ifdef ENABLE_DEBUGGERS
+	adapter->debugger.reentered = false;
+#endif
+}
+
 mSCRIPT_DECLARE_STRUCT(mScriptCoreAdapter);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, W(mCore), _get, _mScriptCoreAdapterGet, 1, CHARP, name);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, _deinit, _mScriptCoreAdapterDeinit, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, reset, _mScriptCoreAdapterReset, 0);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, WTABLE, setRotationCallbacks, _mScriptCoreAdapterSetRotationCbTable, 1, WTABLE, cbTable);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, setSolarSensorCallback, _mScriptCoreAdapterSetLuminanceCb, 1, WRAPPER, callback);
+
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, U32, read8, _mScriptCoreAdapterRead8, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, U32, read16, _mScriptCoreAdapterRead16, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, U32, read32, _mScriptCoreAdapterRead32, 1, U32, address);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, WSTR, readRange, _mScriptCoreAdapterReadRange, 2, U32, address, U32, length);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, write8, _mScriptCoreAdapterWrite8, 2, U32, address, U8, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, write16, _mScriptCoreAdapterWrite16, 2, U32, address, U16, value);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, write32, _mScriptCoreAdapterWrite32, 2, U32, address, U32, value);
+
 #ifdef ENABLE_DEBUGGERS
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setBreakpoint, _mScriptCoreAdapterSetBreakpoint, 3, WRAPPER, callback, U32, address, S32, segment);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setWatchpoint, _mScriptCoreAdapterSetWatchpoint, 4, WRAPPER, callback, U32, address, S32, type, S32, segment);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setRangeWatchpoint, _mScriptCoreAdapterSetRangeWatchpoint, 5, WRAPPER, callback, U32, minAddress, U32, maxAddress, S32, type, S32, segment);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, BOOL, clearBreakpoint, _mScriptCoreAdapterClearBreakpoint, 1, S64, cbid);
-#endif
 
 mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mScriptCoreAdapter, setBreakpoint)
 	mSCRIPT_NO_DEFAULT,
@@ -1009,6 +1103,7 @@ mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mScriptCoreAdapter, setRangeWatchpoint)
 	mSCRIPT_NO_DEFAULT,
 	mSCRIPT_S32(-1)
 mSCRIPT_DEFINE_DEFAULTS_END;
+#endif
 
 mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
@@ -1040,6 +1135,13 @@ mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 		"Note that the full range of values is not used by games, and the exact range depends on the calibration done by the game itself."
 	)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, setSolarSensorCallback)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, read8)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, read16)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, read32)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, readRange)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, write8)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, write16)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, write32)
 #ifdef ENABLE_DEBUGGERS
 	mSCRIPT_DEFINE_DOCSTRING("Set a breakpoint at a given address")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, setBreakpoint)
