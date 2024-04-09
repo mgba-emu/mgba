@@ -140,7 +140,7 @@ static void _sendRequest(struct mCoreThreadInternal* threadContext, enum mCoreTh
 static void _cancelRequest(struct mCoreThreadInternal* threadContext, enum mCoreThreadRequest request) {
 	threadContext->requested &= ~request;
 	_pokeRequest(threadContext);
-	ConditionWake(&threadContext->stateOffThreadCond);
+	ConditionWake(&threadContext->stateOnThreadCond);
 }
 
 void _frameStarted(void* context) {
