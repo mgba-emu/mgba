@@ -343,9 +343,8 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	}
 	osSetSpeedupEnable(true);
 
-	double ratio = GBAAudioCalculateRatio(1, 268111856.f / 4481136.f, 1);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 32768 * ratio);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 32768 * ratio);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 32768);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 32768);
 	if (hasSound != NO_SOUND) {
 		audioPos = 0;
 	}
@@ -858,7 +857,7 @@ int main(int argc, char* argv[]) {
 		ndspChnReset(0);
 		ndspChnSetFormat(0, NDSP_FORMAT_STEREO_PCM16);
 		ndspChnSetInterp(0, NDSP_INTERP_NONE);
-		ndspChnSetRate(0, 0x8000);
+		ndspChnSetRate(0, 32822);
 		ndspChnWaveBufClear(0);
 		audioLeft = linearMemAlign(AUDIO_SAMPLES * DSP_BUFFERS * 2 * sizeof(int16_t), 0x80);
 		memset(dspBuffer, 0, sizeof(dspBuffer));
