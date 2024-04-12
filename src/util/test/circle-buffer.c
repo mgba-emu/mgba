@@ -30,6 +30,8 @@ M_TEST_DEFINE(basicCircle) {
 		assert_int_equal(CircleBufferRead8(&buffer, &value), 1);
 		assert_int_equal(value, i);
 	}
+
+	CircleBufferDeinit(&buffer);
 }
 
 M_TEST_DEFINE(basicAlignment16) {
@@ -59,6 +61,8 @@ M_TEST_DEFINE(basicAlignment16) {
 		assert_int_equal(CircleBufferRead16(&buffer, &value), 2);
 		assert_int_equal(value, i);
 	}
+
+	CircleBufferDeinit(&buffer);
 }
 
 
@@ -113,6 +117,8 @@ M_TEST_DEFINE(basicAlignment32) {
 		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
 		assert_int_equal(value, i);
 	}
+
+	CircleBufferDeinit(&buffer);
 }
 
 M_TEST_DEFINE(capacity) {
@@ -140,6 +146,8 @@ M_TEST_DEFINE(capacity) {
 		assert_int_equal(CircleBufferRead8(&buffer, &value), 1);
 		assert_int_equal(value, i);
 	}
+
+	CircleBufferDeinit(&buffer);
 }
 
 M_TEST_DEFINE(overCapacity16) {
@@ -152,6 +160,8 @@ M_TEST_DEFINE(overCapacity16) {
 		assert_int_equal(CircleBufferWrite8(&buffer, i), 1);
 	}
 	assert_int_equal(CircleBufferWrite16(&buffer, 0xFFFF), 0);
+
+	CircleBufferDeinit(&buffer);
 }
 
 M_TEST_SUITE_DEFINE(CircleBuffer,
