@@ -36,6 +36,7 @@ set(GUI_FILES
 	gui/menu.c)
 
 set(TEST_FILES
+	test/circle-buffer.c
 	test/color.c
 	test/geometry.c
 	test/image.c
