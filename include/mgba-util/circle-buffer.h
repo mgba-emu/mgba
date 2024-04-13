@@ -31,7 +31,7 @@ int CircleBufferRead8(struct CircleBuffer* buffer, int8_t* value);
 int CircleBufferRead16(struct CircleBuffer* buffer, int16_t* value);
 int CircleBufferRead32(struct CircleBuffer* buffer, int32_t* value);
 size_t CircleBufferRead(struct CircleBuffer* buffer, void* output, size_t length);
-size_t CircleBufferDump(const struct CircleBuffer* buffer, void* output, size_t length);
+size_t CircleBufferDump(const struct CircleBuffer* buffer, void* output, size_t length, size_t offset);
 
 CXX_GUARD_END
 

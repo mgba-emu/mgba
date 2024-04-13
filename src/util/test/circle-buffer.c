@@ -164,10 +164,126 @@ M_TEST_DEFINE(overCapacity16) {
 	CircleBufferDeinit(&buffer);
 }
 
+M_TEST_DEFINE(writeLenCapacity) {
+	struct CircleBuffer buffer;
+	const char* data = " Lorem ipsum dolor sit amet, consectetur adipiscing elit placerat.";
+	char databuf[64];
+
+	CircleBufferInit(&buffer, 64);
+
+	assert_int_equal(CircleBufferWrite(&buffer, data, 64), 64);
+	assert_int_equal(CircleBufferSize(&buffer), 64);
+	assert_int_equal(CircleBufferRead(&buffer, databuf, 64), 64);
+	assert_int_equal(CircleBufferSize(&buffer), 0);
+	assert_memory_equal(data, databuf, 64);
+
+	assert_int_equal(CircleBufferWrite(&buffer, data, 48), 48);
+	assert_int_equal(CircleBufferSize(&buffer), 48);
+	assert_int_equal(CircleBufferWrite(&buffer, data, 48), 0);
+	assert_int_equal(CircleBufferSize(&buffer), 48);
+	assert_int_equal(CircleBufferRead(&buffer, databuf, 64), 48);
+	assert_memory_equal(data, databuf, 48);
+
+	assert_int_equal(CircleBufferWrite(&buffer, data, 48), 48);
+	assert_int_equal(CircleBufferSize(&buffer), 48);
+	assert_int_equal(CircleBufferWrite(&buffer, data, 16), 16);
+	assert_int_equal(CircleBufferSize(&buffer), 64);
+	assert_int_equal(CircleBufferRead(&buffer, databuf, 64), 64);
+	assert_int_equal(CircleBufferSize(&buffer), 0);
+	assert_memory_equal(data, databuf, 48);
+	assert_memory_equal(data, &databuf[48], 16);
+
+	CircleBufferDeinit(&buffer);
+}
+
+M_TEST_DEFINE(dumpBasic) {
+	struct CircleBuffer buffer;
+	const char* data = " Lorem ipsum dolor sit amet, consectetur adipiscing elit placerat.";
+	char databuf[64];
+
+	CircleBufferInit(&buffer, 64);
+
+	assert_int_equal(CircleBufferWrite(&buffer, data, 64), 64);
+	assert_int_equal(CircleBufferSize(&buffer), 64);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 64, 0), 64);
+	assert_int_equal(CircleBufferSize(&buffer), 64);
+	assert_memory_equal(data, databuf, 64);
+	assert_int_equal(CircleBufferRead(&buffer, databuf, 64), 64);
+	assert_int_equal(CircleBufferSize(&buffer), 0);
+	assert_memory_equal(data, databuf, 64);
+
+	assert_int_equal(CircleBufferWrite(&buffer, data, 48), 48);
+	assert_int_equal(CircleBufferSize(&buffer), 48);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 48, 0), 48);
+	assert_int_equal(CircleBufferSize(&buffer), 48);
+	assert_memory_equal(data, databuf, 48);
+	assert_int_equal(CircleBufferRead(&buffer, databuf, 16), 16);
+	assert_int_equal(CircleBufferSize(&buffer), 32);
+	assert_memory_equal(data, databuf, 16);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 48, 0), 32);
+	assert_int_equal(CircleBufferSize(&buffer), 32);
+	assert_memory_equal(&data[16], databuf, 32);
+
+	assert_int_equal(CircleBufferWrite(&buffer, data, 32), 32);
+	assert_int_equal(CircleBufferSize(&buffer), 64);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 64, 0), 64);
+	assert_int_equal(CircleBufferSize(&buffer), 64);
+	assert_memory_equal(&data[16], databuf, 32);
+	assert_memory_equal(data, &databuf[32], 32);
+	assert_int_equal(CircleBufferRead(&buffer, databuf, 64), 64);
+	assert_memory_equal(&data[16], databuf, 32);
+	assert_memory_equal(data, &databuf[32], 32);
+	assert_int_equal(CircleBufferSize(&buffer), 0);
+
+	CircleBufferDeinit(&buffer);
+}
+
+M_TEST_DEFINE(dumpOffset) {
+	struct CircleBuffer buffer;
+	const char* data = " Lorem ipsum dolor sit amet, consectetur adipiscing elit placerat.";
+	char databuf[64];
+
+	CircleBufferInit(&buffer, 64);
+
+	assert_int_equal(CircleBufferWrite(&buffer, data, 48), 48);
+	assert_int_equal(CircleBufferSize(&buffer), 48);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 32, 0), 32);
+	assert_memory_equal(data, databuf, 32);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 32, 16), 32);
+	assert_memory_equal(&data[16], databuf, 32);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 32, 32), 16);
+	assert_memory_equal(&data[32], databuf, 16);
+
+	assert_int_equal(CircleBufferRead(&buffer, databuf, 16), 16);
+	assert_int_equal(CircleBufferSize(&buffer), 32);
+	assert_memory_equal(data, databuf, 16);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 32, 0), 32);
+	assert_memory_equal(&data[16], databuf, 32);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 32, 16), 16);
+	assert_memory_equal(&data[32], databuf, 16);
+
+	assert_int_equal(CircleBufferWrite(&buffer, data, 32), 32);
+	assert_int_equal(CircleBufferSize(&buffer), 64);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 32, 0), 32);
+	assert_memory_equal(&data[16], databuf, 32);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 32, 16), 32);
+	assert_memory_equal(&data[32], databuf, 16);
+	assert_memory_equal(data, &databuf[16], 16);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 32, 32), 32);
+	assert_memory_equal(data, databuf, 32);
+	assert_int_equal(CircleBufferDump(&buffer, databuf, 32, 48), 16);
+	assert_memory_equal(&data[16], databuf, 16);
+
+	CircleBufferDeinit(&buffer);
+}
+
 M_TEST_SUITE_DEFINE(CircleBuffer,
 	cmocka_unit_test(basicCircle),
 	cmocka_unit_test(basicAlignment16),
 	cmocka_unit_test(basicAlignment32),
 	cmocka_unit_test(capacity),
 	cmocka_unit_test(overCapacity16),
+	cmocka_unit_test(writeLenCapacity),
+	cmocka_unit_test(dumpBasic),
+	cmocka_unit_test(dumpOffset),
 )

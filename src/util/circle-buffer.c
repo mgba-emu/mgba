@@ -264,15 +264,16 @@ size_t CircleBufferRead(struct CircleBuffer* buffer, void* output, size_t length
 	return length;
 }
 
-size_t CircleBufferDump(const struct CircleBuffer* buffer, void* output, size_t length) {
+size_t CircleBufferDump(const struct CircleBuffer* buffer, void* output, size_t length, size_t offset) {
 	int8_t* data = buffer->readPtr;
-	if (buffer->size == 0) {
+	if (buffer->size <= offset) {
 		return 0;
 	}
-	if (length > buffer->size) {
-		length = buffer->size;
+	if (length > buffer->size - offset) {
+		length = buffer->size - offset;
 	}
-	size_t remaining = buffer->capacity - ((int8_t*) data - (int8_t*) buffer->data);
+	data += offset;
+	size_t remaining = buffer->capacity - ((uintptr_t) data - (uintptr_t) buffer->data);
 	if (length <= remaining) {
 		memcpy(output, data, length);
 	} else {
