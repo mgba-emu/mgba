@@ -73,8 +73,8 @@ struct VFile* VFileFromMemory(void* mem, size_t size);
 struct VFile* VFileFromConstMemory(const void* mem, size_t size);
 struct VFile* VFileMemChunk(const void* mem, size_t size);
 
-struct CircleBuffer;
-struct VFile* VFileFIFO(struct CircleBuffer* backing);
+struct mCircleBuffer;
+struct VFile* VFileFIFO(struct mCircleBuffer* backing);
 
 struct VDir* VDirOpen(const char* path);
 struct VDir* VDirOpenArchive(const char* path);

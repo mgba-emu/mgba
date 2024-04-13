@@ -65,7 +65,7 @@ static struct mSceRotationSource {
 
 static struct mSceRumble {
 	struct mRumble d;
-	struct CircleBuffer history;
+	struct mCircleBuffer history;
 	int current;
 } rumble;
 
@@ -155,12 +155,12 @@ static int32_t _readGyroZ(struct mRotationSource* source) {
 static void _setRumble(struct mRumble* source, int enable) {
 	struct mSceRumble* rumble = (struct mSceRumble*) source;
 	rumble->current += enable;
-	if (CircleBufferSize(&rumble->history) == RUMBLE_PWM) {
+	if (mCircleBufferSize(&rumble->history) == RUMBLE_PWM) {
 		int8_t oldLevel;
-		CircleBufferRead8(&rumble->history, &oldLevel);
+		mCircleBufferRead8(&rumble->history, &oldLevel);
 		rumble->current -= oldLevel;
 	}
-	CircleBufferWrite8(&rumble->history, enable);
+	mCircleBufferWrite8(&rumble->history, enable);
 	int small = (rumble->current << 21) / 65793;
 	int big = ((rumble->current * rumble->current) << 18) / 65793;
 	struct SceCtrlActuator state = {
@@ -342,7 +342,7 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation.d);
 
 	rumble.d.setRumble = _setRumble;
-	CircleBufferInit(&rumble.history, RUMBLE_PWM);
+	mCircleBufferInit(&rumble.history, RUMBLE_PWM);
 	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
 
 	camera.d.startRequestImage = _startRequestImage;
@@ -482,7 +482,7 @@ void mPSP2Unpaused(struct mGUIRunner* runner) {
 
 void mPSP2Teardown(struct mGUIRunner* runner) {
 	UNUSED(runner);
-	CircleBufferDeinit(&rumble.history);
+	mCircleBufferDeinit(&rumble.history);
 	vita2d_free_texture(tex[0]);
 	vita2d_free_texture(tex[1]);
 	vita2d_free_texture(screenshot);

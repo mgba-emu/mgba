@@ -76,7 +76,7 @@ struct mSDLPlayer {
 
 		int level;
 		float activeLevel;
-		struct CircleBuffer history;
+		struct mCircleBuffer history;
 	} rumble;
 #else
 	int newWidth;
@@ -98,7 +98,7 @@ struct mSDLPlayer {
 		int gyroY;
 		int gyroZ;
 		float gyroSensitivity;
-		struct CircleBuffer zHistory;
+		struct mCircleBuffer zHistory;
 		int oldX;
 		int oldY;
 		float zDelta;

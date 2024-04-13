@@ -202,7 +202,7 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	player->rumble.d.setRumble = _mSDLSetRumble;
-	CircleBufferInit(&player->rumble.history, RUMBLE_PWM);
+	mCircleBufferInit(&player->rumble.history, RUMBLE_PWM);
 	player->rumble.level = 0;
 	player->rumble.activeLevel = 0;
 	player->rumble.p = player;
@@ -219,7 +219,7 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 	player->rotation.gyroY = 1;
 	player->rotation.gyroZ = -1;
 	player->rotation.zDelta = 0;
-	CircleBufferInit(&player->rotation.zHistory, sizeof(float) * GYRO_STEPS);
+	mCircleBufferInit(&player->rotation.zHistory, sizeof(float) * GYRO_STEPS);
 	player->rotation.p = player;
 
 	player->playerId = events->playersAttached;
@@ -293,9 +293,9 @@ void mSDLDetachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 		}
 	}
 	--events->playersAttached;
-	CircleBufferDeinit(&player->rotation.zHistory);
+	mCircleBufferDeinit(&player->rotation.zHistory);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	CircleBufferDeinit(&player->rumble.history);
+	mCircleBufferDeinit(&player->rumble.history);
 #endif
 }
 
@@ -739,12 +739,12 @@ static void _mSDLSetRumble(struct mRumble* rumble, int enable) {
 
 	int8_t originalLevel = sdlRumble->level;
 	sdlRumble->level += enable;
-	if (CircleBufferSize(&sdlRumble->history) == RUMBLE_PWM) {
+	if (mCircleBufferSize(&sdlRumble->history) == RUMBLE_PWM) {
 		int8_t oldLevel;
-		CircleBufferRead8(&sdlRumble->history, &oldLevel);
+		mCircleBufferRead8(&sdlRumble->history, &oldLevel);
 		sdlRumble->level -= oldLevel;
 	}
-	CircleBufferWrite8(&sdlRumble->history, enable);
+	mCircleBufferWrite8(&sdlRumble->history, enable);
 	if (sdlRumble->level == originalLevel) {
 		return;
 	}
@@ -851,10 +851,10 @@ static void _mSDLRotationSample(struct mRotationSource* source) {
 	rotation->oldY = y;
 
 	float oldZ = 0;
-	if (CircleBufferSize(&rotation->zHistory) == GYRO_STEPS * sizeof(float)) {
-		CircleBufferRead32(&rotation->zHistory, (int32_t*) &oldZ);
+	if (mCircleBufferSize(&rotation->zHistory) == GYRO_STEPS * sizeof(float)) {
+		mCircleBufferRead32(&rotation->zHistory, (int32_t*) &oldZ);
 	}
-	CircleBufferWrite32(&rotation->zHistory, theta.i);
+	mCircleBufferWrite32(&rotation->zHistory, theta.i);
 	rotation->zDelta += theta.f - oldZ;
 }
 

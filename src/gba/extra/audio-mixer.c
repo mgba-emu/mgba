@@ -43,7 +43,7 @@ void _mp2kInit(void* cpu, struct mCPUComponent* component) {
 	size_t i;
 	for (i = 0; i < MP2K_MAX_SOUND_CHANNELS; ++i) {
 		mixer->activeTracks[i].channel = &mixer->context.chans[i];
-		CircleBufferInit(&mixer->activeTracks[i].buffer, 0x10000);
+		mCircleBufferInit(&mixer->activeTracks[i].buffer, 0x10000);
 	}
 }
 
@@ -51,7 +51,7 @@ void _mp2kDeinit(struct mCPUComponent* component) {
 	struct GBAAudioMixer* mixer = (struct GBAAudioMixer*) component;
 	size_t i;
 	for (i = 0; i < MP2K_MAX_SOUND_CHANNELS; ++i) {
-		CircleBufferDeinit(&mixer->activeTracks[i].buffer);
+		mCircleBufferDeinit(&mixer->activeTracks[i].buffer);
 	}
 }
 
@@ -130,8 +130,8 @@ static void _stepSample(struct GBAAudioMixer* mixer, struct GBAMP2kTrack* track)
 			(sample * track->channel->rightVolume * track->channel->envelopeV) >> 9
 		};
 
-		CircleBufferWrite16(&track->buffer, stereo.left);
-		CircleBufferWrite16(&track->buffer, stereo.right);
+		mCircleBufferWrite16(&track->buffer, stereo.left);
+		mCircleBufferWrite16(&track->buffer, stereo.right);
 
 		sampleOffset += mixer->p->sampleInterval / OVERSAMPLE;
 		while (sampleOffset > freq) {
@@ -265,7 +265,7 @@ void _mp2kStep(struct GBAAudioMixer* mixer) {
 			} else {
 				track->currentOffset = 0;
 				track->samplePlaying = 0;
-				CircleBufferClear(&track->buffer);
+				mCircleBufferClear(&track->buffer);
 			}
 		}
 		mixer->frame -= VIDEO_TOTAL_LENGTH / mixer->tempo;
@@ -281,9 +281,9 @@ void _mp2kStep(struct GBAAudioMixer* mixer) {
 				continue;
 			}
 			int16_t value;
-			CircleBufferRead16(&mixer->activeTracks[track].buffer, &value);
+			mCircleBufferRead16(&mixer->activeTracks[track].buffer, &value);
 			sample.left += value;
-			CircleBufferRead16(&mixer->activeTracks[track].buffer, &value);
+			mCircleBufferRead16(&mixer->activeTracks[track].buffer, &value);
 			sample.right += value;
 		}
 		sample.left = (sample.left * mixer->p->masterVolume) >> 8;

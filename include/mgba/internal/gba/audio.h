@@ -253,7 +253,7 @@ struct GBAMP2kTrack {
 	struct GBAMP2kMusicPlayerTrack track;
 	struct GBAMP2kSoundChannel* channel;
 	uint8_t lastCommand;
-	struct CircleBuffer buffer;
+	struct mCircleBuffer buffer;
 	uint32_t samplePlaying;
 	float currentOffset;
 	bool waiting;

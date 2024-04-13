@@ -78,7 +78,7 @@ struct mGUIRunner {
 	float fps;
 	int64_t lastFpsCheck;
 	int32_t totalDelta;
-	struct CircleBuffer fpsBuffer;
+	struct mCircleBuffer fpsBuffer;
 
 	void (*setup)(struct mGUIRunner*);
 	void (*teardown)(struct mGUIRunner*);
