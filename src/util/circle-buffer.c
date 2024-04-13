@@ -153,6 +153,13 @@ size_t CircleBufferWrite(struct CircleBuffer* buffer, const void* input, size_t 
 	return length;
 }
 
+size_t CircleBufferWriteTruncate(struct CircleBuffer* buffer, const void* input, size_t length) {
+	if (buffer->size + length > buffer->capacity) {
+		length = buffer->capacity - buffer->size;
+	}
+	return CircleBufferWrite(buffer, input, length);
+}
+
 int CircleBufferRead8(struct CircleBuffer* buffer, int8_t* value) {
 	int8_t* data = buffer->readPtr;
 	if (buffer->size < sizeof(int8_t)) {

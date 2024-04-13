@@ -196,6 +196,32 @@ M_TEST_DEFINE(writeLenCapacity) {
 	CircleBufferDeinit(&buffer);
 }
 
+M_TEST_DEFINE(writeTruncate) {
+	struct CircleBuffer buffer;
+	const char* data = " Lorem ipsum dolor sit amet, consectetur adipiscing elit placerat.";
+	char databuf[64];
+
+	CircleBufferInit(&buffer, 64);
+
+	assert_int_equal(CircleBufferWriteTruncate(&buffer, data, 64), 64);
+	assert_int_equal(CircleBufferSize(&buffer), 64);
+	assert_int_equal(CircleBufferRead(&buffer, databuf, 64), 64);
+	assert_int_equal(CircleBufferSize(&buffer), 0);
+	assert_memory_equal(data, databuf, 64);
+
+	assert_int_equal(CircleBufferWriteTruncate(&buffer, data, 48), 48);
+	assert_int_equal(CircleBufferSize(&buffer), 48);
+	assert_int_equal(CircleBufferWrite(&buffer, data, 48), 0);
+	assert_int_equal(CircleBufferSize(&buffer), 48);
+	assert_int_equal(CircleBufferWriteTruncate(&buffer, data, 48), 16);
+	assert_int_equal(CircleBufferSize(&buffer), 64);
+	assert_int_equal(CircleBufferRead(&buffer, databuf, 64), 64);
+	assert_memory_equal(data, databuf, 48);
+	assert_memory_equal(data, &databuf[48], 16);
+
+	CircleBufferDeinit(&buffer);
+}
+
 M_TEST_DEFINE(dumpBasic) {
 	struct CircleBuffer buffer;
 	const char* data = " Lorem ipsum dolor sit amet, consectetur adipiscing elit placerat.";
@@ -284,6 +310,7 @@ M_TEST_SUITE_DEFINE(CircleBuffer,
 	cmocka_unit_test(capacity),
 	cmocka_unit_test(overCapacity16),
 	cmocka_unit_test(writeLenCapacity),
+	cmocka_unit_test(writeTruncate),
 	cmocka_unit_test(dumpBasic),
 	cmocka_unit_test(dumpOffset),
 )
