@@ -131,6 +131,7 @@ static struct mScriptValue* _mScriptPainterGet(struct mScriptPainter* painter, c
 
 void _mScriptPainterDeinit(struct mScriptPainter* painter) {
 	mScriptValueDeref(painter->image);
+	free(painter);
 }
 
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, setBlend, _mPainterSetBlend, 1, BOOL, enable);
