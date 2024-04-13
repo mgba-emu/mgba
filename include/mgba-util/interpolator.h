@@ -8,14 +8,12 @@
 
 #include <mgba-util/common.h>
 
-struct mSampleBuffer {
-	int16_t* data;
-	size_t samples;
-	int channels;
+struct mInterpData {
+	int16_t (*at)(const void* mInterpData, size_t index);
 };
 
 struct mInterpolator {
-	int16_t (*interpolate)(const struct mInterpolator* interp, const struct mSampleBuffer* data, double time, double sampleStep);
+	int16_t (*interpolate)(const struct mInterpolator* interp, const struct mInterpData* data, double time, double sampleStep);
 };
 
 struct mInterpolatorSinc {

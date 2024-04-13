@@ -10,7 +10,7 @@ enum {
 	mSINC_WIDTH = 8,
 };
 
-static int16_t mInterpolatorSincInterpolate(const struct mInterpolator*, const struct mSampleBuffer* data, double time, double sampleStep);
+static int16_t mInterpolatorSincInterpolate(const struct mInterpolator*, const struct mInterpData*, double time, double sampleStep);
 
 void mInterpolatorSincInit(struct mInterpolatorSinc* interp, unsigned resolution, unsigned width) {
 	interp->d.interpolate = mInterpolatorSincInterpolate;
@@ -46,7 +46,7 @@ void mInterpolatorSincDeinit(struct mInterpolatorSinc* interp) {
 	free(interp->windowLut);
 }
 
-int16_t mInterpolatorSincInterpolate(const struct mInterpolator* interpolator, const struct mSampleBuffer* data, double time, double sampleStep) {
+int16_t mInterpolatorSincInterpolate(const struct mInterpolator* interpolator, const struct mInterpData* data, double time, double sampleStep) {
 	struct mInterpolatorSinc* interp = (struct mInterpolatorSinc*) interpolator;
 	ssize_t index = (ssize_t) time;
 	double subsample = time - floor(time);
@@ -75,9 +75,7 @@ int16_t mInterpolatorSincInterpolate(const struct mInterpolator* interpolator, c
 
 		kernel = interp->sincLut[sinc] * interp->windowLut[window];
 		kernelSum += kernel;
-		if (index + i >= 0 && index + i < (ssize_t) data->samples) {
-			sum += data->data[(index + i) * data->channels] * kernel;
-		}
+		sum += data->at(data, index + i) * kernel;
 	}
 	return sum / kernelSum;
 }
