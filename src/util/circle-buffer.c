@@ -72,7 +72,7 @@ int CircleBufferWrite32(struct CircleBuffer* buffer, int32_t value) {
 	if (buffer->size + sizeof(int32_t) > buffer->capacity) {
 		return 0;
 	}
-	if ((intptr_t) data & 0x3) {
+	if (((intptr_t) data & 0x3) || (uintptr_t) data - (uintptr_t) buffer->data > buffer->capacity - sizeof(int32_t)) {
 		int written = 0;
 		written += CircleBufferWrite8(buffer, ((int8_t*) &value)[0]);
 		written += CircleBufferWrite8(buffer, ((int8_t*) &value)[1]);
@@ -102,7 +102,7 @@ int CircleBufferWrite16(struct CircleBuffer* buffer, int16_t value) {
 	if (buffer->size + sizeof(int16_t) > buffer->capacity) {
 		return 0;
 	}
-	if ((intptr_t) data & 0x1) {
+	if (((intptr_t) data & 0x1) || (uintptr_t) data - (uintptr_t) buffer->data > buffer->capacity - sizeof(int16_t)) {
 		int written = 0;
 		written += CircleBufferWrite8(buffer, ((int8_t*) &value)[0]);
 		written += CircleBufferWrite8(buffer, ((int8_t*) &value)[1]);
@@ -187,7 +187,7 @@ int CircleBufferRead16(struct CircleBuffer* buffer, int16_t* value) {
 	if (buffer->size < sizeof(int16_t)) {
 		return 0;
 	}
-	if ((intptr_t) data & 0x1) {
+	if (((intptr_t) data & 0x1) || (uintptr_t) data - (uintptr_t) buffer->data > buffer->capacity - sizeof(int16_t)) {
 		int read = 0;
 		read += CircleBufferRead8(buffer, &((int8_t*) value)[0]);
 		read += CircleBufferRead8(buffer, &((int8_t*) value)[1]);
@@ -215,7 +215,7 @@ int CircleBufferRead32(struct CircleBuffer* buffer, int32_t* value) {
 	if (buffer->size < sizeof(int32_t)) {
 		return 0;
 	}
-	if ((intptr_t) data & 0x3) {
+	if (((intptr_t) data & 0x3) || (uintptr_t) data - (uintptr_t) buffer->data > buffer->capacity - sizeof(int32_t)) {
 		int read = 0;
 		read += CircleBufferRead8(buffer, &((int8_t*) value)[0]);
 		read += CircleBufferRead8(buffer, &((int8_t*) value)[1]);

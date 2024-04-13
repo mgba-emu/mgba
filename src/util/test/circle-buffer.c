@@ -321,6 +321,470 @@ M_TEST_DEFINE(overflowWrap32_3) {
 	CircleBufferDeinit(&buffer);
 }
 
+M_TEST_DEFINE(weirdSize16) {
+	struct CircleBuffer buffer;
+
+	CircleBufferInit(&buffer, 15);
+
+	// Aligned, no overflow wrap
+	int16_t value;
+	int16_t i;
+	for (i = 0; i < 7; ++i) {
+		assert_int_equal(CircleBufferWrite16(&buffer, i * 0x102), 2);
+	}
+	assert_int_equal(CircleBufferWrite16(&buffer, 7), 0);
+	for (i = 0; i < 7; ++i) {
+		assert_int_equal(CircleBufferRead16(&buffer, &value), 2);
+		assert_int_equal(value, i * 0x102);
+	}
+
+	// Misaligned, no overflow wrap
+	CircleBufferClear(&buffer);
+	int8_t i8;
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 7; ++i) {
+		assert_int_equal(CircleBufferWrite16(&buffer, i * 0x102), 2);
+	}
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 7; ++i) {
+		assert_int_equal(CircleBufferRead16(&buffer, &value), 2);
+		assert_int_equal(value, i * 0x102);
+	}
+
+	// Aligned, overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 6; ++i) {
+		assert_int_equal(CircleBufferWrite16(&buffer, i * 0x102), 2);
+	}
+	assert_int_equal(CircleBufferWrite16(&buffer, 6 * 0x102), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite16(&buffer, 6 * 0x102), 2);
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 7; ++i) {
+		assert_int_equal(CircleBufferRead16(&buffer, &value), 2);
+		assert_int_equal(value, i * 0x102);
+	}
+
+	// Misaligned, overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 6; ++i) {
+		assert_int_equal(CircleBufferWrite16(&buffer, i * 0x102), 2);
+	}
+	assert_int_equal(CircleBufferWrite16(&buffer, 6 * 0x102), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite16(&buffer, 6 * 0x102), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite16(&buffer, 6 * 0x102), 2);
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 7; ++i) {
+		assert_int_equal(CircleBufferRead16(&buffer, &value), 2);
+		assert_int_equal(value, i * 0x102);
+	}
+
+	CircleBufferDeinit(&buffer);
+}
+
+M_TEST_DEFINE(weirdSize32_1) {
+	struct CircleBuffer buffer;
+
+	CircleBufferInit(&buffer, 13);
+
+	// Aligned, no overflow wrap
+	int32_t value;
+	int32_t i;
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+	assert_int_equal(CircleBufferWrite32(&buffer, 3), 0);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Misaligned, no overflow wrap
+	CircleBufferClear(&buffer);
+	int8_t i8;
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Aligned, overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 2; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 4);
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Misaligned, overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 2; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 4);
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	CircleBufferDeinit(&buffer);
+}
+
+M_TEST_DEFINE(weirdSize32_2) {
+	struct CircleBuffer buffer;
+
+	CircleBufferInit(&buffer, 14);
+
+	// Aligned, no overflow wrap
+	int32_t value;
+	int8_t i8;
+	int32_t i;
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+	assert_int_equal(CircleBufferWrite32(&buffer, 3), 0);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Singly misaligned, no overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Doubly misaligned, no overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Aligned, overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 2; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 4);
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Singly misaligned, overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 2; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 4);
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Doubly misaligned, overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 2; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 4);
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	CircleBufferDeinit(&buffer);
+}
+
+M_TEST_DEFINE(weirdSize32_3) {
+	struct CircleBuffer buffer;
+
+	CircleBufferInit(&buffer, 15);
+
+	// Aligned, no overflow wrap
+	int32_t value;
+	int8_t i8;
+	int32_t i;
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+	assert_int_equal(CircleBufferWrite32(&buffer, 3), 0);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Singly misaligned, no overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Doubly misaligned, no overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Triply misaligned, no overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Aligned, overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 2; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 4);
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Singly misaligned, overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 2; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 4);
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Doubly misaligned, overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 2; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 4);
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	// Triply misaligned, overflow wrap
+	CircleBufferClear(&buffer);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+	assert_int_equal(CircleBufferWrite8(&buffer, 0), 1);
+
+	for (i = 0; i < 2; ++i) {
+		assert_int_equal(CircleBufferWrite32(&buffer, i * 0x1020304), 4);
+	}
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 0);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferWrite32(&buffer, 2 * 0x1020304), 4);
+
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	assert_int_equal(CircleBufferRead8(&buffer, &i8), 1);
+	for (i = 0; i < 3; ++i) {
+		assert_int_equal(CircleBufferRead32(&buffer, &value), 4);
+		assert_int_equal(value, i * 0x1020304);
+	}
+
+	CircleBufferDeinit(&buffer);
+}
+
 M_TEST_DEFINE(overCapacity16) {
 	struct CircleBuffer buffer;
 
@@ -486,6 +950,10 @@ M_TEST_SUITE_DEFINE(CircleBuffer,
 	cmocka_unit_test(overflowWrap32_1),
 	cmocka_unit_test(overflowWrap32_2),
 	cmocka_unit_test(overflowWrap32_3),
+	cmocka_unit_test(weirdSize16),
+	cmocka_unit_test(weirdSize32_1),
+	cmocka_unit_test(weirdSize32_2),
+	cmocka_unit_test(weirdSize32_3),
 	cmocka_unit_test(overCapacity16),
 	cmocka_unit_test(writeLenCapacity),
 	cmocka_unit_test(writeTruncate),
