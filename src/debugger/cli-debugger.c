@@ -597,7 +597,7 @@ static struct ParseTree* _parseTree(const char** string) {
 	struct ParseTree* tree = NULL;
 	if (!error) {
 		tree = parseTreeCreate();
-		parseLexedExpression(tree, &lv);
+		error = !parseLexedExpression(tree, &lv);
 	}
 	lexFree(&lv);
 	LexVectorClear(&lv);
