@@ -229,7 +229,7 @@ bool mVideoProxyBackendRun(struct mVideoProxyBackend* proxy, bool block) {
 			}
 			ok = true;
 		}
-	} while (block);
+	} while (block && !ok);
 	return ok;
 }
 
