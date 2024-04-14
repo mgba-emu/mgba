@@ -1523,9 +1523,17 @@ void Window::setupMenu(QMenuBar* menubar) {
 		auto setSize = m_actions.addAction(tr("%1×").arg(QString::number(i)), QString("frame.%1x").arg(QString::number(i)), [this, i]() {
 			auto setSize = m_frameSizes[i];
 			showNormal();
-			QSize size(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+#if defined(M_CORE_GBA)
+			QSize minimumSize = QSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
+#elif defined(M_CORE_GB)
+			QSize minimumSize = QSize(GB_VIDEO_HORIZONTAL_PIXELS, GB_VIDEO_VERTICAL_PIXELS);
+#endif
+			QSize size;
 			if (m_display) {
 				size = m_display->contentSize();
+			}
+			if (size.isNull()) {
+				size = minimumSize;
 			}
 			size *= i;
 			m_savedScale = i;
