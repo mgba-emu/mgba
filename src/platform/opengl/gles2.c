@@ -271,20 +271,28 @@ static void mGLES2ContextDeinit(struct VideoBackend* v) {
 	free(context->initialShader.uniforms);
 }
 
-static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h) {
+static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h, unsigned maxW, unsigned maxH) {
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	unsigned drawW = w;
 	unsigned drawH = h;
 
-	unsigned maxW = context->width;
-	unsigned maxH = context->height;
+	if (maxW && drawW > maxW) {
+		drawW = maxW;
+	}
+
+	if (maxH && drawH > maxH) {
+		drawH = maxH;
+	}
+
+	unsigned lockW = context->width;
+	unsigned lockH = context->height;
 
 	if (v->lockAspectRatio) {
-		lockAspectRatioUInt(maxW, maxH, &drawW, &drawH);
+		lockAspectRatioUInt(lockW, lockH, &drawW, &drawH);
 	}
 	if (v->lockIntegerScaling) {
-		lockIntegerRatioUInt(maxW, &drawW);
-		lockIntegerRatioUInt(maxH, &drawH);
+		lockIntegerRatioUInt(lockW, &drawW);
+		lockIntegerRatioUInt(lockH, &drawH);
 	}
 	size_t n;
 	for (n = 0; n < context->nShaders; ++n) {

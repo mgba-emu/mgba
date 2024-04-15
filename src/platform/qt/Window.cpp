@@ -252,6 +252,9 @@ void Window::argumentsPassed() {
 
 void Window::resizeFrame(const QSize& size) {
 	QSize newSize(size);
+	if (!m_config->getOption("lockFrameSize").toInt()) {
+		m_savedSize = size;
+	}
 	if (windowHandle()) {
 		QRect geom = windowHandle()->screen()->availableGeometry();
 		if (newSize.width() > geom.width()) {
@@ -1522,7 +1525,10 @@ void Window::setupMenu(QMenuBar* menubar) {
 	for (int i = 1; i <= 8; ++i) {
 		auto setSize = m_actions.addAction(tr("%1×").arg(QString::number(i)), QString("frame.%1x").arg(QString::number(i)), [this, i]() {
 			auto setSize = m_frameSizes[i];
-			showNormal();
+			bool lockFrameSize = m_config->getOption("lockFrameSize").toInt();
+			if (!lockFrameSize) {
+				showNormal();
+			}
 #if defined(M_CORE_GBA)
 			QSize minimumSize = QSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 #elif defined(M_CORE_GB)
@@ -1538,7 +1544,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 			size *= i;
 			m_savedScale = i;
 			m_config->setOption("scaleMultiplier", i); // TODO: Port to other
+			m_savedSize = size;
 			resizeFrame(size);
+			if (lockFrameSize) {
+				m_display->setMaximumSize(size);
+			}
 			setSize->setActive(true);
 		}, "frame");
 		setSize->setExclusive(true);
@@ -1553,7 +1563,21 @@ void Window::setupMenu(QMenuBar* menubar) {
 #else
 	fullscreenKeys = QKeySequence("Ctrl+F");
 #endif
+	m_actions.addSeparator("frame");
 	m_actions.addAction(tr("Toggle fullscreen"), "fullscreen", this, &Window::toggleFullScreen, "frame", fullscreenKeys);
+
+	ConfigOption* lockFrameSize = m_config->addOption("lockFrameSize");
+	lockFrameSize->addBoolean(tr("&Lock frame size"), &m_actions, "frame");
+	lockFrameSize->connect([this](const QVariant& value) {
+		if (m_display) {
+			if (value.toBool()) {
+				m_display->setMaximumSize(m_display->size());
+			} else {
+				m_display->setMaximumSize({});
+			}
+		}
+	}, this);
+	m_config->updateOption("lockFrameSize");
 
 	ConfigOption* lockAspectRatio = m_config->addOption("lockAspectRatio");
 	lockAspectRatio->addBoolean(tr("Lock aspect ratio"), &m_actions, "av");
@@ -2216,6 +2240,11 @@ void Window::setController(CoreController* controller, const QString& fname) {
 void Window::attachDisplay() {
 	m_display->attach(m_controller);
 	connect(m_display.get(), &QGBA::Display::drawingStarted, this, &Window::changeRenderer);
+	if (m_config->getOption("lockFrameSize").toInt()) {
+		m_display->setMaximumSize(m_savedSize);
+	} else {
+		m_display->setMaximumSize({});
+	}
 	m_display->startDrawing(m_controller);
 
 #ifdef ENABLE_SCRIPTING

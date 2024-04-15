@@ -1,5 +1,6 @@
 0.11.0: (Future)
 Features:
+ - New option to lock the maximum frame size
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
  - Scripting: New `storage` API for saving data for a script, e.g. settings
  - Scripting: Debugger integration to allow for breakpoints and watchpoints

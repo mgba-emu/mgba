@@ -134,7 +134,20 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 	if (!drawSize.isValid() || drawSize.width() < 1 || drawSize.height() < 1) {
 		return;
 	}
-	QRect full(clampSize(contentSize(), size(), isAspectRatioLocked(), isIntegerScalingLocked()));
+	QSize usedSize = size();
+	QPoint screenOrigin(0, 0);
+	if (m_maxSize.isValid()) {
+		if (m_maxSize.width() < usedSize.width()) {
+			screenOrigin.setX((usedSize.width() - m_maxSize.width()) / 2);
+			usedSize.setWidth(m_maxSize.width());
+		}
+		if (m_maxSize.height() < usedSize.height()) {
+			screenOrigin.setY((usedSize.height() - m_maxSize.height()) / 2);
+			usedSize.setHeight(m_maxSize.height());
+		}
+	}
+	QRect full(clampSize(contentSize(), usedSize, isAspectRatioLocked(), isIntegerScalingLocked()));
+	full.translate(screenOrigin);
 	painter.save();
 	painter.translate(full.topLeft());
 	painter.scale(full.width() / static_cast<qreal>(frame.width), full.height() / static_cast<qreal>(frame.height));
@@ -220,7 +233,7 @@ void DisplayQt::swap(struct VideoBackend*) {
 void DisplayQt::clear(struct VideoBackend*) {
 }
 
-void DisplayQt::contextResized(struct VideoBackend*, unsigned, unsigned) {
+void DisplayQt::contextResized(struct VideoBackend*, unsigned, unsigned, unsigned, unsigned) {
 }
 
 void DisplayQt::setImageSize(struct VideoBackend* v, enum VideoLayer layer, int w, int h) {

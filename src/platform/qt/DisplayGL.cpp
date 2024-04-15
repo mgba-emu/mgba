@@ -524,6 +524,10 @@ int DisplayGL::framebufferHandle() {
 	return m_painter->glTex();
 }
 
+void DisplayGL::setMaximumSize(const QSize& size) {
+	QMetaObject::invokeMethod(m_painter.get(), "setMaximumSize", Q_ARG(const QSize&, size));
+}
+
 PainterGL::PainterGL(QWindow* window, mGLWidget* widget, const QSurfaceFormat& format)
 	: m_window(window)
 	, m_format(format)
@@ -720,6 +724,11 @@ void PainterGL::resize(const QSize& size) {
 	}
 }
 
+void PainterGL::setMaximumSize(const QSize& size) {
+	m_maxSize = size;
+	resizeContext();
+}
+
 void PainterGL::lockAspectRatio(bool lock) {
 	m_backend->lockAspectRatio = lock;
 	resize(m_size);
@@ -911,7 +920,11 @@ void PainterGL::unpause() {
 
 void PainterGL::performDraw() {
 	float r = m_window->devicePixelRatio();
-	m_backend->contextResized(m_backend, m_size.width() * r, m_size.height() * r);
+	QSize maxSize = m_maxSize;
+	if (!maxSize.isValid()) {
+		maxSize = QSize(0, 0);
+	}
+	m_backend->contextResized(m_backend, m_size.width() * r, m_size.height() * r, maxSize.width() * r, maxSize.height() * r);
 	if (m_buffer) {
 		m_backend->setImage(m_backend, VIDEO_LAYER_IMAGE, m_buffer);
 	}

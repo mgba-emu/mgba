@@ -38,6 +38,8 @@ union mVideoBackendCommandData {
 	struct {
 		unsigned width;
 		unsigned height;
+		unsigned maxW;
+		unsigned maxH;
 	} u;
 	const void* image;
 };

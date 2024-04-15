@@ -57,6 +57,7 @@ public:
 	virtual void setVideoScale(int) {}
 	virtual void setBackgroundImage(const QImage&) = 0;
 	virtual QSize contentSize() const = 0;
+	virtual void setMaximumSize(const QSize& size) = 0;
 
 	virtual void setVideoProxy(std::shared_ptr<VideoProxy> proxy) { m_videoProxy = std::move(proxy); }
 	std::shared_ptr<VideoProxy> videoProxy() { return m_videoProxy; }
@@ -105,6 +106,7 @@ private:
 	bool m_filter = false;
 	QTimer m_mouseTimer;
 	std::shared_ptr<VideoProxy> m_videoProxy;
+	QSize m_maxSize;
 };
 
 }

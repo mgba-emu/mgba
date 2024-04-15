@@ -194,6 +194,7 @@ private:
 
 	std::unique_ptr<QGBA::Display> m_display;
 	QSize m_initialSize;
+	QSize m_savedSize;
 	int m_savedScale;
 
 	// TODO: Move these to a new class
