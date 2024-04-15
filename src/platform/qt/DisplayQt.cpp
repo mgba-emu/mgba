@@ -130,6 +130,10 @@ void DisplayQt::paintEvent(QPaintEvent*) {
 	struct mRectangle frame;
 	VideoBackendGetFrame(&m_backend, &frame);
 	QPoint origin(-frame.x, -frame.y);
+	QSize drawSize(contentSize());
+	if (!drawSize.isValid() || drawSize.width() < 1 || drawSize.height() < 1) {
+		return;
+	}
 	QRect full(clampSize(contentSize(), size(), isAspectRatioLocked(), isIntegerScalingLocked()));
 	painter.save();
 	painter.translate(full.topLeft());
