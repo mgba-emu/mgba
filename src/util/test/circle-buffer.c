@@ -938,6 +938,38 @@ M_TEST_DEFINE(dumpOffset) {
 	mCircleBufferDeinit(&buffer);
 }
 
+M_TEST_DEFINE(dumpOffsetWrap) {
+	struct mCircleBuffer buffer;
+	const char* data = " Lorem ipsum dolor sit amet, consectetur adipiscing elit placerat.";
+	char databuf[64];
+
+	mCircleBufferInit(&buffer, 64);
+
+	assert_int_equal(mCircleBufferWrite(&buffer, data, 64), 64);
+	assert_int_equal(mCircleBufferSize(&buffer), 64);
+	assert_int_equal(mCircleBufferRead(&buffer, databuf, 48), 48);
+	assert_memory_equal(data, databuf, 48);
+	assert_int_equal(mCircleBufferSize(&buffer), 16);
+	assert_int_equal(mCircleBufferWrite(&buffer, data, 16), 16);
+	assert_int_equal(mCircleBufferSize(&buffer), 32);
+
+	assert_int_equal(mCircleBufferDump(&buffer, databuf, 64, 0), 32);
+	assert_memory_equal(&data[48], databuf, 16);
+	assert_memory_equal(data, &databuf[16], 16);
+
+	assert_int_equal(mCircleBufferDump(&buffer, databuf, 64, 8), 24);
+	assert_memory_equal(&data[56], databuf, 8);
+	assert_memory_equal(data, &databuf[8], 16);
+
+	assert_int_equal(mCircleBufferDump(&buffer, databuf, 64, 16), 16);
+	assert_memory_equal(data, databuf, 16);
+
+	assert_int_equal(mCircleBufferDump(&buffer, databuf, 64, 24), 8);
+	assert_memory_equal(&data[8], databuf, 8);
+
+	mCircleBufferDeinit(&buffer);
+}
+
 M_TEST_SUITE_DEFINE(mCircleBuffer,
 	cmocka_unit_test(basicCircle),
 	cmocka_unit_test(basicAlignment16),
@@ -959,4 +991,5 @@ M_TEST_SUITE_DEFINE(mCircleBuffer,
 	cmocka_unit_test(writeTruncate),
 	cmocka_unit_test(dumpBasic),
 	cmocka_unit_test(dumpOffset),
+	cmocka_unit_test(dumpOffsetWrap),
 )

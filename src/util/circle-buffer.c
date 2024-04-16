@@ -279,8 +279,18 @@ size_t mCircleBufferDump(const struct mCircleBuffer* buffer, void* output, size_
 	if (length > buffer->size - offset) {
 		length = buffer->size - offset;
 	}
-	data += offset;
 	size_t remaining = buffer->capacity - ((uintptr_t) data - (uintptr_t) buffer->data);
+	if (offset) {
+		if (remaining >= offset) {
+			data += offset;
+			remaining -= offset;
+		} else {
+			offset -= remaining;
+			data = buffer->data;
+			data += offset;
+		}
+	}
+
 	if (length <= remaining) {
 		memcpy(output, data, length);
 	} else {
