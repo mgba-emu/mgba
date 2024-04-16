@@ -250,15 +250,19 @@ size_t mCircleBufferRead(struct mCircleBuffer* buffer, void* output, size_t leng
 	}
 	size_t remaining = buffer->capacity - ((int8_t*) data - (int8_t*) buffer->data);
 	if (length <= remaining) {
-		memcpy(output, data, length);
+		if (output) {
+			memcpy(output, data, length);
+		}
 		if (length == remaining) {
 			buffer->readPtr = buffer->data;
 		} else {
 			buffer->readPtr = (int8_t*) data + length;
 		}
 	} else {
-		memcpy(output, data, remaining);
-		memcpy((int8_t*) output + remaining, buffer->data, length - remaining);
+		if (output) {
+			memcpy(output, data, remaining);
+			memcpy((int8_t*) output + remaining, buffer->data, length - remaining);
+		}
 		buffer->readPtr = (int8_t*) buffer->data + length - remaining;
 	}
 
