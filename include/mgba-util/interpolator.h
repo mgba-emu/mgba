@@ -8,12 +8,15 @@
 
 #include <mgba-util/common.h>
 
-struct mInterpData {
-	int16_t (*at)(const void* mInterpData, size_t index);
+CXX_GUARD_START
+
+struct mInterpolationData {
+	int16_t (*at)(int index, const void* context);
+	void* context;
 };
 
 struct mInterpolator {
-	int16_t (*interpolate)(const struct mInterpolator* interp, const struct mInterpData* data, double time, double sampleStep);
+	int16_t (*interpolate)(const struct mInterpolator* interp, const struct mInterpolationData* data, double time, double sampleStep);
 };
 
 struct mInterpolatorSinc {
@@ -27,5 +30,7 @@ struct mInterpolatorSinc {
 
 void mInterpolatorSincInit(struct mInterpolatorSinc* interp, unsigned resolution, unsigned width);
 void mInterpolatorSincDeinit(struct mInterpolatorSinc* interp);
+
+CXX_GUARD_END
 
 #endif

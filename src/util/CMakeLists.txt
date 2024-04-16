@@ -13,6 +13,8 @@ set(BASE_SOURCE_FILES
 
 set(SOURCE_FILES
 	${BASE_SOURCE_FILES}
+	audio-buffer.c
+	audio-resampler.c
 	convolve.c
 	elf-read.c
 	geometry.c

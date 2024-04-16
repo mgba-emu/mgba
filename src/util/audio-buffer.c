@@ -9,7 +9,7 @@
 
 void mAudioBufferInit(struct mAudioBuffer* buffer, size_t capacity, unsigned channels) {
 	mCircleBufferInit(&buffer->data, capacity * channels * sizeof(int16_t));
-	buffer->channels = capacity;
+	buffer->channels = channels;
 }
 
 void mAudioBufferDeinit(struct mAudioBuffer* buffer) {
