@@ -99,8 +99,9 @@ static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
 	}
 	blip_t* left = NULL;
 	blip_t* right = NULL;
-	int32_t clockRate = GBA_ARM7TDMI_FREQUENCY;
+	int32_t clockRate = 1;
 	if (audioContext->core) {
+		clockRate = audioContext->core->frequency(audioContext->core);
 		left = audioContext->core->getAudioChannel(audioContext->core, 0);
 		right = audioContext->core->getAudioChannel(audioContext->core, 1);
 	}
