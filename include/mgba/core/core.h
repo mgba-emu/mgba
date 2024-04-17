@@ -78,6 +78,7 @@ struct mCore {
 	void (*getPixels)(struct mCore*, const void** buffer, size_t* stride);
 	void (*putPixels)(struct mCore*, const void* buffer, size_t stride);
 
+	unsigned (*audioSampleRate)(const struct mCore*);
 	struct blip_t* (*getAudioChannel)(struct mCore*, int ch);
 	void (*setAudioBufferSize)(struct mCore*, size_t samples);
 	size_t (*getAudioBufferSize)(struct mCore*);

@@ -445,6 +445,11 @@ static void _GBCoreSetAudioBufferSize(struct mCore* core, size_t samples) {
 	GBAudioResizeBuffer(&gb->audio, samples);
 }
 
+static unsigned _GBCoreAudioSampleRate(const struct mCore* core) {
+	UNUSED(core);
+	return 131072;
+}
+
 static size_t _GBCoreGetAudioBufferSize(struct mCore* core) {
 	struct GB* gb = core->board;
 	return gb->audio.samples;
@@ -1302,6 +1307,7 @@ struct mCore* GBCoreCreate(void) {
 	core->setVideoGLTex = _GBCoreSetVideoGLTex;
 	core->getPixels = _GBCoreGetPixels;
 	core->putPixels = _GBCorePutPixels;
+	core->audioSampleRate = _GBCoreAudioSampleRate;
 	core->getAudioChannel = _GBCoreGetAudioChannel;
 	core->setAudioBufferSize = _GBCoreSetAudioBufferSize;
 	core->getAudioBufferSize = _GBCoreGetAudioBufferSize;

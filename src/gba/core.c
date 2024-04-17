@@ -559,6 +559,11 @@ static void _GBACorePutPixels(struct mCore* core, const void* buffer, size_t str
 	gba->video.renderer->putPixels(gba->video.renderer, stride, buffer);
 }
 
+static unsigned _GBACoreAudioSampleRate(const struct mCore* core) {
+	UNUSED(core);
+	return 65536;
+}
+
 static struct blip_t* _GBACoreGetAudioChannel(struct mCore* core, int ch) {
 	struct GBA* gba = core->board;
 	switch (ch) {
@@ -1515,6 +1520,7 @@ struct mCore* GBACoreCreate(void) {
 	core->setVideoGLTex = _GBACoreSetVideoGLTex;
 	core->getPixels = _GBACoreGetPixels;
 	core->putPixels = _GBACorePutPixels;
+	core->audioSampleRate = _GBACoreAudioSampleRate;
 	core->getAudioChannel = _GBACoreGetAudioChannel;
 	core->setAudioBufferSize = _GBACoreSetAudioBufferSize;
 	core->getAudioBufferSize = _GBACoreGetAudioBufferSize;
