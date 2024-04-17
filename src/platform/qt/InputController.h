@@ -174,8 +174,7 @@ private:
 	} m_image;
 
 #ifdef BUILD_QT_MULTIMEDIA
-	bool m_cameraActive = false;
-	std::unique_ptr<QCamera> m_camera;
+	QCamera* m_camera;
 	VideoDumper m_videoDumper;
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	QByteArray m_cameraDevice;
