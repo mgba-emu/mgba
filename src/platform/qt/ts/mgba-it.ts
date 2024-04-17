@@ -6,22 +6,22 @@
     <message>
         <location filename="../utils.cpp" line="89"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished">ROM per Game Boy Advance (%1)</translation>
+        <translation>ROM per Game Boy Advance (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="106"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished">ROM per Game Boy (%1)</translation>
+        <translation>ROM per Game Boy (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="110"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished">Tutte le ROM (%1)</translation>
+        <translation>Tutte le ROM (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="112"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished">%1 log Video (*.mvl)</translation>
+        <translation>%1 log Video (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -561,7 +561,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Background</source>
-        <translation type="unfinished">Sfondo</translation>
+        <translation>Sfondo</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
@@ -591,7 +591,7 @@ Dimensione del download: %3</translation>
         <location filename="../ForwarderView.ui" line="53"/>
         <location filename="../ForwarderView.ui" line="112"/>
         <source>Browse</source>
-        <translation type="unfinished">Sfoglia</translation>
+        <translation>Sfoglia</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="43"/>
@@ -4759,12 +4759,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Select image</source>
-        <translation type="unfinished">Seleziona immagine</translation>
+        <translation>Seleziona immagine</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished">File immagine (*.png *.jpg *.jpeg)</translation>
+        <translation>File immagine (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="850"/>
@@ -4784,7 +4784,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.cpp" line="877"/>
         <source>Less than an hour ago</source>
-        <translation>Meno di un ora fa</translation>
+        <translation>Meno di un&apos;ora fa</translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="882"/>
@@ -4815,7 +4815,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="50"/>
         <source>Gameplay</source>
-        <translation>Gameplay</translation>
+        <translation>In gioco</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
@@ -5555,7 +5555,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ShaderSelector.cpp" line="115"/>
         <source>by %1</source>
-        <translation>per %1</translation>
+        <translation>di %1</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="126"/>
@@ -6771,17 +6771,17 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../utils.cpp" line="146"/>
         <source>Super (L)</source>
-        <translation type="unfinished">Super (L)</translation>
+        <translation>Super (L)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="148"/>
         <source>Super (R)</source>
-        <translation type="unfinished">Super (R)</translation>
+        <translation>Super (R)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="150"/>
         <source>Menu</source>
-        <translation type="unfinished">Menu</translation>
+        <translation>Menu</translation>
     </message>
 </context>
 <context>
