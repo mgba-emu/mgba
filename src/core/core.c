@@ -442,6 +442,12 @@ const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(struct mCore* core, uint3
 	return NULL;
 }
 
+double mCoreCalculateFramerateRatio(const struct mCore* core, double desiredFrameRate) {
+	uint32_t clockRate = core->frequency(core);
+	uint32_t frameCycles = core->frameCycles(core);
+	return clockRate / (desiredFrameRate * frameCycles);
+}
+
 #ifdef USE_ELF
 bool mCoreLoadELF(struct mCore* core, struct ELF* elf) {
 	struct ELFProgramHeaders ph;

@@ -330,7 +330,7 @@ static void _setup(struct mGUIRunner* runner) {
 static void _gameLoaded(struct mGUIRunner* runner) {
 	u32 samplerate = audoutGetSampleRate();
 
-	double ratio = GBAAudioCalculateRatio(1, 60.0, 1);
+	double ratio = mCoreCalculateFramerateRatio(runner->core, 60.0);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), samplerate * ratio);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), samplerate * ratio);
 

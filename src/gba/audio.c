@@ -587,7 +587,3 @@ void GBAAudioDeserialize(struct GBAAudio* audio, const struct GBASerializedState
 	}
 	mTimingSchedule(&audio->p->timing, &audio->sampleEvent, when);
 }
-
-float GBAAudioCalculateRatio(float inputSampleRate, float desiredFPS, float desiredSampleRate) {
-	return desiredSampleRate * GBA_ARM7TDMI_FREQUENCY / (VIDEO_TOTAL_LENGTH * desiredFPS * inputSampleRate);
-}

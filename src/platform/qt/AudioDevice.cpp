@@ -26,7 +26,7 @@ void AudioDevice::setFormat(const QAudioFormat& format) {
 		LOG(QT, INFO) << tr("Can't set format of context-less audio device");
 		return;
 	}
-	double fauxClock = GBAAudioCalculateRatio(1, m_context->impl->sync.fpsTarget, 1);
+	double fauxClock = mCoreCalculateFramerateRatio(m_context->core, m_context->impl->sync.fpsTarget);
 	mCoreSyncLockAudio(&m_context->impl->sync);
 	blip_set_rates(m_context->core->getAudioChannel(m_context->core, 0),
 		           m_context->core->frequency(m_context->core), format.sampleRate() * fauxClock);

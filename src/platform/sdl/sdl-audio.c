@@ -103,12 +103,11 @@ static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
 	if (audioContext->core) {
 		left = audioContext->core->getAudioChannel(audioContext->core, 0);
 		right = audioContext->core->getAudioChannel(audioContext->core, 1);
-		clockRate = audioContext->core->frequency(audioContext->core);
 	}
 	double fauxClock = 1;
 	if (audioContext->sync) {
-		if (audioContext->sync->fpsTarget > 0) {
-			fauxClock = GBAAudioCalculateRatio(1, audioContext->sync->fpsTarget, 1);
+		if (audioContext->sync->fpsTarget > 0 && audioContext->core) {
+			fauxClock = mCoreCalculateFramerateRatio(audioContext->core, audioContext->sync->fpsTarget);
 		}
 		mCoreSyncLockAudio(audioContext->sync);
 	}

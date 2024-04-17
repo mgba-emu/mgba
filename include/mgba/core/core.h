@@ -216,6 +216,8 @@ void* mCoreGetMemoryBlock(struct mCore* core, uint32_t start, size_t* size);
 void* mCoreGetMemoryBlockMasked(struct mCore* core, uint32_t start, size_t* size, uint32_t mask);
 const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(struct mCore* core, uint32_t address);
 
+double mCoreCalculateFramerateRatio(const struct mCore* core, double desiredFrameRate);
+
 #ifdef USE_ELF
 struct ELF;
 bool mCoreLoadELF(struct mCore* core, struct ELF* elf);

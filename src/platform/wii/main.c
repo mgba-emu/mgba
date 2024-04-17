@@ -247,7 +247,7 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 		runner->params.width = vmode->fbWidth * guiScale * wAdjust;
 		runner->params.height = vmode->efbHeight * guiScale * hAdjust;
 		if (runner->core) {
-			double ratio = GBAAudioCalculateRatio(1, audioSampleRate, 1);
+			double ratio = mCoreCalculateFramerateRatio(runner->core, audioSampleRate);
 			blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
 			blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
 		}
@@ -1422,7 +1422,7 @@ void _setup(struct mGUIRunner* runner) {
 	}
 	runner->core->setAudioBufferSize(runner->core, SAMPLES);
 
-	double ratio = GBAAudioCalculateRatio(1, audioSampleRate, 1);
+	double ratio = mCoreCalculateFramerateRatio(runner->core, audioSampleRate);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
 	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
 
