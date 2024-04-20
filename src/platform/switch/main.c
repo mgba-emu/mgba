@@ -14,6 +14,7 @@
 #include <mgba-util/gui/menu.h>
 #include <mgba-util/vfs.h>
 
+#include <malloc.h>
 #include <switch.h>
 #include <EGL/egl.h>
 #include <GLES3/gl3.h>
@@ -21,14 +22,8 @@
 
 #define AUTO_INPUT 0x4E585031
 #define SAMPLES 0x200
-#define N_BUFFERS 4
+#define N_BUFFERS 6
 #define ANALOG_DEADZONE 0x4000
-
-#if (SAMPLES * 4) < 0x1000
-#define BUFFER_SIZE 0x1000
-#else
-#define BUFFER_SIZE (SAMPLES * 4)
-#endif
 
 TimeType __nx_time_type = TimeType_UserSystemClock;
 
@@ -94,9 +89,9 @@ static struct mSwitchRumble {
 	HidVibrationValue value;
 } rumble;
 static struct mRotationSource rotation = {0};
-static int audioBufferActive;
-static AudioOutBuffer audoutBuffer[N_BUFFERS];
-static int enqueuedBuffers;
+static AudioDriver audrenDriver;
+static AudioDriverWaveBuf audrvBuffer[N_BUFFERS];
+static struct mStereoSample* audioBuffer[N_BUFFERS];
 static bool frameLimiter = true;
 static unsigned framecount = 0;
 static unsigned framecap = 10;
@@ -115,8 +110,6 @@ static struct mGUIRunnerLux lightSensor;
 static float gyroZ = 0;
 static float tiltX = 0;
 static float tiltY = 0;
-
-static struct mStereoSample audioBuffer[N_BUFFERS][BUFFER_SIZE / 4] __attribute__((__aligned__(0x1000)));
 
 static enum ScreenMode {
 	SM_PA,
@@ -274,22 +267,6 @@ static void _updateRenderer(struct mGUIRunner* runner, bool gl) {
 	}
 }
 
-static int _audioWait(u64 timeout) {
-	AudioOutBuffer* releasedBuffers;
-	u32 nReleasedBuffers = 0;
-	Result rc;
-	if (timeout) {
-		rc = audoutWaitPlayFinish(&releasedBuffers, &nReleasedBuffers, timeout);
-	} else {
-		rc = audoutGetReleasedAudioOutBuffer(&releasedBuffers, &nReleasedBuffers);
-	}
-	if (R_FAILED(rc)) {
-		return 0;
-	}
-	enqueuedBuffers -= nReleasedBuffers;
-	return nReleasedBuffers;
-}
-
 static void _setup(struct mGUIRunner* runner) {
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_A, GBA_KEY_A);
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_B, GBA_KEY_B);
@@ -325,15 +302,22 @@ static void _setup(struct mGUIRunner* runner) {
 	}
 
 	runner->core->setAudioBufferSize(runner->core, SAMPLES);
+
+	u32 samplerate = runner->core->audioSampleRate(runner->core);
+	double ratio = mCoreCalculateFramerateRatio(runner->core, 60.0);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), samplerate);
+	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), samplerate);
+
+	audrvVoiceInit(&audrenDriver, 0, 2, PcmFormat_Int16, samplerate / ratio);
+	audrvVoiceSetDestinationMix(&audrenDriver, 0, AUDREN_FINAL_MIX_ID);
+	audrvVoiceSetMixFactor(&audrenDriver, 0, 1.0f, 0, 0);
+	audrvVoiceSetMixFactor(&audrenDriver, 0, 0.0f, 0, 1);
+	audrvVoiceSetMixFactor(&audrenDriver, 0, 0.0f, 1, 0);
+	audrvVoiceSetMixFactor(&audrenDriver, 0, 1.0f, 1, 1);
+	audrvUpdate(&audrenDriver);
 }
 
 static void _gameLoaded(struct mGUIRunner* runner) {
-	u32 samplerate = audoutGetSampleRate();
-
-	double ratio = mCoreCalculateFramerateRatio(runner->core, 60.0);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), samplerate * ratio);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), samplerate * ratio);
-
 	mCoreConfigGetUIntValue(&runner->config, "fastForwardCap", &framecap);
 
 	unsigned mode;
@@ -388,6 +372,7 @@ static void _gameUnloaded(struct mGUIRunner* runner) {
 	memcpy(&values[2], &vibrationStop, sizeof(rumble.value));
 	memcpy(&values[3], &vibrationStop, sizeof(rumble.value));
 	hidSendVibrationValues(vibrationDeviceHandles, values, 4);
+	audrvVoiceStop(&audrenDriver, 0);
 }
 
 static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height, bool faded, bool blendTop) {
@@ -565,9 +550,7 @@ static void _incrementScreenMode(struct mGUIRunner* runner) {
 static void _setFrameLimiter(struct mGUIRunner* runner, bool limit) {
 	UNUSED(runner);
 	if (!frameLimiter && limit) {
-		while (enqueuedBuffers > 2) {
-			_audioWait(100000000);
-		}
+		audrenWaitFrame();
 	}
 	frameLimiter = limit;
 	eglSwapInterval(s_surface, limit);
@@ -593,27 +576,34 @@ static bool _running(struct mGUIRunner* runner) {
 
 static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
 	UNUSED(stream);
-	_audioWait(0);
-	while (enqueuedBuffers >= N_BUFFERS - 1) {
+	int i;
+	while (true) {
+		audrvUpdate(&audrenDriver);
+		for (i = 0; i < N_BUFFERS; ++i) {
+			if (audrvBuffer[i].state == AudioDriverWaveBufState_Free || audrvBuffer[i].state == AudioDriverWaveBufState_Done) {
+				break;
+			}
+		}
+		if (i < N_BUFFERS) {
+			break;
+		}
 		if (!frameLimiter) {
 			blip_clear(left);
 			blip_clear(right);
 			return;
 		}
-		_audioWait(10000000);
+		audrenWaitFrame();
 	}
-	if (enqueuedBuffers >= N_BUFFERS) {
-		blip_clear(left);
-		blip_clear(right);
-		return;
-	}
-	struct mStereoSample* samples = audioBuffer[audioBufferActive];
+	struct mStereoSample* samples = audioBuffer[i];
 	blip_read_samples(left, &samples[0].left, SAMPLES, true);
 	blip_read_samples(right, &samples[0].right, SAMPLES, true);
-	audoutAppendAudioOutBuffer(&audoutBuffer[audioBufferActive]);
-	++audioBufferActive;
-	audioBufferActive %= N_BUFFERS;
-	++enqueuedBuffers;
+	armDCacheFlush(samples, SAMPLES * sizeof(struct mStereoSample));
+	audrvVoiceAddWaveBuf(&audrenDriver, 0, &audrvBuffer[i]);
+
+	if (!audrvVoiceIsPlaying(&audrenDriver, 0)) {
+		audrvVoiceStart(&audrenDriver, 0);
+	}
+	audrvUpdate(&audrenDriver);
 }
 
 void _setRumble(struct mRumble* rumble, int enable) {
@@ -865,8 +855,25 @@ int main(int argc, char* argv[]) {
 	nxlinkStdio();
 	eglInit();
 	romfsInit();
-	audoutInitialize();
 	psmInitialize();
+
+	const AudioRendererConfig audren = {
+		.output_rate     = AudioRendererOutputRate_48kHz,
+		.num_voices      = 24,
+		.num_effects     = 0,
+		.num_sinks       = 1,
+		.num_mix_objs    = 1,
+		.num_mix_buffers = 2,
+	};
+	const u8 channels[] = { 0, 1 };
+	audrenInitialize(&audren);
+	audrvCreate(&audrenDriver, &audren, 2);
+	struct mStereoSample* buffers = memalign(AUDREN_MEMPOOL_ALIGNMENT, SAMPLES * N_BUFFERS * sizeof(struct mStereoSample));
+	int mempool = audrvMemPoolAdd(&audrenDriver, buffers, SAMPLES * N_BUFFERS * sizeof(struct mStereoSample));
+	audrvMemPoolAttach(&audrenDriver, mempool);
+	audrvDeviceSinkAdd(&audrenDriver, AUDREN_DEFAULT_DEVICE_NAME, 2, channels);
+	audrvUpdate(&audrenDriver);
+	audrenStartAudioRenderer();
 
 	font = GUIFontCreate();
 
@@ -888,16 +895,13 @@ int main(int argc, char* argv[]) {
 	stream.postAudioFrame = NULL;
 	stream.postAudioBuffer = _postAudioBuffer;
 
-	memset(audioBuffer, 0, sizeof(audioBuffer));
-	audioBufferActive = 0;
-	enqueuedBuffers = 0;
 	size_t i;
 	for (i = 0; i < N_BUFFERS; ++i) {
-		audoutBuffer[i].next = NULL;
-		audoutBuffer[i].buffer = audioBuffer[i];
-		audoutBuffer[i].buffer_size = BUFFER_SIZE;
-		audoutBuffer[i].data_size = SAMPLES * 4;
-		audoutBuffer[i].data_offset = 0;
+		audrvBuffer[i].data_raw = buffers;
+		audrvBuffer[i].size = SAMPLES * N_BUFFERS * sizeof(struct mStereoSample);
+		audrvBuffer[i].start_sample_offset = SAMPLES * i;
+		audrvBuffer[i].end_sample_offset = SAMPLES * (i + 1);
+		audioBuffer[i] = &buffers[SAMPLES * i];
 	}
 
 	bool illuminanceAvailable = false;
@@ -1074,8 +1078,6 @@ int main(int argc, char* argv[]) {
 	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Left, GUI_INPUT_LEFT);
 	_mapKey(&runner.params.keyMap, AUTO_INPUT, HidNpadButton_Right, GUI_INPUT_RIGHT);
 
-	audoutStartAudioOut();
-
 	if (argc > 0) {
 		struct VFile* vf = VFileOpen("romfs:/fileassoc.cfg.in", O_RDONLY);
 		if (vf) {
@@ -1108,7 +1110,8 @@ int main(int argc, char* argv[]) {
 
 	mGUIDeinit(&runner);
 
-	audoutStopAudioOut();
+	audrvClose(&audrenDriver);
+	audrenExit();
 	GUIFontDestroy(font);
 
 	glDeinit();
