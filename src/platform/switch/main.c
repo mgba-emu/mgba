@@ -366,6 +366,7 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 }
 
 static void _gameUnloaded(struct mGUIRunner* runner) {
+	UNUSED(runner);
 	HidVibrationValue values[4];
 	memcpy(&values[0], &vibrationStop, sizeof(rumble.value));
 	memcpy(&values[1], &vibrationStop, sizeof(rumble.value));
@@ -392,6 +393,7 @@ static void _drawTex(struct mGUIRunner* runner, unsigned width, unsigned height,
 	float aspectY = inheight / vheight;
 	float max = 1.f;
 	switch (screenMode) {
+	case SM_MAX: // This should never get hit, so just fall through to silence warning
 	case SM_PA:
 		if (aspectX > aspectY) {
 			max = floor(1.f / aspectX);
@@ -616,6 +618,7 @@ void _setRumble(struct mRumble* rumble, int enable) {
 }
 
 void _sampleRotation(struct mRotationSource* source) {
+	UNUSED(source);
 	HidSixAxisSensorState sixaxis = {0};
 	u64 styles = padGetStyleSet(&pad);
 	if (styles & HidNpadStyleTag_NpadHandheld) {
