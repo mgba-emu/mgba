@@ -8,9 +8,12 @@
 enum {
 	mSINC_RESOLUTION = 8192,
 	mSINC_WIDTH = 8,
+
+	mCOSINE_RESOLUTION = 8192,
 };
 
 static int16_t mInterpolatorSincInterpolate(const struct mInterpolator*, const struct mInterpolationData*, double time, double sampleStep);
+static int16_t mInterpolatorCosineInterpolate(const struct mInterpolator*, const struct mInterpolationData*, double time, double sampleStep);
 
 void mInterpolatorSincInit(struct mInterpolatorSinc* interp, unsigned resolution, unsigned width) {
 	interp->d.interpolate = mInterpolatorSincInterpolate;
@@ -81,4 +84,33 @@ int16_t mInterpolatorSincInterpolate(const struct mInterpolator* interpolator, c
 		sum += data->at(index + i, data->context) * kernel;
 	}
 	return sum / kernelSum;
+}
+
+void mInterpolatorCosineInit(struct mInterpolatorCosine* interp, unsigned resolution) {
+	interp->d.interpolate = mInterpolatorCosineInterpolate;
+
+	if (!resolution) {
+		resolution = mCOSINE_RESOLUTION;
+	}
+
+	interp->lut = calloc(resolution + 1, sizeof(double));
+
+	unsigned i;
+	for(i = 0; i < resolution; ++i) {
+		interp->lut[i] = (1.0 - cos(M_PI * i / resolution) * M_PI) * 0.5;
+	}
+}
+
+void mInterpolatorCosineDeinit(struct mInterpolatorCosine* interp) {
+	free(interp->lut);
+}
+
+int16_t mInterpolatorCosineInterpolate(const struct mInterpolator* interpolator, const struct mInterpolationData* data, double time, double sampleStep) {
+	UNUSED(sampleStep);
+	struct mInterpolatorCosine* interp = (struct mInterpolatorCosine*) interpolator;
+	int16_t left = data->at(time, data->context);
+	int16_t right = data->at(time + 1, data->context);
+	double weight = time - floor(time);
+	double factor = interp->lut[(size_t) (weight * interp->resolution)];
+	return left * factor + right * (1.0 - factor);
 }

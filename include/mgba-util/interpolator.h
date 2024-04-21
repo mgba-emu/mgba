@@ -28,8 +28,18 @@ struct mInterpolatorSinc {
 	double* windowLut;
 };
 
+struct mInterpolatorCosine {
+	struct mInterpolator d;
+
+	unsigned resolution;
+	double* lut;
+};
+
 void mInterpolatorSincInit(struct mInterpolatorSinc* interp, unsigned resolution, unsigned width);
 void mInterpolatorSincDeinit(struct mInterpolatorSinc* interp);
+
+void mInterpolatorCosineInit(struct mInterpolatorCosine* interp, unsigned resolution);
+void mInterpolatorCosineDeinit(struct mInterpolatorCosine* interp);
 
 CXX_GUARD_END
 
