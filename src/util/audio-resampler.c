@@ -22,15 +22,32 @@ static int16_t _sampleAt(int index, const void* context) {
 	return mAudioBufferPeek(data->resampler->source, data->channel, index);
 }
 
-void mAudioResamplerInit(struct mAudioResampler* resampler) {
+void mAudioResamplerInit(struct mAudioResampler* resampler, enum mInterpolatorType interpType) {
 	memset(resampler, 0, sizeof(*resampler));
-	mInterpolatorSincInit(&resampler->interp, 0, 0);
-	resampler->lowWaterMark = resampler->interp.width;
-	resampler->highWaterMark = 0;
+	resampler->interpType = interpType;
+	switch (interpType) {
+	case mINTERPOLATOR_SINC:
+		mInterpolatorSincInit(&resampler->sinc, 0, 0);
+		resampler->lowWaterMark = resampler->sinc.width;
+		resampler->highWaterMark = resampler->sinc.width;
+		break;
+	case mINTERPOLATOR_COSINE:
+		mInterpolatorCosineInit(&resampler->cosine, 0);
+		resampler->lowWaterMark = 0;
+		resampler->highWaterMark = 1;
+		break;
+	}
 }
 
 void mAudioResamplerDeinit(struct mAudioResampler* resampler) {
-	mInterpolatorSincDeinit(&resampler->interp);
+	switch (resampler->interpType) {
+	case mINTERPOLATOR_SINC:
+		mInterpolatorSincDeinit(&resampler->sinc);
+		break;
+	case mINTERPOLATOR_COSINE:
+		mInterpolatorCosineDeinit(&resampler->cosine);
+		break;
+	}
 	resampler->source = NULL;
 	resampler->destination = NULL;
 }
@@ -50,7 +67,7 @@ size_t mAudioResamplerProcess(struct mAudioResampler* resampler) {
 	int16_t sampleBuffer[MAX_CHANNELS] = {0};
 	double timestep = resampler->sourceRate / resampler->destRate;
 	double timestamp = resampler->timestamp;
-	struct mInterpolator* interp = &resampler->interp.d;
+	struct mInterpolator* interp = &resampler->interp;
 	struct mAudioResamplerData context = {
 		.resampler = resampler,
 	};

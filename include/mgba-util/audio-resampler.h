@@ -21,11 +21,16 @@ struct mAudioResampler {
 	double timestamp;
 	double lowWaterMark;
 	double highWaterMark;
-	struct mInterpolatorSinc interp;
+	enum mInterpolatorType interpType;
+	union {
+		struct mInterpolator interp;
+		struct mInterpolatorSinc sinc;
+		struct mInterpolatorCosine cosine;
+	};
 	bool consume;
 };
 
-void mAudioResamplerInit(struct mAudioResampler*);
+void mAudioResamplerInit(struct mAudioResampler*, enum mInterpolatorType);
 void mAudioResamplerDeinit(struct mAudioResampler*);
 void mAudioResamplerSetSource(struct mAudioResampler*, struct mAudioBuffer* source, double rate, bool consume);
 void mAudioResamplerSetDestination(struct mAudioResampler*, struct mAudioBuffer* destination, double rate);

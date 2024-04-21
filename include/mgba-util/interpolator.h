@@ -10,6 +10,11 @@
 
 CXX_GUARD_START
 
+enum mInterpolatorType {
+	mINTERPOLATOR_SINC,
+	mINTERPOLATOR_COSINE,
+};
+
 struct mInterpolationData {
 	int16_t (*at)(int index, const void* context);
 	void* context;
