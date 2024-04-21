@@ -20,6 +20,7 @@ Other fixes:
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
  - Debugger: Fix writing to specific segment in command-line debugger
  - GB: Fix uninitialized save data when loading undersized temporary saves
+ - GBA Memory: Let raw access read high MMIO addresses
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Updater: Fix updating appimage across filesystems
 Misc:
