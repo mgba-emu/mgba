@@ -25,7 +25,13 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(QT_LIBRARIES)
 
-set(QT_VERSIONS 6 5)
+option(FORCE_QT_VERSION "Force the used Qt version" OFF)
+
+if(FORCE_QT_VERSION EQUAL 5 OR FORCE_QT_VERSION EQUAL 6)
+	set(QT_VERSIONS ${FORCE_QT_VERSION})
+else()
+	set(QT_VERSIONS 6 5)
+endif()
 foreach(V ${QT_VERSIONS})
 	set(QT Qt${V})
 	set(QT_V ${V})
