@@ -6,9 +6,6 @@
 #include "main.h"
 
 #include "gl-common.h"
-#ifdef BUILD_RASPI
-#include "rpi-common.h"
-#endif
 
 #include <mgba/core/core.h>
 
@@ -43,11 +40,7 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 	renderer->gl2.d.lockAspectRatio = renderer->lockAspectRatio;
 	renderer->gl2.d.lockIntegerScaling = renderer->lockIntegerScaling;
 	renderer->gl2.d.filter = renderer->filter;
-#ifdef BUILD_RASPI
-	renderer->gl2.d.swap = mRPIGLCommonSwap;
-#else
 	renderer->gl2.d.swap = mSDLGLCommonSwap;
-#endif
 	renderer->gl2.d.init(&renderer->gl2.d, 0);
 
 	struct mRectangle dims = {
@@ -66,13 +59,7 @@ void mSDLGLES2Deinit(struct mSDLRenderer* renderer) {
 	if (renderer->gl2.d.deinit) {
 		renderer->gl2.d.deinit(&renderer->gl2.d);
 	}
-#ifdef BUILD_RASPI
-	eglMakeCurrent(renderer->eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-	eglDestroySurface(renderer->eglDisplay, renderer->eglSurface);
-	eglDestroyContext(renderer->eglDisplay, renderer->eglContext);
-	eglTerminate(renderer->eglDisplay);
-	bcm_host_deinit();
-#elif SDL_VERSION_ATLEAST(2, 0, 0)
+#if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GL_DeleteContext(renderer->glCtx);
 #endif
 	free(renderer->outputBuffer);

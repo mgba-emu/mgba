@@ -133,11 +133,7 @@ int main(int argc, char** argv) {
 		mSDLGLCreate(&renderer);
 	} else
 #elif defined(BUILD_GLES2) || defined(USE_EPOXY)
-#ifdef BUILD_RASPI
-	mRPIGLCommonInit(&renderer);
-#else
 	if (mSDLGLCommonInit(&renderer))
-#endif
 	{
 		mSDLGLES2Create(&renderer);
 	} else

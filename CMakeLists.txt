@@ -269,20 +269,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Clang" OR
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELEASE} -gdwarf")
 endif()
 
-if(BUILD_BBB OR BUILD_RASPI OR BUILD_PANDORA)
-	if(NOT BUILD_EGL)
-		add_definitions(-DCOLOR_16_BIT -DCOLOR_5_6_5)
-	endif()
-endif()
-
-if(BUILD_RASPI)
-	set(BUILD_GL OFF CACHE BOOL "OpenGL not supported" FORCE)
-endif()
-
-if(BUILD_PANDORA)
-	add_definitions(-DBUILD_PANDORA)
-endif()
-
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
 	enable_language(ASM)
 endif()
