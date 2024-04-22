@@ -245,7 +245,6 @@ mGBA 版权 © 2013 – 2020 Jeffrey Pfau。基于 [Mozilla 公共许可证版�
 mGBA 包含以下第三方库：
 
 - [inih](https://github.com/benhoyt/inih)：版权 © 2009 – 2020 Ben Hoyt，基于 BSD 3-clause 许可证使用。
-- [blip-buf](https://code.google.com/archive/p/blip-buf)：版权 © 2003 – 2009 Shay Green，基于 Lesser GNU 公共许可证使用。
 - [LZMA SDK](http://www.7-zip.org/sdk.html)：属公有领域使用。
 - [MurmurHash3](https://github.com/aappleby/smhasher)：由 Austin Appleby 实施，属公有领域使用。
 - [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio/)：属公有领域使用。
