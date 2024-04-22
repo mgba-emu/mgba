@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 from ._pylib import ffi, lib  # pylint: disable=no-name-in-module
-from . import tile, audio
+from . import tile
 from cached_property import cached_property
 from functools import wraps
 
@@ -241,14 +241,6 @@ class Core(object):
     @protected
     def set_video_buffer(self, image):
         self._core.setVideoBuffer(self._core, image.buffer, image.stride)
-
-    @protected
-    def set_audio_buffer_size(self, size):
-        self._core.setAudioBufferSize(self._core, size)
-
-    @property
-    def audio_buffer_size(self):
-        return self._core.getAudioBufferSize(self._core)
 
     @protected
     def reset(self):
