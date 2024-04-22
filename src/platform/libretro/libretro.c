@@ -848,9 +848,11 @@ bool retro_load_game(const struct retro_game_info* game) {
 		dataSize = game->size;
 		memcpy(data, game->data, game->size);
 		rom = VFileFromMemory(data, game->size);
+#ifdef ENABLE_VFS
 	} else {
-		data = 0;
+		data = NULL;
 		rom = VFileOpen(game->path, O_RDONLY);
+#endif
 	}
 	if (!rom) {
 		return false;
@@ -973,6 +975,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 	}
 #endif
 
+#ifdef ENABLE_VFS
 	if (core->opts.useBios && sysDir && biosName) {
 		snprintf(biosPath, sizeof(biosPath), "%s%s%s", sysDir, PATH_SEP, biosName);
 		struct VFile* bios = VFileOpen(biosPath, O_RDONLY);
@@ -980,6 +983,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 			core->loadBIOS(core, bios, 0);
 		}
 	}
+#endif
 
 	core->reset(core);
 	_setupMaps(core);
