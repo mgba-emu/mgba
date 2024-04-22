@@ -85,6 +85,7 @@ static void CLIDebuggerEditLineInit(struct CLIDebuggerBackend* be) {
 	history(elbe->histate, &ev, H_SETSIZE, 200);
 	el_set(elbe->elstate, EL_HIST, history, elbe->histate);
 
+#ifdef ENABLE_VFS
 	char path[PATH_MAX + 1];
 	mCoreConfigDirectory(path, PATH_MAX);
 	if (path[0]) {
@@ -99,6 +100,7 @@ static void CLIDebuggerEditLineInit(struct CLIDebuggerBackend* be) {
 			vf->close(vf);
 		}
 	}
+#endif
 
 	MutexInit(&elbe->promptMutex);
 	ConditionInit(&elbe->promptRead);
@@ -120,6 +122,7 @@ static void CLIDebuggerEditLineDeinit(struct CLIDebuggerBackend* be) {
 	MutexUnlock(&elbe->promptMutex);
 	ThreadJoin(&elbe->promptThread);
 
+#ifdef ENABLE_VFS
 	char path[PATH_MAX + 1];
 	mCoreConfigDirectory(path, PATH_MAX);
 	if (path[0]) {
@@ -139,6 +142,7 @@ static void CLIDebuggerEditLineDeinit(struct CLIDebuggerBackend* be) {
 			vf->close(vf);
 		}
 	}
+#endif
 	history_end(elbe->histate);
 	el_end(elbe->elstate);
 	free(elbe);

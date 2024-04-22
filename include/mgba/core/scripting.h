@@ -70,7 +70,9 @@ void mScriptBridgeDebuggerEntered(struct mScriptBridge*, enum mDebuggerEntryReas
 #endif
 
 void mScriptBridgeRun(struct mScriptBridge*);
+#ifdef ENABLE_VFS
 bool mScriptBridgeLoadScript(struct mScriptBridge*, const char* name);
+#endif
 
 bool mScriptBridgeLookupSymbol(struct mScriptBridge*, const char* name, int32_t* out);
 

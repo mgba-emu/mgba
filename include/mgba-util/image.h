@@ -114,12 +114,16 @@ struct VFile;
 struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat format);
 struct mImage* mImageCreateWithStride(unsigned width, unsigned height, unsigned stride, enum mColorFormat format);
 struct mImage* mImageCreateFromConstBuffer(unsigned width, unsigned height, unsigned stride, enum mColorFormat format, const void* pixels);
+#ifdef ENABLE_VFS
 struct mImage* mImageLoad(const char* path);
+#endif
 struct mImage* mImageLoadVF(struct VFile* vf);
 struct mImage* mImageConvertToFormat(const struct mImage*, enum mColorFormat format);
 void mImageDestroy(struct mImage*);
 
+#ifdef ENABLE_VFS
 bool mImageSave(const struct mImage*, const char* path, const char* format);
+#endif
 bool mImageSaveVF(const struct mImage*, struct VFile* vf, const char* format);
 
 uint32_t mImageGetPixel(const struct mImage* image, unsigned x, unsigned y);

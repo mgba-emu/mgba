@@ -109,7 +109,9 @@ const char* mScriptEngineGetDocstring(struct mScriptEngineContext*, const char* 
 
 struct VFile;
 bool mScriptContextLoadVF(struct mScriptContext*, const char* name, struct VFile* vf);
+#ifdef ENABLE_VFS
 bool mScriptContextLoadFile(struct mScriptContext*, const char* path);
+#endif
 
 struct mScriptContext* mScriptActiveContext(void);
 bool mScriptContextActivate(struct mScriptContext*);

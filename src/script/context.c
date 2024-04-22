@@ -424,6 +424,7 @@ bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, stru
 	return info.context->load(info.context, name, vf);
 }
 
+#ifdef ENABLE_VFS
 bool mScriptContextLoadFile(struct mScriptContext* context, const char* path) {
 	struct VFile* vf = VFileOpen(path, O_RDONLY);
 	if (!vf) {
@@ -433,6 +434,7 @@ bool mScriptContextLoadFile(struct mScriptContext* context, const char* path) {
 	vf->close(vf);
 	return ret;
 }
+#endif
 
 struct mScriptContext* mScriptActiveContext(void) {
 	return ThreadLocalGetValue(_threadContext);

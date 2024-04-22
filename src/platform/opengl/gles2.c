@@ -1081,6 +1081,7 @@ static bool _loadUniform(struct Configuration* description, size_t pass, struct 
 	return true;
 }
 
+#ifdef ENABLE_VFS
 bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 	struct VFile* manifest = dir->openFile(dir, "manifest.ini", O_RDONLY);
 	if (!manifest) {
@@ -1204,6 +1205,7 @@ bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 	ConfigurationDeinit(&description);
 	return success;
 }
+#endif
 
 void mGLES2ShaderFree(struct VideoShader* shader) {
 	free((void*) shader->name);

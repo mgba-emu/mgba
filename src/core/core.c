@@ -15,6 +15,10 @@
 #include <mgba-util/elf-read.h>
 #endif
 
+#ifdef USE_PNG
+#include <mgba-util/image/png-io.h>
+#endif
+
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
 #include <mgba/gb/interface.h>
@@ -86,9 +90,7 @@ struct mCore* mCoreCreate(enum mPlatform platform) {
 	return NULL;
 }
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-#include <mgba-util/image/png-io.h>
-
+#ifdef ENABLE_VFS
 #ifdef PSP2
 #include <psp2/photoexport.h>
 #endif
@@ -381,7 +383,7 @@ void mCoreInitConfig(struct mCore* core, const char* port) {
 }
 
 void mCoreLoadConfig(struct mCore* core) {
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 	mCoreConfigLoad(&core->config);
 #endif
 	mCoreLoadForeignConfig(core, &core->config);
@@ -389,7 +391,7 @@ void mCoreLoadConfig(struct mCore* core) {
 
 void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config) {
 	mCoreConfigMap(config, &core->opts);
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 	mDirectorySetMapOptions(&core->dirs, &core->opts);
 #endif
 	if (core->opts.audioBuffers) {

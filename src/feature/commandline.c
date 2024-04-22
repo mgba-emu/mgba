@@ -245,6 +245,7 @@ bool mArgumentsApplyDebugger(const struct mArguments* args, struct mCore* core, 
 }
 
 void mArgumentsApplyFileLoads(const struct mArguments* args, struct mCore* core) {
+#ifdef ENABLE_VFS
 	if (args->patch) {
 		struct VFile* patch = VFileOpen(args->patch, O_RDONLY);
 		if (patch) {
@@ -266,6 +267,10 @@ void mArgumentsApplyFileLoads(const struct mArguments* args, struct mCore* core)
 	} else {
 		mCoreAutoloadCheats(core);
 	}
+#else
+	UNUSED(args);
+	UNUSED(core);
+#endif
 }
 
 void mArgumentsDeinit(struct mArguments* args) {

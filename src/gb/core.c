@@ -149,7 +149,7 @@ static bool _GBCoreInit(struct mCore* core) {
 	gbcore->keys = 0;
 	gb->keySource = &gbcore->keys;
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 	mDirectorySetInit(&core->dirs);
 #endif
 	
@@ -161,7 +161,7 @@ static void _GBCoreDeinit(struct mCore* core) {
 	GBDestroy(core->board);
 	mappedMemoryFree(core->cpu, sizeof(struct SM83Core));
 	mappedMemoryFree(core->board, sizeof(struct GB));
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 	mDirectorySetDeinit(&core->dirs);
 #endif
 #ifdef ENABLE_DEBUGGERS
@@ -597,7 +597,7 @@ static void _GBCoreReset(struct mCore* core) {
 		}
 	}
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 	if (!gb->biosVf && core->opts.useBios) {
 		struct VFile* bios = NULL;
 		bool found = false;
@@ -1108,7 +1108,7 @@ static void _GBCoreDetachDebugger(struct mCore* core) {
 
 static void _GBCoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	core->symbolTable = mDebuggerSymbolTableCreate();
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 	if (!vf && core->dirs.base) {
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
 	}

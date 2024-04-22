@@ -12,7 +12,7 @@ set(TEST_FILES
 	test/classes.c
 	test/types.c)
 
-if(USE_JSON_C)
+if(USE_JSON_C AND ENABLE_VFS)
 	list(APPEND SOURCE_FILES storage.c)
 endif()
 

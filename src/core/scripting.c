@@ -129,6 +129,7 @@ void mScriptBridgeRun(struct mScriptBridge* sb) {
 	HashTableEnumerate(&sb->engines, _seRun, NULL);
 }
 
+#ifdef ENABLE_VFS
 bool mScriptBridgeLoadScript(struct mScriptBridge* sb, const char* name) {
 	struct VFile* vf = VFileOpen(name, O_RDONLY);
 	if (!vf) {
@@ -143,6 +144,7 @@ bool mScriptBridgeLoadScript(struct mScriptBridge* sb, const char* name) {
 	vf->close(vf);
 	return info.success;
 }
+#endif
 
 bool mScriptBridgeLookupSymbol(struct mScriptBridge* sb, const char* name, int32_t* out) {
 	struct mScriptSymbol info = {
@@ -417,6 +419,7 @@ static struct mScriptValue* _mScriptCoreSaveState(struct mCore* core, int32_t fl
 	return value;
 }
 
+#ifdef ENABLE_VFS
 static int _mScriptCoreSaveStateFile(struct mCore* core, const char* path, int flags) {
 	struct VFile* vf = VFileOpen(path, O_WRONLY | O_TRUNC | O_CREAT);
 	if (!vf) {
@@ -425,13 +428,6 @@ static int _mScriptCoreSaveStateFile(struct mCore* core, const char* path, int f
 	bool ok = mCoreSaveStateNamed(core, vf, flags);
 	vf->close(vf);
 	return ok;
-}
-
-static int32_t _mScriptCoreLoadState(struct mCore* core, struct mScriptString* buffer, int32_t flags) {
-	struct VFile* vf = VFileFromConstMemory(buffer->buffer, buffer->size);
-	int ret = mCoreLoadStateNamed(core, vf, flags);
-	vf->close(vf);
-	return ret;
 }
 
 static int _mScriptCoreLoadStateFile(struct mCore* core, const char* path, int flags) {
@@ -455,6 +451,14 @@ static void _mScriptCoreTakeScreenshot(struct mCore* core, const char* filename)
 	} else {
 		mCoreTakeScreenshot(core);
 	}
+}
+#endif
+
+static int32_t _mScriptCoreLoadState(struct mCore* core, struct mScriptString* buffer, int32_t flags) {
+	struct VFile* vf = VFileFromConstMemory(buffer->buffer, buffer->size);
+	int ret = mCoreLoadStateNamed(core, vf, flags);
+	vf->close(vf);
+	return ret;
 }
 
 static struct mScriptValue* _mScriptCoreTakeScreenshotToImage(struct mCore* core) {
@@ -480,10 +484,12 @@ static struct mScriptValue* _mScriptCoreTakeScreenshotToImage(struct mCore* core
 	return result;
 }
 
+#ifdef ENABLE_VFS
 // Loading functions
 mSCRIPT_DECLARE_STRUCT_METHOD(mCore, BOOL, loadFile, mCoreLoadFile, 1, CHARP, path);
 mSCRIPT_DECLARE_STRUCT_METHOD(mCore, BOOL, autoloadSave, mCoreAutoloadSave, 0);
 mSCRIPT_DECLARE_STRUCT_METHOD(mCore, BOOL, loadSaveFile, mCoreLoadSaveFile, 2, CHARP, path, BOOL, temporary);
+#endif
 
 // Info functions
 mSCRIPT_DECLARE_STRUCT_CD_METHOD(mCore, S32, platform, 0);
@@ -523,27 +529,31 @@ mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WSTR, readRegister, _mScriptCoreReadRegiste
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, writeRegister, _mScriptCoreWriteRegister, 2, CHARP, regName, S32, value);
 
 // Savestate functions
-mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, saveStateSlot, mCoreSaveState, 2, S32, slot, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, WSTR, saveStateBuffer, _mScriptCoreSaveState, 1, S32, flags);
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, loadStateBuffer, _mScriptCoreLoadState, 2, STR, buffer, S32, flags);
+#ifdef ENABLE_VFS
+mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, saveStateSlot, mCoreSaveState, 2, S32, slot, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, saveStateFile, _mScriptCoreSaveStateFile, 2, CHARP, path, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, loadStateSlot, mCoreLoadState, 2, S32, slot, S32, flags);
-mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, loadStateBuffer, _mScriptCoreLoadState, 2, STR, buffer, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, loadStateFile, _mScriptCoreLoadStateFile, 2, CHARP, path, S32, flags);
 
 // Miscellaneous functions
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD_WITH_DEFAULTS(mCore, screenshot, _mScriptCoreTakeScreenshot, 1, CHARP, filename);
+#endif
 mSCRIPT_DECLARE_STRUCT_METHOD(mCore, W(mImage), screenshotToImage, _mScriptCoreTakeScreenshotToImage, 0);
 
 mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
 		"An instance of an emulator core."
 	)
+#ifdef ENABLE_VFS
 	mSCRIPT_DEFINE_DOCSTRING("Load a ROM file into the current state of this core")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadFile)
 	mSCRIPT_DEFINE_DOCSTRING("Load the save data associated with the currently loaded ROM file")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, autoloadSave)
 	mSCRIPT_DEFINE_DOCSTRING("Load save data from the given path. If the `temporary` flag is set, the given save data will not be written back to disk")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadSaveFile)
+#endif
 
 	mSCRIPT_DEFINE_DOCSTRING("Get which platform is being emulated. See C.PLATFORM for possible values")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, platform)
@@ -605,21 +615,23 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_DOCSTRING("Write the value of the register with the given name")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, writeRegister)
 
-	mSCRIPT_DEFINE_DOCSTRING("Save state to the slot number. See C.SAVESTATE for possible values for `flags`")
-	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateSlot)
 	mSCRIPT_DEFINE_DOCSTRING("Save state and return as a buffer. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateBuffer)
+	mSCRIPT_DEFINE_DOCSTRING("Load state from a buffer. See C.SAVESTATE for possible values for `flags`")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateBuffer)
+#ifdef ENABLE_VFS
+	mSCRIPT_DEFINE_DOCSTRING("Save state to the slot number. See C.SAVESTATE for possible values for `flags`")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateSlot)
 	mSCRIPT_DEFINE_DOCSTRING("Save state to the given path. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateFile)
 	mSCRIPT_DEFINE_DOCSTRING("Load state from the slot number. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateSlot)
-	mSCRIPT_DEFINE_DOCSTRING("Load state from a buffer. See C.SAVESTATE for possible values for `flags`")
-	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateBuffer)
 	mSCRIPT_DEFINE_DOCSTRING("Load state from the given path. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, loadStateFile)
 
 	mSCRIPT_DEFINE_DOCSTRING("Save a screenshot to a file")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, screenshot)
+#endif
 	mSCRIPT_DEFINE_DOCSTRING("Get a screenshot in an struct::mImage")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, screenshotToImage)
 mSCRIPT_DEFINE_END;

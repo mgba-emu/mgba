@@ -18,6 +18,7 @@
 #include <windows.h>
 #endif
 
+#ifdef ENABLE_VFS
 struct VFile* VFileOpen(const char* path, int flags) {
 #ifdef USE_VFS_FILE
 	const char* chflags;
@@ -115,6 +116,7 @@ struct VDir* VDirOpenArchive(const char* path) {
 #endif
 	return dir;
 }
+#endif
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
 	size_t bytesRead = 0;
@@ -246,6 +248,7 @@ void makeAbsolute(const char* path, const char* base, char* out) {
 	strncpy(out, buf, PATH_MAX);
 }
 
+#ifdef ENABLE_VFS
 struct VFile* VDirFindFirst(struct VDir* dir, bool (*filter)(struct VFile*)) {
 	dir->rewind(dir);
 	struct VDirEntry* dirent = dir->listNext(dir);
@@ -310,3 +313,4 @@ struct VFile* VDirFindNextAvailable(struct VDir* dir, const char* basename, cons
 	path[PATH_MAX - 1] = '\0';
 	return dir->openFile(dir, path, mode);
 }
+#endif

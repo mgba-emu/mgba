@@ -8,7 +8,7 @@
 #include <mgba/core/config.h>
 #include <mgba-util/vfs.h>
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 void mDirectorySetInit(struct mDirectorySet* dirs) {
 	dirs->base = NULL;
 	dirs->archive = NULL;

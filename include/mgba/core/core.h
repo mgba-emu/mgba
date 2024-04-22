@@ -11,7 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba/core/config.h>
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 #include <mgba/core/directories.h>
 #endif
 #ifndef MINIMAL_CORE
@@ -46,7 +46,7 @@ struct mCore {
 	struct mDebuggerSymbols* symbolTable;
 	struct mVideoLogger* videoLogger;
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 	struct mDirectorySet dirs;
 #endif
 #ifndef MINIMAL_CORE
@@ -176,7 +176,7 @@ struct mCore {
 #endif
 };
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 struct mCore* mCoreFind(const char* path);
 bool mCoreLoadFile(struct mCore* core, const char* path);
 

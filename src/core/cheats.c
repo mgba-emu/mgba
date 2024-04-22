@@ -622,7 +622,7 @@ bool mCheatSaveFile(struct mCheatDevice* device, struct VFile* vf) {
 	return true;
 }
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 void mCheatAutosave(struct mCheatDevice* device) {
 	if (!device->autosave) {
 		return;

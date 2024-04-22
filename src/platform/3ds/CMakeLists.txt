@@ -31,9 +31,9 @@ source_group("3DS-specific code" FILES ${OS_SRC})
 if(USE_VFS_3DS)
 	list(APPEND OS_DEFINES USE_VFS_3DS)
 else()
-	list(APPEND CORE_VFS_SRC ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
+	list(APPEND VFS_SRC ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 endif()
-set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
+set(VFS_SRC ${VFS_SRC} PARENT_SCOPE)
 set(OS_DEFINES ${OS_DEFINES} PARENT_SCOPE)
 
 list(APPEND GUI_SRC
