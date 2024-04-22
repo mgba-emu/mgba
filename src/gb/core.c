@@ -428,16 +428,9 @@ static void _GBCorePutPixels(struct mCore* core, const void* buffer, size_t stri
 	gbcore->renderer.d.putPixels(&gbcore->renderer.d, stride, buffer);
 }
 
-static struct blip_t* _GBCoreGetAudioChannel(struct mCore* core, int ch) {
+static struct mAudioBuffer* _GBCoreGetAudioBuffer(struct mCore* core) {
 	struct GB* gb = core->board;
-	switch (ch) {
-	case 0:
-		return gb->audio.left;
-	case 1:
-		return gb->audio.right;
-	default:
-		return NULL;
-	}
+	return &gb->audio.buffer;
 }
 
 static void _GBCoreSetAudioBufferSize(struct mCore* core, size_t samples) {
@@ -1308,7 +1301,7 @@ struct mCore* GBCoreCreate(void) {
 	core->getPixels = _GBCoreGetPixels;
 	core->putPixels = _GBCorePutPixels;
 	core->audioSampleRate = _GBCoreAudioSampleRate;
-	core->getAudioChannel = _GBCoreGetAudioChannel;
+	core->getAudioBuffer = _GBCoreGetAudioBuffer;
 	core->setAudioBufferSize = _GBCoreSetAudioBufferSize;
 	core->getAudioBufferSize = _GBCoreGetAudioBufferSize;
 	core->setAVStream = _GBCoreSetAVStream;

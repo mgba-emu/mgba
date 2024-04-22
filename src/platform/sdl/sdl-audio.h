@@ -11,6 +11,8 @@
 CXX_GUARD_START
 
 #include <mgba/core/log.h>
+#include <mgba-util/audio-buffer.h>
+#include <mgba-util/audio-resampler.h>
 
 #include <SDL.h>
 // Altivec sometimes defines this
@@ -30,6 +32,8 @@ struct mSDLAudio {
 	unsigned sampleRate;
 
 	// State
+	struct mAudioBuffer buffer;
+	struct mAudioResampler resampler;
 	SDL_AudioSpec desiredSpec;
 	SDL_AudioSpec obtainedSpec;
 #if SDL_VERSION_ATLEAST(2, 0, 0)

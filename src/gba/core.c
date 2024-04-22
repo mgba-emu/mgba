@@ -558,16 +558,9 @@ static unsigned _GBACoreAudioSampleRate(const struct mCore* core) {
 	return 65536;
 }
 
-static struct blip_t* _GBACoreGetAudioChannel(struct mCore* core, int ch) {
+static struct mAudioBuffer* _GBACoreGetAudioBuffer(struct mCore* core) {
 	struct GBA* gba = core->board;
-	switch (ch) {
-	case 0:
-		return gba->audio.psg.left;
-	case 1:
-		return gba->audio.psg.right;
-	default:
-		return NULL;
-	}
+	return &gba->audio.psg.buffer;
 }
 
 static void _GBACoreSetAudioBufferSize(struct mCore* core, size_t samples) {
@@ -1505,7 +1498,7 @@ struct mCore* GBACoreCreate(void) {
 	core->getPixels = _GBACoreGetPixels;
 	core->putPixels = _GBACorePutPixels;
 	core->audioSampleRate = _GBACoreAudioSampleRate;
-	core->getAudioChannel = _GBACoreGetAudioChannel;
+	core->getAudioBuffer = _GBACoreGetAudioBuffer;
 	core->setAudioBufferSize = _GBACoreSetAudioBufferSize;
 	core->getAudioBufferSize = _GBACoreGetAudioBufferSize;
 	core->addCoreCallbacks = _GBACoreAddCoreCallbacks;

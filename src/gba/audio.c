@@ -6,7 +6,6 @@
 #include <mgba/internal/gba/audio.h>
 
 #include <mgba/internal/arm/macros.h>
-#include <mgba/core/blip_buf.h>
 #include <mgba/core/sync.h>
 #include <mgba/internal/gba/dma.h>
 #include <mgba/internal/gba/gba.h>
@@ -16,17 +15,12 @@
 
 #define MP2K_LOCK_MAX 8
 
-#ifdef __3DS__
-#define blip_add_delta blip_add_delta_fast
-#endif
-
 mLOG_DEFINE_CATEGORY(GBA_AUDIO, "GBA Audio", "gba.audio");
 
 const unsigned GBA_AUDIO_SAMPLES = 2048;
 const int GBA_AUDIO_VOLUME_MAX = 0x100;
 
 static const int SAMPLE_INTERVAL = GBA_ARM7TDMI_FREQUENCY / 0x4000;
-static const int CLOCKS_PER_FRAME = 0x800;
 
 static int _applyBias(struct GBAAudio* audio, int sample);
 static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate);
@@ -41,14 +35,10 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 #ifdef __BIG_ENDIAN__
 	++nr52;
 #endif
-	GBAudioInit(&audio->psg, 0, nr52, GB_AUDIO_GBA);
+	GBAudioInit(&audio->psg, samples, nr52, GB_AUDIO_GBA);
 	audio->psg.timing = &audio->p->timing;
-	audio->psg.clockRate = GBA_ARM7TDMI_FREQUENCY;
 	audio->psg.frameEvent.context = audio;
 	audio->samples = samples;
-	// Guess too large; we hang producing extra samples if we guess too low
-	blip_set_rates(audio->psg.left, GBA_ARM7TDMI_FREQUENCY, 96000);
-	blip_set_rates(audio->psg.right, GBA_ARM7TDMI_FREQUENCY, 96000);
 
 	audio->forceDisableChA = false;
 	audio->forceDisableChB = false;
@@ -93,10 +83,6 @@ void GBAAudioReset(struct GBAAudio* audio) {
 	audio->enable = false;
 	audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / 0x8000;
 	audio->psg.sampleInterval = audio->sampleInterval;
-
-	blip_clear(audio->psg.left);
-	blip_clear(audio->psg.right);
-	audio->clock = 0;
 }
 
 void GBAAudioDeinit(struct GBAAudio* audio) {
@@ -104,14 +90,9 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 }
 
 void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
-	if (samples > 0x2000) {
-		samples = 0x2000;
-	}
 	mCoreSyncLockAudio(audio->p->sync);
 	audio->samples = samples;
-	blip_clear(audio->psg.left);
-	blip_clear(audio->psg.right);
-	audio->clock = 0;
+	audio->psg.samples = samples;
 	mCoreSyncConsumeAudio(audio->p->sync);
 }
 
@@ -414,34 +395,24 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	unsigned produced;
 	int i;
 	for (i = 0; i < samples; ++i) {
-		int16_t sampleLeft = audio->currentSamples[i].left;
-		int16_t sampleRight = audio->currentSamples[i].right;
-		if ((size_t) blip_samples_avail(audio->psg.left) < audio->samples) {
-			blip_add_delta(audio->psg.left, audio->clock, sampleLeft - audio->lastLeft);
-			blip_add_delta(audio->psg.right, audio->clock, sampleRight - audio->lastRight);
-			audio->lastLeft = sampleLeft;
-			audio->lastRight = sampleRight;
-			audio->clock += audio->sampleInterval;
-			if (audio->clock >= CLOCKS_PER_FRAME) {
-				blip_end_frame(audio->psg.left, CLOCKS_PER_FRAME);
-				blip_end_frame(audio->psg.right, CLOCKS_PER_FRAME);
-				audio->clock -= CLOCKS_PER_FRAME;
-			}
-		}
-
+		int16_t sample[2] = {
+			audio->currentSamples[i].left,
+			audio->currentSamples[i].right
+		};
+		mAudioBufferWrite(&audio->psg.buffer, sample, 1);
 		if (audio->p->stream && audio->p->stream->postAudioFrame) {
-			audio->p->stream->postAudioFrame(audio->p->stream, sampleLeft, sampleRight);
+			audio->p->stream->postAudioFrame(audio->p->stream, sample[0], sample[1]);
 		}
 	}
-	produced = blip_samples_avail(audio->psg.left);
+	produced = mAudioBufferAvailable(&audio->psg.buffer);
 	bool wait = produced >= audio->samples;
-	if (!mCoreSyncProduceAudio(audio->p->sync, audio->psg.left, audio->samples)) {
+	if (!mCoreSyncProduceAudio(audio->p->sync, &audio->psg.buffer)) {
 		// Interrupted
 		audio->p->earlyExit = true;
 	}
 
 	if (wait && audio->p->stream && audio->p->stream->postAudioBuffer) {
-		audio->p->stream->postAudioBuffer(audio->p->stream, audio->psg.left, audio->psg.right);
+		audio->p->stream->postAudioBuffer(audio->p->stream, &audio->psg.buffer);
 	}
 
 	mTimingSchedule(timing, &audio->sampleEvent, SAMPLE_INTERVAL - cyclesLate);

@@ -4,7 +4,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
 #ifdef M_CORE_GBA
@@ -61,7 +60,7 @@ static enum DarkenMode {
 
 #define _3DS_INPUT 0x3344534B
 
-#define AUDIO_SAMPLES 384
+#define AUDIO_SAMPLES 1280
 #define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 16)
 #define DSP_BUFFERS 4
 
@@ -190,7 +189,7 @@ static void _map3DSKey(struct mInputMap* map, int ctrKey, int key) {
 	mInputBindKey(map, _3DS_INPUT, __builtin_ctz(ctrKey), key);
 }
 
-static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right);
+static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buffer);
 
 static void _drawStart(void) {
 	if (frameStarted) {
@@ -343,12 +342,13 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	}
 	osSetSpeedupEnable(true);
 
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 32768);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 32768);
 	if (hasSound != NO_SOUND) {
 		audioPos = 0;
 	}
 	if (hasSound == DSP_SUPPORTED) {
+		unsigned sampleRate = runner->core->audioSampleRate(runner->core);
+		double fauxClock = mCoreCalculateFramerateRatio(runner->core, 16756991. / 280095.);
+		ndspChnSetRate(0, sampleRate * fauxClock);
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * 2 * sizeof(int16_t));
 	}
 	unsigned mode;
@@ -607,8 +607,7 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 				GX_TRANSFER_OUT_TILED(1) | GX_TRANSFER_FLIP_VERT(1));
 
 	if (hasSound == NO_SOUND) {
-		blip_clear(runner->core->getAudioChannel(runner->core, 0));
-		blip_clear(runner->core->getAudioChannel(runner->core, 1));
+		mAudioBufferClear(runner->core->getAudioBuffer(runner->core));
 	}
 
 	_drawTex(runner->core, faded, interframeBlending);
@@ -775,15 +774,14 @@ static void _requestImage(struct mImageSource* source, const void** buffer, size
 	CAMU_SetReceiving(&imageSource->handles[0], imageSource->buffer, PORT_CAM1, imageSource->bufferSize, imageSource->transferSize);
 }
 
-static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
+static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buffer) {
 	UNUSED(stream);
 	if (hasSound == DSP_SUPPORTED) {
 		int startId = bufferId;
 		while (dspBuffer[bufferId].status == NDSP_WBUF_QUEUED || dspBuffer[bufferId].status == NDSP_WBUF_PLAYING) {
 			bufferId = (bufferId + 1) & (DSP_BUFFERS - 1);
 			if (bufferId == startId) {
-				blip_clear(left);
-				blip_clear(right);
+				mAudioBufferClear(buffer);
 				return;
 			}
 		}
@@ -791,8 +789,7 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 		memset(&dspBuffer[bufferId], 0, sizeof(dspBuffer[bufferId]));
 		dspBuffer[bufferId].data_pcm16 = tmpBuf;
 		dspBuffer[bufferId].nsamples = AUDIO_SAMPLES;
-		blip_read_samples(left, dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES, true);
-		blip_read_samples(right, dspBuffer[bufferId].data_pcm16 + 1, AUDIO_SAMPLES, true);
+		mAudioBufferRead(buffer, dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES);
 		DSP_FlushDataCache(dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES * 2 * sizeof(int16_t));
 		ndspChnWaveBufAdd(0, &dspBuffer[bufferId]);
 	}
@@ -857,7 +854,6 @@ int main(int argc, char* argv[]) {
 		ndspChnReset(0);
 		ndspChnSetFormat(0, NDSP_FORMAT_STEREO_PCM16);
 		ndspChnSetInterp(0, NDSP_INTERP_NONE);
-		ndspChnSetRate(0, 32822);
 		ndspChnWaveBufClear(0);
 		audioLeft = linearMemAlign(AUDIO_SAMPLES * DSP_BUFFERS * 2 * sizeof(int16_t), 0x80);
 		memset(dspBuffer, 0, sizeof(dspBuffer));

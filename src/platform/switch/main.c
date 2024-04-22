@@ -4,7 +4,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "feature/gui/gui-runner.h"
-#include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
 #include <mgba/internal/gb/video.h>
 #include <mgba/internal/gba/audio.h>
@@ -305,9 +304,6 @@ static void _setup(struct mGUIRunner* runner) {
 
 	u32 samplerate = runner->core->audioSampleRate(runner->core);
 	double ratio = mCoreCalculateFramerateRatio(runner->core, 60.0);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), samplerate);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), samplerate);
-
 	audrvVoiceInit(&audrenDriver, 0, 2, PcmFormat_Int16, samplerate / ratio);
 	audrvVoiceSetDestinationMix(&audrenDriver, 0, AUDREN_FINAL_MIX_ID);
 	audrvVoiceSetMixFactor(&audrenDriver, 0, 1.0f, 0, 0);
@@ -576,7 +572,7 @@ static bool _running(struct mGUIRunner* runner) {
 	return appletMainLoop();
 }
 
-static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
+static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buffer) {
 	UNUSED(stream);
 	int i;
 	while (true) {
@@ -590,15 +586,13 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 			break;
 		}
 		if (!frameLimiter) {
-			blip_clear(left);
-			blip_clear(right);
+			mAudioBufferClear(buffer);
 			return;
 		}
 		audrenWaitFrame();
 	}
 	struct mStereoSample* samples = audioBuffer[i];
-	blip_read_samples(left, &samples[0].left, SAMPLES, true);
-	blip_read_samples(right, &samples[0].right, SAMPLES, true);
+	mAudioBufferRead(buffer, (int16_t*) samples, SAMPLES);
 	armDCacheFlush(samples, SAMPLES * sizeof(struct mStereoSample));
 	audrvVoiceAddWaveBuf(&audrenDriver, 0, &audrvBuffer[i]);
 

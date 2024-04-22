@@ -32,6 +32,7 @@ enum mCoreChecksumType {
 	mCHECKSUM_CRC32,
 };
 
+struct mAudioBuffer;
 struct mCoreConfig;
 struct mCoreSync;
 struct mDebuggerSymbols;
@@ -79,7 +80,7 @@ struct mCore {
 	void (*putPixels)(struct mCore*, const void* buffer, size_t stride);
 
 	unsigned (*audioSampleRate)(const struct mCore*);
-	struct blip_t* (*getAudioChannel)(struct mCore*, int ch);
+	struct mAudioBuffer* (*getAudioBuffer)(struct mCore*);
 	void (*setAudioBufferSize)(struct mCore*, size_t samples);
 	size_t (*getAudioBufferSize)(struct mCore*);
 

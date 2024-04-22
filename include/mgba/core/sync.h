@@ -22,6 +22,7 @@ struct mCoreSync {
 	bool audioWait;
 	Condition audioRequiredCond;
 	Mutex audioBufferMutex;
+	size_t audioHighWater;
 
 	float fpsTarget;
 };
@@ -32,8 +33,8 @@ bool mCoreSyncWaitFrameStart(struct mCoreSync* sync);
 void mCoreSyncWaitFrameEnd(struct mCoreSync* sync);
 void mCoreSyncSetVideoSync(struct mCoreSync* sync, bool wait);
 
-struct blip_t;
-bool mCoreSyncProduceAudio(struct mCoreSync* sync, const struct blip_t*, size_t samples);
+struct mAudioBuffer;
+bool mCoreSyncProduceAudio(struct mCoreSync* sync, const struct mAudioBuffer*);
 void mCoreSyncLockAudio(struct mCoreSync* sync);
 void mCoreSyncUnlockAudio(struct mCoreSync* sync);
 void mCoreSyncConsumeAudio(struct mCoreSync* sync);

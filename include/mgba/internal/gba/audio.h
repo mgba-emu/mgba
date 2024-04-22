@@ -63,10 +63,6 @@ struct GBAAudio {
 	struct GBAAudioFIFO chA;
 	struct GBAAudioFIFO chB;
 
-	int16_t lastLeft;
-	int16_t lastRight;
-	int clock;
-
 	uint8_t volume;
 	bool volumeChA;
 	bool volumeChB;

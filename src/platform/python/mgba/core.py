@@ -251,14 +251,6 @@ class Core(object):
         return self._core.getAudioBufferSize(self._core)
 
     @protected
-    def get_audio_channels(self):
-        return audio.StereoBuffer(self.get_audio_channel(0), self.get_audio_channel(1));
-
-    @protected
-    def get_audio_channel(self, channel):
-        return audio.Buffer(self._core.getAudioChannel(self._core, channel), self.frequency)
-
-    @protected
     def reset(self):
         self._core.reset(self._core)
         self._load()

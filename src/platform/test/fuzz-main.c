@@ -3,7 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include <mgba/core/blip_buf.h>
 #include <mgba/core/cheats.h>
 #include <mgba/core/config.h>
 #include <mgba/core/core.h>
@@ -153,9 +152,6 @@ int main(int argc, char** argv) {
 		savestate = 0;
 	}
 
-	blip_set_rates(core->getAudioChannel(core, 0), core->frequency(core), 0x8000);
-	blip_set_rates(core->getAudioChannel(core, 1), core->frequency(core), 0x8000);
-
 	_fuzzRunloop(core, fuzzOpts.frames);
 
 	if (hasDebugger) {
@@ -188,8 +184,7 @@ static void _fuzzRunloop(struct mCore* core, int frames) {
 	do {
 		core->runFrame(core);
 		--frames;
-		blip_clear(core->getAudioChannel(core, 0));
-		blip_clear(core->getAudioChannel(core, 1));
+		mAudioBufferClear(core->getAudioBuffer(core));
 	} while (frames > 0 && !_dispatchExiting);
 }
 

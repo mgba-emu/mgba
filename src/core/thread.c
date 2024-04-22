@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/core/thread.h>
 
-#include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
 #ifdef ENABLE_SCRIPTING
 #include <mgba/script/context.h>
@@ -368,7 +367,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 				if (impl->sync.audioWait) {
 					MutexUnlock(&impl->stateMutex);
 					mCoreSyncLockAudio(&impl->sync);
-					mCoreSyncProduceAudio(&impl->sync, core->getAudioChannel(core, 0), core->getAudioBufferSize(core));
+					mCoreSyncProduceAudio(&impl->sync, core->getAudioBuffer(core));
 					MutexLock(&impl->stateMutex);
 				}
 			}
@@ -498,6 +497,7 @@ bool mCoreThreadStart(struct mCoreThread* threadContext) {
 	threadContext->impl->sync.audioWait = threadContext->core->opts.audioSync;
 	threadContext->impl->sync.videoFrameWait = threadContext->core->opts.videoSync;
 	threadContext->impl->sync.fpsTarget = threadContext->core->opts.fpsTarget;
+	threadContext->impl->sync.audioHighWater = 512;
 
 	MutexLock(&threadContext->impl->stateMutex);
 	ThreadCreate(&threadContext->impl->thread, _mCoreThreadRun, threadContext);

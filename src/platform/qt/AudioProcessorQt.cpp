@@ -83,6 +83,7 @@ bool AudioProcessorQt::start() {
 			if (state != QAudio::IdleState) {
 				return;
 			}
+			recheckUnderflow();
 			m_recheckTimer.start();
 		});
 #endif
@@ -91,6 +92,7 @@ bool AudioProcessorQt::start() {
 	if (m_audioOutput->state() == QAudio::SuspendedState) {
 		m_audioOutput->resume();
 	} else {
+		m_device->setBufferSamples(m_samples);
 		m_device->setInput(input());
 		m_device->setFormat(m_audioOutput->format());
 		m_audioOutput->start(m_device.get());
@@ -107,12 +109,17 @@ void AudioProcessorQt::pause() {
 	}
 }
 
-void AudioProcessorQt::setBufferSamples(int) {
+void AudioProcessorQt::setBufferSamples(int samples) {
+	m_samples = samples;
+	if (m_device) {
+		m_device->setBufferSamples(samples);
+	}
 }
 
 void AudioProcessorQt::inputParametersChanged() {
 	if (m_device) {
 		m_device->setFormat(m_audioOutput->format());
+		m_device->setBufferSamples(m_samples);
 	}
 }
 
@@ -138,7 +145,7 @@ void AudioProcessorQt::recheckUnderflow() {
 		m_recheckTimer.stop();
 		return;
 	}
-	if (!m_device->atEnd()) {
+	if (m_device->bytesAvailable()) {
 		start();
 		m_recheckTimer.stop();
 	}
