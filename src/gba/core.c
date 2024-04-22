@@ -14,7 +14,6 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 #include <mgba/internal/gba/debugger/cli.h>
-#include <mgba/internal/gba/extra/audio-mixer.h>
 #include <mgba/internal/gba/overrides.h>
 #ifndef DISABLE_THREADING
 #include <mgba/feature/thread-proxy.h>
@@ -191,7 +190,6 @@ static const struct mCoreRegisterInfo _GBARegisters[] = {
 
 struct mVideoLogContext;
 
-#define CPU_COMPONENT_AUDIO_MIXER CPU_COMPONENT_MISC_1
 #define LOGO_CRC32 0xD0BEB55E
 
 struct GBACore {
@@ -216,7 +214,6 @@ struct GBACore {
 	bool hasOverride;
 	struct mDebuggerPlatform* debuggerPlatform;
 	struct mCheatDevice* cheatDevice;
-	struct GBAAudioMixer* audioMixer;
 	struct mCoreMemoryBlock memoryBlocks[12];
 	size_t nMemoryBlocks;
 	int memoryBlockType;
@@ -269,7 +266,6 @@ static bool _GBACoreInit(struct mCore* core) {
 #ifndef MINIMAL_CORE
 	gbacore->logContext = NULL;
 #endif
-	gbacore->audioMixer = NULL;
 
 	GBACreate(gba);
 	// TODO: Restore cheats
@@ -324,7 +320,6 @@ static void _GBACoreDeinit(struct mCore* core) {
 	if (gbacore->cheatDevice) {
 		mCheatDeviceDestroy(gbacore->cheatDevice);
 	}
-	free(gbacore->audioMixer);
 	mCoreConfigFreeOpts(&core->opts);
 	free(core);
 }
@@ -387,7 +382,6 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	mCoreConfigCopyValue(&core->config, config, "allowOpposingDirections");
 	mCoreConfigCopyValue(&core->config, config, "gba.bios");
 	mCoreConfigCopyValue(&core->config, config, "gba.forceGbp");
-	mCoreConfigCopyValue(&core->config, config, "gba.audioHle");
 	mCoreConfigCopyValue(&core->config, config, "vbaBugCompat");
 
 #ifndef DISABLE_THREADING
@@ -733,16 +727,6 @@ static void _GBACoreReset(struct mCore* core) {
 			GBAVideoAssociateRenderer(&gba->video, renderer);
 		}
 	}
-
-#ifndef MINIMAL_CORE
-	int useAudioMixer;
-	if (!gbacore->audioMixer && mCoreConfigGetIntValue(&core->config, "gba.audioHle", &useAudioMixer) && useAudioMixer) {
-		gbacore->audioMixer = malloc(sizeof(*gbacore->audioMixer));
-		GBAAudioMixerCreate(gbacore->audioMixer);
-		((struct ARMCore*) core->cpu)->components[CPU_COMPONENT_AUDIO_MIXER] = &gbacore->audioMixer->d;
-		ARMHotplugAttach(core->cpu, CPU_COMPONENT_AUDIO_MIXER);
-	}
-#endif
 
 	bool forceGbp = false;
 	bool vbaBugCompat = true;

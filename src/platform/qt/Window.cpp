@@ -543,15 +543,6 @@ void Window::openSettingsWindow(SettingsView::Page page) {
 	connect(settingsWindow, &SettingsView::videoRendererChanged, this, &Window::changeRenderer);
 	connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
 	connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
-	connect(settingsWindow, &SettingsView::audioHleChanged, this, [this]() {
-		if (!m_controller) {
-			return;
-		}
-		if (m_controller->platform() != mPLATFORM_GBA) {
-			return;
-		}
-		mustReset();
-	});
 #ifdef USE_SQLITE3
 	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
 #endif

@@ -63,7 +63,6 @@ signals:
 	void pathsChanged();
 	void languageChanged();
 	void libraryCleared();
-	void audioHleChanged();
 
 public slots:
 	void selectPage(Page);

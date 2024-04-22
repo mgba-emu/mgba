@@ -56,7 +56,6 @@ DECL_BITFIELD(GBARegisterSOUNDBIAS, uint16_t);
 DECL_BITS(GBARegisterSOUNDBIAS, Bias, 0, 10);
 DECL_BITS(GBARegisterSOUNDBIAS, Resolution, 14, 2);
 
-struct GBAAudioMixer;
 struct GBAAudio {
 	struct GBA* p;
 
@@ -82,8 +81,6 @@ struct GBAAudio {
 	size_t samples;
 	GBARegisterSOUNDBIAS soundbias;
 
-	struct GBAAudioMixer* mixer;
-	bool externalMixing;
 	int32_t sampleInterval;
 
 	int32_t lastSample;
@@ -257,26 +254,6 @@ struct GBAMP2kTrack {
 	uint32_t samplePlaying;
 	float currentOffset;
 	bool waiting;
-};
-
-struct GBAAudioMixer {
-	struct mCPUComponent d;
-	struct GBAAudio* p;
-
-	uint32_t contextAddress;
-
-	bool (*engage)(struct GBAAudioMixer* mixer, uint32_t address);
-	void (*vblank)(struct GBAAudioMixer* mixer);
-	void (*step)(struct GBAAudioMixer* mixer);
-
-	struct GBAMP2kContext context;
-	struct GBAMP2kMusicPlayerInfo player;
-	struct GBAMP2kTrack activeTracks[MP2K_MAX_SOUND_CHANNELS];
-
-	double tempo;
-	double frame;
-
-	struct mStereoSample last;
 };
 
 void GBAAudioInit(struct GBAAudio* audio, size_t samples);

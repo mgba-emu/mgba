@@ -28,6 +28,7 @@ Misc:
  - GB: Prevent incompatible BIOSes from being used on differing models
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
+ - GBA Audio: Remove broken XQ audio pending rewrite
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
  - mGUI: Persist fast forwarding after closing menu (fixes mgba.io/i/2414)
  - Qt: Handle multiple save game files for disparate games separately (fixes mgba.io/i/2887)

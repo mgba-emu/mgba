@@ -50,11 +50,9 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 	blip_set_rates(audio->psg.left, GBA_ARM7TDMI_FREQUENCY, 96000);
 	blip_set_rates(audio->psg.right, GBA_ARM7TDMI_FREQUENCY, 96000);
 
-	audio->externalMixing = false;
 	audio->forceDisableChA = false;
 	audio->forceDisableChB = false;
 	audio->masterVolume = GBA_AUDIO_VOLUME_MAX;
-	audio->mixer = NULL;
 }
 
 void GBAAudioReset(struct GBAAudio* audio) {
@@ -130,27 +128,6 @@ void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* 
 	default:
 		mLOG(GBA_AUDIO, GAME_ERROR, "Invalid FIFO destination: 0x%08X", info->dest);
 		return;
-	}
-	if (audio->mixer) {
-		uint32_t source = info->source;
-		uint32_t offsets[] = { 0x350, 0x980 };
-		size_t i;
-		for (i = 0; i < sizeof(offsets) / sizeof(*offsets); ++i) {
-			if (source < GBA_BASE_EWRAM + offsets[i]) {
-				continue;
-			}
-			if (source >= GBA_BASE_IO + offsets[i]) {
-				continue;
-			}
-			uint32_t value = GBALoad32(audio->p->cpu, source - offsets[i], NULL);
-			if (value - MP2K_MAGIC <= MP2K_LOCK_MAX) {
-				audio->mixer->engage(audio->mixer, source - offsets[i]);
-				break;
-			}
-		}
-		if (i == sizeof(offsets) / sizeof(*offsets)) {
-			audio->externalMixing = false;
-		}
 	}
 }
 
@@ -392,28 +369,23 @@ void GBAAudioSample(struct GBAAudio* audio, int32_t timestamp) {
 		sampleLeft >>= psgShift;
 		sampleRight >>= psgShift;
 
-		if (audio->mixer) {
-			audio->mixer->step(audio->mixer);
-		}
-		if (!audio->externalMixing) {
-			if (!audio->forceDisableChA) {
-				if (audio->chALeft) {
-					sampleLeft += (audio->chA.samples[sample] << 2) >> !audio->volumeChA;
-				}
-
-				if (audio->chARight) {
-					sampleRight += (audio->chA.samples[sample] << 2) >> !audio->volumeChA;
-				}
+		if (!audio->forceDisableChA) {
+			if (audio->chALeft) {
+				sampleLeft += (audio->chA.samples[sample] << 2) >> !audio->volumeChA;
 			}
 
-			if (!audio->forceDisableChB) {
-				if (audio->chBLeft) {
-					sampleLeft += (audio->chB.samples[sample] << 2) >> !audio->volumeChB;
-				}
+			if (audio->chARight) {
+				sampleRight += (audio->chA.samples[sample] << 2) >> !audio->volumeChA;
+			}
+		}
 
-				if (audio->chBRight) {
-					sampleRight += (audio->chB.samples[sample] << 2) >> !audio->volumeChB;
-				}
+		if (!audio->forceDisableChB) {
+			if (audio->chBLeft) {
+				sampleLeft += (audio->chB.samples[sample] << 2) >> !audio->volumeChB;
+			}
+
+			if (audio->chBRight) {
+				sampleRight += (audio->chB.samples[sample] << 2) >> !audio->volumeChB;
 			}
 		}
 
