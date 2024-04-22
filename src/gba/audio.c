@@ -393,15 +393,11 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 
 	mCoreSyncLockAudio(audio->p->sync);
 	unsigned produced;
-	int i;
-	for (i = 0; i < samples; ++i) {
-		int16_t sample[2] = {
-			audio->currentSamples[i].left,
-			audio->currentSamples[i].right
-		};
-		mAudioBufferWrite(&audio->psg.buffer, sample, 1);
-		if (audio->p->stream && audio->p->stream->postAudioFrame) {
-			audio->p->stream->postAudioFrame(audio->p->stream, sample[0], sample[1]);
+	mAudioBufferWrite(&audio->psg.buffer, (int16_t*) audio->currentSamples, samples);
+	if (audio->p->stream && audio->p->stream->postAudioFrame) {
+		int i;
+		for (i = 0; i < samples; ++i) {
+			audio->p->stream->postAudioFrame(audio->p->stream, audio->currentSamples[i].left,audio->currentSamples[i].right);
 		}
 	}
 	produced = mAudioBufferAvailable(&audio->psg.buffer);
