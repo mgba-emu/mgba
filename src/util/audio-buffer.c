@@ -52,6 +52,9 @@ size_t mAudioBufferRead(struct mAudioBuffer* buffer, int16_t* samples, size_t co
 size_t mAudioBufferWrite(struct mAudioBuffer* buffer, const int16_t* samples, size_t count) {
 	size_t free = mCircleBufferCapacity(&buffer->data) - mCircleBufferSize(&buffer->data);
 	if (count * buffer->channels * sizeof(int16_t) > free) {
+		if (!free) {
+			return 0;
+		}
 		count = free / (buffer->channels * sizeof(int16_t));
 	}
 	return mCircleBufferWrite(&buffer->data, samples, count * buffer->channels * sizeof(int16_t)) /
