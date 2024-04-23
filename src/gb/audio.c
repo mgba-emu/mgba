@@ -822,24 +822,25 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	GBAudioSample(audio, mTimingCurrentTime(audio->timing));
 
 	mCoreSyncLockAudio(audio->p->sync);
-	unsigned produced;
 	mAudioBufferWrite(&audio->buffer, (int16_t*) audio->currentSamples, GB_MAX_SAMPLES);
-	if (audio->p->stream && audio->p->stream->postAudioFrame) {
-		int i;
-		for (i = 0; i < GB_MAX_SAMPLES; ++i) {
-			audio->p->stream->postAudioFrame(audio->p->stream, audio->currentSamples[i].left,audio->currentSamples[i].right);
+	if (audio->p->stream) {
+		if (audio->p->stream->postAudioFrame) {
+			int i;
+			for (i = 0; i < GB_MAX_SAMPLES; ++i) {
+				audio->p->stream->postAudioFrame(audio->p->stream, audio->currentSamples[i].left,audio->currentSamples[i].right);
+			}
+		}
+		if (audio->p->stream->postAudioBuffer) {
+			unsigned produced = mAudioBufferAvailable(&audio->buffer);
+			bool wait = produced >= audio->samples;
+			if (wait) {
+				audio->p->stream->postAudioBuffer(audio->p->stream, &audio->buffer);
+			}
 		}
 	}
-
-	produced = mAudioBufferAvailable(&audio->buffer);
-	bool wait = produced >= audio->samples;
 	if (!mCoreSyncProduceAudio(audio->p->sync, &audio->buffer)) {
 		// Interrupted
 		audio->p->earlyExit = true;
-	}
-
-	if (wait && audio->p->stream && audio->p->stream->postAudioBuffer) {
-		audio->p->stream->postAudioBuffer(audio->p->stream, &audio->buffer);
 	}
 	mTimingSchedule(timing, &audio->sampleEvent, audio->sampleInterval * audio->timingFactor - cyclesLate);
 }
