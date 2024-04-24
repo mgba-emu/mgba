@@ -234,7 +234,7 @@ static inline Socket SocketOpenTCP(int port, const struct Address* bindAddress) 
 #else
 		err = bind(sock, (const struct sockaddr*) &bindInfo, sizeof(bindInfo));
 #endif
-#if !defined(__3DS__) && !defined(GEKKO)
+#ifdef HAS_IPV6
 	} else {
 		struct sockaddr_in6 bindInfo;
 		memset(&bindInfo, 0, sizeof(bindInfo));
@@ -333,7 +333,7 @@ static inline Socket SocketAccept(Socket socket, struct Address* address) {
 #else
 		return accept(socket, (struct sockaddr*) &addrInfo, &len);
 #endif
-#if !defined(__3DS__) && !defined(GEKKO)
+#ifdef HAS_IPV6
 	} else {
 		struct sockaddr_in6 addrInfo;
 		memset(&addrInfo, 0, sizeof(addrInfo));
