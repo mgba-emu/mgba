@@ -22,6 +22,7 @@ Other fixes:
  - GB: Fix uninitialized save data when loading undersized temporary saves
  - GBA Memory: Let raw access read high MMIO addresses
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
+ - Qt: Fix potential crash when configuring shortcuts
  - Updater: Fix updating appimage across filesystems
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
