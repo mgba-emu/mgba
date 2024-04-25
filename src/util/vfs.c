@@ -20,7 +20,7 @@
 
 #ifdef ENABLE_VFS
 struct VFile* VFileOpen(const char* path, int flags) {
-#ifdef USE_VFS_FILE
+#ifdef ENABLE_VFS_FILE
 	const char* chflags;
 	switch (flags & O_ACCMODE) {
 	case O_WRONLY:
@@ -68,7 +68,7 @@ struct VFile* VFileOpen(const char* path, int flags) {
 		sceFlags |= SCE_O_CREAT;
 	}
 	return VFileOpenSce(path, sceFlags, 0666);
-#elif defined(USE_VFS_3DS)
+#elif defined(ENABLE_VFS_3DS)
 	int ctrFlags = FS_OPEN_READ;
 	switch (flags & O_ACCMODE) {
 	case O_WRONLY:

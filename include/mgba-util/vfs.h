@@ -98,7 +98,7 @@ bool VDirCreate(const char* path);
 struct VFile* VDirFindFirst(struct VDir* dir, bool (*filter)(struct VFile*));
 struct VFile* VDirFindNextAvailable(struct VDir*, const char* basename, const char* infix, const char* suffix, int mode);
 
-#ifdef USE_VFS_FILE
+#ifdef ENABLE_VFS_FILE
 struct VFile* VFileFOpen(const char* path, const char* mode);
 struct VFile* VFileFromFILE(FILE* file);
 #endif
