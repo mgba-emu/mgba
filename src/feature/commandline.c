@@ -217,9 +217,12 @@ void mArgumentsApply(const struct mArguments* args, struct mSubParser* subparser
 }
 
 bool mArgumentsApplyDebugger(const struct mArguments* args, struct mCore* core, struct mDebugger* debugger) {
+	UNUSED(args);
+	UNUSED(core);
+	UNUSED(debugger);
 	bool hasDebugger = false;
 
-	#ifdef USE_EDITLINE
+#ifdef USE_EDITLINE
 	if (args->debugCli) {
 		struct mDebuggerModule* module = mDebuggerCreateModule(DEBUGGER_CLI, core);
 		if (module) {

@@ -282,14 +282,14 @@ bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
 			StringListDeinit(&directives);
 			return false;
 		}
-		while (isspace((int) cheat[i])) {
+		while (isspace((unsigned) cheat[i])) {
 			++i;
 		}
 		switch (cheat[i]) {
 		case '#':
 			do {
 				++i;
-			} while (isspace((int) cheat[i]));
+			} while (isspace((unsigned) cheat[i]));
 			newSet = device->createSet(device, &cheat[i]);
 			newSet->enabled = !nextDisabled;
 			nextDisabled = false;
@@ -305,7 +305,7 @@ bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
 		case '!':
 			do {
 				++i;
-			} while (isspace((int) cheat[i]));
+			} while (isspace((unsigned) cheat[i]));
 			if (strcasecmp(&cheat[i], "disabled") == 0) {
 				nextDisabled = true;
 				break;
@@ -384,7 +384,7 @@ bool mCheatParseLibretroFile(struct mCheatDevice* device, struct VFile* vf) {
 					return false;
 				}
 				++eq;
-				while (isspace((int) eq[0])) {
+				while (isspace((unsigned) eq[0])) {
 					if (eq[0] == '\0') {
 						return false;
 					}
@@ -393,7 +393,7 @@ bool mCheatParseLibretroFile(struct mCheatDevice* device, struct VFile* vf) {
 
 				char* end;
 				unsigned long nCheats = strtoul(eq, &end, 10);
-				if (end[0] != '\0' && !isspace(end[0])) {
+				if (end[0] != '\0' && !isspace((unsigned) end[0])) {
 					return false;
 				}
 
@@ -423,7 +423,7 @@ bool mCheatParseLibretroFile(struct mCheatDevice* device, struct VFile* vf) {
 			return false;
 		}
 		++eq;
-		while (isspace((int) eq[0])) {
+		while (isspace((unsigned) eq[0])) {
 			if (eq[0] == '\0') {
 				return false;
 			}

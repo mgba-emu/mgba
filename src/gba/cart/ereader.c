@@ -371,7 +371,7 @@ void GBACartEReaderScan(struct GBACartEReader* ereader, const void* data, size_t
 	memset(ereader->dots, 0, EREADER_DOTCODE_SIZE);
 
 	uint8_t blockRS[44][0x10];
-	uint8_t block0[0x30];
+	uint8_t block0[0x30] = {0};
 	bool parsed = false;
 	bool bitmap = false;
 	bool reducedHeader = false;

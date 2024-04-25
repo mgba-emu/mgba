@@ -904,9 +904,9 @@ uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat
 		return color;
 	}
 
-	int r;
-	int g;
-	int b;
+	int r = 0;
+	int g = 0;
+	int b = 0;
 	int a = 0xFF;
 
 	switch (from) {

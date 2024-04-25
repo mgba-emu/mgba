@@ -602,7 +602,7 @@ void GBAudioRun(struct GBAudio* audio, int32_t timestamp, int channels) {
 			int32_t last = 0;
 			int samples = 0;
 			int positiveSamples = 0;
-			int lsb;
+			int lsb = 0;
 			int coeff;
 			if (audio->ch4.power) {
 				// TODO: Can this be batched too?
