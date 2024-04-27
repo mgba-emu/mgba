@@ -554,8 +554,8 @@ static void _GBACorePutPixels(struct mCore* core, const void* buffer, size_t str
 }
 
 static unsigned _GBACoreAudioSampleRate(const struct mCore* core) {
-	UNUSED(core);
-	return 65536;
+	struct GBA* gba = core->board;
+	return GBA_ARM7TDMI_FREQUENCY / gba->audio.sampleInterval;
 }
 
 static struct mAudioBuffer* _GBACoreGetAudioBuffer(struct mCore* core) {
