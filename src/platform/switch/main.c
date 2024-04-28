@@ -20,7 +20,7 @@
 #include <GLES3/gl31.h>
 
 #define AUTO_INPUT 0x4E585031
-#define SAMPLES 0x200
+#define SAMPLES 0x400
 #define N_BUFFERS 6
 #define ANALOG_DEADZONE 0x4000
 
@@ -91,6 +91,7 @@ static struct mRotationSource rotation = {0};
 static AudioDriver audrenDriver;
 static AudioDriverWaveBuf audrvBuffer[N_BUFFERS];
 static struct mStereoSample* audioBuffer[N_BUFFERS];
+static double fpsRatio = 1;
 static bool frameLimiter = true;
 static unsigned framecount = 0;
 static unsigned framecap = 10;
@@ -266,6 +267,19 @@ static void _updateRenderer(struct mGUIRunner* runner, bool gl) {
 	}
 }
 
+static void _resetSampleRate(u32 samplerate) {
+	if (!samplerate) {
+		samplerate = 32768;
+	}
+	audrvVoiceInit(&audrenDriver, 0, 2, PcmFormat_Int16, samplerate / fpsRatio);
+	audrvVoiceSetDestinationMix(&audrenDriver, 0, AUDREN_FINAL_MIX_ID);
+	audrvVoiceSetMixFactor(&audrenDriver, 0, 1.0f, 0, 0);
+	audrvVoiceSetMixFactor(&audrenDriver, 0, 0.0f, 0, 1);
+	audrvVoiceSetMixFactor(&audrenDriver, 0, 0.0f, 1, 0);
+	audrvVoiceSetMixFactor(&audrenDriver, 0, 1.0f, 1, 1);
+	audrvUpdate(&audrenDriver);
+}
+
 static void _setup(struct mGUIRunner* runner) {
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_A, GBA_KEY_A);
 	_mapKey(&runner->core->inputMap, AUTO_INPUT, HidNpadButton_B, GBA_KEY_B);
@@ -303,14 +317,8 @@ static void _setup(struct mGUIRunner* runner) {
 	runner->core->setAudioBufferSize(runner->core, SAMPLES);
 
 	u32 samplerate = runner->core->audioSampleRate(runner->core);
-	double ratio = mCoreCalculateFramerateRatio(runner->core, 60.0);
-	audrvVoiceInit(&audrenDriver, 0, 2, PcmFormat_Int16, samplerate / ratio);
-	audrvVoiceSetDestinationMix(&audrenDriver, 0, AUDREN_FINAL_MIX_ID);
-	audrvVoiceSetMixFactor(&audrenDriver, 0, 1.0f, 0, 0);
-	audrvVoiceSetMixFactor(&audrenDriver, 0, 0.0f, 0, 1);
-	audrvVoiceSetMixFactor(&audrenDriver, 0, 0.0f, 1, 0);
-	audrvVoiceSetMixFactor(&audrenDriver, 0, 1.0f, 1, 1);
-	audrvUpdate(&audrenDriver);
+	fpsRatio = mCoreCalculateFramerateRatio(runner->core, 60.0);
+	_resetSampleRate(samplerate);
 }
 
 static void _gameLoaded(struct mGUIRunner* runner) {
@@ -570,6 +578,11 @@ static bool _running(struct mGUIRunner* runner) {
 	}
 
 	return appletMainLoop();
+}
+
+static void _audioRateChanged(struct mAVStream* stream, uint32_t samplerate) {
+	UNUSED(stream);
+	_resetSampleRate(samplerate);
 }
 
 static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buffer) {
@@ -891,6 +904,7 @@ int main(int argc, char* argv[]) {
 	stream.postVideoFrame = NULL;
 	stream.postAudioFrame = NULL;
 	stream.postAudioBuffer = _postAudioBuffer;
+	stream.audioRateChanged = _audioRateChanged;
 
 	size_t i;
 	for (i = 0; i < N_BUFFERS; ++i) {
