@@ -54,6 +54,7 @@ static int currentTex;
 static vita2d_texture* tex[2];
 static vita2d_texture* screenshot;
 static Thread audioThread;
+static double fpsRatio = 1;
 static bool interframeBlending = false;
 static bool sgbCrop = false;
 static bool blurry = false;
@@ -266,6 +267,20 @@ static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buf)
 	MutexUnlock(&audioContext.mutex);
 }
 
+static void _audioRateChanged(struct mAVStream* stream, unsigned sampleRate) {
+	UNUSED(stream);
+	if (!sampleRate) {
+		return;
+	}
+	if (!audioContext.resampler.source || !audioContext.resampler.destination) {
+		return;
+	}
+	MutexLock(&audioContext.mutex);
+	mAudioResamplerProcess(&audioContext.resampler);
+	mAudioResamplerSetSource(&audioContext.resampler, audioContext.resampler.source, sampleRate / fpsRatio, true);
+	MutexUnlock(&audioContext.mutex);
+}
+
 uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositiveExt2(0, &pad, 1);
@@ -364,6 +379,7 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	stream.postAudioFrame = NULL;
 	stream.postAudioBuffer = _postAudioBuffer;
 	stream.postVideoFrame = NULL;
+	stream.audioRateChanged = _audioRateChanged;
 	runner->core->setAVStream(runner->core, &stream);
 
 	frameLimiter = true;
@@ -423,10 +439,13 @@ void mPSP2LoadROM(struct mGUIRunner* runner) {
 
 	float rate = 60.0f / 1.001f;
 	sceDisplayGetRefreshRate(&rate);
-	double ratio = mCoreCalculateFramerateRatio(runner->core, rate);
+	fpsRatio = mCoreCalculateFramerateRatio(runner->core, rate);
 	unsigned sampleRate = runner->core->audioSampleRate(runner->core);
+	if (!sampleRate) {
+		sampleRate = 32768;
+	}
 	mAudioBufferClear(&audioContext.buffer);
-	mAudioResamplerSetSource(&audioContext.resampler, runner->core->getAudioBuffer(runner->core), sampleRate / ratio, true);
+	mAudioResamplerSetSource(&audioContext.resampler, runner->core->getAudioBuffer(runner->core), sampleRate / fpsRatio, true);
 	ThreadCreate(&audioThread, _audioThread, &audioContext);
 }
 
