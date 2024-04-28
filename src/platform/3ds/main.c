@@ -90,6 +90,7 @@ static color_t* screenshotBuffer = NULL;
 static struct mAVStream stream;
 static int16_t* audioLeft = 0;
 static size_t audioPos = 0;
+static double fpsRatio;
 static C3D_Tex outputTexture[2];
 static int activeOutputTexture = 0;
 static ndspWaveBuf dspBuffer[DSP_BUFFERS];
@@ -188,8 +189,6 @@ static void _cleanup(void) {
 static void _map3DSKey(struct mInputMap* map, int ctrKey, int key) {
 	mInputBindKey(map, _3DS_INPUT, __builtin_ctz(ctrKey), key);
 }
-
-static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buffer);
 
 static void _drawStart(void) {
 	if (frameStarted) {
@@ -347,8 +346,11 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	}
 	if (hasSound == DSP_SUPPORTED) {
 		unsigned sampleRate = runner->core->audioSampleRate(runner->core);
-		double fauxClock = mCoreCalculateFramerateRatio(runner->core, 16756991. / 280095.);
-		ndspChnSetRate(0, sampleRate * fauxClock);
+		if (!sampleRate) {
+			sampleRate = 32768;
+		}
+		fpsRatio = mCoreCalculateFramerateRatio(runner->core, 16756991. / 280095.);
+		ndspChnSetRate(0, sampleRate * fpsRatio);
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * 2 * sizeof(int16_t));
 	}
 	unsigned mode;
@@ -795,6 +797,14 @@ static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buff
 	}
 }
 
+static void _audioRateChanged(struct mAVStream* stream, unsigned sampleRate) {
+	UNUSED(stream);
+	if (!sampleRate) {
+		sampleRate = 32768;
+	}
+	ndspChnSetRate(0, sampleRate * fpsRatio);
+}
+
 static enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
 	SwkbdState swkbd;
 	swkbdInit(&swkbd, SWKBD_TYPE_NORMAL, 2, keyboard->maxLen);
@@ -830,10 +840,11 @@ int main(int argc, char* argv[]) {
 	rotation.d.readTiltY = _readTiltY;
 	rotation.d.readGyroZ = _readGyroZ;
 
-	stream.videoDimensionsChanged = 0;
-	stream.postVideoFrame = 0;
-	stream.postAudioFrame = 0;
+	stream.videoDimensionsChanged = NULL;
+	stream.postVideoFrame = NULL;
+	stream.postAudioFrame = NULL;
 	stream.postAudioBuffer = _postAudioBuffer;
+	stream.audioRateChanged = _audioRateChanged;
 
 	camera.d.startRequestImage = _startRequestImage;
 	camera.d.stopRequestImage = _stopRequestImage;
