@@ -77,6 +77,7 @@ static enum VideoMode {
 static void _retraceCallback(u32 count);
 
 static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer*);
+static void _audioRateChanged(struct mAVStream* stream, unsigned);
 static void _audioDMA(void);
 static void _setRumble(struct mRumble* rumble, int enable);
 static void _sampleRotation(struct mRotationSource* source);
@@ -147,7 +148,8 @@ static struct AudioBuffer {
 static struct mAudioBuffer audioBuffer;
 static volatile int currentAudioBuffer = 0;
 static volatile int nextAudioBuffer = 0;
-static double audioSampleRate = 60.0 / 1.001;
+static double fps = 60.0 / 1.001;
+static double fpsRatio = 1;
 static struct mAudioResampler resampler;
 
 static struct GUIFont* font;
@@ -162,7 +164,7 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 	wAdjust = 1.f;
 	hAdjust = 1.f;
 	guiScale = GUI_SCALE;
-	audioSampleRate = 60.0 / 1.001;
+	fps = 60.0 / 1.001;
 
 	s32 signalMode = CONF_GetVideo();
 
@@ -210,7 +212,7 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 			break;
 		}
 		wAdjust = 0.5f;
-		audioSampleRate = 90.0 / 1.50436;
+		fps = 90.0 / 1.50436;
 		guiScale = GUI_SCALE_240p;
 		break;
 	}
@@ -348,6 +350,7 @@ int main(int argc, char* argv[]) {
 	stream.postVideoFrame = NULL;
 	stream.postAudioFrame = NULL;
 	stream.postAudioBuffer = _postAudioBuffer;
+	stream.audioRateChanged = _audioRateChanged;
 
 	struct mGUIRunner runner = {
 		.params = {
@@ -715,6 +718,18 @@ static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buf)
 		AUDIO_StartDMA();
 	}
 	_CPU_ISR_Restore(level);
+}
+
+static void _audioRateChanged(struct mAVStream* stream, unsigned sampleRate) {
+	UNUSED(stream);
+	if (!sampleRate) {
+		return;
+	}
+	if (!resampler.source || !resampler.destination) {
+		return;
+	}
+	mAudioResamplerProcess(&resampler);
+	mAudioResamplerSetSource(&resampler, resampler.source, sampleRate / fpsRatio, true);
 }
 
 static void _drawStart(void) {
@@ -1419,8 +1434,12 @@ void _setup(struct mGUIRunner* runner) {
 	memset(audioBuffers, 0, sizeof(audioBuffers));
 	runner->core->setAudioBufferSize(runner->core, SAMPLES);
 
-	double ratio = mCoreCalculateFramerateRatio(runner->core, audioSampleRate);
-	mAudioResamplerSetSource(&resampler, runner->core->getAudioBuffer(runner->core), runner->core->audioSampleRate(runner->core) / ratio, true);
+	fpsRatio = mCoreCalculateFramerateRatio(runner->core, fps);
+	unsigned sampleRate = runner->core->audioSampleRate(runner->core);
+	if (!sampleRate) {
+		sampleRate = 32768;
+	}
+	mAudioResamplerSetSource(&resampler, runner->core->getAudioBuffer(runner->core), sampleRate / fpsRatio, true);
 
 	frameLimiter = true;
 }
