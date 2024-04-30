@@ -57,7 +57,7 @@ private:
 
 	void updateButtonText();
 
-	int m_key = -1;
+	int m_key = Qt::Key_unknown;
 	int m_axis = -1;
 	int m_hat = -1;
 	bool m_button = false;
