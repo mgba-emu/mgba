@@ -23,12 +23,12 @@ class GBA(Core):
     KEY_L = lib.GBA_KEY_L
     KEY_R = lib.GBA_KEY_R
 
-    SIO_NORMAL_8 = lib.SIO_NORMAL_8
-    SIO_NORMAL_32 = lib.SIO_NORMAL_32
-    SIO_MULTI = lib.SIO_MULTI
-    SIO_UART = lib.SIO_UART
-    SIO_JOYBUS = lib.SIO_JOYBUS
-    SIO_GPIO = lib.SIO_GPIO
+    SIO_NORMAL_8 = lib.GBA_SIO_NORMAL_8
+    SIO_NORMAL_32 = lib.GBA_SIO_NORMAL_32
+    SIO_MULTI = lib.GBA_SIO_MULTI
+    SIO_UART = lib.GBA_SIO_UART
+    SIO_JOYBUS = lib.GBA_SIO_JOYBUS
+    SIO_GPIO = lib.GBA_SIO_GPIO
 
     def __init__(self, native):
         super(GBA, self).__init__(native)
@@ -52,7 +52,7 @@ class GBA(Core):
         super(GBA, self)._load()
         self.memory = GBAMemory(self._core, self._native.memory.romSize)
 
-    def attach_sio(self, link, mode=lib.SIO_MULTI):
+    def attach_sio(self, link, mode=lib.GBA_SIO_MULTI):
         self._sio.add(mode)
         lib.GBASIOSetDriver(ffi.addressof(self._native.sio), link._native, mode)
 

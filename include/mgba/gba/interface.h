@@ -21,12 +21,12 @@ enum {
 };
 
 enum GBASIOMode {
-	SIO_NORMAL_8 = 0,
-	SIO_NORMAL_32 = 1,
-	SIO_MULTI = 2,
-	SIO_UART = 3,
-	SIO_GPIO = 8,
-	SIO_JOYBUS = 12
+	GBA_SIO_NORMAL_8 = 0,
+	GBA_SIO_NORMAL_32 = 1,
+	GBA_SIO_MULTI = 2,
+	GBA_SIO_UART = 3,
+	GBA_SIO_GPIO = 8,
+	GBA_SIO_JOYBUS = 12
 };
 
 enum GBASIOJOYCommand {

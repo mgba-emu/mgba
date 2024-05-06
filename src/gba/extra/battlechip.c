@@ -84,7 +84,7 @@ uint16_t GBASIOBattlechipGateWriteRegister(struct GBASIODriver* driver, uint32_t
 
 void _battlechipTransfer(struct GBASIOBattlechipGate* gate) {
 	int32_t cycles;
-	if (gate->d.p->mode == SIO_NORMAL_32) {
+	if (gate->d.p->mode == GBA_SIO_NORMAL_32) {
 		cycles = GBA_ARM7TDMI_FREQUENCY / 0x40000;
 	} else {
 		cycles = GBASIOCyclesPerTransfer[GBASIOMultiplayerGetBaud(gate->d.p->siocnt)][1];
@@ -97,7 +97,7 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 	UNUSED(timing);
 	struct GBASIOBattlechipGate* gate = user;
 
-	if (gate->d.p->mode == SIO_NORMAL_32) {
+	if (gate->d.p->mode == GBA_SIO_NORMAL_32) {
 		gate->d.p->p->memory.io[GBA_REG(SIODATA32_LO)] = 0;
 		gate->d.p->p->memory.io[GBA_REG(SIODATA32_HI)] = 0;
 		gate->d.p->siocnt = GBASIONormalClearStart(gate->d.p->siocnt);
