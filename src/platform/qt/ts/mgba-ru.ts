@@ -5141,7 +5141,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1201"/>
         <source>Rewind speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Скорость перемотки:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1812"/>
@@ -5231,7 +5231,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="702"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation>Язык</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="719"/>
@@ -5322,7 +5322,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1059"/>
         <source>Fast forward speed:</source>
-        <translation>Скорость перемотки:</translation>
+        <translation>Скорость перемотки (ускр.):</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1090"/>
