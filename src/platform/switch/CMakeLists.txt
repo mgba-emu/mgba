@@ -4,7 +4,7 @@ find_program(BUILD_ROMFS build_romfs)
 find_library(GLAPI_LIBRARY glapi REQUIRED)
 find_library(EGL_LIBRARY EGL REQUIRED)
 
-set(OS_DEFINES _GNU_SOURCE IOAPI_NO_64)
+set(OS_DEFINES _GNU_SOURCE IOAPI_NO_64 ENABLE_VFS_FD)
 list(APPEND VFS_SRC ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 list(APPEND GUI_SRC ${CMAKE_CURRENT_SOURCE_DIR}/gui-font.c)
 

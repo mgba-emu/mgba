@@ -96,8 +96,10 @@ struct VFile* VFileOpen(const char* path, int flags) {
 		vf->seek(vf, vf->size(vf), SEEK_SET);
 	}
 	return vf;
-#else
+#elif defined(ENABLE_VFS_FD)
 	return VFileOpenFD(path, flags);
+#else
+#error "Can't build VFS subsystem without a VFile backend"
 #endif
 }
 

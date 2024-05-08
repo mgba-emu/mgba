@@ -66,9 +66,16 @@ struct VDir {
 };
 
 struct VFile* VFileOpen(const char* path, int flags);
+#endif
 
+#ifdef ENABLE_VFS_FD
 struct VFile* VFileOpenFD(const char* path, int flags);
 struct VFile* VFileFromFD(int fd);
+#endif
+
+#ifdef ENABLE_VFS_FILE
+struct VFile* VFileFOpen(const char* path, const char* mode);
+struct VFile* VFileFromFILE(FILE* file);
 #endif
 
 struct VFile* VFileFromMemory(void* mem, size_t size);
@@ -97,11 +104,6 @@ struct VDir* VDeviceList(void);
 bool VDirCreate(const char* path);
 struct VFile* VDirFindFirst(struct VDir* dir, bool (*filter)(struct VFile*));
 struct VFile* VDirFindNextAvailable(struct VDir*, const char* basename, const char* infix, const char* suffix, int mode);
-
-#ifdef ENABLE_VFS_FILE
-struct VFile* VFileFOpen(const char* path, const char* mode);
-struct VFile* VFileFromFILE(FILE* file);
-#endif
 #endif
 
 void separatePath(const char* path, char* dirname, char* basename, char* extension);
