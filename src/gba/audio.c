@@ -43,6 +43,7 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
 	audio->forceDisableChA = false;
 	audio->forceDisableChB = false;
 	audio->masterVolume = GBA_AUDIO_VOLUME_MAX;
+	audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / 0x8000;
 }
 
 void GBAAudioReset(struct GBAAudio* audio) {
@@ -81,7 +82,12 @@ void GBAAudioReset(struct GBAAudio* audio) {
 	audio->chBLeft = false;
 	audio->chBTimer = false;
 	audio->enable = false;
-	audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / 0x8000;
+	if (audio->sampleInterval != GBA_ARM7TDMI_FREQUENCY / 0x8000) {
+		audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / 0x8000;
+		if (audio->p->stream && audio->p->stream->audioRateChanged) {
+			audio->p->stream->audioRateChanged(audio->p->stream, GBA_ARM7TDMI_FREQUENCY / audio->sampleInterval);
+		}
+	}
 	audio->psg.sampleInterval = audio->sampleInterval;
 }
 
