@@ -53,6 +53,7 @@ static retro_set_sensor_state_t sensorStateCallback;
 static void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
 
 static void _postAudioBuffer(struct mAVStream*, struct mAudioBuffer*);
+static void _audioRateChanged(struct mAVStream*, unsigned rate);
 static void _setRumble(struct mRumble* rumble, int enable);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
@@ -498,10 +499,11 @@ void retro_init(void) {
 	logger.log = GBARetroLog;
 	mLogSetDefaultLogger(&logger);
 
-	stream.videoDimensionsChanged = 0;
-	stream.postAudioFrame = 0;
-	stream.postAudioBuffer = _postAudioBuffer;
-	stream.postVideoFrame = 0;
+	stream.videoDimensionsChanged = NULL;
+	stream.postAudioFrame = NULL;
+	stream.postAudioBuffer = NULL;
+	stream.postVideoFrame = NULL;
+	stream.audioRateChanged = _audioRateChanged;
 
 	imageSource.startRequestImage = _startImage;
 	imageSource.stopRequestImage = _stopImage;
@@ -913,13 +915,14 @@ bool retro_load_game(const struct retro_game_info* game) {
 		 * using the regular stream-set _postAudioBuffer()
 		 * callback with a fixed buffer size, which seems
 		 * (historically) to produce adequate results */
-		core->setAVStream(core, &stream);
+		stream.postAudioBuffer = _postAudioBuffer;
 		audioSampleBufferSize = GB_SAMPLES * 2;
 		audioSampleBuffer = malloc(audioSampleBufferSize * sizeof(int16_t));
 		audioSamplesPerFrameAvg = GB_SAMPLES;
 		core->setAudioBufferSize(core, GB_SAMPLES);
 	}
 
+	core->setAVStream(core, &stream);
 	core->setPeripheral(core, mPERIPH_RUMBLE, &rumble);
 	core->setPeripheral(core, mPERIPH_ROTATION, &rotation);
 
@@ -1248,6 +1251,13 @@ static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buff
 		}
 		audioCallback(audioSampleBuffer, (size_t)produced);
 	}
+}
+
+static void _audioRateChanged(struct mAVStream* stream, unsigned rate) {
+	UNUSED(stream);
+	struct retro_system_av_info info;
+	retro_get_system_av_info(&info);
+	environCallback(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &info);
 }
 
 static void _setRumble(struct mRumble* rumble, int enable) {
