@@ -744,7 +744,7 @@ static void _setupMaps(struct mCore* core) {
 #ifdef M_CORE_GB
 	if (core->platform(core) == mPLATFORM_GB) {
 		struct GB* gb = core->board;
-		struct retro_memory_descriptor descs[11];
+		struct retro_memory_descriptor descs[12];
 		struct retro_memory_map mmaps;
 
 		memset(descs, 0, sizeof(descs));
@@ -814,8 +814,16 @@ static void _setupMaps(struct mCore* core) {
 		if (savedataSize) {
 			descs[i].ptr    = savedata;
 			descs[i].start  = GB_BASE_EXTERNAL_RAM;
-			descs[i].len    = savedataSize;
+			descs[i].len    = savedataSize < GB_SIZE_EXTERNAL_RAM ? savedataSize : GB_SIZE_EXTERNAL_RAM;
 			i++;
+
+			if ((savedataSize & ~0xFF) > GB_SIZE_EXTERNAL_RAM) {
+				descs[i].ptr    = savedata;
+				descs[i].offset = GB_SIZE_EXTERNAL_RAM;
+				descs[i].start  = GB_BASE_EXTERNAL_RAM;
+				descs[i].len    = savedataSize - GB_SIZE_EXTERNAL_RAM;
+				i++;
+			}
 		}
 
 		if (gb->model >= GB_MODEL_CGB) {
@@ -825,7 +833,6 @@ static void _setupMaps(struct mCore* core) {
 			descs[i].ptr    = gb->memory.wram + 0x2000;
 			descs[i].start  = 0x10000;
 			descs[i].len    = GB_SIZE_WORKING_RAM - 0x2000;
-			descs[i].select = 0xFFFFA000;
 			i++;
 		}
 
