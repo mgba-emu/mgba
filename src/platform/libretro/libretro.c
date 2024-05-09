@@ -820,7 +820,7 @@ static void _setupMaps(struct mCore* core) {
 			if ((savedataSize & ~0xFF) > GB_SIZE_EXTERNAL_RAM) {
 				descs[i].ptr    = savedata;
 				descs[i].offset = GB_SIZE_EXTERNAL_RAM;
-				descs[i].start  = GB_BASE_EXTERNAL_RAM;
+				descs[i].start  = 0x16000;
 				descs[i].len    = savedataSize - GB_SIZE_EXTERNAL_RAM;
 				i++;
 			}
