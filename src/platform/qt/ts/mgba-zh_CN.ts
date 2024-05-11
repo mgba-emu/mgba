@@ -6,22 +6,22 @@
     <message>
         <location filename="../utils.cpp" line="89"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished">Game Boy Advance ROM (%1)</translation>
+        <translation>Game Boy Advance ROMs (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="106"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished">Game Boy ROM (%1)</translation>
+        <translation>Game Boy ROMs (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="110"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished">所有 ROM (%1)</translation>
+        <translation>所有 ROMs (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="112"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished">%1 视频日志 (*.mvl)</translation>
+        <translation>%1 视频日志 (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -530,12 +530,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="83"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="85"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
 </context>
 <context>
@@ -561,7 +561,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Background</source>
-        <translation type="unfinished">背景</translation>
+        <translation>背景</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
@@ -591,7 +591,7 @@ Download size: %3</source>
         <location filename="../ForwarderView.ui" line="53"/>
         <location filename="../ForwarderView.ui" line="112"/>
         <source>Browse</source>
-        <translation type="unfinished">浏览</translation>
+        <translation>浏览</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="43"/>
@@ -631,12 +631,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="141"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="151"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="174"/>
@@ -716,7 +716,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>图像文件 (*.png *.jpg *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -975,37 +975,37 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="61"/>
         <source>Game Boy (DMG)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy (DMG)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="62"/>
         <source>Game Boy Pocket (MGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Pocket (MGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="63"/>
         <source>Super Game Boy (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="64"/>
         <source>Super Game Boy 2 (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy 2 (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="65"/>
         <source>Game Boy Color (CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Color (CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="66"/>
         <source>Game Boy Advance (AGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance (AGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="67"/>
         <source>Super Game Boy Color (SGB + CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy Color (SGB + CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="80"/>
@@ -1015,27 +1015,27 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
         <source>MBC1</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="82"/>
         <source>MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="83"/>
         <source>MBC3</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="84"/>
         <source>MBC3 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3 + 实时时钟</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="85"/>
         <source>MBC5</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC5</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
@@ -1045,7 +1045,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
         <source>MBC6</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
@@ -1055,17 +1055,17 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
         <source>MMM01</source>
-        <translation type="unfinished"></translation>
+        <translation>MMM01</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>HuC-1</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="91"/>
         <source>HuC-3</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="92"/>
@@ -1080,17 +1080,17 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="94"/>
         <source>Wisdom Tree</source>
-        <translation type="unfinished"></translation>
+        <translation>Wisdom Tree</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="95"/>
         <source>NT (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT (旧 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="96"/>
         <source>NT (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT (旧 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="97"/>
@@ -1105,32 +1105,32 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="99"/>
         <source>BBD</source>
-        <translation type="unfinished"></translation>
+        <translation>BBD</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="100"/>
         <source>Hitek</source>
-        <translation type="unfinished"></translation>
+        <translation>Hitek</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="101"/>
         <source>GGB-81</source>
-        <translation type="unfinished"></translation>
+        <translation>GGB-81</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="102"/>
         <source>Li Cheng</source>
-        <translation type="unfinished"></translation>
+        <translation>Li Cheng</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="103"/>
         <source>Sachen (MMC1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sachen (MMC1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="104"/>
         <source>Sachen (MMC2)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sachen (MMC2)</translation>
     </message>
 </context>
 <context>
@@ -3752,17 +3752,17 @@ Download size: %3</source>
     <message>
         <location filename="../MultiplayerController.cpp" line="327"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>尝试断开与未连接的多人玩家的连接</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="391"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>尝试获取未连接的多人玩家的 ID</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="405"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>尝试获取未连接的多人玩家的存档 ID</translation>
     </message>
 </context>
 <context>
@@ -4310,7 +4310,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="114"/>
         <source>Save file:</source>
-        <translation type="unfinished"></translation>
+        <translation>保存文件:</translation>
     </message>
 </context>
 <context>
@@ -4759,12 +4759,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Select image</source>
-        <translation type="unfinished">选择图片</translation>
+        <translation>选择图片</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="452"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished">图像文件（*.png *.jpg *.jpeg）</translation>
+        <translation>图像文件（*.png *.jpg *.jpeg）</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="850"/>
@@ -5247,7 +5247,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="941"/>
         <source>Custom border:</source>
-        <translation type="unfinished"></translation>
+        <translation>自定义边框:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1059"/>
@@ -5283,7 +5283,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1201"/>
         <source>Rewind speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>倒带速度:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1238"/>
@@ -5879,7 +5879,7 @@ Download size: %3</source>
     <message>
         <location filename="../VideoView.ui" line="329"/>
         <source>WavPack</source>
-        <translation type="unfinished"></translation>
+        <translation>WavPack</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="334"/>
@@ -6099,7 +6099,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1198"/>
         <source>%1 - %2 (%3 fps) - %4</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 - %2 (%3 fps) - %4</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1262"/>
@@ -6401,12 +6401,12 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1445"/>
         <source>Increase fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>加快快进速度</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1452"/>
         <source>Decrease fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>降低快进速度</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1459"/>
@@ -6744,7 +6744,7 @@ Download size: %3</source>
     <message>
         <location filename="../utils.cpp" line="23"/>
         <source>%1 kiB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 千字节</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="27"/>
@@ -6769,17 +6769,17 @@ Download size: %3</source>
     <message>
         <location filename="../utils.cpp" line="146"/>
         <source>Super (L)</source>
-        <translation type="unfinished">Super（L）</translation>
+        <translation>Super (L)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="148"/>
         <source>Super (R)</source>
-        <translation type="unfinished">Super（R）</translation>
+        <translation>Super (R)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="150"/>
         <source>Menu</source>
-        <translation type="unfinished">菜单</translation>
+        <translation>菜单</translation>
     </message>
 </context>
 <context>
