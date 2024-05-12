@@ -1323,7 +1323,7 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 	});
 	// 0xFF40: LCDC
 	regGB.append({
-		{ tr("Background enable/priority"), 1 },
+		{ tr("Background enable/priority"), 0 },
 		{ tr("Enable sprites"), 1 },
 		{ tr("Double-height sprites"), 2 },
 		{ tr("Background tile map"), 3, 1, {
