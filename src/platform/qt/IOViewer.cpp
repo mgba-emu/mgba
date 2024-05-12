@@ -1689,7 +1689,20 @@ void IOViewer::bitFlipped() {
 void IOViewer::writeback() {
 	{
 		CoreController::Interrupter interrupter(m_controller);
-		GBAIOWrite(static_cast<GBA*>(m_controller->thread()->core->board), m_register, m_value);
+		switch (m_controller->platform()) {
+#ifdef M_CORE_GB
+		case mPLATFORM_GB:
+			GBIOWrite(static_cast<GB*>(m_controller->thread()->core->board), m_register, m_value);
+			break;
+#endif
+#ifdef M_CORE_GBA
+		case mPLATFORM_GBA:
+			GBAIOWrite(static_cast<GBA*>(m_controller->thread()->core->board), m_register, m_value);
+			break;
+#endif
+		case mPLATFORM_NONE:
+			return;
+		}
 	}
 	updateRegister();
 }

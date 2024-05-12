@@ -4,6 +4,7 @@ Emulation fixes:
  - GBA GPIO: Fix gyro read-out start (fixes mgba.io/i/3141)
  - GBA SIO: Fix MULTI mode SIOCNT bit 7 writes on secondary GBAs (fixes mgba.io/i/3110)
 Other fixes:
+ - Qt: Fix crash when applying changes to GB I/O registers in I/O view
  - Updater: Fix updating appimage across filesystems
 Misc:
  - Vita: Add imc0 and xmc0 mount point support
