@@ -14,6 +14,8 @@
 
 static uint16_t _gbpRead(struct mKeyCallback*);
 static uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
+static bool _gbpSioHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
+static int _gbpSioConnectedDevices(struct GBASIODriver* driver);
 static void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLate);
 
 static const uint8_t _logoPalette[] = {
@@ -43,11 +45,15 @@ void GBASIOPlayerInit(struct GBASIOPlayer* gbp) {
 	gbp->callback.d.readKeys = _gbpRead;
 	gbp->callback.d.requireOpposingDirections = true;
 	gbp->callback.p = gbp;
-	gbp->d.init = 0;
-	gbp->d.deinit = 0;
-	gbp->d.load = 0;
-	gbp->d.unload = 0;
+	gbp->d.init = NULL;
+	gbp->d.deinit = NULL;
+	gbp->d.load = NULL;
+	gbp->d.unload = NULL;
 	gbp->d.writeRegister = _gbpSioWriteRegister;
+	gbp->d.setMode = NULL;
+	gbp->d.handlesMode = _gbpSioHandlesMode;
+	gbp->d.connectedDevices = _gbpSioConnectedDevices;
+	gbp->d.deviceId = NULL;
 	gbp->event.context = gbp;
 	gbp->event.name = "GBA SIO Game Boy Player";
 	gbp->event.callback = _gbpSioProcessEvents;
@@ -123,6 +129,16 @@ uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uin
 		value &= 0x78FB;
 	}
 	return value;
+}
+
+static bool _gbpSioHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
+	UNUSED(driver);
+	return mode == GBA_SIO_NORMAL_32;
+}
+
+static int _gbpSioConnectedDevices(struct GBASIODriver* driver) {
+	UNUSED(driver);
+	return 1;
 }
 
 void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLate) {

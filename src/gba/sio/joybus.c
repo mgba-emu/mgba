@@ -9,6 +9,8 @@
 #include <mgba/internal/gba/io.h>
 
 static uint16_t GBASIOJOYWriteRegister(struct GBASIODriver* sio, uint32_t address, uint16_t value);
+static bool GBASIOJOYHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
+static int GBASIOJOYConnectedDevices(struct GBASIODriver* driver);
 
 void GBASIOJOYCreate(struct GBASIODriver* sio) {
 	sio->init = NULL;
@@ -16,6 +18,10 @@ void GBASIOJOYCreate(struct GBASIODriver* sio) {
 	sio->load = NULL;
 	sio->unload = NULL;
 	sio->writeRegister = GBASIOJOYWriteRegister;
+	sio->setMode = NULL;
+	sio->handlesMode = GBASIOJOYHandlesMode;
+	sio->connectedDevices = GBASIOJOYConnectedDevices;
+	sio->deviceId = NULL;
 }
 
 uint16_t GBASIOJOYWriteRegister(struct GBASIODriver* sio, uint32_t address, uint16_t value) {
@@ -39,6 +45,16 @@ uint16_t GBASIOJOYWriteRegister(struct GBASIODriver* sio, uint32_t address, uint
 		break;
 	}
 	return value;
+}
+
+static bool GBASIOJOYHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
+	UNUSED(driver);
+	return mode == GBA_SIO_JOYBUS;
+}
+
+static int GBASIOJOYConnectedDevices(struct GBASIODriver* driver) {
+	UNUSED(driver);
+	return 1;
 }
 
 int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data) {

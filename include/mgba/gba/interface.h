@@ -110,8 +110,13 @@ struct GBASIODriver {
 
 	bool (*init)(struct GBASIODriver* driver);
 	void (*deinit)(struct GBASIODriver* driver);
+	void (*reset)(struct GBASIODriver* driver);
 	bool (*load)(struct GBASIODriver* driver);
 	bool (*unload)(struct GBASIODriver* driver);
+	void (*setMode)(struct GBASIODriver* driver, enum GBASIOMode mode);
+	bool (*handlesMode)(struct GBASIODriver* driver, enum GBASIOMode mode);
+	int (*connectedDevices)(struct GBASIODriver* driver);
+	int (*deviceId)(struct GBASIODriver* driver);
 	uint16_t (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 };
 

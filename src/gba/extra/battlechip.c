@@ -35,6 +35,8 @@ enum {
 
 static bool GBASIOBattlechipGateLoad(struct GBASIODriver* driver);
 static uint16_t GBASIOBattlechipGateWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
+static bool GBASIOBattlechipGateHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
+static int GBASIOBattlechipGateConnectedDevices(struct GBASIODriver* driver);
 
 static void _battlechipTransfer(struct GBASIOBattlechipGate* gate);
 static void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cyclesLate);
@@ -45,6 +47,10 @@ void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate* gate) {
 	gate->d.load = GBASIOBattlechipGateLoad;
 	gate->d.unload = NULL;
 	gate->d.writeRegister = GBASIOBattlechipGateWriteRegister;
+	gate->d.setMode = NULL;
+	gate->d.handlesMode = GBASIOBattlechipGateHandlesMode;
+	gate->d.connectedDevices = GBASIOBattlechipGateConnectedDevices;
+	gate->d.deviceId = NULL;
 
 	gate->event.context = gate;
 	gate->event.callback = _battlechipTransferEvent;
@@ -80,6 +86,22 @@ uint16_t GBASIOBattlechipGateWriteRegister(struct GBASIODriver* driver, uint32_t
 		break;
 	}
 	return value;
+}
+
+static bool GBASIOBattlechipGateHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
+	UNUSED(driver);
+	switch (mode) {
+	case GBA_SIO_NORMAL_32:
+	case GBA_SIO_MULTI:
+		return true;
+	default:
+		return false;
+	}
+}
+
+static int GBASIOBattlechipGateConnectedDevices(struct GBASIODriver* driver) {
+	UNUSED(driver);
+	return 1;
 }
 
 void _battlechipTransfer(struct GBASIOBattlechipGate* gate) {

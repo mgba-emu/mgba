@@ -103,6 +103,15 @@ void GBASIOReset(struct GBASIO* sio) {
 	if (sio->activeDriver && sio->activeDriver->unload) {
 		sio->activeDriver->unload(sio->activeDriver);
 	}
+	if (sio->drivers.multiplayer && sio->drivers.multiplayer->reset) {
+		sio->drivers.multiplayer->reset(sio->drivers.multiplayer);
+	}
+	if (sio->drivers.joybus && sio->drivers.joybus->reset) {
+		sio->drivers.joybus->reset(sio->drivers.joybus);
+	}
+	if (sio->drivers.normal && sio->drivers.normal->reset) {
+		sio->drivers.normal->reset(sio->drivers.normal);
+	}
 	sio->rcnt = RCNT_INITIAL;
 	sio->siocnt = 0;
 	sio->mode = -1;

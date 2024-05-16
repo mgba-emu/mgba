@@ -15,6 +15,10 @@ static bool GBASIOLockstepNodeInit(struct GBASIODriver* driver);
 static void GBASIOLockstepNodeDeinit(struct GBASIODriver* driver);
 static bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver);
 static bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver);
+static void GBASIOLockstepNodeSetMode(struct GBASIODriver* driver, enum GBASIOMode mode);
+static bool GBASIOLockstepNodeHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
+static int GBASIOLockstepNodeConnectedDevices(struct GBASIODriver* driver);
+static int GBASIOLockstepNodeDeviceId(struct GBASIODriver* driver);
 static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 static uint16_t GBASIOLockstepNodeNormalWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
 static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* driver, uint32_t cyclesLate);
@@ -38,7 +42,11 @@ void GBASIOLockstepNodeCreate(struct GBASIOLockstepNode* node) {
 	node->d.deinit = GBASIOLockstepNodeDeinit;
 	node->d.load = GBASIOLockstepNodeLoad;
 	node->d.unload = GBASIOLockstepNodeUnload;
-	node->d.writeRegister = 0;
+	node->d.setMode = GBASIOLockstepNodeSetMode;
+	node->d.handlesMode = GBASIOLockstepNodeHandlesMode;
+	node->d.connectedDevices = GBASIOLockstepNodeConnectedDevices;
+	node->d.deviceId = GBASIOLockstepNodeDeviceId;
+	node->d.writeRegister = NULL;
 }
 
 bool GBASIOLockstepAttachNode(struct GBASIOLockstep* lockstep, struct GBASIOLockstepNode* node) {
@@ -184,6 +192,48 @@ bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver) {
 	mLockstepUnlock(&node->p->d);
 
 	return true;
+}
+
+static void GBASIOLockstepNodeSetMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
+	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
+	mLockstepLock(&node->p->d);
+	node->mode = mode;
+	mLockstepUnlock(&node->p->d);
+}
+
+static bool GBASIOLockstepNodeHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
+	UNUSED(driver);
+	switch (mode) {
+	case GBA_SIO_NORMAL_8:
+	case GBA_SIO_NORMAL_32:
+	case GBA_SIO_MULTI:
+		return true;
+	default:
+		return false;
+	}
+}
+
+static int GBASIOLockstepNodeConnectedDevices(struct GBASIODriver* driver) {
+	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
+	int attached = 0;
+
+	switch (node->mode) {
+	case GBA_SIO_NORMAL_8:
+	case GBA_SIO_NORMAL_32:
+		ATOMIC_LOAD(attached, node->p->attachedNormal);
+		break;
+	case GBA_SIO_MULTI:
+		ATOMIC_LOAD(attached, node->p->attachedMulti);
+		break;
+	default:
+		break;
+	}
+	return attached - 1;
+}
+
+static int GBASIOLockstepNodeDeviceId(struct GBASIODriver* driver) {
+	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
+	return node->id;
 }
 
 static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
