@@ -215,7 +215,7 @@ static bool GBASIOLockstepNodeHandlesMode(struct GBASIODriver* driver, enum GBAS
 
 static int GBASIOLockstepNodeConnectedDevices(struct GBASIODriver* driver) {
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
-	int attached = 0;
+	int attached = 1;
 
 	switch (node->mode) {
 	case GBA_SIO_NORMAL_8:

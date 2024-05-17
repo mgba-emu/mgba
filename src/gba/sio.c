@@ -186,7 +186,32 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 		sio->siocnt = value & 0x3000;
 		_switchMode(sio);
 	}
-	if (sio->activeDriver && sio->activeDriver->writeRegister) {
+	int id = 0;
+	int connected = 0;
+	bool handled = false;
+	if (sio->activeDriver) {
+		handled = sio->activeDriver->handlesMode(sio->activeDriver, sio->mode);
+		if (handled) {
+			if (sio->activeDriver->deviceId) {
+				id = sio->activeDriver->deviceId(sio->activeDriver);
+			}
+			connected = sio->activeDriver->connectedDevices(sio->activeDriver);
+			handled = !!sio->activeDriver->writeRegister;
+		}
+	}
+
+	switch (sio->mode) {
+	case GBA_SIO_MULTI:
+		value &= 0xFF83;
+		value = GBASIOMultiplayerSetSlave(value, id || !connected);
+		value = GBASIOMultiplayerSetId(value, id);
+		value |= sio->siocnt & 0x00FC;
+		break;
+	default:
+		// TODO
+		break;
+	}
+	if (handled) {
 		value = sio->activeDriver->writeRegister(sio->activeDriver, GBA_REG_SIOCNT, value);
 	} else {
 		// Dummy drivers
@@ -203,8 +228,7 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 			}
 			break;
 		case GBA_SIO_MULTI:
-			value &= 0xFF83;
-			value |= 0xC;
+			value = GBASIOMultiplayerFillReady(value);
 			break;
 		default:
 			// TODO
@@ -215,7 +239,12 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 }
 
 uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value) {
-	if (sio->activeDriver && sio->activeDriver->writeRegister) {
+	bool handled = false;
+	if (sio->activeDriver) {
+		handled = sio->activeDriver->writeRegister && sio->activeDriver->handlesMode(sio->activeDriver, sio->mode);
+	}
+
+	if (handled) {
 		return sio->activeDriver->writeRegister(sio->activeDriver, address, value);
 	}
 	// Dummy drivers
@@ -223,9 +252,22 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 	case GBA_SIO_JOYBUS:
 		switch (address) {
 		case GBA_REG_JOYCNT:
+			mLOG(GBA_SIO, DEBUG, "JOY write: CNT <- %04X", value);
 			return (value & 0x0040) | (sio->p->memory.io[GBA_REG(JOYCNT)] & ~(value & 0x7) & ~0x0040);
 		case GBA_REG_JOYSTAT:
+			mLOG(GBA_SIO, DEBUG, "JOY write: STAT <- %04X", value);
 			return (value & 0x0030) | (sio->p->memory.io[GBA_REG(JOYSTAT)] & ~0x30);
+		case GBA_REG_JOY_TRANS_LO:
+			mLOG(GBA_SIO, DEBUG, "JOY write: TRANS_LO <- %04X", value);
+			break;
+		case GBA_REG_JOY_TRANS_HI:
+			mLOG(GBA_SIO, DEBUG, "JOY write: TRANS_HI <- %04X", value);
+			break;
+		default:
+			mLOG(GBA_SIO, DEBUG, "JOY write: Unknown reg %03X <- %04X", address, value);
+			break;
+		case GBA_REG_RCNT:
+			break;
 		}
 		break;
 	default:
@@ -233,4 +275,54 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 		break;
 	}
 	return value;
+}
+
+int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data) {
+	switch (command) {
+	case JOY_RESET:
+		sio->p->p->memory.io[GBA_REG(JOYCNT)] |= JOYCNT_RESET;
+		if (sio->p->p->memory.io[GBA_REG(JOYCNT)] & 0x40) {
+			GBARaiseIRQ(sio->p->p, GBA_IRQ_SIO, 0);
+		}
+		// Fall through
+	case JOY_POLL:
+		data[0] = 0x00;
+		data[1] = 0x04;
+		data[2] = sio->p->p->memory.io[GBA_REG(JOYSTAT)];
+
+		mLOG(GBA_SIO, DEBUG, "JOY %s: %02X (%02X)", command == JOY_POLL ? "poll" : "reset", data[2], sio->p->p->memory.io[GBA_REG(JOYCNT)]);
+		return 3;
+	case JOY_RECV:
+		sio->p->p->memory.io[GBA_REG(JOYCNT)] |= JOYCNT_RECV;
+		sio->p->p->memory.io[GBA_REG(JOYSTAT)] |= JOYSTAT_RECV;
+
+		sio->p->p->memory.io[GBA_REG(JOY_RECV_LO)] = data[0] | (data[1] << 8);
+		sio->p->p->memory.io[GBA_REG(JOY_RECV_HI)] = data[2] | (data[3] << 8);
+
+		data[0] = sio->p->p->memory.io[GBA_REG(JOYSTAT)];
+
+		mLOG(GBA_SIO, DEBUG, "JOY recv: %02X (%02X)", data[0], sio->p->p->memory.io[GBA_REG(JOYCNT)]);
+
+		if (sio->p->p->memory.io[GBA_REG(JOYCNT)] & 0x40) {
+			GBARaiseIRQ(sio->p->p, GBA_IRQ_SIO, 0);
+		}
+		return 1;
+	case JOY_TRANS:
+		data[0] = sio->p->p->memory.io[GBA_REG(JOY_TRANS_LO)];
+		data[1] = sio->p->p->memory.io[GBA_REG(JOY_TRANS_LO)] >> 8;
+		data[2] = sio->p->p->memory.io[GBA_REG(JOY_TRANS_HI)];
+		data[3] = sio->p->p->memory.io[GBA_REG(JOY_TRANS_HI)] >> 8;
+		data[4] = sio->p->p->memory.io[GBA_REG(JOYSTAT)];
+
+		sio->p->p->memory.io[GBA_REG(JOYCNT)] |= JOYCNT_TRANS;
+		sio->p->p->memory.io[GBA_REG(JOYSTAT)] &= ~JOYSTAT_TRANS;
+
+		mLOG(GBA_SIO, DEBUG, "JOY trans: %02X%02X%02X%02X:%02X (%02X)", data[0], data[1], data[2], data[3], data[4], sio->p->p->memory.io[GBA_REG(JOYCNT)]);
+
+		if (sio->p->p->memory.io[GBA_REG(JOYCNT)] & 0x40) {
+			GBARaiseIRQ(sio->p->p, GBA_IRQ_SIO, 0);
+		}
+		return 5;
+	}
+	return 0;
 }

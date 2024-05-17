@@ -25,16 +25,22 @@ enum {
 static bool GBASIODolphinInit(struct GBASIODriver* driver);
 static bool GBASIODolphinLoad(struct GBASIODriver* driver);
 static bool GBASIODolphinUnload(struct GBASIODriver* driver);
+static bool GBASIODolphinHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
+static int GBASIODolphinConnectedDevices(struct GBASIODriver* driver);
 static void GBASIODolphinProcessEvents(struct mTiming* timing, void* context, uint32_t cyclesLate);
 
 static int32_t _processCommand(struct GBASIODolphin* dol, uint32_t cyclesLate);
 static void _flush(struct GBASIODolphin* dol);
 
 void GBASIODolphinCreate(struct GBASIODolphin* dol) {
-	GBASIOJOYCreate(&dol->d);
 	dol->d.init = GBASIODolphinInit;
 	dol->d.load = GBASIODolphinLoad;
 	dol->d.unload = GBASIODolphinUnload;
+	dol->d.writeRegister = NULL;
+	dol->d.setMode = NULL;
+	dol->d.handlesMode = GBASIODolphinHandlesMode;
+	dol->d.connectedDevices = GBASIODolphinConnectedDevices;
+	dol->d.deviceId = NULL;
 	dol->event.context = dol;
 	dol->event.name = "GB SIO Lockstep";
 	dol->event.callback = GBASIODolphinProcessEvents;
@@ -114,6 +120,16 @@ static bool GBASIODolphinUnload(struct GBASIODriver* driver) {
 	struct GBASIODolphin* dol = (struct GBASIODolphin*) driver;
 	dol->active = false;
 	return true;
+}
+
+static bool GBASIODolphinHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
+	UNUSED(driver);
+	return mode == GBA_SIO_JOYBUS;
+}
+
+static int GBASIODolphinConnectedDevices(struct GBASIODriver* driver) {
+	UNUSED(driver);
+	return 1;
 }
 
 void GBASIODolphinProcessEvents(struct mTiming* timing, void* context, uint32_t cyclesLate) {
