@@ -69,6 +69,23 @@ static void _switchMode(struct GBASIO* sio) {
 		if (sio->activeDriver && sio->activeDriver->load) {
 			sio->activeDriver->load(sio->activeDriver);
 		}
+
+		int id = 0;
+		switch (newMode) {
+		case GBA_SIO_MULTI:
+			if (sio->activeDriver && sio->activeDriver->deviceId) {
+				id = sio->activeDriver->deviceId(sio->activeDriver);
+			}
+			if (id) {
+				sio->rcnt |= 4;
+			} else {
+				sio->rcnt &= ~4;
+			}
+			break;
+		default:
+			// TODO
+			break;
+		}
 	}
 }
 
@@ -239,24 +256,17 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 }
 
 uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value) {
-	bool handled = false;
-	if (sio->activeDriver) {
-		handled = sio->activeDriver->writeRegister && sio->activeDriver->handlesMode(sio->activeDriver, sio->mode);
-	}
-
-	if (handled) {
-		return sio->activeDriver->writeRegister(sio->activeDriver, address, value);
-	}
-	// Dummy drivers
 	switch (sio->mode) {
 	case GBA_SIO_JOYBUS:
 		switch (address) {
 		case GBA_REG_JOYCNT:
 			mLOG(GBA_SIO, DEBUG, "JOY write: CNT <- %04X", value);
-			return (value & 0x0040) | (sio->p->memory.io[GBA_REG(JOYCNT)] & ~(value & 0x7) & ~0x0040);
+			value = (value & 0x0040) | (sio->p->memory.io[GBA_REG(JOYCNT)] & ~(value & 0x7) & ~0x0040);
+			break;
 		case GBA_REG_JOYSTAT:
 			mLOG(GBA_SIO, DEBUG, "JOY write: STAT <- %04X", value);
-			return (value & 0x0030) | (sio->p->memory.io[GBA_REG(JOYSTAT)] & ~0x30);
+			value = (value & 0x0030) | (sio->p->memory.io[GBA_REG(JOYSTAT)] & ~0x30);
+			break;
 		case GBA_REG_JOY_TRANS_LO:
 			mLOG(GBA_SIO, DEBUG, "JOY write: TRANS_LO <- %04X", value);
 			break;
@@ -270,9 +280,40 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 			break;
 		}
 		break;
+	case GBA_SIO_NORMAL_8:
+		switch (address) {
+		case GBA_REG_SIODATA8:
+			mLOG(GBA_SIO, DEBUG, "NORMAL8 write: SIODATA8 <- %02X", value);
+			break;
+		default:
+			mLOG(GBA_SIO, DEBUG, "NORMAL8 write: Unknown reg %03X <- %04X", address, value);
+			break;
+		case GBA_REG_RCNT:
+			break;
+		}
+		break;
+	case GBA_SIO_NORMAL_32:
+		switch (address) {
+		case GBA_REG_SIODATA32_LO:
+			mLOG(GBA_SIO, DEBUG, "NORMAL32 write: SIODATA32_LO <- %04X", value);
+			break;
+		case GBA_REG_SIODATA32_HI:
+			mLOG(GBA_SIO, DEBUG, "NORMAL32 write: SIODATA32_HI <- %04X", value);
+			break;
+		default:
+			mLOG(GBA_SIO, DEBUG, "NORMAL32 write: Unknown reg %03X <- %04X", address, value);
+			break;
+		case GBA_REG_RCNT:
+			break;
+		}
+		break;
 	default:
 		// TODO
 		break;
+	}
+
+	if (sio->activeDriver && sio->activeDriver->writeRegister && sio->activeDriver->handlesMode(sio->activeDriver, sio->mode)) {
+		sio->activeDriver->writeRegister(sio->activeDriver, address, value);
 	}
 	return value;
 }
