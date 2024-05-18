@@ -318,6 +318,23 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 	return value;
 }
 
+void GBASIOMultiplayerFinishTransfer(struct GBASIO* sio, uint16_t data[4], uint32_t cyclesLate) {
+	int id = 0;
+	if (sio->activeDriver && sio->activeDriver->deviceId) {
+		id = sio->activeDriver->deviceId(sio->activeDriver);
+	}
+	sio->p->memory.io[GBA_REG(SIOMULTI0)] = data[0];
+	sio->p->memory.io[GBA_REG(SIOMULTI1)] = data[1];
+	sio->p->memory.io[GBA_REG(SIOMULTI2)] = data[2];
+	sio->p->memory.io[GBA_REG(SIOMULTI3)] = data[3];
+	sio->rcnt |= 1;
+	sio->siocnt = GBASIOMultiplayerClearBusy(sio->siocnt);
+	sio->siocnt = GBASIOMultiplayerSetId(sio->siocnt, id);
+	if (GBASIOMultiplayerIsIrq(sio->siocnt)) {
+		GBARaiseIRQ(sio->p, GBA_IRQ_SIO, cyclesLate);
+	}
+}
+
 int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data) {
 	switch (command) {
 	case JOY_RESET:

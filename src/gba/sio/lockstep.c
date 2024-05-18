@@ -280,16 +280,7 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 	struct GBASIO* sio = node->d.p;
 	switch (node->mode) {
 	case GBA_SIO_MULTI:
-		sio->p->memory.io[GBA_REG(SIOMULTI0)] = node->p->multiRecv[0];
-		sio->p->memory.io[GBA_REG(SIOMULTI1)] = node->p->multiRecv[1];
-		sio->p->memory.io[GBA_REG(SIOMULTI2)] = node->p->multiRecv[2];
-		sio->p->memory.io[GBA_REG(SIOMULTI3)] = node->p->multiRecv[3];
-		sio->rcnt |= 1;
-		sio->siocnt = GBASIOMultiplayerClearBusy(sio->siocnt);
-		sio->siocnt = GBASIOMultiplayerSetId(sio->siocnt, node->id);
-		if (GBASIOMultiplayerIsIrq(sio->siocnt)) {
-			GBARaiseIRQ(sio->p, GBA_IRQ_SIO, 0);
-		}
+		GBASIOMultiplayerFinishTransfer(sio, node->p->multiRecv, 0);
 		break;
 	case GBA_SIO_NORMAL_8:
 		// TODO

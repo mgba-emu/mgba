@@ -131,11 +131,6 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 
 	uint16_t cmd = gate->d.p->p->memory.io[GBA_REG(SIOMLT_SEND)];
 	uint16_t reply = 0xFFFF;
-	gate->d.p->p->memory.io[GBA_REG(SIOMULTI0)] = cmd;
-	gate->d.p->p->memory.io[GBA_REG(SIOMULTI2)] = 0xFFFF;
-	gate->d.p->p->memory.io[GBA_REG(SIOMULTI3)] = 0xFFFF;
-	gate->d.p->siocnt = GBASIOMultiplayerClearBusy(gate->d.p->siocnt);
-	gate->d.p->siocnt = GBASIOMultiplayerSetId(gate->d.p->siocnt, 0);
 
 	mLOG(GBA_BATTLECHIP, DEBUG, "Game: %04X (%i)", cmd, gate->state);
 
@@ -168,7 +163,7 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		case 0xA3D0:
 		// EXE 4
 		case 0xA6C0:
-		mLOG(GBA_BATTLECHIP, DEBUG, "Resync detected");
+			mLOG(GBA_BATTLECHIP, DEBUG, "Resync detected");
 			gate->state = BATTLECHIP_STATE_SYNC;
 			break;
 		}
@@ -213,9 +208,8 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 	mLOG(GBA_BATTLECHIP, DEBUG, "Gate: %04X (%i)", reply, gate->state);
 	++gate->state;
 
-	gate->d.p->p->memory.io[GBA_REG(SIOMULTI1)] = reply;
-
-	if (GBASIOMultiplayerIsIrq(gate->d.p->siocnt)) {
-		GBARaiseIRQ(gate->d.p->p, GBA_IRQ_SIO, cyclesLate);
-	}
+	uint16_t data[4] = {
+		cmd, reply, 0xFFFF, 0xFFFF
+	};
+	GBASIOMultiplayerFinishTransfer(gate->d.p, data, cyclesLate);
 }
