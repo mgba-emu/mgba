@@ -11,7 +11,7 @@
 
 mLOG_DEFINE_CATEGORY(GBA_SIO, "GBA Serial I/O", "gba.sio");
 
-const int GBASIOCyclesPerTransfer[4][MAX_GBAS] = {
+static const int GBASIOCyclesPerTransfer[4][MAX_GBAS] = {
 	{ 31976, 63427, 94884, 125829 },
 	{ 8378, 16241, 24104, 31457 },
 	{ 5750, 10998, 16241, 20972 },
@@ -316,6 +316,31 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 		sio->activeDriver->writeRegister(sio->activeDriver, address, value);
 	}
 	return value;
+}
+
+int32_t GBASIOTransferCycles(struct GBASIO* sio) {
+	int connected = 0;
+	if (sio->activeDriver) {
+		connected = sio->activeDriver->connectedDevices(sio->activeDriver);
+	}
+
+	if (connected < 0 || connected >= MAX_GBAS) {
+		mLOG(GBA_SIO, ERROR, "SIO driver returned invalid device count %i", connected);
+		return 0;
+	}
+
+	switch (sio->mode) {
+	case GBA_SIO_MULTI:
+		return GBASIOCyclesPerTransfer[GBASIOMultiplayerGetBaud(sio->siocnt)][connected];
+	case GBA_SIO_NORMAL_8:
+		return 8 * GBA_ARM7TDMI_FREQUENCY / ((GBASIONormalIsInternalSc(sio->siocnt) ? 2048 : 256) * 1024);
+	case GBA_SIO_NORMAL_32:
+		return 32 * GBA_ARM7TDMI_FREQUENCY / ((GBASIONormalIsInternalSc(sio->siocnt) ? 2048 : 256) * 1024);
+	default:
+		mLOG(GBA_SIO, STUB, "No cycle count implemented for mode %s", _modeName(sio->mode));
+		break;
+	}
+	return 0;
 }
 
 void GBASIOMultiplayerFinishTransfer(struct GBASIO* sio, uint16_t data[4], uint32_t cyclesLate) {

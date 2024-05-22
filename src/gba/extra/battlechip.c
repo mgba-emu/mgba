@@ -105,12 +105,7 @@ static int GBASIOBattlechipGateConnectedDevices(struct GBASIODriver* driver) {
 }
 
 void _battlechipTransfer(struct GBASIOBattlechipGate* gate) {
-	int32_t cycles;
-	if (gate->d.p->mode == GBA_SIO_NORMAL_32) {
-		cycles = GBA_ARM7TDMI_FREQUENCY / 0x40000;
-	} else {
-		cycles = GBASIOCyclesPerTransfer[GBASIOMultiplayerGetBaud(gate->d.p->siocnt)][1];
-	}
+	int32_t cycles = GBASIOTransferCycles(gate->d.p);
 	mTimingDeschedule(&gate->d.p->p->timing, &gate->event);
 	mTimingSchedule(&gate->d.p->p->timing, &gate->event, cycles);
 }

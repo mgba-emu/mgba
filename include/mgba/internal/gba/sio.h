@@ -16,8 +16,6 @@ CXX_GUARD_START
 
 #define MAX_GBAS 4
 
-extern const int GBASIOCyclesPerTransfer[4][MAX_GBAS];
-
 mLOG_DECLARE_CATEGORY(GBA_SIO);
 
 enum {
@@ -84,6 +82,8 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value);
 uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value);
+
+int32_t GBASIOTransferCycles(struct GBASIO* sio);
 
 void GBASIOMultiplayerFinishTransfer(struct GBASIO* sio, uint16_t data[4], uint32_t cyclesLate);
 
