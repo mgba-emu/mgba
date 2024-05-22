@@ -13,7 +13,7 @@
 #include <mgba-util/memory.h>
 
 static uint16_t _gbpRead(struct mKeyCallback*);
-static uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
+static uint16_t _gbpSioWriteSIOCNT(struct GBASIODriver* driver, uint16_t value);
 static bool _gbpSioHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
 static int _gbpSioConnectedDevices(struct GBASIODriver* driver);
 static void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLate);
@@ -49,7 +49,7 @@ void GBASIOPlayerInit(struct GBASIOPlayer* gbp) {
 	gbp->d.deinit = NULL;
 	gbp->d.load = NULL;
 	gbp->d.unload = NULL;
-	gbp->d.writeRegister = _gbpSioWriteRegister;
+	gbp->d.writeSIOCNT = _gbpSioWriteSIOCNT;
 	gbp->d.setMode = NULL;
 	gbp->d.handlesMode = _gbpSioHandlesMode;
 	gbp->d.connectedDevices = _gbpSioConnectedDevices;
@@ -106,28 +106,27 @@ uint16_t _gbpRead(struct mKeyCallback* callback) {
 	return 0;
 }
 
-uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
+uint16_t _gbpSioWriteSIOCNT(struct GBASIODriver* driver, uint16_t value) {
 	struct GBASIOPlayer* gbp = (struct GBASIOPlayer*) driver;
-	if (address == GBA_REG_SIOCNT) {
-		if (value & 0x0080) {
-			uint32_t rx = gbp->p->memory.io[GBA_REG(SIODATA32_LO)] | (gbp->p->memory.io[GBA_REG(SIODATA32_HI)] << 16);
-			if (gbp->txPosition < 12 && gbp->txPosition > 0) {
-				// TODO: Check expected
-			} else if (gbp->txPosition >= 12) {
-				// 0x00 = Stop
-				// 0x11 = Hard Stop
-				// 0x22 = Start
-				if (gbp->p->rumble) {
-					int32_t currentTime = mTimingCurrentTime(&gbp->p->timing);
-					gbp->p->rumble->setRumble(gbp->p->rumble, (rx & 0x33) == 0x22, currentTime - gbp->p->lastRumble);
-					gbp->p->lastRumble = currentTime;
-				}
+	if (value & 0x0080) {
+		uint32_t rx = gbp->p->memory.io[GBA_REG(SIODATA32_LO)] | (gbp->p->memory.io[GBA_REG(SIODATA32_HI)] << 16);
+		if (gbp->txPosition < 12 && gbp->txPosition > 0) {
+			// TODO: Check expected
+		} else if (gbp->txPosition >= 12) {
+			uint32_t mask = 0x33;
+			// 0x00 = Stop
+			// 0x11 = Hard Stop
+			// 0x22 = Start
+			if (gbp->p->rumble) {
+				int32_t currentTime = mTimingCurrentTime(&gbp->p->timing);
+				gbp->p->rumble->setRumble(gbp->p->rumble, (rx & 0x33) == 0x22, currentTime - gbp->p->lastRumble);
+				gbp->p->lastRumble = currentTime;
 			}
-			mTimingDeschedule(&gbp->p->timing, &gbp->event);
-			mTimingSchedule(&gbp->p->timing, &gbp->event, 2048);
 		}
-		value &= 0x78FB;
+		mTimingDeschedule(&gbp->p->timing, &gbp->event);
+		mTimingSchedule(&gbp->p->timing, &gbp->event, 2048);
 	}
+	value &= 0x78FB;
 	return value;
 }
 

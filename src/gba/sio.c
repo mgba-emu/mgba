@@ -193,9 +193,6 @@ void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
 	sio->rcnt &= 0xF;
 	sio->rcnt |= value & ~0xF;
 	_switchMode(sio);
-	if (sio->activeDriver && sio->activeDriver->writeRegister) {
-		sio->activeDriver->writeRegister(sio->activeDriver, GBA_REG_RCNT, value);
-	}
 }
 
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
@@ -213,7 +210,7 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 				id = sio->activeDriver->deviceId(sio->activeDriver);
 			}
 			connected = sio->activeDriver->connectedDevices(sio->activeDriver);
-			handled = !!sio->activeDriver->writeRegister;
+			handled = !!sio->activeDriver->writeSIOCNT;
 		}
 	}
 
@@ -229,7 +226,7 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 		break;
 	}
 	if (handled) {
-		value = sio->activeDriver->writeRegister(sio->activeDriver, GBA_REG_SIOCNT, value);
+		value = sio->activeDriver->writeSIOCNT(sio->activeDriver, value);
 	} else {
 		// Dummy drivers
 		switch (sio->mode) {
@@ -327,10 +324,6 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 	default:
 		// TODO
 		break;
-	}
-
-	if (sio->activeDriver && sio->activeDriver->writeRegister && sio->activeDriver->handlesMode(sio->activeDriver, sio->mode)) {
-		sio->activeDriver->writeRegister(sio->activeDriver, address, value);
 	}
 	return value;
 }

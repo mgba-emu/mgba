@@ -36,7 +36,7 @@ void GBASIODolphinCreate(struct GBASIODolphin* dol) {
 	dol->d.init = GBASIODolphinInit;
 	dol->d.load = GBASIODolphinLoad;
 	dol->d.unload = GBASIODolphinUnload;
-	dol->d.writeRegister = NULL;
+	dol->d.writeSIOCNT = NULL;
 	dol->d.setMode = NULL;
 	dol->d.handlesMode = GBASIODolphinHandlesMode;
 	dol->d.connectedDevices = GBASIODolphinConnectedDevices;
