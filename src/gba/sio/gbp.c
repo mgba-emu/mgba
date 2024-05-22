@@ -143,7 +143,6 @@ static int _gbpSioConnectedDevices(struct GBASIODriver* driver) {
 
 void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	UNUSED(timing);
-	UNUSED(cyclesLate);
 	struct GBASIOPlayer* gbp = user;
 	uint32_t tx = 0;
 	int txPosition = gbp->txPosition;
@@ -155,11 +154,5 @@ void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLat
 	}
 	tx = _gbpTxData[txPosition];
 	++gbp->txPosition;
-	gbp->p->memory.io[GBA_REG(SIODATA32_LO)] = tx;
-	gbp->p->memory.io[GBA_REG(SIODATA32_HI)] = tx >> 16;
-	if (GBASIONormalIsIrq(gbp->d.p->siocnt)) {
-		GBARaiseIRQ(gbp->p, GBA_IRQ_SIO, cyclesLate);
-	}
-	gbp->d.p->siocnt = GBASIONormalClearStart(gbp->d.p->siocnt);
-	gbp->p->memory.io[GBA_REG(SIOCNT)] = gbp->d.p->siocnt & ~0x0080;
+	GBASIONormal32FinishTransfer(gbp->d.p, tx, cyclesLate);
 }

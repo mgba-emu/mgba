@@ -283,31 +283,19 @@ static void _finishTransfer(struct GBASIOLockstepNode* node) {
 		GBASIOMultiplayerFinishTransfer(sio, node->p->multiRecv, 0);
 		break;
 	case GBA_SIO_NORMAL_8:
-		// TODO
-		sio->siocnt = GBASIONormalClearStart(sio->siocnt);
 		if (node->id) {
 			sio->siocnt = GBASIONormalSetSi(sio->siocnt, GBASIONormalGetIdleSo(node->p->players[node->id - 1]->d.p->siocnt));
-			node->d.p->p->memory.io[GBA_REG(SIODATA8)] = node->p->normalRecv[node->id - 1] & 0xFF;
+			GBASIONormal8FinishTransfer(sio,  node->p->normalRecv[node->id - 1], 0);
 		} else {
-			node->d.p->p->memory.io[GBA_REG(SIODATA8)] = 0xFFFF;
-		}
-		if (GBASIONormalIsIrq(sio->siocnt)) {
-			GBARaiseIRQ(sio->p, GBA_IRQ_SIO, 0);
+			GBASIONormal8FinishTransfer(sio, 0xFF, 0);
 		}
 		break;
 	case GBA_SIO_NORMAL_32:
-		// TODO
-		sio->siocnt = GBASIONormalClearStart(sio->siocnt);
 		if (node->id) {
 			sio->siocnt = GBASIONormalSetSi(sio->siocnt, GBASIONormalGetIdleSo(node->p->players[node->id - 1]->d.p->siocnt));
-			node->d.p->p->memory.io[GBA_REG(SIODATA32_LO)] = node->p->normalRecv[node->id - 1];
-			node->d.p->p->memory.io[GBA_REG(SIODATA32_HI)] = node->p->normalRecv[node->id - 1] >> 16;
+			GBASIONormal32FinishTransfer(sio,  node->p->normalRecv[node->id - 1], 0);
 		} else {
-			node->d.p->p->memory.io[GBA_REG(SIODATA32_LO)] = 0xFFFF;
-			node->d.p->p->memory.io[GBA_REG(SIODATA32_HI)] = 0xFFFF;
-		}
-		if (GBASIONormalIsIrq(sio->siocnt)) {
-			GBARaiseIRQ(sio->p, GBA_IRQ_SIO, 0);
+			GBASIONormal32FinishTransfer(sio, 0xFFFFFFFF, 0);
 		}
 		break;
 	default:

@@ -115,12 +115,7 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 	struct GBASIOBattlechipGate* gate = user;
 
 	if (gate->d.p->mode == GBA_SIO_NORMAL_32) {
-		gate->d.p->p->memory.io[GBA_REG(SIODATA32_LO)] = 0;
-		gate->d.p->p->memory.io[GBA_REG(SIODATA32_HI)] = 0;
-		gate->d.p->siocnt = GBASIONormalClearStart(gate->d.p->siocnt);
-		if (GBASIONormalIsIrq(gate->d.p->siocnt)) {
-			GBARaiseIRQ(gate->d.p->p, GBA_IRQ_SIO, cyclesLate);
-		}
+		GBASIONormal32FinishTransfer(gate->d.p, 0, cyclesLate);
 		return;
 	}
 

@@ -360,6 +360,23 @@ void GBASIOMultiplayerFinishTransfer(struct GBASIO* sio, uint16_t data[4], uint3
 	}
 }
 
+void GBASIONormal8FinishTransfer(struct GBASIO* sio, uint8_t data, uint32_t cyclesLate) {
+	sio->siocnt = GBASIONormalClearStart(sio->siocnt);
+	sio->p->memory.io[GBA_REG(SIODATA8)] = data;
+	if (GBASIONormalIsIrq(sio->siocnt)) {
+		GBARaiseIRQ(sio->p, GBA_IRQ_SIO, cyclesLate);
+	}
+}
+
+void GBASIONormal32FinishTransfer(struct GBASIO* sio, uint32_t data, uint32_t cyclesLate) {
+	sio->siocnt = GBASIONormalClearStart(sio->siocnt);
+	sio->p->memory.io[GBA_REG(SIODATA32_LO)] = data;
+	sio->p->memory.io[GBA_REG(SIODATA32_HI)] = data >> 16;
+	if (GBASIONormalIsIrq(sio->siocnt)) {
+		GBARaiseIRQ(sio->p, GBA_IRQ_SIO, cyclesLate);
+	}
+}
+
 int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data) {
 	switch (command) {
 	case JOY_RESET:

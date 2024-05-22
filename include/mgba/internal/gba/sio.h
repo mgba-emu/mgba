@@ -86,6 +86,8 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 int32_t GBASIOTransferCycles(struct GBASIO* sio);
 
 void GBASIOMultiplayerFinishTransfer(struct GBASIO* sio, uint16_t data[4], uint32_t cyclesLate);
+void GBASIONormal8FinishTransfer(struct GBASIO* sio, uint8_t data, uint32_t cyclesLate);
+void GBASIONormal32FinishTransfer(struct GBASIO* sio, uint32_t data, uint32_t cyclesLate);
 
 int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data);
 
