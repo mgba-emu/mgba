@@ -40,6 +40,7 @@ endif()
 
 if (NOT SDL2_FOUND AND NOT SDL_FOUND)
 	set(SDL_FOUND OFF PARENT_SCOPE)
+	set(BUILD_SDL OFF PARENT_SCOPE)
 	return()
 endif()
 
