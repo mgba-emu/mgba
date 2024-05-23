@@ -280,7 +280,7 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 			mLOG(GBA_SIO, DEBUG, "JOY write: TRANS_HI <- %04X", value);
 			break;
 		default:
-			mLOG(GBA_SIO, DEBUG, "JOY write: Unknown reg %03X <- %04X", address, value);
+			mLOG(GBA_SIO, GAME_ERROR, "JOY write: Unknown reg %03X <- %04X", address, value);
 			break;
 		}
 		break;
@@ -290,7 +290,7 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 			mLOG(GBA_SIO, DEBUG, "NORMAL8 %i write: SIODATA8 <- %02X", id, value);
 			break;
 		default:
-			mLOG(GBA_SIO, DEBUG, "NORMAL8 %i write: Unknown reg %03X <- %04X", id, address, value);
+			mLOG(GBA_SIO, GAME_ERROR, "NORMAL8 %i write: Unknown reg %03X <- %04X", id, address, value);
 			break;
 		}
 		break;
@@ -303,7 +303,7 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 			mLOG(GBA_SIO, DEBUG, "NORMAL32 %i write: SIODATA32_HI <- %04X", id, value);
 			break;
 		default:
-			mLOG(GBA_SIO, DEBUG, "NORMAL32 %i write: Unknown reg %03X <- %04X", id, address, value);
+			mLOG(GBA_SIO, GAME_ERROR, "NORMAL32 %i write: Unknown reg %03X <- %04X", id, address, value);
 			break;
 		}
 		break;
@@ -313,12 +313,22 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 			mLOG(GBA_SIO, DEBUG, "MULTI %i write: SIOMLT_SEND <- %04X", id, value);
 			break;
 		default:
-			mLOG(GBA_SIO, DEBUG, "MULTI %i write: Unknown reg %03X <- %04X", id, address, value);
+			mLOG(GBA_SIO, GAME_ERROR, "MULTI %i write: Unknown reg %03X <- %04X", id, address, value);
 			break;
 		}
 		break;
-	default:
-		// TODO
+	case GBA_SIO_UART:
+		switch (address) {
+		case GBA_REG_SIODATA8:
+			mLOG(GBA_SIO, DEBUG, "UART write: SIODATA8 <- %02X", value);
+			break;
+		default:
+			mLOG(GBA_SIO, GAME_ERROR, "UART write: Unknown reg %03X <- %04X", address, value);
+			break;
+		}
+		break;
+	case GBA_SIO_GPIO:
+		mLOG(GBA_SIO, GAME_ERROR, "GPIO %i write: Unknown reg %03X <- %04X", id, address, value);
 		break;
 	}
 	return value;
