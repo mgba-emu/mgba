@@ -41,6 +41,7 @@ void GBASIODolphinCreate(struct GBASIODolphin* dol) {
 	dol->d.handlesMode = GBASIODolphinHandlesMode;
 	dol->d.connectedDevices = GBASIODolphinConnectedDevices;
 	dol->d.deviceId = NULL;
+	dol->d.writeSIOCNT = NULL;
 	dol->event.context = dol;
 	dol->event.name = "GB SIO Lockstep";
 	dol->event.callback = GBASIODolphinProcessEvents;

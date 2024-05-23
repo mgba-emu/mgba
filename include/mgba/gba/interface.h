@@ -118,6 +118,7 @@ struct GBASIODriver {
 	int (*connectedDevices)(struct GBASIODriver* driver);
 	int (*deviceId)(struct GBASIODriver* driver);
 	uint16_t (*writeSIOCNT)(struct GBASIODriver* driver, uint16_t value);
+	uint16_t (*writeRCNT)(struct GBASIODriver* driver, uint16_t value);
 };
 
 enum GBASIOBattleChipGateFlavor {

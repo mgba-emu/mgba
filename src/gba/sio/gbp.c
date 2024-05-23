@@ -54,6 +54,7 @@ void GBASIOPlayerInit(struct GBASIOPlayer* gbp) {
 	gbp->d.handlesMode = _gbpSioHandlesMode;
 	gbp->d.connectedDevices = _gbpSioConnectedDevices;
 	gbp->d.deviceId = NULL;
+	gbp->d.writeRCNT = NULL;
 	gbp->event.context = gbp;
 	gbp->event.name = "GBA SIO Game Boy Player";
 	gbp->event.callback = _gbpSioProcessEvents;

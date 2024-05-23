@@ -47,6 +47,7 @@ void GBASIOLockstepNodeCreate(struct GBASIOLockstepNode* node) {
 	node->d.connectedDevices = GBASIOLockstepNodeConnectedDevices;
 	node->d.deviceId = GBASIOLockstepNodeDeviceId;
 	node->d.writeSIOCNT = NULL;
+	node->d.writeRCNT = NULL;
 }
 
 bool GBASIOLockstepAttachNode(struct GBASIOLockstep* lockstep, struct GBASIOLockstepNode* node) {

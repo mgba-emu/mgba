@@ -51,6 +51,7 @@ void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate* gate) {
 	gate->d.handlesMode = GBASIOBattlechipGateHandlesMode;
 	gate->d.connectedDevices = GBASIOBattlechipGateConnectedDevices;
 	gate->d.deviceId = NULL;
+	gate->d.writeRCNT = NULL;
 
 	gate->event.context = gate;
 	gate->event.callback = _battlechipTransferEvent;

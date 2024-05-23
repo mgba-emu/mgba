@@ -193,6 +193,10 @@ void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
 	sio->rcnt &= 0xF;
 	sio->rcnt |= value & ~0xF;
 	_switchMode(sio);
+	if (sio->activeDriver && sio->activeDriver->writeRCNT) {
+		sio->rcnt &= 0xC000;
+		sio->rcnt |= sio->activeDriver->writeRCNT(sio->activeDriver, value) & 0x01FF;
+	}
 }
 
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
@@ -278,8 +282,6 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 		default:
 			mLOG(GBA_SIO, DEBUG, "JOY write: Unknown reg %03X <- %04X", address, value);
 			break;
-		case GBA_REG_RCNT:
-			break;
 		}
 		break;
 	case GBA_SIO_NORMAL_8:
@@ -289,8 +291,6 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 			break;
 		default:
 			mLOG(GBA_SIO, DEBUG, "NORMAL8 %i write: Unknown reg %03X <- %04X", id, address, value);
-			break;
-		case GBA_REG_RCNT:
 			break;
 		}
 		break;
@@ -305,8 +305,6 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 		default:
 			mLOG(GBA_SIO, DEBUG, "NORMAL32 %i write: Unknown reg %03X <- %04X", id, address, value);
 			break;
-		case GBA_REG_RCNT:
-			break;
 		}
 		break;
 	case GBA_SIO_MULTI:
@@ -316,8 +314,6 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 			break;
 		default:
 			mLOG(GBA_SIO, DEBUG, "MULTI %i write: Unknown reg %03X <- %04X", id, address, value);
-			break;
-		case GBA_REG_RCNT:
 			break;
 		}
 		break;
