@@ -18,6 +18,8 @@ static const int GBASIOCyclesPerTransfer[4][MAX_GBAS] = {
 	{ 3140, 5755, 8376, 10486 }
 };
 
+static void _sioFinish(struct mTiming* timing, void* user, uint32_t cyclesLate);
+
 static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mode) {
 	switch (mode) {
 	case GBA_SIO_NORMAL_8:
@@ -90,10 +92,15 @@ static void _switchMode(struct GBASIO* sio) {
 }
 
 void GBASIOInit(struct GBASIO* sio) {
-	sio->drivers.normal = 0;
-	sio->drivers.multiplayer = 0;
-	sio->drivers.joybus = 0;
-	sio->activeDriver = 0;
+	sio->drivers.normal = NULL;
+	sio->drivers.multiplayer = NULL;
+	sio->drivers.joybus = NULL;
+	sio->activeDriver = NULL;
+
+	sio->completeEvent.context = sio;
+	sio->completeEvent.name = "GBA SIO Complete";
+	sio->completeEvent.callback = _sioFinish;
+	sio->completeEvent.priority = 0x80;
 
 	sio->gbp.p = sio->p;
 	GBASIOPlayerInit(&sio->gbp);
@@ -239,10 +246,12 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 			value = GBASIONormalFillSi(value);
 			if ((value & 0x0081) == 0x0081) {
 				if (GBASIONormalIsIrq(value)) {
+					mTimingDeschedule(&sio->p->timing, &sio->completeEvent);
+					mTimingSchedule(&sio->p->timing, &sio->completeEvent, GBASIOTransferCycles(sio));
+				} else {
 					// TODO: Test this on hardware to see if this is correct
-					GBARaiseIRQ(sio->p, GBA_IRQ_SIO, 0);
+					value = GBASIONormalClearStart(value);
 				}
-				value = GBASIONormalClearStart(value);
 			}
 			break;
 		case GBA_SIO_MULTI:
@@ -422,6 +431,27 @@ void GBASIONormal32FinishTransfer(struct GBASIO* sio, uint32_t data, uint32_t cy
 	sio->p->memory.io[GBA_REG(SIODATA32_HI)] = data >> 16;
 	if (GBASIONormalIsIrq(sio->siocnt)) {
 		GBARaiseIRQ(sio->p, GBA_IRQ_SIO, cyclesLate);
+	}
+}
+
+static void _sioFinish(struct mTiming* timing, void* user, uint32_t cyclesLate) {
+	UNUSED(timing);
+	struct GBASIO* sio = user;
+	uint16_t data[4] = {0, 0, 0, 0};
+	switch (sio->mode) {
+	case GBA_SIO_MULTI:
+		GBASIOMultiplayerFinishTransfer(sio, data, cyclesLate);
+		break;
+	case GBA_SIO_NORMAL_8:
+		GBASIONormal8FinishTransfer(sio, 0, cyclesLate);
+		break;
+	case GBA_SIO_NORMAL_32:
+		GBASIONormal32FinishTransfer(sio, 0, cyclesLate);
+		break;
+	default:
+		// TODO
+		mLOG(GBA_SIO, STUB, "No dummy finish implemented for mode %s", _modeName(sio->mode));
+		break;
 	}
 }
 

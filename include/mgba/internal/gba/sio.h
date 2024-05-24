@@ -70,6 +70,7 @@ struct GBASIO {
 	uint16_t siocnt;
 
 	struct GBASIOPlayer gbp;
+	struct mTimingEvent completeEvent;
 };
 
 void GBASIOInit(struct GBASIO* sio);
