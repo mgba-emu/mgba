@@ -15,7 +15,6 @@ static bool GBASIOLockstepNodeInit(struct GBASIODriver* driver);
 static void GBASIOLockstepNodeDeinit(struct GBASIODriver* driver);
 static bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver);
 static bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver);
-static void GBASIOLockstepNodeSetMode(struct GBASIODriver* driver, enum GBASIOMode mode);
 static bool GBASIOLockstepNodeHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
 static int GBASIOLockstepNodeConnectedDevices(struct GBASIODriver* driver);
 static int GBASIOLockstepNodeDeviceId(struct GBASIODriver* driver);
@@ -42,7 +41,7 @@ void GBASIOLockstepNodeCreate(struct GBASIOLockstepNode* node) {
 	node->d.deinit = GBASIOLockstepNodeDeinit;
 	node->d.load = GBASIOLockstepNodeLoad;
 	node->d.unload = GBASIOLockstepNodeUnload;
-	node->d.setMode = GBASIOLockstepNodeSetMode;
+	node->d.setMode = NULL;
 	node->d.handlesMode = GBASIOLockstepNodeHandlesMode;
 	node->d.connectedDevices = GBASIOLockstepNodeConnectedDevices;
 	node->d.deviceId = GBASIOLockstepNodeDeviceId;
@@ -188,13 +187,6 @@ bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver) {
 	mLockstepUnlock(&node->p->d);
 
 	return true;
-}
-
-static void GBASIOLockstepNodeSetMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
-	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
-	mLockstepLock(&node->p->d);
-	node->mode = mode;
-	mLockstepUnlock(&node->p->d);
 }
 
 static bool GBASIOLockstepNodeHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
