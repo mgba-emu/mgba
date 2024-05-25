@@ -505,12 +505,20 @@ bool FrameView::eventFilter(QObject*, QEvent* event) {
 	QPointF pos;
 	switch (event->type()) {
 	case QEvent::MouseButtonPress:
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 		pos = static_cast<QMouseEvent*>(event)->localPos();
+#else
+		pos = static_cast<QMouseEvent*>(event)->position();
+#endif
 		pos /= m_ui.magnification->value();
 		selectLayer(pos);
 		return true;
 	case QEvent::MouseButtonDblClick:
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 		pos = static_cast<QMouseEvent*>(event)->localPos();
+#else
+		pos = static_cast<QMouseEvent*>(event)->position();
+#endif
 		pos /= m_ui.magnification->value();
 		disableLayer(pos);
 		return true;

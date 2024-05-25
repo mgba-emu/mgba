@@ -918,7 +918,11 @@ void Window::gameStarted() {
 #ifdef M_CORE_GBA
 	if (m_controller->platform() == mPLATFORM_GBA) {
 		QVariant eCardList = m_config->takeArgvOption(QString("ecard"));
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 		if (eCardList.canConvert(QMetaType::QStringList)) {
+#else
+		if (QMetaType::canConvert(eCardList.metaType(), QMetaType(QMetaType::QStringList))) {
+#endif
 			m_controller->scanCards(eCardList.toStringList());
 		}
 	}
@@ -2149,7 +2153,11 @@ void Window::setController(CoreController* controller, const QString& fname) {
 #ifdef M_CORE_GBA
 	if (m_controller->platform() == mPLATFORM_GBA) {
 		QVariant mb = m_config->takeArgvOption(QString("mb"));
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 		if (mb.canConvert(QMetaType::QString)) {
+#else
+		if (QMetaType::canConvert(mb.metaType(), QMetaType(QMetaType::QString))) {
+#endif
 			m_controller->replaceGame(mb.toString());
 		}
 	}

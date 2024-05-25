@@ -318,7 +318,11 @@ void ConfigController::setOption(const char* key, const char* value) {
 }
 
 void ConfigController::setOption(const char* key, const QVariant& value) {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	if (value.type() == QVariant::Bool) {
+#else
+	if (value.typeId() == QMetaType::Type::Bool) {
+#endif
 		setOption(key, value.toBool());
 		return;
 	}
