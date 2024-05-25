@@ -511,8 +511,13 @@ void MemoryModel::wheelEvent(QWheelEvent* event) {
 }
 
 void MemoryModel::mousePressEvent(QMouseEvent* event) {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	if (event->x() < m_margins.left() || event->y() < m_margins.top() ||
 	    event->x() > size().width() - m_margins.right()) {
+#else
+	if (event->position().x() < m_margins.left() || event->position().y() < m_margins.top() ||
+	    event->position().x() > size().width() - m_margins.right()) {
+#endif
 		m_selection = qMakePair(0, 0);
 		return;
 	}
@@ -540,8 +545,13 @@ void MemoryModel::mousePressEvent(QMouseEvent* event) {
 }
 
 void MemoryModel::mouseMoveEvent(QMouseEvent* event) {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	if (event->x() < m_margins.left() || event->y() < m_margins.top() ||
 	    event->x() > size().width() - m_margins.right()) {
+#else
+	if (event->position().x() < m_margins.left() || event->position().y() < m_margins.top() ||
+	    event->position().x() > size().width() - m_margins.right()) {
+#endif
 		return;
 	}
 

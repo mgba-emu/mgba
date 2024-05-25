@@ -56,8 +56,13 @@ void Swatch::paintEvent(QPaintEvent*) {
 }
 
 void Swatch::mousePressEvent(QMouseEvent* event) {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	int x = event->x() / (m_size + 1);
 	int y = event->y() / (m_size + 1);
+#else
+	int x = event->position().x() / (m_size + 1);
+	int y = event->position().y() / (m_size + 1);
+#endif
 	emit indexPressed(y * m_dims.width() + x);
 }
 

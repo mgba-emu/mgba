@@ -161,8 +161,13 @@ bool MapView::eventFilter(QObject*, QEvent* event) {
 	if (event->type() != QEvent::MouseButtonPress) {
 		return false;
 	}
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	int x = static_cast<QMouseEvent*>(event)->x();
 	int y = static_cast<QMouseEvent*>(event)->y();
+#else
+	int x = static_cast<QMouseEvent*>(event)->position().x();
+	int y = static_cast<QMouseEvent*>(event)->position().y();
+#endif
 	x /= 8 * m_ui.magnification->value();
 	y /= 8 * m_ui.magnification->value();
 	selectTile(x, y);
