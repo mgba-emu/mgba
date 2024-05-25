@@ -105,7 +105,6 @@ bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver) {
 	switch (node->mode) {
 	case SIO_MULTI:
 		node->d.writeRegister = GBASIOLockstepNodeMultiWriteRegister;
-		node->d.p->rcnt |= 3;
 		ATOMIC_ADD(node->p->attachedMulti, 1);
 		node->d.p->siocnt = GBASIOMultiplayerSetReady(node->d.p->siocnt, node->p->attachedMulti == node->p->d.attached);
 		if (node->id) {
