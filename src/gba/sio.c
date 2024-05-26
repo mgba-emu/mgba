@@ -86,11 +86,7 @@ static void _switchMode(struct GBASIO* sio) {
 			if (sio->activeDriver && sio->activeDriver->deviceId) {
 				id = sio->activeDriver->deviceId(sio->activeDriver);
 			}
-			if (id) {
-				sio->rcnt |= 4;
-			} else {
-				sio->rcnt &= ~4;
-			}
+			sio->rcnt = GBASIORegisterRCNTSetSi(sio->rcnt, !!id);
 			break;
 		default:
 			// TODO
@@ -417,9 +413,17 @@ void GBASIOMultiplayerFinishTransfer(struct GBASIO* sio, uint16_t data[4], uint3
 	sio->p->memory.io[GBA_REG(SIOMULTI1)] = data[1];
 	sio->p->memory.io[GBA_REG(SIOMULTI2)] = data[2];
 	sio->p->memory.io[GBA_REG(SIOMULTI3)] = data[3];
-	sio->rcnt |= 1;
+
 	sio->siocnt = GBASIOMultiplayerClearBusy(sio->siocnt);
 	sio->siocnt = GBASIOMultiplayerSetId(sio->siocnt, id);
+
+	// This SC level is actually a transient pulse, and probably a hardware glitch.
+	// Based on analog sampling it seems to just be a spike when the other lines deassert.
+	// It rapidly falls down to GND but it's high enough that it's read out as a 1 for
+	// several microseconds, likely around 300-500 cycles. I have not measured if and when
+	// it returns to 0 afterwards.
+	sio->rcnt = GBASIORegisterRCNTFillSc(sio->rcnt);
+
 	if (GBASIOMultiplayerIsIrq(sio->siocnt)) {
 		GBARaiseIRQ(sio->p, GBA_IRQ_SIO, cyclesLate);
 	}

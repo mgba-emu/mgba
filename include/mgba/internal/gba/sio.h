@@ -52,6 +52,15 @@ DECL_BITS(GBASIOMultiplayer, Id, 4, 2);
 DECL_BIT(GBASIOMultiplayer, Error, 6);
 DECL_BIT(GBASIOMultiplayer, Busy, 7);
 DECL_BIT(GBASIOMultiplayer, Irq, 14);
+DECL_BITFIELD(GBASIORegisterRCNT, uint16_t);
+DECL_BIT(GBASIORegisterRCNT, Sc, 0);
+DECL_BIT(GBASIORegisterRCNT, Sd, 1);
+DECL_BIT(GBASIORegisterRCNT, Si, 2);
+DECL_BIT(GBASIORegisterRCNT, So, 3);
+DECL_BIT(GBASIORegisterRCNT, ScDirection, 4);
+DECL_BIT(GBASIORegisterRCNT, SdDirection, 5);
+DECL_BIT(GBASIORegisterRCNT, SiDirection, 6);
+DECL_BIT(GBASIORegisterRCNT, SoDirection, 7);
 
 struct GBASIODriverSet {
 	struct GBASIODriver* normal;
