@@ -486,10 +486,10 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	flags2 = GBASerializedHWFlags2SetTiltState(flags2, hw->tiltState);
 	flags2 = GBASerializedHWFlags1SetLightCounter(flags2, hw->lightCounter);
 
-	// GBP stuff is only here for legacy reasons
+	// GBP/SIO stuff is only here for legacy reasons
 	flags2 = GBASerializedHWFlags2SetGbpInputsPosted(flags2, hw->p->sio.gbp.inputsPosted);
 	flags2 = GBASerializedHWFlags2SetGbpTxPosition(flags2, hw->p->sio.gbp.txPosition);
-	STORE_32(hw->p->sio.gbp.event.when - mTimingCurrentTime(&hw->p->timing), 0, &state->hw.gbpNextEvent);
+	STORE_32(hw->p->sio.completeEvent.when - mTimingCurrentTime(&hw->p->timing), 0, &state->hw.sioNextEvent);
 
 	state->hw.flags2 = flags2;
 }
@@ -520,16 +520,16 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	hw->lightSample = state->hw.lightSample;
 	hw->lightEdge = GBASerializedHWFlags1GetLightEdge(flags1);
 
-	// GBP stuff is only here for legacy reasons
+	// GBP/SIO stuff is only here for legacy reasons
 	hw->p->sio.gbp.inputsPosted = GBASerializedHWFlags2GetGbpInputsPosted(state->hw.flags2);
 	hw->p->sio.gbp.txPosition = GBASerializedHWFlags2GetGbpTxPosition(state->hw.flags2);
 
 	uint32_t when;
-	LOAD_32(when, 0, &state->hw.gbpNextEvent);
+	LOAD_32(when, 0, &state->hw.sioNextEvent);
 	if (hw->devices & HW_GB_PLAYER) {
 		GBASIOSetDriver(&hw->p->sio, &hw->p->sio.gbp.d, GBA_SIO_NORMAL_32);
-		if (hw->p->memory.io[GBA_REG(SIOCNT)] & 0x0080) {
-			mTimingSchedule(&hw->p->timing, &hw->p->sio.gbp.event, when);
-		}
+	}
+	if ((hw->p->memory.io[GBA_REG(SIOCNT)] & 0x0080) && when < 0x20000) {
+		mTimingSchedule(&hw->p->timing, &hw->p->sio.completeEvent, when);
 	}
 }

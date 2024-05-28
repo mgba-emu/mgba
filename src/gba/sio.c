@@ -221,6 +221,17 @@ void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
 	}
 }
 
+static void _startTransfer(struct GBASIO* sio) {
+	if (sio->activeDriver && sio->activeDriver->start) {
+		if (!sio->activeDriver->start(sio->activeDriver)) {
+			// Transfer completion is handled internally to the driver
+			return;
+		}
+	}
+	mTimingDeschedule(&sio->p->timing, &sio->completeEvent);
+	mTimingSchedule(&sio->p->timing, &sio->completeEvent, GBASIOTransferCycles(sio));
+}
+
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 	if ((value ^ sio->siocnt) & 0x3000) {
 		sio->siocnt = value & 0x3000;
@@ -256,6 +267,18 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 		// investigation than I managed, apparently.
 		sio->rcnt = GBASIORegisterRCNTFillSc(sio->rcnt);
 
+		if (GBASIOMultiplayerIsBusy(value) && !GBASIOMultiplayerIsBusy(sio->siocnt)) {
+			if (!id) {
+				sio->p->memory.io[GBA_REG(SIOMULTI0)] = 0xFFFF;
+				sio->p->memory.io[GBA_REG(SIOMULTI1)] = 0xFFFF;
+				sio->p->memory.io[GBA_REG(SIOMULTI2)] = 0xFFFF;
+				sio->p->memory.io[GBA_REG(SIOMULTI3)] = 0xFFFF;
+				sio->rcnt = GBASIORegisterRCNTClearSc(sio->rcnt);
+				_startTransfer(sio);
+			} else {
+				// TODO
+			}
+		}
 		break;
 	case GBA_SIO_NORMAL_8:
 	case GBA_SIO_NORMAL_32:
@@ -263,6 +286,13 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 		// If there is no clock owner it's just hi-Z.
 		if (GBASIONormalGetSc(value)) {
 			sio->rcnt = GBASIORegisterRCNTFillSc(sio->rcnt);
+		}
+		if (GBASIONormalIsStart(value) && !GBASIONormalIsStart(sio->siocnt)) {
+			if (GBASIONormalIsSc(value)) {
+				_startTransfer(sio);
+			} else {
+				// TODO
+			}
 		}
 		break;
 	default:
@@ -277,15 +307,6 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 		case GBA_SIO_NORMAL_8:
 		case GBA_SIO_NORMAL_32:
 			value = GBASIONormalFillSi(value);
-			if ((value & 0x0081) == 0x0081) {
-				if (GBASIONormalIsIrq(value)) {
-					mTimingDeschedule(&sio->p->timing, &sio->completeEvent);
-					mTimingSchedule(&sio->p->timing, &sio->completeEvent, GBASIOTransferCycles(sio));
-				} else {
-					// TODO: Test this on hardware to see if this is correct
-					value = GBASIONormalClearStart(value);
-				}
-			}
 			break;
 		case GBA_SIO_MULTI:
 			value = GBASIOMultiplayerFillReady(value);
@@ -473,16 +494,29 @@ void GBASIONormal32FinishTransfer(struct GBASIO* sio, uint32_t data, uint32_t cy
 static void _sioFinish(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	UNUSED(timing);
 	struct GBASIO* sio = user;
-	uint16_t data[4] = {0, 0, 0, 0};
+	union {
+		uint16_t multi[4];
+		uint8_t normal8;
+		uint32_t normal32;
+	} data = {0};
 	switch (sio->mode) {
 	case GBA_SIO_MULTI:
-		GBASIOMultiplayerFinishTransfer(sio, data, cyclesLate);
+		if (sio->activeDriver && sio->activeDriver->finishMultiplayer) {
+			sio->activeDriver->finishMultiplayer(sio->activeDriver, data.multi);
+		}
+		GBASIOMultiplayerFinishTransfer(sio, data.multi, cyclesLate);
 		break;
 	case GBA_SIO_NORMAL_8:
-		GBASIONormal8FinishTransfer(sio, 0, cyclesLate);
+		if (sio->activeDriver && sio->activeDriver->finishNormal8) {
+			data.normal8 = sio->activeDriver->finishNormal8(sio->activeDriver);
+		}
+		GBASIONormal8FinishTransfer(sio, data.normal8, cyclesLate);
 		break;
 	case GBA_SIO_NORMAL_32:
-		GBASIONormal32FinishTransfer(sio, 0, cyclesLate);
+		if (sio->activeDriver && sio->activeDriver->finishNormal32) {
+			data.normal32 = sio->activeDriver->finishNormal32(sio->activeDriver);
+		}
+		GBASIONormal32FinishTransfer(sio, data.normal32, cyclesLate);
 		break;
 	default:
 		// TODO

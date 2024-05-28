@@ -18,6 +18,7 @@ static bool GBASIOLockstepNodeUnload(struct GBASIODriver* driver);
 static bool GBASIOLockstepNodeHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
 static int GBASIOLockstepNodeConnectedDevices(struct GBASIODriver* driver);
 static int GBASIOLockstepNodeDeviceId(struct GBASIODriver* driver);
+static bool GBASIOLockstepNodeStart(struct GBASIODriver* driver);
 static uint16_t GBASIOLockstepNodeMultiWriteSIOCNT(struct GBASIODriver* driver, uint16_t value);
 static uint16_t GBASIOLockstepNodeNormalWriteSIOCNT(struct GBASIODriver* driver, uint16_t value);
 static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* driver, uint32_t cyclesLate);
@@ -37,16 +38,16 @@ void GBASIOLockstepInit(struct GBASIOLockstep* lockstep) {
 }
 
 void GBASIOLockstepNodeCreate(struct GBASIOLockstepNode* node) {
+	memset(&node->d, 0, sizeof(node->d));
 	node->d.init = GBASIOLockstepNodeInit;
 	node->d.deinit = GBASIOLockstepNodeDeinit;
 	node->d.load = GBASIOLockstepNodeLoad;
 	node->d.unload = GBASIOLockstepNodeUnload;
-	node->d.setMode = NULL;
 	node->d.handlesMode = GBASIOLockstepNodeHandlesMode;
 	node->d.connectedDevices = GBASIOLockstepNodeConnectedDevices;
 	node->d.deviceId = GBASIOLockstepNodeDeviceId;
+	node->d.start = GBASIOLockstepNodeStart;
 	node->d.writeSIOCNT = NULL;
-	node->d.writeRCNT = NULL;
 }
 
 bool GBASIOLockstepAttachNode(struct GBASIOLockstep* lockstep, struct GBASIOLockstepNode* node) {
@@ -224,6 +225,11 @@ static int GBASIOLockstepNodeDeviceId(struct GBASIODriver* driver) {
 	return node->id;
 }
 
+static bool GBASIOLockstepNodeStart(struct GBASIODriver* driver) {
+	UNUSED(driver);
+	return false;
+}
+
 static uint16_t GBASIOLockstepNodeMultiWriteSIOCNT(struct GBASIODriver* driver, uint16_t value) {
 	struct GBASIOLockstepNode* node = (struct GBASIOLockstepNode*) driver;
 
@@ -319,10 +325,6 @@ static int32_t _masterUpdate(struct GBASIOLockstepNode* node) {
 		switch (node->mode) {
 		case GBA_SIO_MULTI:
 			node->p->multiRecv[0] = node->d.p->p->memory.io[GBA_REG(SIOMLT_SEND)];
-			node->d.p->p->memory.io[GBA_REG(SIOMULTI0)] = 0xFFFF;
-			node->d.p->p->memory.io[GBA_REG(SIOMULTI1)] = 0xFFFF;
-			node->d.p->p->memory.io[GBA_REG(SIOMULTI2)] = 0xFFFF;
-			node->d.p->p->memory.io[GBA_REG(SIOMULTI3)] = 0xFFFF;
 			node->p->multiRecv[1] = 0xFFFF;
 			node->p->multiRecv[2] = 0xFFFF;
 			node->p->multiRecv[3] = 0xFFFF;

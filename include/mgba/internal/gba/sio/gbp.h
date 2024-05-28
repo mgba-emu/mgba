@@ -21,7 +21,6 @@ struct GBASIOPlayer {
 	struct GBA* p;
 	unsigned inputsPosted;
 	int txPosition;
-	struct mTimingEvent event;
 	struct GBASIOPlayerKeyCallback callback;
 	bool oldOpposingDirections;
 	struct mKeyCallback* oldCallback;

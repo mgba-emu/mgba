@@ -16,7 +16,8 @@ static uint16_t _gbpRead(struct mKeyCallback*);
 static uint16_t _gbpSioWriteSIOCNT(struct GBASIODriver* driver, uint16_t value);
 static bool _gbpSioHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
 static int _gbpSioConnectedDevices(struct GBASIODriver* driver);
-static void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLate);
+static bool _gbpSioStart(struct GBASIODriver* driver);
+static uint32_t _gbpSioFinishNormal32(struct GBASIODriver* driver);
 
 static const uint8_t _logoPalette[] = {
 	0xDF, 0xFF, 0x0C, 0x64, 0x0C, 0xE4, 0x2D, 0xE4, 0x4E, 0x64, 0x4E, 0xE4, 0x6E, 0xE4, 0xAF, 0x68,
@@ -45,20 +46,12 @@ void GBASIOPlayerInit(struct GBASIOPlayer* gbp) {
 	gbp->callback.d.readKeys = _gbpRead;
 	gbp->callback.d.requireOpposingDirections = true;
 	gbp->callback.p = gbp;
-	gbp->d.init = NULL;
-	gbp->d.deinit = NULL;
-	gbp->d.load = NULL;
-	gbp->d.unload = NULL;
+	memset(&gbp->d, 0, sizeof(gbp->d));
 	gbp->d.writeSIOCNT = _gbpSioWriteSIOCNT;
-	gbp->d.setMode = NULL;
 	gbp->d.handlesMode = _gbpSioHandlesMode;
 	gbp->d.connectedDevices = _gbpSioConnectedDevices;
-	gbp->d.deviceId = NULL;
-	gbp->d.writeRCNT = NULL;
-	gbp->event.context = gbp;
-	gbp->event.name = "GBA SIO Game Boy Player";
-	gbp->event.callback = _gbpSioProcessEvents;
-	gbp->event.priority = 0x80;
+	gbp->d.start = _gbpSioStart;
+	gbp->d.finishNormal32 = _gbpSioFinishNormal32;
 }
 
 void GBASIOPlayerReset(struct GBASIOPlayer* gbp) {
@@ -108,27 +101,26 @@ uint16_t _gbpRead(struct mKeyCallback* callback) {
 }
 
 uint16_t _gbpSioWriteSIOCNT(struct GBASIODriver* driver, uint16_t value) {
+	UNUSED(driver);
+	return value & 0x78FB;
+}
+
+bool _gbpSioStart(struct GBASIODriver* driver) {
 	struct GBASIOPlayer* gbp = (struct GBASIOPlayer*) driver;
-	if (value & 0x0080) {
-		uint32_t rx = gbp->p->memory.io[GBA_REG(SIODATA32_LO)] | (gbp->p->memory.io[GBA_REG(SIODATA32_HI)] << 16);
-		if (gbp->txPosition < 12 && gbp->txPosition > 0) {
-			// TODO: Check expected
-		} else if (gbp->txPosition >= 12) {
-			uint32_t mask = 0x33;
-			// 0x00 = Stop
-			// 0x11 = Hard Stop
-			// 0x22 = Start
-			if (gbp->p->rumble) {
-				int32_t currentTime = mTimingCurrentTime(&gbp->p->timing);
-				gbp->p->rumble->setRumble(gbp->p->rumble, (rx & 0x33) == 0x22, currentTime - gbp->p->lastRumble);
-				gbp->p->lastRumble = currentTime;
-			}
+	uint32_t rx = gbp->p->memory.io[GBA_REG(SIODATA32_LO)] | (gbp->p->memory.io[GBA_REG(SIODATA32_HI)] << 16);
+	if (gbp->txPosition < 12 && gbp->txPosition > 0) {
+		// TODO: Check expected
+	} else if (gbp->txPosition >= 12) {
+		// 0x00 = Stop
+		// 0x11 = Hard Stop
+		// 0x22 = Start
+		if (gbp->p->rumble) {
+			int32_t currentTime = mTimingCurrentTime(&gbp->p->timing);
+			gbp->p->rumble->setRumble(gbp->p->rumble, (rx & 0x33) == 0x22, currentTime - gbp->p->lastRumble);
+			gbp->p->lastRumble = currentTime;
 		}
-		mTimingDeschedule(&gbp->p->timing, &gbp->event);
-		mTimingSchedule(&gbp->p->timing, &gbp->event, 2048);
 	}
-	value &= 0x78FB;
-	return value;
+	return true;
 }
 
 static bool _gbpSioHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
@@ -141,9 +133,8 @@ static int _gbpSioConnectedDevices(struct GBASIODriver* driver) {
 	return 1;
 }
 
-void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLate) {
-	UNUSED(timing);
-	struct GBASIOPlayer* gbp = user;
+uint32_t _gbpSioFinishNormal32(struct GBASIODriver* driver) {
+	struct GBASIOPlayer* gbp = (struct GBASIOPlayer*) driver;
 	uint32_t tx = 0;
 	int txPosition = gbp->txPosition;
 	if (txPosition > 16) {
@@ -154,5 +145,5 @@ void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLat
 	}
 	tx = _gbpTxData[txPosition];
 	++gbp->txPosition;
-	GBASIONormal32FinishTransfer(gbp->d.p, tx, cyclesLate);
+	return tx;
 }

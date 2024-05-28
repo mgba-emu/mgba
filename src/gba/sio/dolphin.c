@@ -33,15 +33,12 @@ static int32_t _processCommand(struct GBASIODolphin* dol, uint32_t cyclesLate);
 static void _flush(struct GBASIODolphin* dol);
 
 void GBASIODolphinCreate(struct GBASIODolphin* dol) {
+	memset(&dol->d, 0, sizeof(dol->d));
 	dol->d.init = GBASIODolphinInit;
 	dol->d.load = GBASIODolphinLoad;
 	dol->d.unload = GBASIODolphinUnload;
-	dol->d.writeSIOCNT = NULL;
-	dol->d.setMode = NULL;
 	dol->d.handlesMode = GBASIODolphinHandlesMode;
 	dol->d.connectedDevices = GBASIODolphinConnectedDevices;
-	dol->d.deviceId = NULL;
-	dol->d.writeSIOCNT = NULL;
 	dol->event.context = dol;
 	dol->event.name = "GB SIO Lockstep";
 	dol->event.callback = GBASIODolphinProcessEvents;
