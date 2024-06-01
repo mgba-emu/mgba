@@ -459,11 +459,11 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 	logger->filter = NULL;
 
-	return 0;
+	THREAD_EXIT(0);
 }
 
 bool mCoreThreadStart(struct mCoreThread* threadContext) {
-	threadContext->impl = calloc(sizeof(*threadContext->impl), 1);
+	threadContext->impl = calloc(1, sizeof(*threadContext->impl));
 	threadContext->impl->state = mTHREAD_INITIALIZED;
 	threadContext->impl->requested = 0;
 	threadContext->logger.p = threadContext;
