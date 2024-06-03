@@ -196,12 +196,12 @@ static void GBACP0Process(struct ARMCore* cpu, int crn, int crm, int crd, int op
 }
 
 static int32_t GBACP14Read(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2) {
-	UNUSED(cpu);
 	UNUSED(crn);
 	UNUSED(crm);
 	UNUSED(opcode1);
 	UNUSED(opcode2);
-	return 0xF000B570;
+	mLOG(GBA, GAME_ERROR, "Read from missing CP14");
+	return GBALoadBad(cpu);
 }
 
 void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {
