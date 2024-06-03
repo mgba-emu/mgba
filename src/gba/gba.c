@@ -40,6 +40,8 @@ static const uint8_t GBA_ROM_MAGIC2[] = { 0x96 };
 static const size_t GBA_MB_MAGIC_OFFSET = 0xC0;
 
 static void GBAInit(void* cpu, struct mCPUComponent* component);
+static void GBACP0Process(struct ARMCore* cpu, int crn, int crm, int crd, int opcode1, int opcode2);
+static int32_t GBACP14Read(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2);
 static void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh);
 static void GBAProcessEvents(struct ARMCore* cpu);
 static void GBAHitStub(struct ARMCore* cpu, uint32_t opcode);
@@ -72,6 +74,8 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->sync = 0;
 
 	GBAInterruptHandlerInit(&gba->cpu->irqh);
+	gba->cpu->cp[0].cdp = GBACP0Process;
+	gba->cpu->cp[14].mrc = GBACP14Read;
 	GBAMemoryInit(gba);
 
 	gba->memory.savedata.timing = &gba->timing;
@@ -184,6 +188,20 @@ void GBADestroy(struct GBA* gba) {
 	GBASIODeinit(&gba->sio);
 	mTimingDeinit(&gba->timing);
 	mCoreCallbacksListDeinit(&gba->coreCallbacks);
+}
+
+static void GBACP0Process(struct ARMCore* cpu, int crn, int crm, int crd, int opcode1, int opcode2) {
+	UNUSED(cpu);
+	mLOG(GBA, INFO, "Hit Wii U VC opcode: cdp p0, %i, c%i, c%i, c%i, %i", opcode1, crd, crn, crm, opcode2);
+}
+
+static int32_t GBACP14Read(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2) {
+	UNUSED(cpu);
+	UNUSED(crn);
+	UNUSED(crm);
+	UNUSED(opcode1);
+	UNUSED(opcode2);
+	return 0xF000B570;
 }
 
 void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {
