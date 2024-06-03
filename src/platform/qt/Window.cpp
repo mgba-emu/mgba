@@ -1464,6 +1464,11 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}, "emu");
 
 	auto rewindHeld = m_actions.addHeldAction(tr("Rewind (held)"), "holdRewind", [this](bool held) {
+		// Prevent rewinding while the load/save state window is active
+		if (held && this->m_stateWindow != nullptr) {
+			return;
+		}
+
 		if (m_controller) {
 			m_controller->setRewinding(held);
 		}
