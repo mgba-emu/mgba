@@ -655,11 +655,44 @@ DEFINE_INSTRUCTION_ARM(BX,
 
 // Begin coprocessor definitions
 
-DEFINE_INSTRUCTION_ARM(CDP, ARM_STUB)
+#define DEFINE_COPROCESSOR_INSTRUCTION(NAME, BODY) \
+	DEFINE_INSTRUCTION_ARM(NAME, \
+		int op1 = (opcode >> 21) & 7; \
+		int op2 = (opcode >> 5) & 7; \
+		int rd = (opcode >> 12) & 0xF; \
+		int cp = (opcode >> 8) & 0xF; \
+		int crn = (opcode >> 16) & 0xF; \
+		int crm = opcode & 0xF; \
+		UNUSED(op1); \
+		UNUSED(op2); \
+		UNUSED(rd); \
+		UNUSED(crn); \
+		UNUSED(crm); \
+		BODY;)
+
+DEFINE_COPROCESSOR_INSTRUCTION(MRC,
+	if (cpu->cp[cp].mrc) {
+		cpu->gprs[rd] = cpu->cp[cp].mrc(cpu, crn, crm, op1, op2);
+	} else {
+		ARM_ILL;
+	})
+
+DEFINE_COPROCESSOR_INSTRUCTION(MCR,
+	if (cpu->cp[cp].mcr) {
+		cpu->cp[cp].mcr(cpu, crn, crm, op1, op2, cpu->gprs[rd]);
+	} else {
+		ARM_ILL;
+	})
+
+DEFINE_COPROCESSOR_INSTRUCTION(CDP,
+	if (cpu->cp[cp].cdp) {
+		cpu->cp[cp].cdp(cpu, crn, crm, rd, op1, op2);
+	} else {
+		ARM_ILL;
+	})
+
 DEFINE_INSTRUCTION_ARM(LDC, ARM_STUB)
 DEFINE_INSTRUCTION_ARM(STC, ARM_STUB)
-DEFINE_INSTRUCTION_ARM(MCR, ARM_STUB)
-DEFINE_INSTRUCTION_ARM(MRC, ARM_STUB)
 
 // Begin miscellaneous definitions
 
