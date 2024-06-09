@@ -93,6 +93,7 @@ int main(int argc, char * argv[]) {
 
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
 	mCoreConfigSetDefaultIntValue(&core->config, "logToStdout", true);
+	mCoreLoadConfig(core);
 
 	mStandardLoggerInit(&_logger);
 	mStandardLoggerConfig(&_logger, &core->config);
