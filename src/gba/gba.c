@@ -493,7 +493,7 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
-	GBAVFameDetect(&gba->memory.vfame, gba->memory.rom, gba->memory.romSize);
+	GBAVFameDetect(&gba->memory.vfame, gba->memory.rom, gba->memory.romSize, gba->romCrc32);
 	// TODO: error check
 	return true;
 }
