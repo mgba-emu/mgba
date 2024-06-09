@@ -16,7 +16,8 @@ CXX_GUARD_START
 enum GBAVFameCartType {
 	VFAME_NO = 0,
 	VFAME_STANDARD = 1,
-	VFAME_GEORGE = 2
+	VFAME_ALTERNATE = 2,
+	VFAME_GEORGE = 3
 };
 
 struct GBAVFameCart {

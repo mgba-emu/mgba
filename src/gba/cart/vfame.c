@@ -7,11 +7,17 @@
 
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/memory.h>
+#include <mgba-util/crc32.h>
 
 static const uint8_t ADDRESS_REORDERING[4][16] = {
 	{ 15, 14, 9, 1, 8, 10, 7, 3, 5, 11, 4, 0, 13, 12, 2, 6 },
 	{ 15, 7, 13, 5, 11, 6, 0, 9, 12, 2, 10, 14, 3, 1, 8, 4 },
 	{ 15, 0, 3, 12, 2, 4, 14, 13, 1, 8, 6, 7, 9, 5, 11, 10 }
+};
+static const uint8_t ADDRESS_REORDERING_ALTERNATE[4][16] = {
+	{ 15, 0, 13, 5, 8, 4, 7, 3, 1, 2, 10, 14, 9, 12, 11, 6 },
+	{ 15, 7, 9, 1, 2, 6, 14, 13, 12, 11, 4, 0, 3, 5, 8, 10 },
+	{ 15, 14, 3, 12, 11, 10, 0, 9, 5, 8, 6, 7, 13, 1, 2, 4 }
 };
 static const uint8_t ADDRESS_REORDERING_GEORGE[4][16] = {
 	{ 15, 7, 13, 1, 11, 10, 14, 9, 12, 2, 4, 0, 3, 5, 8, 6 },
@@ -22,6 +28,11 @@ static const uint8_t VALUE_REORDERING[4][16] = {
 	{ 5, 4, 3, 2, 1, 0, 7, 6 },
 	{ 3, 2, 1, 0, 7, 6, 5, 4 },
 	{ 1, 0, 7, 6, 5, 4, 3, 2 }
+};
+static const uint8_t VALUE_REORDERING_ALTERNATE[4][16] = {
+	{ 5, 4, 7, 2, 1, 0, 3, 6 },
+	{ 1, 2, 3, 0, 5, 6, 7, 4 },
+	{ 3, 0, 1, 6, 7, 4, 5, 2 }
 };
 static const uint8_t VALUE_REORDERING_GEORGE[4][16] = {
 	{ 3, 0, 7, 2, 1, 4, 5, 6 },
@@ -65,12 +76,17 @@ void GBAVFameDetect(struct GBAVFameCart* cart, uint32_t* rom, size_t romSize) {
 		mLOG(GBA_MEM, INFO, "Vast Fame game detected");
 	}
 
-	// This game additionally operates with a different set of SRAM modes
-	// Its initialisation seems to be identical so the difference must be in the cart HW itself
+	// These games additionally operates with a different set of SRAM modes
+	// Their initialisation seems to be identical so the difference must be in the cart HW itself
 	// Other undumped games may have similar differences
 	if (memcmp("George Sango", &((struct GBACartridge*) rom)->title, 12) == 0) {
 		cart->cartType = VFAME_GEORGE;
 		mLOG(GBA_MEM, INFO, "George mode");
+	}
+	// Chinese version of Digimon Sapphire; header is identical to the English version which uses the normal reordering
+	// so we have to use some other way to detect it
+	else if (doCrc32(rom, romSize) == 0x793A328F) {
+		cart->cartType = VFAME_STANDARD;
 	}
 }
 
@@ -256,6 +272,8 @@ static uint32_t _modifySramAddress(enum GBAVFameCartType type, uint32_t address,
 		return address;
 	} else if (type == VFAME_GEORGE) {
 		return _reorderBits(address, ADDRESS_REORDERING_GEORGE[mode - 1], 16);
+	} else if (type == VFAME_ALTERNATE) {
+		return _reorderBits(address, ADDRESS_REORDERING_ALTERNATE[mode - 1], 16);
 	} else {
 		return _reorderBits(address, ADDRESS_REORDERING[mode - 1], 16);
 	}
@@ -266,6 +284,8 @@ static int8_t _modifySramValue(enum GBAVFameCartType type, uint8_t value, int mo
 	if (reorderType != 0) {
 		if (type == VFAME_GEORGE) {
 			value = _reorderBits(value, VALUE_REORDERING_GEORGE[reorderType - 1], 8);
+		} else if (type == VFAME_ALTERNATE) {
+			value = _reorderBits(value, VALUE_REORDERING_ALTERNATE[reorderType - 1], 8);
 		} else {
 			value = _reorderBits(value, VALUE_REORDERING[reorderType - 1], 8);
 		}
