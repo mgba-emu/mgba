@@ -42,6 +42,7 @@ static const size_t GBA_MB_MAGIC_OFFSET = 0xC0;
 static void GBAInit(void* cpu, struct mCPUComponent* component);
 static void GBACP0Process(struct ARMCore* cpu, int crn, int crm, int crd, int opcode1, int opcode2);
 static int32_t GBACP14Read(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2);
+static void GBACP14Write(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2, int32_t value);
 static void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh);
 static void GBAProcessEvents(struct ARMCore* cpu);
 static void GBAHitStub(struct ARMCore* cpu, uint32_t opcode);
@@ -76,6 +77,7 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	GBAInterruptHandlerInit(&gba->cpu->irqh);
 	gba->cpu->cp[0].cdp = GBACP0Process;
 	gba->cpu->cp[14].mrc = GBACP14Read;
+	gba->cpu->cp[14].mcr = GBACP14Write;
 	GBAMemoryInit(gba);
 
 	gba->memory.savedata.timing = &gba->timing;
@@ -202,6 +204,16 @@ static int32_t GBACP14Read(struct ARMCore* cpu, int crn, int crm, int opcode1, i
 	UNUSED(opcode2);
 	mLOG(GBA, GAME_ERROR, "Read from missing CP14");
 	return GBALoadBad(cpu);
+}
+
+static void GBACP14Write(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2, int32_t value) {
+	UNUSED(cpu);
+	UNUSED(crn);
+	UNUSED(crm);
+	UNUSED(opcode1);
+	UNUSED(opcode2);
+	UNUSED(value);
+	mLOG(GBA, GAME_ERROR, "Write to missing CP14");
 }
 
 void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {
