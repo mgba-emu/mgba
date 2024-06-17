@@ -401,7 +401,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		LOAD_32(value, address & 0x0001FFFC, gba->video.vram); \
 	} \
 	++wait; \
-	if (gba->video.shouldStall && (address & 0x0001FFFF) < ((GBARegisterDISPCNTGetMode(gba->memory.io[GBA_REG(DISPCNT)]) >= 3) ? 0x00014000 : 0x00010000)) { \
+	if (gba->video.stallMask && (address & 0x0001FFFF) < ((GBARegisterDISPCNTGetMode(gba->memory.io[GBA_REG(DISPCNT)]) >= 3) ? 0x00014000 : 0x00010000)) { \
 		wait += GBAMemoryStallVRAM(gba, wait, 1); \
 	}
 
@@ -561,7 +561,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		} else {
 			LOAD_16(value, address & 0x0001FFFE, gba->video.vram);
 		}
-		if (gba->video.shouldStall && (address & 0x0001FFFF) < ((GBARegisterDISPCNTGetMode(gba->memory.io[GBA_REG(DISPCNT)]) >= 3) ? 0x00014000 : 0x00010000)) {
+		if (gba->video.stallMask && (address & 0x0001FFFF) < ((GBARegisterDISPCNTGetMode(gba->memory.io[GBA_REG(DISPCNT)]) >= 3) ? 0x00014000 : 0x00010000)) {
 			wait += GBAMemoryStallVRAM(gba, wait, 0);
 		}
 		break;
@@ -676,7 +676,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		} else {
 			value = ((uint8_t*) gba->video.vram)[address & 0x0001FFFF];
 		}
-		if (gba->video.shouldStall) {
+		if (gba->video.stallMask) {
 			wait += GBAMemoryStallVRAM(gba, wait, 0);
 		}
 		break;
@@ -781,7 +781,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		} \
 	} \
 	++wait; \
-	if (gba->video.shouldStall && (address & 0x0001FFFF) < ((GBARegisterDISPCNTGetMode(gba->memory.io[GBA_REG(DISPCNT)]) >= 3) ? 0x00014000 : 0x00010000)) { \
+	if (gba->video.stallMask && (address & 0x0001FFFF) < ((GBARegisterDISPCNTGetMode(gba->memory.io[GBA_REG(DISPCNT)]) >= 3) ? 0x00014000 : 0x00010000)) { \
 		wait += GBAMemoryStallVRAM(gba, wait, 1); \
 	}
 
@@ -908,7 +908,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 				gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x0001FFFE);
 			}
 		}
-		if (gba->video.shouldStall && (address & 0x0001FFFF) < ((GBARegisterDISPCNTGetMode(gba->memory.io[GBA_REG(DISPCNT)]) >= 3) ? 0x00014000 : 0x00010000)) {
+		if (gba->video.stallMask && (address & 0x0001FFFF) < ((GBARegisterDISPCNTGetMode(gba->memory.io[GBA_REG(DISPCNT)]) >= 3) ? 0x00014000 : 0x00010000)) {
 			wait += GBAMemoryStallVRAM(gba, wait, 0);
 		}
 		break;
@@ -1038,7 +1038,7 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 			gba->video.renderer->vram[(address & 0x1FFFE) >> 1] = ((uint8_t) value) | (value << 8);
 			gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x0001FFFE);
 		}
-		if (gba->video.shouldStall) {
+		if (gba->video.stallMask) {
 			wait += GBAMemoryStallVRAM(gba, wait, 0);
 		}
 		break;
@@ -1778,20 +1778,64 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 }
 
 int32_t GBAMemoryStallVRAM(struct GBA* gba, int32_t wait, int extra) {
-	UNUSED(extra);
-	// TODO
-	uint16_t dispcnt = gba->memory.io[GBA_REG(DISPCNT)];
-	int32_t stall = 0;
-	switch (GBARegisterDISPCNTGetMode(dispcnt)) {
-	case 2:
-		if (GBARegisterDISPCNTIsBg2Enable(dispcnt) && GBARegisterDISPCNTIsBg3Enable(dispcnt)) {
-			// If both backgrounds are enabled, VRAM access is entirely blocked during hdraw
-			stall = mTimingUntil(&gba->timing, &gba->video.event);
+	static const uint16_t stallLUT[32] = {
+		GBA_VSTALL_T4(0) | GBA_VSTALL_A3,
+		GBA_VSTALL_T4(1) | GBA_VSTALL_A3,
+		GBA_VSTALL_T4(2) | GBA_VSTALL_A2,
+		GBA_VSTALL_T4(3) | GBA_VSTALL_A3 | GBA_VSTALL_B,
+
+		GBA_VSTALL_T4(0) | GBA_VSTALL_A3,
+		GBA_VSTALL_T4(1) | GBA_VSTALL_A3,
+		GBA_VSTALL_T4(2) | GBA_VSTALL_A2,
+		GBA_VSTALL_T4(3) | GBA_VSTALL_A3 | GBA_VSTALL_B,
+
+		GBA_VSTALL_A3,
+		GBA_VSTALL_A3,
+		GBA_VSTALL_A2,
+		GBA_VSTALL_A3 | GBA_VSTALL_B,
+
+		GBA_VSTALL_T8(0) | GBA_VSTALL_A3,
+		GBA_VSTALL_T8(1) | GBA_VSTALL_A3,
+		GBA_VSTALL_T8(2) | GBA_VSTALL_A2,
+		GBA_VSTALL_T8(3) | GBA_VSTALL_A3 | GBA_VSTALL_B,
+
+		GBA_VSTALL_A3,
+		GBA_VSTALL_A3,
+		GBA_VSTALL_A2,
+		GBA_VSTALL_A3 | GBA_VSTALL_B,
+
+		GBA_VSTALL_T4(0) | GBA_VSTALL_A3,
+		GBA_VSTALL_T4(1) | GBA_VSTALL_A3,
+		GBA_VSTALL_T4(2) | GBA_VSTALL_A2,
+		GBA_VSTALL_T4(3) | GBA_VSTALL_A3 | GBA_VSTALL_B,
+
+		GBA_VSTALL_A3,
+		GBA_VSTALL_A3,
+		GBA_VSTALL_A2,
+		GBA_VSTALL_A3 | GBA_VSTALL_B,
+
+		GBA_VSTALL_T8(0) | GBA_VSTALL_A3,
+		GBA_VSTALL_T8(1) | GBA_VSTALL_A3,
+		GBA_VSTALL_T8(2) | GBA_VSTALL_A2,
+		GBA_VSTALL_T8(3) | GBA_VSTALL_A3 | GBA_VSTALL_B,
+	};
+
+	int32_t until = mTimingUntil(&gba->timing, &gba->video.event);
+	int period = -until & 0x1F;
+
+	int32_t stall = until;
+
+	int i;
+	for (i = 0; i < 16; ++i) {
+		if (!(stallLUT[(period + i) & 0x1F] & gba->video.stallMask)) {
+			if (!extra) {
+				stall = i;
+				break;
+			}
+			--extra;
 		}
-		break;
-	default:
-		return 0;
 	}
+
 	stall -= wait;
 	if (stall < 0) {
 		return 0;
