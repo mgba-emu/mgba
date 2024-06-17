@@ -79,7 +79,7 @@ static void _retraceCallback(u32 count);
 static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer*);
 static void _audioRateChanged(struct mAVStream* stream, unsigned);
 static void _audioDMA(void);
-static void _setRumble(struct mRumble* rumble, int enable);
+static void _setRumble(struct mRumble* rumble, bool enable, uint32_t sinceLast);
 static void _sampleRotation(struct mRotationSource* source);
 static int32_t _readTiltX(struct mRotationSource* source);
 static int32_t _readTiltY(struct mRotationSource* source);
@@ -1722,8 +1722,9 @@ void _incrementScreenMode(struct mGUIRunner* runner) {
 	}
 }
 
-void _setRumble(struct mRumble* rumble, int enable) {
+void _setRumble(struct mRumble* rumble, bool enable, uint32_t sinceLast) {
 	UNUSED(rumble);
+	UNUSED(sinceLast);
 	WPAD_Rumble(0, enable);
 	if (enable) {
 		PAD_ControlMotor(0, PAD_MOTOR_RUMBLE);

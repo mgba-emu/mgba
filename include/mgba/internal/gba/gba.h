@@ -91,6 +91,7 @@ struct GBA {
 	struct GBALuminanceSource* luminanceSource;
 	struct mRTCSource* rtcSource;
 	struct mRumble* rumble;
+	int32_t lastRumble;
 
 	bool isPristine;
 	size_t pristineRomSize;

@@ -110,8 +110,21 @@ struct mRTCGenericState {
 void mRTCGenericSourceInit(struct mRTCGenericSource* rtc, struct mCore* core);
 
 struct mRumble {
-	void (*setRumble)(struct mRumble*, int enable);
+	void (*reset)(struct mRumble*, bool enable);
+	void (*setRumble)(struct mRumble*, bool enable, uint32_t sinceLast);
+	void (*integrate)(struct mRumble*, uint32_t period);
 };
+
+struct mRumbleIntegrator {
+	struct mRumble d;
+	bool state;
+	uint32_t timeOn;
+	uint32_t totalTime;
+
+	void (*setRumble)(struct mRumbleIntegrator*, float value);
+};
+
+void mRumbleIntegratorInit(struct mRumbleIntegrator*);
 
 struct mCoreChannelInfo {
 	size_t id;

@@ -22,15 +22,14 @@
 #endif
 
 #define GYRO_STEPS 100
-#define RUMBLE_PWM 16
-#define RUMBLE_STEPS 2
+#define RUMBLE_THRESHOLD 1.f / 128.f
 
 mLOG_DEFINE_CATEGORY(SDL_EVENTS, "SDL Events", "platform.sdl.events");
 
 DEFINE_VECTOR(SDL_JoystickList, struct SDL_JoystickCombo);
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-static void _mSDLSetRumble(struct mRumble* rumble, int enable);
+static void _mSDLSetRumble(struct mRumbleIntegrator* rumble, float level);
 #endif
 static int32_t _mSDLReadTiltX(struct mRotationSource* rumble);
 static int32_t _mSDLReadTiltY(struct mRotationSource* rumble);
@@ -188,9 +187,8 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 	}
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+	mRumbleIntegratorInit(&player->rumble.d);
 	player->rumble.d.setRumble = _mSDLSetRumble;
-	mCircleBufferInit(&player->rumble.history, RUMBLE_PWM);
-	player->rumble.level = 0;
 	player->rumble.activeLevel = 0;
 	player->rumble.p = player;
 #endif
@@ -281,9 +279,6 @@ void mSDLDetachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 	}
 	--events->playersAttached;
 	mCircleBufferDeinit(&player->rotation.zHistory);
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	mCircleBufferDeinit(&player->rumble.history);
-#endif
 }
 
 void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration* config) {
@@ -701,7 +696,7 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 }
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-static void _mSDLSetRumble(struct mRumble* rumble, int enable) {
+static void _mSDLSetRumble(struct mRumbleIntegrator* rumble, float level) {
 	struct mSDLRumble* sdlRumble = (struct mSDLRumble*) rumble;
 	if (!sdlRumble->p->joystick) {
 		return;
@@ -719,36 +714,23 @@ static void _mSDLSetRumble(struct mRumble* rumble, int enable) {
 	}
 #endif
 
-	int8_t originalLevel = sdlRumble->level;
-	sdlRumble->level += enable;
-	if (mCircleBufferSize(&sdlRumble->history) == RUMBLE_PWM) {
-		int8_t oldLevel;
-		mCircleBufferRead8(&sdlRumble->history, &oldLevel);
-		sdlRumble->level -= oldLevel;
-	}
-	mCircleBufferWrite8(&sdlRumble->history, enable);
-	if (sdlRumble->level == originalLevel) {
-		return;
-	}
-	float activeLevel = ceil(RUMBLE_STEPS * sdlRumble->level / (float) RUMBLE_PWM) / RUMBLE_STEPS;
-	if (fabsf(sdlRumble->activeLevel - activeLevel) < 0.75 / RUMBLE_STEPS) {
-		return;
-	}
-	sdlRumble->activeLevel = activeLevel;
 #if SDL_VERSION_ATLEAST(2, 0, 9)
-	if (sdlRumble->p->joystick->controller) {
-		SDL_GameControllerRumble(sdlRumble->p->joystick->controller, activeLevel * 0xFFFF, activeLevel * 0xFFFF, 500);
-	} else {
-		SDL_JoystickRumble(sdlRumble->p->joystick->joystick, activeLevel * 0xFFFF, activeLevel * 0xFFFF, 500);
+	if (sdlRumble->activeLevel > RUMBLE_THRESHOLD || level > RUMBLE_THRESHOLD) {
+		if (sdlRumble->p->joystick->controller) {
+			SDL_GameControllerRumble(sdlRumble->p->joystick->controller, level * 0xFFFF, level * 0xFFFF, 67);
+		} else {
+			SDL_JoystickRumble(sdlRumble->p->joystick->joystick, level * 0xFFFF, level * 0xFFFF, 67);
+		}
 	}
 #else
-	if (sdlRumble->activeLevel > 0.5 / RUMBLE_STEPS) {
+	if (sdlRumble->activeLevel > RUMBLE_THRESHOLD || level > RUMBLE_THRESHOLD) {
 		SDL_HapticRumbleStop(sdlRumble->p->joystick->haptic);
-		SDL_HapticRumblePlay(sdlRumble->p->joystick->haptic, activeLevel, 500);
+		SDL_HapticRumblePlay(sdlRumble->p->joystick->haptic, level, 500);
 	} else {
 		SDL_HapticRumbleStop(sdlRumble->p->joystick->haptic);
 	}
 #endif
+	sdlRumble->activeLevel = level;
 }
 #endif
 

@@ -196,6 +196,7 @@ struct mScriptCoreAdapter {
 	struct mScriptDebugger debugger;
 #endif
 	struct mRumble rumble;
+	struct mRumbleIntegrator rumbleIntegrator;
 	struct mRumble* oldRumble;
 	struct mRotationSource rotation;
 	struct mScriptValue* rotationCbTable;
@@ -1165,16 +1166,22 @@ mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, CS(mCore), _core)
 mSCRIPT_DEFINE_END;
 
-static void _setRumble(struct mRumble* rumble, int enable) {
+static void _setRumble(struct mRumble* rumble, bool enable, uint32_t timeSince) {
 	struct mScriptCoreAdapter* adapter = containerof(rumble, struct mScriptCoreAdapter, rumble);
 
 	if (adapter->oldRumble) {
-		adapter->oldRumble->setRumble(adapter->oldRumble, enable);
+		adapter->oldRumble->setRumble(adapter->oldRumble, enable, timeSince);
 	}
+
+	adapter->rumbleIntegrator.d.setRumble(&adapter->rumbleIntegrator.d, enable, timeSince);
+}
+
+static void _setRumbleFloat(struct mRumbleIntegrator* integrator, float level) {
+	struct mScriptCoreAdapter* adapter = containerof(integrator, struct mScriptCoreAdapter, rumbleIntegrator);
 
 	struct mScriptList args;
 	mScriptListInit(&args, 1);
-	*mScriptListAppend(&args) = mSCRIPT_MAKE_BOOL(!!enable);
+	*mScriptListAppend(&args) = mSCRIPT_MAKE_F32(level);
 	mScriptContextTriggerCallback(adapter->context, "rumble", &args);
 	mScriptListDeinit(&args);
 }
@@ -1293,6 +1300,8 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 	adapter->memory.type = mSCRIPT_TYPE_MS_TABLE;
 	adapter->memory.type->alloc(&adapter->memory);
 
+	mRumbleIntegratorInit(&adapter->rumbleIntegrator);
+	adapter->rumbleIntegrator.setRumble = _setRumbleFloat;
 	adapter->rumble.setRumble = _setRumble;
 	adapter->rotation.sample = _rotationSample;
 	adapter->rotation.readTiltX = _rotationReadTiltX;

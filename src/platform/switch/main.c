@@ -82,9 +82,7 @@ static struct GUIFont* font;
 static color_t* frameBuffer;
 static struct mAVStream stream;
 static struct mSwitchRumble {
-	struct mRumble d;
-	int up;
-	int down;
+	struct mRumbleIntegrator d;
 	HidVibrationValue value;
 } rumble;
 static struct mRotationSource rotation = {0};
@@ -298,7 +296,8 @@ static void _setup(struct mGUIRunner* runner) {
 	}
 	_updateRenderer(runner, fakeBool);
 
-	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
+	mRumbleIntegratorInit(&rumble.d);
+	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d.d);
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
 	runner->core->setAVStream(runner->core, &stream);
 
@@ -365,12 +364,12 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 		}
 	}
 
-	rumble.up = 0;
-	rumble.down = 0;
+	mRumbleIntegratorInit(&rumble.d);
 }
 
 static void _gameUnloaded(struct mGUIRunner* runner) {
 	UNUSED(runner);
+	mRumbleIntegratorInit(&rumble.d);
 	HidVibrationValue values[4];
 	memcpy(&values[0], &vibrationStop, sizeof(rumble.value));
 	memcpy(&values[1], &vibrationStop, sizeof(rumble.value));
@@ -510,24 +509,12 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 		_drawTex(runner, width, height, faded, false);
 	}
 
-
 	HidVibrationValue values[4];
-	if (rumble.up) {
-		rumble.value.amp_low = rumble.up / (float) (rumble.up + rumble.down);
-		rumble.value.amp_high = rumble.up / (float) (rumble.up + rumble.down);
-		memcpy(&values[0], &rumble.value, sizeof(rumble.value));
-		memcpy(&values[1], &rumble.value, sizeof(rumble.value));
-		memcpy(&values[2], &rumble.value, sizeof(rumble.value));
-		memcpy(&values[3], &rumble.value, sizeof(rumble.value));
-	} else {
-		memcpy(&values[0], &vibrationStop, sizeof(rumble.value));
-		memcpy(&values[1], &vibrationStop, sizeof(rumble.value));
-		memcpy(&values[2], &vibrationStop, sizeof(rumble.value));
-		memcpy(&values[3], &vibrationStop, sizeof(rumble.value));
-	}
+	memcpy(&values[0], &rumble.value, sizeof(rumble.value));
+	memcpy(&values[1], &rumble.value, sizeof(rumble.value));
+	memcpy(&values[2], &rumble.value, sizeof(rumble.value));
+	memcpy(&values[3], &rumble.value, sizeof(rumble.value));
 	hidSendVibrationValues(vibrationDeviceHandles, values, 4);
-	rumble.up = 0;
-	rumble.down = 0;
 }
 
 static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
@@ -615,13 +602,10 @@ static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buff
 	audrvUpdate(&audrenDriver);
 }
 
-void _setRumble(struct mRumble* rumble, int enable) {
+void _setRumble(struct mRumbleIntegrator* rumble, float level) {
 	struct mSwitchRumble* sr = (struct mSwitchRumble*) rumble;
-	if (enable) {
-		++sr->up;
-	} else {
-		++sr->down;
-	}
+	sr->value.amp_low = level;
+	sr->value.amp_high = level;
 }
 
 void _sampleRotation(struct mRotationSource* source) {

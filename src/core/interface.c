@@ -109,3 +109,44 @@ void mRTCGenericSourceInit(struct mRTCGenericSource* rtc, struct mCore* core) {
 	rtc->d.serialize = _rtcGenericSerialize;
 	rtc->d.deserialize = _rtcGenericDeserialize;
 }
+
+static void mRumbleIntegratorReset(struct mRumble* rumble, bool enable) {
+	struct mRumbleIntegrator* integrator = (struct mRumbleIntegrator*) rumble;
+	integrator->state = enable;
+	integrator->timeOn = 0;
+	integrator->totalTime = 0;
+}
+
+static void mRumbleIntegratorSetRumble(struct mRumble* rumble, bool enable, uint32_t sinceLast) {
+	struct mRumbleIntegrator* integrator = (struct mRumbleIntegrator*) rumble;
+
+	if (integrator->state) {
+		integrator->timeOn += sinceLast;
+	}
+	integrator->totalTime += sinceLast;
+	integrator->state = enable;
+}
+
+static void mRumbleIntegratorIntegrate(struct mRumble* rumble, uint32_t period) {
+	if (!period) {
+		return;
+	}
+
+	struct mRumbleIntegrator* integrator = (struct mRumbleIntegrator*) rumble;
+	if (integrator->state) {
+		integrator->timeOn += period - integrator->totalTime;
+	}
+	integrator->setRumble(integrator, fminf(integrator->timeOn / (float) period, 1.0f));
+
+	integrator->totalTime = 0;
+	integrator->timeOn = 0;
+}
+
+void mRumbleIntegratorInit(struct mRumbleIntegrator* integrator) {
+	integrator->d.reset = mRumbleIntegratorReset;
+	integrator->d.setRumble = mRumbleIntegratorSetRumble;
+	integrator->d.integrate = mRumbleIntegratorIntegrate;
+
+	integrator->state = false;
+	integrator->timeOn = 0;
+}

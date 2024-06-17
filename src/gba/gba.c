@@ -250,6 +250,7 @@ void GBAReset(struct ARMCore* cpu) {
 		gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 		gba->yankedRomSize = 0;
 	}
+	gba->lastRumble = 0;
 	mTimingClear(&gba->timing);
 	GBAMemoryReset(gba);
 	GBAVideoReset(&gba->video);
@@ -991,6 +992,12 @@ void GBAFrameEnded(struct GBA* gba) {
 
 	if (gba->memory.hw.devices & (HW_GB_PLAYER | HW_GB_PLAYER_DETECTION)) {
 		GBASIOPlayerUpdate(gba);
+	}
+
+	struct mRumble* rumble = gba->rumble;
+	if (rumble && rumble->integrate) {
+		gba->lastRumble = mTimingCurrentTime(&gba->timing);
+		rumble->integrate(rumble, VIDEO_TOTAL_LENGTH);
 	}
 
 	size_t c;

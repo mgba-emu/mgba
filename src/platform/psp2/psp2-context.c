@@ -36,7 +36,6 @@
 
 #include <vita2d.h>
 
-#define RUMBLE_PWM 8
 #define CDRAM_ALIGN 0x40000
 
 mLOG_DECLARE_CATEGORY(GUI_PSP2);
@@ -64,11 +63,7 @@ static struct mSceRotationSource {
 	struct SceMotionSensorState state;
 } rotation;
 
-static struct mSceRumble {
-	struct mRumble d;
-	struct mCircleBuffer history;
-	int current;
-} rumble;
+static struct mRumbleIntegrator rumble;
 
 static struct mSceImageSource {
 	struct mImageSource d;
@@ -157,17 +152,10 @@ static int32_t _readGyroZ(struct mRotationSource* source) {
 	return rotation->state.gyro.z * -0x8000000;
 }
 
-static void _setRumble(struct mRumble* source, int enable) {
-	struct mSceRumble* rumble = (struct mSceRumble*) source;
-	rumble->current += enable;
-	if (mCircleBufferSize(&rumble->history) == RUMBLE_PWM) {
-		int8_t oldLevel;
-		mCircleBufferRead8(&rumble->history, &oldLevel);
-		rumble->current -= oldLevel;
-	}
-	mCircleBufferWrite8(&rumble->history, enable);
-	int small = (rumble->current << 21) / 65793;
-	int big = ((rumble->current * rumble->current) << 18) / 65793;
+static void _setRumble(struct mRumbleIntegrator* source, float level) {
+	UNUSED(source);
+	int small = level * 255;
+	int big = (level * level) * 255;
 	struct SceCtrlActuator state = {
 		small,
 		big
@@ -363,8 +351,8 @@ void mPSP2Setup(struct mGUIRunner* runner) {
 	rotation.d.readGyroZ = _readGyroZ;
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation.d);
 
-	rumble.d.setRumble = _setRumble;
-	mCircleBufferInit(&rumble.history, RUMBLE_PWM);
+	mRumbleIntegratorInit(&rumble);
+	rumble.setRumble = _setRumble;
 	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d);
 
 	camera.d.startRequestImage = _startRequestImage;
@@ -509,7 +497,6 @@ void mPSP2Unpaused(struct mGUIRunner* runner) {
 
 void mPSP2Teardown(struct mGUIRunner* runner) {
 	UNUSED(runner);
-	mCircleBufferDeinit(&rumble.history);
 	mAudioResamplerDeinit(&audioContext.resampler);
 	mAudioBufferDeinit(&audioContext.buffer);
 	vita2d_free_texture(tex[0]);

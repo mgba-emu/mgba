@@ -1174,6 +1174,12 @@ void GBFrameEnded(struct GB* gb) {
 		}
 	}
 
+	struct mRumble* rumble = gb->memory.rumble;
+	if (rumble && rumble->integrate) {
+		gb->memory.lastRumble = mTimingCurrentTime(&gb->timing);
+		rumble->integrate(rumble, GB_VIDEO_TOTAL_LENGTH);
+	}
+
 	// TODO: Move to common code
 	if (gb->stream && gb->stream->postVideoFrame) {
 		const color_t* pixels;

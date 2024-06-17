@@ -339,6 +339,7 @@ struct GBMemory {
 	struct mRTCSource* rtc;
 	struct mRotationSource* rotation;
 	struct mRumble* rumble;
+	int32_t lastRumble;
 	struct mImageSource* cam;
 };
 

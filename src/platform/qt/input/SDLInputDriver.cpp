@@ -112,7 +112,7 @@ void SDLInputDriver::bindDefaults(InputController* controller) {
 mRumble* SDLInputDriver::rumble() {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	if (m_playerAttached) {
-		return &m_sdlPlayer.rumble.d;
+		return &m_sdlPlayer.rumble.d.d;
 	}
 #endif
 	return nullptr;

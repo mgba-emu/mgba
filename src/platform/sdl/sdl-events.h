@@ -71,12 +71,9 @@ struct mSDLPlayer {
 	SDL_Window* window;
 
 	struct mSDLRumble {
-		struct mRumble d;
+		struct mRumbleIntegrator d;
 		struct mSDLPlayer* p;
-
-		int level;
 		float activeLevel;
-		struct mCircleBuffer history;
 	} rumble;
 #else
 	int newWidth;

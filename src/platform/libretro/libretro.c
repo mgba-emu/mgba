@@ -33,7 +33,6 @@
  * to calculating the average for the last 180
  * frames, or 3 seconds of runtime... */
 #define SAMPLES_PER_FRAME_MOVING_AVG_ALPHA (1.0f / 180.0f)
-#define RUMBLE_PWM 35
 #define EVENT_RATE 60
 
 #define VIDEO_WIDTH_MAX  256
@@ -54,7 +53,7 @@ static void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel lev
 
 static void _postAudioBuffer(struct mAVStream*, struct mAudioBuffer*);
 static void _audioRateChanged(struct mAVStream*, unsigned rate);
-static void _setRumble(struct mRumble* rumble, int enable);
+static void _setRumble(struct mRumbleIntegrator*, float level);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
 static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned height, size_t pitch);
@@ -77,9 +76,7 @@ static void* savedata;
 static struct mAVStream stream;
 static bool sensorsInitDone;
 static bool rumbleInitDone;
-static int rumbleUp;
-static int rumbleDown;
-static struct mRumble rumble;
+static struct mRumbleIntegrator rumble;
 static struct GBALuminanceSource lux;
 static struct mRotationSource rotation;
 static bool tiltEnabled;
@@ -467,6 +464,7 @@ void retro_init(void) {
 	// TODO: RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME when BIOS booting is supported
 
 	rumbleInitDone = false;
+	mRumbleIntegratorInit(&rumble);
 	rumble.setRumble = _setRumble;
 	rumbleCallback = 0;
 
@@ -645,18 +643,6 @@ void retro_run(void) {
 		}
 	}
 #endif
-
-	if (rumbleCallback) {
-		if (rumbleUp) {
-			rumbleCallback(0, RETRO_RUMBLE_STRONG, rumbleUp * 0xFFFF / (rumbleUp + rumbleDown));
-			rumbleCallback(0, RETRO_RUMBLE_WEAK, rumbleUp * 0xFFFF / (rumbleUp + rumbleDown));
-		} else {
-			rumbleCallback(0, RETRO_RUMBLE_STRONG, 0);
-			rumbleCallback(0, RETRO_RUMBLE_WEAK, 0);
-		}
-		rumbleUp = 0;
-		rumbleDown = 0;
-	}
 }
 
 static void _setupMaps(struct mCore* core) {
@@ -848,10 +834,8 @@ static void _setupMaps(struct mCore* core) {
 
 void retro_reset(void) {
 	core->reset(core);
+	mRumbleIntegratorInit(&rumble);
 	_setupMaps(core);
-
-	rumbleUp = 0;
-	rumbleDown = 0;
 }
 
 bool retro_load_game(const struct retro_game_info* game) {
@@ -1267,7 +1251,7 @@ static void _audioRateChanged(struct mAVStream* stream, unsigned rate) {
 	environCallback(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &info);
 }
 
-static void _setRumble(struct mRumble* rumble, int enable) {
+static void _setRumble(struct mRumbleIntegrator* rumble, float level) {
 	UNUSED(rumble);
 	if (!rumbleInitDone) {
 		_initRumble();
@@ -1275,11 +1259,9 @@ static void _setRumble(struct mRumble* rumble, int enable) {
 	if (!rumbleCallback) {
 		return;
 	}
-	if (enable) {
-		++rumbleUp;
-	} else {
-		++rumbleDown;
-	}
+
+	rumbleCallback(0, RETRO_RUMBLE_STRONG, level * 0xFFFF);
+	rumbleCallback(0, RETRO_RUMBLE_WEAK, level * 0xFFFF);
 }
 
 static void _updateLux(struct GBALuminanceSource* lux) {

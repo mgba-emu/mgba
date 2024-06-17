@@ -354,7 +354,9 @@ void _rumbleReadPins(struct GBACartridgeHardware* hw) {
 		return;
 	}
 
-	rumble->setRumble(rumble, !!(hw->pinState & 8));
+	int32_t currentTime = mTimingCurrentTime(&hw->p->timing);
+	rumble->setRumble(rumble, !!(hw->pinState & 8), currentTime - hw->p->lastRumble);
+	hw->p->lastRumble = currentTime;
 }
 
 // == Light sensor
