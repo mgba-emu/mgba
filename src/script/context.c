@@ -458,9 +458,7 @@ bool mScriptContextActivate(struct mScriptContext* context) {
 void mScriptContextDeactivate(struct mScriptContext* context) {
 #ifndef NDEBUG
 	struct mScriptContext* threadContext = ThreadLocalGetValue(_threadContext);
-	if (threadContext != context) {
-		abort();
-	}
+	mASSERT(threadContext == context);
 #endif
 
 	--context->threadDepth;

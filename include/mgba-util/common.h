@@ -314,6 +314,26 @@ typedef intptr_t ssize_t;
 
 #define ROR(I, ROTATE) ((((uint32_t) (I)) >> ROTATE) | ((uint32_t) (I) << ((-ROTATE) & 31)))
 
+#define mASSERT(COND) \
+	if (!(COND)) { \
+		abort(); \
+	}
+#define mASSERT_DEBUG(COND) assert((COND))
+
+#define mASSERT_LOG(CAT, COND, ...) \
+	if (!(COND)) { \
+		mLOG(CAT, FATAL, __VA_ARGS__); \
+	}
+
+#ifdef NDEBUG
+#define mASSERT_DEBUG_LOG(...)
+#else
+#define mASSERT_DEBUG_LOG(CAT, COND, ...) \
+	if (!(COND)) { \
+		mLOG(CAT, FATAL, __VA_ARGS__); \
+	}
+#endif
+
 CXX_GUARD_END
 
 #endif
