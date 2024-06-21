@@ -175,7 +175,7 @@ static bool _savePNGState(struct mCore* core, struct VFile* vf, struct mStateExt
 	mappedMemoryFree(state, stateSize);
 
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
 	png_structp png = PNGWriteOpen(vf);
 	png_infop info = PNGWriteHeader(png, width, height);
 	if (!png || !info) {
@@ -527,7 +527,7 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	mappedMemoryFree(state, core->stateSize(core));
 
 	unsigned width, height;
-	core->desiredVideoDimensions(core, &width, &height);
+	core->currentVideoSize(core, &width, &height);
 
 	struct mStateExtdataItem item;
 	if (flags & SAVESTATE_SCREENSHOT && mStateExtdataGet(&extdata, EXTDATA_SCREENSHOT, &item)) {

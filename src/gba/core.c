@@ -133,6 +133,10 @@ static const struct mCoreMemoryBlock _GBAMemoryBlocksEEPROM[] = {
 	{ GBA_REGION_SRAM_MIRROR, "eeprom", "EEPROM", "EEPROM (8kiB)", 0, GBA_SIZE_EEPROM, GBA_SIZE_EEPROM, mCORE_MEMORY_RW },
 };
 
+static const struct mCoreScreenRegion _GBAScreenRegions[] = {
+	{ 0, "Screen", 0, 0, GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS }
+};
+
 static const struct mCoreRegisterInfo _GBARegisters[] = {
 	{ "r0", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
 	{ "r1", NULL, 4, 0xFFFFFFFF, mCORE_REGISTER_GPR },
@@ -430,17 +434,43 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 	}
 }
 
-static void _GBACoreDesiredVideoDimensions(const struct mCore* core, unsigned* width, unsigned* height) {
+static void _GBACoreBaseVideoSize(const struct mCore* core, unsigned* width, unsigned* height) {
+	UNUSED(core);
+	*width = GBA_VIDEO_HORIZONTAL_PIXELS;
+	*height = GBA_VIDEO_VERTICAL_PIXELS;
+}
+
+static void _GBACoreCurrentVideoSize(const struct mCore* core, unsigned* width, unsigned* height) {
+	int scale = 1;
 #ifdef BUILD_GLES3
 	const struct GBACore* gbacore = (const struct GBACore*) core;
-	int scale = gbacore->glRenderer.scale;
+	if (gbacore->glRenderer.outputTex != (unsigned) -1) {
+		scale = gbacore->glRenderer.scale;
+	}
 #else
 	UNUSED(core);
-	int scale = 1;
 #endif
 
 	*width = GBA_VIDEO_HORIZONTAL_PIXELS * scale;
 	*height = GBA_VIDEO_VERTICAL_PIXELS * scale;
+}
+
+static unsigned _GBACoreVideoScale(const struct mCore* core) {
+#ifdef BUILD_GLES3
+	const struct GBACore* gbacore = (const struct GBACore*) core;
+	if (gbacore->glRenderer.outputTex != (unsigned) -1) {
+		return gbacore->glRenderer.scale;
+	}
+#else
+	UNUSED(core);
+#endif
+	return 1;
+}
+
+static size_t _GBACoreScreenRegions(const struct mCore* core, const struct mCoreScreenRegion** regions) {
+	UNUSED(core);
+	*regions = _GBAScreenRegions;
+	return 1;
 }
 
 static void _GBACoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {
@@ -508,7 +538,7 @@ static void _GBACoreSetAVStream(struct mCore* core, struct mAVStream* stream) {
 	gba->stream = stream;
 	if (stream && stream->videoDimensionsChanged) {
 		unsigned width, height;
-		core->desiredVideoDimensions(core, &width, &height);
+		core->currentVideoSize(core, &width, &height);
 		stream->videoDimensionsChanged(stream, width, height);
 	}
 	if (stream && stream->videoFrameRateChanged) {
@@ -1380,7 +1410,10 @@ struct mCore* GBACoreCreate(void) {
 	core->setSync = _GBACoreSetSync;
 	core->loadConfig = _GBACoreLoadConfig;
 	core->reloadConfigOption = _GBACoreReloadConfigOption;
-	core->desiredVideoDimensions = _GBACoreDesiredVideoDimensions;
+	core->baseVideoSize = _GBACoreBaseVideoSize;
+	core->currentVideoSize = _GBACoreCurrentVideoSize;
+	core->videoScale = _GBACoreVideoScale;
+	core->screenRegions = _GBACoreScreenRegions;
 	core->setVideoBuffer = _GBACoreSetVideoBuffer;
 	core->setVideoGLTex = _GBACoreSetVideoGLTex;
 	core->getPixels = _GBACoreGetPixels;

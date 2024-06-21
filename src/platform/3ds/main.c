@@ -496,7 +496,7 @@ static void _drawTex(struct mCore* core, bool faded, bool both) {
 	int wide = isWide ? 2 : 1;
 
 	unsigned corew, coreh;
-	core->desiredVideoDimensions(core, &corew, &coreh);
+	core->currentVideoSize(core, &corew, &coreh);
 
 	int w = corew;
 	int h = coreh;

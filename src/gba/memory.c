@@ -405,7 +405,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 
 #define LOAD_CART \
 	wait += waitstatesRegion[address >> BASE_OFFSET]; \
-	if ((address & (GBA_SIZE_ROM0 - 1)) < memory->romSize) { \
+	if ((address & (GBA_SIZE_ROM0 - 4)) < memory->romSize) { \
 		LOAD_32(value, address & (GBA_SIZE_ROM0 - 4), memory->rom); \
 	} else if (memory->vfame.cartType) { \
 		value = GBAVFameGetPatternValue(address, 32); \
@@ -570,11 +570,11 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	case GBA_REGION_ROM1_EX:
 	case GBA_REGION_ROM2:
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
-		if ((address & (GBA_SIZE_ROM0 - 1)) < memory->romSize) {
+		if ((address & (GBA_SIZE_ROM0 - 2)) < memory->romSize) {
 			LOAD_16(value, address & (GBA_SIZE_ROM0 - 2), memory->rom);
 		} else if (memory->vfame.cartType) {
 			value = GBAVFameGetPatternValue(address, 16);
-		} else if ((address & (GBA_SIZE_ROM0 - 1)) >= AGB_PRINT_BASE) {
+		} else if ((address & (GBA_SIZE_ROM0 - 2)) >= AGB_PRINT_BASE) {
 			uint32_t agbPrintAddr = address & 0x00FFFFFF;
 			if (agbPrintAddr == AGB_PRINT_PROTECT) {
 				value = memory->agbPrintProtect;
@@ -595,7 +595,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = GBASavedataReadEEPROM(&memory->savedata);
 		} else if ((address & 0x0DFC0000) >= 0x0DF80000 && memory->hw.devices & HW_EREADER) {
 			value = GBACartEReaderRead(&memory->ereader, address);
-		} else if ((address & (GBA_SIZE_ROM0 - 1)) < memory->romSize) {
+		} else if ((address & (GBA_SIZE_ROM0 - 2)) < memory->romSize) {
 			LOAD_16(value, address & (GBA_SIZE_ROM0 - 2), memory->rom);
 		} else if (memory->vfame.cartType) {
 			value = GBAVFameGetPatternValue(address, 16);
@@ -1219,7 +1219,7 @@ void GBAPatch32(struct ARMCore* cpu, uint32_t address, int32_t value, int32_t* o
 		mLOG(GBA_MEM, STUB, "Unimplemented memory Patch32: 0x%08X", address);
 		break;
 	case GBA_REGION_PALETTE_RAM:
-		LOAD_32(oldValue, address & (GBA_SIZE_PALETTE_RAM - 1), gba->video.palette);
+		LOAD_32(oldValue, address & (GBA_SIZE_PALETTE_RAM - 4), gba->video.palette);
 		STORE_32(value, address & (GBA_SIZE_PALETTE_RAM - 4), gba->video.palette);
 		gba->video.renderer->writePalette(gba->video.renderer, address & (GBA_SIZE_PALETTE_RAM - 4), value);
 		gba->video.renderer->writePalette(gba->video.renderer, (address & (GBA_SIZE_PALETTE_RAM - 4)) + 2, value >> 16);
@@ -1320,7 +1320,7 @@ void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* o
 	case GBA_REGION_ROM2:
 	case GBA_REGION_ROM2_EX:
 		_pristineCow(gba);
-		if ((address & (GBA_SIZE_ROM0 - 1)) >= gba->memory.romSize) {
+		if ((address & (GBA_SIZE_ROM0 - 2)) >= gba->memory.romSize) {
 			gba->memory.romSize = (address & (GBA_SIZE_ROM0 - 2)) + 2;
 			gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 		}

@@ -342,6 +342,8 @@ find_function(popcount32)
 find_function(futimens)
 find_function(futimes)
 
+find_function(realpath)
+
 if(ANDROID AND ANDROID_NDK_MAJOR GREATER 13)
 	find_function(localtime_r)
 	set(HAVE_STRTOF_L ON)
@@ -753,6 +755,11 @@ elseif(BUILD_GL)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libgl1|libgles2")
 elseif(BUILD_GLES2)
 	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libgles2")
+endif()
+
+if(USE_EPOXY OR BUILD_GL OR BUILD_GLES2)
+	# This file should probably go somewhere else
+	list(APPEND FEATURE_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/video-backend.c)
 endif()
 
 if(WIN32 AND NOT (LIBMGBA_ONLY OR SKIP_LIBRARY OR USE_EPOXY))

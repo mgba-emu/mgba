@@ -27,9 +27,9 @@ typedef uint32_t color_t;
 #define M_G5(X) (((X) >> 5) & 0x1F)
 #define M_B5(X) (((X) >> 10) & 0x1F)
 
-#define M_R8(X) (((((X) << 3) & 0xF8) * 0x21) >> 5)
-#define M_G8(X) (((((X) >> 2) & 0xF8) * 0x21) >> 5)
-#define M_B8(X) (((((X) >> 7) & 0xF8) * 0x21) >> 5)
+#define M_R8(X) (((((X) << 3) & 0xF8) * 0x21) >> 2)
+#define M_G8(X) (((((X) >> 2) & 0xF8) * 0x21) >> 2)
+#define M_B8(X) (((((X) >> 7) & 0xF8) * 0x21) >> 2)
 
 #define M_RGB5_TO_BGR8(X) ((M_R5(X) << 3) | (M_G5(X) << 11) | (M_B5(X) << 19))
 #define M_RGB5_TO_RGB8(X) ((M_R5(X) << 19) | (M_G5(X) << 11) | (M_B5(X) << 3))
@@ -292,6 +292,15 @@ struct mCoreMemoryBlock {
 	uint32_t flags;
 	uint16_t maxSegment;
 	uint32_t segmentStart;
+};
+
+struct mCoreScreenRegion {
+	size_t id;
+	const char* description;
+	int16_t x;
+	int16_t y;
+	int16_t w;
+	int16_t h;
 };
 
 enum mCoreRegisterType {

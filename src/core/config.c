@@ -79,7 +79,7 @@ static const char* _lookupValue(const struct mCoreConfig* config, const char* ke
 
 static bool _lookupCharValue(const struct mCoreConfig* config, const char* key, char** out) {
 	const char* value = _lookupValue(config, key);
-	if (!value) {
+	if (!value || !value[0]) {
 		return false;
 	}
 	if (*out) {

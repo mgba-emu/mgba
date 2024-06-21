@@ -1033,7 +1033,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 		return;
 	}
 	struct CInemaImage image;
-	core->desiredVideoDimensions(core, &image.width, &image.height);
+	core->baseVideoSize(core, &image.width, &image.height);
 	ssize_t bufferSize = image.width * image.height * BYTES_PER_PIXEL;
 	image.data = malloc(bufferSize);
 	image.stride = image.width;
@@ -1076,7 +1076,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 	for (frame = 0; frame < skip; ++frame) {
 		core->runFrame(core);
 	}
-	core->desiredVideoDimensions(core, &image.width, &image.height);
+	core->currentVideoSize(core, &image.width, &image.height);
 
 #ifdef USE_FFMPEG
 	struct FFmpegDecoder decoder;
@@ -1141,7 +1141,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 			break;
 		}
 		CIlog(3, "Test frame: %u\n", frameCounter);
-		core->desiredVideoDimensions(core, &image.width, &image.height);
+		core->currentVideoSize(core, &image.width, &image.height);
 		uint8_t* diff = NULL;
 		struct CInemaImage expected = {
 			.data = NULL,

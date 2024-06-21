@@ -583,7 +583,7 @@ static void _mSDLHandleMouseButton(struct mCore* core, struct mSDLPlayer* sdlCon
 	SDL_GetWindowSize(sdlContext->window, &windowW, &windowH);
 	unsigned coreW;
 	unsigned coreH;
-	core->desiredVideoDimensions(core, &coreW, &coreH);
+	core->baseVideoSize(core, &coreW, &coreH);
 	x = x * coreW / windowW;
 	y = y * coreH / windowH;
 #endif
@@ -600,7 +600,7 @@ static void _mSDLHandleMouseMotion(struct mCore* core, struct mSDLPlayer* sdlCon
 	SDL_GetWindowSize(sdlContext->window, &windowW, &windowH);
 	unsigned coreW;
 	unsigned coreH;
-	core->desiredVideoDimensions(core, &coreW, &coreH);
+	core->baseVideoSize(core, &coreW, &coreH);
 	x = x * coreW / windowW;
 	y = y * coreH / windowH;
 #endif

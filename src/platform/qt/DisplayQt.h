@@ -22,6 +22,7 @@ public:
 	bool isDrawing() const override { return m_isDrawing; }
 	bool supportsShaders() const override { return false; }
 	VideoShader* shaders() override { return nullptr; }
+	QSize contentSize() const override;
 
 public slots:
 	void stopDrawing() override;
@@ -36,16 +37,18 @@ public slots:
 	void setShaders(struct VDir*) override {}
 	void clearShaders() override {}
 	void resizeContext() override;
+	void setBackgroundImage(const QImage&) override;
 
 protected:
 	virtual void paintEvent(QPaintEvent*) override;
 
 private:
 	bool m_isDrawing = false;
-	int m_width;
-	int m_height;
+	int m_width = -1;
+	int m_height = -1;
 	QImage m_backing{nullptr};
 	QImage m_oldBacking{nullptr};
+	QImage m_background;
 	std::shared_ptr<CoreController> m_context = nullptr;
 };
 

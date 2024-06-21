@@ -79,8 +79,13 @@ struct mGLES2Shader {
 struct mGLES2Context {
 	struct VideoBackend d;
 
-	GLuint tex;
+	GLuint tex[VIDEO_LAYER_MAX];
 	GLuint vbo;
+
+	struct Rectangle layerDims[VIDEO_LAYER_MAX];
+	struct Size imageSizes[VIDEO_LAYER_MAX];
+	unsigned width;
+	unsigned height;
 
 	struct mGLES2Shader initialShader;
 	struct mGLES2Shader finalShader;

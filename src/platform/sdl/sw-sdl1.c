@@ -28,7 +28,7 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
 	SDL_WM_SetCaption(projectName, "");
 
 	unsigned width, height;
-	renderer->core->desiredVideoDimensions(renderer->core, &width, &height);
+	renderer->core->baseVideoSize(renderer->core, &width, &height);
 	SDL_Surface* surface = SDL_GetVideoSurface();
 	SDL_LockSurface(surface);
 

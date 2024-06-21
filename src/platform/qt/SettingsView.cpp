@@ -143,6 +143,9 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	connect(m_ui.cheatsBrowse, &QAbstractButton::pressed, [this] () {
 		selectPath(m_ui.cheatsPath, m_ui.cheatsSameDir);
 	});
+	connect(m_ui.bgImageBrowse, &QAbstractButton::pressed, [this] () {
+		selectImage(m_ui.bgImage);
+	});
 	connect(m_ui.clearCache, &QAbstractButton::pressed, this, &SettingsView::libraryCleared);
 
 	// TODO: Move to reloadConfig()
@@ -445,6 +448,13 @@ void SettingsView::selectPath(QLineEdit* field, QCheckBox* sameDir) {
 	}
 }
 
+void SettingsView::selectImage(QLineEdit* field) {
+	QString path = GBAApp::app()->getOpenFileName(this, tr("Select image"), tr("Image file (*.png *.jpg *.jpeg)"));
+	if (!path.isNull()) {
+		field->setText(makePortablePath(path));
+	}
+}
+
 void SettingsView::updateConfig() {
 	saveSetting("gba.bios", m_ui.gbaBios);
 	saveSetting("gb.bios", m_ui.gbBios);
@@ -504,6 +514,7 @@ void SettingsView::updateConfig() {
 	saveSetting("vbaBugCompat", m_ui.vbaBugCompat);
 	saveSetting("updateAutoCheck", m_ui.updateAutoCheck);
 	saveSetting("showFilenameInLibrary", m_ui.showFilenameInLibrary);
+	saveSetting("backgroundImage", m_ui.bgImage);
 
 	if (m_ui.audioBufferSize->currentText().toInt() > 8192) {
 		m_ui.audioBufferSize->setCurrentText("8192");
@@ -733,6 +744,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("vbaBugCompat", m_ui.vbaBugCompat, true);
 	loadSetting("updateAutoCheck", m_ui.updateAutoCheck);
 	loadSetting("showFilenameInLibrary", m_ui.showFilenameInLibrary);
+	loadSetting("backgroundImage", m_ui.bgImage);
 
 	m_ui.libraryStyle->setCurrentIndex(loadSetting("libraryStyle").toInt());
 

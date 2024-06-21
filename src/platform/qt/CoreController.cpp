@@ -266,13 +266,17 @@ mPlatform CoreController::platform() const {
 
 QSize CoreController::screenDimensions() const {
 	unsigned width, height;
-	m_threadContext.core->desiredVideoDimensions(m_threadContext.core, &width, &height);
+	m_threadContext.core->currentVideoSize(m_threadContext.core, &width, &height);
 
 	return QSize(width, height);
 }
 
 QPair<unsigned, unsigned> CoreController::frameRate() const {
    return qMakePair(m_threadContext.core->frameCycles(m_threadContext.core), m_threadContext.core->frequency(m_threadContext.core));
+}
+
+unsigned CoreController::videoScale() const {
+	return m_threadContext.core->videoScale(m_threadContext.core);
 }
 
 void CoreController::loadConfig(ConfigController* config) {
@@ -1165,7 +1169,7 @@ void CoreController::updateKeys() {
 void CoreController::finishFrame() {
 	if (!m_hwaccel) {
 		unsigned width, height;
-		m_threadContext.core->desiredVideoDimensions(m_threadContext.core, &width, &height);
+		m_threadContext.core->currentVideoSize(m_threadContext.core, &width, &height);
 
 		QMutexLocker locker(&m_bufferMutex);
 		memcpy(m_completeBuffer.data(), m_activeBuffer.constData(), width * height * BYTES_PER_PIXEL);

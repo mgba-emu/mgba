@@ -54,6 +54,8 @@ public:
 	virtual VideoShader* shaders() = 0;
 	virtual int framebufferHandle() { return -1; }
 	virtual void setVideoScale(int) {}
+	virtual void setBackgroundImage(const QImage&) = 0;
+	virtual QSize contentSize() const = 0;
 
 	QSize viewportSize();
 

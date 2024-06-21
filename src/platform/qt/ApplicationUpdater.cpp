@@ -100,6 +100,7 @@ ApplicationUpdater::UpdateInfo ApplicationUpdater::currentVersion() {
 	info.version = QLatin1String(projectVersion);
 	info.rev = gitRevision;
 	info.commit = QLatin1String(gitCommit);
+	info.size = 0;
 	return info;
 }
 

@@ -216,7 +216,7 @@ static void _DSCoreReloadConfigOption(struct mCore* core, const char* option, co
 	}
 }
 
-static void _DSCoreDesiredVideoDimensions(const struct mCore* core, unsigned* width, unsigned* height) {
+static void _DSCoreVideoSize(const struct mCore* core, unsigned* width, unsigned* height) {
 	UNUSED(core);
 	*width = DS_VIDEO_HORIZONTAL_PIXELS;
 	*height = DS_VIDEO_VERTICAL_PIXELS * 2;
@@ -713,7 +713,8 @@ struct mCore* DSCoreCreate(void) {
 	core->setSync = _DSCoreSetSync;
 	core->loadConfig = _DSCoreLoadConfig;
 	core->reloadConfigOption = _DSCoreReloadConfigOption;
-	core->desiredVideoDimensions = _DSCoreDesiredVideoDimensions;
+	core->baseVideoSize = _DSCoreVideoSize;
+	core->currentVideoSize = _DSCoreVideoSize;
 	core->setVideoBuffer = _DSCoreSetVideoBuffer;
 	core->getPixels = _DSCoreGetPixels;
 	core->putPixels = _DSCorePutPixels;

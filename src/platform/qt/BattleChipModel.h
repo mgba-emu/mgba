@@ -49,7 +49,7 @@ private:
 	BattleChip createChip(int id) const;
 
 	QMap<int, QString> m_chipIdToName;
-	int m_flavor;
+	int m_flavor = 0;
 	int m_scale = 1;
 
 	QList<BattleChip> m_deck;
