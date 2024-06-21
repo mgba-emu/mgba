@@ -16,6 +16,12 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
+        },
+        {
+            "name": "debug",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "C:/Projects/vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            }
         }
     ]
 }
