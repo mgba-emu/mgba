@@ -216,7 +216,7 @@ static void _DSCoreReloadConfigOption(struct mCore* core, const char* option, co
 	}
 }
 
-static void _DSCoreDesiredVideoDimensions(struct mCore* core, unsigned* width, unsigned* height) {
+static void _DSCoreDesiredVideoDimensions(const struct mCore* core, unsigned* width, unsigned* height) {
 	UNUSED(core);
 	*width = DS_VIDEO_HORIZONTAL_PIXELS;
 	*height = DS_VIDEO_VERTICAL_PIXELS * 2;
