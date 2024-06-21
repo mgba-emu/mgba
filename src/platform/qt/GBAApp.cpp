@@ -32,6 +32,10 @@
 #include "DiscordCoordinator.h"
 #endif
 
+#ifdef BUILD_SDL
+#include "input/SDLInputDriver.h"
+#endif
+
 using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
@@ -307,6 +311,25 @@ bool GBAApp::waitOnJob(qint64 jobId, QObject* context, std::function<void ()> ca
 	});
 	m_workerJobCallbacks.insert(m_nextJob, connection);
 	return true;
+}
+
+void GBAApp::suspendScreensaver() {
+#ifdef BUILD_SDL
+	SDL::suspendScreensaver();
+#endif
+}
+
+void GBAApp::resumeScreensaver() {
+#ifdef BUILD_SDL
+	SDL::resumeScreensaver();
+#endif
+}
+
+void GBAApp::setScreensaverSuspendable(bool suspendable) {
+	UNUSED(suspendable);
+#ifdef BUILD_SDL
+	SDL::setScreensaverSuspendable(suspendable);
+#endif
 }
 
 void GBAApp::cleanupAfterUpdate() {

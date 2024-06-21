@@ -314,10 +314,8 @@ void ReportView::generateReport() {
 		} else {
 			windowReport << QString("ROM open: No");
 		}
-#ifdef BUILD_SDL
 		InputController* input = window->inputController();
-		windowReport << QString("Active gamepad: %1").arg(input->gamepad(SDL_BINDING_BUTTON));
-#endif
+		windowReport << QString("Active gamepad: %1").arg(input->gamepadIndex());
 		windowReport << QString("Configuration: %1").arg(configs.indexOf(config) + 1);
 		addReport(QString("Window %1").arg(winId), windowReport.join('\n'));
 	}
@@ -477,9 +475,8 @@ void ReportView::addGLInfo(QStringList& report) {
 }
 
 void ReportView::addGamepadInfo(QStringList& report) {
-#ifdef BUILD_SDL
 	InputController* input = GBAApp::app()->windows()[0]->inputController();
-	QStringList gamepads = input->connectedGamepads(SDL_BINDING_BUTTON);
+	QStringList gamepads = input->connectedGamepads();
 	report << QString("Connected gamepads: %1").arg(gamepads.size());
 	int i = 0;
 	for (const auto& gamepad : gamepads) {
@@ -490,10 +487,9 @@ void ReportView::addGamepadInfo(QStringList& report) {
 		i = 0;
 		for (Window* window : GBAApp::app()->windows()) {
 			++i;
-			report << QString("Window %1 gamepad: %2").arg(i).arg(window->inputController()->gamepad(SDL_BINDING_BUTTON));
+			report << QString("Window %1 gamepad: %2").arg(i).arg(window->inputController()->gamepadIndex());
 		}
 	}
-#endif
 }
 
 void ReportView::addROMInfo(QStringList& report, CoreController* controller) {

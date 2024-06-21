@@ -36,6 +36,9 @@
 #include "GDBController.h"
 #include "GDBWindow.h"
 #include "GIFView.h"
+#ifdef BUILD_SDL
+#include "input/SDLInputDriver.h"
+#endif
 #include "IOViewer.h"
 #include "LoadSaveState.h"
 #include "LogView.h"
@@ -82,6 +85,7 @@
 #include <mgba/internal/ds/input.h>
 #endif
 #include <mgba/feature/commandline.h>
+#include <mgba/internal/gba/input.h>
 #include <mgba-util/vfs.h>
 
 #include <mgba-util/convolve.h>
@@ -193,19 +197,14 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	m_mustReset.setInterval(MUST_RESTART_TIMEOUT);
 	m_mustReset.setSingleShot(true);
 
+#ifdef BUILD_SDL
+	m_inputController.addInputDriver(std::make_shared<SDLInputDriver>(&m_inputController));
+#endif
+
 	m_shortcutController->setConfigController(m_config);
 	m_shortcutController->setActionMapper(&m_actions);
 	setupMenu(menuBar());
 
-#ifdef M_CORE_GBA
-	m_inputController.addPlatform(mPLATFORM_GBA, &GBAInputInfo);
-#endif
-#ifdef M_CORE_GB
-	m_inputController.addPlatform(mPLATFORM_GB, &GBInputInfo);
-#endif
-#ifdef M_CORE_DS
-	m_inputController.addPlatform(mPLATFORM_DS, &DSInputInfo);
-#endif
 	setupOptions();
 }
 
@@ -330,7 +329,7 @@ void Window::reloadConfig() {
 		m_display->resizeContext();
 	}
 
-	m_inputController.setScreensaverSuspendable(opts->suspendScreensaver);
+	GBAApp::app()->setScreensaverSuspendable(opts->suspendScreensaver);
 }
 
 void Window::saveConfig() {
@@ -2023,7 +2022,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	}
 
 	m_controller = std::shared_ptr<CoreController>(controller);
-	m_inputController.recalibrateAxes();
 	m_controller->setInputController(&m_inputController);
 	m_controller->setLogger(&m_log);
 
@@ -2036,14 +2034,14 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	});
 
 	connect(m_controller.get(), &CoreController::started, this, &Window::gameStarted);
-	connect(m_controller.get(), &CoreController::started, &m_inputController, &InputController::suspendScreensaver);
+	connect(m_controller.get(), &CoreController::started, GBAApp::app(), &GBAApp::suspendScreensaver);
 	connect(m_controller.get(), &CoreController::stopping, this, &Window::gameStopped);
 	{
 		connect(m_controller.get(), &CoreController::stopping, [this]() {
 			m_controller.reset();
 		});
 	}
-	connect(m_controller.get(), &CoreController::stopping, &m_inputController, &InputController::resumeScreensaver);
+	connect(m_controller.get(), &CoreController::stopping, GBAApp::app(), &GBAApp::resumeScreensaver);
 	connect(m_controller.get(), &CoreController::paused, this, &Window::updateFrame);
 
 #ifndef Q_OS_MAC
@@ -2055,14 +2053,14 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	});
 #endif
 
-	connect(m_controller.get(), &CoreController::paused, &m_inputController, &InputController::resumeScreensaver);
+	connect(m_controller.get(), &CoreController::paused, GBAApp::app(), &GBAApp::resumeScreensaver);
 	connect(m_controller.get(), &CoreController::paused, [this]() {
 		emit paused(true);
 	});
 	connect(m_controller.get(), &CoreController::unpaused, [this]() {
 		emit paused(false);
 	});
-	connect(m_controller.get(), &CoreController::unpaused, &m_inputController, &InputController::suspendScreensaver);
+	connect(m_controller.get(), &CoreController::unpaused, GBAApp::app(), &GBAApp::suspendScreensaver);
 	connect(m_controller.get(), &CoreController::frameAvailable, this, &Window::recordFrame);
 	connect(m_controller.get(), &CoreController::crashed, this, &Window::gameCrashed);
 	connect(m_controller.get(), &CoreController::failed, this, &Window::gameFailed);

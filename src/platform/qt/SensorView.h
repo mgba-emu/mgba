@@ -21,6 +21,7 @@ class ConfigController;
 class CoreController;
 class GamepadAxisEvent;
 class InputController;
+class InputDriver;
 
 class SensorView : public QDialog {
 Q_OBJECT
@@ -43,14 +44,14 @@ private:
 	Ui::SensorView m_ui;
 
 	QAbstractButton* m_button = nullptr;
-	void (InputController::*m_setter)(int);
+	void (InputDriver::*m_setter)(int);
 
 	std::shared_ptr<CoreController> m_controller;
 	InputController* m_input;
 	mRotationSource* m_rotation;
 	QTimer m_timer;
 
-	void jiggerer(QAbstractButton*, void (InputController::*)(int));
+	void jiggerer(QAbstractButton*, void (InputDriver::*)(int));
 };
 
 }

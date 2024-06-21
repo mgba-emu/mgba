@@ -103,9 +103,6 @@ set(SOURCE_FILES
 	FrameView.cpp
 	GBAApp.cpp
 	GIFView.cpp
-	GamepadAxisEvent.cpp
-	GamepadButtonEvent.cpp
-	GamepadHatEvent.cpp
 	IOViewer.cpp
 	KeyEditor.cpp
 	LoadSaveState.cpp
@@ -145,11 +142,19 @@ set(SOURCE_FILES
 	VFileDevice.cpp
 	VideoProxy.cpp
 	VideoView.cpp
+	input/Gamepad.cpp
+	input/GamepadAxisEvent.cpp
+	input/GamepadButtonEvent.cpp
+	input/GamepadHatEvent.cpp
 	input/InputController.cpp
+	input/InputDriver.cpp
 	input/InputIndex.cpp
 	input/InputItem.cpp
+	input/InputMapper.cpp
 	input/InputModel.cpp
-	input/InputProfile.cpp)
+	input/InputProfile.cpp
+	input/InputSource.cpp
+	input/KeySource.cpp)
 
 set(UI_FILES
 	AboutScreen.ui
@@ -201,6 +206,7 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5
 
 set(AUDIO_SRC)
 if(BUILD_SDL)
+	list(APPEND SOURCE_FILES input/SDLInputDriver.cpp)
 	list(APPEND AUDIO_SRC AudioProcessorSDL.cpp)
 endif()
 

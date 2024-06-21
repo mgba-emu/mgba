@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2023 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,8 +6,6 @@
 #pragma once
 
 #include <QEvent>
-
-#include <mgba/internal/gba/input.h>
 
 namespace QGBA {
 
@@ -18,7 +16,7 @@ public:
 	GamepadButtonEvent(Type pressType, int button, int type, InputController* controller = nullptr);
 
 	int value() const { return m_button; }
-	GBAKey gbaKey() const { return m_key; }
+	int platformKey() const { return m_key; }
 
 	static Type Down();
 	static Type Up();
@@ -28,7 +26,7 @@ private:
 	static Type s_upType;
 
 	int m_button;
-	GBAKey m_key;
+	int m_key;
 };
 
 }

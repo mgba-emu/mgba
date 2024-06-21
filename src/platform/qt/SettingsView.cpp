@@ -24,6 +24,10 @@
 #include <mgba/core/version.h>
 #include <mgba/internal/gba/gba.h>
 
+#ifdef BUILD_SDL
+#include "platform/sdl/sdl-events.h"
+#endif
+
 using namespace QGBA;
 
 SettingsView::SettingsView(ConfigController* controller, InputController* inputController, ShortcutController* shortcutController, LogController* logController, QWidget* parent)

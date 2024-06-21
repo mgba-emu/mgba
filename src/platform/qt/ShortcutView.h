@@ -5,9 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "GamepadAxisEvent.h"
-#include "InputIndex.h"
-#include "InputModel.h"
+#include "input/GamepadAxisEvent.h"
 
 #include <QWidget>
 

@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2023 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,8 +9,14 @@
 #include "GamepadHatEvent.h"
 #include "InputIndex.h"
 
+#include "input/GamepadAxisEvent.h"
+#include "input/GamepadHatEvent.h"
+#include "input/InputDriver.h"
+#include "input/InputMapper.h"
+
 #include <memory>
 
+#include <QHash>
 #include <QImage>
 #include <QMap>
 #include <QMutex>
@@ -23,11 +29,8 @@
 #include <mgba/core/core.h>
 #include <mgba/core/input.h>
 
+#include <mgba/core/input.h>
 #include <mgba/gba/interface.h>
-
-#ifdef BUILD_SDL
-#include "platform/sdl/sdl-events.h"
-#endif
 
 #ifdef BUILD_QT_MULTIMEDIA
 #include "VideoDumper.h"
@@ -37,14 +40,11 @@
 struct mRotationSource;
 struct mRumble;
 
-class QCamera;
-class QMenu;
-
 namespace QGBA {
 
 class ConfigController;
-class GameController;
-class InputItem;
+class Gamepad;
+class InputSource;
 
 class InputController : public QObject {
 Q_OBJECT
@@ -62,14 +62,7 @@ public:
 	InputController(int playerId = 0, QWidget* topLevel = nullptr, QObject* parent = nullptr);
 	~InputController();
 
-	InputIndex* inputIndex() { return &m_inputIndex; }
-	InputIndex* keyIndex() { return &m_keyIndex; }
-	void rebuildIndex(const InputIndex* = nullptr);
-	void rebuildKeyIndex(const InputIndex* = nullptr);
-
-	void addPlatform(mPlatform, const mInputPlatformInfo*);
-	void setPlatform(mPlatform);
-	void addKey(const QString& name);
+	void addInputDriver(std::shared_ptr<InputDriver>);
 
 	void setConfiguration(ConfigController* config);
 	void saveConfiguration();
@@ -77,42 +70,35 @@ public:
 	bool loadProfile(uint32_t type, const QString& profile);
 	void saveConfiguration(uint32_t type);
 	void saveProfile(uint32_t type, const QString& profile);
-	const char* profileForType(uint32_t type);
+	QString profileForType(uint32_t type);
 
-	GBAKey mapKeyboard(int key) const;
+	int mapKeyboard(int key) const;
 
-	void bindKey(uint32_t type, int key, GBAKey);
-
-	const mInputMap* map();
+	mInputMap* map() { return &m_inputMap; }
+	const mInputMap* map() const { return &m_inputMap; }
 
 	int pollEvents();
 
 	static const int32_t AXIS_THRESHOLD = 0x3000;
-	QSet<int> activeGamepadButtons(int type);
-	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(int type);
-	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
-	void recalibrateAxes();
 
-	void bindKey(uint32_t type, int key, const QString&);
+	void setGamepadDriver(uint32_t type);
+	const InputDriver* gamepadDriver() const { return m_inputDrivers.value(m_sensorDriver).get(); }
+	InputDriver* gamepadDriver() { return m_inputDrivers.value(m_sensorDriver).get(); }
 
-	void bindAxis(uint32_t type, int axis, GamepadAxisEvent::Direction, const QString&);
-	void unbindAllAxes(uint32_t type);
-
-	void bindHat(uint32_t type, int hat, GamepadHatEvent::Direction, const QString&);
-	void unbindAllHats(uint32_t type);
-
-	QStringList connectedGamepads(uint32_t type) const;
-	int gamepad(uint32_t type) const;
+	QStringList connectedGamepads(uint32_t type = 0) const;
+	int gamepadIndex(uint32_t type = 0) const;
 	void setGamepad(uint32_t type, int index);
+	void setGamepad(int index);
 	void setPreferredGamepad(uint32_t type, int index);
+	void setPreferredGamepad(int index);
 
-	void registerTiltAxisX(int axis);
-	void registerTiltAxisY(int axis);
-	void registerGyroAxisX(int axis);
-	void registerGyroAxisY(int axis);
+	InputMapper mapper(uint32_t type);
+	InputMapper mapper(InputDriver*);
+	InputMapper mapper(InputSource*);
 
-	float gyroSensitivity() const;
-	void setGyroSensitivity(float sensitivity);
+	void setSensorDriver(uint32_t type);
+	const InputDriver* sensorDriver() const { return m_inputDrivers.value(m_sensorDriver).get(); }
+	InputDriver* sensorDriver() { return m_inputDrivers.value(m_sensorDriver).get(); }
 
 	void stealFocus(QWidget* focus);
 	void releaseFocus(QWidget* focus);
@@ -130,15 +116,7 @@ signals:
 
 public slots:
 	void testGamepad(int type);
-	void updateJoysticks();
-	int updateAutofire();
-
-	void setAutofire(int key, bool enable);
-
-	// TODO: Move these to somewhere that makes sense
-	void suspendScreensaver();
-	void resumeScreensaver();
-	void setScreensaverSuspendable(bool);
+	void update();
 
 	void increaseLuminanceLevel();
 	void decreaseLuminanceLevel();
@@ -150,9 +128,6 @@ public slots:
 
 	void setCamera(const QByteArray& id);
 
-protected:
-	bool eventFilter(QObject*, QEvent*) override;
-
 private slots:
 #ifdef BUILD_QT_MULTIMEDIA
 	void prepareCamSettings(QCamera::Status);
@@ -161,18 +136,17 @@ private slots:
 	void teardownCam();
 
 private:
-	void postPendingEvent(int key);
-	void clearPendingEvent(int key);
-	bool hasPendingEvent(int key) const;
+	void postPendingEvent(int);
+	void clearPendingEvent(int);
+	bool hasPendingEvent(int) const;
 	void sendGamepadEvent(QEvent*);
-	void restoreModel();
-	void rebindKey(const QString& key);
 
-	InputItem* itemForKey(const QString& key);
-	int keyId(const QString& key);
+	Gamepad* gamepad(uint32_t type);
+	QList<Gamepad*> gamepads();
 
-	InputIndex m_inputIndex;
-	InputIndex m_keyIndex;
+	QSet<int> activeGamepadButtons(int type);
+	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(int type);
+	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
 
 	struct InputControllerLux : GBALuminanceSource {
 		InputController* p;
@@ -198,9 +172,6 @@ private:
 #endif
 
 	mInputMap m_inputMap;
-	int m_activeKeys;
-	bool m_autofireEnabled[32] = {};
-	int m_autofireStatus[32] = {};
 
 	ConfigController* m_config = nullptr;
 	int m_playerId;
@@ -209,17 +180,9 @@ private:
 	QMap<mPlatform, const mInputPlatformInfo*> m_keyInfo;
 	const mInputPlatformInfo* m_activeKeyInfo = nullptr;
 
-	std::unique_ptr<QMenu> m_bindings;
-	std::unique_ptr<QMenu> m_autofire;
-
-#ifdef BUILD_SDL
-	static int s_sdlInited;
-	static mSDLEvents s_sdlEvents;
-	mSDLPlayer m_sdlPlayer{};
-	bool m_playerAttached = false;
-#endif
-
-	QVector<int> m_deadzones;
+	QHash<uint32_t, std::shared_ptr<InputDriver>> m_inputDrivers;
+	uint32_t m_gamepadDriver;
+	uint32_t m_sensorDriver;
 
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;

@@ -420,7 +420,6 @@ void CoreController::setOverride(std::unique_ptr<Override> override) {
 
 void CoreController::setInputController(InputController* inputController) {
 	m_inputController = inputController;
-	m_inputController->setPlatform(platform());
 	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_ROTATION, m_inputController->rotationSource());
 	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_RUMBLE, m_inputController->rumble());
 	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_IMAGE_SOURCE, m_inputController->imageSource());
@@ -1159,7 +1158,7 @@ void CoreController::setFramebufferHandle(int fb) {
 }
 
 void CoreController::updateKeys() {
-	int polledKeys = m_inputController->pollEvents() | m_inputController->updateAutofire();
+	int polledKeys = m_inputController->pollEvents();
 	int activeKeys = m_activeKeys | polledKeys;
 	activeKeys |= m_threadContext.core->getKeys(m_threadContext.core) & ~m_removedKeys;
 	m_removedKeys = polledKeys;

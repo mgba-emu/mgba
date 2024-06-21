@@ -6,7 +6,7 @@
 #include "ShortcutController.h"
 
 #include "ConfigController.h"
-#include "GamepadButtonEvent.h"
+#include "input/GamepadButtonEvent.h"
 #include "InputProfile.h"
 
 #include <QAction>
