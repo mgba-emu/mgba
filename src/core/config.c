@@ -279,8 +279,7 @@ void mCoreConfigDirectory(char* out, size_t outLength) {
 void mCoreConfigPortablePath(char* out, size_t outLength) {
 #ifdef _WIN32
 	wchar_t wpath[MAX_PATH];
-	HMODULE hModule = GetModuleHandleW(NULL);
-	GetModuleFileNameW(hModule, wpath, MAX_PATH);
+	GetModuleFileNameW(NULL, wpath, MAX_PATH);
 	PathRemoveFileSpecW(wpath);
 	if (PATH_SEP[0] != '\\') {
 		WCHAR* pathSep;
@@ -407,6 +406,7 @@ void mCoreConfigMap(const struct mCoreConfig* config, struct mCoreOptions* opts)
 	_lookupIntValue(config, "frameskip", &opts->frameskip);
 	_lookupIntValue(config, "volume", &opts->volume);
 	_lookupIntValue(config, "rewindBufferCapacity", &opts->rewindBufferCapacity);
+	_lookupIntValue(config, "rewindBufferInterval", &opts->rewindBufferInterval);
 	_lookupFloatValue(config, "fpsTarget", &opts->fpsTarget);
 	unsigned audioBuffers;
 	if (_lookupUIntValue(config, "audioBuffers", &audioBuffers)) {
@@ -449,6 +449,7 @@ void mCoreConfigLoadDefaults(struct mCoreConfig* config, const struct mCoreOptio
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "frameskip", opts->frameskip);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindEnable", opts->rewindEnable);
 	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindBufferCapacity", opts->rewindBufferCapacity);
+	ConfigurationSetIntValue(&config->defaultsTable, 0, "rewindBufferInterval", opts->rewindBufferInterval);
 	ConfigurationSetFloatValue(&config->defaultsTable, 0, "fpsTarget", opts->fpsTarget);
 	ConfigurationSetUIntValue(&config->defaultsTable, 0, "audioBuffers", opts->audioBuffers);
 	ConfigurationSetUIntValue(&config->defaultsTable, 0, "sampleRate", opts->sampleRate);

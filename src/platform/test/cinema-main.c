@@ -10,7 +10,7 @@
 #include <mgba/feature/commandline.h>
 #include <mgba/feature/video-logger.h>
 
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/string.h>
 #include <mgba-util/table.h>
 #include <mgba-util/threading.h>
@@ -732,8 +732,8 @@ static struct VDir* _makeOutDir(const char* testName) {
 
 static void _writeImage(struct VFile* vf, const struct CInemaImage* image) {
 	png_structp png = PNGWriteOpen(vf);
-	png_infop info = PNGWriteHeader(png, image->width, image->height);
-	if (!PNGWritePixels(png, image->width, image->height, image->stride, image->data)) {
+	png_infop info = PNGWriteHeader(png, image->width, image->height, mCOLOR_NATIVE);
+	if (!PNGWritePixels(png, image->width, image->height, image->stride, image->data, mCOLOR_NATIVE)) {
 		CIerr(0, "Could not write output image\n");
 	}
 	PNGWriteClose(png, info);

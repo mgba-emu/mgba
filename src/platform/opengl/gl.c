@@ -63,7 +63,7 @@ static inline void _setTexDims(int width, int height) {
 #endif
 }
 
-static void mGLContextSetLayerDimensions(struct VideoBackend* v, enum VideoLayer layer, const struct Rectangle* dims) {
+static void mGLContextSetLayerDimensions(struct VideoBackend* v, enum VideoLayer layer, const struct mRectangle* dims) {
 	struct mGLContext* context = (struct mGLContext*) v;
 	if (layer >= VIDEO_LAYER_MAX) {
 		return;
@@ -89,7 +89,7 @@ static void mGLContextSetLayerDimensions(struct VideoBackend* v, enum VideoLayer
 	}
 }
 
-static void mGLContextLayerDimensions(const struct VideoBackend* v, enum VideoLayer layer, struct Rectangle* dims) {
+static void mGLContextLayerDimensions(const struct VideoBackend* v, enum VideoLayer layer, struct mRectangle* dims) {
 	struct mGLContext* context = (struct mGLContext*) v;
 	if (layer >= VIDEO_LAYER_MAX) {
 		return;
@@ -141,13 +141,13 @@ static void _setFilter(struct VideoBackend* v) {
 	}
 }
 
-static void _setFrame(struct Rectangle* dims, int frameW, int frameH) {
+static void _setFrame(struct mRectangle* dims, struct mRectangle* frame) {
 	GLint viewport[4];
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	glScissor(viewport[0] + dims->x * viewport[2] / frameW,
-	          viewport[1] + dims->y * viewport[3] / frameH,
-	          dims->width * viewport[2] / frameW,
-	          dims->height * viewport[3] / frameH);
+	glScissor(viewport[0] + (dims->x - frame->x) * viewport[2] / frame->width,
+	          viewport[1] + (dims->y - frame->y) * viewport[3] / frame->height,
+	          dims->width * viewport[2] / frame->width,
+	          dims->height * viewport[3] / frame->height);
 	glTranslatef(dims->x, dims->y, 0);
 	glScalef(toPow2(dims->width), toPow2(dims->height), 1);
 }
@@ -162,9 +162,9 @@ void mGLContextDrawFrame(struct VideoBackend* v) {
 	glTexCoordPointer(2, GL_INT, 0, _glTexCoords);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	unsigned frameW, frameH;
-	VideoBackendGetFrameSize(v, &frameW, &frameH);
-	glOrtho(0, frameW, frameH, 0, 0, 1);
+	struct mRectangle frame;
+	VideoBackendGetFrame(v, &frame);
+	glOrtho(frame.x, frame.x + frame.width, frame.y + frame.height, frame.y, 0, 1);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
@@ -178,12 +178,12 @@ void mGLContextDrawFrame(struct VideoBackend* v) {
 		glBindTexture(GL_TEXTURE_2D, context->layers[layer]);
 		_setFilter(v);
 		glPushMatrix();
-		_setFrame(&context->layerDims[layer], frameW, frameH);
+		_setFrame(&context->layerDims[layer], &frame);
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		glPopMatrix();
 	}
 
-	_setFrame(&context->layerDims[VIDEO_LAYER_IMAGE], frameW, frameH);
+	_setFrame(&context->layerDims[VIDEO_LAYER_IMAGE], &frame);
 	if (v->interframeBlending) {
 		glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
 		glBlendColor(1, 1, 1, 0.5);

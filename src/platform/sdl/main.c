@@ -61,6 +61,7 @@ int main(int argc, char** argv) {
 		.useBios = true,
 		.rewindEnable = true,
 		.rewindBufferCapacity = 600,
+		.rewindBufferInterval = 1,
 		.audioBuffers = 1024,
 		.videoSync = false,
 		.audioSync = true,

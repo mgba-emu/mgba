@@ -8,9 +8,8 @@ gocha
 Jaime J. Denizard
 MichaelK__
 Miras Absar
+Nic Losby
 Petru-Sebastian Toader
 Stevoisiak
-Tyler Jenkins
 William K. Leung
-Zach
 Zhongchao Qian

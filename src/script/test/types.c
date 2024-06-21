@@ -5,9 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/test/suite.h"
 
-#include <mgba/script/context.h>
-#include <mgba/script/macros.h>
-#include <mgba/script/types.h>
+#include <mgba/script.h>
 
 struct Test {
 	int32_t a;
@@ -96,6 +94,12 @@ mSCRIPT_BIND_FUNCTION(boundIsHello, S32, isHello, 1, CHARP, str);
 mSCRIPT_BIND_FUNCTION(boundIsSequential, S32, isSequential, 1, LIST, list);
 mSCRIPT_BIND_FUNCTION(boundIsNullCharp, BOOL, isNullCharp, 1, CHARP, arg);
 mSCRIPT_BIND_FUNCTION(boundIsNullStruct, BOOL, isNullStruct, 1, S(Test), arg);
+mSCRIPT_BIND_FUNCTION_WITH_DEFAULTS(boundAddIntWithDefaults, S32, addInts, 2, S32, a, S32, b);
+
+mSCRIPT_DEFINE_FUNCTION_BINDING_DEFAULTS(boundAddIntWithDefaults)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_S32(0)
+mSCRIPT_DEFINE_DEFAULTS_END;
 
 M_TEST_DEFINE(voidArgs) {
 	struct mScriptFrame frame;
@@ -169,6 +173,30 @@ M_TEST_DEFINE(addS32) {
 	int32_t val;
 	assert_true(mScriptPopS32(&frame.returnValues, &val));
 	assert_int_equal(val, 3);
+	mScriptFrameDeinit(&frame);
+}
+
+M_TEST_DEFINE(addS32Defaults) {
+	struct mScriptFrame frame;
+	int32_t val;
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	mSCRIPT_PUSH(&frame.arguments, S32, 2);
+	assert_true(mScriptInvoke(&boundAddIntWithDefaults, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 3);
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	assert_true(mScriptInvoke(&boundAddIntWithDefaults, &frame));
+	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_int_equal(val, 1);
+	mScriptFrameDeinit(&frame);
+
+	mScriptFrameInit(&frame);
+	assert_false(mScriptInvoke(&boundAddIntWithDefaults, &frame));
 	mScriptFrameDeinit(&frame);
 }
 
@@ -1316,6 +1344,7 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(identityFunctionF32),
 	cmocka_unit_test(identityFunctionStruct),
 	cmocka_unit_test(addS32),
+	cmocka_unit_test(addS32Defaults),
 	cmocka_unit_test(subS32),
 	cmocka_unit_test(wrongArgCountLo),
 	cmocka_unit_test(wrongArgCountHi),

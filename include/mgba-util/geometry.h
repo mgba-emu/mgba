@@ -10,20 +10,21 @@
 
 CXX_GUARD_START
 
-struct Size {
+struct mSize {
     int width;
     int height;
 };
 
-struct Rectangle {
+struct mRectangle {
     int x;
     int y;
     int width;
     int height;
 };
 
-void RectangleUnion(struct Rectangle* dst, const struct Rectangle* add);
-void RectangleCenter(const struct Rectangle* ref, struct Rectangle* rect);
+void mRectangleUnion(struct mRectangle* dst, const struct mRectangle* add);
+bool mRectangleIntersection(struct mRectangle* dst, const struct mRectangle* add);
+void mRectangleCenter(const struct mRectangle* ref, struct mRectangle* rect);
 
 CXX_GUARD_END
 

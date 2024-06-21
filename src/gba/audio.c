@@ -106,6 +106,9 @@ void GBAAudioDeinit(struct GBAAudio* audio) {
 }
 
 void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
+	if (samples > 0x2000) {
+		samples = 0x2000;
+	}
 	mCoreSyncLockAudio(audio->p->sync);
 	audio->samples = samples;
 	blip_clear(audio->psg.left);
@@ -231,8 +234,22 @@ void GBAAudioWriteSOUNDCNT_HI(struct GBAAudio* audio, uint16_t value) {
 }
 
 void GBAAudioWriteSOUNDCNT_X(struct GBAAudio* audio, uint16_t value) {
+	GBAAudioSample(audio, mTimingCurrentTime(&audio->p->timing));
 	audio->enable = GBAudioEnableGetEnable(value);
 	GBAudioWriteNR52(&audio->psg, value);
+	if (!audio->enable) {
+		int i;
+		for (i = REG_SOUND1CNT_LO; i < REG_SOUNDCNT_HI; i += 2) {
+			audio->p->memory.io[i >> 1] = 0;
+		}
+		audio->psg.ch3.size = 0;
+		audio->psg.ch3.bank = 0;
+		audio->psg.ch3.volume = 0;
+		audio->volume = 0;
+		audio->volumeChA = 0;
+		audio->volumeChB = 0;
+		audio->p->memory.io[REG_SOUNDCNT_HI >> 1] &= 0xFF00;
+	}
 }
 
 void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {

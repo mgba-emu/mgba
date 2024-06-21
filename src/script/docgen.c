@@ -7,9 +7,7 @@
 #include <mgba/core/scripting.h>
 #include <mgba/core/version.h>
 #include <mgba/internal/script/types.h>
-#include <mgba/script/context.h>
-#include <mgba/script/input.h>
-#include <mgba/script/storage.h>
+#include <mgba/script.h>
 #include <mgba-util/string.h>
 
 struct mScriptContext context;
@@ -187,6 +185,9 @@ void explainClass(struct mScriptTypeClass* cls, int level) {
 					fprintf(out, "%s    comment: \"%s\"\n", indent, docstring);
 				}
 				docstring = NULL;
+			}
+			if (details->info.member.readonly) {
+				fprintf(out, "%s    readonly: true\n", indent);
 			}
 			fprintf(out, "%s    type: %s\n", indent, details->info.member.type->name);
 			break;
@@ -469,9 +470,10 @@ int main(int argc, char* argv[]) {
 
 	mScriptContextInit(&context);
 	mScriptContextAttachStdlib(&context);
+	mScriptContextAttachImage(&context);
+	mScriptContextAttachInput(&context);
 	mScriptContextAttachSocket(&context);
 	mScriptContextAttachStorage(&context);
-	mScriptContextAttachInput(&context);
 	mScriptContextSetTextBufferFactory(&context, NULL, NULL);
 
 	initTypes();

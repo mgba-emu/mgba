@@ -158,18 +158,34 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 	}
 	encoder->sampleRate = encoder->isampleRate;
 	if (codec->supported_samplerates) {
+		bool gotSampleRate = false;
+		int highestSampleRate = 0;
 		for (i = 0; codec->supported_samplerates[i]; ++i) {
+			if (codec->supported_samplerates[i] > highestSampleRate) {
+				highestSampleRate = codec->supported_samplerates[i];
+			}
 			if (codec->supported_samplerates[i] < encoder->isampleRate) {
 				continue;
 			}
-			if (encoder->sampleRate == encoder->isampleRate || encoder->sampleRate > codec->supported_samplerates[i]) {
+			if (!gotSampleRate || encoder->sampleRate > codec->supported_samplerates[i]) {
 				encoder->sampleRate = codec->supported_samplerates[i];
+				gotSampleRate = true;
 			}
+		}
+		if (!gotSampleRate) {
+			// There are no available sample rates that are higher than the input sample rate
+			// Let's use the highest available instead
+			encoder->sampleRate = highestSampleRate;
 		}
 	} else if (codec->id == AV_CODEC_ID_FLAC) {
 		// HACK: FLAC doesn't support > 65535Hz unless it's divisible by 10
 		if (encoder->sampleRate >= 65535) {
 			encoder->sampleRate -= encoder->isampleRate % 10;
+		}
+	} else if (codec->id == AV_CODEC_ID_VORBIS) {
+		// HACK: FLAC doesn't support > 48000Hz but doesn't tell us
+		if (encoder->sampleRate > 48000) {
+			encoder->sampleRate = 48000;
 		}
 	} else if (codec->id == AV_CODEC_ID_AAC) {
 		// HACK: AAC doesn't support 32768Hz (it rounds to 32000), but libfaac doesn't tell us that
@@ -890,7 +906,7 @@ void FFmpegEncoderSetInputSampleRate(struct FFmpegEncoder* encoder, int sampleRa
 }
 
 void _ffmpegOpenResampleContext(struct FFmpegEncoder* encoder) {
-	encoder->audioBufferSize = av_rescale_q(encoder->audioFrame->nb_samples, (AVRational) { 4, encoder->sampleRate }, (AVRational) { 1, encoder->isampleRate });
+	encoder->audioBufferSize = av_rescale_q(encoder->audioFrame->nb_samples, (AVRational) { 1, encoder->sampleRate }, (AVRational) { 1, encoder->isampleRate }) * 4;
 	encoder->audioBuffer = av_malloc(encoder->audioBufferSize);
 #ifdef USE_LIBAVRESAMPLE
 	encoder->resampleContext = avresample_alloc_context();

@@ -24,6 +24,7 @@ struct mCoreRewindContext {
 	size_t size;
 	struct VFile* previousState;
 	struct VFile* currentState;
+	int rewindFrameCounter;
 
 #ifndef DISABLE_THREADING
 	bool onThread;

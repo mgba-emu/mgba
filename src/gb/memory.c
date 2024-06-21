@@ -799,6 +799,10 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 			state->huc3Registers[i] |= memory->mbcState.huc3.registers[i * 2 + 1] << 4;
 		}
 		break;
+	case GB_POCKETCAM:
+		state->memory.pocketCam.registersActive = memory->mbcState.pocketCam.registersActive;
+		memcpy(state->pocketCamRegisters, memory->mbcState.pocketCam.registers, sizeof(memory->mbcState.pocketCam.registers));
+		break;
 	case GB_MMM01:
 		state->memory.mmm01.locked = memory->mbcState.mmm01.locked;
 		state->memory.mmm01.bank0 = memory->mbcState.mmm01.currentBank0;
@@ -949,6 +953,10 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 			memory->mbcState.huc3.registers[i * 2] = state->huc3Registers[i] & 0xF;
 			memory->mbcState.huc3.registers[i * 2 + 1] = state->huc3Registers[i] >> 4;
 		}
+		break;
+	case GB_POCKETCAM:
+		memory->mbcState.pocketCam.registersActive = state->memory.pocketCam.registersActive;
+		memcpy(memory->mbcState.pocketCam.registers, state->pocketCamRegisters, sizeof(memory->mbcState.pocketCam.registers));
 		break;
 	case GB_MMM01:
 		memory->mbcState.mmm01.locked = state->memory.mmm01.locked;

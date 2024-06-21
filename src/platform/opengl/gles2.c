@@ -194,7 +194,7 @@ static inline void _setTexDims(int width, int height) {
 #endif
 }
 
-static void mGLES2ContextSetLayerDimensions(struct VideoBackend* v, enum VideoLayer layer, const struct Rectangle* dims) {
+static void mGLES2ContextSetLayerDimensions(struct VideoBackend* v, enum VideoLayer layer, const struct mRectangle* dims) {
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	if (layer >= VIDEO_LAYER_MAX) {
 		return;
@@ -212,10 +212,9 @@ static void mGLES2ContextSetLayerDimensions(struct VideoBackend* v, enum VideoLa
 	context->layerDims[layer].x = dims->x;
 	context->layerDims[layer].y = dims->y;
 
-	unsigned newW;
-	unsigned newH;
-	VideoBackendGetFrameSize(v, &newW, &newH);
-	if (newW != context->width || newH != context->height) {
+	struct mRectangle frame;
+	VideoBackendGetFrame(v, &frame);
+	if (frame.width != context->width || frame.height != context->height) {
 		size_t n;
 		for (n = 0; n < context->nShaders; ++n) {
 			if (context->shaders[n].width < 0 || context->shaders[n].height < 0) {
@@ -224,12 +223,14 @@ static void mGLES2ContextSetLayerDimensions(struct VideoBackend* v, enum VideoLa
 		}
 		context->initialShader.dirty = true;
 		context->interframeShader.dirty = true;
-		context->width = newW;
-		context->height = newH;
+		context->width = frame.width;
+		context->height = frame.height;
 	}
+	context->x = frame.x;
+	context->y = frame.y;
 }
 
-static void mGLES2ContextLayerDimensions(const struct VideoBackend* v, enum VideoLayer layer, struct Rectangle* dims) {
+static void mGLES2ContextLayerDimensions(const struct VideoBackend* v, enum VideoLayer layer, struct mRectangle* dims) {
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	if (layer >= VIDEO_LAYER_MAX) {
 		return;
@@ -320,7 +321,7 @@ static void _drawShaderEx(struct mGLES2Context* context, struct mGLES2Shader* sh
 	}
 
 	if (layer >= 0 && layer < VIDEO_LAYER_MAX) {
-		glViewport(context->layerDims[layer].x, context->layerDims[layer].y, context->layerDims[layer].width, context->layerDims[layer].height);
+		glViewport(context->layerDims[layer].x - context->x, context->layerDims[layer].y - context->y, context->layerDims[layer].width, context->layerDims[layer].height);
 	} else {
 		glViewport(padW, padH, drawW, drawH);
 	}

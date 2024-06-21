@@ -873,7 +873,7 @@ int main(int argc, char* argv[]) {
 	u8 model = 0;
 	cfguInit();
 	CFGU_GetSystemModel(&model);
-	if (model != 3 /* o2DS */) {
+	if (model != CFG_MODEL_2DS) {
 		gfxSetWide(true);
 	}
 	cfguExit();

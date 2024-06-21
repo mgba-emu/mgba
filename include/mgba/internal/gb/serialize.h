@@ -420,6 +420,9 @@ struct GBSerializedState {
 				uint8_t bank0;
 			} mmm01;
 			struct {
+				uint8_t registersActive;
+			} pocketCam;
+			struct {
 				uint64_t lastLatch;
 				uint8_t reg;
 			} tama5;
@@ -484,6 +487,7 @@ struct GBSerializedState {
 
 	union {
 		uint8_t huc3Registers[0x80];
+		uint8_t pocketCamRegisters[0x36];
 		struct {
 			uint8_t registers[4];
 			uint8_t reserved[4];

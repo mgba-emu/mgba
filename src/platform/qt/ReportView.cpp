@@ -15,7 +15,7 @@
 #include <mgba/core/cheats.h>
 #include <mgba/core/serialize.h>
 #include <mgba/core/version.h>
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/vfs.h>
 
 #include "CoreController.h"
@@ -127,6 +127,7 @@ void ReportView::generateReport() {
 	swReport << QString("Build architecture: %1").arg(QSysInfo::buildCpuArchitecture());
 	swReport << QString("Run architecture: %1").arg(QSysInfo::currentCpuArchitecture());
 	swReport << QString("Qt version: %1").arg(QLatin1String(qVersion()));
+	swReport << QString("Qt QPA platform: %1").arg(QGuiApplication::platformName());
 #ifdef USE_FFMPEG
 	QStringList libavVers;
 	libavVers << QLatin1String(LIBAVCODEC_IDENT);

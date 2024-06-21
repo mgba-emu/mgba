@@ -12,6 +12,8 @@ CXX_GUARD_START
 
 #ifdef USE_PNG
 
+#include <mgba-util/image.h>
+
 // png.h defines its own version of restrict which conflicts with mGBA's.
 #ifdef restrict
 #undef restrict
@@ -25,13 +27,10 @@ enum {
 };
 
 png_structp PNGWriteOpen(struct VFile* source);
-png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height);
-png_infop PNGWriteHeaderA(png_structp png, unsigned width, unsigned height);
-png_infop PNGWriteHeader8(png_structp png, unsigned width, unsigned height);
-bool PNGWritePalette(png_structp png, png_infop info, const uint32_t* palette, unsigned entries);
-bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels);
-bool PNGWritePixelsA(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels);
-bool PNGWritePixels8(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels);
+png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height, enum mColorFormat);
+png_infop PNGWriteHeaderPalette(png_structp png, unsigned width, unsigned height, const uint32_t* palette, unsigned entries);
+bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels, enum mColorFormat);
+bool PNGWritePixelsPalette(png_structp png, unsigned width, unsigned height, unsigned stride, const void* pixels);
 bool PNGWriteCustomChunk(png_structp png, const char* name, size_t size, void* data);
 void PNGWriteClose(png_structp png, png_infop info);
 

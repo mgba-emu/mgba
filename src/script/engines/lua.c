@@ -60,6 +60,7 @@ static int _luaGetList(lua_State* lua);
 static int _luaLenList(lua_State* lua);
 
 static int _luaRequireShim(lua_State* lua);
+static int _luaPrintShim(lua_State* lua);
 
 static const char* _socketLuaSource =
 	"socket = {\n"
@@ -101,7 +102,7 @@ static const char* _socketLuaSource =
 	"        local cbid = self._nextCallback\n"
 	"        self._nextCallback = cbid + 1\n"
 	"        self._callbacks[event][cbid] = callback\n"
-	"        return id\n"
+	"        return cbid\n"
 	"      end,\n"
 	"      remove = function(self, cbid)\n"
 	"        for _, group in pairs(self._callbacks) do\n"
@@ -414,6 +415,14 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 	lua_getglobal(luaContext->lua, "require");
 	luaContext->require = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
 
+	lua_pushliteral(luaContext->lua, "log");
+	lua_pushcclosure(luaContext->lua, _luaPrintShim, 1);
+	lua_setglobal(luaContext->lua, "print");
+
+	lua_pushliteral(luaContext->lua, "warn");
+	lua_pushcclosure(luaContext->lua, _luaPrintShim, 1);
+	lua_setglobal(luaContext->lua, "warn");
+
 	HashTableInit(&luaContext->d.docroot, 0, (void (*)(void*)) mScriptValueDeref);
 
 	int status = luaL_dostring(luaContext->lua, _socketLuaSource);
@@ -449,7 +458,6 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 			mSCRIPT_KV_PAIR(connect, mSCRIPT_VALUE_DOC_FUNCTION(socket_connect)),
 			mSCRIPT_KV_SENTINEL
 		});
-		mScriptValueDeref(errors);
 		mScriptEngineSetDocstring(&luaContext->d, "socket", "A basic TCP socket library");
 		mScriptEngineSetDocstring(&luaContext->d, "socket.ERRORS",
 			"Error strings corresponding to the C.SOCKERR error codes, indexed both by name and by value");
@@ -463,6 +471,16 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 			"**Caution:** This is a blocking call. The emulator will not respond until "
 			"the connection either succeeds or fails");
 	}
+
+	mScriptEngineExportDocNamespace(&luaContext->d, "script", (struct mScriptKVPair[]) {
+		mSCRIPT_KV_PAIR(dir, mScriptStringCreateFromASCII("/")),
+		mSCRIPT_KV_PAIR(path, mScriptStringCreateFromASCII("/lua")),
+		mSCRIPT_KV_SENTINEL
+	});
+
+	mScriptEngineSetDocstring(&luaContext->d, "script", "Information about the currently loaded script");
+	mScriptEngineSetDocstring(&luaContext->d, "script.dir", "The path to the directory containing the script");
+	mScriptEngineSetDocstring(&luaContext->d, "script.path", "The path of the current script file");
 
 	return &luaContext->d;
 }
@@ -620,6 +638,14 @@ struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext,
 	if (i != len + 1) {
 		mScriptValueDeref(list);
 		return table;
+	}
+	for (i = 0; i < mScriptListSize(list->value.list); ++i) {
+		struct mScriptValue* value = mScriptListGetPointer(list->value.list, i);
+		if (value->type->base != mSCRIPT_TYPE_WRAPPER) {
+			continue;
+		}
+		value = mScriptValueUnwrap(value);
+		mScriptValueRef(value);
 	}
 	mScriptValueDeref(table);
 	return list;
@@ -885,7 +911,9 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 		luaContext->lastError = NULL;
 	}
 	char name[PATH_MAX + 1];
-	char dirname[PATH_MAX] = {0};
+	char dirname[PATH_MAX];
+	name[0] = '\0';
+	dirname[0] = '\0';
 	if (filename) {
 		if (*filename == '*') {
 			snprintf(name, sizeof(name), "=%s", filename + 1);
@@ -900,7 +928,11 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 				lastSlash = lastBackslash;
 			}
 			if (lastSlash) {
-				strncpy(dirname, filename, lastSlash - filename);
+				size_t len = lastSlash - filename + 1;
+				if (sizeof(dirname) < len) {
+					len = sizeof(dirname);
+				}
+				strlcpy(dirname, filename, len);
 			}
 			snprintf(name, sizeof(name), "@%s", filename);
 		}
@@ -913,14 +945,43 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 #endif
 	switch (ret) {
 	case LUA_OK:
+		// Create new _ENV
+		lua_newtable(luaContext->lua);
+
+		// Make the old _ENV the __index in the metatable
+		lua_newtable(luaContext->lua);
+		lua_pushliteral(luaContext->lua, "__index");
+		lua_getupvalue(luaContext->lua, -4, 1);
+		lua_rawset(luaContext->lua, -3);
+
+		lua_pushliteral(luaContext->lua, "__newindex");
+		lua_getupvalue(luaContext->lua, -4, 1);
+		lua_rawset(luaContext->lua, -3);
+
+		lua_setmetatable(luaContext->lua, -2);
+
+		lua_pushliteral(luaContext->lua, "script");
+		lua_newtable(luaContext->lua);
+
 		if (dirname[0]) {
-			lua_getupvalue(luaContext->lua, -1, 1);
 			lua_pushliteral(luaContext->lua, "require");
 			lua_pushstring(luaContext->lua, dirname);
 			lua_pushcclosure(luaContext->lua, _luaRequireShim, 1);
+			lua_rawset(luaContext->lua, -5);
+
+			lua_pushliteral(luaContext->lua, "dir");
+			lua_pushstring(luaContext->lua, dirname);
 			lua_rawset(luaContext->lua, -3);
-			lua_pop(luaContext->lua, 1);
 		}
+
+		if (name[0] == '@') {
+			lua_pushliteral(luaContext->lua, "path");
+			lua_pushstring(luaContext->lua, &name[1]);
+			lua_rawset(luaContext->lua, -3);
+		}
+
+		lua_rawset(luaContext->lua, -3);
+		lua_setupvalue(luaContext->lua, -2, 1);
 		luaContext->func = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
 		return true;
 	case LUA_ERRSYNTAX:
@@ -1237,7 +1298,7 @@ int _luaGetTable(lua_State* lua) {
 	}
 	lua_pop(lua, 2);
 
-	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);	
+	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
 	if (obj->type->base == mSCRIPT_TYPE_WRAPPER) {
 		obj = mScriptValueUnwrap(obj);
 	}
@@ -1474,4 +1535,38 @@ static int _luaRequireShim(lua_State* lua) {
 
 	int newtop = lua_gettop(luaContext->lua);
 	return newtop - oldtop + 1;
+}
+
+static int _luaPrintShim(lua_State* lua) {
+	int n = lua_gettop(lua);
+
+	lua_getglobal(lua, "console");
+	lua_insert(lua, 1);
+
+	// The first upvalue is either "log" or "warn"
+	lua_getglobal(lua, "console");
+	lua_pushvalue(lua, lua_upvalueindex(1));
+	lua_gettable(lua, -2);
+
+	lua_insert(lua, 1);
+	lua_pop(lua, 1);
+
+	// TODO when console:log is variadic and stringifies by itself:
+	// lua_call(lua, n + 1, 0);
+
+	// Until then, stringify and concatenate:
+	for (int i = 0; i < n; i++) {
+		luaL_tolstring(lua, i * 2 + 3, NULL);
+		lua_replace(lua, i * 2 + 3);
+		if (i == 0) {
+			lua_pushliteral(lua, "");
+		} else {
+			lua_pushliteral(lua, "\t");
+		}
+		lua_insert(lua, i * 2 + 3);
+	}
+	n = n * 2 - 1;
+	lua_concat(lua, n + 1);
+	lua_call(lua, 2, 0);
+	return 0;
 }

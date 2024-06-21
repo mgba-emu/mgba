@@ -1493,6 +1493,20 @@ void Window::setupMenu(QMenuBar* menubar) {
 	}
 	m_config->updateOption("fastForwardRatio");
 
+	addGameAction(tr("Increase fast forward speed"), "fastForwardUp", [this] {
+		float newRatio = m_config->getOption("fastForwardRatio", 1.0f).toFloat() + 1.0f;
+		if (newRatio >= 3.0f) {
+			m_config->setOption("fastForwardRatio", QVariant(newRatio));
+		}
+	}, "emu");
+
+	addGameAction(tr("Decrease fast forward speed"), "fastForwardDown", [this] {
+		float newRatio = m_config->getOption("fastForwardRatio").toFloat() - 1.0f;
+		if (newRatio >= 2.0f) {
+			m_config->setOption("fastForwardRatio", QVariant(newRatio));
+		}
+	}, "emu");
+
 	Action* rewindHeld = m_actions.addHeldAction(tr("Rewind (held)"), "holdRewind", [this](bool held) {
 		if (m_controller) {
 			m_controller->setRewinding(held);
@@ -1634,7 +1648,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addSeparator("av");
 
 	ConfigOption* mute = m_config->addOption("mute");
-	mute->addBoolean(tr("Mute"), &m_actions, "av");
+	Action* muteAction = mute->addBoolean(tr("Mute"), &m_actions, "av");
+	muteAction->setActive(m_config->getOption("mute").toInt());
 	mute->connect([this](const QVariant& value) {
 		m_config->setOption("fastForwardMute", static_cast<bool>(value.toInt()));
 		reloadConfig();
@@ -1774,7 +1789,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 void Window::setupOptions() {
 	ConfigOption* videoSync = m_config->addOption("videoSync");
-	videoSync->connect([this](const QVariant&) {
+	videoSync->connect([this](const QVariant& variant) {
 		reloadConfig();
 	}, this);
 
@@ -1825,6 +1840,11 @@ void Window::setupOptions() {
 
 	ConfigOption* rewindBufferCapacity = m_config->addOption("rewindBufferCapacity");
 	rewindBufferCapacity->connect([this](const QVariant&) {
+		reloadConfig();
+	}, this);
+
+	ConfigOption* rewindBufferInterval = m_config->addOption("rewindBufferInterval");
+	rewindBufferInterval->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 

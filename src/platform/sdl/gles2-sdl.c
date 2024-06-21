@@ -50,7 +50,7 @@ bool mSDLGLES2Init(struct mSDLRenderer* renderer) {
 #endif
 	renderer->gl2.d.init(&renderer->gl2.d, 0);
 
-	struct Rectangle dims = {
+	struct mRectangle dims = {
 		.x = 0,
 		.y = 0,
 		.width = renderer->width,

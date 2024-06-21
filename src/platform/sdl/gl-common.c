@@ -10,7 +10,7 @@
 #include <mgba/core/version.h>
 
 #ifdef USE_PNG
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <mgba-util/vfs.h>
 #endif
 
@@ -66,7 +66,7 @@ bool mSDLGLCommonLoadBackground(struct VideoBackend* context) {
 		goto done;
 	}
 
-	struct Rectangle dims = {
+	struct mRectangle dims = {
 		.width = width,
 		.height = height
 	};
@@ -136,13 +136,13 @@ void mSDLGLCommonRunloop(struct mSDLRenderer* renderer, void* user) {
 	if (mSDLGLCommonLoadBackground(v)) {
 		renderer->player.windowUpdated = true;
 
-		struct Rectangle frame;
-		VideoBackendGetFrame(v, &frame);
+		struct mRectangle frame;
+		v->layerDimensions(v, VIDEO_LAYER_IMAGE, &frame);
 		int i;
-		for (i = 0; i <= VIDEO_LAYER_IMAGE; ++i) {
-			struct Rectangle dims;
+		for (i = 0; i < VIDEO_LAYER_IMAGE; ++i) {
+			struct mRectangle dims;
 			v->layerDimensions(v, i, &dims);
-			RectangleCenter(&frame, &dims);
+			mRectangleCenter(&frame, &dims);
 			v->setLayerDimensions(v, i, &dims);
 		}
 
@@ -168,7 +168,7 @@ void mSDLGLCommonRunloop(struct mSDLRenderer* renderer, void* user) {
 			}
 		}
 		renderer->core->currentVideoSize(renderer->core, &renderer->width, &renderer->height);
-		struct Rectangle dims;
+		struct mRectangle dims;
 		v->layerDimensions(v, VIDEO_LAYER_IMAGE, &dims);
 		if (renderer->width != dims.width || renderer->height != dims.height) {
 			renderer->core->setVideoBuffer(renderer->core, renderer->outputBuffer, renderer->width);

@@ -483,6 +483,7 @@ void SettingsView::updateConfig() {
 	saveSetting("fastForwardMute", m_ui.muteFf);
 	saveSetting("rewindEnable", m_ui.rewind);
 	saveSetting("rewindBufferCapacity", m_ui.rewindCapacity);
+	saveSetting("rewindBufferInterval", m_ui.rewindBufferInterval);
 	saveSetting("resampleVideo", m_ui.resampleVideo);
 	saveSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	saveSetting("suspendScreensaver", m_ui.suspendScreensaver);
@@ -716,6 +717,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("fastForwardMute", m_ui.muteFf, m_ui.mute->isChecked());
 	loadSetting("rewindEnable", m_ui.rewind);
 	loadSetting("rewindBufferCapacity", m_ui.rewindCapacity);
+	loadSetting("rewindBufferInterval", m_ui.rewindBufferInterval);
 	loadSetting("resampleVideo", m_ui.resampleVideo);
 	loadSetting("allowOpposingDirections", m_ui.allowOpposingDirections);
 	loadSetting("suspendScreensaver", m_ui.suspendScreensaver);

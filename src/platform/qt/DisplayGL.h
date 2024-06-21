@@ -37,7 +37,7 @@
 #include "CoreController.h"
 #include "VideoProxy.h"
 
-#include "platform/video-backend.h"
+#include <mgba/feature/video-backend.h>
 
 class QOpenGLPaintDevice;
 class QOpenGLWidget;
@@ -109,6 +109,7 @@ public slots:
 	void showOSDMessages(bool enable) override;
 	void showFrameCounter(bool enable) override;
 	void filter(bool filter) override;
+	void swapInterval(int interval) override;
 	void framePosted() override;
 	void setShaders(struct VDir*) override;
 	void clearShaders() override;
@@ -121,8 +122,6 @@ protected:
 	virtual void resizeEvent(QResizeEvent*) override;
 
 private slots:
-	void startThread(int);
-	void setupProxyThread();
 	void updateContentSize();
 
 private:
@@ -133,14 +132,10 @@ private:
 
 	bool m_isDrawing = false;
 	bool m_hasStarted = false;
-	int m_threadStartPending = 0;
 	std::unique_ptr<PainterGL> m_painter;
 	QThread m_drawThread;
-	QThread m_proxyThread;
 	std::shared_ptr<CoreController> m_context;
 	mGLWidget* m_gl;
-	QOffscreenSurface m_proxySurface;
-	std::unique_ptr<QOpenGLContext> m_proxyContext;
 	QSize m_cachedContentSize;
 };
 
@@ -155,7 +150,6 @@ public:
 	void setContext(std::shared_ptr<CoreController>);
 	void setMessagePainter(MessagePainter*);
 	void enqueue(const uint32_t* backing);
-	void enqueue(GLuint tex);
 
 	void stop();
 
@@ -166,9 +160,6 @@ public:
 
 	void setVideoProxy(std::shared_ptr<VideoProxy>);
 	void interrupt();
-
-	// Run on main thread
-	void swapTex();
 
 public slots:
 	void create();
@@ -186,8 +177,8 @@ public slots:
 	void showOSD(bool enable);
 	void showFrameCounter(bool enable);
 	void filter(bool filter);
+	void swapInterval(int interval);
 	void resizeContext();
-	void updateFramebufferHandle();
 	void setBackgroundImage(const QImage&);
 
 	void setShaders(struct VDir*);
@@ -215,13 +206,6 @@ private:
 	QQueue<uint32_t*> m_queue;
 	uint32_t* m_buffer = nullptr;
 
-	std::array<GLuint, 3> m_bridgeTexes;
-	QQueue<GLuint> m_freeTex;
-	QQueue<GLuint> m_queueTex;
-
-	GLuint m_bridgeTexIn = std::numeric_limits<GLuint>::max();
-	GLuint m_bridgeTexOut = std::numeric_limits<GLuint>::max();
-
 	QPainter m_painter;
 	QMutex m_mutex;
 	QWindow* m_window;
@@ -248,6 +232,7 @@ private:
 	MessagePainter* m_messagePainter = nullptr;
 	QElapsedTimer m_delayTimer;
 	std::shared_ptr<VideoProxy> m_videoProxy;
+	int m_swapInterval = -1;
 };
 
 }

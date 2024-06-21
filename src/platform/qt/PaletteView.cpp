@@ -19,7 +19,7 @@
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
 #endif
-#include <mgba-util/export.h>
+#include <mgba-util/image/export.h>
 #include <mgba-util/vfs.h>
 
 using namespace QGBA;
@@ -145,9 +145,9 @@ void PaletteView::exportPalette(int start, int length) {
 		return;
 	}
 	if (filename.endsWith(".pal", Qt::CaseInsensitive)) {
-		exportPaletteRIFF(vf, length, &static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[start]);
+		mPaletteExportRIFF(vf, length, &static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[start]);
 	} else if (filename.endsWith(".act", Qt::CaseInsensitive)) {
-		exportPaletteACT(vf, length, &static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[start]);
+		mPaletteExportACT(vf, length, &static_cast<GBA*>(m_controller->thread()->core->board)->video.palette[start]);
 	}
 	vf->close(vf);
 }

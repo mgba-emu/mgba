@@ -19,18 +19,18 @@ using namespace QGBA;
 DebuggerConsoleController::DebuggerConsoleController(QObject* parent)
 	: DebuggerController(&m_cliDebugger.d, parent)
 {
-	m_backend.d.printf = printf;
-	m_backend.d.init = init;
-	m_backend.d.deinit = deinit;
-	m_backend.d.readline = readLine;
-	m_backend.d.lineAppend = lineAppend;
-	m_backend.d.historyLast = historyLast;
-	m_backend.d.historyAppend = historyAppend;
-	m_backend.d.interrupt = interrupt;
+	m_backend.printf = printf;
+	m_backend.init = init;
+	m_backend.deinit = deinit;
+	m_backend.readline = readLine;
+	m_backend.lineAppend = lineAppend;
+	m_backend.historyLast = historyLast;
+	m_backend.historyAppend = historyAppend;
+	m_backend.interrupt = interrupt;
 	m_backend.self = this;
 
 	CLIDebuggerCreate(&m_cliDebugger);
-	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend.d);
+	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend);
 }
 
 void DebuggerConsoleController::enterLine(const QString& line) {
@@ -60,7 +60,7 @@ void DebuggerConsoleController::attachInternal() {
 	CoreController::Interrupter interrupter(m_gameController);
 	QMutexLocker lock(&m_mutex);
 	mCore* core = m_gameController->thread()->core;
-	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend.d);
+	CLIDebuggerAttachBackend(&m_cliDebugger, &m_backend);
 	CLIDebuggerAttachSystem(&m_cliDebugger, core->cliDebuggerSystem(core));
 }
 

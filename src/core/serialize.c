@@ -13,7 +13,7 @@
 #include <mgba-util/vfs.h>
 
 #ifdef USE_PNG
-#include <mgba-util/png-io.h>
+#include <mgba-util/image/png-io.h>
 #include <png.h>
 #include <zlib.h>
 #endif
@@ -177,13 +177,13 @@ static bool _savePNGState(struct mCore* core, struct VFile* vf, struct mStateExt
 	unsigned width, height;
 	core->currentVideoSize(core, &width, &height);
 	png_structp png = PNGWriteOpen(vf);
-	png_infop info = PNGWriteHeader(png, width, height);
+	png_infop info = PNGWriteHeader(png, width, height, mCOLOR_NATIVE);
 	if (!png || !info) {
 		PNGWriteClose(png, info);
 		free(buffer);
 		return false;
 	}
-	PNGWritePixels(png, width, height, stride, pixels);
+	PNGWritePixels(png, width, height, stride, pixels, mCOLOR_NATIVE);
 	PNGWriteCustomChunk(png, "gbAs", len, buffer);
 	if (extdata) {
 		uint32_t i;
@@ -453,13 +453,14 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 #endif
 		vf->truncate(vf, stateSize);
 		void* state = vf->map(vf, stateSize, MAP_WRITE);
-		if (!state || !core->saveState(core, state)) {
+		if (!state) {
 			mStateExtdataDeinit(&extdata);
 			if (cheatVf) {
 				cheatVf->close(cheatVf);
 			}
 			return false;
 		}
+		core->saveState(core, state);
 		vf->unmap(vf, state, stateSize);
 		vf->seek(vf, stateSize, SEEK_SET);
 		mStateExtdataSerialize(&extdata, vf);

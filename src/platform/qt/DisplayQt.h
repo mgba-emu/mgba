@@ -32,6 +32,7 @@ public slots:
 	void lockAspectRatio(bool lock) override;
 	void lockIntegerScaling(bool lock) override;
 	void interframeBlending(bool enable) override;
+	void swapInterval(int) override {};
 	void filter(bool filter) override;
 	void framePosted() override;
 	void setShaders(struct VDir*) override {}

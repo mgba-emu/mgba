@@ -297,13 +297,6 @@ void CoreController::loadConfig(ConfigController* config) {
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
 	m_preload = config->getOption("preload").toInt();
 
-	int playerId = m_multiplayer->playerId(this) + 1;
-	QVariant savePlayerId = config->getOption("savePlayerId");
-	if (m_multiplayer->attached() < 2 && savePlayerId.canConvert<int>()) {
-		playerId = savePlayerId.toInt();
-	}
-	mCoreConfigSetOverrideIntValue(&m_threadContext.core->config, "savePlayerId", playerId);
-
 	QSize sizeBefore = screenDimensions();
 	m_activeBuffer.resize(256 * 224 * sizeof(color_t));
 	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), sizeBefore.width());
@@ -1000,9 +993,9 @@ void CoreController::attachPrinter() {
 	}
 	GB* gb = static_cast<GB*>(m_threadContext.core->board);
 	clearMultiplayerController();
-	GBPrinterCreate(&m_printer.d);
+	GBPrinterCreate(&m_printer);
 	m_printer.parent = this;
-	m_printer.d.print = [](GBPrinter* printer, int height, const uint8_t* data) {
+	m_printer.print = [](GBPrinter* printer, int height, const uint8_t* data) {
 		QGBPrinter* qPrinter = reinterpret_cast<QGBPrinter*>(printer);
 		QImage image(GB_VIDEO_HORIZONTAL_PIXELS, height, QImage::Format_Indexed8);
 		QVector<QRgb> colors;
@@ -1023,7 +1016,7 @@ void CoreController::attachPrinter() {
 		QMetaObject::invokeMethod(qPrinter->parent, "imagePrinted", Q_ARG(const QImage&, image));
 	};
 	Interrupter interrupter(this);
-	GBSIOSetDriver(&gb->sio, &m_printer.d.d);
+	GBSIOSetDriver(&gb->sio, &m_printer.d);
 }
 
 void CoreController::detachPrinter() {
@@ -1032,7 +1025,7 @@ void CoreController::detachPrinter() {
 	}
 	Interrupter interrupter(this);
 	GB* gb = static_cast<GB*>(m_threadContext.core->board);
-	GBPrinterDonePrinting(&m_printer.d);
+	GBPrinterDonePrinting(&m_printer);
 	GBSIOSetDriver(&gb->sio, nullptr);
 }
 
@@ -1041,7 +1034,7 @@ void CoreController::endPrint() {
 		return;
 	}
 	Interrupter interrupter(this);
-	GBPrinterDonePrinting(&m_printer.d);
+	GBPrinterDonePrinting(&m_printer);
 }
 #endif
 
@@ -1199,7 +1192,12 @@ void CoreController::updatePlayerSave() {
 	int savePlayerId = 0;
 	mCoreConfigGetIntValue(&m_threadContext.core->config, "savePlayerId", &savePlayerId);
 	if (savePlayerId == 0 || m_multiplayer->attached() > 1) {
-		savePlayerId = m_multiplayer->playerId(this) + 1;
+		if (savePlayerId == m_multiplayer->playerId(this) + 1) {
+			// Player 1 is using our save, so let's use theirs, at least for now.
+			savePlayerId = 1;
+		} else {
+			savePlayerId = m_multiplayer->playerId(this) + 1;
+		}
 	}
 
 	QString saveSuffix;

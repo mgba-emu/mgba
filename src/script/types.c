@@ -364,24 +364,6 @@ static uint32_t _hashString(const struct mScriptValue* val) {
 	return hash32(buffer, size, 0);
 }
 
-uint32_t _hashScalar(const struct mScriptValue* val) {
-	// From https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
-	uint32_t x = 0;
-	switch (val->type->base) {
-	case mSCRIPT_TYPE_SINT:
-		x = val->value.s32;
-		break;
-	case mSCRIPT_TYPE_UINT:
-	default:
-		x = val->value.u32;
-		break;
-	}
-	x = ((x >> 16) ^ x) * 0x45D9F3B;
-	x = ((x >> 16) ^ x) * 0x45D9F3B;
-	x = (x >> 16) ^ x;
-	return x;
-}
-
 bool _wstrCast(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) {
 	if (input->type->base != mSCRIPT_TYPE_WRAPPER) {
 		return false;
@@ -517,6 +499,16 @@ bool _castScalar(const struct mScriptValue* input, const struct mScriptType* typ
 	}
 	output->type = type;
 	return true;
+}
+
+uint32_t _hashScalar(const struct mScriptValue* val) {
+	// From https://stackoverflow.com/questions/664014/what-integer-hash-function-are-good-that-accepts-an-integer-hash-key
+	uint32_t x = 0;
+	_asUInt32(val, &x);
+	x = ((x >> 16) ^ x) * 0x45D9F3B;
+	x = ((x >> 16) ^ x) * 0x45D9F3B;
+	x = (x >> 16) ^ x;
+	return x;
 }
 
 uint32_t _valHash(const void* val, size_t len, uint32_t seed) {
@@ -1480,6 +1472,10 @@ bool mScriptObjectSet(struct mScriptValue* obj, const char* member, struct mScri
 		return true;
 	}
 
+	if (m->readonly) {
+		return false;
+	}
+
 	void* rawMember = (void *)((uintptr_t) obj->value.opaque + m->offset);
 	if (m->type != val->type) {
 		if (!mScriptCast(m->type, val, val)) {
@@ -1572,7 +1568,7 @@ void mScriptObjectFree(struct mScriptValue* value) {
 	if (value->type->base != mSCRIPT_TYPE_OBJECT) {
 		return;
 	}
-	if (value->flags & mSCRIPT_VALUE_FLAG_FREE_BUFFER) {
+	if (value->flags & (mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER)) {
 		mScriptClassInit(value->type->details.cls);
 		if (value->type->details.cls->free) {
 			struct mScriptValue deinitMember;
@@ -1588,6 +1584,8 @@ void mScriptObjectFree(struct mScriptValue* value) {
 				mScriptFrameDeinit(&frame);
 			}
 		}
+	}
+	if (value->flags & mSCRIPT_VALUE_FLAG_FREE_BUFFER) {
 		free(value->value.opaque);
 	}
 }

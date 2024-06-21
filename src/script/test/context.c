@@ -5,9 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "util/test/suite.h"
 
-#include <mgba/script/context.h>
-#include <mgba/script/macros.h>
-#include <mgba/script/types.h>
+#include <mgba/script.h>
 
 M_TEST_DEFINE(weakrefBasic) {
 	struct mScriptContext context;

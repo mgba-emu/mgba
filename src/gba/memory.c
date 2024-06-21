@@ -1747,15 +1747,13 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 		maxLoads -= previousLoads;
 	}
 
-	int32_t s = cpu->memory.activeSeqCycles16;
-	int32_t n2s = cpu->memory.activeNonseqCycles16 - cpu->memory.activeSeqCycles16 + 1;
-
 	// Figure out how many sequential loads we can jam in
+	int32_t s = cpu->memory.activeSeqCycles16;
 	int32_t stall = s + 1;
 	int32_t loads = 1;
 
 	while (stall < wait && loads < maxLoads) {
-		stall += s;
+		stall += s + 1;
 		++loads;
 	}
 	memory->lastPrefetchedPc = cpu->gprs[ARM_PC] + WORD_SIZE_THUMB * (loads + previousLoads - 1);
@@ -1766,10 +1764,10 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	}
 
 	// This instruction used to have an N, convert it to an S.
-	wait -= n2s;
+	wait -= cpu->memory.activeNonseqCycles16 - s;
 
 	// The next |loads|S waitstates disappear entirely, so long as they're all in a row
-	wait -= stall - 1;
+	wait -= stall;
 
 	return wait;
 }
