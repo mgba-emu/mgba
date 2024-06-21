@@ -37,7 +37,7 @@ static void GBATimerUpdateAudio(struct GBA* gba, int timerId, uint32_t cyclesLat
 }
 
 bool GBATimerUpdateCountUp(struct mTiming* timing, struct GBATimer* nextTimer, uint16_t* io, uint32_t cyclesLate) {
-	if (GBATimerFlagsIsCountUp(nextTimer->flags)) { // TODO: Does this increment while disabled?
+	if (GBATimerFlagsIsCountUp(nextTimer->flags) && GBATimerFlagsIsEnable(nextTimer->flags)) {
 		++*io;
 		if (!*io && GBATimerFlagsIsEnable(nextTimer->flags)) {
 			GBATimerUpdate(timing, nextTimer, io, cyclesLate);

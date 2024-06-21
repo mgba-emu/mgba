@@ -155,6 +155,10 @@ void ScriptingController::event(QObject* obj, QEvent* event) {
 	}
 
 	switch (event->type()) {
+	case QEvent::FocusOut:
+	case QEvent::WindowDeactivate:
+		mScriptContextClearKeys(&m_scriptContext);
+		return;
 	case QEvent::KeyPress:
 	case QEvent::KeyRelease: {
 		struct mScriptKeyEvent ev{mSCRIPT_EV_TYPE_KEY};

@@ -131,6 +131,50 @@ M_TEST_DEFINE(activeKeys) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(clearKeys) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("assert(not input:isKeyActive('a'))");
+	TEST_PROGRAM("assert(not input:isKeyActive('b'))");
+	TEST_PROGRAM("assert(#input:activeKeys() == 0)");
+
+	struct mScriptKeyEvent keyEvent = {
+		.d = { .type = mSCRIPT_EV_TYPE_KEY },
+		.state = mSCRIPT_INPUT_STATE_DOWN,
+		.key = 'a'
+	};
+	mScriptContextFireEvent(&context, &keyEvent.d);
+	// This changes it to STATE_HELD, but increments the down counter
+	mScriptContextFireEvent(&context, &keyEvent.d);
+	keyEvent.state = mSCRIPT_INPUT_STATE_DOWN;
+	keyEvent.key = 'b';
+	mScriptContextFireEvent(&context, &keyEvent.d);
+
+	TEST_PROGRAM("assert(input:isKeyActive('a'))");
+	TEST_PROGRAM("assert(input:isKeyActive('b'))");
+	TEST_PROGRAM("assert(#input:activeKeys() == 2)");
+
+	TEST_PROGRAM(
+		"up = {}\n"
+		"function cb(ev)\n"
+		"	assert(ev.type == C.EV_TYPE.KEY)\n"
+		"	assert(ev.state == C.INPUT_STATE.UP)\n"
+		"	table.insert(up, ev.key)\n"
+		"end\n"
+		"id = callbacks:add('key', cb)\n"
+	);
+
+	mScriptContextClearKeys(&context);
+
+	TEST_PROGRAM("assert(not input:isKeyActive('a'))");
+	TEST_PROGRAM("assert(not input:isKeyActive('b'))");
+	TEST_PROGRAM("assert(#input:activeKeys() == 0)");
+	TEST_PROGRAM("assert(#up == 2)");
+
+	mScriptContextDeinit(&context);
+}
+
+
 M_TEST_DEFINE(gamepadExport) {
 	SETUP_LUA;
 
@@ -176,5 +220,6 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptInput,
 	cmocka_unit_test(seq),
 	cmocka_unit_test(fireKey),
 	cmocka_unit_test(activeKeys),
+	cmocka_unit_test(clearKeys),
 	cmocka_unit_test(gamepadExport),
 )
