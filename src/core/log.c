@@ -50,7 +50,7 @@ const char* mLogCategoryName(int category) {
 }
 
 const char* mLogCategoryId(int category) {
-	if (category < MAX_CATEGORY) {
+	if (category >= 0 && category < MAX_CATEGORY) {
 		return _categoryIds[category];
 	}
 	return NULL;
@@ -88,6 +88,7 @@ void mLogExplicit(struct mLogger* context, int category, enum mLogLevel level, c
 	if (!context->filter || mLogFilterTest(context->filter, category, level)) {
 		context->log(context, category, level, format, args);
 	}
+	va_end(args);
 }
 
 void mLogFilterInit(struct mLogFilter* filter) {

@@ -571,20 +571,38 @@ static void _cleanOAM(struct GBVideoSoftwareRenderer* renderer, int y) {
 	}
 	int o = 0;
 	int i;
+	int16_t ids[GB_VIDEO_MAX_LINE_OBJ];
 	for (i = 0; i < GB_VIDEO_MAX_OBJ && o < GB_VIDEO_MAX_LINE_OBJ; ++i) {
 		uint8_t oy = renderer->d.oam->obj[i].y;
 		if (y < oy - 16 || y >= oy - 16 + spriteHeight) {
 			continue;
 		}
-		// TODO: Sort
-		renderer->obj[o].obj = renderer->d.oam->obj[i];
-		renderer->obj[o].index = i;
+		ids[o] = (renderer->d.oam->obj[i].x << 7) | i;
 		++o;
-		if (o == 10) {
-			break;
-		}
 	}
 	renderer->objMax = o;
+	if (renderer->model < GB_MODEL_CGB) {
+		// Terrble n^2 sort, but it's only 10 elements so it shouldn't be that bad
+		int16_t ids2[GB_VIDEO_MAX_LINE_OBJ];
+		int min = -1;
+		int j;
+		for (i = 0; i < o; ++i) {
+			int min2 = 0xFFFF;
+			for (j = 0; j < o; ++j) {
+				if (ids[j] > min && ids[j] < min2) {
+					min2 = ids[j];
+				}
+			}
+			min = min2;
+			ids2[i] = min;
+		}
+		memcpy(ids, ids2, sizeof(ids));
+	}
+	for (i = 0; i < o; ++i) {
+		int id = ids[i] & 0x7F;
+		renderer->obj[i].obj = renderer->d.oam->obj[id];
+		renderer->obj[i].index = id;
+	}
 }
 
 static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, int startX, int endX, int y) {

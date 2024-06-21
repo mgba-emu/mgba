@@ -46,6 +46,7 @@ Features:
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:
+ - GB Video: Implement DMG-style sprite ordering
  - GBA Audio: Fix improperly deserializing GB audio registers (fixes mgba.io/i/2793)
  - GBA Memory: Make VRAM access stalls only apply to BG RAM
  - GBA SIO: Fix SIOCNT SI pin value after attaching player 2 (fixes mgba.io/i/2805)
@@ -62,6 +63,9 @@ Other fixes:
  - Qt: Disable attempted linking betwen incompatible platforms (fixes mgba.io/i/2702)
  - Qt: Fix modifier key names in shortcut editor (fixes mgba.io/i/2817)
  - Qt: Fix a handful of edge cases with graphics viewers (fixes mgba.io/i/2827)
+ - Qt: Fix full-buffer rewind
+ - Qt: Fix crash if loading a shader fails
+ - Qt: Fix black screen when starting with a game (fixes mgba.io/i/2781)
  - Scripting: Fix receiving packets for client sockets
  - Scripting: Fix empty receive calls returning unknown error on Windows
 Misc:

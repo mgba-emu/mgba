@@ -14,6 +14,7 @@
 #include <mgba/internal/sm83/sm83.h>
 
 #include <mgba-util/memory.h>
+#include <mgba-util/vfs.h>
 
 mLOG_DEFINE_CATEGORY(GB_MEM, "GB Memory", "gb.memory");
 
@@ -474,13 +475,14 @@ uint8_t GBView8(struct SM83Core* cpu, uint16_t address, int segment) {
 		if (memory->rtcAccess) {
 			return memory->rtcRegs[memory->activeRtcReg];
 		} else if (memory->sramAccess) {
-			if (segment < 0 && memory->sram) {
-				return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
-			} else if ((size_t) segment * GB_SIZE_EXTERNAL_RAM < gb->sramSize) {
-				return memory->sram[(address & (GB_SIZE_EXTERNAL_RAM - 1)) + segment *GB_SIZE_EXTERNAL_RAM];
-			} else {
-				return 0xFF;
+			if (memory->sram) {
+				if (segment < 0) {
+					return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+				} else if ((size_t) segment * GB_SIZE_EXTERNAL_RAM < gb->sramSize) {
+					return memory->sram[(address & (GB_SIZE_EXTERNAL_RAM - 1)) + segment *GB_SIZE_EXTERNAL_RAM];
+				}
 			}
+			return 0xFF;
 		} else if (memory->mbcRead) {
 			return memory->mbcRead(memory, address);
 		} else if (memory->mbcType == GB_HuC3) {
@@ -1004,6 +1006,11 @@ void _pristineCow(struct GB* gb) {
 	memset(((uint8_t*) newRom) + gb->memory.romSize, 0xFF, GB_SIZE_CART_MAX - gb->memory.romSize);
 	if (gb->memory.rom == gb->memory.romBase) {
 		gb->memory.romBase = newRom;
+	}
+	if (gb->romVf) {
+		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->memory.romSize);
+		gb->romVf->close(gb->romVf);
+		gb->romVf = NULL;
 	}
 	gb->memory.rom = newRom;
 	GBMBCSwitchBank(gb, gb->memory.currentBank);

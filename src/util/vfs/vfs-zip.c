@@ -309,6 +309,9 @@ ssize_t _vfzRead(struct VFile* vf, void* buffer, size_t size) {
 	if (!vfz->buffer) {
 		vfz->bufferSize = BLOCK_SIZE;
 		vfz->buffer = malloc(BLOCK_SIZE);
+		if (vfz->readSize) {
+			abort();
+		}
 	}
 
 	while (bytesRead < size) {
@@ -714,7 +717,7 @@ struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode) {
 		}
 	}
 
-	struct VFileZip* vfz = malloc(sizeof(struct VFileZip));
+	struct VFileZip* vfz = calloc(1, sizeof(struct VFileZip));
 	vfz->uz = vdz->uz;
 	vfz->z = vdz->z;
 	vfz->buffer = 0;

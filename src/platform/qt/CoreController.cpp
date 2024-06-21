@@ -80,7 +80,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 
 	m_threadContext.resetCallback = [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
-		for (auto action : controller->m_resetActions) {
+		for (auto& action : controller->m_resetActions) {
 			action();
 		}
 
@@ -522,9 +522,6 @@ void CoreController::setRewinding(bool rewind) {
 }
 
 void CoreController::rewind(int states) {
-	if (!states) {
-		return;
-	}
 	if (!m_threadContext.core->opts.rewindEnable) {
 		emit statusPosted(tr("Rewinding not currently enabled"));
 	}

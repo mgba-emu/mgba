@@ -48,6 +48,11 @@ using QOpenGLFunctions_Baseline = QOpenGLFunctions_3_2_Core;
 
 using namespace QGBA;
 
+enum ThreadStartFrom {
+	START = 1,
+	PROXY = 2,
+};
+
 QHash<QSurfaceFormat, bool> DisplayGL::s_supports;
 
 uint qHash(const QSurfaceFormat& format, uint seed) {
@@ -238,7 +243,16 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	messagePainter()->resize(size(), devicePixelRatio());
 #endif
 
-	CoreController::Interrupter interrupter(controller);
+	startThread(ThreadStartFrom::START);
+}
+
+void DisplayGL::startThread(int from) {
+	m_threadStartPending |= from;
+	if (m_threadStartPending < 3) {
+		return;
+	}
+
+	CoreController::Interrupter interrupter(m_context);
 	QMetaObject::invokeMethod(m_painter.get(), "start");
 	if (!m_gl) {
 		if (shouldDisableUpdates()) {
@@ -313,6 +327,7 @@ void DisplayGL::stopDrawing() {
 			hide();
 		}
 		setUpdatesEnabled(true);
+		m_threadStartPending &= ~1;
 	}
 	m_context.reset();
 }
@@ -438,6 +453,7 @@ void DisplayGL::setupProxyThread() {
 #if defined(_WIN32) && defined(USE_EPOXY)
 		epoxy_handle_external_wglMakeCurrent();
 #endif
+		QMetaObject::invokeMethod(this, "startThread", Q_ARG(int, ThreadStartFrom::PROXY));
 	});
 	connect(m_painter.get(), &PainterGL::texSwapped, m_proxyContext.get(), [this]() {
 		if (!m_context->hardwareAccelerated()) {
@@ -918,8 +934,9 @@ void PainterGL::setShaders(struct VDir* dir) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
 	}
-	mGLES2ShaderLoad(&m_shader, dir);
-	mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
+	if (mGLES2ShaderLoad(&m_shader, dir)) {
+		mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
+	}
 
 	if (!m_started) {
 		m_gl->doneCurrent();

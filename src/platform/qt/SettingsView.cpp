@@ -51,7 +51,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 #ifdef M_CORE_GB
 	m_pageIndex[Page::GB] = 9;
 
-	for (auto model : GameBoy::modelList()) {
+	for (auto& model : GameBoy::modelList()) {
 		m_ui.gbModel->addItem(GameBoy::modelName(model), model);
 		m_ui.sgbModel->addItem(GameBoy::modelName(model), model);
 		m_ui.cgbModel->addItem(GameBoy::modelName(model), model);
@@ -350,7 +350,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	QLocale englishLocale("en");
 	m_ui.languages->addItem(englishLocale.nativeLanguageName(), englishLocale);
 	QDir ts(":/translations/");
-	for (auto name : ts.entryList()) {
+	for (auto& name : ts.entryList()) {
 		if (!name.endsWith(".qm") || !name.startsWith(binaryName)) {
 			continue;
 		}

@@ -405,7 +405,9 @@ void GBUnloadROM(struct GB* gb) {
 
 	if (gb->romVf) {
 #ifndef FIXED_ROM_BUFFER
-		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
+		if (gb->isPristine && gb->memory.rom) {
+			gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
+		}
 #endif
 		gb->romVf->close(gb->romVf);
 		gb->romVf = NULL;

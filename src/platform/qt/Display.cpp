@@ -130,9 +130,9 @@ void QGBA::Display::configure(ConfigController* config) {
 	config->updateOption("showOSD");
 	config->updateOption("showFrameCounter");
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3)
-	if (opts->shader) {
+	if (opts->shader && supportsShaders()) {
 		struct VDir* shader = VDirOpen(opts->shader);
-		if (shader && supportsShaders()) {
+		if (shader) {
 			setShaders(shader);
 			shader->close(shader);
 		}

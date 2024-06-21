@@ -343,6 +343,7 @@ constexpr const char* ConfigController::mruName(ConfigController::MRU mru) {
 	case MRU::Script:
 		return "recentScripts";
 	}
+	Q_UNREACHABLE();
 }
 
 void ConfigController::write() {
