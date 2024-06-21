@@ -17,7 +17,7 @@
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/memory.h>
 #define TEST_PLATFORM mPLATFORM_GBA
-#define RAM_BASE BASE_WORKING_IRAM
+#define RAM_BASE GBA_BASE_IWRAM
 #elif defined(M_CORE_GB)
 #include <mgba/internal/gb/memory.h>
 #define TEST_PLATFORM mPLATFORM_GB

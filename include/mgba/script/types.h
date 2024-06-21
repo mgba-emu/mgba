@@ -304,6 +304,8 @@ void mScriptValueWrap(struct mScriptValue* val, struct mScriptValue* out);
 struct mScriptValue* mScriptValueUnwrap(struct mScriptValue* val);
 const struct mScriptValue* mScriptValueUnwrapConst(const struct mScriptValue* val);
 
+void mScriptValueFollowPointer(struct mScriptValue* ptr, struct mScriptValue* out);
+
 struct mScriptValue* mScriptStringCreateEmpty(size_t size);
 struct mScriptValue* mScriptStringCreateFromBytes(const void* string, size_t size);
 struct mScriptValue* mScriptStringCreateFromUTF8(const char* string);

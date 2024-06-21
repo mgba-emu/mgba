@@ -651,7 +651,7 @@ static struct mScriptValue* _mScriptCoreAdapterGet(struct mScriptCoreAdapter* ad
 
 static void _mScriptCoreAdapterReset(struct mScriptCoreAdapter* adapter) {
 	adapter->core->reset(adapter->core);
-	mScriptContextTriggerCallback(adapter->context, "reset");
+	mScriptContextTriggerCallback(adapter->context, "reset", NULL);
 }
 
 mSCRIPT_DECLARE_STRUCT(mScriptCoreAdapter);

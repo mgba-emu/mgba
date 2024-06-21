@@ -111,6 +111,18 @@ bool GBASIOLockstepNodeLoad(struct GBASIODriver* driver) {
 		if (node->id) {
 			node->d.p->rcnt |= 4;
 			node->d.p->siocnt = GBASIOMultiplayerFillSlave(node->d.p->siocnt);
+
+			int try;
+			for (try = 0; try < 3; ++try) {
+				uint16_t masterSiocnt;
+				ATOMIC_LOAD(masterSiocnt, node->p->players[0]->d.p->siocnt);
+				if (ATOMIC_CMPXCHG(node->p->players[0]->d.p->siocnt, masterSiocnt, GBASIOMultiplayerClearSlave(masterSiocnt))) {
+					break;
+				}
+			}
+		} else {
+			node->d.p->rcnt &= ~4;
+			node->d.p->siocnt = GBASIOMultiplayerClearSlave(node->d.p->siocnt);
 		}
 		break;
 	case SIO_NORMAL_8:

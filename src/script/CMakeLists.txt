@@ -1,6 +1,7 @@
 include(ExportDirectory)
 set(SOURCE_FILES
 	context.c
+	input.c
 	socket.c
 	stdlib.c
 	types.c)
@@ -13,6 +14,7 @@ if(USE_LUA)
 	list(APPEND SOURCE_FILES engines/lua.c)
 	list(APPEND TEST_FILES
 		test/context.c
+		test/input.c
 		test/lua.c
 		test/stdlib.c)
 endif()

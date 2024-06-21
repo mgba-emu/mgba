@@ -296,8 +296,8 @@ static const int _isWSpecialRegister[REG_INTERNAL_MAX >> 1] = {
 	0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0,
 	// Audio
-	1, 1, 1, 0, 1, 0, 1, 0,
-	1, 0, 1, 0, 1, 0, 1, 0,
+	0, 0, 1, 0, 0, 0, 1, 0,
+	0, 0, 1, 0, 0, 0, 1, 0,
 	0, 0, 1, 0, 0, 0, 0, 0,
 	1, 1, 1, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 0, 0, 0, 0,
@@ -625,18 +625,18 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 		return;
 	}
 	if (address == REG_POSTFLG) {
-		gba->memory.io[(address & (SIZE_IO - 1)) >> 1] = value;
+		gba->memory.io[(address & (GBA_SIZE_IO - 1)) >> 1] = value;
 		return;
 	}
 	if (address >= REG_DEBUG_STRING && address - REG_DEBUG_STRING < sizeof(gba->debugString)) {
 		gba->debugString[address - REG_DEBUG_STRING] = value;
 		return;
 	}
-	if (address > SIZE_IO) {
+	if (address > GBA_SIZE_IO) {
 		return;
 	}
 	uint16_t value16 = value << (8 * (address & 1));
-	value16 |= (gba->memory.io[(address & (SIZE_IO - 1)) >> 1]) & ~(0xFF << (8 * (address & 1)));
+	value16 |= (gba->memory.io[(address & (GBA_SIZE_IO - 1)) >> 1]) & ~(0xFF << (8 * (address & 1)));
 	GBAIOWrite(gba, address & 0xFFFFFFFE, value16);
 }
 

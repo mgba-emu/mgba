@@ -9,17 +9,20 @@
 #include <QObject>
 
 #include <mgba/script/context.h>
+#include <mgba/script/input.h>
 #include <mgba/core/scripting.h>
 
 #include "VFileDevice.h"
 
 #include <memory>
 
+class QKeyEvent;
 class QTextDocument;
 
 namespace QGBA {
 
 class CoreController;
+class InputController;
 class ScriptingTextBuffer;
 class ScriptingTextBufferModel;
 
@@ -31,9 +34,12 @@ public:
 	~ScriptingController();
 
 	void setController(std::shared_ptr<CoreController> controller);
+	void setInputController(InputController* controller);
 
 	bool loadFile(const QString& path);
 	bool load(VFileDevice& vf, const QString& name);
+
+	void event(QObject* obj, QEvent* ev);
 
 	mScriptContext* context() { return &m_scriptContext; }
 	ScriptingTextBufferModel* textBufferModel() const { return m_bufferModel; }
@@ -49,10 +55,20 @@ public slots:
 	void reset();
 	void runCode(const QString& code);
 
+protected:
+	bool eventFilter(QObject*, QEvent*) override;
+
+private slots:
+	void updateGamepad();
+
 private:
 	void init();
 
-	static mScriptTextBuffer* createTextBuffer(void* context);
+	void attachGamepad();
+	void detachGamepad();
+
+	static uint32_t qtToScriptingKey(const QKeyEvent*);
+	static uint16_t qtToScriptingModifiers(Qt::KeyboardModifiers);
 
 	struct Logger : mLogger {
 		ScriptingController* p;
@@ -64,7 +80,10 @@ private:
 	QHash<QString, mScriptEngineContext*> m_engines;
 	ScriptingTextBufferModel* m_bufferModel;
 
+	mScriptGamepad m_gamepad;
+
 	std::shared_ptr<CoreController> m_controller;
+	InputController* m_inputController = nullptr;
 };
 
 }

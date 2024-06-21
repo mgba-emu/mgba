@@ -44,6 +44,8 @@ public:
 	bool isShowOSD() const { return m_showOSD; }
 	bool isShowFrameCounter() const { return m_showFrameCounter; }
 
+	QPoint normalizedPoint(CoreController*, const QPoint& localRef);
+
 	virtual void attach(std::shared_ptr<CoreController>);
 	virtual void configure(ConfigController*);
 	virtual void startDrawing(std::shared_ptr<CoreController>) = 0;

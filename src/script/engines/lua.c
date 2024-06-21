@@ -584,13 +584,18 @@ struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext)
 			return false;
 		}
 		mScriptTableInsert(table, key, value);
-		mScriptValueDeref(key);
+		if (key->type != mSCRIPT_TYPE_MS_STR) {
+			// Strings are added to the ref pool, so we need to keep it
+			// ref'd to prevent it from being collected prematurely
+			mScriptValueDeref(key);
+		}
 		mScriptValueDeref(value);
 	}
 	lua_pop(luaContext->lua, 1);
 
 	size_t len = mScriptTableSize(table);
 	if (!isList || !len) {
+		mScriptContextFillPool(luaContext->d.context, table);
 		return table;
 	}
 
@@ -600,6 +605,7 @@ struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext)
 		struct mScriptValue* value = mScriptTableLookup(table, &mSCRIPT_MAKE_S64(i));
 		if (!value) {
 			mScriptValueDeref(list);
+			mScriptContextFillPool(luaContext->d.context, table);
 			return table;
 		}
 		mScriptValueWrap(value, mScriptListAppend(list->value.list));
@@ -691,6 +697,31 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		if (!value) {
 			lua_pushnil(luaContext->lua);
 			return true;
+		}
+	}
+	struct mScriptValue derefPtr;
+	if (value->type->base == mSCRIPT_TYPE_OPAQUE) {
+		if (!value->type->details.type) {
+			return false;
+		}
+		mScriptValueFollowPointer(value, &derefPtr);
+		switch (derefPtr.type->base) {
+		case mSCRIPT_TYPE_VOID:
+		case mSCRIPT_TYPE_SINT:
+		case mSCRIPT_TYPE_UINT:
+		case mSCRIPT_TYPE_FLOAT:
+			value = &derefPtr;
+			break;
+		case mSCRIPT_TYPE_OBJECT:
+			value = mScriptValueAlloc(derefPtr.type);
+			value->value.opaque = derefPtr.value.opaque;
+			weakref = mScriptContextSetWeakref(luaContext->d.context, value);
+			needsWeakref = true;
+			mScriptContextDisownWeakref(luaContext->d.context, weakref);
+			mScriptValueDeref(value);
+			break;
+		default:
+			return false;
 		}
 	}
 	if (value->type == mSCRIPT_TYPE_MS_WEAKREF) {

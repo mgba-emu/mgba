@@ -22,6 +22,7 @@ struct Test {
 	void (*vfn0)(struct Test*);
 	void (*vfn1)(struct Test*, int);
 	int32_t (*icfn0)(const struct Test*);
+	struct Test* next;
 };
 
 static int identityInt(int in) {
@@ -83,6 +84,7 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(Test, v1, testV1, 1, S32, b);
 
 mSCRIPT_DEFINE_STRUCT(Test)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(Test, S32, i)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(Test, PS(Test), next)
 	mSCRIPT_DEFINE_STRUCT_METHOD(Test, ifn0)
 	mSCRIPT_DEFINE_STRUCT_METHOD(Test, ifn1)
 	mSCRIPT_DEFINE_STRUCT_METHOD(Test, icfn0)
@@ -726,6 +728,42 @@ M_TEST_DEFINE(callList) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(linkedList) {
+	SETUP_LUA;
+
+	struct Test first = {
+		.i = 1
+	};
+	struct Test second = {
+		.i = 2
+	};
+	struct mScriptValue a = mSCRIPT_MAKE_S(Test, &first);
+
+	assert_true(lua->setGlobal(lua, "l", &a));
+	TEST_PROGRAM("assert(l)");
+	TEST_PROGRAM("assert(l.i == 1)");
+	TEST_PROGRAM("assert(not l.next)");
+
+	first.next = &second;
+	TEST_PROGRAM("assert(l)");
+	TEST_PROGRAM("assert(l.i == 1)");
+	TEST_PROGRAM("assert(l.next)");
+	TEST_PROGRAM("assert(l.next.i == 2)");
+	TEST_PROGRAM("assert(not l.next.next)");
+
+	TEST_PROGRAM(
+		"n = l.next\n"
+		"function readN()\n"
+		"	assert(n)\n"
+		"	assert(n.i or not n.i)\n"
+		"end\n"
+		"assert(pcall(readN))\n");
+	// The weakref stored in `n` gets pruned between executions to avoid stale pointers
+	TEST_PROGRAM("assert(not pcall(readN))");
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(create),
 	cmocka_unit_test(loadGood),
@@ -744,4 +782,5 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptLua,
 	cmocka_unit_test(tableLookup),
 	cmocka_unit_test(tableIterate),
 	cmocka_unit_test(callList),
+	cmocka_unit_test(linkedList)
 )

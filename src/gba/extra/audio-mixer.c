@@ -245,7 +245,7 @@ static void _mp2kReload(struct GBAAudioMixer* mixer) {
 }
 
 bool _mp2kEngage(struct GBAAudioMixer* mixer, uint32_t address) {
-	if (address < BASE_WORKING_RAM) {
+	if (address < GBA_BASE_EWRAM) {
 		return false;
 	}
 	if (address != mixer->contextAddress) {

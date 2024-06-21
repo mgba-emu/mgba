@@ -10,6 +10,7 @@
 #include "DisplayGL.h"
 #include "DisplayQt.h"
 #include "LogController.h"
+#include "utils.h"
 
 #include <mgba-util/vfs.h>
 
@@ -191,4 +192,33 @@ void QGBA::Display::mouseMoveEvent(QMouseEvent* event) {
 void QGBA::Display::setSystemDimensions(int width, int height) {
 	m_coreWidth = width;
 	m_coreHeight = height;
+}
+
+QPoint QGBA::Display::normalizedPoint(CoreController* controller, const QPoint& localRef) {
+	QSize screen(controller->screenDimensions());
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+	QSize newSize((QSizeF(size()) * devicePixelRatioF()).toSize());
+#else
+	QSize newSize((QSizeF(size()) * devicePixelRatio()).toSize());
+#endif
+
+	if (m_lockAspectRatio) {
+		QGBA::lockAspectRatio(screen, newSize);
+	}
+
+	if (m_lockIntegerScaling) {
+		QGBA::lockIntegerScaling(screen, newSize);
+	}
+
+	QPointF newPos(localRef);
+	newPos -= QPointF(width() / 2.0, height() / 2.0);
+	newPos = QPointF(newPos.x() * screen.width(), newPos.y() * screen.height());
+	newPos = QPointF(newPos.x() / newSize.width(), newPos.y() / newSize.height());
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+	newPos *= devicePixelRatioF();
+#else
+	newPos *= devicePixelRatio();
+#endif
+	newPos += QPointF(screen.width() / 2.0, screen.height() / 2.0);
+	return newPos.toPoint();
 }

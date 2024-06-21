@@ -43,7 +43,7 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	case mPLATFORM_GBA:
 		m_boundary = 2048;
 		m_ui.tile->setMaxTile(3096);
-		m_addressBase = BASE_VRAM;
+		m_addressBase = GBA_BASE_VRAM;
 		m_addressWidth = 8;
 		m_ui.bgInfo->addCustomProperty("priority", tr("Priority"));
 		m_ui.bgInfo->addCustomProperty("screenBase", tr("Map base"));

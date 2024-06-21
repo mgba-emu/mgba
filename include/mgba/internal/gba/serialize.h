@@ -407,12 +407,12 @@ struct GBASerializedState {
 
 	uint32_t reserved[12];
 
-	uint16_t io[SIZE_IO >> 1];
-	uint16_t pram[SIZE_PALETTE_RAM >> 1];
-	uint16_t oam[SIZE_OAM >> 1];
-	uint16_t vram[SIZE_VRAM >> 1];
-	uint8_t iwram[SIZE_WORKING_IRAM];
-	uint8_t wram[SIZE_WORKING_RAM];
+	uint16_t io[GBA_SIZE_IO >> 1];
+	uint16_t pram[GBA_SIZE_PALETTE_RAM >> 1];
+	uint16_t oam[GBA_SIZE_OAM >> 1];
+	uint16_t vram[GBA_SIZE_VRAM >> 1];
+	uint8_t iwram[GBA_SIZE_IWRAM];
+	uint8_t wram[GBA_SIZE_EWRAM];
 };
 
 static_assert(sizeof(struct GBASerializedState) == 0x61000, "GBA savestate struct sized wrong");

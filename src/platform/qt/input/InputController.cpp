@@ -46,7 +46,7 @@ InputController::InputController(int playerId, QWidget* topLevel, QObject* paren
 		}
 	});
 
-	m_gamepadTimer.setInterval(50);
+	m_gamepadTimer.setInterval(15);
 	m_gamepadTimer.start();
 
 #ifdef BUILD_QT_MULTIMEDIA
@@ -332,6 +332,7 @@ void InputController::update() {
 			loadProfile(driver->type(), newProfile);
 		}
 	}
+	emit updated();
 }
 
 int InputController::pollEvents() {

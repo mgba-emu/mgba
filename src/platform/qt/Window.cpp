@@ -651,8 +651,11 @@ void Window::consoleOpen() {
 void Window::scriptingOpen() {
 	if (!m_scripting) {
 		m_scripting = std::make_unique<ScriptingController>();
+		m_scripting->setInputController(&m_inputController);
+		m_shortcutController->setScriptingController(m_scripting.get());
 		if (m_controller) {
 			m_scripting->setController(m_controller);
+			m_display->installEventFilter(m_scripting.get());
 		}
 	}
 	ScriptingView* view = new ScriptingView(m_scripting.get(), m_config);
@@ -1757,7 +1760,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 		if (m_controller) {
 			mCheatPressButton(m_controller->cheatDevice(), held);
 		}
-	}, "tools", QKeySequence(Qt::Key_Apostrophe));
+	}, "tools");
 
 	for (Action* action : m_gameActions) {
 		action->setEnabled(false);
@@ -2140,6 +2143,12 @@ void Window::attachDisplay() {
 	m_display->attach(m_controller);
 	connect(m_display.get(), &QGBA::Display::drawingStarted, this, &Window::changeRenderer);
 	m_display->startDrawing(m_controller);
+
+#ifdef ENABLE_SCRIPTING
+	if (m_scripting) {
+		m_display->installEventFilter(m_scripting.get());
+	}
+#endif
 }
 
 void Window::updateMute() {

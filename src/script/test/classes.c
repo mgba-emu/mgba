@@ -14,6 +14,7 @@ struct TestA {
 	int32_t i2;
 	int8_t b8;
 	int16_t hUnaligned;
+	char str[6];
 	struct mScriptValue table;
 	struct mScriptList list;
 	int32_t (*ifn0)(struct TestA*);
@@ -105,6 +106,7 @@ mSCRIPT_DEFINE_STRUCT(TestA)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestA, S32, i2)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestA, S8, b8)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestA, S16, hUnaligned)
+	mSCRIPT_DEFINE_STRUCT_MEMBER(TestA, CHARP, str)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestA, TABLE, table)
 	mSCRIPT_DEFINE_STRUCT_MEMBER(TestA, LIST, list)
 	mSCRIPT_DEFINE_STRUCT_METHOD(TestA, ifn0)
@@ -190,6 +192,13 @@ M_TEST_DEFINE(testALayout) {
 	assert_null(member->docstring);
 	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_S16);
 	assert_int_not_equal(member->offset, sizeof(int32_t) * 2 + 1);
+
+	member = HashTableLookup(&cls->instanceMembers, "str");
+	assert_non_null(member);
+	assert_string_equal(member->name, "str");
+	assert_null(member->docstring);
+	assert_ptr_equal(member->type, mSCRIPT_TYPE_MS_CHARP);
+	assert_int_equal(member->offset, &((struct TestA*) 0)->str);
 
 	member = HashTableLookup(&cls->instanceMembers, "table");
 	assert_non_null(member);
@@ -304,6 +313,8 @@ M_TEST_DEFINE(testAGet) {
 	s.table.type = mSCRIPT_TYPE_MS_TABLE;
 	s.table.type->alloc(&s.table);
 
+	strcpy(s.str, "test");
+
 	struct mScriptValue sval = mSCRIPT_MAKE_S(TestA, &s);
 	struct mScriptValue val;
 	struct mScriptValue compare;
@@ -322,6 +333,10 @@ M_TEST_DEFINE(testAGet) {
 
 	compare = mSCRIPT_MAKE_S32(4);
 	assert_true(mScriptObjectGet(&sval, "hUnaligned", &val));
+	assert_true(compare.type->equal(&compare, &val));
+
+	compare = mSCRIPT_MAKE_CHARP("test");
+	assert_true(mScriptObjectGet(&sval, "str", &val));
 	assert_true(compare.type->equal(&compare, &val));
 
 	compare = mSCRIPT_MAKE_S32(5);
