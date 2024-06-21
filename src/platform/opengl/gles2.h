@@ -70,6 +70,7 @@ struct mGLES2Shader {
 	GLuint texLocation;
 	GLuint texSizeLocation;
 	GLuint positionLocation;
+	GLuint outputSizeLocation;
 
 	struct mGLES2Uniform* uniforms;
 	size_t nUniforms;

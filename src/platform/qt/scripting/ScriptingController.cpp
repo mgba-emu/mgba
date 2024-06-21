@@ -20,6 +20,7 @@
 #include "scripting/ScriptingTextBufferModel.h"
 
 #include <mgba/script/input.h>
+#include <mgba/script/storage.h>
 #include <mgba-util/math.h>
 #include <mgba-util/string.h>
 
@@ -50,6 +51,9 @@ ScriptingController::ScriptingController(QObject* parent)
 
 	m_bufferModel = new ScriptingTextBufferModel(this);
 	QObject::connect(m_bufferModel, &ScriptingTextBufferModel::textBufferCreated, this, &ScriptingController::textBufferCreated);
+
+	connect(&m_storageFlush, &QTimer::timeout, this, &ScriptingController::flushStorage);
+	m_storageFlush.setInterval(5);
 
 	mScriptGamepadInit(&m_gamepad);
 
@@ -107,9 +111,11 @@ bool ScriptingController::load(VFileDevice& vf, const QString& name) {
 		emit error(QString::fromUtf8(m_activeEngine->getError(m_activeEngine)));
 		ok = false;
 	}
-	if (m_controller && m_controller->isPaused()) {
+	if (m_controller) {
 		m_controller->setSync(true);
-		m_controller->paused();
+		if (m_controller->isPaused()) {
+			m_controller->paused();
+		}
 	}
 	return ok;
 }
@@ -142,6 +148,12 @@ void ScriptingController::reset() {
 void ScriptingController::runCode(const QString& code) {
 	VFileDevice vf(code.toUtf8());
 	load(vf, "*prompt");
+}
+
+void ScriptingController::flushStorage() {
+#ifdef USE_JSON_C
+	mScriptStorageFlushAll(&m_scriptContext);
+#endif
 }
 
 bool ScriptingController::eventFilter(QObject* obj, QEvent* ev) {
@@ -293,6 +305,9 @@ void ScriptingController::detachGamepad() {
 void ScriptingController::init() {
 	mScriptContextInit(&m_scriptContext);
 	mScriptContextAttachStdlib(&m_scriptContext);
+#ifdef USE_JSON_C
+	mScriptContextAttachStorage(&m_scriptContext);
+#endif
 	mScriptContextAttachSocket(&m_scriptContext);
 	mScriptContextAttachInput(&m_scriptContext);
 	mScriptContextRegisterEngines(&m_scriptContext);
@@ -308,6 +323,10 @@ void ScriptingController::init() {
 	if (m_engines.count() == 1) {
 		m_activeEngine = *m_engines.begin();
 	}
+
+#ifdef USE_JSON_C
+	m_storageFlush.start();
+#endif
 }
 
 uint32_t ScriptingController::qtToScriptingKey(const QKeyEvent* event) {

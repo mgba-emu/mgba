@@ -27,7 +27,14 @@ static uint32_t _mScriptCallbackAdd(struct mScriptCallbackManager* adapter, stru
 		fn = mScriptValueUnwrap(fn);
 	}
 	uint32_t id = mScriptContextAddCallback(adapter->context, name->buffer, fn);
-	mScriptValueDeref(fn);
+	return id;
+}
+
+static uint32_t _mScriptCallbackOneshot(struct mScriptCallbackManager* adapter, struct mScriptString* name, struct mScriptValue* fn) {
+	if (fn->type->base == mSCRIPT_TYPE_WRAPPER) {
+		fn = mScriptValueUnwrap(fn);
+	}
+	uint32_t id = mScriptContextAddOneshot(adapter->context, name->buffer, fn);
 	return id;
 }
 
@@ -37,6 +44,7 @@ static void _mScriptCallbackRemove(struct mScriptCallbackManager* adapter, uint3
 
 mSCRIPT_DECLARE_STRUCT(mScriptCallbackManager);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCallbackManager, U32, add, _mScriptCallbackAdd, 2, STR, callback, WRAPPER, function);
+mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCallbackManager, U32, oneshot, _mScriptCallbackOneshot, 2, STR, callback, WRAPPER, function);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCallbackManager, remove, _mScriptCallbackRemove, 1, U32, cbid);
 
 static uint64_t mScriptMakeBitmask(struct mScriptList* list) {
@@ -87,6 +95,8 @@ mSCRIPT_DEFINE_STRUCT(mScriptCallbackManager)
 	)
 	mSCRIPT_DEFINE_DOCSTRING("Add a callback of the named type. The returned id can be used to remove it later")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCallbackManager, add)
+	mSCRIPT_DEFINE_DOCSTRING("Add a one-shot callback of the named type that will be automatically removed after called. The returned id can be used to remove it early")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCallbackManager, oneshot)
 	mSCRIPT_DEFINE_DOCSTRING("Remove a callback with the previously retuned id")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCallbackManager, remove)
 mSCRIPT_DEFINE_END;

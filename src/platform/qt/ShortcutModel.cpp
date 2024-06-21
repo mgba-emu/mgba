@@ -6,6 +6,7 @@
 #include "ShortcutModel.h"
 
 #include "ShortcutController.h"
+#include "utils.h"
 
 using namespace QGBA;
 
@@ -33,7 +34,7 @@ QVariant ShortcutModel::data(const QModelIndex& index, int role) const {
 	case 0:
 		return m_controller->visibleName(item->name);
 	case 1:
-		return shortcut ? QKeySequence(shortcut->shortcut()).toString(QKeySequence::NativeText) : QVariant();
+		return shortcut ? keyName(shortcut->shortcut()) : QVariant();
 	case 2:
 		if (!shortcut) {
 			return QVariant();

@@ -42,6 +42,7 @@ Misc:
 0.11.0: (Future)
 Features:
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
+ - Scripting: New `storage` API for saving data for a script, e.g. settings
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:
@@ -57,11 +58,19 @@ Other fixes:
  - Qt: Fix crash when attempting to use OpenGL 2.1 to 3.1 (fixes mgba.io/i/2794)
  - Qt: Disable sync while running scripts from main thread (fixes mgba.io/i/2738)
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
+ - Qt: Properly cap number of attached players by platform (fixes mgba.io/i/2807)
+ - Qt: Disable attempted linking betwen incompatible platforms (fixes mgba.io/i/2702)
+ - Qt: Fix modifier key names in shortcut editor (fixes mgba.io/i/2817)
+ - Qt: Fix a handful of edge cases with graphics viewers (fixes mgba.io/i/2827)
+ - Scripting: Fix receiving packets for client sockets
+ - Scripting: Fix empty receive calls returning unknown error on Windows
 Misc:
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
  - Qt: Include wayland QPA in AppImage (fixes mgba.io/i/2796)
  - Qt: Stop eating boolean action key events (fixes mgba.io/i/2636)
+ - Qt: Automatically change video file extension as appropriate
+ - Scripting: Add `callbacks:oneshot` for single-call callbacks
 
 0.10.1: (2023-01-10)
 Emulation fixes:

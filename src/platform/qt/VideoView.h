@@ -7,6 +7,7 @@
 
 #ifdef USE_FFMPEG
 
+#include <QStringList>
 #include <QWidget>
 
 #include <memory>
@@ -62,6 +63,8 @@ private slots:
 
 	void uncheckIncompatible();
 	void updatePresets();
+
+	void changeExtension();
 
 private:
 	struct Preset {
@@ -124,6 +127,7 @@ private:
 	static QMap<QString, QString> s_acodecMap;
 	static QMap<QString, QString> s_vcodecMap;
 	static QMap<QString, QString> s_containerMap;
+	static QMap<QString, QStringList> s_extensionMap;
 };
 
 }

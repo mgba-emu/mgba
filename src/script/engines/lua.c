@@ -36,8 +36,11 @@ static const char* _luaGetError(struct mScriptEngineContext*);
 
 static bool _luaCall(struct mScriptFrame*, void* context);
 
+static void _freeFrame(struct mScriptList* frame);
+static void _autofreeFrame(struct mScriptContext* context, struct mScriptList* frame);
+
 struct mScriptEngineContextLua;
-static bool _luaPushFrame(struct mScriptEngineContextLua*, struct mScriptList*, bool internal);
+static bool _luaPushFrame(struct mScriptEngineContextLua*, struct mScriptList*);
 static bool _luaPopFrame(struct mScriptEngineContextLua*, struct mScriptList*);
 static bool _luaInvoke(struct mScriptEngineContextLua*, struct mScriptFrame*);
 
@@ -131,7 +134,7 @@ static const char* _socketLuaSource =
 	"      end,\n"
 	"      connect = function(self, address, port)\n"
 	"        local status = self._s:connect(address, port)\n"
-	"        return socket._wrap(status)\n"
+	"        return self:_hook(status)\n"
 	"      end,\n"
 	"      listen = function(self, backlog)\n"
 	"        local status = self._s:listen(backlog or 1)\n"
@@ -520,6 +523,8 @@ struct mScriptValue* _luaRootScope(struct mScriptEngineContext* ctx) {
 		lua_pop(luaContext->lua, 1);
 		key = _luaCoerce(luaContext, false);
 		mScriptValueWrap(key, mScriptListAppend(list->value.list));
+		mScriptValueRef(key);
+		mScriptContextFillPool(luaContext->d.context, key);
 	}
 	lua_pop(luaContext->lua, 1);
 
@@ -538,11 +543,13 @@ struct mScriptValue* _luaCoerceFunction(struct mScriptEngineContextLua* luaConte
 	return value;
 }
 
-struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext) {
+struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext, struct Table* markedObjects) {
 	struct mScriptValue* table = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
 	bool isList = true;
 
 	lua_pushnil(luaContext->lua);
+
+	const void* tablePointer;
 	while (lua_next(luaContext->lua, -2) != 0) {
 		struct mScriptValue* value = NULL;
 		int type = lua_type(luaContext->lua, -1);
@@ -553,14 +560,20 @@ struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext)
 		case LUA_TFUNCTION:
 			value = _luaCoerce(luaContext, true);
 			break;
+		case LUA_TTABLE:
+			tablePointer = lua_topointer(luaContext->lua, -1);
+			// Ensure this table doesn't contain any cycles
+			if (!HashTableLookupBinary(markedObjects, &tablePointer, sizeof(tablePointer))) {
+				HashTableInsertBinary(markedObjects, &tablePointer, sizeof(tablePointer), (void*) tablePointer);
+				value = _luaCoerceTable(luaContext, markedObjects);
+			}
 		default:
-			// Don't let values be something that could contain themselves
 			break;
 		}
 		if (!value) {
-			lua_pop(luaContext->lua, 3);
+			lua_pop(luaContext->lua, type == LUA_TTABLE ? 2 : 3);
 			mScriptValueDeref(table);
-			return false;
+			return NULL;
 		}
 
 		struct mScriptValue* key = NULL;
@@ -584,18 +597,13 @@ struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext)
 			return false;
 		}
 		mScriptTableInsert(table, key, value);
-		if (key->type != mSCRIPT_TYPE_MS_STR) {
-			// Strings are added to the ref pool, so we need to keep it
-			// ref'd to prevent it from being collected prematurely
-			mScriptValueDeref(key);
-		}
+		mScriptValueDeref(key);
 		mScriptValueDeref(value);
 	}
 	lua_pop(luaContext->lua, 1);
 
 	size_t len = mScriptTableSize(table);
 	if (!isList || !len) {
-		mScriptContextFillPool(luaContext->d.context, table);
 		return table;
 	}
 
@@ -605,18 +613,15 @@ struct mScriptValue* _luaCoerceTable(struct mScriptEngineContextLua* luaContext)
 		struct mScriptValue* value = mScriptTableLookup(table, &mSCRIPT_MAKE_S64(i));
 		if (!value) {
 			mScriptValueDeref(list);
-			mScriptContextFillPool(luaContext->d.context, table);
 			return table;
 		}
 		mScriptValueWrap(value, mScriptListAppend(list->value.list));
 	}
 	if (i != len + 1) {
 		mScriptValueDeref(list);
-		mScriptContextFillPool(luaContext->d.context, table);
 		return table;
 	}
 	mScriptValueDeref(table);
-	mScriptContextFillPool(luaContext->d.context, list);
 	return list;
 }
 
@@ -628,6 +633,7 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext, bool
 
 	size_t size;
 	const void* buffer;
+	struct Table markedObjects;
 	struct mScriptValue* value = NULL;
 	switch (lua_type(luaContext->lua, -1)) {
 	case LUA_TNIL:
@@ -651,7 +657,6 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext, bool
 	case LUA_TSTRING:
 		buffer = lua_tolstring(luaContext->lua, -1, &size);
 		value = mScriptStringCreateFromBytes(buffer, size);
-		mScriptContextFillPool(luaContext->d.context, value);
 		break;
 	case LUA_TFUNCTION:
 		// This function pops the value internally via luaL_ref
@@ -664,19 +669,36 @@ struct mScriptValue* _luaCoerce(struct mScriptEngineContextLua* luaContext, bool
 		if (!pop) {
 			break;
 		}
-		return _luaCoerceTable(luaContext);
+		HashTableInit(&markedObjects, 0, NULL);
+		value = _luaCoerceTable(luaContext, &markedObjects);
+		HashTableDeinit(&markedObjects);
+		return value;
 	case LUA_TUSERDATA:
 		if (!lua_getmetatable(luaContext->lua, -1)) {
 			break;
 		}
 		luaL_getmetatable(luaContext->lua, "mSTStruct");
 		if (!lua_rawequal(luaContext->lua, -1, -2)) {
-			lua_pop(luaContext->lua, 2);
-			break;
+			lua_pop(luaContext->lua, 1);
+			luaL_getmetatable(luaContext->lua, "mSTList");
+			if (!lua_rawequal(luaContext->lua, -1, -2)) {
+				lua_pop(luaContext->lua, 1);
+				luaL_getmetatable(luaContext->lua, "mSTTable");
+				if (!lua_rawequal(luaContext->lua, -1, -2)) {
+					lua_pop(luaContext->lua, 2);
+					break;
+				}
+			}
 		}
 		lua_pop(luaContext->lua, 2);
 		value = lua_touserdata(luaContext->lua, -1);
 		value = mScriptContextAccessWeakref(luaContext->d.context, value);
+		if (value->type->base == mSCRIPT_TYPE_WRAPPER) {
+			value = mScriptValueUnwrap(value);
+		}
+		if (value) {
+			mScriptValueRef(value);
+		}
 		break;
 	}
 	if (pop) {
@@ -698,6 +720,7 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 			lua_pushnil(luaContext->lua);
 			return true;
 		}
+		mScriptContextFillPool(luaContext->d.context, value);
 	}
 	struct mScriptValue derefPtr;
 	if (value->type->base == mSCRIPT_TYPE_OPAQUE) {
@@ -788,6 +811,7 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		if (needsWeakref) {
 			*newValue = mSCRIPT_MAKE(WEAKREF, weakref);
 		} else {
+			mScriptValueRef(value);
 			mScriptValueWrap(value, newValue);
 		}
 		lua_getfield(luaContext->lua, LUA_REGISTRYINDEX, "mSTList");
@@ -798,6 +822,7 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		if (needsWeakref) {
 			*newValue = mSCRIPT_MAKE(WEAKREF, weakref);
 		} else {
+			mScriptValueRef(value);
 			mScriptValueWrap(value, newValue);
 		}
 		lua_getfield(luaContext->lua, LUA_REGISTRYINDEX, "mSTTable");
@@ -809,7 +834,6 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		newValue->refs = mSCRIPT_VALUE_UNREF;
 		newValue->type->alloc(newValue);
 		lua_pushcclosure(luaContext->lua, _luaThunk, 1);
-		mScriptValueDeref(value);
 		break;
 	case mSCRIPT_TYPE_OBJECT:
 		if (!value->value.opaque) {
@@ -820,6 +844,7 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		if (needsWeakref) {
 			*newValue = mSCRIPT_MAKE(WEAKREF, weakref);
 		} else {
+			mScriptValueRef(value);
 			mScriptValueWrap(value, newValue);
 		}
 		lua_getfield(luaContext->lua, LUA_REGISTRYINDEX, "mSTStruct");
@@ -920,16 +945,12 @@ const char* _luaGetError(struct mScriptEngineContext* context) {
 	return luaContext->lastError;
 }
 
-bool _luaPushFrame(struct mScriptEngineContextLua* luaContext, struct mScriptList* frame, bool internal) {
+bool _luaPushFrame(struct mScriptEngineContextLua* luaContext, struct mScriptList* frame) {
 	bool ok = true;
 	if (frame) {
 		size_t i;
 		for (i = 0; i < mScriptListSize(frame); ++i) {
 			struct mScriptValue* value = mScriptListGetPointer(frame, i);
-			if (internal && value->type->base == mSCRIPT_TYPE_WRAPPER) {
-				value = mScriptValueUnwrap(value);
-				mScriptContextFillPool(luaContext->d.context, value);
-			}
 			if (!_luaWrap(luaContext, value)) {
 				ok = false;
 				break;
@@ -953,8 +974,11 @@ bool _luaPopFrame(struct mScriptEngineContextLua* luaContext, struct mScriptList
 				ok = false;
 				break;
 			}
-			mScriptValueWrap(value, mScriptListAppend(frame));
-			mScriptValueDeref(value);
+			struct mScriptValue* tail = mScriptListAppend(frame);
+			mScriptValueWrap(value, tail);
+			if (tail->type == value->type) {
+				mScriptValueDeref(value);
+			}
 		}
 		if (count > i) {
 			lua_pop(luaContext->lua, count - i);
@@ -981,6 +1005,26 @@ bool _luaCall(struct mScriptFrame* frame, void* context) {
 	return true;
 }
 
+void _freeFrame(struct mScriptList* frame) {
+	size_t i;
+	for (i = 0; i < mScriptListSize(frame); ++i) {
+		struct mScriptValue* val = mScriptValueUnwrap(mScriptListGetPointer(frame, i));
+		if (val) {
+			mScriptValueDeref(val);
+		}
+	}
+}
+
+void _autofreeFrame(struct mScriptContext* context, struct mScriptList* frame) {
+	size_t i;
+	for (i = 0; i < mScriptListSize(frame); ++i) {
+		struct mScriptValue* val = mScriptValueUnwrap(mScriptListGetPointer(frame, i));
+		if (val) {
+			mScriptContextFillPool(context, val);
+		}
+	}
+}
+
 bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame* frame) {
 	int nargs = 0;
 	if (frame) {
@@ -992,7 +1036,7 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 		luaContext->lastError = NULL;
 	}
 
-	if (frame && !_luaPushFrame(luaContext, &frame->arguments, false)) {
+	if (frame && !_luaPushFrame(luaContext, &frame->arguments)) {
 		return false;
 	}
 
@@ -1057,6 +1101,7 @@ int _luaThunk(lua_State* lua) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
 	if (!_luaPopFrame(luaContext, &frame.arguments)) {
+		_freeFrame(&frame.arguments);
 		mScriptContextDrainPool(luaContext->d.context);
 		mScriptFrameDeinit(&frame);
 		luaL_traceback(lua, lua, "Error calling function (translating arguments into runtime)", 1);
@@ -1064,19 +1109,21 @@ int _luaThunk(lua_State* lua) {
 	}
 
 	struct mScriptValue* fn = lua_touserdata(lua, lua_upvalueindex(1));
+	_autofreeFrame(luaContext->d.context, &frame.arguments);
 	if (!fn || !mScriptInvoke(fn, &frame)) {
+		mScriptContextDrainPool(luaContext->d.context);
 		mScriptFrameDeinit(&frame);
 		luaL_traceback(lua, lua, "Error calling function (invoking failed)", 1);
 		return lua_error(lua);
 	}
 
-	if (!_luaPushFrame(luaContext, &frame.returnValues, true)) {
-		mScriptFrameDeinit(&frame);
+	bool ok = _luaPushFrame(luaContext, &frame.returnValues);
+	mScriptContextDrainPool(luaContext->d.context);
+	mScriptFrameDeinit(&frame);
+	if (!ok) {
 		luaL_traceback(lua, lua, "Error calling function (translating return values from runtime)", 1);
 		return lua_error(lua);
 	}
-	mScriptContextDrainPool(luaContext->d.context);
-	mScriptFrameDeinit(&frame);
 
 	return lua_gettop(luaContext->lua);
 }
@@ -1131,19 +1178,22 @@ int _luaSetObject(lua_State* lua) {
 	strlcpy(key, keyPtr, sizeof(key));
 	lua_pop(lua, 2);
 
-	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
-	if (!obj) {
-		luaL_traceback(lua, lua, "Invalid object", 1);
-		return lua_error(lua);
-	}
-
 	if (!val) {
 		luaL_traceback(lua, lua, "Error translating value to runtime", 1);
 		return lua_error(lua);
 	}
 
+	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
+	if (!obj) {
+		mScriptValueDeref(val);
+		mScriptContextDrainPool(luaContext->d.context);
+		luaL_traceback(lua, lua, "Invalid object", 1);
+		return lua_error(lua);
+	}
+
 	if (!mScriptObjectSet(obj, key, val)) {
 		mScriptValueDeref(val);
+		mScriptContextDrainPool(luaContext->d.context);
 		char error[MAX_KEY_SIZE + 16];
 		snprintf(error, sizeof(error), "Invalid key '%s'", key);
 		luaL_traceback(lua, lua, "Invalid key", 1);
@@ -1187,8 +1237,11 @@ int _luaGetTable(lua_State* lua) {
 	}
 	lua_pop(lua, 2);
 
-	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
-	if (!obj) {
+	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);	
+	if (obj->type->base == mSCRIPT_TYPE_WRAPPER) {
+		obj = mScriptValueUnwrap(obj);
+	}
+	if (!obj || obj->type != mSCRIPT_TYPE_MS_TABLE) {
 		luaL_traceback(lua, lua, "Invalid table", 1);
 		return lua_error(lua);
 	}
@@ -1220,7 +1273,10 @@ int _luaLenTable(lua_State* lua) {
 	lua_pop(lua, 1);
 
 	obj = mScriptContextAccessWeakref(luaContext->d.context, obj);
-	if (!obj) {
+	if (obj->type->base == mSCRIPT_TYPE_WRAPPER) {
+		obj = mScriptValueUnwrap(obj);
+	}
+	if (!obj || obj->type != mSCRIPT_TYPE_MS_TABLE) {
 		luaL_traceback(lua, lua, "Invalid table", 1);
 		return lua_error(lua);
 	}
@@ -1256,7 +1312,10 @@ static int _luaNextTable(lua_State* lua) {
 	lua_pop(lua, 2);
 
 	table = mScriptContextAccessWeakref(luaContext->d.context, table);
-	if (!table) {
+	if (table->type->base == mSCRIPT_TYPE_WRAPPER) {
+		table = mScriptValueUnwrap(table);
+	}
+	if (!table || table->type != mSCRIPT_TYPE_MS_TABLE) {
 		luaL_traceback(lua, lua, "Invalid table", 1);
 		return lua_error(lua);
 	}

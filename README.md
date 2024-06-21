@@ -143,9 +143,9 @@ Compiling requires using CMake 3.1 or newer. GCC, Clang, and Visual Studio 2019 
 
 #### Docker building
 
-The recommended way to build for most platforms is to use Docker. Several Docker images are provided that contain the requisite toolchain and dependencies for building mGBA across several platforms. 
+The recommended way to build for most platforms is to use Docker. Several Docker images are provided that contain the requisite toolchain and dependencies for building mGBA across several platforms.
 
-Note: If you are on an older Windows system before Windows 10, you may need to configure your Docker to use VirtualBox shared folders to correctly map your current `mgba` checkout directory to the Docker image's working directory. (See issue [#1985](https://mgba.io/i/1985) for details.) 
+Note: If you are on an older Windows system before Windows 10, you may need to configure your Docker to use VirtualBox shared folders to correctly map your current `mgba` checkout directory to the Docker image's working directory. (See issue [#1985](https://mgba.io/i/1985) for details.)
 
 To use a Docker image to build mGBA, simply run the following command while in the root of an mGBA checkout:
 
@@ -252,6 +252,7 @@ medusa has no hard dependencies, however, the following optional dependencies ar
 - SQLite3: for game databases.
 - libelf: for ELF loading.
 - Lua: for scripting.
+- json-c: for the scripting `storage` API.
 
 SQLite3, libpng, and zlib are included with the emulator, so they do not need to be externally compiled first.
 
@@ -311,7 +312,7 @@ Missing features on DS are
 Copyright
 ---------
 
-medusa is Copyright © 2013 – 2022 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
+medusa is Copyright © 2013 – 2023 Jeffrey Pfau. It is distributed under the [Mozilla Public License version 2.0](https://www.mozilla.org/MPL/2.0/). A copy of the license is available in the distributed LICENSE file.
 
 medusa contains the following third-party libraries:
 

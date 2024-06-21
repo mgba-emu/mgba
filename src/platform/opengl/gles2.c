@@ -301,7 +301,8 @@ void _drawShader(struct mGLES2Context* context, struct mGLES2Shader* shader) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shader->filter ? GL_LINEAR : GL_NEAREST);
 	glUseProgram(shader->program);
 	glUniform1i(shader->texLocation, 0);
-	glUniform2f(shader->texSizeLocation, context->d.width - padW, context->d.height - padH);
+	glUniform2f(shader->texSizeLocation, context->d.width, context->d.height);
+	glUniform2f(shader->outputSizeLocation, drawW, drawH);
 #ifdef BUILD_GLES3
 	if (shader->vao != (GLuint) -1) {
 		glBindVertexArray(shader->vao);
@@ -532,6 +533,7 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	shader->texLocation = glGetUniformLocation(shader->program, "tex");
 	shader->texSizeLocation = glGetUniformLocation(shader->program, "texSize");
 	shader->positionLocation = glGetAttribLocation(shader->program, "position");
+	shader->outputSizeLocation = glGetUniformLocation(shader->program, "outputSize");
 	size_t i;
 	for (i = 0; i < shader->nUniforms; ++i) {
 		shader->uniforms[i].location = glGetUniformLocation(shader->program, shader->uniforms[i].name);
@@ -1010,8 +1012,11 @@ bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 					}
 				}
 				u = mGLES2UniformListSize(&uniformVector);
-				struct mGLES2Uniform* uniformBlock = calloc(u, sizeof(*uniformBlock));
-				memcpy(uniformBlock, mGLES2UniformListGetPointer(&uniformVector, 0), sizeof(*uniformBlock) * u);
+				struct mGLES2Uniform* uniformBlock;
+				if (u) {
+					uniformBlock = calloc(u, sizeof(*uniformBlock));
+					memcpy(uniformBlock, mGLES2UniformListGetPointer(&uniformVector, 0), sizeof(*uniformBlock) * u);
+				}
 				mGLES2UniformListDeinit(&uniformVector);
 
 				mGLES2ShaderInit(&shaderBlock[n], vssrc, fssrc, width, height, scaling, uniformBlock, u);

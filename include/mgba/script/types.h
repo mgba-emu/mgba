@@ -35,16 +35,17 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_C_PTR void*
 #define mSCRIPT_TYPE_C_CPTR const void*
 #define mSCRIPT_TYPE_C_LIST struct mScriptList*
-#define mSCRIPT_TYPE_C_TABLE Table*
+#define mSCRIPT_TYPE_C_TABLE struct Table*
 #define mSCRIPT_TYPE_C_WRAPPER struct mScriptValue*
 #define mSCRIPT_TYPE_C_WEAKREF uint32_t
+#define mSCRIPT_TYPE_C_NUL void*
 #define mSCRIPT_TYPE_C_S(STRUCT) struct STRUCT*
 #define mSCRIPT_TYPE_C_CS(STRUCT) const struct STRUCT*
-#define mSCRIPT_TYPE_C_S_METHOD(STRUCT, NAME) _mSTStructFunctionType_ ## STRUCT ## _ ## NAME
 #define mSCRIPT_TYPE_C_PS(X) void
 #define mSCRIPT_TYPE_C_PCS(X) void
 #define mSCRIPT_TYPE_C_WSTR struct mScriptValue*
 #define mSCRIPT_TYPE_C_WLIST struct mScriptValue*
+#define mSCRIPT_TYPE_C_WTABLE struct mScriptValue*
 #define mSCRIPT_TYPE_C_W(X) struct mScriptValue*
 #define mSCRIPT_TYPE_C_CW(X) const struct mScriptValue*
 
@@ -66,13 +67,14 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_FIELD_TABLE table
 #define mSCRIPT_TYPE_FIELD_WRAPPER opaque
 #define mSCRIPT_TYPE_FIELD_WEAKREF u32
+#define mSCRIPT_TYPE_FIELD_NUL opaque
 #define mSCRIPT_TYPE_FIELD_S(STRUCT) opaque
 #define mSCRIPT_TYPE_FIELD_CS(STRUCT) copaque
-#define mSCRIPT_TYPE_FIELD_S_METHOD(STRUCT, NAME) copaque
 #define mSCRIPT_TYPE_FIELD_PS(STRUCT) opaque
 #define mSCRIPT_TYPE_FIELD_PCS(STRUCT) copaque
 #define mSCRIPT_TYPE_FIELD_WSTR opaque
 #define mSCRIPT_TYPE_FIELD_WLIST opaque
+#define mSCRIPT_TYPE_FIELD_WTABLE opaque
 #define mSCRIPT_TYPE_FIELD_W(TYPE) opaque
 #define mSCRIPT_TYPE_FIELD_CW(TYPE) opaque
 
@@ -94,13 +96,14 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_MS_TABLE (&mSTTable)
 #define mSCRIPT_TYPE_MS_WRAPPER (&mSTWrapper)
 #define mSCRIPT_TYPE_MS_WEAKREF (&mSTWeakref)
+#define mSCRIPT_TYPE_MS_NUL mSCRIPT_TYPE_MS_VOID
 #define mSCRIPT_TYPE_MS_S(STRUCT) (&mSTStruct_ ## STRUCT)
 #define mSCRIPT_TYPE_MS_CS(STRUCT) (&mSTStructConst_ ## STRUCT)
-#define mSCRIPT_TYPE_MS_S_METHOD(STRUCT, NAME) (&_mSTStructBindingType_ ## STRUCT ## _ ## NAME)
 #define mSCRIPT_TYPE_MS_PS(STRUCT) (&mSTStructPtr_ ## STRUCT)
 #define mSCRIPT_TYPE_MS_PCS(STRUCT) (&mSTStructPtrConst_ ## STRUCT)
 #define mSCRIPT_TYPE_MS_WSTR (&mSTStringWrapper)
 #define mSCRIPT_TYPE_MS_WLIST (&mSTListWrapper)
+#define mSCRIPT_TYPE_MS_WTABLE (&mSTTableWrapper)
 #define mSCRIPT_TYPE_MS_W(TYPE) (&mSTWrapper_ ## TYPE)
 #define mSCRIPT_TYPE_MS_CW(TYPE) (&mSTWrapperConst_ ## TYPE)
 #define mSCRIPT_TYPE_MS_DS(STRUCT) (&mSTStruct_doc_ ## STRUCT)
@@ -120,14 +123,16 @@ CXX_GUARD_START
 #define mSCRIPT_TYPE_CMP_STR(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_STR, TYPE)
 #define mSCRIPT_TYPE_CMP_CHARP(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_CHARP, TYPE)
 #define mSCRIPT_TYPE_CMP_LIST(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_LIST, TYPE)
+#define mSCRIPT_TYPE_CMP_TABLE(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_TABLE, TYPE)
 #define mSCRIPT_TYPE_CMP_PTR(TYPE) ((TYPE)->base >= mSCRIPT_TYPE_OPAQUE)
 #define mSCRIPT_TYPE_CMP_WRAPPER(TYPE) (true)
+#define mSCRIPT_TYPE_CMP_NUL(TYPE) mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_VOID, TYPE)
 #define mSCRIPT_TYPE_CMP_S(STRUCT) mSCRIPT_TYPE_MS_S(STRUCT)->name == _mSCRIPT_FIELD_NAME
 #define mSCRIPT_TYPE_CMP_CS(STRUCT) mSCRIPT_TYPE_MS_CS(STRUCT)->name == _mSCRIPT_FIELD_NAME
-#define mSCRIPT_TYPE_CMP_S_METHOD(STRUCT, NAME) mSCRIPT_TYPE_MS_S_METHOD(STRUCT, NAME)->name == _mSCRIPT_FIELD_NAME
+#define mSCRIPT_TYPE_CMP_WSTR(TYPE) (mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_WSTR, TYPE))
+#define mSCRIPT_TYPE_CMP_WLIST(TYPE) (mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_WLIST, TYPE))
+#define mSCRIPT_TYPE_CMP_WTABLE(TYPE) (mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_WTABLE, TYPE))
 #define mSCRIPT_TYPE_CMP(TYPE0, TYPE1) mSCRIPT_TYPE_CMP_ ## TYPE0(TYPE1)
-#define mSCRIPT_TYPE_CMP_WSTR(TYPE) (mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_STR, TYPE) || mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_CHARP, TYPE))
-#define mSCRIPT_TYPE_CMP_WLIST(TYPE) (mSCRIPT_TYPE_CMP_GENERIC(mSCRIPT_TYPE_MS_LIST, TYPE))
 
 enum mScriptTypeBase {
 	mSCRIPT_TYPE_VOID = 0,
@@ -183,6 +188,7 @@ extern const struct mScriptType mSTWrapper;
 extern const struct mScriptType mSTWeakref;
 extern const struct mScriptType mSTStringWrapper;
 extern const struct mScriptType mSTListWrapper;
+extern const struct mScriptType mSTTableWrapper;
 
 extern struct mScriptValue mScriptValueNull;
 
@@ -250,10 +256,10 @@ struct mScriptTypeClass {
 	bool internal;
 	struct Table instanceMembers;
 	struct Table castToMembers;
+	struct Table setters;
 	struct mScriptClassMember* alloc; // TODO
 	struct mScriptClassMember* free;
 	struct mScriptClassMember* get;
-	struct mScriptClassMember* set; // TODO
 };
 
 struct mScriptType {

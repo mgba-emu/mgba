@@ -9,6 +9,7 @@
 #include <QMutex>
 #include <QObject>
 
+#include <mgba/core/core.h>
 #include <mgba/core/lockstep.h>
 #ifdef M_CORE_GBA
 #include <mgba/internal/gba/sio/lockstep.h>
@@ -77,6 +78,8 @@ private:
 		GBASIOLockstep m_gbaLockstep;
 #endif
 	};
+
+	mPlatform m_platform = mPLATFORM_NONE;
 	QList<Player> m_players;
 	QMutex m_lock;
 };

@@ -184,13 +184,13 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 		switch (sio->mode) {
 		case SIO_NORMAL_8:
 		case SIO_NORMAL_32:
-			value |= 0x0004;
+			value = GBASIONormalFillSi(value);
 			if ((value & 0x0081) == 0x0081) {
-				if (value & 0x4000) {
+				if (GBASIONormalIsIrq(value)) {
 					// TODO: Test this on hardware to see if this is correct
 					GBARaiseIRQ(sio->p, GBA_IRQ_SIO, 0);
 				}
-				value &= ~0x0080;
+				value = GBASIONormalClearStart(value);
 			}
 			break;
 		case SIO_MULTI:

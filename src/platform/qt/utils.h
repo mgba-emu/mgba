@@ -85,4 +85,6 @@ constexpr const T& clamp(const T& v, const T& lo, const T& hi) {
 QString romFilters(bool includeMvl = false);
 bool extractMatchingFile(VDir* dir, std::function<QString (VDirEntry*)> filter);
 
+QString keyName(int key);
+
 }
