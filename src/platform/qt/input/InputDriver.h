@@ -44,8 +44,11 @@ public:
 	virtual QList<KeySource*> connectedKeySources() const;
 	virtual QList<Gamepad*> connectedGamepads() const;
 
-	virtual int activeKeySource() const;
-	virtual int activeGamepad() const;
+	virtual int activeKeySourceIndex() const;
+	virtual int activeGamepadIndex() const;
+
+	KeySource* activeKeySource();
+	Gamepad* activeGamepad();
 
 	virtual void setActiveKeySource(int);
 	virtual void setActiveGamepad(int);

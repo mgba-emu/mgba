@@ -1178,6 +1178,12 @@ static bool _accessRawMember(struct mScriptClassMember* member, void* raw, bool 
 		val->type = mSCRIPT_TYPE_MS_WRAPPER;
 		val->value.table = raw;
 		break;
+	case mSCRIPT_TYPE_LIST:
+		val->refs = mSCRIPT_VALUE_UNREF;
+		val->flags = 0;
+		val->type = mSCRIPT_TYPE_MS_LIST;
+		val->value.list = raw;
+		break;
 	case mSCRIPT_TYPE_FUNCTION:
 		val->refs = mSCRIPT_VALUE_UNREF;
 		val->flags = 0;

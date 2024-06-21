@@ -173,7 +173,7 @@ void SDLInputDriver::updateGamepads() {
 }
 #endif
 
-int SDLInputDriver::activeGamepad() const {
+int SDLInputDriver::activeGamepadIndex() const {
 	return m_sdlPlayer.joystick ? m_sdlPlayer.joystick->index : 0;
 }
 

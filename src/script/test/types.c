@@ -76,6 +76,14 @@ static int isSequential(struct mScriptList* list) {
 	return true;
 }
 
+static bool isNullCharp(const char* arg) {
+	return !arg;
+}
+
+static bool isNullStruct(struct Test* arg) {
+	return !arg;
+}
+
 mSCRIPT_BIND_FUNCTION(boundVoidOne, S32, voidOne, 0);
 mSCRIPT_BIND_VOID_FUNCTION(boundDiscard, discard, 1, S32, ignored);
 mSCRIPT_BIND_FUNCTION(boundIdentityInt, S32, identityInt, 1, S32, in);
@@ -86,6 +94,8 @@ mSCRIPT_BIND_FUNCTION(boundAddInts, S32, addInts, 2, S32, a, S32, b);
 mSCRIPT_BIND_FUNCTION(boundSubInts, S32, subInts, 2, S32, a, S32, b);
 mSCRIPT_BIND_FUNCTION(boundIsHello, S32, isHello, 1, CHARP, str);
 mSCRIPT_BIND_FUNCTION(boundIsSequential, S32, isSequential, 1, LIST, list);
+mSCRIPT_BIND_FUNCTION(boundIsNullCharp, BOOL, isNullCharp, 1, CHARP, arg);
+mSCRIPT_BIND_FUNCTION(boundIsNullStruct, BOOL, isNullStruct, 1, S(Test), arg);
 
 M_TEST_DEFINE(voidArgs) {
 	struct mScriptFrame frame;
@@ -1261,6 +1271,43 @@ M_TEST_DEFINE(invokeList) {
 	mScriptListDeinit(&list);
 }
 
+M_TEST_DEFINE(nullString) {
+	struct mScriptFrame frame;
+	bool res;
+	mScriptFrameInit(&frame);
+
+	mSCRIPT_PUSH(&frame.arguments, CHARP, "hi");
+	assert_true(mScriptInvoke(&boundIsNullCharp, &frame));
+	assert_true(mScriptPopBool(&frame.returnValues, &res));
+	assert_false(res);
+
+	mSCRIPT_PUSH(&frame.arguments, CHARP, NULL);
+	assert_true(mScriptInvoke(&boundIsNullCharp, &frame));
+	assert_true(mScriptPopBool(&frame.returnValues, &res));
+	assert_true(res);
+
+	mScriptFrameDeinit(&frame);
+}
+
+M_TEST_DEFINE(nullStruct) {
+	struct mScriptFrame frame;
+	struct Test v = {};
+	bool res;
+	mScriptFrameInit(&frame);
+
+	mSCRIPT_PUSH(&frame.arguments, S(Test), &v);
+	assert_true(mScriptInvoke(&boundIsNullStruct, &frame));
+	assert_true(mScriptPopBool(&frame.returnValues, &res));
+	assert_false(res);
+
+	mSCRIPT_PUSH(&frame.arguments, S(Test), NULL);
+	assert_true(mScriptInvoke(&boundIsNullStruct, &frame));
+	assert_true(mScriptPopBool(&frame.returnValues, &res));
+	assert_true(res);
+
+	mScriptFrameDeinit(&frame);
+}
+
 M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(voidArgs),
 	cmocka_unit_test(voidFunc),
@@ -1295,4 +1342,6 @@ M_TEST_SUITE_DEFINE(mScript,
 	cmocka_unit_test(stringIsHello),
 	cmocka_unit_test(stringIsNotHello),
 	cmocka_unit_test(invokeList),
+	cmocka_unit_test(nullString),
+	cmocka_unit_test(nullStruct),
 )

@@ -66,10 +66,7 @@ int InputMapper::mapAxes(QList<int16_t> axes) const {
 int InputMapper::mapHats(QList<GamepadHatEvent::Direction> hats) const {
 	int platformKeys = 0;
 	for (int i = 0; i < hats.count(); ++i) {
-		int platformKey = mInputMapHat(m_map, m_type, i, hats[i]);
-		if (platformKey >= 0) {
-			platformKeys |= 1 << platformKey;
-		}
+		platformKeys |= mInputMapHat(m_map, m_type, i, hats[i]);
 	}
 	return platformKeys;
 }

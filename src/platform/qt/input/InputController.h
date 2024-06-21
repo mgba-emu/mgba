@@ -82,8 +82,8 @@ public:
 	static const int32_t AXIS_THRESHOLD = 0x3000;
 
 	void setGamepadDriver(uint32_t type);
-	const InputDriver* gamepadDriver() const { return m_inputDrivers.value(m_sensorDriver).get(); }
-	InputDriver* gamepadDriver() { return m_inputDrivers.value(m_sensorDriver).get(); }
+	const InputDriver* gamepadDriver() const { return m_inputDrivers.value(m_gamepadDriver).get(); }
+	InputDriver* gamepadDriver() { return m_inputDrivers.value(m_gamepadDriver).get(); }
 
 	QStringList connectedGamepads(uint32_t type = 0) const;
 	int gamepadIndex(uint32_t type = 0) const;
@@ -115,7 +115,7 @@ signals:
 	void luminanceValueChanged(int value);
 
 public slots:
-	void testGamepad(int type);
+	void testGamepad(uint32_t type);
 	void update();
 
 	void increaseLuminanceLevel();
@@ -136,17 +136,19 @@ private slots:
 	void teardownCam();
 
 private:
-	void postPendingEvent(int);
-	void clearPendingEvent(int);
-	bool hasPendingEvent(int) const;
+	void postPendingEvent(int key);
+	void clearPendingEvent(int key);
+	void postPendingEvents(int keys);
+	void clearPendingEvents(int keys);
+	bool hasPendingEvent(int key) const;
 	void sendGamepadEvent(QEvent*);
 
 	Gamepad* gamepad(uint32_t type);
 	QList<Gamepad*> gamepads();
 
-	QSet<int> activeGamepadButtons(int type);
-	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(int type);
-	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(int type);
+	QSet<int> activeGamepadButtons(uint32_t type);
+	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(uint32_t type);
+	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(uint32_t type);
 
 	struct InputControllerLux : GBALuminanceSource {
 		InputController* p;

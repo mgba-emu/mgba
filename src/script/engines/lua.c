@@ -738,7 +738,19 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		}
 		break;
 	case mSCRIPT_TYPE_STRING:
-		lua_pushlstring(luaContext->lua, value->value.string->buffer, value->value.string->size);
+		if (!value->value.string) {
+			lua_pushnil(luaContext->lua);
+			break;
+		}
+		if (value->type == mSCRIPT_TYPE_MS_STR) {
+			lua_pushlstring(luaContext->lua, value->value.string->buffer, value->value.string->size);
+			break;
+		}
+		if (value->type == mSCRIPT_TYPE_MS_CHARP) {
+			lua_pushstring(luaContext->lua, value->value.copaque);
+			break;
+		}
+		ok = false;
 		break;
 	case mSCRIPT_TYPE_LIST:
 		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
@@ -769,6 +781,10 @@ bool _luaWrap(struct mScriptEngineContextLua* luaContext, struct mScriptValue* v
 		mScriptValueDeref(value);
 		break;
 	case mSCRIPT_TYPE_OBJECT:
+		if (!value->value.opaque) {
+			lua_pushnil(luaContext->lua);
+			break;
+		}
 		newValue = lua_newuserdata(luaContext->lua, sizeof(*newValue));
 		if (needsWeakref) {
 			*newValue = mSCRIPT_MAKE(WEAKREF, weakref);

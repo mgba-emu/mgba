@@ -12,8 +12,9 @@ set(TEST_FILES
 if(USE_LUA)
 	list(APPEND SOURCE_FILES engines/lua.c)
 	list(APPEND TEST_FILES
-		test/stdlib.c
-		test/lua.c)
+		test/context.c
+		test/lua.c
+		test/stdlib.c)
 endif()
 
 source_group("Scripting" FILES ${SOURCE_FILES})

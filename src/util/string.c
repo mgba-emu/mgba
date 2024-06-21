@@ -5,11 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba-util/string.h>
 
-#include <mgba-util/vector.h>
-
 #include <string.h>
-
-DEFINE_VECTOR(StringList, char*);
 
 #ifndef HAVE_STRNDUP
 char* strndup(const char* start, size_t len) {

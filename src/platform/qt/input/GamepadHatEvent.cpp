@@ -16,11 +16,11 @@ GamepadHatEvent::GamepadHatEvent(QEvent::Type pressType, int hatId, Direction di
 	: QEvent(pressType)
 	, m_hatId(hatId)
 	, m_direction(direction)
-	, m_key(-1)
+	, m_keys(0)
 {
 	ignore();
 	if (controller && controller->map()) {
-		m_key = mInputMapHat(controller->map(), type, hatId, direction);
+		m_keys = mInputMapHat(controller->map(), type, hatId, direction);
 	}
 }
 

@@ -89,6 +89,7 @@ uint32_t mScriptContextSetWeakref(struct mScriptContext*, struct mScriptValue* v
 struct mScriptValue* mScriptContextMakeWeakref(struct mScriptContext*, struct mScriptValue* value);
 struct mScriptValue* mScriptContextAccessWeakref(struct mScriptContext*, struct mScriptValue* value);
 void mScriptContextClearWeakref(struct mScriptContext*, uint32_t weakref);
+void mScriptContextDisownWeakref(struct mScriptContext*, uint32_t weakref);
 
 void mScriptContextAttachStdlib(struct mScriptContext* context);
 void mScriptContextAttachSocket(struct mScriptContext* context);
