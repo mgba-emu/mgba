@@ -32,3 +32,4 @@ version.c
 *.sav
 *.ss0
 /out/build
+/vcpkg_installed
