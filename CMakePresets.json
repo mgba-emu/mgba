@@ -1,27 +1,30 @@
 {
-    "version": 3,
-    "configurePresets": [
-        {
-            "name": "clang",
-            "generator": "Ninja",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            }
-        },
-        {
-            "name": "gcc",
-            "generator": "Ninja",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            }
-        },
-        {
-            "name": "debug",
-            "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "C:/Projects/vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmake"
-            }
-        }
-    ]
+ "version": 3,
+ "configurePresets": [
+  {
+   "name": "clang",
+   "generator": "Ninja",
+   "cacheVariables": {
+    "CMAKE_BUILD_TYPE": "Debug",
+    "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+   }
+  },
+  {
+   "name": "gcc",
+   "generator": "Ninja",
+   "cacheVariables": {
+    "CMAKE_BUILD_TYPE": "Debug",
+    "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+   }
+  },
+  {
+   "name": "debug",
+   "generator": "Ninja",
+   "cacheVariables": {
+    "CMAKE_BUILD_TYPE": "Debug",
+    "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+    "CMAKE_TOOLCHAIN_FILE": "C:/Projects/vcpkg/vcpkg/scripts/buildsystems/vcpkg.cmake"
+   }
+  }
+ ]
 }
