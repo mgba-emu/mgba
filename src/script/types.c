@@ -895,9 +895,8 @@ struct mScriptValue* mScriptValueAlloc(const struct mScriptType* type) {
 }
 
 void mScriptValueRef(struct mScriptValue* val) {
-	if (val->refs == INT_MAX) {
-		abort();
-	} else if (val->refs == mSCRIPT_VALUE_UNREF) {
+	mASSERT(val->refs != INT_MAX);
+	if (val->refs == mSCRIPT_VALUE_UNREF) {
 		return;
 	}
 	++val->refs;
@@ -1238,12 +1237,8 @@ static void _mScriptClassInit(struct mScriptTypeClass* cls, const struct mScript
 				member->docstring = docstring;
 				docstring = NULL;
 			}
-			if (detail->info.member.type->base != mSCRIPT_TYPE_FUNCTION) {
-				abort();
-			}
-			if (detail->info.member.type->details.function.parameters.count != 3) {
-				abort();
-			}
+			mASSERT(detail->info.member.type->base == mSCRIPT_TYPE_FUNCTION);
+			mASSERT(detail->info.member.type->details.function.parameters.count == 3);
 			HashTableInsert(&cls->setters, detail->info.member.type->details.function.parameters.entries[2]->name, member);
 			break;
 		case mSCRIPT_CLASS_INIT_INTERNAL:

@@ -309,9 +309,7 @@ ssize_t _vfzRead(struct VFile* vf, void* buffer, size_t size) {
 	if (!vfz->buffer) {
 		vfz->bufferSize = BLOCK_SIZE;
 		vfz->buffer = malloc(BLOCK_SIZE);
-		if (vfz->readSize) {
-			abort();
-		}
+		mASSERT(!vfz->readSize);
 	}
 
 	while (bytesRead < size) {

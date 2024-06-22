@@ -197,14 +197,8 @@ static void _regenerateTile256(struct mTileCache* cache, color_t* tile, unsigned
 static inline color_t* _tileLookup(struct mTileCache* cache, unsigned tileId, unsigned paletteId) {
 	if (mTileCacheConfigurationIsShouldStore(cache->config)) {
 		unsigned tiles = mTileCacheSystemInfoGetMaxTiles(cache->sysConfig);
-#ifndef NDEBUG
-		if (tileId >= tiles) {
-			abort();
-		}
-		if (paletteId >= 1U << mTileCacheSystemInfoGetPaletteCount(cache->sysConfig)) {
-			abort();
-		}
-#endif
+		mASSERT(tileId < tiles);
+		mASSERT_DEBUG(paletteId < 1U << mTileCacheSystemInfoGetPaletteCount(cache->sysConfig));
 		return &cache->cache[(tileId + paletteId * tiles) << 6];
 	} else {
 		return cache->temporaryTile;

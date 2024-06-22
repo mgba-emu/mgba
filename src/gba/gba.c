@@ -339,11 +339,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 #ifdef ENABLE_DEBUGGERS
 			gba->timing.globalCycles += cycles < nextEvent ? nextEvent : cycles;
 #endif
-#ifndef NDEBUG
-			if (cycles < 0) {
-				mLOG(GBA, FATAL, "Negative cycles passed: %i", cycles);
-			}
-#endif
+			mASSERT_DEBUG_LOG(GBA, cycles >= 0, "Negative cycles passed: %i", cycles);
 			nextEvent = mTimingTick(&gba->timing, cycles < nextEvent ? nextEvent : cycles);
 		} while (gba->cpuBlocked && !gba->earlyExit);
 
@@ -353,12 +349,9 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 			if (!gba->memory.io[GBA_REG(IME)] || !gba->memory.io[GBA_REG(IE)]) {
 				break;
 			}
+		} else {
+			mASSERT_DEBUG_LOG(GBA, nextEvent >= 0, "Negative cycles will pass: %i", nextEvent);
 		}
-#ifndef NDEBUG
-		else if (nextEvent < 0) {
-			mLOG(GBA, FATAL, "Negative cycles will pass: %i", nextEvent);
-		}
-#endif
 		if (gba->earlyExit) {
 			break;
 		}

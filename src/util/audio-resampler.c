@@ -77,9 +77,7 @@ size_t mAudioResamplerProcess(struct mAudioResampler* resampler) {
 	};
 
 	size_t read = 0;
-	if (resampler->source->channels > MAX_CHANNELS) {
-		abort();
-	}
+	mASSERT(resampler->source->channels <= MAX_CHANNELS);
 
 	while (true) {
 		if (timestamp + resampler->highWaterMark >= mAudioBufferAvailable(resampler->source)) {

@@ -59,11 +59,7 @@ int mCircleBufferWrite8(struct mCircleBuffer* buffer, int8_t value) {
 		buffer->writePtr = buffer->data;
 	}
 	buffer->size += sizeof(int8_t);
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return 1;
 }
 
@@ -89,11 +85,7 @@ int mCircleBufferWrite32(struct mCircleBuffer* buffer, int32_t value) {
 		buffer->writePtr = buffer->data;
 	}
 	buffer->size += sizeof(int32_t);
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return 4;
 }
 
@@ -117,11 +109,7 @@ int mCircleBufferWrite16(struct mCircleBuffer* buffer, int16_t value) {
 		buffer->writePtr = buffer->data;
 	}
 	buffer->size += sizeof(int16_t);
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return 2;
 }
 
@@ -145,11 +133,7 @@ size_t mCircleBufferWrite(struct mCircleBuffer* buffer, const void* input, size_
 	}
 
 	buffer->size += length;
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return length;
 }
 
@@ -174,11 +158,7 @@ int mCircleBufferRead8(struct mCircleBuffer* buffer, int8_t* value) {
 		buffer->readPtr = buffer->data;
 	}
 	buffer->size -= sizeof(int8_t);
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return 1;
 }
 
@@ -202,11 +182,7 @@ int mCircleBufferRead16(struct mCircleBuffer* buffer, int16_t* value) {
 		buffer->readPtr = buffer->data;
 	}
 	buffer->size -= sizeof(int16_t);
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return 2;
 }
 
@@ -232,11 +208,7 @@ int mCircleBufferRead32(struct mCircleBuffer* buffer, int32_t* value) {
 		buffer->readPtr = buffer->data;
 	}
 	buffer->size -= sizeof(int32_t);
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return 4;
 }
 
@@ -267,11 +239,7 @@ size_t mCircleBufferRead(struct mCircleBuffer* buffer, void* output, size_t leng
 	}
 
 	buffer->size -= length;
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return length;
 }
 
