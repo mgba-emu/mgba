@@ -32,7 +32,7 @@ static void GBAVideoDummyRendererPutPixels(struct GBAVideoRenderer* renderer, si
 
 static void _startHblank(struct mTiming*, void* context, uint32_t cyclesLate);
 static void _startHdraw(struct mTiming*, void* context, uint32_t cyclesLate);
-static unsigned _calculateStallMask(struct GBA* gba);
+static unsigned _calculateStallMask(struct GBA* gba, unsigned dispcnt);
 
 MGBA_EXPORT const int GBAVideoObjSizes[16][2] = {
 	{ 8, 8 },
@@ -150,7 +150,8 @@ void _startHdraw(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	video->p->memory.io[GBA_REG(VCOUNT)] = video->vcount;
 
 	if (video->vcount < GBA_VIDEO_VERTICAL_PIXELS) {
-		video->stallMask = _calculateStallMask(video->p);
+		unsigned dispcnt = video->p->memory.io[GBA_REG(DISPCNT)];
+		video->stallMask = _calculateStallMask(video->p, dispcnt);
 	}
 
 	GBARegisterDISPSTAT dispstat = video->p->memory.io[GBA_REG(DISPSTAT)];
@@ -225,10 +226,13 @@ void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
 	// TODO: Does a VCounter IRQ trigger on write?
 }
 
-static unsigned _calculateStallMask(struct GBA* gba) {
+static unsigned _calculateStallMask(struct GBA* gba, unsigned dispcnt) {
 	unsigned mask = 0;
 
-	unsigned dispcnt = gba->memory.io[GBA_REG(DISPCNT)];
+	if (GBARegisterDISPCNTIsForcedBlank(dispcnt)) {
+		return 0;
+	}
+
 	switch (GBARegisterDISPCNTGetMode(dispcnt)) {
 	case 0:
 		if (GBARegisterDISPCNTIsBg0Enable(dispcnt)) {
@@ -446,7 +450,7 @@ void GBAVideoDeserialize(struct GBAVideo* video, const struct GBASerializedState
 		break;
 	case 2:
 		video->event.callback = _startHblank;
-		video->stallMask = _calculateStallMask(video->p);
+		video->stallMask = _calculateStallMask(video->p, state->io[GBA_REG(DISPCNT)]);
 		break;
 	case 3:
 		video->event.callback = _startHdraw;
