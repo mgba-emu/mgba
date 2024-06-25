@@ -24,6 +24,7 @@ Other fixes:
  - Debugger: Fix writing to specific segment in command-line debugger
  - GB: Fix uninitialized save data when loading undersized temporary saves
  - GBA Audio: Fix crash if audio FIFOs and timers get out of sync
+ - GBA Audio: Fix crash in audio subsampling if timing lockstep breaks
  - GBA Memory: Let raw access read high MMIO addresses
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Fix potential crash when configuring shortcuts

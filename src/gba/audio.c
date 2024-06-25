@@ -232,6 +232,9 @@ void GBAAudioWriteSOUNDBIAS(struct GBAAudio* audio, uint16_t value) {
 	if (oldSampleInterval != audio->sampleInterval) {
 		timestamp -= audio->lastSample;
 		audio->sampleIndex = timestamp >> (9 - GBARegisterSOUNDBIASGetResolution(value));
+		if (audio->sampleIndex >= GBA_MAX_SAMPLES) {
+			audio->sampleIndex = 0;
+		}
 		if (audio->p->stream && audio->p->stream->audioRateChanged) {
 			audio->p->stream->audioRateChanged(audio->p->stream, GBA_ARM7TDMI_FREQUENCY / audio->sampleInterval);
 		}

@@ -80,7 +80,7 @@ struct GBAAudio {
 	int32_t sampleInterval;
 
 	int32_t lastSample;
-	int sampleIndex;
+	unsigned sampleIndex;
 	struct mStereoSample currentSamples[GBA_MAX_SAMPLES];
 
 	bool forceDisableChA;
