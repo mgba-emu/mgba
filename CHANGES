@@ -4,6 +4,7 @@ Emulation fixes:
  - GBA GPIO: Fix gyro read-out start (fixes mgba.io/i/3141)
  - GBA SIO: Fix MULTI mode SIOCNT bit 7 writes on secondary GBAs (fixes mgba.io/i/3110)
 Other fixes:
+ - GBA Audio: Fix crash if audio FIFOs and timers get out of sync
  - GBA Memory: Let raw access read high MMIO addresses
  - Qt: Fix crash when applying changes to GB I/O registers in I/O view
  - Qt: Fix LCDC background priority/enable bit being mis-mapped in I/O view

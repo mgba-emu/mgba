@@ -357,6 +357,9 @@ void GBAAudioSampleFIFO(struct GBAAudio* audio, int fifoId, int32_t cycles) {
 	int bits = 2 << GBARegisterSOUNDBIASGetResolution(audio->soundbias);
 	until += 1 << (9 - GBARegisterSOUNDBIASGetResolution(audio->soundbias));
 	until >>= 9 - GBARegisterSOUNDBIASGetResolution(audio->soundbias);
+	if (UNLIKELY(bits < until)) {
+		until = bits;
+	}
 	int i;
 	for (i = bits - until; i < bits; ++i) {
 		channel->samples[i] = channel->internalSample;
