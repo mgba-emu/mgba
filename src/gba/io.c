@@ -941,6 +941,7 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 
 	STORE_32(gba->memory.dmaTransferRegister, 0, &state->dmaTransferRegister);
 	STORE_32(gba->dmaPC, 0, &state->dmaBlockPC);
+	STORE_32(gba->bus, 0, &state->bus);
 
 	GBAHardwareSerialize(&gba->memory.hw, state);
 }
@@ -987,6 +988,7 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 
 	LOAD_32(gba->memory.dmaTransferRegister, 0, &state->dmaTransferRegister);
 	LOAD_32(gba->dmaPC, 0, &state->dmaBlockPC);
+	LOAD_32(gba->bus, 0, &state->bus);
 
 	GBADMAUpdate(gba);
 	GBAHardwareDeserialize(&gba->memory.hw, state);

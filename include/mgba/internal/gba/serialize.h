@@ -20,7 +20,7 @@ extern MGBA_EXPORT const uint32_t GBASavestateVersion;
 mLOG_DECLARE_CATEGORY(GBA_STATE);
 
 /* Savestate format:
- * 0x00000 - 0x00003: Version Magic (0x01000006)
+ * 0x00000 - 0x00003: Version Magic (0x01000007)
  * 0x00004 - 0x00007: BIOS checksum (e.g. 0xBAAE187F for official BIOS)
  * 0x00008 - 0x0000B: ROM CRC32
  * 0x0000C - 0x0000F: Master cycles
@@ -107,6 +107,9 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | 0x001E0 - 0x001E3: Last sample
  * | 0x001E4 - 0x001E7: Additional audio flags
  *   | bits 0 - 3: Current sample index
+ *   | bits 4 - 5: Channel A DMA source
+ *   | bits 6 - 7: Channel B DMA source
+ *   | bits 8 - 31: Reserved
  * | 0x001E8 - 0x001EF: Reserved
  * 0x001F0 - 0x001FF: Video miscellaneous state
  * | 0x001F0 - 0x001F3: Reserved
@@ -232,7 +235,8 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x00370 - 0x0037F: Audio FIFO A samples
  * 0x00380 - 0x0038F: Audio FIFO B samples
  * 0x00390 - 0x003CF: Audio rendered samples
- * 0x003D0 - 0x003FF: Reserved (leave zero)
+ * 0x003D0 - 0x003D3: Memory bus value
+ * 0x003D4 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -250,6 +254,8 @@ DECL_BITS(GBASerializedAudioFlags, FIFOSamplesA, 7, 3);
 
 DECL_BITFIELD(GBASerializedAudioFlags2, uint32_t);
 DECL_BITS(GBASerializedAudioFlags2, SampleIndex, 0, 4);
+DECL_BITS(GBASerializedAudioFlags2, ChASource, 4, 2);
+DECL_BITS(GBASerializedAudioFlags2, ChBSource, 6, 2);
 
 DECL_BITFIELD(GBASerializedVideoFlags, uint32_t);
 DECL_BITS(GBASerializedVideoFlags, Mode, 0, 2);
@@ -405,7 +411,9 @@ struct GBASerializedState {
 
 	struct mStereoSample currentSamples[GBA_MAX_SAMPLES];
 
-	uint32_t reserved[12];
+	uint32_t bus;
+
+	uint32_t reserved[11];
 
 	uint16_t io[GBA_SIZE_IO >> 1];
 	uint16_t pram[GBA_SIZE_PALETTE_RAM >> 1];
