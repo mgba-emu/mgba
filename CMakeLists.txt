@@ -1014,6 +1014,7 @@ endif()
 if(ENABLE_SCRIPTING AND BUILD_DOCGEN)
 	add_executable(docgen ${CMAKE_CURRENT_SOURCE_DIR}/src/tools/docgen.c)
 	target_link_libraries(docgen ${OS_LIB} ${PLATFORM_LIBRARY} ${BINARY_NAME})
+	set_target_properties(docgen PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FUNCTION_DEFINES};${FEATURE_DEFINES}")
 endif()
 
 if(BUILD_MAINTAINER_TOOLS)
