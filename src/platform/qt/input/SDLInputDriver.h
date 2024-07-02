@@ -109,6 +109,7 @@ private:
 	size_t m_index;
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	char m_guid[34]{};
+	SDL_JoystickID m_id;
 #endif
 
 	bool verify() const;
