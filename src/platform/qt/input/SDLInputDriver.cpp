@@ -159,7 +159,7 @@ void SDLInputDriver::updateGamepads() {
 		m_gamepads.removeAt(i);
 		--i;
 	}
-	std::sort(m_gamepads.begin(), m_gamepads.end(), [](const auto& a, const auto b) {
+	std::sort(m_gamepads.begin(), m_gamepads.end(), [](const auto& a, const auto& b) {
 		return a->m_index < b->m_index;
 	});
 
@@ -173,7 +173,7 @@ void SDLInputDriver::updateGamepads() {
 		}
 		m_gamepads.append(std::make_shared<SDLGamepad>(this, i));
 	}
-	std::sort(m_gamepads.begin(), m_gamepads.end(), [](const auto& a, const auto b) {
+	std::sort(m_gamepads.begin(), m_gamepads.end(), [](const auto& a, const auto& b) {
 		return a->m_index < b->m_index;
 	});
 }
