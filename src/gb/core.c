@@ -1107,7 +1107,9 @@ static void _GBCoreDetachDebugger(struct mCore* core) {
 }
 
 static void _GBCoreLoadSymbols(struct mCore* core, struct VFile* vf) {
-	core->symbolTable = mDebuggerSymbolTableCreate();
+	if (!core->symbolTable) {
+		core->symbolTable = mDebuggerSymbolTableCreate();
+	}
 #ifdef ENABLE_VFS
 	if (!vf && core->dirs.base) {
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);

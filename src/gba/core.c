@@ -1243,7 +1243,14 @@ static void _GBACoreDetachDebugger(struct mCore* core) {
 
 static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	bool closeAfter = false;
-	core->symbolTable = mDebuggerSymbolTableCreate();
+	if (!core->symbolTable) {
+		core->symbolTable = mDebuggerSymbolTableCreate();
+	}
+	off_t seek;
+	if (vf) {
+		seek = vf->seek(vf, 0, SEEK_CUR);
+		vf->seek(vf, 0, SEEK_SET);
+	}
 #ifdef ENABLE_VFS
 #ifdef USE_ELF
 	if (!vf && core->dirs.base) {
@@ -1273,6 +1280,8 @@ static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	}
 	if (closeAfter) {
 		vf->close(vf);
+	} else {
+		vf->seek(vf, seek, SEEK_SET);
 	}
 }
 
