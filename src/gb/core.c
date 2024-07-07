@@ -1050,7 +1050,9 @@ static void _GBCoreDetachDebugger(struct mCore* core) {
 }
 
 static void _GBCoreLoadSymbols(struct mCore* core, struct VFile* vf) {
-	core->symbolTable = mDebuggerSymbolTableCreate();
+	if (!core->symbolTable) {
+		core->symbolTable = mDebuggerSymbolTableCreate();
+	}
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 	if (!vf && core->dirs.base) {
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
