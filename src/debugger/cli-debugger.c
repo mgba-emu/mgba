@@ -1427,9 +1427,7 @@ static void _loadSymbols(struct CLIDebugger* debugger, struct CLIDebugVector* dv
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
-#ifdef ENABLE_DEBUGGERS
 		mCoreLoadELFSymbols(symbolTable, elf);
-#endif
 		ELFClose(elf);
 	} else
 #endif
