@@ -81,7 +81,6 @@ struct GBA {
 
 	struct GBATimer timers[4];
 
-	int springIRQ;
 	struct mTimingEvent irqEvent;
 
 	uint32_t biosChecksum;
