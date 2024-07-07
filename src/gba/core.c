@@ -1112,6 +1112,7 @@ static void _GBACoreDetachDebugger(struct mCore* core) {
 }
 
 static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
+	struct GBA* gba = core->board;
 	bool closeAfter = false;
 	if (!core->symbolTable) {
 		core->symbolTable = mDebuggerSymbolTableCreate();
@@ -1133,6 +1134,16 @@ static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
 	}
 #endif
+	if (!vf && gba->mbVf) {
+		vf = gba->mbVf;
+		seek = vf->seek(vf, 0, SEEK_CUR);
+		vf->seek(vf, 0, SEEK_SET);
+	}
+	if (!vf && gba->romVf) {
+		vf = gba->romVf;
+		seek = vf->seek(vf, 0, SEEK_CUR);
+		vf->seek(vf, 0, SEEK_SET);
+	}
 	if (!vf) {
 		return;
 	}
