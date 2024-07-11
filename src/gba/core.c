@@ -1265,11 +1265,13 @@ static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	}
 #endif
 	if (!vf && gba->mbVf) {
+		closeAfter = false;
 		vf = gba->mbVf;
 		seek = vf->seek(vf, 0, SEEK_CUR);
 		vf->seek(vf, 0, SEEK_SET);
 	}
 	if (!vf && gba->romVf) {
+		closeAfter = false;
 		vf = gba->romVf;
 		seek = vf->seek(vf, 0, SEEK_CUR);
 		vf->seek(vf, 0, SEEK_SET);
