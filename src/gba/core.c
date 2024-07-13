@@ -1264,8 +1264,8 @@ static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 		if (vf) {
 			mDebuggerLoadARMIPSSymbols(core->symbolTable, vf);
 			vf->close(vf);
+			return;
 		}
-		return;
 	}
 #endif
 	if (!vf && gba->mbVf) {
