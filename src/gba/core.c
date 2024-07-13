@@ -1260,8 +1260,12 @@ static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	}
 #endif
 	if (!vf && core->dirs.base) {
-		closeAfter = true;
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
+		if (vf) {
+			mDebuggerLoadARMIPSSymbols(core->symbolTable, vf);
+			vf->close(vf);
+		}
+		return;
 	}
 #endif
 	if (!vf && gba->mbVf) {
@@ -1286,11 +1290,8 @@ static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 		mCoreLoadELFSymbols(core->symbolTable, elf);
 #endif
 		ELFClose(elf);
-	} else
-#endif
-	{
-		mDebuggerLoadARMIPSSymbols(core->symbolTable, vf);
 	}
+#endif
 	if (closeAfter) {
 		vf->close(vf);
 	} else {
