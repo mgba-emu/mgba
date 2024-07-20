@@ -24,6 +24,7 @@ Other fixes:
  - Debugger: Fix writing to specific segment in command-line debugger
  - GB: Fix uninitialized save data when loading undersized temporary saves
  - GB, GBA Core: Fix memory leak if reloading debug symbols
+ - GB Serialize: Prevent loading invalid states where LY >= 144 in modes other than 1
  - GBA Audio: Fix crash if audio FIFOs and timers get out of sync
  - GBA Audio: Fix crash in audio subsampling if timing lockstep breaks
  - GBA Core: Fix loading symbols from ELF files if the file doesn't end with .elf
