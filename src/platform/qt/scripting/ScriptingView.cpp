@@ -39,6 +39,7 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 
 	connect(m_ui.buffers->selectionModel(), &QItemSelectionModel::currentChanged, this, &ScriptingView::selectBuffer);
 	connect(m_ui.load, &QAction::triggered, this, &ScriptingView::load);
+	connect(m_ui.loadRecent, &QAction::triggered, this, &ScriptingView::loadRecent);
 	connect(m_ui.reset, &QAction::triggered, controller, &ScriptingController::reset);
 
 	m_mruFiles = m_config->getMRU(ConfigController::MRU::Script);
@@ -64,6 +65,10 @@ void ScriptingView::load() {
 		}
 		appendMRU(filename);
 	}
+}
+
+void ScriptingView::loadRecent() {
+	m_controller->loadFile(m_mruFiles.at(0));
 }
 
 void ScriptingView::controllerReset() {

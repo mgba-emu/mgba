@@ -22,6 +22,7 @@ public:
 private slots:
 	void submitRepl();
 	void load();
+	void loadRecent();
 
 	void controllerReset();
 	void selectBuffer(const QModelIndex& current, const QModelIndex& = QModelIndex());
