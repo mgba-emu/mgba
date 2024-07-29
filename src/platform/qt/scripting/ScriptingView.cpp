@@ -110,7 +110,9 @@ void ScriptingView::updateMRU() {
 	m_ui.mru->clear();
 	for (const auto& fname : m_mruFiles) {
 		m_ui.mru->addAction(fname, [this, fname]() {
-			m_controller->loadFile(fname);
+			if(m_controller->loadFile(fname)) {
+				appendMRU(fname);
+			}
 		});
 	}
 }
