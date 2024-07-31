@@ -116,6 +116,10 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 		i = m_savedScale;
 	}
 #ifdef USE_SQLITE3
+	QPushButton* m_AddDirText = new QPushButton("Click to add a directory to the library", this);
+	m_AddDirText->connect(m_AddDirText, &QPushButton::clicked, [this] { addDirToLibrary();
+		});
+	m_AddDirText->setFixedSize(150 ,50);
 	m_libraryView = new LibraryController(nullptr, ConfigController::configDir() + "/library.sqlite3", m_config);
 	ConfigOption* showLibrary = m_config->addOption("showLibrary");
 	showLibrary->connect([this](const QVariant& value) {
