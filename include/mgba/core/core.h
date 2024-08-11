@@ -119,8 +119,7 @@ struct mCore {
 	int32_t (*frameCycles)(const struct mCore*);
 	int32_t (*frequency)(const struct mCore*);
 
-	void (*getGameTitle)(const struct mCore*, char* title);
-	void (*getGameCode)(const struct mCore*, char* title);
+	void (*getGameInfo)(const struct mCore*, struct mGameInfo* info);
 
 	void (*setPeripheral)(struct mCore*, int type, void*);
 	void* (*getPeripheral)(struct mCore*, int type);

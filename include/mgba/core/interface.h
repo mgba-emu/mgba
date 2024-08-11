@@ -22,6 +22,14 @@ enum mCoreFeature {
 	mCORE_FEATURE_OPENGL = 1,
 };
 
+struct mGameInfo {
+	char title[17];
+	char system[4];
+	char code[5];
+	char maker[3];
+	uint8_t version;
+};
+
 struct mCoreCallbacks {
 	void* context;
 	void (*videoFrameStarted)(void* context);

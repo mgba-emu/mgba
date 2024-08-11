@@ -196,8 +196,6 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 	}
 
 	// TODO: Put back debugger
-	char gameCode[9] = { 0 };
-
 	core->init(core);
 	if (!perfOpts->noVideo) {
 		core->setVideoBuffer(core, _outputBuffer, 256);
@@ -226,7 +224,8 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 		mCoreLoadStateNamed(core, _savestate, 0);
 	}
 
-	core->getGameCode(core, gameCode);
+	struct mGameInfo info;
+	core->getGameInfo(core, &info);
 
 	int frames = perfOpts->frames;
 	if (!frames) {
@@ -255,7 +254,7 @@ bool _mPerfRunCore(const char* fname, const struct mArguments* args, const struc
 		} else {
 			rendererName = "software";
 		}
-		snprintf(buffer, sizeof(buffer), "%s,%i,%" PRIu64 ",%s\n", gameCode, frames, duration, rendererName);
+		snprintf(buffer, sizeof(buffer), "%s-%s,%i,%" PRIu64 ",%s\n", info.system, info.code, frames, duration, rendererName);
 		printf("%s", buffer);
 		if (_socket != INVALID_SOCKET) {
 			SocketSend(_socket, buffer, strlen(buffer));

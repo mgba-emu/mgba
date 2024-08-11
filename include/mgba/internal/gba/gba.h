@@ -182,8 +182,7 @@ void GBAUnloadMB(struct GBA* gba);
 
 bool GBALoadNull(struct GBA* gba);
 
-void GBAGetGameCode(const struct GBA* gba, char* out);
-void GBAGetGameTitle(const struct GBA* gba, char* out);
+void GBAGetGameInfo(const struct GBA* gba, struct mGameInfo* info);
 
 void GBATestKeypadIRQ(struct GBA* gba);
 

@@ -27,16 +27,16 @@ ROMInfo::ROMInfo(std::shared_ptr<CoreController> controller, QWidget* parent)
 
 	CoreController::Interrupter interrupter(controller);
 	mCore* core = controller->thread()->core;
-	char title[17] = {};
-	core->getGameTitle(core, title);
-	m_ui.title->setText(QLatin1String(title));
-	title[8] = '\0';
-	core->getGameCode(core, title);
-	if (title[0]) {
-		m_ui.id->setText(QLatin1String(title));
+	mGameInfo info;
+	core->getGameInfo(core, &info);
+	m_ui.title->setText(QLatin1String(info.title));
+	if (info.code[0]) {
+		m_ui.id->setText(QLatin1String(info.code));
 	} else {
 		m_ui.id->setText(tr("(unknown)"));
 	}
+	m_ui.maker->setText(QLatin1String(info.maker));
+	m_ui.version->setText(QString::number(info.version));
 
 	core->checksum(core, &crc32, mCHECKSUM_CRC32);
 

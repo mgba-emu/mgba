@@ -332,15 +332,15 @@ mSCRIPT_DEFINE_STRUCT(mScriptMemoryDomain)
 mSCRIPT_DEFINE_END;
 
 static struct mScriptValue* _mScriptCoreGetGameTitle(const struct mCore* core) {
-	char title[32] = {0};
-	core->getGameTitle(core, title);
-	return mScriptStringCreateFromASCII(title);
+	struct mGameInfo info;
+	core->getGameInfo(core, &info);
+	return mScriptStringCreateFromASCII(info.title);
 }
 
 static struct mScriptValue* _mScriptCoreGetGameCode(const struct mCore* core) {
-	char code[16] = {0};
-	core->getGameCode(core, code);
-	return mScriptStringCreateFromASCII(code);
+	struct mGameInfo info;
+	core->getGameInfo(core, &info);
+	return mScriptStringCreateFromASCII(info.code);
 }
 
 static struct mScriptValue* _mScriptCoreChecksum(const struct mCore* core, int t) {

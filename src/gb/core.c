@@ -781,12 +781,8 @@ static int32_t _GBCoreFrequency(const struct mCore* core) {
 	return DMG_SM83_FREQUENCY;
 }
 
-static void _GBCoreGetGameTitle(const struct mCore* core, char* title) {
-	GBGetGameTitle(core->board, title);
-}
-
-static void _GBCoreGetGameCode(const struct mCore* core, char* title) {
-	GBGetGameCode(core->board, title);
+static void _GBCoreGetGameInfo(const struct mCore* core, struct mGameInfo* info) {
+	GBGetGameInfo(core->board, info);
 }
 
 static void _GBCoreSetPeripheral(struct mCore* core, int type, void* periph) {
@@ -1332,8 +1328,7 @@ struct mCore* GBCoreCreate(void) {
 	core->frameCounter = _GBCoreFrameCounter;
 	core->frameCycles = _GBCoreFrameCycles;
 	core->frequency = _GBCoreFrequency;
-	core->getGameTitle = _GBCoreGetGameTitle;
-	core->getGameCode = _GBCoreGetGameCode;
+	core->getGameInfo = _GBCoreGetGameInfo;
 	core->setPeripheral = _GBCoreSetPeripheral;
 	core->getPeripheral = _GBCoreGetPeripheral;
 	core->busRead8 = _GBCoreBusRead8;

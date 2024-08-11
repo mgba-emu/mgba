@@ -870,12 +870,8 @@ static int32_t _GBACoreFrequency(const struct mCore* core) {
 	return GBA_ARM7TDMI_FREQUENCY;
 }
 
-static void _GBACoreGetGameTitle(const struct mCore* core, char* title) {
-	GBAGetGameTitle(core->board, title);
-}
-
-static void _GBACoreGetGameCode(const struct mCore* core, char* title) {
-	GBAGetGameCode(core->board, title);
+static void _GBACoreGetGameInfo(const struct mCore* core, struct mGameInfo* info) {
+	GBAGetGameInfo(core->board, info);
 }
 
 static void _GBACoreSetPeripheral(struct mCore* core, int type, void* periph) {
@@ -1550,8 +1546,7 @@ struct mCore* GBACoreCreate(void) {
 	core->frameCounter = _GBACoreFrameCounter;
 	core->frameCycles = _GBACoreFrameCycles;
 	core->frequency = _GBACoreFrequency;
-	core->getGameTitle = _GBACoreGetGameTitle;
-	core->getGameCode = _GBACoreGetGameCode;
+	core->getGameInfo = _GBACoreGetGameInfo;
 	core->setPeripheral = _GBACoreSetPeripheral;
 	core->getPeripheral = _GBACoreGetPeripheral;
 	core->busRead8 = _GBACoreBusRead8;

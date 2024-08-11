@@ -1318,9 +1318,9 @@ void CoreController::updateROMInfo() {
 	mCore* core = m_threadContext.core;
 	core->checksum(core, &m_crc32, mCHECKSUM_CRC32);
 
-	char gameTitle[17] = { '\0' };
-	core->getGameTitle(core, gameTitle);
-	m_internalTitle = QLatin1String(gameTitle);
+	mGameInfo info;
+	core->getGameInfo(core, &info);
+	m_internalTitle = QLatin1String(info.title);
 
 #ifdef USE_SQLITE3
 	if (db && m_crc32 && NoIntroDBLookupGameByCRC(db, m_crc32, &game)) {

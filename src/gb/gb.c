@@ -16,6 +16,7 @@
 #include <mgba-util/memory.h>
 #include <mgba-util/math.h>
 #include <mgba-util/patch.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 const uint32_t CGB_SM83_FREQUENCY = 0x800000;
@@ -1116,38 +1117,28 @@ bool GBIsROM(struct VFile* vf) {
 	return false;
 }
 
-void GBGetGameTitle(const struct GB* gb, char* out) {
+void GBGetGameInfo(const struct GB* gb, struct mGameInfo* info) {
+	memset(info, 0, sizeof(*info));
 	const struct GBCartridge* cart = NULL;
 	if (gb->memory.rom) {
 		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	}
-	if (!cart) {
-		return;
-	}
-	if (cart->oldLicensee != 0x33) {
-		memcpy(out, cart->titleLong, 16);
-	} else {
-		memcpy(out, cart->titleShort, 11);
-	}
-}
 
-void GBGetGameCode(const struct GB* gb, char* out) {
-	memset(out, 0, 8);
-	const struct GBCartridge* cart = NULL;
-	if (gb->memory.rom) {
-		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	}
-	if (!cart) {
-		return;
-	}
 	if (cart->cgb == 0xC0) {
-		memcpy(out, "CGB-????", 8);
+		strlcpy(info->system, "CGB", sizeof(info->system));
 	} else {
-		memcpy(out, "DMG-????", 8);
+		strlcpy(info->system, "DMG", sizeof(info->system));
 	}
-	if (cart->oldLicensee == 0x33) {
-		memcpy(&out[4], cart->maker, 4);
+
+	if (cart->oldLicensee != 0x33) {
+		memcpy(info->title, cart->titleLong, 16);
+		snprintf(info->maker, sizeof(info->maker), "%02X", cart->oldLicensee);
+	} else {
+		memcpy(info->title, cart->titleShort, 11);
+		memcpy(info->code, cart->maker, 4);
+		memcpy(info->maker, &cart->licensee, 2);
 	}
+	info->version = cart->version;
 }
 
 void GBFrameStarted(struct GB* gb) {

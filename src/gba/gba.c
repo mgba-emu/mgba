@@ -18,6 +18,7 @@
 #include <mgba-util/crc32.h>
 #include <mgba-util/math.h>
 #include <mgba-util/memory.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 #ifdef USE_ELF
@@ -849,26 +850,24 @@ bool GBAIsBIOS(struct VFile* vf) {
 	return true;
 }
 
-void GBAGetGameCode(const struct GBA* gba, char* out) {
-	memset(out, 0, 8);
-	if (!gba->memory.rom) {
-		return;
-	}
-
-	memcpy(out, "AGB-", 4);
-	memcpy(&out[4], &((struct GBACartridge*) gba->memory.rom)->id, 4);
-}
-
-void GBAGetGameTitle(const struct GBA* gba, char* out) {
+void GBAGetGameInfo(const struct GBA* gba, struct mGameInfo* info) {
+	memset(info, 0, sizeof(*info));
+	strlcpy(info->system, "AGB", sizeof(info->system));
+	struct GBACartridge* cart = NULL;
 	if (gba->memory.rom) {
-		memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
-		return;
+		cart = (struct GBACartridge*) gba->memory.rom;
+	} else if (gba->isPristine && gba->memory.wram) {
+		cart = (struct GBACartridge*) gba->memory.wram;
 	}
-	if (gba->isPristine && gba->memory.wram) {
-		memcpy(out, &((struct GBACartridge*) gba->memory.wram)->title, 12);
-		return;
+
+	if (cart) {
+		memcpy(info->title, &cart->title, 12);
+		memcpy(info->code, &cart->id, 4);
+		memcpy(info->maker, &cart->maker, 2);
+		info->version = cart->version;
+	} else {
+		strlcpy(info->title, "(BIOS)", 12);
 	}
-	strncpy(out, "(BIOS)", 12);
 }
 
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
