@@ -47,7 +47,9 @@ struct NoIntroDB* NoIntroDBLoad(const char* path) {
 			"flags INTEGER DEFAULT 0,"
 			"gid INTEGER NOT NULL REFERENCES games(gid) ON DELETE CASCADE"
 		");\n"
-		"CREATE INDEX IF NOT EXISTS crc32 ON roms (crc32);";
+		"CREATE INDEX IF NOT EXISTS crc32 ON roms (crc32);\n"
+		"CREATE INDEX IF NOT EXISTS md5 ON roms (md5);\n"
+		"CREATE INDEX IF NOT EXISTS sha1 ON roms (sha1);\n";
 	if (sqlite3_exec(db->db, createTables, NULL, NULL, NULL)) {
 		goto error;
 	}
