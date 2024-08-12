@@ -408,10 +408,14 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 	gba->mbVf = vf;
 	vf->seek(vf, 0, SEEK_SET);
 	memset(gba->memory.wram, 0, GBA_SIZE_EWRAM);
-	vf->read(vf, gba->memory.wram, GBA_SIZE_EWRAM);
+	off_t read = vf->read(vf, gba->memory.wram, GBA_SIZE_EWRAM);
+	if (read < 0) {
+		return false;
+	}
 	if (gba->cpu && gba->memory.activeRegion == GBA_REGION_IWRAM) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
+	gba->romCrc32 = doCrc32(gba->memory.wram, read);
 	return true;
 }
 
@@ -856,7 +860,7 @@ void GBAGetGameInfo(const struct GBA* gba, struct mGameInfo* info) {
 	struct GBACartridge* cart = NULL;
 	if (gba->memory.rom) {
 		cart = (struct GBACartridge*) gba->memory.rom;
-	} else if (gba->isPristine && gba->memory.wram) {
+	} else if (gba->mbVf && gba->memory.wram) {
 		cart = (struct GBACartridge*) gba->memory.wram;
 	}
 
