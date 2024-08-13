@@ -1119,11 +1119,11 @@ bool GBIsROM(struct VFile* vf) {
 
 void GBGetGameInfo(const struct GB* gb, struct mGameInfo* info) {
 	memset(info, 0, sizeof(*info));
-	const struct GBCartridge* cart = NULL;
-	if (gb->memory.rom) {
-		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	if (!gb->memory.rom) {
+		return;
 	}
 
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	if (cart->cgb == 0xC0) {
 		strlcpy(info->system, "CGB", sizeof(info->system));
 	} else {
