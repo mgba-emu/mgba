@@ -118,6 +118,7 @@ struct GBAVideoSoftwareRenderer {
 		struct WindowControl control;
 		int16_t offsetX;
 		int16_t offsetY;
+		bool on;
 	} winN[2];
 
 	struct WindowControl winout;
@@ -142,6 +143,7 @@ struct GBAVideoSoftwareRenderer {
 	struct ScanlineCache {
 		uint16_t io[GBA_REG(SOUND1CNT_LO)];
 		int32_t scale[2][2];
+		bool windowOn[2];
 	} cache[GBA_VIDEO_VERTICAL_PIXELS];
 	int nextY;
 

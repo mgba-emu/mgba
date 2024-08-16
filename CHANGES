@@ -19,6 +19,7 @@ Emulation fixes:
  - GBA Serialize: Fix some minor save state edge cases
  - GBA SIO: Fix MULTI mode SIOCNT bit 7 writes on secondary GBAs (fixes mgba.io/i/3110)
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
+ - GBA Video: Improve emulation of window start/end conditions (fixes mgba.io/i/1945)
 Other fixes:
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
  - Debugger: Fix writing to specific segment in command-line debugger
