@@ -120,9 +120,5 @@ void ScriptingView::updateMRU() {
 
 
 void ScriptingView::checkEmptyMRU() {
-	if(m_mruFiles.isEmpty()) {
-		m_ui.loadMostRecent->setEnabled(false);
-	} else {
-		m_ui.loadMostRecent->setEnabled(true);
-	}
+	m_ui.loadMostRecent->setEnabled(!m_mruFiles.isEmpty());
 }
