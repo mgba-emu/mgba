@@ -61,6 +61,17 @@ struct mLockstepUser {
 	void (*playerIdChanged)(struct mLockstepUser*, int id);
 };
 
+#ifndef DISABLE_THREADING
+struct mCoreThread;
+struct mLockstepThreadUser {
+	struct mLockstepUser d;
+
+	struct mCoreThread* thread;
+};
+
+void mLockstepThreadUserInit(struct mLockstepThreadUser* lockstep, struct mCoreThread* thread);
+#endif
+
 CXX_GUARD_END
 
 #endif
