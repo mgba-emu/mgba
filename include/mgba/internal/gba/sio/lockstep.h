@@ -17,40 +17,6 @@ CXX_GUARD_START
 #include <mgba-util/table.h>
 #include <mgba-util/threading.h>
 
-struct GBASIOLockstep {
-	struct mLockstep d;
-	struct GBASIOLockstepNode* players[MAX_GBAS];
-	int attachedMulti;
-	int attachedNormal;
-
-	uint16_t multiRecv[MAX_GBAS];
-	uint32_t normalRecv[MAX_GBAS];
-};
-
-struct GBASIOLockstepNode {
-	struct GBASIODriver d;
-	struct GBASIOLockstep* p;
-	struct mTimingEvent event;
-
-	volatile int32_t nextEvent;
-	int32_t eventDiff;
-	bool normalSO;
-	int id;
-	enum GBASIOMode mode;
-	bool transferFinished;
-#ifndef NDEBUG
-	int transferId;
-	enum mLockstepPhase phase;
-#endif
-};
-
-void GBASIOLockstepInit(struct GBASIOLockstep*);
-
-void GBASIOLockstepNodeCreate(struct GBASIOLockstepNode*);
-
-bool GBASIOLockstepAttachNode(struct GBASIOLockstep*, struct GBASIOLockstepNode*);
-void GBASIOLockstepDetachNode(struct GBASIOLockstep*, struct GBASIOLockstepNode*);
-
 #define MAX_LOCKSTEP_EVENTS 8
 
 enum GBASIOLockstepEventType {
