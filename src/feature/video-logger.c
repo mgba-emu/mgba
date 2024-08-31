@@ -511,9 +511,13 @@ struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core) {
 #endif
 
 	if (core) {
-		context->initialStateSize = core->stateSize(core);
+		struct VFile* vf = VFileMemChunk(NULL, core->stateSize(core));
+		mCoreSaveStateNamed(core, vf, 0);
+		context->initialStateSize = vf->size(vf);
 		context->initialState = anonymousMemoryMap(context->initialStateSize);
-		core->saveState(core, context->initialState);
+		vf->seek(vf, 0, SEEK_SET);
+		vf->write(vf, context->initialState, context->initialStateSize);
+		vf->close(vf);
 		core->startVideoLog(core, context);
 	}
 
@@ -763,15 +767,15 @@ void mVideoLogContextDestroy(struct mCore* core, struct mVideoLogContext* contex
 void mVideoLogContextRewind(struct mVideoLogContext* context, struct mCore* core) {
 	_readHeader(context);
 	if (core) {
-		size_t size = core->stateSize(core);
-		if (size <= context->initialStateSize) {
-			core->loadState(core, context->initialState);
+		struct VFile* vf;
+		if (context->initialStateSize < core->stateSize(core)) {
+			vf = VFileMemChunk(NULL, core->stateSize(core));
+			vf->write(vf, context->initialState, context->initialStateSize);
 		} else {
-			void* extendedState = anonymousMemoryMap(size);
-			memcpy(extendedState, context->initialState, context->initialStateSize);
-			core->loadState(core, extendedState);
-			mappedMemoryFree(extendedState, size);
+			vf = VFileFromConstMemory(context->initialState, context->initialStateSize);
 		}
+		mCoreLoadStateNamed(core, vf, 0);
+		vf->close(vf);
 	}
 
 	off_t pointer = context->backing->seek(context->backing, 0, SEEK_CUR);
