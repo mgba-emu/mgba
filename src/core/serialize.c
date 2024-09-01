@@ -131,6 +131,9 @@ bool mStateExtdataDeserialize(struct mStateExtdata* extdata, struct VFile* vf) {
 		if (vf->seek(vf, header.offset, SEEK_SET) < 0) {
 			return false;
 		}
+		if (header.size <= 0) {
+			continue;
+		}
 		struct mStateExtdataItem item = {
 			.data = malloc(header.size),
 			.size = header.size,
