@@ -832,6 +832,18 @@ static bool _GBACoreSaveState(struct mCore* core, void* state) {
 	return true;
 }
 
+static bool _GBACoreLoadExtraState(struct mCore* core, const struct mStateExtdata* extdata) {
+	UNUSED(core);
+	UNUSED(extdata);
+	return true;
+}
+
+static bool _GBACoreSaveExtraState(struct mCore* core, struct mStateExtdata* extdata) {
+	UNUSED(core);
+	UNUSED(extdata);
+	return true;
+}
+
 static void _GBACoreSetKeys(struct mCore* core, uint32_t keys) {
 	struct GBA* gba = core->board;
 	gba->keysActive = keys;
@@ -1539,6 +1551,8 @@ struct mCore* GBACoreCreate(void) {
 	core->stateSize = _GBACoreStateSize;
 	core->loadState = _GBACoreLoadState;
 	core->saveState = _GBACoreSaveState;
+	core->loadExtraState = _GBACoreLoadExtraState;
+	core->saveExtraState = _GBACoreSaveExtraState;
 	core->setKeys = _GBACoreSetKeys;
 	core->addKeys = _GBACoreAddKeys;
 	core->clearKeys = _GBACoreClearKeys;

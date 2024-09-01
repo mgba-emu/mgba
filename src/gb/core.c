@@ -743,6 +743,18 @@ static bool _GBCoreSaveState(struct mCore* core, void* state) {
 	return true;
 }
 
+static bool _GBCoreLoadExtraState(struct mCore* core, const struct mStateExtdata* extdata) {
+	UNUSED(core);
+	UNUSED(extdata);
+	return true;
+}
+
+static bool _GBCoreSaveExtraState(struct mCore* core, struct mStateExtdata* extdata) {
+	UNUSED(core);
+	UNUSED(extdata);
+	return true;
+}
+
 static void _GBCoreSetKeys(struct mCore* core, uint32_t keys) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->keys = keys;
@@ -1321,6 +1333,8 @@ struct mCore* GBCoreCreate(void) {
 	core->stateSize = _GBCoreStateSize;
 	core->loadState = _GBCoreLoadState;
 	core->saveState = _GBCoreSaveState;
+	core->loadExtraState = _GBCoreLoadExtraState;
+	core->saveExtraState = _GBCoreSaveExtraState;
 	core->setKeys = _GBCoreSetKeys;
 	core->addKeys = _GBCoreAddKeys;
 	core->clearKeys = _GBCoreClearKeys;

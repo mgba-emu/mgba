@@ -371,6 +371,7 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	mStateExtdataInit(&extdata);
 	size_t stateSize = core->stateSize(core);
 
+	core->saveExtraState(core, &extdata);
 	if (flags & SAVESTATE_METADATA) {
 		uint64_t* creationUsec = malloc(sizeof(*creationUsec));
 		if (creationUsec) {
@@ -527,6 +528,8 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	}
 	bool success = core->loadState(core, state);
 	mappedMemoryFree(state, core->stateSize(core));
+
+	core->loadExtraState(core, &extdata);
 
 	unsigned width, height;
 	core->currentVideoSize(core, &width, &height);
