@@ -57,7 +57,7 @@ void mStateExtdataPut(struct mStateExtdata* extdata, enum mStateExtdataTag tag, 
 	extdata->data[tag] = *item;
 }
 
-bool mStateExtdataGet(struct mStateExtdata* extdata, enum mStateExtdataTag tag, struct mStateExtdataItem* item) {
+bool mStateExtdataGet(const struct mStateExtdata* extdata, enum mStateExtdataTag tag, struct mStateExtdataItem* item) {
 	if (tag == EXTDATA_NONE || tag >= EXTDATA_MAX) {
 		return false;
 	}

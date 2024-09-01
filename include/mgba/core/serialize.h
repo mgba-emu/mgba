@@ -44,7 +44,7 @@ struct mStateExtdata {
 void mStateExtdataInit(struct mStateExtdata*);
 void mStateExtdataDeinit(struct mStateExtdata*);
 void mStateExtdataPut(struct mStateExtdata*, enum mStateExtdataTag, struct mStateExtdataItem*);
-bool mStateExtdataGet(struct mStateExtdata*, enum mStateExtdataTag, struct mStateExtdataItem*);
+bool mStateExtdataGet(const struct mStateExtdata*, enum mStateExtdataTag, struct mStateExtdataItem*);
 
 struct VFile;
 bool mStateExtdataSerialize(struct mStateExtdata* extdata, struct VFile* vf);
