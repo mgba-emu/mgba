@@ -285,6 +285,11 @@ DECL_BIT(GBASerializedMiscFlags, IrqPending, 2);
 DECL_BIT(GBASerializedMiscFlags, Blocked, 3);
 DECL_BITS(GBASerializedMiscFlags, KeyIRQKeys, 4, 11);
 
+enum {
+	GBA_SUBSYSTEM_VIDEO_RENDERER = 0,
+	GBA_SUBSYSTEM_MAX,
+};
+
 struct GBASerializedState {
 	uint32_t versionMagic;
 	uint32_t biosChecksum;

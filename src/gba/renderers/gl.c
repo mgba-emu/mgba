@@ -13,9 +13,14 @@
 #include <mgba/internal/gba/renderers/cache-set.h>
 #include <mgba-util/memory.h>
 
+#define OPENGL_MAGIC 0x6E726C67
+
 static void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer);
 static void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer);
+static uint32_t GBAVideoGLRendererId(const struct GBAVideoRenderer* renderer);
+static bool GBAVideoGLRendererLoadState(struct GBAVideoRenderer* renderer, const void* state, size_t size);
+static void GBAVideoGLRendererSaveState(struct GBAVideoRenderer* renderer, void** state, size_t* size);
 static void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address);
 static void GBAVideoGLRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
 static void GBAVideoGLRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
@@ -656,9 +661,13 @@ static const GLint _vertices[] = {
 };
 
 void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer) {
+	memset(renderer, 0, sizeof(*renderer));
 	renderer->d.init = GBAVideoGLRendererInit;
 	renderer->d.reset = GBAVideoGLRendererReset;
 	renderer->d.deinit = GBAVideoGLRendererDeinit;
+	renderer->d.rendererId = GBAVideoGLRendererId;
+	renderer->d.loadState = GBAVideoGLRendererLoadState;
+	renderer->d.saveState = GBAVideoGLRendererSaveState;
 	renderer->d.writeVideoRegister = GBAVideoGLRendererWriteVideoRegister;
 	renderer->d.writeVRAM = GBAVideoGLRendererWriteVRAM;
 	renderer->d.writeOAM = GBAVideoGLRendererWriteOAM;
@@ -951,6 +960,26 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 		int b = M_B5(glRenderer->d.palette[i]);
 		glRenderer->shadowPalette[0][i] = (r << 11) | (g << 5) | b;
 	}
+}
+
+static uint32_t GBAVideoGLRendererId(const struct GBAVideoRenderer* renderer) {
+	UNUSED(renderer);
+	return OPENGL_MAGIC;
+}
+
+static bool GBAVideoGLRendererLoadState(struct GBAVideoRenderer* renderer, const void* state, size_t size) {
+	UNUSED(renderer);
+	UNUSED(state);
+	UNUSED(size);
+	// TODO
+	return false;
+}
+
+static void GBAVideoGLRendererSaveState(struct GBAVideoRenderer* renderer, void** state, size_t* size) {
+	UNUSED(renderer);
+	*state = NULL;
+	*size = 0;
+	// TODO
 }
 
 void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {

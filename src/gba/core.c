@@ -7,6 +7,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
+#include <mgba/core/serialize.h>
 #include <mgba/internal/arm/debugger/debugger.h>
 #include <mgba/internal/arm/isa-inlines.h>
 #include <mgba/internal/debugger/symbols.h>
@@ -833,14 +834,44 @@ static bool _GBACoreSaveState(struct mCore* core, void* state) {
 }
 
 static bool _GBACoreLoadExtraState(struct mCore* core, const struct mStateExtdata* extdata) {
-	UNUSED(core);
-	UNUSED(extdata);
-	return true;
+	struct GBA* gba = core->board;
+	struct mStateExtdataItem item;
+	bool ok = true;
+	if (mStateExtdataGet(extdata, EXTDATA_SUBSYSTEM_START + GBA_SUBSYSTEM_VIDEO_RENDERER, &item)) {
+		if ((uint32_t) item.size > sizeof(uint32_t)) {
+			uint32_t type;
+			LOAD_32(type, 0, item.data);
+			if (type == gba->video.renderer->rendererId(gba->video.renderer)) {
+				ok = gba->video.renderer->loadState(gba->video.renderer,
+				                                    (void*) ((uintptr_t) item.data + sizeof(uint32_t)),
+				                                    item.size - sizeof(type));
+			}
+		} else if (item.data) {
+			ok = false;
+		}
+	}
+	return ok;
 }
 
 static bool _GBACoreSaveExtraState(struct mCore* core, struct mStateExtdata* extdata) {
-	UNUSED(core);
-	UNUSED(extdata);
+	struct GBA* gba = core->board;
+	void* buffer = NULL;
+	size_t size = 0;
+	gba->video.renderer->saveState(gba->video.renderer, &buffer, &size);
+	if (size > 0 && buffer) {
+		struct mStateExtdataItem item;
+		item.size = size + sizeof(uint32_t);
+		item.data = malloc(item.size);
+		item.clean = free;
+		uint32_t type = gba->video.renderer->rendererId(gba->video.renderer);
+		STORE_32(type, 0, item.data);
+		memcpy((void*) ((uintptr_t) item.data + sizeof(uint32_t)), buffer, size);
+		mStateExtdataPut(extdata, EXTDATA_SUBSYSTEM_START + GBA_SUBSYSTEM_VIDEO_RENDERER, &item);
+	}
+	if (buffer) {
+		free(buffer);
+	}
+
 	return true;
 }
 

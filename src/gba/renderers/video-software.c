@@ -14,10 +14,14 @@
 
 #define DIRTY_SCANLINE(R, Y) R->scanlineDirty[Y >> 5] |= (1U << (Y & 0x1F))
 #define CLEAN_SCANLINE(R, Y) R->scanlineDirty[Y >> 5] &= ~(1U << (Y & 0x1F))
+#define SOFTWARE_MAGIC 0x6E727773
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer);
 static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer);
+static uint32_t GBAVideoSoftwareRendererId(const struct GBAVideoRenderer* renderer);
+static bool GBAVideoSoftwareRendererLoadState(struct GBAVideoRenderer* renderer, const void* state, size_t size);
+static void GBAVideoSoftwareRendererSaveState(struct GBAVideoRenderer* renderer, void** state, size_t* size);
 static void GBAVideoSoftwareRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address);
 static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
@@ -47,9 +51,13 @@ static void _breakWindow(struct GBAVideoSoftwareRenderer* softwareRenderer, stru
 static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer, struct WindowN* win);
 
 void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
+	memset(renderer, 0, sizeof(*renderer));
 	renderer->d.init = GBAVideoSoftwareRendererInit;
 	renderer->d.reset = GBAVideoSoftwareRendererReset;
 	renderer->d.deinit = GBAVideoSoftwareRendererDeinit;
+	renderer->d.rendererId = GBAVideoSoftwareRendererId;
+	renderer->d.loadState = GBAVideoSoftwareRendererLoadState;
+	renderer->d.saveState = GBAVideoSoftwareRendererSaveState;
 	renderer->d.writeVideoRegister = GBAVideoSoftwareRendererWriteVideoRegister;
 	renderer->d.writeVRAM = GBAVideoSoftwareRendererWriteVRAM;
 	renderer->d.writeOAM = GBAVideoSoftwareRendererWriteOAM;
@@ -79,7 +87,7 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
 	renderer->d.highlightColor = M_COLOR_WHITE;
 	renderer->d.highlightAmount = 0;
 
-	renderer->temporaryBuffer = 0;
+	renderer->temporaryBuffer = NULL;
 }
 
 static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
@@ -153,6 +161,26 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 	UNUSED(softwareRenderer);
+}
+
+static uint32_t GBAVideoSoftwareRendererId(const struct GBAVideoRenderer* renderer) {
+	UNUSED(renderer);
+	return SOFTWARE_MAGIC;
+}
+
+static bool GBAVideoSoftwareRendererLoadState(struct GBAVideoRenderer* renderer, const void* state, size_t size) {
+	UNUSED(renderer);
+	UNUSED(state);
+	UNUSED(size);
+	// TODO
+	return false;
+}
+
+static void GBAVideoSoftwareRendererSaveState(struct GBAVideoRenderer* renderer, void** state, size_t* size) {
+	UNUSED(renderer);
+	*state = NULL;
+	*size = 0;
+	// TODO
 }
 
 static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
