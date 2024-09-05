@@ -248,7 +248,7 @@ static uint16_t GBASIOLockstepNodeMultiWriteSIOCNT(struct GBASIODriver* driver, 
 		if (!node->id && attached > 1 && GBASIOMultiplayerIsReady(node->d.p->siocnt)) {
 			mLOG(GBA_SIO, DEBUG, "Lockstep %i: Transfer initiated", node->id);
 			ATOMIC_STORE(node->p->d.transferActive, TRANSFER_STARTING);
-			ATOMIC_STORE(node->p->d.transferCycles, GBASIOTransferCycles(node->d.p));
+			ATOMIC_STORE(node->p->d.transferCycles, GBASIOTransferCycles(node->d.p->mode, node->d.p->siocnt, attached));
 
 			if (mTimingIsScheduled(&driver->p->p->timing, &node->event)) {
 				node->eventDiff -= node->event.when - mTimingCurrentTime(&driver->p->p->timing);
@@ -479,7 +479,7 @@ static void _GBASIOLockstepNodeProcessEvents(struct mTiming* timing, void* user,
 	if (node->p->d.attached < 2) {
 		switch (node->mode) {
 		case GBA_SIO_MULTI:
-			cycles = GBASIOTransferCycles(node->d.p);
+			cycles = GBASIOTransferCycles(node->d.p->mode, node->d.p->siocnt, node->p->d.attached);
 			break;
 		case GBA_SIO_NORMAL_8:
 		case GBA_SIO_NORMAL_32:
@@ -544,7 +544,7 @@ static uint16_t GBASIOLockstepNodeNormalWriteSIOCNT(struct GBASIODriver* driver,
 	if ((value & 0x0081) == 0x0081) {
 		if (!node->id) {
 			// Frequency
-			int32_t cycles = GBASIOTransferCycles(node->d.p);
+			int32_t cycles = GBASIOTransferCycles(node->d.p->mode, node->d.p->siocnt, attached);
 
 			if (transferActive == TRANSFER_IDLE) {
 				mLOG(GBA_SIO, DEBUG, "Lockstep %i: Transfer initiated", node->id);

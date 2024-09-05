@@ -228,8 +228,12 @@ static void _startTransfer(struct GBASIO* sio) {
 			return;
 		}
 	}
+	int connected = 0;
+	if (sio->activeDriver && sio->activeDriver->connectedDevices) {
+		connected = sio->activeDriver->connectedDevices(sio->activeDriver);
+	}
 	mTimingDeschedule(&sio->p->timing, &sio->completeEvent);
-	mTimingSchedule(&sio->p->timing, &sio->completeEvent, GBASIOTransferCycles(sio));
+	mTimingSchedule(&sio->p->timing, &sio->completeEvent, GBASIOTransferCycles(sio->mode, sio->siocnt, connected));
 }
 
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
@@ -429,26 +433,21 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 	return value;
 }
 
-int32_t GBASIOTransferCycles(struct GBASIO* sio) {
-	int connected = 0;
-	if (sio->activeDriver) {
-		connected = sio->activeDriver->connectedDevices(sio->activeDriver);
-	}
-
+int32_t GBASIOTransferCycles(enum GBASIOMode mode, uint16_t siocnt, int connected) {
 	if (connected < 0 || connected >= MAX_GBAS) {
-		mLOG(GBA_SIO, ERROR, "SIO driver returned invalid device count %i", connected);
+		mLOG(GBA_SIO, ERROR, "Invalid device count %i", connected);
 		return 0;
 	}
 
-	switch (sio->mode) {
+	switch (mode) {
 	case GBA_SIO_MULTI:
-		return GBASIOCyclesPerTransfer[GBASIOMultiplayerGetBaud(sio->siocnt)][connected];
+		return GBASIOCyclesPerTransfer[GBASIOMultiplayerGetBaud(siocnt)][connected];
 	case GBA_SIO_NORMAL_8:
-		return 8 * GBA_ARM7TDMI_FREQUENCY / ((GBASIONormalIsInternalSc(sio->siocnt) ? 2048 : 256) * 1024);
+		return 8 * GBA_ARM7TDMI_FREQUENCY / ((GBASIONormalIsInternalSc(siocnt) ? 2048 : 256) * 1024);
 	case GBA_SIO_NORMAL_32:
-		return 32 * GBA_ARM7TDMI_FREQUENCY / ((GBASIONormalIsInternalSc(sio->siocnt) ? 2048 : 256) * 1024);
+		return 32 * GBA_ARM7TDMI_FREQUENCY / ((GBASIONormalIsInternalSc(siocnt) ? 2048 : 256) * 1024);
 	default:
-		mLOG(GBA_SIO, STUB, "No cycle count implemented for mode %s", _modeName(sio->mode));
+		mLOG(GBA_SIO, STUB, "No cycle count implemented for mode %s", _modeName(mode));
 		break;
 	}
 	return 0;
