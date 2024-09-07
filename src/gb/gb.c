@@ -1173,7 +1173,7 @@ void GBFrameEnded(struct GB* gb) {
 
 	// TODO: Move to common code
 	if (gb->stream && gb->stream->postVideoFrame) {
-		const color_t* pixels;
+		const mColor* pixels;
 		size_t stride;
 		gb->video.renderer->getPixels(gb->video.renderer, &stride, (const void**) &pixels);
 		gb->stream->postVideoFrame(gb->stream, pixels, stride);

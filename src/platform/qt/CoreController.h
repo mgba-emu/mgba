@@ -87,7 +87,7 @@ public:
 	QString baseDirectory() const { return m_baseDirectory; }
 	QString savePath() const { return m_savePath; }
 
-	const color_t* drawContext();
+	const mColor* drawContext();
 	QImage getPixels();
 
 	bool isPaused();

@@ -407,7 +407,7 @@ static size_t _GBCoreScreenRegions(const struct mCore* core, const struct mCoreS
 	}
 }
 
-static void _GBCoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {
+static void _GBCoreSetVideoBuffer(struct mCore* core, mColor* buffer, size_t stride) {
 	struct GBCore* gbcore = (struct GBCore*) core;
 	gbcore->renderer.outputBuffer = buffer;
 	gbcore->renderer.outputBufferStride = stride;

@@ -97,7 +97,7 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		controller->m_frameCounter = -1;
 
 		if (!controller->m_hwaccel) {
-			context->core->setVideoBuffer(context->core, reinterpret_cast<color_t*>(controller->m_activeBuffer.data()), controller->screenDimensions().width());
+			context->core->setVideoBuffer(context->core, reinterpret_cast<mColor*>(controller->m_activeBuffer.data()), controller->screenDimensions().width());
 		}
 
 		QString message(tr("Reset r%1-%2 %3").arg(gitRevision).arg(QLatin1String(gitCommitShort)).arg(controller->m_crc32, 8, 16, QLatin1Char('0')));
@@ -236,12 +236,12 @@ void CoreController::setPath(const QString& path, const QString& base) {
 	m_baseDirectory = base;
 }
 
-const color_t* CoreController::drawContext() {
+const mColor* CoreController::drawContext() {
 	if (m_hwaccel) {
 		return nullptr;
 	}
 	QMutexLocker locker(&m_bufferMutex);
-	return reinterpret_cast<const color_t*>(m_completeBuffer.constData());
+	return reinterpret_cast<const mColor*>(m_completeBuffer.constData());
 }
 
 QImage CoreController::getPixels() {
@@ -307,14 +307,14 @@ void CoreController::loadConfig(ConfigController* config) {
 	m_preload = config->getOption("preload").toInt();
 
 	QSize sizeBefore = screenDimensions();
-	m_activeBuffer.resize(256 * 224 * sizeof(color_t));
-	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), sizeBefore.width());
+	m_activeBuffer.resize(256 * 224 * sizeof(mColor));
+	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<mColor*>(m_activeBuffer.data()), sizeBefore.width());
 
 	mCoreLoadForeignConfig(m_threadContext.core, config->config());
 
 	QSize sizeAfter = screenDimensions();
-	m_activeBuffer.resize(sizeAfter.width() * sizeAfter.height() * sizeof(color_t));
-	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), sizeAfter.width());
+	m_activeBuffer.resize(sizeAfter.width() * sizeAfter.height() * sizeof(mColor));
+	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<mColor*>(m_activeBuffer.data()), sizeAfter.width());
 
 	if (hasStarted()) {
 		updateFastForward();
@@ -461,11 +461,11 @@ void CoreController::setLogger(LogController* logger) {
 
 void CoreController::start() {
 	QSize size(screenDimensions());
-	m_activeBuffer.resize(size.width() * size.height() * sizeof(color_t));
+	m_activeBuffer.resize(size.width() * size.height() * sizeof(mColor));
 	m_activeBuffer.fill(0xFF);
 	m_completeBuffer = m_activeBuffer;
 
-	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), size.width());
+	m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<mColor*>(m_activeBuffer.data()), size.width());
 
 	if (!m_patched) {
 		mCoreAutoloadPatch(m_threadContext.core);
@@ -1194,7 +1194,7 @@ void CoreController::setFramebufferHandle(int fb) {
 	if (hasStarted()) {
 		m_threadContext.core->reloadConfigOption(m_threadContext.core, "hwaccelVideo", NULL);
 		if (!m_hwaccel) {
-			m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<color_t*>(m_activeBuffer.data()), screenDimensions().width());
+			m_threadContext.core->setVideoBuffer(m_threadContext.core, reinterpret_cast<mColor*>(m_activeBuffer.data()), screenDimensions().width());
 		}
 	}
 }

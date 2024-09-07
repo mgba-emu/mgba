@@ -37,7 +37,7 @@
 
 #define VIDEO_WIDTH_MAX  256
 #define VIDEO_HEIGHT_MAX 224
-#define VIDEO_BUFF_SIZE  (VIDEO_WIDTH_MAX * VIDEO_HEIGHT_MAX * sizeof(color_t))
+#define VIDEO_BUFF_SIZE  (VIDEO_WIDTH_MAX * VIDEO_HEIGHT_MAX * sizeof(mColor))
 
 static retro_environment_t environCallback;
 static retro_video_refresh_t videoCallback;
@@ -66,7 +66,7 @@ static int32_t _readTiltY(struct mRotationSource* source);
 static int32_t _readGyroZ(struct mRotationSource* source);
 
 static struct mCore* core;
-static color_t* outputBuffer = NULL;
+static mColor* outputBuffer = NULL;
 static int16_t *audioSampleBuffer = NULL;
 static size_t audioSampleBufferSize;
 static float audioSamplesPerFrameAvg;

@@ -82,7 +82,7 @@ struct Window {
 struct GBAVideoSoftwareRenderer {
 	struct GBAVideoRenderer d;
 
-	color_t* outputBuffer;
+	mColor* outputBuffer;
 	int outputBufferStride;
 
 	uint32_t* temporaryBuffer;
@@ -100,10 +100,10 @@ struct GBAVideoSoftwareRenderer {
 	unsigned target2Bd;
 	bool blendDirty;
 	enum GBAVideoBlendEffect blendEffect;
-	color_t normalPalette[512];
-	color_t variantPalette[512];
-	color_t highlightPalette[512];
-	color_t highlightVariantPalette[512];
+	mColor normalPalette[512];
+	mColor variantPalette[512];
+	mColor highlightPalette[512];
+	mColor highlightVariantPalette[512];
 
 	uint16_t blda;
 	uint16_t bldb;

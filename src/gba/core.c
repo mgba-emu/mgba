@@ -525,7 +525,7 @@ static size_t _GBACoreScreenRegions(const struct mCore* core, const struct mCore
 	return 1;
 }
 
-static void _GBACoreSetVideoBuffer(struct mCore* core, color_t* buffer, size_t stride) {
+static void _GBACoreSetVideoBuffer(struct mCore* core, mColor* buffer, size_t stride) {
 	struct GBACore* gbacore = (struct GBACore*) core;
 	gbacore->renderer.outputBuffer = buffer;
 	gbacore->renderer.outputBufferStride = stride;

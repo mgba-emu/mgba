@@ -11,10 +11,10 @@
 CXX_GUARD_START
 
 #ifdef COLOR_16_BIT
-typedef uint16_t color_t;
+typedef uint16_t mColor;
 #define BYTES_PER_PIXEL 2
 #else
-typedef uint32_t color_t;
+typedef uint32_t mColor;
 #define BYTES_PER_PIXEL 4
 #endif
 
@@ -210,18 +210,18 @@ static inline bool mColorFormatHasAlpha(enum mColorFormat format) {
 	return false;
 }
 
-static inline color_t mColorFrom555(uint16_t value) {
+static inline mColor mColorFrom555(uint16_t value) {
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	color_t color = 0;
+	mColor color = 0;
 	color |= (value & 0x001F) << 11;
 	color |= (value & 0x03E0) << 1;
 	color |= (value & 0x7C00) >> 10;
 #else
-	color_t color = value;
+	mColor color = value;
 #endif
 #else
-	color_t color = M_RGB5_TO_BGR8(value);
+	mColor color = M_RGB5_TO_BGR8(value);
 	color |= (color >> 5) & 0x070707;
 #endif
 	return color;

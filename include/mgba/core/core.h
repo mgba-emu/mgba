@@ -73,7 +73,7 @@ struct mCore {
 	unsigned (*videoScale)(const struct mCore*);
 	size_t (*screenRegions)(const struct mCore*, const struct mCoreScreenRegion**);
 
-	void (*setVideoBuffer)(struct mCore*, color_t* buffer, size_t stride);
+	void (*setVideoBuffer)(struct mCore*, mColor* buffer, size_t stride);
 	void (*setVideoGLTex)(struct mCore*, unsigned texid);
 
 	void (*getPixels)(struct mCore*, const void** buffer, size_t* stride);

@@ -123,7 +123,7 @@ static void _drawState(struct GUIBackground* background, void* id) {
 	struct mGUIBackground* gbaBackground = (struct mGUIBackground*) background;
 	unsigned stateId = ((uint32_t) id) >> 16;
 	if (gbaBackground->p->drawScreenshot) {
-		color_t* pixels = gbaBackground->image;
+		mColor* pixels = gbaBackground->image;
 		if (pixels && gbaBackground->screenshotId == (stateId | SCREENSHOT_VALID)) {
 			gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, gbaBackground->w, gbaBackground->h, true);
 			return;

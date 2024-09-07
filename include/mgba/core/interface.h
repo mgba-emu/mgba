@@ -47,7 +47,7 @@ DECLARE_VECTOR(mCoreCallbacksList, struct mCoreCallbacks);
 struct mAVStream {
 	void (*videoDimensionsChanged)(struct mAVStream*, unsigned width, unsigned height);
 	void (*audioRateChanged)(struct mAVStream*, unsigned rate);
-	void (*postVideoFrame)(struct mAVStream*, const color_t* buffer, size_t stride);
+	void (*postVideoFrame)(struct mAVStream*, const mColor* buffer, size_t stride);
 	void (*postAudioFrame)(struct mAVStream*, int16_t left, int16_t right);
 	void (*postAudioBuffer)(struct mAVStream*, struct mAudioBuffer*);
 };

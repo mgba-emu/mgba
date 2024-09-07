@@ -62,7 +62,7 @@ void TilePainter::clearTile(int index) {
 	update(r);
 }
 
-void TilePainter::setTile(int index, const color_t* data) {
+void TilePainter::setTile(int index, const mColor* data) {
 	QPainter painter(&m_backing);
 	int w = width() / m_size;
 	int x = index % w;

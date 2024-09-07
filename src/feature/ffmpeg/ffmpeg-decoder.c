@@ -190,7 +190,7 @@ bool FFmpegDecoderRead(struct FFmpegDecoder* decoder) {
 					}
 					int stride = decoder->width * BYTES_PER_PIXEL;
 					sws_scale(decoder->scaleContext, (const uint8_t* const*) decoder->videoFrame->data, decoder->videoFrame->linesize, 0, decoder->videoFrame->height, &decoder->pixels, &stride);
-					decoder->out->postVideoFrame(decoder->out, (const color_t*) decoder->pixels, decoder->width);
+					decoder->out->postVideoFrame(decoder->out, (const mColor*) decoder->pixels, decoder->width);
 				}
 			}
 		}

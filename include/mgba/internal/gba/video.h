@@ -208,7 +208,7 @@ struct GBAVideoRenderer {
 
 	bool highlightBG[4];
 	bool highlightOBJ[128];
-	color_t highlightColor;
+	mColor highlightColor;
 	uint8_t highlightAmount;
 };
 

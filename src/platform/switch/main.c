@@ -79,7 +79,7 @@ static GLuint oldTex;
 static GLuint screenshotTex;
 
 static struct GUIFont* font;
-static color_t* frameBuffer;
+static mColor* frameBuffer;
 static struct mAVStream stream;
 static struct mSwitchRumble {
 	struct mRumbleIntegrator d;
@@ -517,7 +517,7 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	hidSendVibrationValues(vibrationDeviceHandles, values, 4);
 }
 
-static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
+static void _drawScreenshot(struct mGUIRunner* runner, const mColor* pixels, unsigned width, unsigned height, bool faded) {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, screenshotTex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);

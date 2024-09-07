@@ -97,7 +97,7 @@ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
 
 	int y;
 	for (y = 0; y < GBA_VIDEO_VERTICAL_PIXELS; ++y) {
-		color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
+		mColor* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 		int x;
 		for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; ++x) {
 			row[x] = M_COLOR_WHITE;
@@ -422,7 +422,7 @@ static void GBAVideoSoftwareRendererWriteOAM(struct GBAVideoRenderer* renderer, 
 
 static void GBAVideoSoftwareRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
-	color_t color = mColorFrom555(value);
+	mColor color = mColorFrom555(value);
 	softwareRenderer->normalPalette[address >> 1] = color;
 	if (softwareRenderer->blendEffect == BLEND_BRIGHTEN) {
 		softwareRenderer->variantPalette[address >> 1] = _brighten(color, softwareRenderer->bldy);
@@ -610,7 +610,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 
 	CLEAN_SCANLINE(softwareRenderer, y);
 
-	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
+	mColor* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y];
 	if (GBARegisterDISPCNTIsForcedBlank(softwareRenderer->dispcnt)) {
 		int x;
 		for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; ++x) {
@@ -781,7 +781,7 @@ static void GBAVideoSoftwareRendererGetPixels(struct GBAVideoRenderer* renderer,
 static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
-	const color_t* colorPixels = pixels;
+	const mColor* colorPixels = pixels;
 	unsigned i;
 	for (i = 0; i < GBA_VIDEO_VERTICAL_PIXELS; ++i) {
 		memmove(&softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * i], &colorPixels[stride * i], GBA_VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);

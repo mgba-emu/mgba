@@ -78,7 +78,7 @@ void DisplayQt::filter(bool filter) {
 
 void DisplayQt::framePosted() {
 	update();
-	const color_t* buffer = m_context->drawContext();
+	const mColor* buffer = m_context->drawContext();
 	if (const_cast<const QImage&>(m_layers[VIDEO_LAYER_IMAGE]).bits() == reinterpret_cast<const uchar*>(buffer)) {
 		return;
 	}

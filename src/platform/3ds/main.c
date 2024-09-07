@@ -85,8 +85,8 @@ static enum {
 } hasSound;
 
 // TODO: Move into context
-static color_t* outputBuffer = NULL;
-static color_t* screenshotBuffer = NULL;
+static mColor* outputBuffer = NULL;
+static mColor* screenshotBuffer = NULL;
 static struct mAVStream stream;
 static int16_t* audioLeft = 0;
 static size_t audioPos = 0;
@@ -293,7 +293,7 @@ static void _setup(struct mGUIRunner* runner) {
 	_map3DSKey(&runner->core->inputMap, KEY_L, GBA_KEY_L);
 	_map3DSKey(&runner->core->inputMap, KEY_R, GBA_KEY_R);
 
-	memset(outputBuffer, 0, 256 * 224 * sizeof(color_t));
+	memset(outputBuffer, 0, 256 * 224 * sizeof(mColor));
 	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
 
 	unsigned mode;
@@ -615,19 +615,19 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 	_drawTex(runner->core, faded, interframeBlending);
 }
 
-static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
+static void _drawScreenshot(struct mGUIRunner* runner, const mColor* pixels, unsigned width, unsigned height, bool faded) {
 	C3D_Tex* tex = &outputTexture[activeOutputTexture];
 
 	if (!screenshotBuffer) {
-		screenshotBuffer = linearMemAlign(256 * 224 * sizeof(color_t), 0x80);
+		screenshotBuffer = linearMemAlign(256 * 224 * sizeof(mColor), 0x80);
 	}
 	unsigned y;
 	for (y = 0; y < height; ++y) {
-		memcpy(&screenshotBuffer[y * 256], &pixels[y * width], width * sizeof(color_t));
-		memset(&screenshotBuffer[y * 256 + width], 0, (256 - width) * sizeof(color_t));
+		memcpy(&screenshotBuffer[y * 256], &pixels[y * width], width * sizeof(mColor));
+		memset(&screenshotBuffer[y * 256 + width], 0, (256 - width) * sizeof(mColor));
 	}
 
-	GSPGPU_FlushDataCache(screenshotBuffer, 256 * height * sizeof(color_t));
+	GSPGPU_FlushDataCache(screenshotBuffer, 256 * height * sizeof(mColor));
 	C3D_SyncDisplayTransfer(
 			(u32*) screenshotBuffer, GX_BUFFER_DIM(256, height),
 			tex->data, GX_BUFFER_DIM(256, 256),
@@ -917,7 +917,7 @@ int main(int argc, char* argv[]) {
 		_cleanup();
 		return 1;
 	}
-	outputBuffer = linearMemAlign(256 * 224 * sizeof(color_t), 0x80);
+	outputBuffer = linearMemAlign(256 * 224 * sizeof(mColor), 0x80);
 
 	struct mGUIRunner runner = {
 		.params = {

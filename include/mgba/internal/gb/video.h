@@ -109,7 +109,7 @@ struct GBVideoRenderer {
 	bool highlightBG;
 	bool highlightOBJ[GB_VIDEO_MAX_OBJ];
 	bool highlightWIN;
-	color_t highlightColor;
+	mColor highlightColor;
 	uint8_t highlightAmount;
 };
 

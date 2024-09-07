@@ -29,7 +29,7 @@ struct mTileCacheEntry {
 };
 
 struct mTileCache {
-	color_t* cache;
+	mColor* cache;
 	struct mTileCacheEntry* status;
 	uint32_t* globalPaletteVersion;
 
@@ -39,8 +39,8 @@ struct mTileCache {
 	unsigned bpp;
 
 	uint16_t* vram;
-	color_t* palette;
-	color_t temporaryTile[64];
+	mColor* palette;
+	mColor temporaryTile[64];
 
 	mTileCacheConfiguration config;
 	mTileCacheSystemInfo sysConfig;
@@ -51,11 +51,11 @@ void mTileCacheDeinit(struct mTileCache* cache);
 void mTileCacheConfigure(struct mTileCache* cache, mTileCacheConfiguration config);
 void mTileCacheConfigureSystem(struct mTileCache* cache, mTileCacheSystemInfo config, uint32_t tileBase, uint32_t paletteBase);
 void mTileCacheWriteVRAM(struct mTileCache* cache, uint32_t address);
-void mTileCacheWritePalette(struct mTileCache* cache, uint32_t entry, color_t color);
+void mTileCacheWritePalette(struct mTileCache* cache, uint32_t entry, mColor color);
 
-const color_t* mTileCacheGetTile(struct mTileCache* cache, unsigned tileId, unsigned paletteId);
-const color_t* mTileCacheGetTileIfDirty(struct mTileCache* cache, struct mTileCacheEntry* entry, unsigned tileId, unsigned paletteId);
-const color_t* mTileCacheGetPalette(struct mTileCache* cache, unsigned paletteId);
+const mColor* mTileCacheGetTile(struct mTileCache* cache, unsigned tileId, unsigned paletteId);
+const mColor* mTileCacheGetTileIfDirty(struct mTileCache* cache, struct mTileCacheEntry* entry, unsigned tileId, unsigned paletteId);
+const mColor* mTileCacheGetPalette(struct mTileCache* cache, unsigned paletteId);
 const uint16_t* mTileCacheGetVRAM(struct mTileCache* cache, unsigned tileId);
 
 CXX_GUARD_END

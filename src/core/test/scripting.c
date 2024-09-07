@@ -312,7 +312,7 @@ M_TEST_DEFINE(logging) {
 M_TEST_DEFINE(screenshot) {
 	SETUP_LUA;
 	CREATE_CORE;
-	color_t* buffer = malloc(240 * 160 * sizeof(color_t));
+	mColor* buffer = malloc(240 * 160 * sizeof(mColor));
 	core->setVideoBuffer(core, buffer, 240);
 	core->reset(core);
 	core->runFrame(core);

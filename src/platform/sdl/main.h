@@ -30,7 +30,7 @@ CXX_GUARD_START
 struct mCore;
 struct mSDLRenderer {
 	struct mCore* core;
-	color_t* outputBuffer;
+	mColor* outputBuffer;
 
 	struct mSDLAudio audio;
 	struct mSDLEvents events;
