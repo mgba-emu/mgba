@@ -101,9 +101,9 @@ static bool _rtcGenericDeserialize(struct mRTCSource* source, const struct mStat
 }
 
 void mRTCGenericSourceInit(struct mRTCGenericSource* rtc, struct mCore* core) {
+	memset(rtc, 0, sizeof(*rtc));
 	rtc->p = core;
 	rtc->override = RTC_NO_OVERRIDE;
-	rtc->value = 0;
 	rtc->d.sample = _rtcGenericSample;
 	rtc->d.unixTime = _rtcGenericCallback;
 	rtc->d.serialize = _rtcGenericSerialize;
@@ -143,10 +143,8 @@ static void mRumbleIntegratorIntegrate(struct mRumble* rumble, uint32_t period) 
 }
 
 void mRumbleIntegratorInit(struct mRumbleIntegrator* integrator) {
+	memset(integrator, 0, sizeof(*integrator));
 	integrator->d.reset = mRumbleIntegratorReset;
 	integrator->d.setRumble = mRumbleIntegratorSetRumble;
 	integrator->d.integrate = mRumbleIntegratorIntegrate;
-
-	integrator->state = false;
-	integrator->timeOn = 0;
 }
