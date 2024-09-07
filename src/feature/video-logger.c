@@ -516,7 +516,7 @@ struct mVideoLogContext* mVideoLogContextCreate(struct mCore* core) {
 		context->initialStateSize = vf->size(vf);
 		context->initialState = anonymousMemoryMap(context->initialStateSize);
 		vf->seek(vf, 0, SEEK_SET);
-		vf->write(vf, context->initialState, context->initialStateSize);
+		vf->read(vf, context->initialState, context->initialStateSize);
 		vf->close(vf);
 		core->startVideoLog(core, context);
 	}
