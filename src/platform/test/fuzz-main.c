@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
 	}
 	if (fuzzOpts.ssOverlay) {
 		overlayOffset = fuzzOpts.overlayOffset;
-		if (overlayOffset < core->stateSize(core)) {
+		if (overlayOffset <= core->stateSize(core)) {
 			savestateOverlay = VFileOpen(fuzzOpts.ssOverlay, O_RDONLY);
 		}
 		free(fuzzOpts.ssOverlay);
@@ -137,19 +137,25 @@ int main(int argc, char** argv) {
 
 	if (savestate) {
 		if (!savestateOverlay) {
-			mCoreLoadStateNamed(core, savestate, 0);
+			mCoreLoadStateNamed(core, savestate, SAVESTATE_ALL);
 		} else {
-			size_t size = core->stateSize(core);
-			uint8_t* state = malloc(size);
-			savestate->read(savestate, state, size);
-			savestateOverlay->read(savestateOverlay, state + overlayOffset, size - overlayOffset);
-			core->loadState(core, state);
-			free(state);
+			size_t size = savestate->size(savestate);
+			void* mapped = savestate->map(savestate, size, MAP_READ);
+			struct VFile* newState = VFileMemChunk(mapped, size);
+			savestate->unmap(savestate, mapped, size);
+			newState->seek(newState, overlayOffset, SEEK_SET);
+			uint8_t buffer[2048];
+			int read;
+			while ((read = savestateOverlay->read(savestateOverlay, buffer, sizeof(buffer))) > 0) {
+				newState->write(newState, buffer, read);
+			}
 			savestateOverlay->close(savestateOverlay);
-			savestateOverlay = 0;
+			savestateOverlay = NULL;
+			mCoreLoadStateNamed(core, newState, SAVESTATE_ALL);
+			newState->close(newState);
 		}
 		savestate->close(savestate);
-		savestate = 0;
+		savestate = NULL;
 	}
 
 	_fuzzRunloop(core, fuzzOpts.frames);
