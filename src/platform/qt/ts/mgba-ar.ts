@@ -6,7 +6,7 @@
     <message>
         <location filename="../utils.cpp" line="88"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation>رومات غيم بوي أدفنس (%1)</translation>
+        <translation>رومات غيم بوي أدفانس (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="105"/>
@@ -127,7 +127,7 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>مجهول</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="235"/>
