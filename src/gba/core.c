@@ -470,8 +470,7 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 #endif
 #ifndef MINIMAL_CORE
 		if (renderer && core->videoLogger) {
-			gbacore->proxyRenderer.logger = core->videoLogger;
-			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
+			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer, core->videoLogger);
 			renderer = &gbacore->proxyRenderer.d;
 		}
 #endif
@@ -712,8 +711,7 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 #ifndef MINIMAL_CORE
 		if (renderer && core->videoLogger) {
-			gbacore->proxyRenderer.logger = core->videoLogger;
-			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer);
+			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer, core->videoLogger);
 			renderer = &gbacore->proxyRenderer.d;
 		}
 #endif
@@ -1516,12 +1514,12 @@ static void _GBACoreStartVideoLog(struct mCore* core, struct mVideoLogContext* c
 	state->cpu.gprs[ARM_PC] = GBA_BASE_EWRAM;
 
 	int channelId = mVideoLoggerAddChannel(context);
-	gbacore->vlProxy.logger = malloc(sizeof(struct mVideoLogger));
-	mVideoLoggerRendererCreate(gbacore->vlProxy.logger, false);
-	mVideoLoggerAttachChannel(gbacore->vlProxy.logger, context, channelId);
-	gbacore->vlProxy.logger->block = false;
+	struct mVideoLogger* logger = malloc(sizeof(*logger));
+	mVideoLoggerRendererCreate(logger, false);
+	mVideoLoggerAttachChannel(logger, context, channelId);
+	logger->block = false;
 
-	GBAVideoProxyRendererCreate(&gbacore->vlProxy, gba->video.renderer);
+	GBAVideoProxyRendererCreate(&gbacore->vlProxy, gba->video.renderer, logger);
 	GBAVideoProxyRendererShim(&gba->video, &gbacore->vlProxy);
 }
 
@@ -1654,9 +1652,9 @@ static bool _GBAVLPInit(struct mCore* core) {
 	if (!_GBACoreInit(core)) {
 		return false;
 	}
-	gbacore->vlProxy.logger = malloc(sizeof(struct mVideoLogger));
-	mVideoLoggerRendererCreate(gbacore->vlProxy.logger, true);
-	GBAVideoProxyRendererCreate(&gbacore->vlProxy, NULL);
+	struct mVideoLogger* logger = malloc(sizeof(*logger));
+	mVideoLoggerRendererCreate(logger, true);
+	GBAVideoProxyRendererCreate(&gbacore->vlProxy, NULL, logger);
 	memset(&gbacore->logCallbacks, 0, sizeof(gbacore->logCallbacks));
 	gbacore->logCallbacks.videoFrameStarted = _GBAVLPStartFrameCallback;
 	gbacore->logCallbacks.context = core;

@@ -29,7 +29,8 @@ static void GBVideoProxyRendererPutPixels(struct GBVideoRenderer* renderer, size
 static bool _parsePacket(struct mVideoLogger* logger, const struct mVideoLoggerDirtyInfo* packet);
 static uint16_t* _vramBlock(struct mVideoLogger* logger, uint32_t address);
 
-void GBVideoProxyRendererCreate(struct GBVideoProxyRenderer* renderer, struct GBVideoRenderer* backend) {
+void GBVideoProxyRendererCreate(struct GBVideoProxyRenderer* renderer, struct GBVideoRenderer* backend, struct mVideoLogger* logger) {
+	memset(renderer, 0, sizeof(*renderer));
 	renderer->d.init = GBVideoProxyRendererInit;
 	renderer->d.deinit = GBVideoProxyRendererDeinit;
 	renderer->d.writeVideoRegister = GBVideoProxyRendererWriteVideoRegister;
@@ -57,12 +58,13 @@ void GBVideoProxyRendererCreate(struct GBVideoProxyRenderer* renderer, struct GB
 	renderer->d.highlightColor = M_COLOR_WHITE;
 	renderer->d.highlightAmount = 0;
 
-	renderer->logger->context = renderer;
-	renderer->logger->parsePacket = _parsePacket;
-	renderer->logger->vramBlock = _vramBlock;
-	renderer->logger->paletteSize = 0;
-	renderer->logger->vramSize = GB_SIZE_VRAM;
-	renderer->logger->oamSize = GB_SIZE_OAM;
+	renderer->logger = logger;
+	logger->context = renderer;
+	logger->parsePacket = _parsePacket;
+	logger->vramBlock = _vramBlock;
+	logger->paletteSize = 0;
+	logger->vramSize = GB_SIZE_VRAM;
+	logger->oamSize = GB_SIZE_OAM;
 
 	renderer->backend = backend;
 }
