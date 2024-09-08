@@ -113,6 +113,9 @@ struct GBASIODriver {
 	void (*reset)(struct GBASIODriver* driver);
 	bool (*load)(struct GBASIODriver* driver);
 	bool (*unload)(struct GBASIODriver* driver);
+	uint32_t (*driverId)(const struct GBASIODriver* renderer);
+	bool (*loadState)(struct GBASIODriver* renderer, const void* state, size_t size);
+	void (*saveState)(struct GBASIODriver* renderer, void** state, size_t* size);
 	void (*setMode)(struct GBASIODriver* driver, enum GBASIOMode mode);
 	bool (*handlesMode)(struct GBASIODriver* driver, enum GBASIOMode mode);
 	int (*connectedDevices)(struct GBASIODriver* driver);

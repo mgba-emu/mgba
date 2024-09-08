@@ -842,7 +842,21 @@ static bool _GBACoreLoadExtraState(struct mCore* core, const struct mStateExtdat
 			if (type == gba->video.renderer->rendererId(gba->video.renderer)) {
 				ok = gba->video.renderer->loadState(gba->video.renderer,
 				                                    (void*) ((uintptr_t) item.data + sizeof(uint32_t)),
-				                                    item.size - sizeof(type));
+				                                    item.size - sizeof(type)) && ok;
+			}
+		} else if (item.data) {
+			ok = false;
+		}
+	}
+	if (gba->sio.activeDriver && gba->sio.activeDriver->driverId && gba->sio.activeDriver->loadState &&
+	    mStateExtdataGet(extdata, EXTDATA_SUBSYSTEM_START + GBA_SUBSYSTEM_SIO_DRIVER, &item)) {
+		if ((uint32_t) item.size > sizeof(uint32_t)) {
+			uint32_t type;
+			LOAD_32(type, 0, item.data);
+			if (type == gba->sio.activeDriver->driverId(gba->sio.activeDriver)) {
+				ok = gba->sio.activeDriver->loadState(gba->sio.activeDriver,
+				                                    (void*) ((uintptr_t) item.data + sizeof(uint32_t)),
+				                                    item.size - sizeof(type)) && ok;
 			}
 		} else if (item.data) {
 			ok = false;
@@ -868,6 +882,27 @@ static bool _GBACoreSaveExtraState(struct mCore* core, struct mStateExtdata* ext
 	}
 	if (buffer) {
 		free(buffer);
+		buffer = NULL;
+	}
+	size = 0;
+
+	if (gba->sio.activeDriver && gba->sio.activeDriver->driverId && gba->sio.activeDriver->saveState) {
+		gba->sio.activeDriver->saveState(gba->sio.activeDriver, &buffer, &size);
+		if (size > 0 && buffer) {
+			struct mStateExtdataItem item;
+			item.size = size + sizeof(uint32_t);
+			item.data = malloc(item.size);
+			item.clean = free;
+			uint32_t type = gba->sio.activeDriver->driverId(gba->sio.activeDriver);
+			STORE_32(type, 0, item.data);
+			memcpy((void*) ((uintptr_t) item.data + sizeof(uint32_t)), buffer, size);
+			mStateExtdataPut(extdata, EXTDATA_SUBSYSTEM_START + GBA_SUBSYSTEM_SIO_DRIVER, &item);
+		}
+		if (buffer) {
+			free(buffer);
+			buffer = NULL;
+		}
+		size = 0;
 	}
 
 	return true;
