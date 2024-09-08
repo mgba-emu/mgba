@@ -8,17 +8,82 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
 
+#define DRIVER_ID 0x6B636F4C
+#define DRIVER_STATE_VERSION 1
 #define LOCKSTEP_INCREMENT 2000
 #define TARGET(P) (1 << (P))
 #define TARGET_ALL 0xF
 #define TARGET_PRIMARY 0x1
 #define TARGET_SECONDARY ((TARGET_ALL) & ~(TARGET_PRIMARY))
 
+DECL_BITFIELD(GBASIOLockstepSerializedFlags, uint32_t);
+DECL_BITS(GBASIOLockstepSerializedFlags, DriverMode, 0, 3);
+DECL_BITS(GBASIOLockstepSerializedFlags, NumEvents, 3, 4);
+DECL_BIT(GBASIOLockstepSerializedFlags, Asleep, 7);
+DECL_BIT(GBASIOLockstepSerializedFlags, DataReceived, 8);
+DECL_BIT(GBASIOLockstepSerializedFlags, EventScheduled, 9);
+DECL_BITS(GBASIOLockstepSerializedFlags, Player0Mode, 10, 3);
+DECL_BITS(GBASIOLockstepSerializedFlags, Player1Mode, 13, 3);
+DECL_BITS(GBASIOLockstepSerializedFlags, Player2Mode, 16, 3);
+DECL_BITS(GBASIOLockstepSerializedFlags, Player3Mode, 19, 3);
+DECL_BITS(GBASIOLockstepSerializedFlags, TransferMode, 28, 3);
+DECL_BIT(GBASIOLockstepSerializedFlags, TransferActive, 31);
+
+DECL_BITFIELD(GBASIOLockstepSerializedEventFlags, uint32_t);
+DECL_BITS(GBASIOLockstepSerializedEventFlags, Type, 0, 3);
+
+struct GBASIOLockstepSerializedEvent {
+	int32_t timestamp;
+	int32_t playerId;
+	GBASIOLockstepSerializedEventFlags flags;
+	int32_t reserved[5];
+	union {
+		int32_t mode;
+		int32_t finishCycle;
+		int32_t padding[4];
+	};
+};
+static_assert(sizeof(struct GBASIOLockstepSerializedEvent) == 0x30, "GBA lockstep event savestate struct sized wrong");
+
+struct GBASIOLockstepSerializedState {
+	uint32_t version;
+	GBASIOLockstepSerializedFlags flags;
+	uint32_t reserved[2];
+
+	struct {
+		int32_t nextEvent;
+		uint32_t reservedDriver[7];
+	} driver;
+
+	struct {
+		int32_t playerId;
+		int32_t cycleOffset;
+		uint32_t reservedPlayer[2];
+		struct GBASIOLockstepSerializedEvent events[MAX_LOCKSTEP_EVENTS];
+	} player;
+
+	// playerId 0 only
+	struct {
+		int32_t cycle;
+		uint32_t waiting;
+		uint32_t reservedCoordinator[4];
+		uint16_t multiData[4];
+		uint32_t normalData[4];
+	} coordinator;
+};
+static_assert(offsetof(struct GBASIOLockstepSerializedState, driver) == 0x10, "GBA lockstep savestate driver offset wrong");
+static_assert(offsetof(struct GBASIOLockstepSerializedState, player) == 0x30, "GBA lockstep savestate player offset wrong");
+static_assert(offsetof(struct GBASIOLockstepSerializedState, coordinator) == 0x1C0, "GBA lockstep savestate coordinator offset wrong");
+static_assert(sizeof(struct GBASIOLockstepSerializedState) == 0x1F0, "GBA lockstep savestate struct sized wrong");
+
 static bool GBASIOLockstepDriverInit(struct GBASIODriver* driver);
 static void GBASIOLockstepDriverDeinit(struct GBASIODriver* driver);
 static void GBASIOLockstepDriverReset(struct GBASIODriver* driver);
 static bool GBASIOLockstepDriverLoad(struct GBASIODriver* driver);
 static bool GBASIOLockstepDriverUnload(struct GBASIODriver* driver);
+static uint32_t GBASIOLockstepDriverId(const struct GBASIODriver* driver);
+static bool GBASIOLockstepDriverLoadState(struct GBASIODriver* driver, const void* state, size_t size);
+static void GBASIOLockstepDriverSaveState(struct GBASIODriver* driver, void** state, size_t* size);
 static void GBASIOLockstepDriverSetMode(struct GBASIODriver* driver, enum GBASIOMode mode);
 static bool GBASIOLockstepDriverHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
 static int GBASIOLockstepDriverConnectedDevices(struct GBASIODriver* driver);
@@ -56,6 +121,9 @@ void GBASIOLockstepDriverCreate(struct GBASIOLockstepDriver* driver, struct mLoc
 	driver->d.reset = GBASIOLockstepDriverReset;
 	driver->d.load = GBASIOLockstepDriverLoad;
 	driver->d.unload = GBASIOLockstepDriverUnload;
+	driver->d.driverId = GBASIOLockstepDriverId;
+	driver->d.loadState = GBASIOLockstepDriverLoadState;
+	driver->d.saveState = GBASIOLockstepDriverSaveState;
 	driver->d.setMode = GBASIOLockstepDriverSetMode;
 	driver->d.handlesMode = GBASIOLockstepDriverHandlesMode;
 	driver->d.deviceId = GBASIOLockstepDriverDeviceId;
@@ -171,6 +239,209 @@ static bool GBASIOLockstepDriverUnload(struct GBASIODriver* driver) {
 		GBASIOLockstepDriverSetMode(driver, -1);
 	}
 	return true;
+}
+
+static uint32_t GBASIOLockstepDriverId(const struct GBASIODriver* driver) {
+	UNUSED(driver);
+	return DRIVER_ID;
+}
+
+static unsigned _modeEnumToInt(enum GBASIOMode mode) {
+	switch ((int) mode) {
+	case -1:
+	default:
+		return 0;
+	case GBA_SIO_MULTI:
+		return 1;
+	case GBA_SIO_NORMAL_8:
+		return 2;
+	case GBA_SIO_NORMAL_32:
+		return 3;
+	case GBA_SIO_GPIO:
+		return 4;
+	case GBA_SIO_UART:
+		return 5;
+	case GBA_SIO_JOYBUS:
+		return 6;
+	}
+}
+
+static enum GBASIOMode _modeIntToEnum(unsigned mode) {
+	const enum GBASIOMode modes[8] = {
+		-1, GBA_SIO_MULTI, GBA_SIO_NORMAL_8, GBA_SIO_NORMAL_32, GBA_SIO_GPIO, GBA_SIO_UART, GBA_SIO_JOYBUS, -1
+	};
+	return modes[mode & 7];
+}
+
+static bool GBASIOLockstepDriverLoadState(struct GBASIODriver* driver, const void* data, size_t size) {
+	struct GBASIOLockstepDriver* lockstep = (struct GBASIOLockstepDriver*) driver;
+	struct GBASIOLockstepCoordinator* coordinator = lockstep->coordinator;
+	if (size != sizeof(struct GBASIOLockstepSerializedState)) {
+		mLOG(GBA_SIO, WARN, "Incorrect state size: expected %" PRIz "X, got %" PRIz "X", sizeof(struct GBASIOLockstepSerializedState), size);
+		return false;
+	}
+	const struct GBASIOLockstepSerializedState* state = data;
+	bool error = false;
+	uint32_t ucheck;
+	int32_t check;
+	LOAD_32LE(ucheck, 0, &state->version);
+	if (ucheck > DRIVER_STATE_VERSION) {
+		mLOG(GBA_SIO, WARN, "Invalid or too new save state: expected %u, got %u", DRIVER_STATE_VERSION, ucheck);
+		return false;
+	}
+
+	MutexLock(&coordinator->mutex);
+	struct GBASIOLockstepPlayer* player = TableLookup(&coordinator->players, lockstep->lockstepId);
+	LOAD_32LE(check, 0, &state->player.playerId);
+	if (check != player->playerId) {
+		mLOG(GBA_SIO, WARN, "State is for different player: expected %d, got %d", player->playerId, check);
+		error = true;
+		goto out;
+	}
+
+	GBASIOLockstepSerializedFlags flags = 0;
+	LOAD_32LE(flags, 0, &state->flags);
+	LOAD_32LE(player->cycleOffset, 0, &state->player.cycleOffset);
+	player->dataReceived = GBASIOLockstepSerializedFlagsGetDataReceived(flags);
+	player->mode = _modeIntToEnum(GBASIOLockstepSerializedFlagsGetDriverMode(flags));
+
+	player->otherModes[0] = _modeIntToEnum(GBASIOLockstepSerializedFlagsGetPlayer0Mode(flags));
+	player->otherModes[1] = _modeIntToEnum(GBASIOLockstepSerializedFlagsGetPlayer1Mode(flags));
+	player->otherModes[2] = _modeIntToEnum(GBASIOLockstepSerializedFlagsGetPlayer2Mode(flags));
+	player->otherModes[3] = _modeIntToEnum(GBASIOLockstepSerializedFlagsGetPlayer3Mode(flags));
+
+	if (GBASIOLockstepSerializedFlagsGetEventScheduled(flags)) {
+		int32_t when;
+		LOAD_32LE(when, 0, &state->driver.nextEvent);
+		mTimingSchedule(&driver->p->p->timing, &lockstep->event, when);
+	}
+
+	if (GBASIOLockstepSerializedFlagsGetAsleep(flags)) {
+		if (!player->asleep && player->driver->user->sleep) {
+			player->driver->user->sleep(player->driver->user);
+		}
+		player->asleep = true;
+	} else {
+		if (player->asleep && player->driver->user->wake) {
+			player->driver->user->wake(player->driver->user);
+		}
+		player->asleep = false;
+	}
+
+	unsigned i;
+	for (i = 0; i < MAX_LOCKSTEP_EVENTS - 1; ++i) {
+		player->buffer[i].next = &player->buffer[i + 1];
+	}
+	player->freeList = &player->buffer[0];
+	player->queue = NULL;
+
+	struct GBASIOLockstepEvent** lastEvent = &player->queue;
+	for (i = 0; i < GBASIOLockstepSerializedFlagsGetNumEvents(flags) && i < MAX_LOCKSTEP_EVENTS; ++i) {
+		struct GBASIOLockstepEvent* event = player->freeList;
+		const struct GBASIOLockstepSerializedEvent* stateEvent = &state->player.events[i];
+		player->freeList = player->freeList->next;
+		*lastEvent = event;
+		lastEvent = &event->next;
+
+		GBASIOLockstepSerializedEventFlags flags;
+		LOAD_32LE(flags, 0, &stateEvent->flags);
+		LOAD_32LE(event->timestamp, 0, &stateEvent->timestamp);
+		LOAD_32LE(event->playerId, 0, &stateEvent->playerId);
+		event->type = GBASIOLockstepSerializedEventFlagsGetType(flags);
+		switch (event->type) {
+		case SIO_EV_ATTACH:
+		case SIO_EV_DETACH:
+		case SIO_EV_HARD_SYNC:
+			break;
+		case SIO_EV_MODE_SET:
+			LOAD_32LE(event->mode, 0, &stateEvent->mode);
+			break;
+		case SIO_EV_TRANSFER_START:
+			LOAD_32LE(event->finishCycle, 0, &stateEvent->finishCycle);
+			break;
+		}
+	}
+
+	if (player->playerId == 0) {
+		LOAD_32LE(coordinator->cycle, 0, &state->coordinator.cycle);
+		LOAD_32LE(coordinator->waiting, 0, &state->coordinator.waiting);
+		for (i = 0; i < 4; ++i) {
+			LOAD_16LE(coordinator->multiData[i], 0, &state->coordinator.multiData[i]);
+			LOAD_32LE(coordinator->normalData[i], 0, &state->coordinator.normalData[i]);
+		}
+		coordinator->transferMode = _modeIntToEnum(GBASIOLockstepSerializedFlagsGetTransferMode(flags));
+		coordinator->transferActive = GBASIOLockstepSerializedFlagsGetTransferActive(flags);
+	}
+out:
+	MutexUnlock(&coordinator->mutex);
+	if (!error) {
+		mTimingInterrupt(&driver->p->p->timing);
+	}
+	return !error;
+}
+
+static void GBASIOLockstepDriverSaveState(struct GBASIODriver* driver, void** stateOut, size_t* size) {
+	struct GBASIOLockstepDriver* lockstep = (struct GBASIOLockstepDriver*) driver;
+	struct GBASIOLockstepCoordinator* coordinator = lockstep->coordinator;
+	struct GBASIOLockstepSerializedState* state = calloc(1, sizeof(*state));
+
+	STORE_32LE(DRIVER_STATE_VERSION, 0, &state->version);
+
+	STORE_32LE(lockstep->event.when - mTimingCurrentTime(&driver->p->p->timing), 0, &state->driver.nextEvent);
+
+	MutexLock(&coordinator->mutex);
+	struct GBASIOLockstepPlayer* player = TableLookup(&coordinator->players, lockstep->lockstepId);
+	GBASIOLockstepSerializedFlags flags = 0;
+	STORE_32LE(player->playerId, 0, &state->player.playerId);
+	STORE_32LE(player->cycleOffset, 0, &state->player.cycleOffset);
+	flags = GBASIOLockstepSerializedFlagsSetAsleep(flags, player->asleep);
+	flags = GBASIOLockstepSerializedFlagsSetDataReceived(flags, player->dataReceived);
+	flags = GBASIOLockstepSerializedFlagsSetDriverMode(flags, _modeEnumToInt(player->mode));
+	flags = GBASIOLockstepSerializedFlagsSetEventScheduled(flags, mTimingIsScheduled(&driver->p->p->timing, &lockstep->event));
+
+	flags = GBASIOLockstepSerializedFlagsSetPlayer0Mode(flags, _modeEnumToInt(player->otherModes[0]));
+	flags = GBASIOLockstepSerializedFlagsSetPlayer1Mode(flags, _modeEnumToInt(player->otherModes[1]));
+	flags = GBASIOLockstepSerializedFlagsSetPlayer2Mode(flags, _modeEnumToInt(player->otherModes[2]));
+	flags = GBASIOLockstepSerializedFlagsSetPlayer3Mode(flags, _modeEnumToInt(player->otherModes[3]));
+
+	struct GBASIOLockstepEvent* event = player->queue;
+	size_t i;
+	for (i = 0; i < MAX_LOCKSTEP_EVENTS && event; ++i, event = event->next) {
+		struct GBASIOLockstepSerializedEvent* stateEvent = &state->player.events[i];
+		GBASIOLockstepSerializedEventFlags flags = GBASIOLockstepSerializedEventFlagsSetType(0, event->type);
+		STORE_32LE(event->timestamp, 0, &stateEvent->timestamp);
+		STORE_32LE(event->playerId, 0, &stateEvent->playerId);
+		switch (event->type) {
+		case SIO_EV_ATTACH:
+		case SIO_EV_DETACH:
+		case SIO_EV_HARD_SYNC:
+			break;
+		case SIO_EV_MODE_SET:
+			STORE_32LE(event->mode, 0, &stateEvent->mode);
+			break;
+		case SIO_EV_TRANSFER_START:
+			STORE_32LE(event->finishCycle, 0, &stateEvent->finishCycle);
+			break;
+		}
+		STORE_32LE(flags, 0, &stateEvent->flags);
+	}
+	flags = GBASIOLockstepSerializedFlagsSetNumEvents(flags, i);
+
+	if (player->playerId == 0) {
+		STORE_32LE(coordinator->cycle, 0, &state->coordinator.cycle);
+		STORE_32LE(coordinator->waiting, 0, &state->coordinator.waiting);
+		for (i = 0; i < 4; ++i) {
+			STORE_16LE(coordinator->multiData[i], 0, &state->coordinator.multiData[i]);
+			STORE_32LE(coordinator->normalData[i], 0, &state->coordinator.normalData[i]);
+		}
+		flags = GBASIOLockstepSerializedFlagsSetTransferMode(flags, _modeEnumToInt(coordinator->transferMode));
+		flags = GBASIOLockstepSerializedFlagsSetTransferActive(flags, coordinator->transferActive);
+	}
+	MutexUnlock(&lockstep->coordinator->mutex);
+
+	STORE_32LE(flags, 0, &state->flags);
+	*stateOut = state;
+	*size = sizeof(*state);
 }
 
 static void GBASIOLockstepDriverSetMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
