@@ -33,7 +33,7 @@ enum {
 	BATTLECHIP_CONTINUE = 0xFFFF,
 };
 
-static bool GBASIOBattlechipGateLoad(struct GBASIODriver* driver);
+static bool GBASIOBattlechipGateInit(struct GBASIODriver* driver);
 static uint16_t GBASIOBattlechipGateWriteSIOCNT(struct GBASIODriver* driver, uint16_t value);
 static bool GBASIOBattlechipGateHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
 static int GBASIOBattlechipGateConnectedDevices(struct GBASIODriver* driver);
@@ -41,7 +41,7 @@ static void GBASIOBattlechipGateFinishMultiplayer(struct GBASIODriver* driver, u
 
 void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate* gate) {
 	memset(&gate->d, 0, sizeof(gate->d));
-	gate->d.load = GBASIOBattlechipGateLoad;
+	gate->d.init = GBASIOBattlechipGateInit;
 	gate->d.writeSIOCNT = GBASIOBattlechipGateWriteSIOCNT;
 	gate->d.handlesMode = GBASIOBattlechipGateHandlesMode;
 	gate->d.connectedDevices = GBASIOBattlechipGateConnectedDevices;
@@ -51,7 +51,7 @@ void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate* gate) {
 	gate->flavor = GBA_FLAVOR_BATTLECHIP_GATE;
 }
 
-bool GBASIOBattlechipGateLoad(struct GBASIODriver* driver) {
+bool GBASIOBattlechipGateInit(struct GBASIODriver* driver) {
 	struct GBASIOBattlechipGate* gate = (struct GBASIOBattlechipGate*) driver;
 	gate->state = BATTLECHIP_STATE_SYNC;
 	gate->data[0] = 0x00FE;

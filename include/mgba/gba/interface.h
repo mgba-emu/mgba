@@ -111,8 +111,6 @@ struct GBASIODriver {
 	bool (*init)(struct GBASIODriver* driver);
 	void (*deinit)(struct GBASIODriver* driver);
 	void (*reset)(struct GBASIODriver* driver);
-	bool (*load)(struct GBASIODriver* driver);
-	bool (*unload)(struct GBASIODriver* driver);
 	uint32_t (*driverId)(const struct GBASIODriver* renderer);
 	bool (*loadState)(struct GBASIODriver* renderer, const void* state, size_t size);
 	void (*saveState)(struct GBASIODriver* renderer, void** state, size_t* size);

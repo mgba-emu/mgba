@@ -20,20 +20,6 @@ static const int GBASIOCyclesPerTransfer[4][MAX_GBAS] = {
 
 static void _sioFinish(struct mTiming* timing, void* user, uint32_t cyclesLate);
 
-static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mode) {
-	switch (mode) {
-	case GBA_SIO_NORMAL_8:
-	case GBA_SIO_NORMAL_32:
-		return sio->drivers.normal;
-	case GBA_SIO_MULTI:
-		return sio->drivers.multiplayer;
-	case GBA_SIO_JOYBUS:
-		return sio->drivers.joybus;
-	default:
-		return 0;
-	}
-}
-
 static const char* _modeName(enum GBASIOMode mode) {
 	switch (mode) {
 	case GBA_SIO_NORMAL_8:
@@ -60,31 +46,19 @@ static void _switchMode(struct GBASIO* sio) {
 		newMode = (enum GBASIOMode) (mode & 0xC);
 	}
 	if (newMode != sio->mode) {
-		struct GBASIODriver* driver = _lookupDriver(sio, newMode);
 		if (sio->mode != (enum GBASIOMode) -1) {
 			mLOG(GBA_SIO, DEBUG, "Switching mode from %s to %s", _modeName(sio->mode), _modeName(newMode));
 		}
-		if (driver != sio->activeDriver || (driver && !driver->setMode)) {
-			if (sio->activeDriver && sio->activeDriver->unload) {
-				sio->activeDriver->unload(sio->activeDriver);
-			}
-			sio->mode = newMode;
-			sio->activeDriver = driver;
-			if (sio->activeDriver && sio->activeDriver->load) {
-				sio->activeDriver->load(sio->activeDriver);
-			}
-		} else {
-			sio->mode = newMode;
-			if (sio->activeDriver && sio->activeDriver->setMode) {
-				sio->activeDriver->setMode(sio->activeDriver, newMode);
-			}
+		sio->mode = newMode;
+		if (sio->driver && sio->driver->setMode) {
+			sio->driver->setMode(sio->driver, newMode);
 		}
 
 		int id = 0;
 		switch (newMode) {
 		case GBA_SIO_MULTI:
-			if (sio->activeDriver && sio->activeDriver->deviceId) {
-				id = sio->activeDriver->deviceId(sio->activeDriver);
+			if (sio->driver && sio->driver->deviceId) {
+				id = sio->driver->deviceId(sio->driver);
 			}
 			sio->rcnt = GBASIORegisterRCNTSetSi(sio->rcnt, !!id);
 			break;
@@ -96,10 +70,7 @@ static void _switchMode(struct GBASIO* sio) {
 }
 
 void GBASIOInit(struct GBASIO* sio) {
-	sio->drivers.normal = NULL;
-	sio->drivers.multiplayer = NULL;
-	sio->drivers.joybus = NULL;
-	sio->activeDriver = NULL;
+	sio->driver = NULL;
 
 	sio->completeEvent.context = sio;
 	sio->completeEvent.name = "GBA SIO Complete";
@@ -113,73 +84,28 @@ void GBASIOInit(struct GBASIO* sio) {
 }
 
 void GBASIODeinit(struct GBASIO* sio) {
-	if (sio->activeDriver && sio->activeDriver->unload) {
-		sio->activeDriver->unload(sio->activeDriver);
-	}
-	if (sio->drivers.multiplayer && sio->drivers.multiplayer->deinit) {
-		sio->drivers.multiplayer->deinit(sio->drivers.multiplayer);
-	}
-	if (sio->drivers.joybus && sio->drivers.joybus->deinit) {
-		sio->drivers.joybus->deinit(sio->drivers.joybus);
-	}
-	if (sio->drivers.normal && sio->drivers.normal->deinit) {
-		sio->drivers.normal->deinit(sio->drivers.normal);
+	if (sio->driver && sio->driver->deinit) {
+		sio->driver->deinit(sio->driver);
 	}
 }
 
 void GBASIOReset(struct GBASIO* sio) {
-	if (sio->activeDriver && sio->activeDriver->unload) {
-		sio->activeDriver->unload(sio->activeDriver);
-	}
-	if (sio->drivers.multiplayer && sio->drivers.multiplayer->reset) {
-		sio->drivers.multiplayer->reset(sio->drivers.multiplayer);
-	}
-	if (sio->drivers.joybus && sio->drivers.joybus->reset) {
-		sio->drivers.joybus->reset(sio->drivers.joybus);
-	}
-	if (sio->drivers.normal && sio->drivers.normal->reset) {
-		sio->drivers.normal->reset(sio->drivers.normal);
+	if (sio->driver && sio->driver->reset) {
+		sio->driver->reset(sio->driver);
 	}
 	sio->rcnt = RCNT_INITIAL;
 	sio->siocnt = 0;
 	sio->mode = -1;
-	sio->activeDriver = NULL;
 	_switchMode(sio);
 
 	GBASIOPlayerReset(&sio->gbp);
 }
 
-void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers) {
-	GBASIOSetDriver(sio, drivers->normal, GBA_SIO_NORMAL_8);
-	GBASIOSetDriver(sio, drivers->multiplayer, GBA_SIO_MULTI);
-	GBASIOSetDriver(sio, drivers->joybus, GBA_SIO_JOYBUS);
-}
-
-void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASIOMode mode) {
-	struct GBASIODriver** driverLoc;
-	switch (mode) {
-	case GBA_SIO_NORMAL_8:
-	case GBA_SIO_NORMAL_32:
-		driverLoc = &sio->drivers.normal;
-		break;
-	case GBA_SIO_MULTI:
-		driverLoc = &sio->drivers.multiplayer;
-		break;
-	case GBA_SIO_JOYBUS:
-		driverLoc = &sio->drivers.joybus;
-		break;
-	default:
-		mLOG(GBA_SIO, ERROR, "Setting an unsupported SIO driver: %x", mode);
-		return;
+void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver) {
+	if (sio->driver && sio->driver->deinit) {
+		sio->driver->deinit(sio->driver);
 	}
-	if (*driverLoc) {
-		if ((*driverLoc)->unload) {
-			(*driverLoc)->unload(*driverLoc);
-		}
-		if ((*driverLoc)->deinit) {
-			(*driverLoc)->deinit(*driverLoc);
-		}
-	}
+	sio->driver = driver;
 	if (driver) {
 		driver->p = sio;
 
@@ -191,26 +117,19 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 			}
 		}
 	}
-	if (sio->activeDriver == *driverLoc) {
-		sio->activeDriver = driver;
-		if (driver && driver->load) {
-			driver->load(driver);
-		}
-	}
-	*driverLoc = driver;
 }
 
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
 	sio->rcnt &= 0x1FF;
 	sio->rcnt |= value & 0xC000;
 	_switchMode(sio);
-	if (sio->activeDriver && sio->activeDriver->writeRCNT) {
+	if (sio->driver && sio->driver->writeRCNT) {
 		switch (sio->mode) {
 		case GBA_SIO_GPIO:
-			sio->rcnt = (sio->activeDriver->writeRCNT(sio->activeDriver, value) & 0x01FF) | (sio->rcnt & 0xC000);
+			sio->rcnt = (sio->driver->writeRCNT(sio->driver, value) & 0x01FF) | (sio->rcnt & 0xC000);
 			break;
 		default:
-			sio->rcnt = (sio->activeDriver->writeRCNT(sio->activeDriver, value) & 0x01F0) | (sio->rcnt & 0xC00F);
+			sio->rcnt = (sio->driver->writeRCNT(sio->driver, value) & 0x01F0) | (sio->rcnt & 0xC00F);
 		}
 	} else if (sio->mode == GBA_SIO_GPIO) {
 		sio->rcnt &= 0xC000;
@@ -222,15 +141,15 @@ void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
 }
 
 static void _startTransfer(struct GBASIO* sio) {
-	if (sio->activeDriver && sio->activeDriver->start) {
-		if (!sio->activeDriver->start(sio->activeDriver)) {
+	if (sio->driver && sio->driver->start) {
+		if (!sio->driver->start(sio->driver)) {
 			// Transfer completion is handled internally to the driver
 			return;
 		}
 	}
 	int connected = 0;
-	if (sio->activeDriver && sio->activeDriver->connectedDevices) {
-		connected = sio->activeDriver->connectedDevices(sio->activeDriver);
+	if (sio->driver && sio->driver->connectedDevices) {
+		connected = sio->driver->connectedDevices(sio->driver);
 	}
 	mTimingDeschedule(&sio->p->timing, &sio->completeEvent);
 	mTimingSchedule(&sio->p->timing, &sio->completeEvent, GBASIOTransferCycles(sio->mode, sio->siocnt, connected));
@@ -244,14 +163,14 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 	int id = 0;
 	int connected = 0;
 	bool handled = false;
-	if (sio->activeDriver) {
-		handled = sio->activeDriver->handlesMode(sio->activeDriver, sio->mode);
+	if (sio->driver) {
+		handled = sio->driver->handlesMode(sio->driver, sio->mode);
 		if (handled) {
-			if (sio->activeDriver->deviceId) {
-				id = sio->activeDriver->deviceId(sio->activeDriver);
+			if (sio->driver->deviceId) {
+				id = sio->driver->deviceId(sio->driver);
 			}
-			connected = sio->activeDriver->connectedDevices(sio->activeDriver);
-			handled = !!sio->activeDriver->writeSIOCNT;
+			connected = sio->driver->connectedDevices(sio->driver);
+			handled = !!sio->driver->writeSIOCNT;
 		}
 	}
 
@@ -304,7 +223,7 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 		break;
 	}
 	if (handled) {
-		value = sio->activeDriver->writeSIOCNT(sio->activeDriver, value);
+		value = sio->driver->writeSIOCNT(sio->driver, value);
 	} else {
 		// Dummy drivers
 		switch (sio->mode) {
@@ -325,8 +244,8 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 
 uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value) {
 	int id = 0;
-	if (sio->activeDriver && sio->activeDriver->deviceId) {
-		id = sio->activeDriver->deviceId(sio->activeDriver);
+	if (sio->driver && sio->driver->deviceId) {
+		id = sio->driver->deviceId(sio->driver);
 	}
 
 	bool handled = true;
@@ -455,8 +374,8 @@ int32_t GBASIOTransferCycles(enum GBASIOMode mode, uint16_t siocnt, int connecte
 
 void GBASIOMultiplayerFinishTransfer(struct GBASIO* sio, uint16_t data[4], uint32_t cyclesLate) {
 	int id = 0;
-	if (sio->activeDriver && sio->activeDriver->deviceId) {
-		id = sio->activeDriver->deviceId(sio->activeDriver);
+	if (sio->driver && sio->driver->deviceId) {
+		id = sio->driver->deviceId(sio->driver);
 	}
 	sio->p->memory.io[GBA_REG(SIOMULTI0)] = data[0];
 	sio->p->memory.io[GBA_REG(SIOMULTI1)] = data[1];
@@ -500,20 +419,20 @@ static void _sioFinish(struct mTiming* timing, void* user, uint32_t cyclesLate) 
 	} data = {0};
 	switch (sio->mode) {
 	case GBA_SIO_MULTI:
-		if (sio->activeDriver && sio->activeDriver->finishMultiplayer) {
-			sio->activeDriver->finishMultiplayer(sio->activeDriver, data.multi);
+		if (sio->driver && sio->driver->finishMultiplayer) {
+			sio->driver->finishMultiplayer(sio->driver, data.multi);
 		}
 		GBASIOMultiplayerFinishTransfer(sio, data.multi, cyclesLate);
 		break;
 	case GBA_SIO_NORMAL_8:
-		if (sio->activeDriver && sio->activeDriver->finishNormal8) {
-			data.normal8 = sio->activeDriver->finishNormal8(sio->activeDriver);
+		if (sio->driver && sio->driver->finishNormal8) {
+			data.normal8 = sio->driver->finishNormal8(sio->driver);
 		}
 		GBASIONormal8FinishTransfer(sio, data.normal8, cyclesLate);
 		break;
 	case GBA_SIO_NORMAL_32:
-		if (sio->activeDriver && sio->activeDriver->finishNormal32) {
-			data.normal32 = sio->activeDriver->finishNormal32(sio->activeDriver);
+		if (sio->driver && sio->driver->finishNormal32) {
+			data.normal32 = sio->driver->finishNormal32(sio->driver);
 		}
 		GBASIONormal32FinishTransfer(sio, data.normal32, cyclesLate);
 		break;

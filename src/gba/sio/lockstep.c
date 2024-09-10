@@ -79,8 +79,6 @@ static_assert(sizeof(struct GBASIOLockstepSerializedState) == 0x1F0, "GBA lockst
 static bool GBASIOLockstepDriverInit(struct GBASIODriver* driver);
 static void GBASIOLockstepDriverDeinit(struct GBASIODriver* driver);
 static void GBASIOLockstepDriverReset(struct GBASIODriver* driver);
-static bool GBASIOLockstepDriverLoad(struct GBASIODriver* driver);
-static bool GBASIOLockstepDriverUnload(struct GBASIODriver* driver);
 static uint32_t GBASIOLockstepDriverId(const struct GBASIODriver* driver);
 static bool GBASIOLockstepDriverLoadState(struct GBASIODriver* driver, const void* state, size_t size);
 static void GBASIOLockstepDriverSaveState(struct GBASIODriver* driver, void** state, size_t* size);
@@ -119,8 +117,6 @@ void GBASIOLockstepDriverCreate(struct GBASIOLockstepDriver* driver, struct mLoc
 	driver->d.init = GBASIOLockstepDriverInit;
 	driver->d.deinit = GBASIOLockstepDriverDeinit;
 	driver->d.reset = GBASIOLockstepDriverReset;
-	driver->d.load = GBASIOLockstepDriverLoad;
-	driver->d.unload = GBASIOLockstepDriverUnload;
 	driver->d.driverId = GBASIOLockstepDriverId;
 	driver->d.loadState = GBASIOLockstepDriverLoadState;
 	driver->d.saveState = GBASIOLockstepDriverSaveState;
@@ -218,27 +214,6 @@ static void GBASIOLockstepDriverReset(struct GBASIODriver* driver) {
 	}
 	MutexUnlock(&coordinator->mutex);
 	mTimingSchedule(&lockstep->d.p->p->timing, &lockstep->event, nextEvent);
-}
-
-static bool GBASIOLockstepDriverLoad(struct GBASIODriver* driver) {
-	struct GBASIOLockstepDriver* lockstep = (struct GBASIOLockstepDriver*) driver;
-	if (lockstep->lockstepId) {
-		struct GBASIOLockstepCoordinator* coordinator = lockstep->coordinator;
-		MutexLock(&coordinator->mutex);
-		struct GBASIOLockstepPlayer* player = TableLookup(&coordinator->players, lockstep->lockstepId);
-		_setReady(coordinator, player, 0, coordinator->transferMode);
-		MutexUnlock(&coordinator->mutex);
-		GBASIOLockstepDriverSetMode(driver, driver->p->mode);
-	}
-	return true;
-}
-
-static bool GBASIOLockstepDriverUnload(struct GBASIODriver* driver) {
-	struct GBASIOLockstepDriver* lockstep = (struct GBASIOLockstepDriver*) driver;
-	if (lockstep->lockstepId) {
-		GBASIOLockstepDriverSetMode(driver, -1);
-	}
-	return true;
 }
 
 static uint32_t GBASIOLockstepDriverId(const struct GBASIODriver* driver) {

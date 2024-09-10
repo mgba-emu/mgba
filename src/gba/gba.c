@@ -263,8 +263,8 @@ void GBAReset(struct ARMCore* cpu) {
 
 	// GB Player SIO control should not be engaged before detection, even if we already know it's GBP
 	gba->memory.hw.devices &= ~HW_GB_PLAYER;
-	if (gba->sio.drivers.normal == &gba->sio.gbp.d) {
-		GBASIOSetDriver(&gba->sio, NULL, GBA_SIO_NORMAL_32);
+	if (gba->sio.driver == &gba->sio.gbp.d) {
+		GBASIOSetDriver(&gba->sio, NULL);
 	}
 
 	bool isELF = false;

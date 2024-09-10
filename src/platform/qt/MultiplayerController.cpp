@@ -265,9 +265,7 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 		GBASIOLockstepCoordinatorAttach(&m_gbaCoordinator, node);
 		player.node.gba = node;
 
-		GBASIOSetDriver(&gba->sio, &node->d, GBA_SIO_MULTI);
-		GBASIOSetDriver(&gba->sio, &node->d, GBA_SIO_NORMAL_8);
-		GBASIOSetDriver(&gba->sio, &node->d, GBA_SIO_NORMAL_32);
+		GBASIOSetDriver(&gba->sio, &node->d);
 		break;
 	}
 #endif
@@ -356,10 +354,8 @@ void MultiplayerController::detachGame(CoreController* controller) {
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA: {
 		GBA* gba = static_cast<GBA*>(thread->core->board);
-		GBASIOLockstepDriver* node = reinterpret_cast<GBASIOLockstepDriver*>(gba->sio.drivers.multiplayer);
-		GBASIOSetDriver(&gba->sio, nullptr, GBA_SIO_MULTI);
-		GBASIOSetDriver(&gba->sio, nullptr, GBA_SIO_NORMAL_8);
-		GBASIOSetDriver(&gba->sio, nullptr, GBA_SIO_NORMAL_32);
+		GBASIOLockstepDriver* node = reinterpret_cast<GBASIOLockstepDriver*>(gba->sio.driver);
+		GBASIOSetDriver(&gba->sio, nullptr);
 		if (node) {
 			GBASIOLockstepCoordinatorDetach(&m_gbaCoordinator, node);
 			delete node->user;
@@ -485,12 +481,13 @@ void MultiplayerController::fixOrder() {
 	switch (m_platform) {
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
-		for (int pid : m_pids.keys()) {
+		// TODO: fix
+		/*for (int pid : m_pids.keys()) {
 			Player& p = m_pids.find(pid).value();
 			GBA* gba = static_cast<GBA*>(p.controller->thread()->core->board);
-			GBASIOLockstepDriver* node = reinterpret_cast<GBASIOLockstepDriver*>(gba->sio.drivers.multiplayer);
+			GBASIOLockstepDriver* node = reinterpret_cast<GBASIOLockstepDriver*>(gba->sio.driver);
 			m_players[node->d.deviceId(&node->d)] = pid;
-		}
+		}*/
 		break;
 #endif
 #ifdef M_CORE_GB

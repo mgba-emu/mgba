@@ -62,18 +62,11 @@ DECL_BIT(GBASIORegisterRCNT, SdDirection, 5);
 DECL_BIT(GBASIORegisterRCNT, SiDirection, 6);
 DECL_BIT(GBASIORegisterRCNT, SoDirection, 7);
 
-struct GBASIODriverSet {
-	struct GBASIODriver* normal;
-	struct GBASIODriver* multiplayer;
-	struct GBASIODriver* joybus;
-};
-
 struct GBASIO {
 	struct GBA* p;
 
 	enum GBASIOMode mode;
-	struct GBASIODriverSet drivers;
-	struct GBASIODriver* activeDriver;
+	struct GBASIODriver* driver;
 
 	uint16_t rcnt;
 	uint16_t siocnt;
@@ -86,8 +79,7 @@ void GBASIOInit(struct GBASIO* sio);
 void GBASIODeinit(struct GBASIO* sio);
 void GBASIOReset(struct GBASIO* sio);
 
-void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers);
-void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASIOMode mode);
+void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver);
 
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value);

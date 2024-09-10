@@ -55,8 +55,8 @@ void GBASIOPlayerInit(struct GBASIOPlayer* gbp) {
 }
 
 void GBASIOPlayerReset(struct GBASIOPlayer* gbp) {
-	if (gbp->p->sio.drivers.normal == &gbp->d) {
-		GBASIOSetDriver(&gbp->p->sio, NULL, GBA_SIO_NORMAL_32);
+	if (gbp->p->sio.driver == &gbp->d) {
+		GBASIOSetDriver(&gbp->p->sio, NULL);
 	}
 }
 
@@ -88,7 +88,7 @@ void GBASIOPlayerUpdate(struct GBA* gba) {
 		gba->sio.gbp.oldCallback = gba->keyCallback;
 		gba->keyCallback = &gba->sio.gbp.callback.d;
 		// TODO: Check if the SIO driver is actually used first
-		GBASIOSetDriver(&gba->sio, &gba->sio.gbp.d, GBA_SIO_NORMAL_32);
+		GBASIOSetDriver(&gba->sio, &gba->sio.gbp.d);
 	}
 }
 

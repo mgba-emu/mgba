@@ -848,15 +848,15 @@ static bool _GBACoreLoadExtraState(struct mCore* core, const struct mStateExtdat
 			ok = false;
 		}
 	}
-	if (gba->sio.activeDriver && gba->sio.activeDriver->driverId && gba->sio.activeDriver->loadState &&
+	if (gba->sio.driver && gba->sio.driver->driverId && gba->sio.driver->loadState &&
 	    mStateExtdataGet(extdata, EXTDATA_SUBSYSTEM_START + GBA_SUBSYSTEM_SIO_DRIVER, &item)) {
 		if ((uint32_t) item.size > sizeof(uint32_t)) {
 			uint32_t type;
 			LOAD_32(type, 0, item.data);
-			if (type == gba->sio.activeDriver->driverId(gba->sio.activeDriver)) {
-				ok = gba->sio.activeDriver->loadState(gba->sio.activeDriver,
-				                                    (void*) ((uintptr_t) item.data + sizeof(uint32_t)),
-				                                    item.size - sizeof(type)) && ok;
+			if (type == gba->sio.driver->driverId(gba->sio.driver)) {
+				ok = gba->sio.driver->loadState(gba->sio.driver,
+				                                (void*) ((uintptr_t) item.data + sizeof(uint32_t)),
+				                                item.size - sizeof(type)) && ok;
 			}
 		} else if (item.data) {
 			ok = false;
@@ -886,14 +886,14 @@ static bool _GBACoreSaveExtraState(struct mCore* core, struct mStateExtdata* ext
 	}
 	size = 0;
 
-	if (gba->sio.activeDriver && gba->sio.activeDriver->driverId && gba->sio.activeDriver->saveState) {
-		gba->sio.activeDriver->saveState(gba->sio.activeDriver, &buffer, &size);
+	if (gba->sio.driver && gba->sio.driver->driverId && gba->sio.driver->saveState) {
+		gba->sio.driver->saveState(gba->sio.driver, &buffer, &size);
 		if (size > 0 && buffer) {
 			struct mStateExtdataItem item;
 			item.size = size + sizeof(uint32_t);
 			item.data = malloc(item.size);
 			item.clean = free;
-			uint32_t type = gba->sio.activeDriver->driverId(gba->sio.activeDriver);
+			uint32_t type = gba->sio.driver->driverId(gba->sio.driver);
 			STORE_32(type, 0, item.data);
 			memcpy((void*) ((uintptr_t) item.data + sizeof(uint32_t)), buffer, size);
 			mStateExtdataPut(extdata, EXTDATA_SUBSYSTEM_START + GBA_SUBSYSTEM_SIO_DRIVER, &item);
@@ -963,8 +963,7 @@ static void _GBACoreSetPeripheral(struct mCore* core, int type, void* periph) {
 		gba->luminanceSource = periph;
 		break;
 	case mPERIPH_GBA_BATTLECHIP_GATE:
-		GBASIOSetDriver(&gba->sio, periph, GBA_SIO_MULTI);
-		GBASIOSetDriver(&gba->sio, periph, GBA_SIO_NORMAL_32);
+		GBASIOSetDriver(&gba->sio, periph);
 		break;
 	default:
 		return;

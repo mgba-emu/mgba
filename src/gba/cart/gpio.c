@@ -527,7 +527,7 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	uint32_t when;
 	LOAD_32(when, 0, &state->hw.sioNextEvent);
 	if (hw->devices & HW_GB_PLAYER) {
-		GBASIOSetDriver(&hw->p->sio, &hw->p->sio.gbp.d, GBA_SIO_NORMAL_32);
+		GBASIOSetDriver(&hw->p->sio, &hw->p->sio.gbp.d);
 	}
 	if ((hw->p->memory.io[GBA_REG(SIOCNT)] & 0x0080) && when < 0x20000) {
 		mTimingSchedule(&hw->p->timing, &hw->p->sio.completeEvent, when);

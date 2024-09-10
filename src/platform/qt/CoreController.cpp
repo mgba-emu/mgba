@@ -424,7 +424,7 @@ bool CoreController::attachDolphin(const Address& address) {
 	}
 	if (GBASIODolphinConnect(&m_dolphin, &address, 0, 0)) {
 		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-		GBASIOSetDriver(&gba->sio, &m_dolphin.d, GBA_SIO_JOYBUS);
+		GBASIOSetDriver(&gba->sio, &m_dolphin.d);
 		return true;
 	}
 	return false;
@@ -433,7 +433,8 @@ bool CoreController::attachDolphin(const Address& address) {
 void CoreController::detachDolphin() {
 	if (platform() == mPLATFORM_GBA) {
 		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-		GBASIOSetDriver(&gba->sio, nullptr, GBA_SIO_JOYBUS);
+		// TODO: Reattach to multiplayer controller
+		GBASIOSetDriver(&gba->sio, nullptr);
 	}
 	GBASIODolphinDestroy(&m_dolphin);
 }

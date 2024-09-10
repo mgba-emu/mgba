@@ -23,8 +23,8 @@ enum {
 };
 
 static bool GBASIODolphinInit(struct GBASIODriver* driver);
-static bool GBASIODolphinLoad(struct GBASIODriver* driver);
-static bool GBASIODolphinUnload(struct GBASIODriver* driver);
+static void GBASIODolphinReset(struct GBASIODriver* driver);
+static void GBASIODolphinSetMode(struct GBASIODriver* driver, enum GBASIOMode mode);
 static bool GBASIODolphinHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
 static int GBASIODolphinConnectedDevices(struct GBASIODriver* driver);
 static void GBASIODolphinProcessEvents(struct mTiming* timing, void* context, uint32_t cyclesLate);
@@ -35,8 +35,8 @@ static void _flush(struct GBASIODolphin* dol);
 void GBASIODolphinCreate(struct GBASIODolphin* dol) {
 	memset(&dol->d, 0, sizeof(dol->d));
 	dol->d.init = GBASIODolphinInit;
-	dol->d.load = GBASIODolphinLoad;
-	dol->d.unload = GBASIODolphinUnload;
+	dol->d.reset = GBASIODolphinReset;
+	dol->d.setMode = GBASIODolphinSetMode;
 	dol->d.handlesMode = GBASIODolphinHandlesMode;
 	dol->d.connectedDevices = GBASIODolphinConnectedDevices;
 	dol->event.context = dol;
@@ -98,26 +98,23 @@ bool GBASIODolphinConnect(struct GBASIODolphin* dol, const struct Address* addre
 
 static bool GBASIODolphinInit(struct GBASIODriver* driver) {
 	struct GBASIODolphin* dol = (struct GBASIODolphin*) driver;
-	dol->active = false;
 	dol->clockSlice = 0;
 	dol->state = WAIT_FOR_FIRST_CLOCK;
-	_flush(dol);
+	GBASIODolphinReset(driver);
 	return true;
 }
 
-static bool GBASIODolphinLoad(struct GBASIODriver* driver) {
+static void GBASIODolphinReset(struct GBASIODriver* driver) {
 	struct GBASIODolphin* dol = (struct GBASIODolphin*) driver;
-	dol->active = true;
+	dol->active = false;
 	_flush(dol);
 	mTimingDeschedule(&dol->d.p->p->timing, &dol->event);
 	mTimingSchedule(&dol->d.p->p->timing, &dol->event, 0);
-	return true;
 }
 
-static bool GBASIODolphinUnload(struct GBASIODriver* driver) {
+static void GBASIODolphinSetMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
 	struct GBASIODolphin* dol = (struct GBASIODolphin*) driver;
-	dol->active = false;
-	return true;
+	dol->active = mode == GBA_SIO_JOYBUS;
 }
 
 static bool GBASIODolphinHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
