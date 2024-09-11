@@ -10,7 +10,8 @@
 
 #define DRIVER_ID 0x6B636F4C
 #define DRIVER_STATE_VERSION 1
-#define LOCKSTEP_INCREMENT 2000
+#define LOCKSTEP_INTERVAL 2048
+#define UNLOCKED_INTERVAL 4096
 #define TARGET(P) (1 << (P))
 #define TARGET_ALL 0xF
 #define TARGET_PRIMARY 0x1
@@ -186,7 +187,7 @@ static void GBASIOLockstepDriverReset(struct GBASIODriver* driver) {
 		}
 		_reconfigPlayers(coordinator);
 		if (player->playerId != 0) {
-			player->cycleOffset = mTimingCurrentTime(&driver->p->p->timing) - coordinator->cycle + LOCKSTEP_INCREMENT;
+			player->cycleOffset = mTimingCurrentTime(&driver->p->p->timing) - coordinator->cycle + LOCKSTEP_INTERVAL;
 			struct GBASIOLockstepEvent event = {
 				.type = SIO_EV_ATTACH,
 				.playerId = player->playerId,
@@ -207,7 +208,7 @@ static void GBASIOLockstepDriverReset(struct GBASIODriver* driver) {
 	_setReady(coordinator, player, player->playerId, player->mode);
 	if (TableSize(&coordinator->players) == 1) {
 		coordinator->cycle = mTimingCurrentTime(&lockstep->d.p->p->timing);
-		nextEvent = LOCKSTEP_INCREMENT;
+		nextEvent = LOCKSTEP_INTERVAL;
 	} else {
 		_setReady(coordinator, player, 0, coordinator->transferMode);
 		nextEvent = _untilNextSync(lockstep->coordinator, player);
@@ -629,7 +630,11 @@ void GBASIOLockstepCoordinatorDetach(struct GBASIOLockstepCoordinator* coordinat
 int32_t _untilNextSync(struct GBASIOLockstepCoordinator* coordinator, struct GBASIOLockstepPlayer* player) {
 	int32_t cycle = coordinator->cycle - GBASIOLockstepTime(player);
 	if (player->playerId == 0) {
-		cycle += LOCKSTEP_INCREMENT;
+		if (coordinator->nAttached < 2) {
+			cycle += UNLOCKED_INTERVAL;
+		} else {
+			cycle += LOCKSTEP_INTERVAL;
+		}
 	}
 	return cycle;
 }
@@ -921,7 +926,7 @@ void _lockstepEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 		nextEvent = player->queue->timestamp - GBASIOLockstepTime(player);
 	}
 
-	if (player->playerId != 0 && nextEvent <= LOCKSTEP_INCREMENT) {
+	if (player->playerId != 0 && nextEvent <= LOCKSTEP_INTERVAL) {
 		if (!player->queue || wasDetach) {
 			GBASIOLockstepPlayerSleep(player);
 			// XXX: Is there a better way to gain sync lock at the beginning?
