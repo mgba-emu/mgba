@@ -327,9 +327,9 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 			if (player.attached) {
 				continue;
 			}
-			GBA* gba = static_cast<GBA*>(player.controller->thread()->core->board);
+			struct mCore* core = player.controller->thread()->core;
 			GBASIOLockstepCoordinatorAttach(&m_gbaCoordinator, player.node.gba);
-			GBASIOSetDriver(&gba->sio, &player.node.gba->d);
+			core->setPeripheral(core, mPERIPH_GBA_LINK_PORT, &player.node.gba->d);
 			player.attached = true;
 		}
 	}
@@ -371,7 +371,7 @@ void MultiplayerController::detachGame(CoreController* controller) {
 		Player& p = m_pids.find(pid).value();
 		GBASIODriver* node = gba->sio.driver;
 		if (node == &p.node.gba->d) {
-			GBASIOSetDriver(&gba->sio, nullptr);
+			thread->core->setPeripheral(thread->core, mPERIPH_GBA_LINK_PORT, NULL);
 		}
 		if (p.attached) {
 			GBASIOLockstepCoordinatorDetach(&m_gbaCoordinator, p.node.gba);

@@ -423,8 +423,8 @@ bool CoreController::attachDolphin(const Address& address) {
 		return false;
 	}
 	if (GBASIODolphinConnect(&m_dolphin, &address, 0, 0)) {
-		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-		GBASIOSetDriver(&gba->sio, &m_dolphin.d);
+		clearMultiplayerController();
+		m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_LINK_PORT, &m_dolphin.d);
 		return true;
 	}
 	return false;
@@ -432,9 +432,8 @@ bool CoreController::attachDolphin(const Address& address) {
 
 void CoreController::detachDolphin() {
 	if (platform() == mPLATFORM_GBA) {
-		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
 		// TODO: Reattach to multiplayer controller
-		GBASIOSetDriver(&gba->sio, nullptr);
+		m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_LINK_PORT, NULL);
 	}
 	GBASIODolphinDestroy(&m_dolphin);
 }
@@ -1095,7 +1094,7 @@ void CoreController::attachBattleChipGate() {
 	Interrupter interrupter(this);
 	clearMultiplayerController();
 	GBASIOBattlechipGateCreate(&m_battlechip);
-	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_BATTLECHIP_GATE, &m_battlechip);
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_LINK_PORT, &m_battlechip);
 }
 
 void CoreController::detachBattleChipGate() {
@@ -1103,7 +1102,7 @@ void CoreController::detachBattleChipGate() {
 		return;
 	}
 	Interrupter interrupter(this);
-	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_BATTLECHIP_GATE, nullptr);
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_LINK_PORT, nullptr);
 }
 
 void CoreController::setBattleChipId(uint16_t id) {

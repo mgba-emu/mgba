@@ -81,7 +81,7 @@ extern MGBA_EXPORT const int GBA_LUX_LEVELS[10];
 
 enum {
 	mPERIPH_GBA_LUMINANCE = 0x1000,
-	mPERIPH_GBA_BATTLECHIP_GATE,
+	mPERIPH_GBA_LINK_PORT,
 };
 
 struct GBACartridgeOverride {
