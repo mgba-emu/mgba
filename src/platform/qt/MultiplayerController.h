@@ -64,6 +64,7 @@ private:
 		unsigned waitMask = 0;
 		int saveId = 1;
 		int preferredId = 0;
+		bool attached = false;
 	};
 	struct LockstepUser : mLockstepThreadUser {
 		MultiplayerController* controller;
