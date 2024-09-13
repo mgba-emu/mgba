@@ -87,8 +87,9 @@ void GBASIOPlayerUpdate(struct GBA* gba) {
 		gba->sio.gbp.inputsPosted = 0;
 		gba->sio.gbp.oldCallback = gba->keyCallback;
 		gba->keyCallback = &gba->sio.gbp.callback.d;
-		// TODO: Check if the SIO driver is actually used first
-		GBASIOSetDriver(&gba->sio, &gba->sio.gbp.d);
+		if (!gba->sio.driver) {
+			GBASIOSetDriver(&gba->sio, &gba->sio.gbp.d);
+		}
 	}
 }
 
