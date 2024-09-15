@@ -1350,10 +1350,22 @@ void GBAPatch16(struct ARMCore* cpu, uint32_t address, int16_t value, int16_t* o
 	}
 }
 
+#define MUNGE8 \
+	if (address & 1) { \
+		oldValue = alignedValue >> 8; \
+		alignedValue &= 0xFF; \
+		alignedValue |= value << 8; \
+	} else { \
+		oldValue = alignedValue; \
+		alignedValue &= 0xFF00; \
+		alignedValue |= (uint8_t) value; \
+	}
+
 void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	struct GBAMemory* memory = &gba->memory;
 	int8_t oldValue = -1;
+	int16_t alignedValue;
 
 	switch (address >> BASE_OFFSET) {
 	case GBA_REGION_EWRAM:
@@ -1368,13 +1380,29 @@ void GBAPatch8(struct ARMCore* cpu, uint32_t address, int8_t value, int8_t* old)
 		mLOG(GBA_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
 		break;
 	case GBA_REGION_PALETTE_RAM:
-		mLOG(GBA_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		LOAD_16(alignedValue, address & (GBA_SIZE_PALETTE_RAM - 2), gba->video.palette);
+		MUNGE8;
+		STORE_16(alignedValue, address & (GBA_SIZE_PALETTE_RAM - 2), gba->video.palette);
+		gba->video.renderer->writePalette(gba->video.renderer, address & (GBA_SIZE_PALETTE_RAM - 2), alignedValue);
 		break;
 	case GBA_REGION_VRAM:
-		mLOG(GBA_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		if ((address & 0x0001FFFF) < GBA_SIZE_VRAM) {
+			LOAD_16(alignedValue, address & 0x0001FFFE, gba->video.vram);
+			MUNGE8;
+			STORE_16(alignedValue, address & 0x0001FFFE, gba->video.vram);
+			gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x0001FFFE);
+		} else {
+			LOAD_16(alignedValue, address & 0x00017FFE, gba->video.vram);
+			MUNGE8;
+			STORE_16(alignedValue, address & 0x00017FFE, gba->video.vram);
+			gba->video.renderer->writeVRAM(gba->video.renderer, address & 0x00017FFE);
+		}
 		break;
 	case GBA_REGION_OAM:
-		mLOG(GBA_MEM, STUB, "Unimplemented memory Patch8: 0x%08X", address);
+		LOAD_16(alignedValue, address & (GBA_SIZE_OAM - 2), gba->video.oam.raw);
+		MUNGE8;
+		STORE_16(alignedValue, address & (GBA_SIZE_OAM - 2), gba->video.oam.raw);
+		gba->video.renderer->writeOAM(gba->video.renderer, (address & (GBA_SIZE_OAM - 2)) >> 1);
 		break;
 	case GBA_REGION_ROM0:
 	case GBA_REGION_ROM0_EX:
