@@ -16,6 +16,7 @@
 #include <mgba-util/memory.h>
 #include <mgba-util/math.h>
 #include <mgba-util/patch.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 const uint32_t CGB_SM83_FREQUENCY = 0x800000;
@@ -940,7 +941,7 @@ void GBProcessEvents(struct SM83Core* cpu) {
 
 			nextEvent = cycles;
 			do {
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 				gb->timing.globalCycles += nextEvent;
 #endif
 				nextEvent = mTimingTick(&gb->timing, nextEvent);
@@ -1057,7 +1058,7 @@ void GBStop(struct SM83Core* cpu) {
 void GBIllegal(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	mLOG(GB, GAME_ERROR, "Hit illegal opcode at address %04X:%02X", cpu->pc, cpu->bus);
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
 		struct mDebuggerEntryInfo info = {
 			.address = cpu->pc,
@@ -1116,38 +1117,28 @@ bool GBIsROM(struct VFile* vf) {
 	return false;
 }
 
-void GBGetGameTitle(const struct GB* gb, char* out) {
-	const struct GBCartridge* cart = NULL;
-	if (gb->memory.rom) {
-		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	}
-	if (!cart) {
+void GBGetGameInfo(const struct GB* gb, struct mGameInfo* info) {
+	memset(info, 0, sizeof(*info));
+	if (!gb->memory.rom) {
 		return;
 	}
-	if (cart->oldLicensee != 0x33) {
-		memcpy(out, cart->titleLong, 16);
-	} else {
-		memcpy(out, cart->titleShort, 11);
-	}
-}
 
-void GBGetGameCode(const struct GB* gb, char* out) {
-	memset(out, 0, 8);
-	const struct GBCartridge* cart = NULL;
-	if (gb->memory.rom) {
-		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	}
-	if (!cart) {
-		return;
-	}
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	if (cart->cgb == 0xC0) {
-		memcpy(out, "CGB-????", 8);
+		strlcpy(info->system, "CGB", sizeof(info->system));
 	} else {
-		memcpy(out, "DMG-????", 8);
+		strlcpy(info->system, "DMG", sizeof(info->system));
 	}
-	if (cart->oldLicensee == 0x33) {
-		memcpy(&out[4], cart->maker, 4);
+
+	if (cart->oldLicensee != 0x33) {
+		memcpy(info->title, cart->titleLong, 16);
+		snprintf(info->maker, sizeof(info->maker), "%02X", cart->oldLicensee);
+	} else {
+		memcpy(info->title, cart->titleShort, 11);
+		memcpy(info->code, cart->maker, 4);
+		memcpy(info->maker, &cart->licensee, 2);
 	}
+	info->version = cart->version;
 }
 
 void GBFrameStarted(struct GB* gb) {
@@ -1174,9 +1165,15 @@ void GBFrameEnded(struct GB* gb) {
 		}
 	}
 
+	struct mRumble* rumble = gb->memory.rumble;
+	if (rumble && rumble->integrate) {
+		gb->memory.lastRumble = mTimingCurrentTime(&gb->timing);
+		rumble->integrate(rumble, GB_VIDEO_TOTAL_LENGTH);
+	}
+
 	// TODO: Move to common code
 	if (gb->stream && gb->stream->postVideoFrame) {
-		const color_t* pixels;
+		const mColor* pixels;
 		size_t stride;
 		gb->video.renderer->getPixels(gb->video.renderer, &stride, (const void**) &pixels);
 		gb->stream->postVideoFrame(gb->stream, pixels, stride);

@@ -285,9 +285,6 @@ char* latin1ToUtf8(const char* latin1, size_t length) {
 	size_t utf8TotalBytes = 0;
 	size_t utf8Length = 0;
 	for (offset = 0; offset < length; ++offset) {
-		if (length == 0) {
-			break;
-		}
 		uint8_t unichar = latin1[offset];
 		size_t bytes = toUtf8(unichar, buffer);
 		utf8Length += bytes;

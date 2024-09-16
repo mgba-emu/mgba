@@ -15,7 +15,7 @@
 #endif
 
 void mSDLGLDoViewport(int w, int h, struct VideoBackend* v) {
-	v->contextResized(v, w, h);
+	v->contextResized(v, w, h, 0, 0);
 	v->clear(v);
 	v->swap(v);
 	v->clear(v);

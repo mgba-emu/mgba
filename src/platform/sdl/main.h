@@ -18,17 +18,6 @@ CXX_GUARD_START
 #include "platform/opengl/gl.h"
 #endif
 
-#ifdef BUILD_RASPI
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-function"
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-#include <SDL/SDL.h>
-#include <EGL/egl.h>
-
-#include <bcm_host.h>
-#pragma GCC diagnostic pop
-#endif
-
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 #include "gl-common.h"
 #include "platform/opengl/gles2.h"
@@ -41,7 +30,7 @@ CXX_GUARD_START
 struct mCore;
 struct mSDLRenderer {
 	struct mCore* core;
-	color_t* outputBuffer;
+	mColor* outputBuffer;
 
 	struct mSDLAudio audio;
 	struct mSDLEvents events;
@@ -81,19 +70,6 @@ struct mSDLRenderer {
 #ifdef USE_PIXMAN
 	pixman_image_t* pix;
 	pixman_image_t* screenpix;
-#endif
-
-#ifdef BUILD_RASPI
-	EGLDisplay eglDisplay;
-	EGLSurface eglSurface;
-	EGLContext eglContext;
-	EGL_DISPMANX_WINDOW_T eglWindow;
-#endif
-
-#ifdef BUILD_PANDORA
-	int fb;
-	int odd;
-	void* base[2];
 #endif
 };
 

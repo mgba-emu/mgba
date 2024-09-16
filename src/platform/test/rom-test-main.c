@@ -93,6 +93,7 @@ int main(int argc, char * argv[]) {
 
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
 	mCoreConfigSetDefaultIntValue(&core->config, "logToStdout", true);
+	mCoreLoadConfig(core);
 
 	mStandardLoggerInit(&_logger);
 	mStandardLoggerConfig(&_logger, &core->config);
@@ -139,7 +140,7 @@ int main(int argc, char * argv[]) {
 		goto loadError;
 	}
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	struct mDebugger debugger;
 	mDebuggerInit(&debugger);
 	bool hasDebugger = mArgumentsApplyDebugger(&args, core, &debugger);
@@ -165,7 +166,7 @@ int main(int argc, char * argv[]) {
 		savestate->close(savestate);
 	}
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (hasDebugger) {
 		do {
 			mDebuggerRun(&debugger);
@@ -178,7 +179,7 @@ int main(int argc, char * argv[]) {
 
 	core->unloadROM(core);
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (hasDebugger) {
 		core->detachDebugger(core);
 		mDebuggerDeinit(&debugger);

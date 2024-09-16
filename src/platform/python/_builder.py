@@ -21,7 +21,6 @@ ffi.set_source("mgba._pylib", """
 #define MGBA_EXPORT
 #include <mgba/flags.h>
 #define OPAQUE_THREADING
-#include <mgba/core/blip_buf.h>
 #include <mgba/core/cache-set.h>
 #include <mgba-util/common.h>
 #include <mgba/core/core.h>

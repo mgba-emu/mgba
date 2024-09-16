@@ -39,6 +39,7 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 
 	connect(m_ui.buffers->selectionModel(), &QItemSelectionModel::currentChanged, this, &ScriptingView::selectBuffer);
 	connect(m_ui.load, &QAction::triggered, this, &ScriptingView::load);
+	connect(m_ui.loadMostRecent, &QAction::triggered, this, &ScriptingView::loadMostRecent);
 	connect(m_ui.reset, &QAction::triggered, controller, &ScriptingController::reset);
 
 	m_mruFiles = m_config->getMRU(ConfigController::MRU::Script);
@@ -64,6 +65,10 @@ void ScriptingView::load() {
 		}
 		appendMRU(filename);
 	}
+}
+
+void ScriptingView::loadMostRecent() {
+	m_controller->loadFile(m_mruFiles.at(0));
 }
 
 void ScriptingView::controllerReset() {
@@ -105,7 +110,15 @@ void ScriptingView::updateMRU() {
 	m_ui.mru->clear();
 	for (const auto& fname : m_mruFiles) {
 		m_ui.mru->addAction(fname, [this, fname]() {
-			m_controller->loadFile(fname);
+			if (m_controller->loadFile(fname)) {
+				appendMRU(fname);
+			}
 		});
 	}
+	checkEmptyMRU();
+}
+
+
+void ScriptingView::checkEmptyMRU() {
+	m_ui.loadMostRecent->setEnabled(!m_mruFiles.isEmpty());
 }

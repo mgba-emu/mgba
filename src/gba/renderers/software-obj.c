@@ -182,11 +182,11 @@ int GBAVideoSoftwareRendererPreprocessSprite(struct GBAVideoSoftwareRenderer* re
 		}
 	}
 
-	color_t* palette = &renderer->normalPalette[0x100];
+	mColor* palette = &renderer->normalPalette[0x100];
 	if (renderer->d.highlightAmount && renderer->d.highlightOBJ[index]) {
 		palette = &renderer->highlightPalette[0x100];
 	}
-	color_t* objwinPalette = palette;
+	mColor* objwinPalette = palette;
 
 	if (variant) {
 		palette = &renderer->variantPalette[0x100];

@@ -202,7 +202,7 @@ bool GBASavedataExportSharkPort(const struct GBA* gba, struct VFile* vf) {
 		char c[0x1C];
 		int32_t i;
 	} buffer;
-	uint32_t size = strlen(SHARKPORT_HEADER);
+	int32_t size = strlen(SHARKPORT_HEADER);
 	STORE_32(size, 0, &buffer.i);
 	if (vf->write(vf, &buffer.i, 4) < 4) {
 		return false;
@@ -271,7 +271,7 @@ bool GBASavedataExportSharkPort(const struct GBA* gba, struct VFile* vf) {
 	}
 
 	uint32_t checksum = 0;
-	size_t i;
+	ssize_t i;
 	for (i = 0; i < 0x1C; ++i) {
 		checksum += buffer.c[i] << (checksum % 24);
 	}

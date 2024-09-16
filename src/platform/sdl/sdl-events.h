@@ -71,12 +71,9 @@ struct mSDLPlayer {
 	SDL_Window* window;
 
 	struct mSDLRumble {
-		struct mRumble d;
+		struct mRumbleIntegrator d;
 		struct mSDLPlayer* p;
-
-		int level;
 		float activeLevel;
-		struct CircleBuffer history;
 	} rumble;
 #else
 	int newWidth;
@@ -98,7 +95,7 @@ struct mSDLPlayer {
 		int gyroY;
 		int gyroZ;
 		float gyroSensitivity;
-		struct CircleBuffer zHistory;
+		struct mCircleBuffer zHistory;
 		int oldX;
 		int oldY;
 		float zDelta;

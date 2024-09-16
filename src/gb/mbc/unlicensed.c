@@ -228,7 +228,9 @@ void _GBNTOld2(struct GB* gb, uint16_t address, uint8_t value) {
 		}
 
 		if (mbcState->rumble && memory->rumble) {
-			memory->rumble->setRumble(memory->rumble, !!(mbcState->swapped ? value & 0x08 : value & 0x02));
+			int32_t currentTime = mTimingCurrentTime(&gb->timing);
+			memory->rumble->setRumble(memory->rumble, !!(mbcState->swapped ? value & 0x08 : value & 0x02), currentTime - memory->lastRumble);
+			memory->lastRumble = currentTime;
 		}
 		break;
 	}

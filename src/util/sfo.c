@@ -209,9 +209,7 @@ bool SfoWrite(struct Table* sfo, struct VFile* vf) {
 		}
 	}
 
-	if (keysSize != ALIGN4(keysOffset) || dataSize != dataOffset) {
-		abort();
-	}
+	mASSERT(keysSize == ALIGN4(keysOffset) && dataSize == dataOffset);
 
 	free(sortedEntries);
 

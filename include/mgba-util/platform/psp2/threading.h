@@ -9,7 +9,7 @@
 #include <psp2/kernel/threadmgr.h>
 
 typedef SceUID Thread;
-typedef SceUID Mutex;
+typedef SceKernelLwMutexWork Mutex;
 typedef struct {
 	Mutex mutex;
 	SceUID semaphore;
@@ -20,28 +20,23 @@ typedef THREAD_ENTRY (*ThreadEntry)(void*);
 #define THREAD_EXIT(RES) return RES
 
 static inline int MutexInit(Mutex* mutex) {
-	Mutex id = sceKernelCreateMutex("mutex", 0, 0, 0);
-	if (id < 0) {
-		return id;
-	}
-	*mutex = id;
-	return 0;
+	return sceKernelCreateLwMutex(mutex, "mutex", 0, 0, 0);
 }
 
 static inline int MutexDeinit(Mutex* mutex) {
-	return sceKernelDeleteMutex(*mutex);
+	return sceKernelDeleteLwMutex(mutex);
 }
 
 static inline int MutexLock(Mutex* mutex) {
-	return sceKernelLockMutex(*mutex, 1, 0);
+	return sceKernelLockLwMutex(mutex, 1, 0);
 }
 
 static inline int MutexTryLock(Mutex* mutex) {
-	return sceKernelTryLockMutex(*mutex, 1);
+	return sceKernelTryLockLwMutex(mutex, 1);
 }
 
 static inline int MutexUnlock(Mutex* mutex) {
-	return sceKernelUnlockMutex(*mutex, 1);
+	return sceKernelUnlockLwMutex(mutex, 1);
 }
 
 static inline int ConditionInit(Condition* cond) {

@@ -12,20 +12,20 @@
 mLOG_DEFINE_CATEGORY(GBA_SIO, "GBA Serial I/O", "gba.sio");
 
 const int GBASIOCyclesPerTransfer[4][MAX_GBAS] = {
-	{ 38326, 73003, 107680, 142356 },
-	{ 9582, 18251, 26920, 35589 },
-	{ 6388, 12167, 17947, 23726 },
-	{ 3194, 6075, 8973, 11863 }
+	{ 31976, 63427, 94884, 125829 },
+	{ 8378, 16241, 24104, 31457 },
+	{ 5750, 10998, 16241, 20972 },
+	{ 3140, 5755, 8376, 10486 }
 };
 
 static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mode) {
 	switch (mode) {
-	case SIO_NORMAL_8:
-	case SIO_NORMAL_32:
+	case GBA_SIO_NORMAL_8:
+	case GBA_SIO_NORMAL_32:
 		return sio->drivers.normal;
-	case SIO_MULTI:
+	case GBA_SIO_MULTI:
 		return sio->drivers.multiplayer;
-	case SIO_JOYBUS:
+	case GBA_SIO_JOYBUS:
 		return sio->drivers.joybus;
 	default:
 		return 0;
@@ -34,15 +34,15 @@ static struct GBASIODriver* _lookupDriver(struct GBASIO* sio, enum GBASIOMode mo
 
 static const char* _modeName(enum GBASIOMode mode) {
 	switch (mode) {
-	case SIO_NORMAL_8:
+	case GBA_SIO_NORMAL_8:
 		return "NORMAL8";
-	case SIO_NORMAL_32:
+	case GBA_SIO_NORMAL_32:
 		return "NORMAL32";
-	case SIO_MULTI:
+	case GBA_SIO_MULTI:
 		return "MULTI";
-	case SIO_JOYBUS:
+	case GBA_SIO_JOYBUS:
 		return "JOYBUS";
-	case SIO_GPIO:
+	case GBA_SIO_GPIO:
 		return "GPIO";
 	default:
 		return "(unknown)";
@@ -113,22 +113,22 @@ void GBASIOReset(struct GBASIO* sio) {
 }
 
 void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers) {
-	GBASIOSetDriver(sio, drivers->normal, SIO_NORMAL_8);
-	GBASIOSetDriver(sio, drivers->multiplayer, SIO_MULTI);
-	GBASIOSetDriver(sio, drivers->joybus, SIO_JOYBUS);
+	GBASIOSetDriver(sio, drivers->normal, GBA_SIO_NORMAL_8);
+	GBASIOSetDriver(sio, drivers->multiplayer, GBA_SIO_MULTI);
+	GBASIOSetDriver(sio, drivers->joybus, GBA_SIO_JOYBUS);
 }
 
 void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASIOMode mode) {
 	struct GBASIODriver** driverLoc;
 	switch (mode) {
-	case SIO_NORMAL_8:
-	case SIO_NORMAL_32:
+	case GBA_SIO_NORMAL_8:
+	case GBA_SIO_NORMAL_32:
 		driverLoc = &sio->drivers.normal;
 		break;
-	case SIO_MULTI:
+	case GBA_SIO_MULTI:
 		driverLoc = &sio->drivers.multiplayer;
 		break;
-	case SIO_JOYBUS:
+	case GBA_SIO_JOYBUS:
 		driverLoc = &sio->drivers.joybus;
 		break;
 	default:
@@ -182,8 +182,8 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 	} else {
 		// Dummy drivers
 		switch (sio->mode) {
-		case SIO_NORMAL_8:
-		case SIO_NORMAL_32:
+		case GBA_SIO_NORMAL_8:
+		case GBA_SIO_NORMAL_32:
 			value = GBASIONormalFillSi(value);
 			if ((value & 0x0081) == 0x0081) {
 				if (GBASIONormalIsIrq(value)) {
@@ -193,7 +193,7 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 				value = GBASIONormalClearStart(value);
 			}
 			break;
-		case SIO_MULTI:
+		case GBA_SIO_MULTI:
 			value &= 0xFF83;
 			value |= 0xC;
 			break;
@@ -211,7 +211,7 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 	}
 	// Dummy drivers
 	switch (sio->mode) {
-	case SIO_JOYBUS:
+	case GBA_SIO_JOYBUS:
 		switch (address) {
 		case GBA_REG_JOYCNT:
 			return (value & 0x0040) | (sio->p->memory.io[GBA_REG(JOYCNT)] & ~(value & 0x7) & ~0x0040);

@@ -281,7 +281,7 @@ void SaveConverter::detectFromHeaders(std::shared_ptr<VFileDevice> vf) {
 			}
 			free(data);
 		}
-	} else if (buffer.left(gsv.count()) == gsv) {
+	} else if (buffer.left(gsv.size()) == gsv) {
 		size_t size;
 		void* data = GBASavedataGSVGetPayload(*vf, &size, nullptr, false);
 		if (data) {

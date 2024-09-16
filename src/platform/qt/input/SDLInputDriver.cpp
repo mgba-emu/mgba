@@ -112,7 +112,7 @@ void SDLInputDriver::bindDefaults(InputController* controller) {
 mRumble* SDLInputDriver::rumble() {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	if (m_playerAttached) {
-		return &m_sdlPlayer.rumble.d;
+		return &m_sdlPlayer.rumble.d.d;
 	}
 #endif
 	return nullptr;
@@ -159,7 +159,7 @@ void SDLInputDriver::updateGamepads() {
 		m_gamepads.removeAt(i);
 		--i;
 	}
-	std::sort(m_gamepads.begin(), m_gamepads.end(), [](const auto& a, const auto b) {
+	std::sort(m_gamepads.begin(), m_gamepads.end(), [](const auto& a, const auto& b) {
 		return a->m_index < b->m_index;
 	});
 
@@ -173,7 +173,7 @@ void SDLInputDriver::updateGamepads() {
 		}
 		m_gamepads.append(std::make_shared<SDLGamepad>(this, i));
 	}
-	std::sort(m_gamepads.begin(), m_gamepads.end(), [](const auto& a, const auto b) {
+	std::sort(m_gamepads.begin(), m_gamepads.end(), [](const auto& a, const auto& b) {
 		return a->m_index < b->m_index;
 	});
 }
@@ -249,6 +249,7 @@ SDLGamepad::SDLGamepad(SDLInputDriver* driver, int index, QObject* parent)
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), m_guid, sizeof(m_guid));
+	m_id = SDL_JoystickInstanceID(joystick);
 #endif
 }
 
@@ -395,11 +396,10 @@ QString SDLGamepad::visibleName() const {
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 bool SDLGamepad::updateIndex() {
-	char guid[34];
 	for (size_t i = 0; i < SDL_JoystickListSize(&s_sdlEvents.joysticks); ++i) {
 		SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, i)->joystick;
-		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), guid, sizeof(guid));
-		if (memcmp(guid, m_guid, 33) == 0) {
+		SDL_JoystickID id = SDL_JoystickInstanceID(joystick);
+		if (id == m_id) {
 			m_index = i;
 			return true;
 		}

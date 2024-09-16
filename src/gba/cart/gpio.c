@@ -320,18 +320,20 @@ void _gyroReadPins(struct GBACartridgeHardware* hw) {
 		return;
 	}
 
+	// Write bit on falling edge
+	bool doOutput = hw->gyroEdge && !(hw->pinState & 2);
 	if (hw->pinState & 1) {
 		if (gyro->sample) {
 			gyro->sample(gyro);
 		}
 		int32_t sample = gyro->readGyroZ(gyro);
 
-		// Normalize to ~12 bits, focused on 0x6C0
-		hw->gyroSample = (sample >> 21) + 0x6C0; // Crop off an extra bit so that we can't go negative
+		// Normalize to ~12 bits, focused on 0x700
+		hw->gyroSample = (sample >> 21) + 0x700; // Crop off an extra bit so that we can't go negative
+		doOutput = true;
 	}
 
-	if (hw->gyroEdge && !(hw->pinState & 2)) {
-		// Write bit on falling edge
+	if (doOutput) {
 		unsigned bit = hw->gyroSample >> 15;
 		hw->gyroSample <<= 1;
 		_outputPins(hw, bit << 2);
@@ -352,7 +354,9 @@ void _rumbleReadPins(struct GBACartridgeHardware* hw) {
 		return;
 	}
 
-	rumble->setRumble(rumble, !!(hw->pinState & 8));
+	int32_t currentTime = mTimingCurrentTime(&hw->p->timing);
+	rumble->setRumble(rumble, !!(hw->pinState & 8), currentTime - hw->p->lastRumble);
+	hw->p->lastRumble = currentTime;
 }
 
 // == Light sensor
@@ -523,7 +527,7 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	uint32_t when;
 	LOAD_32(when, 0, &state->hw.gbpNextEvent);
 	if (hw->devices & HW_GB_PLAYER) {
-		GBASIOSetDriver(&hw->p->sio, &hw->p->sio.gbp.d, SIO_NORMAL_32);
+		GBASIOSetDriver(&hw->p->sio, &hw->p->sio.gbp.d, GBA_SIO_NORMAL_32);
 		if (hw->p->memory.io[GBA_REG(SIOCNT)] & 0x0080) {
 			mTimingSchedule(&hw->p->timing, &hw->p->sio.gbp.event, when);
 		}

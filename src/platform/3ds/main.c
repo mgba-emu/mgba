@@ -4,7 +4,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>
 #ifdef M_CORE_GBA
@@ -61,7 +60,7 @@ static enum DarkenMode {
 
 #define _3DS_INPUT 0x3344534B
 
-#define AUDIO_SAMPLES 384
+#define AUDIO_SAMPLES 1280
 #define AUDIO_SAMPLE_BUFFER (AUDIO_SAMPLES * 16)
 #define DSP_BUFFERS 4
 
@@ -86,11 +85,12 @@ static enum {
 } hasSound;
 
 // TODO: Move into context
-static color_t* outputBuffer = NULL;
-static color_t* screenshotBuffer = NULL;
+static mColor* outputBuffer = NULL;
+static mColor* screenshotBuffer = NULL;
 static struct mAVStream stream;
 static int16_t* audioLeft = 0;
 static size_t audioPos = 0;
+static double fpsRatio;
 static C3D_Tex outputTexture[2];
 static int activeOutputTexture = 0;
 static ndspWaveBuf dspBuffer[DSP_BUFFERS];
@@ -189,8 +189,6 @@ static void _cleanup(void) {
 static void _map3DSKey(struct mInputMap* map, int ctrKey, int key) {
 	mInputBindKey(map, _3DS_INPUT, __builtin_ctz(ctrKey), key);
 }
-
-static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right);
 
 static void _drawStart(void) {
 	if (frameStarted) {
@@ -295,7 +293,7 @@ static void _setup(struct mGUIRunner* runner) {
 	_map3DSKey(&runner->core->inputMap, KEY_L, GBA_KEY_L);
 	_map3DSKey(&runner->core->inputMap, KEY_R, GBA_KEY_R);
 
-	memset(outputBuffer, 0, 256 * 224 * sizeof(color_t));
+	memset(outputBuffer, 0, 256 * 224 * sizeof(mColor));
 	runner->core->setVideoBuffer(runner->core, outputBuffer, 256);
 
 	unsigned mode;
@@ -343,13 +341,16 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 	}
 	osSetSpeedupEnable(true);
 
-	double ratio = GBAAudioCalculateRatio(1, 268111856.f / 4481136.f, 1);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 32768 * ratio);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 32768 * ratio);
 	if (hasSound != NO_SOUND) {
 		audioPos = 0;
 	}
 	if (hasSound == DSP_SUPPORTED) {
+		unsigned sampleRate = runner->core->audioSampleRate(runner->core);
+		if (!sampleRate) {
+			sampleRate = 32768;
+		}
+		fpsRatio = mCoreCalculateFramerateRatio(runner->core, 16756991. / 280095.);
+		ndspChnSetRate(0, sampleRate * fpsRatio);
 		memset(audioLeft, 0, AUDIO_SAMPLE_BUFFER * 2 * sizeof(int16_t));
 	}
 	unsigned mode;
@@ -608,26 +609,25 @@ static void _drawFrame(struct mGUIRunner* runner, bool faded) {
 				GX_TRANSFER_OUT_TILED(1) | GX_TRANSFER_FLIP_VERT(1));
 
 	if (hasSound == NO_SOUND) {
-		blip_clear(runner->core->getAudioChannel(runner->core, 0));
-		blip_clear(runner->core->getAudioChannel(runner->core, 1));
+		mAudioBufferClear(runner->core->getAudioBuffer(runner->core));
 	}
 
 	_drawTex(runner->core, faded, interframeBlending);
 }
 
-static void _drawScreenshot(struct mGUIRunner* runner, const color_t* pixels, unsigned width, unsigned height, bool faded) {
+static void _drawScreenshot(struct mGUIRunner* runner, const mColor* pixels, unsigned width, unsigned height, bool faded) {
 	C3D_Tex* tex = &outputTexture[activeOutputTexture];
 
 	if (!screenshotBuffer) {
-		screenshotBuffer = linearMemAlign(256 * 224 * sizeof(color_t), 0x80);
+		screenshotBuffer = linearMemAlign(256 * 224 * sizeof(mColor), 0x80);
 	}
 	unsigned y;
 	for (y = 0; y < height; ++y) {
-		memcpy(&screenshotBuffer[y * 256], &pixels[y * width], width * sizeof(color_t));
-		memset(&screenshotBuffer[y * 256 + width], 0, (256 - width) * sizeof(color_t));
+		memcpy(&screenshotBuffer[y * 256], &pixels[y * width], width * sizeof(mColor));
+		memset(&screenshotBuffer[y * 256 + width], 0, (256 - width) * sizeof(mColor));
 	}
 
-	GSPGPU_FlushDataCache(screenshotBuffer, 256 * height * sizeof(color_t));
+	GSPGPU_FlushDataCache(screenshotBuffer, 256 * height * sizeof(mColor));
 	C3D_SyncDisplayTransfer(
 			(u32*) screenshotBuffer, GX_BUFFER_DIM(256, height),
 			tex->data, GX_BUFFER_DIM(256, 256),
@@ -704,7 +704,7 @@ static int32_t _readTiltY(struct mRotationSource* source) {
 
 static int32_t _readGyroZ(struct mRotationSource* source) {
 	struct m3DSRotationSource* rotation = (struct m3DSRotationSource*) source;
-	return rotation->gyro.y << 18L; // Yes, y
+	return rotation->gyro.y << 17L; // Yes, y
 }
 
 static void _startRequestImage(struct mImageSource* source, unsigned w, unsigned h, int colorFormats) {
@@ -776,15 +776,14 @@ static void _requestImage(struct mImageSource* source, const void** buffer, size
 	CAMU_SetReceiving(&imageSource->handles[0], imageSource->buffer, PORT_CAM1, imageSource->bufferSize, imageSource->transferSize);
 }
 
-static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
+static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buffer) {
 	UNUSED(stream);
 	if (hasSound == DSP_SUPPORTED) {
 		int startId = bufferId;
 		while (dspBuffer[bufferId].status == NDSP_WBUF_QUEUED || dspBuffer[bufferId].status == NDSP_WBUF_PLAYING) {
 			bufferId = (bufferId + 1) & (DSP_BUFFERS - 1);
 			if (bufferId == startId) {
-				blip_clear(left);
-				blip_clear(right);
+				mAudioBufferClear(buffer);
 				return;
 			}
 		}
@@ -792,11 +791,18 @@ static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* rig
 		memset(&dspBuffer[bufferId], 0, sizeof(dspBuffer[bufferId]));
 		dspBuffer[bufferId].data_pcm16 = tmpBuf;
 		dspBuffer[bufferId].nsamples = AUDIO_SAMPLES;
-		blip_read_samples(left, dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES, true);
-		blip_read_samples(right, dspBuffer[bufferId].data_pcm16 + 1, AUDIO_SAMPLES, true);
+		mAudioBufferRead(buffer, dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES);
 		DSP_FlushDataCache(dspBuffer[bufferId].data_pcm16, AUDIO_SAMPLES * 2 * sizeof(int16_t));
 		ndspChnWaveBufAdd(0, &dspBuffer[bufferId]);
 	}
+}
+
+static void _audioRateChanged(struct mAVStream* stream, unsigned sampleRate) {
+	UNUSED(stream);
+	if (!sampleRate) {
+		sampleRate = 32768;
+	}
+	ndspChnSetRate(0, sampleRate * fpsRatio);
 }
 
 static enum GUIKeyboardStatus _keyboardRun(struct GUIKeyboardParams* keyboard) {
@@ -834,10 +840,11 @@ int main(int argc, char* argv[]) {
 	rotation.d.readTiltY = _readTiltY;
 	rotation.d.readGyroZ = _readGyroZ;
 
-	stream.videoDimensionsChanged = 0;
-	stream.postVideoFrame = 0;
-	stream.postAudioFrame = 0;
+	stream.videoDimensionsChanged = NULL;
+	stream.postVideoFrame = NULL;
+	stream.postAudioFrame = NULL;
 	stream.postAudioBuffer = _postAudioBuffer;
+	stream.audioRateChanged = _audioRateChanged;
 
 	camera.d.startRequestImage = _startRequestImage;
 	camera.d.stopRequestImage = _stopRequestImage;
@@ -858,7 +865,6 @@ int main(int argc, char* argv[]) {
 		ndspChnReset(0);
 		ndspChnSetFormat(0, NDSP_FORMAT_STEREO_PCM16);
 		ndspChnSetInterp(0, NDSP_INTERP_NONE);
-		ndspChnSetRate(0, 0x8000);
 		ndspChnWaveBufClear(0);
 		audioLeft = linearMemAlign(AUDIO_SAMPLES * DSP_BUFFERS * 2 * sizeof(int16_t), 0x80);
 		memset(dspBuffer, 0, sizeof(dspBuffer));
@@ -911,7 +917,7 @@ int main(int argc, char* argv[]) {
 		_cleanup();
 		return 1;
 	}
-	outputBuffer = linearMemAlign(256 * 224 * sizeof(color_t), 0x80);
+	outputBuffer = linearMemAlign(256 * 224 * sizeof(mColor), 0x80);
 
 	struct mGUIRunner runner = {
 		.params = {

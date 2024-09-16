@@ -371,7 +371,7 @@ void GBACartEReaderScan(struct GBACartEReader* ereader, const void* data, size_t
 	memset(ereader->dots, 0, EREADER_DOTCODE_SIZE);
 
 	uint8_t blockRS[44][0x10];
-	uint8_t block0[0x30];
+	uint8_t block0[0x30] = {0};
 	bool parsed = false;
 	bool bitmap = false;
 	bool reducedHeader = false;
@@ -875,7 +875,7 @@ void EReaderScanDestroy(struct EReaderScan* scan) {
 	free(scan);
 }
 
-#ifdef USE_PNG
+#if defined(USE_PNG) && defined(ENABLE_VFS)
 struct EReaderScan* EReaderScanLoadImagePNG(const char* filename) {
 	struct VFile* vf = VFileOpen(filename, O_RDONLY);
 	if (!vf) {
@@ -1564,6 +1564,7 @@ void EReaderScanOutputBitmap(const struct EReaderScan* scan, void* output, size_
 	}
 }
 
+#ifdef ENABLE_VFS
 bool EReaderScanSaveRaw(const struct EReaderScan* scan, const char* filename, bool strict) {
 	size_t blocks = EReaderBlockListSize(&scan->blocks);
 	if (!blocks) {
@@ -1633,5 +1634,6 @@ bool EReaderScanSaveRaw(const struct EReaderScan* scan, const char* filename, bo
 	free(data);
 	return true;
 }
+#endif
 
 #endif

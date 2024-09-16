@@ -10,7 +10,7 @@
 
 CXX_GUARD_START
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 #include <mgba/debugger/debugger.h>
 #endif
 #include <mgba/script/macros.h>
@@ -20,8 +20,6 @@ struct mCore;
 struct mScriptTextBuffer;
 mSCRIPT_DECLARE_STRUCT(mCore);
 mSCRIPT_DECLARE_STRUCT(mLogger);
-mSCRIPT_DECLARE_STRUCT(mScriptConsole);
-mSCRIPT_DECLARE_STRUCT(mScriptTextBuffer);
 
 struct mScriptBridge;
 struct VFile;
@@ -35,27 +33,9 @@ struct mScriptEngine {
 	void (*run)(struct mScriptEngine*);
 	bool (*lookupSymbol)(struct mScriptEngine*, const char* name, int32_t* out);
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	void (*debuggerEntered)(struct mScriptEngine*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 #endif
-};
-
-struct mScriptTextBuffer {
-	void (*init)(struct mScriptTextBuffer*, const char* name);
-	void (*deinit)(struct mScriptTextBuffer*);
-
-	void (*setName)(struct mScriptTextBuffer*, const char* text);
-
-	uint32_t (*getX)(const struct mScriptTextBuffer*);
-	uint32_t (*getY)(const struct mScriptTextBuffer*);
-	uint32_t (*cols)(const struct mScriptTextBuffer*);
-	uint32_t (*rows)(const struct mScriptTextBuffer*);
-
-	void (*print)(struct mScriptTextBuffer*, const char* text);
-	void (*clear)(struct mScriptTextBuffer*);
-	void (*setSize)(struct mScriptTextBuffer*, uint32_t cols, uint32_t rows);
-	void (*moveCursor)(struct mScriptTextBuffer*, uint32_t x, uint32_t y);
-	void (*advance)(struct mScriptTextBuffer*, int32_t);
 };
 
 struct mScriptBridge* mScriptBridgeCreate(void);
@@ -63,27 +43,22 @@ void mScriptBridgeDestroy(struct mScriptBridge*);
 
 void mScriptBridgeInstallEngine(struct mScriptBridge*, struct mScriptEngine*);
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 void mScriptBridgeSetDebugger(struct mScriptBridge*, struct mDebugger*);
 struct mDebugger* mScriptBridgeGetDebugger(struct mScriptBridge*);
 void mScriptBridgeDebuggerEntered(struct mScriptBridge*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
 #endif
 
 void mScriptBridgeRun(struct mScriptBridge*);
+#ifdef ENABLE_VFS
 bool mScriptBridgeLoadScript(struct mScriptBridge*, const char* name);
+#endif
 
 bool mScriptBridgeLookupSymbol(struct mScriptBridge*, const char* name, int32_t* out);
 
 struct mScriptContext;
 void mScriptContextAttachCore(struct mScriptContext*, struct mCore*);
 void mScriptContextDetachCore(struct mScriptContext*);
-
-struct mLogger;
-void mScriptContextAttachLogger(struct mScriptContext*, struct mLogger*);
-void mScriptContextDetachLogger(struct mScriptContext*);
-
-typedef struct mScriptTextBuffer* (*mScriptContextBufferFactory)(void*);
-void mScriptContextSetTextBufferFactory(struct mScriptContext*, mScriptContextBufferFactory factory, void* cbContext);
 
 CXX_GUARD_END
 

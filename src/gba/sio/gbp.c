@@ -56,7 +56,7 @@ void GBASIOPlayerInit(struct GBASIOPlayer* gbp) {
 
 void GBASIOPlayerReset(struct GBASIOPlayer* gbp) {
 	if (gbp->p->sio.drivers.normal == &gbp->d) {
-		GBASIOSetDriver(&gbp->p->sio, NULL, SIO_NORMAL_32);
+		GBASIOSetDriver(&gbp->p->sio, NULL, GBA_SIO_NORMAL_32);
 	}
 }
 
@@ -88,7 +88,7 @@ void GBASIOPlayerUpdate(struct GBA* gba) {
 		gba->sio.gbp.oldCallback = gba->keyCallback;
 		gba->keyCallback = &gba->sio.gbp.callback.d;
 		// TODO: Check if the SIO driver is actually used first
-		GBASIOSetDriver(&gba->sio, &gba->sio.gbp.d, SIO_NORMAL_32);
+		GBASIOSetDriver(&gba->sio, &gba->sio.gbp.d, GBA_SIO_NORMAL_32);
 	}
 }
 
@@ -108,12 +108,13 @@ uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uin
 			if (gbp->txPosition < 12 && gbp->txPosition > 0) {
 				// TODO: Check expected
 			} else if (gbp->txPosition >= 12) {
-				uint32_t mask = 0x33;
 				// 0x00 = Stop
 				// 0x11 = Hard Stop
 				// 0x22 = Start
 				if (gbp->p->rumble) {
-					gbp->p->rumble->setRumble(gbp->p->rumble, (rx & mask) == 0x22);
+					int32_t currentTime = mTimingCurrentTime(&gbp->p->timing);
+					gbp->p->rumble->setRumble(gbp->p->rumble, (rx & 0x33) == 0x22, currentTime - gbp->p->lastRumble);
+					gbp->p->lastRumble = currentTime;
 				}
 			}
 			mTimingDeschedule(&gbp->p->timing, &gbp->event);

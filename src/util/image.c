@@ -132,6 +132,7 @@ struct mImage* mImageCreateFromConstBuffer(unsigned width, unsigned height, unsi
 	return image;
 }
 
+#ifdef ENABLE_VFS
 struct mImage* mImageLoad(const char* path) {
 	struct VFile* vf = VFileOpen(path, O_RDONLY);
 	if (!vf) {
@@ -141,6 +142,7 @@ struct mImage* mImageLoad(const char* path) {
 	vf->close(vf);
 	return image;
 }
+#endif
 
 #ifdef USE_PNG
 static struct mImage* mImageLoadPNG(struct VFile* vf) {
@@ -299,6 +301,7 @@ void mImageDestroy(struct mImage* image) {
 	free(image);
 }
 
+#ifdef ENABLE_VFS
 bool mImageSave(const struct mImage* image, const char* path, const char* format) {
 	struct VFile* vf = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
@@ -314,6 +317,7 @@ bool mImageSave(const struct mImage* image, const char* path, const char* format
 	vf->close(vf);
 	return success;
 }
+#endif
 
 #ifdef USE_PNG
 bool mImageSavePNG(const struct mImage* image, struct VFile* vf) {
@@ -900,9 +904,9 @@ uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat
 		return color;
 	}
 
-	int r;
-	int g;
-	int b;
+	int r = 0;
+	int g = 0;
+	int b = 0;
 	int a = 0xFF;
 
 	switch (from) {

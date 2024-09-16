@@ -6,7 +6,6 @@
 #include <mgba/internal/gb/video.h>
 
 #include <mgba/core/sync.h>
-#include <mgba/core/thread.h>
 #include <mgba/core/cache-set.h>
 #include <mgba/internal/gb/gb.h>
 #include <mgba/internal/gb/io.h>

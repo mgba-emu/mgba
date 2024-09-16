@@ -13,10 +13,13 @@
 
 CXX_GUARD_START
 
+#define DIGIMON_SAPPHIRE_CHINESE_CRC32 0x793A328F
+
 enum GBAVFameCartType {
 	VFAME_NO = 0,
 	VFAME_STANDARD = 1,
-	VFAME_GEORGE = 2
+	VFAME_GEORGE = 2,
+	VFAME_ALTERNATE = 3,
 };
 
 struct GBAVFameCart {
@@ -28,7 +31,7 @@ struct GBAVFameCart {
 };
 
 void GBAVFameInit(struct GBAVFameCart* cart);
-void GBAVFameDetect(struct GBAVFameCart* cart, uint32_t* rom, size_t romSize);
+void GBAVFameDetect(struct GBAVFameCart* cart, uint32_t* rom, size_t romSize, uint32_t crc32);
 void GBAVFameSramWrite(struct GBAVFameCart* cart, uint32_t address, uint8_t value, uint8_t* sramData);
 uint32_t GBAVFameModifyRomAddress(struct GBAVFameCart* cart, uint32_t address, size_t romSize);
 uint32_t GBAVFameGetPatternValue(uint32_t address, int bits);

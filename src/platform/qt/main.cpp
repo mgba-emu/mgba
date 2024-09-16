@@ -90,7 +90,9 @@ int main(int argc, char* argv[]) {
 
 	QApplication::setApplicationName(projectName);
 	QApplication::setApplicationVersion(projectVersion);
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+#endif
 
 #ifdef BUILD_GLES2
 	QSurfaceFormat format;
@@ -109,7 +111,11 @@ int main(int argc, char* argv[]) {
 #endif
 
 	QTranslator qtTranslator;
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	if (qtTranslator.load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+#else
+	if (qtTranslator.load(locale, "qt", "_", QLibraryInfo::path(QLibraryInfo::TranslationsPath))) {
+#endif
 		application.installTranslator(&qtTranslator);
 	}
 

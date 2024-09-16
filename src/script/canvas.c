@@ -157,10 +157,8 @@ static struct mScriptValue* mScriptCanvasLayerCreate(struct mScriptCanvasContext
 	}
 
 	struct mScriptCanvasLayer* layer = &context->overlays[next];
-	if (layer->image) {
-		// This shouldn't exist yet
-		abort();
-	}
+	// This shouldn't exist yet
+	mASSERT(!layer->image);
 
 	layer->image = mImageCreate(w, h, mCOLOR_ABGR8);
 	layer->dirty = true;

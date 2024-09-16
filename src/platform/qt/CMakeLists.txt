@@ -25,11 +25,16 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(QT_LIBRARIES)
 
-set(QT_VERSIONS 6 5)
+option(FORCE_QT_VERSION "Force the used Qt version" OFF)
+
+if(FORCE_QT_VERSION EQUAL 5 OR FORCE_QT_VERSION EQUAL 6)
+	set(QT_VERSIONS ${FORCE_QT_VERSION})
+else()
+	set(QT_VERSIONS 6 5)
+endif()
 foreach(V ${QT_VERSIONS})
 	set(QT Qt${V})
 	set(QT_V ${V})
-	message("${V} ${QT} ${QT_V}")
 	find_package(${QT} COMPONENTS Core Widgets Network OPTIONAL_COMPONENTS Multimedia)
 	if(QT_V GREATER_EQUAL 6)
 		find_package(${QT} COMPONENTS OpenGL OpenGLWidgets)
@@ -249,7 +254,7 @@ if(NOT AUDIO_SRC)
 	return()
 endif()
 
-if(USE_DEBUGGERS)
+if(ENABLE_DEBUGGERS)
 	list(APPEND SOURCE_FILES
 		DebuggerController.cpp
 		DebuggerConsole.cpp
@@ -257,7 +262,7 @@ if(USE_DEBUGGERS)
 		MemoryAccessLogView.cpp)
 endif()
 
-if(USE_GDB_STUB)
+if(ENABLE_GDB_STUB)
 	list(APPEND SOURCE_FILES GDBController.cpp GDBWindow.cpp)
 endif()
 

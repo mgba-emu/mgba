@@ -21,12 +21,12 @@ enum {
 };
 
 enum GBASIOMode {
-	SIO_NORMAL_8 = 0,
-	SIO_NORMAL_32 = 1,
-	SIO_MULTI = 2,
-	SIO_UART = 3,
-	SIO_GPIO = 8,
-	SIO_JOYBUS = 12
+	GBA_SIO_NORMAL_8 = 0,
+	GBA_SIO_NORMAL_32 = 1,
+	GBA_SIO_MULTI = 2,
+	GBA_SIO_UART = 3,
+	GBA_SIO_GPIO = 8,
+	GBA_SIO_JOYBUS = 12
 };
 
 enum GBASIOJOYCommand {
@@ -139,7 +139,7 @@ struct GBA;
 void GBACartEReaderQueueCard(struct GBA* gba, const void* data, size_t size);
 
 struct EReaderScan;
-#ifdef USE_PNG
+#if defined(USE_PNG) && defined(ENABLE_VFS)
 MGBA_EXPORT struct EReaderScan* EReaderScanLoadImagePNG(const char* filename);
 #endif
 MGBA_EXPORT struct EReaderScan* EReaderScanLoadImage(const void* pixels, unsigned width, unsigned height, unsigned stride);
@@ -149,7 +149,9 @@ MGBA_EXPORT void EReaderScanDestroy(struct EReaderScan*);
 
 MGBA_EXPORT bool EReaderScanCard(struct EReaderScan*);
 MGBA_EXPORT void EReaderScanOutputBitmap(const struct EReaderScan*, void* output, size_t stride);
+#ifdef ENABLE_VFS
 MGBA_EXPORT bool EReaderScanSaveRaw(const struct EReaderScan*, const char* filename, bool strict);
+#endif
 
 CXX_GUARD_END
 

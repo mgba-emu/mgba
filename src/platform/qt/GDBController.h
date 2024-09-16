@@ -7,7 +7,7 @@
 
 #include "DebuggerController.h"
 
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 
 #include <mgba/internal/debugger/gdb-stub.h>
 

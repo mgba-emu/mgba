@@ -607,12 +607,6 @@ void SettingsView::updateConfig() {
 		emit languageChanged();
 	}
 
-	bool oldAudioHle = m_controller->getOption("gba.audioHle", "0") != "0";
-	if (oldAudioHle != m_ui.audioHle->isChecked()) {
-		saveSetting("gba.audioHle", m_ui.audioHle);
-		emit audioHleChanged();
-	}
-
 	if (m_ui.multiplayerAudioAll->isChecked()) {
 		m_controller->setQtOption("multiplayerAudio", "all");
 	} else if (m_ui.multiplayerAudio1->isChecked()) {
@@ -740,7 +734,6 @@ void SettingsView::reloadConfig() {
 	loadSetting("logToStdout", m_ui.logToStdout);
 	loadSetting("logFile", m_ui.logFile);
 	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
-	loadSetting("gba.audioHle", m_ui.audioHle);
 	loadSetting("dynamicTitle", m_ui.dynamicTitle, true);
 	loadSetting("gba.forceGbp", m_ui.forceGbp);
 	loadSetting("vbaBugCompat", m_ui.vbaBugCompat, true);

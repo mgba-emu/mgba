@@ -14,13 +14,13 @@
 
 #include <mgba-util/common.h>
 
-#include <mgba/core/blip_buf.h>
 #include <mgba/core/core.h>
 #include "feature/gui/gui-runner.h"
 #include <mgba/internal/gb/video.h>
 #include <mgba/internal/gba/audio.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/input.h>
+#include <mgba-util/audio-resampler.h>
 #include <mgba-util/gui.h>
 #include <mgba-util/gui/file-select.h>
 #include <mgba-util/gui/font.h>
@@ -76,9 +76,10 @@ static enum VideoMode {
 
 static void _retraceCallback(u32 count);
 
-static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right);
+static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer*);
+static void _audioRateChanged(struct mAVStream* stream, unsigned);
 static void _audioDMA(void);
-static void _setRumble(struct mRumble* rumble, int enable);
+static void _setRumble(struct mRumble* rumble, bool enable, uint32_t sinceLast);
 static void _sampleRotation(struct mRotationSource* source);
 static int32_t _readTiltX(struct mRotationSource* source);
 static int32_t _readTiltY(struct mRotationSource* source);
@@ -141,12 +142,15 @@ static void* framebuffer[2] = { 0, 0 };
 static int whichFb = 0;
 
 static struct AudioBuffer {
-	struct mStereoSample samples[SAMPLES] __attribute__((__aligned__(32)));
-	volatile size_t size;
-} audioBuffer[BUFFERS] = {0};
+	int16_t samples[SAMPLES * 2] __attribute__((__aligned__(32)));
+	volatile bool full;
+} audioBuffers[BUFFERS] = {0};
+static struct mAudioBuffer audioBuffer;
 static volatile int currentAudioBuffer = 0;
 static volatile int nextAudioBuffer = 0;
-static double audioSampleRate = 60.0 / 1.001;
+static double fps = 60.0 / 1.001;
+static double fpsRatio = 1;
+static struct mAudioResampler resampler;
 
 static struct GUIFont* font;
 
@@ -160,7 +164,7 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 	wAdjust = 1.f;
 	hAdjust = 1.f;
 	guiScale = GUI_SCALE;
-	audioSampleRate = 60.0 / 1.001;
+	fps = 60.0 / 1.001;
 
 	s32 signalMode = CONF_GetVideo();
 
@@ -208,7 +212,7 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 			break;
 		}
 		wAdjust = 0.5f;
-		audioSampleRate = 90.0 / 1.50436;
+		fps = 90.0 / 1.50436;
 		guiScale = GUI_SCALE_240p;
 		break;
 	}
@@ -246,11 +250,6 @@ static void reconfigureScreen(struct mGUIRunner* runner) {
 	if (runner) {
 		runner->params.width = vmode->fbWidth * guiScale * wAdjust;
 		runner->params.height = vmode->efbHeight * guiScale * hAdjust;
-		if (runner->core) {
-			double ratio = GBAAudioCalculateRatio(1, audioSampleRate, 1);
-			blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
-			blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
-		}
 	}
 }
 
@@ -269,7 +268,10 @@ int main(int argc, char* argv[]) {
 	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
 	AUDIO_RegisterDMACallback(_audioDMA);
 
-	memset(audioBuffer, 0, sizeof(audioBuffer));
+	memset(audioBuffers, 0, sizeof(audioBuffers));
+	mAudioBufferInit(&audioBuffer, SAMPLES * BUFFERS, 2);
+	mAudioResamplerInit(&resampler, mINTERPOLATOR_COSINE);
+	mAudioResamplerSetDestination(&resampler, &audioBuffer, 48000);
 #ifdef FIXED_ROM_BUFFER
 	romBufferSize = GBA_SIZE_ROM0;
 	romBuffer = SYS_GetArena2Lo();
@@ -348,6 +350,7 @@ int main(int argc, char* argv[]) {
 	stream.postVideoFrame = NULL;
 	stream.postAudioFrame = NULL;
 	stream.postAudioBuffer = _postAudioBuffer;
+	stream.audioRateChanged = _audioRateChanged;
 
 	struct mGUIRunner runner = {
 		.params = {
@@ -663,6 +666,9 @@ int main(int argc, char* argv[]) {
 	VIDEO_WaitVSync();
 	mGUIDeinit(&runner);
 
+	mAudioResamplerDeinit(&resampler);
+	mAudioBufferDeinit(&audioBuffer);
+
 	free(fifo);
 	free(texmem);
 	free(rescaleTexmem);
@@ -678,43 +684,52 @@ int main(int argc, char* argv[]) {
 }
 
 static void _audioDMA(void) {
-	struct AudioBuffer* buffer = &audioBuffer[currentAudioBuffer];
-	if (buffer->size != SAMPLES) {
+	struct AudioBuffer* buffer = &audioBuffers[currentAudioBuffer];
+	if (!buffer->full) {
+		printf("Recv %i %i%s", currentAudioBuffer, buffer->full, buffer->full ? "" : "!");
 		return;
 	}
 	DCFlushRange(buffer->samples, SAMPLES * sizeof(struct mStereoSample));
 	AUDIO_InitDMA((u32) buffer->samples, SAMPLES * sizeof(struct mStereoSample));
-	buffer->size = 0;
+	buffer->full = false;
 	currentAudioBuffer = (currentAudioBuffer + 1) % BUFFERS;
 }
 
-static void _postAudioBuffer(struct mAVStream* stream, blip_t* left, blip_t* right) {
+static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buf) {
 	UNUSED(stream);
-
+	UNUSED(buf);
+	mAudioResamplerProcess(&resampler);
 	u32 level = 0;
+	bool gotAudio = false;
 	_CPU_ISR_Disable(level);
-	struct AudioBuffer* buffer = &audioBuffer[nextAudioBuffer];
-	int available = blip_samples_avail(left);
-	if (available + buffer->size > SAMPLES) {
-		available = SAMPLES - buffer->size;
-	}
-	if (available > 0) {
-		// These appear to be reversed for AUDIO_InitDMA
-		blip_read_samples(left, &buffer->samples[buffer->size].right, available, true);
-		blip_read_samples(right, &buffer->samples[buffer->size].left, available, true);
-		buffer->size += available;
-	}
-	if (buffer->size == SAMPLES) {
-		int next = (nextAudioBuffer + 1) % BUFFERS;
-		if ((currentAudioBuffer + BUFFERS - next) % BUFFERS != 1) {
-			nextAudioBuffer = next;
+	while (mAudioBufferAvailable(&audioBuffer) >= SAMPLES) {
+		struct AudioBuffer* buffer = &audioBuffers[nextAudioBuffer];
+		if (buffer->full) {
+			printf("Send %i %i%s", nextAudioBuffer, buffer->full, buffer->full ? "!!" : "");
+			break;
 		}
-		if (!AUDIO_GetDMAEnableFlag()) {
-			_audioDMA();
-			AUDIO_StartDMA();
-		}
+		mAudioBufferRead(&audioBuffer, buffer->samples, SAMPLES);
+		buffer->full = true;
+		nextAudioBuffer = (nextAudioBuffer + 1) % BUFFERS;
+		gotAudio = true;
+	}
+	if (gotAudio && !AUDIO_GetDMAEnableFlag()) {
+		_audioDMA();
+		AUDIO_StartDMA();
 	}
 	_CPU_ISR_Restore(level);
+}
+
+static void _audioRateChanged(struct mAVStream* stream, unsigned sampleRate) {
+	UNUSED(stream);
+	if (!sampleRate) {
+		return;
+	}
+	if (!resampler.source || !resampler.destination) {
+		return;
+	}
+	mAudioResamplerProcess(&resampler);
+	mAudioResamplerSetSource(&resampler, resampler.source, sampleRate / fpsRatio, true);
 }
 
 static void _drawStart(void) {
@@ -1416,15 +1431,15 @@ void _setup(struct mGUIRunner* runner) {
 
 	nextAudioBuffer = 0;
 	currentAudioBuffer = 0;
-	int i;
-	for (i = 0; i < BUFFERS; ++i) {
-		audioBuffer[i].size = 0;
-	}
+	memset(audioBuffers, 0, sizeof(audioBuffers));
 	runner->core->setAudioBufferSize(runner->core, SAMPLES);
 
-	double ratio = GBAAudioCalculateRatio(1, audioSampleRate, 1);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 0), runner->core->frequency(runner->core), 48000 * ratio);
-	blip_set_rates(runner->core->getAudioChannel(runner->core, 1), runner->core->frequency(runner->core), 48000 * ratio);
+	fpsRatio = mCoreCalculateFramerateRatio(runner->core, fps);
+	unsigned sampleRate = runner->core->audioSampleRate(runner->core);
+	if (!sampleRate) {
+		sampleRate = 32768;
+	}
+	mAudioResamplerSetSource(&resampler, runner->core->getAudioBuffer(runner->core), sampleRate / fpsRatio, true);
 
 	frameLimiter = true;
 }
@@ -1433,6 +1448,7 @@ void _gameUnloaded(struct mGUIRunner* runner) {
 	UNUSED(runner);
 	AUDIO_StopDMA();
 	frameLimiter = true;
+	mAudioBufferClear(&audioBuffer);
 	VIDEO_SetBlack(true);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
@@ -1706,8 +1722,9 @@ void _incrementScreenMode(struct mGUIRunner* runner) {
 	}
 }
 
-void _setRumble(struct mRumble* rumble, int enable) {
+void _setRumble(struct mRumble* rumble, bool enable, uint32_t sinceLast) {
 	UNUSED(rumble);
+	UNUSED(sinceLast);
 	WPAD_Rumble(0, enable);
 	if (enable) {
 		PAD_ControlMotor(0, PAD_MOTOR_RUMBLE);
@@ -1731,7 +1748,7 @@ void _sampleRotation(struct mRotationSource* source) {
 		return;
 	}
 	gyroZ = exp.mp.rz - 0x1FA0;
-	gyroZ <<= 18;
+	gyroZ <<= 17;
 }
 
 int32_t _readTiltX(struct mRotationSource* source) {

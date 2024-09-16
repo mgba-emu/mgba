@@ -17,6 +17,8 @@ enum mStateExtdataTag {
 	EXTDATA_CHEATS = 3,
 	EXTDATA_RTC = 4,
 	EXTDATA_SCREENSHOT_DIMENSIONS = 5,
+	EXTDATA_SUBSYSTEM_START = 0x40,
+	EXTDATA_SUBSYSTEM_MAX = 0x7F,
 	EXTDATA_META_TIME = 0x101,
 	EXTDATA_META_CREATOR = 0x102,
 	EXTDATA_MAX
@@ -42,7 +44,7 @@ struct mStateExtdata {
 void mStateExtdataInit(struct mStateExtdata*);
 void mStateExtdataDeinit(struct mStateExtdata*);
 void mStateExtdataPut(struct mStateExtdata*, enum mStateExtdataTag, struct mStateExtdataItem*);
-bool mStateExtdataGet(struct mStateExtdata*, enum mStateExtdataTag, struct mStateExtdataItem*);
+bool mStateExtdataGet(const struct mStateExtdata*, enum mStateExtdataTag, struct mStateExtdataItem*);
 
 struct VFile;
 bool mStateExtdataSerialize(struct mStateExtdata* extdata, struct VFile* vf);

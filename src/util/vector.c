@@ -6,6 +6,7 @@
 #include <mgba-util/vector.h>
 
 DEFINE_VECTOR(IntList, int);
+DEFINE_VECTOR(UIntList, unsigned);
 DEFINE_VECTOR(SInt8List, int8_t);
 DEFINE_VECTOR(SInt16List, int16_t);
 DEFINE_VECTOR(SInt32List, int32_t);

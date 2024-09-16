@@ -7,12 +7,6 @@
 
 #include <mgba/core/core.h>
 #include <mgba/core/thread.h>
-#include <mgba/internal/gba/audio.h>
-#include <mgba/internal/gba/gba.h>
-
-#include <mgba/core/blip_buf.h>
-
-#define BUFFER_SIZE (GBA_AUDIO_SAMPLES >> 2)
 
 mLOG_DEFINE_CATEGORY(SDL_AUDIO, "SDL Audio", "platform.sdl.audio");
 
@@ -47,6 +41,10 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext)
 	}
 	context->core = 0;
 
+	mAudioBufferInit(&context->buffer, context->samples, context->obtainedSpec.channels);
+	mAudioResamplerInit(&context->resampler, mINTERPOLATOR_SINC);
+	mAudioResamplerSetDestination(&context->resampler, &context->buffer, context->obtainedSpec.freq);
+
 	if (threadContext) {
 		context->core = threadContext->core;
 		context->sync = &threadContext->impl->sync;
@@ -70,6 +68,8 @@ void mSDLDeinitAudio(struct mSDLAudio* context) {
 	SDL_PauseAudio(1);
 	SDL_CloseAudio();
 #endif
+	mAudioBufferDeinit(&context->buffer);
+	mAudioResamplerDeinit(&context->resampler);
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
@@ -97,32 +97,25 @@ static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
 		memset(data, 0, len);
 		return;
 	}
-	blip_t* left = NULL;
-	blip_t* right = NULL;
-	int32_t clockRate = GBA_ARM7TDMI_FREQUENCY;
+	struct mAudioBuffer* buffer = NULL;
+	unsigned sampleRate = 32768;
 	if (audioContext->core) {
-		left = audioContext->core->getAudioChannel(audioContext->core, 0);
-		right = audioContext->core->getAudioChannel(audioContext->core, 1);
-		clockRate = audioContext->core->frequency(audioContext->core);
+		buffer = audioContext->core->getAudioBuffer(audioContext->core);
+		sampleRate = audioContext->core->audioSampleRate(audioContext->core);
 	}
 	double fauxClock = 1;
 	if (audioContext->sync) {
-		if (audioContext->sync->fpsTarget > 0) {
-			fauxClock = GBAAudioCalculateRatio(1, audioContext->sync->fpsTarget, 1);
+		if (audioContext->sync->fpsTarget > 0 && audioContext->core) {
+			fauxClock = mCoreCalculateFramerateRatio(audioContext->core, audioContext->sync->fpsTarget);
 		}
 		mCoreSyncLockAudio(audioContext->sync);
+		audioContext->sync->audioHighWater = audioContext->samples + audioContext->resampler.highWaterMark + audioContext->resampler.lowWaterMark;
+		audioContext->sync->audioHighWater *= sampleRate / (fauxClock * audioContext->obtainedSpec.freq);
 	}
-	blip_set_rates(left, clockRate, audioContext->obtainedSpec.freq * fauxClock);
-	blip_set_rates(right, clockRate, audioContext->obtainedSpec.freq * fauxClock);
+	mAudioResamplerSetSource(&audioContext->resampler, buffer, sampleRate / fauxClock, true);
+	mAudioResamplerProcess(&audioContext->resampler);
 	len /= 2 * audioContext->obtainedSpec.channels;
-	int available = blip_samples_avail(left);
-	if (available > len) {
-		available = len;
-	}
-	blip_read_samples(left, (short*) data, available, audioContext->obtainedSpec.channels == 2);
-	if (audioContext->obtainedSpec.channels == 2) {
-		blip_read_samples(right, ((short*) data) + 1, available, 1);
-	}
+	int available = mAudioBufferRead(&audioContext->buffer, (int16_t*) data, len);
 
 	if (audioContext->sync) {
 		mCoreSyncConsumeAudio(audioContext->sync);

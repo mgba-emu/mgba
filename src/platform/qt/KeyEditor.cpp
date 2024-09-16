@@ -41,7 +41,7 @@ void KeyEditor::setValue(int key) {
 	if (m_button) {
 		updateButtonText();
 	} else {
-		if (key < 0) {
+		if (key == Qt::Key_unknown) {
 			setText(tr("---"));
 		} else {
 			setText(keyName(key));
@@ -78,7 +78,7 @@ void KeyEditor::setValueHat(int hat, GamepadHatEvent::Direction direction) {
 
 void KeyEditor::clearButton() {
 	m_button = true;
-	setValue(-1);
+	setValue(Qt::Key_unknown);
 }
 
 void KeyEditor::clearAxis() {
@@ -106,48 +106,11 @@ QSize KeyEditor::sizeHint() const {
 
 void KeyEditor::keyPressEvent(QKeyEvent* event) {
 	if (!m_button) {
-		if (m_key < 0 || !m_lastKey.isActive()) {
-			m_key = 0;
+		if (!m_lastKey.isActive()) {
+			m_key = Qt::Key_unknown;
 		}
 		m_lastKey.start(KEY_TIME);
-		if (m_key) {
-			if (ShortcutController::isModifierKey(m_key)) {
-				switch (event->key()) {
-				case Qt::Key_Shift:
-					setValue(Qt::ShiftModifier);
-					break;
-				case Qt::Key_Control:
-					setValue(Qt::ControlModifier);
-					break;
-				case Qt::Key_Alt:
-					setValue(Qt::AltModifier);
-					break;
-				case Qt::Key_Meta:
-					setValue(Qt::MetaModifier);
-					break;
-				}
-			}
-			if (ShortcutController::isModifierKey(event->key())) {
-				switch (event->key()) {
-				case Qt::Key_Shift:
-					setValue(m_key | Qt::ShiftModifier);
-					break;
-				case Qt::Key_Control:
-					setValue(m_key | Qt::ControlModifier);
-					break;
-				case Qt::Key_Alt:
-					setValue(m_key | Qt::AltModifier);
-					break;
-				case Qt::Key_Meta:
-					setValue(m_key | Qt::MetaModifier);
-					break;
-				}
-			} else {
-				setValue(event->key() | (m_key & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)));
-			}
-		} else {
-			setValue(event->key());
-		}
+		setValue(ShortcutController::isModifierKey(event->key()) ? event->modifiers() : event->key() | event->modifiers());
 	}
 	event->accept();
 }
@@ -213,7 +176,7 @@ void KeyEditor::updateButtonText() {
 			break;
 		}
 	}
-	if (m_key >= 0) {
+	if (m_key != Qt::Key_unknown) {
 		std::shared_ptr<Gamepad> gamepad;
 		if (m_controller && m_controller->gamepadDriver()) {
 			gamepad = m_controller->gamepadDriver()->activeGamepad();

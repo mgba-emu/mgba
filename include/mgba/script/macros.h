@@ -323,7 +323,7 @@ CXX_GUARD_START
 	} \
 
 #define _mSCRIPT_DECLARE_STRUCT_OVERLOADED_METHOD_BINDING(TYPE, NAME, T) \
-	static const struct mScriptFunctionOverload _mSTStructBindingOverloads_ ## TYPE ## _ ## NAME[]; \
+	static const struct mScriptFunctionOverload _mSTStructBindingOverloads_ ## TYPE ## _ ## NAME[mSCRIPT_OVERLOADS_MAX]; \
 	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
 		const struct mScriptFunctionOverload* overload = mScriptFunctionFindOverload(_mSTStructBindingOverloads_ ## TYPE ## _ ## NAME, &frame->arguments); \
@@ -468,7 +468,7 @@ CXX_GUARD_START
 #define mSCRIPT_DEFINE_DEFAULTS_END }
 
 #define mSCRIPT_DEFINE_STRUCT_METHOD_OVERLOADS(STRUCT, METHOD) \
-	static const struct mScriptFunctionOverload _mSTStructBindingOverloads_ ## STRUCT ## _ ## METHOD[] = { \
+	static const struct mScriptFunctionOverload _mSTStructBindingOverloads_ ## STRUCT ## _ ## METHOD[mSCRIPT_OVERLOADS_MAX] = { \
 
 #define mSCRIPT_DEFINE_STRUCT_METHOD_OVERLOAD(TYPE, FUNCTION) { \
 	.type = &_mSTStructBindingType_ ## TYPE ## _ ## FUNCTION, \

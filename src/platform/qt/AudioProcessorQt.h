@@ -51,6 +51,7 @@ private:
 	std::unique_ptr<QAudioOutput> m_audioOutput;
 #endif
 	std::unique_ptr<AudioDevice> m_device;
+	size_t m_samples = 1024;
 	unsigned m_sampleRate = 44100;
 };
 

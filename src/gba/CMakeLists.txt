@@ -40,7 +40,6 @@ set(SIO_FILES
 	sio/lockstep.c)
 
 set(EXTRA_FILES
-	extra/audio-mixer.c
 	extra/battlechip.c
 	extra/proxy.c)
 

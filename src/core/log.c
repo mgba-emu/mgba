@@ -278,15 +278,16 @@ void mStandardLoggerDeinit(struct mStandardLogger* logger) {
 }
 
 void mStandardLoggerConfig(struct mStandardLogger* logger, struct mCoreConfig* config) {
+#ifdef ENABLE_VFS
 	bool logToFile = false;
 	const char* logFile = mCoreConfigGetValue(config, "logFile");
-	mCoreConfigGetBoolValue(config, "logToStdout", &logger->logToStdout);
 	mCoreConfigGetBoolValue(config, "logToFile", &logToFile);
 
 	if (logToFile && logFile) {
 		logger->logFile = VFileOpen(logFile, O_WRONLY | O_CREAT | O_APPEND);
 	}
-
+#endif
+	mCoreConfigGetBoolValue(config, "logToStdout", &logger->logToStdout);
 	mLogFilterLoad(logger->d.filter, config);
 }
 
