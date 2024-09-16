@@ -201,12 +201,23 @@ void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASI
 }
 
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value) {
-	sio->rcnt &= 0xF;
-	sio->rcnt |= value & ~0xF;
+	sio->rcnt &= 0x1FF;
+	sio->rcnt |= value & 0xC000;
 	_switchMode(sio);
 	if (sio->activeDriver && sio->activeDriver->writeRCNT) {
+		switch (sio->mode) {
+		case GBA_SIO_GPIO:
+			sio->rcnt = (sio->activeDriver->writeRCNT(sio->activeDriver, value) & 0x01FF) | (sio->rcnt & 0xC000);
+			break;
+		default:
+			sio->rcnt = (sio->activeDriver->writeRCNT(sio->activeDriver, value) & 0x01F0) | (sio->rcnt & 0xC00F);
+		}
+	} else if (sio->mode == GBA_SIO_GPIO) {
 		sio->rcnt &= 0xC000;
-		sio->rcnt |= sio->activeDriver->writeRCNT(sio->activeDriver, value) & 0x01FF;
+		sio->rcnt |= value & 0x1FF;
+	} else {
+		sio->rcnt &= 0xC00F;
+		sio->rcnt |= value & 0x1F0;
 	}
 }
 
@@ -235,6 +246,24 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 		value = GBASIOMultiplayerSetSlave(value, id || !connected);
 		value = GBASIOMultiplayerSetId(value, id);
 		value |= sio->siocnt & 0x00FC;
+
+		// SC appears to float in multi mode when not doing a transfer. While
+		// it does spike at the end of a transfer, it appears to die down after
+		// around 20-30 microseconds. However, the docs on akkit.org
+		// (http://www.akkit.org/info/gba_comms.html) say this is high until
+		// a transfer starts and low while active. Further, the Mario Bros.
+		// multiplayer expects SC to be high in multi mode. This needs better
+		// investigation than I managed, apparently.
+		sio->rcnt = GBASIORegisterRCNTFillSc(sio->rcnt);
+
+		break;
+	case GBA_SIO_NORMAL_8:
+	case GBA_SIO_NORMAL_32:
+		// This line is pulled up by the clock owner while the clock is idle.
+		// If there is no clock owner it's just hi-Z.
+		if (GBASIONormalGetSc(value)) {
+			sio->rcnt = GBASIORegisterRCNTFillSc(sio->rcnt);
+		}
 		break;
 	default:
 		// TODO
@@ -417,11 +446,6 @@ void GBASIOMultiplayerFinishTransfer(struct GBASIO* sio, uint16_t data[4], uint3
 	sio->siocnt = GBASIOMultiplayerClearBusy(sio->siocnt);
 	sio->siocnt = GBASIOMultiplayerSetId(sio->siocnt, id);
 
-	// This SC level is actually a transient pulse, and probably a hardware glitch.
-	// Based on analog sampling it seems to just be a spike when the other lines deassert.
-	// It rapidly falls down to GND but it's high enough that it's read out as a 1 for
-	// several microseconds, likely around 300-500 cycles. I have not measured if and when
-	// it returns to 0 afterwards.
 	sio->rcnt = GBASIORegisterRCNTFillSc(sio->rcnt);
 
 	if (GBASIOMultiplayerIsIrq(sio->siocnt)) {
