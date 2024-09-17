@@ -41,6 +41,7 @@ struct GBASIOLockstepCoordinator {
 	enum GBASIOMode transferMode;
 
 	int32_t cycle;
+	int32_t nextHardSync;
 
 	uint16_t multiData[4];
 	uint32_t normalData[4];

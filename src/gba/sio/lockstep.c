@@ -12,6 +12,7 @@
 #define DRIVER_STATE_VERSION 1
 #define LOCKSTEP_INTERVAL 2048
 #define UNLOCKED_INTERVAL 4096
+#define HARD_SYNC_INTERVAL 0x80000
 #define TARGET(P) (1 << (P))
 #define TARGET_ALL 0xF
 #define TARGET_PRIMARY 0x1
@@ -67,7 +68,8 @@ struct GBASIOLockstepSerializedState {
 	struct {
 		int32_t cycle;
 		uint32_t waiting;
-		uint32_t reservedCoordinator[4];
+		int32_t nextHardSync;
+		uint32_t reservedCoordinator[3];
 		uint16_t multiData[4];
 		uint32_t normalData[4];
 	} coordinator;
@@ -159,9 +161,10 @@ static void GBASIOLockstepDriverDeinit(struct GBASIODriver* driver) {
 static void GBASIOLockstepDriverReset(struct GBASIODriver* driver) {
 	struct GBASIOLockstepDriver* lockstep = (struct GBASIOLockstepDriver*) driver;
 	struct GBASIOLockstepCoordinator* coordinator = lockstep->coordinator;
+	struct GBASIOLockstepPlayer* player;
 	if (!lockstep->lockstepId) {
-		struct GBASIOLockstepPlayer* player = calloc(1, sizeof(*player));
 		unsigned id;
+		player = calloc(1, sizeof(*player));
 		player->driver = lockstep;
 		player->mode = driver->p->mode;
 		player->playerId = -1;
@@ -195,16 +198,19 @@ static void GBASIOLockstepDriverReset(struct GBASIODriver* driver) {
 			};
 			_enqueueEvent(coordinator, &event, TARGET_ALL & ~TARGET(player->playerId));
 		}
-		MutexUnlock(&coordinator->mutex);
+	} else {
+		player = TableLookup(&coordinator->players, lockstep->lockstepId);
+		if (player->playerId != 0) {
+			player->cycleOffset = mTimingCurrentTime(&driver->p->p->timing) - coordinator->cycle + LOCKSTEP_INTERVAL;
+		}
 	}
 
 	if (mTimingIsScheduled(&lockstep->d.p->p->timing, &lockstep->event)) {
+		MutexUnlock(&coordinator->mutex);
 		return;
 	}
 
 	int32_t nextEvent;
-	MutexLock(&coordinator->mutex);
-	struct GBASIOLockstepPlayer* player = TableLookup(&coordinator->players, lockstep->lockstepId);
 	_setReady(coordinator, player, player->playerId, player->mode);
 	if (TableSize(&coordinator->players) == 1) {
 		coordinator->cycle = mTimingCurrentTime(&lockstep->d.p->p->timing);
@@ -341,6 +347,7 @@ static bool GBASIOLockstepDriverLoadState(struct GBASIODriver* driver, const voi
 	if (player->playerId == 0) {
 		LOAD_32LE(coordinator->cycle, 0, &state->coordinator.cycle);
 		LOAD_32LE(coordinator->waiting, 0, &state->coordinator.waiting);
+		LOAD_32LE(coordinator->nextHardSync, 0, &state->coordinator.nextHardSync);
 		for (i = 0; i < 4; ++i) {
 			LOAD_16LE(coordinator->multiData[i], 0, &state->coordinator.multiData[i]);
 			LOAD_32LE(coordinator->normalData[i], 0, &state->coordinator.normalData[i]);
@@ -406,6 +413,7 @@ static void GBASIOLockstepDriverSaveState(struct GBASIODriver* driver, void** st
 	if (player->playerId == 0) {
 		STORE_32LE(coordinator->cycle, 0, &state->coordinator.cycle);
 		STORE_32LE(coordinator->waiting, 0, &state->coordinator.waiting);
+		STORE_32LE(coordinator->nextHardSync, 0, &state->coordinator.nextHardSync);
 		for (i = 0; i < 4; ++i) {
 			STORE_16LE(coordinator->multiData[i], 0, &state->coordinator.multiData[i]);
 			STORE_32LE(coordinator->normalData[i], 0, &state->coordinator.normalData[i]);
@@ -643,6 +651,7 @@ void _advanceCycle(struct GBASIOLockstepCoordinator* coordinator, struct GBASIOL
 	int32_t newCycle = GBASIOLockstepTime(player);
 	mASSERT(newCycle - coordinator->cycle >= 0);
 	//mLOG(GBA_SIO, DEBUG, "Advancing from cycle %08X to %08X (%i cycles)", coordinator->cycle, newCycle, newCycle - coordinator->cycle);
+	coordinator->nextHardSync -= newCycle - coordinator->cycle;
 	coordinator->cycle = newCycle;
 }
 
@@ -674,6 +683,7 @@ void _reconfigPlayers(struct GBASIOLockstepCoordinator* coordinator) {
 
 		struct GBASIOLockstepPlayer* player = TableIteratorGetValue(&coordinator->players, &iter);
 		coordinator->cycle = mTimingCurrentTime(&player->driver->d.p->p->timing);
+		coordinator->nextHardSync = HARD_SYNC_INTERVAL;
 
 		if (player->playerId != 0) {
 			player->playerId = 0;
@@ -858,6 +868,12 @@ void _lockstepEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 		_advanceCycle(coordinator, player);
 		if (!coordinator->transferActive) {
 			GBASIOLockstepCoordinatorWakePlayers(coordinator);
+		}
+		if (coordinator->nextHardSync < 0) {
+			if (!coordinator->waiting) {
+				_hardSync(coordinator, player);
+			}
+			coordinator->nextHardSync += HARD_SYNC_INTERVAL;
 		}
 	}
 
