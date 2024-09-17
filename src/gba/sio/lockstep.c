@@ -10,7 +10,7 @@
 
 #define DRIVER_ID 0x6B636F4C
 #define DRIVER_STATE_VERSION 1
-#define LOCKSTEP_INTERVAL 2048
+#define LOCKSTEP_INTERVAL 4096
 #define UNLOCKED_INTERVAL 4096
 #define HARD_SYNC_INTERVAL 0x80000
 #define TARGET(P) (1 << (P))
@@ -457,7 +457,7 @@ static void GBASIOLockstepDriverSetMode(struct GBASIODriver* driver, enum GBASIO
 			.mode = mode,
 		};
 		if (player->playerId == 0) {
-			mASSERT(!coordinator->transferActive); // TODO
+			mASSERT_DEBUG(!coordinator->transferActive); // TODO
 			coordinator->transferMode = mode;
 			GBASIOLockstepCoordinatorWaitOnPlayers(coordinator, player);
 		}
@@ -664,8 +664,7 @@ int32_t _untilNextSync(struct GBASIOLockstepCoordinator* coordinator, struct GBA
 
 void _advanceCycle(struct GBASIOLockstepCoordinator* coordinator, struct GBASIOLockstepPlayer* player) {
 	int32_t newCycle = GBASIOLockstepTime(player);
-	mASSERT(newCycle - coordinator->cycle >= 0);
-	//mLOG(GBA_SIO, DEBUG, "Advancing from cycle %08X to %08X (%i cycles)", coordinator->cycle, newCycle, newCycle - coordinator->cycle);
+	mASSERT_DEBUG(newCycle - coordinator->cycle >= 0);
 	coordinator->nextHardSync -= newCycle - coordinator->cycle;
 	coordinator->cycle = newCycle;
 }
@@ -810,7 +809,6 @@ static void _setData(struct GBASIOLockstepCoordinator* coordinator, uint32_t id,
 	case GBA_SIO_JOYBUS:
 		mLOG(GBA_SIO, ERROR, "Unsupported mode %i in lockstep", coordinator->transferMode);
 		// TODO: Should we handle this or just abort?
-		abort();
 		break;
 	}
 }
@@ -901,7 +899,6 @@ void _lockstepEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 	}
 
 	int32_t nextEvent = _untilNextSync(coordinator, player);
-	//mASSERT_DEBUG(nextEvent + cyclesLate > 0);
 	while (true) {
 		struct GBASIOLockstepEvent* event = player->queue;
 		if (!event) {
@@ -1003,7 +1000,6 @@ void GBASIOLockstepCoordinatorWaitOnPlayers(struct GBASIOLockstepCoordinator* co
 }
 
 void GBASIOLockstepCoordinatorWakePlayers(struct GBASIOLockstepCoordinator* coordinator) {
-	//mLOG(GBA_SIO, DEBUG, "Waking all secondary players");
 	int i;
 	for (i = 1; i < coordinator->nAttached; ++i) {
 		if (!coordinator->attachedPlayers[i]) {
@@ -1026,7 +1022,6 @@ void GBASIOLockstepCoordinatorAckPlayer(struct GBASIOLockstepCoordinator* coordi
 	if (player->playerId == 0) {
 		return;
 	}
-	mLOG(GBA_SIO, DEBUG, "Player %i acking primary", player->playerId);
 	coordinator->waiting &= ~TARGET(player->playerId);
 	if (!coordinator->waiting) {
 		mLOG(GBA_SIO, DEBUG, "All players acked, waking primary");
@@ -1053,7 +1048,6 @@ void GBASIOLockstepPlayerSleep(struct GBASIOLockstepPlayer* player) {
 	if (player->asleep) {
 		return;
 	}
-	//mLOG(GBA_SIO, DEBUG, "Player %i going to sleep with %i cycles until sync", player->playerId, _untilNextSync(coordinator, player));
 	player->asleep = true;
 	player->driver->user->sleep(player->driver->user);
 	player->driver->d.p->p->cpu->nextEvent = 0;
