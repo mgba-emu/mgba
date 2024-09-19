@@ -12,7 +12,11 @@ install:
 - vcpkg --no-dry-run upgrade
 - rd /Q /S C:\Tools\vcpkg\buildtrees
 before_build:
-- cmake . -DCMAKE_PREFIX_PATH=C:\Qt\5.15\msvc2019_64 -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-release -DCMAKE_CONFIGURATION_TYPES=Release
+- cmake . -DCMAKE_PREFIX_PATH=C:\Qt\5.15\msvc2019_64 \
+    -DCMAKE_TOOLCHAIN_FILE=C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake \
+    -DVCPKG_TARGET_TRIPLET=x64-windows-release \
+    -DCMAKE_CONFIGURATION_TYPES=Release \
+    -DCMAKE_SYSTEM_VERSION=10.0.22000.1
 build:
   parallel: true
   project: mGBA.sln
