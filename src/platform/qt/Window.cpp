@@ -14,6 +14,10 @@
 #include <QScreen>
 #include <QWindow>
 
+#ifdef Q_OS_WIN
+#include <dwmapi.h>
+#endif
+
 #ifdef USE_SQLITE3
 #include "ArchiveInspector.h"
 #include "library/LibraryController.h"
@@ -745,6 +749,11 @@ void Window::showEvent(QShowEvent* event) {
 		return;
 	}
 	m_wasOpened = true;
+#ifdef Q_OS_WIN
+	HWND hwnd = reinterpret_cast<HWND>(winId());
+	DWM_WINDOW_CORNER_PREFERENCE cornerPref = DWMWCP_DONOTROUND;
+	DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));
+#endif
 	if (m_initialSize.isValid()) {
 		resizeFrame(m_initialSize);
 	}

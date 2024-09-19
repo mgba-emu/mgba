@@ -17,6 +17,7 @@ Other fixes:
  - Qt: Fix LCDC background priority/enable bit being mis-mapped in I/O view
  - Updater: Fix updating appimage across filesystems
 Misc:
+ - Qt: Make window corners square on Windows 11 (fixes mgba.io/i/3285)
  - Switch: Add bilinear filtering option (closes mgba.io/i/3111)
  - Vita: Add imc0 and xmc0 mount point support
 
