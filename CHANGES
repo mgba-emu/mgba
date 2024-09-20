@@ -16,6 +16,7 @@ Emulation fixes:
  - GBA: Add baseline CP0 (Wii U VC) and CP1 (DCC) implementations
  - GBA GPIO: Fix gyro read-out start (fixes mgba.io/i/3141)
  - GBA I/O: Fix HALTCNT access behavior (fixes mgba.io/i/2309)
+ - GBA I/O: Fix audio register 8-bit write behavior (fixes mgba.io/i/3086)
  - GBA Serialize: Fix some minor save state edge cases
  - GBA SIO: Fix MULTI mode SIOCNT bit 7 writes on secondary GBAs (fixes mgba.io/i/3110)
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
