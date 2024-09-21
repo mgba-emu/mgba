@@ -668,7 +668,7 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
 		GBAudioWriteNR44(&gba->audio.psg, value);
 		gba->memory.io[GBA_REG(SOUND4CNT_HI)] &= 0x00FF;
-		gba->memory.io[GBA_REG(SOUND4CNT_HI)] = (value & 0x40) << 8;
+		gba->memory.io[GBA_REG(SOUND4CNT_HI)] |= (value & 0x40) << 8;
 		break;
 	default:
 		value16 = value << (8 * (address & 1));
