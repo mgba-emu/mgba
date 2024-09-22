@@ -482,7 +482,7 @@ Download size: %3</source>
     <message>
         <location filename="../DisplayGL.cpp" line="312"/>
         <source>Failed to create an OpenGL 3 context, trying old-style...</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenGL 3 컨텍스트를 만들 수 없습니다. 이전 스타일을 시도 중입니다...</translation>
     </message>
 </context>
 <context>
@@ -3408,63 +3408,63 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="14"/>
         <source>Memory access logging</source>
-        <translation type="unfinished"></translation>
+        <translation>메모리 접속 로깅</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="23"/>
         <source>Log file</source>
-        <translation type="unfinished"></translation>
+        <translation>로그 파일</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="32"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>찾아보기</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="39"/>
         <source>Log additional information (uses 3× space)</source>
-        <translation type="unfinished"></translation>
+        <translation>로그 추가 정보 (3× 공간 사용)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="46"/>
         <source>Load existing file if present</source>
-        <translation type="unfinished"></translation>
+        <translation>기존 파일이 있으면 로드</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="59"/>
         <source>Regions</source>
-        <translation type="unfinished"></translation>
+        <translation>지역</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="70"/>
         <source>Export ROM snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM 스냅샷 내보내기</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="77"/>
         <source>Start</source>
-        <translation type="unfinished">시작</translation>
+        <translation>시작</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="87"/>
         <source>Stop</source>
-        <translation type="unfinished">정지</translation>
+        <translation>정지</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="82"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished"></translation>
+        <translation>메모리 로그 파일을 열 수 없음</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="116"/>
         <location filename="../MemoryAccessLogView.cpp" line="135"/>
         <source>Select access log file</source>
-        <translation type="unfinished"></translation>
+        <translation>접속 파일 선택</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="116"/>
         <source>Memory access logs (*.mal)</source>
-        <translation type="unfinished"></translation>
+        <translation>메모리 접속 로그 (*.mal)</translation>
     </message>
 </context>
 <context>
@@ -4372,12 +4372,12 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="80"/>
         <source>Maker Code:</source>
-        <translation type="unfinished"></translation>
+        <translation>메이커 코드:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="97"/>
         <source>Revision:</source>
-        <translation type="unfinished"></translation>
+        <translation>리비전:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="114"/>
@@ -4660,7 +4660,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="115"/>
         <source>&amp;Load most recent</source>
-        <translation type="unfinished"></translation>
+        <translation>최신 항목 로드 (&amp;L)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="120"/>
@@ -6374,7 +6374,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1570"/>
         <source>&amp;Lock frame size</source>
-        <translation type="unfinished"></translation>
+        <translation>프레임 크기 잠금 (&amp;L)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1583"/>
@@ -6655,7 +6655,7 @@ Download size: %3</source>
     <message>
         <location filename="../Window.cpp" line="1750"/>
         <source>Log memory &amp;accesses...</source>
-        <translation type="unfinished"></translation>
+        <translation>메모리 및 접속 기록...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1759"/>
