@@ -115,6 +115,23 @@ static void _hardSync(struct GBASIOLockstepCoordinator*, struct GBASIOLockstepPl
 
 static void _lockstepEvent(struct mTiming*, void* context, uint32_t cyclesLate);
 
+static void _verifyAwake(struct GBASIOLockstepCoordinator* coordinator) {
+#ifdef NDEBUG
+	UNUSED(coordinator);
+#else
+	int i;
+	int asleep = 0;
+	for (i = 0; i < coordinator->nAttached; ++i) {
+		if (!coordinator->attachedPlayers[i]) {
+			continue;
+		}
+		struct GBASIOLockstepPlayer* player = TableLookup(&coordinator->players, coordinator->attachedPlayers[i]);
+		asleep += player->asleep;
+	}
+	mASSERT_DEBUG(!asleep || asleep < coordinator->nAttached);
+#endif
+}
+
 void GBASIOLockstepDriverCreate(struct GBASIOLockstepDriver* driver, struct mLockstepUser* user) {
 	memset(driver, 0, sizeof(*driver));
 	driver->d.init = GBASIOLockstepDriverInit;
@@ -189,8 +206,8 @@ static void GBASIOLockstepDriverReset(struct GBASIODriver* driver) {
 			}
 		}
 		_reconfigPlayers(coordinator);
+		player->cycleOffset = mTimingCurrentTime(&driver->p->p->timing) - coordinator->cycle;
 		if (player->playerId != 0) {
-			player->cycleOffset = mTimingCurrentTime(&driver->p->p->timing) - coordinator->cycle + LOCKSTEP_INTERVAL;
 			struct GBASIOLockstepEvent event = {
 				.type = SIO_EV_ATTACH,
 				.playerId = player->playerId,
@@ -200,9 +217,7 @@ static void GBASIOLockstepDriverReset(struct GBASIODriver* driver) {
 		}
 	} else {
 		player = TableLookup(&coordinator->players, lockstep->lockstepId);
-		if (player->playerId != 0) {
-			player->cycleOffset = mTimingCurrentTime(&driver->p->p->timing) - coordinator->cycle + LOCKSTEP_INTERVAL;
-		}
+		player->cycleOffset = mTimingCurrentTime(&driver->p->p->timing) - coordinator->cycle;
 	}
 
 	if (mTimingIsScheduled(&lockstep->d.p->p->timing, &lockstep->event)) {
@@ -662,12 +677,18 @@ void _removePlayer(struct GBASIOLockstepCoordinator* coordinator, struct GBASIOL
 		.timestamp = GBASIOLockstepTime(player),
 	};
 	_enqueueEvent(coordinator, &event, TARGET_ALL & ~TARGET(player->playerId));
-	GBASIOLockstepCoordinatorWakePlayers(coordinator);
-	if (player->playerId != 0) {
-		GBASIOLockstepCoordinatorAckPlayer(coordinator, player);
-	}
+
+	coordinator->waiting = 0;
+	coordinator->transferActive = false;
+
 	TableRemove(&coordinator->players, player->driver->lockstepId);
 	_reconfigPlayers(coordinator);
+
+	struct GBASIOLockstepPlayer* runner = TableLookup(&coordinator->players, coordinator->attachedPlayers[0]);
+	if (runner) {
+		GBASIOLockstepPlayerWake(runner);
+	}
+	_verifyAwake(coordinator);
 }
 
 void _reconfigPlayers(struct GBASIOLockstepCoordinator* coordinator) {
@@ -863,8 +884,10 @@ void _lockstepEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 		                      player->queue->playerId, player->queue->timestamp);
 		wasDetach = true;
 	}
-	if (player->playerId == 0) {
-		// We are the clock owner; advance the shared clock
+	if (player->playerId == 0 && GBASIOLockstepTime(player) - coordinator->cycle >= 0) {
+		// We are the clock owner; advance the shared clock. However, if we just became
+		// the clock owner (by the previous one disconnecting) we might be slightly
+		// behind the shared clock. We should wait a bit if needed in that case.
 		_advanceCycle(coordinator, player);
 		if (!coordinator->transferActive) {
 			GBASIOLockstepCoordinatorWakePlayers(coordinator);
@@ -949,6 +972,7 @@ void _lockstepEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 			if (nextEvent < 4) {
 				nextEvent = 4;
 			}
+			_verifyAwake(coordinator);
 		}
 	}
 	MutexUnlock(&coordinator->mutex);
@@ -974,6 +998,8 @@ void GBASIOLockstepCoordinatorWaitOnPlayers(struct GBASIOLockstepCoordinator* co
 	coordinator->waiting = ((1 << coordinator->nAttached) - 1) & ~TARGET(player->playerId);
 	GBASIOLockstepPlayerSleep(player);
 	GBASIOLockstepCoordinatorWakePlayers(coordinator);
+
+	_verifyAwake(coordinator);
 }
 
 void GBASIOLockstepCoordinatorWakePlayers(struct GBASIOLockstepCoordinator* coordinator) {
