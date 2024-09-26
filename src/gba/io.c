@@ -483,6 +483,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 
 	// SIO
 	case GBA_REG_SIOCNT:
+		value &= 0x7FFF;
 		GBASIOWriteSIOCNT(&gba->sio, value);
 		break;
 	case GBA_REG_RCNT:

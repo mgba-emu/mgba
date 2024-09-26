@@ -262,9 +262,13 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 		id = sio->activeDriver->deviceId(sio->activeDriver);
 	}
 
+	bool handled = true;
 	switch (sio->mode) {
 	case GBA_SIO_JOYBUS:
 		switch (address) {
+		case GBA_REG_SIODATA8:
+			mLOG(GBA_SIO, DEBUG, "JOY write: SIODATA8 (?) <- %04X", value);
+			break;
 		case GBA_REG_JOYCNT:
 			mLOG(GBA_SIO, DEBUG, "JOY write: CNT <- %04X", value);
 			value = (value & 0x0040) | (sio->p->memory.io[GBA_REG(JOYCNT)] & ~(value & 0x7) & ~0x0040);
@@ -280,17 +284,23 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 			mLOG(GBA_SIO, DEBUG, "JOY write: TRANS_HI <- %04X", value);
 			break;
 		default:
-			mLOG(GBA_SIO, GAME_ERROR, "JOY write: Unknown reg %03X <- %04X", address, value);
+			mLOG(GBA_SIO, GAME_ERROR, "JOY write: Unhandled %s <- %04X", GBAIORegisterNames[address >> 1], value);
+			handled = false;
 			break;
 		}
 		break;
 	case GBA_SIO_NORMAL_8:
 		switch (address) {
 		case GBA_REG_SIODATA8:
-			mLOG(GBA_SIO, DEBUG, "NORMAL8 %i write: SIODATA8 <- %02X", id, value);
+			mLOG(GBA_SIO, DEBUG, "NORMAL8 %i write: SIODATA8 <- %04X", id, value);
+			break;
+		case GBA_REG_JOYCNT:
+			mLOG(GBA_SIO, DEBUG, "NORMAL8 %i write: JOYCNT (?) <- %04X", id, value);
+			value = (value & 0x0040) | (sio->p->memory.io[GBA_REG(JOYCNT)] & ~(value & 0x7) & ~0x0040);
 			break;
 		default:
-			mLOG(GBA_SIO, GAME_ERROR, "NORMAL8 %i write: Unknown reg %03X <- %04X", id, address, value);
+			mLOG(GBA_SIO, GAME_ERROR, "NORMAL8 %i write: Unhandled %s <- %04X", id, GBAIORegisterNames[address >> 1], value);
+			handled = false;
 			break;
 		}
 		break;
@@ -302,8 +312,16 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 		case GBA_REG_SIODATA32_HI:
 			mLOG(GBA_SIO, DEBUG, "NORMAL32 %i write: SIODATA32_HI <- %04X", id, value);
 			break;
+		case GBA_REG_SIODATA8:
+			mLOG(GBA_SIO, DEBUG, "NORMAL32 %i write: SIODATA8 (?) <- %04X", id, value);
+			break;
+		case GBA_REG_JOYCNT:
+			mLOG(GBA_SIO, DEBUG, "NORMAL32 %i write: JOYCNT (?) <- %04X", id, value);
+			value = (value & 0x0040) | (sio->p->memory.io[GBA_REG(JOYCNT)] & ~(value & 0x7) & ~0x0040);
+			break;
 		default:
-			mLOG(GBA_SIO, GAME_ERROR, "NORMAL32 %i write: Unknown reg %03X <- %04X", id, address, value);
+			mLOG(GBA_SIO, GAME_ERROR, "NORMAL32 %i write: Unhandled %s <- %04X", id, GBAIORegisterNames[address >> 1], value);
+			handled = false;
 			break;
 		}
 		break;
@@ -312,24 +330,38 @@ uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t valu
 		case GBA_REG_SIOMLT_SEND:
 			mLOG(GBA_SIO, DEBUG, "MULTI %i write: SIOMLT_SEND <- %04X", id, value);
 			break;
+		case GBA_REG_JOYCNT:
+			mLOG(GBA_SIO, DEBUG, "MULTI %i write: JOYCNT (?) <- %04X", id, value);
+			value = (value & 0x0040) | (sio->p->memory.io[GBA_REG(JOYCNT)] & ~(value & 0x7) & ~0x0040);
+			break;
 		default:
-			mLOG(GBA_SIO, GAME_ERROR, "MULTI %i write: Unknown reg %03X <- %04X", id, address, value);
+			mLOG(GBA_SIO, GAME_ERROR, "MULTI %i write: Unhandled %s <- %04X", id, GBAIORegisterNames[address >> 1], value);
+			handled = false;
 			break;
 		}
 		break;
 	case GBA_SIO_UART:
 		switch (address) {
 		case GBA_REG_SIODATA8:
-			mLOG(GBA_SIO, DEBUG, "UART write: SIODATA8 <- %02X", value);
+			mLOG(GBA_SIO, DEBUG, "UART write: SIODATA8 <- %04X", value);
+			break;
+		case GBA_REG_JOYCNT:
+			mLOG(GBA_SIO, DEBUG, "UART write: JOYCNT (?) <- %04X", value);
+			value = (value & 0x0040) | (sio->p->memory.io[GBA_REG(JOYCNT)] & ~(value & 0x7) & ~0x0040);
 			break;
 		default:
-			mLOG(GBA_SIO, GAME_ERROR, "UART write: Unknown reg %03X <- %04X", address, value);
+			mLOG(GBA_SIO, GAME_ERROR, "UART write: Unhandled %s <- %04X", GBAIORegisterNames[address >> 1], value);
+			handled = false;
 			break;
 		}
 		break;
 	case GBA_SIO_GPIO:
-		mLOG(GBA_SIO, GAME_ERROR, "GPIO %i write: Unknown reg %03X <- %04X", id, address, value);
+		mLOG(GBA_SIO, STUB, "GPIO write: Unhandled %s <- %04X", GBAIORegisterNames[address >> 1], value);
+		handled = false;
 		break;
+	}
+	if (!handled) {
+		value = sio->p->memory.io[address >> 1];
 	}
 	return value;
 }
