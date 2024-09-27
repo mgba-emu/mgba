@@ -520,7 +520,7 @@ mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite16, 2, U32, address, U16, va
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite32, 2, U32, address, U32, value);
 
 // Register functions
-mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WSTR, readRegister, _mScriptCoreReadRegister, 1, CHARP, regName);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WRAPPER, readRegister, _mScriptCoreReadRegister, 1, CHARP, regName);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, writeRegister, _mScriptCoreWriteRegister, 2, CHARP, regName, S32, value);
 
 // Savestate functions
