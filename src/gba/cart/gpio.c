@@ -498,6 +498,18 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	LOAD_16(hw->direction, 0, &state->hw.pinDirection);
 	hw->devices = state->hw.devices;
 
+	if (hw->gpioBase) {
+		if (hw->readWrite) {
+			STORE_16(hw->pinState, 0, hw->gpioBase);
+			STORE_16(hw->direction, 2, hw->gpioBase);
+			STORE_16(hw->readWrite, 4, hw->gpioBase);
+		} else {
+			hw->gpioBase[0] = 0;
+			hw->gpioBase[1] = 0;
+			hw->gpioBase[2] = 0;
+		}
+	}
+
 	LOAD_32(hw->rtc.bytesRemaining, 0, &state->hw.rtcBytesRemaining);
 	LOAD_32(hw->rtc.transferStep, 0, &state->hw.rtcTransferStep);
 	LOAD_32(hw->rtc.bitsRead, 0, &state->hw.rtcBitsRead);
