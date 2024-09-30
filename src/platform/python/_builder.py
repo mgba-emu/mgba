@@ -52,7 +52,7 @@ ffi.set_source("mgba._pylib", """
      libraries=["mgba"],
      library_dirs=[bindir],
      runtime_library_dirs=[libdir],
-     sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "core.c", "log.c", "sio.c"]])
+     sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "core.c", "log.c"]])
 
 preprocessed = subprocess.check_output(cpp + ["-fno-inline", "-P"] + cppflags + [os.path.join(pydir, "_builder.h")], universal_newlines=True)
 

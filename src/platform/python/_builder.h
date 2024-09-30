@@ -22,8 +22,7 @@
 #define CXX_GUARD_END
 
 #define PYCPARSE
-#define va_list void*
-
+typedef ... va_list;
 typedef int... time_t;
 typedef int... off_t;
 typedef ...* png_structp;
