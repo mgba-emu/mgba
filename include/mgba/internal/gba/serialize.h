@@ -191,7 +191,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 2 - 3: GB Player inputs posted
  *   | bits 4 - 8: GB Player transmit position
  *   | bits 9 - 23: Reserved
- * 0x002C4 - 0x002C7: Game Boy Player next event
+ * 0x002C4 - 0x002C7: SIO next event
  * 0x002C8 - 0x002CB: Current DMA transfer word
  * 0x002CC - 0x002CF: Last DMA transfer PC
  * 0x002D0 - 0x002DF: Matrix memory command buffer
@@ -287,6 +287,7 @@ DECL_BITS(GBASerializedMiscFlags, KeyIRQKeys, 4, 11);
 
 enum {
 	GBA_SUBSYSTEM_VIDEO_RENDERER = 0,
+	GBA_SUBSYSTEM_SIO_DRIVER = 1,
 	GBA_SUBSYSTEM_MAX,
 };
 
@@ -370,7 +371,7 @@ struct GBASerializedState {
 		uint8_t lightSample;
 		GBASerializedHWFlags2 flags2;
 		GBASerializedHWFlags3 flags3;
-		uint32_t gbpNextEvent;
+		uint32_t sioNextEvent;
 	} hw;
 
 	uint32_t dmaTransferRegister;

@@ -214,8 +214,8 @@ static const int _isRSpecialRegister[GBA_REG(INTERNAL_MAX)] = {
 	/* 10 */ 1, 1, 1, 1, 1, 1, 1, 1,
 	/* 11 */ 0, 0, 0, 0, 0, 0, 0, 0,
 	/*    SIO */
-	/* 12 */ 1, 1, 1, 1, 1, 0, 0, 0,
-	/* 13 */ 1, 1, 1, 0, 0, 0, 0, 0,
+	/* 12 */ 1, 1, 1, 1, 0, 0, 0, 0,
+	/* 13 */ 1, 1, 0, 0, 0, 0, 0, 0,
 	/* 14 */ 1, 0, 0, 0, 0, 0, 0, 0,
 	/* 15 */ 1, 1, 1, 1, 1, 0, 0, 0,
 	/* 16 */ 0, 0, 0, 0, 0, 0, 0, 0,
@@ -483,6 +483,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 
 	// SIO
 	case GBA_REG_SIOCNT:
+		value &= 0x7FFF;
 		GBASIOWriteSIOCNT(&gba->sio, value);
 		break;
 	case GBA_REG_RCNT:

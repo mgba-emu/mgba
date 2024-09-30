@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2016 Jeffrey Pfau
+/* Copyright (c) 2013-2024 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -52,6 +52,25 @@ static inline void mLockstepUnlock(struct mLockstep* lockstep) {
 		lockstep->unlock(lockstep);
 	}
 }
+
+struct mLockstepUser {
+	void (*sleep)(struct mLockstepUser*);
+	void (*wake)(struct mLockstepUser*);
+
+	int (*requestedId)(struct mLockstepUser*);
+	void (*playerIdChanged)(struct mLockstepUser*, int id);
+};
+
+#ifndef DISABLE_THREADING
+struct mCoreThread;
+struct mLockstepThreadUser {
+	struct mLockstepUser d;
+
+	struct mCoreThread* thread;
+};
+
+void mLockstepThreadUserInit(struct mLockstepThreadUser* lockstep, struct mCoreThread* thread);
+#endif
 
 CXX_GUARD_END
 

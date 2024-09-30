@@ -46,6 +46,7 @@ Misc:
  - GBA: Improve detection of valid ELF ROMs
  - GBA Audio: Remove broken XQ audio pending rewrite
  - GBA Memory: Improve VRAM access stall cycle estimation
+ - GBA SIO: Rewrite lockstep driver for improved stability
  - GBA Video: Add special circlular window handling in OpenGL renderer
  - Libretro: Add Super Game Boy Color support (closes mgba.io/i/3188)
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)

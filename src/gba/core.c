@@ -842,7 +842,21 @@ static bool _GBACoreLoadExtraState(struct mCore* core, const struct mStateExtdat
 			if (type == gba->video.renderer->rendererId(gba->video.renderer)) {
 				ok = gba->video.renderer->loadState(gba->video.renderer,
 				                                    (void*) ((uintptr_t) item.data + sizeof(uint32_t)),
-				                                    item.size - sizeof(type));
+				                                    item.size - sizeof(type)) && ok;
+			}
+		} else if (item.data) {
+			ok = false;
+		}
+	}
+	if (gba->sio.driver && gba->sio.driver->driverId && gba->sio.driver->loadState &&
+	    mStateExtdataGet(extdata, EXTDATA_SUBSYSTEM_START + GBA_SUBSYSTEM_SIO_DRIVER, &item)) {
+		if ((uint32_t) item.size > sizeof(uint32_t)) {
+			uint32_t type;
+			LOAD_32(type, 0, item.data);
+			if (type == gba->sio.driver->driverId(gba->sio.driver)) {
+				ok = gba->sio.driver->loadState(gba->sio.driver,
+				                                (void*) ((uintptr_t) item.data + sizeof(uint32_t)),
+				                                item.size - sizeof(type)) && ok;
 			}
 		} else if (item.data) {
 			ok = false;
@@ -868,6 +882,27 @@ static bool _GBACoreSaveExtraState(struct mCore* core, struct mStateExtdata* ext
 	}
 	if (buffer) {
 		free(buffer);
+		buffer = NULL;
+	}
+	size = 0;
+
+	if (gba->sio.driver && gba->sio.driver->driverId && gba->sio.driver->saveState) {
+		gba->sio.driver->saveState(gba->sio.driver, &buffer, &size);
+		if (size > 0 && buffer) {
+			struct mStateExtdataItem item;
+			item.size = size + sizeof(uint32_t);
+			item.data = malloc(item.size);
+			item.clean = free;
+			uint32_t type = gba->sio.driver->driverId(gba->sio.driver);
+			STORE_32(type, 0, item.data);
+			memcpy((void*) ((uintptr_t) item.data + sizeof(uint32_t)), buffer, size);
+			mStateExtdataPut(extdata, EXTDATA_SUBSYSTEM_START + GBA_SUBSYSTEM_SIO_DRIVER, &item);
+		}
+		if (buffer) {
+			free(buffer);
+			buffer = NULL;
+		}
+		size = 0;
 	}
 
 	return true;
@@ -927,9 +962,8 @@ static void _GBACoreSetPeripheral(struct mCore* core, int type, void* periph) {
 	case mPERIPH_GBA_LUMINANCE:
 		gba->luminanceSource = periph;
 		break;
-	case mPERIPH_GBA_BATTLECHIP_GATE:
-		GBASIOSetDriver(&gba->sio, periph, GBA_SIO_MULTI);
-		GBASIOSetDriver(&gba->sio, periph, GBA_SIO_NORMAL_32);
+	case mPERIPH_GBA_LINK_PORT:
+		GBASIOSetDriver(&gba->sio, periph);
 		break;
 	default:
 		return;

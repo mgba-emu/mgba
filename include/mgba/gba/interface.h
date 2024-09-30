@@ -81,7 +81,7 @@ extern MGBA_EXPORT const int GBA_LUX_LEVELS[10];
 
 enum {
 	mPERIPH_GBA_LUMINANCE = 0x1000,
-	mPERIPH_GBA_BATTLECHIP_GATE,
+	mPERIPH_GBA_LINK_PORT,
 };
 
 struct GBACartridgeOverride {
@@ -110,12 +110,21 @@ struct GBASIODriver {
 
 	bool (*init)(struct GBASIODriver* driver);
 	void (*deinit)(struct GBASIODriver* driver);
-	bool (*load)(struct GBASIODriver* driver);
-	bool (*unload)(struct GBASIODriver* driver);
-	uint16_t (*writeRegister)(struct GBASIODriver* driver, uint32_t address, uint16_t value);
+	void (*reset)(struct GBASIODriver* driver);
+	uint32_t (*driverId)(const struct GBASIODriver* renderer);
+	bool (*loadState)(struct GBASIODriver* renderer, const void* state, size_t size);
+	void (*saveState)(struct GBASIODriver* renderer, void** state, size_t* size);
+	void (*setMode)(struct GBASIODriver* driver, enum GBASIOMode mode);
+	bool (*handlesMode)(struct GBASIODriver* driver, enum GBASIOMode mode);
+	int (*connectedDevices)(struct GBASIODriver* driver);
+	int (*deviceId)(struct GBASIODriver* driver);
+	uint16_t (*writeSIOCNT)(struct GBASIODriver* driver, uint16_t value);
+	uint16_t (*writeRCNT)(struct GBASIODriver* driver, uint16_t value);
+	bool (*start)(struct GBASIODriver* driver);
+	void (*finishMultiplayer)(struct GBASIODriver* driver, uint16_t data[4]);
+	uint8_t (*finishNormal8)(struct GBASIODriver* driver);
+	uint32_t (*finishNormal32)(struct GBASIODriver* driver);
 };
-
-void GBASIOJOYCreate(struct GBASIODriver* sio);
 
 enum GBASIOBattleChipGateFlavor {
 	GBA_FLAVOR_BATTLECHIP_GATE = 4,
@@ -126,7 +135,6 @@ enum GBASIOBattleChipGateFlavor {
 
 struct GBASIOBattlechipGate {
 	struct GBASIODriver d;
-	struct mTimingEvent event;
 	uint16_t chipId;
 	uint16_t data[2];
 	int state;
