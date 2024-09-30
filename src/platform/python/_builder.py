@@ -45,7 +45,6 @@ ffi.set_source("mgba._pylib", """
 #define PYEXPORT
 #include "platform/python/core.h"
 #include "platform/python/log.h"
-#include "platform/python/sio.h"
 #include "platform/python/vfs-py.h"
 #undef PYEXPORT
 """, include_dirs=[incdir, srcdir],

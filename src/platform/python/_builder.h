@@ -46,7 +46,6 @@ void free(void*);
 #define PYEXPORT extern "Python+C"
 #include "platform/python/core.h"
 #include "platform/python/log.h"
-#include "platform/python/sio.h"
 #include "platform/python/vfs-py.h"
 #undef PYEXPORT
 
