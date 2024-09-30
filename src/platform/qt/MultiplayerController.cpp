@@ -401,7 +401,7 @@ void MultiplayerController::detachGame(CoreController* controller) {
 	QPair<QString, QString> path(controller->path(), controller->baseDirectory());
 	Player& p = m_pids.find(pid).value();
 	if (!p.saveId) {
-		LOG(QT, WARN) << "Clearing invalid save ID";
+		LOG(QT, WARN) << tr("Clearing invalid save ID");
 	} else {
 		m_claimedSaves[path] &= ~(1 << (p.saveId - 1));
 		if (!m_claimedSaves[path]) {
@@ -410,7 +410,7 @@ void MultiplayerController::detachGame(CoreController* controller) {
 	}
 
 	if (p.preferredId < 0) {
-		LOG(QT, WARN) << "Clearing invalid preferred ID";
+		LOG(QT, WARN) << tr("Clearing invalid preferred ID");
 	} else {
 		m_claimedIds &= ~(1 << p.preferredId);
 	}
