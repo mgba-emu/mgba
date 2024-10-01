@@ -154,11 +154,12 @@ ConfigController::ConfigController(QObject* parent)
 	mSubParserGraphicsInit(&m_subparsers[0], &m_graphicsOpts);
 
 	m_subparsers[1].usage = "Frontend options:\n"
-	    "  --ecard FILE  Scan an e-Reader card in the first loaded game\n"
-	    "                Can be passed multiple times for multiple cards\n"
-	    "  --mb FILE     Boot a multiboot image with FILE inserted into the ROM slot"
+	      "  --ecard FILE   Scan an e-Reader card in the first loaded game\n"
+	      "                 Can be passed multiple times for multiple cards\n"
+	      "  --mb FILE      Boot a multiboot image with FILE inserted into the ROM slot"
 #ifdef ENABLE_SCRIPTING
-	    "\n  --script FILE Script file to load on start"
+	    "\n  --script FILE  Script file to load on start\n"
+	      "                 Can be passed multiple times\n"
 #endif
 	    ;
 
