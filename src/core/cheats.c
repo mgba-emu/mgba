@@ -37,7 +37,7 @@ static uint32_t _patchMakeKey(struct mCheatPatch* patch) {
 		patchKey >>= 2;
 		break;
 	default:
-		break;	
+		break;
 	}
 	// TODO: More than one segment
 	if (patch->segment > 0) {

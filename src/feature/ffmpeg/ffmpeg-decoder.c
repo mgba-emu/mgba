@@ -71,7 +71,7 @@ bool FFmpegDecoderOpen(struct FFmpegDecoder* decoder, const char* infile) {
 		codec = avcodec_find_decoder(context->codec_id);
 		if (!codec) {
 			FFmpegDecoderClose(decoder);
-			return false;			
+			return false;
 		}
 		if (avcodec_open2(context, codec, NULL) < 0) {
 			FFmpegDecoderClose(decoder);

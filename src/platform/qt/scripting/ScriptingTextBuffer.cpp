@@ -107,7 +107,7 @@ void ScriptingTextBuffer::moveCursor(const QPoint& pos) {
 			m_shim.cursor.insertBlock();
 		}
 	} else {
-		m_shim.cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, y);		
+		m_shim.cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, y);
 	}
 
 	int x = pos.x();

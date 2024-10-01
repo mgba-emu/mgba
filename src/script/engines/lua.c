@@ -1143,7 +1143,7 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 	if (ret == LUA_ERRRUN) {
 		luaContext->lastError = strdup(lua_tostring(luaContext->lua, -1));
 		lua_pop(luaContext->lua, 1);
-	
+
 		_luaError(luaContext);
 	}
 	mScriptContextDeactivate(luaContext->d.context);

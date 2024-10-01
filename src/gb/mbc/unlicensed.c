@@ -349,7 +349,7 @@ void  _GBHitek(struct GB* gb, uint16_t address, uint8_t value) {
 		break;
 	case 0x300:
 		// See hhugboy src/memory/mbc/MbcUnlHitek.cpp for commentary on this return
-		return;	
+		return;
 	}
 	_GBMBC5(gb, address, value);
 }
@@ -396,10 +396,10 @@ uint8_t _GBGGB81Read(struct GBMemory* memory, uint16_t address) {
 }
 
 void  _GBLiCheng(struct GB* gb, uint16_t address, uint8_t value) {
-    if (address > 0x2100 && address < 0x3000) {
-        return;
-    }
-    _GBMBC5(gb, address, value);
+	if (address > 0x2100 && address < 0x3000) {
+		return;
+	}
+	_GBMBC5(gb, address, value);
 }
 
 void _GBSachen(struct GB* gb, uint16_t address, uint8_t value) {

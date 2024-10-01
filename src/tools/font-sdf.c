@@ -24,7 +24,7 @@ void createSdf(const struct mImage* src, struct mImage* dst, int x, int y, int w
 			if (mImageGetPixel(src, i, j) & 0xFFFFFF) {
 				mImageSetPixelRaw(dst, i, j, 0xFF);
 			} else {
-				mImageSetPixelRaw(dst, i, j, 1);		
+				mImageSetPixelRaw(dst, i, j, 1);
 			}
 		}
 	}

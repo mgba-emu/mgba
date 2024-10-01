@@ -132,7 +132,7 @@ void TileView::updateTilesGBA(bool force) {
 		if (m_ui.tilesBg->isChecked()) {
 			m_ui.tiles->setTileCount(1024);
 		} else if (m_ui.tilesObj->isChecked()) {
-			m_ui.tiles->setTileCount(512);			
+			m_ui.tiles->setTileCount(512);
 		} else {
 			m_ui.tiles->setTileCount(1536);
 		}
@@ -165,7 +165,7 @@ void TileView::updateTilesGBA(bool force) {
 		if (m_ui.tilesBg->isChecked()) {
 			m_ui.tiles->setTileCount(2048);
 		} else if (m_ui.tilesObj->isChecked()) {
-			m_ui.tiles->setTileCount(1024);			
+			m_ui.tiles->setTileCount(1024);
 		} else {
 			m_ui.tiles->setTileCount(3072);
 		}

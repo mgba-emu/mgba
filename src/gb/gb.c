@@ -152,7 +152,7 @@ bool GBLoadGBX(struct GBXMetadata* metadata, struct VFile* vf) {
 	if (memcmp(footer, "MBC1", 4) == 0) {
 		metadata->mapperVars.u8[0] = 5;
 	} else if (memcmp(footer, "MB1M", 4) == 0) {
-		metadata->mapperVars.u8[0] = 4;		
+		metadata->mapperVars.u8[0] = 4;
 	}
 	return true;
 }
@@ -894,7 +894,7 @@ int GBValidModels(const uint8_t* bank0) {
 	} else if (cart->cgb == 0xC0) {
 		models = GB_MODEL_CGB;
 	} else {
-		models = GB_MODEL_MGB;		
+		models = GB_MODEL_MGB;
 	}
 	if (cart->sgb == 0x03 && cart->oldLicensee == 0x33) {
 		models |= GB_MODEL_SGB;

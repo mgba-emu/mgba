@@ -314,7 +314,7 @@ bool DisplayGL::highestCompatible(QSurfaceFormat& format) {
 	if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
 		format.setVersion(1, 4);
 	} else {
-		format.setVersion(1, 1);			
+		format.setVersion(1, 1);
 	}
 	format.setOption(QSurfaceFormat::DeprecatedFunctions);
 	if (DisplayGL::supportsFormat(format)) {

@@ -1443,7 +1443,7 @@ static struct mScriptClassMember* _findSetter(const struct mScriptTypeClass* cls
 	if (m) {
 		return m;
 	}
-	
+
 	switch (type->base) {
 	case mSCRIPT_TYPE_SINT:
 		if (type->size < 2) {

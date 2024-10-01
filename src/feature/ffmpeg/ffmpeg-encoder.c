@@ -893,7 +893,7 @@ void FFmpegEncoderSetInputFrameRate(struct FFmpegEncoder* encoder, int numerator
 
 void FFmpegEncoderSetInputSampleRate(struct FFmpegEncoder* encoder, int sampleRate) {
 	encoder->isampleRate = sampleRate;
-	if (encoder->resampleContext) {	
+	if (encoder->resampleContext) {
 		av_freep(&encoder->audioBuffer);
 #ifdef USE_LIBAVRESAMPLE
 		avresample_close(encoder->resampleContext);

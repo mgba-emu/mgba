@@ -57,7 +57,7 @@ struct mVideoBackendCommand {
 struct mVideoProxyBackend {
 	struct VideoBackend d;
 	struct VideoBackend* backend;
-	
+
 	struct RingFIFO in;
 	struct RingFIFO out;
 

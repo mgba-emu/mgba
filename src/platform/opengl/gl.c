@@ -253,7 +253,7 @@ static void mGLContextImageSize(struct VideoBackend* v, enum VideoLayer layer, i
 		*height = context->layerDims[layer].height;
 	} else {
 		*width = context->imageSizes[layer].width;
-		*height = context->imageSizes[layer].height;		
+		*height = context->imageSizes[layer].height;
 	}
 }
 
@@ -266,7 +266,7 @@ void mGLContextPostFrame(struct VideoBackend* v, enum VideoLayer layer, const vo
 		context->activeTex ^= 1;
 		glBindTexture(GL_TEXTURE_2D, context->tex[context->activeTex]);
 	} else {
-		glBindTexture(GL_TEXTURE_2D, context->layers[layer]);		
+		glBindTexture(GL_TEXTURE_2D, context->layers[layer]);
 	}
 
 	int width = context->imageSizes[layer].width;

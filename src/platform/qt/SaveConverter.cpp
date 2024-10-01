@@ -86,18 +86,18 @@ void SaveConverter::refreshInputTypes() {
 	m_validSaves.clear();
 	m_ui.inputType->clear();
 	if (m_ui.inputFile->text().isEmpty()) {
-		m_ui.inputType->addItem(tr("No file selected"));	
+		m_ui.inputType->addItem(tr("No file selected"));
 		m_ui.inputType->setEnabled(false);
 		return;
 	}
 
 	std::shared_ptr<VFileDevice> vf = std::make_shared<VFileDevice>(m_ui.inputFile->text(), QIODevice::ReadOnly);
 	if (!vf->isOpen()) {
-		m_ui.inputType->addItem(tr("Could not open file"));	
+		m_ui.inputType->addItem(tr("Could not open file"));
 		m_ui.inputType->setEnabled(false);
 		return;
 	}
-	
+
 	detectFromSavestate(*vf);
 	detectFromSize(vf);
 	detectFromHeaders(vf);
@@ -108,7 +108,7 @@ void SaveConverter::refreshInputTypes() {
 	if (m_validSaves.count()) {
 		m_ui.inputType->setEnabled(true);
 	} else {
-		m_ui.inputType->addItem(tr("No valid formats found"));	
+		m_ui.inputType->addItem(tr("No valid formats found"));
 		m_ui.inputType->setEnabled(false);
 	}
 }
@@ -127,7 +127,7 @@ void SaveConverter::refreshOutputTypes() {
 	if (m_validOutputs.count()) {
 		m_ui.outputType->setEnabled(true);
 	} else {
-		m_ui.outputType->addItem(tr("No valid conversions found"));	
+		m_ui.outputType->addItem(tr("No valid conversions found"));
 		m_ui.outputType->setEnabled(false);
 	}
 	checkCanConvert();
@@ -494,21 +494,21 @@ SaveConverter::AnnotatedSave::operator QString() const {
 			if (size & 0xFF) {
 				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 SRAM + RTC");
 			} else {
-				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 SRAM");				
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 SRAM");
 			}
 			break;
 		case GB_MBC2:
 			if (size == 0x100) {
 				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "packed MBC2");
 			} else {
-				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "unpacked MBC2");				
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "unpacked MBC2");
 			}
 			break;
 		case GB_MBC6:
 			if (size == GB_SIZE_MBC6_FLASH) {
 				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 flash");
 			} else if (size > GB_SIZE_MBC6_FLASH) {
-				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 combined SRAM + flash");				
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 combined SRAM + flash");
 			} else {
 				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 SRAM");
 			}

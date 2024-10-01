@@ -60,7 +60,7 @@ void mAudioResamplerSetSource(struct mAudioResampler* resampler, struct mAudioBu
 
 void mAudioResamplerSetDestination(struct mAudioResampler* resampler, struct mAudioBuffer* destination, double rate) {
 	resampler->destination = destination;
-	resampler->destRate = rate;	
+	resampler->destRate = rate;
 }
 
 size_t mAudioResamplerProcess(struct mAudioResampler* resampler) {

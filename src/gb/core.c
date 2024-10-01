@@ -152,7 +152,7 @@ static bool _GBCoreInit(struct mCore* core) {
 #ifdef ENABLE_VFS
 	mDirectorySetInit(&core->dirs);
 #endif
-	
+
 	return true;
 }
 

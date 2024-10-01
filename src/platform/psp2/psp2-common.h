@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #ifndef PSP2_COMMON_H
 #define PSP2_COMMON_H
- 
+
 #include <mgba-util/common.h>
 
 #define PSP2_HORIZONTAL_PIXELS 960
