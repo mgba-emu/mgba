@@ -133,6 +133,7 @@ struct mRumbleIntegrator {
 };
 
 void mRumbleIntegratorInit(struct mRumbleIntegrator*);
+void mRumbleIntegratorReset(struct mRumbleIntegrator*);
 
 struct mCoreChannelInfo {
 	size_t id;
