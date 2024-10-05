@@ -627,6 +627,9 @@ void mCheatAutosave(struct mCheatDevice* device) {
 	if (!device->autosave) {
 		return;
 	}
+	if (!device->p->dirs.cheats) {
+		return;
+	}
 	struct VFile* vf = mDirectorySetOpenSuffix(&device->p->dirs, device->p->dirs.cheats, ".cheats", O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
 		return;

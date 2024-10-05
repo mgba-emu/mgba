@@ -245,14 +245,16 @@ bool mCoreAutoloadPatch(struct mCore* core) {
 }
 
 bool mCoreAutoloadCheats(struct mCore* core) {
-	bool success = true;
+	bool success = !!core->dirs.cheats;
 	int cheatAuto;
-	if (!mCoreConfigGetIntValue(&core->config, "cheatAutoload", &cheatAuto) || cheatAuto) {
+	if (success && (!mCoreConfigGetIntValue(&core->config, "cheatAutoload", &cheatAuto) || cheatAuto)) {
 		struct VFile* vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.cheats, ".cheats", O_RDONLY);
 		if (vf) {
 			struct mCheatDevice* device = core->cheatDevice(core);
 			success = mCheatParseFile(device, vf);
 			vf->close(vf);
+		} else {
+			success = false;
 		}
 	}
 	if (!mCoreConfigGetIntValue(&core->config, "cheatAutosave", &cheatAuto) || cheatAuto) {
