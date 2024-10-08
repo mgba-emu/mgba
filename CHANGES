@@ -24,6 +24,7 @@ Emulation fixes:
  - GBA Video: Improve emulation of window start/end conditions (fixes mgba.io/i/1945)
 Other fixes:
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
+ - Core: Fix patch autoloading leaking the file handle
  - Debugger: Fix writing to specific segment in command-line debugger
  - GB: Fix uninitialized save data when loading undersized temporary saves
  - GB, GBA Core: Fix memory leak if reloading debug symbols
