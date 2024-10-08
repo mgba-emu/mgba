@@ -21,6 +21,7 @@
 #include <mgba/internal/sm83/sm83.h>
 #include <mgba/internal/sm83/debugger/debugger.h>
 #include <mgba-util/crc32.h>
+#include <mgba-util/md5.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
@@ -528,6 +529,15 @@ static void _GBCoreChecksum(const struct mCore* core, void* data, enum mCoreChec
 	switch (type) {
 	case mCHECKSUM_CRC32:
 		memcpy(data, &gb->romCrc32, sizeof(gb->romCrc32));
+		break;
+	case mCHECKSUM_MD5:
+		if (gb->romVf) {
+			md5File(gb->romVf, data);
+		} else if (gb->memory.rom && gb->isPristine) {
+			md5Buffer(gb->memory.rom, gb->pristineRomSize, data);
+		} else {
+			md5Buffer("", 0, data);
+		}
 		break;
 	}
 	return;

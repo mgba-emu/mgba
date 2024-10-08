@@ -30,6 +30,7 @@
 #ifdef USE_ELF
 #include <mgba-util/elf-read.h>
 #endif
+#include <mgba-util/md5.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
@@ -675,6 +676,19 @@ static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChe
 	switch (type) {
 	case mCHECKSUM_CRC32:
 		memcpy(data, &gba->romCrc32, sizeof(gba->romCrc32));
+		break;
+	case mCHECKSUM_MD5:
+		if (gba->romVf) {
+			md5File(gba->romVf, data);
+		} else if (gba->mbVf) {
+			md5File(gba->mbVf, data);
+		} else if (gba->memory.rom && gba->isPristine) {
+			md5Buffer(gba->memory.rom, gba->pristineRomSize, data);
+		} else if (gba->memory.rom) {
+			md5Buffer(gba->memory.rom, gba->memory.romSize, data);
+		} else {
+			md5Buffer("", 0, data);
+		}
 		break;
 	}
 	return;

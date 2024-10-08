@@ -41,6 +41,7 @@ Other fixes:
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - Core: Improve rumble emulation by averaging state over entire frame (fixes mgba.io/i/3232)
+ - Core: Add MD5 hashing for ROMs
  - GB: Prevent incompatible BIOSes from being used on differing models
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs

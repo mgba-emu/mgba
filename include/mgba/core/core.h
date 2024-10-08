@@ -30,6 +30,7 @@ enum mPlatform {
 
 enum mCoreChecksumType {
 	mCHECKSUM_CRC32,
+	mCHECKSUM_MD5,
 };
 
 struct mAudioBuffer;
