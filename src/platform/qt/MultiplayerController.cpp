@@ -192,6 +192,9 @@ MultiplayerController::MultiplayerController() {
 
 MultiplayerController::~MultiplayerController() {
 	mLockstepDeinit(&m_lockstep);
+	if (m_platform == mPLATFORM_GBA) {
+		GBASIOLockstepCoordinatorDeinit(&m_gbaCoordinator);
+	}
 }
 
 bool MultiplayerController::attachGame(CoreController* controller) {
@@ -376,7 +379,7 @@ void MultiplayerController::detachGame(CoreController* controller) {
 		if (p.attached) {
 			GBASIOLockstepCoordinatorDetach(&m_gbaCoordinator, p.node.gba);
 		}
-		delete p.node.gba->user;
+		delete reinterpret_cast<LockstepUser*>(p.node.gba->user);
 		delete p.node.gba;
 		break;
 	}
@@ -417,6 +420,9 @@ void MultiplayerController::detachGame(CoreController* controller) {
 
 	m_pids.remove(pid);
 	if (m_pids.size() == 0) {
+		if (m_platform == mPLATFORM_GBA) {
+			GBASIOLockstepCoordinatorDeinit(&m_gbaCoordinator);
+		}
 		m_platform = mPLATFORM_NONE;
 	} else {
 		fixOrder();
