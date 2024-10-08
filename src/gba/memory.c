@@ -1894,8 +1894,6 @@ void _pristineCow(struct GBA* gba) {
 	}
 	if (gba->romVf) {
 		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->memory.romSize);
-		gba->romVf->close(gba->romVf);
-		gba->romVf = NULL;
 	}
 	gba->memory.rom = newRom;
 	gba->memory.hw.gpioBase = &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1];

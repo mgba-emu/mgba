@@ -668,6 +668,9 @@ static size_t _GBACoreROMSize(const struct mCore* core) {
 	if (gba->romVf) {
 		return gba->romVf->size(gba->romVf);
 	}
+	if (gba->mbVf) {
+		return gba->mbVf->size(gba->mbVf);
+	}
 	return gba->pristineRomSize;
 }
 

@@ -557,16 +557,14 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 		mappedMemoryFree(newRom, GBA_SIZE_ROM0);
 		return;
 	}
-	if (gba->romVf) {
+	if (gba->memory.rom) {
 #ifndef FIXED_ROM_BUFFER
 		if (!gba->isPristine) {
-			mappedMemoryFree(gba->memory.rom, GBA_SIZE_ROM0);
+			mappedMemoryFree(gba->memory.rom, gba->memory.romSize);
 		} else {
 			gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->pristineRomSize);
 		}
 #endif
-		gba->romVf->close(gba->romVf);
-		gba->romVf = NULL;
 	}
 	gba->isPristine = false;
 	gba->memory.rom = newRom;

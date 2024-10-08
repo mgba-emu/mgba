@@ -483,12 +483,10 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 		mappedMemoryFree(newRom, GB_SIZE_CART_MAX);
 		return;
 	}
-	if (gb->romVf) {
+	if (gb->romVf && gb->isPristine) {
 #ifndef FIXED_ROM_BUFFER
 		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
 #endif
-		gb->romVf->close(gb->romVf);
-		gb->romVf = NULL;
 	}
 	gb->isPristine = false;
 	if (gb->memory.romBase == gb->memory.rom) {
