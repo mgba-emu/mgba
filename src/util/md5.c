@@ -87,7 +87,7 @@ static void md5Step(uint32_t* buffer, const uint32_t* input) {
 		switch (i / 16) {
 		case 0:
 			E = F(BB, CC, DD);
-			j = i;
+			j = i & 0xF;
 			break;
 		case 1:
 			E = G(BB, CC, DD);
