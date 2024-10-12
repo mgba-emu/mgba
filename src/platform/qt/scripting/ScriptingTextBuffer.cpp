@@ -51,26 +51,25 @@ void ScriptingTextBuffer::setBufferName(const QString& name) {
 
 void ScriptingTextBuffer::print(const QString& text) {
 	QMutexLocker locker(&m_mutex);
-	QString split(text);
-	m_shim.cursor.beginEditBlock();
-	while (m_shim.cursor.positionInBlock() + split.length() > m_dims.width()) {
-		int cut = m_dims.width() - m_shim.cursor.positionInBlock();
+	for (QString split : text.split('\n')) {
+		while (m_shim.cursor.positionInBlock() + split.length() > m_dims.width()) {
+			int cut = m_dims.width() - m_shim.cursor.positionInBlock();
+			if (!m_shim.cursor.atBlockEnd()) {
+				m_shim.cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+			}
+			m_shim.cursor.insertText(split.left(cut));
+			if (m_shim.cursor.atEnd()) {
+				m_shim.cursor.insertBlock();
+			} else {
+				m_shim.cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, 1);
+			}
+			split = split.mid(cut);
+		}
 		if (!m_shim.cursor.atBlockEnd()) {
-			m_shim.cursor.movePosition(QTextCursor::EndOfBlock, QTextCursor::KeepAnchor);
+			m_shim.cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, split.length());
 		}
-		m_shim.cursor.insertText(split.left(cut));
-		if (m_shim.cursor.atEnd()) {
-			m_shim.cursor.insertBlock();
-		} else {
-			m_shim.cursor.movePosition(QTextCursor::NextBlock, QTextCursor::MoveAnchor, 1);
-		}
-		split = split.mid(cut);
+		m_shim.cursor.insertText(split);
 	}
-	if (!m_shim.cursor.atBlockEnd()) {
-		m_shim.cursor.movePosition(QTextCursor::NextCharacter, QTextCursor::KeepAnchor, split.length());
-	}
-	m_shim.cursor.insertText(split);
-	m_shim.cursor.endEditBlock();
 }
 
 void ScriptingTextBuffer::clear() {
@@ -107,7 +106,7 @@ void ScriptingTextBuffer::moveCursor(const QPoint& pos) {
 			m_shim.cursor.insertBlock();
 		}
 	} else {
-		m_shim.cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, y);		
+		m_shim.cursor.movePosition(QTextCursor::Down, QTextCursor::MoveAnchor, y);
 	}
 
 	int x = pos.x();
