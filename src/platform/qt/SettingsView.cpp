@@ -397,29 +397,38 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
 	addPage(tr("Shortcuts"), shortcutView, Page::SHORTCUTS);
+
+#if defined(BUILD_GLES2) || defined(USE_EPOXY)
+	m_dummyShader = new QLabel(tr("Shaders are not supported when the display driver is not OpenGL.\n\n"
+		"If it is set to OpenGL and you still see this, your graphics card or drivers may be too old."));
+	m_dummyShader->setWordWrap(true);
+	m_dummyShader->setAlignment(Qt::AlignCenter);
+	addPage(tr("Shaders"), m_dummyShader, Page::SHADERS);
+#endif
 }
 
 SettingsView::~SettingsView() {
-#if defined(BUILD_GL) || defined(BUILD_GLES2)
-	setShaderSelector(nullptr);
+#if defined(BUILD_GLES2) || defined(USE_EPOXY)
+	if (m_shader) {
+		m_shader->setParent(nullptr);
+	}
 #endif
 }
 
 void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
-#if defined(BUILD_GL) || defined(BUILD_GLES2)
-	if (m_shader) {
-		auto items = m_ui.tabs->findItems(tr("Shaders"), Qt::MatchFixedString);
-		for (const auto& item : items) {
-			m_ui.tabs->removeItemWidget(item);
-		}
-		m_ui.stackedWidget->removeWidget(m_shader);
-		m_shader->setParent(nullptr);
+#if  defined(BUILD_GLES2) || defined(USE_EPOXY)
+	auto items = m_ui.tabs->findItems(tr("Shaders"), Qt::MatchFixedString);
+	for (QListWidgetItem* item : items) {
+		delete item;
+	}
+	if (!m_shader) {
+		m_ui.stackedWidget->removeWidget(m_dummyShader);
 	}
 	m_shader = shaderSelector;
 	if (shaderSelector) {
-		m_ui.stackedWidget->addWidget(m_shader);
-		m_ui.tabs->addItem(tr("Shaders"));
-		connect(m_ui.buttonBox, &QDialogButtonBox::accepted, m_shader, &ShaderSelector::saved);
+		addPage(tr("Shaders"), m_shader, Page::SHADERS);
+	} else {
+		addPage(tr("Shaders"), m_dummyShader, Page::SHADERS);
 	}
 #endif
 }
@@ -579,7 +588,6 @@ void SettingsView::updateConfig() {
 	if (displayDriver != m_controller->getQtOption("displayDriver")) {
 		m_controller->setQtOption("displayDriver", displayDriver);
 		Display::setDriver(static_cast<Display::Driver>(displayDriver.toInt()));
-		setShaderSelector(nullptr);
 		emit displayDriverChanged();
 	}
 

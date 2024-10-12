@@ -58,6 +58,7 @@ Misc:
  - Qt: Pass logging context through to video proxy thread (fixes mgba.io/i/3095)
  - Qt: Show maker code and game version in ROM info
  - Qt: Make window corners square on Windows 11 (fixes mgba.io/i/3285)
+ - Qt: Show a dummy shader settings tab if shaders aren't supported
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
  - Switch: Add bilinear filtering option (closes mgba.io/i/3111)

@@ -550,6 +550,7 @@ void Window::openSettingsWindow(SettingsView::Page page) {
 #ifdef USE_SQLITE3
 	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
 #endif
+	connect(this, &Window::shaderSelectorAdded, settingsWindow, &SettingsView::setShaderSelector);
 	openView(settingsWindow);
 	settingsWindow->selectPage(page);
 }
@@ -1050,7 +1051,12 @@ void Window::reloadDisplayDriver() {
 	}
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	m_shaderView.reset();
-	m_shaderView = std::make_unique<ShaderSelector>(m_display.get(), m_config);
+	if (m_display->supportsShaders()) {
+		m_shaderView = std::make_unique<ShaderSelector>(m_display.get(), m_config);
+		emit shaderSelectorAdded(m_shaderView.get());
+	} else {
+		emit shaderSelectorAdded(nullptr);
+	}
 #endif
 
 	connect(m_display.get(), &QGBA::Display::hideCursor, [this]() {
