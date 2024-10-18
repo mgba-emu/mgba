@@ -1079,6 +1079,7 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	LOAD_32(gba->dmaPC, 0, &state->dmaBlockPC);
 	LOAD_32(gba->bus, 0, &state->bus);
 
+	GBADMARecalculateCycles(gba);
 	GBADMAUpdate(gba);
 	GBAHardwareDeserialize(&gba->memory.hw, state);
 }

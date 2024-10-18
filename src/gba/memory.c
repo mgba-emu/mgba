@@ -1734,6 +1734,10 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 			STORE_32(memory->agbPrintFuncBackup, AGB_PRINT_FLUSH_ADDR | base, memory->rom);
 		}
 	}
+
+	if (gba->performingDMA) {
+		GBADMARecalculateCycles(gba);
+	}
 }
 
 void GBAAdjustEWRAMWaitstates(struct GBA* gba, uint16_t parameters) {
