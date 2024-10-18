@@ -319,9 +319,11 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	int i;
 	for (i = 0; i < 4; ++i) {
 		struct GBADMA* dma = &memory->dma[i];
-		int32_t time = dma->when - info->when;
-		if (time < 0 && GBADMARegisterIsEnable(dma->reg) && dma->nextCount) {
-			dma->when = info->when;
+		if (GBADMARegisterIsEnable(dma->reg) && dma->nextCount) {
+			int32_t time = dma->when - info->when;
+			if (time < 0) {
+				dma->when = info->when;
+			}
 		}
 	}
 
