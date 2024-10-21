@@ -10,3 +10,4 @@ Comment=Nintendo Game Boy Advance Emulator
 Categories=Game;Emulator;
 MimeType=application/x-gameboy-advance-rom;application/x-agb-rom;application/x-gba-rom;
 Keywords=emulator;Nintendo;advance;gba;Game Boy Advance;
+StartupWMClass=mGBA
