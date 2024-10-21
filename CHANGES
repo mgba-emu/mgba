@@ -38,6 +38,7 @@ Other fixes:
  - Qt: Fix potential crash when configuring shortcuts
  - Qt: Fix crash when applying changes to GB I/O registers in I/O view
  - Qt: Fix LCDC background priority/enable bit being mis-mapped in I/O view
+ - Qt: Fix saving named states breaking when screenshot states disabled (fixes mgba.io/i/3320)
  - Updater: Fix updating appimage across filesystems
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
