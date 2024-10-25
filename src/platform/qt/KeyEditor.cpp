@@ -110,7 +110,7 @@ void KeyEditor::keyPressEvent(QKeyEvent* event) {
 			m_key = Qt::Key_unknown;
 		}
 		m_lastKey.start(KEY_TIME);
-		setValue(ShortcutController::isModifierKey(event->key()) ? event->modifiers() : event->key() | event->modifiers());
+		setValue(ShortcutController::isModifierKey(event->key()) ? event->key() : event->key() | event->modifiers());
 	}
 	event->accept();
 }
