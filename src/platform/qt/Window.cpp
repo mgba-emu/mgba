@@ -1086,7 +1086,12 @@ void Window::reloadDisplayDriver() {
 	m_display->setMinimumSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 #endif
 
-	m_display->setBackgroundImage(QImage{m_config->getOption("backgroundImage")});
+	QString backgroundImage = m_config->getOption("backgroundImage");
+	if (backgroundImage.isEmpty()) {
+		m_display->setBackgroundImage(QImage{});
+	} else {
+		m_display->setBackgroundImage(QImage{backgroundImage});
+	}
 
 	if (!proxy) {
 		proxy = std::make_shared<VideoProxy>();
@@ -1978,7 +1983,12 @@ void Window::setupOptions() {
 	ConfigOption* backgroundImage = m_config->addOption("backgroundImage");
 	backgroundImage->connect([this](const QVariant& value) {
 		if (m_display) {
-			m_display->setBackgroundImage(QImage{value.toString()});
+			QString backgroundImage = value.toString();
+			if (backgroundImage.isEmpty()) {
+				m_display->setBackgroundImage(QImage{});
+			} else {
+				m_display->setBackgroundImage(QImage{backgroundImage});
+			}
 		}
 	}, this);
 	m_config->updateOption("backgroundImage");
