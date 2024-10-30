@@ -190,6 +190,8 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 {
 	setAttribute(Qt::WA_NativeWindow);
 	window()->windowHandle()->setFormat(format);
+	windowHandle()->setSurfaceType(QSurface::OpenGLSurface);
+	windowHandle()->destroy();
 	windowHandle()->create();
 
 #ifdef USE_SHARE_WIDGET

@@ -19,6 +19,7 @@ Other fixes:
  - Qt: Fix crash when applying changes to GB I/O registers in I/O view
  - Qt: Fix LCDC background priority/enable bit being mis-mapped in I/O view
  - Qt: Fix saving named states breaking when screenshot states disabled (fixes mgba.io/i/3320)
+ - Qt: Fix potential crash on Wayland with OpenGL (fixes mgba.io/i/3276)
  - Updater: Fix updating appimage across filesystems
 Misc:
  - Qt: Make window corners square on Windows 11 (fixes mgba.io/i/3285)
