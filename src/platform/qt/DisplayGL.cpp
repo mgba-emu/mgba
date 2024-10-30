@@ -285,6 +285,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 
 bool DisplayGL::highestCompatible(QSurfaceFormat& format) {
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
+	format.setRenderableType(QSurfaceFormat::OpenGLES);
 	if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
 		format.setVersion(3, 3);
 		format.setProfile(QSurfaceFormat::CoreProfile);
@@ -311,6 +312,7 @@ bool DisplayGL::highestCompatible(QSurfaceFormat& format) {
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 	LOG(QT, WARN) << tr("Failed to create an OpenGL 3 context, trying old-style...");
 #endif
+	format.setRenderableType(QSurfaceFormat::OpenGL);
 	if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
 		format.setVersion(1, 4);
 	} else {
