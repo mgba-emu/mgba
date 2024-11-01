@@ -802,14 +802,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	mLOG(GBA_MEM, STUB, "Unimplemented memory Store32: 0x%08X", address);
 
 #define STORE_SRAM \
-	if (address & 0x3) { \
-		mLOG(GBA_MEM, GAME_ERROR, "Unaligned SRAM Store32: 0x%08X", address); \
-	} else { \
-		GBAStore8(cpu, address, value, cycleCounter); \
-		GBAStore8(cpu, address | 1, value, cycleCounter); \
-		GBAStore8(cpu, address | 2, value, cycleCounter); \
-		GBAStore8(cpu, address | 3, value, cycleCounter); \
-	}
+	GBAStore8(cpu, address, value >> (8 * (address & 3)), cycleCounter);
 
 #define STORE_BAD \
 	mLOG(GBA_MEM, GAME_ERROR, "Bad memory Store32: 0x%08X", address);
@@ -989,10 +982,9 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	case GBA_REGION_SRAM_MIRROR:
 		if (address & 1) {
 			mLOG(GBA_MEM, GAME_ERROR, "Unaligned SRAM Store16: 0x%08X", address);
-			break;
+			value >>= 8;
 		}
 		GBAStore8(cpu, address, value, cycleCounter);
-		GBAStore8(cpu, address | 1, value, cycleCounter);
 		break;
 	default:
 		mLOG(GBA_MEM, GAME_ERROR, "Bad memory Store16: 0x%08X", address);
