@@ -318,13 +318,14 @@ mov lr, #0x8000003
 ldrb r1, [lr], #-3
 cmp r1, #0
 movne r1, #0
-bxne lr
+bne 1f
 ldr lr, =0x20000C0
 ldr r1, [lr]
 cmp r1, #0
 mov r1, #0
-bxne lr
+bne 1f
 sub lr, #0xC0
+1:
 bx lr
 .word 0
 .word 0xE129F000

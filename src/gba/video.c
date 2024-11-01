@@ -70,7 +70,7 @@ void GBAVideoReset(struct GBAVideo* video) {
 	} else {
 		// TODO: Verify exact scanline on hardware
 		video->vcount = 0x7E;
-		nextEvent = 117;
+		nextEvent = 120;
 	}
 	video->p->memory.io[GBA_REG(VCOUNT)] = video->vcount;
 
