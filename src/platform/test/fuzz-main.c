@@ -3,7 +3,6 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include <mgba/core/blip_buf.h>
 #include <mgba/core/cheats.h>
 #include <mgba/core/config.h>
 #include <mgba/core/core.h>
@@ -100,9 +99,6 @@ int main(int argc, char** argv) {
 		cleanExit = false;
 		goto loadError;
 	}
-	if (args.patch) {
-		core->loadPatch(core, VFileOpen(args.patch, O_RDONLY));
-	}
 
 	struct VFile* savestate = 0;
 	struct VFile* savestateOverlay = 0;
@@ -113,7 +109,7 @@ int main(int argc, char** argv) {
 	}
 	if (fuzzOpts.ssOverlay) {
 		overlayOffset = fuzzOpts.overlayOffset;
-		if (overlayOffset < core->stateSize(core)) {
+		if (overlayOffset <= core->stateSize(core)) {
 			savestateOverlay = VFileOpen(fuzzOpts.ssOverlay, O_RDONLY);
 		}
 		free(fuzzOpts.ssOverlay);
@@ -137,35 +133,30 @@ int main(int argc, char** argv) {
 		hasDebugger = true;
 	}
 
-	struct mCheatDevice* device;
-	if (args.cheatsFile && (device = core->cheatDevice(core))) {
-		struct VFile* vf = VFileOpen(args.cheatsFile, O_RDONLY);
-		if (vf) {
-			mCheatDeviceClear(device);
-			mCheatParseFile(device, vf);
-			vf->close(vf);
-		}
-	}
+	mArgumentsApplyFileLoads(&args, core);
 
 	if (savestate) {
 		if (!savestateOverlay) {
-			mCoreLoadStateNamed(core, savestate, 0);
+			mCoreLoadStateNamed(core, savestate, SAVESTATE_ALL);
 		} else {
-			size_t size = core->stateSize(core);
-			uint8_t* state = malloc(size);
-			savestate->read(savestate, state, size);
-			savestateOverlay->read(savestateOverlay, state + overlayOffset, size - overlayOffset);
-			core->loadState(core, state);
-			free(state);
+			size_t size = savestate->size(savestate);
+			void* mapped = savestate->map(savestate, size, MAP_READ);
+			struct VFile* newState = VFileMemChunk(mapped, size);
+			savestate->unmap(savestate, mapped, size);
+			newState->seek(newState, overlayOffset, SEEK_SET);
+			uint8_t buffer[2048];
+			int read;
+			while ((read = savestateOverlay->read(savestateOverlay, buffer, sizeof(buffer))) > 0) {
+				newState->write(newState, buffer, read);
+			}
 			savestateOverlay->close(savestateOverlay);
-			savestateOverlay = 0;
+			savestateOverlay = NULL;
+			mCoreLoadStateNamed(core, newState, SAVESTATE_ALL);
+			newState->close(newState);
 		}
 		savestate->close(savestate);
-		savestate = 0;
+		savestate = NULL;
 	}
-
-	blip_set_rates(core->getAudioChannel(core, 0), core->frequency(core), 0x8000);
-	blip_set_rates(core->getAudioChannel(core, 1), core->frequency(core), 0x8000);
 
 	_fuzzRunloop(core, fuzzOpts.frames);
 
@@ -199,8 +190,7 @@ static void _fuzzRunloop(struct mCore* core, int frames) {
 	do {
 		core->runFrame(core);
 		--frames;
-		blip_clear(core->getAudioChannel(core, 0));
-		blip_clear(core->getAudioChannel(core, 1));
+		mAudioBufferClear(core->getAudioBuffer(core));
 	} while (frames > 0 && !_dispatchExiting);
 }
 

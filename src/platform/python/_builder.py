@@ -21,7 +21,6 @@ ffi.set_source("mgba._pylib", """
 #define MGBA_EXPORT
 #include <mgba/flags.h>
 #define OPAQUE_THREADING
-#include <mgba/core/blip_buf.h>
 #include <mgba/core/cache-set.h>
 #include <mgba-util/common.h>
 #include <mgba/core/core.h>
@@ -46,7 +45,6 @@ ffi.set_source("mgba._pylib", """
 #define PYEXPORT
 #include "platform/python/core.h"
 #include "platform/python/log.h"
-#include "platform/python/sio.h"
 #include "platform/python/vfs-py.h"
 #undef PYEXPORT
 """, include_dirs=[incdir, srcdir],
@@ -54,7 +52,7 @@ ffi.set_source("mgba._pylib", """
      libraries=["mgba"],
      library_dirs=[bindir],
      runtime_library_dirs=[libdir],
-     sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "core.c", "log.c", "sio.c"]])
+     sources=[os.path.join(pydir, path) for path in ["vfs-py.c", "core.c", "log.c"]])
 
 preprocessed = subprocess.check_output(cpp + ["-fno-inline", "-P"] + cppflags + [os.path.join(pydir, "_builder.h")], universal_newlines=True)
 

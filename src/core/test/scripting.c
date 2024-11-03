@@ -312,7 +312,7 @@ M_TEST_DEFINE(logging) {
 M_TEST_DEFINE(screenshot) {
 	SETUP_LUA;
 	CREATE_CORE;
-	color_t* buffer = malloc(240 * 160 * sizeof(color_t));
+	mColor* buffer = malloc(240 * 160 * sizeof(mColor));
 	core->setVideoBuffer(core, buffer, 240);
 	core->reset(core);
 	core->runFrame(core);
@@ -327,7 +327,7 @@ M_TEST_DEFINE(screenshot) {
 	TEARDOWN_CORE;
 }
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 void _setupBp(struct mCore* core) {
 	switch (core->platform(core)) {
 #ifdef M_CORE_GBA
@@ -547,6 +547,40 @@ M_TEST_DEFINE(basicWatchpoint) {
 	mDebuggerDeinit(&debugger);
 }
 
+M_TEST_DEFINE(watchpointReentrant) {
+	SETUP_LUA;
+	mScriptContextAttachStdlib(&context);
+	CREATE_CORE;
+	struct mDebugger debugger;
+	core->reset(core);
+	mScriptContextAttachCore(&context, core);
+
+	mDebuggerInit(&debugger);
+	mDebuggerAttach(&debugger, core);
+
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"function bkpt()\n"
+		"	hit = hit + 1\n"
+		"end"
+	);
+	struct mScriptValue base = mSCRIPT_MAKE_S32(RAM_BASE);
+	lua->setGlobal(lua, "base", &base);
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base, C.WATCHPOINT_TYPE.READ))");
+
+	TEST_PROGRAM("hit = 0");
+	core->busRead8(core, RAM_BASE);
+	TEST_PROGRAM("assert(hit == 1)");
+	TEST_PROGRAM("emu:read8(base)");
+	TEST_PROGRAM("assert(hit == 1)");
+	core->busRead8(core, RAM_BASE);
+	TEST_PROGRAM("assert(hit == 2)");
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+	mDebuggerDeinit(&debugger);
+}
+
 M_TEST_DEFINE(removeBreakpoint) {
 	SETUP_LUA;
 	mScriptContextAttachStdlib(&context);
@@ -727,7 +761,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(memoryWrite),
 	cmocka_unit_test(logging),
 	cmocka_unit_test(screenshot),
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 #ifdef M_CORE_GBA
 	cmocka_unit_test(basicBreakpointGBA),
 #endif
@@ -736,6 +770,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 #endif
 	cmocka_unit_test(multipleBreakpoint),
 	cmocka_unit_test(basicWatchpoint),
+	cmocka_unit_test(watchpointReentrant),
 	cmocka_unit_test(removeBreakpoint),
 	cmocka_unit_test(overlappingBreakpoint),
 	cmocka_unit_test(overlappingWatchpoint),

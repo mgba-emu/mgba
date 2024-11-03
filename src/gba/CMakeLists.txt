@@ -31,7 +31,6 @@ set(SOURCE_FILES
 	sharkport.c
 	sio.c
 	sio/gbp.c
-	sio/joybus.c
 	timer.c
 	video.c)
 
@@ -40,7 +39,6 @@ set(SIO_FILES
 	sio/lockstep.c)
 
 set(EXTRA_FILES
-	extra/audio-mixer.c
 	extra/battlechip.c
 	extra/proxy.c)
 

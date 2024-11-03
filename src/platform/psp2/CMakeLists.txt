@@ -10,8 +10,8 @@ file(GLOB OS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/psp2-*.c)
 set(OS_SRC ${OS_SRC} PARENT_SCOPE)
 source_group("PS Vita-specific code" FILES ${OS_SRC})
 
-list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sce-vfs.c)
-set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
+list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sce-vfs.c)
+set(VFS_SRC ${VFS_SRC} PARENT_SCOPE)
 
 set(OS_LIB -lvita2d -l${M_LIBRARY}
     -lSceAppMgr_stub
@@ -47,7 +47,7 @@ target_link_libraries(${BINARY_NAME}.elf ${BINARY_NAME} ${OS_LIB})
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/icons.o
                    COMMAND ${OBJCOPY_CMD} icons2x.png ${CMAKE_CURRENT_BINARY_DIR}/icons.o
-                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/res)
+                   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/res)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o
                    COMMAND ${OBJCOPY_CMD} backdrop.png ${CMAKE_CURRENT_BINARY_DIR}/backdrop.o

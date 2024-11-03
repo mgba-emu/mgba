@@ -34,7 +34,7 @@
 #endif
 #include <libswscale/swscale.h>
 
-static void _ffmpegPostVideoFrame(struct mAVStream*, const color_t* pixels, size_t stride);
+static void _ffmpegPostVideoFrame(struct mAVStream*, const mColor* pixels, size_t stride);
 static void _ffmpegPostAudioFrame(struct mAVStream*, int16_t left, int16_t right);
 static void _ffmpegSetVideoDimensions(struct mAVStream*, unsigned width, unsigned height);
 static void _ffmpegSetAudioRate(struct mAVStream*, unsigned rate);
@@ -784,7 +784,7 @@ bool _ffmpegWriteAudioFrame(struct FFmpegEncoder* encoder, struct AVFrame* audio
 	return gotData;
 }
 
-void _ffmpegPostVideoFrame(struct mAVStream* stream, const color_t* pixels, size_t stride) {
+void _ffmpegPostVideoFrame(struct mAVStream* stream, const mColor* pixels, size_t stride) {
 	struct FFmpegEncoder* encoder = (struct FFmpegEncoder*) stream;
 	if (!encoder->context || !encoder->videoCodec) {
 		return;
@@ -893,7 +893,7 @@ void FFmpegEncoderSetInputFrameRate(struct FFmpegEncoder* encoder, int numerator
 
 void FFmpegEncoderSetInputSampleRate(struct FFmpegEncoder* encoder, int sampleRate) {
 	encoder->isampleRate = sampleRate;
-	if (encoder->resampleContext) {	
+	if (encoder->resampleContext) {
 		av_freep(&encoder->audioBuffer);
 #ifdef USE_LIBAVRESAMPLE
 		avresample_close(encoder->resampleContext);

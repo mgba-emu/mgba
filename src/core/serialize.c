@@ -57,7 +57,7 @@ void mStateExtdataPut(struct mStateExtdata* extdata, enum mStateExtdataTag tag, 
 	extdata->data[tag] = *item;
 }
 
-bool mStateExtdataGet(struct mStateExtdata* extdata, enum mStateExtdataTag tag, struct mStateExtdataItem* item) {
+bool mStateExtdataGet(const struct mStateExtdata* extdata, enum mStateExtdataTag tag, struct mStateExtdataItem* item) {
 	if (tag == EXTDATA_NONE || tag >= EXTDATA_MAX) {
 		return false;
 	}
@@ -130,6 +130,9 @@ bool mStateExtdataDeserialize(struct mStateExtdata* extdata, struct VFile* vf) {
 		ssize_t position = vf->seek(vf, 0, SEEK_CUR);
 		if (vf->seek(vf, header.offset, SEEK_SET) < 0) {
 			return false;
+		}
+		if (header.size <= 0) {
+			continue;
 		}
 		struct mStateExtdataItem item = {
 			.data = malloc(header.size),
@@ -371,6 +374,7 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	mStateExtdataInit(&extdata);
 	size_t stateSize = core->stateSize(core);
 
+	core->saveExtraState(core, &extdata);
 	if (flags & SAVESTATE_METADATA) {
 		uint64_t* creationUsec = malloc(sizeof(*creationUsec));
 		if (creationUsec) {
@@ -527,6 +531,8 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	}
 	bool success = core->loadState(core, state);
 	mappedMemoryFree(state, core->stateSize(core));
+
+	core->loadExtraState(core, &extdata);
 
 	unsigned width, height;
 	core->currentVideoSize(core, &width, &height);

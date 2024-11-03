@@ -14,9 +14,9 @@ void GBAOverride::identify(const struct mCore* core) {
 	if (core->platform(core) != mPLATFORM_GBA) {
 		return;
 	}
-	char gameId[8];
-	core->getGameCode(core, gameId);
-	memcpy(override.id, &gameId[4], 4);
+	mGameInfo info;
+	core->getGameInfo(core, &info);
+	memcpy(override.id, info.code, 4);
 }
 
 void GBAOverride::save(struct Configuration* config) const {

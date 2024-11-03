@@ -10,6 +10,7 @@
 #include <QTextCursor>
 #include <QTextDocument>
 
+#include <mgba/script/console.h>
 #include <mgba/core/scripting.h>
 
 namespace QGBA {

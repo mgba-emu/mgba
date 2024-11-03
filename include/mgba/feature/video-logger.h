@@ -35,6 +35,8 @@ enum mVideoLoggerEvent {
 	LOGGER_EVENT_DEINIT,
 	LOGGER_EVENT_RESET,
 	LOGGER_EVENT_GET_PIXELS,
+	LOGGER_EVENT_LOAD_STATE,
+	LOGGER_EVENT_SAVE_STATE,
 };
 
 enum mVideoLoggerInjectionPoint {
@@ -85,6 +87,10 @@ struct mVideoLogger {
 
 	const void* pixelBuffer;
 	size_t pixelStride;
+
+	void* stateBuffer;
+	size_t stateSize;
+	bool stateStatus;
 };
 
 void mVideoLoggerRendererCreate(struct mVideoLogger* logger, bool readonly);

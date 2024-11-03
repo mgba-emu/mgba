@@ -12,6 +12,7 @@ CXX_GUARD_START
 
 #include <mgba/core/interface.h>
 #include <mgba/core/timing.h>
+#include <mgba-util/audio-buffer.h>
 
 #define GB_MAX_SAMPLES 32
 
@@ -166,14 +167,9 @@ struct GBAudio {
 	struct GBAudioWaveChannel ch3;
 	struct GBAudioNoiseChannel ch4;
 
-	struct blip_t* left;
-	struct blip_t* right;
-	int16_t lastLeft;
-	int16_t lastRight;
+	struct mAudioBuffer buffer;
 	int32_t capLeft;
 	int32_t capRight;
-	int clock;
-	int32_t clockRate;
 
 	uint8_t volumeRight;
 	uint8_t volumeLeft;

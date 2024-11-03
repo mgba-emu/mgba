@@ -372,25 +372,25 @@ M_TEST_DEFINE(wrongConst) {
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, S(Test), &a);
 	signature.entries[0] = mSCRIPT_TYPE_MS_S(Test);
-	assert_true(mScriptCoerceFrame(&signature, &frame.arguments));
+	assert_true(mScriptCoerceFrame(&signature, &frame.arguments, &frame.arguments));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, CS(Test), &a);
 	signature.entries[0] = mSCRIPT_TYPE_MS_CS(Test);
-	assert_true(mScriptCoerceFrame(&signature, &frame.arguments));
+	assert_true(mScriptCoerceFrame(&signature, &frame.arguments, &frame.arguments));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, S(Test), &a);
 	signature.entries[0] = mSCRIPT_TYPE_MS_CS(Test);
-	assert_true(mScriptCoerceFrame(&signature, &frame.arguments));
+	assert_true(mScriptCoerceFrame(&signature, &frame.arguments, &frame.arguments));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
 	mSCRIPT_PUSH(&frame.arguments, CS(Test), &a);
 	signature.entries[0] = mSCRIPT_TYPE_MS_S(Test);
-	assert_false(mScriptCoerceFrame(&signature, &frame.arguments));
+	assert_false(mScriptCoerceFrame(&signature, &frame.arguments, &frame.arguments));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
@@ -402,7 +402,7 @@ M_TEST_DEFINE(wrongConst) {
 	mSCRIPT_PUSH(&frame.arguments, S(Test), &a);
 	assert_false(mScriptPopCSTest(&frame.arguments, &cb));
 	signature.entries[0] = mSCRIPT_TYPE_MS_CS(Test);
-	assert_true(mScriptCoerceFrame(&signature, &frame.arguments));
+	assert_true(mScriptCoerceFrame(&signature, &frame.arguments, &frame.arguments));
 	assert_true(mScriptPopCSTest(&frame.arguments, &cb));
 	mScriptFrameDeinit(&frame);
 
@@ -410,7 +410,7 @@ M_TEST_DEFINE(wrongConst) {
 	mSCRIPT_PUSH(&frame.arguments, CS(Test), &a);
 	assert_false(mScriptPopSTest(&frame.arguments, &b));
 	signature.entries[0] = mSCRIPT_TYPE_MS_S(Test);
-	assert_false(mScriptCoerceFrame(&signature, &frame.arguments));
+	assert_false(mScriptCoerceFrame(&signature, &frame.arguments, &frame.arguments));
 	assert_false(mScriptPopSTest(&frame.arguments, &b));
 	mScriptFrameDeinit(&frame);
 

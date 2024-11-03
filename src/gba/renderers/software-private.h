@@ -85,7 +85,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 }
 
 #define COMPOSITE_16_OBJWIN(BLEND, IDX)  \
-	if (objwinForceEnable || (!(current & FLAG_OBJWIN)) == objwinOnly) {                                          \
+	if (background->objwinForceEnable || (!(current & FLAG_OBJWIN)) == background->objwinOnly) { \
 		unsigned color; \
 		unsigned mergedFlags = flags; \
 		if (current & FLAG_OBJWIN) { \
@@ -111,7 +111,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	}
 
 #define COMPOSITE_256_OBJWIN(BLEND, IDX) \
-	if (objwinForceEnable || (!(current & FLAG_OBJWIN)) == objwinOnly) { \
+	if (background->objwinForceEnable || (!(current & FLAG_OBJWIN)) == background->objwinOnly) { \
 		unsigned color; \
 		unsigned mergedFlags = flags; \
 		if (current & FLAG_OBJWIN) { \
@@ -155,10 +155,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 // TODO: Remove UNUSEDs after implementing OBJWIN for modes 3 - 5
 #define PREPARE_OBJWIN                                                                            \
 	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt);                     \
-	int objwinOnly = 0;                                                                           \
-	int objwinForceEnable = 0;                                                                    \
-	UNUSED(objwinForceEnable);                                                                    \
-	color_t* objwinPalette = renderer->normalPalette;                                             \
+	mColor* objwinPalette = renderer->normalPalette;                                             \
 	if (renderer->d.highlightAmount && background->highlight) {                                   \
 		objwinPalette = renderer->highlightPalette;                                               \
 	}                                                                                             \
@@ -170,28 +167,6 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 			if (renderer->d.highlightAmount && background->highlight) {                           \
 				palette = renderer->highlightVariantPalette;                                      \
 			}                                                                                     \
-		}                                                                                         \
-		switch (background->index) {                                                              \
-		case 0:                                                                                   \
-			objwinForceEnable = GBAWindowControlIsBg0Enable(renderer->objwin.packed) &&           \
-			    GBAWindowControlIsBg0Enable(renderer->currentWindow.packed);                      \
-			objwinOnly = !GBAWindowControlIsBg0Enable(renderer->objwin.packed);                   \
-			break;                                                                                \
-		case 1:                                                                                   \
-			objwinForceEnable = GBAWindowControlIsBg1Enable(renderer->objwin.packed) &&           \
-			    GBAWindowControlIsBg1Enable(renderer->currentWindow.packed);                      \
-			objwinOnly = !GBAWindowControlIsBg1Enable(renderer->objwin.packed);                   \
-			break;                                                                                \
-		case 2:                                                                                   \
-			objwinForceEnable = GBAWindowControlIsBg2Enable(renderer->objwin.packed) &&           \
-			    GBAWindowControlIsBg2Enable(renderer->currentWindow.packed);                      \
-			objwinOnly = !GBAWindowControlIsBg2Enable(renderer->objwin.packed);                   \
-			break;                                                                                \
-		case 3:                                                                                   \
-			objwinForceEnable = GBAWindowControlIsBg3Enable(renderer->objwin.packed) &&           \
-			    GBAWindowControlIsBg3Enable(renderer->currentWindow.packed);                      \
-			objwinOnly = !GBAWindowControlIsBg3Enable(renderer->objwin.packed);                   \
-			break;                                                                                \
 		}                                                                                         \
 	}
 
@@ -219,7 +194,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	uint32_t flags = background->flags;                                                                               \
 	uint32_t objwinFlags = background->objwinFlags;                                                                   \
 	bool variant = background->variant;                                                                               \
-	color_t* palette = renderer->normalPalette;                                                                       \
+	mColor* palette = renderer->normalPalette;                                                                       \
 	if (renderer->d.highlightAmount && background->highlight) {                                                       \
 		palette = renderer->highlightPalette;                                                                         \
 	}                                                                                                                 \

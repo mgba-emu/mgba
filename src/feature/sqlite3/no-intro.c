@@ -47,7 +47,9 @@ struct NoIntroDB* NoIntroDBLoad(const char* path) {
 			"flags INTEGER DEFAULT 0,"
 			"gid INTEGER NOT NULL REFERENCES games(gid) ON DELETE CASCADE"
 		");\n"
-		"CREATE INDEX IF NOT EXISTS crc32 ON roms (crc32);";
+		"CREATE INDEX IF NOT EXISTS crc32 ON roms (crc32);\n"
+		"CREATE INDEX IF NOT EXISTS md5 ON roms (md5);\n"
+		"CREATE INDEX IF NOT EXISTS sha1 ON roms (sha1);\n";
 	if (sqlite3_exec(db->db, createTables, NULL, NULL, NULL)) {
 		goto error;
 	}
@@ -70,6 +72,7 @@ bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf) {
 
 	sqlite3_stmt* gamedbTable = NULL;
 	sqlite3_stmt* gamedbDrop = NULL;
+	sqlite3_stmt* gamedbSelect = NULL;
 	sqlite3_stmt* gameTable = NULL;
 	sqlite3_stmt* romTable = NULL;
 	char* fieldName = NULL;
@@ -86,6 +89,11 @@ bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf) {
 
 	static const char deleteGamedb[] = "DELETE FROM gamedb WHERE name = ? AND version < ?;";
 	if (sqlite3_prepare_v2(db->db, deleteGamedb, -1, &gamedbDrop, NULL)) {
+		return false;
+	}
+
+	static const char selectGamedb[] = "SELECT * FROM gamedb WHERE name = ? AND version >= ?;";
+	if (sqlite3_prepare_v2(db->db, selectGamedb, -1, &gamedbSelect, NULL)) {
 		return false;
 	}
 
@@ -159,18 +167,24 @@ bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf) {
 				break;
 			case ')':
 				if (currentDb < 0 && dbType && dbVersion) {
-					sqlite3_clear_bindings(gamedbDrop);
-					sqlite3_reset(gamedbDrop);
-					sqlite3_bind_text(gamedbDrop, 1, dbType, -1, SQLITE_TRANSIENT);
-					sqlite3_bind_text(gamedbDrop, 2, dbVersion, -1, SQLITE_TRANSIENT);
-					sqlite3_step(gamedbDrop);
+					sqlite3_clear_bindings(gamedbSelect);
+					sqlite3_reset(gamedbSelect);
+					sqlite3_bind_text(gamedbSelect, 1, dbType, -1, SQLITE_TRANSIENT);
+					sqlite3_bind_text(gamedbSelect, 2, dbVersion, -1, SQLITE_TRANSIENT);
+					if (sqlite3_step(gamedbSelect) != SQLITE_ROW) {
+						sqlite3_clear_bindings(gamedbDrop);
+						sqlite3_reset(gamedbDrop);
+						sqlite3_bind_text(gamedbDrop, 1, dbType, -1, SQLITE_TRANSIENT);
+						sqlite3_bind_text(gamedbDrop, 2, dbVersion, -1, SQLITE_TRANSIENT);
+						sqlite3_step(gamedbDrop);
 
-					sqlite3_clear_bindings(gamedbTable);
-					sqlite3_reset(gamedbTable);
-					sqlite3_bind_text(gamedbTable, 1, dbType, -1, SQLITE_TRANSIENT);
-					sqlite3_bind_text(gamedbTable, 2, dbVersion, -1, SQLITE_TRANSIENT);
-					if (sqlite3_step(gamedbTable) == SQLITE_DONE) {
-						currentDb = sqlite3_last_insert_rowid(db->db);
+						sqlite3_clear_bindings(gamedbTable);
+						sqlite3_reset(gamedbTable);
+						sqlite3_bind_text(gamedbTable, 1, dbType, -1, SQLITE_TRANSIENT);
+						sqlite3_bind_text(gamedbTable, 2, dbVersion, -1, SQLITE_TRANSIENT);
+						if (sqlite3_step(gamedbTable) == SQLITE_DONE) {
+							currentDb = sqlite3_last_insert_rowid(db->db);
+						}
 					}
 					free((void*) dbType);
 					free((void*) dbVersion);
@@ -270,6 +284,7 @@ bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf) {
 
 	sqlite3_finalize(gamedbTable);
 	sqlite3_finalize(gamedbDrop);
+	sqlite3_finalize(gamedbSelect);
 	sqlite3_finalize(gameTable);
 	sqlite3_finalize(romTable);
 

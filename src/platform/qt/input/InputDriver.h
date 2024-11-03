@@ -9,6 +9,8 @@
 #include <QString>
 #include <QObject>
 
+#include <memory>
+
 struct mRotationSource;
 struct mRumble;
 
@@ -42,13 +44,13 @@ public:
 	virtual bool update() = 0;
 
 	virtual QList<KeySource*> connectedKeySources() const;
-	virtual QList<Gamepad*> connectedGamepads() const;
+	virtual QList<std::shared_ptr<Gamepad>> connectedGamepads() const;
 
 	virtual int activeKeySourceIndex() const;
 	virtual int activeGamepadIndex() const;
 
 	KeySource* activeKeySource();
-	Gamepad* activeGamepad();
+	std::shared_ptr<Gamepad> activeGamepad();
 
 	virtual void setActiveKeySource(int);
 	virtual void setActiveGamepad(int);

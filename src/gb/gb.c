@@ -16,6 +16,7 @@
 #include <mgba-util/memory.h>
 #include <mgba-util/math.h>
 #include <mgba-util/patch.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 const uint32_t CGB_SM83_FREQUENCY = 0x800000;
@@ -106,7 +107,7 @@ static void GBDeinit(struct mCPUComponent* component) {
 
 bool GBLoadGBX(struct GBXMetadata* metadata, struct VFile* vf) {
 	uint8_t footer[16];
-	if (vf->seek(vf, -sizeof(footer), SEEK_END) < 0) {
+	if (vf->seek(vf, -(off_t) sizeof(footer), SEEK_END) < 0) {
 		return false;
 	}
 	if (vf->read(vf, footer, sizeof(footer)) < (ssize_t) sizeof(footer)) {
@@ -151,7 +152,7 @@ bool GBLoadGBX(struct GBXMetadata* metadata, struct VFile* vf) {
 	if (memcmp(footer, "MBC1", 4) == 0) {
 		metadata->mapperVars.u8[0] = 5;
 	} else if (memcmp(footer, "MB1M", 4) == 0) {
-		metadata->mapperVars.u8[0] = 4;		
+		metadata->mapperVars.u8[0] = 4;
 	}
 	return true;
 }
@@ -260,9 +261,13 @@ void GBResizeSram(struct GB* gb, size_t size) {
 	}
 	struct VFile* vf = gb->sramVf;
 	if (vf) {
+		// We have a vf
+		ssize_t vfSize = vf->size(vf);
 		if (vf == gb->sramRealVf) {
-			ssize_t vfSize = vf->size(vf);
+			// This is the real save file, not a masked one
 			if (vfSize >= 0 && (size_t) vfSize < size) {
+				// We need to grow the file
+				// Make sure to copy the footer data, if any
 				uint8_t extdataBuffer[0x100];
 				if (vfSize & 0xFF) {
 					vf->seek(vf, -(vfSize & 0xFF), SEEK_END);
@@ -270,6 +275,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 				}
 				if (gb->memory.sram) {
 					vf->unmap(vf, gb->memory.sram, gb->sramSize);
+					gb->memory.sram = NULL;
 				}
 				vf->truncate(vf, size + (vfSize & 0xFF));
 				if (vfSize & 0xFF) {
@@ -281,24 +287,36 @@ void GBResizeSram(struct GB* gb, size_t size) {
 					memset(&gb->memory.sram[vfSize], 0xFF, size - vfSize);
 				}
 			} else if (size > gb->sramSize || !gb->memory.sram) {
+				// We aren't growing the file, but we are changing our mapping of it
 				if (gb->memory.sram) {
 					vf->unmap(vf, gb->memory.sram, gb->sramSize);
+					gb->memory.sram = NULL;
 				}
 				if (size) {
 					gb->memory.sram = vf->map(vf, size, MAP_WRITE);
 				}
 			}
 		} else {
+			// This is a masked save file
 			if (gb->memory.sram) {
 				vf->unmap(vf, gb->memory.sram, gb->sramSize);
 			}
-			if (vf->size(vf) < gb->sramSize) {
-				void* sram = vf->map(vf, vf->size(vf), MAP_READ);
-				struct VFile* newVf = VFileMemChunk(sram, vf->size(vf));
-				vf->unmap(vf, sram,vf->size(vf));
-				vf = newVf;
-				gb->sramVf = newVf;
-				vf->truncate(vf, size);
+			if ((vfSize <= 0 && size) || (size_t) vfSize < size) {
+				// The loaded mask file is too small. Since these can be read-only,
+				// we need to make a new one of the right size
+				if (vfSize < 0) {
+					vfSize = 0;
+				}
+				gb->sramVf = VFileMemChunk(NULL, size);
+				uint8_t* sram = gb->sramVf->map(gb->sramVf, size, MAP_WRITE);
+				if (vfSize > 0) {
+					vf->seek(vf, 0, SEEK_SET);
+					vf->read(vf, sram, vfSize);
+				}
+				memset(&sram[vfSize], 0xFF, size - vfSize);
+				gb->sramVf->unmap(gb->sramVf, sram, size);
+				vf->close(vf);
+				vf = gb->sramVf;
 			}
 			if (size) {
 				gb->memory.sram = vf->map(vf, size, MAP_READ);
@@ -308,6 +326,8 @@ void GBResizeSram(struct GB* gb, size_t size) {
 			gb->memory.sram = NULL;
 		}
 	} else if (size) {
+		// There's no vf, so let's make it only memory-backed
+		// TODO: Investigate just using a VFileMemChunk instead of this hybrid approach
 		uint8_t* newSram = anonymousMemoryMap(size);
 		if (gb->memory.sram) {
 			if (size > gb->sramSize) {
@@ -455,17 +475,18 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 	if (patchedSize > GB_SIZE_CART_MAX) {
 		patchedSize = GB_SIZE_CART_MAX;
 	}
+
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	uint8_t type = cart->type;
 	void* newRom = anonymousMemoryMap(GB_SIZE_CART_MAX);
 	if (!patch->applyPatch(patch, gb->memory.rom, gb->pristineRomSize, newRom, patchedSize)) {
 		mappedMemoryFree(newRom, GB_SIZE_CART_MAX);
 		return;
 	}
-	if (gb->romVf) {
+	if (gb->romVf && gb->isPristine) {
 #ifndef FIXED_ROM_BUFFER
 		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
 #endif
-		gb->romVf->close(gb->romVf);
-		gb->romVf = NULL;
 	}
 	gb->isPristine = false;
 	if (gb->memory.romBase == gb->memory.rom) {
@@ -473,6 +494,12 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 	}
 	gb->memory.rom = newRom;
 	gb->memory.romSize = patchedSize;
+
+	cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	if (cart->type != type) {
+		gb->memory.mbcType = GB_MBC_AUTODETECT;
+		GBMBCInit(gb);
+	}
 	gb->romCrc32 = doCrc32(gb->memory.rom, gb->memory.romSize);
 	gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
 }
@@ -865,7 +892,7 @@ int GBValidModels(const uint8_t* bank0) {
 	} else if (cart->cgb == 0xC0) {
 		models = GB_MODEL_CGB;
 	} else {
-		models = GB_MODEL_MGB;		
+		models = GB_MODEL_MGB;
 	}
 	if (cart->sgb == 0x03 && cart->oldLicensee == 0x33) {
 		models |= GB_MODEL_SGB;
@@ -912,7 +939,7 @@ void GBProcessEvents(struct SM83Core* cpu) {
 
 			nextEvent = cycles;
 			do {
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 				gb->timing.globalCycles += nextEvent;
 #endif
 				nextEvent = mTimingTick(&gb->timing, nextEvent);
@@ -1029,7 +1056,7 @@ void GBStop(struct SM83Core* cpu) {
 void GBIllegal(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	mLOG(GB, GAME_ERROR, "Hit illegal opcode at address %04X:%02X", cpu->pc, cpu->bus);
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
 		struct mDebuggerEntryInfo info = {
 			.address = cpu->pc,
@@ -1072,7 +1099,7 @@ bool GBIsROM(struct VFile* vf) {
 	}
 
 	uint8_t footer[16];
-	vf->seek(vf, -sizeof(footer), SEEK_END);
+	vf->seek(vf, -(off_t) sizeof(footer), SEEK_END);
 	if (vf->read(vf, footer, sizeof(footer)) < (ssize_t) sizeof(footer)) {
 		return false;
 	}
@@ -1088,38 +1115,28 @@ bool GBIsROM(struct VFile* vf) {
 	return false;
 }
 
-void GBGetGameTitle(const struct GB* gb, char* out) {
-	const struct GBCartridge* cart = NULL;
-	if (gb->memory.rom) {
-		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	}
-	if (!cart) {
+void GBGetGameInfo(const struct GB* gb, struct mGameInfo* info) {
+	memset(info, 0, sizeof(*info));
+	if (!gb->memory.rom) {
 		return;
 	}
-	if (cart->oldLicensee != 0x33) {
-		memcpy(out, cart->titleLong, 16);
-	} else {
-		memcpy(out, cart->titleShort, 11);
-	}
-}
 
-void GBGetGameCode(const struct GB* gb, char* out) {
-	memset(out, 0, 8);
-	const struct GBCartridge* cart = NULL;
-	if (gb->memory.rom) {
-		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	}
-	if (!cart) {
-		return;
-	}
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	if (cart->cgb == 0xC0) {
-		memcpy(out, "CGB-????", 8);
+		strlcpy(info->system, "CGB", sizeof(info->system));
 	} else {
-		memcpy(out, "DMG-????", 8);
+		strlcpy(info->system, "DMG", sizeof(info->system));
 	}
-	if (cart->oldLicensee == 0x33) {
-		memcpy(&out[4], cart->maker, 4);
+
+	if (cart->oldLicensee != 0x33) {
+		memcpy(info->title, cart->titleLong, 16);
+		snprintf(info->maker, sizeof(info->maker), "%02X", cart->oldLicensee);
+	} else {
+		memcpy(info->title, cart->titleShort, 11);
+		memcpy(info->code, cart->maker, 4);
+		memcpy(info->maker, &cart->licensee, 2);
 	}
+	info->version = cart->version;
 }
 
 void GBFrameStarted(struct GB* gb) {
@@ -1146,9 +1163,15 @@ void GBFrameEnded(struct GB* gb) {
 		}
 	}
 
+	struct mRumble* rumble = gb->memory.rumble;
+	if (rumble && rumble->integrate) {
+		gb->memory.lastRumble = mTimingCurrentTime(&gb->timing);
+		rumble->integrate(rumble, GB_VIDEO_TOTAL_LENGTH);
+	}
+
 	// TODO: Move to common code
 	if (gb->stream && gb->stream->postVideoFrame) {
-		const color_t* pixels;
+		const mColor* pixels;
 		size_t stride;
 		gb->video.renderer->getPixels(gb->video.renderer, &stride, (const void**) &pixels);
 		gb->stream->postVideoFrame(gb->stream, pixels, stride);

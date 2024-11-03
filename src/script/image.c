@@ -29,6 +29,7 @@ static struct mScriptValue* _mImageNew(unsigned width, unsigned height) {
 	return result;
 }
 
+#ifdef ENABLE_VFS
 static struct mScriptValue* _mImageLoad(const char* path) {
 	struct mImage* image = mImageLoad(path);
 	if (!image) {
@@ -39,6 +40,7 @@ static struct mScriptValue* _mImageLoad(const char* path) {
 	result->flags = mSCRIPT_VALUE_FLAG_DEINIT;
 	return result;
 }
+#endif
 
 static struct mScriptValue* _mImageNewPainter(struct mScriptValue* image) {
 	mScriptValueRef(image);
@@ -54,15 +56,9 @@ static struct mScriptValue* _mImageNewPainter(struct mScriptValue* image) {
 
 mSCRIPT_DECLARE_STRUCT_C_METHOD(mImage, U32, getPixel, mImageGetPixel, 2, U32, x, U32, y);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mImage, setPixel, mImageSetPixel, 3, U32, x, U32, y, U32, color);
-mSCRIPT_DECLARE_STRUCT_C_METHOD_WITH_DEFAULTS(mImage, BOOL, save, mImageSave, 2, CHARP, path, CHARP, format);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mImage, _deinit, mImageDestroy, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mImage, drawImageOpaque, mImageBlit, 3, CS(mImage), image, U32, x, U32, y);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD_WITH_DEFAULTS(mImage, drawImage, mImageCompositeWithAlpha, 4, CS(mImage), image, U32, x, U32, y, F32, alpha);
-
-mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mImage, save)
-	mSCRIPT_NO_DEFAULT,
-	mSCRIPT_CHARP("PNG")
-mSCRIPT_DEFINE_DEFAULTS_END;
 
 mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mImage, drawImage)
 	mSCRIPT_NO_DEFAULT,
@@ -71,13 +67,23 @@ mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mImage, drawImage)
 	mSCRIPT_F32(1.0f)
 mSCRIPT_DEFINE_DEFAULTS_END;
 
+#ifdef ENABLE_VFS
+mSCRIPT_DECLARE_STRUCT_C_METHOD_WITH_DEFAULTS(mImage, BOOL, save, mImageSave, 2, CHARP, path, CHARP, format);
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mImage, save)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_CHARP("PNG")
+mSCRIPT_DEFINE_DEFAULTS_END;
+#endif
+
 mSCRIPT_DEFINE_STRUCT(mImage)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
 		"A single, static image."
 	)
 	mSCRIPT_DEFINE_STRUCT_DEINIT(mImage)
+#ifdef ENABLE_VFS
 	mSCRIPT_DEFINE_DOCSTRING("Save the image to a file. Currently, only `PNG` format is supported")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mImage, save)
+#endif
 	mSCRIPT_DEFINE_DOCSTRING("Get the ARGB value of the pixel at a given coordinate")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mImage, getPixel)
 	mSCRIPT_DEFINE_DOCSTRING("Set the ARGB value of the pixel at a given coordinate")
@@ -93,7 +99,9 @@ mSCRIPT_DEFINE_STRUCT(mImage)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_BIND_FUNCTION(mImageNew_Binding, W(mImage), _mImageNew, 2, U32, width, U32, height);
+#ifdef ENABLE_VFS
 mSCRIPT_BIND_FUNCTION(mImageLoad_Binding, W(mImage), _mImageLoad, 1, CHARP, path);
+#endif
 mSCRIPT_BIND_FUNCTION(mImageNewPainter_Binding, W(mScriptPainter), _mImageNewPainter, 1, W(mImage), image);
 
 void _mPainterSetBlend(struct mPainter* painter, bool enable) {
@@ -131,6 +139,7 @@ static struct mScriptValue* _mScriptPainterGet(struct mScriptPainter* painter, c
 
 void _mScriptPainterDeinit(struct mScriptPainter* painter) {
 	mScriptValueDeref(painter->image);
+	free(painter);
 }
 
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, setBlend, _mPainterSetBlend, 1, BOOL, enable);
@@ -141,6 +150,7 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, setStrokeColor, _mPainterSetStrokeC
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawRectangle, mPainterDrawRectangle, 4, S32, x, S32, y, S32, width, S32, height);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawLine, mPainterDrawLine, 4, S32, x1, S32, y1, S32, x2, S32, y2);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawCircle, mPainterDrawCircle, 3, S32, x, S32, y, S32, diameter);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawMask, mPainterDrawMask, 3, CS(mImage), mask, S32, x, S32, y);
 
 mSCRIPT_DEFINE_STRUCT(mPainter)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
@@ -162,6 +172,13 @@ mSCRIPT_DEFINE_STRUCT(mPainter)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, drawLine)
 	mSCRIPT_DEFINE_DOCSTRING("Draw a circle with the specified diameter with the given origin at the top-left corner of the bounding box")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, drawCircle)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Draw a mask image with each color channel multiplied by the current fill color. This can "
+		"be useful for displaying graphics with dynamic colors. By making a grayscale template "
+		"image on a transparent background in advance, a script can set the fill color to a desired "
+		"target color and use this function to draw it into a destination image."
+	)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, drawMask)
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptPainter, W(mPainter), _get, _mScriptPainterGet, 1, CHARP, name);
@@ -177,12 +194,16 @@ mSCRIPT_DEFINE_END;
 void mScriptContextAttachImage(struct mScriptContext* context) {
 	mScriptContextExportNamespace(context, "image", (struct mScriptKVPair[]) {
 		mSCRIPT_KV_PAIR(new, &mImageNew_Binding),
+#ifdef ENABLE_VFS
 		mSCRIPT_KV_PAIR(load, &mImageLoad_Binding),
+#endif
 		mSCRIPT_KV_PAIR(newPainter, &mImageNewPainter_Binding),
 		mSCRIPT_KV_SENTINEL
 	});
 	mScriptContextSetDocstring(context, "image", "Methods for creating struct::mImage and struct::mPainter instances");
 	mScriptContextSetDocstring(context, "image.new", "Create a new image with the given dimensions");
+#ifdef ENABLE_VFS
 	mScriptContextSetDocstring(context, "image.load", "Load an image from a path. Currently, only `PNG` format is supported");
+#endif
 	mScriptContextSetDocstring(context, "image.newPainter", "Create a new painter from an existing image");
 }

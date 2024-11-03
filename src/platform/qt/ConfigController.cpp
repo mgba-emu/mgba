@@ -13,12 +13,15 @@
 
 #include <mgba/feature/commandline.h>
 #ifdef M_CORE_GB
-#include <mgba/internal/gb/overrides.h>
+#include <mgba/gb/interface.h>
 #endif
 
 static const mOption s_frontendOptions[] = {
 	{ "ecard", true, '\0' },
 	{ "mb", true, '\0' },
+#ifdef ENABLE_SCRIPTING
+	{ "script", true, '\0' },
+#endif
 	{ 0 }
 };
 
@@ -31,7 +34,7 @@ ConfigOption::ConfigOption(const QString& name, QObject* parent)
 }
 
 void ConfigOption::connect(std::function<void(const QVariant&)> slot, QObject* parent) {
-	m_slots[parent] = slot;
+	m_slots[parent] = std::move(slot);
 	QObject::connect(parent, &QObject::destroyed, this, [this, parent]() {
 		m_slots.remove(parent);
 	});
@@ -49,7 +52,12 @@ std::shared_ptr<Action> ConfigOption::addValue(const QString& text, const QVaria
 		action = std::make_shared<Action>(function, name, text, this);
 	}
 	action->setExclusive();
-	QObject::connect(action.get(), &QObject::destroyed, this, [this, action, value]() {
+	std::weak_ptr<Action> weakAction(action);
+	QObject::connect(action.get(), &QObject::destroyed, this, [this, weakAction = std::move(weakAction), value]() {
+		if (weakAction.expired()) {
+			return;
+		}
+		std::shared_ptr<Action> action(weakAction.lock());
 		m_actions.removeAll(std::make_pair(action, value));
 	});
 	m_actions.append(std::make_pair(action, value));
@@ -71,7 +79,12 @@ std::shared_ptr<Action> ConfigOption::addBoolean(const QString& text, ActionMapp
 		action = std::make_shared<Action>(function, m_name, text, this);
 	}
 
-	QObject::connect(action.get(), &QObject::destroyed, this, [this, action]() {
+	std::weak_ptr<Action> weakAction(action);
+	QObject::connect(action.get(), &QObject::destroyed, this, [this, weakAction]() {
+		if (weakAction.expired()) {
+			return;
+		}
+		std::shared_ptr<Action> action(weakAction.lock());
 		m_actions.removeAll(std::make_pair(action, QVariant(1)));
 	});
 	m_actions.append(std::make_pair(action, QVariant(1)));
@@ -141,9 +154,15 @@ ConfigController::ConfigController(QObject* parent)
 	mSubParserGraphicsInit(&m_subparsers[0], &m_graphicsOpts);
 
 	m_subparsers[1].usage = "Frontend options:\n"
-	    "  --ecard FILE  Scan an e-Reader card in the first loaded game\n"
-	    "                Can be passed multiple times for multiple cards\n"
-	    "  --mb FILE     Boot a multiboot image with FILE inserted into the ROM slot";
+	      "  --ecard FILE   Scan an e-Reader card in the first loaded game\n"
+	      "                 Can be passed multiple times for multiple cards\n"
+	      "  --mb FILE      Boot a multiboot image with FILE inserted into the ROM slot"
+#ifdef ENABLE_SCRIPTING
+	    "\n  --script FILE  Script file to load on start\n"
+	      "                 Can be passed multiple times\n"
+#endif
+	    ;
+
 	m_subparsers[1].parse = nullptr;
 	m_subparsers[1].parseLong = [](struct mSubParser* parser, const char* option, const char* arg) {
 		ConfigController* self = static_cast<ConfigController*>(parser->opts);
@@ -161,6 +180,17 @@ ConfigController::ConfigController(QObject* parent)
 			self->m_argvOptions[optionName] = QString::fromUtf8(arg);
 			return true;
 		}
+#ifdef ENABLE_SCRIPTING
+		if (optionName == QLatin1String("script")) {
+			QStringList scripts;
+			if (self->m_argvOptions.contains(optionName)) {
+				scripts = self->m_argvOptions[optionName].toStringList();
+			}
+			scripts.append(QString::fromUtf8(arg));
+			self->m_argvOptions[optionName] = scripts;
+			return true;
+		}
+#endif
 		return false;
 	};
 	m_subparsers[1].apply = nullptr;
@@ -289,7 +319,11 @@ void ConfigController::setOption(const char* key, const char* value) {
 }
 
 void ConfigController::setOption(const char* key, const QVariant& value) {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	if (value.type() == QVariant::Bool) {
+#else
+	if (value.typeId() == QMetaType::Type::Bool) {
+#endif
 		setOption(key, value.toBool());
 		return;
 	}
@@ -356,7 +390,7 @@ void ConfigController::write() {
 }
 
 void ConfigController::makePortable() {
-	mCoreConfigMakePortable(&m_config);
+	mCoreConfigMakePortable(&m_config, nullptr);
 
 	QString fileName(configDir());
 	fileName.append(QDir::separator());

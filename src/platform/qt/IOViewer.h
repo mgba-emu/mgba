@@ -28,7 +28,7 @@ public:
 			, size(size)
 			, readonly(readonly)
 			, description(description) {}
-		RegisterItem(const QString& description, uint start, int size, QStringList items, bool readonly = false)
+		RegisterItem(const QString& description, uint start, int size, const QStringList& items, bool readonly = false)
 			: start(start)
 			, size(size)
 			, readonly(readonly)

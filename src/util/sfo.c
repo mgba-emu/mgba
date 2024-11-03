@@ -91,7 +91,7 @@ bool SfoAddStrValue(struct Table* sfo, const char* name, const char* value) {
 		HashTableInsert(sfo, name, entry);
 	}
 	entry->type = PSF_TYPE_STR;
-	entry->data.str = value;	
+	entry->data.str = value;
 	return true;
 }
 
@@ -161,6 +161,9 @@ bool SfoWrite(struct Table* sfo, struct VFile* vf) {
 			case PSF_TYPE_U32:
 				sortedEntries[i].size = 4;
 				break;
+			default:
+				free(sortedEntries);
+				return false;
 			}
 		}
 		dataSize += ALIGN4(sortedEntries[i].size);
@@ -206,9 +209,7 @@ bool SfoWrite(struct Table* sfo, struct VFile* vf) {
 		}
 	}
 
-	if (keysSize != ALIGN4(keysOffset) || dataSize != dataOffset) {
-		abort();
-	}
+	mASSERT(keysSize == ALIGN4(keysOffset) && dataSize == dataOffset);
 
 	free(sortedEntries);
 

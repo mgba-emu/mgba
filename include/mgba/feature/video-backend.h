@@ -48,7 +48,7 @@ struct VideoBackend {
 	void (*layerDimensions)(const struct VideoBackend*, enum VideoLayer, struct mRectangle*);
 	void (*swap)(struct VideoBackend*);
 	void (*clear)(struct VideoBackend*);
-	void (*contextResized)(struct VideoBackend*, unsigned w, unsigned h);
+	void (*contextResized)(struct VideoBackend*, unsigned w, unsigned h, unsigned maxW, unsigned maxH);
 	void (*setImageSize)(struct VideoBackend*, enum VideoLayer, int w, int h);
 	void (*imageSize)(struct VideoBackend*, enum VideoLayer, int* w, int* h);
 	void (*setImage)(struct VideoBackend*, enum VideoLayer, const void* frame);
@@ -74,6 +74,7 @@ struct VideoShader {
 
 void VideoBackendGetFrame(const struct VideoBackend*, struct mRectangle* frame);
 void VideoBackendGetFrameSize(const struct VideoBackend*, unsigned* width, unsigned* height);
+void VideoBackendRecenter(struct VideoBackend* v, unsigned scale);
 
 CXX_GUARD_END
 

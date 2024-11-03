@@ -10,7 +10,7 @@
 
 CXX_GUARD_START
 
-struct CircleBuffer {
+struct mCircleBuffer {
 	void* data;
 	size_t capacity;
 	size_t size;
@@ -18,20 +18,21 @@ struct CircleBuffer {
 	void* writePtr;
 };
 
-void CircleBufferInit(struct CircleBuffer* buffer, unsigned capacity);
-void CircleBufferDeinit(struct CircleBuffer* buffer);
-size_t CircleBufferSize(const struct CircleBuffer* buffer);
-size_t CircleBufferCapacity(const struct CircleBuffer* buffer);
-void CircleBufferClear(struct CircleBuffer* buffer);
-int CircleBufferWrite8(struct CircleBuffer* buffer, int8_t value);
-int CircleBufferWrite16(struct CircleBuffer* buffer, int16_t value);
-int CircleBufferWrite32(struct CircleBuffer* buffer, int32_t value);
-size_t CircleBufferWrite(struct CircleBuffer* buffer, const void* input, size_t length);
-int CircleBufferRead8(struct CircleBuffer* buffer, int8_t* value);
-int CircleBufferRead16(struct CircleBuffer* buffer, int16_t* value);
-int CircleBufferRead32(struct CircleBuffer* buffer, int32_t* value);
-size_t CircleBufferRead(struct CircleBuffer* buffer, void* output, size_t length);
-size_t CircleBufferDump(const struct CircleBuffer* buffer, void* output, size_t length);
+void mCircleBufferInit(struct mCircleBuffer* buffer, unsigned capacity);
+void mCircleBufferDeinit(struct mCircleBuffer* buffer);
+size_t mCircleBufferSize(const struct mCircleBuffer* buffer);
+size_t mCircleBufferCapacity(const struct mCircleBuffer* buffer);
+void mCircleBufferClear(struct mCircleBuffer* buffer);
+int mCircleBufferWrite8(struct mCircleBuffer* buffer, int8_t value);
+int mCircleBufferWrite16(struct mCircleBuffer* buffer, int16_t value);
+int mCircleBufferWrite32(struct mCircleBuffer* buffer, int32_t value);
+size_t mCircleBufferWrite(struct mCircleBuffer* buffer, const void* input, size_t length);
+size_t mCircleBufferWriteTruncate(struct mCircleBuffer* buffer, const void* input, size_t length);
+int mCircleBufferRead8(struct mCircleBuffer* buffer, int8_t* value);
+int mCircleBufferRead16(struct mCircleBuffer* buffer, int16_t* value);
+int mCircleBufferRead32(struct mCircleBuffer* buffer, int32_t* value);
+size_t mCircleBufferRead(struct mCircleBuffer* buffer, void* output, size_t length);
+size_t mCircleBufferDump(const struct mCircleBuffer* buffer, void* output, size_t length, size_t offset);
 
 CXX_GUARD_END
 

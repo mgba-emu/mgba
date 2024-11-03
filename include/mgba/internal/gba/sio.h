@@ -16,8 +16,6 @@ CXX_GUARD_START
 
 #define MAX_GBAS 4
 
-extern const int GBASIOCyclesPerTransfer[4][MAX_GBAS];
-
 mLOG_DECLARE_CATEGORY(GBA_SIO);
 
 enum {
@@ -54,36 +52,44 @@ DECL_BITS(GBASIOMultiplayer, Id, 4, 2);
 DECL_BIT(GBASIOMultiplayer, Error, 6);
 DECL_BIT(GBASIOMultiplayer, Busy, 7);
 DECL_BIT(GBASIOMultiplayer, Irq, 14);
-
-struct GBASIODriverSet {
-	struct GBASIODriver* normal;
-	struct GBASIODriver* multiplayer;
-	struct GBASIODriver* joybus;
-};
+DECL_BITFIELD(GBASIORegisterRCNT, uint16_t);
+DECL_BIT(GBASIORegisterRCNT, Sc, 0);
+DECL_BIT(GBASIORegisterRCNT, Sd, 1);
+DECL_BIT(GBASIORegisterRCNT, Si, 2);
+DECL_BIT(GBASIORegisterRCNT, So, 3);
+DECL_BIT(GBASIORegisterRCNT, ScDirection, 4);
+DECL_BIT(GBASIORegisterRCNT, SdDirection, 5);
+DECL_BIT(GBASIORegisterRCNT, SiDirection, 6);
+DECL_BIT(GBASIORegisterRCNT, SoDirection, 7);
 
 struct GBASIO {
 	struct GBA* p;
 
 	enum GBASIOMode mode;
-	struct GBASIODriverSet drivers;
-	struct GBASIODriver* activeDriver;
+	struct GBASIODriver* driver;
 
 	uint16_t rcnt;
 	uint16_t siocnt;
 
 	struct GBASIOPlayer gbp;
+	struct mTimingEvent completeEvent;
 };
 
 void GBASIOInit(struct GBASIO* sio);
 void GBASIODeinit(struct GBASIO* sio);
 void GBASIOReset(struct GBASIO* sio);
 
-void GBASIOSetDriverSet(struct GBASIO* sio, struct GBASIODriverSet* drivers);
-void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver, enum GBASIOMode mode);
+void GBASIOSetDriver(struct GBASIO* sio, struct GBASIODriver* driver);
 
 void GBASIOWriteRCNT(struct GBASIO* sio, uint16_t value);
 void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value);
 uint16_t GBASIOWriteRegister(struct GBASIO* sio, uint32_t address, uint16_t value);
+
+int32_t GBASIOTransferCycles(enum GBASIOMode mode, uint16_t siocnt, int connected);
+
+void GBASIOMultiplayerFinishTransfer(struct GBASIO* sio, uint16_t data[4], uint32_t cyclesLate);
+void GBASIONormal8FinishTransfer(struct GBASIO* sio, uint8_t data, uint32_t cyclesLate);
+void GBASIONormal32FinishTransfer(struct GBASIO* sio, uint32_t data, uint32_t cyclesLate);
 
 int GBASIOJOYSendCommand(struct GBASIODriver* sio, enum GBASIOJOYCommand command, uint8_t* data);
 

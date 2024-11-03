@@ -53,6 +53,12 @@ typedef struct _XDisplay Display;
 #define OVERHEAD_NSEC 300000
 #endif
 
+// Legacy define from X11/X.h
+#ifdef Unsorted
+#undef Unsorted
+#endif
+
+#include "LogController.h"
 #include "OpenGLBug.h"
 #include "utils.h"
 
@@ -186,6 +192,7 @@ DisplayGL::DisplayGL(const QSurfaceFormat& format, QWidget* parent)
 	setAttribute(Qt::WA_NativeWindow);
 	window()->windowHandle()->setFormat(format);
 	windowHandle()->setSurfaceType(QSurface::OpenGLSurface);
+	windowHandle()->destroy();
 	windowHandle()->create();
 
 #ifdef USE_SHARE_WIDGET
@@ -245,7 +252,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	m_isDrawing = true;
 	m_painter->setContext(controller);
 	m_painter->setMessagePainter(messagePainter());
-	m_context = controller;
+	m_context = std::move(controller);
 	if (videoProxy()) {
 		videoProxy()->moveToThread(&m_drawThread);
 	}
@@ -275,6 +282,47 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 	}
 
 	QTimer::singleShot(8, this, &DisplayGL::updateContentSize);
+}
+
+bool DisplayGL::highestCompatible(QSurfaceFormat& format) {
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
+	if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
+		format.setVersion(3, 3);
+		format.setProfile(QSurfaceFormat::CoreProfile);
+		if (DisplayGL::supportsFormat(format)) {
+			return true;
+		}
+	} else {
+#if defined(BUILD_GLES3) || defined(USE_EPOXY)
+		format.setVersion(3, 1);
+		if (DisplayGL::supportsFormat(format)) {
+			return true;
+		}
+#endif
+#if defined(BUILD_GLES2) || defined(USE_EPOXY)
+		format.setVersion(2, 0);
+		if (DisplayGL::supportsFormat(format)) {
+			return true;
+		}
+#endif
+	}
+#endif
+
+#ifdef BUILD_GL
+#if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
+	LOG(QT, WARN) << tr("Failed to create an OpenGL 3 context, trying old-style...");
+#endif
+	if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
+		format.setVersion(1, 4);
+	} else {
+		format.setVersion(1, 1);
+	}
+	format.setOption(QSurfaceFormat::DeprecatedFunctions);
+	if (DisplayGL::supportsFormat(format)) {
+			return true;
+	}
+#endif
+	return false;
 }
 
 bool DisplayGL::supportsFormat(const QSurfaceFormat& format) {
@@ -466,7 +514,7 @@ void DisplayGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
 	if (proxy) {
 		proxy->moveToThread(&m_drawThread);
 	}
-	m_painter->setVideoProxy(proxy);
+	m_painter->setVideoProxy(std::move(proxy));
 }
 
 void DisplayGL::updateContentSize() {
@@ -475,6 +523,10 @@ void DisplayGL::updateContentSize() {
 
 int DisplayGL::framebufferHandle() {
 	return m_painter->glTex();
+}
+
+void DisplayGL::setMaximumSize(const QSize& size) {
+	QMetaObject::invokeMethod(m_painter.get(), "setMaximumSize", Q_ARG(const QSize&, size));
 }
 
 PainterGL::PainterGL(QWindow* window, mGLWidget* widget, const QSurfaceFormat& format)
@@ -624,7 +676,7 @@ void PainterGL::destroy() {
 }
 
 void PainterGL::setContext(std::shared_ptr<CoreController> context) {
-	m_context = context;
+	m_context = std::move(context);
 }
 
 void PainterGL::resizeContext() {
@@ -647,6 +699,7 @@ void PainterGL::resizeContext() {
 	mRectangle dims = {0, 0, size.width(), size.height()};
 	m_backend->setLayerDimensions(m_backend, VIDEO_LAYER_IMAGE, &dims);
 	recenterLayers();
+	m_dims = size;
 }
 
 void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
@@ -657,22 +710,7 @@ void PainterGL::recenterLayers() {
 	if (!m_context) {
 		return;
 	}
-	const static std::initializer_list<VideoLayer> centeredLayers{VIDEO_LAYER_BACKGROUND};
-	int width, height;
-	mRectangle frame = {0};
-	m_backend->imageSize(m_backend, VIDEO_LAYER_IMAGE, &width, &height);
-	frame.width = width;
-	frame.height = height;
-	unsigned scale = std::max(1U, m_context->videoScale());
-
-	for (VideoLayer l : centeredLayers) {
-		mRectangle dims{};
-		m_backend->imageSize(m_backend, l, &width, &height);
-		dims.width = width * scale;
-		dims.height = height * scale;
-		mRectangleCenter(&frame, &dims);
-		m_backend->setLayerDimensions(m_backend, l, &dims);
-	}
+	VideoBackendRecenter(m_backend, std::max(1U, m_context->videoScale()));
 }
 
 void PainterGL::resize(const QSize& size) {
@@ -685,6 +723,11 @@ void PainterGL::resize(const QSize& size) {
 	if (m_started && !m_active) {
 		forceDraw();
 	}
+}
+
+void PainterGL::setMaximumSize(const QSize& size) {
+	m_maxSize = size;
+	resizeContext();
 }
 
 void PainterGL::lockAspectRatio(bool lock) {
@@ -878,7 +921,11 @@ void PainterGL::unpause() {
 
 void PainterGL::performDraw() {
 	float r = m_window->devicePixelRatio();
-	m_backend->contextResized(m_backend, m_size.width() * r, m_size.height() * r);
+	QSize maxSize = m_maxSize;
+	if (!maxSize.isValid()) {
+		maxSize = QSize(0, 0);
+	}
+	m_backend->contextResized(m_backend, m_size.width() * r, m_size.height() * r, maxSize.width() * r, maxSize.height() * r);
 	if (m_buffer) {
 		m_backend->setImage(m_backend, VIDEO_LAYER_IMAGE, m_buffer);
 	}

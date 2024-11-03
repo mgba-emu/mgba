@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba-util/platform/3ds/3ds-vfs.h>
 
-#ifdef USE_VFS_3DS
+#ifdef ENABLE_VFS_3DS
 #include <mgba-util/memory.h>
 #include <mgba-util/string.h>
 

@@ -28,11 +28,11 @@ QVariant ShortcutModel::data(const QModelIndex& index, int role) const {
 	if (role != Qt::DisplayRole || !index.isValid()) {
 		return QVariant();
 	}
-	const Item* item = static_cast<Item*>(index.internalPointer());
-	const Shortcut* shortcut = item->shortcut;
+	const Item& item = m_cache[index.internalId()];
+	const Shortcut* shortcut = item.shortcut;
 	switch (index.column()) {
 	case 0:
-		return m_controller->visibleName(item->name);
+		return m_controller->visibleName(item.name);
 	case 1:
 		return shortcut ? keyName(shortcut->shortcut()) : QVariant();
 	case 2:
@@ -77,28 +77,31 @@ QVariant ShortcutModel::headerData(int section, Qt::Orientation orientation, int
 QModelIndex ShortcutModel::index(int row, int column, const QModelIndex& parent) const {
 	QString pmenu;
 	if (parent.isValid()) {
-		pmenu = static_cast<Item*>(parent.internalPointer())->name;
+		const Item& item = m_cache[parent.internalId()];
+		pmenu = item.name;
 	}
 	QString name = m_controller->name(row, pmenu);
-	Item* item = &m_cache[name];
-	item->name = name;
-	item->shortcut = m_controller->shortcut(name);
-	return createIndex(row, column, item);
+	size_t hash = qHash(name);
+	Item& item = m_cache[hash];
+	item.name = name;
+	item.shortcut = m_controller->shortcut(name);
+	return createIndex(row, column, hash);
 }
 
 QModelIndex ShortcutModel::parent(const QModelIndex& index) const {
 	if (!index.isValid() || !index.internalPointer()) {
 		return QModelIndex();
 	}
-	Item* item = static_cast<Item*>(index.internalPointer());
-	QString parent = m_controller->parent(item->name);
+	const Item& item = m_cache[index.internalId()];
+	QString parent = m_controller->parent(item.name);
 	if (parent.isNull()) {
 		return QModelIndex();
 	}
-	Item* pitem = &m_cache[parent];
-	pitem->name = parent;
-	pitem->shortcut = m_controller->shortcut(parent);
-	return createIndex(m_controller->indexIn(parent), 0, pitem);
+	size_t hash = qHash(parent);
+	Item& pitem = m_cache[hash];
+	pitem.name = parent;
+	pitem.shortcut = m_controller->shortcut(parent);
+	return createIndex(m_controller->indexIn(parent), 0, hash);
 }
 
 int ShortcutModel::columnCount(const QModelIndex&) const {
@@ -109,25 +112,26 @@ int ShortcutModel::rowCount(const QModelIndex& index) const {
 	if (!index.isValid()) {
 		return m_controller->count();
 	}
-	Item* item = static_cast<Item*>(index.internalPointer());
-	return m_controller->count(item->name);
+	const Item& item = m_cache[index.internalId()];
+	return m_controller->count(item.name);
 }
 
 QString ShortcutModel::name(const QModelIndex& index) const {
 	if (!index.isValid()) {
 		return {};
 	}
-	Item* item = static_cast<Item*>(index.internalPointer());
-	return item->name;
+	const Item& item = m_cache[index.internalId()];
+	return item.name;
 }
 
 void ShortcutModel::addRowNamed(const QString& name) {
 	QString parent = m_controller->parent(name);
-	Item* item = &m_cache[parent];
-	item->name = parent;
-	item->shortcut = m_controller->shortcut(parent);
+	size_t hash = qHash(name);
+	Item& item = m_cache[hash];
+	item.name = parent;
+	item.shortcut = m_controller->shortcut(parent);
 	int index = m_controller->indexIn(name);
-	beginInsertRows(createIndex(m_controller->indexIn(parent), 0, item), index, index + 1);
+	beginInsertRows(createIndex(m_controller->indexIn(parent), 0, hash), index, index + 1);
 	endInsertRows();
 }
 

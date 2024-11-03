@@ -10,6 +10,8 @@
 
 CXX_GUARD_START
 
+#ifdef ENABLE_VFS
+
 #include <mgba/core/core.h>
 #include <mgba-util/vector.h>
 
@@ -45,6 +47,8 @@ struct VFile* mLibraryOpenVFile(struct mLibrary* library, const struct mLibraryE
 
 struct NoIntroDB;
 void mLibraryAttachGameDB(struct mLibrary* library, const struct NoIntroDB* db);
+
+#endif
 
 #endif
 

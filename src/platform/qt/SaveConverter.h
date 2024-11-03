@@ -48,7 +48,7 @@ private slots:
 private:
 #ifdef M_CORE_GBA
 	struct GBASave {
-		SavedataType type;
+		GBASavedataType type;
 	};
 #endif
 #ifdef M_CORE_GB
@@ -66,7 +66,7 @@ private:
 		AnnotatedSave();
 		AnnotatedSave(mPlatform, std::shared_ptr<VFileDevice>, Endian = Endian::NONE, Container = Container::NONE);
 #ifdef M_CORE_GBA
-		AnnotatedSave(SavedataType, std::shared_ptr<VFileDevice>, Endian = Endian::NONE, Container = Container::NONE);
+		AnnotatedSave(GBASavedataType, std::shared_ptr<VFileDevice>, Endian = Endian::NONE, Container = Container::NONE);
 #endif
 #ifdef M_CORE_GB
 		AnnotatedSave(GBMemoryBankControllerType, std::shared_ptr<VFileDevice>, Endian = Endian::NONE, Container = Container::NONE);

@@ -130,7 +130,7 @@ private:
 	mGraphicsOpts m_graphicsOpts{};
 	std::array<mSubParser, 2> m_subparsers;
 	bool m_parsed = false;
-	
+
 	QHash<QString, QVariant> m_argvOptions;
 	QHash<QString, ConfigOption*> m_optionSet;
 	std::unique_ptr<QSettings> m_settings;

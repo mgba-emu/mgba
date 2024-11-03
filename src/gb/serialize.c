@@ -122,6 +122,13 @@ bool GBDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: video y is out of range");
 		error = true;
 	}
+
+	GBSerializedVideoFlags videoFlags = state->video.flags;
+	if (check16 >= GB_VIDEO_VERTICAL_PIXELS && GBSerializedVideoFlagsGetMode(videoFlags) != 1) {
+		mLOG(GB_STATE, WARN, "Savestate is corrupted: video y is in vblank but mode is not vblank");
+		error = true;
+	}
+
 	LOAD_16LE(ucheck16, 0, &state->memory.dmaDest);
 	if (ucheck16 + state->memory.dmaRemaining > GB_SIZE_OAM) {
 		mLOG(GB_STATE, WARN, "Savestate is corrupted: DMA destination is out of range");

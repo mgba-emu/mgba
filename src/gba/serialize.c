@@ -195,7 +195,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	if (GBASerializedMiscFlagsIsIrqPending(miscFlags)) {
 		int32_t when;
 		LOAD_32(when, 0, &state->nextIrq);
-		mTimingSchedule(&gba->timing, &gba->irqEvent, when);		
+		mTimingSchedule(&gba->timing, &gba->irqEvent, when);
 	}
 	gba->cpuBlocked = GBASerializedMiscFlagsGetBlocked(miscFlags);
 	gba->keysLast = GBASerializedMiscFlagsGetKeyIRQKeys(miscFlags);

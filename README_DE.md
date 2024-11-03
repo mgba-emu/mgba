@@ -247,7 +247,6 @@ Copyright für mGBA © 2013 – 2021 Jeffrey Pfau. mGBA wird unter der [Mozilla 
 mGBA beinhaltet die folgenden Bibliotheken von Drittanbietern:
 
 - [inih](https://github.com/benhoyt/inih), Copyright © 2009 - 2020 Ben Hoyt, verwendet unter einer BSD 3-clause-Lizenz.
-- [blip-buf](https://code.google.com/archive/b/blip-buf), Copyright © 2003 - 2009 Shay Green, verwendet unter einer Lesser GNU Public License.
 - [LZMA SDK](http://www.7-zip.org/sdk.html), Public Domain.
 - [MurmurHash3](https://github.com/aappleby/smhasher), Implementierung von Austin Appleby, Public Domain.
 - [getopt fot MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio/), Public Domain.

@@ -8,7 +8,7 @@
 #include <mgba/core/config.h>
 #include <mgba-util/vfs.h>
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 void mDirectorySetInit(struct mDirectorySet* dirs) {
 	dirs->base = NULL;
 	dirs->archive = NULL;
@@ -110,6 +110,9 @@ struct VFile* mDirectorySetOpenPath(struct mDirectorySet* dirs, const char* path
 }
 
 struct VFile* mDirectorySetOpenSuffix(struct mDirectorySet* dirs, struct VDir* dir, const char* suffix, int mode) {
+	if (!dir) {
+		return NULL;
+	}
 	char name[PATH_MAX + 1] = "";
 	snprintf(name, sizeof(name) - 1, "%s%s", dirs->baseName, suffix);
 	return dir->openFile(dir, name, mode);

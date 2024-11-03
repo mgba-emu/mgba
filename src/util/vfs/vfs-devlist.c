@@ -20,7 +20,7 @@ static enum VFSType _vdleType(struct VDirEntry* vde);
 struct VDirEntryDevList {
 	struct VDirEntry d;
 	size_t index;
-	char* name;
+	char name[PATH_MAX + 1];
 };
 
 struct VDirDevList {
@@ -31,7 +31,7 @@ struct VDirDevList {
 struct VDir* VDeviceList() {
 	struct VDirDevList* vd = malloc(sizeof(struct VDirDevList));
 	if (!vd) {
-		return 0;
+		return NULL;
 	}
 
 	vd->d.close = _vdlClose;
@@ -44,50 +44,42 @@ struct VDir* VDeviceList() {
 	vd->vde.d.name = _vdleName;
 	vd->vde.d.type = _vdleType;
 	vd->vde.index = 0;
-	vd->vde.name = 0;
+	vd->vde.name[0] = '\0';
 
 	return &vd->d;
 }
 
 static bool _vdlClose(struct VDir* vd) {
 	struct VDirDevList* vdl = (struct VDirDevList*) vd;
-	free(vdl->vde.name);
 	free(vdl);
 	return true;
 }
 
 static void _vdlRewind(struct VDir* vd) {
 	struct VDirDevList* vdl = (struct VDirDevList*) vd;
-	free(vdl->vde.name);
-	vdl->vde.name = 0;
-	vdl->vde.index = 3;
+	vdl->vde.name[0] = '\0';
+	vdl->vde.index = 0;
 }
 
 static struct VDirEntry* _vdlListNext(struct VDir* vd) {
 	struct VDirDevList* vdl = (struct VDirDevList*) vd;
-	if (vdl->vde.name) {
-		++vdl->vde.index;
-		free(vdl->vde.name);
-		vdl->vde.name = 0;
-	}
 	while (vdl->vde.index < STD_MAX) {
 		const devoptab_t *devops = devoptab_list[vdl->vde.index];
-		if (devops->dirStateSize > 0) {
-			vdl->vde.name = malloc(strlen(devops->name) + 3);
-			sprintf(vdl->vde.name, "%s:", devops->name);
-			return &vdl->vde.d;
-		}
-
 		++vdl->vde.index;
+		if (!devops || !devops->name || devops->dirStateSize <= 0) {
+			continue;
+		}
+		snprintf(vdl->vde.name, sizeof(vdl->vde.name), "%s:", devops->name);
+		return &vdl->vde.d;
 	}
-	return 0;
+	return NULL;
 }
 
 static struct VFile* _vdlOpenFile(struct VDir* vd, const char* path, int mode) {
 	UNUSED(vd);
 	UNUSED(path);
 	UNUSED(mode);
-	return 0;
+	return NULL;
 }
 
 static struct VDir* _vdlOpenDir(struct VDir* vd, const char* path) {

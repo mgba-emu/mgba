@@ -160,7 +160,7 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 		mSCRIPT_KV_SENTINEL
 	});
 #endif
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	mScriptContextExportConstants(context, "WATCHPOINT_TYPE", (struct mScriptKVPair[]) {
 		mSCRIPT_CONSTANT_PAIR(WATCHPOINT, WRITE),
 		mSCRIPT_CONSTANT_PAIR(WATCHPOINT, READ),

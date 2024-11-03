@@ -87,7 +87,8 @@ struct mCoreThreadInternal {
 	int requested;
 
 	Mutex stateMutex;
-	Condition stateCond;
+	Condition stateOnThreadCond;
+	Condition stateOffThreadCond;
 	int interruptDepth;
 	bool frameWasOn;
 
@@ -128,7 +129,6 @@ void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool);
 void mCoreThreadRewindParamsChanged(struct mCoreThread* threadContext);
 
 struct mCoreThread* mCoreThreadGet(void);
-struct mLogger* mCoreThreadLogger(void);
 
 CXX_GUARD_END
 

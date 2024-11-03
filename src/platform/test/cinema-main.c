@@ -684,7 +684,7 @@ static void _cinemaDimensionsChanged(struct mAVStream* stream, unsigned width, u
 	}
 }
 
-static void _cinemaVideoFrame(struct mAVStream* stream, const color_t* pixels, size_t stride) {
+static void _cinemaVideoFrame(struct mAVStream* stream, const mColor* pixels, size_t stride) {
 	struct CInemaStream* cistream = (struct CInemaStream*) stream;
 	cistream->image->stride = stride;
 	size_t bufferSize = cistream->image->stride * cistream->image->height * BYTES_PER_PIXEL;
@@ -1177,7 +1177,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 		if (test->status == CI_ERROR) {
 			break;
 		}
-		bool failed = false;
+		bool failed = true;
 		if (baselineFound) {
 			int max = 0;
 			failed = !_compareImages(test, &image, &expected, &max, diffs ? &diff : NULL);

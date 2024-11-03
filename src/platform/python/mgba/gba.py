@@ -23,12 +23,12 @@ class GBA(Core):
     KEY_L = lib.GBA_KEY_L
     KEY_R = lib.GBA_KEY_R
 
-    SIO_NORMAL_8 = lib.SIO_NORMAL_8
-    SIO_NORMAL_32 = lib.SIO_NORMAL_32
-    SIO_MULTI = lib.SIO_MULTI
-    SIO_UART = lib.SIO_UART
-    SIO_JOYBUS = lib.SIO_JOYBUS
-    SIO_GPIO = lib.SIO_GPIO
+    SIO_NORMAL_8 = lib.GBA_SIO_NORMAL_8
+    SIO_NORMAL_32 = lib.GBA_SIO_NORMAL_32
+    SIO_MULTI = lib.GBA_SIO_MULTI
+    SIO_UART = lib.GBA_SIO_UART
+    SIO_JOYBUS = lib.GBA_SIO_JOYBUS
+    SIO_GPIO = lib.GBA_SIO_GPIO
 
     def __init__(self, native):
         super(GBA, self).__init__(native)
@@ -51,72 +51,6 @@ class GBA(Core):
     def _load(self):
         super(GBA, self)._load()
         self.memory = GBAMemory(self._core, self._native.memory.romSize)
-
-    def attach_sio(self, link, mode=lib.SIO_MULTI):
-        self._sio.add(mode)
-        lib.GBASIOSetDriver(ffi.addressof(self._native.sio), link._native, mode)
-
-    def __del__(self):
-        for mode in self._sio:
-            lib.GBASIOSetDriver(ffi.addressof(self._native.sio), ffi.NULL, mode)
-
-
-create_callback("GBASIOPythonDriver", "init")
-create_callback("GBASIOPythonDriver", "deinit")
-create_callback("GBASIOPythonDriver", "load")
-create_callback("GBASIOPythonDriver", "unload")
-create_callback("GBASIOPythonDriver", "writeRegister")
-
-
-class GBASIODriver(object):
-    def __init__(self):
-        super(GBASIODriver, self).__init__()
-
-        self._handle = ffi.new_handle(self)
-        self._native = ffi.gc(lib.GBASIOPythonDriverCreate(self._handle), lib.free)
-
-    def init(self):
-        return True
-
-    def deinit(self):
-        pass
-
-    def load(self):
-        return True
-
-    def unload(self):
-        return True
-
-    def write_register(self, address, value):
-        return value
-
-
-class GBASIOJOYDriver(GBASIODriver):
-    RESET = lib.JOY_RESET
-    POLL = lib.JOY_POLL
-    TRANS = lib.JOY_TRANS
-    RECV = lib.JOY_RECV
-
-    def __init__(self):
-        super(GBASIOJOYDriver, self).__init__()
-
-        self._native = ffi.gc(lib.GBASIOJOYPythonDriverCreate(self._handle), lib.free)
-
-    def send_command(self, cmd, data):
-        buffer = ffi.new('uint8_t[5]')
-        try:
-            buffer[0] = data[0]
-            buffer[1] = data[1]
-            buffer[2] = data[2]
-            buffer[3] = data[3]
-            buffer[4] = data[4]
-        except IndexError:
-            pass
-
-        outlen = lib.GBASIOJOYSendCommand(self._native, cmd, buffer)
-        if outlen > 0 and outlen <= 5:
-            return bytes(buffer[0:outlen])
-        return None
 
 
 class GBAMemory(Memory):
