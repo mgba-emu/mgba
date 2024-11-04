@@ -59,7 +59,10 @@ if(APPLE)
 		list(APPEND QT_DEFINES USE_SHARE_WIDGET)
 	endif()
 
-	if(Qt6Widgets_VERSION)
+	# Allows building with Qt that was built with std::filesystem support, which requires macOS 15
+	if(Qt6Widgets_VERSION AND MACOSX_SDK VERSION_GREATER_EQUAL 10.15)
+		set(MIN_VER 10.15)
+	elseif(Qt6Widgets_VERSION)
 		set(MIN_VER 10.14)
 	elseif(Qt5Widgets_VERSION MATCHES "^5.15")
 		set(MIN_VER 10.13)
@@ -478,13 +481,21 @@ endif()
 if(APPLE)
 	if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin")
 		get_target_property(QTCOCOA ${QT}::QCocoaIntegrationPlugin LOCATION)
-		get_target_property(COREAUDIO ${QT}::CoreAudioPlugin LOCATION)
-		get_target_property(QTAVFSERVICE ${QT}::AVFServicePlugin LOCATION)
+		if(${QT_V} LESS 6)
+			# QtMultimedia plugins were removed with Qt 6, skip checking for them
+			get_target_property(COREAUDIO ${QT}::CoreAudioPlugin LOCATION)
+			get_target_property(QTAVFSERVICE ${QT}::AVFServicePlugin LOCATION)
+		endif()
+
 		set(BUNDLE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.app)
 		target_sources(${BINARY_NAME}-qt PRIVATE "${PLUGINS}")
+
 		set_source_files_properties("${QTCOCOA}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
-		set_source_files_properties("${COREAUDIO}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
-		set_source_files_properties("${QTAVFSERVICE}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
+		if(${QT_V} LESS 6)
+			set_source_files_properties("${COREAUDIO}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
+			set_source_files_properties("${QTAVFSERVICE}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
+		endif()
+	
 		install(CODE "
 		   include(BundleUtilities)
 		   set(BU_CHMOD_BUNDLE_ITEMS ON)

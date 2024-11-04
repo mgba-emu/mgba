@@ -242,6 +242,12 @@ if(APPLE)
 	execute_process(COMMAND xcrun --show-sdk-version OUTPUT_VARIABLE MACOSX_SDK)
 	add_definitions(-D_DARWIN_C_SOURCE)
 	list(APPEND OS_LIB "-framework Foundation")
+
+	# Xcode 15 introduced a warning about duplicate libraries that CMake doesn't disable itself, we do it here globally
+	if(MACOSX_SDK VERSION_GREATER_EQUAL 10.15)
+		add_link_options(LINKER:-no_warn_duplicate_libraries)
+	endif()
+
 	if(NOT CMAKE_SYSTEM_VERSION VERSION_LESS "10.0") # Darwin 10.x is Mac OS X 10.6
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
 	endif()
