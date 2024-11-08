@@ -362,7 +362,7 @@ bool call(struct mScriptValue* obj, const char* method, struct mScriptFrame* fra
 	if (!mScriptObjectGet(obj, method, &fn)) {
 		return false;
 	}
-	mSCRIPT_PUSH(&frame->arguments, WRAPPER, obj);
+	mSCRIPT_PUSH(&frame->stack, WRAPPER, obj);
 	return mScriptInvoke(&fn, frame);
 }
 
@@ -394,12 +394,12 @@ void explainCore(struct mCore* core) {
 
 				mScriptFrameInit(&frame);
 				call(value, "base", &frame);
-				mScriptPopU32(&frame.returnValues, &baseVal);
+				mScriptPopU32(&frame.stack, &baseVal);
 				mScriptFrameDeinit(&frame);
 
 				mScriptFrameInit(&frame);
 				call(value, "name", &frame);
-				shortName = mScriptValueUnwrap(mScriptListGetPointer(&frame.returnValues, 0));
+				shortName = mScriptValueUnwrap(mScriptListGetPointer(&frame.stack, 0));
 				mScriptFrameDeinit(&frame);
 
 				fprintf(out, "        base: 0x%x\n", baseVal);

@@ -1205,11 +1205,11 @@ static bool _callRotationCb(struct mScriptCoreAdapter* adapter, const char* cbNa
 	struct mScriptValue* context = mScriptTableLookup(adapter->rotationCbTable, &mSCRIPT_MAKE_CHARP("context"));
 	mScriptFrameInit(&frame);
 	if (context) {
-		mScriptValueWrap(context, mScriptListAppend(&frame.arguments));
+		mScriptValueWrap(context, mScriptListAppend(&frame.stack));
 	}
 	bool ok = mScriptContextInvoke(adapter->context, cb, &frame);
-	if (ok && out && mScriptListSize(&frame.returnValues) == 1) {
-		if (!mScriptCast(mSCRIPT_TYPE_MS_F32, mScriptListGetPointer(&frame.returnValues, 0), out)) {
+	if (ok && out && mScriptListSize(&frame.stack) == 1) {
+		if (!mScriptCast(mSCRIPT_TYPE_MS_F32, mScriptListGetPointer(&frame.stack, 0), out)) {
 			ok = false;
 		}
 	}
@@ -1278,8 +1278,8 @@ static uint8_t _readLuminance(struct GBALuminanceSource* luminance) {
 		mScriptFrameInit(&frame);
 		bool ok = mScriptContextInvoke(adapter->context, adapter->luminanceCb, &frame);
 		struct mScriptValue out = {0};
-		if (ok && mScriptListSize(&frame.returnValues) == 1) {
-			if (!mScriptCast(mSCRIPT_TYPE_MS_U8, mScriptListGetPointer(&frame.returnValues, 0), &out)) {
+		if (ok && mScriptListSize(&frame.stack) == 1) {
+			if (!mScriptCast(mSCRIPT_TYPE_MS_U8, mScriptListGetPointer(&frame.stack, 0), &out)) {
 				ok = false;
 			}
 		}

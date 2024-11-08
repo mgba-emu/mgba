@@ -266,7 +266,7 @@ void mScriptContextTriggerCallback(struct mScriptContext* context, const char* c
 		if (fn) {
 			mScriptFrameInit(&frame);
 			if (args) {
-				mScriptListCopy(&frame.arguments, args);
+				mScriptListCopy(&frame.stack, args);
 			}
 			mScriptContextInvoke(context, fn, &frame);
 			mScriptFrameDeinit(&frame);
@@ -481,7 +481,7 @@ bool mScriptInvoke(const struct mScriptValue* val, struct mScriptFrame* frame) {
 		return false;
 	}
 	const struct mScriptTypeFunction* signature = &val->type->details.function;
-	if (!mScriptCoerceFrame(&signature->parameters, &frame->arguments, &frame->arguments)) {
+	if (!mScriptCoerceFrame(&signature->parameters, &frame->stack, &frame->stack)) {
 		return false;
 	}
 	const struct mScriptFunction* fn = val->value.opaque;

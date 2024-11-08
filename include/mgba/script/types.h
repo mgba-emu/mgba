@@ -325,8 +325,7 @@ struct mScriptString {
 };
 
 struct mScriptFrame {
-	struct mScriptList arguments;
-	struct mScriptList returnValues;
+	struct mScriptList stack;
 	// TODO: Exception/failure codes
 };
 
