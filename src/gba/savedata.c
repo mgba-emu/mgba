@@ -376,9 +376,10 @@ uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address) {
 		}
 	}
 	if (mTimingIsScheduled(savedata->timing, &savedata->dust) && (address >> 12) == savedata->settling) {
-		// This should read /Q7 ("data# polling") and Q6 flipping ("toggle bit") every read,
-		// but just data# polling is sufficient for games to figure it out
-		return savedata->currentBank[address] ^ 0x80;
+		// This should read /Q7 ("data# polling"), Q6 flipping ("toggle bit")
+		// every read, and /Q5 ("error bit" cleared), but just data# polling
+		// is sufficient for games to figure it out
+		return (savedata->currentBank[address] ^ 0x80) & 0x80;
 	}
 	return savedata->currentBank[address];
 }
