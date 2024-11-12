@@ -1750,12 +1750,14 @@ static void _setupMaps(struct mCore* core) {
 		descs[0].start  = GBA_BASE_IWRAM;
 		descs[0].len    = GBA_SIZE_IWRAM;
 		descs[0].select = 0xFF000000;
+		descs[0].flags  = RETRO_MEMDESC_SYSTEM_RAM; // Allow RetroArch to access this memory for cheats
 
 		/* Map working RAM */
 		descs[1].ptr    = gba->memory.wram;
 		descs[1].start  = GBA_BASE_EWRAM;
 		descs[1].len    = GBA_SIZE_EWRAM;
 		descs[1].select = 0xFF000000;
+		descs[1].flags  = RETRO_MEMDESC_SYSTEM_RAM; // Allow RetroArch to access this memory for cheats
 
 		/* Map save RAM */
 		/* TODO: if SRAM is flash, use start=0 addrspace="S" instead */
@@ -1851,12 +1853,14 @@ static void _setupMaps(struct mCore* core) {
 		descs[i].ptr    = gb->memory.wram;
 		descs[i].start  = GB_BASE_WORKING_RAM_BANK0;
 		descs[i].len    = GB_SIZE_WORKING_RAM_BANK0;
+		descs[i].flags  = RETRO_MEMDESC_SYSTEM_RAM;  // Allow RetroArch to access this memory for cheats
 		i++;
 
 		descs[i].ptr    = gb->memory.wram;
 		descs[i].offset = GB_SIZE_WORKING_RAM_BANK0;
 		descs[i].start  = GB_BASE_WORKING_RAM_BANK1;
 		descs[i].len    = GB_SIZE_WORKING_RAM_BANK0;
+		descs[i].flags  = RETRO_MEMDESC_SYSTEM_RAM; // Allow RetroArch to access this memory for cheats
 		i++;
 
 		/* Map OAM */
@@ -1877,6 +1881,7 @@ static void _setupMaps(struct mCore* core) {
 		descs[i].start  = GB_BASE_HRAM;
 		descs[i].len    = GB_SIZE_HRAM;
 		descs[i].select = 0xFFFFFF80;
+		descs[i].flags  = RETRO_MEMDESC_SYSTEM_RAM; // Allow RetroArch to access this memory for cheats
 		i++;
 
 		/* Map IE Register */
@@ -1901,6 +1906,7 @@ static void _setupMaps(struct mCore* core) {
 			descs[i].start  = 0x10000;
 			descs[i].len    = GB_SIZE_WORKING_RAM - 0x2000;
 			descs[i].select = 0xFFFFA000;
+			descs[i].flags  = RETRO_MEMDESC_SYSTEM_RAM; // Allow RetroArch to access this memory for cheats
 			i++;
 		}
 
