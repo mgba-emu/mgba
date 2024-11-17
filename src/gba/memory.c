@@ -963,6 +963,10 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 				break;
 			}
 		}
+		if (memory->unl.type) {
+			GBAUnlCartWriteROM(gba, address & (GBA_SIZE_ROM0 - 1), value);
+			break;
+		}
 		mLOG(GBA_MEM, GAME_ERROR, "Bad cartridge Store16: 0x%08X", address);
 		break;
 	case GBA_REGION_ROM2_EX:

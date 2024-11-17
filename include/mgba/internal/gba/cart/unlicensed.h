@@ -60,6 +60,7 @@ void GBAUnlCartReset(struct GBA*);
 void GBAUnlCartUnload(struct GBA*);
 void GBAUnlCartDetect(struct GBA*);
 void GBAUnlCartWriteSRAM(struct GBA*, uint32_t address, uint8_t value);
+void GBAUnlCartWriteROM(struct GBA*, uint32_t address, uint16_t value);
 
 struct GBASerializedState;
 void GBAUnlCartSerialize(const struct GBA* gba, struct GBASerializedState* state);

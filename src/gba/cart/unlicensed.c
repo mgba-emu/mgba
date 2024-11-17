@@ -126,6 +126,19 @@ void GBAUnlCartWriteSRAM(struct GBA* gba, uint32_t address, uint8_t value) {
 	gba->memory.savedata.data[address & (GBA_SIZE_SRAM - 1)] = value;
 }
 
+void GBAUnlCartWriteROM(struct GBA* gba, uint32_t address, uint16_t value) {
+	struct GBAUnlCart* unl = &gba->memory.unl;
+
+	switch (unl->type) {
+	case GBA_UNL_CART_VFAME:
+	case GBA_UNL_CART_NONE:
+		break;
+	case GBA_UNL_CART_MULTICART:
+		mLOG(GBA_MEM, STUB, "Unimplemented writing to ROM %07X:%04X", address, value);
+		break;
+	}
+}
+
 static void _multicartSettle(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	UNUSED(timing);
 	UNUSED(cyclesLate);
