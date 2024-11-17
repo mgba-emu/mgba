@@ -6,6 +6,7 @@ set(SOURCE_FILES
 	cart/ereader.c
 	cart/gpio.c
 	cart/matrix.c
+	cart/unlicensed.c
 	cart/vfame.c
 	cheats.c
 	cheats/codebreaker.c

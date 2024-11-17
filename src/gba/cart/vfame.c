@@ -4,7 +4,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include <mgba/internal/gba/cart/vfame.h>
+#include <mgba/internal/gba/cart/unlicensed.h>
 
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/memory.h>
@@ -60,25 +60,19 @@ static int8_t _modifySramValue(enum GBAVFameCartType type, uint8_t value, int mo
 static uint32_t _modifySramAddress(enum GBAVFameCartType type, uint32_t address, int mode);
 static int _reorderBits(uint32_t value, const uint8_t* reordering, int reorderLength);
 
-void GBAVFameInit(struct GBAVFameCart* cart) {
-	cart->cartType = VFAME_NO;
-	cart->sramMode = -1;
-	cart->romMode = -1;
-	cart->acceptingModeChange = false;
-}
-
-void GBAVFameDetect(struct GBAVFameCart* cart, uint32_t* rom, size_t romSize, uint32_t crc32) {
-	cart->cartType = VFAME_NO;
-
+bool GBAVFameDetect(struct GBAVFameCart* cart, uint32_t* rom, size_t romSize, uint32_t crc32) {
 	// The initialisation code is also present & run in the dumps of Digimon Ruby & Sapphire from hacked/deprotected reprint carts,
 	// which would break if run in "proper" VFame mode so we need to exclude those..
 	if (romSize == 0x2000000) { // the deprotected dumps are 32MB but no real VF games are this size
-		return;
+		return false;
 	}
+
+	bool detected = false;
 
 	// Most games have the same init sequence in the same place
 	// but LOTR/Mo Jie Qi Bing doesn't, probably because it's based on the Kiki KaiKai engine, so just detect based on its title
 	if (memcmp(INIT_SEQUENCE, &rom[0x57], sizeof(INIT_SEQUENCE)) == 0 || memcmp("\0LORD\0WORD\0\0AKIJ", &((struct GBACartridge*) rom)->title, 16) == 0) {
+		detected = true;
 		cart->cartType = VFAME_STANDARD;
 		mLOG(GBA_MEM, INFO, "Vast Fame game detected");
 	}
@@ -87,13 +81,23 @@ void GBAVFameDetect(struct GBAVFameCart* cart, uint32_t* rom, size_t romSize, ui
 	// Their initialisation seems to be identical so the difference must be in the cart HW itself
 	// Other undumped games may have similar differences
 	if (memcmp("George Sango", &((struct GBACartridge*) rom)->title, 12) == 0) {
+		detected = true;
 		cart->cartType = VFAME_GEORGE;
 		mLOG(GBA_MEM, INFO, "George mode");
 	} else if (crc32 == DIGIMON_SAPPHIRE_CHINESE_CRC32) {
 		// Chinese version of Digimon Sapphire; header is identical to the English version which uses the normal reordering
 		// so we have to use some other way to detect it
+		detected = true;
 		cart->cartType = VFAME_ALTERNATE;
 	}
+
+	if (detected) {
+		cart->sramMode = -1;
+		cart->romMode = -1;
+		cart->acceptingModeChange = false;
+	}
+
+	return detected;
 }
 
 // This is not currently being used but would be called on ROM reads
@@ -235,7 +239,6 @@ static uint32_t _patternRightShift2(uint32_t addr) {
 }
 
 void GBAVFameSramWrite(struct GBAVFameCart* cart, uint32_t address, uint8_t value, uint8_t* sramData) {
-	address &= 0x00FFFFFF;
 	// A certain sequence of writes to SRAM FFF8->FFFC can enable or disable "mode change" mode
 	// Currently unknown if these writes have to be sequential, or what happens if you write different values, if anything
 	if (address >= 0xFFF8 && address <= 0xFFFC) {

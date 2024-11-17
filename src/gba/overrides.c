@@ -377,6 +377,12 @@ void GBAOverrideApplyDefaults(struct GBA* gba, const struct Configuration* overr
 	struct GBACartridgeOverride override = { .idleLoop = GBA_IDLE_LOOP_NONE };
 	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
 	if (cart) {
+		if (gba->memory.unl.type == GBA_UNL_CART_MULTICART) {
+			override.savetype = GBA_SAVEDATA_SRAM;
+			GBAOverrideApply(gba, &override);
+			return;
+		}
+
 		memcpy(override.id, &cart->id, sizeof(override.id));
 
 		static const uint32_t pokemonTable[] = {

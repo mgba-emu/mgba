@@ -140,6 +140,9 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 
 void GBAUnloadROM(struct GBA* gba) {
 	GBAMemoryClearAGBPrint(gba);
+	if (gba->memory.unl.type) {
+		GBAUnlCartUnload(gba);
+	}
 	if (gba->memory.rom && !gba->isPristine) {
 		if (gba->yankedRomSize) {
 			gba->yankedRomSize = 0;
@@ -492,7 +495,7 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
-	GBAVFameDetect(&gba->memory.vfame, gba->memory.rom, gba->memory.romSize, gba->romCrc32);
+	GBAUnlCartDetect(gba);
 	// TODO: error check
 	return true;
 }

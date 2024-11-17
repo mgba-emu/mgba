@@ -32,8 +32,17 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 	STORE_64LE(gba->timing.globalCycles, 0, &state->globalCycles);
 
 	if (gba->memory.rom) {
-		state->id = ((struct GBACartridge*) gba->memory.rom)->id;
-		memcpy(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title));
+		switch (gba->memory.unl.type) {
+		case GBA_UNL_CART_NONE:
+		case GBA_UNL_CART_VFAME:
+			state->id = ((struct GBACartridge*) gba->memory.rom)->id;
+			memcpy(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title));
+			break;
+		case GBA_UNL_CART_MULTICART:
+			state->id = ((struct GBACartridge*) gba->memory.unl.multi.rom)->id;
+			memcpy(state->title, ((struct GBACartridge*) gba->memory.unl.multi.rom)->title, sizeof(state->title));
+			break;
+		}
 	} else {
 		state->id = 0;
 		memset(state->title, 0, sizeof(state->title));
@@ -106,9 +115,21 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 			error = true;
 		}
 	}
-	if (gba->memory.rom && (state->id != ((struct GBACartridge*) gba->memory.rom)->id || memcmp(state->title, ((struct GBACartridge*) gba->memory.rom)->title, sizeof(state->title)))) {
-		mLOG(GBA_STATE, WARN, "Savestate is for a different game");
-		error = true;
+	if (gba->memory.rom) {
+		struct GBACartridge* cart;
+		switch (gba->memory.unl.type) {
+		case GBA_UNL_CART_NONE:
+		case GBA_UNL_CART_VFAME:
+			cart = (struct GBACartridge*) gba->memory.rom;
+			break;
+		case GBA_UNL_CART_MULTICART:
+			cart = (struct GBACartridge*) gba->memory.unl.multi.rom;
+			break;
+		}
+		if (state->id != cart->id || memcmp(state->title, cart->title, sizeof(state->title))) {
+			mLOG(GBA_STATE, WARN, "Savestate is for a different game");
+			error = true;
+		}
 	} else if (!gba->memory.rom && state->id != 0) {
 		mLOG(GBA_STATE, WARN, "Savestate is for a game, but no game loaded");
 		error = true;

@@ -1033,6 +1033,7 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 	STORE_32(gba->bus, 0, &state->bus);
 
 	GBAHardwareSerialize(&gba->memory.hw, state);
+	GBAUnlCartSerialize(gba, state);
 }
 
 void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
@@ -1082,4 +1083,5 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 	GBADMARecalculateCycles(gba);
 	GBADMAUpdate(gba);
 	GBAHardwareDeserialize(&gba->memory.hw, state);
+	GBAUnlCartDeserialize(gba, state);
 }
