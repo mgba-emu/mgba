@@ -1,4 +1,5 @@
 /* Copyright (c) 2016 taizou
+ * Copyright (c) 2013-2024 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,35 +9,42 @@
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/memory.h>
 
-static const uint8_t ADDRESS_REORDERING[4][16] = {
-	{ 15, 14, 9, 1, 8, 10, 7, 3, 5, 11, 4, 0, 13, 12, 2, 6 },
-	{ 15, 7, 13, 5, 11, 6, 0, 9, 12, 2, 10, 14, 3, 1, 8, 4 },
-	{ 15, 0, 3, 12, 2, 4, 14, 13, 1, 8, 6, 7, 9, 5, 11, 10 }
+#define DIGIMON_SAPPHIRE_CHINESE_CRC32 0x793A328F
+
+static const uint8_t ADDRESS_REORDERING[][3][16] = {
+	[VFAME_STANDARD] = {
+		{ 15, 14, 9, 1, 8, 10, 7, 3, 5, 11, 4, 0, 13, 12, 2, 6 },
+		{ 15, 7, 13, 5, 11, 6, 0, 9, 12, 2, 10, 14, 3, 1, 8, 4 },
+		{ 15, 0, 3, 12, 2, 4, 14, 13, 1, 8, 6, 7, 9, 5, 11, 10 }
+	},
+	[VFAME_GEORGE] = {
+		{ 15, 7, 13, 1, 11, 10, 14, 9, 12, 2, 4, 0, 3, 5, 8, 6 },
+		{ 15, 14, 3, 12, 8, 4, 0, 13, 5, 11, 6, 7, 9, 1, 2, 10 },
+		{ 15, 0, 9, 5, 2, 6, 7, 3, 1, 8, 10, 14, 13, 12, 11, 4 }
+	},
+	[VFAME_ALTERNATE] = {
+		{ 15, 0, 13, 5, 8, 4, 7, 3, 1, 2, 10, 14, 9, 12, 11, 6 },
+		{ 15, 7, 9, 1, 2, 6, 14, 13, 12, 11, 4, 0, 3, 5, 8, 10 },
+		{ 15, 14, 3, 12, 11, 10, 0, 9, 5, 8, 6, 7, 13, 1, 2, 4 }
+	},
 };
-static const uint8_t ADDRESS_REORDERING_GEORGE[4][16] = {
-	{ 15, 7, 13, 1, 11, 10, 14, 9, 12, 2, 4, 0, 3, 5, 8, 6 },
-	{ 15, 14, 3, 12, 8, 4, 0, 13, 5, 11, 6, 7, 9, 1, 2, 10 },
-	{ 15, 0, 9, 5, 2, 6, 7, 3, 1, 8, 10, 14, 13, 12, 11, 4 }
-};
-static const uint8_t ADDRESS_REORDERING_ALTERNATE[4][16] = {
-	{ 15, 0, 13, 5, 8, 4, 7, 3, 1, 2, 10, 14, 9, 12, 11, 6 },
-	{ 15, 7, 9, 1, 2, 6, 14, 13, 12, 11, 4, 0, 3, 5, 8, 10 },
-	{ 15, 14, 3, 12, 11, 10, 0, 9, 5, 8, 6, 7, 13, 1, 2, 4 }
-};
-static const uint8_t VALUE_REORDERING[4][16] = {
-	{ 5, 4, 3, 2, 1, 0, 7, 6 },
-	{ 3, 2, 1, 0, 7, 6, 5, 4 },
-	{ 1, 0, 7, 6, 5, 4, 3, 2 }
-};
-static const uint8_t VALUE_REORDERING_GEORGE[4][16] = {
-	{ 3, 0, 7, 2, 1, 4, 5, 6 },
-	{ 1, 4, 3, 0, 5, 6, 7, 2 },
-	{ 5, 2, 1, 6, 7, 0, 3, 4 }
-};
-static const uint8_t VALUE_REORDERING_ALTERNATE[4][16] = {
-	{ 5, 4, 7, 2, 1, 0, 3, 6 },
-	{ 1, 2, 3, 0, 5, 6, 7, 4 },
-	{ 3, 0, 1, 6, 7, 4, 5, 2 }
+
+static const uint8_t VALUE_REORDERING[][3][8] = {
+	[VFAME_STANDARD] = {
+		{ 5, 4, 3, 2, 1, 0, 7, 6 },
+		{ 3, 2, 1, 0, 7, 6, 5, 4 },
+		{ 1, 0, 7, 6, 5, 4, 3, 2 }
+	},
+	[VFAME_GEORGE] = {
+		{ 3, 0, 7, 2, 1, 4, 5, 6 },
+		{ 1, 4, 3, 0, 5, 6, 7, 2 },
+		{ 5, 2, 1, 6, 7, 0, 3, 4 }
+	},
+	[VFAME_ALTERNATE] = {
+		{ 5, 4, 7, 2, 1, 0, 3, 6 },
+		{ 1, 2, 3, 0, 5, 6, 7, 4 },
+		{ 3, 0, 1, 6, 7, 4, 5, 2 }
+	},
 };
 
 static const int8_t MODE_CHANGE_START_SEQUENCE[5] = { 0x99, 0x02, 0x05, 0x02, 0x03 };
@@ -268,25 +276,14 @@ static uint32_t _modifySramAddress(enum GBAVFameCartType type, uint32_t address,
 	mode &= 0x3;
 	if (mode == 0) {
 		return address;
-	} else if (type == VFAME_GEORGE) {
-		return _reorderBits(address, ADDRESS_REORDERING_GEORGE[mode - 1], 16);
-	} else if (type == VFAME_ALTERNATE) {
-		return _reorderBits(address, ADDRESS_REORDERING_ALTERNATE[mode - 1], 16);
-	} else {
-		return _reorderBits(address, ADDRESS_REORDERING[mode - 1], 16);
 	}
+	return _reorderBits(address, ADDRESS_REORDERING[type][mode - 1], 16);
 }
 
 static int8_t _modifySramValue(enum GBAVFameCartType type, uint8_t value, int mode) {
 	int reorderType = (mode & 0xF) >> 2;
 	if (reorderType != 0) {
-		if (type == VFAME_GEORGE) {
-			value = _reorderBits(value, VALUE_REORDERING_GEORGE[reorderType - 1], 8);
-		} else if (type == VFAME_ALTERNATE) {
-			value = _reorderBits(value, VALUE_REORDERING_ALTERNATE[reorderType - 1], 8);
-		} else {
-			value = _reorderBits(value, VALUE_REORDERING[reorderType - 1], 8);
-		}
+		value = _reorderBits(value, VALUE_REORDERING[type][reorderType - 1], 8);
 	}
 	if (mode & 0x80) {
 		value ^= 0xAA;
