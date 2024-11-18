@@ -24,6 +24,7 @@ if (SDL_VERSION EQUAL "2")
 
 		if(APPLE)
 			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.7")
+			set(CMAKE_OSX_DEPLOYMENT_TARGET "10.7")
 		endif()
 		set(SDLMAIN_LIBRARY ${SDL2MAIN_LIBRARY})
 	endif()
