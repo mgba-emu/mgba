@@ -239,7 +239,7 @@ if(APPLE)
 	add_definitions(-D_DARWIN_C_SOURCE)
 	list(APPEND OS_LIB "-framework Foundation")
 	if(NOT CMAKE_SYSTEM_VERSION VERSION_LESS "10.0") # Darwin 10.x is Mac OS X 10.6
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.6")
+		set(CMAKE_OSX_DEPLOYMENT_TARGET "10.6")
 	endif()
 	# Not supported until Xcode 9
 	if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang" AND CMAKE_C_COMPILER_VERSION VERSION_LESS "9")
@@ -761,6 +761,7 @@ if(USE_ELF)
 endif()
 
 if (USE_DISCORD_RPC)
+	set(CMAKE_OSX_DEPLOYMENT_TARGET "10.7")
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/discord-rpc discord-rpc EXCLUDE_FROM_ALL)
 	list(APPEND FEATURES DISCORD_RPC)
 	include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/discord-rpc/include)
