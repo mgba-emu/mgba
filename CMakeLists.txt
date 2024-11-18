@@ -759,6 +759,7 @@ if(USE_ELF)
 endif()
 
 if (USE_DISCORD_RPC)
+	set(CMAKE_OSX_DEPLOYMENT_TARGET "10.7")
 	add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/discord-rpc discord-rpc EXCLUDE_FROM_ALL)
 	list(APPEND FEATURES DISCORD_RPC)
 	include_directories(AFTER ${CMAKE_CURRENT_SOURCE_DIR}/src/third-party/discord-rpc/include)
