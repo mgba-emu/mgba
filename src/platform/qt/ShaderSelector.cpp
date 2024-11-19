@@ -16,6 +16,7 @@
 #include <QFileDialog>
 #include <QFormLayout>
 #include <QGridLayout>
+#include <QMessageBox>
 #include <QSpinBox>
 
 #include <mgba/core/version.h>
@@ -50,7 +51,7 @@ ShaderSelector::~ShaderSelector() {
 }
 
 void ShaderSelector::saveSettings() {
-	QString oldPath = config->getOption("shader");
+	QString oldPath = m_config->getOption("shader");
 	if (oldPath != m_shaderPath) {
 		if (m_shaderPath.isEmpty()) {
 			clearShader(true);
@@ -88,7 +89,8 @@ void ShaderSelector::selectShader() {
 #if !defined(USE_LIBZIP) && !defined(USE_MINIZIP)
 	QString name = GBAApp::app()->getOpenDirectoryName(this, tr("Load shader"), path.absolutePath());
 #else
-	QString name = GBAApp::app()->getOpenFileName(this, tr("Load shader"), "mGBA Shaders (*.shader)", path.absolutePath());
+	QString filters = QStringLiteral("%1 (*.shader manifest.ini)").arg(tr("mGBA Shaders"));
+	QString name = GBAApp::app()->getOpenFileName(this, tr("Load shader"), filters, path.absolutePath());
 #endif
 	if (!name.isNull()) {
 		loadShader(name);
@@ -97,18 +99,28 @@ void ShaderSelector::selectShader() {
 }
 
 void ShaderSelector::loadShader(const QString& path, bool saveToSettings) {
-	VDir* shader = VFileDevice::openDir(path);
-	if (!shader) {
-		shader = VFileDevice::openArchive(path);
+	static const QString manifestIni = "/manifest.ini";
+	QString shaderPath = path;
+	if (shaderPath.endsWith(manifestIni)) {
+		shaderPath.chop(manifestIni.length());
 	}
+	VDir* shader = VFileDevice::openDir(shaderPath);
 	if (!shader) {
-		return;
+		shader = VFileDevice::openArchive(shaderPath);
 	}
-	m_display->setShaders(shader);
-	shader->close(shader);
-	m_shaderPath = path;
-	if (saveToSettings) {
-		m_config->setOption("shader", path);
+	bool error = !shader || !m_display->setShaders(shader);
+	if (!error) {
+		if (saveToSettings) {
+			m_config->setOption("shader", shaderPath);
+		}
+		m_shaderPath = shaderPath;
+		refreshShaders();
+	}
+	if (shader) {
+		shader->close(shader);
+	}
+	if (error) {
+		QMessageBox::warning(this, tr("Error loading shader"), tr("The shader \"%1\" could not be loaded successfully.").arg(shaderPath));
 	}
 }
 

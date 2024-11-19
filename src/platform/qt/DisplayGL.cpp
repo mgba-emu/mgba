@@ -462,8 +462,10 @@ void DisplayGL::framePosted() {
 	QMetaObject::invokeMethod(m_painter.get(), "draw");
 }
 
-void DisplayGL::setShaders(struct VDir* shaders) {
-	QMetaObject::invokeMethod(m_painter.get(), "setShaders", Qt::BlockingQueuedConnection, Q_ARG(struct VDir*, shaders));
+bool DisplayGL::setShaders(struct VDir* shaders) {
+	bool success = false;
+	QMetaObject::invokeMethod(m_painter.get(), "setShaders", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, success), Q_ARG(struct VDir*, shaders));
+	return success;
 }
 
 void DisplayGL::clearShaders() {
@@ -996,10 +998,11 @@ void PainterGL::interrupt() {
 	m_interrupter.interrupt(m_context);
 }
 
-void PainterGL::setShaders(struct VDir* dir) {
+bool PainterGL::setShaders(struct VDir* dir) {
 	if (!supportsShaders()) {
-		return;
+		return false;
 	}
+	bool success = false;
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
 	if (!m_started) {
 		makeCurrent();
@@ -1009,7 +1012,9 @@ void PainterGL::setShaders(struct VDir* dir) {
 		mGLES2ShaderDetach(reinterpret_cast<mGLES2Context*>(m_backend));
 		mGLES2ShaderFree(&m_shader);
 	}
-	if (mGLES2ShaderLoad(&m_shader, dir)) {
+
+	success = mGLES2ShaderLoad(&m_shader, dir);
+	if (success) {
 		mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
 	}
 
@@ -1017,6 +1022,7 @@ void PainterGL::setShaders(struct VDir* dir) {
 		m_gl->doneCurrent();
 	}
 #endif
+	return success;
 }
 
 void PainterGL::clearShaders() {

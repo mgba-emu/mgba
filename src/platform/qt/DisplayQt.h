@@ -41,7 +41,7 @@ public slots:
 	void swapInterval(int) override {};
 	void filter(bool filter) override;
 	void framePosted() override;
-	void setShaders(struct VDir*) override {}
+	bool setShaders(struct VDir*) override { return false; }
 	void clearShaders() override {}
 	void resizeContext() override;
 	void setBackgroundImage(const QImage&) override;

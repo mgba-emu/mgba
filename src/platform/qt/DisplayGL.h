@@ -113,7 +113,7 @@ public slots:
 	void filter(bool filter) override;
 	void swapInterval(int interval) override;
 	void framePosted() override;
-	void setShaders(struct VDir*) override;
+	bool setShaders(struct VDir*) override;
 	void clearShaders() override;
 	void resizeContext() override;
 	void setVideoScale(int scale) override;
@@ -184,7 +184,7 @@ public slots:
 	void resizeContext();
 	void setBackgroundImage(const QImage&);
 
-	void setShaders(struct VDir*);
+	bool setShaders(struct VDir*);
 	void clearShaders();
 	VideoShader* shaders();
 	QSize contentSize() const;
