@@ -36,6 +36,8 @@ signals:
 	void bufferNameChanged(const QString&);
 
 private:
+	enum { tabStop = 4 };
+
 	struct ScriptingBufferShim : public mScriptTextBuffer {
 		ScriptingTextBuffer* p;
 		QTextCursor cursor;
@@ -43,6 +45,11 @@ private:
 	QTextDocument m_document;
 	QMutex m_mutex;
 	QString m_name;
+
+	void lineBreak();
+	void carriageReturn();
+	void tab();
+	void insertString(const QString& text);
 
 	static void init(struct mScriptTextBuffer*, const char* name);
 	static void deinit(struct mScriptTextBuffer*);
