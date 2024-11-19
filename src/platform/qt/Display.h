@@ -81,7 +81,7 @@ public slots:
 	virtual void filter(bool filter);
 	virtual void swapInterval(int interval) = 0;
 	virtual void framePosted() = 0;
-	virtual void setShaders(struct VDir*) = 0;
+	virtual bool setShaders(struct VDir*) = 0;
 	virtual void clearShaders() = 0;
 	virtual void resizeContext() = 0;
 
