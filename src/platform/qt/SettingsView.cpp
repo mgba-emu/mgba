@@ -423,8 +423,11 @@ void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
 	}
 	if (!m_shader) {
 		m_ui.stackedWidget->removeWidget(m_dummyShader);
+	} else {
+		QObject::disconnect(m_shader, nullptr, this, nullptr);
 	}
 	m_shader = shaderSelector;
+	QObject::connect(this, &SettingsView::saveSettingsRequested, m_shader, &ShaderSelector::saveSettings);
 	if (shaderSelector) {
 		addPage(tr("Shaders"), m_shader, Page::SHADERS);
 	} else {
@@ -682,6 +685,8 @@ void SettingsView::updateConfig() {
 	}
 	saveSetting("gb.colors", gbColors);
 #endif
+
+	emit saveSettingsRequested();
 
 	m_controller->write();
 

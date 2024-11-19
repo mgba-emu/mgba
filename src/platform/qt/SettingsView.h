@@ -61,6 +61,7 @@ signals:
 	void pathsChanged();
 	void languageChanged();
 	void libraryCleared();
+	void saveSettingsRequested();
 
 public slots:
 	void selectPage(Page);
