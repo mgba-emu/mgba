@@ -50,7 +50,25 @@ ShaderSelector::~ShaderSelector() {
 }
 
 void ShaderSelector::saveSettings() {
-	emit saved();
+	QString oldPath = config->getOption("shader");
+	if (oldPath != m_shaderPath) {
+		if (m_shaderPath.isEmpty()) {
+			clearShader(true);
+		} else {
+			loadShader(m_shaderPath, true);
+		}
+	}
+	emit saveSettingsRequested();
+}
+
+void ShaderSelector::revert() {
+	QString shaderPath = m_config->getOption("shader");
+	if (shaderPath.isEmpty()) {
+		clearShader();
+	} else {
+		loadShader(shaderPath);
+		emit reset();
+	}
 }
 
 void ShaderSelector::clear() {
@@ -78,7 +96,7 @@ void ShaderSelector::selectShader() {
 	}
 }
 
-void ShaderSelector::loadShader(const QString& path) {
+void ShaderSelector::loadShader(const QString& path, bool saveToSettings) {
 	VDir* shader = VFileDevice::openDir(path);
 	if (!shader) {
 		shader = VFileDevice::openArchive(path);
@@ -89,14 +107,18 @@ void ShaderSelector::loadShader(const QString& path) {
 	m_display->setShaders(shader);
 	shader->close(shader);
 	m_shaderPath = path;
-	m_config->setOption("shader", m_shaderPath);
+	if (saveToSettings) {
+		m_config->setOption("shader", path);
+	}
 }
 
-void ShaderSelector::clearShader() {
+void ShaderSelector::clearShader(bool saveToSettings) {
 	m_display->clearShaders();
-	refreshShaders();
 	m_shaderPath = "";
-	m_config->setOption("shader", m_shaderPath);
+	if (saveToSettings) {
+		m_config->setOption("shader", m_shaderPath);
+	}
+	refreshShaders();
 }
 
 void ShaderSelector::refreshShaders() {
@@ -121,7 +143,7 @@ void ShaderSelector::refreshShaders() {
 		m_ui.author->clear();
 	}
 
-	disconnect(this, &ShaderSelector::saved, 0, 0);
+	disconnect(this, &ShaderSelector::saveSettingsRequested, 0, 0);
 	disconnect(this, &ShaderSelector::reset, 0, 0);
 	disconnect(this, &ShaderSelector::resetToDefault, 0, 0);
 
@@ -160,7 +182,7 @@ void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, c
 	connect(f, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [value](double v) {
 		*value = v;
 	});
-	connect(this, &ShaderSelector::saved, [this, section, name, f]() {
+	connect(this, &ShaderSelector::saveSettingsRequested, [this, section, name, f]() {
 		m_config->setQtOption(name, f->value(), section);
 	});
 	connect(this, &ShaderSelector::reset, [this, section, name, f]() {
@@ -194,7 +216,7 @@ void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, c
 	connect(i, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [value](int v) {
 		*value = v;
 	});
-	connect(this, &ShaderSelector::saved, [this, section, name, i]() {
+	connect(this, &ShaderSelector::saveSettingsRequested, [this, section, name, i]() {
 		m_config->setQtOption(name, i->value(), section);
 	});
 	connect(this, &ShaderSelector::reset, [this, section, name, i]() {

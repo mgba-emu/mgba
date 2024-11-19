@@ -428,6 +428,7 @@ void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
 	}
 	m_shader = shaderSelector;
 	QObject::connect(this, &SettingsView::saveSettingsRequested, m_shader, &ShaderSelector::saveSettings);
+	QObject::connect(m_ui.buttonBox, &QDialogButtonBox::rejected, m_shader, &ShaderSelector::revert);
 	if (shaderSelector) {
 		addPage(tr("Shaders"), m_shader, Page::SHADERS);
 	} else {
