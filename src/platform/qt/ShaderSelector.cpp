@@ -49,6 +49,10 @@ ShaderSelector::~ShaderSelector() {
 	clear();
 }
 
+void ShaderSelector::saveSettings() {
+	emit saved();
+}
+
 void ShaderSelector::clear() {
 	m_ui.shaderName->setText(tr("No shader active"));
 	m_ui.description->clear();
@@ -268,10 +272,6 @@ void ShaderSelector::buttonPressed(QAbstractButton* button) {
 	switch (m_ui.buttonBox->standardButton(button)) {
 	case QDialogButtonBox::Reset:
 		emit reset();
-		break;
-	case QDialogButtonBox::Ok:
-		emit saved();
-		close();
 		break;
  	case QDialogButtonBox::RestoreDefaults:
 		emit resetToDefault();

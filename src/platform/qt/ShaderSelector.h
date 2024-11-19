@@ -28,6 +28,7 @@ public:
 	~ShaderSelector();
 
 public slots:
+	void saveSettings();
 	void refreshShaders();
 	void clear();
 
