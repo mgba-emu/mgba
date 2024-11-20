@@ -480,11 +480,11 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	STORE_16(hw->tiltY, 0, &state->hw.tiltSampleY);
 	state->hw.lightSample = hw->lightSample;
 	flags1 = GBASerializedHWFlags1SetLightEdge(flags1, hw->lightEdge);
+	flags1 = GBASerializedHWFlags1SetLightCounter(flags1, hw->lightCounter);
 	STORE_16(flags1, 0, &state->hw.flags1);
 
 	GBASerializedHWFlags2 flags2 = 0;
 	flags2 = GBASerializedHWFlags2SetTiltState(flags2, hw->tiltState);
-	flags2 = GBASerializedHWFlags1SetLightCounter(flags2, hw->lightCounter);
 
 	// GBP/SIO stuff is only here for legacy reasons
 	flags2 = GBASerializedHWFlags2SetGbpInputsPosted(flags2, hw->p->sio.gbp.inputsPosted);
