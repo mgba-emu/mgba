@@ -10,7 +10,7 @@
 #include <mgba/internal/gba/serialize.h>
 #include <mgba-util/vfs.h>
 
-#define MULTI_SETTLE 512
+#define MULTI_SETTLE 300
 #define MULTI_BLOCK 0x80000
 #define MULTI_BANK 0x2000000
 
@@ -94,18 +94,24 @@ void GBAUnlCartWriteSRAM(struct GBA* gba, uint32_t address, uint8_t value) {
 		switch (address) {
 		case GBA_MULTICART_CFG_BANK:
 			unl->multi.bank = value >> 4;
-			mTimingDeschedule(&gba->timing, &unl->multi.settle);
-			mTimingSchedule(&gba->timing, &unl->multi.settle, MULTI_SETTLE);
+			if (!(unl->multi.offset & 0x80)) {
+				mTimingDeschedule(&gba->timing, &unl->multi.settle);
+				mTimingSchedule(&gba->timing, &unl->multi.settle, MULTI_SETTLE);
+			}
 			break;
 		case GBA_MULTICART_CFG_OFFSET:
-			unl->multi.offset = value & 0x3F;
-			mTimingDeschedule(&gba->timing, &unl->multi.settle);
-			mTimingSchedule(&gba->timing, &unl->multi.settle, MULTI_SETTLE);
+			unl->multi.offset = value;
+			if (!(unl->multi.offset & 0x80)) {
+				mTimingDeschedule(&gba->timing, &unl->multi.settle);
+				mTimingSchedule(&gba->timing, &unl->multi.settle, MULTI_SETTLE);
+			}
 			break;
 		case GBA_MULTICART_CFG_SIZE:
 			unl->multi.size = 0x40 - (value & 0x3F);
-			mTimingDeschedule(&gba->timing, &unl->multi.settle);
-			mTimingSchedule(&gba->timing, &unl->multi.settle, MULTI_SETTLE);
+			if (!(unl->multi.offset & 0x80)) {
+				mTimingDeschedule(&gba->timing, &unl->multi.settle);
+				mTimingSchedule(&gba->timing, &unl->multi.settle, MULTI_SETTLE);
+			}
 			break;
 		case GBA_MULTICART_CFG_SRAM:
 			if (value == 0 && unl->multi.sramActive) {
@@ -147,8 +153,8 @@ static void _multicartSettle(struct mTiming* timing, void* context, uint32_t cyc
 	UNUSED(cyclesLate);
 	struct GBA* gba = context;
 	mLOG(GBA_MEM, INFO, "Switching to bank %i offset %i, size %i",
-	     gba->memory.unl.multi.bank, gba->memory.unl.multi.offset, gba->memory.unl.multi.size);
-	size_t offset = gba->memory.unl.multi.bank * (MULTI_BANK >> 2) + gba->memory.unl.multi.offset * (MULTI_BLOCK >> 2);
+	     gba->memory.unl.multi.bank, gba->memory.unl.multi.offset & 0x3F, gba->memory.unl.multi.size);
+	size_t offset = gba->memory.unl.multi.bank * (MULTI_BANK >> 2) + (gba->memory.unl.multi.offset & 0x3F) * (MULTI_BLOCK >> 2);
 	size_t size = gba->memory.unl.multi.size * MULTI_BLOCK;
 	if (offset * 4 >= gba->memory.unl.multi.fullSize || offset * 4 + size > gba->memory.unl.multi.fullSize) {
 		mLOG(GBA_MEM, GAME_ERROR, "Bank switch was out of bounds, %07" PRIz "X + %" PRIz "X > %07" PRIz "X",
