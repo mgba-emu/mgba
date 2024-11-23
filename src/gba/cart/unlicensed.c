@@ -22,6 +22,9 @@ enum GBMulticartCfgOffset {
 	GBA_MULTICART_CFG_UNK = 0x6,
 };
 
+static_assert(sizeof(((struct GBASerializedState*)(NULL))->vfame.writeSequence) ==
+              sizeof(((struct GBAVFameCart*)(NULL))->writeSequence), "GBA savestate vfame writeSequence size mismatch");
+
 static void _multicartSettle(struct mTiming* timing, void* context, uint32_t cyclesLate);
 
 void GBAUnlCartInit(struct GBA* gba) {
@@ -165,7 +168,10 @@ void GBAUnlCartSerialize(const struct GBA* gba, struct GBASerializedState* state
 	case GBA_UNL_CART_VFAME:
 		flags = GBASerializedUnlCartFlagsSetType(flags, GBA_UNL_CART_VFAME);
 		flags = GBASerializedUnlCartFlagsSetSubtype(flags, unl->vfame.cartType);
-		mLOG(GBA_MEM, STUB, "Vast Fame save states are not yet implemented");
+		STORE_16(unl->vfame.sramMode, 0, &state->vfame.sramMode);
+		STORE_16(unl->vfame.romMode, 0, &state->vfame.romMode);
+		memcpy(state->vfame.writeSequence, unl->vfame.writeSequence, sizeof(state->vfame.writeSequence));
+		state->vfame.acceptingModeChange = unl->vfame.acceptingModeChange;
 		break;
 	case GBA_UNL_CART_MULTICART:
 		flags = GBASerializedUnlCartFlagsSetType(0, GBA_UNL_CART_MULTICART);
@@ -205,7 +211,10 @@ void GBAUnlCartDeserialize(struct GBA* gba, const struct GBASerializedState* sta
 	case GBA_UNL_CART_NONE:
 		return;
 	case GBA_UNL_CART_VFAME:
-		mLOG(GBA_MEM, STUB, "Vast Fame save states are not yet implemented");
+		LOAD_16(unl->vfame.sramMode, 0, &state->vfame.sramMode);
+		LOAD_16(unl->vfame.romMode, 0, &state->vfame.romMode);
+		memcpy(unl->vfame.writeSequence, state->vfame.writeSequence, sizeof(state->vfame.writeSequence));
+		unl->vfame.acceptingModeChange = state->vfame.acceptingModeChange;
 		return;
 	case GBA_UNL_CART_MULTICART:
 		unl->multi.bank = state->multicart.bank;

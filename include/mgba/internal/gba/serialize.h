@@ -446,6 +446,12 @@ struct GBASerializedState {
 			uint32_t settleNextEvent;
 			GBASerializedMulticartFlags flags;
 		} multicart;
+		struct {
+			int16_t sramMode;
+			int16_t romMode;
+			int8_t writeSequence[5];
+			bool acceptingModeChange;
+		} vfame;
 	};
 
 	struct {
