@@ -83,6 +83,7 @@ void GBASerialize(struct GBA* gba, struct GBASerializedState* state) {
 
 	GBAMemorySerialize(&gba->memory, state);
 	GBAIOSerialize(gba, state);
+	GBAUnlCartSerialize(gba, state);
 	GBAVideoSerialize(&gba->video, state);
 	GBAAudioSerialize(&gba->audio, state);
 	GBASavedataSerialize(&gba->memory.savedata, state);
@@ -180,6 +181,9 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		mLOG(GBA_STATE, WARN, "Savestate has unaligned PC and is probably corrupted");
 		gba->cpu->gprs[ARM_PC] &= ~1;
 	}
+
+	// Since this can remap the ROM, we need to do this before we reset the pipeline
+	GBAUnlCartDeserialize(gba, state);
 	gba->memory.activeRegion = -1;
 	gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	if (state->biosPrefetch) {

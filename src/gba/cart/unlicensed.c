@@ -69,6 +69,7 @@ void GBAUnlCartReset(struct GBA* gba) {
 		gba->memory.unl.multi.bank = 0;
 		gba->memory.unl.multi.offset = 0;
 		gba->memory.unl.multi.size = 0;
+		gba->memory.unl.multi.locked = false;
 		gba->memory.rom = gba->memory.unl.multi.rom;
 		gba->memory.romSize = GBA_SIZE_ROM0;
 	}
@@ -93,22 +94,25 @@ void GBAUnlCartWriteSRAM(struct GBA* gba, uint32_t address, uint8_t value) {
 		mLOG(GBA_MEM, DEBUG, "Multicart writing SRAM %06X:%02X", address, value);
 		switch (address) {
 		case GBA_MULTICART_CFG_BANK:
-			unl->multi.bank = value >> 4;
-			if (!(unl->multi.offset & 0x80)) {
+			if (!unl->multi.locked) {
+				unl->multi.bank = value >> 4;
 				mTimingDeschedule(&gba->timing, &unl->multi.settle);
 				mTimingSchedule(&gba->timing, &unl->multi.settle, MULTI_SETTLE);
 			}
 			break;
 		case GBA_MULTICART_CFG_OFFSET:
-			unl->multi.offset = value;
-			if (!(unl->multi.offset & 0x80)) {
+			if (!unl->multi.locked) {
+				unl->multi.offset = value;
 				mTimingDeschedule(&gba->timing, &unl->multi.settle);
 				mTimingSchedule(&gba->timing, &unl->multi.settle, MULTI_SETTLE);
+				if (unl->multi.offset & 0x80) {
+					unl->multi.locked = true;
+				}
 			}
 			break;
 		case GBA_MULTICART_CFG_SIZE:
 			unl->multi.size = 0x40 - (value & 0x3F);
-			if (!(unl->multi.offset & 0x80)) {
+			if (!unl->multi.locked) {
 				mTimingDeschedule(&gba->timing, &unl->multi.settle);
 				mTimingSchedule(&gba->timing, &unl->multi.settle, MULTI_SETTLE);
 			}
@@ -167,6 +171,7 @@ static void _multicartSettle(struct mTiming* timing, void* context, uint32_t cyc
 
 void GBAUnlCartSerialize(const struct GBA* gba, struct GBASerializedState* state) {
 	GBASerializedUnlCartFlags flags = 0;
+	GBASerializedMulticartFlags multiFlags = 0;
 	const struct GBAUnlCart* unl = &gba->memory.unl;
 	switch (unl->type) {
 	case GBA_UNL_CART_NONE:
@@ -187,11 +192,13 @@ void GBAUnlCartSerialize(const struct GBA* gba, struct GBASerializedState* state
 		state->multicart.sramActive = unl->multi.sramActive;
 		state->multicart.unk = unl->multi.unk;
 		state->multicart.currentSize = gba->memory.romSize / MULTI_BLOCK;
+		multiFlags = GBASerializedMulticartFlagsSetLocked(flags, unl->multi.locked);
 		STORE_16((gba->memory.rom - unl->multi.rom) / 0x20000, 0, &state->multicart.currentOffset);
 		STORE_32(unl->multi.settle.when, 0, &state->multicart.settleNextEvent);
 		if (mTimingIsScheduled(&gba->timing, &unl->multi.settle)) {
-			STORE_32(GBASerializedMulticartFlagsFillDustSettling(0), 0, &state->multicart.flags);
+			multiFlags = GBASerializedMulticartFlagsFillDustSettling(multiFlags);
 		}
+		STORE_32(multiFlags, 0, &state->multicart.flags);
 		break;
 	}
 	STORE_32(flags, 0, &state->hw.unlCartFlags);
@@ -238,6 +245,7 @@ void GBAUnlCartDeserialize(struct GBA* gba, const struct GBASerializedState* sta
 			gba->memory.rom = unl->multi.rom + offset;
 		}
 		LOAD_32(multiFlags, 0, &state->multicart.flags);
+		unl->multi.locked = GBASerializedMulticartFlagsGetLocked(multiFlags);
 		if (GBASerializedMulticartFlagsIsDustSettling(multiFlags)) {
 			LOAD_32(when, 0, &state->multicart.settleNextEvent);
 			mTimingSchedule(&gba->timing, &unl->multi.settle, when);

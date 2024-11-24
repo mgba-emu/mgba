@@ -295,6 +295,7 @@ DECL_BITS(GBASerializedUnlCartFlags, Subtype, 5, 3);
 
 DECL_BITFIELD(GBASerializedMulticartFlags, uint32_t);
 DECL_BIT(GBASerializedMulticartFlags, DustSettling, 0);
+DECL_BIT(GBASerializedMulticartFlags, Locked, 1);
 
 DECL_BITFIELD(GBASerializedSavedataFlags, uint8_t);
 DECL_BITS(GBASerializedSavedataFlags, FlashState, 0, 2);

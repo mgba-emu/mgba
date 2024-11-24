@@ -42,6 +42,7 @@ struct GBAMulticart {
 	uint8_t offset;
 	uint8_t size;
 	bool sramActive;
+	bool locked;
 	uint8_t unk;
 };
 
