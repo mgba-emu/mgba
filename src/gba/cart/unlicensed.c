@@ -42,7 +42,7 @@ void GBAUnlCartDetect(struct GBA* gba) {
 		return;
 	}
 
-	if (memcmp(&cart->id, "AXVJ01", 6) == 0) {
+	if (memcmp(&cart->id, "AXVJ01", 6) == 0 || memcmp(&cart->id, "BI3P52", 6) == 0) {
 		if (gba->romVf && gba->romVf->size(gba->romVf) >= 0x04000000) {
 			// Bootleg multicart
 			// TODO: Identify a bit more precisely
