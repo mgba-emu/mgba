@@ -49,6 +49,7 @@ Misc:
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
  - GBA Audio: Remove broken XQ audio pending rewrite
+ - GBA BIOS: Move SoftReset implementation to assembly
  - GBA Memory: Improve VRAM access stall cycle estimation
  - GBA SIO: Rewrite lockstep driver for improved stability
  - GBA Video: Add special circlular window handling in OpenGL renderer
