@@ -21,7 +21,7 @@
     <message>
         <location filename="../utils.cpp" line="129"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation>%1 log Video (*.mvl)</translation>
+        <translation>%1 registro Video (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -482,7 +482,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../DisplayGL.cpp" line="312"/>
         <source>Failed to create an OpenGL 3 context, trying old-style...</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossibile creare un contesto OpenGL 3, provo con il vecchio stile...</translation>
     </message>
 </context>
 <context>
@@ -3181,7 +3181,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../LogConfigModel.cpp" line="102"/>
         <source>Stub</source>
-        <translation>Matrice</translation>
+        <translation>Stub</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="104"/>
@@ -3242,7 +3242,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../LogView.ui" line="14"/>
         <source>Logs</source>
-        <translation>Log</translation>
+        <translation>Registri</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="22"/>
@@ -3257,7 +3257,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../LogView.ui" line="38"/>
         <source>Stub</source>
-        <translation>Matrice</translation>
+        <translation>Stub</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="48"/>
@@ -3408,63 +3408,63 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="14"/>
         <source>Memory access logging</source>
-        <translation type="unfinished"></translation>
+        <translation>Registrazione accessi alla memoria</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="23"/>
         <source>Log file</source>
-        <translation type="unfinished"></translation>
+        <translation>File di registro</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="32"/>
         <source>Browse</source>
-        <translation type="unfinished">Sfoglia</translation>
+        <translation>Sfoglia</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="39"/>
         <source>Log additional information (uses 3× space)</source>
-        <translation type="unfinished"></translation>
+        <translation>Registra informazioni aggiuntive (utilizza 3× spazio)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="46"/>
         <source>Load existing file if present</source>
-        <translation type="unfinished"></translation>
+        <translation>Carica file esistente se presente</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="59"/>
         <source>Regions</source>
-        <translation type="unfinished"></translation>
+        <translation>Regioni</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="70"/>
         <source>Export ROM snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Esporta istantanea ROM</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="77"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Avvia</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="87"/>
         <source>Stop</source>
-        <translation type="unfinished">Ferma</translation>
+        <translation>Ferma</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="82"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossibile aprire il file di registro della memoria</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="116"/>
         <location filename="../MemoryAccessLogView.cpp" line="135"/>
         <source>Select access log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleziona il file di registro di accesso</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="116"/>
         <source>Memory access logs (*.mal)</source>
-        <translation type="unfinished"></translation>
+        <translation>Registri degli accessi alla memoria (*.mal)</translation>
     </message>
 </context>
 <context>
@@ -4038,7 +4038,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="55"/>
         <source>Realtime clock</source>
-        <translation>Clock in tempo reale</translation>
+        <translation>Orologio in tempo reale</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="65"/>
@@ -4372,12 +4372,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="80"/>
         <source>Maker Code:</source>
-        <translation type="unfinished"></translation>
+        <translation>Codice fabbricante:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="97"/>
         <source>Revision:</source>
-        <translation type="unfinished"></translation>
+        <translation>Revisione:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="114"/>
@@ -4660,7 +4660,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="115"/>
         <source>&amp;Load most recent</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Carica il più recente</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="120"/>
@@ -4698,7 +4698,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SensorView.ui" line="31"/>
         <source>Realtime clock</source>
-        <translation>Clock in tempo reale</translation>
+        <translation>Orologio in tempo reale</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="50"/>
@@ -4713,7 +4713,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SensorView.ui" line="96"/>
         <source>Start time at</source>
-        <translation>Avvia tempo a</translation>
+        <translation>Avvia ora alle</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="60"/>
@@ -4932,7 +4932,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="85"/>
         <source>Logging</source>
-        <translation>Log</translation>
+        <translation>Registrazione</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="90"/>
@@ -5387,17 +5387,17 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1771"/>
         <source>Log to file</source>
-        <translation>Registro log in file</translation>
+        <translation>Registro salvato su file</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1778"/>
         <source>Log to console</source>
-        <translation>Registro log in console</translation>
+        <translation>Registro mostrato in console</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1792"/>
         <source>Select Log File</source>
-        <translation>Seleziona file log</translation>
+        <translation>Seleziona file registro</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1887"/>
@@ -6026,12 +6026,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="554"/>
         <source>Select video log</source>
-        <translation>Seleziona log video</translation>
+        <translation>Seleziona registro video</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="554"/>
         <source>Video logs (*.mvl)</source>
-        <translation>Log video (*.mvl)</translation>
+        <translation>Registro video (*.mvl)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="991"/>
@@ -6376,7 +6376,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1570"/>
         <source>&amp;Lock frame size</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Blocca dimensione cornice</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1583"/>
@@ -6436,7 +6436,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1686"/>
         <source>Game &amp;overrides...</source>
-        <translation>Valore specifico per il gioco...</translation>
+        <translation>Sovrascrivi funzioni del gioco...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1700"/>
@@ -6657,17 +6657,17 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1750"/>
         <source>Log memory &amp;accesses...</source>
-        <translation type="unfinished"></translation>
+        <translation>Registra memoria &amp;accessi...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1759"/>
         <source>Record debug video log...</source>
-        <translation>Registra video log di debug...</translation>
+        <translation>Salva registro video di debug...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1760"/>
         <source>Stop debug video log</source>
-        <translation>Ferma video log di debug</translation>
+        <translation>Ferma registro video di debug</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1764"/>
