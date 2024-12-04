@@ -211,11 +211,7 @@ void GBASIOWriteSIOCNT(struct GBASIO* sio, uint16_t value) {
 			sio->rcnt = GBASIORegisterRCNTFillSc(sio->rcnt);
 		}
 		if (GBASIONormalIsStart(value) && !GBASIONormalIsStart(sio->siocnt)) {
-			if (GBASIONormalIsSc(value)) {
-				_startTransfer(sio);
-			} else {
-				// TODO
-			}
+			_startTransfer(sio);
 		}
 		break;
 	default:
