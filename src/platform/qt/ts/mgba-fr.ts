@@ -557,7 +557,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="30"/>
         <source>Banner</source>
-        <translation type="unfinished"></translation>
+        <translation>Bannière</translation>
     </message>
 </context>
 <context>
