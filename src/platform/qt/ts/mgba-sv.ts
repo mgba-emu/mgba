@@ -448,7 +448,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="117"/>
         <source>Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).</source>
-        <translation type="unfinished"></translation>
+        <translation>Misslyckades med att öppna sparad fil; sparningar i spel kan inte uppdateras. Försäkra dig om att sparkatalogen är skrivbar utan att ytterligare behörighet krävs (t.ex UAC i Windows).</translation>
     </message>
 </context>
 <context>
@@ -1635,12 +1635,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="297"/>
         <source>Brighten</source>
-        <translation type="unfinished"></translation>
+        <translation>Ljusare</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="298"/>
         <source>Darken</source>
-        <translation type="unfinished"></translation>
+        <translation>Mörkare</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="300"/>
@@ -1784,7 +1784,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1172"/>
         <location filename="../IOViewer.cpp" line="1198"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Nollställ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="368"/>
@@ -5211,22 +5211,22 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="2164"/>
         <source>Default color palette only</source>
-        <translation type="unfinished"></translation>
+        <translation>Endast standardfärgpalett</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2157"/>
         <source>SGB color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>SGB-färgpalett om tillgänglig</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2171"/>
         <source>GBC color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>GBC-färgpalett om tillgänglig</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2178"/>
         <source>SGB (preferred) or GBC color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>SGB (föredragen) eller GBC-färgpalett om tillgänglig</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2190"/>
@@ -5397,7 +5397,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1264"/>
         <source>Preload entire ROM into memory</source>
-        <translation type="unfinished"></translation>
+        <translation>Förinläs hela ROM till minnet</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="609"/>
@@ -5443,7 +5443,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1851"/>
         <source>SGB and GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>SGB och GBC-kompatibla:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1871"/>
@@ -5470,7 +5470,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1271"/>
         <source>Enable Game Boy Player features by default</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera Game Boy Player-funktioner som standard</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1278"/>
@@ -5490,7 +5490,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1313"/>
         <source>OpenGL enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenGL-förbättringar</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1319"/>
@@ -5534,17 +5534,17 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1470"/>
         <source>GBA BIOS file:</source>
-        <translation type="unfinished"></translation>
+        <translation>GBA BIOS-fil:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1442"/>
         <source>GBC BIOS file:</source>
-        <translation type="unfinished"></translation>
+        <translation>GBC BIOS-fil:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1414"/>
         <source>SGB BIOS file:</source>
-        <translation type="unfinished"></translation>
+        <translation>SGB BIOS-fil:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1522"/>
@@ -5563,7 +5563,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="1570"/>
         <source>Save states</source>
-        <translation type="unfinished"></translation>
+        <translation>Sparade tillstånd</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1618"/>
@@ -5971,7 +5971,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../Window.cpp" line="515"/>
         <location filename="../Window.cpp" line="522"/>
         <source>Select save</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj sparning</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="434"/>
@@ -5991,7 +5991,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="445"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>e-Reader-kort (*.raw *.bin *.bmp)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="508"/>
@@ -6006,7 +6006,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="522"/>
         <source>GameShark saves (*.sps *.xps)</source>
-        <translation type="unfinished"></translation>
+        <translation>GameShark-sparningar (*.sps *.xps)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="554"/>
@@ -6060,7 +6060,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1125"/>
         <source>Really make portable?</source>
-        <translation type="unfinished"></translation>
+        <translation>Verkligen göra portabelt?</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1126"/>
@@ -6070,7 +6070,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1138"/>
         <source>Restart needed</source>
-        <translation type="unfinished"></translation>
+        <translation>Omstart krävs</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1139"/>
@@ -6120,12 +6120,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="395"/>
         <source>Save games (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sparade spel (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="396"/>
         <source>Select save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj sparat spel</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="404"/>
@@ -6136,7 +6136,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../Window.cpp" line="406"/>
         <location filename="../Window.cpp" line="411"/>
         <source>Select save state</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj sparat tillstånd</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="453"/>
@@ -6161,12 +6161,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1279"/>
         <source>Load alternate save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs in alternativt sparat spel...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1282"/>
         <source>Load temporary save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs in temporärt sparat spel...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1315"/>
@@ -6226,17 +6226,17 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1346"/>
         <source>Save state file...</source>
-        <translation type="unfinished"></translation>
+        <translation>Spara tillståndsfil...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1351"/>
         <source>Quick load</source>
-        <translation type="unfinished"></translation>
+        <translation>Snabbinläsning</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1352"/>
         <source>Quick save</source>
-        <translation type="unfinished"></translation>
+        <translation>Snabbsparning</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1354"/>
@@ -6246,17 +6246,17 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1359"/>
         <source>Save recent</source>
-        <translation type="unfinished"></translation>
+        <translation>Spara senaste</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1367"/>
         <source>Undo load state</source>
-        <translation type="unfinished"></translation>
+        <translation>Ångra inläst tillstånd</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1370"/>
         <source>Undo save state</source>
-        <translation type="unfinished"></translation>
+        <translation>Ångra sparat tillstånd</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1377"/>
@@ -6277,7 +6277,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="515"/>
         <source>GameShark saves (*.gsv *.sps *.xps)</source>
-        <translation type="unfinished"></translation>
+        <translation>GameShark-sparningar (*.gsv *.sps *.xps)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1150"/>
@@ -6287,7 +6287,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1151"/>
         <source>Some changes will not take effect until the game is reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>Vissa ändringar kommer inte bli effektiva tills spelet har startats om.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1278"/>
@@ -6297,17 +6297,17 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1291"/>
         <source>Import GameShark Save...</source>
-        <translation type="unfinished"></translation>
+        <translation>Importera GameShark-sparning...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1294"/>
         <source>Export GameShark Save...</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportera GameShark-sparning...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1301"/>
         <source>Automatically determine</source>
-        <translation type="unfinished"></translation>
+        <translation>Bestäm automatiskt</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1305"/>
@@ -6372,7 +6372,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1429"/>
         <source>Fast forward (held)</source>
-        <translation type="unfinished"></translation>
+        <translation>Snabbspolning (håll)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1435"/>
@@ -6382,12 +6382,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1439"/>
         <source>Fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Snabbspolningshastighet</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1444"/>
         <source>Unbounded</source>
-        <translation type="unfinished"></translation>
+        <translation>Obunden</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1448"/>
@@ -6397,22 +6397,22 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1452"/>
         <source>Increase fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Öka snabbspolningshastighet</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1459"/>
         <source>Decrease fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Sänk snabbspolningshastighet</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1466"/>
         <source>Rewind (held)</source>
-        <translation type="unfinished"></translation>
+        <translation>Spola tillbaka (håll)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1478"/>
         <source>Re&amp;wind</source>
-        <translation type="unfinished"></translation>
+        <translation>Spola ti&amp;llbaka</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1483"/>
@@ -6467,7 +6467,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1524"/>
         <source>Frame size</source>
-        <translation type="unfinished"></translation>
+        <translation>Bildrutestorlek</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1526"/>
