@@ -1168,32 +1168,32 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="40"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation type="unfinished"></translation>
+        <translation>Läge 0: 4 bricklager</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="41"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation type="unfinished"></translation>
+        <translation>Läge 1: 2 bricklager + 1 roterat/skalat bricklager</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="42"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
-        <translation type="unfinished"></translation>
+        <translation>Läge 2: 2 roterade/skalade bricklager</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="43"/>
         <source>Mode 3: Full 15-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation>Läge 3: Full 15-bitars bitmap</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="44"/>
         <source>Mode 4: Full 8-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation>Läge 4: Full 8-bitars bitmap</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="45"/>
         <source>Mode 5: Small 15-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation>Läge 5: Liten 15-bitars bitmap</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="49"/>
@@ -1208,12 +1208,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="51"/>
         <source>Unlocked HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>Olåst HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="52"/>
         <source>Linear OBJ tile mapping</source>
-        <translation type="unfinished"></translation>
+        <translation>Linjär OBJ-brickmappning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="53"/>
@@ -1268,32 +1268,32 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="69"/>
         <source>Currently in VBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>För närvarande i VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="70"/>
         <source>Currently in HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>För närvarande i HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="71"/>
         <source>Currently in VCounter</source>
-        <translation type="unfinished"></translation>
+        <translation>För närvarande i VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="72"/>
         <source>Enable VBlank IRQ generation</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera VBlank IRQ-generering</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="73"/>
         <source>Enable HBlank IRQ generation</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera HBlank IRQ-generering</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="74"/>
         <source>Enable VCounter IRQ generation</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera VCounter IRQ-generering</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="75"/>
@@ -1319,7 +1319,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="102"/>
         <location filename="../IOViewer.cpp" line="112"/>
         <source>Tile data base (* 16kB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Brickdatabas (* 16kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="85"/>
@@ -1343,7 +1343,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="105"/>
         <location filename="../IOViewer.cpp" line="115"/>
         <source>Tile map base (* 2kB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Brickkartbas (* 2kB)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="88"/>
@@ -1367,7 +1367,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1364"/>
         <location filename="../IOViewer.cpp" line="1405"/>
         <source>Horizontal offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Horisontell marginal</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="125"/>
@@ -1377,7 +1377,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1360"/>
         <location filename="../IOViewer.cpp" line="1401"/>
         <source>Vertical offset</source>
-        <translation type="unfinished"></translation>
+        <translation>Vertikal marginal</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="153"/>
@@ -1405,7 +1405,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="202"/>
         <location filename="../IOViewer.cpp" line="207"/>
         <source>Integer part</source>
-        <translation type="unfinished"></translation>
+        <translation>Heltalsdel</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="174"/>
@@ -1413,7 +1413,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="212"/>
         <location filename="../IOViewer.cpp" line="221"/>
         <source>Integer part (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>Heltalsdel (låg)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="178"/>
@@ -1421,7 +1421,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="216"/>
         <location filename="../IOViewer.cpp" line="225"/>
         <source>Integer part (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>Heltalsdel (hög)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="229"/>
@@ -1887,49 +1887,49 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="420"/>
         <location filename="../IOViewer.cpp" line="1209"/>
         <source>Enable channel 1 right</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera kanal 1 höger</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="421"/>
         <location filename="../IOViewer.cpp" line="1210"/>
         <source>Enable channel 2 right</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera kanal 2 höger</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="422"/>
         <location filename="../IOViewer.cpp" line="1211"/>
         <source>Enable channel 3 right</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera kanal 3 höger</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="423"/>
         <location filename="../IOViewer.cpp" line="1212"/>
         <source>Enable channel 4 right</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera kanal 4 höger</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="424"/>
         <location filename="../IOViewer.cpp" line="1213"/>
         <source>Enable channel 1 left</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera kanal 1 vänster</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="425"/>
         <location filename="../IOViewer.cpp" line="1214"/>
         <source>Enable channel 2 left</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera kanal 2 vänster</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="426"/>
         <location filename="../IOViewer.cpp" line="1215"/>
         <source>Enable channel 3 left</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera kanal 3 vänster</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="427"/>
         <location filename="../IOViewer.cpp" line="1216"/>
         <source>Enable channel 4 left</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera kanal 4 vänster</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="431"/>
@@ -1949,12 +1949,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="439"/>
         <source>Enable channel A right</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera kanal A höger</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="440"/>
         <source>Enable channel A left</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera kanal A vänster</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="441"/>
@@ -1965,7 +1965,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="442"/>
         <location filename="../IOViewer.cpp" line="449"/>
         <source>0</source>
-        <translation type="unfinished"></translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="443"/>
@@ -1978,7 +1978,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1002"/>
         <location filename="../IOViewer.cpp" line="1012"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="445"/>
@@ -1988,12 +1988,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="446"/>
         <source>Enable channel B right</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera kanal B höger</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="447"/>
         <source>Enable channel B left</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera kanal B vänster</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="448"/>
@@ -2131,7 +2131,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="696"/>
         <location filename="../IOViewer.cpp" line="704"/>
         <source>Address (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>Adress (låg)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="565"/>
@@ -2143,21 +2143,21 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="700"/>
         <location filename="../IOViewer.cpp" line="708"/>
         <source>Address (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>Adress (hög)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1116"/>
         <location filename="../IOViewer.cpp" line="1139"/>
         <location filename="../IOViewer.cpp" line="1166"/>
         <source>Sound frequency (low)</source>
-        <translation type="unfinished"></translation>
+        <translation>Ljudfrekvens (låg)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1120"/>
         <location filename="../IOViewer.cpp" line="1143"/>
         <location filename="../IOViewer.cpp" line="1170"/>
         <source>Sound frequency (high)</source>
-        <translation type="unfinished"></translation>
+        <translation>Ljudfrekvens (hög)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1424"/>
@@ -2265,7 +2265,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="683"/>
         <location filename="../IOViewer.cpp" line="729"/>
         <source>Repeat</source>
-        <translation type="unfinished"></translation>
+        <translation>Upprepa</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="594"/>
@@ -2290,7 +2290,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="732"/>
         <location filename="../IOViewer.cpp" line="1442"/>
         <source>Immediate</source>
-        <translation type="unfinished"></translation>
+        <translation>Direkt</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="597"/>
@@ -2302,7 +2302,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1091"/>
         <location filename="../IOViewer.cpp" line="1552"/>
         <source>VBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="598"/>
@@ -2313,7 +2313,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="962"/>
         <location filename="../IOViewer.cpp" line="1443"/>
         <source>HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="601"/>
@@ -2348,7 +2348,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="689"/>
         <location filename="../IOViewer.cpp" line="735"/>
         <source>Audio FIFO</source>
-        <translation type="unfinished"></translation>
+        <translation>Ljud-FIFO</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="726"/>
@@ -2387,7 +2387,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="827"/>
         <location filename="../IOViewer.cpp" line="1070"/>
         <source>1/64</source>
-        <translation type="unfinished"></translation>
+        <translation>1/64</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="781"/>
@@ -2396,7 +2396,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="828"/>
         <location filename="../IOViewer.cpp" line="1071"/>
         <source>1/256</source>
-        <translation type="unfinished"></translation>
+        <translation>1/256</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="782"/>
@@ -2405,7 +2405,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="829"/>
         <location filename="../IOViewer.cpp" line="1068"/>
         <source>1/1024</source>
-        <translation type="unfinished"></translation>
+        <translation>1/1024</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="799"/>
@@ -2460,13 +2460,13 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="877"/>
         <location filename="../IOViewer.cpp" line="890"/>
         <source>R</source>
-        <translation type="unfinished"></translation>
+        <translation>R</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="878"/>
         <location filename="../IOViewer.cpp" line="891"/>
         <source>L</source>
-        <translation type="unfinished"></translation>
+        <translation>L</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="893"/>
@@ -2476,28 +2476,28 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="897"/>
         <source>SC</source>
-        <translation type="unfinished"></translation>
+        <translation>SC</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="898"/>
         <source>SD</source>
-        <translation type="unfinished"></translation>
+        <translation>SD</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="899"/>
         <source>SI</source>
-        <translation type="unfinished"></translation>
+        <translation>SI</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="900"/>
         <source>SO</source>
-        <translation type="unfinished"></translation>
+        <translation>SO</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="946"/>
         <location filename="../IOViewer.cpp" line="963"/>
         <source>VCounter</source>
-        <translation type="unfinished"></translation>
+        <translation>VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="947"/>
@@ -2527,31 +2527,31 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="951"/>
         <location filename="../IOViewer.cpp" line="968"/>
         <source>SIO</source>
-        <translation type="unfinished"></translation>
+        <translation>SIO</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="952"/>
         <location filename="../IOViewer.cpp" line="969"/>
         <source>DMA 0</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="953"/>
         <location filename="../IOViewer.cpp" line="970"/>
         <source>DMA 1</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="954"/>
         <location filename="../IOViewer.cpp" line="971"/>
         <source>DMA 2</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="955"/>
         <location filename="../IOViewer.cpp" line="972"/>
         <source>DMA 3</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="956"/>
@@ -2699,12 +2699,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1039"/>
         <source>Active face buttons</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktiva handlingsknappar</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1047"/>
         <source>Internal clock</source>
-        <translation type="unfinished"></translation>
+        <translation>Intern klocka</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1048"/>
@@ -2724,7 +2724,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/16</source>
-        <translation type="unfinished"></translation>
+        <translation>1/16</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1092"/>
@@ -2753,59 +2753,59 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1202"/>
         <source>Volume right</source>
-        <translation type="unfinished"></translation>
+        <translation>Volym höger</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1203"/>
         <source>Output right</source>
-        <translation type="unfinished"></translation>
+        <translation>Utgång höger</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1204"/>
         <source>Volume left</source>
-        <translation type="unfinished"></translation>
+        <translation>Volym vänster</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1205"/>
         <source>Output left</source>
-        <translation type="unfinished"></translation>
+        <translation>Utgång vänster</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1326"/>
         <source>Background enable/priority</source>
-        <translation type="unfinished"></translation>
+        <translation>Bakgrund aktivera/prioritet</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1327"/>
         <source>Enable sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera sprites</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1328"/>
         <source>Double-height sprites</source>
-        <translation type="unfinished"></translation>
+        <translation>Sprites med dubbelhöjd</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation type="unfinished"></translation>
+        <translation>Brickkarta för bakgrund</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
         <location filename="../IOViewer.cpp" line="1339"/>
         <source>0x9800 – 0x9BFF</source>
-        <translation type="unfinished"></translation>
+        <translation>0x9800 – 0x9BFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1331"/>
         <location filename="../IOViewer.cpp" line="1340"/>
         <source>0x9C00 – 0x9FFF</source>
-        <translation type="unfinished"></translation>
+        <translation>0x9C00 – 0x9FFF</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1333"/>
         <source>Background tile data</source>
-        <translation type="unfinished"></translation>
+        <translation>Brickdata för bakgrund</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1334"/>
@@ -2825,7 +2825,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1338"/>
         <source>Window tile map</source>
-        <translation type="unfinished"></translation>
+        <translation>Brickkarta för fönster</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1342"/>
@@ -2840,12 +2840,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1347"/>
         <source>0: HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>0: HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1348"/>
         <source>1: VBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>1: VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1349"/>
@@ -2855,7 +2855,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1350"/>
         <source>3: HDraw</source>
-        <translation type="unfinished"></translation>
+        <translation>3: HDraw</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1352"/>
@@ -2865,17 +2865,17 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1353"/>
         <source>Enable HBlank (mode 0) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera HBlank (läge 0) IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1354"/>
         <source>Enable VBlank (mode 1) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera VBlank (läge 1) IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1355"/>
         <source>Enable OAM (mode 2) IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera OAM (läge 2) IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1356"/>
@@ -2928,7 +2928,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1411"/>
         <source>Prepare to switch speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Förbered att växla hastighet</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1412"/>
@@ -2993,12 +2993,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1517"/>
         <source>Sprite ordering</source>
-        <translation type="unfinished"></translation>
+        <translation>Spriteordning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1518"/>
         <source>OAM order</source>
-        <translation type="unfinished"></translation>
+        <translation>OAM-ordning</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1519"/>
@@ -3008,7 +3008,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1530"/>
         <source>WRAM bank</source>
-        <translation type="unfinished"></translation>
+        <translation>WRAM-bank</translation>
     </message>
 </context>
 <context>
@@ -3305,7 +3305,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MapView.ui" line="14"/>
         <source>Maps</source>
-        <translation type="unfinished"></translation>
+        <translation>Kartor</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="43"/>
@@ -3331,13 +3331,13 @@ Hämtningsstorlek: %3</translation>
         <location filename="../MapView.cpp" line="49"/>
         <location filename="../MapView.cpp" line="62"/>
         <source>Map base</source>
-        <translation type="unfinished"></translation>
+        <translation>Kartbas</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="50"/>
         <location filename="../MapView.cpp" line="63"/>
         <source>Tile base</source>
-        <translation type="unfinished"></translation>
+        <translation>Brickbas</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="51"/>
@@ -5296,12 +5296,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="845"/>
         <source>Dynamically update window title</source>
-        <translation type="unfinished"></translation>
+        <translation>Uppdatera fönstertiteln dynamiskt</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="865"/>
         <source>Show filename instead of ROM name in title bar</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa filnamn istället för ROM-namn i titelraden</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="882"/>
@@ -6130,7 +6130,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="404"/>
         <source>mGBA save state files (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>mGBA-filer för sparat tillstånd (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="406"/>
@@ -6141,7 +6141,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="453"/>
         <source>Select e-Reader card images</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj e-Reader-kortavbilder</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="453"/>
@@ -6156,7 +6156,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="495"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 av %2 e-Reader-kort konverterades.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1279"/>
@@ -6186,12 +6186,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1322"/>
         <source>Scan e-Reader dotcodes...</source>
-        <translation type="unfinished"></translation>
+        <translation>Skanna e-Reader-punktkoder...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1755"/>
         <source>Convert e-Reader card image to raw...</source>
-        <translation type="unfinished"></translation>
+        <translation>Konvertera e-Reader-kortavbilder till raw...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1326"/>
@@ -6607,7 +6607,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1702"/>
         <source>Scripting...</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriptning...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1723"/>
@@ -6622,22 +6622,22 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1725"/>
         <source>View &amp;sprites...</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa &amp;sprites...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1726"/>
         <source>View &amp;tiles...</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa &amp;brickor...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1727"/>
         <source>View &amp;map...</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa &amp;karta...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1729"/>
         <source>&amp;Frame inspector...</source>
-        <translation type="unfinished"></translation>
+        <translation>Inspektera bi&amp;ldrutor...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1745"/>
@@ -6652,7 +6652,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1747"/>
         <source>View &amp;I/O registers...</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa I/&amp;O-register...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1750"/>
