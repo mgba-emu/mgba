@@ -361,16 +361,15 @@ subs pc, lr, #4
 SoftReset:
 msr   spsr, #0
 mov   lr, #0
-ldr   sp, =0x03007FE0
+ldr   sp, =0x03007F00
 msr   cpsr_c, #0x92
 msr   spsr, #0
 mov   lr, #0
 ldr   sp, =0x03007FA0
-msr   cpsr_c, #0x9F
+msr   cpsr_c, #0x93
 msr   spsr, #0
 mov   lr, #0
-ldr   sp, =0x03007F00
-msr   cpsr_c, #0x93
+ldr   sp, =0x03007FE0
 mov   r0, #0x04000000
 sub   r1, r0, #0x200
 ldrb  r0, [r0, #-6]
