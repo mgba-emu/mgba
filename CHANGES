@@ -1,4 +1,4 @@
-0.10.4: (Future)
+0.10.4: (2024-12-07)
 Emulation fixes:
  - GB Audio: Fix audio envelope timing resetting too often (fixes mgba.io/i/3164)
  - GB I/O: Fix STAT writing IRQ trigger conditions (fixes mgba.io/i/2501)
