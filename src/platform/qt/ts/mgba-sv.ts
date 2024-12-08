@@ -2217,7 +2217,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="717"/>
         <location filename="../IOViewer.cpp" line="723"/>
         <source>Increment</source>
-        <translation type="unfinished"></translation>
+        <translation>Öka</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="583"/>
@@ -2229,7 +2229,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="718"/>
         <location filename="../IOViewer.cpp" line="724"/>
         <source>Decrement</source>
-        <translation type="unfinished"></translation>
+        <translation>Minska</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="584"/>
@@ -2241,7 +2241,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="719"/>
         <location filename="../IOViewer.cpp" line="725"/>
         <source>Fixed</source>
-        <translation type="unfinished"></translation>
+        <translation>Fast</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="585"/>
@@ -2249,7 +2249,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="675"/>
         <location filename="../IOViewer.cpp" line="720"/>
         <source>Increment and reload</source>
-        <translation type="unfinished"></translation>
+        <translation>Öka och läs om</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="587"/>
@@ -2970,7 +2970,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1493"/>
         <location filename="../IOViewer.cpp" line="1505"/>
         <source>Current index</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuellt index</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1494"/>
@@ -3353,12 +3353,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MapView.cpp" line="53"/>
         <source>Xform</source>
-        <translation type="unfinished"></translation>
+        <translation>Xform</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="108"/>
         <source>Map Addr.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kartadr.</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="109"/>
@@ -3390,12 +3390,12 @@ Hämtningsstorlek: %3</translation>
         <location filename="../MapView.cpp" line="184"/>
         <location filename="../MapView.cpp" line="239"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translation>Inte tillgänglig</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="282"/>
         <source>Export map</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportera karta</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="283"/>
@@ -3408,7 +3408,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="14"/>
         <source>Memory access logging</source>
-        <translation type="unfinished"></translation>
+        <translation>Loggning av minnesåtkomst</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="23"/>
@@ -3423,12 +3423,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="39"/>
         <source>Log additional information (uses 3× space)</source>
-        <translation type="unfinished"></translation>
+        <translation>Logga ytterligare information (använder 3× utrymme)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="46"/>
         <source>Load existing file if present</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs in befintlig fil om tillgänglig</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="59"/>
@@ -3438,7 +3438,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="70"/>
         <source>Export ROM snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportera ROM-ögonblicksbild</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="77"/>
@@ -3453,18 +3453,18 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="82"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Misslyckades med att öppna minnesloggfil</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="116"/>
         <location filename="../MemoryAccessLogView.cpp" line="135"/>
         <source>Select access log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj åtkomstloggfil</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="116"/>
         <source>Memory access logs (*.mal)</source>
-        <translation type="unfinished"></translation>
+        <translation>Minnesåtkomstloggar (*.mal)</translation>
     </message>
 </context>
 <context>
@@ -4025,7 +4025,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="30"/>
         <source>Game Boy Advance</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="42"/>
@@ -4033,17 +4033,17 @@ Hämtningsstorlek: %3</translation>
         <location filename="../OverrideView.ui" line="241"/>
         <location filename="../OverrideView.ui" line="257"/>
         <source>Autodetect</source>
-        <translation type="unfinished"></translation>
+        <translation>Identifiera automatiskt</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="55"/>
         <source>Realtime clock</source>
-        <translation type="unfinished"></translation>
+        <translation>Realtidsklocka</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="65"/>
         <source>Gyroscope</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyroskop</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="75"/>
@@ -4058,12 +4058,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="95"/>
         <source>Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>Rumble</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="113"/>
         <source>Save type</source>
-        <translation type="unfinished"></translation>
+        <translation>Sparningstyp</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="126"/>
@@ -4078,27 +4078,27 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="136"/>
         <source>Flash 512kb</source>
-        <translation type="unfinished"></translation>
+        <translation>Flash 512kb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="141"/>
         <source>Flash 1Mb</source>
-        <translation type="unfinished"></translation>
+        <translation>Flash 1Mb</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="146"/>
         <source>EEPROM 8kB</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 8kB</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="151"/>
         <source>EEPROM 512 bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>EEPROM 512 bytes</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="156"/>
         <source>SRAM 64kB (bootlegs only)</source>
-        <translation type="unfinished"></translation>
+        <translation>SRAM 64kB (endast bootlegs)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="164"/>
@@ -4133,7 +4133,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="265"/>
         <source>Background Colors</source>
-        <translation type="unfinished"></translation>
+        <translation>Bakgrundsfärger</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="352"/>
@@ -4153,17 +4153,17 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../OverrideView.cpp" line="54"/>
         <source>Official MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>Officiella MBCer</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="58"/>
         <source>Licensed MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>Licensierade MBCer</translation>
     </message>
     <message>
         <location filename="../OverrideView.cpp" line="62"/>
         <source>Unlicensed MBCs</source>
-        <translation type="unfinished"></translation>
+        <translation>Olicensierade MBCer</translation>
     </message>
 </context>
 <context>
@@ -4723,7 +4723,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SensorView.ui" line="67"/>
         <source>Offset time</source>
-        <translation type="unfinished"></translation>
+        <translation>Förskjut tid</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="80"/>
@@ -4765,7 +4765,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SensorView.ui" line="268"/>
         <source>Gyroscope</source>
-        <translation type="unfinished"></translation>
+        <translation>Gyroskop</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="296"/>
@@ -4902,7 +4902,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="50"/>
         <source>Gameplay</source>
-        <translation type="unfinished"></translation>
+        <translation>Spelning</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
@@ -4912,7 +4912,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
         <source>Update</source>
-        <translation>Uppdatera</translation>
+        <translation>Uppdatering</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
@@ -5130,7 +5130,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SettingsView.ui" line="750"/>
         <source>Show filename instead of ROM name in library view</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa filnamn istället för ROM-namn i biblioteksvyn</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="797"/>
@@ -5731,7 +5731,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../TileView.cpp" line="225"/>
         <source>Export tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportera brickor</translation>
     </message>
     <message>
         <location filename="../TileView.cpp" line="226"/>
@@ -5742,12 +5742,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../TileView.cpp" line="237"/>
         <source>Export tile</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportera bricka</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="14"/>
         <source>Tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Brickor</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="170"/>
@@ -5777,7 +5777,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../TileView.ui" line="96"/>
         <source>Tiles per row</source>
-        <translation type="unfinished"></translation>
+        <translation>Brickor per rad</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="103"/>
@@ -5787,17 +5787,17 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../TileView.ui" line="119"/>
         <source>Displayed tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Visade brickor</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="125"/>
         <source>Only BG tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Endast BG-brickor</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="135"/>
         <source>Only OBJ tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Endast OBJ-brickor</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="145"/>
@@ -6060,12 +6060,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1125"/>
         <source>Really make portable?</source>
-        <translation>Verkligen göra portabelt?</translation>
+        <translation>Verkligen göra portabel?</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1126"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>Detta komma att göra att emulatorn läser in sin konfiguration från samma katalog som den körbara filen. Vill du fortsätta?</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1138"/>
@@ -6422,27 +6422,27 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1490"/>
         <source>Solar sensor</source>
-        <translation type="unfinished"></translation>
+        <translation>Solsensor</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1491"/>
         <source>Increase solar level</source>
-        <translation type="unfinished"></translation>
+        <translation>Öka solnivå</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1492"/>
         <source>Decrease solar level</source>
-        <translation type="unfinished"></translation>
+        <translation>Sänk solnivå</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1493"/>
         <source>Brightest solar level</source>
-        <translation type="unfinished"></translation>
+        <translation>Starkaste solnivån</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1496"/>
         <source>Darkest solar level</source>
-        <translation type="unfinished"></translation>
+        <translation>Mörkaste solnivån</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1502"/>
@@ -6482,7 +6482,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1570"/>
         <source>&amp;Lock frame size</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Lås bildrutestorlek</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1583"/>
