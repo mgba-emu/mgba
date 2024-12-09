@@ -6,12 +6,12 @@
     <message>
         <location filename="../utils.cpp" line="96"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation>ROMs para Game Boy Advance (%1)</translation>
+        <translation>ROMs de Game Boy Advance (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="122"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation>ROMs para Game Boy Advance (%1)</translation>
+        <translation>ROMs de Game Boy (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="127"/>
@@ -78,7 +78,7 @@ Game Boy Advance es una marca registrada de Nintendo Co., Ltd.</translation>
         <source>
 Do you want to download and install it now? You will need to restart the emulator when the download is complete.</source>
         <translation>
-¿Quieres descargarlo e instalarlo ahora? Deberás reiniciar el emulador cuando se complete la descarga.</translation>
+¿Quieres descargarla e instalarla ahora? Deberás reiniciar el emulador cuando se complete la descarga.</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="41"/>
@@ -109,7 +109,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="82"/>
         <source>Downloading done. Press OK to restart %1 and install the update.</source>
-        <translation>Descarga finalizada. Presiona OK para reiniciar %1 e instalar la actualización.</translation>
+        <translation>Descarga finalizada. Presiona Aceptar para reiniciar %1 e instalar la actualización.</translation>
     </message>
 </context>
 <context>
@@ -140,7 +140,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation>Abrir desde archivo comprimido...</translation>
+        <translation>Abrir archivo comprimido...</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
@@ -272,7 +272,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
-        <translation>ID de chip</translation>
+        <translation>Identificador del chip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
@@ -466,7 +466,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../DebuggerConsole.ui" line="27"/>
         <source>Break</source>
-        <translation>Entrar a depuración</translation>
+        <translation>Interrumpir</translation>
     </message>
 </context>
 <context>
@@ -482,7 +482,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../DisplayGL.cpp" line="312"/>
         <source>Failed to create an OpenGL 3 context, trying old-style...</source>
-        <translation type="unfinished"></translation>
+        <translation>Fallo al crear contexto OpenGL, intentando estilo antiguo…</translation>
     </message>
 </context>
 <context>
@@ -495,7 +495,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../DolphinConnector.ui" line="23"/>
         <source>Local computer</source>
-        <translation>Ordenador local</translation>
+        <translation>Equipo local</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
@@ -1615,7 +1615,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="293"/>
         <source>Backdrop target 1</source>
-        <translation>Backdrop target 1</translation>
+        <translation>Objetivo del cuadro 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="294"/>
@@ -1670,7 +1670,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="305"/>
         <source>Backdrop target 2</source>
-        <translation>Backdrop target 2</translation>
+        <translation>Objetivo del cuadro 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="309"/>
@@ -2568,7 +2568,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="978"/>
         <source>SRAM wait</source>
-        <translation>SRAM wait</translation>
+        <translation>Espera SRAM</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="979"/>
@@ -2664,7 +2664,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1020"/>
         <source>Gamepak prefetch</source>
-        <translation>Gamepak prefetch</translation>
+        <translation>Precargar Gamepak</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1026"/>
@@ -2778,7 +2778,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1327"/>
         <source>Enable sprites</source>
-        <translation>Habilitar sprites</translation>
+        <translation>Activar sprites</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1328"/>
@@ -2788,7 +2788,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1329"/>
         <source>Background tile map</source>
-        <translation>Mapa de tesela de fondo</translation>
+        <translation>Fondo de tile map</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1330"/>
@@ -3176,12 +3176,12 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../LogConfigModel.cpp" line="100"/>
         <source>Debug</source>
-        <translation>Depuración (Debug)</translation>
+        <translation>Depuración</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="102"/>
         <source>Stub</source>
-        <translation>Stub</translation>
+        <translation>Borrador</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="104"/>
@@ -3252,12 +3252,12 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../LogView.ui" line="28"/>
         <source>Debug</source>
-        <translation>Debug</translation>
+        <translation>Depuración</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="38"/>
         <source>Stub</source>
-        <translation>Stub</translation>
+        <translation>Borrador</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="48"/>
@@ -3267,7 +3267,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../LogView.ui" line="58"/>
         <source>Warning</source>
-        <translation>Warning</translation>
+        <translation>Advertencia</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="68"/>
@@ -3408,63 +3408,63 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="14"/>
         <source>Memory access logging</source>
-        <translation type="unfinished"></translation>
+        <translation>Registro de acceso a la memoria</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="23"/>
         <source>Log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Archivo de registro</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="32"/>
         <source>Browse</source>
-        <translation type="unfinished"></translation>
+        <translation>Explorar</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="39"/>
         <source>Log additional information (uses 3× space)</source>
-        <translation type="unfinished"></translation>
+        <translation>Registrar información adicional (usa x3 más espacio)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="46"/>
         <source>Load existing file if present</source>
-        <translation type="unfinished"></translation>
+        <translation>Cargar archivo existente si está presente</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="59"/>
         <source>Regions</source>
-        <translation type="unfinished"></translation>
+        <translation>Regiones</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="70"/>
         <source>Export ROM snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportar captura de la ROM</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="77"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Comenzar</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="87"/>
         <source>Stop</source>
-        <translation type="unfinished">Detener</translation>
+        <translation>Detener</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="82"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Error al abrir el archivo de registro de memoria</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="116"/>
         <location filename="../MemoryAccessLogView.cpp" line="135"/>
         <source>Select access log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccionar archivo de registro de acceso</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="116"/>
         <source>Memory access logs (*.mal)</source>
-        <translation type="unfinished"></translation>
+        <translation>Archivos de registro de memoria (*.mal)</translation>
     </message>
 </context>
 <context>
@@ -4020,7 +4020,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="20"/>
         <source>Game Overrides</source>
-        <translation>Ajustes específicos por juego</translation>
+        <translation>Ajustes de juego</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="30"/>
@@ -4113,7 +4113,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="197"/>
         <source>VBA bug compatibility mode</source>
-        <translation>Compatibilidad con bugs de VBA</translation>
+        <translation>Compatibilidad con errores de VBA</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="227"/>
@@ -4372,12 +4372,12 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="80"/>
         <source>Maker Code:</source>
-        <translation type="unfinished"></translation>
+        <translation>Código de fabricante:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="97"/>
         <source>Revision:</source>
-        <translation type="unfinished"></translation>
+        <translation>Revisión:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="114"/>
@@ -4400,7 +4400,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ReportView.cpp" line="351"/>
         <source>Bug report archive</source>
-        <translation>Archivo del informe de errores</translation>
+        <translation>Archivo del reporte de errores</translation>
     </message>
     <message>
         <location filename="../ReportView.cpp" line="351"/>
@@ -4410,17 +4410,17 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ReportView.ui" line="14"/>
         <source>Generate Bug Report</source>
-        <translation>Generar informe de error</translation>
+        <translation>Generar reporte de error</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="67"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Antes de enviar un informe de errores, por favor primero genera un archivo de reporte para enviarlo como adjunto. Recomendamos adjuntar los archivos de guardado ya que puede ayudar con la investigación de reportes. Esto recopilará información sobre la versión de {projectName} que estás ejecutando y su configuración, tu ordenador, y el juego que tienes abierto (si hay alguno). Cuando esto termine, puedes ver toda la información y guardarla en un archivo ZIP. Este proceso intentará eliminar automáticamente tus datos personales (como tu usuario, si se encuentra en algunas de las rutas de directorio generadas), pero siempre se puede modificiar luego. Tras generar y guardar el reporte, pulsa el botón inferior o visita &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; para subirlo a GitHub. ¡Asegúrate de adjuntar el informe que has generado!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Antes de enviar un reporte de errores, por favor primero genera el archivo de reporte para enviarlo como adjunto. Recomendamos adjuntar los archivos de guardado ya que pueden ayudar con la investigación del error. Esto recopilará información sobre la versión de {projectName} que estás ejecutando y su configuración, tu equipo, y el juego que tienes abierto (si hay alguno). Cuando esto termine, podrás ver el reporte y guardarlo en un archivo comprimido (ZIP). Este proceso intentará eliminar automáticamente tus datos personales (por ejemplo, tu usuario, si se encuentra en algunas de las rutas de archivo), pero siempre podrás editarlo manualmente antes de enviarlo. Tras generar y guardar el reporte, pulsa el botón inferior o visita &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; para crear un reporte de error en GitHub. ¡Asegúrate de adjuntar tu archivo!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="85"/>
         <source>Generate report</source>
-        <translation>Generar informe</translation>
+        <translation>Generar reporte</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="99"/>
@@ -4430,7 +4430,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ReportView.ui" line="113"/>
         <source>Open issue list in browser</source>
-        <translation>Abrir lista de informes en navegador</translation>
+        <translation>Abrir reporte de errores en el navegador</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="134"/>
@@ -4660,7 +4660,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="115"/>
         <source>&amp;Load most recent</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Cargar más reciente</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="120"/>
@@ -5986,7 +5986,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../Window.cpp" line="445"/>
         <source>Select e-Reader dotcode</source>
-        <translation>Seleccionar dotcode del e-Reader</translation>
+        <translation>Seleccionar código del e-Reader</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="445"/>
@@ -6271,12 +6271,12 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1367"/>
         <source>Undo load state</source>
-        <translation>Deshacer cargar estado</translation>
+        <translation>Deshacer estado cargado</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1370"/>
         <source>Undo save state</source>
-        <translation>Deshacer guardar estado</translation>
+        <translation>Deshacer estado guardado</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1377"/>
@@ -6452,7 +6452,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1570"/>
         <source>&amp;Lock frame size</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Bloquear tamaño de cuadro</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1583"/>
@@ -6567,7 +6567,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1322"/>
         <source>Scan e-Reader dotcodes...</source>
-        <translation>Escanear dotcodes del e-Reader...</translation>
+        <translation>Escanear código del e-Reader...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1291"/>
@@ -6662,7 +6662,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../Window.cpp" line="1750"/>
         <source>Log memory &amp;accesses...</source>
-        <translation type="unfinished"></translation>
+        <translation>Registrar &amp;accesoa la memoria…</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1759"/>
