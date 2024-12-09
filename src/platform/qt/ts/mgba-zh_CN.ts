@@ -2714,7 +2714,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1049"/>
         <source>Transfer active</source>
-        <translation>传输处于活动状态</translation>
+        <translation>传输活跃状态</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1067"/>
