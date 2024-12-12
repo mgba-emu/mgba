@@ -1,3 +1,7 @@
+0.10.5: (Future)
+Other fixes:
+ - GBA Hardware: Fix loading states unconditionally overwriting GPIO memory
+
 0.10.4: (2024-12-07)
 Emulation fixes:
  - GB Audio: Fix audio envelope timing resetting too often (fixes mgba.io/i/3164)
