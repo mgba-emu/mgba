@@ -1158,7 +1158,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="870"/>
         <location filename="../IOViewer.cpp" line="883"/>
         <source>B</source>
-        <translation type="unfinished"></translation>
+        <translation>B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="39"/>
@@ -3348,7 +3348,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../MapView.cpp" line="52"/>
         <location filename="../MapView.cpp" line="64"/>
         <source>Offset</source>
-        <translation type="unfinished">Förskjut</translation>
+        <translation>Marginal</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="53"/>
@@ -4367,7 +4367,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>Filinformation</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
@@ -4377,7 +4377,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
@@ -5360,7 +5360,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="897"/>
         <source>Show frame count in OSD</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa bilder/s i OSD</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="904"/>
@@ -5370,7 +5370,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="941"/>
         <source>Custom border:</source>
-        <translation type="unfinished"></translation>
+        <translation>Anpassad ram:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1059"/>
@@ -5381,7 +5381,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.ui" line="1090"/>
         <location filename="../SettingsView.ui" line="1133"/>
         <source>Unbounded</source>
-        <translation type="unfinished">Obunden</translation>
+        <translation>Obunden</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1102"/>
@@ -5436,7 +5436,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="609"/>
         <source>Save state extra data:</source>
-        <translation type="unfinished"></translation>
+        <translation>Extradata för sparade tillstånd:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="626"/>
@@ -5447,7 +5447,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="653"/>
         <source>Load state extra data:</source>
-        <translation type="unfinished"></translation>
+        <translation>Extradata för inlästa tillstånd:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1805"/>
@@ -5666,17 +5666,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.cpp" line="92"/>
         <source>mGBA Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>mGBA-shaders</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>Error loading shader</source>
-        <translation type="unfinished"></translation>
+        <translation>Fel vid inläsning av shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>Shadern &quot;%1&quot; kunde inte läsas in korrekt.</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="145"/>
@@ -6035,7 +6035,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="449"/>
         <source>Select e-Reader dotcode</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj e-Reader-punktkod</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="449"/>
@@ -6094,17 +6094,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1024"/>
         <source>Unimplemented BIOS call</source>
-        <translation type="unfinished"></translation>
+        <translation>Ej implementerat BIOS-anrop</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1025"/>
         <source>This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience.</source>
-        <translation type="unfinished"></translation>
+        <translation>Detta spel använder ett BIOS-anrop som inte är implementerat. Använd ett officiellt BIOS för bästa upplevelse.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1047"/>
         <source>Failed to create an appropriate display device, falling back to software display. Games may run slowly, especially with larger windows.</source>
-        <translation type="unfinished"></translation>
+        <translation>Misslyckades med att skapa en lämplig visningsenhet, faller tillbaka på programvaruvisning. Spel kan bli långsamma, speciellt med större fönster.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1145"/>
