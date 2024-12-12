@@ -520,7 +520,7 @@ mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite16, 2, U32, address, U16, va
 mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite32, 2, U32, address, U32, value);
 
 // Register functions
-mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WSTR, readRegister, _mScriptCoreReadRegister, 1, CHARP, regName);
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WRAPPER, readRegister, _mScriptCoreReadRegister, 1, CHARP, regName);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, writeRegister, _mScriptCoreWriteRegister, 2, CHARP, regName, S32, value);
 
 // Savestate functions
@@ -1205,11 +1205,11 @@ static bool _callRotationCb(struct mScriptCoreAdapter* adapter, const char* cbNa
 	struct mScriptValue* context = mScriptTableLookup(adapter->rotationCbTable, &mSCRIPT_MAKE_CHARP("context"));
 	mScriptFrameInit(&frame);
 	if (context) {
-		mScriptValueWrap(context, mScriptListAppend(&frame.arguments));
+		mScriptValueWrap(context, mScriptListAppend(&frame.stack));
 	}
 	bool ok = mScriptContextInvoke(adapter->context, cb, &frame);
-	if (ok && out && mScriptListSize(&frame.returnValues) == 1) {
-		if (!mScriptCast(mSCRIPT_TYPE_MS_F32, mScriptListGetPointer(&frame.returnValues, 0), out)) {
+	if (ok && out && mScriptListSize(&frame.stack) == 1) {
+		if (!mScriptCast(mSCRIPT_TYPE_MS_F32, mScriptListGetPointer(&frame.stack, 0), out)) {
 			ok = false;
 		}
 	}
@@ -1278,8 +1278,8 @@ static uint8_t _readLuminance(struct GBALuminanceSource* luminance) {
 		mScriptFrameInit(&frame);
 		bool ok = mScriptContextInvoke(adapter->context, adapter->luminanceCb, &frame);
 		struct mScriptValue out = {0};
-		if (ok && mScriptListSize(&frame.returnValues) == 1) {
-			if (!mScriptCast(mSCRIPT_TYPE_MS_U8, mScriptListGetPointer(&frame.returnValues, 0), &out)) {
+		if (ok && mScriptListSize(&frame.stack) == 1) {
+			if (!mScriptCast(mSCRIPT_TYPE_MS_U8, mScriptListGetPointer(&frame.stack, 0), &out)) {
 				ok = false;
 			}
 		}

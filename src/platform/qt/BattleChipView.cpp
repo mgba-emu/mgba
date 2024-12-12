@@ -216,7 +216,7 @@ void BattleChipView::loadDeck() {
 		error->show();
 		return;
 	}
-	
+
 	QList<int> newDeck;
 	QStringList deck = ini.value("deck").toString().split(',');
 	for (const auto& item : deck) {

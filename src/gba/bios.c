@@ -35,30 +35,6 @@ static int _mulWait(int32_t r) {
 	}
 }
 
-static void _SoftReset(struct GBA* gba) {
-	struct ARMCore* cpu = gba->cpu;
-	ARMSetPrivilegeMode(cpu, MODE_IRQ);
-	cpu->spsr.packed = 0;
-	cpu->gprs[ARM_LR] = 0;
-	cpu->gprs[ARM_SP] = GBA_SP_BASE_IRQ;
-	ARMSetPrivilegeMode(cpu, MODE_SUPERVISOR);
-	cpu->spsr.packed = 0;
-	cpu->gprs[ARM_LR] = 0;
-	cpu->gprs[ARM_SP] = GBA_SP_BASE_SUPERVISOR;
-	ARMSetPrivilegeMode(cpu, MODE_SYSTEM);
-	cpu->gprs[ARM_LR] = 0;
-	cpu->gprs[ARM_SP] = GBA_SP_BASE_SYSTEM;
-	int8_t flag = ((int8_t*) gba->memory.iwram)[0x7FFA];
-	memset(((int8_t*) gba->memory.iwram) + GBA_SIZE_IWRAM - 0x200, 0, 0x200);
-	if (flag) {
-		cpu->gprs[ARM_PC] = GBA_BASE_EWRAM;
-	} else {
-		cpu->gprs[ARM_PC] = GBA_BASE_ROM0;
-	}
-	_ARMSetMode(cpu, MODE_ARM);
-	ARMWritePC(cpu);
-}
-
 static void _RegisterRamReset(struct GBA* gba) {
 	uint32_t registers = gba->cpu->gprs[0];
 	struct ARMCore* cpu = gba->cpu;
@@ -445,7 +421,7 @@ void GBASwi16(struct ARMCore* cpu, int immediate) {
 	bool useStall = false;
 	switch (immediate) {
 	case GBA_SWI_SOFT_RESET:
-		_SoftReset(gba);
+		ARMRaiseSWI(cpu);
 		break;
 	case GBA_SWI_REGISTER_RAM_RESET:
 		_RegisterRamReset(gba);

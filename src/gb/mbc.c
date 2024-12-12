@@ -163,7 +163,7 @@ static bool _isMulticart(const uint8_t* mem) {
 		success = GBIsROM(vf);
 		vf->close(vf);
 	}
-	
+
 	return success;
 }
 

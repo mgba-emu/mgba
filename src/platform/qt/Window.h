@@ -73,6 +73,7 @@ signals:
 	void startDrawing();
 	void shutdown();
 	void paused(bool);
+	void shaderSelectorAdded(ShaderSelector*);
 
 public slots:
 	void setController(CoreController* controller, const QString& fname);

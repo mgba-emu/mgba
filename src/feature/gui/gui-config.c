@@ -295,7 +295,7 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 						test.v.s = mCoreConfigGetValue(&runner->config, item->data.v.s);
 						if (test.v.s && strcmp(test.v.s, v->v.s) == 0) {
 							item->state = j;
-							break;						
+							break;
 						}
 						break;
 					case GUI_VARIANT_POINTER:

@@ -14,6 +14,10 @@
 #include <QScreen>
 #include <QWindow>
 
+#ifdef Q_OS_WIN
+#include <dwmapi.h>
+#endif
+
 #ifdef USE_SQLITE3
 #include "ArchiveInspector.h"
 #include "library/LibraryController.h"
@@ -123,7 +127,7 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 			if (value.toBool()) {
 				attachWidget(m_libraryView);
 			} else {
-				attachWidget(m_screenWidget);				
+				attachWidget(m_screenWidget);
 			}
 		}
 	}, this);
@@ -132,8 +136,8 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	ConfigOption* showFilenameInLibrary = m_config->addOption("showFilenameInLibrary");
 	showFilenameInLibrary->connect([this](const QVariant& value) {
 			m_libraryView->setShowFilename(value.toBool());
-	}, this); 
-    m_config->updateOption("showFilenameInLibrary");
+	}, this);
+	m_config->updateOption("showFilenameInLibrary");
 	ConfigOption* libraryStyle = m_config->addOption("libraryStyle");
 	libraryStyle->connect([this](const QVariant& value) {
 		m_libraryView->setViewStyle(static_cast<LibraryStyle>(value.toInt()));
@@ -546,6 +550,7 @@ void Window::openSettingsWindow(SettingsView::Page page) {
 #ifdef USE_SQLITE3
 	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
 #endif
+	connect(this, &Window::shaderSelectorAdded, settingsWindow, &SettingsView::setShaderSelector);
 	openView(settingsWindow);
 	settingsWindow->selectPage(page);
 }
@@ -717,6 +722,11 @@ void Window::showEvent(QShowEvent* event) {
 		return;
 	}
 	m_wasOpened = true;
+#ifdef Q_OS_WIN
+	HWND hwnd = reinterpret_cast<HWND>(winId());
+	DWM_WINDOW_CORNER_PREFERENCE cornerPref = DWMWCP_DONOTROUND;
+	DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &cornerPref, sizeof(cornerPref));
+#endif
 	if (m_initialSize.isValid()) {
 		resizeFrame(m_initialSize);
 	}
@@ -1041,7 +1051,12 @@ void Window::reloadDisplayDriver() {
 	}
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 	m_shaderView.reset();
-	m_shaderView = std::make_unique<ShaderSelector>(m_display.get(), m_config);
+	if (m_display->supportsShaders()) {
+		m_shaderView = std::make_unique<ShaderSelector>(m_display.get(), m_config);
+		emit shaderSelectorAdded(m_shaderView.get());
+	} else {
+		emit shaderSelectorAdded(nullptr);
+	}
 #endif
 
 	connect(m_display.get(), &QGBA::Display::hideCursor, [this]() {
@@ -1071,7 +1086,12 @@ void Window::reloadDisplayDriver() {
 	m_display->setMinimumSize(GBA_VIDEO_HORIZONTAL_PIXELS, GBA_VIDEO_VERTICAL_PIXELS);
 #endif
 
-	m_display->setBackgroundImage(QImage{m_config->getOption("backgroundImage")});
+	QString backgroundImage = m_config->getOption("backgroundImage");
+	if (backgroundImage.isEmpty()) {
+		m_display->setBackgroundImage(QImage{});
+	} else {
+		m_display->setBackgroundImage(QImage{backgroundImage});
+	}
 
 	if (!proxy) {
 		proxy = std::make_shared<VideoProxy>();
@@ -1402,7 +1422,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	m_actions.addAction(tr("About..."), "about", openTView<AboutScreen>(), "file")->setRole(Action::Role::ABOUT);
-	m_actions.addAction(tr("E&xit"), "quit", static_cast<QWidget*>(this), &QWidget::close, "file", QKeySequence::Quit)->setRole(Action::Role::QUIT);
+	m_actions.addAction(tr("E&xit"), "quit", &QApplication::quit, "file", QKeySequence::Quit)->setRole(Action::Role::QUIT);
 
 	m_actions.addMenu(tr("&Emulation"), "emu");
 	addGameAction(tr("&Reset"), "reset", &CoreController::reset, "emu", QKeySequence("Ctrl+R"));
@@ -1963,7 +1983,12 @@ void Window::setupOptions() {
 	ConfigOption* backgroundImage = m_config->addOption("backgroundImage");
 	backgroundImage->connect([this](const QVariant& value) {
 		if (m_display) {
-			m_display->setBackgroundImage(QImage{value.toString()});
+			QString backgroundImage = value.toString();
+			if (backgroundImage.isEmpty()) {
+				m_display->setBackgroundImage(QImage{});
+			} else {
+				m_display->setBackgroundImage(QImage{backgroundImage});
+			}
 		}
 	}, this);
 	m_config->updateOption("backgroundImage");

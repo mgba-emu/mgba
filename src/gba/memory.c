@@ -93,7 +93,7 @@ void GBAMemoryInit(struct GBA* gba) {
 	gba->memory.iwram = &gba->memory.wram[GBA_SIZE_EWRAM >> 2];
 
 	GBADMAInit(gba);
-	GBAVFameInit(&gba->memory.vfame);
+	GBAUnlCartInit(gba);
 
 	gba->memory.ereader.p = gba;
 	gba->memory.ereader.dots = NULL;
@@ -138,7 +138,18 @@ void GBAMemoryReset(struct GBA* gba) {
 		mLOG(GBA_MEM, FATAL, "Could not map memory");
 	}
 
+	if (!gba->memory.rom) {
+		gba->isPristine = false;
+	}
+
+	if (gba->memory.hw.devices & HW_GPIO) {
+		_pristineCow(gba);
+	}
+
+	GBASavedataReset(&gba->memory.savedata);
+	GBAHardwareReset(&gba->memory.hw);
 	GBADMAReset(gba);
+	GBAUnlCartReset(gba);
 	memset(&gba->memory.matrix, 0, sizeof(gba->memory.matrix));
 }
 
@@ -411,7 +422,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	wait += waitstatesRegion[address >> BASE_OFFSET]; \
 	if ((address & (GBA_SIZE_ROM0 - 4)) < memory->romSize) { \
 		LOAD_32(value, address & (GBA_SIZE_ROM0 - 4), memory->rom); \
-	} else if (memory->vfame.cartType) { \
+	} else if (memory->unl.type == GBA_UNL_CART_VFAME) { \
 		value = GBAVFameGetPatternValue(address, 32); \
 	} else { \
 		mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load32: 0x%08X", address); \
@@ -576,7 +587,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
 		if ((address & (GBA_SIZE_ROM0 - 2)) < memory->romSize) {
 			LOAD_16(value, address & (GBA_SIZE_ROM0 - 2), memory->rom);
-		} else if (memory->vfame.cartType) {
+		} else if (memory->unl.type == GBA_UNL_CART_VFAME) {
 			value = GBAVFameGetPatternValue(address, 16);
 		} else if ((address & (GBA_SIZE_ROM0 - 2)) >= AGB_PRINT_BASE) {
 			uint32_t agbPrintAddr = address & 0x00FFFFFF;
@@ -601,7 +612,7 @@ uint32_t GBALoad16(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 			value = GBACartEReaderRead(&memory->ereader, address);
 		} else if ((address & (GBA_SIZE_ROM0 - 2)) < memory->romSize) {
 			LOAD_16(value, address & (GBA_SIZE_ROM0 - 2), memory->rom);
-		} else if (memory->vfame.cartType) {
+		} else if (memory->unl.type == GBA_UNL_CART_VFAME) {
 			value = GBAVFameGetPatternValue(address, 16);
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load16: 0x%08X", address);
@@ -692,7 +703,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 		wait = memory->waitstatesNonseq16[address >> BASE_OFFSET];
 		if ((address & (GBA_SIZE_ROM0 - 1)) < memory->romSize) {
 			value = ((uint8_t*) memory->rom)[address & (GBA_SIZE_ROM0 - 1)];
-		} else if (memory->vfame.cartType) {
+		} else if (memory->unl.type == GBA_UNL_CART_VFAME) {
 			value = GBAVFameGetPatternValue(address, 8);
 		} else {
 			mLOG(GBA_MEM, GAME_ERROR, "Out of bounds ROM Load8: 0x%08X", address);
@@ -802,14 +813,7 @@ uint32_t GBALoad8(struct ARMCore* cpu, uint32_t address, int* cycleCounter) {
 	mLOG(GBA_MEM, STUB, "Unimplemented memory Store32: 0x%08X", address);
 
 #define STORE_SRAM \
-	if (address & 0x3) { \
-		mLOG(GBA_MEM, GAME_ERROR, "Unaligned SRAM Store32: 0x%08X", address); \
-	} else { \
-		GBAStore8(cpu, address, value, cycleCounter); \
-		GBAStore8(cpu, address | 1, value, cycleCounter); \
-		GBAStore8(cpu, address | 2, value, cycleCounter); \
-		GBAStore8(cpu, address | 3, value, cycleCounter); \
-	}
+	GBAStore8(cpu, address, value >> (8 * (address & 3)), cycleCounter);
 
 #define STORE_BAD \
 	mLOG(GBA_MEM, GAME_ERROR, "Bad memory Store32: 0x%08X", address);
@@ -921,7 +925,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		break;
 	case GBA_REGION_ROM0:
 		if (IS_GPIO_REGISTER(address & 0xFFFFFE)) {
-			if (memory->hw.devices == HW_NONE) {
+			if (!(memory->hw.devices & HW_GPIO)) {
 				mLOG(GBA_HW, WARN, "Write to GPIO address %08X on cartridge without GPIO", address);
 				break;
 			}
@@ -969,6 +973,10 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 				break;
 			}
 		}
+		if (memory->unl.type) {
+			GBAUnlCartWriteROM(gba, address & (GBA_SIZE_ROM0 - 1), value);
+			break;
+		}
 		mLOG(GBA_MEM, GAME_ERROR, "Bad cartridge Store16: 0x%08X", address);
 		break;
 	case GBA_REGION_ROM2_EX:
@@ -989,10 +997,9 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 	case GBA_REGION_SRAM_MIRROR:
 		if (address & 1) {
 			mLOG(GBA_MEM, GAME_ERROR, "Unaligned SRAM Store16: 0x%08X", address);
-			break;
+			value >>= 8;
 		}
 		GBAStore8(cpu, address, value, cycleCounter);
-		GBAStore8(cpu, address | 1, value, cycleCounter);
 		break;
 	default:
 		mLOG(GBA_MEM, GAME_ERROR, "Bad memory Store16: 0x%08X", address);
@@ -1064,8 +1071,8 @@ void GBAStore8(struct ARMCore* cpu, uint32_t address, int8_t value, int* cycleCo
 		} else if (memory->savedata.type == GBA_SAVEDATA_FLASH512 || memory->savedata.type == GBA_SAVEDATA_FLASH1M) {
 			GBASavedataWriteFlash(&memory->savedata, address, value);
 		} else if (memory->savedata.type == GBA_SAVEDATA_SRAM) {
-			if (memory->vfame.cartType) {
-				GBAVFameSramWrite(&memory->vfame, address, value, memory->savedata.data);
+			if (memory->unl.type) {
+				GBAUnlCartWriteSRAM(gba, address & 0xFFFF, value);
 			} else {
 				memory->savedata.data[address & (GBA_SIZE_SRAM - 1)] = value;
 			}
@@ -1734,6 +1741,10 @@ void GBAAdjustWaitstates(struct GBA* gba, uint16_t parameters) {
 			STORE_32(memory->agbPrintFuncBackup, AGB_PRINT_FLUSH_ADDR | base, memory->rom);
 		}
 	}
+
+	if (gba->performingDMA) {
+		GBADMARecalculateCycles(gba);
+	}
 }
 
 void GBAAdjustEWRAMWaitstates(struct GBA* gba, uint16_t parameters) {
@@ -1894,8 +1905,6 @@ void _pristineCow(struct GBA* gba) {
 	}
 	if (gba->romVf) {
 		gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->memory.romSize);
-		gba->romVf->close(gba->romVf);
-		gba->romVf = NULL;
 	}
 	gba->memory.rom = newRom;
 	gba->memory.hw.gpioBase = &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1];

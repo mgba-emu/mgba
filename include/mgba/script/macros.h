@@ -76,10 +76,14 @@ CXX_GUARD_START
 #define _mSCRIPT_FIELD_NAME(V) (V)->type->name
 #define _mSCRIPT_WRAPPED_FIELD_NAME(V) (V)->value.wrapped->type->name
 
-#define _mSCRIPT_CALL_VOID(FUNCTION, NPARAMS) FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS))
+#define _mSCRIPT_CALL_VOID(FUNCTION, NPARAMS) \
+	FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS)); \
+	mScriptListClear(&frame->stack)
+
 #define _mSCRIPT_CALL(RETURN, FUNCTION, NPARAMS) \
 	mSCRIPT_TYPE_C_ ## RETURN out = FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS)); \
-	mSCRIPT_PUSH(&frame->returnValues, RETURN, out)
+	mScriptListClear(&frame->stack); \
+	mSCRIPT_PUSH(&frame->stack, RETURN, out)
 
 #define mSCRIPT_DECLARE_STRUCT(STRUCT) \
 	extern const struct mScriptType mSTStruct_ ## STRUCT; \
@@ -249,8 +253,8 @@ CXX_GUARD_START
 },
 
 #define _mSCRIPT_STRUCT_METHOD_POP(TYPE, S, NPARAMS, ...) \
-	_mCALL(_mCAT(mSCRIPT_POP_, _mSUCC_ ## NPARAMS), &frame->arguments, _mCOMMA_ ## NPARAMS(S(TYPE), __VA_ARGS__)); \
-	if (mScriptListSize(&frame->arguments)) { \
+	_mCALL(_mCAT(mSCRIPT_POP_, _mSUCC_ ## NPARAMS), &frame->stack, _mCOMMA_ ## NPARAMS(S(TYPE), __VA_ARGS__)); \
+	if (mScriptListSize(&frame->stack)) { \
 		return false; \
 	}
 
@@ -326,11 +330,11 @@ CXX_GUARD_START
 	static const struct mScriptFunctionOverload _mSTStructBindingOverloads_ ## TYPE ## _ ## NAME[mSCRIPT_OVERLOADS_MAX]; \
 	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
-		const struct mScriptFunctionOverload* overload = mScriptFunctionFindOverload(_mSTStructBindingOverloads_ ## TYPE ## _ ## NAME, &frame->arguments); \
+		const struct mScriptFunctionOverload* overload = mScriptFunctionFindOverload(_mSTStructBindingOverloads_ ## TYPE ## _ ## NAME, &frame->stack); \
 		if (!overload) { \
 			return false; \
 		} \
-		if (!mScriptCoerceFrame(&overload->type->details.function.parameters, &frame->arguments, &frame->arguments)) { \
+		if (!mScriptCoerceFrame(&overload->type->details.function.parameters, &frame->stack, &frame->stack)) { \
 			return false; \
 		} \
 		return overload->function->call(frame, overload->function->context); \
@@ -552,8 +556,8 @@ CXX_GUARD_START
 #define _mSCRIPT_BIND_N_FUNCTION(NAME, RETURN, FUNCTION, DEFAULTS, NPARAMS, ...) \
 	static bool _binding_ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
-		_mCALL(mSCRIPT_POP_ ## NPARAMS, &frame->arguments, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
-		if (mScriptListSize(&frame->arguments)) { \
+		_mCALL(mSCRIPT_POP_ ## NPARAMS, &frame->stack, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+		if (mScriptListSize(&frame->stack)) { \
 			return false; \
 		} \
 		_mSCRIPT_CALL(RETURN, FUNCTION, NPARAMS); \
@@ -564,8 +568,8 @@ CXX_GUARD_START
 #define _mSCRIPT_BIND_VOID_FUNCTION(NAME, FUNCTION, DEFAULTS, NPARAMS, ...) \
 	static bool _binding_ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
-		_mCALL(mSCRIPT_POP_ ## NPARAMS, &frame->arguments, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
-		if (mScriptListSize(&frame->arguments)) { \
+		_mCALL(mSCRIPT_POP_ ## NPARAMS, &frame->stack, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+		if (mScriptListSize(&frame->stack)) { \
 			return false; \
 		} \
 		_mSCRIPT_CALL_VOID(FUNCTION, NPARAMS); \

@@ -267,7 +267,7 @@ void GBVideoProxyRendererDrawRange(struct GBVideoRenderer* renderer, int startX,
 		_copyExtraState(proxyRenderer);
 		proxyRenderer->backend->drawRange(proxyRenderer->backend, startX, endX, y);
 	}
-	mVideoLoggerRendererDrawRange(proxyRenderer->logger, startX, endX, y);	
+	mVideoLoggerRendererDrawRange(proxyRenderer->logger, startX, endX, y);
 }
 
 void GBVideoProxyRendererFinishScanline(struct GBVideoRenderer* renderer, int y) {

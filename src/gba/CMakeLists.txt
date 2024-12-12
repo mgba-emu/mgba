@@ -6,6 +6,7 @@ set(SOURCE_FILES
 	cart/ereader.c
 	cart/gpio.c
 	cart/matrix.c
+	cart/unlicensed.c
 	cart/vfame.c
 	cheats.c
 	cheats/codebreaker.c
@@ -31,7 +32,6 @@ set(SOURCE_FILES
 	sharkport.c
 	sio.c
 	sio/gbp.c
-	sio/joybus.c
 	timer.c
 	video.c)
 

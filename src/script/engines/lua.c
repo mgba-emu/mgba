@@ -912,12 +912,12 @@ void _luaError(struct mScriptEngineContextLua* luaContext) {
 	if (ok) {
 		struct mScriptFrame frame;
 		mScriptFrameInit(&frame);
-		struct mScriptValue* this = mScriptListAppend(&frame.arguments);
+		struct mScriptValue* this = mScriptListAppend(&frame.stack);
 		this->type = console->type;
 		this->refs = mSCRIPT_VALUE_UNREF;
 		this->flags = 0;
 		this->value.opaque = console->value.opaque;
-		mSCRIPT_PUSH(&frame.arguments, CHARP, luaContext->lastError);
+		mSCRIPT_PUSH(&frame.stack, CHARP, luaContext->lastError);
 		ok = mScriptInvoke(&error, &frame);
 		mScriptFrameDeinit(&frame);
 	}
@@ -1115,7 +1115,7 @@ void _autofreeFrame(struct mScriptContext* context, struct mScriptList* frame) {
 bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame* frame) {
 	int nargs = 0;
 	if (frame) {
-		nargs = mScriptListSize(&frame->arguments);
+		nargs = mScriptListSize(&frame->stack);
 	}
 
 	if (luaContext->lastError) {
@@ -1127,9 +1127,12 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 		return false;
 	}
 
-	if (frame && !_luaPushFrame(luaContext, luaContext->lua, &frame->arguments)) {
-		mScriptContextDeactivate(luaContext->d.context);
-		return false;
+	if (frame) {
+		if (!_luaPushFrame(luaContext, luaContext->lua, &frame->stack)) {
+			mScriptContextDeactivate(luaContext->d.context);
+			return false;
+		}
+		mScriptListClear(&frame->stack);
 	}
 
 	lua_pushliteral(luaContext->lua, "mCtx");
@@ -1143,7 +1146,7 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 	if (ret == LUA_ERRRUN) {
 		luaContext->lastError = strdup(lua_tostring(luaContext->lua, -1));
 		lua_pop(luaContext->lua, 1);
-	
+
 		_luaError(luaContext);
 	}
 	mScriptContextDeactivate(luaContext->d.context);
@@ -1151,7 +1154,7 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 		return false;
 	}
 
-	if (frame && !_luaPopFrame(luaContext, luaContext->lua, &frame->returnValues)) {
+	if (frame && !_luaPopFrame(luaContext, luaContext->lua, &frame->stack)) {
 		mScriptContextDrainPool(luaContext->d.context);
 		return false;
 	}
@@ -1191,8 +1194,8 @@ int _luaThunk(lua_State* lua) {
 	struct mScriptEngineContextLua* luaContext = _luaGetContext(lua);
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	if (!_luaPopFrame(luaContext, lua, &frame.arguments)) {
-		_freeFrame(&frame.arguments);
+	if (!_luaPopFrame(luaContext, lua, &frame.stack)) {
+		_freeFrame(&frame.stack);
 		mScriptContextDrainPool(luaContext->d.context);
 		mScriptFrameDeinit(&frame);
 		luaL_traceback(lua, lua, "Error calling function (translating arguments into runtime)", 1);
@@ -1200,7 +1203,7 @@ int _luaThunk(lua_State* lua) {
 	}
 
 	struct mScriptValue* fn = lua_touserdata(lua, lua_upvalueindex(1));
-	_autofreeFrame(luaContext->d.context, &frame.arguments);
+	_autofreeFrame(luaContext->d.context, &frame.stack);
 	if (!fn || !mScriptContextInvoke(luaContext->d.context, fn, &frame)) {
 		mScriptContextDrainPool(luaContext->d.context);
 		mScriptFrameDeinit(&frame);
@@ -1208,7 +1211,7 @@ int _luaThunk(lua_State* lua) {
 		return lua_error(lua);
 	}
 
-	bool ok = _luaPushFrame(luaContext, lua, &frame.returnValues);
+	bool ok = _luaPushFrame(luaContext, lua, &frame.stack);
 	mScriptContextDrainPool(luaContext->d.context);
 	mScriptFrameDeinit(&frame);
 	if (!ok) {

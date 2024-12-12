@@ -324,7 +324,7 @@ void GBAVideoProxyRendererSaveState(struct GBAVideoRenderer* renderer, void** st
 		proxyRenderer->logger->stateSize = 0;
 	} else {
 		proxyRenderer->backend->saveState(proxyRenderer->backend, state, size);
-	}	
+	}
 }
 
 void GBAVideoProxyRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {

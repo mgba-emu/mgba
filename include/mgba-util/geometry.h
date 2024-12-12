@@ -11,15 +11,15 @@
 CXX_GUARD_START
 
 struct mSize {
-    int width;
-    int height;
+	int width;
+	int height;
 };
 
 struct mRectangle {
-    int x;
-    int y;
-    int width;
-    int height;
+	int x;
+	int y;
+	int width;
+	int height;
 };
 
 void mRectangleUnion(struct mRectangle* dst, const struct mRectangle* add);

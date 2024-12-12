@@ -529,7 +529,7 @@ static void mGLES2ContextImageSize(struct VideoBackend* v, enum VideoLayer layer
 		*height = context->layerDims[layer].height;
 	} else {
 		*width = context->imageSizes[layer].width;
-		*height = context->imageSizes[layer].height;		
+		*height = context->imageSizes[layer].height;
 	}
 }
 
@@ -617,7 +617,7 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	if (shader->width > 0 && shader->height > 0) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, shader->width, shader->height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 	} else {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);		
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 	}
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shader->tex, 0);

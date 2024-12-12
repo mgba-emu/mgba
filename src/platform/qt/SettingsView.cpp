@@ -357,7 +357,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	});
 
 	QLocale englishLocale("en");
-	m_ui.languages->addItem(englishLocale.nativeLanguageName(), englishLocale);
+	m_ui.languages->addItem("English", englishLocale);
 	QDir ts(":/translations/");
 	for (auto& name : ts.entryList()) {
 		if (!name.endsWith(".qm") || !name.startsWith(binaryName)) {
@@ -367,7 +367,17 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 		if (locale.language() == QLocale::English) {
 			continue;
 		}
-		m_ui.languages->addItem(locale.nativeLanguageName(), locale);
+		QString endonym = locale.nativeLanguageName();
+		// Manualy handle some cases that Qt can't seem to do properly
+		if (locale.language() == QLocale::Spanish) {
+			// Qt insists this is called español de España, regardless of if we set the country
+			endonym = u8"Español";
+		} else if (locale.language() == QLocale::Portuguese && locale.country() == QLocale::Brazil) {
+			// Qt insists that Brazilian Portuguese is just called Português
+			endonym = u8"Português brasileiro";
+		}
+		endonym[0] = endonym[0].toUpper();
+		m_ui.languages->addItem(endonym, locale);
 		if (locale.bcp47Name() == QLocale().bcp47Name()) {
 			m_ui.languages->setCurrentIndex(m_ui.languages->count() - 1);
 		}
@@ -397,29 +407,42 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
 	addPage(tr("Shortcuts"), shortcutView, Page::SHORTCUTS);
+
+#if defined(BUILD_GLES2) || defined(USE_EPOXY)
+	m_dummyShader = new QLabel(tr("Shaders are not supported when the display driver is not OpenGL.\n\n"
+		"If it is set to OpenGL and you still see this, your graphics card or drivers may be too old."));
+	m_dummyShader->setWordWrap(true);
+	m_dummyShader->setAlignment(Qt::AlignCenter);
+	addPage(tr("Shaders"), m_dummyShader, Page::SHADERS);
+#endif
 }
 
 SettingsView::~SettingsView() {
-#if defined(BUILD_GL) || defined(BUILD_GLES2)
-	setShaderSelector(nullptr);
+#if defined(BUILD_GLES2) || defined(USE_EPOXY)
+	if (m_shader) {
+		m_shader->setParent(nullptr);
+	}
 #endif
 }
 
 void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
-#if defined(BUILD_GL) || defined(BUILD_GLES2)
-	if (m_shader) {
-		auto items = m_ui.tabs->findItems(tr("Shaders"), Qt::MatchFixedString);
-		for (const auto& item : items) {
-			m_ui.tabs->removeItemWidget(item);
-		}
-		m_ui.stackedWidget->removeWidget(m_shader);
-		m_shader->setParent(nullptr);
+#if  defined(BUILD_GLES2) || defined(USE_EPOXY)
+	auto items = m_ui.tabs->findItems(tr("Shaders"), Qt::MatchFixedString);
+	for (QListWidgetItem* item : items) {
+		delete item;
+	}
+	if (!m_shader) {
+		m_ui.stackedWidget->removeWidget(m_dummyShader);
+	} else {
+		QObject::disconnect(m_shader, nullptr, this, nullptr);
 	}
 	m_shader = shaderSelector;
+	QObject::connect(this, &SettingsView::saveSettingsRequested, m_shader, &ShaderSelector::saveSettings);
+	QObject::connect(m_ui.buttonBox, &QDialogButtonBox::rejected, m_shader, &ShaderSelector::revert);
 	if (shaderSelector) {
-		m_ui.stackedWidget->addWidget(m_shader);
-		m_ui.tabs->addItem(tr("Shaders"));
-		connect(m_ui.buttonBox, &QDialogButtonBox::accepted, m_shader, &ShaderSelector::saved);
+		addPage(tr("Shaders"), m_shader, Page::SHADERS);
+	} else {
+		addPage(tr("Shaders"), m_dummyShader, Page::SHADERS);
 	}
 #endif
 }
@@ -579,7 +602,6 @@ void SettingsView::updateConfig() {
 	if (displayDriver != m_controller->getQtOption("displayDriver")) {
 		m_controller->setQtOption("displayDriver", displayDriver);
 		Display::setDriver(static_cast<Display::Driver>(displayDriver.toInt()));
-		setShaderSelector(nullptr);
 		emit displayDriverChanged();
 	}
 
@@ -674,6 +696,8 @@ void SettingsView::updateConfig() {
 	}
 	saveSetting("gb.colors", gbColors);
 #endif
+
+	emit saveSettingsRequested();
 
 	m_controller->write();
 

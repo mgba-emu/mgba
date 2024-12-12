@@ -37,7 +37,7 @@ static uint32_t _patchMakeKey(struct mCheatPatch* patch) {
 		patchKey >>= 2;
 		break;
 	default:
-		break;	
+		break;
 	}
 	// TODO: More than one segment
 	if (patch->segment > 0) {
@@ -625,6 +625,9 @@ bool mCheatSaveFile(struct mCheatDevice* device, struct VFile* vf) {
 #ifdef ENABLE_VFS
 void mCheatAutosave(struct mCheatDevice* device) {
 	if (!device->autosave) {
+		return;
+	}
+	if (!device->p->dirs.cheats) {
 		return;
 	}
 	struct VFile* vf = mDirectorySetOpenSuffix(&device->p->dirs, device->p->dirs.cheats, ".cheats", O_WRONLY | O_CREAT | O_TRUNC);

@@ -48,6 +48,7 @@ struct GBADMA {
 	uint32_t nextDest;
 	int32_t nextCount;
 	uint32_t when;
+	int32_t cycles;
 };
 
 struct GBA;
@@ -65,6 +66,7 @@ void GBADMARunHblank(struct GBA* gba, int32_t cycles);
 void GBADMARunVblank(struct GBA* gba, int32_t cycles);
 void GBADMARunDisplayStart(struct GBA* gba, int32_t cycles);
 void GBADMAUpdate(struct GBA* gba);
+void GBADMARecalculateCycles(struct GBA* gba);
 
 CXX_GUARD_END
 

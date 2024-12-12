@@ -129,7 +129,6 @@ subs   pc, lr, #4
 .word 0x03A0E004
 
 @ Unimplemented
-SoftReset:
 RegisterRamReset:
 Stop:
 GetBiosChecksum:
@@ -318,13 +317,14 @@ mov lr, #0x8000003
 ldrb r1, [lr], #-3
 cmp r1, #0
 movne r1, #0
-bxne lr
+bne 1f
 ldr lr, =0x20000C0
 ldr r1, [lr]
 cmp r1, #0
 mov r1, #0
-bxne lr
+bne 1f
 sub lr, #0xC0
+1:
 bx lr
 .word 0
 .word 0xE129F000
@@ -357,3 +357,44 @@ ldmdb sp!, {r12, lr}
 subs pc, lr, #4
 .word 0
 .word 0x03A0E004
+
+SoftReset:
+msr   spsr, #0
+mov   lr, #0
+ldr   sp, =0x03007F00
+msr   cpsr_c, #0x92
+msr   spsr, #0
+mov   lr, #0
+ldr   sp, =0x03007FA0
+msr   cpsr_c, #0x93
+msr   spsr, #0
+mov   lr, #0
+ldr   sp, =0x03007FE0
+mov   r0, #0x04000000
+sub   r1, r0, #0x200
+ldrb  r0, [r0, #-6]
+mov   r2, #0
+mov   r3, #0
+mov   r4, #0
+mov   r5, #0
+mov   r6, #0
+mov   r7, #0
+mov   r8, #0
+mov   r9, #0
+mov   r10, #0
+mov   r11, #0
+mov   r12, #0
+1:
+stmia r1!, {r2, r3, r4, r5, r6, r7, r8, r9}
+cmp   r1, #0x04000000
+bne   1b
+cmp   r0, #0
+mov   r0, #0
+mov   r1, #0
+moveq lr, #0x08000000
+movne lr, #0x02000000
+movs  pc, lr
+.word 0
+.word 0xE129F000
+
+.ltorg

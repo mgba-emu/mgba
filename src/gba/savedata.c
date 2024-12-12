@@ -45,7 +45,7 @@ static void _ashesToAshes(struct mTiming* timing, void* user, uint32_t cyclesLat
 
 void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->type = GBA_SAVEDATA_AUTODETECT;
-	savedata->data = 0;
+	savedata->data = NULL;
 	savedata->command = EEPROM_COMMAND_NULL;
 	savedata->flashState = FLASH_STATE_RAW;
 	savedata->vf = vf;
@@ -61,6 +61,11 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->dust.priority = 0x70;
 	savedata->dust.context = savedata;
 	savedata->dust.callback = _ashesToAshes;
+}
+
+void GBASavedataReset(struct GBASavedata* savedata) {
+	savedata->command = EEPROM_COMMAND_NULL;
+	savedata->flashState = FLASH_STATE_RAW;
 }
 
 void GBASavedataDeinit(struct GBASavedata* savedata) {
@@ -376,7 +381,10 @@ uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address) {
 		}
 	}
 	if (mTimingIsScheduled(savedata->timing, &savedata->dust) && (address >> 12) == savedata->settling) {
-		return 0x5F;
+		// This should read Q7 XOR data bit 7 (data# polling), Q6 flipping
+		// every read (toggle bit), and /Q5 (error bit cleared), but implementing
+		// just data# polling is sufficient for games to figure it out
+		return (savedata->currentBank[address] ^ 0x80) & 0x80;
 	}
 	return savedata->currentBank[address];
 }

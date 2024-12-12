@@ -296,7 +296,7 @@ static void _setup(struct mGUIRunner* runner) {
 	}
 	_updateRenderer(runner, fakeBool);
 
-	mRumbleIntegratorInit(&rumble.d);
+	mRumbleIntegratorReset(&rumble.d);
 	runner->core->setPeripheral(runner->core, mPERIPH_RUMBLE, &rumble.d.d);
 	runner->core->setPeripheral(runner->core, mPERIPH_ROTATION, &rotation);
 	runner->core->setAVStream(runner->core, &stream);
@@ -363,13 +363,10 @@ static void _gameLoaded(struct mGUIRunner* runner) {
 			runner->core->reloadConfigOption(runner->core, "videoScale", &runner->config);
 		}
 	}
-
-	mRumbleIntegratorInit(&rumble.d);
 }
 
 static void _gameUnloaded(struct mGUIRunner* runner) {
 	UNUSED(runner);
-	mRumbleIntegratorInit(&rumble.d);
 	HidVibrationValue values[4];
 	memcpy(&values[0], &vibrationStop, sizeof(rumble.value));
 	memcpy(&values[1], &vibrationStop, sizeof(rumble.value));
@@ -812,6 +809,7 @@ static void hidSetup(void) {
 	padConfigureInput(1, HidNpadStyleSet_NpadStandard);
 	padInitializeDefault(&pad);
 
+	mRumbleIntegratorInit(&rumble.d);
 	rumble.d.setRumble = _setRumble;
 	rumble.value.freq_low = 120.0;
 	rumble.value.freq_high = 180.0;

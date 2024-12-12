@@ -539,7 +539,7 @@ static const char* const _renderWindow =
 	"}\n"
 
 	"bool test(vec3 circle, vec4 top, vec4 bottom) {\n"
-	"	if (circle.z > 0) {\n"
+	"	if (circle.z > 0.) {\n"
 	"		return distance(circle.xy, texCoord.xy) <= circle.z;\n"
 	"	}\n"
 	"	return crop(interpolate(top, bottom));\n"

@@ -109,7 +109,7 @@ void GBAMatrixSerialize(const struct GBA* gba, struct GBASerializedState* state)
 
 	int i;
 	for (i = 0; i < 16; ++i) {
-		STORE_32(gba->memory.matrix.mappings[i], i << 2, state->matrixMappings);
+		STORE_32(gba->memory.matrix.mappings[i], i << 2, state->matrix2.mappings);
 	}
 }
 
@@ -121,7 +121,7 @@ void GBAMatrixDeserialize(struct GBA* gba, const struct GBASerializedState* stat
 
 	int i;
 	for (i = 0; i < 16; ++i) {
-		LOAD_32(gba->memory.matrix.mappings[i], i << 2, state->matrixMappings);
+		LOAD_32(gba->memory.matrix.mappings[i], i << 2, state->matrix2.mappings);
 		gba->memory.matrix.paddr = gba->memory.matrix.mappings[i];
 		gba->memory.matrix.vaddr = i << 9;
 		_remapMatrix(gba);

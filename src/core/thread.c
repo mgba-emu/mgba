@@ -656,7 +656,7 @@ void mCoreThreadContinue(struct mCoreThread* threadContext) {
 		if (threadContext->impl->requested) {
 			threadContext->impl->state = mTHREAD_REQUEST;
 		} else {
-			threadContext->impl->state = mTHREAD_RUNNING;			
+			threadContext->impl->state = mTHREAD_RUNNING;
 		}
 		ConditionWake(&threadContext->impl->stateOnThreadCond);
 	}

@@ -239,20 +239,35 @@ bool mCoreAutoloadPatch(struct mCore* core) {
 	if (!core->dirs.patch) {
 		return false;
 	}
-	return core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ups", O_RDONLY)) ||
-	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ips", O_RDONLY)) ||
-	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".bps", O_RDONLY));
+	struct VFile* vf = NULL;
+	if (!vf) {
+		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".bps", O_RDONLY);
+	}
+	if (!vf) {
+		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ups", O_RDONLY);
+	}
+	if (!vf) {
+		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ips", O_RDONLY);
+	}
+	if (!vf) {
+		return false;
+	}
+	bool result = core->loadPatch(core, vf);
+	vf->close(vf);
+	return result;
 }
 
 bool mCoreAutoloadCheats(struct mCore* core) {
-	bool success = true;
+	bool success = !!core->dirs.cheats;
 	int cheatAuto;
-	if (!mCoreConfigGetIntValue(&core->config, "cheatAutoload", &cheatAuto) || cheatAuto) {
+	if (success && (!mCoreConfigGetIntValue(&core->config, "cheatAutoload", &cheatAuto) || cheatAuto)) {
 		struct VFile* vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.cheats, ".cheats", O_RDONLY);
 		if (vf) {
 			struct mCheatDevice* device = core->cheatDevice(core);
 			success = mCheatParseFile(device, vf);
 			vf->close(vf);
+		} else {
+			success = false;
 		}
 	}
 	if (!mCoreConfigGetIntValue(&core->config, "cheatAutosave", &cheatAuto) || cheatAuto) {

@@ -423,8 +423,8 @@ bool CoreController::attachDolphin(const Address& address) {
 		return false;
 	}
 	if (GBASIODolphinConnect(&m_dolphin, &address, 0, 0)) {
-		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-		GBASIOSetDriver(&gba->sio, &m_dolphin.d, GBA_SIO_JOYBUS);
+		clearMultiplayerController();
+		m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_LINK_PORT, &m_dolphin.d);
 		return true;
 	}
 	return false;
@@ -432,8 +432,8 @@ bool CoreController::attachDolphin(const Address& address) {
 
 void CoreController::detachDolphin() {
 	if (platform() == mPLATFORM_GBA) {
-		GBA* gba = static_cast<GBA*>(m_threadContext.core->board);
-		GBASIOSetDriver(&gba->sio, nullptr, GBA_SIO_JOYBUS);
+		// TODO: Reattach to multiplayer controller
+		m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_LINK_PORT, NULL);
 	}
 	GBASIODolphinDestroy(&m_dolphin);
 }
@@ -736,7 +736,7 @@ void CoreController::saveState(const QString& path, int flags) {
 			vf->read(vf, controller->m_backupSaveState.data(), controller->m_backupSaveState.size());
 			vf->close(vf);
 		}
-		vf = VFileDevice::open(controller->m_statePath, O_WRONLY | O_CREAT | O_TRUNC);
+		vf = VFileDevice::open(controller->m_statePath, O_RDWR | O_CREAT | O_TRUNC);
 		if (!vf) {
 			return;
 		}
@@ -1094,7 +1094,7 @@ void CoreController::attachBattleChipGate() {
 	Interrupter interrupter(this);
 	clearMultiplayerController();
 	GBASIOBattlechipGateCreate(&m_battlechip);
-	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_BATTLECHIP_GATE, &m_battlechip);
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_LINK_PORT, &m_battlechip);
 }
 
 void CoreController::detachBattleChipGate() {
@@ -1102,7 +1102,7 @@ void CoreController::detachBattleChipGate() {
 		return;
 	}
 	Interrupter interrupter(this);
-	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_BATTLECHIP_GATE, nullptr);
+	m_threadContext.core->setPeripheral(m_threadContext.core, mPERIPH_GBA_LINK_PORT, nullptr);
 }
 
 void CoreController::setBattleChipId(uint16_t id) {

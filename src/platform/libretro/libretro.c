@@ -834,7 +834,7 @@ static void _setupMaps(struct mCore* core) {
 
 void retro_reset(void) {
 	core->reset(core);
-	mRumbleIntegratorInit(&rumble);
+	mRumbleIntegratorReset(&rumble);
 	_setupMaps(core);
 }
 

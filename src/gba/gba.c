@@ -140,6 +140,9 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 
 void GBAUnloadROM(struct GBA* gba) {
 	GBAMemoryClearAGBPrint(gba);
+	if (gba->memory.unl.type) {
+		GBAUnlCartUnload(gba);
+	}
 	if (gba->memory.rom && !gba->isPristine) {
 		if (gba->yankedRomSize) {
 			gba->yankedRomSize = 0;
@@ -263,8 +266,8 @@ void GBAReset(struct ARMCore* cpu) {
 
 	// GB Player SIO control should not be engaged before detection, even if we already know it's GBP
 	gba->memory.hw.devices &= ~HW_GB_PLAYER;
-	if (gba->sio.drivers.normal == &gba->sio.gbp.d) {
-		GBASIOSetDriver(&gba->sio, NULL, GBA_SIO_NORMAL_32);
+	if (gba->sio.driver == &gba->sio.gbp.d) {
+		GBASIOSetDriver(&gba->sio, NULL);
 	}
 
 	bool isELF = false;
@@ -492,7 +495,7 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
-	GBAVFameDetect(&gba->memory.vfame, gba->memory.rom, gba->memory.romSize, gba->romCrc32);
+	GBAUnlCartDetect(gba);
 	// TODO: error check
 	return true;
 }
@@ -557,16 +560,14 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 		mappedMemoryFree(newRom, GBA_SIZE_ROM0);
 		return;
 	}
-	if (gba->romVf) {
+	if (gba->memory.rom) {
 #ifndef FIXED_ROM_BUFFER
 		if (!gba->isPristine) {
-			mappedMemoryFree(gba->memory.rom, GBA_SIZE_ROM0);
+			mappedMemoryFree(gba->memory.rom, gba->memory.romSize);
 		} else {
 			gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->pristineRomSize);
 		}
 #endif
-		gba->romVf->close(gba->romVf);
-		gba->romVf = NULL;
 	}
 	gba->isPristine = false;
 	gba->memory.rom = newRom;

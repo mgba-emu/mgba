@@ -339,17 +339,17 @@ bool mVideoLoggerRendererRunInjected(struct mVideoLogger* logger) {
 	channel->injecting = true;
 	bool res = mVideoLoggerRendererRun(logger, false);
 	channel->injecting = false;
-	return res;	
+	return res;
 }
 
 void mVideoLoggerInjectionPoint(struct mVideoLogger* logger, enum mVideoLoggerInjectionPoint injectionPoint) {
 	struct mVideoLogChannel* channel = logger->dataContext;
-	channel->injectionPoint = injectionPoint;	
+	channel->injectionPoint = injectionPoint;
 }
 
 void mVideoLoggerIgnoreAfterInjection(struct mVideoLogger* logger, uint32_t mask) {
 	struct mVideoLogChannel* channel = logger->dataContext;
-	channel->ignorePackets = mask;	
+	channel->ignorePackets = mask;
 }
 
 static bool _writeData(struct mVideoLogger* logger, const void* data, size_t length) {

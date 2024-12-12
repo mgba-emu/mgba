@@ -30,6 +30,7 @@
 #ifdef USE_ELF
 #include <mgba-util/elf-read.h>
 #endif
+#include <mgba-util/md5.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
@@ -667,6 +668,9 @@ static size_t _GBACoreROMSize(const struct mCore* core) {
 	if (gba->romVf) {
 		return gba->romVf->size(gba->romVf);
 	}
+	if (gba->mbVf) {
+		return gba->mbVf->size(gba->mbVf);
+	}
 	return gba->pristineRomSize;
 }
 
@@ -675,6 +679,19 @@ static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChe
 	switch (type) {
 	case mCHECKSUM_CRC32:
 		memcpy(data, &gba->romCrc32, sizeof(gba->romCrc32));
+		break;
+	case mCHECKSUM_MD5:
+		if (gba->romVf) {
+			md5File(gba->romVf, data);
+		} else if (gba->mbVf) {
+			md5File(gba->mbVf, data);
+		} else if (gba->memory.rom && gba->isPristine) {
+			md5Buffer(gba->memory.rom, gba->pristineRomSize, data);
+		} else if (gba->memory.rom) {
+			md5Buffer(gba->memory.rom, gba->memory.romSize, data);
+		} else {
+			md5Buffer("", 0, data);
+		}
 		break;
 	}
 	return;
@@ -842,7 +859,21 @@ static bool _GBACoreLoadExtraState(struct mCore* core, const struct mStateExtdat
 			if (type == gba->video.renderer->rendererId(gba->video.renderer)) {
 				ok = gba->video.renderer->loadState(gba->video.renderer,
 				                                    (void*) ((uintptr_t) item.data + sizeof(uint32_t)),
-				                                    item.size - sizeof(type));
+				                                    item.size - sizeof(type)) && ok;
+			}
+		} else if (item.data) {
+			ok = false;
+		}
+	}
+	if (gba->sio.driver && gba->sio.driver->driverId && gba->sio.driver->loadState &&
+	    mStateExtdataGet(extdata, EXTDATA_SUBSYSTEM_START + GBA_SUBSYSTEM_SIO_DRIVER, &item)) {
+		if ((uint32_t) item.size > sizeof(uint32_t)) {
+			uint32_t type;
+			LOAD_32(type, 0, item.data);
+			if (type == gba->sio.driver->driverId(gba->sio.driver)) {
+				ok = gba->sio.driver->loadState(gba->sio.driver,
+				                                (void*) ((uintptr_t) item.data + sizeof(uint32_t)),
+				                                item.size - sizeof(type)) && ok;
 			}
 		} else if (item.data) {
 			ok = false;
@@ -868,6 +899,27 @@ static bool _GBACoreSaveExtraState(struct mCore* core, struct mStateExtdata* ext
 	}
 	if (buffer) {
 		free(buffer);
+		buffer = NULL;
+	}
+	size = 0;
+
+	if (gba->sio.driver && gba->sio.driver->driverId && gba->sio.driver->saveState) {
+		gba->sio.driver->saveState(gba->sio.driver, &buffer, &size);
+		if (size > 0 && buffer) {
+			struct mStateExtdataItem item;
+			item.size = size + sizeof(uint32_t);
+			item.data = malloc(item.size);
+			item.clean = free;
+			uint32_t type = gba->sio.driver->driverId(gba->sio.driver);
+			STORE_32(type, 0, item.data);
+			memcpy((void*) ((uintptr_t) item.data + sizeof(uint32_t)), buffer, size);
+			mStateExtdataPut(extdata, EXTDATA_SUBSYSTEM_START + GBA_SUBSYSTEM_SIO_DRIVER, &item);
+		}
+		if (buffer) {
+			free(buffer);
+			buffer = NULL;
+		}
+		size = 0;
 	}
 
 	return true;
@@ -927,9 +979,8 @@ static void _GBACoreSetPeripheral(struct mCore* core, int type, void* periph) {
 	case mPERIPH_GBA_LUMINANCE:
 		gba->luminanceSource = periph;
 		break;
-	case mPERIPH_GBA_BATTLECHIP_GATE:
-		GBASIOSetDriver(&gba->sio, periph, GBA_SIO_MULTI);
-		GBASIOSetDriver(&gba->sio, periph, GBA_SIO_NORMAL_32);
+	case mPERIPH_GBA_LINK_PORT:
+		GBASIOSetDriver(&gba->sio, periph);
 		break;
 	default:
 		return;
