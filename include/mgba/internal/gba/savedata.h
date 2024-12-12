@@ -91,6 +91,7 @@ struct GBASavedataRTCBuffer {
 };
 
 void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf);
+void GBASavedataReset(struct GBASavedata* savedata);
 void GBASavedataDeinit(struct GBASavedata* savedata);
 
 void GBASavedataMask(struct GBASavedata* savedata, struct VFile* vf, bool writeback);

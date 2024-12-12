@@ -138,6 +138,16 @@ void GBAMemoryReset(struct GBA* gba) {
 		mLOG(GBA_MEM, FATAL, "Could not map memory");
 	}
 
+	if (!gba->memory.rom) {
+		gba->isPristine = false;
+	}
+
+	if (gba->memory.hw.devices & HW_GPIO) {
+		_pristineCow(gba);
+	}
+
+	GBASavedataReset(&gba->memory.savedata);
+	GBAHardwareReset(&gba->memory.hw);
 	GBADMAReset(gba);
 	GBAUnlCartReset(gba);
 	memset(&gba->memory.matrix, 0, sizeof(gba->memory.matrix));
