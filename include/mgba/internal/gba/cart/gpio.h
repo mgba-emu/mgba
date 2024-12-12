@@ -86,6 +86,7 @@ struct GBACartridgeHardware {
 };
 
 void GBAHardwareInit(struct GBACartridgeHardware* gpio, uint16_t* gpioBase);
+void GBAHardwareReset(struct GBACartridgeHardware* gpio);
 void GBAHardwareClear(struct GBACartridgeHardware* gpio);
 
 void GBAHardwareInitRTC(struct GBACartridgeHardware* gpio);

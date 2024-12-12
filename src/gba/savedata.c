@@ -45,7 +45,7 @@ static void _ashesToAshes(struct mTiming* timing, void* user, uint32_t cyclesLat
 
 void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->type = GBA_SAVEDATA_AUTODETECT;
-	savedata->data = 0;
+	savedata->data = NULL;
 	savedata->command = EEPROM_COMMAND_NULL;
 	savedata->flashState = FLASH_STATE_RAW;
 	savedata->vf = vf;
@@ -61,6 +61,11 @@ void GBASavedataInit(struct GBASavedata* savedata, struct VFile* vf) {
 	savedata->dust.priority = 0x70;
 	savedata->dust.context = savedata;
 	savedata->dust.callback = _ashesToAshes;
+}
+
+void GBASavedataReset(struct GBASavedata* savedata) {
+	savedata->command = EEPROM_COMMAND_NULL;
+	savedata->flashState = FLASH_STATE_RAW;
 }
 
 void GBASavedataDeinit(struct GBASavedata* savedata) {

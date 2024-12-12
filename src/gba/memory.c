@@ -138,6 +138,16 @@ void GBAMemoryReset(struct GBA* gba) {
 		mLOG(GBA_MEM, FATAL, "Could not map memory");
 	}
 
+	if (!gba->memory.rom) {
+		gba->isPristine = false;
+	}
+
+	if (gba->memory.hw.devices & HW_GPIO) {
+		_pristineCow(gba);
+	}
+
+	GBASavedataReset(&gba->memory.savedata);
+	GBAHardwareReset(&gba->memory.hw);
 	GBADMAReset(gba);
 	GBAUnlCartReset(gba);
 	memset(&gba->memory.matrix, 0, sizeof(gba->memory.matrix));
@@ -915,7 +925,7 @@ void GBAStore16(struct ARMCore* cpu, uint32_t address, int16_t value, int* cycle
 		break;
 	case GBA_REGION_ROM0:
 		if (IS_GPIO_REGISTER(address & 0xFFFFFE)) {
-			if (memory->hw.devices == HW_NONE) {
+			if (!(memory->hw.devices & HW_GPIO)) {
 				mLOG(GBA_HW, WARN, "Write to GPIO address %08X on cartridge without GPIO", address);
 				break;
 			}

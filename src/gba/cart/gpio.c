@@ -47,6 +47,20 @@ void GBAHardwareInit(struct GBACartridgeHardware* hw, uint16_t* base) {
 	GBAHardwareClear(hw);
 }
 
+void GBAHardwareReset(struct GBACartridgeHardware* hw) {
+	hw->readWrite = GPIO_WRITE_ONLY;
+	hw->pinState = 0;
+	hw->direction = 0;
+	hw->lightCounter = 0;
+	hw->lightEdge = false;
+	hw->lightSample = 0xFF;
+	hw->gyroSample = 0;
+	hw->gyroEdge = 0;
+	hw->tiltX = 0xFFF;
+	hw->tiltY = 0xFFF;
+	hw->tiltState = 0;
+}
+
 void GBAHardwareClear(struct GBACartridgeHardware* hw) {
 	hw->devices = HW_NONE | (hw->devices & HW_GB_PLAYER_DETECTION);
 	hw->readWrite = GPIO_WRITE_ONLY;
@@ -502,7 +516,8 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	LOAD_16(hw->direction, 0, &state->hw.pinDirection);
 	hw->devices = state->hw.devices;
 
-	if (hw->gpioBase) {
+	if ((hw->devices & HW_GPIO) && hw->gpioBase) {
+		// TODO: This needs to update the pristine state somehow
 		if (hw->readWrite) {
 			STORE_16(hw->pinState, 0, hw->gpioBase);
 			STORE_16(hw->direction, 2, hw->gpioBase);
