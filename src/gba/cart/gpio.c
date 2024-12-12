@@ -502,7 +502,7 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	LOAD_16(hw->direction, 0, &state->hw.pinDirection);
 	hw->devices = state->hw.devices;
 
-	if (hw->gpioBase) {
+	if ((hw->devices & HW_GPIO) && hw->gpioBase) {
 		if (hw->readWrite) {
 			STORE_16(hw->pinState, 0, hw->gpioBase);
 			STORE_16(hw->direction, 2, hw->gpioBase);

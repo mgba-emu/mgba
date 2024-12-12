@@ -68,7 +68,9 @@ enum GBAHardwareDevice {
 	HW_TILT = 16,
 	HW_GB_PLAYER = 32,
 	HW_GB_PLAYER_DETECTION = 64,
-	HW_EREADER = 128
+	HW_EREADER = 128,
+
+	HW_GPIO = HW_RTC | HW_RUMBLE | HW_LIGHT_SENSOR | HW_GYRO | HW_TILT,
 };
 
 struct Configuration;
