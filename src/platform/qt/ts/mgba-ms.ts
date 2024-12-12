@@ -474,7 +474,7 @@ Download size: %3</source>
 <context>
     <name>QGBA::DisplayGL</name>
     <message>
-        <location filename="../DisplayGL.cpp" line="312"/>
+        <location filename="../DisplayGL.cpp" line="313"/>
         <source>Failed to create an OpenGL 3 context, trying old-style...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3009,7 +3009,7 @@ Download size: %3</source>
     <name>QGBA::KeyEditor</name>
     <message>
         <location filename="../KeyEditor.cpp" line="45"/>
-        <location filename="../KeyEditor.cpp" line="204"/>
+        <location filename="../KeyEditor.cpp" line="206"/>
         <source>---</source>
         <translation>---</translation>
     </message>
@@ -3816,17 +3816,27 @@ Download size: %3</source>
 <context>
     <name>QGBA::MultiplayerController</name>
     <message>
-        <location filename="../MultiplayerController.cpp" line="331"/>
+        <location filename="../MultiplayerController.cpp" line="367"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MultiplayerController.cpp" line="395"/>
+        <location filename="../MultiplayerController.cpp" line="407"/>
+        <source>Clearing invalid save ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MultiplayerController.cpp" line="416"/>
+        <source>Clearing invalid preferred ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MultiplayerController.cpp" line="437"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MultiplayerController.cpp" line="409"/>
+        <location filename="../MultiplayerController.cpp" line="451"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4325,21 +4335,21 @@ Download size: %3</source>
 <context>
     <name>QGBA::ROMInfo</name>
     <message>
-        <location filename="../ROMInfo.cpp" line="36"/>
-        <location filename="../ROMInfo.cpp" line="53"/>
-        <location filename="../ROMInfo.cpp" line="62"/>
-        <location filename="../ROMInfo.cpp" line="63"/>
-        <location filename="../ROMInfo.cpp" line="70"/>
+        <location filename="../ROMInfo.cpp" line="37"/>
+        <location filename="../ROMInfo.cpp" line="55"/>
+        <location filename="../ROMInfo.cpp" line="64"/>
+        <location filename="../ROMInfo.cpp" line="65"/>
+        <location filename="../ROMInfo.cpp" line="76"/>
         <source>(unknown)</source>
         <translation>(tidak diketahui)</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.cpp" line="43"/>
+        <location filename="../ROMInfo.cpp" line="45"/>
         <source> bytes</source>
         <translation> bait</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.cpp" line="56"/>
+        <location filename="../ROMInfo.cpp" line="58"/>
         <source>(no database present)</source>
         <translation>(tiada pangkalan data hadir)</translation>
     </message>
@@ -4349,42 +4359,57 @@ Download size: %3</source>
         <translation>Perihal ROM</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="26"/>
+        <location filename="../ROMInfo.ui" line="23"/>
+        <source>File information</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ROMInfo.ui" line="29"/>
         <source>Game name:</source>
         <translation>Nama permainan:</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="46"/>
+        <location filename="../ROMInfo.ui" line="83"/>
+        <source>MD5</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ROMInfo.ui" line="117"/>
+        <source>ROM header</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ROMInfo.ui" line="123"/>
         <source>Internal name:</source>
         <translation>Nama dalaman:</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="63"/>
+        <location filename="../ROMInfo.ui" line="140"/>
         <source>Game ID:</source>
         <translation>ID Permainan:</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="80"/>
+        <location filename="../ROMInfo.ui" line="157"/>
         <source>Maker Code:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="97"/>
+        <location filename="../ROMInfo.ui" line="174"/>
         <source>Revision:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="114"/>
+        <location filename="../ROMInfo.ui" line="49"/>
         <source>File size:</source>
         <translation>Saiz fail:</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="131"/>
+        <location filename="../ROMInfo.ui" line="66"/>
         <source>CRC32:</source>
         <translation>CRC32:</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="148"/>
+        <location filename="../ROMInfo.ui" line="100"/>
         <source>Save file:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4817,65 +4842,74 @@ Download size: %3</source>
         <translation>Pengawal</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="399"/>
+        <location filename="../SettingsView.cpp" line="409"/>
         <source>Shortcuts</source>
         <translation>Pintas</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="411"/>
-        <location filename="../SettingsView.cpp" line="421"/>
+        <location filename="../SettingsView.cpp" line="412"/>
+        <source>Shaders are not supported when the display driver is not OpenGL.
+
+If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.cpp" line="416"/>
+        <location filename="../SettingsView.cpp" line="430"/>
+        <location filename="../SettingsView.cpp" line="443"/>
+        <location filename="../SettingsView.cpp" line="445"/>
         <source>Shaders</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="443"/>
+        <location filename="../SettingsView.cpp" line="466"/>
         <source>Select BIOS</source>
         <translation>Pilih BIOS</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="450"/>
+        <location filename="../SettingsView.cpp" line="473"/>
         <source>Select directory</source>
         <translation>Pilih direktori</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="458"/>
+        <location filename="../SettingsView.cpp" line="481"/>
         <source>Select image</source>
         <translation type="unfinished">Pilih gambar</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="458"/>
+        <location filename="../SettingsView.cpp" line="481"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
         <translation type="unfinished">Fail gambar (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="851"/>
+        <location filename="../SettingsView.cpp" line="875"/>
         <source>(%1×%2)</source>
         <translation>(%1×%2)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="869"/>
+        <location filename="../SettingsView.cpp" line="893"/>
         <source>Never</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="874"/>
+        <location filename="../SettingsView.cpp" line="898"/>
         <source>Just now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="878"/>
+        <location filename="../SettingsView.cpp" line="902"/>
         <source>Less than an hour ago</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../SettingsView.cpp" line="883"/>
+        <location filename="../SettingsView.cpp" line="907"/>
         <source>%n hour(s) ago</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../SettingsView.cpp" line="887"/>
+        <location filename="../SettingsView.cpp" line="911"/>
         <source>%n day(s) ago</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -5611,33 +5645,48 @@ Download size: %3</source>
 <context>
     <name>QGBA::ShaderSelector</name>
     <message>
-        <location filename="../ShaderSelector.cpp" line="53"/>
+        <location filename="../ShaderSelector.cpp" line="76"/>
         <source>No shader active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="67"/>
-        <location filename="../ShaderSelector.cpp" line="69"/>
+        <location filename="../ShaderSelector.cpp" line="90"/>
+        <location filename="../ShaderSelector.cpp" line="93"/>
         <source>Load shader</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="107"/>
+        <location filename="../ShaderSelector.cpp" line="92"/>
+        <source>mGBA Shaders</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShaderSelector.cpp" line="123"/>
+        <source>Error loading shader</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShaderSelector.cpp" line="123"/>
+        <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ShaderSelector.cpp" line="145"/>
         <source>No shader loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="115"/>
+        <location filename="../ShaderSelector.cpp" line="153"/>
         <source>by %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="126"/>
+        <location filename="../ShaderSelector.cpp" line="164"/>
         <source>Preprocessing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ShaderSelector.cpp" line="133"/>
+        <location filename="../ShaderSelector.cpp" line="171"/>
         <source>Pass %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5943,80 +5992,80 @@ Download size: %3</source>
 <context>
     <name>QGBA::Window</name>
     <message>
-        <location filename="../Window.cpp" line="339"/>
+        <location filename="../Window.cpp" line="343"/>
         <source>Archives (%1)</source>
         <translation>Arkib (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="344"/>
-        <location filename="../Window.cpp" line="360"/>
-        <location filename="../Window.cpp" line="387"/>
+        <location filename="../Window.cpp" line="348"/>
+        <location filename="../Window.cpp" line="364"/>
+        <location filename="../Window.cpp" line="391"/>
         <source>Select ROM</source>
         <translation>Pilih ROM</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="378"/>
+        <location filename="../Window.cpp" line="382"/>
         <source>Select folder</source>
         <translation>Pilih folder</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="515"/>
-        <location filename="../Window.cpp" line="522"/>
+        <location filename="../Window.cpp" line="519"/>
+        <location filename="../Window.cpp" line="526"/>
         <source>Select save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="434"/>
+        <location filename="../Window.cpp" line="438"/>
         <source>Select patch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="434"/>
+        <location filename="../Window.cpp" line="438"/>
         <source>Patches (*.ips *.ups *.bps)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="445"/>
+        <location filename="../Window.cpp" line="449"/>
         <source>Select e-Reader dotcode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="445"/>
+        <location filename="../Window.cpp" line="449"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="508"/>
+        <location filename="../Window.cpp" line="512"/>
         <source>Select image</source>
         <translation>Pilih gambar</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="508"/>
+        <location filename="../Window.cpp" line="512"/>
         <source>Image file (*.png *.gif *.jpg *.jpeg);;All files (*)</source>
         <translation>Fail gambar (*.png *.gif *.jpg *.jpeg);;Semua fail (*)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="522"/>
+        <location filename="../Window.cpp" line="526"/>
         <source>GameShark saves (*.sps *.xps)</source>
         <translation>Simpanan GameShark (*.sps *.xps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="554"/>
+        <location filename="../Window.cpp" line="559"/>
         <source>Select video log</source>
         <translation>Pilih log video</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="554"/>
+        <location filename="../Window.cpp" line="559"/>
         <source>Video logs (*.mvl)</source>
         <translation>Log video (*.mvl)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="991"/>
+        <location filename="../Window.cpp" line="1001"/>
         <source>Crash</source>
         <translation>Nahas</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="992"/>
+        <location filename="../Window.cpp" line="1002"/>
         <source>The game has crashed with the following error:
 
 %1</source>
@@ -6025,709 +6074,709 @@ Download size: %3</source>
 %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="999"/>
+        <location filename="../Window.cpp" line="1009"/>
         <source>Couldn&apos;t Start</source>
         <translation>Tidak dapat memula</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1000"/>
+        <location filename="../Window.cpp" line="1010"/>
         <source>Could not start game.</source>
         <translation>Permainan tidak dapat bermula.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1014"/>
+        <location filename="../Window.cpp" line="1024"/>
         <source>Unimplemented BIOS call</source>
         <translation>Panggilan BIOS yg belum dilaksanakan</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1015"/>
+        <location filename="../Window.cpp" line="1025"/>
         <source>This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience.</source>
         <translation>Permainan ini menggunakan panggilan BIOS yang belum dilaksanakan. Sila pakai BIOS rasmi untuk pengalaman yang lebih baik.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1037"/>
+        <location filename="../Window.cpp" line="1047"/>
         <source>Failed to create an appropriate display device, falling back to software display. Games may run slowly, especially with larger windows.</source>
         <translation>Gagal mencipta peranti paparan yang sesuai, berbalik ke paparan perisian. Permainan mungkin menjadi lembap, terutamanya dengan tetingkap besar.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1125"/>
+        <location filename="../Window.cpp" line="1145"/>
         <source>Really make portable?</source>
         <translation type="unfinished">Betulkah mahu buat jadi mudah alih?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1126"/>
+        <location filename="../Window.cpp" line="1146"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
         <translation type="unfinished">Ini akan menetapkan pelagak untuk muat konfigurasi dari direktori yang sama dengan fail bolehlakunya. Teruskan?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1138"/>
+        <location filename="../Window.cpp" line="1158"/>
         <source>Restart needed</source>
         <translation>Mula semula diperlukan</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1139"/>
+        <location filename="../Window.cpp" line="1159"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
         <translation type="unfinished">Beberapa perubahan tidak akan dilaksanakan sehingga pelagak dimula semula.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1190"/>
+        <location filename="../Window.cpp" line="1210"/>
         <source> -  Player %1 of %2</source>
         <translation> -  Pemain %1 dari %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1201"/>
+        <location filename="../Window.cpp" line="1221"/>
         <source>%1 - %2</source>
         <translation>%1 - %2</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1203"/>
+        <location filename="../Window.cpp" line="1223"/>
         <source>%1 - %2 - %3</source>
         <translation>%1 - %2 - %3</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1205"/>
+        <location filename="../Window.cpp" line="1225"/>
         <source>%1 - %2 (%3 fps) - %4</source>
         <translation>%1 - %2 (%3 fps) - %4</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1269"/>
+        <location filename="../Window.cpp" line="1289"/>
         <source>&amp;File</source>
         <translation>&amp;File</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1271"/>
+        <location filename="../Window.cpp" line="1291"/>
         <source>Load &amp;ROM...</source>
         <translation>Muat %ROM...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1274"/>
+        <location filename="../Window.cpp" line="1294"/>
         <source>Load ROM in archive...</source>
         <translation>Muat ROM daripada arkib...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1275"/>
+        <location filename="../Window.cpp" line="1295"/>
         <source>Add folder to library...</source>
         <translation>Tambah folder ke perpustakaan...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="395"/>
+        <location filename="../Window.cpp" line="399"/>
         <source>Save games (%1)</source>
         <translation>Simpanan permainan (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="396"/>
+        <location filename="../Window.cpp" line="400"/>
         <source>Select save game</source>
         <translation>Pilih simpanan permainan</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="404"/>
+        <location filename="../Window.cpp" line="408"/>
         <source>mGBA save state files (%1)</source>
         <translation>mGBA fail keadaan tersimpan (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="406"/>
-        <location filename="../Window.cpp" line="411"/>
+        <location filename="../Window.cpp" line="410"/>
+        <location filename="../Window.cpp" line="415"/>
         <source>Select save state</source>
         <translation>Pilih keadaan tersimpan</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="453"/>
+        <location filename="../Window.cpp" line="457"/>
         <source>Select e-Reader card images</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="453"/>
+        <location filename="../Window.cpp" line="457"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
         <translation>Fail gambar (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="454"/>
+        <location filename="../Window.cpp" line="458"/>
         <source>Conversion finished</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="495"/>
+        <location filename="../Window.cpp" line="499"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1279"/>
+        <location filename="../Window.cpp" line="1299"/>
         <source>Load alternate save game...</source>
         <translation>Muat simpanan permainan alternatif...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1282"/>
+        <location filename="../Window.cpp" line="1302"/>
         <source>Load temporary save game...</source>
         <translation>Muat simpanan permainan sementara...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1315"/>
+        <location filename="../Window.cpp" line="1335"/>
         <source>Load &amp;patch...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1318"/>
+        <location filename="../Window.cpp" line="1338"/>
         <source>Boot BIOS</source>
         <translation>But BIOS</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1412"/>
+        <location filename="../Window.cpp" line="1432"/>
         <source>Replace ROM...</source>
         <translation>Ganti ROM...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1322"/>
+        <location filename="../Window.cpp" line="1342"/>
         <source>Scan e-Reader dotcodes...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1755"/>
+        <location filename="../Window.cpp" line="1775"/>
         <source>Convert e-Reader card image to raw...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1326"/>
+        <location filename="../Window.cpp" line="1346"/>
         <source>ROM &amp;info...</source>
         <translation>&amp;Perihal ROM...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1328"/>
+        <location filename="../Window.cpp" line="1348"/>
         <source>Recent</source>
         <translation>Terkini</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1709"/>
+        <location filename="../Window.cpp" line="1729"/>
         <source>Make portable</source>
         <translation type="unfinished">Buat jadi mudah alih</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1331"/>
+        <location filename="../Window.cpp" line="1351"/>
         <source>&amp;Load state</source>
         <translation>&amp;Muat keadaan</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1336"/>
+        <location filename="../Window.cpp" line="1356"/>
         <source>Load state file...</source>
         <translation>Muat fail keadaan...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1341"/>
+        <location filename="../Window.cpp" line="1361"/>
         <source>&amp;Save state</source>
         <translation>&amp;Simpan keadaan</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1346"/>
+        <location filename="../Window.cpp" line="1366"/>
         <source>Save state file...</source>
         <translation>Simpan fail keadaan...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1351"/>
+        <location filename="../Window.cpp" line="1371"/>
         <source>Quick load</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1352"/>
+        <location filename="../Window.cpp" line="1372"/>
         <source>Quick save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1354"/>
+        <location filename="../Window.cpp" line="1374"/>
         <source>Load recent</source>
         <translation>Muat terkini</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1359"/>
+        <location filename="../Window.cpp" line="1379"/>
         <source>Save recent</source>
         <translation>Simpan terkini</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1367"/>
+        <location filename="../Window.cpp" line="1387"/>
         <source>Undo load state</source>
         <translation>Buat asal keadaan termuat</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1370"/>
+        <location filename="../Window.cpp" line="1390"/>
         <source>Undo save state</source>
         <translation>Buat asal keadaan tersimpan</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1377"/>
-        <location filename="../Window.cpp" line="1382"/>
+        <location filename="../Window.cpp" line="1397"/>
+        <location filename="../Window.cpp" line="1402"/>
         <source>State &amp;%1</source>
         <translation>Keadaan &amp;%1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1508"/>
+        <location filename="../Window.cpp" line="1528"/>
         <source>Load camera image...</source>
         <translation>Muat gambar kamera...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1288"/>
+        <location filename="../Window.cpp" line="1308"/>
         <source>Convert save game...</source>
         <translation type="unfinished">Tukar simpanan permainan...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="515"/>
+        <location filename="../Window.cpp" line="519"/>
         <source>GameShark saves (*.gsv *.sps *.xps)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1150"/>
+        <location filename="../Window.cpp" line="1170"/>
         <source>Reset needed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1151"/>
+        <location filename="../Window.cpp" line="1171"/>
         <source>Some changes will not take effect until the game is reset.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1278"/>
+        <location filename="../Window.cpp" line="1298"/>
         <source>Save games</source>
         <translation type="unfinished">Simpanan permainan</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1291"/>
+        <location filename="../Window.cpp" line="1311"/>
         <source>Import GameShark Save...</source>
         <translation>Import Simpanan GameShark...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1294"/>
+        <location filename="../Window.cpp" line="1314"/>
         <source>Export GameShark Save...</source>
         <translation>Eksport Simpanan GameShark...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1301"/>
+        <location filename="../Window.cpp" line="1321"/>
         <source>Automatically determine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1305"/>
+        <location filename="../Window.cpp" line="1325"/>
         <source>Use player %0 save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1389"/>
+        <location filename="../Window.cpp" line="1409"/>
         <source>New multiplayer window</source>
         <translation>Tetingkap multipemain baru</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1392"/>
+        <location filename="../Window.cpp" line="1412"/>
         <source>Connect to Dolphin...</source>
         <translation>Sambung ke Dolphin...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1398"/>
+        <location filename="../Window.cpp" line="1418"/>
         <source>Report bug...</source>
         <translation>Laporkan pepijat...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1404"/>
+        <location filename="../Window.cpp" line="1424"/>
         <source>About...</source>
         <translation>Perihal...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1405"/>
+        <location filename="../Window.cpp" line="1425"/>
         <source>E&amp;xit</source>
         <translation>&amp;Keluar</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1407"/>
+        <location filename="../Window.cpp" line="1427"/>
         <source>&amp;Emulation</source>
         <translation>Pe&amp;lagak</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1408"/>
+        <location filename="../Window.cpp" line="1428"/>
         <source>&amp;Reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1409"/>
+        <location filename="../Window.cpp" line="1429"/>
         <source>Sh&amp;utdown</source>
         <translation>&amp;Matikan</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1413"/>
+        <location filename="../Window.cpp" line="1433"/>
         <source>Yank game pak</source>
         <translation>Alih keluar Game Pak</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1416"/>
+        <location filename="../Window.cpp" line="1436"/>
         <source>&amp;Pause</source>
         <translation>&amp;Jeda</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1425"/>
+        <location filename="../Window.cpp" line="1445"/>
         <source>&amp;Next frame</source>
         <translation>Bingkai se&amp;terusnya</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1429"/>
+        <location filename="../Window.cpp" line="1449"/>
         <source>Fast forward (held)</source>
         <translation>Mundar laju (pegang)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1435"/>
+        <location filename="../Window.cpp" line="1455"/>
         <source>&amp;Fast forward</source>
         <translation>Mundar &amp;laju</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1439"/>
+        <location filename="../Window.cpp" line="1459"/>
         <source>Fast forward speed</source>
         <translation>Kelajuan mundar laju</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1444"/>
+        <location filename="../Window.cpp" line="1464"/>
         <source>Unbounded</source>
         <translation>Tidak terbatas</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1448"/>
+        <location filename="../Window.cpp" line="1468"/>
         <source>%0x</source>
         <translation>%0x</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1452"/>
+        <location filename="../Window.cpp" line="1472"/>
         <source>Increase fast forward speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1459"/>
+        <location filename="../Window.cpp" line="1479"/>
         <source>Decrease fast forward speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1466"/>
+        <location filename="../Window.cpp" line="1486"/>
         <source>Rewind (held)</source>
         <translation>Putar balik (pegang)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1478"/>
+        <location filename="../Window.cpp" line="1498"/>
         <source>Re&amp;wind</source>
         <translation>Ma&amp;ndir</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1483"/>
+        <location filename="../Window.cpp" line="1503"/>
         <source>Step backwards</source>
         <translation>Langkah belakang</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1490"/>
+        <location filename="../Window.cpp" line="1510"/>
         <source>Solar sensor</source>
         <translation>Pengesan suria</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1491"/>
+        <location filename="../Window.cpp" line="1511"/>
         <source>Increase solar level</source>
         <translation>Meningkatkan aras suria</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1492"/>
+        <location filename="../Window.cpp" line="1512"/>
         <source>Decrease solar level</source>
         <translation>Mengurangkan aras suria</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1493"/>
+        <location filename="../Window.cpp" line="1513"/>
         <source>Brightest solar level</source>
         <translation>Aras suria paling terang</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1496"/>
+        <location filename="../Window.cpp" line="1516"/>
         <source>Darkest solar level</source>
         <translation>Aras suria paling gelap</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1502"/>
+        <location filename="../Window.cpp" line="1522"/>
         <source>Brightness %1</source>
         <translation>Kecerahan %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1510"/>
+        <location filename="../Window.cpp" line="1530"/>
         <source>Game Boy Printer...</source>
         <translation>Pencetak Game Boy...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1519"/>
+        <location filename="../Window.cpp" line="1539"/>
         <source>BattleChip Gate...</source>
         <translation>BattleChip Gate...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1523"/>
+        <location filename="../Window.cpp" line="1543"/>
         <source>Audio/&amp;Video</source>
         <translation>Audio/&amp;Video</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1524"/>
+        <location filename="../Window.cpp" line="1544"/>
         <source>Frame size</source>
         <translation>Saiz bingkai</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1526"/>
+        <location filename="../Window.cpp" line="1546"/>
         <source>%1×</source>
         <translation>%1×</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1567"/>
+        <location filename="../Window.cpp" line="1587"/>
         <source>Toggle fullscreen</source>
         <translation>Togol skrinpenuh</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1570"/>
+        <location filename="../Window.cpp" line="1590"/>
         <source>&amp;Lock frame size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1583"/>
+        <location filename="../Window.cpp" line="1603"/>
         <source>Lock aspect ratio</source>
         <translation>Kekalkan nisbah aspek</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1595"/>
+        <location filename="../Window.cpp" line="1615"/>
         <source>Force integer scaling</source>
         <translation>Paksa skala integer</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1607"/>
+        <location filename="../Window.cpp" line="1627"/>
         <source>Interframe blending</source>
         <translation type="unfinished">Persebatian antarabingkai</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1616"/>
+        <location filename="../Window.cpp" line="1636"/>
         <source>Bilinear filtering</source>
         <translation type="unfinished">Penapisan bilinear</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1624"/>
+        <location filename="../Window.cpp" line="1644"/>
         <source>Frame&amp;skip</source>
         <translation>Langkauan &amp;bingkai</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1637"/>
+        <location filename="../Window.cpp" line="1657"/>
         <source>Mute</source>
         <translation>Senyap</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1644"/>
+        <location filename="../Window.cpp" line="1664"/>
         <source>FPS target</source>
         <translation>Sasaran FPS</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1652"/>
+        <location filename="../Window.cpp" line="1672"/>
         <source>Native (59.7275)</source>
         <translation>Asal (59.7275)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1667"/>
+        <location filename="../Window.cpp" line="1687"/>
         <source>Take &amp;screenshot</source>
         <translation>Ambil &amp;cekupan skrin</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1669"/>
+        <location filename="../Window.cpp" line="1689"/>
         <source>F12</source>
         <translation>F12</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1673"/>
+        <location filename="../Window.cpp" line="1693"/>
         <source>Record A/V...</source>
         <translation>Rakam A/V...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1674"/>
+        <location filename="../Window.cpp" line="1694"/>
         <source>Record GIF/WebP/APNG...</source>
         <translation>Rakam GIF/WebP/APNG...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1678"/>
+        <location filename="../Window.cpp" line="1698"/>
         <source>Video layers</source>
         <translation>Lapisan video</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1679"/>
+        <location filename="../Window.cpp" line="1699"/>
         <source>Audio channels</source>
         <translation>Saluran audio</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1681"/>
+        <location filename="../Window.cpp" line="1701"/>
         <source>Adjust layer placement...</source>
         <translation type="unfinished">Melaras peletakan lapisan...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1683"/>
+        <location filename="../Window.cpp" line="1703"/>
         <source>&amp;Tools</source>
         <translation>&amp;Alat</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1684"/>
+        <location filename="../Window.cpp" line="1704"/>
         <source>View &amp;logs...</source>
         <translation>Lihat &amp;log...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1686"/>
+        <location filename="../Window.cpp" line="1706"/>
         <source>Game &amp;overrides...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1698"/>
+        <location filename="../Window.cpp" line="1718"/>
         <source>Game Pak sensors...</source>
         <translation>Pengesan Game Pak...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1700"/>
+        <location filename="../Window.cpp" line="1720"/>
         <source>&amp;Cheats...</source>
         <translation>&amp;Tipu...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1705"/>
+        <location filename="../Window.cpp" line="1725"/>
         <source>Create forwarder...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1708"/>
+        <location filename="../Window.cpp" line="1728"/>
         <source>Settings...</source>
         <translation>Tetapan...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1713"/>
+        <location filename="../Window.cpp" line="1733"/>
         <source>Open debugger console...</source>
         <translation>Buka konsol penyahpepijat...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1715"/>
+        <location filename="../Window.cpp" line="1735"/>
         <source>Start &amp;GDB server...</source>
         <translation>Mula pelayan &amp;GDB...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1702"/>
+        <location filename="../Window.cpp" line="1722"/>
         <source>Scripting...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1723"/>
+        <location filename="../Window.cpp" line="1743"/>
         <source>Game state views</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1724"/>
+        <location filename="../Window.cpp" line="1744"/>
         <source>View &amp;palette...</source>
         <translation>Pelihat &amp;palet...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1725"/>
+        <location filename="../Window.cpp" line="1745"/>
         <source>View &amp;sprites...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1726"/>
+        <location filename="../Window.cpp" line="1746"/>
         <source>View &amp;tiles...</source>
         <translation>Pelihat &amp;jubin...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1727"/>
+        <location filename="../Window.cpp" line="1747"/>
         <source>View &amp;map...</source>
         <translation>Pelihat pe&amp;ta...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1729"/>
+        <location filename="../Window.cpp" line="1749"/>
         <source>&amp;Frame inspector...</source>
         <translation>Periksa &amp;bingkai...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1745"/>
+        <location filename="../Window.cpp" line="1765"/>
         <source>View memory...</source>
         <translation>Lihat ingatan...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1746"/>
+        <location filename="../Window.cpp" line="1766"/>
         <source>Search memory...</source>
         <translation>Cari ingatan...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1747"/>
+        <location filename="../Window.cpp" line="1767"/>
         <source>View &amp;I/O registers...</source>
         <translation>Lihat daftar &amp;I/O...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1750"/>
+        <location filename="../Window.cpp" line="1770"/>
         <source>Log memory &amp;accesses...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1759"/>
+        <location filename="../Window.cpp" line="1779"/>
         <source>Record debug video log...</source>
         <translation>Rakam log video nyahpepijat...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1760"/>
+        <location filename="../Window.cpp" line="1780"/>
         <source>Stop debug video log</source>
         <translation>Henti log video nyahpepijat</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1764"/>
+        <location filename="../Window.cpp" line="1784"/>
         <source>Exit fullscreen</source>
         <translation>Keluar skrinpenuh</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1766"/>
+        <location filename="../Window.cpp" line="1786"/>
         <source>GameShark Button (held)</source>
         <translation>Butang GameShark (pegang)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1772"/>
+        <location filename="../Window.cpp" line="1792"/>
         <source>Autofire</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1773"/>
+        <location filename="../Window.cpp" line="1793"/>
         <source>Autofire A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1778"/>
+        <location filename="../Window.cpp" line="1798"/>
         <source>Autofire B</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1783"/>
+        <location filename="../Window.cpp" line="1803"/>
         <source>Autofire L</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1788"/>
+        <location filename="../Window.cpp" line="1808"/>
         <source>Autofire R</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1793"/>
+        <location filename="../Window.cpp" line="1813"/>
         <source>Autofire Start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1798"/>
+        <location filename="../Window.cpp" line="1818"/>
         <source>Autofire Select</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1803"/>
+        <location filename="../Window.cpp" line="1823"/>
         <source>Autofire Up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1808"/>
+        <location filename="../Window.cpp" line="1828"/>
         <source>Autofire Right</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1813"/>
+        <location filename="../Window.cpp" line="1833"/>
         <source>Autofire Down</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1818"/>
+        <location filename="../Window.cpp" line="1838"/>
         <source>Autofire Left</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="2018"/>
+        <location filename="../Window.cpp" line="2043"/>
         <source>Clear</source>
         <translation>Kosongkan</translation>
     </message>
