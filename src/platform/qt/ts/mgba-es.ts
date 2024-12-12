@@ -3829,12 +3829,12 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="407"/>
         <source>Clearing invalid save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Borrando identificador de guardado inválido</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="416"/>
         <source>Clearing invalid preferred ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Borrando identificador inválido preferido</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="437"/>
@@ -4367,7 +4367,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>Información de archivo</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
@@ -4377,12 +4377,12 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
         <source>ROM header</source>
-        <translation type="unfinished"></translation>
+        <translation>Cabecera de ROM</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="123"/>
@@ -4857,7 +4857,9 @@ Tamaño de descarga: %3</translation>
         <source>Shaders are not supported when the display driver is not OpenGL.
 
 If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
-        <translation type="unfinished"></translation>
+        <translation>Los shader no están disponibles cuando el controlador de pantalla no es OpenGL.
+
+Si está configurado como OpenGL y estás viendo esto, tu tarjeta gráfica o controladores son demasiado antiguos.</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="416"/>
@@ -5666,17 +5668,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.cpp" line="92"/>
         <source>mGBA Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Shaders de mGBA</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>Error loading shader</source>
-        <translation type="unfinished"></translation>
+        <translation>Error al cargar shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>El shader &quot;%1&quot; falló al cargarse.</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="145"/>
