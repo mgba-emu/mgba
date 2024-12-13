@@ -2742,13 +2742,13 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1094"/>
         <location filename="../IOViewer.cpp" line="1555"/>
         <source>Serial</source>
-        <translation type="unfinished"></translation>
+        <translation>Serienummer</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1095"/>
         <location filename="../IOViewer.cpp" line="1556"/>
         <source>Joypad</source>
-        <translation type="unfinished"></translation>
+        <translation>Joypad</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1202"/>
@@ -2902,28 +2902,28 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="1387"/>
         <location filename="../IOViewer.cpp" line="1394"/>
         <source>Color 0 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Färg 0-skugga</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1381"/>
         <location filename="../IOViewer.cpp" line="1388"/>
         <location filename="../IOViewer.cpp" line="1395"/>
         <source>Color 1 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Färg 1-skugga</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1382"/>
         <location filename="../IOViewer.cpp" line="1389"/>
         <location filename="../IOViewer.cpp" line="1396"/>
         <source>Color 2 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Färg 2-skugga</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1383"/>
         <location filename="../IOViewer.cpp" line="1390"/>
         <location filename="../IOViewer.cpp" line="1397"/>
         <source>Color 3 shade</source>
-        <translation type="unfinished"></translation>
+        <translation>Färg 3-skugga</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1411"/>
@@ -2938,7 +2938,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1418"/>
         <source>VRAM bank</source>
-        <translation type="unfinished"></translation>
+        <translation>VRAM-bank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1440"/>
@@ -3482,7 +3482,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryDump.ui" line="76"/>
         <source>Byte Count:</source>
-        <translation type="unfinished"></translation>
+        <translation>Antal byte:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="108"/>
@@ -4030,7 +4030,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="20"/>
         <source>Game Overrides</source>
-        <translation type="unfinished"></translation>
+        <translation>Spelförbättringar</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="30"/>
@@ -4118,7 +4118,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="190"/>
         <source>Game Boy Player features</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Player-funktioner</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="197"/>
@@ -4138,7 +4138,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="249"/>
         <source>Memory bank controller</source>
-        <translation type="unfinished"></translation>
+        <translation>Minnesbankskontroller</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="265"/>
@@ -4148,12 +4148,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../OverrideView.ui" line="352"/>
         <source>Sprite Colors 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Spritefärger 1</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="359"/>
         <source>Sprite Colors 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Spritefärger 2</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="529"/>
@@ -4382,7 +4382,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
         <source>ROM header</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM-header</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="123"/>
@@ -4440,7 +4440,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../ReportView.ui" line="67"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;För att rapportera en bugg eller fel så måste du generera en rapportfil att lägga till i felrapporten som du håller på att skicka in. Det rekommenderas att du inkluderar sparade filer eftersom dessa hjälper till att felsöka problem. Detta kommer att samla in viss information om versionen av {projectName} som du använder, din konfiguration, din dator samt spelet som du för närvarande har öppet (om något). När detta har samlats in så kan du granska all information nedan och spara det till en zip-fil. Personlig information kommer att undantas från den samlade informationen om det går, så som ditt användarnamn om det finns i någon sökväg, men du kan även redigera det i efterhand. Efter att du har genererat och sparat det, klicka på knappen nedan eller gå till &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; för att skicka in felrapporten på GitHub. Försäkra dig om att lägga till rapporten som du genererat!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="85"/>
@@ -4779,13 +4779,13 @@ Hämtningsstorlek: %3</translation>
         <location filename="../SensorView.ui" line="187"/>
         <location filename="../SensorView.ui" line="276"/>
         <source>Set Y</source>
-        <translation type="unfinished"></translation>
+        <translation>Ställ in Y</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="197"/>
         <location filename="../SensorView.ui" line="286"/>
         <source>Set X</source>
-        <translation type="unfinished"></translation>
+        <translation>Ställ in X</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="268"/>
@@ -5122,7 +5122,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="475"/>
         <source>FPS target:</source>
-        <translation type="unfinished"></translation>
+        <translation>Bilder/s:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="500"/>
@@ -5350,7 +5350,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="582"/>
         <source>Periodically autosave state</source>
-        <translation type="unfinished"></translation>
+        <translation>Autospara tillstånd periodiskt</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="855"/>
@@ -5386,27 +5386,27 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="1102"/>
         <source>Fast forward (held) speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Hastighet för snabbspolning (håll):</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1145"/>
         <source>Autofire interval:</source>
-        <translation type="unfinished"></translation>
+        <translation>Intervall för autofire:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1169"/>
         <source>Enable rewind</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera tillbakaspolning</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1176"/>
         <source>Rewind history:</source>
-        <translation type="unfinished"></translation>
+        <translation>Historik för tillbakaspolning:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1201"/>
         <source>Rewind speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Hastighet för tillbakaspolning:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1238"/>
@@ -5647,7 +5647,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="1861"/>
         <source>Super Game Boy borders</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy-ramar</translation>
     </message>
 </context>
 <context>
@@ -5726,7 +5726,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.ui" line="88"/>
         <source>Unload Shader</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs ur shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="95"/>
@@ -6556,7 +6556,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1644"/>
         <source>Frame&amp;skip</source>
-        <translation type="unfinished"></translation>
+        <translation>Hoppa över &amp;bildrutor</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1657"/>
@@ -6566,7 +6566,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1664"/>
         <source>FPS target</source>
-        <translation type="unfinished"></translation>
+        <translation>Bilder/s</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1672"/>
@@ -6621,7 +6621,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1706"/>
         <source>Game &amp;overrides...</source>
-        <translation type="unfinished"></translation>
+        <translation>Spel&amp;förbättringar...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1718"/>
@@ -6636,7 +6636,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1725"/>
         <source>Create forwarder...</source>
-        <translation type="unfinished"></translation>
+        <translation>Skapa forwarder...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1728"/>
@@ -6661,7 +6661,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1743"/>
         <source>Game state views</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa speltillstånd</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1744"/>
@@ -6726,62 +6726,62 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1786"/>
         <source>GameShark Button (held)</source>
-        <translation type="unfinished"></translation>
+        <translation>GameShark-knapp (håll)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1792"/>
         <source>Autofire</source>
-        <translation type="unfinished"></translation>
+        <translation>Autofire</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1793"/>
         <source>Autofire A</source>
-        <translation type="unfinished"></translation>
+        <translation>Autofire A</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1798"/>
         <source>Autofire B</source>
-        <translation type="unfinished"></translation>
+        <translation>Autofire B</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1803"/>
         <source>Autofire L</source>
-        <translation type="unfinished"></translation>
+        <translation>Autofire L</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1808"/>
         <source>Autofire R</source>
-        <translation type="unfinished"></translation>
+        <translation>Autofire R</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1813"/>
         <source>Autofire Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Autofire Start</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1818"/>
         <source>Autofire Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Autofire Select</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1823"/>
         <source>Autofire Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Autofire upp</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1828"/>
         <source>Autofire Right</source>
-        <translation type="unfinished"></translation>
+        <translation>Autofire höger</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1833"/>
         <source>Autofire Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Autofire ner</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1838"/>
         <source>Autofire Left</source>
-        <translation type="unfinished"></translation>
+        <translation>Autofire vänster</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="2043"/>
