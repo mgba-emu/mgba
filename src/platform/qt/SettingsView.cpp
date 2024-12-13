@@ -352,7 +352,7 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 			continue;
 		}
 		QLocale locale(name.remove(QString("%0-").arg(binaryName)).remove(".qm"));
-		if (locale.language() == QLocale::English) {
+		if (locale.language() == QLocale::English || locale.language() == QLocale::C) {
 			continue;
 		}
 		QString endonym = locale.nativeLanguageName();
