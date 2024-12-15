@@ -1,5 +1,6 @@
 0.10.5: (Future)
 Other fixes:
+ - GBA Core: Fix booting into BIOS when skip BIOS is enabled
  - GBA Hardware: Fix loading states unconditionally overwriting GPIO memory
 
 0.10.4: (2024-12-07)
