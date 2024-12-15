@@ -3338,7 +3338,7 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="108"/>
         <source>Map Addr.</source>
-        <translation>映射位址</translation>
+        <translation>映射位址。</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="109"/>
@@ -4407,7 +4407,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="140"/>
         <source>Game ID:</source>
-        <translation type="unfinished">遊戲 ID</translation>
+        <translation>遊戲 ID:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="157"/>
@@ -5506,12 +5506,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1974"/>
         <source>Default sprite colors 1:</source>
-        <translation type="unfinished">預設角色圖顏色組 1</translation>
+        <translation>預設角色圖顏色組 1:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2061"/>
         <source>Default sprite colors 2:</source>
-        <translation type="unfinished">預設角色圖顏色組 2</translation>
+        <translation>預設角色圖顏色組 2:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2157"/>
@@ -6243,17 +6243,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1342"/>
         <source>Scan e-Reader dotcodes...</source>
-        <translation>掃描 e-Reader 點碼</translation>
+        <translation>掃描 e-Reader 點碼...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1775"/>
         <source>Convert e-Reader card image to raw...</source>
-        <translation>轉換 e-Reader 卡片圖檔為原始資料</translation>
+        <translation>轉換 e-Reader 卡片圖檔為原始資料...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1346"/>
         <source>ROM &amp;info...</source>
-        <translation>ROM 資訊 (&amp;I)</translation>
+        <translation>ROM 資訊 (&amp;I)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1348"/>
@@ -6344,12 +6344,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1311"/>
         <source>Import GameShark Save...</source>
-        <translation>匯入 GameShark 存檔</translation>
+        <translation>匯入 GameShark 存檔...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1314"/>
         <source>Export GameShark Save...</source>
-        <translation>匯出 GameShark 存檔</translation>
+        <translation>匯出 GameShark 存檔...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1321"/>
@@ -6614,12 +6614,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1704"/>
         <source>View &amp;logs...</source>
-        <translation>查看記錄檔 (&amp;L)</translation>
+        <translation>查看記錄檔 (&amp;L)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1706"/>
         <source>Game &amp;overrides...</source>
-        <translation>遊戲替代 (&amp;O)</translation>
+        <translation>遊戲替代 (&amp;O)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1718"/>
@@ -6629,7 +6629,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1720"/>
         <source>&amp;Cheats...</source>
-        <translation>金手指 (&amp;C)</translation>
+        <translation>金手指 (&amp;C)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1722"/>
