@@ -3829,17 +3829,17 @@ Download size: %3</source>
     <message>
         <location filename="../MultiplayerController.cpp" line="407"/>
         <source>Clearing invalid save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>清理非法存档ID</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="416"/>
         <source>Clearing invalid preferred ID</source>
-        <translation type="unfinished"></translation>
+        <translation>清理非法优先ID</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="437"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation>尝试获取未连接的多人玩家的 ID</translation>
+        <translation>尝试获取多人联机中未连接上的玩家ID</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="451"/>
