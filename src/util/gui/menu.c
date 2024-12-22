@@ -17,6 +17,8 @@
 DEFINE_VECTOR(GUIMenuItemList, struct GUIMenuItem);
 DEFINE_VECTOR(GUIMenuSavedList, struct GUIMenuSavedState);
 
+mLOG_DEFINE_CATEGORY(GUI_MENU, "GUI Menu", "gui.menu");
+
 void _itemNext(struct GUIMenuItem* item, bool wrap) {
 	if (wrap || item->state < item->nStates - 1) {
 		unsigned oldState = item->state;

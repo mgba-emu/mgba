@@ -22,6 +22,7 @@ Other fixes:
  - GBA: Fix getting game info for multiboot ROMs
  - GBA Core: Fix booting into BIOS when skip BIOS is enabled
  - GBA Hardware: Fix loading states unconditionally overwriting GPIO memory
+ - mGUI: Load parent directory if last used directory is missing (fixes mgba.io/i/3379)
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Fix potential crash when configuring shortcuts
 Misc:
