@@ -1,5 +1,6 @@
 0.10.5: (Future)
 Other fixes:
+ - FFmpeg: Fix failing to record videos with CRF video (fixes mgba.io/i/3368)
  - GBA Core: Fix booting into BIOS when skip BIOS is enabled
  - GBA Hardware: Fix loading states unconditionally overwriting GPIO memory
 

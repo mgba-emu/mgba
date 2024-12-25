@@ -384,7 +384,9 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->videoStream = avformat_new_stream(encoder->context, vcodec);
 		encoder->video = encoder->videoStream->codec;
 #endif
-		encoder->video->bit_rate = encoder->videoBitrate;
+		if (encoder->videoBitrate >= 0) {
+			encoder->video->bit_rate = encoder->videoBitrate;
+		}
 		encoder->video->width = encoder->width;
 		encoder->video->height = encoder->height;
 		encoder->video->time_base = (AVRational) { encoder->frameCycles * encoder->frameskip, encoder->cycles };
