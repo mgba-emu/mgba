@@ -3408,12 +3408,12 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="14"/>
         <source>Memory access logging</source>
-        <translation type="unfinished"></translation>
+        <translation>Logowanie dostępu do pamięci</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="23"/>
         <source>Log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Plik logów</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="32"/>
@@ -3423,7 +3423,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="39"/>
         <source>Log additional information (uses 3× space)</source>
-        <translation type="unfinished"></translation>
+        <translation>Loguj dodatkowe informacje (używa 3× miejsca)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="46"/>
@@ -3433,12 +3433,12 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="59"/>
         <source>Regions</source>
-        <translation type="unfinished"></translation>
+        <translation>Regiony</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="70"/>
         <source>Export ROM snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Eksportuj zrzut ROMu</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="77"/>
@@ -3453,7 +3453,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="82"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Błąd odczytu pliku logów pamięci</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="116"/>
@@ -4367,7 +4367,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>Informacje o pliku</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
@@ -4377,12 +4377,12 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
         <source>ROM header</source>
-        <translation type="unfinished"></translation>
+        <translation>Nagłówek ROMu</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="123"/>
@@ -4402,7 +4402,7 @@ Rozmiar pobierania: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="174"/>
         <source>Revision:</source>
-        <translation type="unfinished"></translation>
+        <translation>Rewizja:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="49"/>
@@ -5668,12 +5668,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.cpp" line="92"/>
         <source>mGBA Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Shadery mGBA</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>Error loading shader</source>
-        <translation type="unfinished"></translation>
+        <translation>Błąd wczytywania shaderu</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
