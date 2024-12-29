@@ -48,6 +48,7 @@ Misc:
  - Qt: Show a dummy shader settings tab if shaders aren't supported
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
+ - Updater: Fix rewriting folders and files on Windows (fixes mgba.io/i/3384)
 
 0.10.4: (2024-12-07)
 Emulation fixes:
