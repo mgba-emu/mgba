@@ -834,21 +834,38 @@ static void _scriptDebuggerEntered(struct mDebuggerModule* debugger, enum mDebug
 	};
 	cbInfo.type->alloc(&cbInfo);
 
-	// TODO: Intern strings
-	mScriptTableInsert(&cbInfo, mScriptStringCreateFromASCII("address"), mScriptValueCreateFromUInt(info->address));
+	static struct mScriptValue keyAddress = mSCRIPT_MAKE_CHARP("address");
+	static struct mScriptValue keyWidth = mSCRIPT_MAKE_CHARP("width");
+	static struct mScriptValue keySegment = mSCRIPT_MAKE_CHARP("segment");
+	static struct mScriptValue keyOldValue = mSCRIPT_MAKE_CHARP("oldValue");
+	static struct mScriptValue keyNewValue = mSCRIPT_MAKE_CHARP("newValue");
+	static struct mScriptValue keyAccessType = mSCRIPT_MAKE_CHARP("accessType");
+
+	struct mScriptValue valAddress = mSCRIPT_MAKE_U32(info->address);
+	struct mScriptValue valWidth = mSCRIPT_MAKE_S32(info->width);
+	struct mScriptValue valSegment = mSCRIPT_MAKE_S32(info->segment);
+	struct mScriptValue valOldValue;
+	struct mScriptValue valNewValue;
+	struct mScriptValue valAccessType;
+
+	mScriptTableInsert(&cbInfo, &keyAddress, &valAddress);
 	if (info->width > 0) {
-		mScriptTableInsert(&cbInfo, mScriptStringCreateFromASCII("width"), mScriptValueCreateFromSInt(info->width));
+		mScriptTableInsert(&cbInfo, &keyWidth, &valWidth);
 	}
 	if (info->segment >= 0) {
-		mScriptTableInsert(&cbInfo, mScriptStringCreateFromASCII("segment"), mScriptValueCreateFromSInt(info->segment));
+		mScriptTableInsert(&cbInfo, &keySegment, &valSegment);
 	}
 
 	if (reason == DEBUGGER_ENTER_WATCHPOINT) {
-		mScriptTableInsert(&cbInfo, mScriptStringCreateFromASCII("oldValue"), mScriptValueCreateFromSInt(info->type.wp.oldValue));
+		valOldValue = mSCRIPT_MAKE_S32(info->type.wp.oldValue);
+		valNewValue = mSCRIPT_MAKE_S32(info->type.wp.newValue);
+		valAccessType = mSCRIPT_MAKE_S32(info->type.wp.accessType);
+
+		mScriptTableInsert(&cbInfo, &keyOldValue, &valOldValue);
 		if (info->type.wp.accessType != WATCHPOINT_READ) {
-			mScriptTableInsert(&cbInfo, mScriptStringCreateFromASCII("newValue"), mScriptValueCreateFromSInt(info->type.wp.newValue));
+			mScriptTableInsert(&cbInfo, &keyNewValue, &valNewValue);
 		}
-		mScriptTableInsert(&cbInfo, mScriptStringCreateFromASCII("accessType"), mScriptValueCreateFromSInt(info->type.wp.accessType));
+		mScriptTableInsert(&cbInfo, &keyAccessType, &valAccessType);
 	}
 
 	_runCallbacks(scriptDebugger, point, &cbInfo);
