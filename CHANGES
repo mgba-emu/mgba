@@ -19,6 +19,7 @@ Other fixes:
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
  - Debugger: Fix writing to specific segment in command-line debugger
  - FFmpeg: Fix failing to record videos with CRF video (fixes mgba.io/i/3368)
+ - GB Core: Fix cloning savedata when backing file is outdated (fixes mgba.io/i/3388)
  - GB Serialize: Prevent loading invalid states where LY >= 144 in modes other than 1
  - GBA: Fix getting game info for multiboot ROMs
  - GBA Core: Fix booting into BIOS when skip BIOS is enabled

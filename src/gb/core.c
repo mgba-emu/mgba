@@ -1167,19 +1167,32 @@ static struct mCheatDevice* _GBCoreCheatDevice(struct mCore* core) {
 
 static size_t _GBCoreSavedataClone(struct mCore* core, void** sram) {
 	struct GB* gb = core->board;
-	struct VFile* vf = gb->sramVf;
-	if (vf) {
-		*sram = malloc(vf->size(vf));
-		vf->seek(vf, 0, SEEK_SET);
-		return vf->read(vf, *sram, vf->size(vf));
+	size_t sramSize = gb->sramSize;
+	size_t vfSize = 0;
+	size_t size = sramSize;
+	uint8_t* view = NULL;
+
+	if (gb->sramVf) {
+		vfSize = gb->sramVf->size(gb->sramVf);
+		if (vfSize > size) {
+			size = vfSize;
+		}
 	}
-	if (gb->sramSize) {
-		*sram = malloc(gb->sramSize);
-		memcpy(*sram, gb->memory.sram, gb->sramSize);
-		return gb->sramSize;
+	if (!size) {
+		*sram = NULL;
+		return 0;
 	}
-	*sram = NULL;
-	return 0;
+
+	view = malloc(size);
+	if (sramSize) {
+		memcpy(view, gb->memory.sram, gb->sramSize);
+	}
+	if (vfSize > sramSize) {
+		gb->sramVf->seek(gb->sramVf, sramSize, SEEK_SET);
+		gb->sramVf->read(gb->sramVf, &view[sramSize], vfSize - sramSize);
+	}
+	*sram = view;
+	return size;
 }
 
 static bool _GBCoreSavedataRestore(struct mCore* core, const void* sram, size_t size, bool writeback) {
