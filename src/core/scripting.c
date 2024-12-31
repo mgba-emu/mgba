@@ -769,7 +769,7 @@ static int64_t _addCallbackToBreakpoint(struct mScriptDebugger* debugger, struct
 	return cbid;
 }
 
-static void _runCallbacks(struct mScriptDebugger* debugger, struct mScriptBreakpoint* point) {
+static void _runCallbacks(struct mScriptDebugger* debugger, struct mScriptBreakpoint* point, struct mScriptValue* info) {
 	struct TableIterator iter;
 	if (!HashTableIteratorStart(&point->callbacks, &iter)) {
 		return;
@@ -778,6 +778,7 @@ static void _runCallbacks(struct mScriptDebugger* debugger, struct mScriptBreakp
 		struct mScriptValue* fn = HashTableIteratorGetValue(&point->callbacks, &iter);
 		struct mScriptFrame frame;
 		mScriptFrameInit(&frame);
+		mSCRIPT_PUSH(&frame.stack, WTABLE, info);
 		mScriptContextInvoke(debugger->p->context, fn, &frame);
 		mScriptFrameDeinit(&frame);
 	} while (HashTableIteratorNext(&point->callbacks, &iter));
@@ -826,7 +827,33 @@ static void _scriptDebuggerEntered(struct mDebuggerModule* debugger, enum mDebug
 		return;
 	}
 
-	_runCallbacks(scriptDebugger, point);
+	struct mScriptValue cbInfo = {
+		.refs = mSCRIPT_VALUE_UNREF,
+		.flags = 0,
+		.type = mSCRIPT_TYPE_MS_TABLE,
+	};
+	cbInfo.type->alloc(&cbInfo);
+
+	// TODO: Intern strings
+	mScriptTableInsert(&cbInfo, mScriptStringCreateFromASCII("address"), mScriptValueCreateFromUInt(info->address));
+	if (info->width > 0) {
+		mScriptTableInsert(&cbInfo, mScriptStringCreateFromASCII("width"), mScriptValueCreateFromSInt(info->width));
+	}
+	if (info->segment >= 0) {
+		mScriptTableInsert(&cbInfo, mScriptStringCreateFromASCII("segment"), mScriptValueCreateFromSInt(info->segment));
+	}
+
+	if (reason == DEBUGGER_ENTER_WATCHPOINT) {
+		mScriptTableInsert(&cbInfo, mScriptStringCreateFromASCII("oldValue"), mScriptValueCreateFromSInt(info->type.wp.oldValue));
+		if (info->type.wp.accessType != WATCHPOINT_READ) {
+			mScriptTableInsert(&cbInfo, mScriptStringCreateFromASCII("newValue"), mScriptValueCreateFromSInt(info->type.wp.newValue));
+		}
+		mScriptTableInsert(&cbInfo, mScriptStringCreateFromASCII("accessType"), mScriptValueCreateFromSInt(info->type.wp.accessType));
+	}
+
+	_runCallbacks(scriptDebugger, point, &cbInfo);
+
+	cbInfo.type->free(&cbInfo);
 	debugger->isPaused = false;
 }
 
