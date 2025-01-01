@@ -209,7 +209,7 @@ void DisplayQt::deinit(struct VideoBackend*) {
 
 void DisplayQt::setLayerDimensions(struct VideoBackend* v, enum VideoLayer layer, const struct mRectangle* dims) {
 	DisplayQt* self = static_cast<DisplayQt*>(v->user);
-	if (layer > self->m_layerDims.size()) {
+	if (layer >= self->m_layerDims.size()) {
 		return;
 	}
 	self->m_layerDims[layer] = QRect(dims->x, dims->y, dims->width, dims->height);
@@ -217,7 +217,7 @@ void DisplayQt::setLayerDimensions(struct VideoBackend* v, enum VideoLayer layer
 
 void DisplayQt::layerDimensions(const struct VideoBackend* v, enum VideoLayer layer, struct mRectangle* dims) {
 	DisplayQt* self = static_cast<DisplayQt*>(v->user);
-	if (layer > self->m_layerDims.size()) {
+	if (layer >= self->m_layerDims.size()) {
 		return;
 	}
 	QRect rect = self->m_layerDims[layer];
@@ -238,7 +238,7 @@ void DisplayQt::contextResized(struct VideoBackend*, unsigned, unsigned, unsigne
 
 void DisplayQt::setImageSize(struct VideoBackend* v, enum VideoLayer layer, int w, int h) {
 	DisplayQt* self = static_cast<DisplayQt*>(v->user);
-	if (layer > self->m_layers.size()) {
+	if (layer >= self->m_layers.size()) {
 		return;
 	}
 	self->m_layers[layer] = QImage(w, h, QImage::Format_ARGB32);
@@ -246,7 +246,7 @@ void DisplayQt::setImageSize(struct VideoBackend* v, enum VideoLayer layer, int 
 
 void DisplayQt::imageSize(struct VideoBackend* v, enum VideoLayer layer, int* w, int* h) {
 	DisplayQt* self = static_cast<DisplayQt*>(v->user);
-	if (layer > self->m_layers.size()) {
+	if (layer >= self->m_layers.size()) {
 		return;
 	}
 	*w = self->m_layers[layer].width();
@@ -255,7 +255,7 @@ void DisplayQt::imageSize(struct VideoBackend* v, enum VideoLayer layer, int* w,
 
 void DisplayQt::setImage(struct VideoBackend* v, enum VideoLayer layer, const void* frame) {
 	DisplayQt* self = static_cast<DisplayQt*>(v->user);
-	if (layer > self->m_layers.size()) {
+	if (layer >= self->m_layers.size()) {
 		return;
 	}
 	QImage& image = self->m_layers[layer];
