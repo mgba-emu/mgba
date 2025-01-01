@@ -834,12 +834,12 @@ static void _scriptDebuggerEntered(struct mDebuggerModule* debugger, enum mDebug
 	};
 	cbInfo.type->alloc(&cbInfo);
 
-	static struct mScriptValue keyAddress = mSCRIPT_MAKE_CHARP("address");
-	static struct mScriptValue keyWidth = mSCRIPT_MAKE_CHARP("width");
-	static struct mScriptValue keySegment = mSCRIPT_MAKE_CHARP("segment");
-	static struct mScriptValue keyOldValue = mSCRIPT_MAKE_CHARP("oldValue");
-	static struct mScriptValue keyNewValue = mSCRIPT_MAKE_CHARP("newValue");
-	static struct mScriptValue keyAccessType = mSCRIPT_MAKE_CHARP("accessType");
+	static struct mScriptValue keyAddress = mSCRIPT_CHARP("address");
+	static struct mScriptValue keyWidth = mSCRIPT_CHARP("width");
+	static struct mScriptValue keySegment = mSCRIPT_CHARP("segment");
+	static struct mScriptValue keyOldValue = mSCRIPT_CHARP("oldValue");
+	static struct mScriptValue keyNewValue = mSCRIPT_CHARP("newValue");
+	static struct mScriptValue keyAccessType = mSCRIPT_CHARP("accessType");
 
 	struct mScriptValue valAddress = mSCRIPT_MAKE_U32(info->address);
 	struct mScriptValue valWidth = mSCRIPT_MAKE_S32(info->width);
