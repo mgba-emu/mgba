@@ -250,8 +250,8 @@ static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
 		const uint8_t* data = chunk->data;
 		data += sizeof(uint32_t) * 2;
 		if (uncompress((Bytef*) item.data, &len, data, chunk->size) == Z_OK) {
-			if (item.size != len) {
-				mLOG(SAVESTATE, WARN, "Mismatched decompressed extdata %i size (%"PRIz"u vs %"PRIz"u)", tag, item.size, (size_t) len);
+			if ((uLongf) item.size != len) {
+				mLOG(SAVESTATE, WARN, "Mismatched decompressed extdata %i size (%d vs %u)", tag, item.size, (uint32_t) len);
 				item.size = len;
 			}
 			mStateExtdataPut(extdata, tag, &item);
