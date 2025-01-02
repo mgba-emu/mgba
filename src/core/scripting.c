@@ -1343,6 +1343,24 @@ static uint8_t _readLuminance(struct GBALuminanceSource* luminance) {
 }
 #endif
 
+#define CALLBACK(NAME) _mScriptCoreCallback ## NAME
+#define DEFINE_CALLBACK(NAME) \
+	void CALLBACK(NAME) (void* context) { \
+		struct mScriptContext* scriptContext = context; \
+		if (!scriptContext) { \
+			return; \
+		} \
+		mScriptContextTriggerCallback(scriptContext, #NAME, NULL); \
+	}
+
+DEFINE_CALLBACK(frame)
+DEFINE_CALLBACK(crashed)
+DEFINE_CALLBACK(sleep)
+DEFINE_CALLBACK(stop)
+DEFINE_CALLBACK(keysRead)
+DEFINE_CALLBACK(savedataUpdated)
+DEFINE_CALLBACK(alarm)
+
 void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core) {
 	struct mScriptValue* coreValue = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mScriptCoreAdapter));
 	struct mScriptCoreAdapter* adapter = calloc(1, sizeof(*adapter));
@@ -1374,6 +1392,18 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, &adapter->luminance);
 	}
 #endif
+
+	struct mCoreCallbacks callbacks = {
+		.videoFrameEnded = CALLBACK(frame),
+		.coreCrashed = CALLBACK(crashed),
+		.sleep = CALLBACK(sleep),
+		.shutdown = CALLBACK(stop),
+		.keysRead = CALLBACK(keysRead),
+		.savedataUpdated = CALLBACK(savedataUpdated),
+		.alarm = CALLBACK(alarm),
+		.context = context
+	};
+	core->addCoreCallbacks(core, &callbacks);
 
 	_rebuildMemoryMap(context, adapter);
 

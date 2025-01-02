@@ -198,42 +198,6 @@ void _coreShutdown(void* context) {
 	MutexUnlock(&thread->impl->stateMutex);
 }
 
-#ifdef ENABLE_SCRIPTING
-#define ADD_CALLBACK(NAME) \
-void _script_ ## NAME(void* context) { \
-	struct mCoreThread* threadContext = context; \
-	if (!threadContext->scriptContext) { \
-		return; \
-	} \
-	mScriptContextTriggerCallback(threadContext->scriptContext, #NAME, NULL); \
-}
-
-ADD_CALLBACK(frame)
-ADD_CALLBACK(crashed)
-ADD_CALLBACK(sleep)
-ADD_CALLBACK(stop)
-ADD_CALLBACK(keysRead)
-ADD_CALLBACK(savedataUpdated)
-ADD_CALLBACK(alarm)
-
-#undef ADD_CALLBACK
-#define SCRIPT(NAME) _script_ ## NAME
-
-static void _mCoreThreadAddCallbacks(struct mCoreThread* threadContext) {
-	struct mCoreCallbacks callbacks = {
-		.videoFrameEnded = SCRIPT(frame),
-		.coreCrashed = SCRIPT(crashed),
-		.sleep = SCRIPT(sleep),
-		.shutdown = SCRIPT(stop),
-		.keysRead = SCRIPT(keysRead),
-		.savedataUpdated = SCRIPT(savedataUpdated),
-		.alarm = SCRIPT(alarm),
-		.context = threadContext
-	};
-	threadContext->core->addCoreCallbacks(threadContext->core, &callbacks);
-}
-#endif
-
 static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	struct mCoreThread* threadContext = context;
 #ifdef USE_PTHREADS
@@ -279,7 +243,6 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	struct mScriptContext* scriptContext = threadContext->scriptContext;
 	if (scriptContext) {
 		mScriptContextAttachCore(scriptContext, core);
-		_mCoreThreadAddCallbacks(threadContext);
 	}
 #endif
 
@@ -289,12 +252,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 	}
 #ifdef ENABLE_SCRIPTING
 	// startCallback could add a script context
-	if (scriptContext != threadContext->scriptContext) {
-		scriptContext = threadContext->scriptContext;
-		if (scriptContext) {
-			_mCoreThreadAddCallbacks(threadContext);
-		}
-	}
+	scriptContext = threadContext->scriptContext;
 	if (scriptContext) {
 		mScriptContextTriggerCallback(scriptContext, "start", NULL);
 	}
@@ -312,12 +270,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 
 #ifdef ENABLE_SCRIPTING
 	// resetCallback could add a script context
-	if (scriptContext != threadContext->scriptContext) {
-		scriptContext = threadContext->scriptContext;
-		if (scriptContext) {
-			_mCoreThreadAddCallbacks(threadContext);
-		}
-	}
+	scriptContext = threadContext->scriptContext;
 	if (scriptContext) {
 		mScriptContextTriggerCallback(scriptContext, "reset", NULL);
 	}
@@ -372,12 +325,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 				}
 			}
 #ifdef ENABLE_SCRIPTING
-			if (scriptContext != threadContext->scriptContext) {
-				scriptContext = threadContext->scriptContext;
-				if (scriptContext) {
-					_mCoreThreadAddCallbacks(threadContext);
-				}
-			}
+			scriptContext = threadContext->scriptContext;
 #endif
 			if (wasPaused && !(impl->requested & mTHREAD_REQ_PAUSE)) {
 				break;
