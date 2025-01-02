@@ -17,26 +17,37 @@
 #ifdef M_CORE_GB
 #include <mgba/internal/sm83/sm83.h>
 #endif
+#ifdef ENABLE_SCRIPTING
+#include <mgba/script.h>
+#include <mgba/core/scripting.h>
+#endif
 
 #include <mgba/feature/commandline.h>
+#include <mgba-util/vector.h>
 #include <mgba-util/vfs.h>
 
 #include <errno.h>
 #include <signal.h>
 
 #define ROM_TEST_OPTIONS "S:R:"
-#define ROM_TEST_USAGE \
-	"Additional options:\n" \
-	"  -S SWI           Run until specified SWI call before exiting\n" \
-	"  -R REGISTER      General purpose register to return as exit code\n" \
+static const char* const romTestUsage =
+	"Additional options:\n"
+	"  -S SWI           Run until specified SWI call before exiting\n"
+	"  -R REGISTER      General purpose register to return as exit code\n"
+#ifdef ENABLE_SCRIPTING
+	"  --script FILE    Run a script on start. Can be passed multiple times\n"
+#endif
+	;
 
 struct RomTestOpts {
 	int exitSwiImmediate;
 	char* returnCodeRegister;
+	struct StringList scripts;
 };
 
 static void _romTestShutdown(int signal);
 static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char* arg);
+static bool _parseLongRomTestOpts(struct mSubParser* parser, const char* option, const char* arg);
 static bool _parseSwi(const char* regStr, int* oSwi);
 
 static bool _romTestCheckResiger(void);
@@ -62,11 +73,23 @@ void (*_armSwi32)(struct ARMCore* cpu, int immediate);
 int main(int argc, char * argv[]) {
 	signal(SIGINT, _romTestShutdown);
 
+	bool cleanExit = false;
+	int uncleanExit = 1;
+
 	struct RomTestOpts romTestOpts = { 3, NULL };
+	StringListInit(&romTestOpts.scripts, 0);
 	struct mSubParser subparser = {
-		.usage = ROM_TEST_USAGE,
+		.usage = romTestUsage,
 		.parse = _parseRomTestOpts,
+		.parseLong = _parseLongRomTestOpts,
 		.extraOptions = ROM_TEST_OPTIONS,
+		.longOptions = (struct mOption[]) {
+			{
+				.name = "script",
+				.arg = true,
+			},
+			{0}
+		},
 		.opts = &romTestOpts
 	};
 
@@ -77,15 +100,17 @@ int main(int argc, char * argv[]) {
 	}
 	if (!parsed || args.showHelp) {
 		usage(argv[0], NULL, NULL, &subparser, 1);
-		return !parsed;
+		uncleanExit = !parsed;
+		goto argsExit;
 	}
 	if (args.showVersion) {
 		version(argv[0]);
-		return 0;
+		uncleanExit = 0;
+		goto argsExit;
 	}
 	core = mCoreFind(args.fname);
 	if (!core) {
-		return 1;
+		goto argsExit;
 	}
 	core->init(core);
 	mCoreInitConfig(core, "romTest");
@@ -99,7 +124,6 @@ int main(int argc, char * argv[]) {
 	mStandardLoggerConfig(&_logger, &core->config);
 	mLogSetDefaultLogger(&_logger.d);
 
-	bool cleanExit = false;
 	struct mCoreCallbacks callbacks = {0};
 
 	_returnCodeRegister = romTestOpts.returnCodeRegister;
@@ -166,6 +190,32 @@ int main(int argc, char * argv[]) {
 		savestate->close(savestate);
 	}
 
+#ifdef ENABLE_SCRIPTING
+	struct mScriptContext scriptContext;
+
+	if (StringListSize(&romTestOpts.scripts)) {
+		mScriptContextInit(&scriptContext);
+		mScriptContextAttachStdlib(&scriptContext);
+		mScriptContextAttachImage(&scriptContext);
+		mScriptContextAttachLogger(&scriptContext, NULL);
+		mScriptContextAttachSocket(&scriptContext);
+#ifdef USE_JSON_C
+		mScriptContextAttachStorage(&scriptContext);
+#endif
+		mScriptContextRegisterEngines(&scriptContext);
+
+		mScriptContextAttachCore(&scriptContext, core);
+
+		size_t i;
+		for (i = 0; i < StringListSize(&romTestOpts.scripts); ++i) {
+			if (!mScriptContextLoadFile(&scriptContext, *StringListGetPointer(&romTestOpts.scripts, i))) {
+				mLOG(STATUS, ERROR, "Failed to load script \"%s\"", *StringListGetPointer(&romTestOpts.scripts, i));
+				goto scriptsError;
+			}
+		}
+	}
+#endif
+
 #ifdef ENABLE_DEBUGGERS
 	if (hasDebugger) {
 		do {
@@ -176,8 +226,16 @@ int main(int argc, char * argv[]) {
 	do {
 		core->runLoop(core);
 	} while (!_dispatchExiting);
+	cleanExit = true;
 
+scriptsError:
 	core->unloadROM(core);
+
+#ifdef ENABLE_SCRIPTING
+	if (StringListSize(&romTestOpts.scripts)) {
+		mScriptContextDeinit(&scriptContext);
+	}
+#endif
 
 #ifdef ENABLE_DEBUGGERS
 	if (hasDebugger) {
@@ -185,10 +243,8 @@ int main(int argc, char * argv[]) {
 		mDebuggerDeinit(&debugger);
 	}
 #endif
-	cleanExit = true;
 
 loadError:
-	mArgumentsDeinit(&args);
 	mStandardLoggerDeinit(&_logger);
 	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
@@ -196,7 +252,15 @@ loadError:
 		free(_returnCodeRegister);
 	}
 
-	return cleanExit ? _exitCode : 1;
+argsExit:
+	size_t i;
+	for (i = 0; i < StringListSize(&romTestOpts.scripts); ++i) {
+		free(*StringListGetPointer(&romTestOpts.scripts, i));
+	}
+	StringListDeinit(&romTestOpts.scripts);
+	mArgumentsDeinit(&args);
+
+	return cleanExit ? _exitCode : uncleanExit;
 }
 
 static void _romTestShutdown(int signal) {
@@ -294,6 +358,15 @@ static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char*
 	default:
 		return false;
 	}
+}
+
+static bool _parseLongRomTestOpts(struct mSubParser* parser, const char* option, const char* arg) {
+	struct RomTestOpts* opts = parser->opts;
+	if (strcmp(option, "script") == 0) {
+		*StringListAppend(&opts->scripts) = strdup(arg);
+		return true;
+	}
+	return false;
 }
 
 static bool _parseSwi(const char* swiStr, int* oSwi) {
