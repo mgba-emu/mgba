@@ -29,8 +29,8 @@
 #include <errno.h>
 #include <signal.h>
 
-#define ROM_TEST_OPTIONS "S:R:"
-static const char* const romTestUsage =
+#define HEADLESS_OPTIONS "S:R:"
+static const char* const headlessUsage =
 	"Additional options:\n"
 	"  -S SWI           Run until specified SWI call before exiting\n"
 	"  -R REGISTER      General purpose register to return as exit code\n"
@@ -39,18 +39,18 @@ static const char* const romTestUsage =
 #endif
 	;
 
-struct RomTestOpts {
+struct HeadlessOpts {
 	int exitSwiImmediate;
 	char* returnCodeRegister;
 	struct StringList scripts;
 };
 
-static void _romTestShutdown(int signal);
-static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char* arg);
-static bool _parseLongRomTestOpts(struct mSubParser* parser, const char* option, const char* arg);
+static void _headlessShutdown(int signal);
+static bool _parseHeadlessOpts(struct mSubParser* parser, int option, const char* arg);
+static bool _parseLongHeadlessOpts(struct mSubParser* parser, const char* option, const char* arg);
 static bool _parseSwi(const char* regStr, int* oSwi);
 
-static bool _romTestCheckResiger(void);
+static bool _headlessCheckResiger(void);
 
 static struct mCore* core;
 
@@ -58,10 +58,10 @@ static bool _dispatchExiting = false;
 static int _exitCode = 0;
 static struct mStandardLogger _logger;
 
-static void _romTestCallback(void* context);
+static void _headlessCallback(void* context);
 #ifdef M_CORE_GBA
-static void _romTestSwi16(struct ARMCore* cpu, int immediate);
-static void _romTestSwi32(struct ARMCore* cpu, int immediate);
+static void _headlessSwi16(struct ARMCore* cpu, int immediate);
+static void _headlessSwi32(struct ARMCore* cpu, int immediate);
 
 static int _exitSwiImmediate;
 static char* _returnCodeRegister;
@@ -71,18 +71,18 @@ void (*_armSwi32)(struct ARMCore* cpu, int immediate);
 #endif
 
 int main(int argc, char * argv[]) {
-	signal(SIGINT, _romTestShutdown);
+	signal(SIGINT, _headlessShutdown);
 
 	bool cleanExit = false;
 	int uncleanExit = 1;
 
-	struct RomTestOpts romTestOpts = { 3, NULL };
-	StringListInit(&romTestOpts.scripts, 0);
+	struct HeadlessOpts headlessOpts = { 3, NULL };
+	StringListInit(&headlessOpts.scripts, 0);
 	struct mSubParser subparser = {
-		.usage = romTestUsage,
-		.parse = _parseRomTestOpts,
-		.parseLong = _parseLongRomTestOpts,
-		.extraOptions = ROM_TEST_OPTIONS,
+		.usage = headlessUsage,
+		.parse = _parseHeadlessOpts,
+		.parseLong = _parseLongHeadlessOpts,
+		.extraOptions = HEADLESS_OPTIONS,
 		.longOptions = (struct mOption[]) {
 			{
 				.name = "script",
@@ -90,7 +90,7 @@ int main(int argc, char * argv[]) {
 			},
 			{0}
 		},
-		.opts = &romTestOpts
+		.opts = &headlessOpts
 	};
 
 	struct mArguments args;
@@ -113,7 +113,7 @@ int main(int argc, char * argv[]) {
 		goto argsExit;
 	}
 	core->init(core);
-	mCoreInitConfig(core, "romTest");
+	mCoreInitConfig(core, "headless");
 	mArgumentsApply(&args, NULL, 0, &core->config);
 
 	mCoreConfigSetDefaultValue(&core->config, "idleOptimization", "remove");
@@ -126,8 +126,8 @@ int main(int argc, char * argv[]) {
 
 	struct mCoreCallbacks callbacks = {0};
 
-	_returnCodeRegister = romTestOpts.returnCodeRegister;
-	if (!_romTestCheckResiger()) {
+	_returnCodeRegister = headlessOpts.returnCodeRegister;
+	if (!_headlessCheckResiger()) {
 		goto loadError;
 	}
 
@@ -135,24 +135,24 @@ int main(int argc, char * argv[]) {
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
 		((struct GBA*) core->board)->hardCrash = false;
-		_exitSwiImmediate = romTestOpts.exitSwiImmediate;
+		_exitSwiImmediate = headlessOpts.exitSwiImmediate;
 
 		if (_exitSwiImmediate == 3) {
 			// Hook into SWI 3 (shutdown)
-			callbacks.shutdown = _romTestCallback;
+			callbacks.shutdown = _headlessCallback;
 			core->addCoreCallbacks(core, &callbacks);
 		} else {
 			// Custom SWI hooks
 			_armSwi16 = ((struct GBA*) core->board)->cpu->irqh.swi16;
-			((struct GBA*) core->board)->cpu->irqh.swi16 = _romTestSwi16;
+			((struct GBA*) core->board)->cpu->irqh.swi16 = _headlessSwi16;
 			_armSwi32 = ((struct GBA*) core->board)->cpu->irqh.swi32;
-			((struct GBA*) core->board)->cpu->irqh.swi32 = _romTestSwi32;
+			((struct GBA*) core->board)->cpu->irqh.swi32 = _headlessSwi32;
 		}
 		break;
 #endif
 #ifdef M_CORE_GB
 	case mPLATFORM_GB:
-		callbacks.shutdown = _romTestCallback;
+		callbacks.shutdown = _headlessCallback;
 		core->addCoreCallbacks(core, &callbacks);
 		break;
 #endif
@@ -193,7 +193,7 @@ int main(int argc, char * argv[]) {
 #ifdef ENABLE_SCRIPTING
 	struct mScriptContext scriptContext;
 
-	if (StringListSize(&romTestOpts.scripts)) {
+	if (StringListSize(&headlessOpts.scripts)) {
 		mScriptContextInit(&scriptContext);
 		mScriptContextAttachStdlib(&scriptContext);
 		mScriptContextAttachImage(&scriptContext);
@@ -207,9 +207,9 @@ int main(int argc, char * argv[]) {
 		mScriptContextAttachCore(&scriptContext, core);
 
 		size_t i;
-		for (i = 0; i < StringListSize(&romTestOpts.scripts); ++i) {
-			if (!mScriptContextLoadFile(&scriptContext, *StringListGetPointer(&romTestOpts.scripts, i))) {
-				mLOG(STATUS, ERROR, "Failed to load script \"%s\"", *StringListGetPointer(&romTestOpts.scripts, i));
+		for (i = 0; i < StringListSize(&headlessOpts.scripts); ++i) {
+			if (!mScriptContextLoadFile(&scriptContext, *StringListGetPointer(&headlessOpts.scripts, i))) {
+				mLOG(STATUS, ERROR, "Failed to load script \"%s\"", *StringListGetPointer(&headlessOpts.scripts, i));
 				goto scriptsError;
 			}
 		}
@@ -232,7 +232,7 @@ scriptsError:
 	core->unloadROM(core);
 
 #ifdef ENABLE_SCRIPTING
-	if (StringListSize(&romTestOpts.scripts)) {
+	if (StringListSize(&headlessOpts.scripts)) {
 		mScriptContextDeinit(&scriptContext);
 	}
 #endif
@@ -254,21 +254,21 @@ loadError:
 
 argsExit:
 	size_t i;
-	for (i = 0; i < StringListSize(&romTestOpts.scripts); ++i) {
-		free(*StringListGetPointer(&romTestOpts.scripts, i));
+	for (i = 0; i < StringListSize(&headlessOpts.scripts); ++i) {
+		free(*StringListGetPointer(&headlessOpts.scripts, i));
 	}
-	StringListDeinit(&romTestOpts.scripts);
+	StringListDeinit(&headlessOpts.scripts);
 	mArgumentsDeinit(&args);
 
 	return cleanExit ? _exitCode : uncleanExit;
 }
 
-static void _romTestShutdown(int signal) {
+static void _headlessShutdown(int signal) {
 	UNUSED(signal);
 	_dispatchExiting = true;
 }
 
-static bool _romTestCheckResiger(void) {
+static bool _headlessCheckResiger(void) {
 	if (!_returnCodeRegister) {
 		return true;
 	}
@@ -314,7 +314,7 @@ static bool _romTestCheckResiger(void) {
 	return true;
 }
 
-static void _romTestCallback(void* context) {
+static void _headlessCallback(void* context) {
 	UNUSED(context);
 	if (_returnCodeRegister) {
 		core->readRegister(core, _returnCodeRegister, &_exitCode);
@@ -323,7 +323,7 @@ static void _romTestCallback(void* context) {
 }
 
 #ifdef M_CORE_GBA
-static void _romTestSwi16(struct ARMCore* cpu, int immediate) {
+static void _headlessSwi16(struct ARMCore* cpu, int immediate) {
 	if (immediate == _exitSwiImmediate) {
 		if (_returnCodeRegister) {
 			core->readRegister(core, _returnCodeRegister, &_exitCode);
@@ -334,7 +334,7 @@ static void _romTestSwi16(struct ARMCore* cpu, int immediate) {
 	_armSwi16(cpu, immediate);
 }
 
-static void _romTestSwi32(struct ARMCore* cpu, int immediate) {
+static void _headlessSwi32(struct ARMCore* cpu, int immediate) {
 	if (immediate == _exitSwiImmediate) {
 		if (_returnCodeRegister) {
 			core->readRegister(core, _returnCodeRegister, &_exitCode);
@@ -346,8 +346,8 @@ static void _romTestSwi32(struct ARMCore* cpu, int immediate) {
 }
 #endif
 
-static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char* arg) {
-	struct RomTestOpts* opts = parser->opts;
+static bool _parseHeadlessOpts(struct mSubParser* parser, int option, const char* arg) {
+	struct HeadlessOpts* opts = parser->opts;
 	errno = 0;
 	switch (option) {
 	case 'S':
@@ -360,8 +360,8 @@ static bool _parseRomTestOpts(struct mSubParser* parser, int option, const char*
 	}
 }
 
-static bool _parseLongRomTestOpts(struct mSubParser* parser, const char* option, const char* arg) {
-	struct RomTestOpts* opts = parser->opts;
+static bool _parseLongHeadlessOpts(struct mSubParser* parser, const char* option, const char* arg) {
+	struct HeadlessOpts* opts = parser->opts;
 	if (strcmp(option, "script") == 0) {
 		*StringListAppend(&opts->scripts) = strdup(arg);
 		return true;
