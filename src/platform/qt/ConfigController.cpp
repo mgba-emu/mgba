@@ -158,8 +158,7 @@ ConfigController::ConfigController(QObject* parent)
 	      "                 Can be passed multiple times for multiple cards\n"
 	      "  --mb FILE      Boot a multiboot image with FILE inserted into the ROM slot"
 #ifdef ENABLE_SCRIPTING
-	    "\n  --script FILE  Script file to load on start\n"
-	      "                 Can be passed multiple times\n"
+	    "\n  --script FILE  Run a script on start. Can be passed multiple times\n"
 #endif
 	    ;
 
