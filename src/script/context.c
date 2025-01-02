@@ -421,7 +421,10 @@ bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, stru
 	if (!info.context) {
 		return false;
 	}
-	return info.context->load(info.context, name, vf);
+	if (!info.context->load(info.context, name, vf)) {
+		return false;
+	}
+	return info.context->run(info.context);
 }
 
 #ifdef ENABLE_VFS
