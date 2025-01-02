@@ -172,7 +172,7 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 		return false;
 	}
 #else
-	sampleRates = codec->sample_rates;
+	sampleRates = codec->supported_samplerates;
 #endif
 	if (sampleRates) {
 		bool gotSampleRate = false;
