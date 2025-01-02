@@ -134,18 +134,28 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 		return false;
 	}
 
-	if (!codec->sample_fmts) {
+	const enum AVSampleFormat* formats = NULL;
+#ifdef FFMPEG_USE_GET_SUPPORTED_CONFIG
+	if (avcodec_get_supported_config(NULL, codec, AV_CODEC_CONFIG_SAMPLE_FORMAT, 0, (const void**) &formats, NULL) < 0) {
 		return false;
 	}
+#else
+	formats = codec->sample_fmts;
+#endif
+
+	if (!formats) {
+		return false;
+	}
+
 	size_t i;
 	size_t j;
 	int priority = INT_MAX;
 	encoder->sampleFormat = AV_SAMPLE_FMT_NONE;
-	for (i = 0; codec->sample_fmts[i] != AV_SAMPLE_FMT_NONE; ++i) {
+	for (i = 0; formats[i] != AV_SAMPLE_FMT_NONE; ++i) {
 		for (j = 0; j < sizeof(priorities) / sizeof(*priorities); ++j) {
-			if (codec->sample_fmts[i] == priorities[j].format && priority > priorities[j].priority) {
+			if (formats[i] == priorities[j].format && priority > priorities[j].priority) {
 				priority = priorities[j].priority;
-				encoder->sampleFormat = codec->sample_fmts[i];
+				encoder->sampleFormat = formats[i];
 			}
 		}
 	}
@@ -153,18 +163,29 @@ bool FFmpegEncoderSetAudio(struct FFmpegEncoder* encoder, const char* acodec, un
 		return false;
 	}
 	encoder->sampleRate = encoder->isampleRate;
-	if (codec->supported_samplerates) {
+
+
+
+	const int* sampleRates = NULL;
+#ifdef FFMPEG_USE_GET_SUPPORTED_CONFIG
+	if (avcodec_get_supported_config(NULL, codec, AV_CODEC_CONFIG_SAMPLE_RATE, 0, (const void**) &sampleRates, NULL) < 0) {
+		return false;
+	}
+#else
+	sampleRates = codec->supported_samplerates;
+#endif
+	if (sampleRates) {
 		bool gotSampleRate = false;
 		int highestSampleRate = 0;
-		for (i = 0; codec->supported_samplerates[i]; ++i) {
-			if (codec->supported_samplerates[i] > highestSampleRate) {
-				highestSampleRate = codec->supported_samplerates[i];
+		for (i = 0; sampleRates[i]; ++i) {
+			if (sampleRates[i] > highestSampleRate) {
+				highestSampleRate = sampleRates[i];
 			}
-			if (codec->supported_samplerates[i] < encoder->isampleRate) {
+			if (sampleRates[i] < encoder->isampleRate) {
 				continue;
 			}
-			if (!gotSampleRate || encoder->sampleRate > codec->supported_samplerates[i]) {
-				encoder->sampleRate = codec->supported_samplerates[i];
+			if (!gotSampleRate || encoder->sampleRate > sampleRates[i]) {
+				encoder->sampleRate = sampleRates[i];
 				gotSampleRate = true;
 			}
 		}
@@ -231,11 +252,19 @@ bool FFmpegEncoderSetVideo(struct FFmpegEncoder* encoder, const char* vcodec, in
 	size_t j;
 	int priority = INT_MAX;
 	encoder->pixFormat = AV_PIX_FMT_NONE;
-	for (i = 0; codec->pix_fmts[i] != AV_PIX_FMT_NONE; ++i) {
+	const enum AVPixelFormat* formats;
+#ifdef FFMPEG_USE_GET_SUPPORTED_CONFIG
+	if (avcodec_get_supported_config(NULL, codec, AV_CODEC_CONFIG_PIX_FORMAT, 0, (const void**) &formats, NULL) < 0) {
+		return false;
+	}
+#else
+	formats = codec->pix_fmts;
+#endif
+	for (i = 0; formats[i] != AV_PIX_FMT_NONE; ++i) {
 		for (j = 0; j < sizeof(priorities) / sizeof(*priorities); ++j) {
-			if (codec->pix_fmts[i] == priorities[j].format && priority > priorities[j].priority) {
+			if (formats[i] == priorities[j].format && priority > priorities[j].priority) {
 				priority = priorities[j].priority;
-				encoder->pixFormat = codec->pix_fmts[i];
+				encoder->pixFormat = formats[i];
 			}
 		}
 	}
