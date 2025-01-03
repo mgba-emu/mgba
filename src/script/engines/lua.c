@@ -1573,7 +1573,19 @@ static int _luaRequireShim(lua_State* lua) {
 static int _luaPrintShim(lua_State* lua) {
 	int n = lua_gettop(lua);
 
-	lua_getglobal(lua, "console");
+	if (lua_getglobal(lua, "console") == LUA_TNIL) {
+		// There is no console installed, so output to stdout
+		lua_pop(lua, 1);
+		for (int i = 1; i <= n; i++) {
+			const char* str = luaL_tolstring(lua, i, NULL);
+			if (i > 1) {
+				printf("\t");
+			}
+			printf("%s", str);
+		}
+		printf("\n");
+		return 0;
+	}
 	lua_insert(lua, 1);
 
 	// The first upvalue is either "log" or "warn"
