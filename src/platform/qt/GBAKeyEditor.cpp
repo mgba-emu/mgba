@@ -18,6 +18,7 @@
 #include "KeyEditor.h"
 
 #ifdef BUILD_SDL
+#define SDL_MAIN_HANDLED
 #include "platform/sdl/sdl-events.h"
 #endif
 
@@ -53,7 +54,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 	refresh();
 
 #ifdef BUILD_SDL
-	if (type == SDL_BINDING_BUTTON) {
+	if (type == SDL_BINDING_BUTTON || type == SDL_BINDING_CONTROLLER) {
 		m_profileSelect = new QComboBox(this);
 		connect(m_profileSelect, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
 		        this, &GBAKeyEditor::selectGamepad);
@@ -121,6 +122,7 @@ GBAKeyEditor::GBAKeyEditor(InputController* controller, int type, const QString&
 		connect(key, &KeyEditor::valueChanged, this, &GBAKeyEditor::setNext);
 		connect(key, &KeyEditor::axisChanged, this, &GBAKeyEditor::setNext);
 		connect(key, &KeyEditor::hatChanged, this, &GBAKeyEditor::setNext);
+		key->setInputController(m_controller);
 		key->installEventFilter(this);
 	}
 
@@ -264,7 +266,7 @@ void GBAKeyEditor::refresh() {
 
 void GBAKeyEditor::lookupBinding(const mInputMap* map, KeyEditor* keyEditor, int key) {
 #ifdef BUILD_SDL
-	if (m_type == SDL_BINDING_BUTTON) {
+	if (m_type == SDL_BINDING_BUTTON || m_type == SDL_BINDING_CONTROLLER) {
 		int value = mInputQueryBinding(map, m_type, key);
 		keyEditor->setValueButton(value);
 		return;
@@ -328,7 +330,7 @@ void GBAKeyEditor::lookupHats(const mInputMap* map) {
 void GBAKeyEditor::bindKey(const KeyEditor* keyEditor, int key) {
 	InputMapper mapper = m_controller->mapper(m_type);
 #ifdef BUILD_SDL
-	if (m_type == SDL_BINDING_BUTTON && keyEditor->axis() >= 0) {
+	if ((m_type == SDL_BINDING_BUTTON || m_type == SDL_BINDING_CONTROLLER) && keyEditor->axis() >= 0) {
 		mapper.bindAxis(keyEditor->axis(), keyEditor->direction(), key);
 	}
 	if (m_type == SDL_BINDING_BUTTON && keyEditor->hat() >= 0) {

@@ -24,21 +24,23 @@ ROMInfo::ROMInfo(std::shared_ptr<CoreController> controller, QWidget* parent)
 	const NoIntroDB* db = GBAApp::app()->gameDB();
 #endif
 	uint32_t crc32 = 0;
+	uint8_t md5[16]{};
 
 	CoreController::Interrupter interrupter(controller);
 	mCore* core = controller->thread()->core;
-	char title[17] = {};
-	core->getGameTitle(core, title);
-	m_ui.title->setText(QLatin1String(title));
-	title[8] = '\0';
-	core->getGameCode(core, title);
-	if (title[0]) {
-		m_ui.id->setText(QLatin1String(title));
+	mGameInfo info;
+	core->getGameInfo(core, &info);
+	m_ui.title->setText(QLatin1String(info.title));
+	if (info.code[0]) {
+		m_ui.id->setText(QLatin1String(info.code));
 	} else {
 		m_ui.id->setText(tr("(unknown)"));
 	}
+	m_ui.maker->setText(QLatin1String(info.maker));
+	m_ui.version->setText(QString::number(info.version));
 
 	core->checksum(core, &crc32, mCHECKSUM_CRC32);
+	core->checksum(core, &md5, mCHECKSUM_MD5);
 
 	m_ui.size->setText(QString::number(core->romSize(core)) + tr(" bytes"));
 
@@ -62,6 +64,10 @@ ROMInfo::ROMInfo(std::shared_ptr<CoreController> controller, QWidget* parent)
 		m_ui.crc->setText(tr("(unknown)"));
 		m_ui.name->setText(tr("(unknown)"));
 	}
+
+	m_ui.md5->setText(QString::asprintf("%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+		md5[0x0], md5[0x1], md5[0x2], md5[0x3], md5[0x4], md5[0x5], md5[0x6], md5[0x7],
+		md5[0x8], md5[0x9], md5[0xA], md5[0xB], md5[0xC], md5[0xD], md5[0xE], md5[0xF]));
 
 	QString savePath = controller->savePath();
 	if (!savePath.isEmpty()) {

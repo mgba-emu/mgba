@@ -163,7 +163,7 @@ static bool _isMulticart(const uint8_t* mem) {
 		success = GBIsROM(vf);
 		vf->close(vf);
 	}
-	
+
 	return success;
 }
 
@@ -540,6 +540,7 @@ void GBMBCReset(struct GB* gb) {
 	gb->memory.cartBus = 0xFF;
 	gb->memory.cartBusPc = 0;
 	gb->memory.cartBusDecay = 1;
+	gb->memory.lastRumble = 0;
 
 	memset(&gb->memory.mbcState, 0, sizeof(gb->memory.mbcState));
 	GBMBCInit(gb);

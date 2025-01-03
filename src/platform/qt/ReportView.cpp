@@ -497,17 +497,16 @@ void ReportView::addROMInfo(QStringList& report, CoreController* controller) {
 	report << QString("Currently paused: %1").arg(yesNo[controller->isPaused()]);
 
 	mCore* core = controller->thread()->core;
-	char title[17] = {};
-	core->getGameTitle(core, title);
-	report << QString("Internal title: %1").arg(QLatin1String(title));
-
-	title[8] = '\0';
-	core->getGameCode(core, title);
-	if (title[0]) {
-		report << QString("Game code: %1").arg(QLatin1String(title));
+	struct mGameInfo info;
+	core->getGameInfo(core, &info);
+	report << QString("Internal title: %1").arg(QLatin1String(info.title));
+	if (info.code[0]) {
+		report << QString("Game code: %1").arg(QLatin1String(info.code));
 	} else {
 		report << QString("Invalid game code");
 	}
+	report << QString("Game maker: %1").arg(QLatin1String(info.maker));
+	report << QString("Game version: %1").arg(info.version);
 
 	uint32_t crc32 = 0;
 	core->checksum(core, &crc32, mCHECKSUM_CRC32);

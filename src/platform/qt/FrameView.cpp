@@ -505,12 +505,20 @@ bool FrameView::eventFilter(QObject*, QEvent* event) {
 	QPointF pos;
 	switch (event->type()) {
 	case QEvent::MouseButtonPress:
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 		pos = static_cast<QMouseEvent*>(event)->localPos();
+#else
+		pos = static_cast<QMouseEvent*>(event)->position();
+#endif
 		pos /= m_ui.magnification->value();
 		selectLayer(pos);
 		return true;
 	case QEvent::MouseButtonDblClick:
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 		pos = static_cast<QMouseEvent*>(event)->localPos();
+#else
+		pos = static_cast<QMouseEvent*>(event)->position();
+#endif
 		pos /= m_ui.magnification->value();
 		disableLayer(pos);
 		return true;
@@ -566,7 +574,7 @@ void FrameView::newVl() {
 	unsigned width, height;
 	m_vl->baseVideoSize(m_vl, &width, &height);
 	m_framebuffer = QImage(width, height, QImage::Format_RGBX8888);
-	m_vl->setVideoBuffer(m_vl, reinterpret_cast<color_t*>(m_framebuffer.bits()), width);
+	m_vl->setVideoBuffer(m_vl, reinterpret_cast<mColor*>(m_framebuffer.bits()), width);
 	m_vl->reset(m_vl);
 }
 

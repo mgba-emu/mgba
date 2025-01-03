@@ -18,7 +18,7 @@ CXX_GUARD_START
 #include <mgba/internal/gba/cart/ereader.h>
 #include <mgba/internal/gba/cart/gpio.h>
 #include <mgba/internal/gba/cart/matrix.h>
-#include <mgba/internal/gba/cart/vfame.h>
+#include <mgba/internal/gba/cart/unlicensed.h>
 
 enum GBAMemoryRegion {
 	GBA_REGION_BIOS = 0x0,
@@ -108,8 +108,8 @@ struct GBAMemory {
 
 	struct GBACartridgeHardware hw;
 	struct GBASavedata savedata;
-	struct GBAVFameCart vfame;
 	struct GBAMatrix matrix;
+	struct GBAUnlCart unl;
 	struct GBACartEReader ereader;
 	size_t romSize;
 	uint32_t romMask;
@@ -138,8 +138,6 @@ struct GBAMemory {
 	struct GBAPrintContext agbPrintCtxBackup;
 	uint32_t agbPrintFuncBackup;
 	uint16_t* agbPrintBufferBackup;
-
-	bool mirroring;
 };
 
 struct GBA;

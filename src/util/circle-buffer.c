@@ -6,7 +6,7 @@
 #include <mgba-util/circle-buffer.h>
 
 #ifndef NDEBUG
-static int _checkIntegrity(struct CircleBuffer* buffer) {
+static int _checkIntegrity(struct mCircleBuffer* buffer) {
 	if ((int8_t*) buffer->writePtr - (int8_t*) buffer->readPtr == (ssize_t) buffer->size) {
 		return 1;
 	}
@@ -20,32 +20,32 @@ static int _checkIntegrity(struct CircleBuffer* buffer) {
 }
 #endif
 
-void CircleBufferInit(struct CircleBuffer* buffer, unsigned capacity) {
+void mCircleBufferInit(struct mCircleBuffer* buffer, unsigned capacity) {
 	buffer->data = malloc(capacity);
 	buffer->capacity = capacity;
-	CircleBufferClear(buffer);
+	mCircleBufferClear(buffer);
 }
 
-void CircleBufferDeinit(struct CircleBuffer* buffer) {
+void mCircleBufferDeinit(struct mCircleBuffer* buffer) {
 	free(buffer->data);
 	buffer->data = 0;
 }
 
-size_t CircleBufferSize(const struct CircleBuffer* buffer) {
+size_t mCircleBufferSize(const struct mCircleBuffer* buffer) {
 	return buffer->size;
 }
 
-size_t CircleBufferCapacity(const struct CircleBuffer* buffer) {
+size_t mCircleBufferCapacity(const struct mCircleBuffer* buffer) {
 	return buffer->capacity;
 }
 
-void CircleBufferClear(struct CircleBuffer* buffer) {
+void mCircleBufferClear(struct mCircleBuffer* buffer) {
 	buffer->size = 0;
 	buffer->readPtr = buffer->data;
 	buffer->writePtr = buffer->data;
 }
 
-int CircleBufferWrite8(struct CircleBuffer* buffer, int8_t value) {
+int mCircleBufferWrite8(struct mCircleBuffer* buffer, int8_t value) {
 	int8_t* data = buffer->writePtr;
 	if (buffer->size + sizeof(int8_t) > buffer->capacity) {
 		return 0;
@@ -59,25 +59,21 @@ int CircleBufferWrite8(struct CircleBuffer* buffer, int8_t value) {
 		buffer->writePtr = buffer->data;
 	}
 	buffer->size += sizeof(int8_t);
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return 1;
 }
 
-int CircleBufferWrite32(struct CircleBuffer* buffer, int32_t value) {
+int mCircleBufferWrite32(struct mCircleBuffer* buffer, int32_t value) {
 	int32_t* data = buffer->writePtr;
 	if (buffer->size + sizeof(int32_t) > buffer->capacity) {
 		return 0;
 	}
-	if ((intptr_t) data & 0x3) {
+	if (((intptr_t) data & 0x3) || (uintptr_t) data - (uintptr_t) buffer->data > buffer->capacity - sizeof(int32_t)) {
 		int written = 0;
-		written += CircleBufferWrite8(buffer, ((int8_t*) &value)[0]);
-		written += CircleBufferWrite8(buffer, ((int8_t*) &value)[1]);
-		written += CircleBufferWrite8(buffer, ((int8_t*) &value)[2]);
-		written += CircleBufferWrite8(buffer, ((int8_t*) &value)[3]);
+		written += mCircleBufferWrite8(buffer, ((int8_t*) &value)[0]);
+		written += mCircleBufferWrite8(buffer, ((int8_t*) &value)[1]);
+		written += mCircleBufferWrite8(buffer, ((int8_t*) &value)[2]);
+		written += mCircleBufferWrite8(buffer, ((int8_t*) &value)[3]);
 		return written;
 	}
 	*data = value;
@@ -89,23 +85,19 @@ int CircleBufferWrite32(struct CircleBuffer* buffer, int32_t value) {
 		buffer->writePtr = buffer->data;
 	}
 	buffer->size += sizeof(int32_t);
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return 4;
 }
 
-int CircleBufferWrite16(struct CircleBuffer* buffer, int16_t value) {
+int mCircleBufferWrite16(struct mCircleBuffer* buffer, int16_t value) {
 	int16_t* data = buffer->writePtr;
 	if (buffer->size + sizeof(int16_t) > buffer->capacity) {
 		return 0;
 	}
-	if ((intptr_t) data & 0x3) {
+	if (((intptr_t) data & 0x1) || (uintptr_t) data - (uintptr_t) buffer->data > buffer->capacity - sizeof(int16_t)) {
 		int written = 0;
-		written += CircleBufferWrite8(buffer, ((int8_t*) &value)[0]);
-		written += CircleBufferWrite8(buffer, ((int8_t*) &value)[1]);
+		written += mCircleBufferWrite8(buffer, ((int8_t*) &value)[0]);
+		written += mCircleBufferWrite8(buffer, ((int8_t*) &value)[1]);
 		return written;
 	}
 	*data = value;
@@ -117,15 +109,11 @@ int CircleBufferWrite16(struct CircleBuffer* buffer, int16_t value) {
 		buffer->writePtr = buffer->data;
 	}
 	buffer->size += sizeof(int16_t);
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return 2;
 }
 
-size_t CircleBufferWrite(struct CircleBuffer* buffer, const void* input, size_t length) {
+size_t mCircleBufferWrite(struct mCircleBuffer* buffer, const void* input, size_t length) {
 	int8_t* data = buffer->writePtr;
 	if (buffer->size + length > buffer->capacity) {
 		return 0;
@@ -145,15 +133,18 @@ size_t CircleBufferWrite(struct CircleBuffer* buffer, const void* input, size_t 
 	}
 
 	buffer->size += length;
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return length;
 }
 
-int CircleBufferRead8(struct CircleBuffer* buffer, int8_t* value) {
+size_t mCircleBufferWriteTruncate(struct mCircleBuffer* buffer, const void* input, size_t length) {
+	if (buffer->size + length > buffer->capacity) {
+		length = buffer->capacity - buffer->size;
+	}
+	return mCircleBufferWrite(buffer, input, length);
+}
+
+int mCircleBufferRead8(struct mCircleBuffer* buffer, int8_t* value) {
 	int8_t* data = buffer->readPtr;
 	if (buffer->size < sizeof(int8_t)) {
 		return 0;
@@ -167,23 +158,19 @@ int CircleBufferRead8(struct CircleBuffer* buffer, int8_t* value) {
 		buffer->readPtr = buffer->data;
 	}
 	buffer->size -= sizeof(int8_t);
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return 1;
 }
 
-int CircleBufferRead16(struct CircleBuffer* buffer, int16_t* value) {
+int mCircleBufferRead16(struct mCircleBuffer* buffer, int16_t* value) {
 	int16_t* data = buffer->readPtr;
 	if (buffer->size < sizeof(int16_t)) {
 		return 0;
 	}
-	if ((intptr_t) data & 0x3) {
+	if (((intptr_t) data & 0x1) || (uintptr_t) data - (uintptr_t) buffer->data > buffer->capacity - sizeof(int16_t)) {
 		int read = 0;
-		read += CircleBufferRead8(buffer, &((int8_t*) value)[0]);
-		read += CircleBufferRead8(buffer, &((int8_t*) value)[1]);
+		read += mCircleBufferRead8(buffer, &((int8_t*) value)[0]);
+		read += mCircleBufferRead8(buffer, &((int8_t*) value)[1]);
 		return read;
 	}
 	*value = *data;
@@ -195,25 +182,21 @@ int CircleBufferRead16(struct CircleBuffer* buffer, int16_t* value) {
 		buffer->readPtr = buffer->data;
 	}
 	buffer->size -= sizeof(int16_t);
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return 2;
 }
 
-int CircleBufferRead32(struct CircleBuffer* buffer, int32_t* value) {
+int mCircleBufferRead32(struct mCircleBuffer* buffer, int32_t* value) {
 	int32_t* data = buffer->readPtr;
 	if (buffer->size < sizeof(int32_t)) {
 		return 0;
 	}
-	if ((intptr_t) data & 0x3) {
+	if (((intptr_t) data & 0x3) || (uintptr_t) data - (uintptr_t) buffer->data > buffer->capacity - sizeof(int32_t)) {
 		int read = 0;
-		read += CircleBufferRead8(buffer, &((int8_t*) value)[0]);
-		read += CircleBufferRead8(buffer, &((int8_t*) value)[1]);
-		read += CircleBufferRead8(buffer, &((int8_t*) value)[2]);
-		read += CircleBufferRead8(buffer, &((int8_t*) value)[3]);
+		read += mCircleBufferRead8(buffer, &((int8_t*) value)[0]);
+		read += mCircleBufferRead8(buffer, &((int8_t*) value)[1]);
+		read += mCircleBufferRead8(buffer, &((int8_t*) value)[2]);
+		read += mCircleBufferRead8(buffer, &((int8_t*) value)[3]);
 		return read;
 	}
 	*value = *data;
@@ -225,15 +208,11 @@ int CircleBufferRead32(struct CircleBuffer* buffer, int32_t* value) {
 		buffer->readPtr = buffer->data;
 	}
 	buffer->size -= sizeof(int32_t);
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return 4;
 }
 
-size_t CircleBufferRead(struct CircleBuffer* buffer, void* output, size_t length) {
+size_t mCircleBufferRead(struct mCircleBuffer* buffer, void* output, size_t length) {
 	int8_t* data = buffer->readPtr;
 	if (buffer->size == 0) {
 		return 0;
@@ -243,36 +222,47 @@ size_t CircleBufferRead(struct CircleBuffer* buffer, void* output, size_t length
 	}
 	size_t remaining = buffer->capacity - ((int8_t*) data - (int8_t*) buffer->data);
 	if (length <= remaining) {
-		memcpy(output, data, length);
+		if (output) {
+			memcpy(output, data, length);
+		}
 		if (length == remaining) {
 			buffer->readPtr = buffer->data;
 		} else {
 			buffer->readPtr = (int8_t*) data + length;
 		}
 	} else {
-		memcpy(output, data, remaining);
-		memcpy((int8_t*) output + remaining, buffer->data, length - remaining);
+		if (output) {
+			memcpy(output, data, remaining);
+			memcpy((int8_t*) output + remaining, buffer->data, length - remaining);
+		}
 		buffer->readPtr = (int8_t*) buffer->data + length - remaining;
 	}
 
 	buffer->size -= length;
-#ifndef NDEBUG
-	if (!_checkIntegrity(buffer)) {
-		abort();
-	}
-#endif
+	mASSERT_DEBUG(_checkIntegrity(buffer));
 	return length;
 }
 
-size_t CircleBufferDump(const struct CircleBuffer* buffer, void* output, size_t length) {
+size_t mCircleBufferDump(const struct mCircleBuffer* buffer, void* output, size_t length, size_t offset) {
 	int8_t* data = buffer->readPtr;
-	if (buffer->size == 0) {
+	if (buffer->size <= offset) {
 		return 0;
 	}
-	if (length > buffer->size) {
-		length = buffer->size;
+	if (length > buffer->size - offset) {
+		length = buffer->size - offset;
 	}
-	size_t remaining = buffer->capacity - ((int8_t*) data - (int8_t*) buffer->data);
+	size_t remaining = buffer->capacity - ((uintptr_t) data - (uintptr_t) buffer->data);
+	if (offset) {
+		if (remaining >= offset) {
+			data += offset;
+			remaining -= offset;
+		} else {
+			offset -= remaining;
+			data = buffer->data;
+			data += offset;
+		}
+	}
+
 	if (length <= remaining) {
 		memcpy(output, data, length);
 	} else {

@@ -27,6 +27,8 @@ public:
 	VideoShader* shaders() override { return nullptr; }
 	QSize contentSize() const override;
 	VideoBackend* videoBackend() override { return &m_backend; }
+	void setMaximumSize(const QSize& size) override { m_maxSize = size; }
+
 
 public slots:
 	void stopDrawing() override;
@@ -39,7 +41,7 @@ public slots:
 	void swapInterval(int) override {};
 	void filter(bool filter) override;
 	void framePosted() override;
-	void setShaders(struct VDir*) override {}
+	bool setShaders(struct VDir*) override { return false; }
 	void clearShaders() override {}
 	void resizeContext() override;
 	void setBackgroundImage(const QImage&) override;
@@ -56,7 +58,7 @@ private:
 	static void layerDimensions(const struct VideoBackend*, enum VideoLayer, struct mRectangle*);
 	static void swap(struct VideoBackend*);
 	static void clear(struct VideoBackend*);
-	static void contextResized(struct VideoBackend*, unsigned w, unsigned h);
+	static void contextResized(struct VideoBackend*, unsigned w, unsigned h, unsigned maxW, unsigned maxH);
 	static void setImageSize(struct VideoBackend*, enum VideoLayer, int w, int h);
 	static void imageSize(struct VideoBackend*, enum VideoLayer, int* w, int* h);
 	static void setImage(struct VideoBackend*, enum VideoLayer, const void* frame);
@@ -69,6 +71,7 @@ private:
 	int m_width = -1;
 	int m_height = -1;
 	QImage m_oldBacking{nullptr};
+	QSize m_maxSize;
 	std::shared_ptr<CoreController> m_context = nullptr;
 };
 

@@ -86,18 +86,18 @@ void SaveConverter::refreshInputTypes() {
 	m_validSaves.clear();
 	m_ui.inputType->clear();
 	if (m_ui.inputFile->text().isEmpty()) {
-		m_ui.inputType->addItem(tr("No file selected"));	
+		m_ui.inputType->addItem(tr("No file selected"));
 		m_ui.inputType->setEnabled(false);
 		return;
 	}
 
 	std::shared_ptr<VFileDevice> vf = std::make_shared<VFileDevice>(m_ui.inputFile->text(), QIODevice::ReadOnly);
 	if (!vf->isOpen()) {
-		m_ui.inputType->addItem(tr("Could not open file"));	
+		m_ui.inputType->addItem(tr("Could not open file"));
 		m_ui.inputType->setEnabled(false);
 		return;
 	}
-	
+
 	detectFromSavestate(*vf);
 	detectFromSize(vf);
 	detectFromHeaders(vf);
@@ -108,7 +108,7 @@ void SaveConverter::refreshInputTypes() {
 	if (m_validSaves.count()) {
 		m_ui.inputType->setEnabled(true);
 	} else {
-		m_ui.inputType->addItem(tr("No valid formats found"));	
+		m_ui.inputType->addItem(tr("No valid formats found"));
 		m_ui.inputType->setEnabled(false);
 	}
 }
@@ -127,7 +127,7 @@ void SaveConverter::refreshOutputTypes() {
 	if (m_validOutputs.count()) {
 		m_ui.outputType->setEnabled(true);
 	} else {
-		m_ui.outputType->addItem(tr("No valid conversions found"));	
+		m_ui.outputType->addItem(tr("No valid conversions found"));
 		m_ui.outputType->setEnabled(false);
 	}
 	checkCanConvert();
@@ -170,8 +170,8 @@ void SaveConverter::detectFromSavestate(VFile* vf) {
 	switch (platform) {
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
-		save.gba.type = static_cast<SavedataType>(state.at(offsetof(GBASerializedState, savedata.type)));
-		if (save.gba.type == SAVEDATA_EEPROM || save.gba.type == SAVEDATA_EEPROM512) {
+		save.gba.type = static_cast<GBASavedataType>(state.at(offsetof(GBASerializedState, savedata.type)));
+		if (save.gba.type == GBA_SAVEDATA_EEPROM || save.gba.type == GBA_SAVEDATA_EEPROM512) {
 			save.endianness = Endian::LITTLE;
 		}
 		break;
@@ -198,25 +198,25 @@ void SaveConverter::detectFromSize(std::shared_ptr<VFileDevice> vf) {
 	switch (vf->size()) {
 	case GBA_SIZE_SRAM:
 	case GBA_SIZE_SRAM + 16:
-		m_validSaves.append(AnnotatedSave{SAVEDATA_SRAM, vf});
+		m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_SRAM, vf});
 		break;
 	case GBA_SIZE_FLASH512:
 	case GBA_SIZE_FLASH512 + 16:
-		m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH512, vf});
+		m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_FLASH512, vf});
 		break;
 	case GBA_SIZE_FLASH1M:
 	case GBA_SIZE_FLASH1M + 16:
-		m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, vf});
+		m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_FLASH1M, vf});
 		break;
 	case GBA_SIZE_EEPROM:
 	case GBA_SIZE_EEPROM + 16:
-		m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, vf, Endian::LITTLE});
-		m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, vf, Endian::BIG});
+		m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_EEPROM, vf, Endian::LITTLE});
+		m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_EEPROM, vf, Endian::BIG});
 		break;
 	case GBA_SIZE_EEPROM512:
 	case GBA_SIZE_EEPROM512 + 16:
-		m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, vf, Endian::LITTLE});
-		m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, vf, Endian::BIG});
+		m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_EEPROM512, vf, Endian::LITTLE});
+		m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_EEPROM512, vf, Endian::BIG});
 		break;
 	}
 #endif
@@ -272,16 +272,16 @@ void SaveConverter::detectFromHeaders(std::shared_ptr<VFileDevice> vf) {
 			QByteArray bytes = QByteArray::fromRawData(static_cast<const char*>(data), size);
 			bytes.data(); // Trigger a deep copy before we delete the backing
 			if (size == GBA_SIZE_FLASH1M) {
-				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::SHARKPORT});
+				m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::SHARKPORT});
 			} else {
-				m_validSaves.append(AnnotatedSave{SAVEDATA_SRAM, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_SRAM)), Endian::NONE, Container::SHARKPORT});
-				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH512, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_FLASH512)), Endian::NONE, Container::SHARKPORT});
-				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_EEPROM)), Endian::BIG, Container::SHARKPORT});
-				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_EEPROM512)), Endian::BIG, Container::SHARKPORT});
+				m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_SRAM, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_SRAM)), Endian::NONE, Container::SHARKPORT});
+				m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_FLASH512, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_FLASH512)), Endian::NONE, Container::SHARKPORT});
+				m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_EEPROM, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_EEPROM)), Endian::BIG, Container::SHARKPORT});
+				m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_EEPROM512, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_EEPROM512)), Endian::BIG, Container::SHARKPORT});
 			}
 			free(data);
 		}
-	} else if (buffer.left(gsv.count()) == gsv) {
+	} else if (buffer.left(gsv.size()) == gsv) {
 		size_t size;
 		void* data = GBASavedataGSVGetPayload(*vf, &size, nullptr, false);
 		if (data) {
@@ -289,20 +289,20 @@ void SaveConverter::detectFromHeaders(std::shared_ptr<VFileDevice> vf) {
 			bytes.data(); // Trigger a deep copy before we delete the backing
 			switch (size) {
 			case GBA_SIZE_FLASH1M:
-				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
+				m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
 				break;
 			case GBA_SIZE_FLASH512:
-				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH512, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
-				m_validSaves.append(AnnotatedSave{SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
+				m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_FLASH512, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
+				m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_FLASH1M, std::make_shared<VFileDevice>(bytes), Endian::NONE, Container::GSV});
 				break;
 			case GBA_SIZE_SRAM:
-				m_validSaves.append(AnnotatedSave{SAVEDATA_SRAM, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_SRAM)), Endian::NONE, Container::GSV});
+				m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_SRAM, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_SRAM)), Endian::NONE, Container::GSV});
 				break;
 			case GBA_SIZE_EEPROM:
-				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_EEPROM)), Endian::BIG, Container::GSV});
+				m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_EEPROM, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_EEPROM)), Endian::BIG, Container::GSV});
 				break;
 			case GBA_SIZE_EEPROM512:
-				m_validSaves.append(AnnotatedSave{SAVEDATA_EEPROM512, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_EEPROM512)), Endian::BIG, Container::GSV});
+				m_validSaves.append(AnnotatedSave{GBA_SAVEDATA_EEPROM512, std::make_shared<VFileDevice>(bytes.left(GBA_SIZE_EEPROM512)), Endian::BIG, Container::GSV});
 				break;
 			}
 			free(data);
@@ -401,7 +401,7 @@ SaveConverter::AnnotatedSave::AnnotatedSave(mPlatform platform, std::shared_ptr<
 }
 
 #ifdef M_CORE_GBA
-SaveConverter::AnnotatedSave::AnnotatedSave(SavedataType type, std::shared_ptr<VFileDevice> vf, Endian endianness, Container container)
+SaveConverter::AnnotatedSave::AnnotatedSave(GBASavedataType type, std::shared_ptr<VFileDevice> vf, Endian endianness, Container container)
 	: container(container)
 	, platform(mPLATFORM_GBA)
 	, size(vf->size())
@@ -468,15 +468,15 @@ SaveConverter::AnnotatedSave::operator QString() const {
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
 		switch (gba.type) {
-		case SAVEDATA_SRAM:
+		case GBA_SAVEDATA_SRAM:
 			typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "SRAM");
 			break;
-		case SAVEDATA_FLASH512:
-		case SAVEDATA_FLASH1M:
+		case GBA_SAVEDATA_FLASH512:
+		case GBA_SAVEDATA_FLASH1M:
 			typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 flash");
 			break;
-		case SAVEDATA_EEPROM:
-		case SAVEDATA_EEPROM512:
+		case GBA_SAVEDATA_EEPROM:
+		case GBA_SAVEDATA_EEPROM512:
 			typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 EEPROM");
 			break;
 		default:
@@ -494,21 +494,21 @@ SaveConverter::AnnotatedSave::operator QString() const {
 			if (size & 0xFF) {
 				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 SRAM + RTC");
 			} else {
-				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 SRAM");				
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "%1 SRAM");
 			}
 			break;
 		case GB_MBC2:
 			if (size == 0x100) {
 				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "packed MBC2");
 			} else {
-				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "unpacked MBC2");				
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "unpacked MBC2");
 			}
 			break;
 		case GB_MBC6:
 			if (size == GB_SIZE_MBC6_FLASH) {
 				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 flash");
 			} else if (size > GB_SIZE_MBC6_FLASH) {
-				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 combined SRAM + flash");				
+				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 combined SRAM + flash");
 			} else {
 				typeFormat = QCoreApplication::translate("QGBA::SaveConverter", "MBC6 SRAM");
 			}
@@ -664,8 +664,8 @@ QByteArray SaveConverter::AnnotatedSave::convertTo(const SaveConverter::Annotate
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
 		switch (gba.type) {
-		case SAVEDATA_EEPROM:
-		case SAVEDATA_EEPROM512:
+		case GBA_SAVEDATA_EEPROM:
+		case GBA_SAVEDATA_EEPROM512:
 			if (endianness == target.endianness) {
 				break;
 			}

@@ -47,6 +47,20 @@ void GBAHardwareInit(struct GBACartridgeHardware* hw, uint16_t* base) {
 	GBAHardwareClear(hw);
 }
 
+void GBAHardwareReset(struct GBACartridgeHardware* hw) {
+	hw->readWrite = GPIO_WRITE_ONLY;
+	hw->pinState = 0;
+	hw->direction = 0;
+	hw->lightCounter = 0;
+	hw->lightEdge = false;
+	hw->lightSample = 0xFF;
+	hw->gyroSample = 0;
+	hw->gyroEdge = 0;
+	hw->tiltX = 0xFFF;
+	hw->tiltY = 0xFFF;
+	hw->tiltState = 0;
+}
+
 void GBAHardwareClear(struct GBACartridgeHardware* hw) {
 	hw->devices = HW_NONE | (hw->devices & HW_GB_PLAYER_DETECTION);
 	hw->readWrite = GPIO_WRITE_ONLY;
@@ -320,18 +334,20 @@ void _gyroReadPins(struct GBACartridgeHardware* hw) {
 		return;
 	}
 
+	// Write bit on falling edge
+	bool doOutput = hw->gyroEdge && !(hw->pinState & 2);
 	if (hw->pinState & 1) {
 		if (gyro->sample) {
 			gyro->sample(gyro);
 		}
 		int32_t sample = gyro->readGyroZ(gyro);
 
-		// Normalize to ~12 bits, focused on 0x6C0
-		hw->gyroSample = (sample >> 21) + 0x6C0; // Crop off an extra bit so that we can't go negative
+		// Normalize to ~12 bits, focused on 0x700
+		hw->gyroSample = (sample >> 21) + 0x700; // Crop off an extra bit so that we can't go negative
+		doOutput = true;
 	}
 
-	if (hw->gyroEdge && !(hw->pinState & 2)) {
-		// Write bit on falling edge
+	if (doOutput) {
 		unsigned bit = hw->gyroSample >> 15;
 		hw->gyroSample <<= 1;
 		_outputPins(hw, bit << 2);
@@ -352,7 +368,9 @@ void _rumbleReadPins(struct GBACartridgeHardware* hw) {
 		return;
 	}
 
-	rumble->setRumble(rumble, !!(hw->pinState & 8));
+	int32_t currentTime = mTimingCurrentTime(&hw->p->timing);
+	rumble->setRumble(rumble, !!(hw->pinState & 8), currentTime - hw->p->lastRumble);
+	hw->p->lastRumble = currentTime;
 }
 
 // == Light sensor
@@ -476,16 +494,16 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	STORE_16(hw->tiltY, 0, &state->hw.tiltSampleY);
 	state->hw.lightSample = hw->lightSample;
 	flags1 = GBASerializedHWFlags1SetLightEdge(flags1, hw->lightEdge);
+	flags1 = GBASerializedHWFlags1SetLightCounter(flags1, hw->lightCounter);
 	STORE_16(flags1, 0, &state->hw.flags1);
 
 	GBASerializedHWFlags2 flags2 = 0;
 	flags2 = GBASerializedHWFlags2SetTiltState(flags2, hw->tiltState);
-	flags2 = GBASerializedHWFlags1SetLightCounter(flags2, hw->lightCounter);
 
-	// GBP stuff is only here for legacy reasons
+	// GBP/SIO stuff is only here for legacy reasons
 	flags2 = GBASerializedHWFlags2SetGbpInputsPosted(flags2, hw->p->sio.gbp.inputsPosted);
 	flags2 = GBASerializedHWFlags2SetGbpTxPosition(flags2, hw->p->sio.gbp.txPosition);
-	STORE_32(hw->p->sio.gbp.event.when - mTimingCurrentTime(&hw->p->timing), 0, &state->hw.gbpNextEvent);
+	STORE_32(hw->p->sio.completeEvent.when - mTimingCurrentTime(&hw->p->timing), 0, &state->hw.sioNextEvent);
 
 	state->hw.flags2 = flags2;
 }
@@ -497,6 +515,19 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	LOAD_16(hw->pinState, 0, &state->hw.pinState);
 	LOAD_16(hw->direction, 0, &state->hw.pinDirection);
 	hw->devices = state->hw.devices;
+
+	if ((hw->devices & HW_GPIO) && hw->gpioBase) {
+		// TODO: This needs to update the pristine state somehow
+		if (hw->readWrite) {
+			STORE_16(hw->pinState, 0, hw->gpioBase);
+			STORE_16(hw->direction, 2, hw->gpioBase);
+			STORE_16(hw->readWrite, 4, hw->gpioBase);
+		} else {
+			hw->gpioBase[0] = 0;
+			hw->gpioBase[1] = 0;
+			hw->gpioBase[2] = 0;
+		}
+	}
 
 	LOAD_32(hw->rtc.bytesRemaining, 0, &state->hw.rtcBytesRemaining);
 	LOAD_32(hw->rtc.transferStep, 0, &state->hw.rtcTransferStep);
@@ -516,16 +547,16 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	hw->lightSample = state->hw.lightSample;
 	hw->lightEdge = GBASerializedHWFlags1GetLightEdge(flags1);
 
-	// GBP stuff is only here for legacy reasons
+	// GBP/SIO stuff is only here for legacy reasons
 	hw->p->sio.gbp.inputsPosted = GBASerializedHWFlags2GetGbpInputsPosted(state->hw.flags2);
 	hw->p->sio.gbp.txPosition = GBASerializedHWFlags2GetGbpTxPosition(state->hw.flags2);
 
 	uint32_t when;
-	LOAD_32(when, 0, &state->hw.gbpNextEvent);
+	LOAD_32(when, 0, &state->hw.sioNextEvent);
 	if (hw->devices & HW_GB_PLAYER) {
-		GBASIOSetDriver(&hw->p->sio, &hw->p->sio.gbp.d, SIO_NORMAL_32);
-		if (hw->p->memory.io[GBA_REG(SIOCNT)] & 0x0080) {
-			mTimingSchedule(&hw->p->timing, &hw->p->sio.gbp.event, when);
-		}
+		GBASIOSetDriver(&hw->p->sio, &hw->p->sio.gbp.d);
+	}
+	if ((hw->p->memory.io[GBA_REG(SIOCNT)] & 0x0080) && when < 0x20000) {
+		mTimingSchedule(&hw->p->timing, &hw->p->sio.completeEvent, when);
 	}
 }

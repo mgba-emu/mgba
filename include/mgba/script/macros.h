@@ -76,10 +76,14 @@ CXX_GUARD_START
 #define _mSCRIPT_FIELD_NAME(V) (V)->type->name
 #define _mSCRIPT_WRAPPED_FIELD_NAME(V) (V)->value.wrapped->type->name
 
-#define _mSCRIPT_CALL_VOID(FUNCTION, NPARAMS) FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS))
+#define _mSCRIPT_CALL_VOID(FUNCTION, NPARAMS) \
+	FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS)); \
+	mScriptListClear(&frame->stack)
+
 #define _mSCRIPT_CALL(RETURN, FUNCTION, NPARAMS) \
 	mSCRIPT_TYPE_C_ ## RETURN out = FUNCTION(_mCAT(mSCRIPT_ARG_NAMES_, NPARAMS)); \
-	mSCRIPT_PUSH(&frame->returnValues, RETURN, out)
+	mScriptListClear(&frame->stack); \
+	mSCRIPT_PUSH(&frame->stack, RETURN, out)
 
 #define mSCRIPT_DECLARE_STRUCT(STRUCT) \
 	extern const struct mScriptType mSTStruct_ ## STRUCT; \
@@ -249,12 +253,12 @@ CXX_GUARD_START
 },
 
 #define _mSCRIPT_STRUCT_METHOD_POP(TYPE, S, NPARAMS, ...) \
-	_mCALL(_mCAT(mSCRIPT_POP_, _mSUCC_ ## NPARAMS), &frame->arguments, _mCOMMA_ ## NPARAMS(S(TYPE), __VA_ARGS__)); \
-	if (mScriptListSize(&frame->arguments)) { \
+	_mCALL(_mCAT(mSCRIPT_POP_, _mSUCC_ ## NPARAMS), &frame->stack, _mCOMMA_ ## NPARAMS(S(TYPE), __VA_ARGS__)); \
+	if (mScriptListSize(&frame->stack)) { \
 		return false; \
 	}
 
-#define _mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, S, NRET, RETURN, NPARAMS, DEFAULTS, ...) \
+#define _mSCRIPT_DECLARE_STRUCT_METHOD_HEAD(TYPE, NAME) \
 	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx); \
 	static const struct mScriptFunction _mSTStructBindingFunction_ ## TYPE ## _ ## NAME = { \
 		.call = &_mSTStructBinding_ ## TYPE ## _ ## NAME \
@@ -269,11 +273,31 @@ CXX_GUARD_START
 		.alloc = _mSTStructBindingAlloc_ ## TYPE ## _ ## NAME, \
 		.details = { \
 			.function = { \
+
+#define _mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, S, NRET, RETURN, NPARAMS, DEFAULTS, ...) \
+		_mSCRIPT_DECLARE_STRUCT_METHOD_HEAD(TYPE, NAME) \
 				.parameters = { \
 					.count = _mSUCC_ ## NPARAMS, \
 					.entries = { mSCRIPT_TYPE_MS_ ## S(TYPE), _mCALL(mSCRIPT_PREFIX_ ## NPARAMS, mSCRIPT_TYPE_MS_, _mEVEN_ ## NPARAMS(__VA_ARGS__)) }, \
 					.names = { "this", _mCALL(_mCALL_ ## NPARAMS, _mSTRINGIFY, _mODD_ ## NPARAMS(__VA_ARGS__)) }, \
 					.defaults = DEFAULTS, \
+				}, \
+				.returnType = { \
+					.count = NRET, \
+					.entries = { RETURN } \
+				}, \
+			}, \
+		} \
+	};
+
+#define _mSCRIPT_DECLARE_STRUCT_OVERLOADED_METHOD(TYPE, NAME, S, NRET, RETURN) \
+	_mSCRIPT_DECLARE_STRUCT_METHOD_HEAD(TYPE, NAME) \
+				.parameters = { \
+					.count = 1, \
+					.entries = { mSCRIPT_TYPE_MS_ ## S(TYPE) }, \
+					.names = { "this" }, \
+					.defaults = NULL, \
+					.variable = true, \
 				}, \
 				.returnType = { \
 					.count = NRET, \
@@ -301,6 +325,20 @@ CXX_GUARD_START
 		_mSCRIPT_CALL_VOID(FUNCTION, _mSUCC_ ## NPARAMS); \
 		return true; \
 	} \
+
+#define _mSCRIPT_DECLARE_STRUCT_OVERLOADED_METHOD_BINDING(TYPE, NAME, T) \
+	static const struct mScriptFunctionOverload _mSTStructBindingOverloads_ ## TYPE ## _ ## NAME[mSCRIPT_OVERLOADS_MAX]; \
+	static bool _mSTStructBinding_ ## TYPE ## _ ## NAME(struct mScriptFrame* frame, void* ctx) { \
+		UNUSED(ctx); \
+		const struct mScriptFunctionOverload* overload = mScriptFunctionFindOverload(_mSTStructBindingOverloads_ ## TYPE ## _ ## NAME, &frame->stack); \
+		if (!overload) { \
+			return false; \
+		} \
+		if (!mScriptCoerceFrame(&overload->type->details.function.parameters, &frame->stack, &frame->stack)) { \
+			return false; \
+		} \
+		return overload->function->call(frame, overload->function->context); \
+	}
 
 #define mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, RETURN, NAME, FUNCTION, NPARAMS, ...) \
 	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, mSCRIPT_TYPE_C_ ## RETURN, NAME, , NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
@@ -345,6 +383,22 @@ CXX_GUARD_START
 	_mSCRIPT_DECLARE_STRUCT_METHOD_SIGNATURE(TYPE, void, NAME, const, NPARAMS, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
 	_mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, NAME, CS, 0, 0, NPARAMS, _mIDENT(_mSTStructBindingDefaults_ ## TYPE ## _ ## NAME, __VA_ARGS__) \
 	_mSCRIPT_DECLARE_STRUCT_VOID_METHOD_BINDING(TYPE, NAME, FUNCTION, CS, NPARAMS, __VA_ARGS__)
+
+#define mSCRIPT_DECLARE_STRUCT_OVERLOADED_METHOD(TYPE, RETURN, NAME) \
+	_mSCRIPT_DECLARE_STRUCT_OVERLOADED_METHOD(TYPE, NAME, S, 1, mSCRIPT_TYPE_MS_ ## RETURN) \
+	_mSCRIPT_DECLARE_STRUCT_OVERLOADED_METHOD_BINDING(TYPE, NAME, S)
+
+#define mSCRIPT_DECLARE_STRUCT_OVERLOADED_VOID_METHOD(TYPE, NAME) \
+	_mSCRIPT_DECLARE_STRUCT_OVERLOADED_METHOD(TYPE, NAME, S, 0, 0) \
+	_mSCRIPT_DECLARE_STRUCT_OVERLOADED_METHOD_BINDING(TYPE, NAME, S)
+
+#define mSCRIPT_DECLARE_STRUCT_OVERLOADED_C_METHOD(TYPE, RETURN, NAME) \
+	_mSCRIPT_DECLARE_STRUCT_OVERLOADED_METHOD(TYPE, NAME, CS, 1, mSCRIPT_TYPE_MS_ ## RETURN) \
+	_mSCRIPT_DECLARE_STRUCT_OVERLOADED_METHOD_BINDING(TYPE, NAME, CS)
+
+#define mSCRIPT_DECLARE_STRUCT_OVERLOADED_VOID_C_METHOD(TYPE, NAME) \
+	_mSCRIPT_DECLARE_STRUCT_OVERLOADED_METHOD(TYPE, NAME, CS, 0, 0) \
+	_mSCRIPT_DECLARE_STRUCT_OVERLOADED_METHOD_BINDING(TYPE, NAME, CS)
 
 #define mSCRIPT_DECLARE_STRUCT_D_METHOD(TYPE, RETURN, NAME, NPARAMS, ...) \
 	mSCRIPT_DECLARE_STRUCT_METHOD(TYPE, RETURN, NAME, p0->NAME, NPARAMS, __VA_ARGS__)
@@ -417,27 +471,39 @@ CXX_GUARD_START
 
 #define mSCRIPT_DEFINE_DEFAULTS_END }
 
-#define _mSCRIPT_DEFINE_STRUCT_BINDING(INIT_TYPE, TYPE, EXPORTED_NAME, NAME) { \
+#define mSCRIPT_DEFINE_STRUCT_METHOD_OVERLOADS(STRUCT, METHOD) \
+	static const struct mScriptFunctionOverload _mSTStructBindingOverloads_ ## STRUCT ## _ ## METHOD[mSCRIPT_OVERLOADS_MAX] = { \
+
+#define mSCRIPT_DEFINE_STRUCT_METHOD_OVERLOAD(TYPE, FUNCTION) { \
+	.type = &_mSTStructBindingType_ ## TYPE ## _ ## FUNCTION, \
+	.function = &_mSTStructBindingFunction_ ## TYPE ## _ ## FUNCTION \
+},
+
+#define mSCRIPT_DEFINE_OVERLOADS_END { NULL, NULL } }
+
+#define _mSCRIPT_DEFINE_STRUCT_BINDING(INIT_TYPE, TYPE, EXPORTED_NAME, NAME, OVERLOADS) { \
 	.type = mSCRIPT_CLASS_INIT_ ## INIT_TYPE, \
 	.info = { \
 		.member = { \
 			.name = #EXPORTED_NAME, \
-			.type = &_mSTStructBindingType_ ## TYPE ## _ ## NAME \
+			.type = &_mSTStructBindingType_ ## TYPE ## _ ## NAME, \
+			.overloads = OVERLOADS, \
 		} \
 	}, \
 },
 
 #define mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(TYPE, EXPORTED_NAME, NAME) \
-	_mSCRIPT_DEFINE_STRUCT_BINDING(INSTANCE_MEMBER, TYPE, EXPORTED_NAME, NAME)
+	_mSCRIPT_DEFINE_STRUCT_BINDING(INSTANCE_MEMBER, TYPE, EXPORTED_NAME, NAME, NULL)
 
 #define mSCRIPT_DEFINE_STRUCT_METHOD(TYPE, NAME) mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(TYPE, NAME, NAME)
+#define mSCRIPT_DEFINE_STRUCT_OVERLOADED_METHOD(TYPE, NAME) _mSCRIPT_DEFINE_STRUCT_BINDING(INSTANCE_MEMBER, TYPE, NAME, NAME, _mSTStructBindingOverloads_ ## TYPE ## _ ## NAME)
 
-#define mSCRIPT_DEFINE_STRUCT_INIT(TYPE) _mSCRIPT_DEFINE_STRUCT_BINDING(INIT, TYPE, _init, _init)
-#define mSCRIPT_DEFINE_STRUCT_INIT_NAMED(TYPE, NAME) _mSCRIPT_DEFINE_STRUCT_BINDING(INIT, TYPE, _init, NAME)
-#define mSCRIPT_DEFINE_STRUCT_DEINIT(TYPE) _mSCRIPT_DEFINE_STRUCT_BINDING(DEINIT, TYPE, _deinit, _deinit)
-#define mSCRIPT_DEFINE_STRUCT_DEINIT_NAMED(TYPE, NAME) _mSCRIPT_DEFINE_STRUCT_BINDING(DEINIT, TYPE, _deinit, NAME)
-#define mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(TYPE) _mSCRIPT_DEFINE_STRUCT_BINDING(GET, TYPE, _get, _get)
-#define mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(TYPE, SETTER) _mSCRIPT_DEFINE_STRUCT_BINDING(SET, TYPE, SETTER, SETTER)
+#define mSCRIPT_DEFINE_STRUCT_INIT(TYPE) _mSCRIPT_DEFINE_STRUCT_BINDING(INIT, TYPE, _init, _init, NULL)
+#define mSCRIPT_DEFINE_STRUCT_INIT_NAMED(TYPE, NAME) _mSCRIPT_DEFINE_STRUCT_BINDING(INIT, TYPE, _init, NAME, NULL)
+#define mSCRIPT_DEFINE_STRUCT_DEINIT(TYPE) _mSCRIPT_DEFINE_STRUCT_BINDING(DEINIT, TYPE, _deinit, _deinit, NULL)
+#define mSCRIPT_DEFINE_STRUCT_DEINIT_NAMED(TYPE, NAME) _mSCRIPT_DEFINE_STRUCT_BINDING(DEINIT, TYPE, _deinit, NAME, NULL)
+#define mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(TYPE) _mSCRIPT_DEFINE_STRUCT_BINDING(GET, TYPE, _get, _get, NULL)
+#define mSCRIPT_DEFINE_STRUCT_DEFAULT_SET(TYPE, SETTER) _mSCRIPT_DEFINE_STRUCT_BINDING(SET, TYPE, SETTER, SETTER, NULL)
 
 #define mSCRIPT_DEFINE_DOC_STRUCT_METHOD(SCOPE, TYPE, NAME) mSCRIPT_DEFINE_STRUCT_METHOD_NAMED(doc_ ## TYPE, NAME, NAME)
 
@@ -490,8 +556,8 @@ CXX_GUARD_START
 #define _mSCRIPT_BIND_N_FUNCTION(NAME, RETURN, FUNCTION, DEFAULTS, NPARAMS, ...) \
 	static bool _binding_ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
-		_mCALL(mSCRIPT_POP_ ## NPARAMS, &frame->arguments, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
-		if (mScriptListSize(&frame->arguments)) { \
+		_mCALL(mSCRIPT_POP_ ## NPARAMS, &frame->stack, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+		if (mScriptListSize(&frame->stack)) { \
 			return false; \
 		} \
 		_mSCRIPT_CALL(RETURN, FUNCTION, NPARAMS); \
@@ -502,8 +568,8 @@ CXX_GUARD_START
 #define _mSCRIPT_BIND_VOID_FUNCTION(NAME, FUNCTION, DEFAULTS, NPARAMS, ...) \
 	static bool _binding_ ## NAME(struct mScriptFrame* frame, void* ctx) { \
 		UNUSED(ctx); \
-		_mCALL(mSCRIPT_POP_ ## NPARAMS, &frame->arguments, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
-		if (mScriptListSize(&frame->arguments)) { \
+		_mCALL(mSCRIPT_POP_ ## NPARAMS, &frame->stack, _mEVEN_ ## NPARAMS(__VA_ARGS__)); \
+		if (mScriptListSize(&frame->stack)) { \
 			return false; \
 		} \
 		_mSCRIPT_CALL_VOID(FUNCTION, NPARAMS); \

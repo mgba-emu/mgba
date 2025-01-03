@@ -28,17 +28,19 @@ public:
 	~ShaderSelector();
 
 public slots:
+	void saveSettings();
 	void refreshShaders();
 	void clear();
+	void revert();
 
 private slots:
 	void selectShader();
-	void loadShader(const QString& path);
-	void clearShader();
+	void loadShader(const QString& path, bool saveToSettings = false);
+	void clearShader(bool saveToSettings = false);
 	void buttonPressed(QAbstractButton*);
 
 signals:
-	void saved();
+	void saveSettingsRequested();
 	void reset();
 	void resetToDefault();
 

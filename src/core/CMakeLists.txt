@@ -9,7 +9,6 @@ set(SOURCE_FILES
 	directories.c
 	input.c
 	interface.c
-	library.c
 	lockstep.c
 	log.c
 	map-cache.c
@@ -23,6 +22,11 @@ set(SOURCE_FILES
 
 set(TEST_FILES
 	test/core.c)
+
+if(ENABLE_VFS)
+		list(APPEND SOURCE_FILES
+			library.c)
+endif()
 
 if(ENABLE_SCRIPTING)
 	set(SCRIPTING_FILES

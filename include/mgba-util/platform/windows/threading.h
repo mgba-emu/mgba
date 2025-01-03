@@ -8,8 +8,6 @@
 
 #include <mgba-util/common.h>
 
-#define _WIN32_WINNT 0x0600
-#include <windows.h>
 #define THREAD_ENTRY DWORD WINAPI
 typedef THREAD_ENTRY ThreadEntry(LPVOID);
 #define THREAD_EXIT(RES) return RES

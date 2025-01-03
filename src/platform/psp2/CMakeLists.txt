@@ -10,8 +10,8 @@ file(GLOB OS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/psp2-*.c)
 set(OS_SRC ${OS_SRC} PARENT_SCOPE)
 source_group("PS Vita-specific code" FILES ${OS_SRC})
 
-list(APPEND CORE_VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sce-vfs.c)
-set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
+list(APPEND VFS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/sce-vfs.c)
+set(VFS_SRC ${VFS_SRC} PARENT_SCOPE)
 
 set(OS_LIB -lvita2d -l${M_LIBRARY}
     -lSceAppMgr_stub

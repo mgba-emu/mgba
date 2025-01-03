@@ -10,8 +10,11 @@
 
 CXX_GUARD_START
 
+#include <mgba/core/log.h>
 #include <mgba-util/gui.h>
 #include <mgba-util/vector.h>
+
+mLOG_DECLARE_CATEGORY(GUI_MENU);
 
 #define GUI_V_V (struct GUIVariant) { .type = GUI_VARIANT_VOID }
 #define GUI_V_U(U) (struct GUIVariant) { .type = GUI_VARIANT_UNSIGNED, .v.u = (U) }

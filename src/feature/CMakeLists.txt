@@ -3,9 +3,13 @@ set(SOURCE_FILES
 	commandline.c
 	proxy-backend.c
 	thread-proxy.c
-	updater.c
 	video-backend.c
 	video-logger.c)
+
+if(ENABLE_VFS)
+	list(APPEND SOURCE_FILES
+		updater.c)
+endif()
 
 set(GUI_FILES
 	gui/cheats.c

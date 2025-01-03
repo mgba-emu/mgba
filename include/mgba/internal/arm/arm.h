@@ -134,6 +134,12 @@ struct ARMMemory {
 	void (*setActiveRegion)(struct ARMCore*, uint32_t address);
 };
 
+struct ARMCoprocessor {
+	int32_t (*mrc)(struct ARMCore*, int crn, int crm, int opcode1, int opcode2);
+	void (*mcr)(struct ARMCore*, int crn, int crm, int opcode1, int opcode2, int32_t value);
+	void (*cdp)(struct ARMCore*, int crn, int crm, int crd, int opcode1, int opcode2);
+};
+
 struct ARMInterruptHandler {
 	void (*reset)(struct ARMCore* cpu);
 	void (*processEvents)(struct ARMCore* cpu);
@@ -179,6 +185,7 @@ struct ARMCore {
 
 	struct ARMMemory memory;
 	struct ARMInterruptHandler irqh;
+	struct ARMCoprocessor cp[16];
 
 	struct mCPUComponent* master;
 

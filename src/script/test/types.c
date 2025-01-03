@@ -111,7 +111,7 @@ M_TEST_DEFINE(voidArgs) {
 	mScriptFrameInit(&frame);
 	assert_true(mScriptInvoke(&boundVoidOne, &frame));
 	int32_t val;
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 1);
 	mScriptFrameDeinit(&frame);
 }
@@ -119,7 +119,7 @@ M_TEST_DEFINE(voidArgs) {
 M_TEST_DEFINE(voidFunc) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	mSCRIPT_PUSH(&frame.stack, S32, 1);
 	assert_true(mScriptInvoke(&boundDiscard, &frame));
 	mScriptFrameDeinit(&frame);
 }
@@ -127,10 +127,10 @@ M_TEST_DEFINE(voidFunc) {
 M_TEST_DEFINE(identityFunctionS32) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	mSCRIPT_PUSH(&frame.stack, S32, 1);
 	assert_true(mScriptInvoke(&boundIdentityInt, &frame));
 	int32_t val;
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 1);
 	mScriptFrameDeinit(&frame);
 }
@@ -138,10 +138,10 @@ M_TEST_DEFINE(identityFunctionS32) {
 M_TEST_DEFINE(identityFunctionS64) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S64, 1);
+	mSCRIPT_PUSH(&frame.stack, S64, 1);
 	assert_true(mScriptInvoke(&boundIdentityInt64, &frame));
 	int64_t val;
-	assert_true(mScriptPopS64(&frame.returnValues, &val));
+	assert_true(mScriptPopS64(&frame.stack, &val));
 	assert_int_equal(val, 1);
 	mScriptFrameDeinit(&frame);
 }
@@ -149,10 +149,10 @@ M_TEST_DEFINE(identityFunctionS64) {
 M_TEST_DEFINE(identityFunctionF32) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, F32, 3.125f);
+	mSCRIPT_PUSH(&frame.stack, F32, 3.125f);
 	assert_true(mScriptInvoke(&boundIdentityFloat, &frame));
 	float val;
-	assert_true(mScriptPopF32(&frame.returnValues, &val));
+	assert_true(mScriptPopF32(&frame.stack, &val));
 	assert_float_equal(val, 3.125f, 0.f);
 	mScriptFrameDeinit(&frame);
 }
@@ -161,10 +161,10 @@ M_TEST_DEFINE(identityFunctionStruct) {
 	struct mScriptFrame frame;
 	struct Test v = {};
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S(Test), &v);
+	mSCRIPT_PUSH(&frame.stack, S(Test), &v);
 	assert_true(mScriptInvoke(&boundIdentityStruct, &frame));
 	struct Test* val;
-	assert_true(mScriptPopPointer(&frame.returnValues, (void**) &val));
+	assert_true(mScriptPopPointer(&frame.stack, (void**) &val));
 	assert_ptr_equal(val, &v);
 	mScriptFrameDeinit(&frame);
 }
@@ -172,11 +172,11 @@ M_TEST_DEFINE(identityFunctionStruct) {
 M_TEST_DEFINE(addS32) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 1);
-	mSCRIPT_PUSH(&frame.arguments, S32, 2);
+	mSCRIPT_PUSH(&frame.stack, S32, 1);
+	mSCRIPT_PUSH(&frame.stack, S32, 2);
 	assert_true(mScriptInvoke(&boundAddInts, &frame));
 	int32_t val;
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 3);
 	mScriptFrameDeinit(&frame);
 }
@@ -186,17 +186,17 @@ M_TEST_DEFINE(addS32Defaults) {
 	int32_t val;
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 1);
-	mSCRIPT_PUSH(&frame.arguments, S32, 2);
+	mSCRIPT_PUSH(&frame.stack, S32, 1);
+	mSCRIPT_PUSH(&frame.stack, S32, 2);
 	assert_true(mScriptInvoke(&boundAddIntWithDefaults, &frame));
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 3);
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	mSCRIPT_PUSH(&frame.stack, S32, 1);
 	assert_true(mScriptInvoke(&boundAddIntWithDefaults, &frame));
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 1);
 	mScriptFrameDeinit(&frame);
 
@@ -208,11 +208,11 @@ M_TEST_DEFINE(addS32Defaults) {
 M_TEST_DEFINE(subS32) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 2);
-	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	mSCRIPT_PUSH(&frame.stack, S32, 2);
+	mSCRIPT_PUSH(&frame.stack, S32, 1);
 	assert_true(mScriptInvoke(&boundSubInts, &frame));
 	int32_t val;
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 1);
 	mScriptFrameDeinit(&frame);
 }
@@ -227,8 +227,8 @@ M_TEST_DEFINE(wrongArgCountLo) {
 M_TEST_DEFINE(wrongArgCountHi) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 1);
-	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	mSCRIPT_PUSH(&frame.stack, S32, 1);
+	mSCRIPT_PUSH(&frame.stack, S32, 1);
 	assert_false(mScriptInvoke(&boundIdentityInt, &frame));
 	mScriptFrameDeinit(&frame);
 }
@@ -236,7 +236,7 @@ M_TEST_DEFINE(wrongArgCountHi) {
 M_TEST_DEFINE(wrongArgType) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	mSCRIPT_PUSH(&frame.stack, S32, 1);
 	assert_false(mScriptInvoke(&boundIdentityStruct, &frame));
 	mScriptFrameDeinit(&frame);
 }
@@ -252,55 +252,55 @@ M_TEST_DEFINE(wrongPopType) {
 	bool b;
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 0);
-	assert_false(mScriptPopU32(&frame.arguments, &u32));
-	assert_false(mScriptPopF32(&frame.arguments, &f32));
-	assert_false(mScriptPopBool(&frame.arguments, &b));
+	mSCRIPT_PUSH(&frame.stack, S32, 0);
+	assert_false(mScriptPopU32(&frame.stack, &u32));
+	assert_false(mScriptPopF32(&frame.stack, &f32));
+	assert_false(mScriptPopBool(&frame.stack, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S64, 0);
-	assert_false(mScriptPopU64(&frame.arguments, &u64));
-	assert_false(mScriptPopF64(&frame.arguments, &f64));
-	assert_false(mScriptPopBool(&frame.arguments, &b));
+	mSCRIPT_PUSH(&frame.stack, S64, 0);
+	assert_false(mScriptPopU64(&frame.stack, &u64));
+	assert_false(mScriptPopF64(&frame.stack, &f64));
+	assert_false(mScriptPopBool(&frame.stack, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, U32, 0);
-	assert_false(mScriptPopS32(&frame.arguments, &s32));
-	assert_false(mScriptPopF32(&frame.arguments, &f32));
-	assert_false(mScriptPopBool(&frame.arguments, &b));
+	mSCRIPT_PUSH(&frame.stack, U32, 0);
+	assert_false(mScriptPopS32(&frame.stack, &s32));
+	assert_false(mScriptPopF32(&frame.stack, &f32));
+	assert_false(mScriptPopBool(&frame.stack, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, U64, 0);
-	assert_false(mScriptPopS64(&frame.arguments, &s64));
-	assert_false(mScriptPopF64(&frame.arguments, &f64));
-	assert_false(mScriptPopBool(&frame.arguments, &b));
+	mSCRIPT_PUSH(&frame.stack, U64, 0);
+	assert_false(mScriptPopS64(&frame.stack, &s64));
+	assert_false(mScriptPopF64(&frame.stack, &f64));
+	assert_false(mScriptPopBool(&frame.stack, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, F32, 0);
-	assert_false(mScriptPopS32(&frame.arguments, &s32));
-	assert_false(mScriptPopU32(&frame.arguments, &u32));
-	assert_false(mScriptPopBool(&frame.arguments, &b));
+	mSCRIPT_PUSH(&frame.stack, F32, 0);
+	assert_false(mScriptPopS32(&frame.stack, &s32));
+	assert_false(mScriptPopU32(&frame.stack, &u32));
+	assert_false(mScriptPopBool(&frame.stack, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, F64, 0);
-	assert_false(mScriptPopS64(&frame.arguments, &s64));
-	assert_false(mScriptPopU64(&frame.arguments, &u64));
-	assert_false(mScriptPopBool(&frame.arguments, &b));
+	mSCRIPT_PUSH(&frame.stack, F64, 0);
+	assert_false(mScriptPopS64(&frame.stack, &s64));
+	assert_false(mScriptPopU64(&frame.stack, &u64));
+	assert_false(mScriptPopBool(&frame.stack, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, BOOL, 0);
-	assert_false(mScriptPopS32(&frame.arguments, &s32));
-	assert_false(mScriptPopU32(&frame.arguments, &u32));
-	assert_false(mScriptPopS64(&frame.arguments, &s64));
-	assert_false(mScriptPopU64(&frame.arguments, &u64));
-	assert_false(mScriptPopF32(&frame.arguments, &f32));
-	assert_false(mScriptPopF64(&frame.arguments, &f64));
+	mSCRIPT_PUSH(&frame.stack, BOOL, 0);
+	assert_false(mScriptPopS32(&frame.stack, &s32));
+	assert_false(mScriptPopU32(&frame.stack, &u32));
+	assert_false(mScriptPopS64(&frame.stack, &s64));
+	assert_false(mScriptPopU64(&frame.stack, &u64));
+	assert_false(mScriptPopF32(&frame.stack, &f32));
+	assert_false(mScriptPopF64(&frame.stack, &f64));
 	mScriptFrameDeinit(&frame);
 }
 
@@ -314,33 +314,33 @@ M_TEST_DEFINE(wrongPopSize) {
 	double f64;
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 0);
-	assert_false(mScriptPopS64(&frame.arguments, &s64));
+	mSCRIPT_PUSH(&frame.stack, S32, 0);
+	assert_false(mScriptPopS64(&frame.stack, &s64));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S64, 0);
-	assert_false(mScriptPopS32(&frame.arguments, &s32));
+	mSCRIPT_PUSH(&frame.stack, S64, 0);
+	assert_false(mScriptPopS32(&frame.stack, &s32));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, U32, 0);
-	assert_false(mScriptPopU64(&frame.arguments, &u64));
+	mSCRIPT_PUSH(&frame.stack, U32, 0);
+	assert_false(mScriptPopU64(&frame.stack, &u64));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, U64, 0);
-	assert_false(mScriptPopU32(&frame.arguments, &u32));
+	mSCRIPT_PUSH(&frame.stack, U64, 0);
+	assert_false(mScriptPopU32(&frame.stack, &u32));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, F32, 0);
-	assert_false(mScriptPopF64(&frame.arguments, &f64));
+	mSCRIPT_PUSH(&frame.stack, F32, 0);
+	assert_false(mScriptPopF64(&frame.stack, &f64));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, F64, 0);
-	assert_false(mScriptPopF32(&frame.arguments, &f32));
+	mSCRIPT_PUSH(&frame.stack, F64, 0);
+	assert_false(mScriptPopF32(&frame.stack, &f32));
 	mScriptFrameDeinit(&frame);
 }
 
@@ -370,63 +370,63 @@ M_TEST_DEFINE(wrongConst) {
 	mScriptClassInit(mSCRIPT_TYPE_MS_CS(Test)->details.cls);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S(Test), &a);
+	mSCRIPT_PUSH(&frame.stack, S(Test), &a);
 	signature.entries[0] = mSCRIPT_TYPE_MS_S(Test);
-	assert_true(mScriptCoerceFrame(&signature, &frame.arguments));
+	assert_true(mScriptCoerceFrame(&signature, &frame.stack, &frame.stack));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, CS(Test), &a);
+	mSCRIPT_PUSH(&frame.stack, CS(Test), &a);
 	signature.entries[0] = mSCRIPT_TYPE_MS_CS(Test);
-	assert_true(mScriptCoerceFrame(&signature, &frame.arguments));
+	assert_true(mScriptCoerceFrame(&signature, &frame.stack, &frame.stack));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S(Test), &a);
+	mSCRIPT_PUSH(&frame.stack, S(Test), &a);
 	signature.entries[0] = mSCRIPT_TYPE_MS_CS(Test);
-	assert_true(mScriptCoerceFrame(&signature, &frame.arguments));
+	assert_true(mScriptCoerceFrame(&signature, &frame.stack, &frame.stack));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, CS(Test), &a);
+	mSCRIPT_PUSH(&frame.stack, CS(Test), &a);
 	signature.entries[0] = mSCRIPT_TYPE_MS_S(Test);
-	assert_false(mScriptCoerceFrame(&signature, &frame.arguments));
+	assert_false(mScriptCoerceFrame(&signature, &frame.stack, &frame.stack));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S(Test), &a);
-	assert_true(mScriptPopSTest(&frame.arguments, &b));
+	mSCRIPT_PUSH(&frame.stack, S(Test), &a);
+	assert_true(mScriptPopSTest(&frame.stack, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S(Test), &a);
-	assert_false(mScriptPopCSTest(&frame.arguments, &cb));
+	mSCRIPT_PUSH(&frame.stack, S(Test), &a);
+	assert_false(mScriptPopCSTest(&frame.stack, &cb));
 	signature.entries[0] = mSCRIPT_TYPE_MS_CS(Test);
-	assert_true(mScriptCoerceFrame(&signature, &frame.arguments));
-	assert_true(mScriptPopCSTest(&frame.arguments, &cb));
+	assert_true(mScriptCoerceFrame(&signature, &frame.stack, &frame.stack));
+	assert_true(mScriptPopCSTest(&frame.stack, &cb));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, CS(Test), &a);
-	assert_false(mScriptPopSTest(&frame.arguments, &b));
+	mSCRIPT_PUSH(&frame.stack, CS(Test), &a);
+	assert_false(mScriptPopSTest(&frame.stack, &b));
 	signature.entries[0] = mSCRIPT_TYPE_MS_S(Test);
-	assert_false(mScriptCoerceFrame(&signature, &frame.arguments));
-	assert_false(mScriptPopSTest(&frame.arguments, &b));
+	assert_false(mScriptCoerceFrame(&signature, &frame.stack, &frame.stack));
+	assert_false(mScriptPopSTest(&frame.stack, &b));
 	mScriptFrameDeinit(&frame);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, CS(Test), &a);
-	assert_true(mScriptPopCSTest(&frame.arguments, &cb));
+	mSCRIPT_PUSH(&frame.stack, CS(Test), &a);
+	assert_true(mScriptPopCSTest(&frame.stack, &cb));
 	mScriptFrameDeinit(&frame);
 }
 
 M_TEST_DEFINE(coerceToFloat) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	mSCRIPT_PUSH(&frame.stack, S32, 1);
 	assert_true(mScriptInvoke(&boundIdentityFloat, &frame));
 	float val;
-	assert_true(mScriptPopF32(&frame.returnValues, &val));
+	assert_true(mScriptPopF32(&frame.stack, &val));
 	assert_float_equal(val, 1.f, 0.f);
 	mScriptFrameDeinit(&frame);
 }
@@ -434,10 +434,10 @@ M_TEST_DEFINE(coerceToFloat) {
 M_TEST_DEFINE(coerceFromFloat) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, F32, 1.25f);
+	mSCRIPT_PUSH(&frame.stack, F32, 1.25f);
 	assert_true(mScriptInvoke(&boundIdentityInt, &frame));
 	int val;
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 1);
 	mScriptFrameDeinit(&frame);
 }
@@ -539,10 +539,10 @@ M_TEST_DEFINE(coerceFromBool) {
 M_TEST_DEFINE(coerceWiden) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, -1);
+	mSCRIPT_PUSH(&frame.stack, S32, -1);
 	assert_true(mScriptInvoke(&boundIdentityInt64, &frame));
 	int64_t val;
-	assert_true(mScriptPopS64(&frame.returnValues, &val));
+	assert_true(mScriptPopS64(&frame.stack, &val));
 	assert_true(val == -1LL);
 	mScriptFrameDeinit(&frame);
 }
@@ -550,10 +550,10 @@ M_TEST_DEFINE(coerceWiden) {
 M_TEST_DEFINE(coerceNarrow) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S64, -1);
+	mSCRIPT_PUSH(&frame.stack, S64, -1);
 	assert_true(mScriptInvoke(&boundIdentityInt, &frame));
 	int32_t val;
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_true(val == -1);
 	mScriptFrameDeinit(&frame);
 }
@@ -1244,10 +1244,10 @@ M_TEST_DEFINE(hashTableString) {
 M_TEST_DEFINE(stringIsHello) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, CHARP, "hello");
+	mSCRIPT_PUSH(&frame.stack, CHARP, "hello");
 	assert_true(mScriptInvoke(&boundIsHello, &frame));
 	int val;
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 1);
 	mScriptFrameDeinit(&frame);
 }
@@ -1255,10 +1255,10 @@ M_TEST_DEFINE(stringIsHello) {
 M_TEST_DEFINE(stringIsNotHello) {
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, CHARP, "world");
+	mSCRIPT_PUSH(&frame.stack, CHARP, "world");
 	assert_true(mScriptInvoke(&boundIsHello, &frame));
 	int val;
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 0);
 	mScriptFrameDeinit(&frame);
 }
@@ -1271,33 +1271,33 @@ M_TEST_DEFINE(invokeList) {
 	mScriptListInit(&list, 0);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, LIST, &list);
+	mSCRIPT_PUSH(&frame.stack, LIST, &list);
 	assert_true(mScriptInvoke(&boundIsSequential, &frame));
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 1);
 	mScriptFrameDeinit(&frame);
 
 	*mScriptListAppend(&list) = mSCRIPT_MAKE_S32(1);
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, LIST, &list);
+	mSCRIPT_PUSH(&frame.stack, LIST, &list);
 	assert_true(mScriptInvoke(&boundIsSequential, &frame));
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 1);
 	mScriptFrameDeinit(&frame);
 
 	*mScriptListAppend(&list) = mSCRIPT_MAKE_S32(2);
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, LIST, &list);
+	mSCRIPT_PUSH(&frame.stack, LIST, &list);
 	assert_true(mScriptInvoke(&boundIsSequential, &frame));
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 1);
 	mScriptFrameDeinit(&frame);
 
 	*mScriptListAppend(&list) = mSCRIPT_MAKE_S32(4);
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, LIST, &list);
+	mSCRIPT_PUSH(&frame.stack, LIST, &list);
 	assert_true(mScriptInvoke(&boundIsSequential, &frame));
-	assert_true(mScriptPopS32(&frame.returnValues, &val));
+	assert_true(mScriptPopS32(&frame.stack, &val));
 	assert_int_equal(val, 0);
 	mScriptFrameDeinit(&frame);
 
@@ -1309,14 +1309,14 @@ M_TEST_DEFINE(nullString) {
 	bool res;
 	mScriptFrameInit(&frame);
 
-	mSCRIPT_PUSH(&frame.arguments, CHARP, "hi");
+	mSCRIPT_PUSH(&frame.stack, CHARP, "hi");
 	assert_true(mScriptInvoke(&boundIsNullCharp, &frame));
-	assert_true(mScriptPopBool(&frame.returnValues, &res));
+	assert_true(mScriptPopBool(&frame.stack, &res));
 	assert_false(res);
 
-	mSCRIPT_PUSH(&frame.arguments, CHARP, NULL);
+	mSCRIPT_PUSH(&frame.stack, CHARP, NULL);
 	assert_true(mScriptInvoke(&boundIsNullCharp, &frame));
-	assert_true(mScriptPopBool(&frame.returnValues, &res));
+	assert_true(mScriptPopBool(&frame.stack, &res));
 	assert_true(res);
 
 	mScriptFrameDeinit(&frame);
@@ -1328,14 +1328,14 @@ M_TEST_DEFINE(nullStruct) {
 	bool res;
 	mScriptFrameInit(&frame);
 
-	mSCRIPT_PUSH(&frame.arguments, S(Test), &v);
+	mSCRIPT_PUSH(&frame.stack, S(Test), &v);
 	assert_true(mScriptInvoke(&boundIsNullStruct, &frame));
-	assert_true(mScriptPopBool(&frame.returnValues, &res));
+	assert_true(mScriptPopBool(&frame.stack, &res));
 	assert_false(res);
 
-	mSCRIPT_PUSH(&frame.arguments, S(Test), NULL);
+	mSCRIPT_PUSH(&frame.stack, S(Test), NULL);
 	assert_true(mScriptInvoke(&boundIsNullStruct, &frame));
-	assert_true(mScriptPopBool(&frame.returnValues, &res));
+	assert_true(mScriptPopBool(&frame.stack, &res));
 	assert_true(res);
 
 	mScriptFrameDeinit(&frame);

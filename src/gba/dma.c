@@ -260,15 +260,21 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	if (info->count == info->nextCount) {
 		if (width == 4) {
 			cycles += memory->waitstatesNonseq32[sourceRegion] + memory->waitstatesNonseq32[destRegion];
+			info->cycles = memory->waitstatesSeq32[sourceRegion] + memory->waitstatesSeq32[destRegion];
 		} else {
 			cycles += memory->waitstatesNonseq16[sourceRegion] + memory->waitstatesNonseq16[destRegion];
+			info->cycles = memory->waitstatesSeq16[sourceRegion] + memory->waitstatesSeq16[destRegion];
 		}
 	} else {
-		if (width == 4) {
-			cycles += memory->waitstatesSeq32[sourceRegion] + memory->waitstatesSeq32[destRegion];
-		} else {
-			cycles += memory->waitstatesSeq16[sourceRegion] + memory->waitstatesSeq16[destRegion];
+		// Crossed region boundary; recalculate cached cycles
+		if (UNLIKELY(!(source & 0x00FFFFFC) || !(dest & 0x00FFFFFC))) {
+			if (width == 4) {
+				info->cycles = memory->waitstatesSeq32[sourceRegion] + memory->waitstatesSeq32[destRegion];
+			} else {
+				info->cycles = memory->waitstatesSeq16[sourceRegion] + memory->waitstatesSeq16[destRegion];
+			}
 		}
+		cycles += info->cycles;
 	}
 	info->when += cycles;
 
@@ -278,19 +284,19 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		}
 		cpu->memory.store32(cpu, dest, memory->dmaTransferRegister, 0);
 	} else {
-		if (sourceRegion == GBA_REGION_ROM2_EX && (memory->savedata.type == SAVEDATA_EEPROM || memory->savedata.type == SAVEDATA_EEPROM512)) {
+		if (sourceRegion == GBA_REGION_ROM2_EX && (memory->savedata.type == GBA_SAVEDATA_EEPROM || memory->savedata.type == GBA_SAVEDATA_EEPROM512)) {
 			memory->dmaTransferRegister = GBASavedataReadEEPROM(&memory->savedata);
 			memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
 		} else if (source) {
 			memory->dmaTransferRegister = cpu->memory.load16(cpu, source, 0);
 			memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
 		}
-		if (destRegion == GBA_REGION_ROM2_EX) {
-			if (memory->savedata.type == SAVEDATA_AUTODETECT) {
+		if (UNLIKELY(destRegion == GBA_REGION_ROM2_EX)) {
+			if (memory->savedata.type == GBA_SAVEDATA_AUTODETECT) {
 				mLOG(GBA_MEM, INFO, "Detected EEPROM savegame");
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
-			if (memory->savedata.type == SAVEDATA_EEPROM512 || memory->savedata.type == SAVEDATA_EEPROM) {
+			if (memory->savedata.type == GBA_SAVEDATA_EEPROM512 || memory->savedata.type == GBA_SAVEDATA_EEPROM) {
 				GBASavedataWriteEEPROM(&memory->savedata, memory->dmaTransferRegister, info->nextCount);
 			}
 		} else {
@@ -317,9 +323,11 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	int i;
 	for (i = 0; i < 4; ++i) {
 		struct GBADMA* dma = &memory->dma[i];
-		int32_t time = dma->when - info->when;
-		if (time < 0 && GBADMARegisterIsEnable(dma->reg) && dma->nextCount) {
-			dma->when = info->when;
+		if (GBADMARegisterIsEnable(dma->reg) && dma->nextCount) {
+			int32_t time = dma->when - info->when;
+			if (time < 0) {
+				dma->when = info->when;
+			}
 		}
 	}
 
@@ -330,4 +338,23 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		}
 	}
 	GBADMAUpdate(gba);
+}
+
+void GBADMARecalculateCycles(struct GBA* gba) {
+	int i;
+	for (i = 0; i < 4; ++i) {
+		struct GBADMA* dma = &gba->memory.dma[i];
+		if (!GBADMARegisterIsEnable(dma->reg)) {
+			continue;
+		}
+
+		uint32_t width = GBADMARegisterGetWidth(dma->reg);
+		uint32_t sourceRegion = dma->nextSource >> BASE_OFFSET;
+		uint32_t destRegion = dma->nextDest >> BASE_OFFSET;
+		if (width) {
+			dma->cycles = gba->memory.waitstatesSeq32[sourceRegion] + gba->memory.waitstatesSeq32[destRegion];
+		} else {
+			dma->cycles = gba->memory.waitstatesSeq16[sourceRegion] + gba->memory.waitstatesSeq16[destRegion];
+		}
+	}
 }

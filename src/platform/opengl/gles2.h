@@ -106,8 +106,10 @@ void mGLES2ShaderDeinit(struct mGLES2Shader*);
 void mGLES2ShaderAttach(struct mGLES2Context*, struct mGLES2Shader*, size_t nShaders);
 void mGLES2ShaderDetach(struct mGLES2Context*);
 
+#ifdef ENABLE_VFS
 struct VDir;
 bool mGLES2ShaderLoad(struct VideoShader*, struct VDir*);
+#endif
 void mGLES2ShaderFree(struct VideoShader*);
 
 CXX_GUARD_END

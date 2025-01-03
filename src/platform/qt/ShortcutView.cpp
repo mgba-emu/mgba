@@ -54,6 +54,7 @@ void ShortcutView::setInputController(InputController* controller) {
 	}
 	m_input = controller;
 	m_input->stealFocus(this);
+	m_ui.keyEdit->setInputController(controller);
 }
 
 void ShortcutView::load(const QModelIndex& index) {

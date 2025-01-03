@@ -31,7 +31,7 @@ struct mGUIBackground {
 	struct GUIBackground d;
 	struct mGUIRunner* p;
 
-	color_t* image;
+	mColor* image;
 	size_t imageSize;
 	uint16_t w;
 	uint16_t h;
@@ -78,7 +78,7 @@ struct mGUIRunner {
 	float fps;
 	int64_t lastFpsCheck;
 	int32_t totalDelta;
-	struct CircleBuffer fpsBuffer;
+	struct mCircleBuffer fpsBuffer;
 
 	void (*setup)(struct mGUIRunner*);
 	void (*teardown)(struct mGUIRunner*);
@@ -86,7 +86,7 @@ struct mGUIRunner {
 	void (*gameUnloaded)(struct mGUIRunner*);
 	void (*prepareForFrame)(struct mGUIRunner*);
 	void (*drawFrame)(struct mGUIRunner*, bool faded);
-	void (*drawScreenshot)(struct mGUIRunner*, const color_t* pixels, unsigned width, unsigned height, bool faded);
+	void (*drawScreenshot)(struct mGUIRunner*, const mColor* pixels, unsigned width, unsigned height, bool faded);
 	void (*paused)(struct mGUIRunner*);
 	void (*unpaused)(struct mGUIRunner*);
 	void (*incrementScreenMode)(struct mGUIRunner*);

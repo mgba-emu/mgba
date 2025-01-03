@@ -5,7 +5,9 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 
 可在以下网址找到最新新闻和下载：[mgba.io](https://mgba.io/)。
 
-[![Build status](https://travis-ci.org/mgba-emu/mgba.svg?branch=master)](https://travis-ci.org/mgba-emu/mgba)
+[![Build status](https://buildbot.mgba.io/badges/build-win32.svg)](https://buildbot.mgba.io)
+[![Translation status](https://hosted.weblate.org/widgets/mgba/-/svg-badge.svg)](https://hosted.weblate.org/engage/mgba)
+
 
 功能
 --------
@@ -13,7 +15,7 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 - 支持高精确的 Game Boy Advance 硬件[<sup>[1]</sup>](#missing)。
 - 支持 Game Boy/Game Boy Color 硬件。
 - 快速模拟：已知即使在低端硬件（例如上网本）上也能够全速运行。
-- 用于重型和轻型前端的 Qt 和 SDL 端口。
+- 可用于重型和轻型前端的 Qt 和 SDL 移植。
 - 支持本地（同一台计算机）链接电缆。
 - 存档类型检测，即使是闪存大小也可检测[<sup>[2]</sup>](#flashdetect)。
 - 支持附带有运动传感器和振动机制的卡带（仅适用于游戏控制器）。
@@ -21,6 +23,7 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 - 支持《我们的太阳》系列游戏的太阳能传感器。
 - 支持 Game Boy 相机和 Game Boy 打印机。
 - 内置 BIOS 执行，并具有加载外部 BIOS 文件的功能。
+- 支持使用 Lua 编写脚本
 - 支持 Turbo/快进功能（按住 Tab 键）。
 - 支持倒带（按住反引号键）。
 - 支持跳帧，最多可配置 10 级。
@@ -32,10 +35,11 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 - 可重新映射键盘和游戏手柄的控制键。
 - 支持从 ZIP 和 7z 文件中加载。
 - 支持 IPS、UPS 和 BPS 补丁。
-- 支持通过命令行界面和 GDB 远程支持进行游戏调试，兼容 IDA Pro。
+- 支持通过命令行界面和 GDB 远程支持进行游戏调试，兼容 Ghidra 和 IDA Pro。
 - 支持可配置的模拟倒带。
 - 支持载入和导出 GameShark 和 Action Replay 快照。
 - 适用于 RetroArch/Libretro 和 OpenEmu 的内核。
+- 社区支持的多种语言翻译 [Weblate](https://hosted.weblate.org/engage/mgba).
 - 许许多多的小玩意。
 
 #### Game Boy 映射器（mapper）
@@ -51,9 +55,10 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 - MBC5+振动
 - MBC7
 - Wisdom Tree（未授权）
+- NT "old type" 1 and 2 (未授权多合一卡带)
+- NT "new type" (未授权 MBC5-like)
 - Pokémon Jade/Diamond（未授权）
-- BBD（未授权、类 MBC5）
-- Hitek（未授权、类 MBC5）
+- Sachen MMC1 (未授权)
 
 部分支持以下 mapper：
 
@@ -63,6 +68,11 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 - TAMA5（缺少 RTC 支持）
 - HuC-1（缺少 IR 支持）
 - HuC-3（缺少 IR 和 RTC 支持）
+- Sachen MMC2 (缺少备用接线支持)
+- BBD (缺少图标切换)
+- Hitek (缺少图标切换)
+- GGB-81 (缺少图标切换)
+- Li Cheng (缺少图标切换)
 
 ### 计划加入的功能
 
@@ -70,7 +80,6 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 - 支持 Dolphin/JOY 总线链接电缆。
 - MP2k 音频混合，获得比硬件更高质量的声音。
 - 支持针对工具辅助竞速（Tool-Assisted Speedrun）的重录功能。
-- 支持 Lua 脚本。
 - 全方位的调试套件。
 - 支持无线适配器。
 
@@ -112,17 +121,19 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 编译
 ---------
 
-编译需要使用 CMake 3.1 或更新版本。已知 GCC 和 Clang 都可以编译 mGBA，而 Visual Studio 2013 和更旧的版本则无法编译。我们即将实现对 Visual Studio 2015 或更新版本的支持。
+编译需要使用 CMake 3.1 或更新版本。已知 GCC , Clang 和 Visual Studio 2013 都可以编译 mGBA。
 
 #### Docker 构建
 
 对于大多数平台来说，建议使用 Docker 进行构建。我们提供了多个 Docker 映像，其中包含在多个平台上构建 mGBA 所需的工具链和依赖项。
 
+注意: 如果你是用的是 Widnows 10 之前的旧版本 Windows 系统, 你可能需要配置你的 Docker 使用 VirtualBox 共享文件夹以正确映射你当前 mGBA 检出目录到 Docker 镜像中的工作目录. 详细细节参见 issue [#1985](https://mgba.io/i/1985)
+
 要使用 Docker 映像构建 mGBA，只需在 mGBA 的签出（checkout）根目录中运行以下命令：
 
 	docker run --rm -t -v $PWD:/home/mgba/src mgba/windows:w32
 
-此命令将生成 `build-win32` 目录。将 `mgba/windows:w32` 替换为其他平台上的 Docker 映像，会生成相应的其他目录。Docker Hub 上提供了以下 Docker 映像：
+启动 Docker 容器之后, 此命令将生成 `build-win32` 目录, 此目录中包含编译产物。将 `mgba/windows:w32` 替换为其他平台上的 Docker 映像，会生成相应的其他目录。Docker Hub 上提供了以下 Docker 映像：
 
 - mgba/3ds
 - mgba/switch
@@ -134,6 +145,8 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 - mgba/wii
 - mgba/windows:w32
 - mgba/windows:w64
+
+如果你希望加速编译过程, 可以考虑添加编译选项 `-e MAKEFLAGS=-jN`, 使用 `N` 个 CPU 核心来并行构建 mGBA
 
 #### *nix 构建
 
@@ -147,7 +160,7 @@ mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比�
 
 这些命令将构建 mGBA 并将其安装到 `/usr/bin` 和 `/usr/lib` 中。系统会自动检测已安装的依赖项，如果未找到依赖项，则会在提示找不到依赖项的情况下运行 `cmake` 命令，并显示已被禁用的功能。
 
-如果您使用的是 MacOS，则步骤略有不同。假设您使用的是自制软件包管理器，建议使用以下命令来获取依赖项并进行构建：
+如果您使用的是 MacOS，则步骤略有不同。假设您使用的 homebrew 软件包管理器，建议使用以下命令来获取依赖项并进行构建：
 
 	brew install cmake ffmpeg libzip qt5 sdl2 libedit pkg-config
 	mkdir build
@@ -220,10 +233,12 @@ mGBA 没有硬性的依赖项，但是特定功能需要以下可选的依赖项
 - libzip 或 zlib：载入储存在 ZIP 文件中的 ROM 的所需依赖项。
 - SQLite3：游戏数据库的所需依赖项
 - libelf：ELF 载入的所需依赖项
+- Lua: 脚本支持
+- json-c: 脚本 `storage` API 支持
 
 SQLite3、libpng 以及 zlib 已包含在模拟器中，因此不需要先对这些依赖项进行外部编译。
 
-Footnotes
+脚注
 ---------
 
 <a name="missing">[1]</a> 目前缺失的功能有
@@ -232,7 +247,7 @@ Footnotes
 
 <a name="flashdetect">[2]</a> 闪存大小检测在某些情况下不起作用。 这些可以在运行时中进行配置，但如果遇到此类情况，建议提交错误。
 
-<a name="osxver">[3]</a> 仅 Qt 端口需要 10.9。应该可以在 10.7 或更早版本上构建或运行 Qt 端口，但这类操作不受官方支持。已知 SDL 端口可以在 10.5 上运行，并且可能能够在旧版本上运行。
+<a name="osxver">[3]</a> 仅 Qt 移植需要 10.9。应该可以在 10.7 或更早版本上构建或运行 Qt 移植，但这类操作不受官方支持。已知 SDL 移植可以在 10.5 上运行，并且可能能够在旧版本上运行。
 
 [downloads]: http://mgba.io/downloads.html
 [source]: https://github.com/mgba-emu/mgba/
@@ -240,12 +255,11 @@ Footnotes
 版权
 ---------
 
-mGBA 版权 © 2013 – 2020 Jeffrey Pfau。基于 [Mozilla 公共许可证版本 2.0](https://www.mozilla.org/MPL/2.0/) 许可证分发。分发的 LICENSE 文件中提供了许可证的副本。
+mGBA 版权 © 2013 – 2023 Jeffrey Pfau。基于 [Mozilla 公共许可证版本 2.0](https://www.mozilla.org/MPL/2.0/) 许可证分发。分发的 LICENSE 文件中提供了许可证的副本。
 
 mGBA 包含以下第三方库：
 
 - [inih](https://github.com/benhoyt/inih)：版权 © 2009 – 2020 Ben Hoyt，基于 BSD 3-clause 许可证使用。
-- [blip-buf](https://code.google.com/archive/p/blip-buf)：版权 © 2003 – 2009 Shay Green，基于 Lesser GNU 公共许可证使用。
 - [LZMA SDK](http://www.7-zip.org/sdk.html)：属公有领域使用。
 - [MurmurHash3](https://github.com/aappleby/smhasher)：由 Austin Appleby 实施，属公有领域使用。
 - [getopt for MSVC](https://github.com/skandhurkat/Getopt-for-Visual-Studio/)：属公有领域使用。

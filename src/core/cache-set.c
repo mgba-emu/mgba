@@ -72,7 +72,7 @@ void mCacheSetWriteVRAM(struct mCacheSet* cache, uint32_t address) {
 	}
 }
 
-void mCacheSetWritePalette(struct mCacheSet* cache, uint32_t entry, color_t color) {
+void mCacheSetWritePalette(struct mCacheSet* cache, uint32_t entry, mColor color) {
 	size_t i;
 	for (i = 0; i < mBitmapCacheSetSize(&cache->bitmaps); ++i) {
 		mBitmapCacheWritePalette(mBitmapCacheSetGetPointer(&cache->bitmaps, i), entry, color);

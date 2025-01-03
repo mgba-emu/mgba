@@ -167,7 +167,7 @@ void mCoreConfigDeinit(struct mCoreConfig* config) {
 	free(config->port);
 }
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 bool mCoreConfigLoad(struct mCoreConfig* config) {
 	char path[PATH_MAX + 1];
 	mCoreConfigDirectory(path, PATH_MAX);

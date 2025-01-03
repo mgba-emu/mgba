@@ -133,14 +133,11 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 			errno = 0;
 			vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
 			if (!vfOut) {
-				if (errno == EACCES) {
-#ifdef _WIN32
-					Sleep(1000);
-#else
-					sleep(1);
-#endif
-					vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
-				} else if (errno == EISDIR) {
+				int error = errno;
+				struct stat st;
+				if (error == EISDIR || (stat(path, &st) >= 0 && S_ISDIR(st.st_mode))) {
+					// Windows maps STATUS_FILE_IS_A_DIRECTORY to ERROR_ACCESS_DENIED,
+					// which then gets mapped to EACCESS, because everything is awful
 					fprintf(logfile, "rm -r   %s\n", path);
 					if (!rmdirRecursive(VDirOpen(path))) {
 						return false;
@@ -151,6 +148,13 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 					RemoveDirectoryW(wpath);
 #else
 					rmdir(path);
+#endif
+					vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+				} else if (error == EACCES || error == ETXTBSY) {
+#ifdef _WIN32
+					Sleep(1000);
+#else
+					sleep(1);
 #endif
 					vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
 				}

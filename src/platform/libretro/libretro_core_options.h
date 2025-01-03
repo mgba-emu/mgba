@@ -91,11 +91,12 @@ struct retro_core_option_v2_definition option_defs_us[] = {
       NULL,
       "system",
       {
-         { "Autodetect",       NULL },
-         { "Game Boy",         NULL },
-         { "Super Game Boy",   NULL },
-         { "Game Boy Color",   NULL },
-         { "Game Boy Advance", NULL },
+         { "Autodetect",           NULL },
+         { "Game Boy",             NULL },
+         { "Super Game Boy",       NULL },
+         { "Game Boy Color",       NULL },
+         { "Super Game Boy Color", NULL },
+         { "Game Boy Advance",     NULL },
          { NULL, NULL },
       },
       "Autodetect"

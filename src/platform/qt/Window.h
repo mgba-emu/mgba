@@ -73,6 +73,7 @@ signals:
 	void startDrawing();
 	void shutdown();
 	void paused(bool);
+	void shaderSelectorAdded(ShaderSelector*);
 
 public slots:
 	void setController(CoreController* controller, const QString& fname);
@@ -108,11 +109,11 @@ public slots:
 
 	void startVideoLog();
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	void consoleOpen();
 #endif
 
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 	void gdbOpen();
 #endif
 
@@ -194,6 +195,7 @@ private:
 
 	std::unique_ptr<QGBA::Display> m_display;
 	QSize m_initialSize;
+	QSize m_savedSize;
 	int m_savedScale;
 
 	// TODO: Move these to a new class
@@ -206,7 +208,7 @@ private:
 
 	LogController m_log{0};
 	LogView* m_logView;
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	DebuggerConsoleController* m_console = nullptr;
 #endif
 	LoadSaveState* m_stateWindow = nullptr;
@@ -249,7 +251,7 @@ private:
 	std::unique_ptr<GIFView> m_gifView;
 #endif
 
-#ifdef USE_GDB_STUB
+#ifdef ENABLE_GDB_STUB
 	GDBController* m_gdbController = nullptr;
 #endif
 

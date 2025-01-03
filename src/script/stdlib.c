@@ -130,6 +130,7 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 	});
 	mScriptContextExportConstants(context, "CHECKSUM", (struct mScriptKVPair[]) {
 		mSCRIPT_CONSTANT_PAIR(mCHECKSUM, CRC32),
+		mSCRIPT_CONSTANT_PAIR(mCHECKSUM, MD5),
 		mSCRIPT_KV_SENTINEL
 	});
 #ifdef M_CORE_GBA
@@ -160,7 +161,7 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 		mSCRIPT_KV_SENTINEL
 	});
 #endif
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	mScriptContextExportConstants(context, "WATCHPOINT_TYPE", (struct mScriptKVPair[]) {
 		mSCRIPT_CONSTANT_PAIR(WATCHPOINT, WRITE),
 		mSCRIPT_CONSTANT_PAIR(WATCHPOINT, READ),

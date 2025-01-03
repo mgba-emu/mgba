@@ -31,7 +31,7 @@ void mCacheSetDeinit(struct mCacheSet*);
 void mCacheSetAssignVRAM(struct mCacheSet*, void* vram);
 
 void mCacheSetWriteVRAM(struct mCacheSet*, uint32_t address);
-void mCacheSetWritePalette(struct mCacheSet*, uint32_t entry, color_t color);
+void mCacheSetWritePalette(struct mCacheSet*, uint32_t entry, mColor color);
 
 CXX_GUARD_END
 

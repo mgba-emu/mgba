@@ -190,8 +190,7 @@ void GBSavedataUnmask(struct GB* gb);
 struct Patch;
 void GBApplyPatch(struct GB* gb, struct Patch* patch);
 
-void GBGetGameTitle(const struct GB* gba, char* out);
-void GBGetGameCode(const struct GB* gba, char* out);
+void GBGetGameInfo(const struct GB* gba, struct mGameInfo* info);
 
 void GBTestKeypadIRQ(struct GB* gb);
 

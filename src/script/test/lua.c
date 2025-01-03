@@ -328,10 +328,10 @@ M_TEST_DEFINE(callLuaFunc) {
 
 	struct mScriptFrame frame;
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 1);
+	mSCRIPT_PUSH(&frame.stack, S32, 1);
 	assert_true(mScriptInvoke(fn, &frame));
 	int64_t val;
-	assert_true(mScriptPopS64(&frame.returnValues, &val));
+	assert_true(mScriptPopS64(&frame.stack, &val));
 	assert_int_equal(val, 2);
 
 	mScriptFrameDeinit(&frame);
@@ -342,10 +342,10 @@ M_TEST_DEFINE(callLuaFunc) {
 	assert_int_equal(fn->type->base, mSCRIPT_TYPE_FUNCTION);
 
 	mScriptFrameInit(&frame);
-	mSCRIPT_PUSH(&frame.arguments, S32, 1);
-	mSCRIPT_PUSH(&frame.arguments, S32, 2);
+	mSCRIPT_PUSH(&frame.stack, S32, 1);
+	mSCRIPT_PUSH(&frame.stack, S32, 2);
 	assert_true(mScriptInvoke(fn, &frame));
-	assert_true(mScriptPopS64(&frame.returnValues, &val));
+	assert_true(mScriptPopS64(&frame.stack, &val));
 	assert_int_equal(val, 3);
 
 	mScriptFrameDeinit(&frame);

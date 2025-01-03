@@ -1,32 +1,50 @@
 /* Copyright (c) 2016 taizou
+ * Copyright (c) 2013-2024 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include <mgba/internal/gba/cart/vfame.h>
+#include <mgba/internal/gba/cart/unlicensed.h>
 
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/memory.h>
 
-static const uint8_t ADDRESS_REORDERING[4][16] = {
-	{ 15, 14, 9, 1, 8, 10, 7, 3, 5, 11, 4, 0, 13, 12, 2, 6 },
-	{ 15, 7, 13, 5, 11, 6, 0, 9, 12, 2, 10, 14, 3, 1, 8, 4 },
-	{ 15, 0, 3, 12, 2, 4, 14, 13, 1, 8, 6, 7, 9, 5, 11, 10 }
+#define DIGIMON_SAPPHIRE_CHINESE_CRC32 0x793A328F
+
+static const uint8_t ADDRESS_REORDERING[][3][16] = {
+	[VFAME_STANDARD] = {
+		{ 15, 14, 9, 1, 8, 10, 7, 3, 5, 11, 4, 0, 13, 12, 2, 6 },
+		{ 15, 7, 13, 5, 11, 6, 0, 9, 12, 2, 10, 14, 3, 1, 8, 4 },
+		{ 15, 0, 3, 12, 2, 4, 14, 13, 1, 8, 6, 7, 9, 5, 11, 10 }
+	},
+	[VFAME_GEORGE] = {
+		{ 15, 7, 13, 1, 11, 10, 14, 9, 12, 2, 4, 0, 3, 5, 8, 6 },
+		{ 15, 14, 3, 12, 8, 4, 0, 13, 5, 11, 6, 7, 9, 1, 2, 10 },
+		{ 15, 0, 9, 5, 2, 6, 7, 3, 1, 8, 10, 14, 13, 12, 11, 4 }
+	},
+	[VFAME_ALTERNATE] = {
+		{ 15, 0, 13, 5, 8, 4, 7, 3, 1, 2, 10, 14, 9, 12, 11, 6 },
+		{ 15, 7, 9, 1, 2, 6, 14, 13, 12, 11, 4, 0, 3, 5, 8, 10 },
+		{ 15, 14, 3, 12, 11, 10, 0, 9, 5, 8, 6, 7, 13, 1, 2, 4 }
+	},
 };
-static const uint8_t ADDRESS_REORDERING_GEORGE[4][16] = {
-	{ 15, 7, 13, 1, 11, 10, 14, 9, 12, 2, 4, 0, 3, 5, 8, 6 },
-	{ 15, 14, 3, 12, 8, 4, 0, 13, 5, 11, 6, 7, 9, 1, 2, 10 },
-	{ 15, 0, 9, 5, 2, 6, 7, 3, 1, 8, 10, 14, 13, 12, 11, 4 }
-};
-static const uint8_t VALUE_REORDERING[4][16] = {
-	{ 5, 4, 3, 2, 1, 0, 7, 6 },
-	{ 3, 2, 1, 0, 7, 6, 5, 4 },
-	{ 1, 0, 7, 6, 5, 4, 3, 2 }
-};
-static const uint8_t VALUE_REORDERING_GEORGE[4][16] = {
-	{ 3, 0, 7, 2, 1, 4, 5, 6 },
-	{ 1, 4, 3, 0, 5, 6, 7, 2 },
-	{ 5, 2, 1, 6, 7, 0, 3, 4 }
+
+static const uint8_t VALUE_REORDERING[][3][8] = {
+	[VFAME_STANDARD] = {
+		{ 5, 4, 3, 2, 1, 0, 7, 6 },
+		{ 3, 2, 1, 0, 7, 6, 5, 4 },
+		{ 1, 0, 7, 6, 5, 4, 3, 2 }
+	},
+	[VFAME_GEORGE] = {
+		{ 3, 0, 7, 2, 1, 4, 5, 6 },
+		{ 1, 4, 3, 0, 5, 6, 7, 2 },
+		{ 5, 2, 1, 6, 7, 0, 3, 4 }
+	},
+	[VFAME_ALTERNATE] = {
+		{ 5, 4, 7, 2, 1, 0, 3, 6 },
+		{ 1, 2, 3, 0, 5, 6, 7, 4 },
+		{ 3, 0, 1, 6, 7, 4, 5, 2 }
+	},
 };
 
 static const int8_t MODE_CHANGE_START_SEQUENCE[5] = { 0x99, 0x02, 0x05, 0x02, 0x03 };
@@ -42,36 +60,44 @@ static int8_t _modifySramValue(enum GBAVFameCartType type, uint8_t value, int mo
 static uint32_t _modifySramAddress(enum GBAVFameCartType type, uint32_t address, int mode);
 static int _reorderBits(uint32_t value, const uint8_t* reordering, int reorderLength);
 
-void GBAVFameInit(struct GBAVFameCart* cart) {
-	cart->cartType = VFAME_NO;
-	cart->sramMode = -1;
-	cart->romMode = -1;
-	cart->acceptingModeChange = false;
-}
-
-void GBAVFameDetect(struct GBAVFameCart* cart, uint32_t* rom, size_t romSize) {
-	cart->cartType = VFAME_NO;
-
+bool GBAVFameDetect(struct GBAVFameCart* cart, uint32_t* rom, size_t romSize, uint32_t crc32) {
 	// The initialisation code is also present & run in the dumps of Digimon Ruby & Sapphire from hacked/deprotected reprint carts,
 	// which would break if run in "proper" VFame mode so we need to exclude those..
 	if (romSize == 0x2000000) { // the deprotected dumps are 32MB but no real VF games are this size
-		return;
+		return false;
 	}
+
+	bool detected = false;
 
 	// Most games have the same init sequence in the same place
 	// but LOTR/Mo Jie Qi Bing doesn't, probably because it's based on the Kiki KaiKai engine, so just detect based on its title
 	if (memcmp(INIT_SEQUENCE, &rom[0x57], sizeof(INIT_SEQUENCE)) == 0 || memcmp("\0LORD\0WORD\0\0AKIJ", &((struct GBACartridge*) rom)->title, 16) == 0) {
+		detected = true;
 		cart->cartType = VFAME_STANDARD;
 		mLOG(GBA_MEM, INFO, "Vast Fame game detected");
 	}
 
-	// This game additionally operates with a different set of SRAM modes
-	// Its initialisation seems to be identical so the difference must be in the cart HW itself
+	// These games additionally operates with a different set of SRAM modes
+	// Their initialisation seems to be identical so the difference must be in the cart HW itself
 	// Other undumped games may have similar differences
 	if (memcmp("George Sango", &((struct GBACartridge*) rom)->title, 12) == 0) {
+		detected = true;
 		cart->cartType = VFAME_GEORGE;
 		mLOG(GBA_MEM, INFO, "George mode");
+	} else if (crc32 == DIGIMON_SAPPHIRE_CHINESE_CRC32) {
+		// Chinese version of Digimon Sapphire; header is identical to the English version which uses the normal reordering
+		// so we have to use some other way to detect it
+		detected = true;
+		cart->cartType = VFAME_ALTERNATE;
 	}
+
+	if (detected) {
+		cart->sramMode = -1;
+		cart->romMode = -1;
+		cart->acceptingModeChange = false;
+	}
+
+	return detected;
 }
 
 // This is not currently being used but would be called on ROM reads
@@ -213,7 +239,6 @@ static uint32_t _patternRightShift2(uint32_t addr) {
 }
 
 void GBAVFameSramWrite(struct GBAVFameCart* cart, uint32_t address, uint8_t value, uint8_t* sramData) {
-	address &= 0x00FFFFFF;
 	// A certain sequence of writes to SRAM FFF8->FFFC can enable or disable "mode change" mode
 	// Currently unknown if these writes have to be sequential, or what happens if you write different values, if anything
 	if (address >= 0xFFF8 && address <= 0xFFFC) {
@@ -254,21 +279,14 @@ static uint32_t _modifySramAddress(enum GBAVFameCartType type, uint32_t address,
 	mode &= 0x3;
 	if (mode == 0) {
 		return address;
-	} else if (type == VFAME_GEORGE) {
-		return _reorderBits(address, ADDRESS_REORDERING_GEORGE[mode - 1], 16);
-	} else {
-		return _reorderBits(address, ADDRESS_REORDERING[mode - 1], 16);
 	}
+	return _reorderBits(address, ADDRESS_REORDERING[type][mode - 1], 16);
 }
 
 static int8_t _modifySramValue(enum GBAVFameCartType type, uint8_t value, int mode) {
 	int reorderType = (mode & 0xF) >> 2;
 	if (reorderType != 0) {
-		if (type == VFAME_GEORGE) {
-			value = _reorderBits(value, VALUE_REORDERING_GEORGE[reorderType - 1], 8);
-		} else {
-			value = _reorderBits(value, VALUE_REORDERING[reorderType - 1], 8);
-		}
+		value = _reorderBits(value, VALUE_REORDERING[type][reorderType - 1], 8);
 	}
 	if (mode & 0x80) {
 		value ^= 0xAA;

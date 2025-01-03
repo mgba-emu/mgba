@@ -162,7 +162,7 @@ void DebuggerConsoleController::historyLoad() {
 		if (line.endsWith("\r\n")) {
 			line.chop(2);
 		} else if (line.endsWith("\n")) {
-			line.chop(1);			
+			line.chop(1);
 		}
 		history.append(QString::fromUtf8(line));
 	}

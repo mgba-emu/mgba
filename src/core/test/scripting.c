@@ -312,7 +312,7 @@ M_TEST_DEFINE(logging) {
 M_TEST_DEFINE(screenshot) {
 	SETUP_LUA;
 	CREATE_CORE;
-	color_t* buffer = malloc(240 * 160 * sizeof(color_t));
+	mColor* buffer = malloc(240 * 160 * sizeof(mColor));
 	core->setVideoBuffer(core, buffer, 240);
 	core->reset(core);
 	core->runFrame(core);
@@ -327,7 +327,7 @@ M_TEST_DEFINE(screenshot) {
 	TEARDOWN_CORE;
 }
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 void _setupBp(struct mCore* core) {
 	switch (core->platform(core)) {
 #ifdef M_CORE_GBA
@@ -365,8 +365,10 @@ M_TEST_DEFINE(basicBreakpointGBA) {
 
 	TEST_PROGRAM(
 		"hit = 0\n"
-		"function bkpt()\n"
+		"address = nil\n"
+		"function bkpt(info)\n"
 		"	hit = hit + 1\n"
+		"	address = info.address\n"
 		"end"
 	);
 	TEST_PROGRAM("cbid = emu:setBreakpoint(bkpt, 0x020000C4)");
@@ -379,6 +381,7 @@ M_TEST_DEFINE(basicBreakpointGBA) {
 
 	assert_int_equal(debugger.state, DEBUGGER_RUNNING);
 	TEST_PROGRAM("assert(hit >= 1)");
+	TEST_PROGRAM("assert(address == 0x020000C4)");
 
 	mScriptContextDeinit(&context);
 	TEARDOWN_CORE;
@@ -404,8 +407,10 @@ M_TEST_DEFINE(basicBreakpointGB) {
 
 	TEST_PROGRAM(
 		"hit = 0\n"
-		"function bkpt()\n"
+		"address = nil\n"
+		"function bkpt(info)\n"
 		"	hit = hit + 1\n"
+		"	address = info.address\n"
 		"end"
 	);
 	TEST_PROGRAM("cbid = emu:setBreakpoint(bkpt, 0xF0)");
@@ -418,6 +423,7 @@ M_TEST_DEFINE(basicBreakpointGB) {
 
 	assert_int_equal(debugger.state, DEBUGGER_RUNNING);
 	TEST_PROGRAM("assert(hit >= 1)");
+	TEST_PROGRAM("assert(address == 0xF0)");
 
 	mScriptContextDeinit(&context);
 	TEARDOWN_CORE;
@@ -441,11 +447,22 @@ M_TEST_DEFINE(multipleBreakpoint) {
 
 	TEST_PROGRAM(
 		"hit = 0\n"
-		"function bkpt1()\n"
+		"address = nil\n"
+		"function bkpt1(info)\n"
 		"	hit = hit + 1\n"
+		"	if address then\n"
+		"		address = (address + info.address) / 2\n"
+		"	else\n"
+		"		address = info.address\n"
+		"	end\n"
 		"end\n"
-		"function bkpt2()\n"
+		"function bkpt2(info)\n"
 		"	hit = hit + 100\n"
+		"	if address then\n"
+		"		address = (address + info.address) / 2\n"
+		"	else\n"
+		"		address = info.address\n"
+		"	end\n"
 		"end"
 	);
 #ifdef M_CORE_GBA
@@ -465,6 +482,13 @@ M_TEST_DEFINE(multipleBreakpoint) {
 
 	assert_int_equal(debugger.state, DEBUGGER_RUNNING);
 	TEST_PROGRAM("assert(hit >= 101)");
+#ifdef M_CORE_GBA
+	TEST_PROGRAM("assert(address >= 0x020000C4)");
+	TEST_PROGRAM("assert(address <= 0x020000C8)");
+#else
+	TEST_PROGRAM("assert(address >= 0xF0)");
+	TEST_PROGRAM("assert(address <= 0xF1)");
+#endif
 
 	mScriptContextDeinit(&context);
 	TEARDOWN_CORE;
@@ -472,6 +496,148 @@ M_TEST_DEFINE(multipleBreakpoint) {
 }
 
 M_TEST_DEFINE(basicWatchpoint) {
+	SETUP_LUA;
+	mScriptContextAttachStdlib(&context);
+	CREATE_CORE;
+	struct mDebugger debugger;
+	core->reset(core);
+	mScriptContextAttachCore(&context, core);
+
+	int i;
+	for (i = 0; i < 4; ++i) {
+		core->busWrite8(core, RAM_BASE + i, i + 1);
+	}
+
+	mDebuggerInit(&debugger);
+	mDebuggerAttach(&debugger, core);
+
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"address = nil\n"
+		"width = nil\n"
+		"oldValue = nil\n"
+		"newValue = nil\n"
+		"accessType = nil\n"
+		"function bkpt(info)\n"
+		"	hit = hit + 1\n"
+		"	address = info.address\n"
+		"	width = info.width\n"
+		"	oldValue = info.oldValue\n"
+		"	newValue = info.newValue\n"
+		"	accessType = info.accessType\n"
+		"end"
+	);
+	struct mScriptValue base = mSCRIPT_MAKE_S32(RAM_BASE);
+	lua->setGlobal(lua, "base", &base);
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base, C.WATCHPOINT_TYPE.READ))");
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base + 1, C.WATCHPOINT_TYPE.WRITE))");
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base + 2, C.WATCHPOINT_TYPE.RW))");
+	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base + 3, C.WATCHPOINT_TYPE.WRITE_CHANGE))");
+	TEST_PROGRAM("assert(hit == 0)");
+
+	uint8_t value;
+
+	// Read
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"address = nil\n"
+		"width = nil\n"
+		"oldValue = nil\n"
+		"newValue = nil\n"
+		"accessType = nil\n");
+	value = core->rawRead8(core, RAM_BASE, -1);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busRead8(core, RAM_BASE);
+	TEST_PROGRAM("assert(hit == 1)");
+	core->busWrite8(core, RAM_BASE, value);
+	TEST_PROGRAM("assert(hit == 1)");
+	core->busWrite8(core, RAM_BASE, ~value);
+	TEST_PROGRAM("assert(hit == 1)");
+	TEST_PROGRAM("assert(address == base)");
+	TEST_PROGRAM("assert(width == 1)");
+	TEST_PROGRAM("assert(oldValue == 1)");
+	TEST_PROGRAM("assert(newValue == nil)");
+	TEST_PROGRAM("assert(accessType == C.WATCHPOINT_TYPE.READ)");
+
+	// Write
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"address = nil\n"
+		"width = nil\n"
+		"oldValue = nil\n"
+		"newValue = nil\n"
+		"accessType = nil\n");
+	value = core->rawRead8(core, RAM_BASE + 1, -1);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busRead8(core, RAM_BASE + 1);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busWrite8(core, RAM_BASE + 1, value);
+	TEST_PROGRAM("assert(hit == 1)");
+	TEST_PROGRAM("assert(oldValue == 2)");
+	TEST_PROGRAM("assert(newValue == 2)");
+	core->busWrite8(core, RAM_BASE + 1, ~value);
+	TEST_PROGRAM("assert(hit == 2)");
+	TEST_PROGRAM("assert(address == base + 1)");
+	TEST_PROGRAM("assert(width == 1)");
+	TEST_PROGRAM("assert(oldValue == 2)");
+	TEST_PROGRAM("assert(newValue == -3)");
+	TEST_PROGRAM("assert(accessType == C.WATCHPOINT_TYPE.WRITE)");
+
+	// RW
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"address = nil\n"
+		"width = nil\n"
+		"oldValue = nil\n"
+		"newValue = nil\n"
+		"accessType = nil\n");
+	value = core->rawRead8(core, RAM_BASE + 2, -1);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busRead8(core, RAM_BASE + 2);
+	TEST_PROGRAM("assert(accessType == C.WATCHPOINT_TYPE.READ)");
+	TEST_PROGRAM("assert(hit == 1)");
+	TEST_PROGRAM("assert(oldValue == 3)");
+	TEST_PROGRAM("assert(newValue == nil)");
+	core->busWrite8(core, RAM_BASE + 2, value);
+	TEST_PROGRAM("assert(hit == 2)");
+	TEST_PROGRAM("assert(oldValue == 3)");
+	TEST_PROGRAM("assert(newValue == 3)");
+	core->busWrite8(core, RAM_BASE + 2, ~value);
+	TEST_PROGRAM("assert(hit == 3)");
+	TEST_PROGRAM("assert(address == base + 2)");
+	TEST_PROGRAM("assert(width == 1)");
+	TEST_PROGRAM("assert(oldValue == 3)");
+	TEST_PROGRAM("assert(newValue == -4)");
+	TEST_PROGRAM("assert(accessType == C.WATCHPOINT_TYPE.WRITE)");
+
+	// Change
+	TEST_PROGRAM(
+		"hit = 0\n"
+		"address = nil\n"
+		"width = nil\n"
+		"oldValue = nil\n"
+		"newValue = nil\n"
+		"accessType = nil\n");
+	value = core->rawRead8(core, RAM_BASE + 3, -1);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busRead8(core, RAM_BASE + 3);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busWrite8(core, RAM_BASE + 3, value);
+	TEST_PROGRAM("assert(hit == 0)");
+	core->busWrite8(core, RAM_BASE + 3, ~value);
+	TEST_PROGRAM("assert(hit == 1)");
+	TEST_PROGRAM("assert(address == base + 3)");
+	TEST_PROGRAM("assert(width == 1)");
+	TEST_PROGRAM("assert(oldValue == 4)");
+	TEST_PROGRAM("assert(newValue == -5)");
+	TEST_PROGRAM("assert(accessType == C.WATCHPOINT_TYPE.WRITE)");
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+	mDebuggerDeinit(&debugger);
+}
+
+M_TEST_DEFINE(watchpointReentrant) {
 	SETUP_LUA;
 	mScriptContextAttachStdlib(&context);
 	CREATE_CORE;
@@ -491,56 +657,14 @@ M_TEST_DEFINE(basicWatchpoint) {
 	struct mScriptValue base = mSCRIPT_MAKE_S32(RAM_BASE);
 	lua->setGlobal(lua, "base", &base);
 	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base, C.WATCHPOINT_TYPE.READ))");
-	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base + 1, C.WATCHPOINT_TYPE.WRITE))");
-	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base + 2, C.WATCHPOINT_TYPE.RW))");
-	TEST_PROGRAM("assert(0 < emu:setWatchpoint(bkpt, base + 3, C.WATCHPOINT_TYPE.WRITE_CHANGE))");
-	TEST_PROGRAM("assert(hit == 0)");
 
-	uint8_t value;
-
-	// Read
 	TEST_PROGRAM("hit = 0");
-	value = core->rawRead8(core, RAM_BASE, -1);
-	TEST_PROGRAM("assert(hit == 0)");
 	core->busRead8(core, RAM_BASE);
 	TEST_PROGRAM("assert(hit == 1)");
-	core->busWrite8(core, RAM_BASE, value);
+	TEST_PROGRAM("emu:read8(base)");
 	TEST_PROGRAM("assert(hit == 1)");
-	core->busWrite8(core, RAM_BASE, ~value);
-	TEST_PROGRAM("assert(hit == 1)");
-
-	// Write
-	TEST_PROGRAM("hit = 0");
-	value = core->rawRead8(core, RAM_BASE + 1, -1);
-	TEST_PROGRAM("assert(hit == 0)");
-	core->busRead8(core, RAM_BASE + 1);
-	TEST_PROGRAM("assert(hit == 0)");
-	core->busWrite8(core, RAM_BASE + 1, value);
-	TEST_PROGRAM("assert(hit == 1)");
-	core->busWrite8(core, RAM_BASE + 1, ~value);
+	core->busRead8(core, RAM_BASE);
 	TEST_PROGRAM("assert(hit == 2)");
-
-	// RW
-	TEST_PROGRAM("hit = 0");
-	value = core->rawRead8(core, RAM_BASE + 2, -1);
-	TEST_PROGRAM("assert(hit == 0)");
-	core->busRead8(core, RAM_BASE + 2);
-	TEST_PROGRAM("assert(hit == 1)");
-	core->busWrite8(core, RAM_BASE + 2, value);
-	TEST_PROGRAM("assert(hit == 2)");
-	core->busWrite8(core, RAM_BASE + 2, ~value);
-	TEST_PROGRAM("assert(hit == 3)");
-
-	// Change
-	TEST_PROGRAM("hit = 0");
-	value = core->rawRead8(core, RAM_BASE + 3, -1);
-	TEST_PROGRAM("assert(hit == 0)");
-	core->busRead8(core, RAM_BASE + 3);
-	TEST_PROGRAM("assert(hit == 0)");
-	core->busWrite8(core, RAM_BASE + 3, value);
-	TEST_PROGRAM("assert(hit == 0)");
-	core->busWrite8(core, RAM_BASE + 3, ~value);
-	TEST_PROGRAM("assert(hit == 1)");
 
 	mScriptContextDeinit(&context);
 	TEARDOWN_CORE;
@@ -694,8 +818,10 @@ M_TEST_DEFINE(rangeWatchpoint) {
 
 	TEST_PROGRAM(
 		"hit = 0\n"
-		"function bkpt()\n"
+		"address = nil\n"
+		"function bkpt(info)\n"
 		"	hit = hit + 1\n"
+		"	address = info.address\n"
 		"end"
 	);
 	struct mScriptValue base = mSCRIPT_MAKE_S32(RAM_BASE);
@@ -707,10 +833,13 @@ M_TEST_DEFINE(rangeWatchpoint) {
 	TEST_PROGRAM("assert(hit == 0)");
 	core->busRead8(core, RAM_BASE);
 	TEST_PROGRAM("assert(hit == 1)");
+	TEST_PROGRAM("assert(address == base)");
 	core->busRead8(core, RAM_BASE + 1);
 	TEST_PROGRAM("assert(hit == 3)");
+	TEST_PROGRAM("assert(address == base + 1)");
 	core->busRead8(core, RAM_BASE + 2);
 	TEST_PROGRAM("assert(hit == 4)");
+	TEST_PROGRAM("assert(address == base + 2)");
 
 	mScriptContextDeinit(&context);
 	TEARDOWN_CORE;
@@ -727,7 +856,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 	cmocka_unit_test(memoryWrite),
 	cmocka_unit_test(logging),
 	cmocka_unit_test(screenshot),
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 #ifdef M_CORE_GBA
 	cmocka_unit_test(basicBreakpointGBA),
 #endif
@@ -736,6 +865,7 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptCore,
 #endif
 	cmocka_unit_test(multipleBreakpoint),
 	cmocka_unit_test(basicWatchpoint),
+	cmocka_unit_test(watchpointReentrant),
 	cmocka_unit_test(removeBreakpoint),
 	cmocka_unit_test(overlappingBreakpoint),
 	cmocka_unit_test(overlappingWatchpoint),

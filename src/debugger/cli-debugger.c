@@ -75,13 +75,15 @@ static void _dumpByte(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _dumpWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _events(struct CLIDebugger*, struct CLIDebugVector*);
-#ifdef ENABLE_SCRIPTING
-static void _source(struct CLIDebugger*, struct CLIDebugVector*);
-#endif
 static void _backtrace(struct CLIDebugger*, struct CLIDebugVector*);
 static void _finish(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setStackTraceMode(struct CLIDebugger*, struct CLIDebugVector*);
+#ifdef ENABLE_VFS
 static void _loadSymbols(struct CLIDebugger*, struct CLIDebugVector*);
+#ifdef ENABLE_SCRIPTING
+static void _source(struct CLIDebugger*, struct CLIDebugVector*);
+#endif
+#endif
 static void _setSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 static void _findSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 
@@ -96,6 +98,9 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "help", _printHelp, "S", "Print help" },
 	{ "listb", _listBreakpoints, "", "List breakpoints" },
 	{ "listw", _listWatchpoints, "", "List watchpoints" },
+#ifdef ENABLE_VFS
+	{ "load-symbols", _loadSymbols, "S", "Load symbols from an external file" },
+#endif
 	{ "next", _next, "", "Execute next instruction" },
 	{ "print", _print, "S+", "Print a value" },
 	{ "print/t", _printBin, "S+", "Print a value as binary" },
@@ -106,10 +111,12 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "r/2", _readHalfword, "I", "Read a halfword from a specified offset" },
 	{ "r/4", _readWord, "I", "Read a word from a specified offset" },
 	{ "set", _setSymbol, "SI", "Assign a symbol to an address" },
+#if defined(ENABLE_SCRIPTING) && defined(ENABLE_VFS)
+	{ "source", _source, "S", "Load a script" },
+#endif
 	{ "stack", _setStackTraceMode, "S", "Change the stack tracing mode" },
 	{ "status", _printStatus, "", "Print the current status" },
 	{ "symbol", _findSymbol, "I", "Find the symbol name for an address" },
-	{ "load-symbols", _loadSymbols, "S", "Load symbols from an external file" },
 	{ "trace", _trace, "Is", "Trace a number of instructions" },
 	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
 	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset" },
@@ -126,9 +133,6 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "x/1", _dumpByte, "Ii", "Examine bytes at a specified offset" },
 	{ "x/2", _dumpHalfword, "Ii", "Examine halfwords at a specified offset" },
 	{ "x/4", _dumpWord, "Ii", "Examine words at a specified offset" },
-#ifdef ENABLE_SCRIPTING
-	{ "source", _source, "S", "Load a script" },
-#endif
 #if !defined(NDEBUG) && !defined(_WIN32)
 	{ "!", _breakInto, "", "Break into attached debugger (for developers)" },
 #endif
@@ -586,7 +590,7 @@ static void _dumpWord(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	}
 }
 
-#ifdef ENABLE_SCRIPTING
+#if defined(ENABLE_SCRIPTING) && defined(ENABLE_VFS)
 static void _source(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv) {
 		debugger->backend->printf(debugger->backend, "Needs a filename\n");
@@ -615,7 +619,7 @@ static struct ParseTree* _parseTree(const char** string) {
 	struct ParseTree* tree = NULL;
 	if (!error) {
 		tree = parseTreeCreate();
-		parseLexedExpression(tree, &lv);
+		error = !parseLexedExpression(tree, &lv);
 	}
 	lexFree(&lv);
 	LexVectorClear(&lv);
@@ -829,9 +833,11 @@ static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (debugger->traceRemaining == 0) {
 		return;
 	}
+#ifdef ENABLE_VFS
 	if (dv->next && dv->next->charValue) {
 		debugger->traceVf = VFileOpen(dv->next->charValue, O_CREAT | O_WRONLY | O_APPEND);
 	}
+#endif
 	if (_doTrace(debugger)) {
 		debugger->d.isPaused = false;
 		mDebuggerUpdatePaused(debugger->d.p);
@@ -1398,6 +1404,7 @@ static void _setStackTraceMode(struct CLIDebugger* debugger, struct CLIDebugVect
 	}
 }
 
+#ifdef ENABLE_VFS
 static void _loadSymbols(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	struct mDebuggerSymbols* symbolTable = debugger->d.p->core->symbolTable;
 	if (!symbolTable) {
@@ -1420,9 +1427,7 @@ static void _loadSymbols(struct CLIDebugger* debugger, struct CLIDebugVector* dv
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
-#ifdef USE_DEBUGGERS
 		mCoreLoadELFSymbols(symbolTable, elf);
-#endif
 		ELFClose(elf);
 	} else
 #endif
@@ -1431,6 +1436,7 @@ static void _loadSymbols(struct CLIDebugger* debugger, struct CLIDebugVector* dv
 	}
 	vf->close(vf);
 }
+#endif
 
 static void _setSymbol(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	struct mDebuggerSymbols* symbolTable = debugger->d.p->core->symbolTable;

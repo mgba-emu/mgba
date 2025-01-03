@@ -47,6 +47,7 @@ static void _loadState(struct mCoreThread* thread) {
 int main(int argc, char** argv) {
 #ifdef _WIN32
 	AttachConsole(ATTACH_PARENT_PROCESS);
+	freopen("CONOUT$", "w", stdout);
 #endif
 	struct mSDLRenderer renderer = {0};
 
@@ -132,11 +133,7 @@ int main(int argc, char** argv) {
 		mSDLGLCreate(&renderer);
 	} else
 #elif defined(BUILD_GLES2) || defined(USE_EPOXY)
-#ifdef BUILD_RASPI
-	mRPIGLCommonInit(&renderer);
-#else
 	if (mSDLGLCommonInit(&renderer))
-#endif
 	{
 		mSDLGLES2Create(&renderer);
 	} else
@@ -160,7 +157,7 @@ int main(int argc, char** argv) {
 	mSDLPlayerLoadConfig(&renderer.player, mCoreConfigGetInput(&renderer.core->config));
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	renderer.core->setPeripheral(renderer.core, mPERIPH_RUMBLE, &renderer.player.rumble.d);
+	renderer.core->setPeripheral(renderer.core, mPERIPH_RUMBLE, &renderer.player.rumble.d.d);
 #endif
 
 	int ret;
@@ -216,12 +213,12 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 #ifdef ENABLE_PYTHON
 	mPythonSetup(bridge);
 #endif
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	CLIDebuggerScriptEngineInstall(bridge);
 #endif
 #endif
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	struct mDebugger debugger;
 	mDebuggerInit(&debugger);
 	bool hasDebugger = mArgumentsApplyDebugger(args, renderer->core, &debugger);
@@ -291,7 +288,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	mScriptBridgeDestroy(bridge);
 #endif
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (hasDebugger) {
 		renderer->core->detachDebugger(renderer->core);
 		mDebuggerDeinit(&debugger);

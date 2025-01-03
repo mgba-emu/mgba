@@ -29,13 +29,13 @@ struct mBitmapCacheEntry {
 };
 
 struct mBitmapCache {
-	color_t* cache;
+	mColor* cache;
 	struct mBitmapCacheEntry* status;
 
 	uint32_t globalPaletteVersion;
 
 	uint8_t* vram;
-	color_t* palette;
+	mColor* palette;
 
 	uint32_t bitsSize;
 	uint32_t bitsStart[2];
@@ -53,11 +53,11 @@ void mBitmapCacheDeinit(struct mBitmapCache* cache);
 void mBitmapCacheConfigure(struct mBitmapCache* cache, mBitmapCacheConfiguration config);
 void mBitmapCacheConfigureSystem(struct mBitmapCache* cache, mBitmapCacheSystemInfo config);
 void mBitmapCacheWriteVRAM(struct mBitmapCache* cache, uint32_t address);
-void mBitmapCacheWritePalette(struct mBitmapCache* cache, uint32_t entry, color_t color);
+void mBitmapCacheWritePalette(struct mBitmapCache* cache, uint32_t entry, mColor color);
 
 void mBitmapCacheCleanRow(struct mBitmapCache* cache, struct mBitmapCacheEntry* entry, unsigned y);
 bool mBitmapCacheCheckRow(struct mBitmapCache* cache, const struct mBitmapCacheEntry* entry, unsigned y);
-const color_t* mBitmapCacheGetRow(struct mBitmapCache* cache, unsigned y);
+const mColor* mBitmapCacheGetRow(struct mBitmapCache* cache, unsigned y);
 
 CXX_GUARD_END
 

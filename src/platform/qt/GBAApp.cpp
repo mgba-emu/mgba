@@ -370,7 +370,7 @@ void GBAApp::cleanupAfterUpdate() {
 void GBAApp::restartForUpdate() {
 	QFileInfo updaterPath(m_updater.updateInfo().url.path());
 	QDir configDir(ConfigController::configDir());
-	if (updaterPath.completeSuffix() == "exe") {
+	if (updaterPath.suffix() == "exe") {
 		m_invokeOnExit = configDir.filePath(QLatin1String("update.exe"));
 	} else {
 		QFile updater(":/updater");

@@ -214,8 +214,8 @@ static const int _isRSpecialRegister[GBA_REG(INTERNAL_MAX)] = {
 	/* 10 */ 1, 1, 1, 1, 1, 1, 1, 1,
 	/* 11 */ 0, 0, 0, 0, 0, 0, 0, 0,
 	/*    SIO */
-	/* 12 */ 1, 1, 1, 1, 1, 0, 0, 0,
-	/* 13 */ 1, 1, 1, 0, 0, 0, 0, 0,
+	/* 12 */ 1, 1, 1, 1, 0, 0, 0, 0,
+	/* 13 */ 1, 1, 0, 0, 0, 0, 0, 0,
 	/* 14 */ 1, 0, 0, 0, 0, 0, 0, 0,
 	/* 15 */ 1, 1, 1, 1, 1, 0, 0, 0,
 	/* 16 */ 0, 0, 0, 0, 0, 0, 0, 0,
@@ -326,17 +326,19 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		break;
 	case GBA_REG_SOUND1CNT_HI:
 		GBAAudioWriteSOUND1CNT_HI(&gba->audio, value);
+		value &= 0xFFC0;
 		break;
 	case GBA_REG_SOUND1CNT_X:
 		GBAAudioWriteSOUND1CNT_X(&gba->audio, value);
-		value &= 0x47FF;
+		value &= 0x4000;
 		break;
 	case GBA_REG_SOUND2CNT_LO:
 		GBAAudioWriteSOUND2CNT_LO(&gba->audio, value);
+		value &= 0xFFC0;
 		break;
 	case GBA_REG_SOUND2CNT_HI:
 		GBAAudioWriteSOUND2CNT_HI(&gba->audio, value);
-		value &= 0x47FF;
+		value &= 0x4000;
 		break;
 	case GBA_REG_SOUND3CNT_LO:
 		GBAAudioWriteSOUND3CNT_LO(&gba->audio, value);
@@ -344,16 +346,15 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 		break;
 	case GBA_REG_SOUND3CNT_HI:
 		GBAAudioWriteSOUND3CNT_HI(&gba->audio, value);
-		value &= 0xE03F;
+		value &= 0xE000;
 		break;
 	case GBA_REG_SOUND3CNT_X:
 		GBAAudioWriteSOUND3CNT_X(&gba->audio, value);
-		// TODO: The low bits need to not be readable, but still 8-bit writable
-		value &= 0x47FF;
+		value &= 0x4000;
 		break;
 	case GBA_REG_SOUND4CNT_LO:
 		GBAAudioWriteSOUND4CNT_LO(&gba->audio, value);
-		value &= 0xFF3F;
+		value &= 0xFF00;
 		break;
 	case GBA_REG_SOUND4CNT_HI:
 		GBAAudioWriteSOUND4CNT_HI(&gba->audio, value);
@@ -482,6 +483,7 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 
 	// SIO
 	case GBA_REG_SIOCNT:
+		value &= 0x7FFF;
 		GBASIOWriteSIOCNT(&gba->sio, value);
 		break;
 	case GBA_REG_RCNT:
@@ -585,9 +587,96 @@ void GBAIOWrite8(struct GBA* gba, uint32_t address, uint8_t value) {
 	if (address > GBA_SIZE_IO) {
 		return;
 	}
-	uint16_t value16 = value << (8 * (address & 1));
-	value16 |= (gba->memory.io[(address & (GBA_SIZE_IO - 1)) >> 1]) & ~(0xFF << (8 * (address & 1)));
-	GBAIOWrite(gba, address & 0xFFFFFFFE, value16);
+	uint16_t value16;
+
+	switch (address) {
+	case GBA_REG_SOUND1CNT_HI:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR11(&gba->audio.psg, value);
+		gba->memory.io[GBA_REG(SOUND1CNT_HI)] &= 0xFF00;
+		gba->memory.io[GBA_REG(SOUND1CNT_HI)] |= value & 0xC0;
+		break;
+	case GBA_REG_SOUND1CNT_HI + 1:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR12(&gba->audio.psg, value);
+		gba->memory.io[GBA_REG(SOUND1CNT_HI)] &= 0x00C0;
+		gba->memory.io[GBA_REG(SOUND1CNT_HI)] |= value << 8;
+		break;
+	case GBA_REG_SOUND1CNT_X:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR13(&gba->audio.psg, value);
+		break;
+	case GBA_REG_SOUND1CNT_X + 1:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR14(&gba->audio.psg, value);
+		gba->memory.io[GBA_REG(SOUND1CNT_X)] = (value & 0x40) << 8;
+		break;
+	case GBA_REG_SOUND2CNT_LO:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR21(&gba->audio.psg, value);
+		gba->memory.io[GBA_REG(SOUND2CNT_LO)] &= 0xFF00;
+		gba->memory.io[GBA_REG(SOUND2CNT_LO)] |= value & 0xC0;
+		break;
+	case GBA_REG_SOUND2CNT_LO + 1:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR22(&gba->audio.psg, value);
+		gba->memory.io[GBA_REG(SOUND2CNT_LO)] &= 0x00C0;
+		gba->memory.io[GBA_REG(SOUND2CNT_LO)] |= value << 8;
+		break;
+	case GBA_REG_SOUND2CNT_HI:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR23(&gba->audio.psg, value);
+		break;
+	case GBA_REG_SOUND2CNT_HI + 1:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR24(&gba->audio.psg, value);
+		gba->memory.io[GBA_REG(SOUND2CNT_HI)] = (value & 0x40) << 8;
+		break;
+	case GBA_REG_SOUND3CNT_HI:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR31(&gba->audio.psg, value);
+		break;
+	case GBA_REG_SOUND3CNT_HI + 1:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		gba->audio.psg.ch3.volume = GBAudioRegisterBankVolumeGetVolumeGBA(value);
+		gba->memory.io[GBA_REG(SOUND3CNT_HI)] = (value & 0xE0) << 8;
+		break;
+	case GBA_REG_SOUND3CNT_X:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR33(&gba->audio.psg, value);
+		break;
+	case GBA_REG_SOUND3CNT_X + 1:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR34(&gba->audio.psg, value);
+		gba->memory.io[GBA_REG(SOUND3CNT_X)] = (value & 0x40) << 8;
+		break;
+	case GBA_REG_SOUND4CNT_LO:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR41(&gba->audio.psg, value);
+		break;
+	case GBA_REG_SOUND4CNT_LO + 1:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR42(&gba->audio.psg, value);
+		gba->memory.io[GBA_REG(SOUND4CNT_LO)] = value << 8;
+		break;
+	case GBA_REG_SOUND4CNT_HI:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR43(&gba->audio.psg, value);
+		gba->memory.io[GBA_REG(SOUND4CNT_HI)] &= 0x4000;
+		gba->memory.io[GBA_REG(SOUND4CNT_HI)] |= value;
+		break;
+	case GBA_REG_SOUND4CNT_HI + 1:
+		GBAAudioSample(&gba->audio, mTimingCurrentTime(&gba->timing));
+		GBAudioWriteNR44(&gba->audio.psg, value);
+		gba->memory.io[GBA_REG(SOUND4CNT_HI)] &= 0x00FF;
+		gba->memory.io[GBA_REG(SOUND4CNT_HI)] |= (value & 0x40) << 8;
+		break;
+	default:
+		value16 = value << (8 * (address & 1));
+		value16 |= (gba->memory.io[(address & (GBA_SIZE_IO - 1)) >> 1]) & ~(0xFF << (8 * (address & 1)));
+		GBAIOWrite(gba, address & 0xFFFFFFFE, value16);
+		break;
+	}
 }
 
 void GBAIOWrite32(struct GBA* gba, uint32_t address, uint32_t value) {
@@ -941,6 +1030,7 @@ void GBAIOSerialize(struct GBA* gba, struct GBASerializedState* state) {
 
 	STORE_32(gba->memory.dmaTransferRegister, 0, &state->dmaTransferRegister);
 	STORE_32(gba->dmaPC, 0, &state->dmaBlockPC);
+	STORE_32(gba->bus, 0, &state->bus);
 
 	GBAHardwareSerialize(&gba->memory.hw, state);
 }
@@ -987,7 +1077,9 @@ void GBAIODeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 
 	LOAD_32(gba->memory.dmaTransferRegister, 0, &state->dmaTransferRegister);
 	LOAD_32(gba->dmaPC, 0, &state->dmaBlockPC);
+	LOAD_32(gba->bus, 0, &state->bus);
 
+	GBADMARecalculateCycles(gba);
 	GBADMAUpdate(gba);
 	GBAHardwareDeserialize(&gba->memory.hw, state);
 }

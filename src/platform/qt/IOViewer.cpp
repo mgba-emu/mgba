@@ -1323,7 +1323,7 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 	});
 	// 0xFF40: LCDC
 	regGB.append({
-		{ tr("Background enable/priority"), 1 },
+		{ tr("Background enable/priority"), 0 },
 		{ tr("Enable sprites"), 1 },
 		{ tr("Double-height sprites"), 2 },
 		{ tr("Background tile map"), 3, 1, {
@@ -1687,7 +1687,15 @@ void IOViewer::bitFlipped() {
 void IOViewer::writeback() {
 	{
 		CoreController::Interrupter interrupter(m_controller);
-		GBAIOWrite(static_cast<GBA*>(m_controller->thread()->core->board), m_register, m_value);
+		mCore* core = m_controller->thread()->core;
+		switch (m_width) {
+		case 0:
+			core->busWrite8(core, m_base + m_register, m_value);
+			break;
+		case 1:
+			core->busWrite16(core, m_base + m_register, m_value);
+			break;
+		}
 	}
 	updateRegister();
 }

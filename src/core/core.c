@@ -15,6 +15,10 @@
 #include <mgba-util/elf-read.h>
 #endif
 
+#ifdef USE_PNG
+#include <mgba-util/image/png-io.h>
+#endif
+
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
 #include <mgba/gb/interface.h>
@@ -86,9 +90,7 @@ struct mCore* mCoreCreate(enum mPlatform platform) {
 	return NULL;
 }
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-#include <mgba-util/image/png-io.h>
-
+#ifdef ENABLE_VFS
 #ifdef PSP2
 #include <psp2/photoexport.h>
 #endif
@@ -237,20 +239,35 @@ bool mCoreAutoloadPatch(struct mCore* core) {
 	if (!core->dirs.patch) {
 		return false;
 	}
-	return core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ups", O_RDONLY)) ||
-	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ips", O_RDONLY)) ||
-	       core->loadPatch(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".bps", O_RDONLY));
+	struct VFile* vf = NULL;
+	if (!vf) {
+		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".bps", O_RDONLY);
+	}
+	if (!vf) {
+		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ups", O_RDONLY);
+	}
+	if (!vf) {
+		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.patch, ".ips", O_RDONLY);
+	}
+	if (!vf) {
+		return false;
+	}
+	bool result = core->loadPatch(core, vf);
+	vf->close(vf);
+	return result;
 }
 
 bool mCoreAutoloadCheats(struct mCore* core) {
-	bool success = true;
+	bool success = !!core->dirs.cheats;
 	int cheatAuto;
-	if (!mCoreConfigGetIntValue(&core->config, "cheatAutoload", &cheatAuto) || cheatAuto) {
+	if (success && (!mCoreConfigGetIntValue(&core->config, "cheatAutoload", &cheatAuto) || cheatAuto)) {
 		struct VFile* vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.cheats, ".cheats", O_RDONLY);
 		if (vf) {
 			struct mCheatDevice* device = core->cheatDevice(core);
 			success = mCheatParseFile(device, vf);
 			vf->close(vf);
+		} else {
+			success = false;
 		}
 	}
 	if (!mCoreConfigGetIntValue(&core->config, "cheatAutosave", &cheatAuto) || cheatAuto) {
@@ -381,7 +398,7 @@ void mCoreInitConfig(struct mCore* core, const char* port) {
 }
 
 void mCoreLoadConfig(struct mCore* core) {
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 	mCoreConfigLoad(&core->config);
 #endif
 	mCoreLoadForeignConfig(core, &core->config);
@@ -389,7 +406,7 @@ void mCoreLoadConfig(struct mCore* core) {
 
 void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config) {
 	mCoreConfigMap(config, &core->opts);
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 	mDirectorySetMapOptions(&core->dirs, &core->opts);
 #endif
 	if (core->opts.audioBuffers) {
@@ -442,6 +459,12 @@ const struct mCoreMemoryBlock* mCoreGetMemoryBlockInfo(struct mCore* core, uint3
 	return NULL;
 }
 
+double mCoreCalculateFramerateRatio(const struct mCore* core, double desiredFrameRate) {
+	uint32_t clockRate = core->frequency(core);
+	uint32_t frameCycles = core->frameCycles(core);
+	return clockRate / (desiredFrameRate * frameCycles);
+}
+
 #ifdef USE_ELF
 bool mCoreLoadELF(struct mCore* core, struct ELF* elf) {
 	struct ELFProgramHeaders ph;
@@ -467,7 +490,7 @@ bool mCoreLoadELF(struct mCore* core, struct ELF* elf) {
 	return true;
 }
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 void mCoreLoadELFSymbols(struct mDebuggerSymbols* symbols, struct ELF* elf) {
 	size_t symIndex = ELFFindSection(elf, ".symtab");
 	size_t names = ELFFindSection(elf, ".strtab");

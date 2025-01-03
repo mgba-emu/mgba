@@ -13,9 +13,14 @@
 #include <mgba/internal/gba/renderers/cache-set.h>
 #include <mgba-util/memory.h>
 
+#define OPENGL_MAGIC 0x6E726C67
+
 static void GBAVideoGLRendererInit(struct GBAVideoRenderer* renderer);
 static void GBAVideoGLRendererDeinit(struct GBAVideoRenderer* renderer);
 static void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer);
+static uint32_t GBAVideoGLRendererId(const struct GBAVideoRenderer* renderer);
+static bool GBAVideoGLRendererLoadState(struct GBAVideoRenderer* renderer, const void* state, size_t size);
+static void GBAVideoGLRendererSaveState(struct GBAVideoRenderer* renderer, void** state, size_t* size);
 static void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address);
 static void GBAVideoGLRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t oam);
 static void GBAVideoGLRendererWritePalette(struct GBAVideoRenderer* renderer, uint32_t address, uint16_t value);
@@ -486,6 +491,8 @@ static const struct GBAVideoGLUniform _uniformsWindow[] = {
 	{ "flags", GBA_GL_WIN_FLAGS, },
 	{ "win0", GBA_GL_WIN_WIN0, },
 	{ "win1", GBA_GL_WIN_WIN1, },
+	{ "circle0", GBA_GL_WIN_CIRCLE0, },
+	{ "circle1", GBA_GL_WIN_CIRCLE1, },
 	{ 0 }
 };
 
@@ -496,6 +503,8 @@ static const char* const _renderWindow =
 	"uniform ivec3 flags;\n"
 	"uniform ivec4 win0[160];\n"
 	"uniform ivec4 win1[160];\n"
+	"uniform vec3 circle0;\n"
+	"uniform vec3 circle1;\n"
 	"OUT(0) out ivec4 window;\n"
 
 	"bool crop(vec4 windowParams) {\n"
@@ -529,13 +538,20 @@ static const char* const _renderWindow =
 	"	return vec4(mix(bottom.xy, top.xy, fract(texCoord.y)), top.zw);\n"
 	"}\n"
 
+	"bool test(vec3 circle, vec4 top, vec4 bottom) {\n"
+	"	if (circle.z > 0.) {\n"
+	"		return distance(circle.xy, texCoord.xy) <= circle.z;\n"
+	"	}\n"
+	"	return crop(interpolate(top, bottom));\n"
+	"}\n"
+
 	"void main() {\n"
 	"	ivec4 windowFlags = ivec4(flags.z, blend, 0);\n"
 	"	int top = int(texCoord.y);\n"
 	"	int bottom = max(top - 1, 0);\n"
-	"	if ((dispcnt & 0x20) != 0 && crop(interpolate(vec4(win0[top]), vec4(win0[bottom])))) { \n"
+	"	if ((dispcnt & 0x20) != 0 && test(circle0, vec4(win0[top]), vec4(win0[bottom]))) {\n"
 	"		windowFlags.x = flags.x;\n"
-	"	} else if ((dispcnt & 0x40) != 0 && crop(interpolate(vec4(win1[top]), vec4(win1[bottom])))) {\n"
+	"	} else if ((dispcnt & 0x40) != 0 && test(circle1, vec4(win1[top]), vec4(win1[bottom]))) {\n"
 	"		windowFlags.x = flags.y;\n"
 	"	}\n"
 	"	window = windowFlags;\n"
@@ -645,9 +661,13 @@ static const GLint _vertices[] = {
 };
 
 void GBAVideoGLRendererCreate(struct GBAVideoGLRenderer* renderer) {
+	memset(renderer, 0, sizeof(*renderer));
 	renderer->d.init = GBAVideoGLRendererInit;
 	renderer->d.reset = GBAVideoGLRendererReset;
 	renderer->d.deinit = GBAVideoGLRendererDeinit;
+	renderer->d.rendererId = GBAVideoGLRendererId;
+	renderer->d.loadState = GBAVideoGLRendererLoadState;
+	renderer->d.saveState = GBAVideoGLRendererSaveState;
 	renderer->d.writeVideoRegister = GBAVideoGLRendererWriteVideoRegister;
 	renderer->d.writeVRAM = GBAVideoGLRendererWriteVRAM;
 	renderer->d.writeOAM = GBAVideoGLRendererWriteOAM;
@@ -940,6 +960,26 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 		int b = M_B5(glRenderer->d.palette[i]);
 		glRenderer->shadowPalette[0][i] = (r << 11) | (g << 5) | b;
 	}
+}
+
+static uint32_t GBAVideoGLRendererId(const struct GBAVideoRenderer* renderer) {
+	UNUSED(renderer);
+	return OPENGL_MAGIC;
+}
+
+static bool GBAVideoGLRendererLoadState(struct GBAVideoRenderer* renderer, const void* state, size_t size) {
+	UNUSED(renderer);
+	UNUSED(state);
+	UNUSED(size);
+	// TODO
+	return false;
+}
+
+static void GBAVideoGLRendererSaveState(struct GBAVideoRenderer* renderer, void** state, size_t* size) {
+	UNUSED(renderer);
+	*state = NULL;
+	*size = 0;
+	// TODO
 }
 
 void GBAVideoGLRendererWriteVRAM(struct GBAVideoRenderer* renderer, uint32_t address) {
@@ -1924,6 +1964,127 @@ void GBAVideoGLRendererDrawBackgroundMode5(struct GBAVideoGLRenderer* renderer, 
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
 
+static void _detectCircle(struct GBAVideoGLRenderer* renderer, int y, int window) {
+	int lastStart = 0;
+	int lastEnd = 0;
+
+	int startX = 0;
+	int endX = 0;
+
+	int firstY = -1;
+	float centerX;
+	float centerY = -1;
+	float radius = 0;
+	bool invalid = false;
+
+	int i;
+	for (i = renderer->firstY; i <= y; ++i) {
+		lastStart = startX;
+		lastEnd = endX;
+		startX = renderer->winNHistory[window][i * 4];
+		endX = renderer->winNHistory[window][i * 4 + 1];
+		int startY = renderer->winNHistory[window][i * 4 + 2];
+		int endY = renderer->winNHistory[window][i * 4 + 3];
+
+		if (startX == endX || i < startY || i >= endY) {
+			if (firstY >= 0) {
+				// The bottom edge of the circle
+				centerY = (firstY + i) / 2.f;
+				firstY = -1;
+			}
+			continue;
+		}
+		if (lastEnd - lastStart <= 0) {
+			continue;
+		}
+
+		// The previous segment was non-zero
+		if (startX >= GBA_VIDEO_HORIZONTAL_PIXELS) {
+			invalid = true;
+			break;
+		}
+
+		int startDiff = lastStart - startX;
+		int endDiff = endX - lastEnd;
+		// Make sure the slopes match, otherwise this isn't a circle
+		if (startDiff - endDiff < -1 || startDiff - endDiff > 1) {
+			invalid = true;
+			break;
+		}
+
+		if (startX < lastStart) {
+			centerX = (startX + endX) / 2.f;
+			if (radius > 0) {
+				// We found two separate shapes, which the interpolation can't handle
+				invalid = true;
+				break;
+			}
+		} else if (startX > lastStart && radius <= 0) {
+			radius = (lastEnd - lastStart) / 2.f;
+		}
+
+		if (firstY < 0 && i - 1 >= startY && i - 1 < endY) {
+			firstY = i - 1;
+		}
+	}
+
+	if (radius <= 0) {
+		invalid = true;
+	}
+	if (centerY < 0) {
+		invalid = true;
+	}
+
+	// Check validity
+	for (i = renderer->firstY; i <= y && !invalid; ++i) {
+		int startX = renderer->winNHistory[window][i * 4];
+		int endX = renderer->winNHistory[window][i * 4 + 1];
+		int startY = renderer->winNHistory[window][i * 4 + 2];
+		int endY = renderer->winNHistory[window][i * 4 + 3];
+
+		bool xActive = startX < endX;
+		bool yActive = i >= startY && i < endY;
+
+		if (xActive && yActive) {
+			// Real window would be active, make sure simulated window would too
+			if (centerY - i > radius) {
+				// y is above the radius
+				invalid = true;
+				break;
+			}
+			if (i - centerY > radius) {
+				// y is below the radius
+				invalid = true;
+				break;
+			}
+
+			float cosine = fabsf(i - centerY);
+			float sine = sqrtf(radius * radius - cosine * cosine);
+			if (fabsf(centerX - sine - startX) <= 1 && fabsf(centerX + sine - endX) <= 1) {
+				continue;
+			}
+
+			if (radius >= cosine + 1) {
+				sine = sqrtf(radius * radius - (cosine + 1) * (cosine + 1));
+				if (fabsf(centerX - sine - startX) <= 1 && fabsf(centerX + sine - endX) <= 1) {
+					continue;
+				}
+			}
+			// y is active on the wrong parts of the scanline
+			invalid = true;
+		} else if (centerY - i < radius && i - centerY < radius) {
+			// Real window would be inactive, make sure simulated window would too
+			invalid = true;
+		}
+	}
+
+	if (invalid) {
+		glUniform3f(renderer->windowShader.uniforms[GBA_GL_WIN_CIRCLE0 + window], 0, 0, 0);
+	} else {
+		glUniform3f(renderer->windowShader.uniforms[GBA_GL_WIN_CIRCLE0 + window], centerX, centerY, radius - 0.499);
+	}
+}
+
 void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y) {
 	const struct GBAVideoGLShader* shader = &renderer->windowShader;
 	const GLuint* uniforms = shader->uniforms;
@@ -1950,6 +2111,8 @@ void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y) {
 		glUniform3i(uniforms[GBA_GL_WIN_FLAGS], renderer->winN[0].control, renderer->winN[1].control, renderer->winout);
 		glUniform4iv(uniforms[GBA_GL_WIN_WIN0], GBA_VIDEO_VERTICAL_PIXELS, renderer->winNHistory[0]);
 		glUniform4iv(uniforms[GBA_GL_WIN_WIN1], GBA_VIDEO_VERTICAL_PIXELS, renderer->winNHistory[1]);
+		_detectCircle(renderer, y, 0);
+		_detectCircle(renderer, y, 1);
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 		break;
 	}

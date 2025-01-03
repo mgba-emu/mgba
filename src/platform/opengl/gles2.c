@@ -271,20 +271,28 @@ static void mGLES2ContextDeinit(struct VideoBackend* v) {
 	free(context->initialShader.uniforms);
 }
 
-static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h) {
+static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h, unsigned maxW, unsigned maxH) {
 	struct mGLES2Context* context = (struct mGLES2Context*) v;
 	unsigned drawW = w;
 	unsigned drawH = h;
 
-	unsigned maxW = context->width;
-	unsigned maxH = context->height;
+	if (maxW && drawW > maxW) {
+		drawW = maxW;
+	}
+
+	if (maxH && drawH > maxH) {
+		drawH = maxH;
+	}
+
+	unsigned lockW = context->width;
+	unsigned lockH = context->height;
 
 	if (v->lockAspectRatio) {
-		lockAspectRatioUInt(maxW, maxH, &drawW, &drawH);
+		lockAspectRatioUInt(lockW, lockH, &drawW, &drawH);
 	}
 	if (v->lockIntegerScaling) {
-		lockIntegerRatioUInt(maxW, &drawW);
-		lockIntegerRatioUInt(maxH, &drawH);
+		lockIntegerRatioUInt(lockW, &drawW);
+		lockIntegerRatioUInt(lockH, &drawH);
 	}
 	size_t n;
 	for (n = 0; n < context->nShaders; ++n) {
@@ -521,7 +529,7 @@ static void mGLES2ContextImageSize(struct VideoBackend* v, enum VideoLayer layer
 		*height = context->layerDims[layer].height;
 	} else {
 		*width = context->imageSizes[layer].width;
-		*height = context->imageSizes[layer].height;		
+		*height = context->imageSizes[layer].height;
 	}
 }
 
@@ -609,7 +617,7 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 	if (shader->width > 0 && shader->height > 0) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, shader->width, shader->height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 	} else {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);		
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 512, 512, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 	}
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, shader->tex, 0);
@@ -1073,6 +1081,7 @@ static bool _loadUniform(struct Configuration* description, size_t pass, struct 
 	return true;
 }
 
+#ifdef ENABLE_VFS
 bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 	struct VFile* manifest = dir->openFile(dir, "manifest.ini", O_RDONLY);
 	if (!manifest) {
@@ -1196,6 +1205,7 @@ bool mGLES2ShaderLoad(struct VideoShader* shader, struct VDir* dir) {
 	ConfigurationDeinit(&description);
 	return success;
 }
+#endif
 
 void mGLES2ShaderFree(struct VideoShader* shader) {
 	free((void*) shader->name);

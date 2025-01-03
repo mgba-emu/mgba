@@ -9,6 +9,7 @@
 
 #ifdef BUILD_SDL
 
+#define SDL_MAIN_HANDLED
 #include "platform/sdl/sdl-audio.h"
 
 namespace QGBA {

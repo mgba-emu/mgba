@@ -18,6 +18,7 @@
 #include <mgba-util/crc32.h>
 #include <mgba-util/math.h>
 #include <mgba-util/memory.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 #ifdef USE_ELF
@@ -40,6 +41,9 @@ static const uint8_t GBA_ROM_MAGIC2[] = { 0x96 };
 static const size_t GBA_MB_MAGIC_OFFSET = 0xC0;
 
 static void GBAInit(void* cpu, struct mCPUComponent* component);
+static void GBACP0Process(struct ARMCore* cpu, int crn, int crm, int crd, int opcode1, int opcode2);
+static int32_t GBACP14Read(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2);
+static void GBACP14Write(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2, int32_t value);
 static void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh);
 static void GBAProcessEvents(struct ARMCore* cpu);
 static void GBAHitStub(struct ARMCore* cpu, uint32_t opcode);
@@ -49,7 +53,7 @@ static void GBATestIRQNoDelay(struct ARMCore* cpu);
 
 static void _triggerIRQ(struct mTiming*, void* user, uint32_t cyclesLate);
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 static bool _setSoftwareBreakpoint(struct ARMDebugger*, uint32_t address, enum ExecutionMode mode, uint32_t* opcode);
 static void _clearSoftwareBreakpoint(struct ARMDebugger*, const struct ARMDebugBreakpoint*);
 #endif
@@ -72,6 +76,9 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->sync = 0;
 
 	GBAInterruptHandlerInit(&gba->cpu->irqh);
+	gba->cpu->cp[0].cdp = GBACP0Process;
+	gba->cpu->cp[14].mrc = GBACP14Read;
+	gba->cpu->cp[14].mcr = GBACP14Write;
 	GBAMemoryInit(gba);
 
 	gba->memory.savedata.timing = &gba->timing;
@@ -111,7 +118,7 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->biosChecksum = GBAChecksum(gba->memory.bios, GBA_SIZE_BIOS);
 
 	gba->idleOptimization = IDLE_LOOP_REMOVE;
-	gba->idleLoop = IDLE_LOOP_NONE;
+	gba->idleLoop = GBA_IDLE_LOOP_NONE;
 
 	gba->vbaBugCompat = false;
 	gba->hardCrash = true;
@@ -133,6 +140,9 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 
 void GBAUnloadROM(struct GBA* gba) {
 	GBAMemoryClearAGBPrint(gba);
+	if (gba->memory.unl.type) {
+		GBAUnlCartUnload(gba);
+	}
 	if (gba->memory.rom && !gba->isPristine) {
 		if (gba->yankedRomSize) {
 			gba->yankedRomSize = 0;
@@ -165,7 +175,7 @@ void GBAUnloadROM(struct GBA* gba) {
 		gba->memory.savedata.realVf->close(gba->memory.savedata.realVf);
 		gba->memory.savedata.realVf = 0;
 	}
-	gba->idleLoop = IDLE_LOOP_NONE;
+	gba->idleLoop = GBA_IDLE_LOOP_NONE;
 }
 
 void GBADestroy(struct GBA* gba) {
@@ -184,6 +194,30 @@ void GBADestroy(struct GBA* gba) {
 	GBASIODeinit(&gba->sio);
 	mTimingDeinit(&gba->timing);
 	mCoreCallbacksListDeinit(&gba->coreCallbacks);
+}
+
+static void GBACP0Process(struct ARMCore* cpu, int crn, int crm, int crd, int opcode1, int opcode2) {
+	UNUSED(cpu);
+	mLOG(GBA, INFO, "Hit Wii U VC opcode: cdp p0, %i, c%i, c%i, c%i, %i", opcode1, crd, crn, crm, opcode2);
+}
+
+static int32_t GBACP14Read(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2) {
+	UNUSED(crn);
+	UNUSED(crm);
+	UNUSED(opcode1);
+	UNUSED(opcode2);
+	mLOG(GBA, GAME_ERROR, "Read from missing CP14");
+	return GBALoadBad(cpu);
+}
+
+static void GBACP14Write(struct ARMCore* cpu, int crn, int crm, int opcode1, int opcode2, int32_t value) {
+	UNUSED(cpu);
+	UNUSED(crn);
+	UNUSED(crm);
+	UNUSED(opcode1);
+	UNUSED(opcode2);
+	UNUSED(value);
+	mLOG(GBA, GAME_ERROR, "Write to missing CP14");
 }
 
 void GBAInterruptHandlerInit(struct ARMInterruptHandler* irqh) {
@@ -220,6 +254,7 @@ void GBAReset(struct ARMCore* cpu) {
 		gba->memory.romMask = toPow2(gba->memory.romSize) - 1;
 		gba->yankedRomSize = 0;
 	}
+	gba->lastRumble = 0;
 	mTimingClear(&gba->timing);
 	GBAMemoryReset(gba);
 	GBAVideoReset(&gba->video);
@@ -231,8 +266,8 @@ void GBAReset(struct ARMCore* cpu) {
 
 	// GB Player SIO control should not be engaged before detection, even if we already know it's GBP
 	gba->memory.hw.devices &= ~HW_GB_PLAYER;
-	if (gba->sio.drivers.normal == &gba->sio.gbp.d) {
-		GBASIOSetDriver(&gba->sio, NULL, SIO_NORMAL_32);
+	if (gba->sio.driver == &gba->sio.gbp.d) {
+		GBASIOSetDriver(&gba->sio, NULL);
 	}
 
 	bool isELF = false;
@@ -305,14 +340,10 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 		do {
 			int32_t cycles = cpu->cycles;
 			cpu->cycles = 0;
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 			gba->timing.globalCycles += cycles < nextEvent ? nextEvent : cycles;
 #endif
-#ifndef NDEBUG
-			if (cycles < 0) {
-				mLOG(GBA, FATAL, "Negative cycles passed: %i", cycles);
-			}
-#endif
+			mASSERT_DEBUG_LOG(GBA, cycles >= 0, "Negative cycles passed: %i", cycles);
 			nextEvent = mTimingTick(&gba->timing, cycles < nextEvent ? nextEvent : cycles);
 		} while (gba->cpuBlocked && !gba->earlyExit);
 
@@ -322,12 +353,9 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 			if (!gba->memory.io[GBA_REG(IME)] || !gba->memory.io[GBA_REG(IE)]) {
 				break;
 			}
+		} else {
+			mASSERT_DEBUG_LOG(GBA, nextEvent >= 0, "Negative cycles will pass: %i", nextEvent);
 		}
-#ifndef NDEBUG
-		else if (nextEvent < 0) {
-			mLOG(GBA, FATAL, "Negative cycles will pass: %i", nextEvent);
-		}
-#endif
 		if (gba->earlyExit) {
 			break;
 		}
@@ -338,7 +366,7 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 	}
 }
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger) {
 	gba->debugger = (struct ARMDebugger*) debugger->platform;
 	gba->debugger->setSoftwareBreakpoint = _setSoftwareBreakpoint;
@@ -383,10 +411,14 @@ bool GBALoadMB(struct GBA* gba, struct VFile* vf) {
 	gba->mbVf = vf;
 	vf->seek(vf, 0, SEEK_SET);
 	memset(gba->memory.wram, 0, GBA_SIZE_EWRAM);
-	vf->read(vf, gba->memory.wram, GBA_SIZE_EWRAM);
+	off_t read = vf->read(vf, gba->memory.wram, GBA_SIZE_EWRAM);
+	if (read < 0) {
+		return false;
+	}
 	if (gba->cpu && gba->memory.activeRegion == GBA_REGION_IWRAM) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
+	gba->romCrc32 = doCrc32(gba->memory.wram, read);
 	return true;
 }
 
@@ -463,16 +495,16 @@ bool GBALoadROM(struct GBA* gba, struct VFile* vf) {
 		gba->cpu->memory.setActiveRegion(gba->cpu, gba->cpu->gprs[ARM_PC]);
 	}
 	GBAHardwareInit(&gba->memory.hw, &((uint16_t*) gba->memory.rom)[GPIO_REG_DATA >> 1]);
-	GBAVFameDetect(&gba->memory.vfame, gba->memory.rom, gba->memory.romSize);
+	GBAUnlCartDetect(gba);
 	// TODO: error check
 	return true;
 }
 
 bool GBALoadSave(struct GBA* gba, struct VFile* sav) {
-	enum SavedataType type = gba->memory.savedata.type;
+	enum GBASavedataType type = gba->memory.savedata.type;
 	GBASavedataDeinit(&gba->memory.savedata);
 	GBASavedataInit(&gba->memory.savedata, sav);
-	if (type != SAVEDATA_AUTODETECT) {
+	if (type != GBA_SAVEDATA_AUTODETECT) {
 		GBASavedataForceType(&gba->memory.savedata, type);
 	}
 	return sav;
@@ -528,16 +560,14 @@ void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
 		mappedMemoryFree(newRom, GBA_SIZE_ROM0);
 		return;
 	}
-	if (gba->romVf) {
+	if (gba->memory.rom) {
 #ifndef FIXED_ROM_BUFFER
 		if (!gba->isPristine) {
-			mappedMemoryFree(gba->memory.rom, GBA_SIZE_ROM0);
+			mappedMemoryFree(gba->memory.rom, gba->memory.romSize);
 		} else {
 			gba->romVf->unmap(gba->romVf, gba->memory.rom, gba->pristineRomSize);
 		}
 #endif
-		gba->romVf->close(gba->romVf);
-		gba->romVf = NULL;
 	}
 	gba->isPristine = false;
 	gba->memory.rom = newRom;
@@ -825,32 +855,30 @@ bool GBAIsBIOS(struct VFile* vf) {
 	return true;
 }
 
-void GBAGetGameCode(const struct GBA* gba, char* out) {
-	memset(out, 0, 8);
-	if (!gba->memory.rom) {
-		return;
-	}
-
-	memcpy(out, "AGB-", 4);
-	memcpy(&out[4], &((struct GBACartridge*) gba->memory.rom)->id, 4);
-}
-
-void GBAGetGameTitle(const struct GBA* gba, char* out) {
+void GBAGetGameInfo(const struct GBA* gba, struct mGameInfo* info) {
+	memset(info, 0, sizeof(*info));
+	strlcpy(info->system, "AGB", sizeof(info->system));
+	struct GBACartridge* cart = NULL;
 	if (gba->memory.rom) {
-		memcpy(out, &((struct GBACartridge*) gba->memory.rom)->title, 12);
-		return;
+		cart = (struct GBACartridge*) gba->memory.rom;
+	} else if (gba->mbVf && gba->memory.wram) {
+		cart = (struct GBACartridge*) gba->memory.wram;
 	}
-	if (gba->isPristine && gba->memory.wram) {
-		memcpy(out, &((struct GBACartridge*) gba->memory.wram)->title, 12);
-		return;
+
+	if (cart) {
+		memcpy(info->title, &cart->title, 12);
+		memcpy(info->code, &cart->id, 4);
+		memcpy(info->maker, &cart->maker, 2);
+		info->version = cart->version;
+	} else {
+		strlcpy(info->title, "(BIOS)", 12);
 	}
-	strncpy(out, "(BIOS)", 12);
 }
 
 void GBAHitStub(struct ARMCore* cpu, uint32_t opcode) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	UNUSED(gba);
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (gba->debugger) {
 		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
@@ -873,7 +901,7 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 		// TODO: More sensible category?
 		mLOG(GBA, WARN, "Illegal opcode: %08x", opcode);
 	}
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (gba->debugger) {
 		struct mDebuggerEntryInfo info = {
 			.address = _ARMPCAddress(cpu),
@@ -888,7 +916,7 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 	struct GBA* gba = (struct GBA*) cpu->master;
 	switch (immediate) {
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	case CPU_COMPONENT_DEBUGGER:
 		if (gba->debugger) {
 			struct mDebuggerEntryInfo info = {
@@ -928,10 +956,6 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 void GBAFrameStarted(struct GBA* gba) {
 	GBATestKeypadIRQ(gba);
 
-	if (gba->audio.mixer) {
-		gba->audio.mixer->vblank(gba->audio.mixer);
-	}
-
 	size_t c;
 	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
 		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
@@ -957,7 +981,7 @@ void GBAFrameEnded(struct GBA* gba) {
 	}
 
 	if (gba->stream && gba->stream->postVideoFrame) {
-		const color_t* pixels;
+		const mColor* pixels;
 		size_t stride;
 		gba->video.renderer->getPixels(gba->video.renderer, &stride, (const void**) &pixels);
 		gba->stream->postVideoFrame(gba->stream, pixels, stride);
@@ -965,6 +989,12 @@ void GBAFrameEnded(struct GBA* gba) {
 
 	if (gba->memory.hw.devices & (HW_GB_PLAYER | HW_GB_PLAYER_DETECTION)) {
 		GBASIOPlayerUpdate(gba);
+	}
+
+	struct mRumble* rumble = gba->rumble;
+	if (rumble && rumble->integrate) {
+		gba->lastRumble = mTimingCurrentTime(&gba->timing);
+		rumble->integrate(rumble, VIDEO_TOTAL_LENGTH);
 	}
 
 	size_t c;
@@ -1053,7 +1083,7 @@ void GBAClearBreakpoint(struct GBA* gba, uint32_t address, enum ExecutionMode mo
 	}
 }
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 static bool _setSoftwareBreakpoint(struct ARMDebugger* debugger, uint32_t address, enum ExecutionMode mode, uint32_t* opcode) {
 	GBASetBreakpoint((struct GBA*) debugger->cpu->master, &debugger->d.p->d, address, mode, opcode);
 	return true;

@@ -131,7 +131,7 @@ static void _latchTAMA6Rtc(struct mRTCSource* rtc, struct GBTAMA5State* tama5, t
 		timerRegs[GBTAMA6_RTC_PA0_HOUR_10] = (diff % 24) / 10;
 	} else {
 		timerRegs[GBTAMA6_RTC_PA0_HOUR_1] = (diff % 12) % 10;
-		timerRegs[GBTAMA6_RTC_PA0_HOUR_10] = (diff % 12) / 10 + (diff / 12) * 2;		
+		timerRegs[GBTAMA6_RTC_PA0_HOUR_10] = (diff % 12) / 10 + (diff / 12) * 2;
 	}
 	t /= 24;
 	t += diff / 24;

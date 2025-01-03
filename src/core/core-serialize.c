@@ -57,7 +57,7 @@ void mStateExtdataPut(struct mStateExtdata* extdata, enum mStateExtdataTag tag, 
 	extdata->data[tag] = *item;
 }
 
-bool mStateExtdataGet(struct mStateExtdata* extdata, enum mStateExtdataTag tag, struct mStateExtdataItem* item) {
+bool mStateExtdataGet(const struct mStateExtdata* extdata, enum mStateExtdataTag tag, struct mStateExtdataItem* item) {
 	if (tag == EXTDATA_NONE || tag >= EXTDATA_MAX) {
 		return false;
 	}
@@ -130,6 +130,9 @@ bool mStateExtdataDeserialize(struct mStateExtdata* extdata, struct VFile* vf) {
 		ssize_t position = vf->seek(vf, 0, SEEK_CUR);
 		if (vf->seek(vf, header.offset, SEEK_SET) < 0) {
 			return false;
+		}
+		if (header.size <= 0) {
+			continue;
 		}
 		struct mStateExtdataItem item = {
 			.data = malloc(header.size),
@@ -246,9 +249,16 @@ static int _loadPNGChunkHandler(png_structp png, png_unknown_chunkp chunk) {
 		}
 		const uint8_t* data = chunk->data;
 		data += sizeof(uint32_t) * 2;
-		uncompress((Bytef*) item.data, &len, data, chunk->size);
-		item.size = len;
-		mStateExtdataPut(extdata, tag, &item);
+		if (uncompress((Bytef*) item.data, &len, data, chunk->size) == Z_OK) {
+			if ((uLongf) item.size != len) {
+				mLOG(SAVESTATE, WARN, "Mismatched decompressed extdata %i size (%d vs %u)", tag, item.size, (uint32_t) len);
+				item.size = len;
+			}
+			mStateExtdataPut(extdata, tag, &item);
+		} else {
+			mLOG(SAVESTATE, WARN, "Failed to decompress extdata chunk");
+			free(item.data);
+		}
 		return 1;
 	}
 	return 0;
@@ -317,7 +327,7 @@ static void* _loadPNGState(struct mCore* core, struct VFile* vf, struct mStateEx
 	return state;
 }
 
-static bool _loadPNGExtadata(struct VFile* vf, struct mStateExtdata* extdata) {
+static bool _loadPNGExtdata(struct VFile* vf, struct mStateExtdata* extdata) {
 	png_structp png = PNGReadOpen(vf, PNG_HEADER_BYTES);
 	png_infop info = png_create_info_struct(png);
 	png_infop end = png_create_info_struct(png);
@@ -371,6 +381,7 @@ bool mCoreSaveStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	mStateExtdataInit(&extdata);
 	size_t stateSize = core->stateSize(core);
 
+	core->saveExtraState(core, &extdata);
 	if (flags & SAVESTATE_METADATA) {
 		uint64_t* creationUsec = malloc(sizeof(*creationUsec));
 		if (creationUsec) {
@@ -507,7 +518,7 @@ void* mCoreExtractState(struct mCore* core, struct VFile* vf, struct mStateExtda
 bool mCoreExtractExtdata(struct mCore* core, struct VFile* vf, struct mStateExtdata* extdata) {
 #ifdef USE_PNG
 	if (isPNG(vf)) {
-		return _loadPNGExtadata(vf, extdata);
+		return _loadPNGExtdata(vf, extdata);
 	}
 #endif
 	if (!core) {
@@ -527,6 +538,8 @@ bool mCoreLoadStateNamed(struct mCore* core, struct VFile* vf, int flags) {
 	}
 	bool success = core->loadState(core, state);
 	mappedMemoryFree(state, core->stateSize(core));
+
+	core->loadExtraState(core, &extdata);
 
 	unsigned width, height;
 	core->currentVideoSize(core, &width, &height);

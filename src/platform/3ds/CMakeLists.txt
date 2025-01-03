@@ -1,5 +1,5 @@
-set(USE_VFS_3DS OFF CACHE BOOL "Use 3DS-specific file support")
-mark_as_advanced(USE_VFS_3DS)
+set(ENABLE_VFS_3DS OFF CACHE BOOL "Use 3DS-specific file support")
+mark_as_advanced(ENABLE_VFS_3DS)
 
 find_program(3DSLINK 3dslink)
 find_program(3DSXTOOL 3dsxtool)
@@ -28,12 +28,13 @@ set(OS_SRC
 set(OS_LIB ${OS_LIB} PARENT_SCOPE)
 source_group("3DS-specific code" FILES ${OS_SRC})
 
-if(USE_VFS_3DS)
-	list(APPEND OS_DEFINES USE_VFS_3DS)
+if(ENABLE_VFS_3DS)
+	list(APPEND OS_DEFINES ENABLE_VFS_3DS)
 else()
-	list(APPEND CORE_VFS_SRC ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
+	list(APPEND OS_DEFINES ENABLE_VFS_FD)
+	list(APPEND VFS_SRC ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c)
 endif()
-set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
+set(VFS_SRC ${VFS_SRC} PARENT_SCOPE)
 set(OS_DEFINES ${OS_DEFINES} PARENT_SCOPE)
 
 list(APPEND GUI_SRC

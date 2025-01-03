@@ -46,7 +46,7 @@ static void _updateList(const char* key, const char* value, void* user) {
 	if (strncmp("medusa.", key, 7) == 0) {
 		dotLoc = strchr(&key[7], '.');
 	} else {
-		dotLoc = strchr(key, '.');		
+		dotLoc = strchr(key, '.');
 	}
 	if (!dotLoc) {
 		return;

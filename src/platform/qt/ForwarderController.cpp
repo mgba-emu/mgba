@@ -160,7 +160,7 @@ void ForwarderController::gotManifest(QNetworkReply* reply) {
 	mUpdaterGetUpdateForChannel(&context, platform.toUtf8().constData(), m_channel.toUtf8().constData(), &update);
 
 	downloadBuild({bucket + update.path});
-    mUpdaterDeinit(&context);
+	mUpdaterDeinit(&context);
 }
 
 void ForwarderController::downloadBuild(const QUrl& url) {
@@ -174,7 +174,7 @@ void ForwarderController::downloadBuild(const QUrl& url) {
 		.arg(extension));
 	if (!m_sourceFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
 		emit buildFailed();
-		return;		
+		return;
 	}
 	QNetworkReply* reply = GBAApp::app()->httpGet(url);
 
@@ -232,9 +232,9 @@ bool ForwarderController::toolInstalled(const QString& tool) {
 
 void ForwarderController::connectReply(QNetworkReply* reply, Download download, void (ForwarderController::*next)(QNetworkReply*)) {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-	connect(reply, &QNetworkReply::errorOccurred, this, [this, reply]() {
+	connect(reply, &QNetworkReply::errorOccurred, this, [this]() {
 #else
-	connect(reply, qOverload<>(&QNetworkReply::error), this, [this, reply]() {
+	connect(reply, qOverload<>(&QNetworkReply::error), this, [this]() {
 #endif
 		emit buildFailed();
 	});

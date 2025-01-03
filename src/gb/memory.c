@@ -1017,8 +1017,6 @@ void _pristineCow(struct GB* gb) {
 	}
 	if (gb->romVf) {
 		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->memory.romSize);
-		gb->romVf->close(gb->romVf);
-		gb->romVf = NULL;
 	}
 	gb->memory.rom = newRom;
 	GBMBCSwitchBank(gb, gb->memory.currentBank);

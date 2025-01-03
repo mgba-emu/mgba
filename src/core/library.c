@@ -6,6 +6,7 @@
 #include <mgba/core/library.h>
 
 #include <mgba/core/core.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 #ifdef USE_SQLITE3
@@ -291,8 +292,10 @@ bool _mLibraryAddEntry(struct mLibrary* library, const char* filename, const cha
 	core->init(core);
 	core->loadROM(core, vf);
 
-	core->getGameTitle(core, entry.internalTitle);
-	core->getGameCode(core, entry.internalCode);
+	struct mGameInfo info;
+	core->getGameInfo(core, &info);
+	snprintf(entry.internalCode, sizeof(entry.internalCode), "%s-%s", info.system, info.code);
+	strlcpy(entry.internalTitle, info.title, sizeof(entry.internalTitle));
 	core->checksum(core, &entry.crc32, mCHECKSUM_CRC32);
 	entry.platform = core->platform(core);
 	entry.title = NULL;
