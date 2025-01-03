@@ -353,7 +353,7 @@ static void _loadAudioLowPassFilterSettings(void) {
 #define GBA_CC_BG         0.21f
 #define GBA_CC_GAMMA_ADJ  1.0f
 
-static color_t* ccLUT              = NULL;
+static mColor* ccLUT               = NULL;
 static unsigned ccType             = 0;
 static bool colorCorrectionEnabled = false;
 
@@ -456,7 +456,7 @@ static void _initColorCorrection(void) {
 
 	/* Allocate look-up table buffer, if required */
 	if (!ccLUT) {
-		size_t lutSize = 65536 * sizeof(color_t);
+		size_t lutSize = 65536 * sizeof(mColor);
 		ccLUT = malloc(lutSize);
 		if (!ccLUT) {
 			return;
@@ -553,17 +553,17 @@ enum frame_blend_method
 
 static enum frame_blend_method frameBlendType = FRAME_BLEND_NONE;
 static bool frameBlendEnabled                 = false;
-static color_t* outputBufferPrev1             = NULL;
-static color_t* outputBufferPrev2             = NULL;
-static color_t* outputBufferPrev3             = NULL;
-static color_t* outputBufferPrev4             = NULL;
+static mColor* outputBufferPrev1              = NULL;
+static mColor* outputBufferPrev2              = NULL;
+static mColor* outputBufferPrev3              = NULL;
+static mColor* outputBufferPrev4              = NULL;
 static float* outputBufferAccR                = NULL;
 static float* outputBufferAccG                = NULL;
 static float* outputBufferAccB                = NULL;
 static float frameBlendResponse[4]            = {0.0f};
 static bool frameBlendResponseSet             = false;
 
-static bool _allocateOutputBufferPrev(color_t** buf) {
+static bool _allocateOutputBufferPrev(mColor** buf) {
 	if (!*buf) {
 		*buf = malloc(VIDEO_BUFF_SIZE);
 		if (!*buf) {
@@ -721,7 +721,7 @@ static void _loadFrameBlendSettings(void) {
 }
 
 /* General post processing buffers/functions */
-static color_t* ppOutputBuffer = NULL;
+static mColor* ppOutputBuffer = NULL;
 
 static void (*videoPostProcess)(unsigned width, unsigned height) = NULL;
 
@@ -732,8 +732,8 @@ static void (*videoPostProcess)(unsigned width, unsigned height) = NULL;
  *   minimise logic in the inner loops where possible  */
 static void videoPostProcessCc(unsigned width, unsigned height) {
 
-	color_t *src = outputBuffer;
-	color_t *dst = ppOutputBuffer;
+	mColor *src = outputBuffer;
+	mColor *dst = ppOutputBuffer;
 	size_t x, y;
 
 	for (y = 0; y < height; y++) {
@@ -747,25 +747,25 @@ static void videoPostProcessCc(unsigned width, unsigned height) {
 
 static void videoPostProcessMix(unsigned width, unsigned height) {
 
-	color_t *srcCurr = outputBuffer;
-	color_t *srcPrev = outputBufferPrev1;
-	color_t *dst     = ppOutputBuffer;
+	mColor *srcCurr = outputBuffer;
+	mColor *srcPrev = outputBufferPrev1;
+	mColor *dst     = ppOutputBuffer;
 	size_t x, y;
 
 	for (y = 0; y < height; y++) {
 		for (x = 0; x < width; x++) {
 
 			/* Get colours from current + previous frames */
-			color_t rgbCurr = *(srcCurr + x);
-			color_t rgbPrev = *(srcPrev + x);
+			mColor rgbCurr = *(srcCurr + x);
+			mColor rgbPrev = *(srcPrev + x);
 
 			/* Store colours for next frame */
-			*(srcPrev + x)  = rgbCurr;
+			*(srcPrev + x) = rgbCurr;
 
 			/* Mix colours
 			 * > "Mixing Packed RGB Pixels Efficiently"
 			 *   http://blargg.8bitalley.com/info/rgb_mixing.html */
-			color_t rgbMix  = (rgbCurr + rgbPrev + ((rgbCurr ^ rgbPrev) & 0x821)) >> 1;
+			mColor rgbMix  = (rgbCurr + rgbPrev + ((rgbCurr ^ rgbPrev) & 0x821)) >> 1;
 
 			/* Assign colours for current frame */
 			*(dst + x)      = colorCorrectionEnabled ?
@@ -779,21 +779,21 @@ static void videoPostProcessMix(unsigned width, unsigned height) {
 
 static void videoPostProcessMixSmart(unsigned width, unsigned height) {
 
-	color_t *srcCurr  = outputBuffer;
-	color_t *srcPrev1 = outputBufferPrev1;
-	color_t *srcPrev2 = outputBufferPrev2;
-	color_t *srcPrev3 = outputBufferPrev3;
-	color_t *dst      = ppOutputBuffer;
+	mColor *srcCurr  = outputBuffer;
+	mColor *srcPrev1 = outputBufferPrev1;
+	mColor *srcPrev2 = outputBufferPrev2;
+	mColor *srcPrev3 = outputBufferPrev3;
+	mColor *dst      = ppOutputBuffer;
 	size_t x, y;
 
 	for (y = 0; y < height; y++) {
 		for (x = 0; x < width; x++) {
 
 			/* Get colours from current + previous frames */
-			color_t rgbCurr  = *(srcCurr + x);
-			color_t rgbPrev1 = *(srcPrev1 + x);
-			color_t rgbPrev2 = *(srcPrev2 + x);
-			color_t rgbPrev3 = *(srcPrev3 + x);
+			mColor rgbCurr  = *(srcCurr + x);
+			mColor rgbPrev1 = *(srcPrev1 + x);
+			mColor rgbPrev2 = *(srcPrev2 + x);
+			mColor rgbPrev3 = *(srcPrev3 + x);
 
 			/* Store colours for next frame */
 			*(srcPrev1 + x) = rgbCurr;
@@ -811,7 +811,7 @@ static void videoPostProcessMixSmart(unsigned width, unsigned height) {
 				/* Mix colours
 				 * > "Mixing Packed RGB Pixels Efficiently"
 				 *   http://blargg.8bitalley.com/info/rgb_mixing.html */
-				color_t rgbMix = (rgbCurr + rgbPrev1 + ((rgbCurr ^ rgbPrev1) & 0x821)) >> 1;
+				mColor rgbMix = (rgbCurr + rgbPrev1 + ((rgbCurr ^ rgbPrev1) & 0x821)) >> 1;
 
 				/* Assign colours for current frame */
 				*(dst + x) = colorCorrectionEnabled ?
@@ -833,24 +833,24 @@ static void videoPostProcessMixSmart(unsigned width, unsigned height) {
 
 static void videoPostProcessLcdGhost(unsigned width, unsigned height) {
 
-	color_t *srcCurr  = outputBuffer;
-	color_t *srcPrev1 = outputBufferPrev1;
-	color_t *srcPrev2 = outputBufferPrev2;
-	color_t *srcPrev3 = outputBufferPrev3;
-	color_t *srcPrev4 = outputBufferPrev4;
-	color_t *dst      = ppOutputBuffer;
-	float *response   = frameBlendResponse;
+	mColor *srcCurr  = outputBuffer;
+	mColor *srcPrev1 = outputBufferPrev1;
+	mColor *srcPrev2 = outputBufferPrev2;
+	mColor *srcPrev3 = outputBufferPrev3;
+	mColor *srcPrev4 = outputBufferPrev4;
+	mColor *dst      = ppOutputBuffer;
+	float *response  = frameBlendResponse;
 	size_t x, y;
 
 	for (y = 0; y < height; y++) {
 		for (x = 0; x < width; x++) {
 
 			/* Get colours from current + previous frames */
-			color_t rgbCurr  = *(srcCurr + x);
-			color_t rgbPrev1 = *(srcPrev1 + x);
-			color_t rgbPrev2 = *(srcPrev2 + x);
-			color_t rgbPrev3 = *(srcPrev3 + x);
-			color_t rgbPrev4 = *(srcPrev4 + x);
+			mColor rgbCurr  = *(srcCurr + x);
+			mColor rgbPrev1 = *(srcPrev1 + x);
+			mColor rgbPrev2 = *(srcPrev2 + x);
+			mColor rgbPrev3 = *(srcPrev3 + x);
+			mColor rgbPrev4 = *(srcPrev4 + x);
 
 			/* Store colours for next frame */
 			*(srcPrev1 + x) = rgbCurr;
@@ -879,7 +879,7 @@ static void videoPostProcessLcdGhost(unsigned width, unsigned height) {
 			float gPrev4 = (float)(rgbPrev4 >>  6 & 0x1F);
 			float bPrev4 = (float)(rgbPrev4       & 0x1F);
 
-			/* Mix colours for current frame and convert back to color_t
+			/* Mix colours for current frame and convert back to mColor
 			 * > Response time effect implemented via an exponential
 			 *   drop-off algorithm, taken from the 'Gameboy Classic Shader'
 			 *   by Harlequin:
@@ -888,19 +888,19 @@ static void videoPostProcessLcdGhost(unsigned width, unsigned height) {
 			rCurr += (rPrev2 - rCurr) * *(response + 1);
 			rCurr += (rPrev3 - rCurr) * *(response + 2);
 			rCurr += (rPrev4 - rCurr) * *(response + 3);
-			color_t rMix = (color_t)(rCurr + 0.5f) & 0x1F;
+			mColor rMix = (mColor)(rCurr + 0.5f) & 0x1F;
 
 			gCurr += (gPrev1 - gCurr) * *response;
 			gCurr += (gPrev2 - gCurr) * *(response + 1);
 			gCurr += (gPrev3 - gCurr) * *(response + 2);
 			gCurr += (gPrev4 - gCurr) * *(response + 3);
-			color_t gMix = (color_t)(gCurr + 0.5f) & 0x1F;
+			mColor gMix = (mColor)(gCurr + 0.5f) & 0x1F;
 
 			bCurr += (bPrev1 - bCurr) * *response;
 			bCurr += (bPrev2 - bCurr) * *(response + 1);
 			bCurr += (bPrev3 - bCurr) * *(response + 2);
 			bCurr += (bPrev4 - bCurr) * *(response + 3);
-			color_t bMix = (color_t)(bCurr + 0.5f) & 0x1F;
+			mColor bMix = (mColor)(bCurr + 0.5f) & 0x1F;
 
 			/* Repack colours for current frame */
 			*(dst + x) = colorCorrectionEnabled ?
@@ -918,21 +918,21 @@ static void videoPostProcessLcdGhost(unsigned width, unsigned height) {
 
 static void videoPostProcessLcdGhostFast(unsigned width, unsigned height) {
 
-	color_t *srcCurr = outputBuffer;
-	float *srcPrevR  = outputBufferAccR;
-	float *srcPrevG  = outputBufferAccG;
-	float *srcPrevB  = outputBufferAccB;
-	color_t *dst     = ppOutputBuffer;
+	mColor *srcCurr = outputBuffer;
+	float *srcPrevR = outputBufferAccR;
+	float *srcPrevG = outputBufferAccG;
+	float *srcPrevB = outputBufferAccB;
+	mColor *dst     = ppOutputBuffer;
 	size_t x, y;
 
 	for (y = 0; y < height; y++) {
 		for (x = 0; x < width; x++) {
 
 			/* Get colours from current + previous frames */
-			color_t rgbCurr = *(srcCurr + x);
-			float rPrev     = *(srcPrevR + x);
-			float gPrev     = *(srcPrevG + x);
-			float bPrev     = *(srcPrevB + x);
+			mColor rgbCurr = *(srcCurr + x);
+			float rPrev    = *(srcPrevR + x);
+			float gPrev    = *(srcPrevG + x);
+			float bPrev    = *(srcPrevB + x);
 
 			/* Unpack current colours and convert to float */
 			float rCurr = (float)(rgbCurr >> 11 & 0x1F);
@@ -950,9 +950,9 @@ static void videoPostProcessLcdGhostFast(unsigned width, unsigned height) {
 			*(srcPrevB + x) = bMix;
 
 			/* Convert and repack current frame colours */
-			color_t rgbMix =   ((color_t)(rMix + 0.5f) & 0x1F) << 11
-								  | ((color_t)(gMix + 0.5f) & 0x1F) << 6
-								  | ((color_t)(bMix + 0.5f) & 0x1F);
+			mColor rgbMix =   ((mColor)(rMix + 0.5f) & 0x1F) << 11
+								  | ((mColor)(gMix + 0.5f) & 0x1F) << 6
+								  | ((mColor)(bMix + 0.5f) & 0x1F);
 
 			/* Assign colours for current frame */
 			*(dst + x) = colorCorrectionEnabled ?
@@ -1682,12 +1682,12 @@ void retro_run(void) {
 #if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
 		if (videoPostProcess) {
 			videoPostProcess(width, height);
-			videoCallback(ppOutputBuffer, width, height, VIDEO_WIDTH_MAX * sizeof(color_t));
+			videoCallback(ppOutputBuffer, width, height, VIDEO_WIDTH_MAX * sizeof(mColor));
 		} else
 #endif
-			videoCallback(outputBuffer, width, height, VIDEO_WIDTH_MAX * sizeof(color_t));
+			videoCallback(outputBuffer, width, height, VIDEO_WIDTH_MAX * sizeof(mColor));
 	} else {
-		videoCallback(NULL, width, height, VIDEO_WIDTH_MAX * sizeof(color_t));
+		videoCallback(NULL, width, height, VIDEO_WIDTH_MAX * sizeof(mColor));
 	}
 
 #ifdef M_CORE_GBA
