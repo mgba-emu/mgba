@@ -6,22 +6,22 @@
     <message>
         <location filename="../utils.cpp" line="96"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished">Game Boy Advance ROMs (%1)</translation>
+        <translation>Game Boy Advance ROMs (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="122"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished">Game Boy ROMs (%1)</translation>
+        <translation>Game Boy ROMs (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="127"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished">所有 ROMs (%1)</translation>
+        <translation>所有 ROMs (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="129"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished">%1 影片記錄檔 (*.mvl)</translation>
+        <translation>%1 影片記錄檔 (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -29,7 +29,7 @@
     <message>
         <location filename="../AboutScreen.ui" line="14"/>
         <source>About</source>
-        <translation type="unfinished">關於</translation>
+        <translation>關於</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
@@ -193,17 +193,17 @@ Download size: %3</source>
     <message>
         <location filename="../AudioDevice.cpp" line="34"/>
         <source>Can&apos;t set format of context-less audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>無法設定無上下文音訊設備的格式</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="55"/>
         <source>Audio device is missing its core</source>
-        <translation type="unfinished"></translation>
+        <translation>音訊設備缺少其核心</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="83"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>將資料寫入唯讀音訊設備</translation>
     </message>
 </context>
 <context>
@@ -211,7 +211,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="56"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>無輸入時無法啟動音訊處理器</translation>
     </message>
 </context>
 <context>
@@ -219,7 +219,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>無輸入時無法啟動音訊處理器</translation>
     </message>
 </context>
 <context>
@@ -242,12 +242,12 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="94"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>載入</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="114"/>
@@ -287,28 +287,28 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.cpp" line="115"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>缺少 BattleChip 數據</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="116"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>缺少 BattleChip 數據。 BattleChip Gate 仍然可以使用,但一些圖形將會遺失。您要立即下載資料嗎？</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="182"/>
         <location filename="../BattleChipView.cpp" line="201"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇卡座文件</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="213"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>不相容的卡座</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="214"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>所選卡座與此 Chip Gate 不相容</translation>
     </message>
 </context>
 <context>
@@ -341,7 +341,7 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.cpp" line="186"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>無法新增某些作弊碼。請確認它們的格式是否正確並且/或嘗試其它的作弊類型。</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="14"/>
@@ -356,12 +356,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="46"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>載入</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
@@ -389,23 +389,23 @@ Download size: %3</source>
     <message>
         <location filename="../CoreController.cpp" line="103"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>重置 r%1-%2 %3</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="536"/>
         <location filename="../CoreController.cpp" line="553"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>目前未開啟倒帶</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="592"/>
         <source>Reset the game?</source>
-        <translation type="unfinished"></translation>
+        <translation>要重置遊戲嗎?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="593"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
-        <translation type="unfinished"></translation>
+        <translation>大多數遊戲需要重置才能載入新的檔案。您要立即重啟嗎?</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="808"/>
@@ -474,7 +474,7 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="176"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>無法開啟用於寫入的 CLI 歷史</translation>
     </message>
 </context>
 <context>
@@ -482,7 +482,7 @@ Download size: %3</source>
     <message>
         <location filename="../DisplayGL.cpp" line="313"/>
         <source>Failed to create an OpenGL 3 context, trying old-style...</source>
-        <translation type="unfinished"></translation>
+        <translation>建立OpenGL3環境失敗，請嘗試舊形式...</translation>
     </message>
 </context>
 <context>
@@ -525,12 +525,12 @@ Download size: %3</source>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
         <source>Couldn&apos;t Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>無法連接</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Could not connect to Dolphin.</source>
-        <translation type="unfinished"></translation>
+        <translation>無法連線到 Dolphin。</translation>
     </message>
 </context>
 <context>
@@ -538,12 +538,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="83"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="85"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
 </context>
 <context>
@@ -551,12 +551,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="29"/>
         <source>Icon</source>
-        <translation type="unfinished"></translation>
+        <translation>圖示</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="30"/>
         <source>Banner</source>
-        <translation type="unfinished"></translation>
+        <translation>橫幅</translation>
     </message>
 </context>
 <context>
@@ -564,7 +564,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="25"/>
         <source>Bubble</source>
-        <translation type="unfinished"></translation>
+        <translation>氣泡</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
@@ -574,7 +574,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
         <source>Startup</source>
-        <translation type="unfinished"></translation>
+        <translation>啟動</translation>
     </message>
 </context>
 <context>
@@ -582,17 +582,17 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="14"/>
         <source>Create forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>建立轉發器</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="20"/>
         <source>Files</source>
-        <translation type="unfinished"></translation>
+        <translation>文件</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="26"/>
         <source>ROM file:</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM 文件:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="36"/>
@@ -604,127 +604,127 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="43"/>
         <source>Output filename:</source>
-        <translation type="unfinished"></translation>
+        <translation>輸出檔名：</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="60"/>
         <source>Forwarder base:</source>
-        <translation type="unfinished"></translation>
+        <translation>轉發器基礎:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="74"/>
         <source>Latest stable version</source>
-        <translation type="unfinished"></translation>
+        <translation>最新穩定版本</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="79"/>
         <source>Latest development build</source>
-        <translation type="unfinished"></translation>
+        <translation>最新開發版本</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="84"/>
         <source>Specific file</source>
-        <translation type="unfinished"></translation>
+        <translation>指定文件</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="95"/>
         <source>Base file:</source>
-        <translation type="unfinished"></translation>
+        <translation>基礎文件:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="135"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>系統</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="141"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="151"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="174"/>
         <source>Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>介紹</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="182"/>
         <source>Title:</source>
-        <translation type="unfinished"></translation>
+        <translation>標題:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="195"/>
         <source>Images:</source>
-        <translation type="unfinished"></translation>
+        <translation>圖像:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="215"/>
         <source>Use default image</source>
-        <translation type="unfinished"></translation>
+        <translation>使用預設影像</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="328"/>
         <source>Preferred size:</source>
-        <translation type="unfinished"></translation>
+        <translation>首選大小:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="395"/>
         <source>Select image file</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇圖像文件</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="22"/>
         <source>Select ROM file</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇ROM文件</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="23"/>
         <source>Select output filename</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇輸出檔名</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="24"/>
         <source>Select base file</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇基礎文件</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="36"/>
         <source>Build finished</source>
-        <translation type="unfinished"></translation>
+        <translation>已完成建置</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="37"/>
         <source>Forwarder finished building</source>
-        <translation type="unfinished"></translation>
+        <translation>已完成建置轉發器</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="44"/>
         <source>Build failed</source>
-        <translation type="unfinished"></translation>
+        <translation>建置失敗</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
         <source>Failed to build forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>建立轉發器失敗</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="176"/>
         <source>%1 installable package (*.%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 個可安裝套件 (*.%2)</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Select an image</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇一個影像</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>圖片檔案 (*.png *.jpg *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -866,22 +866,22 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="52"/>
         <source>Write watchpoints behavior</source>
-        <translation type="unfinished"></translation>
+        <translation>編寫觀察點行為</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="63"/>
         <source>Standard GDB</source>
-        <translation type="unfinished"></translation>
+        <translation>標準 GDB</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="68"/>
         <source>Internal change detection</source>
-        <translation type="unfinished"></translation>
+        <translation>內部變化檢測</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="72"/>
         <source>Break on all writes</source>
-        <translation type="unfinished"></translation>
+        <translation>中斷所有寫入操作</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="82"/>
@@ -939,7 +939,7 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.ui" line="51"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>開始</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="67"/>
@@ -983,102 +983,102 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="61"/>
         <source>Game Boy (DMG)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy (DMG)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="62"/>
         <source>Game Boy Pocket (MGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Pocket (MGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="63"/>
         <source>Super Game Boy (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="64"/>
         <source>Super Game Boy 2 (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy 2 (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="65"/>
         <source>Game Boy Color (CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Color (CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="66"/>
         <source>Game Boy Advance (AGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance (AGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="67"/>
         <source>Super Game Boy Color (SGB + CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy Color (SGB + CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="80"/>
         <source>ROM Only</source>
-        <translation type="unfinished"></translation>
+        <translation>僅 ROM</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
         <source>MBC1</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="82"/>
         <source>MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="83"/>
         <source>MBC3</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="84"/>
         <source>MBC3 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3 + 實時時鐘</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="85"/>
         <source>MBC5</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC5</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
         <source>MBC5 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC5 + 震動</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
         <source>MBC6</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
         <source>MBC7 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC7 (Tilt)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
         <source>MMM01</source>
-        <translation type="unfinished"></translation>
+        <translation>MMM01</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>HuC-1</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="91"/>
         <source>HuC-3</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="92"/>
         <source>Pocket Cam</source>
-        <translation type="unfinished"></translation>
+        <translation>袖珍攝影機</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="93"/>
@@ -1088,57 +1088,57 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="94"/>
         <source>Wisdom Tree</source>
-        <translation type="unfinished"></translation>
+        <translation>Wisdom Tree</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="95"/>
         <source>NT (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT (舊 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="96"/>
         <source>NT (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT (舊 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="97"/>
         <source>NT (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>NT(新)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
         <source>Pokémon Jade/Diamond</source>
-        <translation type="unfinished"></translation>
+        <translation>寶可夢翡翠/鑽石</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="99"/>
         <source>BBD</source>
-        <translation type="unfinished"></translation>
+        <translation>BBD</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="100"/>
         <source>Hitek</source>
-        <translation type="unfinished"></translation>
+        <translation>Hitek</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="101"/>
         <source>GGB-81</source>
-        <translation type="unfinished"></translation>
+        <translation>GGB-81</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="102"/>
         <source>Li Cheng</source>
-        <translation type="unfinished"></translation>
+        <translation>Li Cheng</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="103"/>
         <source>Sachen (MMC1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sachen (MMC1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="104"/>
         <source>Sachen (MMC2)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sachen (MMC2)</translation>
     </message>
 </context>
 <context>
@@ -3408,12 +3408,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="14"/>
         <source>Memory access logging</source>
-        <translation type="unfinished"></translation>
+        <translation>記憶體存取日誌</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="23"/>
         <source>Log file</source>
-        <translation type="unfinished"></translation>
+        <translation>紀錄檔案</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="32"/>
@@ -3423,27 +3423,27 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="39"/>
         <source>Log additional information (uses 3× space)</source>
-        <translation type="unfinished"></translation>
+        <translation>記錄額外資訊（使用 3x 空間）</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="46"/>
         <source>Load existing file if present</source>
-        <translation type="unfinished"></translation>
+        <translation>存在的情況下載入已有文件</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="59"/>
         <source>Regions</source>
-        <translation type="unfinished"></translation>
+        <translation>區域</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="70"/>
         <source>Export ROM snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>匯出ROM快照</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="77"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>啟動</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="87"/>
@@ -3453,18 +3453,18 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="82"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished"></translation>
+        <translation>打開記憶體日誌檔案失敗</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="116"/>
         <location filename="../MemoryAccessLogView.cpp" line="135"/>
         <source>Select access log file</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇訪問日誌文件</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="116"/>
         <source>Memory access logs (*.mal)</source>
-        <translation type="unfinished"></translation>
+        <translation>記憶體存取日誌（*.mal）</translation>
     </message>
 </context>
 <context>
@@ -3808,7 +3808,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="297"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>載入</translation>
     </message>
 </context>
 <context>
@@ -3816,7 +3816,7 @@ Download size: %3</source>
     <message>
         <location filename="../MessagePainter.cpp" line="81"/>
         <source>Frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>帧 %1</translation>
     </message>
 </context>
 <context>
@@ -3824,17 +3824,17 @@ Download size: %3</source>
     <message>
         <location filename="../MultiplayerController.cpp" line="367"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>嘗試斷開與未連接的多人玩家的連接</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="407"/>
         <source>Clearing invalid save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>清理非法存檔ID</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="416"/>
         <source>Clearing invalid preferred ID</source>
-        <translation type="unfinished"></translation>
+        <translation>清理非法優先ID</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="437"/>
@@ -6213,7 +6213,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="499"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
-        <translation>%1 張 e-Reader 卡片轉換成功。 (共 %2 張)</translation>
+        <translation>%2 張電子閱讀器卡中的 %1 張已成功轉換。</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1299"/>
@@ -6654,7 +6654,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1735"/>
         <source>Start &amp;GDB server...</source>
-        <translation>啟動 GDB 伺服器 (&amp;G)</translation>
+        <translation>啟動 GDB 伺服器 (&amp;G)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1743"/>
@@ -6664,27 +6664,27 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1744"/>
         <source>View &amp;palette...</source>
-        <translation>檢視調色盤 (&amp;P)</translation>
+        <translation>檢視調色盤 (&amp;P)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1745"/>
         <source>View &amp;sprites...</source>
-        <translation>檢視角色圖 (&amp;S)</translation>
+        <translation>檢視角色圖 (&amp;S)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1746"/>
         <source>View &amp;tiles...</source>
-        <translation>檢視圖塊 (&amp;T)</translation>
+        <translation>檢視圖塊 (&amp;T)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1747"/>
         <source>View &amp;map...</source>
-        <translation>檢視映射 (&amp;M)</translation>
+        <translation>檢視映射 (&amp;M)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1749"/>
         <source>&amp;Frame inspector...</source>
-        <translation>畫格檢視器 (&amp;F)</translation>
+        <translation>畫格檢視器 (&amp;F)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1765"/>
@@ -6699,7 +6699,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1767"/>
         <source>View &amp;I/O registers...</source>
-        <translation>檢視 I/O 暫存器 (&amp;I)</translation>
+        <translation>檢視 I/O 暫存器 (&amp;I)...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1770"/>
