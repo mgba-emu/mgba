@@ -949,6 +949,14 @@ if(NOT SKIP_LIBRARY)
 
 	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/mgba-util)
 
+	if(BUILD_STATIC)
+		# Some versions of CMake are remarkably bad about deduplicating this list,
+		# leading to issues with static linking. Let's do it manually.
+		list(REVERSE DEPENDENCY_LIB)
+		list(REMOVE_DUPLICATES DEPENDENCY_LIB)
+		list(REVERSE DEPENDENCY_LIB)
+	endif()
+
 	target_link_libraries(${BINARY_NAME} ${DEBUGGER_LIB} ${DEPENDENCY_LIB} ${OS_LIB})
 	install(TARGETS ${BINARY_NAME} LIBRARY DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME} NAMELINK_SKIP ARCHIVE DESTINATION ${LIBDIR} RUNTIME DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME})
 	if(BUILD_SHARED)
@@ -1040,7 +1048,7 @@ endif()
 
 if(BUILD_HEADLESS)
 	add_executable(${BINARY_NAME}-headless ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/headless-main.c)
-	target_link_libraries(${BINARY_NAME}-headless ${BINARY_NAME})
+	target_link_libraries(${BINARY_NAME}-headless ${PLATFORM_LIBRARY} ${BINARY_NAME})
 	debug_strip(${BINARY_NAME}-headless)
 	target_compile_definitions(${BINARY_NAME}-headless PRIVATE "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 	install(TARGETS ${BINARY_NAME}-headless DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${BINARY_NAME}-headless)
