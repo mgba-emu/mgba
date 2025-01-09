@@ -119,12 +119,6 @@ static enum GUIMenuExitReason GUIMenuPollInput(struct GUIParams* params, struct 
 	state->cursor = GUIPollCursor(params, &state->cx, &state->cy);
 
 	// Check for new direction presses
-	if (newInput & (1 << GUI_INPUT_UP) && menu->index > 0) {
-		--menu->index;
-	}
-	if (newInput & (1 << GUI_INPUT_DOWN) && menu->index < GUIMenuItemListSize(&menu->items) - 1) {
-		++menu->index;
-	}
 	if (newInput & (1 << GUI_INPUT_LEFT)) {
 		struct GUIMenuItem* item = GUIMenuItemListGetPointer(&menu->items, menu->index);
 		if (item->validStates && !item->readonly) {
@@ -143,6 +137,20 @@ static enum GUIMenuExitReason GUIMenuPollInput(struct GUIParams* params, struct 
 			menu->index += pageSize;
 		} else {
 			menu->index = GUIMenuItemListSize(&menu->items) - 1;
+		}
+	}
+	if (newInput & (1 << GUI_INPUT_UP)) {
+		if (menu->index > 0) {
+			--menu->index;
+		} else {
+			menu->index = GUIMenuItemListSize(&menu->items) - 1;
+		}
+	}
+	if (newInput & (1 << GUI_INPUT_DOWN)) {
+		if (menu->index < GUIMenuItemListSize(&menu->items) - 1) {
+			++menu->index;
+		} else {
+			menu->index = 0;
 		}
 	}
 

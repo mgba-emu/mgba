@@ -41,6 +41,7 @@ Misc:
  - Libretro: Add Super Game Boy Color support (closes mgba.io/i/3188)
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
  - mGUI: Persist fast forwarding after closing menu (fixes mgba.io/i/2414)
+ - mGUI: Wrap around menu cursor when navigating past end (closes mgba.io/i/3356)
  - Qt: Handle multiple save game files for disparate games separately (fixes mgba.io/i/2887)
  - Qt: Remove maligned double-click-to-fullscreen shortcut (closes mgba.io/i/2632)
  - Qt: Pass logging context through to video proxy thread (fixes mgba.io/i/3095)
