@@ -47,6 +47,7 @@ Misc:
  - Qt: Pass logging context through to video proxy thread (fixes mgba.io/i/3095)
  - Qt: Show maker code and game version in ROM info
  - Qt: Show a dummy shader settings tab if shaders aren't supported
+ - Qt: Allow passing multiple games on command line for multiplayer (closes mgba.io/i/3061)
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
  - Updater: Fix rewriting folders and files on Windows (fixes mgba.io/i/3384)

@@ -196,6 +196,14 @@ ConfigController::ConfigController(QObject* parent)
 	m_subparsers[1].extraOptions = nullptr;
 	m_subparsers[1].longOptions = s_frontendOptions;
 	m_subparsers[1].opts = this;
+	m_subparsers[1].handleExtraArg = [](struct mSubParser* parser, const char* arg) {
+		ConfigController* self = static_cast<ConfigController*>(parser->opts);
+		if (self->m_fnames.count() >= MAX_GBAS) {
+			return false;
+		}
+		self->m_fnames.append(QString::fromUtf8(arg));
+		return true;
+	};
 }
 
 ConfigController::~ConfigController() {
