@@ -3267,37 +3267,37 @@ Download size: %3</source>
     <message>
         <location filename="../LogView.ui" line="58"/>
         <source>Warning</source>
-        <translation type="unfinished">警告</translation>
+        <translation>警告</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="68"/>
         <source>Error</source>
-        <translation type="unfinished">錯誤</translation>
+        <translation>錯誤</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="78"/>
         <source>Fatal</source>
-        <translation type="unfinished">嚴重</translation>
+        <translation>致命錯誤</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="95"/>
         <source>Game Error</source>
-        <translation type="unfinished">遊戲錯誤</translation>
+        <translation>遊戲錯誤</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="108"/>
         <source>Advanced settings</source>
-        <translation type="unfinished">進階設定</translation>
+        <translation>進階設定</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="128"/>
         <source>Clear</source>
-        <translation type="unfinished">清除</translation>
+        <translation>清除</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="137"/>
         <source>Max Lines</source>
-        <translation type="unfinished">最大行數</translation>
+        <translation>最大行數</translation>
     </message>
 </context>
 <context>
@@ -3385,22 +3385,22 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.ui" line="14"/>
         <source>Maps</source>
-        <translation type="unfinished">映射</translation>
+        <translation>貼圖</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="43"/>
         <source>Magnification</source>
-        <translation type="unfinished">放大</translation>
+        <translation>放大</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="124"/>
         <source>Export</source>
-        <translation type="unfinished">匯出</translation>
+        <translation>匯出</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="139"/>
         <source>Copy</source>
-        <translation type="unfinished">複製</translation>
+        <translation>複製</translation>
     </message>
 </context>
 <context>
@@ -3409,7 +3409,7 @@ Download size: %3</source>
         <location filename="../MemoryAccessLogController.cpp" line="66"/>
         <location filename="../MemoryAccessLogController.cpp" line="76"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished">打開記憶體日誌檔案失敗</translation>
+        <translation>打開記憶體日誌檔案失敗</translation>
     </message>
 </context>
 <context>
@@ -3427,7 +3427,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="32"/>
         <source>Browse</source>
-        <translation type="unfinished">瀏覽</translation>
+        <translation>瀏覽</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="39"/>
@@ -3457,7 +3457,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="87"/>
         <source>Stop</source>
-        <translation type="unfinished">停止</translation>
+        <translation>停止</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="78"/>
@@ -3486,22 +3486,22 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryDump.ui" line="14"/>
         <source>Save Memory Range</source>
-        <translation type="unfinished">記憶體儲存範圍</translation>
+        <translation>記憶體儲存範圍</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="20"/>
         <source>Start Address:</source>
-        <translation type="unfinished">起始位址:</translation>
+        <translation>起始位址:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="76"/>
         <source>Byte Count:</source>
-        <translation type="unfinished">位元組數:</translation>
+        <translation>位元組數:</translation>
     </message>
     <message>
         <location filename="../MemoryDump.ui" line="108"/>
         <source>Dump across banks</source>
-        <translation type="unfinished">跨記憶庫傾印</translation>
+        <translation>跨記憶庫傾印</translation>
     </message>
 </context>
 <context>
@@ -3592,149 +3592,149 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="26"/>
         <source>Memory Search</source>
-        <translation type="unfinished">搜尋記憶體</translation>
+        <translation>搜尋記憶體</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="51"/>
         <source>Address</source>
-        <translation type="unfinished">位址</translation>
+        <translation>位址</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="56"/>
         <source>Current Value</source>
-        <translation type="unfinished">目前的值</translation>
+        <translation>目前的值</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="61"/>
         <location filename="../MemorySearch.ui" line="81"/>
         <source>Type</source>
-        <translation type="unfinished">型別</translation>
+        <translation>型別</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="71"/>
         <source>Value</source>
-        <translation type="unfinished">值</translation>
+        <translation>值</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="88"/>
         <source>Numeric</source>
-        <translation type="unfinished">數字</translation>
+        <translation>數字</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="101"/>
         <source>Text</source>
-        <translation type="unfinished">文字</translation>
+        <translation>文字</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="118"/>
         <source>Width</source>
-        <translation type="unfinished">寬度</translation>
+        <translation>寬度</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="125"/>
         <location filename="../MemorySearch.ui" line="185"/>
         <source>Guess</source>
-        <translation type="unfinished">預測</translation>
+        <translation>預測</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="138"/>
         <source>1 Byte (8-bit)</source>
-        <translation type="unfinished">1 位元組 (8 位元)</translation>
+        <translation>1 位元組 (8 位元)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="148"/>
         <source>2 Bytes (16-bit)</source>
-        <translation type="unfinished">2 位元組 (16 位元)</translation>
+        <translation>2 位元組 (16 位元)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="158"/>
         <source>4 Bytes (32-bit)</source>
-        <translation type="unfinished">4 位元組 (32 位元)</translation>
+        <translation>4 位元組 (32 位元)</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="178"/>
         <source>Number type</source>
-        <translation type="unfinished">數字型別</translation>
+        <translation>數字型別</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="195"/>
         <source>Decimal</source>
-        <translation type="unfinished">十進位</translation>
+        <translation>十進位</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="202"/>
         <source>Hexadecimal</source>
-        <translation type="unfinished">十六進位</translation>
+        <translation>十六進位</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="216"/>
         <source>Search type</source>
-        <translation type="unfinished">搜尋型別</translation>
+        <translation>搜尋型別</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="223"/>
         <source>Equal to value</source>
-        <translation type="unfinished">等於值</translation>
+        <translation>等於值</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="236"/>
         <source>Greater than value</source>
-        <translation type="unfinished">大於值</translation>
+        <translation>大於值</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="246"/>
         <source>Less than value</source>
-        <translation type="unfinished">小於值</translation>
+        <translation>小於值</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="256"/>
         <source>Unknown/changed</source>
-        <translation type="unfinished">未知/已變更</translation>
+        <translation>未知/已變更</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="269"/>
         <source>Changed by value</source>
-        <translation type="unfinished">數值變更</translation>
+        <translation>數值變更</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="282"/>
         <source>Unchanged</source>
-        <translation type="unfinished">未變更</translation>
+        <translation>未變更</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="295"/>
         <source>Increased</source>
-        <translation type="unfinished">增加</translation>
+        <translation>增加</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="308"/>
         <source>Decreased</source>
-        <translation type="unfinished">減少</translation>
+        <translation>減少</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="318"/>
         <source>Search ROM</source>
-        <translation type="unfinished">搜尋 ROM</translation>
+        <translation>搜尋 ROM</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="336"/>
         <source>New Search</source>
-        <translation type="unfinished">新的搜尋</translation>
+        <translation>新的搜尋</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="343"/>
         <source>Search Within</source>
-        <translation type="unfinished">在...裡搜尋</translation>
+        <translation>在範圍內搜尋</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="350"/>
         <source>Open in Memory Viewer</source>
-        <translation type="unfinished">在記憶體檢視器中打開</translation>
+        <translation>在記憶體檢視器中打開</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="357"/>
         <source>Refresh</source>
-        <translation type="unfinished">重新整理</translation>
+        <translation>重新整理</translation>
     </message>
 </context>
 <context>
@@ -3742,72 +3742,72 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="14"/>
         <source>Memory</source>
-        <translation type="unfinished">記憶體</translation>
+        <translation>記憶體</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="38"/>
         <source>Inspect Address:</source>
-        <translation type="unfinished">檢查位址:</translation>
+        <translation>檢查位址:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="88"/>
         <source>Set Alignment:</source>
-        <translation type="unfinished">資料對齊設定:</translation>
+        <translation>資料對齊設定:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="108"/>
         <source>&amp;1 Byte</source>
-        <translation type="unfinished">1 位元組 (&amp;1)</translation>
+        <translation>1 位元組 (&amp;1)</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="131"/>
         <source>&amp;2 Bytes</source>
-        <translation type="unfinished">2 位元組 (&amp;2)</translation>
+        <translation>2 位元組 (&amp;2)</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="151"/>
         <source>&amp;4 Bytes</source>
-        <translation type="unfinished">4 位元組 (&amp;4)</translation>
+        <translation>4 位元組 (&amp;4)</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="187"/>
         <source>Unsigned Integer:</source>
-        <translation type="unfinished">無符號整數:</translation>
+        <translation>無符號整數:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="208"/>
         <source>Signed Integer:</source>
-        <translation type="unfinished">有符號整數:</translation>
+        <translation>有符號整數:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="229"/>
         <source>String:</source>
-        <translation type="unfinished">字串:</translation>
+        <translation>字串:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="243"/>
         <source>Load TBL</source>
-        <translation type="unfinished">讀取 TBL</translation>
+        <translation>讀取 TBL</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="256"/>
         <source>Copy Selection</source>
-        <translation type="unfinished">複製所選</translation>
+        <translation>複製所選</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="263"/>
         <source>Paste</source>
-        <translation type="unfinished">貼上</translation>
+        <translation>貼上</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="283"/>
         <source>Save Selection</source>
-        <translation type="unfinished">儲存所選</translation>
+        <translation>儲存所選</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="290"/>
         <source>Save Range</source>
-        <translation type="unfinished">儲存範圍</translation>
+        <translation>儲存範圍</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="297"/>
@@ -3843,12 +3843,12 @@ Download size: %3</source>
     <message>
         <location filename="../MultiplayerController.cpp" line="437"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>嘗試取得多人線上未連線上的玩家ID</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="451"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>嘗試取得未連線的多人玩家的存檔 ID</translation>
     </message>
 </context>
 <context>
@@ -4334,7 +4334,7 @@ Download size: %3</source>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Save Printout</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存列印輸出</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
@@ -4371,7 +4371,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>文件訊息</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
@@ -4391,17 +4391,17 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="100"/>
         <source>Save file:</source>
-        <translation type="unfinished"></translation>
+        <translation>儲存文件:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
         <source>ROM header</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM header</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="123"/>
@@ -4416,12 +4416,12 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="157"/>
         <source>Maker Code:</source>
-        <translation type="unfinished"></translation>
+        <translation>創建者程式碼：</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="174"/>
         <source>Revision:</source>
-        <translation type="unfinished"></translation>
+        <translation>修訂：</translation>
     </message>
 </context>
 <context>
@@ -4562,7 +4562,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="486"/>
         <source> + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation> + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="495"/>
@@ -4656,7 +4656,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingTextBuffer.cpp" line="43"/>
         <source>Untitled buffer</source>
-        <translation type="unfinished"></translation>
+        <translation>無標題緩存</translation>
     </message>
 </context>
 <context>
@@ -4664,32 +4664,32 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="14"/>
         <source>Scripting</source>
-        <translation type="unfinished"></translation>
+        <translation>腳本</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="45"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>運行</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="92"/>
         <source>File</source>
-        <translation type="unfinished"></translation>
+        <translation>檔案</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="96"/>
         <source>Load recent script</source>
-        <translation type="unfinished"></translation>
+        <translation>載入最近的腳本</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="110"/>
         <source>Load script...</source>
-        <translation type="unfinished"></translation>
+        <translation>加載腳本...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="115"/>
         <source>&amp;Load most recent</source>
-        <translation type="unfinished"></translation>
+        <translation>載入最近的(&amp;L)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="120"/>
@@ -4704,17 +4704,17 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="61"/>
         <source>Select script to load</source>
-        <translation type="unfinished"></translation>
+        <translation>選擇要載入的腳本</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="90"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished"></translation>
+        <translation>Lua 腳本 (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="92"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished"></translation>
+        <translation>所有檔案 (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4747,12 +4747,12 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="67"/>
         <source>Offset time</source>
-        <translation type="unfinished"></translation>
+        <translation>偏移時間</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="80"/>
         <source> sec</source>
-        <translation type="unfinished"></translation>
+        <translation> 秒</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="96"/>
