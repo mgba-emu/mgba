@@ -801,7 +801,7 @@ static void _GBACoreReset(struct mCore* core) {
 #endif
 
 	ARMReset(core->cpu);
-	bool forceSkip = gba->mbVf || core->opts.skipBios;
+	bool forceSkip = gba->mbVf || (core->opts.skipBios && (gba->romVf || gba->memory.rom));
 	if (!forceSkip && (gba->romVf || gba->memory.rom) && gba->pristineRomSize >= 0xA0 && gba->biosVf) {
 		uint32_t crc = doCrc32(&gba->memory.rom[1], 0x9C);
 		if (crc != LOGO_CRC32) {

@@ -82,7 +82,7 @@ static struct mScriptConsole* _ensureConsole(struct mScriptContext* context) {
 
 void mScriptContextAttachLogger(struct mScriptContext* context, struct mLogger* logger) {
 	struct mScriptConsole* console = _ensureConsole(context);
-	console->logger = logger;
+	console->logger = logger ? logger : mLogGetContext();
 }
 
 void mScriptContextDetachLogger(struct mScriptContext* context) {

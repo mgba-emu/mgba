@@ -131,10 +131,9 @@ int main(int argc, char* argv[]) {
 	}
 
 	Window* w = application.newWindow();
-	w->loadConfig();
 	w->argumentsPassed();
 
-	w->show();
+	application.initMultiplayer();
 
 	int ret = application.exec();
 	if (ret != 0) {

@@ -702,7 +702,7 @@ void GBASavedataRTCRead(struct GBASavedata* savedata) {
 
 	savedata->gpio->rtc.offset = savedata->gpio->rtc.lastLatch - rtcTime;
 
-	mLOG(GBA_SAVE, ERROR, "Savegame time offset set to %li", savedata->gpio->rtc.offset);
+	mLOG(GBA_SAVE, DEBUG, "Savegame time offset set to %li", savedata->gpio->rtc.offset);
 }
 
 void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state) {

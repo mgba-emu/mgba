@@ -17,7 +17,9 @@
 CXX_GUARD_START
 
 #ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 // Require Windows 7 or newer
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0601

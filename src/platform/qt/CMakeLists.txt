@@ -261,6 +261,7 @@ if(ENABLE_DEBUGGERS)
 		DebuggerController.cpp
 		DebuggerConsole.cpp
 		DebuggerConsoleController.cpp
+		MemoryAccessLogController.cpp
 		MemoryAccessLogView.cpp)
 endif()
 
@@ -517,7 +518,7 @@ if(APPLE)
 			set(DEPLOY_OPTIONS ${DEPLOY_OPTIONS} -R "${CROSS_ROOT}")
 		endif()
 		if($ENV{CODESIGN_IDENTITY})
-			set(DEPLOY_OPTIONS ${DEPLOY_OPTIONS} -s "$ENV{CODESIGN_IDENTITY}" -E "${PROJECT_SOURCE_DIR}/res/entitlements.xml")
+			set(DEPLOY_OPTIONS ${DEPLOY_OPTIONS} -s "$ENV{CODESIGN_IDENTITY}" -E "${PROJECT_SOURCE_DIR}/res/entitlements.plist")
 		endif()
 		install(CODE "execute_process(COMMAND \"${PROJECT_SOURCE_DIR}/tools/deploy-mac.py\" -v ${DEPLOY_OPTIONS} \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${APPDIR}/${PROJECT_NAME}.app\")")
 	endif()
@@ -536,17 +537,7 @@ elseif(WIN32)
 	endif()
 endif()
 
-if(DISTBUILD AND NOT APPLE)
-	if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${OBJCOPY}" --only-keep-debug "$<TARGET_FILE:${BINARY_NAME}-qt>" "$<TARGET_FILE:${BINARY_NAME}-qt>.debug")
-		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${STRIP}" "$<TARGET_FILE:${BINARY_NAME}-qt>")
-		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${OBJCOPY}" --add-gnu-debuglink "$<TARGET_FILE:${BINARY_NAME}-qt>.debug" "$<TARGET_FILE:${BINARY_NAME}-qt>")
-		install(FILES "$<TARGET_FILE:${BINARY_NAME}-qt>.debug" DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${BINARY_NAME}-qt-dbg)
-	elseif(BUILD_STATIC AND (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel"))
-		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${STRIP}" "$<TARGET_FILE:${BINARY_NAME}-qt>")
-	endif()
-endif()
-
+debug_strip(${BINARY_NAME}-qt)
 install(TARGETS ${BINARY_NAME}-qt
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${BINARY_NAME}-qt
 	BUNDLE DESTINATION ${APPDIR} COMPONENT ${BINARY_NAME}-qt)
