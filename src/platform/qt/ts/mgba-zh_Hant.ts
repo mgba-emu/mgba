@@ -34,29 +34,29 @@
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation type="unfinished">&lt;a href=&quot;http://mgba.io/&quot;&gt;網站&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;論壇、取得協助&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;贊助&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;原始碼&lt;/a&gt;</translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;網站&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;論壇、取得協助&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;贊助&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;原始碼&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
         <source>Branch: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;Revision: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</source>
-        <translation type="unfinished">分支: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;修訂版: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
+        <translation>分支: &lt;tt&gt;{gitBranch}&lt;/tt&gt;&lt;br/&gt;修訂版: &lt;tt&gt;{gitCommit}&lt;/tt&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="68"/>
         <source>{projectName} would like to thank the following patrons from Patreon:</source>
-        <translation type="unfinished">{projectName} 感謝以下 Patreon 贊助者:</translation>
+        <translation>{projectName}感謝以下 Patreon 贊助者:</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="86"/>
         <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
-        <translation type="unfinished">© 2013 – {year} Jeffrey Pfau，基於 Mozilla 公共許可證（版本 2.0）授權
+        <translation>© 2013 – {year} Jeffrey Pfau，基於 Mozilla 公共許可證（版本 2.0）授權
 Game Boy Advance 是任天堂有限公司（Nintendo Co., Ltd.）的註冊商標。</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
         <source>{projectName} is an open-source Game Boy Advance emulator</source>
-        <translation type="unfinished">{projectName} 是開源的 Game Boy Advance 模擬器</translation>
+        <translation>{projectName} 是開源的 Game Boy Advance 模擬器</translation>
     </message>
 </context>
 <context>
@@ -109,7 +109,7 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdatePrompt.ui" line="14"/>
         <source>An update is available</source>
-        <translation type="unfinished">有可用的更新</translation>
+        <translation>有可用的更新</translation>
     </message>
 </context>
 <context>
@@ -140,12 +140,12 @@ Download size: %3</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="14"/>
         <source>Open in archive...</source>
-        <translation type="unfinished">在壓縮文件中打開...</translation>
+        <translation>在壓縮文件中打開...</translation>
     </message>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation type="unfinished">正在載入...</translation>
+        <translation>正在載入...</translation>
     </message>
 </context>
 <context>
@@ -160,32 +160,32 @@ Download size: %3</source>
     <message>
         <location filename="../AssetTile.ui" line="41"/>
         <source>Tile #</source>
-        <translation type="unfinished">圖塊 #</translation>
+        <translation>圖塊 #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="65"/>
         <source>Palette #</source>
-        <translation type="unfinished">調色盤 #</translation>
+        <translation>調色盤 #</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="89"/>
         <source>Address</source>
-        <translation type="unfinished">位址</translation>
+        <translation>位址</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="138"/>
         <source>Red</source>
-        <translation type="unfinished">紅</translation>
+        <translation>紅</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="145"/>
         <source>Green</source>
-        <translation type="unfinished">綠</translation>
+        <translation>綠</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="152"/>
         <source>Blue</source>
-        <translation type="unfinished">藍</translation>
+        <translation>藍</translation>
     </message>
 </context>
 <context>
@@ -227,17 +227,17 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.ui" line="14"/>
         <source>BattleChip Gate</source>
-        <translation type="unfinished">戰鬥晶片閘</translation>
+        <translation>BattleChip Gate</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="67"/>
         <source>Chip name</source>
-        <translation type="unfinished">晶片名稱</translation>
+        <translation>晶片名稱</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
         <source>Insert</source>
-        <translation type="unfinished">插入</translation>
+        <translation>插入</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
@@ -252,37 +252,37 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.ui" line="114"/>
         <source>Add</source>
-        <translation type="unfinished">加入</translation>
+        <translation>加入</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="121"/>
         <source>Remove</source>
-        <translation type="unfinished">移除</translation>
+        <translation>移除</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="138"/>
         <source>Gate type</source>
-        <translation type="unfinished">閘門類別</translation>
+        <translation>Gate 類型</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="180"/>
         <source>Inserted</source>
-        <translation type="unfinished">已插入</translation>
+        <translation>已插入</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
-        <translation type="unfinished">晶片ID</translation>
+        <translation>晶片ID</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
         <source>Update Chip data</source>
-        <translation type="unfinished">更新晶片資料</translation>
+        <translation>更新晶片資料</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
         <source>Show advanced</source>
-        <translation type="unfinished">顯示進階選項</translation>
+        <translation>顯示進階選項</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="115"/>
@@ -346,12 +346,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="14"/>
         <source>Cheats</source>
-        <translation type="unfinished">金手指</translation>
+        <translation>金手指</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
         <source>Add New Code</source>
-        <translation type="unfinished">新增金手指</translation>
+        <translation>新增金手指</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="46"/>
@@ -366,22 +366,22 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
         <source>Remove</source>
-        <translation type="unfinished">移除</translation>
+        <translation>移除</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="86"/>
         <source>Enter codes here...</source>
-        <translation type="unfinished">在此輸入代碼...</translation>
+        <translation>在此輸入代碼...</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="93"/>
         <source>Add Lines</source>
-        <translation type="unfinished">新增一行</translation>
+        <translation>新增一行</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="100"/>
         <source>Code type</source>
-        <translation type="unfinished">代碼類型</translation>
+        <translation>作弊碼類型</translation>
     </message>
 </context>
 <context>
@@ -456,17 +456,17 @@ Download size: %3</source>
     <message>
         <location filename="../DebuggerConsole.ui" line="14"/>
         <source>Debugger</source>
-        <translation type="unfinished">除錯器</translation>
+        <translation>除錯器</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="20"/>
         <source>Enter command (try `help` for more info)</source>
-        <translation type="unfinished">輸入指令 (更多資訊請見「幫助」)</translation>
+        <translation>輸入指令（嘗試“help”以取得更多資訊）</translation>
     </message>
     <message>
         <location filename="../DebuggerConsole.ui" line="27"/>
         <source>Break</source>
-        <translation type="unfinished">中斷</translation>
+        <translation>中斷</translation>
     </message>
 </context>
 <context>
@@ -490,37 +490,37 @@ Download size: %3</source>
     <message>
         <location filename="../DolphinConnector.ui" line="14"/>
         <source>Connect to Dolphin</source>
-        <translation type="unfinished">連接 Dolphin</translation>
+        <translation>連接 Dolphin</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="23"/>
         <source>Local computer</source>
-        <translation type="unfinished">區域電腦</translation>
+        <translation>區域電腦</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="36"/>
         <source>IP address</source>
-        <translation type="unfinished">IP位址</translation>
+        <translation>IP位址</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
         <source>Connect</source>
-        <translation type="unfinished">連接</translation>
+        <translation>連接</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="68"/>
         <source>Disconnect</source>
-        <translation type="unfinished">中斷連接</translation>
+        <translation>中斷連接</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="78"/>
         <source>Close</source>
-        <translation type="unfinished">關閉</translation>
+        <translation>關閉</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="90"/>
         <source>Reset on connect</source>
-        <translation type="unfinished">連接後重新啟動</translation>
+        <translation>連接後重新啟動</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
@@ -569,7 +569,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Background</source>
-        <translation type="unfinished">背景</translation>
+        <translation>背景</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
@@ -599,7 +599,7 @@ Download size: %3</source>
         <location filename="../ForwarderView.ui" line="53"/>
         <location filename="../ForwarderView.ui" line="112"/>
         <source>Browse</source>
-        <translation type="unfinished">瀏覽</translation>
+        <translation>瀏覽</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="43"/>
@@ -782,37 +782,37 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.ui" line="14"/>
         <source>Inspect frame</source>
-        <translation type="unfinished">檢查畫格</translation>
+        <translation>檢查畫格</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="41"/>
         <source>Magnification</source>
-        <translation type="unfinished">放大</translation>
+        <translation>放大</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="50"/>
         <source>Freeze frame</source>
-        <translation type="unfinished">暫停畫格</translation>
+        <translation>暫停畫格</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="84"/>
         <source>Backdrop color</source>
-        <translation type="unfinished">背景顏色</translation>
+        <translation>背景顏色</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="132"/>
         <source>Disable scanline effects</source>
-        <translation type="unfinished">停用掃描線特效</translation>
+        <translation>停用掃描線特效</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="145"/>
         <source>Export</source>
-        <translation type="unfinished">匯出</translation>
+        <translation>匯出</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="152"/>
         <source>Reset</source>
-        <translation type="unfinished">重新啟動</translation>
+        <translation>重新啟動</translation>
     </message>
 </context>
 <context>
@@ -929,12 +929,12 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.ui" line="14"/>
         <source>Record GIF/WebP/APNG</source>
-        <translation type="unfinished">錄製 GIF/WebP/APNG</translation>
+        <translation>錄製 GIF/WebP/APNG</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="30"/>
         <source>Loop</source>
-        <translation type="unfinished">循環</translation>
+        <translation>循環</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="51"/>
@@ -944,32 +944,32 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.ui" line="67"/>
         <source>Stop</source>
-        <translation type="unfinished">停止</translation>
+        <translation>停止</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="93"/>
         <source>Select File</source>
-        <translation type="unfinished">選擇檔案</translation>
+        <translation>選擇檔案</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="112"/>
         <source>APNG</source>
-        <translation type="unfinished">APNG</translation>
+        <translation>APNG</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="122"/>
         <source>GIF</source>
-        <translation type="unfinished">GIF</translation>
+        <translation>GIF</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="135"/>
         <source>WebP</source>
-        <translation type="unfinished">WebP</translation>
+        <translation>WebP</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="145"/>
         <source>Frameskip</source>
-        <translation type="unfinished">跳過畫格</translation>
+        <translation>跳過畫格</translation>
     </message>
 </context>
 <context>
@@ -978,7 +978,7 @@ Download size: %3</source>
         <location filename="../GameBoy.cpp" line="60"/>
         <location filename="../GameBoy.cpp" line="79"/>
         <source>Autodetect</source>
-        <translation type="unfinished">自動偵測</translation>
+        <translation>自動偵測</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="61"/>
@@ -1083,7 +1083,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="93"/>
         <source>TAMA5</source>
-        <translation type="unfinished">TAMA5</translation>
+        <translation>TAMA5</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="94"/>
@@ -2406,12 +2406,12 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.ui" line="14"/>
         <source>I/O Viewer</source>
-        <translation type="unfinished">I/O 檢視器</translation>
+        <translation>I/O 檢視器</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="26"/>
         <source>0x0000</source>
-        <translation type="unfinished">0x0000</translation>
+        <translation>0x0000</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="367"/>
@@ -3008,7 +3008,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1530"/>
         <source>WRAM bank</source>
-        <translation>WRAM bank</translation>
+        <translation>記憶體庫</translation>
     </message>
 </context>
 <context>
@@ -3025,27 +3025,27 @@ Download size: %3</source>
     <message>
         <location filename="../library/LibraryTree.cpp" line="51"/>
         <source>Name</source>
-        <translation type="unfinished">名稱</translation>
+        <translation>名稱</translation>
     </message>
     <message>
         <location filename="../library/LibraryTree.cpp" line="52"/>
         <source>Location</source>
-        <translation type="unfinished">位置</translation>
+        <translation>位置</translation>
     </message>
     <message>
         <location filename="../library/LibraryTree.cpp" line="53"/>
         <source>Platform</source>
-        <translation type="unfinished">平台</translation>
+        <translation>平台</translation>
     </message>
     <message>
         <location filename="../library/LibraryTree.cpp" line="54"/>
         <source>Size</source>
-        <translation type="unfinished">大小</translation>
+        <translation>大小</translation>
     </message>
     <message>
         <location filename="../library/LibraryTree.cpp" line="55"/>
         <source>CRC32</source>
-        <translation type="unfinished">CRC32</translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -3079,7 +3079,7 @@ Download size: %3</source>
         <location filename="../LoadSaveState.ui" line="14"/>
         <location filename="../LoadSaveState.ui" line="66"/>
         <source>%1 State</source>
-        <translation type="unfinished">%1 即時存檔</translation>
+        <translation>%1 即時存檔</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="41"/>
@@ -3092,57 +3092,57 @@ Download size: %3</source>
         <location filename="../LoadSaveState.ui" line="217"/>
         <location filename="../LoadSaveState.ui" line="239"/>
         <source>No Save</source>
-        <translation type="unfinished">無存檔</translation>
+        <translation>無存檔</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="50"/>
         <source>5</source>
-        <translation type="unfinished">5</translation>
+        <translation>5</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="94"/>
         <source>6</source>
-        <translation type="unfinished">6</translation>
+        <translation>6</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="116"/>
         <source>8</source>
-        <translation type="unfinished">8</translation>
+        <translation>8</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="138"/>
         <source>4</source>
-        <translation type="unfinished">4</translation>
+        <translation>4</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="160"/>
         <source>1</source>
-        <translation type="unfinished">1</translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="182"/>
         <source>3</source>
-        <translation type="unfinished">3</translation>
+        <translation>3</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="204"/>
         <source>7</source>
-        <translation type="unfinished">7</translation>
+        <translation>7</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="226"/>
         <source>9</source>
-        <translation type="unfinished">9</translation>
+        <translation>9</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="248"/>
         <source>2</source>
-        <translation type="unfinished">2</translation>
+        <translation>2</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.ui" line="261"/>
         <source>Cancel</source>
-        <translation type="unfinished">取消</translation>
+        <translation>取消</translation>
     </message>
 </context>
 <context>
@@ -3242,27 +3242,27 @@ Download size: %3</source>
     <message>
         <location filename="../LogView.ui" line="14"/>
         <source>Logs</source>
-        <translation type="unfinished">記錄</translation>
+        <translation>記錄</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="22"/>
         <source>Enabled Levels</source>
-        <translation type="unfinished">已啟用的關卡</translation>
+        <translation>已啟用的關卡</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="28"/>
         <source>Debug</source>
-        <translation type="unfinished">除錯</translation>
+        <translation>除錯</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="38"/>
         <source>Stub</source>
-        <translation type="unfinished">測試樁</translation>
+        <translation>測試樁</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation type="unfinished">資訊</translation>
+        <translation>資訊</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
