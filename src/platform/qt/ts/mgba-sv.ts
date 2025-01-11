@@ -387,48 +387,48 @@ Hämtningsstorlek: %3</translation>
 <context>
     <name>QGBA::CoreController</name>
     <message>
-        <location filename="../CoreController.cpp" line="103"/>
+        <location filename="../CoreController.cpp" line="104"/>
         <source>Reset r%1-%2 %3</source>
         <translation>Starta om r%1-%2 %3</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="536"/>
-        <location filename="../CoreController.cpp" line="553"/>
+        <location filename="../CoreController.cpp" line="550"/>
+        <location filename="../CoreController.cpp" line="567"/>
         <source>Rewinding not currently enabled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="592"/>
+        <location filename="../CoreController.cpp" line="606"/>
         <source>Reset the game?</source>
         <translation>Starta om spelet?</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="593"/>
+        <location filename="../CoreController.cpp" line="607"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
         <translation>De flesta spel kommer att kräva en omstart för att läsa in ny sparning. Vill du starta om nu?</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="808"/>
+        <location filename="../CoreController.cpp" line="822"/>
         <source>Failed to open save file: %1</source>
         <translation>Misslyckades med att öppna sparad fil: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="866"/>
+        <location filename="../CoreController.cpp" line="880"/>
         <source>Failed to open game file: %1</source>
         <translation>Misslyckades med att öppna spelfil: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="896"/>
+        <location filename="../CoreController.cpp" line="910"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="1011"/>
+        <location filename="../CoreController.cpp" line="1025"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation>Misslyckades med att öppna ögonblicksfil för läsning: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="1028"/>
+        <location filename="../CoreController.cpp" line="1042"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation>Misslyckades med att öppna ögonblicksfil för skrivning: %1</translation>
     </message>
@@ -3404,6 +3404,15 @@ Hämtningsstorlek: %3</translation>
     </message>
 </context>
 <context>
+    <name>QGBA::MemoryAccessLogController</name>
+    <message>
+        <location filename="../MemoryAccessLogController.cpp" line="66"/>
+        <location filename="../MemoryAccessLogController.cpp" line="76"/>
+        <source>Failed to open memory log file</source>
+        <translation type="unfinished">Misslyckades med att öppna minnesloggfil</translation>
+    </message>
+</context>
+<context>
     <name>QGBA::MemoryAccessLogView</name>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="14"/>
@@ -3451,18 +3460,13 @@ Hämtningsstorlek: %3</translation>
         <translation>Stoppa</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogView.cpp" line="82"/>
-        <source>Failed to open memory log file</source>
-        <translation>Misslyckades med att öppna minnesloggfil</translation>
-    </message>
-    <message>
-        <location filename="../MemoryAccessLogView.cpp" line="116"/>
-        <location filename="../MemoryAccessLogView.cpp" line="135"/>
+        <location filename="../MemoryAccessLogView.cpp" line="78"/>
+        <location filename="../MemoryAccessLogView.cpp" line="93"/>
         <source>Select access log file</source>
         <translation>Välj åtkomstloggfil</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogView.cpp" line="116"/>
+        <location filename="../MemoryAccessLogView.cpp" line="78"/>
         <source>Memory access logs (*.mal)</source>
         <translation>Minnesåtkomstloggar (*.mal)</translation>
     </message>
@@ -6238,7 +6242,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <translation>Skanna e-Reader-punktkoder...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1775"/>
+        <location filename="../Window.cpp" line="1780"/>
         <source>Convert e-Reader card image to raw...</source>
         <translation>Konvertera e-Reader-kortavbilder till raw...</translation>
     </message>
@@ -6709,82 +6713,82 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <translation>Logga minneså&amp;tkomster...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1779"/>
+        <location filename="../Window.cpp" line="1784"/>
         <source>Record debug video log...</source>
         <translation>Spela in felsökningsvideologg...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1780"/>
+        <location filename="../Window.cpp" line="1785"/>
         <source>Stop debug video log</source>
         <translation>Stoppa felsökningsvideologg</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1784"/>
+        <location filename="../Window.cpp" line="1789"/>
         <source>Exit fullscreen</source>
         <translation>Avsluta helskärm</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1786"/>
+        <location filename="../Window.cpp" line="1791"/>
         <source>GameShark Button (held)</source>
         <translation>GameShark-knapp (håll)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1792"/>
+        <location filename="../Window.cpp" line="1797"/>
         <source>Autofire</source>
         <translation>Autofire</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1793"/>
+        <location filename="../Window.cpp" line="1798"/>
         <source>Autofire A</source>
         <translation>Autofire A</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1798"/>
+        <location filename="../Window.cpp" line="1803"/>
         <source>Autofire B</source>
         <translation>Autofire B</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1803"/>
+        <location filename="../Window.cpp" line="1808"/>
         <source>Autofire L</source>
         <translation>Autofire L</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1808"/>
+        <location filename="../Window.cpp" line="1813"/>
         <source>Autofire R</source>
         <translation>Autofire R</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1813"/>
+        <location filename="../Window.cpp" line="1818"/>
         <source>Autofire Start</source>
         <translation>Autofire Start</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1818"/>
+        <location filename="../Window.cpp" line="1823"/>
         <source>Autofire Select</source>
         <translation>Autofire Select</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1823"/>
+        <location filename="../Window.cpp" line="1828"/>
         <source>Autofire Up</source>
         <translation>Autofire upp</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1828"/>
+        <location filename="../Window.cpp" line="1833"/>
         <source>Autofire Right</source>
         <translation>Autofire höger</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1833"/>
+        <location filename="../Window.cpp" line="1838"/>
         <source>Autofire Down</source>
         <translation>Autofire ner</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1838"/>
+        <location filename="../Window.cpp" line="1843"/>
         <source>Autofire Left</source>
         <translation>Autofire vänster</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="2043"/>
+        <location filename="../Window.cpp" line="2048"/>
         <source>Clear</source>
         <translation>Töm</translation>
     </message>

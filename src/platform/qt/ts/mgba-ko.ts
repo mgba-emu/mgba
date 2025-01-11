@@ -387,48 +387,48 @@ Download size: %3</source>
 <context>
     <name>QGBA::CoreController</name>
     <message>
-        <location filename="../CoreController.cpp" line="103"/>
+        <location filename="../CoreController.cpp" line="104"/>
         <source>Reset r%1-%2 %3</source>
         <translation>r%1-%2 %3 재설정</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="536"/>
-        <location filename="../CoreController.cpp" line="553"/>
+        <location filename="../CoreController.cpp" line="550"/>
+        <location filename="../CoreController.cpp" line="567"/>
         <source>Rewinding not currently enabled</source>
         <translation>현재 활성화되지 않은 되감기</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="592"/>
+        <location filename="../CoreController.cpp" line="606"/>
         <source>Reset the game?</source>
         <translation>게임을 재설정하겠습니까?</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="593"/>
+        <location filename="../CoreController.cpp" line="607"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
         <translation>대부분의 게임은 새로운 저장을 로드하려면 재설정이 필요합니다. 지금 재설정하겠습니까?</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="808"/>
+        <location filename="../CoreController.cpp" line="822"/>
         <source>Failed to open save file: %1</source>
         <translation>저장 파일을 열지 못했습니다: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="866"/>
+        <location filename="../CoreController.cpp" line="880"/>
         <source>Failed to open game file: %1</source>
         <translation>게임 파일을 열지 못했습니다: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="896"/>
+        <location filename="../CoreController.cpp" line="910"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
         <translation>예기치 않은 플랫폼에서 팩을 잡아당길 수 없습니다!</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="1011"/>
+        <location filename="../CoreController.cpp" line="1025"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation>읽기 용 스냅샷 파일을 열지 못했습니다: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="1028"/>
+        <location filename="../CoreController.cpp" line="1042"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation>쓰기 용 스냅샷 파일을 열지 못했습니다: %1</translation>
     </message>
@@ -3404,6 +3404,15 @@ Download size: %3</source>
     </message>
 </context>
 <context>
+    <name>QGBA::MemoryAccessLogController</name>
+    <message>
+        <location filename="../MemoryAccessLogController.cpp" line="66"/>
+        <location filename="../MemoryAccessLogController.cpp" line="76"/>
+        <source>Failed to open memory log file</source>
+        <translation type="unfinished">메모리 로그 파일을 열 수 없음</translation>
+    </message>
+</context>
+<context>
     <name>QGBA::MemoryAccessLogView</name>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="14"/>
@@ -3451,18 +3460,13 @@ Download size: %3</source>
         <translation>정지</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogView.cpp" line="82"/>
-        <source>Failed to open memory log file</source>
-        <translation>메모리 로그 파일을 열 수 없음</translation>
-    </message>
-    <message>
-        <location filename="../MemoryAccessLogView.cpp" line="116"/>
-        <location filename="../MemoryAccessLogView.cpp" line="135"/>
+        <location filename="../MemoryAccessLogView.cpp" line="78"/>
+        <location filename="../MemoryAccessLogView.cpp" line="93"/>
         <source>Select access log file</source>
         <translation>접속 파일 선택</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogView.cpp" line="116"/>
+        <location filename="../MemoryAccessLogView.cpp" line="78"/>
         <source>Memory access logs (*.mal)</source>
         <translation>메모리 접속 로그 (*.mal)</translation>
     </message>
@@ -6215,7 +6219,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <translation>게임 상태 보기</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1775"/>
+        <location filename="../Window.cpp" line="1780"/>
         <source>Convert e-Reader card image to raw...</source>
         <translation>e-리더 카드 이미지를 원시 데이터로 변환...</translation>
     </message>
@@ -6707,82 +6711,82 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <translation>메모리 및 접속 기록...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1779"/>
+        <location filename="../Window.cpp" line="1784"/>
         <source>Record debug video log...</source>
         <translation>디버그 비디오 로그 녹화...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1780"/>
+        <location filename="../Window.cpp" line="1785"/>
         <source>Stop debug video log</source>
         <translation>디버그 비디오 로그 중지</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1784"/>
+        <location filename="../Window.cpp" line="1789"/>
         <source>Exit fullscreen</source>
         <translation>전체화면 종료</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1786"/>
+        <location filename="../Window.cpp" line="1791"/>
         <source>GameShark Button (held)</source>
         <translation>게임샤크 버튼 (누름)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1792"/>
+        <location filename="../Window.cpp" line="1797"/>
         <source>Autofire</source>
         <translation>연사</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1793"/>
+        <location filename="../Window.cpp" line="1798"/>
         <source>Autofire A</source>
         <translation>연사 A</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1798"/>
+        <location filename="../Window.cpp" line="1803"/>
         <source>Autofire B</source>
         <translation>연사 B</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1803"/>
+        <location filename="../Window.cpp" line="1808"/>
         <source>Autofire L</source>
         <translation>연사 L</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1808"/>
+        <location filename="../Window.cpp" line="1813"/>
         <source>Autofire R</source>
         <translation>연사 R</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1813"/>
+        <location filename="../Window.cpp" line="1818"/>
         <source>Autofire Start</source>
         <translation>연사 시작</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1818"/>
+        <location filename="../Window.cpp" line="1823"/>
         <source>Autofire Select</source>
         <translation>연사 선택</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="2043"/>
+        <location filename="../Window.cpp" line="2048"/>
         <source>Clear</source>
         <translation>지움</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1823"/>
+        <location filename="../Window.cpp" line="1828"/>
         <source>Autofire Up</source>
         <translation>연사 위쪽</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1828"/>
+        <location filename="../Window.cpp" line="1833"/>
         <source>Autofire Right</source>
         <translation>연사 오른쪽</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1833"/>
+        <location filename="../Window.cpp" line="1838"/>
         <source>Autofire Down</source>
         <translation>연사 아래쪽</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1838"/>
+        <location filename="../Window.cpp" line="1843"/>
         <source>Autofire Left</source>
         <translation>연사 왼쪽</translation>
     </message>
