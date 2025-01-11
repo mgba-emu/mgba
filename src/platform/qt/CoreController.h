@@ -40,6 +40,7 @@ namespace QGBA {
 class ConfigController;
 class InputController;
 class LogController;
+class MemoryAccessLogController;
 class MultiplayerController;
 class Override;
 
@@ -113,6 +114,8 @@ public:
 	void detachDebugger();
 	void attachDebuggerModule(mDebuggerModule*, bool interrupt = true);
 	void detachDebuggerModule(mDebuggerModule*);
+
+	std::weak_ptr<MemoryAccessLogController> memoryAccessLogController();
 #endif
 
 	void setMultiplayerController(MultiplayerController*);
@@ -324,6 +327,10 @@ private:
 	MultiplayerController* m_multiplayer = nullptr;
 #ifdef M_CORE_GBA
 	GBASIODolphin m_dolphin;
+#endif
+
+#ifdef ENABLE_DEBUGGERS
+	std::shared_ptr<MemoryAccessLogController> m_malController;
 #endif
 
 	mVideoLogContext* m_vl = nullptr;
