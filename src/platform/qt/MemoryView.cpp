@@ -133,20 +133,10 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 		}
 	}
 
-	connect(m_ui.width8, &QAbstractButton::clicked, [this]() {
-		m_ui.hexfield->setAlignment(1);
-		m_sintValidator.setWidth(1);
-		m_uintValidator.setWidth(1);
-	});
-	connect(m_ui.width16, &QAbstractButton::clicked, [this]() {
-		m_ui.hexfield->setAlignment(2);
-		m_sintValidator.setWidth(2);
-		m_uintValidator.setWidth(2);
-	});
-	connect(m_ui.width32, &QAbstractButton::clicked, [this]() {
-		m_ui.hexfield->setAlignment(4);
-		m_sintValidator.setWidth(4);
-		m_uintValidator.setWidth(4);
+	connect(m_ui.width, &QComboBox::currentIndexChanged, [this](int index) {
+		m_ui.hexfield->setAlignment(1 << index);
+		m_sintValidator.setWidth(1 << index);
+		m_uintValidator.setWidth(1 << index);
 	});
 	connect(m_ui.setAddress, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
 	        this, static_cast<void (MemoryView::*)(uint32_t)>(&MemoryView::jumpToAddress));
@@ -258,7 +248,7 @@ void MemoryView::updateStatus() {
 	mCore* core = m_controller->thread()->core;
 	QByteArray selection(m_ui.hexfield->serialize());
 	QString text(m_ui.hexfield->decodeText(selection));
-	m_ui.stringVal->setText(text);
+	m_ui.stringVal->setPlainText(text);
 
 	if (m_selection.first & (align - 1) || m_selection.second - m_selection.first != align) {
 		m_ui.sintVal->clear();
