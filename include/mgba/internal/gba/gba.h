@@ -81,7 +81,6 @@ struct GBA {
 
 	struct GBATimer timers[4];
 
-	int springIRQ;
 	struct mTimingEvent irqEvent;
 
 	uint32_t biosChecksum;
@@ -91,6 +90,7 @@ struct GBA {
 	struct GBALuminanceSource* luminanceSource;
 	struct mRTCSource* rtcSource;
 	struct mRumble* rumble;
+	int32_t lastRumble;
 
 	bool isPristine;
 	size_t pristineRomSize;
@@ -160,7 +160,7 @@ struct ELF;
 bool GBAVerifyELFEntry(struct ELF* elf, uint32_t target);
 #endif
 
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 struct mDebugger;
 void GBAAttachDebugger(struct GBA* gba, struct mDebugger* debugger);
 void GBADetachDebugger(struct GBA* gba);
@@ -182,8 +182,7 @@ void GBAUnloadMB(struct GBA* gba);
 
 bool GBALoadNull(struct GBA* gba);
 
-void GBAGetGameCode(const struct GBA* gba, char* out);
-void GBAGetGameTitle(const struct GBA* gba, char* out);
+void GBAGetGameInfo(const struct GBA* gba, struct mGameInfo* info);
 
 void GBATestKeypadIRQ(struct GBA* gba);
 

@@ -512,7 +512,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode0(struct GBAVideoSoftwareRenderer
 
 	uint32_t screenBase;
 	uint32_t charBase;
-	color_t* palette = renderer->normalPalette;
+	mColor* palette = renderer->normalPalette;
 	if (renderer->d.highlightAmount && background->highlight) {
 		palette = renderer->highlightPalette;
 	}

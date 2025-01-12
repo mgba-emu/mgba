@@ -163,7 +163,16 @@ bool GUISelectFile(struct GUIParams* params, char* outPath, size_t outLen, bool 
 		.subtitle = params->currentPath,
 	};
 	GUIMenuItemListInit(&menu.items, 0);
-	_refreshDirectory(params, params->currentPath, &menu.items, filterName, filterContents, preselect);
+	while (true) {
+		if (_refreshDirectory(params, params->currentPath, &menu.items, filterName, filterContents, preselect)) {
+			break;
+		}
+		if (strncmp(params->currentPath, params->basePath, PATH_MAX) == 0 || !params->currentPath[0]) {
+			mLOG(GUI_MENU, ERROR, "Failed to load base directory");
+			return false;
+		}
+		_upDirectory(params->currentPath);
+	}
 	menu.index = params->fileIndex;
 
 	while (true) {

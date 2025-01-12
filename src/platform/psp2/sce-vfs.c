@@ -21,6 +21,7 @@ struct VFileSce {
 	SceUID fd;
 };
 
+#ifdef ENABLE_VFS
 struct VDirEntrySce {
 	struct VDirEntry d;
 	SceIoDirent ent;
@@ -32,6 +33,7 @@ struct VDirSce {
 	SceUID fd;
 	char* path;
 };
+#endif
 
 static bool _vfsceClose(struct VFile* vf);
 static off_t _vfsceSeek(struct VFile* vf, off_t offset, int whence);
@@ -43,6 +45,7 @@ static void _vfsceTruncate(struct VFile* vf, size_t size);
 static ssize_t _vfsceSize(struct VFile* vf);
 static bool _vfsceSync(struct VFile* vf, void* memory, size_t size);
 
+#ifdef ENABLE_VFS
 static bool _vdsceClose(struct VDir* vd);
 static void _vdsceRewind(struct VDir* vd);
 static struct VDirEntry* _vdsceListNext(struct VDir* vd);
@@ -62,6 +65,7 @@ static bool _vdlsceDeleteFile(struct VDir* vd, const char* path);
 
 static const char* _vdlesceName(struct VDirEntry* vde);
 static enum VFSType _vdlesceType(struct VDirEntry* vde);
+#endif
 
 struct VFile* VFileOpenSce(const char* path, int flags, SceMode mode) {
 	struct VFileSce* vfsce = malloc(sizeof(struct VFileSce));
@@ -161,6 +165,7 @@ bool _vfsceSync(struct VFile* vf, void* buffer, size_t size) {
 	return sceIoSyncByFd(vfsce->fd, 0) >= 0;
 }
 
+#ifdef ENABLE_VFS
 struct VDir* VDirOpen(const char* path) {
 	if (!path || !path[0]) {
 		return VDeviceList();
@@ -370,3 +375,4 @@ bool VDirCreate(const char* path) {
 	sceIoMkdir(path, 0777);
 	return true;
 }
+#endif

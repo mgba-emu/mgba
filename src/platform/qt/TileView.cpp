@@ -132,7 +132,7 @@ void TileView::updateTilesGBA(bool force) {
 		if (m_ui.tilesBg->isChecked()) {
 			m_ui.tiles->setTileCount(1024);
 		} else if (m_ui.tilesObj->isChecked()) {
-			m_ui.tiles->setTileCount(512);			
+			m_ui.tiles->setTileCount(512);
 		} else {
 			m_ui.tiles->setTileCount(1536);
 		}
@@ -142,7 +142,7 @@ void TileView::updateTilesGBA(bool force) {
 			objOffset = 0;
 			cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 1);
 			for (int i = 0; i < 1024; ++i) {
-				const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i, 0);
+				const mColor* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i, 0);
 				if (data) {
 					m_ui.tiles->setTile(i, data);
 				} else if (force) {
@@ -153,7 +153,7 @@ void TileView::updateTilesGBA(bool force) {
 		if (!m_ui.tilesBg->isChecked()) {
 			cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 3);
 			for (int i = 1024; i < 1536; ++i) {
-				const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i - 1024, 0);
+				const mColor* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i - 1024, 0);
 				if (data) {
 					m_ui.tiles->setTile(i - objOffset, data);
 				} else if (force) {
@@ -165,7 +165,7 @@ void TileView::updateTilesGBA(bool force) {
 		if (m_ui.tilesBg->isChecked()) {
 			m_ui.tiles->setTileCount(2048);
 		} else if (m_ui.tilesObj->isChecked()) {
-			m_ui.tiles->setTileCount(1024);			
+			m_ui.tiles->setTileCount(1024);
 		} else {
 			m_ui.tiles->setTileCount(3072);
 		}
@@ -175,7 +175,7 @@ void TileView::updateTilesGBA(bool force) {
 			objOffset = 0;
 			cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 0);
 			for (int i = 0; i < 2048; ++i) {
-				const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i, m_paletteId);
+				const mColor* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i, m_paletteId);
 				if (data) {
 					m_ui.tiles->setTile(i, data);
 				} else if (force) {
@@ -186,7 +186,7 @@ void TileView::updateTilesGBA(bool force) {
 		if (!m_ui.tilesBg->isChecked()) {
 			cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 2);
 			for (int i = 2048; i < 3072; ++i) {
-				const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i - 2048, m_paletteId);
+				const mColor* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[16 * i], i - 2048, m_paletteId);
 				if (data) {
 					m_ui.tiles->setTile(i - objOffset, data);
 				} else if (force) {
@@ -205,7 +205,7 @@ void TileView::updateTilesGB(bool force) {
 	m_ui.tiles->setTileCount(count);
 	mTileCache* cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 0);
 	for (int i = 0; i < count; ++i) {
-		const color_t* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[8 * i], i, m_paletteId);
+		const mColor* data = mTileCacheGetTileIfDirty(cache, &m_tileStatus[8 * i], i, m_paletteId);
 		if (data) {
 			m_ui.tiles->setTile(i, data);
 		} else if (force) {

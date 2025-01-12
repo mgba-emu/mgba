@@ -173,7 +173,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode4(struct GBAVideoSoftwareRenderer
 			if (!objwinSlowPath) {
 				_compositeBlendNoObjwin(renderer, pixel, palette[color] | flags, current);
 			} else if (background->objwinForceEnable || (!(current & FLAG_OBJWIN)) == background->objwinOnly) {
-				color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
+				mColor* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
 				unsigned mergedFlags = flags;
 				if (current & FLAG_OBJWIN) {
 					mergedFlags = objwinFlags;

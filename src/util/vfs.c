@@ -18,8 +18,9 @@
 #include <windows.h>
 #endif
 
+#ifdef ENABLE_VFS
 struct VFile* VFileOpen(const char* path, int flags) {
-#ifdef USE_VFS_FILE
+#ifdef ENABLE_VFS_FILE
 	const char* chflags;
 	switch (flags & O_ACCMODE) {
 	case O_WRONLY:
@@ -67,7 +68,7 @@ struct VFile* VFileOpen(const char* path, int flags) {
 		sceFlags |= SCE_O_CREAT;
 	}
 	return VFileOpenSce(path, sceFlags, 0666);
-#elif defined(USE_VFS_3DS)
+#elif defined(ENABLE_VFS_3DS)
 	int ctrFlags = FS_OPEN_READ;
 	switch (flags & O_ACCMODE) {
 	case O_WRONLY:
@@ -95,8 +96,10 @@ struct VFile* VFileOpen(const char* path, int flags) {
 		vf->seek(vf, vf->size(vf), SEEK_SET);
 	}
 	return vf;
-#else
+#elif defined(ENABLE_VFS_FD)
 	return VFileOpenFD(path, flags);
+#else
+#error "Can't build VFS subsystem without a VFile backend"
 #endif
 }
 
@@ -115,6 +118,7 @@ struct VDir* VDirOpenArchive(const char* path) {
 #endif
 	return dir;
 }
+#endif
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
 	size_t bytesRead = 0;
@@ -211,7 +215,7 @@ void separatePath(const char* path, char* dirname, char* basename, char* extensi
 	}
 }
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 bool isAbsolute(const char* path) {
 	// XXX: Is this robust?
 #ifdef _WIN32
@@ -246,7 +250,6 @@ void makeAbsolute(const char* path, const char* base, char* out) {
 #endif
 	strncpy(out, buf, PATH_MAX);
 }
-#endif
 
 struct VFile* VDirFindFirst(struct VDir* dir, bool (*filter)(struct VFile*)) {
 	dir->rewind(dir);
@@ -312,3 +315,4 @@ struct VFile* VDirFindNextAvailable(struct VDir* dir, const char* basename, cons
 	path[PATH_MAX - 1] = '\0';
 	return dir->openFile(dir, path, mode);
 }
+#endif

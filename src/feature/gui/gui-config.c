@@ -12,7 +12,7 @@
 #include <mgba/internal/gba/gba.h>
 #ifdef M_CORE_GB
 #include <mgba/internal/gb/gb.h>
-#include <mgba/internal/gb/overrides.h>
+#include <mgba/gb/interface.h>
 #endif
 #include <mgba-util/gui/file-select.h>
 #include <mgba-util/gui/menu.h>
@@ -295,7 +295,7 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 						test.v.s = mCoreConfigGetValue(&runner->config, item->data.v.s);
 						if (test.v.s && strcmp(test.v.s, v->v.s) == 0) {
 							item->state = j;
-							break;						
+							break;
 						}
 						break;
 					case GUI_VARIANT_POINTER:

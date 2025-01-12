@@ -5,7 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gb/audio.h>
 
-#include <mgba/core/blip_buf.h>
 #include <mgba/core/interface.h>
 #include <mgba/core/sync.h>
 #include <mgba/internal/gb/gb.h>
@@ -15,15 +14,10 @@
 #include <mgba/internal/gba/audio.h>
 #endif
 
-#ifdef __3DS__
-#define blip_add_delta blip_add_delta_fast
-#endif
-
+#define AUDIO_BUFFER_SAMPLES 0x4000
 #define FRAME_CYCLES (DMG_SM83_FREQUENCY >> 9)
 
 const uint32_t DMG_SM83_FREQUENCY = 0x400000;
-static const int CLOCKS_PER_BLIP_FRAME = 0x1000;
-static const unsigned BLIP_BUFFER_SIZE = 0x4000;
 static const int SAMPLE_INTERVAL = 32;
 static const int FILTER = 65368;
 const int GB_AUDIO_VOLUME_MAX = 0x100;
@@ -33,10 +27,10 @@ static void _writeDuty(struct GBAudioEnvelope* envelope, uint8_t value);
 static bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value, enum GBAudioStyle style);
 
 static void _resetSweep(struct GBAudioSweep* sweep);
-static bool _resetEnvelope(struct GBAudioEnvelope* sweep);
+static bool _resetEnvelope(struct GBAudioEnvelope* sweep, enum GBAudioStyle style);
 
 static void _updateEnvelope(struct GBAudioEnvelope* envelope);
-static void _updateEnvelopeDead(struct GBAudioEnvelope* envelope);
+static void _updateEnvelopeDead(struct GBAudioEnvelope* envelope, enum GBAudioStyle style);
 static bool _updateSweep(struct GBAudioSquareChannel* sweep, bool initial);
 
 static void _updateSquareSample(struct GBAudioSquareChannel* ch);
@@ -57,12 +51,7 @@ static const int _squareChannelDuty[4][8] = {
 
 void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAudioStyle style) {
 	audio->samples = samples;
-	audio->left = blip_new(BLIP_BUFFER_SIZE);
-	audio->right = blip_new(BLIP_BUFFER_SIZE);
-	audio->clockRate = DMG_SM83_FREQUENCY;
-	// Guess too large; we hang producing extra samples if we guess too low
-	blip_set_rates(audio->left, DMG_SM83_FREQUENCY, 96000);
-	blip_set_rates(audio->right, DMG_SM83_FREQUENCY, 96000);
+	mAudioBufferInit(&audio->buffer, AUDIO_BUFFER_SAMPLES, 2);
 	audio->forceDisableCh[0] = false;
 	audio->forceDisableCh[1] = false;
 	audio->forceDisableCh[2] = false;
@@ -86,8 +75,7 @@ void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAu
 }
 
 void GBAudioDeinit(struct GBAudio* audio) {
-	blip_delete(audio->left);
-	blip_delete(audio->right);
+	mAudioBufferDeinit(&audio->buffer);
 }
 
 void GBAudioReset(struct GBAudio* audio) {
@@ -123,11 +111,9 @@ void GBAudioReset(struct GBAudio* audio) {
 	audio->sampleInterval = SAMPLE_INTERVAL * GB_MAX_SAMPLES;
 	audio->lastSample = 0;
 	audio->sampleIndex = 0;
-	audio->lastLeft = 0;
-	audio->lastRight = 0;
 	audio->capLeft = 0;
 	audio->capRight = 0;
-	audio->clock = 0;
+	mAudioBufferClear(&audio->buffer);
 	audio->playingCh1 = false;
 	audio->playingCh2 = false;
 	audio->playingCh3 = false;
@@ -140,14 +126,8 @@ void GBAudioReset(struct GBAudio* audio) {
 }
 
 void GBAudioResizeBuffer(struct GBAudio* audio, size_t samples) {
-	if (samples > BLIP_BUFFER_SIZE / 2) {
-		samples = BLIP_BUFFER_SIZE / 2;
-	}
 	mCoreSyncLockAudio(audio->p->sync);
 	audio->samples = samples;
-	blip_clear(audio->left);
-	blip_clear(audio->right);
-	audio->clock = 0;
 	mCoreSyncConsumeAudio(audio->p->sync);
 }
 
@@ -192,7 +172,7 @@ void GBAudioWriteNR14(struct GBAudio* audio, uint8_t value) {
 		}
 	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
-		audio->playingCh1 = _resetEnvelope(&audio->ch1.envelope);
+		audio->playingCh1 = _resetEnvelope(&audio->ch1.envelope, audio->style);
 		audio->ch1.sweep.realFrequency = audio->ch1.control.frequency;
 		_resetSweep(&audio->ch1.sweep);
 		if (audio->playingCh1 && audio->ch1.sweep.shift) {
@@ -243,7 +223,7 @@ void GBAudioWriteNR24(struct GBAudio* audio, uint8_t value) {
 		}
 	}
 	if (GBAudioRegisterControlIsRestart(value << 8)) {
-		audio->playingCh2 = _resetEnvelope(&audio->ch2.envelope);
+		audio->playingCh2 = _resetEnvelope(&audio->ch2.envelope, audio->style);
 
 		if (!audio->ch2.control.length) {
 			audio->ch2.control.length = 64;
@@ -383,7 +363,7 @@ void GBAudioWriteNR44(struct GBAudio* audio, uint8_t value) {
 		}
 	}
 	if (GBAudioRegisterNoiseControlIsRestart(value)) {
-		audio->playingCh4 = _resetEnvelope(&audio->ch4.envelope);
+		audio->playingCh4 = _resetEnvelope(&audio->ch4.envelope, audio->style);
 
 		audio->ch4.lfsr = 0;
 		if (!audio->ch4.length) {
@@ -622,7 +602,7 @@ void GBAudioRun(struct GBAudio* audio, int32_t timestamp, int channels) {
 			int32_t last = 0;
 			int samples = 0;
 			int positiveSamples = 0;
-			int lsb;
+			int lsb = 0;
 			int coeff;
 			if (audio->ch4.power) {
 				// TODO: Can this be batched too?
@@ -842,44 +822,33 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	GBAudioSample(audio, mTimingCurrentTime(audio->timing));
 
 	mCoreSyncLockAudio(audio->p->sync);
-	unsigned produced;
-	int i;
-	for (i = 0; i < GB_MAX_SAMPLES; ++i) {
-		int16_t sampleLeft = audio->currentSamples[i].left;
-		int16_t sampleRight = audio->currentSamples[i].right;
-		if ((size_t) blip_samples_avail(audio->left) < audio->samples) {
-			blip_add_delta(audio->left, audio->clock, sampleLeft - audio->lastLeft);
-			blip_add_delta(audio->right, audio->clock, sampleRight - audio->lastRight);
-			audio->lastLeft = sampleLeft;
-			audio->lastRight = sampleRight;
-			audio->clock += SAMPLE_INTERVAL;
-			if (audio->clock >= CLOCKS_PER_BLIP_FRAME) {
-				blip_end_frame(audio->left, CLOCKS_PER_BLIP_FRAME);
-				blip_end_frame(audio->right, CLOCKS_PER_BLIP_FRAME);
-				audio->clock -= CLOCKS_PER_BLIP_FRAME;
+	mAudioBufferWrite(&audio->buffer, (int16_t*) audio->currentSamples, GB_MAX_SAMPLES);
+	if (audio->p->stream) {
+		if (audio->p->stream->postAudioFrame) {
+			int i;
+			for (i = 0; i < GB_MAX_SAMPLES; ++i) {
+				audio->p->stream->postAudioFrame(audio->p->stream, audio->currentSamples[i].left,audio->currentSamples[i].right);
 			}
 		}
-		if (audio->p->stream && audio->p->stream->postAudioFrame) {
-			audio->p->stream->postAudioFrame(audio->p->stream, sampleLeft, sampleRight);
+		if (audio->p->stream->postAudioBuffer) {
+			unsigned produced = mAudioBufferAvailable(&audio->buffer);
+			bool wait = produced >= audio->samples;
+			if (wait) {
+				audio->p->stream->postAudioBuffer(audio->p->stream, &audio->buffer);
+			}
 		}
 	}
-
-	produced = blip_samples_avail(audio->left);
-	bool wait = produced >= audio->samples;
-	if (!mCoreSyncProduceAudio(audio->p->sync, audio->left, audio->samples)) {
+	if (!mCoreSyncProduceAudio(audio->p->sync, &audio->buffer)) {
 		// Interrupted
 		audio->p->earlyExit = true;
-	}
-
-	if (wait && audio->p->stream && audio->p->stream->postAudioBuffer) {
-		audio->p->stream->postAudioBuffer(audio->p->stream, audio->left, audio->right);
 	}
 	mTimingSchedule(timing, &audio->sampleEvent, audio->sampleInterval * audio->timingFactor - cyclesLate);
 }
 
-bool _resetEnvelope(struct GBAudioEnvelope* envelope) {
+bool _resetEnvelope(struct GBAudioEnvelope* envelope, enum GBAudioStyle style) {
 	envelope->currentVolume = envelope->initialVolume;
-	_updateEnvelopeDead(envelope);
+	envelope->nextStep = envelope->stepTime;
+	_updateEnvelopeDead(envelope, style);
 	return envelope->initialVolume || envelope->direction;
 }
 
@@ -932,7 +901,7 @@ bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value, enum GBAudi
 		}
 		envelope->currentVolume &= 0xF;
 	}
-	_updateEnvelopeDead(envelope);
+	_updateEnvelopeDead(envelope, style);
 	return envelope->initialVolume || envelope->direction;
 }
 
@@ -968,16 +937,20 @@ static void _updateEnvelope(struct GBAudioEnvelope* envelope) {
 	}
 }
 
-static void _updateEnvelopeDead(struct GBAudioEnvelope* envelope) {
+static void _updateEnvelopeDead(struct GBAudioEnvelope* envelope, enum GBAudioStyle style) {
 	if (!envelope->stepTime) {
 		envelope->dead = envelope->currentVolume ? 1 : 2;
 	} else if (!envelope->direction && !envelope->currentVolume) {
 		envelope->dead = 2;
 	} else if (envelope->direction && envelope->currentVolume == 0xF) {
 		envelope->dead = 1;
-	} else {
+	} else if (envelope->dead) {
+		// TODO: Figure out if this happens on DMG/CGB or just AGB
+		// TODO: Figure out the exact circumstances that lead to reloading the step
+		if (style == GB_AUDIO_GBA) {
+			envelope->nextStep = envelope->stepTime;
+		}
 		envelope->dead = 0;
-		envelope->nextStep = envelope->stepTime;
 	}
 }
 

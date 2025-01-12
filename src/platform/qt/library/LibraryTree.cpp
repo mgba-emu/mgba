@@ -181,7 +181,7 @@ void LibraryTree::rebuildTree() {
 
 	QHash<QString, QTreeWidgetItem*> pathNodes;
 	if (m_currentStyle == LibraryStyle::STYLE_TREE) {
-		for (const QString& folder : m_pathNodes.keys()) { 
+		for (const QString& folder : m_pathNodes.keys()) {
 			QTreeWidgetItem* i = new LibraryTreeItem;
 			pathNodes.insert(folder, i);
 			i->setText(0, folder.section("/", -1));

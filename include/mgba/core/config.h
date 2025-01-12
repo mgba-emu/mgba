@@ -64,7 +64,7 @@ struct mCoreOptions {
 void mCoreConfigInit(struct mCoreConfig*, const char* port);
 void mCoreConfigDeinit(struct mCoreConfig*);
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 bool mCoreConfigLoad(struct mCoreConfig*);
 bool mCoreConfigSave(const struct mCoreConfig*);
 bool mCoreConfigLoadPath(struct mCoreConfig*, const char* path);

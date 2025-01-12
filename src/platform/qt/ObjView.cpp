@@ -138,7 +138,7 @@ void ObjView::updateTilesGBA(bool force) {
 	for (unsigned y = 0; y < newInfo.height; ++y) {
 		for (unsigned x = 0; x < newInfo.width; ++x, ++i, ++tile, ++tileBase) {
 			if (tile < maxTiles) {
-				const color_t* data = mTileCacheGetTileIfDirty(tileCache, &m_tileStatus[16 * tileBase], tile, newInfo.paletteId);
+				const mColor* data = mTileCacheGetTileIfDirty(tileCache, &m_tileStatus[16 * tileBase], tile, newInfo.paletteId);
 				if (data) {
 					m_ui.tiles->setTile(i, data);
 				} else if (force) {
@@ -233,7 +233,7 @@ void ObjView::updateTilesGB(bool force) {
 	m_ui.tile->setPalette(newInfo.paletteId);
 	for (unsigned y = 0; y < newInfo.height; ++y, ++i) {
 		unsigned t = tile + i;
-		const color_t* data = mTileCacheGetTileIfDirty(tileCache, &m_tileStatus[8 * t], t, newInfo.paletteId);
+		const mColor* data = mTileCacheGetTileIfDirty(tileCache, &m_tileStatus[8 * t], t, newInfo.paletteId);
 		if (data) {
 			m_ui.tiles->setTile(i, data);
 		} else if (force) {

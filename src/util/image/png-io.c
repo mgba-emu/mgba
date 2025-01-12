@@ -62,7 +62,7 @@ static png_infop _pngWriteHeader(png_structp png, unsigned width, unsigned heigh
 }
 
 png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height, enum mColorFormat fmt) {
-	int type;
+	int type = -1;
 	switch (fmt) {
 	case mCOLOR_XBGR8:
 	case mCOLOR_XRGB8:
@@ -93,6 +93,9 @@ png_infop PNGWriteHeader(png_structp png, unsigned width, unsigned height, enum 
 	case mCOLOR_PAL8:
 		type = PNG_COLOR_TYPE_PALETTE;
 		break;
+	}
+	if (type < 0) {
+		return NULL;
 	}
 	return _pngWriteHeader(png, width, height, NULL, 0, type);
 }
@@ -373,6 +376,7 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 	} else {
 		depth = 3;
 	}
+	stride *= mColorFormatBytes(fmt);
 	png_bytep row = malloc(sizeof(png_byte) * width * depth);
 	if (!row) {
 		return false;
@@ -383,7 +387,6 @@ bool PNGWritePixels(png_structp png, unsigned width, unsigned height, unsigned s
 		return false;
 	}
 	const png_byte* pixelRow = pixelData;
-	stride *= mColorFormatBytes(fmt);
 	unsigned i;
 	for (i = 0; i < height; ++i, pixelRow += stride) {
 		switch (fmt) {

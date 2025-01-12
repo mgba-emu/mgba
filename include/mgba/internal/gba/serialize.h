@@ -20,7 +20,7 @@ extern MGBA_EXPORT const uint32_t GBASavestateVersion;
 mLOG_DECLARE_CATEGORY(GBA_STATE);
 
 /* Savestate format:
- * 0x00000 - 0x00003: Version Magic (0x01000006)
+ * 0x00000 - 0x00003: Version Magic (0x01000007)
  * 0x00004 - 0x00007: BIOS checksum (e.g. 0xBAAE187F for official BIOS)
  * 0x00008 - 0x0000B: ROM CRC32
  * 0x0000C - 0x0000F: Master cycles
@@ -107,6 +107,9 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | 0x001E0 - 0x001E3: Last sample
  * | 0x001E4 - 0x001E7: Additional audio flags
  *   | bits 0 - 3: Current sample index
+ *   | bits 4 - 5: Channel A DMA source
+ *   | bits 6 - 7: Channel B DMA source
+ *   | bits 8 - 31: Reserved
  * | 0x001E8 - 0x001EF: Reserved
  * 0x001F0 - 0x001FF: Video miscellaneous state
  * | 0x001F0 - 0x001F3: Reserved
@@ -183,12 +186,15 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bit 3: Reserved
  *   | bits 4 - 15: Light counter
  * | 0x002C0 - 0x002C0: Light sample
- * | 0x002C1 - 0x002C3: Flags
+ * | 0x002C1: Flags
  *   | bits 0 - 1: Tilt state machine
  *   | bits 2 - 3: GB Player inputs posted
- *   | bits 4 - 8: GB Player transmit position
- *   | bits 9 - 23: Reserved
- * 0x002C4 - 0x002C7: Game Boy Player next event
+ *   | bits 4 - 7: GB Player transmit position
+ * | 0x002C2 - 0x002C3: Unlicensed cart flags
+ *   | bits 0 - 4: Cartridge type
+ *   | bits 5 - 7: Cartridge subtype
+ *   | bits 8 - 15: Reserved
+ * 0x002C4 - 0x002C7: SIO next event
  * 0x002C8 - 0x002CB: Current DMA transfer word
  * 0x002CC - 0x002CF: Last DMA transfer PC
  * 0x002D0 - 0x002DF: Matrix memory command buffer
@@ -227,12 +233,28 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | bits 15 - 31: Reserved
  * 0x00320 - 0x00323: Next IRQ event
  * 0x00324 - 0x00327: Interruptable BIOS stall cycles
- * 0x00328 - 0x00367: Matrix memory mapping table
- * 0x00368 - 0x0036F: Reserved (leave zero)
+ * 0x00328 - 0x0036F: Special cartridge state, one of:
+ * | Matrix Memory:
+ * | 0x00328 - 0x00367: Matrix memory mapping table
+ * | 0x00368 - 0x0036F: Reserved (leave zero)
+ * | Unlicensed multicart:
+ * | 0x00328: Bank value
+ * | 0x00329: Offset value
+ * | 0x0032A: Size value
+ * | 0x0032B: SRAM active value
+ * | 0x0032C: Unknown value
+ * | 0x0032D: Current size
+ * | 0x0032E - 0x0032F: Current bank/offset
+ * | 0x00330 - 0x00333: Next settle event
+ * | 0x00334 - 0x00337: Flags
+ *   | bit 0: Is settling occuring?
+ *   | bits 1 - 31: Reserved
+ * | 0x00338 - 0x0036F: Reserved (leave zero)
  * 0x00370 - 0x0037F: Audio FIFO A samples
  * 0x00380 - 0x0038F: Audio FIFO B samples
  * 0x00390 - 0x003CF: Audio rendered samples
- * 0x003D0 - 0x003FF: Reserved (leave zero)
+ * 0x003D0 - 0x003D3: Memory bus value
+ * 0x003D4 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -250,6 +272,8 @@ DECL_BITS(GBASerializedAudioFlags, FIFOSamplesA, 7, 3);
 
 DECL_BITFIELD(GBASerializedAudioFlags2, uint32_t);
 DECL_BITS(GBASerializedAudioFlags2, SampleIndex, 0, 4);
+DECL_BITS(GBASerializedAudioFlags2, ChASource, 4, 2);
+DECL_BITS(GBASerializedAudioFlags2, ChBSource, 6, 2);
 
 DECL_BITFIELD(GBASerializedVideoFlags, uint32_t);
 DECL_BITS(GBASerializedVideoFlags, Mode, 0, 2);
@@ -263,9 +287,15 @@ DECL_BITS(GBASerializedHWFlags1, LightCounter, 4, 12);
 DECL_BITFIELD(GBASerializedHWFlags2, uint8_t);
 DECL_BITS(GBASerializedHWFlags2, TiltState, 0, 2);
 DECL_BITS(GBASerializedHWFlags2, GbpInputsPosted, 2, 2);
-DECL_BITS(GBASerializedHWFlags2, GbpTxPosition, 4, 5);
+DECL_BITS(GBASerializedHWFlags2, GbpTxPosition, 4, 4);
 
-DECL_BITFIELD(GBASerializedHWFlags3, uint16_t);
+DECL_BITFIELD(GBASerializedUnlCartFlags, uint16_t);
+DECL_BITS(GBASerializedUnlCartFlags, Type, 0, 5);
+DECL_BITS(GBASerializedUnlCartFlags, Subtype, 5, 3);
+
+DECL_BITFIELD(GBASerializedMulticartFlags, uint32_t);
+DECL_BIT(GBASerializedMulticartFlags, DustSettling, 0);
+DECL_BIT(GBASerializedMulticartFlags, Locked, 1);
 
 DECL_BITFIELD(GBASerializedSavedataFlags, uint8_t);
 DECL_BITS(GBASerializedSavedataFlags, FlashState, 0, 2);
@@ -278,6 +308,12 @@ DECL_BIT(GBASerializedMiscFlags, POSTFLG, 1);
 DECL_BIT(GBASerializedMiscFlags, IrqPending, 2);
 DECL_BIT(GBASerializedMiscFlags, Blocked, 3);
 DECL_BITS(GBASerializedMiscFlags, KeyIRQKeys, 4, 11);
+
+enum {
+	GBA_SUBSYSTEM_VIDEO_RENDERER = 0,
+	GBA_SUBSYSTEM_SIO_DRIVER = 1,
+	GBA_SUBSYSTEM_MAX,
+};
 
 struct GBASerializedState {
 	uint32_t versionMagic;
@@ -358,8 +394,8 @@ struct GBASerializedState {
 		GBASerializedHWFlags1 flags1;
 		uint8_t lightSample;
 		GBASerializedHWFlags2 flags2;
-		GBASerializedHWFlags3 flags3;
-		uint32_t gbpNextEvent;
+		GBASerializedUnlCartFlags unlCartFlags;
+		uint32_t sioNextEvent;
 	} hw;
 
 	uint32_t dmaTransferRegister;
@@ -395,8 +431,29 @@ struct GBASerializedState {
 	uint32_t nextIrq;
 	int32_t biosStall;
 
-	uint32_t matrixMappings[16];
-	uint32_t reservedMatrix[2];
+	union {
+		struct {
+			uint32_t mappings[16];
+			uint32_t reserved[2];
+		} matrix2;
+		struct {
+			uint8_t bank;
+			uint8_t offset;
+			uint8_t size;
+			uint8_t sramActive;
+			uint8_t unk;
+			uint8_t currentSize;
+			uint16_t currentOffset;
+			uint32_t settleNextEvent;
+			GBASerializedMulticartFlags flags;
+		} multicart;
+		struct {
+			int16_t sramMode;
+			int16_t romMode;
+			int8_t writeSequence[5];
+			bool acceptingModeChange;
+		} vfame;
+	};
 
 	struct {
 		int8_t chA[16];
@@ -405,7 +462,9 @@ struct GBASerializedState {
 
 	struct mStereoSample currentSamples[GBA_MAX_SAMPLES];
 
-	uint32_t reserved[12];
+	uint32_t bus;
+
+	uint32_t reserved[11];
 
 	uint16_t io[GBA_SIZE_IO >> 1];
 	uint16_t pram[GBA_SIZE_PALETTE_RAM >> 1];

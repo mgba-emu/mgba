@@ -14,11 +14,22 @@
 #define CXX_GUARD_END
 #endif
 
-#ifdef __MINGW32__
-#define __USE_MINGW_ANSI_STDIO 1
-#endif
-
 CXX_GUARD_START
+
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+// Require Windows 7 or newer
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0601
+#elif _WIN32_WINNT < 0x0601
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0601
+#endif
+// WinSock2 gets very angry if it's included too late
+#include <winsock2.h>
+#endif
 
 #include <assert.h>
 #include <ctype.h>
@@ -34,11 +45,6 @@ CXX_GUARD_START
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-#ifdef _WIN32
-// WinSock2 gets very angry if it is included too late
-#include <winsock2.h>
-#endif
 
 #if defined(_MSC_VER) || defined(__cplusplus)
 #define restrict __restrict
@@ -311,6 +317,26 @@ typedef intptr_t ssize_t;
 #endif
 
 #define ROR(I, ROTATE) ((((uint32_t) (I)) >> ROTATE) | ((uint32_t) (I) << ((-ROTATE) & 31)))
+
+#define mASSERT(COND) \
+	if (!(COND)) { \
+		abort(); \
+	}
+#define mASSERT_DEBUG(COND) assert((COND))
+
+#define mASSERT_LOG(CAT, COND, ...) \
+	if (!(COND)) { \
+		mLOG(CAT, FATAL, __VA_ARGS__); \
+	}
+
+#ifdef NDEBUG
+#define mASSERT_DEBUG_LOG(...)
+#else
+#define mASSERT_DEBUG_LOG(CAT, COND, ...) \
+	if (!(COND)) { \
+		mLOG(CAT, FATAL, __VA_ARGS__); \
+	}
+#endif
 
 CXX_GUARD_END
 

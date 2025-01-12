@@ -103,20 +103,29 @@ static void mGLContextDeinit(struct VideoBackend* v) {
 	glDeleteTextures(VIDEO_LAYER_MAX, context->layers);
 }
 
-static void mGLContextResized(struct VideoBackend* v, unsigned w, unsigned h) {
+static void mGLContextResized(struct VideoBackend* v, unsigned w, unsigned h, unsigned maxW, unsigned maxH) {
 	unsigned drawW = w;
 	unsigned drawH = h;
 
-	unsigned maxW;
-	unsigned maxH;
-	VideoBackendGetFrameSize(v, &maxW, &maxH);
+
+	if (maxW && drawW > maxW) {
+		drawW = maxW;
+	}
+
+	if (maxH && drawH > maxH) {
+		drawH = maxH;
+	}
+
+	unsigned lockW;
+	unsigned lockH;
+	VideoBackendGetFrameSize(v, &lockW, &lockH);
 
 	if (v->lockAspectRatio) {
-		lockAspectRatioUInt(maxW, maxH, &drawW, &drawH);
+		lockAspectRatioUInt(lockW, lockH, &drawW, &drawH);
 	}
 	if (v->lockIntegerScaling) {
-		lockIntegerRatioUInt(maxW, &drawW);
-		lockIntegerRatioUInt(maxH, &drawH);
+		lockIntegerRatioUInt(lockW, &drawW);
+		lockIntegerRatioUInt(lockH, &drawH);
 	}
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -244,7 +253,7 @@ static void mGLContextImageSize(struct VideoBackend* v, enum VideoLayer layer, i
 		*height = context->layerDims[layer].height;
 	} else {
 		*width = context->imageSizes[layer].width;
-		*height = context->imageSizes[layer].height;		
+		*height = context->imageSizes[layer].height;
 	}
 }
 
@@ -257,7 +266,7 @@ void mGLContextPostFrame(struct VideoBackend* v, enum VideoLayer layer, const vo
 		context->activeTex ^= 1;
 		glBindTexture(GL_TEXTURE_2D, context->tex[context->activeTex]);
 	} else {
-		glBindTexture(GL_TEXTURE_2D, context->layers[layer]);		
+		glBindTexture(GL_TEXTURE_2D, context->layers[layer]);
 	}
 
 	int width = context->imageSizes[layer].width;

@@ -266,7 +266,7 @@ void mScriptContextTriggerCallback(struct mScriptContext* context, const char* c
 		if (fn) {
 			mScriptFrameInit(&frame);
 			if (args) {
-				mScriptListCopy(&frame.arguments, args);
+				mScriptListCopy(&frame.stack, args);
 			}
 			mScriptContextInvoke(context, fn, &frame);
 			mScriptFrameDeinit(&frame);
@@ -421,9 +421,13 @@ bool mScriptContextLoadVF(struct mScriptContext* context, const char* name, stru
 	if (!info.context) {
 		return false;
 	}
-	return info.context->load(info.context, name, vf);
+	if (!info.context->load(info.context, name, vf)) {
+		return false;
+	}
+	return info.context->run(info.context);
 }
 
+#ifdef ENABLE_VFS
 bool mScriptContextLoadFile(struct mScriptContext* context, const char* path) {
 	struct VFile* vf = VFileOpen(path, O_RDONLY);
 	if (!vf) {
@@ -433,6 +437,7 @@ bool mScriptContextLoadFile(struct mScriptContext* context, const char* path) {
 	vf->close(vf);
 	return ret;
 }
+#endif
 
 struct mScriptContext* mScriptActiveContext(void) {
 	return ThreadLocalGetValue(_threadContext);
@@ -456,9 +461,7 @@ bool mScriptContextActivate(struct mScriptContext* context) {
 void mScriptContextDeactivate(struct mScriptContext* context) {
 #ifndef NDEBUG
 	struct mScriptContext* threadContext = ThreadLocalGetValue(_threadContext);
-	if (threadContext != context) {
-		abort();
-	}
+	mASSERT(threadContext == context);
 #endif
 
 	--context->threadDepth;
@@ -481,7 +484,7 @@ bool mScriptInvoke(const struct mScriptValue* val, struct mScriptFrame* frame) {
 		return false;
 	}
 	const struct mScriptTypeFunction* signature = &val->type->details.function;
-	if (!mScriptCoerceFrame(&signature->parameters, &frame->arguments)) {
+	if (!mScriptCoerceFrame(&signature->parameters, &frame->stack, &frame->stack)) {
 		return false;
 	}
 	const struct mScriptFunction* fn = val->value.opaque;

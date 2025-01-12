@@ -44,7 +44,7 @@ static void _clearScreen(struct GBVideoSoftwareRenderer* renderer) {
 	}
 	int y;
 	for (y = 0; y < GB_VIDEO_VERTICAL_PIXELS; ++y) {
-		color_t* row = &renderer->outputBuffer[renderer->outputBufferStride * y + sgbOffset];
+		mColor* row = &renderer->outputBuffer[renderer->outputBufferStride * y + sgbOffset];
 		int x;
 		for (x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 4) {
 			row[x + 0] = renderer->palette[0];
@@ -492,7 +492,7 @@ static void GBVideoSoftwareRendererWriteSGBPacket(struct GBVideoRenderer* render
 
 static void GBVideoSoftwareRendererWritePalette(struct GBVideoRenderer* renderer, int index, uint16_t value) {
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
-	color_t color = mColorFrom555(value);
+	mColor color = mColorFrom555(value);
 	if (softwareRenderer->model & GB_MODEL_SGB) {
 		if (index >= PAL_SGB_BORDER && !(index & 0xF)) {
 			color = softwareRenderer->palette[0];
@@ -668,7 +668,7 @@ static void GBVideoSoftwareRendererDrawRange(struct GBVideoRenderer* renderer, i
 	if (softwareRenderer->model & GB_MODEL_SGB && softwareRenderer->sgbBorders) {
 		sgbOffset = softwareRenderer->outputBufferStride * 40 + 48;
 	}
-	color_t* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y + sgbOffset];
+	mColor* row = &softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * y + sgbOffset];
 	int x = startX;
 	int p = 0;
 	switch (softwareRenderer->d.sgbRenderMode) {
@@ -1161,7 +1161,7 @@ static void GBVideoSoftwareRendererPutPixels(struct GBVideoRenderer* renderer, s
 	struct GBVideoSoftwareRenderer* softwareRenderer = (struct GBVideoSoftwareRenderer*) renderer;
 	// TODO: Share with GBAVideoSoftwareRendererGetPixels
 
-	const color_t* colorPixels = pixels;
+	const mColor* colorPixels = pixels;
 	unsigned i;
 	for (i = 0; i < GB_VIDEO_VERTICAL_PIXELS; ++i) {
 		memmove(&softwareRenderer->outputBuffer[softwareRenderer->outputBufferStride * i], &colorPixels[stride * i], GB_VIDEO_HORIZONTAL_PIXELS * BYTES_PER_PIXEL);

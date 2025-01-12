@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
 		SocketClose(sock);
 		SocketSubsystemDeinit();
 		didFail = true;
-		goto cleanup;		
+		goto cleanup;
 	}
 
 	// Run the server

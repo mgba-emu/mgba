@@ -61,7 +61,7 @@ static void _mVideoProxyBackendClear(struct VideoBackend* v) {
 	mVideoProxyBackendSubmit(proxy, &cmd, NULL);
 }
 
-static void _mVideoProxyBackendContextResized(struct VideoBackend* v, unsigned w, unsigned h) {
+static void _mVideoProxyBackendContextResized(struct VideoBackend* v, unsigned w, unsigned h, unsigned maxW, unsigned maxH) {
 	struct mVideoProxyBackend* proxy = (struct mVideoProxyBackend*) v;
 	struct mVideoBackendCommand cmd = {
 		.cmd = mVB_CMD_CONTEXT_RESIZED,
@@ -69,6 +69,8 @@ static void _mVideoProxyBackendContextResized(struct VideoBackend* v, unsigned w
 			.u = {
 				.width = w,
 				.height = h,
+				.maxW = maxW,
+				.maxH = maxH,
 			}
 		}
 	};
@@ -139,8 +141,8 @@ void mVideoProxyBackendInit(struct mVideoProxyBackend* proxy, struct VideoBacken
 	proxy->d.drawFrame = _mVideoProxyBackendDrawFrame;
 	proxy->backend = backend;
 
-	RingFIFOInit(&proxy->in, 0x400);
-	RingFIFOInit(&proxy->out, 0x400);
+	RingFIFOInit(&proxy->in, sizeof(union mVideoBackendCommandData) * 0x80);
+	RingFIFOInit(&proxy->out, sizeof(union mVideoBackendCommandData) * 0x80);
 	MutexInit(&proxy->inLock);
 	MutexInit(&proxy->outLock);
 	ConditionInit(&proxy->inWait);
@@ -209,7 +211,7 @@ bool mVideoProxyBackendRun(struct mVideoProxyBackend* proxy, bool block) {
 				proxy->backend->clear(proxy->backend);
 				break;
 			case mVB_CMD_CONTEXT_RESIZED:
-				proxy->backend->contextResized(proxy->backend, cmd.data.u.width, cmd.data.u.height);
+				proxy->backend->contextResized(proxy->backend, cmd.data.u.width, cmd.data.u.height, cmd.data.u.maxW, cmd.data.u.maxH);
 				break;
 			case mVB_CMD_SET_IMAGE_SIZE:
 				proxy->backend->setImageSize(proxy->backend, cmd.layer, cmd.data.s.width, cmd.data.s.height);
@@ -229,7 +231,7 @@ bool mVideoProxyBackendRun(struct mVideoProxyBackend* proxy, bool block) {
 			}
 			ok = true;
 		}
-	} while (block);
+	} while (block && !ok);
 	return ok;
 }
 

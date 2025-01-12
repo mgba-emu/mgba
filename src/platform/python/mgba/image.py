@@ -23,7 +23,7 @@ class Image:
     def constitute(self):
         if self.stride <= 0:
             self.stride = self.width
-        self.buffer = ffi.new("color_t[{}]".format(self.stride * self.height))
+        self.buffer = ffi.new("mColor[{}]".format(self.stride * self.height))
 
     def save_png(self, fileobj):
         png_file = png.PNG(fileobj, mode=png.MODE_RGBA if self.alpha else png.MODE_RGB)
@@ -65,7 +65,7 @@ def u32_to_u16(color):
     return abgr
 
 
-if ffi.sizeof("color_t") == 2:
+if ffi.sizeof("mColor") == 2:
     def color_to_u16(color):
         return color
 

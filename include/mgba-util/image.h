@@ -11,10 +11,10 @@
 CXX_GUARD_START
 
 #ifdef COLOR_16_BIT
-typedef uint16_t color_t;
+typedef uint16_t mColor;
 #define BYTES_PER_PIXEL 2
 #else
-typedef uint32_t color_t;
+typedef uint32_t mColor;
 #define BYTES_PER_PIXEL 4
 #endif
 
@@ -114,12 +114,16 @@ struct VFile;
 struct mImage* mImageCreate(unsigned width, unsigned height, enum mColorFormat format);
 struct mImage* mImageCreateWithStride(unsigned width, unsigned height, unsigned stride, enum mColorFormat format);
 struct mImage* mImageCreateFromConstBuffer(unsigned width, unsigned height, unsigned stride, enum mColorFormat format, const void* pixels);
+#ifdef ENABLE_VFS
 struct mImage* mImageLoad(const char* path);
+#endif
 struct mImage* mImageLoadVF(struct VFile* vf);
 struct mImage* mImageConvertToFormat(const struct mImage*, enum mColorFormat format);
 void mImageDestroy(struct mImage*);
 
+#ifdef ENABLE_VFS
 bool mImageSave(const struct mImage*, const char* path, const char* format);
+#endif
 bool mImageSaveVF(const struct mImage*, struct VFile* vf, const char* format);
 
 uint32_t mImageGetPixel(const struct mImage* image, unsigned x, unsigned y);
@@ -138,6 +142,7 @@ void mPainterInit(struct mPainter*, struct mImage* backing);
 void mPainterDrawRectangle(struct mPainter*, int x, int y, int width, int height);
 void mPainterDrawLine(struct mPainter*, int x1, int y1, int x2, int y2);
 void mPainterDrawCircle(struct mPainter*, int x, int y, int diameter);
+void mPainterDrawMask(struct mPainter*, const struct mImage* mask, int x, int y);
 
 uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to);
 uint32_t mImageColorConvert(uint32_t color, const struct mImage* from, enum mColorFormat to);
@@ -205,18 +210,18 @@ static inline bool mColorFormatHasAlpha(enum mColorFormat format) {
 	return false;
 }
 
-static inline color_t mColorFrom555(uint16_t value) {
+static inline mColor mColorFrom555(uint16_t value) {
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
-	color_t color = 0;
+	mColor color = 0;
 	color |= (value & 0x001F) << 11;
 	color |= (value & 0x03E0) << 1;
 	color |= (value & 0x7C00) >> 10;
 #else
-	color_t color = value;
+	mColor color = value;
 #endif
 #else
-	color_t color = M_RGB5_TO_BGR8(value);
+	mColor color = M_RGB5_TO_BGR8(value);
 	color |= (color >> 5) & 0x070707;
 #endif
 	return color;

@@ -228,7 +228,9 @@ void _GBNTOld2(struct GB* gb, uint16_t address, uint8_t value) {
 		}
 
 		if (mbcState->rumble && memory->rumble) {
-			memory->rumble->setRumble(memory->rumble, !!(mbcState->swapped ? value & 0x08 : value & 0x02));
+			int32_t currentTime = mTimingCurrentTime(&gb->timing);
+			memory->rumble->setRumble(memory->rumble, !!(mbcState->swapped ? value & 0x08 : value & 0x02), currentTime - memory->lastRumble);
+			memory->lastRumble = currentTime;
 		}
 		break;
 	}
@@ -347,7 +349,7 @@ void  _GBHitek(struct GB* gb, uint16_t address, uint8_t value) {
 		break;
 	case 0x300:
 		// See hhugboy src/memory/mbc/MbcUnlHitek.cpp for commentary on this return
-		return;	
+		return;
 	}
 	_GBMBC5(gb, address, value);
 }
@@ -394,10 +396,10 @@ uint8_t _GBGGB81Read(struct GBMemory* memory, uint16_t address) {
 }
 
 void  _GBLiCheng(struct GB* gb, uint16_t address, uint8_t value) {
-    if (address > 0x2100 && address < 0x3000) {
-        return;
-    }
-    _GBMBC5(gb, address, value);
+	if (address > 0x2100 && address < 0x3000) {
+		return;
+	}
+	_GBMBC5(gb, address, value);
 }
 
 void _GBSachen(struct GB* gb, uint16_t address, uint8_t value) {

@@ -160,6 +160,7 @@ static char* _vfgets(char* stream, int size, void* user) {
 	return 0;
 }
 
+#ifdef ENABLE_VFS
 bool ConfigurationRead(struct Configuration* configuration, const char* path) {
 	struct VFile* vf = VFileOpen(path, O_RDONLY);
 	if (!vf) {
@@ -170,12 +171,6 @@ bool ConfigurationRead(struct Configuration* configuration, const char* path) {
 	return res;
 }
 
-bool ConfigurationReadVFile(struct Configuration* configuration, struct VFile* vf) {
-	HashTableClear(&configuration->root);
-	HashTableClear(&configuration->sections);
-	return ini_parse_stream(_vfgets, vf, _iniRead, configuration) == 0;
-}
-
 bool ConfigurationWrite(const struct Configuration* configuration, const char* path) {
 	struct VFile* vf = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
@@ -184,12 +179,6 @@ bool ConfigurationWrite(const struct Configuration* configuration, const char* p
 	bool res = ConfigurationWriteVFile(configuration, vf);
 	vf->close(vf);
 	return res;
-}
-
-bool ConfigurationWriteVFile(const struct Configuration* configuration, struct VFile* vf) {
-	HashTableEnumerate(&configuration->root, _keyHandler, vf);
-	HashTableEnumerate(&configuration->sections, _sectionHandler, vf);
-	return true;
 }
 
 bool ConfigurationWriteSection(const struct Configuration* configuration, const char* path, const char* section) {
@@ -211,6 +200,19 @@ bool ConfigurationWriteSection(const struct Configuration* configuration, const 
 		HashTableEnumerate(currentSection, _sectionHandler, vf);
 	}
 	vf->close(vf);
+	return true;
+}
+#endif
+
+bool ConfigurationReadVFile(struct Configuration* configuration, struct VFile* vf) {
+	HashTableClear(&configuration->root);
+	HashTableClear(&configuration->sections);
+	return ini_parse_stream(_vfgets, vf, _iniRead, configuration) == 0;
+}
+
+bool ConfigurationWriteVFile(const struct Configuration* configuration, struct VFile* vf) {
+	HashTableEnumerate(&configuration->root, _keyHandler, vf);
+	HashTableEnumerate(&configuration->sections, _sectionHandler, vf);
 	return true;
 }
 

@@ -95,39 +95,32 @@ void _GBPocketCamCapture(struct GBMemory* memory) {
 			case mCOLOR_XRGB8:
 			case mCOLOR_ARGB8:
 			case mCOLOR_ABGR8:
-				color = ((const uint32_t*) image)[y * stride + x];
-				gray = (color & 0xFF) + ((color >> 8) & 0xFF) + ((color >> 16) & 0xFF);
-				break;
 			case mCOLOR_BGRX8:
 			case mCOLOR_RGBX8:
 			case mCOLOR_RGBA8:
 			case mCOLOR_BGRA8:
 				color = ((const uint32_t*) image)[y * stride + x];
-				gray = ((color >> 8) & 0xFF) + ((color >> 16) & 0xFF) + ((color >> 24) & 0xFF);
 				break;
 			case mCOLOR_BGR5:
 			case mCOLOR_RGB5:
 			case mCOLOR_ARGB5:
 			case mCOLOR_ABGR5:
-				color = ((const uint16_t*) image)[y * stride + x];
-				gray = ((color << 3) & 0xF8) + ((color >> 2) & 0xF8) + ((color >> 7) & 0xF8);
-				break;
 			case mCOLOR_BGR565:
 			case mCOLOR_RGB565:
-				color = ((const uint16_t*) image)[y * stride + x];
-				gray = ((color << 3) & 0xF8) + ((color >> 3) & 0xFC) + ((color >> 8) & 0xF8);
-				break;
 			case mCOLOR_BGRA5:
 			case mCOLOR_RGBA5:
 				color = ((const uint16_t*) image)[y * stride + x];
-				gray = ((color << 2) & 0xF8) + ((color >> 3) & 0xF8) + ((color >> 8) & 0xF8);
+				break;
+			case mCOLOR_L8:
+				color = ((const uint8_t*) image)[y * stride + x];
 				break;
 			default:
 				mLOG(GB_MBC, WARN, "Unsupported pixel format: %X", format);
 				return;
 			}
 			uint16_t exposure = (pocketCam->registers[2] << 8) | (pocketCam->registers[3]);
-			gray = (gray + 1) * exposure / 0x300;
+			gray = mColorConvert(color, format, mCOLOR_L8);
+			gray = (gray + 1) * exposure / 0x100;
 			// TODO: Additional processing
 			int matrixEntry = 3 * ((x & 3) + 4 * (y & 3));
 			if (gray < pocketCam->registers[matrixEntry + 6]) {

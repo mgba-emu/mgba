@@ -97,7 +97,7 @@ void ForwarderView::build() {
 	if (m_ui.baseType->currentIndex() == 2) {
 		m_controller.setBaseFilename(m_ui.baseFilename->text());
 	} else {
-		m_controller.clearBaseFilename();		
+		m_controller.clearBaseFilename();
 	}
 	m_controller.startBuild(m_ui.outputFilename->text());
 	m_ui.buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
@@ -235,14 +235,14 @@ void ForwarderView::updateProgress() {
 		if (m_needsForwarderKit) {
 			m_ui.progressBar->setValue(450 + m_downloadProgress * 50);
 		} else {
-			m_ui.progressBar->setValue(m_downloadProgress * 100);		
+			m_ui.progressBar->setValue(m_downloadProgress * 100);
 		}
 		break;
 	case ForwarderController::BASE:
 		if (m_needsForwarderKit) {
 			m_ui.progressBar->setValue(500 + m_downloadProgress * 500);
 		} else {
-			m_ui.progressBar->setValue(100 + m_downloadProgress * 900);			
+			m_ui.progressBar->setValue(100 + m_downloadProgress * 900);
 		}
 		break;
 	}

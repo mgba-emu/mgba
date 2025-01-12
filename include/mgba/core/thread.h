@@ -87,7 +87,8 @@ struct mCoreThreadInternal {
 	int requested;
 
 	Mutex stateMutex;
-	Condition stateCond;
+	Condition stateOnThreadCond;
+	Condition stateOffThreadCond;
 	int interruptDepth;
 	bool frameWasOn;
 

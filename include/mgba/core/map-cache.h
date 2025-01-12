@@ -44,7 +44,7 @@ struct mMapCacheEntry {
 struct mTileCache;
 struct mTileCacheEntry;
 struct mMapCache {
-	color_t* cache;
+	mColor* cache;
 	struct mTileCache* tileCache;
 	struct mMapCacheEntry* status;
 
@@ -75,7 +75,7 @@ bool mMapCacheCheckTile(struct mMapCache* cache, const struct mMapCacheEntry* en
 void mMapCacheCleanTile(struct mMapCache* cache, struct mMapCacheEntry* entry, unsigned x, unsigned y);
 
 void mMapCacheCleanRow(struct mMapCache* cache, unsigned y);
-const color_t* mMapCacheGetRow(struct mMapCache* cache, unsigned y);
+const mColor* mMapCacheGetRow(struct mMapCache* cache, unsigned y);
 
 CXX_GUARD_END
 

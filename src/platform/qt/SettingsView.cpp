@@ -18,7 +18,7 @@
 
 #ifdef M_CORE_GB
 #include "GameBoy.h"
-#include <mgba/internal/gb/overrides.h>
+#include <mgba/gb/interface.h>
 #endif
 
 #include <mgba/core/serialize.h>
@@ -26,6 +26,7 @@
 #include <mgba/internal/gba/gba.h>
 
 #ifdef BUILD_SDL
+#define SDL_MAIN_HANDLED
 #include "platform/sdl/sdl-events.h"
 #endif
 
@@ -333,8 +334,13 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 	GBAKeyEditor* buttonEditor = nullptr;
 #ifdef BUILD_SDL
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	QString profile = inputController->profileForType(SDL_BINDING_CONTROLLER);
+	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_CONTROLLER, profile);
+#else
 	QString profile = inputController->profileForType(SDL_BINDING_BUTTON);
 	buttonEditor = new GBAKeyEditor(inputController, SDL_BINDING_BUTTON, profile);
+#endif
 	addPage(tr("Controllers"), buttonEditor, Page::CONTROLLERS);
 	connect(m_ui.buttonBox, &QDialogButtonBox::accepted, buttonEditor, &GBAKeyEditor::save);
 #endif
@@ -351,17 +357,27 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	});
 
 	QLocale englishLocale("en");
-	m_ui.languages->addItem(englishLocale.nativeLanguageName(), englishLocale);
+	m_ui.languages->addItem("English", englishLocale);
 	QDir ts(":/translations/");
 	for (auto& name : ts.entryList()) {
 		if (!name.endsWith(".qm") || !name.startsWith(binaryName)) {
 			continue;
 		}
 		QLocale locale(name.remove(QString("%0-").arg(binaryName)).remove(".qm"));
-		if (locale.language() == QLocale::English) {
+		if (locale.language() == QLocale::English || locale.language() == QLocale::C) {
 			continue;
 		}
-		m_ui.languages->addItem(locale.nativeLanguageName(), locale);
+		QString endonym = locale.nativeLanguageName();
+		// Manualy handle some cases that Qt can't seem to do properly
+		if (locale.language() == QLocale::Spanish) {
+			// Qt insists this is called español de España, regardless of if we set the country
+			endonym = u8"Español";
+		} else if (locale.language() == QLocale::Portuguese && locale.country() == QLocale::Brazil) {
+			// Qt insists that Brazilian Portuguese is just called Português
+			endonym = u8"Português brasileiro";
+		}
+		endonym[0] = endonym[0].toUpper();
+		m_ui.languages->addItem(endonym, locale);
 		if (locale.bcp47Name() == QLocale().bcp47Name()) {
 			m_ui.languages->setCurrentIndex(m_ui.languages->count() - 1);
 		}
@@ -391,29 +407,42 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 	shortcutView->setController(shortcutController);
 	shortcutView->setInputController(inputController);
 	addPage(tr("Shortcuts"), shortcutView, Page::SHORTCUTS);
+
+#if defined(BUILD_GLES2) || defined(USE_EPOXY)
+	m_dummyShader = new QLabel(tr("Shaders are not supported when the display driver is not OpenGL.\n\n"
+		"If it is set to OpenGL and you still see this, your graphics card or drivers may be too old."));
+	m_dummyShader->setWordWrap(true);
+	m_dummyShader->setAlignment(Qt::AlignCenter);
+	addPage(tr("Shaders"), m_dummyShader, Page::SHADERS);
+#endif
 }
 
 SettingsView::~SettingsView() {
-#if defined(BUILD_GL) || defined(BUILD_GLES2)
-	setShaderSelector(nullptr);
+#if defined(BUILD_GLES2) || defined(USE_EPOXY)
+	if (m_shader) {
+		m_shader->setParent(nullptr);
+	}
 #endif
 }
 
 void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
-#if defined(BUILD_GL) || defined(BUILD_GLES2)
-	if (m_shader) {
-		auto items = m_ui.tabs->findItems(tr("Shaders"), Qt::MatchFixedString);
-		for (const auto& item : items) {
-			m_ui.tabs->removeItemWidget(item);
-		}
-		m_ui.stackedWidget->removeWidget(m_shader);
-		m_shader->setParent(nullptr);
+#if  defined(BUILD_GLES2) || defined(USE_EPOXY)
+	auto items = m_ui.tabs->findItems(tr("Shaders"), Qt::MatchFixedString);
+	for (QListWidgetItem* item : items) {
+		delete item;
+	}
+	if (!m_shader) {
+		m_ui.stackedWidget->removeWidget(m_dummyShader);
+	} else {
+		QObject::disconnect(m_shader, nullptr, this, nullptr);
 	}
 	m_shader = shaderSelector;
+	QObject::connect(this, &SettingsView::saveSettingsRequested, m_shader, &ShaderSelector::saveSettings);
+	QObject::connect(m_ui.buttonBox, &QDialogButtonBox::rejected, m_shader, &ShaderSelector::revert);
 	if (shaderSelector) {
-		m_ui.stackedWidget->addWidget(m_shader);
-		m_ui.tabs->addItem(tr("Shaders"));
-		connect(m_ui.buttonBox, &QDialogButtonBox::accepted, m_shader, &ShaderSelector::saved);
+		addPage(tr("Shaders"), m_shader, Page::SHADERS);
+	} else {
+		addPage(tr("Shaders"), m_dummyShader, Page::SHADERS);
 	}
 #endif
 }
@@ -573,7 +602,6 @@ void SettingsView::updateConfig() {
 	if (displayDriver != m_controller->getQtOption("displayDriver")) {
 		m_controller->setQtOption("displayDriver", displayDriver);
 		Display::setDriver(static_cast<Display::Driver>(displayDriver.toInt()));
-		setShaderSelector(nullptr);
 		emit displayDriverChanged();
 	}
 
@@ -599,12 +627,6 @@ void SettingsView::updateConfig() {
 	if (language != m_controller->getQtOption("language").toLocale() && !(language.bcp47Name() == QLocale::system().bcp47Name() && m_controller->getQtOption("language").isNull())) {
 		m_controller->setQtOption("language", language.bcp47Name());
 		emit languageChanged();
-	}
-
-	bool oldAudioHle = m_controller->getOption("gba.audioHle", "0") != "0";
-	if (oldAudioHle != m_ui.audioHle->isChecked()) {
-		saveSetting("gba.audioHle", m_ui.audioHle);
-		emit audioHleChanged();
 	}
 
 	if (m_ui.multiplayerAudioAll->isChecked()) {
@@ -675,6 +697,8 @@ void SettingsView::updateConfig() {
 	saveSetting("gb.colors", gbColors);
 #endif
 
+	emit saveSettingsRequested();
+
 	m_controller->write();
 
 	emit pathsChanged();
@@ -734,7 +758,6 @@ void SettingsView::reloadConfig() {
 	loadSetting("logToStdout", m_ui.logToStdout);
 	loadSetting("logFile", m_ui.logFile);
 	loadSetting("useDiscordPresence", m_ui.useDiscordPresence);
-	loadSetting("gba.audioHle", m_ui.audioHle);
 	loadSetting("dynamicTitle", m_ui.dynamicTitle, true);
 	loadSetting("gba.forceGbp", m_ui.forceGbp);
 	loadSetting("vbaBugCompat", m_ui.vbaBugCompat, true);

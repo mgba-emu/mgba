@@ -135,7 +135,7 @@ QImage AssetView::compositeMap(int map, QVector<mMapCacheEntry>* mapStatus) {
 QImage AssetView::compositeObj(const ObjInfo& objInfo) {
 	mTileCache* tileCache = mTileCacheSetGetPointer(&m_cacheSet->tiles, objInfo.paletteSet);
 	unsigned maxTiles = mTileCacheSystemInfoGetMaxTiles(tileCache->sysConfig);
-	const color_t* rawPalette = mTileCacheGetPalette(tileCache, objInfo.paletteId);
+	const mColor* rawPalette = mTileCacheGetPalette(tileCache, objInfo.paletteId);
 	unsigned colors = 1 << objInfo.bits;
 	QVector<QRgb> palette;
 

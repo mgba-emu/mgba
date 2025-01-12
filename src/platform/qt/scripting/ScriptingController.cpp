@@ -92,6 +92,7 @@ void ScriptingController::setInputController(InputController* input) {
 }
 
 void ScriptingController::setVideoBackend(VideoBackend* backend) {
+	m_videoBackend = backend;
 	mScriptCanvasUpdateBackend(&m_scriptContext, backend);
 }
 
@@ -170,11 +171,11 @@ void ScriptingController::flushStorage() {
 }
 
 bool ScriptingController::eventFilter(QObject* obj, QEvent* ev) {
-	event(obj, ev);
+	scriptingEvent(obj, ev);
 	return false;
 }
 
-void ScriptingController::event(QObject* obj, QEvent* event) {
+void ScriptingController::scriptingEvent(QObject* obj, QEvent* event) {
 	if (!m_controller) {
 		return;
 	}
@@ -188,7 +189,7 @@ void ScriptingController::event(QObject* obj, QEvent* event) {
 		return;
 	case QEvent::KeyPress:
 	case QEvent::KeyRelease: {
-		struct mScriptKeyEvent ev{mSCRIPT_EV_TYPE_KEY};
+		struct mScriptKeyEvent ev{{mSCRIPT_EV_TYPE_KEY}};
 		auto keyEvent = static_cast<QKeyEvent*>(event);
 		ev.state = event->type() == QEvent::KeyRelease ? mSCRIPT_INPUT_STATE_UP :
 			static_cast<QKeyEvent*>(event)->isAutoRepeat() ? mSCRIPT_INPUT_STATE_HELD : mSCRIPT_INPUT_STATE_DOWN;
@@ -199,7 +200,7 @@ void ScriptingController::event(QObject* obj, QEvent* event) {
 	}
 	case QEvent::MouseButtonPress:
 	case QEvent::MouseButtonRelease: {
-		struct mScriptMouseButtonEvent ev{mSCRIPT_EV_TYPE_MOUSE_BUTTON};
+		struct mScriptMouseButtonEvent ev{{mSCRIPT_EV_TYPE_MOUSE_BUTTON}};
 		auto mouseEvent = static_cast<QMouseEvent*>(event);
 		ev.mouse = 0;
 		ev.state = event->type() == QEvent::MouseButtonPress ? mSCRIPT_INPUT_STATE_DOWN : mSCRIPT_INPUT_STATE_UP;
@@ -208,7 +209,7 @@ void ScriptingController::event(QObject* obj, QEvent* event) {
 		return;
 	}
 	case QEvent::MouseMove: {
-		struct mScriptMouseMoveEvent ev{mSCRIPT_EV_TYPE_MOUSE_MOVE};
+		struct mScriptMouseMoveEvent ev{{mSCRIPT_EV_TYPE_MOUSE_MOVE}};
 		auto mouseEvent = static_cast<QMouseEvent*>(event);
 		QPoint pos = mouseEvent->pos();
 		pos = static_cast<Display*>(obj)->normalizedPoint(m_controller.get(), pos);
@@ -219,7 +220,7 @@ void ScriptingController::event(QObject* obj, QEvent* event) {
 		return;
 	}
 	case QEvent::Wheel: {
-		struct mScriptMouseWheelEvent ev{mSCRIPT_EV_TYPE_MOUSE_WHEEL};
+		struct mScriptMouseWheelEvent ev{{mSCRIPT_EV_TYPE_MOUSE_WHEEL}};
 		auto wheelEvent = static_cast<QWheelEvent*>(event);
 		QPoint adelta = wheelEvent->angleDelta();
 		QPoint pdelta = wheelEvent->pixelDelta();
@@ -240,7 +241,7 @@ void ScriptingController::event(QObject* obj, QEvent* event) {
 
 	auto type = event->type();
 	if (type == GamepadButtonEvent::Down() || type == GamepadButtonEvent::Up()) {
-		struct mScriptGamepadButtonEvent ev{mSCRIPT_EV_TYPE_GAMEPAD_BUTTON};
+		struct mScriptGamepadButtonEvent ev{{mSCRIPT_EV_TYPE_GAMEPAD_BUTTON}};
 		auto gamepadEvent = static_cast<GamepadButtonEvent*>(event);
 		ev.pad = 0;
 		ev.state = event->type() == GamepadButtonEvent::Down() ? mSCRIPT_INPUT_STATE_DOWN : mSCRIPT_INPUT_STATE_UP;
@@ -248,7 +249,7 @@ void ScriptingController::event(QObject* obj, QEvent* event) {
 		mScriptContextFireEvent(&m_scriptContext, &ev.d);
 	}
 	if (type == GamepadHatEvent::Type()) {
-		struct mScriptGamepadHatEvent ev{mSCRIPT_EV_TYPE_GAMEPAD_HAT};
+		struct mScriptGamepadHatEvent ev{{mSCRIPT_EV_TYPE_GAMEPAD_HAT}};
 		updateGamepad();
 		auto gamepadEvent = static_cast<GamepadHatEvent*>(event);
 		ev.pad = 0;
@@ -301,7 +302,7 @@ void ScriptingController::updateGamepad() {
 void ScriptingController::attach() {
 	CoreController::Interrupter interrupter(m_controller);
 	mScriptContextAttachCore(&m_scriptContext, m_controller->thread()->core);
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	m_controller->attachDebugger(false);
 #endif
 }
@@ -339,6 +340,7 @@ void ScriptingController::init() {
 
 	mScriptContextAttachLogger(&m_scriptContext, &m_logger);
 	m_bufferModel->attachToContext(&m_scriptContext);
+	mScriptCanvasUpdateBackend(&m_scriptContext, m_videoBackend);
 
 	HashTableEnumerate(&m_scriptContext.engines, [](const char* key, void* engine, void* context) {
 	ScriptingController* self = static_cast<ScriptingController*>(context);

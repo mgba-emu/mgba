@@ -18,7 +18,7 @@ class Tile:
 
     def composite(self, i, x, y):
         for iy in range(8):
-            ffi.memmove(ffi.addressof(i.buffer, x + (iy + y) * i.stride), ffi.addressof(self.buffer, iy * 8), 8 * ffi.sizeof("color_t"))
+            ffi.memmove(ffi.addressof(i.buffer, x + (iy + y) * i.stride), ffi.addressof(self.buffer, iy * 8), 8 * ffi.sizeof("mColor"))
 
 
 class CacheSet:
@@ -55,7 +55,7 @@ class MapView:
             if not y & 7:
                 lib.mMapCacheCleanRow(self.cache, y >> 3)
             row = lib.mMapCacheGetRow(self.cache, y)
-            ffi.memmove(ffi.addressof(i.buffer, i.stride * y), row, self.width * 8 * ffi.sizeof("color_t"))
+            ffi.memmove(ffi.addressof(i.buffer, i.stride * y), row, self.width * 8 * ffi.sizeof("mColor"))
         return i
 
 

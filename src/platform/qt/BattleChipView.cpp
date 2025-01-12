@@ -30,12 +30,11 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 	m_ui.setupUi(this);
 	m_ui.chipList->setModel(&m_model);
 
-	char title[9];
 	CoreController::Interrupter interrupter(m_controller);
 	mCore* core = m_controller->thread()->core;
-	title[8] = '\0';
-	core->getGameCode(core, title);
-	QString qtitle(title);
+	mGameInfo info;
+	core->getGameInfo(core, &info);
+	QString qtitle(info.title);
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	int size = QFontMetrics(QFont()).height() / ((int) ceil(devicePixelRatioF()) * 12);
@@ -101,11 +100,11 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 
 	m_controller->attachBattleChipGate();
 	setFlavor(4);
-	if (qtitle.startsWith("AGB-B4B") || qtitle.startsWith("AGB-B4W") || qtitle.startsWith("AGB-BR4") || qtitle.startsWith("AGB-BZ3")) {
+	if (qtitle.startsWith("B4B") || qtitle.startsWith("B4W") || qtitle.startsWith("BR4") || qtitle.startsWith("BZ3")) {
 		m_ui.gateBattleChip->setChecked(true);
-	} else if (qtitle.startsWith("AGB-BRB") || qtitle.startsWith("AGB-BRK")) {
+	} else if (qtitle.startsWith("BRB") || qtitle.startsWith("BRK")) {
 		m_ui.gateProgress->setChecked(true);
-	} else if (qtitle.startsWith("AGB-BR5") || qtitle.startsWith("AGB-BR6")) {
+	} else if (qtitle.startsWith("BR5") || qtitle.startsWith("BR6")) {
 		m_ui.gateBeastLink->setChecked(true);
 	}
 
@@ -217,7 +216,7 @@ void BattleChipView::loadDeck() {
 		error->show();
 		return;
 	}
-	
+
 	QList<int> newDeck;
 	QStringList deck = ini.value("deck").toString().split(',');
 	for (const auto& item : deck) {

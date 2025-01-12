@@ -160,7 +160,7 @@ void ctrActivateTexture(const C3D_Tex* texture) {
 		.m = {
 			// Rows are in the order w z y x, because ctrulib
 			0.0f, 0.0f, 0.0f, 1.0f / activeTexture->width,
-			0.0f, 0.0f, 1.0f / activeTexture->height, 0.0f 
+			0.0f, 0.0f, 1.0f / activeTexture->height, 0.0f
 		}
 	};
 	C3D_FVUnifMtx2x4(GPU_GEOMETRY_SHADER, GSH_FVEC_textureMtx, &textureMtx);

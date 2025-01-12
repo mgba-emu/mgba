@@ -98,6 +98,7 @@
     </widget>
     <addaction name="load"/>
     <addaction name="mru"/>
+    <addaction name="loadMostRecent"/>    
     <addaction name="separator"/>
     <addaction name="reset"/>
    </widget>
@@ -107,6 +108,11 @@
   <action name="load">
    <property name="text">
     <string>Load script...</string>
+   </property>
+  </action>
+    <action name="loadMostRecent">
+   <property name="text">
+    <string>&amp;Load most recent</string>
    </property>
   </action>
   <action name="reset">

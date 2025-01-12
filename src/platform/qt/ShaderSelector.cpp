@@ -16,6 +16,7 @@
 #include <QFileDialog>
 #include <QFormLayout>
 #include <QGridLayout>
+#include <QMessageBox>
 #include <QSpinBox>
 
 #include <mgba/core/version.h>
@@ -49,6 +50,28 @@ ShaderSelector::~ShaderSelector() {
 	clear();
 }
 
+void ShaderSelector::saveSettings() {
+	QString oldPath = m_config->getOption("shader");
+	if (oldPath != m_shaderPath) {
+		if (m_shaderPath.isEmpty()) {
+			clearShader(true);
+		} else {
+			loadShader(m_shaderPath, true);
+		}
+	}
+	emit saveSettingsRequested();
+}
+
+void ShaderSelector::revert() {
+	QString shaderPath = m_config->getOption("shader");
+	if (shaderPath.isEmpty()) {
+		clearShader();
+	} else {
+		loadShader(shaderPath);
+		emit reset();
+	}
+}
+
 void ShaderSelector::clear() {
 	m_ui.shaderName->setText(tr("No shader active"));
 	m_ui.description->clear();
@@ -66,7 +89,8 @@ void ShaderSelector::selectShader() {
 #if !defined(USE_LIBZIP) && !defined(USE_MINIZIP)
 	QString name = GBAApp::app()->getOpenDirectoryName(this, tr("Load shader"), path.absolutePath());
 #else
-	QString name = GBAApp::app()->getOpenFileName(this, tr("Load shader"), "mGBA Shaders (*.shader)", path.absolutePath());
+	QString filters = QStringLiteral("%1 (*.shader manifest.ini)").arg(tr("mGBA Shaders"));
+	QString name = GBAApp::app()->getOpenFileName(this, tr("Load shader"), filters, path.absolutePath());
 #endif
 	if (!name.isNull()) {
 		loadShader(name);
@@ -74,25 +98,39 @@ void ShaderSelector::selectShader() {
 	}
 }
 
-void ShaderSelector::loadShader(const QString& path) {
-	VDir* shader = VFileDevice::openDir(path);
-	if (!shader) {
-		shader = VFileDevice::openArchive(path);
+void ShaderSelector::loadShader(const QString& path, bool saveToSettings) {
+	static const QString manifestIni = "/manifest.ini";
+	QString shaderPath = path;
+	if (shaderPath.endsWith(manifestIni)) {
+		shaderPath.chop(manifestIni.length());
 	}
+	VDir* shader = VFileDevice::openDir(shaderPath);
 	if (!shader) {
-		return;
+		shader = VFileDevice::openArchive(shaderPath);
 	}
-	m_display->setShaders(shader);
-	shader->close(shader);
-	m_shaderPath = path;
-	m_config->setOption("shader", m_shaderPath);
+	bool error = !shader || !m_display->setShaders(shader);
+	if (!error) {
+		if (saveToSettings) {
+			m_config->setOption("shader", shaderPath);
+		}
+		m_shaderPath = shaderPath;
+		refreshShaders();
+	}
+	if (shader) {
+		shader->close(shader);
+	}
+	if (error) {
+		QMessageBox::warning(this, tr("Error loading shader"), tr("The shader \"%1\" could not be loaded successfully.").arg(shaderPath));
+	}
 }
 
-void ShaderSelector::clearShader() {
+void ShaderSelector::clearShader(bool saveToSettings) {
 	m_display->clearShaders();
-	refreshShaders();
 	m_shaderPath = "";
-	m_config->setOption("shader", m_shaderPath);
+	if (saveToSettings) {
+		m_config->setOption("shader", m_shaderPath);
+	}
+	refreshShaders();
 }
 
 void ShaderSelector::refreshShaders() {
@@ -117,7 +155,7 @@ void ShaderSelector::refreshShaders() {
 		m_ui.author->clear();
 	}
 
-	disconnect(this, &ShaderSelector::saved, 0, 0);
+	disconnect(this, &ShaderSelector::saveSettingsRequested, 0, 0);
 	disconnect(this, &ShaderSelector::reset, 0, 0);
 	disconnect(this, &ShaderSelector::resetToDefault, 0, 0);
 
@@ -156,7 +194,7 @@ void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, c
 	connect(f, static_cast<void (QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), [value](double v) {
 		*value = v;
 	});
-	connect(this, &ShaderSelector::saved, [this, section, name, f]() {
+	connect(this, &ShaderSelector::saveSettingsRequested, [this, section, name, f]() {
 		m_config->setQtOption(name, f->value(), section);
 	});
 	connect(this, &ShaderSelector::reset, [this, section, name, f]() {
@@ -190,7 +228,7 @@ void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, c
 	connect(i, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [value](int v) {
 		*value = v;
 	});
-	connect(this, &ShaderSelector::saved, [this, section, name, i]() {
+	connect(this, &ShaderSelector::saveSettingsRequested, [this, section, name, i]() {
 		m_config->setQtOption(name, i->value(), section);
 	});
 	connect(this, &ShaderSelector::reset, [this, section, name, i]() {
@@ -268,10 +306,6 @@ void ShaderSelector::buttonPressed(QAbstractButton* button) {
 	switch (m_ui.buttonBox->standardButton(button)) {
 	case QDialogButtonBox::Reset:
 		emit reset();
-		break;
-	case QDialogButtonBox::Ok:
-		emit saved();
-		close();
 		break;
  	case QDialogButtonBox::RestoreDefaults:
 		emit resetToDefault();

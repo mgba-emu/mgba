@@ -155,7 +155,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 // TODO: Remove UNUSEDs after implementing OBJWIN for modes 3 - 5
 #define PREPARE_OBJWIN                                                                            \
 	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt);                     \
-	color_t* objwinPalette = renderer->normalPalette;                                             \
+	mColor* objwinPalette = renderer->normalPalette;                                             \
 	if (renderer->d.highlightAmount && background->highlight) {                                   \
 		objwinPalette = renderer->highlightPalette;                                               \
 	}                                                                                             \
@@ -194,7 +194,7 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	uint32_t flags = background->flags;                                                                               \
 	uint32_t objwinFlags = background->objwinFlags;                                                                   \
 	bool variant = background->variant;                                                                               \
-	color_t* palette = renderer->normalPalette;                                                                       \
+	mColor* palette = renderer->normalPalette;                                                                       \
 	if (renderer->d.highlightAmount && background->highlight) {                                                       \
 		palette = renderer->highlightPalette;                                                                         \
 	}                                                                                                                 \

@@ -318,7 +318,7 @@ else ifeq ($(platform), ctr)
    CFLAGS += -I$(CTRULIB)/include
    DEFINES += -std=c99
 
-   PLATFORM_DEFINES += -DUSE_VFS_3DS
+   PLATFORM_DEFINES += -DENABLE_VFS_3DS
    STATIC_LINKING = 1
 
 # Xbox 360

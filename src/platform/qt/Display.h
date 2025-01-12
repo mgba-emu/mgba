@@ -57,11 +57,12 @@ public:
 	virtual void setVideoScale(int) {}
 	virtual void setBackgroundImage(const QImage&) = 0;
 	virtual QSize contentSize() const = 0;
+	virtual void setMaximumSize(const QSize& size) = 0;
 
 	virtual void setVideoProxy(std::shared_ptr<VideoProxy> proxy) { m_videoProxy = std::move(proxy); }
 	std::shared_ptr<VideoProxy> videoProxy() { return m_videoProxy; }
 	virtual VideoBackend* videoBackend();
-	
+
 signals:
 	void drawingStarted();
 	void showCursor();
@@ -80,7 +81,7 @@ public slots:
 	virtual void filter(bool filter);
 	virtual void swapInterval(int interval) = 0;
 	virtual void framePosted() = 0;
-	virtual void setShaders(struct VDir*) = 0;
+	virtual bool setShaders(struct VDir*) = 0;
 	virtual void clearShaders() = 0;
 	virtual void resizeContext() = 0;
 
@@ -105,6 +106,7 @@ private:
 	bool m_filter = false;
 	QTimer m_mouseTimer;
 	std::shared_ptr<VideoProxy> m_videoProxy;
+	QSize m_maxSize;
 };
 
 }

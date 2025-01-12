@@ -2038,6 +2038,97 @@ M_TEST_DEFINE(painterDrawCircleInvalid) {
 	mImageDestroy(image);
 }
 
+M_TEST_DEFINE(painterDrawMask) {
+	struct mImage* image;
+	struct mImage* mask;
+	struct mPainter painter;
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = true;
+
+	mask = mImageCreate(2, 2, mCOLOR_XRGB8);
+	mImageSetPixel(mask, 0, 0, 0xFFFFFFFF);
+	mImageSetPixel(mask, 1, 0, 0xFFFF0000);
+	mImageSetPixel(mask, 0, 1, 0xFF00FF00);
+	mImageSetPixel(mask, 1, 1, 0xFF0000FF);
+
+	painter.fillColor = 0xFFFFFFFF;
+	mPainterDrawMask(&painter, mask, 0, 0);
+	painter.fillColor = 0xFFFF0000;
+	mPainterDrawMask(&painter, mask, 2, 0);
+	painter.fillColor = 0xFF00FF00;
+	mPainterDrawMask(&painter, mask, 0, 2);
+	painter.fillColor = 0xFF0000FF;
+	mPainterDrawMask(&painter, mask, 2, 2);
+
+	COMPARE4X(0xFFFFFF, 0xFF0000, 0xFF0000, 0xFF0000,
+			  0x00FF00, 0x0000FF, 0x000000, 0x000000,
+			  0x00FF00, 0x000000, 0x0000FF, 0x000000,
+			  0x00FF00, 0x000000, 0x000000, 0x0000FF);
+
+	painter.fillColor = 0xFF808080;
+	mPainterDrawMask(&painter, mask, 0, 0);
+	painter.fillColor = 0xFFFFFF00;
+	mPainterDrawMask(&painter, mask, 2, 0);
+	painter.fillColor = 0xFF00FFFF;
+	mPainterDrawMask(&painter, mask, 0, 2);
+	painter.fillColor = 0xFFFF00FF;
+	mPainterDrawMask(&painter, mask, 2, 2);
+
+	COMPARE4X(0x808080, 0x800000, 0xFFFF00, 0xFF0000,
+			  0x008000, 0x000080, 0x00FF00, 0x000000,
+			  0x00FFFF, 0x000000, 0xFF00FF, 0xFF0000,
+			  0x00FF00, 0x0000FF, 0x000000, 0x0000FF);
+
+	painter.fillColor = 0xFFFFFFFF;
+	mPainterDrawMask(&painter, mask, -1, -1);
+	mPainterDrawMask(&painter, mask, 3, 3);
+	assert_int_equal(0xFF0000FF, mImageGetPixel(image, 0, 0));
+	assert_int_equal(0xFFFFFFFF, mImageGetPixel(image, 3, 3));
+
+	mImageDestroy(image);
+	mImageDestroy(mask);
+}
+
+M_TEST_DEFINE(painterDrawMaskBlend) {
+	struct mImage* image;
+	struct mImage* mask;
+	struct mPainter painter;
+	const uint8_t lut[4] = { 0x00, 0x55, 0xAA, 0xFF };
+	int x, y;
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = true;
+	painter.fill = true;
+	painter.fillColor = 0xFFFF8000;
+
+	for (y = 0; y < 4; ++y) {
+		for (x = 0; x < 4; ++x) {
+			mImageSetPixel(image, x, y, 0xFF808080);
+		}
+	}
+
+	mask = mImageCreate(4, 4, mCOLOR_ARGB8);
+	for (y = 0; y < 4; ++y) {
+		for (x = 0; x < 4; ++x) {
+			mImageSetPixel(mask, x, y, (lut[x] << 24) | (lut[y] * 0x010101));
+		}
+	}
+
+	mPainterDrawMask(&painter, mask, 0, 0);
+
+	COMPARE4X(0x808080, 0x555555, 0x2A2A2A, 0x000000,
+			  0x808080, 0x716355, 0x63462A, 0x552A00,
+			  0x808080, 0x8E7155, 0x9C632A, 0xAA5500,
+			  0x808080, 0xAA8055, 0xD4802A, 0xFF8000);
+
+	mImageDestroy(image);
+	mImageDestroy(mask);
+}
+
 #undef COMPARE3X
 #undef COMPARE3
 #undef COMPARE4X
@@ -2083,4 +2174,6 @@ M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(painterDrawCircleOffset),
 	cmocka_unit_test(painterDrawCircleBlend),
 	cmocka_unit_test(painterDrawCircleInvalid),
+	cmocka_unit_test(painterDrawMask),
+	cmocka_unit_test(painterDrawMaskBlend),
 )

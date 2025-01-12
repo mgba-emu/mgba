@@ -37,7 +37,7 @@ static uint32_t _patchMakeKey(struct mCheatPatch* patch) {
 		patchKey >>= 2;
 		break;
 	default:
-		break;	
+		break;
 	}
 	// TODO: More than one segment
 	if (patch->segment > 0) {
@@ -282,14 +282,14 @@ bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
 			StringListDeinit(&directives);
 			return false;
 		}
-		while (isspace((int) cheat[i])) {
+		while (isspace((unsigned) cheat[i])) {
 			++i;
 		}
 		switch (cheat[i]) {
 		case '#':
 			do {
 				++i;
-			} while (isspace((int) cheat[i]));
+			} while (isspace((unsigned) cheat[i]));
 			newSet = device->createSet(device, &cheat[i]);
 			newSet->enabled = !nextDisabled;
 			nextDisabled = false;
@@ -305,7 +305,7 @@ bool mCheatParseFile(struct mCheatDevice* device, struct VFile* vf) {
 		case '!':
 			do {
 				++i;
-			} while (isspace((int) cheat[i]));
+			} while (isspace((unsigned) cheat[i]));
 			if (strcasecmp(&cheat[i], "disabled") == 0) {
 				nextDisabled = true;
 				break;
@@ -384,7 +384,7 @@ bool mCheatParseLibretroFile(struct mCheatDevice* device, struct VFile* vf) {
 					return false;
 				}
 				++eq;
-				while (isspace((int) eq[0])) {
+				while (isspace((unsigned) eq[0])) {
 					if (eq[0] == '\0') {
 						return false;
 					}
@@ -393,7 +393,7 @@ bool mCheatParseLibretroFile(struct mCheatDevice* device, struct VFile* vf) {
 
 				char* end;
 				unsigned long nCheats = strtoul(eq, &end, 10);
-				if (end[0] != '\0' && !isspace(end[0])) {
+				if (end[0] != '\0' && !isspace((unsigned) end[0])) {
 					return false;
 				}
 
@@ -423,7 +423,7 @@ bool mCheatParseLibretroFile(struct mCheatDevice* device, struct VFile* vf) {
 			return false;
 		}
 		++eq;
-		while (isspace((int) eq[0])) {
+		while (isspace((unsigned) eq[0])) {
 			if (eq[0] == '\0') {
 				return false;
 			}
@@ -622,9 +622,12 @@ bool mCheatSaveFile(struct mCheatDevice* device, struct VFile* vf) {
 	return true;
 }
 
-#if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
+#ifdef ENABLE_VFS
 void mCheatAutosave(struct mCheatDevice* device) {
 	if (!device->autosave) {
+		return;
+	}
+	if (!device->p->dirs.cheats) {
 		return;
 	}
 	struct VFile* vf = mDirectorySetOpenSuffix(&device->p->dirs, device->p->dirs.cheats, ".cheats", O_WRONLY | O_CREAT | O_TRUNC);

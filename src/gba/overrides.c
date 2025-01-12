@@ -13,213 +13,202 @@
 
 static const struct GBACartridgeOverride _overrides[] = {
 	// Advance Wars
-	{ "AWRE", SAVEDATA_FLASH512, HW_NONE, 0x8038810, false },
-	{ "AWRP", SAVEDATA_FLASH512, HW_NONE, 0x8038810, false },
+	{ "AWRE", GBA_SAVEDATA_FLASH512, HW_NONE, 0x8038810 },
+	{ "AWRP", GBA_SAVEDATA_FLASH512, HW_NONE, 0x8038810 },
 
 	// Advance Wars 2: Black Hole Rising
-	{ "AW2E", SAVEDATA_FLASH512, HW_NONE, 0x8036E08, false },
-	{ "AW2P", SAVEDATA_FLASH512, HW_NONE, 0x803719C, false },
+	{ "AW2E", GBA_SAVEDATA_FLASH512, HW_NONE, 0x8036E08 },
+	{ "AW2P", GBA_SAVEDATA_FLASH512, HW_NONE, 0x803719C },
 
 	// Boktai: The Sun is in Your Hand
-	{ "U3IJ", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE, false },
-	{ "U3IE", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE, false },
-	{ "U3IP", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE, false },
+	{ "U3IJ", GBA_SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, GBA_IDLE_LOOP_NONE },
+	{ "U3IE", GBA_SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, GBA_IDLE_LOOP_NONE },
+	{ "U3IP", GBA_SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, GBA_IDLE_LOOP_NONE },
 
 	// Boktai 2: Solar Boy Django
-	{ "U32J", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE, false },
-	{ "U32E", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE, false },
-	{ "U32P", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE, false },
+	{ "U32J", GBA_SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, GBA_IDLE_LOOP_NONE },
+	{ "U32E", GBA_SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, GBA_IDLE_LOOP_NONE },
+	{ "U32P", GBA_SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, GBA_IDLE_LOOP_NONE },
 
 	// Crash Bandicoot 2 - N-Tranced
-	{ "AC8J", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "AC8E", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "AC8P", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "AC8J", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "AC8E", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "AC8P", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// DigiCommunication Nyo - Datou! Black Gemagema Dan
-	{ "BDKJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "BDKJ", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Dragon Ball Z - The Legacy of Goku
-	{ "ALGP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "ALGP", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Dragon Ball Z - The Legacy of Goku II
-	{ "ALFJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "ALFE", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "ALFP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "ALFJ", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "ALFE", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "ALFP", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Dragon Ball Z - Taiketsu
-	{ "BDBE", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BDBP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "BDBE", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BDBP", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Drill Dozer
-	{ "V49J", SAVEDATA_SRAM, HW_RUMBLE, IDLE_LOOP_NONE, false },
-	{ "V49E", SAVEDATA_SRAM, HW_RUMBLE, IDLE_LOOP_NONE, false },
-	{ "V49P", SAVEDATA_SRAM, HW_RUMBLE, IDLE_LOOP_NONE, false },
+	{ "V49J", GBA_SAVEDATA_SRAM, HW_RUMBLE, GBA_IDLE_LOOP_NONE },
+	{ "V49E", GBA_SAVEDATA_SRAM, HW_RUMBLE, GBA_IDLE_LOOP_NONE },
+	{ "V49P", GBA_SAVEDATA_SRAM, HW_RUMBLE, GBA_IDLE_LOOP_NONE },
 
 	// e-Reader
-	{ "PEAJ", SAVEDATA_FLASH1M, HW_EREADER, IDLE_LOOP_NONE },
-	{ "PSAJ", SAVEDATA_FLASH1M, HW_EREADER, IDLE_LOOP_NONE },
-	{ "PSAE", SAVEDATA_FLASH1M, HW_EREADER, IDLE_LOOP_NONE },
+	{ "PEAJ", GBA_SAVEDATA_FLASH1M, HW_EREADER, GBA_IDLE_LOOP_NONE },
+	{ "PSAJ", GBA_SAVEDATA_FLASH1M, HW_EREADER, GBA_IDLE_LOOP_NONE },
+	{ "PSAE", GBA_SAVEDATA_FLASH1M, HW_EREADER, GBA_IDLE_LOOP_NONE },
 
 	// Final Fantasy Tactics Advance
-	{ "AFXE", SAVEDATA_FLASH512, HW_NONE, 0x8000428, false },
+	{ "AFXE", GBA_SAVEDATA_FLASH512, HW_NONE, 0x8000428 },
 
 	// F-Zero - Climax
-	{ "BFTJ", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "BFTJ", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Goodboy Galaxy
-	{ "2GBP", SAVEDATA_SRAM, HW_RUMBLE, IDLE_LOOP_NONE, false },
+	{ "2GBP", GBA_SAVEDATA_SRAM, HW_RUMBLE, GBA_IDLE_LOOP_NONE },
 
 	// Iridion II
-	{ "AI2E", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "AI2P", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "AI2E", GBA_SAVEDATA_FORCE_NONE, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "AI2P", GBA_SAVEDATA_FORCE_NONE, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Game Boy Wars Advance 1+2
-	{ "BGWJ", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "BGWJ", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Golden Sun: The Lost Age
-	{ "AGFE", SAVEDATA_FLASH512, HW_NONE, 0x801353A, false },
+	{ "AGFE", GBA_SAVEDATA_FLASH512, HW_NONE, 0x801353A },
 
 	// Koro Koro Puzzle - Happy Panechu!
-	{ "KHPJ", SAVEDATA_EEPROM, HW_TILT, IDLE_LOOP_NONE, false },
+	{ "KHPJ", GBA_SAVEDATA_EEPROM, HW_TILT, GBA_IDLE_LOOP_NONE },
 
 	// Legendz - Yomigaeru Shiren no Shima
-	{ "BLJJ", SAVEDATA_FLASH512, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "BLJK", SAVEDATA_FLASH512, HW_RTC, IDLE_LOOP_NONE, false },
+	{ "BLJJ", GBA_SAVEDATA_FLASH512, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "BLJK", GBA_SAVEDATA_FLASH512, HW_RTC, GBA_IDLE_LOOP_NONE },
 
 	// Legendz - Sign of Nekuromu
-	{ "BLVJ", SAVEDATA_FLASH512, HW_RTC, IDLE_LOOP_NONE, false },
+	{ "BLVJ", GBA_SAVEDATA_FLASH512, HW_RTC, GBA_IDLE_LOOP_NONE },
 
 	// Mega Man Battle Network
-	{ "AREE", SAVEDATA_SRAM, HW_NONE, 0x800032E, false },
+	{ "AREE", GBA_SAVEDATA_SRAM, HW_NONE, 0x800032E },
 
 	// Mega Man Zero
-	{ "AZCE", SAVEDATA_SRAM, HW_NONE, 0x80004E8, false },
+	{ "AZCE", GBA_SAVEDATA_SRAM, HW_NONE, 0x80004E8 },
 
 	// Metal Slug Advance
-	{ "BSME", SAVEDATA_EEPROM, HW_NONE, 0x8000290, false },
+	{ "BSME", GBA_SAVEDATA_EEPROM, HW_NONE, 0x8000290 },
 
 	// Pokemon Ruby
-	{ "AXVJ", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "AXVE", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "AXVP", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "AXVI", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "AXVS", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "AXVD", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "AXVF", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
+	{ "AXVJ", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "AXVE", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "AXVP", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "AXVI", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "AXVS", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "AXVD", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "AXVF", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
 
 	// Pokemon Sapphire
-	{ "AXPJ", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "AXPE", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "AXPP", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "AXPI", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "AXPS", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "AXPD", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
-	{ "AXPF", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
+	{ "AXPJ", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "AXPE", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "AXPP", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "AXPI", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "AXPS", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "AXPD", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
+	{ "AXPF", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
 
 	// Pokemon Emerald
-	{ "BPEJ", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6, false },
-	{ "BPEE", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6, false },
-	{ "BPEP", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6, false },
-	{ "BPEI", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6, false },
-	{ "BPES", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6, false },
-	{ "BPED", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6, false },
-	{ "BPEF", SAVEDATA_FLASH1M, HW_RTC, 0x80008C6, false },
+	{ "BPEJ", GBA_SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
+	{ "BPEE", GBA_SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
+	{ "BPEP", GBA_SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
+	{ "BPEI", GBA_SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
+	{ "BPES", GBA_SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
+	{ "BPED", GBA_SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
+	{ "BPEF", GBA_SAVEDATA_FLASH1M, HW_RTC, 0x80008C6 },
 
 	// Pokemon Mystery Dungeon
-	{ "B24E", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "B24P", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "B24E", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "B24P", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Pokemon FireRed
-	{ "BPRJ", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BPRE", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BPRP", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BPRI", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BPRS", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BPRD", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BPRF", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "BPRJ", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BPRE", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BPRP", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BPRI", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BPRS", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BPRD", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BPRF", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Pokemon LeafGreen
-	{ "BPGJ", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BPGE", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BPGP", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BPGI", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BPGS", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BPGD", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "BPGF", SAVEDATA_FLASH1M, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "BPGJ", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BPGE", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BPGP", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BPGI", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BPGS", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BPGD", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "BPGF", GBA_SAVEDATA_FLASH1M, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// RockMan EXE 4.5 - Real Operation
-	{ "BR4J", SAVEDATA_FLASH512, HW_RTC, IDLE_LOOP_NONE, false },
+	{ "BR4J", GBA_SAVEDATA_FLASH512, HW_RTC, GBA_IDLE_LOOP_NONE },
 
 	// Rocky
-	{ "AR8E", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "AROP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "AR8E", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "AROP", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Sennen Kazoku
-	{ "BKAJ", SAVEDATA_FLASH1M, HW_RTC, IDLE_LOOP_NONE, false },
+	{ "BKAJ", GBA_SAVEDATA_FLASH1M, HW_RTC, GBA_IDLE_LOOP_NONE },
 
 	// Shin Bokura no Taiyou: Gyakushuu no Sabata
-	{ "U33J", SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, IDLE_LOOP_NONE, false },
+	{ "U33J", GBA_SAVEDATA_EEPROM, HW_RTC | HW_LIGHT_SENSOR, GBA_IDLE_LOOP_NONE },
 
 	// Stuart Little 2
-	{ "ASLE", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "ASLF", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "ASLE", GBA_SAVEDATA_FORCE_NONE, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "ASLF", GBA_SAVEDATA_FORCE_NONE, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Super Mario Advance 2
-	{ "AA2J", SAVEDATA_EEPROM, HW_NONE, 0x800052E, false },
-	{ "AA2E", SAVEDATA_EEPROM, HW_NONE, 0x800052E, false },
-	{ "AA2P", SAVEDATA_AUTODETECT, HW_NONE, 0x800052E, false },
+	{ "AA2J", GBA_SAVEDATA_EEPROM, HW_NONE, 0x800052E },
+	{ "AA2E", GBA_SAVEDATA_EEPROM, HW_NONE, 0x800052E },
+	{ "AA2P", GBA_SAVEDATA_AUTODETECT, HW_NONE, 0x800052E },
 
 	// Super Mario Advance 3
-	{ "A3AJ", SAVEDATA_EEPROM, HW_NONE, 0x8002B9C, false },
-	{ "A3AE", SAVEDATA_EEPROM, HW_NONE, 0x8002B9C, false },
-	{ "A3AP", SAVEDATA_EEPROM, HW_NONE, 0x8002B9C, false },
+	{ "A3AJ", GBA_SAVEDATA_EEPROM, HW_NONE, 0x8002B9C },
+	{ "A3AE", GBA_SAVEDATA_EEPROM, HW_NONE, 0x8002B9C },
+	{ "A3AP", GBA_SAVEDATA_EEPROM, HW_NONE, 0x8002B9C },
 
 	// Super Mario Advance 4
-	{ "AX4J", SAVEDATA_FLASH1M, HW_NONE, 0x800072A, false },
-	{ "AX4E", SAVEDATA_FLASH1M, HW_NONE, 0x800072A, false },
-	{ "AX4P", SAVEDATA_FLASH1M, HW_NONE, 0x800072A, false },
+	{ "AX4J", GBA_SAVEDATA_FLASH1M, HW_NONE, 0x800072A },
+	{ "AX4E", GBA_SAVEDATA_FLASH1M, HW_NONE, 0x800072A },
+	{ "AX4P", GBA_SAVEDATA_FLASH1M, HW_NONE, 0x800072A },
 
 	// Super Monkey Ball Jr.
-	{ "ALUE", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "ALUP", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "ALUE", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
+	{ "ALUP", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Top Gun - Combat Zones
-	{ "A2YE", SAVEDATA_FORCE_NONE, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "A2YE", GBA_SAVEDATA_FORCE_NONE, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Ueki no Housoku - Jingi Sakuretsu! Nouryokusha Battle
-	{ "BUHJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "BUHJ", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE },
 
 	// Wario Ware Twisted
-	{ "RZWJ", SAVEDATA_SRAM, HW_RUMBLE | HW_GYRO, IDLE_LOOP_NONE, false },
-	{ "RZWE", SAVEDATA_SRAM, HW_RUMBLE | HW_GYRO, IDLE_LOOP_NONE, false },
-	{ "RZWP", SAVEDATA_SRAM, HW_RUMBLE | HW_GYRO, IDLE_LOOP_NONE, false },
+	{ "RZWJ", GBA_SAVEDATA_SRAM, HW_RUMBLE | HW_GYRO, GBA_IDLE_LOOP_NONE },
+	{ "RZWE", GBA_SAVEDATA_SRAM, HW_RUMBLE | HW_GYRO, GBA_IDLE_LOOP_NONE },
+	{ "RZWP", GBA_SAVEDATA_SRAM, HW_RUMBLE | HW_GYRO, GBA_IDLE_LOOP_NONE },
 
 	// Yoshi's Universal Gravitation
-	{ "KYGJ", SAVEDATA_EEPROM, HW_TILT, IDLE_LOOP_NONE, false },
-	{ "KYGE", SAVEDATA_EEPROM, HW_TILT, IDLE_LOOP_NONE, false },
-	{ "KYGP", SAVEDATA_EEPROM, HW_TILT, IDLE_LOOP_NONE, false },
+	{ "KYGJ", GBA_SAVEDATA_EEPROM, HW_TILT, GBA_IDLE_LOOP_NONE },
+	{ "KYGE", GBA_SAVEDATA_EEPROM, HW_TILT, GBA_IDLE_LOOP_NONE },
+	{ "KYGP", GBA_SAVEDATA_EEPROM, HW_TILT, GBA_IDLE_LOOP_NONE },
 
 	// Aging cartridge
-	{ "TCHK", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
+	{ "TCHK", GBA_SAVEDATA_EEPROM, HW_NONE, GBA_IDLE_LOOP_NONE, },
 
-	// Famicom Mini series 3 (FDS), some aren't mirrored (22 - 28)
-	// See https://forum.no-intro.org/viewtopic.php?f=2&t=4221 for discussion
-	{ "FNMJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "FMRJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "FPTJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "FLBJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "FFMJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "FTKJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-	{ "FTUJ", SAVEDATA_EEPROM, HW_NONE, IDLE_LOOP_NONE, false },
-
-	{ { 0, 0, 0, 0 }, 0, 0, IDLE_LOOP_NONE, false }
+	{ { 0, 0, 0, 0 }, 0, 0, GBA_IDLE_LOOP_NONE, false }
 };
 
 bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOverride* override) {
-	override->savetype = SAVEDATA_AUTODETECT;
+	override->savetype = GBA_SAVEDATA_AUTODETECT;
 	override->hardware = HW_NONE;
-	override->idleLoop = IDLE_LOOP_NONE;
-	override->mirroring = false;
+	override->idleLoop = GBA_IDLE_LOOP_NONE;
 	override->vbaBugCompat = false;
 	bool found = false;
 
@@ -233,7 +222,7 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 	}
 	if (!found && override->id[0] == 'F') {
 		// Classic NES Series
-		override->savetype = SAVEDATA_EEPROM;
+		override->savetype = GBA_SAVEDATA_EEPROM;
 		found = true;
 	}
 
@@ -247,25 +236,25 @@ bool GBAOverrideFind(const struct Configuration* config, struct GBACartridgeOver
 		if (savetype) {
 			if (strcasecmp(savetype, "SRAM") == 0) {
 				found = true;
-				override->savetype = SAVEDATA_SRAM;
+				override->savetype = GBA_SAVEDATA_SRAM;
 			} else if (strcasecmp(savetype, "SRAM512") == 0) {
 				found = true;
-				override->savetype = SAVEDATA_SRAM512;
+				override->savetype = GBA_SAVEDATA_SRAM512;
 			} else if (strcasecmp(savetype, "EEPROM") == 0) {
 				found = true;
-				override->savetype = SAVEDATA_EEPROM;
+				override->savetype = GBA_SAVEDATA_EEPROM;
 			} else if (strcasecmp(savetype, "EEPROM512") == 0) {
 				found = true;
-				override->savetype = SAVEDATA_EEPROM512;
+				override->savetype = GBA_SAVEDATA_EEPROM512;
 			} else if (strcasecmp(savetype, "FLASH512") == 0) {
 				found = true;
-				override->savetype = SAVEDATA_FLASH512;
+				override->savetype = GBA_SAVEDATA_FLASH512;
 			} else if (strcasecmp(savetype, "FLASH1M") == 0) {
 				found = true;
-				override->savetype = SAVEDATA_FLASH1M;
+				override->savetype = GBA_SAVEDATA_FLASH1M;
 			} else if (strcasecmp(savetype, "NONE") == 0) {
 				found = true;
-				override->savetype = SAVEDATA_FORCE_NONE;
+				override->savetype = GBA_SAVEDATA_FORCE_NONE;
 			}
 		}
 
@@ -295,28 +284,28 @@ void GBAOverrideSave(struct Configuration* config, const struct GBACartridgeOver
 	snprintf(sectionName, sizeof(sectionName), "override.%c%c%c%c", override->id[0], override->id[1], override->id[2], override->id[3]);
 	const char* savetype = 0;
 	switch (override->savetype) {
-	case SAVEDATA_SRAM:
+	case GBA_SAVEDATA_SRAM:
 		savetype = "SRAM";
 		break;
-	case SAVEDATA_SRAM512:
+	case GBA_SAVEDATA_SRAM512:
 		savetype = "SRAM512";
 		break;
-	case SAVEDATA_EEPROM:
+	case GBA_SAVEDATA_EEPROM:
 		savetype = "EEPROM";
 		break;
-	case SAVEDATA_EEPROM512:
+	case GBA_SAVEDATA_EEPROM512:
 		savetype = "EEPROM512";
 		break;
-	case SAVEDATA_FLASH512:
+	case GBA_SAVEDATA_FLASH512:
 		savetype = "FLASH512";
 		break;
-	case SAVEDATA_FLASH1M:
+	case GBA_SAVEDATA_FLASH1M:
 		savetype = "FLASH1M";
 		break;
-	case SAVEDATA_FORCE_NONE:
+	case GBA_SAVEDATA_FORCE_NONE:
 		savetype = "NONE";
 		break;
-	case SAVEDATA_AUTODETECT:
+	case GBA_SAVEDATA_AUTODETECT:
 		break;
 	}
 	ConfigurationSetValue(config, sectionName, "savetype", savetype);
@@ -327,7 +316,7 @@ void GBAOverrideSave(struct Configuration* config, const struct GBACartridgeOver
 		ConfigurationClearValue(config, sectionName, "hardware");
 	}
 
-	if (override->idleLoop != IDLE_LOOP_NONE) {
+	if (override->idleLoop != GBA_IDLE_LOOP_NONE) {
 		ConfigurationSetUIntValue(config, sectionName, "idleLoop", override->idleLoop);
 	} else {
 		ConfigurationClearValue(config, sectionName, "idleLoop");
@@ -335,7 +324,7 @@ void GBAOverrideSave(struct Configuration* config, const struct GBACartridgeOver
 }
 
 void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* override) {
-	if (override->savetype != SAVEDATA_AUTODETECT) {
+	if (override->savetype != GBA_SAVEDATA_AUTODETECT) {
 		GBASavedataForceType(&gba->memory.savedata, override->savetype);
 	}
 
@@ -376,7 +365,7 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 		}
 	}
 
-	if (override->idleLoop != IDLE_LOOP_NONE) {
+	if (override->idleLoop != GBA_IDLE_LOOP_NONE) {
 		gba->idleLoop = override->idleLoop;
 		if (gba->idleOptimization == IDLE_LOOP_DETECT) {
 			gba->idleOptimization = IDLE_LOOP_REMOVE;
@@ -385,9 +374,15 @@ void GBAOverrideApply(struct GBA* gba, const struct GBACartridgeOverride* overri
 }
 
 void GBAOverrideApplyDefaults(struct GBA* gba, const struct Configuration* overrides) {
-	struct GBACartridgeOverride override = { .idleLoop = IDLE_LOOP_NONE };
+	struct GBACartridgeOverride override = { .idleLoop = GBA_IDLE_LOOP_NONE };
 	const struct GBACartridge* cart = (const struct GBACartridge*) gba->memory.rom;
 	if (cart) {
+		if (gba->memory.unl.type == GBA_UNL_CART_MULTICART) {
+			override.savetype = GBA_SAVEDATA_SRAM;
+			GBAOverrideApply(gba, &override);
+			return;
+		}
+
 		memcpy(override.id, &cart->id, sizeof(override.id));
 
 		static const uint32_t pokemonTable[] = {
@@ -429,7 +424,7 @@ void GBAOverrideApplyDefaults(struct GBA* gba, const struct Configuration* overr
 
 		if (isPokemon && !isKnownPokemon) {
 			// Enable FLASH1M and RTC on Pokémon ROM hacks
-			override.savetype = SAVEDATA_FLASH1M;
+			override.savetype = GBA_SAVEDATA_FLASH1M;
 			override.hardware = HW_RTC;
 			override.vbaBugCompat = true;
 			GBAOverrideApply(gba, &override);

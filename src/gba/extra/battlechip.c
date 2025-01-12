@@ -33,28 +33,25 @@ enum {
 	BATTLECHIP_CONTINUE = 0xFFFF,
 };
 
-static bool GBASIOBattlechipGateLoad(struct GBASIODriver* driver);
-static uint16_t GBASIOBattlechipGateWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value);
-
-static void _battlechipTransfer(struct GBASIOBattlechipGate* gate);
-static void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cyclesLate);
+static bool GBASIOBattlechipGateInit(struct GBASIODriver* driver);
+static uint16_t GBASIOBattlechipGateWriteSIOCNT(struct GBASIODriver* driver, uint16_t value);
+static bool GBASIOBattlechipGateHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode);
+static int GBASIOBattlechipGateConnectedDevices(struct GBASIODriver* driver);
+static void GBASIOBattlechipGateFinishMultiplayer(struct GBASIODriver* driver, uint16_t data[4]);
 
 void GBASIOBattlechipGateCreate(struct GBASIOBattlechipGate* gate) {
-	gate->d.init = NULL;
-	gate->d.deinit = NULL;
-	gate->d.load = GBASIOBattlechipGateLoad;
-	gate->d.unload = NULL;
-	gate->d.writeRegister = GBASIOBattlechipGateWriteRegister;
-
-	gate->event.context = gate;
-	gate->event.callback = _battlechipTransferEvent;
-	gate->event.priority = 0x80;
+	memset(&gate->d, 0, sizeof(gate->d));
+	gate->d.init = GBASIOBattlechipGateInit;
+	gate->d.writeSIOCNT = GBASIOBattlechipGateWriteSIOCNT;
+	gate->d.handlesMode = GBASIOBattlechipGateHandlesMode;
+	gate->d.connectedDevices = GBASIOBattlechipGateConnectedDevices;
+	gate->d.finishMultiplayer = GBASIOBattlechipGateFinishMultiplayer;
 
 	gate->chipId = 0;
 	gate->flavor = GBA_FLAVOR_BATTLECHIP_GATE;
 }
 
-bool GBASIOBattlechipGateLoad(struct GBASIODriver* driver) {
+bool GBASIOBattlechipGateInit(struct GBASIODriver* driver) {
 	struct GBASIOBattlechipGate* gate = (struct GBASIOBattlechipGate*) driver;
 	gate->state = BATTLECHIP_STATE_SYNC;
 	gate->data[0] = 0x00FE;
@@ -62,58 +59,34 @@ bool GBASIOBattlechipGateLoad(struct GBASIODriver* driver) {
 	return true;
 }
 
-uint16_t GBASIOBattlechipGateWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
-	struct GBASIOBattlechipGate* gate = (struct GBASIOBattlechipGate*) driver;
-	switch (address) {
-	case GBA_REG_SIOCNT:
-		value &= ~0xC;
-		value |= 0x8;
-		if (value & 0x80) {
-			_battlechipTransfer(gate);
-		}
-		break;
-	case GBA_REG_SIOMLT_SEND:
-		break;
-	case GBA_REG_RCNT:
-		break;
-	default:
-		break;
-	}
+uint16_t GBASIOBattlechipGateWriteSIOCNT(struct GBASIODriver* driver, uint16_t value) {
+	UNUSED(driver);
+	value &= ~0xC;
+	value |= 0x8;
 	return value;
 }
 
-void _battlechipTransfer(struct GBASIOBattlechipGate* gate) {
-	int32_t cycles;
-	if (gate->d.p->mode == SIO_NORMAL_32) {
-		cycles = GBA_ARM7TDMI_FREQUENCY / 0x40000;
-	} else {
-		cycles = GBASIOCyclesPerTransfer[GBASIOMultiplayerGetBaud(gate->d.p->siocnt)][1];
+static bool GBASIOBattlechipGateHandlesMode(struct GBASIODriver* driver, enum GBASIOMode mode) {
+	UNUSED(driver);
+	switch (mode) {
+	case GBA_SIO_NORMAL_32:
+	case GBA_SIO_MULTI:
+		return true;
+	default:
+		return false;
 	}
-	mTimingDeschedule(&gate->d.p->p->timing, &gate->event);
-	mTimingSchedule(&gate->d.p->p->timing, &gate->event, cycles);
 }
 
-void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cyclesLate) {
-	UNUSED(timing);
-	struct GBASIOBattlechipGate* gate = user;
+static int GBASIOBattlechipGateConnectedDevices(struct GBASIODriver* driver) {
+	UNUSED(driver);
+	return 1;
+}
 
-	if (gate->d.p->mode == SIO_NORMAL_32) {
-		gate->d.p->p->memory.io[GBA_REG(SIODATA32_LO)] = 0;
-		gate->d.p->p->memory.io[GBA_REG(SIODATA32_HI)] = 0;
-		gate->d.p->siocnt = GBASIONormalClearStart(gate->d.p->siocnt);
-		if (GBASIONormalIsIrq(gate->d.p->siocnt)) {
-			GBARaiseIRQ(gate->d.p->p, GBA_IRQ_SIO, cyclesLate);
-		}
-		return;
-	}
+static void GBASIOBattlechipGateFinishMultiplayer(struct GBASIODriver* driver, uint16_t data[4]) {
+	struct GBASIOBattlechipGate* gate = (struct GBASIOBattlechipGate*) driver;
 
 	uint16_t cmd = gate->d.p->p->memory.io[GBA_REG(SIOMLT_SEND)];
 	uint16_t reply = 0xFFFF;
-	gate->d.p->p->memory.io[GBA_REG(SIOMULTI0)] = cmd;
-	gate->d.p->p->memory.io[GBA_REG(SIOMULTI2)] = 0xFFFF;
-	gate->d.p->p->memory.io[GBA_REG(SIOMULTI3)] = 0xFFFF;
-	gate->d.p->siocnt = GBASIOMultiplayerClearBusy(gate->d.p->siocnt);
-	gate->d.p->siocnt = GBASIOMultiplayerSetId(gate->d.p->siocnt, 0);
 
 	mLOG(GBA_BATTLECHIP, DEBUG, "Game: %04X (%i)", cmd, gate->state);
 
@@ -146,7 +119,7 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 		case 0xA3D0:
 		// EXE 4
 		case 0xA6C0:
-		mLOG(GBA_BATTLECHIP, DEBUG, "Resync detected");
+			mLOG(GBA_BATTLECHIP, DEBUG, "Resync detected");
 			gate->state = BATTLECHIP_STATE_SYNC;
 			break;
 		}
@@ -191,9 +164,8 @@ void _battlechipTransferEvent(struct mTiming* timing, void* user, uint32_t cycle
 	mLOG(GBA_BATTLECHIP, DEBUG, "Gate: %04X (%i)", reply, gate->state);
 	++gate->state;
 
-	gate->d.p->p->memory.io[GBA_REG(SIOMULTI1)] = reply;
-
-	if (GBASIOMultiplayerIsIrq(gate->d.p->siocnt)) {
-		GBARaiseIRQ(gate->d.p->p, GBA_IRQ_SIO, cyclesLate);
-	}
+	data[0] = cmd;
+	data[1] = reply;
+	data[2] = 0xFFFF;
+	data[3] = 0xFFFF;
 }

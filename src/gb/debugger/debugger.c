@@ -3,14 +3,14 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
- #include <mgba/internal/gb/debugger/debugger.h>
+#include <mgba/internal/gb/debugger/debugger.h>
 
- #include <mgba/core/core.h>
- #include <mgba/internal/debugger/cli-debugger.h>
- #include <mgba/internal/gb/gb.h>
- #include <mgba/internal/gb/io.h>
- #include <mgba/internal/gb/memory.h>
- #include <mgba/internal/sm83/debugger/debugger.h>
+#include <mgba/core/core.h>
+#include <mgba/internal/debugger/cli-debugger.h>
+#include <mgba/internal/gb/gb.h>
+#include <mgba/internal/gb/io.h>
+#include <mgba/internal/gb/memory.h>
+#include <mgba/internal/sm83/debugger/debugger.h>
 
 static const struct SM83Segment _GBSegments[] = {
 	{ .name = "ROM", .start = GB_BASE_CART_BANK1, .end = GB_BASE_VRAM },

@@ -86,7 +86,7 @@ void AssetTile::selectIndex(int index) {
 		return;
 	}
 	m_index = index;
-	const color_t* data;
+	const mColor* data;
 	mTileCache* tileCache = m_tileCaches[index >= m_boundary];
 
 	unsigned bpp = 8 << tileCache->bpp;
@@ -130,10 +130,10 @@ void AssetTile::setFlip(bool h, bool v) {
 }
 
 void AssetTile::selectColor(int index) {
-	const color_t* data;
+	const mColor* data;
 	mTileCache* tileCache = m_tileCaches[m_index >= m_boundary];
 	data = mTileCacheGetTile(tileCache, m_index >= m_boundary ? m_index - m_boundary : m_index, m_paletteId);
-	color_t color = data[index];
+	mColor color = data[index];
 	m_ui.color->setColor(0, color);
 	m_ui.color->update();
 

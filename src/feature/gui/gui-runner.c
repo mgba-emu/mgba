@@ -123,7 +123,7 @@ static void _drawState(struct GUIBackground* background, void* id) {
 	struct mGUIBackground* gbaBackground = (struct mGUIBackground*) background;
 	unsigned stateId = ((uint32_t) id) >> 16;
 	if (gbaBackground->p->drawScreenshot) {
-		color_t* pixels = gbaBackground->image;
+		mColor* pixels = gbaBackground->image;
 		if (pixels && gbaBackground->screenshotId == (stateId | SCREENSHOT_VALID)) {
 			gbaBackground->p->drawScreenshot(gbaBackground->p, pixels, gbaBackground->w, gbaBackground->h, true);
 			return;
@@ -220,7 +220,7 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 	runner->fps = 0;
 	runner->lastFpsCheck = 0;
 	runner->totalDelta = 0;
-	CircleBufferInit(&runner->fpsBuffer, FPS_BUFFER_SIZE * sizeof(uint32_t));
+	mCircleBufferInit(&runner->fpsBuffer, FPS_BUFFER_SIZE * sizeof(uint32_t));
 
 	mInputMapInit(&runner->params.keyMap, &_mGUIKeyInfo);
 	mCoreConfigInit(&runner->config, runner->port);
@@ -284,7 +284,7 @@ void mGUIDeinit(struct mGUIRunner* runner) {
 	if (runner->teardown) {
 		runner->teardown(runner);
 	}
-	CircleBufferDeinit(&runner->fpsBuffer);
+	mCircleBufferDeinit(&runner->fpsBuffer);
 	mInputMapDeinit(&runner->params.keyMap);
 	mCoreConfigDeinit(&runner->config);
 	if (logger.vf) {
@@ -502,7 +502,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	runner->fps = 0;
 	bool fastForward = false;
 	while (running) {
-		CircleBufferClear(&runner->fpsBuffer);
+		mCircleBufferClear(&runner->fpsBuffer);
 		runner->totalDelta = 0;
 		struct timeval tv;
 		gettimeofday(&tv, 0);
@@ -610,17 +610,17 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 						uint64_t delta = t - runner->lastFpsCheck;
 						runner->lastFpsCheck = t;
 						if (delta > 0x7FFFFFFFLL) {
-							CircleBufferClear(&runner->fpsBuffer);
+							mCircleBufferClear(&runner->fpsBuffer);
 							runner->fps = 0;
 						}
-						if (CircleBufferSize(&runner->fpsBuffer) == CircleBufferCapacity(&runner->fpsBuffer)) {
+						if (mCircleBufferSize(&runner->fpsBuffer) == mCircleBufferCapacity(&runner->fpsBuffer)) {
 							int32_t last;
-							CircleBufferRead32(&runner->fpsBuffer, &last);
+							mCircleBufferRead32(&runner->fpsBuffer, &last);
 							runner->totalDelta -= last;
 						}
-						CircleBufferWrite32(&runner->fpsBuffer, delta);
+						mCircleBufferWrite32(&runner->fpsBuffer, delta);
 						runner->totalDelta += delta;
-						runner->fps = (CircleBufferSize(&runner->fpsBuffer) * FPS_GRANULARITY * 1000000.0f) / (runner->totalDelta * sizeof(uint32_t));
+						runner->fps = (mCircleBufferSize(&runner->fpsBuffer) * FPS_GRANULARITY * 1000000.0f) / (runner->totalDelta * sizeof(uint32_t));
 					}
 				}
 				if (frame % (AUTOSAVE_GRANULARITY * (fastForwarding ? 2 : 1)) == 0) {
@@ -782,6 +782,9 @@ void mGUILoadInputMaps(struct mGUIRunner* runner) {
 	size_t i;
 	for (i = 0; runner->keySources[i].id; ++i) {
 		mInputMapLoad(&runner->params.keyMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+		if (runner->core) {
+			mInputMapLoad(&runner->core->inputMap, runner->keySources[i].id, mCoreConfigGetInput(&runner->config));
+		}
 	}
 }
 

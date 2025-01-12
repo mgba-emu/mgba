@@ -8,15 +8,15 @@ if(WIIDRC_LIBRARY)
     add_definitions(-DWIIDRC)
 endif()
 
-set(OS_DEFINES _GNU_SOURCE COLOR_16_BIT COLOR_5_6_5 IOAPI_NO_64 FIXED_ROM_BUFFER)
-list(APPEND CORE_VFS_SRC ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-devlist.c)
+set(OS_DEFINES _GNU_SOURCE COLOR_16_BIT COLOR_5_6_5 IOAPI_NO_64 FIXED_ROM_BUFFER ENABLE_VFS_FD)
+list(APPEND VFS_SRC ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-fd.c ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-dirent.c ${PROJECT_SOURCE_DIR}/src/util/vfs/vfs-devlist.c)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 list(APPEND OS_LIB wiiuse bte fat ogc)
 set(OS_LIB ${OS_LIB} PARENT_SCOPE)
 source_group("Wii-specific code" FILES ${OS_SRC})
-set(CORE_VFS_SRC ${CORE_VFS_SRC} PARENT_SCOPE)
+set(VFS_SRC ${VFS_SRC} PARENT_SCOPE)
 set(OS_DEFINES ${OS_DEFINES} PARENT_SCOPE)
 
 list(APPEND GUI_SRC ${CMAKE_CURRENT_BINARY_DIR}/font.c ${CMAKE_CURRENT_BINARY_DIR}/icons.c ${CMAKE_CURRENT_SOURCE_DIR}/gui-font.c)

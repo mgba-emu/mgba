@@ -16,6 +16,7 @@
 #include <mgba-util/memory.h>
 #include <mgba-util/math.h>
 #include <mgba-util/patch.h>
+#include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
 const uint32_t CGB_SM83_FREQUENCY = 0x800000;
@@ -106,7 +107,7 @@ static void GBDeinit(struct mCPUComponent* component) {
 
 bool GBLoadGBX(struct GBXMetadata* metadata, struct VFile* vf) {
 	uint8_t footer[16];
-	if (vf->seek(vf, -sizeof(footer), SEEK_END) < 0) {
+	if (vf->seek(vf, -(off_t) sizeof(footer), SEEK_END) < 0) {
 		return false;
 	}
 	if (vf->read(vf, footer, sizeof(footer)) < (ssize_t) sizeof(footer)) {
@@ -151,7 +152,7 @@ bool GBLoadGBX(struct GBXMetadata* metadata, struct VFile* vf) {
 	if (memcmp(footer, "MBC1", 4) == 0) {
 		metadata->mapperVars.u8[0] = 5;
 	} else if (memcmp(footer, "MB1M", 4) == 0) {
-		metadata->mapperVars.u8[0] = 4;		
+		metadata->mapperVars.u8[0] = 4;
 	}
 	return true;
 }
@@ -482,12 +483,10 @@ void GBApplyPatch(struct GB* gb, struct Patch* patch) {
 		mappedMemoryFree(newRom, GB_SIZE_CART_MAX);
 		return;
 	}
-	if (gb->romVf) {
+	if (gb->romVf && gb->isPristine) {
 #ifndef FIXED_ROM_BUFFER
 		gb->romVf->unmap(gb->romVf, gb->memory.rom, gb->pristineRomSize);
 #endif
-		gb->romVf->close(gb->romVf);
-		gb->romVf = NULL;
 	}
 	gb->isPristine = false;
 	if (gb->memory.romBase == gb->memory.rom) {
@@ -893,7 +892,7 @@ int GBValidModels(const uint8_t* bank0) {
 	} else if (cart->cgb == 0xC0) {
 		models = GB_MODEL_CGB;
 	} else {
-		models = GB_MODEL_MGB;		
+		models = GB_MODEL_MGB;
 	}
 	if (cart->sgb == 0x03 && cart->oldLicensee == 0x33) {
 		models |= GB_MODEL_SGB;
@@ -940,7 +939,7 @@ void GBProcessEvents(struct SM83Core* cpu) {
 
 			nextEvent = cycles;
 			do {
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 				gb->timing.globalCycles += nextEvent;
 #endif
 				nextEvent = mTimingTick(&gb->timing, nextEvent);
@@ -1057,7 +1056,7 @@ void GBStop(struct SM83Core* cpu) {
 void GBIllegal(struct SM83Core* cpu) {
 	struct GB* gb = (struct GB*) cpu->master;
 	mLOG(GB, GAME_ERROR, "Hit illegal opcode at address %04X:%02X", cpu->pc, cpu->bus);
-#ifdef USE_DEBUGGERS
+#ifdef ENABLE_DEBUGGERS
 	if (cpu->components && cpu->components[CPU_COMPONENT_DEBUGGER]) {
 		struct mDebuggerEntryInfo info = {
 			.address = cpu->pc,
@@ -1100,7 +1099,7 @@ bool GBIsROM(struct VFile* vf) {
 	}
 
 	uint8_t footer[16];
-	vf->seek(vf, -sizeof(footer), SEEK_END);
+	vf->seek(vf, -(off_t) sizeof(footer), SEEK_END);
 	if (vf->read(vf, footer, sizeof(footer)) < (ssize_t) sizeof(footer)) {
 		return false;
 	}
@@ -1116,38 +1115,28 @@ bool GBIsROM(struct VFile* vf) {
 	return false;
 }
 
-void GBGetGameTitle(const struct GB* gb, char* out) {
-	const struct GBCartridge* cart = NULL;
-	if (gb->memory.rom) {
-		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	}
-	if (!cart) {
+void GBGetGameInfo(const struct GB* gb, struct mGameInfo* info) {
+	memset(info, 0, sizeof(*info));
+	if (!gb->memory.rom) {
 		return;
 	}
-	if (cart->oldLicensee != 0x33) {
-		memcpy(out, cart->titleLong, 16);
-	} else {
-		memcpy(out, cart->titleShort, 11);
-	}
-}
 
-void GBGetGameCode(const struct GB* gb, char* out) {
-	memset(out, 0, 8);
-	const struct GBCartridge* cart = NULL;
-	if (gb->memory.rom) {
-		cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-	}
-	if (!cart) {
-		return;
-	}
+	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
 	if (cart->cgb == 0xC0) {
-		memcpy(out, "CGB-????", 8);
+		strlcpy(info->system, "CGB", sizeof(info->system));
 	} else {
-		memcpy(out, "DMG-????", 8);
+		strlcpy(info->system, "DMG", sizeof(info->system));
 	}
-	if (cart->oldLicensee == 0x33) {
-		memcpy(&out[4], cart->maker, 4);
+
+	if (cart->oldLicensee != 0x33) {
+		memcpy(info->title, cart->titleLong, 16);
+		snprintf(info->maker, sizeof(info->maker), "%02X", cart->oldLicensee);
+	} else {
+		memcpy(info->title, cart->titleShort, 11);
+		memcpy(info->code, cart->maker, 4);
+		memcpy(info->maker, &cart->licensee, 2);
 	}
+	info->version = cart->version;
 }
 
 void GBFrameStarted(struct GB* gb) {
@@ -1174,9 +1163,15 @@ void GBFrameEnded(struct GB* gb) {
 		}
 	}
 
+	struct mRumble* rumble = gb->memory.rumble;
+	if (rumble && rumble->integrate) {
+		gb->memory.lastRumble = mTimingCurrentTime(&gb->timing);
+		rumble->integrate(rumble, GB_VIDEO_TOTAL_LENGTH);
+	}
+
 	// TODO: Move to common code
 	if (gb->stream && gb->stream->postVideoFrame) {
-		const color_t* pixels;
+		const mColor* pixels;
 		size_t stride;
 		gb->video.renderer->getPixels(gb->video.renderer, &stride, (const void**) &pixels);
 		gb->stream->postVideoFrame(gb->stream, pixels, stride);

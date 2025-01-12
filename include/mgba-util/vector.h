@@ -112,6 +112,7 @@ CXX_GUARD_START
 	} \
 
 DECLARE_VECTOR(IntList, int);
+DECLARE_VECTOR(UIntList, unsigned);
 DECLARE_VECTOR(SInt8List, int8_t);
 DECLARE_VECTOR(SInt16List, int16_t);
 DECLARE_VECTOR(SInt32List, int32_t);
