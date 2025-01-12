@@ -3409,7 +3409,7 @@ Tamanho do download: %3</translation>
         <location filename="../MemoryAccessLogController.cpp" line="66"/>
         <location filename="../MemoryAccessLogController.cpp" line="76"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished">Falhou em abrir o arquivo do registro da memória</translation>
+        <translation>Falhou em abrir o arquivo do registro de memória</translation>
     </message>
 </context>
 <context>
