@@ -507,6 +507,10 @@ void mCoreThreadClearCrashed(struct mCoreThread* threadContext) {
 
 void mCoreThreadEnd(struct mCoreThread* threadContext) {
 	MutexLock(&threadContext->impl->stateMutex);
+	if (threadContext->impl->state == mTHREAD_SHUTDOWN) {
+		MutexUnlock(&threadContext->impl->stateMutex);
+		return;
+	}
 	_waitOnInterrupt(threadContext->impl);
 	threadContext->impl->state = mTHREAD_EXITING;
 	ConditionWake(&threadContext->impl->stateOnThreadCond);
