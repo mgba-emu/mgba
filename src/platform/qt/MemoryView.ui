@@ -31,14 +31,14 @@
     </widget>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QVBoxLayout" name="sidebarLayout" stretch="0,0,0,1,0,1">
      <item>
       <widget class="QComboBox" name="regions"/>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout">
+      <layout class="QHBoxLayout" name="addressLayout">
        <item>
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="address">
          <property name="text">
           <string>Address:</string>
          </property>
@@ -105,9 +105,9 @@
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <layout class="QHBoxLayout" name="alignmentLayout">
        <item>
-        <widget class="QLabel" name="label_2">
+        <widget class="QLabel" name="alignmentLabel">
          <property name="text">
           <string>Alignment:</string>
          </property>
@@ -141,7 +141,7 @@
       </layout>
      </item>
      <item>
-      <widget class="QGroupBox" name="groupBox">
+      <widget class="QGroupBox" name="data">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -151,9 +151,9 @@
        <property name="title">
         <string/>
        </property>
-       <layout class="QGridLayout" name="gridLayout_2">
+       <layout class="QGridLayout" name="gridLayout_9">
         <item row="0" column="0">
-         <widget class="QLabel" name="label_4">
+         <widget class="QLabel" name="sintLabel">
           <property name="text">
            <string>Signed:</string>
           </property>
@@ -173,7 +173,7 @@
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QLabel" name="label_6">
+         <widget class="QLabel" name="uintLabel">
           <property name="text">
            <string>Unsigned:</string>
           </property>
@@ -193,7 +193,7 @@
          </widget>
         </item>
         <item row="2" column="0">
-         <widget class="QLabel" name="label_7">
+         <widget class="QLabel" name="stringLabel">
           <property name="text">
            <string>String:</string>
           </property>
@@ -232,7 +232,7 @@
       </widget>
      </item>
      <item>
-      <layout class="QGridLayout" name="gridLayout">
+      <layout class="QGridLayout" name="buttons">
        <item row="0" column="0">
         <widget class="QPushButton" name="copy">
          <property name="text">
@@ -275,6 +275,44 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="verticalGroupBox_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="title">
+        <string>Selected address accesses</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QTreeView" name="accessLog">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="textElideMode">
+           <enum>Qt::ElideNone</enum>
+          </property>
+          <attribute name="headerVisible">
+           <bool>false</bool>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="accessLoggerButton">
+          <property name="text">
+           <string>Logging configuration</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </item>
     </layout>
    </item>

@@ -10,7 +10,13 @@
 #include "utils.h"
 #include "VFileDevice.h"
 
+#include <mgba-util/math.h>
+
 using namespace QGBA;
+
+int MemoryAccessLogController::Flags::count() const {
+	return popcount32(flags) + popcount32(flagsEx);
+}
 
 MemoryAccessLogController::MemoryAccessLogController(CoreController* controller, QObject* parent)
 	: QObject(parent)
@@ -37,6 +43,17 @@ MemoryAccessLogController::~MemoryAccessLogController() {
 
 bool MemoryAccessLogController::canExport() const {
 	return m_regionMapping.contains("cart0");
+}
+
+MemoryAccessLogController::Flags MemoryAccessLogController::flagsForAddress(uint32_t addresss, int segment) {
+	uint32_t offset = cacheRegion(addresss, segment);
+	if (!m_cachedRegion) {
+		return { 0, 0 };
+	}
+	return {
+		m_cachedRegion->blockEx ? m_cachedRegion->blockEx[offset] : mDebuggerAccessLogFlagsEx{},
+		m_cachedRegion->block ? m_cachedRegion->block[offset] : mDebuggerAccessLogFlags{},
+	};
 }
 
 void MemoryAccessLogController::updateRegion(const QString& internalName, bool checked) {
@@ -115,4 +132,28 @@ void MemoryAccessLogController::exportFile(const QString& filename) {
 	CoreController::Interrupter interrupter(m_controller);
 	mDebuggerAccessLoggerCreateShadowFile(&m_logger, m_regionMapping[QString("cart0")], vf, 0);
 	vf->close(vf);
+}
+
+uint32_t MemoryAccessLogController::cacheRegion(uint32_t address, int segment) {
+	if (m_cachedRegion && (address < m_cachedRegion->start || address >= m_cachedRegion->end)) {
+		m_cachedRegion = nullptr;
+	}
+	if (!m_cachedRegion) {
+		m_cachedRegion = mDebuggerAccessLoggerGetRegion(&m_logger, address, segment, nullptr);
+	}
+	if (!m_cachedRegion) {
+		return 0;
+	}
+
+	size_t offset = address - m_cachedRegion->start;
+	if (segment > 0) {
+		uint32_t segmentSize = m_cachedRegion->end - m_cachedRegion->segmentStart;
+		offset %= segmentSize;
+		offset += segmentSize * segment;
+	}
+	if (offset >= m_cachedRegion->size) {
+		m_cachedRegion = nullptr;
+		return cacheRegion(address, segment);
+	}
+	return offset;
 }
