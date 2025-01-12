@@ -46,6 +46,8 @@ int mDebuggerAccessLoggerWatchMemoryBlockName(struct mDebuggerAccessLogger*, con
 
 bool mDebuggerAccessLoggerCreateShadowFile(struct mDebuggerAccessLogger*, int region, struct VFile*, uint8_t fill);
 
+struct mDebuggerAccessLogRegion* mDebuggerAccessLoggerGetRegion(struct mDebuggerAccessLogger*, uint32_t address, int segment, size_t* offset);
+
 CXX_GUARD_END
 
 #endif
