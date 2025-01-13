@@ -39,9 +39,23 @@ QVariant MemoryAccessLogModel::data(const QModelIndex& index, int role) const {
 	const Block& block = m_cachedBlocks[blockIndex];
 
 	if (flagIndex < 0) {
-		return QString("0x%1 – 0x%2")
-			.arg(QString("%0").arg(block.region.first, 8, 16, QChar('0')).toUpper())
-			.arg(QString("%0").arg(block.region.second, 8, 16, QChar('0')).toUpper());
+		if (m_platform == mPLATFORM_GB) {
+			if (m_segment < 0) {
+				return QString("$%1 – $%2")
+					.arg(QString("%0").arg(block.region.first, 4, 16, QChar('0')).toUpper())
+					.arg(QString("%0").arg(block.region.second, 4, 16, QChar('0')).toUpper());
+			} else {
+				return QString("$%1:%3 – $%2:%4")
+					.arg(QString("%0").arg(m_segment, 2, 16, QChar('0')).toUpper())
+					.arg(QString("%0").arg(m_segment, 2, 16, QChar('0')).toUpper())
+					.arg(QString("%0").arg(block.region.first, 4, 16, QChar('0')).toUpper())
+					.arg(QString("%0").arg(block.region.second, 4, 16, QChar('0')).toUpper());
+			}
+		} else {
+			return QString("0x%1 – 0x%2")
+				.arg(QString("%0").arg(block.region.first, 8, 16, QChar('0')).toUpper())
+				.arg(QString("%0").arg(block.region.second, 8, 16, QChar('0')).toUpper());			
+		}
 	}
 	for (int i = 0; i < 8; ++i) {
 		if (!(block.flags.flags & (1 << i))) {
@@ -109,6 +123,8 @@ QVariant MemoryAccessLogModel::data(const QModelIndex& index, int role) const {
 				switch (m_platform) {
 				case mPLATFORM_GBA:
 					return tr("ARM code");
+				case mPLATFORM_GB:
+					return tr("Instruction opcode");
 				default:
 					return tr("(Private bit 2)");
 				}
@@ -116,8 +132,10 @@ QVariant MemoryAccessLogModel::data(const QModelIndex& index, int role) const {
 				switch (m_platform) {
 				case mPLATFORM_GBA:
 					return tr("Thumb code");
+				case mPLATFORM_GB:
+					return tr("Instruction operand");
 				default:
-					return tr("(Private bit 2)");
+					return tr("(Private bit 3)");
 				}
 			default:
 				Q_UNREACHABLE();
