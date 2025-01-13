@@ -137,7 +137,7 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 		}
 	}
 
-	connect(m_ui.width, &QComboBox::currentIndexChanged, [this](int index) {
+	connect(m_ui.width, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this](int index) {
 		m_ui.hexfield->setAlignment(1 << index);
 		m_sintValidator.setWidth(1 << index);
 		m_uintValidator.setWidth(1 << index);
