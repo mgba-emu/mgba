@@ -2,6 +2,8 @@ LOCAL_PATH := $(call my-dir)
 
 CORE_DIR := $(LOCAL_PATH)/../..
 
+HAVE_VFS_FD = 1
+
 include $(CORE_DIR)/libretro-build/Makefile.common
 
 COREFLAGS := -DHAVE_XLOCALE -DHAVE_STRTOF_L -DDISABLE_THREADING -DMINIMAL_CORE=2 $(RETRODEFS) $(INCLUDES)

@@ -1430,7 +1430,7 @@ void retro_init(void) {
 	stream.postAudioFrame = NULL;
 	stream.postAudioBuffer = NULL;
 	stream.postVideoFrame = NULL;
-	stream.audioRateChanged = _audioRateChanged;
+	/*stream.audioRateChanged = _audioRateChanged;*/
 
 	imageSource.startRequestImage = _startImage;
 	imageSource.stopRequestImage = _stopImage;
