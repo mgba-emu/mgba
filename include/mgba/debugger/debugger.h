@@ -111,6 +111,7 @@ struct mDebuggerEntryInfo {
 			uint32_t newValue;
 			enum mWatchpointType watchType;
 			enum mWatchpointType accessType;
+			enum mMemoryAccessSource accessSource;
 		} wp;
 
 		struct {

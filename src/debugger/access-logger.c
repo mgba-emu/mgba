@@ -69,9 +69,29 @@ static void _mDebuggerAccessLoggerEntered(struct mDebuggerModule* debugger, enum
 	}
 	offset &= -info->width;
 
+	mDebuggerAccessLogFlagsEx flagsEx = 0;
 	int i;
 	switch (reason) {
 	case DEBUGGER_ENTER_WATCHPOINT:
+		switch (info->type.wp.accessSource) {
+		case mACCESS_PROGRAM:
+			flagsEx = mDebuggerAccessLogFlagsExFillAccessProgram(flagsEx);
+			break;
+		case mACCESS_DMA:
+			flagsEx = mDebuggerAccessLogFlagsExFillAccessDMA(flagsEx);
+			break;
+		case mACCESS_SYSTEM:
+			flagsEx = mDebuggerAccessLogFlagsExFillAccessSystem(flagsEx);
+			break;
+		case mACCESS_DECOMPRESS:
+			flagsEx = mDebuggerAccessLogFlagsExFillAccessDecompress(flagsEx);
+			break;
+		case mACCESS_COPY:
+			flagsEx = mDebuggerAccessLogFlagsExFillAccessCopy(flagsEx);
+			break;
+		case mACCESS_UNKNOWN:
+			break;
+		}
 		for (i = 0; i < info->width; ++i) {
 			if (info->type.wp.accessType & WATCHPOINT_WRITE) {
 				region->block[offset + i] = mDebuggerAccessLogFlagsFillWrite(region->block[offset + i]);
@@ -83,16 +103,29 @@ static void _mDebuggerAccessLoggerEntered(struct mDebuggerModule* debugger, enum
 		switch (info->width) {
 		case 1:
 			region->block[offset] = mDebuggerAccessLogFlagsFillAccess8(region->block[offset]);
+			if (region->blockEx) {
+				region->blockEx[offset] |= flagsEx;
+			}
 			break;
 		case 2:
 			region->block[offset] = mDebuggerAccessLogFlagsFillAccess16(region->block[offset]);
 			region->block[offset + 1] = mDebuggerAccessLogFlagsFillAccess16(region->block[offset + 1]);
+			if (region->blockEx) {
+				region->blockEx[offset] |= flagsEx;
+				region->blockEx[offset + 1] |= flagsEx;
+			}
 			break;
 		case 4:
 			region->block[offset] = mDebuggerAccessLogFlagsFillAccess32(region->block[offset]);
 			region->block[offset + 1] = mDebuggerAccessLogFlagsFillAccess32(region->block[offset + 1]);
 			region->block[offset + 2] = mDebuggerAccessLogFlagsFillAccess32(region->block[offset + 2]);
 			region->block[offset + 3] = mDebuggerAccessLogFlagsFillAccess32(region->block[offset + 3]);
+			if (region->blockEx) {
+				region->blockEx[offset] |= flagsEx;
+				region->blockEx[offset + 1] |= flagsEx;
+				region->blockEx[offset + 2] |= flagsEx;
+				region->blockEx[offset + 3] |= flagsEx;
+			}
 			break;
 		case 8:
 			region->block[offset] = mDebuggerAccessLogFlagsFillAccess64(region->block[offset]);
@@ -103,6 +136,16 @@ static void _mDebuggerAccessLoggerEntered(struct mDebuggerModule* debugger, enum
 			region->block[offset + 5] = mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 5]);
 			region->block[offset + 6] = mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 6]);
 			region->block[offset + 7] = mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 7]);
+			if (region->blockEx) {
+				region->blockEx[offset] |= flagsEx;
+				region->blockEx[offset + 1] |= flagsEx;
+				region->blockEx[offset + 2] |= flagsEx;
+				region->blockEx[offset + 3] |= flagsEx;
+				region->blockEx[offset + 4] |= flagsEx;
+				region->blockEx[offset + 5] |= flagsEx;
+				region->blockEx[offset + 6] |= flagsEx;
+				region->blockEx[offset + 7] |= flagsEx;
+			}
 			break;
 		}
 		break;

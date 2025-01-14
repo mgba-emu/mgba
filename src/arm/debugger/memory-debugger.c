@@ -121,6 +121,7 @@ static void _checkWatchpoints(struct ARMDebugger* debugger, uint32_t address, en
 			info.type.wp.newValue = newValue;
 			info.type.wp.watchType = watchpoint->type;
 			info.type.wp.accessType = type;
+			info.type.wp.accessSource = debugger->cpu->memory.accessSource;
 			info.address = address;
 			info.segment = 0;
 			info.width = width;

@@ -20,6 +20,15 @@ enum mCPUComponentType {
 	CPU_COMPONENT_MAX
 };
 
+enum mMemoryAccessSource {
+	mACCESS_UNKNOWN = 0,
+	mACCESS_PROGRAM,
+	mACCESS_DMA,
+	mACCESS_SYSTEM,
+	mACCESS_DECOMPRESS,
+	mACCESS_COPY,
+};
+
 struct mCPUComponent {
 	uint32_t id;
 	void (*init)(void* cpu, struct mCPUComponent* component);
