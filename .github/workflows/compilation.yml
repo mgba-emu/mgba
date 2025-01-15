@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ps2dev/ps2dev:latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Install dependencies
       run: |
@@ -30,7 +30,7 @@ jobs:
 
     - name: Upload artifacts
       if: ${{ success() }}
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ steps.core.outputs.info }}_libretro_${{ steps.core.outputs.platform }}-${{ steps.core.outputs.sha8 }}
         path: ${{ steps.core.outputs.info }}_libretro_${{ steps.core.outputs.platform }}.a
