@@ -167,7 +167,7 @@ void mCoreConfigDeinit(struct mCoreConfig* config) {
 	free(config->port);
 }
 
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && !defined(__LIBRETRO__)
 bool mCoreConfigLoad(struct mCoreConfig* config) {
 	char path[PATH_MAX + 1];
 	mCoreConfigDirectory(path, PATH_MAX);

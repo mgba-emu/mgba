@@ -215,7 +215,7 @@ void separatePath(const char* path, char* dirname, char* basename, char* extensi
 	}
 }
 
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && !defined(__LIBRETRO__)
 bool isAbsolute(const char* path) {
 	// XXX: Is this robust?
 #ifdef _WIN32

@@ -296,7 +296,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->proxyRenderer.logger = NULL;
 #endif
 
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && !defined(__LIBRETRO__)
 	mDirectorySetInit(&core->dirs);
 #endif
 
@@ -308,7 +308,7 @@ static void _GBACoreDeinit(struct mCore* core) {
 	GBADestroy(core->board);
 	mappedMemoryFree(core->cpu, sizeof(struct ARMCore));
 	mappedMemoryFree(core->board, sizeof(struct GBA));
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && !defined(__LIBRETRO__)
 	mDirectorySetDeinit(&core->dirs);
 #endif
 #ifdef ENABLE_DEBUGGERS
@@ -782,6 +782,7 @@ static void _GBACoreReset(struct mCore* core) {
 				bios = NULL;
 			}
 		}
+#ifndef __LIBRETRO__
 		if (!found) {
 			char path[PATH_MAX];
 			mCoreConfigDirectory(path, PATH_MAX);
@@ -794,6 +795,7 @@ static void _GBACoreReset(struct mCore* core) {
 				bios = NULL;
 			}
 		}
+#endif
 		if (found && bios) {
 			GBALoadBIOS(gba, bios);
 		}

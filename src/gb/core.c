@@ -150,7 +150,7 @@ static bool _GBCoreInit(struct mCore* core) {
 	gbcore->keys = 0;
 	gb->keySource = &gbcore->keys;
 
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && !defined(__LIBRETRO__)
 	mDirectorySetInit(&core->dirs);
 #endif
 
@@ -162,7 +162,7 @@ static void _GBCoreDeinit(struct mCore* core) {
 	GBDestroy(core->board);
 	mappedMemoryFree(core->cpu, sizeof(struct SM83Core));
 	mappedMemoryFree(core->board, sizeof(struct GB));
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && !defined(__LIBRETRO__)
 	mDirectorySetDeinit(&core->dirs);
 #endif
 #ifdef ENABLE_DEBUGGERS
@@ -651,6 +651,7 @@ static void _GBCoreReset(struct mCore* core) {
 				bios = NULL;
 			}
 		}
+#ifndef __LIBRETRO__
 		if (!found) {
 			char path[PATH_MAX];
 			mCoreConfigDirectory(path, PATH_MAX);
@@ -679,6 +680,7 @@ static void _GBCoreReset(struct mCore* core) {
 				bios = NULL;
 			}
 		}
+#endif
 		if (found && bios) {
 			GBLoadBIOS(gb, bios);
 		}
