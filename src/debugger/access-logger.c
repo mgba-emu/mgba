@@ -71,7 +71,6 @@ static void _mDebuggerAccessLoggerEntered(struct mDebuggerModule* debugger, enum
 
 	mDebuggerAccessLogFlags flags = 0;
 	mDebuggerAccessLogFlagsEx flagsEx = 0;
-	int i;
 	switch (reason) {
 	case DEBUGGER_ENTER_WATCHPOINT:
 		switch (info->type.wp.accessSource) {
@@ -257,13 +256,18 @@ static bool _setupRegion(struct mDebuggerAccessLogger* logger, struct mDebuggerA
 		return false;
 	}
 
-	struct mWatchpoint wp = {
-		.segment = -1,
-		.minAddress = region->start,
-		.maxAddress = region->end,
-		.type = WATCHPOINT_RW,
-	};
-	logger->d.p->platform->setWatchpoint(logger->d.p->platform, &logger->d, &wp);
+	if (region->watchpoint < 0) {
+		struct mWatchpoint wp = {
+			.segment = -1,
+			.minAddress = region->start,
+			.maxAddress = region->end,
+			.type = WATCHPOINT_RW,
+		};
+		region->watchpoint = logger->d.p->platform->setWatchpoint(logger->d.p->platform, &logger->d, &wp);
+	}
+	if (region->watchpoint < 0) {
+		return false;
+	}
 	mDebuggerModuleSetNeedsCallback(&logger->d);
 	return true;
 }
@@ -307,7 +311,7 @@ static bool mDebuggerAccessLoggerLoad(struct mDebuggerAccessLogger* logger) {
 		LOAD_32LE(region->end, 0, &info->end);
 		LOAD_32LE(region->size, 0, &info->size);
 		LOAD_32LE(region->segmentStart, 0, &info->segmentStart);
-		if (!_setupRegion(logger, region, info)) {
+		if (!_mapRegion(logger, region, info)) {
 			mDebuggerAccessLogRegionListClear(&logger->regions);
 			return false;
 		}
@@ -350,6 +354,30 @@ bool mDebuggerAccessLoggerOpen(struct mDebuggerAccessLogger* logger, struct VFil
 		loaded = true;
 	}
 	return loaded;
+}
+
+void mDebuggerAccessLoggerStart(struct mDebuggerAccessLogger* logger) {
+	size_t i;
+	for (i = 0; i < logger->mapped->header.nRegions; ++i) {
+		struct mDebuggerAccessLogRegionInfo* info = &logger->mapped->regionInfo[i];
+		struct mDebuggerAccessLogRegion* region = mDebuggerAccessLogRegionListGetPointer(&logger->regions, i);
+		if (!_setupRegion(logger, region, info)) {
+			return;
+		}
+	}
+}
+
+void mDebuggerAccessLoggerStop(struct mDebuggerAccessLogger* logger) {
+	size_t i;
+	for (i = 0; i < logger->mapped->header.nRegions; ++i) {
+		struct mDebuggerAccessLogRegion* region = mDebuggerAccessLogRegionListGetPointer(&logger->regions, i);
+		if (region->watchpoint < 0) {
+			continue;
+		}
+		logger->d.p->platform->clearBreakpoint(logger->d.p->platform, region->watchpoint);
+		region->watchpoint = -1;
+	}
+	logger->d.needsCallback = false;
 }
 
 static int _mDebuggerAccessLoggerWatchMemoryBlock(struct mDebuggerAccessLogger* logger, const struct mCoreMemoryBlock* block, mDebuggerAccessLogRegionFlags flags) {
@@ -423,6 +451,7 @@ static int _mDebuggerAccessLoggerWatchMemoryBlock(struct mDebuggerAccessLogger* 
 	region->size = block->size;
 	region->segmentStart = block->segmentStart;
 	region->block = (mDebuggerAccessLogFlags*) ((uintptr_t) logger->backing + fileEnd);
+	region->watchpoint = -1;
 
 	struct mDebuggerAccessLogRegionInfo* info = &logger->mapped->regionInfo[id];
 	STORE_32LE(region->start, 0, &info->start);
@@ -451,6 +480,7 @@ bool mDebuggerAccessLoggerClose(struct mDebuggerAccessLogger* logger) {
 	if (!logger->backing) {
 		return true;
 	}
+	mDebuggerAccessLoggerStop(logger);
 	mDebuggerAccessLogRegionListClear(&logger->regions);
 	logger->backing->unmap(logger->backing, logger->mapped, logger->backing->size(logger->backing));
 	logger->mapped = NULL;

@@ -93,6 +93,7 @@ void MemoryAccessLogController::start(bool loadExisting, bool logExtra) {
 		LOG(QT, ERROR) << tr("Failed to open memory log file");
 		return;
 	}
+	mDebuggerAccessLoggerStart(&m_logger);
 
 	m_active = true;
 	emit loggingChanged(true);

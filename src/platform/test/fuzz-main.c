@@ -130,6 +130,7 @@ int main(int argc, char** argv) {
 		mDebuggerAccessLoggerInit(&accessLog);
 		mDebuggerAttachModule(&debugger, &accessLog.d);
 		mDebuggerAccessLoggerOpen(&accessLog, vf, O_RDWR);
+		mDebuggerAccessLoggerStart(&accessLog);
 		hasDebugger = true;
 	}
 
