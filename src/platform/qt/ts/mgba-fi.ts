@@ -6,22 +6,22 @@
     <message>
         <location filename="../utils.cpp" line="96"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance ROMit (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="122"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy ROMit(%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="127"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Kaikki ROMit (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="129"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 Video tallenteet (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -70,7 +70,8 @@ Game Boy Advance on Nintendo Co., Ltd rekisteröimä tuotemerkki.</translation>
         <location filename="../ApplicationUpdatePrompt.cpp" line="26"/>
         <source>An update to %1 is available.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Päivitys %1 varten on saatavilla.
+</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdatePrompt.cpp" line="38"/>
@@ -218,7 +219,7 @@ Latauksen koko: %3</translation>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Ääni prosessoria ei voinut käynnistää ilman tuloa</translation>
     </message>
 </context>
 <context>
@@ -261,27 +262,27 @@ Latauksen koko: %3</translation>
     <message>
         <location filename="../BattleChipView.ui" line="138"/>
         <source>Gate type</source>
-        <translation type="unfinished"></translation>
+        <translation>Porttityyppi</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="180"/>
         <source>Inserted</source>
-        <translation type="unfinished"></translation>
+        <translation>Liitetty</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Siru ID</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
         <source>Update Chip data</source>
-        <translation type="unfinished"></translation>
+        <translation>Päivitä sirun dataa</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
         <source>Show advanced</source>
-        <translation type="unfinished"></translation>
+        <translation>Näytä edistyneet</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="115"/>
