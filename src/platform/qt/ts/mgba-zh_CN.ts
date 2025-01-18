@@ -3409,7 +3409,7 @@ Download size: %3</source>
         <location filename="../MemoryAccessLogController.cpp" line="66"/>
         <location filename="../MemoryAccessLogController.cpp" line="76"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished">打开内存日志文件失败</translation>
+        <translation>打开内存日志文件失败</translation>
     </message>
 </context>
 <context>
@@ -4371,7 +4371,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>文件信息</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
@@ -4381,7 +4381,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
