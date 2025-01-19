@@ -65,7 +65,9 @@ void MemoryAccessLogController::updateRegion(const QString& internalName, bool c
 	if (!m_active) {
 		return;
 	}
-	m_regionMapping[internalName] = mDebuggerAccessLoggerWatchMemoryBlockName(&m_logger, internalName.toUtf8().constData(), activeFlags());
+	if (checked && !m_regionMapping.contains(internalName)) {
+		m_regionMapping[internalName] = mDebuggerAccessLoggerWatchMemoryBlockName(&m_logger, internalName.toUtf8().constData(), activeFlags());
+	}
 	emit regionMappingChanged(internalName, checked);
 }
 
@@ -74,6 +76,38 @@ void MemoryAccessLogController::setFile(const QString& path) {
 }
 
 void MemoryAccessLogController::start(bool loadExisting, bool logExtra) {
+	if (!m_loaded) {
+		load(loadExisting);
+	}
+	if (!m_loaded) {
+		return;
+	}
+	CoreController::Interrupter interrupter(m_controller);
+	mDebuggerAccessLoggerStart(&m_logger);
+	m_logExtra = logExtra;
+
+	m_active = true;
+	for (const auto& region : m_watchedRegions) {
+		m_regionMapping[region] = mDebuggerAccessLoggerWatchMemoryBlockName(&m_logger, region.toUtf8().constData(), activeFlags());
+	}
+	emit loggingChanged(true);
+}
+
+void MemoryAccessLogController::stop() {
+	if (!m_active) {
+		return;
+	}
+	CoreController::Interrupter interrupter(m_controller);
+	mDebuggerAccessLoggerStop(&m_logger);
+	emit loggingChanged(false);
+	interrupter.resume();
+	m_active = false;
+}
+
+void MemoryAccessLogController::load(bool loadExisting) {
+	if (m_loaded) {
+		return;
+	}
 	int flags = O_CREAT | O_RDWR;
 	if (!loadExisting) {
 		flags |= O_TRUNC;
@@ -83,7 +117,6 @@ void MemoryAccessLogController::start(bool loadExisting, bool logExtra) {
 		LOG(QT, ERROR) << tr("Failed to open memory log file");
 		return;
 	}
-	m_logExtra = logExtra;
 
 	mDebuggerAccessLoggerInit(&m_logger);
 	CoreController::Interrupter interrupter(m_controller);
@@ -93,26 +126,22 @@ void MemoryAccessLogController::start(bool loadExisting, bool logExtra) {
 		LOG(QT, ERROR) << tr("Failed to open memory log file");
 		return;
 	}
-	mDebuggerAccessLoggerStart(&m_logger);
-
-	m_active = true;
-	emit loggingChanged(true);
-	for (const auto& region : m_watchedRegions) {
-		m_regionMapping[region] = mDebuggerAccessLoggerWatchMemoryBlockName(&m_logger, region.toUtf8().constData(), activeFlags());
-	}
-	interrupter.resume();
+	emit loaded(true);
+	m_loaded = true;
 }
 
-void MemoryAccessLogController::stop() {
-	if (!m_active) {
+void MemoryAccessLogController::unload() {
+	if (m_active) {
+		stop();
+	}
+	if (m_active) {
 		return;
 	}
 	CoreController::Interrupter interrupter(m_controller);
 	m_controller->detachDebuggerModule(&m_logger.d);
 	mDebuggerAccessLoggerDeinit(&m_logger);
-	emit loggingChanged(false);
-	interrupter.resume();
-	m_active = false;
+	emit loaded(false);
+	m_loaded = false;
 }
 
 mDebuggerAccessLogRegionFlags MemoryAccessLogController::activeFlags() const {

@@ -49,6 +49,7 @@ public:
 
 	QString file() const { return m_path; }
 	bool active() const { return m_active; }
+	bool isLoaded() const { return m_loaded; }
 
 public slots:
 	void updateRegion(const QString& internalName, bool enable);
@@ -57,9 +58,13 @@ public slots:
 	void start(bool loadExisting, bool logExtra);
 	void stop();
 
+	void load(bool loadExisting);
+	void unload();
+
 	void exportFile(const QString& filename);
 
 signals:
+	void loaded(bool loaded);
 	void loggingChanged(bool active);
 	void regionMappingChanged(const QString& internalName, bool active);
 
@@ -71,6 +76,7 @@ private:
 	QHash<QString, int> m_regionMapping;
 	QVector<Region> m_regions;
 	struct mDebuggerAccessLogger m_logger{};
+	bool m_loaded = false;
 	bool m_active = false;
 	mDebuggerAccessLogRegion* m_cachedRegion = nullptr;
 
