@@ -241,6 +241,10 @@ endif()
 
 if(APPLE)
 	execute_process(COMMAND xcrun --show-sdk-version OUTPUT_VARIABLE MACOSX_SDK)
+	if(NOT MACOSX_SDK)
+		message(WARNING "Could not detect SDK version; defaulting to system version. Is SDKROOT set?")
+		set(MACOSX_SDK ${CMAKE_SYSTEM_VERSION})
+	endif()
 	add_definitions(-D_DARWIN_C_SOURCE)
 	list(APPEND OS_LIB "-framework Foundation")
 
