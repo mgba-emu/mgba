@@ -377,7 +377,7 @@ void mDebuggerAccessLoggerStop(struct mDebuggerAccessLogger* logger) {
 		logger->d.p->platform->clearBreakpoint(logger->d.p->platform, region->watchpoint);
 		region->watchpoint = -1;
 	}
-	logger->d.needsCallback = false;
+	mDebuggerModuleClearNeedsCallback(&logger->d);
 }
 
 static int _mDebuggerAccessLoggerWatchMemoryBlock(struct mDebuggerAccessLogger* logger, const struct mCoreMemoryBlock* block, mDebuggerAccessLogRegionFlags flags) {

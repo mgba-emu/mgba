@@ -320,3 +320,8 @@ void mDebuggerModuleSetNeedsCallback(struct mDebuggerModule* debugger) {
 	debugger->needsCallback = true;
 	mDebuggerUpdatePaused(debugger->p);
 }
+
+void mDebuggerModuleClearNeedsCallback(struct mDebuggerModule* debugger) {
+	debugger->needsCallback = false;
+	mDebuggerUpdatePaused(debugger->p);
+}
