@@ -1,11 +1,17 @@
 0.11.0: (Future)
 Features:
+ - Forwarder support for 3DS and Vita
+ - Custom border support
  - New option to lock the maximum frame size
+ - Memory access and information logging
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
  - Scripting: New `storage` API for saving data for a script, e.g. settings
+ - Scripting: New `image` and `canvas` APIs for drawing images and displaying on-screen
  - Scripting: Debugger integration to allow for breakpoints and watchpoints
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
+ - Initial support for bootleg GBA multicarts
  - Debugger: Add range watchpoints
+ - "Headless" frontend for running tests, automation, etc.
 Emulation fixes:
  - ARM: Add framework for coprocessor support
  - GB Serialize: Add missing Pocket Cam state to savestates
@@ -30,6 +36,7 @@ Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - Core: Improve rumble emulation by averaging state over entire frame (fixes mgba.io/i/3232)
  - Core: Add MD5 hashing for ROMs
+ - Core: Add support for specifying an arbitrary portable directory
  - GB: Prevent incompatible BIOSes from being used on differing models
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
@@ -48,7 +55,11 @@ Misc:
  - Qt: Show maker code and game version in ROM info
  - Qt: Show a dummy shader settings tab if shaders aren't supported
  - Qt: Allow passing multiple games on command line for multiplayer (closes mgba.io/i/3061)
+ - Qt: Support building against Qt 6
+ - Qt: Add shortcuts to increment fast forward speed (mgba.io/i/2903)
+ - Res: Port hq2x and OmniScale shaders from SameBoy
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
+ - Res: Update gba-colors shader (closes mgba.io/i/2976)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
  - Updater: Fix rewriting folders and files on Windows (fixes mgba.io/i/3384)
 
