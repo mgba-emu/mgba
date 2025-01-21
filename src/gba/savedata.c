@@ -372,11 +372,11 @@ uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address) {
 	if (savedata->command == FLASH_COMMAND_ID) {
 		if (savedata->type == GBA_SAVEDATA_FLASH512) {
 			if (address < 2) {
-				return FLASH_MFG_PANASONIC >> (address * 8);
+				return FLASH_PANASONIC_MN63F805MNP >> (address * 8);
 			}
 		} else if (savedata->type == GBA_SAVEDATA_FLASH1M) {
 			if (address < 2) {
-				return FLASH_MFG_SANYO >> (address * 8);
+				return FLASH_SANYO_LE26FV10N1TS >> (address * 8);
 			}
 		}
 	}
