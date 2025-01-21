@@ -1267,6 +1267,9 @@ void CoreController::finishFrame() {
 }
 
 void CoreController::updatePlayerSave() {
+	if (m_saveBlocked) {
+		return;
+	}
 	int savePlayerId = m_multiplayer->saveId(this);
 
 	QString saveSuffix;

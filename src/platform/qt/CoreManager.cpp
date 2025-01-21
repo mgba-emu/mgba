@@ -169,6 +169,7 @@ CoreController* CoreManager::loadBIOS(int platform, const QString& path) {
 	mDirectorySetAttachBase(&core->dirs, VDirOpen(bytes.constData()));
 
 	CoreController* cc = new CoreController(core);
+	cc->blockSave();
 	if (m_multiplayer) {
 		cc->setMultiplayerController(m_multiplayer);
 	}

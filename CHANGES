@@ -32,6 +32,7 @@ Other fixes:
  - mGUI: Load parent directory if last used directory is missing (fixes mgba.io/i/3379)
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Fix potential crash when configuring shortcuts
+ - Qt: Fix regression where loading BIOS creates a save file (fixes mgba.io/i/3359)
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - Core: Improve rumble emulation by averaging state over entire frame (fixes mgba.io/i/3232)
