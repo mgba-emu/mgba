@@ -12,6 +12,8 @@
 #include <mgba/core/log.h>
 #include <mgba/core/serialize.h>
 #include <mgba/core/version.h>
+#include <mgba-util/audio-buffer.h>
+#include <mgba-util/audio-resampler.h>
 #ifdef M_CORE_GB
 #include <mgba/gb/core.h>
 #include <mgba/internal/gb/gb.h>
@@ -41,6 +43,7 @@ FS_Archive sdmcArchive;
 
 #include "libretro_core_options.h"
 
+#define GBA_RESAMPLED_RATE 32768
 #define GB_SAMPLES 512
 /* An alpha factor of 1/180 is *somewhat* equivalent
  * to calculating the average for the last 180
@@ -82,9 +85,10 @@ static int32_t _readGyroZ(struct mRotationSource* source);
 
 static struct mCore* core;
 static mColor* outputBuffer = NULL;
+struct mAudioBuffer audioResampleBuffer;
+struct mAudioResampler audioResampler;
 static int16_t *audioSampleBuffer = NULL;
 static size_t audioSampleBufferSize;
-static float audioSamplesPerFrameAvg;
 static void* data;
 static size_t dataSize;
 static void* savedata;
@@ -118,6 +122,7 @@ static unsigned retroAudioBuffOccupancy;
 static bool retroAudioBuffUnderrun;
 static unsigned retroAudioLatency;
 static bool updateAudioLatency;
+static bool updateAudioRate;
 static bool deferredSetup = false;
 static bool useBitmasks = true;
 static bool envVarsUpdated;
@@ -1270,8 +1275,6 @@ static void _doDeferredSetup(void) {
 	if (!core->loadSave(core, save)) {
 		save->close(save);
 	}
-	stream.audioRateChanged = _audioRateChanged;
-    _audioRateChanged(NULL, 0);
 	deferredSetup = false;
 }
 
@@ -1351,7 +1354,16 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 
 	info->geometry.aspect_ratio = width / (double) height;
 	info->timing.fps = core->frequency(core) / (float) core->frameCycles(core);
-	info->timing.sample_rate = core->audioSampleRate(core);
+
+#ifdef M_CORE_GBA
+	if (core->platform(core) == mPLATFORM_GBA) {
+		info->timing.sample_rate = GBA_RESAMPLED_RATE;
+	} else {
+#endif
+		info->timing.sample_rate = core->audioSampleRate(core);
+#ifdef M_CORE_GBA
+	}
+#endif
 }
 
 void retro_init(void) {
@@ -1432,7 +1444,7 @@ void retro_init(void) {
 	stream.postAudioFrame = NULL;
 	stream.postAudioBuffer = NULL;
 	stream.postVideoFrame = NULL;
-	/*stream.audioRateChanged = _audioRateChanged;*/
+	stream.audioRateChanged = _audioRateChanged;
 
 	imageSource.startRequestImage = _startImage;
 	imageSource.stopRequestImage = _stopImage;
@@ -1449,6 +1461,7 @@ void retro_init(void) {
 	retroAudioBuffUnderrun  = false;
 	retroAudioLatency       = 0;
 	updateAudioLatency      = false;
+	updateAudioRate         = false;
 }
 
 void retro_deinit(void) {
@@ -1464,12 +1477,14 @@ void retro_deinit(void) {
 	_deinitPostProcessing();
 #endif
 
+	mAudioBufferDeinit(&audioResampleBuffer);
+	mAudioResamplerDeinit(&audioResampler);
+
 	if (audioSampleBuffer) {
 		free(audioSampleBuffer);
 		audioSampleBuffer = NULL;
 	}
 	audioSampleBufferSize = 0;
-	audioSamplesPerFrameAvg = 0.0f;
 
 	if (sensorStateCallback) {
 		sensorStateCallback(0, RETRO_SENSOR_ACCELEROMETER_DISABLE, EVENT_RATE);
@@ -1692,33 +1707,29 @@ void retro_run(void) {
 		videoCallback(NULL, width, height, VIDEO_WIDTH_MAX * sizeof(mColor));
 	}
 
+	/* Check whether audio sample rate has changed */
+	if (updateAudioRate) {
+		struct retro_system_av_info info;
+		retro_get_system_av_info(&info);
+		environCallback(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &info);
+		updateAudioRate = false;
+	}
+
 #ifdef M_CORE_GBA
 	if (core->platform(core) == mPLATFORM_GBA) {
-		struct mAudioBuffer *buffer = core->getAudioBuffer(core);
-		int samplesAvail            = mAudioBufferAvailable(buffer);
-		if (samplesAvail > 0) {
-			/* Update 'running average' of number of
-			 * samples per frame.
-			 * Note that this is not a true running
-			 * average, but just a leaky-integrator/
-			 * exponential moving average, used because
-			 * it is simple and fast (i.e. requires no
-			 * window of samples). */
-			audioSamplesPerFrameAvg = (SAMPLES_PER_FRAME_MOVING_AVG_ALPHA * (float)samplesAvail) +
-					((1.0f - SAMPLES_PER_FRAME_MOVING_AVG_ALPHA) * audioSamplesPerFrameAvg);
-			size_t samplesToRead = (size_t)(audioSamplesPerFrameAvg);
-			/* Resize audio output buffer, if required */
-			if (audioSampleBufferSize < (samplesToRead * 2)) {
-				audioSampleBufferSize = (samplesToRead * 2);
-				audioSampleBuffer     = realloc(audioSampleBuffer, audioSampleBufferSize * sizeof(int16_t));
+		struct mAudioBuffer *coreBuffer = core->getAudioBuffer(core);
+		unsigned coreSampleRate = core->audioSampleRate(core);
+		/* Resample generated audio */
+		mAudioResamplerSetSource(&audioResampler, coreBuffer, coreSampleRate, true);
+		mAudioResamplerProcess(&audioResampler);
+		/* Output resampled audio */
+		size_t samplesAvail = mAudioBufferAvailable(&audioResampleBuffer);
+		size_t samplesProduced = mAudioBufferRead(&audioResampleBuffer, audioSampleBuffer, samplesAvail);
+		if (samplesProduced > 0) {
+			if (audioLowPassEnabled) {
+				_audioLowPassFilter(audioSampleBuffer, samplesProduced);
 			}
-			int produced = mAudioBufferRead(buffer, audioSampleBuffer, samplesToRead);
-			if (produced > 0) {
-				if (audioLowPassEnabled) {
-					_audioLowPassFilter(audioSampleBuffer, produced);
-				}
-				audioCallback(audioSampleBuffer, (size_t)produced);
-			}
+			audioCallback(audioSampleBuffer, samplesProduced);
 		}
 	}
 #endif
@@ -2011,27 +2022,23 @@ bool retro_load_game(const struct retro_game_info* game) {
 	 * audio samples in retro_run() to achieve the
 	 * best possible frame pacing */
 	if (core->platform(core) == mPLATFORM_GBA) {
-		/* Set initial output audio buffer size
-		 * to nominal number of samples per frame.
-		 * Buffer will be resized as required in
-		 * retro_run(). */
-		size_t audioSamplesPerFrame = (size_t)((float) core->audioSampleRate(core) * (float) core->frameCycles(core) /
-			(float)core->frequency(core));
-		audioSampleBufferSize  = ceil(audioSamplesPerFrame) * 2;
+		/* Get nominal output samples per frame */
+		size_t audioSamplesPerFrame = (size_t)(
+				((float) GBA_RESAMPLED_RATE * (float) core->frameCycles(core) /
+						(float)core->frequency(core)) + 0.5f);
+		/* Round up to nearest multiple of 1024
+		 * > This is more than we need, but
+		 *   no harm in being safe... */
+		size_t audioBufferSize = ((audioSamplesPerFrame + 1024 - 1) / 1024) * 1024;
+		/* Initialise resample buffer */
+		mAudioBufferInit(&audioResampleBuffer, audioBufferSize, 2);
+		/* Initialise resampler */
+		mAudioResamplerInit(&audioResampler, mINTERPOLATOR_SINC);
+		mAudioResamplerSetDestination(&audioResampler, &audioResampleBuffer, GBA_RESAMPLED_RATE);
+		/* Initialise output sample buffer
+		 * > Multiply size by 2 (channels) */
+		audioSampleBufferSize = audioBufferSize * 2;
 		audioSampleBuffer = malloc(audioSampleBufferSize * sizeof(int16_t));
-		audioSamplesPerFrameAvg = (float) audioSamplesPerFrame;
-		/* Internal audio buffer size should be
-		 * audioSamplesPerFrame, but number of samples
-		 * actually generated varies slightly on a
-		 * frame-by-frame basis. We therefore allow
-		 * for some wriggle room by setting double
-		 * what we need (accounting for the hard
-		 * coded blip buffer limit of 0x4000). */
-		size_t internalAudioBufferSize = audioSamplesPerFrame * 2;
-		if (internalAudioBufferSize > 0x4000) {
-			internalAudioBufferSize = 0x4000;
-		}
-		core->setAudioBufferSize(core, internalAudioBufferSize);
 	} else
 #endif
 	{
@@ -2045,7 +2052,6 @@ bool retro_load_game(const struct retro_game_info* game) {
 		stream.postAudioBuffer = _postAudioBuffer;
 		audioSampleBufferSize = GB_SAMPLES * 2;
 		audioSampleBuffer = malloc(audioSampleBufferSize * sizeof(int16_t));
-		audioSamplesPerFrameAvg = GB_SAMPLES;
 		core->setAudioBufferSize(core, GB_SAMPLES);
 	}
 
@@ -2418,9 +2424,17 @@ static void _postAudioBuffer(struct mAVStream* stream, struct mAudioBuffer* buff
 
 static void _audioRateChanged(struct mAVStream* stream, unsigned rate) {
 	UNUSED(stream);
-	struct retro_system_av_info info;
-	retro_get_system_av_info(&info);
-	environCallback(RETRO_ENVIRONMENT_SET_SYSTEM_AV_INFO, &info);
+	/* For GBA content, audio is resampled
+	 * to a fixed output rate so internal
+	 * rate changes do not require frontend
+	 * notification */
+#ifdef M_CORE_GBA
+	if (core->platform(core) != mPLATFORM_GBA) {
+#endif
+		updateAudioRate = true;
+#ifdef M_CORE_GBA
+	}
+#endif
 }
 
 static void _setRumble(struct mRumbleIntegrator* rumble, float level) {
