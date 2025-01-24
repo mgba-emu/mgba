@@ -2471,7 +2471,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="893"/>
         <source>Condition</source>
-        <translation>Condition</translation>
+        <translation>狀態</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="897"/>
@@ -2938,7 +2938,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1418"/>
         <source>VRAM bank</source>
-        <translation>VRAM bank</translation>
+        <translation>顯存庫</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1440"/>
@@ -4547,17 +4547,17 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="472"/>
         <source>SRAM</source>
-        <translation type="unfinished">SRAM</translation>
+        <translation>SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="476"/>
         <source>%1 flash</source>
-        <translation type="unfinished">%1 flash</translation>
+        <translation>%1 快閃記憶體</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="480"/>
         <source>%1 EEPROM</source>
-        <translation type="unfinished">%1 EEPROM</translation>
+        <translation>%1 EEPROM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="486"/>
@@ -4567,62 +4567,62 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="495"/>
         <source>%1 SRAM + RTC</source>
-        <translation type="unfinished">%1 SRAM + RTC</translation>
+        <translation>%1 SRAM + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="497"/>
         <source>%1 SRAM</source>
-        <translation type="unfinished">%1 SRAM</translation>
+        <translation>%1 SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="502"/>
         <source>packed MBC2</source>
-        <translation type="unfinished">包裝 MBC2</translation>
+        <translation>包裝 MBC2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="504"/>
         <source>unpacked MBC2</source>
-        <translation type="unfinished">未包裝 MBC2</translation>
+        <translation>未包裝 MBC2</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="509"/>
         <source>MBC6 flash</source>
-        <translation type="unfinished">MBC6 flash</translation>
+        <translation>MBC6 快閃記憶體</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="511"/>
         <source>MBC6 combined SRAM + flash</source>
-        <translation type="unfinished">MBC6 合併 SRAM + flash</translation>
+        <translation>MBC6組合SRAM+快閃記憶體</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="513"/>
         <source>MBC6 SRAM</source>
-        <translation type="unfinished">MBC6 SRAM</translation>
+        <translation>MBC6 SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="517"/>
         <source>TAMA5</source>
-        <translation type="unfinished">TAMA5</translation>
+        <translation>TAMA5</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="529"/>
         <source>%1 (%2)</source>
-        <translation type="unfinished">%1 (%2)</translation>
+        <translation>%1 (%2)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="533"/>
         <source>%1 save state with embedded %2 save game</source>
-        <translation type="unfinished">%1 即時存檔與嵌入的 %2 遊戲存檔</translation>
+        <translation>%1 即時存檔與嵌入的 %2 遊戲存檔</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="536"/>
         <source>%1 SharkPort %2 save game</source>
-        <translation type="unfinished">%1 SharkPort %2 存檔</translation>
+        <translation>%1 SharkPort %2 存檔</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="539"/>
         <source>%1 GameShark Advance SP %2 save game</source>
-        <translation type="unfinished">%1 GameShark Advance SP %2 存檔</translation>
+        <translation>%1 GameShark Advance SP %2 存檔</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="659"/>
@@ -4632,23 +4632,23 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.ui" line="14"/>
         <source>Convert/Extract Save Game</source>
-        <translation type="unfinished">轉換/擷取存檔</translation>
+        <translation>轉換/擷取存檔</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="20"/>
         <source>Input file</source>
-        <translation type="unfinished">輸入檔案</translation>
+        <translation>輸入檔案</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="29"/>
         <location filename="../SaveConverter.ui" line="55"/>
         <source>Browse</source>
-        <translation type="unfinished">瀏覽</translation>
+        <translation>瀏覽</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="46"/>
         <source>Output file</source>
-        <translation type="unfinished">輸出檔案</translation>
+        <translation>輸出檔案</translation>
     </message>
 </context>
 <context>
@@ -4694,12 +4694,12 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="120"/>
         <source>&amp;Reset</source>
-        <translation type="unfinished">重新啟動 (&amp;R)</translation>
+        <translation>重新啟動 (&amp;R)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="125"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="61"/>
@@ -4722,27 +4722,27 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="20"/>
         <source>Sensors</source>
-        <translation type="unfinished">感測器</translation>
+        <translation>感測器</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="31"/>
         <source>Realtime clock</source>
-        <translation type="unfinished">實時計時器</translation>
+        <translation>實時計時器</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="37"/>
         <source>System time</source>
-        <translation type="unfinished">系統時間</translation>
+        <translation>系統時間</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="50"/>
         <source>Fixed time</source>
-        <translation type="unfinished">固定時間</translation>
+        <translation>固定時間</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="60"/>
         <source>Now</source>
-        <translation type="unfinished">現在</translation>
+        <translation>現在</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="67"/>
@@ -4757,49 +4757,49 @@ Download size: %3</source>
     <message>
         <location filename="../SensorView.ui" line="96"/>
         <source>Start time at</source>
-        <translation type="unfinished">開始時間於</translation>
+        <translation>開始時間於</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="126"/>
         <source>MM/dd/yy hh:mm:ss AP</source>
-        <translation type="unfinished">yy/MM/dd hh:mm:ss AP</translation>
+        <translation>yy/MM/dd hh:mm:ss AP</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="136"/>
         <source>Light sensor</source>
-        <translation type="unfinished">光感測器</translation>
+        <translation>光感測器</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="142"/>
         <source>Brightness</source>
-        <translation type="unfinished">亮度</translation>
+        <translation>亮度</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="179"/>
         <source>Tilt sensor</source>
-        <translation type="unfinished">傾斜感測器</translation>
+        <translation>傾斜感測器</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="187"/>
         <location filename="../SensorView.ui" line="276"/>
         <source>Set Y</source>
-        <translation type="unfinished">設定 Y</translation>
+        <translation>設定 Y 軸</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="197"/>
         <location filename="../SensorView.ui" line="286"/>
         <source>Set X</source>
-        <translation type="unfinished">設定 X</translation>
+        <translation>設定 X 軸</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="268"/>
         <source>Gyroscope</source>
-        <translation type="unfinished">陀螺儀</translation>
+        <translation>陀螺儀</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="296"/>
         <source>Sensitivity</source>
-        <translation type="unfinished">靈敏度</translation>
+        <translation>靈敏度</translation>
     </message>
 </context>
 <context>
@@ -4823,12 +4823,12 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="20"/>
         <source>Settings</source>
-        <translation type="unfinished">設定</translation>
+        <translation>設定</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="45"/>
         <source>Audio/Video</source>
-        <translation type="unfinished">音訊/視訊</translation>
+        <translation>音訊/視訊</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="50"/>
@@ -4838,135 +4838,135 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
         <source>Interface</source>
-        <translation type="unfinished">介面</translation>
+        <translation>介面</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
         <source>Update</source>
-        <translation type="unfinished">更新</translation>
+        <translation>更新</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
         <source>Emulation</source>
-        <translation type="unfinished">模擬</translation>
+        <translation>模擬器</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="70"/>
         <source>Enhancements</source>
-        <translation type="unfinished">增強</translation>
+        <translation>增強</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="75"/>
         <source>BIOS</source>
-        <translation type="unfinished">BIOS</translation>
+        <translation>BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="80"/>
         <source>Paths</source>
-        <translation type="unfinished">路徑</translation>
+        <translation>路徑</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="85"/>
         <source>Logging</source>
-        <translation type="unfinished">記錄</translation>
+        <translation>日誌記錄</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="90"/>
         <source>Game Boy</source>
-        <translation type="unfinished">Game Boy</translation>
+        <translation>Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="105"/>
         <location filename="../SettingsView.ui" line="532"/>
         <source>Audio</source>
-        <translation type="unfinished">音訊</translation>
+        <translation>音訊</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="111"/>
         <source>Audio driver:</source>
-        <translation type="unfinished">音訊驅動:</translation>
+        <translation>音訊驅動:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="128"/>
         <source>Audio buffer:</source>
-        <translation type="unfinished">音訊緩衝:</translation>
+        <translation>音訊緩衝:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="140"/>
         <location filename="../SettingsView.ui" line="162"/>
         <source>1536</source>
-        <translation type="unfinished">1536</translation>
+        <translation>1536</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="147"/>
         <source>512</source>
-        <translation type="unfinished">512</translation>
+        <translation>512</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="152"/>
         <source>768</source>
-        <translation type="unfinished">768</translation>
+        <translation>768</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="157"/>
         <source>1024</source>
-        <translation type="unfinished">1024</translation>
+        <translation>1024</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="167"/>
         <source>2048</source>
-        <translation type="unfinished">2048</translation>
+        <translation>2048</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="172"/>
         <source>3072</source>
-        <translation type="unfinished">3072</translation>
+        <translation>3072</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="177"/>
         <source>4096</source>
-        <translation type="unfinished">4096</translation>
+        <translation>4096</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="185"/>
         <source>samples</source>
-        <translation type="unfinished">取樣</translation>
+        <translation>取樣</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="194"/>
         <source>Sample rate:</source>
-        <translation type="unfinished">取樣率:</translation>
+        <translation>取樣率:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="206"/>
         <location filename="../SettingsView.ui" line="223"/>
         <source>44100</source>
-        <translation type="unfinished">44100</translation>
+        <translation>44100</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="213"/>
         <source>22050</source>
-        <translation type="unfinished">22050</translation>
+        <translation>22050</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="218"/>
         <source>32000</source>
-        <translation type="unfinished">32000</translation>
+        <translation>32000</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="228"/>
         <source>48000</source>
-        <translation type="unfinished">48000</translation>
+        <translation>48000</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="236"/>
         <source>Hz</source>
-        <translation type="unfinished">Hz</translation>
+        <translation>Hz</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="245"/>
         <source>Volume:</source>
-        <translation type="unfinished">音量:</translation>
+        <translation>音量:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="276"/>
@@ -4974,99 +4974,99 @@ Download size: %3</source>
         <location filename="../SettingsView.ui" line="804"/>
         <location filename="../SettingsView.ui" line="829"/>
         <source>Mute</source>
-        <translation type="unfinished">靜音</translation>
+        <translation>靜音</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="285"/>
         <source>Fast forward volume:</source>
-        <translation type="unfinished">快轉音量:</translation>
+        <translation>快轉音量:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="325"/>
         <source>Audio in multiplayer:</source>
-        <translation type="unfinished">多人遊戲音訊:</translation>
+        <translation>多人遊戲音訊:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="332"/>
         <source>All windows</source>
-        <translation type="unfinished">所有視窗</translation>
+        <translation>所有視窗</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="345"/>
         <source>Player 1 window only</source>
-        <translation type="unfinished">僅玩家 1 視窗</translation>
+        <translation>僅玩家 1 視窗</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="355"/>
         <source>Currently active player window</source>
-        <translation type="unfinished">現在使用中的玩家視窗</translation>
+        <translation>現在使用中的玩家視窗</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="382"/>
         <location filename="../SettingsView.ui" line="525"/>
         <source>Video</source>
-        <translation type="unfinished">視訊</translation>
+        <translation>視訊</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="388"/>
         <source>Display driver:</source>
-        <translation type="unfinished">顯示驅動:</translation>
+        <translation>顯示驅動:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="405"/>
         <source>Frameskip:</source>
-        <translation type="unfinished">跳過畫格:</translation>
+        <translation>跳過畫格:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="414"/>
         <source>Skip every</source>
-        <translation type="unfinished">每隔 N 畫格跳過</translation>
+        <translation>每隔 N 畫格跳過</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="424"/>
         <location filename="../SettingsView.ui" line="1192"/>
         <source>frames</source>
-        <translation type="unfinished">畫格</translation>
+        <translation>畫格</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="433"/>
         <source>Lock aspect ratio</source>
-        <translation type="unfinished">鎖定長寬比</translation>
+        <translation>鎖定長寬比</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="440"/>
         <source>Force integer scaling</source>
-        <translation type="unfinished">強制整數倍放大</translation>
+        <translation>強制整數倍放大</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="447"/>
         <source>Interframe blending</source>
-        <translation type="unfinished">畫格間混合</translation>
+        <translation>畫格間混合</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="454"/>
         <source>Bilinear filtering</source>
-        <translation type="unfinished">雙線性過濾</translation>
+        <translation>雙線性過濾</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="475"/>
         <source>FPS target:</source>
-        <translation type="unfinished">FPS 目標:</translation>
+        <translation>FPS 目標:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="500"/>
         <source>frames per second</source>
-        <translation type="unfinished">每秒畫格數 (FPS)</translation>
+        <translation>每秒畫格數 (FPS)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="509"/>
         <source>Native (59.7275)</source>
-        <translation type="unfinished">原生 (59.7275)</translation>
+        <translation>原生 (59.7275)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="516"/>
         <source>Sync:</source>
-        <translation type="unfinished">同步:</translation>
+        <translation>同步:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="548"/>
@@ -5096,60 +5096,60 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="609"/>
         <source>Save state extra data:</source>
-        <translation type="unfinished">儲存即時存檔額外資料:</translation>
+        <translation>儲存即時存檔額外資料:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="616"/>
         <location filename="../SettingsView.ui" line="660"/>
         <source>Screenshot</source>
-        <translation type="unfinished">螢幕截圖</translation>
+        <translation>螢幕截圖</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="626"/>
         <location filename="../SettingsView.ui" line="670"/>
         <source>Save game</source>
-        <translation type="unfinished">儲存遊戲</translation>
+        <translation>儲存遊戲</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="636"/>
         <location filename="../SettingsView.ui" line="677"/>
         <source>Cheat codes</source>
-        <translation type="unfinished">金手指代碼</translation>
+        <translation>金手指代碼</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="653"/>
         <source>Load state extra data:</source>
-        <translation type="unfinished">讀取即時存檔額外資料:</translation>
+        <translation>讀取即時存檔額外資料:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="691"/>
         <source>Enable Discord Rich Presence</source>
-        <translation type="unfinished">啟用 Discord Rich Presence</translation>
+        <translation>啟用 Discord Rich Presence</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="702"/>
         <source>Language</source>
-        <translation type="unfinished">語言</translation>
+        <translation>語言</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="719"/>
         <source>Library:</source>
-        <translation type="unfinished">資料庫:</translation>
+        <translation>資料庫:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="727"/>
         <source>List view</source>
-        <translation type="unfinished">清單顯示</translation>
+        <translation>清單顯示</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="732"/>
         <source>Tree view</source>
-        <translation type="unfinished">樹狀顯示</translation>
+        <translation>樹狀顯示</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="740"/>
         <source>Show when no game open</source>
-        <translation type="unfinished">無遊戲啟動時顯示</translation>
+        <translation>無遊戲啟動時顯示</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="750"/>
@@ -5159,53 +5159,53 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="757"/>
         <source>Clear cache</source>
-        <translation type="unfinished">清除快取</translation>
+        <translation>清除快取</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="771"/>
         <source>Allow opposing input directions</source>
-        <translation type="unfinished">允許相反方向輸入</translation>
+        <translation>允許相反方向輸入</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="778"/>
         <source>Suspend screensaver</source>
-        <translation type="unfinished">暫停螢幕保護程式</translation>
+        <translation>暫停螢幕保護程式</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="788"/>
         <source>When inactive:</source>
-        <translation type="unfinished">閒置時:</translation>
+        <translation>閒置時:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="797"/>
         <location filename="../SettingsView.ui" line="822"/>
         <source>Pause</source>
-        <translation type="unfinished">暫停</translation>
+        <translation>暫停</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="813"/>
         <source>When minimized:</source>
-        <translation type="unfinished">最小化時:</translation>
+        <translation>最小化時:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="845"/>
         <source>Dynamically update window title</source>
-        <translation type="unfinished">動態更新視窗標題</translation>
+        <translation>動態更新視窗標題</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="855"/>
         <source>Show FPS in title bar</source>
-        <translation type="unfinished">標題顯示 FPS</translation>
+        <translation>標題顯示 FPS</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="865"/>
         <source>Show filename instead of ROM name in title bar</source>
-        <translation type="unfinished">標題顯示檔案名稱而非 ROM 名稱</translation>
+        <translation>標題顯示檔案名稱而非 ROM 名稱</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="882"/>
         <source>Show OSD messages</source>
-        <translation type="unfinished">顯示 OSD 訊息</translation>
+        <translation>顯示 OSD 訊息</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="897"/>
@@ -5229,7 +5229,7 @@ Download size: %3</source>
         <location filename="../SettingsView.ui" line="1691"/>
         <location filename="../SettingsView.ui" line="1739"/>
         <source>Browse</source>
-        <translation type="unfinished">瀏覽</translation>
+        <translation>瀏覽</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="941"/>
@@ -5239,73 +5239,73 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="952"/>
         <source>Current channel:</source>
-        <translation type="unfinished">目前頻道:</translation>
+        <translation>目前頻道:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="966"/>
         <source>Current version:</source>
-        <translation type="unfinished">現在版本:</translation>
+        <translation>現在版本:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="990"/>
         <source>Update channel:</source>
-        <translation type="unfinished">更新頻道:</translation>
+        <translation>更新頻道:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1000"/>
         <source>Available version:</source>
-        <translation type="unfinished">可用版本:</translation>
+        <translation>可用版本:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1007"/>
         <source>(Unknown)</source>
-        <translation type="unfinished">(未知)</translation>
+        <translation>(未知)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1017"/>
         <source>Last checked:</source>
-        <translation type="unfinished">上次檢查時間:</translation>
+        <translation>上次檢查時間:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1038"/>
         <source>Automatically check on start</source>
-        <translation type="unfinished">啟動時自動檢查</translation>
+        <translation>啟動時自動檢查</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1045"/>
         <source>Check now</source>
-        <translation type="unfinished">現在檢查</translation>
+        <translation>現在檢查</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1059"/>
         <source>Fast forward speed:</source>
-        <translation type="unfinished">快轉速率:</translation>
+        <translation>快轉速率:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1090"/>
         <location filename="../SettingsView.ui" line="1133"/>
         <source>Unbounded</source>
-        <translation type="unfinished">無限制</translation>
+        <translation>無限制</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1102"/>
         <source>Fast forward (held) speed:</source>
-        <translation type="unfinished">快轉 (長按) 速率:</translation>
+        <translation>快轉 (長按) 速率:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1145"/>
         <source>Autofire interval:</source>
-        <translation type="unfinished">自動連射間隔:</translation>
+        <translation>自動連射間隔:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1169"/>
         <source>Enable rewind</source>
-        <translation type="unfinished">啟用倒轉</translation>
+        <translation>啟用倒轉</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1176"/>
         <source>Rewind history:</source>
-        <translation type="unfinished">倒轉歷史:</translation>
+        <translation>倒轉歷史:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1201"/>
@@ -5315,47 +5315,47 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1238"/>
         <source>Idle loops:</source>
-        <translation type="unfinished">閒置迴圈:</translation>
+        <translation>閒置迴圈:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1246"/>
         <source>Run all</source>
-        <translation type="unfinished">執行全部</translation>
+        <translation>執行全部</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1251"/>
         <source>Remove known</source>
-        <translation type="unfinished">移除已知</translation>
+        <translation>移除已知</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1256"/>
         <source>Detect and remove</source>
-        <translation type="unfinished">偵測並移除</translation>
+        <translation>偵測並移除</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1264"/>
         <source>Preload entire ROM into memory</source>
-        <translation type="unfinished">預先讀取整個 ROM 至記憶體中</translation>
+        <translation>預先讀取整個 ROM 至記憶體中</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1271"/>
         <source>Enable Game Boy Player features by default</source>
-        <translation type="unfinished">預設啟用 Game Boy Player 功能</translation>
+        <translation>預設啟用 Game Boy Player 功能</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1278"/>
         <source>Enable VBA bug compatibility in ROM hacks</source>
-        <translation type="unfinished">ROM 修改啟用 VBA 錯誤相容性</translation>
+        <translation>ROM 修改啟用 VBA 錯誤相容性</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1292"/>
         <source>Video renderer:</source>
-        <translation type="unfinished">渲染器:</translation>
+        <translation>渲染器:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1300"/>
         <source>Software</source>
-        <translation type="unfinished">軟體</translation>
+        <translation>軟體</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1305"/>
@@ -5366,52 +5366,52 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="1313"/>
         <source>OpenGL enhancements</source>
-        <translation type="unfinished">OpenGL 增強</translation>
+        <translation>OpenGL 增強</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1319"/>
         <source>High-resolution scale:</source>
-        <translation type="unfinished">高畫質比例:</translation>
+        <translation>高畫質比例:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1357"/>
         <source>(240×160)</source>
-        <translation type="unfinished">(240×160)</translation>
+        <translation>(240×160)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1386"/>
         <source>GB BIOS file:</source>
-        <translation type="unfinished">GB BIOS 檔案:</translation>
+        <translation>GB BIOS 檔案:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1414"/>
         <source>SGB BIOS file:</source>
-        <translation type="unfinished">SGB BIOS 檔案:</translation>
+        <translation>SGB BIOS 檔案:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1442"/>
         <source>GBC BIOS file:</source>
-        <translation type="unfinished">GBC BIOS 檔案:</translation>
+        <translation>GBC BIOS 檔案:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1470"/>
         <source>GBA BIOS file:</source>
-        <translation type="unfinished">GBA BIOS 檔案:</translation>
+        <translation>GBA BIOS 檔案:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1498"/>
         <source>Use BIOS file if found</source>
-        <translation type="unfinished">若存在，使用 BIOS 檔案</translation>
+        <translation>若存在，使用 BIOS 檔案</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1508"/>
         <source>Skip BIOS intro</source>
-        <translation type="unfinished">跳過 BIOS 開頭畫面</translation>
+        <translation>跳過 BIOS 開頭畫面</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1522"/>
         <source>Save games</source>
-        <translation type="unfinished">遊戲存檔</translation>
+        <translation>遊戲存檔</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1556"/>
@@ -5420,92 +5420,92 @@ Download size: %3</source>
         <location filename="../SettingsView.ui" line="1700"/>
         <location filename="../SettingsView.ui" line="1748"/>
         <source>Same directory as the ROM</source>
-        <translation type="unfinished">與 ROM 同目錄</translation>
+        <translation>與 ROM 同目錄</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1570"/>
         <source>Save states</source>
-        <translation type="unfinished">即時存檔</translation>
+        <translation>即時存檔</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1618"/>
         <source>Screenshots</source>
-        <translation type="unfinished">螢幕截圖</translation>
+        <translation>螢幕截圖</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1666"/>
         <source>Patches</source>
-        <translation type="unfinished">修補檔</translation>
+        <translation>修補檔</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1714"/>
         <source>Cheats</source>
-        <translation type="unfinished">金手指</translation>
+        <translation>金手指</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1771"/>
         <source>Log to file</source>
-        <translation type="unfinished">記錄到檔案</translation>
+        <translation>記錄到檔案</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1778"/>
         <source>Log to console</source>
-        <translation type="unfinished">記錄到控制台</translation>
+        <translation>記錄到控制台</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1792"/>
         <source>Select Log File</source>
-        <translation type="unfinished">選擇記錄檔</translation>
+        <translation>選擇記錄檔</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1805"/>
         <source>Models</source>
-        <translation type="unfinished">模型</translation>
+        <translation>模型</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1811"/>
         <source>GB only:</source>
-        <translation type="unfinished">僅 GB:</translation>
+        <translation>僅 GB:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1821"/>
         <source>SGB compatible:</source>
-        <translation type="unfinished">SGB 相容:</translation>
+        <translation>SGB 相容:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1831"/>
         <source>GBC only:</source>
-        <translation type="unfinished">僅 GBC:</translation>
+        <translation>僅 GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1841"/>
         <source>GBC compatible:</source>
-        <translation type="unfinished">GBC 相容:</translation>
+        <translation>GBC 相容:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1851"/>
         <source>SGB and GBC compatible:</source>
-        <translation type="unfinished">SGB &amp; GBC 相容:</translation>
+        <translation>SGB &amp; GBC 相容:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1861"/>
         <source>Super Game Boy borders</source>
-        <translation type="unfinished">Super Game Boy 邊界</translation>
+        <translation>Super Game Boy 邊界</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1871"/>
         <source>Game Boy palette</source>
-        <translation type="unfinished">Game Boy 調色盤</translation>
+        <translation>Game Boy 調色盤</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1877"/>
         <source>Preset:</source>
-        <translation type="unfinished">預設:</translation>
+        <translation>預設:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1887"/>
         <source>Default BG colors:</source>
-        <translation type="unfinished">預設 BG 顏色組:</translation>
+        <translation>預設背景色:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1974"/>
@@ -5520,37 +5520,37 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.ui" line="2157"/>
         <source>SGB color palette if available</source>
-        <translation type="unfinished">若可用，使用SGB調色盤</translation>
+        <translation>若可用，使用SGB調色盤</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2164"/>
         <source>Default color palette only</source>
-        <translation type="unfinished">僅使用預設調色盤</translation>
+        <translation>僅使用預設調色盤</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2171"/>
         <source>GBC color palette if available</source>
-        <translation type="unfinished">若可用，使用GBC調色盤</translation>
+        <translation>若可用，使用GBC調色盤</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2178"/>
         <source>SGB (preferred) or GBC color palette if available</source>
-        <translation type="unfinished">若可用，使用 SGB (優先) 或 GBC調色盤</translation>
+        <translation>若可用，使用 SGB (優先) 或 GBC調色盤</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2190"/>
         <source>Game Boy Camera</source>
-        <translation type="unfinished">Game Boy Camera</translation>
+        <translation>Game Boy Camera</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2196"/>
         <source>Driver:</source>
-        <translation type="unfinished">驅動:</translation>
+        <translation>驅動:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2213"/>
         <source>Source:</source>
-        <translation type="unfinished">來源:</translation>
+        <translation>來源:</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="183"/>
@@ -5612,12 +5612,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.cpp" line="481"/>
         <source>Select image</source>
-        <translation type="unfinished">選擇圖片</translation>
+        <translation>選擇圖片</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="481"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished">圖檔 (*.png *.jpg *.jpeg)</translation>
+        <translation>圖檔 (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="875"/>
@@ -5705,37 +5705,37 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.ui" line="14"/>
         <source>Shaders</source>
-        <translation type="unfinished">著色器</translation>
+        <translation>著色器</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="28"/>
         <source>Active Shader:</source>
-        <translation type="unfinished">使用中的著色器:</translation>
+        <translation>使用中的著色器:</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="35"/>
         <source>Name</source>
-        <translation type="unfinished">名稱</translation>
+        <translation>名稱</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="45"/>
         <source>Author</source>
-        <translation type="unfinished">作者</translation>
+        <translation>作者</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="62"/>
         <source>Description</source>
-        <translation type="unfinished">描述</translation>
+        <translation>描述</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="88"/>
         <source>Unload Shader</source>
-        <translation type="unfinished">卸除著色器</translation>
+        <translation>卸除著色器</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="95"/>
         <source>Load New Shader</source>
-        <translation type="unfinished">讀取新著色器</translation>
+        <translation>讀取新著色器</translation>
     </message>
 </context>
 <context>
@@ -5761,22 +5761,22 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShortcutView.ui" line="14"/>
         <source>Edit Shortcuts</source>
-        <translation type="unfinished">編輯快捷鍵</translation>
+        <translation>編輯快捷鍵</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="32"/>
         <source>Keyboard</source>
-        <translation type="unfinished">鍵盤</translation>
+        <translation>鍵盤</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="42"/>
         <source>Gamepad</source>
-        <translation type="unfinished">遊戲手把</translation>
+        <translation>遊戲手把</translation>
     </message>
     <message>
         <location filename="../ShortcutView.ui" line="49"/>
         <source>Clear</source>
-        <translation type="unfinished">清除</translation>
+        <translation>清除</translation>
     </message>
 </context>
 <context>
@@ -5800,32 +5800,32 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../TileView.ui" line="14"/>
         <source>Tiles</source>
-        <translation type="unfinished">圖塊</translation>
+        <translation>圖塊</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="33"/>
         <source>Palette</source>
-        <translation type="unfinished">調色盤</translation>
+        <translation>調色盤</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="40"/>
         <source>256 colors</source>
-        <translation type="unfinished">256 色</translation>
+        <translation>256 色</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="73"/>
         <source>Magnification</source>
-        <translation type="unfinished">放大</translation>
+        <translation>縮放率</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="96"/>
         <source>Tiles per row</source>
-        <translation type="unfinished">每行圖塊數</translation>
+        <translation>每行圖塊數</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="103"/>
         <source>Fit to window</source>
-        <translation type="unfinished">貼合視窗</translation>
+        <translation>貼合視窗</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="119"/>
@@ -5845,27 +5845,27 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../TileView.ui" line="145"/>
         <source>Both</source>
-        <translation type="unfinished">兩者</translation>
+        <translation>兩者</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="163"/>
         <source>Copy Selected</source>
-        <translation type="unfinished">複製選取</translation>
+        <translation>複製選取</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="170"/>
         <source>Export Selected</source>
-        <translation type="unfinished">匯出所選</translation>
+        <translation>匯出所選</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="177"/>
         <source>Copy All</source>
-        <translation type="unfinished">複製全部</translation>
+        <translation>複製全部</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="184"/>
         <source>Export All</source>
-        <translation type="unfinished">匯出全部</translation>
+        <translation>匯出全部</translation>
     </message>
 </context>
 <context>
@@ -5888,7 +5888,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.ui" line="20"/>
         <source>Record Video</source>
-        <translation type="unfinished">錄影</translation>
+        <translation>錄影</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="40"/>
@@ -5898,107 +5898,107 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.ui" line="56"/>
         <source>Stop</source>
-        <translation type="unfinished">停止</translation>
+        <translation>停止</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="69"/>
         <source>Select File</source>
-        <translation type="unfinished">選擇檔案</translation>
+        <translation>選擇檔案</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="101"/>
         <source>Presets</source>
-        <translation type="unfinished">預設</translation>
+        <translation>預設</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="109"/>
         <source>High &amp;Quality</source>
-        <translation type="unfinished">高畫質 (&amp;Q)</translation>
+        <translation>高畫質 (&amp;Q)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="119"/>
         <source>&amp;YouTube</source>
-        <translation type="unfinished">YouTube (&amp;Y)</translation>
+        <translation>YouTube (&amp;Y)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="129"/>
         <source>WebM</source>
-        <translation type="unfinished">WebM</translation>
+        <translation>WebM</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="139"/>
         <source>MP4</source>
-        <translation type="unfinished">MP4</translation>
+        <translation>MP4</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="146"/>
         <source>&amp;Lossless</source>
-        <translation type="unfinished">無損品質 (&amp;L)</translation>
+        <translation>無損品質 (&amp;L)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="167"/>
         <source>4K</source>
-        <translation type="unfinished">4K</translation>
+        <translation>4K</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="174"/>
         <source>&amp;1080p</source>
-        <translation type="unfinished">1080p (&amp;1)</translation>
+        <translation>1080p (&amp;1)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="184"/>
         <source>&amp;720p</source>
-        <translation type="unfinished">720p (&amp;7)</translation>
+        <translation>720p (&amp;7)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="194"/>
         <source>&amp;480p</source>
-        <translation type="unfinished">480p (&amp;4)</translation>
+        <translation>480p (&amp;4)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="207"/>
         <source>&amp;Native</source>
-        <translation type="unfinished">原始畫質 (&amp;N)</translation>
+        <translation>原始畫質 (&amp;N)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="240"/>
         <source>Format</source>
-        <translation type="unfinished">格式</translation>
+        <translation>格式</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="370"/>
         <source> Bitrate (kbps)</source>
-        <translation type="unfinished"> 位元率 (kbps)</translation>
+        <translation> 位元率 (kbps)</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="415"/>
         <source>ABR</source>
-        <translation type="unfinished">ABR</translation>
+        <translation>ABR</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="460"/>
         <source>VBR</source>
-        <translation type="unfinished">VBR</translation>
+        <translation>VBR</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="473"/>
         <source>CRF</source>
-        <translation type="unfinished">CRF</translation>
+        <translation>CRF</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="489"/>
         <source>Dimensions</source>
-        <translation type="unfinished">維度</translation>
+        <translation>維度</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="555"/>
         <source>Lock aspect ratio</source>
-        <translation type="unfinished">鎖定長寬比</translation>
+        <translation>鎖定長寬比</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="570"/>
         <source>Show advanced</source>
-        <translation type="unfinished">顯示進階選項</translation>
+        <translation>顯示進階選項</translation>
     </message>
 </context>
 <context>
@@ -6345,7 +6345,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1298"/>
         <source>Save games</source>
-        <translation type="unfinished">遊戲存檔</translation>
+        <translation>遊戲存檔</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1311"/>
@@ -6360,7 +6360,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1321"/>
         <source>Automatically determine</source>
-        <translation type="unfinished">自動判斷</translation>
+        <translation>自動判斷</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1325"/>
@@ -6505,7 +6505,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1530"/>
         <source>Game Boy Printer...</source>
-        <translation>Game Boy Printer...</translation>
+        <translation>Game Boy 印表機...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1539"/>
@@ -6828,17 +6828,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../utils.cpp" line="170"/>
         <source>Super (L)</source>
-        <translation type="unfinished">Super (L)</translation>
+        <translation>Super (L)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="172"/>
         <source>Super (R)</source>
-        <translation type="unfinished">Super (R)</translation>
+        <translation>Super (R)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="174"/>
         <source>Menu</source>
-        <translation type="unfinished">選單</translation>
+        <translation>選單</translation>
     </message>
 </context>
 <context>
