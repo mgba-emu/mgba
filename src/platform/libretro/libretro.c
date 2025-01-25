@@ -43,7 +43,7 @@ FS_Archive sdmcArchive;
 
 #include "libretro_core_options.h"
 
-#define GBA_RESAMPLED_RATE 32768
+#define GBA_RESAMPLED_RATE 65536
 #define GB_SAMPLES 512
 /* An alpha factor of 1/180 is *somewhat* equivalent
  * to calculating the average for the last 180
