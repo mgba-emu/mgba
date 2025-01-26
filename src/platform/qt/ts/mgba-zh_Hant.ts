@@ -4537,12 +4537,12 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="458"/>
         <source>little endian</source>
-        <translation type="unfinished">位元組由小到大</translation>
+        <translation>小端</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="461"/>
         <source>big endian</source>
-        <translation type="unfinished">位元組由大到小</translation>
+        <translation>大端</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="472"/>
