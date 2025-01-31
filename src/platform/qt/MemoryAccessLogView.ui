@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>385</width>
-    <height>380</height>
+    <width>311</width>
+    <height>387</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,31 +22,48 @@
      <property name="title">
       <string>Log file</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
+     <layout class="QGridLayout" name="gridLayout_2" columnstretch="3,1,2">
+      <item row="0" column="0" colspan="2">
        <widget class="QLineEdit" name="filename"/>
       </item>
-      <item row="0" column="1">
+      <item row="0" column="2">
        <widget class="QPushButton" name="browse">
         <property name="text">
          <string>Browse</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0" colspan="2">
+      <item row="1" column="0" colspan="3">
        <widget class="QCheckBox" name="logExtra">
         <property name="text">
          <string>Log additional information (uses 3× space)</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0" colspan="2">
+      <item row="2" column="0" colspan="3">
        <widget class="QCheckBox" name="loadExisting">
         <property name="text">
          <string>Load existing file if present</string>
         </property>
         <property name="checked">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QPushButton" name="load">
+        <property name="text">
+         <string>Load</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1" colspan="2">
+       <widget class="QPushButton" name="unload">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Unload</string>
         </property>
        </widget>
       </item>
@@ -124,9 +141,43 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>load</sender>
+   <signal>clicked()</signal>
+   <receiver>QGBA::MemoryAccessLogView</receiver>
+   <slot>load()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>81</x>
+     <y>152</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>192</x>
+     <y>189</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>unload</sender>
+   <signal>clicked()</signal>
+   <receiver>QGBA::MemoryAccessLogView</receiver>
+   <slot>unload()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>226</x>
+     <y>152</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>192</x>
+     <y>189</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>start()</slot>
   <slot>stop()</slot>
+  <slot>load()</slot>
+  <slot>unload()</slot>
  </slots>
 </ui>

@@ -8,6 +8,7 @@
 #include <QValidator>
 
 #include "MemoryModel.h"
+#include "MemoryAccessLogModel.h"
 
 #include "ui_MemoryView.h"
 
@@ -54,6 +55,10 @@ private:
 	std::shared_ptr<CoreController> m_controller;
 	QPair<uint32_t, uint32_t> m_region;
 	QPair<uint32_t, uint32_t> m_selection;
+
+#ifdef ENABLE_DEBUGGERS
+	MemoryAccessLogModel m_malModel;
+#endif
 };
 
 }

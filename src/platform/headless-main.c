@@ -75,6 +75,7 @@ int main(int argc, char * argv[]) {
 
 	bool cleanExit = false;
 	int uncleanExit = 1;
+	size_t i;
 
 	struct HeadlessOpts headlessOpts = { 3, NULL };
 	StringListInit(&headlessOpts.scripts, 0);
@@ -206,7 +207,6 @@ int main(int argc, char * argv[]) {
 
 		mScriptContextAttachCore(&scriptContext, core);
 
-		size_t i;
 		for (i = 0; i < StringListSize(&headlessOpts.scripts); ++i) {
 			if (!mScriptContextLoadFile(&scriptContext, *StringListGetPointer(&headlessOpts.scripts, i))) {
 				mLOG(STATUS, ERROR, "Failed to load script \"%s\"", *StringListGetPointer(&headlessOpts.scripts, i));
@@ -253,7 +253,6 @@ loadError:
 	}
 
 argsExit:
-	size_t i;
 	for (i = 0; i < StringListSize(&headlessOpts.scripts); ++i) {
 		free(*StringListGetPointer(&headlessOpts.scripts, i));
 	}

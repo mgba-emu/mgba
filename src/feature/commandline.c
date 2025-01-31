@@ -187,7 +187,21 @@ bool mArgumentsParse(struct mArguments* args, int argc, char* const* argv, struc
 	argc -= optind;
 	argv += optind;
 	if (argc > 1) {
-		return false;
+		for (j = 0; j < argc; ++j) {
+			bool handled = false;
+			for (i = 0; i < nSubparsers; ++i) {
+				if (!subparsers[i].handleExtraArg) {
+					continue;
+				}
+				handled = subparsers[i].handleExtraArg(&subparsers[i], argv[j]);
+				if (handled) {
+					break;
+				}
+			}
+			if (!handled) {
+				return false;
+			}
+		}
 	} else if (argc == 1) {
 		args->fname = strdup(argv[0]);
 	} else {
@@ -303,6 +317,7 @@ void mSubParserGraphicsInit(struct mSubParser* parser, struct mGraphicsOpts* opt
 	parser->apply = _applyGraphicsArgs;
 	parser->extraOptions = GRAPHICS_OPTIONS;
 	parser->longOptions = _graphicsLongOpts;
+	parser->handleExtraArg = NULL;
 	opts->multiplier = 0;
 	opts->fullscreen = false;
 }

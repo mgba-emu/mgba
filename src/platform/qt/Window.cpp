@@ -972,7 +972,12 @@ void Window::gameStopped() {
 #endif
 	}
 
-	m_controller.reset();
+	std::shared_ptr<CoreController> controller;
+	m_controller.swap(controller);
+	QTimer::singleShot(0, this, [controller]() {
+		// Destroy the controller after everything else has cleaned up
+		Q_UNUSED(controller);
+	});
 	detachWidget();
 	updateTitle();
 
@@ -1767,7 +1772,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "stateViews");
 
 #ifdef ENABLE_DEBUGGERS
-	addGameAction(tr("Log memory &accesses..."), "memoryAccessView", openControllerTView<MemoryAccessLogView>(), "tools");
+	addGameAction(tr("Log memory &accesses..."), "memoryAccessView", [this]() {
+		std::weak_ptr<MemoryAccessLogController> controller = m_controller->memoryAccessLogController();
+		MemoryAccessLogView* view = new MemoryAccessLogView(controller);
+		connect(m_controller.get(), &CoreController::stopping, view, &QWidget::close);
+		openView(view);
+	}, "tools");
 #endif
 
 #if defined(USE_FFMPEG) && defined(M_CORE_GBA)
@@ -2150,11 +2160,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	connect(m_controller.get(), &CoreController::started, this, &Window::gameStarted);
 	connect(m_controller.get(), &CoreController::started, GBAApp::app(), &GBAApp::suspendScreensaver);
 	connect(m_controller.get(), &CoreController::stopping, this, &Window::gameStopped);
-	{
-		connect(m_controller.get(), &CoreController::stopping, [this]() {
-			m_controller.reset();
-		});
-	}
 	connect(m_controller.get(), &CoreController::stopping, GBAApp::app(), &GBAApp::resumeScreensaver);
 	connect(m_controller.get(), &CoreController::paused, this, &Window::updateFrame);
 

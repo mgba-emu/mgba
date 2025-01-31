@@ -158,6 +158,7 @@ endif()
 
 include(FindFeature)
 include(FindFunction)
+include(DebugStrip)
 
 # Version information
 add_custom_target(${BINARY_NAME}-version-info ALL
@@ -240,6 +241,10 @@ endif()
 
 if(APPLE)
 	execute_process(COMMAND xcrun --show-sdk-version OUTPUT_VARIABLE MACOSX_SDK)
+	if(NOT MACOSX_SDK)
+		message(WARNING "Could not detect SDK version; defaulting to system version. Is SDKROOT set?")
+		set(MACOSX_SDK ${CMAKE_SYSTEM_VERSION})
+	endif()
 	add_definitions(-D_DARWIN_C_SOURCE)
 	list(APPEND OS_LIB "-framework Foundation")
 
@@ -948,6 +953,14 @@ if(NOT SKIP_LIBRARY)
 
 	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/mgba-util)
 
+	if(BUILD_STATIC)
+		# Some versions of CMake are remarkably bad about deduplicating this list,
+		# leading to issues with static linking. Let's do it manually.
+		list(REVERSE DEPENDENCY_LIB)
+		list(REMOVE_DUPLICATES DEPENDENCY_LIB)
+		list(REVERSE DEPENDENCY_LIB)
+	endif()
+
 	target_link_libraries(${BINARY_NAME} ${DEBUGGER_LIB} ${DEPENDENCY_LIB} ${OS_LIB})
 	install(TARGETS ${BINARY_NAME} LIBRARY DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME} NAMELINK_SKIP ARCHIVE DESTINATION ${LIBDIR} RUNTIME DESTINATION ${LIBDIR} COMPONENT lib${BINARY_NAME})
 	if(BUILD_SHARED)
@@ -1039,7 +1052,8 @@ endif()
 
 if(BUILD_HEADLESS)
 	add_executable(${BINARY_NAME}-headless ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/headless-main.c)
-	target_link_libraries(${BINARY_NAME}-headless ${BINARY_NAME})
+	target_link_libraries(${BINARY_NAME}-headless ${PLATFORM_LIBRARY} ${BINARY_NAME})
+	debug_strip(${BINARY_NAME}-headless)
 	target_compile_definitions(${BINARY_NAME}-headless PRIVATE "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 	install(TARGETS ${BINARY_NAME}-headless DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${BINARY_NAME}-headless)
 endif()
@@ -1220,7 +1234,6 @@ elseif(BUILD_STATIC)
 	cpack_add_component(lib${BINARY_NAME} GROUP dev)
 endif()
 cpack_add_component(${BINARY_NAME}-dev GROUP dev)
-cpack_add_component(${BINARY_NAME}-headless GROUP dev)
 
 if(3DS)
 	cpack_add_component(${BINARY_NAME}-3ds GROUP base)
@@ -1242,6 +1255,11 @@ if(SDL_FOUND)
 	cpack_add_component(${BINARY_NAME}-sdl GROUP sdl)
 endif()
 
+if(BUILD_HEADLESS)
+	cpack_add_component_group(headless PARENT_GROUP base)
+	cpack_add_component(${BINARY_NAME}-headless GROUP headless)
+endif()
+
 if(DISTBUILD)
 	cpack_add_component_group(debug PARENT_GROUP dev)
 	if(BUILD_SHARED AND NOT IS_EMBEDDED)
@@ -1255,6 +1273,9 @@ if(DISTBUILD)
 	endif()
 	if(SDL_FOUND)
 		cpack_add_component(${BINARY_NAME}-sdl-dbg GROUP debug)
+	endif()
+	if(BUILD_HEADLESS)
+		cpack_add_component(${BINARY_NAME}-headless-dbg GROUP debug)
 	endif()
 	if(WIN32)
 		cpack_add_component_group(installer PARENT_GROUP base)

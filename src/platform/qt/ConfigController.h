@@ -102,6 +102,7 @@ public:
 
 	const mArguments* args() const { return &m_args; }
 	const mGraphicsOpts* graphicsOpts() const { return &m_graphicsOpts; }
+	QStringList fileNames() const { return m_fnames; }
 	void usage(const char* arg0) const;
 
 	static const QString& configDir();
@@ -129,6 +130,7 @@ private:
 	mArguments m_args{};
 	mGraphicsOpts m_graphicsOpts{};
 	std::array<mSubParser, 2> m_subparsers;
+	QStringList m_fnames;
 	bool m_parsed = false;
 
 	QHash<QString, QVariant> m_argvOptions;

@@ -62,74 +62,102 @@ static void _mDebuggerAccessLoggerEntered(struct mDebuggerModule* debugger, enum
 		break;
 	}
 
-	size_t i;
-	for (i = 0; i < mDebuggerAccessLogRegionListSize(&logger->regions); ++i) {
-		struct mDebuggerAccessLogRegion* region = mDebuggerAccessLogRegionListGetPointer(&logger->regions, i);
-		if (info->address < region->start || info->address >= region->end) {
-			continue;
-		}
-		size_t offset = info->address - region->start;
-		if (info->segment > 0) {
-			uint32_t segmentSize = region->end - region->segmentStart;
-			offset %= segmentSize;
-			offset += segmentSize * info->segment;
-		}
+	size_t offset;
+	struct mDebuggerAccessLogRegion* region = mDebuggerAccessLoggerGetRegion(logger, info->address, info->segment, &offset);
+	if (!region) {
+		return;
+	}
+	offset &= -info->width;
 
-		if (offset >= region->size) {
-			continue;
-		}
-
-		offset &= -info->width;
-
-		int j;
-		switch (reason) {
-		case DEBUGGER_ENTER_WATCHPOINT:
-			for (j = 0; j < info->width; ++j) {
-				if (info->type.wp.accessType & WATCHPOINT_WRITE) {
-					region->block[offset + j] = mDebuggerAccessLogFlagsFillWrite(region->block[offset + j]);
-				}
-				if (info->type.wp.accessType & WATCHPOINT_READ) {
-					region->block[offset + j] = mDebuggerAccessLogFlagsFillRead(region->block[offset + j]);
-				}
-			}
-			switch (info->width) {
-			case 1:
-				region->block[offset] = mDebuggerAccessLogFlagsFillAccess8(region->block[offset]);
-				break;
-			case 2:
-				region->block[offset] = mDebuggerAccessLogFlagsFillAccess16(region->block[offset]);
-				region->block[offset + 1] = mDebuggerAccessLogFlagsFillAccess16(region->block[offset + 1]);
-				break;
-			case 4:
-				region->block[offset] = mDebuggerAccessLogFlagsFillAccess32(region->block[offset]);
-				region->block[offset + 1] = mDebuggerAccessLogFlagsFillAccess32(region->block[offset + 1]);
-				region->block[offset + 2] = mDebuggerAccessLogFlagsFillAccess32(region->block[offset + 2]);
-				region->block[offset + 3] = mDebuggerAccessLogFlagsFillAccess32(region->block[offset + 3]);
-				break;
-			case 8:
-				region->block[offset] = mDebuggerAccessLogFlagsFillAccess64(region->block[offset]);
-				region->block[offset + 1] = mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 1]);
-				region->block[offset + 2] = mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 2]);
-				region->block[offset + 3] = mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 3]);
-				region->block[offset + 4] = mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 4]);
-				region->block[offset + 5] = mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 5]);
-				region->block[offset + 6] = mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 6]);
-				region->block[offset + 7] = mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 7]);
-				break;
-			}
+	mDebuggerAccessLogFlags flags = 0;
+	mDebuggerAccessLogFlagsEx flagsEx = 0;
+	switch (reason) {
+	case DEBUGGER_ENTER_WATCHPOINT:
+		switch (info->type.wp.accessSource) {
+		case mACCESS_PROGRAM:
+			flagsEx = mDebuggerAccessLogFlagsExFillAccessProgram(flagsEx);
 			break;
-		case DEBUGGER_ENTER_ILLEGAL_OP:
-			region->block[offset] = mDebuggerAccessLogFlagsFillExecute(region->block[offset]);
+		case mACCESS_DMA:
+			flagsEx = mDebuggerAccessLogFlagsExFillAccessDMA(flagsEx);
+			break;
+		case mACCESS_SYSTEM:
+			flagsEx = mDebuggerAccessLogFlagsExFillAccessSystem(flagsEx);
+			break;
+		case mACCESS_DECOMPRESS:
+			flagsEx = mDebuggerAccessLogFlagsExFillAccessDecompress(flagsEx);
+			break;
+		case mACCESS_COPY:
+			flagsEx = mDebuggerAccessLogFlagsExFillAccessCopy(flagsEx);
+			break;
+		case mACCESS_UNKNOWN:
+			break;
+		}
+		if (info->type.wp.accessType & WATCHPOINT_WRITE) {
+			flags = mDebuggerAccessLogFlagsFillWrite(flags);
+		}
+		if (info->type.wp.accessType & WATCHPOINT_READ) {
+			flags = mDebuggerAccessLogFlagsFillRead(flags);
+		}
+		switch (info->width) {
+		case 1:
+			region->block[offset] = flags | mDebuggerAccessLogFlagsFillAccess8(region->block[offset]);
 			if (region->blockEx) {
-				uint16_t ex;
-				LOAD_16LE(ex, 0, &region->blockEx[offset]);
-				ex = mDebuggerAccessLogFlagsExFillErrorIllegalOpcode(ex);
-				STORE_16LE(ex, 0, &region->blockEx[offset]);
+				region->blockEx[offset] |= flagsEx;
 			}
 			break;
-		default:
+		case 2:
+			region->block[offset] = flags | mDebuggerAccessLogFlagsFillAccess16(region->block[offset]);
+			region->block[offset + 1] = flags | mDebuggerAccessLogFlagsFillAccess16(region->block[offset + 1]);
+			if (region->blockEx) {
+				region->blockEx[offset] |= flagsEx;
+				region->blockEx[offset + 1] |= flagsEx;
+			}
+			break;
+		case 4:
+			region->block[offset] = flags | mDebuggerAccessLogFlagsFillAccess32(region->block[offset]);
+			region->block[offset + 1] = flags | mDebuggerAccessLogFlagsFillAccess32(region->block[offset + 1]);
+			region->block[offset + 2] = flags | mDebuggerAccessLogFlagsFillAccess32(region->block[offset + 2]);
+			region->block[offset + 3] = flags | mDebuggerAccessLogFlagsFillAccess32(region->block[offset + 3]);
+			if (region->blockEx) {
+				region->blockEx[offset] |= flagsEx;
+				region->blockEx[offset + 1] |= flagsEx;
+				region->blockEx[offset + 2] |= flagsEx;
+				region->blockEx[offset + 3] |= flagsEx;
+			}
+			break;
+		case 8:
+			region->block[offset] = flags | mDebuggerAccessLogFlagsFillAccess64(region->block[offset]);
+			region->block[offset + 1] = flags | mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 1]);
+			region->block[offset + 2] = flags | mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 2]);
+			region->block[offset + 3] = flags | mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 3]);
+			region->block[offset + 4] = flags | mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 4]);
+			region->block[offset + 5] = flags | mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 5]);
+			region->block[offset + 6] = flags | mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 6]);
+			region->block[offset + 7] = flags | mDebuggerAccessLogFlagsFillAccess64(region->block[offset + 7]);
+			if (region->blockEx) {
+				region->blockEx[offset] |= flagsEx;
+				region->blockEx[offset + 1] |= flagsEx;
+				region->blockEx[offset + 2] |= flagsEx;
+				region->blockEx[offset + 3] |= flagsEx;
+				region->blockEx[offset + 4] |= flagsEx;
+				region->blockEx[offset + 5] |= flagsEx;
+				region->blockEx[offset + 6] |= flagsEx;
+				region->blockEx[offset + 7] |= flagsEx;
+			}
 			break;
 		}
+		break;
+	case DEBUGGER_ENTER_ILLEGAL_OP:
+		region->block[offset] = mDebuggerAccessLogFlagsFillExecute(region->block[offset]);
+		if (region->blockEx) {
+			uint16_t ex;
+			LOAD_16LE(ex, 0, &region->blockEx[offset]);
+			ex = mDebuggerAccessLogFlagsExFillErrorIllegalOpcode(ex);
+			STORE_16LE(ex, 0, &region->blockEx[offset]);
+		}
+		break;
+	default:
+		break;
 	}
 }
 
@@ -139,34 +167,22 @@ static void _mDebuggerAccessLoggerCallback(struct mDebuggerModule* debugger) {
 	struct mDebuggerInstructionInfo info;
 	logger->d.p->platform->nextInstructionInfo(logger->d.p->platform, &info);
 
+	size_t offset;
+	struct mDebuggerAccessLogRegion* region = mDebuggerAccessLoggerGetRegion(logger, info.address, info.segment, &offset);
+	if (!region) {
+		return;
+	}
+
 	size_t i;
-	for (i = 0; i < mDebuggerAccessLogRegionListSize(&logger->regions); ++i) {
-		struct mDebuggerAccessLogRegion* region = mDebuggerAccessLogRegionListGetPointer(&logger->regions, i);
-		if (info.address < region->start || info.address >= region->end) {
-			continue;
-		}
-		size_t offset = info.address - region->start;
-		if (info.segment > 0) {
-			uint32_t segmentSize = region->end - region->segmentStart;
-			offset %= segmentSize;
-			offset += segmentSize * info.segment;
-		}
+	for (i = 0; i < info.width; ++i) {
+		uint16_t ex = 0;
+		region->block[offset + i] = mDebuggerAccessLogFlagsFillExecute(region->block[offset + i]);
+		region->block[offset + i] |= info.flags[i];
 
-		if (offset >= region->size) {
-			continue;
-		}
-
-		size_t j;
-		for (j = 0; j < info.width; ++j) {
-			uint16_t ex = 0;
-			region->block[offset + j] = mDebuggerAccessLogFlagsFillExecute(region->block[offset + j]);
-			region->block[offset + j] |= info.flags[j];
-
-			if (region->blockEx) {
-				LOAD_16LE(ex, 0, &region->blockEx[offset + j]);
-				ex |= info.flagsEx[j];
-				STORE_16LE(ex, 0, &region->blockEx[offset + j]);
-			}
+		if (region->blockEx) {
+			LOAD_16LE(ex, 0, &region->blockEx[offset + i]);
+			ex |= info.flagsEx[i];
+			STORE_16LE(ex, 0, &region->blockEx[offset + i]);
 		}
 	}
 }
@@ -240,13 +256,18 @@ static bool _setupRegion(struct mDebuggerAccessLogger* logger, struct mDebuggerA
 		return false;
 	}
 
-	struct mWatchpoint wp = {
-		.segment = -1,
-		.minAddress = region->start,
-		.maxAddress = region->end,
-		.type = WATCHPOINT_RW,
-	};
-	logger->d.p->platform->setWatchpoint(logger->d.p->platform, &logger->d, &wp);
+	if (region->watchpoint < 0) {
+		struct mWatchpoint wp = {
+			.segment = -1,
+			.minAddress = region->start,
+			.maxAddress = region->end,
+			.type = WATCHPOINT_RW,
+		};
+		region->watchpoint = logger->d.p->platform->setWatchpoint(logger->d.p->platform, &logger->d, &wp);
+	}
+	if (region->watchpoint < 0) {
+		return false;
+	}
 	mDebuggerModuleSetNeedsCallback(&logger->d);
 	return true;
 }
@@ -290,7 +311,7 @@ static bool mDebuggerAccessLoggerLoad(struct mDebuggerAccessLogger* logger) {
 		LOAD_32LE(region->end, 0, &info->end);
 		LOAD_32LE(region->size, 0, &info->size);
 		LOAD_32LE(region->segmentStart, 0, &info->segmentStart);
-		if (!_setupRegion(logger, region, info)) {
+		if (!_mapRegion(logger, region, info)) {
 			mDebuggerAccessLogRegionListClear(&logger->regions);
 			return false;
 		}
@@ -333,6 +354,30 @@ bool mDebuggerAccessLoggerOpen(struct mDebuggerAccessLogger* logger, struct VFil
 		loaded = true;
 	}
 	return loaded;
+}
+
+void mDebuggerAccessLoggerStart(struct mDebuggerAccessLogger* logger) {
+	size_t i;
+	for (i = 0; i < logger->mapped->header.nRegions; ++i) {
+		struct mDebuggerAccessLogRegionInfo* info = &logger->mapped->regionInfo[i];
+		struct mDebuggerAccessLogRegion* region = mDebuggerAccessLogRegionListGetPointer(&logger->regions, i);
+		if (!_setupRegion(logger, region, info)) {
+			return;
+		}
+	}
+}
+
+void mDebuggerAccessLoggerStop(struct mDebuggerAccessLogger* logger) {
+	size_t i;
+	for (i = 0; i < logger->mapped->header.nRegions; ++i) {
+		struct mDebuggerAccessLogRegion* region = mDebuggerAccessLogRegionListGetPointer(&logger->regions, i);
+		if (region->watchpoint < 0) {
+			continue;
+		}
+		logger->d.p->platform->clearBreakpoint(logger->d.p->platform, region->watchpoint);
+		region->watchpoint = -1;
+	}
+	mDebuggerModuleClearNeedsCallback(&logger->d);
 }
 
 static int _mDebuggerAccessLoggerWatchMemoryBlock(struct mDebuggerAccessLogger* logger, const struct mCoreMemoryBlock* block, mDebuggerAccessLogRegionFlags flags) {
@@ -406,6 +451,7 @@ static int _mDebuggerAccessLoggerWatchMemoryBlock(struct mDebuggerAccessLogger* 
 	region->size = block->size;
 	region->segmentStart = block->segmentStart;
 	region->block = (mDebuggerAccessLogFlags*) ((uintptr_t) logger->backing + fileEnd);
+	region->watchpoint = -1;
 
 	struct mDebuggerAccessLogRegionInfo* info = &logger->mapped->regionInfo[id];
 	STORE_32LE(region->start, 0, &info->start);
@@ -434,6 +480,7 @@ bool mDebuggerAccessLoggerClose(struct mDebuggerAccessLogger* logger) {
 	if (!logger->backing) {
 		return true;
 	}
+	mDebuggerAccessLoggerStop(logger);
 	mDebuggerAccessLogRegionListClear(&logger->regions);
 	logger->backing->unmap(logger->backing, logger->mapped, logger->backing->size(logger->backing));
 	logger->mapped = NULL;
@@ -517,4 +564,29 @@ bool mDebuggerAccessLoggerCreateShadowFile(struct mDebuggerAccessLogger* logger,
 		}
 	}
 	return true;
+}
+
+struct mDebuggerAccessLogRegion* mDebuggerAccessLoggerGetRegion(struct mDebuggerAccessLogger* logger, uint32_t address, int segment, size_t* offsetOut) {
+	size_t i;
+	for (i = 0; i < mDebuggerAccessLogRegionListSize(&logger->regions); ++i) {
+		struct mDebuggerAccessLogRegion* region = mDebuggerAccessLogRegionListGetPointer(&logger->regions, i);
+		if (address < region->start || address >= region->end) {
+			continue;
+		}
+		size_t offset = address - region->start;
+		if (segment > 0) {
+			uint32_t segmentSize = region->end - region->segmentStart;
+			offset %= segmentSize;
+			offset += segmentSize * segment;
+		}
+
+		if (offset >= region->size) {
+			continue;
+		}
+		if (offsetOut) {
+			*offsetOut = offset;
+		}
+		return region;
+	}
+	return NULL;
 }

@@ -8,6 +8,7 @@
 #include "ConfigController.h"
 #include "InputController.h"
 #include "LogController.h"
+#include "MemoryAccessLogController.h"
 #include "MultiplayerController.h"
 #include "Override.h"
 
@@ -459,6 +460,15 @@ void CoreController::setLogger(LogController* logger) {
 	connect(this, &CoreController::logPosted, m_log, &LogController::postLog);
 }
 
+#ifdef ENABLE_DEBUGGERS
+std::weak_ptr<MemoryAccessLogController> CoreController::memoryAccessLogController() {
+	if (!m_malController) {
+		m_malController = std::make_shared<MemoryAccessLogController>(this);
+	}
+	return m_malController;
+}
+#endif
+
 void CoreController::start() {
 	QSize size(screenDimensions());
 	m_activeBuffer.resize(size.width() * size.height() * sizeof(mColor));
@@ -479,6 +489,10 @@ void CoreController::start() {
 void CoreController::stop() {
 	setSync(false);
 #ifdef ENABLE_DEBUGGERS
+	if (m_malController) {
+		m_malController->stop();
+	}
+
 	detachDebugger();
 #endif
 	setPaused(false);
@@ -1253,6 +1267,9 @@ void CoreController::finishFrame() {
 }
 
 void CoreController::updatePlayerSave() {
+	if (m_saveBlocked) {
+		return;
+	}
 	int savePlayerId = m_multiplayer->saveId(this);
 
 	QString saveSuffix;

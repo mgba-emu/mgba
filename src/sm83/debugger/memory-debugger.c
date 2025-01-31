@@ -61,6 +61,7 @@ static void _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, e
 			info.type.wp.newValue = newValue;
 			info.type.wp.watchType = watchpoint->type;
 			info.type.wp.accessType = type;
+			info.type.wp.accessSource = debugger->cpu->memory.accessSource;
 			info.address = address;
 			info.segment = debugger->originalMemory.currentSegment(debugger->cpu, address);
 			info.width = 1;
