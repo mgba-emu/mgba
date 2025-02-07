@@ -60,7 +60,7 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 		{ tr("Enable Window 1"), 14 },
 		{ tr("Enable OBJ Window"), 15 },
 	});
-	// 0x04000002: Green swap
+	// 0x04000002: STEREOCNT
 	regGBA.append({
 		{ tr("Swap green components"), 0 },
 	});

@@ -128,7 +128,7 @@ void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* 
 	video->renderer->init(video->renderer);
 	video->renderer->reset(video->renderer);
 	renderer->writeVideoRegister(renderer, GBA_REG_DISPCNT, video->p->memory.io[GBA_REG(DISPCNT)]);
-	renderer->writeVideoRegister(renderer, GBA_REG_GREENSWP, video->p->memory.io[GBA_REG(GREENSWP)]);
+	renderer->writeVideoRegister(renderer, GBA_REG_STEREOCNT, video->p->memory.io[GBA_REG(STEREOCNT)]);
 	int address;
 	for (address = GBA_REG_BG0CNT; address < 0x56; address += 2) {
 		if (address == 0x4E) {

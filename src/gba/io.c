@@ -934,7 +934,7 @@ uint16_t GBAIORead(struct GBA* gba, uint32_t address) {
 		}
 		// Fall through
 	case GBA_REG_DISPCNT:
-	case GBA_REG_GREENSWP:
+	case GBA_REG_STEREOCNT:
 	case GBA_REG_DISPSTAT:
 	case GBA_REG_VCOUNT:
 	case GBA_REG_BG0CNT:
