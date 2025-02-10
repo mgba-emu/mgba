@@ -109,7 +109,7 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 		.nStates = 2
 	};
 	*GUIMenuItemListAppend(&menu.items) = (struct GUIMenuItem) {
-		.title = "Fast forward mute",
+		.title = "Mute while fast forwarding",
 		.data = GUI_V_S("fastForwardMute"),
 		.submenu = 0,
 		.state = false,
