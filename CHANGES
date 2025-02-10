@@ -4,6 +4,7 @@ Features:
  - Custom border support
  - New option to lock the maximum frame size
  - Memory access and information logging
+ - 3DS: Add faster "loose" sync mode, default enabled
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
  - Scripting: New `storage` API for saving data for a script, e.g. settings
  - Scripting: New `image` and `canvas` APIs for drawing images and displaying on-screen
