@@ -341,7 +341,7 @@ void mGUIShowConfig(struct mGUIRunner* runner, struct GUIMenuItem* extra, size_t
 						mCoreConfigSetUIntValue(&runner->config, item->data.v.s, v->v.u);
 						break;
 					case GUI_VARIANT_INT:
-						mCoreConfigSetUIntValue(&runner->config, item->data.v.s, v->v.i);
+						mCoreConfigSetIntValue(&runner->config, item->data.v.s, v->v.i);
 						break;
 					case GUI_VARIANT_FLOAT:
 						mCoreConfigSetFloatValue(&runner->config, item->data.v.s, v->v.f);
