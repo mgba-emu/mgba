@@ -747,7 +747,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("patchPath", m_ui.patchPath);
 	loadSetting("cheatsPath", m_ui.cheatsPath);
 	loadSetting("showLibrary", m_ui.showLibrary);
-	loadSetting("preload", m_ui.preload);
+	loadSetting("preload", m_ui.preload, true);
 	loadSetting("showFps", m_ui.showFps, true);
 	loadSetting("cheatAutoload", m_ui.cheatAutoload, true);
 	loadSetting("cheatAutosave", m_ui.cheatAutosave, true);

@@ -60,6 +60,7 @@ Misc:
  - Qt: Allow passing multiple games on command line for multiplayer (closes mgba.io/i/3061)
  - Qt: Support building against Qt 6
  - Qt: Add shortcuts to increment fast forward speed (mgba.io/i/2903)
+ - Qt: Enable ROM preloading by default
  - Res: Port hq2x and OmniScale shaders from SameBoy
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
  - Res: Update gba-colors shader (closes mgba.io/i/2976)

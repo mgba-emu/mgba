@@ -263,7 +263,7 @@ private:
 	QString m_savePath;
 
 	bool m_patched = false;
-	bool m_preload = false;
+	bool m_preload = true;
 	bool m_saveBlocked = false;
 
 	uint32_t m_crc32;

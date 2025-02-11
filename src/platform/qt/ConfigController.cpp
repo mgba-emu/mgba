@@ -149,6 +149,7 @@ ConfigController::ConfigController(QObject* parent)
 	mCoreConfigSetDefaultIntValue(&m_config, "sgb.borders", 1);
 	mCoreConfigSetDefaultIntValue(&m_config, "gb.colors", GB_COLORS_CGB);
 #endif
+	mCoreConfigSetDefaultIntValue(&m_config, "preload", true);
 	mCoreConfigMap(&m_config, &m_opts);
 
 	mSubParserGraphicsInit(&m_subparsers[0], &m_graphicsOpts);
