@@ -9,7 +9,7 @@ Features:
  - Scripting: New `storage` API for saving data for a script, e.g. settings
  - Scripting: New `image` and `canvas` APIs for drawing images and displaying on-screen
  - Scripting: Debugger integration to allow for breakpoints and watchpoints
- - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
+ - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81, Sintax
  - Initial support for bootleg GBA multicarts
  - Debugger: Add range watchpoints
  - "Headless" frontend for running tests, automation, etc.

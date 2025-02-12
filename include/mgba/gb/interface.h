@@ -50,6 +50,7 @@ enum GBMemoryBankControllerType {
 	GB_UNL_GGB81 = 0x223,
 	GB_UNL_SACHEN_MMC1 = 0x230,
 	GB_UNL_SACHEN_MMC2 = 0x231,
+	GB_UNL_SINTAX = 0x240,
 };
 
 enum GBVideoLayer {

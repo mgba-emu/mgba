@@ -840,6 +840,12 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 		state->memory.sachen.unmaskedBank = memory->mbcState.sachen.unmaskedBank;
 		state->memory.sachen.baseBank = memory->mbcState.sachen.baseBank;
 		break;
+	case GB_UNL_SINTAX:
+		state->memory.sintax.mode = memory->mbcState.sintax.mode;
+		memcpy(state->memory.sintax.xorValues, memory->mbcState.sintax.xorValues, sizeof(state->memory.sintax.xorValues));
+		state->memory.sintax.bankNo = memory->mbcState.sintax.bankNo;
+		state->memory.sintax.romBankXor = memory->mbcState.sintax.romBankXor;
+		break;
 	default:
 		break;
 	}
@@ -1007,6 +1013,12 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		memory->mbcState.sachen.unmaskedBank = state->memory.sachen.unmaskedBank;
 		memory->mbcState.sachen.baseBank = state->memory.sachen.baseBank;
 		GBMBCSwitchBank0(gb, memory->mbcState.sachen.baseBank & memory->mbcState.sachen.mask);
+		break;
+	case GB_UNL_SINTAX:
+		memory->mbcState.sintax.mode = state->memory.sintax.mode;
+		memcpy(memory->mbcState.sintax.xorValues, state->memory.sintax.xorValues, sizeof(memory->mbcState.sintax.xorValues));
+		memory->mbcState.sintax.bankNo = state->memory.sintax.bankNo;
+		memory->mbcState.sintax.romBankXor = state->memory.sintax.romBankXor;
 		break;
 	default:
 		break;

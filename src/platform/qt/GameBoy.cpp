@@ -44,6 +44,7 @@ static const QList<GBMemoryBankControllerType> s_mbcList{
 	GB_UNL_LI_CHENG,
 	GB_UNL_SACHEN_MMC1,
 	GB_UNL_SACHEN_MMC2,
+	GB_UNL_SINTAX,
 };
 
 static QMap<GBModel, QString> s_gbModelNames;
@@ -102,6 +103,7 @@ QString GameBoy::mbcName(GBMemoryBankControllerType mbc) {
 		s_mbcNames[GB_UNL_LI_CHENG] = tr("Li Cheng");
 		s_mbcNames[GB_UNL_SACHEN_MMC1] = tr("Sachen (MMC1)");
 		s_mbcNames[GB_UNL_SACHEN_MMC2] = tr("Sachen (MMC2)");
+		s_mbcNames[GB_UNL_SINTAX] = tr("Sintax");
 	}
 
 	return s_mbcNames[mbc];
