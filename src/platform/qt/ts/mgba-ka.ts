@@ -29,7 +29,7 @@
     <message>
         <location filename="../AboutScreen.ui" line="14"/>
         <source>About</source>
-        <translation type="unfinished"></translation>
+        <translation>შესახებ</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
@@ -121,7 +121,7 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>უცნობი</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="236"/>
@@ -139,7 +139,7 @@ Download size: %3</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation type="unfinished"></translation>
+        <translation>ჩატვირთვა...</translation>
     </message>
 </context>
 <context>
@@ -157,29 +157,29 @@ Download size: %3</source>
     <message>
         <location filename="../AssetTile.ui" line="89"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>მისამართი</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="138"/>
         <source>Red</source>
-        <translation type="unfinished"></translation>
+        <translation>წითელი</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="145"/>
         <source>Green</source>
-        <translation type="unfinished"></translation>
+        <translation>მწვანე</translation>
     </message>
     <message>
         <location filename="../AssetTile.ui" line="152"/>
         <source>Blue</source>
-        <translation type="unfinished"></translation>
+        <translation>ლურჯი</translation>
     </message>
     <message>
         <location filename="../AssetTile.cpp" line="143"/>
         <location filename="../AssetTile.cpp" line="144"/>
         <location filename="../AssetTile.cpp" line="145"/>
         <source>0x%0 (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>0x%0 (%1)</translation>
     </message>
 </context>
 <context>
@@ -231,27 +231,27 @@ Download size: %3</source>
     <message>
         <location filename="../BattleChipView.ui" line="76"/>
         <source>Insert</source>
-        <translation type="unfinished"></translation>
+        <translation>ჩასმა</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="87"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>შენახვა</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="94"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>ჩატვირთვა</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="114"/>
         <source>Add</source>
-        <translation type="unfinished"></translation>
+        <translation>დამატება</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="121"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>წაშლა</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="138"/>
@@ -333,7 +333,7 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
         <source>Remove</source>
-        <translation type="unfinished"></translation>
+        <translation>წაშლა</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="93"/>
@@ -348,12 +348,12 @@ Download size: %3</source>
     <message>
         <location filename="../CheatsView.ui" line="53"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>შენახვა</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="46"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>ჩატვირთვა</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="86"/>
@@ -499,17 +499,17 @@ Download size: %3</source>
     <message>
         <location filename="../DolphinConnector.ui" line="55"/>
         <source>Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>დაკავშირება</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="68"/>
         <source>Disconnect</source>
-        <translation type="unfinished"></translation>
+        <translation>გათიშვა</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="78"/>
         <source>Close</source>
-        <translation type="unfinished"></translation>
+        <translation>დახურვა</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.ui" line="90"/>
@@ -532,12 +532,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="83"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="85"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
 </context>
 <context>
@@ -545,7 +545,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="29"/>
         <source>Icon</source>
-        <translation type="unfinished"></translation>
+        <translation>ხატულა</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="30"/>
@@ -581,7 +581,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="20"/>
         <source>Files</source>
-        <translation type="unfinished"></translation>
+        <translation>ფაილები</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="26"/>
@@ -628,7 +628,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="135"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>სისტემა</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="141"/>
@@ -751,12 +751,12 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.ui" line="145"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>გატანა</translation>
     </message>
     <message>
         <location filename="../FrameView.ui" line="152"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>ხელახლა ჩართვა</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="591"/>
@@ -771,7 +771,7 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.cpp" line="613"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>არცერთი</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="615"/>
@@ -806,7 +806,7 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.cpp" line="638"/>
         <source>%1 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2</translation>
     </message>
 </context>
 <context>
@@ -832,7 +832,7 @@ Download size: %3</source>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="92"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>განახლება</translation>
     </message>
     <message>
         <location filename="../GBAKeyEditor.cpp" line="102"/>
@@ -885,12 +885,12 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="124"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>გაჩერება</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="137"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>დაწყება</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="145"/>
@@ -918,12 +918,12 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.ui" line="51"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>დაწყება</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="67"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>გაჩერება</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="93"/>
@@ -933,17 +933,17 @@ Download size: %3</source>
     <message>
         <location filename="../GIFView.ui" line="112"/>
         <source>APNG</source>
-        <translation type="unfinished"></translation>
+        <translation>APNG</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="122"/>
         <source>GIF</source>
-        <translation type="unfinished"></translation>
+        <translation>GIF</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="135"/>
         <source>WebP</source>
-        <translation type="unfinished"></translation>
+        <translation>WebP</translation>
     </message>
     <message>
         <location filename="../GIFView.ui" line="145"/>
@@ -1017,67 +1017,67 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
         <source>MBC1</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="82"/>
         <source>MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="83"/>
         <source>MBC3</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="84"/>
         <source>MBC3 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC3 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="85"/>
         <source>MBC5</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC5</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
         <source>MBC5 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC5 + Rumble</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
         <source>MBC6</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC6</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
         <source>MBC7 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC7 (Tilt)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
         <source>MMM01</source>
-        <translation type="unfinished"></translation>
+        <translation>MMM01</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>HuC-1</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-1</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="91"/>
         <source>HuC-3</source>
-        <translation type="unfinished"></translation>
+        <translation>HuC-3</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="92"/>
         <source>Pocket Cam</source>
-        <translation type="unfinished"></translation>
+        <translation>Pocket Cam</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="93"/>
         <source>TAMA5</source>
-        <translation type="unfinished"></translation>
+        <translation>TAMA5</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="94"/>
@@ -1107,17 +1107,17 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="99"/>
         <source>BBD</source>
-        <translation type="unfinished"></translation>
+        <translation>BBD</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="100"/>
         <source>Hitek</source>
-        <translation type="unfinished"></translation>
+        <translation>Hitek</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="101"/>
         <source>GGB-81</source>
-        <translation type="unfinished"></translation>
+        <translation>GGB-81</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="102"/>
@@ -1145,14 +1145,14 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.ui" line="26"/>
         <source>0x0000</source>
-        <translation type="unfinished"></translation>
+        <translation>0x0000</translation>
     </message>
     <message>
         <location filename="../IOViewer.ui" line="367"/>
         <location filename="../IOViewer.cpp" line="870"/>
         <location filename="../IOViewer.cpp" line="883"/>
         <source>B</source>
-        <translation type="unfinished"></translation>
+        <translation>B</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="39"/>
@@ -1305,7 +1305,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="101"/>
         <location filename="../IOViewer.cpp" line="111"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>პრიორიტეტი</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="84"/>
@@ -1619,7 +1619,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="295"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>გამორთული</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="296"/>
@@ -1778,7 +1778,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1172"/>
         <location filename="../IOViewer.cpp" line="1198"/>
         <source>Reset</source>
-        <translation type="unfinished"></translation>
+        <translation>ხელახლა ჩართვა</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="368"/>
@@ -1800,34 +1800,34 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="375"/>
         <location filename="../IOViewer.cpp" line="1157"/>
         <source>Volume</source>
-        <translation type="unfinished"></translation>
+        <translation>ტომი</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="376"/>
         <location filename="../IOViewer.cpp" line="1158"/>
         <source>0%</source>
-        <translation type="unfinished"></translation>
+        <translation>0%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="377"/>
         <location filename="../IOViewer.cpp" line="434"/>
         <location filename="../IOViewer.cpp" line="1159"/>
         <source>100%</source>
-        <translation type="unfinished"></translation>
+        <translation>100%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="378"/>
         <location filename="../IOViewer.cpp" line="433"/>
         <location filename="../IOViewer.cpp" line="1160"/>
         <source>50%</source>
-        <translation type="unfinished"></translation>
+        <translation>50%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="379"/>
         <location filename="../IOViewer.cpp" line="432"/>
         <location filename="../IOViewer.cpp" line="1161"/>
         <source>25%</source>
-        <translation type="unfinished"></translation>
+        <translation>25%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="380"/>
@@ -1835,7 +1835,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="382"/>
         <location filename="../IOViewer.cpp" line="383"/>
         <source>75%</source>
-        <translation type="unfinished"></translation>
+        <translation>75%</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="405"/>
@@ -1853,13 +1853,13 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="407"/>
         <location filename="../IOViewer.cpp" line="1190"/>
         <source>15</source>
-        <translation type="unfinished"></translation>
+        <translation>15</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="408"/>
         <location filename="../IOViewer.cpp" line="1191"/>
         <source>7</source>
-        <translation type="unfinished"></translation>
+        <translation>7</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="410"/>
@@ -1959,7 +1959,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="442"/>
         <location filename="../IOViewer.cpp" line="449"/>
         <source>0</source>
-        <translation type="unfinished"></translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="443"/>
@@ -1972,7 +1972,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1002"/>
         <location filename="../IOViewer.cpp" line="1012"/>
         <source>1</source>
-        <translation type="unfinished"></translation>
+        <translation>1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="445"/>
@@ -2335,7 +2335,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1450"/>
         <location filename="../IOViewer.cpp" line="1454"/>
         <source>Enable</source>
-        <translation type="unfinished"></translation>
+        <translation>ჩართვა</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="644"/>
@@ -2364,7 +2364,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1059"/>
         <location filename="../IOViewer.cpp" line="1063"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>მნიშვნელობა</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="778"/>
@@ -2424,7 +2424,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="872"/>
         <location filename="../IOViewer.cpp" line="885"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>დაწყება</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="873"/>
@@ -2442,13 +2442,13 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="875"/>
         <location filename="../IOViewer.cpp" line="888"/>
         <source>Up</source>
-        <translation type="unfinished"></translation>
+        <translation>მაღლა</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="876"/>
         <location filename="../IOViewer.cpp" line="889"/>
         <source>Down</source>
-        <translation type="unfinished"></translation>
+        <translation>გამორთული</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="877"/>
@@ -2470,22 +2470,22 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="897"/>
         <source>SC</source>
-        <translation type="unfinished"></translation>
+        <translation>SC</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="898"/>
         <source>SD</source>
-        <translation type="unfinished"></translation>
+        <translation>SD</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="899"/>
         <source>SI</source>
-        <translation type="unfinished"></translation>
+        <translation>SI</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="900"/>
         <source>SO</source>
-        <translation type="unfinished"></translation>
+        <translation>SO</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="946"/>
@@ -2521,31 +2521,31 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="951"/>
         <location filename="../IOViewer.cpp" line="968"/>
         <source>SIO</source>
-        <translation type="unfinished"></translation>
+        <translation>SIO</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="952"/>
         <location filename="../IOViewer.cpp" line="969"/>
         <source>DMA 0</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="953"/>
         <location filename="../IOViewer.cpp" line="970"/>
         <source>DMA 1</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="954"/>
         <location filename="../IOViewer.cpp" line="971"/>
         <source>DMA 2</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="955"/>
         <location filename="../IOViewer.cpp" line="972"/>
         <source>DMA 3</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="956"/>
@@ -2571,7 +2571,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1001"/>
         <location filename="../IOViewer.cpp" line="1005"/>
         <source>4</source>
-        <translation type="unfinished"></translation>
+        <translation>4</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="980"/>
@@ -2579,7 +2579,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="996"/>
         <location filename="../IOViewer.cpp" line="1006"/>
         <source>3</source>
-        <translation type="unfinished"></translation>
+        <translation>3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="981"/>
@@ -2588,7 +2588,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="997"/>
         <location filename="../IOViewer.cpp" line="1007"/>
         <source>2</source>
-        <translation type="unfinished"></translation>
+        <translation>2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="982"/>
@@ -2597,7 +2597,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1008"/>
         <location filename="../IOViewer.cpp" line="1011"/>
         <source>8</source>
-        <translation type="unfinished"></translation>
+        <translation>8</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="984"/>
@@ -2638,7 +2638,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1015"/>
         <location filename="../IOViewer.cpp" line="1451"/>
         <source>Disable</source>
-        <translation type="unfinished"></translation>
+        <translation>გათიშვა</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1016"/>
@@ -2736,7 +2736,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1094"/>
         <location filename="../IOViewer.cpp" line="1555"/>
         <source>Serial</source>
-        <translation type="unfinished"></translation>
+        <translation>სერიული</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1095"/>
@@ -2829,7 +2829,7 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="1346"/>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>რეჟიმი</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1347"/>
@@ -2958,7 +2958,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1452"/>
         <location filename="../IOViewer.cpp" line="1453"/>
         <source>Unknown</source>
-        <translation type="unfinished"></translation>
+        <translation>უცნობი</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1493"/>
@@ -3019,7 +3019,7 @@ Download size: %3</source>
     <message>
         <location filename="../library/LibraryTree.cpp" line="51"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>სახელი</translation>
     </message>
     <message>
         <location filename="../library/LibraryTree.cpp" line="52"/>
@@ -3034,7 +3034,7 @@ Download size: %3</source>
     <message>
         <location filename="../library/LibraryTree.cpp" line="54"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>ზომა</translation>
     </message>
     <message>
         <location filename="../library/LibraryTree.cpp" line="55"/>
@@ -3111,7 +3111,7 @@ Download size: %3</source>
     <message>
         <location filename="../LoadSaveState.ui" line="261"/>
         <source>Cancel</source>
-        <translation type="unfinished"></translation>
+        <translation>გაუქმება</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="75"/>
@@ -3126,7 +3126,7 @@ Download size: %3</source>
     <message>
         <location filename="../LoadSaveState.cpp" line="184"/>
         <source>Empty</source>
-        <translation type="unfinished"></translation>
+        <translation>ცარიელი</translation>
     </message>
     <message>
         <location filename="../LoadSaveState.cpp" line="193"/>
@@ -3145,7 +3145,7 @@ Download size: %3</source>
         <location filename="../LogConfigModel.cpp" line="90"/>
         <location filename="../LogConfigModel.cpp" line="111"/>
         <source>Default</source>
-        <translation type="unfinished"></translation>
+        <translation>ნაგულიხმები</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="92"/>
@@ -3155,17 +3155,17 @@ Download size: %3</source>
     <message>
         <location filename="../LogConfigModel.cpp" line="94"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>შეცდომა</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="96"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>გაფრთხილება</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="98"/>
         <source>Info</source>
-        <translation type="unfinished"></translation>
+        <translation>ინფორმაცია</translation>
     </message>
     <message>
         <location filename="../LogConfigModel.cpp" line="100"/>
@@ -3256,17 +3256,17 @@ Download size: %3</source>
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation type="unfinished"></translation>
+        <translation>ინფორმაცია</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
         <source>Warning</source>
-        <translation type="unfinished"></translation>
+        <translation>გაფრთხილება</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="68"/>
         <source>Error</source>
-        <translation type="unfinished"></translation>
+        <translation>შეცდომა</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="78"/>
@@ -3286,7 +3286,7 @@ Download size: %3</source>
     <message>
         <location filename="../LogView.ui" line="128"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>გასუფთავება</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="137"/>
@@ -3309,17 +3309,17 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.ui" line="124"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>გატანა</translation>
     </message>
     <message>
         <location filename="../MapView.ui" line="139"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>კოპირება</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="48"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>პრიორიტეტი</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="49"/>
@@ -3336,7 +3336,7 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="51"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>ზომა</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="52"/>
@@ -3362,12 +3362,12 @@ Download size: %3</source>
     <message>
         <location filename="../MapView.cpp" line="146"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>არცერთი</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="148"/>
         <source>Both</source>
-        <translation type="unfinished"></translation>
+        <translation>ორივე</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="150"/>
@@ -3384,7 +3384,7 @@ Download size: %3</source>
         <location filename="../MapView.cpp" line="184"/>
         <location filename="../MapView.cpp" line="239"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translation>მ/შ</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="282"/>
@@ -3446,12 +3446,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="77"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>დაწყება</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="87"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>გაჩერება</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="78"/>
@@ -3518,12 +3518,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryModel.cpp" line="59"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>ჩატვირთვა</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="113"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>ყველა</translation>
     </message>
     <message>
         <location filename="../MemoryModel.cpp" line="158"/>
@@ -3571,7 +3571,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="51"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>მისამართი</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="56"/>
@@ -3582,12 +3582,12 @@ Download size: %3</source>
         <location filename="../MemorySearch.ui" line="61"/>
         <location filename="../MemorySearch.ui" line="81"/>
         <source>Type</source>
-        <translation type="unfinished"></translation>
+        <translation>ტიპი</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="71"/>
         <source>Value</source>
-        <translation type="unfinished"></translation>
+        <translation>მნიშვნელობა</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="88"/>
@@ -3597,7 +3597,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="101"/>
         <source>Text</source>
-        <translation type="unfinished"></translation>
+        <translation>ტექსტი</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="118"/>
@@ -3708,7 +3708,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemorySearch.ui" line="357"/>
         <source>Refresh</source>
-        <translation type="unfinished"></translation>
+        <translation>განახლება</translation>
     </message>
     <message>
         <location filename="../MemorySearch.cpp" line="224"/>
@@ -3736,7 +3736,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="14"/>
         <source>Memory</source>
-        <translation type="unfinished"></translation>
+        <translation>მეხსიერება</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="38"/>
@@ -3806,7 +3806,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="297"/>
         <source>Load</source>
-        <translation type="unfinished"></translation>
+        <translation>ჩატვირთვა</translation>
     </message>
 </context>
 <context>
@@ -3855,12 +3855,12 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.ui" line="72"/>
         <source>Address</source>
-        <translation type="unfinished"></translation>
+        <translation>მისამართი</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="94"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>კოპირება</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="122"/>
@@ -3875,7 +3875,7 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.ui" line="145"/>
         <source>Position</source>
-        <translation type="unfinished"></translation>
+        <translation>პოზიცია</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="224"/>
@@ -3890,7 +3890,7 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.ui" line="389"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>გატანა</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="402"/>
@@ -3906,7 +3906,7 @@ Download size: %3</source>
         <location filename="../ObjView.ui" line="430"/>
         <location filename="../ObjView.cpp" line="181"/>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>გამორთული</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="444"/>
@@ -3945,13 +3945,13 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.ui" line="572"/>
         <source>Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>რეჟიმი</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="592"/>
         <location filename="../ObjView.cpp" line="190"/>
         <source>Normal</source>
-        <translation type="unfinished"></translation>
+        <translation>ნორმალური</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="606"/>
@@ -3961,12 +3961,12 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.ui" line="643"/>
         <source>Enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>ჩართულია</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="677"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>პრიორიტეტი</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="715"/>
@@ -4004,13 +4004,13 @@ Download size: %3</source>
     <message>
         <location filename="../ObjView.cpp" line="199"/>
         <source>Invalid</source>
-        <translation type="unfinished"></translation>
+        <translation>არასწორი</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="256"/>
         <location filename="../ObjView.cpp" line="261"/>
         <source>N/A</source>
-        <translation type="unfinished"></translation>
+        <translation>მ/შ</translation>
     </message>
     <message>
         <location filename="../ObjView.cpp" line="287"/>
@@ -4076,7 +4076,7 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="126"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>არცერთი</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="131"/>
@@ -4280,7 +4280,7 @@ Download size: %3</source>
     <message>
         <location filename="../PlacementControl.ui" line="26"/>
         <source>All</source>
-        <translation type="unfinished"></translation>
+        <translation>ყველა</translation>
     </message>
     <message>
         <location filename="../PlacementControl.ui" line="65"/>
@@ -4323,7 +4323,7 @@ Download size: %3</source>
     <message>
         <location filename="../PrinterView.ui" line="223"/>
         <source>Copy</source>
-        <translation type="unfinished"></translation>
+        <translation>კოპირება</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
@@ -4448,7 +4448,7 @@ Download size: %3</source>
     <message>
         <location filename="../ReportView.ui" line="99"/>
         <source>Save</source>
-        <translation type="unfinished"></translation>
+        <translation>შენახვა</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="113"/>
@@ -4663,7 +4663,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="45"/>
         <source>Run</source>
-        <translation type="unfinished"></translation>
+        <translation>გაშვება</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="92"/>
@@ -4828,7 +4828,7 @@ Download size: %3</source>
     <message>
         <location filename="../SettingsView.cpp" line="216"/>
         <source>None</source>
-        <translation type="unfinished"></translation>
+        <translation>არცერთი</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="223"/>
@@ -4893,7 +4893,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.cpp" line="893"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>არასდროს</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="898"/>
@@ -4937,12 +4937,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="55"/>
         <source>Interface</source>
-        <translation type="unfinished"></translation>
+        <translation>ინტერფეისი</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="60"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>განახლება</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
@@ -4952,7 +4952,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="70"/>
         <source>Enhancements</source>
-        <translation type="unfinished"></translation>
+        <translation>გაფართოებები</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="75"/>
@@ -4967,7 +4967,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="85"/>
         <source>Logging</source>
-        <translation type="unfinished"></translation>
+        <translation>ჟურნალში ჩაწერა</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="90"/>
@@ -5134,7 +5134,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.ui" line="382"/>
         <location filename="../SettingsView.ui" line="525"/>
         <source>Video</source>
-        <translation type="unfinished"></translation>
+        <translation>ვიდეო</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="105"/>
@@ -5166,7 +5166,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.ui" line="797"/>
         <location filename="../SettingsView.ui" line="822"/>
         <source>Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>შეჩერება</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="788"/>
@@ -5286,7 +5286,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="702"/>
         <source>Language</source>
-        <translation type="unfinished"></translation>
+        <translation>ენა</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="719"/>
@@ -5515,7 +5515,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="1300"/>
         <source>Software</source>
-        <translation type="unfinished"></translation>
+        <translation>პროგრამული უზრუნველყოფა</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1313"/>
@@ -5707,7 +5707,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.ui" line="35"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>სახელი</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="45"/>
@@ -5717,7 +5717,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.ui" line="62"/>
         <source>Description</source>
-        <translation type="unfinished"></translation>
+        <translation>აღწერა</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.ui" line="88"/>
@@ -5735,7 +5735,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShortcutModel.cpp" line="67"/>
         <source>Action</source>
-        <translation type="unfinished"></translation>
+        <translation>ქმედება</translation>
     </message>
     <message>
         <location filename="../ShortcutModel.cpp" line="69"/>
@@ -5768,7 +5768,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShortcutView.ui" line="49"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>გასუფთავება</translation>
     </message>
 </context>
 <context>
@@ -5847,7 +5847,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../TileView.ui" line="145"/>
         <source>Both</source>
-        <translation type="unfinished"></translation>
+        <translation>ორივე</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="163"/>
@@ -5885,12 +5885,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.ui" line="40"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>დაწყება</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="56"/>
         <source>Stop</source>
-        <translation type="unfinished"></translation>
+        <translation>გაჩერება</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="69"/>
@@ -5955,7 +5955,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../VideoView.ui" line="240"/>
         <source>Format</source>
-        <translation type="unfinished"></translation>
+        <translation>ფორმატი</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="370"/>
@@ -6575,7 +6575,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1689"/>
         <source>F12</source>
-        <translation type="unfinished"></translation>
+        <translation>F12</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1693"/>
@@ -6780,7 +6780,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="2048"/>
         <source>Clear</source>
-        <translation type="unfinished"></translation>
+        <translation>გასუფთავება</translation>
     </message>
 </context>
 <context>
@@ -6808,7 +6808,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../utils.cpp" line="40"/>
         <source>GB</source>
-        <translation type="unfinished"></translation>
+        <translation>გბ</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="43"/>
