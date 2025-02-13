@@ -7,10 +7,12 @@
 
 #include <QDialog>
 #include <QMap>
+#include <QPointer>
 #include <QTimer>
 
 #include "ColorPicker.h"
 #include "LogConfigModel.h"
+#include "ShaderSelector.h"
 
 #include <mgba/core/core.h>
 
@@ -25,7 +27,6 @@ namespace QGBA {
 class ConfigController;
 class InputController;
 class ShortcutController;
-class ShaderSelector;
 
 class SettingsView : public QDialog {
 Q_OBJECT
@@ -80,7 +81,7 @@ private:
 
 	ConfigController* m_controller;
 	InputController* m_input;
-	ShaderSelector* m_shader = nullptr;
+	QPointer<ShaderSelector> m_shader;
 	QLabel* m_dummyShader;
 	LogConfigModel m_logModel;
 	QTimer m_checkTimer;
