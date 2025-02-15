@@ -1143,7 +1143,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="106"/>
         <source>Sintax</source>
-        <translation type="unfinished"></translation>
+        <translation>Sintaxe</translation>
     </message>
 </context>
 <context>
@@ -3267,7 +3267,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../LogView.ui" line="48"/>
         <source>Info</source>
-        <translation>Info</translation>
+        <translation>Informações</translation>
     </message>
     <message>
         <location filename="../LogView.ui" line="58"/>
@@ -3422,147 +3422,147 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="67"/>
         <source>Data read</source>
-        <translation type="unfinished"></translation>
+        <translation>Leitura dos Dados</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="69"/>
         <source>Data written</source>
-        <translation type="unfinished"></translation>
+        <translation>Dados gravados</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="71"/>
         <source>Code executed</source>
-        <translation type="unfinished"></translation>
+        <translation>Código executado</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="73"/>
         <source>Code aborted</source>
-        <translation type="unfinished"></translation>
+        <translation>Código abortado</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="75"/>
         <source>8-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acesso de 8 bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="77"/>
         <source>16-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acesso de 16 bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="79"/>
         <source>32-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acesso de 32 bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="81"/>
         <source>64-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acesso de 64 bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="95"/>
         <source>Accessed by instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Acessado pela instrução</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="97"/>
         <source>Accessed by DMA</source>
-        <translation type="unfinished"></translation>
+        <translation>Acessado pelo DMA</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="99"/>
         <source>Accessed by BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>Acessado pela BIOS</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="101"/>
         <source>Compressed data</source>
-        <translation type="unfinished"></translation>
+        <translation>Dados comprimidos</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="103"/>
         <source>Accessed by memory copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Acessado pela cópia da memória</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="105"/>
         <source>(Unknown extra bit 5)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit extra desconhecido 5)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="107"/>
         <source>(Unknown extra bit 6)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit extra desconhecido 6)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="109"/>
         <source>(Unknown extra bit 7)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit extra desconhecido 7)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="111"/>
         <source>Invalid instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Instrução inválida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="113"/>
         <source>Invalid read</source>
-        <translation type="unfinished"></translation>
+        <translation>Leitura inválida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="115"/>
         <source>Invalid write</source>
-        <translation type="unfinished"></translation>
+        <translation>Gravação inválida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="117"/>
         <source>Invalid executable address</source>
-        <translation type="unfinished"></translation>
+        <translation>Endereço do executável inválido</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="119"/>
         <source>(Private bit 0)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit privado 0)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="121"/>
         <source>(Private bit 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit privado 1)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>Código ARM</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
         <source>Instruction opcode</source>
-        <translation type="unfinished"></translation>
+        <translation>Opcode da instrução</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="129"/>
         <source>(Private bit 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit privado 2)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="134"/>
         <source>Thumb code</source>
-        <translation type="unfinished"></translation>
+        <translation>Código do thumb</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="136"/>
         <source>Instruction operand</source>
-        <translation type="unfinished"></translation>
+        <translation>Operando da instrução</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="138"/>
         <source>(Private bit 3)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit privado 3)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="146"/>
         <source>(Unknown)</source>
-        <translation type="unfinished">(Desconhecido)</translation>
+        <translation>(Desconhecido)</translation>
     </message>
 </context>
 <context>
@@ -3595,12 +3595,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="56"/>
         <source>Load</source>
-        <translation type="unfinished">Carregar</translation>
+        <translation>Carregar</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
         <source>Unload</source>
-        <translation type="unfinished"></translation>
+        <translation>Descarregar</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="76"/>
@@ -3935,37 +3935,37 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="43"/>
         <source>Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Endereço:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="112"/>
         <source>Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation>Alinhamento:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="126"/>
         <source>1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>1 Byte</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="131"/>
         <source>2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>2 Bytes</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="136"/>
         <source>4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>4 Bytes</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="158"/>
         <source>Signed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Assinado:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="178"/>
         <source>Unsigned:</source>
-        <translation type="unfinished"></translation>
+        <translation>Não assinado:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="260"/>
@@ -3980,12 +3980,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="288"/>
         <source>Selected address accesses</source>
-        <translation type="unfinished"></translation>
+        <translation>Acessos do endereço selecionado</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="310"/>
         <source>Logging configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuração do registro</translation>
     </message>
 </context>
 <context>
@@ -4006,12 +4006,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="407"/>
         <source>Clearing invalid save ID</source>
-        <translation>Limpando a ID inválida do save</translation>
+        <translation>Limpando a ID do salvamento inválido</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="416"/>
         <source>Clearing invalid preferred ID</source>
-        <translation>Limpando a ID inválida preferida</translation>
+        <translation>Limpando a ID preferida inválida</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="437"/>
@@ -5034,9 +5034,9 @@ Tamanho do download: %3</translation>
         <source>Shaders are not supported when the display driver is not OpenGL.
 
 If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
-        <translation>Os shaders não são suportados quando o driver de exibição não é OpenGL.
+        <translation>Shaders não são suportados quando o driver de exibição não é OpenGL.
 
-Se ele está definido como OpenGL e você ainda ver isto sua placa gráfica ou drivers podem ser muito antigos.</translation>
+Se estiver definido como OpenGL e você ainda ver isto, sua placa gráfica ou drivers podem ser muito antigos.</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="416"/>
