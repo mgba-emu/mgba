@@ -452,6 +452,12 @@ struct GBSerializedState {
 				uint8_t baseBank;
 			} sachen;
 			struct {
+				uint8_t mode;
+				uint8_t xorValues[4];
+				uint8_t bankNo;
+				uint8_t romBankXor;
+			} sintax;
+			struct {
 				uint8_t reserved[16];
 			} padding;
 		};

@@ -34,9 +34,13 @@ private slots:
 	void start();
 	void stop();
 
+	void load();
+	void unload();
+
 	void exportFile();
 
 	void handleStartStop(bool start);
+	void handleLoadUnload(bool load);
 
 private:
 	Ui::MemoryAccessLogView m_ui;

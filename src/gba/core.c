@@ -479,6 +479,14 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 			GBAVideoAssociateRenderer(&gba->video, renderer);
 		}
 	}
+
+#ifndef MINIMAL_CORE
+	if (strcmp("threadedVideo.flushScanline", option) == 0) {
+		int flushScanline = -1;
+		mCoreConfigGetIntValue(config, "threadedVideo.flushScanline", &flushScanline);
+		gbacore->proxyRenderer.flushScanline = flushScanline;
+	}
+#endif
 }
 
 static void _GBACoreSetOverride(struct mCore* core, const void* override) {
@@ -730,6 +738,10 @@ static void _GBACoreReset(struct mCore* core) {
 		if (renderer && core->videoLogger) {
 			GBAVideoProxyRendererCreate(&gbacore->proxyRenderer, renderer, core->videoLogger);
 			renderer = &gbacore->proxyRenderer.d;
+
+			int flushScanline = -1;
+			mCoreConfigGetIntValue(&core->config, "threadedVideo.flushScanline", &flushScanline);
+			gbacore->proxyRenderer.flushScanline = flushScanline;
 		}
 #endif
 		if (renderer) {

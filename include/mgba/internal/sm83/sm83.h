@@ -61,6 +61,8 @@ struct SM83Memory {
 	uint16_t activeMask;
 	uint16_t activeRegionEnd;
 	void (*setActiveRegion)(struct SM83Core*, uint16_t address);
+
+	enum mMemoryAccessSource accessSource;
 };
 
 struct SM83InterruptHandler {

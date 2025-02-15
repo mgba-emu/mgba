@@ -113,7 +113,7 @@ static struct {
 	{"M161", GB_MBC_AUTODETECT}, // TODO
 	{"BBD", GB_UNL_BBD},
 	{"HITK", GB_UNL_HITEK},
-	{"SNTX", GB_MBC_AUTODETECT}, // TODO
+	{"SNTX", GB_UNL_SINTAX},
 	{"NTO1", GB_UNL_NT_OLD_1},
 	{"NTO2", GB_UNL_NT_OLD_2},
 	{"NTN", GB_UNL_NT_NEW},
@@ -128,6 +128,8 @@ static struct {
 	{"NGHK", GB_MBC_AUTODETECT}, // TODO
 	{"GB81", GB_UNL_GGB81},
 	{"TPP1", GB_MBC_AUTODETECT}, // TODO
+	{"VF01", GB_MBC_AUTODETECT}, // TODO
+	{"SKL8", GB_MBC_AUTODETECT}, // TODO
 
 	{NULL, GB_MBC_AUTODETECT},
 };
@@ -221,6 +223,12 @@ static enum GBMemoryBankControllerType _detectUnlMBC(const uint8_t* mem, size_t 
 		}
 		if ((0x8000U << cart->romSize) != size) {
 			return GB_UNL_LI_CHENG;
+		}
+		break;
+	case 0x6c1dcf2d:
+	case 0x99e3449d:
+		if (mem[0x7FFF] != 0x01) { // Make sure we're not using a "fixed" version
+			return GB_UNL_SINTAX;
 		}
 		break;
 	}
@@ -504,6 +512,14 @@ void GBMBCInit(struct GB* gb) {
 			gb->memory.sramAccess = true;
 		}
 		break;
+	case GB_UNL_SINTAX:
+		gb->memory.mbcWrite = _GBSintax;
+		gb->memory.mbcRead = _GBSintaxRead;
+		gb->memory.mbcReadBank1 = true;
+		if (gb->sramSize) {
+			gb->memory.sramAccess = true;
+		}
+		break;
 	}
 
 	gb->memory.currentBank = 1;
@@ -558,6 +574,9 @@ void GBMBCReset(struct GB* gb) {
 	case GB_MMM01:
 		GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
 		GBMBCSwitchBank(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 1);
+		break;
+	case GB_UNL_SINTAX:
+		gb->memory.mbcState.sintax.mode = 0xF;
 		break;
 	default:
 		break;

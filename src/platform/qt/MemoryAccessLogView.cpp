@@ -26,8 +26,10 @@ MemoryAccessLogView::MemoryAccessLogView(std::weak_ptr<MemoryAccessLogController
 	connect(m_ui.exportButton, &QAbstractButton::clicked, this, &MemoryAccessLogView::exportFile);
 	connect(controllerPtr.get(), &MemoryAccessLogController::regionMappingChanged, this, &MemoryAccessLogView::updateRegion);
 	connect(controllerPtr.get(), &MemoryAccessLogController::loggingChanged, this, &MemoryAccessLogView::handleStartStop);
+	connect(controllerPtr.get(), &MemoryAccessLogController::loaded, this, &MemoryAccessLogView::handleLoadUnload);
 
 	bool active = controllerPtr->active();
+	bool loaded = controllerPtr->isLoaded();
 	auto watchedRegions = controllerPtr->watchedRegions();
 
 	QVBoxLayout* regionBox = static_cast<QVBoxLayout*>(m_ui.regionBox->layout());
@@ -46,11 +48,14 @@ MemoryAccessLogView::MemoryAccessLogView(std::weak_ptr<MemoryAccessLogController
 		});
 	}
 
+	handleLoadUnload(loaded);
 	handleStartStop(active);
 }
 
-void MemoryAccessLogView::updateRegion(const QString& internalName, bool) {
-	m_regionBoxes[internalName]->setEnabled(false);
+void MemoryAccessLogView::updateRegion(const QString& internalName, bool checked) {
+	if (checked) {
+		m_regionBoxes[internalName]->setEnabled(false);
+	}
 }
 
 void MemoryAccessLogView::start() {
@@ -68,10 +73,23 @@ void MemoryAccessLogView::stop() {
 		return;
 	}
 	controllerPtr->stop();
-	for (const auto& region : controllerPtr->watchedRegions()) {
-		m_regionBoxes[region]->setEnabled(true);
+}
+
+void MemoryAccessLogView::load() {
+	std::shared_ptr<MemoryAccessLogController> controllerPtr = m_controller.lock();
+	if (!controllerPtr) {
+		return;
 	}
-	m_ui.exportButton->setEnabled(false);
+	controllerPtr->setFile(m_ui.filename->text());
+	controllerPtr->load(m_ui.loadExisting->isChecked());
+}
+
+void MemoryAccessLogView::unload() {
+	std::shared_ptr<MemoryAccessLogController> controllerPtr = m_controller.lock();
+	if (!controllerPtr) {
+		return;
+	}
+	controllerPtr->unload();
 }
 
 void MemoryAccessLogView::selectFile() {
@@ -110,12 +128,26 @@ void MemoryAccessLogView::handleStartStop(bool start) {
 		m_regionBoxes[region]->setChecked(true);
 	}
 
-	if (watchedRegions.contains(QString("cart0"))) {
-		m_ui.exportButton->setEnabled(start);
-	}
-
 	m_ui.start->setDisabled(start);
 	m_ui.stop->setEnabled(start);
-	m_ui.filename->setDisabled(start);
-	m_ui.browse->setDisabled(start);
+	m_ui.unload->setDisabled(start || !controllerPtr->isLoaded());
+}
+
+void MemoryAccessLogView::handleLoadUnload(bool load) {
+	std::shared_ptr<MemoryAccessLogController> controllerPtr = m_controller.lock();
+	if (!controllerPtr) {
+		return;
+	}
+	m_ui.filename->setText(controllerPtr->file());
+
+	if (load && controllerPtr->canExport()) {
+		m_ui.exportButton->setEnabled(true);
+	} else if (!load) {
+		m_ui.exportButton->setEnabled(false);
+	}
+
+	m_ui.load->setDisabled(load);
+	m_ui.unload->setEnabled(load);
+	m_ui.filename->setDisabled(load);
+	m_ui.browse->setDisabled(load);
 }

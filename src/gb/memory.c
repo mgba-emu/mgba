@@ -148,6 +148,7 @@ void GBMemoryInit(struct GB* gb) {
 	cpu->memory.store8 = GBStore8;
 	cpu->memory.currentSegment = GBCurrentSegment;
 	cpu->memory.setActiveRegion = GBSetActiveRegion;
+	cpu->memory.accessSource = mACCESS_UNKNOWN;
 
 	gb->memory.wram = 0;
 	gb->memory.wramBank = 0;
@@ -205,6 +206,7 @@ void GBMemoryReset(struct GB* gb) {
 	gb->memory.hdmaDest = 0;
 	gb->memory.isHdma = false;
 
+	gb->cpu->memory.accessSource = mACCESS_UNKNOWN;
 
 	gb->memory.dmaEvent.context = gb;
 	gb->memory.dmaEvent.name = "GB DMA";
@@ -576,10 +578,13 @@ void _GBMemoryDMAService(struct mTiming* timing, void* context, uint32_t cyclesL
 	struct GB* gb = context;
 	int dmaRemaining = gb->memory.dmaRemaining;
 	gb->memory.dmaRemaining = 0;
+	enum mMemoryAccessSource oldAccess = gb->cpu->memory.accessSource;
+	gb->cpu->memory.accessSource = mACCESS_DMA;
 	uint8_t b = GBLoad8(gb->cpu, gb->memory.dmaSource);
 	// TODO: Can DMA write OAM during modes 2-3?
 	gb->video.oam.raw[gb->memory.dmaDest] = b;
 	gb->video.renderer->writeOAM(gb->video.renderer, gb->memory.dmaDest);
+	gb->cpu->memory.accessSource = oldAccess;
 	++gb->memory.dmaSource;
 	++gb->memory.dmaDest;
 	gb->memory.dmaRemaining = dmaRemaining - 1;
@@ -591,8 +596,11 @@ void _GBMemoryDMAService(struct mTiming* timing, void* context, uint32_t cyclesL
 void _GBMemoryHDMAService(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GB* gb = context;
 	gb->cpuBlocked = true;
+	enum mMemoryAccessSource oldAccess = gb->cpu->memory.accessSource;
+	gb->cpu->memory.accessSource = mACCESS_DMA;
 	uint8_t b = gb->cpu->memory.load8(gb->cpu, gb->memory.hdmaSource);
 	gb->cpu->memory.store8(gb->cpu, gb->memory.hdmaDest, b);
+	gb->cpu->memory.accessSource = oldAccess;
 	++gb->memory.hdmaSource;
 	++gb->memory.hdmaDest;
 	--gb->memory.hdmaRemaining;
@@ -832,6 +840,12 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 		state->memory.sachen.unmaskedBank = memory->mbcState.sachen.unmaskedBank;
 		state->memory.sachen.baseBank = memory->mbcState.sachen.baseBank;
 		break;
+	case GB_UNL_SINTAX:
+		state->memory.sintax.mode = memory->mbcState.sintax.mode;
+		memcpy(state->memory.sintax.xorValues, memory->mbcState.sintax.xorValues, sizeof(state->memory.sintax.xorValues));
+		state->memory.sintax.bankNo = memory->mbcState.sintax.bankNo;
+		state->memory.sintax.romBankXor = memory->mbcState.sintax.romBankXor;
+		break;
 	default:
 		break;
 	}
@@ -999,6 +1013,12 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		memory->mbcState.sachen.unmaskedBank = state->memory.sachen.unmaskedBank;
 		memory->mbcState.sachen.baseBank = state->memory.sachen.baseBank;
 		GBMBCSwitchBank0(gb, memory->mbcState.sachen.baseBank & memory->mbcState.sachen.mask);
+		break;
+	case GB_UNL_SINTAX:
+		memory->mbcState.sintax.mode = state->memory.sintax.mode;
+		memcpy(memory->mbcState.sintax.xorValues, state->memory.sintax.xorValues, sizeof(memory->mbcState.sintax.xorValues));
+		memory->mbcState.sintax.bankNo = state->memory.sintax.bankNo;
+		memory->mbcState.sintax.romBankXor = state->memory.sintax.romBankXor;
 		break;
 	default:
 		break;

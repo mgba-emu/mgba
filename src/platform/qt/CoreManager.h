@@ -36,7 +36,7 @@ signals:
 private:
 	const mCoreConfig* m_config = nullptr;
 	MultiplayerController* m_multiplayer = nullptr;
-	bool m_preload = false;
+	bool m_preload = true;
 };
 
 }

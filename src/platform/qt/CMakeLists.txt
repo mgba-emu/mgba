@@ -262,6 +262,7 @@ if(ENABLE_DEBUGGERS)
 		DebuggerConsole.cpp
 		DebuggerConsoleController.cpp
 		MemoryAccessLogController.cpp
+		MemoryAccessLogModel.cpp
 		MemoryAccessLogView.cpp)
 endif()
 

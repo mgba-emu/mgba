@@ -176,6 +176,7 @@ public slots:
 	void scanCards(const QStringList&);
 	void replaceGame(const QString&);
 	void yankPak();
+	void blockSave() { m_saveBlocked = true; }
 
 	void addKey(int key);
 	void clearKey(int key);
@@ -262,7 +263,8 @@ private:
 	QString m_savePath;
 
 	bool m_patched = false;
-	bool m_preload = false;
+	bool m_preload = true;
+	bool m_saveBlocked = false;
 
 	uint32_t m_crc32;
 	QString m_internalTitle;

@@ -23,6 +23,7 @@ struct mDebuggerAccessLogRegion {
 	uint32_t segmentStart;
 	mDebuggerAccessLogFlags* block;
 	mDebuggerAccessLogFlagsEx* blockEx;
+	ssize_t watchpoint;
 };
 
 DECLARE_VECTOR(mDebuggerAccessLogRegionList, struct mDebuggerAccessLogRegion);
@@ -41,10 +42,15 @@ void mDebuggerAccessLoggerDeinit(struct mDebuggerAccessLogger*);
 bool mDebuggerAccessLoggerOpen(struct mDebuggerAccessLogger*, struct VFile*, int mode);
 bool mDebuggerAccessLoggerClose(struct mDebuggerAccessLogger*);
 
+void mDebuggerAccessLoggerStart(struct mDebuggerAccessLogger*);
+void mDebuggerAccessLoggerStop(struct mDebuggerAccessLogger*);
+
 int mDebuggerAccessLoggerWatchMemoryBlockId(struct mDebuggerAccessLogger*, size_t id, mDebuggerAccessLogRegionFlags);
 int mDebuggerAccessLoggerWatchMemoryBlockName(struct mDebuggerAccessLogger*, const char* internalName, mDebuggerAccessLogRegionFlags);
 
 bool mDebuggerAccessLoggerCreateShadowFile(struct mDebuggerAccessLogger*, int region, struct VFile*, uint8_t fill);
+
+struct mDebuggerAccessLogRegion* mDebuggerAccessLoggerGetRegion(struct mDebuggerAccessLogger*, uint32_t address, int segment, size_t* offset);
 
 CXX_GUARD_END
 

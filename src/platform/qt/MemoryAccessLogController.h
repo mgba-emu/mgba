@@ -12,6 +12,7 @@
 
 #include "CoreController.h"
 
+#include <mgba/debugger/debugger.h>
 #include <mgba/internal/debugger/access-logger.h>
 
 namespace QGBA {
@@ -25,6 +26,16 @@ public:
 		QString internalName;
 	};
 
+	struct Flags {
+		mDebuggerAccessLogFlagsEx flagsEx;
+		mDebuggerAccessLogFlags flags;
+
+		int count() const;
+		bool operator==(const Flags& other) const { return flags == other.flags && flagsEx == other.flagsEx; }
+		bool operator!=(const Flags& other) const { return flags != other.flags || flagsEx != other.flagsEx; }
+		operator bool() const { return flags || flagsEx; }
+	};
+
 	MemoryAccessLogController(CoreController* controller, QObject* parent = nullptr);
 	~MemoryAccessLogController();
 
@@ -34,8 +45,11 @@ public:
 	bool canExport() const;
 	mPlatform platform() const { return m_controller->platform(); }
 
+	Flags flagsForAddress(uint32_t address, int segment = -1);
+
 	QString file() const { return m_path; }
 	bool active() const { return m_active; }
+	bool isLoaded() const { return m_loaded; }
 
 public slots:
 	void updateRegion(const QString& internalName, bool enable);
@@ -44,9 +58,13 @@ public slots:
 	void start(bool loadExisting, bool logExtra);
 	void stop();
 
+	void load(bool loadExisting);
+	void unload();
+
 	void exportFile(const QString& filename);
 
 signals:
+	void loaded(bool loaded);
 	void loggingChanged(bool active);
 	void regionMappingChanged(const QString& internalName, bool active);
 
@@ -58,9 +76,12 @@ private:
 	QHash<QString, int> m_regionMapping;
 	QVector<Region> m_regions;
 	struct mDebuggerAccessLogger m_logger{};
+	bool m_loaded = false;
 	bool m_active = false;
+	mDebuggerAccessLogRegion* m_cachedRegion = nullptr;
 
 	mDebuggerAccessLogRegionFlags activeFlags() const;
+	uint32_t cacheRegion(uint32_t address, int segment);
 };
 
 }

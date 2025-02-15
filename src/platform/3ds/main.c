@@ -273,6 +273,7 @@ static void _resetCamera(struct m3DSImageSource* imageSource) {
 static void _setup(struct mGUIRunner* runner) {
 	if (core2) {
 		mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo", 1);
+		mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo.flushScanline", 0);
 		mCoreLoadForeignConfig(runner->core, &runner->config);
 	}
 
@@ -968,6 +969,22 @@ int main(int argc, char* argv[]) {
 			{ .id = 0 }
 		},
 		.configExtra = (struct GUIMenuItem[]) {
+#ifdef M_CORE_GBA
+			{
+				.title = "Sync",
+				.data = GUI_V_S("threadedVideo.flushScanline"),
+				.state = 0,
+				.validStates = (const char*[]) {
+					"Loose (faster, can tear)", "Strict (slower, less input lag)"
+				},
+				.stateMappings = (const struct GUIVariant[]) {
+					GUI_V_I(0),
+					GUI_V_I(-1),
+				},
+				.nStates = 2
+			},
+#endif
+
 			{
 				.title = "Screen mode",
 				.data = GUI_V_S("screenMode"),

@@ -305,7 +305,7 @@ void CoreController::loadConfig(ConfigController* config) {
 	m_fastForwardMute = config->getOption("fastForwardMute", -1).toInt();
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "volume");
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
-	m_preload = config->getOption("preload").toInt();
+	m_preload = config->getOption("preload", true).toInt();
 
 	QSize sizeBefore = screenDimensions();
 	m_activeBuffer.resize(256 * 224 * sizeof(mColor));
@@ -1267,6 +1267,9 @@ void CoreController::finishFrame() {
 }
 
 void CoreController::updatePlayerSave() {
+	if (m_saveBlocked) {
+		return;
+	}
 	int savePlayerId = m_multiplayer->saveId(this);
 
 	QString saveSuffix;

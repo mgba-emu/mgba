@@ -73,6 +73,7 @@ The following mappers are partially supported:
 - Hitek (missing logo switching)
 - GGB-81 (missing logo switching)
 - Li Cheng (missing logo switching)
+- Sintax (missing logo switching)
 
 ### Planned features
 

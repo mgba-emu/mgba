@@ -75,6 +75,7 @@ void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct 
 	logger->vramSize = GBA_SIZE_VRAM;
 	logger->oamSize = GBA_SIZE_OAM;
 
+	renderer->flushScanline = -1;
 	renderer->backend = backend;
 }
 
@@ -359,6 +360,9 @@ void GBAVideoProxyRendererWriteOAM(struct GBAVideoRenderer* renderer, uint32_t o
 
 void GBAVideoProxyRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoProxyRenderer* proxyRenderer = (struct GBAVideoProxyRenderer*) renderer;
+	if (proxyRenderer->flushScanline == y) {
+		mVideoLoggerRendererFlush(proxyRenderer->logger);
+	}
 	if (!proxyRenderer->logger->block) {
 		_copyExtraState(proxyRenderer);
 		proxyRenderer->backend->drawScanline(proxyRenderer->backend, y);
@@ -375,7 +379,9 @@ void GBAVideoProxyRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 		proxyRenderer->backend->finishFrame(proxyRenderer->backend);
 	}
 	mVideoLoggerRendererFinishFrame(proxyRenderer->logger);
-	mVideoLoggerRendererFlush(proxyRenderer->logger);
+	if (proxyRenderer->flushScanline < 0) {
+		mVideoLoggerRendererFlush(proxyRenderer->logger);
+	}
 }
 
 static void GBAVideoProxyRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
