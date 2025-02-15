@@ -5,6 +5,7 @@ Features:
  - New option to lock the maximum frame size
  - Memory access and information logging
  - 3DS: Add faster "loose" sync mode, default enabled
+ - Vita: Allow using rear touch pads as L2/L3/R2/R3
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
  - Scripting: New `storage` API for saving data for a script, e.g. settings
  - Scripting: New `image` and `canvas` APIs for drawing images and displaying on-screen
