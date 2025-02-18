@@ -82,6 +82,7 @@ static void _updateRotation(struct mRotationSource* source);
 static int32_t _readTiltX(struct mRotationSource* source);
 static int32_t _readTiltY(struct mRotationSource* source);
 static int32_t _readGyroZ(struct mRotationSource* source);
+static void _setupMaps(struct mCore* core);
 
 static struct mCore* core;
 static mColor* outputBuffer = NULL;
@@ -1272,6 +1273,15 @@ static void _doDeferredSetup(void) {
 	// you actually first get them, you're out of luck without workarounds. Yup, seriously.
 	// Here's that workaround, but really the API needs to be thrown out and rewritten.
 	struct VFile* save = VFileFromMemory(savedata, GBA_SIZE_FLASH1M);
+
+    /* need to defer resetting the core on start so drivers are initialized */
+    core->reset(core);
+	_setupMaps(core);
+
+#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
+	_loadPostProcessingSettings();
+#endif
+
 	if (!core->loadSave(core, save)) {
 		save->close(save);
 	}
@@ -2122,13 +2132,6 @@ bool retro_load_game(const struct retro_game_info* game) {
 			core->loadBIOS(core, bios, 0);
 		}
 	}
-#endif
-
-	core->reset(core);
-	_setupMaps(core);
-
-#if defined(COLOR_16_BIT) && defined(COLOR_5_6_5)
-	_loadPostProcessingSettings();
 #endif
 
 	return true;
