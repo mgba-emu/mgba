@@ -3,6 +3,7 @@ Other fixes:
  - ARM Debugger: Fix disassembly of ror r0 barrel shift (fixes mgba.io/i/3412)
  - FFmpeg: Fix failing to record videos with CRF video (fixes mgba.io/i/3368)
  - GB Core: Fix cloning savedata when backing file is outdated (fixes mgba.io/i/3388)
+ - GBA Cheats: Let VBA-style codes patch ROM (fixes mgba.io/i/3423)
  - GBA Core: Fix booting into BIOS when skip BIOS is enabled
  - GBA Hardware: Fix loading states unconditionally overwriting GPIO memory
 Misc:
