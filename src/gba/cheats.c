@@ -180,14 +180,25 @@ bool GBACheatAddVBALine(struct GBACheatSet* cheats, const char* line) {
 		return false;
 	}
 
-	struct mCheat* cheat = mCheatListAppend(&cheats->d.list);
-	cheat->address = address;
-	cheat->operandOffset = 0;
-	cheat->addressOffset = 0;
-	cheat->repeat = 1;
-	cheat->type = CHEAT_ASSIGN;
-	cheat->width = width;
-	cheat->operand = value;
+	if (address < GBA_BASE_ROM0 || address >= GBA_BASE_SRAM) {
+		struct mCheat* cheat = mCheatListAppend(&cheats->d.list);
+		memset(cheat, 0, sizeof(*cheat));
+		cheat->address = address;
+		cheat->operandOffset = 0;
+		cheat->addressOffset = 0;
+		cheat->repeat = 1;
+		cheat->type = CHEAT_ASSIGN;
+		cheat->width = width;
+		cheat->operand = value;
+	} else {
+		struct mCheatPatch* patch = mCheatPatchListAppend(&cheats->d.romPatches);
+		memset(patch, 0, sizeof(*patch));
+		patch->width = width;
+		patch->address = address;
+		patch->segment = 0;
+		patch->value = value;
+		patch->check = false;
+	}
 	return true;
 }
 
