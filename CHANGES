@@ -5,6 +5,8 @@ Other fixes:
  - GB Core: Fix cloning savedata when backing file is outdated (fixes mgba.io/i/3388)
  - GBA Core: Fix booting into BIOS when skip BIOS is enabled
  - GBA Hardware: Fix loading states unconditionally overwriting GPIO memory
+Misc:
+ - GB: Allow use of CGB-E and AGB-0 BIOS versions (closes mgba.io/i/3427)
  - Updater: Fix rewriting folders and files on Windows (fixes mgba.io/i/3384)
 
 0.10.4: (2024-12-07)
