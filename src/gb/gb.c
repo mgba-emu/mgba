@@ -35,7 +35,9 @@ static const uint8_t _registeredTrademark[] = {0x3C, 0x42, 0xB9, 0xA5, 0xB9, 0xA
 #define SGB2_BIOS_CHECKSUM 0X53D0DD63
 #define CGB_BIOS_CHECKSUM 0x41884E46
 #define CGB0_BIOS_CHECKSUM 0xE8EF5318
+#define CGBE_BIOS_CHECKSUM 0xE95DC95D
 #define AGB_BIOS_CHECKSUM 0xFFD6B0F1
+#define AGB0_BIOS_CHECKSUM 0x570337EA
 
 mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
 
@@ -550,7 +552,9 @@ bool GBIsBIOS(struct VFile* vf) {
 	case SGB2_BIOS_CHECKSUM:
 	case CGB_BIOS_CHECKSUM:
 	case CGB0_BIOS_CHECKSUM:
+	case CGBE_BIOS_CHECKSUM:
 	case AGB_BIOS_CHECKSUM:
+	case AGB0_BIOS_CHECKSUM:
 		return true;
 	default:
 		return false;
@@ -567,7 +571,9 @@ bool GBIsCompatibleBIOS(struct VFile* vf, enum GBModel model) {
 		return model < GB_MODEL_CGB;
 	case CGB_BIOS_CHECKSUM:
 	case CGB0_BIOS_CHECKSUM:
+	case CGBE_BIOS_CHECKSUM:
 	case AGB_BIOS_CHECKSUM:
+	case AGB0_BIOS_CHECKSUM:
 		return model >= GB_MODEL_CGB;
 	default:
 		return false;
@@ -862,9 +868,11 @@ void GBDetectModel(struct GB* gb) {
 			break;
 		case CGB_BIOS_CHECKSUM:
 		case CGB0_BIOS_CHECKSUM:
+		case CGBE_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;
 			break;
 		case AGB_BIOS_CHECKSUM:
+		case AGB0_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_AGB;
 			break;
 		default:

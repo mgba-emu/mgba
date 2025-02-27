@@ -44,6 +44,7 @@ Misc:
  - Core: Add MD5 hashing for ROMs
  - Core: Add support for specifying an arbitrary portable directory
  - GB: Prevent incompatible BIOSes from being used on differing models
+ - GB: Allow use of CGB-E and AGB-0 BIOS versions (closes mgba.io/i/3427)
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
  - GBA Audio: Remove broken XQ audio pending rewrite
