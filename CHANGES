@@ -6,6 +6,7 @@ Other fixes:
  - GBA Cheats: Let VBA-style codes patch ROM (fixes mgba.io/i/3423)
  - GBA Core: Fix booting into BIOS when skip BIOS is enabled
  - GBA Hardware: Fix loading states unconditionally overwriting GPIO memory
+ - Wii: Fix crash on loading large ZIP files (fixes mgba.io/i/3404)
 Misc:
  - GB: Allow use of CGB-E and AGB-0 BIOS versions (closes mgba.io/i/3427)
  - Updater: Fix rewriting folders and files on Windows (fixes mgba.io/i/3384)
