@@ -11,6 +11,12 @@
 #ifdef USE_LIBZIP
 #include <zip.h>
 
+#ifndef FIXED_ROM_BUFFER
+#define MAX_BUFFER_SIZE 0x80000000
+#else
+#define MAX_BUFFER_SIZE 0x00200000
+#endif
+
 struct VDirEntryZip {
 	struct VDirEntry d;
 	struct zip* z;
@@ -36,6 +42,7 @@ struct VFileZip {
 	size_t fileSize;
 	char* name;
 	bool write;
+	size_t bufferStart;
 };
 
 enum {
@@ -250,8 +257,9 @@ bool _vfzClose(struct VFile* vf) {
 			zip_source_free(source);
 			return false;
 		}
-		free(vfz->name);
 	}
+	free(vfz->name);
+	vfz->name = NULL;
 	if (vfz->zf && zip_fclose(vfz->zf) < 0) {
 		return false;
 	}
@@ -286,6 +294,17 @@ off_t _vfzSeek(struct VFile* vf, off_t offset, int whence) {
 		return -1;
 	}
 
+	if (position < vfz->bufferStart) {
+		if (zip_fclose(vfz->zf) < 0) {
+			return -1;
+		}
+		vfz->zf = zip_fopen(vfz->z, vfz->name, 0);
+		vfz->bufferStart = 0;
+		vfz->offset = 0;
+		vfz->readSize = 0;
+		vfz->writeSize = 0;
+	}
+
 	if (position <= vfz->offset) {
 		vfz->offset = position;
 		return position;
@@ -315,7 +334,7 @@ ssize_t _vfzRead(struct VFile* vf, void* buffer, size_t size) {
 	while (bytesRead < size) {
 		if (vfz->offset < vfz->readSize) {
 			size_t diff = vfz->readSize - vfz->offset;
-			void* start = &((uint8_t*) vfz->buffer)[vfz->offset];
+			void* start = &((uint8_t*) vfz->buffer)[vfz->offset - vfz->bufferStart];
 			if (diff > size - bytesRead) {
 				diff = size - bytesRead;
 			}
@@ -330,16 +349,25 @@ ssize_t _vfzRead(struct VFile* vf, void* buffer, size_t size) {
 			}
 		}
 		// offset == readSize
-		if (vfz->readSize == vfz->bufferSize) {
-			vfz->bufferSize *= 2;
-			if (vfz->bufferSize > vfz->fileSize) {
-				vfz->bufferSize = vfz->fileSize;
+		if (vfz->readSize == vfz->bufferSize + vfz->bufferStart) {
+			size_t bufferSize = vfz->bufferSize * 2;
+			void* newBuffer = NULL;
+			if (bufferSize <= MAX_BUFFER_SIZE) {
+				if (bufferSize > vfz->fileSize) {
+					bufferSize = vfz->fileSize;
+				}
+				newBuffer = realloc(vfz->buffer, bufferSize);
 			}
-			vfz->buffer = realloc(vfz->buffer, vfz->bufferSize);
+			if (newBuffer) {
+				vfz->bufferSize = bufferSize;
+				vfz->buffer = newBuffer;
+			} else {
+				vfz->bufferStart += vfz->bufferSize;
+			}
 		}
-		if (vfz->readSize < vfz->bufferSize) {
-			void* start = &((uint8_t*) vfz->buffer)[vfz->readSize];
-			size_t toRead = vfz->bufferSize - vfz->readSize;
+		if (vfz->readSize < vfz->bufferSize + vfz->bufferStart) {
+			void* start = &((uint8_t*) vfz->buffer)[vfz->readSize - vfz->bufferStart];
+			size_t toRead = vfz->bufferSize - vfz->readSize - vfz->bufferStart;
 			if (toRead > BLOCK_SIZE) {
 				toRead = BLOCK_SIZE;
 			}
@@ -391,8 +419,15 @@ void* _vfzMap(struct VFile* vf, size_t size, int flags) {
 	struct VFileZip* vfz = (struct VFileZip*) vf;
 
 	UNUSED(flags);
+	if (size > vfz->fileSize) {
+		return NULL;
+	}
+	size_t start = vfz->bufferStart;
 	if (size > vfz->readSize) {
 		vf->read(vf, 0, size - vfz->readSize);
+	}
+	if (vfz->bufferStart != start) {
+		return NULL;
 	}
 	return vfz->buffer;
 }
@@ -470,10 +505,8 @@ struct VFile* _vdzOpenFile(struct VDir* vd, const char* path, int mode) {
 	vfz->zf = zf;
 	vfz->z = vdz->z;
 	vfz->fileSize = s.size;
-	if ((mode & O_ACCMODE) == O_WRONLY) {
-		vfz->name = strdup(path);
-		vfz->write = true;
-	}
+	vfz->name = strdup(path);
+	vfz->write = (mode & O_ACCMODE) == O_WRONLY;
 
 	vfz->d.close = _vfzClose;
 	vfz->d.seek = _vfzSeek;

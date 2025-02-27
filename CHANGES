@@ -37,6 +37,7 @@ Other fixes:
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Fix potential crash when configuring shortcuts
  - Qt: Fix regression where loading BIOS creates a save file (fixes mgba.io/i/3359)
+ - Wii: Fix crash on loading large ZIP files (fixes mgba.io/i/3404)
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - Core: Improve rumble emulation by averaging state over entire frame (fixes mgba.io/i/3232)
