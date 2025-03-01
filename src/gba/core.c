@@ -296,7 +296,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->proxyRenderer.logger = NULL;
 #endif
 
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 	mDirectorySetInit(&core->dirs);
 #endif
 
@@ -308,7 +308,7 @@ static void _GBACoreDeinit(struct mCore* core) {
 	GBADestroy(core->board);
 	mappedMemoryFree(core->cpu, sizeof(struct ARMCore));
 	mappedMemoryFree(core->board, sizeof(struct GBA));
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 	mDirectorySetDeinit(&core->dirs);
 #endif
 #ifdef ENABLE_DEBUGGERS
@@ -1352,7 +1352,7 @@ static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 		seek = vf->seek(vf, 0, SEEK_CUR);
 		vf->seek(vf, 0, SEEK_SET);
 	}
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 #ifdef USE_ELF
 	if (!vf && core->dirs.base) {
 		closeAfter = true;

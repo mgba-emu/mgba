@@ -50,7 +50,7 @@ struct VFile {
 	bool (*sync)(struct VFile* vf, void* buffer, size_t size);
 };
 
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 struct VDirEntry {
 	const char* (*name)(struct VDirEntry* vde);
 	enum VFSType (*type)(struct VDirEntry* vde);
@@ -64,7 +64,9 @@ struct VDir {
 	struct VDir* (*openDir)(struct VDir* vd, const char* name);
 	bool (*deleteFile)(struct VDir* vd, const char* name);
 };
+#endif
 
+#ifdef ENABLE_VFS
 struct VFile* VFileOpen(const char* path, int flags);
 #endif
 
@@ -85,7 +87,7 @@ struct VFile* VFileMemChunk(const void* mem, size_t size);
 struct mCircleBuffer;
 struct VFile* VFileFIFO(struct mCircleBuffer* backing);
 
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 struct VDir* VDirOpen(const char* path);
 struct VDir* VDirOpenArchive(const char* path);
 
