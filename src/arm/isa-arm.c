@@ -743,11 +743,11 @@ DEFINE_INSTRUCTION_ARM(MRSR, \
 	cpu->gprs[rd] = cpu->spsr.packed;)
 
 DEFINE_INSTRUCTION_ARM(MSRI,
-	int c = opcode & 0x00010000;
-	int f = opcode & 0x00080000;
-	int rotate = (opcode & 0x00000F00) >> 7;
-	int32_t operand = ROR(opcode & 0x000000FF, rotate);
-	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
+	uint32_t c = opcode & 0x00010000;
+	uint32_t f = opcode & 0x00080000;
+	uint32_t rotate = (opcode & 0x00000F00) >> 7;
+	uint32_t operand = ROR(opcode & 0x000000FF, rotate);
+	uint32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
 	if (mask & PSR_USER_MASK) {
 		cpu->cpsr.packed = (cpu->cpsr.packed & ~PSR_USER_MASK) | (operand & PSR_USER_MASK);
 	}
@@ -769,11 +769,11 @@ DEFINE_INSTRUCTION_ARM(MSRI,
 	})
 
 DEFINE_INSTRUCTION_ARM(MSRRI,
-	int c = opcode & 0x00010000;
-	int f = opcode & 0x00080000;
-	int rotate = (opcode & 0x00000F00) >> 7;
-	int32_t operand = ROR(opcode & 0x000000FF, rotate);
-	int32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
+	uint32_t c = opcode & 0x00010000;
+	uint32_t f = opcode & 0x00080000;
+	uint32_t rotate = (opcode & 0x00000F00) >> 7;
+	uint32_t operand = ROR(opcode & 0x000000FF, rotate);
+	uint32_t mask = (c ? 0x000000FF : 0) | (f ? 0xFF000000 : 0);
 	mask &= PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK;
 	cpu->spsr.packed = (cpu->spsr.packed & ~mask) | (operand & mask) | 0x00000010;)
 
