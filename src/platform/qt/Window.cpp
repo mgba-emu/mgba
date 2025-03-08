@@ -1101,7 +1101,7 @@ void Window::reloadDisplayDriver() {
 	if (!proxy) {
 		proxy = std::make_shared<VideoProxy>();
 	}
-	m_display->setVideoProxy(proxy);
+	m_display->setVideoProxy(std::move(proxy));
 #ifdef ENABLE_SCRIPTING
 	if (m_scripting) {
 		m_scripting->setVideoBackend(m_display->videoBackend());
