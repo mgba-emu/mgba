@@ -1,4 +1,4 @@
-0.10.5: (Future)
+0.10.5: (2025-03-08)
 Other fixes:
  - ARM Debugger: Fix disassembly of ror r0 barrel shift (fixes mgba.io/i/3412)
  - FFmpeg: Fix failing to record videos with CRF video (fixes mgba.io/i/3368)
