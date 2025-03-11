@@ -65,6 +65,7 @@ VideoView::VideoView(QWidget* parent)
 		s_vcodecMap["hevc"] = "libx265";
 		s_vcodecMap["hevc nvenc"] = "hevc_nvenc";
 		s_vcodecMap["theora"] = "libtheora";
+		s_vcodecMap["ut video"] = "utvideo";
 		s_vcodecMap["vp8"] = "libvpx";
 		s_vcodecMap["vp9"] = "libvpx-vp9";
 		s_vcodecMap["xvid"] = "libxvid";
