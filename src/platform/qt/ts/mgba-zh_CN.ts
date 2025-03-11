@@ -1143,7 +1143,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="106"/>
         <source>Sintax</source>
-        <translation type="unfinished"></translation>
+        <translation>语法</translation>
     </message>
 </context>
 <context>
@@ -3422,147 +3422,147 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="67"/>
         <source>Data read</source>
-        <translation type="unfinished"></translation>
+        <translation>数据读取</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="69"/>
         <source>Data written</source>
-        <translation type="unfinished"></translation>
+        <translation>数据写入</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="71"/>
         <source>Code executed</source>
-        <translation type="unfinished"></translation>
+        <translation>代码执行</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="73"/>
         <source>Code aborted</source>
-        <translation type="unfinished"></translation>
+        <translation>代码已中止</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="75"/>
         <source>8-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>8 位访问</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="77"/>
         <source>16-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>16 位访问</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="79"/>
         <source>32-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>32 位访问</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="81"/>
         <source>64-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>64 位访问</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="95"/>
         <source>Accessed by instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>通过指令访问</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="97"/>
         <source>Accessed by DMA</source>
-        <translation type="unfinished"></translation>
+        <translation>通过 DMA 访问</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="99"/>
         <source>Accessed by BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>通过 BIOS 访问</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="101"/>
         <source>Compressed data</source>
-        <translation type="unfinished"></translation>
+        <translation>压缩数据</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="103"/>
         <source>Accessed by memory copy</source>
-        <translation type="unfinished"></translation>
+        <translation>通过内存复制访问</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="105"/>
         <source>(Unknown extra bit 5)</source>
-        <translation type="unfinished"></translation>
+        <translation>（未知附加位 5）</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="107"/>
         <source>(Unknown extra bit 6)</source>
-        <translation type="unfinished"></translation>
+        <translation>（未知附加位 6）</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="109"/>
         <source>(Unknown extra bit 7)</source>
-        <translation type="unfinished"></translation>
+        <translation>（未知附加位 7）</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="111"/>
         <source>Invalid instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>指令无效</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="113"/>
         <source>Invalid read</source>
-        <translation type="unfinished"></translation>
+        <translation>读取无效</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="115"/>
         <source>Invalid write</source>
-        <translation type="unfinished"></translation>
+        <translation>写入无效</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="117"/>
         <source>Invalid executable address</source>
-        <translation type="unfinished"></translation>
+        <translation>无效的可执行地址</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="119"/>
         <source>(Private bit 0)</source>
-        <translation type="unfinished"></translation>
+        <translation>（私人位 0）</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="121"/>
         <source>(Private bit 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>（私人位 1）</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>ARM 代码</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
         <source>Instruction opcode</source>
-        <translation type="unfinished"></translation>
+        <translation>指令操作码</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="129"/>
         <source>(Private bit 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>（私人位 2）</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="134"/>
         <source>Thumb code</source>
-        <translation type="unfinished"></translation>
+        <translation>拇指代码</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="136"/>
         <source>Instruction operand</source>
-        <translation type="unfinished"></translation>
+        <translation>指令操作数</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="138"/>
         <source>(Private bit 3)</source>
-        <translation type="unfinished"></translation>
+        <translation>（私人位 3）</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="146"/>
         <source>(Unknown)</source>
-        <translation type="unfinished">(未知)</translation>
+        <translation>（未知）</translation>
     </message>
 </context>
 <context>
@@ -3595,12 +3595,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="56"/>
         <source>Load</source>
-        <translation type="unfinished">载入</translation>
+        <translation>加载</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
         <source>Unload</source>
-        <translation type="unfinished"></translation>
+        <translation>取消加载</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="76"/>
@@ -3935,37 +3935,37 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="43"/>
         <source>Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>地址：</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="112"/>
         <source>Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation>对齐：</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="126"/>
         <source>1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>1 字节</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="131"/>
         <source>2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>2 字节</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="136"/>
         <source>4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>4 字节</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="158"/>
         <source>Signed:</source>
-        <translation type="unfinished"></translation>
+        <translation>签名：</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="178"/>
         <source>Unsigned:</source>
-        <translation type="unfinished"></translation>
+        <translation>未签名：</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="273"/>
@@ -3975,12 +3975,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="288"/>
         <source>Selected address accesses</source>
-        <translation type="unfinished"></translation>
+        <translation>所选地址访问</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="310"/>
         <source>Logging configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>日志配置</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="260"/>
@@ -4559,7 +4559,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
         <source>ROM header</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM 头</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="123"/>
@@ -5034,7 +5034,9 @@ Download size: %3</source>
         <source>Shaders are not supported when the display driver is not OpenGL.
 
 If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
-        <translation type="unfinished"></translation>
+        <translation>当显示驱动程序不是 OpenGL 时，不支持着色器。
+
+如果设置为 OpenGL 并且您仍然看到此信息，则您的显卡或驱动程序可能太旧了。</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="416"/>
@@ -5841,17 +5843,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.cpp" line="92"/>
         <source>mGBA Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>mGBA 着色器</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>Error loading shader</source>
-        <translation type="unfinished"></translation>
+        <translation>加载着色器时出错</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>着色器“%1”无法成功加载。</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="145"/>
