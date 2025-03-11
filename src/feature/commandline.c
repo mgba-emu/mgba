@@ -47,6 +47,7 @@ static const struct option _options[] = {
 	{ "log-level", required_argument, 0, 'l' },
 	{ "savestate", required_argument, 0, 't' },
 	{ "patch",     required_argument, 0, 'p' },
+	{ "shader",    required_argument, 0, 'a'},
 	{ "version",   no_argument, 0, '\0' },
 	{ 0, 0, 0, 0 }
 };
@@ -81,7 +82,7 @@ static void _tableApply(const char* key, void* value, void* user) {
 bool mArgumentsParse(struct mArguments* args, int argc, char* const* argv, struct mSubParser* subparsers, int nSubparsers) {
 	int ch;
 	char options[128] =
-		"b:c:C:hl:p:s:t:"
+		"b:c:C:hl:p:s:t:a:"
 #ifdef USE_EDITLINE
 		"d"
 #endif
@@ -172,6 +173,9 @@ bool mArgumentsParse(struct mArguments* args, int argc, char* const* argv, struc
 		case 't':
 			args->savestate = strdup(optarg);
 			break;
+		case 'a':
+			args->shader = strdup(optarg);
+			break;
 		default:
 			for (i = 0; i < nSubparsers; ++i) {
 				if (subparsers[i].parse) {
@@ -220,6 +224,9 @@ void mArgumentsApply(const struct mArguments* args, struct mSubParser* subparser
 	if (args->bios) {
 		mCoreConfigSetOverrideValue(config, "bios", args->bios);
 		mCoreConfigSetOverrideIntValue(config, "useBios", true);
+	}
+	if (args->shader) {
+		mCoreConfigSetOverrideValue(config, "shader", args->shader);
 	}
 	HashTableEnumerate(&args->configOverrides, _tableApply, config);
 	int i;
@@ -305,6 +312,9 @@ void mArgumentsDeinit(struct mArguments* args) {
 
 	free(args->bios);
 	args->bios = 0;
+
+	free(args->shader);
+	args->shader = 0;
 
 	HashTableDeinit(&args->configOverrides);
 }
