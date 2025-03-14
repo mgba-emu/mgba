@@ -699,7 +699,13 @@ void PainterGL::resizeContext() {
 	dequeueAll(false);
 
 	mRectangle dims = {0, 0, size.width(), size.height()};
+	if (!m_started) {
+		makeCurrent();
+	}
 	m_backend->setLayerDimensions(m_backend, VIDEO_LAYER_IMAGE, &dims);
+	if (!m_started) {
+		m_gl->doneCurrent();
+	}
 	recenterLayers();
 	m_dims = size;
 }
