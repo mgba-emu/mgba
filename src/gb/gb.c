@@ -87,6 +87,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->isPristine = false;
 	gb->pristineRomSize = 0;
 	gb->yankedRomSize = 0;
+	gb->sramSize = 0;
 
 	memset(&gb->gbx, 0, sizeof(gb->gbx));
 

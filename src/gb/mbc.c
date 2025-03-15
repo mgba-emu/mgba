@@ -274,6 +274,7 @@ void GBMBCSwitchSramHalfBank(struct GB* gb, int half, int bank) {
 
 void GBMBCInit(struct GB* gb) {
 	const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
+	size_t sramSize = 0;
 	if (gb->memory.rom && gb->memory.romSize) {
 		if (gb->memory.romSize >= 0x8000) {
 			const struct GBCartridge* cartFooter = (const struct GBCartridge*) &gb->memory.rom[gb->memory.romSize - 0x7F00];
@@ -282,25 +283,25 @@ void GBMBCInit(struct GB* gb) {
 			}
 		}
 		if (gb->gbx.romSize) {
-			gb->sramSize = gb->gbx.ramSize;
+			sramSize = gb->gbx.ramSize;
 			gb->memory.mbcType = gb->gbx.mbc;
 		} else {
 			switch (cart->ramSize) {
 			case 0:
-				gb->sramSize = 0;
+				sramSize = 0;
 				break;
 			default:
 			case 2:
-				gb->sramSize = 0x2000;
+				sramSize = 0x2000;
 				break;
 			case 3:
-				gb->sramSize = 0x8000;
+				sramSize = 0x8000;
 				break;
 			case 4:
-				gb->sramSize = 0x20000;
+				sramSize = 0x20000;
 				break;
 			case 5:
-				gb->sramSize = 0x10000;
+				sramSize = 0x10000;
 				break;
 			}
 		}
@@ -399,7 +400,7 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcWrite = _GBMBC2;
 		gb->memory.mbcRead = _GBMBC2Read;
 		gb->memory.directSramAccess = false;
-		gb->sramSize = 0x100;
+		sramSize = 0x100;
 		break;
 	case GB_MBC3:
 		gb->memory.mbcWrite = _GBMBC3;
@@ -414,15 +415,15 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcWrite = _GBMBC6;
 		gb->memory.mbcRead = _GBMBC6Read;
 		gb->memory.directSramAccess = false;
-		if (!gb->sramSize) {
-			gb->sramSize = GB_SIZE_EXTERNAL_RAM; // Force minimum size for convenience
+		if (!sramSize) {
+			sramSize = GB_SIZE_EXTERNAL_RAM; // Force minimum size for convenience
 		}
-		gb->sramSize += GB_SIZE_MBC6_FLASH; // Flash is concatenated at the end
+		sramSize += GB_SIZE_MBC6_FLASH; // Flash is concatenated at the end
 		break;
 	case GB_MBC7:
 		gb->memory.mbcWrite = _GBMBC7;
 		gb->memory.mbcRead = _GBMBC7Read;
-		gb->sramSize = 0x100;
+		sramSize = 0x100;
 		break;
 	case GB_MMM01:
 		gb->memory.mbcWrite = _GBMMM01;
@@ -440,7 +441,7 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcState.tama5.rtcAlarmPage[GBTAMA6_RTC_PAGE] = 1;
 		gb->memory.mbcState.tama5.rtcFreePage0[GBTAMA6_RTC_PAGE] = 2;
 		gb->memory.mbcState.tama5.rtcFreePage1[GBTAMA6_RTC_PAGE] = 3;
-		gb->sramSize = 0x20;
+		sramSize = 0x20;
 		break;
 	case GB_MBC3_RTC:
 		memset(gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
@@ -452,8 +453,8 @@ void GBMBCInit(struct GB* gb) {
 	case GB_POCKETCAM:
 		gb->memory.mbcWrite = _GBPocketCam;
 		gb->memory.mbcRead = _GBPocketCamRead;
-		if (!gb->sramSize) {
-			gb->sramSize = GB_SIZE_EXTERNAL_RAM; // Force minimum size for convenience
+		if (!sramSize) {
+			sramSize = GB_SIZE_EXTERNAL_RAM; // Force minimum size for convenience
 		}
 		if (gb->memory.cam && gb->memory.cam->startRequestImage) {
 			gb->memory.cam->startRequestImage(gb->memory.cam, GBCAM_WIDTH, GBCAM_HEIGHT, mCOLOR_ANY);
@@ -508,7 +509,7 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcReadBank1 = true;
 		gb->memory.mbcReadHigh = true;
 		gb->memory.mbcWriteHigh = true;
-		if (gb->sramSize) {
+		if (sramSize) {
 			gb->memory.sramAccess = true;
 		}
 		break;
@@ -516,7 +517,7 @@ void GBMBCInit(struct GB* gb) {
 		gb->memory.mbcWrite = _GBSintax;
 		gb->memory.mbcRead = _GBSintaxRead;
 		gb->memory.mbcReadBank1 = true;
-		if (gb->sramSize) {
+		if (sramSize) {
 			gb->memory.sramAccess = true;
 		}
 		break;
@@ -539,7 +540,7 @@ void GBMBCInit(struct GB* gb) {
 	}
 	memset(&gb->memory.rtcRegs, 0, sizeof(gb->memory.rtcRegs));
 
-	GBResizeSram(gb, gb->sramSize);
+	GBResizeSram(gb, sramSize);
 
 	if (gb->memory.mbcType == GB_MBC3_RTC) {
 		GBMBCRTCRead(gb);
