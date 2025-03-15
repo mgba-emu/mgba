@@ -233,7 +233,7 @@ static void GBSramDeinit(struct GB* gb) {
 	} else if (gb->memory.sram) {
 		mappedMemoryFree(gb->memory.sram, gb->sramSize);
 	}
-	gb->memory.sram = 0;
+	gb->memory.sram = NULL;
 }
 
 bool GBLoadSave(struct GB* gb, struct VFile* vf) {
@@ -342,6 +342,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 			mappedMemoryFree(gb->memory.sram, gb->sramSize);
 		} else {
 			memset(newSram, 0xFF, size);
+			gb->sramSize = size;
 		}
 		gb->memory.sram = newSram;
 	}
@@ -438,6 +439,8 @@ void GBUnloadROM(struct GB* gb) {
 	gb->memory.rom = NULL;
 	gb->memory.mbcType = GB_MBC_AUTODETECT;
 	gb->isPristine = false;
+	gb->pristineRomSize = 0;
+	gb->memory.romSize = 0;
 
 	if (!gb->sramDirty) {
 		gb->sramMaskWriteback = false;
@@ -447,6 +450,7 @@ void GBUnloadROM(struct GB* gb) {
 	if (gb->sramRealVf) {
 		gb->sramRealVf->close(gb->sramRealVf);
 	}
+	gb->sramSize = 0;
 	gb->sramRealVf = NULL;
 	gb->sramVf = NULL;
 	if (gb->memory.cam && gb->memory.cam->stopRequestImage) {
