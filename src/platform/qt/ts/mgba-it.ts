@@ -3562,7 +3562,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="146"/>
         <source>(Unknown)</source>
-        <translation type="unfinished">(Sconosciuto)</translation>
+        <translation>(Sconosciuto)</translation>
     </message>
 </context>
 <context>
@@ -3595,7 +3595,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="56"/>
         <source>Load</source>
-        <translation type="unfinished">Carica</translation>
+        <translation>Carica</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
@@ -3945,17 +3945,17 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="126"/>
         <source>1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>1 Byte</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="131"/>
         <source>2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>2 Byte</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="136"/>
         <source>4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>4 Byte</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="158"/>
@@ -4554,7 +4554,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
