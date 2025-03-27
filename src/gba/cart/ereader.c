@@ -650,7 +650,7 @@ void _eReaderWriteControl0(struct GBACartEReader* ereader, uint8_t value) {
 	}
 	ereader->registerControl0 = control;
 	if (!EReaderControl0IsScan(oldControl) && EReaderControl0IsScan(control)) {
-		if (ereader->scanX > 1000) {
+		if (ereader->scanX > 0) {
 			_eReaderScanCard(ereader);
 		}
 		ereader->scanX = 0;
@@ -668,7 +668,7 @@ void _eReaderWriteControl1(struct GBACartEReader* ereader, uint8_t value) {
 		++ereader->scanY;
 		if (ereader->scanY == (ereader->serial[0x15] | (ereader->serial[0x14] << 8))) {
 			ereader->scanY = 0;
-			if (ereader->scanX < 3400) {
+			if (ereader->scanX < 4050) {
 				ereader->scanX += 210;
 			}
 		}
