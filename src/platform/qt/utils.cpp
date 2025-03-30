@@ -37,21 +37,21 @@ QString nicePlatformFormat(mPlatform platform, int validModels) {
 	switch (platform) {
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
-		return QObject::tr("GBA");
+		return "GBA";
 #endif
 #ifdef M_CORE_GB
 	case mPLATFORM_GB:
 		if (validModels != M_LIBRARY_MODEL_UNKNOWN) {
 			if (validModels & GB_MODEL_CGB) {
-				return QObject::tr("GBC");
+				return "GBC";
 			} else if (validModels & GB_MODEL_SGB) {
-				return QObject::tr("SGB");
+				return "SGB";
 			}
 		}
-		return QObject::tr("GB");
+		return "GB";
 #endif
 	default:
-		return QObject::tr("?");
+		return "?";
 	}
 }
 

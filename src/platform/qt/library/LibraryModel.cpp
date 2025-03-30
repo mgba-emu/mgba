@@ -31,7 +31,7 @@ LibraryModel::LibraryModel(QObject* parent)
 	, m_showFilename(false)
 {
 	for (const QString& platform : iconSets) {
-		QString pathTemplate = QStringLiteral(":/res/%1-icon%2").arg(platform);
+		QString pathTemplate = QStringLiteral(":/res/%1-icon%2").arg(platform.toLower());
 		QIcon icon;
 		icon.addFile(pathTemplate.arg("-256.png"), QSize(256, 256));
 		icon.addFile(pathTemplate.arg("-128.png"), QSize(128, 128));
@@ -40,7 +40,7 @@ LibraryModel::LibraryModel(QObject* parent)
 		icon.addFile(pathTemplate.arg("-16.png"), QSize(16, 16));
 		// This will silently and harmlessly fail if QSvgIconEngine isn't compiled in.
 		icon.addFile(pathTemplate.arg(".svg"));
-		m_icons[platform.toLower()] = icon;
+		m_icons[platform] = icon;
 	}
 }
 
