@@ -31,6 +31,7 @@
 #include <mgba-util/elf-read.h>
 #endif
 #include <mgba-util/md5.h>
+#include <mgba-util/sha1.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
@@ -699,6 +700,19 @@ static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChe
 			md5Buffer(gba->memory.rom, gba->memory.romSize, data);
 		} else {
 			md5Buffer("", 0, data);
+		}
+		break;
+	case mCHECKSUM_SHA1:
+		if (gba->romVf) {
+			sha1File(gba->romVf, data);
+		} else if (gba->mbVf) {
+			sha1File(gba->mbVf, data);
+		} else if (gba->memory.rom && gba->isPristine) {
+			sha1Buffer(gba->memory.rom, gba->pristineRomSize, data);
+		} else if (gba->memory.rom) {
+			sha1Buffer(gba->memory.rom, gba->memory.romSize, data);
+		} else {
+			sha1Buffer("", 0, data);
 		}
 		break;
 	}

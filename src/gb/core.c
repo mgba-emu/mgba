@@ -24,6 +24,7 @@
 #include <mgba-util/md5.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/patch.h>
+#include <mgba-util/sha1.h>
 #include <mgba-util/vfs.h>
 
 static const struct mCoreChannelInfo _GBVideoLayers[] = {
@@ -537,6 +538,15 @@ static void _GBCoreChecksum(const struct mCore* core, void* data, enum mCoreChec
 			md5Buffer(gb->memory.rom, gb->pristineRomSize, data);
 		} else {
 			md5Buffer("", 0, data);
+		}
+		break;
+	case mCHECKSUM_SHA1:
+		if (gb->romVf) {
+			sha1File(gb->romVf, data);
+		} else if (gb->memory.rom && gb->isPristine) {
+			sha1Buffer(gb->memory.rom, gb->pristineRomSize, data);
+		} else {
+			sha1Buffer("", 0, data);
 		}
 		break;
 	}

@@ -353,6 +353,9 @@ static struct mScriptValue* _mScriptCoreChecksum(const struct mCore* core, int t
 	case mCHECKSUM_MD5:
 		size = 16;
 		break;
+	case mCHECKSUM_SHA1:
+		size = 20;
+		break;
 	}
 	if (!size) {
 		return &mScriptValueNull;

@@ -28,11 +28,6 @@ enum mPlatform {
 	mPLATFORM_GB = 1,
 };
 
-enum mCoreChecksumType {
-	mCHECKSUM_CRC32,
-	mCHECKSUM_MD5,
-};
-
 struct mAudioBuffer;
 struct mCoreConfig;
 struct mCoreSync;
