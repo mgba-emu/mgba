@@ -192,7 +192,7 @@ void LibraryController::refresh() {
 
 	setDisabled(true);
 
-	QSet<QString> removedEntries = QSet<QString>::fromList(m_knownGames.keys());
+	QSet<QString> removedEntries(m_knownGames.keyBegin(), m_knownGames.keyEnd());
 	QList<LibraryEntry> updatedEntries;
 	QList<LibraryEntry> newEntries;
 
@@ -217,7 +217,7 @@ void LibraryController::refresh() {
 		m_knownGames.remove(path);
 	}
 
-	m_libraryModel->removeEntries(removedEntries.toList());
+	m_libraryModel->removeEntries(QList<QString>(removedEntries.begin(), removedEntries.end()));
 	m_libraryModel->updateEntries(updatedEntries);
 	m_libraryModel->addEntries(newEntries);
 

@@ -11,6 +11,9 @@
 
 #include <mgba/core/library.h>
 
+#include <memory>
+#include <vector>
+
 #include "LibraryEntry.h"
 
 class QTreeView;
@@ -71,7 +74,7 @@ private:
 	bool m_treeMode;
 	bool m_showFilename;
 
-	QList<LibraryEntry> m_games;
+	std::vector<std::unique_ptr<LibraryEntry>> m_games;
 	QStringList m_pathOrder;
 	QHash<QString, QList<const LibraryEntry*>> m_pathIndex;
 	QHash<QString, int> m_gameIndex;

@@ -102,11 +102,11 @@ void LibraryModel::addEntries(const QList<LibraryEntry>& items) {
 
 void LibraryModel::addEntryInternal(const LibraryEntry& item) {
 	m_gameIndex[item.fullpath] = m_games.size();
-	m_games << item;
+	m_games.emplace_back(new LibraryEntry(item));
 	if (!m_pathIndex.contains(item.base)) {
 		m_pathOrder << item.base;
 	}
-	m_pathIndex[item.base] << &m_games.back();
+	m_pathIndex[item.base] << m_games.back().get();
 }
 
 void LibraryModel::addEntriesList(const QList<LibraryEntry>& items) {
@@ -158,7 +158,7 @@ void LibraryModel::updateEntries(const QList<LibraryEntry>& items) {
 		Q_ASSERT(idx.isValid());
 		int pos = m_gameIndex.value(item.fullpath, -1);
 		Q_ASSERT(pos >= 0);
-		m_games[pos] = item;
+		*m_games[pos] = item;
 		updatedSpans[idx.parent()].add(pos);
 	}
 	for (auto iter = updatedSpans.begin(); iter != updatedSpans.end(); iter++) {
@@ -183,11 +183,13 @@ void LibraryModel::removeEntries(const QList<QString>& items) {
 		if (pos < firstModifiedIndex) {
 			firstModifiedIndex = pos;
 		}
-		LibraryEntry* entry = &m_games[pos];
+		LibraryEntry* entry = m_games[pos].get();
 		QModelIndex parent = indexForPath(entry->base);
 		Q_ASSERT(!m_treeMode || parent.isValid());
 		QList<const LibraryEntry*>& pathItems = m_pathIndex[entry->base];
-		removedTreeSpans[entry->base].add(pathItems.indexOf(entry));
+		int pathPos = pathItems.indexOf(entry);
+		Q_ASSERT(pathPos >= 0);
+		removedTreeSpans[entry->base].add(pathPos);
 		if (!m_treeMode) {
 			removedRootSpans.add(pos);
 		}
@@ -214,9 +216,6 @@ void LibraryModel::removeEntries(const QList<QString>& items) {
 		for (const SpanSet::Span& span : spanSet.spans) {
 			if (m_treeMode) {
 				beginRemoveRows(parent, span.left, span.right);
-				for (int i = span.left; i <= span.right; i++) {
-
-				}
 			}
 			pathIndex.erase(pathIndex.begin() + span.left, pathIndex.begin() + span.right + 1);
 			if (m_treeMode) {
@@ -238,8 +237,8 @@ void LibraryModel::removeEntries(const QList<QString>& items) {
 		}
 		endRemoveRows();
 	}
-	for (int i = m_games.count() - 1; i >= firstModifiedIndex; i--) {
-		m_gameIndex[m_games[i].fullpath] = i;
+	for (int i = m_games.size() - 1; i >= firstModifiedIndex; i--) {
+		m_gameIndex[m_games[i]->fullpath] = i;
 	}
 }
 
@@ -249,7 +248,7 @@ QModelIndex LibraryModel::index(const QString& game) const {
 		return QModelIndex();
 	}
 	if (m_treeMode) {
-		const LibraryEntry& entry = m_games[pos];
+		const LibraryEntry& entry = *m_games[pos];
 		return createIndex(m_pathIndex[entry.base].indexOf(&entry), 0, m_pathOrder.indexOf(entry.base));
 	}
 	return createIndex(pos, 0);
@@ -339,8 +338,8 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const {
 		}
 		QString path = m_pathOrder[index.parent().row()];
 		entry = m_pathIndex[path][index.row()];
-	} else if (!index.parent().isValid() && index.row() < m_games.size()) {
-		entry = &m_games[index.row()];
+	} else if (!index.parent().isValid() && index.row() < (int)m_games.size()) {
+		entry = m_games[index.row()].get();
 	}
 	if (entry) {
 		if (role == FullPathRole) {
@@ -414,5 +413,5 @@ LibraryEntry LibraryModel::entry(const QString& game) const {
 	if (pos < 0) {
 		return {};
 	}
-	return m_games[pos];
+	return *m_games[pos];
 }
