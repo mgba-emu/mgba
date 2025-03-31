@@ -131,6 +131,7 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 	mScriptContextExportConstants(context, "CHECKSUM", (struct mScriptKVPair[]) {
 		mSCRIPT_CONSTANT_PAIR(mCHECKSUM, CRC32),
 		mSCRIPT_CONSTANT_PAIR(mCHECKSUM, MD5),
+		mSCRIPT_CONSTANT_PAIR(mCHECKSUM, SHA1),
 		mSCRIPT_KV_SENTINEL
 	});
 #ifdef M_CORE_GBA
