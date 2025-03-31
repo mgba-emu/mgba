@@ -34,6 +34,8 @@ struct mLibrary {
 	"CASE WHEN :useSize THEN roms.size = :size ELSE 1 END AND " \
 	"CASE WHEN :usePlatform THEN roms.platform = :platform ELSE 1 END AND " \
 	"CASE WHEN :useCrc32 THEN roms.crc32 = :crc32 ELSE 1 END AND " \
+	"CASE WHEN :useMd5 THEN roms.md5 = :md5 ELSE 1 END AND " \
+	"CASE WHEN :useSha1 THEN roms.sha1 = :sha1 ELSE 1 END AND " \
 	"CASE WHEN :useInternalCode THEN roms.internalCode = :internalCode ELSE 1 END"
 
 #define CONSTRAINTS \
@@ -56,6 +58,20 @@ static void _bindConstraints(sqlite3_stmt* statement, const struct mLibraryEntry
 		index = sqlite3_bind_parameter_index(statement, ":crc32");
 		sqlite3_bind_int(statement, useIndex, 1);
 		sqlite3_bind_int(statement, index, constraints->crc32);
+	}
+
+	if (memcmp(constraints->md5, &(uint8_t[16]) {0}, 16) != 0) {
+		useIndex = sqlite3_bind_parameter_index(statement, ":useMd5");
+		index = sqlite3_bind_parameter_index(statement, ":md5");
+		sqlite3_bind_int(statement, useIndex, 1);
+		sqlite3_bind_blob(statement, index, constraints->md5, 16, NULL);
+	}
+
+	if (memcmp(constraints->sha1, &(uint8_t[20]) {0}, 20) != 0) {
+		useIndex = sqlite3_bind_parameter_index(statement, ":useSha1");
+		index = sqlite3_bind_parameter_index(statement, ":sha1");
+		sqlite3_bind_int(statement, useIndex, 1);
+		sqlite3_bind_blob(statement, index, constraints->sha1, 20, NULL);
 	}
 
 	if (constraints->filesize) {
@@ -139,6 +155,8 @@ struct mLibrary* mLibraryLoad(const char* path) {
 		"\n 	CONSTRAINT location UNIQUE (path, rootid)"
 		"\n );"
 		"\n CREATE INDEX IF NOT EXISTS crc32 ON roms (crc32);"
+		"\n CREATE INDEX IF NOT EXISTS md5 ON roms (md5);"
+		"\n CREATE INDEX IF NOT EXISTS sha1 ON roms (sha1);"
 		"\n INSERT OR IGNORE INTO version (tname, version) VALUES ('version', 1);"
 		"\n INSERT OR IGNORE INTO version (tname, version) VALUES ('roots', 1);"
 		"\n INSERT OR IGNORE INTO version (tname, version) VALUES ('roms', 1);"
@@ -152,7 +170,7 @@ struct mLibrary* mLibraryLoad(const char* path) {
 		goto error;
 	}
 
-	static const char insertRom[] = "INSERT INTO roms (crc32, size, internalCode, platform) VALUES (:crc32, :size, :internalCode, :platform);";
+	static const char insertRom[] = "INSERT INTO roms (crc32, md5, sha1, size, internalCode, platform) VALUES (:crc32, :md5, :sha1, :size, :internalCode, :platform);";
 	if (sqlite3_prepare_v2(library->db, insertRom, -1, &library->insertRom, NULL)) {
 		goto error;
 	}
@@ -297,6 +315,8 @@ bool _mLibraryAddEntry(struct mLibrary* library, const char* filename, const cha
 	snprintf(entry.internalCode, sizeof(entry.internalCode), "%s-%s", info.system, info.code);
 	strlcpy(entry.internalTitle, info.title, sizeof(entry.internalTitle));
 	core->checksum(core, &entry.crc32, mCHECKSUM_CRC32);
+	core->checksum(core, &entry.md5, mCHECKSUM_MD5);
+	core->checksum(core, &entry.sha1, mCHECKSUM_SHA1);
 	entry.platform = core->platform(core);
 	entry.title = NULL;
 	entry.base = base;
@@ -402,10 +422,28 @@ size_t mLibraryGetEntries(struct mLibrary* library, struct mLibraryListing* out,
 		int i;
 		for (i = 0; i < nCols; ++i) {
 			const char* colName = sqlite3_column_name(library->select, i);
-			if (strcmp(colName, "crc32") == 0) {
+			if (strcmp(colName, "sha1") == 0) {
+				const void* buf = sqlite3_column_blob(library->select, i);
+				if (buf && sqlite3_column_bytes(library->select, i) == sizeof(entry->sha1)) {
+					memcpy(entry->sha1, buf, sizeof(entry->sha1));
+					struct NoIntroGame game;
+					if (!entry->title && NoIntroDBLookupGameBySHA1(library->gameDB, entry->sha1, &game)) {
+						entry->title = strdup(game.name);
+					}
+				}
+			} else if (strcmp(colName, "md5") == 0) {
+				const void* buf = sqlite3_column_blob(library->select, i);
+				if (buf && sqlite3_column_bytes(library->select, i) == sizeof(entry->md5)) {
+					memcpy(entry->md5, buf, sizeof(entry->md5));
+					struct NoIntroGame game;
+					if (!entry->title && NoIntroDBLookupGameByMD5(library->gameDB, entry->md5, &game)) {
+						entry->title = strdup(game.name);
+					}
+				}
+			} else if (strcmp(colName, "crc32") == 0) {
 				entry->crc32 = sqlite3_column_int(library->select, i);
 				struct NoIntroGame game;
-				if (NoIntroDBLookupGameByCRC(library->gameDB, entry->crc32, &game)) {
+				if (!entry->title && NoIntroDBLookupGameByCRC(library->gameDB, entry->crc32, &game)) {
 					entry->title = strdup(game.name);
 				}
 			} else if (strcmp(colName, "platform") == 0) {

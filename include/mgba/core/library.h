@@ -24,6 +24,8 @@ struct mLibraryEntry {
 	enum mPlatform platform;
 	size_t filesize;
 	uint32_t crc32;
+	uint8_t md5[16];
+	uint8_t sha1[20];
 };
 
 #ifdef USE_SQLITE3
