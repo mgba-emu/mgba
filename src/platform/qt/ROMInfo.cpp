@@ -80,7 +80,7 @@ ROMInfo::ROMInfo(std::shared_ptr<CoreController> controller, QWidget* parent)
 #ifdef USE_SQLITE3
 	if (db) {
 		NoIntroGame game{};
-		if (memcmp(sha1, &(const uint8_t[20]) {}, 20) != 0 && NoIntroDBLookupGameBySHA1(db, sha1, &game)) {
+		if (!isZeroed<20>(sha1) && NoIntroDBLookupGameBySHA1(db, sha1, &game)) {
 			m_ui.name->setText(game.name);
 		} else if (crc32 && NoIntroDBLookupGameByCRC(db, crc32, &game)) {
 			m_ui.name->setText(game.name);
