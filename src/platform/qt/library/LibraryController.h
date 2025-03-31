@@ -75,6 +75,7 @@ protected:
 
 private:
 	void loadDirectory(const QString&, bool recursive = true); // Called on separate thread
+	void updateViewStyle(LibraryStyle newStyle);
 
 	ConfigController* m_config = nullptr;
 	std::shared_ptr<mLibrary> m_library;

@@ -222,7 +222,7 @@ struct mLibrary* mLibraryLoad(const char* path) {
 		goto error;
 	}
 
-	static const char insertRom[] = "INSERT INTO roms (crc32, md5, sha1, size, internalCode, platform, :models) VALUES (:crc32, :md5, :sha1, :size, :internalCode, :platform, :models);";
+	static const char insertRom[] = "INSERT INTO roms (crc32, md5, sha1, size, internalCode, platform, models) VALUES (:crc32, :md5, :sha1, :size, :internalCode, :platform, :models);";
 	if (sqlite3_prepare_v2(library->db, insertRom, -1, &library->insertRom, NULL)) {
 		goto error;
 	}

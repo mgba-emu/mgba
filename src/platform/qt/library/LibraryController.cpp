@@ -61,13 +61,7 @@ LibraryController::LibraryController(QWidget* parent, const QString& path, Confi
 	QObject::connect(m_libraryModel, &QAbstractItemModel::rowsInserted, &m_expandThrottle, qOverload<>(&QTimer::start));
 
 	LibraryStyle libraryStyle = LibraryStyle(m_config->getOption("libraryStyle", int(LibraryStyle::STYLE_LIST)).toInt());
-	// Make sure setViewStyle does something
-	if (libraryStyle == LibraryStyle::STYLE_TREE) {
-		m_currentStyle = LibraryStyle::STYLE_LIST;
-	} else {
-		m_currentStyle = LibraryStyle::STYLE_TREE;
-	}
-	setViewStyle(libraryStyle);
+	updateViewStyle(libraryStyle);
 
 	QVariant librarySort = m_config->getQtOption("librarySort");
 	QVariant librarySortOrder = m_config->getQtOption("librarySortOrder");
@@ -89,6 +83,10 @@ void LibraryController::setViewStyle(LibraryStyle newStyle) {
 	if (m_currentStyle == newStyle) {
 		return;
 	}
+	updateViewStyle(newStyle);
+}
+
+void LibraryController::updateViewStyle(LibraryStyle newStyle) {
 	QString selected;
 	if (m_currentView) {
 		QModelIndex selectedIndex = m_currentView->selectionModel()->currentIndex();
@@ -266,16 +264,24 @@ void LibraryController::resizeEvent(QResizeEvent*) {
 	resizeTreeView(false);
 }
 
+// This function automatically reallocates the horizontal space between the
+// columns in the view in a useful way when the window is resized.
 void LibraryController::resizeTreeView(bool expand) {
+	// When new items are added to the model, make sure they are revealed.
 	if (expand) {
 		m_treeView->expandAll();
 	}
 
+	// Start off by asking the view how wide it thinks each column should be.
 	int viewportWidth = m_treeView->viewport()->width();
 	int totalWidth = m_treeView->header()->sectionSizeHint(LibraryModel::MAX_COLUMN);
 	for (int column = 0; column < LibraryModel::MAX_COLUMN; column++) {
 		totalWidth += m_treeView->columnWidth(column);
 	}
+
+	// If there would be empty space, ask the view to redistribute it.
+	// The final column is set to fill any remaining width, so this
+	// should (at least) fill the window.
 	if (totalWidth < viewportWidth) {
 		totalWidth = 0;
 		for (int column = 0; column <= LibraryModel::MAX_COLUMN; column++) {
@@ -283,6 +289,10 @@ void LibraryController::resizeTreeView(bool expand) {
 			totalWidth += m_treeView->columnWidth(column);
 		}
 	}
+
+	// If the columns would be too wide for the view now, try shrinking the
+	// "Location" column down to reduce horizontal scrolling, with a fixed
+	// minimum width of 100px.
 	if (totalWidth > viewportWidth) {
 		int locationWidth = m_treeView->columnWidth(LibraryModel::COL_LOCATION);
 		if (locationWidth > 100) {
@@ -291,7 +301,6 @@ void LibraryController::resizeTreeView(bool expand) {
 				newLocationWidth = 100;
 			}
 			m_treeView->setColumnWidth(LibraryModel::COL_LOCATION, newLocationWidth);
-			totalWidth = totalWidth - locationWidth + newLocationWidth;
 		}
 	}
 }

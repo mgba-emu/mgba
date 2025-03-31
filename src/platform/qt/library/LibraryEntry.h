@@ -37,6 +37,7 @@ struct LibraryEntry {
 	int platformModels;
 	size_t filesize;
 	uint32_t crc32;
+	QByteArray sha1;
 
 	LibraryEntry& operator=(const LibraryEntry&) = default;
 	LibraryEntry& operator=(LibraryEntry&&) = default;

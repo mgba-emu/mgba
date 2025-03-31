@@ -6,7 +6,9 @@
 #include "utils.h"
 
 #include <mgba/core/library.h>
+#ifdef M_CORE_GB
 #include <mgba/gb/interface.h>
+#endif
 
 #include <QCoreApplication>
 #include <QHostAddress>

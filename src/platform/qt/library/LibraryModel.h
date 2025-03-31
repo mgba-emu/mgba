@@ -17,6 +17,7 @@
 #include "LibraryEntry.h"
 
 class QTreeView;
+class LibraryModelTest;
 
 namespace QGBA {
 
@@ -62,6 +63,8 @@ public:
 	LibraryEntry entry(const QString& game) const;
 
 private:
+	friend class ::LibraryModelTest;
+
 	QModelIndex indexForPath(const QString& path);
 	QModelIndex indexForPath(const QString& path) const;
 
@@ -78,7 +81,6 @@ private:
 	QStringList m_pathOrder;
 	QHash<QString, QList<const LibraryEntry*>> m_pathIndex;
 	QHash<QString, int> m_gameIndex;
-	QHash<QString, QIcon> m_icons;
 };
 
 }

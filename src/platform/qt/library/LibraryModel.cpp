@@ -22,25 +22,28 @@ static const QStringList iconSets{
 	"GBC",
 	"GB",
 	"SGB",
-	// "DS",
 };
+
+static QHash<QString, QIcon> platformIcons;
 
 LibraryModel::LibraryModel(QObject* parent)
 	: QAbstractItemModel(parent)
 	, m_treeMode(false)
 	, m_showFilename(false)
 {
-	for (const QString& platform : iconSets) {
-		QString pathTemplate = QStringLiteral(":/res/%1-icon%2").arg(platform.toLower());
-		QIcon icon;
-		icon.addFile(pathTemplate.arg("-256.png"), QSize(256, 256));
-		icon.addFile(pathTemplate.arg("-128.png"), QSize(128, 128));
-		icon.addFile(pathTemplate.arg("-32.png"), QSize(32, 32));
-		icon.addFile(pathTemplate.arg("-24.png"), QSize(24, 24));
-		icon.addFile(pathTemplate.arg("-16.png"), QSize(16, 16));
-		// This will silently and harmlessly fail if QSvgIconEngine isn't compiled in.
-		icon.addFile(pathTemplate.arg(".svg"));
-		m_icons[platform] = icon;
+	if (platformIcons.isEmpty()) {
+		for (const QString& platform : iconSets) {
+			QString pathTemplate = QStringLiteral(":/res/%1-icon%2").arg(platform.toLower());
+			QIcon icon;
+			icon.addFile(pathTemplate.arg("-256.png"), QSize(256, 256));
+			icon.addFile(pathTemplate.arg("-128.png"), QSize(128, 128));
+			icon.addFile(pathTemplate.arg("-32.png"), QSize(32, 32));
+			icon.addFile(pathTemplate.arg("-24.png"), QSize(24, 24));
+			icon.addFile(pathTemplate.arg("-16.png"), QSize(16, 16));
+			// This will silently and harmlessly fail if QSvgIconEngine isn't compiled in.
+			icon.addFile(pathTemplate.arg(".svg"));
+			platformIcons[platform] = icon;
+		}
 	}
 }
 
@@ -174,9 +177,13 @@ void LibraryModel::updateEntries(const QList<LibraryEntry>& items) {
 }
 
 void LibraryModel::removeEntries(const QList<QString>& items) {
-	SpanSet removedRootSpans;
+	SpanSet removedRootSpans, removedGameSpans;
 	QHash<QString, SpanSet> removedTreeSpans;
 	int firstModifiedIndex = m_games.size();
+
+	// Remove the items from the game index and assemble a span
+	// set so that we can later inform the view of which rows
+	// were removed in an optimized way.
 	for (const QString& item : items) {
 		int pos = m_gameIndex.value(item, -1);
 		Q_ASSERT(pos >= 0);
@@ -189,12 +196,18 @@ void LibraryModel::removeEntries(const QList<QString>& items) {
 		QList<const LibraryEntry*>& pathItems = m_pathIndex[entry->base];
 		int pathPos = pathItems.indexOf(entry);
 		Q_ASSERT(pathPos >= 0);
+		removedGameSpans.add(pos);
 		removedTreeSpans[entry->base].add(pathPos);
-		if (!m_treeMode) {
-			removedRootSpans.add(pos);
-		}
 		m_gameIndex.remove(item);
 	}
+
+	if (!m_treeMode) {
+		// If not using a tree view, all entries are root entries.
+		removedRootSpans = removedGameSpans;
+	}
+
+	// Remove the paths from the path indexes.
+	// If it's a tree view, inform the view.
 	for (const QString& base : removedTreeSpans.keys()) {
 		SpanSet& spanSet = removedTreeSpans[base];
 		spanSet.merge();
@@ -223,6 +236,9 @@ void LibraryModel::removeEntries(const QList<QString>& items) {
 			}
 		}
 	}
+
+	// Remove the games from the backing store and path indexes,
+	// and tell the view to remove the root items.
 	removedRootSpans.merge();
 	removedRootSpans.sort(true);
 	for (const SpanSet::Span& span : removedRootSpans.spans) {
@@ -233,10 +249,21 @@ void LibraryModel::removeEntries(const QList<QString>& items) {
 				m_pathIndex.remove(base);
 			}
 		} else {
+			// In list view, remove games from the backing store immediately
 			m_games.erase(m_games.begin() + span.left, m_games.begin() + span.right + 1);
 		}
 		endRemoveRows();
 	}
+	if (m_treeMode) {
+		// In tree view, remove them after cleaning up the path indexes.
+		removedGameSpans.merge();
+		removedGameSpans.sort(true);
+		for (const SpanSet::Span& span : removedGameSpans.spans) {
+			m_games.erase(m_games.begin() + span.left, m_games.begin() + span.right + 1);
+		}
+	}
+
+	// Finally, update the game index for the remaining items.
 	for (int i = m_games.size() - 1; i >= firstModifiedIndex; i--) {
 		m_gameIndex[m_games[i]->fullpath] = i;
 	}
@@ -294,8 +321,7 @@ int LibraryModel::rowCount(const QModelIndex& parent) const {
 	return m_games.size();
 }
 
-QVariant LibraryModel::folderData(const QModelIndex& index, int role) const
-{
+QVariant LibraryModel::folderData(const QModelIndex& index, int role) const {
 	// Precondition: index and role must have already been validated
 	if (role == Qt::DecorationRole) {
 		return qApp->style()->standardIcon(QStyle::SP_DirOpenIcon);
@@ -311,26 +337,34 @@ QVariant LibraryModel::folderData(const QModelIndex& index, int role) const
 }
 
 QVariant LibraryModel::data(const QModelIndex& index, int role) const {
-	if (role != Qt::DisplayRole &&
-			role != Qt::EditRole &&
-			role != Qt::ToolTipRole &&
-			role != Qt::DecorationRole &&
-			role != Qt::TextAlignmentRole &&
-			role != FullPathRole) {
-		return QVariant();
+	switch (role) {
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+		case Qt::TextAlignmentRole:
+		case FullPathRole:
+			break;
+		case Qt::ToolTipRole:
+			if (index.column() > COL_LOCATION) {
+				return QVariant();
+			}
+			break;
+		case Qt::DecorationRole:
+			if (index.column() != COL_NAME) {
+				return QVariant();
+			}
+			break;
+		default:
+			return QVariant();
 	}
+
 	if (!checkIndex(index)) {
 		return QVariant();
 	}
-	if (role == Qt::ToolTipRole && index.column() > COL_LOCATION) {
-		return QVariant();
-	}
-	if (role == Qt::DecorationRole && index.column() != COL_NAME) {
-		return QVariant();
-	}
+
 	if (role == Qt::TextAlignmentRole) {
 		return index.column() == COL_SIZE ? (int)(Qt::AlignTrailing | Qt::AlignVCenter) : (int)(Qt::AlignLeading | Qt::AlignVCenter);
 	}
+
 	const LibraryEntry* entry = nullptr;
 	if (m_treeMode) {
 		if (!index.parent().isValid()) {
@@ -341,26 +375,28 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const {
 	} else if (!index.parent().isValid() && index.row() < (int)m_games.size()) {
 		entry = m_games[index.row()].get();
 	}
+
 	if (entry) {
 		if (role == FullPathRole) {
 			return entry->fullpath;
 		}
 		switch (index.column()) {
-			case COL_NAME:
-				if (role == Qt::DecorationRole) {
-					return m_icons.value(entry->displayPlatform(), qApp->style()->standardIcon(QStyle::SP_FileIcon));
-				}
-				return entry->displayTitle(m_showFilename);
-			case COL_LOCATION:
-				return QDir::toNativeSeparators(entry->base);
-			case COL_PLATFORM:
-				return nicePlatformFormat(entry->platform);
-			case COL_SIZE:
-				return (role == Qt::DisplayRole) ? QVariant(niceSizeFormat(entry->filesize)) : QVariant(int(entry->filesize));
-			case COL_CRC32:
-				return (role == Qt::DisplayRole) ? QVariant(QStringLiteral("%0").arg(entry->crc32, 8, 16, QChar('0'))) : QVariant(entry->crc32);
+		case COL_NAME:
+			if (role == Qt::DecorationRole) {
+				return platformIcons.value(entry->displayPlatform(), qApp->style()->standardIcon(QStyle::SP_FileIcon));
+			}
+			return entry->displayTitle(m_showFilename);
+		case COL_LOCATION:
+			return QDir::toNativeSeparators(entry->base);
+		case COL_PLATFORM:
+			return nicePlatformFormat(entry->platform);
+		case COL_SIZE:
+			return (role == Qt::DisplayRole) ? QVariant(niceSizeFormat(entry->filesize)) : QVariant(int(entry->filesize));
+		case COL_CRC32:
+			return (role == Qt::DisplayRole) ? QVariant(QStringLiteral("%0").arg(entry->crc32, 8, 16, QChar('0'))) : QVariant(entry->crc32);
 		}
 	}
+
 	return QVariant();
 }
 

@@ -128,13 +128,18 @@ private slots:
 	void testList() {
 		addTestGames1();
 		QCOMPARE(model->rowCount(), 3);
+		QCOMPARE(model->m_games.size(), 3);
 		addTestGames2();
 		QCOMPARE(model->rowCount(), 8);
+		QCOMPARE(model->m_games.size(), 8);
 		updateGame();
+		QCOMPARE(model->m_games.size(), 8);
 		model->removeEntries({ "/gba/Another.gba", "/gb/Game 6.gb" });
 		QCOMPARE(model->rowCount(), 6);
+		QCOMPARE(model->m_games.size(), 6);
 		model->removeEntries({ "/gb/Old Game.gb", "/gb/Game 7.gb" });
 		QCOMPARE(model->rowCount(), 4);
+		QCOMPARE(model->m_games.size(), 4);
 	}
 
 	void testTree() {
@@ -144,19 +149,24 @@ private slots:
 		QCOMPARE(model->rowCount(), 2);
 		QCOMPARE(model->rowCount(model->index(gbRow, 0)), 1);
 		QCOMPARE(model->rowCount(model->index(gbaRow, 0)), 2);
+		QCOMPARE(model->m_games.size(), 3);
 		addTestGames2();
 		QCOMPARE(model->rowCount(), 2);
 		QCOMPARE(model->rowCount(model->index(gbRow, 0)), 3);
 		QCOMPARE(model->rowCount(model->index(gbaRow, 0)), 5);
+		QCOMPARE(model->m_games.size(), 8);
 		updateGame();
+		QCOMPARE(model->m_games.size(), 8);
 		removeGames1();
 		QCOMPARE(model->rowCount(), 2);
 		QCOMPARE(model->rowCount(model->index(gbRow, 0)), 2);
 		QCOMPARE(model->rowCount(model->index(gbaRow, 0)), 4);
+		QCOMPARE(model->m_games.size(), 6);
 		removeGames2();
 		QVERIFY2(!find("gb").isValid(), "did not remove gb folder");
 		QCOMPARE(model->rowCount(), 1);
 		QCOMPARE(model->rowCount(model->index(0, 0)), 4);
+		QCOMPARE(model->m_games.size(), 4);
 	}
 
 	void modeSwitchTest1() {
