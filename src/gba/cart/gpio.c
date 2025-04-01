@@ -78,15 +78,15 @@ void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uin
 			hw->pinState &= ~hw->direction;
 			hw->pinState |= value & hw->direction;
 		} else {
-			hw->pinState = value;
+			hw->pinState = value & 0xF;
 		}
 		_readPins(hw);
 		break;
 	case GPIO_REG_DIRECTION:
-		hw->direction = value;
+		hw->direction = value & 0xF;
 		break;
 	case GPIO_REG_CONTROL:
-		hw->readWrite = value;
+		hw->readWrite = value & 0x1;
 		break;
 	default:
 		mLOG(GBA_HW, WARN, "Invalid GPIO address");
@@ -514,6 +514,8 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	hw->readWrite = GBASerializedHWFlags1GetReadWrite(flags1);
 	LOAD_16(hw->pinState, 0, &state->hw.pinState);
 	LOAD_16(hw->direction, 0, &state->hw.pinDirection);
+	hw->pinState &= 0xF;
+	hw->direction &= 0xF;
 	hw->devices = state->hw.devices;
 
 	if ((hw->devices & HW_GPIO) && hw->gpioBase) {
