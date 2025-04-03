@@ -1346,6 +1346,8 @@ static uint8_t _readLuminance(struct GBALuminanceSource* luminance) {
 }
 #endif
 
+#pragma push_macro("CALLBACK")
+#undef CALLBACK
 #define CALLBACK(NAME) _mScriptCoreCallback ## NAME
 #define DEFINE_CALLBACK(NAME) \
 	void CALLBACK(NAME) (void* context) { \
@@ -1444,3 +1446,4 @@ void mScriptContextDetachCore(struct mScriptContext* context) {
 
 	mScriptContextRemoveGlobal(context, "emu");
 }
+#pragma pop_macro("CALLBACK")

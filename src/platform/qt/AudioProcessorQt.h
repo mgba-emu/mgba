@@ -45,12 +45,12 @@ private slots:
 
 private:
 	QTimer m_recheckTimer;
-	std::unique_ptr<QAudioSink> m_audioOutput;
+	QAudioSink* m_audioOutput;
 #else
 private:
-	std::unique_ptr<QAudioOutput> m_audioOutput;
+	QAudioOutput* m_audioOutput;
 #endif
-	std::unique_ptr<AudioDevice> m_device;
+	AudioDevice* m_device;
 	size_t m_samples = 1024;
 	unsigned m_sampleRate = 44100;
 };

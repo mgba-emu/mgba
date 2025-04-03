@@ -34,6 +34,9 @@ int InputController::s_claimedPlayers = 0;
 
 InputController::InputController(QWidget* topLevel, QObject* parent)
 	: QObject(parent)
+#ifdef BUILD_QT_MULTIMEDIA
+	, m_camera(new QCamera(this))
+#endif
 	, m_playerId(claimPlayer())
 	, m_topLevel(topLevel)
 	, m_focusParent(topLevel)
@@ -97,7 +100,6 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 			image->image.load(":/res/no-cam.png");
 		}
 #ifdef BUILD_QT_MULTIMEDIA
-		image->p->m_cameraActive = true;
 		QByteArray camera = image->p->m_config->getQtOption("camera").toByteArray();
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 		if (!camera.isNull()) {
@@ -119,7 +121,6 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 	m_image.stopRequestImage = [](mImageSource* context) {
 #ifdef BUILD_QT_MULTIMEDIA
 		InputControllerImage* image = static_cast<InputControllerImage*>(context);
-		image->p->m_cameraActive = false;
 		QMetaObject::invokeMethod(image->p, "teardownCam");
 #else
 		UNUSED(context);
@@ -666,24 +667,20 @@ void InputController::setupCam() {
 	}
 
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-	if (!m_camera) {
-		m_camera = std::make_unique<QCamera>(m_cameraDevice);
-		connect(m_camera.get(), &QCamera::statusChanged, this, &InputController::prepareCamSettings, Qt::QueuedConnection);
-	}
+	m_camera->deleteLater();
+	m_camera = new QCamera(m_cameraDevice, this);
+	connect(m_camera, &QCamera::statusChanged, this, &InputController::prepareCamSettings, Qt::QueuedConnection);
 	if (m_camera->status() == QCamera::UnavailableStatus) {
-		m_camera.reset();
 		return;
 	}
 	m_camera->setCaptureMode(QCamera::CaptureVideo);
 	m_camera->setViewfinder(&m_videoDumper);
 	m_camera->load();
 #else
-	if (!m_camera) {
-		m_camera = std::make_unique<QCamera>(m_cameraDevice);
-		m_captureSession.setCamera(m_camera.get());
-	}
-	prepareCamFormat();
+	m_camera->setCameraDevice(m_cameraDevice);
+	m_captureSession.setCamera(m_camera);
 #endif
+	prepareCamFormat();
 #endif
 }
 
@@ -762,7 +759,7 @@ void InputController::teardownCam() {
 #else
 		m_captureSession.setCamera(nullptr);
 #endif
-		m_camera.reset();
+		m_camera->stop();
 	}
 #endif
 }
@@ -776,6 +773,7 @@ void InputController::setCamera(const QByteArray& name) {
 	m_cameraDevice = name;
 	if (m_camera && m_camera->state() == QCamera::ActiveState) {
 		teardownCam();
+		setupCam();
 	}
 #else
 	if (m_cameraDevice.id() == name) {
@@ -786,10 +784,11 @@ void InputController::setCamera(const QByteArray& name) {
 			m_cameraDevice = cam;
 		}
 	}
-#endif
-	if (m_cameraActive) {
+	if (m_camera->isActive()) {
+		teardownCam();
 		setupCam();
 	}
+#endif
 #else
 	UNUSED(name);
 #endif
