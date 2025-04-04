@@ -482,7 +482,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../DisplayGL.cpp" line="313"/>
         <source>Failed to create an OpenGL 3 context, trying old-style...</source>
-        <translation type="unfinished"></translation>
+        <translation>Falhou ao criar um contexto do OpenGL 3, tentando o estilo antigo...</translation>
     </message>
 </context>
 <context>
@@ -1143,7 +1143,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="106"/>
         <source>Sintax</source>
-        <translation type="unfinished"></translation>
+        <translation>Sintaxe</translation>
     </message>
 </context>
 <context>
@@ -3414,7 +3414,7 @@ Tamanho da descarga: %3</translation>
         <location filename="../MemoryAccessLogController.cpp" line="117"/>
         <location filename="../MemoryAccessLogController.cpp" line="126"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Falhou em abrir o ficheiro do registo de memória</translation>
     </message>
 </context>
 <context>
@@ -3422,147 +3422,147 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="67"/>
         <source>Data read</source>
-        <translation type="unfinished"></translation>
+        <translation>Leitura dos Dados</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="69"/>
         <source>Data written</source>
-        <translation type="unfinished"></translation>
+        <translation>Dados gravados</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="71"/>
         <source>Code executed</source>
-        <translation type="unfinished"></translation>
+        <translation>Código executado</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="73"/>
         <source>Code aborted</source>
-        <translation type="unfinished"></translation>
+        <translation>Código abortado</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="75"/>
         <source>8-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acesso de 8 bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="77"/>
         <source>16-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acesso de 16 bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="79"/>
         <source>32-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acesso de 32 bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="81"/>
         <source>64-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acesso de 64 bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="95"/>
         <source>Accessed by instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Acedido pela instrução</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="97"/>
         <source>Accessed by DMA</source>
-        <translation type="unfinished"></translation>
+        <translation>Acedido pelo DMA</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="99"/>
         <source>Accessed by BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>Acedido pela BIOS</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="101"/>
         <source>Compressed data</source>
-        <translation type="unfinished"></translation>
+        <translation>Dados comprimidos</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="103"/>
         <source>Accessed by memory copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Acedido pela cópia da memória</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="105"/>
         <source>(Unknown extra bit 5)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit extra desconhecido 5)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="107"/>
         <source>(Unknown extra bit 6)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit extra desconhecido 6)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="109"/>
         <source>(Unknown extra bit 7)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit extra desconhecido 7)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="111"/>
         <source>Invalid instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Instrução inválida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="113"/>
         <source>Invalid read</source>
-        <translation type="unfinished"></translation>
+        <translation>Leitura inválida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="115"/>
         <source>Invalid write</source>
-        <translation type="unfinished"></translation>
+        <translation>Gravação inválida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="117"/>
         <source>Invalid executable address</source>
-        <translation type="unfinished"></translation>
+        <translation>Endereço do executável inválido</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="119"/>
         <source>(Private bit 0)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit privado 0)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="121"/>
         <source>(Private bit 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit privado 1)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>Código ARM</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
         <source>Instruction opcode</source>
-        <translation type="unfinished"></translation>
+        <translation>Opcode da instrução</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="129"/>
         <source>(Private bit 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit privado 2)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="134"/>
         <source>Thumb code</source>
-        <translation type="unfinished"></translation>
+        <translation>Código do thumb</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="136"/>
         <source>Instruction operand</source>
-        <translation type="unfinished"></translation>
+        <translation>Operando da instrução</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="138"/>
         <source>(Private bit 3)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit privado 3)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="146"/>
         <source>(Unknown)</source>
-        <translation type="unfinished">(Desconhecido)</translation>
+        <translation>(Desconhecido)</translation>
     </message>
 </context>
 <context>
@@ -3570,68 +3570,68 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="14"/>
         <source>Memory access logging</source>
-        <translation type="unfinished"></translation>
+        <translation>Registo de acesso a memória</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="23"/>
         <source>Log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Ficheiro do registo</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="32"/>
         <source>Browse</source>
-        <translation type="unfinished">Explorar</translation>
+        <translation>Explorar</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="39"/>
         <source>Log additional information (uses 3× space)</source>
-        <translation type="unfinished"></translation>
+        <translation>Informação adicional do registo (usa 3x mais espaço)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="46"/>
         <source>Load existing file if present</source>
-        <translation type="unfinished"></translation>
+        <translation>Carregar o ficheiro existente se estiver presente</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="56"/>
         <source>Load</source>
-        <translation type="unfinished">Carregar</translation>
+        <translation>Carregar</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
         <source>Unload</source>
-        <translation type="unfinished"></translation>
+        <translation>Descarregar</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="76"/>
         <source>Regions</source>
-        <translation type="unfinished"></translation>
+        <translation>Regiões</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="87"/>
         <source>Export ROM snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Exportar a snapshot da ROM</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="94"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Iniciar</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="104"/>
         <source>Stop</source>
-        <translation type="unfinished">Parar</translation>
+        <translation>Parar</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="96"/>
         <location filename="../MemoryAccessLogView.cpp" line="111"/>
         <source>Select access log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecionar o ficheiro de registo do acesso</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="96"/>
         <source>Memory access logs (*.mal)</source>
-        <translation type="unfinished"></translation>
+        <translation>Registos de acesso a memória (*.mal)</translation>
     </message>
 </context>
 <context>
@@ -3935,37 +3935,37 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="43"/>
         <source>Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Endereço:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="112"/>
         <source>Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation>Alinhamento:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="126"/>
         <source>1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>1 Byte</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="131"/>
         <source>2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>2 Bytes</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="136"/>
         <source>4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>4 Bytes</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="158"/>
         <source>Signed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Assinado:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="178"/>
         <source>Unsigned:</source>
-        <translation type="unfinished"></translation>
+        <translation>Não assinado:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="260"/>
@@ -3980,12 +3980,12 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="288"/>
         <source>Selected address accesses</source>
-        <translation type="unfinished"></translation>
+        <translation>Acessos do endereço selecionado</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="310"/>
         <source>Logging configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuração do registo</translation>
     </message>
 </context>
 <context>
@@ -4006,12 +4006,12 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="407"/>
         <source>Clearing invalid save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>A limpar a ID do gravamento inválido</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="416"/>
         <source>Clearing invalid preferred ID</source>
-        <translation type="unfinished"></translation>
+        <translation>A limpar a ID preferida inválida</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="437"/>
@@ -4544,7 +4544,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>Informação do ficheiro</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
@@ -4554,12 +4554,12 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
         <source>ROM header</source>
-        <translation type="unfinished"></translation>
+        <translation>Cabeçalho da ROM</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="123"/>
@@ -4574,12 +4574,12 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="157"/>
         <source>Maker Code:</source>
-        <translation type="unfinished"></translation>
+        <translation>Código do Criador:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="174"/>
         <source>Revision:</source>
-        <translation type="unfinished"></translation>
+        <translation>Revisão:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="49"/>
@@ -4862,7 +4862,7 @@ Tamanho da descarga: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="115"/>
         <source>&amp;Load most recent</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Carregar o mais recente</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="120"/>
@@ -5034,7 +5034,9 @@ Tamanho da descarga: %3</translation>
         <source>Shaders are not supported when the display driver is not OpenGL.
 
 If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
-        <translation type="unfinished"></translation>
+        <translation>Shaders não são suportados quando o driver de exibição não é OpenGL.
+
+Se estiver definido como OpenGL e ainda ver isto, a sua placa gráfica ou drivers podem ser muito antigos.</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="416"/>
@@ -5843,17 +5845,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.cpp" line="92"/>
         <source>mGBA Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Shaders do mGBA</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>Error loading shader</source>
-        <translation type="unfinished"></translation>
+        <translation>Erro ao carregar o shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>O shader &quot;%1&quot; não pôde ser carregado com sucesso.</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="145"/>
@@ -6708,7 +6710,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1595"/>
         <source>&amp;Lock frame size</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Travar o tamanho do frame</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1608"/>
@@ -6883,7 +6885,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1775"/>
         <source>Log memory &amp;accesses...</source>
-        <translation type="unfinished"></translation>
+        <translation>Registar os acessos a &amp;memória...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1789"/>
