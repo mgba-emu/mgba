@@ -49,6 +49,7 @@ void GBAHardwareInit(struct GBACartridgeHardware* hw, uint16_t* base) {
 
 void GBAHardwareReset(struct GBACartridgeHardware* hw) {
 	hw->readWrite = GPIO_WRITE_ONLY;
+	hw->writeLatch = 0;
 	hw->pinState = 0;
 	hw->direction = 0;
 	hw->lightCounter = 0;
@@ -64,6 +65,7 @@ void GBAHardwareReset(struct GBACartridgeHardware* hw) {
 void GBAHardwareClear(struct GBACartridgeHardware* hw) {
 	hw->devices = HW_NONE | (hw->devices & HW_GB_PLAYER_DETECTION);
 	hw->readWrite = GPIO_WRITE_ONLY;
+	hw->writeLatch = 0;
 	hw->pinState = 0;
 	hw->direction = 0;
 }
@@ -74,16 +76,22 @@ void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uin
 	}
 	switch (address) {
 	case GPIO_REG_DATA:
+		hw->writeLatch = value & 0xF;
 		if (!hw->p->vbaBugCompat) {
 			hw->pinState &= ~hw->direction;
-			hw->pinState |= value & hw->direction;
+			hw->pinState |= hw->writeLatch & hw->direction;
 		} else {
-			hw->pinState = value & 0xF;
+			hw->pinState = hw->writeLatch;
 		}
 		_readPins(hw);
 		break;
 	case GPIO_REG_DIRECTION:
 		hw->direction = value & 0xF;
+		if (!hw->p->vbaBugCompat) {
+			hw->pinState &= ~hw->direction;
+			hw->pinState |= hw->writeLatch & hw->direction;
+			_readPins(hw);
+		}
 		break;
 	case GPIO_REG_CONTROL:
 		hw->readWrite = value & 0x1;
@@ -475,7 +483,8 @@ uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* hw, uint32_t address) {
 void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASerializedState* state) {
 	GBASerializedHWFlags1 flags1 = 0;
 	flags1 = GBASerializedHWFlags1SetReadWrite(flags1, hw->readWrite);
-	STORE_16(hw->pinState, 0, &state->hw.pinState);
+	state->hw.writeLatch = hw->writeLatch;
+	state->hw.pinState = hw->pinState;
 	STORE_16(hw->direction, 0, &state->hw.pinDirection);
 	state->hw.devices = hw->devices;
 
@@ -512,9 +521,9 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	GBASerializedHWFlags1 flags1;
 	LOAD_16(flags1, 0, &state->hw.flags1);
 	hw->readWrite = GBASerializedHWFlags1GetReadWrite(flags1);
-	LOAD_16(hw->pinState, 0, &state->hw.pinState);
+	hw->writeLatch = state->hw.writeLatch;
+	hw->pinState = state->hw.pinState;
 	LOAD_16(hw->direction, 0, &state->hw.pinDirection);
-	hw->pinState &= 0xF;
 	hw->direction &= 0xF;
 	hw->devices = state->hw.devices;
 
