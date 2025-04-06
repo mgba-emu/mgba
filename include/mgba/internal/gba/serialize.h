@@ -376,7 +376,8 @@ struct GBASerializedState {
 	} dma[4];
 
 	struct {
-		uint16_t pinState;
+		uint8_t pinState;
+		uint8_t writeLatch;
 		uint16_t pinDirection;
 		int32_t rtcBytesRemaining;
 		int32_t rtcTransferStep;
