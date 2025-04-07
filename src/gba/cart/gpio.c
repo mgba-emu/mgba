@@ -485,7 +485,7 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	flags1 = GBASerializedHWFlags1SetReadWrite(flags1, hw->readWrite);
 	state->hw.writeLatch = hw->writeLatch;
 	state->hw.pinState = hw->pinState;
-	STORE_16(hw->direction, 0, &state->hw.pinDirection);
+	state->hw.pinDirection = hw->direction;
 	state->hw.devices = hw->devices;
 
 	STORE_32(hw->rtc.bytesRemaining, 0, &state->hw.rtcBytesRemaining);
@@ -521,10 +521,9 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	GBASerializedHWFlags1 flags1;
 	LOAD_16(flags1, 0, &state->hw.flags1);
 	hw->readWrite = GBASerializedHWFlags1GetReadWrite(flags1);
-	hw->writeLatch = state->hw.writeLatch;
-	hw->pinState = state->hw.pinState;
-	LOAD_16(hw->direction, 0, &state->hw.pinDirection);
-	hw->direction &= 0xF;
+	hw->writeLatch = state->hw.writeLatch & 0xF;
+	hw->pinState = state->hw.pinState & 0xF;
+	hw->direction = state->hw.pinDirection & 0xF;
 	hw->devices = state->hw.devices;
 
 	if ((hw->devices & HW_GPIO) && hw->gpioBase) {

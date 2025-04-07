@@ -165,8 +165,10 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | 0x00288 - 0x0028B: DMA next count
  * | 0x0028C - 0x0028F: DMA next event
  * 0x00290 - 0x002C3: GPIO state
- * | 0x00290 - 0x00291: Pin state
- * | 0x00292 - 0x00293: Direction state
+ * | 0x00290: Pin state
+ * | 0x00291: Write latch
+ * | 0x00292: Direction state
+ * | 0x00293: Reserved
  * | 0x00294 - 0x002B6: RTC state (see hardware.h for format)
  * | 0x002B7 - 0x002B7: GPIO devices
  *   | bit 0: Has RTC values
@@ -378,7 +380,8 @@ struct GBASerializedState {
 	struct {
 		uint8_t pinState;
 		uint8_t writeLatch;
-		uint16_t pinDirection;
+		uint8_t pinDirection;
+		uint8_t reserved0;
 		int32_t rtcBytesRemaining;
 		int32_t rtcTransferStep;
 		int32_t rtcBitsRead;
@@ -386,7 +389,7 @@ struct GBASerializedState {
 		int32_t rtcCommandActive;
 		RTCCommandData rtcCommand;
 		uint8_t rtcControl;
-		uint8_t reserved[3];
+		uint8_t reserved1[3];
 		uint8_t time[7];
 		uint8_t devices;
 		uint16_t gyroSample;
