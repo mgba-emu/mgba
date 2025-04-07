@@ -69,8 +69,8 @@ struct GBACartridgeHardware {
 	uint16_t* gpioBase;
 
 	uint8_t writeLatch;
-	uint16_t pinState;
-	uint16_t direction;
+	uint8_t pinState;
+	uint8_t direction;
 
 	struct GBARTC rtc;
 
