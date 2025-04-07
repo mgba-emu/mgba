@@ -27,6 +27,7 @@ static void* _vfmMap(struct VFile* vf, size_t size, int flags);
 static void _vfmUnmap(struct VFile* vf, void* memory, size_t size);
 static void _vfmTruncate(struct VFile* vf, size_t size);
 static void _vfmTruncateNoExpand(struct VFile* vf, size_t size);
+static void _vfmTruncateNoop(struct VFile* vf, size_t size);
 static ssize_t _vfmSize(struct VFile* vf);
 static bool _vfmSync(struct VFile* vf, void* buffer, size_t size);
 
@@ -79,7 +80,7 @@ struct VFile* VFileFromConstMemory(const void* mem, size_t size) {
 	vfm->d.write = _vfmWriteNoop;
 	vfm->d.map = _vfmMap;
 	vfm->d.unmap = _vfmUnmap;
-	vfm->d.truncate = _vfmTruncateNoExpand;
+	vfm->d.truncate = _vfmTruncateNoop;
 	vfm->d.size = _vfmSize;
 	vfm->d.sync = _vfmSync;
 
@@ -236,8 +237,12 @@ ssize_t _vfmRead(struct VFile* vf, void* buffer, size_t size) {
 ssize_t _vfmWrite(struct VFile* vf, const void* buffer, size_t size) {
 	struct VFileMem* vfm = (struct VFileMem*) vf;
 
-	if (size + vfm->offset >= vfm->size) {
-		size = vfm->size - vfm->offset;
+	if (size + vfm->offset > vfm->size) {
+		vfm->size = size + vfm->offset;
+		if (vfm->size > vfm->bufferSize) {
+			vfm->size = vfm->bufferSize;
+			size = vfm->size - vfm->offset;
+		}
 	}
 
 	memcpy((void*) ((uintptr_t) vfm->mem + vfm->offset), buffer, size);
@@ -295,6 +300,12 @@ void _vfmTruncateNoExpand(struct VFile* vf, size_t size) {
 	}
 
 	vfm->size = size;
+}
+
+void _vfmTruncateNoop(struct VFile* vf, size_t size) {
+	// TODO: Return value?
+	UNUSED(vf);
+	UNUSED(size);
 }
 
 ssize_t _vfmSize(struct VFile* vf) {
