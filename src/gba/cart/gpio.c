@@ -784,6 +784,7 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	STORE_32(hw->rtc.command, 0, &state->hw.rtcCommand);
 	STORE_32(hw->rtc.control, 0, &state->hw.rtcControl);
 	memcpy(state->hw.time, hw->rtc.time, sizeof(state->hw.time));
+	STORE_64((int64_t)hw->rtc.lastLatch, 0, &state->rtcLastLatch);
 
 	STORE_16(hw->gyroSample, 0, &state->hw.gyroSample);
 	flags1 = GBASerializedHWFlags1SetGyroEdge(flags1, hw->gyroEdge);
@@ -835,6 +836,7 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	LOAD_32(hw->rtc.command, 0, &state->hw.rtcCommand);
 	LOAD_32(hw->rtc.control, 0, &state->hw.rtcControl);
 	memcpy(hw->rtc.time, state->hw.time, sizeof(hw->rtc.time));
+	LOAD_64(hw->rtc.lastLatch, 0, &state->rtcLastLatch);
 	GBAHardwareRTCSanitize(hw);
 
 	LOAD_16(hw->gyroSample, 0, &state->hw.gyroSample);
