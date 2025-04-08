@@ -466,7 +466,7 @@ Yeni sürüm: %2
     <message>
         <location filename="../DebuggerConsole.ui" line="27"/>
         <source>Break</source>
-        <translation>Ara ver</translation>
+        <translation>Kır</translation>
     </message>
 </context>
 <context>
