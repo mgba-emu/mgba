@@ -299,6 +299,10 @@ void _vfmTruncateNoExpand(struct VFile* vf, size_t size) {
 		size = vfm->bufferSize;
 	}
 
+	if (size > vfm->size) {
+		memset((void*) ((uintptr_t) vfm->mem + vfm->size), 0, size - vfm->size);
+	}
+
 	vfm->size = size;
 }
 
