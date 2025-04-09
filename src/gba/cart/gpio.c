@@ -183,36 +183,37 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 		}
 		break;
 	case 2:
-		if (!(hw->pinState & 1)) {
+	case 3:
+		if (!(hw->pinState & 4)) {
+			hw->rtc.bitsRead = 0;
+			hw->rtc.bytesRemaining = 0;
+			hw->rtc.commandActive = 0;
+			hw->rtc.command = 0;
+			hw->rtc.transferStep = hw->pinState & 1;
+			_outputPins(hw, 1);
+		} else if (!(hw->pinState & 1)) {
 			hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
 			hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
-		} else {
-			if (hw->pinState & 4) {
-				if (!RTCCommandDataIsReading(hw->rtc.command)) {
-					++hw->rtc.bitsRead;
-					if (hw->rtc.bitsRead == 8) {
-						_rtcProcessByte(hw);
-					}
-				} else {
-					_outputPins(hw, 5 | (_rtcOutput(hw) << 1));
-					++hw->rtc.bitsRead;
-					if (hw->rtc.bitsRead == 8) {
-						--hw->rtc.bytesRemaining;
-						if (hw->rtc.bytesRemaining <= 0) {
-							hw->rtc.commandActive = 0;
-							hw->rtc.command = 0;
-						}
-						hw->rtc.bitsRead = 0;
-					}
+			hw->rtc.transferStep = 3;
+		} else if (hw->rtc.transferStep == 3) {
+			if (!RTCCommandDataIsReading(hw->rtc.command)) {
+				++hw->rtc.bitsRead;
+				if (hw->rtc.bitsRead == 8) {
+					_rtcProcessByte(hw);
 				}
 			} else {
-				hw->rtc.bitsRead = 0;
-				hw->rtc.bytesRemaining = 0;
-				hw->rtc.commandActive = 0;
-				hw->rtc.command = 0;
-				hw->rtc.transferStep = hw->pinState & 1;
-				_outputPins(hw, 1);
+				_outputPins(hw, 5 | (_rtcOutput(hw) << 1));
+				++hw->rtc.bitsRead;
+				if (hw->rtc.bitsRead == 8) {
+					--hw->rtc.bytesRemaining;
+					if (hw->rtc.bytesRemaining <= 0) {
+						hw->rtc.commandActive = 0;
+						hw->rtc.command = 0;
+					}
+					hw->rtc.bitsRead = 0;
+				}
 			}
+			hw->rtc.transferStep = 2;
 		}
 		break;
 	}
