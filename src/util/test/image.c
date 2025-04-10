@@ -1142,6 +1142,807 @@ M_TEST_DEFINE(blitBoundaries) {
 	mImageDestroy(sprite);
 }
 
+#define COMPARE4(AA, BA, CA, DA, AB, BB, CB, DB, AC, BC, CC, DC, AD, BD, CD, DD) \
+	assert_int_equal(mImageGetPixel(image, 0, 0), (AA)); \
+	assert_int_equal(mImageGetPixel(image, 1, 0), (BA)); \
+	assert_int_equal(mImageGetPixel(image, 2, 0), (CA)); \
+	assert_int_equal(mImageGetPixel(image, 3, 0), (DA)); \
+	assert_int_equal(mImageGetPixel(image, 0, 1), (AB)); \
+	assert_int_equal(mImageGetPixel(image, 1, 1), (BB)); \
+	assert_int_equal(mImageGetPixel(image, 2, 1), (CB)); \
+	assert_int_equal(mImageGetPixel(image, 3, 1), (DB)); \
+	assert_int_equal(mImageGetPixel(image, 0, 2), (AC)); \
+	assert_int_equal(mImageGetPixel(image, 1, 2), (BC)); \
+	assert_int_equal(mImageGetPixel(image, 2, 2), (CC)); \
+	assert_int_equal(mImageGetPixel(image, 3, 2), (DC)); \
+	assert_int_equal(mImageGetPixel(image, 0, 3), (AD)); \
+	assert_int_equal(mImageGetPixel(image, 1, 3), (BD)); \
+	assert_int_equal(mImageGetPixel(image, 2, 3), (CD)); \
+	assert_int_equal(mImageGetPixel(image, 3, 3), (DD))
+
+#define COMPARE4X(AA, BA, CA, DA, AB, BB, CB, DB, AC, BC, CC, DC, AD, BD, CD, DD) \
+	COMPARE4(0xFF000000 | (AA), 0xFF000000 | (BA), 0xFF000000 | (CA), 0xFF000000 | (DA), \
+	         0xFF000000 | (AB), 0xFF000000 | (BB), 0xFF000000 | (CB), 0xFF000000 | (DB), \
+	         0xFF000000 | (AC), 0xFF000000 | (BC), 0xFF000000 | (CC), 0xFF000000 | (DC), \
+	         0xFF000000 | (AD), 0xFF000000 | (BD), 0xFF000000 | (CD), 0xFF000000 | (DD))
+
+#define COMPARE3(AA, BA, CA, AB, BB, CB, AC, BC, CC) \
+	assert_int_equal(mImageGetPixel(image, 0, 0), (AA)); \
+	assert_int_equal(mImageGetPixel(image, 1, 0), (BA)); \
+	assert_int_equal(mImageGetPixel(image, 2, 0), (CA)); \
+	assert_int_equal(mImageGetPixel(image, 0, 1), (AB)); \
+	assert_int_equal(mImageGetPixel(image, 1, 1), (BB)); \
+	assert_int_equal(mImageGetPixel(image, 2, 1), (CB)); \
+	assert_int_equal(mImageGetPixel(image, 0, 2), (AC)); \
+	assert_int_equal(mImageGetPixel(image, 1, 2), (BC)); \
+	assert_int_equal(mImageGetPixel(image, 2, 2), (CC))
+
+#define COMPARE3X(AA, BA, CA, AB, BB, CB, AC, BC, CC) \
+	COMPARE3(0xFF000000 | (AA), 0xFF000000 | (BA), 0xFF000000 | (CA), \
+	         0xFF000000 | (AB), 0xFF000000 | (BB), 0xFF000000 | (CB), \
+	         0xFF000000 | (AC), 0xFF000000 | (BC), 0xFF000000 | (CC))
+
+M_TEST_DEFINE(painterFillRectangle) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = true;
+	painter.strokeWidth = 0;
+	painter.fillColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 1, 1, 2, 2);
+	COMPARE4X(0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x0000FF, 0x0000FF, 0x000000,
+	          0x000000, 0x0000FF, 0x0000FF, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = true;
+	painter.strokeWidth = 0;
+	painter.fillColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, -1, -1, 2, 2);
+	COMPARE4X(0x0000FF, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = true;
+	painter.strokeWidth = 0;
+	painter.fillColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 3, -1, 2, 2);
+	COMPARE4X(0x000000, 0x000000, 0x000000, 0x0000FF,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = true;
+	painter.strokeWidth = 0;
+	painter.fillColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, -1, 3, 2, 2);
+	COMPARE4X(0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x0000FF, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = true;
+	painter.strokeWidth = 0;
+	painter.fillColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 3, 3, 2, 2);
+	COMPARE4X(0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x0000FF);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = true;
+	painter.strokeWidth = 0;
+	painter.fillColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 3, 3);
+	painter.fillColor = 0xFF00FF00;
+	mPainterDrawRectangle(&painter, 1, 1, 3, 3);
+	COMPARE4X(0x0000FF, 0x0000FF, 0x0000FF, 0x000000,
+	          0x0000FF, 0x00FF00, 0x00FF00, 0x00FF00,
+	          0x0000FF, 0x00FF00, 0x00FF00, 0x00FF00,
+	          0x000000, 0x00FF00, 0x00FF00, 0x00FF00);
+	mImageDestroy(image);
+}
+
+M_TEST_DEFINE(painterFillRectangleBlend) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	image = mImageCreate(3, 3, mCOLOR_ARGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = true;
+	painter.strokeWidth = 0;
+	painter.fillColor = 0x400000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 2, 2);
+	painter.fillColor = 0x40FF0000;
+	mPainterDrawRectangle(&painter, 1, 1, 2, 2);
+	COMPARE3(0x400000FF, 0x400000FF, 0x00000000,
+	         0x400000FF, 0x40FF0000, 0x40FF0000,
+	         0x00000000, 0x40FF0000, 0x40FF0000);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_ARGB8);
+	mPainterInit(&painter, image);
+	painter.blend = true;
+	painter.fill = true;
+	painter.strokeWidth = 0;
+	painter.fillColor = 0x400000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 2, 2);
+	painter.fillColor = 0x40FF0000;
+	mPainterDrawRectangle(&painter, 1, 1, 2, 2);
+	COMPARE3(0x400000FF, 0x400000FF, 0x00000000,
+	         0x400000FF, 0x6F91006D, 0x40FF0000,
+	         0x00000000, 0x40FF0000, 0x40FF0000);
+	mImageDestroy(image);
+}
+
+M_TEST_DEFINE(painterStrokeRectangle) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 1, 1, 2, 2);
+	COMPARE4X(0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x0000FF, 0x0000FF, 0x000000,
+	          0x000000, 0x0000FF, 0x0000FF, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, -1, -1, 3, 3);
+	COMPARE4X(0x000000, 0x0000FF, 0x000000, 0x000000,
+	          0x0000FF, 0x0000FF, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 2, -1, 3, 3);
+	COMPARE4X(0x000000, 0x000000, 0x0000FF, 0x000000,
+	          0x000000, 0x000000, 0x0000FF, 0x0000FF,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, -1, 2, 3, 3);
+	COMPARE4X(0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x0000FF, 0x0000FF, 0x000000, 0x000000,
+	          0x000000, 0x0000FF, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 2, 2, 3, 3);
+	COMPARE4X(0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x0000FF, 0x0000FF,
+	          0x000000, 0x000000, 0x0000FF, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 3, 3);
+	painter.strokeColor = 0xFF00FF00;
+	mPainterDrawRectangle(&painter, 1, 1, 3, 3);
+	COMPARE4X(0x0000FF, 0x0000FF, 0x0000FF, 0x000000,
+	          0x0000FF, 0x00FF00, 0x00FF00, 0x00FF00,
+	          0x0000FF, 0x00FF00, 0x0000FF, 0x00FF00,
+	          0x000000, 0x00FF00, 0x00FF00, 0x00FF00);
+	mImageDestroy(image);
+}
+
+M_TEST_DEFINE(painterStrokeRectangleWidth) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 4, 4);
+	COMPARE4X(0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF,
+	          0x0000FF, 0x000000, 0x000000, 0x0000FF,
+	          0x0000FF, 0x000000, 0x000000, 0x0000FF,
+	          0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 4, 1);
+	COMPARE4X(0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 1, 4);
+	COMPARE4X(0x0000FF, 0x000000, 0x000000, 0x000000,
+	          0x0000FF, 0x000000, 0x000000, 0x000000,
+	          0x0000FF, 0x000000, 0x000000, 0x000000,
+	          0x0000FF, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 4, 2);
+	COMPARE4X(0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF,
+	          0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 2, 4);
+	COMPARE4X(0x0000FF, 0x0000FF, 0x000000, 0x000000,
+	          0x0000FF, 0x0000FF, 0x000000, 0x000000,
+	          0x0000FF, 0x0000FF, 0x000000, 0x000000,
+	          0x0000FF, 0x0000FF, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 2;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 4, 4);
+	COMPARE4X(0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF,
+	          0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF,
+	          0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF,
+	          0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 2;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 4, 2);
+	COMPARE4X(0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF,
+	          0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 2;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 2, 4);
+	COMPARE4X(0x0000FF, 0x0000FF, 0x000000, 0x000000,
+	          0x0000FF, 0x0000FF, 0x000000, 0x000000,
+	          0x0000FF, 0x0000FF, 0x000000, 0x000000,
+	          0x0000FF, 0x0000FF, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 3;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 4, 2);
+	COMPARE4X(0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF,
+	          0x0000FF, 0x0000FF, 0x0000FF, 0x0000FF,
+	          0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 3;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 2, 4);
+	COMPARE4X(0x0000FF, 0x0000FF, 0x000000, 0x000000,
+	          0x0000FF, 0x0000FF, 0x000000, 0x000000,
+	          0x0000FF, 0x0000FF, 0x000000, 0x000000,
+	          0x0000FF, 0x0000FF, 0x000000, 0x000000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 4;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawRectangle(&painter, 1, 1, 2, 2);
+	COMPARE4X(0x000000, 0x000000, 0x000000, 0x000000,
+	          0x000000, 0x0000FF, 0x0000FF, 0x000000,
+	          0x000000, 0x0000FF, 0x0000FF, 0x000000,
+	          0x000000, 0x000000, 0x000000, 0x000000);
+	mImageDestroy(image);
+}
+
+M_TEST_DEFINE(painterStrokeRectangleBlend) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	image = mImageCreate(4, 4, mCOLOR_ARGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0x400000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 3, 3);
+	painter.strokeColor = 0x40FF0000;
+	mPainterDrawRectangle(&painter, 1, 1, 3, 3);
+	COMPARE4(0x400000FF, 0x400000FF, 0x400000FF, 0x00000000,
+	         0x400000FF, 0x40FF0000, 0x40FF0000, 0x40FF0000,
+	         0x400000FF, 0x40FF0000, 0x400000FF, 0x40FF0000,
+	         0x00000000, 0x40FF0000, 0x40FF0000, 0x40FF0000);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_ARGB8);
+	mPainterInit(&painter, image);
+	painter.blend = true;
+	painter.fill = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0x400000FF;
+	mPainterDrawRectangle(&painter, 0, 0, 3, 3);
+	painter.strokeColor = 0x40FF0000;
+	mPainterDrawRectangle(&painter, 1, 1, 3, 3);
+	COMPARE4(0x400000FF, 0x400000FF, 0x400000FF, 0x00000000,
+	         0x400000FF, 0x40FF0000, 0x6F91006D, 0x40FF0000,
+	         0x400000FF, 0x6F91006D, 0x400000FF, 0x40FF0000,
+	         0x00000000, 0x40FF0000, 0x40FF0000, 0x40FF0000);
+}
+
+M_TEST_DEFINE(painterDrawRectangle) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	image = mImageCreate(3, 3, mCOLOR_ARGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = true;
+	painter.fillColor = 0x800000FF;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0x4000FF00;
+	mPainterDrawRectangle(&painter, 0, 0, 3, 3);
+	COMPARE3(0x4000FF00, 0x4000FF00, 0x4000FF00,
+	         0x4000FF00, 0x800000FF, 0x4000FF00,
+	         0x4000FF00, 0x4000FF00, 0x4000FF00);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_ARGB8);
+	mPainterInit(&painter, image);
+	painter.blend = true;
+	painter.fill = true;
+	painter.fillColor = 0x800000FF;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0x4000FF00;
+	mPainterDrawRectangle(&painter, 0, 0, 3, 3);
+	COMPARE3(0x4000FF00, 0x4000FF00, 0x4000FF00,
+	         0x4000FF00, 0x800000FF, 0x4000FF00,
+	         0x4000FF00, 0x4000FF00, 0x4000FF00);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_ARGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.fill = true;
+	painter.fillColor = 0x800000FF;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0x4000FF00;
+	mPainterDrawRectangle(&painter, 0, 0, 3, 3);
+	mPainterDrawRectangle(&painter, 1, 1, 3, 3);
+	COMPARE4(0x4000FF00, 0x4000FF00, 0x4000FF00, 0x00000000,
+	         0x4000FF00, 0x4000FF00, 0x4000FF00, 0x4000FF00,
+	         0x4000FF00, 0x4000FF00, 0x800000FF, 0x4000FF00,
+	         0x00000000, 0x4000FF00, 0x4000FF00, 0x4000FF00);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_ARGB8);
+	mPainterInit(&painter, image);
+	painter.blend = true;
+	painter.fill = true;
+	painter.fillColor = 0x800000FF;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0x4000FF00;
+	mPainterDrawRectangle(&painter, 0, 0, 3, 3);
+	mPainterDrawRectangle(&painter, 1, 1, 3, 3);
+	COMPARE4(0x4000FF00, 0x4000FF00, 0x4000FF00, 0x00000000,
+	         0x4000FF00, 0x9F006698, 0x6F00FF00, 0x4000FF00,
+	         0x4000FF00, 0x6F00FF00, 0x9F0032CC, 0x4000FF00,
+	         0x00000000, 0x4000FF00, 0x4000FF00, 0x4000FF00);
+	mImageDestroy(image);
+}
+
+M_TEST_DEFINE(painterDrawLineOctants) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	image = mImageCreate(3, 3, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 0, 0, 2, 2);
+	COMPARE3X(0xFF, 0x00, 0x00,
+	          0x00, 0xFF, 0x00,
+	          0x00, 0x00, 0xFF);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 2, 2, 0, 0);
+	COMPARE3X(0xFF, 0x00, 0x00,
+	          0x00, 0xFF, 0x00,
+	          0x00, 0x00, 0xFF);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 2, 0, 0, 2);
+	COMPARE3X(0x00, 0x00, 0xFF,
+	          0x00, 0xFF, 0x00,
+	          0xFF, 0x00, 0x00);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 0, 2, 2, 0);
+	COMPARE3X(0x00, 0x00, 0xFF,
+	          0x00, 0xFF, 0x00,
+	          0xFF, 0x00, 0x00);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 0, 0, 2, 1);
+	COMPARE3X(0xFF, 0xFF, 0x00,
+	          0x00, 0x00, 0xFF,
+	          0x00, 0x00, 0x00);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 2, 1, 0, 0);
+	COMPARE3X(0xFF, 0x00, 0x00,
+	          0x00, 0xFF, 0xFF,
+	          0x00, 0x00, 0x00);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 0, 0, 1, 2);
+	COMPARE3X(0xFF, 0x00, 0x00,
+	          0xFF, 0x00, 0x00,
+	          0x00, 0xFF, 0x00);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 1, 2, 0, 0);
+	COMPARE3X(0xFF, 0x00, 0x00,
+	          0x00, 0xFF, 0x00,
+	          0x00, 0xFF, 0x00);
+	mImageDestroy(image);
+}
+
+M_TEST_DEFINE(painterDrawLineWidth) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 2;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 0, 0, 3, 3);
+	COMPARE4X(0xFF, 0x00, 0x00, 0x00,
+	          0xFF, 0xFF, 0x00, 0x00,
+	          0x00, 0xFF, 0xFF, 0x00,
+	          0x00, 0x00, 0xFF, 0xFF);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 3;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 0, 0, 3, 3);
+	COMPARE4X(0xFF, 0xFF, 0x00, 0x00,
+	          0xFF, 0xFF, 0xFF, 0x00,
+	          0x00, 0xFF, 0xFF, 0xFF,
+	          0x00, 0x00, 0xFF, 0xFF);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 2;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 3, 0, 0, 3);
+	COMPARE4X(0x00, 0x00, 0xFF, 0xFF,
+	          0x00, 0xFF, 0xFF, 0x00,
+	          0xFF, 0xFF, 0x00, 0x00,
+	          0xFF, 0x00, 0x00, 0x00);
+	mImageDestroy(image);
+
+	image = mImageCreate(4, 4, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 3;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 3, 0, 0, 3);
+	COMPARE4X(0x00, 0x00, 0xFF, 0xFF,
+	          0x00, 0xFF, 0xFF, 0xFF,
+	          0xFF, 0xFF, 0xFF, 0x00,
+	          0xFF, 0xFF, 0x00, 0x00);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 2;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 1, 0, 1, 2);
+	COMPARE3X(0xFF, 0xFF, 0x00,
+	          0xFF, 0xFF, 0x00,
+	          0xFF, 0xFF, 0x00);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 3;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 1, 0, 1, 2);
+	COMPARE3X(0xFF, 0xFF, 0xFF,
+	          0xFF, 0xFF, 0xFF,
+	          0xFF, 0xFF, 0xFF);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 2;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 0, 1, 2, 1);
+	COMPARE3X(0xFF, 0xFF, 0xFF,
+	          0xFF, 0xFF, 0xFF,
+	          0x00, 0x00, 0x00);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_XRGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 3;
+	painter.strokeColor = 0xFF0000FF;
+	mPainterDrawLine(&painter, 0, 1, 2, 1);
+	COMPARE3X(0xFF, 0xFF, 0xFF,
+	          0xFF, 0xFF, 0xFF,
+	          0xFF, 0xFF, 0xFF);
+	mImageDestroy(image);
+}
+
+M_TEST_DEFINE(painterDrawLineBlend) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	image = mImageCreate(3, 3, mCOLOR_ARGB8);
+	mPainterInit(&painter, image);
+	painter.blend = false;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0x400000FF;
+	mPainterDrawLine(&painter, 0, 0, 2, 2);
+	painter.strokeColor = 0x4000FF00;
+	mPainterDrawLine(&painter, 0, 2, 2, 0);
+	COMPARE3(0x400000FF, 0x00000000, 0x4000FF00,
+	         0x00000000, 0x4000FF00, 0x00000000,
+	         0x4000FF00, 0x00000000, 0x400000FF);
+	mImageDestroy(image);
+
+	image = mImageCreate(3, 3, mCOLOR_ARGB8);
+	mPainterInit(&painter, image);
+	painter.blend = true;
+	painter.strokeWidth = 1;
+	painter.strokeColor = 0x400000FF;
+	mPainterDrawLine(&painter, 0, 0, 2, 2);
+	painter.strokeColor = 0x4000FF00;
+	mPainterDrawLine(&painter, 0, 2, 2, 0);
+	COMPARE3(0x400000FF, 0x00000000, 0x4000FF00,
+	         0x00000000, 0x6F00916D, 0x00000000,
+	         0x4000FF00, 0x00000000, 0x400000FF);
+	mImageDestroy(image);
+}
+
+M_TEST_DEFINE(painterDrawCircleArea) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	int i;
+	for (i = 4; i < 50; ++i) {
+		image = mImageCreate(i, i, mCOLOR_XRGB8);
+		mPainterInit(&painter, image);
+		painter.blend = false;
+		painter.fill = true;
+		painter.strokeWidth = 0;
+		painter.fillColor = 0xFF0000FF;
+		mPainterDrawCircle(&painter, 0, 0, i);
+
+		int filled = 0;
+
+		int x, y;
+		for (y = 0; y < i; ++y) {
+			for (x = 0; x < i; ++x) {
+				uint32_t color = mImageGetPixel(image, x, y);
+				if (color == painter.fillColor) {
+					++filled;
+				}
+			}
+		}
+		float area = i * i;
+		assert_float_equal(filled / area, M_PI / 4, 0.12);
+	}
+}
+
+M_TEST_DEFINE(painterDrawCircleCircumference) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	int i;
+	for (i = 25; i < 100; ++i) {
+		image = mImageCreate(i, i, mCOLOR_XRGB8);
+		mPainterInit(&painter, image);
+		painter.blend = false;
+		painter.fill = false;
+		painter.strokeWidth = 1;
+		painter.strokeColor = 0xFF0000FF;
+		mPainterDrawCircle(&painter, 0, 0, i);
+
+		int filled = 0;
+
+		int x, y;
+		for (y = 0; y < i; ++y) {
+			for (x = 0; x < i; ++x) {
+				uint32_t color = mImageGetPixel(image, x, y);
+				if (color == painter.strokeColor) {
+					++filled;
+				}
+			}
+		}
+		assert_float_equal(filled / (float) i, M_PI, M_PI * 0.11);
+	}
+}
+
+
+M_TEST_DEFINE(painterDrawCircleOffset) {
+	struct mImage* image;
+	struct mPainter painter;
+
+	int i;
+	for (i = 4; i < 20; ++i) {
+		image = mImageCreate(i * 2, i * 2, mCOLOR_XRGB8);
+		mPainterInit(&painter, image);
+		painter.blend = false;
+		painter.fill = true;
+		painter.strokeWidth = 0;
+		painter.fillColor = 0xFF0000FF;
+		mPainterDrawCircle(&painter, 0, 0, i);
+		mPainterDrawCircle(&painter, i, 0, i);
+		mPainterDrawCircle(&painter, 0, i, i);
+		mPainterDrawCircle(&painter, i, i, i);
+
+		int x, y;
+		for (y = 0; y < i; ++y) {
+			for (x = 0; x < i; ++x) {
+				uint32_t color = mImageGetPixel(image, x, y);
+				assert_int_equal(color, mImageGetPixel(image, x + i, y));
+				assert_int_equal(color, mImageGetPixel(image, x, y + i));
+				assert_int_equal(color, mImageGetPixel(image, x + i, y + i));
+			}
+		}
+	}
+}
+
+#undef COMPARE3X
+#undef COMPARE3
+#undef COMPARE4X
+#undef COMPARE4
+
 M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(zeroDim),
 	cmocka_unit_test(pitchRead),
@@ -1166,4 +1967,16 @@ M_TEST_SUITE_DEFINE(Image,
 	cmocka_unit_test(convert1x2),
 	cmocka_unit_test(convert2x2),
 	cmocka_unit_test(blitBoundaries),
+	cmocka_unit_test(painterFillRectangle),
+	cmocka_unit_test(painterFillRectangleBlend),
+	cmocka_unit_test(painterStrokeRectangle),
+	cmocka_unit_test(painterStrokeRectangleWidth),
+	cmocka_unit_test(painterStrokeRectangleBlend),
+	cmocka_unit_test(painterDrawRectangle),
+	cmocka_unit_test(painterDrawLineOctants),
+	cmocka_unit_test(painterDrawLineWidth),
+	cmocka_unit_test(painterDrawLineBlend),
+	cmocka_unit_test(painterDrawCircleArea),
+	cmocka_unit_test(painterDrawCircleCircumference),
+	cmocka_unit_test(painterDrawCircleOffset),
 )

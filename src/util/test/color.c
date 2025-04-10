@@ -155,9 +155,9 @@ M_TEST_DEFINE(alphaBlendARGB8) {
 	assert_int_equal(mColorMixARGB8(0xFF012345, 0xFF987654), 0xFF012345);
 	assert_int_equal(mColorMixARGB8(0x00012345, 0xFF987654), 0xFF987654);
 	assert_int_equal(mColorMixARGB8(0x80012345, 0xFF987654), 0xFF4C4C4C);
-	assert_int_equal(mColorMixARGB8(0x80012345, 0x40987654), 0xC04C4C4C);
+	assert_int_equal(mColorMixARGB8(0x80012345, 0x40987654), 0x9F1F3347);
 	assert_int_equal(mColorMixARGB8(0x01012345, 0xFF987654), 0xFF977553);
-	assert_int_equal(mColorMixARGB8(0x01012345, 0xFD987654), 0xFE977553);
+	assert_int_equal(mColorMixARGB8(0x01012345, 0xFD987654), 0xFD977553);
 }
 
 M_TEST_SUITE_DEFINE(Color,

@@ -523,6 +523,294 @@ void mImageCompositeWithAlpha(struct mImage* image, const struct mImage* source,
 	}
 }
 
+#define FILL_BOUNDS_INIT(X, Y, W, H) \
+	struct mRectangle dstRect = { \
+		.x = 0, \
+		.y = 0, \
+		.width = painter->backing->width, \
+		.height = painter->backing->height \
+	}; \
+	struct mRectangle srcRect = { \
+		.x = (X), \
+		.y = (Y), \
+		.width = (W), \
+		.height = (H) \
+	}; \
+	if (!mRectangleIntersection(&srcRect, &dstRect)) { \
+		return; \
+	} \
+	int dstStartX; \
+	int dstStartY; \
+	if ((X) < 0) { \
+		dstStartX = 0; \
+	} else { \
+		dstStartX = srcRect.x; \
+	} \
+	if ((Y) < 0) { \
+		dstStartY = 0; \
+	} else { \
+		dstStartY = srcRect.y; \
+	}
+
+void mPainterInit(struct mPainter* painter, struct mImage* backing) {
+	memset(painter, 0, sizeof(*painter));
+	painter->backing = backing;
+}
+
+static void mPainterDrawPixel(struct mPainter* painter, unsigned x, unsigned y, uint32_t color) {
+	if (painter->blend) {
+		color = mColorMixARGB8(painter->strokeColor, mImageGetPixel(painter->backing, x, y));
+	}
+	mImageSetPixel(painter->backing, x, y, color);
+}
+
+static void mPainterFillRectangle(struct mPainter* painter, int x, int y, int width, int height) {
+	FILL_BOUNDS_INIT(x, y, width, height);
+
+	if (!painter->blend || painter->fillColor >= 0xFF000000) {
+		uint32_t color = mColorConvert(painter->fillColor, mCOLOR_ARGB8, painter->backing->format);
+		for (y = 0; y < srcRect.height; ++y) {
+			uintptr_t dstPixel = (uintptr_t) PIXEL(painter->backing, dstStartX, dstStartY + y);
+			for (x = 0; x < srcRect.width; ++x, dstPixel += painter->backing->depth) {
+				PUT_PIXEL(color, dstPixel, painter->backing->depth);
+			}
+		}
+	} else {
+		for (y = 0; y < srcRect.height; ++y) {
+			uintptr_t dstPixel = (uintptr_t) PIXEL(painter->backing, dstStartX, dstStartY + y);
+			for (x = 0; x < srcRect.width; ++x, dstPixel += painter->backing->depth) {
+				uint32_t color;
+				GET_PIXEL(color, dstPixel, painter->backing->depth);
+				color = mColorConvert(color, painter->backing->format, mCOLOR_ARGB8);
+				color = mColorMixARGB8(painter->fillColor, color);
+				color = mColorConvert(color, mCOLOR_ARGB8, painter->backing->format);
+				PUT_PIXEL(color, dstPixel, painter->backing->depth);
+			}
+		}
+	}
+}
+
+static void mPainterStrokeRectangle(struct mPainter* painter, int x, int y, int width, int height) {
+	uint32_t fillColor = painter->fillColor;
+	painter->fillColor = painter->strokeColor;
+	if (width <= painter->strokeWidth * 2 || height <= painter->strokeWidth * 2) {
+		mPainterFillRectangle(painter, x, y, width, height);
+	} else {
+		int lr = height - painter->strokeWidth;
+		int tb = width - painter->strokeWidth;
+		// Top, top-left corner
+		mPainterFillRectangle(painter, x, y, tb, painter->strokeWidth);
+		// Left, bottom-left corner
+		mPainterFillRectangle(painter, x, y + painter->strokeWidth, painter->strokeWidth, lr);
+		// Bottom, bottom-right corner
+		mPainterFillRectangle(painter, x + painter->strokeWidth, y + height - painter->strokeWidth, tb, painter->strokeWidth);
+		// Right, top-right corner
+		mPainterFillRectangle(painter, x + width - painter->strokeWidth, y, painter->strokeWidth, lr);
+	}
+	painter->fillColor = fillColor;
+}
+
+void mPainterDrawRectangle(struct mPainter* painter, int x, int y, int width, int height) {
+	int interiorW = width - painter->strokeWidth * 2;
+	int interiorH = height - painter->strokeWidth * 2;
+	if (painter->fill && interiorW > 0 && interiorH > 0) {
+		mPainterFillRectangle(painter, x + painter->strokeWidth, y + painter->strokeWidth, interiorW, interiorH);
+	}
+	if (painter->strokeWidth) {
+		mPainterStrokeRectangle(painter, x, y, width, height);
+	}
+}
+
+void mPainterDrawLine(struct mPainter* painter, int x1, int y1, int x2, int y2) {
+	if (!painter->strokeWidth) {
+		return;
+	}
+	int dx = x2 - x1;
+	int dy = y2 - y1;
+	int x, y;
+	int xi = 1;
+	int yi = 1;
+	int residual;
+
+	int mx = dx;
+	int my = dy;
+	if (mx < 0) {
+		mx = -mx;
+	}
+	if (my < 0) {
+		my = -my;
+	}
+
+	if (dx < 0) {
+		xi = -1;
+		dx = -dx;
+	}
+	if (dy < 0) {
+		yi = -1;
+		dy = -dy;
+	}
+
+	unsigned i;
+	uint32_t color = painter->strokeColor;
+
+	if (mx > my) {
+		residual = 2 * dy - dx;
+		y = y1;
+		for (x = x1; x != x2 + xi; x += xi) {
+			for (i = 0; i < painter->strokeWidth; ++i) {
+				mPainterDrawPixel(painter, x, y - painter->strokeWidth / 2 + i, color);
+			}
+			if (residual > 0) {
+				y += yi;
+				residual -= 2 * dx;
+			}
+			residual += 2 * dy;
+		}
+	} else {
+		residual = 2 * dx - dy;
+		x = x1;
+		for (y = y1; y != y2 + yi; y += yi) {
+			for (i = 0; i < painter->strokeWidth; ++i) {
+				mPainterDrawPixel(painter, x - painter->strokeWidth / 2 + i, y, color);
+			}
+			if (residual > 0) {
+				x += xi;
+				residual -= 2 * dy;
+			}
+			residual += 2 * dx;
+		}
+	}
+
+	// TODO: Draw endcaps for widths >2
+}
+
+static void _drawCircleOctants(struct mPainter* painter, int x, int y, int offx, int offy, int offset, uint32_t color) {
+	mPainterDrawPixel(painter, x + offy - offset, y + offx - offset, color);
+	mPainterDrawPixel(painter, x - offy, y + offx - offset, color);
+	mPainterDrawPixel(painter, x + offy - offset, y - offx, color);
+	mPainterDrawPixel(painter, x - offy, y - offx, color);
+	if (offx < offy) {
+		mPainterDrawPixel(painter, x + offx - offset, y + offy - offset, color);
+		mPainterDrawPixel(painter, x - offx, y + offy - offset, color);
+		mPainterDrawPixel(painter, x + offx - offset, y - offy, color);
+		mPainterDrawPixel(painter, x - offx, y - offy, color);
+	}
+}
+
+static void _drawCircle2x2(struct mPainter* painter, int x, int y, uint32_t color) {
+	mPainterDrawPixel(painter, x, y, color);
+	mPainterDrawPixel(painter, x - 1, y, color);
+	mPainterDrawPixel(painter, x, y - 1, color);
+	mPainterDrawPixel(painter, x - 1, y - 1, color);
+}
+
+void mPainterDrawCircle(struct mPainter* painter, int x, int y, int diameter) {
+	int radius = diameter / 2;
+	int offset = (diameter ^ 1) & 1;
+	int stroke = painter->strokeWidth;
+	int dx = 1;
+	int residual0 = 1 - radius;
+	int dy0 = -2 * radius;
+	int offx = 0;
+	int offy;
+	int y0 = radius;
+	if (stroke > radius) {
+		// Clamp stroke
+		stroke = radius;
+		if (!offset) {
+			// Draw center dot as stroke
+			mPainterDrawPixel(painter, x + radius, y + radius, painter->strokeColor);
+		}
+	} else if (!offset && painter->fill) {
+		// Draw center dot as fill
+		mPainterDrawPixel(painter, x + radius, y + radius, painter->fillColor);
+	}
+
+	int residual1 = 1 - radius + stroke;
+	int dy1 = -2 * (radius - stroke);
+	int y1 = radius - stroke;
+	int i;
+
+	if (!offset) {
+		// Draw central axes
+		for (i = 0; i < stroke; ++i) {
+			mPainterDrawPixel(painter, x + radius, y + radius * 2 - i, painter->strokeColor);
+			mPainterDrawPixel(painter, x + radius, y + i, painter->strokeColor);
+			mPainterDrawPixel(painter, x + radius * 2 - i, y + radius, painter->strokeColor);
+			mPainterDrawPixel(painter, x + i, y + radius, painter->strokeColor);
+		}
+		if (painter->fill) {
+			for (i = i; i < y1 + 1; ++i) {
+				mPainterDrawPixel(painter, x + radius, y + radius - i, painter->fillColor);
+				mPainterDrawPixel(painter, x + radius, y + radius + i, painter->fillColor);
+				mPainterDrawPixel(painter, x + radius - i, y + radius, painter->fillColor);
+				mPainterDrawPixel(painter, x + radius + i, y + radius, painter->fillColor);
+			}
+		}
+	}
+
+	while (offx < y0) {
+		if (residual0 >= 0) {
+			y0 -= 1;
+			dy0 += 2;
+			residual0 += dy0;
+		}
+		if (residual1 >= 0) {
+			y1 -= 1;
+			dy1 += 2;
+			residual1 += dy1;
+		}
+		offx += 1;
+		dx += 2;
+		residual0 += dx;
+		residual1 += dx;
+		if (stroke) {
+			// Fill
+			if (painter->fill) {
+				if (offx == 1 && y1 == 0 && offset) {
+					// Special case for diameter-2 fill
+					_drawCircle2x2(painter, x + radius, y + radius, painter->fillColor);
+				} else {
+					for (offy = 0; offy < y1 + 1; ++offy) {
+						if (offx > offy) {
+							continue;
+						}
+						_drawCircleOctants(painter, x + radius, y + radius, offx, offy, offset, painter->fillColor);
+					}
+				}
+			}
+			// Stroke
+			if (radius == 1 && offset) {
+				// Special case for diameter-2 stroke
+				_drawCircle2x2(painter, x + radius, y + radius, painter->strokeColor);
+			} else {
+				for (offy = y1 + 1; offy < y0 + 1; ++offy) {
+					if (offx == 1 && offy == 1 && y1 == 0 && offset) {
+						// Special case for diameter-2 inner fill
+						continue;
+					}
+					if (offx > offy) {
+						continue;
+					}
+					_drawCircleOctants(painter, x + radius, y + radius, offx, offy, offset, painter->strokeColor);
+				}
+			}
+		} else if (painter->fill) {
+			if (offx == 1 && y0 == 0 && offset) {
+				// Special case for diameter-2 fill
+				_drawCircle2x2(painter, x, y, painter->fillColor);
+			} else {
+				for (offy = 0; offy < y0 + 1; ++offy) {
+					if (offx > offy) {
+						continue;
+					}
+					_drawCircleOctants(painter, x + radius, y + radius, offx, offy, offset, painter->fillColor);
+				}
+			}
+		}
+	}
+}
+
 uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to) {
 	if (from == to) {
 		return color;

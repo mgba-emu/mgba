@@ -21,6 +21,9 @@
 #include <synchapi.h>
 
 #define mkdir(X, Y) _mkdir(X)
+#ifndef S_ISDIR
+#define S_ISDIR(MODE) (((MODE) & _S_IFMT) == _S_IFDIR)
+#endif
 #elif defined(_POSIX_C_SOURCE)
 #include <unistd.h>
 #endif
@@ -89,9 +92,27 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 		switch (vde->type(vde)) {
 		case VFS_DIRECTORY:
 			fprintf(logfile, "mkdir   %s\n", fname);
-			if (mkdir(path, 0755) < 0 && errno != EEXIST) {
-				fprintf(logfile, "error   %i\n", errno);
-				return false;
+			if (mkdir(path, 0755) < 0) {
+				bool redo = false;
+				if (errno == EEXIST) {
+					struct stat st;
+					if (stat(path, &st) >= 0 && !S_ISDIR(st.st_mode)) {
+#ifdef _WIN32
+						wchar_t wpath[MAX_PATH + 1];
+						MultiByteToWideChar(CP_UTF8, 0, path, -1, wpath, MAX_PATH);
+						DeleteFileW(wpath);
+#else
+						unlink(path);
+#endif
+						if (mkdir(path, 0755) >= 0) {
+							redo = true;
+						}
+					}
+				}
+				if (!redo) {
+					fprintf(logfile, "error   %i\n", errno);
+					return false;
+				}
 			}
 			if (!prefix) {
 				struct VDir* subdir = archive->openDir(archive, fname);
