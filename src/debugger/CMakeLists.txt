@@ -1,5 +1,6 @@
 include(ExportDirectory)
 set(SOURCE_FILES
+	access-logger.c
 	cli-debugger.c
 	debugger.c
 	parser.c

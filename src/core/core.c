@@ -134,6 +134,7 @@ struct mCore* mCoreFind(const char* path) {
 }
 
 bool mCoreLoadFile(struct mCore* core, const char* path) {
+	core->unloadROM(core);
 #ifdef FIXED_ROM_BUFFER
 	return mCorePreloadFile(core, path);
 #else

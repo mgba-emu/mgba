@@ -10,21 +10,55 @@
 
 CXX_GUARD_START
 
+#define INSN_LENGTH_MAX 4
+
 #include <mgba/core/cpu.h>
 #include <mgba/core/log.h>
 #include <mgba-util/table.h>
 #include <mgba-util/vector.h>
-#include <mgba/internal/debugger/stack-trace.h>
 
 mLOG_DECLARE_CATEGORY(DEBUGGER);
 
 extern const uint32_t DEBUGGER_ID;
+
+DECL_BITFIELD(mDebuggerAccessLogFlags, uint8_t);
+DECL_BIT(mDebuggerAccessLogFlags, Read, 0);
+DECL_BIT(mDebuggerAccessLogFlags, Write, 1);
+DECL_BIT(mDebuggerAccessLogFlags, Execute, 2);
+DECL_BIT(mDebuggerAccessLogFlags, Abort, 3);
+DECL_BIT(mDebuggerAccessLogFlags, Access8, 4);
+DECL_BIT(mDebuggerAccessLogFlags, Access16, 5);
+DECL_BIT(mDebuggerAccessLogFlags, Access32, 6);
+DECL_BIT(mDebuggerAccessLogFlags, Access64, 7);
+
+DECL_BITFIELD(mDebuggerAccessLogFlagsEx, uint16_t);
+DECL_BIT(mDebuggerAccessLogFlagsEx, AccessProgram, 0);
+DECL_BIT(mDebuggerAccessLogFlagsEx, AccessDMA, 1);
+DECL_BIT(mDebuggerAccessLogFlagsEx, AccessSystem, 2);
+DECL_BIT(mDebuggerAccessLogFlagsEx, AccessDecompress, 3);
+DECL_BIT(mDebuggerAccessLogFlagsEx, AccessCopy, 4);
+
+DECL_BIT(mDebuggerAccessLogFlagsEx, ErrorIllegalOpcode, 8);
+DECL_BIT(mDebuggerAccessLogFlagsEx, ErrorAccessRead, 9);
+DECL_BIT(mDebuggerAccessLogFlagsEx, ErrorAccessWrite, 10);
+DECL_BIT(mDebuggerAccessLogFlagsEx, ErrorAccessExecute, 11);
+DECL_BIT(mDebuggerAccessLogFlagsEx, Private0, 12);
+DECL_BIT(mDebuggerAccessLogFlagsEx, Private1, 13);
+DECL_BIT(mDebuggerAccessLogFlagsEx, Private2, 14);
+DECL_BIT(mDebuggerAccessLogFlagsEx, Private3, 15);
+
+DECL_BIT(mDebuggerAccessLogFlagsEx, ExecuteARM, 14);
+DECL_BIT(mDebuggerAccessLogFlagsEx, ExecuteThumb, 15);
+
+DECL_BIT(mDebuggerAccessLogFlagsEx, ExecuteOpcode, 14);
+DECL_BIT(mDebuggerAccessLogFlagsEx, ExecuteOperand, 15);
 
 enum mDebuggerType {
 	DEBUGGER_NONE = 0,
 	DEBUGGER_CUSTOM,
 	DEBUGGER_CLI,
 	DEBUGGER_GDB,
+	DEBUGGER_ACCESS_LOGGER,
 	DEBUGGER_MAX
 };
 
@@ -58,10 +92,19 @@ enum mDebuggerEntryReason {
 	DEBUGGER_ENTER_STACK
 };
 
+enum mStackTraceMode {
+	STACK_TRACE_DISABLED = 0,
+	STACK_TRACE_ENABLED = 1,
+	STACK_TRACE_BREAK_ON_RETURN = 2,
+	STACK_TRACE_BREAK_ON_CALL = 4,
+	STACK_TRACE_BREAK_ON_BOTH = STACK_TRACE_BREAK_ON_RETURN | STACK_TRACE_BREAK_ON_CALL
+};
+
 struct mDebuggerModule;
 struct mDebuggerEntryInfo {
 	uint32_t address;
 	int segment;
+	int width;
 	union {
 		struct {
 			uint32_t oldValue;
@@ -100,9 +143,39 @@ struct mWatchpoint {
 	struct ParseTree* condition;
 };
 
+struct mDebuggerInstructionInfo {
+	uint32_t address;
+	int segment;
+	unsigned width;
+	mDebuggerAccessLogFlags flags[INSN_LENGTH_MAX];
+	mDebuggerAccessLogFlagsEx flagsEx[INSN_LENGTH_MAX];
+};
+
 DECLARE_VECTOR(mBreakpointList, struct mBreakpoint);
 DECLARE_VECTOR(mWatchpointList, struct mWatchpoint);
 DECLARE_VECTOR(mDebuggerModuleList, struct mDebuggerModule*);
+
+struct mStackFrame {
+	int callSegment;
+	uint32_t callAddress;
+	int entrySegment;
+	uint32_t entryAddress;
+	int frameBaseSegment;
+	uint32_t frameBaseAddress;
+	void* regs;
+	bool finished;
+	bool breakWhenFinished;
+	bool interrupt;
+};
+
+DECLARE_VECTOR(mStackFrames, struct mStackFrame);
+
+struct mStackTrace {
+	struct mStackFrames stack;
+	size_t registersSize;
+
+	void (*formatRegisters)(struct mStackFrame* frame, char* out, size_t* length);
+};
 
 struct mDebugger;
 struct ParseTree;
@@ -127,9 +200,11 @@ struct mDebuggerPlatform {
 
 	bool (*lookupIdentifier)(struct mDebuggerPlatform*, const char* name, int32_t* value, int* segment);
 
-	uint32_t (*getStackTraceMode)(struct mDebuggerPlatform*);
-	void (*setStackTraceMode)(struct mDebuggerPlatform*, uint32_t mode);
+	enum mStackTraceMode (*getStackTraceMode)(struct mDebuggerPlatform*);
+	void (*setStackTraceMode)(struct mDebuggerPlatform*, enum mStackTraceMode mode);
 	bool (*updateStackTrace)(struct mDebuggerPlatform* d);
+
+	void (*nextInstructionInfo)(struct mDebuggerPlatform* d, struct mDebuggerInstructionInfo* info);
 };
 
 struct mDebugger {

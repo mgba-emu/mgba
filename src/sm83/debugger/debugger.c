@@ -74,6 +74,7 @@ static void SM83DebuggerListWatchpoints(struct mDebuggerPlatform*, struct mDebug
 static void SM83DebuggerCheckBreakpoints(struct mDebuggerPlatform*);
 static bool SM83DebuggerHasBreakpoints(struct mDebuggerPlatform*);
 static void SM83DebuggerTrace(struct mDebuggerPlatform*, char* out, size_t* length);
+static void SM83DebuggerNextInstructionInfo(struct mDebuggerPlatform* d, struct mDebuggerInstructionInfo* info);
 
 struct mDebuggerPlatform* SM83DebuggerPlatformCreate(void) {
 	struct SM83Debugger* platform = malloc(sizeof(struct SM83Debugger));
@@ -91,6 +92,7 @@ struct mDebuggerPlatform* SM83DebuggerPlatformCreate(void) {
 	platform->d.getStackTraceMode = NULL;
 	platform->d.setStackTraceMode = NULL;
 	platform->d.updateStackTrace = NULL;
+	platform->d.nextInstructionInfo = SM83DebuggerNextInstructionInfo;
 	platform->printStatus = NULL;
 	return &platform->d;
 }
@@ -243,4 +245,22 @@ static void SM83DebuggerTrace(struct mDebuggerPlatform* d, char* out, size_t* le
 		               cpu->a, cpu->f.packed, cpu->b, cpu->c,
 		               cpu->d, cpu->e, cpu->h, cpu->l,
 		               cpu->sp, cpu->memory.currentSegment(cpu, cpu->pc), cpu->pc, disassembly);
+}
+
+static void SM83DebuggerNextInstructionInfo(struct mDebuggerPlatform* d, struct mDebuggerInstructionInfo* info) {
+	struct SM83Debugger* debugger = (struct SM83Debugger*) d;
+	info->address = debugger->cpu->pc;
+	uint8_t opcode = debugger->cpu->memory.cpuLoad8(debugger->cpu, info->address);
+	info->width = SM83InstructionLength(opcode);
+	info->segment = debugger->cpu->memory.currentSegment(debugger->cpu, info->address);
+	info->flags[0] = mDebuggerAccessLogFlagsFillAccess8(0);
+	info->flags[1] = mDebuggerAccessLogFlagsFillAccess8(0);
+	info->flags[2] = mDebuggerAccessLogFlagsFillAccess8(0);
+	info->flagsEx[0] = mDebuggerAccessLogFlagsExFillExecuteOpcode(0);
+	info->flagsEx[1] = mDebuggerAccessLogFlagsExFillExecuteOperand(0);
+	info->flagsEx[2] = mDebuggerAccessLogFlagsExFillExecuteOperand(0);
+	if (info->width == 0) {
+		info->width = 1;
+		info->flagsEx[0] = mDebuggerAccessLogFlagsExFillErrorIllegalOpcode(info->flagsEx[0]);
+	}
 }

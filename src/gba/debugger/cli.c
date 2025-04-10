@@ -3,7 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-#include <mgba/internal/gba/extra/cli.h>
+#include <mgba/internal/gba/debugger/cli.h>
 
 #include <mgba/core/core.h>
 #include <mgba/core/serialize.h>

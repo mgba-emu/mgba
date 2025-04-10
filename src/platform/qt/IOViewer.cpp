@@ -1651,8 +1651,6 @@ IOViewer::IOViewer(std::shared_ptr<CoreController> controller, QWidget* parent)
 	}
 
 	selectRegister(0);
-
-	connect(controller.get(), &CoreController::stopping, this, &QWidget::close);
 }
 
 void IOViewer::updateRegister() {

@@ -32,7 +32,6 @@ AssetView::AssetView(std::shared_ptr<CoreController> controller, QWidget* parent
 
 	connect(controller.get(), &CoreController::frameAvailable, &m_updateTimer,
 	        static_cast<void(QTimer::*)()>(&QTimer::start));
-	connect(controller.get(), &CoreController::stopping, this, &AssetView::close);
 	connect(controller.get(), &CoreController::stopping, &m_updateTimer, &QTimer::stop);
 }
 

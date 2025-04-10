@@ -43,6 +43,7 @@
 #include "LoadSaveState.h"
 #include "LogView.h"
 #include "MapView.h"
+#include "MemoryAccessLogView.h"
 #include "MemorySearch.h"
 #include "MemoryView.h"
 #include "MultiplayerController.h"
@@ -593,6 +594,7 @@ template <typename T, typename... A>
 std::function<void()> Window::openControllerTView(A... arg) {
 	return [=]() {
 		T* view = new T(m_controller, arg...);
+		connect(m_controller.get(), &CoreController::stopping, view, &QWidget::close);
 		openView(view);
 	};
 }
@@ -1331,7 +1333,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addSeparator("saves");
 
-	m_actions.addAction(tr("Convert save game..."), "convertSave", openControllerTView<SaveConverter>(), "saves");
+	m_actions.addAction(tr("Convert save game..."), "convertSave", openTView<SaveConverter>(), "saves");
 
 #ifdef M_CORE_GBA
 	auto importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "saves");
@@ -1784,6 +1786,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "stateViews");
 	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "stateViews");
 	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "stateViews");
+
+	addGameAction(tr("Log memory &accesses..."), "memoryAccessView", openControllerTView<MemoryAccessLogView>(), "tools");
 
 #if defined(USE_FFMPEG) && defined(M_CORE_GBA)
 	m_actions.addSeparator("tools");

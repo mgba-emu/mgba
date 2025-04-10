@@ -59,6 +59,9 @@ void ARM(Run)(struct ARMCore* cpu) {
 	} else {
 		ARM(Step)(cpu);
 	}
+	while (cpu->cycles >= cpu->nextEvent) {
+		cpu->irqh.processEvents(cpu);
+	}
 }
 
 void ARM(RunLoop)(struct ARMCore* cpu) {

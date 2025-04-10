@@ -115,6 +115,7 @@ set(SOURCE_FILES
 	LogView.cpp
 	LogWidget.cpp
 	MapView.cpp
+	MemoryAccessLogView.cpp
 	MemoryDump.cpp
 	MemoryModel.cpp
 	MemorySearch.cpp
@@ -176,6 +177,7 @@ set(UI_FILES
 	LoadSaveState.ui
 	LogView.ui
 	MapView.ui
+	MemoryAccessLogView.ui
 	MemoryDump.ui
 	MemorySearch.ui
 	MemoryView.ui
