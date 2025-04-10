@@ -61,7 +61,7 @@ TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
 		m_ui.tilesBoth->setEnabled(false);
 		m_ui.palette256->setEnabled(false);
 		m_ui.tile->setBoundary(1024, 0, 0);
-		m_ui.tile->setMaxTile(512);
+		m_ui.tile->setMaxTile(896);
 		break;
 #endif
 	default:
@@ -201,7 +201,8 @@ void TileView::updateTilesGBA(bool force) {
 #ifdef M_CORE_GB
 void TileView::updateTilesGB(bool force) {
 	const GB* gb = static_cast<const GB*>(m_controller->thread()->core->board);
-	int count = gb->model >= GB_MODEL_CGB ? 1024 : 512;
+	// TODO: Strip out tiles 384-511, as they aren't valid
+	int count = gb->model >= GB_MODEL_CGB ? 896 : 384;
 	m_ui.tiles->setTileCount(count);
 	mTileCache* cache = mTileCacheSetGetPointer(&m_cacheSet->tiles, 0);
 	for (int i = 0; i < count; ++i) {
