@@ -11,6 +11,7 @@
 CXX_GUARD_START
 
 #include <mgba-util/geometry.h>
+#include <mgba/core/log.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -19,13 +20,26 @@ typedef HWND WHandle;
 typedef void* WHandle;
 #endif
 
+mLOG_DECLARE_CATEGORY(VIDEO);
+
 enum VideoLayer {
 	VIDEO_LAYER_BACKGROUND = 0,
 	VIDEO_LAYER_BEZEL,
 	VIDEO_LAYER_IMAGE,
-	VIDEO_LAYER_OVERLAY,
+	VIDEO_LAYER_OVERLAY0,
+	VIDEO_LAYER_OVERLAY1,
+	VIDEO_LAYER_OVERLAY2,
+	VIDEO_LAYER_OVERLAY3,
+	VIDEO_LAYER_OVERLAY4,
+	VIDEO_LAYER_OVERLAY5,
+	VIDEO_LAYER_OVERLAY6,
+	VIDEO_LAYER_OVERLAY7,
+	VIDEO_LAYER_OVERLAY8,
+	VIDEO_LAYER_OVERLAY9,
 	VIDEO_LAYER_MAX
 };
+
+#define VIDEO_LAYER_OVERLAY_COUNT VIDEO_LAYER_MAX - VIDEO_LAYER_OVERLAY0
 
 struct VideoBackend {
 	void (*init)(struct VideoBackend*, WHandle handle);

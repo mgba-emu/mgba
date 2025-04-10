@@ -60,6 +60,7 @@ typedef struct _XDisplay Display;
 #endif
 
 #include "OpenGLBug.h"
+#include "utils.h"
 
 using namespace QGBA;
 
@@ -947,6 +948,9 @@ void PainterGL::dequeueAll(bool keep) {
 
 void PainterGL::setVideoProxy(std::shared_ptr<VideoProxy> proxy) {
 	m_videoProxy = proxy;
+	if (proxy) {
+		proxy->setProxiedBackend(m_backend);
+	}
 }
 
 void PainterGL::interrupt() {
@@ -1003,8 +1007,8 @@ VideoShader* PainterGL::shaders() {
 QSize PainterGL::contentSize() const {
 	unsigned width, height;
 	VideoBackendGetFrameSize(m_backend, &width, &height);
-	return {static_cast<int>(width > static_cast<unsigned>(INT_MAX) ? INT_MAX : width),
-	        static_cast<int>(height > static_cast<unsigned>(INT_MAX) ? INT_MAX : height)};
+	return {saturateCast<int>(width),
+	        saturateCast<int>(height)};
 }
 
 int PainterGL::glTex() {

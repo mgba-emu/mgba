@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/feature/video-backend.h>
 
+mLOG_DEFINE_CATEGORY(VIDEO, "Video backend", "video");
+
 void VideoBackendGetFrame(const struct VideoBackend* v, struct mRectangle* frame) {
 	memset(frame, 0, sizeof(*frame));
 	int i;

@@ -335,6 +335,8 @@ bool mScriptTableIteratorLookup(struct mScriptValue* table, struct TableIterator
 void mScriptFrameInit(struct mScriptFrame* frame);
 void mScriptFrameDeinit(struct mScriptFrame* frame);
 
+struct mScriptValue* mScriptLambdaCreate0(struct mScriptValue* fn, struct mScriptList* args);
+
 void mScriptClassInit(struct mScriptTypeClass* cls);
 void mScriptClassDeinit(struct mScriptTypeClass* cls);
 
@@ -343,6 +345,7 @@ bool mScriptObjectGetConst(const struct mScriptValue* obj, const char* member, s
 bool mScriptObjectSet(struct mScriptValue* obj, const char* member, struct mScriptValue*);
 bool mScriptObjectCast(const struct mScriptValue* input, const struct mScriptType* type, struct mScriptValue* output) ;
 void mScriptObjectFree(struct mScriptValue* obj);
+struct mScriptValue* mScriptObjectBindLambda(struct mScriptValue* obj, const char* member, struct mScriptList* args);
 
 bool mScriptPopS32(struct mScriptList* list, int32_t* out);
 bool mScriptPopU32(struct mScriptList* list, uint32_t* out);

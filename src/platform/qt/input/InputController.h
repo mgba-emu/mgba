@@ -33,7 +33,9 @@
 #include <mgba/gba/interface.h>
 
 #ifdef BUILD_QT_MULTIMEDIA
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #include "VideoDumper.h"
+#endif
 #include <QCamera>
 #endif
 
@@ -173,7 +175,9 @@ private:
 	bool m_cameraActive = false;
 	QByteArray m_cameraDevice;
 	std::unique_ptr<QCamera> m_camera;
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	VideoDumper m_videoDumper;
+#endif
 #endif
 
 	mInputMap m_inputMap;

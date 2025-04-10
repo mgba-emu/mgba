@@ -26,8 +26,12 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/input)
 
 set(QT_LIBRARIES)
 
-find_package(Qt5 COMPONENTS Core Widgets Network Multimedia)
-set(QT Qt5)
+set(QT_V 5)
+find_package(Qt${QT_V} COMPONENTS Core Widgets Network OPTIONAL_COMPONENTS Multimedia)
+if(QT_V GREATER_EQUAL 6)
+	find_package(Qt${QT_V} COMPONENTS OpenGL OpenGLWidgets)
+endif()
+set(QT Qt${QT_V})
 
 if(NOT BUILD_GL AND NOT BUILD_GLES2 AND NOT BUILD_GLES3)
 	message(WARNING "OpenGL is recommended to build the Qt port")
@@ -65,7 +69,7 @@ if(APPLE)
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -Werror=narrowing")
 endif()
 
 get_target_property(QT_TYPE ${QT}::Core TYPE)
@@ -202,7 +206,7 @@ set(GB_SRC
 	GBOverride.cpp
 	PrinterView.cpp)
 
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5widgets5")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt${QT_V}widgets${QT_V}")
 
 set(AUDIO_SRC)
 if(BUILD_SDL)
@@ -222,15 +226,17 @@ if(${QT}Multimedia_FOUND)
 	list(APPEND AUDIO_SRC
 		AudioProcessorQt.cpp
 		AudioDevice.cpp)
-	list(APPEND SOURCE_FILES
-		VideoDumper.cpp)
+	if(QT_V LESS 6)
+		list(APPEND SOURCE_FILES
+			VideoDumper.cpp)
+	endif()
 	if (WIN32 AND QT_STATIC)
 		list(APPEND QT_LIBRARIES ${QT}::QWindowsAudioPlugin ${QT}::DSServicePlugin ${QT}::QWindowsVistaStylePlugin ${QT}::QJpegPlugin
                                  strmiids mfuuid mfplat mf ksguid dxva2 evr d3d9)
 	endif()
 	list(APPEND QT_LIBRARIES ${QT}::Multimedia)
 	list(APPEND QT_DEFINES BUILD_QT_MULTIMEDIA)
-	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt5multimedia5")
+	set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt${QT_V}multimedia${QT_V}")
 endif()
 
 if(NOT AUDIO_SRC)
@@ -406,6 +412,9 @@ if(WIN32)
 endif()
 
 list(APPEND QT_LIBRARIES ${QT}::Widgets ${QT}::Network)
+if(${QT_V} GREATER_EQUAL 6)
+	list(APPEND QT_LIBRARIES ${QT}::OpenGL ${QT}::OpenGLWidgets)
+endif()
 if(BUILD_GL OR BUILD_GLES2 OR BUILD_EPOXY)
 	list(APPEND QT_LIBRARIES ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 endif()

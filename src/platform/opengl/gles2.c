@@ -81,6 +81,15 @@ static const char* const _nullFragmentShader =
 	"	gl_FragColor = color;\n"
 	"}";
 
+static const char* const _thruFragmentShader =
+	"varying vec2 texCoord;\n"
+	"uniform sampler2D tex;\n"
+
+	"void main() {\n"
+	"	vec4 color = texture2D(tex, texCoord);\n"
+	"	gl_FragColor = color;\n"
+	"}";
+
 static const char* const _interframeFragmentShader =
 	"varying vec2 texCoord;\n"
 	"uniform sampler2D tex;\n"
@@ -159,8 +168,9 @@ static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 	uniforms[3].max.fvec3[1] = 1.0f;
 	uniforms[3].max.fvec3[2] = 1.0f;
 	mGLES2ShaderInit(&context->initialShader, _vertexShader, _fragmentShader, -1, -1, false, uniforms, 4);
-	mGLES2ShaderInit(&context->finalShader, 0, 0, 0, 0, false, 0, 0);
-	mGLES2ShaderInit(&context->interframeShader, 0, _interframeFragmentShader, -1, -1, false, 0, 0);
+	mGLES2ShaderInit(&context->finalShader, 0, 0, 0, 0, false, NULL, 0);
+	mGLES2ShaderInit(&context->interframeShader, 0, _interframeFragmentShader, -1, -1, false, NULL, 0);
+	mGLES2ShaderInit(&context->overlayShader, _vertexShader, _thruFragmentShader, -1, -1, false, NULL, 0);
 
 #ifdef BUILD_GLES3
 	if (context->initialShader.vao != (GLuint) -1) {
@@ -170,9 +180,16 @@ static void mGLES2ContextInit(struct VideoBackend* v, WHandle handle) {
 		glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
 		glBindVertexArray(context->interframeShader.vao);
 		glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
+		glBindVertexArray(context->overlayShader.vao);
+		glBindBuffer(GL_ARRAY_BUFFER, context->vbo);
 		glBindVertexArray(0);
 	}
 #endif
+
+	glDeleteFramebuffers(1, &context->overlayShader.fbo);
+	glDeleteTextures(1, &context->overlayShader.tex);
+	context->overlayShader.fbo = context->initialShader.fbo;
+	context->overlayShader.tex = context->initialShader.tex;
 
 	glDeleteFramebuffers(1, &context->finalShader.fbo);
 	glDeleteTextures(1, &context->finalShader.tex);
@@ -221,8 +238,8 @@ static void mGLES2ContextSetLayerDimensions(struct VideoBackend* v, enum VideoLa
 				context->shaders[n].dirty = true;
 			}
 		}
-		context->initialShader.dirty = true;
-		context->interframeShader.dirty = true;
+		glBindTexture(GL_TEXTURE_2D, context->initialShader.tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame.width, frame.height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 		context->width = frame.width;
 		context->height = frame.height;
 	}
@@ -245,6 +262,8 @@ static void mGLES2ContextDeinit(struct VideoBackend* v) {
 	mGLES2ShaderDeinit(&context->initialShader);
 	mGLES2ShaderDeinit(&context->finalShader);
 	mGLES2ShaderDeinit(&context->interframeShader);
+	context->overlayShader.fbo = 0;
+	mGLES2ShaderDeinit(&context->overlayShader);
 	free(context->initialShader.uniforms);
 }
 
@@ -321,7 +340,7 @@ static void _drawShaderEx(struct mGLES2Context* context, struct mGLES2Shader* sh
 	}
 
 	if (layer >= 0 && layer < VIDEO_LAYER_MAX) {
-		glViewport(context->layerDims[layer].x - context->x, context->layerDims[layer].y - context->y, context->layerDims[layer].width, context->layerDims[layer].height);
+		glViewport(context->layerDims[layer].x - context->x, context->height - context->layerDims[layer].y - context->layerDims[layer].height + context->y, context->layerDims[layer].width, context->layerDims[layer].height);
 	} else {
 		glViewport(padW, padH, drawW, drawH);
 	}
@@ -423,12 +442,17 @@ void mGLES2ContextDrawFrame(struct VideoBackend* v) {
 	context->finalShader.filter = v->filter;
 
 	int layer;
-	for (layer = 0; layer <= VIDEO_LAYER_IMAGE; ++layer) {
+	for (layer = 0; layer < VIDEO_LAYER_MAX; ++layer) {
 		if (context->layerDims[layer].width < 1 || context->layerDims[layer].height < 1) {
 			continue;
 		}
 		glBindTexture(GL_TEXTURE_2D, context->tex[layer]);
-		_drawShaderEx(context, &context->initialShader, layer);
+		if (layer != VIDEO_LAYER_IMAGE) {
+			context->overlayShader.blend = layer > VIDEO_LAYER_BACKGROUND;
+			_drawShaderEx(context, &context->overlayShader, layer);
+		} else {
+			_drawShaderEx(context, &context->initialShader, layer);
+		}
 		if (layer != VIDEO_LAYER_IMAGE) {
 			continue;
 		}
@@ -659,10 +683,14 @@ void mGLES2ShaderInit(struct mGLES2Shader* shader, const char* vs, const char* f
 }
 
 void mGLES2ShaderDeinit(struct mGLES2Shader* shader) {
-	glDeleteTextures(1, &shader->tex);
+	if (shader->tex) {
+		glDeleteTextures(1, &shader->tex);
+	}
 	glDeleteShader(shader->fragmentShader);
 	glDeleteProgram(shader->program);
-	glDeleteFramebuffers(1, &shader->fbo);
+	if (shader->fbo) {
+		glDeleteFramebuffers(1, &shader->fbo);
+	}
 #ifdef BUILD_GLES3
 	if (shader->vao != (GLuint) -1) {
 		glDeleteVertexArrays(1, &shader->vao);

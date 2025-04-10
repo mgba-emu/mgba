@@ -8,7 +8,7 @@
 #include "input/InputMapper.h"
 #include "InputController.h"
 
-#include <QRegExp>
+#include <QRegularExpression>
 
 using namespace QGBA;
 
@@ -202,8 +202,8 @@ constexpr InputProfile::InputProfile(const char* name,
 
 const InputProfile* InputProfile::findProfile(const QString& name) {
 	for (size_t i = 0; i < sizeof(s_defaultMaps) / sizeof(*s_defaultMaps); ++i) {
-		QRegExp re(s_defaultMaps[i].m_profileName);
-		if (re.exactMatch(name)) {
+		QRegularExpression re(QString("^%1$").arg(s_defaultMaps[i].m_profileName));
+		if (re.match(name).hasMatch()) {
 			return &s_defaultMaps[i];
 		}
 	}

@@ -10,6 +10,7 @@
 #include "DisplayGL.h"
 #include "DisplayQt.h"
 #include "LogController.h"
+#include "VideoProxy.h"
 #include "utils.h"
 
 #include <mgba-util/vfs.h>
@@ -139,6 +140,13 @@ void QGBA::Display::configure(ConfigController* config) {
 		}
 	}
 #endif
+}
+
+VideoBackend* QGBA::Display::videoBackend() {
+	if (m_videoProxy) {
+		return m_videoProxy->backend();
+	}
+	return nullptr;
 }
 
 void QGBA::Display::resizeEvent(QResizeEvent*) {
