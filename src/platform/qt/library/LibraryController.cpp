@@ -9,6 +9,7 @@
 #include "ConfigController.h"
 #include "GBAApp.h"
 #include "LibraryModel.h"
+#include "utils.h"
 
 #include <QHeaderView>
 #include <QListView>
@@ -190,7 +191,7 @@ void LibraryController::refresh() {
 
 	setDisabled(true);
 
-	QSet<QString> removedEntries(m_knownGames.keyBegin(), m_knownGames.keyEnd());
+	QSet<QString> removedEntries(qListToSet(m_knownGames.keys()));
 	QList<LibraryEntry> updatedEntries;
 	QList<LibraryEntry> newEntries;
 
@@ -215,7 +216,7 @@ void LibraryController::refresh() {
 		m_knownGames.remove(path);
 	}
 
-	m_libraryModel->removeEntries(QList<QString>(removedEntries.begin(), removedEntries.end()));
+	m_libraryModel->removeEntries(removedEntries.values());
 	m_libraryModel->updateEntries(updatedEntries);
 	m_libraryModel->addEntries(newEntries);
 

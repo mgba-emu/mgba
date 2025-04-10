@@ -134,4 +134,13 @@ struct SpanSet {
 	QVector<Span> spans;
 };
 
+template<typename T>
+QSet<T> qListToSet(const QList<T>& list) {
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+	return QSet<T>::fromList(list);
+#else
+	return QSet<T>(list.begin(), list.end());
+#endif
+}
+
 }
