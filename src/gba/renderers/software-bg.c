@@ -130,7 +130,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode3(struct GBAVideoSoftwareRenderer
 		}
 
 		uint32_t current = renderer->row[outX];
-		if (!objwinSlowPath || (!(current & FLAG_OBJWIN)) != objwinOnly) {
+		if (!objwinSlowPath || (!(current & FLAG_OBJWIN)) != background->objwinOnly) {
 			unsigned mergedFlags = flags;
 			if (current & FLAG_OBJWIN) {
 				mergedFlags = objwinFlags;
@@ -174,7 +174,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode4(struct GBAVideoSoftwareRenderer
 		if (color && IS_WRITABLE(current)) {
 			if (!objwinSlowPath) {
 				_compositeBlendNoObjwin(renderer, outX, palette[color] | flags, current);
-			} else if (objwinForceEnable || (!(current & FLAG_OBJWIN)) == objwinOnly) {
+			} else if (background->objwinForceEnable || (!(current & FLAG_OBJWIN)) == background->objwinOnly) {
 				color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
 				unsigned mergedFlags = flags;
 				if (current & FLAG_OBJWIN) {
@@ -212,7 +212,7 @@ void GBAVideoSoftwareRendererDrawBackgroundMode5(struct GBAVideoSoftwareRenderer
 		}
 
 		uint32_t current = renderer->row[outX];
-		if (!objwinSlowPath || (!(current & FLAG_OBJWIN)) != objwinOnly) {
+		if (!objwinSlowPath || (!(current & FLAG_OBJWIN)) != background->objwinOnly) {
 			unsigned mergedFlags = flags;
 			if (current & FLAG_OBJWIN) {
 				mergedFlags = objwinFlags;

@@ -293,6 +293,7 @@ static void mGLES2ContextResized(struct VideoBackend* v, unsigned w, unsigned h)
 		}
 	}
 	context->finalShader.dirty = true;
+	context->interframeShader.dirty = true;
 	glBindTexture(GL_TEXTURE_2D, context->finalShader.tex);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, drawW, drawH, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, context->finalShader.fbo);

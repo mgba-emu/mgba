@@ -347,6 +347,7 @@ int InputController::pollEvents() {
 		activeButtons |= im.mapAxes(pad->currentAxes());
 		activeButtons |= im.mapHats(pad->currentHats());
 	}
+	QReadLocker l(&m_eventsLock);
 	for (int i = 0; i < GBA_KEY_MAX; ++i) {
 		if ((activeButtons & (1 << i)) && hasPendingEvent(i)) {
 			activeButtons ^= 1 << i;

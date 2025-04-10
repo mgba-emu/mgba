@@ -213,8 +213,6 @@ static uint16_t GBASIOLockstepNodeMultiWriteRegister(struct GBASIODriver* driver
 					mTimingDeschedule(&driver->p->p->timing, &node->event);
 				}
 				mTimingSchedule(&driver->p->p->timing, &node->event, 0);
-			} else {
-				value &= ~0x0080;
 			}
 		}
 		value &= 0xFF83;

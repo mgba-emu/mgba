@@ -520,6 +520,58 @@ static void _breakWindowInner(struct GBAVideoSoftwareRenderer* softwareRenderer,
 #endif
 }
 
+static void GBAVideoSoftwareRendererPrepareWindow(struct GBAVideoSoftwareRenderer* renderer) {
+	int objwinSlowPath = GBARegisterDISPCNTIsObjwinEnable(renderer->dispcnt);
+	if (objwinSlowPath) {
+		renderer->bg[0].objwinForceEnable = GBAWindowControlIsBg0Enable(renderer->objwin.packed) &&
+		    GBAWindowControlIsBg0Enable(renderer->currentWindow.packed);
+		renderer->bg[0].objwinOnly = !GBAWindowControlIsBg0Enable(renderer->objwin.packed);
+		renderer->bg[1].objwinForceEnable = GBAWindowControlIsBg1Enable(renderer->objwin.packed) &&
+		    GBAWindowControlIsBg1Enable(renderer->currentWindow.packed);
+		renderer->bg[1].objwinOnly = !GBAWindowControlIsBg1Enable(renderer->objwin.packed);
+		renderer->bg[2].objwinForceEnable = GBAWindowControlIsBg2Enable(renderer->objwin.packed) &&
+		    GBAWindowControlIsBg2Enable(renderer->currentWindow.packed);
+		renderer->bg[2].objwinOnly = !GBAWindowControlIsBg2Enable(renderer->objwin.packed);
+		renderer->bg[3].objwinForceEnable = GBAWindowControlIsBg3Enable(renderer->objwin.packed) &&
+		    GBAWindowControlIsBg3Enable(renderer->currentWindow.packed);
+		renderer->bg[3].objwinOnly = !GBAWindowControlIsBg3Enable(renderer->objwin.packed);
+	}
+
+	switch (GBARegisterDISPCNTGetMode(renderer->dispcnt)) {
+	case 0:
+		if (renderer->bg[0].enabled == ENABLED_MAX) {
+			GBAVideoSoftwareRendererUpdateFlags(renderer, &renderer->bg[0]);
+		}
+		if (renderer->bg[1].enabled == ENABLED_MAX) {
+			GBAVideoSoftwareRendererUpdateFlags(renderer, &renderer->bg[1]);
+		}
+		// Fall through
+	case 2:
+		if (renderer->bg[3].enabled == ENABLED_MAX) {
+			GBAVideoSoftwareRendererUpdateFlags(renderer, &renderer->bg[3]);
+		}
+		// Fall through
+	case 3:
+	case 4:
+	case 5:
+		if (renderer->bg[2].enabled == ENABLED_MAX) {
+			GBAVideoSoftwareRendererUpdateFlags(renderer, &renderer->bg[2]);
+		}
+		break;
+	case 1:
+		if (renderer->bg[0].enabled == ENABLED_MAX) {
+			GBAVideoSoftwareRendererUpdateFlags(renderer, &renderer->bg[0]);
+		}
+		if (renderer->bg[1].enabled == ENABLED_MAX) {
+			GBAVideoSoftwareRendererUpdateFlags(renderer, &renderer->bg[1]);
+		}
+		if (renderer->bg[2].enabled == ENABLED_MAX) {
+			GBAVideoSoftwareRendererUpdateFlags(renderer, &renderer->bg[2]);
+		}
+		break;
+	}
+}
+
 static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
 
@@ -590,40 +642,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 		softwareRenderer->start = softwareRenderer->end;
 		softwareRenderer->end = softwareRenderer->windows[w].endX;
 		softwareRenderer->currentWindow = softwareRenderer->windows[w].control;
-		switch (GBARegisterDISPCNTGetMode(softwareRenderer->dispcnt)) {
-		case 0:
-			if (softwareRenderer->bg[0].enabled == ENABLED_MAX) {
-				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[0]);
-			}
-			if (softwareRenderer->bg[1].enabled == ENABLED_MAX) {
-				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[1]);
-			}
-			// Fall through
-		case 2:
-			if (softwareRenderer->bg[3].enabled == ENABLED_MAX) {
-				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[3]);
-			}
-			// Fall through
-		case 3:
-		case 4:
-		case 5:
-			if (softwareRenderer->bg[2].enabled == ENABLED_MAX) {
-				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[2]);
-			}
-			break;
-		case 1:
-			if (softwareRenderer->bg[0].enabled == ENABLED_MAX) {
-				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[0]);
-			}
-			if (softwareRenderer->bg[1].enabled == ENABLED_MAX) {
-				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[1]);
-			}
-			if (softwareRenderer->bg[2].enabled == ENABLED_MAX) {
-				GBAVideoSoftwareRendererUpdateFlags(softwareRenderer, &softwareRenderer->bg[2]);
-			}
-			break;
-		}
-
+		GBAVideoSoftwareRendererPrepareWindow(softwareRenderer);
 		for (priority = 0; priority < 4; ++priority) {
 			if (spriteLayers & (1 << priority)) {
 				GBAVideoSoftwareRendererPostprocessSprite(softwareRenderer, priority);

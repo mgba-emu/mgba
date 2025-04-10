@@ -1954,8 +1954,15 @@ void Window::setupOptions() {
 }
 
 void Window::attachWidget(QWidget* widget) {
+	// Fix https://mgba.io/i/2885 -- seems like a Qt bug
+	if (m_display && widget != m_display.get()) {
+		m_display->hide();
+	}
 	takeCentralWidget();
 	setCentralWidget(widget);
+	if (m_display && widget == m_display.get()) {
+		m_display->show();
+	}
 }
 
 void Window::detachWidget() {

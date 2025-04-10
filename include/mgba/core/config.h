@@ -72,8 +72,9 @@ bool mCoreConfigSavePath(const struct mCoreConfig*, const char* path);
 bool mCoreConfigLoadVFile(struct mCoreConfig*, struct VFile* vf);
 bool mCoreConfigSaveVFile(const struct mCoreConfig*, struct VFile* vf);
 
-void mCoreConfigMakePortable(const struct mCoreConfig*);
+void mCoreConfigMakePortable(const struct mCoreConfig*, const char* path);
 void mCoreConfigDirectory(char* out, size_t outLength);
+void mCoreConfigPortableIniPath(char* out, size_t outLength);
 void mCoreConfigPortablePath(char* out, size_t outLength);
 bool mCoreConfigIsPortable(void);
 #endif

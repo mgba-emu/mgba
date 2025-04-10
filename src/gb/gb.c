@@ -260,9 +260,13 @@ void GBResizeSram(struct GB* gb, size_t size) {
 	}
 	struct VFile* vf = gb->sramVf;
 	if (vf) {
+		// We have a vf
+		ssize_t vfSize = vf->size(vf);
 		if (vf == gb->sramRealVf) {
-			ssize_t vfSize = vf->size(vf);
+			// This is the real save file, not a masked one
 			if (vfSize >= 0 && (size_t) vfSize < size) {
+				// We need to grow the file
+				// Make sure to copy the footer data, if any
 				uint8_t extdataBuffer[0x100];
 				if (vfSize & 0xFF) {
 					vf->seek(vf, -(vfSize & 0xFF), SEEK_END);
@@ -270,6 +274,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 				}
 				if (gb->memory.sram) {
 					vf->unmap(vf, gb->memory.sram, gb->sramSize);
+					gb->memory.sram = NULL;
 				}
 				vf->truncate(vf, size + (vfSize & 0xFF));
 				if (vfSize & 0xFF) {
@@ -281,24 +286,36 @@ void GBResizeSram(struct GB* gb, size_t size) {
 					memset(&gb->memory.sram[vfSize], 0xFF, size - vfSize);
 				}
 			} else if (size > gb->sramSize || !gb->memory.sram) {
+				// We aren't growing the file, but we are changing our mapping of it
 				if (gb->memory.sram) {
 					vf->unmap(vf, gb->memory.sram, gb->sramSize);
+					gb->memory.sram = NULL;
 				}
 				if (size) {
 					gb->memory.sram = vf->map(vf, size, MAP_WRITE);
 				}
 			}
 		} else {
+			// This is a masked save file
 			if (gb->memory.sram) {
 				vf->unmap(vf, gb->memory.sram, gb->sramSize);
 			}
-			if (vf->size(vf) < gb->sramSize) {
-				void* sram = vf->map(vf, vf->size(vf), MAP_READ);
-				struct VFile* newVf = VFileMemChunk(sram, vf->size(vf));
-				vf->unmap(vf, sram,vf->size(vf));
-				vf = newVf;
-				gb->sramVf = newVf;
-				vf->truncate(vf, size);
+			if ((vfSize <= 0 && size) || (size_t) vfSize < size) {
+				// The loaded mask file is too small. Since these can be read-only,
+				// we need to make a new one of the right size
+				if (vfSize < 0) {
+					vfSize = 0;
+				}
+				gb->sramVf = VFileMemChunk(NULL, size);
+				uint8_t* sram = gb->sramVf->map(gb->sramVf, size, MAP_WRITE);
+				if (vfSize > 0) {
+					vf->seek(vf, 0, SEEK_SET);
+					vf->read(vf, sram, vfSize);
+				}
+				memset(&sram[vfSize], 0xFF, size - vfSize);
+				gb->sramVf->unmap(gb->sramVf, sram, size);
+				vf->close(vf);
+				vf = gb->sramVf;
 			}
 			if (size) {
 				gb->memory.sram = vf->map(vf, size, MAP_READ);
@@ -308,6 +325,8 @@ void GBResizeSram(struct GB* gb, size_t size) {
 			gb->memory.sram = NULL;
 		}
 	} else if (size) {
+		// There's no vf, so let's make it only memory-backed
+		// TODO: Investigate just using a VFileMemChunk instead of this hybrid approach
 		uint8_t* newSram = anonymousMemoryMap(size);
 		if (gb->memory.sram) {
 			if (size > gb->sramSize) {

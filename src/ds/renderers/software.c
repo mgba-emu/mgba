@@ -412,6 +412,23 @@ static void DSVideoSoftwareRendererDrawGBAScanline(struct GBAVideoRenderer* rend
 			softwareRenderer->start = softwareRenderer->end;
 			softwareRenderer->end = softwareRenderer->windows[w].endX;
 			softwareRenderer->currentWindow = softwareRenderer->windows[w].control;
+
+			int objwinSlowPath = DSRegisterDISPCNTIsObjwinEnable(softwareRenderer->dispcnt);
+			if (objwinSlowPath) {
+				softwareRenderer->bg[0].objwinForceEnable = GBAWindowControlIsBg0Enable(softwareRenderer->objwin.packed) &&
+				    GBAWindowControlIsBg0Enable(softwareRenderer->currentWindow.packed);
+				softwareRenderer->bg[0].objwinOnly = !GBAWindowControlIsBg0Enable(softwareRenderer->objwin.packed);
+				softwareRenderer->bg[1].objwinForceEnable = GBAWindowControlIsBg1Enable(softwareRenderer->objwin.packed) &&
+				    GBAWindowControlIsBg1Enable(softwareRenderer->currentWindow.packed);
+				softwareRenderer->bg[1].objwinOnly = !GBAWindowControlIsBg1Enable(softwareRenderer->objwin.packed);
+				softwareRenderer->bg[2].objwinForceEnable = GBAWindowControlIsBg2Enable(softwareRenderer->objwin.packed) &&
+				    GBAWindowControlIsBg2Enable(softwareRenderer->currentWindow.packed);
+				softwareRenderer->bg[2].objwinOnly = !GBAWindowControlIsBg2Enable(softwareRenderer->objwin.packed);
+				softwareRenderer->bg[3].objwinForceEnable = GBAWindowControlIsBg3Enable(softwareRenderer->objwin.packed) &&
+				    GBAWindowControlIsBg3Enable(softwareRenderer->currentWindow.packed);
+				softwareRenderer->bg[3].objwinOnly = !GBAWindowControlIsBg3Enable(softwareRenderer->objwin.packed);
+			}
+
 			if (spriteLayers & (1 << priority)) {
 				GBAVideoSoftwareRendererPostprocessSprite(softwareRenderer, priority);
 			}
@@ -909,7 +926,7 @@ void DSVideoSoftwareRendererDrawBackgroundExt1(struct GBAVideoSoftwareRenderer* 
 		if (color && IS_WRITABLE(current)) {
 			if (!objwinSlowPath) {
 				_compositeBlendNoObjwin(renderer, outX, palette[color] | flags, current);
-			} else if (objwinForceEnable || (!(current & FLAG_OBJWIN)) == objwinOnly) {
+			} else if (background->objwinForceEnable || (!(current & FLAG_OBJWIN)) == background->objwinOnly) {
 				color_t* currentPalette = (current & FLAG_OBJWIN) ? objwinPalette : palette;
 				unsigned mergedFlags = flags;
 				if (current & FLAG_OBJWIN) {
@@ -975,7 +992,7 @@ void DSVideoSoftwareRendererDrawBackgroundExt2(struct GBAVideoSoftwareRenderer* 
 		}
 
 		uint32_t current = renderer->row[outX];
-		if (!objwinSlowPath || (!(current & FLAG_OBJWIN)) != objwinOnly) {
+		if (!objwinSlowPath || (!(current & FLAG_OBJWIN)) != background->objwinOnly) {
 			unsigned mergedFlags = flags;
 			if (current & FLAG_OBJWIN) {
 				mergedFlags = objwinFlags;

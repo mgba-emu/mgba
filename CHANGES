@@ -47,36 +47,19 @@ Features:
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:
- - ARM: Remove obsolete force-alignment in `bx pc` (fixes mgba.io/i/2964)
- - ARM: Fake bpkt instruction should take no cycles (fixes mgba.io/i/2551)
- - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
- - GB Audio: Fix channel 1 restarting if sweep applies after stop (fixes mgba.io/i/2965)
- - GB Audio: Fix restarting envelope when writing to register (fixes mgba.io/i/3067)
- - GB Audio: Improve "zombie mode" emulation in CGB mode (fixes mgba.io/i/2029)
- - GB I/O: Read back proper SVBK value after writing 0 (fixes mgba.io/i/2921)
  - GB I/O: Fix STAT writing IRQ trigger conditions (fixes mgba.io/i/2501)
  - GB Serialize: Add missing Pocket Cam state to savestates
- - GB SIO: Disabling SIO should cancel pending transfers (fixes mgba.io/i/2537)
  - GB Video: Implement DMG-style sprite ordering
  - GBA: Unhandled bkpt should be treated as an undefined exception
- - GBA Audio: Fix sample timing drifting when changing sample interval
- - GBA Audio: Fix initial channel 3 wave RAM (fixes mgba.io/i/2947)
- - GBA Audio: Fix sample position issues when rate changes (fixes mgba.io/i/3006)
- - GBA BIOS: Fix clobbering registers with word-sized CpuSet
  - GBA GPIO: Fix tilt scale and orientation (fixes mgba.io/i/2703)
  - GBA I/O: Fix HALTCNT access behavior (fixes mgba.io/i/2309)
- - GBA SIO: Fix normal mode SI/SO semantics (fixes mgba.io/i/2925)
+ - GBA SIO: Fix MULTI mode SIOCNT bit 7 writes on secondary GBAs (fixes mgba.io/i/3110)
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
  - Debugger: Fix writing to specific segment in command-line debugger
- - GB: Fix applying a patch that changes the cartridge mapper (fixes mgba.io/i/3077)
- - GBA Savedata: Fix crash when resizing flash save games for RTC data
- - mGUI: Fix cases where an older save state screenshot would be shown. (fixes mgba.io/i/2183)
+ - GB: Fix uninitialized save data when loading undersized temporary saves
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
- - Qt: Re-enable sync for multiplayer windows that aren't connected (fixes mgba.io/i/2974)
- - Qt: Fix mute settings not being loaded on setting screen (fixes mgba.io/i/2990)
- - Vita: Fix camera setting not appearing (fixes mgba.io/i/3012)
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - GB: Prevent incompatible BIOSes from being used on differing models
@@ -84,10 +67,40 @@ Misc:
  - GBA: Improve detection of valid ELF ROMs
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
  - mGUI: Persist fast forwarding after closing menu (fixes mgba.io/i/2414)
- - Qt: Add exporting of SAV + RTC saves from Save Converter to strip RTC data
  - Qt: Handle multiple save game files for disparate games separately (fixes mgba.io/i/2887)
  - Qt: Remove maligned double-click-to-fullscreen shortcut (closes mgba.io/i/2632)
+ - Qt: Pass logging context through to video proxy thread (fixes mgba.io/i/3095)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
+ - Switch: Add bilinear filtering option (closes mgba.io/i/3111)
+ - Vita: Add imc0 and xmc0 mount point support
+
+0.10.3: (2024-01-07)
+Emulation fixes:
+ - ARM: Remove obsolete force-alignment in `bx pc` (fixes mgba.io/i/2964)
+ - ARM: Fake bpkt instruction should take no cycles (fixes mgba.io/i/2551)
+ - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
+ - GB Audio: Fix channel 1 restarting if sweep applies after stop (fixes mgba.io/i/2965)
+ - GB Audio: Fix restarting envelope when writing to register (fixes mgba.io/i/3067)
+ - GB Audio: Improve "zombie mode" emulation in CGB mode (fixes mgba.io/i/2029)
+ - GB I/O: Read back proper SVBK value after writing 0 (fixes mgba.io/i/2921)
+ - GB SIO: Disabling SIO should cancel pending transfers (fixes mgba.io/i/2537)
+ - GBA Audio: Fix sample timing drifting when changing sample interval
+ - GBA Audio: Fix initial channel 3 wave RAM (fixes mgba.io/i/2947)
+ - GBA Audio: Fix sample position issues when rate changes (fixes mgba.io/i/3006)
+ - GBA GPIO: Fix tilt scale and orientation (fixes mgba.io/i/2703)
+ - GBA BIOS: Fix clobbering registers with word-sized CpuSet
+ - GBA SIO: Fix normal mode SI/SO semantics (fixes mgba.io/i/2925)
+Other fixes:
+ - GB: Fix applying a patch that changes the cartridge mapper (fixes mgba.io/i/3077)
+ - GBA Savedata: Fix crash when resizing flash save games for RTC data
+ - mGUI: Fix cases where an older save state screenshot would be shown (fixes mgba.io/i/2183)
+ - Qt: Re-enable sync for multiplayer windows that aren't connected (fixes mgba.io/i/2974)
+ - Qt: Fix mute settings not being loaded on setting screen (fixes mgba.io/i/2990)
+ - Qt: Fix screen freezing on macOS after closing save state window (fixes mgba.io/i/2885)
+ - Vita: Fix camera setting not appearing (fixes mgba.io/i/3012)
+Misc:
+ - mGUI: Persist fast forwarding after closing menu (fixes mgba.io/i/2414)
+ - Qt: Add exporting of SAV + RTC saves from Save Converter to strip RTC data
  - VFS: Use anonymousMemoryMap for large 7z allocations (fixes mgba.io/i/3013)
 
 0.10.2: (2023-04-23)

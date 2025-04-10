@@ -650,6 +650,7 @@ void PainterGL::resizeContext() {
 	mRectangle dims = {0, 0, size.width(), size.height()};
 	m_backend->setLayerDimensions(m_backend, VIDEO_LAYER_IMAGE, &dims);
 	recenterLayers();
+	m_dims = size;
 }
 
 void PainterGL::setMessagePainter(MessagePainter* messagePainter) {
@@ -660,22 +661,7 @@ void PainterGL::recenterLayers() {
 	if (!m_context) {
 		return;
 	}
-	const static std::initializer_list<VideoLayer> centeredLayers{VIDEO_LAYER_BACKGROUND};
-	int width, height;
-	mRectangle frame = {0};
-	m_backend->imageSize(m_backend, VIDEO_LAYER_IMAGE, &width, &height);
-	frame.width = width;
-	frame.height = height;
-	unsigned scale = std::max(1U, m_context->videoScale());
-
-	for (VideoLayer l : centeredLayers) {
-		mRectangle dims{};
-		m_backend->imageSize(m_backend, l, &width, &height);
-		dims.width = width * scale;
-		dims.height = height * scale;
-		mRectangleCenter(&frame, &dims);
-		m_backend->setLayerDimensions(m_backend, l, &dims);
-	}
+	VideoBackendRecenter(m_backend, std::max(1U, m_context->videoScale()));
 }
 
 void PainterGL::resize(const QSize& size) {

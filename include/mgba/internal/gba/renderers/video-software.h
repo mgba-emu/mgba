@@ -48,6 +48,8 @@ struct GBAVideoSoftwareBackground {
 	color_t* variantPalette;
 	uint32_t flags;
 	uint32_t objwinFlags;
+	int objwinForceEnable;
+	bool objwinOnly;
 	bool variant;
 	int32_t offsetX;
 	int32_t offsetY;
