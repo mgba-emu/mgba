@@ -38,7 +38,7 @@ public:
 	void detachGame(CoreController*);
 
 	int attached();
-	int playerId(CoreController*);
+	int playerId(CoreController*) const;
 
 signals:
 	void gameAttached();

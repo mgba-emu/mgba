@@ -169,10 +169,14 @@ void GBAApp::continueAll(const QList<Window*>& paused) {
 	}
 }
 
-QString GBAApp::getOpenFileName(QWidget* owner, const QString& title, const QString& filter) {
+QString GBAApp::getOpenFileName(QWidget* owner, const QString& title, const QString& filter, const QString& path) {
 	QList<Window*> paused;
+	QString base(path);
+	if (base.isNull()) {
+		base = m_configController->getOption("lastDirectory");
+	}
 	pauseAll(&paused);
-	QString filename = QFileDialog::getOpenFileName(owner, title, m_configController->getOption("lastDirectory"), filter);
+	QString filename = QFileDialog::getOpenFileName(owner, title, base, filter);
 	continueAll(paused);
 	if (!filename.isEmpty()) {
 		m_configController->setOption("lastDirectory", QFileInfo(filename).dir().canonicalPath());
@@ -180,10 +184,14 @@ QString GBAApp::getOpenFileName(QWidget* owner, const QString& title, const QStr
 	return filename;
 }
 
-QStringList GBAApp::getOpenFileNames(QWidget* owner, const QString& title, const QString& filter) {
+QStringList GBAApp::getOpenFileNames(QWidget* owner, const QString& title, const QString& filter, const QString& path) {
 	QList<Window*> paused;
+	QString base(path);
+	if (base.isNull()) {
+		base = m_configController->getOption("lastDirectory");
+	}
 	pauseAll(&paused);
-	QStringList filenames = QFileDialog::getOpenFileNames(owner, title, m_configController->getOption("lastDirectory"), filter);
+	QStringList filenames = QFileDialog::getOpenFileNames(owner, title, base, filter);
 	continueAll(paused);
 	if (!filenames.isEmpty()) {
 		m_configController->setOption("lastDirectory", QFileInfo(filenames.at(0)).dir().canonicalPath());
@@ -191,10 +199,14 @@ QStringList GBAApp::getOpenFileNames(QWidget* owner, const QString& title, const
 	return filenames;
 }
 
-QString GBAApp::getSaveFileName(QWidget* owner, const QString& title, const QString& filter) {
+QString GBAApp::getSaveFileName(QWidget* owner, const QString& title, const QString& filter, const QString& path) {
 	QList<Window*> paused;
+	QString base(path);
+	if (base.isNull()) {
+		base = m_configController->getOption("lastDirectory");
+	}
 	pauseAll(&paused);
-	QString filename = QFileDialog::getSaveFileName(owner, title, m_configController->getOption("lastDirectory"), filter);
+	QString filename = QFileDialog::getSaveFileName(owner, title, base, filter);
 	continueAll(paused);
 	if (!filename.isEmpty()) {
 		m_configController->setOption("lastDirectory", QFileInfo(filename).dir().canonicalPath());

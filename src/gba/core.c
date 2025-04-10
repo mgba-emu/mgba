@@ -209,6 +209,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	core->debugger = NULL;
 	core->symbolTable = NULL;
 	core->videoLogger = NULL;
+	gbacore->hasOverride = false;
 	gbacore->overrides = NULL;
 	gbacore->debuggerPlatform = NULL;
 	gbacore->cheatDevice = NULL;

@@ -64,6 +64,7 @@ void FFmpegEncoderInit(struct FFmpegEncoder* encoder) {
 	encoder->audioCodec = NULL;
 	encoder->videoCodec = NULL;
 	encoder->containerFormat = NULL;
+	encoder->isampleRate = PREFERRED_SAMPLE_RATE;
 	FFmpegEncoderSetAudio(encoder, "flac", 0);
 	FFmpegEncoderSetVideo(encoder, "libx264", 0, 0);
 	FFmpegEncoderSetContainer(encoder, "matroska");
