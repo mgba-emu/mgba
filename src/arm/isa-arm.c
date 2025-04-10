@@ -811,12 +811,15 @@ DEFINE_INSTRUCTION_ARM(STC, ARM_STUB)
 
 // Begin miscellaneous definitions
 
+
 DEFINE_INSTRUCTION_ARM(CLZ,
 	int rm = opcode & 0xF;
 	int rd = (opcode >> 12) & 0xF;
 	cpu->gprs[rd] = clz32(cpu->gprs[rm]);)
 
-DEFINE_INSTRUCTION_ARM(BKPT, cpu->irqh.bkpt32(cpu, ((opcode >> 4) & 0xFFF0) | (opcode & 0xF))); // Not strictly in ARMv4T, but here for convenience
+DEFINE_INSTRUCTION_ARM(BKPT,
+	cpu->irqh.bkpt32(cpu, ((opcode >> 4) & 0xFFF0) | (opcode & 0xF));
+	currentCycles = 0;); // Not strictly in ARMv4T, but here for convenience
 DEFINE_INSTRUCTION_ARM(ILL, ARM_ILL) // Illegal opcode
 
 DEFINE_INSTRUCTION_ARM(MSR,

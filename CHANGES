@@ -48,15 +48,18 @@ Features:
  - Debugger: Add range watchpoints
 Emulation fixes:
  - ARM: Remove obsolete force-alignment in `bx pc` (fixes mgba.io/i/2964)
+ - ARM: Fake bpkt instruction should take no cycles (fixes mgba.io/i/2551)
  - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
  - GB Audio: Fix channel 1 restarting if sweep applies after stop (fixes mgba.io/i/2965)
  - GB I/O: Read back proper SVBK value after writing 0 (fixes mgba.io/i/2921)
  - GB Serialize: Add missing Pocket Cam state to savestates
  - GB SIO: Disabling SIO should cancel pending transfers (fixes mgba.io/i/2537)
  - GB Video: Implement DMG-style sprite ordering
+ - GBA: Unhandled bkpt should be treated as an undefined exception
  - GBA Audio: Fix sample timing drifting when changing sample interval
  - GBA Audio: Fix initial channel 3 wave RAM (fixes mgba.io/i/2947)
  - GBA BIOS: Fix clobbering registers with word-sized CpuSet
+ - GBA SIO: Fix normal mode SI/SO semantics (fixes mgba.io/i/2925)
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
@@ -69,7 +72,7 @@ Misc:
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
- - Qt: Add exporting of SAV + RTC GBA saves from Save Converter to strip RTC data
+ - Qt: Add exporting of SAV + RTC saves from Save Converter to strip RTC data
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
 
 0.10.2: (2023-04-23)

@@ -885,9 +885,6 @@ void GBAIllegal(struct ARMCore* cpu, uint32_t opcode) {
 
 void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 	struct GBA* gba = (struct GBA*) cpu->master;
-	if (immediate >= CPU_COMPONENT_MAX) {
-		return;
-	}
 	switch (immediate) {
 #ifdef USE_DEBUGGERS
 	case CPU_COMPONENT_DEBUGGER:
@@ -898,6 +895,7 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 				.pointId = -1
 			};
 			mDebuggerEnter(gba->debugger->d.p, DEBUGGER_ENTER_BREAKPOINT, &info);
+			return;
 		}
 		break;
 #endif
@@ -916,11 +914,13 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 			if (hook) {
 				ARMRunFake(cpu, hook->patchedOpcode);
 			}
+			return;
 		}
 		break;
 	default:
 		break;
 	}
+	ARMRaiseUndefined(cpu);
 }
 
 void GBAFrameStarted(struct GBA* gba) {
