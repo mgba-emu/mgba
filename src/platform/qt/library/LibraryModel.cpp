@@ -357,7 +357,7 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const {
 			return QVariant();
 	}
 
-	if (!checkIndex(index)) {
+	if (index.model() != this || index.row() < 0 || index.row() > rowCount() || index.column() < 0 || index.column() > columnCount()) {
 		return QVariant();
 	}
 
