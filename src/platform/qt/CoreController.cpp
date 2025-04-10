@@ -79,6 +79,11 @@ CoreController::CoreController(mCore* core, QObject* parent)
 			controller->updatePlayerSave();
 		}
 
+		if (controller->m_override) {
+			controller->m_override->identify(context->core);
+			context->core->setOverride(context->core, controller->m_override->raw());
+		}
+
 		QMetaObject::invokeMethod(controller, "started");
 	};
 
@@ -86,11 +91,6 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		CoreController* controller = static_cast<CoreController*>(context->userData);
 		for (auto& action : controller->m_resetActions) {
 			action();
-		}
-
-		if (controller->m_override) {
-			controller->m_override->identify(context->core);
-			controller->m_override->apply(context->core);
 		}
 
 		controller->m_resetActions.clear();

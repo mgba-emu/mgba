@@ -197,6 +197,11 @@ struct mScriptCoreAdapter {
 	struct mRotationSource rotation;
 	struct mScriptValue* rotationCbTable;
 	struct mRotationSource* oldRotation;
+#ifdef M_CORE_GBA
+	struct GBALuminanceSource luminance;
+	struct mScriptValue* luminanceCb;
+	struct GBALuminanceSource* oldLuminance;
+#endif
 };
 
 struct mScriptConsole {
@@ -958,11 +963,25 @@ static struct mScriptValue* _mScriptCoreAdapterSetRotationCbTable(struct mScript
 	return oldTable;
 }
 
+static void _mScriptCoreAdapterSetLuminanceCb(struct mScriptCoreAdapter* adapter, struct mScriptValue* callback) {
+	if (callback) {
+		if (callback->type->base != mSCRIPT_TYPE_FUNCTION) {
+			return;
+		}
+		mScriptValueRef(callback);
+	}
+	if (adapter->luminanceCb) {
+		mScriptValueDeref(adapter->luminanceCb);
+	}
+	adapter->luminanceCb = callback;
+}
+
 mSCRIPT_DECLARE_STRUCT(mScriptCoreAdapter);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, W(mCore), _get, _mScriptCoreAdapterGet, 1, CHARP, name);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, _deinit, _mScriptCoreAdapterDeinit, 0);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, reset, _mScriptCoreAdapterReset, 0);
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptCoreAdapter, WTABLE, setRotationCallbacks, _mScriptCoreAdapterSetRotationCbTable, 1, WTABLE, cbTable);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptCoreAdapter, setSolarSensorCallback, _mScriptCoreAdapterSetLuminanceCb, 1, WRAPPER, callback);
 #ifdef USE_DEBUGGERS
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setBreakpoint, _mScriptCoreAdapterSetBreakpoint, 3, WRAPPER, callback, U32, address, S32, segment);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptCoreAdapter, S64, setWatchpoint, _mScriptCoreAdapterSetWatchpoint, 4, WRAPPER, callback, U32, address, S32, type, S32, segment);
@@ -1016,6 +1035,11 @@ mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 		"or key into a separate table. Use cases may vary. If this function is called more than once, the previous value of the table is returned."
 	)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, setRotationCallbacks)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Set a callback that will be used to get the current value of the solar sensors between 0 (darkest) and 255 (brightest). "
+		"Note that the full range of values is not used by games, and the exact range depends on the calibration done by the game itself."
+	)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, setSolarSensorCallback)
 #ifdef USE_DEBUGGERS
 	mSCRIPT_DEFINE_DOCSTRING("Set a breakpoint at a given address")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCoreAdapter, setBreakpoint)
@@ -1123,6 +1147,33 @@ static int32_t _rotationReadGyroZ(struct mRotationSource* rotation) {
 	return 0;
 }
 
+#ifdef M_CORE_GBA
+static uint8_t _readLuminance(struct GBALuminanceSource* luminance) {
+	struct mScriptCoreAdapter* adapter = containerof(luminance, struct mScriptCoreAdapter, luminance);
+
+	if (adapter->luminanceCb) {
+		struct mScriptFrame frame;
+		mScriptFrameInit(&frame);
+		bool ok = mScriptInvoke(adapter->luminanceCb, &frame);
+		struct mScriptValue out = {0};
+		if (ok && mScriptListSize(&frame.returnValues) == 1) {
+			if (!mScriptCast(mSCRIPT_TYPE_MS_U8, mScriptListGetPointer(&frame.returnValues, 0), &out)) {
+				ok = false;
+			}
+		}
+		mScriptFrameDeinit(&frame);
+		if (ok) {
+			return 0xFF - out.value.u32;
+		}
+	}
+	if (adapter->oldLuminance) {
+		adapter->oldLuminance->sample(adapter->oldLuminance);
+		return adapter->oldLuminance->readLuminance(adapter->oldLuminance);
+	}
+	return 0;
+}
+#endif
+
 void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core) {
 	struct mScriptValue* coreValue = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mScriptCoreAdapter));
 	struct mScriptCoreAdapter* adapter = calloc(1, sizeof(*adapter));
@@ -1145,6 +1196,14 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 	core->setPeripheral(core, mPERIPH_RUMBLE, &adapter->rumble);
 	core->setPeripheral(core, mPERIPH_ROTATION, &adapter->rotation);
 
+#ifdef M_CORE_GBA
+	adapter->luminance.readLuminance = _readLuminance;
+	if (core->platform(core) == mPLATFORM_GBA) {
+		adapter->oldLuminance = core->getPeripheral(core, mPERIPH_GBA_LUMINANCE);
+		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, &adapter->luminance);
+	}
+#endif
+
 	_rebuildMemoryMap(context, adapter);
 
 	coreValue->value.opaque = adapter;
@@ -1164,11 +1223,20 @@ void mScriptContextDetachCore(struct mScriptContext* context) {
 
 	struct mScriptCoreAdapter* adapter = value->value.opaque;
 	_clearMemoryMap(context, adapter, true);
-	adapter->core->setPeripheral(adapter->core, mPERIPH_RUMBLE, adapter->oldRumble);
-	adapter->core->setPeripheral(adapter->core, mPERIPH_ROTATION, adapter->oldRotation);
+	struct mCore* core = adapter->core;
+	core->setPeripheral(core, mPERIPH_RUMBLE, adapter->oldRumble);
+	core->setPeripheral(core, mPERIPH_ROTATION, adapter->oldRotation);
 	if (adapter->rotationCbTable) {
 		mScriptValueDeref(adapter->rotationCbTable);
 	}
+#ifdef M_CORE_GBA
+	if (core->platform(core) == mPLATFORM_GBA) {
+		core->setPeripheral(core, mPERIPH_GBA_LUMINANCE, adapter->oldLuminance);
+	}
+	if (adapter->luminanceCb) {
+		mScriptValueDeref(adapter->luminanceCb);
+	}
+#endif
 
 	mScriptContextRemoveGlobal(context, "emu");
 }

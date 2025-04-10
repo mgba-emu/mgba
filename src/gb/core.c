@@ -104,6 +104,8 @@ struct GBCore {
 	uint8_t keys;
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	const struct Configuration* overrides;
+	struct GBCartridgeOverride override;
+	bool hasOverride;
 	struct mDebuggerPlatform* debuggerPlatform;
 	struct mCheatDevice* cheatDevice;
 	struct mCoreMemoryBlock memoryBlocks[8];
@@ -129,6 +131,8 @@ static bool _GBCoreInit(struct mCore* core) {
 	gbcore->logContext = NULL;
 #endif
 	memcpy(gbcore->memoryBlocks, _GBMemoryBlocks, sizeof(_GBMemoryBlocks));
+	memset(&gbcore->override, 0, sizeof(gbcore->override));
+	gbcore->hasOverride = false;
 
 	GBCreate(gb);
 	memset(gbcore->components, 0, sizeof(gbcore->components));
@@ -373,6 +377,12 @@ static void _GBCoreReloadConfigOption(struct mCore* core, const char* option, co
 	}
 }
 
+static void _GBCoreSetOverride(struct mCore* core, const void* override) {
+	struct GBCore* gbcore = (struct GBCore*) core;
+	memcpy(&gbcore->override, override, sizeof(gbcore->override));
+	gbcore->hasOverride = true;
+}
+
 static void _GBCoreBaseVideoSize(const struct mCore* core, unsigned* width, unsigned* height) {
 	UNUSED(core);
 	*width = SGB_VIDEO_HORIZONTAL_PIXELS;
@@ -553,14 +563,15 @@ static void _GBCoreReset(struct mCore* core) {
 			mCoreConfigGetIntValue(&core->config, "useCgbColors", &doColorOverride);
 		}
 
-		struct GBCartridgeOverride override;
 		const struct GBCartridge* cart = (const struct GBCartridge*) &gb->memory.rom[0x100];
-		override.headerCrc32 = doCrc32(cart, sizeof(*cart));
-		bool modelOverride = GBOverrideFind(gbcore->overrides, &override) || (doColorOverride && GBOverrideColorFind(&override, doColorOverride));
-		if (modelOverride) {
-			GBOverrideApply(gb, &override);
+		if (!gbcore->hasOverride) {
+			gbcore->override.headerCrc32 = doCrc32(cart, sizeof(*cart));
+			gbcore->hasOverride = GBOverrideFind(gbcore->overrides, &gbcore->override) || (doColorOverride && GBOverrideColorFind(&gbcore->override, doColorOverride));
 		}
-		if (!modelOverride || override.model == GB_MODEL_AUTODETECT) {
+		if (gbcore->hasOverride) {
+			GBOverrideApply(gb, &gbcore->override);
+		}
+		if (!gbcore->hasOverride || gbcore->override.model == GB_MODEL_AUTODETECT) {
 			const char* modelGB = mCoreConfigGetValue(&core->config, "gb.model");
 			const char* modelSGB = mCoreConfigGetValue(&core->config, "sgb.model");
 			const char* modelCGB = mCoreConfigGetValue(&core->config, "cgb.model");
@@ -1303,6 +1314,7 @@ struct mCore* GBCoreCreate(void) {
 	core->setSync = _GBCoreSetSync;
 	core->loadConfig = _GBCoreLoadConfig;
 	core->reloadConfigOption = _GBCoreReloadConfigOption;
+	core->setOverride = _GBCoreSetOverride;
 	core->baseVideoSize = _GBCoreBaseVideoSize;
 	core->currentVideoSize = _GBCoreCurrentVideoSize;
 	core->videoScale = _GBCoreVideoScale;

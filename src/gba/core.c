@@ -186,6 +186,8 @@ struct GBACore {
 #endif
 	struct mCPUComponent* components[CPU_COMPONENT_MAX];
 	const struct Configuration* overrides;
+	struct GBACartridgeOverride override;
+	bool hasOverride;
 	struct mDebuggerPlatform* debuggerPlatform;
 	struct mCheatDevice* cheatDevice;
 	struct GBAAudioMixer* audioMixer;
@@ -432,6 +434,12 @@ static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, c
 			GBAVideoAssociateRenderer(&gba->video, renderer);
 		}
 	}
+}
+
+static void _GBACoreSetOverride(struct mCore* core, const void* override) {
+	struct GBACore* gbacore = (struct GBACore*) core;
+	memcpy(&gbacore->override, override, sizeof(gbacore->override));
+	gbacore->hasOverride = true;
 }
 
 static void _GBACoreBaseVideoSize(const struct mCore* core, unsigned* width, unsigned* height) {
@@ -689,7 +697,11 @@ static void _GBACoreReset(struct mCore* core) {
 	if (!forceGbp) {
 		gba->memory.hw.devices &= ~HW_GB_PLAYER_DETECTION;
 	}
-	GBAOverrideApplyDefaults(gba, gbacore->overrides);
+	if (gbacore->hasOverride) {
+		GBAOverrideApply(gba, &gbacore->override);
+	} else {
+		GBAOverrideApplyDefaults(gba, gbacore->overrides);
+	}
 	if (forceGbp) {
 		gba->memory.hw.devices |= HW_GB_PLAYER_DETECTION;
 	}
@@ -1427,6 +1439,7 @@ struct mCore* GBACoreCreate(void) {
 	core->setSync = _GBACoreSetSync;
 	core->loadConfig = _GBACoreLoadConfig;
 	core->reloadConfigOption = _GBACoreReloadConfigOption;
+	core->setOverride = _GBACoreSetOverride;
 	core->baseVideoSize = _GBACoreBaseVideoSize;
 	core->currentVideoSize = _GBACoreCurrentVideoSize;
 	core->videoScale = _GBACoreVideoScale;
