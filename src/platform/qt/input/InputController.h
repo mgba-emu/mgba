@@ -194,8 +194,8 @@ private:
 	const mInputPlatformInfo* m_activeKeyInfo = nullptr;
 
 	QHash<uint32_t, std::shared_ptr<InputDriver>> m_inputDrivers;
-	uint32_t m_gamepadDriver;
-	uint32_t m_sensorDriver;
+	uint32_t m_gamepadDriver = 0;
+	uint32_t m_sensorDriver = 0;
 
 	QSet<int> m_activeButtons;
 	QSet<QPair<int, GamepadAxisEvent::Direction>> m_activeAxes;

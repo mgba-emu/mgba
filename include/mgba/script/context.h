@@ -15,7 +15,7 @@ CXX_GUARD_START
 #include <mgba-util/table.h>
 #include <mgba-util/vfs.h>
 
-#define mSCRIPT_KV_PAIR(KEY, VALUE) { #KEY, VALUE }
+#define mSCRIPT_KV_PAIR(KEY, VALUE) { #KEY, (struct mScriptValue*) VALUE }
 #define mSCRIPT_CONSTANT_PAIR(NS, CONST) { #CONST, mScriptValueCreateFromSInt(NS ## _ ## CONST) }
 #define mSCRIPT_KV_SENTINEL { NULL, NULL }
 
@@ -36,6 +36,7 @@ struct mScriptContext {
 	uint32_t nextCallbackId;
 	struct mScriptValue* constants;
 	struct Table docstrings;
+	int threadDepth;
 };
 
 struct mScriptEngine2 {
@@ -109,6 +110,12 @@ const char* mScriptEngineGetDocstring(struct mScriptEngineContext*, const char* 
 struct VFile;
 bool mScriptContextLoadVF(struct mScriptContext*, const char* name, struct VFile* vf);
 bool mScriptContextLoadFile(struct mScriptContext*, const char* path);
+
+struct mScriptContext* mScriptActiveContext(void);
+bool mScriptContextActivate(struct mScriptContext*);
+void mScriptContextDeactivate(struct mScriptContext*);
+
+bool mScriptContextInvoke(struct mScriptContext*, const struct mScriptValue* fn, struct mScriptFrame* frame);
 
 bool mScriptInvoke(const struct mScriptValue* fn, struct mScriptFrame* frame);
 

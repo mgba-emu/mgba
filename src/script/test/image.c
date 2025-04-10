@@ -100,6 +100,20 @@ M_TEST_DEFINE(saveLoadRoundTrip) {
 }
 #endif
 
+M_TEST_DEFINE(painterBasic) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("im = image.new(1, 1)");
+	TEST_PROGRAM("painter = image.newPainter(im)");
+	TEST_PROGRAM("assert(painter)");
+	TEST_PROGRAM("painter:setFill(true)");
+	TEST_PROGRAM("painter:setFillColor(0xFF123456)");
+	TEST_PROGRAM("painter:drawRectangle(0, 0, 1, 1)");
+	TEST_PROGRAM("assert(im:getPixel(0, 0) == 0xFF123456)");
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptImage,
 	cmocka_unit_test(members),
 	cmocka_unit_test(zeroDim),
@@ -108,4 +122,5 @@ M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptImage,
 #ifdef USE_PNG
 	cmocka_unit_test(saveLoadRoundTrip),
 #endif
+	cmocka_unit_test(painterBasic),
 )

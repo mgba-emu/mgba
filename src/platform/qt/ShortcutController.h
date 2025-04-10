@@ -27,10 +27,10 @@ class Shortcut : public QObject {
 Q_OBJECT
 
 public:
-	Shortcut(Action* action);
+	Shortcut(std::shared_ptr<Action> action);
 
-	Action* action() { return m_action; }
-	const Action* action() const { return m_action; }
+	std::shared_ptr<Action> action() { return m_action; }
+	const std::shared_ptr<Action> action() const { return m_action; }
 	int shortcut() const { return m_shortcut; }
 	QString visibleName() const { return m_action ? m_action->visibleName() : QString(); }
 	QString name() const { return m_action ? m_action->name() : QString(); }
@@ -53,7 +53,7 @@ signals:
 	void axisChanged(int axis, GamepadAxisEvent::Direction direction);
 
 private:
-	Action* m_action = nullptr;
+	std::shared_ptr<Action> m_action;
 	int m_shortcut = 0;
 	int m_button = -1;
 	int m_axis = -1;

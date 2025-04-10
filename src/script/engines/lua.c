@@ -1098,7 +1098,12 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 		luaContext->lastError = NULL;
 	}
 
+	if (!mScriptContextActivate(luaContext->d.context)) {
+		return false;
+	}
+
 	if (frame && !_luaPushFrame(luaContext, &frame->arguments)) {
+		mScriptContextDeactivate(luaContext->d.context);
 		return false;
 	}
 
@@ -1114,6 +1119,7 @@ bool _luaInvoke(struct mScriptEngineContextLua* luaContext, struct mScriptFrame*
 		luaContext->lastError = strdup(lua_tostring(luaContext->lua, -1));
 		lua_pop(luaContext->lua, 1);
 	}
+	mScriptContextDeactivate(luaContext->d.context);
 	if (ret) {
 		return false;
 	}
@@ -1172,7 +1178,7 @@ int _luaThunk(lua_State* lua) {
 
 	struct mScriptValue* fn = lua_touserdata(lua, lua_upvalueindex(1));
 	_autofreeFrame(luaContext->d.context, &frame.arguments);
-	if (!fn || !mScriptInvoke(fn, &frame)) {
+	if (!fn || !mScriptContextInvoke(luaContext->d.context, fn, &frame)) {
 		mScriptContextDrainPool(luaContext->d.context);
 		mScriptFrameDeinit(&frame);
 		luaL_traceback(lua, lua, "Error calling function (invoking failed)", 1);

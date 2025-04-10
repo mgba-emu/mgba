@@ -761,7 +761,7 @@ static int64_t _addCallbackToBreakpoint(struct mScriptDebugger* debugger, struct
 	return cbid;
 }
 
-static void _runCallbacks(struct mScriptBreakpoint* point) {
+static void _runCallbacks(struct mScriptDebugger* debugger, struct mScriptBreakpoint* point) {
 	struct TableIterator iter;
 	if (!HashTableIteratorStart(&point->callbacks, &iter)) {
 		return;
@@ -770,7 +770,7 @@ static void _runCallbacks(struct mScriptBreakpoint* point) {
 		struct mScriptValue* fn = HashTableIteratorGetValue(&point->callbacks, &iter);
 		struct mScriptFrame frame;
 		mScriptFrameInit(&frame);
-		mScriptInvoke(fn, &frame);
+		mScriptContextInvoke(debugger->p->context, fn, &frame);
 		mScriptFrameDeinit(&frame);
 	} while (HashTableIteratorNext(&point->callbacks, &iter));
 }
@@ -812,7 +812,7 @@ static void _scriptDebuggerEntered(struct mDebuggerModule* debugger, enum mDebug
 	default:
 		return;
 	}
-	_runCallbacks(point);
+	_runCallbacks(scriptDebugger, point);
 	debugger->isPaused = false;
 }
 
@@ -1085,7 +1085,7 @@ static bool _callRotationCb(struct mScriptCoreAdapter* adapter, const char* cbNa
 	if (context) {
 		mScriptValueWrap(context, mScriptListAppend(&frame.arguments));
 	}
-	bool ok = mScriptInvoke(cb, &frame);
+	bool ok = mScriptContextInvoke(adapter->context, cb, &frame);
 	if (ok && out && mScriptListSize(&frame.returnValues) == 1) {
 		if (!mScriptCast(mSCRIPT_TYPE_MS_F32, mScriptListGetPointer(&frame.returnValues, 0), out)) {
 			ok = false;
@@ -1110,7 +1110,7 @@ static int32_t _rotationReadTiltX(struct mRotationSource* rotation) {
 
 	struct mScriptValue out;
 	if (_callRotationCb(adapter, "readTiltX", &out)) {
-		return out.value.f32 * INT32_MAX;
+		return out.value.f32 * (double) INT32_MAX;
 	}
 
 	if (adapter->oldRotation && adapter->oldRotation->readTiltX) {
@@ -1124,7 +1124,7 @@ static int32_t _rotationReadTiltY(struct mRotationSource* rotation) {
 
 	struct mScriptValue out;
 	if (_callRotationCb(adapter, "readTiltY", &out)) {
-		return out.value.f32 * INT32_MAX;
+		return out.value.f32 * (double) INT32_MAX;
 	}
 
 	if (adapter->oldRotation && adapter->oldRotation->readTiltY) {
@@ -1138,7 +1138,7 @@ static int32_t _rotationReadGyroZ(struct mRotationSource* rotation) {
 
 	struct mScriptValue out;
 	if (_callRotationCb(adapter, "readGyroZ", &out)) {
-		return out.value.f32 * INT32_MAX;
+		return out.value.f32 * (double) INT32_MAX;
 	}
 
 	if (adapter->oldRotation && adapter->oldRotation->readGyroZ) {
@@ -1154,7 +1154,7 @@ static uint8_t _readLuminance(struct GBALuminanceSource* luminance) {
 	if (adapter->luminanceCb) {
 		struct mScriptFrame frame;
 		mScriptFrameInit(&frame);
-		bool ok = mScriptInvoke(adapter->luminanceCb, &frame);
+		bool ok = mScriptContextInvoke(adapter->context, adapter->luminanceCb, &frame);
 		struct mScriptValue out = {0};
 		if (ok && mScriptListSize(&frame.returnValues) == 1) {
 			if (!mScriptCast(mSCRIPT_TYPE_MS_U8, mScriptListGetPointer(&frame.returnValues, 0), &out)) {

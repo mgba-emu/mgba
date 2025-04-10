@@ -172,7 +172,7 @@ bool ShortcutController::eventFilter(QObject* obj, QEvent* event) {
 		if (item == m_buttons.end()) {
 			return false;
 		}
-		Action* action = item.value()->action();
+		auto action = item.value()->action();
 		if (action) {
 			if (m_actions->isHeld(action->name())) {
 				action->trigger(true);
@@ -193,7 +193,7 @@ bool ShortcutController::eventFilter(QObject* obj, QEvent* event) {
 		if (item == m_buttons.end()) {
 			return false;
 		}
-		Action* action = item.value()->action();
+		auto action = item.value()->action();
 		if (action && m_actions->isHeld(action->name())) {
 			action->trigger(false);
 		}
@@ -206,7 +206,7 @@ bool ShortcutController::eventFilter(QObject* obj, QEvent* event) {
 		if (item == m_axes.end()) {
 			return false;
 		}
-		Action* action = item.value()->action();
+		auto action = item.value()->action();
 		if (action) {
 			if (gae->isNew()) {
 				if (m_actions->isHeld(action->name())) {
@@ -235,7 +235,7 @@ void ShortcutController::generateItem(const QString& itemName) {
 	if (itemName.isNull() || itemName[0] == '.') {
 		return;
 	}
-	Action* action = m_actions->getAction(itemName);
+	auto action = m_actions->getAction(itemName);
 	if (action) {
 		std::shared_ptr<Shortcut> item = std::make_shared<Shortcut>(action);
 		m_items[itemName] = item;
@@ -449,7 +449,7 @@ int ShortcutController::count(const QString& name) const {
 	return menu.count();
 }
 
-Shortcut::Shortcut(Action* action)
+Shortcut::Shortcut(std::shared_ptr<Action> action)
 	: m_action(action)
 {
 }

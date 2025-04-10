@@ -18,9 +18,9 @@
 using namespace QGBA;
 
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
-QGBA::Display::Driver Display::s_driver = QGBA::Display::Driver::OPENGL;
+QGBA::Display::Driver QGBA::Display::s_driver = QGBA::Display::Driver::OPENGL;
 #else
-QGBA::Display::Driver Display::s_driver = QGBA::Display::Driver::QT;
+QGBA::Display::Driver QGBA::Display::s_driver = QGBA::Display::Driver::QT;
 #endif
 
 QGBA::Display* QGBA::Display::create(QWidget* parent) {
