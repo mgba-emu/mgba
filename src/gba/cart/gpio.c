@@ -114,7 +114,7 @@ void GBAHardwareInitRTC(struct GBACartridgeHardware* hw) {
 	hw->devices |= HW_RTC;
 	hw->rtc.bytesRemaining = 0;
 
-	hw->rtc.transferStep = 0;
+	hw->rtc.sckEdge = true;
 
 	hw->rtc.bitsRead = 0;
 	hw->rtc.bits = 0;
@@ -158,65 +158,52 @@ void _outputPins(struct GBACartridgeHardware* hw, unsigned pins) {
 // == RTC
 
 void _rtcReadPins(struct GBACartridgeHardware* hw) {
-	// Transfer sequence:
-	// P: 0 | 1 |  2 | 3
-	// == Initiate
-	// > HI | - | LO | -
-	// > HI | - | HI | -
-	// == Transfer bit (x8)
-	// > LO | x | HI | -
-	// > HI | - | HI | -
-	// < ?? | x | ?? | -
-	// == Terminate
-	// >  - | - | LO | -
-	switch (hw->rtc.transferStep) {
-	case 0:
-		if ((hw->pinState & 5) == 1) {
-			hw->rtc.transferStep = 1;
-		}
-		break;
-	case 1:
-		if ((hw->pinState & 5) == 5) {
-			hw->rtc.transferStep = 2;
-		} else if ((hw->pinState & 5) != 1) {
-			hw->rtc.transferStep = 0;
-		}
-		break;
-	case 2:
-	case 3:
-		if (!(hw->pinState & 4)) {
-			hw->rtc.bitsRead = 0;
-			hw->rtc.bytesRemaining = 0;
-			hw->rtc.commandActive = 0;
-			hw->rtc.command = 0;
-			hw->rtc.transferStep = hw->pinState & 1;
-			_outputPins(hw, 1);
-		} else if (!(hw->pinState & 1)) {
-			hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
-			hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
-			hw->rtc.transferStep = 3;
-		} else if (hw->rtc.transferStep == 3) {
-			if (!RTCCommandDataIsReading(hw->rtc.command)) {
-				++hw->rtc.bitsRead;
-				if (hw->rtc.bitsRead == 8) {
-					_rtcProcessByte(hw);
-				}
-			} else {
-				_outputPins(hw, 5 | (_rtcOutput(hw) << 1));
-				++hw->rtc.bitsRead;
-				if (hw->rtc.bitsRead == 8) {
-					--hw->rtc.bytesRemaining;
-					if (hw->rtc.bytesRemaining <= 0) {
-						hw->rtc.commandActive = 0;
-						hw->rtc.command = 0;
-					}
-					hw->rtc.bitsRead = 0;
-				}
-			}
-			hw->rtc.transferStep = 2;
-		}
-		break;
+	// P: 0 - SCK | 1 - SIO | 2 - CS | 3 - Unused
+	// CS rising edge starts RTC transfer
+	// Conversely, CS falling edge aborts RTC transfer
+	// SCK rising edge shifts a bit from SIO into the transfer
+	// However, the data is used is whatever was in SIO before SCK rising edge
+	// (Likely actually a race on SCK rising edge where old data wins)
+	// Note while CS is low, SCK is considered high by the RTC
+	// Spec sheet states SCK falling edge is when SIO should be set
+	// But testing indicates this is unneeded in practice
+	// (Likely was done as good practice to avoid this race condition)
+
+	if (!(hw->pinState & 4)) {
+		hw->rtc.bitsRead = 0;
+		hw->rtc.bytesRemaining = 0;
+		hw->rtc.commandActive = 0;
+		hw->rtc.command = 0;
+		hw->rtc.sckEdge = true;
+		_outputPins(hw, 1);
+		return;
 	}
+
+	if (!(hw->pinState & 1)) {
+		hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
+		hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
+	}
+	if (!hw->rtc.sckEdge && (hw->pinState & 1)) {
+		if (!RTCCommandDataIsReading(hw->rtc.command)) {
+			++hw->rtc.bitsRead;
+			if (hw->rtc.bitsRead == 8) {
+				_rtcProcessByte(hw);
+			}
+		} else {
+			_outputPins(hw, 5 | (_rtcOutput(hw) << 1));
+			++hw->rtc.bitsRead;
+			if (hw->rtc.bitsRead == 8) {
+				--hw->rtc.bytesRemaining;
+				if (hw->rtc.bytesRemaining <= 0) {
+					hw->rtc.commandActive = 0;
+					hw->rtc.command = 0;
+				}
+				hw->rtc.bitsRead = 0;
+			}
+		}
+	}
+
+	hw->rtc.sckEdge = !!(hw->pinState & 1);
 }
 
 void _rtcProcessByte(struct GBACartridgeHardware* hw) {
@@ -490,10 +477,10 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	state->hw.devices = hw->devices;
 
 	STORE_32(hw->rtc.bytesRemaining, 0, &state->hw.rtcBytesRemaining);
-	STORE_32(hw->rtc.transferStep, 0, &state->hw.rtcTransferStep);
 	STORE_32(hw->rtc.bitsRead, 0, &state->hw.rtcBitsRead);
 	STORE_32(hw->rtc.bits, 0, &state->hw.rtcBits);
 	STORE_32(hw->rtc.commandActive, 0, &state->hw.rtcCommandActive);
+	flags1 = GBASerializedHWFlags1SetRtcSckEdge(flags1, hw->rtc.sckEdge);
 	STORE_32(hw->rtc.command, 0, &state->hw.rtcCommand);
 	STORE_32(hw->rtc.control, 0, &state->hw.rtcControl);
 	memcpy(state->hw.time, hw->rtc.time, sizeof(state->hw.time));
@@ -541,10 +528,10 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	}
 
 	LOAD_32(hw->rtc.bytesRemaining, 0, &state->hw.rtcBytesRemaining);
-	LOAD_32(hw->rtc.transferStep, 0, &state->hw.rtcTransferStep);
 	LOAD_32(hw->rtc.bitsRead, 0, &state->hw.rtcBitsRead);
 	LOAD_32(hw->rtc.bits, 0, &state->hw.rtcBits);
 	LOAD_32(hw->rtc.commandActive, 0, &state->hw.rtcCommandActive);
+	hw->rtc.sckEdge = GBASerializedHWFlags1GetRtcSckEdge(flags1);
 	LOAD_32(hw->rtc.command, 0, &state->hw.rtcCommand);
 	LOAD_32(hw->rtc.control, 0, &state->hw.rtcControl);
 	memcpy(hw->rtc.time, state->hw.time, sizeof(hw->rtc.time));
