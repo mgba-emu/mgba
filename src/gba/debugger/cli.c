@@ -56,12 +56,12 @@ static bool _GBACLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger;
 
 	if (gbaDebugger->frameAdvance) {
-		if (!gbaDebugger->inVblank && GBARegisterDISPSTATIsInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[REG_DISPSTAT >> 1])) {
+		if (!gbaDebugger->inVblank && GBARegisterDISPSTATIsInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[GBA_REG(DISPSTAT)])) {
 			mDebuggerEnter(gbaDebugger->d.p->d.p, DEBUGGER_ENTER_MANUAL, 0);
 			gbaDebugger->frameAdvance = false;
 			return false;
 		}
-		gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[REG_DISPSTAT >> 1]);
+		gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[GBA_REG(DISPSTAT)]);
 		return true;
 	}
 	return true;
@@ -74,7 +74,7 @@ static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 
 	struct GBACLIDebugger* gbaDebugger = (struct GBACLIDebugger*) debugger->system;
 	gbaDebugger->frameAdvance = true;
-	gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[REG_DISPSTAT >> 1]);
+	gbaDebugger->inVblank = GBARegisterDISPSTATGetInVblank(((struct GBA*) gbaDebugger->core->board)->memory.io[GBA_REG(DISPSTAT)]);
 }
 
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2

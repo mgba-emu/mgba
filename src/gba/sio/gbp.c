@@ -102,9 +102,9 @@ uint16_t _gbpRead(struct mKeyCallback* callback) {
 
 uint16_t _gbpSioWriteRegister(struct GBASIODriver* driver, uint32_t address, uint16_t value) {
 	struct GBASIOPlayer* gbp = (struct GBASIOPlayer*) driver;
-	if (address == REG_SIOCNT) {
+	if (address == GBA_REG_SIOCNT) {
 		if (value & 0x0080) {
-			uint32_t rx = gbp->p->memory.io[REG_SIODATA32_LO >> 1] | (gbp->p->memory.io[REG_SIODATA32_HI >> 1] << 16);
+			uint32_t rx = gbp->p->memory.io[GBA_REG(SIODATA32_LO)] | (gbp->p->memory.io[GBA_REG(SIODATA32_HI)] << 16);
 			if (gbp->txPosition < 12 && gbp->txPosition > 0) {
 				// TODO: Check expected
 			} else if (gbp->txPosition >= 12) {
@@ -138,11 +138,11 @@ void _gbpSioProcessEvents(struct mTiming* timing, void* user, uint32_t cyclesLat
 	}
 	tx = _gbpTxData[txPosition];
 	++gbp->txPosition;
-	gbp->p->memory.io[REG_SIODATA32_LO >> 1] = tx;
-	gbp->p->memory.io[REG_SIODATA32_HI >> 1] = tx >> 16;
+	gbp->p->memory.io[GBA_REG(SIODATA32_LO)] = tx;
+	gbp->p->memory.io[GBA_REG(SIODATA32_HI)] = tx >> 16;
 	if (GBASIONormalIsIrq(gbp->d.p->siocnt)) {
 		GBARaiseIRQ(gbp->p, GBA_IRQ_SIO, cyclesLate);
 	}
 	gbp->d.p->siocnt = GBASIONormalClearStart(gbp->d.p->siocnt);
-	gbp->p->memory.io[REG_SIOCNT >> 1] = gbp->d.p->siocnt & ~0x0080;
+	gbp->p->memory.io[GBA_REG(SIOCNT)] = gbp->d.p->siocnt & ~0x0080;
 }

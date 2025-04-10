@@ -832,6 +832,7 @@ static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 		debugger->traceVf = VFileOpen(dv->next->charValue, O_CREAT | O_WRONLY | O_APPEND);
 	}
 	if (_doTrace(debugger)) {
+		debugger->d.isPaused = false;
 		mDebuggerUpdatePaused(debugger->d.p);
 	} else {
 		debugger->system->printStatus(debugger->system);

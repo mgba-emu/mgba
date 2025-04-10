@@ -1579,7 +1579,7 @@ IOViewer::IOViewer(std::shared_ptr<CoreController> controller, QWidget* parent)
 #ifdef M_CORE_GBA
 	case mPLATFORM_GBA:
 		regs = GBAIORegisterNames;
-		maxRegs = REG_MAX >> 1;
+		maxRegs = GBA_REG_MAX >> 1;
 		m_base = GBA_BASE_IO;
 		m_width = 1;
 		break;

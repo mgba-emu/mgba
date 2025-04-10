@@ -154,9 +154,9 @@ struct GBAVideoSoftwareRenderer {
 	int16_t objOffsetY;
 
 	uint32_t scanlineDirty[6];
-	uint16_t nextIo[REG_SOUND1CNT_LO >> 1];
+	uint16_t nextIo[GBA_REG(SOUND1CNT_LO)];
 	struct ScanlineCache {
-		uint16_t io[REG_SOUND1CNT_LO >> 1];
+		uint16_t io[GBA_REG(SOUND1CNT_LO)];
 		int32_t scale[2][2];
 #ifdef M_CORE_DS
 	} cache[DS_VIDEO_VERTICAL_PIXELS];

@@ -50,9 +50,9 @@ bool GBATimerUpdateCountUp(struct mTiming* timing, struct GBATimer* nextTimer, u
 static void GBATimerUpdate0(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBA* gba = context;
 	GBATimerUpdateAudio(gba, 0, cyclesLate);
-	GBATimerUpdate(timing, &gba->timers[0], &gba->memory.io[REG_TM0CNT_LO >> 1], cyclesLate);
+	GBATimerUpdate(timing, &gba->timers[0], &gba->memory.io[GBA_REG(TM0CNT_LO)], cyclesLate);
 	GBATimerIrq(gba, 0, cyclesLate);
-	if (GBATimerUpdateCountUp(timing, &gba->timers[1], &gba->memory.io[REG_TM1CNT_LO >> 1], cyclesLate)) {
+	if (GBATimerUpdateCountUp(timing, &gba->timers[1], &gba->memory.io[GBA_REG(TM1CNT_LO)], cyclesLate)) {
 		GBATimerIrq(gba, 1, cyclesLate);
 	}
 }
@@ -60,25 +60,25 @@ static void GBATimerUpdate0(struct mTiming* timing, void* context, uint32_t cycl
 static void GBATimerUpdate1(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBA* gba = context;
 	GBATimerUpdateAudio(gba, 1, cyclesLate);
-	GBATimerUpdate(timing, &gba->timers[1], &gba->memory.io[REG_TM1CNT_LO >> 1], cyclesLate);
+	GBATimerUpdate(timing, &gba->timers[1], &gba->memory.io[GBA_REG(TM1CNT_LO)], cyclesLate);
 	GBATimerIrq(gba, 1, cyclesLate);
-	if (GBATimerUpdateCountUp(timing, &gba->timers[2], &gba->memory.io[REG_TM2CNT_LO >> 1], cyclesLate)) {
+	if (GBATimerUpdateCountUp(timing, &gba->timers[2], &gba->memory.io[GBA_REG(TM2CNT_LO)], cyclesLate)) {
 		GBATimerIrq(gba, 2, cyclesLate);
 	}
 }
 
 static void GBATimerUpdate2(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBA* gba = context;
-	GBATimerUpdate(timing, &gba->timers[2], &gba->memory.io[REG_TM2CNT_LO >> 1], cyclesLate);
+	GBATimerUpdate(timing, &gba->timers[2], &gba->memory.io[GBA_REG(TM2CNT_LO)], cyclesLate);
 	GBATimerIrq(gba, 2, cyclesLate);
-	if (GBATimerUpdateCountUp(timing, &gba->timers[3], &gba->memory.io[REG_TM3CNT_LO >> 1], cyclesLate)) {
+	if (GBATimerUpdateCountUp(timing, &gba->timers[3], &gba->memory.io[GBA_REG(TM3CNT_LO)], cyclesLate)) {
 		GBATimerIrq(gba, 3, cyclesLate);
 	}
 }
 
 static void GBATimerUpdate3(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	struct GBA* gba = context;
-	GBATimerUpdate(timing, &gba->timers[3], &gba->memory.io[REG_TM3CNT_LO >> 1], cyclesLate);
+	GBATimerUpdate(timing, &gba->timers[3], &gba->memory.io[GBA_REG(TM3CNT_LO)], cyclesLate);
 	GBATimerIrq(gba, 3, cyclesLate);
 }
 
@@ -105,7 +105,7 @@ void GBATimerInit(struct GBA* gba) {
 void GBATimerUpdateRegister(struct GBA* gba, int timer, int32_t cyclesLate) {
 	struct GBATimer* currentTimer = &gba->timers[timer];
 	if (GBATimerFlagsIsEnable(currentTimer->flags) && !GBATimerFlagsIsCountUp(currentTimer->flags)) {
-		GBATimerUpdateRegisterInternal(currentTimer, &gba->timing, &gba->memory.io[(REG_TM0CNT_LO + (timer << 2)) >> 1], cyclesLate);
+		GBATimerUpdateRegisterInternal(currentTimer, &gba->timing, &gba->memory.io[(GBA_REG_TM0CNT_LO + (timer << 2)) >> 1], cyclesLate);
 	}
 }
 

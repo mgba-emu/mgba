@@ -278,7 +278,7 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 			cheat = mCheatListAppend(&cheats->d.list);
 			cheat->type = CHEAT_IF_NAND;
 			cheat->width = 2;
-			cheat->address = GBA_BASE_IO | REG_KEYINPUT;
+			cheat->address = GBA_BASE_IO | GBA_REG_KEYINPUT;
 			cheat->operand = op2;
 			cheat->repeat = 1;
 			return true;
