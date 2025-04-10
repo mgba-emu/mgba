@@ -104,6 +104,10 @@ int main(int argc, char* argv[]) {
 	QApplication::setWindowIcon(QIcon(":/res/mgba-256.png"));
 #endif
 
+#ifdef Q_OS_UNIX
+	QApplication::setDesktopFileName(QString("io.mgba.mGBA"));
+#endif
+
 	QTranslator qtTranslator;
 	qtTranslator.load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
 	application.installTranslator(&qtTranslator);

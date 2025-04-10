@@ -49,7 +49,12 @@ std::shared_ptr<Action> ConfigOption::addValue(const QString& text, const QVaria
 		action = std::make_shared<Action>(function, name, text, this);
 	}
 	action->setExclusive();
-	QObject::connect(action.get(), &QObject::destroyed, this, [this, action, value]() {
+	std::weak_ptr<Action> weakAction(action);
+	QObject::connect(action.get(), &QObject::destroyed, this, [this, weakAction, value]() {
+		if (weakAction.expired()) {
+			return;
+		}
+		std::shared_ptr<Action> action(weakAction.lock());
 		m_actions.removeAll(std::make_pair(action, value));
 	});
 	m_actions.append(std::make_pair(action, value));
@@ -71,7 +76,12 @@ std::shared_ptr<Action> ConfigOption::addBoolean(const QString& text, ActionMapp
 		action = std::make_shared<Action>(function, m_name, text, this);
 	}
 
-	QObject::connect(action.get(), &QObject::destroyed, this, [this, action]() {
+	std::weak_ptr<Action> weakAction(action);
+	QObject::connect(action.get(), &QObject::destroyed, this, [this, weakAction]() {
+		if (weakAction.expired()) {
+			return;
+		}
+		std::shared_ptr<Action> action(weakAction.lock());
 		m_actions.removeAll(std::make_pair(action, QVariant(1)));
 	});
 	m_actions.append(std::make_pair(action, QVariant(1)));

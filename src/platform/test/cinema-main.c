@@ -1179,7 +1179,7 @@ void CInemaTestRun(struct CInemaTest* test) {
 		if (test->status == CI_ERROR) {
 			break;
 		}
-		bool failed = false;
+		bool failed = true;
 		if (baselineFound) {
 			int max = 0;
 			failed = !_compareImages(test, &image, &expected, &max, diffs ? &diff : NULL);

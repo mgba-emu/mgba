@@ -264,7 +264,7 @@ void ScriptingController::updateGamepad() {
 		detachGamepad();
 		return;
 	}
-	Gamepad* gamepad = driver->activeGamepad();
+	std::shared_ptr<Gamepad> gamepad = driver->activeGamepad();
 	if (!gamepad) {
 		detachGamepad();
 		return;

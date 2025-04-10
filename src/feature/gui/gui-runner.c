@@ -500,6 +500,7 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 	}
 	mLOG(GUI_RUNNER, INFO, "Game starting");
 	runner->fps = 0;
+	bool fastForward = false;
 	while (running) {
 		CircleBufferClear(&runner->fpsBuffer);
 		runner->totalDelta = 0;
@@ -508,7 +509,6 @@ void mGUIRun(struct mGUIRunner* runner, const char* path) {
 		runner->lastFpsCheck = 1000000LL * tv.tv_sec + tv.tv_usec;
 
 		int frame = 0;
-		bool fastForward = false;
 		while (running) {
 			if (runner->running) {
 				running = runner->running(runner);

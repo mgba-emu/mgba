@@ -44,7 +44,7 @@ public:
 
 	bool update() override;
 
-	QList<Gamepad*> connectedGamepads() const override;
+	QList<std::shared_ptr<Gamepad>> connectedGamepads() const override;
 
 	int activeGamepadIndex() const override;
 	void setActiveGamepad(int) override;

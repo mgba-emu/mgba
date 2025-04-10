@@ -880,9 +880,6 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 bool _resetEnvelope(struct GBAudioEnvelope* envelope) {
 	envelope->currentVolume = envelope->initialVolume;
 	_updateEnvelopeDead(envelope);
-	if (!envelope->dead) {
-		envelope->nextStep = envelope->stepTime;
-	}
 	return envelope->initialVolume || envelope->direction;
 }
 
@@ -914,12 +911,25 @@ void _writeDuty(struct GBAudioEnvelope* envelope, uint8_t value) {
 }
 
 bool _writeEnvelope(struct GBAudioEnvelope* envelope, uint8_t value, enum GBAudioStyle style) {
+	bool oldDirection = envelope->direction;
 	envelope->stepTime = GBAudioRegisterSweepGetStepTime(value);
 	envelope->direction = GBAudioRegisterSweepGetDirection(value);
 	envelope->initialVolume = GBAudioRegisterSweepGetInitialVolume(value);
-	if (style == GB_AUDIO_DMG && !envelope->stepTime) {
+	if (!envelope->stepTime) {
 		// TODO: Improve "zombie" mode
-		++envelope->currentVolume;
+		if (style == GB_AUDIO_DMG) {
+			++envelope->currentVolume;
+		} else if (style == GB_AUDIO_CGB) {
+			if (envelope->direction == oldDirection) {
+				if (envelope->direction) {
+					++envelope->currentVolume;
+				} else {
+					envelope->currentVolume += 2;
+				}
+			} else {
+				envelope->currentVolume = 0;
+			}
+		}
 		envelope->currentVolume &= 0xF;
 	}
 	_updateEnvelopeDead(envelope);
@@ -967,6 +977,7 @@ static void _updateEnvelopeDead(struct GBAudioEnvelope* envelope) {
 		envelope->dead = 1;
 	} else {
 		envelope->dead = 0;
+		envelope->nextStep = envelope->stepTime;
 	}
 }
 

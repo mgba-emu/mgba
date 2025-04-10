@@ -93,7 +93,13 @@ void ActionMapper::rebuildMenu(const QString& menu, QMenu* qmenu, QWidget* conte
 			qaction->setMenuRole(QAction::QuitRole);
 			break;
 		}
-		QObject::connect(qaction, &QAction::triggered, [qaction, action](bool enabled) {
+
+		std::weak_ptr<Action> weakAction(action);
+		QObject::connect(qaction, &QAction::triggered, [qaction, weakAction](bool enabled) {
+			if (weakAction.expired()) {
+				return;
+			}
+			std::shared_ptr<Action> action(weakAction.lock());
 			if (qaction->isCheckable()) {
 				action->trigger(enabled);
 			} else {
@@ -101,7 +107,8 @@ void ActionMapper::rebuildMenu(const QString& menu, QMenu* qmenu, QWidget* conte
 			}
 		});
 		QObject::connect(action.get(), &Action::enabled, qaction, &QAction::setEnabled);
-		QObject::connect(action.get(), &Action::activated, [qaction, action](bool active) {
+		QObject::connect(action.get(), &Action::activated, [qaction, weakAction](bool active) {
+			std::shared_ptr<Action> action(weakAction.lock());
 			if (qaction->isCheckable()) {
 				qaction->setChecked(active);
 			} else if (active) {
