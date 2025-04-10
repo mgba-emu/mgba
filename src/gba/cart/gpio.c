@@ -114,11 +114,10 @@ void GBAHardwareInitRTC(struct GBACartridgeHardware* hw) {
 	hw->devices |= HW_RTC;
 	hw->rtc.bytesRemaining = 0;
 
-	hw->rtc.sckEdge = true;
-
 	hw->rtc.bitsRead = 0;
 	hw->rtc.bits = 0;
 	hw->rtc.commandActive = 0;
+	hw->rtc.sckEdge = true;
 	hw->rtc.command = 0;
 	hw->rtc.control = 0x40;
 	memset(hw->rtc.time, 0, sizeof(hw->rtc.time));
