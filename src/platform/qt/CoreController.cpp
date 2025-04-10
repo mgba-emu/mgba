@@ -231,6 +231,11 @@ CoreController::~CoreController() {
 	m_threadContext.core->deinit(m_threadContext.core);
 }
 
+void CoreController::setPath(const QString& path, const QString& base) {
+	m_path = path;
+	m_baseDirectory = base;
+}
+
 const color_t* CoreController::drawContext() {
 	if (m_hwaccel) {
 		return nullptr;
@@ -812,10 +817,16 @@ void CoreController::loadSave(const QString& path, bool temporary) {
 			return;
 		}
 
+		bool ok;
 		if (temporary) {
-			m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
+			ok = m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
 		} else {
-			m_threadContext.core->loadSave(m_threadContext.core, vf);
+			ok = m_threadContext.core->loadSave(m_threadContext.core, vf);
+		}
+		if (!ok) {
+			vf->close(vf);
+		} else {
+			m_savePath = path;
 		}
 	});
 	if (hasStarted()) {
@@ -823,12 +834,18 @@ void CoreController::loadSave(const QString& path, bool temporary) {
 	}
 }
 
-void CoreController::loadSave(VFile* vf, bool temporary) {
-	m_resetActions.append([this, vf, temporary]() {
+void CoreController::loadSave(VFile* vf, bool temporary, const QString& path) {
+	m_resetActions.append([this, vf, temporary, path]() {
+		bool ok;
 		if (temporary) {
-			m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
+			ok = m_threadContext.core->loadTemporarySave(m_threadContext.core, vf);
 		} else {
-			m_threadContext.core->loadSave(m_threadContext.core, vf);
+			ok = m_threadContext.core->loadSave(m_threadContext.core, vf);
+		}
+		if (!ok) {
+			vf->close(vf);
+		} else {
+			m_savePath = path;
 		}
 	});
 	if (hasStarted()) {
@@ -865,6 +882,7 @@ void CoreController::replaceGame(const QString& path) {
 	} else {
 		mCoreLoadFile(m_threadContext.core, fname.toUtf8().constData());
 	}
+	// TODO: Make sure updating the path is handled properly by everything that calls path() and baseDirectory()
 	updateROMInfo();
 }
 
@@ -1218,16 +1236,7 @@ void CoreController::finishFrame() {
 }
 
 void CoreController::updatePlayerSave() {
-	int savePlayerId = 0;
-	mCoreConfigGetIntValue(&m_threadContext.core->config, "savePlayerId", &savePlayerId);
-	if (savePlayerId == 0 || m_multiplayer->attached() > 1) {
-		if (savePlayerId == m_multiplayer->playerId(this) + 1) {
-			// Player 1 is using our save, so let's use theirs, at least for now.
-			savePlayerId = 1;
-		} else {
-			savePlayerId = m_multiplayer->playerId(this) + 1;
-		}
-	}
+	int savePlayerId = m_multiplayer->saveId(this);
 
 	QString saveSuffix;
 	if (savePlayerId < 2) {
@@ -1238,7 +1247,11 @@ void CoreController::updatePlayerSave() {
 	QByteArray saveSuffixBin(saveSuffix.toUtf8());
 	VFile* save = mDirectorySetOpenSuffix(&m_threadContext.core->dirs, m_threadContext.core->dirs.save, saveSuffixBin.constData(), O_CREAT | O_RDWR);
 	if (save) {
-		m_threadContext.core->loadSave(m_threadContext.core, save);
+		if (!m_threadContext.core->loadSave(m_threadContext.core, save)) {
+			save->close(save);
+		} else {
+			m_savePath = QString::fromUtf8(m_threadContext.core->dirs.baseName) + saveSuffix;
+		}
 	}
 }
 

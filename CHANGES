@@ -73,6 +73,7 @@ Misc:
  - GBA: Improve detection of valid ELF ROMs
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
  - Qt: Add exporting of SAV + RTC saves from Save Converter to strip RTC data
+ - Qt: Handle multiple save game files for disparate games separately (fixes mgba.io/i/2887)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
 
 0.10.2: (2023-04-23)

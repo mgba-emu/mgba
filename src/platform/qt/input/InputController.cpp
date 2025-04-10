@@ -27,9 +27,11 @@
 
 using namespace QGBA;
 
-InputController::InputController(int playerId, QWidget* topLevel, QObject* parent)
+int InputController::s_claimedPlayers = 0;
+
+InputController::InputController(QWidget* topLevel, QObject* parent)
 	: QObject(parent)
-	, m_playerId(playerId)
+	, m_playerId(claimPlayer())
 	, m_topLevel(topLevel)
 	, m_focusParent(topLevel)
 {
@@ -122,6 +124,7 @@ InputController::~InputController() {
 	if (m_activeKeyInfo) {
 		mInputMapDeinit(&m_inputMap);
 	}
+	freePlayer(m_playerId);
 }
 
 void InputController::addInputDriver(std::shared_ptr<InputDriver> driver) {
@@ -545,6 +548,20 @@ void InputController::clearPendingEvents(int keys) {
 
 bool InputController::hasPendingEvent(int key) const {
 	return m_pendingEvents.contains(key);
+}
+
+int InputController::claimPlayer() {
+	for (int i = 0; i < MAX_GBAS; ++i) {
+		if (!(s_claimedPlayers & (1 << i))) {
+			s_claimedPlayers |= 1 << i;
+			return i;
+		}
+	}
+	qFatal("Can't claim 5th player. Please report this bug.");
+}
+
+void InputController::freePlayer(int player) {
+	s_claimedPlayers &= ~(1 << player);
 }
 
 void InputController::stealFocus(QWidget* focus) {
