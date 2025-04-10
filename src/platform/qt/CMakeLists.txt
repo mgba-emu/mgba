@@ -10,6 +10,9 @@ if(BUILD_SDL)
 	add_definitions(-DBUILD_SDL)
 	if(SDL2_FOUND)
 		link_directories(${SDL2_LIBDIR})
+		if(APPLE)
+			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mmacosx-version-min=10.7")
+		endif()
 	endif()
 	list(APPEND PLATFORM_LIBRARY ${SDL_LIBRARY})
 	list(APPEND PLATFORM_SRC ${PLATFORM_SRC} ${CMAKE_SOURCE_DIR}/src/platform/sdl/sdl-events.c ${CMAKE_SOURCE_DIR}/src/platform/sdl/sdl-audio.c)
@@ -115,7 +118,6 @@ set(SOURCE_FILES
 	LogView.cpp
 	LogWidget.cpp
 	MapView.cpp
-	MemoryAccessLogView.cpp
 	MemoryDump.cpp
 	MemoryModel.cpp
 	MemorySearch.cpp
@@ -251,7 +253,8 @@ if(USE_DEBUGGERS)
 	list(APPEND SOURCE_FILES
 		DebuggerController.cpp
 		DebuggerConsole.cpp
-		DebuggerConsoleController.cpp)
+		DebuggerConsoleController.cpp
+		MemoryAccessLogView.cpp)
 endif()
 
 if(USE_GDB_STUB)

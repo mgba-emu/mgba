@@ -325,8 +325,12 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->audio = encoder->audioStream->codec;
 #endif
 		encoder->audio->bit_rate = encoder->audioBitrate;
+#ifdef FFMPEG_USE_NEW_CH_LAYOUT
+		av_channel_layout_copy(&encoder->audio->ch_layout, &(AVChannelLayout) AV_CHANNEL_LAYOUT_STEREO);
+#else
 		encoder->audio->channels = 2;
 		encoder->audio->channel_layout = AV_CH_LAYOUT_STEREO;
+#endif
 		encoder->audio->sample_rate = encoder->sampleRate;
 		encoder->audio->sample_fmt = encoder->sampleFormat;
 		AVDictionary* opts = 0;
@@ -351,7 +355,11 @@ bool FFmpegEncoderOpen(struct FFmpegEncoder* encoder, const char* outfile) {
 		encoder->audioFrame->nb_samples = encoder->audio->frame_size;
 		encoder->audioFrame->format = encoder->audio->sample_fmt;
 		encoder->audioFrame->pts = 0;
+#ifdef FFMPEG_USE_NEW_CH_LAYOUT
+		av_channel_layout_copy(&encoder->audioFrame->ch_layout, &(AVChannelLayout) AV_CHANNEL_LAYOUT_STEREO);
+#else
 		encoder->audioFrame->channel_layout = AV_CH_LAYOUT_STEREO;
+#endif
 		_ffmpegOpenResampleContext(encoder);
 		av_frame_get_buffer(encoder->audioFrame, 0);
 
@@ -919,8 +927,13 @@ void _ffmpegOpenResampleContext(struct FFmpegEncoder* encoder) {
 	av_opt_set_int(encoder->resampleContext, "out_sample_fmt", encoder->sampleFormat, 0);
 	avresample_open(encoder->resampleContext);
 #else
+#ifdef FFMPEG_USE_NEW_CH_LAYOUT
+	swr_alloc_set_opts2(&encoder->resampleContext, &(AVChannelLayout) AV_CHANNEL_LAYOUT_STEREO, encoder->sampleFormat, encoder->sampleRate,
+	                    &(AVChannelLayout) AV_CHANNEL_LAYOUT_STEREO, AV_SAMPLE_FMT_S16, encoder->isampleRate, 0, NULL);
+#else
 	encoder->resampleContext = swr_alloc_set_opts(NULL, AV_CH_LAYOUT_STEREO, encoder->sampleFormat, encoder->sampleRate,
 	                                              AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S16, encoder->isampleRate, 0, NULL);
+#endif
 	swr_init(encoder->resampleContext);
 #endif
 }

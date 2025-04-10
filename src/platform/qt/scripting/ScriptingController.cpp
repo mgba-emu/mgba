@@ -77,7 +77,7 @@ void ScriptingController::setController(std::shared_ptr<CoreController> controll
 	CoreController::Interrupter interrupter(m_controller);
 	m_controller->thread()->scriptContext = &m_scriptContext;
 	if (m_controller->hasStarted()) {
-		mScriptContextAttachCore(&m_scriptContext, m_controller->thread()->core);
+		attach();
 	}
 	updateVideoScale();
 	connect(m_controller.get(), &CoreController::stopping, this, &ScriptingController::clearController);
@@ -115,7 +115,6 @@ bool ScriptingController::load(VFileDevice& vf, const QString& name) {
 	}
 	bool ok = true;
 	if (!m_activeEngine->load(m_activeEngine, utf8.constData(), vf) || !m_activeEngine->run(m_activeEngine)) {
-		emit error(QString::fromUtf8(m_activeEngine->getError(m_activeEngine)));
 		ok = false;
 	}
 	if (m_controller) {
@@ -155,7 +154,7 @@ void ScriptingController::reset() {
 	m_activeEngine = nullptr;
 	init();
 	if (m_controller && m_controller->hasStarted()) {
-		mScriptContextAttachCore(&m_scriptContext, m_controller->thread()->core);
+		attach();
 	}
 }
 
@@ -297,6 +296,14 @@ void ScriptingController::updateGamepad() {
 	for (int i = 0; i < nHats; ++i) {
 		mScriptGamepadSetHat(&m_gamepad, i, hats.at(i));
 	}
+}
+
+void ScriptingController::attach() {
+	CoreController::Interrupter interrupter(m_controller);
+	mScriptContextAttachCore(&m_scriptContext, m_controller->thread()->core);
+#ifdef USE_DEBUGGERS
+	m_controller->attachDebugger(false);
+#endif
 }
 
 void ScriptingController::attachGamepad() {

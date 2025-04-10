@@ -100,9 +100,6 @@ int main(int argc, char** argv) {
 		cleanExit = false;
 		goto loadError;
 	}
-	if (args.patch) {
-		core->loadPatch(core, VFileOpen(args.patch, O_RDONLY));
-	}
 
 	struct VFile* savestate = 0;
 	struct VFile* savestateOverlay = 0;
@@ -137,15 +134,7 @@ int main(int argc, char** argv) {
 		hasDebugger = true;
 	}
 
-	struct mCheatDevice* device;
-	if (args.cheatsFile && (device = core->cheatDevice(core))) {
-		struct VFile* vf = VFileOpen(args.cheatsFile, O_RDONLY);
-		if (vf) {
-			mCheatDeviceClear(device);
-			mCheatParseFile(device, vf);
-			vf->close(vf);
-		}
-	}
+	mArgumentsApplyFileLoads(&args, core);
 
 	if (savestate) {
 		if (!savestateOverlay) {

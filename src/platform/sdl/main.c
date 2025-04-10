@@ -7,12 +7,6 @@
 
 #include <mgba/internal/debugger/cli-debugger.h>
 
-#ifdef USE_GDB_STUB
-#include <mgba/internal/debugger/gdb-stub.h>
-#endif
-#ifdef USE_EDITLINE
-#include "feature/editline/cli-el-backend.h"
-#endif
 #ifdef ENABLE_SCRIPTING
 #include <mgba/core/scripting.h>
 
@@ -21,7 +15,6 @@
 #endif
 #endif
 
-#include <mgba/core/cheats.h>
 #include <mgba/core/core.h>
 #include <mgba/core/config.h>
 #include <mgba/core/input.h>
@@ -116,16 +109,6 @@ int main(int argc, char** argv) {
 	opts.width = renderer.width * renderer.ratio;
 	opts.height = renderer.height * renderer.ratio;
 
-	struct mCheatDevice* device = NULL;
-	if (args.cheatsFile && (device = renderer.core->cheatDevice(renderer.core))) {
-		struct VFile* vf = VFileOpen(args.cheatsFile, O_RDONLY);
-		if (vf) {
-			mCheatDeviceClear(device);
-			mCheatParseFile(device, vf);
-			vf->close(vf);
-		}
-	}
-
 	mInputMapInit(&renderer.core->inputMap, renderer.core->inputInfo);
 	mCoreInitConfig(renderer.core, PORT);
 	mArgumentsApply(&args, &subparser, 1, &renderer.core->config);
@@ -189,10 +172,6 @@ int main(int argc, char** argv) {
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&renderer.core->inputMap);
 
-	if (device) {
-		mCheatDeviceDestroy(device);
-	}
-
 	mSDLDeinit(&renderer);
 	mStandardLoggerDeinit(&_logger);
 
@@ -231,7 +210,7 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 		return 1;
 	}
 	mCoreAutoloadSave(renderer->core);
-	mCoreAutoloadCheats(renderer->core);
+	mArgumentsApplyFileLoads(args, renderer->core);
 #ifdef ENABLE_SCRIPTING
 	struct mScriptBridge* bridge = mScriptBridgeCreate();
 #ifdef ENABLE_PYTHON
@@ -244,30 +223,8 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 
 #ifdef USE_DEBUGGERS
 	struct mDebugger debugger;
-	bool hasDebugger = false;
-
 	mDebuggerInit(&debugger);
-#ifdef USE_EDITLINE
-	if (args->debugCli) {
-		struct mDebuggerModule* module = mDebuggerCreateModule(DEBUGGER_CLI, renderer->core);
-		if (module) {
-			struct CLIDebugger* cliDebugger = (struct CLIDebugger*) module;
-			CLIDebuggerAttachBackend(cliDebugger, CLIDebuggerEditLineBackendCreate());
-			mDebuggerAttachModule(&debugger, module);
-			hasDebugger = true;
-		}
-	}
-#endif
-
-#ifdef USE_GDB_STUB
-	if (args->debugGdb) {
-		struct mDebuggerModule* module = mDebuggerCreateModule(DEBUGGER_GDB, renderer->core);
-		if (module) {
-			mDebuggerAttachModule(&debugger, module);
-			hasDebugger = true;
-		}
-	}
-#endif
+	bool hasDebugger = mArgumentsApplyDebugger(args, renderer->core, &debugger);
 
 	if (hasDebugger) {
 		mDebuggerAttach(&debugger, renderer->core);
@@ -275,17 +232,10 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 #ifdef ENABLE_SCRIPTING
 		mScriptBridgeSetDebugger(bridge, &debugger);
 #endif
+	} else {
+		mDebuggerDeinit(&debugger);
 	}
 #endif
-
-	if (args->patch) {
-		struct VFile* patch = VFileOpen(args->patch, O_RDONLY);
-		if (patch) {
-			renderer->core->loadPatch(renderer->core, patch);
-		}
-	} else {
-		mCoreAutoloadPatch(renderer->core);
-	}
 
 	renderer->audio.samples = renderer->core->opts.audioBuffers;
 	renderer->audio.sampleRate = 44100;

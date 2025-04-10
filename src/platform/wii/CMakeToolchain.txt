@@ -7,6 +7,7 @@ set(link_flags "-L${DEVKITPRO}/libogc/lib/wii ${arch_flags}")
 
 set(CMAKE_SYSTEM_PROCESSOR powerpc CACHE INTERNAL "processor")
 set(CMAKE_LIBRARY_ARCHITECTURE powerpc-none-eabi CACHE INTERNAL "abi")
+set(CMAKE_REQUIRED_LIBRARIES ogc)
 
 set(WII ON)
 add_definitions(-DGEKKO)

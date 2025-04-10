@@ -163,9 +163,9 @@ struct mScriptMemoryDomain {
 struct mScriptBreakpointName {
 	uint32_t address;
 	uint32_t maxAddress;
-	int segment : 9;
-	int type : 1;
-	int subtype : 3;
+	int16_t segment;
+	uint8_t type;
+	uint8_t subtype;
 };
 
 struct mScriptBreakpoint {
@@ -1247,33 +1247,33 @@ static struct mScriptTextBuffer* _mScriptConsoleCreateBuffer(struct mScriptConso
 	return buffer;
 }
 
-static void mScriptConsoleLog(struct mScriptConsole* console, struct mScriptString* msg) {
+static void mScriptConsoleLog(struct mScriptConsole* console, const char* msg) {
 	if (console->logger) {
-		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_INFO, "%s", msg->buffer);
+		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_INFO, "%s", msg);
 	} else {
-		mLog(_mLOG_CAT_SCRIPT, mLOG_INFO, "%s", msg->buffer);
+		mLog(_mLOG_CAT_SCRIPT, mLOG_INFO, "%s", msg);
 	}
 }
 
-static void mScriptConsoleWarn(struct mScriptConsole* console, struct mScriptString* msg) {
+static void mScriptConsoleWarn(struct mScriptConsole* console, const char* msg) {
 	if (console->logger) {
-		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);
+		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg);
 	} else {
-		mLog(_mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg->buffer);
+		mLog(_mLOG_CAT_SCRIPT, mLOG_WARN, "%s", msg);
 	}
 }
 
-static void mScriptConsoleError(struct mScriptConsole* console, struct mScriptString* msg) {
+static void mScriptConsoleError(struct mScriptConsole* console, const char* msg) {
 	if (console->logger) {
-		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_ERROR, "%s", msg->buffer);
+		mLogExplicit(console->logger, _mLOG_CAT_SCRIPT, mLOG_ERROR, "%s", msg);
 	} else {
-		mLog(_mLOG_CAT_SCRIPT, mLOG_ERROR, "%s", msg->buffer);
+		mLog(_mLOG_CAT_SCRIPT, mLOG_ERROR, "%s", msg);
 	}
 }
 
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptConsole, log, mScriptConsoleLog, 1, STR, msg);
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptConsole, warn, mScriptConsoleWarn, 1, STR, msg);
-mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptConsole, error, mScriptConsoleError, 1, STR, msg);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptConsole, log, mScriptConsoleLog, 1, CHARP, msg);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptConsole, warn, mScriptConsoleWarn, 1, CHARP, msg);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mScriptConsole, error, mScriptConsoleError, 1, CHARP, msg);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mScriptConsole, S(mScriptTextBuffer), createBuffer, _mScriptConsoleCreateBuffer, 1, CHARP, name);
 
 mSCRIPT_DEFINE_STRUCT(mScriptConsole)

@@ -67,6 +67,7 @@ protected:
 
 private slots:
 	void updateGamepad();
+	void attach();
 
 private:
 	void init();
