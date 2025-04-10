@@ -560,11 +560,7 @@ void CoreController::rewind(int states) {
 	if (!states) {
 		states = INT_MAX;
 	}
-	for (int i = 0; i < states; ++i) {
-		if (!mCoreRewindRestore(&m_threadContext.impl->rewind, m_threadContext.core)) {
-			break;
-		}
-	}
+	mCoreRewindRestore(&m_threadContext.impl->rewind, m_threadContext.core, states);
 	interrupter.resume();
 	emit frameAvailable();
 	emit rewound();
@@ -975,7 +971,7 @@ void CoreController::scanCard(const QString& path) {
 			}
 		}
 		scanCards(lines);
-		m_eReaderData = eReaderData;
+		m_eReaderData = std::move(eReaderData);
 	} else if (image.size() == QSize(989, 44) || image.size() == QSize(639, 44)) {
 		const uchar* bits = image.constBits();
 		size_t size;
@@ -1050,7 +1046,7 @@ void CoreController::attachPrinter() {
 		colors.append(qRgb(0xA8, 0xA8, 0xA8));
 		colors.append(qRgb(0x50, 0x50, 0x50));
 		colors.append(qRgb(0x00, 0x00, 0x00));
-		image.setColorTable(colors);
+		image.setColorTable(std::move(colors));
 		for (int y = 0; y < height; ++y) {
 			for (int x = 0; x < GB_VIDEO_HORIZONTAL_PIXELS; x += 4) {
 				uint8_t byte = data[(x + y * GB_VIDEO_HORIZONTAL_PIXELS) / 4];

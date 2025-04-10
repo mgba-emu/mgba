@@ -228,11 +228,8 @@ endif()
 if(${QT}Multimedia_FOUND)
 	list(APPEND AUDIO_SRC
 		AudioProcessorQt.cpp
-		AudioDevice.cpp)
-	if(QT_V LESS 6)
-		list(APPEND SOURCE_FILES
-			VideoDumper.cpp)
-	endif()
+		AudioDevice.cpp
+		VideoDumper.cpp)
 	if (WIN32 AND QT_STATIC)
 		list(APPEND QT_LIBRARIES ${QT}::QWindowsAudioPlugin ${QT}::DSServicePlugin ${QT}::QWindowsVistaStylePlugin ${QT}::QJpegPlugin
                                  strmiids mfuuid mfplat mf ksguid dxva2 evr d3d9)
@@ -338,7 +335,6 @@ if(BUILD_GL OR BUILD_GLES2 OR BUILD_EPOXY)
 		install(DIRECTORY ${PROJECT_SOURCE_DIR}/res/shaders DESTINATION ${DATADIR} COMPONENT ${BINARY_NAME}-qt)
 	else()
 		file(GLOB SHADERS ${PROJECT_SOURCE_DIR}/res/shaders/*.shader)
-		message(STATUS ${SHADERS})
 		file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders)
 		foreach(SHADER_DIR ${SHADERS})
 			get_filename_component(SHADER ${SHADER_DIR} NAME)

@@ -109,8 +109,9 @@ int main(int argc, char* argv[]) {
 #endif
 
 	QTranslator qtTranslator;
-	qtTranslator.load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-	application.installTranslator(&qtTranslator);
+	if (qtTranslator.load(locale, "qt", "_", QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+		application.installTranslator(&qtTranslator);
+	}
 
 #ifdef QT_STATIC
 	QTranslator qtStaticTranslator;
@@ -119,8 +120,9 @@ int main(int argc, char* argv[]) {
 #endif
 
 	QTranslator langTranslator;
-	langTranslator.load(locale, binaryName, "-", ":/translations/");
-	application.installTranslator(&langTranslator);
+	if (langTranslator.load(locale, binaryName, "-", ":/translations/")) {
+		application.installTranslator(&langTranslator);
+	}
 
 	Window* w = application.newWindow();
 	w->loadConfig();

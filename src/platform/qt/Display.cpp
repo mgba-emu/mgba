@@ -33,49 +33,33 @@ QGBA::Display* QGBA::Display::create(QWidget* parent) {
 	switch (s_driver) {
 #if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 	case Driver::OPENGL:
-#if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
-		if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES) {
-			format.setVersion(2, 0);
-		} else {
-			format.setVersion(3, 3);
+	default:
+		if (DisplayGL::highestCompatible(format)) {
+			return new DisplayGL(format, parent);
 		}
-		format.setProfile(QSurfaceFormat::CoreProfile);
-		if (DisplayGL::supportsFormat(format)) {
-			QSurfaceFormat::setDefaultFormat(format);
-		} else {
-#ifdef BUILD_GL
-			LOG(QT, WARN) << ("Failed to create an OpenGL Core context, trying old-style...");
-			format.setVersion(1, 4);
-			format.setOption(QSurfaceFormat::DeprecatedFunctions);
-			if (!DisplayGL::supportsFormat(format)) {
-				return nullptr;
-			}
-#else
-			return nullptr;
-#endif
-		}
-		return new DisplayGL(format, parent);
-#endif
+		break;
 #endif
 #ifdef BUILD_GL
 	case Driver::OPENGL1:
-		format.setVersion(1, 4);
-		if (!DisplayGL::supportsFormat(format)) {
-			return nullptr;
+		if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
+			format.setVersion(1, 4);
+		} else {
+			format.setVersion(1, 1);
 		}
-		return new DisplayGL(format, parent);
+		if (DisplayGL::supportsFormat(format)) {
+			return new DisplayGL(format, parent);
+		}
+		break;
 #endif
 
 	case Driver::QT:
+#if !defined(BUILD_GL) && !defined(BUILD_GLES2) && !defined(BUILD_GLES3) && !defined(USE_EPOXY)
+	default:
+#endif
 		return new DisplayQt(parent);
 
-	default:
-#if defined(BUILD_GL) || defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
-		return new DisplayGL(format, parent);
-#else
-		return new DisplayQt(parent);
-#endif
 	}
+	return nullptr;
 }
 
 QGBA::Display::Display(QWidget* parent)

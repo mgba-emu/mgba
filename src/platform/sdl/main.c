@@ -47,6 +47,7 @@ static void _loadState(struct mCoreThread* thread) {
 int main(int argc, char** argv) {
 #ifdef _WIN32
 	AttachConsole(ATTACH_PARENT_PROCESS);
+	freopen("CONOUT$", "w", stdout);
 #endif
 	struct mSDLRenderer renderer = {0};
 

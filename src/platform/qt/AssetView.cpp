@@ -199,7 +199,7 @@ bool AssetView::lookupObjGBA(int id, struct ObjInfo* info) {
 		paletteSet = 2;
 		bits = 4;
 	}
-	ObjInfo newInfo{
+	*info = ObjInfo{
 		tile,
 		width / 8,
 		height / 8,
@@ -218,16 +218,15 @@ bool AssetView::lookupObjGBA(int id, struct ObjInfo* info) {
 		int matIndex = GBAObjAttributesBGetMatIndex(obj->b);
 		const GBAOAMMatrix* mat = &gba->video.oam.mat[matIndex];
 		QTransform invXform(mat->a / 256., mat->c / 256., mat->b / 256., mat->d / 256., 0, 0);
-		newInfo.xform = invXform.inverted();
+		info->xform = invXform.inverted();
 	} else {
-		newInfo.hflip = bool(GBAObjAttributesBIsHFlip(obj->b));
-		newInfo.vflip = bool(GBAObjAttributesBIsVFlip(obj->b));
+		info->hflip = bool(GBAObjAttributesBIsHFlip(obj->b));
+		info->vflip = bool(GBAObjAttributesBIsVFlip(obj->b));
 	}
 	GBARegisterDISPCNT dispcnt = gba->memory.io[0]; // FIXME: Register name can't be imported due to namespacing issues
 	if (!GBARegisterDISPCNTIsObjCharacterMapping(dispcnt)) {
-		newInfo.stride = 0x20 >> (GBAObjAttributesAGet256Color(obj->a));
+		info->stride = 0x20 >> (GBAObjAttributesAGet256Color(obj->a));
 	};
-	*info = newInfo;
 	return true;
 }
 #endif
@@ -258,7 +257,7 @@ bool AssetView::lookupObjGB(int id, struct ObjInfo* info) {
 	}
 	palette += 8;
 
-	ObjInfo newInfo{
+	*info = ObjInfo{
 		tile,
 		1,
 		height / 8,
@@ -273,7 +272,6 @@ bool AssetView::lookupObjGB(int id, struct ObjInfo* info) {
 		bool(GBObjAttributesIsXFlip(obj->attr)),
 		bool(GBObjAttributesIsYFlip(obj->attr)),
 	};
-	*info = newInfo;
 	return true;
 }
 #endif

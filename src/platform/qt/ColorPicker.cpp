@@ -44,13 +44,11 @@ bool ColorPicker::eventFilter(QObject* obj, QEvent* event) {
 		return false;
 	}
 
-	QWidget* swatch = static_cast<QWidget*>(obj);
-
 	QColorDialog* colorPicker = new QColorDialog;
 	colorPicker->setAttribute(Qt::WA_DeleteOnClose);
 	colorPicker->setCurrentColor(m_defaultColor);
 	colorPicker->open();
-	connect(colorPicker, &QColorDialog::colorSelected, [this, swatch](const QColor& color) {
+	connect(colorPicker, &QColorDialog::colorSelected, [this](const QColor& color) {
 		setColor(color);
 		emit colorChanged(color);
 	});

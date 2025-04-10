@@ -12,17 +12,17 @@ Action::Action(QObject* parent)
 {
 }
 
-Action::Action(Function function, const QString& name, const QString& visibleName, QObject* parent)
+Action::Action(Function&& function, const QString& name, const QString& visibleName, QObject* parent)
 	: QObject(parent)
-	, m_function(function)
+	, m_function(std::move(function))
 	, m_name(name)
 	, m_visibleName(visibleName)
 {
 }
 
-Action::Action(Action::BooleanFunction function, const QString& name, const QString& visibleName, QObject* parent)
+Action::Action(Action::BooleanFunction&& function, const QString& name, const QString& visibleName, QObject* parent)
 	: QObject(parent)
-	, m_booleanFunction(function)
+	, m_booleanFunction(std::move(function))
 	, m_name(name)
 	, m_visibleName(visibleName)
 {
@@ -57,9 +57,9 @@ Action::Action(Action& other)
 {
 }
 
-void Action::connect(Function func) {
+void Action::connect(Function&& func) {
 	m_booleanFunction = {};
-	m_function = func;
+	m_function = std::move(func);
 }
 
 void Action::trigger(bool active) {

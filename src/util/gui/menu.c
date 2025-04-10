@@ -18,30 +18,33 @@ DEFINE_VECTOR(GUIMenuItemList, struct GUIMenuItem);
 DEFINE_VECTOR(GUIMenuSavedList, struct GUIMenuSavedState);
 
 void _itemNext(struct GUIMenuItem* item, bool wrap) {
-	if (item->state < item->nStates - 1) {
+	if (wrap || item->state < item->nStates - 1) {
 		unsigned oldState = item->state;
 		do {
 			++item->state;
+			if (item->state >= item->nStates) {
+				item->state -= item->nStates;
+			}
 		} while (!item->validStates[item->state] && item->state < item->nStates - 1);
 		if (!item->validStates[item->state]) {
 			item->state = oldState;
 		}
-	} else if (wrap) {
-		item->state = 0;
 	}
 }
 
 void _itemPrev(struct GUIMenuItem* item, bool wrap) {
-	if (item->state > 0) {
+	if (wrap || item->state > 0) {
 		unsigned oldState = item->state;
 		do {
-			--item->state;
+			if (item->state > 0) {
+				--item->state;
+			} else {
+				item->state = item->nStates - 1;
+			}
 		} while (!item->validStates[item->state] && item->state > 0);
 		if (!item->validStates[item->state]) {
 			item->state = oldState;
 		}
-	} else if (wrap) {
-		item->state = item->nStates - 1;
 	}
 }
 

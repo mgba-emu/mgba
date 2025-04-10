@@ -19,6 +19,9 @@
 static const mOption s_frontendOptions[] = {
 	{ "ecard", true, '\0' },
 	{ "mb", true, '\0' },
+#ifdef ENABLE_SCRIPTING
+	{ "script", true, '\0' },
+#endif
 	{ 0 }
 };
 
@@ -31,7 +34,7 @@ ConfigOption::ConfigOption(const QString& name, QObject* parent)
 }
 
 void ConfigOption::connect(std::function<void(const QVariant&)> slot, QObject* parent) {
-	m_slots[parent] = slot;
+	m_slots[parent] = std::move(slot);
 	QObject::connect(parent, &QObject::destroyed, this, [this, parent]() {
 		m_slots.remove(parent);
 	});
@@ -50,7 +53,7 @@ std::shared_ptr<Action> ConfigOption::addValue(const QString& text, const QVaria
 	}
 	action->setExclusive();
 	std::weak_ptr<Action> weakAction(action);
-	QObject::connect(action.get(), &QObject::destroyed, this, [this, weakAction, value]() {
+	QObject::connect(action.get(), &QObject::destroyed, this, [this, weakAction = std::move(weakAction), value]() {
 		if (weakAction.expired()) {
 			return;
 		}
@@ -153,7 +156,12 @@ ConfigController::ConfigController(QObject* parent)
 	m_subparsers[1].usage = "Frontend options:\n"
 	    "  --ecard FILE  Scan an e-Reader card in the first loaded game\n"
 	    "                Can be passed multiple times for multiple cards\n"
-	    "  --mb FILE     Boot a multiboot image with FILE inserted into the ROM slot";
+	    "  --mb FILE     Boot a multiboot image with FILE inserted into the ROM slot"
+#ifdef ENABLE_SCRIPTING
+	    "\n  --script FILE Script file to load on start"
+#endif
+	    ;
+
 	m_subparsers[1].parse = nullptr;
 	m_subparsers[1].parseLong = [](struct mSubParser* parser, const char* option, const char* arg) {
 		ConfigController* self = static_cast<ConfigController*>(parser->opts);
@@ -171,6 +179,17 @@ ConfigController::ConfigController(QObject* parent)
 			self->m_argvOptions[optionName] = QString::fromUtf8(arg);
 			return true;
 		}
+#ifdef ENABLE_SCRIPTING
+		if (optionName == QLatin1String("script")) {
+			QStringList scripts;
+			if (self->m_argvOptions.contains(optionName)) {
+				scripts = self->m_argvOptions[optionName].toStringList();
+			}
+			scripts.append(QString::fromUtf8(arg));
+			self->m_argvOptions[optionName] = scripts;
+			return true;
+		}
+#endif
 		return false;
 	};
 	m_subparsers[1].apply = nullptr;

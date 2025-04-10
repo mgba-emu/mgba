@@ -154,7 +154,14 @@ bool extractMatchingFile(VDir* dir, std::function<QString (VDirEntry*)> filter) 
 			continue;
 		}
 		VFile* outfile = VFileOpen(target.toUtf8().constData(), O_WRONLY | O_TRUNC | O_CREAT);
+		if (!outfile) {
+			return false;
+		}
 		VFile* infile = dir->openFile(dir, entry->name(entry), O_RDONLY);
+		if (!infile) {
+			outfile->close(outfile);
+			return false;
+		}
 		VFileDevice::copyFile(infile, outfile);
 		infile->close(infile);
 		outfile->close(outfile);

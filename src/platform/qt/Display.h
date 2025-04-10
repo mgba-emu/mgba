@@ -60,7 +60,7 @@ public:
 
 	QSize viewportSize();
 
-	virtual void setVideoProxy(std::shared_ptr<VideoProxy> proxy) { m_videoProxy = proxy; }
+	virtual void setVideoProxy(std::shared_ptr<VideoProxy> proxy) { m_videoProxy = std::move(proxy); }
 	std::shared_ptr<VideoProxy> videoProxy() { return m_videoProxy; }
 	virtual VideoBackend* videoBackend();
 	

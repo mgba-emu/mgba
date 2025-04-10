@@ -1141,7 +1141,9 @@ void Window::reloadAudioDriver() {
 	m_audioProcessor = std::unique_ptr<AudioProcessor>(AudioProcessor::create());
 	m_audioProcessor->setInput(m_controller);
 	m_audioProcessor->configure(m_config);
-	m_audioProcessor->start();
+	if (!m_audioProcessor->start()) {
+		LOG(QT, WARN) << "Failed to start audio processor";
+	}
 }
 
 void Window::changeRenderer() {
@@ -1687,7 +1689,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	double nativeGB = double(GBA_ARM7TDMI_FREQUENCY) / double(VIDEO_TOTAL_LENGTH);
 	fpsTargets[nativeGB] = fpsTargetOption->addValue(tr("Native (59.7275)"), nativeGB, &m_actions, "target");
 
-	fpsTargetOption->connect([this, fpsTargets](const QVariant& value) {
+	fpsTargetOption->connect([this, fpsTargets = std::move(fpsTargets)](const QVariant& value) {
 		reloadConfig();
 		for (auto iter = fpsTargets.begin(); iter != fpsTargets.end(); ++iter) {
 			bool enableSignals = iter.value()->blockSignals(true);
@@ -2005,7 +2007,7 @@ void Window::updateMRU() {
 }
 
 std::shared_ptr<Action> Window::addGameAction(const QString& visibleName, const QString& name, Action::Function function, const QString& menu, const QKeySequence& shortcut) {
-	auto action = m_actions.addAction(visibleName, name, [this, function]() {
+	auto action = m_actions.addAction(visibleName, name, [this, function = std::move(function)]() {
 		if (m_controller) {
 			function();
 		}
@@ -2029,7 +2031,7 @@ std::shared_ptr<Action> Window::addGameAction(const QString& visibleName, const 
 }
 
 std::shared_ptr<Action> Window::addGameAction(const QString& visibleName, const QString& name, Action::BooleanFunction function, const QString& menu, const QKeySequence& shortcut) {
-	auto action = m_actions.addBooleanAction(visibleName, name, [this, function](bool value) {
+	auto action = m_actions.addBooleanAction(visibleName, name, [this, function = std::move(function)](bool value) {
 		if (m_controller) {
 			function(value);
 		}
@@ -2207,6 +2209,18 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		m_controller->setPaused(true);
 		m_pendingPause = false;
 	}
+
+#ifdef ENABLE_SCRIPTING
+	if (!m_scripting) {
+		QStringList scripts = m_config->getArgvOption("script").toStringList();
+		if (!scripts.isEmpty()) {
+			scriptingOpen();
+			for (const auto& scriptPath : scripts) {
+				m_scripting->loadFile(scriptPath);
+			}
+		}
+	}
+#endif
 }
 
 void Window::attachDisplay() {

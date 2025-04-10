@@ -1025,7 +1025,7 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 	regGBA.append({
 		{ tr("Enable IRQs"), 0 },
 	});
-	s_registers[mPLATFORM_GBA] = regGBA;
+	s_registers[mPLATFORM_GBA] = std::move(regGBA);
 #endif
 #ifdef M_CORE_GB
 	QList<IOViewer::RegisterDescription> regGB;
@@ -1555,7 +1555,7 @@ const QList<IOViewer::RegisterDescription>& IOViewer::registerDescriptions(mPlat
 		{ tr("Serial"), 3 },
 		{ tr("Joypad"), 4 },
 	});
-	s_registers[mPLATFORM_GB] = regGB;
+	s_registers[mPLATFORM_GB] = std::move(regGB);
 #endif
 	return s_registers[platform];
 }

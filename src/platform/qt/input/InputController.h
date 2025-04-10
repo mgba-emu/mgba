@@ -33,10 +33,13 @@
 #include <mgba/gba/interface.h>
 
 #ifdef BUILD_QT_MULTIMEDIA
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 #include "VideoDumper.h"
-#endif
+
 #include <QCamera>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+#include <QMediaCaptureSession>
+#include <QVideoSink>
+#endif
 #endif
 
 struct mRotationSource;
@@ -134,7 +137,7 @@ public slots:
 	void setCamera(const QByteArray& id);
 
 private slots:
-#ifdef BUILD_QT_MULTIMEDIA
+#if defined(BUILD_QT_MULTIMEDIA) && (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	void prepareCamSettings(QCamera::Status);
 #endif
 	void setupCam();
@@ -158,6 +161,10 @@ private:
 	QSet<QPair<int, GamepadAxisEvent::Direction>> activeGamepadAxes(uint32_t type);
 	QSet<QPair<int, GamepadHatEvent::Direction>> activeGamepadHats(uint32_t type);
 
+#if defined(BUILD_QT_MULTIMEDIA)
+	void prepareCamFormat();
+#endif
+
 	struct InputControllerLux : GBALuminanceSource {
 		InputController* p;
 		uint8_t value;
@@ -176,10 +183,14 @@ private:
 
 #ifdef BUILD_QT_MULTIMEDIA
 	bool m_cameraActive = false;
-	QByteArray m_cameraDevice;
 	std::unique_ptr<QCamera> m_camera;
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 	VideoDumper m_videoDumper;
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+	QByteArray m_cameraDevice;
+#else
+	QCameraDevice m_cameraDevice;
+	QMediaCaptureSession m_captureSession;
+	QVideoSink m_videoSink;
 #endif
 #endif
 

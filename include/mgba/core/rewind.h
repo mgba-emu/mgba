@@ -40,7 +40,7 @@ void mCoreRewindContextDeinit(struct mCoreRewindContext*);
 
 struct mCore;
 void mCoreRewindAppend(struct mCoreRewindContext*, struct mCore*);
-bool mCoreRewindRestore(struct mCoreRewindContext*, struct mCore*);
+bool mCoreRewindRestore(struct mCoreRewindContext*, struct mCore*, unsigned count);
 
 CXX_GUARD_END
 

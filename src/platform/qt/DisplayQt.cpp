@@ -44,7 +44,7 @@ void DisplayQt::startDrawing(std::shared_ptr<CoreController> controller) {
 	setSystemDimensions(m_width, m_height);
 	m_oldBacking = QImage();
 	m_isDrawing = true;
-	m_context = controller;
+	m_context = std::move(controller);
 	emit drawingStarted();
 }
 
@@ -242,9 +242,8 @@ void DisplayQt::setImage(struct VideoBackend* v, enum VideoLayer layer, const vo
 	if (layer > self->m_layers.size()) {
 		return;
 	}
-	QImage image = self->m_layers[layer];
-	image = QImage(static_cast<const uchar*>(frame), image.width(), image.height(), QImage::Format_ARGB32).rgbSwapped();
-	self->m_layers[layer] = image;
+	QImage& image = self->m_layers[layer];
+	self->m_layers[layer] = QImage(static_cast<const uchar*>(frame), image.width(), image.height(), QImage::Format_ARGB32).rgbSwapped();
 }
 
 void DisplayQt::drawFrame(struct VideoBackend* v) {

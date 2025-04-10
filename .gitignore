@@ -20,6 +20,10 @@
 CMakeCache.txt
 CMakeFiles
 CMakeSettings.json
+CMakeUserPresets.json
+compile_commands.json
+/.cache
+/.vscode
 cmake_install.cmake
 hle-bios.bin
 version.c
