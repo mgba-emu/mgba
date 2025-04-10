@@ -12,65 +12,27 @@
 #include <QHash>
 #include <QList>
 #include <QStackedWidget>
+#include <QTimer>
 
 #include <mgba/core/library.h>
 
+#include "LibraryEntry.h"
+
+class QAbstractItemView;
+class QListView;
+class QSortFilterProxyModel;
+class QTreeView;
+
 namespace QGBA {
 
-// Predefinitions
-class LibraryGrid;
-class LibraryTree;
 class ConfigController;
+class LibraryModel;
 
 enum class LibraryStyle {
 	STYLE_LIST = 0,
 	STYLE_TREE,
 	STYLE_GRID,
 	STYLE_ICON
-};
-
-struct LibraryEntry {
-	LibraryEntry() {}
-	LibraryEntry(const mLibraryEntry* entry);
-
-	bool isNull() const { return fullpath.isNull(); }
-
-	QString displayTitle() const { return title.isNull() ? filename : title; }
-
-	QString base;
-	QString filename;
-	QString fullpath;
-	QString title;
-	QByteArray internalTitle;
-	QByteArray internalCode;
-	mPlatform platform;
-	size_t filesize;
-	uint32_t crc32;
-
-	bool operator==(const LibraryEntry& other) const { return other.fullpath == fullpath; }
-};
-
-class AbstractGameList {
-public:
-	virtual QString selectedEntry() = 0;
-	virtual void selectEntry(const QString& fullpath) = 0;
-
-	virtual void setViewStyle(LibraryStyle newStyle) = 0;
-
-	virtual void resetEntries(const QList<LibraryEntry>&) = 0;
-	virtual void addEntries(const QList<LibraryEntry>&) = 0;
-	virtual void updateEntries(const QList<LibraryEntry>&) = 0;
-	virtual void removeEntries(const QList<QString>&) = 0;
-
-	virtual void addEntry(const LibraryEntry&);
-	virtual void updateEntry(const LibraryEntry&);
-	virtual void removeEntry(const QString&);
-	virtual void setShowFilename(bool showFilename);
-
-	virtual QWidget* widget() = 0;
-
-protected:
-	bool m_showFilename = false;
 };
 
 class LibraryController final : public QStackedWidget {
@@ -103,21 +65,34 @@ signals:
 
 private slots:
 	void refresh();
+	void sortChanged(int column, Qt::SortOrder order);
+	inline void resizeTreeView() { resizeTreeView(true); }
+	void resizeTreeView(bool expand);
+
+protected:
+	void showEvent(QShowEvent*) override;
+	void resizeEvent(QResizeEvent*) override;
 
 private:
 	void loadDirectory(const QString&, bool recursive = true); // Called on separate thread
+	void updateViewStyle(LibraryStyle newStyle);
 
 	ConfigController* m_config = nullptr;
 	std::shared_ptr<mLibrary> m_library;
 	QAtomicInteger<qint64> m_libraryJob = -1;
-	QHash<QString, LibraryEntry> m_entries;
 
 	LibraryStyle m_currentStyle;
-	AbstractGameList* m_currentList = nullptr;
 
-	std::unique_ptr<LibraryGrid> m_libraryGrid;
-	std::unique_ptr<LibraryTree> m_libraryTree;
+	QHash<QString, uint64_t> m_knownGames;
+	LibraryModel* m_libraryModel;
+	QSortFilterProxyModel* m_listModel;
+	QSortFilterProxyModel* m_treeModel;
+	QListView* m_listView;
+	QTreeView* m_treeView;
+	QAbstractItemView* m_currentView = nullptr;
 	bool m_showFilename = false;
+
+	QTimer m_expandThrottle;
 };
 
 }

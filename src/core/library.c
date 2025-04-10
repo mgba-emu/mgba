@@ -9,6 +9,11 @@
 #include <mgba-util/string.h>
 #include <mgba-util/vfs.h>
 
+#ifdef M_CORE_GB
+#include <mgba/gb/interface.h>
+#include <mgba/internal/gb/gb.h>
+#endif
+
 #ifdef USE_SQLITE3
 
 #include <sqlite3.h>
@@ -33,6 +38,7 @@ struct mLibrary {
 #define CONSTRAINTS_ROMONLY \
 	"CASE WHEN :useSize THEN roms.size = :size ELSE 1 END AND " \
 	"CASE WHEN :usePlatform THEN roms.platform = :platform ELSE 1 END AND " \
+	"CASE WHEN :useModels THEN roms.models & :models ELSE 1 END AND " \
 	"CASE WHEN :useCrc32 THEN roms.crc32 = :crc32 ELSE 1 END AND " \
 	"CASE WHEN :useMd5 THEN roms.md5 = :md5 ELSE 1 END AND " \
 	"CASE WHEN :useSha1 THEN roms.sha1 = :sha1 ELSE 1 END AND " \
@@ -108,10 +114,38 @@ static void _bindConstraints(sqlite3_stmt* statement, const struct mLibraryEntry
 		sqlite3_bind_int(statement, useIndex, 1);
 		sqlite3_bind_int(statement, index, constraints->platform);
 	}
+
+	if (constraints->platformModels != M_LIBRARY_MODEL_UNKNOWN) {
+		useIndex = sqlite3_bind_parameter_index(statement, ":useModels");
+		index = sqlite3_bind_parameter_index(statement, ":models");
+		sqlite3_bind_int(statement, useIndex, 1);
+		sqlite3_bind_int(statement, index, constraints->platformModels);
+	}
 }
 
 struct mLibrary* mLibraryCreateEmpty(void) {
 	return mLibraryLoad(":memory:");
+}
+
+static int _mLibraryTableVersion(struct mLibrary* library, const char* tableName) {
+	int version = -1;
+
+	static const char getVersion[] = "SELECT version FROM version WHERE tname=?";
+	sqlite3_stmt* getVersionStmt;
+	if (sqlite3_prepare_v2(library->db, getVersion, -1, &getVersionStmt, NULL)) {
+		goto error;
+	}
+
+	sqlite3_clear_bindings(getVersionStmt);
+	sqlite3_reset(getVersionStmt);
+	sqlite3_bind_text(getVersionStmt, 1, tableName, -1, SQLITE_TRANSIENT);
+	if (sqlite3_step(getVersionStmt) != SQLITE_DONE) {
+		version = sqlite3_column_int(getVersionStmt, 0);
+	}
+
+error:
+	sqlite3_finalize(getVersionStmt);
+	return version;
 }
 
 struct mLibrary* mLibraryLoad(const char* path) {
@@ -140,6 +174,7 @@ struct mLibrary* mLibraryLoad(const char* path) {
 		"\n 	internalTitle TEXT,"
 		"\n 	internalCode TEXT,"
 		"\n 	platform INTEGER NOT NULL DEFAULT -1,"
+		"\n 	models INTEGER NULL,"
 		"\n 	size INTEGER,"
 		"\n 	crc32 INTEGER,"
 		"\n 	md5 BLOB,"
@@ -159,10 +194,27 @@ struct mLibrary* mLibraryLoad(const char* path) {
 		"\n CREATE INDEX IF NOT EXISTS sha1 ON roms (sha1);"
 		"\n INSERT OR IGNORE INTO version (tname, version) VALUES ('version', 1);"
 		"\n INSERT OR IGNORE INTO version (tname, version) VALUES ('roots', 1);"
-		"\n INSERT OR IGNORE INTO version (tname, version) VALUES ('roms', 1);"
+		"\n INSERT OR IGNORE INTO version (tname, version) VALUES ('roms', 2);"
 		"\n INSERT OR IGNORE INTO version (tname, version) VALUES ('paths', 1);";
 	if (sqlite3_exec(library->db, createTables, NULL, NULL, NULL)) {
 		goto error;
+	}
+
+	int romsTableVersion = _mLibraryTableVersion(library, "roms");
+	if (romsTableVersion < 0) {
+		goto error;
+	} else if (romsTableVersion < 2) {
+		static const char upgradeRomsTable[] =
+			"   ALTER TABLE roms"
+			"\n ADD COLUMN models INTEGER NULL";
+		if (sqlite3_exec(library->db, upgradeRomsTable, NULL, NULL, NULL)) {
+			goto error;
+		}
+
+		static const char updateRomsTableVersion[] = "UPDATE version SET version=2 WHERE tname='roms'";
+		if (sqlite3_exec(library->db, updateRomsTableVersion, NULL, NULL, NULL)) {
+			goto error;
+		}
 	}
 
 	static const char insertPath[] = "INSERT INTO paths (romid, path, customTitle, rootid) VALUES (?, ?, ?, ?);";
@@ -170,7 +222,7 @@ struct mLibrary* mLibraryLoad(const char* path) {
 		goto error;
 	}
 
-	static const char insertRom[] = "INSERT INTO roms (crc32, md5, sha1, size, internalCode, platform) VALUES (:crc32, :md5, :sha1, :size, :internalCode, :platform);";
+	static const char insertRom[] = "INSERT INTO roms (crc32, md5, sha1, size, internalCode, platform, models) VALUES (:crc32, :md5, :sha1, :size, :internalCode, :platform, :models);";
 	if (sqlite3_prepare_v2(library->db, insertRom, -1, &library->insertRom, NULL)) {
 		goto error;
 	}
@@ -318,6 +370,15 @@ bool _mLibraryAddEntry(struct mLibrary* library, const char* filename, const cha
 	core->checksum(core, &entry.md5, mCHECKSUM_MD5);
 	core->checksum(core, &entry.sha1, mCHECKSUM_SHA1);
 	entry.platform = core->platform(core);
+	entry.platformModels = M_LIBRARY_MODEL_UNKNOWN;
+#ifdef M_CORE_GB
+	if (entry.platform == mPLATFORM_GB) {
+		struct GB* gb = (struct GB*) core->board;
+		if (gb->memory.rom) {
+			entry.platformModels = GBValidModels(gb->memory.rom);
+		}
+	}
+#endif
 	entry.title = NULL;
 	entry.base = base;
 	entry.filename = filename;
@@ -448,6 +509,8 @@ size_t mLibraryGetEntries(struct mLibrary* library, struct mLibraryListing* out,
 				}
 			} else if (strcmp(colName, "platform") == 0) {
 				entry->platform = sqlite3_column_int(library->select, i);
+			} else if (strcmp(colName, "models") == 0) {
+				entry->platformModels = sqlite3_column_int(library->select, i);
 			} else if (strcmp(colName, "size") == 0) {
 				entry->filesize = sqlite3_column_int64(library->select, i);
 			} else if (strcmp(colName, "internalCode") == 0 && sqlite3_column_type(library->select, i) == SQLITE_TEXT) {
