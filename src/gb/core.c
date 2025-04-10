@@ -818,6 +818,20 @@ static void _GBCoreSetPeripheral(struct mCore* core, int type, void* periph) {
 	}
 }
 
+static void* _GBCoreGetPeripheral(struct mCore* core, int type) {
+	struct GB* gb = core->board;
+	switch (type) {
+	case mPERIPH_ROTATION:
+		return gb->memory.rotation;
+	case mPERIPH_RUMBLE:
+		return gb->memory.rumble;
+	case mPERIPH_IMAGE_SOURCE:
+		return gb->memory.cam;
+	default:
+		return NULL;
+	}
+}
+
 static uint32_t _GBCoreBusRead8(struct mCore* core, uint32_t address) {
 	struct SM83Core* cpu = core->cpu;
 	return cpu->memory.load8(cpu, address);
@@ -1084,6 +1098,9 @@ static struct CLIDebuggerSystem* _GBCoreCliDebuggerSystem(struct mCore* core) {
 
 static void _GBCoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {
 	struct SM83Core* cpu = core->cpu;
+	if (core->debugger == debugger) {
+		return;
+	}
 	if (core->debugger) {
 		SM83HotplugDetach(cpu, CPU_COMPONENT_DEBUGGER);
 	}
@@ -1104,7 +1121,7 @@ static void _GBCoreDetachDebugger(struct mCore* core) {
 static void _GBCoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	core->symbolTable = mDebuggerSymbolTableCreate();
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
-	if (!vf) {
+	if (!vf && core->dirs.base) {
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
 	}
 #endif
@@ -1328,6 +1345,7 @@ struct mCore* GBCoreCreate(void) {
 	core->getGameTitle = _GBCoreGetGameTitle;
 	core->getGameCode = _GBCoreGetGameCode;
 	core->setPeripheral = _GBCoreSetPeripheral;
+	core->getPeripheral = _GBCoreGetPeripheral;
 	core->busRead8 = _GBCoreBusRead8;
 	core->busRead16 = _GBCoreBusRead16;
 	core->busRead32 = _GBCoreBusRead32;

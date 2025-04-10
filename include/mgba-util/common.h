@@ -44,6 +44,10 @@ CXX_GUARD_START
 #define restrict __restrict
 #endif
 
+#ifndef containerof
+#define containerof(PTR, TYPE, MEMBER) ((TYPE*) ((uintptr_t) (PTR) - offsetof(TYPE, MEMBER)))
+#endif
+
 #ifdef _MSC_VER
 #include <Windows.h>
 #include <sys/types.h>

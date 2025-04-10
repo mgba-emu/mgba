@@ -176,7 +176,7 @@ THREAD_ENTRY _rewindThread(void* context) {
 		rewindContext->ready = false;
 	}
 	MutexUnlock(&rewindContext->mutex);
-	return 0;
+	THREAD_EXIT(0);
 }
 #endif
 

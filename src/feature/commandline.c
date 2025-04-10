@@ -137,18 +137,14 @@ bool mArgumentsParse(struct mArguments* args, int argc, char* const* argv, struc
 			break;
 #ifdef USE_EDITLINE
 		case 'd':
-			if (args->debuggerType != DEBUGGER_NONE) {
-				return false;
-			}
-			args->debuggerType = DEBUGGER_CLI;
+			args->debugAtStart = true;
+			args->debugCli = true;
 			break;
 #endif
 #ifdef USE_GDB_STUB
 		case 'g':
-			if (args->debuggerType != DEBUGGER_NONE) {
-				return false;
-			}
-			args->debuggerType = DEBUGGER_GDB;
+			args->debugAtStart = true;
+			args->debugGdb = true;
 			break;
 #endif
 		case 'h':

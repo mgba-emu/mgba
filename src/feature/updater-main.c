@@ -274,7 +274,7 @@ int main(int argc, char* argv[]) {
 		const char* argv[] = { qbin, NULL };
 		_execv(bin, argv);
 #elif defined(_POSIX_C_SOURCE) || defined(__APPLE__)
-		const char* argv[] = { bin, NULL };
+		char* const argv[] = { bin, NULL };
 		execv(bin, argv);
 #endif
 	}

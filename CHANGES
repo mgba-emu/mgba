@@ -43,21 +43,27 @@ Misc:
 Features:
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
  - Scripting: New `storage` API for saving data for a script, e.g. settings
+ - Scripting: Debugger integration to allow for breakpoints and watchpoints
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
  - Debugger: Add range watchpoints
 Emulation fixes:
  - GB Audio: Fix channels 1/2 staying muted if restarted after long silence
+ - GB I/O: Read back proper SVBK value after writing 0 (fixes mgba.io/i/2921)
  - GB Serialize: Add missing Pocket Cam state to savestates
+ - GB SIO: Disabling SIO should cancel pending transfers (fixes mgba.io/i/2537)
  - GB Video: Implement DMG-style sprite ordering
  - GBA BIOS: Fix clobbering registers with word-sized CpuSet
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
 Other fixes:
+ - Debugger: Fix writing to specific segment in command-line debugger
+ - mGUI: Fix cases where an older save state screenshot would be shown. (fixes mgba.io/i/2183)
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
 Misc:
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
+ - Qt: Add exporting of SAV + RTC GBA saves from Save Converter to strip RTC data
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
 
 0.10.2: (2023-04-23)

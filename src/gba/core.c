@@ -866,6 +866,20 @@ static void _GBACoreSetPeripheral(struct mCore* core, int type, void* periph) {
 	}
 }
 
+static void* _GBACoreGetPeripheral(struct mCore* core, int type) {
+	struct GBA* gba = core->board;
+	switch (type) {
+	case mPERIPH_ROTATION:
+		return gba->rotationSource;
+	case mPERIPH_RUMBLE:
+		return gba->rumble;
+	case mPERIPH_GBA_LUMINANCE:
+		return gba->luminanceSource;
+	default:
+		return NULL;
+	}
+}
+
 static uint32_t _GBACoreBusRead8(struct mCore* core, uint32_t address) {
 	struct ARMCore* cpu = core->cpu;
 	return cpu->memory.load8(cpu, address, 0);
@@ -1151,6 +1165,9 @@ static struct CLIDebuggerSystem* _GBACoreCliDebuggerSystem(struct mCore* core) {
 }
 
 static void _GBACoreAttachDebugger(struct mCore* core, struct mDebugger* debugger) {
+	if (core->debugger == debugger) {
+		return;
+	}
 	if (core->debugger) {
 		GBADetachDebugger(core->board);
 	}
@@ -1168,12 +1185,12 @@ static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	core->symbolTable = mDebuggerSymbolTableCreate();
 #if !defined(MINIMAL_CORE) || MINIMAL_CORE < 2
 #ifdef USE_ELF
-	if (!vf) {
+	if (!vf && core->dirs.base) {
 		closeAfter = true;
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".elf", O_RDONLY);
 	}
 #endif
-	if (!vf) {
+	if (!vf && core->dirs.base) {
 		closeAfter = true;
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
 	}
@@ -1452,6 +1469,7 @@ struct mCore* GBACoreCreate(void) {
 	core->getGameTitle = _GBACoreGetGameTitle;
 	core->getGameCode = _GBACoreGetGameCode;
 	core->setPeripheral = _GBACoreSetPeripheral;
+	core->getPeripheral = _GBACoreGetPeripheral;
 	core->busRead8 = _GBACoreBusRead8;
 	core->busRead16 = _GBACoreBusRead16;
 	core->busRead32 = _GBACoreBusRead32;

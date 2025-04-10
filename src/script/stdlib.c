@@ -89,6 +89,7 @@ mSCRIPT_DEFINE_STRUCT(mScriptCallbackManager)
 		"- **frame**: The emulation finished a frame\n"
 		"- **keysRead**: The emulation is about to read the key input\n"
 		"- **reset**: The emulation has been reset\n"
+		"- **rumble**: The state of the rumble motor was changed. This callback is passed a single argument that specifies if it was turned on (true) or off (false)\n"
 		"- **savedataUpdated**: The emulation has just finished modifying save data\n"
 		"- **sleep**: The emulation has used the sleep feature to enter a low-power mode\n"
 		"- **shutdown**: The emulation has been powered off\n"
@@ -180,6 +181,15 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 		mSCRIPT_KV_SENTINEL
 	});
 #endif
+#ifdef USE_DEBUGGERS
+	mScriptContextExportConstants(context, "WATCHPOINT_TYPE", (struct mScriptKVPair[]) {
+		mSCRIPT_CONSTANT_PAIR(WATCHPOINT, WRITE),
+		mSCRIPT_CONSTANT_PAIR(WATCHPOINT, READ),
+		mSCRIPT_CONSTANT_PAIR(WATCHPOINT, RW),
+		mSCRIPT_CONSTANT_PAIR(WATCHPOINT, WRITE_CHANGE),
+		mSCRIPT_KV_SENTINEL
+	});
+#endif
 	mScriptContextSetGlobal(context, "C", context->constants);
 	mScriptContextSetDocstring(context, "C", "A table containing the [exported constants](#constants)");
 
@@ -210,7 +220,7 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 
 	mScriptContextSetDocstring(context, "system", "Information about the system the script is running under");
 	mScriptContextSetDocstring(context, "system.version", "The current version of this build of the program");
-	mScriptContextSetDocstring(context, "system.program", "The name of the program. Generally this will be \"mGBA\", but forks may change it to differentiate");
+	mScriptContextSetDocstring(context, "system.program", "The name of the program. Generally this will be \\\"mGBA\\\", but forks may change it to differentiate");
 	mScriptContextSetDocstring(context, "system.branch", "The current git branch of this build of the program, if known");
 	mScriptContextSetDocstring(context, "system.commit", "The current git commit hash of this build of the program, if known");
 	mScriptContextSetDocstring(context, "system.revision", "The current git revision number of this build of the program, or -1 if unknown");

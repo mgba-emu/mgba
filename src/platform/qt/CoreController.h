@@ -104,8 +104,11 @@ public:
 	mCheatDevice* cheatDevice() { return m_threadContext.core->cheatDevice(m_threadContext.core); }
 
 #ifdef USE_DEBUGGERS
-	mDebugger* debugger() { return m_threadContext.core->debugger; }
-	void setDebugger(mDebugger*);
+	mDebugger* debugger() { return &m_debugger; }
+	void attachDebugger(bool interrupt = true);
+	void detachDebugger();
+	void attachDebuggerModule(mDebuggerModule*, bool interrupt = true);
+	void detachDebuggerModule(mDebuggerModule*);
 #endif
 
 	void setMultiplayerController(MultiplayerController*);
@@ -291,6 +294,10 @@ private:
 	bool m_autosave;
 	bool m_autoload;
 	int m_autosaveCounter = 0;
+
+#ifdef USE_DEBUGGERS
+	struct mDebugger m_debugger;
+#endif
 
 	int m_fastForward = false;
 	int m_fastForwardForced = false;

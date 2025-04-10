@@ -50,7 +50,7 @@ static bool _DSCLIDebuggerCustom(struct CLIDebuggerSystem* debugger) {
 
 static void _frame(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	UNUSED(dv);
-	debugger->d.state = DEBUGGER_CUSTOM;
+	mDebuggerModuleSetNeedsCallback(&debugger->d);
 
 	struct DSCLIDebugger* dsDebugger = (struct DSCLIDebugger*) debugger->system;
 	dsDebugger->frameAdvance = true;
@@ -61,7 +61,7 @@ static void _switchCpu(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 	struct DSCLIDebugger* dsDebugger = (struct DSCLIDebugger*) debugger->system;
 	struct mCore* core = dsDebugger->core;
 	struct DS* ds = core->board;
-	debugger->d.platform->deinit(debugger->d.platform);
+	debugger->d.p->platform->deinit(debugger->d.p->platform);
 	if (core->cpu == ds->ds9.cpu) {
 		core->cpu = ds->ds7.cpu;
 		core->timing = &ds->ds7.timing;
@@ -69,6 +69,6 @@ static void _switchCpu(struct CLIDebugger* debugger, struct CLIDebugVector* dv) 
 		core->cpu = ds->ds9.cpu;
 		core->timing = &ds->ds9.timing;
 	}
-	debugger->d.platform->init(core->cpu, debugger->d.platform);
+	debugger->d.p->platform->init(core->cpu, debugger->d.p->platform);
 	debugger->system->printStatus(debugger->system);
 }

@@ -662,7 +662,6 @@ bool GBAIsROM(struct VFile* vf) {
 #ifdef USE_ELF
 	struct ELF* elf = ELFOpen(vf);
 	if (elf) {
-		uint32_t entry = ELFEntry(elf);
 		bool isGBA = true;
 		isGBA = isGBA && ELFMachine(elf) == EM_ARM;
 		isGBA = isGBA && (GBAVerifyELFEntry(elf, GBA_BASE_ROM0) || GBAVerifyELFEntry(elf, GBA_BASE_EWRAM + 0xC0));

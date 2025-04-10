@@ -230,15 +230,14 @@ void Window::argumentsPassed() {
 	}
 
 #ifdef USE_GDB_STUB
-	if (args->debuggerType == DEBUGGER_GDB) {
-		if (!m_gdbController) {
-			m_gdbController = new GDBController(this);
-			if (m_controller) {
-				m_gdbController->setController(m_controller);
-			}
-			m_gdbController->attach();
-			m_gdbController->listen();
-		}
+	if (args->debugGdb) {
+		gdbOpen();
+	}
+#endif
+
+#ifdef USE_DEBUGGERS
+	if (args->debugCli) {
+		consoleOpen();
 	}
 #endif
 
@@ -1807,7 +1806,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 void Window::setupOptions() {
 	ConfigOption* videoSync = m_config->addOption("videoSync");
-	videoSync->connect([this](const QVariant& variant) {
+	videoSync->connect([this](const QVariant&) {
 		reloadConfig();
 	}, this);
 

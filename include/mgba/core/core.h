@@ -125,6 +125,7 @@ struct mCore {
 	void (*getGameCode)(const struct mCore*, char* title);
 
 	void (*setPeripheral)(struct mCore*, int type, void*);
+	void* (*getPeripheral)(struct mCore*, int type);
 
 	uint32_t (*busRead8)(struct mCore*, uint32_t address);
 	uint32_t (*busRead16)(struct mCore*, uint32_t address);

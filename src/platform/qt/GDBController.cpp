@@ -20,10 +20,6 @@ ushort GDBController::port() {
 	return m_port;
 }
 
-bool GDBController::isAttached() {
-	return m_gameController && m_gameController->debugger() == &m_gdbStub.d;
-}
-
 void GDBController::setPort(ushort port) {
 	m_port = port;
 }

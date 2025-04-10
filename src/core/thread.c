@@ -109,10 +109,7 @@ static void _wait(struct mCoreThreadInternal* threadContext) {
 
 #ifdef USE_DEBUGGERS
 	if (threadContext->core && threadContext->core->debugger) {
-		struct mDebugger* debugger = threadContext->core->debugger;
-		if (debugger->interrupt) {
-			debugger->interrupt(debugger);
-		}
+		mDebuggerInterrupt(threadContext->core->debugger);
 	}
 #endif
 
@@ -352,8 +349,8 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 
 			while (impl->state >= mTHREAD_MIN_WAITING && impl->state <= mTHREAD_MAX_WAITING) {
 #ifdef USE_DEBUGGERS
-				if (debugger && debugger->update && debugger->state != DEBUGGER_SHUTDOWN) {
-					debugger->update(debugger);
+				if (debugger && debugger->state != DEBUGGER_SHUTDOWN) {
+					mDebuggerUpdate(debugger);
 					ConditionWaitTimed(&impl->stateCond, &impl->stateMutex, 10);
 				} else
 #endif

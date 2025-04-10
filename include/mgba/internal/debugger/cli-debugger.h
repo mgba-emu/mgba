@@ -73,6 +73,7 @@ struct CLIDebuggerBackend {
 
 	ATTRIBUTE_FORMAT(printf, 2, 3)
 	void (*printf)(struct CLIDebuggerBackend*, const char* fmt, ...);
+	int (*poll)(struct CLIDebuggerBackend*, int32_t timeoutMs);
 	const char* (*readline)(struct CLIDebuggerBackend*, size_t* len);
 	void (*lineAppend)(struct CLIDebuggerBackend*, const char* line);
 	const char* (*historyLast)(struct CLIDebuggerBackend*, size_t* len);
@@ -81,7 +82,7 @@ struct CLIDebuggerBackend {
 };
 
 struct CLIDebugger {
-	struct mDebugger d;
+	struct mDebuggerModule d;
 
 	struct CLIDebuggerSystem* system;
 	struct CLIDebuggerBackend* backend;
