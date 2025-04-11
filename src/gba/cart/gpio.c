@@ -118,7 +118,7 @@ void GBAHardwareInitRTC(struct GBACartridgeHardware* hw) {
 	hw->rtc.bits = 0;
 	hw->rtc.commandActive = 0;
 	hw->rtc.sckEdge = true;
-	hw->rtc.lastSioOutput = true;
+	hw->rtc.sioOutput = true;
 	hw->rtc.command = 0;
 	hw->rtc.control = 0x40;
 	memset(hw->rtc.time, 0, sizeof(hw->rtc.time));
@@ -173,19 +173,19 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 		hw->rtc.commandActive = 0;
 		hw->rtc.command = 0;
 		hw->rtc.sckEdge = true;
-		hw->rtc.lastSioOutput = true;
+		hw->rtc.sioOutput = true;
 		_outputPins(hw, 2 | (hw->pinState & 1));
 		return;
 	}
 
 	if (!RTCCommandDataIsReading(hw->rtc.command)) {
-		_outputPins(hw, 4 | (hw->rtc.lastSioOutput << 1) | (hw->pinState & 1));
+		_outputPins(hw, 4 | (hw->rtc.sioOutput << 1) | (hw->pinState & 1));
 		if (!(hw->pinState & 1)) {
 			hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
 			hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
 		}
 		if (!hw->rtc.sckEdge && (hw->pinState & 1)) {
-			hw->rtc.lastSioOutput = true;
+			hw->rtc.sioOutput = true;
 			if (hw->rtc.commandActive) {
 				if ((((hw->rtc.bits >> hw->rtc.bitsRead) & 1) ^ ((hw->pinState & 2) >> 1))) {
 					hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
@@ -198,8 +198,7 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 		}
 	} else {
 		if (hw->rtc.sckEdge && !(hw->pinState & 1)) {
-			hw->rtc.lastSioOutput = _rtcOutput(hw);
-			_outputPins(hw, 4 | (hw->rtc.lastSioOutput << 1));
+			hw->rtc.sioOutput = _rtcOutput(hw);
 			++hw->rtc.bitsRead;
 			if (hw->rtc.bitsRead == 8) {
 				--hw->rtc.bytesRemaining;
@@ -209,9 +208,8 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 				}
 				hw->rtc.bitsRead = 0;
 			}
-		} else {
-			_outputPins(hw, 4 | (hw->rtc.lastSioOutput << 1) | (hw->pinState & 1));
 		}
+		_outputPins(hw, 4 | (hw->rtc.sioOutput << 1) | (hw->pinState & 1));
 	}
 
 	hw->rtc.sckEdge = !!(hw->pinState & 1);
