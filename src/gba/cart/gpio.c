@@ -118,6 +118,7 @@ void GBAHardwareInitRTC(struct GBACartridgeHardware* hw) {
 	hw->rtc.bits = 0;
 	hw->rtc.commandActive = 0;
 	hw->rtc.sckEdge = true;
+	hw->rtc.lastSioOutput = true;
 	hw->rtc.command = 0;
 	hw->rtc.control = 0x40;
 	memset(hw->rtc.time, 0, sizeof(hw->rtc.time));
@@ -145,11 +146,9 @@ void _readPins(struct GBACartridgeHardware* hw) {
 }
 
 void _outputPins(struct GBACartridgeHardware* hw, unsigned pins) {
+	hw->pinState &= hw->direction;
+	hw->pinState |= (pins & ~hw->direction & 0xF);
 	if (hw->readWrite) {
-		uint16_t old;
-		LOAD_16(old, 0, hw->gpioBase);
-		old &= hw->direction;
-		hw->pinState = old | (pins & ~hw->direction & 0xF);
 		STORE_16(hw->pinState, 0, hw->gpioBase);
 	}
 }
@@ -161,12 +160,12 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 	// CS rising edge starts RTC transfer
 	// Conversely, CS falling edge aborts RTC transfer
 	// SCK rising edge shifts a bit from SIO into the transfer
-	// However, the data is used is whatever was in SIO before SCK rising edge
-	// (Likely actually a race on SCK rising edge where old data wins)
-	// Note while CS is low, SCK is considered high by the RTC
-	// Spec sheet states SCK falling edge is when SIO should be set
-	// But testing indicates this is unneeded in practice
-	// (Likely was done as good practice to avoid this race condition)
+	// However, there appears to be a race condition if SIO changes at SCK rising edge
+	// For writing the command, the old SIO data is used in this race
+	// For writing command data, 0 is used in this race
+	// Note while CS is low, SCK is internally considered high by the RTC
+	// SCK falling edge shifts a bit from the transfer into SIO
+	// (Assuming a read command, outside of read commands SIO is held high)
 
 	if (!(hw->pinState & 4)) {
 		hw->rtc.bitsRead = 0;
@@ -174,22 +173,33 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 		hw->rtc.commandActive = 0;
 		hw->rtc.command = 0;
 		hw->rtc.sckEdge = true;
-		_outputPins(hw, 1);
+		hw->rtc.lastSioOutput = true;
+		_outputPins(hw, 2 | (hw->pinState & 1));
 		return;
 	}
 
-	if (!(hw->pinState & 1)) {
-		hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
-		hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
-	}
-	if (!hw->rtc.sckEdge && (hw->pinState & 1)) {
-		if (!RTCCommandDataIsReading(hw->rtc.command)) {
+	if (!RTCCommandDataIsReading(hw->rtc.command)) {
+		_outputPins(hw, 4 | (hw->rtc.lastSioOutput << 1) | (hw->pinState & 1));
+		if (!(hw->pinState & 1)) {
+			hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
+			hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
+		}
+		if (!hw->rtc.sckEdge && (hw->pinState & 1)) {
+			hw->rtc.lastSioOutput = true;
+			if (hw->rtc.commandActive) {
+				if ((((hw->rtc.bits >> hw->rtc.bitsRead) & 1) ^ ((hw->pinState & 2) >> 1))) {
+					hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
+				}
+			}
 			++hw->rtc.bitsRead;
 			if (hw->rtc.bitsRead == 8) {
 				_rtcProcessByte(hw);
 			}
-		} else {
-			_outputPins(hw, 5 | (_rtcOutput(hw) << 1));
+		}
+	} else {
+		if (hw->rtc.sckEdge && !(hw->pinState & 1)) {
+			hw->rtc.lastSioOutput = _rtcOutput(hw);
+			_outputPins(hw, 4 | (hw->rtc.lastSioOutput << 1));
 			++hw->rtc.bitsRead;
 			if (hw->rtc.bitsRead == 8) {
 				--hw->rtc.bytesRemaining;
@@ -199,6 +209,8 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 				}
 				hw->rtc.bitsRead = 0;
 			}
+		} else {
+			_outputPins(hw, 4 | (hw->rtc.lastSioOutput << 1) | (hw->pinState & 1));
 		}
 	}
 
