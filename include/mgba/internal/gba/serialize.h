@@ -185,7 +185,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bit 0: Is read enabled
  *   | bit 1: Gyroscope sample is edge
  *   | bit 2: Light sample is edge
- *   | bit 3: Reserved
+ *   | bit 3: RTC SCK is edge
  *   | bits 4 - 15: Light counter
  * | 0x002C0 - 0x002C0: Light sample
  * | 0x002C1: Flags
@@ -284,6 +284,7 @@ DECL_BITFIELD(GBASerializedHWFlags1, uint16_t);
 DECL_BIT(GBASerializedHWFlags1, ReadWrite, 0);
 DECL_BIT(GBASerializedHWFlags1, GyroEdge, 1);
 DECL_BIT(GBASerializedHWFlags1, LightEdge, 2);
+DECL_BIT(GBASerializedHWFlags1, RtcSckEdge, 3);
 DECL_BITS(GBASerializedHWFlags1, LightCounter, 4, 12);
 
 DECL_BITFIELD(GBASerializedHWFlags2, uint8_t);
@@ -383,13 +384,13 @@ struct GBASerializedState {
 		uint8_t pinDirection;
 		uint8_t reserved0;
 		int32_t rtcBytesRemaining;
-		int32_t rtcTransferStep;
+		int32_t reserved1;
 		int32_t rtcBitsRead;
 		int32_t rtcBits;
 		int32_t rtcCommandActive;
 		RTCCommandData rtcCommand;
 		uint8_t rtcControl;
-		uint8_t reserved1[3];
+		uint8_t reserved2[3];
 		uint8_t time[7];
 		uint8_t devices;
 		uint16_t gyroSample;
