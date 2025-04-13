@@ -395,7 +395,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../CoreController.cpp" line="550"/>
         <location filename="../CoreController.cpp" line="567"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillbakaspolning inte aktiverad för närvarande</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="606"/>
@@ -420,7 +420,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../CoreController.cpp" line="910"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
-        <translation type="unfinished"></translation>
+        <translation>Det går inte att dra ut paketet på en oväntad plattform!</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="1025"/>
@@ -582,7 +582,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="14"/>
         <source>Create forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Skapa forwarder</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="20"/>
@@ -609,7 +609,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="60"/>
         <source>Forwarder base:</source>
-        <translation type="unfinished"></translation>
+        <translation>Forwarder-bas:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="74"/>
@@ -629,7 +629,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="95"/>
         <source>Base file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Basfil:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="135"/>
@@ -689,7 +689,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="24"/>
         <source>Select base file</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj basfil</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="36"/>
@@ -699,7 +699,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="37"/>
         <source>Forwarder finished building</source>
-        <translation type="unfinished"></translation>
+        <translation>Forwarder färdigbyggd</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="44"/>
@@ -709,7 +709,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
         <source>Failed to build forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Misslyckades med att bygga forwarder</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="176"/>
@@ -1308,7 +1308,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="79"/>
         <source>Current scanline</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktuell skanlinje</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="83"/>
