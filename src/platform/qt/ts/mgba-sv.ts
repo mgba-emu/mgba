@@ -3414,7 +3414,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../MemoryAccessLogController.cpp" line="117"/>
         <location filename="../MemoryAccessLogController.cpp" line="126"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished">Misslyckades med att öppna minnesloggfil</translation>
+        <translation>Misslyckades med att öppna minnesloggfil</translation>
     </message>
 </context>
 <context>
@@ -3422,22 +3422,22 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="67"/>
         <source>Data read</source>
-        <translation type="unfinished"></translation>
+        <translation>Data läst</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="69"/>
         <source>Data written</source>
-        <translation type="unfinished"></translation>
+        <translation>Data skriven</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="71"/>
         <source>Code executed</source>
-        <translation type="unfinished"></translation>
+        <translation>Kod exekverad</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="73"/>
         <source>Code aborted</source>
-        <translation type="unfinished"></translation>
+        <translation>Kod avbruten</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="75"/>
@@ -3477,7 +3477,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="101"/>
         <source>Compressed data</source>
-        <translation type="unfinished"></translation>
+        <translation>Komprimerad data</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="103"/>
@@ -3502,17 +3502,17 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="111"/>
         <source>Invalid instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Ogiltig instruktion</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="113"/>
         <source>Invalid read</source>
-        <translation type="unfinished"></translation>
+        <translation>Ogiltig läsning</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="115"/>
         <source>Invalid write</source>
-        <translation type="unfinished"></translation>
+        <translation>Ogiltig skrivning</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="117"/>
@@ -3532,7 +3532,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>ARM-kod</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
@@ -3562,7 +3562,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="146"/>
         <source>(Unknown)</source>
-        <translation type="unfinished">(Okänd)</translation>
+        <translation>(Okänd)</translation>
     </message>
 </context>
 <context>
@@ -3595,12 +3595,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="56"/>
         <source>Load</source>
-        <translation type="unfinished">Läs in</translation>
+        <translation>Läs in</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
         <source>Unload</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs ur</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="76"/>
@@ -3935,7 +3935,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="43"/>
         <source>Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Adress:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="112"/>
@@ -3945,17 +3945,17 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="126"/>
         <source>1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>1 Byte</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="131"/>
         <source>2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>2 Byte</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="136"/>
         <source>4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>4 Byte</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="158"/>
@@ -3985,7 +3985,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="310"/>
         <source>Logging configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>Loggningskonfiguration</translation>
     </message>
 </context>
 <context>
@@ -4001,27 +4001,27 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="367"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Försöker koppla bort en flerspelar-spelare som inte är ansluten</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="407"/>
         <source>Clearing invalid save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Tömmer ogiltigt spar-ID</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="416"/>
         <source>Clearing invalid preferred ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Tömmer ogiltigt föredraget ID</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="437"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Försöker få spelar-ID för en flerspelar-spelare som inte är ansluten</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="451"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Försöker få spar-ID för en flerspelar-spelare som inte är ansluten</translation>
     </message>
 </context>
 <context>
@@ -5034,7 +5034,9 @@ Hämtningsstorlek: %3</translation>
         <source>Shaders are not supported when the display driver is not OpenGL.
 
 If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
-        <translation type="unfinished"></translation>
+        <translation>Shaders stöds inte när bildskärmsdrivrutinen inte är OpenGL.
+
+Om den är inställd på OpenGL och du fortfarande ser detta, kan ditt grafikkort eller dina drivrutiner vara för gamla.</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="416"/>
@@ -5497,7 +5499,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="771"/>
         <source>Allow opposing input directions</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillåt motsatta inmatningsriktningar</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="778"/>
@@ -5686,7 +5688,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="1281"/>
         <source>Enable VBA bug compatibility in ROM hacks</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera VBA-buggkompatibilitet i ROM-hack</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1295"/>
@@ -5814,12 +5816,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="1977"/>
         <source>Default sprite colors 1:</source>
-        <translation type="unfinished"></translation>
+        <translation>Spritefärger som standard 1:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2064"/>
         <source>Default sprite colors 2:</source>
-        <translation type="unfinished"></translation>
+        <translation>Spritefärger som standard 2:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1864"/>
@@ -6538,7 +6540,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1330"/>
         <source>Use player %0 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Använd sparat spel för spelare %0</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1414"/>
