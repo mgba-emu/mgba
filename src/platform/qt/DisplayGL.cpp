@@ -813,11 +813,11 @@ void PainterGL::start() {
 		mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
 	}
 #endif
-	resizeContext();
 
 	m_buffer = nullptr;
 	m_active = true;
 	m_started = true;
+	resizeContext();
 	swapInterval(1);
 	emit started();
 }
