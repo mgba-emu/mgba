@@ -6,22 +6,22 @@
     <message>
         <location filename="../utils.cpp" line="96"/>
         <source>Game Boy Advance ROMs (%1)</source>
-        <translation type="unfinished">ROMs de Game Boy Advance (%1)</translation>
+        <translation>ROMs de Game Boy Advance (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="122"/>
         <source>Game Boy ROMs (%1)</source>
-        <translation type="unfinished">ROMs de Game Boy (%1)</translation>
+        <translation>ROMs de Game Boy (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="127"/>
         <source>All ROMs (%1)</source>
-        <translation type="unfinished">Toutes les ROM (%1)</translation>
+        <translation>Toutes les ROMs (%1)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="129"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished">%1 Journaux vidéo (*.mvl)</translation>
+        <translation>%1 Journaux vidéo (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -570,7 +570,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Background</source>
-        <translation type="unfinished">Arrière plan</translation>
+        <translation>Arrière plan</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
@@ -600,7 +600,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../ForwarderView.ui" line="53"/>
         <location filename="../ForwarderView.ui" line="112"/>
         <source>Browse</source>
-        <translation type="unfinished">Parcourir</translation>
+        <translation>Parcourir</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="43"/>
@@ -2740,7 +2740,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1069"/>
         <source>1/16</source>
-        <translation type="unfinished">4K {1/16?}</translation>
+        <translation>1/16</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1092"/>
@@ -3598,7 +3598,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="32"/>
         <source>Browse</source>
-        <translation type="unfinished">Parcourir</translation>
+        <translation>Parcourir</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="39"/>
@@ -3613,7 +3613,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="56"/>
         <source>Load</source>
-        <translation type="unfinished">Charger</translation>
+        <translation>Charger</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
@@ -3638,7 +3638,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="104"/>
         <source>Stop</source>
-        <translation type="unfinished">Arrêter</translation>
+        <translation>Arrêter</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="96"/>
@@ -4530,7 +4530,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Portable Network Graphics (*.png)</source>
-        <translation type="unfinished">Portable Network Graphics (*.png)</translation>
+        <translation>Portable Network Graphics (*.png)</translation>
     </message>
 </context>
 <context>
@@ -4739,7 +4739,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../SaveConverter.ui" line="29"/>
         <location filename="../SaveConverter.ui" line="55"/>
         <source>Browse</source>
-        <translation type="unfinished">Parcourir</translation>
+        <translation>Parcourir</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="46"/>
@@ -4764,7 +4764,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="472"/>
         <source>SRAM</source>
-        <translation type="unfinished">SRAM</translation>
+        <translation>SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="476"/>
@@ -4885,12 +4885,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="120"/>
         <source>&amp;Reset</source>
-        <translation type="unfinished">&amp;Réinitialiser</translation>
+        <translation>&amp;Réinitialiser</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="125"/>
         <source>0</source>
-        <translation type="unfinished">0</translation>
+        <translation>0</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="61"/>
@@ -5026,7 +5026,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../SettingsView.cpp" line="216"/>
         <source>None</source>
-        <translation type="unfinished">Aucun</translation>
+        <translation>Aucun</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="223"/>
@@ -5076,7 +5076,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.cpp" line="481"/>
         <source>Select image</source>
-        <translation type="unfinished">Choisir une image</translation>
+        <translation>Choisir une image</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="481"/>
