@@ -70,6 +70,8 @@ private:
 
 	QVariant folderData(const QModelIndex& index, int role = Qt::DisplayRole) const;
 
+	bool validateIndex(const QModelIndex& index) const;
+
 	void addEntriesList(const QList<LibraryEntry>& items);
 	void addEntriesTree(const QList<LibraryEntry>& items);
 	void addEntryInternal(const LibraryEntry& item);
