@@ -336,6 +336,26 @@ QVariant LibraryModel::folderData(const QModelIndex& index, int role) const {
 	return QVariant();
 }
 
+bool LibraryModel::validateIndex(const QModelIndex& index) const
+{
+	if (index.model() != this || index.row() < 0 || index.column() < 0 || index.column() > MAX_COLUMN) {
+		// Obviously invalid index
+		return false;
+	}
+
+	if (index.parent().isValid() && !validateIndex(index.parent())) {
+		// Parent index is invalid
+		return false;
+	}
+
+	if (index.row() >= rowCount(index.parent())) {
+		// Row is out of bounds for this level of hierarchy
+		return false;
+	}
+
+	return true;
+}
+
 QVariant LibraryModel::data(const QModelIndex& index, int role) const {
 	switch (role) {
 		case Qt::DisplayRole:
@@ -357,7 +377,7 @@ QVariant LibraryModel::data(const QModelIndex& index, int role) const {
 			return QVariant();
 	}
 
-	if (index.model() != this || index.row() < 0 || index.row() > rowCount() || index.column() < 0 || index.column() > columnCount()) {
+	if (!validateIndex(index)) {
 		return QVariant();
 	}
 
