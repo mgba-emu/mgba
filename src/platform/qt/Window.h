@@ -244,7 +244,7 @@ private:
 	std::unique_ptr<OverrideView> m_overrideView;
 	std::unique_ptr<SensorView> m_sensorView;
 	std::unique_ptr<DolphinConnector> m_dolphinView;
-	FrameView* m_frameView = nullptr;
+	QPointer<FrameView> m_frameView;
 
 #ifdef USE_FFMPEG
 	std::unique_ptr<VideoView> m_videoView;

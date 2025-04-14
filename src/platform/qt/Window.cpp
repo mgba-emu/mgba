@@ -1754,14 +1754,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("&Frame inspector..."), "frameWindow", [this]() {
 		if (!m_frameView) {
 			m_frameView = new FrameView(m_controller);
-			connect(this, &Window::shutdown, this, [this]() {
-				if (m_frameView) {
-					m_frameView->close();
-				}
-			});
-			connect(m_frameView, &QObject::destroyed, this, [this]() {
-				m_frameView = nullptr;
-			});
+			connect(this, &Window::shutdown, m_frameView, &QWidget::close);
 			m_frameView->setAttribute(Qt::WA_DeleteOnClose);
 		}
 		m_frameView->show();
