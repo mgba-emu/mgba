@@ -205,7 +205,8 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		}
 		message = QString::vasprintf(format, args);
 		QMetaObject::invokeMethod(controller, "logPosted", Q_ARG(int, level), Q_ARG(int, category), Q_ARG(const QString&, message));
-		if (level == mLOG_FATAL) {
+		if (level == mLOG_FATAL && !controller->m_crashSeen) {
+			controller->m_crashSeen = true;
 			QMetaObject::invokeMethod(controller, "crashed", Q_ARG(const QString&, message));
 		}
 	};
@@ -500,6 +501,7 @@ void CoreController::stop() {
 }
 
 void CoreController::reset() {
+	m_crashSeen = false;
 	mCoreThreadReset(&m_threadContext);
 }
 
@@ -651,6 +653,7 @@ void CoreController::loadState(int slot) {
 		m_stateSlot = slot;
 		m_backupSaveState.clear();
 	}
+	m_crashSeen = false;
 	mCoreThreadClearCrashed(&m_threadContext);
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
@@ -671,6 +674,7 @@ void CoreController::loadState(const QString& path, int flags) {
 	if (flags != -1) {
 		m_loadStateFlags = flags;
 	}
+	m_crashSeen = false;
 	mCoreThreadClearCrashed(&m_threadContext);
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
@@ -700,6 +704,7 @@ void CoreController::loadState(QIODevice* iodev, int flags) {
 	if (flags != -1) {
 		m_loadStateFlags = flags;
 	}
+	m_crashSeen = false;
 	mCoreThreadClearCrashed(&m_threadContext);
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
