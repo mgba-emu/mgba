@@ -152,6 +152,7 @@ VFile* LibraryController::selectedVFile() {
 		libentry.base = baseUtf8.constData();
 		libentry.filename = filenameUtf8.constData();
 		libentry.platform = mPLATFORM_NONE;
+		libentry.platformModels = M_LIBRARY_MODEL_UNKNOWN;
 		return mLibraryOpenVFile(m_library.get(), &libentry);
 	} else {
 		return nullptr;
