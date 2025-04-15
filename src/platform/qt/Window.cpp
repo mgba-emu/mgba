@@ -1720,7 +1720,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 			if (m_controller) {
 				m_overrideView->setController(m_controller);
 			}
-			connect(this, &Window::shutdown, m_overrideView.get(), &QWidget::close);
+			connect(this, &Window::shutdown, m_overrideView.data(), &QWidget::close);
 		}
 		m_overrideView->show();
 		m_overrideView->activateWindow();
@@ -1733,7 +1733,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 			if (m_controller) {
 				m_sensorView->setController(m_controller);
 			}
-			connect(this, &Window::shutdown, m_sensorView.get(), &QWidget::close);
+			connect(this, &Window::shutdown, m_sensorView.data(), &QWidget::close);
 		}
 		m_sensorView->show();
 		m_sensorView->activateWindow();
