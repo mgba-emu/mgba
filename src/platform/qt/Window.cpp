@@ -584,7 +584,7 @@ std::function<void()> Window::openNamedTView(QPointer<T>* name, bool keepalive, 
 	return [=]() {
 		if (!*name) {
 			*name = new T(arg...);
-			connect(this, &Window::shutdown, name->get(), &QWidget::close);
+			connect(this, &Window::shutdown, name->data(), &QWidget::close);
 			if (!keepalive) {
 				(*name)->setAttribute(Qt::WA_DeleteOnClose);
 			}
@@ -600,8 +600,8 @@ std::function<void()> Window::openNamedControllerTView(QPointer<T>* name, bool k
 	return [=]() {
 		if (!*name) {
 			*name = new T(m_controller, arg...);
-			connect(m_controller.get(), &CoreController::stopping, name->get(), &QWidget::close);
-			connect(this, &Window::shutdown, name->get(), &QWidget::close);
+			connect(m_controller.get(), &CoreController::stopping, name->data(), &QWidget::close);
+			connect(this, &Window::shutdown, name->data(), &QWidget::close);
 			if (!keepalive) {
 				(*name)->setAttribute(Qt::WA_DeleteOnClose);
 			}
