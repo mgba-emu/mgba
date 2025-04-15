@@ -47,7 +47,7 @@ bool VideoView::Preset::compatible(const Preset& other) const {
 	return true;
 }
 
-VideoView::VideoView(QWidget* parent)
+VideoView::VideoView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QWidget(parent)
 {
 	m_ui.setupUi(this);
@@ -133,6 +133,8 @@ VideoView::VideoView(QWidget* parent)
 
 	m_ui.presetYoutube->setChecked(true); // Use the Youtube preset by default
 	showAdvanced(false);
+
+	setController(controller);
 }
 
 void VideoView::updatePresets() {

@@ -15,7 +15,7 @@
 
 using namespace QGBA;
 
-GIFView::GIFView(QWidget* parent)
+GIFView::GIFView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QWidget(parent)
 {
 	m_ui.setupUi(this);
@@ -31,6 +31,8 @@ GIFView::GIFView(QWidget* parent)
 
 	FFmpegEncoderInit(&m_encoder);
 	FFmpegEncoderSetAudio(&m_encoder, nullptr, 0);
+
+	setController(controller);
 }
 
 GIFView::~GIFView() {

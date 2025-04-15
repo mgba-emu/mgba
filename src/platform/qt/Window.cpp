@@ -580,29 +580,35 @@ std::function<void()> Window::openControllerTView(A... arg) {
 }
 
 template <typename T, typename... A>
-std::function<void()> Window::openNamedTView(std::unique_ptr<T>* name, A... arg) {
+std::function<void()> Window::openNamedTView(QPointer<T>* name, bool keepalive, A... arg) {
 	return [=]() {
 		if (!*name) {
-			*name = std::make_unique<T>(arg...);
+			*name = new T(arg...);
 			connect(this, &Window::shutdown, name->get(), &QWidget::close);
+			if (!keepalive) {
+				(*name)->setAttribute(Qt::WA_DeleteOnClose);
+			}
 		}
 		(*name)->show();
-		(*name)->setFocus(Qt::PopupFocusReason);
+		(*name)->activateWindow();
+		(*name)->raise();
 	};
 }
 
 template <typename T, typename... A>
-std::function<void()> Window::openNamedControllerTView(std::unique_ptr<T>* name, A... arg) {
+std::function<void()> Window::openNamedControllerTView(QPointer<T>* name, bool keepalive, A... arg) {
 	return [=]() {
 		if (!*name) {
-			*name = std::make_unique<T>(arg...);
-			if (m_controller) {
-				(*name)->setController(m_controller);
-			}
+			*name = new T(m_controller, arg...);
+			connect(m_controller.get(), &CoreController::stopping, name->get(), &QWidget::close);
 			connect(this, &Window::shutdown, name->get(), &QWidget::close);
+			if (!keepalive) {
+				(*name)->setAttribute(Qt::WA_DeleteOnClose);
+			}
 		}
 		(*name)->show();
-		(*name)->setFocus(Qt::PopupFocusReason);
+		(*name)->activateWindow();
+		(*name)->raise();
 	};
 }
 
@@ -1414,7 +1420,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_multiWindow = m_actions.addAction(tr("New multiplayer window"), "multiWindow", GBAApp::app(), &GBAApp::newWindow, "file");
 
 #ifdef M_CORE_GBA
-	auto dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openNamedTView<DolphinConnector>(&m_dolphinView, this), "file");
+	auto dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openNamedTView<DolphinConnector>(&m_dolphinView, true, this), "file");
 	m_platformActions.insert(mPLATFORM_GBA, dolphin);
 #endif
 
@@ -1695,8 +1701,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 #ifdef USE_FFMPEG
-	addGameAction(tr("Record A/V..."), "recordOutput", openNamedControllerTView<VideoView>(&m_videoView), "av");
-	addGameAction(tr("Record GIF/WebP/APNG..."), "recordGIF", openNamedControllerTView<GIFView>(&m_gifView), "av");
+	addGameAction(tr("Record A/V..."), "recordOutput", openNamedControllerTView<VideoView>(&m_videoView, true), "av");
+	addGameAction(tr("Record GIF/WebP/APNG..."), "recordGIF", openNamedControllerTView<GIFView>(&m_gifView, true), "av");
 #endif
 
 	m_actions.addSeparator("av");
@@ -1710,17 +1716,29 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addAction(tr("Game &overrides..."), "overrideWindow", [this]() {
 		if (!m_overrideView) {
-			m_overrideView = std::make_unique<OverrideView>(m_config);
+			m_overrideView = new OverrideView(m_config);
 			if (m_controller) {
 				m_overrideView->setController(m_controller);
 			}
 			connect(this, &Window::shutdown, m_overrideView.get(), &QWidget::close);
 		}
 		m_overrideView->show();
-		m_overrideView->recheck();
+		m_overrideView->activateWindow();
+		m_overrideView->raise();
 	}, "tools");
 
-	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow",  openNamedControllerTView<SensorView>(&m_sensorView, &m_inputController), "tools");
+	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", [this]() {
+		if (!m_sensorView) {
+			m_sensorView = new SensorView(&m_inputController);
+			if (m_controller) {
+				m_sensorView->setController(m_controller);
+			}
+			connect(this, &Window::shutdown, m_sensorView.get(), &QWidget::close);
+		}
+		m_sensorView->show();
+		m_sensorView->activateWindow();
+		m_sensorView->raise();
+	}, "tools");
 
 	addGameAction(tr("&Cheats..."), "cheatsWindow", openControllerTView<CheatsView>(), "tools");
 #ifdef ENABLE_SCRIPTING
@@ -1750,16 +1768,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("View &sprites..."), "spriteWindow", openControllerTView<ObjView>(), "stateViews");
 	addGameAction(tr("View &tiles..."), "tileWindow", openControllerTView<TileView>(), "stateViews");
 	addGameAction(tr("View &map..."), "mapWindow", openControllerTView<MapView>(), "stateViews");
-
-	addGameAction(tr("&Frame inspector..."), "frameWindow", [this]() {
-		if (!m_frameView) {
-			m_frameView = new FrameView(m_controller);
-			connect(this, &Window::shutdown, m_frameView, &QWidget::close);
-			m_frameView->setAttribute(Qt::WA_DeleteOnClose);
-		}
-		m_frameView->show();
-	}, "stateViews");
-
+	addGameAction(tr("&Frame inspector..."), "frameWindow", openNamedControllerTView<FrameView>(&m_frameView, false), "stateViews");
 	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "stateViews");
 	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "stateViews");
 	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "stateViews");

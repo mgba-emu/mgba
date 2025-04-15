@@ -177,8 +177,8 @@ private:
 
 	template <typename T, typename... A> std::function<void()> openTView(A... arg);
 	template <typename T, typename... A> std::function<void()> openControllerTView(A... arg);
-	template <typename T, typename... A> std::function<void()> openNamedTView(std::unique_ptr<T>*, A... arg);
-	template <typename T, typename... A> std::function<void()> openNamedControllerTView(std::unique_ptr<T>*, A... arg);
+	template <typename T, typename... A> std::function<void()> openNamedTView(QPointer<T>*, bool keepalive, A... arg);
+	template <typename T, typename... A> std::function<void()> openNamedControllerTView(QPointer<T>*, bool keepalive, A... arg);
 
 	std::shared_ptr<Action> addGameAction(const QString& visibleName, const QString& name, Action::Function action, const QString& menu = {}, const QKeySequence& = {});
 	template<typename T, typename V> std::shared_ptr<Action> addGameAction(const QString& visibleName, const QString& name, T* obj, V (T::*action)(), const QString& menu = {}, const QKeySequence& = {});
@@ -241,14 +241,14 @@ private:
 	bool m_multiActive = true;
 	int m_playerId;
 
-	std::unique_ptr<OverrideView> m_overrideView;
-	std::unique_ptr<SensorView> m_sensorView;
-	std::unique_ptr<DolphinConnector> m_dolphinView;
+	QPointer<OverrideView> m_overrideView;
+	QPointer<SensorView> m_sensorView;
+	QPointer<DolphinConnector> m_dolphinView;
 	QPointer<FrameView> m_frameView;
 
 #ifdef USE_FFMPEG
-	std::unique_ptr<VideoView> m_videoView;
-	std::unique_ptr<GIFView> m_gifView;
+	QPointer<VideoView> m_videoView;
+	QPointer<GIFView> m_gifView;
 #endif
 
 #ifdef ENABLE_GDB_STUB
