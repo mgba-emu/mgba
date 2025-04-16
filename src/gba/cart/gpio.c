@@ -21,6 +21,7 @@ static void _outputPins(struct GBACartridgeHardware* hw, unsigned pins);
 
 static void _rtcReadPins(struct GBACartridgeHardware* hw);
 static unsigned _rtcOutput(struct GBACartridgeHardware* hw);
+static void _rtcBeginCommand(struct GBACartridgeHardware* hw);
 static void _rtcProcessByte(struct GBACartridgeHardware* hw);
 static void _rtcUpdateClock(struct GBACartridgeHardware* hw);
 static unsigned _rtcBCD(unsigned value);
@@ -116,7 +117,7 @@ void GBAHardwareInitRTC(struct GBACartridgeHardware* hw) {
 
 	hw->rtc.bitsRead = 0;
 	hw->rtc.bits = 0;
-	hw->rtc.commandActive = 0;
+	hw->rtc.commandActive = false;
 	hw->rtc.sckEdge = true;
 	hw->rtc.sioOutput = true;
 	hw->rtc.command = 0;
@@ -167,29 +168,41 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 	// SCK falling edge shifts a bit from the transfer into SIO
 	// (Assuming a read command, outside of read commands SIO is held high)
 
+	// RTC keeps SCK/CS/Unused to low
+	_outputPins(hw, hw->pinState & 2);
+
 	if (!(hw->pinState & 4)) {
 		hw->rtc.bitsRead = 0;
 		hw->rtc.bytesRemaining = 0;
-		hw->rtc.commandActive = 0;
+		hw->rtc.commandActive = false;
 		hw->rtc.command = 0;
 		hw->rtc.sckEdge = true;
 		hw->rtc.sioOutput = true;
-		_outputPins(hw, 2 | (hw->pinState & 1));
+		_outputPins(hw, 2);
 		return;
 	}
 
-	if (!RTCCommandDataIsReading(hw->rtc.command)) {
-		_outputPins(hw, 4 | (hw->rtc.sioOutput << 1) | (hw->pinState & 1));
+	if (!hw->rtc.commandActive) {
+		_outputPins(hw, 2);
 		if (!(hw->pinState & 1)) {
 			hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
 			hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
 		}
 		if (!hw->rtc.sckEdge && (hw->pinState & 1)) {
-			hw->rtc.sioOutput = true;
-			if (hw->rtc.commandActive) {
-				if ((((hw->rtc.bits >> hw->rtc.bitsRead) & 1) ^ ((hw->pinState & 2) >> 1))) {
-					hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
-				}
+			++hw->rtc.bitsRead;
+			if (hw->rtc.bitsRead == 8) {
+				_rtcBeginCommand(hw);
+			}
+		}
+	} else if (!RTCCommandDataIsReading(hw->rtc.command)) {
+		_outputPins(hw, 2);
+		if (!(hw->pinState & 1)) {
+			hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
+			hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
+		}
+		if (!hw->rtc.sckEdge && (hw->pinState & 1)) {
+			if ((((hw->rtc.bits >> hw->rtc.bitsRead) & 1) ^ ((hw->pinState & 2) >> 1))) {
+				hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
 			}
 			++hw->rtc.bitsRead;
 			if (hw->rtc.bitsRead == 8) {
@@ -203,73 +216,68 @@ void _rtcReadPins(struct GBACartridgeHardware* hw) {
 			if (hw->rtc.bitsRead == 8) {
 				--hw->rtc.bytesRemaining;
 				if (hw->rtc.bytesRemaining <= 0) {
-					hw->rtc.commandActive = 0;
-					hw->rtc.command = 0;
+					hw->rtc.bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(hw->rtc.command)];
 				}
 				hw->rtc.bitsRead = 0;
 			}
 		}
-		_outputPins(hw, 4 | (hw->rtc.sioOutput << 1) | (hw->pinState & 1));
+		_outputPins(hw, hw->rtc.sioOutput << 1);
 	}
 
 	hw->rtc.sckEdge = !!(hw->pinState & 1);
 }
 
-void _rtcProcessByte(struct GBACartridgeHardware* hw) {
-	--hw->rtc.bytesRemaining;
-	if (!hw->rtc.commandActive) {
-		RTCCommandData command;
-		command = hw->rtc.bits;
-		if (RTCCommandDataGetMagic(command) == 0x06) {
-			hw->rtc.command = command;
-
-			hw->rtc.bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(command)];
-			hw->rtc.commandActive = hw->rtc.bytesRemaining > 0;
-			mLOG(GBA_HW, DEBUG, "Got RTC command %x", RTCCommandDataGetCommand(command));
-			switch (RTCCommandDataGetCommand(command)) {
-			case RTC_RESET:
-				hw->rtc.control = 0;
-				break;
-			case RTC_DATETIME:
-			case RTC_TIME:
-				_rtcUpdateClock(hw);
-				break;
-			case RTC_FORCE_IRQ:
-			case RTC_CONTROL:
-				break;
-			}
-		} else {
-			mLOG(GBA_HW, WARN, "Invalid RTC command byte: %02X", hw->rtc.bits);
-		}
-	} else {
-		switch (RTCCommandDataGetCommand(hw->rtc.command)) {
-		case RTC_CONTROL:
-			hw->rtc.control = hw->rtc.bits;
-			break;
-		case RTC_FORCE_IRQ:
-			mLOG(GBA_HW, STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(hw->rtc.command));
-			break;
+void _rtcBeginCommand(struct GBACartridgeHardware* hw) {
+	RTCCommandData command = hw->rtc.bits;
+	if (RTCCommandDataGetMagic(command) == 0x06) {
+		hw->rtc.command = command;
+		hw->rtc.bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(command)];
+		hw->rtc.commandActive = true;
+		mLOG(GBA_HW, DEBUG, "Got RTC command %x", RTCCommandDataGetCommand(command));
+		switch (RTCCommandDataGetCommand(command)) {
 		case RTC_RESET:
+			hw->rtc.control = 0;
+			break;
 		case RTC_DATETIME:
 		case RTC_TIME:
+			_rtcUpdateClock(hw);
+			break;
+		case RTC_FORCE_IRQ:
+		case RTC_CONTROL:
 			break;
 		}
+	} else {
+		mLOG(GBA_HW, WARN, "Invalid RTC command byte: %02X", hw->rtc.bits);
 	}
 
 	hw->rtc.bits = 0;
 	hw->rtc.bitsRead = 0;
-	if (!hw->rtc.bytesRemaining) {
-		hw->rtc.commandActive = 0;
-		hw->rtc.command = 0;
+}
+
+void _rtcProcessByte(struct GBACartridgeHardware* hw) {
+	switch (RTCCommandDataGetCommand(hw->rtc.command)) {
+	case RTC_CONTROL:
+		hw->rtc.control = hw->rtc.bits;
+		break;
+	case RTC_FORCE_IRQ:
+		mLOG(GBA_HW, STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(hw->rtc.command));
+		break;
+	case RTC_RESET:
+	case RTC_DATETIME:
+	case RTC_TIME:
+		break;
+	}
+
+	hw->rtc.bits = 0;
+	hw->rtc.bitsRead = 0;
+	--hw->rtc.bytesRemaining;
+	if (hw->rtc.bytesRemaining <= 0) {
+		hw->rtc.bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(hw->rtc.command)];
 	}
 }
 
 unsigned _rtcOutput(struct GBACartridgeHardware* hw) {
-	uint8_t outputByte = 0;
-	if (!hw->rtc.commandActive) {
-		mLOG(GBA_HW, GAME_ERROR, "Attempting to use RTC without an active command");
-		return 0;
-	}
+	uint8_t outputByte = 0xFF;
 	switch (RTCCommandDataGetCommand(hw->rtc.command)) {
 	case RTC_CONTROL:
 		outputByte = hw->rtc.control;
