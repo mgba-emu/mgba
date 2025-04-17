@@ -1143,7 +1143,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="106"/>
         <source>Sintax</source>
-        <translation type="unfinished"></translation>
+        <translation>Sintaxis</translation>
     </message>
 </context>
 <context>
@@ -3422,72 +3422,72 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="67"/>
         <source>Data read</source>
-        <translation type="unfinished"></translation>
+        <translation>Lectura de datos</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="69"/>
         <source>Data written</source>
-        <translation type="unfinished"></translation>
+        <translation>Datos escritos</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="71"/>
         <source>Code executed</source>
-        <translation type="unfinished"></translation>
+        <translation>Código ejecutado</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="73"/>
         <source>Code aborted</source>
-        <translation type="unfinished"></translation>
+        <translation>Código abortado</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="75"/>
         <source>8-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acceso de 8 bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="77"/>
         <source>16-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acceso de 16 bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="79"/>
         <source>32-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acceso de 32 bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="81"/>
         <source>64-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acceso de 64 bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="95"/>
         <source>Accessed by instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Accedido por instrucción</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="97"/>
         <source>Accessed by DMA</source>
-        <translation type="unfinished"></translation>
+        <translation>Accedido mediante DMA</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="99"/>
         <source>Accessed by BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>Accedido por la BIOS</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="101"/>
         <source>Compressed data</source>
-        <translation type="unfinished"></translation>
+        <translation>Datos comprimidos</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="103"/>
         <source>Accessed by memory copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Accedido mediante copia de memoria</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="105"/>
         <source>(Unknown extra bit 5)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit desconocido 5)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="107"/>
