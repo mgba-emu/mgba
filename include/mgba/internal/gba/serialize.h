@@ -168,7 +168,9 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | 0x00290: Pin state
  * | 0x00291: Write latch
  * | 0x00292: Direction state
- * | 0x00293: Reserved
+ * | 0x00293: Flags
+ *   | bit 0: RTC SIO output
+ *   | bit 1 - 7: Reserved
  * | 0x00294 - 0x002B6: RTC state (see hardware.h for format)
  * | 0x002B7 - 0x002B7: GPIO devices
  *   | bit 0: Has RTC values
@@ -292,6 +294,9 @@ DECL_BITS(GBASerializedHWFlags2, TiltState, 0, 2);
 DECL_BITS(GBASerializedHWFlags2, GbpInputsPosted, 2, 2);
 DECL_BITS(GBASerializedHWFlags2, GbpTxPosition, 4, 4);
 
+DECL_BITFIELD(GBASerializedHWFlags3, uint8_t);
+DECL_BITS(GBASerializedHWFlags3, RtcSioOutput, 0, 1);
+
 DECL_BITFIELD(GBASerializedUnlCartFlags, uint16_t);
 DECL_BITS(GBASerializedUnlCartFlags, Type, 0, 5);
 DECL_BITS(GBASerializedUnlCartFlags, Subtype, 5, 3);
@@ -382,7 +387,7 @@ struct GBASerializedState {
 		uint8_t pinState;
 		uint8_t writeLatch;
 		uint8_t pinDirection;
-		uint8_t reserved0;
+		GBASerializedHWFlags3 flags3;
 		int32_t rtcBytesRemaining;
 		int32_t reserved1;
 		int32_t rtcBitsRead;

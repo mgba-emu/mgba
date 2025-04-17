@@ -493,6 +493,10 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	state->hw.pinDirection = hw->direction;
 	state->hw.devices = hw->devices;
 
+	GBASerializedHWFlags3 flags3 = 0;
+	flags3 = GBASerializedHWFlags3SetRtcSioOutput(flags3, hw->rtc.sioOutput);
+	state->hw.flags3 = flags3;
+
 	STORE_32(hw->rtc.bytesRemaining, 0, &state->hw.rtcBytesRemaining);
 	STORE_32(hw->rtc.bitsRead, 0, &state->hw.rtcBitsRead);
 	STORE_32(hw->rtc.bits, 0, &state->hw.rtcBits);
@@ -543,6 +547,8 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 			hw->gpioBase[2] = 0;
 		}
 	}
+
+	hw->rtc.sioOutput = GBASerializedHWFlags3GetRtcSioOutput(state->hw.flags3);
 
 	LOAD_32(hw->rtc.bytesRemaining, 0, &state->hw.rtcBytesRemaining);
 	LOAD_32(hw->rtc.bitsRead, 0, &state->hw.rtcBitsRead);
