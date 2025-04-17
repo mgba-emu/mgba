@@ -389,13 +389,13 @@ struct GBASerializedState {
 		uint8_t pinDirection;
 		GBASerializedHWFlags3 flags3;
 		int32_t rtcBytesRemaining;
-		int32_t reserved1;
+		int32_t reserved0;
 		int32_t rtcBitsRead;
 		int32_t rtcBits;
 		int32_t rtcCommandActive;
 		RTCCommandData rtcCommand;
 		uint8_t rtcControl;
-		uint8_t reserved2[3];
+		uint8_t reserved1[3];
 		uint8_t time[7];
 		uint8_t devices;
 		uint16_t gyroSample;
