@@ -404,6 +404,7 @@ void _lightReadPins(struct GBACartridgeHardware* hw) {
 		struct GBALuminanceSource* lux = hw->p->luminanceSource;
 		mLOG(GBA_HW, DEBUG, "[SOLAR] Got reset");
 		hw->lightCounter = 0;
+		hw->lightEdge = true; // unverified (perhaps reset only happens on bit 1 rising edge?)
 		if (lux) {
 			if (lux->sample) {
 				lux->sample(lux);
@@ -419,7 +420,7 @@ void _lightReadPins(struct GBACartridgeHardware* hw) {
 	hw->lightEdge = !(hw->pinState & 1);
 
 	bool sendBit = hw->lightCounter >= hw->lightSample;
-	_outputPins(hw, sendBit << 3);
+	_outputPins(hw, (sendBit << 3) | (hw->pinState & 0x7));
 	mLOG(GBA_HW, DEBUG, "[SOLAR] Output %u with pins %u", hw->lightCounter, hw->pinState);
 }
 
