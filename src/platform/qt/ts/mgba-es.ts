@@ -1143,7 +1143,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="106"/>
         <source>Sintax</source>
-        <translation type="unfinished"></translation>
+        <translation>Sintaxis</translation>
     </message>
 </context>
 <context>
@@ -3422,32 +3422,32 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="67"/>
         <source>Data read</source>
-        <translation type="unfinished"></translation>
+        <translation>Lectura de datos</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="69"/>
         <source>Data written</source>
-        <translation type="unfinished"></translation>
+        <translation>Datos escritos</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="71"/>
         <source>Code executed</source>
-        <translation type="unfinished"></translation>
+        <translation>Código ejecutado</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="73"/>
         <source>Code aborted</source>
-        <translation type="unfinished"></translation>
+        <translation>Código abortado</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="75"/>
         <source>8-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acceso de 8-bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="77"/>
         <source>16-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Acceso de 16-bits</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="79"/>
