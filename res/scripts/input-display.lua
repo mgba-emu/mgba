@@ -44,27 +44,25 @@ local state = {
 		[C.PLATFORM.GB] = 7,
 	}
 }
-state.overlay = canvas:newLayer(32, 16)
-state.painter = image.newPainter(state.overlay.image)
-state.painter:setBlend(false)
-state.painter:setFill(true)
 
-function state.update()
-	local keys = util.expandBitmask(emu:getKeys())
-	local maxKey = state.maxKey[emu:platform()]
-
-	for key = 0, maxKey do
-		if emu:getKey(key) ~= 0 then
-			state.painter:setFillColor(0x80FFFFFF)
-		else
-			state.painter:setFillColor(0x40404040)
-		end
-		state.drawButton[key](state)
+function state.create()
+	if state.overlay ~= nil then
+		return true
 	end
-	state.overlay:update()
+	if canvas == nil then
+		return false
+	end
+	state.overlay = canvas:newLayer(32, 16)
+	if state.overlay == nil then
+		return false
+	end
+	state.painter = image.newPainter(state.overlay.image)
+	state.painter:setBlend(false)
+	state.painter:setFill(true)
+	return true
 end
 
-function state.reset()
+function state.update()
 	local endX = canvas:screenWidth() - 32
 	local endY = canvas:screenHeight() - 16
 
@@ -112,10 +110,31 @@ function state.reset()
 	pos.y = pos.y + input_display.offset.y;
 
 	state.overlay:setPosition(pos.x, pos.y);
+
+	local keys = util.expandBitmask(emu:getKeys())
+	local maxKey = state.maxKey[emu:platform()]
+
+	for key = 0, maxKey do
+		if emu:getKey(key) ~= 0 then
+			state.painter:setFillColor(0x80FFFFFF)
+		else
+			state.painter:setFillColor(0x40404040)
+		end
+		state.drawButton[key](state)
+	end
+	state.overlay:update()
+end
+
+function state.reset()
+	if not state.create() then
+		return
+	end
 	state.painter:setFillColor(0x40808080)
 	state.painter:drawRectangle(0, 0, 32, 16)
 	state.overlay:update()
 end
+
+input_display.state = state
 
 state.reset()
 callbacks:add("frame", state.update)
