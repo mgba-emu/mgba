@@ -6,6 +6,7 @@
 #include "scripting/AutorunScriptModel.h"
 
 #include "ConfigController.h"
+#include "LogController.h"
 
 using namespace QGBA;
 
@@ -94,7 +95,7 @@ bool AutorunScriptModel::moveRows(const QModelIndex& sourceParent, int sourceRow
 	}
 
 	if (count > 1) {
-		qWarning() << tr("Moving more than one row at once is not yet supported");
+		LOG(QT, WARN) << tr("Moving more than one row at once is not yet supported");
 		return false;
 	}
 

@@ -6,6 +6,7 @@
 #pragma once
 
 #include <QAbstractListModel>
+#include <QDataStream>
 
 namespace QGBA {
 
