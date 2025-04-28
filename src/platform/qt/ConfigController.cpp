@@ -7,6 +7,7 @@
 
 #include "ActionMapper.h"
 #include "CoreController.h"
+#include "scripting/AutorunScriptModel.h"
 
 #include <QDir>
 #include <QMenu>
@@ -122,6 +123,8 @@ QString ConfigController::s_configDir;
 ConfigController::ConfigController(QObject* parent)
 	: QObject(parent)
 {
+	qRegisterMetaType<AutorunScriptModel::ScriptInfo>();
+
 	QString fileName = configDir();
 	fileName.append(QDir::separator());
 	fileName.append("qt.ini");
@@ -375,6 +378,36 @@ void ConfigController::setMRU(const QStringList& mru, ConfigController::MRU mruT
 	}
 	for (; i < MRU_LIST_SIZE; ++i) {
 		m_settings->remove(QString::number(i));
+	}
+	m_settings->endGroup();
+}
+
+QList<QVariant> ConfigController::getList(const QString& group) const {
+	QList<QVariant> list;
+	m_settings->beginGroup(group);
+	for (int i = 0; ; ++i) {
+		QVariant item = m_settings->value(QString::number(i));
+		if (item.isNull() || !item.isValid()) {
+			break;
+		}
+		list.append(item);
+	}
+	m_settings->endGroup();
+	return list;
+}
+
+void ConfigController::setList(const QString& group, const QList<QVariant>& list) {
+	int i = 0;
+	m_settings->beginGroup(group);
+	QStringList keys = m_settings->childKeys();
+	for (const QVariant& item : list) {
+		QString key = QString::number(i);
+		keys.removeAll(key);
+		m_settings->setValue(key, item);
+		++i;
+	}
+	for (const auto& key: keys) {
+		m_settings->remove(key);
 	}
 	m_settings->endGroup();
 }

@@ -69,6 +69,8 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 	reloadConfig();
 
+	connect(m_ui.autorunScripts, &QAbstractButton::pressed, this, &SettingsView::openAutorunScripts);
+
 	connect(m_ui.volume, static_cast<void (QSlider::*)(int)>(&QSlider::valueChanged), [this](int v) {
 		if (v < m_ui.volumeFf->value()) {
 			m_ui.volumeFf->setValue(v);

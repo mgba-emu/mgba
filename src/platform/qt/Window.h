@@ -109,6 +109,8 @@ public slots:
 
 	void startVideoLog();
 
+	void openView(QWidget* widget);
+
 #ifdef ENABLE_DEBUGGERS
 	void consoleOpen();
 #endif
@@ -173,7 +175,7 @@ private:
 	void clearMRU();
 	void updateMRU();
 
-	void openView(QWidget* widget);
+	void ensureScripting();
 
 	template <typename T, typename... A> std::function<void()> openTView(A... arg);
 	template <typename T, typename... A> std::function<void()> openControllerTView(A... arg);

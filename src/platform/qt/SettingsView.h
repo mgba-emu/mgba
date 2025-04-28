@@ -63,6 +63,7 @@ signals:
 	void languageChanged();
 	void libraryCleared();
 	void saveSettingsRequested();
+	void openAutorunScripts();
 
 public slots:
 	void selectPage(Page);

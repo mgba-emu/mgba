@@ -297,12 +297,15 @@ endif()
 
 if(ENABLE_SCRIPTING)
 	list(APPEND SOURCE_FILES
+		scripting/AutorunScriptModel.cpp
+		scripting/AutorunScriptView.cpp
 		scripting/ScriptingController.cpp
 		scripting/ScriptingTextBuffer.cpp
 		scripting/ScriptingTextBufferModel.cpp
 		scripting/ScriptingView.cpp)
 
 	list(APPEND UI_FILES
+		scripting/AutorunScriptView.ui
 		scripting/ScriptingView.ui)
 endif()
 

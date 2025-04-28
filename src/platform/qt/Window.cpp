@@ -305,6 +305,10 @@ void Window::loadConfig() {
 	updateMRU();
 
 	m_inputController.setConfiguration(m_config);
+
+	if (!m_config->getList("autorunSettings").isEmpty()) {
+		ensureScripting();
+	}
 }
 
 void Window::reloadConfig() {
@@ -550,6 +554,10 @@ void Window::openSettingsWindow(SettingsView::Page page) {
 #ifdef USE_SQLITE3
 	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
 #endif
+	connect(settingsWindow, &SettingsView::openAutorunScripts, this, [this]() {
+		ensureScripting();
+		m_scripting->openAutorunEdit();
+	});
 	connect(this, &Window::shaderSelectorAdded, settingsWindow, &SettingsView::setShaderSelector);
 	openView(settingsWindow);
 	settingsWindow->selectPage(page);
@@ -639,17 +647,7 @@ void Window::consoleOpen() {
 
 #ifdef ENABLE_SCRIPTING
 void Window::scriptingOpen() {
-	if (!m_scripting) {
-		m_scripting = std::make_unique<ScriptingController>();
-		m_scripting->setInputController(&m_inputController);
-		m_shortcutController->setScriptingController(m_scripting.get());
-		if (m_controller) {
-			m_scripting->setController(m_controller);
-			m_display->installEventFilter(m_scripting.get());
-		}
-
-		m_scripting->setVideoBackend(m_display->videoBackend());
-	}
+	ensureScripting();
 	ScriptingView* view = new ScriptingView(m_scripting.get(), m_config);
 	openView(view);
 }
@@ -2055,6 +2053,25 @@ void Window::updateMRU() {
 	m_actions.addAction(tr("Clear"), "resetMru", this, &Window::clearMRU, "mru");
 
 	m_actions.rebuildMenu(menuBar(), this, *m_shortcutController);
+}
+
+void Window::ensureScripting() {
+	if (m_scripting) {
+		return;
+	}
+	m_scripting = std::make_unique<ScriptingController>(m_config);
+	m_scripting->setInputController(&m_inputController);
+	m_shortcutController->setScriptingController(m_scripting.get());
+	if (m_controller) {
+		m_scripting->setController(m_controller);
+		m_display->installEventFilter(m_scripting.get());
+	}
+
+	if (m_display) {
+		m_scripting->setVideoBackend(m_display->videoBackend());
+	}
+
+	connect(m_scripting.get(), &ScriptingController::autorunScriptsOpened, this, &Window::openView);
 }
 
 std::shared_ptr<Action> Window::addGameAction(const QString& visibleName, const QString& name, Action::Function function, const QString& menu, const QKeySequence& shortcut) {
