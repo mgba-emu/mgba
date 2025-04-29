@@ -114,7 +114,7 @@ void MemoryAccessLogController::load(bool loadExisting) {
 	}
 	VFile* vf = VFileDevice::open(m_path, flags);
 	if (!vf) {
-		LOG(QT, ERROR) << tr("Failed to open memory log file");
+		qCritical() << tr("Failed to open memory log file");
 		return;
 	}
 
@@ -123,7 +123,7 @@ void MemoryAccessLogController::load(bool loadExisting) {
 	m_controller->attachDebuggerModule(&m_logger.d);
 	if (!mDebuggerAccessLoggerOpen(&m_logger, vf, flags)) {
 		mDebuggerAccessLoggerDeinit(&m_logger);
-		LOG(QT, ERROR) << tr("Failed to open memory log file");
+		qCritical() << tr("Failed to open memory log file");
 		return;
 	}
 	emit loaded(true);

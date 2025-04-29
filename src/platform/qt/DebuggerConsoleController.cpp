@@ -173,7 +173,7 @@ void DebuggerConsoleController::historyLoad() {
 void DebuggerConsoleController::historySave() {
 	QFile log(ConfigController::configDir() + "/cli_history.log");
 	if (!log.open(QIODevice::WriteOnly | QIODevice::Text)) {
-		LOG(QT, WARN) << tr("Could not open CLI history for writing");
+		qWarning() << tr("Could not open CLI history for writing");
 		return;
 	}
 	for (const QString& line : m_history) {

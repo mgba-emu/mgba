@@ -60,7 +60,7 @@ void GIFView::startRecording() {
 	}
 	FFmpegEncoderSetLooping(&m_encoder, m_ui.loop->isChecked());
 	if (!FFmpegEncoderOpen(&m_encoder, m_filename.toUtf8().constData())) {
-		LOG(QT, ERROR) << tr("Failed to open output file: %1").arg(m_filename);
+		qCritical() << tr("Failed to open output file: %1").arg(m_filename);
 		return;
 	}
 	m_ui.start->setEnabled(false);

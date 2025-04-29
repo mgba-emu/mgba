@@ -53,7 +53,7 @@ void AudioProcessorQt::stop() {
 
 bool AudioProcessorQt::start() {
 	if (!input()) {
-		LOG(QT, WARN) << tr("Can't start an audio processor without input");
+		qWarning() << tr("Can't start an audio processor without input");
 		return false;
 	}
 
@@ -78,7 +78,7 @@ bool AudioProcessorQt::start() {
 
 		QAudioDevice device(QMediaDevices::defaultAudioOutput());
 		m_audioOutput = std::make_unique<QAudioSink>(device, format);
-		LOG(QT, INFO) << "Audio outputting to " << device.description();
+		qInfo() << "Audio outputting to " << device.description();
 		connect(m_audioOutput.get(), &QAudioSink::stateChanged, this, [this](QAudio::State state) {
 			if (state != QAudio::IdleState) {
 				return;

@@ -31,7 +31,7 @@ void AudioProcessorSDL::stop() {
 
 bool AudioProcessorSDL::start() {
 	if (!input()) {
-		LOG(QT, WARN) << tr("Can't start an audio processor without input");
+		qWarning() << tr("Can't start an audio processor without input");
 		return false;
 	}
 

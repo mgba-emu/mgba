@@ -71,6 +71,7 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 		AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController->getQtOption("audioDriver").toInt()));
 	}
 
+	LogController::installMessageHandler();
 	LogController::global()->load(m_configController);
 
 #ifdef USE_DISCORD_RPC

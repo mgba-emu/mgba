@@ -48,6 +48,7 @@ public:
 	Stream operator()(int category, int level);
 
 	static LogController* global();
+	static QtMessageHandler installMessageHandler();
 	static QString toString(int level);
 	static int categoryId(const char*);
 

@@ -6,6 +6,9 @@
 #include "LogController.h"
 
 #include <QMessageBox>
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+#include <QtLogging>
+#endif
 
 #include "ConfigController.h"
 
@@ -17,6 +20,31 @@ using namespace QGBA;
 
 LogController LogController::s_global(mLOG_ALL);
 int LogController::s_qtCat{-1};
+
+static void logMessageHandler(QtMsgType msgType, const QMessageLogContext&, const QString& msg) {
+	switch (msgType) {
+	case QtDebugMsg:
+		LOG(QT, DEBUG) << msg;
+		break;
+	case QtInfoMsg:
+		LOG(QT, INFO) << msg;
+		break;
+	case QtCriticalMsg:
+		LOG(QT, ERROR) << msg;
+		break;
+	case QtFatalMsg:
+		LOG(QT, FATAL) << msg;
+		break;
+	case QtWarningMsg:
+	default:
+		LOG(QT, WARN) << msg;
+		break;
+	}
+}
+
+QtMessageHandler LogController::installMessageHandler() {
+	return qInstallMessageHandler(logMessageHandler);
+}
 
 LogController::LogController(int levels, QObject* parent)
 	: QObject(parent)
