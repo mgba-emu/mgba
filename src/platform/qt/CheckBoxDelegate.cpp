@@ -13,7 +13,7 @@ using namespace QGBA;
 CheckBoxDelegate::CheckBoxDelegate(QObject* parent)
 	: QStyledItemDelegate(parent)
 {
-	// initializers only
+	// Nothing to do
 }
 
 void CheckBoxDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const {

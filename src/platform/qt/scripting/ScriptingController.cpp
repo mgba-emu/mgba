@@ -30,8 +30,12 @@ using namespace QGBA;
 
 ScriptingController::ScriptingController(ConfigController* config, QObject* parent)
 	: QObject(parent)
-	, m_model(config)
+	, m_config(config)
 {
+	QList<QVariant> autorun = m_config->getList("autorunSettings");
+	m_model.deserialize(autorun);
+	QObject::connect(&m_model, &AutorunScriptModel::scriptsChanged, this, &ScriptingController::saveAutorun);
+
 	m_logger.p = this;
 	m_logger.log = [](mLogger* log, int, enum mLogLevel level, const char* format, va_list args) {
 		Logger* logger = static_cast<Logger*>(log);
@@ -504,4 +508,8 @@ uint16_t ScriptingController::qtToScriptingModifiers(Qt::KeyboardModifiers modif
 		mod |= mSCRIPT_KMOD_SUPER;
 	}
 	return mod;
+}
+
+void ScriptingController::saveAutorun(const QList<QVariant>& autorun) {
+	m_config->setList("autorunSettings", autorun);
 }

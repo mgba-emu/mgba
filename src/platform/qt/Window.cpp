@@ -554,10 +554,12 @@ void Window::openSettingsWindow(SettingsView::Page page) {
 #ifdef USE_SQLITE3
 	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
 #endif
+#ifdef ENABLE_SCRIPTING
 	connect(settingsWindow, &SettingsView::openAutorunScripts, this, [this]() {
 		ensureScripting();
 		m_scripting->openAutorunEdit();
 	});
+#endif
 	connect(this, &Window::shaderSelectorAdded, settingsWindow, &SettingsView::setShaderSelector);
 	openView(settingsWindow);
 	settingsWindow->selectPage(page);
@@ -2056,6 +2058,7 @@ void Window::updateMRU() {
 }
 
 void Window::ensureScripting() {
+#ifdef ENABLE_SCRIPTING
 	if (m_scripting) {
 		return;
 	}
@@ -2072,6 +2075,7 @@ void Window::ensureScripting() {
 	}
 
 	connect(m_scripting.get(), &ScriptingController::autorunScriptsOpened, this, &Window::openView);
+#endif
 }
 
 std::shared_ptr<Action> Window::addGameAction(const QString& visibleName, const QString& name, Action::Function function, const QString& menu, const QKeySequence& shortcut) {
