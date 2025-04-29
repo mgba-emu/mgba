@@ -310,7 +310,7 @@ bool DisplayGL::highestCompatible(QSurfaceFormat& format) {
 
 #ifdef BUILD_GL
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
-	LOG(QT, WARN) << tr("Failed to create an OpenGL 3 context, trying old-style...");
+	qWarning() << tr("Failed to create an OpenGL 3 context, trying old-style...");
 #endif
 	if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
 		format.setVersion(1, 4);

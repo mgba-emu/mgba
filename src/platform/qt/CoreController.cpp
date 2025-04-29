@@ -824,7 +824,7 @@ void CoreController::loadSave(const QString& path, bool temporary) {
 	m_resetActions.append([this, path, temporary]() {
 		VFile* vf = VFileDevice::open(path, temporary ? O_RDONLY : O_RDWR);
 		if (!vf) {
-			LOG(QT, ERROR) << tr("Failed to open save file: %1").arg(path);
+			qCritical() << tr("Failed to open save file: %1").arg(path);
 			return;
 		}
 
@@ -882,7 +882,7 @@ void CoreController::loadPatch(const QString& patchPath) {
 void CoreController::replaceGame(const QString& path) {
 	QFileInfo info(path);
 	if (!info.isReadable()) {
-		LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
+		qCritical() << tr("Failed to open game file: %1").arg(path);
 		return;
 	}
 	QString fname = info.canonicalFilePath();
@@ -912,7 +912,7 @@ void CoreController::yankPak() {
 		break;
 #endif
 	case mPLATFORM_NONE:
-		LOG(QT, ERROR) << tr("Can't yank pack in unexpected platform!");
+		qCritical() << tr("Can't yank pack in unexpected platform!");
 		break;
 	}
 }
@@ -1027,7 +1027,7 @@ void CoreController::importSharkport(const QString& path) {
 	}
 	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
-		LOG(QT, ERROR) << tr("Failed to open snapshot file for reading: %1").arg(path);
+		qCritical() << tr("Failed to open snapshot file for reading: %1").arg(path);
 		return;
 	}
 	Interrupter interrupter(this);
@@ -1044,7 +1044,7 @@ void CoreController::exportSharkport(const QString& path) {
 	}
 	VFile* vf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
-		LOG(QT, ERROR) << tr("Failed to open snapshot file for writing: %1").arg(path);
+		qCritical() << tr("Failed to open snapshot file for writing: %1").arg(path);
 		return;
 	}
 	Interrupter interrupter(this);

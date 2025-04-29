@@ -1053,7 +1053,7 @@ void Window::reloadDisplayDriver() {
 	}
 	m_display = std::unique_ptr<QGBA::Display>(Display::create(this));
 	if (!m_display) {
-		LOG(QT, ERROR) << tr("Failed to create an appropriate display device, falling back to software display. "
+		qCritical() << tr("Failed to create an appropriate display device, falling back to software display. "
 		                     "Games may run slowly, especially with larger windows.");
 		Display::setDriver(Display::Driver::QT);
 		m_display = std::unique_ptr<Display>(Display::create(this));
@@ -1126,7 +1126,7 @@ void Window::reloadAudioDriver() {
 	m_audioProcessor->setInput(m_controller);
 	m_audioProcessor->configure(m_config);
 	if (!m_audioProcessor->start()) {
-		LOG(QT, WARN) << "Failed to start audio processor";
+		qWarning() << "Failed to start audio processor";
 	}
 }
 
