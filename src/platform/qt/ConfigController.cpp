@@ -123,7 +123,9 @@ QString ConfigController::s_configDir;
 ConfigController::ConfigController(QObject* parent)
 	: QObject(parent)
 {
-	qRegisterMetaType<AutorunScriptModel::ScriptInfo>();
+#ifdef ENABLE_SCRIPTING
+	AutorunScriptModel::registerMetaTypes();
+#endif
 
 	QString fileName = configDir();
 	fileName.append(QDir::separator());

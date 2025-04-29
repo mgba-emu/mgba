@@ -75,6 +75,7 @@ protected:
 private slots:
 	void updateGamepad();
 	void attach();
+	void saveAutorun(const QList<QVariant>& autorun);
 
 private:
 	void init();
@@ -101,6 +102,7 @@ private:
 	AutorunScriptModel m_model;
 	std::shared_ptr<CoreController> m_controller;
 	InputController* m_inputController = nullptr;
+	ConfigController* m_config = nullptr;
 
 	QTimer m_storageFlush;
 };

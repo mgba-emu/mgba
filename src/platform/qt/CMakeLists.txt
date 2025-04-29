@@ -307,6 +307,10 @@ if(ENABLE_SCRIPTING)
 	list(APPEND UI_FILES
 		scripting/AutorunScriptView.ui
 		scripting/ScriptingView.ui)
+
+	set(TEST_QT_autoscript_SRC
+		test/autoscript.cpp
+		scripting/AutorunScriptModel.cpp)
 endif()
 
 if(TARGET Qt6::Core)
