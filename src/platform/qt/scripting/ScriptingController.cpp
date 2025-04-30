@@ -17,6 +17,7 @@
 #include "input/GamepadButtonEvent.h"
 #include "input/GamepadHatEvent.h"
 #include "InputController.h"
+#include "LogController.h"
 #include "scripting/AutorunScriptView.h"
 #include "scripting/ScriptingTextBuffer.h"
 #include "scripting/ScriptingTextBufferModel.h"
@@ -39,6 +40,11 @@ ScriptingController::ScriptingController(ConfigController* config, QObject* pare
 		va_copy(argc, args);
 		QString message = QString::vasprintf(format, argc);
 		va_end(argc);
+		if (logger->p->m_config->getOption("logToStdout").toInt()) {
+			QTextStream out(stdout);
+			out << message << "\n";
+			out.flush();
+		}
 		switch (level) {
 		case mLOG_WARN:
 			emit logger->p->warn(message);
