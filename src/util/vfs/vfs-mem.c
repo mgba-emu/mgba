@@ -290,6 +290,9 @@ void _vfmUnmap(struct VFile* vf, void* memory, size_t size) {
 void _vfmTruncate(struct VFile* vf, size_t size) {
 	struct VFileMem* vfm = (struct VFileMem*) vf;
 	_vfmExpand(vfm, size);
+	if (vfm->offset > vfm->size) {
+		vfm->offset = vfm->size;
+	}
 }
 
 void _vfmTruncateNoExpand(struct VFile* vf, size_t size) {
@@ -304,6 +307,9 @@ void _vfmTruncateNoExpand(struct VFile* vf, size_t size) {
 	}
 
 	vfm->size = size;
+	if (vfm->offset > vfm->size) {
+		vfm->offset = vfm->size;
+	}
 }
 
 void _vfmTruncateNoop(struct VFile* vf, size_t size) {
