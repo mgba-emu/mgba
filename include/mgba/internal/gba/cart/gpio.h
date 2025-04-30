@@ -49,10 +49,11 @@ DECL_BIT(RTCCommandData, Reading, 7);
 
 struct GBARTC {
 	int32_t bytesRemaining;
-	int32_t transferStep;
 	int32_t bitsRead;
 	int32_t bits;
 	int32_t commandActive;
+	bool sckEdge;
+	bool sioOutput;
 	RTCCommandData command;
 	RTCControl control;
 	uint8_t time[7];
