@@ -321,7 +321,7 @@ Yeni sürüm: %2
     <message>
         <location filename="../CheatsModel.cpp" line="211"/>
         <source>Failed to open cheats file: %1</source>
-        <translation>Hileleri dosyasını açamadı:%1</translation>
+        <translation>Hileler dosyası açılamadı: %1</translation>
     </message>
 </context>
 <context>
@@ -389,13 +389,13 @@ Yeni sürüm: %2
     <message>
         <location filename="../CoreController.cpp" line="104"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Sıfırla r%1-%2 %3</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="550"/>
         <location filename="../CoreController.cpp" line="567"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Geri sarma şu anda etkinliştirilmedi</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="606"/>
