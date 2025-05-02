@@ -16,7 +16,7 @@
 struct GBXParams {
 	uint32_t major;
 	uint32_t minor;
-	char fourcc[4];
+	char fourcc[4] ATTRIBUTE_NONSTRING;
 	bool battery;
 	bool rumble;
 	bool timer;

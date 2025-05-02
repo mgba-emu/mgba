@@ -87,7 +87,7 @@ enum {
 };
 
 struct GBACartridgeOverride {
-	char id[4];
+	char id[4] ATTRIBUTE_NONSTRING;
 	enum GBASavedataType savetype;
 	int hardware;
 	uint32_t idleLoop;
