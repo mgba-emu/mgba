@@ -103,6 +103,7 @@ struct VFile* VFileOpen(const char* path, int flags) {
 #endif
 }
 
+#ifdef ENABLE_DIRECTORIES
 struct VDir* VDirOpenArchive(const char* path) {
 	struct VDir* dir = 0;
 	UNUSED(path);
@@ -118,6 +119,7 @@ struct VDir* VDirOpenArchive(const char* path) {
 #endif
 	return dir;
 }
+#endif
 #endif
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {
@@ -250,7 +252,7 @@ void makeAbsolute(const char* path, const char* base, char* out) {
 	strncpy(out, buf, PATH_MAX);
 }
 
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 struct VFile* VDirFindFirst(struct VDir* dir, bool (*filter)(struct VFile*)) {
 	dir->rewind(dir);
 	struct VDirEntry* dirent = dir->listNext(dir);

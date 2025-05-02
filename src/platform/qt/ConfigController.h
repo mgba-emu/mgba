@@ -90,7 +90,7 @@ public:
 	QVariant takeArgvOption(const QString& key);
 
 	QStringList getMRU(MRU = MRU::ROM) const;
-	void setMRU(const QStringList& mru, MRU = MRU::ROM);
+	QList<QVariant> getList(const QString& group) const;
 
 	Configuration* overrides() { return mCoreConfigGetOverrides(&m_config); }
 	void saveOverride(const Override&);
@@ -116,6 +116,8 @@ public slots:
 	void setOption(const char* key, const char* value);
 	void setOption(const char* key, const QVariant& value);
 	void setQtOption(const QString& key, const QVariant& value, const QString& group = QString());
+	void setMRU(const QStringList& mru, MRU = MRU::ROM);
+	void setList(const QString& group, const QList<QVariant>& list);
 
 	void makePortable();
 	void write();

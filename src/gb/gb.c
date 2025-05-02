@@ -35,7 +35,9 @@ static const uint8_t _registeredTrademark[] = {0x3C, 0x42, 0xB9, 0xA5, 0xB9, 0xA
 #define SGB2_BIOS_CHECKSUM 0X53D0DD63
 #define CGB_BIOS_CHECKSUM 0x41884E46
 #define CGB0_BIOS_CHECKSUM 0xE8EF5318
+#define CGBE_BIOS_CHECKSUM 0xE95DC95D
 #define AGB_BIOS_CHECKSUM 0xFFD6B0F1
+#define AGB0_BIOS_CHECKSUM 0x570337EA
 
 mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
 
@@ -85,6 +87,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->isPristine = false;
 	gb->pristineRomSize = 0;
 	gb->yankedRomSize = 0;
+	gb->sramSize = 0;
 
 	memset(&gb->gbx, 0, sizeof(gb->gbx));
 
@@ -230,7 +233,7 @@ static void GBSramDeinit(struct GB* gb) {
 	} else if (gb->memory.sram) {
 		mappedMemoryFree(gb->memory.sram, gb->sramSize);
 	}
-	gb->memory.sram = 0;
+	gb->memory.sram = NULL;
 }
 
 bool GBLoadSave(struct GB* gb, struct VFile* vf) {
@@ -339,6 +342,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 			mappedMemoryFree(gb->memory.sram, gb->sramSize);
 		} else {
 			memset(newSram, 0xFF, size);
+			gb->sramSize = size;
 		}
 		gb->memory.sram = newSram;
 	}
@@ -435,6 +439,8 @@ void GBUnloadROM(struct GB* gb) {
 	gb->memory.rom = NULL;
 	gb->memory.mbcType = GB_MBC_AUTODETECT;
 	gb->isPristine = false;
+	gb->pristineRomSize = 0;
+	gb->memory.romSize = 0;
 
 	if (!gb->sramDirty) {
 		gb->sramMaskWriteback = false;
@@ -444,6 +450,7 @@ void GBUnloadROM(struct GB* gb) {
 	if (gb->sramRealVf) {
 		gb->sramRealVf->close(gb->sramRealVf);
 	}
+	gb->sramSize = 0;
 	gb->sramRealVf = NULL;
 	gb->sramVf = NULL;
 	if (gb->memory.cam && gb->memory.cam->stopRequestImage) {
@@ -550,7 +557,9 @@ bool GBIsBIOS(struct VFile* vf) {
 	case SGB2_BIOS_CHECKSUM:
 	case CGB_BIOS_CHECKSUM:
 	case CGB0_BIOS_CHECKSUM:
+	case CGBE_BIOS_CHECKSUM:
 	case AGB_BIOS_CHECKSUM:
+	case AGB0_BIOS_CHECKSUM:
 		return true;
 	default:
 		return false;
@@ -567,7 +576,9 @@ bool GBIsCompatibleBIOS(struct VFile* vf, enum GBModel model) {
 		return model < GB_MODEL_CGB;
 	case CGB_BIOS_CHECKSUM:
 	case CGB0_BIOS_CHECKSUM:
+	case CGBE_BIOS_CHECKSUM:
 	case AGB_BIOS_CHECKSUM:
+	case AGB0_BIOS_CHECKSUM:
 		return model >= GB_MODEL_CGB;
 	default:
 		return false;
@@ -862,9 +873,11 @@ void GBDetectModel(struct GB* gb) {
 			break;
 		case CGB_BIOS_CHECKSUM:
 		case CGB0_BIOS_CHECKSUM:
+		case CGBE_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;
 			break;
 		case AGB_BIOS_CHECKSUM:
+		case AGB0_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_AGB;
 			break;
 		default:

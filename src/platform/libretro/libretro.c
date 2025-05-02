@@ -960,6 +960,7 @@ bool retro_load_game(const struct retro_game_info* game) {
 		switch (gb->model) {
 		case GB_MODEL_AGB:
 		case GB_MODEL_CGB:
+		case GB_MODEL_SCGB:
 			biosName = "gbc_bios.bin";
 			break;
 		case GB_MODEL_SGB:
@@ -1385,8 +1386,8 @@ static void _updateRotation(struct mRotationSource* source) {
 	gyroZ = 0;
 	_initSensors();
 	if (tiltEnabled) {
-		tiltX = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_X) * -2e8f;
-		tiltY = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_Y) * 2e8f;
+		tiltX = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_X) * 3e8f;
+		tiltY = sensorGetCallback(0, RETRO_SENSOR_ACCELEROMETER_Y) * -3e8f;
 	}
 	if (gyroEnabled) {
 		gyroZ = sensorGetCallback(0, RETRO_SENSOR_GYROSCOPE_Z) * -5.5e8f;

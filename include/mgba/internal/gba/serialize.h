@@ -165,8 +165,12 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * | 0x00288 - 0x0028B: DMA next count
  * | 0x0028C - 0x0028F: DMA next event
  * 0x00290 - 0x002C3: GPIO state
- * | 0x00290 - 0x00291: Pin state
- * | 0x00292 - 0x00293: Direction state
+ * | 0x00290: Pin state
+ * | 0x00291: Write latch
+ * | 0x00292: Direction state
+ * | 0x00293: Flags
+ *   | bit 0: RTC SIO output
+ *   | bit 1 - 7: Reserved
  * | 0x00294 - 0x002B6: RTC state (see hardware.h for format)
  * | 0x002B7 - 0x002B7: GPIO devices
  *   | bit 0: Has RTC values
@@ -183,7 +187,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bit 0: Is read enabled
  *   | bit 1: Gyroscope sample is edge
  *   | bit 2: Light sample is edge
- *   | bit 3: Reserved
+ *   | bit 3: RTC SCK is edge
  *   | bits 4 - 15: Light counter
  * | 0x002C0 - 0x002C0: Light sample
  * | 0x002C1: Flags
@@ -282,12 +286,16 @@ DECL_BITFIELD(GBASerializedHWFlags1, uint16_t);
 DECL_BIT(GBASerializedHWFlags1, ReadWrite, 0);
 DECL_BIT(GBASerializedHWFlags1, GyroEdge, 1);
 DECL_BIT(GBASerializedHWFlags1, LightEdge, 2);
+DECL_BIT(GBASerializedHWFlags1, RtcSckEdge, 3);
 DECL_BITS(GBASerializedHWFlags1, LightCounter, 4, 12);
 
 DECL_BITFIELD(GBASerializedHWFlags2, uint8_t);
 DECL_BITS(GBASerializedHWFlags2, TiltState, 0, 2);
 DECL_BITS(GBASerializedHWFlags2, GbpInputsPosted, 2, 2);
 DECL_BITS(GBASerializedHWFlags2, GbpTxPosition, 4, 4);
+
+DECL_BITFIELD(GBASerializedHWFlags3, uint8_t);
+DECL_BITS(GBASerializedHWFlags3, RtcSioOutput, 0, 1);
 
 DECL_BITFIELD(GBASerializedUnlCartFlags, uint16_t);
 DECL_BITS(GBASerializedUnlCartFlags, Type, 0, 5);
@@ -376,16 +384,18 @@ struct GBASerializedState {
 	} dma[4];
 
 	struct {
-		uint16_t pinState;
-		uint16_t pinDirection;
+		uint8_t pinState;
+		uint8_t writeLatch;
+		uint8_t pinDirection;
+		GBASerializedHWFlags3 flags3;
 		int32_t rtcBytesRemaining;
-		int32_t rtcTransferStep;
+		int32_t reserved0;
 		int32_t rtcBitsRead;
 		int32_t rtcBits;
 		int32_t rtcCommandActive;
 		RTCCommandData rtcCommand;
 		uint8_t rtcControl;
-		uint8_t reserved[3];
+		uint8_t reserved1[3];
 		uint8_t time[7];
 		uint8_t devices;
 		uint16_t gyroSample;

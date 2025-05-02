@@ -904,10 +904,10 @@ uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat
 		return color;
 	}
 
-	int r = 0;
-	int g = 0;
-	int b = 0;
-	int a = 0xFF;
+	uint32_t r = 0;
+	uint32_t g = 0;
+	uint32_t b = 0;
+	uint32_t a = 0xFF;
 
 	switch (from) {
 	case mCOLOR_ARGB8:

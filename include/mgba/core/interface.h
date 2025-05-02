@@ -188,6 +188,12 @@ struct mCoreRegisterInfo {
 	enum mCoreRegisterType type;
 };
 
+enum mCoreChecksumType {
+	mCHECKSUM_CRC32,
+	mCHECKSUM_MD5,
+	mCHECKSUM_SHA1,
+};
+
 CXX_GUARD_END
 
 #endif

@@ -80,13 +80,17 @@ MemoryModel::MemoryModel(QWidget* parent)
 
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+	int hintWidth;
 	m_margins = QMargins(3, m_cellHeight + 1, 3, 0);
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
 	m_margins += QMargins(metrics.horizontalAdvance("0FFFFFF0 "), 0, metrics.horizontalAdvance(" AAAAAAAAAAAAAAAA"), 0);
+	hintWidth = metrics.horizontalAdvance(" 0FFFFFF0  FFFFFFFF  FFFFFFFF  FFFFFFFF  FFFFFFFF  AAAAAAAAAAAAAAAA");
 #else
 	m_margins += QMargins(metrics.width("0FFFFFF0 "), 0, metrics.width(" AAAAAAAAAAAAAAAA"), 0);
+	hintWidth = metrics.width(" 0FFFFFF0  FFFFFFFF  FFFFFFFF  FFFFFFFF  FFFFFFFF  AAAAAAAAAAAAAAAA");
 #endif
 	m_cellSize = QSizeF((viewport()->size().width() - (m_margins.left() + m_margins.right())) / 16.0, m_cellHeight);
+	setMinimumWidth(hintWidth);
 
 	connect(verticalScrollBar(), &QSlider::sliderMoved, [this](int position) {
 		m_top = position;

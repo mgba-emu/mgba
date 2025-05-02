@@ -33,6 +33,7 @@
 #include <psp2/gxm.h>
 #include <psp2/kernel/sysmem.h>
 #include <psp2/motion.h>
+#include <psp2/touch.h>
 
 #include <vita2d.h>
 
@@ -57,6 +58,7 @@ static double fpsRatio = 1;
 static bool interframeBlending = false;
 static bool sgbCrop = false;
 static bool blurry = false;
+static SceTouchPanelInfo panelInfo[SCE_TOUCH_PORT_MAX_NUM];
 
 static struct mSceRotationSource {
 	struct mRotationSource d;
@@ -290,6 +292,8 @@ uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	if (angles != GBA_KEY_NONE) {
 		activeKeys |= 1 << angles;
 	}
+	activeKeys |= mPSP2ReadTouchLR(&runner->core->inputMap);
+
 	return activeKeys;
 }
 
@@ -312,6 +316,9 @@ void mPSP2SetFrameLimiter(struct mGUIRunner* runner, bool limit) {
 void mPSP2Setup(struct mGUIRunner* runner) {
 	mCoreConfigSetDefaultIntValue(&runner->config, "threadedVideo", 1);
 	mCoreLoadForeignConfig(runner->core, &runner->config);
+
+	sceTouchGetPanelInfo(SCE_TOUCH_PORT_FRONT, &panelInfo[SCE_TOUCH_PORT_FRONT]);
+	sceTouchGetPanelInfo(SCE_TOUCH_PORT_BACK, &panelInfo[SCE_TOUCH_PORT_BACK]);
 
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_CROSS, GBA_KEY_A);
 	mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_CIRCLE, GBA_KEY_B);
@@ -405,18 +412,6 @@ void mPSP2LoadROM(struct mGUIRunner* runner) {
 	}
 
 	mCoreConfigGetBoolValue(&runner->config, "interframeBlending", &interframeBlending);
-
-	// Backcompat: Old versions of mGBA use an older binding system that has different mappings for L/R
-	if (!sceKernelIsPSVitaTV()) {
-		int key = mInputMapKey(&runner->core->inputMap, PSP2_INPUT, __builtin_ctz(SCE_CTRL_L2));
-		if (key >= 0) {
-			mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_L1, key);
-		}
-		key = mInputMapKey(&runner->core->inputMap, PSP2_INPUT, __builtin_ctz(SCE_CTRL_R2));
-		if (key >= 0) {
-			mPSP2MapKey(&runner->core->inputMap, SCE_CTRL_R1, key);
-		}
-	}
 
 	MutexInit(&audioContext.mutex);
 	ConditionInit(&audioContext.cond);
@@ -662,6 +657,39 @@ bool mPSP2SystemPoll(struct mGUIRunner* runner) {
 		mCoreAutoloadSave(runner->core);
 	}
 	return true;
+}
+
+int mPSP2ReadTouchLR(const struct mInputMap* map) {
+	SceTouchData touch[4];
+	int activeKeys = 0;
+	int touches = sceTouchPeek(SCE_TOUCH_PORT_BACK, touch, 4);
+	int i;
+	for (i = 0; i < touches; ++i) {
+		if (touch[i].reportNum < 1) {
+			continue;
+		}
+		bool left = touch[i].report[0].x < (panelInfo[SCE_TOUCH_PORT_BACK].maxAaX - panelInfo[SCE_TOUCH_PORT_BACK].minAaX) / 2;
+		bool top = touch[i].report[0].y < (panelInfo[SCE_TOUCH_PORT_BACK].maxAaY - panelInfo[SCE_TOUCH_PORT_BACK].minAaY) / 2;
+		int button;
+		if (left) {
+			if (top) {
+				button = __builtin_ctz(SCE_CTRL_L2);
+			} else {
+				button = __builtin_ctz(SCE_CTRL_L3);
+			}
+		} else {
+			if (top) {
+				button = __builtin_ctz(SCE_CTRL_R2);
+			} else {
+				button = __builtin_ctz(SCE_CTRL_R3);
+			}
+		}
+		int key = mInputMapKey(map, PSP2_INPUT, button);
+		if (key != -1) {
+			activeKeys |= 1 << key;
+		}
+	}
+	return activeKeys;
 }
 
 __attribute__((noreturn, weak)) void __assert_func(const char* file, int line, const char* func, const char* expr) {

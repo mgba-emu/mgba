@@ -5,10 +5,12 @@ Features:
  - New option to lock the maximum frame size
  - Memory access and information logging
  - 3DS: Add faster "loose" sync mode, default enabled
+ - Vita: Allow using rear touch pads as L2/L3/R2/R3
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
  - Scripting: New `storage` API for saving data for a script, e.g. settings
  - Scripting: New `image` and `canvas` APIs for drawing images and displaying on-screen
  - Scripting: Debugger integration to allow for breakpoints and watchpoints
+ - Scripting: Add support for running scripts at startup
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81, Sintax
  - Initial support for bootleg GBA multicarts
  - Debugger: Add range watchpoints
@@ -23,23 +25,22 @@ Emulation fixes:
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
  - GBA Video: Improve emulation of window start/end conditions (fixes mgba.io/i/1945)
 Other fixes:
- - ARM Debugger: Fix disassembly of ror r0 barrel shift (fixes mgba.io/i/3412)
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
  - Debugger: Fix writing to specific segment in command-line debugger
- - FFmpeg: Fix failing to record videos with CRF video (fixes mgba.io/i/3368)
- - GB Core: Fix cloning savedata when backing file is outdated (fixes mgba.io/i/3388)
  - GBA: Fix getting game info for multiboot ROMs
- - GBA Core: Fix booting into BIOS when skip BIOS is enabled
- - GBA Hardware: Fix loading states unconditionally overwriting GPIO memory
  - mGUI: Load parent directory if last used directory is missing (fixes mgba.io/i/3379)
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Fix potential crash when configuring shortcuts
  - Qt: Fix regression where loading BIOS creates a save file (fixes mgba.io/i/3359)
+ - Qt: Fix selecting high tiles in tile and map views (fixes mgba.io/i/3461)
 Misc:
+ - 3DS: Change title ID to avoid conflict with commercial title (fixes mgba.io/i/3023)
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - Core: Improve rumble emulation by averaging state over entire frame (fixes mgba.io/i/3232)
  - Core: Add MD5 hashing for ROMs
  - Core: Add support for specifying an arbitrary portable directory
+ - Core: Add SHA1 hashing for ROMs
+ - FFmpeg: Add Ut Video option
  - GB: Prevent incompatible BIOSes from being used on differing models
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
@@ -61,11 +62,24 @@ Misc:
  - Qt: Support building against Qt 6
  - Qt: Add shortcuts to increment fast forward speed (mgba.io/i/2903)
  - Qt: Enable ROM preloading by default
+ - Qt: Throttle fatal error dialogs
  - Res: Port hq2x and OmniScale shaders from SameBoy
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
  - Res: Update gba-colors shader (closes mgba.io/i/2976)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
+
+0.10.5: (2025-03-08)
+Other fixes:
+ - ARM Debugger: Fix disassembly of ror r0 barrel shift (fixes mgba.io/i/3412)
+ - FFmpeg: Fix failing to record videos with CRF video (fixes mgba.io/i/3368)
+ - GB Core: Fix cloning savedata when backing file is outdated (fixes mgba.io/i/3388)
+ - GBA Cheats: Let VBA-style codes patch ROM (fixes mgba.io/i/3423)
+ - GBA Core: Fix booting into BIOS when skip BIOS is enabled
+ - GBA Hardware: Fix loading states unconditionally overwriting GPIO memory
  - Updater: Fix rewriting folders and files on Windows (fixes mgba.io/i/3384)
+ - Wii: Fix crash on loading large ZIP files (fixes mgba.io/i/3404)
+Misc:
+ - GB: Allow use of CGB-E and AGB-0 BIOS versions (closes mgba.io/i/3427)
 
 0.10.4: (2024-12-07)
 Emulation fixes:

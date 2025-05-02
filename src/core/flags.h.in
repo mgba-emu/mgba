@@ -53,6 +53,10 @@
 #cmakedefine ENABLE_DEBUGGERS
 #endif
 
+#ifndef ENABLE_DIRECTORIES
+#cmakedefine ENABLE_DIRECTORIES
+#endif
+
 #ifndef ENABLE_GDB_STUB
 #cmakedefine ENABLE_GDB_STUB
 #endif

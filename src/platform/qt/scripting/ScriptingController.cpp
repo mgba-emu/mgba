@@ -10,14 +10,17 @@
 #include <QMouseEvent>
 #include <QWidget>
 
+#include "ConfigController.h"
 #include "CoreController.h"
 #include "Display.h"
 #include "input/Gamepad.h"
 #include "input/GamepadButtonEvent.h"
 #include "input/GamepadHatEvent.h"
 #include "InputController.h"
+#include "scripting/AutorunScriptView.h"
 #include "scripting/ScriptingTextBuffer.h"
 #include "scripting/ScriptingTextBufferModel.h"
+#include "Window.h"
 
 #include <mgba/script.h>
 #include <mgba-util/math.h>
@@ -25,8 +28,9 @@
 
 using namespace QGBA;
 
-ScriptingController::ScriptingController(QObject* parent)
+ScriptingController::ScriptingController(ConfigController* config, QObject* parent)
 	: QObject(parent)
+	, m_model(config)
 {
 	m_logger.p = this;
 	m_logger.log = [](mLogger* log, int, enum mLogLevel level, const char* format, va_list args) {
@@ -154,14 +158,16 @@ void ScriptingController::reset() {
 	m_engines.clear();
 	m_activeEngine = nullptr;
 	init();
-	if (m_controller && m_controller->hasStarted()) {
-		attach();
-	}
 }
 
 void ScriptingController::runCode(const QString& code) {
 	VFileDevice vf(code.toUtf8());
 	load(vf, "*prompt");
+}
+
+void ScriptingController::openAutorunEdit() {
+	AutorunScriptView* view = new AutorunScriptView(&m_model, this);
+	emit autorunScriptsOpened(view);
 }
 
 void ScriptingController::flushStorage() {
@@ -259,6 +265,15 @@ void ScriptingController::scriptingEvent(QObject* obj, QEvent* event) {
 	}
 }
 
+QString ScriptingController::getFilenameFilters() const {
+	QStringList filters;
+#ifdef USE_LUA
+	filters.append(tr("Lua scripts (*.lua)"));
+#endif
+	filters.append(tr("All files (*.*)"));
+	return filters.join(";;");
+}
+
 void ScriptingController::updateGamepad() {
 	InputDriver* driver = m_inputController->gamepadDriver();
 	if (!driver) {
@@ -354,6 +369,14 @@ void ScriptingController::init() {
 #ifdef USE_JSON_C
 	m_storageFlush.start();
 #endif
+
+	if (m_controller && m_controller->hasStarted()) {
+		attach();
+	}
+
+	for (const auto& script: m_model.activeScripts()) {
+		loadFile(script);
+	}
 }
 
 uint32_t ScriptingController::qtToScriptingKey(const QKeyEvent* event) {

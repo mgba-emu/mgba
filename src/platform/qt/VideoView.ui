@@ -304,6 +304,11 @@
            </item>
            <item>
             <property name="text">
+             <string notr="true">Ut Video</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
              <string notr="true">FFV1</string>
             </property>
            </item>

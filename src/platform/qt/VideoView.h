@@ -26,7 +26,7 @@ class VideoView : public QWidget {
 Q_OBJECT
 
 public:
-	VideoView(QWidget* parent = nullptr);
+	VideoView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 	virtual ~VideoView();
 
 	mAVStream* getStream() { return &m_encoder.d; }

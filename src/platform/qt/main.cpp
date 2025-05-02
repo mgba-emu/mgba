@@ -50,6 +50,7 @@ Q_IMPORT_PLUGIN(QWaylandIntegrationPlugin);
 #ifdef Q_OS_WIN
 #include <process.h>
 #include <wincon.h>
+extern "C" __declspec (dllexport) DWORD NoHotPatch = 0x1;
 #else
 #include <unistd.h>
 #endif

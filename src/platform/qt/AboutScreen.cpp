@@ -74,7 +74,7 @@ AboutScreen::AboutScreen(QWidget* parent)
 
 	{
 		QString copyright = m_ui.copyright->text();
-		copyright.replace("{year}", QLatin1String("2023"));
+		copyright.replace("{year}", QLatin1String("2025"));
 		m_ui.copyright->setText(copyright);
 	}
 }

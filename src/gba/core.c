@@ -31,6 +31,7 @@
 #include <mgba-util/elf-read.h>
 #endif
 #include <mgba-util/md5.h>
+#include <mgba-util/sha1.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/patch.h>
 #include <mgba-util/vfs.h>
@@ -296,7 +297,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->proxyRenderer.logger = NULL;
 #endif
 
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 	mDirectorySetInit(&core->dirs);
 #endif
 
@@ -308,7 +309,7 @@ static void _GBACoreDeinit(struct mCore* core) {
 	GBADestroy(core->board);
 	mappedMemoryFree(core->cpu, sizeof(struct ARMCore));
 	mappedMemoryFree(core->board, sizeof(struct GBA));
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 	mDirectorySetDeinit(&core->dirs);
 #endif
 #ifdef ENABLE_DEBUGGERS
@@ -699,6 +700,19 @@ static void _GBACoreChecksum(const struct mCore* core, void* data, enum mCoreChe
 			md5Buffer(gba->memory.rom, gba->memory.romSize, data);
 		} else {
 			md5Buffer("", 0, data);
+		}
+		break;
+	case mCHECKSUM_SHA1:
+		if (gba->romVf) {
+			sha1File(gba->romVf, data);
+		} else if (gba->mbVf) {
+			sha1File(gba->mbVf, data);
+		} else if (gba->memory.rom && gba->isPristine) {
+			sha1Buffer(gba->memory.rom, gba->pristineRomSize, data);
+		} else if (gba->memory.rom) {
+			sha1Buffer(gba->memory.rom, gba->memory.romSize, data);
+		} else {
+			sha1Buffer("", 0, data);
 		}
 		break;
 	}
@@ -1352,7 +1366,7 @@ static void _GBACoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 		seek = vf->seek(vf, 0, SEEK_CUR);
 		vf->seek(vf, 0, SEEK_SET);
 	}
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 #ifdef USE_ELF
 	if (!vf && core->dirs.base) {
 		closeAfter = true;

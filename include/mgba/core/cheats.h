@@ -118,7 +118,7 @@ bool mCheatSaveFile(struct mCheatDevice*, struct VFile*);
 bool mCheatParseLibretroFile(struct mCheatDevice*, struct VFile*);
 bool mCheatParseEZFChtFile(struct mCheatDevice*, struct VFile*);
 
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 void mCheatAutosave(struct mCheatDevice*);
 #endif
 

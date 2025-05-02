@@ -23,7 +23,7 @@ class GIFView : public QWidget {
 Q_OBJECT
 
 public:
-	GIFView(QWidget* parent = nullptr);
+	GIFView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
 	virtual ~GIFView();
 
 	mAVStream* getStream() { return &m_encoder.d; }
