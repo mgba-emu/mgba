@@ -6,27 +6,27 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="427"/>
         <source>Name</source>
-        <translation type="unfinished">Nome</translation>
+        <translation>Nome</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished">Local</translation>
+        <translation>Local</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
         <source>Platform</source>
-        <translation type="unfinished">Plataforma</translation>
+        <translation>Plataforma</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished">Tamanho</translation>
+        <translation>Tamanho</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
         <source>CRC32</source>
-        <translation type="unfinished">CRC32</translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -255,7 +255,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="98"/>
         <source>Moving more than one row at once is not yet supported</source>
-        <translation type="unfinished"></translation>
+        <translation>Mover mais do que uma linha por vez ainda não é suportado</translation>
     </message>
 </context>
 <context>
@@ -263,37 +263,37 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="14"/>
         <source>Autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto-executar scripts</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished">Adicionar</translation>
+        <translation>Adicionar</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
         <source>Remove</source>
-        <translation type="unfinished">Remover</translation>
+        <translation>Remover</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="53"/>
         <source>Move up</source>
-        <translation type="unfinished"></translation>
+        <translation>Mover pra cima</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="63"/>
         <source>Move down</source>
-        <translation type="unfinished"></translation>
+        <translation>Mover pra baixo</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="73"/>
         <source>Run scripts when starting a game</source>
-        <translation type="unfinished"></translation>
+        <translation>Executar scripts quando iniciar um jogo</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="24"/>
         <source>Select a script</source>
-        <translation type="unfinished"></translation>
+        <translation>Selecione um script</translation>
     </message>
 </context>
 <context>
@@ -1097,32 +1097,32 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="85"/>
         <source>%1 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
         <source>%1 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + Rumble</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
         <source>%1 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (Inclinação)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="96"/>
         <source>%1 (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (antigo 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="97"/>
         <source>%1 (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (antigo 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
         <source>%1 (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (novo)</translation>
     </message>
 </context>
 <context>
@@ -4511,7 +4511,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="100"/>
         <source>SHA-1</source>
-        <translation type="unfinished"></translation>
+        <translation>SHA-1</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
@@ -4786,12 +4786,12 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="271"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished">Scripts do lua (*.lua)</translation>
+        <translation>Scripts do lua (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="273"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished">Todos os arquivos (*.*)</translation>
+        <translation>Todos os arquivos (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4847,7 +4847,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="131"/>
         <source>Edit autorun scripts...</source>
-        <translation type="unfinished"></translation>
+        <translation>Editar scripts de execução automática...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="62"/>
@@ -5334,7 +5334,7 @@ Se estiver definido como OpenGL e você ainda ver isto, sua placa gráfica ou dr
     <message>
         <location filename="../SettingsView.ui" line="575"/>
         <source>Edit autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Editar scripts de execução automática</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="599"/>
