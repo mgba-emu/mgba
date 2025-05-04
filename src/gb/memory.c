@@ -150,12 +150,12 @@ void GBMemoryInit(struct GB* gb) {
 	cpu->memory.setActiveRegion = GBSetActiveRegion;
 	cpu->memory.accessSource = mACCESS_UNKNOWN;
 
-	gb->memory.wram = 0;
-	gb->memory.wramBank = 0;
-	gb->memory.rom = 0;
-	gb->memory.romBank = 0;
+	gb->memory.wram = NULL;
+	gb->memory.wramBank = NULL;
+	gb->memory.rom = NULL;
+	gb->memory.romBank = NULL;
 	gb->memory.romSize = 0;
-	gb->memory.sram = 0;
+	gb->memory.sram = NULL;
 	gb->memory.mbcType = GB_MBC_AUTODETECT;
 	gb->memory.mbcRead = NULL;
 	gb->memory.mbcWrite = NULL;
