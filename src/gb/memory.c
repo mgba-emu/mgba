@@ -467,8 +467,10 @@ uint8_t GBView8(struct SM83Core* cpu, uint16_t address, int segment) {
 	case GB_REGION_VRAM + 1:
 		if (segment < 0) {
 			return gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)];
+		} else if (segment == 1 && gb->model < GB_MODEL_CGB) {
+			return 0xFF;
 		} else if (segment < 2) {
-			return gb->video.vram[(address & (GB_SIZE_VRAM_BANK0 - 1)) + segment *GB_SIZE_VRAM_BANK0];
+			return gb->video.vram[(address & (GB_SIZE_VRAM_BANK0 - 1)) + segment * GB_SIZE_VRAM_BANK0];
 		} else {
 			return 0xFF;
 		}
@@ -498,7 +500,12 @@ uint8_t GBView8(struct SM83Core* cpu, uint16_t address, int segment) {
 		if (segment < 0) {
 			return memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
 		} else if (segment < 8) {
-			return memory->wram[(address & (GB_SIZE_WORKING_RAM_BANK0 - 1)) + segment *GB_SIZE_WORKING_RAM_BANK0];
+			if (segment == 0) {
+				segment = 1;
+			} else if (segment > 1 && gb->model < GB_MODEL_CGB) {
+				return 0xFF;
+			}
+			return memory->wram[(address & (GB_SIZE_WORKING_RAM_BANK0 - 1)) + segment * GB_SIZE_WORKING_RAM_BANK0];
 		} else {
 			return 0xFF;
 		}
@@ -659,6 +666,8 @@ void GBPatch8(struct SM83Core* cpu, uint16_t address, int8_t value, int8_t* old,
 			oldValue = gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)];
 			gb->video.vramBank[address & (GB_SIZE_VRAM_BANK0 - 1)] = value;
 			gb->video.renderer->writeVRAM(gb->video.renderer, (address & (GB_SIZE_VRAM_BANK0 - 1)) + GB_SIZE_VRAM_BANK0 * gb->video.vramCurrentBank);
+		} else if (segment == 1 && gb->model < GB_MODEL_CGB) {
+			return;
 		} else if (segment < 2) {
 			oldValue = gb->video.vram[(address & (GB_SIZE_VRAM_BANK0 - 1)) + segment * GB_SIZE_VRAM_BANK0];
 			gb->video.vramBank[(address & (GB_SIZE_VRAM_BANK0 - 1)) + segment * GB_SIZE_VRAM_BANK0] = value;
@@ -689,6 +698,11 @@ void GBPatch8(struct SM83Core* cpu, uint16_t address, int8_t value, int8_t* old,
 			oldValue = memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)];
 			memory->wramBank[address & (GB_SIZE_WORKING_RAM_BANK0 - 1)] = value;
 		} else if (segment < 8) {
+			if (segment == 0) {
+				segment = 1;
+			} else if (segment > 1 && gb->model < GB_MODEL_CGB) {
+				return;
+			}
 			oldValue = memory->wram[(address & (GB_SIZE_WORKING_RAM_BANK0 - 1)) + segment * GB_SIZE_WORKING_RAM_BANK0];
 			memory->wram[(address & (GB_SIZE_WORKING_RAM_BANK0 - 1)) + segment * GB_SIZE_WORKING_RAM_BANK0] = value;
 		} else {
