@@ -583,7 +583,7 @@ int InputController::claimPlayer() {
 			return i;
 		}
 	}
-	qFatal("Can't claim 5th player. Please report this bug.");
+	qFatal(qPrintable(tr("Can't claim 5th player. Please report this bug.")));
 }
 
 void InputController::freePlayer(int player) {
@@ -724,9 +724,9 @@ void InputController::prepareCamFormat() {
 		}
 	}
 	if (!goodFormatFound) {
-		qWarning() << "Could not find a valid camera format!";
+		qWarning().noquote() << tr("Could not find a valid camera format!");
 		for (const auto& format : cameraFormats) {
-			qWarning() << "Camera supported format: " << QString::number(format);
+			qWarning().noquote() << tr("Camera supported format: %1").arg(format);
 		}
 	}
 	m_camera->setViewfinderSettings(settings);
@@ -745,7 +745,7 @@ void InputController::prepareCamFormat() {
 		}
 	}
 	if (!goodFormatFound) {
-		qWarning() << "Could not find a valid camera format!";
+		qWarning().noquote() << tr("Could not find a valid camera format!");
 	}
 	m_camera->setCameraFormat(bestFormat);
 #endif

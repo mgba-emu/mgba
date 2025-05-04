@@ -31,7 +31,7 @@ AudioDevice::~AudioDevice() {
 
 void AudioDevice::setFormat(const QAudioFormat& format) {
 	if (!m_context || !mCoreThreadIsActive(m_context)) {
-		qInfo() << tr("Can't set format of context-less audio device");
+		qInfo().noquote() << tr("Can't set format of context-less audio device");
 		return;
 	}
 	mCoreSyncLockAudio(&m_context->impl->sync);
@@ -52,7 +52,7 @@ void AudioDevice::setInput(mCoreThread* input) {
 
 qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 	if (!m_context->core) {
-		qWarning() << tr("Audio device is missing its core");
+		qWarning().noquote() << tr("Audio device is missing its core");
 		return 0;
 	}
 
@@ -80,7 +80,7 @@ qint64 AudioDevice::readData(char* data, qint64 maxSize) {
 }
 
 qint64 AudioDevice::writeData(const char*, qint64) {
-	qWarning() << tr("Writing data to read-only audio device");
+	qWarning().noquote() << tr("Writing data to read-only audio device");
 	return 0;
 }
 

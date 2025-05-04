@@ -656,7 +656,7 @@ QByteArray SaveConverter::AnnotatedSave::convertTo(const SaveConverter::Annotate
 	}
 
 	if (platform != target.platform) {
-		qCritical() << tr("Cannot convert save games between platforms");
+		qCritical().noquote() << tr("Cannot convert save games between platforms");
 		return {};
 	}
 

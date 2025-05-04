@@ -23,7 +23,7 @@ QDataStream& operator>>(QDataStream& stream, QGBA::AutorunScriptModel::ScriptInf
 		stream >> filename;
 		object.filename = QString::fromUtf8(filename);
 	} else {
-		qCritical() << QGBA::AutorunScriptModel::tr("Could not load autorun script settings: unknown script info format %1").arg(version);
+		qCritical().noquote() << QGBA::AutorunScriptModel::tr("Could not load autorun script settings: unknown script info format %1").arg(version);
 		stream.setStatus(QDataStream::ReadCorruptData);
 		return stream;
 	}

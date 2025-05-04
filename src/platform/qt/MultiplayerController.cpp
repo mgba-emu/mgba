@@ -310,7 +310,7 @@ bool MultiplayerController::attachGame(CoreController* controller) {
 			break;
 		}
 		if (!player.saveId) {
-			qCritical() << "Couldn't find available save ID";
+			qCritical().noquote() << "Couldn't find available save ID";
 			player.saveId = 1;
 		}
 	} else if (saveId) {
@@ -364,7 +364,7 @@ void MultiplayerController::detachGame(CoreController* controller) {
 		interrupters.append(playerController);
 	}
 	if (pid < 0) {
-		qWarning() << tr("Trying to detach a multiplayer player that's not attached");
+		qWarning().noquote() << tr("Trying to detach a multiplayer player that's not attached");
 		return;
 	}
 	switch (controller->platform()) {
@@ -404,7 +404,7 @@ void MultiplayerController::detachGame(CoreController* controller) {
 	QPair<QString, QString> path(controller->path(), controller->baseDirectory());
 	Player& p = m_pids.find(pid).value();
 	if (!p.saveId) {
-		qWarning() << tr("Clearing invalid save ID");
+		qWarning().noquote() << tr("Clearing invalid save ID");
 	} else {
 		m_claimedSaves[path] &= ~(1 << (p.saveId - 1));
 		if (!m_claimedSaves[path]) {
@@ -413,7 +413,7 @@ void MultiplayerController::detachGame(CoreController* controller) {
 	}
 
 	if (p.preferredId < 0) {
-		qWarning() << tr("Clearing invalid preferred ID");
+		qWarning().noquote() << tr("Clearing invalid preferred ID");
 	} else {
 		m_claimedIds &= ~(1 << p.preferredId);
 	}
@@ -434,7 +434,7 @@ int MultiplayerController::playerId(CoreController* controller) const {
 	for (int i = 0; i < m_players.count(); ++i) {
 		const Player* p = player(i);
 		if (!p) {
-			qCritical() << tr("Trying to get player ID for a multiplayer player that's not attached");
+			qCritical().noquote() << tr("Trying to get player ID for a multiplayer player that's not attached");
 			return -1;
 		}
 		if (p->controller == controller) {
@@ -448,7 +448,7 @@ int MultiplayerController::saveId(CoreController* controller) const {
 	for (int i = 0; i < m_players.count(); ++i) {
 		const Player* p = player(i);
 		if (!p) {
-			qCritical() << tr("Trying to get save ID for a multiplayer player that's not attached");
+			qCritical().noquote() << tr("Trying to get save ID for a multiplayer player that's not attached");
 			return -1;
 		}
 		if (p->controller == controller) {

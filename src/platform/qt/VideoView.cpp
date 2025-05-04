@@ -223,7 +223,7 @@ void VideoView::startRecording() {
 		return;
 	}
 	if (!FFmpegEncoderOpen(&m_encoder, m_filename.toUtf8().constData())) {
-		qCritical() << tr("Failed to open output video file: %1").arg(m_filename);
+		qCritical().noquote() << tr("Failed to open output video file: %1").arg(m_filename);
 		return;
 	}
 	m_ui.start->setEnabled(false);
