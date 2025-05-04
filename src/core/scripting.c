@@ -1346,9 +1346,9 @@ static uint8_t _readLuminance(struct GBALuminanceSource* luminance) {
 }
 #endif
 
-#define CALLBACK(NAME) _mScriptCoreCallback ## NAME
+#define mCoreCallback(NAME) _mScriptCoreCallback ## NAME
 #define DEFINE_CALLBACK(NAME) \
-	void CALLBACK(NAME) (void* context) { \
+	void mCoreCallback(NAME) (void* context) { \
 		struct mScriptContext* scriptContext = context; \
 		if (!scriptContext) { \
 			return; \
@@ -1397,13 +1397,13 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 #endif
 
 	struct mCoreCallbacks callbacks = {
-		.videoFrameEnded = CALLBACK(frame),
-		.coreCrashed = CALLBACK(crashed),
-		.sleep = CALLBACK(sleep),
-		.shutdown = CALLBACK(stop),
-		.keysRead = CALLBACK(keysRead),
-		.savedataUpdated = CALLBACK(savedataUpdated),
-		.alarm = CALLBACK(alarm),
+		.videoFrameEnded = mCoreCallback(frame),
+		.coreCrashed = mCoreCallback(crashed),
+		.sleep = mCoreCallback(sleep),
+		.shutdown = mCoreCallback(stop),
+		.keysRead = mCoreCallback(keysRead),
+		.savedataUpdated = mCoreCallback(savedataUpdated),
+		.alarm = mCoreCallback(alarm),
 		.context = context
 	};
 	core->addCoreCallbacks(core, &callbacks);

@@ -17,6 +17,9 @@
 CXX_GUARD_START
 
 #ifdef _WIN32
+#ifdef _CRT_NONSTDC_NO_WARNINGS
+#define _CRT_NONSTDC_NO_WARNINGS
+#endif
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif

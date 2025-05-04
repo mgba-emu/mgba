@@ -650,7 +650,7 @@ void mInputSetPreferredDevice(struct Configuration* config, const char* platform
 
 	char deviceId[KEY_NAME_MAX];
 	snprintf(deviceId, sizeof(deviceId), "device%i", playerId);
-	return ConfigurationSetValue(config, sectionName, deviceId, deviceName);
+	ConfigurationSetValue(config, sectionName, deviceId, deviceName);
 }
 
 const char* mInputGetCustomValue(const struct Configuration* config, const char* platformName, uint32_t type, const char* key, const char* profile) {
