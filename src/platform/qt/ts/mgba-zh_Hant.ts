@@ -2408,7 +2408,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="871"/>
         <location filename="../IOViewer.cpp" line="884"/>
         <source>Select</source>
-        <translation>Select</translation>
+        <translation type="unfinished">選擇</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="872"/>
@@ -4531,7 +4531,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
         <source>ROM header</source>
-        <translation>ROM header</translation>
+        <translation type="unfinished">ROM 標頭</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="140"/>
@@ -6286,7 +6286,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1219"/>
         <source> -  Player %1 of %2</source>
-        <translation> -  Player %1 of %2</translation>
+        <translation> -  玩家 %1 共 %2</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1230"/>
