@@ -25,10 +25,6 @@
 
 struct NoIntroDB;
 
-#include <mgba/core/log.h>
-
-mLOG_DECLARE_CATEGORY(QT);
-
 namespace QGBA {
 
 class ConfigController;
