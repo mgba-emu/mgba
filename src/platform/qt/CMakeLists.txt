@@ -136,6 +136,7 @@ set(SOURCE_FILES
 	InputProfile.cpp
 	KeyEditor.cpp
 	LoadSaveState.cpp
+	Log.cpp
 	LogController.cpp
 	LogConfigModel.cpp
 	LogView.cpp
@@ -309,6 +310,7 @@ if(ENABLE_SCRIPTING)
 		scripting/ScriptingView.ui)
 
 	set(TEST_QT_autoscript_SRC
+		Log.cpp
 		test/autoscript.cpp
 		scripting/AutorunScriptModel.cpp)
 endif()
