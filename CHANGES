@@ -17,6 +17,7 @@ Features:
  - "Headless" frontend for running tests, automation, etc.
 Emulation fixes:
  - ARM: Add framework for coprocessor support
+ - GB Memory: Initialize HRAM when skipping BIOS in GBC mode (fixes mgba.io/i/3420)
  - GB Serialize: Add missing Pocket Cam state to savestates
  - GB Video: Implement DMG-style sprite ordering
  - GBA: Unhandled bkpt should be treated as an undefined exception
