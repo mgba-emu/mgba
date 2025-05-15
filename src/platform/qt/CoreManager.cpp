@@ -49,7 +49,7 @@ CoreController* CoreManager::loadGame(const QString& path) {
 			dir->close(dir);
 			return loadGame(vf, fname, base);
 		} else {
-			qCritical() << tr("Failed to open game file: %1").arg(path);
+			LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
 		}
 		return nullptr;
 	}
@@ -87,7 +87,7 @@ CoreController* CoreManager::loadGame(VFile* vf, const QString& path, const QStr
 	mCore* core = mCoreFindVF(vf);
 	if (!core) {
 		vf->close(vf);
-		qCritical() << tr("Could not load game. Are you sure it's in the correct format?");
+		LOG(QT, ERROR) << tr("Could not load game. Are you sure it's in the correct format?");
 		return nullptr;
 	}
 
@@ -114,7 +114,7 @@ CoreController* CoreManager::loadGame(VFile* vf, const QString& path, const QStr
 	bytes = info.dir().canonicalPath().toUtf8();
 	mDirectorySetAttachBase(&core->dirs, VDirOpen(bytes.constData()));
 	if (!mCoreAutoloadSave(core)) {
-		qCritical() << tr("Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).");
+		LOG(QT, ERROR) << tr("Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).");
 	}
 	mCoreAutoloadCheats(core);
 
