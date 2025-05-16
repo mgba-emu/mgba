@@ -6,27 +6,27 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="427"/>
         <source>Name</source>
-        <translation type="unfinished">名称</translation>
+        <translation>名称</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished">位置</translation>
+        <translation>位置</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
         <source>Platform</source>
-        <translation type="unfinished">平台</translation>
+        <translation>平台</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished">大小</translation>
+        <translation>大小</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
         <source>CRC32</source>
-        <translation type="unfinished">CRC32</translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -255,7 +255,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="98"/>
         <source>Moving more than one row at once is not yet supported</source>
-        <translation type="unfinished"></translation>
+        <translation>尚不支持一次移动多行</translation>
     </message>
 </context>
 <context>
@@ -263,37 +263,37 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="14"/>
         <source>Autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>自动运行脚本</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished">添加</translation>
+        <translation>添加</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
         <source>Remove</source>
-        <translation type="unfinished">移除</translation>
+        <translation>移除</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="53"/>
         <source>Move up</source>
-        <translation type="unfinished"></translation>
+        <translation>上移</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="63"/>
         <source>Move down</source>
-        <translation type="unfinished"></translation>
+        <translation>下移</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="73"/>
         <source>Run scripts when starting a game</source>
-        <translation type="unfinished"></translation>
+        <translation>启动游戏时运行脚本</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="24"/>
         <source>Select a script</source>
-        <translation type="unfinished"></translation>
+        <translation>选择一个脚本</translation>
     </message>
 </context>
 <context>
@@ -1097,32 +1097,32 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="85"/>
         <source>%1 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + RTC(实时时钟)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
         <source>%1 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + Rumble(震动)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
         <source>%1 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (Tilt)(重力感应)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="96"/>
         <source>%1 (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (旧 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="97"/>
         <source>%1 (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (旧 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
         <source>%1 (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 新)</translation>
     </message>
 </context>
 <context>
@@ -4211,32 +4211,32 @@ Download size: %3</source>
     <message>
         <location filename="../OverrideView.ui" line="131"/>
         <source>SRAM</source>
-        <translation>SRAM</translation>
+        <translation>SRAM 32kB(/256kbit)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="136"/>
         <source>Flash 512kb</source>
-        <translation>Flash 512kb</translation>
+        <translation>FLASH 64kB(/512kbit)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="141"/>
         <source>Flash 1Mb</source>
-        <translation>Flash 1Mb</translation>
+        <translation>FLASH 128kB(/1Mbit)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="146"/>
         <source>EEPROM 8kB</source>
-        <translation>EEPROM 8kB</translation>
+        <translation>EEPROM 8kB(/64kbit)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="151"/>
         <source>EEPROM 512 bytes</source>
-        <translation>EEPROM 512 字节</translation>
+        <translation>EEPROM 512B(/4kbit)</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="156"/>
         <source>SRAM 64kB (bootlegs only)</source>
-        <translation>SRAM 64kB（盗版专用）</translation>
+        <translation>SRAM 64kB(/512kbit)（盗版专用）</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="164"/>
@@ -4511,7 +4511,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="100"/>
         <source>SHA-1</source>
-        <translation type="unfinished"></translation>
+        <translation>SHA-1</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
@@ -4786,12 +4786,12 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="271"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished">Lua 脚本 (*.lua)</translation>
+        <translation>Lua 脚本 (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="273"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished">所有文件 (*.*)</translation>
+        <translation>所有文件 (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4847,7 +4847,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="131"/>
         <source>Edit autorun scripts...</source>
-        <translation type="unfinished"></translation>
+        <translation>编辑自动运行脚本...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="62"/>
@@ -5492,7 +5492,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="575"/>
         <source>Edit autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>编辑自动运行脚本</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="589"/>
