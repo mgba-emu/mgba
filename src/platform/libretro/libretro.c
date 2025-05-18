@@ -1728,19 +1728,27 @@ void retro_run(void) {
 #ifdef M_CORE_GBA
 	if (core->platform(core) == mPLATFORM_GBA) {
 		struct mAudioBuffer *coreBuffer = core->getAudioBuffer(core);
-		unsigned coreSampleRate = core->audioSampleRate(core);
-		/* Resample generated audio */
-		mAudioResamplerSetSource(&audioResampler, coreBuffer, coreSampleRate, true);
-		mAudioResamplerProcess(&audioResampler);
-		/* Output resampled audio */
-		size_t samplesAvail = mAudioBufferAvailable(&audioResampleBuffer);
-		size_t samplesProduced = mAudioBufferRead(&audioResampleBuffer, audioSampleBuffer, samplesAvail);
-		if (samplesProduced > 0) {
-			if (audioLowPassEnabled) {
-				_audioLowPassFilter(audioSampleBuffer, samplesProduced);
-			}
-			audioCallback(audioSampleBuffer, samplesProduced);
-		}
+        int coreSamplesAvail = mAudioBufferAvailable(coreBuffer);
+        if (coreSamplesAvail > 0) {
+            unsigned coreSampleRate = core->audioSampleRate(core);
+            size_t samplesProduced;
+            if (coreSampleRate != GBA_RESAMPLED_RATE) {
+                /* Resample generated audio */
+                mAudioResamplerSetSource(&audioResampler, coreBuffer, coreSampleRate, true);
+                mAudioResamplerProcess(&audioResampler);
+                /* Output resampled audio */
+                size_t samplesAvail = mAudioBufferAvailable(&audioResampleBuffer);
+                samplesProduced = mAudioBufferRead(&audioResampleBuffer, audioSampleBuffer, samplesAvail);
+            } else {
+                samplesProduced = mAudioBufferRead(coreBuffer, audioSampleBuffer, coreSamplesAvail);
+            }
+            if (samplesProduced > 0) {
+                if (audioLowPassEnabled) {
+                    _audioLowPassFilter(audioSampleBuffer, samplesProduced);
+                }
+                audioCallback(audioSampleBuffer, samplesProduced);
+            }
+        }
 	}
 #endif
 }
