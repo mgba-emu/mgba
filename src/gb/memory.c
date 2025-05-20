@@ -184,7 +184,18 @@ void GBMemoryReset(struct GB* gb) {
 		uint32_t* base = (uint32_t*) gb->memory.wram;
 		size_t i;
 		uint32_t pattern = 0;
+		// Banks 0, 1, 3, 6, and 7 are cleared with this pattern
 		for (i = 0; i < GB_SIZE_WORKING_RAM / 4; i += 4) {
+			if ((i & 0x1FFF) == 0x800) {
+				// Skip bank 2
+				i += 0x3FC;
+				continue;
+			}
+			if ((i & 0x1FFF) == 0x1000) {
+				// Skip banks 5 and 5
+				i += 0x7FC;
+				continue;
+			}
 			if ((i & 0x1FF) == 0) {
 				pattern = ~pattern;
 			}

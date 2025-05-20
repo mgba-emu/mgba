@@ -18,6 +18,7 @@ Features:
 Emulation fixes:
  - ARM: Add framework for coprocessor support
  - GB Memory: Initialize HRAM when skipping BIOS in GBC mode (fixes mgba.io/i/3420)
+ - GB Memory: Fix initial WRAM pattern when skipping BIOS in GBC mode (fixes mgba.io/i/2704)
  - GB Serialize: Add missing Pocket Cam state to savestates
  - GB Video: Implement DMG-style sprite ordering
  - GB Video: Fix window enable edge case (fixes mgba.io/i/2640)
