@@ -581,6 +581,15 @@ std::function<void()> Window::openTView(A... arg) {
 }
 
 template <typename T, typename... A>
+std::function<void()> Window::openTViewModal(A... arg) {
+	return [=]() {
+		T* view = new T(arg...);
+		view->setAttribute(Qt::WA_DeleteOnClose);
+		view->open();
+	};
+}
+
+template <typename T, typename... A>
 std::function<void()> Window::openControllerTView(A... arg) {
 	return [=]() {
 		T* view = new T(m_controller, arg...);
@@ -610,7 +619,9 @@ std::function<void()> Window::openNamedControllerTView(QPointer<T>* name, bool k
 	return [=]() {
 		if (!*name) {
 			*name = new T(m_controller, arg...);
-			connect(m_controller.get(), &CoreController::stopping, name->data(), &QWidget::close);
+			if (m_controller) {
+				connect(m_controller.get(), &CoreController::stopping, name->data(), &QWidget::close);
+			}
 			connect(this, &Window::shutdown, name->data(), &QWidget::close);
 			if (!keepalive) {
 				(*name)->setAttribute(Qt::WA_DeleteOnClose);
@@ -1316,7 +1327,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addSeparator("saves");
 
-	m_actions.addAction(tr("Convert save game..."), "convertSave", openTView<SaveConverter>(), "saves");
+	m_actions.addAction(tr("Convert save game..."), "convertSave", openTViewModal<SaveConverter>(this), "saves");
 
 #ifdef M_CORE_GBA
 	auto importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "saves");
@@ -1426,13 +1437,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addSeparator("file");
 
-	m_actions.addAction(tr("Report bug..."), "bugReport", openTView<ReportView>(), "file");
+	m_actions.addAction(tr("Report bug..."), "bugReport", openTViewModal<ReportView>(this), "file");
 
 #ifndef Q_OS_MAC
 	m_actions.addSeparator("file");
 #endif
 
-	m_actions.addAction(tr("About..."), "about", openTView<AboutScreen>(), "file")->setRole(Action::Role::ABOUT);
+	m_actions.addAction(tr("About..."), "about", openTViewModal<AboutScreen>(this), "file")->setRole(Action::Role::ABOUT);
 	m_actions.addAction(tr("E&xit"), "quit", &QApplication::quit, "file", QKeySequence::Quit)->setRole(Action::Role::QUIT);
 
 	m_actions.addMenu(tr("&Emulation"), "emu");
@@ -1712,40 +1723,16 @@ void Window::setupMenu(QMenuBar* menubar) {
 	addGameAction(tr("Adjust layer placement..."), "placementControl", openControllerTView<PlacementControl>(), "av");
 
 	m_actions.addMenu(tr("&Tools"), "tools");
-	m_actions.addAction(tr("View &logs..."), "viewLogs", static_cast<QWidget*>(m_logView), &QWidget::show, "tools");
+	m_actions.addAction(tr("View &logs..."), "viewLogs", openNamedTView(&m_logView, true, &m_log, this), "tools");
+	m_actions.addAction(tr("Game &overrides..."), "overrideWindow", openNamedControllerTView(&m_overrideView, true, m_config, this), "tools");
+	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", openNamedControllerTView(&m_sensorView, true, &m_inputController, this), "tools");
 
-	m_actions.addAction(tr("Game &overrides..."), "overrideWindow", [this]() {
-		if (!m_overrideView) {
-			m_overrideView = new OverrideView(m_config);
-			if (m_controller) {
-				m_overrideView->setController(m_controller);
-			}
-			connect(this, &Window::shutdown, m_overrideView.data(), &QWidget::close);
-		}
-		m_overrideView->show();
-		m_overrideView->activateWindow();
-		m_overrideView->raise();
-	}, "tools");
-
-	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", [this]() {
-		if (!m_sensorView) {
-			m_sensorView = new SensorView(&m_inputController);
-			if (m_controller) {
-				m_sensorView->setController(m_controller);
-			}
-			connect(this, &Window::shutdown, m_sensorView.data(), &QWidget::close);
-		}
-		m_sensorView->show();
-		m_sensorView->activateWindow();
-		m_sensorView->raise();
-	}, "tools");
-
-	addGameAction(tr("&Cheats..."), "cheatsWindow", openControllerTView<CheatsView>(), "tools");
+	addGameAction(tr("&Cheats..."), "cheatsWindow", openNamedControllerTView(&m_cheatsView, false), "tools");
 #ifdef ENABLE_SCRIPTING
 	m_actions.addAction(tr("Scripting..."), "scripting", this, &Window::scriptingOpen, "tools");
 #endif
 
-	m_actions.addAction(tr("Create forwarder..."), "createForwarder", openTView<ForwarderView>(), "tools");
+	m_actions.addAction(tr("Create forwarder..."), "createForwarder", openTViewModal<ForwarderView>(this), "tools");
 
 	m_actions.addSeparator("tools");
 	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools")->setRole(Action::Role::SETTINGS);

@@ -27,7 +27,7 @@ class SensorView : public QDialog {
 Q_OBJECT
 
 public:
-	SensorView(InputController* input, QWidget* parent = nullptr);
+	SensorView(std::shared_ptr<CoreController> controller, InputController* input, QWidget* parent = nullptr);
 
 	void setController(std::shared_ptr<CoreController>);
 
