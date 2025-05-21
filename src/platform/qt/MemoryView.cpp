@@ -248,6 +248,9 @@ void MemoryView::setSegment(int segment) {
 void MemoryView::update() {
 	m_ui.hexfield->viewport()->update();
 	updateStatus();
+#ifdef ENABLE_DEBUGGERS
+	m_malModel.update();
+#endif
 }
 
 void MemoryView::jumpToAddress(uint32_t address) {

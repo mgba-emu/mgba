@@ -188,6 +188,8 @@ int MemoryAccessLogModel::rowCount(const QModelIndex& parent) const {
 }
 
 void MemoryAccessLogModel::updateSelection(uint32_t start, uint32_t end) {
+	m_start = start;
+	m_end = end;
 	std::shared_ptr<MemoryAccessLogController> controller = m_controller.lock();
 	if (!controller) {
 		return;
@@ -211,9 +213,11 @@ void MemoryAccessLogModel::updateSelection(uint32_t start, uint32_t end) {
 		newBlocks.append({ lastFlags, qMakePair(lastStart, end) });
 	}
 
-	beginResetModel();
-	m_cachedBlocks = newBlocks;
-	endResetModel();
+	if (m_cachedBlocks != newBlocks) {
+		beginResetModel();
+		m_cachedBlocks = newBlocks;
+		endResetModel();
+	}
 }
 
 void MemoryAccessLogModel::setSegment(int segment) {
@@ -234,4 +238,11 @@ void MemoryAccessLogModel::setRegion(uint32_t base, uint32_t, bool useSegments) 
 	m_segment = useSegments ? 0 : -1;
 	m_cachedBlocks.clear();
 	endResetModel();
+}
+
+void MemoryAccessLogModel::update() {
+	if (m_start >= m_end) {
+		return;
+	}
+	updateSelection(m_start, m_end);
 }
