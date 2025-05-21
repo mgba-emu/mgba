@@ -45,8 +45,8 @@ bool MemoryAccessLogController::canExport() const {
 	return m_regionMapping.contains("cart0");
 }
 
-MemoryAccessLogController::Flags MemoryAccessLogController::flagsForAddress(uint32_t addresss, int segment) {
-	uint32_t offset = cacheRegion(addresss, segment);
+MemoryAccessLogController::Flags MemoryAccessLogController::flagsForAddress(uint32_t address, int segment) {
+	uint32_t offset = cacheRegion(address, segment);
 	if (!m_cachedRegion) {
 		return { 0, 0 };
 	}
