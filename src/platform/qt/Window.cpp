@@ -1762,10 +1762,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 #ifdef ENABLE_DEBUGGERS
 	addGameAction(tr("Log memory &accesses..."), "memoryAccessView", [this]() {
-		std::weak_ptr<MemoryAccessLogController> controller = m_controller->memoryAccessLogController();
-		MemoryAccessLogView* view = new MemoryAccessLogView(controller);
-		connect(m_controller.get(), &CoreController::stopping, view, &QWidget::close);
-		openView(view);
+		MemoryAccessLogView::open(m_controller->memoryAccessLogController());
 	}, "tools");
 #endif
 

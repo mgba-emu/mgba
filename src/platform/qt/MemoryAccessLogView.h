@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include <QHash>
+#include <QPointer>
 #include <QSet>
 #include <QWidget>
 
@@ -24,7 +26,7 @@ class MemoryAccessLogView : public QWidget {
 Q_OBJECT
 
 public:
-	MemoryAccessLogView(std::weak_ptr<MemoryAccessLogController> controller, QWidget* parent = nullptr);
+	static MemoryAccessLogView* open(std::weak_ptr<MemoryAccessLogController> controller, QWidget* parent = nullptr);
 	~MemoryAccessLogView() = default;
 
 private slots:
@@ -43,6 +45,10 @@ private slots:
 	void handleLoadUnload(bool load);
 
 private:
+	MemoryAccessLogView(std::weak_ptr<MemoryAccessLogController> controller, QWidget* parent = nullptr);
+
+	static QHash<quintptr, QPointer<MemoryAccessLogView>> s_views;
+
 	Ui::MemoryAccessLogView m_ui;
 
 	std::weak_ptr<MemoryAccessLogController> m_controller;

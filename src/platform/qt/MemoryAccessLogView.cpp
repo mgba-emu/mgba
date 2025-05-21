@@ -15,6 +15,23 @@
 
 using namespace QGBA;
 
+QHash<quintptr, QPointer<MemoryAccessLogView>> MemoryAccessLogView::s_views{};
+
+MemoryAccessLogView* MemoryAccessLogView::open(std::weak_ptr<MemoryAccessLogController> controller, QWidget* parent) {
+	std::shared_ptr<MemoryAccessLogController> controllerPtr = controller.lock();
+	quintptr controllerId = reinterpret_cast<quintptr>(controllerPtr.get());
+	MemoryAccessLogView* view = s_views.value(controllerId);
+	if (!view) {
+		view = s_views[controllerId] = new MemoryAccessLogView(controller, parent);
+		view->setAttribute(Qt::WA_DeleteOnClose);
+		connect(controllerPtr.get(), &QObject::destroyed, view, &QWidget::close);
+	}
+	view->show();
+	view->activateWindow();
+	view->raise();
+	return view;
+}
+
 MemoryAccessLogView::MemoryAccessLogView(std::weak_ptr<MemoryAccessLogController> controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
