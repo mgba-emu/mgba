@@ -433,6 +433,10 @@ struct GBSerializedState {
 				uint8_t mode;
 			} huc3;
 			struct {
+				uint8_t bank;
+				uint8_t locked;
+			} m161;
+			struct {
 				GBSerializedNTOldFlags flags;
 				uint8_t baseBank;
 				uint8_t bankCount;

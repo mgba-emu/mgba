@@ -840,6 +840,10 @@ void GBMemorySerialize(const struct GB* gb, struct GBSerializedState* state) {
 		state->memory.mmm01.locked = memory->mbcState.mmm01.locked;
 		state->memory.mmm01.bank0 = memory->mbcState.mmm01.currentBank0;
 		break;
+	case GB_M161:
+		state->memory.m161.locked = memory->mbcState.m161.locked;
+		state->memory.m161.bank = memory->mbcState.m161.bank;
+		break;
 	case GB_UNL_NT_OLD_1:
 	case GB_UNL_NT_OLD_2:
 		state->memory.ntOld.flags = GBSerializedNTOldFlagsSetSwapped(0, memory->mbcState.ntOld.swapped);
@@ -1005,6 +1009,12 @@ void GBMemoryDeserialize(struct GB* gb, const struct GBSerializedState* state) {
 		} else {
 			GBMBCSwitchBank0(gb, gb->memory.romSize / GB_SIZE_CART_BANK0 - 2);
 		}
+		break;
+	case GB_M161:
+		memory->mbcState.m161.locked = state->memory.m161.locked;
+		memory->mbcState.m161.bank = state->memory.m161.bank & 0x7;
+		GBMBCSwitchBank0(gb, memory->mbcState.m161.bank * 2);
+		GBMBCSwitchBank(gb, memory->mbcState.m161.bank * 2 + 1);
 		break;
 	case GB_UNL_NT_OLD_1:
 	case GB_UNL_NT_OLD_2:

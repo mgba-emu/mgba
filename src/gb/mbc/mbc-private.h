@@ -24,6 +24,7 @@ void _GBMBC7(struct GB*, uint16_t address, uint8_t value);
 void _GBMMM01(struct GB*, uint16_t address, uint8_t value);
 void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
 void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value);
+void _GBM161(struct GB* gb, uint16_t address, uint8_t value);
 
 void _GBHuC1(struct GB*, uint16_t address, uint8_t value);
 void _GBHuC3(struct GB*, uint16_t address, uint8_t value);
