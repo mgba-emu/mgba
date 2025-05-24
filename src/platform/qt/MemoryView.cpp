@@ -199,11 +199,7 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 	connect(m_ui.segments, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
 	        &m_malModel, &MemoryAccessLogModel::setSegment);
 	connect(m_ui.accessLoggerButton, &QAbstractButton::clicked, this, [this]() {
-		std::weak_ptr<MemoryAccessLogController> controller = m_controller->memoryAccessLogController();
-		MemoryAccessLogView* view = new MemoryAccessLogView(controller);
-		connect(m_controller.get(), &CoreController::stopping, view, &QWidget::close);
-		view->setAttribute(Qt::WA_DeleteOnClose);
-		view->show();
+		MemoryAccessLogView::open(m_controller->memoryAccessLogController());
 	});
 	m_ui.accessLog->setModel(&m_malModel);
 #else

@@ -40,6 +40,9 @@ public slots:
 	void update();
 	void jumpToAddress(uint32_t address);
 
+signals:
+  void openMemoryAccessLogView();
+
 private slots:
 	void setIndex(int);
 	void setSegment(int);
