@@ -71,28 +71,30 @@ SensorView::SensorView(std::shared_ptr<CoreController> controller, InputControll
 
 void SensorView::setController(std::shared_ptr<CoreController> controller) {
 	m_controller = controller;
-	if (controller) {
-		connect(m_ui.timeNoOverride, &QAbstractButton::clicked, controller.get(), &CoreController::setRealTime);
-		connect(m_ui.timeFixed, &QRadioButton::clicked, [controller, this] () {
-			controller->setFixedTime(m_ui.time->dateTime().toUTC());
-		});
-		connect(m_ui.timeFakeEpoch, &QRadioButton::clicked, [controller, this] () {
-			controller->setFakeEpoch(m_ui.time->dateTime().toUTC());
-		});
-		connect(m_ui.timeOffset, &QRadioButton::clicked, [controller, this] () {
-			controller->setTimeOffset(m_ui.offsetSeconds->value());
-		});
-		connect(m_ui.offsetSeconds, qOverload<int>(&QSpinBox::valueChanged), [controller, this] (int value) {
-			if (m_ui.timeOffset->isChecked()) {
-				controller->setTimeOffset(value);
-			}
-		});
-		m_ui.timeButtons->checkedButton()->clicked();
-
-		connect(controller.get(), &CoreController::stopping, [this]() {
-			m_controller.reset();
-		});
+	if (!controller) {
+		return;
 	}
+
+	connect(m_ui.timeNoOverride, &QAbstractButton::clicked, controller.get(), &CoreController::setRealTime);
+	connect(m_ui.timeFixed, &QRadioButton::clicked, [controller, this] () {
+		controller->setFixedTime(m_ui.time->dateTime().toUTC());
+	});
+	connect(m_ui.timeFakeEpoch, &QRadioButton::clicked, [controller, this] () {
+		controller->setFakeEpoch(m_ui.time->dateTime().toUTC());
+	});
+	connect(m_ui.timeOffset, &QRadioButton::clicked, [controller, this] () {
+		controller->setTimeOffset(m_ui.offsetSeconds->value());
+	});
+	connect(m_ui.offsetSeconds, qOverload<int>(&QSpinBox::valueChanged), [controller, this] (int value) {
+		if (m_ui.timeOffset->isChecked()) {
+			controller->setTimeOffset(value);
+		}
+	});
+	m_ui.timeButtons->checkedButton()->clicked();
+
+	connect(controller.get(), &CoreController::stopping, [this]() {
+		m_controller.reset();
+	});
 }
 
 void SensorView::jiggerer(QAbstractButton* button, void (InputDriver::*setter)(int)) {
