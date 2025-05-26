@@ -81,7 +81,7 @@ public:
 	PopupManager& withController(CoreProvider& provider) { d()->setProvider(&provider); return *this; }
 	PopupManager& setModal(bool modal) { d()->isModal = modal; return *this; }
 	PopupManager& setKeepAlive(bool keepAlive) { d()->keepAlive = keepAlive; return *this; }
-	PopupManager& constructWith(const std::function<WINDOW*()>& ctor) { d()->construct = ctor; return *this; }
+	PopupManager& constructWithCallback(const std::function<WINDOW*()>& ctor) { d()->construct = ctor; return *this; }
 
 	template <typename... Args>
 	PopupManager& constructWith(Args... args) {

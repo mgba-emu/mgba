@@ -112,7 +112,10 @@ public:
 #ifdef ENABLE_DEBUGGERS
 	PopupManager<DebuggerConsole> console;
 #endif
-
+#ifdef M_CORE_GB
+	PopupManager<PrinterView> printerView;
+#endif
+	QPointer<SettingsView> settingsView;
 };
 
 }
@@ -528,9 +531,13 @@ void Window::parseCard() {
 }
 
 void Window::openView(QWidget* widget) {
+	// Attempt to disconnect first to prevent multiple connections
+	disconnect(this, &Window::shutdown, widget, &QWidget::close);
 	connect(this, &Window::shutdown, widget, &QWidget::close);
 	widget->setAttribute(Qt::WA_DeleteOnClose);
 	widget->show();
+	widget->activateWindow();
+	widget->raise();
 }
 
 void Window::loadCamImage() {
@@ -559,31 +566,34 @@ void Window::openSettingsWindow() {
 }
 
 void Window::openSettingsWindow(SettingsView::Page page) {
-	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController, &m_log);
+	if (!m_popups->settingsView) {
+		SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController, &m_log);
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
-	if (m_display->supportsShaders()) {
-		settingsWindow->setShaderSelector(m_shaderView.get());
-	}
+		if (m_display->supportsShaders()) {
+			settingsWindow->setShaderSelector(m_shaderView.get());
+		}
 #endif
-	connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::reloadDisplayDriver);
-	connect(settingsWindow, &SettingsView::audioDriverChanged, this, &Window::reloadAudioDriver);
-	connect(settingsWindow, &SettingsView::cameraDriverChanged, this, &Window::mustReset);
-	connect(settingsWindow, &SettingsView::cameraChanged, &m_inputController, &InputController::setCamera);
-	connect(settingsWindow, &SettingsView::videoRendererChanged, this, &Window::changeRenderer);
-	connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
-	connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
+		connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::reloadDisplayDriver);
+		connect(settingsWindow, &SettingsView::audioDriverChanged, this, &Window::reloadAudioDriver);
+		connect(settingsWindow, &SettingsView::cameraDriverChanged, this, &Window::mustReset);
+		connect(settingsWindow, &SettingsView::cameraChanged, &m_inputController, &InputController::setCamera);
+		connect(settingsWindow, &SettingsView::videoRendererChanged, this, &Window::changeRenderer);
+		connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
+		connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
 #ifdef USE_SQLITE3
-	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
+		connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
 #endif
 #ifdef ENABLE_SCRIPTING
-	connect(settingsWindow, &SettingsView::openAutorunScripts, this, [this]() {
-		ensureScripting();
-		m_scripting->openAutorunEdit();
-	});
+		connect(settingsWindow, &SettingsView::openAutorunScripts, this, [this]() {
+			ensureScripting();
+			m_scripting->openAutorunEdit();
+		});
 #endif
-	connect(this, &Window::shaderSelectorAdded, settingsWindow, &SettingsView::setShaderSelector);
-	openView(settingsWindow);
-	settingsWindow->selectPage(page);
+		connect(this, &Window::shaderSelectorAdded, settingsWindow, &SettingsView::setShaderSelector);
+		m_popups->settingsView = settingsWindow;
+	}
+	openView(m_popups->settingsView);
+	m_popups->settingsView->selectPage(page);
 }
 
 void Window::startVideoLog() {
@@ -1267,6 +1277,13 @@ void Window::setupPopups() {
 	m_popups->dolphinView.constructWith(this).setKeepAlive(true);
 	m_popups->videoView.withController(m_controller).setKeepAlive(true);
 	m_popups->gifView.withController(m_controller).setKeepAlive(true);
+
+#ifdef M_CORE_GB
+	m_popups->printerView.withController(m_controller).constructWithCallback([this]() -> PrinterView* {
+		m_controller->attachPrinter();
+		return new PrinterView(m_controller);
+	});
+#endif
 }
 
 void Window::setupMenu(QMenuBar* menubar) {
@@ -1514,11 +1531,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #ifdef M_CORE_GB
 	m_actions.addAction(tr("Load camera image..."), "loadCamImage", this, &Window::loadCamImage, "emu");
 
-	auto gbPrint = addGameAction(tr("Game Boy Printer..."), "gbPrint", [this]() {
-		PrinterView* view = new PrinterView(m_controller);
-		openView(view);
-		m_controller->attachPrinter();
-	}, "emu");
+	auto gbPrint = addGameAction(tr("Game Boy Printer..."), "gbPrint", m_popups->printerView, "emu");
 	m_platformActions.insert(mPLATFORM_GB, gbPrint);
 #endif
 
