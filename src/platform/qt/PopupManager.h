@@ -69,17 +69,6 @@ protected:
 	Private* d() const override { return static_cast<Private*>(PopupManagerBase::d()); }
 	Private* d() override { return static_cast<Private*>(PopupManagerBase::d()); }
 
-	template <typename T>
-	struct HasSetController {
-		using Pass = char;
-		using Fail = int;
-		struct Base { bool setController; };
-		struct Test : T, Base {};
-		template <typename U> static Fail Check(decltype(U::setController)*);
-		template <typename U> static Pass Check(U*);
-		static constexpr bool value = sizeof(Check<Test>(nullptr)) == sizeof(Pass);
-	};
-
 public:
 	PopupManager() : PopupManagerBase(new Private(this)) {}
 	PopupManager(const PopupManager&) = default;
@@ -158,14 +147,14 @@ protected:
 		virtual void notifyWindow() override { notifyWindow<WINDOW>(); }
 
 		template<class T>
-		typename std::enable_if<HasSetController<T>::value>::type notifyWindow() {
+		typename std::enable_if<CoreConsumer::HasSetController<T>::value>::type notifyWindow() {
 			if (ptr) {
 				ptr->setController(controller.sharedController());
 			}
 		}
 
 		template<class T>
-		typename std::enable_if<!HasSetController<T>::value>::type notifyWindow() {
+		typename std::enable_if<!CoreConsumer::HasSetController<T>::value>::type notifyWindow() {
 			// Nothing to do
 		}
 

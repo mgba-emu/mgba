@@ -106,6 +106,12 @@ public:
 	PopupManager<VideoView> videoView;
 	PopupManager<GIFView> gifView;
 #endif
+#ifdef ENABLE_GDB_STUB
+	PopupManager<GDBWindow> gdbWindow;
+#endif
+#ifdef ENABLE_DEBUGGERS
+	PopupManager<DebuggerConsole> console;
+#endif
 
 };
 
@@ -236,10 +242,7 @@ void Window::argumentsPassed() {
 #ifdef ENABLE_GDB_STUB
 	if (args->debugGdb) {
 		if (!m_gdbController) {
-			m_gdbController = new GDBController(this);
-		}
-		if (m_controller) {
-			m_gdbController->setController(m_controller);
+			m_gdbController = new GDBController(&m_controller, this);
 		}
 		m_gdbController->attach();
 		m_gdbController->listen();
@@ -593,25 +596,20 @@ void Window::startVideoLog() {
 #ifdef ENABLE_GDB_STUB
 void Window::gdbOpen() {
 	if (!m_gdbController) {
-		m_gdbController = new GDBController(this);
+		m_gdbController = new GDBController(&m_controller, this);
+		m_popups->gdbWindow.withController(m_controller).constructWith(m_gdbController);
 	}
-	GDBWindow* window = new GDBWindow(m_gdbController);
-	m_gdbController->setController(m_controller);
-	connect(m_controller.get(), &CoreController::stopping, window, &QWidget::close);
-	openView(window);
+	m_popups->gdbWindow();
 }
 #endif
 
 #ifdef ENABLE_DEBUGGERS
 void Window::consoleOpen() {
 	if (!m_console) {
-		m_console = new DebuggerConsoleController(this);
+		m_console = new DebuggerConsoleController(&m_controller, this);
+		m_popups->console.withController(m_controller).constructWith(m_console);
 	}
-	DebuggerConsole* window = new DebuggerConsole(m_console);
-	if (m_controller) {
-		m_console->setController(m_controller);
-	}
-	openView(window);
+	m_popups->console();
 }
 #endif
 
@@ -2173,18 +2171,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 #endif
 			m_controller->replaceGame(mb.toString());
 		}
-	}
-#endif
-
-#ifdef ENABLE_GDB_STUB
-	if (m_gdbController) {
-		m_gdbController->setController(m_controller);
-	}
-#endif
-
-#ifdef ENABLE_DEBUGGERS
-	if (m_console) {
-		m_console->setController(m_controller);
 	}
 #endif
 

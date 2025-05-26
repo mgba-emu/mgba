@@ -9,8 +9,8 @@
 
 using namespace QGBA;
 
-GDBController::GDBController(QObject* parent)
-	: DebuggerController(&m_gdbStub.d, parent)
+GDBController::GDBController(CoreProvider* provider, QObject* parent)
+	: DebuggerController(&m_gdbStub.d, provider, parent)
 	, m_bindAddress({ IPV4, {0} })
 {
 	GDBStubCreate(&m_gdbStub);

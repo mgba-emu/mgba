@@ -15,7 +15,7 @@ using CorePtr = PopupManagerBase::CorePtr;
 PopupManagerBase::PopupManagerBase(PopupManagerBase::Private* d)
 : m_d(d)
 {
-	d->controller.onControllerChanged = [d]{
+	d->controller.onControllerChanged = [d](CorePtr) {
 		d->updateConnections();
 		d->notifyWindow();
 	};

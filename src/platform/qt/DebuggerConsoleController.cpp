@@ -16,8 +16,8 @@
 
 using namespace QGBA;
 
-DebuggerConsoleController::DebuggerConsoleController(QObject* parent)
-	: DebuggerController(&m_cliDebugger.d, parent)
+DebuggerConsoleController::DebuggerConsoleController(CoreProvider* provider, QObject* parent)
+	: DebuggerController(&m_cliDebugger.d, provider, parent)
 {
 	m_backend.printf = printf;
 	m_backend.init = init;

@@ -41,7 +41,18 @@ private:
 class CoreConsumer {
 	friend class CoreProvider;
 public:
-	using ControllerCallback = std::function<void()>;
+	using ControllerCallback = std::function<void(std::shared_ptr<CoreController>)>;
+
+	template <typename T>
+	struct HasSetController {
+		using Pass = char;
+		using Fail = int;
+		struct Base { bool setController; };
+		struct Test : T, Base {};
+		template <typename U> static Fail Check(decltype(U::setController)*);
+		template <typename U> static Pass Check(U*);
+		static constexpr bool value = sizeof(Check<Test>(nullptr)) == sizeof(Pass);
+	};
 
 	CoreConsumer() = default;
 	CoreConsumer(const CoreConsumer& other);
@@ -52,14 +63,41 @@ public:
 	inline CoreProvider* coreProvider() const { return m_provider; }
 	CoreController* controller() const;
 	std::shared_ptr<CoreController> sharedController() const;
-	inline operator bool() const { return controller(); }
 
 	ControllerCallback onControllerChanged;
+
+protected:
+	virtual void callControllerChanged(std::shared_ptr<CoreController> oldController);
 
 private:
 	void providerDestroyed();
 
 	CoreProvider* m_provider = nullptr;
+};
+
+template <typename T>
+class CorePointer : public CoreConsumer {
+public:
+	CorePointer(T* owner) : m_owner(owner) {}
+	CorePointer(T* owner, const CoreConsumer& other) : CoreConsumer(other), m_owner(owner) {}
+	CorePointer(T* owner, CoreProvider* provider) : CoreConsumer(provider), m_owner(owner) {}
+	virtual ~CorePointer() = default;
+
+	inline operator bool() const { return controller(); }
+	inline operator std::shared_ptr<CoreController>() const { return sharedController(); }
+	inline CoreController* get() const { return controller(); }
+	inline CoreController* operator->() const { return controller(); }
+	inline bool operator==(const std::shared_ptr<CoreController>& other) { return other.get() == controller(); }
+	inline bool operator!=(const std::shared_ptr<CoreController>& other) { return other.get() != controller(); }
+
+protected:
+	virtual void callControllerChanged(std::shared_ptr<CoreController> oldController) {
+		CoreConsumer::callControllerChanged(oldController);
+		m_owner->setController(oldController);
+	}
+
+private:
+	T* m_owner;
 };
 
 }

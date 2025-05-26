@@ -9,9 +9,10 @@
 
 using namespace QGBA;
 
-DebuggerController::DebuggerController(mDebuggerModule* debugger, QObject* parent)
+DebuggerController::DebuggerController(mDebuggerModule* debugger, CoreProvider* provider, QObject* parent)
 	: QObject(parent)
 	, m_debugger(debugger)
+	, m_gameController(this, provider)
 {
 }
 
@@ -22,13 +23,12 @@ bool DebuggerController::isAttached() {
 	return m_gameController->debugger() == m_debugger->p;
 }
 
-void DebuggerController::setController(std::shared_ptr<CoreController> controller) {
-	if (m_gameController && controller != m_gameController) {
-		m_gameController->disconnect(this);
+void DebuggerController::setController(std::shared_ptr<CoreController> oldController) {
+	if (oldController && m_gameController != oldController) {
+		oldController->disconnect(this);
 		detach();
 	}
-	m_gameController = controller;
-	if (controller) {
+	if (m_gameController) {
 		connect(m_gameController.get(), &CoreController::stopping, [this]() {
 			setController(nullptr);
 		});

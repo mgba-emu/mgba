@@ -27,9 +27,7 @@ void CoreProvider::setController(std::shared_ptr<CoreController> controller) {
 	std::shared_ptr<CoreController> oldController = m_controller;
 	m_controller = controller;
 	for (CoreConsumer* consumer : m_consumers) {
-		if (consumer->onControllerChanged) {
-			consumer->onControllerChanged();
-		}
+		consumer->callControllerChanged(oldController);
 	}
 }
 
@@ -89,6 +87,12 @@ std::shared_ptr<CoreController> CoreConsumer::sharedController() const {
 		return nullptr;
 	}
 	return *m_provider;
+}
+
+void CoreConsumer::callControllerChanged(std::shared_ptr<CoreController> oldController) {
+	if (onControllerChanged) {
+		onControllerChanged(oldController);
+	}
 }
 
 void CoreConsumer::providerDestroyed() {
