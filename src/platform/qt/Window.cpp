@@ -55,6 +55,7 @@
 #include "ObjView.h"
 #include "PaletteView.h"
 #include "PlacementControl.h"
+#include "PopupManager.h"
 #include "PrinterView.h"
 #include "ReportView.h"
 #include "ROMInfo.h"
@@ -91,15 +92,34 @@
 
 using namespace QGBA;
 
+namespace QGBA {
+
+class WindowPopups {
+public:
+	PopupManager<LogView> logView;
+	PopupManager<OverrideView> overrideView;
+	PopupManager<SensorView> sensorView;
+	PopupManager<DolphinConnector> dolphinView;
+	PopupManager<FrameView> frameView;
+	PopupManager<CheatsView> cheatsView;
+#ifdef USE_FFMPEG
+	PopupManager<VideoView> videoView;
+	PopupManager<GIFView> gifView;
+#endif
+
+};
+
+}
+
 Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWidget* parent)
 	: QMainWindow(parent)
 	, m_manager(manager)
-	, m_logView(new LogView(&m_log, this))
 	, m_screenWidget(new WindowBackground())
 	, m_config(config)
 	, m_inputController(this)
 	, m_shortcutController(new ShortcutController(this))
 	, m_playerId(playerId)
+	, m_popups(new WindowPopups)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
@@ -165,7 +185,6 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	}
 	setLogo();
 
-	connect(this, &Window::shutdown, m_logView, &QWidget::hide);
 	connect(&m_fpsTimer, &QTimer::timeout, this, &Window::showFPS);
 	connect(&m_focusCheck, &QTimer::timeout, this, &Window::focusCheck);
 	connect(&m_inputController, &InputController::profileLoaded, m_shortcutController, &ShortcutController::loadProfile);
@@ -192,13 +211,12 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 
 	m_shortcutController->setConfigController(m_config);
 	m_shortcutController->setActionMapper(&m_actions);
+	setupPopups();
 	setupMenu(menuBar());
 	setupOptions();
 }
 
 Window::~Window() {
-	delete m_logView;
-
 #ifdef USE_SQLITE3
 	delete m_libraryView;
 #endif
@@ -570,67 +588,6 @@ void Window::startVideoLog() {
 	if (!filename.isEmpty()) {
 		m_controller->startVideoLog(filename);
 	}
-}
-
-template <typename T, typename... A>
-std::function<void()> Window::openTView(A... arg) {
-	return [=]() {
-		T* view = new T(arg...);
-		openView(view);
-	};
-}
-
-template <typename T, typename... A>
-std::function<void()> Window::openTViewModal(A... arg) {
-	return [=]() {
-		T* view = new T(arg...);
-		view->setAttribute(Qt::WA_DeleteOnClose);
-		view->open();
-	};
-}
-
-template <typename T, typename... A>
-std::function<void()> Window::openControllerTView(A... arg) {
-	return [=]() {
-		T* view = new T(m_controller, arg...);
-		connect(m_controller.get(), &CoreController::stopping, view, &QWidget::close);
-		openView(view);
-	};
-}
-
-template <typename T, typename... A>
-std::function<void()> Window::openNamedTView(QPointer<T>* name, bool keepalive, A... arg) {
-	return [=]() {
-		if (!*name) {
-			*name = new T(arg...);
-			connect(this, &Window::shutdown, name->data(), &QWidget::close);
-			if (!keepalive) {
-				(*name)->setAttribute(Qt::WA_DeleteOnClose);
-			}
-		}
-		(*name)->show();
-		(*name)->activateWindow();
-		(*name)->raise();
-	};
-}
-
-template <typename T, typename... A>
-std::function<void()> Window::openNamedControllerTView(QPointer<T>* name, bool keepalive, A... arg) {
-	return [=]() {
-		if (!*name) {
-			*name = new T(m_controller, arg...);
-			if (m_controller) {
-				connect(m_controller.get(), &CoreController::stopping, name->data(), &QWidget::close);
-			}
-			connect(this, &Window::shutdown, name->data(), &QWidget::close);
-			if (!keepalive) {
-				(*name)->setAttribute(Qt::WA_DeleteOnClose);
-			}
-		}
-		(*name)->show();
-		(*name)->activateWindow();
-		(*name)->raise();
-	};
 }
 
 #ifdef ENABLE_GDB_STUB
@@ -1304,6 +1261,16 @@ void Window::openStateWindow(LoadSave ls) {
 	attachWidget(m_stateWindow);
 }
 
+void Window::setupPopups() {
+	m_popups->logView.constructWith(&m_log, this).setKeepAlive(false);
+	m_popups->overrideView.withController(m_controller).constructWith(m_config, this);
+	// Why is SensorView keepalive?
+	m_popups->sensorView.withController(m_controller).constructWith(&m_inputController, this).setKeepAlive(true);
+	m_popups->dolphinView.constructWith(this).setKeepAlive(true);
+	m_popups->videoView.withController(m_controller).setKeepAlive(true);
+	m_popups->gifView.withController(m_controller).setKeepAlive(true);
+}
+
 void Window::setupMenu(QMenuBar* menubar) {
 	installEventFilter(m_shortcutController);
 
@@ -1327,7 +1294,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addSeparator("saves");
 
-	m_actions.addAction(tr("Convert save game..."), "convertSave", openTViewModal<SaveConverter>(this), "saves");
+	m_actions.addAction(tr("Convert save game..."), "convertSave", PopupManager<SaveConverter>(), "saves");
 
 #ifdef M_CORE_GBA
 	auto importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "saves");
@@ -1365,7 +1332,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_platformActions.insert(mPLATFORM_GBA, scanCard);
 #endif
 
-	addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");
+	addGameAction(tr("ROM &info..."), "romInfo", PopupManager<ROMInfo>().withController(m_controller), "file");
 
 	m_actions.addMenu(tr("Recent"), "mru", "file");
 	m_actions.addSeparator("file");
@@ -1431,19 +1398,19 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_multiWindow = m_actions.addAction(tr("New multiplayer window"), "multiWindow", GBAApp::app(), &GBAApp::newWindow, "file");
 
 #ifdef M_CORE_GBA
-	auto dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openNamedTView<DolphinConnector>(&m_dolphinView, true, this), "file");
+	auto dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", m_popups->dolphinView, "file");
 	m_platformActions.insert(mPLATFORM_GBA, dolphin);
 #endif
 
 	m_actions.addSeparator("file");
 
-	m_actions.addAction(tr("Report bug..."), "bugReport", openTViewModal<ReportView>(this), "file");
+	m_actions.addAction(tr("Report bug..."), "bugReport", PopupManager<ReportView>(), "file");
 
 #ifndef Q_OS_MAC
 	m_actions.addSeparator("file");
 #endif
 
-	m_actions.addAction(tr("About..."), "about", openTViewModal<AboutScreen>(this), "file")->setRole(Action::Role::ABOUT);
+	m_actions.addAction(tr("About..."), "about", PopupManager<AboutScreen>(), "file")->setRole(Action::Role::ABOUT);
 	m_actions.addAction(tr("E&xit"), "quit", &QApplication::quit, "file", QKeySequence::Quit)->setRole(Action::Role::QUIT);
 
 	m_actions.addMenu(tr("&Emulation"), "emu");
@@ -1558,7 +1525,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 #ifdef M_CORE_GBA
-	auto bcGate = addGameAction(tr("BattleChip Gate..."), "bcGate", openControllerTView<BattleChipView>(this), "emu");
+	auto bcGate = addGameAction(tr("BattleChip Gate..."), "bcGate", PopupManager<BattleChipView>().withController(m_controller), "emu");
 	m_platformActions.insert(mPLATFORM_GBA, bcGate);
 #endif
 
@@ -1712,28 +1679,27 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 #ifdef USE_FFMPEG
-	addGameAction(tr("Record A/V..."), "recordOutput", openNamedControllerTView<VideoView>(&m_videoView, true), "av");
-	addGameAction(tr("Record GIF/WebP/APNG..."), "recordGIF", openNamedControllerTView<GIFView>(&m_gifView, true), "av");
+	addGameAction(tr("Record A/V..."), "recordOutput", m_popups->videoView, "av");
+	addGameAction(tr("Record GIF/WebP/APNG..."), "recordGIF", m_popups->gifView, "av");
 #endif
 
 	m_actions.addSeparator("av");
 	m_actions.addMenu(tr("Video layers"), "videoLayers", "av");
 	m_actions.addMenu(tr("Audio channels"), "audioChannels", "av");
 
-	addGameAction(tr("Adjust layer placement..."), "placementControl", openControllerTView<PlacementControl>(), "av");
+	addGameAction(tr("Adjust layer placement..."), "placementControl", PopupManager<PlacementControl>().withController(m_controller), "av");
 
 	m_actions.addMenu(tr("&Tools"), "tools");
-	m_actions.addAction(tr("View &logs..."), "viewLogs", openNamedTView(&m_logView, true, &m_log, this), "tools");
-	m_overrideView.withController(m_controller).constructWith(m_config, this);
-	m_actions.addAction(tr("Game &overrides..."), "overrideWindow", m_overrideView, "tools");
-	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", openNamedControllerTView(&m_sensorView, true, &m_inputController, this), "tools");
+	m_actions.addAction(tr("View &logs..."), "viewLogs", m_popups->logView, "tools");
+	m_actions.addAction(tr("Game &overrides..."), "overrideWindow", m_popups->overrideView, "tools");
+	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", m_popups->sensorView, "tools");
 
-	addGameAction(tr("&Cheats..."), "cheatsWindow", openNamedControllerTView(&m_cheatsView, false), "tools");
+	addGameAction(tr("&Cheats..."), "cheatsWindow", m_popups->cheatsView, "tools");
 #ifdef ENABLE_SCRIPTING
 	m_actions.addAction(tr("Scripting..."), "scripting", this, &Window::scriptingOpen, "tools");
 #endif
 
-	m_actions.addAction(tr("Create forwarder..."), "createForwarder", openTViewModal<ForwarderView>(this), "tools");
+	m_actions.addAction(tr("Create forwarder..."), "createForwarder", PopupManager<ForwarderView>(), "tools");
 
 	m_actions.addSeparator("tools");
 	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools")->setRole(Action::Role::SETTINGS);
@@ -1752,14 +1718,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	m_actions.addMenu(tr("Game state views"), "stateViews", "tools");
-	addGameAction(tr("View &palette..."), "paletteWindow", openControllerTView<PaletteView>(), "stateViews");
-	addGameAction(tr("View &sprites..."), "spriteWindow", openControllerTView<ObjView>(), "stateViews");
-	addGameAction(tr("View &tiles..."), "tileWindow", openControllerTView<TileView>(), "stateViews");
-	addGameAction(tr("View &map..."), "mapWindow", openControllerTView<MapView>(), "stateViews");
-	addGameAction(tr("&Frame inspector..."), "frameWindow", openNamedControllerTView<FrameView>(&m_frameView, false), "stateViews");
-	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "stateViews");
-	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "stateViews");
-	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "stateViews");
+	addGameAction(tr("View &palette..."), "paletteWindow", PopupManager<PaletteView>().withController(m_controller), "stateViews");
+	addGameAction(tr("View &sprites..."), "spriteWindow", PopupManager<ObjView>().withController(m_controller), "stateViews");
+	addGameAction(tr("View &tiles..."), "tileWindow", PopupManager<TileView>().withController(m_controller), "stateViews");
+	addGameAction(tr("View &map..."), "mapWindow", PopupManager<MapView>().withController(m_controller), "stateViews");
+	addGameAction(tr("&Frame inspector..."), "frameWindow", m_popups->frameView, "stateViews");
+	addGameAction(tr("View memory..."), "memoryView", PopupManager<MemoryView>().withController(m_controller), "stateViews");
+	addGameAction(tr("Search memory..."), "memorySearch", PopupManager<MemorySearch>().withController(m_controller), "stateViews");
+	addGameAction(tr("View &I/O registers..."), "ioViewer", PopupManager<IOViewer>().withController(m_controller), "stateViews");
 
 #ifdef ENABLE_DEBUGGERS
 	addGameAction(tr("Log memory &accesses..."), "memoryAccessView", [this]() {
@@ -2147,6 +2113,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		});
 		return;
 	}
+
 	if (!fname.isEmpty()) {
 		setWindowFilePath(fname);
 		appendMRU(fname);
@@ -2220,20 +2187,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		m_console->setController(m_controller);
 	}
 #endif
-
-#ifdef USE_FFMPEG
-	if (m_gifView) {
-		m_gifView->setController(m_controller);
-	}
-
-	if (m_videoView) {
-		m_videoView->setController(m_controller);
-	}
-#endif
-
-	if (m_sensorView) {
-		m_sensorView->setController(m_controller);
-	}
 
 	if (!m_pendingPatch.isEmpty()) {
 		m_controller->loadPatch(m_pendingPatch);

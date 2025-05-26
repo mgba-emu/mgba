@@ -34,7 +34,8 @@ protected:
 	class Private : public QSharedData {
 	public:
 		Private(PopupManagerBase* pub) : pub(pub) {}
-		Private(const Private& other) = default;
+		Private(const Private& other) = delete;
+		virtual ~Private() = default;
 
 		PopupManagerBase* pub;
 		bool isModal = false;
