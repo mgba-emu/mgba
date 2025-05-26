@@ -1724,7 +1724,8 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addMenu(tr("&Tools"), "tools");
 	m_actions.addAction(tr("View &logs..."), "viewLogs", openNamedTView(&m_logView, true, &m_log, this), "tools");
-	m_actions.addAction(tr("Game &overrides..."), "overrideWindow", openNamedControllerTView(&m_overrideView, true, m_config, this), "tools");
+	m_overrideView.withController(m_controller).constructWith(m_config, this);
+	m_actions.addAction(tr("Game &overrides..."), "overrideWindow", m_overrideView, "tools");
 	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", openNamedControllerTView(&m_sensorView, true, &m_inputController, this), "tools");
 
 	addGameAction(tr("&Cheats..."), "cheatsWindow", openNamedControllerTView(&m_cheatsView, false), "tools");
@@ -2155,7 +2156,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		reloadDisplayDriver();
 	}
 
-	m_controller = std::shared_ptr<CoreController>(controller);
+	m_controller.setController(controller);
 	m_controller->setInputController(&m_inputController);
 	m_controller->setLogger(&m_log);
 
@@ -2232,10 +2233,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 
 	if (m_sensorView) {
 		m_sensorView->setController(m_controller);
-	}
-
-	if (m_overrideView) {
-		m_overrideView->setController(m_controller);
 	}
 
 	if (!m_pendingPatch.isEmpty()) {

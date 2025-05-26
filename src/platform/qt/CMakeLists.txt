@@ -110,6 +110,7 @@ set(SOURCE_FILES
 	ConfigController.cpp
 	ColorPicker.cpp
 	CoreManager.cpp
+	CoreConsumer.cpp
 	CoreController.cpp
 	Display.cpp
 	DisplayGL.cpp
@@ -152,6 +153,7 @@ set(SOURCE_FILES
 	OverrideView.cpp
 	PaletteView.cpp
 	PlacementControl.cpp
+	PopupManager.cpp
 	RegisterView.cpp
 	ReportView.cpp
 	ROMInfo.cpp

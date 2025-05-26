@@ -22,6 +22,8 @@
 #include "InputController.h"
 #include "LoadSaveState.h"
 #include "LogController.h"
+#include "OverrideView.h"
+#include "PopupManager.h"
 #include "SettingsView.h"
 #ifdef ENABLE_SCRIPTING
 #include "scripting/ScriptingController.h"
@@ -194,7 +196,7 @@ private:
 	QString getFiltersArchive() const;
 
 	CoreManager* m_manager;
-	std::shared_ptr<CoreController> m_controller;
+	CoreProvider m_controller;
 	std::unique_ptr<AudioProcessor> m_audioProcessor;
 
 	std::unique_ptr<QGBA::Display> m_display;
@@ -245,7 +247,7 @@ private:
 	bool m_multiActive = true;
 	int m_playerId;
 
-	QPointer<OverrideView> m_overrideView;
+	PopupManager<OverrideView> m_overrideView;
 	QPointer<SensorView> m_sensorView;
 	QPointer<DolphinConnector> m_dolphinView;
 	QPointer<FrameView> m_frameView;
