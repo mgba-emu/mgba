@@ -142,9 +142,9 @@ void ReportView::generateReport() {
 #endif
 	libavVers << QLatin1String(LIBSWSCALE_IDENT);
 #ifdef USE_LIBAV
-	swReport << QString("Libav versions: %1.%2").arg(libavVers.join(", "));
+	swReport << QString("Libav versions: %1").arg(libavVers.join(", "));
 #else
-	swReport << QString("FFmpeg versions: %1.%2").arg(libavVers.join(", "));
+	swReport << QString("FFmpeg versions: %1").arg(libavVers.join(", "));
 #endif
 #else
 	swReport << QString("FFmpeg not linked");
