@@ -9,7 +9,8 @@
 
 #include <mgba-util/string.h>
 
-#include <freetype/freetype.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 #define DPI 100
 
