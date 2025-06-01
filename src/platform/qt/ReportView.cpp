@@ -58,6 +58,10 @@
 #endif
 #endif
 
+#ifdef USE_FREETYPE
+#include <freetype/freetype.h>
+#endif
+
 #ifdef USE_LIBZIP
 #include <zip.h>
 #endif
@@ -148,6 +152,11 @@ void ReportView::generateReport() {
 #endif
 #else
 	swReport << QString("FFmpeg not linked");
+#endif
+#ifdef USE_FREETYPE
+	swReport << QString("FreeType version: %1.%2.%3").arg(FREETYPE_MAJOR).arg(FREETYPE_MINOR).arg(FREETYPE_PATCH);
+#else
+	swReport << QString("FreeType not linked");
 #endif
 #ifdef USE_EDITLINE
 	swReport << QString("libedit version: %1.%2").arg(LIBEDIT_MAJOR).arg(LIBEDIT_MINOR);

@@ -99,6 +99,10 @@
 #cmakedefine USE_FFMPEG
 #endif
 
+#ifndef USE_FREETYPE
+#cmakedefine USE_FREETYPE
+#endif
+
 #ifndef USE_JSON_C
 #cmakedefine USE_JSON_C
 #endif

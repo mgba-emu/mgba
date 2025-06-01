@@ -124,6 +124,34 @@ void _mPainterSetStrokeColor(struct mPainter* painter, uint32_t color) {
 	painter->strokeColor = color;
 }
 
+#ifdef USE_FREETYPE
+void _mPainterLoadFont(struct mPainter* painter, const char* path) {
+	struct mFont* font = mFontOpen(path);
+	if (!font) {
+		return;
+	}
+	if (painter->font) {
+		mFontDestroy(painter->font);
+	}
+	painter->font = font;
+}
+
+void _mPainterSetFontSize(struct mPainter* painter, float pt) {
+	if (!painter->font) {
+		return;
+	}
+	mFontSetSize(painter->font, pt * 64);
+}
+
+
+float _mPainterTextSpanWidth(struct mPainter* painter, const char* text) {
+	if (!painter->font) {
+		return 0;
+	}
+	return mFontSpanWidth(painter->font, text) / 64.f;
+}
+#endif
+
 static struct mScriptValue* _mScriptPainterGet(struct mScriptPainter* painter, const char* name) {
 	struct mScriptValue val;
 	struct mScriptValue realPainter = mSCRIPT_MAKE(S(mPainter), &painter->painter);
@@ -139,6 +167,11 @@ static struct mScriptValue* _mScriptPainterGet(struct mScriptPainter* painter, c
 
 void _mScriptPainterDeinit(struct mScriptPainter* painter) {
 	mScriptValueDeref(painter->image);
+#ifdef USE_FREETYPE
+	if (painter->painter.font) {
+		mFontDestroy(painter->painter.font);
+	}
+#endif
 	free(painter);
 }
 
@@ -151,6 +184,12 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawRectangle, mPainterDrawRectangl
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawLine, mPainterDrawLine, 4, S32, x1, S32, y1, S32, x2, S32, y2);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawCircle, mPainterDrawCircle, 3, S32, x, S32, y, S32, diameter);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawMask, mPainterDrawMask, 3, CS(mImage), mask, S32, x, S32, y);
+#ifdef USE_FREETYPE
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawText, mPainterDrawText, 4, CHARP, text, S32, x, S32, y, S32, alignment);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, loadFont, _mPainterLoadFont, 1, CHARP, path);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, setFontSize, _mPainterSetFontSize, 1, U32, pt);
+mSCRIPT_DECLARE_STRUCT_METHOD(mPainter, F32, textSpanWidth, _mPainterTextSpanWidth, 1, CHARP, text);
+#endif
 
 mSCRIPT_DEFINE_STRUCT(mPainter)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
@@ -179,6 +218,16 @@ mSCRIPT_DEFINE_STRUCT(mPainter)
 		"target color and use this function to draw it into a destination image."
 	)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, drawMask)
+#ifdef USE_FREETYPE
+	mSCRIPT_DEFINE_DOCSTRING("Draw text with the currently set font and fill color")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, drawText)
+	mSCRIPT_DEFINE_DOCSTRING("Load a font from a given filename")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, loadFont)
+	mSCRIPT_DEFINE_DOCSTRING("Set the font size")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, setFontSize)
+	mSCRIPT_DEFINE_DOCSTRING("Get the pixel width of a span of text in the current font")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, textSpanWidth)
+#endif
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptPainter, W(mPainter), _get, _mScriptPainterGet, 1, CHARP, name);
@@ -206,4 +255,15 @@ void mScriptContextAttachImage(struct mScriptContext* context) {
 	mScriptContextSetDocstring(context, "image.load", "Load an image from a path. Currently, only `PNG` format is supported");
 #endif
 	mScriptContextSetDocstring(context, "image.newPainter", "Create a new painter from an existing image");
+
+	mScriptContextExportConstants(context, "ALIGN", (struct mScriptKVPair[]) {
+		mSCRIPT_CONSTANT_PAIR(mALIGN, LEFT),
+		mSCRIPT_CONSTANT_PAIR(mALIGN, HCENTER),
+		mSCRIPT_CONSTANT_PAIR(mALIGN, RIGHT),
+		mSCRIPT_CONSTANT_PAIR(mALIGN, TOP),
+		mSCRIPT_CONSTANT_PAIR(mALIGN, VCENTER),
+		mSCRIPT_CONSTANT_PAIR(mALIGN, BOTTOM),
+		mSCRIPT_CONSTANT_PAIR(mALIGN, BASELINE),
+		mSCRIPT_KV_SENTINEL
+	});
 }

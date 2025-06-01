@@ -22,6 +22,7 @@ set(SOURCE_FILES
 	geometry.c
 	image.c
 	image/export.c
+	image/font.c
 	image/png-io.c
 	interpolator.c
 	patch.c
