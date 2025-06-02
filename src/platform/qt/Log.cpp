@@ -36,6 +36,7 @@ void Log::postLog(int level, int category, const QString& string) {
 	QLoggingCategory cat(mLogCategoryName(category));
 	switch (level) {
 	case mLOG_DEBUG:
+	case mLOG_GAME_ERROR:
 	case mLOG_STUB:
 		qCDebug(cat).noquote() << string;
 		return;
@@ -43,7 +44,6 @@ void Log::postLog(int level, int category, const QString& string) {
 		qCInfo(cat).noquote() << string;
 		return;
 	case mLOG_ERROR:
-	case mLOG_GAME_ERROR:
 		qCCritical(cat).noquote() << string;
 		return;
 	case mLOG_FATAL:
