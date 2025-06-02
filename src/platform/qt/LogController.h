@@ -6,9 +6,12 @@
 #pragma once
 
 #include "GBAApp.h"
+#include "Log.h"
 
 #include <mgba/core/log.h>
 
+#include <QFile>
+#include <QLoggingCategory>
 #include <QObject>
 #include <QStringList>
 #include <QTextStream>
@@ -18,24 +21,8 @@ namespace QGBA {
 
 class ConfigController;
 
-class LogController : public QObject {
+class LogController : public QObject, public Log {
 Q_OBJECT
-
-private:
-	class Stream {
-	public:
-		Stream(LogController* controller, int level, int category);
-		~Stream();
-
-		Stream& operator<<(const QString&);
-
-	private:
-		int m_level;
-		int m_category;
-		LogController* m_log;
-
-		QStringList m_queue;
-	};
 
 public:
 	LogController(int levels, QObject* parent = nullptr);
@@ -44,8 +31,6 @@ public:
 	int levels() const { return m_filter.defaultLevels; }
 	int levels(int category) const;
 	mLogFilter* filter() { return &m_filter; }
-
-	Stream operator()(int category, int level);
 
 	static LogController* global();
 	static QtMessageHandler installMessageHandler();
@@ -65,7 +50,7 @@ signals:
 	void levelsDisabled(int levels, int category);
 
 public slots:
-	void postLog(int level, int category, const QString& string);
+	void postLog(int level, int category, const QString& string) override;
 	void setLevels(int levels);
 	void enableLevels(int levels);
 	void disableLevels(int levels);
@@ -88,7 +73,5 @@ private:
 	static LogController s_global;
 	static int s_qtCat;
 };
-
-#define LOG(C, L) (*LogController::global())(mLOG_ ## L, _mLOG_CAT_ ## C)
 
 }
