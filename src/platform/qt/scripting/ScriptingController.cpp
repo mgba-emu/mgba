@@ -86,6 +86,8 @@ void ScriptingController::setController(std::shared_ptr<CoreController> controll
 	m_controller->thread()->scriptContext = &m_scriptContext;
 	if (m_controller->hasStarted()) {
 		attach();
+	} else {
+		m_controller->attachDebugger(false);
 	}
 	updateVideoScale();
 	connect(m_controller.get(), &CoreController::stopping, this, &ScriptingController::clearController);
