@@ -989,7 +989,7 @@ static bool _mScriptCoreAdapterClearBreakpoint(struct mScriptCoreAdapter* adapte
 	return true;
 }
 
-uint64_t _mScriptCoreAdapterCurrentCycle(struct mScriptCoreAdapter* adapter) {
+static uint64_t _mScriptCoreAdapterCurrentCycle(struct mScriptCoreAdapter* adapter) {
 	return mTimingGlobalTime(adapter->core->timing);
 }
 #endif
@@ -998,6 +998,19 @@ static void _mScriptCoreAdapterDeinit(struct mScriptCoreAdapter* adapter) {
 	_clearMemoryMap(adapter->context, adapter, false);
 	adapter->memory.type->free(&adapter->memory);
 #ifdef ENABLE_DEBUGGERS
+	if (adapter->debugger.d.p) {
+		struct TableIterator iter;
+		if (HashTableIteratorStart(&adapter->debugger.breakpoints, &iter)) {
+			struct mDebuggerModule* module = &adapter->debugger.d;
+			do {
+				struct mScriptBreakpoint* point = HashTableIteratorGetValue(&adapter->debugger.breakpoints, &iter);
+				module->p->platform->clearBreakpoint(module->p->platform, point->id);
+			} while (HashTableIteratorNext(&adapter->debugger.breakpoints, &iter));
+		}
+		HashTableClear(&adapter->debugger.breakpoints);
+		HashTableClear(&adapter->debugger.cbidMap);
+		HashTableClear(&adapter->debugger.bpidMap);
+	}
 	if (adapter->core->debugger) {
 		mDebuggerDetachModule(adapter->core->debugger, &adapter->debugger.d);
 	}
