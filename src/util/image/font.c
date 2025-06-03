@@ -86,10 +86,6 @@ int mFontSpanWidth(struct mFont* font, const char* text) {
 			continue;
 		}
 
-		if (FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL)) {
-			continue;
-		}
-
 		FT_Vector kerning = {0};
 		FT_Get_Kerning(face, lastGlyph, glyph, FT_KERNING_DEFAULT, &kerning);
 		width += kerning.x;
