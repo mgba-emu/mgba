@@ -43,9 +43,10 @@ struct mFont* mFontOpen(const char* path) {
 		if (FT_Init_FreeType(&library)) {
 			return NULL;
 		}
-
+#if FREETYPE_MAJOR >= 2 && FREETYPE_MINOR >= 11
 		FT_Int spread = 5;
 		FT_Property_Set(library, "sdf", "spread", &spread);
+#endif
 	}
 
 	FT_Face face;
@@ -135,6 +136,7 @@ void mPainterDrawText(struct mPainter* painter, const char* text, int x, int y, 
 		break;
 	}
 
+#if FREETYPE_MAJOR >= 2 && FREETYPE_MINOR >= 11
 	if (painter->strokeWidth) {
 		int xx = x;
 		int yy = y;
@@ -170,6 +172,7 @@ void mPainterDrawText(struct mPainter* painter, const char* text, int x, int y, 
 		painter->fillColor = fillColor;
 		lastGlyph = 0;
 	}
+#endif
 
 	while (*text) {
 		uint32_t glyph = utf8Char((const char**) &text, NULL);
