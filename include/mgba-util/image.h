@@ -159,6 +159,7 @@ void mPainterDrawRectangle(struct mPainter*, int x, int y, int width, int height
 void mPainterDrawLine(struct mPainter*, int x1, int y1, int x2, int y2);
 void mPainterDrawCircle(struct mPainter*, int x, int y, int diameter);
 void mPainterDrawMask(struct mPainter*, const struct mImage* mask, int x, int y);
+void mPainterDrawSDFMask(struct mPainter*, const struct mImage* mask, int x, int y, uint8_t upper);
 
 uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to);
 uint32_t mImageColorConvert(uint32_t color, const struct mImage* from, enum mColorFormat to);

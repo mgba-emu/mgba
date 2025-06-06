@@ -11,6 +11,7 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_MODULE_H
 
 #define DPI 100
 
@@ -42,6 +43,9 @@ struct mFont* mFontOpen(const char* path) {
 		if (FT_Init_FreeType(&library)) {
 			return NULL;
 		}
+
+		FT_Int spread = 5;
+		FT_Property_Set(library, "sdf", "spread", &spread);
 	}
 
 	FT_Face face;
@@ -129,6 +133,42 @@ void mPainterDrawText(struct mPainter* painter, const char* text, int x, int y, 
 	case mALIGN_RIGHT:
 		x -= mFontSpanWidth(painter->font, text);
 		break;
+	}
+
+	if (painter->strokeWidth) {
+		int xx = x;
+		int yy = y;
+		const char* ltext = text;
+		uint32_t fillColor = painter->fillColor;
+		painter->fillColor = painter->strokeColor;
+		while (*ltext) {
+			uint32_t glyph = utf8Char((const char**) &ltext, NULL);
+
+			if (FT_Load_Char(face, glyph, FT_LOAD_DEFAULT)) {
+				continue;
+			}
+
+			if (FT_Render_Glyph(face->glyph, FT_RENDER_MODE_SDF)) {
+				continue;
+			}
+
+			struct mImage image;
+			_makeTemporaryImage(&image, &face->glyph->bitmap);
+
+			FT_Vector kerning = {0};
+			FT_Get_Kerning(face, lastGlyph, glyph, FT_KERNING_DEFAULT, &kerning);
+			xx += kerning.x;
+			yy += kerning.y;
+
+			mPainterDrawSDFMask(painter, &image, (xx >> 6) + face->glyph->bitmap_left, (yy >> 6) - face->glyph->bitmap_top, 0x70);
+			xx += face->glyph->advance.x;
+			yy += face->glyph->advance.y;
+
+			lastGlyph = glyph;
+		}
+
+		painter->fillColor = fillColor;
+		lastGlyph = 0;
 	}
 
 	while (*text) {
