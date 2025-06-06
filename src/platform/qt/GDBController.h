@@ -13,13 +13,11 @@
 
 namespace QGBA {
 
-class CoreController;
-
 class GDBController : public DebuggerController {
 Q_OBJECT
 
 public:
-	GDBController(QObject* parent = nullptr);
+	GDBController(CoreProvider* provider, QObject* parent = nullptr);
 
 public:
 	ushort port();

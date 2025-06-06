@@ -15,13 +15,11 @@
 
 namespace QGBA {
 
-class CoreController;
-
 class DebuggerConsoleController : public DebuggerController {
 Q_OBJECT
 
 public:
-	DebuggerConsoleController(QObject* parent = nullptr);
+	DebuggerConsoleController(CoreProvider* provider, QObject* parent = nullptr);
 
 	QStringList history() const { return m_history; }
 

@@ -96,7 +96,7 @@ void LogController::postLog(int level, int category, const QString& string) {
 	if (!mLogFilterTest(&m_filter, category, static_cast<mLogLevel>(level))) {
 		return;
 	}
-	if (m_logToStdout || m_logToFile) {
+	if ((m_logToStdout || m_logToFile) && this == &s_global) {
 		QString line = tr("[%1] %2: %3").arg(LogController::toString(level)).arg(mLogCategoryName(category)).arg(string);
 
 		if (m_logToStdout) {
