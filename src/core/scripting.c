@@ -1239,11 +1239,31 @@ mSCRIPT_DEFINE_END;
 static void _setRumble(struct mRumble* rumble, bool enable, uint32_t timeSince) {
 	struct mScriptCoreAdapter* adapter = containerof(rumble, struct mScriptCoreAdapter, rumble);
 
-	if (adapter->oldRumble) {
+	if (adapter->oldRumble && adapter->oldRumble->setRumble) {
 		adapter->oldRumble->setRumble(adapter->oldRumble, enable, timeSince);
 	}
 
 	adapter->rumbleIntegrator.d.setRumble(&adapter->rumbleIntegrator.d, enable, timeSince);
+}
+
+static void _rumbleIntegrate(struct mRumble* rumble, uint32_t period) {
+	struct mScriptCoreAdapter* adapter = containerof(rumble, struct mScriptCoreAdapter, rumble);
+
+	if (adapter->oldRumble && adapter->oldRumble->integrate) {
+		adapter->oldRumble->integrate(adapter->oldRumble, period);
+	}
+
+	adapter->rumbleIntegrator.d.integrate(&adapter->rumbleIntegrator.d, period);
+}
+
+static void _rumbleReset(struct mRumble* rumble, bool enable) {
+	struct mScriptCoreAdapter* adapter = containerof(rumble, struct mScriptCoreAdapter, rumble);
+
+	if (adapter->oldRumble && adapter->oldRumble->reset) {
+		adapter->oldRumble->reset(adapter->oldRumble, enable);
+	}
+
+	adapter->rumbleIntegrator.d.reset(&adapter->rumbleIntegrator.d, enable);
 }
 
 static void _setRumbleFloat(struct mRumbleIntegrator* integrator, float level) {
@@ -1391,6 +1411,8 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 	mRumbleIntegratorInit(&adapter->rumbleIntegrator);
 	adapter->rumbleIntegrator.setRumble = _setRumbleFloat;
 	adapter->rumble.setRumble = _setRumble;
+	adapter->rumble.reset = _rumbleReset;
+	adapter->rumble.integrate = _rumbleIntegrate;
 	adapter->rotation.sample = _rotationSample;
 	adapter->rotation.readTiltX = _rotationReadTiltX;
 	adapter->rotation.readTiltY = _rotationReadTiltY;
