@@ -10,6 +10,8 @@
 
 CXX_GUARD_START
 
+#include <mgba-util/geometry.h>
+
 #ifdef COLOR_16_BIT
 typedef uint16_t mColor;
 #define BYTES_PER_PIXEL 2
@@ -112,6 +114,16 @@ struct mPainter {
 	uint32_t fillColor;
 };
 
+#ifdef USE_FREETYPE
+#define mFONT_FRACT_BITS 6
+
+struct mTextRunMetrics {
+	int height;
+	int baseline;
+	int width;
+};
+#endif
+
 enum mAlignment {
 	mALIGN_LEFT = 0x01,
 	mALIGN_HCENTER = 0x02,
@@ -170,7 +182,8 @@ void mFontDestroy(struct mFont*);
 
 unsigned mFontSize(const struct mFont*);
 void mFontSetSize(struct mFont*, unsigned px);
-int mFontSpanWidth(struct mFont*, const char* text);
+const char* mFontRunMetrics(struct mFont*, const char* text, struct mTextRunMetrics* out);
+void mFontTextBoxSize(struct mFont*, const char* text, int lineSpacing, struct mSize* out);
 
 void mPainterDrawText(struct mPainter*, const char* text, int x, int y, enum mAlignment);
 #endif

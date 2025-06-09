@@ -56,7 +56,7 @@ struct mFont* mFontOpen(const char* path) {
 
 	struct mFont* font = calloc(1, sizeof(*font));
 	font->face = face;
-	mFontSetSize(font, 8 * 64);
+	mFontSetSize(font, 8 << mFONT_FRACT_BITS);
 	return font;
 }
 
@@ -80,31 +80,121 @@ void mFontSetSize(struct mFont* font, unsigned pt) {
 }
 
 int mFontSpanWidth(struct mFont* font, const char* text) {
+	struct mTextRunMetrics metrics;
+	mFontRunMetrics(font, text, &metrics);
+	return metrics.width;
+}
+
+const char* mFontRunMetrics(struct mFont* font, const char* text, struct mTextRunMetrics* out) {
 	FT_Face face = font->face;
+	out->height = face->size->metrics.ascender - face->size->metrics.descender;
+	out->baseline = -face->size->metrics.descender;
+
 	uint32_t lastGlyph = 0;
 	int width = 0;
-
 	while (*text) {
-		uint32_t glyph = utf8Char((const char**) &text, NULL);
+		uint32_t codepoint = utf8Char((const char**) &text, NULL);
 
-		if (FT_Load_Char(face, glyph, FT_LOAD_DEFAULT)) {
+		if (codepoint == '\n') {
+			out->width = width;
+			return text;
+		}
+
+		if (FT_Load_Char(face, codepoint, FT_LOAD_DEFAULT)) {
+			lastGlyph = 0;
 			continue;
 		}
 
 		FT_Vector kerning = {0};
-		FT_Get_Kerning(face, lastGlyph, glyph, FT_KERNING_DEFAULT, &kerning);
+		FT_Get_Kerning(face, lastGlyph, codepoint, FT_KERNING_DEFAULT, &kerning);
 		width += kerning.x;
 		width += face->glyph->advance.x;
 
-		lastGlyph = glyph;
+		lastGlyph = codepoint;
 	}
 
-	return width;
+	out->width = width;
+	return NULL;
+}
+
+void mFontTextBoxSize(struct mFont* font, const char* text, int lineSpacing, struct mSize* out) {
+	int width = 0;
+	int height = 0;
+
+	do {
+		struct mTextRunMetrics metrics;
+		text = mFontRunMetrics(font, text, &metrics);
+		if (metrics.width > width) {
+			width = metrics.width;
+		}
+		height += metrics.height + lineSpacing;
+	} while (text);
+
+	out->width = width;
+	out->height = height;
+}
+
+static const char* mPainterDrawTextRun(struct mPainter* painter, const char* text, int x, int y, enum mAlignment alignment, uint8_t sdfThreshold) {
+	FT_Face face = painter->font->face;
+	struct mTextRunMetrics metrics;
+	mFontRunMetrics(painter->font, text, &metrics);
+
+	switch (alignment & mALIGN_HORIZONTAL) {
+	case mALIGN_LEFT:
+	default:
+		break;
+	case mALIGN_HCENTER:
+		x -= metrics.width >> 1;
+		break;
+	case mALIGN_RIGHT:
+		x -= metrics.width;
+		break;
+	}
+
+	uint32_t lastGlyph = 0;
+	while (*text) {
+		uint32_t codepoint = utf8Char((const char**) &text, NULL);
+
+		if (codepoint == '\n') {
+			return text;
+		}
+
+		if (FT_Load_Char(face, codepoint, FT_LOAD_DEFAULT)) {
+			lastGlyph = 0;
+			continue;
+		}
+
+		if (FT_Render_Glyph(face->glyph, sdfThreshold ? FT_RENDER_MODE_SDF : FT_RENDER_MODE_NORMAL)) {
+			lastGlyph = 0;
+			continue;
+		}
+
+		struct mImage image;
+		_makeTemporaryImage(&image, &face->glyph->bitmap);
+
+		FT_Vector kerning = {0};
+		FT_Get_Kerning(face, lastGlyph, codepoint, FT_KERNING_DEFAULT, &kerning);
+		x += kerning.x;
+		y += kerning.y;
+
+		if (sdfThreshold) {
+			mPainterDrawSDFMask(painter, &image, (x >> 6) + face->glyph->bitmap_left, (y >> 6) - face->glyph->bitmap_top, 0x70);
+		} else {
+			mPainterDrawMask(painter, &image, (x >> 6) + face->glyph->bitmap_left, (y >> 6) - face->glyph->bitmap_top);
+		}
+		x += face->glyph->advance.x;
+		y += face->glyph->advance.y;
+
+		lastGlyph = codepoint;
+	}
+
+	return NULL;
 }
 
 void mPainterDrawText(struct mPainter* painter, const char* text, int x, int y, enum mAlignment alignment) {
 	FT_Face face = painter->font->face;
-	uint32_t lastGlyph = 0;
+	struct mSize size;
+	mFontTextBoxSize(painter->font, text, 0, &size);
 
 	x <<= 6;
 	y <<= 6;
@@ -116,89 +206,33 @@ void mPainterDrawText(struct mPainter* painter, const char* text, int x, int y, 
 	case mALIGN_BASELINE:
 		break;
 	case mALIGN_VCENTER:
-		y += face->size->metrics.ascender - face->size->metrics.height / 2;
+		y += face->size->metrics.ascender - size.height / 2;
 		break;
 	case mALIGN_BOTTOM:
 	default:
-		y += face->size->metrics.descender;
-		break;
-	}
-
-	switch (alignment & mALIGN_HORIZONTAL) {
-	case mALIGN_LEFT:
-	default:
-		break;
-	case mALIGN_HCENTER:
-		x -= mFontSpanWidth(painter->font, text) >> 1;
-		break;
-	case mALIGN_RIGHT:
-		x -= mFontSpanWidth(painter->font, text);
+		y += face->size->metrics.ascender - size.height;
 		break;
 	}
 
 #if FREETYPE_MAJOR >= 2 && FREETYPE_MINOR >= 11
 	if (painter->strokeWidth) {
-		int xx = x;
 		int yy = y;
 		const char* ltext = text;
 		uint32_t fillColor = painter->fillColor;
 		painter->fillColor = painter->strokeColor;
-		while (*ltext) {
-			uint32_t glyph = utf8Char((const char**) &ltext, NULL);
-
-			if (FT_Load_Char(face, glyph, FT_LOAD_DEFAULT)) {
-				continue;
-			}
-
-			if (FT_Render_Glyph(face->glyph, FT_RENDER_MODE_SDF)) {
-				continue;
-			}
-
-			struct mImage image;
-			_makeTemporaryImage(&image, &face->glyph->bitmap);
-
-			FT_Vector kerning = {0};
-			FT_Get_Kerning(face, lastGlyph, glyph, FT_KERNING_DEFAULT, &kerning);
-			xx += kerning.x;
-			yy += kerning.y;
-
-			mPainterDrawSDFMask(painter, &image, (xx >> 6) + face->glyph->bitmap_left, (yy >> 6) - face->glyph->bitmap_top, 0x70);
-			xx += face->glyph->advance.x;
-			yy += face->glyph->advance.y;
-
-			lastGlyph = glyph;
-		}
+		do {
+			ltext = mPainterDrawTextRun(painter, ltext, x, yy, alignment, 0x70);
+			yy += face->size->metrics.height;
+		} while (ltext);
 
 		painter->fillColor = fillColor;
-		lastGlyph = 0;
 	}
 #endif
 
-	while (*text) {
-		uint32_t glyph = utf8Char((const char**) &text, NULL);
-
-		if (FT_Load_Char(face, glyph, FT_LOAD_DEFAULT)) {
-			continue;
-		}
-
-		if (FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL)) {
-			continue;
-		}
-
-		struct mImage image;
-		_makeTemporaryImage(&image, &face->glyph->bitmap);
-
-		FT_Vector kerning = {0};
-		FT_Get_Kerning(face, lastGlyph, glyph, FT_KERNING_DEFAULT, &kerning);
-		x += kerning.x;
-		y += kerning.y;
-
-		mPainterDrawMask(painter, &image, (x >> 6) + face->glyph->bitmap_left, (y >> 6) - face->glyph->bitmap_top);
-		x += face->glyph->advance.x;
-		y += face->glyph->advance.y;
-
-		lastGlyph = glyph;
-	}
+	do {
+		text = mPainterDrawTextRun(painter, text, x, y, alignment, 0);
+		y += face->size->metrics.height;
+	} while (text);
 }
 
 #endif
