@@ -293,7 +293,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="24"/>
         <source>Select a script</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleziona Script</translation>
     </message>
 </context>
 <context>
