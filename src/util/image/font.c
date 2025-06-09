@@ -12,6 +12,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_MODULE_H
+#include FT_STROKER_H
 
 #define DPI 100
 
@@ -20,6 +21,7 @@ static FT_Library library;
 
 struct mFont {
 	FT_Face face;
+	FT_Stroker stroker;
 	unsigned emHeight;
 };
 
@@ -43,10 +45,6 @@ struct mFont* mFontOpen(const char* path) {
 		if (FT_Init_FreeType(&library)) {
 			return NULL;
 		}
-#if FREETYPE_MAJOR >= 2 && FREETYPE_MINOR >= 11
-		FT_Int spread = 5;
-		FT_Property_Set(library, "sdf", "spread", &spread);
-#endif
 	}
 
 	FT_Face face;
@@ -54,14 +52,22 @@ struct mFont* mFontOpen(const char* path) {
 		return NULL;
 	}
 
+	FT_Stroker stroker;
+	if (FT_Stroker_New(library, &stroker)) {
+		FT_Done_Face(face);
+		return NULL;
+	}
+
 	struct mFont* font = calloc(1, sizeof(*font));
 	font->face = face;
+	font->stroker = stroker;
 	mFontSetSize(font, 8 << mFONT_FRACT_BITS);
 	return font;
 }
 
 void mFontDestroy(struct mFont* font) {
 	FT_Done_Face(font->face);
+	FT_Stroker_Done(font->stroker);
 	free(font);
 
 	size_t opened = --libraryOpen;
@@ -134,7 +140,7 @@ void mFontTextBoxSize(struct mFont* font, const char* text, int lineSpacing, str
 	out->height = height;
 }
 
-static const char* mPainterDrawTextRun(struct mPainter* painter, const char* text, int x, int y, enum mAlignment alignment, uint8_t sdfThreshold) {
+static const char* mPainterDrawTextRun(struct mPainter* painter, const char* text, int x, int y, enum mAlignment alignment, bool stroke) {
 	FT_Face face = painter->font->face;
 	struct mTextRunMetrics metrics;
 	mFontRunMetrics(painter->font, text, &metrics);
@@ -151,7 +157,7 @@ static const char* mPainterDrawTextRun(struct mPainter* painter, const char* tex
 		break;
 	}
 
-	uint32_t lastGlyph = 0;
+	uint32_t lastCodepoint = 0;
 	while (*text) {
 		uint32_t codepoint = utf8Char((const char**) &text, NULL);
 
@@ -160,32 +166,62 @@ static const char* mPainterDrawTextRun(struct mPainter* painter, const char* tex
 		}
 
 		if (FT_Load_Char(face, codepoint, FT_LOAD_DEFAULT)) {
-			lastGlyph = 0;
+			lastCodepoint = 0;
 			continue;
 		}
 
-		if (FT_Render_Glyph(face->glyph, sdfThreshold ? FT_RENDER_MODE_SDF : FT_RENDER_MODE_NORMAL)) {
-			lastGlyph = 0;
-			continue;
+		FT_Bitmap* bitmap;
+		FT_Glyph glyph = NULL;
+		int top;
+		int left;
+
+		if (stroke) {
+			FT_Stroker_Set(painter->font->stroker, painter->strokeWidth << mFONT_FRACT_BITS, FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+
+			FT_Get_Glyph(face->glyph, &glyph);
+			if (painter->fill) {
+				FT_Glyph_Stroke(&glyph, painter->font->stroker, 1);
+			} else {
+				FT_Glyph_StrokeBorder(&glyph, painter->font->stroker, 0, 1);
+			}
+
+			if (FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, NULL, 1)) {
+				FT_Done_Glyph(glyph);
+				lastCodepoint = 0;
+				continue;
+			}
+
+			FT_BitmapGlyph bitmapGlyph = (FT_BitmapGlyph) glyph;
+			bitmap = &bitmapGlyph->bitmap;
+			top = bitmapGlyph->top;
+			left = bitmapGlyph->left;
+		} else {
+			if (FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL)) {
+				lastCodepoint = 0;
+				continue;
+			}
+			bitmap = &face->glyph->bitmap;
+			top = face->glyph->bitmap_top;
+			left = face->glyph->bitmap_left;
 		}
 
 		struct mImage image;
-		_makeTemporaryImage(&image, &face->glyph->bitmap);
+		_makeTemporaryImage(&image, bitmap);
 
 		FT_Vector kerning = {0};
-		FT_Get_Kerning(face, lastGlyph, codepoint, FT_KERNING_DEFAULT, &kerning);
+		FT_Get_Kerning(face, lastCodepoint, codepoint, FT_KERNING_DEFAULT, &kerning);
 		x += kerning.x;
 		y += kerning.y;
 
-		if (sdfThreshold) {
-			mPainterDrawSDFMask(painter, &image, (x >> 6) + face->glyph->bitmap_left, (y >> 6) - face->glyph->bitmap_top, 0x70);
-		} else {
-			mPainterDrawMask(painter, &image, (x >> 6) + face->glyph->bitmap_left, (y >> 6) - face->glyph->bitmap_top);
-		}
+		mPainterDrawMask(painter, &image, (x >> mFONT_FRACT_BITS) + left, (y >> mFONT_FRACT_BITS) - top);
 		x += face->glyph->advance.x;
 		y += face->glyph->advance.y;
 
-		lastGlyph = codepoint;
+		if (glyph) {
+			FT_Done_Glyph(glyph);
+		}
+
+		lastCodepoint = codepoint;
 	}
 
 	return NULL;
@@ -221,7 +257,7 @@ void mPainterDrawText(struct mPainter* painter, const char* text, int x, int y, 
 		uint32_t fillColor = painter->fillColor;
 		painter->fillColor = painter->strokeColor;
 		do {
-			ltext = mPainterDrawTextRun(painter, ltext, x, yy, alignment, 0x70);
+			ltext = mPainterDrawTextRun(painter, ltext, x + painter->strokeWidth , yy, alignment, true);
 			yy += face->size->metrics.height;
 		} while (ltext);
 
@@ -230,7 +266,7 @@ void mPainterDrawText(struct mPainter* painter, const char* text, int x, int y, 
 #endif
 
 	do {
-		text = mPainterDrawTextRun(painter, text, x, y, alignment, 0);
+		text = mPainterDrawTextRun(painter, text, x, y, alignment, false);
 		y += face->size->metrics.height;
 	} while (text);
 }

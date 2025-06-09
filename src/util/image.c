@@ -904,40 +904,6 @@ void mPainterDrawMask(struct mPainter* painter, const struct mImage* mask, int x
 	}
 }
 
-void mPainterDrawSDFMask(struct mPainter* painter, const struct mImage* mask, int x, int y, uint8_t upper) {
-	if (mask->format != mCOLOR_L8) {
-		return;
-	}
-
-	COMPOSITE_BOUNDS_INIT(mask, painter->backing);
-
-	for (y = 0; y < srcRect.height; ++y) {
-		uintptr_t dstPixel = (uintptr_t) PIXEL(painter->backing, dstStartX, dstStartY + y);
-		uintptr_t maskPixel = (uintptr_t) PIXEL(mask, srcStartX, srcStartY + y);
-		for (x = 0; x < srcRect.width; ++x, dstPixel += painter->backing->depth, maskPixel += mask->depth) {
-			uint32_t color;
-			GET_PIXEL(color, maskPixel, mask->depth);
-			if (color >= upper) {
-				color = painter->fillColor;
-			} else if (color + 0x10 > upper) {
-				// TODO: Make this spread customizable without too much perf hit
-				color = ((color + 0x10 - upper) * 0x10) << 24;
-				color |= painter->fillColor & 0x00FFFFFF;
-			} else {
-				continue;
-			}
-			if (painter->blend || painter->fillColor < 0xFF000000) {
-				uint32_t current;
-				GET_PIXEL(current, dstPixel, painter->backing->depth);
-				current = mColorConvert(current, painter->backing->format, mCOLOR_ARGB8);
-				color = mColorMixARGB8(color, current);
-			}
-			color = mColorConvert(color, mCOLOR_ARGB8, painter->backing->format);
-			PUT_PIXEL(color, dstPixel, painter->backing->depth);
-		}
-	}
-}
-
 uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to) {
 	if (from == to) {
 		return color;
