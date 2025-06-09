@@ -998,14 +998,14 @@ struct EReaderScan* EReaderScanLoadImage8(const void* pixels, unsigned width, un
 }
 
 void EReaderScanDetectParams(struct EReaderScan* scan) {
-	size_t sum = 0;
+	double product = 0;
 	unsigned y;
 	for (y = 0; y < scan->height; ++y) {
 		const uint8_t* row = &scan->buffer[scan->width * y];
 		unsigned x;
 		for (x = 0; x < scan->width; ++x) {
 			uint8_t color = row[x];
-			sum += color;
+			product += log(color + 1);
 			if (color < scan->min) {
 				scan->min = color;
 			}
@@ -1014,8 +1014,8 @@ void EReaderScanDetectParams(struct EReaderScan* scan) {
 			}
 		}
 	}
-	scan->mean = sum / (scan->width * scan->height);
-	scan->anchorThreshold = 2 * (scan->mean - scan->min) / 5 + scan->min;
+	scan->mean = exp(product / (scan->width * scan->height));
+	scan->anchorThreshold = (scan->max - scan->mean) / 2 + scan->min;
 }
 
 void EReaderScanDetectAnchors(struct EReaderScan* scan) {

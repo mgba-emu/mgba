@@ -50,6 +50,7 @@ Misc:
  - GBA: Improve detection of valid ELF ROMs
  - GBA Audio: Remove broken XQ audio pending rewrite
  - GBA BIOS: Move SoftReset implementation to assembly
+ - GBA e-Reader: Use geometric mean instead of arithmetic mean when detecting parameters
  - GBA Memory: Improve VRAM access stall cycle estimation
  - GBA SIO: Rewrite lockstep driver for improved stability
  - GBA Video: Add special circlular window handling in OpenGL renderer
