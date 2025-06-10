@@ -503,6 +503,14 @@ void ReportView::addGamepadInfo(QStringList& report) {
 }
 
 void ReportView::addROMInfo(QStringList& report, CoreController* controller) {
+	QFileInfo saveInfo(controller->savePath());
+	if (saveInfo.exists()) {
+		report << QString("Save file: %1").arg(redact(saveInfo.filePath()));
+		report << QString("Save size: %1").arg(saveInfo.size());
+	} else {
+		report << QString("No save file");
+	}
+
 	report << QString("Currently paused: %1").arg(yesNo[controller->isPaused()]);
 
 	mCore* core = controller->thread()->core;
