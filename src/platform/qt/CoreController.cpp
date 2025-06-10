@@ -1289,7 +1289,12 @@ void CoreController::updatePlayerSave() {
 		if (!m_threadContext.core->loadSave(m_threadContext.core, save)) {
 			save->close(save);
 		} else {
-			m_savePath = QString::fromUtf8(m_threadContext.core->dirs.baseName) + saveSuffix;
+			if (m_threadContext.core->dirs.save == m_threadContext.core->dirs.base) {
+				m_savePath = m_baseDirectory;
+			} else {
+				m_savePath = QString::fromUtf8(m_threadContext.core->opts.savegamePath);
+			}
+			m_savePath += PATH_SEP + QString::fromUtf8(m_threadContext.core->dirs.baseName) + saveSuffix;
 		}
 	}
 }
