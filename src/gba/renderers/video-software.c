@@ -1026,11 +1026,17 @@ int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRendere
 		}
 		int mosaicV = GBAMosaicControlGetObjV(renderer->mosaic) + 1;
 		int mosaicY = y - (y % mosaicV);
+		int lastIndex = 0;
 		int i;
 		for (i = 0; i < renderer->oamMax; ++i) {
 			struct GBAVideoRendererSprite* sprite = &renderer->sprites[i];
 			int localY = y;
 			renderer->end = 0;
+			renderer->spriteCyclesRemaining -= 2 * (sprite->index - lastIndex);
+			lastIndex = sprite->index;
+			if (renderer->spriteCyclesRemaining <= 0) {
+				break;
+			}
 			if ((y < sprite->y && (sprite->endY - 256 < 0 || y >= sprite->endY - 256)) || y >= sprite->endY) {
 				continue;
 			}
@@ -1056,9 +1062,6 @@ int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRendere
 				spriteLayers |= drawn << GBAObjAttributesCGetPriority(sprite->obj.c);
 			}
 			renderer->spriteCyclesRemaining -= sprite->cycles;
-			if (renderer->spriteCyclesRemaining <= 0) {
-				break;
-			}
 		}
 	}
 	return spriteLayers;
