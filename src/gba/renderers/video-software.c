@@ -1037,7 +1037,7 @@ int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRendere
 			if (renderer->spriteCyclesRemaining <= 0) {
 				break;
 			}
-			if ((y < sprite->y && (sprite->endY - 256 < 0 || y >= sprite->endY - 256)) || y >= sprite->endY) {
+			if (y < sprite->y || y >= sprite->endY) {
 				continue;
 			}
 			if (GBAObjAttributesAIsMosaic(sprite->obj.a) && mosaicV > 1) {

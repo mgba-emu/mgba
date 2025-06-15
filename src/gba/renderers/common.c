@@ -44,6 +44,9 @@ int GBAVideoRendererCleanOAM(struct GBAObj* oam, struct GBAVideoRendererSprite* 
 				continue;
 			}
 			int y = GBAObjAttributesAGetY(obj.a) + offsetY;
+			if (y + height > 256) {
+				y -= 256;
+			}
 			sprites[oamMax].y = y;
 			sprites[oamMax].endY = y + height;
 			sprites[oamMax].cycles = cycles;
