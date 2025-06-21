@@ -825,6 +825,8 @@ cleanup:
 }
 
 void GDBStubHangup(struct GDBStub* stub) {
+	strncpy(stub->outgoing, "W00", GDB_STUB_MAX_LINE - 4);
+	_sendMessage(stub);
 	if (!SOCKET_FAILED(stub->connection)) {
 		SocketClose(stub->connection);
 		stub->connection = INVALID_SOCKET;
