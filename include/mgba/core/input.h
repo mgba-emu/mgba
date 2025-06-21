@@ -43,8 +43,8 @@ struct mInputMap {
 struct mInputAxis {
 	int highDirection;
 	int lowDirection;
-	int32_t deadHigh;
-	int32_t deadLow;
+	int16_t deadHigh;
+	int16_t deadLow;
 };
 
 void mInputMapInit(struct mInputMap*, const struct mInputPlatformInfo* info);
@@ -57,7 +57,7 @@ int mInputQueryBinding(const struct mInputMap*, uint32_t type, int input);
 void mInputUnbindKey(struct mInputMap*, uint32_t type, int input);
 void mInputUnbindAllKeys(struct mInputMap*, uint32_t type);
 
-int mInputMapAxis(const struct mInputMap*, uint32_t type, int axis, int value);
+int mInputMapAxis(const struct mInputMap*, uint32_t type, int axis, int16_t value);
 int mInputClearAxis(const struct mInputMap*, uint32_t type, int axis, int keys);
 void mInputBindAxis(struct mInputMap*, uint32_t type, int axis, const struct mInputAxis* description);
 void mInputUnbindAxis(struct mInputMap*, uint32_t type, int axis);

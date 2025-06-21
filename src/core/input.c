@@ -447,7 +447,7 @@ int mInputQueryBinding(const struct mInputMap* map, uint32_t type, int input) {
 	return impl->map[input];
 }
 
-int mInputMapAxis(const struct mInputMap* map, uint32_t type, int axis, int value) {
+int mInputMapAxis(const struct mInputMap* map, uint32_t type, int axis, int16_t value) {
 	const struct mInputMapImpl* impl = _lookupMapConst(map, type);
 	if (!impl) {
 		return -1;
