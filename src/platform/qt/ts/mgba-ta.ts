@@ -6,27 +6,27 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="427"/>
         <source>Name</source>
-        <translation type="unfinished">பெயர்</translation>
+        <translation>பெயர்</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished">இடம்</translation>
+        <translation>இடம்</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
         <source>Platform</source>
-        <translation type="unfinished">இயங்குதளம்</translation>
+        <translation>இயங்குதளம்</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished">அளவு</translation>
+        <translation>அளவு</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
         <source>CRC32</source>
-        <translation type="unfinished">CRC32</translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -62,7 +62,7 @@
     <message>
         <location filename="../AboutScreen.ui" line="23"/>
         <source>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;Forums / Support&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;Donate&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;Source&lt;/a&gt;</source>
-        <translation>&lt;a href = &quot;http:/pt &lt;/a&gt;&quot; &lt;a href = &quot;https.2&quot; &gt;&gt;&gt; &lt;a href = &quot;https://paton.com/peration&gt; • &lt;a href =&quot; httpthub.com /gitbranch} &quot;&gt; மூல /&lt;/a&gt;</translation>
+        <translation>&lt;a href=&quot;http://mgba.io/&quot;&gt;Website&lt;/a&gt; • &lt;a href=&quot;https://forums.mgba.io/&quot;&gt;மன்றங்கள் / ஆதரவு&lt;/a&gt; • &lt;a href=&quot;https://patreon.com/mgba&quot;&gt;நன்கொடை&lt;/a&gt; • &lt;a href=&quot;https://github.com/mgba-emu/mgba/tree/{gitBranch}&quot;&gt;மூலம்&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="41"/>
@@ -255,7 +255,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="98"/>
         <source>Moving more than one row at once is not yet supported</source>
-        <translation type="unfinished"></translation>
+        <translation>ஒரே நேரத்தில் ஒன்றுக்கு மேற்பட்ட வரிசையில் நகர்த்துவது இன்னும் ஆதரிக்கப்படவில்லை</translation>
     </message>
 </context>
 <context>
@@ -263,37 +263,37 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="14"/>
         <source>Autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>ஆட்டோரூன் ச்கிரிப்ட்கள்</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished">கூட்டு</translation>
+        <translation>கூட்டு</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
         <source>Remove</source>
-        <translation type="unfinished">அகற்று</translation>
+        <translation>அகற்று</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="53"/>
         <source>Move up</source>
-        <translation type="unfinished"></translation>
+        <translation>மேலே செல்லுங்கள்</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="63"/>
         <source>Move down</source>
-        <translation type="unfinished"></translation>
+        <translation>கீழே செல்லுங்கள்</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="73"/>
         <source>Run scripts when starting a game</source>
-        <translation type="unfinished"></translation>
+        <translation>ஒரு விளையாட்டைத் தொடங்கும்போது ச்கிரிப்ட்களை இயக்கவும்</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="24"/>
         <source>Select a script</source>
-        <translation type="unfinished"></translation>
+        <translation>ச்கிரிப்டைத் தேர்ந்தெடுக்கவும்</translation>
     </message>
 </context>
 <context>
@@ -876,7 +876,7 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.cpp" line="638"/>
         <source>Backdrop</source>
-        <translation>பின்னணி</translation>
+        <translation>பின்விடு</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="641"/>
@@ -945,7 +945,7 @@ Download size: %3</source>
     <message>
         <location filename="../GDBWindow.cpp" line="63"/>
         <source>Standard GDB</source>
-        <translation>நிலையான சி.டி.பி.</translation>
+        <translation>நிலையான சி.டி.பி</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="68"/>
@@ -1097,32 +1097,32 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="85"/>
         <source>%1 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
         <source>%1 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + ரம்பிள்</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
         <source>%1 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (சாய்)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="96"/>
         <source>%1 (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (பழைய 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="97"/>
         <source>%1 (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (பழைய 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
         <source>%1 (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (புதியது)</translation>
     </message>
 </context>
 <context>
@@ -2362,7 +2362,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="809"/>
         <location filename="../IOViewer.cpp" line="825"/>
         <source>Scale</source>
-        <translation>அளவு</translation>
+        <translation>அளவுகோல்</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="780"/>
@@ -3373,147 +3373,147 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="67"/>
         <source>Data read</source>
-        <translation type="unfinished"></translation>
+        <translation>தரவு படித்தது</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="69"/>
         <source>Data written</source>
-        <translation type="unfinished"></translation>
+        <translation>தரவு எழுதப்பட்டது</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="71"/>
         <source>Code executed</source>
-        <translation type="unfinished"></translation>
+        <translation>குறியீடு செயல்படுத்தப்பட்டது</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="73"/>
         <source>Code aborted</source>
-        <translation type="unfinished"></translation>
+        <translation>குறியீடு கைவிடப்பட்டது</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="75"/>
         <source>8-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>8-பிட் அணுகல்</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="77"/>
         <source>16-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>16-பிட் அணுகல்</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="79"/>
         <source>32-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>32-பிட் அணுகல்</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="81"/>
         <source>64-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>64-பிட் அணுகல்</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="95"/>
         <source>Accessed by instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>அறிவுறுத்தலால் அணுகப்பட்டது</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="97"/>
         <source>Accessed by DMA</source>
-        <translation type="unfinished"></translation>
+        <translation>டி.எம்.ஏ. மூலம் அனுகப்பட்டது</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="99"/>
         <source>Accessed by BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>அணுகப்பட்டது பயாச்</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="101"/>
         <source>Compressed data</source>
-        <translation type="unfinished"></translation>
+        <translation>சுருக்கப்பட்ட தரவு</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="103"/>
         <source>Accessed by memory copy</source>
-        <translation type="unfinished"></translation>
+        <translation>நினைவக நகல் மூலம் அணுகப்பட்டது</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="105"/>
         <source>(Unknown extra bit 5)</source>
-        <translation type="unfinished"></translation>
+        <translation>(அறியப்படாத கூடுதல் பிட் 5)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="107"/>
         <source>(Unknown extra bit 6)</source>
-        <translation type="unfinished"></translation>
+        <translation>(அறியப்படாத கூடுதல் பிட் 6)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="109"/>
         <source>(Unknown extra bit 7)</source>
-        <translation type="unfinished"></translation>
+        <translation>(அறியப்படாத கூடுதல் பிட் 7)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="111"/>
         <source>Invalid instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>தவறான அறிவுறுத்தல்</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="113"/>
         <source>Invalid read</source>
-        <translation type="unfinished"></translation>
+        <translation>செல்லாத வாசிப்பு</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="115"/>
         <source>Invalid write</source>
-        <translation type="unfinished"></translation>
+        <translation>தவறான எழுத்து</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="117"/>
         <source>Invalid executable address</source>
-        <translation type="unfinished"></translation>
+        <translation>தவறான இயங்கக்கூடிய முகவரி</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="119"/>
         <source>(Private bit 0)</source>
-        <translation type="unfinished"></translation>
+        <translation>(தனியார் பிட் 0)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="121"/>
         <source>(Private bit 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>(தனியார் பிட் 1)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>கை குறியீடு</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
         <source>Instruction opcode</source>
-        <translation type="unfinished"></translation>
+        <translation>அறிவுறுத்தல் ஆப்கோட்</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="129"/>
         <source>(Private bit 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>(தனியார் பிட் 2)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="134"/>
         <source>Thumb code</source>
-        <translation type="unfinished"></translation>
+        <translation>கட்டைவிரல் குறியீடு</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="136"/>
         <source>Instruction operand</source>
-        <translation type="unfinished"></translation>
+        <translation>அறிவுறுத்தல் செயல்பாடு</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="138"/>
         <source>(Private bit 3)</source>
-        <translation type="unfinished"></translation>
+        <translation>(தனியார் பிட் 3)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="146"/>
         <source>(Unknown)</source>
-        <translation type="unfinished">(தெரியவில்லை)</translation>
+        <translation>(தெரியவில்லை)</translation>
     </message>
 </context>
 <context>
@@ -3546,12 +3546,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="56"/>
         <source>Load</source>
-        <translation type="unfinished">சுமை</translation>
+        <translation>சுமை</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
         <source>Unload</source>
-        <translation type="unfinished"></translation>
+        <translation>இறக்கவும்</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="76"/>
@@ -3886,37 +3886,37 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="37"/>
         <source>Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>முகவரி:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="106"/>
         <source>Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation>சீரமைப்பு:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="120"/>
         <source>1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>1 பைட்</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="125"/>
         <source>2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>2 பைட்டுகள்</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="130"/>
         <source>4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>4 பைட்டுகள்</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="152"/>
         <source>Signed:</source>
-        <translation type="unfinished"></translation>
+        <translation>கையொப்பமிடப்பட்டது:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="172"/>
         <source>Unsigned:</source>
-        <translation type="unfinished"></translation>
+        <translation>கையொப்பமிடப்படாதது:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="254"/>
@@ -3931,12 +3931,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="282"/>
         <source>Selected address accesses</source>
-        <translation type="unfinished"></translation>
+        <translation>தேர்ந்தெடுக்கப்பட்ட முகவரி அணுகல்கள்</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="304"/>
         <source>Logging configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>உள்நுழைவு உள்ளமைவு</translation>
     </message>
 </context>
 <context>
@@ -4359,7 +4359,7 @@ Download size: %3</source>
     <message>
         <location filename="../PaletteView.ui" line="340"/>
         <source>Export BG</source>
-        <translation>ஏற்றுமதி பி.சி.</translation>
+        <translation>ஏற்றுமதி பி.சி</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="360"/>
@@ -4511,7 +4511,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="100"/>
         <source>SHA-1</source>
-        <translation type="unfinished"></translation>
+        <translation>சா -1</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
@@ -4574,7 +4574,7 @@ Download size: %3</source>
     <message>
         <location filename="../ReportView.ui" line="67"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt; &lt;head/&gt; &lt;body&gt; &lt;p&gt; பிழை அறிக்கையை தாக்கல் செய்ய, முதலில் நீங்கள் தாக்கல் செய்யவிருக்கும் பிழை அறிக்கையுடன் இணைக்க ஒரு அறிக்கை கோப்பை உருவாக்கவும். சேமி கோப்புகளை நீங்கள் சேர்க்க பரிந்துரைக்கப்படுகிறது, ஏனெனில் இவை பெரும்பாலும் பிழைத்திருத்த சிக்கல்களுக்கு உதவுகின்றன. நீங்கள் இயங்கும் {projectName} இன் பதிப்பு, உங்கள் உள்ளமைவு, உங்கள் கணினி மற்றும் நீங்கள் தற்போது திறந்த விளையாட்டு (ஏதேனும் இருந்தால்) பற்றிய சில தகவல்களை இது சேகரிக்கும். இந்த சேகரிப்பு முடிந்ததும் கீழே சேகரிக்கப்பட்ட அனைத்து தகவல்களையும் மதிப்பாய்வு செய்து அதை ஒரு சிப் கோப்பில் சேமிக்கலாம். சேகரிக்கப்பட்ட எந்தவொரு பாதையிலும் இருந்தால், உங்கள் பயனர்பெயர் போன்ற எந்தவொரு தனிப்பட்ட தகவல்களையும் மாற்றியமைக்க சேகரிப்பு தானாகவே முயற்சிக்கும், ஆனால் நீங்கள் அதைத் திருத்தினால். நீங்கள் அதை உருவாக்கி சேமித்த பிறகு, தயவுசெய்து கீழேயுள்ள பொத்தானைக் சொடுக்கு செய்க அல்லது &lt;a href = &quot;https://mgba.io/i/&quot;&gt; &lt;ச்பான் பாணி = &quot;உரை-தேடு: அடிக்கோடிட்டு; வண்ணம்: வண்ணம்:#2980 பி 9;&quot; &gt; mgba.io/i &lt;/span&gt; &lt;/a&gt; கிட்அப்பில் பிழை அறிக்கையை தாக்கல் செய்ய. நீங்கள் உருவாக்கிய அறிக்கையை இணைப்பதை உறுதிப்படுத்திக் கொள்ளுங்கள்! &lt;/P&gt; &lt;/body&gt; &lt;/html&gt;</translation>
+        <translation>&lt;html&gt; &lt;head/&gt; &lt;body&gt; &lt;p&gt; பிழை அறிக்கையைத் தாக்கல் செய்ய, முதலில் நீங்கள் தாக்கல் செய்யவிருக்கும் பிழை அறிக்கையுடன் இணைக்க ஒரு அறிக்கை கோப்பை உருவாக்கவும். சேமி கோப்புகளை நீங்கள் சேர்க்க பரிந்துரைக்கப்படுகிறது, ஏனெனில் இவை பெரும்பாலும் பிழைத்திருத்த சிக்கல்களுக்கு உதவுகின்றன. நீங்கள் இயங்கும் {projectName} இன் பதிப்பு, உங்கள் உள்ளமைவு, உங்கள் கணினி மற்றும் நீங்கள் தற்போது திறந்த விளையாட்டு (ஏதேனும் இருந்தால்) பற்றிய சில தகவல்களை இது சேகரிக்கும். இந்தச் சேகரிப்பு முடிந்ததும் கீழே சேகரிக்கப்பட்ட அனைத்து தகவல்களையும் மதிப்பாய்வு செய்து அதை ஒரு சிப் கோப்பில் சேமிக்கலாம். சேகரிக்கப்பட்ட எந்தவொரு பாதையிலும் இருந்தால், உங்கள் பயனர்பெயர் போன்ற எந்தவொரு தனிப்பட்ட தகவல்களையும் மாற்றியமைக்க சேகரிப்பு தானாகவே முயற்சிக்கும், ஆனால் நீங்கள் அதைத் திருத்தினால். நீங்கள் அதை உருவாக்கிச் சேமித்த பிறகு, தயவுசெய்து கீழேயுள்ள பொத்தானைக் சொடுக்கு செய்க அல்லது &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i &lt;/span&gt; &lt;/a&gt; கிட்அப்பில் பிழை அறிக்கையைத் தாக்கல் செய்ய. நீங்கள் உருவாக்கிய அறிக்கையை இணைப்பதை உறுதிப்படுத்திக் கொள்ளுங்கள்! &lt;/p&gt;&lt;/body&gt; &lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="85"/>
@@ -4786,12 +4786,12 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="271"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished">ச்கிரிப்ட்களை எடுத்துக் கொள்ளுங்கள் (*.லுவா)</translation>
+        <translation>ச்கிரிப்ட்களை எடுத்துக் கொள்ளுங்கள் (*.லுவா)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="273"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished">எல்லா கோப்புகளும் (*.*)</translation>
+        <translation>எல்லா கோப்புகளும் (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4847,7 +4847,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="131"/>
         <source>Edit autorun scripts...</source>
-        <translation type="unfinished"></translation>
+        <translation>ஆட்டோரூன் ச்கிரிப்ட்களைத் திருத்து ...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="62"/>
@@ -5215,7 +5215,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.ui" line="811"/>
         <location filename="../SettingsView.ui" line="836"/>
         <source>Mute</source>
-        <translation>முடக்கு</translation>
+        <translation>ஒலிமுடக்கு</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="285"/>
@@ -5494,7 +5494,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="575"/>
         <source>Edit autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>ஆட்டோரூன் ச்கிரிப்ட்களைத் திருத்து</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="589"/>
@@ -6710,7 +6710,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1666"/>
         <source>Mute</source>
-        <translation>முடக்கு</translation>
+        <translation>ஒலிமுடக்கு</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1673"/>
