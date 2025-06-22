@@ -218,6 +218,11 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 			.target = TableLookup(&d->p->pointOwner, breakpoint->d.id)
 		};
 		mDebuggerEnter(d->p, DEBUGGER_ENTER_BREAKPOINT, &info);
+		if (breakpoint->d.isTemporary) {
+			_destroyBreakpoint(debugger->d.p, breakpoint);
+			ARMDebugBreakpointListShift(&debugger->breakpoints, i, 1);
+			--i;
+		}
 	}
 }
 

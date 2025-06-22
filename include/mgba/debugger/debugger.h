@@ -133,6 +133,7 @@ struct mBreakpoint {
 	int segment;
 	enum mBreakpointType type;
 	struct ParseTree* condition;
+	bool isTemporary;
 };
 
 struct mWatchpoint {
