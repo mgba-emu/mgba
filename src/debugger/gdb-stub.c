@@ -255,7 +255,25 @@ static void _continue(struct GDBStub* stub, const char* message) {
 }
 
 static void _step(struct GDBStub* stub, const char* message) {
+	const struct ARMCore* cpu = stub->d.p->core->cpu;
+	const int32_t pc = cpu->gprs[ARM_PC];
+
 	stub->d.p->core->step(stub->d.p->core);
+
+	if (pc >= GBA_SIZE_BIOS && cpu->gprs[ARM_PC] < GBA_SIZE_BIOS) {
+		// GDB cannot cope with jumps into BIOS
+		// skip over them by placing a temporary breakpoint at PC (instruction after the jump)
+		// and then continue without sending a GDB SIGTRAP
+		const struct mBreakpoint breakpoint = {
+			.address = pc,
+			.type = BREAKPOINT_HARDWARE,
+			.isTemporary = true
+		};
+		stub->d.p->platform->setBreakpoint(stub->d.p->platform, &stub->d, &breakpoint);
+		_continue(stub, message);
+		return;
+	}
+
 	snprintf(stub->outgoing, GDB_STUB_MAX_LINE - 4, "S%02x", SIGTRAP);
 	_sendMessage(stub);
 	// TODO: parse message
