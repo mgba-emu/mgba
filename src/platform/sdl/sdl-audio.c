@@ -114,12 +114,12 @@ static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
 	}
 	mAudioResamplerSetSource(&audioContext->resampler, buffer, sampleRate / fauxClock, true);
 	mAudioResamplerProcess(&audioContext->resampler);
-	len /= 2 * audioContext->obtainedSpec.channels;
-	int available = mAudioBufferRead(&audioContext->buffer, (int16_t*) data, len);
-
 	if (audioContext->sync) {
 		mCoreSyncConsumeAudio(audioContext->sync);
 	}
+	len /= 2 * audioContext->obtainedSpec.channels;
+	int available = mAudioBufferRead(&audioContext->buffer, (int16_t*) data, len);
+
 	if (available < len) {
 		memset(((short*) data) + audioContext->obtainedSpec.channels * available, 0, (len - available) * audioContext->obtainedSpec.channels * sizeof(short));
 	}
