@@ -6,27 +6,27 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="427"/>
         <source>Name</source>
-        <translation type="unfinished">이름</translation>
+        <translation>이름</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished">장소</translation>
+        <translation>장소</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
         <source>Platform</source>
-        <translation type="unfinished">플랫폼</translation>
+        <translation>플랫폼</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished">크기</translation>
+        <translation>크기</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
         <source>CRC32</source>
-        <translation type="unfinished">CRC32</translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -255,7 +255,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="98"/>
         <source>Moving more than one row at once is not yet supported</source>
-        <translation type="unfinished"></translation>
+        <translation>한 번에 여러 행을 이동하는 기능은 아직 지원되지 않음</translation>
     </message>
 </context>
 <context>
@@ -263,37 +263,37 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="14"/>
         <source>Autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>자동 실행 스크립트</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished">추가</translation>
+        <translation>추가</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
         <source>Remove</source>
-        <translation type="unfinished">삭제</translation>
+        <translation>삭제</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="53"/>
         <source>Move up</source>
-        <translation type="unfinished"></translation>
+        <translation>위로 이동</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="63"/>
         <source>Move down</source>
-        <translation type="unfinished"></translation>
+        <translation>아래로 이동</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="73"/>
         <source>Run scripts when starting a game</source>
-        <translation type="unfinished"></translation>
+        <translation>게임을 시작할 때 스크립트 실행</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="24"/>
         <source>Select a script</source>
-        <translation type="unfinished"></translation>
+        <translation>스크립트 선택</translation>
     </message>
 </context>
 <context>
@@ -1097,32 +1097,32 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="85"/>
         <source>%1 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + 실시간 시계</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
         <source>%1 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + 진동</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
         <source>%1 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (경사)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="96"/>
         <source>%1 (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (예전 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="97"/>
         <source>%1 (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (예전 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
         <source>%1 (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (새로움)</translation>
     </message>
 </context>
 <context>
@@ -3365,7 +3365,7 @@ Download size: %3</source>
         <location filename="../MemoryAccessLogController.cpp" line="117"/>
         <location filename="../MemoryAccessLogController.cpp" line="126"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished">메모리 로그 파일을 열 수 없음</translation>
+        <translation>메모리 로그 파일을 열 수 없음</translation>
     </message>
 </context>
 <context>
@@ -3373,147 +3373,147 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="67"/>
         <source>Data read</source>
-        <translation type="unfinished"></translation>
+        <translation>데이터 읽기</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="69"/>
         <source>Data written</source>
-        <translation type="unfinished"></translation>
+        <translation>데이터 쓰기</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="71"/>
         <source>Code executed</source>
-        <translation type="unfinished"></translation>
+        <translation>실행된 코드</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="73"/>
         <source>Code aborted</source>
-        <translation type="unfinished"></translation>
+        <translation>코드 중단됨</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="75"/>
         <source>8-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>8비트 접속</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="77"/>
         <source>16-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>16비트 접속</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="79"/>
         <source>32-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>32비트 접속</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="81"/>
         <source>64-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>64비트 접속</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="95"/>
         <source>Accessed by instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>지시에 의해 접속함</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="97"/>
         <source>Accessed by DMA</source>
-        <translation type="unfinished"></translation>
+        <translation>DMA에 의해 접속함</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="99"/>
         <source>Accessed by BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>BIOS에 의해 접속함</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="101"/>
         <source>Compressed data</source>
-        <translation type="unfinished"></translation>
+        <translation>압축된 데이터</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="103"/>
         <source>Accessed by memory copy</source>
-        <translation type="unfinished"></translation>
+        <translation>메모리 복사로 접속함</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="105"/>
         <source>(Unknown extra bit 5)</source>
-        <translation type="unfinished"></translation>
+        <translation>(알 수 없는 추가 비트 5)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="107"/>
         <source>(Unknown extra bit 6)</source>
-        <translation type="unfinished"></translation>
+        <translation>(알 수 없는 추가 비트 6)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="109"/>
         <source>(Unknown extra bit 7)</source>
-        <translation type="unfinished"></translation>
+        <translation>(알 수 없는 추가 비트 7)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="111"/>
         <source>Invalid instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>잘못된 지시</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="113"/>
         <source>Invalid read</source>
-        <translation type="unfinished"></translation>
+        <translation>잘못된 읽기</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="115"/>
         <source>Invalid write</source>
-        <translation type="unfinished"></translation>
+        <translation>잘못된 쓰기</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="117"/>
         <source>Invalid executable address</source>
-        <translation type="unfinished"></translation>
+        <translation>잘못된 실행 파일 주소</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="119"/>
         <source>(Private bit 0)</source>
-        <translation type="unfinished"></translation>
+        <translation>(프라이빗 비트 0)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="121"/>
         <source>(Private bit 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>(프라이빗 비트 1)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>ARM 코드</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
         <source>Instruction opcode</source>
-        <translation type="unfinished"></translation>
+        <translation>지시 명령코드</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="129"/>
         <source>(Private bit 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>(프라이빗 비트 2)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="134"/>
         <source>Thumb code</source>
-        <translation type="unfinished"></translation>
+        <translation>엄지 코드</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="136"/>
         <source>Instruction operand</source>
-        <translation type="unfinished"></translation>
+        <translation>지시 피연산자</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="138"/>
         <source>(Private bit 3)</source>
-        <translation type="unfinished"></translation>
+        <translation>(프라이빗 비트 3)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="146"/>
         <source>(Unknown)</source>
-        <translation type="unfinished">(알 수 없음)</translation>
+        <translation>(알 수 없음)</translation>
     </message>
 </context>
 <context>
@@ -3546,12 +3546,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="56"/>
         <source>Load</source>
-        <translation type="unfinished">로드</translation>
+        <translation>로드</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
         <source>Unload</source>
-        <translation type="unfinished"></translation>
+        <translation>언로드</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="76"/>
@@ -3886,37 +3886,37 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="37"/>
         <source>Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>주소:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="106"/>
         <source>Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation>조정:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="120"/>
         <source>1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>1 바이트</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="125"/>
         <source>2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>2 바이트</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="130"/>
         <source>4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>4 바이트</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="152"/>
         <source>Signed:</source>
-        <translation type="unfinished"></translation>
+        <translation>서명:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="172"/>
         <source>Unsigned:</source>
-        <translation type="unfinished"></translation>
+        <translation>미서명:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="254"/>
@@ -3931,12 +3931,12 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="282"/>
         <source>Selected address accesses</source>
-        <translation type="unfinished"></translation>
+        <translation>선택된 주소 접속</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="304"/>
         <source>Logging configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>로그 구성</translation>
     </message>
 </context>
 <context>
@@ -3957,12 +3957,12 @@ Download size: %3</source>
     <message>
         <location filename="../MultiplayerController.cpp" line="407"/>
         <source>Clearing invalid save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>유효하지 않은 저장 ID 지우기</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="416"/>
         <source>Clearing invalid preferred ID</source>
-        <translation type="unfinished"></translation>
+        <translation>유효하지 않은 선호 ID 지우기</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="437"/>
@@ -4496,7 +4496,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>파일 정보</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
@@ -4506,17 +4506,17 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="100"/>
         <source>SHA-1</source>
-        <translation type="unfinished"></translation>
+        <translation>SHA-1</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
         <source>ROM header</source>
-        <translation type="unfinished"></translation>
+        <translation>롬 헤더</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="140"/>
@@ -4786,12 +4786,12 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="271"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished">루아 스크립트 (*.lua)</translation>
+        <translation>루아 스크립트 (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="273"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished">모든 파일 (*.*)</translation>
+        <translation>모든 파일 (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4847,7 +4847,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="131"/>
         <source>Edit autorun scripts...</source>
-        <translation type="unfinished"></translation>
+        <translation>자동 실행 스크립트 편집...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="62"/>
@@ -4999,7 +4999,9 @@ Download size: %3</source>
         <source>Shaders are not supported when the display driver is not OpenGL.
 
 If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
-        <translation type="unfinished"></translation>
+        <translation>디스플레이 드라이버가 OpenGL이 아닌 경우 셰이더가 지원되지 않습니다.
+
+OpenGL로 설정했는데도 이 문제가 계속 발생하면, 그래픽 카드나 드라이버가 너무 오래된 것일 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="418"/>
@@ -5320,7 +5322,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="575"/>
         <source>Edit autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>자동 실행 스크립트 편집</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="599"/>
@@ -5811,17 +5813,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.cpp" line="92"/>
         <source>mGBA Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>mGBA 셰이더</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>Error loading shader</source>
-        <translation type="unfinished"></translation>
+        <translation>셰이더 로드하는 중 오류 발생</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>셰이더 &quot;%1&quot;을(를) 성공적으로 로드할 수 없습니다.</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="145"/>
