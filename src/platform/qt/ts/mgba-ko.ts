@@ -3936,7 +3936,7 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryView.ui" line="304"/>
         <source>Logging configuration</source>
-        <translation>로깅 구성</translation>
+        <translation>로그 구성</translation>
     </message>
 </context>
 <context>
@@ -3957,12 +3957,12 @@ Download size: %3</source>
     <message>
         <location filename="../MultiplayerController.cpp" line="407"/>
         <source>Clearing invalid save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>유효하지 않은 저장 ID 지우기</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="416"/>
         <source>Clearing invalid preferred ID</source>
-        <translation type="unfinished"></translation>
+        <translation>유효하지 않은 선호 ID 지우기</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="437"/>
@@ -4496,7 +4496,7 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>파일 정보</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
@@ -4506,17 +4506,17 @@ Download size: %3</source>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="100"/>
         <source>SHA-1</source>
-        <translation type="unfinished"></translation>
+        <translation>SHA-1</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
         <source>ROM header</source>
-        <translation type="unfinished"></translation>
+        <translation>롬 헤더</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="140"/>
@@ -4786,12 +4786,12 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="271"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished">루아 스크립트 (*.lua)</translation>
+        <translation>루아 스크립트 (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="273"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished">모든 파일 (*.*)</translation>
+        <translation>모든 파일 (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4847,7 +4847,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="131"/>
         <source>Edit autorun scripts...</source>
-        <translation type="unfinished"></translation>
+        <translation>자동 실행 스크립트 편집...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="62"/>
@@ -4999,7 +4999,9 @@ Download size: %3</source>
         <source>Shaders are not supported when the display driver is not OpenGL.
 
 If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
-        <translation type="unfinished"></translation>
+        <translation>디스플레이 드라이버가 OpenGL이 아닌 경우 셰이더가 지원되지 않습니다.
+
+OpenGL로 설정했는데도 이 문제가 계속 발생하면, 그래픽 카드나 드라이버가 너무 오래된 것일 수 있습니다.</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="418"/>
@@ -5320,7 +5322,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="575"/>
         <source>Edit autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>자동 실행 스크립트 편집</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="599"/>
@@ -5811,17 +5813,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.cpp" line="92"/>
         <source>mGBA Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>mGBA 셰이더</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>Error loading shader</source>
-        <translation type="unfinished"></translation>
+        <translation>셰이더 로드하는 중 오류 발생</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>셰이더 &quot;%1&quot;을(를) 성공적으로 로드할 수 없습니다.</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="145"/>
