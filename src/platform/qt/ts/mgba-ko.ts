@@ -3433,57 +3433,57 @@ Download size: %3</source>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="103"/>
         <source>Accessed by memory copy</source>
-        <translation>메모리 복사로 접속됨</translation>
+        <translation>메모리 복사로 접속함</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="105"/>
         <source>(Unknown extra bit 5)</source>
-        <translation type="unfinished"></translation>
+        <translation>(알 수 없는 추가 비트 5)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="107"/>
         <source>(Unknown extra bit 6)</source>
-        <translation type="unfinished"></translation>
+        <translation>(알 수 없는 추가 비트 6)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="109"/>
         <source>(Unknown extra bit 7)</source>
-        <translation type="unfinished"></translation>
+        <translation>(알 수 없는 추가 비트 7)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="111"/>
         <source>Invalid instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>잘못된 지시</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="113"/>
         <source>Invalid read</source>
-        <translation type="unfinished"></translation>
+        <translation>잘못된 읽기</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="115"/>
         <source>Invalid write</source>
-        <translation type="unfinished"></translation>
+        <translation>잘못된 쓰기</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="117"/>
         <source>Invalid executable address</source>
-        <translation type="unfinished"></translation>
+        <translation>잘못된 실행 파일 주소</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="119"/>
         <source>(Private bit 0)</source>
-        <translation type="unfinished"></translation>
+        <translation>(개인 비트 0)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="121"/>
         <source>(Private bit 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>(개인 비트 1)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>ARM 코드</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
