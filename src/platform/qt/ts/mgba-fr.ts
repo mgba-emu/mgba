@@ -5063,27 +5063,27 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.cpp" line="900"/>
         <source>Just now</source>
-        <translation>Maintenant</translation>
+        <translation>À l&apos;instant</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="904"/>
         <source>Less than an hour ago</source>
-        <translation type="unfinished"></translation>
+        <translation>Il y a moins d&apos;une heure</translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="909"/>
         <source>%n hour(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Il y a %n heure</numerusform>
+            <numerusform>Il y a %n heures</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="913"/>
         <source>%n day(s) ago</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>Il y a %n jour</numerusform>
+            <numerusform>Il y a %n jours</numerusform>
         </translation>
     </message>
     <message>
@@ -5099,7 +5099,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.ui" line="50"/>
         <source>Gameplay</source>
-        <translation type="unfinished"></translation>
+        <translation>Jeu</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="55"/>
@@ -5109,7 +5109,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.ui" line="60"/>
         <source>Update</source>
-        <translation type="unfinished"></translation>
+        <translation>Mise à jour</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="65"/>
@@ -5244,22 +5244,22 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.ui" line="325"/>
         <source>Audio in multiplayer:</source>
-        <translation type="unfinished"></translation>
+        <translation>Audio en multijoueur&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="332"/>
         <source>All windows</source>
-        <translation type="unfinished"></translation>
+        <translation>Toutes les fenêtres</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="345"/>
         <source>Player 1 window only</source>
-        <translation type="unfinished"></translation>
+        <translation>Fenêtre du joueur 1 seulement</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="355"/>
         <source>Currently active player window</source>
-        <translation type="unfinished"></translation>
+        <translation>Fenêtre du joueur actif</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="388"/>
@@ -5322,214 +5322,214 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.ui" line="757"/>
         <source>Show filename instead of ROM name in library view</source>
-        <translation type="unfinished"></translation>
+        <translation>Monter le nom du fichier au lieu du nom de la ROM en vue bibliothèque</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="804"/>
         <location filename="../SettingsView.ui" line="829"/>
         <source>Pause</source>
-        <translation type="unfinished"></translation>
+        <translation>Pause</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="852"/>
         <source>Dynamically update window title</source>
-        <translation type="unfinished"></translation>
+        <translation>Mettre à jour dynamiquement le titre de la fenêtre</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="795"/>
         <source>When inactive:</source>
-        <translation type="unfinished"></translation>
+        <translation>Lorsqu&apos;inactif&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="589"/>
         <source>Periodically autosave state</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegarder périodiquement un état de sauvegarde</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="820"/>
         <source>When minimized:</source>
-        <translation type="unfinished"></translation>
+        <translation>Lorsque minimisé&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="904"/>
         <source>Show frame count in OSD</source>
-        <translation type="unfinished"></translation>
+        <translation>Montrer le compte des frames sur l&apos;écran</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="911"/>
         <source>Show emulation info on reset</source>
-        <translation type="unfinished"></translation>
+        <translation>Montrer l&apos;information d&apos;émulation au redémarrage</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="959"/>
         <source>Current channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Source actuelle&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="973"/>
         <source>Current version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Version actuelle&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="997"/>
         <source>Update channel:</source>
-        <translation type="unfinished"></translation>
+        <translation>Source de mise à jour&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1007"/>
         <source>Available version:</source>
-        <translation type="unfinished"></translation>
+        <translation>Version disponible&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1014"/>
         <source>(Unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Inconnu)</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1024"/>
         <source>Last checked:</source>
-        <translation type="unfinished"></translation>
+        <translation>Dernière vérification&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1045"/>
         <source>Automatically check on start</source>
-        <translation type="unfinished"></translation>
+        <translation>Vérifier automatiquement au démarrage</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1052"/>
         <source>Check now</source>
-        <translation type="unfinished"></translation>
+        <translation>Vérifier maintenant</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="616"/>
         <source>Save state extra data:</source>
-        <translation type="unfinished"></translation>
+        <translation>Données extra d&apos;état de sauvegarde&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="548"/>
         <source>On loading a game:</source>
-        <translation type="unfinished"></translation>
+        <translation>Au chargement d&apos;un jeu&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="555"/>
         <source>Load last state</source>
-        <translation type="unfinished"></translation>
+        <translation>Charger le dernier état de sauvegarde</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="565"/>
         <source>Load cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>Charger les codes de triche</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="575"/>
         <source>Edit autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Modifier les scripts de lancement automatique</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="599"/>
         <source>Save entered cheats</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegarder les codes de triche entrés</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="633"/>
         <location filename="../SettingsView.ui" line="677"/>
         <source>Save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegarde de jeu</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="660"/>
         <source>Load state extra data:</source>
-        <translation type="unfinished"></translation>
+        <translation>Données extra de chargement d&apos;état de sauvegarde&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="948"/>
         <source>Custom border:</source>
-        <translation type="unfinished"></translation>
+        <translation>Bordure personnalisée&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1208"/>
         <source>Rewind speed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Vitesse de rembobinage&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1815"/>
         <source>Models</source>
-        <translation type="unfinished"></translation>
+        <translation>Modèles</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1821"/>
         <source>GB only:</source>
-        <translation type="unfinished"></translation>
+        <translation>GB seulement&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1831"/>
         <source>SGB compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatible SGB&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1841"/>
         <source>GBC only:</source>
-        <translation type="unfinished"></translation>
+        <translation>GBC seulement&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1851"/>
         <source>GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatible GBC&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1861"/>
         <source>SGB and GBC compatible:</source>
-        <translation type="unfinished"></translation>
+        <translation>Compatible SGB et GBC&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1881"/>
         <source>Game Boy palette</source>
-        <translation type="unfinished"></translation>
+        <translation>Palette Game Boy</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1887"/>
         <source>Preset:</source>
-        <translation type="unfinished"></translation>
+        <translation>Préréglage&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2174"/>
         <source>Default color palette only</source>
-        <translation type="unfinished"></translation>
+        <translation>Palette de couleurs par défaut seulement</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2167"/>
         <source>SGB color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>Palette de couleurs SGB si disponible</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2181"/>
         <source>GBC color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>Palette de couleurs GBC si disponible</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2188"/>
         <source>SGB (preferred) or GBC color palette if available</source>
-        <translation type="unfinished"></translation>
+        <translation>Palette de couleurs SGB (de préférence) ou GBC si disponible</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2200"/>
         <source>Game Boy Camera</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Camera</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2206"/>
         <source>Driver:</source>
-        <translation type="unfinished"></translation>
+        <translation>Pilote&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="2223"/>
         <source>Source:</source>
-        <translation type="unfinished"></translation>
+        <translation>Source&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1281"/>
         <source>Enable Game Boy Player features by default</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer les fonctionnalités du Game Boy Player par défaut</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1781"/>
@@ -5594,7 +5594,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.ui" line="862"/>
         <source>Show FPS in title bar</source>
-        <translation>Afficher le nombre de FPS dans la barre de titre</translation>
+        <translation>Afficher le nombre d&apos;IPS dans la barre de titre</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="509"/>
@@ -5677,7 +5677,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
         <location filename="../SettingsView.ui" line="643"/>
         <location filename="../SettingsView.ui" line="684"/>
         <source>Cheat codes</source>
-        <translation>Codes de triches</translation>
+        <translation>Codes de triche</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1271"/>
@@ -5692,7 +5692,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.ui" line="1288"/>
         <source>Enable VBA bug compatibility in ROM hacks</source>
-        <translation type="unfinished"></translation>
+        <translation>Activer la compatibilité des bugs de VBA dans les ROM hacks</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1302"/>
@@ -5722,7 +5722,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.ui" line="1396"/>
         <source>GB BIOS file:</source>
-        <translation>GB BIOS :</translation>
+        <translation>Fichier du BIOS GB&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="932"/>
