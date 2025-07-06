@@ -5020,8 +5020,6 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
 If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
         <translation>Les shaders ne sont pas supportés lorsque le pilote d&apos;affichage n&apos;est pas OpenGL.
 
-
-
 Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos pilotes sont peut-être trop vieux.</translation>
     </message>
     <message>
@@ -5035,22 +5033,22 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.cpp" line="468"/>
         <source>Select BIOS</source>
-        <translation>Choisir le BIOS</translation>
+        <translation>Choisissez le BIOS</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="475"/>
         <source>Select directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisissez le répertoire</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="483"/>
         <source>Select image</source>
-        <translation>Choisir une image</translation>
+        <translation>Choisissez une image</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="483"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier image (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="877"/>
@@ -5060,12 +5058,12 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.cpp" line="895"/>
         <source>Never</source>
-        <translation type="unfinished"></translation>
+        <translation>Jamais</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="900"/>
         <source>Just now</source>
-        <translation type="unfinished"></translation>
+        <translation>Maintenant</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="904"/>
