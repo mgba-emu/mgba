@@ -79,7 +79,7 @@
         <source>© 2013 – {year} Jeffrey Pfau, licensed under the Mozilla Public License, version 2.0
 Game Boy Advance is a registered trademark of Nintendo Co., Ltd.</source>
         <translation>© 2013 – {year} Jeffrey Pfau, sous la licence publique de Mozilla, version 2.0
-Game Boy Advance est une marque de fabrique enregistré par Nintendo Co., Ltd.</translation>
+Game Boy Advance est une marque déposée par Nintendo Co., Ltd.</translation>
     </message>
     <message>
         <location filename="../AboutScreen.ui" line="177"/>
@@ -155,12 +155,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="95"/>
         <source>Unknown</source>
-        <translation>Inconnue</translation>
+        <translation>Inconnu</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="236"/>
         <source>(None)</source>
-        <translation>(Aucune)</translation>
+        <translation>(Aucun)</translation>
     </message>
 </context>
 <context>
@@ -221,17 +221,17 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../AudioDevice.cpp" line="34"/>
         <source>Can&apos;t set format of context-less audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Le format d&apos;un appareil audio sans contexte ne peut pas être défini</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="55"/>
         <source>Audio device is missing its core</source>
-        <translation type="unfinished"></translation>
+        <translation>L&apos;appareil audio manque son cœur</translation>
     </message>
     <message>
         <location filename="../AudioDevice.cpp" line="83"/>
         <source>Writing data to read-only audio device</source>
-        <translation type="unfinished"></translation>
+        <translation>Écriture de données sur un appareil audio en lecture seule</translation>
     </message>
 </context>
 <context>
@@ -239,7 +239,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="56"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Processeur audio ne peut pas démarrer sans commande</translation>
     </message>
 </context>
 <context>
