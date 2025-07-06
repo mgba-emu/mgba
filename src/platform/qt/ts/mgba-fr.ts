@@ -4625,72 +4625,72 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="38"/>
         <source>Save games and save states (%1)</source>
-        <translation>Sauvegardes et états de sauvegarde  (%1)</translation>
+        <translation>Sauvegardes et états de sauvegarde (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="39"/>
         <source>Select save game or save state</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner la sauvegarde ou état de sauvegarde</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="51"/>
         <source>Save games (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegardes (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="52"/>
         <source>Select save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner la sauvegarde</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="73"/>
         <source>Conversion failed</source>
-        <translation type="unfinished"></translation>
+        <translation>La conversion a échoué</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="73"/>
         <source>Failed to convert the save game. This is probably a bug.</source>
-        <translation type="unfinished"></translation>
+        <translation>La sauvegarde n&apos;a pas pu être convertie. C&apos;est probablement un bug.</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="89"/>
         <source>No file selected</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun fichier sélectionné</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="96"/>
         <source>Could not open file</source>
-        <translation type="unfinished"></translation>
+        <translation>Le fichier n&apos;a pas pu être ouvert</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="111"/>
         <source>No valid formats found</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucun format valide trouvé</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="119"/>
         <source>Please select a valid input file</source>
-        <translation type="unfinished"></translation>
+        <translation>Veuillez sélectionner un fichier d&apos;entrée valide</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="130"/>
         <source>No valid conversions found</source>
-        <translation type="unfinished"></translation>
+        <translation>Aucune conversion valide trouvée</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="659"/>
         <source>Cannot convert save games between platforms</source>
-        <translation type="unfinished"></translation>
+        <translation>Les sauvegardes ne peuvent pas être converties entre les plateformes</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="14"/>
         <source>Convert/Extract Save Game</source>
-        <translation type="unfinished"></translation>
+        <translation>Convertir/Extraire sauvegarde</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="20"/>
         <source>Input file</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier d&apos;entrée</translation>
     </message>
     <message>
         <location filename="../SaveConverter.ui" line="29"/>
@@ -4701,22 +4701,22 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../SaveConverter.ui" line="46"/>
         <source>Output file</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier de sortie</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="454"/>
         <source>%1 %2 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 %2 sauvegarde</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="458"/>
         <source>little endian</source>
-        <translation type="unfinished"></translation>
+        <translation>petit-boutiste</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="461"/>
         <source>big endian</source>
-        <translation type="unfinished"></translation>
+        <translation>gros-boutiste</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="472"/>
@@ -4726,37 +4726,37 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="476"/>
         <source>%1 flash</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 flash</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="480"/>
         <source>%1 EEPROM</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 EEPROM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="486"/>
         <source> + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation> + HTR</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="495"/>
         <source>%1 SRAM + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 SRAM + HTR</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="497"/>
         <source>%1 SRAM</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="502"/>
         <source>packed MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2 inclus</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="504"/>
         <source>unpacked MBC2</source>
-        <translation type="unfinished"></translation>
+        <translation>MBC2 exclus</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="509"/>
