@@ -366,7 +366,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../BattleChipView.cpp" line="116"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation>Les données de la BattleChip sont absentes. Les BattleChip Gates fonctionneront, mais certains graphismes seront manquants. Voulez-vous télécharger les données maintenant&#x202f;?</translation>
+        <translation>Les données des BattleChips sont manquantes. Les BattleChip Gates fonctionneront, mais certains graphismes seront incorrects. Voulez-vous télécharger ces données maintenant&#x202f;?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="182"/>
@@ -377,12 +377,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../BattleChipView.cpp" line="213"/>
         <source>Incompatible deck</source>
-        <translation type="unfinished"></translation>
+        <translation>Deck incompatible</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="214"/>
         <source>The selected deck is not compatible with this Chip Gate</source>
-        <translation type="unfinished"></translation>
+        <translation>Le deck sélectionné n&apos;est pas compatible avec cette Chip Gate</translation>
     </message>
 </context>
 <context>
@@ -404,7 +404,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../CheatsView.ui" line="14"/>
         <source>Cheats</source>
         <translatorcomment>Tricheurs n&apos;est pas adapté dans cette situation Cheats est préférable.</translatorcomment>
-        <translation>Cheats</translation>
+        <translation>Codes de triche</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="39"/>
@@ -451,12 +451,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../CheatsView.cpp" line="87"/>
         <location filename="../CheatsView.cpp" line="94"/>
         <source>Select cheats file</source>
-        <translation>Choisir un fichier de cheats</translation>
+        <translation>Choisir un fichier de code de triche</translation>
     </message>
     <message>
         <location filename="../CheatsView.cpp" line="186"/>
         <source>Some cheats could not be added. Please ensure they&apos;re formatted correctly and/or try other cheat types.</source>
-        <translation type="unfinished"></translation>
+        <translation>Certains codes de triche n&apos;ont pas pu être ajoutés. Assurez-vous qu&apos;ils sont formatés correctement et/ou essayez d&apos;autres types de codes de triche.</translation>
     </message>
 </context>
 <context>
@@ -495,7 +495,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../CoreController.cpp" line="915"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
-        <translation type="unfinished"></translation>
+        <translation>La cartouche ne peut pas être brutalement retirée sur une plateforme inattendue&#x202f;!</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="1030"/>
@@ -518,7 +518,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="90"/>
         <source>Could not load game. Are you sure it&apos;s in the correct format?</source>
-        <translation>Impossible de charger le jeu. Êtes-vous sûr qu&apos;il est dans le bon format ?</translation>
+        <translation>Impossible de charger le jeu. Êtes-vous sûr qu&apos;il est au bon format&#x202f;?</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="117"/>
@@ -549,7 +549,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../DebuggerConsoleController.cpp" line="176"/>
         <source>Could not open CLI history for writing</source>
-        <translation type="unfinished"></translation>
+        <translation>L&apos;historique CLI n&apos;a pas pu être ouverte pour l&apos;écriture</translation>
     </message>
 </context>
 <context>
@@ -557,7 +557,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../DisplayGL.cpp" line="313"/>
         <source>Failed to create an OpenGL 3 context, trying old-style...</source>
-        <translation type="unfinished"></translation>
+        <translation>Un contexte OpenGL 3 n&apos;a pas pu être créé, tentative de création comme à l&apos;ancienne...</translation>
     </message>
 </context>
 <context>
@@ -600,12 +600,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../DolphinConnector.cpp" line="57"/>
         <source>Couldn&apos;t Connect</source>
-        <translation type="unfinished"></translation>
+        <translation>La connexion a échoué</translation>
     </message>
     <message>
         <location filename="../DolphinConnector.cpp" line="58"/>
         <source>Could not connect to Dolphin.</source>
-        <translation type="unfinished"></translation>
+        <translation>La connexion à Dolphin a échoué.</translation>
     </message>
 </context>
 <context>
@@ -626,7 +626,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="29"/>
         <source>Icon</source>
-        <translation type="unfinished"></translation>
+        <translation>Icône</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator3DS.cpp" line="30"/>
@@ -639,17 +639,17 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="25"/>
         <source>Bubble</source>
-        <translation type="unfinished"></translation>
+        <translation>Bulle</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Background</source>
-        <translation>Arrière plan</translation>
+        <translation>Arrière-plan</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
         <source>Startup</source>
-        <translation type="unfinished"></translation>
+        <translation>Démarrage</translation>
     </message>
 </context>
 <context>
@@ -657,17 +657,17 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="14"/>
         <source>Create forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Créer un raccourci</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="20"/>
         <source>Files</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichiers</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="26"/>
         <source>ROM file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier ROM&#xa0;:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="36"/>
@@ -679,37 +679,37 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="43"/>
         <source>Output filename:</source>
-        <translation type="unfinished"></translation>
+        <translation>Nom de fichier de sortie&#xa0;:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="60"/>
         <source>Forwarder base:</source>
-        <translation type="unfinished"></translation>
+        <translation>Base du raccourci&#xa0;:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="74"/>
         <source>Latest stable version</source>
-        <translation type="unfinished"></translation>
+        <translation>Dernière version stable</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="79"/>
         <source>Latest development build</source>
-        <translation type="unfinished"></translation>
+        <translation>Dernière version de développement</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="84"/>
         <source>Specific file</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier spécifique</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="95"/>
         <source>Base file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier de base&#xa0;:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="135"/>
         <source>System</source>
-        <translation type="unfinished"></translation>
+        <translation>Système</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="141"/>
@@ -724,82 +724,82 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="174"/>
         <source>Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>Présentation</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="182"/>
         <source>Title:</source>
-        <translation type="unfinished"></translation>
+        <translation>Titre&#xa0;:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="195"/>
         <source>Images:</source>
-        <translation type="unfinished"></translation>
+        <translation>Images&#xa0;:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="215"/>
         <source>Use default image</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser l&apos;image par défaut</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="328"/>
         <source>Preferred size:</source>
-        <translation type="unfinished"></translation>
+        <translation>Taille de préférence&#xa0;:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="395"/>
         <source>Select image file</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner le fichier image</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="22"/>
         <source>Select ROM file</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner un fichier ROM</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="23"/>
         <source>Select output filename</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner un nom de fichier de sortie</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="24"/>
         <source>Select base file</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner un fichier de base</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="36"/>
         <source>Build finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Préparation de la version terminée</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="37"/>
         <source>Forwarder finished building</source>
-        <translation type="unfinished"></translation>
+        <translation>Le raccourci a été créé</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="44"/>
         <source>Build failed</source>
-        <translation type="unfinished"></translation>
+        <translation>La préparation de la version a échoué</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
         <source>Failed to build forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Le raccourci n&apos;a pas pu être créé</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="176"/>
         <source>%1 installable package (*.%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 paquet(s) installable(s) (*.%2)</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Select an image</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner une image</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="192"/>
         <source>Image files (*.png *.jpg *.bmp)</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichiers image (*.png *.jpg *.bmp)</translation>
     </message>
 </context>
 <context>
@@ -857,7 +857,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../FrameView.cpp" line="624"/>
         <source>Background</source>
-        <translation>Arrière plan</translation>
+        <translation>Arrière-plan</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="627"/>
@@ -1093,37 +1093,37 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
         <source>ROM Only</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM seulement</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="85"/>
         <source>%1 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + HTR</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="87"/>
         <source>%1 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + Vibrations</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="89"/>
         <source>%1 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (Inclinaison)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="96"/>
         <source>%1 (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (ancien 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="97"/>
         <source>%1 (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (ancien 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
         <source>%1 (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (nouveau)</translation>
     </message>
 </context>
 <context>
@@ -1153,7 +1153,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="40"/>
         <source>Mode 0: 4 tile layers</source>
-        <translation>Mode 0&#xa0;: 4 couches de tuile</translation>
+        <translation>Mode 0&#xa0;: 4 couches de tuiles</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="41"/>
@@ -1336,7 +1336,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../IOViewer.cpp" line="107"/>
         <location filename="../IOViewer.cpp" line="117"/>
         <source>Background dimensions</source>
-        <translation>Dimensions de l&apos;arrière plan</translation>
+        <translation>Dimensions de l&apos;arrière-plan</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="106"/>
@@ -1435,22 +1435,22 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="249"/>
         <source>Window 0 enable BG 0</source>
-        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière plan nº&#xa0;0</translation>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière-plan nº&#xa0;0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="250"/>
         <source>Window 0 enable BG 1</source>
-        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière plan nº&#xa0;1</translation>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière-plan nº&#xa0;1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="251"/>
         <source>Window 0 enable BG 2</source>
-        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière plan nº&#xa0;2</translation>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière-plan nº&#xa0;2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="252"/>
         <source>Window 0 enable BG 3</source>
-        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière plan nº&#xa0;3</translation>
+        <translation>La fenêtre nº&#xa0;0 active l&apos;arrière-plan nº&#xa0;3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="253"/>
@@ -1465,22 +1465,22 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="255"/>
         <source>Window 1 enable BG 0</source>
-        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière plan nº&#xa0;0</translation>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière-plan nº&#xa0;0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="256"/>
         <source>Window 1 enable BG 1</source>
-        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière plan nº&#xa0;1</translation>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière-plan nº&#xa0;1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="257"/>
         <source>Window 1 enable BG 2</source>
-        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière plan nº&#xa0;2</translation>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière-plan nº&#xa0;2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="258"/>
         <source>Window 1 enable BG 3</source>
-        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière plan nº&#xa0;3</translation>
+        <translation>La fenêtre nº&#xa0;1 active l&apos;arrière-plan nº&#xa0;3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="259"/>
@@ -1495,22 +1495,22 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="264"/>
         <source>Outside window enable BG 0</source>
-        <translation>La fenêtre extérieure active l&apos;arrière plan nº&#xa0;0</translation>
+        <translation>La fenêtre extérieure active l&apos;arrière-plan nº&#xa0;0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="265"/>
         <source>Outside window enable BG 1</source>
-        <translation>La fenêtre extérieure active l&apos;arrière plan nº&#xa0;1</translation>
+        <translation>La fenêtre extérieure active l&apos;arrière-plan nº&#xa0;1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="266"/>
         <source>Outside window enable BG 2</source>
-        <translation>La fenêtre extérieure active l&apos;arrière plan nº&#xa0;2</translation>
+        <translation>La fenêtre extérieure active l&apos;arrière-plan nº&#xa0;2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="267"/>
         <source>Outside window enable BG 3</source>
-        <translation>La fenêtre extérieure active l&apos;arrière plan nº&#xa0;3</translation>
+        <translation>La fenêtre extérieure active l&apos;arrière-plan nº&#xa0;3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="268"/>
@@ -1525,22 +1525,22 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="270"/>
         <source>OBJ window enable BG 0</source>
-        <translation>La fenêtre OBJ active l&apos;arrière plan nº 0</translation>
+        <translation>La fenêtre OBJ active l&apos;arrière-plan nº 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="271"/>
         <source>OBJ window enable BG 1</source>
-        <translation>La fenêtre OBJ active l&apos;arrière plan nº 1</translation>
+        <translation>La fenêtre OBJ active l&apos;arrière-plan nº 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="272"/>
         <source>OBJ window enable BG 2</source>
-        <translation>La fenêtre OBJ active l&apos;arrière plan nº 2</translation>
+        <translation>La fenêtre OBJ active l&apos;arrière-plan nº 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="273"/>
         <source>OBJ window enable BG 3</source>
-        <translation>La fenêtre OBJ active l&apos;arrière plan nº 3</translation>
+        <translation>La fenêtre OBJ active l&apos;arrière-plan nº 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="274"/>
@@ -1555,42 +1555,42 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="280"/>
         <source>Background mosaic size vertical</source>
-        <translation>Taille vertical de la mosaïque en arrière plan</translation>
+        <translation>Taille verticale de la mosaïque en arrière-plan</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="279"/>
         <source>Background mosaic size horizontal</source>
-        <translation>Taille horizontal de la mosaïque en arrière plan</translation>
+        <translation>Taille horizontale de la mosaïque en arrière-plan</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="282"/>
         <source>Object mosaic size vertical</source>
-        <translation>Taille vertical de la mosaïque de l&apos;objet</translation>
+        <translation>Taille verticale de la mosaïque de l&apos;objet</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="281"/>
         <source>Object mosaic size horizontal</source>
-        <translation>Taille horizontal de la mosaïque de l&apos;objet</translation>
+        <translation>Taille horizontale de la mosaïque de l&apos;objet</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="288"/>
         <source>BG 0 target 1</source>
-        <translation>L&apos;arrière plan nº 0 cible 1</translation>
+        <translation>L&apos;arrière-plan nº 0 cible 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="289"/>
         <source>BG 1 target 1</source>
-        <translation>L&apos;arrière plan nº 1 cible 1</translation>
+        <translation>L&apos;arrière-plan nº 1 cible 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="290"/>
         <source>BG 2 target 1</source>
-        <translation>L&apos;arrière plan nº 2 cible 1</translation>
+        <translation>L&apos;arrière-plan nº 2 cible 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="291"/>
         <source>BG 3 target 1</source>
-        <translation>L&apos;arrière plan nº 3 cible 1</translation>
+        <translation>L&apos;arrière-plan nº 3 cible 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="292"/>
@@ -1630,22 +1630,22 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="300"/>
         <source>BG 0 target 2</source>
-        <translation>L&apos;arrière plan nº 0 cible 2</translation>
+        <translation>L&apos;arrière-plan nº 0 cible 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="301"/>
         <source>BG 1 target 2</source>
-        <translation>L&apos;arrière plan nº 1 cible 2</translation>
+        <translation>L&apos;arrière-plan nº 1 cible 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="302"/>
         <source>BG 2 target 2</source>
-        <translation>L&apos;arrière plan nº 2 cible 2</translation>
+        <translation>L&apos;arrière-plan nº 2 cible 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="303"/>
         <source>BG 3 target 2</source>
-        <translation>L&apos;arrière plan nº 3 cible 2</translation>
+        <translation>L&apos;arrière-plan nº 3 cible 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="304"/>
@@ -2135,14 +2135,14 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../IOViewer.cpp" line="1139"/>
         <location filename="../IOViewer.cpp" line="1166"/>
         <source>Sound frequency (low)</source>
-        <translation>Fréquence sonore (bas)</translation>
+        <translation>Fréquence sonore (basse)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1120"/>
         <location filename="../IOViewer.cpp" line="1143"/>
         <location filename="../IOViewer.cpp" line="1170"/>
         <source>Sound frequency (high)</source>
-        <translation>Fréquence sonore (haut)</translation>
+        <translation>Fréquence sonore (haute)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1424"/>
@@ -2250,7 +2250,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../IOViewer.cpp" line="683"/>
         <location filename="../IOViewer.cpp" line="729"/>
         <source>Repeat</source>
-        <translation>Répèter</translation>
+        <translation>Répéter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="594"/>
@@ -2552,13 +2552,13 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../IOViewer.cpp" line="973"/>
         <source>Keypad</source>
         <translatorcomment>Do not use the English translation of this word as no game console manufacturer has translated it.</translatorcomment>
-        <translation>Keypad</translation>
+        <translation>Pavé boutons</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="957"/>
         <location filename="../IOViewer.cpp" line="974"/>
         <source>Gamepak</source>
-        <translation>Gamepak</translation>
+        <translation>Cartouche de jeu</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="978"/>
@@ -2603,32 +2603,32 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="984"/>
         <source>Cart 0 non-sequential</source>
-        <translation>Cart 0 non-séquentiel</translation>
+        <translation>Cartouche 0 non-séquentiel</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="990"/>
         <source>Cart 0 sequential</source>
-        <translation>Cart 0 séquentiel</translation>
+        <translation>Cartouche 0 séquentiel</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="994"/>
         <source>Cart 1 non-sequential</source>
-        <translation>Cart 1 non-séquentiel</translation>
+        <translation>Cartouche 1 non-séquentiel</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1000"/>
         <source>Cart 1 sequential</source>
-        <translation>Cart 1 séquentiel</translation>
+        <translation>Cartouche 1 séquentiel</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1004"/>
         <source>Cart 2 non-sequential</source>
-        <translation>Cart 2 non-séquentiel</translation>
+        <translation>Cartouche 2 non-séquentiel</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1010"/>
         <source>Cart 2 sequential</source>
-        <translation>Cart 2 séquentiel</translation>
+        <translation>Cartouche 2 séquentiel</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1014"/>
