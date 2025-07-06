@@ -5722,7 +5722,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.ui" line="1396"/>
         <source>GB BIOS file:</source>
-        <translation>Fichier du BIOS GB&#xa0;:</translation>
+        <translation>BIOS GB&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="932"/>
@@ -5751,22 +5751,22 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.ui" line="1480"/>
         <source>GBA BIOS file:</source>
-        <translation>GBA BIOS :</translation>
+        <translation>BIOS GBA&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1452"/>
         <source>GBC BIOS file:</source>
-        <translation>GBC BIOS :</translation>
+        <translation>BIOS GBC&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1424"/>
         <source>SGB BIOS file:</source>
-        <translation>SGB BIOS :</translation>
+        <translation>BIOS SGB&#xa0;:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1532"/>
         <source>Save games</source>
-        <translation>Sauvegarder les jeux</translation>
+        <translation>Sauvegardes des jeux</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1566"/>
@@ -5780,7 +5780,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.ui" line="1580"/>
         <source>Save states</source>
-        <translation>Sauvegarder les états</translation>
+        <translation>Sauvegarde des états</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1628"/>
@@ -5795,7 +5795,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../SettingsView.ui" line="1724"/>
         <source>Cheats</source>
-        <translation>Cheats</translation>
+        <translation>Codes de triche</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1897"/>
@@ -5834,17 +5834,17 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../ShaderSelector.cpp" line="92"/>
         <source>mGBA Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Shaders mGBA</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>Error loading shader</source>
-        <translation type="unfinished"></translation>
+        <translation>Le shader n&apos;a pas pu charger à cause d&apos;une erreur</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>Le shader « %1 » n&apos;a pas pu être chargé.</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="145"/>
@@ -5974,7 +5974,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../TileView.ui" line="184"/>
         <source>Export All</source>
-        <translation>Exporter tous</translation>
+        <translation>Tout exporter</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="40"/>
@@ -6004,12 +6004,12 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../TileView.ui" line="119"/>
         <source>Displayed tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Tuiles affichées</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="125"/>
         <source>Only BG tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Seulement les tuiles du fond</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="135"/>
