@@ -3962,7 +3962,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MessagePainter.cpp" line="81"/>
         <source>Frame %1</source>
-        <translation>Frame %1</translation>
+        <translation>Trame %1</translation>
     </message>
 </context>
 <context>
@@ -3970,27 +3970,27 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="367"/>
         <source>Trying to detach a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Tentative de déconnexion d&apos;un joueur multijoueur qui n&apos;est pas branché</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="407"/>
         <source>Clearing invalid save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Réinitialisation d&apos;un ID de sauvegarde invalide</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="416"/>
         <source>Clearing invalid preferred ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Réinitialisation d&apos;un ID de préférence non valide</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="437"/>
         <source>Trying to get player ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Tentative d&apos;obtention de l&apos;ID d&apos;un joueur pour un joueur multijoueur qui n&apos;est pas attaché</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="451"/>
         <source>Trying to get save ID for a multiplayer player that&apos;s not attached</source>
-        <translation type="unfinished"></translation>
+        <translation>Tentative d&apos;obtention de l&apos;ID d&apos;une sauvegarde pour un joueur multijoueur qui n&apos;est pas attaché</translation>
     </message>
 </context>
 <context>
@@ -4204,7 +4204,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../OverrideView.ui" line="75"/>
         <source>Tilt</source>
-        <translation>Gyroscope</translation>
+        <translation>Inclinaison</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="85"/>
@@ -4214,7 +4214,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../OverrideView.ui" line="95"/>
         <source>Rumble</source>
-        <translation>Rumble</translation>
+        <translation>Vibrations</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="113"/>
@@ -4264,7 +4264,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../OverrideView.ui" line="190"/>
         <source>Game Boy Player features</source>
-        <translation>Fonctionnalités du joueur Game Boy</translation>
+        <translation>Fonctionnalités du Game Boy Player</translation>
     </message>
     <message>
         <location filename="../OverrideView.ui" line="197"/>
@@ -4367,7 +4367,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../PaletteView.ui" line="260"/>
         <source>Hex code</source>
-        <translation>Code Héxa</translation>
+        <translation>Code Hexa</translation>
     </message>
     <message>
         <location filename="../PaletteView.ui" line="267"/>
@@ -4451,7 +4451,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../PrinterView.ui" line="14"/>
         <source>Game Boy Printer</source>
-        <translation>Imprimante Game Boy</translation>
+        <translation>Game Boy Printer</translation>
     </message>
     <message>
         <location filename="../PrinterView.ui" line="130"/>
@@ -4476,7 +4476,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
         <source>Save Printout</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegarder l&apos;impression</translation>
     </message>
     <message>
         <location filename="../PrinterView.cpp" line="59"/>
@@ -4514,7 +4514,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>Information du fichier</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
@@ -4534,7 +4534,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
         <source>ROM header</source>
-        <translation type="unfinished"></translation>
+        <translation>En-tête de la ROM</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="140"/>
@@ -4549,12 +4549,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="174"/>
         <source>Maker Code:</source>
-        <translation type="unfinished"></translation>
+        <translation>Code constructeur&#xa0;:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="191"/>
         <source>Revision:</source>
-        <translation type="unfinished"></translation>
+        <translation>Révision&#xa0;:</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="49"/>
@@ -4569,7 +4569,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="117"/>
         <source>Save file:</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier de sauvegarde&#xa0;:</translation>
     </message>
 </context>
 <context>
@@ -4587,17 +4587,17 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ReportView.ui" line="14"/>
         <source>Generate Bug Report</source>
-        <translation type="unfinished"></translation>
+        <translation>Générer un rapport de bug</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="67"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pour remplier un rapport de bug, veuillez d&apos;abord générer un fichier de rapport à attacher au rapport de bug que vous allez envoyer. Il est recommandé d&apos;inclure vos sauvegardes, car elles sont souvent utiles pour débugger les problèmes. Ce fichier collectera certaines informations sur la version de {projectName} que vous utilisez, votre configuration, votre ordinateur, et le jeu auquel vous jouez actuellement (si vous en jouez un). Une fois que ces informations sont obtenues, vous pouvez vérifier toutes les informations récupérées et les sauvegarder dans un fichier zip. La collecte des données va automatiquement essayer de retirer tout type d&apos;information personnelle, telle que votre nom d&apos;utilisateur si il se trouve dans l&apos;une des arborescences récupérée, mais si nécessaire vous pouvez néanmoins le modifier après coup. Une fois que vous avez généré et enregistré le fichier, veuillez appuyer sur le bouton ci-dessous ou aller sur &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; pour soumettre le rapport de bug sur GitHub. N&apos;oubliez pas d&apos;ajouter le fichier de rapport que vous avez généré&#x202f;!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="85"/>
         <source>Generate report</source>
-        <translation>Générer un signalement</translation>
+        <translation>Générer un rapport</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="99"/>
@@ -4625,7 +4625,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../SaveConverter.cpp" line="38"/>
         <source>Save games and save states (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegardes et états de sauvegarde  (%1)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="39"/>
