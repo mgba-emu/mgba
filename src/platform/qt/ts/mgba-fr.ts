@@ -2603,17 +2603,17 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="984"/>
         <source>Cart 0 non-sequential</source>
-        <translation>Cartouche 0 non-séquentiel</translation>
+        <translation>Cartouche 0 non-séquentielle</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="990"/>
         <source>Cart 0 sequential</source>
-        <translation>Cartouche 0 séquentiel</translation>
+        <translation>Cartouche 0 séquentielle</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="994"/>
         <source>Cart 1 non-sequential</source>
-        <translation>Cartouche 1 non-séquentiel</translation>
+        <translation>Cartouche 1 non séquentielle</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1000"/>
