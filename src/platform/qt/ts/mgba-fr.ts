@@ -239,7 +239,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="56"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation>Processeur audio ne peut pas démarrer sans commande</translation>
+        <translation>Le processeur audio ne peut pas démarrer sans commande</translation>
     </message>
 </context>
 <context>
@@ -247,7 +247,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../AudioProcessorSDL.cpp" line="34"/>
         <source>Can&apos;t start an audio processor without input</source>
-        <translation type="unfinished"></translation>
+        <translation>Le processeur audio ne peut pas démarrer sans commande</translation>
     </message>
 </context>
 <context>
@@ -255,7 +255,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="98"/>
         <source>Moving more than one row at once is not yet supported</source>
-        <translation type="unfinished"></translation>
+        <translation>Déplacer plus d&apos;une rangée en une seule fois n&apos;est pas encore disponible</translation>
     </message>
 </context>
 <context>
@@ -263,7 +263,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="14"/>
         <source>Autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripts de lancement automatique</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
@@ -273,27 +273,27 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
         <source>Remove</source>
-        <translation type="unfinished">Supprimer</translation>
+        <translation>Retirer</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="53"/>
         <source>Move up</source>
-        <translation type="unfinished"></translation>
+        <translation>Déplacer plus haut</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="63"/>
         <source>Move down</source>
-        <translation type="unfinished"></translation>
+        <translation>Déplacer plus bas</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="73"/>
         <source>Run scripts when starting a game</source>
-        <translation type="unfinished"></translation>
+        <translation>Lancer les scripts au démarrage d&apos;un jeu</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="24"/>
         <source>Select a script</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner un script</translation>
     </message>
 </context>
 <context>
@@ -346,12 +346,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../BattleChipView.ui" line="194"/>
         <source>Chip ID</source>
-        <translation>ID de la puce</translation>
+        <translation>ID de la Chip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="207"/>
         <source>Update Chip data</source>
-        <translation>Mettre à jour les données de la puce</translation>
+        <translation>Mettre à jour les données de la Chip</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="219"/>
@@ -361,18 +361,18 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../BattleChipView.cpp" line="115"/>
         <source>BattleChip data missing</source>
-        <translation type="unfinished"></translation>
+        <translation>Données de la BattleChip manquantes</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="116"/>
         <source>BattleChip data is missing. BattleChip Gates will still work, but some graphics will be missing. Would you like to download the data now?</source>
-        <translation type="unfinished"></translation>
+        <translation>Les données de la BattleChip sont absentes. Les BattleChip Gates fonctionneront, mais certains graphismes seront manquants. Voulez-vous télécharger les données maintenant&#x202f;?</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="182"/>
         <location filename="../BattleChipView.cpp" line="201"/>
         <source>Select deck file</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionnez le fichier de deck</translation>
     </message>
     <message>
         <location filename="../BattleChipView.cpp" line="213"/>
