@@ -6,27 +6,27 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="427"/>
         <source>Name</source>
-        <translation type="unfinished">Nom</translation>
+        <translation>Nom</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished">Localisation</translation>
+        <translation>Localisation</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
         <source>Platform</source>
-        <translation type="unfinished">Plateforme</translation>
+        <translation>Plateforme</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished">Taille</translation>
+        <translation>Taille</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
         <source>CRC32</source>
-        <translation type="unfinished">CRC32</translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -268,7 +268,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished">Ajouter</translation>
+        <translation>Ajouter</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
@@ -613,12 +613,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="83"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderGenerator.cpp" line="85"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
 </context>
 <context>
@@ -714,12 +714,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ForwarderView.ui" line="141"/>
         <source>3DS</source>
-        <translation type="unfinished"></translation>
+        <translation>3DS</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="151"/>
         <source>Vita</source>
-        <translation type="unfinished"></translation>
+        <translation>Vita</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="174"/>
@@ -867,7 +867,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../FrameView.cpp" line="630"/>
         <source>Objwin</source>
-        <translation type="unfinished">Objwin</translation>
+        <translation>Objwin</translation>
     </message>
     <message>
         <location filename="../FrameView.cpp" line="635"/>
@@ -1053,42 +1053,42 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../GameBoy.cpp" line="61"/>
         <location filename="../GameBoy.cpp" line="80"/>
         <source>Autodetect</source>
-        <translation type="unfinished">Détection automatique</translation>
+        <translation>Détection automatique</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="62"/>
         <source>Game Boy (DMG)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy (DMG)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="63"/>
         <source>Game Boy Pocket (MGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Pocket (MGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="64"/>
         <source>Super Game Boy (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="65"/>
         <source>Super Game Boy 2 (SGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy 2 (SGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="66"/>
         <source>Game Boy Color (CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Color (CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="67"/>
         <source>Game Boy Advance (AGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Game Boy Advance (AGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="68"/>
         <source>Super Game Boy Color (SGB + CGB)</source>
-        <translation type="unfinished"></translation>
+        <translation>Super Game Boy Color (SGB + CGB)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="81"/>
@@ -2830,7 +2830,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1346"/>
         <source>Mode</source>
-        <translation type="unfinished">Mode</translation>
+        <translation>Mode</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1347"/>
@@ -3305,13 +3305,13 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../MapView.cpp" line="49"/>
         <location filename="../MapView.cpp" line="62"/>
         <source>Map base</source>
-        <translation type="unfinished">Fond de carte</translation>
+        <translation>Fond de carte</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="50"/>
         <location filename="../MapView.cpp" line="63"/>
         <source>Tile base</source>
-        <translation type="unfinished">Fond de tuile</translation>
+        <translation>Fond de tuile</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="51"/>
@@ -3322,7 +3322,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../MapView.cpp" line="52"/>
         <location filename="../MapView.cpp" line="64"/>
         <source>Offset</source>
-        <translation type="unfinished">Compensation</translation>
+        <translation>Compensation</translation>
     </message>
     <message>
         <location filename="../MapView.cpp" line="53"/>
@@ -3506,7 +3506,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
         <source>Instruction opcode</source>
-        <translation type="unfinished"></translation>
+        <translation>Instruction opcode</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="129"/>
@@ -3521,7 +3521,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="136"/>
         <source>Instruction operand</source>
-        <translation type="unfinished"></translation>
+        <translation>Instruction operand</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="138"/>
@@ -4099,7 +4099,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ObjView.ui" line="715"/>
         <source>Tile</source>
-        <translation>Tile</translation>
+        <translation>Tuile</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="137"/>
@@ -4524,12 +4524,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="83"/>
         <source>MD5</source>
-        <translation type="unfinished"></translation>
+        <translation>MD5</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="100"/>
         <source>SHA-1</source>
-        <translation type="unfinished"></translation>
+        <translation>SHA-1</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
@@ -4592,7 +4592,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../ReportView.ui" line="67"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To file a bug report, please first generate a report file to attach to the bug report you&apos;re about to file. It is recommended that you include the save files, as these often help with debugging issues. This will collect some information about the version of {projectName} you&apos;re running, your configuration, your computer, and the game you currently have open (if any). Once this collection is completed you can review all of the information gathered below and save it to a zip file. The collection will automatically attempt to redact any personal information, such as your username if it&apos;s in any of the paths gathered, but just in case you can edit it afterwards. After you have generated and saved it, please click the button below or go to &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; to file the bug report on GitHub. Make sure to attach the report you generated!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pour remplier un rapport de bug, veuillez d&apos;abord générer un fichier de rapport à attacher au rapport de bug que vous allez envoyer. Il est recommandé d&apos;inclure vos sauvegardes, car elles sont souvent utiles pour débugger les problèmes. Ce fichier collectera certaines informations sur la version de {projectName} que vous utilisez, votre configuration, votre ordinateur, et le jeu auquel vous jouez actuellement (si vous en jouez un). Une fois que ces informations sont obtenues, vous pouvez vérifier toutes les informations récupérées et les sauvegarder dans un fichier zip. La collecte des données va automatiquement essayer de retirer tout type d&apos;information personnelle, telle que votre nom d&apos;utilisateur si il se trouve dans l&apos;une des arborescences récupérée, mais si nécessaire vous pouvez néanmoins le modifier après coup. Une fois que vous avez généré et enregistré le fichier, veuillez appuyer sur le bouton ci-dessous ou aller sur &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; pour soumettre le rapport de bug sur GitHub. N&apos;oubliez pas d&apos;ajouter le fichier de rapport que vous avez généré&#x202f;!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Pour remplier un rapport de bug, veuillez d&apos;abord générer un fichier de rapport à attacher au rapport de bug que vous allez envoyer. Il est recommandé d&apos;inclure vos sauvegardes, car elles sont souvent utiles pour débugger les problèmes. Ce fichier collectera certaines informations sur la version de {projectName} que vous utilisez, votre configuration, votre ordinateur, et le jeu auquel vous jouez actuellement (si vous en jouez un). Une fois que ces informations sont obtenues, vous pouvez vérifier toutes les informations récupérées et les sauvegarder dans un fichier zip. La collecte des données va automatiquement essayer de retirer tout type d&apos;information personnelle, telle que votre nom d&apos;utilisateur si il se trouve dans l&apos;une des arborescences récupérée, mais si nécessaire vous pouvez néanmoins le modifier après coup. Une fois que vous avez généré et enregistré le fichier, veuillez appuyer sur le bouton ci-dessous ou aller sur &lt;a href=&quot;https://mgba.io/i/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;mgba.io/i&lt;/span&gt;&lt;/a&gt; pour soumettre le rapport de bug sur GitHub. N&apos;oubliez pas d&apos;ajouter le fichier de rapport que vous avez généré!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../ReportView.ui" line="85"/>
@@ -5984,7 +5984,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../TileView.ui" line="33"/>
         <source>Palette</source>
-        <translation type="unfinished">Palette</translation>
+        <translation>Palette</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="73"/>
@@ -6009,17 +6009,17 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../TileView.ui" line="125"/>
         <source>Only BG tiles</source>
-        <translation>Seulement les tuiles du fond</translation>
+        <translation>Seulement les tuiles BG</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="135"/>
         <source>Only OBJ tiles</source>
-        <translation type="unfinished"></translation>
+        <translation>Seulement les tuiles OBJ</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="145"/>
         <source>Both</source>
-        <translation type="unfinished">Les deux</translation>
+        <translation>Les deux</translation>
     </message>
     <message>
         <location filename="../TileView.ui" line="163"/>
@@ -6203,32 +6203,32 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="453"/>
         <source>Select e-Reader dotcode</source>
-        <translation>Sélectionnez le numéro de point du e-Reader</translation>
+        <translation>Sélectionnez le code à points e-Reader</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="453"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
-        <translation>e-Reader carte (*.raw *.bin *.bmp)</translation>
+        <translation>Carte e-Reader (*.raw *.bin *.bmp)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="461"/>
         <source>Select e-Reader card images</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionnez une image de carte e-Reader</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="461"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier image (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="462"/>
         <source>Conversion finished</source>
-        <translation type="unfinished"></translation>
+        <translation>Conversion terminée</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="503"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 de %2 cartes e-Reader ont été converties avec succès.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="516"/>
@@ -6272,7 +6272,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1033"/>
         <source>Unimplemented BIOS call</source>
-        <translation>Requête au BIOS non supporté</translation>
+        <translation>Appel BIOS non supporté</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1034"/>
@@ -6292,7 +6292,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1155"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
-        <translation>Cela amènera l&apos;émulateur à charger sa configuration depuis le même répertoire que l&apos;exécutable. Souhaitez vous continuer ?</translation>
+        <translation>L&apos;émulateur chargera sa configuration depuis le même répertoire que l&apos;exécutable. Souhaitez vous continuer&#x202f;?</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1167"/>
@@ -6307,7 +6307,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1219"/>
         <source> -  Player %1 of %2</source>
-        <translation> -  Joueur %1 of %2</translation>
+        <translation> -  Joueur %1 sur %2</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1230"/>
@@ -6322,7 +6322,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1234"/>
         <source>%1 - %2 (%3 fps) - %4</source>
-        <translation>%1 - %2 (%3 fps) - %4</translation>
+        <translation>%1 - %2 (%3 ips) - %4</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1298"/>
@@ -6362,37 +6362,37 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1481"/>
         <source>Increase fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Augmenter la vitesse d&apos;avance rapide</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1488"/>
         <source>Decrease fast forward speed</source>
-        <translation type="unfinished"></translation>
+        <translation>Réduire la vitesse d&apos;avance rapide</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1599"/>
         <source>&amp;Lock frame size</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Verrouiller la taille de la frame</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1746"/>
         <source>Create forwarder...</source>
-        <translation type="unfinished"></translation>
+        <translation>Création du raccourci...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1764"/>
         <source>Game state views</source>
-        <translation type="unfinished"></translation>
+        <translation>Vues des états de jeu</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1775"/>
         <source>Log memory &amp;accesses...</source>
-        <translation type="unfinished"></translation>
+        <translation>Journalisation mémoire &amp;accès...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1785"/>
         <source>Convert e-Reader card image to raw...</source>
-        <translation type="unfinished"></translation>
+        <translation>Conversion d&apos;image de carte e-Reader en raw...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1355"/>
@@ -6463,7 +6463,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1317"/>
         <source>Convert save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>Convertir la sauvegarde...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1418"/>
@@ -6473,7 +6473,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1421"/>
         <source>Connect to Dolphin...</source>
-        <translation type="unfinished"></translation>
+        <translation>Connecter à Dolphin...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1427"/>
@@ -6503,7 +6503,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1442"/>
         <source>Yank game pak</source>
-        <translation>Yank game pak</translation>
+        <translation>Retirer brutalement la cartouche</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1445"/>
@@ -6613,7 +6613,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1645"/>
         <source>Bilinear filtering</source>
-        <translation>Filtrage bilinèaire</translation>
+        <translation>Filtrage bilinéaire</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1653"/>
@@ -6643,7 +6643,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1539"/>
         <source>Game Boy Printer...</source>
-        <translation>Imprimante GameBoy…</translation>
+        <translation>Game Boy Printer...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1707"/>
@@ -6673,7 +6673,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1715"/>
         <source>Game &amp;overrides...</source>
-        <translation type="unfinished"></translation>
+        <translation>Substitutions de jeu...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1018"/>
@@ -6683,28 +6683,28 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="403"/>
         <source>Save games (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegardes (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="404"/>
         <source>Select save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionnez une sauvegarde</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="412"/>
         <source>mGBA save state files (%1)</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichiers d&apos;état de sauvegarde mGBA (%1)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="414"/>
         <location filename="../Window.cpp" line="419"/>
         <source>Select save state</source>
-        <translation type="unfinished"></translation>
+        <translation>Choisissez un état de sauvegarde</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="523"/>
         <source>GameShark saves (*.gsv *.sps *.xps)</source>
-        <translation type="unfinished"></translation>
+        <translation>Sauvegardes GameShark (*.gsv *.sps *.xps)</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1019"/>
@@ -6714,17 +6714,17 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1308"/>
         <source>Load alternate save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>Charger une sauvegarde alternative...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1311"/>
         <source>Load temporary save game...</source>
-        <translation type="unfinished"></translation>
+        <translation>Charger une sauvegarde temporaire...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1351"/>
         <source>Scan e-Reader dotcodes...</source>
-        <translation>Scanner les dotcodes e-Reader...</translation>
+        <translation>Scanner un code à points e-Reader...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1365"/>
@@ -6744,17 +6744,17 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1179"/>
         <source>Reset needed</source>
-        <translation type="unfinished"></translation>
+        <translation>Redémarrage nécessaire</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1180"/>
         <source>Some changes will not take effect until the game is reset.</source>
-        <translation type="unfinished"></translation>
+        <translation>Certains changements ne prendront effet qu&apos;après redémarrage du jeu.</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1307"/>
         <source>Save games</source>
-        <translation type="unfinished">Sauvegarder les jeux</translation>
+        <translation>Sauvegardes</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1323"/>
@@ -6764,22 +6764,22 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1330"/>
         <source>Automatically determine</source>
-        <translation type="unfinished"></translation>
+        <translation>Déterminer automatiquement</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1334"/>
         <source>Use player %0 save game</source>
-        <translation type="unfinished"></translation>
+        <translation>Utiliser la sauvegarde du joueur %0</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1433"/>
         <source>About...</source>
-        <translation>À propos de…</translation>
+        <translation>À propos de...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1548"/>
         <source>BattleChip Gate...</source>
-        <translation type="unfinished"></translation>
+        <translation>BattleChip Gate...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1555"/>
@@ -6809,17 +6809,17 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1728"/>
         <source>Game Pak sensors...</source>
-        <translation>Capteurs de la Game Pak...</translation>
+        <translation>Capteurs de la cartouche...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1741"/>
         <source>&amp;Cheats...</source>
-        <translation>&amp;Cheats…</translation>
+        <translation>&amp;Codes de triche...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1749"/>
         <source>Settings...</source>
-        <translation>Paramètres…</translation>
+        <translation>Paramètres...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1754"/>
@@ -6834,7 +6834,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1743"/>
         <source>Scripting...</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripts...</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1765"/>
@@ -6849,12 +6849,12 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1767"/>
         <source>View &amp;tiles...</source>
-        <translation>Voir les &amp;tiles…</translation>
+        <translation>Voir les &amp;tuiles…</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1768"/>
         <source>View &amp;map...</source>
-        <translation>Voir la &amp;map…</translation>
+        <translation>Voir la &amp;carte…</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1769"/>
@@ -6934,17 +6934,17 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1833"/>
         <source>Autofire Up</source>
-        <translation>Tir automatique Up</translation>
+        <translation>Tir automatique Haut</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1838"/>
         <source>Autofire Right</source>
-        <translation>Tir automatique Right</translation>
+        <translation>Tir automatique Droite</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1843"/>
         <source>Autofire Down</source>
-        <translation>Tir automatique Down</translation>
+        <translation>Tir automatique Bas</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1848"/>
@@ -6962,32 +6962,32 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../utils.cpp" line="26"/>
         <source>%1 byte</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 multiplet</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="29"/>
         <source>%1 kiB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 kiB</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="33"/>
         <source>%1 MiB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 MiB</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="183"/>
         <source>Super (L)</source>
-        <translation type="unfinished">Super (L)</translation>
+        <translation>Super (L)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="185"/>
         <source>Super (R)</source>
-        <translation type="unfinished">Super (R)</translation>
+        <translation>Super (R)</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="187"/>
         <source>Menu</source>
-        <translation type="unfinished">Menu</translation>
+        <translation>Menu</translation>
     </message>
 </context>
 <context>
@@ -6995,12 +6995,12 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../utils.cpp" line="174"/>
         <source>Shift</source>
-        <translation>Shift</translation>
+        <translation>Majuscule</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="176"/>
         <source>Control</source>
-        <translation>Control</translation>
+        <translation>Contrôle</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="178"/>
