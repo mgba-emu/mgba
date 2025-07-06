@@ -3461,47 +3461,47 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="107"/>
         <source>(Unknown extra bit 6)</source>
-        <translation>(Bit6 extra inconnu)</translation>
+        <translation>(Bit 6 extra inconnu)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="109"/>
         <source>(Unknown extra bit 7)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit 7 extra inconnu)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="111"/>
         <source>Invalid instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Instruction invalide</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="113"/>
         <source>Invalid read</source>
-        <translation type="unfinished"></translation>
+        <translation>Lecture invalide</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="115"/>
         <source>Invalid write</source>
-        <translation type="unfinished"></translation>
+        <translation>Écriture invalide</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="117"/>
         <source>Invalid executable address</source>
-        <translation type="unfinished"></translation>
+        <translation>Adresse d&apos;exécution invalide</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="119"/>
         <source>(Private bit 0)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit 0 privé)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="121"/>
         <source>(Private bit 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit 1 privé)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>Code ARM</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
@@ -3511,12 +3511,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="129"/>
         <source>(Private bit 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit 2 privé)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="134"/>
         <source>Thumb code</source>
-        <translation type="unfinished"></translation>
+        <translation>Code Thumb</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="136"/>
@@ -3526,12 +3526,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="138"/>
         <source>(Private bit 3)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit 3 privé)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="146"/>
         <source>(Unknown)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Inconnu)</translation>
     </message>
 </context>
 <context>
@@ -3539,12 +3539,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="14"/>
         <source>Memory access logging</source>
-        <translation type="unfinished"></translation>
+        <translation>Journalisation de l&apos;accès mémoire</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="23"/>
         <source>Log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Fichier journal</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="32"/>
@@ -3554,12 +3554,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="39"/>
         <source>Log additional information (uses 3× space)</source>
-        <translation type="unfinished"></translation>
+        <translation>Information additionnelle journal (utilise 3x espace)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="46"/>
         <source>Load existing file if present</source>
-        <translation type="unfinished"></translation>
+        <translation>Charger fichier existant si présent</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="56"/>
@@ -3569,22 +3569,22 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
         <source>Unload</source>
-        <translation type="unfinished"></translation>
+        <translation>Décharger</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="76"/>
         <source>Regions</source>
-        <translation type="unfinished"></translation>
+        <translation>Régions</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="87"/>
         <source>Export ROM snapshot</source>
-        <translation type="unfinished"></translation>
+        <translation>Exporter un instantané de la ROM</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="94"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation>Commencer</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="104"/>
@@ -3595,12 +3595,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../MemoryAccessLogView.cpp" line="96"/>
         <location filename="../MemoryAccessLogView.cpp" line="111"/>
         <source>Select access log file</source>
-        <translation type="unfinished"></translation>
+        <translation>Sélectionner le fichier d&apos;accès des journaux</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.cpp" line="96"/>
         <source>Memory access logs (*.mal)</source>
-        <translation type="unfinished"></translation>
+        <translation>Journaux d&apos;accès mémoire (*.mal)</translation>
     </message>
 </context>
 <context>
@@ -3623,7 +3623,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryDump.ui" line="108"/>
         <source>Dump across banks</source>
-        <translation>Dump across banks</translation>
+        <translation>Dumper à travers les banques</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="24"/>
@@ -3776,7 +3776,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemorySearch.ui" line="202"/>
         <source>Hexadecimal</source>
-        <translation>Héxadécimal</translation>
+        <translation>Hexadécimal</translation>
     </message>
     <message>
         <location filename="../MemorySearch.ui" line="216"/>
@@ -3904,37 +3904,37 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryView.ui" line="37"/>
         <source>Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Adresse&#xa0;:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="106"/>
         <source>Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation>Alignement&#xa0;:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="120"/>
         <source>1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>1 multiplet</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="125"/>
         <source>2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>2 multiplets</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="130"/>
         <source>4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>4 multiplets</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="152"/>
         <source>Signed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Signé&#xa0;:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="172"/>
         <source>Unsigned:</source>
-        <translation type="unfinished"></translation>
+        <translation>Non signé&#xa0;:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="254"/>
@@ -3949,12 +3949,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MemoryView.ui" line="282"/>
         <source>Selected address accesses</source>
-        <translation type="unfinished"></translation>
+        <translation>Adresses d&apos;accès sélectionnées</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="304"/>
         <source>Logging configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuration de la journalisation</translation>
     </message>
 </context>
 <context>
@@ -3962,7 +3962,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MessagePainter.cpp" line="81"/>
         <source>Frame %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Frame %1</translation>
     </message>
 </context>
 <context>
