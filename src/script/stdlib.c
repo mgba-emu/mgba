@@ -109,7 +109,7 @@ static struct mScriptValue* _mRectangleNew(int32_t x, int32_t y, int32_t width, 
 	rect->height = height;
 	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mRectangle));
 	result->value.opaque = rect;
-	result->flags = mSCRIPT_VALUE_FLAG_DEINIT;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 	return result;
 }
 
@@ -118,7 +118,7 @@ static struct mScriptValue* _mRectangleCopy(const struct mRectangle* old) {
 	memcpy(rect, old, sizeof(*rect));
 	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mRectangle));
 	result->value.opaque = rect;
-	result->flags = mSCRIPT_VALUE_FLAG_DEINIT;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 	return result;
 }
 
@@ -128,7 +128,7 @@ static struct mScriptValue* _mRectangleSize(const struct mRectangle* rect) {
 	size->height = rect->height;
 	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mSize));
 	result->value.opaque = size;
-	result->flags = mSCRIPT_VALUE_FLAG_DEINIT;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 	return result;
 }
 
@@ -168,7 +168,7 @@ static struct mScriptValue* _mSizeNew(int32_t width, int32_t height) {
 	size->height = height;
 	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mSize));
 	result->value.opaque = size;
-	result->flags = mSCRIPT_VALUE_FLAG_DEINIT;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 	return result;
 }
 
@@ -177,7 +177,7 @@ static struct mScriptValue* _mSizeCopy(const struct mSize* old) {
 	memcpy(size, old, sizeof(*size));
 	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mSize));
 	result->value.opaque = size;
-	result->flags = mSCRIPT_VALUE_FLAG_DEINIT;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 	return result;
 }
 

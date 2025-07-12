@@ -152,7 +152,7 @@ struct mScriptValue* _mPainterTextRunMetrics(struct mPainter* painter, const cha
 
 	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mTextRunMetrics));
 	result->value.opaque = metrics;
-	result->flags = mSCRIPT_VALUE_FLAG_DEINIT;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 	return result;
 }
 
@@ -162,7 +162,7 @@ struct mScriptValue* _mPainterTextBoxSize(struct mPainter* painter, const char* 
 
 	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mSize));
 	result->value.opaque = size;
-	result->flags = mSCRIPT_VALUE_FLAG_DEINIT;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
 	return result;
 }
 #endif
