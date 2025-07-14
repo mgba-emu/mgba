@@ -328,7 +328,10 @@ static void ARMDebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerE
 
 			ARMRunFake(cpu, breakpoint->sw.opcode);
 
-			if (debugger->setSoftwareBreakpoint) {
+			if (breakpoint->d.isTemporary) {
+				_destroyBreakpoint(debugger->d.p, breakpoint);
+				ARMDebugBreakpointListShift(&debugger->swBreakpoints, i, 1);
+			} else if (debugger->setSoftwareBreakpoint) {
 				debugger->setSoftwareBreakpoint(debugger, breakpoint->d.address, breakpoint->sw.mode, &breakpoint->sw.opcode);
 			}
 			break;
