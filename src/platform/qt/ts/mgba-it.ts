@@ -5417,7 +5417,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="1851"/>
         <source>GBC compatible:</source>
-        <translation>Compatibile BGC:</translation>
+        <translation>Compatibile GBC:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1861"/>
