@@ -77,7 +77,7 @@ void InputMapper::bindKey(int key, int platformKey) {
 
 void InputMapper::bindAxis(int axis, GamepadAxisEvent::Direction direction, int platformKey) {
 	const mInputAxis* old = mInputQueryAxis(m_map, m_type, axis);
-	mInputAxis description = { -1, -1, -axisThreshold(axis), axisThreshold(axis) };
+	mInputAxis description = { -1, -1, static_cast<int16_t>(-axisThreshold(axis)), axisThreshold(axis) };
 	if (old) {
 		description = *old;
 	}

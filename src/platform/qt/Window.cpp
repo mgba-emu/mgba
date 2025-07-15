@@ -554,10 +554,12 @@ void Window::openSettingsWindow(SettingsView::Page page) {
 #ifdef USE_SQLITE3
 	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
 #endif
+#ifdef ENABLE_SCRIPTING
 	connect(settingsWindow, &SettingsView::openAutorunScripts, this, [this]() {
 		ensureScripting();
 		m_scripting->openAutorunEdit();
 	});
+#endif
 	connect(this, &Window::shaderSelectorAdded, settingsWindow, &SettingsView::setShaderSelector);
 	openView(settingsWindow);
 	settingsWindow->selectPage(page);
@@ -1053,7 +1055,7 @@ void Window::reloadDisplayDriver() {
 	}
 	m_display = std::unique_ptr<QGBA::Display>(Display::create(this));
 	if (!m_display) {
-		LOG(QT, ERROR) << tr("Failed to create an appropriate display device, falling back to software display. "
+		qCritical() << tr("Failed to create an appropriate display device, falling back to software display. "
 		                     "Games may run slowly, especially with larger windows.");
 		Display::setDriver(Display::Driver::QT);
 		m_display = std::unique_ptr<Display>(Display::create(this));
@@ -1126,7 +1128,7 @@ void Window::reloadAudioDriver() {
 	m_audioProcessor->setInput(m_controller);
 	m_audioProcessor->configure(m_config);
 	if (!m_audioProcessor->start()) {
-		LOG(QT, WARN) << "Failed to start audio processor";
+		qWarning() << "Failed to start audio processor";
 	}
 }
 
@@ -2056,6 +2058,7 @@ void Window::updateMRU() {
 }
 
 void Window::ensureScripting() {
+#ifdef ENABLE_SCRIPTING
 	if (m_scripting) {
 		return;
 	}
@@ -2072,6 +2075,7 @@ void Window::ensureScripting() {
 	}
 
 	connect(m_scripting.get(), &ScriptingController::autorunScriptsOpened, this, &Window::openView);
+#endif
 }
 
 std::shared_ptr<Action> Window::addGameAction(const QString& visibleName, const QString& name, Action::Function function, const QString& menu, const QKeySequence& shortcut) {

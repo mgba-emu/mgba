@@ -54,7 +54,7 @@ QVariant MemoryAccessLogModel::data(const QModelIndex& index, int role) const {
 		} else {
 			return QString("0x%1 – 0x%2")
 				.arg(QString("%0").arg(block.region.first, 8, 16, QChar('0')).toUpper())
-				.arg(QString("%0").arg(block.region.second, 8, 16, QChar('0')).toUpper());			
+				.arg(QString("%0").arg(block.region.second, 8, 16, QChar('0')).toUpper());
 		}
 	}
 	for (int i = 0; i < 8; ++i) {
@@ -188,6 +188,8 @@ int MemoryAccessLogModel::rowCount(const QModelIndex& parent) const {
 }
 
 void MemoryAccessLogModel::updateSelection(uint32_t start, uint32_t end) {
+	m_start = start;
+	m_end = end;
 	std::shared_ptr<MemoryAccessLogController> controller = m_controller.lock();
 	if (!controller) {
 		return;
@@ -211,72 +213,10 @@ void MemoryAccessLogModel::updateSelection(uint32_t start, uint32_t end) {
 		newBlocks.append({ lastFlags, qMakePair(lastStart, end) });
 	}
 
-	if (m_cachedBlocks.count() == 0 || newBlocks.count() == 0) {
+	if (m_cachedBlocks != newBlocks) {
 		beginResetModel();
 		m_cachedBlocks = newBlocks;
 		endResetModel();
-		return;
-	}
-
-	QPair<int, int> changed{ -1, -1 };
-	for (int i = 0; i < m_cachedBlocks.count() && i < newBlocks.count(); ++i) {
-		const Block& oldBlock = m_cachedBlocks.at(i);
-		const Block& newBlock = newBlocks.at(i);
-
-		if (oldBlock != newBlock) {
-			changed = qMakePair(i, m_cachedBlocks.count());
-			break;
-		}
-	}
-
-	if (m_cachedBlocks.count() > newBlocks.count()) {
-		beginRemoveRows({}, newBlocks.count(), m_cachedBlocks.count());
-		m_cachedBlocks.resize(newBlocks.count());
-		endRemoveRows();
-		changed.second = newBlocks.count();
-	}
-
-	if (m_cachedBlocks.count() < newBlocks.count()) {
-		beginInsertRows({}, m_cachedBlocks.count(), newBlocks.count());
-		if (changed.first < 0) {
-			// Only new rows
-			m_cachedBlocks = newBlocks;
-			endInsertRows();
-			return;
-		}
-	}
-
-	if (changed.first < 0) {
-		// No changed rows, though some might have been removed
-		return;
-	}
-
-	for (int i = 0; i < m_cachedBlocks.count() && i < newBlocks.count(); ++i) {
-		const Block& oldBlock = m_cachedBlocks.at(i);
-		const Block& newBlock = newBlocks.at(i);
-		if (oldBlock.flags != newBlock.flags) {
-			int oldFlags = oldBlock.flags.count();
-			int newFlags = newBlock.flags.count();
-			if (oldFlags > newFlags) {
-				beginRemoveRows(createIndex(i, 0, std::numeric_limits<quintptr>::max()), newFlags, oldFlags);
-			} else if (oldFlags < newFlags) {
-				beginInsertRows(createIndex(i, 0, std::numeric_limits<quintptr>::max()), oldFlags, newFlags);
-			}
-			m_cachedBlocks[i] = newBlock;
-			emit dataChanged(createIndex(0, 0, i), createIndex(std::min(oldFlags, newFlags), 0, i));
-			if (oldFlags > newFlags) {
-				endRemoveRows();
-			} else if (oldFlags < newFlags) {
-				endInsertRows();
-			}
-		}
-	}
-	emit dataChanged(createIndex(changed.first, 0, std::numeric_limits<quintptr>::max()),
-	                 createIndex(changed.second, 0, std::numeric_limits<quintptr>::max()));
-
-	if (m_cachedBlocks.count() < newBlocks.count()) {
-		m_cachedBlocks = newBlocks;
-		endInsertRows();
 	}
 }
 
@@ -298,4 +238,11 @@ void MemoryAccessLogModel::setRegion(uint32_t base, uint32_t, bool useSegments) 
 	m_segment = useSegments ? 0 : -1;
 	m_cachedBlocks.clear();
 	endResetModel();
+}
+
+void MemoryAccessLogModel::update() {
+	if (m_start >= m_end) {
+		return;
+	}
+	updateSelection(m_start, m_end);
 }

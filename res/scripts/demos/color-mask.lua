@@ -30,5 +30,3 @@ function state.update()
 end
 
 callbacks:add("frame", state.update)
-
-

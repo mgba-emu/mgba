@@ -1,4 +1,4 @@
-/* Copyright (c) 2013-2015 Jeffrey Pfau
+/* Copyright (c) 2013-2025 Jeffrey Pfau
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -9,6 +9,8 @@
 #include <mgba-util/common.h>
 
 CXX_GUARD_START
+
+#include <mgba-util/geometry.h>
 
 #ifdef COLOR_16_BIT
 typedef uint16_t mColor;
@@ -101,13 +103,39 @@ struct mImage {
 	enum mColorFormat format;
 };
 
+struct mFont;
 struct mPainter {
 	struct mImage* backing;
+	struct mFont* font;
 	bool blend;
 	bool fill;
 	unsigned strokeWidth;
 	uint32_t strokeColor;
 	uint32_t fillColor;
+};
+
+#ifdef USE_FREETYPE
+#define mFONT_FRACT_BITS 6
+
+struct mTextRunMetrics {
+	int height;
+	int baseline;
+	int width;
+};
+#endif
+
+enum mAlignment {
+	mALIGN_LEFT = 0x01,
+	mALIGN_HCENTER = 0x02,
+	mALIGN_RIGHT = 0x03,
+
+	mALIGN_TOP = 0x10,
+	mALIGN_VCENTER = 0x20,
+	mALIGN_BOTTOM = 0x30,
+	mALIGN_BASELINE = 0x40,
+
+	mALIGN_HORIZONTAL = 0x03,
+	mALIGN_VERTICAL = 0x70,
 };
 
 struct VFile;
@@ -146,6 +174,18 @@ void mPainterDrawMask(struct mPainter*, const struct mImage* mask, int x, int y)
 
 uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat to);
 uint32_t mImageColorConvert(uint32_t color, const struct mImage* from, enum mColorFormat to);
+
+#ifdef USE_FREETYPE
+struct mFont* mFontOpen(const char* path);
+void mFontDestroy(struct mFont*);
+
+unsigned mFontSize(const struct mFont*);
+void mFontSetSize(struct mFont*, unsigned px);
+const char* mFontRunMetrics(struct mFont*, const char* text, struct mTextRunMetrics* out);
+void mFontTextBoxSize(struct mFont*, const char* text, int lineSpacing, struct mSize* out);
+
+void mPainterDrawText(struct mPainter*, const char* text, int x, int y, enum mAlignment);
+#endif
 
 #ifndef PYCPARSE
 static inline unsigned mColorFormatBytes(enum mColorFormat format) {

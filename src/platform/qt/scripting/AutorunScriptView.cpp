@@ -18,6 +18,10 @@ AutorunScriptView::AutorunScriptView(AutorunScriptModel* model, ScriptingControl
 	m_ui.setupUi(this);
 
 	m_ui.autorunList->setModel(model);
+	m_ui.autorunList->setDragEnabled(true);
+	m_ui.autorunList->viewport()->setAcceptDrops(true);
+	m_ui.autorunList->setDropIndicatorShown(true);
+	m_ui.autorunList->setDragDropMode(QAbstractItemView::InternalMove);
 }
 
 void AutorunScriptView::addScript() {
@@ -48,5 +52,5 @@ void AutorunScriptView::moveUp() {
 void AutorunScriptView::moveDown() {
 	QModelIndex index = m_ui.autorunList->currentIndex();
 	QAbstractItemModel* model = m_ui.autorunList->model();
-	model->moveRows(index.parent(), index.row(), 1, index.parent(), index.row() + 1);
+	model->moveRows(index.parent(), index.row(), 1, index.parent(), index.row() + 2);
 }

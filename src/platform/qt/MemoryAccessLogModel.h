@@ -31,6 +31,7 @@ public:
 
 public slots:
 	void updateSelection(uint32_t start, uint32_t end);
+	void update();
 	void setSegment(int segment);
 	void setRegion(uint32_t base, uint32_t segmentSize, bool useSegments);
 
@@ -50,6 +51,7 @@ private:
 	uint32_t m_base = 0;
 	int m_segment = -1;
 	QVector<Block> m_cachedBlocks;
+	uint32_t m_start = 0, m_end = 0;
 };
 
 }

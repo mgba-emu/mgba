@@ -724,9 +724,9 @@ void InputController::prepareCamFormat() {
 		}
 	}
 	if (!goodFormatFound) {
-		LOG(QT, WARN) << "Could not find a valid camera format!";
+		qWarning() << "Could not find a valid camera format!";
 		for (const auto& format : cameraFormats) {
-			LOG(QT, WARN) << "Camera supported format: " << QString::number(format);
+			qWarning() << "Camera supported format: " << QString::number(format);
 		}
 	}
 	m_camera->setViewfinderSettings(settings);
@@ -745,7 +745,7 @@ void InputController::prepareCamFormat() {
 		}
 	}
 	if (!goodFormatFound) {
-		LOG(QT, WARN) << "Could not find a valid camera format!";
+		qWarning() << "Could not find a valid camera format!";
 	}
 	m_camera->setCameraFormat(bestFormat);
 #endif

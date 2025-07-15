@@ -208,7 +208,7 @@ void CheatsModel::endAppendRow() {
 void CheatsModel::loadFile(const QString& path) {
 	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
-		LOG(QT, WARN) << tr("Failed to open cheats file: %1").arg(path);
+		qWarning() << tr("Failed to open cheats file: %1").arg(path);
 		return;
 	}
 	beginResetModel();

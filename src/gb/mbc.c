@@ -110,7 +110,7 @@ static struct {
 	{"HUC1", GB_HuC1},
 	{"HUC3", GB_HuC3},
 	{"TAM5", GB_TAMA5},
-	{"M161", GB_MBC_AUTODETECT}, // TODO
+	{"M161", GB_M161},
 	{"BBD", GB_UNL_BBD},
 	{"HITK", GB_UNL_HITEK},
 	{"SNTX", GB_UNL_SINTAX},
@@ -459,6 +459,9 @@ void GBMBCInit(struct GB* gb) {
 		if (gb->memory.cam && gb->memory.cam->startRequestImage) {
 			gb->memory.cam->startRequestImage(gb->memory.cam, GBCAM_WIDTH, GBCAM_HEIGHT, mCOLOR_ANY);
 		}
+		break;
+	case GB_M161:
+		gb->memory.mbcWrite = _GBM161;
 		break;
 	case GB_UNL_WISDOM_TREE:
 		gb->memory.mbcWrite = _GBWisdomTree;

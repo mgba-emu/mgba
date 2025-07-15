@@ -8,6 +8,7 @@
 #define MGBA_EXPORT
 
 #define ATTRIBUTE_FORMAT(X, Y, Z)
+#define ATTRIBUTE_NONSTRING
 #define DECL_BITFIELD(newtype, oldtype) typedef oldtype newtype
 #define DECL_BIT(type, field, bit) DECL_BITS(type, field, bit, 1)
 #define DECL_BITS(TYPE, FIELD, START, SIZE) \

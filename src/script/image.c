@@ -13,6 +13,9 @@ struct mScriptPainter {
 
 mSCRIPT_DECLARE_STRUCT(mPainter);
 mSCRIPT_DECLARE_STRUCT(mScriptPainter);
+#ifdef USE_FREETYPE
+mSCRIPT_DECLARE_STRUCT(mTextRunMetrics);
+#endif
 
 static struct mScriptValue* _mImageNew(unsigned width, unsigned height) {
 	// For various reasons, it's probably a good idea to limit the maximum image size scripts can make
@@ -124,6 +127,46 @@ void _mPainterSetStrokeColor(struct mPainter* painter, uint32_t color) {
 	painter->strokeColor = color;
 }
 
+#ifdef USE_FREETYPE
+void _mPainterLoadFont(struct mPainter* painter, const char* path) {
+	struct mFont* font = mFontOpen(path);
+	if (!font) {
+		return;
+	}
+	if (painter->font) {
+		mFontDestroy(painter->font);
+	}
+	painter->font = font;
+}
+
+void _mPainterSetFontSize(struct mPainter* painter, float pt) {
+	if (!painter->font) {
+		return;
+	}
+	mFontSetSize(painter->font, pt * (1 << mFONT_FRACT_BITS));
+}
+
+struct mScriptValue* _mPainterTextRunMetrics(struct mPainter* painter, const char* text) {
+	struct mTextRunMetrics* metrics = malloc(sizeof(*metrics));
+	mFontRunMetrics(painter->font, text, metrics);
+
+	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mTextRunMetrics));
+	result->value.opaque = metrics;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+	return result;
+}
+
+struct mScriptValue* _mPainterTextBoxSize(struct mPainter* painter, const char* text) {
+	struct mSize* size = malloc(sizeof(*size));
+	mFontTextBoxSize(painter->font, text, 0, size);
+
+	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mSize));
+	result->value.opaque = size;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+	return result;
+}
+#endif
+
 static struct mScriptValue* _mScriptPainterGet(struct mScriptPainter* painter, const char* name) {
 	struct mScriptValue val;
 	struct mScriptValue realPainter = mSCRIPT_MAKE(S(mPainter), &painter->painter);
@@ -139,6 +182,11 @@ static struct mScriptValue* _mScriptPainterGet(struct mScriptPainter* painter, c
 
 void _mScriptPainterDeinit(struct mScriptPainter* painter) {
 	mScriptValueDeref(painter->image);
+#ifdef USE_FREETYPE
+	if (painter->painter.font) {
+		mFontDestroy(painter->painter.font);
+	}
+#endif
 	free(painter);
 }
 
@@ -151,6 +199,21 @@ mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawRectangle, mPainterDrawRectangl
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawLine, mPainterDrawLine, 4, S32, x1, S32, y1, S32, x2, S32, y2);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawCircle, mPainterDrawCircle, 3, S32, x, S32, y, S32, diameter);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, drawMask, mPainterDrawMask, 3, CS(mImage), mask, S32, x, S32, y);
+#ifdef USE_FREETYPE
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD_WITH_DEFAULTS(mPainter, drawText, mPainterDrawText, 4, CHARP, text, S32, x, S32, y, S32, alignment);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, loadFont, _mPainterLoadFont, 1, CHARP, path);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mPainter, setFontSize, _mPainterSetFontSize, 1, F32, pt);
+mSCRIPT_DECLARE_STRUCT_METHOD(mPainter, W(mTextRunMetrics), textRunMetrics, _mPainterTextRunMetrics, 1, CHARP, text);
+mSCRIPT_DECLARE_STRUCT_METHOD(mPainter, W(mSize), textBoxSize, _mPainterTextBoxSize, 1, CHARP, text);
+
+
+mSCRIPT_DEFINE_STRUCT_BINDING_DEFAULTS(mPainter, drawText)
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_NO_DEFAULT,
+	mSCRIPT_S32(mALIGN_TOP | mALIGN_LEFT)
+mSCRIPT_DEFINE_DEFAULTS_END;
+#endif
 
 mSCRIPT_DEFINE_STRUCT(mPainter)
 	mSCRIPT_DEFINE_CLASS_DOCSTRING(
@@ -179,6 +242,24 @@ mSCRIPT_DEFINE_STRUCT(mPainter)
 		"target color and use this function to draw it into a destination image."
 	)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, drawMask)
+#ifdef USE_FREETYPE
+	mSCRIPT_DEFINE_DOCSTRING("Draw text with the currently set font and fill color")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, drawText)
+	mSCRIPT_DEFINE_DOCSTRING("Load a font from a given filename")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, loadFont)
+	mSCRIPT_DEFINE_DOCSTRING("Set the font size")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, setFontSize)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Get the struct::mTextRunMetrics for the first line of a given string rendered in the current "
+		"font. If you want the bounding box for multiple lines, use struct::mPainter.textBoxSize instead."
+	)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, textRunMetrics)
+	mSCRIPT_DEFINE_DOCSTRING(
+		"Get the bounding box size for the given string rendered in the current font. This "
+		"will take into account line breaks, unlike struct::mPainter.textRunMetrics."
+	)
+	mSCRIPT_DEFINE_STRUCT_METHOD(mPainter, textBoxSize)
+#endif
 mSCRIPT_DEFINE_END;
 
 mSCRIPT_DECLARE_STRUCT_METHOD(mScriptPainter, W(mPainter), _get, _mScriptPainterGet, 1, CHARP, name);
@@ -190,6 +271,43 @@ mSCRIPT_DEFINE_STRUCT(mScriptPainter)
 	mSCRIPT_DEFINE_STRUCT_DEFAULT_GET(mScriptPainter)
 	mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptPainter, S(mPainter), _painter)
 mSCRIPT_DEFINE_END;
+
+#ifdef USE_FREETYPE
+float _mTextRunHeight(const struct mTextRunMetrics* metrics) {
+	return metrics->height / (float) (1 << mFONT_FRACT_BITS);
+}
+
+float _mTextRunWidth(const struct mTextRunMetrics* metrics) {
+	return metrics->width / (float) (1 << mFONT_FRACT_BITS);
+}
+
+float _mTextRunDescender(const struct mTextRunMetrics* metrics) {
+	return metrics->baseline / (float) (1 << mFONT_FRACT_BITS);
+}
+
+float _mTextRunAscender(const struct mTextRunMetrics* metrics) {
+	return (metrics->height - metrics->baseline) / (float) (1 << mFONT_FRACT_BITS);
+}
+
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mTextRunMetrics, F32, height, _mTextRunHeight, 0);
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mTextRunMetrics, F32, width, _mTextRunWidth, 0);
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mTextRunMetrics, F32, descender, _mTextRunDescender, 0);
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mTextRunMetrics, F32, ascender, _mTextRunAscender, 0);
+
+mSCRIPT_DEFINE_STRUCT(mTextRunMetrics)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING(
+		"Metrics for the size of a run of text. Generally, a run will represent up to a single line of text."
+	)
+	mSCRIPT_DEFINE_DOCSTRING("Get the height of the run of text, in pixels")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mTextRunMetrics, height)
+	mSCRIPT_DEFINE_DOCSTRING("Get the width of the run of text, in pixels")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mTextRunMetrics, width)
+	mSCRIPT_DEFINE_DOCSTRING("Get the distance from the baseline to the bottom of the line, in pixels")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mTextRunMetrics, descender)
+	mSCRIPT_DEFINE_DOCSTRING("Get the distance from the baseline to the top of the line, in pixels")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mTextRunMetrics, ascender)
+mSCRIPT_DEFINE_END;
+#endif
 
 void mScriptContextAttachImage(struct mScriptContext* context) {
 	mScriptContextExportNamespace(context, "image", (struct mScriptKVPair[]) {
@@ -206,4 +324,15 @@ void mScriptContextAttachImage(struct mScriptContext* context) {
 	mScriptContextSetDocstring(context, "image.load", "Load an image from a path. Currently, only `PNG` format is supported");
 #endif
 	mScriptContextSetDocstring(context, "image.newPainter", "Create a new painter from an existing image");
+
+	mScriptContextExportConstants(context, "ALIGN", (struct mScriptKVPair[]) {
+		mSCRIPT_CONSTANT_PAIR(mALIGN, LEFT),
+		mSCRIPT_CONSTANT_PAIR(mALIGN, HCENTER),
+		mSCRIPT_CONSTANT_PAIR(mALIGN, RIGHT),
+		mSCRIPT_CONSTANT_PAIR(mALIGN, TOP),
+		mSCRIPT_CONSTANT_PAIR(mALIGN, VCENTER),
+		mSCRIPT_CONSTANT_PAIR(mALIGN, BOTTOM),
+		mSCRIPT_CONSTANT_PAIR(mALIGN, BASELINE),
+		mSCRIPT_KV_SENTINEL
+	});
 }

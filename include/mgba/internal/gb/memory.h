@@ -233,6 +233,11 @@ struct GBHuC3State {
 	uint8_t registers[256];
 };
 
+struct GBM161State {
+	bool locked;
+	uint8_t bank;
+};
+
 struct GBPKJDState {
 	uint8_t reg[2];
 };
@@ -276,6 +281,7 @@ union GBMBCState {
 	struct GBPocketCamState pocketCam;
 	struct GBTAMA5State tama5;
 	struct GBHuC3State huc3;
+	struct GBM161State m161;
 	struct GBNTOldState ntOld;
 	struct GBNTNewState ntNew;
 	struct GBPKJDState pkjd;

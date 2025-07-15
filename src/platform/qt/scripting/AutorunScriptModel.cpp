@@ -5,22 +5,59 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "scripting/AutorunScriptModel.h"
 
-#include "ConfigController.h"
-#include "LogController.h"
+#include <QtDebug>
+#include <iostream>
+
+QDataStream& operator<<(QDataStream& stream, const QGBA::AutorunScriptModel::ScriptInfo& object) {
+	stream << QGBA::AutorunScriptModel::ScriptInfo::VERSION;
+	stream << object.filename.toUtf8();
+	stream << object.active;
+	return stream;
+}
+
+QDataStream& operator>>(QDataStream& stream, QGBA::AutorunScriptModel::ScriptInfo& object) {
+	uint16_t version = 0;
+	stream >> version;
+	if (version == 1) {
+		QByteArray filename;
+		stream >> filename;
+		object.filename = QString::fromUtf8(filename);
+	} else {
+		qCritical() << QGBA::AutorunScriptModel::tr("Could not load autorun script settings: unknown script info format %1").arg(version);
+		stream.setStatus(QDataStream::ReadCorruptData);
+		return stream;
+	}
+	stream >> object.active;
+	return stream;
+}
 
 using namespace QGBA;
 
-AutorunScriptModel::AutorunScriptModel(ConfigController* config, QObject* parent)
+void AutorunScriptModel::registerMetaTypes() {
+	qRegisterMetaType<AutorunScriptModel::ScriptInfo>();
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+	qRegisterMetaTypeStreamOperators<AutorunScriptModel::ScriptInfo>("QGBA::AutorunScriptModel::ScriptInfo");
+#endif
+}
+
+AutorunScriptModel::AutorunScriptModel(QObject* parent)
 	: QAbstractListModel(parent)
-	, m_config(config)
 {
-	QList<QVariant> autorun = m_config->getList("autorunSettings");
-	for (const auto& item: autorun) {
+	// Nothing to do
+}
+
+void AutorunScriptModel::deserialize(const QList<QVariant>& autorun) {
+	for (const auto& item : autorun) {
 		if (!item.canConvert<ScriptInfo>()) {
+			continue;
+		}
+		ScriptInfo info = qvariant_cast<ScriptInfo>(item);
+		if (info.filename.isEmpty()) {
 			continue;
 		}
 		m_scripts.append(qvariant_cast<ScriptInfo>(item));
 	}
+	emitScriptsChanged();
 }
 
 int AutorunScriptModel::rowCount(const QModelIndex& parent) const {
@@ -32,13 +69,14 @@ int AutorunScriptModel::rowCount(const QModelIndex& parent) const {
 
 bool AutorunScriptModel::setData(const QModelIndex& index, const QVariant& data, int role) {
 	if (!index.isValid() || index.parent().isValid() || index.row() >= m_scripts.count()) {
-		return {};
+		return false;
 	}
 
 	switch (role) {
 	case Qt::CheckStateRole:
 		m_scripts[index.row()].active = data.value<Qt::CheckState>() == Qt::Checked;
-		save();
+		emit dataChanged(index, index);
+		emitScriptsChanged();
 		return true;
 	}
 	return false;
@@ -61,23 +99,27 @@ QVariant AutorunScriptModel::data(const QModelIndex& index, int role) const {
 
 Qt::ItemFlags AutorunScriptModel::flags(const QModelIndex& index) const {
 	if (!index.isValid() || index.parent().isValid()) {
-		return Qt::NoItemFlags;
+		return Qt::ItemIsDropEnabled;
 	}
-	return Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren;
+	return Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren | Qt::ItemIsDragEnabled;
+}
+
+Qt::DropActions AutorunScriptModel::supportedDropActions() const {
+	return Qt::CopyAction | Qt::MoveAction;
 }
 
 bool AutorunScriptModel::removeRows(int row, int count, const QModelIndex& parent) {
 	if (parent.isValid()) {
 		return false;
 	}
-	if (m_scripts.size() < row) {
+	int lastRow = row + count - 1;
+	if (row < 0 || lastRow >= m_scripts.size() || count < 0) {
 		return false;
 	}
-	if (m_scripts.size() < row + count) {
-		count = m_scripts.size() - row;
-	}
+	beginRemoveRows(QModelIndex(), row, lastRow);
 	m_scripts.erase(m_scripts.begin() + row, m_scripts.begin() + row + count);
-	save();
+	endRemoveRows();
+	emitScriptsChanged();
 	return true;
 }
 
@@ -86,22 +128,34 @@ bool AutorunScriptModel::moveRows(const QModelIndex& sourceParent, int sourceRow
 		return false;
 	}
 
-	if (sourceRow < 0 || destinationChild < 0) {
+	if (sourceRow < 0 || destinationChild < 0 || count <= 0) {
 		return false;
 	}
 
-	if (sourceRow >= m_scripts.size() || destinationChild >= m_scripts.size()) {
+	int lastSource = sourceRow + count - 1;
+
+	if (lastSource >= m_scripts.size() || destinationChild > m_scripts.size()) {
 		return false;
 	}
 
-	if (count > 1) {
-		LOG(QT, WARN) << tr("Moving more than one row at once is not yet supported");
+	if (sourceRow == destinationChild - 1) {
 		return false;
 	}
 
-	auto item = m_scripts.takeAt(sourceRow);
-	m_scripts.insert(destinationChild, item);
-	save();
+	bool ok = beginMoveRows(QModelIndex(), sourceRow, lastSource, QModelIndex(), destinationChild);
+	if (!ok) {
+		return false;
+	}
+	if (destinationChild < sourceRow) {
+		sourceRow = lastSource;
+	} else {
+		destinationChild -= 1;
+	}
+	for (int i = 0; i < count; i++) {
+		m_scripts.move(sourceRow, destinationChild);
+	}
+	endMoveRows();
+	emitScriptsChanged();
 	return true;
 }
 
@@ -109,11 +163,11 @@ void AutorunScriptModel::addScript(const QString& filename) {
 	beginInsertRows({}, m_scripts.count(), m_scripts.count());
 	m_scripts.append(ScriptInfo { filename, true });
 	endInsertRows();
-	save();
+	emitScriptsChanged();
 }
 
-QList<QString> AutorunScriptModel::activeScripts() const {
-	QList<QString> scripts;
+QStringList AutorunScriptModel::activeScripts() const {
+	QStringList scripts;
 	for (const auto& pair: m_scripts) {
 		if (!pair.active) {
 			continue;
@@ -123,10 +177,14 @@ QList<QString> AutorunScriptModel::activeScripts() const {
 	return scripts;
 }
 
-void AutorunScriptModel::save() {
+QList<QVariant> AutorunScriptModel::serialize() const {
 	QList<QVariant> list;
 	for (const auto& script : m_scripts) {
 		list.append(QVariant::fromValue(script));
 	}
-	m_config->setList("autorunSettings", list);
+	return list;
+}
+
+void AutorunScriptModel::emitScriptsChanged() {
+	emit scriptsChanged(serialize());
 }
