@@ -493,6 +493,7 @@ static const struct GBAVideoGLUniform _uniformsWindow[] = {
 	{ "win1", GBA_GL_WIN_WIN1, },
 	{ "circle0", GBA_GL_WIN_CIRCLE0, },
 	{ "circle1", GBA_GL_WIN_CIRCLE1, },
+	{ "disableInterp", GBA_GL_WIN_DISABLE_INTERP, },
 	{ 0 }
 };
 
@@ -505,6 +506,7 @@ static const char* const _renderWindow =
 	"uniform ivec4 win1[160];\n"
 	"uniform vec3 circle0;\n"
 	"uniform vec3 circle1;\n"
+	"uniform bool disableInterp;\n"
 	"OUT(0) out ivec4 window;\n"
 
 	"bool crop(vec4 windowParams) {\n"
@@ -532,7 +534,7 @@ static const char* const _renderWindow =
 	"}\n"
 
 	"vec4 interpolate(vec4 top, vec4 bottom) {\n"
-	"	if (distance(top, bottom) > 40.) {\n"
+	"	if (disableInterp || distance(top, bottom) > 40.) {\n"
 	"		return top;\n"
 	"	}\n"
 	"	return vec4(mix(bottom.xy, top.xy, fract(texCoord.y)), top.zw);\n"
@@ -2111,6 +2113,7 @@ void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y) {
 		glUniform3i(uniforms[GBA_GL_WIN_FLAGS], renderer->winN[0].control, renderer->winN[1].control, renderer->winout);
 		glUniform4iv(uniforms[GBA_GL_WIN_WIN0], GBA_VIDEO_VERTICAL_PIXELS, renderer->winNHistory[0]);
 		glUniform4iv(uniforms[GBA_GL_WIN_WIN1], GBA_VIDEO_VERTICAL_PIXELS, renderer->winNHistory[1]);
+		glUniform1i(uniforms[GBA_GL_WIN_DISABLE_INTERP], renderer->scale < 2);
 		_detectCircle(renderer, y, 0);
 		_detectCircle(renderer, y, 1);
 		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);

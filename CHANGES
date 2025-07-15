@@ -59,6 +59,7 @@ Misc:
  - GBA Memory: Improve VRAM access stall cycle estimation
  - GBA SIO: Rewrite lockstep driver for improved stability
  - GBA Video: Add special circlular window handling in OpenGL renderer
+ - GBA Video: Disable window interpolation at 1× scale (fixes mgba.io/i/1810)
  - Libretro: Add Super Game Boy Color support (closes mgba.io/i/3188)
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
  - mGUI: Persist fast forwarding after closing menu (fixes mgba.io/i/2414)
