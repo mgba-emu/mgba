@@ -53,6 +53,11 @@ static void SM83DebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 			.target = TableLookup(&d->p->pointOwner, breakpoint->id)
 		};
 		mDebuggerEnter(d->p, DEBUGGER_ENTER_BREAKPOINT, &info);
+		if (breakpoint->isTemporary) {
+			_destroyBreakpoint(debugger->d.p, breakpoint);
+			mBreakpointListShift(&debugger->breakpoints, i, 1);
+			--i;
+		}
 	}
 }
 

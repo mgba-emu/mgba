@@ -218,6 +218,11 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 			.target = TableLookup(&d->p->pointOwner, breakpoint->d.id)
 		};
 		mDebuggerEnter(d->p, DEBUGGER_ENTER_BREAKPOINT, &info);
+		if (breakpoint->d.isTemporary) {
+			_destroyBreakpoint(debugger->d.p, breakpoint);
+			ARMDebugBreakpointListShift(&debugger->breakpoints, i, 1);
+			--i;
+		}
 	}
 }
 
@@ -323,7 +328,10 @@ static void ARMDebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerE
 
 			ARMRunFake(cpu, breakpoint->sw.opcode);
 
-			if (debugger->setSoftwareBreakpoint) {
+			if (breakpoint->d.isTemporary) {
+				_destroyBreakpoint(debugger->d.p, breakpoint);
+				ARMDebugBreakpointListShift(&debugger->swBreakpoints, i, 1);
+			} else if (debugger->setSoftwareBreakpoint) {
 				debugger->setSoftwareBreakpoint(debugger, breakpoint->d.address, breakpoint->sw.mode, &breakpoint->sw.opcode);
 			}
 			break;
