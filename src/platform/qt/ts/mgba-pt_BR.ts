@@ -255,7 +255,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="26"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Não pôde carregar as configuações do script de auto-execução: formato da informação do script desconhecido %1</translation>
     </message>
 </context>
 <context>
