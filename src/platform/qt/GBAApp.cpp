@@ -131,6 +131,7 @@ Window* GBAApp::newWindow() {
 		return nullptr;
 	}
 	Window* w = new Window(&m_manager, m_configController, m_windows.count());
+	w->setSkipResetLevels(true);
 	connect(w, &Window::destroyed, [this, w]() {
 		m_windows.removeAll(w);
 		for (Window* w : m_windows) {
