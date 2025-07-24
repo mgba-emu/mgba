@@ -50,6 +50,7 @@ Q_IMPORT_PLUGIN(QWaylandIntegrationPlugin);
 #ifdef Q_OS_WIN
 #include <process.h>
 #include <wincon.h>
+extern "C" __declspec (dllexport) DWORD NoHotPatch = 0x1;
 #else
 #include <unistd.h>
 #endif
@@ -131,10 +132,9 @@ int main(int argc, char* argv[]) {
 	}
 
 	Window* w = application.newWindow();
-	w->loadConfig();
 	w->argumentsPassed();
 
-	w->show();
+	application.initMultiplayer();
 
 	int ret = application.exec();
 	if (ret != 0) {

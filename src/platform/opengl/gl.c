@@ -41,7 +41,7 @@ static void mGLContextInit(struct VideoBackend* v, WHandle handle) {
 	_initTex();
 	context->activeTex = 0;
 
-	glGenTextures(VIDEO_LAYER_MAX, context->tex);
+	glGenTextures(VIDEO_LAYER_MAX, context->layers);
 	int i;
 	for (i = 0; i < VIDEO_LAYER_MAX; ++i) {
 		glBindTexture(GL_TEXTURE_2D, context->layers[i]);

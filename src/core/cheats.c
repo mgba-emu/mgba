@@ -622,7 +622,7 @@ bool mCheatSaveFile(struct mCheatDevice* device, struct VFile* vf) {
 	return true;
 }
 
-#if defined(ENABLE_VFS) && !defined(__LIBRETRO__)
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES) && !defined(__LIBRETRO__)
 void mCheatAutosave(struct mCheatDevice* device) {
 	if (!device->autosave) {
 		return;

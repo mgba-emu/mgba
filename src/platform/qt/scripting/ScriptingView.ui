@@ -98,9 +98,10 @@
     </widget>
     <addaction name="load"/>
     <addaction name="mru"/>
-    <addaction name="loadMostRecent"/>    
+    <addaction name="loadMostRecent"/>
     <addaction name="separator"/>
     <addaction name="reset"/>
+    <addaction name="editAutorunScripts"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -110,7 +111,7 @@
     <string>Load script...</string>
    </property>
   </action>
-    <action name="loadMostRecent">
+  <action name="loadMostRecent">
    <property name="text">
     <string>&amp;Load most recent</string>
    </property>
@@ -123,6 +124,11 @@
   <action name="action0">
    <property name="text">
     <string>0</string>
+   </property>
+  </action>
+  <action name="editAutorunScripts">
+   <property name="text">
+    <string>Edit autorun scripts...</string>
    </property>
   </action>
  </widget>

@@ -417,6 +417,7 @@ static void _compress(struct VFile* dest, struct VFile* src) {
 		}
 		dest->write(dest, compressBuffer, sizeof(compressBuffer) - zstr.avail_out);
 	} while (sizeof(compressBuffer) - zstr.avail_out);
+	deflateEnd(&zstr);
 }
 
 static bool _decompress(struct VFile* dest, struct VFile* src, size_t compressedLength) {

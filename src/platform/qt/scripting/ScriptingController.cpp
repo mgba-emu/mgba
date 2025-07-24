@@ -10,14 +10,17 @@
 #include <QMouseEvent>
 #include <QWidget>
 
+#include "ConfigController.h"
 #include "CoreController.h"
 #include "Display.h"
 #include "input/Gamepad.h"
 #include "input/GamepadButtonEvent.h"
 #include "input/GamepadHatEvent.h"
 #include "InputController.h"
+#include "scripting/AutorunScriptView.h"
 #include "scripting/ScriptingTextBuffer.h"
 #include "scripting/ScriptingTextBufferModel.h"
+#include "Window.h"
 
 #include <mgba/script.h>
 #include <mgba-util/math.h>
@@ -25,9 +28,14 @@
 
 using namespace QGBA;
 
-ScriptingController::ScriptingController(QObject* parent)
+ScriptingController::ScriptingController(ConfigController* config, QObject* parent)
 	: QObject(parent)
+	, m_config(config)
 {
+	QList<QVariant> autorun = m_config->getList("autorunSettings");
+	m_model.deserialize(autorun);
+	QObject::connect(&m_model, &AutorunScriptModel::scriptsChanged, this, &ScriptingController::saveAutorun);
+
 	m_logger.p = this;
 	m_logger.log = [](mLogger* log, int, enum mLogLevel level, const char* format, va_list args) {
 		Logger* logger = static_cast<Logger*>(log);
@@ -78,6 +86,8 @@ void ScriptingController::setController(std::shared_ptr<CoreController> controll
 	m_controller->thread()->scriptContext = &m_scriptContext;
 	if (m_controller->hasStarted()) {
 		attach();
+	} else {
+		m_controller->attachDebugger(false);
 	}
 	updateVideoScale();
 	connect(m_controller.get(), &CoreController::stopping, this, &ScriptingController::clearController);
@@ -154,14 +164,16 @@ void ScriptingController::reset() {
 	m_engines.clear();
 	m_activeEngine = nullptr;
 	init();
-	if (m_controller && m_controller->hasStarted()) {
-		attach();
-	}
 }
 
 void ScriptingController::runCode(const QString& code) {
 	VFileDevice vf(code.toUtf8());
 	load(vf, "*prompt");
+}
+
+void ScriptingController::openAutorunEdit() {
+	AutorunScriptView* view = new AutorunScriptView(&m_model, this);
+	emit autorunScriptsOpened(view);
 }
 
 void ScriptingController::flushStorage() {
@@ -259,6 +271,15 @@ void ScriptingController::scriptingEvent(QObject* obj, QEvent* event) {
 	}
 }
 
+QString ScriptingController::getFilenameFilters() const {
+	QStringList filters;
+#ifdef USE_LUA
+	filters.append(tr("Lua scripts (*.lua)"));
+#endif
+	filters.append(tr("All files (*.*)"));
+	return filters.join(";;");
+}
+
 void ScriptingController::updateGamepad() {
 	InputDriver* driver = m_inputController->gamepadDriver();
 	if (!driver) {
@@ -354,6 +375,14 @@ void ScriptingController::init() {
 #ifdef USE_JSON_C
 	m_storageFlush.start();
 #endif
+
+	if (m_controller && m_controller->hasStarted()) {
+		attach();
+	}
+
+	for (const auto& script: m_model.activeScripts()) {
+		loadFile(script);
+	}
 }
 
 uint32_t ScriptingController::qtToScriptingKey(const QKeyEvent* event) {
@@ -481,4 +510,8 @@ uint16_t ScriptingController::qtToScriptingModifiers(Qt::KeyboardModifiers modif
 		mod |= mSCRIPT_KMOD_SUPER;
 	}
 	return mod;
+}
+
+void ScriptingController::saveAutorun(const QList<QVariant>& autorun) {
+	m_config->setList("autorunSettings", autorun);
 }

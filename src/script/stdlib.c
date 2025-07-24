@@ -101,6 +101,100 @@ mSCRIPT_DEFINE_STRUCT(mScriptCallbackManager)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mScriptCallbackManager, remove)
 mSCRIPT_DEFINE_END;
 
+static struct mScriptValue* _mRectangleNew(int32_t x, int32_t y, int32_t width, int32_t height) {
+	struct mRectangle* rect = malloc(sizeof(*rect));
+	rect->x = x;
+	rect->y = y;
+	rect->width = width;
+	rect->height = height;
+	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mRectangle));
+	result->value.opaque = rect;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+	return result;
+}
+
+static struct mScriptValue* _mRectangleCopy(const struct mRectangle* old) {
+	struct mRectangle* rect = malloc(sizeof(*rect));
+	memcpy(rect, old, sizeof(*rect));
+	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mRectangle));
+	result->value.opaque = rect;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+	return result;
+}
+
+static struct mScriptValue* _mRectangleSize(const struct mRectangle* rect) {
+	struct mSize* size = malloc(sizeof(*size));
+	size->width = rect->width;
+	size->height = rect->height;
+	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mSize));
+	result->value.opaque = size;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+	return result;
+}
+
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mRectangle, W(mRectangle), copy, _mRectangleCopy, 0);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mRectangle, union, mRectangleUnion, 1, CS(mRectangle), other);
+mSCRIPT_DECLARE_STRUCT_METHOD(mRectangle, BOOL, intersection, mRectangleIntersection, 1, CS(mRectangle), other);
+mSCRIPT_DECLARE_STRUCT_VOID_C_METHOD(mRectangle, center, mRectangleCenter, 1, S(mRectangle), other);
+mSCRIPT_DECLARE_STRUCT_METHOD(mRectangle, W(mSize), size, _mRectangleSize, 0);
+
+mSCRIPT_DEFINE_STRUCT(mRectangle)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING("A basic axis-aligned rectangle object")
+	mSCRIPT_DEFINE_DOCSTRING("Create a copy of this struct::mRectangle")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mRectangle, copy)
+	mSCRIPT_DEFINE_DOCSTRING("The x coordinate of the top-left corner")
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mRectangle, S32, x)
+	mSCRIPT_DEFINE_DOCSTRING("The y coordinate of the top-left corner")
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mRectangle, S32, y)
+	mSCRIPT_DEFINE_DOCSTRING("The width of the rectangle")
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mRectangle, S32, width)
+	mSCRIPT_DEFINE_DOCSTRING("The height of the rectangle")
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mRectangle, S32, height)
+	mSCRIPT_DEFINE_DOCSTRING("Find the bounding box of the union of this and another rectangle")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mRectangle, union)
+	mSCRIPT_DEFINE_DOCSTRING("Find the intersection of this and another rectangle. Returns false if the rectangles don't intersect")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mRectangle, intersection)
+	mSCRIPT_DEFINE_DOCSTRING("Center another rectangle inside this one")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mRectangle, center)
+	mSCRIPT_DEFINE_DOCSTRING("Return the size of this struct::mRectangle as a struct::mSize object")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mRectangle, size)
+mSCRIPT_DEFINE_END;
+
+mSCRIPT_BIND_FUNCTION(mRectangleNew_Binding, W(mRectangle), _mRectangleNew, 4, S32, x, S32, y, S32, width, S32, height);
+
+static struct mScriptValue* _mSizeNew(int32_t width, int32_t height) {
+	struct mSize* size = malloc(sizeof(*size));
+	size->width = width;
+	size->height = height;
+	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mSize));
+	result->value.opaque = size;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+	return result;
+}
+
+static struct mScriptValue* _mSizeCopy(const struct mSize* old) {
+	struct mSize* size = malloc(sizeof(*size));
+	memcpy(size, old, sizeof(*size));
+	struct mScriptValue* result = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mSize));
+	result->value.opaque = size;
+	result->flags = mSCRIPT_VALUE_FLAG_DEINIT | mSCRIPT_VALUE_FLAG_FREE_BUFFER;
+	return result;
+}
+
+mSCRIPT_DECLARE_STRUCT_C_METHOD(mSize, W(mSize), copy, _mSizeCopy, 0);
+
+mSCRIPT_DEFINE_STRUCT(mSize)
+	mSCRIPT_DEFINE_CLASS_DOCSTRING("A basic size (width/height) object")
+	mSCRIPT_DEFINE_DOCSTRING("Create a copy of this struct::mSize")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mSize, copy)
+	mSCRIPT_DEFINE_DOCSTRING("The width")
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mSize, S32, width)
+	mSCRIPT_DEFINE_DOCSTRING("The height")
+	mSCRIPT_DEFINE_STRUCT_MEMBER(mSize, S32, height)
+mSCRIPT_DEFINE_END;
+
+mSCRIPT_BIND_FUNCTION(mSizeNew_Binding, W(mSize), _mSizeNew, 2, S32, width, S32, height);
+
 void mScriptContextAttachStdlib(struct mScriptContext* context) {
 	struct mScriptValue* lib;
 
@@ -131,6 +225,7 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 	mScriptContextExportConstants(context, "CHECKSUM", (struct mScriptKVPair[]) {
 		mSCRIPT_CONSTANT_PAIR(mCHECKSUM, CRC32),
 		mSCRIPT_CONSTANT_PAIR(mCHECKSUM, MD5),
+		mSCRIPT_CONSTANT_PAIR(mCHECKSUM, SHA1),
 		mSCRIPT_KV_SENTINEL
 	});
 #ifdef M_CORE_GBA
@@ -176,11 +271,15 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 	mScriptContextExportNamespace(context, "util", (struct mScriptKVPair[]) {
 		mSCRIPT_KV_PAIR(makeBitmask, &mScriptMakeBitmask_Binding),
 		mSCRIPT_KV_PAIR(expandBitmask, &mScriptExpandBitmask_Binding),
+		mSCRIPT_KV_PAIR(newRectangle, &mRectangleNew_Binding),
+		mSCRIPT_KV_PAIR(newSize, &mSizeNew_Binding),
 		mSCRIPT_KV_SENTINEL
 	});
 	mScriptContextSetDocstring(context, "util", "Basic utility library");
 	mScriptContextSetDocstring(context, "util.makeBitmask", "Compile a list of bit indices into a bitmask");
 	mScriptContextSetDocstring(context, "util.expandBitmask", "Expand a bitmask into a list of bit indices");
+	mScriptContextSetDocstring(context, "util.newRectangle", "Create a new mRectangle");
+	mScriptContextSetDocstring(context, "util.newSize", "Create a new mSize");
 
 	struct mScriptValue* systemVersion = mScriptStringCreateFromUTF8(projectVersion);
 	struct mScriptValue* systemProgram = mScriptStringCreateFromUTF8(projectName);

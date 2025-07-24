@@ -177,16 +177,6 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 	return true;
 }
 
-static struct ARMDebugBreakpoint* _lookupBreakpoint(struct ARMDebugBreakpointList* breakpoints, uint32_t address) {
-	size_t i;
-	for (i = 0; i < ARMDebugBreakpointListSize(breakpoints); ++i) {
-		if (ARMDebugBreakpointListGetPointer(breakpoints, i)->d.address == address) {
-			return ARMDebugBreakpointListGetPointer(breakpoints, i);
-		}
-	}
-	return 0;
-}
-
 static void _destroyBreakpoint(struct mDebugger* debugger, struct ARMDebugBreakpoint* breakpoint) {
 	if (breakpoint->d.condition) {
 		parseFree(breakpoint->d.condition);
@@ -208,24 +198,32 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	if (debugger->stackTraceMode != STACK_TRACE_DISABLED && ARMDebuggerUpdateStackTraceInternal(d, pc)) {
 		return;
 	}
-	struct ARMDebugBreakpoint* breakpoint = _lookupBreakpoint(&debugger->breakpoints, pc);
-	if (!breakpoint) {
-		return;
-	}
-	if (breakpoint->d.condition) {
-		int32_t value;
-		int segment;
-		if (!mDebuggerEvaluateParseTree(d->p, breakpoint->d.condition, &value, &segment) || !(value || segment >= 0)) {
-			return;
+	size_t i;
+	for (i = 0; i < ARMDebugBreakpointListSize(&debugger->breakpoints); ++i) {
+		struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListGetPointer(&debugger->breakpoints, i);
+		if (breakpoint->d.address != pc) {
+			continue;
+		}
+		if (breakpoint->d.condition) {
+			int32_t value;
+			int segment;
+			if (!mDebuggerEvaluateParseTree(d->p, breakpoint->d.condition, &value, &segment) || !(value || segment >= 0)) {
+				continue;
+			}
+		}
+		struct mDebuggerEntryInfo info = {
+			.address = breakpoint->d.address,
+			.type.bp.breakType = BREAKPOINT_HARDWARE,
+			.pointId = breakpoint->d.id,
+			.target = TableLookup(&d->p->pointOwner, breakpoint->d.id)
+		};
+		mDebuggerEnter(d->p, DEBUGGER_ENTER_BREAKPOINT, &info);
+		if (breakpoint->d.isTemporary) {
+			_destroyBreakpoint(debugger->d.p, breakpoint);
+			ARMDebugBreakpointListShift(&debugger->breakpoints, i, 1);
+			--i;
 		}
 	}
-	struct mDebuggerEntryInfo info = {
-		.address = breakpoint->d.address,
-		.type.bp.breakType = BREAKPOINT_HARDWARE,
-		.pointId = breakpoint->d.id,
-		.target = TableLookup(&d->p->pointOwner, breakpoint->d.id)
-	};
-	mDebuggerEnter(d->p, DEBUGGER_ENTER_BREAKPOINT, &info);
 }
 
 static void ARMDebuggerInit(void* cpu, struct mDebuggerPlatform* platform);
@@ -312,9 +310,16 @@ static void ARMDebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerE
 	struct ARMDebugger* debugger = (struct ARMDebugger*) platform;
 	struct ARMCore* cpu = debugger->cpu;
 	cpu->nextEvent = cpu->cycles;
-	if (reason == DEBUGGER_ENTER_BREAKPOINT) {
-		struct ARMDebugBreakpoint* breakpoint = _lookupBreakpoint(&debugger->swBreakpoints, _ARMPCAddress(cpu));
-		if (breakpoint && breakpoint->d.type == BREAKPOINT_SOFTWARE) {
+	if (reason != DEBUGGER_ENTER_BREAKPOINT) {
+		return;
+	}
+	size_t i;
+	for (i = 0; i < ARMDebugBreakpointListSize(&debugger->swBreakpoints); ++i) {
+		struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListGetPointer(&debugger->swBreakpoints, i);
+		if (breakpoint->d.address != _ARMPCAddress(cpu)) {
+			continue;
+		}
+		if (breakpoint->d.type == BREAKPOINT_SOFTWARE) {
 			info->address = breakpoint->d.address;
 			info->pointId = breakpoint->d.id;
 			if (debugger->clearSoftwareBreakpoint) {
@@ -323,9 +328,13 @@ static void ARMDebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerE
 
 			ARMRunFake(cpu, breakpoint->sw.opcode);
 
-			if (debugger->setSoftwareBreakpoint) {
+			if (breakpoint->d.isTemporary) {
+				_destroyBreakpoint(debugger->d.p, breakpoint);
+				ARMDebugBreakpointListShift(&debugger->swBreakpoints, i, 1);
+			} else if (debugger->setSoftwareBreakpoint) {
 				debugger->setSoftwareBreakpoint(debugger, breakpoint->d.address, breakpoint->sw.mode, &breakpoint->sw.opcode);
 			}
+			break;
 		}
 	}
 }

@@ -252,10 +252,12 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	uint32_t dest = info->nextDest;
 	uint32_t sourceRegion = source >> BASE_OFFSET;
 	uint32_t destRegion = dest >> BASE_OFFSET;
+	enum mMemoryAccessSource oldAccess = cpu->memory.accessSource;
 	int32_t cycles = 2;
 
 	gba->cpuBlocked = true;
 	gba->performingDMA = 1 | (number << 1);
+	cpu->memory.accessSource = mACCESS_DMA;
 
 	if (info->count == info->nextCount) {
 		if (width == 4) {
@@ -319,6 +321,7 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	--info->nextCount;
 
 	gba->performingDMA = 0;
+	cpu->memory.accessSource = oldAccess;
 
 	int i;
 	for (i = 0; i < 4; ++i) {

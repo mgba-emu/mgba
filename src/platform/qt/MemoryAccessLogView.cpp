@@ -9,107 +9,87 @@
 
 #include "GBAApp.h"
 #include "LogController.h"
+#include "MemoryAccessLogController.h"
 #include "utils.h"
 #include "VFileDevice.h"
 
 using namespace QGBA;
 
-MemoryAccessLogView::MemoryAccessLogView(std::shared_ptr<CoreController> controller, QWidget* parent)
+MemoryAccessLogView::MemoryAccessLogView(std::weak_ptr<MemoryAccessLogController> controller, QWidget* parent)
 	: QWidget(parent)
-	, m_controller(std::move(controller))
+	, m_controller(controller)
 {
 	m_ui.setupUi(this);
 
+	std::shared_ptr<MemoryAccessLogController> controllerPtr = m_controller.lock();
 	connect(m_ui.browse, &QAbstractButton::clicked, this, &MemoryAccessLogView::selectFile);
 	connect(m_ui.exportButton, &QAbstractButton::clicked, this, &MemoryAccessLogView::exportFile);
-	connect(this, &MemoryAccessLogView::loggingChanged, m_ui.start, &QWidget::setDisabled);
-	connect(this, &MemoryAccessLogView::loggingChanged, m_ui.stop, &QWidget::setEnabled);
-	connect(this, &MemoryAccessLogView::loggingChanged, m_ui.filename, &QWidget::setDisabled);
-	connect(this, &MemoryAccessLogView::loggingChanged, m_ui.browse, &QWidget::setDisabled);
+	connect(controllerPtr.get(), &MemoryAccessLogController::regionMappingChanged, this, &MemoryAccessLogView::updateRegion);
+	connect(controllerPtr.get(), &MemoryAccessLogController::loggingChanged, this, &MemoryAccessLogView::handleStartStop);
+	connect(controllerPtr.get(), &MemoryAccessLogController::loaded, this, &MemoryAccessLogView::handleLoadUnload);
 
-	mCore* core = m_controller->thread()->core;
-	const mCoreMemoryBlock* info;
-	size_t nBlocks = core->listMemoryBlocks(core, &info);
+	bool active = controllerPtr->active();
+	bool loaded = controllerPtr->isLoaded();
+	auto watchedRegions = controllerPtr->watchedRegions();
 
 	QVBoxLayout* regionBox = static_cast<QVBoxLayout*>(m_ui.regionBox->layout());
-	for (size_t i = 0; i < nBlocks; ++i) {
-		if (!(info[i].flags & mCORE_MEMORY_MAPPED)) {
-			continue;
-		}
-		QCheckBox* region = new QCheckBox(QString::fromUtf8(info[i].longName));
+	for (const auto& info : controllerPtr->listRegions()) {
+		QCheckBox* region = new QCheckBox(info.longName);
 		regionBox->addWidget(region);
 
-		QString name(QString::fromUtf8(info[i].internalName));
+		QString name(info.internalName);
 		m_regionBoxes[name] = region;
 		connect(region, &QAbstractButton::toggled, this, [this, name](bool checked) {
-			updateRegion(name, checked);
+			std::shared_ptr<MemoryAccessLogController> controllerPtr = m_controller.lock();
+			if (!controllerPtr) {
+				return;
+			}
+			controllerPtr->updateRegion(name, checked);
 		});
 	}
-}
 
-MemoryAccessLogView::~MemoryAccessLogView() {
-	stop();
+	handleLoadUnload(loaded);
+	handleStartStop(active);
 }
 
 void MemoryAccessLogView::updateRegion(const QString& internalName, bool checked) {
 	if (checked) {
-		m_watchedRegions += internalName;
-	} else {
-		m_watchedRegions -= internalName;
+		m_regionBoxes[internalName]->setEnabled(false);
 	}
-	if (!m_active) {
-		return;
-	}
-	m_regionBoxes[internalName]->setEnabled(false);
-	m_regionMapping[internalName] = mDebuggerAccessLoggerWatchMemoryBlockName(&m_logger, internalName.toUtf8().constData(), activeFlags());
 }
 
 void MemoryAccessLogView::start() {
-	int flags = O_CREAT | O_RDWR;
-	if (!m_ui.loadExisting->isChecked()) {
-		flags |= O_TRUNC;
-	}
-	VFile* vf = VFileDevice::open(m_ui.filename->text(), flags);
-	if (!vf) {
-		// log error
+	std::shared_ptr<MemoryAccessLogController> controllerPtr = m_controller.lock();
+	if (!controllerPtr) {
 		return;
 	}
-	mDebuggerAccessLoggerInit(&m_logger);
-	CoreController::Interrupter interrupter(m_controller);
-	m_controller->attachDebuggerModule(&m_logger.d);
-	if (!mDebuggerAccessLoggerOpen(&m_logger, vf, flags)) {
-		mDebuggerAccessLoggerDeinit(&m_logger);
-		LOG(QT, ERROR) << tr("Failed to open memory log file");
-		return;
-	}
-
-	m_active = true;
-	emit loggingChanged(true);
-	for (const auto& region : m_watchedRegions) {
-		m_regionBoxes[region]->setEnabled(false);
-		m_regionMapping[region] = mDebuggerAccessLoggerWatchMemoryBlockName(&m_logger, region.toUtf8().constData(), activeFlags());
-	}
-	interrupter.resume();
-
-	if (m_watchedRegions.contains(QString("cart0"))) {
-		m_ui.exportButton->setEnabled(true);
-	}
+	controllerPtr->setFile(m_ui.filename->text());
+	controllerPtr->start(m_ui.loadExisting->isChecked(), m_ui.logExtra->isChecked());
 }
 
 void MemoryAccessLogView::stop() {
-	if (!m_active) {
+	std::shared_ptr<MemoryAccessLogController> controllerPtr = m_controller.lock();
+	if (!controllerPtr) {
 		return;
 	}
-	CoreController::Interrupter interrupter(m_controller);
-	m_controller->detachDebuggerModule(&m_logger.d);
-	mDebuggerAccessLoggerDeinit(&m_logger);
-	emit loggingChanged(false);
-	interrupter.resume();
+	controllerPtr->stop();
+}
 
-	for (const auto& region : m_watchedRegions) {
-		m_regionBoxes[region]->setEnabled(true);
+void MemoryAccessLogView::load() {
+	std::shared_ptr<MemoryAccessLogController> controllerPtr = m_controller.lock();
+	if (!controllerPtr) {
+		return;
 	}
-	m_ui.exportButton->setEnabled(false);
+	controllerPtr->setFile(m_ui.filename->text());
+	controllerPtr->load(m_ui.loadExisting->isChecked());
+}
+
+void MemoryAccessLogView::unload() {
+	std::shared_ptr<MemoryAccessLogController> controllerPtr = m_controller.lock();
+	if (!controllerPtr) {
+		return;
+	}
+	controllerPtr->unload();
 }
 
 void MemoryAccessLogView::selectFile() {
@@ -119,30 +99,55 @@ void MemoryAccessLogView::selectFile() {
 	}
 }
 
-mDebuggerAccessLogRegionFlags MemoryAccessLogView::activeFlags() const {
-	mDebuggerAccessLogRegionFlags loggerFlags = 0;
-	if (m_ui.logExtra->isChecked()) {
-		loggerFlags = mDebuggerAccessLogRegionFlagsFillHasExBlock(loggerFlags);
-	}
-	return loggerFlags;
-}
-
 void MemoryAccessLogView::exportFile() {
-	if (!m_regionMapping.contains("cart0")) {
+	std::shared_ptr<MemoryAccessLogController> controllerPtr = m_controller.lock();
+	if (!controllerPtr) {
+		return;
+	}
+	if (!controllerPtr->canExport()) {
 		return;
 	}
 
-	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select access log file"), romFilters(false, m_controller->platform(), true));
+	QString filename = GBAApp::app()->getSaveFileName(this, tr("Select access log file"), romFilters(false, controllerPtr->platform(), true));
 	if (filename.isEmpty()) {
 		return;
 	}
-	VFile* vf = VFileDevice::open(filename, O_CREAT | O_TRUNC | O_WRONLY);
-	if (!vf) {
-		// log error
+	controllerPtr->exportFile(filename);
+}
+
+void MemoryAccessLogView::handleStartStop(bool start) {
+	std::shared_ptr<MemoryAccessLogController> controllerPtr = m_controller.lock();
+	if (!controllerPtr) {
 		return;
 	}
+	m_ui.filename->setText(controllerPtr->file());
 
-	CoreController::Interrupter interrupter(m_controller);
-	mDebuggerAccessLoggerCreateShadowFile(&m_logger, m_regionMapping[QString("cart0")], vf, 0);
-	vf->close(vf);
+	auto watchedRegions = controllerPtr->watchedRegions();
+	for (const auto& region : watchedRegions) {
+		m_regionBoxes[region]->setDisabled(start);
+		m_regionBoxes[region]->setChecked(true);
+	}
+
+	m_ui.start->setDisabled(start);
+	m_ui.stop->setEnabled(start);
+	m_ui.unload->setDisabled(start || !controllerPtr->isLoaded());
+}
+
+void MemoryAccessLogView::handleLoadUnload(bool load) {
+	std::shared_ptr<MemoryAccessLogController> controllerPtr = m_controller.lock();
+	if (!controllerPtr) {
+		return;
+	}
+	m_ui.filename->setText(controllerPtr->file());
+
+	if (load && controllerPtr->canExport()) {
+		m_ui.exportButton->setEnabled(true);
+	} else if (!load) {
+		m_ui.exportButton->setEnabled(false);
+	}
+
+	m_ui.load->setDisabled(load);
+	m_ui.unload->setEnabled(load);
+	m_ui.filename->setDisabled(load);
+	m_ui.browse->setDisabled(load);
 }

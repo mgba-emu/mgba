@@ -17,6 +17,9 @@
 CXX_GUARD_START
 
 #ifdef _WIN32
+#ifdef _CRT_NONSTDC_NO_WARNINGS
+#define _CRT_NONSTDC_NO_WARNINGS
+#endif
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -267,6 +270,7 @@ typedef intptr_t ssize_t;
 #define ATTRIBUTE_UNUSED
 #define ATTRIBUTE_FORMAT(X, Y, Z)
 #define ATTRIBUTE_NOINLINE
+#define ATTRIBUTE_NONSTRING
 // Adapted from https://stackoverflow.com/a/2390626
 #define _CONSTRUCTOR(FN, PRE) \
 	static void FN(void); \
@@ -281,6 +285,11 @@ typedef intptr_t ssize_t;
 #define ATTRIBUTE_UNUSED __attribute__((unused))
 #define ATTRIBUTE_FORMAT(X, Y, Z) __attribute__((format(X, Y, Z)))
 #define ATTRIBUTE_NOINLINE __attribute__((noinline))
+#if defined(__llvm__) || (__GNUC__ < 8)
+#define ATTRIBUTE_NONSTRING
+#else
+#define ATTRIBUTE_NONSTRING __attribute__((nonstring))
+#endif
 #define CONSTRUCTOR(FN) static __attribute__((constructor)) void FN(void)
 #endif
 

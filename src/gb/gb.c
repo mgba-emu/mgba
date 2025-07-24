@@ -28,6 +28,25 @@ static const uint8_t _knownHeader[4] = {0xCE, 0xED, 0x66, 0x66};
 static const uint8_t _knownHeaderSachen[4] = {0x7C, 0xE7, 0xC0, 0x00};
 static const uint8_t _registeredTrademark[] = {0x3C, 0x42, 0xB9, 0xA5, 0xB9, 0xA5, 0x42, 0x3C};
 
+static const uint8_t _cgbBiosHram[GB_SIZE_HRAM] = {
+	0xCE, 0xED, 0x66, 0x66, 0xCC, 0x0D, 0x00, 0x0B,
+	0x03, 0x73, 0x00, 0x83, 0x00, 0x0C, 0x00, 0x0D,
+	0x00, 0x08, 0x11, 0x1F, 0x88, 0x89, 0x00, 0x0E,
+	0xDC, 0xCC, 0x6E, 0xE6, 0xDD, 0xDD, 0xD9, 0x99,
+	0xBB, 0xBB, 0x67, 0x63, 0x6E, 0x0E, 0xEC, 0xCC,
+	0xDD, 0xDC, 0x99, 0x9F, 0xBB, 0xB9, 0x33, 0x3E,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x71, 0x02, 0x4D, 0x01, 0xC1, 0xFF,
+	0x0D, 0x00, 0xD3, 0x05, 0xF9, 0x00, 0x00,
+};
+
 #define DMG0_BIOS_CHECKSUM 0xC2F5CC97
 #define DMG_BIOS_CHECKSUM 0x59C8598E
 #define MGB_BIOS_CHECKSUM 0xE6920754
@@ -35,7 +54,9 @@ static const uint8_t _registeredTrademark[] = {0x3C, 0x42, 0xB9, 0xA5, 0xB9, 0xA
 #define SGB2_BIOS_CHECKSUM 0X53D0DD63
 #define CGB_BIOS_CHECKSUM 0x41884E46
 #define CGB0_BIOS_CHECKSUM 0xE8EF5318
+#define CGBE_BIOS_CHECKSUM 0xE95DC95D
 #define AGB_BIOS_CHECKSUM 0xFFD6B0F1
+#define AGB0_BIOS_CHECKSUM 0x570337EA
 
 mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
 
@@ -85,6 +106,7 @@ static void GBInit(void* cpu, struct mCPUComponent* component) {
 	gb->isPristine = false;
 	gb->pristineRomSize = 0;
 	gb->yankedRomSize = 0;
+	gb->sramSize = 0;
 
 	memset(&gb->gbx, 0, sizeof(gb->gbx));
 
@@ -230,7 +252,7 @@ static void GBSramDeinit(struct GB* gb) {
 	} else if (gb->memory.sram) {
 		mappedMemoryFree(gb->memory.sram, gb->sramSize);
 	}
-	gb->memory.sram = 0;
+	gb->memory.sram = NULL;
 }
 
 bool GBLoadSave(struct GB* gb, struct VFile* vf) {
@@ -339,6 +361,7 @@ void GBResizeSram(struct GB* gb, size_t size) {
 			mappedMemoryFree(gb->memory.sram, gb->sramSize);
 		} else {
 			memset(newSram, 0xFF, size);
+			gb->sramSize = size;
 		}
 		gb->memory.sram = newSram;
 	}
@@ -435,6 +458,8 @@ void GBUnloadROM(struct GB* gb) {
 	gb->memory.rom = NULL;
 	gb->memory.mbcType = GB_MBC_AUTODETECT;
 	gb->isPristine = false;
+	gb->pristineRomSize = 0;
+	gb->memory.romSize = 0;
 
 	if (!gb->sramDirty) {
 		gb->sramMaskWriteback = false;
@@ -444,6 +469,7 @@ void GBUnloadROM(struct GB* gb) {
 	if (gb->sramRealVf) {
 		gb->sramRealVf->close(gb->sramRealVf);
 	}
+	gb->sramSize = 0;
 	gb->sramRealVf = NULL;
 	gb->sramVf = NULL;
 	if (gb->memory.cam && gb->memory.cam->stopRequestImage) {
@@ -550,7 +576,9 @@ bool GBIsBIOS(struct VFile* vf) {
 	case SGB2_BIOS_CHECKSUM:
 	case CGB_BIOS_CHECKSUM:
 	case CGB0_BIOS_CHECKSUM:
+	case CGBE_BIOS_CHECKSUM:
 	case AGB_BIOS_CHECKSUM:
+	case AGB0_BIOS_CHECKSUM:
 		return true;
 	default:
 		return false;
@@ -567,7 +595,9 @@ bool GBIsCompatibleBIOS(struct VFile* vf, enum GBModel model) {
 		return model < GB_MODEL_CGB;
 	case CGB_BIOS_CHECKSUM:
 	case CGB0_BIOS_CHECKSUM:
+	case CGBE_BIOS_CHECKSUM:
 	case AGB_BIOS_CHECKSUM:
+	case AGB0_BIOS_CHECKSUM:
 		return model >= GB_MODEL_CGB;
 	default:
 		return false;
@@ -735,6 +765,7 @@ void GBSkipBIOS(struct GB* gb) {
 			gb->memory.io[GB_REG_SVBK] = 0xFF;
 			GBVideoDisableCGB(&gb->video);
 		}
+		memcpy(gb->memory.hram, _cgbBiosHram, sizeof(gb->memory.hram));
 		nextDiv = 0xC;
 		break;
 	}
@@ -862,9 +893,11 @@ void GBDetectModel(struct GB* gb) {
 			break;
 		case CGB_BIOS_CHECKSUM:
 		case CGB0_BIOS_CHECKSUM:
+		case CGBE_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;
 			break;
 		case AGB_BIOS_CHECKSUM:
+		case AGB0_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_AGB;
 			break;
 		default:

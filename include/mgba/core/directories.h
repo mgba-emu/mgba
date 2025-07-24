@@ -10,7 +10,7 @@
 
 CXX_GUARD_START
 
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 struct VDir;
 
 struct mDirectorySet {

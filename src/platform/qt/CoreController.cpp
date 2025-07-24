@@ -8,6 +8,7 @@
 #include "ConfigController.h"
 #include "InputController.h"
 #include "LogController.h"
+#include "MemoryAccessLogController.h"
 #include "MultiplayerController.h"
 #include "Override.h"
 
@@ -204,7 +205,8 @@ CoreController::CoreController(mCore* core, QObject* parent)
 		}
 		message = QString::vasprintf(format, args);
 		QMetaObject::invokeMethod(controller, "logPosted", Q_ARG(int, level), Q_ARG(int, category), Q_ARG(const QString&, message));
-		if (level == mLOG_FATAL) {
+		if (level == mLOG_FATAL && !controller->m_crashSeen) {
+			controller->m_crashSeen = true;
 			QMetaObject::invokeMethod(controller, "crashed", Q_ARG(const QString&, message));
 		}
 	};
@@ -304,7 +306,7 @@ void CoreController::loadConfig(ConfigController* config) {
 	m_fastForwardMute = config->getOption("fastForwardMute", -1).toInt();
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "volume");
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
-	m_preload = config->getOption("preload").toInt();
+	m_preload = config->getOption("preload", true).toInt();
 
 	QSize sizeBefore = screenDimensions();
 	m_activeBuffer.resize(256 * 224 * sizeof(mColor));
@@ -459,6 +461,15 @@ void CoreController::setLogger(LogController* logger) {
 	connect(this, &CoreController::logPosted, m_log, &LogController::postLog);
 }
 
+#ifdef ENABLE_DEBUGGERS
+std::weak_ptr<MemoryAccessLogController> CoreController::memoryAccessLogController() {
+	if (!m_malController) {
+		m_malController = std::make_shared<MemoryAccessLogController>(this);
+	}
+	return m_malController;
+}
+#endif
+
 void CoreController::start() {
 	QSize size(screenDimensions());
 	m_activeBuffer.resize(size.width() * size.height() * sizeof(mColor));
@@ -479,6 +490,10 @@ void CoreController::start() {
 void CoreController::stop() {
 	setSync(false);
 #ifdef ENABLE_DEBUGGERS
+	if (m_malController) {
+		m_malController->stop();
+	}
+
 	detachDebugger();
 #endif
 	setPaused(false);
@@ -486,6 +501,7 @@ void CoreController::stop() {
 }
 
 void CoreController::reset() {
+	m_crashSeen = false;
 	mCoreThreadReset(&m_threadContext);
 }
 
@@ -637,6 +653,7 @@ void CoreController::loadState(int slot) {
 		m_stateSlot = slot;
 		m_backupSaveState.clear();
 	}
+	m_crashSeen = false;
 	mCoreThreadClearCrashed(&m_threadContext);
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
@@ -657,6 +674,7 @@ void CoreController::loadState(const QString& path, int flags) {
 	if (flags != -1) {
 		m_loadStateFlags = flags;
 	}
+	m_crashSeen = false;
 	mCoreThreadClearCrashed(&m_threadContext);
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
@@ -686,6 +704,7 @@ void CoreController::loadState(QIODevice* iodev, int flags) {
 	if (flags != -1) {
 		m_loadStateFlags = flags;
 	}
+	m_crashSeen = false;
 	mCoreThreadClearCrashed(&m_threadContext);
 	mCoreThreadRunFunction(&m_threadContext, [](mCoreThread* context) {
 		CoreController* controller = static_cast<CoreController*>(context->userData);
@@ -805,7 +824,7 @@ void CoreController::loadSave(const QString& path, bool temporary) {
 	m_resetActions.append([this, path, temporary]() {
 		VFile* vf = VFileDevice::open(path, temporary ? O_RDONLY : O_RDWR);
 		if (!vf) {
-			LOG(QT, ERROR) << tr("Failed to open save file: %1").arg(path);
+			qCritical() << tr("Failed to open save file: %1").arg(path);
 			return;
 		}
 
@@ -863,7 +882,7 @@ void CoreController::loadPatch(const QString& patchPath) {
 void CoreController::replaceGame(const QString& path) {
 	QFileInfo info(path);
 	if (!info.isReadable()) {
-		LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
+		qCritical() << tr("Failed to open game file: %1").arg(path);
 		return;
 	}
 	QString fname = info.canonicalFilePath();
@@ -893,7 +912,7 @@ void CoreController::yankPak() {
 		break;
 #endif
 	case mPLATFORM_NONE:
-		LOG(QT, ERROR) << tr("Can't yank pack in unexpected platform!");
+		qCritical() << tr("Can't yank pack in unexpected platform!");
 		break;
 	}
 }
@@ -1008,7 +1027,7 @@ void CoreController::importSharkport(const QString& path) {
 	}
 	VFile* vf = VFileDevice::open(path, O_RDONLY);
 	if (!vf) {
-		LOG(QT, ERROR) << tr("Failed to open snapshot file for reading: %1").arg(path);
+		qCritical() << tr("Failed to open snapshot file for reading: %1").arg(path);
 		return;
 	}
 	Interrupter interrupter(this);
@@ -1025,7 +1044,7 @@ void CoreController::exportSharkport(const QString& path) {
 	}
 	VFile* vf = VFileDevice::open(path, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
-		LOG(QT, ERROR) << tr("Failed to open snapshot file for writing: %1").arg(path);
+		qCritical() << tr("Failed to open snapshot file for writing: %1").arg(path);
 		return;
 	}
 	Interrupter interrupter(this);
@@ -1253,6 +1272,9 @@ void CoreController::finishFrame() {
 }
 
 void CoreController::updatePlayerSave() {
+	if (m_saveBlocked) {
+		return;
+	}
 	int savePlayerId = m_multiplayer->saveId(this);
 
 	QString saveSuffix;
@@ -1267,7 +1289,12 @@ void CoreController::updatePlayerSave() {
 		if (!m_threadContext.core->loadSave(m_threadContext.core, save)) {
 			save->close(save);
 		} else {
-			m_savePath = QString::fromUtf8(m_threadContext.core->dirs.baseName) + saveSuffix;
+			if (m_threadContext.core->dirs.save == m_threadContext.core->dirs.base) {
+				m_savePath = m_baseDirectory;
+			} else {
+				m_savePath = QString::fromUtf8(m_threadContext.core->opts.savegamePath);
+			}
+			m_savePath += PATH_SEP + QString::fromUtf8(m_threadContext.core->dirs.baseName) + saveSuffix;
 		}
 	}
 }

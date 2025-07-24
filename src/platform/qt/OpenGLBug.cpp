@@ -39,6 +39,10 @@ bool glContextHasBug(OpenGLBug bug) {
 		if (renderer == "Intel Pineview Platform") {
 			return true;
 		}
+
+		if (version == "2.1.0 - Build 8.15.10.2900") {
+			return true;
+		}
 #endif
 		return false;
 

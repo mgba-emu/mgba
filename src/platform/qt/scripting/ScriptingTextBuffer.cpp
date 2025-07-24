@@ -16,6 +16,7 @@ using namespace QGBA;
 
 ScriptingTextBuffer::ScriptingTextBuffer(QObject* parent)
 	: QObject(parent)
+	, m_document(this)
 {
 	m_shim.init = &ScriptingTextBuffer::init;
 	m_shim.deinit = &ScriptingTextBuffer::deinit;

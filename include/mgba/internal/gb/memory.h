@@ -233,6 +233,11 @@ struct GBHuC3State {
 	uint8_t registers[256];
 };
 
+struct GBM161State {
+	bool locked;
+	uint8_t bank;
+};
+
 struct GBPKJDState {
 	uint8_t reg[2];
 };
@@ -261,6 +266,13 @@ struct GBSachenState {
 	uint8_t baseBank;
 };
 
+struct GBSintaxState {
+	uint8_t mode;
+	uint8_t xorValues[4];
+	uint8_t bankNo;
+	uint8_t romBankXor;
+};
+
 union GBMBCState {
 	struct GBMBC1State mbc1;
 	struct GBMBC6State mbc6;
@@ -269,11 +281,13 @@ union GBMBCState {
 	struct GBPocketCamState pocketCam;
 	struct GBTAMA5State tama5;
 	struct GBHuC3State huc3;
+	struct GBM161State m161;
 	struct GBNTOldState ntOld;
 	struct GBNTNewState ntNew;
 	struct GBPKJDState pkjd;
 	struct GBBBDState bbd;
 	struct GBSachenState sachen;
+	struct GBSintaxState sintax;
 };
 
 struct mRotationSource;

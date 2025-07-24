@@ -21,6 +21,7 @@ static void _outputPins(struct GBACartridgeHardware* hw, unsigned pins);
 
 static void _rtcReadPins(struct GBACartridgeHardware* hw);
 static unsigned _rtcOutput(struct GBACartridgeHardware* hw);
+static void _rtcBeginCommand(struct GBACartridgeHardware* hw);
 static void _rtcProcessByte(struct GBACartridgeHardware* hw);
 static void _rtcUpdateClock(struct GBACartridgeHardware* hw);
 static unsigned _rtcBCD(unsigned value);
@@ -49,6 +50,7 @@ void GBAHardwareInit(struct GBACartridgeHardware* hw, uint16_t* base) {
 
 void GBAHardwareReset(struct GBACartridgeHardware* hw) {
 	hw->readWrite = GPIO_WRITE_ONLY;
+	hw->writeLatch = 0;
 	hw->pinState = 0;
 	hw->direction = 0;
 	hw->lightCounter = 0;
@@ -64,6 +66,7 @@ void GBAHardwareReset(struct GBACartridgeHardware* hw) {
 void GBAHardwareClear(struct GBACartridgeHardware* hw) {
 	hw->devices = HW_NONE | (hw->devices & HW_GB_PLAYER_DETECTION);
 	hw->readWrite = GPIO_WRITE_ONLY;
+	hw->writeLatch = 0;
 	hw->pinState = 0;
 	hw->direction = 0;
 }
@@ -74,19 +77,25 @@ void GBAHardwareGPIOWrite(struct GBACartridgeHardware* hw, uint32_t address, uin
 	}
 	switch (address) {
 	case GPIO_REG_DATA:
+		hw->writeLatch = value & 0xF;
 		if (!hw->p->vbaBugCompat) {
 			hw->pinState &= ~hw->direction;
-			hw->pinState |= value & hw->direction;
+			hw->pinState |= hw->writeLatch & hw->direction;
 		} else {
-			hw->pinState = value;
+			hw->pinState = hw->writeLatch;
 		}
 		_readPins(hw);
 		break;
 	case GPIO_REG_DIRECTION:
-		hw->direction = value;
+		hw->direction = value & 0xF;
+		if (!hw->p->vbaBugCompat) {
+			hw->pinState &= ~hw->direction;
+			hw->pinState |= hw->writeLatch & hw->direction;
+			_readPins(hw);
+		}
 		break;
 	case GPIO_REG_CONTROL:
-		hw->readWrite = value;
+		hw->readWrite = value & 0x1;
 		break;
 	default:
 		mLOG(GBA_HW, WARN, "Invalid GPIO address");
@@ -106,11 +115,11 @@ void GBAHardwareInitRTC(struct GBACartridgeHardware* hw) {
 	hw->devices |= HW_RTC;
 	hw->rtc.bytesRemaining = 0;
 
-	hw->rtc.transferStep = 0;
-
 	hw->rtc.bitsRead = 0;
 	hw->rtc.bits = 0;
-	hw->rtc.commandActive = 0;
+	hw->rtc.commandActive = false;
+	hw->rtc.sckEdge = true;
+	hw->rtc.sioOutput = true;
 	hw->rtc.command = 0;
 	hw->rtc.control = 0x40;
 	memset(hw->rtc.time, 0, sizeof(hw->rtc.time));
@@ -138,11 +147,9 @@ void _readPins(struct GBACartridgeHardware* hw) {
 }
 
 void _outputPins(struct GBACartridgeHardware* hw, unsigned pins) {
+	hw->pinState &= hw->direction;
+	hw->pinState |= (pins & ~hw->direction & 0xF);
 	if (hw->readWrite) {
-		uint16_t old;
-		LOAD_16(old, 0, hw->gpioBase);
-		old &= hw->direction;
-		hw->pinState = old | (pins & ~hw->direction & 0xF);
 		STORE_16(hw->pinState, 0, hw->gpioBase);
 	}
 }
@@ -150,121 +157,127 @@ void _outputPins(struct GBACartridgeHardware* hw, unsigned pins) {
 // == RTC
 
 void _rtcReadPins(struct GBACartridgeHardware* hw) {
-	// Transfer sequence:
-	// P: 0 | 1 |  2 | 3
-	// == Initiate
-	// > HI | - | LO | -
-	// > HI | - | HI | -
-	// == Transfer bit (x8)
-	// > LO | x | HI | -
-	// > HI | - | HI | -
-	// < ?? | x | ?? | -
-	// == Terminate
-	// >  - | - | LO | -
-	switch (hw->rtc.transferStep) {
-	case 0:
-		if ((hw->pinState & 5) == 1) {
-			hw->rtc.transferStep = 1;
-		}
-		break;
-	case 1:
-		if ((hw->pinState & 5) == 5) {
-			hw->rtc.transferStep = 2;
-		} else if ((hw->pinState & 5) != 1) {
-			hw->rtc.transferStep = 0;
-		}
-		break;
-	case 2:
+	// P: 0 - SCK | 1 - SIO | 2 - CS | 3 - Unused
+	// CS rising edge starts RTC transfer
+	// Conversely, CS falling edge aborts RTC transfer
+	// SCK rising edge shifts a bit from SIO into the transfer
+	// However, there appears to be a race condition if SIO changes at SCK rising edge
+	// For writing the command, the old SIO data is used in this race
+	// For writing command data, 0 is used in this race
+	// Note while CS is low, SCK is internally considered high by the RTC
+	// SCK falling edge shifts a bit from the transfer into SIO
+	// (Assuming a read command, outside of read commands SIO is held high)
+
+	// RTC keeps SCK/CS/Unused to low
+	_outputPins(hw, hw->pinState & 2);
+
+	if (!(hw->pinState & 4)) {
+		hw->rtc.bitsRead = 0;
+		hw->rtc.bytesRemaining = 0;
+		hw->rtc.commandActive = false;
+		hw->rtc.command = 0;
+		hw->rtc.sckEdge = true;
+		hw->rtc.sioOutput = true;
+		_outputPins(hw, 2);
+		return;
+	}
+
+	if (!hw->rtc.commandActive) {
+		_outputPins(hw, 2);
 		if (!(hw->pinState & 1)) {
 			hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
 			hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
-		} else {
-			if (hw->pinState & 4) {
-				if (!RTCCommandDataIsReading(hw->rtc.command)) {
-					++hw->rtc.bitsRead;
-					if (hw->rtc.bitsRead == 8) {
-						_rtcProcessByte(hw);
-					}
-				} else {
-					_outputPins(hw, 5 | (_rtcOutput(hw) << 1));
-					++hw->rtc.bitsRead;
-					if (hw->rtc.bitsRead == 8) {
-						--hw->rtc.bytesRemaining;
-						if (hw->rtc.bytesRemaining <= 0) {
-							hw->rtc.commandActive = 0;
-							hw->rtc.command = 0;
-						}
-						hw->rtc.bitsRead = 0;
-					}
-				}
-			} else {
-				hw->rtc.bitsRead = 0;
-				hw->rtc.bytesRemaining = 0;
-				hw->rtc.commandActive = 0;
-				hw->rtc.command = 0;
-				hw->rtc.transferStep = hw->pinState & 1;
-				_outputPins(hw, 1);
+		}
+		if (!hw->rtc.sckEdge && (hw->pinState & 1)) {
+			++hw->rtc.bitsRead;
+			if (hw->rtc.bitsRead == 8) {
+				_rtcBeginCommand(hw);
 			}
 		}
-		break;
-	}
-}
-
-void _rtcProcessByte(struct GBACartridgeHardware* hw) {
-	--hw->rtc.bytesRemaining;
-	if (!hw->rtc.commandActive) {
-		RTCCommandData command;
-		command = hw->rtc.bits;
-		if (RTCCommandDataGetMagic(command) == 0x06) {
-			hw->rtc.command = command;
-
-			hw->rtc.bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(command)];
-			hw->rtc.commandActive = hw->rtc.bytesRemaining > 0;
-			mLOG(GBA_HW, DEBUG, "Got RTC command %x", RTCCommandDataGetCommand(command));
-			switch (RTCCommandDataGetCommand(command)) {
-			case RTC_RESET:
-				hw->rtc.control = 0;
-				break;
-			case RTC_DATETIME:
-			case RTC_TIME:
-				_rtcUpdateClock(hw);
-				break;
-			case RTC_FORCE_IRQ:
-			case RTC_CONTROL:
-				break;
+	} else if (!RTCCommandDataIsReading(hw->rtc.command)) {
+		_outputPins(hw, 2);
+		if (!(hw->pinState & 1)) {
+			hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
+			hw->rtc.bits |= ((hw->pinState & 2) >> 1) << hw->rtc.bitsRead;
+		}
+		if (!hw->rtc.sckEdge && (hw->pinState & 1)) {
+			if ((((hw->rtc.bits >> hw->rtc.bitsRead) & 1) ^ ((hw->pinState & 2) >> 1))) {
+				hw->rtc.bits &= ~(1 << hw->rtc.bitsRead);
 			}
-		} else {
-			mLOG(GBA_HW, WARN, "Invalid RTC command byte: %02X", hw->rtc.bits);
+			++hw->rtc.bitsRead;
+			if (hw->rtc.bitsRead == 8) {
+				_rtcProcessByte(hw);
+			}
 		}
 	} else {
-		switch (RTCCommandDataGetCommand(hw->rtc.command)) {
-		case RTC_CONTROL:
-			hw->rtc.control = hw->rtc.bits;
-			break;
-		case RTC_FORCE_IRQ:
-			mLOG(GBA_HW, STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(hw->rtc.command));
-			break;
+		if (hw->rtc.sckEdge && !(hw->pinState & 1)) {
+			hw->rtc.sioOutput = _rtcOutput(hw);
+			++hw->rtc.bitsRead;
+			if (hw->rtc.bitsRead == 8) {
+				--hw->rtc.bytesRemaining;
+				if (hw->rtc.bytesRemaining <= 0) {
+					hw->rtc.bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(hw->rtc.command)];
+				}
+				hw->rtc.bitsRead = 0;
+			}
+		}
+		_outputPins(hw, hw->rtc.sioOutput << 1);
+	}
+
+	hw->rtc.sckEdge = !!(hw->pinState & 1);
+}
+
+void _rtcBeginCommand(struct GBACartridgeHardware* hw) {
+	RTCCommandData command = hw->rtc.bits;
+	if (RTCCommandDataGetMagic(command) == 0x06) {
+		hw->rtc.command = command;
+		hw->rtc.bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(command)];
+		hw->rtc.commandActive = true;
+		mLOG(GBA_HW, DEBUG, "Got RTC command %x", RTCCommandDataGetCommand(command));
+		switch (RTCCommandDataGetCommand(command)) {
 		case RTC_RESET:
+			hw->rtc.control = 0;
+			break;
 		case RTC_DATETIME:
 		case RTC_TIME:
+			_rtcUpdateClock(hw);
+			break;
+		case RTC_FORCE_IRQ:
+		case RTC_CONTROL:
 			break;
 		}
+	} else {
+		mLOG(GBA_HW, WARN, "Invalid RTC command byte: %02X", hw->rtc.bits);
 	}
 
 	hw->rtc.bits = 0;
 	hw->rtc.bitsRead = 0;
-	if (!hw->rtc.bytesRemaining) {
-		hw->rtc.commandActive = 0;
-		hw->rtc.command = 0;
+}
+
+void _rtcProcessByte(struct GBACartridgeHardware* hw) {
+	switch (RTCCommandDataGetCommand(hw->rtc.command)) {
+	case RTC_CONTROL:
+		hw->rtc.control = hw->rtc.bits;
+		break;
+	case RTC_FORCE_IRQ:
+		mLOG(GBA_HW, STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(hw->rtc.command));
+		break;
+	case RTC_RESET:
+	case RTC_DATETIME:
+	case RTC_TIME:
+		break;
+	}
+
+	hw->rtc.bits = 0;
+	hw->rtc.bitsRead = 0;
+	--hw->rtc.bytesRemaining;
+	if (hw->rtc.bytesRemaining <= 0) {
+		hw->rtc.bytesRemaining = RTC_BYTES[RTCCommandDataGetCommand(hw->rtc.command)];
 	}
 }
 
 unsigned _rtcOutput(struct GBACartridgeHardware* hw) {
-	uint8_t outputByte = 0;
-	if (!hw->rtc.commandActive) {
-		mLOG(GBA_HW, GAME_ERROR, "Attempting to use RTC without an active command");
-		return 0;
-	}
+	uint8_t outputByte = 0xFF;
 	switch (RTCCommandDataGetCommand(hw->rtc.command)) {
 	case RTC_CONTROL:
 		outputByte = hw->rtc.control;
@@ -391,6 +404,7 @@ void _lightReadPins(struct GBACartridgeHardware* hw) {
 		struct GBALuminanceSource* lux = hw->p->luminanceSource;
 		mLOG(GBA_HW, DEBUG, "[SOLAR] Got reset");
 		hw->lightCounter = 0;
+		hw->lightEdge = true; // unverified (perhaps reset only happens on bit 1 rising edge?)
 		if (lux) {
 			if (lux->sample) {
 				lux->sample(lux);
@@ -406,7 +420,7 @@ void _lightReadPins(struct GBACartridgeHardware* hw) {
 	hw->lightEdge = !(hw->pinState & 1);
 
 	bool sendBit = hw->lightCounter >= hw->lightSample;
-	_outputPins(hw, sendBit << 3);
+	_outputPins(hw, (sendBit << 3) | (hw->pinState & 0x7));
 	mLOG(GBA_HW, DEBUG, "[SOLAR] Output %u with pins %u", hw->lightCounter, hw->pinState);
 }
 
@@ -475,15 +489,20 @@ uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* hw, uint32_t address) {
 void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASerializedState* state) {
 	GBASerializedHWFlags1 flags1 = 0;
 	flags1 = GBASerializedHWFlags1SetReadWrite(flags1, hw->readWrite);
-	STORE_16(hw->pinState, 0, &state->hw.pinState);
-	STORE_16(hw->direction, 0, &state->hw.pinDirection);
+	state->hw.writeLatch = hw->writeLatch;
+	state->hw.pinState = hw->pinState;
+	state->hw.pinDirection = hw->direction;
 	state->hw.devices = hw->devices;
 
+	GBASerializedHWFlags3 flags3 = 0;
+	flags3 = GBASerializedHWFlags3SetRtcSioOutput(flags3, hw->rtc.sioOutput);
+	state->hw.flags3 = flags3;
+
 	STORE_32(hw->rtc.bytesRemaining, 0, &state->hw.rtcBytesRemaining);
-	STORE_32(hw->rtc.transferStep, 0, &state->hw.rtcTransferStep);
 	STORE_32(hw->rtc.bitsRead, 0, &state->hw.rtcBitsRead);
 	STORE_32(hw->rtc.bits, 0, &state->hw.rtcBits);
 	STORE_32(hw->rtc.commandActive, 0, &state->hw.rtcCommandActive);
+	flags1 = GBASerializedHWFlags1SetRtcSckEdge(flags1, hw->rtc.sckEdge);
 	STORE_32(hw->rtc.command, 0, &state->hw.rtcCommand);
 	STORE_32(hw->rtc.control, 0, &state->hw.rtcControl);
 	memcpy(state->hw.time, hw->rtc.time, sizeof(state->hw.time));
@@ -512,8 +531,9 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	GBASerializedHWFlags1 flags1;
 	LOAD_16(flags1, 0, &state->hw.flags1);
 	hw->readWrite = GBASerializedHWFlags1GetReadWrite(flags1);
-	LOAD_16(hw->pinState, 0, &state->hw.pinState);
-	LOAD_16(hw->direction, 0, &state->hw.pinDirection);
+	hw->writeLatch = state->hw.writeLatch & 0xF;
+	hw->pinState = state->hw.pinState & 0xF;
+	hw->direction = state->hw.pinDirection & 0xF;
 	hw->devices = state->hw.devices;
 
 	if ((hw->devices & HW_GPIO) && hw->gpioBase) {
@@ -529,11 +549,13 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 		}
 	}
 
+	hw->rtc.sioOutput = GBASerializedHWFlags3GetRtcSioOutput(state->hw.flags3);
+
 	LOAD_32(hw->rtc.bytesRemaining, 0, &state->hw.rtcBytesRemaining);
-	LOAD_32(hw->rtc.transferStep, 0, &state->hw.rtcTransferStep);
 	LOAD_32(hw->rtc.bitsRead, 0, &state->hw.rtcBitsRead);
 	LOAD_32(hw->rtc.bits, 0, &state->hw.rtcBits);
 	LOAD_32(hw->rtc.commandActive, 0, &state->hw.rtcCommandActive);
+	hw->rtc.sckEdge = GBASerializedHWFlags1GetRtcSckEdge(flags1);
 	LOAD_32(hw->rtc.command, 0, &state->hw.rtcCommand);
 	LOAD_32(hw->rtc.control, 0, &state->hw.rtcControl);
 	memcpy(hw->rtc.time, state->hw.time, sizeof(hw->rtc.time));

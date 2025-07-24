@@ -33,6 +33,7 @@ static const QList<GBMemoryBankControllerType> s_mbcList{
 	GB_TAMA5,
 	GB_HuC1,
 	GB_HuC3,
+	GB_M161,
 	GB_UNL_WISDOM_TREE,
 	GB_UNL_PKJD,
 	GB_UNL_NT_OLD_1,
@@ -44,6 +45,7 @@ static const QList<GBMemoryBankControllerType> s_mbcList{
 	GB_UNL_LI_CHENG,
 	GB_UNL_SACHEN_MMC1,
 	GB_UNL_SACHEN_MMC2,
+	GB_UNL_SINTAX,
 };
 
 static QMap<GBModel, QString> s_gbModelNames;
@@ -78,30 +80,32 @@ QString GameBoy::mbcName(GBMemoryBankControllerType mbc) {
 	if (s_mbcNames.isEmpty()) {
 		s_mbcNames[GB_MBC_AUTODETECT] = tr("Autodetect");
 		s_mbcNames[GB_MBC_NONE] = tr("ROM Only");
-		s_mbcNames[GB_MBC1] = tr("MBC1");
-		s_mbcNames[GB_MBC2] = tr("MBC2");
-		s_mbcNames[GB_MBC3] = tr("MBC3");
-		s_mbcNames[GB_MBC3_RTC] = tr("MBC3 + RTC");
-		s_mbcNames[GB_MBC5] = tr("MBC5");
-		s_mbcNames[GB_MBC5_RUMBLE] = tr("MBC5 + Rumble");
-		s_mbcNames[GB_MBC6] = tr("MBC6");
-		s_mbcNames[GB_MBC7] = tr("MBC7 (Tilt)");
-		s_mbcNames[GB_MMM01] = tr("MMM01");
-		s_mbcNames[GB_HuC1] = tr("HuC-1");
-		s_mbcNames[GB_HuC3] = tr("HuC-3");
-		s_mbcNames[GB_POCKETCAM] = tr("Pocket Cam");
-		s_mbcNames[GB_TAMA5] = tr("TAMA5");
-		s_mbcNames[GB_UNL_WISDOM_TREE] = tr("Wisdom Tree");
-		s_mbcNames[GB_UNL_NT_OLD_1] = tr("NT (old 1)");
-		s_mbcNames[GB_UNL_NT_OLD_2] = tr("NT (old 2)");
-		s_mbcNames[GB_UNL_NT_NEW] = tr("NT (new)");
-		s_mbcNames[GB_UNL_PKJD] = tr("Pokémon Jade/Diamond");
-		s_mbcNames[GB_UNL_BBD] = tr("BBD");
-		s_mbcNames[GB_UNL_HITEK] = tr("Hitek");
-		s_mbcNames[GB_UNL_GGB81] = tr("GGB-81");
-		s_mbcNames[GB_UNL_LI_CHENG] = tr("Li Cheng");
-		s_mbcNames[GB_UNL_SACHEN_MMC1] = tr("Sachen (MMC1)");
-		s_mbcNames[GB_UNL_SACHEN_MMC2] = tr("Sachen (MMC2)");
+		s_mbcNames[GB_MBC1] = "MBC1";
+		s_mbcNames[GB_MBC2] = "MBC2";
+		s_mbcNames[GB_MBC3] = "MBC3";
+		s_mbcNames[GB_MBC3_RTC] = tr("%1 + RTC").arg("MBC3");
+		s_mbcNames[GB_MBC5] = "MBC5";
+		s_mbcNames[GB_MBC5_RUMBLE] = tr("%1 + Rumble").arg("MBC5");
+		s_mbcNames[GB_MBC6] = "MBC6";
+		s_mbcNames[GB_MBC7] = tr("%1 (Tilt)").arg("MBC7");
+		s_mbcNames[GB_MMM01] = "MMM01";
+		s_mbcNames[GB_HuC1] = "HuC-1";
+		s_mbcNames[GB_HuC3] = "HuC-3";
+		s_mbcNames[GB_POCKETCAM] = "Pocket Cam";
+		s_mbcNames[GB_TAMA5] = "TAMA5";
+		s_mbcNames[GB_M161] = "M161";
+		s_mbcNames[GB_UNL_WISDOM_TREE] = "Wisdom Tree";
+		s_mbcNames[GB_UNL_NT_OLD_1] = tr("%1 (old 1)").arg("NT");
+		s_mbcNames[GB_UNL_NT_OLD_2] = tr("%1 (old 2)").arg("NT");
+		s_mbcNames[GB_UNL_NT_NEW] = tr("%1 (new)").arg("NT");
+		s_mbcNames[GB_UNL_PKJD] = "Pokémon Jade/Diamond";
+		s_mbcNames[GB_UNL_BBD] = "BBD";
+		s_mbcNames[GB_UNL_HITEK] = "Hitek";
+		s_mbcNames[GB_UNL_GGB81] = "GGB-81";
+		s_mbcNames[GB_UNL_LI_CHENG] = "Li Cheng";
+		s_mbcNames[GB_UNL_SACHEN_MMC1] = "Sachen (MMC1)";
+		s_mbcNames[GB_UNL_SACHEN_MMC2] = "Sachen (MMC2)";
+		s_mbcNames[GB_UNL_SINTAX] = "Sintax";
 	}
 
 	return s_mbcNames[mbc];

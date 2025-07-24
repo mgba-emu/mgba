@@ -7,6 +7,7 @@
 #include "MemoryView.h"
 
 #include "CoreController.h"
+#include "MemoryAccessLogView.h"
 #include "MemoryDump.h"
 
 #include <mgba/core/core.h>
@@ -107,6 +108,9 @@ QValidator::State IntValidator::validate(QString& input, int&) const {
 MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QWidget(parent)
 	, m_controller(controller)
+#ifdef ENABLE_DEBUGGERS
+	, m_malModel(controller->memoryAccessLogController(), controller->platform())
+#endif
 {
 	m_ui.setupUi(this);
 
@@ -133,20 +137,10 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 		}
 	}
 
-	connect(m_ui.width8, &QAbstractButton::clicked, [this]() {
-		m_ui.hexfield->setAlignment(1);
-		m_sintValidator.setWidth(1);
-		m_uintValidator.setWidth(1);
-	});
-	connect(m_ui.width16, &QAbstractButton::clicked, [this]() {
-		m_ui.hexfield->setAlignment(2);
-		m_sintValidator.setWidth(2);
-		m_uintValidator.setWidth(2);
-	});
-	connect(m_ui.width32, &QAbstractButton::clicked, [this]() {
-		m_ui.hexfield->setAlignment(4);
-		m_sintValidator.setWidth(4);
-		m_uintValidator.setWidth(4);
+	connect(m_ui.width, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [this](int index) {
+		m_ui.hexfield->setAlignment(1 << index);
+		m_sintValidator.setWidth(1 << index);
+		m_uintValidator.setWidth(1 << index);
 	});
 	connect(m_ui.setAddress, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
 	        this, static_cast<void (MemoryView::*)(uint32_t)>(&MemoryView::jumpToAddress));
@@ -199,6 +193,22 @@ MemoryView::MemoryView(std::shared_ptr<CoreController> controller, QWidget* pare
 		}
 		update();
 	});
+
+#ifdef ENABLE_DEBUGGERS
+	connect(m_ui.hexfield, &MemoryModel::selectionChanged, &m_malModel, &MemoryAccessLogModel::updateSelection);
+	connect(m_ui.segments, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+	        &m_malModel, &MemoryAccessLogModel::setSegment);
+	connect(m_ui.accessLoggerButton, &QAbstractButton::clicked, this, [this]() {
+		std::weak_ptr<MemoryAccessLogController> controller = m_controller->memoryAccessLogController();
+		MemoryAccessLogView* view = new MemoryAccessLogView(controller);
+		connect(m_controller.get(), &CoreController::stopping, view, &QWidget::close);
+		view->setAttribute(Qt::WA_DeleteOnClose);
+		view->show();
+	});
+	m_ui.accessLog->setModel(&m_malModel);
+#else
+	m_ui.accessLog->hide();
+#endif
 }
 
 void MemoryView::setIndex(int index) {
@@ -216,6 +226,10 @@ void MemoryView::setIndex(int index) {
 	m_ui.segmentColon->setVisible(info.maxSegment > 0);
 	m_ui.segments->setMaximum(info.maxSegment);
 	m_ui.hexfield->setRegion(info.start, info.end - info.start, info.shortName);
+
+#ifdef ENABLE_DEBUGGERS
+	m_malModel.setRegion(info.start, info.segmentStart - info.start, info.maxSegment > 0);
+#endif
 }
 
 void MemoryView::setSegment(int segment) {
@@ -234,6 +248,9 @@ void MemoryView::setSegment(int segment) {
 void MemoryView::update() {
 	m_ui.hexfield->viewport()->update();
 	updateStatus();
+#ifdef ENABLE_DEBUGGERS
+	m_malModel.update();
+#endif
 }
 
 void MemoryView::jumpToAddress(uint32_t address) {
@@ -258,7 +275,7 @@ void MemoryView::updateStatus() {
 	mCore* core = m_controller->thread()->core;
 	QByteArray selection(m_ui.hexfield->serialize());
 	QString text(m_ui.hexfield->decodeText(selection));
-	m_ui.stringVal->setText(text);
+	m_ui.stringVal->setPlainText(text);
 
 	if (m_selection.first & (align - 1) || m_selection.second - m_selection.first != align) {
 		m_ui.sintVal->clear();

@@ -310,7 +310,7 @@ bool DisplayGL::highestCompatible(QSurfaceFormat& format) {
 
 #ifdef BUILD_GL
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
-	LOG(QT, WARN) << tr("Failed to create an OpenGL 3 context, trying old-style...");
+	qWarning() << tr("Failed to create an OpenGL 3 context, trying old-style...");
 #endif
 	if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
 		format.setVersion(1, 4);
@@ -699,7 +699,13 @@ void PainterGL::resizeContext() {
 	dequeueAll(false);
 
 	mRectangle dims = {0, 0, size.width(), size.height()};
+	if (!m_started) {
+		makeCurrent();
+	}
 	m_backend->setLayerDimensions(m_backend, VIDEO_LAYER_IMAGE, &dims);
+	if (!m_started) {
+		m_gl->doneCurrent();
+	}
 	recenterLayers();
 	m_dims = size;
 }
@@ -807,11 +813,11 @@ void PainterGL::start() {
 		mGLES2ShaderAttach(reinterpret_cast<mGLES2Context*>(m_backend), static_cast<mGLES2Shader*>(m_shader.passes), m_shader.nPasses);
 	}
 #endif
-	resizeContext();
 
 	m_buffer = nullptr;
 	m_active = true;
 	m_started = true;
+	resizeContext();
 	swapInterval(1);
 	emit started();
 }

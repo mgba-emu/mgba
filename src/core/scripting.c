@@ -353,6 +353,9 @@ static struct mScriptValue* _mScriptCoreChecksum(const struct mCore* core, int t
 	case mCHECKSUM_MD5:
 		size = 16;
 		break;
+	case mCHECKSUM_SHA1:
+		size = 20;
+		break;
 	}
 	if (!size) {
 		return &mScriptValueNull;
@@ -986,7 +989,7 @@ static bool _mScriptCoreAdapterClearBreakpoint(struct mScriptCoreAdapter* adapte
 	return true;
 }
 
-uint64_t _mScriptCoreAdapterCurrentCycle(struct mScriptCoreAdapter* adapter) {
+static uint64_t _mScriptCoreAdapterCurrentCycle(struct mScriptCoreAdapter* adapter) {
 	return mTimingGlobalTime(adapter->core->timing);
 }
 #endif
@@ -995,6 +998,19 @@ static void _mScriptCoreAdapterDeinit(struct mScriptCoreAdapter* adapter) {
 	_clearMemoryMap(adapter->context, adapter, false);
 	adapter->memory.type->free(&adapter->memory);
 #ifdef ENABLE_DEBUGGERS
+	if (adapter->debugger.d.p) {
+		struct TableIterator iter;
+		if (HashTableIteratorStart(&adapter->debugger.breakpoints, &iter)) {
+			struct mDebuggerModule* module = &adapter->debugger.d;
+			do {
+				struct mScriptBreakpoint* point = HashTableIteratorGetValue(&adapter->debugger.breakpoints, &iter);
+				module->p->platform->clearBreakpoint(module->p->platform, point->id);
+			} while (HashTableIteratorNext(&adapter->debugger.breakpoints, &iter));
+		}
+		HashTableClear(&adapter->debugger.breakpoints);
+		HashTableClear(&adapter->debugger.cbidMap);
+		HashTableClear(&adapter->debugger.bpidMap);
+	}
 	if (adapter->core->debugger) {
 		mDebuggerDetachModule(adapter->core->debugger, &adapter->debugger.d);
 	}
@@ -1223,11 +1239,31 @@ mSCRIPT_DEFINE_END;
 static void _setRumble(struct mRumble* rumble, bool enable, uint32_t timeSince) {
 	struct mScriptCoreAdapter* adapter = containerof(rumble, struct mScriptCoreAdapter, rumble);
 
-	if (adapter->oldRumble) {
+	if (adapter->oldRumble && adapter->oldRumble->setRumble) {
 		adapter->oldRumble->setRumble(adapter->oldRumble, enable, timeSince);
 	}
 
 	adapter->rumbleIntegrator.d.setRumble(&adapter->rumbleIntegrator.d, enable, timeSince);
+}
+
+static void _rumbleIntegrate(struct mRumble* rumble, uint32_t period) {
+	struct mScriptCoreAdapter* adapter = containerof(rumble, struct mScriptCoreAdapter, rumble);
+
+	if (adapter->oldRumble && adapter->oldRumble->integrate) {
+		adapter->oldRumble->integrate(adapter->oldRumble, period);
+	}
+
+	adapter->rumbleIntegrator.d.integrate(&adapter->rumbleIntegrator.d, period);
+}
+
+static void _rumbleReset(struct mRumble* rumble, bool enable) {
+	struct mScriptCoreAdapter* adapter = containerof(rumble, struct mScriptCoreAdapter, rumble);
+
+	if (adapter->oldRumble && adapter->oldRumble->reset) {
+		adapter->oldRumble->reset(adapter->oldRumble, enable);
+	}
+
+	adapter->rumbleIntegrator.d.reset(&adapter->rumbleIntegrator.d, enable);
 }
 
 static void _setRumbleFloat(struct mRumbleIntegrator* integrator, float level) {
@@ -1343,9 +1379,9 @@ static uint8_t _readLuminance(struct GBALuminanceSource* luminance) {
 }
 #endif
 
-#define CALLBACK(NAME) _mScriptCoreCallback ## NAME
+#define mCoreCallback(NAME) _mScriptCoreCallback ## NAME
 #define DEFINE_CALLBACK(NAME) \
-	void CALLBACK(NAME) (void* context) { \
+	void mCoreCallback(NAME) (void* context) { \
 		struct mScriptContext* scriptContext = context; \
 		if (!scriptContext) { \
 			return; \
@@ -1375,6 +1411,8 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 	mRumbleIntegratorInit(&adapter->rumbleIntegrator);
 	adapter->rumbleIntegrator.setRumble = _setRumbleFloat;
 	adapter->rumble.setRumble = _setRumble;
+	adapter->rumble.reset = _rumbleReset;
+	adapter->rumble.integrate = _rumbleIntegrate;
 	adapter->rotation.sample = _rotationSample;
 	adapter->rotation.readTiltX = _rotationReadTiltX;
 	adapter->rotation.readTiltY = _rotationReadTiltY;
@@ -1394,13 +1432,13 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 #endif
 
 	struct mCoreCallbacks callbacks = {
-		.videoFrameEnded = CALLBACK(frame),
-		.coreCrashed = CALLBACK(crashed),
-		.sleep = CALLBACK(sleep),
-		.shutdown = CALLBACK(stop),
-		.keysRead = CALLBACK(keysRead),
-		.savedataUpdated = CALLBACK(savedataUpdated),
-		.alarm = CALLBACK(alarm),
+		.videoFrameEnded = mCoreCallback(frame),
+		.coreCrashed = mCoreCallback(crashed),
+		.sleep = mCoreCallback(sleep),
+		.shutdown = mCoreCallback(stop),
+		.keysRead = mCoreCallback(keysRead),
+		.savedataUpdated = mCoreCallback(savedataUpdated),
+		.alarm = mCoreCallback(alarm),
 		.context = context
 	};
 	core->addCoreCallbacks(core, &callbacks);

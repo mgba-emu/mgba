@@ -27,6 +27,8 @@ struct NoIntroDB* NoIntroDBLoad(const char* path);
 bool NoIntroDBLoadClrMamePro(struct NoIntroDB* db, struct VFile* vf);
 void NoIntroDBDestroy(struct NoIntroDB* db);
 bool NoIntroDBLookupGameByCRC(const struct NoIntroDB* db, uint32_t crc32, struct NoIntroGame* game);
+bool NoIntroDBLookupGameByMD5(const struct NoIntroDB* db, const uint8_t* md5, struct NoIntroGame* game);
+bool NoIntroDBLookupGameBySHA1(const struct NoIntroDB* db, const uint8_t* sha1, struct NoIntroGame* game);
 
 CXX_GUARD_END
 

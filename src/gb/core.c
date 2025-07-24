@@ -24,6 +24,7 @@
 #include <mgba-util/md5.h>
 #include <mgba-util/memory.h>
 #include <mgba-util/patch.h>
+#include <mgba-util/sha1.h>
 #include <mgba-util/vfs.h>
 
 static const struct mCoreChannelInfo _GBVideoLayers[] = {
@@ -150,7 +151,7 @@ static bool _GBCoreInit(struct mCore* core) {
 	gbcore->keys = 0;
 	gb->keySource = &gbcore->keys;
 
-#if defined(ENABLE_VFS) && !defined(__LIBRETRO__)
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES) && !defined(__LIBRETRO__)
 	mDirectorySetInit(&core->dirs);
 #endif
 
@@ -162,7 +163,7 @@ static void _GBCoreDeinit(struct mCore* core) {
 	GBDestroy(core->board);
 	mappedMemoryFree(core->cpu, sizeof(struct SM83Core));
 	mappedMemoryFree(core->board, sizeof(struct GB));
-#if defined(ENABLE_VFS) && !defined(__LIBRETRO__)
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES) && !defined(__LIBRETRO__)
 	mDirectorySetDeinit(&core->dirs);
 #endif
 #ifdef ENABLE_DEBUGGERS
@@ -539,6 +540,15 @@ static void _GBCoreChecksum(const struct mCore* core, void* data, enum mCoreChec
 			md5Buffer("", 0, data);
 		}
 		break;
+	case mCHECKSUM_SHA1:
+		if (gb->romVf) {
+			sha1File(gb->romVf, data);
+		} else if (gb->memory.rom && gb->isPristine) {
+			sha1Buffer(gb->memory.rom, gb->pristineRomSize, data);
+		} else {
+			sha1Buffer("", 0, data);
+		}
+		break;
 	}
 	return;
 }
@@ -651,7 +661,7 @@ static void _GBCoreReset(struct mCore* core) {
 				bios = NULL;
 			}
 		}
-#ifndef __LIBRETRO__
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES) && !defined(__LIBRETRO__)
 		if (!found) {
 			char path[PATH_MAX];
 			mCoreConfigDirectory(path, PATH_MAX);
@@ -1130,7 +1140,7 @@ static void _GBCoreLoadSymbols(struct mCore* core, struct VFile* vf) {
 	if (!core->symbolTable) {
 		core->symbolTable = mDebuggerSymbolTableCreate();
 	}
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 	if (!vf && core->dirs.base) {
 		vf = mDirectorySetOpenSuffix(&core->dirs, core->dirs.base, ".sym", O_RDONLY);
 	}

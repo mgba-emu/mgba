@@ -565,3 +565,19 @@ void _GBMBC7Write(struct GBMemory* memory, uint16_t address, uint8_t value) {
 	}
 	mbc7->eeprom = value;
 }
+
+void _GBM161(struct GB* gb, uint16_t address, uint8_t value) {
+	UNUSED(address);
+
+	struct GBM161State* m161 = &gb->memory.mbcState.m161;
+	if (m161->locked) {
+		return;
+	}
+
+	int bank = value & 0x7;
+	m161->bank = bank;
+	m161->locked = true;
+
+	GBMBCSwitchBank0(gb, bank * 2);
+	GBMBCSwitchBank(gb, bank * 2 + 1);
+}

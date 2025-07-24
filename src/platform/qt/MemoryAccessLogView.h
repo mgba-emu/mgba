@@ -18,12 +18,14 @@
 
 namespace QGBA {
 
+class MemoryAccessLogController;
+
 class MemoryAccessLogView : public QWidget {
 Q_OBJECT
 
 public:
-	MemoryAccessLogView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
-	~MemoryAccessLogView();
+	MemoryAccessLogView(std::weak_ptr<MemoryAccessLogController> controller, QWidget* parent = nullptr);
+	~MemoryAccessLogView() = default;
 
 private slots:
 	void updateRegion(const QString& internalName, bool enable);
@@ -32,22 +34,19 @@ private slots:
 	void start();
 	void stop();
 
+	void load();
+	void unload();
+
 	void exportFile();
 
-signals:
-	void loggingChanged(bool active);
+	void handleStartStop(bool start);
+	void handleLoadUnload(bool load);
 
 private:
 	Ui::MemoryAccessLogView m_ui;
 
-	std::shared_ptr<CoreController> m_controller;
-	QSet<QString> m_watchedRegions;
+	std::weak_ptr<MemoryAccessLogController> m_controller;
 	QHash<QString, QCheckBox*> m_regionBoxes;
-	QHash<QString, int> m_regionMapping;
-	struct mDebuggerAccessLogger m_logger{};
-	bool m_active = false;
-
-	mDebuggerAccessLogRegionFlags activeFlags() const;
 };
 
 }

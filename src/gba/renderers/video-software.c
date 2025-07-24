@@ -136,7 +136,7 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
 	softwareRenderer->oamMax = 0;
 
 	softwareRenderer->mosaic = 0;
-	softwareRenderer->greenswap = false;
+	softwareRenderer->stereo = false;
 	softwareRenderer->nextY = 0;
 
 	softwareRenderer->objOffsetX = 0;
@@ -195,8 +195,8 @@ static uint16_t GBAVideoSoftwareRendererWriteVideoRegister(struct GBAVideoRender
 		softwareRenderer->dispcnt = value;
 		GBAVideoSoftwareRendererUpdateDISPCNT(softwareRenderer);
 		break;
-	case GBA_REG_GREENSWP:
-		softwareRenderer->greenswap = value & 1;
+	case GBA_REG_STEREOCNT:
+		softwareRenderer->stereo = value & 1;
 		break;
 	case GBA_REG_BG0CNT:
 		value &= 0xDFFF;
@@ -705,7 +705,7 @@ static void GBAVideoSoftwareRendererDrawScanline(struct GBAVideoRenderer* render
 	}
 
 	int x;
-	if (softwareRenderer->greenswap) {
+	if (softwareRenderer->stereo) {
 		for (x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; x += 4) {
 			row[x] = softwareRenderer->row[x] & (M_COLOR_RED | M_COLOR_BLUE);
 			row[x] |= softwareRenderer->row[x + 1] & M_COLOR_GREEN;
@@ -1026,12 +1026,18 @@ int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRendere
 		}
 		int mosaicV = GBAMosaicControlGetObjV(renderer->mosaic) + 1;
 		int mosaicY = y - (y % mosaicV);
+		int lastIndex = 0;
 		int i;
 		for (i = 0; i < renderer->oamMax; ++i) {
 			struct GBAVideoRendererSprite* sprite = &renderer->sprites[i];
 			int localY = y;
 			renderer->end = 0;
-			if ((y < sprite->y && (sprite->endY - 256 < 0 || y >= sprite->endY - 256)) || y >= sprite->endY) {
+			renderer->spriteCyclesRemaining -= 2 * (sprite->index - lastIndex);
+			lastIndex = sprite->index;
+			if (renderer->spriteCyclesRemaining <= 0) {
+				break;
+			}
+			if (y < sprite->y || y >= sprite->endY) {
 				continue;
 			}
 			if (GBAObjAttributesAIsMosaic(sprite->obj.a) && mosaicV > 1) {
@@ -1056,9 +1062,6 @@ int GBAVideoSoftwareRendererPreprocessSpriteLayer(struct GBAVideoSoftwareRendere
 				spriteLayers |= drawn << GBAObjAttributesCGetPriority(sprite->obj.c);
 			}
 			renderer->spriteCyclesRemaining -= sprite->cycles;
-			if (renderer->spriteCyclesRemaining <= 0) {
-				break;
-			}
 		}
 	}
 	return spriteLayers;

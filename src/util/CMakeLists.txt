@@ -7,6 +7,7 @@ set(BASE_SOURCE_FILES
 	gbk-table.c
 	hash.c
 	md5.c
+	sha1.c
 	string.c
 	table.c
 	vector.c
@@ -21,6 +22,7 @@ set(SOURCE_FILES
 	geometry.c
 	image.c
 	image/export.c
+	image/font.c
 	image/png-io.c
 	interpolator.c
 	patch.c

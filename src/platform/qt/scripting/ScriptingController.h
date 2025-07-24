@@ -13,6 +13,7 @@
 #include <mgba/script/input.h>
 #include <mgba/core/scripting.h>
 
+#include "scripting/AutorunScriptModel.h"
 #include "VFileDevice.h"
 
 #include <memory>
@@ -24,6 +25,7 @@ struct VideoBackend;
 
 namespace QGBA {
 
+class ConfigController;
 class CoreController;
 class InputController;
 class ScriptingTextBuffer;
@@ -33,7 +35,7 @@ class ScriptingController : public QObject {
 Q_OBJECT
 
 public:
-	ScriptingController(QObject* parent = nullptr);
+	ScriptingController(ConfigController* config, QObject* parent = nullptr);
 	~ScriptingController();
 
 	void setController(std::shared_ptr<CoreController> controller);
@@ -48,17 +50,22 @@ public:
 	mScriptContext* context() { return &m_scriptContext; }
 	ScriptingTextBufferModel* textBufferModel() const { return m_bufferModel; }
 
+	QString getFilenameFilters() const;
+
 signals:
 	void log(const QString&);
 	void warn(const QString&);
 	void error(const QString&);
 	void textBufferCreated(ScriptingTextBuffer*);
 
+	void autorunScriptsOpened(QWidget* view);
+
 public slots:
 	void clearController();
 	void updateVideoScale();
 	void reset();
 	void runCode(const QString& code);
+	void openAutorunEdit();
 
 	void flushStorage();
 
@@ -68,6 +75,7 @@ protected:
 private slots:
 	void updateGamepad();
 	void attach();
+	void saveAutorun(const QList<QVariant>& autorun);
 
 private:
 	void init();
@@ -91,8 +99,10 @@ private:
 
 	mScriptGamepad m_gamepad;
 
+	AutorunScriptModel m_model;
 	std::shared_ptr<CoreController> m_controller;
 	InputController* m_inputController = nullptr;
+	ConfigController* m_config = nullptr;
 
 	QTimer m_storageFlush;
 };

@@ -24,6 +24,7 @@ void _GBMBC7(struct GB*, uint16_t address, uint8_t value);
 void _GBMMM01(struct GB*, uint16_t address, uint8_t value);
 void _GBPocketCam(struct GB* gb, uint16_t address, uint8_t value);
 void _GBTAMA5(struct GB* gb, uint16_t address, uint8_t value);
+void _GBM161(struct GB* gb, uint16_t address, uint8_t value);
 
 void _GBHuC1(struct GB*, uint16_t address, uint8_t value);
 void _GBHuC3(struct GB*, uint16_t address, uint8_t value);
@@ -38,6 +39,7 @@ void _GBHitek(struct GB* gb, uint16_t address, uint8_t value);
 void _GBLiCheng(struct GB* gb, uint16_t address, uint8_t value);
 void _GBGGB81(struct GB* gb, uint16_t address, uint8_t value);
 void _GBSachen(struct GB* gb, uint16_t address, uint8_t value);
+void _GBSintax(struct GB* gb, uint16_t address, uint8_t value);
 
 uint8_t _GBMBC2Read(struct GBMemory*, uint16_t address);
 uint8_t _GBMBC6Read(struct GBMemory*, uint16_t address);
@@ -54,6 +56,7 @@ uint8_t _GBHitekRead(struct GBMemory*, uint16_t address);
 uint8_t _GBGGB81Read(struct GBMemory*, uint16_t address);
 uint8_t _GBSachenMMC1Read(struct GBMemory*, uint16_t address);
 uint8_t _GBSachenMMC2Read(struct GBMemory*, uint16_t address);
+uint8_t _GBSintaxRead(struct GBMemory*, uint16_t address);
 
 void _GBMBCLatchRTC(struct mRTCSource* rtc, uint8_t* rtcRegs, time_t* rtcLastLatch);
 void _GBMBCAppendSaveSuffix(struct GB* gb, const void* buffer, size_t size);

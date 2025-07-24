@@ -594,7 +594,16 @@ void FrameView::exportFrame() {
 		return;
 	}
 	CoreController::Interrupter interrupter(m_controller);
-	m_framebuffer.save(filename, "PNG");
+
+	unsigned width, height;
+	m_vl->currentVideoSize(m_vl, &width, &height);
+
+	if ((int)width != m_framebuffer.width() || (int)height != m_framebuffer.height()) {
+		QImage crop = m_framebuffer.copy(0, 0, width, height);
+		crop.save(filename, "PNG");
+	} else {
+		m_framebuffer.save(filename, "PNG");
+	}
 }
 
 void FrameView::reset() {

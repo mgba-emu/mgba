@@ -44,6 +44,7 @@ struct mSubParser {
 	bool (*parse)(struct mSubParser* parser, int option, const char* arg);
 	bool (*parseLong)(struct mSubParser* parser, const char* option, const char* arg);
 	void (*apply)(struct mSubParser* parser, struct mCoreConfig* config);
+	bool (*handleExtraArg)(struct mSubParser* parser, const char* arg);
 	const char* extraOptions;
 	const struct mOption* longOptions;
 	void* opts;

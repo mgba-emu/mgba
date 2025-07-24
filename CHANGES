@@ -1,54 +1,99 @@
 0.11.0: (Future)
 Features:
+ - Forwarder support for 3DS and Vita
+ - Custom border support
  - New option to lock the maximum frame size
+ - Memory access and information logging
+ - 3DS: Add faster "loose" sync mode, default enabled
+ - Vita: Allow using rear touch pads as L2/L3/R2/R3
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
  - Scripting: New `storage` API for saving data for a script, e.g. settings
+ - Scripting: New `image` and `canvas` APIs for drawing images and displaying on-screen
  - Scripting: Debugger integration to allow for breakpoints and watchpoints
- - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81
+ - Scripting: Add support for running scripts at startup
+ - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81, Sintax
+ - Initial support for bootleg GBA multicarts
  - Debugger: Add range watchpoints
+ - "Headless" frontend for running tests, automation, etc.
 Emulation fixes:
  - ARM: Add framework for coprocessor support
+ - ARM: cmn/cmp/teq/tst pc shouldn't flush the pipeline
+ - GB Memory: Initialize HRAM when skipping BIOS in GBC mode (fixes mgba.io/i/3420)
+ - GB Memory: Fix initial WRAM pattern when skipping BIOS in GBC mode (fixes mgba.io/i/2704)
  - GB Serialize: Add missing Pocket Cam state to savestates
  - GB Video: Implement DMG-style sprite ordering
+ - GB Video: Fix window enable edge case (fixes mgba.io/i/2640)
  - GBA: Unhandled bkpt should be treated as an undefined exception
  - GBA: Add baseline CP0 (Wii U VC) and CP1 (DCC) implementations
  - GBA Serialize: Fix some minor save state edge cases
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
  - GBA Video: Improve emulation of window start/end conditions (fixes mgba.io/i/1945)
+ - GBA Video: Fix transparent OBJWIN pixel/sprite priority interaction (fixes mgba.io/i/2809)
+ - GBA Video: Improve sprite drawing cycle counting (fixes mgba.io/i/3081)
+ - GBA Video: Fix edge case with double-height sprites wrapping (fixes mgba.io/i/2824)
 Other fixes:
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
  - Debugger: Fix writing to specific segment in command-line debugger
- - FFmpeg: Fix failing to record videos with CRF video (fixes mgba.io/i/3368)
- - GB Core: Fix cloning savedata when backing file is outdated (fixes mgba.io/i/3388)
  - GBA: Fix getting game info for multiboot ROMs
- - GBA Core: Fix booting into BIOS when skip BIOS is enabled
- - GBA Hardware: Fix loading states unconditionally overwriting GPIO memory
  - mGUI: Load parent directory if last used directory is missing (fixes mgba.io/i/3379)
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Fix potential crash when configuring shortcuts
+ - Qt: Fix regression where loading BIOS creates a save file (fixes mgba.io/i/3359)
+ - Qt: Fix selecting high tiles in tile and map views (fixes mgba.io/i/3461)
 Misc:
+ - 3DS: Change title ID to avoid conflict with commercial title (fixes mgba.io/i/3023)
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
  - Core: Improve rumble emulation by averaging state over entire frame (fixes mgba.io/i/3232)
  - Core: Add MD5 hashing for ROMs
+ - Core: Add support for specifying an arbitrary portable directory
+ - Core: Add SHA1 hashing for ROMs
+ - FFmpeg: Add Ut Video option
  - GB: Prevent incompatible BIOSes from being used on differing models
+ - GB MBC: Add M161 support for one Mani 4-in-1 multicart
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
  - GBA Audio: Remove broken XQ audio pending rewrite
  - GBA BIOS: Move SoftReset implementation to assembly
+ - GBA e-Reader: Use geometric mean instead of arithmetic mean when detecting parameters
+ - GBA e-Reader: Disable strict mode when scanning cards
  - GBA Memory: Improve VRAM access stall cycle estimation
  - GBA SIO: Rewrite lockstep driver for improved stability
  - GBA Video: Add special circlular window handling in OpenGL renderer
+ - GBA Video: Disable window interpolation at 1× scale (fixes mgba.io/i/1810)
  - Libretro: Add Super Game Boy Color support (closes mgba.io/i/3188)
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
  - mGUI: Persist fast forwarding after closing menu (fixes mgba.io/i/2414)
+ - mGUI: Wrap around menu cursor when navigating past end (closes mgba.io/i/3356)
  - Qt: Handle multiple save game files for disparate games separately (fixes mgba.io/i/2887)
  - Qt: Remove maligned double-click-to-fullscreen shortcut (closes mgba.io/i/2632)
  - Qt: Pass logging context through to video proxy thread (fixes mgba.io/i/3095)
  - Qt: Show maker code and game version in ROM info
  - Qt: Show a dummy shader settings tab if shaders aren't supported
+ - Qt: Allow passing multiple games on command line for multiplayer (closes mgba.io/i/3061)
+ - Qt: Support building against Qt 6
+ - Qt: Add shortcuts to increment fast forward speed (mgba.io/i/2903)
+ - Qt: Enable ROM preloading by default
+ - Qt: Throttle fatal error dialogs
+ - Qt: Add save info to bug report logs
+ - Qt: Show filename of loaded TBL in memory view (closes mgba.io/i/2815)
+ - Res: Port hq2x and OmniScale shaders from SameBoy
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
+ - Res: Update gba-colors shader (closes mgba.io/i/2976)
+ - Res: Port more Pokefan531 color shaders (closes mgba.io/i/3437)
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
+
+0.10.5: (2025-03-08)
+Other fixes:
+ - ARM Debugger: Fix disassembly of ror r0 barrel shift (fixes mgba.io/i/3412)
+ - FFmpeg: Fix failing to record videos with CRF video (fixes mgba.io/i/3368)
+ - GB Core: Fix cloning savedata when backing file is outdated (fixes mgba.io/i/3388)
+ - GBA Cheats: Let VBA-style codes patch ROM (fixes mgba.io/i/3423)
+ - GBA Core: Fix booting into BIOS when skip BIOS is enabled
+ - GBA Hardware: Fix loading states unconditionally overwriting GPIO memory
  - Updater: Fix rewriting folders and files on Windows (fixes mgba.io/i/3384)
+ - Wii: Fix crash on loading large ZIP files (fixes mgba.io/i/3404)
+Misc:
+ - GB: Allow use of CGB-E and AGB-0 BIOS versions (closes mgba.io/i/3427)
 
 0.10.4: (2024-12-07)
 Emulation fixes:

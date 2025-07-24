@@ -103,6 +103,7 @@ struct VFile* VFileOpen(const char* path, int flags) {
 #endif
 }
 
+#ifdef ENABLE_DIRECTORIES
 struct VDir* VDirOpenArchive(const char* path) {
 	struct VDir* dir = 0;
 	UNUSED(path);
@@ -118,6 +119,7 @@ struct VDir* VDirOpenArchive(const char* path) {
 #endif
 	return dir;
 }
+#endif
 #endif
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size) {

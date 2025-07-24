@@ -396,6 +396,10 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				events->players[i]->joystick = NULL;
 			}
 			struct SDL_JoystickCombo* joystick = _mSDLOpenJoystick(events, event.jdevice.which);
+			if (!joystick) {
+				mLOG(SDL_EVENTS, ERROR, "SDL joystick hotplug attach failed: %s", SDL_GetError());
+				continue;
+			}
 
 			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
 				if (joysticks[i] != -1) {

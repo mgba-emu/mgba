@@ -885,7 +885,12 @@ void mPainterDrawMask(struct mPainter* painter, const struct mImage* mask, int x
 		for (x = 0; x < srcRect.width; ++x, dstPixel += painter->backing->depth, maskPixel += mask->depth) {
 			uint32_t color;
 			GET_PIXEL(color, maskPixel, mask->depth);
-			color = mColorConvert(color, mask->format, mCOLOR_ARGB8);
+			if (mask->format != mCOLOR_L8) {
+				color = mColorConvert(color, mask->format, mCOLOR_ARGB8);
+			} else {
+				color <<= 24;
+				color |= 0xFFFFFF;
+			}
 			color = _mColorMultiply(painter->fillColor, color);
 			if (painter->blend || painter->fillColor < 0xFF000000) {
 				uint32_t current;
@@ -904,10 +909,10 @@ uint32_t mColorConvert(uint32_t color, enum mColorFormat from, enum mColorFormat
 		return color;
 	}
 
-	int r = 0;
-	int g = 0;
-	int b = 0;
-	int a = 0xFF;
+	uint32_t r = 0;
+	uint32_t g = 0;
+	uint32_t b = 0;
+	uint32_t a = 0xFF;
 
 	switch (from) {
 	case mCOLOR_ARGB8:

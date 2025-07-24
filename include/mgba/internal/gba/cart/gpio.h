@@ -49,10 +49,11 @@ DECL_BIT(RTCCommandData, Reading, 7);
 
 struct GBARTC {
 	int32_t bytesRemaining;
-	int32_t transferStep;
 	int32_t bitsRead;
 	int32_t bits;
 	int32_t commandActive;
+	bool sckEdge;
+	bool sioOutput;
 	RTCCommandData command;
 	RTCControl control;
 	uint8_t time[7];
@@ -68,8 +69,9 @@ struct GBACartridgeHardware {
 	enum GPIODirection readWrite;
 	uint16_t* gpioBase;
 
-	uint16_t pinState;
-	uint16_t direction;
+	uint8_t writeLatch;
+	uint8_t pinState;
+	uint8_t direction;
 
 	struct GBARTC rtc;
 

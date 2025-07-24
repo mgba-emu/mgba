@@ -78,6 +78,7 @@ private:
 
 	mCore* m_core = nullptr;
 	std::unique_ptr<TextCodec, TextCodecFree> m_codec;
+	QString m_tbl;
 	QFont m_font;
 	int m_cellHeight;
 	int m_letterWidth;

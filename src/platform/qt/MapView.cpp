@@ -56,7 +56,7 @@ MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
 #ifdef M_CORE_GB
 	case mPLATFORM_GB:
 		m_boundary = 1024;
-		m_ui.tile->setMaxTile(512);
+		m_ui.tile->setMaxTile(1024);
 		m_addressBase = GB_BASE_VRAM;
 		m_addressWidth = 4;
 		m_ui.bgInfo->addCustomProperty("screenBase", tr("Map base"));

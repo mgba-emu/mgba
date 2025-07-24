@@ -183,7 +183,7 @@ void CheatsView::enterCheat() {
 		set->refresh(set, m_controller->cheatDevice());
 	}
 	if (failure) {
-		LOG(QT, ERROR) << tr("Some cheats could not be added. Please ensure they're formatted correctly and/or try other cheat types.");
+		qCritical() << tr("Some cheats could not be added. Please ensure they're formatted correctly and/or try other cheat types.");
 	}
 	m_ui.codeEntry->clear();
 }

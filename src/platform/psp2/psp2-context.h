@@ -28,4 +28,6 @@ void mPSP2SetFrameLimiter(struct mGUIRunner* runner, bool limit);
 uint16_t mPSP2PollInput(struct mGUIRunner* runner);
 bool mPSP2SystemPoll(struct mGUIRunner* runner);
 
+int mPSP2ReadTouchLR(const struct mInputMap* map);
+
 #endif

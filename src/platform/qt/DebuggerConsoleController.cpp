@@ -48,7 +48,7 @@ void DebuggerConsoleController::detach() {
 	{
 		CoreController::Interrupter interrupter(m_gameController);
 		QMutexLocker lock(&m_mutex);
-		if (m_cliDebugger.d.p->state != DEBUGGER_SHUTDOWN) {
+		if (m_cliDebugger.d.p && m_cliDebugger.d.p->state != DEBUGGER_SHUTDOWN) {
 			m_lines.append(QString());
 			m_cond.wakeOne();
 		}
@@ -173,7 +173,7 @@ void DebuggerConsoleController::historyLoad() {
 void DebuggerConsoleController::historySave() {
 	QFile log(ConfigController::configDir() + "/cli_history.log");
 	if (!log.open(QIODevice::WriteOnly | QIODevice::Text)) {
-		LOG(QT, WARN) << tr("Could not open CLI history for writing");
+		qWarning() << tr("Could not open CLI history for writing");
 		return;
 	}
 	for (const QString& line : m_history) {

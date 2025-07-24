@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>QGBA::AutorunScriptView</class>
+ <widget class="QDialog" name="QGBA::AutorunScriptView">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Autorun scripts</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="1" column="0">
+    <widget class="QPushButton" name="add">
+     <property name="text">
+      <string>Add</string>
+     </property>
+     <property name="icon">
+      <iconset theme="list-add"/>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QPushButton" name="remove">
+     <property name="text">
+      <string>Remove</string>
+     </property>
+     <property name="icon">
+      <iconset theme="list-remove"/>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="2">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="3">
+    <widget class="QPushButton" name="up">
+     <property name="text">
+      <string>Move up</string>
+     </property>
+     <property name="icon">
+      <iconset theme="go-up"/>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="4">
+    <widget class="QPushButton" name="down">
+     <property name="text">
+      <string>Move down</string>
+     </property>
+     <property name="icon">
+      <iconset theme="go-down"/>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="5">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>Run scripts when starting a game</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="QListView" name="autorunList"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>add</sender>
+   <signal>clicked()</signal>
+   <receiver>QGBA::AutorunScriptView</receiver>
+   <slot>addScript()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>47</x>
+     <y>276</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>remove</sender>
+   <signal>clicked()</signal>
+   <receiver>QGBA::AutorunScriptView</receiver>
+   <slot>removeScript()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>138</x>
+     <y>276</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>up</sender>
+   <signal>clicked()</signal>
+   <receiver>QGBA::AutorunScriptView</receiver>
+   <slot>moveUp()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>238</x>
+     <y>276</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>down</sender>
+   <signal>clicked()</signal>
+   <receiver>QGBA::AutorunScriptView</receiver>
+   <slot>moveDown()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>341</x>
+     <y>276</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>addScript()</slot>
+  <slot>removeScript()</slot>
+  <slot>moveUp()</slot>
+  <slot>moveDown()</slot>
+ </slots>
+</ui>

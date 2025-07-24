@@ -54,7 +54,7 @@ class GBA(Core):
 
 
 class GBAMemory(Memory):
-    def __init__(self, core, romSize=lib.SIZE_CART0):
+    def __init__(self, core, romSize=lib.GBA_SIZE_ROM0):
         super(GBAMemory, self).__init__(core, 0x100000000)
 
         self.bios = Memory(core, lib.GBA_SIZE_BIOS, lib.GBA_BASE_BIOS)
@@ -64,11 +64,10 @@ class GBAMemory(Memory):
         self.palette = Memory(core, lib.GBA_SIZE_PALETTE_RAM, lib.GBA_BASE_PALETTE_RAM)
         self.vram = Memory(core, lib.GBA_SIZE_VRAM, lib.GBA_BASE_VRAM)
         self.oam = Memory(core, lib.GBA_SIZE_OAM, lib.GBA_BASE_OAM)
-        self.cart0 = Memory(core, romSize, lib.BASE_CART0)
-        self.cart1 = Memory(core, romSize, lib.BASE_CART1)
-        self.cart2 = Memory(core, romSize, lib.BASE_CART2)
-        self.cart = self.cart0
-        self.rom = self.cart0
+        self.rom0 = Memory(core, romSize, lib.GBA_BASE_ROM0)
+        self.rom1 = Memory(core, romSize, lib.GBA_BASE_ROM1)
+        self.rom2 = Memory(core, romSize, lib.GBA_BASE_ROM2)
+        self.rom = self.rom0
         self.sram = Memory(core, lib.GBA_SIZE_SRAM, lib.GBA_BASE_SRAM)
 
 

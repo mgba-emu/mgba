@@ -58,6 +58,7 @@ static const uint8_t _fakeGBROM[0x4000] = {
 		assert_true(core->loadROM(core, VFileFromConstMemory(_fakeGBROM, sizeof(_fakeGBROM)))); \
 		break; \
 	case mPLATFORM_NONE: \
+		abort(); \
 		break; \
 	} \
 	mCoreInitConfig(core, NULL); \
@@ -345,6 +346,9 @@ void _setupBp(struct mCore* core) {
 		core->rawWrite8(core, 0xF2, 0, 0xFD); // jr $-3
 		break;
 #endif
+	case mPLATFORM_NONE:
+		abort();
+		break;
 	}
 }
 

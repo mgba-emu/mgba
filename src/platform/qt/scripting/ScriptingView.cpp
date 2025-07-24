@@ -40,6 +40,7 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 	connect(m_ui.buffers->selectionModel(), &QItemSelectionModel::currentChanged, this, &ScriptingView::selectBuffer);
 	connect(m_ui.load, &QAction::triggered, this, &ScriptingView::load);
 	connect(m_ui.loadMostRecent, &QAction::triggered, this, &ScriptingView::loadMostRecent);
+	connect(m_ui.editAutorunScripts, &QAction::triggered, controller, &ScriptingController::openAutorunEdit);
 	connect(m_ui.reset, &QAction::triggered, controller, &ScriptingController::reset);
 
 	m_mruFiles = m_config->getMRU(ConfigController::MRU::Script);
@@ -58,7 +59,7 @@ void ScriptingView::submitRepl() {
 }
 
 void ScriptingView::load() {
-	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select script to load"), getFilters());
+	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select script to load"), m_controller->getFilenameFilters());
 	if (!filename.isEmpty()) {
 		if (!m_controller->loadFile(filename)) {
 			return;
@@ -82,15 +83,6 @@ void ScriptingView::selectBuffer(const QModelIndex& current, const QModelIndex&)
 		// If there is no selected buffer, use the blank document.
 		m_ui.buffer->setDocument(m_blankDocument);
 	}
-}
-
-QString ScriptingView::getFilters() const {
-	QStringList filters;
-#ifdef USE_LUA
-	filters.append(tr("Lua scripts (*.lua)"));
-#endif
-	filters.append(tr("All files (*.*)"));
-	return filters.join(";;");
 }
 
 void ScriptingView::appendMRU(const QString& fname) {

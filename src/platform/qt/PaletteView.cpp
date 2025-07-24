@@ -139,7 +139,7 @@ void PaletteView::exportPalette(int start, int length) {
 	}
 	VFile* vf = VFileDevice::open(filename, O_WRONLY | O_CREAT | O_TRUNC);
 	if (!vf) {
-		LOG(QT, ERROR) << tr("Failed to open output palette file: %1").arg(filename);
+		qCritical() << tr("Failed to open output palette file: %1").arg(filename);
 		return;
 	}
 	if (filename.endsWith(".pal", Qt::CaseInsensitive)) {

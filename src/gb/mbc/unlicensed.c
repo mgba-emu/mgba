@@ -500,3 +500,102 @@ uint8_t _GBSachenMMC2Read(struct GBMemory* memory, uint16_t address) {
 		return 0xFF;
 	}
 }
+
+static const uint8_t _sintaxReordering[16][8] = {
+	{ 2, 1, 4, 3, 6, 5, 0, 7 },
+	{ 3, 2, 5, 4, 7, 6, 1, 0 },
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // unknown
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // unknown
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // unknown
+	{ 4, 5, 2, 3, 0, 1, 6, 7 },
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // unknown
+	{ 6, 7, 4, 5, 1, 3, 0, 2 },
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // unknown
+	{ 7, 6, 1, 0, 3, 2, 5, 4 },
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // unknown
+	{ 5, 4, 7, 6, 1, 0, 3, 2 },
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // unknown
+	{ 2, 3, 4, 5, 6, 7, 0, 1 },
+	{ 0, 1, 2, 3, 4, 5, 6, 7 }, // unknown
+	{ 0, 1, 2, 3, 4, 5, 6, 7 },
+};
+
+void  _GBSintax(struct GB* gb, uint16_t address, uint8_t value) {
+	struct GBSintaxState* state = &gb->memory.mbcState.sintax;
+
+	if (address >= 0x2000 && address < 0x3000) {
+		state->bankNo = value;
+		value = _reorderBits(value, _sintaxReordering[state->mode]);
+		state->romBankXor = state->xorValues[state->bankNo & 0x3];
+	}
+
+	if ((address & 0xF0F0) == 0x5010) {
+		// contrary to previous belief it IS possible to change the mode after setting it initially
+		// The reason Metal Max was breaking is because it only recognises writes to 5x1x
+		// and that game writes to a bunch of other 5xxx addresses before battles
+		state->mode = value & 0xF;
+
+		mLOG(GB_MBC, DEBUG, "Sintax bank reorder mode: %X", state->mode);
+
+		switch (state->mode) {
+		// Supported modes
+		case 0x00: // Lion King, Golden Sun
+		case 0x01: // Langrisser
+		case 0x05: // Maple Story, Pokemon Platinum
+		case 0x07: // Bynasty Warriors 5
+		case 0x09: // ???
+		case 0x0B: // Shaolin Legend
+		case 0x0D: // Older games
+		case 0x0F: // Default mode, no reordering
+			break;
+		default:
+			mLOG(GB_MBC, DEBUG, "Bank reorder mode unsupported - %X", state->mode);
+			break;
+		}
+
+		_GBSintax(gb, 0x2000, state->bankNo); // fake a bank switch to select the correct bank
+		return;
+	}
+
+	if (address >= 0x7000 && address < 0x8000) {
+		int xorNo = (address & 0x00F0) >> 4;
+		switch (xorNo) {
+		case 2:
+			state->xorValues[0] = value;
+			mLOG(GB_MBC, DEBUG, "Sintax XOR 0: %X", value);
+			break;
+		case 3:
+			state->xorValues[1] = value;
+			mLOG(GB_MBC, DEBUG, "Sintax XOR 1: %X", value);
+			break;
+		case 4:
+			state->xorValues[2] = value;
+			mLOG(GB_MBC, DEBUG, "Sintax XOR 2: %X", value);
+			break;
+		case 5:
+			state->xorValues[3] = value;
+			mLOG(GB_MBC, DEBUG, "Sintax XOR 3: %X", value);
+			break;
+		}
+
+		// xor is applied immediately to the current bank
+		state->romBankXor = state->xorValues[state->bankNo & 0x3];
+	}
+	_GBMBC5(gb, address, value);
+}
+
+uint8_t _GBSintaxRead(struct GBMemory* memory, uint16_t address) {
+	struct GBSintaxState* state = &memory->mbcState.sintax;
+	switch (address >> 13) {
+	case 0x2:
+	case 0x3:
+		return memory->romBank[address & (GB_SIZE_CART_BANK0 - 1)] ^ state->romBankXor;
+	case 0x5:
+		if (memory->sramAccess && memory->sram) {
+			return memory->sramBank[address & (GB_SIZE_EXTERNAL_RAM - 1)];
+		}
+		return 0xFF;
+	default:
+		return 0xFF;
+	}
+}

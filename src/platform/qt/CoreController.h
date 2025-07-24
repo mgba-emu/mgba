@@ -40,6 +40,7 @@ namespace QGBA {
 class ConfigController;
 class InputController;
 class LogController;
+class MemoryAccessLogController;
 class MultiplayerController;
 class Override;
 
@@ -113,6 +114,8 @@ public:
 	void detachDebugger();
 	void attachDebuggerModule(mDebuggerModule*, bool interrupt = true);
 	void detachDebuggerModule(mDebuggerModule*);
+
+	std::weak_ptr<MemoryAccessLogController> memoryAccessLogController();
 #endif
 
 	void setMultiplayerController(MultiplayerController*);
@@ -173,6 +176,7 @@ public slots:
 	void scanCards(const QStringList&);
 	void replaceGame(const QString&);
 	void yankPak();
+	void blockSave() { m_saveBlocked = true; }
 
 	void addKey(int key);
 	void clearKey(int key);
@@ -253,13 +257,15 @@ private:
 	struct CoreLogger : public mLogger {
 		CoreController* self;
 	} m_logger{};
+	bool m_crashSeen = false;
 
 	QString m_path;
 	QString m_baseDirectory;
 	QString m_savePath;
 
 	bool m_patched = false;
-	bool m_preload = false;
+	bool m_preload = true;
+	bool m_saveBlocked = false;
 
 	uint32_t m_crc32;
 	QString m_internalTitle;
@@ -324,6 +330,10 @@ private:
 	MultiplayerController* m_multiplayer = nullptr;
 #ifdef M_CORE_GBA
 	GBASIODolphin m_dolphin;
+#endif
+
+#ifdef ENABLE_DEBUGGERS
+	std::shared_ptr<MemoryAccessLogController> m_malController;
 #endif
 
 	mVideoLogContext* m_vl = nullptr;

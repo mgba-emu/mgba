@@ -111,6 +111,7 @@ struct mDebuggerEntryInfo {
 			uint32_t newValue;
 			enum mWatchpointType watchType;
 			enum mWatchpointType accessType;
+			enum mMemoryAccessSource accessSource;
 		} wp;
 
 		struct {
@@ -132,6 +133,7 @@ struct mBreakpoint {
 	int segment;
 	enum mBreakpointType type;
 	struct ParseTree* condition;
+	bool isTemporary;
 };
 
 struct mWatchpoint {
@@ -256,6 +258,7 @@ bool mDebuggerIsShutdown(const struct mDebugger*);
 
 struct mDebuggerModule* mDebuggerCreateModule(enum mDebuggerType type, struct mCore*);
 void mDebuggerModuleSetNeedsCallback(struct mDebuggerModule*);
+void mDebuggerModuleClearNeedsCallback(struct mDebuggerModule*);
 
 bool mDebuggerLookupIdentifier(struct mDebugger* debugger, const char* name, int32_t* value, int* segment);
 

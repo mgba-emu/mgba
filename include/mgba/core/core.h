@@ -28,11 +28,6 @@ enum mPlatform {
 	mPLATFORM_GB = 1,
 };
 
-enum mCoreChecksumType {
-	mCHECKSUM_CRC32,
-	mCHECKSUM_MD5,
-};
-
 struct mAudioBuffer;
 struct mCoreConfig;
 struct mCoreSync;
@@ -47,7 +42,7 @@ struct mCore {
 	struct mDebuggerSymbols* symbolTable;
 	struct mVideoLogger* videoLogger;
 
-#ifdef ENABLE_VFS
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 	struct mDirectorySet dirs;
 #endif
 #ifndef MINIMAL_CORE
@@ -188,11 +183,12 @@ bool mCorePreloadFile(struct mCore* core, const char* path);
 bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, size_t, void*), void* context);
 bool mCorePreloadFileCB(struct mCore* core, const char* path, void (cb)(size_t, size_t, void*), void* context);
 
+bool mCoreLoadSaveFile(struct mCore* core, const char* path, bool temporary);
+
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 bool mCoreAutoloadSave(struct mCore* core);
 bool mCoreAutoloadPatch(struct mCore* core);
 bool mCoreAutoloadCheats(struct mCore* core);
-
-bool mCoreLoadSaveFile(struct mCore* core, const char* path, bool temporary);
 
 bool mCoreSaveState(struct mCore* core, int slot, int flags);
 bool mCoreLoadState(struct mCore* core, int slot, int flags);
@@ -200,6 +196,7 @@ struct VFile* mCoreGetState(struct mCore* core, int slot, bool write);
 void mCoreDeleteState(struct mCore* core, int slot);
 
 void mCoreTakeScreenshot(struct mCore* core);
+#endif
 bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf);
 #endif
 

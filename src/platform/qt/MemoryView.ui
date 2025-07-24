@@ -6,171 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>874</width>
-    <height>900</height>
+    <width>708</width>
+    <height>549</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Memory</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QComboBox" name="regions"/>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Inspect Address:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="segments">
-       <property name="minimum">
-        <number>-1</number>
-       </property>
-       <property name="maximum">
-        <number>0</number>
-       </property>
-       <property name="displayIntegerBase">
-        <number>16</number>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="segmentColon">
-       <property name="text">
-        <string notr="true">:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSpinBox" name="setAddress">
-       <property name="accelerated">
-        <bool>true</bool>
-       </property>
-       <property name="prefix">
-        <string notr="true">0x</string>
-       </property>
-       <property name="maximum">
-        <number>268435455</number>
-       </property>
-       <property name="singleStep">
-        <number>16</number>
-       </property>
-       <property name="displayIntegerBase">
-        <number>16</number>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Set Alignment:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="width8">
-       <property name="text">
-        <string>&amp;1 Byte</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_4">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="width16">
-       <property name="text">
-        <string>&amp;2 Bytes</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_5">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="width32">
-       <property name="text">
-        <string>&amp;4 Bytes</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_3">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-    </layout>
-   </item>
+  <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,0">
    <item>
     <widget class="QGBA::MemoryModel" name="hexfield" native="true">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -178,124 +25,287 @@
     </widget>
    </item>
    <item>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_6">
+    <layout class="QVBoxLayout" name="sidebarLayout" stretch="0,0,0,1,0,1">
+     <item>
+      <widget class="QComboBox" name="regions"/>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="addressLayout">
        <item>
-        <widget class="QLabel" name="label_4">
+        <widget class="QLabel" name="address">
          <property name="text">
-          <string>Unsigned Integer:</string>
+          <string>Address:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="uintVal">
-         <property name="maxLength">
-          <number>10</number>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
-         <property name="readOnly">
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="segments">
+         <property name="minimum">
+          <number>-1</number>
+         </property>
+         <property name="maximum">
+          <number>0</number>
+         </property>
+         <property name="displayIntegerBase">
+          <number>16</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="segmentColon">
+         <property name="text">
+          <string notr="true">:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="setAddress">
+         <property name="minimumSize">
+          <size>
+           <width>100</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="accelerated">
           <bool>true</bool>
+         </property>
+         <property name="prefix">
+          <string notr="true">0x</string>
+         </property>
+         <property name="maximum">
+          <number>268435455</number>
+         </property>
+         <property name="singleStep">
+          <number>16</number>
+         </property>
+         <property name="displayIntegerBase">
+          <number>16</number>
          </property>
         </widget>
        </item>
       </layout>
      </item>
-     <item row="0" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <layout class="QHBoxLayout" name="alignmentLayout">
        <item>
-        <widget class="QLabel" name="label_3">
+        <widget class="QLabel" name="alignmentLabel">
          <property name="text">
-          <string>Signed Integer:</string>
+          <string>Alignment:</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="sintVal">
-         <property name="maxLength">
-          <number>11</number>
+        <widget class="QComboBox" name="width">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-         <property name="readOnly">
-          <bool>true</bool>
+         <item>
+          <property name="text">
+           <string>1 Byte</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2 Bytes</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>4 Bytes</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="data">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Ignored" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="title">
+        <string/>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_9">
+        <item row="0" column="0">
+         <widget class="QLabel" name="sintLabel">
+          <property name="text">
+           <string>Signed:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="sintVal">
+          <property name="maxLength">
+           <number>11</number>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="placeholderText">
+           <string notr="true"/>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="uintLabel">
+          <property name="text">
+           <string>Unsigned:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="uintVal">
+          <property name="maxLength">
+           <number>10</number>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
+          </property>
+          <property name="placeholderText">
+           <string notr="true"/>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="stringLabel">
+          <property name="text">
+           <string>String:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1" alignment="Qt::AlignRight">
+         <widget class="QPushButton" name="loadTBL">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Load TBL</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0" colspan="2">
+         <widget class="QPlainTextEdit" name="stringVal">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="plainText">
+           <string notr="true"/>
+          </property>
+          <property name="placeholderText">
+           <string notr="true"/>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="buttons">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="copy">
+         <property name="text">
+          <string>Copy Selection</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="save">
+         <property name="text">
+          <string>Save Selection</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="paste">
+         <property name="text">
+          <string>Paste</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="saveRange">
+         <property name="text">
+          <string>Save Range</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0" colspan="2">
+        <widget class="QPushButton" name="load">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Load</string>
          </property>
         </widget>
        </item>
       </layout>
      </item>
-     <item row="1" column="0" colspan="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>String:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="stringVal">
-         <property name="readOnly">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="loadTBL">
-         <property name="text">
-          <string>Load TBL</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
-      <widget class="QPushButton" name="copy">
-       <property name="text">
-        <string>Copy Selection</string>
+      <widget class="QGroupBox" name="verticalGroupBox_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="paste">
-       <property name="text">
-        <string>Paste</string>
+       <property name="title">
+        <string>Selected address accesses</string>
        </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_7">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="save">
-       <property name="text">
-        <string>Save Selection</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="saveRange">
-       <property name="text">
-        <string>Save Range</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="load">
-       <property name="text">
-        <string>Load</string>
-       </property>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QTreeView" name="accessLog">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="textElideMode">
+           <enum>Qt::ElideNone</enum>
+          </property>
+          <attribute name="headerVisible">
+           <bool>false</bool>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="accessLoggerButton">
+          <property name="text">
+           <string>Logging configuration</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>
@@ -310,23 +320,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <tabstops>
-  <tabstop>regions</tabstop>
-  <tabstop>segments</tabstop>
-  <tabstop>setAddress</tabstop>
-  <tabstop>width8</tabstop>
-  <tabstop>width16</tabstop>
-  <tabstop>width32</tabstop>
-  <tabstop>sintVal</tabstop>
-  <tabstop>uintVal</tabstop>
-  <tabstop>stringVal</tabstop>
-  <tabstop>loadTBL</tabstop>
-  <tabstop>copy</tabstop>
-  <tabstop>paste</tabstop>
-  <tabstop>save</tabstop>
-  <tabstop>saveRange</tabstop>
-  <tabstop>load</tabstop>
- </tabstops>
  <resources/>
  <connections/>
 </ui>

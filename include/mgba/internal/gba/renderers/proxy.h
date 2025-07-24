@@ -17,6 +17,7 @@ struct GBAVideoProxyRenderer {
 	struct GBAVideoRenderer d;
 	struct GBAVideoRenderer* backend;
 	struct mVideoLogger* logger;
+	int flushScanline;
 };
 
 void GBAVideoProxyRendererCreate(struct GBAVideoProxyRenderer* renderer, struct GBAVideoRenderer* backend, struct mVideoLogger* logger);

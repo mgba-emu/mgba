@@ -82,6 +82,7 @@ void GBAMemoryInit(struct GBA* gba) {
 	cpu->memory.activeSeqCycles16 = 0;
 	cpu->memory.activeNonseqCycles32 = 0;
 	cpu->memory.activeNonseqCycles16 = 0;
+	cpu->memory.accessSource = mACCESS_UNKNOWN;
 	gba->memory.biosPrefetch = 0;
 
 	gba->memory.agbPrintProtect = 0;
@@ -132,6 +133,7 @@ void GBAMemoryReset(struct GBA* gba) {
 
 	gba->memory.prefetch = false;
 	gba->memory.lastPrefetchedPc = 0;
+	gba->cpu->memory.accessSource = mACCESS_UNKNOWN;
 
 	if (!gba->memory.wram || !gba->memory.iwram) {
 		GBAMemoryDeinit(gba);
@@ -299,22 +301,27 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	memory->activeRegion = newRegion;
 	switch (newRegion) {
 	case GBA_REGION_BIOS:
+		cpu->memory.accessSource = mACCESS_SYSTEM;
 		cpu->memory.activeRegion = memory->bios;
 		cpu->memory.activeMask = GBA_SIZE_BIOS - 1;
 		break;
 	case GBA_REGION_EWRAM:
+		cpu->memory.accessSource = mACCESS_PROGRAM;
 		cpu->memory.activeRegion = memory->wram;
 		cpu->memory.activeMask = GBA_SIZE_EWRAM - 1;
 		break;
 	case GBA_REGION_IWRAM:
+		cpu->memory.accessSource = mACCESS_PROGRAM;
 		cpu->memory.activeRegion = memory->iwram;
 		cpu->memory.activeMask = GBA_SIZE_IWRAM - 1;
 		break;
 	case GBA_REGION_PALETTE_RAM:
+		cpu->memory.accessSource = mACCESS_PROGRAM;
 		cpu->memory.activeRegion = (uint32_t*) gba->video.palette;
 		cpu->memory.activeMask = GBA_SIZE_PALETTE_RAM - 1;
 		break;
 	case GBA_REGION_VRAM:
+		cpu->memory.accessSource = mACCESS_PROGRAM;
 		if (address & 0x10000) {
 			cpu->memory.activeRegion = (uint32_t*) &gba->video.vram[0x8000];
 			cpu->memory.activeMask = 0x00007FFF;
@@ -324,6 +331,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		}
 		break;
 	case GBA_REGION_OAM:
+		cpu->memory.accessSource = mACCESS_PROGRAM;
 		cpu->memory.activeRegion = (uint32_t*) gba->video.oam.raw;
 		cpu->memory.activeMask = GBA_SIZE_OAM - 1;
 		break;
@@ -333,6 +341,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 	case GBA_REGION_ROM1_EX:
 	case GBA_REGION_ROM2:
 	case GBA_REGION_ROM2_EX:
+		cpu->memory.accessSource = mACCESS_PROGRAM;
 		cpu->memory.activeRegion = memory->rom;
 		cpu->memory.activeMask = memory->romMask;
 		if ((address & (GBA_SIZE_ROM0 - 1)) < memory->romSize) {
@@ -345,6 +354,7 @@ static void GBASetActiveRegion(struct ARMCore* cpu, uint32_t address) {
 		}
 	// Fall through
 	default:
+		cpu->memory.accessSource = mACCESS_UNKNOWN;
 		memory->activeRegion = -1;
 		cpu->memory.activeRegion = (uint32_t*) _deadbeef;
 		cpu->memory.activeMask = 0;

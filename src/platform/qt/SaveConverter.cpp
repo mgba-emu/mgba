@@ -395,7 +395,7 @@ SaveConverter::AnnotatedSave::AnnotatedSave(mPlatform platform, std::shared_ptr<
 	: container(container)
 	, platform(platform)
 	, size(vf->size())
-	, backing(vf)
+	, backing(std::move(vf))
 	, endianness(endianness)
 {
 }
@@ -405,7 +405,7 @@ SaveConverter::AnnotatedSave::AnnotatedSave(GBASavedataType type, std::shared_pt
 	: container(container)
 	, platform(mPLATFORM_GBA)
 	, size(vf->size())
-	, backing(vf)
+	, backing(std::move(vf))
 	, endianness(endianness)
 	, gba({type})
 {
@@ -417,7 +417,7 @@ SaveConverter::AnnotatedSave::AnnotatedSave(GBMemoryBankControllerType type, std
 	: container(container)
 	, platform(mPLATFORM_GB)
 	, size(vf->size())
-	, backing(vf)
+	, backing(std::move(vf))
 	, endianness(endianness)
 	, gb({type})
 {
@@ -656,7 +656,7 @@ QByteArray SaveConverter::AnnotatedSave::convertTo(const SaveConverter::Annotate
 	}
 
 	if (platform != target.platform) {
-		LOG(QT, ERROR) << tr("Cannot convert save games between platforms");
+		qCritical() << tr("Cannot convert save games between platforms");
 		return {};
 	}
 

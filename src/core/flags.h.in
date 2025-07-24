@@ -53,6 +53,10 @@
 #cmakedefine ENABLE_DEBUGGERS
 #endif
 
+#ifndef ENABLE_DIRECTORIES
+#cmakedefine ENABLE_DIRECTORIES
+#endif
+
 #ifndef ENABLE_GDB_STUB
 #cmakedefine ENABLE_GDB_STUB
 #endif
@@ -93,6 +97,10 @@
 
 #ifndef USE_FFMPEG
 #cmakedefine USE_FFMPEG
+#endif
+
+#ifndef USE_FREETYPE
+#cmakedefine USE_FREETYPE
 #endif
 
 #ifndef USE_JSON_C

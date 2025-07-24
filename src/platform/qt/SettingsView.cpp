@@ -69,6 +69,8 @@ SettingsView::SettingsView(ConfigController* controller, InputController* inputC
 
 	reloadConfig();
 
+	connect(m_ui.autorunScripts, &QAbstractButton::pressed, this, &SettingsView::openAutorunScripts);
+
 	connect(m_ui.volume, static_cast<void (QSlider::*)(int)>(&QSlider::valueChanged), [this](int v) {
 		if (v < m_ui.volumeFf->value()) {
 			m_ui.volumeFf->setValue(v);
@@ -437,9 +439,9 @@ void SettingsView::setShaderSelector(ShaderSelector* shaderSelector) {
 		QObject::disconnect(m_shader, nullptr, this, nullptr);
 	}
 	m_shader = shaderSelector;
-	QObject::connect(this, &SettingsView::saveSettingsRequested, m_shader, &ShaderSelector::saveSettings);
-	QObject::connect(m_ui.buttonBox, &QDialogButtonBox::rejected, m_shader, &ShaderSelector::revert);
 	if (shaderSelector) {
+		QObject::connect(this, &SettingsView::saveSettingsRequested, m_shader, &ShaderSelector::saveSettings);
+		QObject::connect(m_ui.buttonBox, &QDialogButtonBox::rejected, m_shader, &ShaderSelector::revert);
 		addPage(tr("Shaders"), m_shader, Page::SHADERS);
 	} else {
 		addPage(tr("Shaders"), m_dummyShader, Page::SHADERS);
@@ -747,7 +749,7 @@ void SettingsView::reloadConfig() {
 	loadSetting("patchPath", m_ui.patchPath);
 	loadSetting("cheatsPath", m_ui.cheatsPath);
 	loadSetting("showLibrary", m_ui.showLibrary);
-	loadSetting("preload", m_ui.preload);
+	loadSetting("preload", m_ui.preload, true);
 	loadSetting("showFps", m_ui.showFps, true);
 	loadSetting("cheatAutoload", m_ui.cheatAutoload, true);
 	loadSetting("cheatAutosave", m_ui.cheatAutosave, true);

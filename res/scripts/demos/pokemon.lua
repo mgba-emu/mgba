@@ -466,20 +466,24 @@ local gameLeafGreenEnR1 = gameLeafGreenEn:new{
 	_speciesNameTable=0x245f2c,
 }
 
-gameCodes = {
-	["DMG-AAUE"]=gameGSEn, -- Gold
-	["DMG-AAXE"]=gameGSEn, -- Silver
-	["CGB-BYTE"]=gameCrystalEn,
-	["AGB-AXVE"]=gameRubyEn,
-	["AGB-AXPE"]=gameSapphireEn,
-	["AGB-BPEE"]=gameEmeraldEn,
-	["AGB-BPRE"]=gameFireRedEn,
-	["AGB-BPGE"]=gameLeafGreenEn,
+local gameCodes = {
+	[C.PLATFORM.GB] = {
+		["AAUE"] = gameGSEn, -- Gold
+		["AAXE"] = gameGSEn, -- Silver
+		["BYTE"] = gameCrystalEn,
+	},
+	[C.PLATFORM.GBA] = {
+		["AXVE"] = gameRubyEn,
+		["AXPE"] = gameSapphireEn,
+		["BPEE"] = gameEmeraldEn,
+		["BPRE"] = gameFireRedEn,
+		["BPGE"] = gameLeafGreenEn,
+	}
 }
 
 -- These versions have slight differences and/or cannot be uniquely
 -- identified by their in-header game codes, so fall back on a CRC32
-gameCrc32 = {
+local gameCrc32 = {
 	[0x9f7fdd53] = gameRBEn, -- Red
 	[0xd6da8a1a] = gameRBEn, -- Blue
 	[0x7d527d62] = gameYellowEn,
@@ -510,7 +514,7 @@ function detectGame()
 	end
 	game = gameCrc32[checksum]
 	if not game then
-		game = gameCodes[emu:getGameCode()]
+		game = gameCodes[emu:platform()][emu:getGameCode()]
 	end
 
 	if not game then

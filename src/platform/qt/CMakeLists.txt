@@ -220,6 +220,11 @@ set(GB_SRC
 	GBOverride.cpp
 	PrinterView.cpp)
 
+set(TEST_QT_spanset_SRC
+	test/spanset.cpp
+	utils.cpp
+	VFileDevice.cpp)
+
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS},libqt${QT_V}widgets${QT_V}")
 
 set(AUDIO_SRC)
@@ -261,6 +266,8 @@ if(ENABLE_DEBUGGERS)
 		DebuggerController.cpp
 		DebuggerConsole.cpp
 		DebuggerConsoleController.cpp
+		MemoryAccessLogController.cpp
+		MemoryAccessLogModel.cpp
 		MemoryAccessLogView.cpp)
 endif()
 
@@ -272,8 +279,15 @@ if(USE_SQLITE3)
 	list(APPEND SOURCE_FILES
 		ArchiveInspector.cpp
 		library/LibraryController.cpp
-		library/LibraryGrid.cpp
-		library/LibraryTree.cpp)
+		library/LibraryEntry.cpp
+		library/LibraryModel.cpp)
+
+	set(TEST_QT_library_SRC
+		library/LibraryEntry.cpp
+		library/LibraryModel.cpp
+		test/library.cpp
+		utils.cpp
+		VFileDevice.cpp)
 endif()
 
 if(USE_DISCORD_RPC)
@@ -283,13 +297,20 @@ endif()
 
 if(ENABLE_SCRIPTING)
 	list(APPEND SOURCE_FILES
+		scripting/AutorunScriptModel.cpp
+		scripting/AutorunScriptView.cpp
 		scripting/ScriptingController.cpp
 		scripting/ScriptingTextBuffer.cpp
 		scripting/ScriptingTextBufferModel.cpp
 		scripting/ScriptingView.cpp)
 
 	list(APPEND UI_FILES
+		scripting/AutorunScriptView.ui
 		scripting/ScriptingView.ui)
+
+	set(TEST_QT_autoscript_SRC
+		test/autoscript.cpp
+		scripting/AutorunScriptModel.cpp)
 endif()
 
 if(TARGET Qt6::Core)
@@ -494,7 +515,7 @@ if(APPLE)
 			set_source_files_properties("${COREAUDIO}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
 			set_source_files_properties("${QTAVFSERVICE}" PROPERTIES MACOSX_PACKAGE_LOCATION Contents/PlugIns)
 		endif()
-	
+
 		install(CODE "
 		   include(BundleUtilities)
 		   set(BU_CHMOD_BUNDLE_ITEMS ON)
@@ -536,14 +557,23 @@ elseif(WIN32)
 	endif()
 endif()
 
-if(DISTBUILD AND NOT APPLE)
-	if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${OBJCOPY}" --only-keep-debug "$<TARGET_FILE:${BINARY_NAME}-qt>" "$<TARGET_FILE:${BINARY_NAME}-qt>.debug")
-		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${STRIP}" "$<TARGET_FILE:${BINARY_NAME}-qt>")
-		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${OBJCOPY}" --add-gnu-debuglink "$<TARGET_FILE:${BINARY_NAME}-qt>.debug" "$<TARGET_FILE:${BINARY_NAME}-qt>")
-		install(FILES "$<TARGET_FILE:${BINARY_NAME}-qt>.debug" DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${BINARY_NAME}-qt-dbg)
-	elseif(BUILD_STATIC AND (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "MinSizeRel"))
-		add_custom_command(TARGET ${BINARY_NAME}-qt POST_BUILD COMMAND "${STRIP}" "$<TARGET_FILE:${BINARY_NAME}-qt>")
+debug_strip(${BINARY_NAME}-qt)
+
+if(BUILD_SUITE)
+	enable_testing()
+	find_package(${QT}Test)
+	if(${QT}Test_FOUND)
+		get_property(ALL_TESTS DIRECTORY PROPERTY VARIABLES)
+		list(FILTER ALL_TESTS INCLUDE REGEX "^TEST_QT_.*_SRC$")
+		foreach(TEST_SRC ${ALL_TESTS})
+			string(REGEX REPLACE "^TEST_QT_(.*)_SRC$" "\\1" TEST_NAME ${TEST_SRC})
+			add_executable(test-qt-${TEST_NAME} WIN32 ${${TEST_SRC}})
+			target_link_libraries(test-qt-${TEST_NAME} ${PLATFORM_LIBRARY} ${BINARY_NAME} ${QT_LIBRARIES} ${QT}::Test)
+			set_target_properties(test-qt-${TEST_NAME} PROPERTIES COMPILE_DEFINITIONS "${FEATURE_DEFINES};${FUNCTION_DEFINES};${OS_DEFINES};${QT_DEFINES}" COMPILE_OPTIONS "${FEATURE_FLAGS}")
+			add_test(platform-qt-${TEST_NAME} test-qt-${TEST_NAME})
+		endforeach()
+	else()
+		message(WARNING "${QT}Test not found")
 	endif()
 endif()
 

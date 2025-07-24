@@ -7,6 +7,30 @@
   <file>../../../res/keymap.qpic</file>
   <file>../../../res/patrons.txt</file>
   <file>../../../res/no-cam.png</file>
+  <file>../../../res/gb-icon-256.png</file>
+  <file>../../../res/gb-icon-128.png</file>
+  <file>../../../res/gb-icon-32.png</file>
+  <file>../../../res/gb-icon-24.png</file>
+  <file>../../../res/gb-icon-16.png</file>
+  <file>../../../res/gb-icon.svg</file>
+  <file>../../../res/gbc-icon-256.png</file>
+  <file>../../../res/gbc-icon-128.png</file>
+  <file>../../../res/gbc-icon-32.png</file>
+  <file>../../../res/gbc-icon-24.png</file>
+  <file>../../../res/gbc-icon-16.png</file>
+  <file>../../../res/gbc-icon.svg</file>
+  <file>../../../res/sgb-icon-256.png</file>
+  <file>../../../res/sgb-icon-128.png</file>
+  <file>../../../res/sgb-icon-32.png</file>
+  <file>../../../res/sgb-icon-24.png</file>
+  <file>../../../res/sgb-icon-16.png</file>
+  <file>../../../res/sgb-icon.svg</file>
+  <file>../../../res/gba-icon-256.png</file>
+  <file>../../../res/gba-icon-128.png</file>
+  <file>../../../res/gba-icon-32.png</file>
+  <file>../../../res/gba-icon-24.png</file>
+  <file>../../../res/gba-icon-16.png</file>
+  <file>../../../res/gba-icon.svg</file>
  </qresource>
  <qresource prefix="/exe">
   <file alias="exe4/chip-names.txt">../../../res/exe4/chip-names.txt</file>

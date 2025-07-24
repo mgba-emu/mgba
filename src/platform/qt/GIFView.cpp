@@ -15,7 +15,7 @@
 
 using namespace QGBA;
 
-GIFView::GIFView(QWidget* parent)
+GIFView::GIFView(std::shared_ptr<CoreController> controller, QWidget* parent)
 	: QWidget(parent)
 {
 	m_ui.setupUi(this);
@@ -31,6 +31,8 @@ GIFView::GIFView(QWidget* parent)
 
 	FFmpegEncoderInit(&m_encoder);
 	FFmpegEncoderSetAudio(&m_encoder, nullptr, 0);
+
+	setController(controller);
 }
 
 GIFView::~GIFView() {
@@ -58,7 +60,7 @@ void GIFView::startRecording() {
 	}
 	FFmpegEncoderSetLooping(&m_encoder, m_ui.loop->isChecked());
 	if (!FFmpegEncoderOpen(&m_encoder, m_filename.toUtf8().constData())) {
-		LOG(QT, ERROR) << tr("Failed to open output file: %1").arg(m_filename);
+		qCritical() << tr("Failed to open output file: %1").arg(m_filename);
 		return;
 	}
 	m_ui.start->setEnabled(false);

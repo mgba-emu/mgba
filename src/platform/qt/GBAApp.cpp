@@ -71,6 +71,7 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 		AudioProcessor::setDriver(static_cast<AudioProcessor::Driver>(m_configController->getQtOption("audioDriver").toInt()));
 	}
 
+	LogController::installMessageHandler();
 	LogController::global()->load(m_configController);
 
 #ifdef USE_DISCORD_RPC
@@ -395,6 +396,26 @@ void GBAApp::finishJob(qint64 jobId) {
 	m_workerJobs.remove(jobId);
 	emit jobFinished(jobId);
 	m_workerJobCallbacks.remove(jobId);
+}
+
+void GBAApp::initMultiplayer() {
+	QStringList fnames = m_configController->fileNames();
+	if (fnames.count() < 2) {
+		return;
+	}
+
+	Window* w = m_windows[0];
+	for (const auto& fname : fnames) {
+		if (!w) {
+			w = newWindow();
+		}
+		if (!w) {
+			break;
+		}
+		CoreController* core = m_manager.loadGame(fname);
+		w->setController(core, fname);
+		w = nullptr;
+	}
 }
 
 GBAApp::WorkerJob::WorkerJob(qint64 id, std::function<void ()>&& job, GBAApp* owner)

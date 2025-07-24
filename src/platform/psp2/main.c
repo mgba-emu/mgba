@@ -46,6 +46,7 @@ static uint32_t _pollInput(const struct mInputMap* map) {
 	SceCtrlData pad;
 	sceCtrlPeekBufferPositiveExt2(0, &pad, 1);
 	int input = mInputMapKeyBits(map, PSP2_INPUT, pad.buttons, 0);
+	input |= mPSP2ReadTouchLR(map);
 
 	if (pad.buttons & SCE_CTRL_UP || pad.ly < 64) {
 		input |= 1 << GUI_INPUT_UP;
@@ -248,6 +249,7 @@ int main() {
 	};
 
 	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
+	sceTouchSetSamplingState(SCE_TOUCH_PORT_BACK, SCE_TOUCH_SAMPLING_STATE_START);
 	sceCtrlSetSamplingMode(SCE_CTRL_MODE_ANALOG_WIDE);
 	sceCtrlSetSamplingModeExt(SCE_CTRL_MODE_ANALOG_WIDE);
 	sceSysmoduleLoadModule(SCE_SYSMODULE_PHOTO_EXPORT);

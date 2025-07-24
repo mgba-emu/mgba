@@ -569,14 +569,21 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="0" colspan="2">
+       <item row="6" column="1">
+        <widget class="QPushButton" name="autorunScripts">
+         <property name="text">
+          <string>Edit autorun scripts</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0" colspan="2">
         <widget class="Line" name="line_9">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="7" column="1">
+       <item row="8" column="1">
         <widget class="QCheckBox" name="autosave">
          <property name="text">
           <string>Periodically autosave state</string>
@@ -586,7 +593,7 @@
          </property>
         </widget>
        </item>
-       <item row="8" column="1">
+       <item row="9" column="1">
         <widget class="QCheckBox" name="cheatAutosave">
          <property name="text">
           <string>Save entered cheats</string>
@@ -596,21 +603,21 @@
          </property>
         </widget>
        </item>
-       <item row="9" column="0" colspan="2">
+       <item row="10" column="0" colspan="2">
         <widget class="Line" name="line_21">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
+       <item row="11" column="0">
         <widget class="QLabel" name="label_51">
          <property name="text">
           <string>Save state extra data:</string>
          </property>
         </widget>
        </item>
-       <item row="10" column="1">
+       <item row="11" column="1">
         <widget class="QCheckBox" name="saveStateScreenshot">
          <property name="text">
           <string>Screenshot</string>
@@ -620,7 +627,7 @@
          </property>
         </widget>
        </item>
-       <item row="11" column="1">
+       <item row="12" column="1">
         <widget class="QCheckBox" name="saveStateSave">
          <property name="text">
           <string>Save game</string>
@@ -630,7 +637,7 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="1">
+       <item row="13" column="1">
         <widget class="QCheckBox" name="saveStateCheats">
          <property name="text">
           <string>Cheat codes</string>
@@ -640,21 +647,21 @@
          </property>
         </widget>
        </item>
-       <item row="13" column="0" colspan="2">
+       <item row="14" column="0" colspan="2">
         <widget class="Line" name="line_22">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="14" column="0">
+       <item row="15" column="0">
         <widget class="QLabel" name="label_52">
          <property name="text">
           <string>Load state extra data:</string>
          </property>
         </widget>
        </item>
-       <item row="14" column="1">
+       <item row="15" column="1">
         <widget class="QCheckBox" name="loadStateScreenshot">
          <property name="text">
           <string>Screenshot</string>
@@ -664,28 +671,28 @@
          </property>
         </widget>
        </item>
-       <item row="15" column="1">
+       <item row="16" column="1">
         <widget class="QCheckBox" name="loadStateSave">
          <property name="text">
           <string>Save game</string>
          </property>
         </widget>
        </item>
-       <item row="16" column="1">
+       <item row="17" column="1">
         <widget class="QCheckBox" name="loadStateCheats">
          <property name="text">
           <string>Cheat codes</string>
          </property>
         </widget>
        </item>
-       <item row="17" column="0" colspan="2">
+       <item row="18" column="0" colspan="2">
         <widget class="Line" name="line_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="18" column="1">
+       <item row="19" column="1">
         <widget class="QCheckBox" name="useDiscordPresence">
          <property name="text">
           <string>Enable Discord Rich Presence</string>
@@ -1262,6 +1269,9 @@
         <widget class="QCheckBox" name="preload">
          <property name="text">
           <string>Preload entire ROM into memory</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>

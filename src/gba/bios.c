@@ -174,6 +174,8 @@ static void _BgAffineSet(struct GBA* gba) {
 	int destination = cpu->gprs[1];
 	float a, b, c, d;
 	float rx, ry;
+	enum mMemoryAccessSource oldAccess = cpu->memory.accessSource;
+	cpu->memory.accessSource = mACCESS_SYSTEM;
 	while (i--) {
 		// [ sx   0  0 ]   [ cos(theta)  -sin(theta)  0 ]   [ 1  0  cx - ox ]   [ A B rx ]
 		// [  0  sy  0 ] * [ sin(theta)   cos(theta)  0 ] * [ 0  1  cy - oy ] = [ C D ry ]
@@ -205,6 +207,7 @@ static void _BgAffineSet(struct GBA* gba) {
 		cpu->memory.store32(cpu, destination + 12, ry * 256, 0);
 		destination += 16;
 	}
+	cpu->memory.accessSource = oldAccess;
 }
 
 static void _ObjAffineSet(struct GBA* gba) {
@@ -216,6 +219,8 @@ static void _ObjAffineSet(struct GBA* gba) {
 	int destination = cpu->gprs[1];
 	int diff = cpu->gprs[3];
 	float a, b, c, d;
+	enum mMemoryAccessSource oldAccess = cpu->memory.accessSource;
+	cpu->memory.accessSource = mACCESS_SYSTEM;
 	while (i--) {
 		// [ sx   0 ]   [ cos(theta)  -sin(theta) ]   [ A B ]
 		// [  0  sy ] * [ sin(theta)   cos(theta) ] = [ C D ]
@@ -237,6 +242,7 @@ static void _ObjAffineSet(struct GBA* gba) {
 		cpu->memory.store16(cpu, destination + diff * 3, d * 256, 0);
 		destination += diff * 4;
 	}
+	cpu->memory.accessSource = oldAccess;
 }
 
 static void _MidiKey2Freq(struct GBA* gba) {
@@ -244,7 +250,10 @@ static void _MidiKey2Freq(struct GBA* gba) {
 
 	int oldRegion = gba->memory.activeRegion;
 	gba->memory.activeRegion = GBA_REGION_BIOS;
+	enum mMemoryAccessSource oldAccess = cpu->memory.accessSource;
+	cpu->memory.accessSource = mACCESS_SYSTEM;
 	uint32_t key = cpu->memory.load32(cpu, cpu->gprs[0] + 4, 0);
+	cpu->memory.accessSource = oldAccess;
 	gba->memory.activeRegion = oldRegion;
 
 	cpu->gprs[0] = key / exp2f((180.f - cpu->gprs[1] - cpu->gprs[2] / 256.f) / 12.f);
@@ -624,6 +633,8 @@ static void _unLz77(struct GBA* gba, int width) {
 	uint32_t source = cpu->gprs[0];
 	uint32_t dest = cpu->gprs[1];
 	int cycles = 20;
+	enum mMemoryAccessSource oldAccess = cpu->memory.accessSource;
+	cpu->memory.accessSource = mACCESS_DECOMPRESS;
 	int remaining = (cpu->memory.load32(cpu, source, &cycles) & 0xFFFFFF00) >> 8;
 	// We assume the signature byte (0x10) is correct
 	int blockheader = 0; // Some compilers warn if this isn't set, even though it's trivially provably always set
@@ -698,6 +709,7 @@ static void _unLz77(struct GBA* gba, int width) {
 			blocksRemaining = 8;
 		}
 	}
+	cpu->memory.accessSource = oldAccess;
 	cpu->gprs[0] = source;
 	cpu->gprs[1] = dest;
 	cpu->gprs[3] = 0;
@@ -713,6 +725,8 @@ static void _unHuffman(struct GBA* gba) {
 	struct ARMCore* cpu = gba->cpu;
 	uint32_t source = cpu->gprs[0] & 0xFFFFFFFC;
 	uint32_t dest = cpu->gprs[1];
+	enum mMemoryAccessSource oldAccess = cpu->memory.accessSource;
+	cpu->memory.accessSource = mACCESS_DECOMPRESS;
 	uint32_t header = cpu->memory.load32(cpu, source, 0);
 	int remaining = header >> 8;
 	unsigned bits = header & 0xF;
@@ -722,6 +736,7 @@ static void _unHuffman(struct GBA* gba) {
 	}
 	if (32 % bits || bits == 1) {
 		mLOG(GBA_BIOS, STUB, "Unimplemented unaligned Huffman");
+		cpu->memory.accessSource = oldAccess;
 		return;
 	}
 	// We assume the signature byte (0x20) is correct
@@ -773,6 +788,7 @@ static void _unHuffman(struct GBA* gba) {
 			}
 		}
 	}
+	cpu->memory.accessSource = oldAccess;
 	cpu->gprs[0] = source;
 	cpu->gprs[1] = dest;
 }
@@ -780,6 +796,8 @@ static void _unHuffman(struct GBA* gba) {
 static void _unRl(struct GBA* gba, int width) {
 	struct ARMCore* cpu = gba->cpu;
 	uint32_t source = cpu->gprs[0];
+	enum mMemoryAccessSource oldAccess = cpu->memory.accessSource;
+	cpu->memory.accessSource = mACCESS_DECOMPRESS;
 	int remaining = (cpu->memory.load32(cpu, source & 0xFFFFFFFC, 0) & 0xFFFFFF00) >> 8;
 	int padding = (4 - remaining) & 0x3;
 	// We assume the signature byte (0x30) is correct
@@ -846,6 +864,7 @@ static void _unRl(struct GBA* gba, int width) {
 			++dest;
 		}
 	}
+	cpu->memory.accessSource = oldAccess;
 	cpu->gprs[0] = source;
 	cpu->gprs[1] = dest;
 }
@@ -854,6 +873,8 @@ static void _unFilter(struct GBA* gba, int inwidth, int outwidth) {
 	struct ARMCore* cpu = gba->cpu;
 	uint32_t source = cpu->gprs[0] & 0xFFFFFFFC;
 	uint32_t dest = cpu->gprs[1];
+	enum mMemoryAccessSource oldAccess = cpu->memory.accessSource;
+	cpu->memory.accessSource = mACCESS_DECOMPRESS;
 	uint32_t header = cpu->memory.load32(cpu, source, 0);
 	int remaining = header >> 8;
 	// We assume the signature nybble (0x8) is correct
@@ -888,6 +909,7 @@ static void _unFilter(struct GBA* gba, int inwidth, int outwidth) {
 		old = new;
 		source += inwidth;
 	}
+	cpu->memory.accessSource = oldAccess;
 	cpu->gprs[0] = source;
 	cpu->gprs[1] = dest;
 }
@@ -897,6 +919,8 @@ static void _unBitPack(struct GBA* gba) {
 	uint32_t source = cpu->gprs[0];
 	uint32_t dest = cpu->gprs[1];
 	uint32_t info = cpu->gprs[2];
+	enum mMemoryAccessSource oldAccess = cpu->memory.accessSource;
+	cpu->memory.accessSource = mACCESS_DECOMPRESS;
 	unsigned sourceLen = cpu->memory.load16(cpu, info, 0);
 	unsigned sourceWidth = cpu->memory.load8(cpu, info + 2, 0);
 	unsigned destWidth = cpu->memory.load8(cpu, info + 3, 0);
@@ -908,6 +932,7 @@ static void _unBitPack(struct GBA* gba) {
 		break;
 	default:
 		mLOG(GBA_BIOS, GAME_ERROR, "Bad BitUnPack source width: %u", sourceWidth);
+		cpu->memory.accessSource = oldAccess;
 		return;
 	}
 	switch (destWidth) {
@@ -920,6 +945,7 @@ static void _unBitPack(struct GBA* gba) {
 		break;
 	default:
 		mLOG(GBA_BIOS, GAME_ERROR, "Bad BitUnPack destination width: %u", destWidth);
+		cpu->memory.accessSource = oldAccess;
 		return;
 	}
 	uint32_t bias = cpu->memory.load32(cpu, info + 4, 0);
@@ -949,6 +975,7 @@ static void _unBitPack(struct GBA* gba) {
 			dest += 4;
 		}
 	}
+	cpu->memory.accessSource = oldAccess;
 	cpu->gprs[0] = source;
 	cpu->gprs[1] = dest;
 }

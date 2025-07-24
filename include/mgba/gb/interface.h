@@ -37,6 +37,7 @@ enum GBMemoryBankControllerType {
 	GB_HuC3 = 0x12,
 	GB_POCKETCAM = 0x13,
 	GB_TAMA5 = 0x14,
+	GB_M161 = 0x15,
 	GB_MBC3_RTC = 0x103,
 	GB_MBC5_RUMBLE = 0x105,
 	GB_UNL_WISDOM_TREE = 0x200,
@@ -50,6 +51,7 @@ enum GBMemoryBankControllerType {
 	GB_UNL_GGB81 = 0x223,
 	GB_UNL_SACHEN_MMC1 = 0x230,
 	GB_UNL_SACHEN_MMC2 = 0x231,
+	GB_UNL_SINTAX = 0x240,
 };
 
 enum GBVideoLayer {

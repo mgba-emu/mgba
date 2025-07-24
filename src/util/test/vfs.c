@@ -72,14 +72,33 @@ M_TEST_DEFINE(openNullMemChunkNonzero) {
 }
 
 M_TEST_DEFINE(resizeMem) {
-	uint8_t bytes[32];
+	uint8_t bytes[32] = {
+		0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+		0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+		0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
+	};
 	struct VFile* vf = VFileFromMemory(bytes, 32);
 	assert_non_null(vf);
+	assert_int_equal(vf->seek(vf, 0, SEEK_END), 32);
 	assert_int_equal(vf->size(vf), 32);
+
 	vf->truncate(vf, 64);
 	assert_int_equal(vf->size(vf), 32);
+	assert_int_equal(bytes[15], 0x0F);
+	assert_int_equal(bytes[16], 0x10);
+	assert_int_equal(vf->seek(vf, 0, SEEK_CUR), 32);
+
 	vf->truncate(vf, 16);
+	assert_int_equal(vf->size(vf), 16);
+	assert_int_equal(vf->seek(vf, 0, SEEK_CUR), 16);
+
+	vf->truncate(vf, 64);
 	assert_int_equal(vf->size(vf), 32);
+	assert_int_equal(bytes[15], 0x0F);
+	assert_int_equal(bytes[16], 0x00);
+	assert_int_equal(vf->seek(vf, 0, SEEK_CUR), 16);
+
 	vf->close(vf);
 }
 
@@ -87,11 +106,16 @@ M_TEST_DEFINE(resizeConstMem) {
 	uint8_t bytes[32] = {0};
 	struct VFile* vf = VFileFromConstMemory(bytes, 32);
 	assert_non_null(vf);
+	assert_int_equal(vf->seek(vf, 0, SEEK_END), 32);
 	assert_int_equal(vf->size(vf), 32);
+
 	vf->truncate(vf, 64);
 	assert_int_equal(vf->size(vf), 32);
+	assert_int_equal(vf->seek(vf, 0, SEEK_CUR), 32);
+
 	vf->truncate(vf, 16);
 	assert_int_equal(vf->size(vf), 32);
+	assert_int_equal(vf->seek(vf, 0, SEEK_CUR), 32);
 	vf->close(vf);
 }
 
@@ -99,11 +123,16 @@ M_TEST_DEFINE(resizeMemChunk) {
 	uint8_t bytes[32] = {0};
 	struct VFile* vf = VFileMemChunk(bytes, 32);
 	assert_non_null(vf);
+	assert_int_equal(vf->seek(vf, 0, SEEK_END), 32);
 	assert_int_equal(vf->size(vf), 32);
+
 	vf->truncate(vf, 64);
 	assert_int_equal(vf->size(vf), 64);
+	assert_int_equal(vf->seek(vf, 0, SEEK_CUR), 32);
+
 	vf->truncate(vf, 16);
 	assert_int_equal(vf->size(vf), 16);
+	assert_int_equal(vf->seek(vf, 0, SEEK_CUR), 16);
 	vf->close(vf);
 }
 

@@ -2,24 +2,52 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="tr_TR" sourcelanguage="en_US">
 <context>
+    <name>LibraryTree</name>
+    <message>
+        <location filename="../library/LibraryModel.cpp" line="427"/>
+        <source>Name</source>
+        <translation type="unfinished">İsim</translation>
+    </message>
+    <message>
+        <location filename="../library/LibraryModel.cpp" line="429"/>
+        <source>Location</source>
+        <translation type="unfinished">Konum</translation>
+    </message>
+    <message>
+        <location filename="../library/LibraryModel.cpp" line="431"/>
+        <source>Platform</source>
+        <translation type="unfinished">Platform</translation>
+    </message>
+    <message>
+        <location filename="../library/LibraryModel.cpp" line="433"/>
+        <source>Size</source>
+        <translation type="unfinished">Boyut</translation>
+    </message>
+    <message>
+        <location filename="../library/LibraryModel.cpp" line="435"/>
+        <source>CRC32</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QGBA</name>
     <message>
-        <location filename="../utils.cpp" line="96"/>
+        <location filename="../utils.cpp" line="109"/>
         <source>Game Boy Advance ROMs (%1)</source>
         <translation>Game Boy Advance ROM&apos;ları (%1)</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="122"/>
+        <location filename="../utils.cpp" line="135"/>
         <source>Game Boy ROMs (%1)</source>
         <translation>Game Boy ROM&apos;ları (%1)</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="127"/>
+        <location filename="../utils.cpp" line="140"/>
         <source>All ROMs (%1)</source>
         <translation>Bütün ROM&apos;lar (%1)</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="129"/>
+        <location filename="../utils.cpp" line="142"/>
         <source>%1 Video Logs (*.mvl)</source>
         <translation>%1 Video Günlükleri (*.mvl)</translation>
     </message>
@@ -223,6 +251,52 @@ Yeni sürüm: %2
     </message>
 </context>
 <context>
+    <name>QGBA::AutorunScriptModel</name>
+    <message>
+        <location filename="../scripting/AutorunScriptModel.cpp" line="26"/>
+        <source>Could not load autorun script settings: unknown script info format %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QGBA::AutorunScriptView</name>
+    <message>
+        <location filename="../scripting/AutorunScriptView.ui" line="14"/>
+        <source>Autorun scripts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../scripting/AutorunScriptView.ui" line="20"/>
+        <source>Add</source>
+        <translation type="unfinished">Ekle</translation>
+    </message>
+    <message>
+        <location filename="../scripting/AutorunScriptView.ui" line="30"/>
+        <source>Remove</source>
+        <translation type="unfinished">Kaldır</translation>
+    </message>
+    <message>
+        <location filename="../scripting/AutorunScriptView.ui" line="53"/>
+        <source>Move up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../scripting/AutorunScriptView.ui" line="63"/>
+        <source>Move down</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../scripting/AutorunScriptView.ui" line="73"/>
+        <source>Run scripts when starting a game</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../scripting/AutorunScriptView.cpp" line="28"/>
+        <source>Select a script</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QGBA::BattleChipView</name>
     <message>
         <location filename="../BattleChipView.ui" line="14"/>
@@ -321,7 +395,7 @@ Yeni sürüm: %2
     <message>
         <location filename="../CheatsModel.cpp" line="211"/>
         <source>Failed to open cheats file: %1</source>
-        <translation>Hileleri dosyasını açamadı:%1</translation>
+        <translation>Hileler dosyası açılamadı: %1</translation>
     </message>
 </context>
 <context>
@@ -387,48 +461,48 @@ Yeni sürüm: %2
 <context>
     <name>QGBA::CoreController</name>
     <message>
-        <location filename="../CoreController.cpp" line="103"/>
+        <location filename="../CoreController.cpp" line="104"/>
         <source>Reset r%1-%2 %3</source>
-        <translation type="unfinished"></translation>
+        <translation>Sıfırla r%1-%2 %3</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="536"/>
-        <location filename="../CoreController.cpp" line="553"/>
+        <location filename="../CoreController.cpp" line="552"/>
+        <location filename="../CoreController.cpp" line="569"/>
         <source>Rewinding not currently enabled</source>
-        <translation type="unfinished"></translation>
+        <translation>Geri sarma şu anda etkinliştirilmedi</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="592"/>
+        <location filename="../CoreController.cpp" line="608"/>
         <source>Reset the game?</source>
         <translation>Oyun sıfırlansım mı?</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="593"/>
+        <location filename="../CoreController.cpp" line="609"/>
         <source>Most games will require a reset to load the new save. Do you want to reset now?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="808"/>
+        <location filename="../CoreController.cpp" line="827"/>
         <source>Failed to open save file: %1</source>
         <translation>Kayıt dosyası açılamadı: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="866"/>
+        <location filename="../CoreController.cpp" line="885"/>
         <source>Failed to open game file: %1</source>
         <translation>Oyun dosyası açılamadı: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="896"/>
+        <location filename="../CoreController.cpp" line="915"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
         <translation>Beklenmedik bir platformda kartı çıkaramazsın!</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="1011"/>
+        <location filename="../CoreController.cpp" line="1030"/>
         <source>Failed to open snapshot file for reading: %1</source>
         <translation>Anlık görüntü dosyası okuma için açılamadı: %1</translation>
     </message>
     <message>
-        <location filename="../CoreController.cpp" line="1028"/>
+        <location filename="../CoreController.cpp" line="1047"/>
         <source>Failed to open snapshot file for writing: %1</source>
         <translation>Anlık görüntü dosyası yazma için açılamadı: %1</translation>
     </message>
@@ -466,7 +540,7 @@ Yeni sürüm: %2
     <message>
         <location filename="../DebuggerConsole.ui" line="27"/>
         <source>Break</source>
-        <translation>Ara ver</translation>
+        <translation>Kır</translation>
     </message>
 </context>
 <context>
@@ -775,42 +849,42 @@ Yeni sürüm: %2
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="613"/>
+        <location filename="../FrameView.cpp" line="622"/>
         <source>None</source>
         <translation>Hiçbiri</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="615"/>
+        <location filename="../FrameView.cpp" line="624"/>
         <source>Background</source>
         <translation>Arka Plan</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="618"/>
+        <location filename="../FrameView.cpp" line="627"/>
         <source>Window</source>
         <translation>Pencere</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="621"/>
+        <location filename="../FrameView.cpp" line="630"/>
         <source>Objwin</source>
         <translation>Nes. Pen.</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="626"/>
+        <location filename="../FrameView.cpp" line="635"/>
         <source>Sprite</source>
         <translation>Sprite</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="629"/>
+        <location filename="../FrameView.cpp" line="638"/>
         <source>Backdrop</source>
         <translation>Arka fon</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="632"/>
+        <location filename="../FrameView.cpp" line="641"/>
         <source>Frame</source>
         <translation>Kare</translation>
     </message>
     <message>
-        <location filename="../FrameView.cpp" line="638"/>
+        <location filename="../FrameView.cpp" line="647"/>
         <source>%1 %2</source>
         <translation>%1 %2</translation>
     </message>
@@ -818,7 +892,7 @@ Yeni sürüm: %2
 <context>
     <name>QGBA::GBAApp</name>
     <message>
-        <location filename="../GBAApp.cpp" line="78"/>
+        <location filename="../GBAApp.cpp" line="79"/>
         <source>Enable Discord Rich Presence</source>
         <translation>Discord etkinliğini etkinleştir</translation>
     </message>
@@ -957,17 +1031,17 @@ Yeni sürüm: %2
         <translation>Kare atlama</translation>
     </message>
     <message>
-        <location filename="../GIFView.cpp" line="61"/>
+        <location filename="../GIFView.cpp" line="63"/>
         <source>Failed to open output file: %1</source>
         <translation>Çıkış dosyası açılamadı:%1</translation>
     </message>
     <message>
-        <location filename="../GIFView.cpp" line="88"/>
+        <location filename="../GIFView.cpp" line="90"/>
         <source>Select output file</source>
         <translation>Çıktı dosyasını seçin</translation>
     </message>
     <message>
-        <location filename="../GIFView.cpp" line="88"/>
+        <location filename="../GIFView.cpp" line="90"/>
         <source>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</source>
         <translation>Graphics Interchange Format (*.gif);;WebP ( *.webp);;Animated Portable Network Graphics (*.png *.apng)</translation>
     </message>
@@ -975,169 +1049,79 @@ Yeni sürüm: %2
 <context>
     <name>QGBA::GameBoy</name>
     <message>
-        <location filename="../GameBoy.cpp" line="60"/>
-        <location filename="../GameBoy.cpp" line="79"/>
+        <location filename="../GameBoy.cpp" line="62"/>
+        <location filename="../GameBoy.cpp" line="81"/>
         <source>Autodetect</source>
         <translation type="unfinished">Otomatik tespit</translation>
     </message>
     <message>
-        <location filename="../GameBoy.cpp" line="61"/>
+        <location filename="../GameBoy.cpp" line="63"/>
         <source>Game Boy (DMG)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameBoy.cpp" line="62"/>
+        <location filename="../GameBoy.cpp" line="64"/>
         <source>Game Boy Pocket (MGB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameBoy.cpp" line="63"/>
+        <location filename="../GameBoy.cpp" line="65"/>
         <source>Super Game Boy (SGB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameBoy.cpp" line="64"/>
+        <location filename="../GameBoy.cpp" line="66"/>
         <source>Super Game Boy 2 (SGB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameBoy.cpp" line="65"/>
+        <location filename="../GameBoy.cpp" line="67"/>
         <source>Game Boy Color (CGB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameBoy.cpp" line="66"/>
+        <location filename="../GameBoy.cpp" line="68"/>
         <source>Game Boy Advance (AGB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameBoy.cpp" line="67"/>
+        <location filename="../GameBoy.cpp" line="69"/>
         <source>Super Game Boy Color (SGB + CGB)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameBoy.cpp" line="80"/>
+        <location filename="../GameBoy.cpp" line="82"/>
         <source>ROM Only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../GameBoy.cpp" line="81"/>
-        <source>MBC1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="82"/>
-        <source>MBC2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="83"/>
-        <source>MBC3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="84"/>
-        <source>MBC3 + RTC</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="85"/>
-        <source>MBC5</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../GameBoy.cpp" line="86"/>
-        <source>MBC5 + Rumble</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="87"/>
-        <source>MBC6</source>
+        <source>%1 + RTC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
-        <source>MBC7 (Tilt)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="89"/>
-        <source>MMM01</source>
+        <source>%1 + Rumble</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
-        <source>HuC-1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="91"/>
-        <source>HuC-3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="92"/>
-        <source>Pocket Cam</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="93"/>
-        <source>TAMA5</source>
-        <translation type="unfinished">TAMA5</translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="94"/>
-        <source>Wisdom Tree</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="95"/>
-        <source>NT (old 1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="96"/>
-        <source>NT (old 2)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="97"/>
-        <source>NT (new)</source>
+        <source>%1 (Tilt)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
-        <source>Pokémon Jade/Diamond</source>
+        <source>%1 (old 1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="99"/>
-        <source>BBD</source>
+        <source>%1 (old 2)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="100"/>
-        <source>Hitek</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="101"/>
-        <source>GGB-81</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="102"/>
-        <source>Li Cheng</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="103"/>
-        <source>Sachen (MMC1)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../GameBoy.cpp" line="104"/>
-        <source>Sachen (MMC2)</source>
+        <source>%1 (new)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -3021,34 +3005,6 @@ Yeni sürüm: %2
     </message>
 </context>
 <context>
-    <name>QGBA::LibraryTree</name>
-    <message>
-        <location filename="../library/LibraryTree.cpp" line="51"/>
-        <source>Name</source>
-        <translation>İsim</translation>
-    </message>
-    <message>
-        <location filename="../library/LibraryTree.cpp" line="52"/>
-        <source>Location</source>
-        <translation>Konum</translation>
-    </message>
-    <message>
-        <location filename="../library/LibraryTree.cpp" line="53"/>
-        <source>Platform</source>
-        <translation>Platform</translation>
-    </message>
-    <message>
-        <location filename="../library/LibraryTree.cpp" line="54"/>
-        <source>Size</source>
-        <translation>Boyut</translation>
-    </message>
-    <message>
-        <location filename="../library/LibraryTree.cpp" line="55"/>
-        <source>CRC32</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
     <name>QGBA::LoadSaveState</name>
     <message>
         <location filename="../LoadSaveState.ui" line="14"/>
@@ -3192,47 +3148,47 @@ Yeni sürüm: %2
 <context>
     <name>QGBA::LogController</name>
     <message>
-        <location filename="../LogController.cpp" line="72"/>
+        <location filename="../LogController.cpp" line="100"/>
         <source>[%1] %2: %3</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="83"/>
+        <location filename="../LogController.cpp" line="111"/>
         <source>An error occurred</source>
         <translation>Bir hata meydana geldi</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="155"/>
+        <location filename="../LogController.cpp" line="183"/>
         <source>DEBUG</source>
         <translation>HATA AYIKLAMA</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="157"/>
+        <location filename="../LogController.cpp" line="185"/>
         <source>STUB</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="159"/>
+        <location filename="../LogController.cpp" line="187"/>
         <source>INFO</source>
         <translation>BİLGİ</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="161"/>
+        <location filename="../LogController.cpp" line="189"/>
         <source>WARN</source>
         <translation>UYARI</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="163"/>
+        <location filename="../LogController.cpp" line="191"/>
         <source>ERROR</source>
         <translation>HATA</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="165"/>
+        <location filename="../LogController.cpp" line="193"/>
         <source>FATAL</source>
         <translation>CİDDİ</translation>
     </message>
     <message>
-        <location filename="../LogController.cpp" line="167"/>
+        <location filename="../LogController.cpp" line="195"/>
         <source>GAME ERROR</source>
         <translation>OYUN HATASI</translation>
     </message>
@@ -3404,6 +3360,163 @@ Yeni sürüm: %2
     </message>
 </context>
 <context>
+    <name>QGBA::MemoryAccessLogController</name>
+    <message>
+        <location filename="../MemoryAccessLogController.cpp" line="117"/>
+        <location filename="../MemoryAccessLogController.cpp" line="126"/>
+        <source>Failed to open memory log file</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QGBA::MemoryAccessLogModel</name>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="67"/>
+        <source>Data read</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="69"/>
+        <source>Data written</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="71"/>
+        <source>Code executed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="73"/>
+        <source>Code aborted</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="75"/>
+        <source>8-bit access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="77"/>
+        <source>16-bit access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="79"/>
+        <source>32-bit access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="81"/>
+        <source>64-bit access</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="95"/>
+        <source>Accessed by instruction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="97"/>
+        <source>Accessed by DMA</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="99"/>
+        <source>Accessed by BIOS</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="101"/>
+        <source>Compressed data</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="103"/>
+        <source>Accessed by memory copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="105"/>
+        <source>(Unknown extra bit 5)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="107"/>
+        <source>(Unknown extra bit 6)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="109"/>
+        <source>(Unknown extra bit 7)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="111"/>
+        <source>Invalid instruction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="113"/>
+        <source>Invalid read</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="115"/>
+        <source>Invalid write</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="117"/>
+        <source>Invalid executable address</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="119"/>
+        <source>(Private bit 0)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="121"/>
+        <source>(Private bit 1)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="125"/>
+        <source>ARM code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="127"/>
+        <source>Instruction opcode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="129"/>
+        <source>(Private bit 2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="134"/>
+        <source>Thumb code</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="136"/>
+        <source>Instruction operand</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="138"/>
+        <source>(Private bit 3)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogModel.cpp" line="146"/>
+        <source>(Unknown)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QGBA::MemoryAccessLogView</name>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="14"/>
@@ -3431,38 +3544,43 @@ Yeni sürüm: %2
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogView.ui" line="59"/>
+        <location filename="../MemoryAccessLogView.ui" line="56"/>
+        <source>Load</source>
+        <translation type="unfinished">Yükle</translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogView.ui" line="66"/>
+        <source>Unload</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryAccessLogView.ui" line="76"/>
         <source>Regions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogView.ui" line="70"/>
+        <location filename="../MemoryAccessLogView.ui" line="87"/>
         <source>Export ROM snapshot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogView.ui" line="77"/>
+        <location filename="../MemoryAccessLogView.ui" line="94"/>
         <source>Start</source>
         <translation type="unfinished">Başlat</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogView.ui" line="87"/>
+        <location filename="../MemoryAccessLogView.ui" line="104"/>
         <source>Stop</source>
         <translation type="unfinished">Durdur</translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogView.cpp" line="82"/>
-        <source>Failed to open memory log file</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../MemoryAccessLogView.cpp" line="116"/>
-        <location filename="../MemoryAccessLogView.cpp" line="135"/>
+        <location filename="../MemoryAccessLogView.cpp" line="96"/>
+        <location filename="../MemoryAccessLogView.cpp" line="111"/>
         <source>Select access log file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../MemoryAccessLogView.cpp" line="116"/>
+        <location filename="../MemoryAccessLogView.cpp" line="96"/>
         <source>Memory access logs (*.mal)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3503,62 +3621,57 @@ Yeni sürüm: %2
 <context>
     <name>QGBA::MemoryModel</name>
     <message>
-        <location filename="../MemoryModel.cpp" line="44"/>
+        <location filename="../MemoryModel.cpp" line="45"/>
         <source>Copy selection</source>
         <translation>Seçilenleri kopyala</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="49"/>
+        <location filename="../MemoryModel.cpp" line="50"/>
         <source>Save selection</source>
         <translation>Seçilenleri kaydet</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="54"/>
+        <location filename="../MemoryModel.cpp" line="55"/>
         <source>Paste</source>
         <translation>Yapıştır</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="59"/>
+        <location filename="../MemoryModel.cpp" line="60"/>
         <source>Load</source>
         <translation>Yükle</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="113"/>
+        <location filename="../MemoryModel.cpp" line="118"/>
         <source>All</source>
         <translation>Hepsi</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="158"/>
+        <location filename="../MemoryModel.cpp" line="168"/>
         <source>Load TBL</source>
         <translation>TBL yükle</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="212"/>
+        <location filename="../MemoryModel.cpp" line="222"/>
         <source>Save selected memory</source>
         <translation>Seçilen hafızayı kaydet</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="218"/>
+        <location filename="../MemoryModel.cpp" line="228"/>
         <source>Failed to open output file: %1</source>
         <translation>Çıkış dosyası açılamadı:%1</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="226"/>
+        <location filename="../MemoryModel.cpp" line="236"/>
         <source>Load memory</source>
         <translation>Hafıza yükle</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="232"/>
+        <location filename="../MemoryModel.cpp" line="242"/>
         <source>Failed to open input file: %1</source>
         <translation>Giriş dosyası açılamadı:%1</translation>
     </message>
     <message>
-        <location filename="../MemoryModel.cpp" line="347"/>
-        <source>TBL</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../MemoryModel.cpp" line="347"/>
+        <location filename="../MemoryModel.cpp" line="357"/>
         <source>ISO-8859-1</source>
         <translation></translation>
     </message>
@@ -3741,74 +3854,84 @@ Yeni sürüm: %2
         <translation>Bellek</translation>
     </message>
     <message>
-        <location filename="../MemoryView.ui" line="38"/>
-        <source>Inspect Address:</source>
-        <translation>Kontrol edilecek adres:</translation>
-    </message>
-    <message>
-        <location filename="../MemoryView.ui" line="88"/>
-        <source>Set Alignment:</source>
-        <translation>Hizalamayı Ayarla:</translation>
-    </message>
-    <message>
-        <location filename="../MemoryView.ui" line="108"/>
-        <source>&amp;1 Byte</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../MemoryView.ui" line="131"/>
-        <source>&amp;2 Bytes</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../MemoryView.ui" line="151"/>
-        <source>&amp;4 Bytes</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../MemoryView.ui" line="187"/>
-        <source>Unsigned Integer:</source>
-        <translation>İşaretsiz tam sayı:</translation>
-    </message>
-    <message>
-        <location filename="../MemoryView.ui" line="208"/>
-        <source>Signed Integer:</source>
-        <translation>İşaretlenmiş tam sayı:</translation>
-    </message>
-    <message>
-        <location filename="../MemoryView.ui" line="229"/>
+        <location filename="../MemoryView.ui" line="192"/>
         <source>String:</source>
         <translation>Sicim:</translation>
     </message>
     <message>
-        <location filename="../MemoryView.ui" line="243"/>
+        <location filename="../MemoryView.ui" line="205"/>
         <source>Load TBL</source>
         <translation>TBL yükle</translation>
     </message>
     <message>
-        <location filename="../MemoryView.ui" line="256"/>
+        <location filename="../MemoryView.ui" line="233"/>
         <source>Copy Selection</source>
         <translation>Seçilenleri kopyala</translation>
     </message>
     <message>
-        <location filename="../MemoryView.ui" line="263"/>
+        <location filename="../MemoryView.ui" line="247"/>
         <source>Paste</source>
         <translation>Yapıştır</translation>
     </message>
     <message>
-        <location filename="../MemoryView.ui" line="283"/>
+        <location filename="../MemoryView.ui" line="240"/>
         <source>Save Selection</source>
         <translation>Seçilenleri kaydet</translation>
     </message>
     <message>
-        <location filename="../MemoryView.ui" line="290"/>
+        <location filename="../MemoryView.ui" line="37"/>
+        <source>Address:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryView.ui" line="106"/>
+        <source>Alignment:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryView.ui" line="120"/>
+        <source>1 Byte</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryView.ui" line="125"/>
+        <source>2 Bytes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryView.ui" line="130"/>
+        <source>4 Bytes</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryView.ui" line="152"/>
+        <source>Signed:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryView.ui" line="172"/>
+        <source>Unsigned:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryView.ui" line="254"/>
         <source>Save Range</source>
         <translation>Aralığı Kaydet</translation>
     </message>
     <message>
-        <location filename="../MemoryView.ui" line="297"/>
+        <location filename="../MemoryView.ui" line="267"/>
         <source>Load</source>
         <translation>Yükle</translation>
+    </message>
+    <message>
+        <location filename="../MemoryView.ui" line="282"/>
+        <source>Selected address accesses</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../MemoryView.ui" line="304"/>
+        <source>Logging configuration</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4341,21 +4464,22 @@ Yeni sürüm: %2
 <context>
     <name>QGBA::ROMInfo</name>
     <message>
-        <location filename="../ROMInfo.cpp" line="37"/>
-        <location filename="../ROMInfo.cpp" line="55"/>
-        <location filename="../ROMInfo.cpp" line="64"/>
-        <location filename="../ROMInfo.cpp" line="65"/>
-        <location filename="../ROMInfo.cpp" line="76"/>
+        <location filename="../ROMInfo.cpp" line="47"/>
+        <location filename="../ROMInfo.cpp" line="61"/>
+        <location filename="../ROMInfo.cpp" line="69"/>
+        <location filename="../ROMInfo.cpp" line="77"/>
+        <location filename="../ROMInfo.cpp" line="88"/>
+        <location filename="../ROMInfo.cpp" line="101"/>
         <source>(unknown)</source>
         <translation>(bilinmeyen)</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.cpp" line="45"/>
+        <location filename="../ROMInfo.cpp" line="56"/>
         <source> bytes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ROMInfo.cpp" line="58"/>
+        <location filename="../ROMInfo.cpp" line="91"/>
         <source>(no database present)</source>
         <translation>(veritabanı yok)</translation>
     </message>
@@ -4380,27 +4504,32 @@ Yeni sürüm: %2
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="117"/>
+        <location filename="../ROMInfo.ui" line="100"/>
+        <source>SHA-1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ROMInfo.ui" line="134"/>
         <source>ROM header</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="123"/>
+        <location filename="../ROMInfo.ui" line="140"/>
         <source>Internal name:</source>
         <translation>Dahili İsim:</translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="140"/>
+        <location filename="../ROMInfo.ui" line="157"/>
         <source>Game ID:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="157"/>
+        <location filename="../ROMInfo.ui" line="174"/>
         <source>Maker Code:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="174"/>
+        <location filename="../ROMInfo.ui" line="191"/>
         <source>Revision:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4415,7 +4544,7 @@ Yeni sürüm: %2
         <translation></translation>
     </message>
     <message>
-        <location filename="../ROMInfo.ui" line="100"/>
+        <location filename="../ROMInfo.ui" line="117"/>
         <source>Save file:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4423,12 +4552,12 @@ Yeni sürüm: %2
 <context>
     <name>QGBA::ReportView</name>
     <message>
-        <location filename="../ReportView.cpp" line="351"/>
+        <location filename="../ReportView.cpp" line="360"/>
         <source>Bug report archive</source>
         <translation>Hata rapor arşivi</translation>
     </message>
     <message>
-        <location filename="../ReportView.cpp" line="351"/>
+        <location filename="../ReportView.cpp" line="360"/>
         <source>ZIP archive (*.zip)</source>
         <translation>ZIP arşivi (*.zip)</translation>
     </message>
@@ -4648,9 +4777,22 @@ Yeni sürüm: %2
     </message>
 </context>
 <context>
+    <name>QGBA::ScriptingController</name>
+    <message>
+        <location filename="../scripting/ScriptingController.cpp" line="277"/>
+        <source>Lua scripts (*.lua)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../scripting/ScriptingController.cpp" line="279"/>
+        <source>All files (*.*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>QGBA::ScriptingTextBuffer</name>
     <message>
-        <location filename="../scripting/ScriptingTextBuffer.cpp" line="43"/>
+        <location filename="../scripting/ScriptingTextBuffer.cpp" line="44"/>
         <source>Untitled buffer</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4678,38 +4820,33 @@ Yeni sürüm: %2
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.ui" line="110"/>
+        <location filename="../scripting/ScriptingView.ui" line="111"/>
         <source>Load script...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.ui" line="115"/>
+        <location filename="../scripting/ScriptingView.ui" line="116"/>
         <source>&amp;Load most recent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.ui" line="120"/>
+        <location filename="../scripting/ScriptingView.ui" line="121"/>
         <source>&amp;Reset</source>
         <translation type="unfinished">&amp;Reset</translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.ui" line="125"/>
+        <location filename="../scripting/ScriptingView.ui" line="126"/>
         <source>0</source>
         <translation type="unfinished">4K {0?}</translation>
     </message>
     <message>
-        <location filename="../scripting/ScriptingView.cpp" line="61"/>
+        <location filename="../scripting/ScriptingView.ui" line="131"/>
+        <source>Edit autorun scripts...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../scripting/ScriptingView.cpp" line="62"/>
         <source>Select script to load</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../scripting/ScriptingView.cpp" line="90"/>
-        <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../scripting/ScriptingView.cpp" line="92"/>
-        <source>All files (*.*)</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4801,121 +4938,121 @@ Yeni sürüm: %2
 <context>
     <name>QGBA::SettingsView</name>
     <message>
-        <location filename="../SettingsView.cpp" line="155"/>
-        <location filename="../SettingsView.cpp" line="230"/>
+        <location filename="../SettingsView.cpp" line="157"/>
+        <location filename="../SettingsView.cpp" line="232"/>
         <source>Qt Multimedia</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="162"/>
+        <location filename="../SettingsView.cpp" line="164"/>
         <source>SDL</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="170"/>
+        <location filename="../SettingsView.cpp" line="172"/>
         <source>Software (Qt)</source>
         <translation>Yazılım</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1305"/>
-        <location filename="../SettingsView.cpp" line="176"/>
+        <location filename="../SettingsView.ui" line="1315"/>
+        <location filename="../SettingsView.cpp" line="178"/>
         <source>OpenGL</source>
         <translation>OpenGL</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="183"/>
+        <location filename="../SettingsView.cpp" line="185"/>
         <source>OpenGL (force version 1.x)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="216"/>
+        <location filename="../SettingsView.cpp" line="218"/>
         <source>None</source>
         <translation type="unfinished">Hiçbiri</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="223"/>
+        <location filename="../SettingsView.cpp" line="225"/>
         <source>None (Still Image)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="332"/>
+        <location filename="../SettingsView.cpp" line="334"/>
         <source>Keyboard</source>
         <translation>Klavye</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="344"/>
+        <location filename="../SettingsView.cpp" line="346"/>
         <source>Controllers</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="409"/>
+        <location filename="../SettingsView.cpp" line="411"/>
         <source>Shortcuts</source>
         <translation>Kısayollar</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="412"/>
+        <location filename="../SettingsView.cpp" line="414"/>
         <source>Shaders are not supported when the display driver is not OpenGL.
 
 If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="416"/>
-        <location filename="../SettingsView.cpp" line="430"/>
-        <location filename="../SettingsView.cpp" line="443"/>
+        <location filename="../SettingsView.cpp" line="418"/>
+        <location filename="../SettingsView.cpp" line="432"/>
         <location filename="../SettingsView.cpp" line="445"/>
+        <location filename="../SettingsView.cpp" line="447"/>
         <source>Shaders</source>
         <translation>Gölgelendiricler</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="466"/>
+        <location filename="../SettingsView.cpp" line="468"/>
         <source>Select BIOS</source>
         <translation>BIOS seç</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="473"/>
+        <location filename="../SettingsView.cpp" line="475"/>
         <source>Select directory</source>
         <translation>Yolu seç</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="481"/>
+        <location filename="../SettingsView.cpp" line="483"/>
         <source>Select image</source>
         <translation type="unfinished">Resim seç</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="481"/>
+        <location filename="../SettingsView.cpp" line="483"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
         <translation type="unfinished">Görüntü dosyası (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="875"/>
+        <location filename="../SettingsView.cpp" line="877"/>
         <source>(%1×%2)</source>
         <translation>(%1×%2)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="893"/>
+        <location filename="../SettingsView.cpp" line="895"/>
         <source>Never</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="898"/>
+        <location filename="../SettingsView.cpp" line="900"/>
         <source>Just now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.cpp" line="902"/>
+        <location filename="../SettingsView.cpp" line="904"/>
         <source>Less than an hour ago</source>
         <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
-        <location filename="../SettingsView.cpp" line="907"/>
+        <location filename="../SettingsView.cpp" line="909"/>
         <source>%n hour(s) ago</source>
         <translation type="unfinished">
             <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../SettingsView.cpp" line="911"/>
+        <location filename="../SettingsView.cpp" line="913"/>
         <source>%n day(s) ago</source>
         <translation type="unfinished">
             <numerusform></numerusform>
@@ -5066,8 +5203,8 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="276"/>
         <location filename="../SettingsView.ui" line="316"/>
-        <location filename="../SettingsView.ui" line="804"/>
-        <location filename="../SettingsView.ui" line="829"/>
+        <location filename="../SettingsView.ui" line="811"/>
+        <location filename="../SettingsView.ui" line="836"/>
         <source>Mute</source>
         <translation>Sessiz</translation>
     </message>
@@ -5113,7 +5250,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     </message>
     <message>
         <location filename="../SettingsView.ui" line="424"/>
-        <location filename="../SettingsView.ui" line="1192"/>
+        <location filename="../SettingsView.ui" line="1199"/>
         <source>frames</source>
         <translation>Kare</translation>
     </message>
@@ -5160,18 +5297,18 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <translation>Bilinear filtreleme</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="750"/>
+        <location filename="../SettingsView.ui" line="757"/>
         <source>Show filename instead of ROM name in library view</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="797"/>
-        <location filename="../SettingsView.ui" line="822"/>
+        <location filename="../SettingsView.ui" line="804"/>
+        <location filename="../SettingsView.ui" line="829"/>
         <source>Pause</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="788"/>
+        <location filename="../SettingsView.ui" line="795"/>
         <source>When inactive:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5191,142 +5328,147 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="592"/>
+        <location filename="../SettingsView.ui" line="575"/>
+        <source>Edit autorun scripts</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../SettingsView.ui" line="599"/>
         <source>Save entered cheats</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="813"/>
+        <location filename="../SettingsView.ui" line="820"/>
         <source>When minimized:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="897"/>
+        <location filename="../SettingsView.ui" line="904"/>
         <source>Show frame count in OSD</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="904"/>
+        <location filename="../SettingsView.ui" line="911"/>
         <source>Show emulation info on reset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="941"/>
+        <location filename="../SettingsView.ui" line="948"/>
         <source>Custom border:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="952"/>
+        <location filename="../SettingsView.ui" line="959"/>
         <source>Current channel:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="966"/>
+        <location filename="../SettingsView.ui" line="973"/>
         <source>Current version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="990"/>
+        <location filename="../SettingsView.ui" line="997"/>
         <source>Update channel:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1000"/>
+        <location filename="../SettingsView.ui" line="1007"/>
         <source>Available version:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1007"/>
+        <location filename="../SettingsView.ui" line="1014"/>
         <source>(Unknown)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1017"/>
+        <location filename="../SettingsView.ui" line="1024"/>
         <source>Last checked:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1038"/>
+        <location filename="../SettingsView.ui" line="1045"/>
         <source>Automatically check on start</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1045"/>
+        <location filename="../SettingsView.ui" line="1052"/>
         <source>Check now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1201"/>
+        <location filename="../SettingsView.ui" line="1208"/>
         <source>Rewind speed:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1805"/>
+        <location filename="../SettingsView.ui" line="1815"/>
         <source>Models</source>
         <translation>Modeller</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1811"/>
+        <location filename="../SettingsView.ui" line="1821"/>
         <source>GB only:</source>
         <translation>Sadece GB:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1821"/>
+        <location filename="../SettingsView.ui" line="1831"/>
         <source>SGB compatible:</source>
         <translation>SGB uyumlu:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1831"/>
+        <location filename="../SettingsView.ui" line="1841"/>
         <source>GBC only:</source>
         <translation>Sadece GBC:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1841"/>
+        <location filename="../SettingsView.ui" line="1851"/>
         <source>GBC compatible:</source>
         <translation>Uyumlu GBC:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1851"/>
+        <location filename="../SettingsView.ui" line="1861"/>
         <source>SGB and GBC compatible:</source>
         <translation>Uyumlu SGB ve GBC:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1871"/>
+        <location filename="../SettingsView.ui" line="1881"/>
         <source>Game Boy palette</source>
         <translation>Game Boy paleti</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2164"/>
+        <location filename="../SettingsView.ui" line="2174"/>
         <source>Default color palette only</source>
         <translation>Sadece varsayılan renk paleti</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2157"/>
+        <location filename="../SettingsView.ui" line="2167"/>
         <source>SGB color palette if available</source>
         <translation>Mevcutsa SGB renk paketi</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2171"/>
+        <location filename="../SettingsView.ui" line="2181"/>
         <source>GBC color palette if available</source>
         <translation>Mevcutsa GBC renk paketi</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2178"/>
+        <location filename="../SettingsView.ui" line="2188"/>
         <source>SGB (preferred) or GBC color palette if available</source>
         <translation>Mevcutsa SGB (tercih edilen) ya da GBC renk paketi</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2190"/>
+        <location filename="../SettingsView.ui" line="2200"/>
         <source>Game Boy Camera</source>
         <translation>Game Boy Kamera</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2196"/>
+        <location filename="../SettingsView.ui" line="2206"/>
         <source>Driver:</source>
         <translation>Sürücü:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2213"/>
+        <location filename="../SettingsView.ui" line="2223"/>
         <source>Source:</source>
         <translation>Kaynak:</translation>
     </message>
@@ -5341,309 +5483,309 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <translation>Kareler-arası Karıştırma</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="582"/>
+        <location filename="../SettingsView.ui" line="589"/>
         <source>Periodically autosave state</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="702"/>
+        <location filename="../SettingsView.ui" line="709"/>
         <source>Language</source>
         <translation>Dil</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="719"/>
+        <location filename="../SettingsView.ui" line="726"/>
         <source>Library:</source>
         <translation>Kütüphane:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="727"/>
+        <location filename="../SettingsView.ui" line="734"/>
         <source>List view</source>
         <translation>Liste görünümü</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="732"/>
+        <location filename="../SettingsView.ui" line="739"/>
         <source>Tree view</source>
         <translation>Sıralı görünüm</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="740"/>
+        <location filename="../SettingsView.ui" line="747"/>
         <source>Show when no game open</source>
         <translation>Oyun açılmadığında göster</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="757"/>
+        <location filename="../SettingsView.ui" line="764"/>
         <source>Clear cache</source>
         <translation>Ön belleği temizle</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="771"/>
+        <location filename="../SettingsView.ui" line="778"/>
         <source>Allow opposing input directions</source>
         <translation>Karşıt giriş yönlerine izin ver</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="778"/>
+        <location filename="../SettingsView.ui" line="785"/>
         <source>Suspend screensaver</source>
         <translation>Ekran koruyucuyu askıya alın</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="845"/>
+        <location filename="../SettingsView.ui" line="852"/>
         <source>Dynamically update window title</source>
         <translation>Pencere boyutuna göre dinamik olarak güncelle</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="855"/>
+        <location filename="../SettingsView.ui" line="862"/>
         <source>Show FPS in title bar</source>
         <translation>FPS&apos;i başlık çubuğunda göster</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="609"/>
+        <location filename="../SettingsView.ui" line="616"/>
         <source>Save state extra data:</source>
         <translation>Durum ekstra veriyi kaydet:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="626"/>
-        <location filename="../SettingsView.ui" line="670"/>
+        <location filename="../SettingsView.ui" line="633"/>
+        <location filename="../SettingsView.ui" line="677"/>
         <source>Save game</source>
         <translation>Oyunu kaydet</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="653"/>
+        <location filename="../SettingsView.ui" line="660"/>
         <source>Load state extra data:</source>
         <translation>Durum ekstra veriyi yükle:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1278"/>
+        <location filename="../SettingsView.ui" line="1288"/>
         <source>Enable VBA bug compatibility in ROM hacks</source>
         <translation>ROM hacklerinde VBA hata uyumluluğunu etkinleştir</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1877"/>
+        <location filename="../SettingsView.ui" line="1887"/>
         <source>Preset:</source>
         <translation>Ön ayar:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="691"/>
+        <location filename="../SettingsView.ui" line="698"/>
         <source>Enable Discord Rich Presence</source>
         <translation>Discord etkinliğini etkinleştir</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="882"/>
+        <location filename="../SettingsView.ui" line="889"/>
         <source>Show OSD messages</source>
         <translation>OSD mesajlarını göster</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="865"/>
+        <location filename="../SettingsView.ui" line="872"/>
         <source>Show filename instead of ROM name in title bar</source>
         <translation>Başlık çubuğunda ROM adı yerine dosya adını göster</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1059"/>
+        <location filename="../SettingsView.ui" line="1066"/>
         <source>Fast forward speed:</source>
         <translation>Hızlı sarma hızı:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1090"/>
-        <location filename="../SettingsView.ui" line="1133"/>
+        <location filename="../SettingsView.ui" line="1097"/>
+        <location filename="../SettingsView.ui" line="1140"/>
         <source>Unbounded</source>
         <translation>Sınırsız</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1102"/>
+        <location filename="../SettingsView.ui" line="1109"/>
         <source>Fast forward (held) speed:</source>
         <translation>İleri sarma (tutulan) hızı:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1145"/>
+        <location filename="../SettingsView.ui" line="1152"/>
         <source>Autofire interval:</source>
         <translation>Otomatik ateşleme aralığı:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1169"/>
+        <location filename="../SettingsView.ui" line="1176"/>
         <source>Enable rewind</source>
         <translation>Geri sarmayı etkinleştir</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1176"/>
+        <location filename="../SettingsView.ui" line="1183"/>
         <source>Rewind history:</source>
         <translation>Geri alma tarihi:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1238"/>
+        <location filename="../SettingsView.ui" line="1245"/>
         <source>Idle loops:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1246"/>
+        <location filename="../SettingsView.ui" line="1253"/>
         <source>Run all</source>
         <translation>Hepsini çalıştır</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1251"/>
+        <location filename="../SettingsView.ui" line="1258"/>
         <source>Remove known</source>
         <translation>Bilinenleri kaldır</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1256"/>
+        <location filename="../SettingsView.ui" line="1263"/>
         <source>Detect and remove</source>
         <translation>Algıla ve kaldır</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1264"/>
+        <location filename="../SettingsView.ui" line="1271"/>
         <source>Preload entire ROM into memory</source>
         <translation>Tüm ROM&apos;u belleğe önceden yükle</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="616"/>
-        <location filename="../SettingsView.ui" line="660"/>
+        <location filename="../SettingsView.ui" line="623"/>
+        <location filename="../SettingsView.ui" line="667"/>
         <source>Screenshot</source>
         <translation>Ekran görüntüsü</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="636"/>
-        <location filename="../SettingsView.ui" line="677"/>
+        <location filename="../SettingsView.ui" line="643"/>
+        <location filename="../SettingsView.ui" line="684"/>
         <source>Cheat codes</source>
         <translation>Hile kodları</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1271"/>
+        <location filename="../SettingsView.ui" line="1281"/>
         <source>Enable Game Boy Player features by default</source>
         <translation>Game Boy Player özelliklerini varsayılan olarak etkinleştir</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1292"/>
+        <location filename="../SettingsView.ui" line="1302"/>
         <source>Video renderer:</source>
         <translation>Video oluşturucu:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1300"/>
+        <location filename="../SettingsView.ui" line="1310"/>
         <source>Software</source>
         <translation>Yazılım</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1313"/>
+        <location filename="../SettingsView.ui" line="1323"/>
         <source>OpenGL enhancements</source>
         <translation>OpenGL geliştirmeleri</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1319"/>
+        <location filename="../SettingsView.ui" line="1329"/>
         <source>High-resolution scale:</source>
         <translation>Yüksek kalite ölçeği:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1357"/>
+        <location filename="../SettingsView.ui" line="1367"/>
         <source>(240×160)</source>
         <translation>(240×160)</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1386"/>
+        <location filename="../SettingsView.ui" line="1396"/>
         <source>GB BIOS file:</source>
         <translation>GB BIOS dosyası:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="925"/>
-        <location filename="../SettingsView.ui" line="1405"/>
-        <location filename="../SettingsView.ui" line="1433"/>
-        <location filename="../SettingsView.ui" line="1461"/>
-        <location filename="../SettingsView.ui" line="1489"/>
-        <location filename="../SettingsView.ui" line="1547"/>
-        <location filename="../SettingsView.ui" line="1595"/>
-        <location filename="../SettingsView.ui" line="1643"/>
-        <location filename="../SettingsView.ui" line="1691"/>
-        <location filename="../SettingsView.ui" line="1739"/>
+        <location filename="../SettingsView.ui" line="932"/>
+        <location filename="../SettingsView.ui" line="1415"/>
+        <location filename="../SettingsView.ui" line="1443"/>
+        <location filename="../SettingsView.ui" line="1471"/>
+        <location filename="../SettingsView.ui" line="1499"/>
+        <location filename="../SettingsView.ui" line="1557"/>
+        <location filename="../SettingsView.ui" line="1605"/>
+        <location filename="../SettingsView.ui" line="1653"/>
+        <location filename="../SettingsView.ui" line="1701"/>
+        <location filename="../SettingsView.ui" line="1749"/>
         <source>Browse</source>
         <translation>Gözat</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1498"/>
+        <location filename="../SettingsView.ui" line="1508"/>
         <source>Use BIOS file if found</source>
         <translation>Varsa BIOS dosyasını kullan</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1508"/>
+        <location filename="../SettingsView.ui" line="1518"/>
         <source>Skip BIOS intro</source>
         <translation>BIOS girişini atla</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1470"/>
+        <location filename="../SettingsView.ui" line="1480"/>
         <source>GBA BIOS file:</source>
         <translation>GBA BIOS dosyası:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1442"/>
+        <location filename="../SettingsView.ui" line="1452"/>
         <source>GBC BIOS file:</source>
         <translation>GBC BIOS dosyası:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1414"/>
+        <location filename="../SettingsView.ui" line="1424"/>
         <source>SGB BIOS file:</source>
         <translation>SGB BIOS dosyası:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1522"/>
+        <location filename="../SettingsView.ui" line="1532"/>
         <source>Save games</source>
         <translation>Oyunları kaydet</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1556"/>
-        <location filename="../SettingsView.ui" line="1604"/>
-        <location filename="../SettingsView.ui" line="1652"/>
-        <location filename="../SettingsView.ui" line="1700"/>
-        <location filename="../SettingsView.ui" line="1748"/>
+        <location filename="../SettingsView.ui" line="1566"/>
+        <location filename="../SettingsView.ui" line="1614"/>
+        <location filename="../SettingsView.ui" line="1662"/>
+        <location filename="../SettingsView.ui" line="1710"/>
+        <location filename="../SettingsView.ui" line="1758"/>
         <source>Same directory as the ROM</source>
         <translation>ROM ile aynı dizin</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1570"/>
+        <location filename="../SettingsView.ui" line="1580"/>
         <source>Save states</source>
         <translation>Konum kaydedici</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1618"/>
+        <location filename="../SettingsView.ui" line="1628"/>
         <source>Screenshots</source>
         <translation>Ekran Görüntüleri</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1666"/>
+        <location filename="../SettingsView.ui" line="1676"/>
         <source>Patches</source>
         <translation>Yamalar</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1714"/>
+        <location filename="../SettingsView.ui" line="1724"/>
         <source>Cheats</source>
         <translation>Hileler</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1771"/>
+        <location filename="../SettingsView.ui" line="1781"/>
         <source>Log to file</source>
         <translation>Dosyaya günlüğünü gir</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1778"/>
+        <location filename="../SettingsView.ui" line="1788"/>
         <source>Log to console</source>
         <translation>Konsola günlüğünü gir</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1792"/>
+        <location filename="../SettingsView.ui" line="1802"/>
         <source>Select Log File</source>
         <translation>Günlük Dosyasını Seç</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1887"/>
+        <location filename="../SettingsView.ui" line="1897"/>
         <source>Default BG colors:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1861"/>
+        <location filename="../SettingsView.ui" line="1871"/>
         <source>Super Game Boy borders</source>
         <translation>Super Game Boy sınırları</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="1974"/>
+        <location filename="../SettingsView.ui" line="1984"/>
         <source>Default sprite colors 1:</source>
         <translation>Varsayılan sprite renkleri 1:</translation>
     </message>
     <message>
-        <location filename="../SettingsView.ui" line="2061"/>
+        <location filename="../SettingsView.ui" line="2071"/>
         <source>Default sprite colors 2:</source>
         <translation>Varsayılan sprite renkleri 2:</translation>
     </message>
@@ -5776,18 +5918,18 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 <context>
     <name>QGBA::TileView</name>
     <message>
-        <location filename="../TileView.cpp" line="225"/>
+        <location filename="../TileView.cpp" line="226"/>
         <source>Export tiles</source>
         <translation>Tileleri dışarı aktar</translation>
     </message>
     <message>
-        <location filename="../TileView.cpp" line="226"/>
-        <location filename="../TileView.cpp" line="238"/>
+        <location filename="../TileView.cpp" line="227"/>
+        <location filename="../TileView.cpp" line="239"/>
         <source>Portable Network Graphics (*.png)</source>
         <translation>Portable Network Graphics (*.png)</translation>
     </message>
     <message>
-        <location filename="../TileView.cpp" line="237"/>
+        <location filename="../TileView.cpp" line="238"/>
         <source>Export tile</source>
         <translation>Tileyi dışarı aktar</translation>
     </message>
@@ -5865,17 +6007,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 <context>
     <name>QGBA::VideoView</name>
     <message>
-        <location filename="../VideoView.cpp" line="223"/>
+        <location filename="../VideoView.cpp" line="226"/>
         <source>Failed to open output video file: %1</source>
         <translation>Çıkış video dosyası açılamadı:%1</translation>
     </message>
     <message>
-        <location filename="../VideoView.cpp" line="244"/>
+        <location filename="../VideoView.cpp" line="247"/>
         <source>Native (%0x%1)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../VideoView.cpp" line="259"/>
+        <location filename="../VideoView.cpp" line="262"/>
         <source>Select output file</source>
         <translation>Çıkış dosyasını seç</translation>
     </message>
@@ -5960,37 +6102,37 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <translation>4K</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="370"/>
+        <location filename="../VideoView.ui" line="375"/>
         <source> Bitrate (kbps)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="415"/>
+        <location filename="../VideoView.ui" line="420"/>
         <source>ABR</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="460"/>
+        <location filename="../VideoView.ui" line="465"/>
         <source>VBR</source>
         <translation>VBR</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="473"/>
+        <location filename="../VideoView.ui" line="478"/>
         <source>CRF</source>
         <translation>CRF</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="489"/>
+        <location filename="../VideoView.ui" line="494"/>
         <source>Dimensions</source>
         <translation>Boyutlar</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="555"/>
+        <location filename="../VideoView.ui" line="560"/>
         <source>Lock aspect ratio</source>
         <translation>En boy oranını kilitle</translation>
     </message>
     <message>
-        <location filename="../VideoView.ui" line="570"/>
+        <location filename="../VideoView.ui" line="575"/>
         <source>Show advanced</source>
         <translation>Gelişmişi göster</translation>
     </message>
@@ -5998,100 +6140,100 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 <context>
     <name>QGBA::Window</name>
     <message>
-        <location filename="../Window.cpp" line="343"/>
+        <location filename="../Window.cpp" line="347"/>
         <source>Archives (%1)</source>
         <translation>Arşivler (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="348"/>
-        <location filename="../Window.cpp" line="364"/>
-        <location filename="../Window.cpp" line="391"/>
+        <location filename="../Window.cpp" line="352"/>
+        <location filename="../Window.cpp" line="368"/>
+        <location filename="../Window.cpp" line="395"/>
         <source>Select ROM</source>
         <translation>ROM seç</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="382"/>
+        <location filename="../Window.cpp" line="386"/>
         <source>Select folder</source>
         <translation>Klasör seç</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="519"/>
-        <location filename="../Window.cpp" line="526"/>
+        <location filename="../Window.cpp" line="523"/>
+        <location filename="../Window.cpp" line="530"/>
         <source>Select save</source>
         <translation>Kayıt seç</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="438"/>
+        <location filename="../Window.cpp" line="442"/>
         <source>Select patch</source>
         <translation>Yama seç</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="438"/>
+        <location filename="../Window.cpp" line="442"/>
         <source>Patches (*.ips *.ups *.bps)</source>
         <translation>Yamalar (*.ips *.ups *.bps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="449"/>
+        <location filename="../Window.cpp" line="453"/>
         <source>Select e-Reader dotcode</source>
         <translation>e-Okuyucu nokta kodunu seç</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="449"/>
+        <location filename="../Window.cpp" line="453"/>
         <source>e-Reader card (*.raw *.bin *.bmp)</source>
         <translation>e-Okuyucu kart (*.raw *.bin *.bmp)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="457"/>
+        <location filename="../Window.cpp" line="461"/>
         <source>Select e-Reader card images</source>
         <translation>e-Okuyucu kartından görüntüleri seç</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="457"/>
+        <location filename="../Window.cpp" line="461"/>
         <source>Image file (*.png *.jpg *.jpeg)</source>
         <translation>Görüntü dosyası (*.png *.jpg *.jpeg)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="458"/>
+        <location filename="../Window.cpp" line="462"/>
         <source>Conversion finished</source>
         <translation>Dönüştürme tamamlandı</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="499"/>
+        <location filename="../Window.cpp" line="503"/>
         <source>%1 of %2 e-Reader cards converted successfully.</source>
         <translation>%1 / %2 e-Okuyucu kartları dönüştürme tamamlandı.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="512"/>
+        <location filename="../Window.cpp" line="516"/>
         <source>Select image</source>
         <translation>Resim seç</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="512"/>
+        <location filename="../Window.cpp" line="516"/>
         <source>Image file (*.png *.gif *.jpg *.jpeg);;All files (*)</source>
         <translation>Resim dosyası (*.png *.gif *.jpg *.jpeg);;All files (*)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="526"/>
+        <location filename="../Window.cpp" line="530"/>
         <source>GameShark saves (*.sps *.xps)</source>
         <translation>GameShark kayıtları (*.sps *.xps)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="559"/>
+        <location filename="../Window.cpp" line="569"/>
         <source>Select video log</source>
         <translation>Video günlüğü seç</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="559"/>
+        <location filename="../Window.cpp" line="569"/>
         <source>Video logs (*.mvl)</source>
         <translation>Video günlükleri (*.mvl)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1001"/>
+        <location filename="../Window.cpp" line="1012"/>
         <source>Crash</source>
         <translation>Çökme</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1002"/>
+        <location filename="../Window.cpp" line="1013"/>
         <source>The game has crashed with the following error:
 
 %1</source>
@@ -6100,689 +6242,689 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 %1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1024"/>
+        <location filename="../Window.cpp" line="1035"/>
         <source>Unimplemented BIOS call</source>
         <translation>Uygulanmamış BIOS girişi</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1025"/>
+        <location filename="../Window.cpp" line="1036"/>
         <source>This game uses a BIOS call that is not implemented. Please use the official BIOS for best experience.</source>
         <translation>Oyun BIOS dosyasına ihtiyacı var. Lütfen en iyi deneyim için resmi BIOS&apos;u kullanın.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1047"/>
+        <location filename="../Window.cpp" line="1058"/>
         <source>Failed to create an appropriate display device, falling back to software display. Games may run slowly, especially with larger windows.</source>
         <translation>Uygun görüntü cihazı oluşturma başarısız, yazılım ekranına dönülüyor. Oyunlar özellikle daha büyük ekranlarda yavaş çalışabilir.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1145"/>
+        <location filename="../Window.cpp" line="1156"/>
         <source>Really make portable?</source>
         <translation>Taşınabilir yapılsın mı?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1146"/>
+        <location filename="../Window.cpp" line="1157"/>
         <source>This will make the emulator load its configuration from the same directory as the executable. Do you want to continue?</source>
         <translation>Öyküncünün yapılandırmasını yürütülebilir dosya ile aynı dizinden yüklemesini sağlar. Devam etmek istiyor musunuz?</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1158"/>
+        <location filename="../Window.cpp" line="1169"/>
         <source>Restart needed</source>
         <translation>Yeniden başlatma gerekli</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1159"/>
+        <location filename="../Window.cpp" line="1170"/>
         <source>Some changes will not take effect until the emulator is restarted.</source>
         <translation>Bazı değişiklikler öyküncü yeniden başlatılıncaya kadar etkili olmaz.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1210"/>
+        <location filename="../Window.cpp" line="1221"/>
         <source> -  Player %1 of %2</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1221"/>
+        <location filename="../Window.cpp" line="1232"/>
         <source>%1 - %2</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1223"/>
+        <location filename="../Window.cpp" line="1234"/>
         <source>%1 - %2 - %3</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1225"/>
+        <location filename="../Window.cpp" line="1236"/>
         <source>%1 - %2 (%3 fps) - %4</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1289"/>
+        <location filename="../Window.cpp" line="1300"/>
         <source>&amp;File</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1291"/>
+        <location filename="../Window.cpp" line="1302"/>
         <source>Load &amp;ROM...</source>
         <translation>&amp;ROM yükle...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1294"/>
+        <location filename="../Window.cpp" line="1305"/>
         <source>Load ROM in archive...</source>
         <translation>ROM&apos;u arşivden yükle ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1295"/>
+        <location filename="../Window.cpp" line="1306"/>
         <source>Add folder to library...</source>
         <translation>Kütüphaneye klasör ekle ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1298"/>
+        <location filename="../Window.cpp" line="1309"/>
         <source>Save games</source>
         <translation type="unfinished">Oyunları kaydet</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1321"/>
+        <location filename="../Window.cpp" line="1332"/>
         <source>Automatically determine</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1325"/>
+        <location filename="../Window.cpp" line="1336"/>
         <source>Use player %0 save game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1335"/>
+        <location filename="../Window.cpp" line="1346"/>
         <source>Load &amp;patch...</source>
         <translation>&amp;Patch yükle...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1338"/>
+        <location filename="../Window.cpp" line="1349"/>
         <source>Boot BIOS</source>
         <translation>BIOS boot et</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1432"/>
+        <location filename="../Window.cpp" line="1443"/>
         <source>Replace ROM...</source>
         <translation>ROM değişti...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1725"/>
+        <location filename="../Window.cpp" line="1748"/>
         <source>Create forwarder...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1743"/>
+        <location filename="../Window.cpp" line="1766"/>
         <source>Game state views</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1770"/>
+        <location filename="../Window.cpp" line="1777"/>
         <source>Log memory &amp;accesses...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1775"/>
+        <location filename="../Window.cpp" line="1787"/>
         <source>Convert e-Reader card image to raw...</source>
         <translation>e-Okuyucu kart resimlerini rawa dönüştür...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1346"/>
+        <location filename="../Window.cpp" line="1357"/>
         <source>ROM &amp;info...</source>
         <translation>ROM &amp;info...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1348"/>
+        <location filename="../Window.cpp" line="1359"/>
         <source>Recent</source>
         <translation>Son kullanılanlar</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1729"/>
+        <location filename="../Window.cpp" line="1752"/>
         <source>Make portable</source>
         <translation>Portatif yap</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1351"/>
+        <location filename="../Window.cpp" line="1362"/>
         <source>&amp;Load state</source>
         <translation>&amp;Kaydedilmiş konum yükle</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1356"/>
+        <location filename="../Window.cpp" line="1367"/>
         <source>Load state file...</source>
         <translation>Kaydedilmiş konum dosyası yükle...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1361"/>
+        <location filename="../Window.cpp" line="1372"/>
         <source>&amp;Save state</source>
         <translation>&amp;Konumu kaydet</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1366"/>
+        <location filename="../Window.cpp" line="1377"/>
         <source>Save state file...</source>
         <translation>Konum dosyasını kaydet...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1371"/>
+        <location filename="../Window.cpp" line="1382"/>
         <source>Quick load</source>
         <translation>Hızlı Yükle</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1372"/>
+        <location filename="../Window.cpp" line="1383"/>
         <source>Quick save</source>
         <translation>Hızlı kaydet</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1374"/>
+        <location filename="../Window.cpp" line="1385"/>
         <source>Load recent</source>
         <translation>En son yükle</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1379"/>
+        <location filename="../Window.cpp" line="1390"/>
         <source>Save recent</source>
         <translation>Hızlı kaydet</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1387"/>
+        <location filename="../Window.cpp" line="1398"/>
         <source>Undo load state</source>
         <translation>Kaydedilen konum yüklemeyi geri al</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1390"/>
+        <location filename="../Window.cpp" line="1401"/>
         <source>Undo save state</source>
         <translation>Konum kaydetmeyi geri al</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1397"/>
-        <location filename="../Window.cpp" line="1402"/>
+        <location filename="../Window.cpp" line="1408"/>
+        <location filename="../Window.cpp" line="1413"/>
         <source>State &amp;%1</source>
         <translation>Konum &amp;%1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1528"/>
+        <location filename="../Window.cpp" line="1539"/>
         <source>Load camera image...</source>
         <translation>Kamera resmini yükle ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1308"/>
+        <location filename="../Window.cpp" line="1319"/>
         <source>Convert save game...</source>
         <translation>Kayıtlı oyun dömnüştürülüyor...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="519"/>
+        <location filename="../Window.cpp" line="523"/>
         <source>GameShark saves (*.gsv *.sps *.xps)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1170"/>
+        <location filename="../Window.cpp" line="1181"/>
         <source>Reset needed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1171"/>
+        <location filename="../Window.cpp" line="1182"/>
         <source>Some changes will not take effect until the game is reset.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1409"/>
+        <location filename="../Window.cpp" line="1420"/>
         <source>New multiplayer window</source>
         <translation>Yeni çokoyunculu ekranı</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1412"/>
+        <location filename="../Window.cpp" line="1423"/>
         <source>Connect to Dolphin...</source>
         <translation>Dolphin&apos;e Bağlan...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1418"/>
+        <location filename="../Window.cpp" line="1429"/>
         <source>Report bug...</source>
         <translation>Hata rapor et...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1424"/>
+        <location filename="../Window.cpp" line="1435"/>
         <source>About...</source>
         <translation>Hakkında...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1425"/>
+        <location filename="../Window.cpp" line="1436"/>
         <source>E&amp;xit</source>
         <translation>Çıkış</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1427"/>
+        <location filename="../Window.cpp" line="1438"/>
         <source>&amp;Emulation</source>
         <translation>Emülasyon</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1428"/>
+        <location filename="../Window.cpp" line="1439"/>
         <source>&amp;Reset</source>
         <translation>&amp;Reset</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1429"/>
+        <location filename="../Window.cpp" line="1440"/>
         <source>Sh&amp;utdown</source>
         <translation>Kapat</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1433"/>
+        <location filename="../Window.cpp" line="1444"/>
         <source>Yank game pak</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1436"/>
+        <location filename="../Window.cpp" line="1447"/>
         <source>&amp;Pause</source>
         <translation>&amp;Durdur</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1445"/>
+        <location filename="../Window.cpp" line="1456"/>
         <source>&amp;Next frame</source>
         <translation>&amp;Sonraki kare</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1449"/>
+        <location filename="../Window.cpp" line="1460"/>
         <source>Fast forward (held)</source>
         <translation>İleriye sar(basılı tutun)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1455"/>
+        <location filename="../Window.cpp" line="1466"/>
         <source>&amp;Fast forward</source>
         <translation>&amp;İleriye sar</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1459"/>
+        <location filename="../Window.cpp" line="1470"/>
         <source>Fast forward speed</source>
         <translation>İleriye sarma hızı</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1464"/>
+        <location filename="../Window.cpp" line="1475"/>
         <source>Unbounded</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1468"/>
+        <location filename="../Window.cpp" line="1479"/>
         <source>%0x</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1472"/>
+        <location filename="../Window.cpp" line="1483"/>
         <source>Increase fast forward speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1479"/>
+        <location filename="../Window.cpp" line="1490"/>
         <source>Decrease fast forward speed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1486"/>
+        <location filename="../Window.cpp" line="1497"/>
         <source>Rewind (held)</source>
         <translation>Geri sar (basılı tutun)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1498"/>
+        <location filename="../Window.cpp" line="1509"/>
         <source>Re&amp;wind</source>
         <translation>Geri sar</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1503"/>
+        <location filename="../Window.cpp" line="1514"/>
         <source>Step backwards</source>
         <translation>Geriye doğru adım</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1510"/>
+        <location filename="../Window.cpp" line="1521"/>
         <source>Solar sensor</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1511"/>
+        <location filename="../Window.cpp" line="1522"/>
         <source>Increase solar level</source>
         <translation>Solar seviyesini arttır</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1512"/>
+        <location filename="../Window.cpp" line="1523"/>
         <source>Decrease solar level</source>
         <translation>Solar seviyesini düşür</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1513"/>
+        <location filename="../Window.cpp" line="1524"/>
         <source>Brightest solar level</source>
         <translation>En parlak solar seviyesi</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1516"/>
+        <location filename="../Window.cpp" line="1527"/>
         <source>Darkest solar level</source>
         <translation>En karanlık solar seviyesi</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1522"/>
+        <location filename="../Window.cpp" line="1533"/>
         <source>Brightness %1</source>
         <translation>Parlaklık:%1</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1530"/>
+        <location filename="../Window.cpp" line="1541"/>
         <source>Game Boy Printer...</source>
         <translation>Game Boy yazıcısı...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1539"/>
+        <location filename="../Window.cpp" line="1550"/>
         <source>BattleChip Gate...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1543"/>
+        <location filename="../Window.cpp" line="1554"/>
         <source>Audio/&amp;Video</source>
         <translation>Ses/&amp;Video</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1544"/>
+        <location filename="../Window.cpp" line="1555"/>
         <source>Frame size</source>
         <translation>Çerçeve boyutu</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1587"/>
+        <location filename="../Window.cpp" line="1598"/>
         <source>Toggle fullscreen</source>
         <translation>Tamekranı aç/kapa</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1590"/>
+        <location filename="../Window.cpp" line="1601"/>
         <source>&amp;Lock frame size</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1603"/>
+        <location filename="../Window.cpp" line="1614"/>
         <source>Lock aspect ratio</source>
         <translation>En boy oranını kilitle</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1615"/>
+        <location filename="../Window.cpp" line="1626"/>
         <source>Force integer scaling</source>
         <translation>Tamsayılı ölçeklendirmeyi zorla</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1636"/>
+        <location filename="../Window.cpp" line="1647"/>
         <source>Bilinear filtering</source>
         <translation>Bilinear filtreleme</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1644"/>
+        <location filename="../Window.cpp" line="1655"/>
         <source>Frame&amp;skip</source>
         <translation>Kare atlama</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1657"/>
+        <location filename="../Window.cpp" line="1668"/>
         <source>Mute</source>
         <translation>Sessiz</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1664"/>
+        <location filename="../Window.cpp" line="1675"/>
         <source>FPS target</source>
         <translation>FPS hedefi</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1672"/>
+        <location filename="../Window.cpp" line="1683"/>
         <source>Native (59.7275)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1687"/>
+        <location filename="../Window.cpp" line="1698"/>
         <source>Take &amp;screenshot</source>
         <translation>Ekran görüntüsü al</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1689"/>
+        <location filename="../Window.cpp" line="1700"/>
         <source>F12</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1698"/>
+        <location filename="../Window.cpp" line="1709"/>
         <source>Video layers</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1699"/>
+        <location filename="../Window.cpp" line="1710"/>
         <source>Audio channels</source>
         <translation>Ses kanalları</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1701"/>
+        <location filename="../Window.cpp" line="1712"/>
         <source>Adjust layer placement...</source>
         <translation>Katman yerleşimini ayarlayın...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1703"/>
+        <location filename="../Window.cpp" line="1714"/>
         <source>&amp;Tools</source>
         <translation>&amp;Araçlar</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1704"/>
+        <location filename="../Window.cpp" line="1715"/>
         <source>View &amp;logs...</source>
         <translation>Kayıtları görüntüle...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1706"/>
+        <location filename="../Window.cpp" line="1717"/>
         <source>Game &amp;overrides...</source>
         <translation>&amp; Oyunun üzerine yazılanlar...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1009"/>
+        <location filename="../Window.cpp" line="1020"/>
         <source>Couldn&apos;t Start</source>
         <translation>Başlatılamadı</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="399"/>
+        <location filename="../Window.cpp" line="403"/>
         <source>Save games (%1)</source>
         <translation>Kayıtlı oyunlar (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="400"/>
+        <location filename="../Window.cpp" line="404"/>
         <source>Select save game</source>
         <translation>Kayıtlı oyun seç</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="408"/>
+        <location filename="../Window.cpp" line="412"/>
         <source>mGBA save state files (%1)</source>
         <translation>mGBA kayıt durum dosyası (%1)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="410"/>
-        <location filename="../Window.cpp" line="415"/>
+        <location filename="../Window.cpp" line="414"/>
+        <location filename="../Window.cpp" line="419"/>
         <source>Select save state</source>
         <translation>Kayıt durumu seç</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1010"/>
+        <location filename="../Window.cpp" line="1021"/>
         <source>Could not start game.</source>
         <translation>Oyun başlatılamadı.</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1299"/>
+        <location filename="../Window.cpp" line="1310"/>
         <source>Load alternate save game...</source>
         <translation>Alternatif kayıtlı oyun yükle...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1302"/>
+        <location filename="../Window.cpp" line="1313"/>
         <source>Load temporary save game...</source>
         <translation>Geçici kayıtlı oyunu yükle...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1342"/>
+        <location filename="../Window.cpp" line="1353"/>
         <source>Scan e-Reader dotcodes...</source>
         <translation>e-Okuyucu noktakodları tara...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1311"/>
+        <location filename="../Window.cpp" line="1322"/>
         <source>Import GameShark Save...</source>
         <translation>GameShark kaydını içeri aktar...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1314"/>
+        <location filename="../Window.cpp" line="1325"/>
         <source>Export GameShark Save...</source>
         <translation>GameShark kaydını dışarı aktar...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1546"/>
+        <location filename="../Window.cpp" line="1557"/>
         <source>%1×</source>
         <translation>%1×</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1627"/>
+        <location filename="../Window.cpp" line="1638"/>
         <source>Interframe blending</source>
         <translation>Kareler-arası Karıştırma</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1693"/>
+        <location filename="../Window.cpp" line="1704"/>
         <source>Record A/V...</source>
         <translation>A/V Kayıt...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1694"/>
+        <location filename="../Window.cpp" line="1705"/>
         <source>Record GIF/WebP/APNG...</source>
         <translation>GIF/WebP/APNG Kayıt...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1718"/>
+        <location filename="../Window.cpp" line="1730"/>
         <source>Game Pak sensors...</source>
         <translation>Oyun Kartuş sensörleri...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1720"/>
+        <location filename="../Window.cpp" line="1743"/>
         <source>&amp;Cheats...</source>
         <translation>&amp;Hileler...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1728"/>
+        <location filename="../Window.cpp" line="1751"/>
         <source>Settings...</source>
         <translation>Ayarlar...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1733"/>
+        <location filename="../Window.cpp" line="1756"/>
         <source>Open debugger console...</source>
         <translation>Hata ayıklayıcı konsolunu aç ...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1735"/>
+        <location filename="../Window.cpp" line="1758"/>
         <source>Start &amp;GDB server...</source>
         <translation>&amp;GDB sunucusunu başlat...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1722"/>
+        <location filename="../Window.cpp" line="1745"/>
         <source>Scripting...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1744"/>
+        <location filename="../Window.cpp" line="1767"/>
         <source>View &amp;palette...</source>
         <translation>&amp;Renk Paletini gör...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1745"/>
+        <location filename="../Window.cpp" line="1768"/>
         <source>View &amp;sprites...</source>
         <translation>&amp;Spriteları gör...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1746"/>
+        <location filename="../Window.cpp" line="1769"/>
         <source>View &amp;tiles...</source>
         <translation>&amp;Desenleri gör...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1747"/>
+        <location filename="../Window.cpp" line="1770"/>
         <source>View &amp;map...</source>
         <translation>&amp;Haritayı gör</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1749"/>
+        <location filename="../Window.cpp" line="1771"/>
         <source>&amp;Frame inspector...</source>
         <translation>&amp;Kare denetçisi...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1765"/>
+        <location filename="../Window.cpp" line="1772"/>
         <source>View memory...</source>
         <translation>Hafıza gör...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1766"/>
+        <location filename="../Window.cpp" line="1773"/>
         <source>Search memory...</source>
         <translation>Hafızada ara...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1767"/>
+        <location filename="../Window.cpp" line="1774"/>
         <source>View &amp;I/O registers...</source>
         <translation>&amp;I/O kayıtlarını görüntüle</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1779"/>
+        <location filename="../Window.cpp" line="1791"/>
         <source>Record debug video log...</source>
         <translation>Hata ayıklama video günlüğünü kaydet...</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1780"/>
+        <location filename="../Window.cpp" line="1792"/>
         <source>Stop debug video log</source>
         <translation>Hata ayıklama video günlüğünü durdur</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1784"/>
+        <location filename="../Window.cpp" line="1796"/>
         <source>Exit fullscreen</source>
         <translation>Tam ekrandan çık</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1786"/>
+        <location filename="../Window.cpp" line="1798"/>
         <source>GameShark Button (held)</source>
         <translation>GameShark Butonu (basılı tutun)</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1792"/>
+        <location filename="../Window.cpp" line="1804"/>
         <source>Autofire</source>
         <translation>Otomatik basma</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1793"/>
+        <location filename="../Window.cpp" line="1805"/>
         <source>Autofire A</source>
         <translation>Otomatik basma A</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1798"/>
+        <location filename="../Window.cpp" line="1810"/>
         <source>Autofire B</source>
         <translation>Otomatik basma B</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1803"/>
+        <location filename="../Window.cpp" line="1815"/>
         <source>Autofire L</source>
         <translation>Otomatik basma L</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1808"/>
+        <location filename="../Window.cpp" line="1820"/>
         <source>Autofire R</source>
         <translation>Otomatik basma R</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1813"/>
+        <location filename="../Window.cpp" line="1825"/>
         <source>Autofire Start</source>
         <translation>Otomatik basma Start</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1818"/>
+        <location filename="../Window.cpp" line="1830"/>
         <source>Autofire Select</source>
         <translation>Otomatik basma Select</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1823"/>
+        <location filename="../Window.cpp" line="1835"/>
         <source>Autofire Up</source>
         <translation>Otomatik basma Up</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1828"/>
+        <location filename="../Window.cpp" line="1840"/>
         <source>Autofire Right</source>
         <translation>Otomatik basma Right</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1833"/>
+        <location filename="../Window.cpp" line="1845"/>
         <source>Autofire Down</source>
         <translation>Otomatik basma Down</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="1838"/>
+        <location filename="../Window.cpp" line="1850"/>
         <source>Autofire Left</source>
         <translation>Otomatik basma Sol</translation>
     </message>
     <message>
-        <location filename="../Window.cpp" line="2043"/>
+        <location filename="../Window.cpp" line="2055"/>
         <source>Clear</source>
         <translation>Temizle</translation>
     </message>
@@ -6790,47 +6932,32 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../utils.cpp" line="20"/>
+        <location filename="../utils.cpp" line="26"/>
         <source>%1 byte</source>
         <translation>%1 bayt</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="23"/>
+        <location filename="../utils.cpp" line="29"/>
         <source>%1 kiB</source>
         <translation>%1 kiB</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="27"/>
+        <location filename="../utils.cpp" line="33"/>
         <source>%1 MiB</source>
         <translation>%1 MiB</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="36"/>
-        <source>GBA</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../utils.cpp" line="40"/>
-        <source>GB</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../utils.cpp" line="43"/>
-        <source>?</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../utils.cpp" line="170"/>
+        <location filename="../utils.cpp" line="183"/>
         <source>Super (L)</source>
         <translation type="unfinished">Süper (L)</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="172"/>
+        <location filename="../utils.cpp" line="185"/>
         <source>Super (R)</source>
         <translation type="unfinished">Süper (R)</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="174"/>
+        <location filename="../utils.cpp" line="187"/>
         <source>Menu</source>
         <translation type="unfinished">Menü</translation>
     </message>
@@ -6838,22 +6965,22 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
 <context>
     <name>QShortcut</name>
     <message>
-        <location filename="../utils.cpp" line="161"/>
+        <location filename="../utils.cpp" line="174"/>
         <source>Shift</source>
         <translation>Shift</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="163"/>
+        <location filename="../utils.cpp" line="176"/>
         <source>Control</source>
         <translation>Kontrol</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="165"/>
+        <location filename="../utils.cpp" line="178"/>
         <source>Alt</source>
         <translation>Alt</translation>
     </message>
     <message>
-        <location filename="../utils.cpp" line="167"/>
+        <location filename="../utils.cpp" line="180"/>
         <source>Meta</source>
         <translation>Derece</translation>
     </message>

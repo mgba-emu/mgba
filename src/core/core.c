@@ -96,8 +96,9 @@ struct mCore* mCoreCreate(enum mPlatform platform) {
 #endif
 
 struct mCore* mCoreFind(const char* path) {
-	struct VDir* archive = VDirOpenArchive(path);
 	struct mCore* core = NULL;
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
+	struct VDir* archive = VDirOpenArchive(path);
 	if (archive) {
 		struct VDirEntry* dirent = archive->listNext(archive);
 		while (dirent) {
@@ -114,7 +115,9 @@ struct mCore* mCoreFind(const char* path) {
 			dirent = archive->listNext(archive);
 		}
 		archive->close(archive);
-	} else {
+	} else
+#endif
+	{
 		struct VFile* vf = VFileOpen(path, O_RDONLY);
 		if (!vf) {
 			return NULL;
@@ -134,7 +137,15 @@ bool mCoreLoadFile(struct mCore* core, const char* path) {
 #ifdef FIXED_ROM_BUFFER
 	return mCorePreloadFile(core, path);
 #else
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 	struct VFile* rom = mDirectorySetOpenPath(&core->dirs, path, core->isROM);
+#else
+	struct VFile* rom = VFileOpen(path, O_RDONLY);
+	if (rom && !core->isROM(rom)) {
+		rom->close(rom);
+		rom = NULL;
+	}
+#endif
 	if (!rom) {
 		return false;
 	}
@@ -213,7 +224,15 @@ bool mCorePreloadVFCB(struct mCore* core, struct VFile* vf, void (cb)(size_t, si
 
 #if !defined(__LIBRETRO__)
 bool mCorePreloadFileCB(struct mCore* core, const char* path, void (cb)(size_t, size_t, void*), void* context) {
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 	struct VFile* rom = mDirectorySetOpenPath(&core->dirs, path, core->isROM);
+#else
+	struct VFile* rom = VFileOpen(path, O_RDONLY);
+	if (rom && !core->isROM(rom)) {
+		rom->close(rom);
+		rom = NULL;
+	}
+#endif
 	if (!rom) {
 		return false;
 	}
@@ -225,6 +244,19 @@ bool mCorePreloadFileCB(struct mCore* core, const char* path, void (cb)(size_t, 
 	return ret;
 }
 
+bool mCoreLoadSaveFile(struct mCore* core, const char* path, bool temporary) {
+	struct VFile* vf = VFileOpen(path, O_CREAT | O_RDWR);
+	if (!vf) {
+		return false;
+	}
+	if (temporary) {
+		return core->loadTemporarySave(core, vf);
+	} else {
+		return core->loadSave(core, vf);
+	}
+}
+
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 bool mCoreAutoloadSave(struct mCore* core) {
 	if (!core->dirs.save) {
 		return false;
@@ -280,18 +312,6 @@ bool mCoreAutoloadCheats(struct mCore* core) {
 	return success;
 }
 #endif
-
-bool mCoreLoadSaveFile(struct mCore* core, const char* path, bool temporary) {
-	struct VFile* vf = VFileOpen(path, O_CREAT | O_RDWR);
-	if (!vf) {
-		return false;
-	}
-	if (temporary) {
-		return core->loadTemporarySave(core, vf);
-	} else {
-		return core->loadSave(core, vf);
-	}
-}
 
 bool mCoreSaveState(struct mCore* core, int slot, int flags) {
 	struct VFile* vf = mCoreGetState(core, slot, true);
@@ -377,6 +397,7 @@ void mCoreTakeScreenshot(struct mCore* core) {
 	mLOG(STATUS, WARN, "Failed to take screenshot");
 }
 #endif
+#endif
 
 bool mCoreTakeScreenshotVF(struct mCore* core, struct VFile* vf) {
 #ifdef USE_PNG
@@ -410,7 +431,7 @@ void mCoreLoadConfig(struct mCore* core) {
 
 void mCoreLoadForeignConfig(struct mCore* core, const struct mCoreConfig* config) {
 	mCoreConfigMap(config, &core->opts);
-#if defined(ENABLE_VFS) && !defined(__LIBRETRO__)
+#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES) && !defined(__LIBRETRO__)
 	mDirectorySetMapOptions(&core->dirs, &core->opts);
 #endif
 	if (core->opts.audioBuffers) {

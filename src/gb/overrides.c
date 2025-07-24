@@ -667,6 +667,8 @@ static const struct GBCartridgeOverride _sgbOverrides[] = {
 };
 
 static const struct GBCartridgeOverride _overrides[] = {
+	{ 0xA61F3EE1, GB_MODEL_AUTODETECT, GB_M161, { 0 } }, // Mani 4 in 1 - Tetris + Alleyway + Yakuman + Tennis
+
 	// Pokemon Spaceworld 1997 demo
 	{ 0x232A067D, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Gold (debug)
 	{ 0x630ED957, GB_MODEL_AUTODETECT, GB_MBC3_RTC, { 0 } }, // Gold (non-debug)
