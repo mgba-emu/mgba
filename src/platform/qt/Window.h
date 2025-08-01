@@ -111,6 +111,8 @@ public slots:
 
 	void openView(QWidget* widget);
 
+	void setSkipResetLevels(bool doSkip);
+
 #ifdef ENABLE_DEBUGGERS
 	void consoleOpen();
 #endif
@@ -242,6 +244,8 @@ private:
 	bool m_inactiveMute = false;
 	bool m_multiActive = true;
 	int m_playerId;
+
+	bool m_skipResetLevels = false;
 
 	QPointer<OverrideView> m_overrideView;
 	QPointer<SensorView> m_sensorView;
