@@ -40,8 +40,6 @@ using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
 
-mLOG_DEFINE_CATEGORY(QT, "Qt", "platform.qt");
-
 GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	: QApplication(argc, argv)
 	, m_configController(config)
