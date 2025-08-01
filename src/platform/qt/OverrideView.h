@@ -31,7 +31,7 @@ class OverrideView : public QDialog {
 Q_OBJECT
 
 public:
-	OverrideView(ConfigController* config, QWidget* parent = nullptr);
+	OverrideView(std::shared_ptr<CoreController> controller, ConfigController* config, QWidget* parent = nullptr);
 
 	void setController(std::shared_ptr<CoreController> controller);
 

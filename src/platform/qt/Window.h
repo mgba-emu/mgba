@@ -19,9 +19,11 @@
 #include <mgba/core/thread.h>
 
 #include "ActionMapper.h"
+#include "CoreConsumer.h"
 #include "InputController.h"
 #include "LoadSaveState.h"
 #include "LogController.h"
+#include "OverrideView.h"
 #include "SettingsView.h"
 #ifdef ENABLE_SCRIPTING
 #include "scripting/ScriptingController.h"
@@ -35,18 +37,12 @@ class CoreController;
 class CoreManager;
 class DebuggerConsoleController;
 class Display;
-class DolphinConnector;
-class FrameView;
 class GDBController;
-class GIFView;
 class LibraryController;
-class LogView;
-class OverrideView;
-class SensorView;
 class ShaderSelector;
 class ShortcutController;
-class VideoView;
 class WindowBackground;
+class WindowPopups;
 
 class Window : public QMainWindow {
 Q_OBJECT
@@ -164,6 +160,7 @@ private:
 	static const int FPS_TIMER_INTERVAL = 2000;
 	static const int MUST_RESTART_TIMEOUT = 10000;
 
+	void setupPopups();
 	void setupMenu(QMenuBar*);
 	void setupOptions();
 	void openStateWindow(LoadSave);
@@ -177,11 +174,6 @@ private:
 
 	void ensureScripting();
 
-	template <typename T, typename... A> std::function<void()> openTView(A... arg);
-	template <typename T, typename... A> std::function<void()> openControllerTView(A... arg);
-	template <typename T, typename... A> std::function<void()> openNamedTView(QPointer<T>*, bool keepalive, A... arg);
-	template <typename T, typename... A> std::function<void()> openNamedControllerTView(QPointer<T>*, bool keepalive, A... arg);
-
 	std::shared_ptr<Action> addGameAction(const QString& visibleName, const QString& name, Action::Function action, const QString& menu = {}, const QKeySequence& = {});
 	template<typename T, typename V> std::shared_ptr<Action> addGameAction(const QString& visibleName, const QString& name, T* obj, V (T::*action)(), const QString& menu = {}, const QKeySequence& = {});
 	template<typename V> std::shared_ptr<Action> addGameAction(const QString& visibleName, const QString& name, V (CoreController::*action)(), const QString& menu = {}, const QKeySequence& = {});
@@ -192,7 +184,7 @@ private:
 	QString getFiltersArchive() const;
 
 	CoreManager* m_manager;
-	std::shared_ptr<CoreController> m_controller;
+	CoreProvider m_controller;
 	std::unique_ptr<AudioProcessor> m_audioProcessor;
 
 	std::unique_ptr<QGBA::Display> m_display;
@@ -209,7 +201,6 @@ private:
 	QMap<int, std::shared_ptr<Action>> m_frameSizes;
 
 	LogController m_log{0};
-	LogView* m_logView;
 #ifdef ENABLE_DEBUGGERS
 	DebuggerConsoleController* m_console = nullptr;
 #endif
@@ -243,15 +234,7 @@ private:
 	bool m_multiActive = true;
 	int m_playerId;
 
-	QPointer<OverrideView> m_overrideView;
-	QPointer<SensorView> m_sensorView;
-	QPointer<DolphinConnector> m_dolphinView;
-	QPointer<FrameView> m_frameView;
-
-#ifdef USE_FFMPEG
-	QPointer<VideoView> m_videoView;
-	QPointer<GIFView> m_gifView;
-#endif
+	std::unique_ptr<WindowPopups> m_popups;
 
 #ifdef ENABLE_GDB_STUB
 	GDBController* m_gdbController = nullptr;

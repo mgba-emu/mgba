@@ -55,6 +55,7 @@
 #include "ObjView.h"
 #include "PaletteView.h"
 #include "PlacementControl.h"
+#include "PopupManager.h"
 #include "PrinterView.h"
 #include "ReportView.h"
 #include "ROMInfo.h"
@@ -91,15 +92,43 @@
 
 using namespace QGBA;
 
+namespace QGBA {
+
+class WindowPopups {
+public:
+	PopupManager<LogView> logView;
+	PopupManager<OverrideView> overrideView;
+	PopupManager<SensorView> sensorView;
+	PopupManager<DolphinConnector> dolphinView;
+	PopupManager<FrameView> frameView;
+	PopupManager<CheatsView> cheatsView;
+#ifdef USE_FFMPEG
+	PopupManager<VideoView> videoView;
+	PopupManager<GIFView> gifView;
+#endif
+#ifdef ENABLE_GDB_STUB
+	PopupManager<GDBWindow> gdbWindow;
+#endif
+#ifdef ENABLE_DEBUGGERS
+	PopupManager<DebuggerConsole> console;
+#endif
+#ifdef M_CORE_GB
+	PopupManager<PrinterView> printerView;
+#endif
+	QPointer<SettingsView> settingsView;
+};
+
+}
+
 Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWidget* parent)
 	: QMainWindow(parent)
 	, m_manager(manager)
-	, m_logView(new LogView(&m_log, this))
 	, m_screenWidget(new WindowBackground())
 	, m_config(config)
 	, m_inputController(this)
 	, m_shortcutController(new ShortcutController(this))
 	, m_playerId(playerId)
+	, m_popups(new WindowPopups)
 {
 	setFocusPolicy(Qt::StrongFocus);
 	setAcceptDrops(true);
@@ -165,7 +194,6 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	}
 	setLogo();
 
-	connect(this, &Window::shutdown, m_logView, &QWidget::hide);
 	connect(&m_fpsTimer, &QTimer::timeout, this, &Window::showFPS);
 	connect(&m_focusCheck, &QTimer::timeout, this, &Window::focusCheck);
 	connect(&m_inputController, &InputController::profileLoaded, m_shortcutController, &ShortcutController::loadProfile);
@@ -192,13 +220,12 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 
 	m_shortcutController->setConfigController(m_config);
 	m_shortcutController->setActionMapper(&m_actions);
+	setupPopups();
 	setupMenu(menuBar());
 	setupOptions();
 }
 
 Window::~Window() {
-	delete m_logView;
-
 #ifdef USE_SQLITE3
 	delete m_libraryView;
 #endif
@@ -218,10 +245,7 @@ void Window::argumentsPassed() {
 #ifdef ENABLE_GDB_STUB
 	if (args->debugGdb) {
 		if (!m_gdbController) {
-			m_gdbController = new GDBController(this);
-		}
-		if (m_controller) {
-			m_gdbController->setController(m_controller);
+			m_gdbController = new GDBController(&m_controller, this);
 		}
 		m_gdbController->attach();
 		m_gdbController->listen();
@@ -507,9 +531,13 @@ void Window::parseCard() {
 }
 
 void Window::openView(QWidget* widget) {
+	// Attempt to disconnect first to prevent multiple connections
+	disconnect(this, &Window::shutdown, widget, &QWidget::close);
 	connect(this, &Window::shutdown, widget, &QWidget::close);
 	widget->setAttribute(Qt::WA_DeleteOnClose);
 	widget->show();
+	widget->activateWindow();
+	widget->raise();
 }
 
 void Window::loadCamImage() {
@@ -538,31 +566,34 @@ void Window::openSettingsWindow() {
 }
 
 void Window::openSettingsWindow(SettingsView::Page page) {
-	SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController, &m_log);
+	if (!m_popups->settingsView) {
+		SettingsView* settingsWindow = new SettingsView(m_config, &m_inputController, m_shortcutController, &m_log);
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
-	if (m_display->supportsShaders()) {
-		settingsWindow->setShaderSelector(m_shaderView.get());
-	}
+		if (m_display->supportsShaders()) {
+			settingsWindow->setShaderSelector(m_shaderView.get());
+		}
 #endif
-	connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::reloadDisplayDriver);
-	connect(settingsWindow, &SettingsView::audioDriverChanged, this, &Window::reloadAudioDriver);
-	connect(settingsWindow, &SettingsView::cameraDriverChanged, this, &Window::mustReset);
-	connect(settingsWindow, &SettingsView::cameraChanged, &m_inputController, &InputController::setCamera);
-	connect(settingsWindow, &SettingsView::videoRendererChanged, this, &Window::changeRenderer);
-	connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
-	connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
+		connect(settingsWindow, &SettingsView::displayDriverChanged, this, &Window::reloadDisplayDriver);
+		connect(settingsWindow, &SettingsView::audioDriverChanged, this, &Window::reloadAudioDriver);
+		connect(settingsWindow, &SettingsView::cameraDriverChanged, this, &Window::mustReset);
+		connect(settingsWindow, &SettingsView::cameraChanged, &m_inputController, &InputController::setCamera);
+		connect(settingsWindow, &SettingsView::videoRendererChanged, this, &Window::changeRenderer);
+		connect(settingsWindow, &SettingsView::languageChanged, this, &Window::mustRestart);
+		connect(settingsWindow, &SettingsView::pathsChanged, this, &Window::reloadConfig);
 #ifdef USE_SQLITE3
-	connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
+		connect(settingsWindow, &SettingsView::libraryCleared, m_libraryView, &LibraryController::clear);
 #endif
 #ifdef ENABLE_SCRIPTING
-	connect(settingsWindow, &SettingsView::openAutorunScripts, this, [this]() {
-		ensureScripting();
-		m_scripting->openAutorunEdit();
-	});
+		connect(settingsWindow, &SettingsView::openAutorunScripts, this, [this]() {
+			ensureScripting();
+			m_scripting->openAutorunEdit();
+		});
 #endif
-	connect(this, &Window::shaderSelectorAdded, settingsWindow, &SettingsView::setShaderSelector);
-	openView(settingsWindow);
-	settingsWindow->selectPage(page);
+		connect(this, &Window::shaderSelectorAdded, settingsWindow, &SettingsView::setShaderSelector);
+		m_popups->settingsView = settingsWindow;
+	}
+	openView(m_popups->settingsView);
+	m_popups->settingsView->selectPage(page);
 }
 
 void Window::startVideoLog() {
@@ -572,78 +603,23 @@ void Window::startVideoLog() {
 	}
 }
 
-template <typename T, typename... A>
-std::function<void()> Window::openTView(A... arg) {
-	return [=]() {
-		T* view = new T(arg...);
-		openView(view);
-	};
-}
-
-template <typename T, typename... A>
-std::function<void()> Window::openControllerTView(A... arg) {
-	return [=]() {
-		T* view = new T(m_controller, arg...);
-		connect(m_controller.get(), &CoreController::stopping, view, &QWidget::close);
-		openView(view);
-	};
-}
-
-template <typename T, typename... A>
-std::function<void()> Window::openNamedTView(QPointer<T>* name, bool keepalive, A... arg) {
-	return [=]() {
-		if (!*name) {
-			*name = new T(arg...);
-			connect(this, &Window::shutdown, name->data(), &QWidget::close);
-			if (!keepalive) {
-				(*name)->setAttribute(Qt::WA_DeleteOnClose);
-			}
-		}
-		(*name)->show();
-		(*name)->activateWindow();
-		(*name)->raise();
-	};
-}
-
-template <typename T, typename... A>
-std::function<void()> Window::openNamedControllerTView(QPointer<T>* name, bool keepalive, A... arg) {
-	return [=]() {
-		if (!*name) {
-			*name = new T(m_controller, arg...);
-			connect(m_controller.get(), &CoreController::stopping, name->data(), &QWidget::close);
-			connect(this, &Window::shutdown, name->data(), &QWidget::close);
-			if (!keepalive) {
-				(*name)->setAttribute(Qt::WA_DeleteOnClose);
-			}
-		}
-		(*name)->show();
-		(*name)->activateWindow();
-		(*name)->raise();
-	};
-}
-
 #ifdef ENABLE_GDB_STUB
 void Window::gdbOpen() {
 	if (!m_gdbController) {
-		m_gdbController = new GDBController(this);
+		m_gdbController = new GDBController(&m_controller, this);
+		m_popups->gdbWindow.withController(m_controller).constructWith(m_gdbController);
 	}
-	GDBWindow* window = new GDBWindow(m_gdbController);
-	m_gdbController->setController(m_controller);
-	connect(m_controller.get(), &CoreController::stopping, window, &QWidget::close);
-	openView(window);
+	m_popups->gdbWindow();
 }
 #endif
 
 #ifdef ENABLE_DEBUGGERS
 void Window::consoleOpen() {
 	if (!m_console) {
-		m_console = new DebuggerConsoleController(this);
+		m_console = new DebuggerConsoleController(&m_controller, this);
+		m_popups->console.withController(m_controller).constructWith(m_console);
 	}
-	DebuggerConsole* window = new DebuggerConsole(m_console);
-	if (m_controller) {
-		m_console->setController(m_controller);
-	}
-	openView(window);
+	m_popups->console();
 }
 #endif
 
@@ -1293,6 +1269,23 @@ void Window::openStateWindow(LoadSave ls) {
 	attachWidget(m_stateWindow);
 }
 
+void Window::setupPopups() {
+	m_popups->logView.constructWith(&m_log, this).setKeepAlive(false);
+	m_popups->overrideView.withController(m_controller).constructWith(m_config, this);
+	// Why is SensorView keepalive?
+	m_popups->sensorView.withController(m_controller).constructWith(&m_inputController, this).setKeepAlive(true);
+	m_popups->dolphinView.constructWith(this).setKeepAlive(true);
+	m_popups->videoView.withController(m_controller).setKeepAlive(true);
+	m_popups->gifView.withController(m_controller).setKeepAlive(true);
+
+#ifdef M_CORE_GB
+	m_popups->printerView.withController(m_controller).constructWithCallback([this]() -> PrinterView* {
+		m_controller->attachPrinter();
+		return new PrinterView(m_controller);
+	});
+#endif
+}
+
 void Window::setupMenu(QMenuBar* menubar) {
 	installEventFilter(m_shortcutController);
 
@@ -1316,7 +1309,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addSeparator("saves");
 
-	m_actions.addAction(tr("Convert save game..."), "convertSave", openTView<SaveConverter>(), "saves");
+	m_actions.addAction(tr("Convert save game..."), "convertSave", PopupManager<SaveConverter>(), "saves");
 
 #ifdef M_CORE_GBA
 	auto importShark = addGameAction(tr("Import GameShark Save..."), "importShark", this, &Window::importSharkport, "saves");
@@ -1354,7 +1347,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_platformActions.insert(mPLATFORM_GBA, scanCard);
 #endif
 
-	addGameAction(tr("ROM &info..."), "romInfo", openControllerTView<ROMInfo>(), "file");
+	addGameAction(tr("ROM &info..."), "romInfo", PopupManager<ROMInfo>().withController(m_controller), "file");
 
 	m_actions.addMenu(tr("Recent"), "mru", "file");
 	m_actions.addSeparator("file");
@@ -1420,19 +1413,19 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_multiWindow = m_actions.addAction(tr("New multiplayer window"), "multiWindow", GBAApp::app(), &GBAApp::newWindow, "file");
 
 #ifdef M_CORE_GBA
-	auto dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openNamedTView<DolphinConnector>(&m_dolphinView, true, this), "file");
+	auto dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", m_popups->dolphinView, "file");
 	m_platformActions.insert(mPLATFORM_GBA, dolphin);
 #endif
 
 	m_actions.addSeparator("file");
 
-	m_actions.addAction(tr("Report bug..."), "bugReport", openTView<ReportView>(), "file");
+	m_actions.addAction(tr("Report bug..."), "bugReport", PopupManager<ReportView>(), "file");
 
 #ifndef Q_OS_MAC
 	m_actions.addSeparator("file");
 #endif
 
-	m_actions.addAction(tr("About..."), "about", openTView<AboutScreen>(), "file")->setRole(Action::Role::ABOUT);
+	m_actions.addAction(tr("About..."), "about", PopupManager<AboutScreen>(), "file")->setRole(Action::Role::ABOUT);
 	m_actions.addAction(tr("E&xit"), "quit", &QApplication::quit, "file", QKeySequence::Quit)->setRole(Action::Role::QUIT);
 
 	m_actions.addMenu(tr("&Emulation"), "emu");
@@ -1538,16 +1531,12 @@ void Window::setupMenu(QMenuBar* menubar) {
 #ifdef M_CORE_GB
 	m_actions.addAction(tr("Load camera image..."), "loadCamImage", this, &Window::loadCamImage, "emu");
 
-	auto gbPrint = addGameAction(tr("Game Boy Printer..."), "gbPrint", [this]() {
-		PrinterView* view = new PrinterView(m_controller);
-		openView(view);
-		m_controller->attachPrinter();
-	}, "emu");
+	auto gbPrint = addGameAction(tr("Game Boy Printer..."), "gbPrint", m_popups->printerView, "emu");
 	m_platformActions.insert(mPLATFORM_GB, gbPrint);
 #endif
 
 #ifdef M_CORE_GBA
-	auto bcGate = addGameAction(tr("BattleChip Gate..."), "bcGate", openControllerTView<BattleChipView>(this), "emu");
+	auto bcGate = addGameAction(tr("BattleChip Gate..."), "bcGate", PopupManager<BattleChipView>().withController(m_controller), "emu");
 	m_platformActions.insert(mPLATFORM_GBA, bcGate);
 #endif
 
@@ -1701,51 +1690,27 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 #ifdef USE_FFMPEG
-	addGameAction(tr("Record A/V..."), "recordOutput", openNamedControllerTView<VideoView>(&m_videoView, true), "av");
-	addGameAction(tr("Record GIF/WebP/APNG..."), "recordGIF", openNamedControllerTView<GIFView>(&m_gifView, true), "av");
+	addGameAction(tr("Record A/V..."), "recordOutput", m_popups->videoView, "av");
+	addGameAction(tr("Record GIF/WebP/APNG..."), "recordGIF", m_popups->gifView, "av");
 #endif
 
 	m_actions.addSeparator("av");
 	m_actions.addMenu(tr("Video layers"), "videoLayers", "av");
 	m_actions.addMenu(tr("Audio channels"), "audioChannels", "av");
 
-	addGameAction(tr("Adjust layer placement..."), "placementControl", openControllerTView<PlacementControl>(), "av");
+	addGameAction(tr("Adjust layer placement..."), "placementControl", PopupManager<PlacementControl>().withController(m_controller), "av");
 
 	m_actions.addMenu(tr("&Tools"), "tools");
-	m_actions.addAction(tr("View &logs..."), "viewLogs", static_cast<QWidget*>(m_logView), &QWidget::show, "tools");
+	m_actions.addAction(tr("View &logs..."), "viewLogs", m_popups->logView, "tools");
+	m_actions.addAction(tr("Game &overrides..."), "overrideWindow", m_popups->overrideView, "tools");
+	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", m_popups->sensorView, "tools");
 
-	m_actions.addAction(tr("Game &overrides..."), "overrideWindow", [this]() {
-		if (!m_overrideView) {
-			m_overrideView = new OverrideView(m_config);
-			if (m_controller) {
-				m_overrideView->setController(m_controller);
-			}
-			connect(this, &Window::shutdown, m_overrideView.data(), &QWidget::close);
-		}
-		m_overrideView->show();
-		m_overrideView->activateWindow();
-		m_overrideView->raise();
-	}, "tools");
-
-	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", [this]() {
-		if (!m_sensorView) {
-			m_sensorView = new SensorView(&m_inputController);
-			if (m_controller) {
-				m_sensorView->setController(m_controller);
-			}
-			connect(this, &Window::shutdown, m_sensorView.data(), &QWidget::close);
-		}
-		m_sensorView->show();
-		m_sensorView->activateWindow();
-		m_sensorView->raise();
-	}, "tools");
-
-	addGameAction(tr("&Cheats..."), "cheatsWindow", openControllerTView<CheatsView>(), "tools");
+	addGameAction(tr("&Cheats..."), "cheatsWindow", m_popups->cheatsView, "tools");
 #ifdef ENABLE_SCRIPTING
 	m_actions.addAction(tr("Scripting..."), "scripting", this, &Window::scriptingOpen, "tools");
 #endif
 
-	m_actions.addAction(tr("Create forwarder..."), "createForwarder", openTView<ForwarderView>(), "tools");
+	m_actions.addAction(tr("Create forwarder..."), "createForwarder", PopupManager<ForwarderView>(), "tools");
 
 	m_actions.addSeparator("tools");
 	m_actions.addAction(tr("Settings..."), "settings", this, &Window::openSettingsWindow, "tools")->setRole(Action::Role::SETTINGS);
@@ -1764,14 +1729,14 @@ void Window::setupMenu(QMenuBar* menubar) {
 #endif
 
 	m_actions.addMenu(tr("Game state views"), "stateViews", "tools");
-	addGameAction(tr("View &palette..."), "paletteWindow", openControllerTView<PaletteView>(), "stateViews");
-	addGameAction(tr("View &sprites..."), "spriteWindow", openControllerTView<ObjView>(), "stateViews");
-	addGameAction(tr("View &tiles..."), "tileWindow", openControllerTView<TileView>(), "stateViews");
-	addGameAction(tr("View &map..."), "mapWindow", openControllerTView<MapView>(), "stateViews");
-	addGameAction(tr("&Frame inspector..."), "frameWindow", openNamedControllerTView<FrameView>(&m_frameView, false), "stateViews");
-	addGameAction(tr("View memory..."), "memoryView", openControllerTView<MemoryView>(), "stateViews");
-	addGameAction(tr("Search memory..."), "memorySearch", openControllerTView<MemorySearch>(), "stateViews");
-	addGameAction(tr("View &I/O registers..."), "ioViewer", openControllerTView<IOViewer>(), "stateViews");
+	addGameAction(tr("View &palette..."), "paletteWindow", PopupManager<PaletteView>().withController(m_controller), "stateViews");
+	addGameAction(tr("View &sprites..."), "spriteWindow", PopupManager<ObjView>().withController(m_controller), "stateViews");
+	addGameAction(tr("View &tiles..."), "tileWindow", PopupManager<TileView>().withController(m_controller), "stateViews");
+	addGameAction(tr("View &map..."), "mapWindow", PopupManager<MapView>().withController(m_controller), "stateViews");
+	addGameAction(tr("&Frame inspector..."), "frameWindow", m_popups->frameView, "stateViews");
+	addGameAction(tr("View memory..."), "memoryView", PopupManager<MemoryView>().withController(m_controller), "stateViews");
+	addGameAction(tr("Search memory..."), "memorySearch", PopupManager<MemorySearch>().withController(m_controller), "stateViews");
+	addGameAction(tr("View &I/O registers..."), "ioViewer", PopupManager<IOViewer>().withController(m_controller), "stateViews");
 
 #ifdef ENABLE_DEBUGGERS
 	addGameAction(tr("Log memory &accesses..."), "memoryAccessView", [this]() {
@@ -2159,6 +2124,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		});
 		return;
 	}
+
 	if (!fname.isEmpty()) {
 		setWindowFilePath(fname);
 		appendMRU(fname);
@@ -2168,7 +2134,7 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		reloadDisplayDriver();
 	}
 
-	m_controller = std::shared_ptr<CoreController>(controller);
+	m_controller.setController(controller);
 	m_controller->setInputController(&m_inputController);
 	m_controller->setLogger(&m_log);
 
@@ -2220,36 +2186,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		}
 	}
 #endif
-
-#ifdef ENABLE_GDB_STUB
-	if (m_gdbController) {
-		m_gdbController->setController(m_controller);
-	}
-#endif
-
-#ifdef ENABLE_DEBUGGERS
-	if (m_console) {
-		m_console->setController(m_controller);
-	}
-#endif
-
-#ifdef USE_FFMPEG
-	if (m_gifView) {
-		m_gifView->setController(m_controller);
-	}
-
-	if (m_videoView) {
-		m_videoView->setController(m_controller);
-	}
-#endif
-
-	if (m_sensorView) {
-		m_sensorView->setController(m_controller);
-	}
-
-	if (m_overrideView) {
-		m_overrideView->setController(m_controller);
-	}
 
 	if (!m_pendingPatch.isEmpty()) {
 		m_controller->loadPatch(m_pendingPatch);

@@ -16,7 +16,7 @@
 
 using namespace QGBA;
 
-SensorView::SensorView(InputController* input, QWidget* parent)
+SensorView::SensorView(std::shared_ptr<CoreController> controller, InputController* input, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
 	, m_input(input)
 	, m_rotation(input->rotationSource())
@@ -65,10 +65,16 @@ SensorView::SensorView(InputController* input, QWidget* parent)
 	});
 	m_input->stealFocus(this);
 	connect(m_input, &InputController::luminanceValueChanged, this, &SensorView::luminanceValueChanged);
+
+	setController(controller);
 }
 
 void SensorView::setController(std::shared_ptr<CoreController> controller) {
 	m_controller = controller;
+	if (!controller) {
+		return;
+	}
+
 	connect(m_ui.timeNoOverride, &QAbstractButton::clicked, controller.get(), &CoreController::setRealTime);
 	connect(m_ui.timeFixed, &QRadioButton::clicked, [controller, this] () {
 		controller->setFixedTime(m_ui.time->dateTime().toUTC());
