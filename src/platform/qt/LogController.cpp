@@ -7,15 +7,14 @@
 
 #include <QLoggingCategory>
 #include <QMessageBox>
+#include <QTextStream>
 
 #include "ConfigController.h"
 
 using namespace QGBA;
 
-#if (QT_VERSION < QT_VERSION_CHECK(5, 14, 0))
-namespace Qt {
-using QTextStreamFunctions::endl;
-}
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+using Qt::endl;
 #endif
 
 LogController LogController::s_global(mLOG_ALL);
