@@ -1107,6 +1107,10 @@ void EReaderScanFilterAnchors(struct EReaderScan* scan) {
 			areaMean += portion;
 		}
 	}
+	if (!EReaderAnchorListSize(&scan->anchors)) {
+		return;
+	}
+
 	areaMean /= EReaderAnchorListSize(&scan->anchors);
 	for (i = 0; i < EReaderAnchorListSize(&scan->anchors); ++i) {
 		struct EReaderAnchor* anchor = EReaderAnchorListGetPointer(&scan->anchors, i);
@@ -1117,6 +1121,9 @@ void EReaderScanFilterAnchors(struct EReaderScan* scan) {
 			EReaderAnchorListShift(&scan->anchors, i, 1);
 			--i;
 		}
+	}
+	if (!EReaderAnchorListSize(&scan->anchors)) {
+		return;
 	}
 
 	qsort(EReaderAnchorListGetPointer(&scan->anchors, 0), EReaderAnchorListSize(&scan->anchors), sizeof(struct EReaderAnchor), _compareAnchors);
@@ -1496,6 +1503,10 @@ bool EReaderScanCard(struct EReaderScan* scan) {
 	EReaderScanConnectAnchors(scan);
 	EReaderScanCreateBlocks(scan);
 	size_t blocks = EReaderBlockListSize(&scan->blocks);
+	if (!blocks) {
+		return false;
+	}
+
 	size_t i;
 	for (i = 0; i < blocks; ++i) {
 		EReaderScanDetectBlockThreshold(scan, i);
