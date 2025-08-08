@@ -6,6 +6,7 @@
 #include "AssetView.h"
 
 #include "CoreController.h"
+#include "CorePointerSource.h"
 
 #include <QTimer>
 
@@ -21,18 +22,18 @@
 
 using namespace QGBA;
 
-AssetView::AssetView(std::shared_ptr<CoreController> controller, QWidget* parent)
+AssetView::AssetView(CorePointerSource* controller, QWidget* parent)
 	: QWidget(parent)
-	, m_cacheSet(controller->graphicCaches())
-	, m_controller(controller)
+	, CoreConsumer(controller)
+	, m_cacheSet(m_controller->graphicCaches())
 {
 	m_updateTimer.setSingleShot(true);
 	m_updateTimer.setInterval(1);
 	connect(&m_updateTimer, &QTimer::timeout, this, static_cast<void(AssetView::*)()>(&AssetView::updateTiles));
 
-	connect(controller.get(), &CoreController::frameAvailable, &m_updateTimer,
+	connect(m_controller.get(), &CoreController::frameAvailable, &m_updateTimer,
 	        static_cast<void(QTimer::*)()>(&QTimer::start));
-	connect(controller.get(), &CoreController::stopping, &m_updateTimer, &QTimer::stop);
+	connect(m_controller.get(), &CoreController::stopping, &m_updateTimer, &QTimer::stop);
 }
 
 void AssetView::updateTiles() {

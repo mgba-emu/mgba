@@ -18,12 +18,11 @@
 
 using namespace QGBA;
 
-TileView::TileView(std::shared_ptr<CoreController> controller, QWidget* parent)
+TileView::TileView(CorePointerSource* controller, QWidget* parent)
 	: AssetView(controller, parent)
-	, m_controller(controller)
 {
 	m_ui.setupUi(this);
-	m_ui.tile->setController(controller);
+	m_ui.tile->setCoreSource(controller);
 
 	connect(m_ui.tiles, &TilePainter::indexPressed, this, [this](int index) {
 		if (m_ui.tilesObj->isChecked()) {

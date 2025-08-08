@@ -15,8 +15,9 @@
 
 using namespace QGBA;
 
-GIFView::GIFView(std::shared_ptr<CoreController> controller, QWidget* parent)
+GIFView::GIFView(CorePointerSource* controller, QWidget* parent)
 	: QWidget(parent)
+	, CoreConsumer(controller)
 {
 	m_ui.setupUi(this);
 
@@ -31,15 +32,13 @@ GIFView::GIFView(std::shared_ptr<CoreController> controller, QWidget* parent)
 
 	FFmpegEncoderInit(&m_encoder);
 	FFmpegEncoderSetAudio(&m_encoder, nullptr, 0);
-
-	setController(controller);
 }
 
 GIFView::~GIFView() {
 	stopRecording();
 }
 
-void GIFView::setController(std::shared_ptr<CoreController> controller) {
+void GIFView::onCoreAttached(std::shared_ptr<CoreController> controller) {
 	connect(controller.get(), &CoreController::stopping, this, &GIFView::stopRecording);
 	connect(this, &GIFView::recordingStarted, controller.get(), &CoreController::setAVStream);
 	connect(this, &GIFView::recordingStopped, controller.get(), &CoreController::clearAVStream, Qt::DirectConnection);
