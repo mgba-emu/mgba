@@ -2168,9 +2168,9 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		reloadDisplayDriver();
 	}
 
+	controller->setInputController(&m_inputController);
+	controller->setLogger(&m_log);
 	m_controller = std::shared_ptr<CoreController>(controller);
-	m_controller->setInputController(&m_inputController);
-	m_controller->setLogger(&m_log);
 
 	connect(this, &Window::shutdown, [this]() {
 		if (!m_controller) {
