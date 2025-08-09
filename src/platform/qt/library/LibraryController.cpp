@@ -61,11 +61,16 @@ LibraryController::LibraryController(QWidget* parent, const QString& path, Confi
 	QObject::connect(m_libraryModel, &QAbstractItemModel::modelReset, &m_expandThrottle, qOverload<>(&QTimer::start));
 	QObject::connect(m_libraryModel, &QAbstractItemModel::rowsInserted, &m_expandThrottle, qOverload<>(&QTimer::start));
 
-	LibraryStyle libraryStyle = LibraryStyle(m_config->getOption("libraryStyle", int(LibraryStyle::STYLE_LIST)).toInt());
-	updateViewStyle(libraryStyle);
+	QVariant librarySort, librarySortOrder;
+	if (m_config) {
+		LibraryStyle libraryStyle = LibraryStyle(m_config->getOption("libraryStyle", int(LibraryStyle::STYLE_LIST)).toInt());
+		updateViewStyle(libraryStyle);
+		librarySort = m_config->getQtOption("librarySort");
+		librarySortOrder = m_config->getQtOption("librarySortOrder");
+	} else {
+		updateViewStyle(LibraryStyle::STYLE_LIST);
+	}
 
-	QVariant librarySort = m_config->getQtOption("librarySort");
-	QVariant librarySortOrder = m_config->getQtOption("librarySortOrder");
 	if (librarySort.isNull() || !librarySort.canConvert<int>()) {
 		librarySort = 0;
 	}
@@ -110,8 +115,10 @@ void LibraryController::updateViewStyle(LibraryStyle newStyle) {
 }
 
 void LibraryController::sortChanged(int column, Qt::SortOrder order) {
-	m_config->setQtOption("librarySort", column);
-	m_config->setQtOption("librarySortOrder", order);
+	if (m_config) {
+		m_config->setQtOption("librarySort", column);
+		m_config->setQtOption("librarySortOrder", order);
+	}
 }
 
 void LibraryController::selectEntry(const QString& fullpath) {
