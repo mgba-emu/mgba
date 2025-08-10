@@ -6,27 +6,27 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="427"/>
         <source>Name</source>
-        <translation type="unfinished">Nombre</translation>
+        <translation>Nombre</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished">Ubicación</translation>
+        <translation>Ubicación</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
         <source>Platform</source>
-        <translation type="unfinished">Plataforma</translation>
+        <translation>Plataforma</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished">Tamaño</translation>
+        <translation>Tamaño</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
         <source>CRC32</source>
-        <translation type="unfinished">CRC32</translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -255,7 +255,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="26"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Fallo al cargar los ajustes del script autorun: formato del info script desconocido %1</translation>
     </message>
 </context>
 <context>
@@ -263,37 +263,37 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="14"/>
         <source>Autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Scripts de autorun</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished">Añadir</translation>
+        <translation>Añadir</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
         <source>Remove</source>
-        <translation type="unfinished">Quitar</translation>
+        <translation>Eliminar</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="53"/>
         <source>Move up</source>
-        <translation type="unfinished"></translation>
+        <translation>Mover arriba</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="63"/>
         <source>Move down</source>
-        <translation type="unfinished"></translation>
+        <translation>Mover abajo</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="73"/>
         <source>Run scripts when starting a game</source>
-        <translation type="unfinished"></translation>
+        <translation>Ejecutar script al lanzar un juego</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="28"/>
         <source>Select a script</source>
-        <translation type="unfinished"></translation>
+        <translation>Seleccionar script</translation>
     </message>
 </context>
 <context>
@@ -331,7 +331,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../BattleChipView.ui" line="121"/>
         <source>Remove</source>
-        <translation>Quitar</translation>
+        <translation>Eliminar</translation>
     </message>
     <message>
         <location filename="../BattleChipView.ui" line="138"/>
@@ -413,7 +413,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../CheatsView.ui" line="60"/>
         <source>Remove</source>
-        <translation>Quitar</translation>
+        <translation>Eliminar</translation>
     </message>
     <message>
         <location filename="../CheatsView.ui" line="93"/>
@@ -494,7 +494,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../CoreController.cpp" line="915"/>
         <source>Can&apos;t yank pack in unexpected platform!</source>
-        <translation>¡No se puede quitar el cartucho en esta plataforma!</translation>
+        <translation>¡No se puede extraer el cartucho en esta plataforma inesperada!</translation>
     </message>
     <message>
         <location filename="../CoreController.cpp" line="1030"/>
@@ -1097,32 +1097,32 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
         <source>%1 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
         <source>%1 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + Vibración</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>%1 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (Orientación)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
         <source>%1 (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (antiguo 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="99"/>
         <source>%1 (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (antiguo 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="100"/>
         <source>%1 (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (nuevo)</translation>
     </message>
 </context>
 <context>
@@ -3365,7 +3365,7 @@ Tamaño de descarga: %3</translation>
         <location filename="../MemoryAccessLogController.cpp" line="117"/>
         <location filename="../MemoryAccessLogController.cpp" line="126"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished">Error al abrir el archivo de registro de memoria</translation>
+        <translation>Error al abrir el archivo de registro de memoria</translation>
     </message>
 </context>
 <context>
@@ -3373,7 +3373,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="67"/>
         <source>Data read</source>
-        <translation>Lectura de datos</translation>
+        <translation>Datos leídos</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="69"/>
@@ -3443,77 +3443,77 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="107"/>
         <source>(Unknown extra bit 6)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Extra bit 6 desconocido)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="109"/>
         <source>(Unknown extra bit 7)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Extra bit 7 desconocido)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="111"/>
         <source>Invalid instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Instrucción inválida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="113"/>
         <source>Invalid read</source>
-        <translation type="unfinished"></translation>
+        <translation>Lectura inválida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="115"/>
         <source>Invalid write</source>
-        <translation type="unfinished"></translation>
+        <translation>Escritura inválida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="117"/>
         <source>Invalid executable address</source>
-        <translation type="unfinished"></translation>
+        <translation>Dirección ejecutable inválida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="119"/>
         <source>(Private bit 0)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit privado 0)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="121"/>
         <source>(Private bit 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit privado 1)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>Código ARM</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
         <source>Instruction opcode</source>
-        <translation type="unfinished"></translation>
+        <translation>Instrucción opcode</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="129"/>
         <source>(Private bit 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit privado 2)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="134"/>
         <source>Thumb code</source>
-        <translation type="unfinished"></translation>
+        <translation>Código thumb</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="136"/>
         <source>Instruction operand</source>
-        <translation type="unfinished"></translation>
+        <translation>Operador de instrucción</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="138"/>
         <source>(Private bit 3)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit privado 3)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="146"/>
         <source>(Unknown)</source>
-        <translation type="unfinished">(Desconocido)</translation>
+        <translation>(Desconocido)</translation>
     </message>
 </context>
 <context>
@@ -3546,12 +3546,12 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="56"/>
         <source>Load</source>
-        <translation type="unfinished">Cargar</translation>
+        <translation>Cargar</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
         <source>Unload</source>
-        <translation type="unfinished"></translation>
+        <translation>Descargar</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="76"/>
@@ -3881,37 +3881,37 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="37"/>
         <source>Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Dirección:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="106"/>
         <source>Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation>Alineamiento:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="120"/>
         <source>1 Byte</source>
-        <translation type="unfinished"></translation>
+        <translation>1 bit</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="125"/>
         <source>2 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>2 bits</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="130"/>
         <source>4 Bytes</source>
-        <translation type="unfinished"></translation>
+        <translation>4 bits</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="152"/>
         <source>Signed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Firmado:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="172"/>
         <source>Unsigned:</source>
-        <translation type="unfinished"></translation>
+        <translation>Sin firmar:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="254"/>
@@ -3926,12 +3926,12 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="282"/>
         <source>Selected address accesses</source>
-        <translation type="unfinished"></translation>
+        <translation>Acceso de dirección seleccionado</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="304"/>
         <source>Logging configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>Configuración de registro</translation>
     </message>
 </context>
 <context>
@@ -4506,7 +4506,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="100"/>
         <source>SHA-1</source>
-        <translation type="unfinished"></translation>
+        <translation>SHA-1</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
@@ -4781,12 +4781,12 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="277"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished">Scripts de Lua (*.lua)</translation>
+        <translation>Scripts de Lua (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="279"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished">Todos los archivos (*.*)</translation>
+        <translation>Todos los archivos (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4842,7 +4842,7 @@ Tamaño de descarga: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="131"/>
         <source>Edit autorun scripts...</source>
-        <translation type="unfinished"></translation>
+        <translation>Editar scripts de autorun...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="62"/>
@@ -5329,7 +5329,7 @@ Si está configurado como OpenGL y estás viendo esto, tu tarjeta gráfica o con
     <message>
         <location filename="../SettingsView.ui" line="575"/>
         <source>Edit autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Editar scripts de autorun</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="599"/>
@@ -6535,7 +6535,7 @@ Si está configurado como OpenGL y estás viendo esto, tu tarjeta gráfica o con
     <message>
         <location filename="../Window.cpp" line="1444"/>
         <source>Yank game pak</source>
-        <translation>Sacar cartucho</translation>
+        <translation>Extraer cartucho</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1447"/>
