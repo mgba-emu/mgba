@@ -40,6 +40,7 @@ struct CLIDebuggerCommandSummary {
 	CLIDebuggerCommand command;
 	const char* format;
 	const char* summary;
+	bool execOnBreak;
 };
 
 struct CLIDebuggerCommandAlias {
