@@ -177,9 +177,22 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 	return true;
 }
 
+static void freeBreakCommand(struct BreakCommand* cmd){
+	struct BreakCommand* next;
+	while (cmd) {
+		next = cmd->next;
+		cmd->freeData(cmd->commandData);
+		free(cmd);
+		cmd = next;
+	}
+}
+
 static void _destroyBreakpoint(struct mDebugger* debugger, struct ARMDebugBreakpoint* breakpoint) {
 	if (breakpoint->d.condition) {
 		parseFree(breakpoint->d.condition);
+	}
+	if (breakpoint->d.commands) {
+		freeBreakCommand(breakpoint->d.commands);
 	}
 	TableRemove(&debugger->pointOwner, breakpoint->d.id);
 }
@@ -222,6 +235,11 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 			_destroyBreakpoint(debugger->d.p, breakpoint);
 			ARMDebugBreakpointListShift(&debugger->breakpoints, i, 1);
 			--i;
+		}
+		struct BreakCommand* cmd = breakpoint->d.commands;
+		while(cmd){
+			cmd->handleCommand(cmd->commandData);
+			cmd = cmd->next;
 		}
 	}
 }

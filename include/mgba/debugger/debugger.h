@@ -127,12 +127,20 @@ struct mDebuggerEntryInfo {
 	struct mDebuggerModule* target;
 };
 
+struct BreakCommand{
+	void * commandData;
+	bool (*handleCommand)(void*);
+	void (*freeData)(void*);
+	struct BreakCommand* next;
+};
+
 struct mBreakpoint {
 	ssize_t id;
 	uint32_t address;
 	int segment;
 	enum mBreakpointType type;
 	struct ParseTree* condition;
+	struct BreakCommand* commands;
 	bool isTemporary;
 };
 
