@@ -88,6 +88,7 @@ static void _setSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 static void _findSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 static void freeCLIDebugCMD(void *);
 static bool handleCLICommand(void *);
+static bool _isExecutableOnBreak(const char*);
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "backtrace", _backtrace, "i", "Print backtrace of all or specified frames", true },
@@ -641,6 +642,38 @@ static bool handleCLICommand(void* data){
 	return CLIDebuggerRunCommand(cmd->dbg, cmd->command, strlen(cmd->command));
 }
 
+
+static bool _isExecutableOnBreak(const char* command){
+	while (isspace(*command)) {
+		++command;
+	}
+	const char* end = command;
+	while (*end && !isspace(*end)) {
+		++end;
+	}
+	size_t cmdLen = end - command;
+	int i;
+	const char* name;
+	for (i = 0; (name = _debuggerCommandAliases[i].name); ++i) {
+		if (strlen(name) != cmdLen) {
+			continue;
+		}
+		if (strncasecmp(name, command, cmdLen) == 0) {
+			command = _debuggerCommandAliases[i].original;
+			cmdLen = strlen(_debuggerCommandAliases[i].original);
+		}
+	}
+	for (i = 0; (name = _debuggerCommands[i].name); ++i) {
+		if (strlen(name) != cmdLen) {
+			continue;
+		}
+		if (strncasecmp(name, command, cmdLen) == 0) {
+			return  _debuggerCommands[i].execOnBreak;
+		}
+	}
+	return false;
+}
+
 static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
@@ -700,6 +733,11 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		struct BreakCommand* start = NULL;
 		struct BreakCommand* prev = NULL;
 		while (token != NULL){
+			if (!_isExecutableOnBreak(token)){
+				debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+				freeBreakCommand(start);
+				return;
+			}
 			struct CLIDebugCMD * cliCmd = malloc(sizeof(struct CLIDebugCMD));
 			cliCmd->command = strndup(token, strlen(token));
 			cliCmd->dbg = debugger;
