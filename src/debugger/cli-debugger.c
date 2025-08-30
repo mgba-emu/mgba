@@ -86,10 +86,11 @@ static void _source(struct CLIDebugger*, struct CLIDebugVector*);
 #endif
 static void _setSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 static void _findSymbol(struct CLIDebugger*, struct CLIDebugVector*);
+static void freeCLIDebugCMD(void *);
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "backtrace", _backtrace, "i", "Print backtrace of all or specified frames" },
-	{ "break", _setBreakpoint, "Is", "Set a breakpoint" },
+	{ "break", _setBreakpoint, "Is+", "Set a breakpoint" },
 	{ "continue", _continue, "", "Continue execution" },
 	{ "delete", _clearBreakpoint, "I", "Delete a breakpoint or watchpoint" },
 	{ "disassemble", _disassemble, "Ii", "Disassemble instructions" },
@@ -634,6 +635,11 @@ static struct ParseTree* _parseTree(const char** string) {
 	}
 }
 
+static bool handleCLICommand(void* data){
+	struct CLIDebugCMD* cmd = (struct CLIDebugCMD*) data;
+	return CLIDebuggerRunCommand(cmd->dbg, cmd->command, strlen(cmd->command));
+}
+
 static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
@@ -642,10 +648,26 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 	struct mBreakpoint breakpoint = {
 		.address = dv->intValue,
 		.segment = dv->segmentValue,
-		.type = BREAKPOINT_HARDWARE
+		.type = BREAKPOINT_HARDWARE,
+		.condition = NULL,
+		.commands = NULL,
 	};
-	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
-		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->charValue, NULL });
+
+	struct CLIDebugVector* current = dv->next;
+	size_t len = 0;
+	while (current && current->type == CLIDV_CHAR_TYPE && strcmp(current->charValue, "do")){
+		len = len + strlen(current->charValue);
+		current = current->next;
+	}
+	char * condition = malloc((len+1) * sizeof(char));
+	memset(condition, 0, len+1);
+	current = dv->next;
+	while (current && current->type == CLIDV_CHAR_TYPE && strcmp(current->charValue, "do")){
+		strcat(condition, current->charValue);
+		current = current->next;
+	}
+	if (len) {
+		struct ParseTree* tree = _parseTree((const char*[]) { condition, NULL });
 		if (tree) {
 			breakpoint.condition = tree;
 		} else {
@@ -653,6 +675,51 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 			return;
 		}
 	}
+	free(condition);
+	struct CLIDebugVector* cmd = current;
+	if (cmd && cmd->type == CLIDV_CHAR_TYPE && strcmp(cmd->charValue, "do")==0){
+		size_t cmdLen = 0;
+		current = cmd->next;
+		while (current && current->type == CLIDV_CHAR_TYPE){
+			cmdLen = cmdLen + strlen(current->charValue) + 1;
+			current = current->next;
+		}
+		char * cmdStr = malloc((cmdLen+1) * sizeof(char));;
+		memset(cmdStr, 0, cmdLen+1);
+		current = cmd->next;
+		while (current && current->type == CLIDV_CHAR_TYPE){
+			strcat(cmdStr, " ");
+			strcat(cmdStr, current->charValue);
+			current = current->next;
+		}
+
+		char* token;
+		const char delimiter[] = ";";
+		token = strtok(cmdStr, delimiter);
+		struct BreakCommand* start = NULL;
+		struct BreakCommand* prev = NULL;
+		while (token != NULL){
+			struct CLIDebugCMD * cliCmd = malloc(sizeof(struct CLIDebugCMD));
+			cliCmd->command = strndup(token, strlen(token));
+			cliCmd->dbg = debugger;
+			struct BreakCommand* current = malloc(sizeof(struct BreakCommand));
+			if (prev){
+				prev->next = current;
+			}
+			current->commandData = cliCmd;
+		    current->handleCommand = handleCLICommand;
+			current->freeData = freeCLIDebugCMD;
+			current->next = NULL;
+			if (start == NULL) {
+				start = current;
+			}
+			prev = current;
+			token = strtok(NULL, delimiter);
+		}
+		breakpoint.commands = start;
+		free(cmdStr);
+	}
+
 	ssize_t id = debugger->d.p->platform->setBreakpoint(debugger->d.p->platform, &debugger->d, &breakpoint);
 	if (id > 0) {
 		debugger->backend->printf(debugger->backend, INFO_BREAKPOINT_ADDED, id);
@@ -761,6 +828,12 @@ static void _setWriteRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDeb
 
 static void _setWriteChangedRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	_setRangeWatchpoint(debugger, dv, WATCHPOINT_WRITE_CHANGE);
+}
+
+static void freeCLIDebugCMD(void * data){
+	struct CLIDebugCMD* cmd = (struct CLIDebugCMD*) data;
+	free(cmd->command);
+	free(cmd);
 }
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
