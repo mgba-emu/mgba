@@ -255,16 +255,20 @@ bool mCoreLoadSaveFile(struct mCore* core, const char* path, bool temporary) {
 
 #if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 bool mCoreAutoloadSave(struct mCore* core) {
-	if (!core->dirs.save) {
-		return false;
-	}
-	int savePlayerId = 0;
-	char sav[16] = ".sav";
-	mCoreConfigGetIntValue(&core->config, "savePlayerId", &savePlayerId);
-	if (savePlayerId > 1) {
-		snprintf(sav, sizeof(sav), ".sa%i", savePlayerId);
-	}
-	return core->loadSave(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, sav, O_CREAT | O_RDWR));
+    if (!core->dirs.save) {
+        return false;
+    }
+    int savePlayerId = 0;
+    char sav[16];
+    if (mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, ".SAV", O_RDONLY))
+        snprintf(sav, sizeof(sav), ".SAV");
+    else
+        snprintf(sav, sizeof(sav), ".sav");
+    mCoreConfigGetIntValue(&core->config, "savePlayerId", &savePlayerId);
+    if (savePlayerId > 1) {
+        snprintf(sav, sizeof(sav), ".sa%i", savePlayerId);
+    }
+    return core->loadSave(core, mDirectorySetOpenSuffix(&core->dirs, core->dirs.save, sav, O_CREAT | O_RDWR));
 }
 
 bool mCoreAutoloadPatch(struct mCore* core) {
