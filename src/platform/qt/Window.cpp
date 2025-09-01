@@ -399,7 +399,7 @@ void Window::replaceROM() {
 }
 
 void Window::selectSave(bool temporary) {
-	QStringList formats{"*.sav"};
+	QStringList formats{"*.sav","*.SAV"};
 	QString filter = tr("Save games (%1)").arg(formats.join(QChar(' ')));
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select save game"), filter);
 	if (!filename.isEmpty()) {

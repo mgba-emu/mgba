@@ -1277,9 +1277,14 @@ void CoreController::updatePlayerSave() {
 	}
 	int savePlayerId = m_multiplayer->saveId(this);
 
-	QString saveSuffix;
+	QString saveSuffix, savePrefix;
+    QFileInfo pathFileInfo= QFileInfo(m_baseDirectory+"/"+m_path);
+    savePrefix= m_baseDirectory+"/"+pathFileInfo.baseName();
 	if (savePlayerId < 2) {
-		saveSuffix = QLatin1String(".sav");
+		if (QFile::exists(savePrefix+".SAV"))
+			saveSuffix = QLatin1String(".SAV");
+		else
+			saveSuffix = QLatin1String(".sav");
 	} else {
 		saveSuffix = QString(".sa%1").arg(savePlayerId);
 	}
