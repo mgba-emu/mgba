@@ -15,6 +15,8 @@ Please also describe the issue in as much detail as possible, including the name
 
 Filing pull requests
 --------------------
+
+### NOTE: This section is outdated; please look at the commit history instead.
 When filing a pull request, please make sure you adhere to the coding style as outlined below, and are aware of the requirements for licensing. Furthermore, please make sure all commits in the pull request have coherent commit messages as well as the name of the component being modified in the commit message.
 
 Some components are as follows:
