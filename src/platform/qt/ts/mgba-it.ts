@@ -6,27 +6,27 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="427"/>
         <source>Name</source>
-        <translation type="unfinished">Nome</translation>
+        <translation>Nome</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished">Posizione</translation>
+        <translation>Posizione</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
         <source>Platform</source>
-        <translation type="unfinished">Piattaforma</translation>
+        <translation>Piattaforma</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished">Dimensioni</translation>
+        <translation>Dimensioni</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
         <source>CRC32</source>
-        <translation type="unfinished">CRC32</translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -255,7 +255,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="26"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossibile caricare le impostazioni dello script di esecuzione automatica: formato informazioni script sconosciuto: %1</translation>
     </message>
 </context>
 <context>
@@ -263,32 +263,32 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="14"/>
         <source>Autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Script di esecuzione automatica</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished">Aggiungi</translation>
+        <translation>Aggiungi</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
         <source>Remove</source>
-        <translation type="unfinished">Rimuovi</translation>
+        <translation>Rimuovi</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="53"/>
         <source>Move up</source>
-        <translation type="unfinished"></translation>
+        <translation>Sposta su</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="63"/>
         <source>Move down</source>
-        <translation type="unfinished"></translation>
+        <translation>Sposta giù</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="73"/>
         <source>Run scripts when starting a game</source>
-        <translation type="unfinished"></translation>
+        <translation>Esegui gli script al lancio del gioco</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.cpp" line="28"/>
@@ -1097,32 +1097,32 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
         <source>%1 + RTC</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
         <source>%1 + Rumble</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 + Vibrazione</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>%1 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (Inclinazione)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
         <source>%1 (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (vecchio 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="99"/>
         <source>%1 (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (vecchio 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="100"/>
         <source>%1 (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (nuovo)</translation>
     </message>
 </context>
 <context>
@@ -3365,7 +3365,7 @@ Dimensione del download: %3</translation>
         <location filename="../MemoryAccessLogController.cpp" line="117"/>
         <location filename="../MemoryAccessLogController.cpp" line="126"/>
         <source>Failed to open memory log file</source>
-        <translation type="unfinished">Impossibile aprire il file di registro della memoria</translation>
+        <translation>Impossibile aprire il file di registro della memoria</translation>
     </message>
 </context>
 <context>
@@ -3373,142 +3373,142 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="67"/>
         <source>Data read</source>
-        <translation type="unfinished"></translation>
+        <translation>Dati letti</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="69"/>
         <source>Data written</source>
-        <translation type="unfinished"></translation>
+        <translation>Dati scritti</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="71"/>
         <source>Code executed</source>
-        <translation type="unfinished"></translation>
+        <translation>Codice eseguito</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="73"/>
         <source>Code aborted</source>
-        <translation type="unfinished"></translation>
+        <translation>Codice abortito</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="75"/>
         <source>8-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Accesso 8-bit</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="77"/>
         <source>16-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Accesso 16-bit</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="79"/>
         <source>32-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Accesso 32-bit</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="81"/>
         <source>64-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>Accesso 64-bit</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="95"/>
         <source>Accessed by instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Accesso da istruzione</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="97"/>
         <source>Accessed by DMA</source>
-        <translation type="unfinished"></translation>
+        <translation>Accesso da DMA</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="99"/>
         <source>Accessed by BIOS</source>
-        <translation type="unfinished"></translation>
+        <translation>Accesso da BIOS</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="101"/>
         <source>Compressed data</source>
-        <translation type="unfinished"></translation>
+        <translation>Dati compressi</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="103"/>
         <source>Accessed by memory copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Accesso da copia memoria</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="105"/>
         <source>(Unknown extra bit 5)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Sconosciuto extra bit 5)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="107"/>
         <source>(Unknown extra bit 6)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Sconosciuto extra bit 6)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="109"/>
         <source>(Unknown extra bit 7)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Sconosciuto extra bit 7)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="111"/>
         <source>Invalid instruction</source>
-        <translation type="unfinished"></translation>
+        <translation>Istruzione invalida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="113"/>
         <source>Invalid read</source>
-        <translation type="unfinished"></translation>
+        <translation>Lettura invalida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="115"/>
         <source>Invalid write</source>
-        <translation type="unfinished"></translation>
+        <translation>Scrittura invalida</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="117"/>
         <source>Invalid executable address</source>
-        <translation type="unfinished"></translation>
+        <translation>Indirizzo eseguibile invalido</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="119"/>
         <source>(Private bit 0)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit 0 privato)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="121"/>
         <source>(Private bit 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit 1 privato)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
         <source>ARM code</source>
-        <translation type="unfinished"></translation>
+        <translation>Codice ARM</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="127"/>
         <source>Instruction opcode</source>
-        <translation type="unfinished"></translation>
+        <translation>Istruzione opcode</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="129"/>
         <source>(Private bit 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit 2 privato)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="134"/>
         <source>Thumb code</source>
-        <translation type="unfinished"></translation>
+        <translation>Codice thumb</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="136"/>
         <source>Instruction operand</source>
-        <translation type="unfinished"></translation>
+        <translation>Istruzione operando</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="138"/>
         <source>(Private bit 3)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Bit 3 privato)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="146"/>
@@ -3551,7 +3551,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="66"/>
         <source>Unload</source>
-        <translation type="unfinished"></translation>
+        <translation>Libera</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogView.ui" line="76"/>
@@ -3881,12 +3881,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="37"/>
         <source>Address:</source>
-        <translation type="unfinished"></translation>
+        <translation>Indirizzo:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="106"/>
         <source>Alignment:</source>
-        <translation type="unfinished"></translation>
+        <translation>Allineamento:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="120"/>
@@ -3906,12 +3906,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="152"/>
         <source>Signed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Signed:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="172"/>
         <source>Unsigned:</source>
-        <translation type="unfinished"></translation>
+        <translation>Unsigned:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="254"/>
@@ -3926,12 +3926,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="282"/>
         <source>Selected address accesses</source>
-        <translation type="unfinished"></translation>
+        <translation>Accessi indirizzo selezionato</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="304"/>
         <source>Logging configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>Configurazione registro</translation>
     </message>
 </context>
 <context>
@@ -3952,12 +3952,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="407"/>
         <source>Clearing invalid save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Pulizia ID salvataggio invalido</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="416"/>
         <source>Clearing invalid preferred ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Pulizia ID preferito invalido</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="437"/>
@@ -4491,7 +4491,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="23"/>
         <source>File information</source>
-        <translation type="unfinished"></translation>
+        <translation>Informazioni file</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="29"/>
@@ -4506,12 +4506,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../ROMInfo.ui" line="100"/>
         <source>SHA-1</source>
-        <translation type="unfinished"></translation>
+        <translation>SHA-1</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="134"/>
         <source>ROM header</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM header</translation>
     </message>
     <message>
         <location filename="../ROMInfo.ui" line="140"/>
@@ -4781,12 +4781,12 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="277"/>
         <source>Lua scripts (*.lua)</source>
-        <translation type="unfinished">Script Lua (*.lua)</translation>
+        <translation>Script Lua (*.lua)</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingController.cpp" line="279"/>
         <source>All files (*.*)</source>
-        <translation type="unfinished">Tutti i file (*.*)</translation>
+        <translation>Tutti i file (*.*)</translation>
     </message>
 </context>
 <context>
@@ -4842,7 +4842,7 @@ Dimensione del download: %3</translation>
     <message>
         <location filename="../scripting/ScriptingView.ui" line="131"/>
         <source>Edit autorun scripts...</source>
-        <translation type="unfinished"></translation>
+        <translation>Modifica script autorun...</translation>
     </message>
     <message>
         <location filename="../scripting/ScriptingView.cpp" line="62"/>
@@ -4994,7 +4994,9 @@ Dimensione del download: %3</translation>
         <source>Shaders are not supported when the display driver is not OpenGL.
 
 If it is set to OpenGL and you still see this, your graphics card or drivers may be too old.</source>
-        <translation type="unfinished"></translation>
+        <translation>Gli shader non sono supportati quando il driver della scheda video non è OpenGL.
+
+Se è impostato su OpenGL e continui a vedere questo messaggio, la tua scheda grafica o i tuoi driver potrebbero essere troppo vecchi.</translation>
     </message>
     <message>
         <location filename="../SettingsView.cpp" line="418"/>
@@ -5317,7 +5319,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="575"/>
         <source>Edit autorun scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Modifica script autorun</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="599"/>
@@ -5808,17 +5810,17 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../ShaderSelector.cpp" line="92"/>
         <source>mGBA Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Shader mGBA</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>Error loading shader</source>
-        <translation type="unfinished"></translation>
+        <translation>Errore caricamento shader</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="123"/>
         <source>The shader &quot;%1&quot; could not be loaded successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossibile caricare lo shader &quot;%1&quot;.</translation>
     </message>
     <message>
         <location filename="../ShaderSelector.cpp" line="145"/>
