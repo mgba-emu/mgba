@@ -33,6 +33,11 @@ struct CLIDebugVector {
 	int segmentValue;
 };
 
+struct CLIDebugCMD{
+	char* command;
+	struct CLIDebugger* dbg;
+};
+
 typedef void (*CLIDebuggerCommand)(struct CLIDebugger*, struct CLIDebugVector*);
 
 struct CLIDebuggerCommandSummary {
@@ -40,6 +45,7 @@ struct CLIDebuggerCommandSummary {
 	CLIDebuggerCommand command;
 	const char* format;
 	const char* summary;
+	bool execOnBreak;
 };
 
 struct CLIDebuggerCommandAlias {

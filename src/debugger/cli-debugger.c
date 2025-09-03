@@ -86,57 +86,60 @@ static void _source(struct CLIDebugger*, struct CLIDebugVector*);
 #endif
 static void _setSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 static void _findSymbol(struct CLIDebugger*, struct CLIDebugVector*);
+static void freeCLIDebugCMD(void *);
+static bool handleCLICommand(void *);
+static bool _isExecutableOnBreak(const char*);
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
-	{ "backtrace", _backtrace, "i", "Print backtrace of all or specified frames" },
-	{ "break", _setBreakpoint, "Is", "Set a breakpoint" },
-	{ "continue", _continue, "", "Continue execution" },
-	{ "delete", _clearBreakpoint, "I", "Delete a breakpoint or watchpoint" },
-	{ "disassemble", _disassemble, "Ii", "Disassemble instructions" },
-	{ "events", _events, "", "Print list of scheduled events" },
-	{ "finish", _finish, "", "Execute until current stack frame returns" },
-	{ "help", _printHelp, "S", "Print help" },
-	{ "listb", _listBreakpoints, "", "List breakpoints" },
-	{ "listw", _listWatchpoints, "", "List watchpoints" },
+	{ "backtrace", _backtrace, "i", "Print backtrace of all or specified frames", true },
+	{ "break", _setBreakpoint, "Is+", "Set a breakpoint", false },
+	{ "continue", _continue, "", "Continue execution", true },
+	{ "delete", _clearBreakpoint, "I", "Delete a breakpoint or watchpoint", false },
+	{ "disassemble", _disassemble, "Ii", "Disassemble instructions", false },
+	{ "events", _events, "", "Print list of scheduled events", false },
+	{ "finish", _finish, "", "Execute until current stack frame returns", true },
+	{ "help", _printHelp, "S", "Print help", false },
+	{ "listb", _listBreakpoints, "", "List breakpoints", false },
+	{ "listw", _listWatchpoints, "", "List watchpoints", false },
 #ifdef ENABLE_VFS
-	{ "load-symbols", _loadSymbols, "S", "Load symbols from an external file" },
+	{ "load-symbols", _loadSymbols, "S", "Load symbols from an external file", false },
 #endif
-	{ "next", _next, "", "Execute next instruction" },
-	{ "print", _print, "S+", "Print a value" },
-	{ "print/t", _printBin, "S+", "Print a value as binary" },
-	{ "print/x", _printHex, "S+", "Print a value as hexadecimal" },
-	{ "quit", _quit, "", "Quit the emulator" },
-	{ "reset", _reset, "", "Reset the emulation" },
-	{ "r/1", _readByte, "I", "Read a byte from a specified offset" },
-	{ "r/2", _readHalfword, "I", "Read a halfword from a specified offset" },
-	{ "r/4", _readWord, "I", "Read a word from a specified offset" },
-	{ "set", _setSymbol, "SI", "Assign a symbol to an address" },
+	{ "next", _next, "", "Execute next instruction", true },
+	{ "print", _print, "S+", "Print a value", true },
+	{ "print/t", _printBin, "S+", "Print a value as binary", true },
+	{ "print/x", _printHex, "S+", "Print a value as hexadecimal", true },
+	{ "quit", _quit, "", "Quit the emulator", false },
+	{ "reset", _reset, "", "Reset the emulation", false },
+	{ "r/1", _readByte, "I", "Read a byte from a specified offset", true },
+	{ "r/2", _readHalfword, "I", "Read a halfword from a specified offset", true },
+	{ "r/4", _readWord, "I", "Read a word from a specified offset", true },
+	{ "set", _setSymbol, "SI", "Assign a symbol to an address", false },
 #if defined(ENABLE_SCRIPTING) && defined(ENABLE_VFS)
-	{ "source", _source, "S", "Load a script" },
+	{ "source", _source, "S", "Load a script", false },
 #endif
-	{ "stack", _setStackTraceMode, "S", "Change the stack tracing mode" },
-	{ "status", _printStatus, "", "Print the current status" },
-	{ "symbol", _findSymbol, "I", "Find the symbol name for an address" },
-	{ "trace", _trace, "Is", "Trace a number of instructions" },
-	{ "w/1", _writeByte, "II", "Write a byte at a specified offset" },
-	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset" },
-	{ "w/r", _writeRegister, "SI", "Write a register" },
-	{ "w/4", _writeWord, "II", "Write a word at a specified offset" },
-	{ "watch", _setReadWriteWatchpoint, "Is", "Set a watchpoint" },
-	{ "watch/c", _setWriteChangedWatchpoint, "Is", "Set a change watchpoint" },
-	{ "watch/r", _setReadWatchpoint, "Is", "Set a read watchpoint" },
-	{ "watch/w", _setWriteWatchpoint, "Is", "Set a write watchpoint" },
-	{ "watch-range", _setReadWriteRangeWatchpoint, "IIs", "Set a range watchpoint" },
-	{ "watch-range/c", _setWriteChangedRangeWatchpoint, "IIs", "Set a change range watchpoint" },
-	{ "watch-range/r", _setReadRangeWatchpoint, "IIs", "Set a read range watchpoint" },
-	{ "watch-range/w", _setWriteRangeWatchpoint, "IIs", "Set a write range watchpoint" },
-	{ "x/1", _dumpByte, "Ii", "Examine bytes at a specified offset" },
-	{ "x/2", _dumpHalfword, "Ii", "Examine halfwords at a specified offset" },
-	{ "x/4", _dumpWord, "Ii", "Examine words at a specified offset" },
+	{ "stack", _setStackTraceMode, "S", "Change the stack tracing mode", false },
+	{ "status", _printStatus, "", "Print the current status", true },
+	{ "symbol", _findSymbol, "I", "Find the symbol name for an address", false },
+	{ "trace", _trace, "Is", "Trace a number of instructions", true },
+	{ "w/1", _writeByte, "II", "Write a byte at a specified offset", true },
+	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset", true },
+	{ "w/r", _writeRegister, "SI", "Write a register", true },
+	{ "w/4", _writeWord, "II", "Write a word at a specified offset", true },
+	{ "watch", _setReadWriteWatchpoint, "Is", "Set a watchpoint", false },
+	{ "watch/c", _setWriteChangedWatchpoint, "Is", "Set a change watchpoint", false },
+	{ "watch/r", _setReadWatchpoint, "Is", "Set a read watchpoint", false },
+	{ "watch/w", _setWriteWatchpoint, "Is", "Set a write watchpoint", false },
+	{ "watch-range", _setReadWriteRangeWatchpoint, "IIs", "Set a range watchpoint", false },
+	{ "watch-range/c", _setWriteChangedRangeWatchpoint, "IIs", "Set a change range watchpoint", false },
+	{ "watch-range/r", _setReadRangeWatchpoint, "IIs", "Set a read range watchpoint", false },
+	{ "watch-range/w", _setWriteRangeWatchpoint, "IIs", "Set a write range watchpoint", false },
+	{ "x/1", _dumpByte, "Ii", "Examine bytes at a specified offset", true },
+	{ "x/2", _dumpHalfword, "Ii", "Examine halfwords at a specified offset", true },
+	{ "x/4", _dumpWord, "Ii", "Examine words at a specified offset", true },
 #if !defined(NDEBUG) && !defined(_WIN32)
-	{ "!", _breakInto, "", "Break into attached debugger (for developers)" },
+	{ "!", _breakInto, "", "Break into attached debugger (for developers)", false },
 #endif
-	{ 0, 0, 0, 0 }
+	{ 0, 0, 0, 0, false }
 };
 
 static struct CLIDebuggerCommandAlias _debuggerCommandAliases[] = {
@@ -634,6 +637,43 @@ static struct ParseTree* _parseTree(const char** string) {
 	}
 }
 
+static bool handleCLICommand(void* data){
+	struct CLIDebugCMD* cmd = (struct CLIDebugCMD*) data;
+	return CLIDebuggerRunCommand(cmd->dbg, cmd->command, strlen(cmd->command));
+}
+
+
+static bool _isExecutableOnBreak(const char* command){
+	while (isspace(*command)) {
+		++command;
+	}
+	const char* end = command;
+	while (*end && !isspace(*end)) {
+		++end;
+	}
+	size_t cmdLen = end - command;
+	int i;
+	const char* name;
+	for (i = 0; (name = _debuggerCommandAliases[i].name); ++i) {
+		if (strlen(name) != cmdLen) {
+			continue;
+		}
+		if (strncasecmp(name, command, cmdLen) == 0) {
+			command = _debuggerCommandAliases[i].original;
+			cmdLen = strlen(_debuggerCommandAliases[i].original);
+		}
+	}
+	for (i = 0; (name = _debuggerCommands[i].name); ++i) {
+		if (strlen(name) != cmdLen) {
+			continue;
+		}
+		if (strncasecmp(name, command, cmdLen) == 0) {
+			return  _debuggerCommands[i].execOnBreak;
+		}
+	}
+	return false;
+}
+
 static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
@@ -642,10 +682,26 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 	struct mBreakpoint breakpoint = {
 		.address = dv->intValue,
 		.segment = dv->segmentValue,
-		.type = BREAKPOINT_HARDWARE
+		.type = BREAKPOINT_HARDWARE,
+		.condition = NULL,
+		.commands = NULL,
 	};
-	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
-		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->charValue, NULL });
+
+	struct CLIDebugVector* current = dv->next;
+	size_t len = 0;
+	while (current && current->type == CLIDV_CHAR_TYPE && strcmp(current->charValue, "do")){
+		len = len + strlen(current->charValue);
+		current = current->next;
+	}
+	char * condition = malloc((len+1) * sizeof(char));
+	memset(condition, 0, len+1);
+	current = dv->next;
+	while (current && current->type == CLIDV_CHAR_TYPE && strcmp(current->charValue, "do")){
+		strcat(condition, current->charValue);
+		current = current->next;
+	}
+	if (len) {
+		struct ParseTree* tree = _parseTree((const char*[]) { condition, NULL });
 		if (tree) {
 			breakpoint.condition = tree;
 		} else {
@@ -653,6 +709,56 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 			return;
 		}
 	}
+	free(condition);
+	struct CLIDebugVector* cmd = current;
+	if (cmd && cmd->type == CLIDV_CHAR_TYPE && strcmp(cmd->charValue, "do")==0){
+		size_t cmdLen = 0;
+		current = cmd->next;
+		while (current && current->type == CLIDV_CHAR_TYPE){
+			cmdLen = cmdLen + strlen(current->charValue) + 1;
+			current = current->next;
+		}
+		char * cmdStr = malloc((cmdLen+1) * sizeof(char));;
+		memset(cmdStr, 0, cmdLen+1);
+		current = cmd->next;
+		while (current && current->type == CLIDV_CHAR_TYPE){
+			strcat(cmdStr, " ");
+			strcat(cmdStr, current->charValue);
+			current = current->next;
+		}
+
+		char* token;
+		const char delimiter[] = ";";
+		token = strtok(cmdStr, delimiter);
+		struct BreakCommand* start = NULL;
+		struct BreakCommand* prev = NULL;
+		while (token != NULL){
+			if (!_isExecutableOnBreak(token)){
+				debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+				freeBreakCommand(start);
+				return;
+			}
+			struct CLIDebugCMD * cliCmd = malloc(sizeof(struct CLIDebugCMD));
+			cliCmd->command = strndup(token, strlen(token));
+			cliCmd->dbg = debugger;
+			struct BreakCommand* current = malloc(sizeof(struct BreakCommand));
+			if (prev){
+				prev->next = current;
+			}
+			current->commandData = cliCmd;
+		    current->handleCommand = handleCLICommand;
+			current->freeData = freeCLIDebugCMD;
+			current->next = NULL;
+			if (start == NULL) {
+				start = current;
+			}
+			prev = current;
+			token = strtok(NULL, delimiter);
+		}
+		breakpoint.commands = start;
+		free(cmdStr);
+	}
+
 	ssize_t id = debugger->d.p->platform->setBreakpoint(debugger->d.p->platform, &debugger->d, &breakpoint);
 	if (id > 0) {
 		debugger->backend->printf(debugger->backend, INFO_BREAKPOINT_ADDED, id);
@@ -761,6 +867,12 @@ static void _setWriteRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDeb
 
 static void _setWriteChangedRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	_setRangeWatchpoint(debugger, dv, WATCHPOINT_WRITE_CHANGE);
+}
+
+static void freeCLIDebugCMD(void * data){
+	struct CLIDebugCMD* cmd = (struct CLIDebugCMD*) data;
+	free(cmd->command);
+	free(cmd);
 }
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
@@ -1073,6 +1185,13 @@ static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandS
 }
 
 bool CLIDebuggerRunCommand(struct CLIDebugger* debugger, const char* line, size_t count) {
+	while (isspace(*line)) {
+		++line;
+		--count;
+	}
+	while (isspace(*(line + count - 1))) {
+		--count;
+	}
 	const char* firstSpace = strchr(line, ' ');
 	size_t cmdLength;
 	if (firstSpace) {
