@@ -6,12 +6,12 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="427"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>𐌽𐌰𐌼𐍉</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>𐌻𐍉𐌲</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
@@ -21,7 +21,7 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>𐌼𐌹𐌺𐌹𐌻𐌴𐌹</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
