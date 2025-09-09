@@ -55,6 +55,8 @@ static void _reset(struct CLIDebugger*, struct CLIDebugVector*);
 static void _readHalfword(struct CLIDebugger*, struct CLIDebugVector*);
 static void _readWord(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _enableBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _disableBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _clearBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 static void _listBreakpoints(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setReadWriteWatchpoint(struct CLIDebugger*, struct CLIDebugVector*);
@@ -91,6 +93,8 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "backtrace", _backtrace, "i", "Print backtrace of all or specified frames" },
 	{ "break", _setBreakpoint, "Is", "Set a breakpoint" },
 	{ "continue", _continue, "", "Continue execution" },
+	{ "enable", _enableBreakpoint, "I", "Enable a breakpoint or watchpoint" },
+	{ "disable", _disableBreakpoint, "I", "Disable a breakpoint or watchpoint" },
 	{ "delete", _clearBreakpoint, "I", "Delete a breakpoint or watchpoint" },
 	{ "disassemble", _disassemble, "Ii", "Disassemble instructions" },
 	{ "events", _events, "", "Print list of scheduled events" },
@@ -143,6 +147,8 @@ static struct CLIDebuggerCommandAlias _debuggerCommandAliases[] = {
 	{ "b", "break" },
 	{ "bt", "backtrace" },
 	{ "c", "continue" },
+	{ "eb", "enable" },
+	{ "db", "disable" },
 	{ "d", "delete" },
 	{ "dis", "disassemble" },
 	{ "disasm", "disassemble" },
@@ -761,6 +767,24 @@ static void _setWriteRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDeb
 
 static void _setWriteChangedRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
 	_setRangeWatchpoint(debugger, dv, WATCHPOINT_WRITE_CHANGE);
+}
+
+static void _enableBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint64_t id = dv->intValue;
+	debugger->d.p->platform->toggleBreakpoint(debugger->d.p->platform, id, true);
+}
+
+static void _disableBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	uint64_t id = dv->intValue;
+	debugger->d.p->platform->toggleBreakpoint(debugger->d.p->platform, id, false);
 }
 
 static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
