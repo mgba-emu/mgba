@@ -648,7 +648,8 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 	struct mBreakpoint breakpoint = {
 		.address = dv->intValue,
 		.segment = dv->segmentValue,
-		.type = BREAKPOINT_HARDWARE
+		.type = BREAKPOINT_HARDWARE,
+		.enable = true,
 	};
 	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
 		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->charValue, NULL });
@@ -678,7 +679,8 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		.segment = dv->segmentValue,
 		.minAddress = dv->intValue,
 		.maxAddress = dv->intValue + 1,
-		.type = type
+		.type = type,
+		.enable = true,
 	};
 	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
 		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->charValue, NULL });
@@ -720,7 +722,8 @@ static void _setRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVec
 		.segment = dv->segmentValue,
 		.minAddress = dv->intValue,
 		.maxAddress = dv->next->intValue,
-		.type = type
+		.type = type,
+		.enable = true,
 	};
 	if (dv->next->next && dv->next->next->type == CLIDV_CHAR_TYPE) {
 		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->next->charValue, NULL });
@@ -777,7 +780,7 @@ static void _enableBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVecto
 	struct CLIDebugVector* current = dv;
 	while (current) {
 		if (current->type == CLIDV_INT_TYPE) {
-			uint64_t id = current->intValue;
+			ssize_t id = current->intValue;
 			debugger->d.p->platform->toggleBreakpoint(debugger->d.p->platform, id, true);
 		}
 		current = current->next;
@@ -792,7 +795,7 @@ static void _disableBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVect
 	struct CLIDebugVector* current = dv;
 	while (current) {
 		if (current->type == CLIDV_INT_TYPE) {
-			uint64_t id = current->intValue;
+			ssize_t id = current->intValue;
 			debugger->d.p->platform->toggleBreakpoint(debugger->d.p->platform, id, false);
 		}
 		current = current->next;
