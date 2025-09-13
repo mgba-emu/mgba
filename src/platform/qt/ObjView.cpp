@@ -26,12 +26,11 @@
 
 using namespace QGBA;
 
-ObjView::ObjView(std::shared_ptr<CoreController> controller, QWidget* parent)
+ObjView::ObjView(CorePointerSource* controller, QWidget* parent)
 	: AssetView(controller, parent)
-	, m_controller(controller)
 {
 	m_ui.setupUi(this);
-	m_ui.tile->setController(controller);
+	m_ui.tile->setCoreSource(controller);
 
 	const QFont font = GBAApp::app()->monospaceFont();
 
