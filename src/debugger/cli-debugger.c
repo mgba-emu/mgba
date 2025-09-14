@@ -1097,7 +1097,7 @@ bool CLIDebuggerRunCommand(struct CLIDebugger* debugger, const char* line, size_
 	if (result < 0) {
 		debugger->backend->printf(debugger->backend, "Command not found\n");
 	}
-	return false;
+	return result > 0;
 }
 
 static void _commandLine(struct mDebuggerModule* debugger, int32_t timeoutMs) {
