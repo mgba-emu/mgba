@@ -646,7 +646,61 @@ enum DebugPoint {
 	DP_RANGE_WATCHPOINT,
 };
 
-static void _setDebugpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv, enum DebugPoint dpType, int32_t type){
+bool _increaseBufferSizeIfFull(char** buffer, size_t* bufferSize, size_t length) {
+	char* out;
+	if (length >= *bufferSize) {
+		out = realloc(*buffer, length + 1);
+		if (out) {
+			*buffer = out;
+			*bufferSize = length + 1;
+		} else {
+			return false;
+		}
+	}
+	return true;
+}
+
+static char* _reconstructCommand(CLIDebuggerCommand command, struct CLIDebugVector* dv, enum DebugPoint dpType) {
+	size_t bufferSize = 32;
+	size_t totalLength = 0;
+	size_t i = 0;
+	char* repr = malloc(bufferSize);
+	const char* cmdText;
+	for (i = 0; (_debuggerCommands[i].command); ++i) {
+		if (command == _debuggerCommands[i].command){
+			cmdText = _debuggerCommands[i].name;
+			break;
+		}
+	}
+	size_t cmdLength = strlen(cmdText);
+	totalLength += (dpType == DP_RANGE_WATCHPOINT) ? cmdLength + 22 : cmdLength + 11;
+	if (!_increaseBufferSizeIfFull(&repr, &bufferSize, totalLength)) {
+		goto realloc_failed;
+	}
+	if (dpType == DP_RANGE_WATCHPOINT) {
+		snprintf(repr, bufferSize, "%s 0x%08x 0x%08x", cmdText, dv->intValue, dv->next->intValue);
+	} else {
+		snprintf(repr, bufferSize, "%s 0x%08x", cmdText, dv->intValue);
+	}
+
+	struct CLIDebugVector* cond = dpType == DP_RANGE_WATCHPOINT ? dv->next->next : dv->next;
+	if (cond && cond->type == CLIDV_CHAR_TYPE) {
+		size_t length = strlen(cond->charValue);
+		totalLength += length + 1;
+		if (!_increaseBufferSizeIfFull(&repr, &bufferSize, totalLength)) {
+			goto realloc_failed;
+		}
+		snprintf(&repr[totalLength - length - 1], bufferSize - length - 1, " %s", cond->charValue);
+	}
+	repr[totalLength] = '\0';
+	return repr;
+
+realloc_failed:
+	free(repr);
+	return (char*) 0;
+}
+
+static void _setDebugpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv, enum DebugPoint dpType, int32_t type, CLIDebuggerCommand command){
 	if (!dv || dv->type != CLIDV_INT_TYPE) {
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
@@ -675,7 +729,11 @@ static void _setDebugpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 	} else {
 		condition = dv->next;
 	}
-
+	char* repr = _reconstructCommand(command, dv, dpType);
+	if (!repr){
+		debugger->backend->printf(debugger->backend, "Error when reconstruct command\n");
+		return;
+	}
 	struct mBreakpoint breakpoint;
 	struct mWatchpoint watchpoint;
 	if (dpType == DP_BREAKPOINT){
@@ -683,6 +741,7 @@ static void _setDebugpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 			.address = dv->intValue,
 			.segment = dv->segmentValue,
 			.type = (enum mBreakpointType)type,
+			.representation = repr,
 		};
 	} else {
 		watchpoint = (struct mWatchpoint ){
@@ -690,6 +749,7 @@ static void _setDebugpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 			.minAddress = dv->intValue,
 			.maxAddress = (dpType == DP_WATCHPOINT) ? dv->intValue + 1 : dv->next->intValue,
 			.type = (enum mWatchpointType)type,
+			.representation = repr,
 		};
 	}
 
@@ -719,39 +779,39 @@ static void _setDebugpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 }
 
 static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setDebugpoint(debugger, dv, DP_BREAKPOINT, (int32_t)BREAKPOINT_HARDWARE);
+	_setDebugpoint(debugger, dv, DP_BREAKPOINT, (int32_t)BREAKPOINT_HARDWARE, _setBreakpoint);
 }
 
 static void _setReadWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setDebugpoint(debugger, dv, DP_WATCHPOINT, (int32_t)WATCHPOINT_RW);
+	_setDebugpoint(debugger, dv, DP_WATCHPOINT, (int32_t)WATCHPOINT_RW, _setReadWriteWatchpoint);
 }
 
 static void _setReadWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setDebugpoint(debugger, dv, DP_WATCHPOINT, (int32_t)WATCHPOINT_READ);
+	_setDebugpoint(debugger, dv, DP_WATCHPOINT, (int32_t)WATCHPOINT_READ, _setReadWatchpoint);
 }
 
 static void _setWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setDebugpoint(debugger, dv, DP_WATCHPOINT, (int32_t)WATCHPOINT_WRITE);
+	_setDebugpoint(debugger, dv, DP_WATCHPOINT, (int32_t)WATCHPOINT_WRITE, _setWriteWatchpoint);
 }
 
 static void _setWriteChangedWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setDebugpoint(debugger, dv, DP_WATCHPOINT, (int32_t)WATCHPOINT_WRITE_CHANGE);
+	_setDebugpoint(debugger, dv, DP_WATCHPOINT, (int32_t)WATCHPOINT_WRITE_CHANGE, _setWriteChangedWatchpoint);
 }
 
 static void _setReadWriteRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setDebugpoint(debugger, dv, DP_RANGE_WATCHPOINT, (int32_t)WATCHPOINT_RW);
+	_setDebugpoint(debugger, dv, DP_RANGE_WATCHPOINT, (int32_t)WATCHPOINT_RW, _setReadWriteRangeWatchpoint);
 }
 
 static void _setReadRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setDebugpoint(debugger, dv, DP_RANGE_WATCHPOINT, (int32_t)WATCHPOINT_READ);
+	_setDebugpoint(debugger, dv, DP_RANGE_WATCHPOINT, (int32_t)WATCHPOINT_READ, _setReadRangeWatchpoint);
 }
 
 static void _setWriteRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setDebugpoint(debugger, dv, DP_RANGE_WATCHPOINT, (int32_t)WATCHPOINT_WRITE);
+	_setDebugpoint(debugger, dv, DP_RANGE_WATCHPOINT, (int32_t)WATCHPOINT_WRITE, _setWriteRangeWatchpoint);
 }
 
 static void _setWriteChangedRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setDebugpoint(debugger, dv, DP_RANGE_WATCHPOINT, (int32_t)WATCHPOINT_WRITE_CHANGE);
+	_setDebugpoint(debugger, dv, DP_RANGE_WATCHPOINT, (int32_t)WATCHPOINT_WRITE_CHANGE, _setWriteChangedRangeWatchpoint);
 }
 
 static void _enableBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {

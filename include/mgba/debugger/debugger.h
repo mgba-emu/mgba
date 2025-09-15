@@ -135,6 +135,7 @@ struct mBreakpoint {
 	struct ParseTree* condition;
 	bool disabled;
 	bool isTemporary;
+	char* representation;
 };
 
 struct mWatchpoint {
@@ -145,6 +146,7 @@ struct mWatchpoint {
 	enum mWatchpointType type;
 	struct ParseTree* condition;
 	bool disabled;
+	char* representation;
 };
 
 struct mDebuggerInstructionInfo {
