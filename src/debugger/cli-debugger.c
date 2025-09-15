@@ -640,133 +640,118 @@ static struct ParseTree* _parseTree(const char** string) {
 	}
 }
 
+enum DebugPoint {
+	DP_BREAKPOINT,
+	DP_WATCHPOINT,
+	DP_RANGE_WATCHPOINT,
+};
+
+static void _setDebugpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv, enum DebugPoint dpType, int32_t type){
+	if (!dv || dv->type != CLIDV_INT_TYPE) {
+		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+		return;
+	}
+	if (dpType != DP_BREAKPOINT) {
+		if (!debugger->d.p->platform->setWatchpoint) {
+			debugger->backend->printf(debugger->backend, "Watchpoints are not supported by this platform.\n");
+			return;
+		}
+	}
+	struct CLIDebugVector* condition;
+	if (dpType == DP_RANGE_WATCHPOINT) {
+		if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
+			debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
+			return;
+		}
+		if (dv->intValue >= dv->next->intValue) {
+			debugger->backend->printf(debugger->backend, "Range watchpoint end is before start. Note that the end of the range is not included.\n");
+			return;
+		}
+		if (dv->segmentValue != dv->next->segmentValue) {
+			debugger->backend->printf(debugger->backend, "Range watchpoint does not start and end in the same segment.\n");
+			return;
+		}
+		condition = dv->next->next;
+	} else {
+		condition = dv->next;
+	}
+
+	struct mBreakpoint breakpoint;
+	struct mWatchpoint watchpoint;
+	if (dpType == DP_BREAKPOINT){
+		breakpoint = (struct mBreakpoint) {
+			.address = dv->intValue,
+			.segment = dv->segmentValue,
+			.type = (enum mBreakpointType)type,
+		};
+	} else {
+		watchpoint = (struct mWatchpoint ){
+			.segment = dv->segmentValue,
+			.minAddress = dv->intValue,
+			.maxAddress = (dpType == DP_WATCHPOINT) ? dv->intValue + 1 : dv->next->intValue,
+			.type = (enum mWatchpointType)type,
+		};
+	}
+
+	if (condition && condition->type == CLIDV_CHAR_TYPE) {
+		struct ParseTree* tree = _parseTree((const char*[]) { condition->charValue, NULL });
+		if (tree) {
+			if (dpType == DP_BREAKPOINT) {
+				breakpoint.condition = tree;
+			} else {
+				watchpoint.condition = tree;
+			}
+		} else {
+			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
+			return;
+		}
+	}
+
+	ssize_t id;
+	if (dpType == DP_BREAKPOINT) {
+		id = debugger->d.p->platform->setBreakpoint(debugger->d.p->platform, &debugger->d, &breakpoint);
+	} else {
+		id = debugger->d.p->platform->setWatchpoint(debugger->d.p->platform, &debugger->d, &watchpoint);
+	}
+	if (id > 0) {
+		debugger->backend->printf(debugger->backend, dpType == DP_BREAKPOINT ? INFO_BREAKPOINT_ADDED : INFO_WATCHPOINT_ADDED, id);
+	}
+}
+
 static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
-		return;
-	}
-	struct mBreakpoint breakpoint = {
-		.address = dv->intValue,
-		.segment = dv->segmentValue,
-		.type = BREAKPOINT_HARDWARE,
-	};
-	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
-		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->charValue, NULL });
-		if (tree) {
-			breakpoint.condition = tree;
-		} else {
-			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
-			return;
-		}
-	}
-	ssize_t id = debugger->d.p->platform->setBreakpoint(debugger->d.p->platform, &debugger->d, &breakpoint);
-	if (id > 0) {
-		debugger->backend->printf(debugger->backend, INFO_BREAKPOINT_ADDED, id);
-	}
-}
-
-static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv, enum mWatchpointType type) {
-	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
-		return;
-	}
-	if (!debugger->d.p->platform->setWatchpoint) {
-		debugger->backend->printf(debugger->backend, "Watchpoints are not supported by this platform.\n");
-		return;
-	}
-	struct mWatchpoint watchpoint = {
-		.segment = dv->segmentValue,
-		.minAddress = dv->intValue,
-		.maxAddress = dv->intValue + 1,
-		.type = type,
-	};
-	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
-		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->charValue, NULL });
-		if (tree) {
-			watchpoint.condition = tree;
-		} else {
-			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
-			return;
-		}
-	}
-	ssize_t id = debugger->d.p->platform->setWatchpoint(debugger->d.p->platform, &debugger->d, &watchpoint);
-	if (id > 0) {
-		debugger->backend->printf(debugger->backend, INFO_WATCHPOINT_ADDED, id);
-	}
-}
-
-static void _setRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv, enum mWatchpointType type) {
-	if (!dv || dv->type != CLIDV_INT_TYPE) {
-		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
-		return;
-	}
-	if (!dv->next || dv->next->type != CLIDV_INT_TYPE) {
-		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
-		return;
-	}
-	if (!debugger->d.p->platform->setWatchpoint) {
-		debugger->backend->printf(debugger->backend, "Watchpoints are not supported by this platform.\n");
-		return;
-	}
-	if (dv->intValue >= dv->next->intValue) {
-		debugger->backend->printf(debugger->backend, "Range watchpoint end is before start. Note that the end of the range is not included.\n");
-		return;
-	}
-	if (dv->segmentValue != dv->next->segmentValue) {
-		debugger->backend->printf(debugger->backend, "Range watchpoint does not start and end in the same segment.\n");
-		return;
-	}
-	struct mWatchpoint watchpoint = {
-		.segment = dv->segmentValue,
-		.minAddress = dv->intValue,
-		.maxAddress = dv->next->intValue,
-		.type = type,
-	};
-	if (dv->next->next && dv->next->next->type == CLIDV_CHAR_TYPE) {
-		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->next->charValue, NULL });
-		if (tree) {
-			watchpoint.condition = tree;
-		} else {
-			debugger->backend->printf(debugger->backend, "%s\n", ERROR_INVALID_ARGS);
-			return;
-		}
-	}
-	ssize_t id = debugger->d.p->platform->setWatchpoint(debugger->d.p->platform, &debugger->d, &watchpoint);
-	if (id > 0) {
-		debugger->backend->printf(debugger->backend, INFO_WATCHPOINT_ADDED, id);
-	}
+	_setDebugpoint(debugger, dv, DP_BREAKPOINT, (int32_t)BREAKPOINT_HARDWARE);
 }
 
 static void _setReadWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setWatchpoint(debugger, dv, WATCHPOINT_RW);
+	_setDebugpoint(debugger, dv, DP_WATCHPOINT, (int32_t)WATCHPOINT_RW);
 }
 
 static void _setReadWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setWatchpoint(debugger, dv, WATCHPOINT_READ);
+	_setDebugpoint(debugger, dv, DP_WATCHPOINT, (int32_t)WATCHPOINT_READ);
 }
 
 static void _setWriteWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setWatchpoint(debugger, dv, WATCHPOINT_WRITE);
+	_setDebugpoint(debugger, dv, DP_WATCHPOINT, (int32_t)WATCHPOINT_WRITE);
 }
 
 static void _setWriteChangedWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setWatchpoint(debugger, dv, WATCHPOINT_WRITE_CHANGE);
+	_setDebugpoint(debugger, dv, DP_WATCHPOINT, (int32_t)WATCHPOINT_WRITE_CHANGE);
 }
 
 static void _setReadWriteRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setRangeWatchpoint(debugger, dv, WATCHPOINT_RW);
+	_setDebugpoint(debugger, dv, DP_RANGE_WATCHPOINT, (int32_t)WATCHPOINT_RW);
 }
 
 static void _setReadRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setRangeWatchpoint(debugger, dv, WATCHPOINT_READ);
+	_setDebugpoint(debugger, dv, DP_RANGE_WATCHPOINT, (int32_t)WATCHPOINT_READ);
 }
 
 static void _setWriteRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setRangeWatchpoint(debugger, dv, WATCHPOINT_WRITE);
+	_setDebugpoint(debugger, dv, DP_RANGE_WATCHPOINT, (int32_t)WATCHPOINT_WRITE);
 }
 
 static void _setWriteChangedRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
-	_setRangeWatchpoint(debugger, dv, WATCHPOINT_WRITE_CHANGE);
+	_setDebugpoint(debugger, dv, DP_RANGE_WATCHPOINT, (int32_t)WATCHPOINT_WRITE_CHANGE);
 }
 
 static void _enableBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
