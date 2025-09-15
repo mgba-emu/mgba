@@ -32,6 +32,9 @@ static void SM83DebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	size_t i;
 	for (i = 0; i < mBreakpointListSize(&debugger->breakpoints); ++i) {
 		struct mBreakpoint* breakpoint = mBreakpointListGetPointer(&debugger->breakpoints, i);
+		if (breakpoint->disabled) {
+			continue;
+		}
 		int segment = cpu->memory.currentSegment(cpu, breakpoint->address);
 		if (breakpoint->address != cpu->pc) {
 			continue;
