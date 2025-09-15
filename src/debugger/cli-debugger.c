@@ -649,7 +649,6 @@ static void _setBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		.address = dv->intValue,
 		.segment = dv->segmentValue,
 		.type = BREAKPOINT_HARDWARE,
-		.enable = true,
 	};
 	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
 		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->charValue, NULL });
@@ -680,7 +679,6 @@ static void _setWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		.minAddress = dv->intValue,
 		.maxAddress = dv->intValue + 1,
 		.type = type,
-		.enable = true,
 	};
 	if (dv->next && dv->next->type == CLIDV_CHAR_TYPE) {
 		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->charValue, NULL });
@@ -723,7 +721,6 @@ static void _setRangeWatchpoint(struct CLIDebugger* debugger, struct CLIDebugVec
 		.minAddress = dv->intValue,
 		.maxAddress = dv->next->intValue,
 		.type = type,
-		.enable = true,
 	};
 	if (dv->next->next && dv->next->next->type == CLIDV_CHAR_TYPE) {
 		struct ParseTree* tree = _parseTree((const char*[]) { dv->next->next->charValue, NULL });
@@ -819,7 +816,7 @@ static void _listBreakpoints(struct CLIDebugger* debugger, struct CLIDebugVector
 	size_t i;
 	for (i = 0; i < mBreakpointListSize(&breakpoints); ++i) {
 		struct mBreakpoint* breakpoint = mBreakpointListGetPointer(&breakpoints, i);
-		char status = breakpoint->enable? 'E' : 'D';
+		char status = breakpoint->disabled ? 'D' : 'E';
 		if (breakpoint->segment >= 0) {
 			debugger->backend->printf(debugger->backend, "%c %" PRIz "i: %02X:%X\n", status, breakpoint->id, breakpoint->segment, breakpoint->address);
 		} else {
@@ -837,7 +834,7 @@ static void _listWatchpoints(struct CLIDebugger* debugger, struct CLIDebugVector
 	size_t i;
 	for (i = 0; i < mWatchpointListSize(&watchpoints); ++i) {
 		struct mWatchpoint* watchpoint = mWatchpointListGetPointer(&watchpoints, i);
-		char status = watchpoint->enable? 'E' : 'D';
+		char status = watchpoint->disabled ? 'D' : 'E';
 		if (watchpoint->segment >= 0) {
 			if (watchpoint->maxAddress == watchpoint->minAddress + 1) {
 				debugger->backend->printf(debugger->backend, "%c %" PRIz "i: %02X:%X\n", status, watchpoint->id, watchpoint->segment, watchpoint->minAddress);

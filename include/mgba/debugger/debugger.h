@@ -133,7 +133,7 @@ struct mBreakpoint {
 	int segment;
 	enum mBreakpointType type;
 	struct ParseTree* condition;
-	bool enable;
+	bool disabled;
 	bool isTemporary;
 };
 
@@ -144,7 +144,7 @@ struct mWatchpoint {
 	uint32_t maxAddress;
 	enum mWatchpointType type;
 	struct ParseTree* condition;
-	bool enable;
+	bool disabled;
 };
 
 struct mDebuggerInstructionInfo {
