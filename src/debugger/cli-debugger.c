@@ -95,7 +95,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "continue", _continue, "", "Continue execution" },
 	{ "enable", _enableBreakpoint, "I+", "Enable a breakpoint or watchpoint" },
 	{ "disable", _disableBreakpoint, "I+", "Disable a breakpoint or watchpoint" },
-	{ "delete", _clearBreakpoint, "I", "Delete a breakpoint or watchpoint" },
+	{ "delete", _clearBreakpoint, "I+", "Delete a breakpoint or watchpoint" },
 	{ "disassemble", _disassemble, "Ii", "Disassemble instructions" },
 	{ "events", _events, "", "Print list of scheduled events" },
 	{ "finish", _finish, "", "Execute until current stack frame returns" },
@@ -855,8 +855,14 @@ static void _clearBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector
 		debugger->backend->printf(debugger->backend, "%s\n", ERROR_MISSING_ARGS);
 		return;
 	}
-	uint64_t id = dv->intValue;
-	debugger->d.p->platform->clearBreakpoint(debugger->d.p->platform, id);
+	struct CLIDebugVector* current = dv;
+	while (current) {
+		if (current->type == CLIDV_INT_TYPE) {
+			ssize_t id = current->intValue;
+			debugger->d.p->platform->clearBreakpoint(debugger->d.p->platform, id);
+		}
+		current = current->next;
+	}
 }
 
 static void _listBreakpoints(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
