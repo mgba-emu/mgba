@@ -14,6 +14,7 @@ Features:
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81, Sintax
  - Initial support for bootleg GBA multicarts
  - Debugger: Add range watchpoints
+ - Debugger: Breakpoints/watchpoints can be enable/disable
  - "Headless" frontend for running tests, automation, etc.
 Emulation fixes:
  - ARM: Add framework for coprocessor support
