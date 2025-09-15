@@ -91,7 +91,7 @@ static void _findSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "backtrace", _backtrace, "i", "Print backtrace of all or specified frames" },
-	{ "break", _setBreakpoint, "Is", "Set a breakpoint" },
+	{ "break", _setBreakpoint, "Is+", "Set a breakpoint" },
 	{ "continue", _continue, "", "Continue execution" },
 	{ "enable", _enableBreakpoint, "I+", "Enable a breakpoint or watchpoint" },
 	{ "disable", _disableBreakpoint, "I+", "Disable a breakpoint or watchpoint" },
@@ -126,14 +126,14 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "w/2", _writeHalfword, "II", "Write a halfword at a specified offset" },
 	{ "w/r", _writeRegister, "SI", "Write a register" },
 	{ "w/4", _writeWord, "II", "Write a word at a specified offset" },
-	{ "watch", _setReadWriteWatchpoint, "Is", "Set a watchpoint" },
-	{ "watch/c", _setWriteChangedWatchpoint, "Is", "Set a change watchpoint" },
-	{ "watch/r", _setReadWatchpoint, "Is", "Set a read watchpoint" },
-	{ "watch/w", _setWriteWatchpoint, "Is", "Set a write watchpoint" },
-	{ "watch-range", _setReadWriteRangeWatchpoint, "IIs", "Set a range watchpoint" },
-	{ "watch-range/c", _setWriteChangedRangeWatchpoint, "IIs", "Set a change range watchpoint" },
-	{ "watch-range/r", _setReadRangeWatchpoint, "IIs", "Set a read range watchpoint" },
-	{ "watch-range/w", _setWriteRangeWatchpoint, "IIs", "Set a write range watchpoint" },
+	{ "watch", _setReadWriteWatchpoint, "Is+", "Set a watchpoint" },
+	{ "watch/c", _setWriteChangedWatchpoint, "Is+", "Set a change watchpoint" },
+	{ "watch/r", _setReadWatchpoint, "Is+", "Set a read watchpoint" },
+	{ "watch/w", _setWriteWatchpoint, "Is+", "Set a write watchpoint" },
+	{ "watch-range", _setReadWriteRangeWatchpoint, "IIs+", "Set a range watchpoint" },
+	{ "watch-range/c", _setWriteChangedRangeWatchpoint, "IIs+", "Set a change range watchpoint" },
+	{ "watch-range/r", _setReadRangeWatchpoint, "IIs+", "Set a read range watchpoint" },
+	{ "watch-range/w", _setWriteRangeWatchpoint, "IIs+", "Set a write range watchpoint" },
 	{ "x/1", _dumpByte, "Ii", "Examine bytes at a specified offset" },
 	{ "x/2", _dumpHalfword, "Ii", "Examine halfwords at a specified offset" },
 	{ "x/4", _dumpWord, "Ii", "Examine words at a specified offset" },
@@ -660,7 +660,7 @@ bool _increaseBufferSizeIfFull(char** buffer, size_t* bufferSize, size_t length)
 	return true;
 }
 
-static char* _reconstructCommand(CLIDebuggerCommand command, struct CLIDebugVector* dv, enum DebugPoint dpType) {
+static char* _reconstructCommand(CLIDebuggerCommand command, struct CLIDebugVector* dv, enum DebugPoint dpType, size_t* condIndex) {
 	size_t bufferSize = 32;
 	size_t totalLength = 0;
 	size_t i = 0;
@@ -673,7 +673,7 @@ static char* _reconstructCommand(CLIDebuggerCommand command, struct CLIDebugVect
 		}
 	}
 	size_t cmdLength = strlen(cmdText);
-	totalLength += (dpType == DP_RANGE_WATCHPOINT) ? cmdLength + 22 : cmdLength + 11;
+	totalLength += (dpType == DP_RANGE_WATCHPOINT) ? cmdLength + 22 + 1: cmdLength + 11 + 1;
 	if (!_increaseBufferSizeIfFull(&repr, &bufferSize, totalLength)) {
 		goto realloc_failed;
 	}
@@ -685,12 +685,17 @@ static char* _reconstructCommand(CLIDebuggerCommand command, struct CLIDebugVect
 
 	struct CLIDebugVector* cond = dpType == DP_RANGE_WATCHPOINT ? dv->next->next : dv->next;
 	if (cond && cond->type == CLIDV_CHAR_TYPE) {
+		repr[totalLength - 1] = ' ';
+	}
+	*condIndex = totalLength;
+	while (cond && cond->type == CLIDV_CHAR_TYPE) {
 		size_t length = strlen(cond->charValue);
-		totalLength += length + 1;
+		totalLength += length;
 		if (!_increaseBufferSizeIfFull(&repr, &bufferSize, totalLength)) {
 			goto realloc_failed;
 		}
-		snprintf(&repr[totalLength - length - 1], bufferSize - length - 1, " %s", cond->charValue);
+		snprintf(&repr[totalLength - length], bufferSize - length, "%s", cond->charValue);
+		cond = cond->next;
 	}
 	repr[totalLength] = '\0';
 	return repr;
@@ -729,7 +734,8 @@ static void _setDebugpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 	} else {
 		condition = dv->next;
 	}
-	char* repr = _reconstructCommand(command, dv, dpType);
+	size_t condIndex = 0;
+	char* repr = _reconstructCommand(command, dv, dpType, &condIndex);
 	if (!repr){
 		debugger->backend->printf(debugger->backend, "Error when reconstruct command\n");
 		return;
@@ -754,7 +760,7 @@ static void _setDebugpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 	}
 
 	if (condition && condition->type == CLIDV_CHAR_TYPE) {
-		struct ParseTree* tree = _parseTree((const char*[]) { condition->charValue, NULL });
+		struct ParseTree* tree = _parseTree((const char*[]) { &repr[condIndex], NULL });
 		if (tree) {
 			if (dpType == DP_BREAKPOINT) {
 				breakpoint.condition = tree;
