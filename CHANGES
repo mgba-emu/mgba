@@ -21,6 +21,7 @@ Emulation fixes:
  - ARM: cmn/cmp/teq/tst pc shouldn't flush the pipeline
  - ARM: Remove erroneous SMLAL(S) decodings (fixes mgba.io/i/3544)
  - ARM: Fix LDRT/STRT register-index addressing (fixes mgba.io/i/3586)
+ - GB MBC: Fix MBC3 SRAM enable writes other than 0 and A
  - GB Memory: Initialize HRAM when skipping BIOS in GBC mode (fixes mgba.io/i/3420)
  - GB Memory: Fix initial WRAM pattern when skipping BIOS in GBC mode (fixes mgba.io/i/2704)
  - GB Serialize: Add missing Pocket Cam state to savestates
