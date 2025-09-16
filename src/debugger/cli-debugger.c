@@ -1111,6 +1111,9 @@ static int _tryCommands(struct CLIDebugger* debugger, struct CLIDebuggerCommandS
 }
 
 bool CLIDebuggerRunCommand(struct CLIDebugger* debugger, const char* line, size_t count) {
+	while (isspace(*(line + count - 1))) {
+		--count;
+	}
 	const char* firstSpace = strchr(line, ' ');
 	size_t cmdLength;
 	if (firstSpace) {
