@@ -89,6 +89,7 @@ static void _source(struct CLIDebugger*, struct CLIDebugVector*);
 static void _setSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 static void _findSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 static void _saveBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
+static void _loadBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "backtrace", _backtrace, "i", "Print backtrace of all or specified frames" },
@@ -142,6 +143,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "!", _breakInto, "", "Break into attached debugger (for developers)" },
 #endif
 	{ "savebp", _saveBreakpoint, "S", "Save breakpoints/watchpoints to text file" },
+	{ "loadbp", _loadBreakpoint, "S", "Load breakpoints/watchpoints from text file" },
 	{ 0, 0, 0, 0 }
 };
 
@@ -178,6 +180,8 @@ static struct CLIDebuggerCommandAlias _debuggerCommandAliases[] = {
 	{ ".", "source" },
 	{ 0, 0 }
 };
+
+static ssize_t _lastBreakpointId = 0;
 
 #if !defined(NDEBUG) && !defined(_WIN32)
 static void _handleDeath(int sig) {
@@ -775,14 +779,13 @@ static void _setDebugpoint(struct CLIDebugger* debugger, struct CLIDebugVector* 
 		}
 	}
 
-	ssize_t id;
 	if (dpType == DP_BREAKPOINT) {
-		id = debugger->d.p->platform->setBreakpoint(debugger->d.p->platform, &debugger->d, &breakpoint);
+		_lastBreakpointId = debugger->d.p->platform->setBreakpoint(debugger->d.p->platform, &debugger->d, &breakpoint);
 	} else {
-		id = debugger->d.p->platform->setWatchpoint(debugger->d.p->platform, &debugger->d, &watchpoint);
+		_lastBreakpointId = debugger->d.p->platform->setWatchpoint(debugger->d.p->platform, &debugger->d, &watchpoint);
 	}
-	if (id > 0) {
-		debugger->backend->printf(debugger->backend, dpType == DP_BREAKPOINT ? INFO_BREAKPOINT_ADDED : INFO_WATCHPOINT_ADDED, id);
+	if (_lastBreakpointId > 0) {
+		debugger->backend->printf(debugger->backend, dpType == DP_BREAKPOINT ? INFO_BREAKPOINT_ADDED : INFO_WATCHPOINT_ADDED, _lastBreakpointId);
 	}
 }
 
@@ -961,6 +964,76 @@ static void _saveBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector*
 	}
 	debugger->backend->printf(debugger->backend, "%s %zu %s\n", "Save", i, "watchpoints");
 	mWatchpointListDeinit(&watchpoints);
+	fp->close(fp);
+}
+
+static void _loadBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	char* filename;
+	if (!dv || dv->type != CLIDV_CHAR_TYPE) {
+		char temp[32];
+		_generateBPFileName(debugger, temp, 32);
+		filename = temp;
+	} else {
+		filename = dv->charValue;
+	}
+
+	struct VFile* fp = VFileOpen(filename, O_RDONLY);
+	if (!fp) {
+		debugger->backend->printf(debugger->backend, "%s\n", "Could not open file");
+		return;
+	}
+
+	char buffer[512];
+	size_t cmdSize = 128;
+	char* command = malloc(cmdSize);
+	char* cmdIdx = command;
+	char* bufferIdx = buffer;
+	size_t i = 0;
+
+	size_t count = fp->read(fp, buffer, sizeof(buffer));
+	while (count > 0) {
+		++i;
+		if (i >= cmdSize) {
+			size_t delta = cmdIdx - command;
+			if (!_increaseBufferSizeIfFull(&command, &cmdSize, i + 32)) {
+				goto clean_up;
+			}
+			cmdIdx = command + delta;
+		}
+		*cmdIdx++ = *bufferIdx++;
+		--count;
+		if (count > 0 && *bufferIdx == '\n') {
+			*cmdIdx = '\0';
+			i = 0;
+			++bufferIdx;
+			--count;
+			bool disable = command[0] == '!';
+			cmdIdx = disable ? &command[1] : command;
+			_lastBreakpointId = 0;
+			if (!CLIDebuggerRunCommand(debugger, cmdIdx, strlen(cmdIdx))) {
+				debugger->backend->printf(debugger->backend, "Unable to run: %s\n", command);
+			}
+			cmdIdx = command;
+		    if (_lastBreakpointId > 0){
+				struct CLIDebugVector dv = {
+					.type = CLIDV_INT_TYPE,
+					.intValue = _lastBreakpointId
+				};
+				if (disable) {
+					_disableBreakpoint(debugger, &dv);
+				} else {
+					_enableBreakpoint(debugger, &dv);
+				}
+			}
+		}
+		if (count <= 0) {
+			count = fp->read(fp, buffer, sizeof(buffer));
+			bufferIdx = buffer;
+		}
+	}
+
+clean_up:
+	free(command);
 	fp->close(fp);
 }
 
