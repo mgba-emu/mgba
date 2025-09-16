@@ -54,6 +54,7 @@ Misc:
  - FFmpeg: Add Ut Video option
  - GB: Prevent incompatible BIOSes from being used on differing models
  - GB MBC: Add M161 support for one Mani 4-in-1 multicart
+ - GB Memory: Decay cart bus eagerly when executing from RAM
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
  - GBA Audio: Remove broken XQ audio pending rewrite

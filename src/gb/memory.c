@@ -125,6 +125,7 @@ static void GBSetActiveRegion(struct SM83Core* cpu, uint16_t address) {
 		break;
 	default:
 		cpu->memory.cpuLoad8 = GBLoad8;
+		gb->memory.cartBus = 0xFF;
 		break;
 	}
 	if (gb->memory.dmaRemaining) {
