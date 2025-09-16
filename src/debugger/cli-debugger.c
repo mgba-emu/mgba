@@ -867,11 +867,11 @@ static void _listBreakpoints(struct CLIDebugger* debugger, struct CLIDebugVector
 	size_t i;
 	for (i = 0; i < mBreakpointListSize(&breakpoints); ++i) {
 		struct mBreakpoint* breakpoint = mBreakpointListGetPointer(&breakpoints, i);
-		char status = breakpoint->disabled ? 'D' : 'E';
+		char* status = breakpoint->disabled ? "[ ]" : "[*]";
 		if (breakpoint->segment >= 0) {
-			debugger->backend->printf(debugger->backend, "%c %" PRIz "i: %02X:%X - %s\n", status, breakpoint->id, breakpoint->segment, breakpoint->address, breakpoint->representation);
+			debugger->backend->printf(debugger->backend, "%s %" PRIz "i: %02X:%X - %s\n", status, breakpoint->id, breakpoint->segment, breakpoint->address, breakpoint->representation);
 		} else {
-			debugger->backend->printf(debugger->backend, "%c %" PRIz "i: 0x%X - %s\n", status, breakpoint->id, breakpoint->address, breakpoint->representation);
+			debugger->backend->printf(debugger->backend, "%s %" PRIz "i: 0x%X - %s\n", status, breakpoint->id, breakpoint->address, breakpoint->representation);
 		}
 	}
 	mBreakpointListDeinit(&breakpoints);
@@ -885,18 +885,18 @@ static void _listWatchpoints(struct CLIDebugger* debugger, struct CLIDebugVector
 	size_t i;
 	for (i = 0; i < mWatchpointListSize(&watchpoints); ++i) {
 		struct mWatchpoint* watchpoint = mWatchpointListGetPointer(&watchpoints, i);
-		char status = watchpoint->disabled ? 'D' : 'E';
+		char* status = watchpoint->disabled ? "[ ]" : "[*]";
 		if (watchpoint->segment >= 0) {
 			if (watchpoint->maxAddress == watchpoint->minAddress + 1) {
-				debugger->backend->printf(debugger->backend, "%c %" PRIz "i: %02X:%X - %s\n", status, watchpoint->id, watchpoint->segment, watchpoint->minAddress, watchpoint->representation);
+				debugger->backend->printf(debugger->backend, "%s %" PRIz "i: %02X:%X - %s\n", status, watchpoint->id, watchpoint->segment, watchpoint->minAddress, watchpoint->representation);
 			} else {
-				debugger->backend->printf(debugger->backend, "%c %" PRIz "i: %02X:%X-%X - %s\n", status, watchpoint->id, watchpoint->segment, watchpoint->minAddress, watchpoint->maxAddress, watchpoint->representation);
+				debugger->backend->printf(debugger->backend, "%s %" PRIz "i: %02X:%X-%X - %s\n", status, watchpoint->id, watchpoint->segment, watchpoint->minAddress, watchpoint->maxAddress, watchpoint->representation);
 			}
 		} else {
 			if (watchpoint->maxAddress == watchpoint->minAddress + 1) {
-				debugger->backend->printf(debugger->backend, "%c %" PRIz "i: 0x%X - %s\n", status, watchpoint->id, watchpoint->minAddress, watchpoint->representation);
+				debugger->backend->printf(debugger->backend, "%s %" PRIz "i: 0x%X - %s\n", status, watchpoint->id, watchpoint->minAddress, watchpoint->representation);
 			} else {
-				debugger->backend->printf(debugger->backend, "%c %" PRIz "i: 0x%X-0x%X - %s\n", status, watchpoint->id, watchpoint->minAddress, watchpoint->maxAddress, watchpoint->representation);
+				debugger->backend->printf(debugger->backend, "%s %" PRIz "i: 0x%X-0x%X - %s\n", status, watchpoint->id, watchpoint->minAddress, watchpoint->maxAddress, watchpoint->representation);
 			}
 		}
 	}
