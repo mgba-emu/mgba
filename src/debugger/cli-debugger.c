@@ -88,6 +88,7 @@ static void _source(struct CLIDebugger*, struct CLIDebugVector*);
 #endif
 static void _setSymbol(struct CLIDebugger*, struct CLIDebugVector*);
 static void _findSymbol(struct CLIDebugger*, struct CLIDebugVector*);
+static void _saveBreakpoint(struct CLIDebugger*, struct CLIDebugVector*);
 
 static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 	{ "backtrace", _backtrace, "i", "Print backtrace of all or specified frames" },
@@ -140,6 +141,7 @@ static struct CLIDebuggerCommandSummary _debuggerCommands[] = {
 #if !defined(NDEBUG) && !defined(_WIN32)
 	{ "!", _breakInto, "", "Break into attached debugger (for developers)" },
 #endif
+	{ "savebp", _saveBreakpoint, "S", "Save breakpoints/watchpoints to text file" },
 	{ 0, 0, 0, 0 }
 };
 
@@ -907,6 +909,59 @@ static void _listWatchpoints(struct CLIDebugger* debugger, struct CLIDebugVector
 		}
 	}
 	mWatchpointListDeinit(&watchpoints);
+}
+
+static void _generateBPFileName(struct CLIDebugger* debugger, char* buffer, size_t length) {
+	struct mGameInfo info;
+	debugger->d.p->core->getGameInfo(debugger->d.p->core, &info);
+	snprintf(buffer, length, "%s-%s.v%u.txt", info.title, info.code, info.version);
+}
+
+static void _saveBreakpoint(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
+	char* filename;
+	if (!dv || dv->type != CLIDV_CHAR_TYPE) {
+		char temp[32];
+		_generateBPFileName(debugger, temp, 32);
+		filename = temp;
+	} else {
+		filename = dv->charValue;
+	}
+
+	struct VFile* fp = VFileOpen(filename, O_WRONLY | O_CREAT | O_TRUNC);
+	if (!fp) {
+		debugger->backend->printf(debugger->backend, "%s\n", "Could not create file");
+		return;
+	}
+
+	struct mBreakpointList breakpoints;
+	mBreakpointListInit(&breakpoints, 0);
+	debugger->d.p->platform->listBreakpoints(debugger->d.p->platform, &debugger->d, &breakpoints);
+	size_t i;
+	for (i = 0; i < mBreakpointListSize(&breakpoints); ++i) {
+		struct mBreakpoint* breakpoint = mBreakpointListGetPointer(&breakpoints, i);
+		if (breakpoint->disabled) {
+			fp->write(fp, "!", 1);
+		}
+		fp->write(fp, breakpoint->representation, strlen(breakpoint->representation));
+		fp->write(fp, "\n", 1);
+	}
+	debugger->backend->printf(debugger->backend, "%s %zu %s\n", "Save", i, "breakpoints");
+	mBreakpointListDeinit(&breakpoints);
+
+	struct mWatchpointList watchpoints;
+	mWatchpointListInit(&watchpoints, 0);
+	debugger->d.p->platform->listWatchpoints(debugger->d.p->platform, &debugger->d, &watchpoints);
+	for (i = 0; i < mWatchpointListSize(&watchpoints); ++i) {
+		struct mWatchpoint* watchpoint = mWatchpointListGetPointer(&watchpoints, i);
+		if (watchpoint->disabled) {
+			fp->write(fp, "!", 1);
+		}
+		fp->write(fp, watchpoint->representation, strlen(watchpoint->representation));
+		fp->write(fp, "\n", 1);
+	}
+	debugger->backend->printf(debugger->backend, "%s %zu %s\n", "Save", i, "watchpoints");
+	mWatchpointListDeinit(&watchpoints);
+	fp->close(fp);
 }
 
 static void _trace(struct CLIDebugger* debugger, struct CLIDebugVector* dv) {
