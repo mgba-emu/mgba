@@ -667,7 +667,7 @@ bool _increaseBufferSizeIfFull(char** buffer, size_t* bufferSize, size_t length)
 }
 
 static char* _reconstructCommand(CLIDebuggerCommand command, struct CLIDebugVector* dv, enum DebugPoint dpType, size_t* condIndex) {
-	size_t bufferSize = 32;
+	size_t bufferSize = 64;
 	size_t totalLength = 0;
 	size_t i = 0;
 	char* repr = malloc(bufferSize);
@@ -700,7 +700,7 @@ static char* _reconstructCommand(CLIDebuggerCommand command, struct CLIDebugVect
 		if (!_increaseBufferSizeIfFull(&repr, &bufferSize, totalLength)) {
 			goto realloc_failed;
 		}
-		snprintf(&repr[totalLength - length], bufferSize - length, "%s", cond->charValue);
+		snprintf(&repr[totalLength - length], length + 1, "%s", cond->charValue);
 		cond = cond->next;
 	}
 	repr[totalLength] = '\0';
