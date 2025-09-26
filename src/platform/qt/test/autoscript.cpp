@@ -44,6 +44,7 @@ private:
 		QByteArray rawData(source, size);
 		QVariantList data;
 		QDataStream ds(&rawData, QIODevice::ReadOnly);
+		ds.setVersion(QDataStream::Qt_5_0);
 		ds >> data;
 		return data;
 	}
