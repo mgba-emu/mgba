@@ -179,6 +179,7 @@ static void GBASIOLockstepDriverReset(struct GBASIODriver* driver) {
 	struct GBASIOLockstepDriver* lockstep = (struct GBASIOLockstepDriver*) driver;
 	struct GBASIOLockstepCoordinator* coordinator = lockstep->coordinator;
 	struct GBASIOLockstepPlayer* player;
+	MutexLock(&coordinator->mutex);
 	if (!lockstep->lockstepId) {
 		unsigned id;
 		player = calloc(1, sizeof(*player));
@@ -192,7 +193,6 @@ static void GBASIOLockstepDriverReset(struct GBASIODriver* driver) {
 		}
 		player->freeList = &player->buffer[0];
 
-		MutexLock(&coordinator->mutex);
 		while (true) {
 			if (coordinator->nextId == UINT_MAX) {
 				coordinator->nextId = 0;
@@ -535,8 +535,10 @@ static bool GBASIOLockstepDriverStart(struct GBASIODriver* driver) {
 		.finishCycle = timestamp + GBASIOTransferCycles(player->mode, player->driver->d.p->siocnt, coordinator->nAttached - 1),
 	};
 	_enqueueEvent(coordinator, &event, TARGET_SECONDARY);
-	GBASIOLockstepCoordinatorWaitOnPlayers(coordinator, player);
-	coordinator->transferActive = true;
+	if (!coordinator->waiting && !coordinator->transferActive) {
+		GBASIOLockstepCoordinatorWaitOnPlayers(coordinator, player);
+		coordinator->transferActive = true;
+	}
 	ret = true;
 out:
 	MutexUnlock(&coordinator->mutex);
@@ -562,7 +564,13 @@ static void GBASIOLockstepDriverFinishMultiplayer(struct GBASIODriver* driver, u
 		}
 		player->dataReceived = false;
 		if (player->playerId == 0) {
-			_hardSync(coordinator, player);
+			if (!coordinator->waiting && !coordinator->transferActive) {
+				_hardSync(coordinator, player);
+			} else {
+				if (coordinator->nextHardSync > 0) {
+					coordinator->nextHardSync = 0;
+				}
+			}
 		}
 	}
 	MutexUnlock(&coordinator->mutex);
@@ -585,7 +593,13 @@ static uint8_t GBASIOLockstepDriverFinishNormal8(struct GBASIODriver* driver) {
 		}
 		player->dataReceived = false;
 		if (player->playerId == 0) {
-			_hardSync(coordinator, player);
+			if (!coordinator->waiting && !coordinator->transferActive) {
+				_hardSync(coordinator, player);
+			} else {
+				if (coordinator->nextHardSync > 0) {
+					coordinator->nextHardSync = 0;
+				}
+			}
 		}
 	}
 	MutexUnlock(&coordinator->mutex);
@@ -609,7 +623,13 @@ static uint32_t GBASIOLockstepDriverFinishNormal32(struct GBASIODriver* driver) 
 		}
 		player->dataReceived = false;
 		if (player->playerId == 0) {
-			_hardSync(coordinator, player);
+			if (!coordinator->waiting && !coordinator->transferActive) {
+				_hardSync(coordinator, player);
+			} else {
+				if (coordinator->nextHardSync > 0) {
+					coordinator->nextHardSync = 0;
+				}
+			}
 		}
 	}
 	MutexUnlock(&coordinator->mutex);
@@ -666,6 +686,9 @@ void _advanceCycle(struct GBASIOLockstepCoordinator* coordinator, struct GBASIOL
 	int32_t newCycle = GBASIOLockstepTime(player);
 	mASSERT_DEBUG(newCycle - coordinator->cycle >= 0);
 	coordinator->nextHardSync -= newCycle - coordinator->cycle;
+	if (coordinator->nextHardSync < -HARD_SYNC_INTERVAL) {
+		coordinator->nextHardSync = -HARD_SYNC_INTERVAL;
+	}
 	coordinator->cycle = newCycle;
 }
 
@@ -891,8 +914,13 @@ void _lockstepEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 			GBASIOLockstepCoordinatorWakePlayers(coordinator);
 		}
 		if (coordinator->nextHardSync < 0) {
-			if (!coordinator->waiting) {
+			if (!coordinator->waiting && !coordinator->transferActive) {
 				_hardSync(coordinator, player);
+				coordinator->nextHardSync = HARD_SYNC_INTERVAL;
+			} else {
+				if (coordinator->nextHardSync < -HARD_SYNC_INTERVAL) {
+					coordinator->nextHardSync = -HARD_SYNC_INTERVAL;
+				}
 			}
 			coordinator->nextHardSync += HARD_SYNC_INTERVAL;
 		}
@@ -905,6 +933,10 @@ void _lockstepEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 			break;
 		}
 		if (event->timestamp > GBASIOLockstepTime(player)) {
+			break;
+		}
+		if (player->playerId == 0 && event->type == SIO_EV_TRANSFER_START && (coordinator->waiting || coordinator->transferActive)) {
+			nextEvent = nextEvent > 4 ? 4 : nextEvent;
 			break;
 		}
 		player->queue = event->next;
@@ -934,6 +966,10 @@ void _lockstepEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 			player->driver->d.p->siocnt |= 0x80;
 			mTimingDeschedule(&sio->p->timing, &sio->completeEvent);
 			mTimingSchedule(&sio->p->timing, &sio->completeEvent, nextEvent);
+			if (!coordinator->waiting && !coordinator->transferActive && player->playerId == 0) {
+				GBASIOLockstepCoordinatorWaitOnPlayers(coordinator, player);
+				coordinator->transferActive = true;
+			}
 			GBASIOLockstepCoordinatorAckPlayer(coordinator, player);
 			break;
 		case SIO_EV_MODE_SET:
