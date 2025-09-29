@@ -285,9 +285,10 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 #ifdef ENABLE_DEBUGGERS
 		struct mDebugger* debugger = core->debugger;
 		if (debugger) {
-			MutexUnlock(&impl->stateMutex);
+			if (!debugger->threadImpl) {
+				mDebuggerSetThread(core->debugger, impl);
+			}
 			mDebuggerRun(debugger);
-			MutexLock(&impl->stateMutex);
 			if (debugger->state == DEBUGGER_SHUTDOWN) {
 				impl->state = mTHREAD_EXITING;
 			}
@@ -385,6 +386,12 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		impl->state = mTHREAD_SHUTDOWN;
 	}
 	ConditionWake(&threadContext->impl->stateOffThreadCond);
+
+#ifdef ENABLE_DEBUGGERS
+	if (core->debugger && core->debugger->threadImpl) {
+		mDebuggerUnsetThread(core->debugger);
+	}
+#endif
 	MutexUnlock(&impl->stateMutex);
 
 	if (core->opts.rewindEnable) {

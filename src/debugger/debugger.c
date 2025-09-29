@@ -5,6 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/debugger/debugger.h>
 
+#ifndef DISABLE_THREADING
+#include <mgba/core/thread.h>
+#endif
+
 #include <mgba/core/core.h>
 
 #include <mgba/internal/debugger/cli-debugger.h>
@@ -97,6 +101,20 @@ void mDebuggerAttach(struct mDebugger* debugger, struct mCore* core) {
 	core->attachDebugger(core, debugger);
 }
 
+#ifndef DISABLE_THREADING
+void mDebuggerSetThread(struct mDebugger* debugger, struct mCoreThreadInternal* thread) {
+	if (!debugger->threadImpl) {
+		debugger->threadImpl = thread;
+	}
+}
+
+void mDebuggerUnsetThread(struct mDebugger* debugger) {
+	if (debugger->threadImpl) {
+		debugger->threadImpl = 0;
+	}
+}
+#endif
+
 void mDebuggerAttachModule(struct mDebugger* debugger, struct mDebuggerModule* module) {
 	module->p = debugger;
 	*mDebuggerModuleListAppend(&debugger->modules) = module;
@@ -127,37 +145,97 @@ void mDebuggerRunTimeout(struct mDebugger* debugger, int32_t timeoutMs) {
 	size_t i;
 	size_t anyPaused = 0;
 
+#ifndef DISABLE_THREADING
+	struct mCoreThreadInternal* impl = debugger->threadImpl;
+#endif
+
 	switch (debugger->state) {
 	case DEBUGGER_RUNNING:
-		if (!debugger->platform->hasBreakpoints(debugger->platform)) {
-			debugger->core->runLoop(debugger->core);
-		} else {
-			debugger->core->step(debugger->core);
-			debugger->platform->checkBreakpoints(debugger->platform);
+		bool hasBreakpoints = debugger->platform->hasBreakpoints(debugger->platform);
+#ifndef DISABLE_THREADING
+		if (impl) {
+			if (impl->state == mTHREAD_RUNNING) {
+				if (!hasBreakpoints) {
+					MutexUnlock(&impl->stateMutex);
+					debugger->core->runLoop(debugger->core);
+					MutexLock(&impl->stateMutex);
+				} else {
+					MutexUnlock(&impl->stateMutex);
+					debugger->core->step(debugger->core);
+					debugger->platform->checkBreakpoints(debugger->platform);
+					MutexLock(&impl->stateMutex);
+				}
+			}
+		} else
+#endif
+		{
+			if (!hasBreakpoints) {
+				debugger->core->runLoop(debugger->core);
+			} else {
+				debugger->core->step(debugger->core);
+				debugger->platform->checkBreakpoints(debugger->platform);
+			}
 		}
 		break;
 	case DEBUGGER_CALLBACK:
-		debugger->core->step(debugger->core);
-		debugger->platform->checkBreakpoints(debugger->platform);
-		for (i = 0; i < mDebuggerModuleListSize(&debugger->modules); ++i) {
-			struct mDebuggerModule* module = *mDebuggerModuleListGetPointer(&debugger->modules, i);
-			if (module->needsCallback) {
-				module->custom(module);
+#ifndef DISABLE_THREADING
+		if (impl) {
+			MutexUnlock(&impl->stateMutex);
+			debugger->core->step(debugger->core);
+			debugger->platform->checkBreakpoints(debugger->platform);
+			for (i = 0; i < mDebuggerModuleListSize(&debugger->modules); ++i) {
+				struct mDebuggerModule* module = *mDebuggerModuleListGetPointer(&debugger->modules, i);
+				if (module->needsCallback) {
+					module->custom(module);
+				}
+			}
+			MutexLock(&impl->stateMutex);
+		} else
+#endif
+		{
+			debugger->core->step(debugger->core);
+			debugger->platform->checkBreakpoints(debugger->platform);
+			for (i = 0; i < mDebuggerModuleListSize(&debugger->modules); ++i) {
+				struct mDebuggerModule* module = *mDebuggerModuleListGetPointer(&debugger->modules, i);
+				if (module->needsCallback) {
+					module->custom(module);
+				}
 			}
 		}
 		break;
 	case DEBUGGER_PAUSED:
-		for (i = 0; i < mDebuggerModuleListSize(&debugger->modules); ++i) {
-			struct mDebuggerModule* module = *mDebuggerModuleListGetPointer(&debugger->modules, i);
-			if (module->isPaused) {
-				if (module->paused) {
-					module->paused(module, timeoutMs);
-				}
+#ifndef DISABLE_THREADING
+		if (impl) {
+			MutexUnlock(&impl->stateMutex);
+			for (i = 0; i < mDebuggerModuleListSize(&debugger->modules); ++i) {
+				struct mDebuggerModule* module = *mDebuggerModuleListGetPointer(&debugger->modules, i);
 				if (module->isPaused) {
-					++anyPaused;
+					if (module->paused) {
+						module->paused(module, timeoutMs);
+					}
+					if (module->isPaused) {
+						++anyPaused;
+					}
+				} else if (module->needsCallback) {
+					module->custom(module);
 				}
-			} else if (module->needsCallback) {
-				module->custom(module);
+			}
+			MutexLock(&impl->stateMutex);
+		} else
+#endif
+		{
+			for (i = 0; i < mDebuggerModuleListSize(&debugger->modules); ++i) {
+				struct mDebuggerModule* module = *mDebuggerModuleListGetPointer(&debugger->modules, i);
+				if (module->isPaused) {
+					if (module->paused) {
+						module->paused(module, timeoutMs);
+					}
+					if (module->isPaused) {
+						++anyPaused;
+					}
+				} else if (module->needsCallback) {
+					module->custom(module);
+				}
 			}
 		}
 		if (debugger->state == DEBUGGER_PAUSED && !anyPaused) {
@@ -165,7 +243,7 @@ void mDebuggerRunTimeout(struct mDebugger* debugger, int32_t timeoutMs) {
 		}
 		break;
 	case DEBUGGER_CREATED:
-		mLOG(DEBUGGER, ERROR, "Attempted to run debugger before initializtion");
+		mLOG(DEBUGGER, ERROR, "Attempted to run debugger before initialization");
 		return;
 	case DEBUGGER_SHUTDOWN:
 		return;

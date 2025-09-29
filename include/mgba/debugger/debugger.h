@@ -212,10 +212,13 @@ struct mDebuggerPlatform {
 	void (*nextInstructionInfo)(struct mDebuggerPlatform* d, struct mDebuggerInstructionInfo* info);
 };
 
+struct mCoreThreadInternal;
+
 struct mDebugger {
 	struct mCPUComponent d;
 	struct mDebuggerPlatform* platform;
 	enum mDebuggerState state;
+	struct mCoreThreadInternal* threadImpl;
 	struct mCore* core;
 	struct mScriptBridge* bridge;
 	struct mStackTrace stackTrace;
@@ -245,9 +248,13 @@ void mDebuggerInit(struct mDebugger*);
 void mDebuggerDeinit(struct mDebugger*);
 
 void mDebuggerAttach(struct mDebugger*, struct mCore*);
+#ifndef DISABLE_THREADING
+void mDebuggerSetThread(struct mDebugger*, struct mCoreThreadInternal*);
+void mDebuggerUnsetThread(struct mDebugger*);
+#endif
 void mDebuggerAttachModule(struct mDebugger*, struct mDebuggerModule*);
 void mDebuggerDetachModule(struct mDebugger*, struct mDebuggerModule*);
-void mDebuggerRunTimeout(struct mDebugger* debugger, int32_t timeoutMs);
+void mDebuggerRunTimeout(struct mDebugger*, int32_t);
 void mDebuggerRun(struct mDebugger*);
 void mDebuggerRunFrame(struct mDebugger*);
 void mDebuggerEnter(struct mDebugger*, enum mDebuggerEntryReason, struct mDebuggerEntryInfo*);
