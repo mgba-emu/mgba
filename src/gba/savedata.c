@@ -7,15 +7,12 @@
 
 #include <mgba/internal/arm/macros.h>
 #include <mgba/internal/defines.h>
+#include <mgba/internal/gba/cart/gpio.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/serialize.h>
 
 #include <mgba-util/memory.h>
 #include <mgba-util/vfs.h>
-
-#ifdef PSP2
-#include <psp2/rtc.h>
-#endif
 
 #include <errno.h>
 #include <fcntl.h>
@@ -630,10 +627,6 @@ void GBASavedataRTCWrite(struct GBASavedata* savedata) {
 	}
 }
 
-static uint8_t _unBCD(uint8_t byte) {
-	return (byte >> 4) * 10 + (byte & 0xF);
-}
-
 void GBASavedataRTCRead(struct GBASavedata* savedata) {
 	if (!savedata->vf) {
 		return;
@@ -654,55 +647,11 @@ void GBASavedataRTCRead(struct GBASavedata* savedata) {
 	// Since that bit is invalid on hardware, we can check for != 0x01
 	// to see if it's a valid value instead of just a filler value.
 	if (buffer.control != 1) {
-		savedata->gpio->rtc.control = buffer.control;
+		savedata->gpio->rtc.control = buffer.control & 0xEA;
 	}
 	LOAD_64LE(savedata->gpio->rtc.lastLatch, 0, &buffer.lastLatch);
 
-	time_t rtcTime;
-
-#ifndef PSP2
-	struct tm date;
-	date.tm_year = _unBCD(savedata->gpio->rtc.time[0]) + 100;
-	date.tm_mon = _unBCD(savedata->gpio->rtc.time[1]) - 1;
-	date.tm_mday = _unBCD(savedata->gpio->rtc.time[2]);
-	date.tm_hour = _unBCD(savedata->gpio->rtc.time[4]);
-	date.tm_min = _unBCD(savedata->gpio->rtc.time[5]);
-	date.tm_sec = _unBCD(savedata->gpio->rtc.time[6]);
-	date.tm_isdst = -1;
-	rtcTime = mktime(&date);
-#else
-	struct SceDateTime date;
-	date.year = _unBCD(savedata->gpio->rtc.time[0]) + 2000;
-	date.month = _unBCD(savedata->gpio->rtc.time[1]);
-	date.day = _unBCD(savedata->gpio->rtc.time[2]);
-	date.hour = _unBCD(savedata->gpio->rtc.time[4]);
-	date.minute = _unBCD(savedata->gpio->rtc.time[5]);
-	date.second = _unBCD(savedata->gpio->rtc.time[6]);
-	date.microsecond = 0;
-
-	struct SceRtcTick tick;
-	int res;
-	res = sceRtcConvertDateTimeToTick(&date, &tick);
-	if (res < 0) {
-		mLOG(GBA_SAVE, ERROR, "sceRtcConvertDateTimeToTick %lx", res);
-	}
-	res = sceRtcConvertLocalTimeToUtc(&tick, &tick);
-	if (res < 0) {
-		mLOG(GBA_SAVE, ERROR, "sceRtcConvertUtcToLocalTime %lx", res);
-	}
-	res = sceRtcConvertTickToDateTime(&tick, &date);
-	if (res < 0) {
-		mLOG(GBA_SAVE, ERROR, "sceRtcConvertTickToDateTime %lx", res);
-	}
-	res = sceRtcConvertDateTimeToTime_t(&date, &rtcTime);
-	if (res < 0) {
-		mLOG(GBA_SAVE, ERROR, "sceRtcConvertDateTimeToTime_t %lx", res);
-	}
-#endif
-
-	savedata->gpio->rtc.offset = savedata->gpio->rtc.lastLatch - rtcTime;
-
-	mLOG(GBA_SAVE, DEBUG, "Savegame time offset set to %li", savedata->gpio->rtc.offset);
+	GBAHardwareRTCSanitize(savedata->gpio);
 }
 
 void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state) {
