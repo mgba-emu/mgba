@@ -258,7 +258,9 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x00380 - 0x0038F: Audio FIFO B samples
  * 0x00390 - 0x003CF: Audio rendered samples
  * 0x003D0 - 0x003D3: Memory bus value
- * 0x003D4 - 0x003FF: Reserved (leave zero)
+ * 0x003D4 - 0x003D8: Reserved (leave zero)
+ * 0x003D8 - 0x003DF: RTC last latch
+ * 0x003E0 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -474,7 +476,11 @@ struct GBASerializedState {
 
 	uint32_t bus;
 
-	uint32_t reserved[11];
+	uint32_t reserved0;
+
+	int64_t rtcLastLatch;
+
+	uint32_t reserved1[8];
 
 	uint16_t io[GBA_SIZE_IO >> 1];
 	uint16_t pram[GBA_SIZE_PALETTE_RAM >> 1];
