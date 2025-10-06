@@ -516,6 +516,13 @@ void Window::openView(QWidget* widget) {
 	widget->show();
 }
 
+void Window::showMenu(bool show) {
+	if (auto hideMenu = m_actions.getAction("hideMenu")) {
+		hideMenu->setActive(!show);
+	}
+	menuBar()->setVisible(show);
+}
+
 void Window::loadCamImage() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select image"), tr("Image file (*.png *.gif *.jpg *.jpeg);;All files (*)"));
 	if (!filename.isEmpty()) {
@@ -846,17 +853,17 @@ void Window::enterFullScreen() {
 	showFullScreen();
 #ifndef Q_OS_MAC
 	if (m_controller && !m_controller->isPaused()) {
-		menuBar()->hide();
+		showMenu(false);
 	}
 #endif
 }
 
 void Window::exitFullScreen() {
+	showMenu(true);
 	if (!isFullScreen()) {
 		return;
 	}
 	centralWidget()->unsetCursor();
-	menuBar()->show();
 	showNormal();
 }
 
@@ -888,7 +895,7 @@ void Window::gameStarted() {
 
 #ifndef Q_OS_MAC
 	if (isFullScreen()) {
-		menuBar()->hide();
+		showMenu(false);
 	}
 #endif
 
@@ -1002,7 +1009,7 @@ void Window::gameStopped() {
 		close();
 	}
 #ifndef Q_OS_MAC
-	menuBar()->show();
+	showMenu(true);
 #endif
 
 #ifdef USE_DISCORD_RPC
@@ -1292,7 +1299,7 @@ void Window::openStateWindow(LoadSave ls) {
 	m_stateWindow->setBackground(pixmap);
 
 #ifndef Q_OS_MAC
-	menuBar()->show();
+	showMenu(true);
 #endif
 	attachWidget(m_stateWindow);
 }
@@ -1714,6 +1721,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addMenu(tr("Audio channels"), "audioChannels", "av");
 
 	addGameAction(tr("Adjust layer placement..."), "placementControl", openControllerTView<PlacementControl>(), "av");
+
+#ifndef Q_OS_MAC
+	m_actions.addSeparator("av");
+	m_actions.addBooleanAction(tr("Hide &menu"), "hideMenu", [this](bool hidden) {
+		showMenu(!hidden);
+	}, "av", QKeySequence("Ctrl+M"));
+#endif
 
 	m_actions.addMenu(tr("&Tools"), "tools");
 	m_actions.addAction(tr("View &logs..."), "viewLogs", static_cast<QWidget*>(m_logView), &QWidget::show, "tools");
@@ -2191,10 +2205,12 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	connect(m_controller.get(), &CoreController::paused, this, &Window::updateFrame);
 
 #ifndef Q_OS_MAC
-	connect(m_controller.get(), &CoreController::paused, menuBar(), &QWidget::show);
+	connect(m_controller.get(), &CoreController::paused, [this]() {
+		showMenu(true);
+	});
 	connect(m_controller.get(), &CoreController::unpaused, [this]() {
 		if(isFullScreen()) {
-			menuBar()->hide();
+			showMenu(false);
 		}
 	});
 #endif

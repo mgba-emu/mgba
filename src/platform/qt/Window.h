@@ -110,6 +110,7 @@ public slots:
 	void startVideoLog();
 
 	void openView(QWidget* widget);
+	void showMenu(bool);
 
 #ifdef ENABLE_DEBUGGERS
 	void consoleOpen();
