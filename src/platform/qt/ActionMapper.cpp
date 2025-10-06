@@ -32,6 +32,7 @@ void ActionMapper::clearMenu(const QString& name) {
 
 void ActionMapper::rebuildMenu(QMenuBar* menubar, QWidget* context, const ShortcutController& shortcuts) {
 	menubar->clear();
+	m_menu.clear();
 	for (QAction* action : context->actions()) {
 		context->removeAction(action);
 	}
@@ -43,6 +44,7 @@ void ActionMapper::rebuildMenu(QMenuBar* menubar, QWidget* context, const Shortc
 		QMenu* qmenu = menubar->addMenu(m_menuNames[menu]);
 
 		rebuildMenu(menu, qmenu, context, shortcuts);
+		m_menu.addMenu(qmenu);
 	}
 }
 
@@ -193,4 +195,8 @@ std::shared_ptr<Action> ActionMapper::getAction(const QString& itemName) {
 
 QKeySequence ActionMapper::defaultShortcut(const QString& itemName) {
 	return m_defaultShortcuts[itemName];
+}
+
+void ActionMapper::exec(const QPoint& pos) {
+	m_menu.exec(pos);
 }

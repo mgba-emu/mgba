@@ -194,6 +194,10 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	m_shortcutController->setActionMapper(&m_actions);
 	setupMenu(menuBar());
 	setupOptions();
+	setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(this, &QWidget::customContextMenuRequested, [this](const QPoint& pos) {
+		m_actions.exec(mapToGlobal(pos));
+	});
 }
 
 Window::~Window() {
