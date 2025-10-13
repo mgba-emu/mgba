@@ -44,6 +44,7 @@ FS_Archive sdmcArchive;
 #include "libretro_core_options.h"
 
 #define GBA_RESAMPLED_RATE 65536
+static unsigned targetSampleRate = GBA_RESAMPLED_RATE;
 #define GB_SAMPLES 512
 /* An alpha factor of 1/180 is *somewhat* equivalent
  * to calculating the average for the last 180
@@ -1367,7 +1368,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info) {
 
 #ifdef M_CORE_GBA
 	if (core->platform(core) == mPLATFORM_GBA) {
-		info->timing.sample_rate = GBA_RESAMPLED_RATE;
+		info->timing.sample_rate = targetSampleRate;
 	} else {
 #endif
 		info->timing.sample_rate = core->audioSampleRate(core);
@@ -1732,7 +1733,7 @@ void retro_run(void) {
         if (coreSamplesAvail > 0) {
             unsigned coreSampleRate = core->audioSampleRate(core);
             size_t samplesProduced;
-            if (coreSampleRate != GBA_RESAMPLED_RATE) {
+            if (coreSampleRate != targetSampleRate) {
                 /* Resample generated audio */
                 mAudioResamplerSetSource(&audioResampler, coreBuffer, coreSampleRate, true);
                 mAudioResamplerProcess(&audioResampler);
@@ -2040,19 +2041,22 @@ bool retro_load_game(const struct retro_game_info* game) {
 	 * audio samples in retro_run() to achieve the
 	 * best possible frame pacing */
 	if (core->platform(core) == mPLATFORM_GBA) {
+		size_t audioSamplesPerFrame, audioBufferSize;
+        if (!environCallback(RETRO_ENVIRONMENT_GET_TARGET_SAMPLE_RATE, &targetSampleRate))
+            targetSampleRate = GBA_RESAMPLED_RATE;
 		/* Get nominal output samples per frame */
-		size_t audioSamplesPerFrame = (size_t)(
-				((float) GBA_RESAMPLED_RATE * (float) core->frameCycles(core) /
+        audioSamplesPerFrame = (size_t)(
+				((float) targetSampleRate * (float) core->frameCycles(core) /
 						(float)core->frequency(core)) + 0.5f);
 		/* Round up to nearest multiple of 1024
 		 * > This is more than we need, but
 		 *   no harm in being safe... */
-		size_t audioBufferSize = ((audioSamplesPerFrame + 1024 - 1) / 1024) * 1024;
+		audioBufferSize = ((audioSamplesPerFrame + 1024 - 1) / 1024) * 1024;
 		/* Initialise resample buffer */
 		mAudioBufferInit(&audioResampleBuffer, audioBufferSize, 2);
 		/* Initialise resampler */
 		mAudioResamplerInit(&audioResampler, mINTERPOLATOR_SINC);
-		mAudioResamplerSetDestination(&audioResampler, &audioResampleBuffer, GBA_RESAMPLED_RATE);
+		mAudioResamplerSetDestination(&audioResampler, &audioResampleBuffer, targetSampleRate);
 		/* Initialise output sample buffer
 		 * > Multiply size by 2 (channels) */
 		audioSampleBufferSize = audioBufferSize * 2;
