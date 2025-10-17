@@ -1157,137 +1157,137 @@ Download size: %3</source>
     <message>
         <location filename="../IOViewer.cpp" line="41"/>
         <source>Mode 1: 2 tile layers + 1 rotated/scaled tile layer</source>
-        <translation type="unfinished"></translation>
+        <translation>وضع 1: طبقنتان من المربعات + طبقة مربعات واحدة دوارة\معدلة الحجم</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="42"/>
         <source>Mode 2: 2 rotated/scaled tile layers</source>
-        <translation type="unfinished"></translation>
+        <translation>وضع 2: طبقتان من المربعات الدوارة\معدلة الحجم</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="43"/>
         <source>Mode 3: Full 15-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation>وضع 3: خريطة نقطية كاملة 15 بت</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="44"/>
         <source>Mode 4: Full 8-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation>وضع 4: خريطة نقطية كاملة 8 بت</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="45"/>
         <source>Mode 5: Small 15-bit bitmap</source>
-        <translation type="unfinished"></translation>
+        <translation>وضع 5: خريطة نقطية صغيرة 15 بت</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="49"/>
         <source>CGB Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>وضع GCB</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="50"/>
         <source>Frame select</source>
-        <translation type="unfinished"></translation>
+        <translation>تحديد الإطار</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="51"/>
         <source>Unlocked HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>HBlank غير مقفل</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="52"/>
         <source>Linear OBJ tile mapping</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">توزيع خطي لمربعات العناصر</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="53"/>
         <source>Force blank screen</source>
-        <translation type="unfinished"></translation>
+        <translation>فرض شاشة فارغة</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="54"/>
         <source>Enable background 0</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل الخلفية 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="55"/>
         <source>Enable background 1</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل الخلفية 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="56"/>
         <source>Enable background 2</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل الخلفية 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="57"/>
         <source>Enable background 3</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل الخلفية 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="58"/>
         <source>Enable OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="59"/>
         <source>Enable Window 0</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل النافذة 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="60"/>
         <source>Enable Window 1</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل النافذة 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="61"/>
         <source>Enable OBJ Window</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل نافذة OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="65"/>
         <source>Swap green components</source>
-        <translation type="unfinished"></translation>
+        <translation>تبديل المكونات الخضراء</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="69"/>
         <source>Currently in VBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>حاليا في وضع VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="70"/>
         <source>Currently in HBlank</source>
-        <translation type="unfinished"></translation>
+        <translation>حاليا في وضع HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="71"/>
         <source>Currently in VCounter</source>
-        <translation type="unfinished"></translation>
+        <translation>حاليا في وضع VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="72"/>
         <source>Enable VBlank IRQ generation</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل انشاء مقاطعة VBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="73"/>
         <source>Enable HBlank IRQ generation</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل انشاء مقاطعة HBlank</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="74"/>
         <source>Enable VCounter IRQ generation</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل انشاء مقاطعة VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="75"/>
         <source>VCounter scanline</source>
-        <translation type="unfinished"></translation>
+        <translation>خط مسح VCounter</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="79"/>
         <source>Current scanline</source>
-        <translation type="unfinished"></translation>
+        <translation>خط المسح الحالي</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="83"/>
@@ -1295,7 +1295,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="101"/>
         <location filename="../IOViewer.cpp" line="111"/>
         <source>Priority</source>
-        <translation type="unfinished"></translation>
+        <translation>الأولوية</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="84"/>
@@ -1303,7 +1303,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="102"/>
         <location filename="../IOViewer.cpp" line="112"/>
         <source>Tile data base (* 16kB)</source>
-        <translation type="unfinished"></translation>
+        <translation>قاعدة بيانات المربع (* 16 كيلوبايت)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="85"/>
@@ -1311,7 +1311,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="103"/>
         <location filename="../IOViewer.cpp" line="113"/>
         <source>Enable mosaic</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل الفسيفساء</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="86"/>
@@ -1319,7 +1319,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="104"/>
         <location filename="../IOViewer.cpp" line="114"/>
         <source>Enable 256-color</source>
-        <translation type="unfinished"></translation>
+        <translation>تفعيل 256 لون</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="87"/>
@@ -1327,7 +1327,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="105"/>
         <location filename="../IOViewer.cpp" line="115"/>
         <source>Tile map base (* 2kB)</source>
-        <translation type="unfinished"></translation>
+        <translation>قاعدة خريطة المربع (* 2 كيلوبايت)</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="88"/>
@@ -1335,7 +1335,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="107"/>
         <location filename="../IOViewer.cpp" line="117"/>
         <source>Background dimensions</source>
-        <translation type="unfinished"></translation>
+        <translation>أبعاد الخلفية</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="106"/>
@@ -1351,7 +1351,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1364"/>
         <location filename="../IOViewer.cpp" line="1405"/>
         <source>Horizontal offset</source>
-        <translation type="unfinished"></translation>
+        <translation>الإزاحة الأفقية</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="125"/>
@@ -1361,7 +1361,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1360"/>
         <location filename="../IOViewer.cpp" line="1401"/>
         <source>Vertical offset</source>
-        <translation type="unfinished"></translation>
+        <translation>الإزاحة العمودية</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="153"/>
@@ -1377,7 +1377,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="211"/>
         <location filename="../IOViewer.cpp" line="220"/>
         <source>Fractional part</source>
-        <translation type="unfinished"></translation>
+        <translation>الجزء الكسري</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="154"/>
@@ -1389,7 +1389,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="202"/>
         <location filename="../IOViewer.cpp" line="207"/>
         <source>Integer part</source>
-        <translation type="unfinished"></translation>
+        <translation>الجزء الصحيح</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="174"/>
