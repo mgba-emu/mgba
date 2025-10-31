@@ -205,7 +205,8 @@ void LibraryController::refresh() {
 
 	mLibraryListing listing;
 	mLibraryListingInit(&listing, 0);
-	mLibraryGetEntries(m_library.get(), &listing, 0, 0, nullptr);
+	size_t entries = mLibraryGetEntries(m_library.get(), &listing, 0, 0, nullptr);
+	setVisible(!entries == 0);
 	for (size_t i = 0; i < mLibraryListingSize(&listing); i++) {
 		const mLibraryEntry* entry = mLibraryListingGetConstPointer(&listing, i);
 		uint64_t checkHash = LibraryEntry::checkHash(entry);
