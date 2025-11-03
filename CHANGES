@@ -4,6 +4,7 @@ Features:
  - Custom border support
  - New option to lock the maximum frame size
  - Memory access and information logging
+ - Cheats: Add support for CodeBreaker 5XXXXXXX "Super" codes
  - 3DS: Add faster "loose" sync mode, default enabled
  - Vita: Allow using rear touch pads as L2/L3/R2/R3
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state

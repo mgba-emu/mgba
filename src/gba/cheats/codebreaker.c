@@ -199,10 +199,51 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 
 	if (cheats->incompleteCheat != COMPLETE) {
 		struct mCheat* incompleteCheat = mCheatListGetPointer(&cheats->d.list, cheats->incompleteCheat);
-		incompleteCheat->repeat = op1 & 0xFFFF;
-		incompleteCheat->addressOffset = op2;
-		incompleteCheat->operandOffset = op1 >> 16;
-		cheats->incompleteCheat = COMPLETE;
+		if (cheats->remainingAddresses) {
+			unsigned halfword = op1 >> 16;
+			incompleteCheat->operand = ((halfword >> 8) | (halfword << 8)) & 0xFFFF;
+			--cheats->remainingAddresses;
+
+			if (cheats->remainingAddresses) {
+				unsigned halfword = op1 & 0xFFFF;
+				cheat = mCheatListAppend(&cheats->d.list);
+				cheat->type = CHEAT_ASSIGN;
+				cheat->width = 2;
+				cheat->address = incompleteCheat->address + 2;
+				cheat->operand = ((halfword >> 8) | (halfword << 8)) & 0xFFFF;
+				cheat->repeat = 1;
+				--cheats->remainingAddresses;
+				incompleteCheat = cheat;
+			}
+
+			if (cheats->remainingAddresses) {
+				unsigned halfword = op2;
+				cheat = mCheatListAppend(&cheats->d.list);
+				cheat->type = CHEAT_ASSIGN;
+				cheat->width = 2;
+				cheat->address = incompleteCheat->address + 2;
+				cheat->operand = ((halfword >> 8) | (halfword << 8)) & 0xFFFF;
+				cheat->repeat = 1;
+				--cheats->remainingAddresses;
+				incompleteCheat = cheat;
+			}
+
+			if (!cheats->remainingAddresses) {
+				cheats->incompleteCheat = COMPLETE;
+			} else {
+				cheat = mCheatListAppend(&cheats->d.list);
+				cheat->type = CHEAT_ASSIGN;
+				cheat->width = 2;
+				cheat->address = incompleteCheat->address + 2;
+				cheat->repeat = 1;
+				cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
+			}
+		} else {
+			incompleteCheat->repeat = op1 & 0xFFFF;
+			incompleteCheat->addressOffset = op2;
+			incompleteCheat->operandOffset = op1 >> 16;
+			cheats->incompleteCheat = COMPLETE;
+		}
 		return true;
 	}
 
@@ -236,9 +277,13 @@ bool GBACheatAddCodeBreaker(struct GBACheatSet* cheats, uint32_t op1, uint16_t o
 		cheat->width = 2;
 		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
 		break;
-	case CB_FILL_8:
-		mLOG(CHEATS, STUB, "CodeBreaker code %08X %04X not supported", op1, op2);
-		return false;
+	case CB_FILL_LIST:
+		cheat = mCheatListAppend(&cheats->d.list);
+		cheat->type = CHEAT_ASSIGN;
+		cheat->width = 2;
+		cheats->incompleteCheat = mCheatListIndex(&cheats->d.list, cheat);
+		cheats->remainingAddresses = op2;
+		break;
 	case CB_AND_2:
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_AND;
