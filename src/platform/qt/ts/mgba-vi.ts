@@ -6,12 +6,12 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="427"/>
         <source>Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Tên</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Vị trí</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
@@ -21,7 +21,7 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished"></translation>
+        <translation>Kích thước</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
@@ -139,7 +139,7 @@ Download size: %3</source>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="90"/>
         <source>Stable</source>
-        <translation type="unfinished"></translation>
+        <translation>Ổn định</translation>
     </message>
     <message>
         <location filename="../ApplicationUpdater.cpp" line="93"/>
@@ -167,7 +167,7 @@ Download size: %3</source>
     <message>
         <location filename="../ArchiveInspector.ui" line="20"/>
         <source>Loading...</source>
-        <translation type="unfinished"></translation>
+        <translation>Đang tải...</translation>
     </message>
 </context>
 <context>
