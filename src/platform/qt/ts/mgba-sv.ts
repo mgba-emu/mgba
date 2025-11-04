@@ -255,7 +255,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="26"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Det gick inte att läsa in inställningarna för autorun-skriptet: okänt skriptinformationsformat %1</translation>
     </message>
 </context>
 <context>
