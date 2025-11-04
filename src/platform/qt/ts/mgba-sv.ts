@@ -940,7 +940,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../GDBWindow.cpp" line="52"/>
         <source>Write watchpoints behavior</source>
-        <translation type="unfinished"></translation>
+        <translation>Skriv beteende för bevakningspunkter</translation>
     </message>
     <message>
         <location filename="../GDBWindow.cpp" line="63"/>
@@ -1411,50 +1411,50 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="229"/>
         <location filename="../IOViewer.cpp" line="234"/>
         <source>End x</source>
-        <translation type="unfinished"></translation>
+        <translation>Slut x</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="230"/>
         <location filename="../IOViewer.cpp" line="235"/>
         <source>Start x</source>
-        <translation type="unfinished"></translation>
+        <translation>Start x</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="239"/>
         <location filename="../IOViewer.cpp" line="244"/>
         <source>End y</source>
-        <translation type="unfinished"></translation>
+        <translation>Slut y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="240"/>
         <location filename="../IOViewer.cpp" line="245"/>
         <source>Start y</source>
-        <translation type="unfinished"></translation>
+        <translation>Start y</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="249"/>
         <source>Window 0 enable BG 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Fönster 0 aktivera BG 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="250"/>
         <source>Window 0 enable BG 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Fönster 0 aktivera BG 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="251"/>
         <source>Window 0 enable BG 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Fönster 0 aktivera BG 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="252"/>
         <source>Window 0 enable BG 3</source>
-        <translation type="unfinished"></translation>
+        <translation>Fönster 0 aktivera BG 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="253"/>
         <source>Window 0 enable OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>Fönster 0 aktivera OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="254"/>
@@ -1464,27 +1464,27 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="255"/>
         <source>Window 1 enable BG 0</source>
-        <translation type="unfinished"></translation>
+        <translation>Fönster 1 aktivera BG 0</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="256"/>
         <source>Window 1 enable BG 1</source>
-        <translation type="unfinished"></translation>
+        <translation>Fönster 1 aktivera BG 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="257"/>
         <source>Window 1 enable BG 2</source>
-        <translation type="unfinished"></translation>
+        <translation>Fönster 1 aktivera BG 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="258"/>
         <source>Window 1 enable BG 3</source>
-        <translation type="unfinished"></translation>
+        <translation>Fönster 1 aktivera BG 3</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="259"/>
         <source>Window 1 enable OBJ</source>
-        <translation type="unfinished"></translation>
+        <translation>Fönster 1 aktivera OBJ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="260"/>
@@ -1574,27 +1574,27 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="288"/>
         <source>BG 0 target 1</source>
-        <translation type="unfinished"></translation>
+        <translation>BG 0 mål 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="289"/>
         <source>BG 1 target 1</source>
-        <translation type="unfinished"></translation>
+        <translation>BG 1 mål 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="290"/>
         <source>BG 2 target 1</source>
-        <translation type="unfinished"></translation>
+        <translation>BG 2 mål 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="291"/>
         <source>BG 3 target 1</source>
-        <translation type="unfinished"></translation>
+        <translation>BG 3 mål 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="292"/>
         <source>OBJ target 1</source>
-        <translation type="unfinished"></translation>
+        <translation>OBJ mål 1</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="293"/>
@@ -1604,7 +1604,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="294"/>
         <source>Blend mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Blandningsläge</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="295"/>
@@ -1629,22 +1629,22 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="300"/>
         <source>BG 0 target 2</source>
-        <translation type="unfinished"></translation>
+        <translation>BG 0 mål 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="301"/>
         <source>BG 1 target 2</source>
-        <translation type="unfinished"></translation>
+        <translation>BG 1 mål 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="302"/>
         <source>BG 2 target 2</source>
-        <translation type="unfinished"></translation>
+        <translation>BG 2 mål 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="303"/>
         <source>BG 3 target 2</source>
-        <translation type="unfinished"></translation>
+        <translation>BG 3 mål 2</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="304"/>
@@ -2257,7 +2257,7 @@ Hämtningsstorlek: %3</translation>
         <location filename="../IOViewer.cpp" line="684"/>
         <location filename="../IOViewer.cpp" line="730"/>
         <source>32-bit</source>
-        <translation type="unfinished"></translation>
+        <translation>32-bitar</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="595"/>
@@ -2455,7 +2455,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="893"/>
         <source>Condition</source>
-        <translation type="unfinished"></translation>
+        <translation>Villkor</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="897"/>
@@ -2678,7 +2678,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1038"/>
         <source>Active D-pad</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktiv D-pad</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1039"/>
@@ -2698,7 +2698,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../IOViewer.cpp" line="1049"/>
         <source>Transfer active</source>
-        <translation type="unfinished"></translation>
+        <translation>Överföring aktiv</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="1067"/>
@@ -3393,22 +3393,22 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="75"/>
         <source>8-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>8-bitars åtkomst</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="77"/>
         <source>16-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>16-bitars åtkomst</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="79"/>
         <source>32-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>32-bitars åtkomst</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="81"/>
         <source>64-bit access</source>
-        <translation type="unfinished"></translation>
+        <translation>64-bitars åtkomst</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="95"/>
@@ -3438,12 +3438,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="105"/>
         <source>(Unknown extra bit 5)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Okänd extra bit 5)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="107"/>
         <source>(Unknown extra bit 6)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Okänd extra bit 6)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="109"/>
@@ -3473,12 +3473,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="119"/>
         <source>(Private bit 0)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Privat bit 0)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="121"/>
         <source>(Private bit 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Privat bit 1)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="125"/>
@@ -3493,7 +3493,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="129"/>
         <source>(Private bit 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Privat bit 2)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="134"/>
@@ -3508,7 +3508,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="138"/>
         <source>(Private bit 3)</source>
-        <translation type="unfinished"></translation>
+        <translation>(Privat bit 3)</translation>
     </message>
     <message>
         <location filename="../MemoryAccessLogModel.cpp" line="146"/>
@@ -3605,7 +3605,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryDump.ui" line="108"/>
         <source>Dump across banks</source>
-        <translation type="unfinished"></translation>
+        <translation>Dumpa flera bankar</translation>
     </message>
     <message>
         <location filename="../MemoryDump.cpp" line="24"/>
@@ -3906,12 +3906,12 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="152"/>
         <source>Signed:</source>
-        <translation type="unfinished"></translation>
+        <translation>Signerad:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="172"/>
         <source>Unsigned:</source>
-        <translation type="unfinished"></translation>
+        <translation>Osignerad:</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="254"/>
@@ -3926,7 +3926,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../MemoryView.ui" line="282"/>
         <source>Selected address accesses</source>
-        <translation type="unfinished"></translation>
+        <translation>Valda adressåtkomster</translation>
     </message>
     <message>
         <location filename="../MemoryView.ui" line="304"/>
@@ -4875,7 +4875,7 @@ Hämtningsstorlek: %3</translation>
     <message>
         <location filename="../SensorView.ui" line="96"/>
         <source>Start time at</source>
-        <translation type="unfinished"></translation>
+        <translation>Starttid kl</translation>
     </message>
     <message>
         <location filename="../SensorView.ui" line="60"/>
@@ -5776,7 +5776,7 @@ Om den är inställd på OpenGL och du fortfarande ser detta, kan ditt grafikkor
     <message>
         <location filename="../SettingsView.ui" line="1897"/>
         <source>Default BG colors:</source>
-        <translation type="unfinished"></translation>
+        <translation>BG-färger som standard:</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="1984"/>
