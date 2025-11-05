@@ -6043,7 +6043,7 @@ Om den är inställd på OpenGL och du fortfarande ser detta, kan ditt grafikkor
     <message>
         <location filename="../VideoView.ui" line="69"/>
         <source>Select File</source>
-        <translation>Select File</translation>
+        <translation>Välj fil</translation>
     </message>
     <message>
         <location filename="../VideoView.ui" line="101"/>
