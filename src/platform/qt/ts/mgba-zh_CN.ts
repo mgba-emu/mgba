@@ -255,7 +255,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="26"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
-        <translation type="unfinished"></translation>
+        <translation>无法加载自动运行脚本设置：未知的脚本信息格式 %1</translation>
     </message>
 </context>
 <context>
