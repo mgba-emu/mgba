@@ -41,6 +41,7 @@ ShaderSelector::ShaderSelector(Display* display, ConfigController* config, QWidg
 
 	refreshShaders();
 
+	connect(m_ui.reload, &QAbstractButton::clicked, this, &ShaderSelector::reloadShaders);
 	connect(m_ui.load, &QAbstractButton::clicked, this, &ShaderSelector::selectShader);
 	connect(m_ui.unload, &QAbstractButton::clicked, this, &ShaderSelector::clearShader);
 	connect(m_ui.buttonBox, &QDialogButtonBox::clicked, this, &ShaderSelector::buttonPressed);
@@ -121,6 +122,16 @@ void ShaderSelector::loadShader(const QString& path, bool saveToSettings) {
 	}
 	if (error) {
 		QMessageBox::warning(this, tr("Error loading shader"), tr("The shader \"%1\" could not be loaded successfully.").arg(shaderPath));
+	}
+}
+
+void ShaderSelector::reloadShaders() {
+	if (!m_shaderPath.isEmpty()) {
+		int activeTab = m_ui.passes->currentIndex();
+		loadShader(m_shaderPath);
+		if (activeTab < m_ui.passes->count()) {
+			m_ui.passes->setCurrentIndex(activeTab);
+		}
 	}
 }
 
