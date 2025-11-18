@@ -36,10 +36,22 @@ DECL_BIT(RTCControl, Poweroff, 7);
 
 enum RTCCommand {
 	RTC_RESET = 0,
+	RTC_ALARM = 1,
 	RTC_DATETIME = 2,
-	RTC_FORCE_IRQ = 3,
+	RTC_TEST_START = 3,
 	RTC_CONTROL = 4,
-	RTC_TIME = 6
+	RTC_TIME = 6,
+	RTC_TEST_END = 7
+};
+
+enum RTCDateTime {
+	RTC_YEARS = 0,
+	RTC_MONTHS = 1,
+	RTC_DAYS = 2,
+	RTC_WEEKDAY = 3,
+	RTC_HOURS = 4,
+	RTC_MINUTES = 5,
+	RTC_SECONDS = 6
 };
 
 DECL_BITFIELD(RTCCommandData, uint32_t);
@@ -58,7 +70,6 @@ struct GBARTC {
 	RTCControl control;
 	uint8_t time[7];
 	time_t lastLatch;
-	time_t offset;
 };
 
 DECL_BITFIELD(GPIOPin, uint16_t);
@@ -100,6 +111,8 @@ void GBAHardwareInitTilt(struct GBACartridgeHardware* gpio);
 void GBAHardwareGPIOWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint16_t value);
 void GBAHardwareTiltWrite(struct GBACartridgeHardware* gpio, uint32_t address, uint8_t value);
 uint8_t GBAHardwareTiltRead(struct GBACartridgeHardware* gpio, uint32_t address);
+
+void GBAHardwareRTCSanitize(struct GBACartridgeHardware* gpio);
 
 struct GBASerializedState;
 void GBAHardwareSerialize(const struct GBACartridgeHardware* gpio, struct GBASerializedState* state);
