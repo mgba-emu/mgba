@@ -311,9 +311,8 @@ void GBAIOWrite(struct GBA* gba, uint32_t address, uint16_t value) {
 	switch (address) {
 	// Video
 	case GBA_REG_DISPSTAT:
-		value &= 0xFFF8;
-		GBAVideoWriteDISPSTAT(&gba->video, value);
-		return;
+		value = GBAVideoWriteDISPSTAT(&gba->video, value);
+		break;
 
 	case GBA_REG_VCOUNT:
 		mLOG(GBA_IO, GAME_ERROR, "Write to read-only I/O register: %03X", address);
