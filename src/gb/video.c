@@ -312,8 +312,8 @@ void GBVideoInit(struct GBVideo* video) {
 void GBVideoReset(struct GBVideo* video) {
 	video->ly = 0;
 	video->x = 0;
-	video->mode = 1;
-	video->stat = 1;
+	video->mode = 0;
+	video->stat = 0;
 
 	video->frameCounter = 0;
 	video->frameskipCounter = 0;
@@ -417,6 +417,8 @@ void GBVideoReset(struct GBVideo* video) {
 	video->renderer->writePalette(video->renderer, 9 * 4 + 1, video->palette[9 * 4 + 1]);
 	video->renderer->writePalette(video->renderer, 9 * 4 + 2, video->palette[9 * 4 + 2]);
 	video->renderer->writePalette(video->renderer, 9 * 4 + 3, video->palette[9 * 4 + 3]);
+
+	mTimingSchedule(&video->p->timing, &video->frameEvent, GB_VIDEO_TOTAL_LENGTH << 1);
 }
 
 void GBVideoDeinit(struct GBVideo* video) {
