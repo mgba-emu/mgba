@@ -72,6 +72,7 @@ static void SM83DebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntryRe
 static ssize_t SM83DebuggerSetBreakpoint(struct mDebuggerPlatform*, struct mDebuggerModule* owner, const struct mBreakpoint*);
 static void SM83DebuggerListBreakpoints(struct mDebuggerPlatform*, struct mDebuggerModule* owner, struct mBreakpointList*);
 static bool SM83DebuggerClearBreakpoint(struct mDebuggerPlatform*, ssize_t id);
+static bool SM83DebuggerToggleBreakpoint(struct mDebuggerPlatform*, ssize_t id, bool status);
 static ssize_t SM83DebuggerSetWatchpoint(struct mDebuggerPlatform*, struct mDebuggerModule* owner, const struct mWatchpoint*);
 static void SM83DebuggerListWatchpoints(struct mDebuggerPlatform*, struct mDebuggerModule* owner, struct mWatchpointList*);
 static void SM83DebuggerCheckBreakpoints(struct mDebuggerPlatform*);
@@ -87,6 +88,7 @@ struct mDebuggerPlatform* SM83DebuggerPlatformCreate(void) {
 	platform->d.setBreakpoint = SM83DebuggerSetBreakpoint;
 	platform->d.listBreakpoints = SM83DebuggerListBreakpoints;
 	platform->d.clearBreakpoint = SM83DebuggerClearBreakpoint;
+	platform->d.toggleBreakpoint = SM83DebuggerToggleBreakpoint;
 	platform->d.setWatchpoint = SM83DebuggerSetWatchpoint;
 	platform->d.listWatchpoints = SM83DebuggerListWatchpoints;
 	platform->d.checkBreakpoints = SM83DebuggerCheckBreakpoints;
@@ -164,6 +166,30 @@ static bool SM83DebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t id)
 			if (!mWatchpointListSize(&debugger->watchpoints)) {
 				SM83DebuggerRemoveMemoryShim(debugger);
 			}
+			return true;
+		}
+	}
+	return false;
+}
+
+static bool SM83DebuggerToggleBreakpoint(struct mDebuggerPlatform* d, ssize_t id, bool status) {
+	struct SM83Debugger* debugger = (struct SM83Debugger*) d;
+	size_t i;
+
+	struct mBreakpointList* breakpoints = &debugger->breakpoints;
+	for (i = 0; i < mBreakpointListSize(breakpoints); ++i) {
+		struct mBreakpoint* breakpoint = mBreakpointListGetPointer(breakpoints, i);
+		if (breakpoint->id == id) {
+			breakpoint->disabled = !status;
+			return true;
+		}
+	}
+
+	struct mWatchpointList* watchpoints = &debugger->watchpoints;
+	for (i = 0; i < mWatchpointListSize(watchpoints); ++i) {
+		struct mWatchpoint* watchpoint = mWatchpointListGetPointer(watchpoints, i);
+		if (watchpoint->id == id) {
+			watchpoint->disabled = !status;
 			return true;
 		}
 	}
