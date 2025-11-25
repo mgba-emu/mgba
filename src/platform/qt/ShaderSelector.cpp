@@ -23,6 +23,8 @@
 #include <mgba/feature/video-backend.h>
 #include <mgba-util/vfs.h>
 
+#include <fstream>
+
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
@@ -161,12 +163,12 @@ void ShaderSelector::refreshShaders() {
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (m_shaders->preprocessShader) {
-		m_ui.passes->addTab(makePage(static_cast<mGLES2Shader*>(m_shaders->preprocessShader), "default", 0), tr("Preprocessing"));
+		m_ui.passes->addTab(makePage(static_cast<mGLES2Shader*>(m_shaders->preprocessShader), "default", 0, true), tr("Preprocessing"));
 	}
 	mGLES2Shader* shaders = static_cast<mGLES2Shader*>(m_shaders->passes);
 	QFileInfo fi(m_shaderPath);
 	for (size_t p = 0; p < m_shaders->nPasses; ++p) {
-		QWidget* page = makePage(&shaders[p], fi.baseName(), p);
+		QWidget* page = makePage(&shaders[p], fi.baseName(), p, false);
 		if (page) {
 			m_ui.passes->addTab(page, tr("Pass %1").arg(p + 1));
 		}
@@ -243,7 +245,57 @@ void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, c
 	});
 }
 
-QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int pass) {
+void ShaderSelector::addMatchingUniformRows(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, std::string uniformName, bool addAll){
+	for (size_t u = 0 ; u < shader->nUniforms; ++u) {
+		mGLES2Uniform* uniform = &shader->uniforms[u];
+		if (addAll || (uniform->name == uniformName)) {
+			QGridLayout* settings = new QGridLayout;
+			QString section = QString("shader.%1.%2").arg(name).arg(pass);
+			QString name = QLatin1String(uniform->name);
+			switch (uniform->type) {
+			case GL_FLOAT:
+				addUniform(settings, section, name, &uniform->value.f, uniform->min.f, uniform->max.f, 0, 0);
+				break;
+			case GL_FLOAT_VEC2:
+				addUniform(settings, section, name + "[0]", &uniform->value.fvec2[0], uniform->min.fvec2[0], uniform->max.fvec2[0], 0, 0);
+				addUniform(settings, section, name + "[1]", &uniform->value.fvec2[1], uniform->min.fvec2[1], uniform->max.fvec2[1], 0, 1);
+				break;
+			case GL_FLOAT_VEC3:
+				addUniform(settings, section, name + "[0]", &uniform->value.fvec3[0], uniform->min.fvec3[0], uniform->max.fvec3[0], 0, 0);
+				addUniform(settings, section, name + "[1]", &uniform->value.fvec3[1], uniform->min.fvec3[1], uniform->max.fvec3[1], 0, 1);
+				addUniform(settings, section, name + "[2]", &uniform->value.fvec3[2], uniform->min.fvec3[2], uniform->max.fvec3[2], 0, 2);
+				break;
+			case GL_FLOAT_VEC4:
+				addUniform(settings, section, name + "[0]", &uniform->value.fvec4[0], uniform->min.fvec4[0], uniform->max.fvec4[0], 0, 0);
+				addUniform(settings, section, name + "[1]", &uniform->value.fvec4[1], uniform->min.fvec4[1], uniform->max.fvec4[1], 0, 1);
+				addUniform(settings, section, name + "[2]", &uniform->value.fvec4[2], uniform->min.fvec4[2], uniform->max.fvec4[2], 0, 2);
+				addUniform(settings, section, name + "[3]", &uniform->value.fvec4[3], uniform->min.fvec4[3], uniform->max.fvec4[3], 0, 3);
+				break;
+			case GL_INT:
+				addUniform(settings, section, name, &uniform->value.i, uniform->min.i, uniform->max.i, 0, 0);
+				break;
+			case GL_INT_VEC2:
+				addUniform(settings, section, name + "[0]", &uniform->value.ivec2[0], uniform->min.ivec2[0], uniform->max.ivec2[0], 0, 0);
+				addUniform(settings, section, name + "[1]", &uniform->value.ivec2[1], uniform->min.ivec2[1], uniform->max.ivec2[1], 0, 1);
+				break;
+			case GL_INT_VEC3:
+				addUniform(settings, section, name + "[0]", &uniform->value.ivec3[0], uniform->min.ivec3[0], uniform->max.ivec3[0], 0, 0);
+				addUniform(settings, section, name + "[1]", &uniform->value.ivec3[1], uniform->min.ivec3[1], uniform->max.ivec3[1], 0, 1);
+				addUniform(settings, section, name + "[2]", &uniform->value.ivec3[2], uniform->min.ivec3[2], uniform->max.ivec3[2], 0, 2);
+				break;
+			case GL_INT_VEC4:
+				addUniform(settings, section, name + "[0]", &uniform->value.ivec4[0], uniform->min.ivec4[0], uniform->max.ivec4[0], 0, 0);
+				addUniform(settings, section, name + "[1]", &uniform->value.ivec4[1], uniform->min.ivec4[1], uniform->max.ivec4[1], 0, 1);
+				addUniform(settings, section, name + "[2]", &uniform->value.ivec4[2], uniform->min.ivec4[2], uniform->max.ivec4[2], 0, 2);
+				addUniform(settings, section, name + "[3]", &uniform->value.ivec4[3], uniform->min.ivec4[3], uniform->max.ivec4[3], 0, 3);
+				break;
+			}
+			layout->addRow(shader->uniforms[u].readableName, settings);
+		}
+	}
+}
+
+QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int pass, bool defaultPage) {
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (!shader->nUniforms) {
 		return nullptr;
@@ -251,50 +303,27 @@ QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int
 	QWidget* page = new QWidget;
 	QFormLayout* layout = new QFormLayout;
 	page->setLayout(layout);
-	for (size_t u = 0 ; u < shader->nUniforms; ++u) {
-		QGridLayout* settings = new QGridLayout;
-		mGLES2Uniform* uniform = &shader->uniforms[u];
-		QString section = QString("shader.%1.%2").arg(name).arg(pass);
-		QString name = QLatin1String(uniform->name);
-		switch (uniform->type) {
-		case GL_FLOAT:
-			addUniform(settings, section, name, &uniform->value.f, uniform->min.f, uniform->max.f, 0, 0);
-			break;
-		case GL_FLOAT_VEC2:
-			addUniform(settings, section, name + "[0]", &uniform->value.fvec2[0], uniform->min.fvec2[0], uniform->max.fvec2[0], 0, 0);
-			addUniform(settings, section, name + "[1]", &uniform->value.fvec2[1], uniform->min.fvec2[1], uniform->max.fvec2[1], 0, 1);
-			break;
-		case GL_FLOAT_VEC3:
-			addUniform(settings, section, name + "[0]", &uniform->value.fvec3[0], uniform->min.fvec3[0], uniform->max.fvec3[0], 0, 0);
-			addUniform(settings, section, name + "[1]", &uniform->value.fvec3[1], uniform->min.fvec3[1], uniform->max.fvec3[1], 0, 1);
-			addUniform(settings, section, name + "[2]", &uniform->value.fvec3[2], uniform->min.fvec3[2], uniform->max.fvec3[2], 0, 2);
-			break;
-		case GL_FLOAT_VEC4:
-			addUniform(settings, section, name + "[0]", &uniform->value.fvec4[0], uniform->min.fvec4[0], uniform->max.fvec4[0], 0, 0);
-			addUniform(settings, section, name + "[1]", &uniform->value.fvec4[1], uniform->min.fvec4[1], uniform->max.fvec4[1], 0, 1);
-			addUniform(settings, section, name + "[2]", &uniform->value.fvec4[2], uniform->min.fvec4[2], uniform->max.fvec4[2], 0, 2);
-			addUniform(settings, section, name + "[3]", &uniform->value.fvec4[3], uniform->min.fvec4[3], uniform->max.fvec4[3], 0, 3);
-			break;
-		case GL_INT:
-			addUniform(settings, section, name, &uniform->value.i, uniform->min.i, uniform->max.i, 0, 0);
-			break;
-		case GL_INT_VEC2:
-			addUniform(settings, section, name + "[0]", &uniform->value.ivec2[0], uniform->min.ivec2[0], uniform->max.ivec2[0], 0, 0);
-			addUniform(settings, section, name + "[1]", &uniform->value.ivec2[1], uniform->min.ivec2[1], uniform->max.ivec2[1], 0, 1);
-			break;
-		case GL_INT_VEC3:
-			addUniform(settings, section, name + "[0]", &uniform->value.ivec3[0], uniform->min.ivec3[0], uniform->max.ivec3[0], 0, 0);
-			addUniform(settings, section, name + "[1]", &uniform->value.ivec3[1], uniform->min.ivec3[1], uniform->max.ivec3[1], 0, 1);
-			addUniform(settings, section, name + "[2]", &uniform->value.ivec3[2], uniform->min.ivec3[2], uniform->max.ivec3[2], 0, 2);
-			break;
-		case GL_INT_VEC4:
-			addUniform(settings, section, name + "[0]", &uniform->value.ivec4[0], uniform->min.ivec4[0], uniform->max.ivec4[0], 0, 0);
-			addUniform(settings, section, name + "[1]", &uniform->value.ivec4[1], uniform->min.ivec4[1], uniform->max.ivec4[1], 0, 1);
-			addUniform(settings, section, name + "[2]", &uniform->value.ivec4[2], uniform->min.ivec4[2], uniform->max.ivec4[2], 0, 2);
-			addUniform(settings, section, name + "[3]", &uniform->value.ivec4[3], uniform->min.ivec4[3], uniform->max.ivec4[3], 0, 3);
-			break;
+	if (defaultPage) {
+		addMatchingUniformRows(shader,layout,name,pass,"",true);
+	} else {
+		std::ifstream input(m_shaderPath.toStdString()+"/manifest.ini");
+		for( std::string line; getline( input, line ); ){
+			if (line.rfind("[pass.",0) == 0) {
+				size_t passDigits = line.substr(6,std::string::npos).find(".");
+				if (passDigits != std::string::npos) {
+					std::string passString = line.substr(6,passDigits);
+					int uniformPass = std::stoi(passString);
+					if (pass == uniformPass) {
+						size_t uniformEnd = line.find("]");
+						if (uniformEnd != std::string::npos) {
+							size_t uniformStart = 6+passDigits+9;
+							std::string uniformName = line.substr(uniformStart,uniformEnd-uniformStart);
+							addMatchingUniformRows(shader,layout,name,pass,uniformName,false);
+						}
+					}
+				}
+			}
 		}
-		layout->addRow(shader->uniforms[u].readableName, settings);
 	}
 	return page;
 #else
