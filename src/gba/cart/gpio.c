@@ -24,7 +24,9 @@ static unsigned _rtcOutput(struct GBACartridgeHardware* hw);
 static void _rtcBeginCommand(struct GBACartridgeHardware* hw);
 static void _rtcProcessByte(struct GBACartridgeHardware* hw);
 static void _rtcUpdateClock(struct GBACartridgeHardware* hw);
+static void _rtcSanitizeAndSetClockRegister(struct GBACartridgeHardware* hw, enum RTCDateTime index, uint8_t value);
 static unsigned _rtcBCD(unsigned value);
+static uint8_t _rtcUnBCD(uint8_t value);
 
 static void _gyroReadPins(struct GBACartridgeHardware* hw);
 
@@ -34,13 +36,43 @@ static void _lightReadPins(struct GBACartridgeHardware* hw);
 
 static const int RTC_BYTES[8] = {
 	0, // Force reset
-	0, // Empty
+	2, // Alarm registers
 	7, // Date/Time
-	0, // Force IRQ
+	0, // Enter Test Mode
 	1, // Control register
 	0, // Empty
 	3, // Time
-	0 // Empty
+	0 // Exit Test Mode
+};
+
+static const int RTC_DAY_OF_YEAR_IN_MONTH[12] = {
+	0,
+	0 + 31,
+	0 + 31 + 28,
+	0 + 31 + 28 + 31,
+	0 + 31 + 28 + 31 + 30,
+	0 + 31 + 28 + 31 + 30 + 31,
+	0 + 31 + 28 + 31 + 30 + 31 + 30,
+	0 + 31 + 28 + 31 + 30 + 31 + 30 + 31,
+	0 + 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31,
+	0 + 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30,
+	0 + 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31,
+	0 + 31 + 28 + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30
+};
+
+static const int RTC_DAYS_IN_MONTH[12] = {
+	31, // January
+	28, // February
+	31, // March
+	30, // April
+	31, // May
+	30, // June
+	31, // July
+	31, // August
+	30, // September
+	31, // October
+	30, // November
+	31 // December
 };
 
 void GBAHardwareInit(struct GBACartridgeHardware* hw, uint16_t* base) {
@@ -121,11 +153,19 @@ void GBAHardwareInitRTC(struct GBACartridgeHardware* hw) {
 	hw->rtc.sckEdge = true;
 	hw->rtc.sioOutput = true;
 	hw->rtc.command = 0;
+
+	// The normal first power-on state would rather be 0x82 for control
+	// However, this would just cause most games to immediately reset the RTC
+	// 0x40 is the value used in most games, allowing initial host RTC to be used immediately
 	hw->rtc.control = 0x40;
 	memset(hw->rtc.time, 0, sizeof(hw->rtc.time));
-
-	hw->rtc.lastLatch = 0;
-	hw->rtc.offset = 0;
+	hw->rtc.time[RTC_MONTHS] = 1;
+	hw->rtc.time[RTC_DAYS] = 1;
+	// Normal first power-on would rather have the weekday at 0
+	// Under the usual 0 = Sunday, 6 would be the correct day for the GBA epoch (Jan 1 2000)
+	hw->rtc.time[RTC_WEEKDAY] = 6;
+	// 946684800 is unix time for the GBA epoch
+	hw->rtc.lastLatch = 946684800;
 }
 
 void _readPins(struct GBACartridgeHardware* hw) {
@@ -236,15 +276,34 @@ void _rtcBeginCommand(struct GBACartridgeHardware* hw) {
 		mLOG(GBA_HW, DEBUG, "Got RTC command %x", RTCCommandDataGetCommand(command));
 		switch (RTCCommandDataGetCommand(command)) {
 		case RTC_RESET:
+			_rtcUpdateClock(hw);
 			hw->rtc.control = 0;
+			memset(hw->rtc.time, 0, sizeof(hw->rtc.time));
+			hw->rtc.time[RTC_MONTHS] = 1;
+			hw->rtc.time[RTC_DAYS] = 1;
 			break;
 		case RTC_DATETIME:
 		case RTC_TIME:
 			_rtcUpdateClock(hw);
 			break;
-		case RTC_FORCE_IRQ:
+		case RTC_TEST_START:
+			// According to gbatek, starting test mode should also force an alarm trigger
+			// (i.e. trigger a cartridge IRQ)
+			// Alarms are not implemented yet here however
+			hw->rtc.time[RTC_SECONDS] |= 0x80;
+			break;
+		case RTC_TEST_END:
+			hw->rtc.time[RTC_SECONDS] &= ~0x80;
+			break;
 		case RTC_CONTROL:
 			break;
+		}
+		// In test mode, RTC commands become inoperative
+		// Note spec sheets state seconds stores the test flag
+		// But due to RTC commands not working this isn't visible
+		if (hw->rtc.time[RTC_SECONDS] & 0x80) {
+			hw->rtc.bytesRemaining = 0;
+			hw->rtc.commandActive = false;
 		}
 	} else {
 		mLOG(GBA_HW, WARN, "Invalid RTC command byte: %02X", hw->rtc.bits);
@@ -257,14 +316,35 @@ void _rtcBeginCommand(struct GBACartridgeHardware* hw) {
 void _rtcProcessByte(struct GBACartridgeHardware* hw) {
 	switch (RTCCommandDataGetCommand(hw->rtc.command)) {
 	case RTC_CONTROL:
-		hw->rtc.control = hw->rtc.bits;
+		if (RTCControlIsHour24(hw->rtc.control ^ hw->rtc.bits)) {
+			bool isPM = hw->rtc.time[RTC_HOURS] & 0x80;
+			unsigned hours = _rtcUnBCD(hw->rtc.time[RTC_HOURS] & 0x7F);
+			if (isPM) {
+				if (RTCControlIsHour24(hw->rtc.bits)) {
+					hours += 12;
+				} else {
+					hours -= 12;
+				}
+				hw->rtc.time[RTC_HOURS] = _rtcBCD(hours) | 0x80;
+			}
+		}
+		if (!RTCControlIsPoweroff(hw->rtc.control) && RTCControlIsPoweroff(hw->rtc.bits)) {
+			// The power-off bit cannot be set by the user, but it can be cleared
+			hw->rtc.bits = RTCControlClearPoweroff(hw->rtc.bits);
+		}
+		hw->rtc.control = hw->rtc.bits & 0xEA;
 		break;
-	case RTC_FORCE_IRQ:
-		mLOG(GBA_HW, STUB, "Unimplemented RTC command %u", RTCCommandDataGetCommand(hw->rtc.command));
-		break;
-	case RTC_RESET:
 	case RTC_DATETIME:
 	case RTC_TIME:
+		_rtcSanitizeAndSetClockRegister(hw, 7 - hw->rtc.bytesRemaining, hw->rtc.bits);
+		break;
+	case RTC_ALARM:
+		// alarm registers would normally be set here
+		// this is not yet implemented however
+		break;
+	case RTC_RESET:
+	case RTC_TEST_START:
+	case RTC_TEST_END:
 		break;
 	}
 
@@ -286,8 +366,10 @@ unsigned _rtcOutput(struct GBACartridgeHardware* hw) {
 	case RTC_TIME:
 		outputByte = hw->rtc.time[7 - hw->rtc.bytesRemaining];
 		break;
-	case RTC_FORCE_IRQ:
+	case RTC_ALARM: // alarm registers are write only
 	case RTC_RESET:
+	case RTC_TEST_START:
+	case RTC_TEST_END:
 		break;
 	}
 	unsigned output = (outputByte >> hw->rtc.bitsRead) & 1;
@@ -308,22 +390,218 @@ void _rtcUpdateClock(struct GBACartridgeHardware* hw) {
 	} else {
 		t = time(0);
 	}
-	hw->rtc.lastLatch = t;
-	t -= hw->rtc.offset;
+	time_t currentLatch = t;
+	t -= hw->rtc.lastLatch;
+	hw->rtc.lastLatch = currentLatch;
 
-	struct tm date;
-	localtime_r(&t, &date);
-	hw->rtc.time[0] = _rtcBCD(date.tm_year - 100);
-	hw->rtc.time[1] = _rtcBCD(date.tm_mon + 1);
-	hw->rtc.time[2] = _rtcBCD(date.tm_mday);
-	hw->rtc.time[3] = _rtcBCD(date.tm_wday);
-	if (RTCControlIsHour24(hw->rtc.control)) {
-		hw->rtc.time[4] = _rtcBCD(date.tm_hour);
-	} else {
-		hw->rtc.time[4] = _rtcBCD(date.tm_hour % 12);
+	if (t == 0) {
+		return;
 	}
-	hw->rtc.time[5] = _rtcBCD(date.tm_min);
-	hw->rtc.time[6] = _rtcBCD(date.tm_sec);
+	// Second error correction happens once a second passes
+	if ((hw->rtc.time[RTC_SECONDS] & 0xF) >= 0xA || _rtcUnBCD(hw->rtc.time[RTC_SECONDS] & 0x7F) > 59) {
+		hw->rtc.time[RTC_SECONDS] &= ~0x7F;
+		--t;
+		// Second error correction increments minutes (and so on)
+		t += 60;
+	}
+
+	int64_t diff;
+	bool isTestMode = hw->rtc.time[RTC_SECONDS] & 0x80;
+	diff = _rtcUnBCD(hw->rtc.time[RTC_SECONDS] & 0x7F) + t % 60;
+	if (diff < 0) {
+		diff += 60;
+		t -= 60;
+	}
+	hw->rtc.time[RTC_SECONDS] = _rtcBCD(diff % 60);
+	t /= 60;
+	t += diff / 60;
+	if (isTestMode) {
+		hw->rtc.time[RTC_SECONDS] |= 0x80;
+	}
+
+	diff = _rtcUnBCD(hw->rtc.time[RTC_MINUTES]) + t % 60;
+	if (diff < 0) {
+		diff += 60;
+		t -= 60;
+	}
+	hw->rtc.time[RTC_MINUTES] = _rtcBCD(diff % 60);
+	t /= 60;
+	t += diff / 60;
+
+	bool isPM = hw->rtc.time[RTC_HOURS] & 0x80;
+	bool isHour24 = RTCControlIsHour24(hw->rtc.control);
+	diff = _rtcUnBCD(hw->rtc.time[RTC_HOURS] & 0x7F) + t % 24;
+	if (isPM && !isHour24) {
+		diff += 12;
+	}
+	if (diff < 0) {
+		diff += 24;
+		t -= 24;
+	}
+	if (isHour24) {
+		hw->rtc.time[RTC_HOURS] = _rtcBCD(diff % 24);
+	} else {
+		hw->rtc.time[RTC_HOURS] = _rtcBCD(diff % 12);
+	}
+	isPM = (diff % 24) >= 12;
+	if (isPM) {
+		hw->rtc.time[RTC_HOURS] |= 0x80;
+	}
+	t /= 24;
+	t += diff / 24;
+
+	// 36525 is the maximum amount of days before rollover (100 * 365 + 100 / 4)
+	diff = t % 36525;
+	if (diff < 0) {
+		diff += 36525;
+	}
+
+	unsigned days = diff;
+	hw->rtc.time[RTC_WEEKDAY] = (hw->rtc.time[RTC_WEEKDAY] + days) % 7;
+
+	days += _rtcUnBCD(hw->rtc.time[RTC_DAYS]) - 1;
+	unsigned months = _rtcUnBCD(hw->rtc.time[RTC_MONTHS]) - 1;
+	unsigned years = _rtcUnBCD(hw->rtc.time[RTC_YEARS]);
+	days += RTC_DAY_OF_YEAR_IN_MONTH[months];
+	if (months > 1 && (years % 4) == 0) {
+		++days;
+	}
+	days += (years * 365) + ((years + 3) / 4);
+	if (days >= 36525) {
+		days -= 36525;
+	}
+
+	// 1461 is (366 + 365 + 365 + 365)
+	years = (days / 1461) * 4;
+	days -= (years / 4) * 1461;
+	if (days >= 366) {
+		--days;
+		years += days / 365;
+		days -= (years % 4) * 365;
+	}
+
+	months = 0;
+	while (months < 11) {
+		unsigned daysInMonth = RTC_DAYS_IN_MONTH[months];
+		if (months == 1 && (years % 4) == 0) {
+			++daysInMonth;
+		}
+
+		if (daysInMonth > days) {
+			break;
+		}
+
+		++months;
+		days -= daysInMonth;
+	}
+
+	hw->rtc.time[RTC_DAYS] = _rtcBCD(days + 1);
+	hw->rtc.time[RTC_MONTHS] = _rtcBCD(months + 1);
+	hw->rtc.time[RTC_YEARS] = _rtcBCD(years);
+}
+
+void _rtcSanitizeAndSetClockRegister(struct GBACartridgeHardware* hw, enum RTCDateTime index, uint8_t value) {
+	if (index == RTC_SECONDS) {
+		// RTC seconds only has invalid seconds corrected once a second passes
+		hw->rtc.time[RTC_SECONDS] &= ~0x7F;
+		hw->rtc.time[RTC_SECONDS] |= value & 0x7F;
+		return;
+	}
+
+	if (index == RTC_HOURS) {
+		// In 24 hour mode, AM/PM flag is read-only
+		// In 12 hour mode, AM/PM flag is writable
+		bool isPM;
+		if (RTCControlIsHour24(hw->rtc.control)) {
+			value &= 0x3F;
+			if ((value & 0xF) >= 0xA || _rtcUnBCD(value) > 23) {
+				value = 0;
+			}
+			isPM = _rtcUnBCD(value) > 11;
+		} else {
+			isPM = value & 0x80;
+			value &= 0x1F;
+			if ((value & 0xF) >= 0xA || _rtcUnBCD(value) > 11) {
+				value = 0;
+				isPM = false;
+			}
+		}
+
+		hw->rtc.time[RTC_HOURS] = value;
+		if (isPM) {
+			hw->rtc.time[RTC_HOURS] |= 0x80;
+		}
+
+		return;
+	}
+
+	uint8_t min, max, mask;
+	switch (index) {
+	case RTC_YEARS:
+		min = 0;
+		max = 99;
+		mask = 0xFF;
+		break;
+	case RTC_MONTHS:
+		min = 1;
+		max = 12;
+		mask = 0x1F;
+		break;
+	case RTC_DAYS:
+		min = 1;
+		max = 31;
+		mask = 0x3F;
+		break;
+	case RTC_WEEKDAY:
+		min = 0;
+		max = 6;
+		mask = 0x07;
+		break;
+	case RTC_MINUTES:
+		min = 0;
+		max = 59;
+		mask = 0x7F;
+		break;
+	default:
+		// This is unreachable
+		break;
+	}
+
+	value &= mask;
+	if ((value & 0xF) >= 0xA || (value & 0xF0) >= 0xA0) {
+		value = min;
+	}
+
+	uint8_t unBCDValue = _rtcUnBCD(value);
+	if (unBCDValue < min || unBCDValue > max) {
+		unBCDValue = min;
+		value = min;
+	}
+
+	if (index == RTC_DAYS) {
+		unsigned months = _rtcUnBCD(hw->rtc.time[RTC_MONTHS]) - 1;
+		unsigned years = _rtcUnBCD(hw->rtc.time[RTC_YEARS]);
+		unsigned daysInMonth = RTC_DAYS_IN_MONTH[months];
+		if (months == 1 && (years % 4) == 0) {
+			++daysInMonth;
+		}
+		if (unBCDValue > daysInMonth) {
+			value = min;
+			++months;
+			if (months > 11) {
+				months = 0;
+				++years;
+				if (years > 99) {
+					years = 0;
+				}
+			}
+
+			hw->rtc.time[RTC_MONTHS] = _rtcBCD(months + 1);
+			hw->rtc.time[RTC_YEARS] = _rtcBCD(years);
+		}
+	}
+
+	hw->rtc.time[index] = value;
 }
 
 unsigned _rtcBCD(unsigned value) {
@@ -331,6 +609,16 @@ unsigned _rtcBCD(unsigned value) {
 	value /= 10;
 	counter += (value % 10) << 4;
 	return counter;
+}
+
+uint8_t _rtcUnBCD(uint8_t value) {
+	return (value >> 4) * 10 + (value & 0xF);
+}
+
+void GBAHardwareRTCSanitize(struct GBACartridgeHardware* hw) {
+	for (int i = 0; i < 7; i++) {
+		_rtcSanitizeAndSetClockRegister(hw, i, hw->rtc.time[i]);
+	}
 }
 
 // == Gyro
@@ -506,6 +794,7 @@ void GBAHardwareSerialize(const struct GBACartridgeHardware* hw, struct GBASeria
 	STORE_32(hw->rtc.command, 0, &state->hw.rtcCommand);
 	STORE_32(hw->rtc.control, 0, &state->hw.rtcControl);
 	memcpy(state->hw.time, hw->rtc.time, sizeof(state->hw.time));
+	STORE_64((int64_t)hw->rtc.lastLatch, 0, &state->rtcLastLatch);
 
 	STORE_16(hw->gyroSample, 0, &state->hw.gyroSample);
 	flags1 = GBASerializedHWFlags1SetGyroEdge(flags1, hw->gyroEdge);
@@ -559,6 +848,8 @@ void GBAHardwareDeserialize(struct GBACartridgeHardware* hw, const struct GBASer
 	LOAD_32(hw->rtc.command, 0, &state->hw.rtcCommand);
 	LOAD_32(hw->rtc.control, 0, &state->hw.rtcControl);
 	memcpy(hw->rtc.time, state->hw.time, sizeof(hw->rtc.time));
+	LOAD_64(hw->rtc.lastLatch, 0, &state->rtcLastLatch);
+	GBAHardwareRTCSanitize(hw);
 
 	LOAD_16(hw->gyroSample, 0, &state->hw.gyroSample);
 	hw->gyroEdge = GBASerializedHWFlags1GetGyroEdge(flags1);
