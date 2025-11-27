@@ -23,8 +23,6 @@
 #include <mgba/feature/video-backend.h>
 #include <mgba-util/vfs.h>
 
-#include <fstream>
-
 #if defined(BUILD_GL) || defined(BUILD_GLES2)
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
@@ -245,8 +243,8 @@ void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, c
 	});
 }
 
-void ShaderSelector::addMatchingUniformRows(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, std::string uniformName, bool addAll){
-	for (size_t u = 0 ; u < shader->nUniforms; ++u) {
+void ShaderSelector::addMatchingUniformRows(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, const QString& uniformName, bool addAll){
+	for (size_t u = 0; u < shader->nUniforms; ++u) {
 		mGLES2Uniform* uniform = &shader->uniforms[u];
 		if (addAll || (uniform->name == uniformName)) {
 			QGridLayout* settings = new QGridLayout;
@@ -304,21 +302,30 @@ QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int
 	QFormLayout* layout = new QFormLayout;
 	page->setLayout(layout);
 	if (defaultPage) {
-		addMatchingUniformRows(shader,layout,name,pass,"",true);
+		addMatchingUniformRows(shader, layout, name, pass, "", true);
 	} else {
-		std::ifstream input(m_shaderPath.toStdString()+"/manifest.ini");
-		for( std::string line; getline( input, line ); ){
-			if (line.rfind("[pass.",0) == 0) {
-				size_t passDigits = line.substr(6,std::string::npos).find(".");
-				if (passDigits != std::string::npos) {
-					std::string passString = line.substr(6,passDigits);
-					int uniformPass = std::stoi(passString);
-					if (pass == uniformPass) {
-						size_t uniformEnd = line.find("]");
-						if (uniformEnd != std::string::npos) {
-							size_t uniformStart = 6+passDigits+9;
-							std::string uniformName = line.substr(uniformStart,uniformEnd-uniformStart);
-							addMatchingUniformRows(shader,layout,name,pass,uniformName,false);
+		QFile manifestfile(m_shaderPath + "/manifest.ini");
+		if (!manifestfile.open(QIODevice::ReadOnly)) {
+			return nullptr;
+		}
+		while (true) {
+			QByteArray lineArray = manifestfile.readLine();
+			if (lineArray.isEmpty()) {
+				break;
+			}
+			QString lineString = QString::fromUtf8(lineArray);
+			if (lineString.startsWith("[pass.")) {
+				int passDigitsEnd = lineString.indexOf(".", 6);
+				if (passDigitsEnd != -1) {
+					QString passString = lineString.mid(6, passDigitsEnd-6);
+					bool ok = false;
+					int uniformPass = passString.toInt(&ok);
+					if (ok && (pass == uniformPass)) {
+						int uniformEnd = lineString.indexOf("]");
+						if (uniformEnd != -1) {
+							int uniformStart = passDigitsEnd + 9;
+							QString uniformName = lineString.mid(uniformStart, uniformEnd-uniformStart);
+							addMatchingUniformRows(shader, layout, name, pass, uniformName, false);
 						}
 					}
 				}
