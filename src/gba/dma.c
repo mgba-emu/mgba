@@ -18,6 +18,20 @@ static void GBADMAService(struct GBA* gba, int number, struct GBADMA* info);
 
 static const int DMA_OFFSET[] = { 1, -1, 0, 1 };
 
+static const uint32_t DMA_SRC_MASK[] = {
+	0x07FFFFFE,
+	0x0FFFFFFE,
+	0x0FFFFFFE,
+	0x0FFFFFFE,
+};
+
+static const uint32_t DMA_DST_MASK[] = {
+	0x07FFFFFE,
+	0x07FFFFFE,
+	0x07FFFFFE,
+	0x0FFFFFFE,
+};
+
 void GBADMAInit(struct GBA* gba) {
 	gba->memory.dmaEvent.name = "GBA DMA";
 	gba->memory.dmaEvent.callback = _dmaEvent;
@@ -47,23 +61,19 @@ static bool _isValidDMADAD(int dma, uint32_t address) {
 
 uint32_t GBADMAWriteSAD(struct GBA* gba, int dma, uint32_t address) {
 	struct GBAMemory* memory = &gba->memory;
-	if (_isValidDMASAD(dma, address)) {
-		memory->dma[dma].source = address & 0x0FFFFFFE;
-	} else {
+	if (!_isValidDMASAD(dma, address)) {
 		mLOG(GBA_DMA, GAME_ERROR, "Invalid DMA source address: 0x%08X", address);
-		memory->dma[dma].source = 0;
 	}
+	memory->dma[dma].source = address & DMA_SRC_MASK[dma];
 	return memory->dma[dma].source;
 }
 
 uint32_t GBADMAWriteDAD(struct GBA* gba, int dma, uint32_t address) {
 	struct GBAMemory* memory = &gba->memory;
-	address &= 0x0FFFFFFE;
-	if (_isValidDMADAD(dma, address)) {
-		memory->dma[dma].dest = address;
-	} else {
+	if (!_isValidDMADAD(dma, address)) {
 		mLOG(GBA_DMA, GAME_ERROR, "Invalid DMA destination address: 0x%08X", address);
 	}
+	memory->dma[dma].dest = address & DMA_DST_MASK[dma];
 	return memory->dma[dma].dest;
 }
 
@@ -286,7 +296,7 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	info->when += cycles;
 
 	if (width == 4) {
-		if (source) {
+		if (source >= GBA_BASE_EWRAM) {
 			memory->dmaTransferRegister = cpu->memory.load32(cpu, source, 0);
 		}
 		cpu->memory.store32(cpu, dest, memory->dmaTransferRegister, 0);
@@ -294,7 +304,7 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 		if (sourceRegion == GBA_REGION_ROM2_EX && (memory->savedata.type == GBA_SAVEDATA_EEPROM || memory->savedata.type == GBA_SAVEDATA_EEPROM512)) {
 			memory->dmaTransferRegister = GBASavedataReadEEPROM(&memory->savedata);
 			memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
-		} else if (source) {
+		} else if (source >= GBA_BASE_EWRAM) {
 			memory->dmaTransferRegister = cpu->memory.load16(cpu, source, 0);
 			memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
 		}
@@ -312,14 +322,12 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	}
 	gba->bus = memory->dmaTransferRegister;
 
-	if (source) {
-		info->nextSource += info->sourceOffset;
-		if (UNLIKELY(sourceRegion != info->nextSource >> BASE_OFFSET)) {
-			if (info->nextSource >= GBA_BASE_ROM0 && info->nextSource < GBA_BASE_SRAM) {
-				info->sourceOffset = width;
-			} else {
-				info->sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
-			}
+	info->nextSource += info->sourceOffset;
+	if (UNLIKELY(sourceRegion != info->nextSource >> BASE_OFFSET)) {
+		if (info->nextSource >= GBA_BASE_ROM0 && info->nextSource < GBA_BASE_SRAM) {
+			info->sourceOffset = width;
+		} else {
+			info->sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
 		}
 	}
 	info->nextDest += info->destOffset;

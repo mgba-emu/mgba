@@ -30,6 +30,7 @@ Emulation fixes:
  - GB Video: Fix window enable edge case (fixes mgba.io/i/2640)
  - GBA: Unhandled bkpt should be treated as an undefined exception
  - GBA: Add baseline CP0 (Wii U VC) and CP1 (DCC) implementations
+ - GBA DMA: DMA addresses should be masked to "wrap" around the address space
  - GBA Serialize: Fix some minor save state edge cases
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
  - GBA Video: Improve emulation of window start/end conditions (fixes mgba.io/i/1945)
