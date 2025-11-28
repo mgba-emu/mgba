@@ -283,14 +283,6 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 			info->cycles = memory->waitstatesSeq16[sourceRegion] + memory->waitstatesSeq16[destRegion];
 		}
 	} else {
-		// Crossed region boundary; recalculate cached cycles
-		if (UNLIKELY(!(source & 0x00FFFFFC) || !(dest & 0x00FFFFFC))) {
-			if (width == 4) {
-				info->cycles = memory->waitstatesSeq32[sourceRegion] + memory->waitstatesSeq32[destRegion];
-			} else {
-				info->cycles = memory->waitstatesSeq16[sourceRegion] + memory->waitstatesSeq16[destRegion];
-			}
-		}
 		cycles += info->cycles;
 	}
 	info->when += cycles;
@@ -323,14 +315,22 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	gba->bus = memory->dmaTransferRegister;
 
 	info->nextSource += info->sourceOffset;
-	if (UNLIKELY(sourceRegion != info->nextSource >> BASE_OFFSET)) {
+	info->nextDest += info->destOffset;
+	if (UNLIKELY(sourceRegion != info->nextSource >> BASE_OFFSET) || UNLIKELY(destRegion != info->nextDest >> BASE_OFFSET)) {
+		// Crossed region boundary
 		if (info->nextSource >= GBA_BASE_ROM0 && info->nextSource < GBA_BASE_SRAM) {
 			info->sourceOffset = width;
 		} else {
 			info->sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
 		}
+
+		// Recalculate cached cycles
+		if (width == 4) {
+			info->cycles = memory->waitstatesSeq32[info->nextSource >> BASE_OFFSET] + memory->waitstatesSeq32[info->nextDest >> BASE_OFFSET];
+		} else {
+			info->cycles = memory->waitstatesSeq16[info->nextSource >> BASE_OFFSET] + memory->waitstatesSeq16[info->nextDest >> BASE_OFFSET];
+		}
 	}
-	info->nextDest += info->destOffset;
 	--info->nextCount;
 
 	gba->performingDMA = 0;
