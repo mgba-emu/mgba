@@ -5,8 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include <mgba/internal/gba/dma.h>
 
+#include <mgba/internal/arm/macros.h>
 #include <mgba/internal/gba/gba.h>
 #include <mgba/internal/gba/io.h>
+#include <mgba/internal/gba/serialize.h>
 
 mLOG_DEFINE_CATEGORY(GBA_DMA, "GBA DMA", "gba.dma");
 
@@ -81,6 +83,14 @@ uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control) {
 	}
 	currentDma->reg = control;
 
+	uint32_t width = 2 << GBADMARegisterGetWidth(currentDma->reg);
+	if (currentDma->source >= GBA_BASE_ROM0 && currentDma->source < GBA_BASE_SRAM) {
+		currentDma->sourceOffset = width;
+	} else {
+		currentDma->sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(currentDma->reg)] * width;
+	}
+	currentDma->destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(currentDma->reg)] * width;
+
 	if (GBADMARegisterIsDRQ(currentDma->reg)) {
 		mLOG(GBA_DMA, STUB, "DRQ not implemented");
 	}
@@ -89,7 +99,6 @@ uint16_t GBADMAWriteCNT_HI(struct GBA* gba, int dma, uint16_t control) {
 		currentDma->nextSource = currentDma->source;
 		currentDma->nextDest = currentDma->dest;
 
-		uint32_t width = 2 << GBADMARegisterGetWidth(currentDma->reg);
 		if (currentDma->nextSource & (width - 1)) {
 			mLOG(GBA_DMA, GAME_ERROR, "Misaligned DMA source address: 0x%08X", currentDma->nextSource);
 		}
@@ -303,17 +312,17 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 	}
 	gba->bus = memory->dmaTransferRegister;
 
-	int sourceOffset;
-	if (info->nextSource >= GBA_BASE_ROM0 && info->nextSource < GBA_BASE_SRAM && GBADMARegisterGetSrcControl(info->reg) < 3) {
-		sourceOffset = width;
-	} else {
-		sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
-	}
-	int destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(info->reg)] * width;
 	if (source) {
-		info->nextSource += sourceOffset;
+		info->nextSource += info->sourceOffset;
+		if (UNLIKELY(sourceRegion != info->nextSource >> BASE_OFFSET)) {
+			if (info->nextSource >= GBA_BASE_ROM0 && info->nextSource < GBA_BASE_SRAM) {
+				info->sourceOffset = width;
+			} else {
+				info->sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(info->reg)] * width;
+			}
+		}
 	}
-	info->nextDest += destOffset;
+	info->nextDest += info->destOffset;
 	--info->nextCount;
 
 	gba->performingDMA = 0;
@@ -356,4 +365,42 @@ void GBADMARecalculateCycles(struct GBA* gba) {
 			dma->cycles = gba->memory.waitstatesSeq16[sourceRegion] + gba->memory.waitstatesSeq16[destRegion];
 		}
 	}
+}
+
+void GBADMASerialize(const struct GBA* gba, struct GBASerializedState* state) {
+	int i;
+	for (i = 0; i < 4; ++i) {
+		STORE_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
+		STORE_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);
+		STORE_32(gba->memory.dma[i].nextCount, 0, &state->dma[i].nextCount);
+		STORE_32(gba->memory.dma[i].when, 0, &state->dma[i].when);
+	}
+
+	STORE_32(gba->memory.dmaTransferRegister, 0, &state->dmaTransferRegister);
+	STORE_32(gba->dmaPC, 0, &state->dmaBlockPC);
+}
+
+void GBADMADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
+	int i;
+	for (i = 0; i < 4; ++i) {
+		LOAD_16(gba->memory.dma[i].reg, (GBA_REG_DMA0CNT_HI + i * 12), state->io);
+		LOAD_32(gba->memory.dma[i].nextSource, 0, &state->dma[i].nextSource);
+		LOAD_32(gba->memory.dma[i].nextDest, 0, &state->dma[i].nextDest);
+		LOAD_32(gba->memory.dma[i].nextCount, 0, &state->dma[i].nextCount);
+		LOAD_32(gba->memory.dma[i].when, 0, &state->dma[i].when);
+
+		uint32_t width = 2 << GBADMARegisterGetWidth(gba->memory.dma[i].reg);
+		if (gba->memory.dma[i].source >= GBA_BASE_ROM0 && gba->memory.dma[i].source < GBA_BASE_SRAM) {
+			gba->memory.dma[i].sourceOffset = width;
+		} else {
+			gba->memory.dma[i].sourceOffset = DMA_OFFSET[GBADMARegisterGetSrcControl(gba->memory.dma[i].reg)] * width;
+		}
+		gba->memory.dma[i].destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(gba->memory.dma[i].reg)] * width;
+	}
+
+	LOAD_32(gba->memory.dmaTransferRegister, 0, &state->dmaTransferRegister);
+	LOAD_32(gba->dmaPC, 0, &state->dmaBlockPC);
+
+	GBADMARecalculateCycles(gba);
+	GBADMAUpdate(gba);
 }
