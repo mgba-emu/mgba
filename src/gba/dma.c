@@ -44,6 +44,7 @@ void GBADMAReset(struct GBA* gba) {
 	int i;
 	for (i = 0; i < 4; ++i) {
 		gba->memory.dma[i].count = 0x4000;
+		gba->memory.dma[i].latch = 0;
 	}
 	gba->memory.dma[3].count = 0x10000;
 	gba->memory.activeDMA = -1;
@@ -279,6 +280,9 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 			cycles += memory->waitstatesNonseq32[sourceRegion] + memory->waitstatesNonseq32[destRegion];
 			info->cycles = memory->waitstatesSeq32[sourceRegion] + memory->waitstatesSeq32[destRegion];
 		} else {
+			if (source >= GBA_BASE_EWRAM) {
+				info->latch = cpu->memory.load32(cpu, source, 0);
+			}
 			cycles += memory->waitstatesNonseq16[sourceRegion] + memory->waitstatesNonseq16[destRegion];
 			info->cycles = memory->waitstatesSeq16[sourceRegion] + memory->waitstatesSeq16[destRegion];
 		}
@@ -289,16 +293,17 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 
 	if (width == 4) {
 		if (source >= GBA_BASE_EWRAM) {
-			memory->dmaTransferRegister = cpu->memory.load32(cpu, source, 0);
+			info->latch = cpu->memory.load32(cpu, source, 0);
 		}
-		cpu->memory.store32(cpu, dest, memory->dmaTransferRegister, 0);
+		cpu->memory.store32(cpu, dest, info->latch, 0);
+		gba->bus = info->latch;
 	} else {
 		if (sourceRegion == GBA_REGION_ROM2_EX && (memory->savedata.type == GBA_SAVEDATA_EEPROM || memory->savedata.type == GBA_SAVEDATA_EEPROM512)) {
-			memory->dmaTransferRegister = GBASavedataReadEEPROM(&memory->savedata);
-			memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
+			info->latch = GBASavedataReadEEPROM(&memory->savedata);
+			info->latch |= info->latch << 16;
 		} else if (source >= GBA_BASE_EWRAM) {
-			memory->dmaTransferRegister = cpu->memory.load16(cpu, source, 0);
-			memory->dmaTransferRegister |= memory->dmaTransferRegister << 16;
+			info->latch = cpu->memory.load16(cpu, source, 0);
+			info->latch |= info->latch << 16;
 		}
 		if (UNLIKELY(destRegion == GBA_REGION_ROM2_EX)) {
 			if (memory->savedata.type == GBA_SAVEDATA_AUTODETECT) {
@@ -306,13 +311,13 @@ void GBADMAService(struct GBA* gba, int number, struct GBADMA* info) {
 				GBASavedataInitEEPROM(&memory->savedata);
 			}
 			if (memory->savedata.type == GBA_SAVEDATA_EEPROM512 || memory->savedata.type == GBA_SAVEDATA_EEPROM) {
-				GBASavedataWriteEEPROM(&memory->savedata, memory->dmaTransferRegister, info->nextCount);
+				GBASavedataWriteEEPROM(&memory->savedata, info->latch, info->nextCount);
 			}
 		} else {
-			cpu->memory.store16(cpu, dest, memory->dmaTransferRegister, 0);
+			cpu->memory.store16(cpu, dest, info->latch >> (8 * (dest & 2)), 0);
 		}
+		gba->bus = (info->latch & 0xFFFF) | (info->latch << 16);
 	}
-	gba->bus = memory->dmaTransferRegister;
 
 	info->nextSource += info->sourceOffset;
 	info->nextDest += info->destOffset;
@@ -384,7 +389,10 @@ void GBADMASerialize(const struct GBA* gba, struct GBASerializedState* state) {
 		STORE_32(gba->memory.dma[i].when, 0, &state->dma[i].when);
 	}
 
-	STORE_32(gba->memory.dmaTransferRegister, 0, &state->dmaTransferRegister);
+	STORE_32(gba->memory.dma[0].latch, 0, &state->dmaTransferRegister);
+	STORE_32(gba->memory.dma[1].latch, 0, &state->dmaLatch[0]);
+	STORE_32(gba->memory.dma[2].latch, 0, &state->dmaLatch[1]);
+	STORE_32(gba->memory.dma[3].latch, 0, &state->dmaLatch[2]);
 	STORE_32(gba->dmaPC, 0, &state->dmaBlockPC);
 }
 
@@ -405,8 +413,18 @@ void GBADMADeserialize(struct GBA* gba, const struct GBASerializedState* state) 
 		}
 		gba->memory.dma[i].destOffset = DMA_OFFSET[GBADMARegisterGetDestControl(gba->memory.dma[i].reg)] * width;
 	}
-
-	LOAD_32(gba->memory.dmaTransferRegister, 0, &state->dmaTransferRegister);
+	uint32_t version;
+	LOAD_32(version, 0, &state->versionMagic);
+	LOAD_32(gba->memory.dma[0].latch, 0, &state->dmaTransferRegister);
+	if (version >= GBASavestateMagic + 0xA) {
+		LOAD_32(gba->memory.dma[1].latch, 0, &state->dmaLatch[0]);
+		LOAD_32(gba->memory.dma[2].latch, 0, &state->dmaLatch[1]);
+		LOAD_32(gba->memory.dma[3].latch, 0, &state->dmaLatch[2]);
+	} else {
+		gba->memory.dma[1].latch = gba->memory.dma[0].latch;
+		gba->memory.dma[2].latch = gba->memory.dma[0].latch;
+		gba->memory.dma[3].latch = gba->memory.dma[0].latch;
+	}
 	LOAD_32(gba->dmaPC, 0, &state->dmaBlockPC);
 
 	GBADMARecalculateCycles(gba);

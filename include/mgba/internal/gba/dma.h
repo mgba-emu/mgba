@@ -49,6 +49,7 @@ struct GBADMA {
 	int32_t nextCount;
 	uint32_t when;
 	int32_t cycles;
+	uint32_t latch;
 
 	int sourceOffset;
 	int destOffset;
