@@ -40,8 +40,6 @@ using namespace QGBA;
 
 static GBAApp* g_app = nullptr;
 
-mLOG_DEFINE_CATEGORY(QT, "Qt", "platform.qt");
-
 GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	: QApplication(argc, argv)
 	, m_configController(config)
@@ -49,6 +47,7 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	, m_monospace(QFontDatabase::systemFont(QFontDatabase::FixedFont))
 {
 	g_app = this;
+	setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
 
 #ifdef BUILD_SDL
 	SDL_Init(SDL_INIT_NOPARACHUTE);

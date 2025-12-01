@@ -276,22 +276,10 @@ uint16_t mPSP2PollInput(struct mGUIRunner* runner) {
 	sceCtrlPeekBufferPositiveExt2(0, &pad, 1);
 
 	int activeKeys = mInputMapKeyBits(&runner->core->inputMap, PSP2_INPUT, pad.buttons, 0);
-	int angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 0, pad.ly);
-	if (angles != GBA_KEY_NONE) {
-		activeKeys |= 1 << angles;
-	}
-	angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 1, pad.lx);
-	if (angles != GBA_KEY_NONE) {
-		activeKeys |= 1 << angles;
-	}
-	angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 2, pad.ry);
-	if (angles != GBA_KEY_NONE) {
-		activeKeys |= 1 << angles;
-	}
-	angles = mInputMapAxis(&runner->core->inputMap, PSP2_INPUT, 3, pad.rx);
-	if (angles != GBA_KEY_NONE) {
-		activeKeys |= 1 << angles;
-	}
+	activeKeys |= mInputMapAxisBit(&runner->core->inputMap, PSP2_INPUT, 0, pad.ly);
+	activeKeys |= mInputMapAxisBit(&runner->core->inputMap, PSP2_INPUT, 1, pad.lx);
+	activeKeys |= mInputMapAxisBit(&runner->core->inputMap, PSP2_INPUT, 2, pad.ry);
+	activeKeys |= mInputMapAxisBit(&runner->core->inputMap, PSP2_INPUT, 3, pad.rx);
 	activeKeys |= mPSP2ReadTouchLR(&runner->core->inputMap);
 
 	return activeKeys;

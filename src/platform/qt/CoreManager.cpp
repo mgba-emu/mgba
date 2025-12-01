@@ -49,7 +49,7 @@ CoreController* CoreManager::loadGame(const QString& path) {
 			dir->close(dir);
 			return loadGame(vf, fname, base);
 		} else {
-			qCritical() << tr("Failed to open game file: %1").arg(path);
+			LOG(QT, ERROR) << tr("Failed to open game file: %1").arg(path);
 		}
 		return nullptr;
 	}
@@ -72,6 +72,11 @@ CoreController* CoreManager::loadGame(const QString& path) {
 		archive->close(archive);
 	}
 	QDir dir(info.dir());
+	QDir tmpdir(QDir::tempPath());
+	if (info.canonicalFilePath().startsWith(tmpdir.canonicalPath())) {
+		LOG(QT, ERROR) << tr("The ROM appears to be loaded from a temporary directory. This will likely lead to data loss (e.g. saves, screenshots, etc.) if you continue. "
+			"Please put the ROM in a more suitable location and then re-open it. If you are loading the ROM from an archive, please extract the archive first.");
+	}
 	if (!vf) {
 		// Open bare file
 		vf = VFileOpen(info.canonicalFilePath().toUtf8().constData(), O_RDONLY);
@@ -87,7 +92,7 @@ CoreController* CoreManager::loadGame(VFile* vf, const QString& path, const QStr
 	mCore* core = mCoreFindVF(vf);
 	if (!core) {
 		vf->close(vf);
-		qCritical() << tr("Could not load game. Are you sure it's in the correct format?");
+		LOG(QT, ERROR) << tr("Could not load game. Are you sure it's in the correct format?");
 		return nullptr;
 	}
 
@@ -114,7 +119,7 @@ CoreController* CoreManager::loadGame(VFile* vf, const QString& path, const QStr
 	bytes = info.dir().canonicalPath().toUtf8();
 	mDirectorySetAttachBase(&core->dirs, VDirOpen(bytes.constData()));
 	if (!mCoreAutoloadSave(core)) {
-		qCritical() << tr("Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).");
+		LOG(QT, ERROR) << tr("Failed to open save file; in-game saves cannot be updated. Please ensure the save directory is writable without additional privileges (e.g. UAC on Windows).");
 	}
 	mCoreAutoloadCheats(core);
 

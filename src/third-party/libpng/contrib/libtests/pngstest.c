@@ -1,7 +1,6 @@
-/*-
- * pngstest.c
+/* pngstest.c
  *
- * Last changed in libpng 1.6.31 [July 27, 2017]
+ * Copyright (c) 2021-2025 Cosmin Truta
  * Copyright (c) 2013-2017 John Cunningham Bowler
  *
  * This code is released under the libpng license.
@@ -10,8 +9,9 @@
  *
  * Test for the PNG 'simplified' APIs.
  */
+
 #define _ISOC90_SOURCE 1
-#define MALLOC_CHECK_ 2/*glibc facility: turn on debugging*/
+#define MALLOC_CHECK_ 2 /*glibc facility: turn on debugging*/
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -37,7 +37,7 @@
 /* 1.6.1 added support for the configure test harness, which uses 77 to indicate
  * a skipped test, in earlier versions we need to succeed on a skipped test, so:
  */
-#if PNG_LIBPNG_VER >= 10601 && defined(HAVE_CONFIG_H)
+#if defined(HAVE_CONFIG_H)
 #  define SKIP 77
 #else
 #  define SKIP 0
@@ -595,7 +595,8 @@ newimage(Image *image)
    memset(image, 0, sizeof *image);
 }
 
-/* Reset the image to be read again - only needs to rewind the FILE* at present.
+/* Reset the image to be read again - only needs to rewind the FILE object at
+ * present.
  */
 static void
 resetimage(Image *image)
@@ -1150,7 +1151,7 @@ get_pixel(png_uint_32 format))(Pixel *p, png_const_voidp pb)
  *
  * 2) Remove color by mapping to grayscale.  (Grayscale to color is a no-op.)
  *
- * 3) Convert between 8-bit and 16-bit components.  (Both directtions are
+ * 3) Convert between 8-bit and 16-bit components.  (Both directions are
  *    relevant.)
  *
  * This gives the following base format conversion matrix:
@@ -2701,7 +2702,7 @@ compare_two_images(Image *a, Image *b, int via_linear,
             {
                if ((a->opts & ACCUMULATE) == 0)
                {
-                  char pindex[9];
+                  char pindex[16];
                   sprintf(pindex, "%lu[%lu]", (unsigned long)y,
                      (unsigned long)a->image.colormap_entries);
                   logerror(a, a->file_name, ": bad pixel index: ", pindex);
@@ -2712,12 +2713,12 @@ compare_two_images(Image *a, Image *b, int via_linear,
             else if (y >= b->image.colormap_entries)
             {
                if ((b->opts & ACCUMULATE) == 0)
-                  {
-                  char pindex[9];
+               {
+                  char pindex[16];
                   sprintf(pindex, "%lu[%lu]", (unsigned long)y,
                      (unsigned long)b->image.colormap_entries);
                   logerror(b, b->file_name, ": bad pixel index: ", pindex);
-                  }
+               }
                result = 0;
             }
 
@@ -2820,8 +2821,11 @@ compare_two_images(Image *a, Image *b, int via_linear,
          bchannels = component_loc(bloc, formatb);
 
          /* Hence the btoa array. */
-         for (i=0; i<4; ++i) if (bloc[i] < 4)
-            btoa[bloc[i]] = aloc[i]; /* may be '4' for alpha */
+         for (i=0; i<4; ++i)
+         {
+            if (bloc[i] < 4)
+               btoa[bloc[i]] = aloc[i]; /* may be '4' for alpha */
+         }
 
          if (alpha_added)
             alpha_added = bloc[0]; /* location of alpha channel in image b */
@@ -3209,10 +3213,10 @@ write_one_file(Image *output, Image *image, int convert_to_8bit)
    else if (image->opts & USE_FILE)
    {
 #ifdef PNG_SIMPLIFIED_WRITE_STDIO_SUPPORTED
-      static int counter = 0;
+      static unsigned int counter = 0;
       char name[32];
 
-      sprintf(name, "%s%d.png", tmpf, ++counter);
+      sprintf(name, "%s%u.png", tmpf, ++counter);
 
       if (png_image_write_to_file(&image->image, name, convert_to_8bit,
          image->buffer+16, (png_int_32)image->stride, image->colormap))
@@ -3496,7 +3500,7 @@ main(int argc, char **argv)
    int retval = 0;
    int c;
 
-#if PNG_LIBPNG_VER >= 10700
+#if PNG_LIBPNG_VER == 10700
       /* This error should not exist in 1.7 or later: */
       opts |= GBG_ERROR;
 #endif

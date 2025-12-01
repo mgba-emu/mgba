@@ -566,7 +566,7 @@ void ReportView::addBinary(const QString& filename, const QByteArray& binary) {
 }
 
 QString ReportView::redact(const QString& text) {
-	static QRegularExpression home(R"((?:\b|^)[A-Z]:[\\/](?:Users|Documents and Settings)[\\/][^\\/]+|(?:/usr)?/home/[^/]+)",
+	static QRegularExpression home(R"((?:\b|^)[A-Z]:(?:/|\\\\?)(?:Users|Documents and Settings)(?:/|\\\\?)[^\\/]+|(?:/usr)?/home/[^/]+)",
 	                               QRegularExpression::MultilineOption | QRegularExpression::CaseInsensitiveOption);
 	QString redacted = text;
 	redacted.replace(home, QString("[Home directory]"));

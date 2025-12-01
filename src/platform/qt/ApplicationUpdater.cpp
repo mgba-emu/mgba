@@ -222,6 +222,9 @@ bool ApplicationUpdater::UpdateInfo::operator<(const ApplicationUpdater::UpdateI
 			if (component < otherComponent) {
 				return true;
 			}
+			if (component > otherComponent) {
+				return false;
+			}
 		}
 		return false;
 	}

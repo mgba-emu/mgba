@@ -1,7 +1,6 @@
-
 /* pngunknown.c - test the read side unknown chunk handling
  *
- * Last changed in libpng 1.6.32 [August 24, 2017]
+ * Copyright (c) 2021-2025 Cosmin Truta
  * Copyright (c) 2015,2017 Glenn Randers-Pehrson
  * Written by John Cunningham Bowler
  *
@@ -33,7 +32,7 @@
 /* 1.6.1 added support for the configure test harness, which uses 77 to indicate
  * a skipped test, in earlier versions we need to succeed on a skipped test, so:
  */
-#if PNG_LIBPNG_VER >= 10601 && defined(HAVE_CONFIG_H)
+#if defined(HAVE_CONFIG_H)
 #  define SKIP 77
 #else
 #  define SKIP 0
@@ -55,48 +54,7 @@
 #if defined(PNG_READ_USER_CHUNKS_SUPPORTED) ||\
    defined(PNG_SAVE_UNKNOWN_CHUNKS_SUPPORTED)
 
-#if PNG_LIBPNG_VER < 10500
-/* This deliberately lacks the const. */
-typedef png_byte *png_const_bytep;
 
-/* This is copied from 1.5.1 png.h: */
-#define PNG_INTERLACE_ADAM7_PASSES 7
-#define PNG_PASS_START_ROW(pass) (((1U&~(pass))<<(3-((pass)>>1)))&7)
-#define PNG_PASS_START_COL(pass) (((1U& (pass))<<(3-(((pass)+1)>>1)))&7)
-#define PNG_PASS_ROW_SHIFT(pass) ((pass)>2?(8-(pass))>>1:3)
-#define PNG_PASS_COL_SHIFT(pass) ((pass)>1?(7-(pass))>>1:3)
-#define PNG_PASS_ROWS(height, pass) (((height)+(((1<<PNG_PASS_ROW_SHIFT(pass))\
-   -1)-PNG_PASS_START_ROW(pass)))>>PNG_PASS_ROW_SHIFT(pass))
-#define PNG_PASS_COLS(width, pass) (((width)+(((1<<PNG_PASS_COL_SHIFT(pass))\
-   -1)-PNG_PASS_START_COL(pass)))>>PNG_PASS_COL_SHIFT(pass))
-#define PNG_ROW_FROM_PASS_ROW(yIn, pass) \
-   (((yIn)<<PNG_PASS_ROW_SHIFT(pass))+PNG_PASS_START_ROW(pass))
-#define PNG_COL_FROM_PASS_COL(xIn, pass) \
-   (((xIn)<<PNG_PASS_COL_SHIFT(pass))+PNG_PASS_START_COL(pass))
-#define PNG_PASS_MASK(pass,off) ( \
-   ((0x110145AFU>>(((7-(off))-(pass))<<2)) & 0xFU) | \
-   ((0x01145AF0U>>(((7-(off))-(pass))<<2)) & 0xF0U))
-#define PNG_ROW_IN_INTERLACE_PASS(y, pass) \
-   ((PNG_PASS_MASK(pass,0) >> ((y)&7)) & 1)
-#define PNG_COL_IN_INTERLACE_PASS(x, pass) \
-   ((PNG_PASS_MASK(pass,1) >> ((x)&7)) & 1)
-
-/* These are needed too for the default build: */
-#define PNG_WRITE_16BIT_SUPPORTED
-#define PNG_READ_16BIT_SUPPORTED
-
-/* This comes from pnglibconf.h after 1.5: */
-#define PNG_FP_1 100000
-#define PNG_GAMMA_THRESHOLD_FIXED\
-   ((png_fixed_point)(PNG_GAMMA_THRESHOLD * PNG_FP_1))
-#endif
-
-#if PNG_LIBPNG_VER < 10600
-   /* 1.6.0 constifies many APIs. The following exists to allow pngvalid to be
-    * compiled against earlier versions.
-    */
-#  define png_const_structp png_structp
-#endif
 
 #if PNG_LIBPNG_VER < 10700
    /* Copied from libpng 1.7.0 png.h */
@@ -114,6 +72,8 @@ typedef png_byte *png_const_bytep;
 #define png_PLTE PNG_U32( 80,  76,  84,  69)
 #define png_bKGD PNG_U32( 98,  75,  71,  68)
 #define png_cHRM PNG_U32( 99,  72,  82,  77)
+#define png_cICP PNG_U32( 99,  73,  67,  80) /* PNGv3 */
+#define png_cLLI PNG_U32( 99,  76,  76,  73) /* PNGv3 */
 #define png_eXIf PNG_U32(101,  88,  73, 102) /* registered July 2017 */
 #define png_fRAc PNG_U32(102,  82,  65,  99) /* registered, not defined */
 #define png_gAMA PNG_U32(103,  65,  77,  65)
@@ -123,6 +83,7 @@ typedef png_byte *png_const_bytep;
 #define png_hIST PNG_U32(104,  73,  83,  84)
 #define png_iCCP PNG_U32(105,  67,  67,  80)
 #define png_iTXt PNG_U32(105,  84,  88, 116)
+#define png_mDCV PNG_U32(109,  68,  67,  86) /* PNGv3 */
 #define png_oFFs PNG_U32(111,  70,  70, 115)
 #define png_pCAL PNG_U32(112,  67,  65,  76)
 #define png_pHYs PNG_U32(112,  72,  89, 115)
@@ -211,6 +172,20 @@ static struct
          1,
 #     endif
       1,  START, 0 },
+   { "cICP", PNG_INFO_cICP, png_cICP,
+#     ifdef PNG_READ_cICP_SUPPORTED
+         0,
+#     else
+         1,
+#     endif
+      1,  START, 0 },
+   { "cLLI", PNG_INFO_cLLI, png_cLLI,
+#     ifdef PNG_READ_cLLI_SUPPORTED
+         0,
+#     else
+         1,
+#     endif
+      1,  START, 0 },
    { "eXIf", PNG_INFO_eXIf, png_eXIf,
 #     ifdef PNG_READ_eXIf_SUPPORTED
          0,
@@ -246,6 +221,13 @@ static struct
          1,
 #     endif
       1, ABSENT, 0 },
+   { "mDCV", PNG_INFO_mDCV, png_mDCV,
+#     ifdef PNG_READ_mDCV_SUPPORTED
+         0,
+#     else
+         1,
+#     endif
+      1,  START, 0 },
    { "oFFs", PNG_INFO_oFFs, png_oFFs,
 #     ifdef PNG_READ_oFFs_SUPPORTED
          0,
@@ -370,7 +352,9 @@ find_by_flag(png_uint_32 flag)
 {
    int i = NINFO;
 
-   while (--i >= 0) if (chunk_info[i].flag == flag) return i;
+   while (--i >= 0)
+      if (chunk_info[i].flag == flag)
+         return i;
 
    fprintf(stderr, "pngunknown: internal error\n");
    exit(4);
@@ -547,27 +531,30 @@ read_callback(png_structp pp, png_unknown_chunkp pc)
 
       case PNG_HANDLE_CHUNK_AS_DEFAULT:
       case PNG_HANDLE_CHUNK_NEVER:
-         discard = 1/*handled; discard*/;
+         discard = 1; /*handled; discard*/
          break;
 
       case PNG_HANDLE_CHUNK_IF_SAFE:
       case PNG_HANDLE_CHUNK_ALWAYS:
-         discard = 0/*not handled; keep*/;
+         discard = 0; /*not handled; keep*/
          break;
    }
 
    /* Also store information about this chunk in the display, the relevant flag
     * is set if the chunk is to be kept ('not handled'.)
     */
-   if (chunk >= 0) if (!discard) /* stupidity to stop a GCC warning */
+   if (chunk >= 0)
    {
-      png_uint_32 flag = chunk_info[chunk].flag;
+      if (!discard) /* stupidity to stop a GCC warning */
+      {
+         png_uint_32 flag = chunk_info[chunk].flag;
 
-      if (pc->location & PNG_AFTER_IDAT)
-         d->after_IDAT |= flag;
+         if (pc->location & PNG_AFTER_IDAT)
+            d->after_IDAT |= flag;
 
-      else
-         d->before_IDAT |= flag;
+         else
+            d->before_IDAT |= flag;
+      }
    }
 
    /* However if there is no support to store unknown chunks don't ask libpng to
@@ -841,8 +828,9 @@ check(FILE *fp, int argc, const char **argv, png_uint_32p flags/*out*/,
             {
                png_uint_32 y;
 
-               for (y=0; y<height; ++y) if (PNG_ROW_IN_INTERLACE_PASS(y, ipass))
-                  png_read_row(d->png_ptr, NULL, NULL);
+               for (y=0; y<height; ++y)
+                  if (PNG_ROW_IN_INTERLACE_PASS(y, ipass))
+                     png_read_row(d->png_ptr, NULL, NULL);
             }
          }
       } /* interlaced */
@@ -1091,15 +1079,15 @@ perform_one_test_safe(FILE *fp, int argc, const char **argv,
 
 static const char *standard_tests[] =
 {
- "discard", "default=discard", 0,
- "save", "default=save", 0,
- "if-safe", "default=if-safe", 0,
- "vpAg", "vpAg=if-safe", 0,
- "sTER", "sTER=if-safe", 0,
- "IDAT", "default=discard", "IDAT=save", 0,
- "sAPI", "bKGD=save", "cHRM=save", "gAMA=save", "all=discard", "iCCP=save",
-   "sBIT=save", "sRGB=save", "eXIf=save", 0,
- 0/*end*/
+   "discard", "default=discard", NULL,
+   "save", "default=save", NULL,
+   "if-safe", "default=if-safe", NULL,
+   "vpAg", "vpAg=if-safe", NULL,
+   "sTER", "sTER=if-safe", NULL,
+   "IDAT", "default=discard", "IDAT=save", NULL,
+   "sAPI", "bKGD=save", "cHRM=save", "gAMA=save", "all=discard", "iCCP=save",
+      "sBIT=save", "sRGB=save", "eXIf=save", NULL,
+   NULL /*end*/
 };
 
 static PNG_NORETURN void
@@ -1115,7 +1103,7 @@ int
 main(int argc, const char **argv)
 {
    FILE *fp;
-   png_uint_32 default_flags[4/*valid,unknown{before,after}*/];
+   png_uint_32 default_flags[4]; /*valid,unknown{before,after}*/
    int strict = 0, default_tests = 0;
    const char *count_argv = "default=save";
    const char *touch_file = NULL;
@@ -1153,8 +1141,9 @@ main(int argc, const char **argv)
    /* GCC BUG: if (default_tests && argc != 1) triggers some weird GCC argc
     * optimization which causes warnings with -Wstrict-overflow!
     */
-   else if (default_tests) if (argc != 1)
-      usage(d.program, "extra arguments");
+   else if (default_tests)
+      if (argc != 1)
+         usage(d.program, "extra arguments");
 
    /* The name of the test file is the last argument; remove it. */
    d.file = argv[--argc];
@@ -1216,7 +1205,11 @@ main(int argc, const char **argv)
          const char *result;
          int arg_count = 0;
 
-         while (*next) ++next, ++arg_count;
+         while (*next != NULL)
+         {
+            ++next;
+            ++arg_count;
+         }
 
          perform_one_test_safe(fp, arg_count, test, default_flags, &d,
             this_test);

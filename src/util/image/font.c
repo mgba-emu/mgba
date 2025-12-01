@@ -228,6 +228,10 @@ static const char* mPainterDrawTextRun(struct mPainter* painter, const char* tex
 }
 
 void mPainterDrawText(struct mPainter* painter, const char* text, int x, int y, enum mAlignment alignment) {
+	if (!painter->font) {
+		return;
+	}
+
 	FT_Face face = painter->font->face;
 	struct mSize size;
 	mFontTextBoxSize(painter->font, text, 0, &size);

@@ -178,18 +178,11 @@ void _GBMBC3(struct GB* gb, uint16_t address, uint8_t value) {
 	int bank = value;
 	switch (address >> 13) {
 	case 0x0:
-		switch (value & 0xF) {
-		case 0:
-			memory->sramAccess = false;
-			break;
-		case 0xA:
+		if ((value & 0xF) == 0xA) {
 			memory->sramAccess = true;
 			GBMBCSwitchSramBank(gb, memory->sramCurrentBank);
-			break;
-		default:
-			// TODO
-			mLOG(GB_MBC, STUB, "MBC3 unknown value %02X", value);
-			break;
+		} else {
+			memory->sramAccess = false;
 		}
 		break;
 	case 0x1:

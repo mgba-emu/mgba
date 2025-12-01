@@ -51,7 +51,7 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 		}
 	});
 
-	m_gamepadTimer.setInterval(15);
+	m_gamepadTimer.setInterval(POLL_INTERVAL_MS);
 	m_gamepadTimer.start();
 
 #ifdef BUILD_QT_MULTIMEDIA
@@ -724,9 +724,9 @@ void InputController::prepareCamFormat() {
 		}
 	}
 	if (!goodFormatFound) {
-		qWarning() << "Could not find a valid camera format!";
+		LOG(QT, WARN) << tr("Could not find a valid camera format!");
 		for (const auto& format : cameraFormats) {
-			qWarning() << "Camera supported format: " << QString::number(format);
+			LOG(QT, WARN) << tr("Camera supported format: %1").arg(format);
 		}
 	}
 	m_camera->setViewfinderSettings(settings);
@@ -745,7 +745,7 @@ void InputController::prepareCamFormat() {
 		}
 	}
 	if (!goodFormatFound) {
-		qWarning() << "Could not find a valid camera format!";
+		LOG(QT, WARN) << tr("Could not find a valid camera format!");
 	}
 	m_camera->setCameraFormat(bestFormat);
 #endif

@@ -194,6 +194,10 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	m_shortcutController->setActionMapper(&m_actions);
 	setupMenu(menuBar());
 	setupOptions();
+	setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(this, &QWidget::customContextMenuRequested, [this](const QPoint& pos) {
+		m_actions.exec(mapToGlobal(pos));
+	});
 }
 
 Window::~Window() {
@@ -510,6 +514,13 @@ void Window::openView(QWidget* widget) {
 	connect(this, &Window::shutdown, widget, &QWidget::close);
 	widget->setAttribute(Qt::WA_DeleteOnClose);
 	widget->show();
+}
+
+void Window::showMenu(bool show) {
+	if (auto hideMenu = m_actions.getAction("hideMenu")) {
+		hideMenu->setActive(!show);
+	}
+	menuBar()->setVisible(show);
 }
 
 void Window::loadCamImage() {
@@ -842,17 +853,17 @@ void Window::enterFullScreen() {
 	showFullScreen();
 #ifndef Q_OS_MAC
 	if (m_controller && !m_controller->isPaused()) {
-		menuBar()->hide();
+		showMenu(false);
 	}
 #endif
 }
 
 void Window::exitFullScreen() {
+	showMenu(true);
 	if (!isFullScreen()) {
 		return;
 	}
 	centralWidget()->unsetCursor();
-	menuBar()->show();
 	showNormal();
 }
 
@@ -884,7 +895,7 @@ void Window::gameStarted() {
 
 #ifndef Q_OS_MAC
 	if (isFullScreen()) {
-		menuBar()->hide();
+		showMenu(false);
 	}
 #endif
 
@@ -998,7 +1009,7 @@ void Window::gameStopped() {
 		close();
 	}
 #ifndef Q_OS_MAC
-	menuBar()->show();
+	showMenu(true);
 #endif
 
 #ifdef USE_DISCORD_RPC
@@ -1055,7 +1066,7 @@ void Window::reloadDisplayDriver() {
 	}
 	m_display = std::unique_ptr<QGBA::Display>(Display::create(this));
 	if (!m_display) {
-		qCritical() << tr("Failed to create an appropriate display device, falling back to software display. "
+		LOG(QT, ERROR) << tr("Failed to create an appropriate display device, falling back to software display. "
 		                     "Games may run slowly, especially with larger windows.");
 		Display::setDriver(Display::Driver::QT);
 		m_display = std::unique_ptr<Display>(Display::create(this));
@@ -1128,7 +1139,7 @@ void Window::reloadAudioDriver() {
 	m_audioProcessor->setInput(m_controller);
 	m_audioProcessor->configure(m_config);
 	if (!m_audioProcessor->start()) {
-		qWarning() << "Failed to start audio processor";
+		LOG(QT, WARN) << tr("Failed to start audio processor");
 	}
 }
 
@@ -1288,7 +1299,7 @@ void Window::openStateWindow(LoadSave ls) {
 	m_stateWindow->setBackground(pixmap);
 
 #ifndef Q_OS_MAC
-	menuBar()->show();
+	showMenu(true);
 #endif
 	attachWidget(m_stateWindow);
 }
@@ -1710,6 +1721,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addMenu(tr("Audio channels"), "audioChannels", "av");
 
 	addGameAction(tr("Adjust layer placement..."), "placementControl", openControllerTView<PlacementControl>(), "av");
+
+#ifndef Q_OS_MAC
+	m_actions.addSeparator("av");
+	m_actions.addBooleanAction(tr("Hide &menu"), "hideMenu", [this](bool hidden) {
+		showMenu(!hidden);
+	}, "av", QKeySequence("Ctrl+M"));
+#endif
 
 	m_actions.addMenu(tr("&Tools"), "tools");
 	m_actions.addAction(tr("View &logs..."), "viewLogs", static_cast<QWidget*>(m_logView), &QWidget::show, "tools");
@@ -2187,10 +2205,12 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	connect(m_controller.get(), &CoreController::paused, this, &Window::updateFrame);
 
 #ifndef Q_OS_MAC
-	connect(m_controller.get(), &CoreController::paused, menuBar(), &QWidget::show);
+	connect(m_controller.get(), &CoreController::paused, [this]() {
+		showMenu(true);
+	});
 	connect(m_controller.get(), &CoreController::unpaused, [this]() {
 		if(isFullScreen()) {
-			menuBar()->hide();
+			showMenu(false);
 		}
 	});
 #endif

@@ -34,7 +34,7 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 	mCore* core = m_controller->thread()->core;
 	mGameInfo info;
 	core->getGameInfo(core, &info);
-	QString qtitle(info.title);
+	QString qtitle(info.code);
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	int size = QFontMetrics(QFont()).height() / ((int) ceil(devicePixelRatioF()) * 12);

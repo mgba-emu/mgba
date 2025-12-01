@@ -199,7 +199,7 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  *   | bits 5 - 7: Cartridge subtype
  *   | bits 8 - 15: Reserved
  * 0x002C4 - 0x002C7: SIO next event
- * 0x002C8 - 0x002CB: Current DMA transfer word
+ * 0x002C8 - 0x002CB: Latched DMA 0 value
  * 0x002CC - 0x002CF: Last DMA transfer PC
  * 0x002D0 - 0x002DF: Matrix memory command buffer
  * | 0x002D0 - 0x002D3: Command
@@ -258,7 +258,10 @@ mLOG_DECLARE_CATEGORY(GBA_STATE);
  * 0x00380 - 0x0038F: Audio FIFO B samples
  * 0x00390 - 0x003CF: Audio rendered samples
  * 0x003D0 - 0x003D3: Memory bus value
- * 0x003D4 - 0x003FF: Reserved (leave zero)
+ * 0x003D4 - 0x003D7: Latched DMA 1 value
+ * 0x003D8 - 0x003DB: Latched DMA 2 value
+ * 0x003DC - 0x003DF: Latched DMA 3 value
+ * 0x003E0 - 0x003FF: Reserved (leave zero)
  * 0x00400 - 0x007FF: I/O memory
  * 0x00800 - 0x00BFF: Palette
  * 0x00C00 - 0x00FFF: OAM
@@ -473,8 +476,9 @@ struct GBASerializedState {
 	struct mStereoSample currentSamples[GBA_MAX_SAMPLES];
 
 	uint32_t bus;
+	uint32_t dmaLatch[3];
 
-	uint32_t reserved[11];
+	uint32_t reserved[8];
 
 	uint16_t io[GBA_SIZE_IO >> 1];
 	uint16_t pram[GBA_SIZE_PALETTE_RAM >> 1];

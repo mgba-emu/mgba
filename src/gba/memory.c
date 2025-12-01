@@ -1807,7 +1807,7 @@ int32_t GBAMemoryStall(struct ARMCore* cpu, int32_t wait) {
 	int32_t loads = 1;
 
 	while (stall < wait && loads < maxLoads) {
-		stall += s + 1;
+		stall += s;
 		++loads;
 	}
 	memory->lastPrefetchedPc = cpu->gprs[ARM_PC] + WORD_SIZE_THUMB * (loads + previousLoads - 1);

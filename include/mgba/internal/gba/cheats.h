@@ -30,7 +30,7 @@ enum GBACodeBreakerType {
 	CB_OR_2 = 0x2,
 	CB_ASSIGN_1 = 0x3,
 	CB_FILL = 0x4,
-	CB_FILL_8 = 0x5,
+	CB_FILL_LIST = 0x5,
 	CB_AND_2 = 0x6,
 	CB_IF_EQ = 0x7,
 	CB_ASSIGN_2 = 0x8,

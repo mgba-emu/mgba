@@ -147,6 +147,10 @@ void _mPainterSetFontSize(struct mPainter* painter, float pt) {
 }
 
 struct mScriptValue* _mPainterTextRunMetrics(struct mPainter* painter, const char* text) {
+	if (!painter->font) {
+		return NULL;
+	}
+
 	struct mTextRunMetrics* metrics = malloc(sizeof(*metrics));
 	mFontRunMetrics(painter->font, text, metrics);
 

@@ -204,6 +204,9 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 		if (breakpoint->d.address != pc) {
 			continue;
 		}
+		if (breakpoint->d.disabled) {
+			continue;
+		}
 		if (breakpoint->d.condition) {
 			int32_t value;
 			int segment;
@@ -233,6 +236,7 @@ static void ARMDebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntryRea
 
 static ssize_t ARMDebuggerSetBreakpoint(struct mDebuggerPlatform*, struct mDebuggerModule* owner, const struct mBreakpoint*);
 static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform*, ssize_t id);
+static bool ARMDebuggerToggleBreakpoint(struct mDebuggerPlatform*, ssize_t id, bool status);
 static void ARMDebuggerListBreakpoints(struct mDebuggerPlatform*, struct mDebuggerModule* owner, struct mBreakpointList*);
 static ssize_t ARMDebuggerSetWatchpoint(struct mDebuggerPlatform*, struct mDebuggerModule* owner, const struct mWatchpoint*);
 static void ARMDebuggerListWatchpoints(struct mDebuggerPlatform*, struct mDebuggerModule* owner, struct mWatchpointList*);
@@ -254,6 +258,7 @@ struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	platform->setBreakpoint = ARMDebuggerSetBreakpoint;
 	platform->listBreakpoints = ARMDebuggerListBreakpoints;
 	platform->clearBreakpoint = ARMDebuggerClearBreakpoint;
+	platform->toggleBreakpoint = ARMDebuggerToggleBreakpoint;
 	platform->setWatchpoint = ARMDebuggerSetWatchpoint;
 	platform->listWatchpoints = ARMDebuggerListWatchpoints;
 	platform->checkBreakpoints = ARMDebuggerCheckBreakpoints;
@@ -409,6 +414,39 @@ static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t id) 
 			if (!mWatchpointListSize(&debugger->watchpoints)) {
 				ARMDebuggerRemoveMemoryShim(debugger);
 			}
+			return true;
+		}
+	}
+	return false;
+}
+
+static bool ARMDebuggerToggleBreakpoint(struct mDebuggerPlatform* d, ssize_t id, bool status) {
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	size_t i;
+
+	struct ARMDebugBreakpointList* breakpoints = &debugger->breakpoints;
+	for (i = 0; i < ARMDebugBreakpointListSize(breakpoints); ++i) {
+		struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListGetPointer(breakpoints, i);
+		if (breakpoint->d.id == id) {
+			breakpoint->d.disabled = !status;
+			return true;
+		}
+	}
+
+	struct ARMDebugBreakpointList* swBreakpoints = &debugger->swBreakpoints;
+	for (i = 0; i < ARMDebugBreakpointListSize(swBreakpoints); ++i) {
+		struct ARMDebugBreakpoint* swbreakpoint = ARMDebugBreakpointListGetPointer(swBreakpoints, i);
+		if (swbreakpoint->d.id == id) {
+			swbreakpoint->d.disabled = !status;
+			return true;
+		}
+	}
+
+	struct mWatchpointList* watchpoints = &debugger->watchpoints;
+	for (i = 0; i < mWatchpointListSize(watchpoints); ++i) {
+		struct mWatchpoint* watchpoint = mWatchpointListGetPointer(watchpoints, i);
+		if (watchpoint->id == id) {
+			watchpoint->disabled = !status;
 			return true;
 		}
 	}

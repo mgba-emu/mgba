@@ -225,7 +225,7 @@ void MemoryModel::save() {
 	}
 	QFile outfile(filename);
 	if (!outfile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-		qWarning() << tr("Failed to open output file: %1").arg(filename);
+		LOG(QT, WARN) << tr("Failed to open output file: %1").arg(filename);
 		return;
 	}
 	QByteArray out(serialize());
@@ -239,7 +239,7 @@ void MemoryModel::load() {
 	}
 	QFile infile(filename);
 	if (!infile.open(QIODevice::ReadOnly)) {
-		qWarning() << tr("Failed to open input file: %1").arg(filename);
+		LOG(QT, WARN) << tr("Failed to open input file: %1").arg(filename);
 		return;
 	}
 	QByteArray bytestring(infile.readAll());

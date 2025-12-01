@@ -26,17 +26,27 @@ Some components are as follows:
 	* GBA Audio: Audio processing
 	* GBA SIO: Serial I/O, multiplayer, link
 	* GBA Hardware: Extra devices, e.g. gyro, light sensor
-	* GBA RR: Rerecording features
-	* GBA Thread: Thread-layer abstractions
 	* GBA BIOS: High-level BIOS
+* GB: GB code
+	* GB Memory: Memory-specific
+	* GB Video: Video, rendering
+	* GB Audio: Audio processing
+	* GB MBC: Memory bank controller/cartridge hardware
+	* GB SIO: Serial I/O, multiplayer, link
+* Core: Shared infrastructure for various emulation cores
 * Qt: Qt port-related code
 * SDL: SDL port-related code (including as used in other ports)
-* Video: Video recording code
 * Util: Common utility code
 * Tools: Miscellaneous tools
 * Debugger: Included debugging functionality
+* 3DS: 3DS port
+* Switch: Switch port
+* Vita: Vita port
+* Wii: Wii port
+* mGUI: Shared UI code between the homebrew ports
 * All: Changes that don't touch specific components but affect the project overall
 
+Note that this list isn't exhaustive and looking through the commit log for the files involved might give a better idea.
 
 Coding Style
 ------------

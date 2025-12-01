@@ -4,6 +4,7 @@ Features:
  - Custom border support
  - New option to lock the maximum frame size
  - Memory access and information logging
+ - Cheats: Add support for CodeBreaker 5XXXXXXX "Super" codes
  - 3DS: Add faster "loose" sync mode, default enabled
  - Vita: Allow using rear touch pads as L2/L3/R2/R3
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
@@ -14,10 +15,14 @@ Features:
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81, Sintax
  - Initial support for bootleg GBA multicarts
  - Debugger: Add range watchpoints
+ - Debugger: Add enabling/disabling for breakpoints and watchpoints
  - "Headless" frontend for running tests, automation, etc.
 Emulation fixes:
  - ARM: Add framework for coprocessor support
  - ARM: cmn/cmp/teq/tst pc shouldn't flush the pipeline
+ - ARM: Remove erroneous SMLAL(S) decodings (fixes mgba.io/i/3544)
+ - ARM: Fix LDRT/STRT register-index addressing (fixes mgba.io/i/3586)
+ - GB MBC: Fix MBC3 SRAM enable writes other than 0 and A
  - GB Memory: Initialize HRAM when skipping BIOS in GBC mode (fixes mgba.io/i/3420)
  - GB Memory: Fix initial WRAM pattern when skipping BIOS in GBC mode (fixes mgba.io/i/2704)
  - GB Serialize: Add missing Pocket Cam state to savestates
@@ -25,16 +30,21 @@ Emulation fixes:
  - GB Video: Fix window enable edge case (fixes mgba.io/i/2640)
  - GBA: Unhandled bkpt should be treated as an undefined exception
  - GBA: Add baseline CP0 (Wii U VC) and CP1 (DCC) implementations
+ - GBA DMA: DMA addresses should be masked to "wrap" around the address space
+ - GBA DMA: Fix invalid DMA latching behavior (fixes mgba.io/i/2105)
  - GBA Serialize: Fix some minor save state edge cases
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
  - GBA Video: Improve emulation of window start/end conditions (fixes mgba.io/i/1945)
  - GBA Video: Fix transparent OBJWIN pixel/sprite priority interaction (fixes mgba.io/i/2809)
  - GBA Video: Improve sprite drawing cycle counting (fixes mgba.io/i/3081)
  - GBA Video: Fix edge case with double-height sprites wrapping (fixes mgba.io/i/2824)
+ - GBA Video: VCOUNTER flag should be updated on DISPSTAT write (fixes mgba.io/i/1873)
 Other fixes:
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
  - Debugger: Fix writing to specific segment in command-line debugger
+ - GB Video: Fix video log replaying freezing when video is disabled
  - GBA: Fix getting game info for multiboot ROMs
+ - GBA e-Reader: Early-exit when processing 0-sized lists
  - mGUI: Load parent directory if last used directory is missing (fixes mgba.io/i/3379)
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Fix potential crash when configuring shortcuts
@@ -50,6 +60,7 @@ Misc:
  - FFmpeg: Add Ut Video option
  - GB: Prevent incompatible BIOSes from being used on differing models
  - GB MBC: Add M161 support for one Mani 4-in-1 multicart
+ - GB Memory: Decay cart bus eagerly when executing from RAM
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
  - GBA Audio: Remove broken XQ audio pending rewrite
@@ -59,6 +70,7 @@ Misc:
  - GBA Memory: Improve VRAM access stall cycle estimation
  - GBA SIO: Rewrite lockstep driver for improved stability
  - GBA Video: Add special circlular window handling in OpenGL renderer
+ - GBA Video: Disable window interpolation at 1× scale (fixes mgba.io/i/1810)
  - Libretro: Add Super Game Boy Color support (closes mgba.io/i/3188)
  - mGUI: Enable auto-softpatching (closes mgba.io/i/2899)
  - mGUI: Persist fast forwarding after closing menu (fixes mgba.io/i/2414)
@@ -75,6 +87,10 @@ Misc:
  - Qt: Throttle fatal error dialogs
  - Qt: Add save info to bug report logs
  - Qt: Show filename of loaded TBL in memory view (closes mgba.io/i/2815)
+ - Qt: Increase gamepad polling frequency
+ - Qt: Show menu when right clicking too
+ - Qt: Allow menu bar to be temporarily hidden (closes mgba.io/i/1448)
+ - Qt: Add warning when a ROM is loaded from a temporary directory
  - Res: Port hq2x and OmniScale shaders from SameBoy
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
  - Res: Update gba-colors shader (closes mgba.io/i/2976)

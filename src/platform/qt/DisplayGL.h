@@ -198,6 +198,7 @@ private slots:
 	void doStop();
 
 private:
+	static const int MAX_FRAME_HISTORY = 300;
 	void makeCurrent();
 	void performDraw();
 	void dequeue();
@@ -237,6 +238,9 @@ private:
 	QElapsedTimer m_delayTimer;
 	std::shared_ptr<VideoProxy> m_videoProxy;
 	int m_swapInterval = -1;
+	QList<qint64> m_frametimes;
+	QList<qint64> m_starttimes;
+	bool m_drawFrametimes = false;
 };
 
 }

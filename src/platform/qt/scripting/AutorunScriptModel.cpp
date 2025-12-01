@@ -5,10 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "scripting/AutorunScriptModel.h"
 
-#include <QtDebug>
-#include <iostream>
+#include "Log.h"
 
 QDataStream& operator<<(QDataStream& stream, const QGBA::AutorunScriptModel::ScriptInfo& object) {
+	stream.setVersion(QDataStream::Qt_5_0);
 	stream << QGBA::AutorunScriptModel::ScriptInfo::VERSION;
 	stream << object.filename.toUtf8();
 	stream << object.active;
@@ -16,6 +16,9 @@ QDataStream& operator<<(QDataStream& stream, const QGBA::AutorunScriptModel::Scr
 }
 
 QDataStream& operator>>(QDataStream& stream, QGBA::AutorunScriptModel::ScriptInfo& object) {
+	static bool displayedError = false;
+	int restoreVersion = stream.version();
+	stream.setVersion(QDataStream::Qt_5_0);
 	uint16_t version = 0;
 	stream >> version;
 	if (version == 1) {
@@ -23,11 +26,19 @@ QDataStream& operator>>(QDataStream& stream, QGBA::AutorunScriptModel::ScriptInf
 		stream >> filename;
 		object.filename = QString::fromUtf8(filename);
 	} else {
-		qCritical() << QGBA::AutorunScriptModel::tr("Could not load autorun script settings: unknown script info format %1").arg(version);
+		QString logMessage = QGBA::AutorunScriptModel::tr("Could not load autorun script settings: unknown script info format %1").arg(version);
+		if (displayedError) {
+			LOG(QT, WARN) << logMessage;
+		} else {
+			LOG(QT, ERROR) << logMessage;
+			displayedError = true;
+		}
 		stream.setStatus(QDataStream::ReadCorruptData);
+		stream.setVersion(restoreVersion);
 		return stream;
 	}
 	stream >> object.active;
+	stream.setVersion(restoreVersion);
 	return stream;
 }
 
