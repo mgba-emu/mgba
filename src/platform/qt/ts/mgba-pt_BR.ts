@@ -244,7 +244,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="81"/>
         <source>Audio outputting to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Saída de áudio em %1</translation>
     </message>
 </context>
 <context>
@@ -522,7 +522,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="77"/>
         <source>The ROM appears to be loaded from a temporary directory. This will likely lead to data loss (e.g. saves, screenshots, etc.) if you continue. Please put the ROM in a more suitable location and then re-open it. If you are loading the ROM from an archive, please extract the archive first.</source>
-        <translation type="unfinished"></translation>
+        <translation>A ROM aparenta ser carregada de um diretório temporário. Isto provavelmente levará a perda de dados (ex: salvamentos, screenshots, etc.) se você continuar. Por favor coloque a ROM num local mais adequado e então abra-a de novo. Se você está carregando a ROM de um arquivo, por favor extraia o arquivo primeiro.</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="95"/>
@@ -3011,12 +3011,12 @@ Tamanho do download: %3</translation>
         <location filename="../InputController.cpp" line="727"/>
         <location filename="../InputController.cpp" line="748"/>
         <source>Could not find a valid camera format!</source>
-        <translation type="unfinished"></translation>
+        <translation>Não pôde achar um formato de câmera válido!</translation>
     </message>
     <message>
         <location filename="../InputController.cpp" line="729"/>
         <source>Camera supported format: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Formato suportado da câmera: %1</translation>
     </message>
 </context>
 <context>
@@ -3971,7 +3971,7 @@ Tamanho do download: %3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="313"/>
         <source>Couldn&apos;t find available save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Não pôde achar a ID do salvamento disponível</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="367"/>
@@ -6524,7 +6524,7 @@ Se estiver definido como OpenGL e você ainda ver isto, sua placa gráfica ou dr
     <message>
         <location filename="../Window.cpp" line="1142"/>
         <source>Failed to start audio processor</source>
-        <translation type="unfinished"></translation>
+        <translation>Falhou em iniciar o processador de áudio</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1192"/>
@@ -6839,7 +6839,7 @@ Se estiver definido como OpenGL e você ainda ver isto, sua placa gráfica ou dr
     <message>
         <location filename="../Window.cpp" line="1727"/>
         <source>Hide &amp;menu</source>
-        <translation type="unfinished"></translation>
+        <translation>Esconder &amp;menu</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1766"/>
