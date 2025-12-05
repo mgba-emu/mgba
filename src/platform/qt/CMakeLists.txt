@@ -109,8 +109,10 @@ set(SOURCE_FILES
 	CheckBoxDelegate.cpp
 	ConfigController.cpp
 	ColorPicker.cpp
-	CoreManager.cpp
 	CoreController.cpp
+	CoreManager.cpp
+	CorePointer.cpp
+	CorePointerSource.cpp
 	Display.cpp
 	DisplayGL.cpp
 	DisplayQt.cpp
