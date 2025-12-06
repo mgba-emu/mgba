@@ -243,7 +243,7 @@ void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, c
 	});
 }
 
-void ShaderSelector::addMatchingUniformRows(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, const QString& uniformName, bool addAll){
+void ShaderSelector::addMatchingUniformRows(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, const QString& uniformName, bool addAll) {
 	for (size_t u = 0; u < shader->nUniforms; ++u) {
 		mGLES2Uniform* uniform = &shader->uniforms[u];
 		if (addAll || (uniform->name == uniformName)) {
@@ -317,14 +317,14 @@ QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int
 			if (lineString.startsWith("[pass.")) {
 				int passDigitsEnd = lineString.indexOf(".", 6);
 				if (passDigitsEnd != -1) {
-					QString passString = lineString.mid(6, passDigitsEnd-6);
+					QString passString = lineString.mid(6, passDigitsEnd - 6);
 					bool ok = false;
 					int uniformPass = passString.toInt(&ok);
 					if (ok && (pass == uniformPass)) {
 						int uniformEnd = lineString.indexOf("]");
 						if (uniformEnd != -1) {
-							int uniformStart = passDigitsEnd + 9;
-							QString uniformName = lineString.mid(uniformStart, uniformEnd-uniformStart);
+							int uniformStart = passDigitsEnd + 9;// 9 is the length of ".uniform."
+							QString uniformName = lineString.mid(uniformStart, uniformEnd - uniformStart);
 							addMatchingUniformRows(shader, layout, name, pass, uniformName, false);
 						}
 					}
