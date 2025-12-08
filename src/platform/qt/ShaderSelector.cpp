@@ -293,6 +293,25 @@ void ShaderSelector::addMatchingUniformRows(mGLES2Shader* shader, QFormLayout* l
 	}
 }
 
+void ShaderSelector::parseShaderIniLine(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, QString lineString) {
+	if (lineString.startsWith("[pass.")) {
+		int passDigitsEnd = lineString.indexOf(".", 6);
+		if (passDigitsEnd != -1) {
+			QString passString = lineString.mid(6, passDigitsEnd - 6);
+			bool ok = false;
+			int uniformPass = passString.toInt(&ok);
+			if (ok && (pass == uniformPass)) {
+				int uniformEnd = lineString.indexOf("]");
+				if (uniformEnd != -1) {
+					int uniformStart = passDigitsEnd + 9;// 9 is the length of ".uniform."
+					QString uniformName = lineString.mid(uniformStart, uniformEnd - uniformStart);
+					addMatchingUniformRows(shader, layout, name, pass, uniformName, false);
+				}
+			}
+		}
+	}
+}
+
 QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int pass, bool defaultPage) {
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (!shader->nUniforms) {
@@ -304,31 +323,35 @@ QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int
 	if (defaultPage) {
 		addMatchingUniformRows(shader, layout, name, pass, "", true);
 	} else {
-		QFile manifestfile(m_shaderPath + "/manifest.ini");
-		if (!manifestfile.open(QIODevice::ReadOnly)) {
-			return nullptr;
-		}
-		while (true) {
-			QByteArray lineArray = manifestfile.readLine();
-			if (lineArray.isEmpty()) {
-				break;
-			}
-			QString lineString = QString::fromUtf8(lineArray);
-			if (lineString.startsWith("[pass.")) {
-				int passDigitsEnd = lineString.indexOf(".", 6);
-				if (passDigitsEnd != -1) {
-					QString passString = lineString.mid(6, passDigitsEnd - 6);
-					bool ok = false;
-					int uniformPass = passString.toInt(&ok);
-					if (ok && (pass == uniformPass)) {
-						int uniformEnd = lineString.indexOf("]");
-						if (uniformEnd != -1) {
-							int uniformStart = passDigitsEnd + 9;// 9 is the length of ".uniform."
-							QString uniformName = lineString.mid(uniformStart, uniformEnd - uniformStart);
-							addMatchingUniformRows(shader, layout, name, pass, uniformName, false);
-						}
+	#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
+		struct VDir* archive = VDirOpenArchive(m_shaderPath.toStdString().c_str());
+		if (archive) {
+			struct VFile* vf = archive->openFile(archive, "manifest.ini", O_RDONLY);
+			if (vf) {
+				char line[512];
+				while (true) {
+					ssize_t bytesRead = vf->readline(vf, line, sizeof(line));
+					if (bytesRead <= 0) {
+						break;
 					}
+					parseShaderIniLine(shader, layout, name, pass, QString::fromUtf8(line, bytesRead));
 				}
+				vf->close(vf);
+			}
+			archive->close(archive);
+		} else
+	#endif
+		{
+			QFile manifestfile(m_shaderPath + "/manifest.ini");
+			if (!manifestfile.open(QIODevice::ReadOnly)) {
+				return nullptr;
+			}
+			while (true) {
+				QByteArray lineArray = manifestfile.readLine();
+				if (lineArray.isEmpty()) {
+					break;
+				}
+				parseShaderIniLine(shader, layout, name, pass, QString::fromUtf8(lineArray));
 			}
 		}
 	}
