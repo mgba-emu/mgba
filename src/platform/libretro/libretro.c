@@ -573,7 +573,7 @@ void retro_run(void) {
 	}
 
 	keys = 0;
-	int i;
+	unsigned i;
 	if (useBitmasks) {
 		int16_t joypadMask = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
 		for (i = 0; i < sizeof(keymap) / sizeof(*keymap); ++i) {
