@@ -17,6 +17,7 @@
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QMessageBox>
+#include <QRegularExpression>
 #include <QSpinBox>
 
 #include <mgba/core/version.h>
@@ -246,70 +247,78 @@ void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, c
 void ShaderSelector::addMatchingUniformRows(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, const QString& uniformName, bool addAll) {
 	for (size_t u = 0; u < shader->nUniforms; ++u) {
 		mGLES2Uniform* uniform = &shader->uniforms[u];
-		if (addAll || (uniform->name == uniformName)) {
-			QGridLayout* settings = new QGridLayout;
-			QString section = QString("shader.%1.%2").arg(name).arg(pass);
-			QString name = QLatin1String(uniform->name);
-			switch (uniform->type) {
-			case GL_FLOAT:
-				addUniform(settings, section, name, &uniform->value.f, uniform->min.f, uniform->max.f, 0, 0);
-				break;
-			case GL_FLOAT_VEC2:
-				addUniform(settings, section, name + "[0]", &uniform->value.fvec2[0], uniform->min.fvec2[0], uniform->max.fvec2[0], 0, 0);
-				addUniform(settings, section, name + "[1]", &uniform->value.fvec2[1], uniform->min.fvec2[1], uniform->max.fvec2[1], 0, 1);
-				break;
-			case GL_FLOAT_VEC3:
-				addUniform(settings, section, name + "[0]", &uniform->value.fvec3[0], uniform->min.fvec3[0], uniform->max.fvec3[0], 0, 0);
-				addUniform(settings, section, name + "[1]", &uniform->value.fvec3[1], uniform->min.fvec3[1], uniform->max.fvec3[1], 0, 1);
-				addUniform(settings, section, name + "[2]", &uniform->value.fvec3[2], uniform->min.fvec3[2], uniform->max.fvec3[2], 0, 2);
-				break;
-			case GL_FLOAT_VEC4:
-				addUniform(settings, section, name + "[0]", &uniform->value.fvec4[0], uniform->min.fvec4[0], uniform->max.fvec4[0], 0, 0);
-				addUniform(settings, section, name + "[1]", &uniform->value.fvec4[1], uniform->min.fvec4[1], uniform->max.fvec4[1], 0, 1);
-				addUniform(settings, section, name + "[2]", &uniform->value.fvec4[2], uniform->min.fvec4[2], uniform->max.fvec4[2], 0, 2);
-				addUniform(settings, section, name + "[3]", &uniform->value.fvec4[3], uniform->min.fvec4[3], uniform->max.fvec4[3], 0, 3);
-				break;
-			case GL_INT:
-				addUniform(settings, section, name, &uniform->value.i, uniform->min.i, uniform->max.i, 0, 0);
-				break;
-			case GL_INT_VEC2:
-				addUniform(settings, section, name + "[0]", &uniform->value.ivec2[0], uniform->min.ivec2[0], uniform->max.ivec2[0], 0, 0);
-				addUniform(settings, section, name + "[1]", &uniform->value.ivec2[1], uniform->min.ivec2[1], uniform->max.ivec2[1], 0, 1);
-				break;
-			case GL_INT_VEC3:
-				addUniform(settings, section, name + "[0]", &uniform->value.ivec3[0], uniform->min.ivec3[0], uniform->max.ivec3[0], 0, 0);
-				addUniform(settings, section, name + "[1]", &uniform->value.ivec3[1], uniform->min.ivec3[1], uniform->max.ivec3[1], 0, 1);
-				addUniform(settings, section, name + "[2]", &uniform->value.ivec3[2], uniform->min.ivec3[2], uniform->max.ivec3[2], 0, 2);
-				break;
-			case GL_INT_VEC4:
-				addUniform(settings, section, name + "[0]", &uniform->value.ivec4[0], uniform->min.ivec4[0], uniform->max.ivec4[0], 0, 0);
-				addUniform(settings, section, name + "[1]", &uniform->value.ivec4[1], uniform->min.ivec4[1], uniform->max.ivec4[1], 0, 1);
-				addUniform(settings, section, name + "[2]", &uniform->value.ivec4[2], uniform->min.ivec4[2], uniform->max.ivec4[2], 0, 2);
-				addUniform(settings, section, name + "[3]", &uniform->value.ivec4[3], uniform->min.ivec4[3], uniform->max.ivec4[3], 0, 3);
-				break;
-			}
-			layout->addRow(shader->uniforms[u].readableName, settings);
+		if (uniform->name != uniformName && !addAll) {
+			continue;
 		}
+		QGridLayout* settings = new QGridLayout;
+		QString section = QString("shader.%1.%2").arg(name).arg(pass);
+		QString name = QLatin1String(uniform->name);
+		switch (uniform->type) {
+		case GL_FLOAT:
+			addUniform(settings, section, name, &uniform->value.f, uniform->min.f, uniform->max.f, 0, 0);
+			break;
+		case GL_FLOAT_VEC2:
+			addUniform(settings, section, name + "[0]", &uniform->value.fvec2[0], uniform->min.fvec2[0], uniform->max.fvec2[0], 0, 0);
+			addUniform(settings, section, name + "[1]", &uniform->value.fvec2[1], uniform->min.fvec2[1], uniform->max.fvec2[1], 0, 1);
+			break;
+		case GL_FLOAT_VEC3:
+			addUniform(settings, section, name + "[0]", &uniform->value.fvec3[0], uniform->min.fvec3[0], uniform->max.fvec3[0], 0, 0);
+			addUniform(settings, section, name + "[1]", &uniform->value.fvec3[1], uniform->min.fvec3[1], uniform->max.fvec3[1], 0, 1);
+			addUniform(settings, section, name + "[2]", &uniform->value.fvec3[2], uniform->min.fvec3[2], uniform->max.fvec3[2], 0, 2);
+			break;
+		case GL_FLOAT_VEC4:
+			addUniform(settings, section, name + "[0]", &uniform->value.fvec4[0], uniform->min.fvec4[0], uniform->max.fvec4[0], 0, 0);
+			addUniform(settings, section, name + "[1]", &uniform->value.fvec4[1], uniform->min.fvec4[1], uniform->max.fvec4[1], 0, 1);
+			addUniform(settings, section, name + "[2]", &uniform->value.fvec4[2], uniform->min.fvec4[2], uniform->max.fvec4[2], 0, 2);
+			addUniform(settings, section, name + "[3]", &uniform->value.fvec4[3], uniform->min.fvec4[3], uniform->max.fvec4[3], 0, 3);
+			break;
+		case GL_INT:
+			addUniform(settings, section, name, &uniform->value.i, uniform->min.i, uniform->max.i, 0, 0);
+			break;
+		case GL_INT_VEC2:
+			addUniform(settings, section, name + "[0]", &uniform->value.ivec2[0], uniform->min.ivec2[0], uniform->max.ivec2[0], 0, 0);
+			addUniform(settings, section, name + "[1]", &uniform->value.ivec2[1], uniform->min.ivec2[1], uniform->max.ivec2[1], 0, 1);
+			break;
+		case GL_INT_VEC3:
+			addUniform(settings, section, name + "[0]", &uniform->value.ivec3[0], uniform->min.ivec3[0], uniform->max.ivec3[0], 0, 0);
+			addUniform(settings, section, name + "[1]", &uniform->value.ivec3[1], uniform->min.ivec3[1], uniform->max.ivec3[1], 0, 1);
+			addUniform(settings, section, name + "[2]", &uniform->value.ivec3[2], uniform->min.ivec3[2], uniform->max.ivec3[2], 0, 2);
+			break;
+		case GL_INT_VEC4:
+			addUniform(settings, section, name + "[0]", &uniform->value.ivec4[0], uniform->min.ivec4[0], uniform->max.ivec4[0], 0, 0);
+			addUniform(settings, section, name + "[1]", &uniform->value.ivec4[1], uniform->min.ivec4[1], uniform->max.ivec4[1], 0, 1);
+			addUniform(settings, section, name + "[2]", &uniform->value.ivec4[2], uniform->min.ivec4[2], uniform->max.ivec4[2], 0, 2);
+			addUniform(settings, section, name + "[3]", &uniform->value.ivec4[3], uniform->min.ivec4[3], uniform->max.ivec4[3], 0, 3);
+			break;
+		}
+		layout->addRow(shader->uniforms[u].readableName, settings);
 	}
 }
 
-void ShaderSelector::parseShaderIniLine(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, QString lineString) {
-	if (lineString.startsWith("[pass.")) {
-		int passDigitsEnd = lineString.indexOf(".", 6);
-		if (passDigitsEnd != -1) {
-			QString passString = lineString.mid(6, passDigitsEnd - 6);
-			bool ok = false;
-			int uniformPass = passString.toInt(&ok);
-			if (ok && (pass == uniformPass)) {
-				int uniformEnd = lineString.indexOf("]");
-				if (uniformEnd != -1) {
-					int uniformStart = passDigitsEnd + 9;// 9 is the length of ".uniform."
-					QString uniformName = lineString.mid(uniformStart, uniformEnd - uniformStart);
-					addMatchingUniformRows(shader, layout, name, pass, uniformName, false);
-				}
-			}
+void ShaderSelector::parseShaderIni(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, QIODevice* file) {
+	static QRegularExpression uniformNameRe(R"(^\[pass\.(\d+)\.uniform\.([^]]+)\]$)");
+	char line[512];
+	while (true) {
+		qint64 bytesRead = file->readLine(line, sizeof(line));
+		if (bytesRead <= 0) {
+			break;
 		}
+
+		QString lineString(QString::fromUtf8(line, bytesRead));
+		auto match = uniformNameRe.match(lineString);
+		if (!match.hasMatch()) {
+			continue;
+		}
+		QString passString = match.captured(1);
+		bool ok = false;
+		int uniformPass = passString.toInt(&ok);
+		if (!ok || pass != uniformPass) {
+			continue;
+		}
+		QString uniformName = match.captured(2);
+		addMatchingUniformRows(shader, layout, name, pass, uniformName, false);
 	}
+	file->close();
 }
 
 QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int pass, bool defaultPage) {
@@ -328,15 +337,10 @@ QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int
 		if (archive) {
 			struct VFile* vf = archive->openFile(archive, "manifest.ini", O_RDONLY);
 			if (vf) {
-				char line[512];
-				while (true) {
-					ssize_t bytesRead = vf->readline(vf, line, sizeof(line));
-					if (bytesRead <= 0) {
-						break;
-					}
-					parseShaderIniLine(shader, layout, name, pass, QString::fromUtf8(line, bytesRead));
-				}
-				vf->close(vf);
+				parseShaderIni(shader, layout, name, pass, new VFileDevice(vf));
+			} else {
+				delete page;
+				page = nullptr;
 			}
 			archive->close(archive);
 		} else
@@ -344,15 +348,10 @@ QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int
 		{
 			QFile manifestfile(m_shaderPath + "/manifest.ini");
 			if (!manifestfile.open(QIODevice::ReadOnly)) {
+				delete page;
 				return nullptr;
 			}
-			while (true) {
-				QByteArray lineArray = manifestfile.readLine();
-				if (lineArray.isEmpty()) {
-					break;
-				}
-				parseShaderIniLine(shader, layout, name, pass, QString::fromUtf8(lineArray));
-			}
+			parseShaderIni(shader, layout, name, pass, &manifestfile);
 		}
 	}
 	return page;

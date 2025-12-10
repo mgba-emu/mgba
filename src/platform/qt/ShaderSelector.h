@@ -49,7 +49,7 @@ private:
 	void addUniform(QGridLayout*, const QString& section, const QString& name, float* value, float min, float max, int y, int x);
 	void addUniform(QGridLayout*, const QString& section, const QString& name, int* value, int min, int max, int y, int x);
 	void addMatchingUniformRows(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, const QString& uniformName, bool addAll);
-	void parseShaderIniLine(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, QString lineString);
+	void parseShaderIni(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, QIODevice* file);
 	QWidget* makePage(mGLES2Shader*, const QString& name, int pass, bool defaultPage);
 
 	Ui::ShaderSelector m_ui;
