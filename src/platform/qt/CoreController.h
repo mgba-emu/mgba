@@ -318,7 +318,7 @@ private:
 	int m_fastForward = false;
 	int m_fastForwardForced = false;
 	int m_fastForwardVolume = -1;
-	int m_fastForwardMute = -1;
+	bool m_fastForwardMute = false;
 	float m_fastForwardRatio = -1.f;
 	float m_fastForwardHeldRatio = -1.f;
 	float m_fpsTarget;
