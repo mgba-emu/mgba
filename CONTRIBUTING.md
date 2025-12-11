@@ -5,6 +5,7 @@ In order to contribute to mGBA, there are a few things to be mindful of so as to
 
 Filing issues
 -------------
+
 New issues should be filed on the [mGBA GitHub Issues tracker](http://mgba.io/i/). When filing issues, please include the following information:
 
 * The build you are using. For recent builds, this is visible in the title bar. For example, `0.3-2134-4ec19aa`. On older builds, such as 0.2.1, this is not present, so please specify the version you downloaded or built. If present, this contains the version, branch name (if not `master`), a revision number and a truncated revision hash. For this example, it means that it's version 0.3, on `master`, commit number 2134 and revision hash `4ec19aa`. Additionally, `-dirty` will be appended if there are local changes that haven't been commited.
@@ -15,24 +16,25 @@ Please also describe the issue in as much detail as possible, including the name
 
 Filing pull requests
 --------------------
+
 When filing a pull request, please make sure you adhere to the coding style as outlined below, and are aware of the requirements for licensing. Furthermore, please make sure all commits in the pull request have coherent commit messages as well as the name of the component being modified in the commit message.
 
 Some components are as follows:
 
 * ARM7: The ARM core
 * GBA: GBA code
-	* GBA Memory: Memory-specific
-	* GBA Video: Video, rendering
-	* GBA Audio: Audio processing
-	* GBA SIO: Serial I/O, multiplayer, link
-	* GBA Hardware: Extra devices, e.g. gyro, light sensor
-	* GBA BIOS: High-level BIOS
+  * GBA Memory: Memory-specific
+  * GBA Video: Video, rendering
+  * GBA Audio: Audio processing
+  * GBA SIO: Serial I/O, multiplayer, link
+  * GBA Hardware: Extra devices, e.g. gyro, light sensor
+  * GBA BIOS: High-level BIOS
 * GB: GB code
-	* GB Memory: Memory-specific
-	* GB Video: Video, rendering
-	* GB Audio: Audio processing
-	* GB MBC: Memory bank controller/cartridge hardware
-	* GB SIO: Serial I/O, multiplayer, link
+  * GB Memory: Memory-specific
+  * GB Video: Video, rendering
+  * GB Audio: Audio processing
+  * GB MBC: Memory bank controller/cartridge hardware
+  * GB SIO: Serial I/O, multiplayer, link
 * Core: Shared infrastructure for various emulation cores
 * Qt: Qt port-related code
 * SDL: SDL port-related code (including as used in other ports)
@@ -50,6 +52,7 @@ Note that this list isn't exhaustive and looking through the commit log for the 
 
 Coding Style
 ------------
+
 mGBA aims to have a consistent, clean codebase, so when contributing code to mGBA, please adhere to the following rules. If a pull request has style errors, you will be asked to fix them before the PR will be accepted.
 
 ### Naming
@@ -64,25 +67,25 @@ Enum values and `#define`s should be all caps with underscores.
 
 Good:
 
-	static int _localVariable;
+ static int _localVariable;
 
-	struct LocalStruct {
-		void (*methodName)(struct LocalStruct struct, param);
+ struct LocalStruct {
+  void (*methodName)(struct LocalStruct struct, param);
 
-		int memberName;
-	};
+  int memberName;
+ };
 
-	enum {
-		ENUM_ITEM_1,
-		ENUM_ITEM_2
-	};
+ enum {
+  ENUM_ITEM_1,
+  ENUM_ITEM_2
+ };
 
-	void LocalStructCreate(struct LocalStruct* struct);
-	
-	void functionName(int argument);
+ void LocalStructCreate(struct LocalStruct* struct);
 
-	static void _LocalStructUse(struct LocalStruct* struct);
-	static void _function2(int argument2);
+ void functionName(int argument);
+
+ static void _LocalStructUse(struct LocalStruct* struct);
+ static void_function2(int argument2);
 
 C++ classes should be confined to namespaces. For the Qt port, this namespace is called `QGBA`.
 
@@ -97,43 +100,43 @@ Braces do not go on their own lines, apart from the terminating brace. There sho
 
 Good:
 
-	if (condition) {
-		block;
-	} else if (condition2) {
-		block2;
-	} else {
-		block3;
-	}
+ if (condition) {
+  block;
+ } else if (condition2) {
+  block2;
+ } else {
+  block3;
+ }
 
 Bad (separate line):
 
-	if (condition)
-	{
-		block;
-	}
-	else if (condition2)
-	{
-		block2;
-	}
-	else
-	{
-		block3;
-	}
+ if (condition)
+ {
+  block;
+ }
+ else if (condition2)
+ {
+  block2;
+ }
+ else
+ {
+  block3;
+ }
 
 Bad (missing braces):
 
-	if (condition)
-		statement;
-	else if (condition2)
-		statement2;
-	else
-		statement3;
+ if (condition)
+  statement;
+ else if (condition2)
+  statement2;
+ else
+  statement3;
 
 Bad (missing space):
 
-	if (condition){
-		block;
-	}
+ if (condition){
+  block;
+ }
 
 ### Spacing
 
@@ -145,12 +148,12 @@ For C headers guards, the define should be the filename (including H), all-caps,
 
 Good:
 
-	#ifndef FILE_NAME_H
-	#define FILE_NAME_H
+ #ifndef FILE_NAME_H
+ #define FILE_NAME_H
 
-	// Header
+ // Header
 
-	#endif
+ #endif
 
 There should be no comment on the `#endif`.
 
@@ -158,12 +161,12 @@ For Qt (C++ header guards), the define should start with `QGBA_` and not include
 
 Good:
 
-	#ifndef QGBA_FILE_NAME
-	#define QGBA_FILE_NAME
-	
-	// Header
-	
-	#endif
+ #ifndef QGBA_FILE_NAME
+ #define QGBA_FILE_NAME
+
+ // Header
+
+ #endif
 
 ### Other
 
@@ -171,15 +174,15 @@ Block statements such as `if`, `while` and `for` should have a space between the
 
 Good:
 
-	while (condition) {
-		block;
-	}
+ while (condition) {
+  block;
+ }
 
 Bad:
 
-	while(condition) {
-		block;
-	}
+ while(condition) {
+  block;
+ }
 
 In C code, use `0` instead of `NULL`. This is mostly for legacy reasons and may change in the future. C code should also use `bool` types and values `true` and `false` instead of `1` and `0` where applicable. In C++ code, use `nullptr` instead of `NULL` or `0`.
 
@@ -187,12 +190,11 @@ If a statement has no body, putting braces is not required, and a semicolon can 
 
 Good:
 
-	while (f());
+ while (f());
 
 Bad:
 
-	while (f()) {}
-
+ while (f()) {}
 
 For infinite loops that `break` statements internally, `while (true)` is preferred over `for (;;)`.
 
