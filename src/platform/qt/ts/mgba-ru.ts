@@ -11,22 +11,22 @@
     <message>
         <location filename="../library/LibraryModel.cpp" line="429"/>
         <source>Location</source>
-        <translation type="unfinished">Расположение</translation>
+        <translation>Расположение</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="431"/>
         <source>Platform</source>
-        <translation type="unfinished">Платформа</translation>
+        <translation>Платформа</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="433"/>
         <source>Size</source>
-        <translation type="unfinished">Размер</translation>
+        <translation>Размер</translation>
     </message>
     <message>
         <location filename="../library/LibraryModel.cpp" line="435"/>
         <source>CRC32</source>
-        <translation type="unfinished">CRC32</translation>
+        <translation>CRC32</translation>
     </message>
 </context>
 <context>
@@ -49,7 +49,7 @@
     <message>
         <location filename="../utils.cpp" line="142"/>
         <source>%1 Video Logs (*.mvl)</source>
-        <translation type="unfinished">Журналы видео %1 (*.mvl)</translation>
+        <translation>Журналы видео %1 (*.mvl)</translation>
     </message>
 </context>
 <context>
@@ -244,7 +244,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="81"/>
         <source>Audio outputting to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Звук выводится на %1</translation>
     </message>
 </context>
 <context>
@@ -273,7 +273,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="20"/>
         <source>Add</source>
-        <translation type="unfinished">Добавить</translation>
+        <translation>Добавить</translation>
     </message>
     <message>
         <location filename="../scripting/AutorunScriptView.ui" line="30"/>
@@ -522,7 +522,7 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="77"/>
         <source>The ROM appears to be loaded from a temporary directory. This will likely lead to data loss (e.g. saves, screenshots, etc.) if you continue. Please put the ROM in a more suitable location and then re-open it. If you are loading the ROM from an archive, please extract the archive first.</source>
-        <translation type="unfinished"></translation>
+        <translation>Похоже ROM загружен из временной папки. Если вы продолжите, это скорее всего приведет к потере данных (например сохранений, скриншотов и т.д). Пожалуйста переместите ROM в более подходящее расположение и переоткройте его. Если вы загружаете ROM из архива, пожалуйста сначала извлеките его.</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="95"/>
@@ -648,12 +648,12 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="25"/>
         <source>Bubble</source>
-        <translation type="unfinished"></translation>
+        <translation>Пузырь</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="26"/>
         <source>Background</source>
-        <translation type="unfinished">Фон</translation>
+        <translation>Фон</translation>
     </message>
     <message>
         <location filename="../ForwarderGeneratorVita.cpp" line="27"/>
@@ -666,7 +666,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="14"/>
         <source>Create forwarder</source>
-        <translation type="unfinished"></translation>
+        <translation>Создать перенаправитель</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="20"/>
@@ -683,7 +683,7 @@ Download size: %3</source>
         <location filename="../ForwarderView.ui" line="53"/>
         <location filename="../ForwarderView.ui" line="112"/>
         <source>Browse</source>
-        <translation type="unfinished">Открыть</translation>
+        <translation>Обзор</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="43"/>
@@ -693,7 +693,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="60"/>
         <source>Forwarder base:</source>
-        <translation type="unfinished"></translation>
+        <translation>База перенаправителя:</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="74"/>
@@ -733,7 +733,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.ui" line="174"/>
         <source>Presentation</source>
-        <translation type="unfinished"></translation>
+        <translation>Представление</translation>
     </message>
     <message>
         <location filename="../ForwarderView.ui" line="182"/>
@@ -783,7 +783,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.cpp" line="37"/>
         <source>Forwarder finished building</source>
-        <translation type="unfinished">Forwarder закончил сборку</translation>
+        <translation>Перенаправитель закончил сборку</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="44"/>
@@ -793,7 +793,7 @@ Download size: %3</source>
     <message>
         <location filename="../ForwarderView.cpp" line="45"/>
         <source>Failed to build forwarder</source>
-        <translation type="unfinished">Не удалось собрать forwarder</translation>
+        <translation>Не удалось собрать перенаправитель</translation>
     </message>
     <message>
         <location filename="../ForwarderView.cpp" line="176"/>
@@ -1107,7 +1107,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
         <source>%1 + RTC</source>
-        <translation type="unfinished">%1 + RTC</translation>
+        <translation>%1 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
@@ -1117,22 +1117,22 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="90"/>
         <source>%1 (Tilt)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (Наклон)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="98"/>
         <source>%1 (old 1)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (старое 1)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="99"/>
         <source>%1 (old 2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (старое 2)</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="100"/>
         <source>%1 (new)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (новое)</translation>
     </message>
 </context>
 <context>
@@ -1305,7 +1305,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="101"/>
         <location filename="../IOViewer.cpp" line="111"/>
         <source>Priority</source>
-        <translation type="unfinished">Приоритет</translation>
+        <translation>Приоритет</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="84"/>
@@ -1351,7 +1351,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="106"/>
         <location filename="../IOViewer.cpp" line="116"/>
         <source>Overflow wraps</source>
-        <translation type="unfinished"></translation>
+        <translation>Переносы при переполнении</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="121"/>
@@ -1361,7 +1361,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1364"/>
         <location filename="../IOViewer.cpp" line="1405"/>
         <source>Horizontal offset</source>
-        <translation>Горизонтальный оффсет</translation>
+        <translation>Горизонтальное смещение</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="125"/>
@@ -1371,7 +1371,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="1360"/>
         <location filename="../IOViewer.cpp" line="1401"/>
         <source>Vertical offset</source>
-        <translation>Вертикальный оффсет</translation>
+        <translation>Вертикальное смещение</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="153"/>
@@ -1847,7 +1847,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="406"/>
         <location filename="../IOViewer.cpp" line="1189"/>
         <source>Register stages</source>
-        <translation type="unfinished"></translation>
+        <translation>Этапы регистра</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="407"/>
@@ -2320,7 +2320,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="832"/>
         <location filename="../IOViewer.cpp" line="892"/>
         <source>IRQ</source>
-        <translation type="unfinished"></translation>
+        <translation>IRQ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="602"/>
@@ -2412,13 +2412,13 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="869"/>
         <location filename="../IOViewer.cpp" line="882"/>
         <source>A</source>
-        <translation type="unfinished"></translation>
+        <translation>A</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="871"/>
         <location filename="../IOViewer.cpp" line="884"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation>Select</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="872"/>
