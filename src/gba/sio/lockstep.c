@@ -697,7 +697,7 @@ void _reconfigPlayers(struct GBASIOLockstepCoordinator* coordinator) {
 		mLOG(GBA_SIO, WARN, "Reconfiguring player IDs with no players attached somehow?");
 	} else if (players == 1) {
 		struct TableIterator iter;
-		mASSERT(TableIteratorStart(&coordinator->players, &iter));
+		mASSERT_LOG(GBA_SIO, TableIteratorStart(&coordinator->players, &iter), "Trying to reconfigure 1 player with empty player list");
 		unsigned p0 = TableIteratorGetKey(&coordinator->players, &iter);
 		coordinator->attachedPlayers[0] = p0;
 
@@ -726,7 +726,7 @@ void _reconfigPlayers(struct GBASIOLockstepCoordinator* coordinator) {
 		// Collect the first four players' requested player IDs so we can sort through them later
 		int seen = 0;
 		struct TableIterator iter;
-		mASSERT(TableIteratorStart(&coordinator->players, &iter));
+		mASSERT_LOG(GBA_SIO, TableIteratorStart(&coordinator->players, &iter), "Trying to reconfigure %i players with empty player list", players);
 		do {
 			unsigned pid = TableIteratorGetKey(&coordinator->players, &iter);
 			struct GBASIOLockstepPlayer* player = TableIteratorGetValue(&coordinator->players, &iter);
@@ -874,7 +874,7 @@ void _lockstepEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 	MutexLock(&coordinator->mutex);
 	struct GBASIOLockstepPlayer* player = TableLookup(&coordinator->players, lockstep->lockstepId);
 	struct GBASIO* sio = player->driver->d.p;
-	mASSERT(player->playerId >= 0 && player->playerId < 4);
+	mASSERT_LOG(GBA_SIO, player->playerId >= 0 && player->playerId < 4, "Invalid multiplayer ID %i", player->playerId);
 
 	bool wasDetach = false;
 	if (player->queue && player->queue->type == SIO_EV_DETACH) {
@@ -983,9 +983,9 @@ int32_t GBASIOLockstepTime(struct GBASIOLockstepPlayer* player) {
 }
 
 void GBASIOLockstepCoordinatorWaitOnPlayers(struct GBASIOLockstepCoordinator* coordinator, struct GBASIOLockstepPlayer* player) {
-	mASSERT(!coordinator->waiting);
-	mASSERT(!player->asleep);
-	mASSERT(player->playerId == 0);
+	mASSERT_LOG(GBA_SIO, !coordinator->waiting, "Multiplayer desynchronized: coordinator not waiting");
+	mASSERT_LOG(GBA_SIO, !player->asleep, "Multiplayer desynchronized: player not asleep");
+	mASSERT_LOG(GBA_SIO, player->playerId == 0, "Multiplayer desynchronized: invalid player %i attempting to coordinate", player->playerId);
 	if (coordinator->nAttached < 2) {
 		return;
 	}
