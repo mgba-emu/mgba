@@ -1,7 +1,6 @@
 #!/bin/awk -f
+
 # scripts/options.awk - library build configuration control
-#
-# last changed in libpng version 1.6.11 - June 5, 2014
 #
 # Copyright (c) 1998-2014 Glenn Randers-Pehrson
 #
@@ -243,7 +242,7 @@ $1 == "file" && NF >= 2{
 
 # option NAME ( (requires|enables|if) NAME* | on | off | disabled |
 #                sets SETTING VALUE+ )*
-#     
+#
 #   Declares an option 'NAME' and describes its default setting (disabled)
 #   and its relationship to other options.  The option is disabled
 #   unless *all* the options listed after 'requires' are set and at
@@ -402,8 +401,10 @@ pre != 0 && $1 == "chunk" && NF >= 2{
 
    if (i > NF) {
       # Output new 'option' lines to the intermediate file (out)
-      print "option READ_" opt, "requires READ_ANCILLARY_CHUNKS" reqread, "enables", opt enables , onoff >out
-      print "option WRITE_" opt, "requires WRITE_ANCILLARY_CHUNKS" reqwrite, "enables", opt enables, onoff >out
+      print "option READ_" opt, "requires READ_ANCILLARY_CHUNKS" reqread,
+            "enables", opt enables , onoff >out
+      print "option WRITE_" opt, "requires WRITE_ANCILLARY_CHUNKS" reqwrite,
+            "enables", opt enables, onoff >out
       next
    }
    # Else hit the error handler below - bad line format!
@@ -732,7 +733,9 @@ END{
          # 'have_ifs' here means that everything = "off" still allows an 'if' on
          # an otherwise enabled option to turn it on; otherwise the 'if'
          # handling is effectively disabled by 'everything = off'
-         if (option[i] == "off" || option[i] == "disabled" && everything != "on" || option[i] == "enabled" && everything == "off" && !have_ifs) {
+         if ((option[i] == "off") ||
+             (option[i] == "disabled" && everything != "on") ||
+             (option[i] == "enabled" && everything == "off" && !have_ifs)) {
             print "#      undef PNG_on /*default off*/" >out
          } else {
             print "#      ifdef PNG_NO_" i >out
@@ -753,7 +756,8 @@ END{
          # pnglibconf.h
          print "#   ifdef PNG_on" >out
          if (i ~ /^fail_/) {
-            print error, i, "is on: enabled by:" iffs[i] enabledby[i] ", requires" requires[i] end >out
+            print error, i, "is on:",
+                  "enabled by:" iffs[i] enabledby[i] ", requires" requires[i] end >out
          } else if (i !~ /^ok_/) {
             print def i sup >out
             # Supported option, set required settings
@@ -780,7 +784,8 @@ END{
                print und i une >out
             }
             if (i ~ /^ok_/) {
-               print error, i, "not enabled: requires:" requires[i] ", enabled by:" iffs[i] enabledby[i] end >out
+               print error, i, "not enabled: ",
+                     "requires:" requires[i] ", enabled by:" iffs[i] enabledby[i] end >out
             }
             print "#endif" >out
          }

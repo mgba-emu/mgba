@@ -220,10 +220,20 @@ void _startHblank(struct mTiming* timing, void* context, uint32_t cyclesLate) {
 	video->p->memory.io[GBA_REG(DISPSTAT)] = dispstat;
 }
 
-void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
-	video->p->memory.io[GBA_REG(DISPSTAT)] &= 0x7;
-	video->p->memory.io[GBA_REG(DISPSTAT)] |= value;
-	// TODO: Does a VCounter IRQ trigger on write?
+uint16_t GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value) {
+	GBARegisterDISPSTAT dispstat = video->p->memory.io[GBA_REG(DISPSTAT)] & 0x7;
+	dispstat |= value & 0xFFF8;
+
+	if (video->vcount == GBARegisterDISPSTATGetVcountSetting(dispstat)) {
+		// Edge trigger only
+		if (GBARegisterDISPSTATIsVcounterIRQ(dispstat) && !GBARegisterDISPSTATIsVcounter(dispstat)) {
+			GBARaiseIRQ(video->p, GBA_IRQ_VCOUNTER, 0);
+		}
+		dispstat = GBARegisterDISPSTATFillVcounter(dispstat);
+	} else {
+		dispstat = GBARegisterDISPSTATClearVcounter(dispstat);
+	}
+	return dispstat;
 }
 
 static unsigned _calculateStallMask(struct GBA* gba, unsigned dispcnt) {

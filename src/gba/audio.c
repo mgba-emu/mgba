@@ -105,6 +105,7 @@ void GBAAudioResizeBuffer(struct GBAAudio* audio, size_t samples) {
 void GBAAudioScheduleFifoDma(struct GBAAudio* audio, int number, struct GBADMA* info) {
 	info->reg = GBADMARegisterSetDestControl(info->reg, GBA_DMA_FIXED);
 	info->reg = GBADMARegisterSetWidth(info->reg, 1);
+	info->destOffset = 0;
 	switch (info->dest) {
 	case GBA_BASE_IO | GBA_REG_FIFO_A_LO:
 		audio->chA.dmaSource = number;

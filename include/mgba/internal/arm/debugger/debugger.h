@@ -31,6 +31,7 @@ struct ARMDebugger {
 	struct ARMCore* cpu;
 
 	struct ARMDebugBreakpointList breakpoints;
+	uint64_t bpBloom[4];
 	struct ARMDebugBreakpointList swBreakpoints;
 	struct mWatchpointList watchpoints;
 	struct ARMMemory originalMemory;

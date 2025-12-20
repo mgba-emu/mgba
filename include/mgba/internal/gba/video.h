@@ -238,7 +238,7 @@ void GBAVideoDeinit(struct GBAVideo* video);
 void GBAVideoDummyRendererCreate(struct GBAVideoRenderer*);
 void GBAVideoAssociateRenderer(struct GBAVideo* video, struct GBAVideoRenderer* renderer);
 
-void GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value);
+uint16_t GBAVideoWriteDISPSTAT(struct GBAVideo* video, uint16_t value);
 
 struct GBASerializedState;
 void GBAVideoSerialize(const struct GBAVideo* video, struct GBASerializedState* state);

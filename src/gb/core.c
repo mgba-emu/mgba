@@ -1495,13 +1495,13 @@ static bool _GBVLPLoadState(struct mCore* core, const void* buffer) {
 	struct GB* gb = (struct GB*) core->board;
 	const struct GBSerializedState* state = buffer;
 
-	gb->timing.root = NULL;
 	gb->model = state->model;
 
 	gb->cpu->pc = GB_BASE_HRAM;
 	gb->cpu->memory.setActiveRegion(gb->cpu, gb->cpu->pc);
 
 	GBVideoReset(&gb->video);
+	gb->timing.root = NULL;
 	GBVideoDeserialize(&gb->video, state);
 	GBIODeserialize(gb, state);
 	GBAudioReset(&gb->audio);

@@ -17,6 +17,7 @@
 #include <QFormLayout>
 #include <QGridLayout>
 #include <QMessageBox>
+#include <QRegularExpression>
 #include <QSpinBox>
 
 #include <mgba/core/version.h>
@@ -161,12 +162,12 @@ void ShaderSelector::refreshShaders() {
 
 #if !defined(_WIN32) || defined(USE_EPOXY)
 	if (m_shaders->preprocessShader) {
-		m_ui.passes->addTab(makePage(static_cast<mGLES2Shader*>(m_shaders->preprocessShader), "default", 0), tr("Preprocessing"));
+		m_ui.passes->addTab(makePage(static_cast<mGLES2Shader*>(m_shaders->preprocessShader), "default", 0, true), tr("Preprocessing"));
 	}
 	mGLES2Shader* shaders = static_cast<mGLES2Shader*>(m_shaders->passes);
 	QFileInfo fi(m_shaderPath);
 	for (size_t p = 0; p < m_shaders->nPasses; ++p) {
-		QWidget* page = makePage(&shaders[p], fi.baseName(), p);
+		QWidget* page = makePage(&shaders[p], fi.baseName(), p, false);
 		if (page) {
 			m_ui.passes->addTab(page, tr("Pass %1").arg(p + 1));
 		}
@@ -243,17 +244,13 @@ void ShaderSelector::addUniform(QGridLayout* settings, const QString& section, c
 	});
 }
 
-QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int pass) {
-#if !defined(_WIN32) || defined(USE_EPOXY)
-	if (!shader->nUniforms) {
-		return nullptr;
-	}
-	QWidget* page = new QWidget;
-	QFormLayout* layout = new QFormLayout;
-	page->setLayout(layout);
-	for (size_t u = 0 ; u < shader->nUniforms; ++u) {
-		QGridLayout* settings = new QGridLayout;
+void ShaderSelector::addMatchingUniformRows(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, const QString& uniformName, bool addAll) {
+	for (size_t u = 0; u < shader->nUniforms; ++u) {
 		mGLES2Uniform* uniform = &shader->uniforms[u];
+		if (uniform->name != uniformName && !addAll) {
+			continue;
+		}
+		QGridLayout* settings = new QGridLayout;
 		QString section = QString("shader.%1.%2").arg(name).arg(pass);
 		QString name = QLatin1String(uniform->name);
 		switch (uniform->type) {
@@ -295,6 +292,67 @@ QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int
 			break;
 		}
 		layout->addRow(shader->uniforms[u].readableName, settings);
+	}
+}
+
+void ShaderSelector::parseShaderIni(mGLES2Shader* shader, QFormLayout* layout, const QString& name, int pass, QIODevice* file) {
+	static QRegularExpression uniformNameRe(R"(^\[pass\.(\d+)\.uniform\.([^]]+)\]$)");
+	char line[512];
+	while (true) {
+		qint64 bytesRead = file->readLine(line, sizeof(line));
+		if (bytesRead <= 0) {
+			break;
+		}
+
+		QString lineString(QString::fromUtf8(line, bytesRead));
+		auto match = uniformNameRe.match(lineString);
+		if (!match.hasMatch()) {
+			continue;
+		}
+		QString passString = match.captured(1);
+		bool ok = false;
+		int uniformPass = passString.toInt(&ok);
+		if (!ok || pass != uniformPass) {
+			continue;
+		}
+		QString uniformName = match.captured(2);
+		addMatchingUniformRows(shader, layout, name, pass, uniformName, false);
+	}
+	file->close();
+}
+
+QWidget* ShaderSelector::makePage(mGLES2Shader* shader, const QString& name, int pass, bool defaultPage) {
+#if !defined(_WIN32) || defined(USE_EPOXY)
+	if (!shader->nUniforms) {
+		return nullptr;
+	}
+	QWidget* page = new QWidget;
+	QFormLayout* layout = new QFormLayout;
+	page->setLayout(layout);
+	if (defaultPage) {
+		addMatchingUniformRows(shader, layout, name, pass, "", true);
+	} else {
+	#if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
+		struct VDir* archive = VDirOpenArchive(m_shaderPath.toStdString().c_str());
+		if (archive) {
+			struct VFile* vf = archive->openFile(archive, "manifest.ini", O_RDONLY);
+			if (vf) {
+				parseShaderIni(shader, layout, name, pass, new VFileDevice(vf));
+			} else {
+				delete page;
+				page = nullptr;
+			}
+			archive->close(archive);
+		} else
+	#endif
+		{
+			QFile manifestfile(m_shaderPath + "/manifest.ini");
+			if (!manifestfile.open(QIODevice::ReadOnly)) {
+				delete page;
+				return nullptr;
+			}
+			parseShaderIni(shader, layout, name, pass, &manifestfile);
+		}
 	}
 	return page;
 #else

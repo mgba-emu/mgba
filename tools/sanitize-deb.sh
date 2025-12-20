@@ -1,5 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 # Clean up the caveats that CPack leaves behind
+set -euo pipefail
+
 BINARY=mgba
 
 rmdep () {

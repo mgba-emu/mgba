@@ -72,6 +72,11 @@ CoreController* CoreManager::loadGame(const QString& path) {
 		archive->close(archive);
 	}
 	QDir dir(info.dir());
+	QDir tmpdir(QDir::tempPath());
+	if (info.canonicalFilePath().startsWith(tmpdir.canonicalPath())) {
+		LOG(QT, ERROR) << tr("The ROM appears to be loaded from a temporary directory. This will likely lead to data loss (e.g. saves, screenshots, etc.) if you continue. "
+			"Please put the ROM in a more suitable location and then re-open it. If you are loading the ROM from an archive, please extract the archive first.");
+	}
 	if (!vf) {
 		// Open bare file
 		vf = VFileOpen(info.canonicalFilePath().toUtf8().constData(), O_RDONLY);
