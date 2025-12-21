@@ -1079,7 +1079,7 @@ const char* _luaTolstring(lua_State* lua, int idx, size_t* len) {
 #if LUA_VERSION_NUM < 503
 	if (!luaL_getmetafield(lua, idx, "__tostring")) {
 		if (luaL_getmetafield(lua, idx, "__name")) {
-			const char *name = lua_tostring(lua, -1);
+			const char* name = lua_tostring(lua, -1);
 			lua_pop(lua, 1);
 			lua_pushfstring(lua, "%s: %p", name, lua_topointer(lua, idx));
 			return lua_tolstring(lua, -1, len);
