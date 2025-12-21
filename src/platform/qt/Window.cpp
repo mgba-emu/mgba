@@ -964,6 +964,9 @@ void Window::gameStopped() {
 	for (auto& action : m_platformActions) {
 		action->setEnabled(true);
 	}
+	for (auto& action : m_nonMpActions) {
+		action->setEnabled(true);
+	}
 	for (auto& action : m_gameActions) {
 		action->setEnabled(false);
 	}
