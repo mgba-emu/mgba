@@ -33,6 +33,8 @@ static struct mScriptValue* _luaRootScope(struct mScriptEngineContext*);
 static bool _luaLoad(struct mScriptEngineContext*, const char*, struct VFile*);
 static bool _luaRun(struct mScriptEngineContext*);
 static const char* _luaGetError(struct mScriptEngineContext*);
+static void _luaNewMetatable(lua_State*, const char*, const luaL_Reg*);
+static const char* _luaTolstring(lua_State*, int, size_t*);
 
 static bool _luaCall(struct mScriptFrame*, void* context);
 
@@ -215,6 +217,35 @@ static const int _mScriptSocketNumErrors = sizeof(_mScriptSocketErrors) / sizeof
 
 #if LUA_VERSION_NUM < 503
 #define lua_pushinteger lua_pushnumber
+
+static int _luaPairs(lua_State* lua) {
+	luaL_checkany(lua, 1);
+	if (luaL_getmetafield(lua, 1, "__pairs") == LUA_TNIL) {
+		lua_getglobal(lua, "next");
+		lua_pushvalue(lua, 1);
+		lua_pushnil(lua);
+	} else {
+		lua_pushvalue(lua, 1);
+		lua_call(lua, 1, 3);
+	}
+	return 3;
+}
+
+static int _luaIpairsIter(lua_State* lua) {
+	lua_Integer i = luaL_checkinteger(lua, 2) + 1;
+	lua_pushinteger(lua, i);
+	lua_pushvalue(lua, -1);
+	lua_gettable(lua, 1);
+	return (lua_type(lua, -1) == LUA_TNIL) ? 1 : 2;
+}
+
+static int _luaIpairs(lua_State* lua) {
+	luaL_checkany(lua, 1);
+	lua_pushcfunction(lua, _luaIpairsIter);
+	lua_pushvalue(lua, 1);
+	lua_pushinteger(lua, 0);
+	return 3;
+}
 #endif
 
 #ifndef LUA_OK
@@ -388,32 +419,20 @@ struct mScriptEngineContext* _luaCreate(struct mScriptEngine2* engine, struct mS
 
 	luaL_openlibs(luaContext->lua);
 
-	luaL_newmetatable(luaContext->lua, "mSTStruct");
-#if LUA_VERSION_NUM < 502
-	luaL_register(luaContext->lua, NULL, _mSTStruct);
-#else
-	luaL_setfuncs(luaContext->lua, _mSTStruct, 0);
-#endif
-	lua_pop(luaContext->lua, 1);
-
-	luaL_newmetatable(luaContext->lua, "mSTTable");
-#if LUA_VERSION_NUM < 502
-	luaL_register(luaContext->lua, NULL, _mSTTable);
-#else
-	luaL_setfuncs(luaContext->lua, _mSTTable, 0);
-#endif
-	lua_pop(luaContext->lua, 1);
-
-	luaL_newmetatable(luaContext->lua, "mSTList");
-#if LUA_VERSION_NUM < 502
-	luaL_register(luaContext->lua, NULL, _mSTList);
-#else
-	luaL_setfuncs(luaContext->lua, _mSTList, 0);
-#endif
-	lua_pop(luaContext->lua, 1);
+	_luaNewMetatable(luaContext->lua, "mSTStruct", _mSTStruct);
+	_luaNewMetatable(luaContext->lua, "mSTTable", _mSTTable);
+	_luaNewMetatable(luaContext->lua, "mSTList", _mSTList);
 
 	lua_getglobal(luaContext->lua, "require");
 	luaContext->require = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
+
+#if LUA_VERSION_NUM < 503
+	lua_pushcfunction(luaContext->lua, _luaIpairs);
+	lua_setglobal(luaContext->lua, "ipairs");
+
+	lua_pushcfunction(luaContext->lua, _luaPairs);
+	lua_setglobal(luaContext->lua, "pairs");
+#endif
 
 	lua_pushliteral(luaContext->lua, "log");
 	lua_pushcclosure(luaContext->lua, _luaPrintShim, 1);
@@ -976,11 +995,19 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 		// Make the old _ENV the __index in the metatable
 		lua_newtable(luaContext->lua);
 		lua_pushliteral(luaContext->lua, "__index");
+#if LUA_VERSION_NUM >= 502
 		lua_getupvalue(luaContext->lua, -4, 1);
+#else
+		lua_getfenv(luaContext->lua, -4);
+#endif
 		lua_rawset(luaContext->lua, -3);
 
 		lua_pushliteral(luaContext->lua, "__newindex");
+#if LUA_VERSION_NUM >= 502
 		lua_getupvalue(luaContext->lua, -4, 1);
+#else
+		lua_getfenv(luaContext->lua, -4);
+#endif
 		lua_rawset(luaContext->lua, -3);
 
 		lua_setmetatable(luaContext->lua, -2);
@@ -1006,7 +1033,11 @@ bool _luaLoad(struct mScriptEngineContext* ctx, const char* filename, struct VFi
 		}
 
 		lua_rawset(luaContext->lua, -3);
+#if LUA_VERSION_NUM >= 502
 		lua_setupvalue(luaContext->lua, -2, 1);
+#else
+		lua_setfenv(luaContext->lua, -2);
+#endif
 		luaContext->func = luaL_ref(luaContext->lua, LUA_REGISTRYINDEX);
 		return true;
 	case LUA_ERRSYNTAX:
@@ -1030,6 +1061,39 @@ bool _luaRun(struct mScriptEngineContext* context) {
 const char* _luaGetError(struct mScriptEngineContext* context) {
 	struct mScriptEngineContextLua* luaContext = (struct mScriptEngineContextLua*) context;
 	return luaContext->lastError;
+}
+
+void _luaNewMetatable(lua_State* lua, const char* name, const luaL_Reg* funcs) {
+	luaL_newmetatable(lua, name);
+#if LUA_VERSION_NUM < 502
+	lua_pushstring(lua, name);
+	lua_setfield(lua, -2, "__name");
+	luaL_register(lua, NULL, funcs);
+#else
+	luaL_setfuncs(lua, funcs, 0);
+#endif
+	lua_pop(lua, 1);
+}
+
+const char* _luaTolstring(lua_State* lua, int idx, size_t* len) {
+#if LUA_VERSION_NUM < 503
+	if (!luaL_getmetafield(lua, idx, "__tostring")) {
+		if (luaL_getmetafield(lua, idx, "__name")) {
+			const char* name = lua_tostring(lua, -1);
+			lua_pop(lua, 1);
+			lua_pushfstring(lua, "%s: %p", name, lua_topointer(lua, idx));
+			return lua_tolstring(lua, -1, len);
+		}
+	} else {
+		lua_pop(lua, 1);
+	}
+	lua_getglobal(lua, "tostring");
+	lua_pushvalue(lua, idx);
+	lua_call(lua, 1, 1);
+	return lua_tolstring(lua, -1, len);
+#else
+	return luaL_tolstring(lua, idx, len);
+#endif
 }
 
 bool _luaPushFrame(struct mScriptEngineContextLua* luaContext, lua_State* lua, struct mScriptList* frame) {
@@ -1573,11 +1637,12 @@ static int _luaRequireShim(lua_State* lua) {
 static int _luaPrintShim(lua_State* lua) {
 	int n = lua_gettop(lua);
 
-	if (lua_getglobal(lua, "console") == LUA_TNIL) {
+	lua_getglobal(lua, "console");
+	if (lua_type(lua, -1) == LUA_TNIL) {
 		// There is no console installed, so output to stdout
 		lua_pop(lua, 1);
 		for (int i = 1; i <= n; i++) {
-			const char* str = luaL_tolstring(lua, i, NULL);
+			const char* str = lua_tolstring(lua, i, NULL);
 			if (i > 1) {
 				printf("\t");
 			}
@@ -1601,7 +1666,7 @@ static int _luaPrintShim(lua_State* lua) {
 
 	// Until then, stringify and concatenate:
 	for (int i = 0; i < n; i++) {
-		luaL_tolstring(lua, i * 2 + 3, NULL);
+		_luaTolstring(lua, i * 2 + 3, NULL);
 		lua_replace(lua, i * 2 + 3);
 		if (i == 0) {
 			lua_pushliteral(lua, "");
