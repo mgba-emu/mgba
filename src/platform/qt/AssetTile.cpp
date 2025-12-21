@@ -45,7 +45,7 @@ int AssetTile::customLocation(const QString&) {
 	return layout()->indexOf(m_ui.line);
 }
 
-void AssetTile::setController(std::shared_ptr<CoreController> controller) {
+void AssetTile::onCoreAttached(std::shared_ptr<CoreController> controller) {
 	m_cacheSet = controller->graphicCaches();
 	switch (controller->platform()) {
 #ifdef M_CORE_GBA
