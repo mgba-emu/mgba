@@ -726,7 +726,7 @@ void _reconfigPlayers(struct GBASIOLockstepCoordinator* coordinator) {
 		// Collect the first four players' requested player IDs so we can sort through them later
 		int seen = 0;
 		struct TableIterator iter;
-		mASSERT_LOG(GBA_SIO, TableIteratorStart(&coordinator->players, &iter), "Trying to reconfigure %i players with empty player list", players);
+		mASSERT_LOG(GBA_SIO, TableIteratorStart(&coordinator->players, &iter), "Trying to reconfigure %" PRIz "u players with empty player list", players);
 		do {
 			unsigned pid = TableIteratorGetKey(&coordinator->players, &iter);
 			struct GBASIOLockstepPlayer* player = TableIteratorGetValue(&coordinator->players, &iter);
