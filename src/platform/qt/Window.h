@@ -241,6 +241,7 @@ private:
 	bool m_hitUnimplementedBiosCall;
 
 	bool m_inactiveMute = false;
+	bool m_minimizedMute = false;
 	bool m_multiActive = true;
 	int m_playerId;
 

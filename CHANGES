@@ -51,6 +51,7 @@ Other fixes:
  - Qt: Fix regression where loading BIOS creates a save file (fixes mgba.io/i/3359)
  - Qt: Fix selecting high tiles in tile and map views (fixes mgba.io/i/3461)
  - Qt: Fix some actions disabled in multiplayer staying disabled after closing game
+ - Qt: Fix unexpected mute when window becomes focused while fast-forwarding
 Misc:
  - 3DS: Change title ID to avoid conflict with commercial title (fixes mgba.io/i/3023)
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
