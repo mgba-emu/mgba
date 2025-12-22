@@ -269,6 +269,8 @@ static bool _GBACoreInit(struct mCore* core) {
 #ifndef MINIMAL_CORE
 	gbacore->logContext = NULL;
 #endif
+	gbacore->nMemoryBlocks = 0;
+	gbacore->memoryBlockType = -2;
 
 	GBACreate(gba);
 	// TODO: Restore cheats
