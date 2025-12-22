@@ -8,10 +8,12 @@
 #include "Log.h"
 
 QDataStream& operator<<(QDataStream& stream, const QGBA::AutorunScriptModel::ScriptInfo& object) {
+	int restoreVersion = stream.version();
 	stream.setVersion(QDataStream::Qt_5_0);
 	stream << QGBA::AutorunScriptModel::ScriptInfo::VERSION;
 	stream << object.filename.toUtf8();
 	stream << object.active;
+	stream.setVersion(restoreVersion);
 	return stream;
 }
 
