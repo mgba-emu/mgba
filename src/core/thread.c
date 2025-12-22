@@ -226,7 +226,6 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		.shutdown = _coreShutdown,
 		.context = threadContext
 	};
-	core->addCoreCallbacks(core, &callbacks);
 	core->setSync(core, &threadContext->impl->sync);
 
 	struct mLogFilter filter;
@@ -245,6 +244,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 		mScriptContextAttachCore(scriptContext, core);
 	}
 #endif
+	core->addCoreCallbacks(core, &callbacks);
 
 	mCoreThreadRewindParamsChanged(threadContext);
 	if (threadContext->startCallback) {
