@@ -237,6 +237,7 @@ void OverrideView::gameStarted() {
 		m_ui.tabWidget->setCurrentWidget(m_ui.tabGBA);
 		GBA* gba = static_cast<GBA*>(thread->core->board);
 		m_ui.savetype->setCurrentIndex(gba->memory.savedata.type + 1);
+		m_ui.hwAutodetect->setChecked(gba->memory.hw.devices & HW_NO_OVERRIDE);
 		m_ui.hwRTC->setChecked(gba->memory.hw.devices & HW_RTC);
 		m_ui.hwGyro->setChecked(gba->memory.hw.devices & HW_GYRO);
 		m_ui.hwLight->setChecked(gba->memory.hw.devices & HW_LIGHT_SENSOR);
