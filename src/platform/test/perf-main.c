@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
 
 	GXRModeObj* vmode = VIDEO_GetPreferredMode(0);
 	void* xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vmode));
-	console_init(xfb, 20, 20, vmode->fbWidth, vmode->xfbHeight, vmode->fbWidth * VI_DISPLAY_PIX_SZ);
+	console_init(xfb, 0, 0, vmode->fbWidth, vmode->xfbHeight, vmode->fbWidth * VI_DISPLAY_PIX_SZ);
 
 	VIDEO_Configure(vmode);
 	VIDEO_SetNextFramebuffer(xfb);
