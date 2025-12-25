@@ -98,6 +98,7 @@ Misc:
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
  - Res: Update gba-colors shader (closes mgba.io/i/2976)
  - Res: Port more Pokefan531 color shaders (closes mgba.io/i/3437)
+ - Res: Port MMPX shader
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
 
 0.10.5: (2025-03-08)
