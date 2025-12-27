@@ -36,6 +36,7 @@ FILE* logfile;
 
 bool rmdirRecursive(struct VDir* dir) {
 	if (!dir) {
+		fprintf(logfile, "error (no dir)\n");
 		return false;
 	}
 	bool ok = true;
@@ -57,7 +58,7 @@ bool rmdirRecursive(struct VDir* dir) {
 		case VFS_UNKNOWN:
 			fprintf(logfile, "rm      %s\n", name);
 			if (!dir->deleteFile(dir, name)) {
-				fprintf(logfile, "error\n");
+				fprintf(logfile, "error   %i\n", errno);
 				ok = false;
 			}
 			break;
@@ -117,7 +118,7 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 			if (!prefix) {
 				struct VDir* subdir = archive->openDir(archive, fname);
 				if (!subdir) {
-					fprintf(logfile, "error\n");
+					fprintf(logfile, "error   %i\n", errno);
 					return false;
 				}
 				if (!extractArchive(subdir, path, false)) {
@@ -150,17 +151,29 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 					rmdir(path);
 #endif
 					vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
-				} else if (error == EACCES || error == ETXTBSY) {
+				} else {
+					int i;
+					for (i = 0; i < 10; ++i) {
+						if (error != EACCES && error != ETXTBSY) {
+							break;
+						}
 #ifdef _WIN32
-					Sleep(1000);
+						Sleep(500);
+#elif defined(_POSIX_C_SOURCE)
+						usleep(500000);
 #else
-					sleep(1);
+						sleep(1);
 #endif
-					vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+						vfOut = VFileOpen(path, O_WRONLY | O_CREAT | O_TRUNC);
+						if (vfOut) {
+							break;
+						}
+					}
 				}
 			}
 			if (!vfOut) {
 				vfIn->close(vfIn);
+				fprintf(logfile, "error (open)   %i\n", errno);
 				return false;
 			}
 			while ((size = vfIn->read(vfIn, block, sizeof(block))) > 0) {
@@ -169,6 +182,7 @@ bool extractArchive(struct VDir* archive, const char* root, bool prefix) {
 			vfOut->close(vfOut);
 			vfIn->close(vfIn);
 			if (size < 0) {
+				fprintf(logfile, "error (copy)   %i\n", errno);
 				return false;
 			}
 			break;
