@@ -285,9 +285,11 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 #ifdef ENABLE_DEBUGGERS
 		struct mDebugger* debugger = core->debugger;
 		if (debugger) {
-			MutexUnlock(&impl->stateMutex);
-			mDebuggerRun(debugger);
-			MutexLock(&impl->stateMutex);
+			while (impl->state == mTHREAD_RUNNING) {
+				MutexUnlock(&impl->stateMutex);
+				mDebuggerRun(debugger);
+				MutexLock(&impl->stateMutex);
+			}
 			if (debugger->state == DEBUGGER_SHUTDOWN) {
 				impl->state = mTHREAD_EXITING;
 			}
