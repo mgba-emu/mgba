@@ -389,7 +389,8 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 	while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_JOYDEVICEADDED, SDL_JOYDEVICEREMOVED) > 0) {
 		if (event.type == SDL_JOYDEVICEADDED) {
 			ssize_t joysticks[MAX_PLAYERS];
-			ssize_t i;
+			memset(joysticks, 0x00, (sizeof(ssize_t)*MAX_PLAYERS));
+			ssize_t i = 0;
 			// Pointers can get invalidated, so we'll need to refresh them
 			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
 				joysticks[i] = events->players[i]->joystick ? (ssize_t) SDL_JoystickListIndex(&events->joysticks, events->players[i]->joystick) : -1;

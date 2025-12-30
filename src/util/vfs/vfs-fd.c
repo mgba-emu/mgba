@@ -231,7 +231,10 @@ static void _vfdUnmap(struct VFile* vf, void* memory, size_t size) {
 
 static void _vfdTruncate(struct VFile* vf, size_t size) {
 	struct VFileFD* vfd = (struct VFileFD*) vf;
-	ftruncate(vfd->fd, size);
+	if (ftruncate(vfd->fd, size) != 0)
+	{
+	  perror("ftruncate failed");
+	}
 }
 
 static ssize_t _vfdSize(struct VFile* vf) {

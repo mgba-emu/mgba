@@ -1974,9 +1974,9 @@ static void _detectCircle(struct GBAVideoGLRenderer* renderer, int y, int window
 	int endX = 0;
 
 	int firstY = -1;
-	float centerX;
-	float centerY = -1;
-	float radius = 0;
+	float centerX = 0.0f;
+	float centerY = -1.0f;
+	float radius = 0.0f;
 	bool invalid = false;
 
 	int i;

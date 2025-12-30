@@ -301,7 +301,10 @@ void mCoreConfigPortableIniPath(char* out, size_t outLength) {
 	UNUSED(outLength);
 	out[0] = '\0';
 #else
-	getcwd(out, outLength);
+	if(!getcwd(out, outLength))
+	{
+          perror("getcwd failed");
+        }
 #ifdef __APPLE__
 	CFBundleRef mainBundle = CFBundleGetMainBundle();
 	if (strcmp(out, "/") == 0 && mainBundle) {

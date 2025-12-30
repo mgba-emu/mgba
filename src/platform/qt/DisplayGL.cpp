@@ -585,7 +585,7 @@ void PainterGL::create() {
 	mGLContext* glBackend;
 #endif
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3)
-	mGLES2Context* gl2Backend;
+	mGLES2Context* gl2Backend = nullptr;
 #endif
 
 	if (!m_widget) {
