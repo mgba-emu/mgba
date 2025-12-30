@@ -175,8 +175,8 @@ static inline void _compositeNoBlendNoObjwin(struct GBAVideoSoftwareRenderer* re
 	int32_t y = background->sy + (renderer->start - 1) * background->dy;                                              \
 	int mosaicH = 0;                                                                                                  \
 	int mosaicWait = 0;                                                                                               \
-	int32_t localX;                                                                                                   \
-	int32_t localY;                                                                                                   \
+	int32_t localX = 0;                                                                                                   \
+	int32_t localY = 0;                                                                                                   \
 	if (background->mosaic) {                                                                                         \
 		int mosaicV = GBAMosaicControlGetBgV(renderer->mosaic) + 1;                                                   \
 		mosaicH = GBAMosaicControlGetBgH(renderer->mosaic) + 1;                                                       \
