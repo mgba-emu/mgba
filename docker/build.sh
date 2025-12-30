@@ -1,5 +1,5 @@
 #!/bin/bash
-# Meant to be run from project root folder and in docker:rootless mode
+# Meant to be run from project root folder and in docker:rootless mode (https://github.com/volt317)
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
