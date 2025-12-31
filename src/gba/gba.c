@@ -343,7 +343,6 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 #ifdef ENABLE_DEBUGGERS
 			gba->timing.globalCycles += cycles < nextEvent ? nextEvent : cycles;
 #endif
-			mASSERT_DEBUG_LOG(GBA, cycles >= 0, "Negative cycles passed: %i", cycles);
 			nextEvent = mTimingTick(&gba->timing, cycles < nextEvent ? nextEvent : cycles);
 		} while (gba->cpuBlocked && !gba->earlyExit);
 
