@@ -226,7 +226,7 @@ static bool _mapRegion(struct mDebuggerAccessLogger* logger, struct mDebuggerAcc
 	if ((size_t) fileEnd < offset + region->size * sizeof(mDebuggerAccessLogFlags)) {
 		return false;
 	}
-	region->block = (mDebuggerAccessLogFlags*) ((uintptr_t) logger->mapped + offset);
+	region->block = (mDebuggerAccessLogFlags*) ((uintptr_t) logger->mapped + (uintptr_t) offset);
 
 	if (mDebuggerAccessLogRegionFlagsIsHasExBlock(flags)) {
 		LOAD_64LE(offset, 0, &info->fileOffsetEx);
@@ -245,7 +245,7 @@ static bool _mapRegion(struct mDebuggerAccessLogger* logger, struct mDebuggerAcc
 			if ((size_t) fileEnd < offset + region->size * sizeof(mDebuggerAccessLogFlagsEx)) {
 				return false;
 			}
-			region->blockEx = (mDebuggerAccessLogFlagsEx*) ((uintptr_t) logger->mapped + offset);
+			region->blockEx = (mDebuggerAccessLogFlagsEx*) ((uintptr_t) logger->mapped + (uintptr_t) offset);
 		}
 	}
 	return true;
