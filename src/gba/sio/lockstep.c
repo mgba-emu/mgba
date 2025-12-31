@@ -449,6 +449,7 @@ static void GBASIOLockstepDriverSetMode(struct GBASIODriver* driver, enum GBASIO
 	MutexLock(&coordinator->mutex);
 	struct GBASIOLockstepPlayer* player = TableLookup(&coordinator->players, lockstep->lockstepId);
 	if (mode != player->mode) {
+		mLOG(GBA_SIO, DEBUG, "Switching mode from %d to %d", player->mode, mode);
 		player->mode = mode;
 		struct GBASIOLockstepEvent event = {
 			.type = SIO_EV_MODE_SET,
@@ -983,8 +984,8 @@ int32_t GBASIOLockstepTime(struct GBASIOLockstepPlayer* player) {
 }
 
 void GBASIOLockstepCoordinatorWaitOnPlayers(struct GBASIOLockstepCoordinator* coordinator, struct GBASIOLockstepPlayer* player) {
-	mASSERT_LOG(GBA_SIO, !coordinator->waiting, "Multiplayer desynchronized: coordinator not waiting");
-	mASSERT_LOG(GBA_SIO, !player->asleep, "Multiplayer desynchronized: player not asleep");
+	mASSERT_LOG(GBA_SIO, !coordinator->waiting, "Multiplayer desynchronized: coordinator still waiting");
+	mASSERT_LOG(GBA_SIO, !player->asleep, "Multiplayer desynchronized: player asleep");
 	mASSERT_LOG(GBA_SIO, player->playerId == 0, "Multiplayer desynchronized: invalid player %i attempting to coordinate", player->playerId);
 	if (coordinator->nAttached < 2) {
 		return;
