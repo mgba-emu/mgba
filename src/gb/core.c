@@ -1431,7 +1431,7 @@ static void _GBVLPStartFrameCallback(void *context) {
 		GBVideoProxyRendererUnshim(&gb->video, &gbcore->proxyRenderer);
 		mVideoLogContextRewind(gbcore->logContext, core);
 		GBVideoProxyRendererShim(&gb->video, &gbcore->proxyRenderer);
-		gb->earlyExit = true;
+		GBInterrupt(gb);
 	}
 }
 

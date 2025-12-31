@@ -686,7 +686,7 @@ void _updateFrameCount(struct mTiming* timing, void* context, uint32_t cyclesLat
 	GBFrameEnded(video->p);
 	mCoreSyncPostFrame(video->p->sync);
 	++video->frameCounter;
-	video->p->earlyExit = true;
+	GBInterrupt(video->p);
 
 	GBFrameStarted(video->p);
 }

@@ -976,7 +976,7 @@ void GBProcessEvents(struct SM83Core* cpu) {
 				gb->timing.globalCycles += nextEvent;
 #endif
 				nextEvent = mTimingTick(&gb->timing, nextEvent);
-			} while (gb->cpuBlocked);
+			} while (gb->cpuBlocked && !gb->earlyExit);
 			// This loop cannot early exit until the SM83 run loop properly handles mid-M-cycle-exits
 			cpu->nextEvent = nextEvent;
 
@@ -1217,6 +1217,11 @@ void GBFrameEnded(struct GB* gb) {
 			callbacks->videoFrameEnded(callbacks->context);
 		}
 	}
+}
+
+void GBInterrupt(struct GB* gb) {
+	gb->earlyExit = true;
+	mTimingInterrupt(&gb->timing);
 }
 
 enum GBModel GBNameToModel(const char* model) {

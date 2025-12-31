@@ -840,7 +840,7 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	}
 	if (!mCoreSyncProduceAudio(audio->p->sync, &audio->buffer)) {
 		// Interrupted
-		audio->p->earlyExit = true;
+		GBInterrupt(audio->p);
 	}
 	mTimingSchedule(timing, &audio->sampleEvent, audio->sampleInterval * audio->timingFactor - cyclesLate);
 }
