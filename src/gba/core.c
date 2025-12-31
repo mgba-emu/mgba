@@ -1722,7 +1722,7 @@ static void _GBAVLPStartFrameCallback(void *context) {
 		GBAVideoProxyRendererUnshim(&gba->video, &gbacore->vlProxy);
 		mVideoLogContextRewind(gbacore->logContext, core);
 		GBAVideoProxyRendererShim(&gba->video, &gbacore->vlProxy);
-		gba->earlyExit = true;
+		GBAInterrupt(gba);
 	}
 }
 

@@ -1052,7 +1052,7 @@ void GBASIOLockstepPlayerSleep(struct GBASIOLockstepPlayer* player) {
 	player->asleep = true;
 	player->driver->user->sleep(player->driver->user);
 	player->driver->d.p->p->cpu->nextEvent = 0;
-	player->driver->d.p->p->earlyExit = true;
+	GBAInterrupt(player->driver->d.p->p);
 }
 
 size_t GBASIOLockstepCoordinatorAttached(struct GBASIOLockstepCoordinator* coordinator) {

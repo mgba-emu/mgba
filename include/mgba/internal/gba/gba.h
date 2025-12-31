@@ -154,6 +154,8 @@ void GBAHalt(struct GBA* gba);
 void GBAStop(struct GBA* gba);
 void GBADebug(struct GBA* gba, uint16_t value);
 
+void GBAInterrupt(struct GBA* gba);
+
 #ifdef USE_ELF
 struct ELF;
 
