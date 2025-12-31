@@ -450,6 +450,8 @@ void ReportView::addCpuInfo(QStringList& report) {
 	features << QString("Supports SSE4a: %1").arg(testBit(6, regs[2]));
 	features.sort();
 	report << features;
+#else
+	Q_UNUSED(report);
 #endif
 }
 
