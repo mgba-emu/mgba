@@ -551,15 +551,7 @@ static uint8_t _readKeysFiltered(struct GB* gb) {
 uint8_t GBIORead(struct GB* gb, unsigned address) {
 	switch (address) {
 	case GB_REG_JOYP:
-		{
-			size_t c;
-			for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
-				struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
-				if (callbacks->keysRead) {
-					callbacks->keysRead(callbacks->context);
-				}
-			}
-		}
+		mCALLBACKS_INVOKE(gb, keysRead);
 		return _readKeysFiltered(gb);
 	case GB_REG_IE:
 		return gb->memory.ie;

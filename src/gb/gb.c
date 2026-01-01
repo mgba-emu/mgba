@@ -394,13 +394,7 @@ void GBSramClean(struct GB* gb, uint32_t frameCount) {
 			}
 		}
 
-		size_t c;
-		for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
-			struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
-			if (callbacks->savedataUpdated) {
-				callbacks->savedataUpdated(callbacks->context);
-			}
-		}
+		mCALLBACKS_INVOKE(gb, savedataUpdated);
 	}
 }
 
@@ -1174,14 +1168,7 @@ void GBGetGameInfo(const struct GB* gb, struct mGameInfo* info) {
 
 void GBFrameStarted(struct GB* gb) {
 	GBTestKeypadIRQ(gb);
-
-	size_t c;
-	for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
-		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
-		if (callbacks->videoFrameStarted) {
-			callbacks->videoFrameStarted(callbacks->context);
-		}
-	}
+	mCALLBACKS_INVOKE(gb, videoFrameStarted);
 }
 
 void GBFrameEnded(struct GB* gb) {
@@ -1209,14 +1196,7 @@ void GBFrameEnded(struct GB* gb) {
 		gb->video.renderer->getPixels(gb->video.renderer, &stride, (const void**) &pixels);
 		gb->stream->postVideoFrame(gb->stream, pixels, stride);
 	}
-
-	size_t c;
-	for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
-		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
-		if (callbacks->videoFrameEnded) {
-			callbacks->videoFrameEnded(callbacks->context);
-		}
-	}
+	mCALLBACKS_INVOKE(gb, videoFrameEnded);
 }
 
 void GBInterrupt(struct GB* gb) {
