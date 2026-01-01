@@ -62,11 +62,11 @@ enum {
 };
 
 struct GBASavedata {
+	struct GBA* p;
 	enum GBASavedataType type;
 	uint8_t* data;
 	enum SavedataCommand command;
 	struct VFile* vf;
-	struct GBACartridgeHardware* gpio;
 
 	int mapMode;
 	bool maskWriteback;
@@ -78,7 +78,6 @@ struct GBASavedata {
 
 	uint8_t* currentBank;
 
-	struct mTiming* timing;
 	unsigned settling;
 	struct mTimingEvent dust;
 

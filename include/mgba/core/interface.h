@@ -50,6 +50,7 @@ struct mCoreCallbacks {
 	void (*keysRead)(void* context);
 	void (*savedataUpdated)(void* context);
 	void (*alarm)(void* context);
+	void (*memoryBlocksChanged)(void* context);
 };
 
 DECLARE_VECTOR(mCoreCallbacksList, struct mCoreCallbacks);

@@ -59,6 +59,7 @@ Misc:
  - Core: Add MD5 hashing for ROMs
  - Core: Add support for specifying an arbitrary portable directory
  - Core: Add SHA1 hashing for ROMs
+ - Core: Add callback for memoryBlocksChanged (fixes mgba.io/i/3640)
  - FFmpeg: Add Ut Video option
  - GB: Prevent incompatible BIOSes from being used on differing models
  - GB MBC: Add M161 support for one Mani 4-in-1 multicart

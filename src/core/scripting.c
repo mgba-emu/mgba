@@ -1236,6 +1236,19 @@ mSCRIPT_DEFINE_STRUCT(mScriptCoreAdapter)
 	mSCRIPT_DEFINE_STRUCT_CAST_TO_MEMBER(mScriptCoreAdapter, CS(mCore), _core)
 mSCRIPT_DEFINE_END;
 
+static struct mScriptCoreAdapter* _getAdapter(struct mScriptContext* context) {
+	struct mScriptValue* value = HashTableLookup(&context->rootScope, "emu");
+	if (!value) {
+		return NULL;
+	}
+	value = mScriptContextAccessWeakref(context, value);
+	if (!value) {
+		return NULL;
+	}
+
+	return value->value.opaque;
+}
+
 static void _setRumble(struct mRumble* rumble, bool enable, uint32_t timeSince) {
 	struct mScriptCoreAdapter* adapter = containerof(rumble, struct mScriptCoreAdapter, rumble);
 
@@ -1380,12 +1393,13 @@ static uint8_t _readLuminance(struct GBALuminanceSource* luminance) {
 #endif
 
 #define mCoreCallback(NAME) _mScriptCoreCallback ## NAME
-#define DEFINE_CALLBACK(NAME) \
+#define DEFINE_CALLBACK(NAME, ...) \
 	void mCoreCallback(NAME) (void* context) { \
 		struct mScriptContext* scriptContext = context; \
 		if (!scriptContext) { \
 			return; \
 		} \
+		__VA_ARGS__ \
 		mScriptContextTriggerCallback(scriptContext, #NAME, NULL); \
 	}
 
@@ -1396,6 +1410,11 @@ DEFINE_CALLBACK(stop)
 DEFINE_CALLBACK(keysRead)
 DEFINE_CALLBACK(savedataUpdated)
 DEFINE_CALLBACK(alarm)
+DEFINE_CALLBACK(memoryBlocksChanged,
+	struct mScriptCoreAdapter* adapter = _getAdapter(scriptContext);
+	if (adapter) {
+		_rebuildMemoryMap(scriptContext, adapter);
+	})
 
 void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core) {
 	struct mScriptValue* coreValue = mScriptValueAlloc(mSCRIPT_TYPE_MS_S(mScriptCoreAdapter));
@@ -1439,6 +1458,7 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 		.keysRead = mCoreCallback(keysRead),
 		.savedataUpdated = mCoreCallback(savedataUpdated),
 		.alarm = mCoreCallback(alarm),
+		.memoryBlocksChanged = mCoreCallback(memoryBlocksChanged),
 		.context = context
 	};
 	core->addCoreCallbacks(core, &callbacks);
@@ -1451,16 +1471,10 @@ void mScriptContextAttachCore(struct mScriptContext* context, struct mCore* core
 }
 
 void mScriptContextDetachCore(struct mScriptContext* context) {
-	struct mScriptValue* value = HashTableLookup(&context->rootScope, "emu");
-	if (!value) {
+	struct mScriptCoreAdapter* adapter = _getAdapter(context);
+	if (!adapter) {
 		return;
 	}
-	value = mScriptContextAccessWeakref(context, value);
-	if (!value) {
-		return;
-	}
-
-	struct mScriptCoreAdapter* adapter = value->value.opaque;
 	_clearMemoryMap(context, adapter, true);
 	struct mCore* core = adapter->core;
 	core->setPeripheral(core, mPERIPH_RUMBLE, adapter->oldRumble);

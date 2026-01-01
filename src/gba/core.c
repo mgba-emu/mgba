@@ -1139,6 +1139,8 @@ size_t _GBACoreListMemoryBlocks(const struct mCore* core, const struct mCoreMemo
 			}
 		}
 		gbacore->memoryBlockType = gba->memory.savedata.type;
+
+		mCALLBACKS_INVOKE(gba, memoryBlocksChanged);
 	}
 
 	*blocks = gbacore->memoryBlocks;

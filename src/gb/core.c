@@ -719,6 +719,8 @@ static void _GBCoreReset(struct mCore* core) {
 		}
 	}
 
+	mCALLBACKS_INVOKE(gb, memoryBlocksChanged);
+
 	SM83Reset(core->cpu);
 
 	if (core->opts.skipBios) {
