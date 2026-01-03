@@ -9,13 +9,13 @@
 
 #include <memory>
 
+#include "CorePointer.h"
+
 struct mDebuggerModule;
 
 namespace QGBA {
 
-class CoreController;
-
-class DebuggerController : public QObject {
+class DebuggerController : public QObject, public CoreConsumer {
 Q_OBJECT
 
 public:
@@ -23,7 +23,6 @@ public:
 
 public:
 	bool isAttached();
-	void setController(std::shared_ptr<CoreController>);
 
 public slots:
 	virtual void attach();
@@ -36,9 +35,10 @@ protected:
 	virtual void shutdownInternal();
 
 	mDebuggerModule* const m_debugger;
-	std::shared_ptr<CoreController> m_gameController;
 
 private:
+	void onCoreDetached(std::shared_ptr<CoreController>);
+	void onCoreAttached(std::shared_ptr<CoreController>);
 	bool m_autoattach = false;
 };
 
