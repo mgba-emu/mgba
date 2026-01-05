@@ -86,8 +86,10 @@ void ScriptingController::setController(std::shared_ptr<CoreController> controll
 	m_controller->thread()->scriptContext = &m_scriptContext;
 	if (m_controller->hasStarted()) {
 		attach();
+#ifdef ENABLE_DEBUGGERS
 	} else {
 		m_controller->attachDebugger(false);
+#endif
 	}
 	updateVideoScale();
 	connect(m_controller.get(), &CoreController::stopping, this, &ScriptingController::clearController);
