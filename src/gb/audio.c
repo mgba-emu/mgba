@@ -38,7 +38,9 @@ static void _updateSquareSample(struct GBAudioSquareChannel* ch);
 static int16_t _coalesceNoiseChannel(struct GBAudioNoiseChannel* ch);
 
 static void _updateFrame(struct mTiming* timing, void* user, uint32_t cyclesLate);
+#ifdef M_CORE_GB
 static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate);
+#endif
 
 static void GBAudioSample(struct GBAudio* audio, int32_t timestamp);
 
@@ -68,10 +70,12 @@ void GBAudioInit(struct GBAudio* audio, size_t samples, uint8_t* nr52, enum GBAu
 	audio->frameEvent.name = "GB Audio Frame Sequencer";
 	audio->frameEvent.callback = _updateFrame;
 	audio->frameEvent.priority = 0x10;
+#ifdef M_CORE_GB
 	audio->sampleEvent.context = audio;
 	audio->sampleEvent.name = "GB Audio Sample";
 	audio->sampleEvent.callback = _sample;
 	audio->sampleEvent.priority = 0x18;
+#endif
 }
 
 void GBAudioDeinit(struct GBAudio* audio) {
@@ -79,10 +83,12 @@ void GBAudioDeinit(struct GBAudio* audio) {
 }
 
 void GBAudioReset(struct GBAudio* audio) {
+#ifdef M_CORE_GB
 	mTimingDeschedule(audio->timing, &audio->sampleEvent);
 	if (audio->style != GB_AUDIO_GBA) {
 		mTimingSchedule(audio->timing, &audio->sampleEvent, 0);
 	}
+#endif
 	audio->ch1 = (struct GBAudioSquareChannel) { .sweep = { .time = 8 }, .envelope = { .dead = 2 } };
 	audio->ch2 = (struct GBAudioSquareChannel) { .envelope = { .dead = 2 } };
 	audio->ch3 = (struct GBAudioWaveChannel) { .bank = 0 };
@@ -817,6 +823,7 @@ void GBAudioSample(struct GBAudio* audio, int32_t timestamp) {
 	}
 }
 
+#ifdef M_CORE_GB
 static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	struct GBAudio* audio = user;
 	GBAudioSample(audio, mTimingCurrentTime(audio->timing));
@@ -844,6 +851,7 @@ static void _sample(struct mTiming* timing, void* user, uint32_t cyclesLate) {
 	}
 	mTimingSchedule(timing, &audio->sampleEvent, audio->sampleInterval * audio->timingFactor - cyclesLate);
 }
+#endif
 
 bool _resetEnvelope(struct GBAudioEnvelope* envelope, enum GBAudioStyle style) {
 	envelope->currentVolume = envelope->initialVolume;
