@@ -117,6 +117,7 @@ int main(int argc, char** argv) {
 
 	core->reset(core);
 
+#ifdef ENABLE_DEBUGGERS
 	struct mDebugger debugger;
 	struct mDebuggerAccessLogger accessLog;
 	bool hasDebugger = false;
@@ -133,6 +134,7 @@ int main(int argc, char** argv) {
 		mDebuggerAccessLoggerStart(&accessLog);
 		hasDebugger = true;
 	}
+#endif
 
 	mArgumentsApplyFileLoads(&args, core);
 
@@ -161,11 +163,13 @@ int main(int argc, char** argv) {
 
 	_fuzzRunloop(core, fuzzOpts.frames);
 
+#ifdef ENABLE_DEBUGGERS
 	if (hasDebugger) {
 		core->detachDebugger(core);
 		mDebuggerAccessLoggerDeinit(&accessLog);
 		mDebuggerDeinit(&debugger);
 	}
+#endif
 
 	core->unloadROM(core);
 
