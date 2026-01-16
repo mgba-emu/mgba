@@ -174,6 +174,9 @@ struct mScriptBreakpoint {
 	ssize_t id;
 	struct mScriptBreakpointName name;
 	struct Table callbacks;
+	// TODO: Handle re-entry
+	bool invalidated;
+	bool inUse;
 };
 
 struct mScriptCoreAdapter;
@@ -718,6 +721,10 @@ static void _rebuildMemoryMap(struct mScriptContext* context, struct mScriptCore
 #ifdef ENABLE_DEBUGGERS
 static void _freeBreakpoint(void* bp) {
 	struct mScriptBreakpoint* point = bp;
+	if (point->inUse) {
+		// TODO: Refcount this?
+		return;
+	}
 	HashTableDeinit(&point->callbacks);
 	free(bp);
 }
@@ -772,22 +779,43 @@ static int64_t _addCallbackToBreakpoint(struct mScriptDebugger* debugger, struct
 	HashTableInsertBinary(&debugger->cbidMap, &cbid, sizeof(cbid), point);
 	mScriptValueRef(callback);
 	HashTableInsertBinary(&point->callbacks, &cbid, sizeof(cbid), callback);
+	point->invalidated = true;
 	return cbid;
 }
 
 static void _runCallbacks(struct mScriptDebugger* debugger, struct mScriptBreakpoint* point, struct mScriptValue* info) {
+	struct Table visited;
+	HashTableInit(&visited, 0, NULL);
+	point->inUse = true;
+
 	struct TableIterator iter;
-	if (!HashTableIteratorStart(&point->callbacks, &iter)) {
-		return;
+	while (HashTableIteratorStart(&point->callbacks, &iter)) {
+		point->invalidated = false;
+		do {
+			int64_t cbid = *(int64_t*) HashTableIteratorGetKey(&point->callbacks, &iter);
+			if (HashTableLookupBinary(&visited, &cbid, sizeof(cbid))) {
+				continue;
+			}
+			HashTableInsertBinary(&visited, &cbid, sizeof(cbid), (void*) 1);
+
+			struct mScriptValue* fn = HashTableIteratorGetValue(&point->callbacks, &iter);
+			struct mScriptFrame frame;
+			mScriptFrameInit(&frame);
+			mSCRIPT_PUSH(&frame.stack, WTABLE, info);
+			mScriptContextInvoke(debugger->p->context, fn, &frame);
+			mScriptFrameDeinit(&frame);
+			if (point->invalidated) {
+				break;
+			}
+		} while (HashTableIteratorNext(&point->callbacks, &iter));
 	}
-	do {
-		struct mScriptValue* fn = HashTableIteratorGetValue(&point->callbacks, &iter);
-		struct mScriptFrame frame;
-		mScriptFrameInit(&frame);
-		mSCRIPT_PUSH(&frame.stack, WTABLE, info);
-		mScriptContextInvoke(debugger->p->context, fn, &frame);
-		mScriptFrameDeinit(&frame);
-	} while (HashTableIteratorNext(&point->callbacks, &iter));
+
+	HashTableDeinit(&visited);
+	point->inUse = false;
+
+	if (!HashTableSize(&point->callbacks)) {
+		_freeBreakpoint(point);
+	}
 }
 
 static void _scriptDebuggerInit(struct mDebuggerModule* debugger) {
