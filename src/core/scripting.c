@@ -777,8 +777,35 @@ static int64_t _addCallbackToBreakpoint(struct mScriptDebugger* debugger, struct
 
 static void _runCallbacks(struct mScriptDebugger* debugger, struct mScriptBreakpoint* point, struct mScriptValue* info) {
 	struct TableIterator iter;
-	if (!HashTableIteratorStart(&point->callbacks, &iter)) {
-		return;
+	while (HashTableIteratorStart(&point->callbacks, &iter)) {
+		point->invalidated = false;
+		do {
+			int64_t cbid = *(int64_t*) HashTableIteratorGetKey(&point->callbacks, &iter);
+			if (HashTableLookupBinary(&visited, &cbid, sizeof(cbid))) {
+				continue;
+			}
+			HashTableInsertBinary(&visited, &cbid, sizeof(cbid), (void*) 1);
+
+			struct mScriptValue* fn = HashTableIteratorGetValue(&point->callbacks, &iter);
+			struct mScriptFrame frame;
+			mScriptFrameInit(&frame);
+			mSCRIPT_PUSH(&frame.stack, WTABLE, info);
+			mScriptContextInvoke(debugger->p->context, fn, &frame);
+			mScriptFrameDeinit(&frame);
+			if (point->invalidated) {
+				break;
+			}
+		} while (HashTableIteratorNext(&point->callbacks, &iter));
+		if (!point->invalidated) {
+			break;
+		}
+	}
+
+	HashTableDeinit(&visited);
+	point->inUse = false;
+
+	if (!HashTableSize(&point->callbacks)) {
+		_freeBreakpoint(point);
 	}
 	do {
 		struct mScriptValue* fn = HashTableIteratorGetValue(&point->callbacks, &iter);
