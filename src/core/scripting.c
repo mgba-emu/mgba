@@ -808,6 +808,9 @@ static void _runCallbacks(struct mScriptDebugger* debugger, struct mScriptBreakp
 				break;
 			}
 		} while (HashTableIteratorNext(&point->callbacks, &iter));
+		if (!point->invalidated) {
+			break;
+		}
 	}
 
 	HashTableDeinit(&visited);
