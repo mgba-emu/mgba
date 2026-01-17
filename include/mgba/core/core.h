@@ -21,6 +21,7 @@ CXX_GUARD_START
 #ifdef ENABLE_DEBUGGERS
 #include <mgba/debugger/debugger.h>
 #endif
+#include <mgba/core/movie.h>
 
 enum mPlatform {
 	mPLATFORM_NONE = -1,
@@ -47,6 +48,7 @@ struct mCore {
 #endif
 #ifndef MINIMAL_CORE
 	struct mInputMap inputMap;
+	struct mMovie* movie;
 #endif
 	struct mCoreConfig config;
 	struct mCoreOptions opts;

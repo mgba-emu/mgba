@@ -45,6 +45,8 @@ static const struct option _options[] = {
 #endif
 	{ "help",      no_argument, 0, 'h' },
 	{ "log-level", required_argument, 0, 'l' },
+	{ "movie-play",required_argument, 0, 'P' },
+	{ "movie-record",required_argument, 0, 'R' },
 	{ "savestate", required_argument, 0, 't' },
 	{ "patch",     required_argument, 0, 'p' },
 	{ "version",   no_argument, 0, '\0' },
@@ -81,7 +83,7 @@ static void _tableApply(const char* key, void* value, void* user) {
 bool mArgumentsParse(struct mArguments* args, int argc, char* const* argv, struct mSubParser* subparsers, int nSubparsers) {
 	int ch;
 	char options[128] =
-		"b:c:C:hl:p:s:t:"
+		"b:c:C:hl:p:P:R:s:t:"
 #ifdef USE_EDITLINE
 		"d"
 #endif
@@ -153,11 +155,25 @@ bool mArgumentsParse(struct mArguments* args, int argc, char* const* argv, struc
 #endif
 #ifdef ENABLE_GDB_STUB
 		case 'g':
-			args->debugAtStart = true;
+			_tableInsert(&args->configOverrides, "gdb.enable=1");
 			args->debugGdb = true;
 			break;
 #endif
-		case 'h':
+		case 'R':
+			if (optarg) {
+				args->movieRecord = strdup(optarg);
+			} else {
+				// Should not happen if configured correctly
+			}
+			break;
+		case 'P':
+			if (optarg) {
+				args->moviePlay = strdup(optarg);
+			} else {
+				// Should not happen
+			}
+			break;
+		case '?':
 			args->showHelp = true;
 			break;
 		case 'l':
@@ -306,6 +322,12 @@ void mArgumentsDeinit(struct mArguments* args) {
 	free(args->bios);
 	args->bios = 0;
 
+	free(args->movieRecord);
+	args->movieRecord = 0;
+
+	free(args->moviePlay);
+	args->moviePlay = 0;
+
 	HashTableDeinit(&args->configOverrides);
 }
 
@@ -385,6 +407,8 @@ void usage(const char* arg0, const char* prologue, const char* epilogue, const s
 	     "  -t, --savestate FILE       Load savestate when starting\n"
 	     "  -p, --patch FILE           Apply a specified patch file when running\n"
 	     "  -s, --frameskip N          Skip every N frames\n"
+	     "  -R, --movie-record FILE    Record movie to file\n"
+	     "  -P, --movie-play FILE      Play movie from file\n"
 	     "  --version                  Print version and exit"
 	);
 	int i;

@@ -12,6 +12,7 @@ set(SOURCE_FILES
 	log.c
 	map-cache.c
 	mem-search.c
+	movie.c
 	rewind.c
 	serialize.c
 	sync.c
@@ -20,7 +21,8 @@ set(SOURCE_FILES
 	timing.c)
 
 set(TEST_FILES
-	test/core.c)
+	test/core.c
+	test/movie.c)
 
 if(ENABLE_VFS)
 		list(APPEND SOURCE_FILES

@@ -707,6 +707,15 @@ static const struct GBColorPreset _colorPresets[] = {
 	{ "DMG Green", UNIFORM_PAL(0x2691, 0x19A9, 0x1105, 0x04A3), },
 	{ "GB Pocket", UNIFORM_PAL(0x52D4, 0x4270, 0x2989, 0x10A3), },
 	{ "GB Light", UNIFORM_PAL(0x7FCF, 0x738B, 0x56C3, 0x39E0), },
+	// Hardware-accurate LCD variants
+	{ "DMG-01 Early", UNIFORM_PAL(0x2F56, 0x2310, 0x1109, 0x0000), },  // Early production yellowish-green
+	{ "DMG-01 Late", UNIFORM_PAL(0x2691, 0x1D2A, 0x10C5, 0x0421), },   // Later production deep green
+	{ "MGB Gray", UNIFORM_PAL(0x5294, 0x39CE, 0x2108, 0x0842), },      // GB Pocket pure gray
+	{ "MGB Mint", UNIFORM_PAL(0x5EF7, 0x4210, 0x2529, 0x0C63), },      // GB Pocket with mint tint
+	{ "GBL Backlit", UNIFORM_PAL(0x7FFF, 0x6F7B, 0x4E73, 0x2D6B), },   // GB Light (Japan) backlit
+	{ "GBA AGB-001", UNIFORM_PAL(0x7FFF, 0x5AD6, 0x318C, 0x0000), },   // Original GBA (no backlight)
+	{ "GBA SP AGS-101", UNIFORM_PAL(0x7FFF, 0x5EF7, 0x3DEF, 0x1CE7), },// GBA SP backlit (bright)
+	{ "GBC Washed", UNIFORM_PAL(0x7F9C, 0x6318, 0x4A52, 0x318C), },    // GBC screen (slightly washed)
 	{ "GBC Brown ↑", PALETTE(0, 0, 0), },
 	{ "GBC Red ↑A", PALETTE(4, 3, 28), },
 	{ "GBC Dark Brown ↑B", PALETTE(1, 0, 0), },

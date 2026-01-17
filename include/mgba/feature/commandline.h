@@ -22,6 +22,8 @@ struct mArguments {
 	char* bios;
 	int logLevel;
 	int frameskip;
+	char* movieRecord;
+	char* moviePlay;
 
 	struct Table configOverrides;
 

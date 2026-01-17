@@ -7,6 +7,7 @@
 
 #include <mgba/core/core.h>
 #include <mgba/core/log.h>
+#include <mgba/core/movie.h>
 #include <mgba/core/serialize.h>
 #include <mgba/internal/arm/debugger/debugger.h>
 #include <mgba/internal/arm/isa-inlines.h>
@@ -268,6 +269,7 @@ static bool _GBACoreInit(struct mCore* core) {
 	gbacore->cheatDevice = NULL;
 #ifndef MINIMAL_CORE
 	gbacore->logContext = NULL;
+	core->movie = mMovieCreate();
 #endif
 	gbacore->nMemoryBlocks = 0;
 	gbacore->memoryBlockType = -2;
@@ -326,6 +328,9 @@ static void _GBACoreDeinit(struct mCore* core) {
 		mCheatDeviceDestroy(gbacore->cheatDevice);
 	}
 	mCoreConfigFreeOpts(&core->opts);
+#ifndef MINIMAL_CORE
+	mMovieDestroy(core->movie);
+#endif
 	free(core);
 }
 
@@ -393,7 +398,12 @@ static void _GBACoreLoadConfig(struct mCore* core, const struct mCoreConfig* con
 	mCoreConfigCopyValue(&core->config, config, "threadedVideo");
 #endif
 	mCoreConfigCopyValue(&core->config, config, "hwaccelVideo");
+	mCoreConfigCopyValue(&core->config, config, "hwaccelVideo");
 	mCoreConfigCopyValue(&core->config, config, "videoScale");
+	
+	bool mp2k = false;
+	mCoreConfigGetBoolValue(config, "gba.mp2k", &mp2k);
+	gba->audio.mp2kAllowed = mp2k;
 }
 
 static void _GBACoreReloadConfigOption(struct mCore* core, const char* option, const struct mCoreConfig* config) {
@@ -849,13 +859,16 @@ static void _GBACoreRunFrame(struct mCore* core) {
 	struct GBA* gba = core->board;
 	uint32_t frameCounter = gba->video.frameCounter;
 	uint32_t startCycle = mTimingCurrentTime(&gba->timing);
+#ifndef MINIMAL_CORE
+	mMovieHookRunFrame(core->movie, core);
+#endif
 	while (gba->video.frameCounter == frameCounter && mTimingCurrentTime(&gba->timing) - startCycle < VIDEO_TOTAL_LENGTH + VIDEO_HORIZONTAL_LENGTH) {
 		ARMRunLoop(core->cpu);
 	}
 }
 
 static void _GBACoreRunLoop(struct mCore* core) {
-	ARMRunLoop(core->cpu);
+	_GBACoreRunFrame(core);
 }
 
 static void _GBACoreStep(struct mCore* core) {
@@ -907,6 +920,9 @@ static bool _GBACoreLoadExtraState(struct mCore* core, const struct mStateExtdat
 			ok = false;
 		}
 	}
+#ifndef MINIMAL_CORE
+	mMovieHookStateLoaded(core->movie, extdata);
+#endif
 	return ok;
 }
 
@@ -950,6 +966,9 @@ static bool _GBACoreSaveExtraState(struct mCore* core, struct mStateExtdata* ext
 		size = 0;
 	}
 
+#ifndef MINIMAL_CORE
+	mMovieHookStateSaved(core->movie, extdata);
+#endif
 	return true;
 }
 

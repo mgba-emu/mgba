@@ -208,6 +208,20 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	}
 	mCoreAutoloadSave(renderer->core);
 	mArgumentsApplyFileLoads(args, renderer->core);
+
+	if (args->moviePlay) {
+		struct VFile* vf = VFileOpen(args->moviePlay, O_RDONLY);
+		if (vf) {
+			mMovieLoad(renderer->core->movie, vf);
+			vf->close(vf);
+		} else {
+			printf("Could not open movie file for playback: %s\n", args->moviePlay);
+		}
+	}
+
+	if (args->movieRecord && !args->moviePlay) {
+		renderer->core->movie->mode = MOVIE_RECORD;
+	}
 #ifdef ENABLE_SCRIPTING
 	struct mScriptBridge* bridge = mScriptBridgeCreate();
 #ifdef ENABLE_PYTHON
@@ -282,6 +296,17 @@ int mSDLRun(struct mSDLRenderer* renderer, struct mArguments* args) {
 	} else {
 		printf("Could not run game. Are you sure the file exists and is a compatible game?\n");
 	}
+
+	if (args->movieRecord) {
+		struct VFile* vf = VFileOpen(args->movieRecord, O_WRONLY | O_CREAT | O_TRUNC);
+		if (vf) {
+			mMovieSave(renderer->core->movie, vf);
+			vf->close(vf);
+		} else {
+			printf("Could not save movie file: %s\n", args->movieRecord);
+		}
+	}
+
 	renderer->core->unloadROM(renderer->core);
 
 #ifdef ENABLE_SCRIPTING

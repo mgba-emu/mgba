@@ -6,6 +6,7 @@
 #include <mgba/gb/core.h>
 
 #include <mgba/core/core.h>
+#include <mgba/core/movie.h>
 #include <mgba/internal/debugger/symbols.h>
 #include <mgba/internal/gb/cheats.h>
 #include <mgba/internal/gb/debugger/cli.h>
@@ -155,6 +156,10 @@ static bool _GBCoreInit(struct mCore* core) {
 	mDirectorySetInit(&core->dirs);
 #endif
 
+#ifndef MINIMAL_CORE
+	core->movie = mMovieCreate();
+#endif
+
 	return true;
 }
 
@@ -166,6 +171,11 @@ static void _GBCoreDeinit(struct mCore* core) {
 #if defined(ENABLE_VFS) && defined(ENABLE_DIRECTORIES)
 	mDirectorySetDeinit(&core->dirs);
 #endif
+
+#ifndef MINIMAL_CORE
+	mMovieDestroy(core->movie);
+#endif
+
 #ifdef ENABLE_DEBUGGERS
 	if (core->symbolTable) {
 		mDebuggerSymbolTableDestroy(core->symbolTable);
@@ -733,13 +743,18 @@ static void _GBCoreReset(struct mCore* core) {
 static void _GBCoreRunFrame(struct mCore* core) {
 	struct GB* gb = core->board;
 	uint32_t frameCounter = gb->video.frameCounter;
+
+#ifndef MINIMAL_CORE
+	mMovieHookRunFrame(core->movie, core);
+#endif
+
 	while (gb->video.frameCounter == frameCounter) {
 		SM83Run(core->cpu);
 	}
 }
 
 static void _GBCoreRunLoop(struct mCore* core) {
-	SM83Run(core->cpu);
+	_GBCoreRunFrame(core);
 }
 
 static void _GBCoreStep(struct mCore* core) {
@@ -770,12 +785,18 @@ static bool _GBCoreSaveState(struct mCore* core, void* state) {
 static bool _GBCoreLoadExtraState(struct mCore* core, const struct mStateExtdata* extdata) {
 	UNUSED(core);
 	UNUSED(extdata);
+#ifndef MINIMAL_CORE
+	mMovieHookStateLoaded(core->movie, extdata);
+#endif
 	return true;
 }
 
 static bool _GBCoreSaveExtraState(struct mCore* core, struct mStateExtdata* extdata) {
 	UNUSED(core);
 	UNUSED(extdata);
+#ifndef MINIMAL_CORE
+	mMovieHookStateSaved(core->movie, extdata);
+#endif
 	return true;
 }
 
