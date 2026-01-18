@@ -1039,7 +1039,11 @@ int main(int argc, char* argv[]) {
 				.nStates = 3
 			}
 		},
+#ifdef M_CORE_GBA
 		.nConfigExtra = 4,
+#else
+		.nConfigExtra = 5,
+#endif
 		.setup = _setup,
 		.teardown = 0,
 		.gameLoaded = _gameLoaded,
