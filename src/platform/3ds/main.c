@@ -1059,7 +1059,9 @@ int main(int argc, char* argv[]) {
 		.running = _running
 	};
 
+	runner.autosave.pending = false;
 	runner.autosave.running = true;
+	runner.autosave.core = NULL;
 	MutexInit(&runner.autosave.mutex);
 	ConditionInit(&runner.autosave.cond);
 
