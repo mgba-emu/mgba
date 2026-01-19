@@ -151,8 +151,6 @@ static bool _initGpu(void) {
 }
 
 static void _cleanup(void) {
-	ctrDeinitGpu();
-
 	if (outputBuffer) {
 		linearFree(outputBuffer);
 		outputBuffer = NULL;
@@ -169,6 +167,8 @@ static void _cleanup(void) {
 	C3D_TexDelete(&outputTexture[0]);
 	C3D_TexDelete(&outputTexture[1]);
 	C3D_Fini();
+
+	ctrDeinitGpu();
 
 	gfxExit();
 
