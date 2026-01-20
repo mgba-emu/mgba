@@ -251,10 +251,13 @@ bool ShortcutController::loadShortcuts(std::shared_ptr<Shortcut> item) {
 	loadGamepadShortcuts(item);
 	QVariant shortcut = m_config->getQtOption(item->name(), KEY_SECTION);
 	if (!shortcut.isNull()) {
-		if (shortcut.toString().endsWith("+")) {
-			updateKey(item, toModifierShortcut(shortcut.toString()));
+		QString s = shortcut.toString();
+		if (s.endsWith('+') &&
+			(s.contains("Ctrl") || s.contains("Shift") ||
+			s.contains("Alt")  || s.contains("Meta"))) {
+			updateKey(item, toModifierShortcut(s));
 		} else {
-			updateKey(item, QKeySequence(shortcut.toString())[0]);
+			updateKey(item, QKeySequence(s)[0]);
 		}
 		return true;
 	} else {
