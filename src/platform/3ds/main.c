@@ -1093,6 +1093,7 @@ int main(int argc, char* argv[]) {
 		useRomfs = mGUIGetRom(&runner, initialPath, sizeof(initialPath));
 		if (!useRomfs) {
 			romfsExit();
+			GUIFontDestroy(font);
 			_cleanup();
 			return 1;
 		}
@@ -1110,6 +1111,7 @@ int main(int argc, char* argv[]) {
 	if (useRomfs) {
 		romfsExit();
 	}
+	GUIFontDestroy(font);
 	_cleanup();
 	return 0;
 }
