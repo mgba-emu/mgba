@@ -1066,7 +1066,7 @@ int main(int argc, char* argv[]) {
 	ConditionInit(&runner.autosave.cond);
 
 	APT_SetAppCpuTimeLimit(20);
-	runner.autosave.thread = threadCreate(mGUIAutosaveThread, &runner.autosave, 0x2000, 0x1F, 1, true);
+	runner.autosave.thread = threadCreate(mGUIAutosaveThread, &runner.autosave, 0x2000, 0x1F, 1, false);
 
 	Thread thread2;
 	if (ThreadCreate(&thread2, _core2Test, NULL) == 0) {
