@@ -254,7 +254,7 @@ bool ShortcutController::loadShortcuts(std::shared_ptr<Shortcut> item) {
 		QString s = shortcut.toString();
 		if (s.endsWith('+') &&
 			(s.contains("Ctrl") || s.contains("Shift") ||
-			s.contains("Alt")  || s.contains("Meta"))) {
+			s.contains("Alt") || s.contains("Meta"))) {
 			updateKey(item, toModifierShortcut(s));
 		} else {
 			updateKey(item, QKeySequence(s)[0]);
