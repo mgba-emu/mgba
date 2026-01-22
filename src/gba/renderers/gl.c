@@ -47,10 +47,8 @@ static void GBAVideoGLRendererDrawBackgroundMode5(struct GBAVideoGLRenderer* ren
 static void GBAVideoGLRendererDrawWindow(struct GBAVideoGLRenderer* renderer, int y);
 
 static void _cleanRegister(struct GBAVideoGLRenderer* renderer, int address, uint16_t value);
-static void _drawScanlines(struct GBAVideoGLRenderer* renderer, int lastY);
+static void _drawScanlines(struct GBAVideoGLRenderer* renderer, int y);
 static void _finalizeLayers(struct GBAVideoGLRenderer* renderer);
-
-#define TEST_LAYER_ENABLED(X) !glRenderer->d.disableBG[X] && glRenderer->bg[X].enabled == 4
 
 struct GBAVideoGLUniform {
 	const char* name;
@@ -911,6 +909,7 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	glRenderer->vramDirty = 0xFFFFFF;
 	glRenderer->firstAffine = -1;
 	glRenderer->firstY = -1;
+	glRenderer->lastY = -1;
 	glRenderer->dispcnt = 0x0080;
 	glRenderer->mosaic = 0;
 	glRenderer->nextPalette = 0;
@@ -926,7 +925,7 @@ void GBAVideoGLRendererReset(struct GBAVideoRenderer* renderer) {
 	for (i = 0; i < 4; ++i) {
 		struct GBAVideoGLBackground* bg = &glRenderer->bg[i];
 		bg->index = i;
-		bg->enabled = 0;
+		bg->enabledAtY = INT_MAX;
 		bg->priority = 0;
 		bg->charBase = 0;
 		bg->mosaic = 0;
@@ -1243,8 +1242,7 @@ void _cleanRegister(struct GBAVideoGLRenderer* glRenderer, int address, uint16_t
 }
 
 static bool _dirtyMode0(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
-	UNUSED(y);
-	if (!background->enabled) {
+	if (y < background->enabledAtY) {
 		return false;
 	}
 	unsigned screenBase = background->screenBase >> 11; // Lops off one extra bit
@@ -1261,8 +1259,7 @@ static bool _dirtyMode0(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBa
 }
 
 static bool _dirtyMode2(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
-	UNUSED(y);
-	if (!background->enabled) {
+	if (y < background->enabledAtY) {
 		return false;
 	}
 	unsigned screenBase = background->screenBase >> 11; // Lops off one extra bit
@@ -1279,8 +1276,7 @@ static bool _dirtyMode2(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBa
 }
 
 static bool _dirtyMode3(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
-	UNUSED(y);
-	if (!background->enabled) {
+	if (y < background->enabledAtY) {
 		return false;
 	}
 	if (renderer->vramDirty & 0xFFFFF) {
@@ -1290,8 +1286,7 @@ static bool _dirtyMode3(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBa
 }
 
 static bool _dirtyMode45(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
-	UNUSED(y);
-	if (!background->enabled) {
+	if (y < background->enabledAtY) {
 		return false;
 	}
 	int start = GBARegisterDISPCNTIsFrameSelect(renderer->dispcnt) ? 5 : 0;
@@ -1365,6 +1360,7 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	if (glRenderer->firstY < 0) {
 		glRenderer->firstY = y;
 	}
+	glRenderer->lastY = y;
 
 	int i;
 	for (i = 0; i < 0x30; ++i) {
@@ -1468,11 +1464,11 @@ void GBAVideoGLRendererDrawScanline(struct GBAVideoRenderer* renderer, int y) {
 	}
 
 	if (GBARegisterDISPCNTGetMode(glRenderer->dispcnt) != 0) {
-		if (glRenderer->bg[2].enabled == 4) {
+		if (glRenderer->bg[2].enabledAtY <= y) {
 			glRenderer->bg[2].affine.sx += glRenderer->bg[2].affine.dmx;
 			glRenderer->bg[2].affine.sy += glRenderer->bg[2].affine.dmy;
 		}
-		if (glRenderer->bg[3].enabled == 4) {
+		if (glRenderer->bg[3].enabledAtY <= y) {
 			glRenderer->bg[3].affine.sx += glRenderer->bg[3].affine.dmx;
 			glRenderer->bg[3].affine.sy += glRenderer->bg[3].affine.dmy;
 		}
@@ -1535,13 +1531,13 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 		glDisable(GL_STENCIL_TEST);
 	}
 
-	if (TEST_LAYER_ENABLED(0) && GBARegisterDISPCNTGetMode(glRenderer->dispcnt) < 2) {
+	if (glRenderer->bg[0].enabledAtY <= y && GBARegisterDISPCNTGetMode(glRenderer->dispcnt) < 2) {
 		GBAVideoGLRendererDrawBackgroundMode0(glRenderer, &glRenderer->bg[0], y);
 	}
-	if (TEST_LAYER_ENABLED(1) && GBARegisterDISPCNTGetMode(glRenderer->dispcnt) < 2) {
+	if (glRenderer->bg[1].enabledAtY <= y && GBARegisterDISPCNTGetMode(glRenderer->dispcnt) < 2) {
 		GBAVideoGLRendererDrawBackgroundMode0(glRenderer, &glRenderer->bg[1], y);
 	}
-	if (TEST_LAYER_ENABLED(2)) {
+	if (glRenderer->bg[2].enabledAtY <= y) {
 		switch (GBARegisterDISPCNTGetMode(glRenderer->dispcnt)) {
 		case 0:
 			GBAVideoGLRendererDrawBackgroundMode0(glRenderer, &glRenderer->bg[2], y);
@@ -1561,7 +1557,7 @@ void _drawScanlines(struct GBAVideoGLRenderer* glRenderer, int y) {
 			break;
 		}
 	}
-	if (TEST_LAYER_ENABLED(3)) {
+	if (glRenderer->bg[3].enabledAtY <= y) {
 		switch (GBARegisterDISPCNTGetMode(glRenderer->dispcnt)) {
 		case 0:
 			GBAVideoGLRendererDrawBackgroundMode0(glRenderer, &glRenderer->bg[3], y);
@@ -1582,6 +1578,19 @@ void GBAVideoGLRendererFinishFrame(struct GBAVideoRenderer* renderer) {
 	glBindVertexArray(0);
 	glRenderer->firstAffine = -1;
 	glRenderer->firstY = -1;
+	glRenderer->lastY = -1;
+	if (glRenderer->bg[0].enabledAtY < INT_MAX) {
+		glRenderer->bg[0].enabledAtY = 0;
+	}
+	if (glRenderer->bg[1].enabledAtY < INT_MAX) {
+		glRenderer->bg[1].enabledAtY = 0;
+	}
+	if (glRenderer->bg[2].enabledAtY < INT_MAX) {
+		glRenderer->bg[2].enabledAtY = 0;
+	}
+	if (glRenderer->bg[3].enabledAtY < INT_MAX) {
+		glRenderer->bg[3].enabledAtY = 0;
+	}
 	glRenderer->bg[2].affine.sx = glRenderer->bg[2].refx;
 	glRenderer->bg[2].affine.sy = glRenderer->bg[2].refy;
 	glRenderer->bg[3].affine.sx = glRenderer->bg[3].refx;
@@ -1610,17 +1619,18 @@ void GBAVideoGLRendererPutPixels(struct GBAVideoRenderer* renderer, size_t strid
 }
 
 static void _enableBg(struct GBAVideoGLRenderer* renderer, int bg, bool active) {
-	int wasActive = renderer->bg[bg].enabled;
+	int wasActive = renderer->bg[bg].enabledAtY;
 	if (!active) {
-		renderer->bg[bg].enabled = 0;
-	} else if (!wasActive && active) {
-		/*if (renderer->nextY == 0 || GBARegisterDISPCNTGetMode(renderer->dispcnt) > 2) {
+		renderer->bg[bg].enabledAtY = INT_MAX;
+	} else if (wasActive == INT_MAX && active) {
+		if (renderer->lastY < 0) {
 			// TODO: Investigate in more depth how switching background works in different modes
-			renderer->bg[bg].enabled = 4;
+			renderer->bg[bg].enabledAtY = 0;
+		} else if (GBARegisterDISPCNTGetMode(renderer->dispcnt) > 2) {
+			renderer->bg[bg].enabledAtY = renderer->lastY + 2;
 		} else {
-			renderer->bg[bg].enabled = 1;
-		}*/
-		renderer->bg[bg].enabled = 4;
+			renderer->bg[bg].enabledAtY = renderer->lastY + 3;
+		}
 	}
 }
 
@@ -1885,6 +1895,10 @@ void _prepareBackground(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBa
 void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
 	const struct GBAVideoGLShader* shader = &renderer->bgShader[background->multipalette ? 1 : 0];
 	const GLuint* uniforms = shader->uniforms;
+	int firstY = renderer->firstY;
+	if (firstY < background->enabledAtY) {
+		firstY = background->enabledAtY;
+	}
 	glUseProgram(shader->program);
 	glBindVertexArray(shader->vao);
 	_prepareBackground(renderer, background, uniforms);
@@ -1893,16 +1907,20 @@ void GBAVideoGLRendererDrawBackgroundMode0(struct GBAVideoGLRenderer* renderer, 
 	glUniform1i(uniforms[GBA_GL_BG_SIZE], background->size);
 	glUniform1iv(uniforms[GBA_GL_BG_OFFSET], GBA_VIDEO_VERTICAL_PIXELS, background->scanlineOffset);
 
-	glScissor(0, renderer->firstY * renderer->scale, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, (y - renderer->firstY + 1) * renderer->scale);
-	glUniform2i(uniforms[GBA_GL_VS_LOC], y - renderer->firstY + 1, renderer->firstY);
+	glScissor(0, firstY * renderer->scale, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, (y - firstY + 1) * renderer->scale);
+	glUniform2i(uniforms[GBA_GL_VS_LOC], y - firstY + 1, firstY);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
 	glDrawBuffers(1, (GLenum[]) { GL_COLOR_ATTACHMENT0 });
 }
 
 void _prepareTransform(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, const GLuint* uniforms, int y) {
-	glScissor(0, renderer->firstY * renderer->scale, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, renderer->scale * (y - renderer->firstY + 1));
-	glUniform2i(uniforms[GBA_GL_VS_LOC], y - renderer->firstY + 1, renderer->firstY);
+	int firstY = renderer->firstY;
+	if (firstY < background->enabledAtY) {
+		firstY = background->enabledAtY;
+	}
+	glScissor(0, firstY * renderer->scale, GBA_VIDEO_HORIZONTAL_PIXELS * renderer->scale, renderer->scale * (y - firstY + 1));
+	glUniform2i(uniforms[GBA_GL_VS_LOC], y - firstY + 1, firstY);
 	glUniform2i(uniforms[GBA_GL_BG_RANGE], renderer->firstAffine, y);
 
 	glUniform4iv(uniforms[GBA_GL_BG_TRANSFORM], GBA_VIDEO_VERTICAL_PIXELS, background->scanlineAffine);
@@ -1912,11 +1930,15 @@ void _prepareTransform(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBac
 void GBAVideoGLRendererDrawBackgroundMode2(struct GBAVideoGLRenderer* renderer, struct GBAVideoGLBackground* background, int y) {
 	const struct GBAVideoGLShader* shader = &renderer->bgShader[background->overflow ? 2 : 3];
 	const GLuint* uniforms = shader->uniforms;
+	int firstY = renderer->firstY;
+	if (firstY < background->enabledAtY) {
+		firstY = background->enabledAtY;
+	}
 	glUseProgram(shader->program);
 	glBindVertexArray(shader->vao);
 	_prepareTransform(renderer, background, uniforms, y);
 	glUniform1i(uniforms[GBA_GL_BG_SCREENBASE], background->screenBase);
-	glUniform2i(uniforms[GBA_GL_BG_OLDCHARBASE], background->oldCharBase, renderer->firstY);
+	glUniform2i(uniforms[GBA_GL_BG_OLDCHARBASE], background->oldCharBase, firstY);
 	glUniform1i(uniforms[GBA_GL_BG_CHARBASE], background->charBase);
 	glUniform1i(uniforms[GBA_GL_BG_SIZE], background->size);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
