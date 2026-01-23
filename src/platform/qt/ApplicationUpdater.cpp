@@ -53,9 +53,9 @@ ApplicationUpdater::ApplicationUpdater(ConfigController* config, QObject* parent
 	});
 
 	connect(this, &AbstractUpdater::updateDone, this, [this, config]() {
-		QByteArray arg0 = GBAApp::app()->arguments().at(0).toUtf8();
+		QByteArray exe = GBAApp::applicationFilePath().toUtf8();
 		QByteArray path = updateInfo().url.path().toUtf8();
-		mUpdateRegister(config->config(), arg0.constData(), path.constData());
+		mUpdateRegister(config->config(), exe.constData(), path.constData());
 		config->write();
 	});
 }
@@ -153,8 +153,8 @@ QString ApplicationUpdater::destination() const {
 
 const char* ApplicationUpdater::platform() {
 #ifdef Q_OS_WIN
-	QFileInfo exe(GBAApp::app()->arguments().at(0));
-	QFileInfo uninstallInfo(exe.dir().filePath("unins000.dat"));
+	QDir appdir(QCoreApplication::applicationDirPath());
+	QFileInfo uninstallInfo(appdir.filePath("unins000.dat"));
 #ifdef Q_OS_WIN64
 	return uninstallInfo.exists() ? "win64-installer" : "win64";
 #elif defined(Q_OS_WIN32)
