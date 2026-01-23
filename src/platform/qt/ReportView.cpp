@@ -121,6 +121,7 @@ void ReportView::generateReport() {
 	QStringList swReport;
 	swReport << QString("Name: %1").arg(QLatin1String(projectName));
 	swReport << QString("Executable location: %1").arg(redact(QCoreApplication::applicationFilePath()));
+	swReport << QString("Working directory: %1").arg(redact(QDir::currentPath()));
 	swReport << QString("Portable: %1").arg(yesNo[ConfigController::isPortable()]);
 	swReport << QString("Configuration directory: %1").arg(redact(configDir.path()));
 	swReport << QString("Version: %1").arg(QLatin1String(projectVersion));
