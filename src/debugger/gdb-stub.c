@@ -832,6 +832,7 @@ bool GDBStubListen(struct GDBStub* stub, int port, const struct Address* bindAdd
 
 	stub->watchpointsBehavior = watchpointsBehavior;
 	memset(stub->memoryMapXml, 0, GDB_STUB_MAX_LINE);
+	stub->d.needsCallback = true;
 
 	return true;
 
@@ -849,7 +850,8 @@ void GDBStubHangup(struct GDBStub* stub) {
 		SocketClose(stub->connection);
 		stub->connection = INVALID_SOCKET;
 	}
-	stub->d.needsCallback = false;
+	stub->lineAck = GDB_ACK_PENDING;
+	stub->d.needsCallback = !SOCKET_FAILED(stub->socket);
 	stub->d.isPaused = false;
 	mDebuggerUpdatePaused(stub->d.p);
 }
@@ -860,6 +862,11 @@ void GDBStubShutdown(struct GDBStub* stub) {
 		SocketClose(stub->socket);
 		stub->socket = INVALID_SOCKET;
 	}
+	stub->d.needsCallback = false;
+	if (stub->d.p) {
+		mDebuggerUpdatePaused(stub->d.p);
+	}
+	stub->d.p = NULL;
 }
 
 bool GDBStubUpdate(struct GDBStub* stub, int32_t timeoutMs) {
