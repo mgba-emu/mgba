@@ -75,6 +75,9 @@ static void _audioRateChanged(struct mAVStream*, unsigned rate);
 static void _setRumble(struct mRumbleIntegrator*, float level);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
+static int _boktai1StepToBar(int step);
+static int _boktai1BarToStep(int bar);
+static int _solarChordLevel(int16_t joypadMask);
 static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned height, size_t pitch);
 static void _startImage(struct mImageSource*, unsigned w, unsigned h, int colorFormats);
 static void _stopImage(struct mImageSource*);
@@ -106,6 +109,10 @@ static int luxLevelIndex;
 static uint8_t luxLevel;
 static bool luxSensorEnabled;
 static bool luxSensorUsed;
+static bool luxChordMode;
+static bool luxInputAdjustable;
+static bool inputDescriptorsChordMode;
+static bool boktai1Game;
 static struct mLogger logger;
 static struct retro_camera_callback cam;
 static struct mImageSource imageSource;
@@ -135,6 +142,108 @@ static bool audioLowPassEnabled = false;
 static int32_t audioLowPassRange = 0;
 static int32_t audioLowPassLeftPrev = 0;
 static int32_t audioLowPassRightPrev = 0;
+
+static bool _joypadPressed(unsigned id, int16_t joypadMask) {
+	if (useBitmasks) {
+		return (joypadMask >> id) & 1;
+	}
+	if (!inputCallback) {
+		return false;
+	}
+	return inputCallback(0, RETRO_DEVICE_JOYPAD, 0, id);
+}
+
+static int _clampLuxLevel(int level) {
+	if (level < 0) {
+		return 0;
+	}
+	if (level > 10) {
+		return 10;
+	}
+	return level;
+}
+
+static void _applySolarInputOption(const char* value, bool updateLevel) {
+	luxChordMode = false;
+	luxSensorUsed = false;
+	luxInputAdjustable = false;
+
+	if (!value) {
+		return;
+	}
+
+	if (strcmp(value, "chord") == 0) {
+		luxChordMode = true;
+		luxInputAdjustable = true;
+		return;
+	}
+	if (strcmp(value, "buttons") == 0) {
+		luxInputAdjustable = true;
+		return;
+	}
+	if (strcmp(value, "sensor") == 0) {
+		luxSensorUsed = true;
+		return;
+	}
+	if (strcmp(value, "off") == 0) {
+		if (updateLevel) {
+			luxLevelIndex = 0;
+		}
+		return;
+	}
+
+	if (updateLevel) {
+		char* end;
+		int level = (int) strtol(value, &end, 10);
+		if (!*end) {
+			luxLevelIndex = _clampLuxLevel(level);
+		}
+	}
+}
+
+static const struct retro_input_descriptor inputDescriptorsDefault[] = {
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Turbo A" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Turbo B" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Left" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "R" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "L" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "Turbo R" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Turbo L" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "Brighten Solar Sensor" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "Darken Solar Sensor" },
+	{ 0 }
+};
+
+static const struct retro_input_descriptor inputDescriptorsChord[] = {
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Turbo A" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Turbo B" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Left" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "R" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "L" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "Turbo R" },
+	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Turbo L" },
+	{ 0 }
+};
+
+static void _setInputDescriptors(bool chordMode) {
+	environCallback(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS,
+		chordMode ? inputDescriptorsChord : inputDescriptorsDefault);
+	inputDescriptorsChordMode = chordMode;
+}
 
 static const int keymap[] = {
 	RETRO_DEVICE_ID_JOYPAD_A,
@@ -1392,27 +1501,6 @@ void retro_init(void) {
 #endif
 	environCallback(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &fmt);
 
-	struct retro_input_descriptor inputDescriptors[] = {
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Turbo A" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_Y, "Turbo B" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_RIGHT, "Right" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Left" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_UP, "Up" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_DOWN, "Down" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "R" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "L" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "Turbo R" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L2, "Turbo L" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "Brighten Solar Sensor" },
-		{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "Darken Solar Sensor" },
-		{ 0 }
-	};
-	environCallback(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, &inputDescriptors);
-
 	useBitmasks = environCallback(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL);
 
 	// TODO: RETRO_ENVIRONMENT_SET_SUPPORT_NO_GAME when BIOS booting is supported
@@ -1436,10 +1524,23 @@ void retro_init(void) {
 	envVarsUpdated = true;
 	luxSensorUsed = false;
 	luxSensorEnabled = false;
+	luxChordMode = false;
+	luxInputAdjustable = false;
+	inputDescriptorsChordMode = false;
 	luxLevelIndex = 0;
 	luxLevel = 0;
 	lux.readLuminance = _readLux;
 	lux.sample = _updateLux;
+	{
+		struct retro_variable var = {
+			.key = "mgba_solar_sensor_input",
+			.value = 0
+		};
+		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
+			_applySolarInputOption(var.value, true);
+		}
+	}
+	_setInputDescriptors(luxChordMode);
 	_updateLux(&lux);
 
 	struct retro_log_callback log;
@@ -1568,6 +1669,16 @@ void retro_run(void) {
 			mCoreConfigSetIntValue(&core->config, "allowOpposingDirections", strcmp(var.value, "yes") == 0);
 			core->reloadConfigOption(core, "allowOpposingDirections", NULL);
 		}
+		struct retro_variable solarInputVar = {
+			.key = "mgba_solar_sensor_input",
+			.value = 0
+		};
+		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &solarInputVar) && solarInputVar.value) {
+			_applySolarInputOption(solarInputVar.value, true);
+		}
+		if (luxChordMode != inputDescriptorsChordMode) {
+			_setInputDescriptors(luxChordMode);
+		}
 
 		_loadFrameskipSettings(NULL);
 		_loadAudioLowPassFilterSettings();
@@ -1582,8 +1693,9 @@ void retro_run(void) {
 
 	keys = 0;
 	int i;
+	int16_t joypadMask = 0;
 	if (useBitmasks) {
-		int16_t joypadMask = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+		joypadMask = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
 		for (i = 0; i < sizeof(keymap) / sizeof(*keymap); ++i) {
 			keys |= ((joypadMask >> keymap[i]) & 1) << i;
 		}
@@ -1606,24 +1718,61 @@ void retro_run(void) {
 
 	core->setKeys(core, keys);
 
-	if (!luxSensorUsed) {
+	if (!luxSensorUsed && luxInputAdjustable) {
 		static bool wasAdjustingLux = false;
-		if (wasAdjustingLux) {
-			wasAdjustingLux = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3) ||
-			                  inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3);
+		if (luxChordMode) {
+			int level = _solarChordLevel(joypadMask);
+			if (level >= 0) {
+				if (boktai1Game) {
+					if (level > 8) {
+						level = 8;
+					}
+					luxLevelIndex = _boktai1BarToStep(level);
+				} else {
+					luxLevelIndex = level;
+				}
+				wasAdjustingLux = true;
+			} else {
+				wasAdjustingLux = false;
+			}
+		} else if (boktai1Game) {
+			if (wasAdjustingLux) {
+				wasAdjustingLux = _joypadPressed(RETRO_DEVICE_ID_JOYPAD_R3, joypadMask) ||
+				                  _joypadPressed(RETRO_DEVICE_ID_JOYPAD_L3, joypadMask);
+			} else {
+				int bar = _boktai1StepToBar(luxLevelIndex);
+				if (_joypadPressed(RETRO_DEVICE_ID_JOYPAD_R3, joypadMask)) {
+					if (bar < 8) {
+						++bar;
+					}
+					luxLevelIndex = _boktai1BarToStep(bar);
+					wasAdjustingLux = true;
+				} else if (_joypadPressed(RETRO_DEVICE_ID_JOYPAD_L3, joypadMask)) {
+					if (bar > 0) {
+						--bar;
+					}
+					luxLevelIndex = _boktai1BarToStep(bar);
+					wasAdjustingLux = true;
+				}
+			}
 		} else {
-			if (inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)) {
-				++luxLevelIndex;
-				if (luxLevelIndex > 10) {
-					luxLevelIndex = 10;
+			if (wasAdjustingLux) {
+				wasAdjustingLux = _joypadPressed(RETRO_DEVICE_ID_JOYPAD_R3, joypadMask) ||
+				                  _joypadPressed(RETRO_DEVICE_ID_JOYPAD_L3, joypadMask);
+			} else {
+				if (_joypadPressed(RETRO_DEVICE_ID_JOYPAD_R3, joypadMask)) {
+					++luxLevelIndex;
+					if (luxLevelIndex > 10) {
+						luxLevelIndex = 10;
+					}
+					wasAdjustingLux = true;
+				} else if (_joypadPressed(RETRO_DEVICE_ID_JOYPAD_L3, joypadMask)) {
+					--luxLevelIndex;
+					if (luxLevelIndex < 0) {
+						luxLevelIndex = 0;
+					}
+					wasAdjustingLux = true;
 				}
-				wasAdjustingLux = true;
-			} else if (inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)) {
-				--luxLevelIndex;
-				if (luxLevelIndex < 0) {
-					luxLevelIndex = 0;
-				}
-				wasAdjustingLux = true;
 			}
 		}
 	}
@@ -2087,6 +2236,16 @@ bool retro_load_game(const struct retro_game_info* game) {
 	_reloadSettings();
 	core->loadROM(core, rom);
 	deferredSetup = true;
+#ifdef M_CORE_GBA
+	boktai1Game = false;
+	if (core->platform(core) == mPLATFORM_GBA) {
+		struct mGameInfo info;
+		core->getGameInfo(core, &info);
+		boktai1Game = strcmp(info.code, "U3IJ") == 0 || strcmp(info.code, "U3IE") == 0 || strcmp(info.code, "U3IP") == 0;
+	}
+#else
+	boktai1Game = false;
+#endif
 
 	const char* sysDir = 0;
 	const char* biosName = 0;
@@ -2466,10 +2625,90 @@ static void _setRumble(struct mRumbleIntegrator* rumble, float level) {
 	rumbleCallback(0, RETRO_RUMBLE_WEAK, level * 0xFFFF);
 }
 
+static int _boktai1StepToBar(int step) {
+	static const uint8_t map[11] = { 0, 1, 2, 3, 3, 4, 5, 6, 7, 7, 8 };
+	if (step < 0) {
+		step = 0;
+	} else if (step > 10) {
+		step = 10;
+	}
+	return map[step];
+}
+
+static int _boktai1BarToStep(int bar) {
+	static const uint8_t map[9] = { 0, 1, 2, 3, 5, 6, 7, 8, 10 };
+	if (bar < 0) {
+		bar = 0;
+	} else if (bar > 8) {
+		bar = 8;
+	}
+	return map[bar];
+}
+
+static int _solarChordLevel(int16_t joypadMask) {
+	if (!inputCallback) {
+		return -1;
+	}
+
+	const int16_t deadzone = 0x4000;
+	int16_t lx = inputCallback(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X);
+	int16_t ly = inputCallback(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y);
+	int16_t rx = inputCallback(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X);
+	int16_t ry = inputCallback(0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y);
+
+	bool lUp = ly < -deadzone;
+	bool lDown = ly > deadzone;
+	bool lLeft = lx < -deadzone;
+	bool lRight = lx > deadzone;
+	bool rUp = ry < -deadzone;
+	bool rDown = ry > deadzone;
+	bool rLeft = rx < -deadzone;
+	bool rRight = rx > deadzone;
+	bool anyDir = lUp || lDown || lLeft || lRight || rUp || rDown || rLeft || rRight;
+	bool l3Pressed = _joypadPressed(RETRO_DEVICE_ID_JOYPAD_L3, joypadMask);
+
+	if (!l3Pressed && !anyDir) {
+		return 0;
+	}
+
+	if (lUp && rUp) {
+		return 9;
+	}
+	if (lRight && rRight) {
+		return 10;
+	}
+	if (lUp) {
+		return 1;
+	}
+	if (lRight) {
+		return 2;
+	}
+	if (lDown) {
+		return 3;
+	}
+	if (lLeft) {
+		return 4;
+	}
+	if (rUp) {
+		return 5;
+	}
+	if (rRight) {
+		return 6;
+	}
+	if (rDown) {
+		return 7;
+	}
+	if (rLeft) {
+		return 8;
+	}
+
+	return 0;
+}
+
 static void _updateLux(struct GBALuminanceSource* lux) {
 	UNUSED(lux);
 	struct retro_variable var = {
-		.key = "mgba_solar_sensor_level",
+		.key = "mgba_solar_sensor_input",
 		.value = 0
 	};
 	bool luxVarUpdated = envVarsUpdated;
@@ -2479,7 +2718,7 @@ static void _updateLux(struct GBALuminanceSource* lux) {
 	}
 
 	if (luxVarUpdated) {
-		luxSensorUsed = strcmp(var.value, "sensor") == 0;
+		_applySolarInputOption(var.value, true);
 	}
 
 	if (luxSensorUsed) {
@@ -2487,21 +2726,6 @@ static void _updateLux(struct GBALuminanceSource* lux) {
 		float fLux = luxSensorEnabled ? sensorGetCallback(0, RETRO_SENSOR_ILLUMINANCE) : 0.0f;
 		luxLevel = cbrtf(fLux) * 8;
 	} else {
-		if (luxVarUpdated) {
-			char* end;
-			int newLuxLevelIndex = strtol(var.value, &end, 10);
-
-			if (!*end) {
-				if (newLuxLevelIndex > 10) {
-					luxLevelIndex = 10;
-				} else if (newLuxLevelIndex < 0) {
-					luxLevelIndex = 0;
-				} else {
-					luxLevelIndex = newLuxLevelIndex;
-				}
-			}
-		}
-
 		luxLevel = 0x16;
 		if (luxLevelIndex > 0) {
 			luxLevel += GBA_LUX_LEVELS[luxLevelIndex - 1];
