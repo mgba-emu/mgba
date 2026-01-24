@@ -293,7 +293,7 @@ struct retro_core_option_v2_definition option_defs_us[] = {
          { NULL,      NULL },
       },
       "chord"
-   },
+    },
    {
       "mgba_force_gbp",
       "Game Boy Player Rumble (Restart)",

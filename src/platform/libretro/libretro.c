@@ -66,8 +66,6 @@ static retro_set_rumble_state_t rumbleCallback;
 static retro_sensor_get_input_t sensorGetCallback;
 static retro_set_sensor_state_t sensorStateCallback;
 
-static bool libretro_supports_bitmasks = false;
-
 static void GBARetroLog(struct mLogger* logger, int category, enum mLogLevel level, const char* format, va_list args);
 
 static void _postAudioBuffer(struct mAVStream*, struct mAudioBuffer*);
@@ -77,7 +75,7 @@ static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
 static int _boktai1StepToBar(int step);
 static int _boktai1BarToStep(int bar);
-static int _solarChordLevel(int16_t joypadMask);
+static int _solarChordLevel(uint16_t joypadMask);
 static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned height, size_t pitch);
 static void _startImage(struct mImageSource*, unsigned w, unsigned h, int colorFormats);
 static void _stopImage(struct mImageSource*);
@@ -111,7 +109,7 @@ static bool luxSensorEnabled;
 static bool luxSensorUsed;
 static bool luxChordMode;
 static bool luxInputAdjustable;
-static bool inputDescriptorsChordMode;
+static bool inputDescriptorsShowSolarButtons;
 static bool boktai1Game;
 static struct mLogger logger;
 static struct retro_camera_callback cam;
@@ -122,7 +120,6 @@ static unsigned camHeight;
 static unsigned imcapWidth;
 static unsigned imcapHeight;
 static size_t camStride;
-static bool envVarsUpdated;
 static unsigned frameskipType;
 static unsigned frameskipThreshold;
 static uint16_t frameskipCounter;
@@ -134,7 +131,6 @@ static bool updateAudioLatency;
 static bool updateAudioRate;
 static bool deferredSetup = false;
 static bool useBitmasks = true;
-static bool envVarsUpdated;
 static int32_t tiltX = 0;
 static int32_t tiltY = 0;
 static int32_t gyroZ = 0;
@@ -143,7 +139,7 @@ static int32_t audioLowPassRange = 0;
 static int32_t audioLowPassLeftPrev = 0;
 static int32_t audioLowPassRightPrev = 0;
 
-static bool _joypadPressed(unsigned id, int16_t joypadMask) {
+static bool _joypadPressed(unsigned id, uint16_t joypadMask) {
 	if (useBitmasks) {
 		return (joypadMask >> id) & 1;
 	}
@@ -201,7 +197,7 @@ static void _applySolarInputOption(const char* value, bool updateLevel) {
 	}
 }
 
-static const struct retro_input_descriptor inputDescriptorsDefault[] = {
+static const struct retro_input_descriptor inputDescriptorsWithSolarButtons[] = {
 	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A" },
 	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B" },
 	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Turbo A" },
@@ -221,7 +217,7 @@ static const struct retro_input_descriptor inputDescriptorsDefault[] = {
 	{ 0 }
 };
 
-static const struct retro_input_descriptor inputDescriptorsChord[] = {
+static const struct retro_input_descriptor inputDescriptorsNoSolarButtons[] = {
 	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_A, "A" },
 	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_B, "B" },
 	{ 0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_X, "Turbo A" },
@@ -239,10 +235,10 @@ static const struct retro_input_descriptor inputDescriptorsChord[] = {
 	{ 0 }
 };
 
-static void _setInputDescriptors(bool chordMode) {
+static void _setInputDescriptors(bool showSolarButtons) {
 	environCallback(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS,
-		chordMode ? inputDescriptorsChord : inputDescriptorsDefault);
-	inputDescriptorsChordMode = chordMode;
+		(void*) (showSolarButtons ? inputDescriptorsWithSolarButtons : inputDescriptorsNoSolarButtons));
+	inputDescriptorsShowSolarButtons = showSolarButtons;
 }
 
 static const int keymap[] = {
@@ -1521,12 +1517,11 @@ void retro_init(void) {
 	rotation.readTiltY = _readTiltY;
 	rotation.readGyroZ = _readGyroZ;
 
-	envVarsUpdated = true;
 	luxSensorUsed = false;
 	luxSensorEnabled = false;
 	luxChordMode = false;
 	luxInputAdjustable = false;
-	inputDescriptorsChordMode = false;
+	inputDescriptorsShowSolarButtons = false;
 	luxLevelIndex = 0;
 	luxLevel = 0;
 	lux.readLuminance = _readLux;
@@ -1540,7 +1535,7 @@ void retro_init(void) {
 			_applySolarInputOption(var.value, true);
 		}
 	}
-	_setInputDescriptors(luxChordMode);
+	_setInputDescriptors(luxInputAdjustable && !luxChordMode);
 	_updateLux(&lux);
 
 	struct retro_log_callback log;
@@ -1561,9 +1556,6 @@ void retro_init(void) {
 	imageSource.startRequestImage = _startImage;
 	imageSource.stopRequestImage = _stopImage;
 	imageSource.requestImage = _requestImage;
-
-	if (environCallback(RETRO_ENVIRONMENT_GET_INPUT_BITMASKS, NULL))
-		libretro_supports_bitmasks = true;
 
 	frameskipType           = 0;
 	frameskipThreshold      = 0;
@@ -1659,8 +1651,6 @@ void retro_run(void) {
 
 	bool updated = false;
 	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated) {
-		envVarsUpdated = true;
-
 		struct retro_variable var = {
 			.key = "mgba_allow_opposing_directions",
 			.value = 0
@@ -1676,9 +1666,11 @@ void retro_run(void) {
 		if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &solarInputVar) && solarInputVar.value) {
 			_applySolarInputOption(solarInputVar.value, true);
 		}
-		if (luxChordMode != inputDescriptorsChordMode) {
-			_setInputDescriptors(luxChordMode);
+		bool showSolarButtons = luxInputAdjustable && !luxChordMode;
+		if (showSolarButtons != inputDescriptorsShowSolarButtons) {
+			_setInputDescriptors(showSolarButtons);
 		}
+		_updateLux(&lux);
 
 		_loadFrameskipSettings(NULL);
 		_loadAudioLowPassFilterSettings();
@@ -1693,9 +1685,9 @@ void retro_run(void) {
 
 	keys = 0;
 	int i;
-	int16_t joypadMask = 0;
+	uint16_t joypadMask = 0;
 	if (useBitmasks) {
-		joypadMask = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
+		joypadMask = (uint16_t) inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_MASK);
 		for (i = 0; i < sizeof(keymap) / sizeof(*keymap); ++i) {
 			keys |= ((joypadMask >> keymap[i]) & 1) << i;
 		}
@@ -2645,7 +2637,7 @@ static int _boktai1BarToStep(int bar) {
 	return map[bar];
 }
 
-static int _solarChordLevel(int16_t joypadMask) {
+static int _solarChordLevel(uint16_t joypadMask) {
 	if (!inputCallback) {
 		return -1;
 	}
@@ -2667,8 +2659,11 @@ static int _solarChordLevel(int16_t joypadMask) {
 	bool anyDir = lUp || lDown || lLeft || lRight || rUp || rDown || rLeft || rRight;
 	bool l3Pressed = _joypadPressed(RETRO_DEVICE_ID_JOYPAD_L3, joypadMask);
 
-	if (!l3Pressed && !anyDir) {
-		return 0;
+	/* If L3 is not pressed, ignore stick directions.
+	 * We still treat 'no input' as 0 to support devices
+	 * that output no chord at 0 bars. */
+	if (!l3Pressed) {
+		return anyDir ? -1 : 0;
 	}
 
 	if (lUp && rUp) {
@@ -2707,19 +2702,6 @@ static int _solarChordLevel(int16_t joypadMask) {
 
 static void _updateLux(struct GBALuminanceSource* lux) {
 	UNUSED(lux);
-	struct retro_variable var = {
-		.key = "mgba_solar_sensor_input",
-		.value = 0
-	};
-	bool luxVarUpdated = envVarsUpdated;
-
-	if (luxVarUpdated && (!environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) || !var.value)) {
-		luxVarUpdated = false;
-	}
-
-	if (luxVarUpdated) {
-		_applySolarInputOption(var.value, true);
-	}
 
 	if (luxSensorUsed) {
 		_initSensors();
@@ -2731,8 +2713,6 @@ static void _updateLux(struct GBALuminanceSource* lux) {
 			luxLevel += GBA_LUX_LEVELS[luxLevelIndex - 1];
 		}
 	}
-
-	envVarsUpdated = false;
 }
 
 static uint8_t _readLux(struct GBALuminanceSource* lux) {

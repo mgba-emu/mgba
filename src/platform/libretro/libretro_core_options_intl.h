@@ -108,8 +108,6 @@ extern "C" {
 #define OPTION_VAL_95_AR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_AR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_AR NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_AR NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_AR NULL
 #define OPTION_VAL_SENSOR_AR NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_AR NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_AR NULL
@@ -355,8 +353,8 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -548,8 +546,6 @@ struct retro_core_options_v2 options_ar = {
 #define OPTION_VAL_95_AST NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_AST NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_AST NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_AST "Nivel del sensor solar"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_AST NULL
 #define OPTION_VAL_SENSOR_AST NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_AST NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_AST NULL
@@ -795,8 +791,8 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -988,8 +984,6 @@ struct retro_core_options_v2 options_ast = {
 #define OPTION_VAL_95_CA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CA NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CA NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CA NULL
 #define OPTION_VAL_SENSOR_CA NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_CA NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_CA NULL
@@ -1235,8 +1229,8 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -1428,8 +1422,6 @@ struct retro_core_options_v2 options_ca = {
 #define OPTION_VAL_95_CHS NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CHS NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CHS NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CHS "太阳光传感器等级"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CHS NULL
 #define OPTION_VAL_SENSOR_CHS "如果可用则使用设备传感器"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_CHS NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_CHS NULL
@@ -1675,8 +1667,8 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -1868,8 +1860,6 @@ struct retro_core_options_v2 options_chs = {
 #define OPTION_VAL_95_CHT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CHT "允許反向操作"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CHT "允許反方向快速操作，可同時按下左右或上下的方向。可能導致遊戲的移動架構出錯。"
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CHT NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CHT NULL
 #define OPTION_VAL_SENSOR_CHT NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_CHT NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_CHT NULL
@@ -2115,8 +2105,8 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -2308,8 +2298,6 @@ struct retro_core_options_v2 options_cht = {
 #define OPTION_VAL_95_CS NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CS "Povolení Protichůdného Směrového Vstupu"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CS "Povolení této funkce umožní stisknout / rychle střídat / držet současně levý i pravý směr (nebo nahoru a dolů). To může způsobit závady založené na pohybu."
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CS "Úroveň Solárního Senzoru"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CS "Nastaví intenzitu okolního slunečního světla. Lze použít ve hrách, které obsahují sluneční senzor v kazetách, např. v sérii Boktai."
 #define OPTION_VAL_SENSOR_CS "Použít snímač zařízení, je-li k dispozici"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_CS NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_CS NULL
@@ -2555,8 +2543,8 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -2748,8 +2736,6 @@ struct retro_core_options_v2 options_cs = {
 #define OPTION_VAL_95_CY NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_CY NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_CY NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CY NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CY NULL
 #define OPTION_VAL_SENSOR_CY NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_CY NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_CY NULL
@@ -2995,8 +2981,8 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -3188,8 +3174,6 @@ struct retro_core_options_v2 options_cy = {
 #define OPTION_VAL_95_DA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_DA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_DA NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_DA NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_DA NULL
 #define OPTION_VAL_SENSOR_DA NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_DA NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_DA NULL
@@ -3435,8 +3419,8 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -3628,8 +3612,6 @@ struct retro_core_options_v2 options_da = {
 #define OPTION_VAL_95_DE "95 %"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_DE "Entgegengesetzte Richtungseingabe zulassen"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_DE "Wenn diese Funktion aktiviert ist, kann gleichzeitig die linke und die rechte (oder die obere und die untere) Richtungstaste bzw. schnell abwechselnd gedrückt oder gehalten werden. Dies kann zu bewegungsbasierten Fehlern führen."
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_DE "Solarsensorstufe"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_DE "Setzt die Intensität des Umgebungslichts. Kann von Spielen verwendet werden, die einen Solarsensor in ihre Module eingeschlossen haben, z. B. die Boktai-Serie."
 #define OPTION_VAL_SENSOR_DE "Gerätesensor verwenden, falls verfügbar"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_DE NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_DE NULL
@@ -3875,8 +3857,8 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -4068,8 +4050,6 @@ struct retro_core_options_v2 options_de = {
 #define OPTION_VAL_95_EL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_EL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_EL NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_EL "Επίπεδο Ηλιακού Αισθητήρα"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EL NULL
 #define OPTION_VAL_SENSOR_EL "Χρήση αισθητήρα συσκευής εάν υπάρχει"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_EL NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_EL NULL
@@ -4315,8 +4295,8 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -4508,8 +4488,6 @@ struct retro_core_options_v2 options_el = {
 #define OPTION_VAL_95_EN NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_EN NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_EN NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_EN NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EN NULL
 #define OPTION_VAL_SENSOR_EN NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_EN NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_EN NULL
@@ -4755,8 +4733,8 @@ struct retro_core_option_v2_definition option_defs_en[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -4948,8 +4926,6 @@ struct retro_core_options_v2 options_en = {
 #define OPTION_VAL_95_EO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_EO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_EO NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_EO NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EO NULL
 #define OPTION_VAL_SENSOR_EO NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_EO NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_EO NULL
@@ -5195,8 +5171,8 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -5388,8 +5364,6 @@ struct retro_core_options_v2 options_eo = {
 #define OPTION_VAL_95_ES "95 %"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_ES "Permitir entradas direccionales opuestas"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_ES "Esta opción permitirá pulsar, alternar rápidamente o mantener las direcciones izquierda y derecha (o arriba y abajo) al mismo tiempo. Podría provocar fallos de movimiento."
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_ES "Nivel del sensor solar"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_ES "Ajusta la intensidad de la luz solar ambiental. Para juegos que contenían un sensor solar en sus cartuchos, p. ej.: la saga Boktai."
 #define OPTION_VAL_SENSOR_ES "Utilizar dispositivo sensor si está disponible"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_ES NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_ES NULL
@@ -5635,8 +5609,8 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -5828,8 +5802,6 @@ struct retro_core_options_v2 options_es = {
 #define OPTION_VAL_95_FA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_FA NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_FA NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FA NULL
 #define OPTION_VAL_SENSOR_FA NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_FA NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_FA NULL
@@ -6075,8 +6047,8 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -6268,8 +6240,6 @@ struct retro_core_options_v2 options_fa = {
 #define OPTION_VAL_95_FI "95 %"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FI "Salli vastakkaisten suuntien syöte"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_FI "Tämän käyttöönotto sallii painamaan / nopeasti vaihtelemaan / pitämään sekä vasemmalle että oikealle (tai ylös ja alas) samanaikaisesti. Tämä voi aiheuttaa liikkeisiin perustuvia virheitä."
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_FI "Aurinkoanturin taso"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FI "Asettaa ympäristön auringonvalon voimakkuuden. Voidaan käyttää peleissä, jotka sisälsivät aurinkoanturin kaseteissaan, esim. Boktai-sarjassa."
 #define OPTION_VAL_SENSOR_FI "Käytä laitteen anturia, mikäli saatavana"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_FI NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_FI NULL
@@ -6515,8 +6485,8 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -6708,8 +6678,6 @@ struct retro_core_options_v2 options_fi = {
 #define OPTION_VAL_95_FR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_FR "Autoriser les entrées directionnelles opposées"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_FR "L'activation de cette option permettra d'appuyer/d'alterner rapidement/de maintenir les directions gauche et droite (ou haut et bas) en même temps. Cela peut causer des bugs liés au mouvement."
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_FR "Niveau du capteur solaire"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FR "Définit l'intensité ambiante de la lumière du soleil. Peut être utilisée par des jeux qui incluaient un capteur solaire dans leurs cartouches, par exemple : la série Boktai."
 #define OPTION_VAL_SENSOR_FR "Utiliser le capteur de l'appareil si disponible"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_FR NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_FR NULL
@@ -6955,8 +6923,8 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -7148,8 +7116,6 @@ struct retro_core_options_v2 options_fr = {
 #define OPTION_VAL_95_GL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_GL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_GL NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_GL NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_GL NULL
 #define OPTION_VAL_SENSOR_GL NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_GL NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_GL NULL
@@ -7395,8 +7361,8 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -7588,8 +7554,6 @@ struct retro_core_options_v2 options_gl = {
 #define OPTION_VAL_95_HE NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_HE NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_HE NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_HE NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HE NULL
 #define OPTION_VAL_SENSOR_HE NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_HE NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_HE NULL
@@ -7835,8 +7799,8 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -8028,8 +7992,6 @@ struct retro_core_options_v2 options_he = {
 #define OPTION_VAL_95_HR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_HR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_HR NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_HR NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HR NULL
 #define OPTION_VAL_SENSOR_HR NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_HR NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_HR NULL
@@ -8275,8 +8237,8 @@ struct retro_core_option_v2_definition option_defs_hr[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -8468,8 +8430,6 @@ struct retro_core_options_v2 options_hr = {
 #define OPTION_VAL_95_HU NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_HU "Ellentétes irányok engedélyezése"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_HU "A jobb és bal (vagy fel és le) irányok egyidejű/gyorsan váltakozó lenyomásának vagy nyomva tartásának engedélyezése. Hibákat okozhat a mozgatásban."
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_HU "Fényszenzor szintje"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HU "A környező napfény intenzitásának állítása. Olyan játékok használják, amelyek tartalmaznak fényérzékelőt a cartridge-ben, mint pl. a Boktai sorozat."
 #define OPTION_VAL_SENSOR_HU "Az eszköz szenzorának használata, ha elérhető"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_HU NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_HU NULL
@@ -8715,8 +8675,8 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -8908,8 +8868,6 @@ struct retro_core_options_v2 options_hu = {
 #define OPTION_VAL_95_ID NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_ID NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_ID NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_ID NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_ID NULL
 #define OPTION_VAL_SENSOR_ID NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_ID NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_ID NULL
@@ -9155,8 +9113,8 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -9348,8 +9306,6 @@ struct retro_core_options_v2 options_id = {
 #define OPTION_VAL_95_IT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_IT "Permetti Input Direzionali Opposti"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_IT "Attivando questa funzionalità ti permette di premere / alternare velocemente / tenere premuti entrambe le direzioni destra e sinistra (oppure su e giù) allo stesso momento. Potrebbe causare dei glitch di movimento."
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_IT "Livello Sensore Solare"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_IT "Imposta l'intensità solare dell'ambiente. Può essere usato dai giochi che includono un sensore solare nelle loro cartucce, es.: la serie Boktai."
 #define OPTION_VAL_SENSOR_IT "Usa sensore dispositivo se disponibile"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_IT NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_IT NULL
@@ -9595,8 +9551,8 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -9788,8 +9744,6 @@ struct retro_core_options_v2 options_it = {
 #define OPTION_VAL_95_JA NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_JA "対向方向入力を許可する"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_JA "有効にすると、左右 (または上下) 方向の同時押し / 高速交互押し / 長押しが可能になります。動作に不具合が生じる場合があります。"
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_JA "太陽センサーレベル"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_JA NULL
 #define OPTION_VAL_SENSOR_JA "利用可能な場合は端末センサーを使用する"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_JA NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_JA NULL
@@ -10035,8 +9989,8 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -10228,8 +10182,6 @@ struct retro_core_options_v2 options_ja = {
 #define OPTION_VAL_95_KO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_KO "반대 방향 동시 입력 허용"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_KO "이 옵션을 활성화하면 왼쪽과 오른쪽 (또는 위쪽과 아래쪽) 방향 입력을 동시에 누르거나 빠르게 번갈아 누르는 것을 허용합니다. 이는 움직임 관련 버그를 일으킬 수 있습니다."
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_KO "태양광 센서 수준"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_KO "태양광 센서의 강도를 설정합니다. 카트리지에 태양광 센서를 장착한 일부 게임(예: Boktai 시리즈)에서 사용할 수 있습니다."
 #define OPTION_VAL_SENSOR_KO "가능한 경우 장치 센서 사용"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_KO NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_KO NULL
@@ -10475,8 +10427,8 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -10668,8 +10620,6 @@ struct retro_core_options_v2 options_ko = {
 #define OPTION_VAL_95_MT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_MT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_MT NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_MT NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_MT NULL
 #define OPTION_VAL_SENSOR_MT NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_MT NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_MT NULL
@@ -10915,8 +10865,8 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -11108,8 +11058,6 @@ struct retro_core_options_v2 options_mt = {
 #define OPTION_VAL_95_NL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_NL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_NL NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_NL NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_NL NULL
 #define OPTION_VAL_SENSOR_NL NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_NL NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_NL NULL
@@ -11355,8 +11303,8 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -11548,8 +11496,6 @@ struct retro_core_options_v2 options_nl = {
 #define OPTION_VAL_95_NO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_NO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_NO NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_NO NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_NO NULL
 #define OPTION_VAL_SENSOR_NO NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_NO NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_NO NULL
@@ -11795,8 +11741,8 @@ struct retro_core_option_v2_definition option_defs_no[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -11988,8 +11934,6 @@ struct retro_core_options_v2 options_no = {
 #define OPTION_VAL_95_OC NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_OC NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_OC NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_OC NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_OC NULL
 #define OPTION_VAL_SENSOR_OC NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_OC NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_OC NULL
@@ -12235,8 +12179,8 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -12428,8 +12372,6 @@ struct retro_core_options_v2 options_oc = {
 #define OPTION_VAL_95_PL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PL NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PL NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PL NULL
 #define OPTION_VAL_SENSOR_PL "Użyj czujnika urządzenia, jeśli jest dostępny"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_PL NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_PL NULL
@@ -12675,8 +12617,8 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -12868,8 +12810,6 @@ struct retro_core_options_v2 options_pl = {
 #define OPTION_VAL_95_PT_BR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PT_BR "Permitir entradas direcionais opostas"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PT_BR "Esta opção permitirá pressionar, alternar ou segurar rapidamente as direções esquerda e direita (ou cima e baixo) ao mesmo tempo. Pode causar falhas de movimento."
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_BR "Nível do sensor solar"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PT_BR "Define a intensidade da luz do sol no ambiente. Pode ser usado por jogos que incluem um sensor solar em seus cartuchos, por exemplo: a série Boktai."
 #define OPTION_VAL_SENSOR_PT_BR "Usa um dispositivo sensor, se disponível"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_PT_BR NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_PT_BR NULL
@@ -13115,8 +13055,8 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -13308,8 +13248,6 @@ struct retro_core_options_v2 options_pt_br = {
 #define OPTION_VAL_95_PT_PT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_PT_PT NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_PT_PT NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_PT NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PT_PT NULL
 #define OPTION_VAL_SENSOR_PT_PT NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_PT_PT NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_PT_PT NULL
@@ -13555,8 +13493,8 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -13748,8 +13686,6 @@ struct retro_core_options_v2 options_pt_pt = {
 #define OPTION_VAL_95_RO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_RO NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_RO NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_RO NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_RO NULL
 #define OPTION_VAL_SENSOR_RO NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_RO NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_RO NULL
@@ -13995,8 +13931,8 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -14188,8 +14124,6 @@ struct retro_core_options_v2 options_ro = {
 #define OPTION_VAL_95_RU NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_RU "Разрешать нажатия в разные стороны"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_RU "Позволяет нажимать / быстро менять / зажимать одновременно направления влево и вправо (или вверх и вниз). Может вызывать глитчи, связанные с перемещением."
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_RU "Уровень датчика света"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_RU "Устанавливает интенсивность окружающего освещения. Может использоваться в играх с картриджами, оснащёнными датчиком света (напр. серия Boktai)."
 #define OPTION_VAL_SENSOR_RU "Использовать датчик устройства"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_RU NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_RU NULL
@@ -14435,8 +14369,8 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -14628,8 +14562,6 @@ struct retro_core_options_v2 options_ru = {
 #define OPTION_VAL_95_SI NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SI NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SI NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SI NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SI NULL
 #define OPTION_VAL_SENSOR_SI NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_SI NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_SI NULL
@@ -14875,8 +14807,8 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -15068,8 +15000,6 @@ struct retro_core_options_v2 options_si = {
 #define OPTION_VAL_95_SK NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SK NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SK NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SK NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SK NULL
 #define OPTION_VAL_SENSOR_SK NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_SK NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_SK NULL
@@ -15315,8 +15245,8 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -15508,8 +15438,6 @@ struct retro_core_options_v2 options_sk = {
 #define OPTION_VAL_95_SR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SR NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SR NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SR NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SR NULL
 #define OPTION_VAL_SENSOR_SR NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_SR NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_SR NULL
@@ -15755,8 +15683,8 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -15948,8 +15876,6 @@ struct retro_core_options_v2 options_sr = {
 #define OPTION_VAL_95_SV "95 %"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_SV NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_SV NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SV NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SV NULL
 #define OPTION_VAL_SENSOR_SV NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_SV NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_SV NULL
@@ -16195,8 +16121,8 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -16388,8 +16314,6 @@ struct retro_core_options_v2 options_sv = {
 #define OPTION_VAL_95_TR "%95"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_TR "Karşı Yönlü Girişe İzin Ver"
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_TR "Bunu etkinleştirmek aynı anda hem sola hem de sağa (veya yukarı ve aşağı) yönlere basma/hızlı değiştirme/tutma imkanı sağlar. Bu harekete dayalı hatalara neden olabilir."
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_TR "Güneş Sensörü Seviyesi"
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_TR "Ortamdaki güneş ışığı yoğunluğunu ayarlar. Kartuşlarında güneş sensörü bulunan oyunlar tarafından kullanılabilir, örneğin: Boktai serisi."
 #define OPTION_VAL_SENSOR_TR "Varsa cihaz sensörünü kullanın"
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_TR NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_TR NULL
@@ -16635,8 +16559,8 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -16828,8 +16752,6 @@ struct retro_core_options_v2 options_tr = {
 #define OPTION_VAL_95_UK NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_UK NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_UK "Увімкнення цього дозволить одночасно натискати / швидко чергувати/утримувати одночасно ліворуч та праворуч (чи донизу) напрямки. Це може спричинити глітчі руху."
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_UK NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_UK NULL
 #define OPTION_VAL_SENSOR_UK NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_UK NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_UK NULL
@@ -17075,8 +16997,8 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -17268,8 +17190,6 @@ struct retro_core_options_v2 options_uk = {
 #define OPTION_VAL_95_VAL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_VAL NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_VAL NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_VAL NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_VAL NULL
 #define OPTION_VAL_SENSOR_VAL NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_VAL NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_VAL NULL
@@ -17515,8 +17435,8 @@ struct retro_core_option_v2_definition option_defs_val[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
@@ -17708,8 +17628,6 @@ struct retro_core_options_v2 options_val = {
 #define OPTION_VAL_95_VN NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_LABEL_VN NULL
 #define MGBA_ALLOW_OPPOSING_DIRECTIONS_INFO_0_VN NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_LABEL_VN NULL
-#define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_VN NULL
 #define OPTION_VAL_SENSOR_VN NULL
 #define MGBA_SOLAR_SENSOR_INPUT_LABEL_VN NULL
 #define MGBA_SOLAR_SENSOR_INPUT_INFO_0_VN NULL
@@ -17955,8 +17873,8 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
+         { "off",    "Disabled" },
+         { "sensor", "Use Device Sensor If Available" },
          { "buttons", "L3/R3 Increment" },
          { "chord",   "L3 + Stick Chords" },
          { "0",  "Static: 0" },
