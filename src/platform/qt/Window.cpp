@@ -992,12 +992,7 @@ void Window::gameStopped() {
 #endif
 	}
 
-	std::shared_ptr<CoreController> controller;
-	m_controller.swap(controller);
-	QTimer::singleShot(0, this, [controller]() {
-		// Destroy the controller after everything else has cleaned up
-		Q_UNUSED(controller);
-	});
+	m_cleanupController = std::move(m_controller);
 	detachWidget();
 	updateTitle();
 
@@ -1008,9 +1003,10 @@ void Window::gameStopped() {
 			m_scripting->setVideoBackend(nullptr);
 		}
 #endif
-		m_display.reset();
+		m_cleanupDisplay = std::move(m_display);
 		close();
 	}
+	QTimer::singleShot(0, this, &Window::delayedCleanup);
 #ifndef Q_OS_MAC
 	showMenu(true);
 #endif
@@ -2358,6 +2354,13 @@ void Window::setLogo() {
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
 	centralWidget()->unsetCursor();
+}
+
+void Window::delayedCleanup() {
+	// Destroy the controller after everything else has cleaned up, except for the display
+	m_cleanupController.reset();
+	// The display needs to be cleaned up last so the core can clean up the OpenGL resources
+	m_cleanupDisplay.reset();
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

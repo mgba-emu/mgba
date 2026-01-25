@@ -917,9 +917,6 @@ void PainterGL::doStop() {
 	m_started = false;
 	dequeueAll(false);
 	if (m_context) {
-		if (m_videoProxy) {
-			m_videoProxy->detach(m_context.get());
-		}
 		m_context->setFramebufferHandle(-1);
 		m_context.reset();
 		if (m_videoProxy) {

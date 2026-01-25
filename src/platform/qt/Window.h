@@ -161,6 +161,8 @@ private slots:
 
 	void setLogo();
 
+	void delayedCleanup();
+
 private:
 	static const int FPS_TIMER_INTERVAL = 2000;
 	static const int MUST_RESTART_TIMEOUT = 10000;
@@ -266,6 +268,9 @@ private:
 #ifdef ENABLE_SCRIPTING
 	std::unique_ptr<ScriptingController> m_scripting;
 #endif
+
+	std::unique_ptr<QGBA::Display> m_cleanupDisplay;
+	std::shared_ptr<CoreController> m_cleanupController;
 };
 
 class WindowBackground : public QWidget {
