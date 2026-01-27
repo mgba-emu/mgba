@@ -15,7 +15,11 @@
 #include <mgba/gba/interface.h>
 
 #ifdef BUILD_SDL
+#define SDL_MAIN_HANDLED
 #include "platform/sdl/sdl-events.h"
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+#include <SDL_main.h>
+#endif
 #endif
 
 #include <QLibraryInfo>

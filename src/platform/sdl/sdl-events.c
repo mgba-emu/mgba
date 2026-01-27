@@ -70,25 +70,37 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 #if SDL_VERSION_ATLEAST(2, 0, 4)
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 #endif
-	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
+	if (!SDL_OK(SDL_InitSubSystem(SDL_INIT_JOYSTICK))) {
 		mLOG(SDL_EVENTS, ERROR, "SDL joystick initialization failed: %s", SDL_GetError());
 	}
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
 #if !SDL_VERSION_ATLEAST(2, 0, 9)
-	if (SDL_InitSubSystem(SDL_INIT_HAPTIC) < 0) {
+	if (!SDL_OK(SDL_InitSubSystem(SDL_INIT_HAPTIC))) {
 		mLOG(SDL_EVENTS, ERROR, "SDL haptic initialization failed: %s", SDL_GetError());
 	}
 #endif
-	if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) < 0) {
+	if (!SDL_OK(SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER))) {
 		mLOG(SDL_EVENTS, ERROR, "SDL game controller initialization failed: %s", SDL_GetError());
 	}
-	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
+	if (!SDL_OK(SDL_InitSubSystem(SDL_INIT_VIDEO))) {
 		mLOG(SDL_EVENTS, ERROR, "SDL video initialization failed: %s", SDL_GetError());
 	}
 #endif
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_SetJoystickEventsEnabled(true);
+	int nJoysticks;
+	SDL_JoystickID* ids = SDL_GetJoysticks(&nJoysticks);
+	if (nJoysticks > 0) {
+		mSDLUpdateJoysticks(context, NULL);
+		int i;
+		for (i = 0; i < nJoysticks; ++i) {
+			_mSDLOpenJoystick(context, ids[i]);
+		}
+	}
+#else
 	SDL_JoystickEventState(SDL_ENABLE);
 	int nJoysticks = SDL_NumJoysticks();
 	SDL_JoystickListInit(&context->joysticks, nJoysticks);
@@ -102,6 +114,7 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 			}
 		}
 	}
+#endif
 
 	context->playersAttached = 0;
 
@@ -233,7 +246,11 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		char joystickName[34] = {0};
+#if SDL_VERSION_ATLEAST(2, 24, 0)
+		SDL_GUIDToString(SDL_JoystickGetGUID(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick), joystickName, sizeof(joystickName));
+#else
 		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick), joystickName, sizeof(joystickName));
+#endif
 #else
 		const char* joystickName = SDL_JoystickName(SDL_JoystickIndex(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick));
 		if (!joystickName) {
@@ -287,7 +304,11 @@ void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		mInputMapLoad(context->bindings, SDL_BINDING_CONTROLLER, config);
 		char name[34] = {0};
+#if SDL_VERSION_ATLEAST(2, 24, 0)
+		SDL_GUIDToString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
+#else
 		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
+#endif
 		mInputProfileLoad(context->bindings, SDL_BINDING_CONTROLLER, config, name);
 #else
 		mInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
@@ -351,7 +372,11 @@ void mSDLPlayerSaveConfig(const struct mSDLPlayer* context, struct Configuration
 	if (context->joystick) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		char name[34] = {0};
+#if SDL_VERSION_ATLEAST(2, 24, 0)
+		SDL_GUIDToString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
+#else
 		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
+#endif
 #else
 		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick->joystick));
 		if (!name) {
@@ -408,7 +433,11 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 			}
 
 			char joystickName[34] = {0};
+#if SDL_VERSION_ATLEAST(2, 24, 0)
+			SDL_GUIDToString(SDL_JoystickGetGUID(joystick->joystick), joystickName, sizeof(joystickName));
+#else
 			SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick->joystick), joystickName, sizeof(joystickName));
+#endif
 			for (i = 0; (int) i < events->playersAttached; ++i) {
 				if (events->players[i]->joystick) {
 					continue;
@@ -469,8 +498,15 @@ static void _pauseAfterFrame(struct mCoreThread* context) {
 
 static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
 	int key = -1;
-	if (!(event->keysym.mod & ~(KMOD_NUM | KMOD_CAPS))) {
-		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_Keycode keycode = event->key;
+	uint16_t modifiers = event->mod;
+#else
+	SDL_Keycode keycode = event->keysym.sym;
+	uint16_t modifiers = event->keysym.mod;
+#endif
+	if (!(modifiers & ~(KMOD_NUM | KMOD_CAPS))) {
+		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, keycode);
 	}
 	if (key != -1) {
 		mCoreThreadInterrupt(context);
@@ -482,15 +518,15 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 		mCoreThreadContinue(context);
 		return;
 	}
-	if (event->keysym.sym == SDLK_TAB) {
+	if (keycode == SDLK_TAB) {
 		context->impl->sync.audioWait = event->type != SDL_KEYDOWN;
 		return;
 	}
-	if (event->keysym.sym == SDLK_BACKQUOTE) {
+	if (keycode == SDLK_BACKQUOTE) {
 		mCoreThreadSetRewinding(context, event->type == SDL_KEYDOWN);
 	}
 	if (event->type == SDL_KEYDOWN) {
-		switch (event->keysym.sym) {
+		switch (keycode) {
 #ifdef ENABLE_DEBUGGERS
 		case SDLK_F11:
 			if (context->core->debugger) {
@@ -509,9 +545,15 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 			mCoreThreadUnpause(context);
 			return;
 		default:
-			if ((event->keysym.mod & GUI_MOD) && (event->keysym.mod & GUI_MOD) == event->keysym.mod) {
-				switch (event->keysym.sym) {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
+			if ((modifiers & GUI_MOD) && (modifiers & GUI_MOD) == modifiers) {
+				switch (keycode) {
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+				case SDLK_F:
+					sdlContext->fullscreen = !sdlContext->fullscreen;
+					SDL_SetWindowFullscreen(sdlContext->window, sdlContext->fullscreen);
+					sdlContext->windowUpdated = 1;
+					break;
+#elif SDL_VERSION_ATLEAST(2, 0, 0)
 				case SDLK_f:
 					SDL_SetWindowFullscreen(sdlContext->window, sdlContext->fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
 					sdlContext->fullscreen = !sdlContext->fullscreen;
@@ -533,8 +575,8 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 					break;
 				}
 			}
-			if (event->keysym.mod & KMOD_SHIFT) {
-				switch (event->keysym.sym) {
+			if (modifiers & KMOD_SHIFT) {
+				switch (keycode) {
 				case SDLK_F1:
 				case SDLK_F2:
 				case SDLK_F3:
@@ -545,14 +587,14 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 				case SDLK_F8:
 				case SDLK_F9:
 					mCoreThreadInterrupt(context);
-					mCoreSaveState(context->core, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SAVEDATA | SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
+					mCoreSaveState(context->core, keycode - SDLK_F1 + 1, SAVESTATE_SAVEDATA | SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 					mCoreThreadContinue(context);
 					break;
 				default:
 					break;
 				}
 			} else {
-				switch (event->keysym.sym) {
+				switch (keycode) {
 				case SDLK_F1:
 				case SDLK_F2:
 				case SDLK_F3:
@@ -563,7 +605,7 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* 
 				case SDLK_F8:
 				case SDLK_F9:
 					mCoreThreadInterrupt(context);
-					mCoreLoadState(context->core, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
+					mCoreLoadState(context->core, keycode - SDLK_F1 + 1, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
 					mCoreThreadContinue(context);
 					break;
 				default:
@@ -606,6 +648,7 @@ static void _mSDLHandleControllerAxis(struct mCoreThread* context, struct mSDLPl
 	mCoreThreadContinue(context);
 }
 
+#if !SDL_VERSION_ATLEAST(3, 0, 0)
 static void _mSDLHandleWindowEvent(struct mSDLPlayer* sdlContext, const struct SDL_WindowEvent* event) {
 	switch (event->event) {
 	case SDL_WINDOWEVENT_SIZE_CHANGED:
@@ -613,6 +656,7 @@ static void _mSDLHandleWindowEvent(struct mSDLPlayer* sdlContext, const struct S
 		break;
 	}
 }
+#endif
 #else
 static void _mSDLHandleJoyButton(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_JoyButtonEvent* event) {
 	int key = 0;
@@ -664,7 +708,18 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
 	case SDL_QUIT:
 		mCoreThreadEnd(context);
 		break;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	case SDL_EVENT_WINDOW_RESIZED:
+		sdlContext->windowUpdated = 1;
+		break;
+	case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+	case SDL_EVENT_GAMEPAD_BUTTON_UP:
+		_mSDLHandleControllerButton(context, sdlContext, &event->gbutton);
+		break;
+	case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+		_mSDLHandleControllerAxis(context, sdlContext, &event->gaxis);
+		break;
+#elif SDL_VERSION_ATLEAST(2, 0, 0)
 	case SDL_WINDOWEVENT:
 		_mSDLHandleWindowEvent(sdlContext, &event->window);
 		break;
@@ -712,7 +767,11 @@ static void _mSDLSetRumble(struct mRumbleIntegrator* rumble, float level) {
 	}
 #endif
 
-#if SDL_VERSION_ATLEAST(2, 0, 18)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	if (!sdlRumble->p->joystick->controller || !SDL_GetBooleanProperty(SDL_GetGamepadProperties(sdlRumble->p->joystick->controller), SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false)) {
+		return;
+	}
+#elif SDL_VERSION_ATLEAST(2, 0, 18)
 	if (!sdlRumble->p->joystick->controller || !SDL_GameControllerHasRumble(sdlRumble->p->joystick->controller)) {
 		return;
 	}

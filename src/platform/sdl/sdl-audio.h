@@ -6,23 +6,13 @@
 #ifndef SDL_AUDIO_H
 #define SDL_AUDIO_H
 
-#include <mgba-util/common.h>
+#include "sdl-common.h"
 
 CXX_GUARD_START
 
 #include <mgba/core/log.h>
 #include <mgba-util/audio-buffer.h>
 #include <mgba-util/audio-resampler.h>
-
-#include <SDL.h>
-// Altivec sometimes defines this
-#ifdef vector
-#undef vector
-#endif
-#ifdef bool
-#undef bool
-#define bool _Bool
-#endif
 
 mLOG_DECLARE_CATEGORY(SDL_AUDIO);
 
@@ -36,7 +26,9 @@ struct mSDLAudio {
 	struct mAudioResampler resampler;
 	SDL_AudioSpec desiredSpec;
 	SDL_AudioSpec obtainedSpec;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_AudioStream* stream;
+#elif SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_AudioDeviceID deviceId;
 #endif
 

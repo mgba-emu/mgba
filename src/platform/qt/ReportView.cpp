@@ -195,7 +195,11 @@ void ReportView::generateReport() {
 	swReport << QString("minizip not linked");
 #endif
 #ifdef BUILD_SDL
+#ifdef SDL_MICRO_VERSION
+	swReport << QString("SDL version: %1.%2.%3").arg(SDL_MAJOR_VERSION).arg(SDL_MINOR_VERSION).arg(SDL_MICRO_VERSION);
+#else
 	swReport << QString("SDL version: %1.%2.%3").arg(SDL_MAJOR_VERSION).arg(SDL_MINOR_VERSION).arg(SDL_PATCHLEVEL);
+#endif
 #else
 	swReport << QString("SDL not linked");
 #endif

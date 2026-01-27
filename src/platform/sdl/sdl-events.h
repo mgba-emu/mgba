@@ -6,7 +6,7 @@
 #ifndef SDL_EVENTS_H
 #define SDL_EVENTS_H
 
-#include <mgba-util/common.h>
+#include "sdl-common.h"
 
 CXX_GUARD_START
 
@@ -14,16 +14,6 @@ CXX_GUARD_START
 #include <mgba/core/log.h>
 #include <mgba-util/circle-buffer.h>
 #include <mgba-util/vector.h>
-
-#include <SDL.h>
-// Altivec sometimes defines this
-#ifdef vector
-#undef vector
-#endif
-#ifdef bool
-#undef bool
-#define bool _Bool
-#endif
 
 mLOG_DECLARE_CATEGORY(SDL_EVENTS);
 
@@ -38,7 +28,10 @@ struct Configuration;
 struct SDL_JoystickCombo {
 	size_t index;
 	SDL_Joystick* joystick;
-#if SDL_VERSION_ATLEAST(2, 0, 0)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_Gamepad* controller;
+	SDL_JoystickID id;
+#elif SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GameController* controller;
 	SDL_Haptic* haptic;
 	SDL_JoystickID id;
@@ -124,8 +117,13 @@ void mSDLSuspendScreensaver(struct mSDLEvents*);
 void mSDLResumeScreensaver(struct mSDLEvents*);
 void mSDLSetScreensaverSuspendable(struct mSDLEvents*, bool suspendable);
 
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+const char* mSDLButtonName(SDL_Gamepad*, SDL_GamepadButton);
+const char* mSDLAxisName(SDL_Gamepad*, SDL_GamepadAxis);
+#else
 const char* mSDLButtonName(SDL_GameController*, SDL_GameControllerButton);
 const char* mSDLAxisName(SDL_GameController*, SDL_GameControllerAxis);
+#endif
 #endif
 
 CXX_GUARD_END

@@ -1092,6 +1092,9 @@ if(BUILD_EXAMPLE)
 	set_target_properties(${BINARY_NAME}-example-server PROPERTIES COMPILE_DEFINITIONS "${OS_DEFINES};${FEATURE_DEFINES};${FUNCTION_DEFINES}")
 
 	if(SDL_FOUND)
+		if (SDL_VERSION EQUAL "3")
+			find_package(SDL3)
+		endif()
 		add_executable(${BINARY_NAME}-example-client ${CMAKE_CURRENT_SOURCE_DIR}/src/platform/example/client-server/client.c)
 		target_link_libraries(${BINARY_NAME}-example-client ${BINARY_NAME} ${SDL_LIBRARY} ${SDLMAIN_LIBRARY} ${OPENGL_LIBRARY} ${OPENGLES2_LIBRARY})
 		set_target_properties(${BINARY_NAME}-example-client PROPERTIES

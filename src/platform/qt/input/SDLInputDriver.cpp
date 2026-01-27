@@ -248,7 +248,11 @@ SDLGamepad::SDLGamepad(SDLInputDriver* driver, int index, QObject* parent)
 {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
+#if SDL_VERSION_ATLEAST(2, 24, 0)
+	SDL_GUIDToString(SDL_JoystickGetGUID(joystick), m_guid, sizeof(m_guid));
+#else
 	SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), m_guid, sizeof(m_guid));
+#endif
 	m_id = SDL_JoystickInstanceID(joystick);
 #endif
 }

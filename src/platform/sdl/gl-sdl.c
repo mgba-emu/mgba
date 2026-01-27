@@ -52,7 +52,9 @@ void mSDLGLDeinit(struct mSDLRenderer* renderer) {
 		renderer->gl.d.deinit(&renderer->gl.d);
 	}
 	free(renderer->outputBuffer);
-#if SDL_VERSION_ATLEAST(2, 0, 0)
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_GL_DestroyContext(renderer->glCtx);
+#elif SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_GL_DeleteContext(renderer->glCtx);
 #endif
 }

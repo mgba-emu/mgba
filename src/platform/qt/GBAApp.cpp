@@ -50,7 +50,11 @@ GBAApp::GBAApp(int& argc, char* argv[], ConfigController* config)
 	setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
 
 #ifdef BUILD_SDL
+#if !SDL_VERSION_ATLEAST(2, 0, 0)
 	SDL_Init(SDL_INIT_NOPARACHUTE);
+#else
+	SDL_Init(0);
+#endif
 #endif
 
 	SocketSubsystemInit();

@@ -22,10 +22,15 @@ void mSDLSWCreate(struct mSDLRenderer* renderer) {
 bool mSDLSWInit(struct mSDLRenderer* renderer) {
 	unsigned width, height;
 	renderer->core->baseVideoSize(renderer->core, &width, &height);
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	renderer->window = SDL_CreateWindow(projectName, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_FULLSCREEN * renderer->player.fullscreen);
+	renderer->sdlRenderer = SDL_CreateRenderer(renderer->window, NULL);
+#else
 	renderer->window = SDL_CreateWindow(projectName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->player.fullscreen);
+	renderer->sdlRenderer = SDL_CreateRenderer(renderer->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+#endif
 	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
 	renderer->player.window = renderer->window;
-	renderer->sdlRenderer = SDL_CreateRenderer(renderer->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 #ifdef COLOR_16_BIT
 #ifdef COLOR_5_6_5
 	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, width, height);
