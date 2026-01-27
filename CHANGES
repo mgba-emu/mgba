@@ -40,6 +40,7 @@ Emulation fixes:
  - GBA Video: Fix edge case with double-height sprites wrapping (fixes mgba.io/i/2824)
  - GBA Video: VCOUNTER flag should be updated on DISPSTAT write (fixes mgba.io/i/1873)
  - GBA Video: Fix background toggling in OpenGL renderer (fixes mgba.io/i/2475)
+ - GBA Video: Properly clear VRAM on reset (fixes mgba.io/i/3690)
 Other fixes:
  - 3DS: Don't detach autosave thread (fixes mgba.io/i/3561)
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)

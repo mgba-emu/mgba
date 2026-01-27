@@ -83,6 +83,7 @@ void GBAVideoReset(struct GBAVideo* video) {
 
 	memset(video->palette, 0, sizeof(video->palette));
 	memset(video->oam.raw, 0, sizeof(video->oam.raw));
+	memset(video->vram, 0, GBA_SIZE_VRAM);
 
 	if (!video->renderer) {
 		mLOG(GBA_VIDEO, FATAL, "No renderer associated");
