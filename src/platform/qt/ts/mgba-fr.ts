@@ -523,7 +523,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../CoreManager.cpp" line="77"/>
         <source>The ROM appears to be loaded from a temporary directory. This will likely lead to data loss (e.g. saves, screenshots, etc.) if you continue. Please put the ROM in a more suitable location and then re-open it. If you are loading the ROM from an archive, please extract the archive first.</source>
-        <translation type="unfinished"></translation>
+        <translation>La ROM semble avoir été chargée depuis un répertoire temporaire. Cela va probablement provoquer des pertes de données (par exemple les sauvegardes, les captures d&apos;écran, etc.) si vous continuez. Veuillez mettre la ROM dans un endroit plus adapté et la rouvrir ensuite. Si vous avez chargé la ROM depuis une archive, veuillez l&apos;extraire en premier.</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="95"/>
@@ -3022,12 +3022,12 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
         <location filename="../InputController.cpp" line="727"/>
         <location filename="../InputController.cpp" line="748"/>
         <source>Could not find a valid camera format!</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de trouver un format de caméra valide&#x202f;!</translation>
     </message>
     <message>
         <location filename="../InputController.cpp" line="729"/>
         <source>Camera supported format: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Format supporté par la caméra&#xa0;: %1</translation>
     </message>
 </context>
 <context>
@@ -3989,7 +3989,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../MultiplayerController.cpp" line="313"/>
         <source>Couldn&apos;t find available save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>Impossible de trouver un ID de sauvegarde disponible</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="367"/>
@@ -6311,7 +6311,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1142"/>
         <source>Failed to start audio processor</source>
-        <translation type="unfinished"></translation>
+        <translation>Le démarrage du processeur audio a échoué</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1167"/>
@@ -6406,7 +6406,7 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../Window.cpp" line="1727"/>
         <source>Hide &amp;menu</source>
-        <translation type="unfinished"></translation>
+        <translation>Cacher le &amp;menu</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1766"/>
@@ -6996,17 +6996,17 @@ Si vous voyez ce message en utilisant OpenGL, alors votre carte graphique ou vos
     <message>
         <location filename="../utils.cpp" line="26"/>
         <source>%1 byte</source>
-        <translation>%1 multiplet</translation>
+        <translation>%1 octet</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="29"/>
         <source>%1 kiB</source>
-        <translation>%1 kiB</translation>
+        <translation>%1 kio</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="33"/>
         <source>%1 MiB</source>
-        <translation>%1 MiB</translation>
+        <translation>%1 Mio</translation>
     </message>
     <message>
         <location filename="../utils.cpp" line="183"/>
