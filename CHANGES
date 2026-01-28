@@ -100,6 +100,7 @@ Misc:
  - Qt: Add warning when a ROM is loaded from a temporary directory
  - Qt: Sort shader uniforms based on order in file
  - Qt: Allow downgrading across update channels
+ - Qt: Prevent both gyro and RTC sensors from being enabled at the same time
  - Res: Port hq2x and OmniScale shaders from SameBoy
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
  - Res: Update gba-colors shader (closes mgba.io/i/2976)

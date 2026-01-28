@@ -38,6 +38,19 @@ OverrideView::OverrideView(ConfigController* config, QWidget* parent)
 		m_ui.hwRumble->setEnabled(!enabled);
 	});
 
+	// These two settings are mutually exclusive and break if both are enabled
+	connect(m_ui.hwRTC, &QAbstractButton::toggled, this, [this] (bool checked) {
+		if (checked) {
+			m_ui.hwGyro->setChecked(false);
+		}
+	});
+
+	connect(m_ui.hwGyro, &QAbstractButton::toggled, this, [this] (bool checked) {
+		if (checked) {
+			m_ui.hwRTC->setChecked(false);
+		}
+	});
+
 #ifdef M_CORE_GB
 	m_ui.gbModel->setItemData(0, GB_MODEL_AUTODETECT);
 	m_ui.mbc->setItemData(0, GB_MBC_AUTODETECT);
@@ -236,6 +249,9 @@ void OverrideView::gameStarted() {
 	case mPLATFORM_GBA: {
 		m_ui.tabWidget->setCurrentWidget(m_ui.tabGBA);
 		GBA* gba = static_cast<GBA*>(thread->core->board);
+		QSignalBlocker rtc(m_ui.hwRTC);
+		QSignalBlocker gyro(m_ui.hwGyro);
+
 		m_ui.savetype->setCurrentIndex(gba->memory.savedata.type + 1);
 		m_ui.hwAutodetect->setChecked(gba->memory.hw.devices & HW_NO_OVERRIDE);
 		m_ui.hwRTC->setChecked(gba->memory.hw.devices & HW_RTC);
