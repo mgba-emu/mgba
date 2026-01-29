@@ -9,6 +9,10 @@
 #include <mgba/core/serialize.h>
 #ifdef M_CORE_GBA
 #include <mgba/gba/interface.h>
+#include <mgba/internal/gba/gba.h>
+#endif
+#ifdef M_CORE_GB
+#include <mgba/internal/gb/gb.h>
 #endif
 #include <mgba/script/base.h>
 #include <mgba/script/context.h>
@@ -411,6 +415,90 @@ static void _mScriptCoreWriteRegister(struct mCore* core, const char* regName, i
 	core->writeRegister(core, regName, &in);
 }
 
+static struct mScriptValue* _mScriptCoreReadPalette(struct mCore* core, uint32_t index) {
+	const uint16_t* palette = 0;
+	uint32_t paletteCount;
+	uint32_t colorCount;
+
+	switch (core->platform(core)) {
+#ifdef M_CORE_GBA
+	case mPLATFORM_GBA:
+		struct GBA* gba = (struct GBA*) core->board;
+		palette = gba->video.palette;
+		paletteCount = 32;
+		colorCount = 16;
+		break;
+#endif
+#ifdef M_CORE_GB
+	case mPLATFORM_GB:
+		struct GB* gb = (struct GB*) core->board;
+		palette = gb->video.palette;
+		paletteCount = 8;
+		colorCount = 4;
+		break;
+#endif
+	default:
+		return &mScriptValueNull;
+	}
+
+	if (index >= paletteCount) {
+		return &mScriptValueNull;
+	}
+
+	if (palette == 0) {
+		return &mScriptValueNull;
+	}
+
+	struct mScriptValue* tbl = mScriptValueAlloc(mSCRIPT_TYPE_MS_TABLE);
+
+	for (uint32_t i = 0; i < colorCount; i++) {
+		struct mScriptValue* key = mScriptValueCreateFromUInt(i + 1);
+		struct mScriptValue* val = mScriptValueCreateFromUInt(palette[4*index + i]);
+
+		mScriptTableInsert(tbl, key, val);
+	}
+
+	return tbl;
+}
+
+static void _mScriptCoreWritePalette(struct mCore* core, uint32_t index, uint32_t c0, uint32_t c1, uint32_t c2, uint32_t c3) {
+	struct GBVideo* video = 0;
+
+	uint16_t* palette;
+	uint32_t count;
+	switch (core->platform(core)) {
+#ifdef M_CORE_GBA
+	case mPLATFORM_GBA:
+		break;
+#endif
+#ifdef M_CORE_GB
+	case mPLATFORM_GB:
+		struct GB* gb = (struct GB*) core->board;
+		palette = gb->video.palette;
+		video = &gb->video;
+		count = 32;
+		break;
+#endif
+	default:
+		return;
+	}
+
+	if (video == 0) {
+		return;
+	}
+
+	if (index >= count) {
+		return;
+	}
+
+	uint32_t values[4] = {c0, c1, c2, c3};
+
+	for (int i = 0; i < 4; i++) {
+		palette[4*index + i] = values[i];
+	  video->renderer->writePalette(video->renderer, 4*index + i, values[i]);
+	}
+}
+
 static struct mScriptValue* _mScriptCoreSaveState(struct mCore* core, int32_t flags) {
 	struct VFile* vf = VFileMemChunk(NULL, 0);
 	if (!mCoreSaveStateNamed(core, vf, flags)) {
@@ -532,6 +620,10 @@ mSCRIPT_DECLARE_STRUCT_VOID_D_METHOD(mCore, busWrite32, 2, U32, address, U32, va
 mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WRAPPER, readRegister, _mScriptCoreReadRegister, 1, CHARP, regName);
 mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, writeRegister, _mScriptCoreWriteRegister, 2, CHARP, regName, S32, value);
 
+// Palette functions, especially for SGB
+mSCRIPT_DECLARE_STRUCT_METHOD(mCore, WTABLE, readPalette, _mScriptCoreReadPalette, 1, U32, index);
+mSCRIPT_DECLARE_STRUCT_VOID_METHOD(mCore, writePalette, _mScriptCoreWritePalette, 5, U32, index, U32, c0, U32, c1, U32, c2, U32, c3);
+
 // Savestate functions
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, WSTR, saveStateBuffer, _mScriptCoreSaveState, 1, S32, flags);
 mSCRIPT_DECLARE_STRUCT_METHOD_WITH_DEFAULTS(mCore, BOOL, loadStateBuffer, _mScriptCoreLoadState, 2, STR, buffer, S32, flags);
@@ -618,6 +710,11 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, readRegister)
 	mSCRIPT_DEFINE_DOCSTRING("Write the value of the register with the given name")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, writeRegister)
+
+	mSCRIPT_DEFINE_DOCSTRING("Get the colors of the palette of the given index (0-indexed). Returns a table of integers which encode the colors in 5 bits each. See util.unpackColor.")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, readPalette)
+	mSCRIPT_DEFINE_DOCSTRING("Set the colors of the palette of the given index (0-indexed). Takes four integers encoding the colors in 5 bits each. See util.packColor. Does nothing on GBA.")
+	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, writePalette)
 
 	mSCRIPT_DEFINE_DOCSTRING("Save state and return as a buffer. See C.SAVESTATE for possible values for `flags`")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, saveStateBuffer)
