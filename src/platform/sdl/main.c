@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+	if (!SDL_OK(SDL_Init(SDL_INIT_VIDEO))) {
 		printf("Could not initialize video: %s\n", SDL_GetError());
 		mArgumentsDeinit(&args);
 		return 1;
