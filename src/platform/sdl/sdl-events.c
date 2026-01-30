@@ -101,6 +101,7 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 			_mSDLOpenJoystick(context, ids[i]);
 		}
 	}
+	SDL_free(ids);
 #else
 	SDL_JoystickEventState(SDL_ENABLE);
 	int nJoysticks = SDL_NumJoysticks();

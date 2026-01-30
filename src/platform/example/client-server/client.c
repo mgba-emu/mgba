@@ -49,6 +49,7 @@ int main() {
 #if SDL_VERSION_ATLEAST(3, 0, 0)
 	SDL_Window* window = SDL_CreateWindow(projectName, width, height, SDL_WINDOW_OPENGL);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, NULL);
+	SDL_SetRenderVSync(renderer, 1);
 #else
 	SDL_Window* window = SDL_CreateWindow(projectName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
 	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
