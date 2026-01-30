@@ -111,10 +111,6 @@ extern "C" {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_AR NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_AR NULL
 #define OPTION_VAL_SENSOR_AR NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_AR NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_AR NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_AR NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_AR NULL
 #define MGBA_FORCE_GBP_LABEL_AR NULL
 #define MGBA_FORCE_GBP_INFO_0_AR NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_AR NULL
@@ -348,31 +344,28 @@ struct retro_core_option_v2_definition option_defs_ar[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_AR,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_AR,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_AR,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_AR,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_AR },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -551,10 +544,6 @@ struct retro_core_options_v2 options_ar = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_AST "Nivel del sensor solar"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_AST NULL
 #define OPTION_VAL_SENSOR_AST NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_AST NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_AST NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_AST NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_AST NULL
 #define MGBA_FORCE_GBP_LABEL_AST NULL
 #define MGBA_FORCE_GBP_INFO_0_AST NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_AST NULL
@@ -788,31 +777,28 @@ struct retro_core_option_v2_definition option_defs_ast[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_AST,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_AST,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_AST,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_AST,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_AST },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -991,10 +977,6 @@ struct retro_core_options_v2 options_ast = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CA NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CA NULL
 #define OPTION_VAL_SENSOR_CA NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_CA NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_CA NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_CA NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_CA NULL
 #define MGBA_FORCE_GBP_LABEL_CA NULL
 #define MGBA_FORCE_GBP_INFO_0_CA NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_CA NULL
@@ -1228,31 +1210,28 @@ struct retro_core_option_v2_definition option_defs_ca[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_CA,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_CA,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_CA,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CA,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_CA },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -1431,10 +1410,6 @@ struct retro_core_options_v2 options_ca = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CHS "太阳光传感器等级"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CHS NULL
 #define OPTION_VAL_SENSOR_CHS "如果可用则使用设备传感器"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_CHS NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_CHS NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_CHS NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_CHS NULL
 #define MGBA_FORCE_GBP_LABEL_CHS NULL
 #define MGBA_FORCE_GBP_INFO_0_CHS NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_CHS NULL
@@ -1668,31 +1643,28 @@ struct retro_core_option_v2_definition option_defs_chs[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_CHS,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_CHS,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_CHS,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CHS,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_CHS },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -1871,10 +1843,6 @@ struct retro_core_options_v2 options_chs = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CHT NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CHT NULL
 #define OPTION_VAL_SENSOR_CHT NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_CHT NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_CHT NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_CHT NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_CHT NULL
 #define MGBA_FORCE_GBP_LABEL_CHT NULL
 #define MGBA_FORCE_GBP_INFO_0_CHT NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_CHT NULL
@@ -2108,31 +2076,28 @@ struct retro_core_option_v2_definition option_defs_cht[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_CHT,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_CHT,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_CHT,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CHT,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_CHT },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -2311,10 +2276,6 @@ struct retro_core_options_v2 options_cht = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CS "Úroveň Solárního Senzoru"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CS "Nastaví intenzitu okolního slunečního světla. Lze použít ve hrách, které obsahují sluneční senzor v kazetách, např. v sérii Boktai."
 #define OPTION_VAL_SENSOR_CS "Použít snímač zařízení, je-li k dispozici"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_CS NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_CS NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_CS NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_CS NULL
 #define MGBA_FORCE_GBP_LABEL_CS "Game Boy Player Vybrace (Restart)"
 #define MGBA_FORCE_GBP_INFO_0_CS "Povolení této funkce umožní kompatibilním hrám se spouštěcím logem Game Boy Player, aby ovladač vybroval. Vzhledem k tomu, jak se společnost Nintendo rozhodla, že by tato funkce měla fungovat, může v některých těchto hrách způsobovat závady, jako je blikání nebo zpoždění."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_CS "Odstranění Nečinné Smyčky"
@@ -2548,31 +2509,28 @@ struct retro_core_option_v2_definition option_defs_cs[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_CS,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_CS,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_CS,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CS,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_CS },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -2751,10 +2709,6 @@ struct retro_core_options_v2 options_cs = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_CY NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CY NULL
 #define OPTION_VAL_SENSOR_CY NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_CY NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_CY NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_CY NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_CY NULL
 #define MGBA_FORCE_GBP_LABEL_CY NULL
 #define MGBA_FORCE_GBP_INFO_0_CY NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_CY NULL
@@ -2988,31 +2942,28 @@ struct retro_core_option_v2_definition option_defs_cy[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_CY,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_CY,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_CY,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_CY,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_CY },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -3191,10 +3142,6 @@ struct retro_core_options_v2 options_cy = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_DA NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_DA NULL
 #define OPTION_VAL_SENSOR_DA NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_DA NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_DA NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_DA NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_DA NULL
 #define MGBA_FORCE_GBP_LABEL_DA NULL
 #define MGBA_FORCE_GBP_INFO_0_DA NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_DA NULL
@@ -3428,31 +3375,28 @@ struct retro_core_option_v2_definition option_defs_da[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_DA,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_DA,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_DA,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_DA,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_DA },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -3631,10 +3575,6 @@ struct retro_core_options_v2 options_da = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_DE "Solarsensorstufe"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_DE "Setzt die Intensität des Umgebungslichts. Kann von Spielen verwendet werden, die einen Solarsensor in ihre Module eingeschlossen haben, z. B. die Boktai-Serie."
 #define OPTION_VAL_SENSOR_DE "Gerätesensor verwenden, falls verfügbar"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_DE NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_DE NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_DE NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_DE NULL
 #define MGBA_FORCE_GBP_LABEL_DE "Game-Boy-Player-Rumble (Neustart erforderlich)"
 #define MGBA_FORCE_GBP_INFO_0_DE "Wird dies aktiviert, können kompatible Spiele mit dem Game-Boy-Player-Bootlogo den Controller zum Rattern bringen. Aufgrund der Entscheidung von Nintendo, wie diese Funktion funktioniert, kann es bei einigen dieser Spiele zu Störungen wie Flackern oder Verzögerungen kommen."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_DE "Leerlaufschleife entfernen"
@@ -3868,31 +3808,28 @@ struct retro_core_option_v2_definition option_defs_de[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_DE,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_DE,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_DE,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_DE,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_DE },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -4071,10 +4008,6 @@ struct retro_core_options_v2 options_de = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_EL "Επίπεδο Ηλιακού Αισθητήρα"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EL NULL
 #define OPTION_VAL_SENSOR_EL "Χρήση αισθητήρα συσκευής εάν υπάρχει"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_EL NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_EL NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_EL NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_EL NULL
 #define MGBA_FORCE_GBP_LABEL_EL NULL
 #define MGBA_FORCE_GBP_INFO_0_EL NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_EL NULL
@@ -4308,31 +4241,28 @@ struct retro_core_option_v2_definition option_defs_el[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_EL,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_EL,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_EL,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EL,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_EL },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -4511,10 +4441,6 @@ struct retro_core_options_v2 options_el = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_EN NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EN NULL
 #define OPTION_VAL_SENSOR_EN NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_EN NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_EN NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_EN NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_EN NULL
 #define MGBA_FORCE_GBP_LABEL_EN NULL
 #define MGBA_FORCE_GBP_INFO_0_EN NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_EN NULL
@@ -4748,31 +4674,28 @@ struct retro_core_option_v2_definition option_defs_en[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_EN,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_EN,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_EN,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EN,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_EN },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -4951,10 +4874,6 @@ struct retro_core_options_v2 options_en = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_EO NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EO NULL
 #define OPTION_VAL_SENSOR_EO NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_EO NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_EO NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_EO NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_EO NULL
 #define MGBA_FORCE_GBP_LABEL_EO NULL
 #define MGBA_FORCE_GBP_INFO_0_EO NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_EO NULL
@@ -5188,31 +5107,28 @@ struct retro_core_option_v2_definition option_defs_eo[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_EO,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_EO,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_EO,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_EO,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_EO },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -5391,10 +5307,6 @@ struct retro_core_options_v2 options_eo = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_ES "Nivel del sensor solar"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_ES "Ajusta la intensidad de la luz solar ambiental. Para juegos que contenían un sensor solar en sus cartuchos, p. ej.: la saga Boktai."
 #define OPTION_VAL_SENSOR_ES "Utilizar dispositivo sensor si está disponible"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_ES NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_ES NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_ES NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_ES NULL
 #define MGBA_FORCE_GBP_LABEL_ES "Vibración de Game Boy Player (es necesario reiniciar)"
 #define MGBA_FORCE_GBP_INFO_0_ES "Permite que los juegos compatibles con el logotipo de arranque de Game Boy Player hagan vibrar el mando. Debido al método que utilizó Nintendo, puede provocar fallos gráficos, como parpadeos o retrasos de señal en algunos de estos juegos."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_ES "Eliminar bucle de inactividad"
@@ -5628,31 +5540,28 @@ struct retro_core_option_v2_definition option_defs_es[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_ES,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_ES,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_ES,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_ES,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_ES },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -5831,10 +5740,6 @@ struct retro_core_options_v2 options_es = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_FA NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FA NULL
 #define OPTION_VAL_SENSOR_FA NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_FA NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_FA NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_FA NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_FA NULL
 #define MGBA_FORCE_GBP_LABEL_FA NULL
 #define MGBA_FORCE_GBP_INFO_0_FA NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_FA NULL
@@ -6068,31 +5973,28 @@ struct retro_core_option_v2_definition option_defs_fa[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_FA,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_FA,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_FA,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FA,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_FA },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -6271,10 +6173,6 @@ struct retro_core_options_v2 options_fa = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_FI "Aurinkoanturin taso"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FI "Asettaa ympäristön auringonvalon voimakkuuden. Voidaan käyttää peleissä, jotka sisälsivät aurinkoanturin kaseteissaan, esim. Boktai-sarjassa."
 #define OPTION_VAL_SENSOR_FI "Käytä laitteen anturia, mikäli saatavana"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_FI NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_FI NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_FI NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_FI NULL
 #define MGBA_FORCE_GBP_LABEL_FI "Game Boy Player tärinä (Uudelleenkäynnistys)"
 #define MGBA_FORCE_GBP_INFO_0_FI "Tämän käyttöönotto mahdollistaa Game Boy Player:in kanssa yhteensopivien pelien käyttää tärinää. Siitä miten Nintendo päätti tämän ominaisuuden pitäisi toimia, se saattaa aiheuttaa virheitä, kuten vilkkumista tai viivettä joissakin näistä peleistä."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_FI "Joutosilmukan poisto"
@@ -6508,31 +6406,28 @@ struct retro_core_option_v2_definition option_defs_fi[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_FI,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_FI,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_FI,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FI,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_FI },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -6711,10 +6606,6 @@ struct retro_core_options_v2 options_fi = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_FR "Niveau du capteur solaire"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FR "Définit l'intensité ambiante de la lumière du soleil. Peut être utilisée par des jeux qui incluaient un capteur solaire dans leurs cartouches, par exemple : la série Boktai."
 #define OPTION_VAL_SENSOR_FR "Utiliser le capteur de l'appareil si disponible"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_FR NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_FR NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_FR NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_FR NULL
 #define MGBA_FORCE_GBP_LABEL_FR "Vibration du Game Boy Player (Redémarrage requis)"
 #define MGBA_FORCE_GBP_INFO_0_FR "Activer cette option permettra aux jeux compatibles avec le logo de démarrage du Game Boy Player de faire vibrer la manette. En raison de la façon dont Nintendo a décidé que cette fonctionnalité devrait marcher, cela peut causer des bugs tels que scintillement ou latence dans certains de ces jeux."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_FR "Suppression de la boucle inactive"
@@ -6948,31 +6839,28 @@ struct retro_core_option_v2_definition option_defs_fr[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_FR,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_FR,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_FR,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_FR,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_FR },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -7151,10 +7039,6 @@ struct retro_core_options_v2 options_fr = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_GL NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_GL NULL
 #define OPTION_VAL_SENSOR_GL NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_GL NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_GL NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_GL NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_GL NULL
 #define MGBA_FORCE_GBP_LABEL_GL NULL
 #define MGBA_FORCE_GBP_INFO_0_GL NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_GL NULL
@@ -7388,31 +7272,28 @@ struct retro_core_option_v2_definition option_defs_gl[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_GL,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_GL,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_GL,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_GL,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_GL },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -7591,10 +7472,6 @@ struct retro_core_options_v2 options_gl = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_HE NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HE NULL
 #define OPTION_VAL_SENSOR_HE NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_HE NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_HE NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_HE NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_HE NULL
 #define MGBA_FORCE_GBP_LABEL_HE NULL
 #define MGBA_FORCE_GBP_INFO_0_HE NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_HE NULL
@@ -7828,31 +7705,28 @@ struct retro_core_option_v2_definition option_defs_he[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_HE,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_HE,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_HE,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HE,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_HE },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -8031,10 +7905,6 @@ struct retro_core_options_v2 options_he = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_HR NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HR NULL
 #define OPTION_VAL_SENSOR_HR NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_HR NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_HR NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_HR NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_HR NULL
 #define MGBA_FORCE_GBP_LABEL_HR NULL
 #define MGBA_FORCE_GBP_INFO_0_HR NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_HR NULL
@@ -8268,31 +8138,28 @@ struct retro_core_option_v2_definition option_defs_hr[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_HR,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_HR,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_HR,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HR,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_HR },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -8471,10 +8338,6 @@ struct retro_core_options_v2 options_hr = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_HU "Fényszenzor szintje"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HU "A környező napfény intenzitásának állítása. Olyan játékok használják, amelyek tartalmaznak fényérzékelőt a cartridge-ben, mint pl. a Boktai sorozat."
 #define OPTION_VAL_SENSOR_HU "Az eszköz szenzorának használata, ha elérhető"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_HU NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_HU NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_HU NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_HU NULL
 #define MGBA_FORCE_GBP_LABEL_HU "Game Boy Player rezgés (újraindítás)"
 #define MGBA_FORCE_GBP_INFO_0_HU "A Game Boy Player indító logóval ellátott kompatibilis játékok rezgethetik a kontrollert. Mivel a Nintendo úgy döntött, hogy ez a feature úgy működjön, ahogy, így aztán hibákat, villódzást vagy késleltetést okozhat néhány ilyen játékban."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_HU "Üresjárati hurkok eltávolítása"
@@ -8708,31 +8571,28 @@ struct retro_core_option_v2_definition option_defs_hu[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_HU,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_HU,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_HU,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_HU,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_HU },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -8911,10 +8771,6 @@ struct retro_core_options_v2 options_hu = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_ID NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_ID NULL
 #define OPTION_VAL_SENSOR_ID NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_ID NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_ID NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_ID NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_ID NULL
 #define MGBA_FORCE_GBP_LABEL_ID "Getaran Game Boy Player (mulai ulang)"
 #define MGBA_FORCE_GBP_INFO_0_ID NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_ID NULL
@@ -9148,31 +9004,28 @@ struct retro_core_option_v2_definition option_defs_id[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_ID,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_ID,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_ID,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_ID,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_ID },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -9351,10 +9204,6 @@ struct retro_core_options_v2 options_id = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_IT "Livello Sensore Solare"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_IT "Imposta l'intensità solare dell'ambiente. Può essere usato dai giochi che includono un sensore solare nelle loro cartucce, es.: la serie Boktai."
 #define OPTION_VAL_SENSOR_IT "Usa sensore dispositivo se disponibile"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_IT NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_IT NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_IT NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_IT NULL
 #define MGBA_FORCE_GBP_LABEL_IT "Vibrazione Game Boy Player (Riavvio)"
 #define MGBA_FORCE_GBP_INFO_0_IT "Abilitando questa opzione i giochi saranno compatibili con il logo di avvio del Game Boy Player per far vibrare il controller. A causa di come Nintendo ha deciso che questa funzione dovrebbe funzionare, può causare problemi come tremolio o ritardo in alcuni di questi giochi."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_IT "Rimozione Idle Loop"
@@ -9588,31 +9437,28 @@ struct retro_core_option_v2_definition option_defs_it[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_IT,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_IT,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_IT,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_IT,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_IT },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -9791,10 +9637,6 @@ struct retro_core_options_v2 options_it = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_JA "太陽センサーレベル"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_JA NULL
 #define OPTION_VAL_SENSOR_JA "利用可能な場合は端末センサーを使用する"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_JA NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_JA NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_JA NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_JA NULL
 #define MGBA_FORCE_GBP_LABEL_JA "ゲームボーイプレーヤー振動 (再起動)"
 #define MGBA_FORCE_GBP_INFO_0_JA "この機能を有効にすると、ゲームボーイプレーヤーの起動ロゴがある対応ゲームで、コントローラーが振動するようになります。この機能は、任天堂の判断により、一部のゲームでちらつきやラグなどの不具合が発生する場合があります。"
 #define MGBA_IDLE_OPTIMIZATION_LABEL_JA "アイドルループの削除"
@@ -10028,31 +9870,28 @@ struct retro_core_option_v2_definition option_defs_ja[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_JA,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_JA,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_JA,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_JA,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_JA },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -10231,10 +10070,6 @@ struct retro_core_options_v2 options_ja = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_KO "태양광 센서 수준"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_KO "태양광 센서의 강도를 설정합니다. 카트리지에 태양광 센서를 장착한 일부 게임(예: Boktai 시리즈)에서 사용할 수 있습니다."
 #define OPTION_VAL_SENSOR_KO "가능한 경우 장치 센서 사용"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_KO NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_KO NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_KO NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_KO NULL
 #define MGBA_FORCE_GBP_LABEL_KO "Game Boy Player 진동 (재시작 필요)"
 #define MGBA_FORCE_GBP_INFO_0_KO "사용할 경우 Game Boy Player 로고를 표시하는 호환 게임에서 컨트롤러 진동을 사용합니다. Nintendo의 진동 구현 방식 때문에 일부 게임에서는 화면 깜빡임 또는 지연이 발생할 수 있습니다."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_KO "유휴 루프 제거"
@@ -10468,31 +10303,28 @@ struct retro_core_option_v2_definition option_defs_ko[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_KO,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_KO,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_KO,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_KO,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_KO },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -10671,10 +10503,6 @@ struct retro_core_options_v2 options_ko = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_MT NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_MT NULL
 #define OPTION_VAL_SENSOR_MT NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_MT NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_MT NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_MT NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_MT NULL
 #define MGBA_FORCE_GBP_LABEL_MT NULL
 #define MGBA_FORCE_GBP_INFO_0_MT NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_MT NULL
@@ -10908,31 +10736,28 @@ struct retro_core_option_v2_definition option_defs_mt[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_MT,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_MT,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_MT,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_MT,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_MT },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -11111,10 +10936,6 @@ struct retro_core_options_v2 options_mt = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_NL NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_NL NULL
 #define OPTION_VAL_SENSOR_NL NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_NL NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_NL NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_NL NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_NL NULL
 #define MGBA_FORCE_GBP_LABEL_NL NULL
 #define MGBA_FORCE_GBP_INFO_0_NL NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_NL NULL
@@ -11348,31 +11169,28 @@ struct retro_core_option_v2_definition option_defs_nl[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_NL,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_NL,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_NL,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_NL,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_NL },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -11551,10 +11369,6 @@ struct retro_core_options_v2 options_nl = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_NO NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_NO NULL
 #define OPTION_VAL_SENSOR_NO NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_NO NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_NO NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_NO NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_NO NULL
 #define MGBA_FORCE_GBP_LABEL_NO NULL
 #define MGBA_FORCE_GBP_INFO_0_NO NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_NO NULL
@@ -11788,31 +11602,28 @@ struct retro_core_option_v2_definition option_defs_no[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_NO,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_NO,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_NO,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_NO,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_NO },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -11991,10 +11802,6 @@ struct retro_core_options_v2 options_no = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_OC NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_OC NULL
 #define OPTION_VAL_SENSOR_OC NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_OC NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_OC NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_OC NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_OC NULL
 #define MGBA_FORCE_GBP_LABEL_OC NULL
 #define MGBA_FORCE_GBP_INFO_0_OC NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_OC NULL
@@ -12228,31 +12035,28 @@ struct retro_core_option_v2_definition option_defs_oc[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_OC,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_OC,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_OC,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_OC,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_OC },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -12431,10 +12235,6 @@ struct retro_core_options_v2 options_oc = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PL NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PL NULL
 #define OPTION_VAL_SENSOR_PL "Użyj czujnika urządzenia, jeśli jest dostępny"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_PL NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_PL NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_PL NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_PL NULL
 #define MGBA_FORCE_GBP_LABEL_PL NULL
 #define MGBA_FORCE_GBP_INFO_0_PL NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_PL "Usuwanie pętli bezczynności"
@@ -12668,31 +12468,28 @@ struct retro_core_option_v2_definition option_defs_pl[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_PL,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_PL,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_PL,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PL,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_PL },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -12871,10 +12668,6 @@ struct retro_core_options_v2 options_pl = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_BR "Nível do sensor solar"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PT_BR "Define a intensidade da luz do sol no ambiente. Pode ser usado por jogos que incluem um sensor solar em seus cartuchos, por exemplo: a série Boktai."
 #define OPTION_VAL_SENSOR_PT_BR "Usa um dispositivo sensor, se disponível"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_PT_BR NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_PT_BR NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_PT_BR NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_PT_BR NULL
 #define MGBA_FORCE_GBP_LABEL_PT_BR "Vibração do Game Boy Player (requer reinício)"
 #define MGBA_FORCE_GBP_INFO_0_PT_BR "Permite que os jogos que suportam o logotipo de inicialização do Game Boy Player vibrem o controle. Devido ao método que a Nintendo utilizou, pode causar falhas gráficas como tremulações ou atrasos de sinal em alguns destes jogos."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_PT_BR "Remover loops de inatividade"
@@ -13108,31 +12901,28 @@ struct retro_core_option_v2_definition option_defs_pt_br[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_PT_BR,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_BR,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_PT_BR,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PT_BR,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_PT_BR },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -13311,10 +13101,6 @@ struct retro_core_options_v2 options_pt_br = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_PT NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PT_PT NULL
 #define OPTION_VAL_SENSOR_PT_PT NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_PT_PT NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_PT_PT NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_PT_PT NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_PT_PT NULL
 #define MGBA_FORCE_GBP_LABEL_PT_PT NULL
 #define MGBA_FORCE_GBP_INFO_0_PT_PT NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_PT_PT NULL
@@ -13548,31 +13334,28 @@ struct retro_core_option_v2_definition option_defs_pt_pt[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_PT_PT,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_PT_PT,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_PT_PT,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_PT_PT,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_PT_PT },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -13751,10 +13534,6 @@ struct retro_core_options_v2 options_pt_pt = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_RO NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_RO NULL
 #define OPTION_VAL_SENSOR_RO NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_RO NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_RO NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_RO NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_RO NULL
 #define MGBA_FORCE_GBP_LABEL_RO NULL
 #define MGBA_FORCE_GBP_INFO_0_RO NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_RO NULL
@@ -13988,31 +13767,28 @@ struct retro_core_option_v2_definition option_defs_ro[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_RO,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_RO,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_RO,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_RO,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_RO },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -14191,10 +13967,6 @@ struct retro_core_options_v2 options_ro = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_RU "Уровень датчика света"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_RU "Устанавливает интенсивность окружающего освещения. Может использоваться в играх с картриджами, оснащёнными датчиком света (напр. серия Boktai)."
 #define OPTION_VAL_SENSOR_RU "Использовать датчик устройства"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_RU NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_RU NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_RU NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_RU NULL
 #define MGBA_FORCE_GBP_LABEL_RU "Отдача Game Boy Player (перезапуск)"
 #define MGBA_FORCE_GBP_INFO_0_RU "При включении активирует отдачу для совместимых игр с логотипом Game Boy Player на экране загрузки. Из-за особенностей реализации Nintendo, в некоторых играх данная функция может вызывать баги в виде подтормаживаний или мерцания."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_RU "Удаление циклов простоя"
@@ -14428,31 +14200,28 @@ struct retro_core_option_v2_definition option_defs_ru[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_RU,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_RU,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_RU,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_RU,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_RU },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -14631,10 +14400,6 @@ struct retro_core_options_v2 options_ru = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SI NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SI NULL
 #define OPTION_VAL_SENSOR_SI NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_SI NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_SI NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_SI NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_SI NULL
 #define MGBA_FORCE_GBP_LABEL_SI NULL
 #define MGBA_FORCE_GBP_INFO_0_SI NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_SI NULL
@@ -14868,31 +14633,28 @@ struct retro_core_option_v2_definition option_defs_si[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_SI,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_SI,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_SI,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SI,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_SI },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -15071,10 +14833,6 @@ struct retro_core_options_v2 options_si = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SK NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SK NULL
 #define OPTION_VAL_SENSOR_SK NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_SK NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_SK NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_SK NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_SK NULL
 #define MGBA_FORCE_GBP_LABEL_SK NULL
 #define MGBA_FORCE_GBP_INFO_0_SK NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_SK NULL
@@ -15308,31 +15066,28 @@ struct retro_core_option_v2_definition option_defs_sk[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_SK,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_SK,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_SK,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SK,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_SK },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -15511,10 +15266,6 @@ struct retro_core_options_v2 options_sk = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SR NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SR NULL
 #define OPTION_VAL_SENSOR_SR NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_SR NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_SR NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_SR NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_SR NULL
 #define MGBA_FORCE_GBP_LABEL_SR NULL
 #define MGBA_FORCE_GBP_INFO_0_SR NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_SR NULL
@@ -15748,31 +15499,28 @@ struct retro_core_option_v2_definition option_defs_sr[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_SR,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_SR,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_SR,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SR,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_SR },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -15951,10 +15699,6 @@ struct retro_core_options_v2 options_sr = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_SV NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SV NULL
 #define OPTION_VAL_SENSOR_SV NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_SV NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_SV NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_SV NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_SV NULL
 #define MGBA_FORCE_GBP_LABEL_SV NULL
 #define MGBA_FORCE_GBP_INFO_0_SV NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_SV NULL
@@ -16188,31 +15932,28 @@ struct retro_core_option_v2_definition option_defs_sv[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_SV,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_SV,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_SV,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_SV,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_SV },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -16391,10 +16132,6 @@ struct retro_core_options_v2 options_sv = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_TR "Güneş Sensörü Seviyesi"
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_TR "Ortamdaki güneş ışığı yoğunluğunu ayarlar. Kartuşlarında güneş sensörü bulunan oyunlar tarafından kullanılabilir, örneğin: Boktai serisi."
 #define OPTION_VAL_SENSOR_TR "Varsa cihaz sensörünü kullanın"
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_TR NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_TR NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_TR NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_TR NULL
 #define MGBA_FORCE_GBP_LABEL_TR "Game Boy Player Titreşim (Yeniden Başlat)"
 #define MGBA_FORCE_GBP_INFO_0_TR "Bunu etkinleştirmek, Game Boy Player açılış logosuna sahip uyumlu oyunların denetleyiciyi titretmesine için izin verecektir. Nintendo'nun bu özelliğin çalışması gerektiğine nasıl karar verdiğinden dolayı, bu oyunların bazılarında titreme veya gecikme gibi hatalara neden olabilir."
 #define MGBA_IDLE_OPTIMIZATION_LABEL_TR "Boştaki Döngüyü Kaldır"
@@ -16628,31 +16365,28 @@ struct retro_core_option_v2_definition option_defs_tr[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_TR,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_TR,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_TR,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_TR,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_TR },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -16831,10 +16565,6 @@ struct retro_core_options_v2 options_tr = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_UK NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_UK NULL
 #define OPTION_VAL_SENSOR_UK NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_UK NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_UK NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_UK NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_UK NULL
 #define MGBA_FORCE_GBP_LABEL_UK NULL
 #define MGBA_FORCE_GBP_INFO_0_UK NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_UK NULL
@@ -17068,31 +16798,28 @@ struct retro_core_option_v2_definition option_defs_uk[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_UK,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_UK,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_UK,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_UK,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_UK },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -17271,10 +16998,6 @@ struct retro_core_options_v2 options_uk = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_VAL NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_VAL NULL
 #define OPTION_VAL_SENSOR_VAL NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_VAL NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_VAL NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_VAL NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_VAL NULL
 #define MGBA_FORCE_GBP_LABEL_VAL NULL
 #define MGBA_FORCE_GBP_INFO_0_VAL NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_VAL NULL
@@ -17508,31 +17231,28 @@ struct retro_core_option_v2_definition option_defs_val[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_VAL,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_VAL,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_VAL,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_VAL,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_VAL },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
@@ -17711,10 +17431,6 @@ struct retro_core_options_v2 options_val = {
 #define MGBA_SOLAR_SENSOR_LEVEL_LABEL_VN NULL
 #define MGBA_SOLAR_SENSOR_LEVEL_INFO_0_VN NULL
 #define OPTION_VAL_SENSOR_VN NULL
-#define MGBA_SOLAR_SENSOR_INPUT_LABEL_VN NULL
-#define MGBA_SOLAR_SENSOR_INPUT_INFO_0_VN NULL
-#define OPTION_VAL_SOLAR_INPUT_BUTTONS_VN NULL
-#define OPTION_VAL_SOLAR_INPUT_CHORD_VN NULL
 #define MGBA_FORCE_GBP_LABEL_VN NULL
 #define MGBA_FORCE_GBP_INFO_0_VN NULL
 #define MGBA_IDLE_OPTIMIZATION_LABEL_VN NULL
@@ -17948,31 +17664,28 @@ struct retro_core_option_v2_definition option_defs_vn[] = {
       "no"
    },
    {
-      "mgba_solar_sensor_input",
-      MGBA_SOLAR_SENSOR_INPUT_LABEL_VN,
+      "mgba_solar_sensor_level",
+      MGBA_SOLAR_SENSOR_LEVEL_LABEL_VN,
       NULL,
-      MGBA_SOLAR_SENSOR_INPUT_INFO_0_VN,
+      MGBA_SOLAR_SENSOR_LEVEL_INFO_0_VN,
       NULL,
       "input",
       {
-         { "off",    "Off" },
-         { "sensor", "Use device sensor if available" },
-         { "buttons", "L3/R3 Increment" },
-         { "chord",   "L3 + Stick Chords" },
-         { "0",  "Static: 0" },
-         { "1",  "Static: 1" },
-         { "2",  "Static: 2" },
-         { "3",  "Static: 3" },
-         { "4",  "Static: 4" },
-         { "5",  "Static: 5" },
-         { "6",  "Static: 6" },
-         { "7",  "Static: 7" },
-         { "8",  "Static: 8" },
-         { "9",  "Static: 9" },
-         { "10", "Static: 10" },
-         { NULL, NULL },
+         { "sensor", OPTION_VAL_SENSOR_VN },
+         { "0",      NULL },
+         { "1",      NULL },
+         { "2",      NULL },
+         { "3",      NULL },
+         { "4",      NULL },
+         { "5",      NULL },
+         { "6",      NULL },
+         { "7",      NULL },
+         { "8",      NULL },
+         { "9",      NULL },
+         { "10",     NULL },
+         { NULL,     NULL },
       },
-      "chord"
+      "0"
    },
    {
       "mgba_force_gbp",
