@@ -93,6 +93,7 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 	SDL_SetJoystickEventsEnabled(true);
 	int nJoysticks;
 	SDL_JoystickID* ids = SDL_GetJoysticks(&nJoysticks);
+	SDL_JoystickListInit(&context->joysticks, nJoysticks);
 	if (nJoysticks > 0) {
 		mSDLUpdateJoysticks(context, NULL);
 		int i;
