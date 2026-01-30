@@ -66,6 +66,29 @@ M_TEST_DEFINE(bitUnmask) {
 	mScriptContextDeinit(&context);
 }
 
+M_TEST_DEFINE(packColor) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("assert(util.packColor)");
+	TEST_PROGRAM("assert(util.packColor(255, 128, 30) == 3615)");
+
+	mScriptContextDeinit(&context);
+}
+
+M_TEST_DEFINE(unpackColor) {
+	SETUP_LUA;
+
+	TEST_PROGRAM("assert(util.unpackColor)");
+	TEST_PROGRAM("assert(util.unpackColor(3615).red == 255)");
+	TEST_PROGRAM("assert(util.unpackColor(3615)[1] == 255)");
+	TEST_PROGRAM("assert(util.unpackColor(3615).green == 131)");
+	TEST_PROGRAM("assert(util.unpackColor(3615)[2] == 131)");
+	TEST_PROGRAM("assert(util.unpackColor(3615).blue == 24)");
+	TEST_PROGRAM("assert(util.unpackColor(3615)[3] == 24)");
+
+	mScriptContextDeinit(&context);
+}
+
 M_TEST_DEFINE(callbacks) {
 	SETUP_LUA;
 
@@ -260,6 +283,8 @@ M_TEST_DEFINE(size) {
 M_TEST_SUITE_DEFINE_SETUP_TEARDOWN(mScriptStdlib,
 	cmocka_unit_test(bitMask),
 	cmocka_unit_test(bitUnmask),
+	cmocka_unit_test(packColor),
+	cmocka_unit_test(unpackColor),
 	cmocka_unit_test(callbacks),
 	cmocka_unit_test(oneshot),
 	cmocka_unit_test(callbackWeakref),
