@@ -75,6 +75,8 @@ static void _audioRateChanged(struct mAVStream*, unsigned rate);
 static void _setRumble(struct mRumbleIntegrator*, float level);
 static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
+static int _boktai1StepToBar(int step);
+static int _boktai1BarToStep(int bar);
 static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned height, size_t pitch);
 static void _startImage(struct mImageSource*, unsigned w, unsigned h, int colorFormats);
 static void _stopImage(struct mImageSource*);
@@ -106,6 +108,7 @@ static int luxLevelIndex;
 static uint8_t luxLevel;
 static bool luxSensorEnabled;
 static bool luxSensorUsed;
+static bool boktai1Game;
 static struct mLogger logger;
 static struct retro_camera_callback cam;
 static struct mImageSource imageSource;
@@ -1436,6 +1439,7 @@ void retro_init(void) {
 	envVarsUpdated = true;
 	luxSensorUsed = false;
 	luxSensorEnabled = false;
+	boktai1Game = false;
 	luxLevelIndex = 0;
 	luxLevel = 0;
 	lux.readLuminance = _readLux;
@@ -1613,15 +1617,31 @@ void retro_run(void) {
 			                  inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3);
 		} else {
 			if (inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)) {
-				++luxLevelIndex;
-				if (luxLevelIndex > 10) {
-					luxLevelIndex = 10;
+				if (boktai1Game) {
+					int bar = _boktai1StepToBar(luxLevelIndex);
+					if (bar < 8) {
+						++bar;
+					}
+					luxLevelIndex = _boktai1BarToStep(bar);
+				} else {
+					++luxLevelIndex;
+					if (luxLevelIndex > 10) {
+						luxLevelIndex = 10;
+					}
 				}
 				wasAdjustingLux = true;
 			} else if (inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)) {
-				--luxLevelIndex;
-				if (luxLevelIndex < 0) {
-					luxLevelIndex = 0;
+				if (boktai1Game) {
+					int bar = _boktai1StepToBar(luxLevelIndex);
+					if (bar > 0) {
+						--bar;
+					}
+					luxLevelIndex = _boktai1BarToStep(bar);
+				} else {
+					--luxLevelIndex;
+					if (luxLevelIndex < 0) {
+						luxLevelIndex = 0;
+					}
 				}
 				wasAdjustingLux = true;
 			}
@@ -2088,6 +2108,22 @@ bool retro_load_game(const struct retro_game_info* game) {
 	core->loadROM(core, rom);
 	deferredSetup = true;
 
+	/* Boktai 1 has an 8-bar solar gauge. Detect it once per loaded game so
+	 * manual adjustments (core option level + L3/R3) operate in 0-8 bars. */
+	boktai1Game = false;
+#ifdef M_CORE_GBA
+	if (core->platform(core) == mPLATFORM_GBA) {
+		struct mGameInfo info;
+		core->getGameInfo(core, &info);
+		boktai1Game = strcmp(info.code, "U3IJ") == 0 ||
+		              strcmp(info.code, "U3IE") == 0 ||
+		              strcmp(info.code, "U3IP") == 0;
+	}
+#endif
+	/* Re-apply solar settings with the correct mapping for this title. */
+	envVarsUpdated = true;
+	_updateLux(&lux);
+
 	const char* sysDir = 0;
 	const char* biosName = 0;
 	char biosPath[PATH_MAX];
@@ -2154,6 +2190,7 @@ void retro_unload_game(void) {
 	if (!core) {
 		return;
 	}
+	boktai1Game = false;
 	mCoreConfigDeinit(&core->config);
 	core->deinit(core);
 	mappedMemoryFree(data, dataSize);
@@ -2466,6 +2503,26 @@ static void _setRumble(struct mRumbleIntegrator* rumble, float level) {
 	rumbleCallback(0, RETRO_RUMBLE_WEAK, level * 0xFFFF);
 }
 
+static int _boktai1StepToBar(int step) {
+	static const uint8_t map[11] = { 0, 1, 2, 3, 3, 4, 5, 6, 7, 7, 8 };
+	if (step < 0) {
+		step = 0;
+	} else if (step > 10) {
+		step = 10;
+	}
+	return map[step];
+}
+
+static int _boktai1BarToStep(int bar) {
+	static const uint8_t map[9] = { 0, 1, 2, 3, 5, 6, 7, 8, 10 };
+	if (bar < 0) {
+		bar = 0;
+	} else if (bar > 8) {
+		bar = 8;
+	}
+	return map[bar];
+}
+
 static void _updateLux(struct GBALuminanceSource* lux) {
 	UNUSED(lux);
 	struct retro_variable var = {
@@ -2492,12 +2549,24 @@ static void _updateLux(struct GBALuminanceSource* lux) {
 			int newLuxLevelIndex = strtol(var.value, &end, 10);
 
 			if (!*end) {
-				if (newLuxLevelIndex > 10) {
-					luxLevelIndex = 10;
-				} else if (newLuxLevelIndex < 0) {
-					luxLevelIndex = 0;
+				if (boktai1Game) {
+					/* Boktai 1 shows an 8-bar gauge (0-8). Clamp any user-provided
+					 * values outside that range, then map into the internal 10-step
+					 * lux level indices. */
+					if (newLuxLevelIndex > 8) {
+						newLuxLevelIndex = 8;
+					} else if (newLuxLevelIndex < 0) {
+						newLuxLevelIndex = 0;
+					}
+					luxLevelIndex = _boktai1BarToStep(newLuxLevelIndex);
 				} else {
-					luxLevelIndex = newLuxLevelIndex;
+					if (newLuxLevelIndex > 10) {
+						luxLevelIndex = 10;
+					} else if (newLuxLevelIndex < 0) {
+						luxLevelIndex = 0;
+					} else {
+						luxLevelIndex = newLuxLevelIndex;
+					}
 				}
 			}
 		}
