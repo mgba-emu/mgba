@@ -318,7 +318,9 @@ void Window::loadConfig() {
 void Window::reloadConfig() {
 	const mCoreOptions* opts = m_config->options();
 
-	m_log.setLevels(opts->logLevel);
+	if (!m_skipResetLevels) {
+		m_log.setLevels(opts->logLevel);
+	}
 
 	if (m_controller) {
 		m_controller->loadConfig(m_config);
@@ -1428,6 +1430,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addSeparator("file");
 	m_multiWindow = m_actions.addAction(tr("New multiplayer window"), "multiWindow", GBAApp::app(), &GBAApp::newWindow, "file");
+	setSkipResetLevels(false);
 
 #ifdef M_CORE_GBA
 	auto dolphin = m_actions.addAction(tr("Connect to Dolphin..."), "connectDolphin", openNamedTView<DolphinConnector>(&m_dolphinView, true, this), "file");
@@ -2394,4 +2397,8 @@ void WindowBackground::paintEvent(QPaintEvent* event) {
 	painter.fillRect(QRect(QPoint(), size()), Qt::black);
 	QRect full(clampSize(QSize(m_aspectWidth, m_aspectHeight), size(), true, false));
 	painter.drawPixmap(full, logo);
+}
+
+void Window::setSkipResetLevels(bool doSkip) {
+	m_skipResetLevels = doSkip;
 }
