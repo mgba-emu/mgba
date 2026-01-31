@@ -55,6 +55,7 @@ static unsigned targetSampleRate = GBA_RESAMPLED_RATE;
 #define VIDEO_WIDTH_MAX  256
 #define VIDEO_HEIGHT_MAX 224
 #define VIDEO_BUFF_SIZE  (VIDEO_WIDTH_MAX * VIDEO_HEIGHT_MAX * sizeof(mColor))
+#define LIBRETRO_MAX_PORTS 8
 
 static retro_environment_t environCallback;
 static retro_video_refresh_t videoCallback;
@@ -77,6 +78,7 @@ static uint8_t _readLux(struct GBALuminanceSource* lux);
 static void _updateLux(struct GBALuminanceSource* lux);
 static int _boktai1StepToBar(int step);
 static int _boktai1BarToStep(int bar);
+static int _analogStickSolarLevel(unsigned port);
 static void _updateCamera(const uint32_t* buffer, unsigned width, unsigned height, size_t pitch);
 static void _startImage(struct mImageSource*, unsigned w, unsigned h, int colorFormats);
 static void _stopImage(struct mImageSource*);
@@ -108,6 +110,7 @@ static int luxLevelIndex;
 static uint8_t luxLevel;
 static bool luxSensorEnabled;
 static bool luxSensorUsed;
+static bool luxAnalogMode;
 static bool boktai1Game;
 static struct mLogger logger;
 static struct retro_camera_callback cam;
@@ -1611,39 +1614,60 @@ void retro_run(void) {
 	core->setKeys(core, keys);
 
 	if (!luxSensorUsed) {
-		static bool wasAdjustingLux = false;
-		if (wasAdjustingLux) {
-			wasAdjustingLux = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3) ||
-			                  inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3);
+		if (luxAnalogMode) {
+			int level = -1;
+			unsigned port;
+			for (port = 0; port < LIBRETRO_MAX_PORTS; ++port) {
+				level = _analogStickSolarLevel(port);
+				if (level >= 0) {
+					break;
+				}
+			}
+			if (level >= 0) {
+				if (boktai1Game) {
+					if (level > 8) {
+						level = 8;
+					}
+					luxLevelIndex = _boktai1BarToStep(level);
+				} else {
+					luxLevelIndex = level;
+				}
+			}
 		} else {
-			if (inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)) {
-				if (boktai1Game) {
-					int bar = _boktai1StepToBar(luxLevelIndex);
-					if (bar < 8) {
-						++bar;
+			static bool wasAdjustingLux = false;
+			if (wasAdjustingLux) {
+				wasAdjustingLux = inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3) ||
+				                  inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3);
+			} else {
+				if (inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3)) {
+					if (boktai1Game) {
+						int bar = _boktai1StepToBar(luxLevelIndex);
+						if (bar < 8) {
+							++bar;
+						}
+						luxLevelIndex = _boktai1BarToStep(bar);
+					} else {
+						++luxLevelIndex;
+						if (luxLevelIndex > 10) {
+							luxLevelIndex = 10;
+						}
 					}
-					luxLevelIndex = _boktai1BarToStep(bar);
-				} else {
-					++luxLevelIndex;
-					if (luxLevelIndex > 10) {
-						luxLevelIndex = 10;
+					wasAdjustingLux = true;
+				} else if (inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)) {
+					if (boktai1Game) {
+						int bar = _boktai1StepToBar(luxLevelIndex);
+						if (bar > 0) {
+							--bar;
+						}
+						luxLevelIndex = _boktai1BarToStep(bar);
+					} else {
+						--luxLevelIndex;
+						if (luxLevelIndex < 0) {
+							luxLevelIndex = 0;
+						}
 					}
+					wasAdjustingLux = true;
 				}
-				wasAdjustingLux = true;
-			} else if (inputCallback(0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3)) {
-				if (boktai1Game) {
-					int bar = _boktai1StepToBar(luxLevelIndex);
-					if (bar > 0) {
-						--bar;
-					}
-					luxLevelIndex = _boktai1BarToStep(bar);
-				} else {
-					--luxLevelIndex;
-					if (luxLevelIndex < 0) {
-						luxLevelIndex = 0;
-					}
-				}
-				wasAdjustingLux = true;
 			}
 		}
 	}
@@ -2523,6 +2547,61 @@ static int _boktai1BarToStep(int bar) {
 	return map[bar];
 }
 
+static int _analogStickSolarLevel(unsigned port) {
+	const int16_t dead = 0x4000;
+	int16_t lx = inputCallback(port, RETRO_DEVICE_ANALOG,
+	                           RETRO_DEVICE_INDEX_ANALOG_LEFT,
+	                           RETRO_DEVICE_ID_ANALOG_X);
+	int16_t ly = inputCallback(port, RETRO_DEVICE_ANALOG,
+	                           RETRO_DEVICE_INDEX_ANALOG_LEFT,
+	                           RETRO_DEVICE_ID_ANALOG_Y);
+	int16_t rx = inputCallback(port, RETRO_DEVICE_ANALOG,
+	                           RETRO_DEVICE_INDEX_ANALOG_RIGHT,
+	                           RETRO_DEVICE_ID_ANALOG_X);
+	int16_t ry = inputCallback(port, RETRO_DEVICE_ANALOG,
+	                           RETRO_DEVICE_INDEX_ANALOG_RIGHT,
+	                           RETRO_DEVICE_ID_ANALOG_Y);
+
+	int group = -1;
+	if (ly < -dead) {
+		group = 0; /* 0-3 */
+	} else if (ly > dead) {
+		group = 1; /* 4-7 */
+	} else if (lx < -dead) {
+		group = 2; /* 8-10 & 0 */
+	}
+
+	int select = -1;
+	if (ry < -dead) {
+		select = 0; /* 0/4/8 */
+	} else if (ry > dead) {
+		select = 1; /* 1/5/9 */
+	} else if (rx < -dead) {
+		select = 2; /* 2/6/10 */
+	} else if (rx > dead) {
+		select = 3; /* 3/7/0 */
+	}
+
+	if (group < 0 || select < 0) {
+		return -1;
+	}
+
+	if (group == 0) {
+		return select;
+	} else if (group == 1) {
+		return 4 + select;
+	}
+
+	if (select == 0) {
+		return 8;
+	} else if (select == 1) {
+		return 9;
+	} else if (select == 2) {
+		return 10;
+	}
+	return 0;
+}
+
 static void _updateLux(struct GBALuminanceSource* lux) {
 	UNUSED(lux);
 	struct retro_variable var = {
@@ -2537,6 +2616,7 @@ static void _updateLux(struct GBALuminanceSource* lux) {
 
 	if (luxVarUpdated) {
 		luxSensorUsed = strcmp(var.value, "sensor") == 0;
+		luxAnalogMode = strcmp(var.value, "analog") == 0;
 	}
 
 	if (luxSensorUsed) {
@@ -2544,7 +2624,7 @@ static void _updateLux(struct GBALuminanceSource* lux) {
 		float fLux = luxSensorEnabled ? sensorGetCallback(0, RETRO_SENSOR_ILLUMINANCE) : 0.0f;
 		luxLevel = cbrtf(fLux) * 8;
 	} else {
-		if (luxVarUpdated) {
+		if (luxVarUpdated && !luxAnalogMode) {
 			char* end;
 			int newLuxLevelIndex = strtol(var.value, &end, 10);
 
