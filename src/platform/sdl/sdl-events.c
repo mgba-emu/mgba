@@ -67,6 +67,24 @@ static struct SDL_JoystickCombo* _mSDLOpenJoystick(struct mSDLEvents* events, in
 }
 
 bool mSDLInitEvents(struct mSDLEvents* context) {
+#if SDL_VERSION_ATLEAST(2, 0, 2)
+	char path[PATH_MAX + 1];
+	mCoreConfigDirectory(path, PATH_MAX);
+	strncat(path, PATH_SEP "gamecontrollerdb.txt", PATH_MAX - strlen(path));
+
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	int result = SDL_AddGamepadMappingsFromFile(path);
+#else
+	int result = SDL_GameControllerAddMappingsFromFile(path);
+#endif
+
+	if (result < 0) {
+		mLOG(SDL_EVENTS, DEBUG, "SDL failed to load optional game controller mappings from %s: %s", path, SDL_GetError());
+	} else {
+		mLOG(SDL_EVENTS, INFO, "Loaded %d gamepad mappings from %s", result, path);
+	}
+#endif
+
 #if SDL_VERSION_ATLEAST(2, 0, 4)
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 #endif
