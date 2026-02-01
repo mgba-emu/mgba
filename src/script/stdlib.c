@@ -78,11 +78,8 @@ static struct mScriptValue* mScriptExpandBitmask(uint64_t mask) {
 mSCRIPT_BIND_FUNCTION(mScriptMakeBitmask_Binding, U64, mScriptMakeBitmask, 1, LIST, bits);
 mSCRIPT_BIND_FUNCTION(mScriptExpandBitmask_Binding, WLIST, mScriptExpandBitmask, 1, U64, mask);
 
-static uint16_t mScriptPackColor(uint32_t red, uint32_t green, uint32_t blue) {
-	red /= 8;
-	green /= 8;
-	blue /= 8;
-	return (uint16_t) ((blue << 10) | (green << 5) | red);
+static uint16_t mScriptPackColor(uint8_t red, uint8_t green, uint8_t blue) {
+	return (uint16_t) (((blue & 31) << 10) | ((green & 31) << 5) | (red & 31));
 }
 
 static struct mScriptValue* mScriptUnpackColor(uint16_t color) {
@@ -91,7 +88,7 @@ static struct mScriptValue* mScriptUnpackColor(uint16_t color) {
 	char* keys[3] = {"red", "green", "blue"};
 
 	for (size_t i = 0; i < 3; ++i) {
-		uint16_t part = ((color >> i*5) & 31) * 255 / 31;
+		uint16_t part = (color >> 5*i) & 31;
 		struct mScriptValue* ikey = mScriptValueCreateFromUInt(i + 1);
 		struct mScriptValue* skey = mScriptStringCreateFromASCII(keys[i]);
 		struct mScriptValue* val = mScriptValueCreateFromUInt(part);
@@ -103,7 +100,7 @@ static struct mScriptValue* mScriptUnpackColor(uint16_t color) {
 	return tbl;
 }
 
-mSCRIPT_BIND_FUNCTION(mScriptPackColor_Binding, U16, mScriptPackColor, 3, U32, red, U32, green, U32, blue);
+mSCRIPT_BIND_FUNCTION(mScriptPackColor_Binding, U16, mScriptPackColor, 3, U8, red, U8, green, U8, blue);
 mSCRIPT_BIND_FUNCTION(mScriptUnpackColor_Binding, WTABLE, mScriptUnpackColor, 1, U16, color);
 
 mSCRIPT_DEFINE_STRUCT(mScriptCallbackManager)
@@ -309,8 +306,8 @@ void mScriptContextAttachStdlib(struct mScriptContext* context) {
 	mScriptContextSetDocstring(context, "util", "Basic utility library");
 	mScriptContextSetDocstring(context, "util.makeBitmask", "Compile a list of bit indices into a bitmask");
 	mScriptContextSetDocstring(context, "util.expandBitmask", "Expand a bitmask into a list of bit indices");
-	mScriptContextSetDocstring(context, "util.packColor", "Pack three RGB channels (0-255) into the native 555 format.");
-	mScriptContextSetDocstring(context, "util.unpackColor", "Split a color in native 555 format into a table of red, blue and green channels (indexed by name or integer) in range 0 to 255.");
+	mScriptContextSetDocstring(context, "util.packColor", "Pack three RGB channels (0-31) into a 16-bit value.");
+	mScriptContextSetDocstring(context, "util.unpackColor", "Split a color in a 16-bit value into a table of red, blue and green channels (indexed by name or integer) from 0 to 31.");
 	mScriptContextSetDocstring(context, "util.newRectangle", "Create a new mRectangle");
 	mScriptContextSetDocstring(context, "util.newSize", "Create a new mSize");
 
