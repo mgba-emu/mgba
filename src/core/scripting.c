@@ -696,9 +696,9 @@ mSCRIPT_DEFINE_STRUCT(mCore)
 	mSCRIPT_DEFINE_DOCSTRING("Write the value of the register with the given name")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, writeRegister)
 
-	mSCRIPT_DEFINE_DOCSTRING("Read a 16-bit value from the given palette index (0-indexed)")
+	mSCRIPT_DEFINE_DOCSTRING("Read a 16-bit value encoding the RGB channels in 5 bits each from the given palette index (0-indexed). See util.unpackColor")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, readPalette)
-	mSCRIPT_DEFINE_DOCSTRING("Write a 16-bit value to the given palette index (0-indexed)")
+	mSCRIPT_DEFINE_DOCSTRING("Write a 16-bit value encoding the RGB channels in 5 bits each to the given palette index (0-indexed). See util.packColor")
 	mSCRIPT_DEFINE_STRUCT_METHOD(mCore, writePalette)
 
 	mSCRIPT_DEFINE_DOCSTRING("Save state and return as a buffer. See C.SAVESTATE for possible values for `flags`")
