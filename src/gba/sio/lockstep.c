@@ -216,6 +216,7 @@ static void GBASIOLockstepDriverReset(struct GBASIODriver* driver) {
 			_enqueueEvent(coordinator, &event, TARGET_ALL & ~TARGET(player->playerId));
 		}
 	} else {
+		MutexLock(&coordinator->mutex);
 		player = TableLookup(&coordinator->players, lockstep->lockstepId);
 		player->cycleOffset = mTimingCurrentTime(&driver->p->p->timing) - coordinator->cycle;
 	}
