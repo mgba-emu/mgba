@@ -518,7 +518,11 @@ static bool GBASIOLockstepDriverStart(struct GBASIODriver* driver) {
 	bool ret = false;
 	MutexLock(&coordinator->mutex);
 	if (coordinator->transferActive) {
-		mLOG(GBA_SIO, ERROR, "Transfer restarted unexpectedly");
+		mLOG(GBA_SIO, GAME_ERROR, "Transfer restarted unexpectedly");
+		goto out;
+	}
+	if (coordinator->nAttached < 2) {
+		mLOG(GBA_SIO, DEBUG, "Attempted to start transfer with no secondary players");
 		goto out;
 	}
 	struct GBASIOLockstepPlayer* player = TableLookup(&coordinator->players, lockstep->lockstepId);
