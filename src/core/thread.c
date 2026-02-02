@@ -334,7 +334,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 			}
 		}
 
-		impl->requested &= ~pendingRequests | mTHREAD_REQ_PAUSE | mTHREAD_REQ_WAIT;
+		impl->requested &= ~pendingRequests | mTHREAD_REQ_PAUSE | mTHREAD_REQ_WAIT | mTHREAD_REQ_CRASHED;
 		pendingRequests = impl->requested;
 
 		if (impl->state == mTHREAD_REQUEST) {
@@ -344,6 +344,9 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 				}
 				if (pendingRequests & mTHREAD_REQ_WAIT) {
 					_changeState(impl, mTHREAD_PAUSED);
+				}
+				if (pendingRequests & mTHREAD_REQ_CRASHED) {
+					_changeState(impl, mTHREAD_CRASHED);
 				}
 			} else {
 				_changeState(impl, mTHREAD_RUNNING);
@@ -494,16 +497,14 @@ bool mCoreThreadHasCrashed(struct mCoreThread* threadContext) {
 
 void mCoreThreadMarkCrashed(struct mCoreThread* threadContext) {
 	MutexLock(&threadContext->impl->stateMutex);
+	threadContext->impl->requested |= mTHREAD_REQ_CRASHED;
 	_changeState(threadContext->impl, mTHREAD_CRASHED);
 	MutexUnlock(&threadContext->impl->stateMutex);
 }
 
 void mCoreThreadClearCrashed(struct mCoreThread* threadContext) {
 	MutexLock(&threadContext->impl->stateMutex);
-	if (threadContext->impl->state == mTHREAD_CRASHED) {
-		threadContext->impl->state = mTHREAD_REQUEST;
-		ConditionWake(&threadContext->impl->stateOnThreadCond);
-	}
+	_cancelRequest(threadContext->impl, mTHREAD_REQ_CRASHED);
 	MutexUnlock(&threadContext->impl->stateMutex);
 }
 
@@ -532,6 +533,7 @@ void mCoreThreadEnd(struct mCoreThread* threadContext) {
 void mCoreThreadReset(struct mCoreThread* threadContext) {
 	MutexLock(&threadContext->impl->stateMutex);
 	_waitOnInterrupt(threadContext->impl);
+	_cancelRequest(threadContext->impl, mTHREAD_REQ_CRASHED);
 	_sendRequest(threadContext->impl, mTHREAD_REQ_RESET);
 	_waitOnRequest(threadContext->impl, mTHREAD_REQ_RESET);
 	MutexUnlock(&threadContext->impl->stateMutex);

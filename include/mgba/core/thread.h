@@ -78,6 +78,7 @@ enum mCoreThreadRequest {
 	mTHREAD_REQ_WAIT = 2, // Core-set pause
 	mTHREAD_REQ_RESET = 4,
 	mTHREAD_REQ_RUN_ON = 8,
+	mTHREAD_REQ_CRASHED = 16,
 };
 
 struct mCoreThreadInternal {
