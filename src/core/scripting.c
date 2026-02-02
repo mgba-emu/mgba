@@ -442,7 +442,10 @@ static uint16_t _mScriptCoreReadPalette(struct mCore* core, uint32_t index) {
 		return 0x8000;
 	}
 
-	return palette[index];
+	uint16_t color;
+	LOAD_16LE(color, 2 * index, palette);
+
+	return color;
 }
 
 static void _mScriptCoreWritePalette(struct mCore* core, uint32_t index, uint16_t color) {
@@ -456,8 +459,10 @@ static void _mScriptCoreWritePalette(struct mCore* core, uint32_t index, uint16_
 		struct GBA* gba = (struct GBA*) core->board;
 		palette = gba->video.palette;
 
+		STORE_16LE(color, 2 * index, palette);
+
 		struct GBAVideoRenderer* gbaRenderer = gba->video.renderer;
-		gbaRenderer->writePalette(gbaRenderer, index, color);
+		gbaRenderer->writePalette(gbaRenderer, index, palette[index]);
 		break;
 #endif
 #ifdef M_CORE_GB
@@ -468,15 +473,15 @@ static void _mScriptCoreWritePalette(struct mCore* core, uint32_t index, uint16_
 		struct GB* gb = (struct GB*) core->board;
 		palette = gb->video.palette;
 
+		STORE_16LE(color, 2 * index, palette);
+
 		struct GBVideoRenderer* gbRenderer = gb->video.renderer;
-		gbRenderer->writePalette(gbRenderer, index, color);
+		gbRenderer->writePalette(gbRenderer, index, palette[index]);
 		break;
 #endif
 	default:
-		return;
+		break;
 	}
-
-	palette[index] = color;
 }
 
 static struct mScriptValue* _mScriptCoreSaveState(struct mCore* core, int32_t flags) {
