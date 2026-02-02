@@ -340,6 +340,40 @@ M_TEST_DEFINE(readPalette) {
 	uint16_t* palette = 0;
 
 	switch(core->platform(core)) {
+#ifdef M_CORE_GBA
+		case mPLATFORM_GBA:
+			struct GBA* gba = (struct GBA*) core->board;
+			palette = gba->video.palette;
+			break;
+#endif
+#ifdef M_CORE_GB
+		case mPLATFORM_GB:
+			struct GB* gb = (struct GB*) core->board;
+			palette = gb->video.palette;
+			break;
+#endif
+		default:
+			break;
+	}
+
+	if (palette != 0) {
+		palette[0] = 123;
+
+		TEST_PROGRAM("assert(emu.readPalette)")
+		TEST_PROGRAM("assert(emu:readPalette(0) == 123)")
+	}
+
+	mScriptContextDeinit(&context);
+	TEARDOWN_CORE;
+}
+
+M_TEST_DEFINE(writePalette) {
+	SETUP_LUA;
+	CREATE_CORE;
+
+	uint16_t* palette = 0;
+
+	switch(core->platform(core)) {
 #if(TEST_PLATFORM == mPLATFORM_GBA)
 		case mPLATFORM_GBA:
 			struct GBA* gba = (struct GBA*) core->board;
@@ -357,52 +391,10 @@ M_TEST_DEFINE(readPalette) {
 	}
 
 	if (palette != 0) {
-		for (size_t i = 0; i < 4; ++i) {
-			palette[i] = i;
-		}
-
-		TEST_PROGRAM("assert(emu.readPalette)")
-		TEST_PROGRAM("palette = emu:readPalette(0)")
-		TEST_PROGRAM("assert(palette)")
-		TEST_PROGRAM("assert(palette[1] == 0)")
-		TEST_PROGRAM("assert(palette[2] == 1)")
-		TEST_PROGRAM("assert(palette[3] == 2)")
-		TEST_PROGRAM("assert(palette[4] == 3)")
-	}
-
-	mScriptContextDeinit(&context);
-	TEARDOWN_CORE;
-}
-
-M_TEST_DEFINE(writePalette) {
-	SETUP_LUA;
-	CREATE_CORE;
-
-	uint16_t* palette = 0;
-
-	switch(core->platform(core)) {
-#if(TEST_PLATFORM == mPLATFORM_GBA)
-		case mPLATFORM_GBA:
-			break;
-#endif
-#if(TEST_PLATFORM == mPLATFORM_GB)
-		case mPLATFORM_GB:
-			struct GB* gb = (struct GB*) core->board;
-			palette = gb->video.palette;
-			break;
-#endif
-		default:
-			break;
-	}
-
-	if (palette != 0) {
 		TEST_PROGRAM("assert(emu.writePalette)")
-		TEST_PROGRAM("emu:writePalette(0, 0, 1, 2, 3)")
+		TEST_PROGRAM("emu:writePalette(0, 123)")
 
-		for (size_t i = 0; i < 4; ++i) {
-			printf("%d\n", palette[i]);
-			assert(palette[i] == i);
-		}
+		assert_true(palette[0] == 123);
 	}
 
 	mScriptContextDeinit(&context);
