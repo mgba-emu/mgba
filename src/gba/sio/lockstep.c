@@ -586,7 +586,7 @@ static void GBASIOLockstepDriverFinishMultiplayer(struct GBASIODriver* driver, u
 			mLOG(GBA_SIO, WARN, "MULTI did not receive data. Are we running behind?");
 			memset(data, 0xFF, sizeof(uint16_t) * 4);
 		} else {
-			mLOG(GBA_SIO, INFO, "MULTI transfer finished: %04X %04X %04X %04X",
+			mLOG(GBA_SIO, DEBUG, "MULTI transfer finished: %04X %04X %04X %04X",
 			     coordinator->multiData[0],
 			     coordinator->multiData[1],
 			     coordinator->multiData[2],
@@ -613,7 +613,7 @@ static uint8_t GBASIOLockstepDriverFinishNormal8(struct GBASIODriver* driver) {
 				mLOG(GBA_SIO, WARN, "NORMAL did not receive data. Are we running behind?");
 			} else {
 				data = coordinator->normalData[player->playerId - 1];
-				mLOG(GBA_SIO, INFO, "NORMAL8 transfer finished: %02X", data);
+				mLOG(GBA_SIO, DEBUG, "NORMAL8 transfer finished: %02X", data);
 			}
 		}
 		player->dataReceived = false;
@@ -637,7 +637,7 @@ static uint32_t GBASIOLockstepDriverFinishNormal32(struct GBASIODriver* driver) 
 				mLOG(GBA_SIO, WARN, "Did not receive data. Are we running behind?");
 			} else {
 				data = coordinator->normalData[player->playerId - 1];
-				mLOG(GBA_SIO, INFO, "NORMAL32 transfer finished: %08X", data);
+				mLOG(GBA_SIO, DEBUG, "NORMAL32 transfer finished: %08X", data);
 			}
 		}
 		player->dataReceived = false;
@@ -840,7 +840,7 @@ static void _setData(struct GBASIOLockstepCoordinator* coordinator, uint32_t id,
 	case GBA_SIO_UART:
 	case GBA_SIO_GPIO:
 	case GBA_SIO_JOYBUS:
-		mLOG(GBA_SIO, ERROR, "Unsupported mode %i in lockstep", coordinator->transferMode);
+		mLOG(GBA_SIO, WARN, "Unsupported mode %i in lockstep", coordinator->transferMode);
 		// TODO: Should we handle this or just abort?
 		break;
 	}
