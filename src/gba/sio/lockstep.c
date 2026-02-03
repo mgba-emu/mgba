@@ -11,7 +11,7 @@
 #define DRIVER_ID 0x6B636F4C
 #define DRIVER_STATE_VERSION 1
 #define LOCKSTEP_INTERVAL 4096
-#define UNLOCKED_INTERVAL 4096
+#define UNLOCKED_INTERVAL 8192
 #define HARD_SYNC_INTERVAL 0x80000
 #define TARGET(P) (1 << (P))
 #define TARGET_ALL 0xF
@@ -923,11 +923,8 @@ void _lockstepEvent(struct mTiming* timing, void* context, uint32_t cyclesLate) 
 		if (!coordinator->transferActive) {
 			GBASIOLockstepCoordinatorWakePlayers(coordinator);
 		}
-		if (coordinator->nextHardSync < 0) {
-			if (!coordinator->waiting) {
-				_hardSync(coordinator, player);
-			}
-			coordinator->nextHardSync += HARD_SYNC_INTERVAL;
+		if (coordinator->nextHardSync < 0 && !coordinator->waiting) {
+			_hardSync(coordinator, player);
 		}
 	}
 
@@ -1075,6 +1072,7 @@ void GBASIOLockstepCoordinatorAckPlayer(struct GBASIOLockstepCoordinator* coordi
 			coordinator->transferActive = false;
 		}
 
+		coordinator->nextHardSync = HARD_SYNC_INTERVAL;
 		struct GBASIOLockstepPlayer* runner = TableLookup(&coordinator->players, coordinator->attachedPlayers[0]);
 		GBASIOLockstepPlayerWake(runner);
 	}
