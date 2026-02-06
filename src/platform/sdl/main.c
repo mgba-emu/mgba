@@ -117,6 +117,9 @@ int main(int argc, char** argv) {
 	mCoreConfigSetDefaultIntValue(&renderer.core->config, "logToStdout", true);
 	mCoreConfigLoadDefaults(&renderer.core->config, &opts);
 	mCoreLoadConfig(renderer.core);
+	mStandardLoggerInit(&_logger);
+	mStandardLoggerConfig(&_logger, &renderer.core->config);
+	mLogSetDefaultLogger(&_logger.d);
 
 	renderer.viewportWidth = renderer.core->opts.width;
 	renderer.viewportHeight = renderer.core->opts.height;
@@ -163,8 +166,6 @@ int main(int argc, char** argv) {
 	int ret;
 
 	// TODO: Use opts and config
-	mStandardLoggerInit(&_logger);
-	mStandardLoggerConfig(&_logger, &renderer.core->config);
 	ret = mSDLRun(&renderer, &args);
 	mSDLDetachPlayer(&renderer.events, &renderer.player);
 	mInputMapDeinit(&renderer.core->inputMap);
