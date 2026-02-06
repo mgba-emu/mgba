@@ -133,6 +133,7 @@ ReportView::ReportView(QWidget* parent)
 		gbBioses.insert(QByteArray::fromHex("9e328227920e86d5530f54efedb562e9ce5b6d32a4ecdee0a278a3d9c6a114b1"), QLatin1String("Fortune/Bitman 3000B"));
 		gbBioses.insert(QByteArray::fromHex("7abdaeea7ac2afd39d86a2ddf044fb978ccd4e65fa4ef15ffc8fcd19df71f254"), QLatin1String("Game Fighter"));
 		gbBioses.insert(QByteArray::fromHex("27e4bee8a8fddc80d48393a51fd9cdf33abc981a795f6aecc59a03a12daff881"), QLatin1String("Maxstation"));
+		gbBioses.insert(QByteArray::fromHex("371686262f845b109a180a27e8a2dfd2e7c76bb836a67e10531cf30aeb356f4a"), QLatin1String("Kongfeng GB Boy Colour"));
 		gbBioses.insert(QByteArray::fromHex("a8cb5f4f1f16f2573ed2ecd8daedb9c5d1dd2c30a481f9b179b5d725d95eafe2"), QLatin1String("MGB"));
 		gbBioses.insert(QByteArray::fromHex("fd243c4fb27008986316ce3df29e9cfbcdc0cd52704970555a8bb76edbec3988"), QLatin1String("SGB2"));
 		gbBioses.insert(QByteArray::fromHex("0e4ddff32fc9d1eeaae812a157dd246459b00c9e14f2f61751f661f32361e360"), QLatin1String("SGB"));
