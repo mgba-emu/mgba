@@ -44,6 +44,7 @@ private:
 	void addGamepadInfo(QStringList&);
 	void addROMInfo(QStringList&, CoreController*);
 	void addScreenInfo(QStringList&, const QScreen*);
+	void addBios(QStringList&, const QString& path, const QString& name);
 
 	void addReport(const QString& filename, const QString& report);
 	void addBinary(const QString& filename, const QByteArray& report);
@@ -56,6 +57,8 @@ private:
 	static unsigned s_cpuidMax;
 	static unsigned s_cpuidExtMax;
 #endif
+
+	static QHash<QString, QHash<QByteArray, QString>> s_bioses;
 
 	ConfigController* m_config;
 
