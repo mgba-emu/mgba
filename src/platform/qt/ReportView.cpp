@@ -626,7 +626,7 @@ void ReportView::addBios(QStringList& report, const QString& path, const QString
 	}
 	QByteArray data = bios.readAll();
 	QByteArray hash = QCryptographicHash::hash(data, QCryptographicHash::Sha256);
-	report << QString("%1 SHA-256: %2").arg(name).arg(hash.toHex());
+	report << QString("%1 SHA-256: %2").arg(name).arg(QString::fromLatin1(hash.toHex()));
 	auto iter = s_bioses[name].constFind(hash);
 	if (iter != s_bioses[name].end()) {
 		report << QString("%1: %2").arg(name).arg(*iter);
