@@ -523,6 +523,24 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 		mLOG(GBA, WARN, "Couldn't map BIOS");
 		return;
 	}
+	uint32_t checksum = GBAChecksum(bios, GBA_SIZE_BIOS);
+	mLOG(GBA, DEBUG, "BIOS Checksum: 0x%X", checksum);
+	switch (checksum) {
+	case GBA_BIOS_CHECKSUM:
+		mLOG(GBA, INFO, "Official GBA BIOS detected");
+		break;
+	case GBA_DS_BIOS_CHECKSUM:
+		mLOG(GBA, INFO, "Official GBA (DS) BIOS detected");
+		break;
+	case GBA_DEBUG_BIOS_CHECKSUM:
+		mLOG(GBA, WARN, "Known broken GBA BIOS detected, disabling");
+		vf->unmap(vf, bios, GBA_SIZE_BIOS);
+		return;
+	default:
+		mLOG(GBA, WARN, "BIOS checksum incorrect");
+		break;
+	}
+
 	if (gba->biosVf) {
 		gba->biosVf->unmap(gba->biosVf, gba->memory.bios, GBA_SIZE_BIOS);
 		gba->biosVf->close(gba->biosVf);
@@ -530,20 +548,10 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 	gba->biosVf = vf;
 	gba->memory.bios = bios;
 	gba->memory.fullBios = 1;
-	uint32_t checksum = GBAChecksum(gba->memory.bios, GBA_SIZE_BIOS);
-	mLOG(GBA, DEBUG, "BIOS Checksum: 0x%X", checksum);
-	if (checksum == GBA_BIOS_CHECKSUM) {
-		mLOG(GBA, INFO, "Official GBA BIOS detected");
-	} else if (checksum == GBA_DS_BIOS_CHECKSUM) {
-		mLOG(GBA, INFO, "Official GBA (DS) BIOS detected");
-	} else {
-		mLOG(GBA, WARN, "BIOS checksum incorrect");
-	}
 	gba->biosChecksum = checksum;
 	if (gba->memory.activeRegion == GBA_REGION_BIOS) {
 		gba->cpu->memory.activeRegion = gba->memory.bios;
 	}
-	// TODO: error check
 }
 
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {

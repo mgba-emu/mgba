@@ -12,9 +12,6 @@
 #include <mgba/internal/gba/memory.h>
 #include <mgba-util/math.h>
 
-const uint32_t GBA_BIOS_CHECKSUM = 0xBAAE187F;
-const uint32_t GBA_DS_BIOS_CHECKSUM = 0xBAAE1880;
-
 mLOG_DEFINE_CATEGORY(GBA_BIOS, "GBA BIOS", "gba.bios");
 
 static void _unLz77(struct GBA* gba, int width);

@@ -12,6 +12,10 @@ CXX_GUARD_START
 
 #include <mgba/core/log.h>
 
+#define GBA_BIOS_CHECKSUM 0xBAAE187F
+#define GBA_DS_BIOS_CHECKSUM 0xBAAE1880
+#define GBA_DEBUG_BIOS_CHECKSUM 0x242CEF81
+
 mLOG_DECLARE_CATEGORY(GBA_BIOS);
 
 enum GBASwi {
@@ -65,8 +69,6 @@ void GBASwi16(struct ARMCore* cpu, int immediate);
 void GBASwi32(struct ARMCore* cpu, int immediate);
 
 uint32_t GBAChecksum(uint32_t* memory, size_t size);
-extern const uint32_t GBA_BIOS_CHECKSUM;
-extern const uint32_t GBA_DS_BIOS_CHECKSUM;
 
 CXX_GUARD_END
 
