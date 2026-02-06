@@ -244,7 +244,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="81"/>
         <source>Audio outputting to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>L&apos;audio sort sur %1</translation>
     </message>
 </context>
 <context>
@@ -260,7 +260,7 @@ Taille du téléchargement&#xa0;:&#xa0;%3</translation>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="29"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Échec du chargement des scripts de lancement automatique&#xa0;: format d&apos;info script %1 inconnu</translation>
     </message>
 </context>
 <context>
