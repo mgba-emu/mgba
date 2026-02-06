@@ -58,6 +58,11 @@ static const uint8_t _cgbBiosHram[GB_SIZE_HRAM] = {
 #define AGB_BIOS_CHECKSUM 0xFFD6B0F1
 #define AGB0_BIOS_CHECKSUM 0x570337EA
 
+#define FORTUNE_BIOS_CHECKSUM 0x66CC6D94
+#define GAMEFIGHTER_BIOS_CHECKSUM 0x908BA8DE
+#define KONGFENG_GBBC_BIOS_CHECKSUM 0x69236128
+#define MAXSTATION_BIOS_CHECKSUM 0x783E69C2
+
 mLOG_DEFINE_CATEGORY(GB, "GB", "gb");
 
 static void GBInit(void* cpu, struct mCPUComponent* component);
@@ -573,6 +578,11 @@ bool GBIsBIOS(struct VFile* vf) {
 	case CGBE_BIOS_CHECKSUM:
 	case AGB_BIOS_CHECKSUM:
 	case AGB0_BIOS_CHECKSUM:
+	// Bootleg consoles
+	case FORTUNE_BIOS_CHECKSUM:
+	case GAMEFIGHTER_BIOS_CHECKSUM:
+	case KONGFENG_GBBC_BIOS_CHECKSUM:
+	case MAXSTATION_BIOS_CHECKSUM:
 		return true;
 	default:
 		return false;
@@ -586,12 +596,18 @@ bool GBIsCompatibleBIOS(struct VFile* vf, enum GBModel model) {
 	case MGB_BIOS_CHECKSUM:
 	case SGB_BIOS_CHECKSUM:
 	case SGB2_BIOS_CHECKSUM:
+	// Bootleg consoles
+	case FORTUNE_BIOS_CHECKSUM:
+	case GAMEFIGHTER_BIOS_CHECKSUM:
+	case MAXSTATION_BIOS_CHECKSUM:
 		return model < GB_MODEL_CGB;
 	case CGB_BIOS_CHECKSUM:
 	case CGB0_BIOS_CHECKSUM:
 	case CGBE_BIOS_CHECKSUM:
 	case AGB_BIOS_CHECKSUM:
 	case AGB0_BIOS_CHECKSUM:
+	// Bootleg consoles
+	case KONGFENG_GBBC_BIOS_CHECKSUM:
 		return model >= GB_MODEL_CGB;
 	default:
 		return false;
@@ -874,6 +890,10 @@ void GBDetectModel(struct GB* gb) {
 		switch (_GBBiosCRC32(gb->biosVf)) {
 		case DMG_BIOS_CHECKSUM:
 		case DMG0_BIOS_CHECKSUM:
+		// Bootleg consoles
+		case FORTUNE_BIOS_CHECKSUM:
+		case GAMEFIGHTER_BIOS_CHECKSUM:
+		case MAXSTATION_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_DMG;
 			break;
 		case MGB_BIOS_CHECKSUM:
@@ -888,6 +908,8 @@ void GBDetectModel(struct GB* gb) {
 		case CGB_BIOS_CHECKSUM:
 		case CGB0_BIOS_CHECKSUM:
 		case CGBE_BIOS_CHECKSUM:
+		// Bootleg consoles
+		case KONGFENG_GBBC_BIOS_CHECKSUM:
 			gb->model = GB_MODEL_CGB;
 			break;
 		case AGB_BIOS_CHECKSUM:

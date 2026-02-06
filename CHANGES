@@ -66,6 +66,7 @@ Misc:
  - Core: Add callback for memoryBlocksChanged (fixes mgba.io/i/3640)
  - FFmpeg: Add Ut Video option
  - GB: Prevent incompatible BIOSes from being used on differing models
+ - GB: Allow use of some bootleg BIOSes
  - GB MBC: Add M161 support for one Mani 4-in-1 multicart
  - GB Memory: Decay cart bus eagerly when executing from RAM
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
