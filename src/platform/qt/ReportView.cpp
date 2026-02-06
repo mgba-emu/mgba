@@ -62,6 +62,10 @@
 #include <freetype/freetype.h>
 #endif
 
+#ifdef USE_JSON_C
+#include <json.h>
+#endif
+
 #ifdef USE_LIBZIP
 #include <zip.h>
 #endif
@@ -158,6 +162,11 @@ void ReportView::generateReport() {
 	swReport << QString("FreeType version: %1.%2.%3").arg(FREETYPE_MAJOR).arg(FREETYPE_MINOR).arg(FREETYPE_PATCH);
 #else
 	swReport << QString("FreeType not linked");
+#endif
+#ifdef USE_JSON_C
+	swReport << QString("json-c version: %1.%2.%3").arg(JSON_C_MAJOR_VERSION).arg(JSON_C_MINOR_VERSION).arg(JSON_C_MICRO_VERSION);
+#else
+	swReport << QString("json-c not linked");
 #endif
 #ifdef USE_EDITLINE
 	swReport << QString("libedit version: %1.%2").arg(LIBEDIT_MAJOR).arg(LIBEDIT_MINOR);
