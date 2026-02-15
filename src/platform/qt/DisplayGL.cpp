@@ -287,6 +287,7 @@ void DisplayGL::startDrawing(std::shared_ptr<CoreController> controller) {
 bool DisplayGL::highestCompatible(QSurfaceFormat& format) {
 #if defined(BUILD_GLES2) || defined(BUILD_GLES3) || defined(USE_EPOXY)
 	if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) {
+		format.setRenderableType(QSurfaceFormat::OpenGL);
 		format.setVersion(3, 3);
 		format.setProfile(QSurfaceFormat::CoreProfile);
 		if (DisplayGL::supportsFormat(format)) {
