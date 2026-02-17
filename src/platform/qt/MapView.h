@@ -19,7 +19,7 @@ class MapView : public AssetView {
 Q_OBJECT
 
 public:
-	MapView(std::shared_ptr<CoreController> controller, QWidget* parent = nullptr);
+	MapView(CorePointerSource* controller, QWidget* parent = nullptr);
 
 public slots:
 	void exportMap();
@@ -42,7 +42,6 @@ private:
 
 	Ui::MapView m_ui;
 
-	std::shared_ptr<CoreController> m_controller;
 	QVector<mMapCacheEntry> m_mapStatus;
 	QVector<mBitmapCacheEntry> m_bitmapStatus{512 * 2}; // TODO: Correct size
 	int m_map = 0;
