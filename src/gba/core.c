@@ -1263,8 +1263,21 @@ static bool _GBACoreWriteRegister(struct mCore* core, const char* name, const vo
 	case 'c':
 	case 'C':
 		if (strcmp(name, "cpsr") == 0) {
+			uint32_t pc = cpu->gprs[ARM_PC] & -WORD_SIZE_THUMB;
+			enum ExecutionMode mode = cpu->cpsr.t;
 			cpu->cpsr.packed = value & 0xF00000FF;
 			_ARMReadCPSR(cpu);
+			if (mode != cpu->cpsr.t) {
+				// Mode changed, flush the prefetch
+				if (cpu->cpsr.t == MODE_ARM) {
+					pc &= -WORD_SIZE_ARM;
+					LOAD_32(cpu->prefetch[0], (pc - WORD_SIZE_ARM) & cpu->memory.activeMask, cpu->memory.activeRegion);
+					LOAD_32(cpu->prefetch[1], pc & cpu->memory.activeMask, cpu->memory.activeRegion);
+				} else {
+					LOAD_16(cpu->prefetch[0], (pc - WORD_SIZE_THUMB) & cpu->memory.activeMask, cpu->memory.activeRegion);
+					LOAD_16(cpu->prefetch[1], pc & cpu->memory.activeMask, cpu->memory.activeRegion);
+				}
+			}
 			return true;
 		}
 		return false;

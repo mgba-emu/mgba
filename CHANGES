@@ -47,6 +47,7 @@ Other fixes:
  - Debugger: Fix writing to specific segment in command-line debugger
  - GB Video: Fix video log replaying freezing when video is disabled
  - GBA: Fix getting game info for multiboot ROMs
+ - GBA Core: Flush pipeline if CPSR is directly written
  - GBA e-Reader: Early-exit when processing 0-sized lists
  - mGUI: Load parent directory if last used directory is missing (fixes mgba.io/i/3379)
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
