@@ -490,7 +490,7 @@ bool mCoreThreadHasCrashed(struct mCoreThread* threadContext) {
 	}
 	bool hasExited;
 	MutexLock(&threadContext->impl->stateMutex);
-	hasExited = threadContext->impl->state == mTHREAD_CRASHED;
+	hasExited = !!(threadContext->impl->requested & mTHREAD_REQ_CRASHED);
 	MutexUnlock(&threadContext->impl->stateMutex);
 	return hasExited;
 }
@@ -567,7 +567,9 @@ bool mCoreThreadIsActive(struct mCoreThread* threadContext) {
 	if (!threadContext->impl) {
 		return false;
 	}
-	return threadContext->impl->state >= mTHREAD_RUNNING && threadContext->impl->state < mTHREAD_EXITING && threadContext->impl->state != mTHREAD_CRASHED;
+	return threadContext->impl->state >= mTHREAD_RUNNING &&
+	       threadContext->impl->state < mTHREAD_EXITING &&
+	       !(threadContext->impl->requested & mTHREAD_REQ_CRASHED);
 }
 
 void mCoreThreadInterrupt(struct mCoreThread* threadContext) {
