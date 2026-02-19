@@ -563,13 +563,18 @@ void mCoreThreadJoin(struct mCoreThread* threadContext) {
 	threadContext->impl = NULL;
 }
 
+static bool _isActive(struct mCoreThreadInternal* impl) {
+	return impl->state >= mTHREAD_RUNNING && impl->state < mTHREAD_EXITING && !(impl->requested & mTHREAD_REQ_CRASHED);
+}
+
 bool mCoreThreadIsActive(struct mCoreThread* threadContext) {
 	if (!threadContext->impl) {
 		return false;
 	}
-	return threadContext->impl->state >= mTHREAD_RUNNING &&
-	       threadContext->impl->state < mTHREAD_EXITING &&
-	       !(threadContext->impl->requested & mTHREAD_REQ_CRASHED);
+	MutexLock(&threadContext->impl->stateMutex);
+	bool active = _isActive(threadContext->impl);
+	MutexUnlock(&threadContext->impl->stateMutex);
+	return active;
 }
 
 void mCoreThreadInterrupt(struct mCoreThread* threadContext) {
@@ -578,7 +583,7 @@ void mCoreThreadInterrupt(struct mCoreThread* threadContext) {
 	}
 	MutexLock(&threadContext->impl->stateMutex);
 	++threadContext->impl->interruptDepth;
-	if (threadContext->impl->interruptDepth > 1 || !mCoreThreadIsActive(threadContext)) {
+	if (threadContext->impl->interruptDepth > 1 || !_isActive(threadContext->impl)) {
 		MutexUnlock(&threadContext->impl->stateMutex);
 		return;
 	}
@@ -593,7 +598,7 @@ void mCoreThreadInterruptFromThread(struct mCoreThread* threadContext) {
 	}
 	MutexLock(&threadContext->impl->stateMutex);
 	++threadContext->impl->interruptDepth;
-	if (threadContext->impl->interruptDepth > 1 || !mCoreThreadIsActive(threadContext)) {
+	if (threadContext->impl->interruptDepth > 1 || !_isActive(threadContext->impl)) {
 		if (threadContext->impl->state == mTHREAD_INTERRUPTING) {
 			threadContext->impl->state = mTHREAD_INTERRUPTED;
 		}
@@ -610,7 +615,7 @@ void mCoreThreadContinue(struct mCoreThread* threadContext) {
 	}
 	MutexLock(&threadContext->impl->stateMutex);
 	--threadContext->impl->interruptDepth;
-	if (threadContext->impl->interruptDepth < 1 && mCoreThreadIsActive(threadContext)) {
+	if (threadContext->impl->interruptDepth < 1 && _isActive(threadContext->impl)) {
 		if (threadContext->impl->requested) {
 			threadContext->impl->state = mTHREAD_REQUEST;
 		} else {
