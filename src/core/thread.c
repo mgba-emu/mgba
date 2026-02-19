@@ -289,9 +289,9 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 				MutexUnlock(&impl->stateMutex);
 				mDebuggerRun(debugger);
 				MutexLock(&impl->stateMutex);
-			}
-			if (debugger->state == DEBUGGER_SHUTDOWN) {
-				impl->state = mTHREAD_EXITING;
+				if (debugger->state == DEBUGGER_SHUTDOWN) {
+					_changeState(impl, mTHREAD_EXITING);
+				}
 			}
 		} else
 #endif
