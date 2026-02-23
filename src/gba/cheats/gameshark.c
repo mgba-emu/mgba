@@ -194,17 +194,33 @@ bool GBACheatAddGameSharkRaw(struct GBACheatSet* cheats, uint32_t op1, uint32_t 
 			return false;
 		}
 		break;
-	case GSA_IF_EQ:
+	case GSA_IF:
 		if (op1 == 0xDEADFACE) {
 			GBACheatReseedGameShark(cheats->gsaSeeds, op2, _gsa1T1, _gsa1T2);
 			return true;
 		}
 		cheat = mCheatListAppend(&cheats->d.list);
-		cheat->type = CHEAT_IF_EQ;
+		switch (op2 >> 20) {
+		case GSA_IF_EQ:
+			cheat->type = CHEAT_IF_EQ;
+			break;
+		case GSA_IF_NE:
+			cheat->type = CHEAT_IF_NE;
+			break;
+		case GSA_IF_LE:
+			cheat->type = CHEAT_IF_LE;
+			break;
+		case GSA_IF_GE:
+			cheat->type = CHEAT_IF_GE;
+			break;
+		}
 		cheat->width = 2;
+		cheat->repeat = 1;
+		cheat->negativeRepeat = 0;
 		cheat->address = op1 & 0x0FFFFFFF;
-		break;
-	case GSA_IF_EQ_RANGE:
+		cheat->operand = op2 & 0xFFFF;
+		return true;
+	case GSA_IF_RANGE:
 		cheat = mCheatListAppend(&cheats->d.list);
 		cheat->type = CHEAT_IF_EQ;
 		cheat->width = 2;
@@ -302,14 +318,14 @@ int GBACheatGameSharkProbability(uint32_t op1, uint32_t op2) {
 	case GSA_BUTTON:
 		probability += 0x10;
 		break;
-	case GSA_IF_EQ:
+	case GSA_IF:
 		probability += 0x20;
-		if (op2 & 0xFFFF0000) {
+		if (op2 & 0xFFCF0000) {
 			probability -= 0x10;
 		}
 		probability += GBACheatAddressIsReal(address);
 		break;
-	case GSA_IF_EQ_RANGE:
+	case GSA_IF_RANGE:
 		probability += 0x20;
 		probability += GBACheatAddressIsReal(op2);
 		if (op1 & 0x0F000000) {

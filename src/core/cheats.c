@@ -713,6 +713,18 @@ void mCheatRefresh(struct mCheatDevice* device, struct mCheatSet* cheats) {
 				negativeConditionRemaining = cheat->negativeRepeat;
 				operationsRemaining = 1;
 				break;
+			case CHEAT_IF_LE:
+				condition = _readMem(device->p, address, cheat->width) <= operand;
+				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
+				break;
+			case CHEAT_IF_GE:
+				condition = _readMem(device->p, address, cheat->width) >= operand;
+				conditionRemaining = cheat->repeat;
+				negativeConditionRemaining = cheat->negativeRepeat;
+				operationsRemaining = 1;
+				break;
 			case CHEAT_IF_ULT:
 				condition = (uint32_t) _readMem(device->p, address, cheat->width) < (uint32_t) operand;
 				conditionRemaining = cheat->repeat;
