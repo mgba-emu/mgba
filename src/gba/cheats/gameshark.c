@@ -51,6 +51,17 @@ static const uint8_t _gsa1T2[256] = {
 };
 
 // http://en.wikipedia.org/wiki/Tiny_Encryption_Algorithm
+void GBACheatEncryptGameShark(uint32_t* op1, uint32_t* op2, const uint32_t* seeds) {
+	uint32_t sum = 0;
+	int i;
+	for (i = 0; i < 32; ++i) {
+		sum += 0x9E3779B9;
+		*op1 += ((*op2 << 4) + seeds[0]) ^ (*op2 + sum) ^ ((*op2 >> 5) + seeds[1]);
+		*op2 += ((*op1 << 4) + seeds[2]) ^ (*op1 + sum) ^ ((*op1 >> 5) + seeds[3]);
+	}
+	sum += 0xC6EF3720;
+}
+
 void GBACheatDecryptGameShark(uint32_t* op1, uint32_t* op2, const uint32_t* seeds) {
 	uint32_t sum = 0xC6EF3720;
 	int i;
