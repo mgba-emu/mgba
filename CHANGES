@@ -58,6 +58,7 @@ Other fixes:
  - Qt: Fix some actions disabled in multiplayer staying disabled after closing game
  - Qt: Fix unexpected mute when window becomes focused while fast-forwarding
  - Qt: Fix crashes when exiting with OpenGL renderer
+ - Qt: Fix hiding menu if fullscreen is entered by WM itself (fixes mgba.io/i/3713)
 Misc:
  - 3DS: Change title ID to avoid conflict with commercial title (fixes mgba.io/i/3023)
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)

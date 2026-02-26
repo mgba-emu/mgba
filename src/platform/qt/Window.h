@@ -135,6 +135,9 @@ protected:
 	virtual void focusOutEvent(QFocusEvent*) override;
 	virtual void dragEnterEvent(QDragEnterEvent*) override;
 	virtual void dropEvent(QDropEvent*) override;
+#ifndef Q_OS_MAC
+	virtual void changeEvent(QEvent*) override;
+#endif
 
 private slots:
 	void gameStarted();

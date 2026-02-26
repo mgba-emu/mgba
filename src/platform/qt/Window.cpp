@@ -842,6 +842,20 @@ void Window::dropEvent(QDropEvent* event) {
 	setController(m_manager->loadGame(url.toLocalFile()), url.toLocalFile());
 }
 
+void Window::changeEvent(QEvent* event) {
+	if (event->type() == QEvent::WindowStateChange) {
+		if (isFullScreen()) {
+#ifndef Q_OS_MAC
+			if (m_controller && !m_controller->isPaused()) {
+				showMenu(false);
+			} else {
+				showMenu(true);
+			}
+#endif
+		}
+	}
+}
+
 void Window::enterFullScreen() {
 	if (!isVisible()) {
 		m_fullscreenOnStart = true;
