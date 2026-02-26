@@ -305,6 +305,7 @@ void ReportView::generateReport() {
 
 		windowReport << QString("Window size: %1x%2").arg(window->width()).arg(window->height());
 		windowReport << QString("Window location: %1, %2").arg(window->x()).arg(window->y());
+		windowReport << QString("Fullscreen: %1").arg(window->isFullScreen() ? "yes" : "no");
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
 		QScreen* screen = window->screen();
 #else
