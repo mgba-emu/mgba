@@ -244,7 +244,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="81"/>
         <source>Audio outputting to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>音频输出至 %1</translation>
     </message>
 </context>
 <context>
@@ -522,7 +522,7 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="77"/>
         <source>The ROM appears to be loaded from a temporary directory. This will likely lead to data loss (e.g. saves, screenshots, etc.) if you continue. Please put the ROM in a more suitable location and then re-open it. If you are loading the ROM from an archive, please extract the archive first.</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM似乎是从一个临时目录加载的。如果你继续的话很可能会导致数据丢失(例如:存档，截图等)。请把ROM放到一个更加合适的位置然后重新打开。如果你是从压缩文件中加载的ROM，请先解压该压缩文件。</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="95"/>
@@ -3011,12 +3011,12 @@ Download size: %3</source>
         <location filename="../InputController.cpp" line="727"/>
         <location filename="../InputController.cpp" line="748"/>
         <source>Could not find a valid camera format!</source>
-        <translation type="unfinished"></translation>
+        <translation>无法找到一个有效的相机格式!</translation>
     </message>
     <message>
         <location filename="../InputController.cpp" line="729"/>
         <source>Camera supported format: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>相机支持的格式: %1</translation>
     </message>
 </context>
 <context>
@@ -3971,7 +3971,7 @@ Download size: %3</source>
     <message>
         <location filename="../MultiplayerController.cpp" line="313"/>
         <source>Couldn&apos;t find available save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>无法找到有效的存档ID</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="367"/>
@@ -6502,7 +6502,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1142"/>
         <source>Failed to start audio processor</source>
-        <translation type="unfinished"></translation>
+        <translation>启动音频处理器失败</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1192"/>
@@ -6787,7 +6787,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1727"/>
         <source>Hide &amp;menu</source>
-        <translation type="unfinished"></translation>
+        <translation>隐藏 &amp;菜单</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1732"/>
