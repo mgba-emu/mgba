@@ -17,6 +17,7 @@ Features:
  - Initial support for bootleg GBA multicarts
  - Debugger: Add range watchpoints
  - Debugger: Add enabling/disabling for breakpoints and watchpoints
+ - Debugger: Add save/load function for breakpoints and watchpoints
  - "Headless" frontend for running tests, automation, etc.
 Emulation fixes:
  - ARM: Add framework for coprocessor support
