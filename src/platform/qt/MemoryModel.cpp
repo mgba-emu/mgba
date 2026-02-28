@@ -118,7 +118,7 @@ MemoryModel::MemoryModel(QWidget* parent)
 	setRegion(0, 0x10000000, tr("All"));
 }
 
-void MemoryModel::setController(std::shared_ptr<CoreController> controller) {
+void MemoryModel::onCoreAttached(std::shared_ptr<CoreController> controller) {
 	m_core = controller->thread()->core;
 }
 

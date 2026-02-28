@@ -31,12 +31,11 @@
 
 using namespace QGBA;
 
-MapView::MapView(std::shared_ptr<CoreController> controller, QWidget* parent)
+MapView::MapView(CorePointerSource* controller, QWidget* parent)
 	: AssetView(controller, parent)
-	, m_controller(controller)
 {
 	m_ui.setupUi(this);
-	m_ui.tile->setController(controller);
+	m_ui.tile->setCoreSource(controller);
 
 	switch (m_controller->platform()) {
 #ifdef M_CORE_GBA

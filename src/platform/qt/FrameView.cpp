@@ -30,8 +30,8 @@
 
 using namespace QGBA;
 
-FrameView::FrameView(std::shared_ptr<CoreController> controller, QWidget* parent)
-	: AssetView(std::move(controller), parent)
+FrameView::FrameView(CorePointerSource* controller, QWidget* parent)
+	: AssetView(controller, parent)
 {
 	m_ui.setupUi(this);
 

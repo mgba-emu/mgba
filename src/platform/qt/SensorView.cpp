@@ -16,8 +16,9 @@
 
 using namespace QGBA;
 
-SensorView::SensorView(InputController* input, QWidget* parent)
+SensorView::SensorView(CorePointerSource* controller, InputController* input, QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
+	, CoreConsumer(controller)
 	, m_input(input)
 	, m_rotation(input->rotationSource())
  {
@@ -67,8 +68,7 @@ SensorView::SensorView(InputController* input, QWidget* parent)
 	connect(m_input, &InputController::luminanceValueChanged, this, &SensorView::luminanceValueChanged);
 }
 
-void SensorView::setController(std::shared_ptr<CoreController> controller) {
-	m_controller = controller;
+void SensorView::onCoreAttached(std::shared_ptr<CoreController> controller) {
 	connect(m_ui.timeNoOverride, &QAbstractButton::clicked, controller.get(), &CoreController::setRealTime);
 	connect(m_ui.timeFixed, &QRadioButton::clicked, [controller, this] () {
 		controller->setFixedTime(m_ui.time->dateTime().toUTC());
@@ -85,10 +85,6 @@ void SensorView::setController(std::shared_ptr<CoreController> controller) {
 		}
 	});
 	m_ui.timeButtons->checkedButton()->clicked();
-
-	connect(controller.get(), &CoreController::stopping, [this]() {
-		m_controller.reset();
-	});
 }
 
 void SensorView::jiggerer(QAbstractButton* button, void (InputDriver::*setter)(int)) {
