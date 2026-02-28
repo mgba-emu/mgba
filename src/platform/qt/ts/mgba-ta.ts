@@ -244,7 +244,7 @@ Download size: %3</source>
     <message>
         <location filename="../AudioProcessorQt.cpp" line="81"/>
         <source>Audio outputting to %1</source>
-        <translation type="unfinished"></translation>
+        <translation>% 1 க்கு ஆடியோ வெளியீடு</translation>
     </message>
 </context>
 <context>
@@ -260,7 +260,7 @@ Download size: %3</source>
     <message>
         <location filename="../scripting/AutorunScriptModel.cpp" line="29"/>
         <source>Could not load autorun script settings: unknown script info format %1</source>
-        <translation type="unfinished"></translation>
+        <translation>தானியங்கு ச்கிரிப்ட் அமைப்புகளை ஏற்ற முடியவில்லை: அறியப்படாத ச்கிரிப்ட் செய்தி வடிவம் %1</translation>
     </message>
 </context>
 <context>
@@ -522,7 +522,7 @@ Download size: %3</source>
     <message>
         <location filename="../CoreManager.cpp" line="77"/>
         <source>The ROM appears to be loaded from a temporary directory. This will likely lead to data loss (e.g. saves, screenshots, etc.) if you continue. Please put the ROM in a more suitable location and then re-open it. If you are loading the ROM from an archive, please extract the archive first.</source>
-        <translation type="unfinished"></translation>
+        <translation>ROM ஒரு தற்காலிக கோப்பகத்தில் இருந்து ஏற்றப்பட்டதாகத் தெரிகிறது. நீங்கள் தொடர்ந்தால், இது தரவு இழப்புக்கு வழிவகுக்கும் (எ.கா. சேமிப்புகள், ச்கிரீன்சாட்கள் போன்றவை). ROM ஐ மிகவும் பொருத்தமான இடத்தில் வைத்து, அதை மீண்டும் திறக்கவும். நீங்கள் ஒரு காப்பகத்திலிருந்து ROM ஐ ஏற்றினால், முதலில் காப்பகத்தைப் பிரித்தெடுக்கவும்.</translation>
     </message>
     <message>
         <location filename="../CoreManager.cpp" line="95"/>
@@ -896,7 +896,7 @@ Download size: %3</source>
     <message>
         <location filename="../FrameView.cpp" line="647"/>
         <source>%1 %2</source>
-        <translation>%1 %2</translation>
+        <translation>% 1 % 2</translation>
     </message>
 </context>
 <context>
@@ -1107,7 +1107,7 @@ Download size: %3</source>
     <message>
         <location filename="../GameBoy.cpp" line="86"/>
         <source>%1 + RTC</source>
-        <translation>%1 + RTC</translation>
+        <translation>% 1 + RTC</translation>
     </message>
     <message>
         <location filename="../GameBoy.cpp" line="88"/>
@@ -1152,7 +1152,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="870"/>
         <location filename="../IOViewer.cpp" line="883"/>
         <source>B</source>
-        <translation>B</translation>
+        <translation>பி</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="39"/>
@@ -2412,7 +2412,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="869"/>
         <location filename="../IOViewer.cpp" line="882"/>
         <source>A</source>
-        <translation>A</translation>
+        <translation>ஏ</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="871"/>
@@ -2454,7 +2454,7 @@ Download size: %3</source>
         <location filename="../IOViewer.cpp" line="877"/>
         <location filename="../IOViewer.cpp" line="890"/>
         <source>R</source>
-        <translation>R</translation>
+        <translation>ஆர்</translation>
     </message>
     <message>
         <location filename="../IOViewer.cpp" line="878"/>
@@ -3011,12 +3011,12 @@ Download size: %3</source>
         <location filename="../InputController.cpp" line="727"/>
         <location filename="../InputController.cpp" line="748"/>
         <source>Could not find a valid camera format!</source>
-        <translation type="unfinished"></translation>
+        <translation>சரியான கேமரா வடிவமைப்பைக் கண்டுபிடிக்க முடியவில்லை!</translation>
     </message>
     <message>
         <location filename="../InputController.cpp" line="729"/>
         <source>Camera supported format: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>கேமரா உதவி வடிவம்:% 1</translation>
     </message>
 </context>
 <context>
@@ -3971,7 +3971,7 @@ Download size: %3</source>
     <message>
         <location filename="../MultiplayerController.cpp" line="313"/>
         <source>Couldn&apos;t find available save ID</source>
-        <translation type="unfinished"></translation>
+        <translation>சேமிக்கப்பட்ட ஐடியைக் கண்டுபிடிக்க முடியவில்லை</translation>
     </message>
     <message>
         <location filename="../MultiplayerController.cpp" line="367"/>
@@ -4094,7 +4094,7 @@ Download size: %3</source>
         <location filename="../ObjView.ui" line="558"/>
         <source>V</source>
         <extracomment>Short for vertical</extracomment>
-        <translation>V</translation>
+        <translation>வி</translation>
     </message>
     <message>
         <location filename="../ObjView.ui" line="572"/>
@@ -4742,17 +4742,17 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="486"/>
         <source> + RTC</source>
-        <translation> + RTC</translation>
+        <translation> + ஆர்டிசி</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="495"/>
         <source>%1 SRAM + RTC</source>
-        <translation>%1 SRAM + RTC</translation>
+        <translation>% 1 SRAM + RTC</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="497"/>
         <source>%1 SRAM</source>
-        <translation>%1 SRAM</translation>
+        <translation>% 1 SRAM</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="502"/>
@@ -4787,7 +4787,7 @@ Download size: %3</source>
     <message>
         <location filename="../SaveConverter.cpp" line="529"/>
         <source>%1 (%2)</source>
-        <translation>%1 (%2)</translation>
+        <translation>% 1 (% 2)</translation>
     </message>
     <message>
         <location filename="../SaveConverter.cpp" line="533"/>
@@ -5079,15 +5079,15 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
         <location filename="../SettingsView.cpp" line="909"/>
         <source>%n hour(s) ago</source>
         <translation>
-            <numerusform>%n மணி நேரத்திற்கு முன்பு</numerusform>
-            <numerusform>%n மணி நேரத்திற்கு முன்பு</numerusform>
+            <numerusform>%n மணிநேரத்திற்கு முன்பு</numerusform>
+            <numerusform>%n மணிநேரத்திற்கு முன்பு</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../SettingsView.cpp" line="913"/>
         <source>%n day(s) ago</source>
         <translation>
-            <numerusform>%n நாள் முன்பு</numerusform>
+            <numerusform>%n நாளுக்கு முன்பு</numerusform>
             <numerusform>%n நாட்களுக்கு முன்பு</numerusform>
         </translation>
     </message>
@@ -5226,7 +5226,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../SettingsView.ui" line="236"/>
         <source>Hz</source>
-        <translation>Hz</translation>
+        <translation>எர்ட்ச்</translation>
     </message>
     <message>
         <location filename="../SettingsView.ui" line="245"/>
@@ -6307,12 +6307,12 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1243"/>
         <source>%1 - %2</source>
-        <translation>%1 - %2</translation>
+        <translation>% 1 - % 2</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1245"/>
         <source>%1 - %2 - %3</source>
-        <translation>%1 - %2 - %3</translation>
+        <translation>% 1 - % 2 - % 3</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1247"/>
@@ -6504,7 +6504,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1142"/>
         <source>Failed to start audio processor</source>
-        <translation type="unfinished"></translation>
+        <translation>ஆடியோ செயலியைத் தொடங்குவதில் தோல்வி</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1192"/>
@@ -6789,7 +6789,7 @@ If it is set to OpenGL and you still see this, your graphics card or drivers may
     <message>
         <location filename="../Window.cpp" line="1727"/>
         <source>Hide &amp;menu</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;மெனுவை மறை</translation>
     </message>
     <message>
         <location filename="../Window.cpp" line="1732"/>
