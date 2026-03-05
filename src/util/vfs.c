@@ -172,8 +172,8 @@ void separatePath(const char* path, char* dirname, char* basename, char* extensi
 	if (!path) {
 		return;
 	}
-	char* dotPoint = strrchr(path, '.');
-	char* separatorPoint = strnrstr(path, PATH_SEP, strlen(path));
+	const char* dotPoint = strrchr(path, '.');
+	const char* separatorPoint = strnrstr(path, PATH_SEP, strlen(path));
 	if (separatorPoint) {
 		if (dirname) {
 			ptrdiff_t len = separatorPoint - path;
