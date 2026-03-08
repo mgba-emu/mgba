@@ -5,7 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include <QStringList>
+
 #include "ui_ScriptingView.h"
+
+class QStringListModel;
 
 namespace QGBA {
 
@@ -20,7 +24,7 @@ public:
 	ScriptingView(ScriptingController* controller, ConfigController* config, QWidget* parent = nullptr);
 
 private slots:
-	void submitRepl();
+	void submitRepl(const QString& line);
 	void load();
 	void loadMostRecent();
 
@@ -38,6 +42,7 @@ private:
 	ScriptingController* m_controller;
 	QStringList m_mruFiles;
 	QTextDocument* m_blankDocument;
+	QStringListModel* m_history;
 };
 
 }
