@@ -75,3 +75,9 @@ void HistoryLineEdit::keyPressEvent(QKeyEvent* keyEvent) {
 	}
 	setIndex(newIndex);
 }
+
+void HistoryLineEdit::appendLine(const QString& string) {
+	int rowCount = model()->rowCount();
+	model()->insertRows(rowCount, 1);
+	model()->setData(model()->index(rowCount, 0), string, Qt::DisplayRole);
+}

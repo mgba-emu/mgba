@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #include "scripting/ScriptingView.h"
 
+#include <QStringListModel>
+
 #include "GBAApp.h"
 #include "ConfigController.h"
 #include "scripting/ScriptingController.h"
@@ -17,16 +19,19 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 	: QMainWindow(parent)
 	, m_config(config)
 	, m_controller(controller)
+	, m_history(new QStringListModel(this))
 {
 	m_ui.setupUi(this);
 
 	ScriptingTextBufferModel* bufferModel = controller->textBufferModel();
 	m_ui.prompt->setFont(GBAApp::app()->monospaceFont());
+	m_ui.prompt->setModel(m_history);
 	m_ui.log->setNewlineTerminated(true);
 	m_ui.buffers->setModel(bufferModel);
 
-	connect(m_ui.prompt, &QLineEdit::returnPressed, this, &ScriptingView::submitRepl);
-	connect(m_ui.runButton, &QAbstractButton::clicked, this, &ScriptingView::submitRepl);
+	connect(m_ui.runButton, &QAbstractButton::clicked, m_ui.prompt, &QLineEdit::returnPressed);
+	connect(m_ui.prompt, &HistoryLineEdit::linePosted, this, &ScriptingView::submitRepl);
+	connect(m_ui.prompt, &HistoryLineEdit::linePosted, m_ui.prompt, &HistoryLineEdit::appendLine);
 
 	connect(bufferModel, &QAbstractItemModel::modelAboutToBeReset, this, &ScriptingView::controllerReset);
 	connect(bufferModel, &QAbstractItemModel::rowsInserted, this, [this, bufferModel](const QModelIndex&, int row, int) {
@@ -52,10 +57,9 @@ ScriptingView::ScriptingView(ScriptingController* controller, ConfigController* 
 	m_ui.buffers->setCurrentIndex(bufferModel->index(0, 0));
 }
 
-void ScriptingView::submitRepl() {
-	m_ui.log->echo(m_ui.prompt->text());
-	m_controller->runCode(m_ui.prompt->text());
-	m_ui.prompt->clear();
+void ScriptingView::submitRepl(const QString& text) {
+	m_ui.log->echo(text);
+	m_controller->runCode(text);
 }
 
 void ScriptingView::load() {

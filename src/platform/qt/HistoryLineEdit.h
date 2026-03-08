@@ -31,6 +31,7 @@ signals:
 
 public slots:
 	void setIndex(int);
+	void appendLine(const QString& string);
 
 protected:
 	void keyPressEvent(QKeyEvent*) override;
