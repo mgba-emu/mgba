@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
-    <widget class="QLineEdit" name="prompt">
+    <widget class="QGBA::HistoryLineEdit" name="prompt">
      <property name="placeholderText">
       <string>Enter command (try `help` for more info)</string>
      </property>
@@ -42,6 +42,11 @@
    <class>QGBA::LogWidget</class>
    <extends>QPlainTextEdit</extends>
    <header>LogWidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QGBA::HistoryLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>HistoryLineEdit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>
