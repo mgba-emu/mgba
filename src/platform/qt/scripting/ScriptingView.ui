@@ -36,16 +36,6 @@
       </widget>
       <widget class="QWidget" name="verticalLayoutWidget">
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="1" column="0">
-         <widget class="QLineEdit" name="prompt"/>
-        </item>
-        <item row="1" column="1">
-         <widget class="QPushButton" name="runButton">
-          <property name="text">
-           <string>Run</string>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="0" colspan="2">
          <widget class="QSplitter" name="splitter_1">
           <property name="orientation">
@@ -70,6 +60,16 @@
             <bool>true</bool>
            </property>
           </widget>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLineEdit" name="prompt"/>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="runButton">
+          <property name="text">
+           <string>Run</string>
+          </property>
          </widget>
         </item>
        </layout>
@@ -103,7 +103,14 @@
     <addaction name="reset"/>
     <addaction name="editAutorunScripts"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="clearConsoleAction"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuView"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="load">
@@ -131,6 +138,11 @@
     <string>Edit autorun scripts...</string>
    </property>
   </action>
+  <action name="clearConsoleAction">
+   <property name="text">
+    <string>Clear console</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -140,5 +152,22 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>clearConsoleAction</sender>
+   <signal>triggered()</signal>
+   <receiver>log</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>521</x>
+     <y>434</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
