@@ -18,6 +18,7 @@ using namespace QGBA;
 
 DebuggerConsoleController::DebuggerConsoleController(QObject* parent)
 	: DebuggerController(&m_cliDebugger.d, parent)
+	, m_history(new QStringListModel(this))
 {
 	m_backend.printf = printf;
 	m_backend.init = init;
@@ -125,10 +126,13 @@ const char* DebuggerConsoleController::historyLast(struct CLIDebuggerBackend* be
 	DebuggerConsoleController* self = consoleBe->self;
 	CoreController::Interrupter interrupter(self->m_gameController);
 	QMutexLocker lock(&self->m_mutex);
-	if (self->m_history.isEmpty()) {
+	int rowCount = self->m_history->rowCount();
+	if (rowCount == 0) {
 		return "i";
 	}
-	self->m_last = self->m_history.last().toUtf8();
+
+	QModelIndex index = self->m_history->index(rowCount - 1, 0);
+	self->m_last = self->m_history->data(index, Qt::DisplayRole).toString().toUtf8();
 	*len = self->m_last.size();
 	return self->m_last.constData();
 }
@@ -138,7 +142,10 @@ void DebuggerConsoleController::historyAppend(struct CLIDebuggerBackend* be, con
 	DebuggerConsoleController* self = consoleBe->self;
 	CoreController::Interrupter interrupter(self->m_gameController);
 	QMutexLocker lock(&self->m_mutex);
-	self->m_history.append(QString::fromUtf8(line));
+	int rowCount = self->m_history->rowCount();
+	self->m_history->insertRows(rowCount, 1);
+	QModelIndex index = self->m_history->index(rowCount, 0);
+	self->m_history->setData(index, QString::fromUtf8(line), Qt::DisplayRole);
 }
 
 void DebuggerConsoleController::interrupt(struct CLIDebuggerBackend* be) {
@@ -167,7 +174,7 @@ void DebuggerConsoleController::historyLoad() {
 		history.append(QString::fromUtf8(line));
 	}
 	QMutexLocker lock(&m_mutex);
-	m_history = std::move(history);
+	m_history->setStringList(history);
 }
 
 void DebuggerConsoleController::historySave() {
@@ -176,7 +183,7 @@ void DebuggerConsoleController::historySave() {
 		LOG(QT, WARN) << tr("Could not open CLI history for writing");
 		return;
 	}
-	for (const QString& line : m_history) {
+	for (const QString& line : m_history->stringList()) {
 		log.write(line.toUtf8());
 		log.write("\n");
 	}

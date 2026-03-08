@@ -126,6 +126,7 @@ set(SOURCE_FILES
 	GBAApp.cpp
 	GBAKeyEditor.cpp
 	GIFView.cpp
+	HistoryLineEdit.cpp
 	IOViewer.cpp
 	input/Gamepad.cpp
 	input/GamepadAxisEvent.cpp
