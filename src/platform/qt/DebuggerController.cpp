@@ -16,26 +16,20 @@ DebuggerController::DebuggerController(mDebuggerModule* debugger, QObject* paren
 }
 
 bool DebuggerController::isAttached() {
-	if (!m_gameController) {
+	if (!m_controller) {
 		return false;
 	}
-	return m_gameController->debugger() == m_debugger->p;
+	return m_controller->debugger() == m_debugger->p;
 }
 
-void DebuggerController::setController(std::shared_ptr<CoreController> controller) {
-	if (m_gameController && controller != m_gameController) {
-		m_gameController->disconnect(this);
-		detach();
-	}
-	m_gameController = controller;
-	if (controller) {
-		connect(m_gameController.get(), &CoreController::stopping, [this]() {
-			setController(nullptr);
-		});
-		if (m_autoattach) {
-			m_autoattach = false;
-			attach();
-		}
+void DebuggerController::onCoreDetached(std::shared_ptr<CoreController>) {
+	detach();
+}
+
+void DebuggerController::onCoreAttached(std::shared_ptr<CoreController>) {
+	if (m_autoattach) {
+		m_autoattach = false;
+		attach();
 	}
 }
 
@@ -43,9 +37,9 @@ void DebuggerController::attach() {
 	if (isAttached()) {
 		return;
 	}
-	if (m_gameController) {
+	if (m_controller) {
 		attachInternal();
-		m_gameController->attachDebuggerModule(m_debugger);
+		m_controller->attachDebuggerModule(m_debugger);
 	} else {
 		m_autoattach = true;
 	}
@@ -55,10 +49,10 @@ void DebuggerController::detach() {
 	if (!isAttached()) {
 		return;
 	}
-	if (m_gameController) {
-		CoreController::Interrupter interrupter(m_gameController);
+	if (m_controller) {
+		CoreController::Interrupter interrupter(m_controller);
 		shutdownInternal();
-		m_gameController->detachDebuggerModule(m_debugger);
+		m_controller->detachDebuggerModule(m_debugger);
 	} else {
 		m_autoattach = false;
 	}
@@ -68,7 +62,7 @@ void DebuggerController::breakInto() {
 	if (!isAttached()) {
 		return;
 	}
-	CoreController::Interrupter interrupter(m_gameController);
+	CoreController::Interrupter interrupter(m_controller);
 	mDebuggerEnter(m_debugger->p, DEBUGGER_ENTER_MANUAL, 0);
 }
 
@@ -77,7 +71,7 @@ void DebuggerController::shutdown() {
 	if (!isAttached()) {
 		return;
 	}
-	CoreController::Interrupter interrupter(m_gameController);
+	CoreController::Interrupter interrupter(m_controller);
 	shutdownInternal();
 }
 

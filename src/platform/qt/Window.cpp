@@ -225,7 +225,7 @@ void Window::argumentsPassed() {
 			m_gdbController = new GDBController(this);
 		}
 		if (m_controller) {
-			m_gdbController->setController(m_controller);
+			m_gdbController->setCoreSource(&m_controller);
 		}
 		m_gdbController->attach();
 		m_gdbController->listen();
@@ -591,10 +591,24 @@ std::function<void()> Window::openTView(A... arg) {
 	};
 }
 
+namespace {
+class RefAdaptor
+{
+public:
+	RefAdaptor(CorePointerSource& source) : source(&source) {}
+
+	inline operator CorePointerSource&() { return *source; }
+	inline operator CorePointerSource*() { return source; }
+	inline operator std::shared_ptr<CoreController>() { return *source; }
+
+	CorePointerSource* source;
+};
+}
+
 template <typename T, typename... A>
 std::function<void()> Window::openControllerTView(A... arg) {
 	return [=]() {
-		T* view = new T(m_controller, arg...);
+		T* view = new T(RefAdaptor(m_controller), arg...);
 		connect(m_controller.get(), &CoreController::stopping, view, &QWidget::close);
 		openView(view);
 	};
@@ -620,7 +634,7 @@ template <typename T, typename... A>
 std::function<void()> Window::openNamedControllerTView(QPointer<T>* name, bool keepalive, A... arg) {
 	return [=]() {
 		if (!*name) {
-			*name = new T(m_controller, arg...);
+			*name = new T(&m_controller, arg...);
 			connect(m_controller.get(), &CoreController::stopping, name->data(), &QWidget::close);
 			connect(this, &Window::shutdown, name->data(), &QWidget::close);
 			if (!keepalive) {
@@ -639,7 +653,7 @@ void Window::gdbOpen() {
 		m_gdbController = new GDBController(this);
 	}
 	GDBWindow* window = new GDBWindow(m_gdbController);
-	m_gdbController->setController(m_controller);
+	m_gdbController->setCoreSource(&m_controller);
 	connect(m_controller.get(), &CoreController::stopping, window, &QWidget::close);
 	openView(window);
 }
@@ -652,7 +666,7 @@ void Window::consoleOpen() {
 	}
 	DebuggerConsole* window = new DebuggerConsole(m_console);
 	if (m_controller) {
-		m_console->setController(m_controller);
+		m_console->setCoreSource(&m_controller);
 	}
 	openView(window);
 }
@@ -1747,10 +1761,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addAction(tr("Game &overrides..."), "overrideWindow", [this]() {
 		if (!m_overrideView) {
-			m_overrideView = new OverrideView(m_config);
-			if (m_controller) {
-				m_overrideView->setController(m_controller);
-			}
+			m_overrideView = new OverrideView(&m_controller, m_config);
 			connect(this, &Window::shutdown, m_overrideView.data(), &QWidget::close);
 		}
 		m_overrideView->show();
@@ -1760,10 +1771,7 @@ void Window::setupMenu(QMenuBar* menubar) {
 
 	m_actions.addAction(tr("Game Pak sensors..."), "sensorWindow", [this]() {
 		if (!m_sensorView) {
-			m_sensorView = new SensorView(&m_inputController);
-			if (m_controller) {
-				m_sensorView->setController(m_controller);
-			}
+			m_sensorView = new SensorView(&m_controller, &m_inputController);
 			connect(this, &Window::shutdown, m_sensorView.data(), &QWidget::close);
 		}
 		m_sensorView->show();
@@ -2097,7 +2105,6 @@ void Window::ensureScripting() {
 	m_scripting->setInputController(&m_inputController);
 	m_shortcutController->setScriptingController(m_scripting.get());
 	if (m_controller) {
-		m_scripting->setController(m_controller);
 		m_display->installEventFilter(m_scripting.get());
 	}
 
@@ -2199,9 +2206,9 @@ void Window::setController(CoreController* controller, const QString& fname) {
 		reloadDisplayDriver();
 	}
 
+	controller->setInputController(&m_inputController);
+	controller->setLogger(&m_log);
 	m_controller = std::shared_ptr<CoreController>(controller);
-	m_controller->setInputController(&m_inputController);
-	m_controller->setLogger(&m_log);
 
 	connect(this, &Window::shutdown, [this]() {
 		if (!m_controller) {
@@ -2254,36 +2261,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	}
 #endif
 
-#ifdef ENABLE_GDB_STUB
-	if (m_gdbController) {
-		m_gdbController->setController(m_controller);
-	}
-#endif
-
-#ifdef ENABLE_DEBUGGERS
-	if (m_console) {
-		m_console->setController(m_controller);
-	}
-#endif
-
-#ifdef USE_FFMPEG
-	if (m_gifView) {
-		m_gifView->setController(m_controller);
-	}
-
-	if (m_videoView) {
-		m_videoView->setController(m_controller);
-	}
-#endif
-
-	if (m_sensorView) {
-		m_sensorView->setController(m_controller);
-	}
-
-	if (m_overrideView) {
-		m_overrideView->setController(m_controller);
-	}
-
 	if (!m_pendingPatch.isEmpty()) {
 		m_controller->loadPatch(m_pendingPatch);
 		m_pendingPatch = QString();
@@ -2291,8 +2268,6 @@ void Window::setController(CoreController* controller, const QString& fname) {
 
 #ifdef ENABLE_SCRIPTING
 	if (m_scripting) {
-		m_scripting->setController(m_controller);
-
 		m_scripting->setVideoBackend(m_display->videoBackend());
 	}
 #endif

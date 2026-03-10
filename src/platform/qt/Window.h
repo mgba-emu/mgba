@@ -19,6 +19,7 @@
 #include <mgba/core/thread.h>
 
 #include "ActionMapper.h"
+#include "CorePointerSource.h"
 #include "InputController.h"
 #include "LoadSaveState.h"
 #include "LogController.h"
@@ -198,7 +199,7 @@ private:
 	QString getFiltersArchive() const;
 
 	CoreManager* m_manager;
-	std::shared_ptr<CoreController> m_controller;
+	CorePointerSource m_controller;
 	std::unique_ptr<AudioProcessor> m_audioProcessor;
 
 	std::unique_ptr<QGBA::Display> m_display;
