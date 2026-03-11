@@ -7,11 +7,47 @@
 
 #include "GBAApp.h"
 
+#include <algorithm>
+
 #include <QPainter>
+#include <QStringList>
 
 #include <mgba/gba/interface.h>
 
 using namespace QGBA;
+
+static QString _activeButtonLabel(int activeKeys) {
+	if (!activeKeys) {
+		return QStringLiteral("None");
+	}
+
+	static const struct {
+		int key;
+		const char* name;
+	} keyNames[] = {
+		{ GBA_KEY_A, "A" },
+		{ GBA_KEY_B, "B" },
+		{ GBA_KEY_L, "L" },
+		{ GBA_KEY_R, "R" },
+		{ GBA_KEY_START, "Start" },
+		{ GBA_KEY_SELECT, "Select" },
+		{ GBA_KEY_UP, "Up" },
+		{ GBA_KEY_DOWN, "Down" },
+		{ GBA_KEY_LEFT, "Left" },
+		{ GBA_KEY_RIGHT, "Right" },
+	};
+
+	QStringList labels;
+	for (const auto& keyName : keyNames) {
+		if (activeKeys & (1 << keyName.key)) {
+			labels.append(QString::fromLatin1(keyName.name));
+		}
+	}
+	if (labels.isEmpty()) {
+		return QStringLiteral("None");
+	}
+	return labels.join(QStringLiteral(" + "));
+}
 
 MessagePainter::MessagePainter(QObject* parent)
 	: QObject(parent)
@@ -78,26 +114,33 @@ void MessagePainter::paint(QPainter* painter) {
 		painter->drawPixmap(m_local, m_pixmap);
 	}
 	if (m_drawFrameCounter) {
-		QString frame(tr("Frame %1").arg(m_frameCounter));
+		QString fpsLine(tr("FPS %1").arg(QString::number(m_fps, 'f', 1)));
+		QString buttonLine(tr("Button %1").arg(_activeButtonLabel(m_activeKeys)));
 		QFontMetrics metrics(m_frameFont);
+		int maxWidth = 0;
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+		maxWidth = std::max(metrics.horizontalAdvance(fpsLine), metrics.horizontalAdvance(buttonLine));
+#else
+		maxWidth = std::max(metrics.width(fpsLine), metrics.width(buttonLine));
+#endif
+		const int lineHeight = metrics.height();
+
 		painter->setWorldTransform(m_world);
 		painter->setRenderHint(QPainter::Antialiasing);
 		painter->setFont(m_frameFont);
 		painter->setPen(Qt::black);
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
-		painter->translate(-metrics.horizontalAdvance(frame), 0);
-#else
-		painter->translate(-metrics.width(frame), 0);
-#endif
+		painter->translate(-maxWidth, 0);
 		const static int ITERATIONS = 11;
 		for (int i = 0; i < ITERATIONS; ++i) {
 			painter->save();
 			painter->translate(cos(i * 2.0 * M_PI / ITERATIONS) * 0.8, sin(i * 2.0 * M_PI / ITERATIONS) * 0.8);
-			painter->drawText(m_framePoint, frame);
+			painter->drawText(m_framePoint, fpsLine);
+			painter->drawText(m_framePoint + QPointF(0, lineHeight), buttonLine);
 			painter->restore();
 		}
 		painter->setPen(Qt::white);
-		painter->drawText(m_framePoint, frame);
+		painter->drawText(m_framePoint, fpsLine);
+		painter->drawText(m_framePoint + QPointF(0, lineHeight), buttonLine);
 	}
 }
 
@@ -118,9 +161,21 @@ void MessagePainter::clearMessage() {
 	m_messageTimer.stop();
 }
 
-void MessagePainter::showFrameCounter(uint64_t frameCounter) {
+void MessagePainter::showFrameCounter(uint64_t frameCounter, int activeKeys) {
 	m_mutex.lock();
+	if (!m_fpsTimer.isValid()) {
+		m_fpsTimer.start();
+		m_fps = 0.0f;
+	} else {
+		qint64 elapsedMs = m_fpsTimer.elapsed();
+		if (elapsedMs >= 250) {
+			uint64_t deltaFrames = frameCounter - m_frameCounter;
+			m_fps = deltaFrames > 0 ? (deltaFrames * 1000.f) / elapsedMs : 0.0f;
+			m_fpsTimer.restart();
+		}
+	}
 	m_frameCounter = frameCounter;
+	m_activeKeys = activeKeys;
 	m_drawFrameCounter = true;
 	m_mutex.unlock();
 }
@@ -128,5 +183,8 @@ void MessagePainter::showFrameCounter(uint64_t frameCounter) {
 void MessagePainter::clearFrameCounter() {
 	m_mutex.lock();
 	m_drawFrameCounter = false;
+	m_fps = 0.0f;
+	m_activeKeys = 0;
+	m_fpsTimer.invalidate();
 	m_mutex.unlock();
 }

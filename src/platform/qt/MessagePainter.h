@@ -5,6 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include <QElapsedTimer>
 #include <QMutex>
 #include <QObject>
 #include <QPixmap>
@@ -27,7 +28,7 @@ public slots:
 	void showMessage(const QString& message);
 	void clearMessage();
 
-	void showFrameCounter(uint64_t);
+	void showFrameCounter(uint64_t frameCounter, int activeKeys);
 	void clearFrameCounter();
 
 private:
@@ -36,8 +37,11 @@ private:
 	QMutex m_mutex;
 	QStaticText m_message;
 	qreal m_scaleFactor = 1;
-	uint64_t m_frameCounter;
+	uint64_t m_frameCounter = 0;
 	bool m_drawFrameCounter = false;
+	float m_fps = 0.0f;
+	int m_activeKeys = 0;
+	QElapsedTimer m_fpsTimer;
 
 	QPoint m_local;
 	QPixmap m_pixmap;

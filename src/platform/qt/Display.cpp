@@ -82,7 +82,7 @@ void QGBA::Display::attach(std::shared_ptr<CoreController> controller) {
 	connect(controllerP, &CoreController::frameAvailable, this, &Display::framePosted);
 	connect(controllerP, &CoreController::frameAvailable, this, [controllerP, this]() {
 		if (m_showFrameCounter) {
-			m_messagePainter.showFrameCounter(controllerP->frameCounter());
+			m_messagePainter.showFrameCounter(controllerP->frameCounter(), controllerP->currentKeys());
 		}
 	});
 	connect(controllerP, &CoreController::statusPosted, this, &Display::showMessage);

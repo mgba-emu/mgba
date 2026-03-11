@@ -1223,6 +1223,7 @@ void CoreController::updateKeys() {
 	int activeKeys = m_activeKeys | polledKeys;
 	activeKeys |= m_threadContext.core->getKeys(m_threadContext.core) & ~m_removedKeys;
 	m_removedKeys = polledKeys;
+	m_currentKeys.store(activeKeys, std::memory_order_relaxed);
 	m_threadContext.core->setKeys(m_threadContext.core, activeKeys);
 }
 
