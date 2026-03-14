@@ -19,7 +19,7 @@ bool loadPatch(struct VFile* vf, struct Patch* patch) {
 		return true;
 	}
 
-	patch->outputSize = 0;
-	patch->applyPatch = 0;
+	patch->outputSize = NULL;
+	patch->applyPatch = NULL;
 	return false;
 }
