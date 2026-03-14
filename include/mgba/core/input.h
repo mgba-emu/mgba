@@ -58,6 +58,7 @@ void mInputUnbindKey(struct mInputMap*, uint32_t type, int input);
 void mInputUnbindAllKeys(struct mInputMap*, uint32_t type);
 
 int mInputMapAxis(const struct mInputMap*, uint32_t type, int axis, int16_t value);
+int mInputMapAxisBit(const struct mInputMap*, uint32_t type, int axis, int16_t value);
 int mInputClearAxis(const struct mInputMap*, uint32_t type, int axis, int keys);
 void mInputBindAxis(struct mInputMap*, uint32_t type, int axis, const struct mInputAxis* description);
 void mInputUnbindAxis(struct mInputMap*, uint32_t type, int axis);

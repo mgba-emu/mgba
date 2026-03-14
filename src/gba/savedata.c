@@ -243,24 +243,25 @@ void GBASavedataForceType(struct GBASavedata* savedata, enum GBASavedataType typ
 	case GBA_SAVEDATA_FLASH1M:
 		savedata->type = type;
 		GBASavedataInitFlash(savedata);
-		break;
+		return;
 	case GBA_SAVEDATA_EEPROM:
 	case GBA_SAVEDATA_EEPROM512:
 		savedata->type = type;
 		GBASavedataInitEEPROM(savedata);
-		break;
+		return;
 	case GBA_SAVEDATA_SRAM:
 		GBASavedataInitSRAM(savedata);
-		break;
+		return;
 	case GBA_SAVEDATA_SRAM512:
 		GBASavedataInitSRAM512(savedata);
-		break;
+		return;
 	case GBA_SAVEDATA_FORCE_NONE:
 		savedata->type = GBA_SAVEDATA_FORCE_NONE;
 		break;
 	case GBA_SAVEDATA_AUTODETECT:
 		break;
 	}
+	mCALLBACKS_INVOKE(savedata->p, memoryBlocksChanged);
 }
 
 void GBASavedataInitFlash(struct GBASavedata* savedata) {
@@ -291,6 +292,8 @@ void GBASavedataInitFlash(struct GBASavedata* savedata) {
 	if (end < GBA_SIZE_FLASH512) {
 		memset(&savedata->data[end], 0xFF, flashSize - end);
 	}
+
+	mCALLBACKS_INVOKE(savedata->p, memoryBlocksChanged);
 }
 
 void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
@@ -318,6 +321,7 @@ void GBASavedataInitEEPROM(struct GBASavedata* savedata) {
 	if (end < GBA_SIZE_EEPROM512) {
 		memset(&savedata->data[end], 0xFF, GBA_SIZE_EEPROM512 - end);
 	}
+	mCALLBACKS_INVOKE(savedata->p, memoryBlocksChanged);
 }
 
 void GBASavedataInitSRAM(struct GBASavedata* savedata) {
@@ -342,6 +346,7 @@ void GBASavedataInitSRAM(struct GBASavedata* savedata) {
 	if (end < GBA_SIZE_SRAM) {
 		memset(&savedata->data[end], 0xFF, GBA_SIZE_SRAM - end);
 	}
+	mCALLBACKS_INVOKE(savedata->p, memoryBlocksChanged);
 }
 
 void GBASavedataInitSRAM512(struct GBASavedata* savedata) {
@@ -366,6 +371,7 @@ void GBASavedataInitSRAM512(struct GBASavedata* savedata) {
 	if (end < GBA_SIZE_SRAM512) {
 		memset(&savedata->data[end], 0xFF, GBA_SIZE_SRAM512 - end);
 	}
+	mCALLBACKS_INVOKE(savedata->p, memoryBlocksChanged);
 }
 
 uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address) {
@@ -380,7 +386,7 @@ uint8_t GBASavedataReadFlash(struct GBASavedata* savedata, uint16_t address) {
 			}
 		}
 	}
-	if (mTimingIsScheduled(savedata->timing, &savedata->dust) && (address >> 12) == savedata->settling) {
+	if (mTimingIsScheduled(&savedata->p->timing, &savedata->dust) && (address >> 12) == savedata->settling) {
 		// This should read Q7 XOR data bit 7 (data# polling), Q6 flipping
 		// every read (toggle bit), and /Q5 (error bit cleared), but implementing
 		// just data# polling is sufficient for games to figure it out
@@ -397,8 +403,8 @@ void GBASavedataWriteFlash(struct GBASavedata* savedata, uint16_t address, uint8
 			savedata->dirty |= mSAVEDATA_DIRT_NEW;
 			savedata->currentBank[address] = value;
 			savedata->command = FLASH_COMMAND_NONE;
-			mTimingDeschedule(savedata->timing, &savedata->dust);
-			mTimingSchedule(savedata->timing, &savedata->dust, FLASH_PROGRAM_CYCLES);
+			mTimingDeschedule(&savedata->p->timing, &savedata->dust);
+			mTimingSchedule(&savedata->p->timing, &savedata->dust, FLASH_PROGRAM_CYCLES);
 			break;
 		case FLASH_COMMAND_SWITCH_BANK:
 			if (address == 0 && value < 2) {
@@ -495,6 +501,7 @@ static void _ensureEeprom(struct GBASavedata* savedata, uint32_t size) {
 	} else {
 		savedata->data = savedata->vf->map(savedata->vf, GBA_SIZE_EEPROM, savedata->mapMode);
 	}
+	mCALLBACKS_INVOKE(savedata->p, memoryBlocksChanged);
 }
 
 void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32_t writeSize) {
@@ -528,8 +535,8 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 			current |= (value & 0x1) << (0x7 - (savedata->writeAddress & 0x7));
 			savedata->dirty |= mSAVEDATA_DIRT_NEW;
 			savedata->data[savedata->writeAddress >> 3] = current;
-			mTimingDeschedule(savedata->timing, &savedata->dust);
-			mTimingSchedule(savedata->timing, &savedata->dust, EEPROM_SETTLE_CYCLES);
+			mTimingDeschedule(&savedata->p->timing, &savedata->dust);
+			mTimingSchedule(&savedata->p->timing, &savedata->dust, EEPROM_SETTLE_CYCLES);
 			++savedata->writeAddress;
 		} else {
 			mLOG(GBA_SAVE, GAME_ERROR, "Writing beyond end of EEPROM: %08X", (savedata->writeAddress >> 3));
@@ -552,7 +559,7 @@ void GBASavedataWriteEEPROM(struct GBASavedata* savedata, uint16_t value, uint32
 
 uint16_t GBASavedataReadEEPROM(struct GBASavedata* savedata) {
 	if (savedata->command != EEPROM_COMMAND_READ) {
-		if (!mTimingIsScheduled(savedata->timing, &savedata->dust)) {
+		if (!mTimingIsScheduled(&savedata->p->timing, &savedata->dust)) {
 			return 1;
 		} else {
 			return 0;
@@ -597,15 +604,15 @@ void GBASavedataClean(struct GBASavedata* savedata, uint32_t frameCount) {
 }
 
 void GBASavedataRTCWrite(struct GBASavedata* savedata) {
-	if (!(savedata->gpio->devices & HW_RTC) || !savedata->vf || savedata->mapMode == MAP_READ) {
+	if (!(savedata->p->memory.hw.devices & HW_RTC) || !savedata->vf || savedata->mapMode == MAP_READ) {
 		return;
 	}
 
 	struct GBASavedataRTCBuffer buffer;
 
-	memcpy(&buffer.time, savedata->gpio->rtc.time, 7);
-	buffer.control = savedata->gpio->rtc.control;
-	STORE_64LE(savedata->gpio->rtc.lastLatch, 0, &buffer.lastLatch);
+	memcpy(&buffer.time, savedata->p->memory.hw.rtc.time, 7);
+	buffer.control = savedata->p->memory.hw.rtc.control;
+	STORE_64LE(savedata->p->memory.hw.rtc.lastLatch, 0, &buffer.lastLatch);
 
 	size_t size = GBASavedataSize(savedata);
 	savedata->vf->seek(savedata->vf, size & ~0xFF, SEEK_SET);
@@ -648,36 +655,36 @@ void GBASavedataRTCRead(struct GBASavedata* savedata) {
 		return;
 	}
 
-	memcpy(savedata->gpio->rtc.time, &buffer.time, 7);
+	memcpy(savedata->p->memory.hw.rtc.time, &buffer.time, 7);
 
 	// Older FlashGBX sets this to 0x01 instead of the control flag.
 	// Since that bit is invalid on hardware, we can check for != 0x01
 	// to see if it's a valid value instead of just a filler value.
 	if (buffer.control != 1) {
-		savedata->gpio->rtc.control = buffer.control;
+		savedata->p->memory.hw.rtc.control = buffer.control;
 	}
-	LOAD_64LE(savedata->gpio->rtc.lastLatch, 0, &buffer.lastLatch);
+	LOAD_64LE(savedata->p->memory.hw.rtc.lastLatch, 0, &buffer.lastLatch);
 
 	time_t rtcTime;
 
 #ifndef PSP2
 	struct tm date;
-	date.tm_year = _unBCD(savedata->gpio->rtc.time[0]) + 100;
-	date.tm_mon = _unBCD(savedata->gpio->rtc.time[1]) - 1;
-	date.tm_mday = _unBCD(savedata->gpio->rtc.time[2]);
-	date.tm_hour = _unBCD(savedata->gpio->rtc.time[4]);
-	date.tm_min = _unBCD(savedata->gpio->rtc.time[5]);
-	date.tm_sec = _unBCD(savedata->gpio->rtc.time[6]);
+	date.tm_year = _unBCD(savedata->p->memory.hw.rtc.time[0]) + 100;
+	date.tm_mon = _unBCD(savedata->p->memory.hw.rtc.time[1]) - 1;
+	date.tm_mday = _unBCD(savedata->p->memory.hw.rtc.time[2]);
+	date.tm_hour = _unBCD(savedata->p->memory.hw.rtc.time[4]);
+	date.tm_min = _unBCD(savedata->p->memory.hw.rtc.time[5]);
+	date.tm_sec = _unBCD(savedata->p->memory.hw.rtc.time[6]);
 	date.tm_isdst = -1;
 	rtcTime = mktime(&date);
 #else
 	struct SceDateTime date;
-	date.year = _unBCD(savedata->gpio->rtc.time[0]) + 2000;
-	date.month = _unBCD(savedata->gpio->rtc.time[1]);
-	date.day = _unBCD(savedata->gpio->rtc.time[2]);
-	date.hour = _unBCD(savedata->gpio->rtc.time[4]);
-	date.minute = _unBCD(savedata->gpio->rtc.time[5]);
-	date.second = _unBCD(savedata->gpio->rtc.time[6]);
+	date.year = _unBCD(savedata->p->memory.hw.rtc.time[0]) + 2000;
+	date.month = _unBCD(savedata->p->memory.hw.rtc.time[1]);
+	date.day = _unBCD(savedata->p->memory.hw.rtc.time[2]);
+	date.hour = _unBCD(savedata->p->memory.hw.rtc.time[4]);
+	date.minute = _unBCD(savedata->p->memory.hw.rtc.time[5]);
+	date.second = _unBCD(savedata->p->memory.hw.rtc.time[6]);
 	date.microsecond = 0;
 
 	struct SceRtcTick tick;
@@ -700,9 +707,9 @@ void GBASavedataRTCRead(struct GBASavedata* savedata) {
 	}
 #endif
 
-	savedata->gpio->rtc.offset = savedata->gpio->rtc.lastLatch - rtcTime;
+	savedata->p->memory.hw.rtc.offset = savedata->p->memory.hw.rtc.lastLatch - rtcTime;
 
-	mLOG(GBA_SAVE, DEBUG, "Savegame time offset set to %li", savedata->gpio->rtc.offset);
+	mLOG(GBA_SAVE, DEBUG, "Savegame time offset set to %li", savedata->p->memory.hw.rtc.offset);
 }
 
 void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializedState* state) {
@@ -712,8 +719,8 @@ void GBASavedataSerialize(const struct GBASavedata* savedata, struct GBASerializ
 	flags = GBASerializedSavedataFlagsSetFlashState(flags, savedata->flashState);
 	flags = GBASerializedSavedataFlagsTestFillFlashBank(flags, savedata->currentBank == &savedata->data[0x10000]);
 
-	if (mTimingIsScheduled(savedata->timing, &savedata->dust)) {
-		STORE_32(savedata->dust.when - mTimingCurrentTime(savedata->timing), 0, &state->savedata.settlingDust);
+	if (mTimingIsScheduled(&savedata->p->timing, &savedata->dust)) {
+		STORE_32(savedata->dust.when - mTimingCurrentTime(&savedata->p->timing), 0, &state->savedata.settlingDust);
 		flags = GBASerializedSavedataFlagsFillDustSettling(flags);
 	}
 
@@ -745,7 +752,7 @@ void GBASavedataDeserialize(struct GBASavedata* savedata, const struct GBASerial
 	if (GBASerializedSavedataFlagsIsDustSettling(flags)) {
 		uint32_t when;
 		LOAD_32(when, 0, &state->savedata.settlingDust);
-		mTimingSchedule(savedata->timing, &savedata->dust, when);
+		mTimingSchedule(&savedata->p->timing, &savedata->dust, when);
 	}
 }
 
@@ -764,6 +771,7 @@ void _flashSwitchBank(struct GBASavedata* savedata, int bank) {
 				savedata->data = savedata->vf->map(savedata->vf, GBA_SIZE_FLASH1M, MAP_WRITE);
 			}
 		}
+		mCALLBACKS_INVOKE(savedata->p, memoryBlocksChanged);
 	}
 	savedata->currentBank = &savedata->data[bank << 16];
 }
@@ -786,7 +794,7 @@ void _flashEraseSector(struct GBASavedata* savedata, uint16_t sectorStart) {
 		mLOG(GBA_SAVE, DEBUG, "Performing unknown sector-size erase at 0x%04x", sectorStart);
 	}
 	savedata->settling = sectorStart >> 12;
-	mTimingDeschedule(savedata->timing, &savedata->dust);
-	mTimingSchedule(savedata->timing, &savedata->dust, FLASH_ERASE_CYCLES);
+	mTimingDeschedule(&savedata->p->timing, &savedata->dust);
+	mTimingSchedule(&savedata->p->timing, &savedata->dust, FLASH_ERASE_CYCLES);
 	memset(&savedata->currentBank[sectorStart & ~(size - 1)], 0xFF, size);
 }

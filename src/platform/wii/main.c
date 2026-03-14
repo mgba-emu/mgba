@@ -1664,36 +1664,27 @@ uint16_t _pollGameInput(struct mGUIRunner* runner) {
 	keys |= mInputMapKeyBits(&runner->core->inputMap, DRC_INPUT, drckeys, 0);
 #endif
 
-	enum GBAKey angles = mInputMapAxis(&runner->core->inputMap, GCN1_INPUT, 0, PAD_StickX(0));
-	if (angles != GBA_KEY_NONE) {
-		keys |= 1 << angles;
-	}
-	angles = mInputMapAxis(&runner->core->inputMap, GCN1_INPUT, 1, PAD_StickY(0));
-	if (angles != GBA_KEY_NONE) {
-		keys |= 1 << angles;
-	}
+	keys |= mInputMapAxisBit(&runner->core->inputMap, GCN1_INPUT, 0, PAD_StickX(0));
+	keys |= mInputMapAxisBit(&runner->core->inputMap, GCN1_INPUT, 1, PAD_StickY(0));
+	keys |= mInputMapAxisBit(&runner->core->inputMap, GCN1_INPUT, 2, PAD_TriggerL(0));
+	keys |= mInputMapAxisBit(&runner->core->inputMap, GCN1_INPUT, 3, PAD_TriggerR(0));
 	if (ext == WPAD_EXP_CLASSIC) {
 		keys |= mInputMapKeyBits(&runner->core->inputMap, CLASSIC_INPUT, wiiPad, 0);
-		angles = mInputMapAxis(&runner->core->inputMap, CLASSIC_INPUT, 0, WPAD_StickX(0, 0));
-		if (angles != GBA_KEY_NONE) {
-			keys |= 1 << angles;
-		}
-		angles = mInputMapAxis(&runner->core->inputMap, CLASSIC_INPUT, 1, WPAD_StickY(0, 0));
-		if (angles != GBA_KEY_NONE) {
-			keys |= 1 << angles;
+		keys |= mInputMapAxisBit(&runner->core->inputMap, CLASSIC_INPUT, 0, WPAD_StickX(0, 0));
+		keys |= mInputMapAxisBit(&runner->core->inputMap, CLASSIC_INPUT, 1, WPAD_StickY(0, 0));
+
+		struct expansion_t exp;
+		WPAD_Expansion(0, &exp);
+		if (exp.classic.type == CLASSIC_TYPE_ORIG) {
+			keys |= mInputMapAxisBit(&runner->core->inputMap, CLASSIC_INPUT, 2, exp.classic.l_shoulder * 0x7FFF);
+			keys |= mInputMapAxisBit(&runner->core->inputMap, CLASSIC_INPUT, 3, exp.classic.r_shoulder * 0x7FFF);
 		}
 	}
 #ifdef WIIDRC
 	if (WiiDRC_Connected()) {
 		keys |= mInputMapKeyBits(&runner->core->inputMap, DRC_INPUT, drckeys, 0);
-		angles = mInputMapAxis(&runner->core->inputMap, DRC_INPUT, 0, WiiDRC_lStickX());
-		if (angles != GBA_KEY_NONE) {
-			keys |= 1 << angles;
-		}
-		angles = mInputMapAxis(&runner->core->inputMap, DRC_INPUT, 1, WiiDRC_lStickY());
-		if (angles != GBA_KEY_NONE) {
-			keys |= 1 << angles;
-		}
+		keys |= mInputMapAxisBit(&runner->core->inputMap, DRC_INPUT, 0, WiiDRC_lStickX());
+		keys |= mInputMapAxisBit(&runner->core->inputMap, DRC_INPUT, 1, WiiDRC_lStickY());
 	}
 #endif
 

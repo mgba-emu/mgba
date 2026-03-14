@@ -319,6 +319,9 @@ void mCoreConfigPortableIniPath(char* out, size_t outLength) {
 void mCoreConfigPortablePath(char* out, size_t outLength) {
 	struct VFile* portableIni;
 	char portableIniPath[PATH_MAX];
+	if (outLength <= 1) {
+		return;
+	}
 	mCoreConfigPortableIniPath(portableIniPath, sizeof(portableIniPath));
 	out[0] = '\0';
 	if (portableIniPath[0]) {
@@ -339,7 +342,7 @@ void mCoreConfigPortablePath(char* out, size_t outLength) {
 						strlcpy(out, path, outLength);
 					} else {
 						// User specified a relative path, append to the portable.ini path.
-						snprintf(out, outLength, "%s" PATH_SEP "%s", iniDir, path);
+						snprintf(out, outLength - 1, "%s" PATH_SEP "%s", iniDir, path);
 					}
 				}
 			}

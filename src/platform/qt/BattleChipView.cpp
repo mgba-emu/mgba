@@ -39,21 +39,8 @@ BattleChipView::BattleChipView(std::shared_ptr<CoreController> controller, Windo
 	CoreController::Interrupter interrupter(m_controller);
 	mCore* core = m_controller->thread()->core;
 	mGameInfo info;
-	QString qtitle;
-
-	if (core->platform(core) == mPLATFORM_GBA) {
-		struct GBA* gba = (struct GBA*) core->board;
-		char code[5];
-		code[0] = (char) GBAView8(gba->cpu, 0x080000AC);
-		code[1] = (char) GBAView8(gba->cpu, 0x080000AD);
-		code[2] = (char) GBAView8(gba->cpu, 0x080000AE);
-		code[3] = (char) GBAView8(gba->cpu, 0x080000AF);
-		code[4] = '\0';
-		qtitle = QString::fromLatin1(code);
-	} else {
-		core->getGameInfo(core, &info);
-		qtitle = QString::fromLatin1(info.title).right(4);
-	}
+	core->getGameInfo(core, &info);
+	QString qtitle(info.code);
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
 	int size = QFontMetrics(QFont()).height() / ((int) ceil(devicePixelRatioF()) * 12);

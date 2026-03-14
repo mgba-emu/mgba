@@ -1,8 +1,6 @@
 /* pngcp.c
  *
- * Copyright (c) 2016 John Cunningham Bowler
- *
- * Last changed in libpng 1.6.24 [August 4, 2016]
+ * Copyright (c) 2016,2022,2024 John Cunningham Bowler
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -14,7 +12,12 @@
  *
  * For a more extensive example that uses the transforms see
  * contrib/libtests/pngimage.c in the libpng distribution.
+ *
+ * This code is not intended for installation in a release system; the command
+ * line options are not documented and most of the behavior is intended for
+ * testing libpng performance, both speed and compression.
  */
+
 #include "pnglibconf.h" /* To find how libpng was configured. */
 
 #ifdef PNG_PNGCP_TIMING_SUPPORTED
@@ -84,16 +87,6 @@
 #else
 #  define voidcast(type, value) (value)
 #endif /* __cplusplus */
-
-#ifdef __GNUC__
-   /* Many versions of GCC erroneously report that local variables unmodified
-    * within the scope of a setjmp may be clobbered.  This hacks round the
-    * problem (sometimes) without harming other compilers.
-    */
-#  define gv volatile
-#else
-#  define gv
-#endif
 
 /* 'CLOCK_PROCESS_CPUTIME_ID' is one of the clock timers for clock_gettime.  It
  * need not be supported even when clock_gettime is available.  It returns the
@@ -336,7 +329,7 @@ static const option options[] =
 #  define VLC(name) VLCIDAT(name) VLCiCCP(name) VLCzTXt(name)
 
 #  ifdef PNG_SW_COMPRESS_png_level
-      /* The libpng compression level isn't searched because it justs sets the
+      /* The libpng compression level isn't searched because it just sets the
        * other things that are searched!
        */
       VLO("compression", compression, 0)
@@ -392,6 +385,7 @@ struct display
 {
    jmp_buf          error_return;      /* Where to go to on error */
    unsigned int     errset;            /* error_return is set */
+   int              errlevel;          /* error level from longjmp */
 
    const char      *operation;         /* What is happening */
    const char      *filename;          /* The name of the original file */
@@ -503,10 +497,10 @@ display_init(struct display *dp)
 }
 
 static void
-display_clean_read(struct display *dp)
+display_clean_read(struct display *dp, int freeinfo)
 {
    if (dp->read_pp != NULL)
-      png_destroy_read_struct(&dp->read_pp, NULL, NULL);
+      png_destroy_read_struct(&dp->read_pp, freeinfo ? &dp->ip : NULL, NULL);
 
    if (dp->fp != NULL)
    {
@@ -517,7 +511,7 @@ display_clean_read(struct display *dp)
 }
 
 static void
-display_clean_write(struct display *dp)
+display_clean_write(struct display *dp, int freeinfo)
 {
    if (dp->fp != NULL)
    {
@@ -527,14 +521,14 @@ display_clean_write(struct display *dp)
    }
 
    if (dp->write_pp != NULL)
-      png_destroy_write_struct(&dp->write_pp, dp->tsp > 0 ? NULL : &dp->ip);
+      png_destroy_write_struct(&dp->write_pp, freeinfo ? &dp->ip : NULL);
 }
 
 static void
 display_clean(struct display *dp)
 {
-   display_clean_read(dp);
-   display_clean_write(dp);
+   display_clean_read(dp, 1/*freeinfo*/);
+   display_clean_write(dp, 1/*freeinfo*/);
    dp->output_file = NULL;
 
 #  if PNG_LIBPNG_VER < 10700 && defined PNG_TEXT_SUPPORTED
@@ -631,7 +625,10 @@ display_log(struct display *dp, error_level level, const char *fmt, ...)
    if (level > APP_FAIL || (level > ERRORS && !(dp->options & CONTINUE)))
    {
       if (dp->errset)
+      {
+         dp->errlevel = level;
          longjmp(dp->error_return, level);
+      }
 
       else
          exit(99);
@@ -778,7 +775,7 @@ static void
 set_opt_string(struct display *dp, unsigned int sp)
    /* Add the appropriate option string to dp->curr. */
 {
-   dp->stack[sp].opt_string_end = set_opt_string_(dp, sp, dp->stack[sp].opt, 
+   dp->stack[sp].opt_string_end = set_opt_string_(dp, sp, dp->stack[sp].opt,
       options[dp->stack[sp].opt].values[dp->stack[sp].entry].name);
 }
 
@@ -1745,7 +1742,17 @@ read_function(png_structp pp, png_bytep data, size_t size)
 static void
 read_png(struct display *dp, const char *filename)
 {
-   display_clean_read(dp); /* safety */
+   /* This is an assumption of the code; it may happen if a previous write fails
+    * and there is a bug in the cleanup handling below (look for setjmp).
+    * Passing freeinfo==1 to display_clean_read below avoids a second error
+    * on dp->ip != NULL below.
+    */
+   if (dp->read_pp != NULL)
+   {
+      display_log(dp, APP_FAIL, "unexpected png_read_struct");
+      display_clean_read(dp, 1/*freeinfo*/); /* recovery */
+   }
+
    display_start_read(dp, filename);
 
    dp->read_pp = png_create_read_struct(PNG_LIBPNG_VER_STRING, dp,
@@ -1768,6 +1775,13 @@ read_png(struct display *dp, const char *filename)
       if ((dp->options & IGNORE_INDEX) != 0) /* DANGEROUS */
          png_set_check_for_invalid_index(dp->read_pp, -1/*off completely*/);
 #  endif /* IGNORE_INDEX */
+
+   if (dp->ip != NULL)
+   {
+      /* UNEXPECTED: some problem in the display_clean function calls! */
+      display_log(dp, APP_FAIL, "read_png: freeing old info struct");
+      png_destroy_info_struct(dp->read_pp, &dp->ip);
+   }
 
    /* The png_read_png API requires us to make the info struct, but it does the
     * call to png_read_info.
@@ -1848,7 +1862,14 @@ read_png(struct display *dp, const char *filename)
    }
 #endif /* FIX_INDEX */
 
-   display_clean_read(dp);
+   /* NOTE: dp->ip is where all the information about the PNG that was just read
+    * is stored.  It can be used to write and write again a single PNG file,
+    * however be aware that prior to libpng 1.7 text chunks could only be
+    * written once; this is a bug which would require a significant code rewrite
+    * to fix, it has been there in several versions of libpng (it was introduced
+    * to fix another bug involving duplicate writes of the text chunks.)
+    */
+   display_clean_read(dp, 0/*freeiinfo*/);
    dp->operation = "none";
 }
 
@@ -1975,7 +1996,21 @@ set_text_compression(struct display *dp)
 static void
 write_png(struct display *dp, const char *destname)
 {
-   display_clean_write(dp); /* safety */
+   /* If this test fails png_write_png would fail *silently* below; this
+    * is not helpful, so catch the problem now and give up:
+    */
+   if (dp->ip == NULL)
+      display_log(dp, INTERNAL_ERROR, "missing png_info");
+
+   /* This is an assumption of the code; it may happen if a previous
+    * write fails and there is a bug in the cleanup handling below.
+    */
+   if (dp->write_pp != NULL)
+   {
+      display_log(dp, APP_FAIL, "unexpected png_write_struct");
+      display_clean_write(dp, 0/*!freeinfo*/);
+   }
+
    display_start_write(dp, destname);
 
    dp->write_pp = png_create_write_struct(PNG_LIBPNG_VER_STRING, dp,
@@ -2073,10 +2108,6 @@ write_png(struct display *dp, const char *destname)
                destname == NULL ? "stdout" : destname, strerror(errno));
    }
 
-   /* Clean it on the way out - if control returns to the caller then the
-    * written_file contains the required data.
-    */
-   display_clean_write(dp);
    dp->operation = "none";
 }
 
@@ -2243,6 +2274,10 @@ cp_one_file(struct display *dp, const char *filename, const char *destname)
       /* Loop to find the best option. */
       do
       {
+         /* Clean before each write_png; this just removes *dp->write_pp which
+          * cannot be reused.
+          */
+         display_clean_write(dp, 0/*!freeinfo*/);
          write_png(dp, tmpname);
 
          /* And compare the sizes (the write function makes sure write_size
@@ -2272,17 +2307,14 @@ cp_one_file(struct display *dp, const char *filename, const char *destname)
       /* Do this for the 'sizes' option so that it reports the correct size. */
       dp->write_size = dp->best_size;
    }
+
+   display_clean_write(dp, 1/*freeinfo*/);
 }
 
 static int
-cppng(struct display *dp, const char *file, const char *gv dest)
-   /* Exists solely to isolate the setjmp clobbers which some versions of GCC
-    * erroneously generate.
-    */
+cppng(struct display *dp, const char *file, const char *dest)
 {
-   int ret = setjmp(dp->error_return);
-
-   if (ret == 0)
+   if (setjmp(dp->error_return) == 0)
    {
       dp->errset = 1;
       cp_one_file(dp, file, dest);
@@ -2294,10 +2326,11 @@ cppng(struct display *dp, const char *file, const char *gv dest)
    {
       dp->errset = 0;
 
-      if (ret < ERRORS) /* shouldn't longjmp on warnings */
-         display_log(dp, INTERNAL_ERROR, "unexpected return code %d", ret);
+      if (dp->errlevel < ERRORS) /* shouldn't longjmp on warnings */
+         display_log(dp, INTERNAL_ERROR, "unexpected return code %d",
+               dp->errlevel);
 
-      return ret;
+      return dp->errlevel;
    }
 }
 

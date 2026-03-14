@@ -44,7 +44,11 @@ struct mSDLRenderer {
 	SDL_Window* window;
 	SDL_Texture* sdlTex;
 	SDL_Renderer* sdlRenderer;
+#if SDL_VERSION_ATLEAST(3, 0, 0)
+	SDL_GLContext glCtx;
+#else
 	SDL_GLContext* glCtx;
+#endif
 #endif
 
 	unsigned width;

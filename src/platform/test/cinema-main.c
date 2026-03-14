@@ -314,11 +314,26 @@ static void usageCInema(const char* arg0) {
 	puts("  --version                  Print version and exit");
 }
 
-static bool determineBase(int argc, char* const* argv) {
-	// TODO: Better dynamic detection
+static bool determineBase(const char* arg0) {
 	separatePath(__FILE__, base, NULL, NULL);
 	strncat(base, PATH_SEP ".." PATH_SEP ".." PATH_SEP ".." PATH_SEP "cinema", sizeof(base) - strlen(base) - 1);
-	return true;
+	if (access(base, R_OK | X_OK) == 0) {
+		return true;
+	}
+
+	char buffer[2][PATH_MAX];
+	getcwd(buffer[0], sizeof(buffer[0]));
+	makeAbsolute(arg0, buffer[0], buffer[1]);
+	separatePath(buffer[1], buffer[0], NULL, NULL);
+	while (true) {
+		snprintf(base, sizeof(base), "%s" PATH_SEP "cinema", buffer[0]);
+		if (access(base, R_OK | X_OK) == 0) {
+			return true;
+		}
+		if (!upDirectory(buffer[0])) {
+			return false;
+		}
+	}
 }
 
 static bool collectTests(struct CInemaTestList* tests, const char* path) {
@@ -1434,15 +1449,14 @@ int main(int argc, char** argv) {
 		usageCInema(argv[0]);
 		goto cleanup;
 	}
-
-	argc -= optind;
-	argv += optind;
-
-	if (!base[0] && !determineBase(argc, argv)) {
+	if (!base[0] && !determineBase(argv[0])) {
 		CIlog(0, "Could not determine CInema test base. Please specify manually.");
 		status = 1;
 		goto cleanup;
 	}
+
+	argc -= optind;
+	argv += optind;
 #ifndef _WIN32
 	char* rbase = realpath(base, NULL);
 	if (rbase) {

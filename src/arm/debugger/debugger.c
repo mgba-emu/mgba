@@ -177,6 +177,33 @@ static bool ARMDebuggerUpdateStackTraceInternal(struct mDebuggerPlatform* d, uin
 	return true;
 }
 
+static void _rebuildBpBloom(struct ARMDebugger* debugger) {
+	memset(debugger->bpBloom, 0, sizeof(debugger->bpBloom));
+	size_t i;
+	for (i = 0; i < ARMDebugBreakpointListSize(&debugger->breakpoints); ++i) {
+		struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListGetPointer(&debugger->breakpoints, i);
+		if (breakpoint->d.disabled) {
+			continue;
+		}
+		uint32_t address = breakpoint->d.address;
+		size_t j;
+		for (j = 0; j < 4; ++j) {
+			debugger->bpBloom[j] |= 1ULL << ((address >> (4 * j + 1)) & 0x3F);
+		}
+	}
+}
+
+static bool _checkBpBloom(struct ARMDebugger* debugger, uint32_t address) {
+	size_t i;
+	for (i = 0; i < 4; ++i) {
+		if (!(debugger->bpBloom[i] & (1ULL << ((address >> (4 * i + 1)) & 0x3F)))) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 static void _destroyBreakpoint(struct mDebugger* debugger, struct ARMDebugBreakpoint* breakpoint) {
 	if (breakpoint->d.condition) {
 		parseFree(breakpoint->d.condition);
@@ -198,10 +225,16 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 	if (debugger->stackTraceMode != STACK_TRACE_DISABLED && ARMDebuggerUpdateStackTraceInternal(d, pc)) {
 		return;
 	}
+	if (ARMDebugBreakpointListSize(&debugger->breakpoints) > 3 && !_checkBpBloom(debugger, pc)) {
+		return;
+	}
 	size_t i;
 	for (i = 0; i < ARMDebugBreakpointListSize(&debugger->breakpoints); ++i) {
 		struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListGetPointer(&debugger->breakpoints, i);
 		if (breakpoint->d.address != pc) {
+			continue;
+		}
+		if (breakpoint->d.disabled) {
 			continue;
 		}
 		if (breakpoint->d.condition) {
@@ -221,6 +254,7 @@ static void ARMDebuggerCheckBreakpoints(struct mDebuggerPlatform* d) {
 		if (breakpoint->d.isTemporary) {
 			_destroyBreakpoint(debugger->d.p, breakpoint);
 			ARMDebugBreakpointListShift(&debugger->breakpoints, i, 1);
+			_rebuildBpBloom(debugger);
 			--i;
 		}
 	}
@@ -233,6 +267,7 @@ static void ARMDebuggerEnter(struct mDebuggerPlatform* d, enum mDebuggerEntryRea
 
 static ssize_t ARMDebuggerSetBreakpoint(struct mDebuggerPlatform*, struct mDebuggerModule* owner, const struct mBreakpoint*);
 static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform*, ssize_t id);
+static bool ARMDebuggerToggleBreakpoint(struct mDebuggerPlatform*, ssize_t id, bool status);
 static void ARMDebuggerListBreakpoints(struct mDebuggerPlatform*, struct mDebuggerModule* owner, struct mBreakpointList*);
 static ssize_t ARMDebuggerSetWatchpoint(struct mDebuggerPlatform*, struct mDebuggerModule* owner, const struct mWatchpoint*);
 static void ARMDebuggerListWatchpoints(struct mDebuggerPlatform*, struct mDebuggerModule* owner, struct mWatchpointList*);
@@ -254,6 +289,7 @@ struct mDebuggerPlatform* ARMDebuggerPlatformCreate(void) {
 	platform->setBreakpoint = ARMDebuggerSetBreakpoint;
 	platform->listBreakpoints = ARMDebuggerListBreakpoints;
 	platform->clearBreakpoint = ARMDebuggerClearBreakpoint;
+	platform->toggleBreakpoint = ARMDebuggerToggleBreakpoint;
 	platform->setWatchpoint = ARMDebuggerSetWatchpoint;
 	platform->listWatchpoints = ARMDebuggerListWatchpoints;
 	platform->checkBreakpoints = ARMDebuggerCheckBreakpoints;
@@ -331,6 +367,7 @@ static void ARMDebuggerEnter(struct mDebuggerPlatform* platform, enum mDebuggerE
 			if (breakpoint->d.isTemporary) {
 				_destroyBreakpoint(debugger->d.p, breakpoint);
 				ARMDebugBreakpointListShift(&debugger->swBreakpoints, i, 1);
+				_rebuildBpBloom(debugger);
 			} else if (debugger->setSoftwareBreakpoint) {
 				debugger->setSoftwareBreakpoint(debugger, breakpoint->d.address, breakpoint->sw.mode, &breakpoint->sw.opcode);
 			}
@@ -370,6 +407,7 @@ static ssize_t ARMDebuggerSetBreakpoint(struct mDebuggerPlatform* d, struct mDeb
 	breakpoint->d.address &= ~1; // Clear Thumb bit since it's not part of a valid address
 	breakpoint->d.id = id;
 	TableInsert(&debugger->d.p->pointOwner, id, owner);
+	_rebuildBpBloom(debugger);
 	if (info->type == BREAKPOINT_SOFTWARE) {
 		// TODO
 		abort();
@@ -389,6 +427,7 @@ static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t id) 
 			return true;
 		}
 	}
+	_rebuildBpBloom(debugger);
 
 	struct ARMDebugBreakpointList* swBreakpoints = &debugger->swBreakpoints;
 	if (debugger->clearSoftwareBreakpoint) {
@@ -409,6 +448,40 @@ static bool ARMDebuggerClearBreakpoint(struct mDebuggerPlatform* d, ssize_t id) 
 			if (!mWatchpointListSize(&debugger->watchpoints)) {
 				ARMDebuggerRemoveMemoryShim(debugger);
 			}
+			return true;
+		}
+	}
+	return false;
+}
+
+static bool ARMDebuggerToggleBreakpoint(struct mDebuggerPlatform* d, ssize_t id, bool status) {
+	struct ARMDebugger* debugger = (struct ARMDebugger*) d;
+	size_t i;
+
+	struct ARMDebugBreakpointList* breakpoints = &debugger->breakpoints;
+	for (i = 0; i < ARMDebugBreakpointListSize(breakpoints); ++i) {
+		struct ARMDebugBreakpoint* breakpoint = ARMDebugBreakpointListGetPointer(breakpoints, i);
+		if (breakpoint->d.id == id) {
+			breakpoint->d.disabled = !status;
+			return true;
+		}
+	}
+	_rebuildBpBloom(debugger);
+
+	struct ARMDebugBreakpointList* swBreakpoints = &debugger->swBreakpoints;
+	for (i = 0; i < ARMDebugBreakpointListSize(swBreakpoints); ++i) {
+		struct ARMDebugBreakpoint* swbreakpoint = ARMDebugBreakpointListGetPointer(swBreakpoints, i);
+		if (swbreakpoint->d.id == id) {
+			swbreakpoint->d.disabled = !status;
+			return true;
+		}
+	}
+
+	struct mWatchpointList* watchpoints = &debugger->watchpoints;
+	for (i = 0; i < mWatchpointListSize(watchpoints); ++i) {
+		struct mWatchpoint* watchpoint = mWatchpointListGetPointer(watchpoints, i);
+		if (watchpoint->id == id) {
+			watchpoint->disabled = !status;
 			return true;
 		}
 	}

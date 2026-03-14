@@ -203,6 +203,7 @@ static void _tryAutosave(struct mGUIRunner* runner) {
 	}
 	runner->autosave.core = runner->core;
 	mCoreSaveStateNamed(runner->core, runner->autosave.buffer, SAVESTATE_SAVEDATA | SAVESTATE_RTC | SAVESTATE_METADATA);
+	runner->autosave.pending = true;
 	ConditionWake(&runner->autosave.cond);
 	MutexUnlock(&runner->autosave.mutex);
 #endif
@@ -255,6 +256,7 @@ void mGUIInit(struct mGUIRunner* runner, const char* port) {
 
 #ifndef DISABLE_THREADING
 	if (!runner->autosave.running) {
+		runner->autosave.pending = false;
 		runner->autosave.running = true;
 		runner->autosave.core = NULL;
 		MutexInit(&runner->autosave.mutex);
@@ -268,6 +270,11 @@ void mGUIDeinit(struct mGUIRunner* runner) {
 #ifndef DISABLE_THREADING
 	MutexLock(&runner->autosave.mutex);
 	runner->autosave.running = false;
+	runner->autosave.pending = false;
+	if (runner->autosave.buffer) {
+		runner->autosave.buffer->close(runner->autosave.buffer);
+		runner->autosave.buffer = NULL;
+	}
 	ConditionWake(&runner->autosave.cond);
 	MutexUnlock(&runner->autosave.mutex);
 
@@ -275,10 +282,6 @@ void mGUIDeinit(struct mGUIRunner* runner) {
 
 	ConditionDeinit(&runner->autosave.cond);
 	MutexDeinit(&runner->autosave.mutex);
-
-	if (runner->autosave.buffer) {
-		runner->autosave.buffer->close(runner->autosave.buffer);
-	}
 #endif
 
 	if (runner->teardown) {
@@ -833,19 +836,21 @@ THREAD_ENTRY mGUIAutosaveThread(void* context) {
 	MutexLock(&autosave->mutex);
 	while (autosave->running) {
 		ConditionWait(&autosave->cond, &autosave->mutex);
-		if (autosave->running && autosave->core) {
-			if (!autosave->buffer) {
-				continue;
-			}
-			struct VFile* vf = mCoreGetState(autosave->core, 0, true);
-			if (!vf) {
-				continue;
-			}
-			void* mem = autosave->buffer->map(autosave->buffer, autosave->buffer->size(autosave->buffer), MAP_READ);
-			vf->write(vf, mem, autosave->buffer->size(autosave->buffer));
-			autosave->buffer->unmap(autosave->buffer, mem, autosave->buffer->size(autosave->buffer));
-			vf->close(vf);
+		if (!autosave->running) {
+			break;
 		}
+		if (!autosave->core || !autosave->pending || !autosave->buffer) {
+			continue;
+		}
+		struct VFile* vf = mCoreGetState(autosave->core, 0, true);
+		if (!vf) {
+			continue;
+		}
+		void* mem = autosave->buffer->map(autosave->buffer, autosave->buffer->size(autosave->buffer), MAP_READ);
+		vf->write(vf, mem, autosave->buffer->size(autosave->buffer));
+		autosave->buffer->unmap(autosave->buffer, mem, autosave->buffer->size(autosave->buffer));
+		vf->close(vf);
+		autosave->pending = false;
 	}
 	MutexUnlock(&autosave->mutex);
 	THREAD_EXIT(0);

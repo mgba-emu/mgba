@@ -45,6 +45,9 @@ static void _checkWatchpoints(struct SM83Debugger* debugger, uint16_t address, e
 	for (i = 0; i < mWatchpointListSize(&debugger->watchpoints); ++i) {
 		watchpoint = mWatchpointListGetPointer(&debugger->watchpoints, i);
 		if (watchpoint->type & type && address >= watchpoint->minAddress && address < watchpoint->maxAddress && (watchpoint->segment < 0 || watchpoint->segment == debugger->originalMemory.currentSegment(debugger->cpu, address))) {
+			if (watchpoint->disabled) {
+				continue;
+			}
 			if (watchpoint->condition) {
 				int32_t value;
 				int segment;

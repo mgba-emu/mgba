@@ -438,7 +438,7 @@ static void _mLibraryDeleteEntry(struct mLibrary* library, struct mLibraryEntry*
 	sqlite3_clear_bindings(library->deletePath);
 	sqlite3_reset(library->deletePath);
 	sqlite3_bind_text(library->deletePath, 1, entry->filename, -1, SQLITE_TRANSIENT);
-	sqlite3_step(library->insertPath);
+	sqlite3_step(library->deletePath);
 }
 
 void mLibraryClear(struct mLibrary* library) {

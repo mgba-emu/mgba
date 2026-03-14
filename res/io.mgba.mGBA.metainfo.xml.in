@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component type="desktop">
+  <id>io.mgba.mGBA</id>
+  <name>mGBA</name>
+  <summary>Nintendo Game Boy Advance Emulator</summary>
+  <developer_name>endrift</developer_name>
+  <launchable type="desktop-id">io.mgba.mGBA.desktop</launchable>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MPL-2.0</project_license>
+  <description>
+    <p>mGBA is an emulator for running Game Boy Advance games. It aims to be faster and more accurate than many existing Game Boy Advance emulators, as well as adding features that other emulators lack. It also supports Game Boy and Game Boy Color games.</p>
+    <p xml:lang="de">mGBA ist ein Emulator für Game Boy Advance-Spiele. Das Ziel von mGBA ist, schneller und genauer als viele existierende Game Boy Advance-Emulatoren zu sein. Außerdem verfügt mGBA über Funktionen, die anderen Emulatoren fehlen. Zusätzlich werden auch Game Boy- und Game Boy Color-Spiele unterstützt.</p>
+    <p xml:lang="es">mGBA es un emulador para juegos de Game Boy Advance. Su objetivo es ser más rápido y más preciso que muchos emuladores de Game Boy Advance existentes, además de añadir funciones que otros emuladores no tienen. También es compatible con juegos de Game Boy y Game Boy Color.</p>
+    <p xml:lang="zh_CN">mGBA 是一个运行 Game Boy Advance 游戏的模拟器。mGBA 的目标是比众多现有的 Game Boy Advance 模拟器更快、更准确，并增加其他模拟器所缺少的功能。mGBA 还支持 Game Boy 和 Game Boy Color 游戏。</p>
+  </description>
+  @APPSTREAM_RELEASES@
+  <url type="homepage">https://mgba.io</url>
+  <url type="bugtracker">https://github.com/mgba-emu/mgba/issues</url>
+  <url type="faq">https://mgba.io/faq.html</url>
+  <url type="donation">https://patreon.com/mgba</url>
+  <url type="translate">https://hosted.weblate.org/engage/mgba</url>
+  <url type="vcs-browser">https://github.com/mgba-emu</url>
+  <url type="contribute">https://github.com/mgba-emu/mgba/blob/master/CONTRIBUTING.md</url>
+  <categories>
+    <category>Game</category>
+    <category>Emulator</category>
+  </categories>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>gamepad</control>
+  </supports>
+  <content_rating type="oars-1.1"/>
+  <provides>
+    <binary>mgba</binary>
+    <binary>mgba-qt</binary>
+    <mediatype>application/x-gameboy-advance-rom</mediatype>
+    <mediatype>application/x-agb-rom</mediatype>
+    <mediatype>application/x-gba-rom</mediatype>
+  </provides>
+  <keywords>
+    <keyword>emulator</keyword>
+    <keyword>Nintendo</keyword>
+    <keyword>advance</keyword>
+    <keyword>gba</keyword>
+    <keyword>Game Boy Advance</keyword>
+  </keywords>
+</component>

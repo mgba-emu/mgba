@@ -7,6 +7,7 @@
 
 #include <QBuffer>
 #include <QDesktopServices>
+#include <QCryptographicHash>
 #include <QOffscreenSurface>
 #include <QScreen>
 #include <QSysInfo>
@@ -62,6 +63,10 @@
 #include <freetype/freetype.h>
 #endif
 
+#ifdef USE_JSON_C
+#include <json.h>
+#endif
+
 #ifdef USE_LIBZIP
 #include <zip.h>
 #endif
@@ -98,6 +103,7 @@ static const QLatin1String yesNo[2] = {
 unsigned ReportView::s_cpuidMax = 0xFFFFFFFF;
 unsigned ReportView::s_cpuidExtMax = 0xFFFFFFFF;
 #endif
+QHash<QString, QHash<QByteArray, QString>> ReportView::s_bioses;
 
 ReportView::ReportView(QWidget* parent)
 	: QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowCloseButtonHint)
@@ -108,6 +114,33 @@ ReportView::ReportView(QWidget* parent)
 	description.replace("{projectName}", QLatin1String(projectName));
 	m_ui.description->setText(description);
 	m_ui.fileView->setFont(GBAApp::app()->monospaceFont());
+
+	if (s_bioses.isEmpty()) {
+		QHash<QByteArray, QString> gbaBioses;
+		gbaBioses.insert(QByteArray::fromHex("fd2547724b505f487e6dcb29ec2ecff3af35a841a77ab2e85fd87350abd36570"), QLatin1String("Official"));
+		gbaBioses.insert(QByteArray::fromHex("782eb3894237ec6aa411b78ffee19078bacf10413856d33cda10b44fd9c2856b"), QLatin1String("DS"));
+		gbaBioses.insert(QByteArray::fromHex("9758dbf0c4c5ffefa2a710405f4df7ddc7de0399b0975e85e12fb43d8843b63d"), QLatin1String("Debug"));
+		s_bioses.insert(QLatin1String("GBA BIOS"), gbaBioses);
+
+		QHash<QByteArray, QString> gbBioses;
+		gbBioses.insert(QByteArray::fromHex("3a307a41689bee99a9a32ea021bf45136906c86b2e4f06c806738398e4f92e45"), QLatin1String("CGB-0"));
+		gbBioses.insert(QByteArray::fromHex("b4f2e416a35eef52cba161b159c7c8523a92594facb924b3ede0d722867c50c7"), QLatin1String("CGB"));
+		gbBioses.insert(QByteArray::fromHex("fe2d45405531756d87622abde6127c804bd675cb968081b2c052497a470ffeb2"), QLatin1String("AGB-0"));
+		gbBioses.insert(QByteArray::fromHex("fe3cceb79930c4cb6c6f62f742c2562fd4c96b827584ef8ea89d49b387bd6860"), QLatin1String("AGB"));
+		gbBioses.insert(QByteArray::fromHex("c56299bedd56debdbf36442238636bf5887a65c5173b33995682052353804da9"), QLatin1String("CGB-E"));
+		gbBioses.insert(QByteArray::fromHex("26e71cf01e301e5dc40e987cd2ecbf6d0276245890ac829db2a25323da86818e"), QLatin1String("DMG-0"));
+		gbBioses.insert(QByteArray::fromHex("cf053eccb4ccafff9e67339d4e78e98dce7d1ed59be819d2a1ba2232c6fce1c7"), QLatin1String("DMG"));
+		gbBioses.insert(QByteArray::fromHex("9e328227920e86d5530f54efedb562e9ce5b6d32a4ecdee0a278a3d9c6a114b1"), QLatin1String("Fortune/Bitman 3000B"));
+		gbBioses.insert(QByteArray::fromHex("7abdaeea7ac2afd39d86a2ddf044fb978ccd4e65fa4ef15ffc8fcd19df71f254"), QLatin1String("Game Fighter"));
+		gbBioses.insert(QByteArray::fromHex("27e4bee8a8fddc80d48393a51fd9cdf33abc981a795f6aecc59a03a12daff881"), QLatin1String("Maxstation"));
+		gbBioses.insert(QByteArray::fromHex("371686262f845b109a180a27e8a2dfd2e7c76bb836a67e10531cf30aeb356f4a"), QLatin1String("Kongfeng GB Boy Colour"));
+		gbBioses.insert(QByteArray::fromHex("a8cb5f4f1f16f2573ed2ecd8daedb9c5d1dd2c30a481f9b179b5d725d95eafe2"), QLatin1String("MGB"));
+		gbBioses.insert(QByteArray::fromHex("fd243c4fb27008986316ce3df29e9cfbcdc0cd52704970555a8bb76edbec3988"), QLatin1String("SGB2"));
+		gbBioses.insert(QByteArray::fromHex("0e4ddff32fc9d1eeaae812a157dd246459b00c9e14f2f61751f661f32361e360"), QLatin1String("SGB"));
+		s_bioses.insert(QLatin1String("GB BIOS"), gbBioses);
+		s_bioses.insert(QLatin1String("GBC BIOS"), gbBioses);
+		s_bioses.insert(QLatin1String("SGB BIOS"), gbBioses);
+	}
 
 	connect(m_ui.fileList, &QListWidget::currentTextChanged, this, &ReportView::setShownReport);
 }
@@ -121,6 +154,7 @@ void ReportView::generateReport() {
 	QStringList swReport;
 	swReport << QString("Name: %1").arg(QLatin1String(projectName));
 	swReport << QString("Executable location: %1").arg(redact(QCoreApplication::applicationFilePath()));
+	swReport << QString("Working directory: %1").arg(redact(QDir::currentPath()));
 	swReport << QString("Portable: %1").arg(yesNo[ConfigController::isPortable()]);
 	swReport << QString("Configuration directory: %1").arg(redact(configDir.path()));
 	swReport << QString("Version: %1").arg(QLatin1String(projectVersion));
@@ -128,6 +162,16 @@ void ReportView::generateReport() {
 	swReport << QString("Git commit: %1").arg(QLatin1String(gitCommit));
 	swReport << QString("Git revision: %1").arg(gitRevision);
 	swReport << QString("OS: %1").arg(QSysInfo::prettyProductName());
+#ifdef M_CORE_GBA
+	swReport << QString("GBA core enabled");
+#else
+	swReport << QString("GBA core disabled");
+#endif
+#ifdef M_CORE_GB
+	swReport << QString("GB core enabled");
+#else
+	swReport << QString("GB core disabled");
+#endif
 	swReport << QString("Build architecture: %1").arg(QSysInfo::buildCpuArchitecture());
 	swReport << QString("Run architecture: %1").arg(QSysInfo::currentCpuArchitecture());
 	swReport << QString("Qt version: %1").arg(QLatin1String(qVersion()));
@@ -157,6 +201,11 @@ void ReportView::generateReport() {
 	swReport << QString("FreeType version: %1.%2.%3").arg(FREETYPE_MAJOR).arg(FREETYPE_MINOR).arg(FREETYPE_PATCH);
 #else
 	swReport << QString("FreeType not linked");
+#endif
+#ifdef USE_JSON_C
+	swReport << QString("json-c version: %1.%2.%3").arg(JSON_C_MAJOR_VERSION).arg(JSON_C_MINOR_VERSION).arg(JSON_C_MICRO_VERSION);
+#else
+	swReport << QString("json-c not linked");
 #endif
 #ifdef USE_EDITLINE
 	swReport << QString("libedit version: %1.%2").arg(LIBEDIT_MAJOR).arg(LIBEDIT_MINOR);
@@ -194,7 +243,11 @@ void ReportView::generateReport() {
 	swReport << QString("minizip not linked");
 #endif
 #ifdef BUILD_SDL
+#ifdef SDL_MICRO_VERSION
+	swReport << QString("SDL version: %1.%2.%3").arg(SDL_MAJOR_VERSION).arg(SDL_MINOR_VERSION).arg(SDL_MICRO_VERSION);
+#else
 	swReport << QString("SDL version: %1.%2.%3").arg(SDL_MAJOR_VERSION).arg(SDL_MINOR_VERSION).arg(SDL_PATCHLEVEL);
+#endif
 #else
 	swReport << QString("SDL not linked");
 #endif
@@ -252,6 +305,7 @@ void ReportView::generateReport() {
 
 		windowReport << QString("Window size: %1x%2").arg(window->width()).arg(window->height());
 		windowReport << QString("Window location: %1, %2").arg(window->x()).arg(window->y());
+		windowReport << QString("Fullscreen: %1").arg(window->isFullScreen() ? "yes" : "no");
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
 		QScreen* screen = window->screen();
 #else
@@ -327,6 +381,11 @@ void ReportView::generateReport() {
 		InputController* input = window->inputController();
 		windowReport << QString("Active gamepad: %1").arg(input->gamepadIndex());
 		windowReport << QString("Configuration: %1").arg(configs.indexOf(config) + 1);
+
+		addBios(windowReport, config->getOption("gba.bios", QString()), QLatin1String("GBA BIOS"));
+		addBios(windowReport, config->getOption("gb.bios", QString()), QLatin1String("GB BIOS"));
+		addBios(windowReport, config->getOption("gbc.bios", QString()), QLatin1String("GBC BIOS"));
+		addBios(windowReport, config->getOption("sgb.bios", QString()), QLatin1String("SGB BIOS"));
 		addReport(QString("Window %1").arg(winId), windowReport.join('\n'));
 	}
 	for (ConfigController* config : configs) {
@@ -450,6 +509,8 @@ void ReportView::addCpuInfo(QStringList& report) {
 	features << QString("Supports SSE4a: %1").arg(testBit(6, regs[2]));
 	features.sort();
 	report << features;
+#else
+	Q_UNUSED(report);
 #endif
 }
 
@@ -553,6 +614,26 @@ void ReportView::addScreenInfo(QStringList& report, const QScreen* screen) {
 #endif
 	report << QString("Logical DPI: %1x%2").arg(screen->logicalDotsPerInchX()).arg(screen->logicalDotsPerInchY());
 	report << QString("Physical DPI: %1x%2").arg(screen->physicalDotsPerInchX()).arg(screen->physicalDotsPerInchY());
+}
+
+void ReportView::addBios(QStringList& report, const QString& path, const QString& name) {
+	if (path.isEmpty()) {
+		return;
+	}
+
+	QFile bios(path);
+	if (!bios.open(QIODevice::ReadOnly)) {
+		return;
+	}
+	QByteArray data = bios.readAll();
+	QByteArray hash = QCryptographicHash::hash(data, QCryptographicHash::Sha256);
+	report << QString("%1 SHA-256: %2").arg(name).arg(QString::fromLatin1(hash.toHex()));
+	auto iter = s_bioses[name].constFind(hash);
+	if (iter != s_bioses[name].end()) {
+		report << QString("%1: %2").arg(name).arg(*iter);
+	} else {
+		report << QString("Unknown %1").arg(name);
+	}
 }
 
 void ReportView::addReport(const QString& filename, const QString& report) {

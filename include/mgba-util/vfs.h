@@ -112,6 +112,7 @@ void separatePath(const char* path, char* dirname, char* basename, char* extensi
 
 bool isAbsolute(const char* path);
 void makeAbsolute(const char* path, const char* base, char* out);
+bool upDirectory(char* path);
 
 ssize_t VFileReadline(struct VFile* vf, char* buffer, size_t size);
 

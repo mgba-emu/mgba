@@ -15,8 +15,8 @@
  * images.  Normally you would call png_set_interlace_handling() to have libpng
  * deal with the interlace for you, but that obliges you to buffer half of the
  * image to assemble the interlaced rows.  In this code
- * png_set_interlace_handling() is not called and, instead, the code handles the
- * interlace passes directly looking for the required pixel.
+ * png_set_interlace_handling() is not called and, instead, the code handles
+ * the interlace passes directly looking for the required pixel.
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -27,34 +27,37 @@
  */
 #include "../../png.h"
 
-#if defined(PNG_READ_SUPPORTED) && defined(PNG_SEQUENTIAL_READ_SUPPORTED)
+#if !defined(PNG_READ_SUPPORTED) || !defined(PNG_SEQUENTIAL_READ_SUPPORTED)
+#error This program requires libpng supporting the read and sequential read API
+#endif
+
 
 /* Return component 'c' of pixel 'x' from the given row. */
 static unsigned int
 component(png_const_bytep row, png_uint_32 x, unsigned int c,
-   unsigned int bit_depth, unsigned int channels)
+          unsigned int bit_depth, unsigned int channels)
 {
-   /* PNG images can be up to 2^31 pixels wide, but this means they can be up to
-    * 2^37 bits wide (for a 64-bit pixel - the largest possible) and hence 2^34
-    * bytes wide.  Since the row fitted into memory, however, the following must
+   /* PNG images can be up to 2^31 pixels wide, which means they can be up to
+    * 2^37 bits wide (for a 64-bit pixel - the largest possible) and hence
+    * 2^34 bytes wide.  Since the row fitted into memory, the following must
     * work:
     */
    png_uint_32 bit_offset_hi = bit_depth * ((x >> 6) * channels);
    png_uint_32 bit_offset_lo = bit_depth * ((x & 0x3f) * channels + c);
 
-   row = (png_const_bytep)(((const png_byte (*)[8])row) + bit_offset_hi);
+   row = (png_const_bytep)(((const png_byte(*)[8])row) + bit_offset_hi);
    row += bit_offset_lo >> 3;
    bit_offset_lo &= 0x07;
 
    /* PNG pixels are packed into bytes to put the first pixel in the highest
-    * bits of the byte and into two bytes for 16-bit values with the high 8 bits
-    * first, so:
+    * bits of the byte, and into two bytes for 16-bit values with the high
+    * 8 bits first, so:
     */
    switch (bit_depth)
    {
-      case 1: return (row[0] >> (7-bit_offset_lo)) & 0x01;
-      case 2: return (row[0] >> (6-bit_offset_lo)) & 0x03;
-      case 4: return (row[0] >> (4-bit_offset_lo)) & 0x0f;
+      case 1: return (row[0] >> (7 - bit_offset_lo)) & 0x01;
+      case 2: return (row[0] >> (6 - bit_offset_lo)) & 0x03;
+      case 4: return (row[0] >> (4 - bit_offset_lo)) & 0x0f;
       case 8: return row[0];
       case 16: return (row[0] << 8) + row[1];
       default:
@@ -71,7 +74,7 @@ component(png_const_bytep row, png_uint_32 x, unsigned int c,
  */
 static void
 print_pixel(png_structp png_ptr, png_infop info_ptr, png_const_bytep row,
-   png_uint_32 x)
+            png_uint_32 x)
 {
    unsigned int bit_depth = png_get_bit_depth(png_ptr, info_ptr);
 
@@ -92,22 +95,24 @@ print_pixel(png_structp png_ptr, png_infop info_ptr, png_const_bytep row,
             int num_palette = 0;
 
             if ((png_get_PLTE(png_ptr, info_ptr, &palette, &num_palette) &
-               PNG_INFO_PLTE) && num_palette > 0 && palette != NULL)
+                 PNG_INFO_PLTE) &&
+                (num_palette > 0) &&
+                (palette != NULL))
             {
                png_bytep trans_alpha = NULL;
                int num_trans = 0;
                if ((png_get_tRNS(png_ptr, info_ptr, &trans_alpha, &num_trans,
-                  NULL) & PNG_INFO_tRNS) && num_trans > 0 &&
-                  trans_alpha != NULL)
+                                 NULL) & PNG_INFO_tRNS) &&
+                   (num_trans > 0) &&
+                   (trans_alpha != NULL))
                   printf("INDEXED %u = %d %d %d %d\n", index,
-                     palette[index].red, palette[index].green,
-                     palette[index].blue,
-                     index < num_trans ? trans_alpha[index] : 255);
+                         palette[index].red, palette[index].green,
+                         palette[index].blue,
+                         index < num_trans ? trans_alpha[index] : 255);
 
                else /* no transparency */
-                  printf("INDEXED %u = %d %d %d\n", index,
-                     palette[index].red, palette[index].green,
-                     palette[index].blue);
+                  printf("INDEXED %u = %d %d %d\n", index, palette[index].red,
+                         palette[index].green, palette[index].blue);
             }
 
             else
@@ -117,20 +122,20 @@ print_pixel(png_structp png_ptr, png_infop info_ptr, png_const_bytep row,
 
       case PNG_COLOR_TYPE_RGB:
          printf("RGB %u %u %u\n", component(row, x, 0, bit_depth, 3),
-            component(row, x, 1, bit_depth, 3),
-            component(row, x, 2, bit_depth, 3));
+                component(row, x, 1, bit_depth, 3),
+                component(row, x, 2, bit_depth, 3));
          return;
 
       case PNG_COLOR_TYPE_GRAY_ALPHA:
          printf("GRAY+ALPHA %u %u\n", component(row, x, 0, bit_depth, 2),
-            component(row, x, 1, bit_depth, 2));
+                component(row, x, 1, bit_depth, 2));
          return;
 
       case PNG_COLOR_TYPE_RGB_ALPHA:
          printf("RGBA %u %u %u %u\n", component(row, x, 0, bit_depth, 4),
-            component(row, x, 1, bit_depth, 4),
-            component(row, x, 2, bit_depth, 4),
-            component(row, x, 3, bit_depth, 4));
+                component(row, x, 1, bit_depth, 4),
+                component(row, x, 2, bit_depth, 4),
+                component(row, x, 3, bit_depth, 4));
          return;
 
       default:
@@ -138,7 +143,8 @@ print_pixel(png_structp png_ptr, png_infop info_ptr, png_const_bytep row,
    }
 }
 
-int main(int argc, const char **argv)
+int
+main(int argc, const char **argv)
 {
    /* This program uses the default, <setjmp.h> based, libpng error handling
     * mechanism, therefore any local variable that exists before the call to
@@ -146,7 +152,7 @@ int main(int argc, const char **argv)
     * be declared with 'volatile' to ensure that their values don't get
     * destroyed by longjmp:
     */
-   volatile int result = 1/*fail*/;
+   volatile int result = 1 /*fail*/;
 
    if (argc == 4)
    {
@@ -163,8 +169,8 @@ int main(int argc, const char **argv)
           * writes error messages to stderr.  Creating the png_struct is a
           * little tricky; just copy the following code.
           */
-         png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
-            NULL, NULL, NULL);
+         png_structp png_ptr =
+            png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
          if (png_ptr != NULL)
          {
@@ -184,11 +190,11 @@ int main(int argc, const char **argv)
                      compression_method, filter_method;
                   png_bytep row_tmp;
 
-                  /* Now associate the recently opened (FILE*) with the default
-                   * libpng initialization functions.  Sometimes libpng is
-                   * compiled without stdio support (it can be difficult to do
-                   * in some environments); in that case you will have to write
-                   * your own read callback to read data from the (FILE*).
+                  /* Now associate the recently opened FILE object with the
+                   * default libpng initialization functions.  Sometimes libpng
+                   * is compiled without stdio support (it can be difficult to
+                   * do in some environments); in that case you will have to
+                   * write your own read callback to read data from the stream.
                    */
                   png_init_io(png_ptr, f);
 
@@ -202,21 +208,21 @@ int main(int argc, const char **argv)
                    * space.  In this case png_malloc is used - it will not
                    * return if memory isn't available.
                    */
-                  row = png_malloc(png_ptr, png_get_rowbytes(png_ptr,
-                     info_ptr));
+                  row =
+                     png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
 
-                  /* To avoid the overhead of using a volatile auto copy row_tmp
+                  /* Avoid the overhead of using a volatile auto copy row_tmp
                    * to a local here - just use row for the png_free below.
                    */
                   row_tmp = row;
 
-                  /* All the information we need is in the header is returned by
-                   * png_get_IHDR, if this fails we can now use 'png_error' to
+                  /* All the information we need is in the header returned by
+                   * png_get_IHDR.  If this fails, we can use 'png_error' to
                    * signal the error and return control to the setjmp above.
                    */
                   if (png_get_IHDR(png_ptr, info_ptr, &width, &height,
-                     &bit_depth, &color_type, &interlace_method,
-                     &compression_method, &filter_method))
+                                   &bit_depth, &color_type, &interlace_method,
+                                   &compression_method, &filter_method))
                   {
                      int passes, pass;
 
@@ -242,7 +248,7 @@ int main(int argc, const char **argv)
                      /* Now read the pixels, pass-by-pass, row-by-row: */
                      png_start_read_image(png_ptr);
 
-                     for (pass=0; pass<passes; ++pass)
+                     for (pass = 0; pass < passes; ++pass)
                      {
                         png_uint_32 ystart, xstart, ystep, xstep;
                         png_uint_32 py;
@@ -299,19 +305,27 @@ int main(int argc, const char **argv)
                             * are, of course, much better ways of doing this
                             * than using a for loop:
                             */
-                           if (y == py) for (px = xstart, ppx = 0;
-                              px < width; px += xstep, ++ppx) if (x == px)
+                           if (y == py)
                            {
-                              /* 'ppx' is the index of the pixel in the row
-                               * buffer.
-                               */
-                              print_pixel(png_ptr, info_ptr, row_tmp, ppx);
+                              for (px = xstart, ppx = 0;
+                                   px < width;
+                                   px += xstep, ++ppx)
+                              {
+                                 if (x == px)
+                                 {
+                                    /* 'ppx' is the index of the pixel in the
+                                     * row buffer.
+                                     */
+                                    print_pixel(png_ptr, info_ptr, row_tmp,
+                                                ppx);
 
-                              /* Now terminate the loops early - we have
-                               * found and handled the required data.
-                               */
-                              goto pass_loop_end;
-                           } /* x loop */
+                                    /* Now terminate the loops early - we have
+                                     * found and handled the required data.
+                                     */
+                                    goto pass_loop_end;
+                                 } /* x loop */
+                              }
+                           }
                         } /* y loop */
                      } /* pass loop */
 
@@ -323,7 +337,6 @@ int main(int argc, const char **argv)
 
                   else
                      png_error(png_ptr, "pngpixel: png_get_IHDR failed");
-
                }
 
                else
@@ -349,7 +362,8 @@ int main(int argc, const char **argv)
             }
 
             else
-               fprintf(stderr, "pngpixel: out of memory allocating png_info\n");
+               fprintf(stderr,
+                       "pngpixel: out of memory allocating png_info\n");
 
             png_destroy_read_struct(&png_ptr, NULL, NULL);
          }
@@ -368,4 +382,3 @@ int main(int argc, const char **argv)
 
    return result;
 }
-#endif /* READ && SEQUENTIAL_READ */

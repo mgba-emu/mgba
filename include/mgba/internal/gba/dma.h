@@ -49,6 +49,10 @@ struct GBADMA {
 	int32_t nextCount;
 	uint32_t when;
 	int32_t cycles;
+	uint32_t latch;
+
+	int sourceOffset;
+	int destOffset;
 };
 
 struct GBA;
@@ -67,6 +71,10 @@ void GBADMARunVblank(struct GBA* gba, int32_t cycles);
 void GBADMARunDisplayStart(struct GBA* gba, int32_t cycles);
 void GBADMAUpdate(struct GBA* gba);
 void GBADMARecalculateCycles(struct GBA* gba);
+
+struct GBASerializedState;
+void GBADMASerialize(const struct GBA* gba, struct GBASerializedState* state);
+void GBADMADeserialize(struct GBA* gba, const struct GBASerializedState* state);
 
 CXX_GUARD_END
 

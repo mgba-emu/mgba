@@ -94,16 +94,7 @@ int main(int argc, char** argv) {
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
 
-	GXRModeObj* vmode = VIDEO_GetPreferredMode(0);
-	void* xfb = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vmode));
-	console_init(xfb, 20, 20, vmode->fbWidth, vmode->xfbHeight, vmode->fbWidth * VI_DISPLAY_PIX_SZ);
-
-	VIDEO_Configure(vmode);
-	VIDEO_SetNextFramebuffer(xfb);
-	VIDEO_SetBlack(false);
-	VIDEO_Flush();
-	VIDEO_WaitVSync();
-	VIDEO_WaitVSync();
+	consoleInit(NULL);
 	fatInitDefault();
 
 #ifdef FIXED_ROM_BUFFER

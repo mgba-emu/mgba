@@ -471,6 +471,14 @@ int mInputMapAxis(const struct mInputMap* map, uint32_t type, int axis, int16_t 
 	return -1;
 }
 
+int mInputMapAxisBit(const struct mInputMap* map, uint32_t type, int axis, int16_t value) {
+	int bit = mInputMapAxis(map, type, axis, value);
+	if (bit < 0) {
+		return 0;
+	}
+	return 1 << bit;
+}
+
 int mInputClearAxis(const struct mInputMap* map, uint32_t type, int axis, int keys) {
 	const struct mInputMapImpl* impl = _lookupMapConst(map, type);
 	if (!impl) {

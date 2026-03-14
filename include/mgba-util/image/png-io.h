@@ -14,10 +14,6 @@ CXX_GUARD_START
 
 #include <mgba-util/image.h>
 
-// png.h defines its own version of restrict which conflicts with mGBA's.
-#ifdef restrict
-#undef restrict
-#endif
 #include <png.h>
 
 struct VFile;

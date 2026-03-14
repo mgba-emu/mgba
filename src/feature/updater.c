@@ -170,9 +170,13 @@ void mUpdateRegister(struct mCoreConfig* config, const char* arg0, const char* u
 	char filename[PATH_MAX];
 
 	strlcpy(filename, arg0, sizeof(filename));
-	char* last;
+	char* last = NULL;
 #ifdef _WIN32
-	last = strrchr(filename, '\\');
+	char* running;
+	for (running = filename; running = strpbrk(&running[1], "/\\");) {
+		running[0] = '\\';
+		last = running;
+	}
 #else
 	last = strrchr(filename, '/');
 #endif

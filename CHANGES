@@ -4,6 +4,8 @@ Features:
  - Custom border support
  - New option to lock the maximum frame size
  - Memory access and information logging
+ - Cheats: Add support for CodeBreaker 5XXXXXXX "Super" codes
+ - Cheats: Add support for additional, undocumented GameShark IF code types
  - 3DS: Add faster "loose" sync mode, default enabled
  - Vita: Allow using rear touch pads as L2/L3/R2/R3
  - Scripting: New `input` API for getting raw keyboard/mouse/controller state
@@ -11,14 +13,18 @@ Features:
  - Scripting: New `image` and `canvas` APIs for drawing images and displaying on-screen
  - Scripting: Debugger integration to allow for breakpoints and watchpoints
  - Scripting: Add support for running scripts at startup
+ - Qt: Scripting REPL now has history
  - New unlicensed GB mappers: NT (older types 1 and 2), Li Cheng, GGB-81, Sintax
  - Initial support for bootleg GBA multicarts
  - Debugger: Add range watchpoints
+ - Debugger: Add enabling/disabling for breakpoints and watchpoints
  - "Headless" frontend for running tests, automation, etc.
 Emulation fixes:
  - ARM: Add framework for coprocessor support
  - ARM: cmn/cmp/teq/tst pc shouldn't flush the pipeline
  - ARM: Remove erroneous SMLAL(S) decodings (fixes mgba.io/i/3544)
+ - ARM: Fix LDRT/STRT register-index addressing (fixes mgba.io/i/3586)
+ - GB MBC: Fix MBC3 SRAM enable writes other than 0 and A
  - GB Memory: Initialize HRAM when skipping BIOS in GBC mode (fixes mgba.io/i/3420)
  - GB Memory: Fix initial WRAM pattern when skipping BIOS in GBC mode (fixes mgba.io/i/2704)
  - GB Serialize: Add missing Pocket Cam state to savestates
@@ -26,22 +32,35 @@ Emulation fixes:
  - GB Video: Fix window enable edge case (fixes mgba.io/i/2640)
  - GBA: Unhandled bkpt should be treated as an undefined exception
  - GBA: Add baseline CP0 (Wii U VC) and CP1 (DCC) implementations
+ - GBA DMA: DMA addresses should be masked to "wrap" around the address space
+ - GBA DMA: Fix invalid DMA latching behavior (fixes mgba.io/i/2105)
  - GBA Serialize: Fix some minor save state edge cases
  - GBA Video: Disable BG target 1 blending when OBJ blending (fixes mgba.io/i/2722)
  - GBA Video: Improve emulation of window start/end conditions (fixes mgba.io/i/1945)
  - GBA Video: Fix transparent OBJWIN pixel/sprite priority interaction (fixes mgba.io/i/2809)
  - GBA Video: Improve sprite drawing cycle counting (fixes mgba.io/i/3081)
  - GBA Video: Fix edge case with double-height sprites wrapping (fixes mgba.io/i/2824)
+ - GBA Video: VCOUNTER flag should be updated on DISPSTAT write (fixes mgba.io/i/1873)
+ - GBA Video: Fix background toggling in OpenGL renderer (fixes mgba.io/i/2475)
+ - GBA Video: Properly clear VRAM on reset (fixes mgba.io/i/3690)
 Other fixes:
+ - 3DS: Don't detach autosave thread (fixes mgba.io/i/3561)
  - Core: Fix inconsistencies with setting game-specific overrides (fixes mgba.io/i/2963)
+ - Core: Don't leave initial empty state in rewind queue
  - Debugger: Fix writing to specific segment in command-line debugger
+ - GB Video: Fix video log replaying freezing when video is disabled
  - GBA: Fix getting game info for multiboot ROMs
+ - GBA Core: Flush pipeline if CPSR is directly written
  - GBA e-Reader: Early-exit when processing 0-sized lists
  - mGUI: Load parent directory if last used directory is missing (fixes mgba.io/i/3379)
  - Qt: Fix savestate preview sizes with different scales (fixes mgba.io/i/2560)
  - Qt: Fix potential crash when configuring shortcuts
  - Qt: Fix regression where loading BIOS creates a save file (fixes mgba.io/i/3359)
  - Qt: Fix selecting high tiles in tile and map views (fixes mgba.io/i/3461)
+ - Qt: Fix some actions disabled in multiplayer staying disabled after closing game
+ - Qt: Fix unexpected mute when window becomes focused while fast-forwarding
+ - Qt: Fix crashes when exiting with OpenGL renderer
+ - Qt: Fix hiding menu if fullscreen is entered by WM itself (fixes mgba.io/i/3713)
 Misc:
  - 3DS: Change title ID to avoid conflict with commercial title (fixes mgba.io/i/3023)
  - Core: Handle relative paths for saves, screenshots, etc consistently (fixes mgba.io/i/2826)
@@ -49,13 +68,18 @@ Misc:
  - Core: Add MD5 hashing for ROMs
  - Core: Add support for specifying an arbitrary portable directory
  - Core: Add SHA1 hashing for ROMs
+ - Core: Add callback for memoryBlocksChanged (fixes mgba.io/i/3640)
+ - Core: Pause a rewinding thread when empty instead of running one frame repeatedly
  - FFmpeg: Add Ut Video option
  - GB: Prevent incompatible BIOSes from being used on differing models
+ - GB: Allow use of some bootleg BIOSes
  - GB MBC: Add M161 support for one Mani 4-in-1 multicart
+ - GB Memory: Decay cart bus eagerly when executing from RAM
  - GB Serialize: Add missing savestate support for MBC6 and NT (newer)
  - GBA: Improve detection of valid ELF ROMs
  - GBA Audio: Remove broken XQ audio pending rewrite
  - GBA BIOS: Move SoftReset implementation to assembly
+ - GBA BIOS: Prevent using known-broken "debug" BIOS
  - GBA e-Reader: Use geometric mean instead of arithmetic mean when detecting parameters
  - GBA e-Reader: Disable strict mode when scanning cards
  - GBA Memory: Improve VRAM access stall cycle estimation
@@ -78,10 +102,20 @@ Misc:
  - Qt: Throttle fatal error dialogs
  - Qt: Add save info to bug report logs
  - Qt: Show filename of loaded TBL in memory view (closes mgba.io/i/2815)
+ - Qt: Increase gamepad polling frequency
+ - Qt: Show menu when right clicking too
+ - Qt: Allow menu bar to be temporarily hidden (closes mgba.io/i/1448)
+ - Qt: Add warning when a ROM is loaded from a temporary directory
+ - Qt: Sort shader uniforms based on order in file
+ - Qt: Allow downgrading across update channels
+ - Qt: Prevent both gyro and RTC sensors from being enabled at the same time
+ - Qt: Put fullscreen information in report view
+ - Qt: Add "clear console" menu item for the scripting view
  - Res: Port hq2x and OmniScale shaders from SameBoy
  - Res: Port NSO-gba-colors shader (closes mgba.io/i/2834)
  - Res: Update gba-colors shader (closes mgba.io/i/2976)
  - Res: Port more Pokefan531 color shaders (closes mgba.io/i/3437)
+ - Res: Port MMPX shader
  - Scripting: Add `callbacks:oneshot` for single-call callbacks
 
 0.10.5: (2025-03-08)

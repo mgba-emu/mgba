@@ -51,7 +51,7 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 		}
 	});
 
-	m_gamepadTimer.setInterval(15);
+	m_gamepadTimer.setInterval(POLL_INTERVAL_MS);
 	m_gamepadTimer.start();
 
 #ifdef BUILD_QT_MULTIMEDIA

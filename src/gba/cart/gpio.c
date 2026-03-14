@@ -64,7 +64,7 @@ void GBAHardwareReset(struct GBACartridgeHardware* hw) {
 }
 
 void GBAHardwareClear(struct GBACartridgeHardware* hw) {
-	hw->devices = HW_NONE | (hw->devices & HW_GB_PLAYER_DETECTION);
+	hw->devices = HW_NO_OVERRIDE | (hw->devices & HW_GB_PLAYER_DETECTION);
 	hw->readWrite = GPIO_WRITE_ONLY;
 	hw->writeLatch = 0;
 	hw->pinState = 0;

@@ -54,7 +54,6 @@ static void _latchHuC3Rtc(struct mRTCSource* rtc, uint8_t* huc3Regs, time_t* rtc
 }
 
 static void _huc3Commit(struct GB* gb, struct GBHuC3State* state) {
-	size_t c;
 	switch (state->value & 0x70) {
 	case 0x10:
 		if ((state->index & 0xF8) == 0x10) {
@@ -100,12 +99,7 @@ static void _huc3Commit(struct GB* gb, struct GBHuC3State* state) {
 			break;
 		case GBHUC3_CMD_TONE:
 			if (state->registers[GBHUC3_SPEAKER_ENABLE] == 1) {
-				for (c = 0; c < mCoreCallbacksListSize(&gb->coreCallbacks); ++c) {
-					struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gb->coreCallbacks, c);
-					if (callbacks->alarm) {
-						callbacks->alarm(callbacks->context);
-					}
-				}
+				mCALLBACKS_INVOKE(gb, alarm);
 				mLOG(GB_MBC, DEBUG, "HuC-3 tone %i", state->registers[GBHUC3_SPEAKER_TONE] & 3);
 			}
 			break;

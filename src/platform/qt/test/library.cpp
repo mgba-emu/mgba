@@ -77,11 +77,11 @@ private:
 	}
 
 	void updateGame() {
-		LibraryEntry game = makeGBA("Another", 0x88888888);
+		LibraryEntry game = makeGBA("Another", 0x68888888);
 		model->updateEntries({ game });
 		QModelIndex idx = find("Another");
 		QVERIFY2(idx.isValid(), "game not found");
-		QCOMPARE(idx.siblingAtColumn(LibraryModel::COL_CRC32).data(Qt::EditRole).toInt(), 0x88888888);
+		QCOMPARE(idx.siblingAtColumn(LibraryModel::COL_CRC32).data(Qt::EditRole).toInt(), 0x68888888);
 	}
 
 	void removeGames1() {

@@ -55,6 +55,7 @@ public:
 	};
 
 	static const uint32_t KEYBOARD = 0x51545F4B;
+	static const int POLL_INTERVAL_MS = 8;
 
 	InputController(QWidget* topLevel = nullptr, QObject* parent = nullptr);
 	~InputController();

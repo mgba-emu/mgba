@@ -9,6 +9,7 @@
 
 #include <QHash>
 #include <QKeySequence>
+#include <QMenu>
 #include <QObject>
 #include <QSet>
 
@@ -55,6 +56,8 @@ public:
 	std::shared_ptr<Action> getAction(const QString& action);
 	QKeySequence defaultShortcut(const QString& action);
 
+	void exec(const QPoint& pos);
+
 signals:
 	void actionAdded(const QString& name);
 	void menuCleared(const QString& name);
@@ -70,6 +73,7 @@ private:
 	QHash<QString, QKeySequence> m_defaultShortcuts;
 	QSet<QString> m_hiddenActions;
 	QSet<QString> m_heldActions;
+	QMenu m_menu;
 };
 
 template<typename T, typename V>

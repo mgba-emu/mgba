@@ -1,8 +1,7 @@
 /* pngimage.c
  *
+ * Copyright (c) 2021-2025 Cosmin Truta
  * Copyright (c) 2015,2016 John Cunningham Bowler
- *
- * Last changed in libpng 1.6.24 [August 4, 2016]
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -12,6 +11,7 @@
  * using png_read_png and then write with png_write_png.  Test all possible
  * transforms.
  */
+
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,7 +39,7 @@
 /* 1.6.1 added support for the configure test harness, which uses 77 to indicate
  * a skipped test, in earlier versions we need to succeed on a skipped test, so:
  */
-#if PNG_LIBPNG_VER >= 10601 && defined(HAVE_CONFIG_H)
+#if defined(HAVE_CONFIG_H)
 #  define SKIP 77
 #else
 #  define SKIP 0
@@ -317,11 +317,10 @@ transform_name(int t)
 
    t &= -t; /* first set bit */
 
-   for (i=0; i<TTABLE_SIZE; ++i) if (transform_info[i].name != NULL)
-   {
-      if ((transform_info[i].transform & t) != 0)
-         return transform_info[i].name;
-   }
+   for (i=0; i<TTABLE_SIZE; ++i)
+      if (transform_info[i].name != NULL)
+         if ((transform_info[i].transform & t) != 0)
+            return transform_info[i].name;
 
    return "invalid transform";
 }
@@ -338,13 +337,16 @@ validate_T(void)
 {
    unsigned int i;
 
-   for (i=0; i<TTABLE_SIZE; ++i) if (transform_info[i].name != NULL)
+   for (i=0; i<TTABLE_SIZE; ++i)
    {
-      if (transform_info[i].when & TRANSFORM_R)
-         read_transforms |= transform_info[i].transform;
+      if (transform_info[i].name != NULL)
+      {
+         if (transform_info[i].when & TRANSFORM_R)
+            read_transforms |= transform_info[i].transform;
 
-      if (transform_info[i].when & TRANSFORM_W)
-         write_transforms |= transform_info[i].transform;
+         if (transform_info[i].when & TRANSFORM_W)
+            write_transforms |= transform_info[i].transform;
+      }
    }
 
    /* Reversible transforms are those which are supported on both read and
@@ -540,6 +542,7 @@ typedef enum
 struct display
 {
    jmp_buf        error_return;      /* Where to go to on error */
+   error_level    error_code;        /* Set before longjmp */
 
    const char    *filename;          /* The name of the original file */
    const char    *operation;         /* Operation being performed */
@@ -760,7 +763,10 @@ display_log(struct display *dp, error_level level, const char *fmt, ...)
 
    /* Errors cause this routine to exit to the fail code */
    if (level > APP_FAIL || (level > ERRORS && !(dp->options & CONTINUE)))
+   {
+      dp->error_code = level;
       longjmp(dp->error_return, level);
+    }
 }
 
 /* error handler callbacks for libpng */
@@ -962,21 +968,24 @@ update_display(struct display *dp)
       int bd = dp->bit_depth;
       unsigned int i;
 
-      for (i=0; i<TTABLE_SIZE; ++i) if (transform_info[i].name != NULL)
+      for (i=0; i<TTABLE_SIZE; ++i)
       {
-         int transform = transform_info[i].transform;
+         if (transform_info[i].name != NULL)
+         {
+            int transform = transform_info[i].transform;
 
-         if ((transform_info[i].valid_chunks == 0 ||
-               (transform_info[i].valid_chunks & chunks) != 0) &&
-            (transform_info[i].color_mask_required & ct) ==
-               transform_info[i].color_mask_required &&
-            (transform_info[i].color_mask_absent & ct) == 0 &&
-            (transform_info[i].bit_depths & bd) != 0 &&
-            (transform_info[i].when & TRANSFORM_R) != 0)
-            active |= transform;
+            if ((transform_info[i].valid_chunks == 0 ||
+                  (transform_info[i].valid_chunks & chunks) != 0) &&
+               (transform_info[i].color_mask_required & ct) ==
+                  transform_info[i].color_mask_required &&
+               (transform_info[i].color_mask_absent & ct) == 0 &&
+               (transform_info[i].bit_depths & bd) != 0 &&
+               (transform_info[i].when & TRANSFORM_R) != 0)
+               active |= transform;
 
-         else if ((transform_info[i].when & TRANSFORM_R) != 0)
-            inactive |= transform;
+            else if ((transform_info[i].when & TRANSFORM_R) != 0)
+               inactive |= transform;
+         }
       }
 
       /* Some transforms appear multiple times in the table; the 'active' status
@@ -1000,8 +1009,9 @@ compare_read(struct display *dp, int applied_transforms)
    int interlace_method, compression_method, filter_method;
    const char *e = NULL;
 
-   png_get_IHDR(dp->read_pp, dp->read_ip, &width, &height, &bit_depth,
-      &color_type, &interlace_method, &compression_method, &filter_method);
+   if (!png_get_IHDR(dp->read_pp, dp->read_ip, &width, &height, &bit_depth,
+      &color_type, &interlace_method, &compression_method, &filter_method))
+      display_log(dp, LIBPNG_BUG, "png_get_IHDR failed");
 
 #  define C(item) if (item != dp->item) \
       display_log(dp, APP_WARNING, "IHDR " #item "(%lu) changed to %lu",\
@@ -1012,7 +1022,12 @@ compare_read(struct display *dp, int applied_transforms)
    C(height);
    C(bit_depth);
    C(color_type);
-   C(interlace_method);
+#  ifdef PNG_WRITE_INTERLACING_SUPPORTED
+      /* If write interlace has been disabled, the PNG file is still
+       * written correctly, but as a regular (not-interlaced) PNG.
+       */
+      C(interlace_method);
+#  endif
    C(compression_method);
    C(filter_method);
 
@@ -1081,8 +1096,9 @@ compare_read(struct display *dp, int applied_transforms)
                size_t x;
 
                /* Find the first error */
-               for (x=0; x<rowbytes-1; ++x) if (row[x] != orig[x])
-                  break;
+               for (x=0; x<rowbytes-1; ++x)
+                  if (row[x] != orig[x])
+                     break;
 
                display_log(dp, APP_FAIL,
                   "byte(%lu,%lu) changed 0x%.2x -> 0x%.2x",
@@ -1137,6 +1153,7 @@ compare_read(struct display *dp, int applied_transforms)
                display_log(dp, LIBPNG_ERROR, "invalid colour type %d",
                   color_type);
                /*NOTREACHED*/
+               memset(sig_bits, 0, sizeof(sig_bits));
                bpp = 0;
                break;
          }
@@ -1198,7 +1215,7 @@ compare_read(struct display *dp, int applied_transforms)
                sig_bits[0] = (png_byte)b;
                break;
 
-            case 4: /* Relicate twice */
+            case 4: /* Replicate twice */
                /* Value is 1, 2, 3 or 4 */
                b = 0xf & ((0xf << 4) >> sig_bits[0]);
                b |= b << 4;
@@ -1557,18 +1574,19 @@ static int
 do_test(struct display *dp, const char *file)
    /* Exists solely to isolate the setjmp clobbers */
 {
-   int ret = setjmp(dp->error_return);
+   dp->error_code = VERBOSE; /* The "lowest" level */
 
-   if (ret == 0)
+   if (setjmp(dp->error_return) == 0)
    {
       test_one_file(dp, file);
       return 0;
    }
 
-   else if (ret < ERRORS) /* shouldn't longjmp on warnings */
-      display_log(dp, INTERNAL_ERROR, "unexpected return code %d", ret);
+   else if (dp->error_code < ERRORS) /* shouldn't longjmp on warnings */
+      display_log(dp, INTERNAL_ERROR, "unexpected return code %d",
+                  dp->error_code);
 
-   return ret;
+   return dp->error_code;
 }
 
 int
@@ -1668,7 +1686,11 @@ main(int argc, char **argv)
             int ret = do_test(&d, argv[i]);
 
             if (ret > QUIET) /* abort on user or internal error */
+            {
+               display_clean(&d);
+               display_destroy(&d);
                return 99;
+            }
          }
 
          /* Here on any return, including failures, except user/internal issues
@@ -1686,8 +1708,9 @@ main(int argc, char **argv)
 
                printf("%s: pngimage ", pass ? "PASS" : "FAIL");
 
-               for (j=1; j<option_end; ++j) if (j != ilog)
-                  printf("%s ", argv[j]);
+               for (j=1; j<option_end; ++j)
+                  if (j != ilog)
+                     printf("%s ", argv[j]);
 
                printf("%s\n", d.filename);
             }

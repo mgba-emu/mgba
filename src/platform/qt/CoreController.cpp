@@ -303,7 +303,7 @@ void CoreController::loadConfig(ConfigController* config) {
 	m_autoload = config->getOption("autoload", true).toInt();
 	m_autofireThreshold = config->getOption("autofireThreshold", m_autofireThreshold).toInt();
 	m_fastForwardVolume = config->getOption("fastForwardVolume", -1).toInt();
-	m_fastForwardMute = config->getOption("fastForwardMute", -1).toInt();
+	m_fastForwardMute = config->getOption("fastForwardMute", false).toInt();
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "volume");
 	mCoreConfigCopyValue(&m_threadContext.core->config, config->config(), "mute");
 	m_preload = config->getOption("preload", true).toInt();
@@ -640,7 +640,7 @@ void CoreController::overrideMute(bool override) {
 		core->opts.mute = true;
 	} else {
 		if (m_fastForward || m_fastForwardForced) {
-			core->opts.mute = m_fastForwardMute >= 0;
+			core->opts.mute = m_fastForwardMute;
 		} else {
 			mCoreConfigGetBoolValue(&core->config, "mute", &core->opts.mute);
 		}
@@ -1306,9 +1306,7 @@ void CoreController::updateFastForward() {
 		if (m_fastForwardVolume >= 0) {
 			m_threadContext.core->opts.volume = m_fastForwardVolume;
 		}
-		if (m_fastForwardMute >= 0) {
-			m_threadContext.core->opts.mute = m_fastForwardMute || m_mute;
-		}
+		m_threadContext.core->opts.mute = m_fastForwardMute || m_mute;
 		setSync(false);
 
 		// If we aren't holding the fast forward button

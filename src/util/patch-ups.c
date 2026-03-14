@@ -20,8 +20,8 @@ enum {
 
 static size_t _UPSOutputSize(struct Patch* patch, size_t inSize);
 
-static bool _UPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* out, size_t outSize);
-static bool _BPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* out, size_t outSize);
+static bool _UPSApplyPatch(struct Patch* patch, const void* restrict in, size_t inSize, void* restrict out, size_t outSize);
+static bool _BPSApplyPatch(struct Patch* patch, const void* restrict in, size_t inSize, void* restrict out, size_t outSize);
 
 static size_t _decodeLength(struct VFile* vf, struct mCircleBuffer* buffer);
 
@@ -67,7 +67,7 @@ size_t _UPSOutputSize(struct Patch* patch, size_t inSize) {
 	return _decodeLength(patch->vf, NULL);
 }
 
-bool _UPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* out, size_t outSize) {
+bool _UPSApplyPatch(struct Patch* patch, const void* restrict in, size_t inSize, void* restrict out, size_t outSize) {
 	// TODO: Input checksum
 
 	size_t filesize = patch->vf->size(patch->vf);
@@ -98,7 +98,11 @@ bool _UPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* ou
 				}
 				mCircleBufferWrite(&buffer, block, read);
 			}
-			mCircleBufferRead8(&buffer, &byte);
+			if (!mCircleBufferRead8(&buffer, &byte)) {
+				// This should be unreachable
+				mCircleBufferDeinit(&buffer);
+				return false;
+			}
 			if (!byte) {
 				break;
 			}
@@ -127,7 +131,7 @@ bool _UPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* ou
 	return true;
 }
 
-bool _BPSApplyPatch(struct Patch* patch, const void* in, size_t inSize, void* out, size_t outSize) {
+bool _BPSApplyPatch(struct Patch* patch, const void* restrict in, size_t inSize, void* restrict out, size_t outSize) {
 	patch->vf->seek(patch->vf, IN_CHECKSUM, SEEK_END);
 	uint32_t expectedInChecksum;
 	uint32_t expectedOutChecksum;
@@ -233,11 +237,14 @@ size_t _decodeLength(struct VFile* vf, struct mCircleBuffer* buffer) {
 				uint8_t block[BUFFER_SIZE];
 				ssize_t read = vf->read(vf, block, sizeof(block));
 				if (read < 1) {
-					return false;
+					return 0;
 				}
 				mCircleBufferWrite(buffer, block, read);
 			}
-			mCircleBufferRead8(buffer, (int8_t*) &byte);
+			if (!mCircleBufferRead8(buffer, (int8_t*) &byte)) {
+				// This should be unreachable
+				return 0;
+			}
 		} else {
 			if (vf->read(vf, &byte, 1) != 1) {
 				break;

@@ -6,9 +6,9 @@
  * United States.
  *
  * Read several PNG files, which should have an alpha channel or transparency
- * information, and composite them together to produce one or more 16-bit linear
- * RGBA intermediates.  This involves doing the correct 'over' composition to
- * combine the alpha channels and corresponding data.
+ * information, and composite them together to produce one or more 16-bit
+ * linear RGBA intermediates.  This involves doing the 'over' compositing
+ * operation to combine the alpha channels and corresponding data.
  *
  * Finally read an output (background) PNG using the 24-bit RGB format (the
  * PNG will be composited on green (#00ff00) by default if it has an alpha
@@ -28,8 +28,8 @@
  * correctly.  Apart from the libpng Simplified API the only work done in here
  * is to combine multiple input PNG images into a single sprite; this involves
  * a Porter-Duff 'over' operation and the input PNG images may, as a result,
- * be regarded as being layered one on top of the other with the first (leftmost
- * on the command line) being at the bottom and the last on the top.
+ * be regarded as being layered one on top of the other with the first
+ * (leftmost on the command line) being at the bottom and the last on the top.
  */
 #include <stddef.h>
 #include <stdlib.h>
@@ -44,54 +44,61 @@
  */
 #include "../../png.h"
 
-#ifdef PNG_SIMPLIFIED_READ_SUPPORTED
+#if !defined(PNG_SIMPLIFIED_READ_SUPPORTED)
+#error This program requires libpng supporting the simplified read API
+#endif
 
 #define sprite_name_chars 15
-struct sprite {
-   FILE         *file;
-   png_uint_16p  buffer;
-   unsigned int  width;
-   unsigned int  height;
-   char          name[sprite_name_chars+1];
+struct sprite
+{
+   FILE *file;
+   png_uint_16p buffer;
+   unsigned int width;
+   unsigned int height;
+   char name[sprite_name_chars + 1];
 };
 
 #if 0 /* div by 65535 test program */
 #include <math.h>
 #include <stdio.h>
 
-int main(void) {
+int
+main(void)
+{
    double err = 0;
    unsigned int xerr = 0;
    unsigned int r = 32769;
+   unsigned int x = 0;
+
+   do
    {
-      unsigned int x = 0;
+      unsigned int t = x + (x >> 16) /*+ (x >> 31)*/ + r;
+      double v = x, errtest;
 
-      do {
-         unsigned int t = x + (x >> 16) /*+ (x >> 31)*/ + r;
-         double v = x, errtest;
+      if (t < x)
+      {
+         fprintf(stderr, "overflow: %u+%u -> %u\n", x, r, t);
+         return 1;
+      }
 
-         if (t < x) {
-            fprintf(stderr, "overflow: %u+%u -> %u\n", x, r, t);
-            return 1;
+      v /= 65535;
+      errtest = v;
+      t >>= 16;
+      errtest -= t;
+
+      if (errtest > err)
+      {
+         err = errtest;
+         xerr = x;
+
+         if (errtest >= .5)
+         {
+            fprintf(stderr, "error: %u/65535 = %f, not %u, error %f\n",
+                    x, v, t, errtest);
+            return 0;
          }
-
-         v /= 65535;
-         errtest = v;
-         t >>= 16;
-         errtest -= t;
-
-         if (errtest > err) {
-            err = errtest;
-            xerr = x;
-
-            if (errtest >= .5) {
-               fprintf(stderr, "error: %u/65535 = %f, not %u, error %f\n",
-                     x, v, t, errtest);
-               return 0;
-            }
-         }
-      } while (++x <= 65535U*65535U);
-   }
+      }
+   } while (++x <= 65535U * 65535U);
 
    printf("error %f @ %u\n", err, xerr);
 
@@ -101,7 +108,7 @@ int main(void) {
 
 static void
 sprite_op(const struct sprite *sprite, int x_offset, int y_offset,
-   png_imagep image, const png_uint_16 *buffer)
+          png_imagep image, const png_uint_16 *buffer)
 {
    /* This is where the Porter-Duff 'Over' operator is evaluated; change this
     * code to change the operator (this could be parameterized).  Any other
@@ -112,8 +119,8 @@ sprite_op(const struct sprite *sprite, int x_offset, int y_offset,
    /* Check for an x or y offset that pushes any part of the image beyond the
     * right or bottom of the sprite:
     */
-   if ((y_offset < 0 || (unsigned)/*SAFE*/y_offset < sprite->height) &&
-       (x_offset < 0 || (unsigned)/*SAFE*/x_offset < sprite->width))
+   if ((y_offset < 0 || /*SAFE*/ (unsigned)y_offset < sprite->height) &&
+       (x_offset < 0 || /*SAFE*/ (unsigned)x_offset < sprite->width))
    {
       unsigned int y = 0;
 
@@ -130,7 +137,7 @@ sprite_op(const struct sprite *sprite, int x_offset, int y_offset,
          do
          {
             /* In and out are RGBA values, so: */
-            const png_uint_16 *in_pixel = buffer + (y * image->width + x)*4;
+            const png_uint_16 *in_pixel = buffer + (y * image->width + x) * 4;
             png_uint_32 in_alpha = in_pixel[3];
 
             /* This is the optimized Porter-Duff 'Over' operation, when the
@@ -139,10 +146,10 @@ sprite_op(const struct sprite *sprite, int x_offset, int y_offset,
             if (in_alpha > 0)
             {
                png_uint_16 *out_pixel = sprite->buffer +
-                  ((y+y_offset) * sprite->width + (x+x_offset))*4;
+                  ((y + y_offset) * sprite->width + (x + x_offset)) * 4;
 
                /* This is the weight to apply to the output: */
-               in_alpha = 65535-in_alpha;
+               in_alpha = 65535 - in_alpha;
 
                if (in_alpha > 0)
                {
@@ -159,9 +166,9 @@ sprite_op(const struct sprite *sprite, int x_offset, int y_offset,
                    */
                   png_uint_32 tmp;
 
-#                 define compose(c)\
-                     tmp = out_pixel[c] * in_alpha;\
-                     tmp = (tmp + (tmp >> 16) + 32769) >> 16;\
+#                 define compose(c) \
+                     tmp = out_pixel[c] * in_alpha; \
+                     tmp = (tmp + (tmp >> 16) + 32769) >> 16; \
                      out_pixel[c] = tmp + in_pixel[c]
 
                   /* The following is very vectorizable... */
@@ -172,15 +179,15 @@ sprite_op(const struct sprite *sprite, int x_offset, int y_offset,
                }
 
                else
-                  out_pixel[0] = in_pixel[0],
-                  out_pixel[1] = in_pixel[1],
-                  out_pixel[2] = in_pixel[2],
+               {
+                  out_pixel[0] = in_pixel[0];
+                  out_pixel[1] = in_pixel[1];
+                  out_pixel[2] = in_pixel[2];
                   out_pixel[3] = in_pixel[3];
+               }
             }
-         }
-         while (++x < image->width);
-      }
-      while (++y < image->height);
+         } while (++x < image->width);
+      } while (++y < image->height);
    }
 }
 
@@ -224,9 +231,8 @@ create_sprite(struct sprite *sprite, int *argc, const char ***argv)
 
             if (buffer != NULL)
             {
-               if (png_image_finish_read(&image, NULL/*background*/, buffer,
-                  0/*row_stride*/,
-                  NULL/*colormap for PNG_FORMAT_FLAG_COLORMAP*/))
+               if (png_image_finish_read(&image, NULL /*background*/, buffer,
+                                         0 /*row_stride*/, NULL /*colormap*/))
                {
                   /* This is the place where the Porter-Duff 'Over' operator
                    * needs to be done by this code.  In fact, any image
@@ -245,14 +251,14 @@ create_sprite(struct sprite *sprite, int *argc, const char ***argv)
                {
                   free(buffer);
                   fprintf(stderr, "simpleover: read %s: %s\n", (*argv)[0],
-                      image.message);
+                          image.message);
                }
             }
 
             else
             {
                fprintf(stderr, "simpleover: out of memory: %lu bytes\n",
-                  (unsigned long)PNG_IMAGE_SIZE(image));
+                       (unsigned long)PNG_IMAGE_SIZE(image));
 
                /* png_image_free must be called if we abort the Simplified API
                 * read because of a problem detected in this code.  If problems
@@ -290,8 +296,9 @@ create_sprite(struct sprite *sprite, int *argc, const char ***argv)
       save.flags = PNG_IMAGE_FLAG_FAST;
       save.colormap_entries = 0;
 
-      if (png_image_write_to_stdio(&save, sprite->file, 1/*convert_to_8_bit*/,
-          sprite->buffer, 0/*row_stride*/, NULL/*colormap*/))
+      if (png_image_write_to_stdio(&save, sprite->file, 1 /*convert_to_8_bit*/,
+                                   sprite->buffer, 0 /*row_stride*/,
+                                   NULL /*colormap*/))
       {
          /* Success; the buffer is no longer needed: */
          free(sprite->buffer);
@@ -301,19 +308,20 @@ create_sprite(struct sprite *sprite, int *argc, const char ***argv)
 
       else
          fprintf(stderr, "simpleover: write sprite %s: %s\n", sprite->name,
-            save.message);
+                 save.message);
    }
 
    else
-      fprintf(stderr, "simpleover: sprite %s: could not allocate tmpfile: %s\n",
-         sprite->name, strerror(errno));
+      fprintf(stderr,
+              "simpleover: sprite %s: could not allocate tmpfile: %s\n",
+              sprite->name, strerror(errno));
 
    return 0; /* fail */
 }
 
 static int
 add_sprite(png_imagep output, png_bytep out_buf, struct sprite *sprite,
-   int *argc, const char ***argv)
+           int *argc, const char ***argv)
 {
    /* Given a --add argument naming this sprite, perform the operations listed
     * in the following arguments.  The arguments are expected to have the form
@@ -334,13 +342,13 @@ add_sprite(png_imagep output, png_bytep out_buf, struct sprite *sprite,
           * will fit.
           */
          if (x < 0 || y < 0 ||
-             (unsigned)/*SAFE*/x >= output->width ||
-             (unsigned)/*SAFE*/y >= output->height ||
-             sprite->width > output->width-x ||
-             sprite->height > output->height-y)
+             /*SAFE*/ (unsigned)x >= output->width ||
+             /*SAFE*/ (unsigned)y >= output->height ||
+             sprite->width > output->width - x ||
+             sprite->height > output->height - y)
          {
             fprintf(stderr, "simpleover: sprite %s @ (%d,%d) outside image\n",
-               sprite->name, x, y);
+                    sprite->name, x, y);
             /* Could just skip this, but for the moment it is an error */
             return 0; /* error */
          }
@@ -359,10 +367,10 @@ add_sprite(png_imagep output, png_bytep out_buf, struct sprite *sprite,
             {
                in.format = PNG_FORMAT_RGB; /* force compose */
 
-               if (png_image_finish_read(&in, NULL/*background*/,
-                  out_buf + (y*output->width + x)*3/*RGB*/,
-                  output->width*3/*row_stride*/,
-                  NULL/*colormap for PNG_FORMAT_FLAG_COLORMAP*/))
+               if (png_image_finish_read(
+                      &in, NULL /*background*/,
+                      out_buf + (y * output->width + x) * 3 /*RGB*/,
+                      output->width * 3 /*row_stride*/, NULL /*colormap*/))
                {
                   ++*argv, --*argc;
                   continue;
@@ -371,7 +379,7 @@ add_sprite(png_imagep output, png_bytep out_buf, struct sprite *sprite,
 
             /* The read failed: */
             fprintf(stderr, "simpleover: add sprite %s: %s\n", sprite->name,
-                in.message);
+                    in.message);
             return 0; /* error */
          }
       }
@@ -379,7 +387,7 @@ add_sprite(png_imagep output, png_bytep out_buf, struct sprite *sprite,
       else
       {
          fprintf(stderr, "simpleover: --add='%s': invalid position %s\n",
-               sprite->name, (*argv)[0]);
+                 sprite->name, (*argv)[0]);
          return 0; /* error */
       }
    }
@@ -389,10 +397,10 @@ add_sprite(png_imagep output, png_bytep out_buf, struct sprite *sprite,
 
 static int
 simpleover_process(png_imagep output, png_bytep out_buf, int argc,
-   const char **argv)
+                   const char **argv)
 {
    int result = 1; /* success */
-#  define csprites 10/*limit*/
+#  define csprites 10 /*limit*/
 #  define str(a) #a
    int nsprites = 0;
    struct sprite sprites[csprites];
@@ -412,23 +420,25 @@ simpleover_process(png_imagep output, png_bytep out_buf, int argc,
             sprites[nsprites].width = sprites[nsprites].height = 0;
             sprites[nsprites].name[0] = 0;
 
-            n = sscanf(argv[0], "--sprite=%u,%u,%" str(sprite_name_chars) "s%c",
-                &sprites[nsprites].width, &sprites[nsprites].height,
-                sprites[nsprites].name, &tombstone);
+            n = sscanf(argv[0],
+                       "--sprite=%u,%u,%" str(sprite_name_chars) "s%c",
+                       &sprites[nsprites].width, &sprites[nsprites].height,
+                       sprites[nsprites].name, &tombstone);
 
             if ((n == 2 || n == 3) &&
-                sprites[nsprites].width > 0 && sprites[nsprites].height > 0)
+                (sprites[nsprites].width > 0) &&
+                (sprites[nsprites].height > 0))
             {
                size_t buf_size, tmp;
 
                /* Default a name if not given. */
                if (sprites[nsprites].name[0] == 0)
-                  sprintf(sprites[nsprites].name, "sprite-%d", nsprites+1);
+                  sprintf(sprites[nsprites].name, "sprite-%d", nsprites + 1);
 
                /* Allocate a buffer for the sprite and calculate the buffer
                 * size:
                 */
-               buf_size = sizeof (png_uint_16 [4]);
+               buf_size = sizeof(png_uint_16[4]);
                buf_size *= sprites[nsprites].width;
                buf_size *= sprites[nsprites].height;
 
@@ -437,7 +447,7 @@ simpleover_process(png_imagep output, png_bytep out_buf, int argc,
                tmp /= sprites[nsprites].width;
                tmp /= sprites[nsprites].height;
 
-               if (tmp == sizeof (png_uint_16 [4]))
+               if (tmp == sizeof(png_uint_16[4]))
                {
                   sprites[nsprites].buffer = malloc(buf_size);
                   /* This buffer must be initialized to transparent: */
@@ -448,7 +458,7 @@ simpleover_process(png_imagep output, png_bytep out_buf, int argc,
                      sprites[nsprites].file = NULL;
                      ++argv, --argc;
 
-                     if (create_sprite(sprites+nsprites++, &argc, &argv))
+                     if (create_sprite(sprites + nsprites++, &argc, &argv))
                      {
                         result = 1; /* still ok */
                         continue;
@@ -466,7 +476,8 @@ simpleover_process(png_imagep output, png_bytep out_buf, int argc,
             else
             {
                fprintf(stderr, "simpleover: %s: invalid sprite (%u,%u)\n",
-                  argv[0], sprites[nsprites].width, sprites[nsprites].height);
+                       argv[0],
+                       sprites[nsprites].width, sprites[nsprites].height);
                break;
             }
          }
@@ -480,7 +491,7 @@ simpleover_process(png_imagep output, png_bytep out_buf, int argc,
 
       else if (strncmp(argv[0], "--add=", 6) == 0)
       {
-         const char *name = argv[0]+6;
+         const char *name = argv[0] + 6;
          int isprite = nsprites;
 
          ++argv, --argc;
@@ -489,7 +500,8 @@ simpleover_process(png_imagep output, png_bytep out_buf, int argc,
          {
             if (strcmp(sprites[isprite].name, name) == 0)
             {
-               if (!add_sprite(output, out_buf, sprites+isprite, &argc, &argv))
+               if (!add_sprite(output, out_buf, sprites + isprite,
+                               &argc, &argv))
                   goto out; /* error in add_sprite */
 
                break;
@@ -498,7 +510,8 @@ simpleover_process(png_imagep output, png_bytep out_buf, int argc,
 
          if (isprite < 0) /* sprite not found */
          {
-            fprintf(stderr, "simpleover: --add='%s': sprite not found\n", name);
+            fprintf(stderr, "simpleover: --add='%s': sprite not found\n",
+                    name);
             break;
          }
       }
@@ -526,7 +539,8 @@ out:
    return result;
 }
 
-int main(int argc, const char **argv)
+int
+main(int argc, const char **argv)
 {
    int result = 1; /* default to fail */
 
@@ -536,7 +550,7 @@ int main(int argc, const char **argv)
       const char *output = NULL;
       png_image image;
 
-      if (argc > 2 && argv[2][0] != '-'/*an operation*/)
+      if (argc > 2 && argv[2][0] != '-' /*an operation*/)
       {
          output = argv[2];
          argi = 3;
@@ -558,7 +572,7 @@ int main(int argc, const char **argv)
             png_color background = {0, 0xff, 0}; /* fully saturated green */
 
             if (png_image_finish_read(&image, &background, buffer,
-               0/*row_stride*/, NULL/*colormap for PNG_FORMAT_FLAG_COLORMAP */))
+                                      0 /*row_stride*/, NULL /*colormap*/))
             {
                /* At this point png_image_finish_read has cleaned up the
                 * allocated data in png_image, and only the buffer needs to be
@@ -566,22 +580,24 @@ int main(int argc, const char **argv)
                 *
                 * Perform the remaining operations:
                 */
-               if (simpleover_process(&image, buffer, argc-argi, argv+argi))
+               if (simpleover_process(&image, buffer,
+                                      argc - argi, argv + argi))
                {
                   /* Write the output: */
                   if ((output != NULL &&
-                       png_image_write_to_file(&image, output,
-                        0/*convert_to_8bit*/, buffer, 0/*row_stride*/,
-                        NULL/*colormap*/)) ||
+                       png_image_write_to_file(
+                          &image, output, 0 /*convert_to_8bit*/, buffer,
+                          0 /*row_stride*/, NULL /*colormap*/)) ||
                       (output == NULL &&
-                       png_image_write_to_stdio(&image, stdout,
-                        0/*convert_to_8bit*/, buffer, 0/*row_stride*/,
-                        NULL/*colormap*/)))
+                       png_image_write_to_stdio(
+                          &image, stdout, 0 /*convert_to_8bit*/, buffer,
+                          0 /*row_stride*/, NULL /*colormap*/)))
                      result = 0;
 
                   else
                      fprintf(stderr, "simpleover: write %s: %s\n",
-                        output == NULL ? "stdout" : output, image.message);
+                             output == NULL ? "stdout" : output,
+                             image.message);
                }
 
                /* else simpleover_process writes an error message */
@@ -589,7 +605,7 @@ int main(int argc, const char **argv)
 
             else
                fprintf(stderr, "simpleover: read %s: %s\n", argv[1],
-                   image.message);
+                       image.message);
 
             free(buffer);
          }
@@ -597,7 +613,7 @@ int main(int argc, const char **argv)
          else
          {
             fprintf(stderr, "simpleover: out of memory: %lu bytes\n",
-               (unsigned long)PNG_IMAGE_SIZE(image));
+                    (unsigned long)PNG_IMAGE_SIZE(image));
 
             /* This is the only place where a 'free' is required; libpng does
              * the cleanup on error and success, but in this case we couldn't
@@ -617,7 +633,8 @@ int main(int argc, const char **argv)
    else
    {
       /* Usage message */
-      fprintf(stderr,
+      fprintf(
+         stderr,
          "simpleover: usage: simpleover background.png [output.png]\n"
          "  Output 'background.png' as a 24-bit RGB PNG file in 'output.png'\n"
          "   or, if not given, stdout.  'background.png' will be composited\n"
@@ -628,13 +645,13 @@ int main(int argc, const char **argv)
          "   --sprite=width,height,name {[--at=x,y] {sprite.png}}\n"
          "    Produce a transparent sprite of size (width,height) and with\n"
          "     name 'name'.\n"
-         "    For each sprite.png composite it using a Porter-Duff 'Over'\n"
-         "     operation at offset (x,y) in the sprite (defaulting to (0,0)).\n"
+         "    For each sprite.png composite it is using a Porter-Duff 'Over'\n"
+         "     operation at offset (x,y) in the sprite, defaulting to (0,0).\n"
          "     Input PNGs will be truncated to the area of the sprite.\n"
          "\n"
          "   --add='name' {x,y}\n"
          "    Optionally, before output, composite a sprite, 'name', which\n"
-         "     must have been previously produced using --sprite, at each\n"
+         "     must have been previously produced using --sprite at each\n"
          "     offset (x,y) in the output image.  Each sprite must fit\n"
          "     completely within the output image.\n"
          "\n"
@@ -645,4 +662,3 @@ int main(int argc, const char **argv)
 
    return result;
 }
-#endif /* SIMPLIFIED_READ */

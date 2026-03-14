@@ -8,14 +8,19 @@
 #include "Log.h"
 
 QDataStream& operator<<(QDataStream& stream, const QGBA::AutorunScriptModel::ScriptInfo& object) {
+	int restoreVersion = stream.version();
+	stream.setVersion(QDataStream::Qt_5_0);
 	stream << QGBA::AutorunScriptModel::ScriptInfo::VERSION;
 	stream << object.filename.toUtf8();
 	stream << object.active;
+	stream.setVersion(restoreVersion);
 	return stream;
 }
 
 QDataStream& operator>>(QDataStream& stream, QGBA::AutorunScriptModel::ScriptInfo& object) {
 	static bool displayedError = false;
+	int restoreVersion = stream.version();
+	stream.setVersion(QDataStream::Qt_5_0);
 	uint16_t version = 0;
 	stream >> version;
 	if (version == 1) {
@@ -31,9 +36,11 @@ QDataStream& operator>>(QDataStream& stream, QGBA::AutorunScriptModel::ScriptInf
 			displayedError = true;
 		}
 		stream.setStatus(QDataStream::ReadCorruptData);
+		stream.setVersion(restoreVersion);
 		return stream;
 	}
 	stream >> object.active;
+	stream.setVersion(restoreVersion);
 	return stream;
 }
 

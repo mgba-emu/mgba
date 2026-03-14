@@ -81,10 +81,9 @@ static void GBAInit(void* cpu, struct mCPUComponent* component) {
 	gba->cpu->cp[14].mcr = GBACP14Write;
 	GBAMemoryInit(gba);
 
-	gba->memory.savedata.timing = &gba->timing;
 	gba->memory.savedata.vf = NULL;
 	gba->memory.savedata.realVf = NULL;
-	gba->memory.savedata.gpio = &gba->memory.hw;
+	gba->memory.savedata.p = gba;
 	GBASavedataInit(&gba->memory.savedata, NULL);
 
 	gba->video.p = gba;
@@ -343,7 +342,6 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 #ifdef ENABLE_DEBUGGERS
 			gba->timing.globalCycles += cycles < nextEvent ? nextEvent : cycles;
 #endif
-			mASSERT_DEBUG_LOG(GBA, cycles >= 0, "Negative cycles passed: %i", cycles);
 			nextEvent = mTimingTick(&gba->timing, cycles < nextEvent ? nextEvent : cycles);
 		} while (gba->cpuBlocked && !gba->earlyExit);
 
@@ -353,8 +351,6 @@ static void GBAProcessEvents(struct ARMCore* cpu) {
 			if (!gba->memory.io[GBA_REG(IME)] || !gba->memory.io[GBA_REG(IE)]) {
 				break;
 			}
-		} else {
-			mASSERT_DEBUG_LOG(GBA, nextEvent >= 0, "Negative cycles will pass: %i", nextEvent);
 		}
 		if (gba->earlyExit) {
 			break;
@@ -527,6 +523,24 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 		mLOG(GBA, WARN, "Couldn't map BIOS");
 		return;
 	}
+	uint32_t checksum = GBAChecksum(bios, GBA_SIZE_BIOS);
+	mLOG(GBA, DEBUG, "BIOS Checksum: 0x%X", checksum);
+	switch (checksum) {
+	case GBA_BIOS_CHECKSUM:
+		mLOG(GBA, INFO, "Official GBA BIOS detected");
+		break;
+	case GBA_DS_BIOS_CHECKSUM:
+		mLOG(GBA, INFO, "Official GBA (DS) BIOS detected");
+		break;
+	case GBA_DEBUG_BIOS_CHECKSUM:
+		mLOG(GBA, WARN, "Known broken GBA BIOS detected, disabling");
+		vf->unmap(vf, bios, GBA_SIZE_BIOS);
+		return;
+	default:
+		mLOG(GBA, WARN, "BIOS checksum incorrect");
+		break;
+	}
+
 	if (gba->biosVf) {
 		gba->biosVf->unmap(gba->biosVf, gba->memory.bios, GBA_SIZE_BIOS);
 		gba->biosVf->close(gba->biosVf);
@@ -534,20 +548,10 @@ void GBALoadBIOS(struct GBA* gba, struct VFile* vf) {
 	gba->biosVf = vf;
 	gba->memory.bios = bios;
 	gba->memory.fullBios = 1;
-	uint32_t checksum = GBAChecksum(gba->memory.bios, GBA_SIZE_BIOS);
-	mLOG(GBA, DEBUG, "BIOS Checksum: 0x%X", checksum);
-	if (checksum == GBA_BIOS_CHECKSUM) {
-		mLOG(GBA, INFO, "Official GBA BIOS detected");
-	} else if (checksum == GBA_DS_BIOS_CHECKSUM) {
-		mLOG(GBA, INFO, "Official GBA (DS) BIOS detected");
-	} else {
-		mLOG(GBA, WARN, "BIOS checksum incorrect");
-	}
 	gba->biosChecksum = checksum;
 	if (gba->memory.activeRegion == GBA_REGION_BIOS) {
 		gba->cpu->memory.activeRegion = gba->memory.bios;
 	}
-	// TODO: error check
 }
 
 void GBAApplyPatch(struct GBA* gba, struct Patch* patch) {
@@ -627,6 +631,11 @@ void GBADebug(struct GBA* gba, uint16_t flags) {
 		mLog(_mLOG_CAT_GBA_DEBUG, level, "%s", oolBuf);
 	}
 	gba->debugFlags = GBADebugFlagsClearSend(gba->debugFlags);
+}
+
+void GBAInterrupt(struct GBA* gba) {
+	gba->earlyExit = true;
+	mTimingInterrupt(&gba->timing);
 }
 
 #ifdef USE_ELF
@@ -955,14 +964,7 @@ void GBABreakpoint(struct ARMCore* cpu, int immediate) {
 
 void GBAFrameStarted(struct GBA* gba) {
 	GBATestKeypadIRQ(gba);
-
-	size_t c;
-	for (c = 0; c < mCoreCallbacksListSize(&gba->coreCallbacks); ++c) {
-		struct mCoreCallbacks* callbacks = mCoreCallbacksListGetPointer(&gba->coreCallbacks, c);
-		if (callbacks->videoFrameStarted) {
-			callbacks->videoFrameStarted(callbacks->context);
-		}
-	}
+	mCALLBACKS_INVOKE(gba, videoFrameStarted);
 }
 
 void GBAFrameEnded(struct GBA* gba) {

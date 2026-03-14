@@ -194,6 +194,10 @@ Window::Window(CoreManager* manager, ConfigController* config, int playerId, QWi
 	m_shortcutController->setActionMapper(&m_actions);
 	setupMenu(menuBar());
 	setupOptions();
+	setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(this, &QWidget::customContextMenuRequested, [this](const QPoint& pos) {
+		m_actions.exec(mapToGlobal(pos));
+	});
 }
 
 Window::~Window() {
@@ -512,6 +516,13 @@ void Window::openView(QWidget* widget) {
 	widget->show();
 }
 
+void Window::showMenu(bool show) {
+	if (auto hideMenu = m_actions.getAction("hideMenu")) {
+		hideMenu->setActive(!show);
+	}
+	menuBar()->setVisible(show);
+}
+
 void Window::loadCamImage() {
 	QString filename = GBAApp::app()->getOpenFileName(this, tr("Select image"), tr("Image file (*.png *.gif *.jpg *.jpeg);;All files (*)"));
 	if (!filename.isEmpty()) {
@@ -721,7 +732,7 @@ void Window::showEvent(QShowEvent* event) {
 			}
 
 			if (m_config->getOption("muteOnMinimize").toInt()) {
-				m_inactiveMute = false;
+				m_minimizedMute = false;
 				updateMute();
 			}
 		}
@@ -770,7 +781,7 @@ void Window::hideEvent(QHideEvent* event) {
 		m_controller->setPaused(true);
 	}
 	if (m_config->getOption("muteOnMinimize").toInt()) {
-		m_inactiveMute = true;
+		m_minimizedMute = true;
 		updateMute();
 	}
 }
@@ -831,6 +842,20 @@ void Window::dropEvent(QDropEvent* event) {
 	setController(m_manager->loadGame(url.toLocalFile()), url.toLocalFile());
 }
 
+#ifndef Q_OS_MAC
+void Window::changeEvent(QEvent* event) {
+	if (event->type() == QEvent::WindowStateChange) {
+		if (isFullScreen()) {
+			if (m_controller && !m_controller->isPaused()) {
+				showMenu(false);
+			} else {
+				showMenu(true);
+			}
+		}
+	}
+}
+#endif
+
 void Window::enterFullScreen() {
 	if (!isVisible()) {
 		m_fullscreenOnStart = true;
@@ -842,17 +867,17 @@ void Window::enterFullScreen() {
 	showFullScreen();
 #ifndef Q_OS_MAC
 	if (m_controller && !m_controller->isPaused()) {
-		menuBar()->hide();
+		showMenu(false);
 	}
 #endif
 }
 
 void Window::exitFullScreen() {
+	showMenu(true);
 	if (!isFullScreen()) {
 		return;
 	}
 	centralWidget()->unsetCursor();
-	menuBar()->show();
 	showNormal();
 }
 
@@ -884,7 +909,7 @@ void Window::gameStarted() {
 
 #ifndef Q_OS_MAC
 	if (isFullScreen()) {
-		menuBar()->hide();
+		showMenu(false);
 	}
 #endif
 
@@ -953,6 +978,9 @@ void Window::gameStopped() {
 	for (auto& action : m_platformActions) {
 		action->setEnabled(true);
 	}
+	for (auto& action : m_nonMpActions) {
+		action->setEnabled(true);
+	}
 	for (auto& action : m_gameActions) {
 		action->setEnabled(false);
 	}
@@ -978,12 +1006,7 @@ void Window::gameStopped() {
 #endif
 	}
 
-	std::shared_ptr<CoreController> controller;
-	m_controller.swap(controller);
-	QTimer::singleShot(0, this, [controller]() {
-		// Destroy the controller after everything else has cleaned up
-		Q_UNUSED(controller);
-	});
+	m_cleanupController = std::move(m_controller);
 	detachWidget();
 	updateTitle();
 
@@ -994,11 +1017,12 @@ void Window::gameStopped() {
 			m_scripting->setVideoBackend(nullptr);
 		}
 #endif
-		m_display.reset();
+		m_cleanupDisplay = std::move(m_display);
 		close();
 	}
+	QTimer::singleShot(0, this, &Window::delayedCleanup);
 #ifndef Q_OS_MAC
-	menuBar()->show();
+	showMenu(true);
 #endif
 
 #ifdef USE_DISCORD_RPC
@@ -1288,7 +1312,7 @@ void Window::openStateWindow(LoadSave ls) {
 	m_stateWindow->setBackground(pixmap);
 
 #ifndef Q_OS_MAC
-	menuBar()->show();
+	showMenu(true);
 #endif
 	attachWidget(m_stateWindow);
 }
@@ -1710,6 +1734,13 @@ void Window::setupMenu(QMenuBar* menubar) {
 	m_actions.addMenu(tr("Audio channels"), "audioChannels", "av");
 
 	addGameAction(tr("Adjust layer placement..."), "placementControl", openControllerTView<PlacementControl>(), "av");
+
+#ifndef Q_OS_MAC
+	m_actions.addSeparator("av");
+	m_actions.addBooleanAction(tr("Hide &menu"), "hideMenu", [this](bool hidden) {
+		showMenu(!hidden);
+	}, "av", QKeySequence("Ctrl+M"));
+#endif
 
 	m_actions.addMenu(tr("&Tools"), "tools");
 	m_actions.addAction(tr("View &logs..."), "viewLogs", static_cast<QWidget*>(m_logView), &QWidget::show, "tools");
@@ -2187,10 +2218,12 @@ void Window::setController(CoreController* controller, const QString& fname) {
 	connect(m_controller.get(), &CoreController::paused, this, &Window::updateFrame);
 
 #ifndef Q_OS_MAC
-	connect(m_controller.get(), &CoreController::paused, menuBar(), &QWidget::show);
+	connect(m_controller.get(), &CoreController::paused, [this]() {
+		showMenu(true);
+	});
 	connect(m_controller.get(), &CoreController::unpaused, [this]() {
 		if(isFullScreen()) {
-			menuBar()->hide();
+			showMenu(false);
 		}
 	});
 #endif
@@ -2316,7 +2349,7 @@ void Window::updateMute() {
 		return;
 	}
 
-	bool mute = m_inactiveMute;
+	bool mute = m_inactiveMute || m_minimizedMute;
 
 	if (!mute) {
 		QString multiplayerAudio = m_config->getQtOption("multiplayerAudio").toString();
@@ -2335,6 +2368,13 @@ void Window::setLogo() {
 	m_screenWidget->setPixmap(m_logo);
 	m_screenWidget->setDimensions(m_logo.width(), m_logo.height());
 	centralWidget()->unsetCursor();
+}
+
+void Window::delayedCleanup() {
+	// Destroy the controller after everything else has cleaned up, except for the display
+	m_cleanupController.reset();
+	// The display needs to be cleaned up last so the core can clean up the OpenGL resources
+	m_cleanupDisplay.reset();
 }
 
 WindowBackground::WindowBackground(QWidget* parent)

@@ -15,7 +15,7 @@
 #include <fcntl.h>
 
 MGBA_EXPORT const uint32_t GBASavestateMagic = 0x01000000;
-MGBA_EXPORT const uint32_t GBASavestateVersion = 0x00000009;
+MGBA_EXPORT const uint32_t GBASavestateVersion = 0x0000000A;
 
 mLOG_DEFINE_CATEGORY(GBA_STATE, "GBA Savestate", "gba.serialize");
 
@@ -121,6 +121,7 @@ bool GBADeserialize(struct GBA* gba, const struct GBASerializedState* state) {
 		switch (gba->memory.unl.type) {
 		case GBA_UNL_CART_NONE:
 		case GBA_UNL_CART_VFAME:
+		default:
 			cart = (struct GBACartridge*) gba->memory.rom;
 			break;
 		case GBA_UNL_CART_MULTICART:
