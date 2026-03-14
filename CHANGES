@@ -69,6 +69,7 @@ Misc:
  - Core: Add support for specifying an arbitrary portable directory
  - Core: Add SHA1 hashing for ROMs
  - Core: Add callback for memoryBlocksChanged (fixes mgba.io/i/3640)
+ - Core: Pause a rewinding thread when empty instead of running one frame repeatedly
  - FFmpeg: Add Ut Video option
  - GB: Prevent incompatible BIOSes from being used on differing models
  - GB: Allow use of some bootleg BIOSes

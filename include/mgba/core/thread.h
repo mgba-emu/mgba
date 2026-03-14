@@ -79,6 +79,7 @@ enum mCoreThreadRequest {
 	mTHREAD_REQ_RESET = 4,
 	mTHREAD_REQ_RUN_ON = 8,
 	mTHREAD_REQ_CRASHED = 16,
+	mTHREAD_REQ_REWIND_EMPTY = 32,
 };
 
 struct mCoreThreadInternal {

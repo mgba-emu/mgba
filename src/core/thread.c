@@ -148,13 +148,19 @@ void _frameStarted(void* context) {
 		return;
 	}
 	if (thread->core->opts.rewindEnable && thread->core->opts.rewindBufferCapacity > 0) {
-		if (!thread->impl->rewinding || !mCoreRewindRestore(&thread->impl->rewind, thread->core, 1)) {
+		MutexLock(&thread->impl->stateMutex);
+		if (thread->impl->rewinding) {
+			if (!mCoreRewindRestore(&thread->impl->rewind, thread->core, 1)) {
+				_sendRequest(thread->impl, mTHREAD_REQ_REWIND_EMPTY);
+			}
+		} else {
 			if (thread->impl->rewind.rewindFrameCounter == 0) {
 				mCoreRewindAppend(&thread->impl->rewind, thread->core);
 				thread->impl->rewind.rewindFrameCounter = thread->core->opts.rewindBufferInterval;
 			}
 			thread->impl->rewind.rewindFrameCounter--;
 		}
+		MutexUnlock(&thread->impl->stateMutex);
 	}
 }
 
@@ -334,7 +340,7 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 			}
 		}
 
-		impl->requested &= ~pendingRequests | mTHREAD_REQ_PAUSE | mTHREAD_REQ_WAIT | mTHREAD_REQ_CRASHED;
+		impl->requested &= ~pendingRequests | mTHREAD_REQ_PAUSE | mTHREAD_REQ_WAIT | mTHREAD_REQ_CRASHED | mTHREAD_REQ_REWIND_EMPTY;
 		pendingRequests = impl->requested;
 
 		if (impl->state == mTHREAD_REQUEST) {
@@ -347,6 +353,9 @@ static THREAD_ENTRY _mCoreThreadRun(void* context) {
 				}
 				if (pendingRequests & mTHREAD_REQ_CRASHED) {
 					_changeState(impl, mTHREAD_CRASHED);
+				}
+				if (pendingRequests & mTHREAD_REQ_REWIND_EMPTY) {
+					_changeState(impl, mTHREAD_PAUSED);
 				}
 			} else {
 				_changeState(impl, mTHREAD_RUNNING);
@@ -682,6 +691,9 @@ void mCoreThreadSetRewinding(struct mCoreThread* threadContext, bool rewinding) 
 	if (rewinding && threadContext->impl->state == mTHREAD_CRASHED) {
 		threadContext->impl->state = mTHREAD_REQUEST;
 		ConditionWake(&threadContext->impl->stateOnThreadCond);
+	}
+	if (!rewinding) {
+		_cancelRequest(threadContext->impl, mTHREAD_REQ_REWIND_EMPTY);
 	}
 	MutexUnlock(&threadContext->impl->stateMutex);
 }
