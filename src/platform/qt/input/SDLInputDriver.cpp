@@ -254,6 +254,9 @@ SDLGamepad::SDLGamepad(SDLInputDriver* driver, int index, QObject* parent)
 	SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), m_guid, sizeof(m_guid));
 #endif
 	m_id = SDL_JoystickInstanceID(joystick);
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+	m_serial = SDL_JoystickGetSerial(joystick);
+#endif
 #endif
 }
 
@@ -415,6 +418,26 @@ bool SDLGamepad::updateIndex() {
 			m_index = i;
 			return true;
 		}
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+		char guid[34]{};
+#if SDL_VERSION_ATLEAST(2, 24, 0)
+		SDL_GUIDToString(SDL_JoystickGetGUID(joystick), guid, sizeof(guid));
+#else
+		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), guid, sizeof(guid));
+#endif
+		if (QLatin1String(guid) != QLatin1String(m_guid)) {
+			continue;
+		}
+
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+		QString serial = SDL_JoystickGetSerial(joystick);
+		if (m_serial == serial) {
+			m_index = i;
+			return true;
+		}
+#endif
+#endif
 	}
 	return false;
 }
