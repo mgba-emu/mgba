@@ -42,10 +42,15 @@ struct SDL_JoystickCombo {
 
 DECLARE_VECTOR(SDL_JoystickList, struct SDL_JoystickCombo);
 
+struct mSDLUniqueJoystick {
+	const char* type;
+	const char* serial;
+};
+
 struct mSDLPlayer;
 struct mSDLEvents {
 	struct SDL_JoystickList joysticks;
-	const char* preferredJoysticks[MAX_PLAYERS];
+	struct mSDLUniqueJoystick preferredJoysticks[MAX_PLAYERS];
 	int playersAttached;
 	struct mSDLPlayer* players[MAX_PLAYERS];
 #if SDL_VERSION_ATLEAST(2, 0, 0)

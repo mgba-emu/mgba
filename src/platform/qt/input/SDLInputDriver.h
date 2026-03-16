@@ -98,6 +98,7 @@ public:
 
 	QString name() const override;
 	QString visibleName() const override;
+	QString serial() const override;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	bool updateIndex();

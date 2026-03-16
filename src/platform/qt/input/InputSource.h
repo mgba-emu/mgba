@@ -24,6 +24,7 @@ public:
 
 	virtual QString name() const = 0;
 	virtual QString visibleName() const = 0;
+	virtual QString serial() const = 0;
 
 protected:
 	InputDriver* const m_driver;

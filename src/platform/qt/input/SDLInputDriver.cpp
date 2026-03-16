@@ -398,6 +398,14 @@ QString SDLGamepad::visibleName() const {
 #endif
 }
 
+QString SDLGamepad::serial() const {
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+	return SDL_JoystickGetSerial(SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick);
+#else
+	return {};
+#endif
+}
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 bool SDLGamepad::updateIndex() {
 	for (size_t i = 0; i < SDL_JoystickListSize(&s_sdlEvents.joysticks); ++i) {

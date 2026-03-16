@@ -643,7 +643,7 @@ void mInputProfileSave(const struct mInputMap* map, uint32_t type, struct Config
 	_saveAll(map, type, sectionName, config);
 }
 
-const char* mInputGetPreferredDevice(const struct Configuration* config, const char* platformName, uint32_t type, int playerId) {
+const char* mInputGetPreferredDeviceType(const struct Configuration* config, const char* platformName, uint32_t type, int playerId) {
 	char sectionName[SECTION_NAME_MAX];
 	_makeSectionName(platformName, sectionName, SECTION_NAME_MAX, type);
 
@@ -652,13 +652,31 @@ const char* mInputGetPreferredDevice(const struct Configuration* config, const c
 	return ConfigurationGetValue(config, sectionName, deviceId);
 }
 
-void mInputSetPreferredDevice(struct Configuration* config, const char* platformName, uint32_t type, int playerId, const char* deviceName) {
+const char* mInputGetPreferredDeviceSerial(const struct Configuration* config, const char* platformName, uint32_t type, int playerId) {
+	char sectionName[SECTION_NAME_MAX];
+	_makeSectionName(platformName, sectionName, SECTION_NAME_MAX, type);
+
+	char deviceId[KEY_NAME_MAX];
+	snprintf(deviceId, sizeof(deviceId), "deviceSerial%i", playerId);
+	return ConfigurationGetValue(config, sectionName, deviceId);
+}
+
+void mInputSetPreferredDeviceType(struct Configuration* config, const char* platformName, uint32_t type, int playerId, const char* deviceName) {
 	char sectionName[SECTION_NAME_MAX];
 	_makeSectionName(platformName, sectionName, SECTION_NAME_MAX, type);
 
 	char deviceId[KEY_NAME_MAX];
 	snprintf(deviceId, sizeof(deviceId), "device%i", playerId);
 	ConfigurationSetValue(config, sectionName, deviceId, deviceName);
+}
+
+void mInputSetPreferredDeviceSerial(struct Configuration* config, const char* platformName, uint32_t type, int playerId, const char* serial) {
+	char sectionName[SECTION_NAME_MAX];
+	_makeSectionName(platformName, sectionName, SECTION_NAME_MAX, type);
+
+	char deviceId[KEY_NAME_MAX];
+	snprintf(deviceId, sizeof(deviceId), "deviceSerial%i", playerId);
+	ConfigurationSetValue(config, sectionName, deviceId, serial);
 }
 
 const char* mInputGetCustomValue(const struct Configuration* config, const char* platformName, uint32_t type, const char* key, const char* profile) {

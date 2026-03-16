@@ -140,7 +140,8 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 
 	size_t i;
 	for (i = 0; i < MAX_PLAYERS; ++i) {
-		context->preferredJoysticks[i] = 0;
+		context->preferredJoysticks[i].type = NULL;
+		context->preferredJoysticks[i].serial = NULL;
 	}
 
 #if !SDL_VERSION_ATLEAST(2, 0, 0)
@@ -168,10 +169,11 @@ void mSDLDeinitEvents(struct mSDLEvents* context) {
 }
 
 void mSDLEventsLoadConfig(struct mSDLEvents* context, const struct Configuration* config) {
-	context->preferredJoysticks[0] = mInputGetPreferredDevice(config, "gba", SDL_BINDING_BUTTON, 0);
-	context->preferredJoysticks[1] = mInputGetPreferredDevice(config, "gba", SDL_BINDING_BUTTON, 1);
-	context->preferredJoysticks[2] = mInputGetPreferredDevice(config, "gba", SDL_BINDING_BUTTON, 2);
-	context->preferredJoysticks[3] = mInputGetPreferredDevice(config, "gba", SDL_BINDING_BUTTON, 3);
+	int i;
+	for (i = 0; i < MAX_PLAYERS; ++i) {
+		context->preferredJoysticks[i].type = mInputGetPreferredDeviceType(config, "gba", SDL_BINDING_BUTTON, i);
+		context->preferredJoysticks[i].serial = mInputGetPreferredDeviceSerial(config, "gba", SDL_BINDING_BUTTON, i);
+	}
 }
 
 void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
@@ -264,23 +266,35 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 			firstUnclaimed = i;
 		}
 
+		struct SDL_JoystickCombo* joystick = SDL_JoystickListGetPointer(&events->joysticks, i);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 		char joystickName[34] = {0};
 #if SDL_VERSION_ATLEAST(2, 24, 0)
-		SDL_GUIDToString(SDL_JoystickGetGUID(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick), joystickName, sizeof(joystickName));
+		SDL_GUIDToString(SDL_JoystickGetGUID(joystick->joystick), joystickName, sizeof(joystickName));
 #else
-		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick), joystickName, sizeof(joystickName));
+		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick->joystick), joystickName, sizeof(joystickName));
+#endif
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+		const char* serial = SDL_JoystickGetSerial(joystick->joystick);
 #endif
 #else
-		const char* joystickName = SDL_JoystickName(SDL_JoystickIndex(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick));
+		const char* joystickName = SDL_JoystickName(SDL_JoystickIndex(joystick->joystick));
 		if (!joystickName) {
 			continue;
 		}
 #endif
-		if (events->preferredJoysticks[player->playerId] && strcmp(events->preferredJoysticks[player->playerId], joystickName) == 0) {
-			index = i;
-			break;
+
+		if (!events->preferredJoysticks[player->playerId].type || strcmp(events->preferredJoysticks[player->playerId].type, joystickName) != 0) {
+			continue;
 		}
+
+#if SDL_VERSION_ATLEAST(2, 0, 14)
+		if (events->preferredJoysticks[player->playerId].serial && serial && strcmp(events->preferredJoysticks[player->playerId].serial, serial) != 0) {
+			continue;
+		}
+#endif
+		index = i;
+		break;
 	}
 
 	if (index == SIZE_MAX && firstUnclaimed != SIZE_MAX) {
@@ -436,9 +450,10 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 		if (event.type == SDL_JOYDEVICEADDED) {
 			ssize_t joysticks[MAX_PLAYERS];
 			ssize_t i;
+			mLOG(SDL_EVENTS, DEBUG, "Joystick attached");
 			// Pointers can get invalidated, so we'll need to refresh them
 			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
-				joysticks[i] = events->players[i]->joystick ? (ssize_t) SDL_JoystickListIndex(&events->joysticks, events->players[i]->joystick) : -1;
+				joysticks[i] = events->players[i]->joystick ? (ssize_t) events->players[i]->joystick->index : -1;
 				events->players[i]->joystick = NULL;
 			}
 			struct SDL_JoystickCombo* joystick = _mSDLOpenJoystick(events, event.jdevice.which);
@@ -447,6 +462,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				continue;
 			}
 
+			// First pass: refresh existing controller pointers
 			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
 				if (joysticks[i] != -1) {
 					events->players[i]->joystick = SDL_JoystickListGetPointer(&events->joysticks, joysticks[i]);
@@ -459,22 +475,31 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 #else
 			SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick->joystick), joystickName, sizeof(joystickName));
 #endif
-			for (i = 0; (int) i < events->playersAttached; ++i) {
+			// Second pass: see if new controller matches preferred one for any player missing a controller
+			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
 				if (events->players[i]->joystick) {
 					continue;
 				}
-				if (events->preferredJoysticks[i] && strcmp(events->preferredJoysticks[i], joystickName) == 0) {
-					events->players[i]->joystick = joystick;
-					if (config) {
-						mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_CONTROLLER, config, joystickName);
-					}
-					return;
+				if (!events->preferredJoysticks[i].type || strcmp(events->preferredJoysticks[i].type, joystickName) != 0) {
+					continue;
 				}
+				if (events->preferredJoysticks[i].serial && strcmp(events->preferredJoysticks[i].type, joystickName) != 0) {
+					continue;
+				}
+				mLOG(SDL_EVENTS, DEBUG, "Joystick matched player %" PRIz "i preferred device", i + 1);
+				events->players[i]->joystick = joystick;
+				if (config && joystickName[0]) {
+					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_CONTROLLER, config, joystickName);
+				}
+				return;
 			}
-			for (i = 0; (int) i < events->playersAttached; ++i) {
+
+			// Third pass: if not, give it to the first player missing a controller
+			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
 				if (events->players[i]->joystick) {
 					continue;
 				}
+				mLOG(SDL_EVENTS, DEBUG, "Unmatched joystick assigned to player %" PRIz "i", i + 1);
 				events->players[i]->joystick = joystick;
 				if (config && joystickName[0]) {
 					mInputProfileLoad(events->players[i]->bindings, SDL_BINDING_CONTROLLER, config, joystickName);
@@ -484,25 +509,41 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 		} else if (event.type == SDL_JOYDEVICEREMOVED) {
 			SDL_JoystickID ids[MAX_PLAYERS] = { 0 };
 			size_t i;
-			for (i = 0; (int) i < events->playersAttached; ++i) {
-				if (events->players[i]->joystick) {
-					ids[i] = events->players[i]->joystick->id;
-					events->players[i]->joystick = NULL;
+			int p;
+			mLOG(SDL_EVENTS, INFO, "Joystick ID %i detached", event.jdevice.which);
+			// Invalidate existing pointers in advance
+			for (p = 0; p < events->playersAttached && p < MAX_PLAYERS; ++p) {
+				if (events->players[p]->joystick) {
+					ids[p] = events->players[p]->joystick->id;
+					events->players[p]->joystick = NULL;
+
+					if (ids[p] == event.jdevice.which) {
+						mLOG(SDL_EVENTS, DEBUG, "Removed joystick for player %i", p + 1);
+					}
 				} else {
-					ids[i] = -1;
+					ids[p] = -1;
 				}
 			}
-			for (i = 0; i < SDL_JoystickListSize(&events->joysticks);) {
+
+			// First pass: remove joystick from our list
+			for (i = 0; i < SDL_JoystickListSize(&events->joysticks); ++i) {
 				struct SDL_JoystickCombo* joystick = SDL_JoystickListGetPointer(&events->joysticks, i);
-				if (joystick->id == event.jdevice.which) {
-					SDL_JoystickListShift(&events->joysticks, i, 1);
+				if (joystick->id != event.jdevice.which) {
 					continue;
 				}
-				SDL_JoystickListGetPointer(&events->joysticks, i)->index = i;
-				int p;
-				for (p = 0; p < events->playersAttached; ++p) {
+				SDL_JoystickListShift(&events->joysticks, i, 1);
+				break;
+			}
+
+			// Second pass: refresh existing controller pointers
+			for (i = 0; i < SDL_JoystickListSize(&events->joysticks);) {
+				struct SDL_JoystickCombo* joystick = SDL_JoystickListGetPointer(&events->joysticks, i);
+				joystick->index = i;
+
+				for (p = 0; p < events->playersAttached && p < MAX_PLAYERS; ++p) {
 					if (joystick->id == ids[p]) {
 						events->players[p]->joystick = SDL_JoystickListGetPointer(&events->joysticks, i);
+						break;
 					}
 				}
 				++i;

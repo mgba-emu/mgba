@@ -304,7 +304,13 @@ void InputController::setPreferredGamepad(uint32_t type, int index) {
 	if (name.isEmpty()) {
 		return;
 	}
-	mInputSetPreferredDevice(m_config->input(), "gba", type, m_playerId, name.toUtf8().constData());
+	mInputSetPreferredDeviceType(m_config->input(), "gba", type, m_playerId, name.toUtf8().constData());
+
+	QString serial = pads[index]->serial();
+	if (serial.isEmpty()) {
+		return;
+	}
+	mInputSetPreferredDeviceSerial(m_config->input(), "gba", type, m_playerId, serial.toUtf8().constData());
 }
 
 void InputController::setPreferredGamepad(int index) {
