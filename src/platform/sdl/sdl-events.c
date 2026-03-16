@@ -427,9 +427,10 @@ void mSDLPlayerChangeJoystick(struct mSDLEvents* events, struct mSDLPlayer* play
 }
 
 void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* config) {
-	// Pump SDL joystick events without eating the rest of the events
-	SDL_JoystickUpdate();
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+	// Most of what we want is in SDL_JoystickUpdate, but e.g. udev hotplug
+	// is only pumped in SDL_PumpEvents proper
+	SDL_PumpEvents();
 	SDL_Event event;
 	while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_JOYDEVICEADDED, SDL_JOYDEVICEREMOVED) > 0) {
 		if (event.type == SDL_JOYDEVICEADDED) {
@@ -486,7 +487,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 			for (i = 0; (int) i < events->playersAttached; ++i) {
 				if (events->players[i]->joystick) {
 					ids[i] = events->players[i]->joystick->id;
-					events->players[i]->joystick = 0;
+					events->players[i]->joystick = NULL;
 				} else {
 					ids[i] = -1;
 				}
@@ -508,6 +509,9 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 			}
 		}
 	}
+#else
+	// Pump SDL joystick events without eating the rest of the events
+	SDL_JoystickUpdate();
 #endif
 }
 
