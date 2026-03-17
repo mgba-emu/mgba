@@ -254,9 +254,12 @@ SDLGamepad::SDLGamepad(SDLInputDriver* driver, int index, QObject* parent)
 	SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), m_guid, sizeof(m_guid));
 #endif
 	m_id = SDL_JoystickInstanceID(joystick);
+	m_visibleName = SDL_JoystickName(joystick);
 #if SDL_VERSION_ATLEAST(2, 0, 14)
 	m_serial = SDL_JoystickGetSerial(joystick);
 #endif
+#else
+	m_visibleName = SDL_JoystickName(SDL_JoystickIndex(joystick));
 #endif
 }
 
@@ -389,24 +392,16 @@ QString SDLGamepad::name() const {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	return m_guid;
 #else
-	return visibleName();
+	return m_visibleName;
 #endif
 }
 
 QString SDLGamepad::visibleName() const {
-#if SDL_VERSION_ATLEAST(2, 0, 0)
-	return SDL_JoystickName(SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick);
-#else
-	return SDL_JoystickName(SDL_JoystickIndex(SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick));
-#endif
+	return m_visibleName;
 }
 
 QString SDLGamepad::serial() const {
-#if SDL_VERSION_ATLEAST(2, 0, 14)
-	return SDL_JoystickGetSerial(SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick);
-#else
-	return {};
-#endif
+	return m_serial;
 }
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)

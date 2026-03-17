@@ -111,10 +111,9 @@ private:
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	char m_guid[34]{};
 	SDL_JoystickID m_id;
-#if SDL_VERSION_ATLEAST(2, 0, 14)
+#endif
+	QString m_visibleName;
 	QString m_serial;
-#endif
-#endif
 
 	bool verify() const;
 };
