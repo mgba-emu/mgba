@@ -329,6 +329,10 @@ QList<GamepadHatEvent::Direction> SDLGamepad::currentHats() {
 
 QString SDLGamepad::buttonHumanName(int button) const {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+	if (!verify()) {
+		return {};
+	}
+
 	SDL_GameController* controller = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->controller;
 	const char* name = mSDLButtonName(controller, static_cast<SDL_GameControllerButton>(button));
 	if (name) {
@@ -340,6 +344,10 @@ QString SDLGamepad::buttonHumanName(int button) const {
 
 QString SDLGamepad::axisHumanName(int axis) const {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+	if (!verify()) {
+		return {};
+	}
+
 	SDL_GameController* controller = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->controller;
 	const char* name = mSDLAxisName(controller, static_cast<SDL_GameControllerAxis>(axis));
 	if (name) {
