@@ -13,6 +13,7 @@
 using namespace QGBA;
 
 int s_sdlInited = 0;
+QReadWriteLock s_eventsRwLock;
 mSDLEvents s_sdlEvents;
 
 void SDL::suspendScreensaver() {
@@ -43,6 +44,7 @@ SDLInputDriver::SDLInputDriver(InputController* controller, QObject* parent)
 	: InputDriver(parent)
 	, m_controller(controller)
 {
+	QWriteLocker locker(&s_eventsRwLock);
 	if (s_sdlInited == 0) {
 		mSDLInitEvents(&s_sdlEvents);
 	}
@@ -50,11 +52,13 @@ SDLInputDriver::SDLInputDriver(InputController* controller, QObject* parent)
 	m_sdlPlayer.bindings = m_controller->map();
 
 	for (size_t i = 0; i < SDL_JoystickListSize(&s_sdlEvents.joysticks); ++i) {
-		m_gamepads.append(std::make_shared<SDLGamepad>(this, i));
+		// Can't use make_shared here due to friend restrictions
+		m_gamepads.append(std::shared_ptr<SDLGamepad>(new SDLGamepad(this, i)));
 	}
 }
 
 SDLInputDriver::~SDLInputDriver() {
+	QWriteLocker locker(&s_eventsRwLock);
 	if (m_playerAttached) {
 		mSDLDetachPlayer(&s_sdlEvents, &m_sdlPlayer);
 	}
@@ -68,6 +72,7 @@ SDLInputDriver::~SDLInputDriver() {
 void SDLInputDriver::setPlayerId(int id) {
 	InputDriver::setPlayerId(id);
 	if (m_playerAttached) {
+		QWriteLocker locker(&s_eventsRwLock);
 		mSDLPlayerChangeId(&s_sdlEvents, &m_sdlPlayer, id);
 	}
 }
@@ -97,6 +102,8 @@ QString SDLInputDriver::currentProfile() const {
 
 void SDLInputDriver::loadConfiguration(ConfigController* config) {
 	m_config = config;
+
+	QWriteLocker locker(&s_eventsRwLock);
 	mSDLEventsLoadConfig(&s_sdlEvents, config->input());
 	if (!m_playerAttached) {
 		m_playerAttached = mSDLAttachPlayer(&s_sdlEvents, &m_sdlPlayer, playerId());
@@ -157,6 +164,7 @@ QList<std::shared_ptr<Gamepad>> SDLInputDriver::connectedGamepads() const {
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 void SDLInputDriver::updateGamepads() {
+	QWriteLocker locker(&s_eventsRwLock);
 	if (m_config) {
 		mSDLUpdateJoysticks(&s_sdlEvents, m_config->input());
 	}
@@ -179,7 +187,8 @@ void SDLInputDriver::updateGamepads() {
 				continue;
 			}
 		}
-		m_gamepads.append(std::make_shared<SDLGamepad>(this, i));
+		// Can't use make_shared here due to friend restrictions
+		m_gamepads.append(std::shared_ptr<SDLGamepad>(new SDLGamepad(this, i)));
 	}
 	std::sort(m_gamepads.begin(), m_gamepads.end(), [](const auto& a, const auto& b) {
 		return a->m_index < b->m_index;
@@ -192,6 +201,7 @@ int SDLInputDriver::activeGamepadIndex() const {
 }
 
 void SDLInputDriver::setActiveGamepad(int index) {
+	QReadLocker locker(&s_eventsRwLock);
 	mSDLPlayerChangeJoystick(&s_sdlEvents, &m_sdlPlayer, index);
 }
 
@@ -272,6 +282,7 @@ SDLGamepad::SDLGamepad(SDLInputDriver* driver, int index, QObject* parent)
 }
 
 QList<bool> SDLGamepad::currentButtons() {
+	QReadLocker locker(&s_eventsRwLock);
 	if (!verify()) {
 		return {};
 	}
@@ -295,6 +306,7 @@ QList<bool> SDLGamepad::currentButtons() {
 }
 
 QList<int16_t> SDLGamepad::currentAxes() {
+	QReadLocker locker(&s_eventsRwLock);
 	if (!verify()) {
 		return {};
 	}
@@ -318,6 +330,7 @@ QList<int16_t> SDLGamepad::currentAxes() {
 }
 
 QList<GamepadHatEvent::Direction> SDLGamepad::currentHats() {
+	QReadLocker locker(&s_eventsRwLock);
 	if (!verify()) {
 		return {};
 	}
@@ -337,6 +350,7 @@ QList<GamepadHatEvent::Direction> SDLGamepad::currentHats() {
 
 QString SDLGamepad::buttonHumanName(int button) const {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+	QReadLocker locker(&s_eventsRwLock);
 	if (!verify()) {
 		return {};
 	}
@@ -352,6 +366,7 @@ QString SDLGamepad::buttonHumanName(int button) const {
 
 QString SDLGamepad::axisHumanName(int axis) const {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+	QReadLocker locker(&s_eventsRwLock);
 	if (!verify()) {
 		return {};
 	}
@@ -366,39 +381,39 @@ QString SDLGamepad::axisHumanName(int axis) const {
 }
 
 int SDLGamepad::buttonCount() const {
-	if (!verify()) {
-		return -1;
-	}
-
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	return SDL_CONTROLLER_BUTTON_MAX;
 #else
+	QReadLocker locker(&s_eventsRwLock);
+	if (!verify()) {
+		return -1;
+	}
 	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	return SDL_JoystickNumButtons(joystick);
 #endif
 }
 
 int SDLGamepad::axisCount() const {
-	if (!verify()) {
-		return -1;
-	}
-
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	return SDL_CONTROLLER_AXIS_MAX;
 #else
+	QReadLocker locker(&s_eventsRwLock);
+	if (!verify()) {
+		return -1;
+	}
 	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	return SDL_JoystickNumAxes(joystick);
 #endif
 }
 
 int SDLGamepad::hatCount() const {
-	if (!verify()) {
-		return -1;
-	}
-
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	return 0;
 #else
+	QReadLocker locker(&s_eventsRwLock);
+	if (!verify()) {
+		return -1;
+	}
 	SDL_Joystick* joystick = SDL_JoystickListGetPointer(&s_sdlEvents.joysticks, m_index)->joystick;
 	return SDL_JoystickNumHats(joystick);
 #endif

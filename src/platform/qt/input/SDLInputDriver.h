@@ -85,8 +85,6 @@ class SDLGamepad : public Gamepad {
 Q_OBJECT
 
 public:
-	SDLGamepad(SDLInputDriver*, int index, QObject* parent = nullptr);
-
 	QList<bool> currentButtons() override;
 	QList<int16_t> currentAxes() override;
 	QList<GamepadHatEvent::Direction> currentHats() override;
@@ -102,11 +100,13 @@ public:
 	QString visibleName() const override;
 	QString serial() const override;
 
+private:
+	// These are private because they need the lock to already be held before calling
+	SDLGamepad(SDLInputDriver*, int index, QObject* parent = nullptr);
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	bool updateIndex();
 #endif
 
-private:
 	friend class SDLInputDriver;
 
 	size_t m_index;
