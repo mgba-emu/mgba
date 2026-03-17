@@ -65,6 +65,13 @@ SDLInputDriver::~SDLInputDriver() {
 	}
 }
 
+void SDLInputDriver::setPlayerId(int id) {
+	InputDriver::setPlayerId(id);
+	if (m_playerAttached) {
+		mSDLPlayerChangeId(&s_sdlEvents, &m_sdlPlayer, id);
+	}
+}
+
 bool SDLInputDriver::supportsPolling() const {
 	return true;
 }
@@ -92,7 +99,7 @@ void SDLInputDriver::loadConfiguration(ConfigController* config) {
 	m_config = config;
 	mSDLEventsLoadConfig(&s_sdlEvents, config->input());
 	if (!m_playerAttached) {
-		m_playerAttached = mSDLAttachPlayer(&s_sdlEvents, &m_sdlPlayer);
+		m_playerAttached = mSDLAttachPlayer(&s_sdlEvents, &m_sdlPlayer, playerId());
 	}
 	if (m_playerAttached) {
 		mSDLPlayerLoadConfig(&m_sdlPlayer, config->input());
@@ -131,9 +138,10 @@ bool SDLInputDriver::update() {
 		return false;
 	}
 
-	SDL_JoystickUpdate();
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	updateGamepads();
+#else
+	SDL_JoystickUpdate();
 #endif
 
 	return true;

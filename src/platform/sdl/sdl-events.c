@@ -136,8 +136,6 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
 	}
 #endif
 
-	context->playersAttached = 0;
-
 	size_t i;
 	for (i = 0; i < MAX_PLAYERS; ++i) {
 		context->preferredJoysticks[i].type = NULL;
@@ -219,10 +217,18 @@ void mSDLInitBindingsGBA(struct mInputMap* inputMap) {
 #endif
 }
 
-bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
+bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player, int playerId) {
 	player->joystick = 0;
 
-	if (events->playersAttached >= MAX_PLAYERS) {
+	if (playerId < 0) {
+		int i;
+		for (i = 0; i < MAX_PLAYERS; ++i) {
+			if (!events->players[i]) {
+				playerId = i;
+				break;
+			}
+		}
+	} else if (playerId >= MAX_PLAYERS || events->players[playerId]) {
 		return false;
 	}
 
@@ -247,7 +253,7 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 	mCircleBufferInit(&player->rotation.zHistory, sizeof(float) * GYRO_STEPS);
 	player->rotation.p = player;
 
-	player->playerId = events->playersAttached;
+	player->playerId = playerId;
 	events->players[player->playerId] = player;
 	size_t firstUnclaimed = SIZE_MAX;
 	size_t index = SIZE_MAX;
@@ -257,7 +263,10 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 		bool claimed = false;
 
 		int p;
-		for (p = 0; p < events->playersAttached; ++p) {
+		for (p = 0; p < MAX_PLAYERS; ++p) {
+			if (!events->players[p]) {
+				continue;
+			}
 			if (events->players[p]->joystick == SDL_JoystickListGetPointer(&events->joysticks, i)) {
 				claimed = true;
 				break;
@@ -316,7 +325,6 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 #endif
 	}
 
-	++events->playersAttached;
 	return true;
 }
 
@@ -324,16 +332,7 @@ void mSDLDetachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
 	if (player != events->players[player->playerId]) {
 		return;
 	}
-	int i;
-	for (i = player->playerId; i < events->playersAttached; ++i) {
-		if (i + 1 < MAX_PLAYERS) {
-			events->players[i] = events->players[i + 1];
-		}
-		if (i < events->playersAttached - 1) {
-			events->players[i]->playerId = i;
-		}
-	}
-	--events->playersAttached;
+	events->players[player->playerId] = NULL;
 	mCircleBufferDeinit(&player->rotation.zHistory);
 }
 
@@ -445,6 +444,18 @@ void mSDLPlayerChangeJoystick(struct mSDLEvents* events, struct mSDLPlayer* play
 	player->joystick = SDL_JoystickListGetPointer(&events->joysticks, index);
 }
 
+void mSDLPlayerChangeId(struct mSDLEvents* events, struct mSDLPlayer* player, int id) {
+	if (id >= MAX_PLAYERS) {
+		return;
+	}
+	if (player != events->players[player->playerId]) {
+		return;
+	}
+	events->players[player->playerId] = NULL;
+	events->players[id] = player;
+	player->playerId = id;
+}
+
 void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* config) {
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	// Most of what we want is in SDL_JoystickUpdate, but e.g. udev hotplug
@@ -457,7 +468,11 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 			ssize_t i;
 			mLOG(SDL_EVENTS, DEBUG, "Joystick attached");
 			// Pointers can get invalidated, so we'll need to refresh them
-			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
+			for (i = 0; i < MAX_PLAYERS; ++i) {
+				if (!events->players[i]) {
+					joysticks[i] = -1;
+					continue;
+				}
 				joysticks[i] = events->players[i]->joystick ? (ssize_t) events->players[i]->joystick->index : -1;
 				events->players[i]->joystick = NULL;
 			}
@@ -468,7 +483,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 			}
 
 			// First pass: refresh existing controller pointers
-			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
+			for (i = 0; i < MAX_PLAYERS; ++i) {
 				if (joysticks[i] != -1) {
 					events->players[i]->joystick = SDL_JoystickListGetPointer(&events->joysticks, joysticks[i]);
 				}
@@ -481,8 +496,8 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 			SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick->joystick), joystickName, sizeof(joystickName));
 #endif
 			// Second pass: see if new controller matches preferred one for any player missing a controller
-			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
-				if (events->players[i]->joystick) {
+			for (i = 0; i < MAX_PLAYERS; ++i) {
+				if (!events->players[i] || events->players[i]->joystick) {
 					continue;
 				}
 				if (!events->preferredJoysticks[i].type || strcmp(events->preferredJoysticks[i].type, joystickName) != 0) {
@@ -500,8 +515,8 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 			}
 
 			// Third pass: if not, give it to the first player missing a controller
-			for (i = 0; i < events->playersAttached && i < MAX_PLAYERS; ++i) {
-				if (events->players[i]->joystick) {
+			for (i = 0; i < MAX_PLAYERS; ++i) {
+				if (!events->players[i] || events->players[i]->joystick) {
 					continue;
 				}
 				mLOG(SDL_EVENTS, DEBUG, "Unmatched joystick assigned to player %" PRIz "i", i + 1);
@@ -517,8 +532,8 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 			int p;
 			mLOG(SDL_EVENTS, INFO, "Joystick ID %i detached", event.jdevice.which);
 			// Invalidate existing pointers in advance
-			for (p = 0; p < events->playersAttached && p < MAX_PLAYERS; ++p) {
-				if (events->players[p]->joystick) {
+			for (p = 0; p < MAX_PLAYERS; ++p) {
+				if (events->players[p] && events->players[p]->joystick) {
 					ids[p] = events->players[p]->joystick->id;
 					events->players[p]->joystick = NULL;
 
@@ -545,7 +560,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration* 
 				struct SDL_JoystickCombo* joystick = SDL_JoystickListGetPointer(&events->joysticks, i);
 				joystick->index = i;
 
-				for (p = 0; p < events->playersAttached && p < MAX_PLAYERS; ++p) {
+				for (p = 0; p < MAX_PLAYERS; ++p) {
 					if (joystick->id == ids[p]) {
 						events->players[p]->joystick = SDL_JoystickListGetPointer(&events->joysticks, i);
 						break;

@@ -156,7 +156,7 @@ int main(int argc, char** argv) {
 	mSDLInitBindingsGBA(&renderer.core->inputMap);
 	mSDLInitEvents(&renderer.events);
 	mSDLEventsLoadConfig(&renderer.events, mCoreConfigGetInput(&renderer.core->config));
-	mSDLAttachPlayer(&renderer.events, &renderer.player);
+	mSDLAttachPlayer(&renderer.events, &renderer.player, -1);
 	mSDLPlayerLoadConfig(&renderer.player, mCoreConfigGetInput(&renderer.core->config));
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)

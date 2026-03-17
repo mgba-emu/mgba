@@ -31,6 +31,8 @@ public:
 	SDLInputDriver(InputController*, QObject* parent = nullptr);
 	~SDLInputDriver();
 
+	void setPlayerId(int id) override;
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	uint32_t type() const override { return SDL_BINDING_CONTROLLER; }
 #else

@@ -46,9 +46,7 @@ InputController::InputController(QWidget* topLevel, QObject* parent)
 				testGamepad(driver->type());
 			}
 		}
-		if (m_playerId == 0) {
-			update();
-		}
+		update();
 	});
 
 	m_gamepadTimer.setInterval(POLL_INTERVAL_MS);
@@ -158,6 +156,7 @@ InputController::~InputController() {
 
 void InputController::addInputDriver(std::shared_ptr<InputDriver> driver) {
 	m_inputDrivers[driver->type()] = driver;
+	driver->setPlayerId(m_playerId);
 	if (!m_sensorDriver && driver->supportsSensors()) {
 		m_sensorDriver = driver->type();
 	}

@@ -28,6 +28,9 @@ public:
 	InputDriver(QObject* parent = nullptr);
 	virtual ~InputDriver() = default;
 
+	virtual void setPlayerId(int id);
+	int playerId() const { return m_playerId; }
+
 	virtual uint32_t type() const = 0;
 	virtual QString visibleName() const = 0;
 	virtual QString currentProfile() const = 0;
@@ -66,6 +69,9 @@ public:
 
 	virtual mRumble* rumble();
 	virtual mRotationSource* rotationSource();
+
+private:
+	int m_playerId;
 };
 
 }

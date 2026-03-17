@@ -11,6 +11,10 @@ InputDriver::InputDriver(QObject* parent)
 	: QObject(parent)
 {}
 
+void InputDriver::setPlayerId(int playerId) {
+	m_playerId = playerId;
+}
+
 void InputDriver::loadConfiguration(ConfigController*) {
 }
 
