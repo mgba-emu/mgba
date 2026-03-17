@@ -55,6 +55,12 @@ SDLInputDriver::SDLInputDriver(InputController* controller, QObject* parent)
 		// Can't use make_shared here due to friend restrictions
 		m_gamepads.append(std::shared_ptr<SDLGamepad>(new SDLGamepad(this, i)));
 	}
+
+#if SDL_VERSION_ATLEAST(2, 0, 0)
+	// Throttle the gamepad update timer to only update once a second
+	m_gamepadTimer.setInterval(1000);
+	connect(&m_gamepadTimer, &QTimer::timeout, this, &SDLInputDriver::updateGamepads);
+#endif
 }
 
 SDLInputDriver::~SDLInputDriver() {
@@ -146,10 +152,11 @@ bool SDLInputDriver::update() {
 	}
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-	updateGamepads();
-#else
-	SDL_JoystickUpdate();
+	if (!m_gamepadTimer.isActive()) {
+		m_gamepadTimer.start();
+	}
 #endif
+	SDL_JoystickUpdate();
 
 	return true;
 }

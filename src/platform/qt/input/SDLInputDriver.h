@@ -12,6 +12,8 @@
 
 #include "platform/sdl/sdl-events.h"
 
+#include <QTimer>
+
 #include <memory>
 
 namespace QGBA {
@@ -77,6 +79,9 @@ private:
 	QList<std::shared_ptr<SDLGamepad>> m_gamepads;
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
+	QTimer m_gamepadTimer;
+
+private slots:
 	void updateGamepads();
 #endif
 };
