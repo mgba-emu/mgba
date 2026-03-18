@@ -105,7 +105,7 @@
    <item row="2" column="0" colspan="2">
     <widget class="QCheckBox" name="spanSegments">
      <property name="text">
-      <string>Dump across banks</string>
+      <string comment="Generate dump with bytes all within the same region of memory, even if it crosses the bank boundary">Dump across banks within region</string>
      </property>
     </widget>
    </item>
