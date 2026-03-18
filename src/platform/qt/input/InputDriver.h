@@ -71,7 +71,7 @@ public:
 	virtual mRotationSource* rotationSource();
 
 private:
-	int m_playerId;
+	int m_playerId = -1;
 };
 
 }
